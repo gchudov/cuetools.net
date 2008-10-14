@@ -5,6 +5,7 @@ using namespace System::Text;
 using namespace System::Collections::Generic;
 using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
+using namespace APETagsDotNet;
 
 #ifndef _WAVEFORMATEX_
 #define _WAVEFORMATEX_
@@ -34,7 +35,6 @@ typedef struct tWAVEFORMATEX
 
 #include "All.h"
 #include "MACLib.h"
-#include "APETag.h"
 
 namespace APEDotNet {
 
@@ -46,18 +46,18 @@ namespace APEDotNet {
 			pAPEDecompress = NULL;
 			_sampleOffset = 0;
 			_samplesWaiting = false;
-			_path = NULL;
+			_path = path;
 			pBuffer = NULL;
 
 			int nRetVal = 0;
 
 			pathChars = Marshal::StringToHGlobalUni(path);
 			size_t pathLen = wcslen ((const wchar_t*)pathChars.ToPointer())+1;
-			_path = new wchar_t[pathLen];
-			memcpy ((void*) _path, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
+			wchar_t * pPath = new wchar_t[pathLen];
+			memcpy ((void*) pPath, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
 			Marshal::FreeHGlobal(pathChars);
 
-			pAPEDecompress = CreateIAPEDecompress (_path, &nRetVal);
+			pAPEDecompress = CreateIAPEDecompress (pPath, &nRetVal);
 			if (!pAPEDecompress) {
 				throw gcnew Exception("Unable to open file.");
 			}
@@ -77,7 +77,6 @@ namespace APEDotNet {
 		~APEReader ()
 		{
 			if (pBuffer) delete [] pBuffer;
-			if (_path) delete [] _path;
 		}
 
 		property Int32 BitsPerSample {
@@ -129,7 +128,7 @@ namespace APEDotNet {
 
 		property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
-				if (!_tags) GetTags ();
+				if (!_tags) _tags = (gcnew APETagDotNet (_path, true))->GetStringTags (true);
 				return _tags;
 			}
 			void set (NameValueCollection ^tags) {
@@ -180,32 +179,7 @@ namespace APEDotNet {
 		int nBlockAlign;
 		bool _samplesWaiting;
 		unsigned char * pBuffer;
-		const wchar_t * _path;
-
-		void GetTags (void)
-		{
-			_tags = gcnew NameValueCollection();
-			CAPETag apeTag (_path, TRUE);
-			for (int i = 0; ; i++)
-			{
-				CAPETagField * field = apeTag.GetTagField (i);
-				if (!field)
-					break;
-				if (field->GetIsUTF8Text())
-				{
-					int valueSize = field->GetFieldValueSize();
-					while (valueSize && field->GetFieldValue()[valueSize-1]=='\0')
-						valueSize --;
-					const wchar_t * fieldName = field->GetFieldName ();
-					if (!wcsicmp (fieldName, L"YEAR"))
-						fieldName = L"DATE";
-					if (!wcsicmp (fieldName, L"TRACK"))
-						fieldName = L"TRACKNUMBER";
-					_tags->Add (gcnew String (fieldName),
-						gcnew String (field->GetFieldValue(), 0, valueSize, System::Text::Encoding::UTF8));
-				}
-			}
-		}
+		String^ _path;
 
 #if 0
 		APE__StreamDecoderWriteStatus WriteCallback(const APE__StreamDecoder *decoder,

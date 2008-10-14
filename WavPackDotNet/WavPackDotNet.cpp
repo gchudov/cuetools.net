@@ -32,18 +32,19 @@
 using namespace System;
 using namespace System::Runtime::InteropServices;
 using namespace System::Collections::Specialized;
+using namespace APETagsDotNet;
 
 #include <stdio.h>
 #include <memory.h>
 #include "WavPack\wavpack.h"
 #include <string.h>
-typedef char                                        str_ansi;
-typedef wchar_t                                     str_utf16;
-#define BOOL int
-#define TRUE 1
-#define FALSE 0
-#include "..\MAC_SDK\Shared\SmartPtr.h"
-#include "..\MAC_SDK\Shared\APETag.h"
+//typedef char                                        str_ansi;
+//typedef wchar_t                                     str_utf16;
+//#define BOOL int
+//#define TRUE 1
+//#define FALSE 0
+//#include "..\MAC_SDK\Shared\SmartPtr.h"
+//#include "..\MAC_SDK\Shared\APETag.h"
 
 namespace WavPackDotNet {
 	int write_block(void *id, void *data, int32_t length);
@@ -54,15 +55,15 @@ namespace WavPackDotNet {
 			IntPtr pathChars;
 			char errorMessage[256];
 
-			_path = NULL;
+			_path = path;
 
 			pathChars = Marshal::StringToHGlobalUni(path);
 			size_t pathLen = wcslen ((const wchar_t*)pathChars.ToPointer())+1;
-			_path = new wchar_t[pathLen];
-			memcpy ((void*) _path, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
+			wchar_t * pPath = new wchar_t[pathLen];
+			memcpy ((void*) pPath, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
 			Marshal::FreeHGlobal(pathChars);
 
-			_wpc = WavpackOpenFileInput(_path, errorMessage, OPEN_WVC, 0);
+			_wpc = WavpackOpenFileInput(pPath, errorMessage, OPEN_WVC, 0);
 			if (_wpc == NULL) {
 				throw gcnew Exception("Unable to initialize the decoder.");
 			}
@@ -76,7 +77,6 @@ namespace WavPackDotNet {
 
 		~WavPackReader()
 		{
-			if (_path) delete [] _path;
 		}
 
 		property Int32 BitsPerSample {
@@ -123,7 +123,7 @@ namespace WavPackDotNet {
 
 		property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
-				if (!_tags) GetTags ();
+				if (!_tags) _tags = (gcnew APETagDotNet (_path, true))->GetStringTags (true);
 				return _tags;
 			}
 			void set (NameValueCollection ^tags) {
@@ -152,32 +152,7 @@ namespace WavPackDotNet {
 		NameValueCollection^ _tags;
 		Int32 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
-		const wchar_t * _path;
-
-		void GetTags (void)
-		{
-			_tags = gcnew NameValueCollection();
-			CAPETag apeTag (_path, TRUE);
-			for (int i = 0; ; i++)
-			{
-				CAPETagField * field = apeTag.GetTagField (i);
-				if (!field)
-					break;
-				if (field->GetIsUTF8Text())
-				{
-					int valueSize = field->GetFieldValueSize();
-					while (valueSize && field->GetFieldValue()[valueSize-1]=='\0')
-						valueSize --;
-					const wchar_t * fieldName = field->GetFieldName ();
-					if (!_wcsicmp (fieldName, L"YEAR"))
-						fieldName = L"DATE";
-					if (!_wcsicmp (fieldName, L"TRACK"))
-						fieldName = L"TRACKNUMBER";
-					_tags->Add (gcnew String (fieldName),
-						gcnew String (field->GetFieldValue(), 0, valueSize, System::Text::Encoding::UTF8));
-				}
-			}
-		}
+		String^ _path;
 	};
 
 	public ref class WavPackWriter {

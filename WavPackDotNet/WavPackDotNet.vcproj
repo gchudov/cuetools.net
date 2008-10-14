@@ -115,6 +115,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -134,6 +135,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="WavPack\libwavpack.lib $(NOINHERIT)"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -175,6 +177,10 @@
 		<AssemblyReference
 			RelativePath="System.XML.dll"
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{CA200BCB-DFC6-4153-9BD4-785BC768B26B}"
+			RelativePathToProject="..\APETagDotNet\APETagDotNet.csproj"
 		/>
 	</References>
 	<Files>
