@@ -84,6 +84,11 @@ AdaptAddLoopUEnd%1:
             nop
             nop
             nop
+            nop
+            nop
+            nop
+            nop
+            nop
 proc        Adapt
 
             shr  r9d, 4
@@ -94,9 +99,6 @@ proc        Adapt
 AdaptAddUnaligned paddw
 
             align 16
-            nop
-            nop
-            nop
             nop
             nop
             nop
@@ -115,15 +117,6 @@ endproc
 ;
 
             align   16
-            nop
-            nop
-            nop
-            nop
-            nop
-            nop
-            nop
-            nop
-            nop
             nop
             nop
             nop

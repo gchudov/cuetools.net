@@ -36,12 +36,20 @@ namespace JDP {
 			this.chkFLACVerify = new System.Windows.Forms.CheckBox();
 			this.btnOK = new System.Windows.Forms.Button();
 			this.grpWavPack = new System.Windows.Forms.GroupBox();
+			this.numWVExtraMode = new System.Windows.Forms.NumericUpDown();
 			this.chkWVExtraMode = new System.Windows.Forms.CheckBox();
 			this.rbWVVeryHigh = new System.Windows.Forms.RadioButton();
 			this.rbWVHigh = new System.Windows.Forms.RadioButton();
 			this.rbWVNormal = new System.Windows.Forms.RadioButton();
 			this.rbWVFast = new System.Windows.Forms.RadioButton();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.chkArFixOffset = new System.Windows.Forms.CheckBox();
+			this.label4 = new System.Windows.Forms.Label();
+			this.numEncodeWhenPercent = new System.Windows.Forms.NumericUpDown();
+			this.label3 = new System.Windows.Forms.Label();
+			this.numEncodeWhenConfidence = new System.Windows.Forms.NumericUpDown();
+			this.chkArNoUnverifiedAudio = new System.Windows.Forms.CheckBox();
+			this.chkArSaveLog = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this.numFixWhenConfidence = new System.Windows.Forms.NumericUpDown();
 			this.label1 = new System.Windows.Forms.Label();
@@ -57,27 +65,20 @@ namespace JDP {
 			this.lblTrackFilenameFormat = new System.Windows.Forms.Label();
 			this.lblSingleFilenameFormat = new System.Windows.Forms.Label();
 			this.txtSingleFilenameFormat = new System.Windows.Forms.TextBox();
-			this.chkArSaveLog = new System.Windows.Forms.CheckBox();
-			this.chkArNoUnverifiedAudio = new System.Windows.Forms.CheckBox();
-			this.numWVExtraMode = new System.Windows.Forms.NumericUpDown();
-			this.numEncodeWhenConfidence = new System.Windows.Forms.NumericUpDown();
-			this.label3 = new System.Windows.Forms.Label();
-			this.numEncodeWhenPercent = new System.Windows.Forms.NumericUpDown();
-			this.label4 = new System.Windows.Forms.Label();
-			this.chkArFixOffset = new System.Windows.Forms.CheckBox();
+			this.chkEmbedLog = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
 			this.grpFLAC.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).BeginInit();
 			this.grpWavPack.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).BeginInit();
 			this.groupBox1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenPercent)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenConfidence)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenConfidence)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenPercent)).BeginInit();
 			this.grpAudioFilenames.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenConfidence)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenPercent)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnCancel
@@ -92,13 +93,14 @@ namespace JDP {
 			// 
 			// grpGeneral
 			// 
+			this.grpGeneral.Controls.Add(this.chkEmbedLog);
 			this.grpGeneral.Controls.Add(this.numericWriteOffset);
 			this.grpGeneral.Controls.Add(this.chkAutoCorrectFilenames);
 			this.grpGeneral.Controls.Add(this.chkPreserveHTOA);
 			this.grpGeneral.Controls.Add(this.lblWriteOffset);
 			this.grpGeneral.Location = new System.Drawing.Point(8, 4);
 			this.grpGeneral.Name = "grpGeneral";
-			this.grpGeneral.Size = new System.Drawing.Size(246, 128);
+			this.grpGeneral.Size = new System.Drawing.Size(246, 144);
 			this.grpGeneral.TabIndex = 0;
 			this.grpGeneral.TabStop = false;
 			this.grpGeneral.Text = "General";
@@ -123,17 +125,18 @@ namespace JDP {
 			// 
 			// chkAutoCorrectFilenames
 			// 
-			this.chkAutoCorrectFilenames.Location = new System.Drawing.Point(12, 68);
+			this.chkAutoCorrectFilenames.Location = new System.Drawing.Point(12, 61);
 			this.chkAutoCorrectFilenames.Name = "chkAutoCorrectFilenames";
-			this.chkAutoCorrectFilenames.Size = new System.Drawing.Size(232, 36);
+			this.chkAutoCorrectFilenames.Size = new System.Drawing.Size(232, 17);
 			this.chkAutoCorrectFilenames.TabIndex = 3;
-			this.chkAutoCorrectFilenames.Text = "Preprocess with filename corrector if unable to locate audio files";
+			this.chkAutoCorrectFilenames.Text = "Locate audio files if missing";
+			this.toolTip1.SetToolTip(this.chkAutoCorrectFilenames, "Preprocess with filename corrector if unable to locate audio files");
 			this.chkAutoCorrectFilenames.UseVisualStyleBackColor = true;
 			// 
 			// chkPreserveHTOA
 			// 
 			this.chkPreserveHTOA.AutoSize = true;
-			this.chkPreserveHTOA.Location = new System.Drawing.Point(12, 48);
+			this.chkPreserveHTOA.Location = new System.Drawing.Point(12, 44);
 			this.chkPreserveHTOA.Name = "chkPreserveHTOA";
 			this.chkPreserveHTOA.Size = new System.Drawing.Size(229, 17);
 			this.chkPreserveHTOA.TabIndex = 2;
@@ -224,6 +227,28 @@ namespace JDP {
 			this.grpWavPack.TabStop = false;
 			this.grpWavPack.Text = "WavPack";
 			// 
+			// numWVExtraMode
+			// 
+			this.numWVExtraMode.Location = new System.Drawing.Point(212, 19);
+			this.numWVExtraMode.Maximum = new decimal(new int[] {
+            6,
+            0,
+            0,
+            0});
+			this.numWVExtraMode.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.numWVExtraMode.Name = "numWVExtraMode";
+			this.numWVExtraMode.Size = new System.Drawing.Size(29, 21);
+			this.numWVExtraMode.TabIndex = 5;
+			this.numWVExtraMode.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			// 
 			// chkWVExtraMode
 			// 
 			this.chkWVExtraMode.AutoSize = true;
@@ -297,6 +322,103 @@ namespace JDP {
 			this.groupBox1.TabIndex = 4;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "AccurateRip";
+			// 
+			// chkArFixOffset
+			// 
+			this.chkArFixOffset.AutoSize = true;
+			this.chkArFixOffset.Checked = true;
+			this.chkArFixOffset.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.chkArFixOffset.Location = new System.Drawing.Point(12, 105);
+			this.chkArFixOffset.Name = "chkArFixOffset";
+			this.chkArFixOffset.Size = new System.Drawing.Size(81, 17);
+			this.chkArFixOffset.TabIndex = 12;
+			this.chkArFixOffset.Text = "Fix offset if";
+			this.chkArFixOffset.UseVisualStyleBackColor = true;
+			this.chkArFixOffset.CheckedChanged += new System.EventHandler(this.chkArFixOffset_CheckedChanged);
+			// 
+			// label4
+			// 
+			this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label4.AutoSize = true;
+			this.label4.Location = new System.Drawing.Point(41, 68);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(121, 13);
+			this.label4.TabIndex = 11;
+			this.label4.Text = "% of verified tracks >=";
+			// 
+			// numEncodeWhenPercent
+			// 
+			this.numEncodeWhenPercent.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+			this.numEncodeWhenPercent.Location = new System.Drawing.Point(168, 66);
+			this.numEncodeWhenPercent.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.numEncodeWhenPercent.Name = "numEncodeWhenPercent";
+			this.numEncodeWhenPercent.Size = new System.Drawing.Size(38, 21);
+			this.numEncodeWhenPercent.TabIndex = 10;
+			this.numEncodeWhenPercent.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+			// 
+			// label3
+			// 
+			this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(62, 89);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(101, 13);
+			this.label3.TabIndex = 9;
+			this.label3.Text = "with confidence >=";
+			// 
+			// numEncodeWhenConfidence
+			// 
+			this.numEncodeWhenConfidence.Location = new System.Drawing.Point(168, 87);
+			this.numEncodeWhenConfidence.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.numEncodeWhenConfidence.Name = "numEncodeWhenConfidence";
+			this.numEncodeWhenConfidence.Size = new System.Drawing.Size(38, 21);
+			this.numEncodeWhenConfidence.TabIndex = 8;
+			this.numEncodeWhenConfidence.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			// 
+			// chkArNoUnverifiedAudio
+			// 
+			this.chkArNoUnverifiedAudio.AutoSize = true;
+			this.chkArNoUnverifiedAudio.Checked = true;
+			this.chkArNoUnverifiedAudio.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.chkArNoUnverifiedAudio.Location = new System.Drawing.Point(12, 44);
+			this.chkArNoUnverifiedAudio.Name = "chkArNoUnverifiedAudio";
+			this.chkArNoUnverifiedAudio.Size = new System.Drawing.Size(93, 17);
+			this.chkArNoUnverifiedAudio.TabIndex = 7;
+			this.chkArNoUnverifiedAudio.Text = "Encode only if";
+			this.chkArNoUnverifiedAudio.UseVisualStyleBackColor = true;
+			this.chkArNoUnverifiedAudio.CheckedChanged += new System.EventHandler(this.chkArNoUnverifiedAudio_CheckedChanged);
+			// 
+			// chkArSaveLog
+			// 
+			this.chkArSaveLog.AutoSize = true;
+			this.chkArSaveLog.Checked = true;
+			this.chkArSaveLog.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.chkArSaveLog.Location = new System.Drawing.Point(94, 21);
+			this.chkArSaveLog.Name = "chkArSaveLog";
+			this.chkArSaveLog.Size = new System.Drawing.Size(69, 17);
+			this.chkArSaveLog.TabIndex = 6;
+			this.chkArSaveLog.Text = "Write log";
+			this.chkArSaveLog.UseVisualStyleBackColor = true;
 			// 
 			// label2
 			// 
@@ -388,9 +510,9 @@ namespace JDP {
 			this.grpAudioFilenames.Controls.Add(this.lblTrackFilenameFormat);
 			this.grpAudioFilenames.Controls.Add(this.lblSingleFilenameFormat);
 			this.grpAudioFilenames.Controls.Add(this.txtSingleFilenameFormat);
-			this.grpAudioFilenames.Location = new System.Drawing.Point(12, 138);
+			this.grpAudioFilenames.Location = new System.Drawing.Point(12, 150);
 			this.grpAudioFilenames.Name = "grpAudioFilenames";
-			this.grpAudioFilenames.Size = new System.Drawing.Size(246, 192);
+			this.grpAudioFilenames.Size = new System.Drawing.Size(246, 180);
 			this.grpAudioFilenames.TabIndex = 6;
 			this.grpAudioFilenames.TabStop = false;
 			this.grpAudioFilenames.Text = "Audio Filenames";
@@ -478,124 +600,16 @@ namespace JDP {
 			this.txtSingleFilenameFormat.TabIndex = 2;
 			this.txtSingleFilenameFormat.Text = "%F";
 			// 
-			// chkArSaveLog
+			// chkEmbedLog
 			// 
-			this.chkArSaveLog.AutoSize = true;
-			this.chkArSaveLog.Checked = true;
-			this.chkArSaveLog.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.chkArSaveLog.Location = new System.Drawing.Point(94, 21);
-			this.chkArSaveLog.Name = "chkArSaveLog";
-			this.chkArSaveLog.Size = new System.Drawing.Size(69, 17);
-			this.chkArSaveLog.TabIndex = 6;
-			this.chkArSaveLog.Text = "Write log";
-			this.chkArSaveLog.UseVisualStyleBackColor = true;
-			// 
-			// chkArNoUnverifiedAudio
-			// 
-			this.chkArNoUnverifiedAudio.AutoSize = true;
-			this.chkArNoUnverifiedAudio.Checked = true;
-			this.chkArNoUnverifiedAudio.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.chkArNoUnverifiedAudio.Location = new System.Drawing.Point(12, 44);
-			this.chkArNoUnverifiedAudio.Name = "chkArNoUnverifiedAudio";
-			this.chkArNoUnverifiedAudio.Size = new System.Drawing.Size(93, 17);
-			this.chkArNoUnverifiedAudio.TabIndex = 7;
-			this.chkArNoUnverifiedAudio.Text = "Encode only if";
-			this.chkArNoUnverifiedAudio.UseVisualStyleBackColor = true;
-			this.chkArNoUnverifiedAudio.CheckedChanged += new System.EventHandler(this.chkArNoUnverifiedAudio_CheckedChanged);
-			// 
-			// numWVExtraMode
-			// 
-			this.numWVExtraMode.Location = new System.Drawing.Point(212, 19);
-			this.numWVExtraMode.Maximum = new decimal(new int[] {
-            6,
-            0,
-            0,
-            0});
-			this.numWVExtraMode.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this.numWVExtraMode.Name = "numWVExtraMode";
-			this.numWVExtraMode.Size = new System.Drawing.Size(29, 21);
-			this.numWVExtraMode.TabIndex = 5;
-			this.numWVExtraMode.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// numEncodeWhenConfidence
-			// 
-			this.numEncodeWhenConfidence.Location = new System.Drawing.Point(168, 87);
-			this.numEncodeWhenConfidence.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this.numEncodeWhenConfidence.Name = "numEncodeWhenConfidence";
-			this.numEncodeWhenConfidence.Size = new System.Drawing.Size(38, 21);
-			this.numEncodeWhenConfidence.TabIndex = 8;
-			this.numEncodeWhenConfidence.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// label3
-			// 
-			this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(62, 89);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(101, 13);
-			this.label3.TabIndex = 9;
-			this.label3.Text = "with confidence >=";
-			// 
-			// numEncodeWhenPercent
-			// 
-			this.numEncodeWhenPercent.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-			this.numEncodeWhenPercent.Location = new System.Drawing.Point(168, 66);
-			this.numEncodeWhenPercent.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this.numEncodeWhenPercent.Name = "numEncodeWhenPercent";
-			this.numEncodeWhenPercent.Size = new System.Drawing.Size(38, 21);
-			this.numEncodeWhenPercent.TabIndex = 10;
-			this.numEncodeWhenPercent.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-			// 
-			// label4
-			// 
-			this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(41, 68);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(121, 13);
-			this.label4.TabIndex = 11;
-			this.label4.Text = "% of verified tracks >=";
-			// 
-			// chkArFixOffset
-			// 
-			this.chkArFixOffset.AutoSize = true;
-			this.chkArFixOffset.Checked = true;
-			this.chkArFixOffset.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.chkArFixOffset.Location = new System.Drawing.Point(12, 105);
-			this.chkArFixOffset.Name = "chkArFixOffset";
-			this.chkArFixOffset.Size = new System.Drawing.Size(81, 17);
-			this.chkArFixOffset.TabIndex = 12;
-			this.chkArFixOffset.Text = "Fix offset if";
-			this.chkArFixOffset.UseVisualStyleBackColor = true;
-			this.chkArFixOffset.CheckedChanged += new System.EventHandler(this.chkArFixOffset_CheckedChanged);
+			this.chkEmbedLog.AutoSize = true;
+			this.chkEmbedLog.Location = new System.Drawing.Point(12, 78);
+			this.chkEmbedLog.Name = "chkEmbedLog";
+			this.chkEmbedLog.Size = new System.Drawing.Size(134, 17);
+			this.chkEmbedLog.TabIndex = 6;
+			this.chkEmbedLog.Text = "Embed log file as a tag";
+			this.toolTip1.SetToolTip(this.chkEmbedLog, "File should be in the same directory as source file and have a .log extension");
+			this.chkEmbedLog.UseVisualStyleBackColor = true;
 			// 
 			// frmSettings
 			// 
@@ -627,15 +641,15 @@ namespace JDP {
 			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).EndInit();
 			this.grpWavPack.ResumeLayout(false);
 			this.grpWavPack.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).EndInit();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenPercent)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenConfidence)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenConfidence)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenPercent)).EndInit();
 			this.grpAudioFilenames.ResumeLayout(false);
 			this.grpAudioFilenames.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenConfidence)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenPercent)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -682,6 +696,7 @@ namespace JDP {
 		private System.Windows.Forms.NumericUpDown numEncodeWhenPercent;
 		private System.Windows.Forms.CheckBox chkArFixOffset;
 		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.CheckBox chkEmbedLog;
 
 	}
 }

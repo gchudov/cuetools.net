@@ -139,8 +139,8 @@
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
-				Description="Building assembly..."
-				CommandLine="cd &quot;$(ProjectDir)&quot;Assembly&#x0D;&#x0A;nasmw -d WIN32 -f win32 -o Assembly.obj Assembly.nas&#x0D;&#x0A;"
+				Description=""
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCLibrarianTool"
@@ -296,8 +296,8 @@
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
-				Description="Building assembly..."
-				CommandLine="cd &quot;$(ProjectDir)&quot;Assembly&#x0D;&#x0A;nasmw -d WIN32 -f win32 -o Assembly.obj Assembly.nas&#x0D;&#x0A;"
+				Description=""
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCLibrarianTool"
@@ -2157,11 +2157,32 @@
 				/>
 			</FileConfiguration>
 			<FileConfiguration
+				Name="Debug|x64"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="cd &quot;$(ProjectDir)&quot;Assembly&#x0D;&#x0A;nasmw -d WIN32 -f win64 -o Assembly64.obj Assembly64.nas&#x0D;&#x0A;"
+					AdditionalDependencies="$(ProjectDir)Assembly/Assembly64.nas"
+					Outputs="$(ProjectDir)Assembly/Assembly64.obj"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
 				Name="Release|Win32"
 				ExcludedFromBuild="true"
 				>
 				<Tool
 					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|x64"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Calling assembler"
+					CommandLine="cd &quot;$(ProjectDir)&quot;Assembly&#x0D;&#x0A;nasmw -d WIN32 -f win64 -o Assembly64.obj Assembly64.nas&#x0D;&#x0A;"
+					AdditionalDependencies="$(ProjectDir)Assembly/Assembly64.nas"
+					Outputs="$(ProjectDir)Assembly/Assembly64.obj"
 				/>
 			</FileConfiguration>
 		</File>

@@ -290,11 +290,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\include\protected\all.h"
+				RelativePath=".\include\private\all.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\private\all.h"
+				RelativePath=".\include\protected\all.h"
 				>
 			</File>
 			<File
@@ -623,6 +623,7 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|x64"
+				ExcludedFromBuild="true"
 				>
 				<Tool
 					Name="VCCustomBuildTool"
@@ -668,6 +669,7 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|x64"
+				ExcludedFromBuild="true"
 				>
 				<Tool
 					Name="VCCustomBuildTool"
@@ -713,6 +715,7 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|x64"
+				ExcludedFromBuild="true"
 				>
 				<Tool
 					Name="VCCustomBuildTool"
@@ -758,6 +761,7 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|x64"
+				ExcludedFromBuild="true"
 				>
 				<Tool
 					Name="VCCustomBuildTool"
@@ -803,6 +807,7 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|x64"
+				ExcludedFromBuild="true"
 				>
 				<Tool
 					Name="VCCustomBuildTool"

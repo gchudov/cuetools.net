@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 	///////////////////////////////////////////////////////////////////////////////
 	// open the APE file
 	///////////////////////////////////////////////////////////////////////////////
-	IAPEDecompress * pAPEDecompress = CreateIAPEDecompress(L"E:\\Music\\Babylon 5\\Episodic CDs\\Babylon 5 (1997, River Of Souls, APE) - Christopher Franke\\01 - Suite 1.ape" , &nRetVal);
+	IAPEDecompress * pAPEDecompress = CreateIAPEDecompress(L"E:\\Music\\Steve Hackett\\Steve Hackett - Wild Orchids (2006)\\Steve Hackett - Wild Orchids (2006).ape" , &nRetVal);
 	if (pAPEDecompress == NULL)
 	{
 		printf("Error opening APE file (error code: %d)\r\n", nRetVal);

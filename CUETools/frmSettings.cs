@@ -24,7 +24,7 @@ namespace JDP {
 			numEncodeWhenConfidence.Value = _config.encodeWhenConfidence;
 			numEncodeWhenPercent.Value = _config.encodeWhenPercent;
 			chkFLACVerify.Checked = _config.flacVerify;
-			chkArAddCRCs.Checked = _config.writeCRC;
+			chkArAddCRCs.Checked = _config.writeArTags;
 			if (_config.wvCompressionMode == 0) rbWVFast.Checked = true;
 			if (_config.wvCompressionMode == 1) rbWVNormal.Checked = true;
 			if (_config.wvCompressionMode == 2) rbWVHigh.Checked = true;
@@ -41,6 +41,7 @@ namespace JDP {
 			chkArSaveLog.Checked = _config.writeArLog;
 			chkArNoUnverifiedAudio.Checked = _config.noUnverifiedOutput;
 			chkArFixOffset.Checked = _config.fixOffset;
+			chkEmbedLog.Checked = _config.embedLog;
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -76,7 +77,7 @@ namespace JDP {
 			_config.encodeWhenPercent = (uint)numEncodeWhenPercent.Value;
 			_config.encodeWhenConfidence = (uint)numEncodeWhenConfidence.Value;
 			_config.flacVerify = chkFLACVerify.Checked;
-			_config.writeCRC = chkArAddCRCs.Checked;
+			_config.writeArTags = chkArAddCRCs.Checked;
 			if (rbWVFast.Checked) _config.wvCompressionMode = 0;
 			else if (rbWVHigh.Checked) _config.wvCompressionMode = 2;
 			else if (rbWVVeryHigh.Checked) _config.wvCompressionMode = 3;
@@ -92,6 +93,7 @@ namespace JDP {
 			_config.writeArLog = chkArSaveLog.Checked;
 			_config.noUnverifiedOutput = chkArNoUnverifiedAudio.Checked;
 			_config.fixOffset = chkArFixOffset.Checked;
+			_config.embedLog = chkEmbedLog.Checked;
 		}
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)

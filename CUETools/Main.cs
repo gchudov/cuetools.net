@@ -197,7 +197,7 @@ namespace JDP {
 		public uint fixWhenPercent;
 		public uint encodeWhenConfidence;
 		public uint encodeWhenPercent;
-		public bool writeCRC;
+		public bool writeArTags;
 		public bool writeArLog;
 		public bool fixOffset;
 		public bool noUnverifiedOutput;
@@ -225,7 +225,7 @@ namespace JDP {
 			encodeWhenPercent = 100;
 			fixOffset = true;
 			noUnverifiedOutput = false;
-			writeCRC = true;
+			writeArTags = true;
 			writeArLog = true;
 
 			autoCorrectFilenames = true;
@@ -252,7 +252,7 @@ namespace JDP {
 			sw.Save("ArEncodeWhenPercent", encodeWhenPercent.ToString());
 			sw.Save("ArNoUnverifiedOutput", noUnverifiedOutput ? "1" : "0");
 			sw.Save("ArFixOffset", fixOffset ? "1" : "0");
-			sw.Save("ArWriteCRC", writeCRC ? "1" : "0");
+			sw.Save("ArWriteCRC", writeArTags ? "1" : "0");
 			sw.Save("ArWriteLog", writeArLog ? "1" : "0");
 
 			sw.Save("AutoCorrectFilenames", autoCorrectFilenames ? "1" : "0");
@@ -301,7 +301,7 @@ namespace JDP {
 			fixOffset = (val != null) ? (val != "0") : true;
 
 			val = sr.Load("ArWriteCRC");
-			writeCRC = (val != null) ? (val != "0") : true;
+			writeArTags = (val != null) ? (val != "0") : true;
 
 			val = sr.Load("ArWriteLog");
 			writeArLog = (val != null) ? (val != "0") : true;
@@ -1484,11 +1484,12 @@ namespace JDP {
 			if (!SkipOutput)
 			{
 				bool verifyOnly = _accurateRip && !_accurateOffset;
-				if (!verifyOnly && style != CUEStyle.SingleFileWithCUE)
+				if (!verifyOnly)
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
-					Write(_cuePath, style);
+					if (style != CUEStyle.SingleFileWithCUE)
+						Write(_cuePath, style);
 				}
 				WriteAudioFilesPass(dir, style, statusDel, destPaths, destLengths, htoaToFile, verifyOnly);
 			}
@@ -1496,7 +1497,7 @@ namespace JDP {
 			if (_accurateRip)
 			{
 				statusDel((string)"Generating AccurateRip report...", 0, 0);
-				if (!_accurateOffset && _config.writeCRC && _writeOffset == 0)
+				if (!_accurateOffset && _config.writeArTags && _writeOffset == 0)
 				{
 					uint tracksMatch;
 					int bestOffset;
@@ -1614,9 +1615,6 @@ namespace JDP {
 					}
 
 					destTags.Remove ("CUESHEET");
-					destTags.Remove ("LOG");
-					destTags.Remove ("LOGFILE");
-					destTags.Remove ("EACLOG");
 					CleanupTags(destTags, "ACCURATERIP");
 					CleanupTags(destTags, "REPLAYGAIN");
 
@@ -1627,10 +1625,24 @@ namespace JDP {
 						destTags.Add("CUESHEET", sw.ToString());
 						sw.Close();
 					}
-					if (_eacLog != null)
-						destTags.Add("LOG", _eacLog);
+					else
+					{
+						string[] keys = destTags.AllKeys;
+						for (int i = 0; i < keys.Length; i++)
+							if (keys[i].ToLower().StartsWith("cue_track"))
+								destTags.Remove(keys[i]);						
+					}
 
-					if (_accurateRipId != null && _config.writeCRC)
+					if (_config.embedLog)
+					{
+						destTags.Remove("LOG");
+						destTags.Remove("LOGFILE");
+						destTags.Remove("EACLOG");
+						if (_eacLog != null)
+							destTags.Add("LOG", _eacLog);
+					}
+
+					if (_accurateRipId != null && _config.writeArTags)
 					{
 						if (style == CUEStyle.SingleFileWithCUE && _accurateOffset && accResult == HttpStatusCode.OK)
 							GenerateAccurateRipTags(destTags, _writeOffset, _writeOffset, -1);
@@ -1729,7 +1741,7 @@ namespace JDP {
 							if (destTags.Get("ARTIST") == null && "" != track.Artist)
 								destTags.Add("ARTIST", track.Artist);
 							destTags.Add("TRACKNUMBER", iTrack.ToString());
-							if (_accurateRipId != null && _config.writeCRC)
+							if (_accurateRipId != null && _config.writeArTags)
 							{
 								if (_accurateOffset && accResult == HttpStatusCode.OK)
 									GenerateAccurateRipTags(destTags, _writeOffset, _writeOffset, iTrack);
