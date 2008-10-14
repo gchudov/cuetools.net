@@ -29,19 +29,19 @@ AdaptAddLoop0%1:
             je      short AdaptAddLoopULast%1
 AdaptAddLoopU%1:
             movdqa xmm0, [rcx]
-            movdqu xmm1, [rdx]
+            lddqu  xmm1, [rdx]
             %1     xmm0, xmm1
             movdqa [rcx], xmm0
             movdqa xmm2, [rcx + 16]
-            movdqu xmm3, [rdx + 16]
+            lddqu  xmm3, [rdx + 16]
             %1     xmm2, xmm3
             movdqa [rcx + 16], xmm2
             movdqa xmm4, [rcx+32]
-            movdqu xmm5, [rdx+32]
+            lddqu  xmm5, [rdx+32]
             %1     xmm4, xmm5
             movdqa [rcx+32], xmm4
             movdqa xmm6, [rcx + 48]
-            movdqu xmm7, [rdx + 48]
+            lddqu  xmm7, [rdx + 48]
             %1     xmm6, xmm7
             movdqa [rcx + 48], xmm6
             add   rcx, byte 64
@@ -52,11 +52,11 @@ AdaptAddLoopULast%1:
             cmp   r8d, byte 0
             je    short AdaptAddLoopUEnd%1
             movdqa xmm0, [rcx]
-            movdqu xmm1, [rdx]
+            lddqu  xmm1, [rdx]
             %1     xmm0, xmm1
             movdqa [rcx], xmm0
             movdqa xmm2, [rcx + 16]
-            movdqu xmm3, [rdx + 16]
+            lddqu  xmm3, [rdx + 16]
             %1     xmm2, xmm3
             movdqa [rcx + 16], xmm2
 AdaptAddLoopUEnd%1:
@@ -135,16 +135,16 @@ proc        CalculateDotProduct
             je      DotNonEven
 
 LoopDotEven:
-            movdqu  xmm0, [rcx] ;pA
+            lddqu   xmm0, [rcx] ;pA
             pmaddwd xmm0, [rdx] ;pB
             paddd   xmm7, xmm0
-            movdqu  xmm1, [rcx + 16]
+            lddqu   xmm1, [rcx + 16]
             pmaddwd xmm1, [rdx + 16]
             paddd   xmm7, xmm1
-            movdqu  xmm2, [rcx + 32]
+            lddqu   xmm2, [rcx + 32]
             pmaddwd xmm2, [rdx + 32]
             paddd   xmm7, xmm2
-            movdqu  xmm3, [rcx + 48]
+            lddqu   xmm3, [rcx + 48]
             pmaddwd xmm3, [rdx + 48]
             add     rcx, byte 64
             add     rdx, byte 64
@@ -156,10 +156,10 @@ DotNonEven:
             cmp     r9d, byte 0
             je      DotFinal
 
-            movdqu  xmm0, [rcx] ;pA
+            lddqu   xmm0, [rcx] ;pA
             pmaddwd xmm0, [rdx] ;pB
             paddd   xmm7, xmm0
-            movdqu  xmm1, [rcx + 16]
+            lddqu   xmm1, [rcx + 16]
             pmaddwd xmm1, [rdx + 16]
             paddd   xmm7, xmm1
 
@@ -167,8 +167,7 @@ DotFinal:
             movdqa  xmm6, xmm7
             psrldq  xmm6, 8
             paddd   xmm7, xmm6
-            movdqa  xmm6, xmm7
-            psrldq  xmm6, 4
+            movshdup xmm6, xmm7
             paddd   xmm7, xmm6
             movd    eax, xmm7
             emms
@@ -180,5 +179,16 @@ endproc
 ;
 
 proc        GetMMXAvailable
-            mov     eax, 1
+
+	    push rbx
+	    push rcx
+	    push rdx
+            mov     eax,1
+            CPUID
+            test    ecx, 1 ; actually, testing for SSE3
+            setnz   al
+            and     eax, byte 1
+	    pop rdx
+            pop rcx
+	    pop rbx
 endproc
