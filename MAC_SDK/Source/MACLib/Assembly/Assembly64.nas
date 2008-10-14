@@ -30,19 +30,16 @@ proc        Adapt
             cmp  r8d, byte 0       ; nDirection
             jle  short AdaptSub
 
+
 AdaptAddLoop:
-            movq  mm0, [rcx]
-            paddw mm0, [rdx]
-            movq  [rcx], mm0
-            movq  mm1, [rcx + 8]
-            paddw mm1, [rdx + 8]
-            movq  [rcx + 8], mm1
-            movq  mm2, [rcx + 16]
-            paddw mm2, [rdx + 16]
-            movq  [rcx + 16], mm2
-            movq  mm3, [rcx + 24]
-            paddw mm3, [rdx + 24]
-            movq  [rcx + 24], mm3
+            movdqu xmm0, [rcx]
+            movdqu xmm1, [rdx]
+            paddw  xmm0, xmm1
+            movdqu [rcx], xmm0
+            movdqu xmm2, [rcx + 16]
+            movdqu xmm3, [rdx + 16]
+            paddw  xmm2, xmm3
+            movdqu [rcx + 16], xmm2
             add   rcx, byte 32
             add   rdx, byte 32
             dec   r9d
@@ -70,18 +67,14 @@ AdaptAddLoop:
 AdaptSub:   je    short AdaptDone
 
 AdaptSubLoop:
-            movq  mm0, [rcx]
-            psubw mm0, [rdx]
-            movq  [rcx], mm0
-            movq  mm1, [rcx + 8]
-            psubw mm1, [rdx + 8]
-            movq  [rcx + 8], mm1
-            movq  mm2, [rcx + 16]
-            psubw mm2, [rdx + 16]
-            movq  [rcx + 16], mm2
-            movq  mm3, [rcx + 24]
-            psubw mm3, [rdx + 24]
-            movq  [rcx + 24], mm3
+            movdqu xmm0, [rcx]
+            movdqu xmm1, [rdx]
+            psubw  xmm0, xmm1
+            movdqu [rcx], xmm0
+            movdqu xmm2, [rcx + 16]
+            movdqu xmm3, [rdx + 16]
+            psubw  xmm2, xmm3
+            movdqu [rcx + 16], xmm2
             add   rcx, byte 32
             add   rdx, byte 32
             dec   r9d
