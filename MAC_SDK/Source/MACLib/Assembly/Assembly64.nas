@@ -3,6 +3,67 @@
                  
 segment_code
 
+%imacro AdaptAddAligned 1
+AdaptAddLoop0%1:
+            movdqa xmm0, [rcx]
+            movdqa xmm1, [rdx]
+            %1     xmm0, xmm1
+            movdqa [rcx], xmm0
+            movdqa xmm2, [rcx + 16]
+            movdqa xmm3, [rdx + 16]
+            %1     xmm2, xmm3
+            movdqa [rcx + 16], xmm2
+            add   rcx, byte 32
+            add   rdx, byte 32
+            dec   r9d
+            jnz   AdaptAddLoop0%1
+            emms
+            ret
+%endmacro
+
+%imacro AdaptAddUnaligned 1
+            mov     r8d, r9d
+            and     r8d, 1
+            shr     r9d, 1
+            cmp     r9d, byte 0
+            je      short AdaptAddLoopULast%1
+AdaptAddLoopU%1:
+            movdqa xmm0, [rcx]
+            movdqu xmm1, [rdx]
+            %1     xmm0, xmm1
+            movdqa [rcx], xmm0
+            movdqa xmm2, [rcx + 16]
+            movdqu xmm3, [rdx + 16]
+            %1     xmm2, xmm3
+            movdqa [rcx + 16], xmm2
+            movdqa xmm4, [rcx+32]
+            movdqu xmm5, [rdx+32]
+            %1     xmm4, xmm5
+            movdqa [rcx+32], xmm4
+            movdqa xmm6, [rcx + 48]
+            movdqu xmm7, [rdx + 48]
+            %1     xmm6, xmm7
+            movdqa [rcx + 48], xmm6
+            add   rcx, byte 64
+            add   rdx, byte 64
+            dec   r9d
+            jnz   AdaptAddLoopU%1
+AdaptAddLoopULast%1:
+            cmp   r8d, byte 0
+            je    short AdaptAddLoopUEnd%1
+            movdqa xmm0, [rcx]
+            movdqu xmm1, [rdx]
+            %1     xmm0, xmm1
+            movdqa [rcx], xmm0
+            movdqa xmm2, [rcx + 16]
+            movdqu xmm3, [rdx + 16]
+            %1     xmm2, xmm3
+            movdqa [rcx + 16], xmm2
+AdaptAddLoopUEnd%1:
+            emms
+            ret
+%endmacro
+
 ;
 ; void  Adapt ( short* pM, const short* pAdapt, int nDirection, int nOrder )
 ;
@@ -28,28 +89,9 @@ proc        Adapt
             shr  r9d, 4
 
             cmp  r8d, byte 0       ; nDirection
-            jle  short AdaptSub
+            jle AdaptSub1
 
-
-            mov r8, rdx
-;            and edx, 0xfffffff0
-	    and r8b, 0xf
-AdaptAddLoop:
-            movdqa xmm0, [rcx]
-            movdqu xmm1, [rdx]
-            paddw  xmm0, xmm1
-            movdqa [rcx], xmm0
-            movdqa xmm2, [rcx + 16]
-            movdqu xmm3, [rdx + 16]
-            paddw  xmm2, xmm3
-            movdqa [rcx + 16], xmm2
-            add   rcx, byte 32
-            add   rdx, byte 32
-            dec   r9d
-            jnz   AdaptAddLoop
-
-            emms
-            ret
+AdaptAddUnaligned paddw
 
             align 16
             nop
@@ -62,30 +104,10 @@ AdaptAddLoop:
             nop
             nop
             nop
-            nop
-            nop
-            nop
-            nop
 
-AdaptSub:   je    short AdaptDone
-
-AdaptSubLoop:
-            movdqa xmm0, [rcx]
-            movdqu xmm1, [rdx]
-            psubw  xmm0, xmm1
-            movdqa [rcx], xmm0
-            movdqa xmm2, [rcx + 16]
-            movdqu xmm3, [rdx + 16]
-            psubw  xmm2, xmm3
-            movdqa [rcx + 16], xmm2
-            add   rcx, byte 32
-            add   rdx, byte 32
-            dec   r9d
-            jnz   AdaptSubLoop
-
-            emms
-AdaptDone:
-
+AdaptSub1:   je AdaptDone1
+AdaptAddUnaligned psubw
+AdaptDone1:
 endproc
 
 ;
@@ -116,6 +138,9 @@ proc        CalculateDotProduct
             and     r9d, 1
             shr     r8d, 1
 
+            cmp     r8d, byte 0
+            je      DotNonEven
+
 LoopDotEven:
             movdqu  xmm0, [rcx] ;pA
             pmaddwd xmm0, [rdx] ;pB
@@ -134,6 +159,7 @@ LoopDotEven:
             dec     r8d
             jnz short LoopDotEven
 
+DotNonEven:
             cmp     r9d, byte 0
             je      DotFinal
 
