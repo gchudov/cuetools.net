@@ -31,15 +31,18 @@ proc        Adapt
             jle  short AdaptSub
 
 
+            mov r8, rdx
+;            and edx, 0xfffffff0
+	    and r8b, 0xf
 AdaptAddLoop:
-            movdqu xmm0, [rcx]
+            movdqa xmm0, [rcx]
             movdqu xmm1, [rdx]
             paddw  xmm0, xmm1
-            movdqu [rcx], xmm0
-            movdqu xmm2, [rcx + 16]
+            movdqa [rcx], xmm0
+            movdqa xmm2, [rcx + 16]
             movdqu xmm3, [rdx + 16]
             paddw  xmm2, xmm3
-            movdqu [rcx + 16], xmm2
+            movdqa [rcx + 16], xmm2
             add   rcx, byte 32
             add   rdx, byte 32
             dec   r9d
@@ -67,14 +70,14 @@ AdaptAddLoop:
 AdaptSub:   je    short AdaptDone
 
 AdaptSubLoop:
-            movdqu xmm0, [rcx]
+            movdqa xmm0, [rcx]
             movdqu xmm1, [rdx]
             psubw  xmm0, xmm1
-            movdqu [rcx], xmm0
-            movdqu xmm2, [rcx + 16]
+            movdqa [rcx], xmm0
+            movdqa xmm2, [rcx + 16]
             movdqu xmm3, [rdx + 16]
             psubw  xmm2, xmm3
-            movdqu [rcx + 16], xmm2
+            movdqa [rcx + 16], xmm2
             add   rcx, byte 32
             add   rdx, byte 32
             dec   r9d
