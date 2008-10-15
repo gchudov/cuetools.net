@@ -945,7 +945,7 @@ namespace JDP {
 			uint timeRelativeToFileStart = 0;
 
 			using (sw) {
-				if (_accurateRipId != null)
+				if (_accurateRipId != null && _config.writeArTags)
 					WriteLine(sw, 0, "REM ACCURATERIPID " +
 						_accurateRipId);
 
@@ -1602,9 +1602,8 @@ namespace JDP {
 			{
 				iDest++;
 				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
-				if (audioDest is FLACWriter)
+				if (audioDest is FLACWriter || audioDest is WavPackWriter)
 				{
-					FLACWriter w = (FLACWriter)audioDest;
 					NameValueCollection destTags = new NameValueCollection();
 
 					if (_hasEmbeddedCUESheet || _hasSingleFilename)
@@ -1649,7 +1648,7 @@ namespace JDP {
 						else
 							destTags.Add("ACCURATERIPID", _accurateRipId);
 					}
-					w.SetTags(destTags);
+					audioDest.SetTags(destTags);
 				}
 			}
 

@@ -803,8 +803,8 @@ namespace JDP {
 
 		private void updateOutputStyles()
 		{
-			rbEmbedCUE.Enabled = rbFLAC.Checked;
-			rbNoAudio.Enabled = rbWAV.Enabled = rbWavPack.Enabled = !rbEmbedCUE.Checked;
+			rbEmbedCUE.Enabled = rbFLAC.Checked || rbWavPack.Checked;
+			rbNoAudio.Enabled = rbWAV.Enabled = !rbEmbedCUE.Checked;
 		}
 
 		private void rbWAV_CheckedChanged(object sender, EventArgs e)

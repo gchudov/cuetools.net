@@ -116,7 +116,12 @@ namespace WavPackDotNet {
 
 		property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
-				if (!_tags) _tags = (gcnew APETagDotNet (_path, true))->GetStringTags (true);
+				if (!_tags) 
+				{
+					APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, true);
+					_tags = apeTag->GetStringTags (true);
+					apeTag->Close ();
+				}
 				return _tags;
 			}
 			void set (NameValueCollection ^tags) {
@@ -157,6 +162,9 @@ namespace WavPackDotNet {
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
 			}
 
+			_path = path;
+			_tags = gcnew NameValueCollection();
+
 			_compressionMode = 1;
 			_extraMode = 0;
 
@@ -179,6 +187,15 @@ namespace WavPackDotNet {
 
 			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
 				throw gcnew Exception("Samples written differs from the expected sample count.");
+			}
+
+			if (_tags->Count > 0)
+			{
+				APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
+				apeTag->SetStringTags (_tags, true);
+				apeTag->Save();
+				apeTag->Close();
+				_tags->Clear ();
 			}
 		}
 
@@ -233,6 +250,10 @@ namespace WavPackDotNet {
 			_samplesWritten += sampleCount;
 		}
 
+		void SetTags (NameValueCollection^ tags) {
+			_tags = tags;
+		}
+
 	private:
 		FILE *_hFile;
 		bool _initialized;
@@ -240,6 +261,8 @@ namespace WavPackDotNet {
 		Int32 _finalSampleCount, _samplesWritten;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		Int32 _compressionMode, _extraMode;
+		NameValueCollection^ _tags;
+		String^ _path;
 
 		void Initialize() {
 			WavpackConfig config;

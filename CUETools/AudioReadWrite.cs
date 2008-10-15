@@ -21,6 +21,7 @@ namespace JDP {
 
 	public interface IAudioDest {
 		void Write(byte[] buff, uint sampleCount);
+		bool SetTags(NameValueCollection tags);
 		void Close();
 		long FinalSampleCount { set; }
 	}
@@ -65,6 +66,10 @@ namespace JDP {
 		public DummyWriter (string path, int bitsPerSample, int channelCount, int sampleRate) {
 		}
 
+		public bool SetTags(NameValueCollection tags)
+		{
+			return false;
+		}
 
 		public void Close() {
 		}
@@ -290,6 +295,11 @@ namespace JDP {
 			_bw = new BinaryWriter(_fs);
 
 			WriteHeaders();
+		}
+
+		public bool SetTags(NameValueCollection tags)
+		{
+			return false;
 		}
 
 		private void WriteHeaders() {
@@ -535,9 +545,10 @@ namespace JDP {
 			}
 		}
 
-		public void SetTags(NameValueCollection tags)
+		public bool SetTags(NameValueCollection tags)
 		{
 			_flacWriter.SetTags (tags);
+			return true;
 		}
 
 		public void Close() {
@@ -807,6 +818,12 @@ namespace JDP {
 			_channelCount = channelCount;
 			_sampleRate = sampleRate;
 			_wavPackWriter = new WavPackDotNet.WavPackWriter(path, bitsPerSample, channelCount, sampleRate);
+		}
+
+		public bool SetTags(NameValueCollection tags)
+		{
+			_wavPackWriter.SetTags(tags);
+			return true;
 		}
 
 		public long FinalSampleCount {

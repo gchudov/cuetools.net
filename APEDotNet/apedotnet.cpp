@@ -128,7 +128,12 @@ namespace APEDotNet {
 
 		property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
-				if (!_tags) _tags = (gcnew APETagDotNet (_path, true))->GetStringTags (true);
+				if (!_tags) 
+				{
+					APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, true);
+					_tags = apeTag->GetStringTags (true);
+					apeTag->Close ();
+				}
 				return _tags;
 			}
 			void set (NameValueCollection ^tags) {

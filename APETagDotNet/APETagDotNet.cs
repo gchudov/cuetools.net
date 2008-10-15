@@ -114,9 +114,9 @@ namespace APETagsDotNet
 		{
 			LittleEndian.Write32(pBuffer, pos, _fieldValue.Length);
 			LittleEndian.Write32(pBuffer, pos + 4, _fieldFlags);
-			Array.Copy (new ASCIIEncoding().GetBytes(_fieldName), pBuffer, pos + 8);
+			Array.Copy(new ASCIIEncoding().GetBytes(_fieldName), 0, pBuffer, pos + 8, _fieldName.Length);
 			pBuffer[pos + 8 + _fieldName.Length] = 0;
-			Array.Copy(_fieldValue, pBuffer, pos + 8 + _fieldName.Length + 1);
+			Array.Copy(_fieldValue, 0, pBuffer, pos + 8 + _fieldName.Length + 1, _fieldValue.Length);
 			return GetFieldSize();
 		}
 
@@ -173,26 +173,33 @@ namespace APETagsDotNet
 		// create an APE tags object
 		// bAnalyze determines whether it will analyze immediately or on the first request
 		// be careful with multiple threads / file pointer movement if you don't analyze immediately
-		public APETagDotNet (string filename, bool analyze)
+		public APETagDotNet (string filename, bool analyze, bool isReadonly)
 		{
-			m_spIO = new FileStream (filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+			m_spIO = new FileStream(filename, FileMode.Open, isReadonly?FileAccess.Read:FileAccess.ReadWrite, FileShare.Read);
 			m_bAnalyzed = false;
 			m_aryFields = new APETagField[0];
 			m_nTagBytes = 0;
 			m_bIgnoreReadOnly = false;
 			if (analyze) Analyze ();
 		}
+
+		public void Close ()
+		{
+			m_spIO.Close ();
+			ClearFields ();
+		}
 	    
 		// destructor
-		~APETagDotNet () { ClearFields (); }
+		~APETagDotNet () { }
 
 		// save the tag to the I/O source (bUseOldID3 forces it to save as an ID3v1.1 tag instead of an APE tag)
-		int Save () 
+		public bool Save () 
 		{
 			if (!Remove(false))
-				return -1;
+				return false;
 
-			if (m_aryFields.Length == 0) { return 0; }
+			if (m_aryFields.Length == 0)
+				return true;
 
 			int z = 0;
 
@@ -221,7 +228,7 @@ namespace APETagsDotNet
 
 			// dump the tag to the I/O source
 			WriteBufferToEndOfIO (spRawTag);
-			return 0;
+			return true;
 		}
 	    
 		// removes any tags from the file (bUpdate determines whether is should re-analyze after removing the tag)
@@ -294,7 +301,7 @@ namespace APETagsDotNet
 
 		// sets the value of a field (use nFieldBytes = -1 for null terminated strings)
 		// note: using NULL or "" for a string type will remove the field
-		void SetFieldString(string fieldName, string fieldValue)
+		public void SetFieldString(string fieldName, string fieldValue)
 		{
 			// remove if empty
 			if (fieldValue == "")
@@ -390,6 +397,22 @@ namespace APETagsDotNet
 			return tags;
 		}
 
+		public void SetStringTags(NameValueCollection tags, bool mapFromFlac)
+		{
+			for (int i = 0; i < tags.Count; i++)
+			{
+				String [] tagValues = tags.GetValues(i);
+				String tagName = tags.GetKey (i);
+				if (mapFromFlac)
+				{
+					if (tagName.ToUpper() == "DATE")
+						tagName = "YEAR";
+					if (tagName.ToUpper() == "TRACKNUMBER")
+						tagName = "TRACK";
+				}
+				SetFieldString(tagName, tagValues[0]);
+			}
+		}
 
 		// remove a specific field
 		void RemoveField(string pFieldName) 
