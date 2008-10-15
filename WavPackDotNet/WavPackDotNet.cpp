@@ -36,15 +36,8 @@ using namespace APETagsDotNet;
 
 #include <stdio.h>
 #include <memory.h>
-#include "WavPack\wavpack.h"
+#include "wavpack.h"
 #include <string.h>
-//typedef char                                        str_ansi;
-//typedef wchar_t                                     str_utf16;
-//#define BOOL int
-//#define TRUE 1
-//#define FALSE 0
-//#include "..\MAC_SDK\Shared\SmartPtr.h"
-//#include "..\MAC_SDK\Shared\APETag.h"
 
 namespace WavPackDotNet {
 	int write_block(void *id, void *data, int32_t length);
@@ -63,7 +56,7 @@ namespace WavPackDotNet {
 			memcpy ((void*) pPath, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
 			Marshal::FreeHGlobal(pathChars);
 
-			_wpc = WavpackOpenFileInput(pPath, errorMessage, OPEN_WVC, 0);
+			_wpc = WavpackOpenFileInput (pPath, errorMessage, OPEN_WVC, 0);
 			if (_wpc == NULL) {
 				throw gcnew Exception("Unable to initialize the decoder.");
 			}

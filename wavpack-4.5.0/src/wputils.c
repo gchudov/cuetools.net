@@ -55,7 +55,7 @@ static void free_streams (WavpackContext *wpc);
 
 ///////////////////////////// local table storage ////////////////////////////
 
-const uint32_t sample_rates [] = { 6000, 8000, 9600, 11025, 12000, 16000, 22050,
+static const uint32_t sample_rates [] = { 6000, 8000, 9600, 11025, 12000, 16000, 22050,
     24000, 32000, 44100, 48000, 64000, 88200, 96000, 192000 };
 
 ///////////////////////////// executable code ////////////////////////////////
@@ -362,6 +362,8 @@ WavpackContext *WavpackOpenFileInputEx (WavpackStreamReader *reader, void *wv_id
 // MODE_VERY_HIGH:  file was created in the "very high" mode (or in
 //                  the "high" mode prior to 4.4)
 // MODE_MD5:  file contains an MD5 checksum
+// MODE_XMODE:  level used for extra mode (1-6, 0=unknown)
+// MODE_DNS:  dynamic noise shaping
 
 int WavpackGetMode (WavpackContext *wpc)
 {
@@ -382,7 +384,7 @@ int WavpackGetMode (WavpackContext *wpc)
         if (wpc->config.flags & CONFIG_FLOAT_DATA)
             mode |= MODE_FLOAT;
 
-        if (wpc->config.flags & CONFIG_HIGH_FLAG) {
+        if (wpc->config.flags & (CONFIG_HIGH_FLAG | CONFIG_VERY_HIGH_FLAG)) {
             mode |= MODE_HIGH;
 
             if ((wpc->config.flags & CONFIG_VERY_HIGH_FLAG) ||
@@ -394,13 +396,17 @@ int WavpackGetMode (WavpackContext *wpc)
             mode |= MODE_FAST;
 
         if (wpc->config.flags & CONFIG_EXTRA_MODE)
-            mode |= MODE_EXTRA;
+            mode |= (MODE_EXTRA | (wpc->config.xmode << 12));
 
         if (wpc->config.flags & CONFIG_CREATE_EXE)
             mode |= MODE_SFX;
 
         if (wpc->config.flags & CONFIG_MD5_CHECKSUM)
             mode |= MODE_MD5;
+
+        if ((wpc->config.flags & CONFIG_HYBRID_FLAG) && (wpc->config.flags & CONFIG_DYNAMIC_SHAPING) &&
+            wpc->streams [0] && wpc->streams [0]->wphdr.version >= 0x407)
+                mode |= MODE_DNS;
 
 #ifndef NO_TAGS
         if (valid_tag (&wpc->m_tag)) {
@@ -618,6 +624,16 @@ uint32_t WavpackUnpackSamples (WavpackContext *wpc, int32_t *buffer, uint32_t sa
 
                     offset++;
                 }
+                else if (offset == num_channels - 1) {
+                    while (samcnt--) {
+                        dst [0] = src [0];
+                        dst += num_channels;
+                        src += 2;
+                    }
+
+                    wpc->crc_errors++;
+                    offset++;
+                }
                 else {
                     while (samcnt--) {
                         dst [0] = *src++;
@@ -628,7 +644,7 @@ uint32_t WavpackUnpackSamples (WavpackContext *wpc, int32_t *buffer, uint32_t sa
                     offset += 2;
                 }
 
-                if ((wps->wphdr.flags & FINAL_BLOCK) || wpc->num_streams == MAX_STREAMS)
+                if ((wps->wphdr.flags & FINAL_BLOCK) || wpc->num_streams == MAX_STREAMS || offset == num_channels)
                     break;
                 else
                     wpc->current_stream++;
@@ -891,17 +907,17 @@ static int get_ape_tag_item (M_Tag *m_tag, const char *item, char *value, int si
     char *q = p + m_tag->ape_tag_hdr.length - sizeof (APE_Tag_Hdr);
     int i;
 
-    for (i = 0; i < m_tag->ape_tag_hdr.item_count; ++i) {
+    for (i = 0; i < m_tag->ape_tag_hdr.item_count && q - p > 8; ++i) {
         int vsize, flags, isize;
 
         vsize = * (int32_t *) p; p += 4;
         flags = * (int32_t *) p; p += 4;
-        isize = (int) strlen (p);
+        isize = (int) strnlen (p, q - p);
 
         little_endian_to_native (&vsize, "L");
         little_endian_to_native (&flags, "L");
 
-        if (p + isize + vsize + 1 > q)
+        if (vsize < 0 || vsize > m_tag->ape_tag_hdr.length || p + isize + vsize + 1 > q)
             break;
 
         if (isize && vsize && !stricmp (item, p) && !(flags & 6)) {
@@ -1009,17 +1025,17 @@ static int get_ape_tag_item_indexed (M_Tag *m_tag, int index, char *item, int si
     char *q = p + m_tag->ape_tag_hdr.length - sizeof (APE_Tag_Hdr);
     int i;
 
-    for (i = 0; i < m_tag->ape_tag_hdr.item_count && index >= 0; ++i) {
+    for (i = 0; i < m_tag->ape_tag_hdr.item_count && index >= 0 && q - p > 8; ++i) {
         int vsize, flags, isize;
 
         vsize = * (int32_t *) p; p += 4;
         flags = * (int32_t *) p; p += 4;
-        isize = (int) strlen (p);
+        isize = (int) strnlen (p, q - p);
 
         little_endian_to_native (&vsize, "L");
         little_endian_to_native (&flags, "L");
 
-        if (p + isize + vsize + 1 > q)
+        if (vsize < 0 || vsize > m_tag->ape_tag_hdr.length || p + isize + vsize + 1 > q)
             break;
 
         if (isize && vsize && !(flags & 6) && !index--) {
@@ -1190,7 +1206,7 @@ int WavpackSetConfiguration (WavpackContext *wpc, WavpackConfig *config, uint32_
     wpc->config.flags = config->flags;
 
     if (config->flags & CONFIG_VERY_HIGH_FLAG)
-        config->flags |= CONFIG_HIGH_FLAG;
+        wpc->config.flags |= CONFIG_HIGH_FLAG;
 
     if (config->float_norm_exp) {
         wpc->config.float_norm_exp = config->float_norm_exp;
@@ -1317,23 +1333,31 @@ int WavpackPackInit (WavpackContext *wpc)
     if (wpc->metabytes > 4096)
         write_metadata_block (wpc);
 
-    if (wpc->config.block_samples)
-        wpc->block_samples = wpc->config.block_samples;
-    else {
-        if (wpc->config.flags & CONFIG_HIGH_FLAG)
-            wpc->block_samples = wpc->config.sample_rate;
-        else if (!(wpc->config.sample_rate % 2))
-            wpc->block_samples = wpc->config.sample_rate / 2;
+    if (wpc->config.flags & CONFIG_HIGH_FLAG)
+        wpc->block_samples = wpc->config.sample_rate;
+    else if (!(wpc->config.sample_rate % 2))
+        wpc->block_samples = wpc->config.sample_rate / 2;
+    else
+        wpc->block_samples = wpc->config.sample_rate;
+
+    while (wpc->block_samples * wpc->config.num_channels > 150000)
+        wpc->block_samples /= 2;
+
+    while (wpc->block_samples * wpc->config.num_channels < 40000)
+        wpc->block_samples *= 2;
+
+    if (wpc->config.block_samples) {
+        if ((wpc->config.flags & CONFIG_MERGE_BLOCKS) &&
+            wpc->block_samples > (uint32_t) wpc->config.block_samples) {
+                wpc->block_boundary = wpc->config.block_samples;
+                wpc->block_samples /= wpc->config.block_samples;
+                wpc->block_samples *= wpc->config.block_samples;
+        }
         else
-            wpc->block_samples = wpc->config.sample_rate;
-
-        while (wpc->block_samples * wpc->config.num_channels > 150000)
-            wpc->block_samples /= 2;
-
-        while (wpc->block_samples * wpc->config.num_channels < 40000)
-            wpc->block_samples *= 2;
+            wpc->block_samples = wpc->config.block_samples;
     }
 
+    wpc->ave_block_samples = wpc->block_samples;
     wpc->max_samples = wpc->block_samples + (wpc->block_samples >> 1);
 
     for (wpc->current_stream = 0; wpc->streams [wpc->current_stream]; wpc->current_stream++) {
@@ -1590,6 +1614,9 @@ static int pack_streams (WavpackContext *wpc, uint32_t block_samples)
         result = pack_block (wpc, wps->sample_buffer);
         wps->blockbuff = wps->block2buff = NULL;
 
+        if (wps->wphdr.block_samples != block_samples)
+            block_samples = wps->wphdr.block_samples;
+
         if (!result) {
             strcpy (wpc->error_message, "output buffer overflowed!");
             break;
@@ -1625,6 +1652,7 @@ static int pack_streams (WavpackContext *wpc, uint32_t block_samples)
     }
 
     wpc->current_stream = 0;
+    wpc->ave_block_samples = (wpc->ave_block_samples * 0x7 + block_samples + 0x4) >> 3;
     wpc->acc_samples -= block_samples;
     free (outbuff);
 
@@ -1648,11 +1676,19 @@ void WavpackUpdateNumSamples (WavpackContext *wpc, void *first_block)
     little_endian_to_native (first_block, WavpackHeaderFormat);
     ((WavpackHeader *) first_block)->total_samples = WavpackGetSampleIndex (wpc);
 
+    /* note that since the RIFF wrapper will not necessarily be properly aligned,
+       we copy it into a newly allocated buffer before modifying it */
+
     if (wpc->riff_header_created) {
         if (WavpackGetWrapperLocation (first_block, &wrapper_size)) {
-            RiffChunkHeader *riffhdr = WavpackGetWrapperLocation (first_block, NULL);
-            ChunkHeader *datahdr = (ChunkHeader *)((char *) riffhdr + wrapper_size - sizeof (ChunkHeader));
             uint32_t data_size = WavpackGetSampleIndex (wpc) * WavpackGetNumChannels (wpc) * WavpackGetBytesPerSample (wpc);
+            RiffChunkHeader *riffhdr;
+            ChunkHeader *datahdr;
+            void *wrapper_buff;
+
+            riffhdr = wrapper_buff = malloc (wrapper_size);
+            memcpy (wrapper_buff, WavpackGetWrapperLocation (first_block, NULL), wrapper_size);
+            datahdr = (ChunkHeader *)((char *) riffhdr + wrapper_size - sizeof (ChunkHeader));
 
             if (!strncmp (riffhdr->ckID, "RIFF", 4)) {
                 little_endian_to_native (riffhdr, ChunkHeaderFormat);
@@ -1665,6 +1701,9 @@ void WavpackUpdateNumSamples (WavpackContext *wpc, void *first_block)
                 datahdr->ckSize = data_size;
                 native_to_little_endian (datahdr, ChunkHeaderFormat);
             }
+
+            memcpy (WavpackGetWrapperLocation (first_block, NULL), wrapper_buff, wrapper_size);
+            free (wrapper_buff);
         }
     }
 
@@ -1745,7 +1784,7 @@ static void *find_metadata (void *wavpack_block, int desired_id, uint32_t *size)
         dp += meta_bc;
     }
 
-    return FALSE;
+    return NULL;
 }
 
 #endif
@@ -2013,7 +2052,7 @@ double WavpackGetAverageBitrate (WavpackContext *wpc, int count_wvc)
         double output_time = (double) wpc->total_samples / wpc->config.sample_rate;
         double input_size = (double) wpc->filelen + (count_wvc ? wpc->file2len : 0);
 
-        if (output_time >= 1.0 && input_size >= 1.0)
+        if (output_time >= 0.1 && input_size >= 1.0)
             return input_size * 8.0 / output_time;
     }
 
@@ -2267,6 +2306,11 @@ static void free_streams (WavpackContext *wpc)
             wpc->streams [si]->sample_buffer = NULL;
         }
 
+        if (wpc->streams [si]->dc.shaping_data) {
+            free (wpc->streams [si]->dc.shaping_data);
+            wpc->streams [si]->dc.shaping_data = NULL;
+        }
+
         if (si) {
             wpc->num_streams--;
             free (wpc->streams [si]);
@@ -2297,7 +2341,7 @@ static void free_tag (M_Tag *m_tag)
 {
     if (m_tag->ape_tag_data) {
         free (m_tag->ape_tag_data);
-        m_tag->ape_tag_data = 0;
+        m_tag->ape_tag_data = NULL;
     }
 }
 
@@ -2313,7 +2357,7 @@ static void free_tag (M_Tag *m_tag)
 
 static uint32_t read_next_header (WavpackStreamReader *reader, void *id, WavpackHeader *wphdr)
 {
-    char buffer [sizeof (*wphdr)], *sp = buffer + sizeof (*wphdr), *ep = sp;
+    unsigned char buffer [sizeof (*wphdr)], *sp = buffer + sizeof (*wphdr), *ep = sp;
     uint32_t bytes_skipped = 0;
     int bleft;
 
@@ -2331,8 +2375,8 @@ static uint32_t read_next_header (WavpackStreamReader *reader, void *id, Wavpack
         sp = buffer;
 
         if (*sp++ == 'w' && *sp == 'v' && *++sp == 'p' && *++sp == 'k' &&
-            !(*++sp & 1) && sp [2] < 16 && !sp [3] && sp [5] == 4 &&
-            sp [4] >= (MIN_STREAM_VERS & 0xff) && sp [4] <= (MAX_STREAM_VERS & 0xff)) {
+            !(*++sp & 1) && sp [2] < 16 && !sp [3] && (sp [2] || sp [1] || *sp > 24) && sp [5] == 4 &&
+            sp [4] >= (MIN_STREAM_VERS & 0xff) && sp [4] <= (MAX_STREAM_VERS & 0xff) && sp [18] < 3 && !sp [19]) {
                 memcpy (wphdr, buffer, sizeof (*wphdr));
                 little_endian_to_native (wphdr, WavpackHeaderFormat);
                 return bytes_skipped;
@@ -2562,7 +2606,7 @@ static int read_wvc_block (WavpackContext *wpc)
             if (wpc->reader->read_bytes (wpc->wvc_in, wps->block2buff + 32, wphdr.ckSize - 24) !=
                 wphdr.ckSize - 24 || (wphdr.flags & UNKNOWN_FLAGS)) {
                     free (wps->block2buff);
-                    wps->block2buff = 0;
+                    wps->block2buff = NULL;
                     wps->wvc_skip = TRUE;
                     wpc->crc_errors++;
                     return FALSE;
@@ -2594,7 +2638,7 @@ static int read_wvc_block (WavpackContext *wpc)
 
 static uint32_t find_header (WavpackStreamReader *reader, void *id, uint32_t filepos, WavpackHeader *wphdr)
 {
-    char *buffer = malloc (BUFSIZE), *sp = buffer, *ep = buffer;
+    unsigned char *buffer = malloc (BUFSIZE), *sp = buffer, *ep = buffer;
 
     if (filepos != (uint32_t) -1 && reader->set_pos_abs (id, filepos)) {
         free (buffer);
@@ -2630,14 +2674,14 @@ static uint32_t find_header (WavpackStreamReader *reader, void *id, uint32_t fil
 
         while (sp + 32 <= ep)
             if (*sp++ == 'w' && *sp == 'v' && *++sp == 'p' && *++sp == 'k' &&
-                !(*++sp & 1) && sp [2] < 16 && !sp [3] && sp [5] == 4 &&
-                sp [4] >= (MIN_STREAM_VERS & 0xff) && sp [4] <= (MAX_STREAM_VERS & 0xff)) {
+                !(*++sp & 1) && sp [2] < 16 && !sp [3] && (sp [2] || sp [1] || *sp > 24) && sp [5] == 4 &&
+                sp [4] >= (MIN_STREAM_VERS & 0xff) && sp [4] <= (MAX_STREAM_VERS & 0xff) && sp [18] < 3 && !sp [19]) {
                     memcpy (wphdr, sp - 4, sizeof (*wphdr));
                     little_endian_to_native (wphdr, WavpackHeaderFormat);
 
                     if (wphdr->block_samples && (wphdr->flags & INITIAL_BLOCK)) {
                         free (buffer);
-                        return reader->get_pos (id) - (ep - sp + 4);
+                        return reader->get_pos (id) - (uint32_t)(ep - sp + 4);
                     }
 
                     if (wphdr->ckSize > 1024)
@@ -2730,6 +2774,7 @@ static uint32_t find_sample (WavpackContext *wpc, void *infile, uint32_t header_
 
 static int load_tag (WavpackContext *wpc)
 {
+    int ape_tag_length, ape_tag_items;
     M_Tag *m_tag = &wpc->m_tag;
 
     CLEAR (*m_tag);
@@ -2753,17 +2798,20 @@ static int load_tag (WavpackContext *wpc)
                     m_tag->ape_tag_hdr.length < (1024 * 1024) &&
                     (m_tag->ape_tag_data = malloc (m_tag->ape_tag_hdr.length)) != NULL) {
 
+                        ape_tag_items = m_tag->ape_tag_hdr.item_count;
+                        ape_tag_length = m_tag->ape_tag_hdr.length;
+
                         if (m_tag->id3_tag.tag_id [0] == 'T')
                             m_tag->tag_file_pos = -(int32_t)sizeof (ID3_Tag);
                         else
                             m_tag->tag_file_pos = 0;
 
-                        m_tag->tag_file_pos -= m_tag->ape_tag_hdr.length + sizeof (APE_Tag_Hdr);
+                        m_tag->tag_file_pos -= ape_tag_length + sizeof (APE_Tag_Hdr);
                         wpc->reader->set_pos_rel (wpc->wv_in, m_tag->tag_file_pos, SEEK_END);
-                        memset (m_tag->ape_tag_data, 0, m_tag->ape_tag_hdr.length);
+                        memset (m_tag->ape_tag_data, 0, ape_tag_length);
 
-                        if (wpc->reader->read_bytes (wpc->wv_in, &m_tag->ape_tag_hdr, sizeof (APE_Tag_Hdr)) != sizeof (APE_Tag_Hdr) ||
-                            strncmp (m_tag->ape_tag_hdr.ID, "APETAGEX", 8)) {
+                        if (wpc->reader->read_bytes (wpc->wv_in, &m_tag->ape_tag_hdr, sizeof (APE_Tag_Hdr)) !=
+                            sizeof (APE_Tag_Hdr) || strncmp (m_tag->ape_tag_hdr.ID, "APETAGEX", 8)) {
                                 free (m_tag->ape_tag_data);
                                 CLEAR (*m_tag);
                                 return FALSE;       // something's wrong...
@@ -2771,16 +2819,15 @@ static int load_tag (WavpackContext *wpc)
 
                         little_endian_to_native (&m_tag->ape_tag_hdr, APE_Tag_Hdr_Format);
 
-                        if (m_tag->ape_tag_hdr.version != 2000 || !m_tag->ape_tag_hdr.item_count ||
-                            m_tag->ape_tag_hdr.length < sizeof (m_tag->ape_tag_hdr) ||
-                            m_tag->ape_tag_hdr.length > (1024 * 1024)) {
+                        if (m_tag->ape_tag_hdr.version != 2000 || m_tag->ape_tag_hdr.item_count != ape_tag_items ||
+                            m_tag->ape_tag_hdr.length != ape_tag_length) {
                                 free (m_tag->ape_tag_data);
                                 CLEAR (*m_tag);
                                 return FALSE;       // something's wrong...
                         }
 
-                        if (wpc->reader->read_bytes (wpc->wv_in, m_tag->ape_tag_data, m_tag->ape_tag_hdr.length - sizeof (APE_Tag_Hdr)) !=
-                            m_tag->ape_tag_hdr.length - sizeof (APE_Tag_Hdr)) {
+                        if (wpc->reader->read_bytes (wpc->wv_in, m_tag->ape_tag_data,
+                            ape_tag_length - sizeof (APE_Tag_Hdr)) != ape_tag_length - sizeof (APE_Tag_Hdr)) {
                                 free (m_tag->ape_tag_data);
                                 CLEAR (*m_tag);
                                 return FALSE;       // something's wrong...
@@ -2867,14 +2914,14 @@ void WavpackNativeToLittleEndian (void *data, char *format)
     native_to_little_endian (data, format);
 }
 
-uint32_t WavpackGetLibraryVersion ()
+uint32_t WavpackGetLibraryVersion (void)
 {
     return (LIBWAVPACK_MAJOR<<16)
           |(LIBWAVPACK_MINOR<<8)
           |(LIBWAVPACK_MICRO<<0);
 }
 
-const char *WavpackGetLibraryVersionString ()
+const char *WavpackGetLibraryVersionString (void)
 {
     return LIBWAVPACK_VERSION_STRING;
 }

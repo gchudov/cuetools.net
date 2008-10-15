@@ -176,7 +176,7 @@ typedef struct {
 
 #define MIN_STREAM_VERS     0x402       // lowest stream version we'll decode
 #define MAX_STREAM_VERS     0x410       // highest stream version we'll decode or encode
-#define CUR_STREAM_VERS     0x406       // stream version we are [normally] writing now
+#define CUR_STREAM_VERS     0x407       // stream version we are [normally] writing now
 
 
 //////////////////////////// WavPack Metadata /////////////////////////////////
@@ -248,6 +248,7 @@ typedef struct {
 #define CONFIG_AUTO_SHAPING     0x4000  // automatic noise shaping
 #define CONFIG_SHAPE_OVERRIDE   0x8000  // shaping mode specified
 #define CONFIG_JOINT_OVERRIDE   0x10000 // joint-stereo mode specified
+#define CONFIG_DYNAMIC_SHAPING  0x20000 // dynamic noise shaping
 #define CONFIG_CREATE_EXE       0x40000 // create executable
 #define CONFIG_CREATE_WVC       0x80000 // create correction file
 #define CONFIG_OPTIMIZE_WVC     0x100000 // maximize bybrid compression
@@ -256,12 +257,17 @@ typedef struct {
 #define CONFIG_EXTRA_MODE       0x2000000 // extra processing mode
 #define CONFIG_SKIP_WVX         0x4000000 // no wvx stream w/ floats & big ints
 #define CONFIG_MD5_CHECKSUM     0x8000000 // compute & store MD5 signature
+#define CONFIG_MERGE_BLOCKS     0x10000000 // merge blocks of equal redundancy (for lossyWAV)
 #define CONFIG_OPTIMIZE_MONO    0x80000000 // optimize for mono streams posing as stereo
 
 /*
- * These config flags are no longer used (or were never used) although there
- * may be WavPack files that have some of these bits set in the config
- * metadata structure, so be careful reusing them for something else.
+ * These config flags were never actually used, or are no longer used, or are
+ * used for something else now. They may be used in the future for what they
+ * say, or for something else. WavPack files in the wild *may* have some of
+ * these bit set in their config flags (with these older meanings), but only
+ * if the stream version is 0x410 or less than 0x407. Of course, this is not
+ * very important because once the file has been encoded, the config bits are
+ * just for information purposes (i.e., they do not affect decoding),
  *
 #define CONFIG_ADOBE_MODE       0x100   // "adobe" mode for 32-bit floats
 #define CONFIG_VERY_FAST_FLAG   0x400   // double fast
@@ -352,10 +358,12 @@ typedef struct {
     struct {
         int32_t shaping_acc [2], shaping_delta [2], error [2];
         double noise_sum, noise_ave, noise_max;
+        short *shaping_data, *shaping_array;
+        int32_t shaping_samples;
     } dc;
 
-    struct decorr_pass decorr_passes [MAX_NTERMS];
-    WavpackDecorrSpec *decorr_specs;
+    struct decorr_pass decorr_passes [MAX_NTERMS], analysis_pass;
+    const WavpackDecorrSpec *decorr_specs;
 } WavpackStream;
 
 // flags for float_flags:
@@ -406,7 +414,7 @@ typedef struct {
 
     uint32_t filelen, file2len, filepos, file2pos, total_samples, crc_errors, first_flags;
     int wvc_flag, open_flags, norm_offset, reduced_channels, lossy_blocks, close_files;
-    uint32_t block_samples, max_samples, acc_samples, initial_index;
+    uint32_t block_samples, ave_block_samples, block_boundary, max_samples, acc_samples, initial_index;
     int riff_header_added, riff_header_created;
     M_Tag m_tag;
 
@@ -650,12 +658,15 @@ int WavpackGetMode (WavpackContext *wpc);
 #define MODE_VALID_TAG  0x10
 #define MODE_HIGH       0x20
 #define MODE_FAST       0x40
-#define MODE_EXTRA      0x80
+#define MODE_EXTRA      0x80    // extra mode used, see MODE_XMODE for possible level
 #define MODE_APETAG     0x100
 #define MODE_SFX        0x200
 #define MODE_VERY_HIGH  0x400
 #define MODE_MD5        0x800
+#define MODE_XMODE      0x7000  // mask for extra level (1-6, 0=unknown)
+#define MODE_DNS        0x8000
 
+char *WavpackGetErrorMessage (WavpackContext *wpc);
 int WavpackGetVersion (WavpackContext *wpc);
 uint32_t WavpackUnpackSamples (WavpackContext *wpc, int32_t *buffer, uint32_t samples);
 uint32_t WavpackGetNumSamples (WavpackContext *wpc);
@@ -670,6 +681,7 @@ int WavpackGetBytesPerSample (WavpackContext *wpc);
 int WavpackGetNumChannels (WavpackContext *wpc);
 int WavpackGetChannelMask (WavpackContext *wpc);
 int WavpackGetReducedChannels (WavpackContext *wpc);
+int WavpackGetFloatNormExp (WavpackContext *wpc);
 int WavpackGetMD5Sum (WavpackContext *wpc, uchar data [16]);
 uint32_t WavpackGetWrapperBytes (WavpackContext *wpc);
 uchar *WavpackGetWrapperData (WavpackContext *wpc);
@@ -700,6 +712,9 @@ void *WavpackGetWrapperLocation (void *first_block, uint32_t *size);
 void WavpackLittleEndianToNative (void *data, char *format);
 void WavpackNativeToLittleEndian (void *data, char *format);
 
+uint32_t WavpackGetLibraryVersion (void);
+const char *WavpackGetLibraryVersionString (void);
+
 ///////////////////////////// SIMD helper macros /////////////////////////////
 
 #ifdef OPT_MMX
@@ -719,10 +734,11 @@ typedef int __v4hi __attribute__ ((__mode__ (__V4HI__)));
 #define _m_pxor(m1, m2) (__m64) __builtin_ia32_pxor ((__di) m1, (__di) m2)
 #else
 typedef int __m64 __attribute__ ((__vector_size__ (8)));
-#define _m_paddsw(m1, m2) __builtin_ia32_paddsw (m1, m2)
+typedef short __m64_16 __attribute__ ((__vector_size__ (8)));
+#define _m_paddsw(m1, m2) (__m64) __builtin_ia32_paddsw ((__m64_16) m1, (__m64_16) m2)
 #define _m_pand(m1, m2) __builtin_ia32_pand (m1, m2)
 #define _m_pandn(m1, m2) __builtin_ia32_pandn (m1, m2)
-#define _m_pmaddwd(m1, m2) __builtin_ia32_pmaddwd (m1, m2)
+#define _m_pmaddwd(m1, m2) __builtin_ia32_pmaddwd ((__m64_16) m1, (__m64_16) m2)
 #define _m_por(m1, m2) __builtin_ia32_por (m1, m2)
 #define _m_pxor(m1, m2) __builtin_ia32_pxor (m1, m2)
 #endif
