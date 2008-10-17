@@ -24,7 +24,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace JDP {
+namespace CUEToolsLib
+{
 	static class SettingsShared {
 		public static string GetMyAppDataDir(string appName) {
 			string appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

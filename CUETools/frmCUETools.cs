@@ -32,6 +32,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using CUEToolsLib;
 
 namespace JDP {
 	public partial class frmCUETools : Form {

@@ -75,7 +75,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AudioReadWrite.cs" />
     <Compile Include="frmBatch.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -100,7 +99,6 @@
     <Compile Include="frmSettings.Designer.cs">
       <DependentUpon>frmSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Main.cs" />
     <Compile Include="frmCUETools.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -149,20 +147,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\APEDotNet\APEDotNet.vcproj">
-      <Project>{9AE965C4-301E-4C01-B90F-297AF341ACC6}</Project>
-      <Name>APEDotNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FLACDotNet\FLACDotNet.vcproj">
-      <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
-      <Name>FLACDotNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WavPackDotNet\WavPackDotNet.vcproj">
-      <Project>{CC2E74B6-534A-43D8-9F16-AC03FE955000}</Project>
-      <Name>WavPackDotNet</Name>
+    <ProjectReference Include="..\CUEToolsLib\CUEToolsLib.csproj">
+      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
+      <Name>CUEToolsLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

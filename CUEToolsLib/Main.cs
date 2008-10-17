@@ -27,7 +27,8 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 
-namespace JDP {
+namespace CUEToolsLib
+{
 
 	public enum OutputAudioFormat
 	{
@@ -38,7 +39,7 @@ namespace JDP {
 		NoAudio
 	}
 
-	static class General {
+	public static class General {
 		public static string FormatExtension(OutputAudioFormat value)
 		{
 			switch (value)
@@ -184,9 +185,9 @@ namespace JDP {
 		}
 	}
 
-	delegate void SetStatus(string status, uint percentTrack, double percentDisk);
+	public delegate void SetStatus(string status, uint percentTrack, double percentDisk);
 
-	enum CUEStyle {
+	public enum CUEStyle {
 		SingleFileWithCUE,
 		SingleFile,
 		GapsPrepended,
@@ -383,7 +384,7 @@ namespace JDP {
 		}
 	}
 
-	class CUESheet {
+	public class CUESheet {
 		private bool _stop;
 		private List<CUELine> _attributes;
 		private List<TrackInfo> _tracks;
@@ -2124,7 +2125,7 @@ namespace JDP {
 		}
 	}
 
-	class CUELine {
+	public class CUELine {
 		private List<String> _params;
 		private List<bool> _quoted;
 
@@ -2199,7 +2200,7 @@ namespace JDP {
 		}
 	}
 
-	class TrackInfo {
+	public class TrackInfo {
 		private List<uint> _indexLengths;
 		private List<CUELine> _attributes;
 		public uint[] OffsetedCRC;
@@ -2307,7 +2308,7 @@ namespace JDP {
 	}
 
 
-	class StopException : Exception {
+	public class StopException : Exception {
 		public StopException() : base() {
 		}
 	}

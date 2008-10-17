@@ -6,7 +6,7 @@ using APEDotNet;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace JDP {
+namespace CUEToolsLib {
 	public interface IAudioSource {
 		uint Read(byte[] buff, uint sampleCount);
 		ulong Length { get; }
