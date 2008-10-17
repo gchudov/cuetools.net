@@ -68,6 +68,7 @@ namespace JDP {
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.btnCUECreator = new System.Windows.Forms.Button();
+			this.rbAPE = new System.Windows.Forms.RadioButton();
 			this.grpCUEPaths.SuspendLayout();
 			this.grpOutputStyle.SuspendLayout();
 			this.grpOutputPathGeneration.SuspendLayout();
@@ -256,6 +257,7 @@ namespace JDP {
 			// 
 			// grpAudioOutput
 			// 
+			this.grpAudioOutput.Controls.Add(this.rbAPE);
 			this.grpAudioOutput.Controls.Add(this.rbNoAudio);
 			this.grpAudioOutput.Controls.Add(this.rbWavPack);
 			this.grpAudioOutput.Controls.Add(this.rbFLAC);
@@ -409,6 +411,14 @@ namespace JDP {
 			this.btnCUECreator.UseVisualStyleBackColor = true;
 			this.btnCUECreator.Click += new System.EventHandler(this.btnCUECreator_Click);
 			// 
+			// rbAPE
+			// 
+			resources.ApplyResources(this.rbAPE, "rbAPE");
+			this.rbAPE.Name = "rbAPE";
+			this.rbAPE.TabStop = true;
+			this.rbAPE.UseVisualStyleBackColor = true;
+			this.rbAPE.CheckedChanged += new System.EventHandler(this.rbAPE_CheckedChanged);
+			// 
 			// frmCUETools
 			// 
 			resources.ApplyResources(this, "$this");
@@ -492,6 +502,7 @@ namespace JDP {
         private System.Windows.Forms.Button btnCUECreator;
 		private System.Windows.Forms.MaskedTextBox txtDataTrackLength;
 		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.RadioButton rbAPE;
 	}
 }
 

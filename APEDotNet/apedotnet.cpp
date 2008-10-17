@@ -150,24 +150,16 @@ namespace APEDotNet {
 
 			sampleCount = nBlocksRetrieved;
 			array<Int32,2>^ _sampleBuffer = gcnew array<Int32,2> (nBlocksRetrieved, 2);
+		    interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, 0];
 
-			{
-			    interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, 0];
-			    unsigned short * pAPEBuffer = (unsigned short *) pBuffer;
-			    unsigned short * pAPEBufferEnd = (unsigned short *) pBuffer + 2 * nBlocksRetrieved;
+		    unsigned short * pAPEBuffer = (unsigned short *) pBuffer;
+		    unsigned short * pAPEBufferEnd = (unsigned short *) pBuffer + 2 * nBlocksRetrieved;
 
-			    while (pAPEBuffer < pAPEBufferEnd) {
-				    *(pMyBuffer++) = *(pAPEBuffer++);
-				    *(pMyBuffer++) = *(pAPEBuffer++);
-			    }
-			}
-#if 0
-			for (int i = 0; i < nBlocksRetrieved; i++)
-			{
-			    _sampleBuffer[i,0] = pBuffer[i*4] + (pBuffer[i*4+1] << 8);
-			    _sampleBuffer[i,1] = pBuffer[i*4+2] + (pBuffer[i*4+3] << 8);
-			}
-#endif
+		    while (pAPEBuffer < pAPEBufferEnd) {
+			    *(pMyBuffer++) = *(pAPEBuffer++);
+			    *(pMyBuffer++) = *(pAPEBuffer++);
+		    }
+
 			sampleBuffer = _sampleBuffer;
 			_sampleOffset += nBlocksRetrieved;
 			_samplesWaiting = false;
@@ -209,4 +201,126 @@ namespace APEDotNet {
 #endif
 	};
 
+	public ref class APEWriter {
+	public:
+		APEWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) {
+
+			if ((channelCount != 1) && (channelCount != 2)) {
+				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
+			}
+
+			_path = path;
+			_tags = gcnew NameValueCollection();
+
+			_compressionLevel = COMPRESSION_LEVEL_NORMAL;
+
+			_bitsPerSample = bitsPerSample;
+			_channelCount = channelCount;
+			_sampleRate = sampleRate;
+
+			int nRetVal;
+			pAPECompress = CreateIAPECompress (&nRetVal);
+			if (!pAPECompress) {
+				throw gcnew Exception("Unable to open file.");
+			}
+		}
+
+		void Close() {
+			if (pAPECompress) 
+			{
+				pAPECompress->Finish (NULL, 0, 0);
+				delete pAPECompress;
+				pAPECompress = NULL;
+			}
+
+			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
+				throw gcnew Exception("Samples written differs from the expected sample count.");
+			}
+
+			if (_tags->Count > 0)
+			{
+				APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
+				apeTag->SetStringTags (_tags, true);
+				apeTag->Save();
+				apeTag->Close();
+				_tags->Clear ();
+			}
+		}
+
+		property Int32 FinalSampleCount {
+			Int32 get() {
+				return _finalSampleCount;
+			}
+			void set(Int32 value) {
+				if (value < 0) {
+					throw gcnew Exception("Invalid final sample count.");
+				}
+				if (_initialized) {
+					throw gcnew Exception("Final sample count cannot be changed after encoding begins.");
+				}
+				_finalSampleCount = value;
+			}
+		}
+
+		property Int32 CompressionLevel {
+			Int32 get() {
+				return _compressionLevel;
+			}
+			void set(Int32 value) {
+				if ((value < 1) || (value > 5)) {
+					throw gcnew Exception("Invalid compression mode.");
+				}
+				_compressionLevel = value * 1000;
+			}
+		}
+
+		void Write(array<unsigned char>^ sampleBuffer, UInt32 sampleCount) {
+			if (!_initialized) Initialize();
+
+			pin_ptr<unsigned char> pSampleBuffer = &sampleBuffer[0];
+
+			if (pAPECompress->AddData (pSampleBuffer, sampleCount * sizeof (int)))
+			{
+				throw gcnew Exception("An error occurred while encoding.");
+			}
+
+			_samplesWritten += sampleCount;
+		}
+
+		void SetTags (NameValueCollection^ tags) {
+			_tags = tags;
+		}
+
+	private:
+		IAPECompress * pAPECompress;
+		bool _initialized;
+		Int32 _finalSampleCount, _samplesWritten;
+		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		Int32 _compressionLevel;
+		NameValueCollection^ _tags;
+		String^ _path;
+
+		void Initialize() {
+			IntPtr pathChars;
+			int res;
+			WAVEFORMATEX waveFormat;
+
+			pathChars = Marshal::StringToHGlobalUni(_path);
+			
+			FillWaveFormatEx (&waveFormat, _sampleRate, _bitsPerSample, _channelCount);
+			res = pAPECompress->Start ((const wchar_t*)pathChars.ToPointer(), 
+				&waveFormat, 
+				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * sizeof (int),
+				_compressionLevel, 
+				NULL, 
+				CREATE_WAV_HEADER_ON_DECOMPRESSION);
+			Marshal::FreeHGlobal(pathChars);
+			if (res)
+			{
+				throw gcnew Exception("Unable to create the encoder.");
+			}
+
+			_initialized = true;
+		}
+	};
 }

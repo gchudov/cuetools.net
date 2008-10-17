@@ -129,7 +129,7 @@
     <value>5</value>
   </data>
   <data name="btnConvert.Text" xml:space="preserve">
-    <value>&amp;Convert</value>
+    <value>&amp;Go</value>
   </data>
   <data name="&gt;&gt;btnConvert.Name" xml:space="preserve">
     <value>btnConvert</value>
@@ -383,93 +383,6 @@
   <data name="&gt;&gt;txtInputPath.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="&gt;&gt;rbEmbedCUE.Name" xml:space="preserve">
-    <value>rbEmbedCUE</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Parent" xml:space="preserve">
-    <value>grpOutputStyle</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;rbGapsLeftOut.Name" xml:space="preserve">
-    <value>rbGapsLeftOut</value>
-  </data>
-  <data name="&gt;&gt;rbGapsLeftOut.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbGapsLeftOut.Parent" xml:space="preserve">
-    <value>grpOutputStyle</value>
-  </data>
-  <data name="&gt;&gt;rbGapsLeftOut.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;rbGapsPrepended.Name" xml:space="preserve">
-    <value>rbGapsPrepended</value>
-  </data>
-  <data name="&gt;&gt;rbGapsPrepended.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbGapsPrepended.Parent" xml:space="preserve">
-    <value>grpOutputStyle</value>
-  </data>
-  <data name="&gt;&gt;rbGapsPrepended.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;rbGapsAppended.Name" xml:space="preserve">
-    <value>rbGapsAppended</value>
-  </data>
-  <data name="&gt;&gt;rbGapsAppended.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbGapsAppended.Parent" xml:space="preserve">
-    <value>grpOutputStyle</value>
-  </data>
-  <data name="&gt;&gt;rbGapsAppended.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Name" xml:space="preserve">
-    <value>rbSingleFile</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Parent" xml:space="preserve">
-    <value>grpOutputStyle</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="grpOutputStyle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>114, 211</value>
-  </data>
-  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>119, 118</value>
-  </data>
-  <data name="grpOutputStyle.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="grpOutputStyle.Text" xml:space="preserve">
-    <value>CUE Style</value>
-  </data>
-  <data name="&gt;&gt;grpOutputStyle.Name" xml:space="preserve">
-    <value>grpOutputStyle</value>
-  </data>
-  <data name="&gt;&gt;grpOutputStyle.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;grpOutputStyle.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;grpOutputStyle.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>153, 8</value>
-  </metadata>
   <data name="rbEmbedCUE.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -481,16 +394,19 @@
     <value>12, 19</value>
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
-    <value>57, 17</value>
+    <value>75, 17</value>
   </data>
   <data name="rbEmbedCUE.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
   </data>
   <data name="rbEmbedCUE.Text" xml:space="preserve">
-    <value>&amp;Embed</value>
+    <value>&amp;Embedded</value>
   </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>153, 8</value>
+  </metadata>
   <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
-    <value>Create single file with embedded CUE sheet. Currently supported only for FLAC output</value>
+    <value>Create single file with embedded CUE sheet.</value>
   </data>
   <data name="&gt;&gt;rbEmbedCUE.Name" xml:space="preserve">
     <value>rbEmbedCUE</value>
@@ -623,6 +539,30 @@
   </data>
   <data name="&gt;&gt;rbSingleFile.ZOrder" xml:space="preserve">
     <value>4</value>
+  </data>
+  <data name="grpOutputStyle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>114, 211</value>
+  </data>
+  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>119, 118</value>
+  </data>
+  <data name="grpOutputStyle.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="grpOutputStyle.Text" xml:space="preserve">
+    <value>CUE Style</value>
+  </data>
+  <data name="&gt;&gt;grpOutputStyle.Name" xml:space="preserve">
+    <value>grpOutputStyle</value>
+  </data>
+  <data name="&gt;&gt;grpOutputStyle.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;grpOutputStyle.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;grpOutputStyle.ZOrder" xml:space="preserve">
+    <value>9</value>
   </data>
   <data name="btnAbout.Location" type="System.Drawing.Point, System.Drawing">
     <value>410, 135</value>
@@ -936,6 +876,18 @@
   <data name="&gt;&gt;txtAppendFilename.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
+  <data name="&gt;&gt;rbAPE.Name" xml:space="preserve">
+    <value>rbAPE</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="&gt;&gt;rbNoAudio.Name" xml:space="preserve">
     <value>rbNoAudio</value>
   </data>
@@ -946,7 +898,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbNoAudio.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;rbWavPack.Name" xml:space="preserve">
     <value>rbWavPack</value>
@@ -958,7 +910,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbWavPack.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="&gt;&gt;rbFLAC.Name" xml:space="preserve">
     <value>rbFLAC</value>
@@ -970,7 +922,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbFLAC.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="&gt;&gt;rbWAV.Name" xml:space="preserve">
     <value>rbWAV</value>
@@ -982,7 +934,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbWAV.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="grpAudioOutput.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 211</value>
@@ -1012,7 +964,7 @@
     <value>True</value>
   </data>
   <data name="rbNoAudio.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 71</value>
+    <value>11, 85</value>
   </data>
   <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
     <value>50, 17</value>
@@ -1036,13 +988,13 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbNoAudio.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="rbWavPack.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="rbWavPack.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 54</value>
+    <value>11, 34</value>
   </data>
   <data name="rbWavPack.Size" type="System.Drawing.Size, System.Drawing">
     <value>69, 17</value>
@@ -1063,13 +1015,13 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbWavPack.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="rbFLAC.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="rbFLAC.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 37</value>
+    <value>11, 17</value>
   </data>
   <data name="rbFLAC.Size" type="System.Drawing.Size, System.Drawing">
     <value>50, 17</value>
@@ -1090,13 +1042,13 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbFLAC.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="rbWAV.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="rbWAV.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 20</value>
+    <value>11, 68</value>
   </data>
   <data name="rbWAV.Size" type="System.Drawing.Size, System.Drawing">
     <value>48, 17</value>
@@ -1117,7 +1069,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbWAV.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
     <value>410, 259</value>
@@ -1191,6 +1143,90 @@
   <data name="&gt;&gt;btnSettings.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="&gt;&gt;label1.Name" xml:space="preserve">
+    <value>label1</value>
+  </data>
+  <data name="&gt;&gt;label1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label1.Parent" xml:space="preserve">
+    <value>grpAccurateRip</value>
+  </data>
+  <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;txtDataTrackLength.Name" xml:space="preserve">
+    <value>txtDataTrackLength</value>
+  </data>
+  <data name="&gt;&gt;txtDataTrackLength.Type" xml:space="preserve">
+    <value>System.Windows.Forms.MaskedTextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;txtDataTrackLength.Parent" xml:space="preserve">
+    <value>grpAccurateRip</value>
+  </data>
+  <data name="&gt;&gt;txtDataTrackLength.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;rbArApplyOffset.Name" xml:space="preserve">
+    <value>rbArApplyOffset</value>
+  </data>
+  <data name="&gt;&gt;rbArApplyOffset.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbArApplyOffset.Parent" xml:space="preserve">
+    <value>grpAccurateRip</value>
+  </data>
+  <data name="&gt;&gt;rbArApplyOffset.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;rbArVerify.Name" xml:space="preserve">
+    <value>rbArVerify</value>
+  </data>
+  <data name="&gt;&gt;rbArVerify.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbArVerify.Parent" xml:space="preserve">
+    <value>grpAccurateRip</value>
+  </data>
+  <data name="&gt;&gt;rbArVerify.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;rbArNone.Name" xml:space="preserve">
+    <value>rbArNone</value>
+  </data>
+  <data name="&gt;&gt;rbArNone.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbArNone.Parent" xml:space="preserve">
+    <value>grpAccurateRip</value>
+  </data>
+  <data name="&gt;&gt;rbArNone.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
+    <value>238, 211</value>
+  </data>
+  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>144, 118</value>
+  </data>
+  <data name="grpAccurateRip.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="grpAccurateRip.Text" xml:space="preserve">
+    <value>AccurateRip</value>
+  </data>
+  <data name="&gt;&gt;grpAccurateRip.Name" xml:space="preserve">
+    <value>grpAccurateRip</value>
+  </data>
+  <data name="&gt;&gt;grpAccurateRip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;grpAccurateRip.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;grpAccurateRip.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
   <data name="label1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1252,7 +1288,7 @@
     <value>True</value>
   </data>
   <data name="rbArApplyOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 52</value>
+    <value>8, 20</value>
   </data>
   <data name="rbArApplyOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 17</value>
@@ -1263,9 +1299,6 @@
   <data name="rbArApplyOffset.Text" xml:space="preserve">
     <value>Verify, &amp;then encode</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>153, 8</value>
-  </metadata>
   <data name="rbArApplyOffset.ToolTip" xml:space="preserve">
     <value>On the first pass, verify and try to find an offset correction which makes the rip accurate according to the AccurateRip database. On the second pass, convert, possibly applying offset correction.</value>
   </data>
@@ -1285,16 +1318,16 @@
     <value>True</value>
   </data>
   <data name="rbArVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 35</value>
+    <value>8, 54</value>
   </data>
   <data name="rbArVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>53, 17</value>
+    <value>122, 17</value>
   </data>
   <data name="rbArVerify.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
   <data name="rbArVerify.Text" xml:space="preserve">
-    <value>&amp;Verify</value>
+    <value>&amp;Verify, don't encode</value>
   </data>
   <data name="rbArVerify.ToolTip" xml:space="preserve">
     <value>Contact the AccurateRip databse for validation and compare the image against database</value>
@@ -1315,16 +1348,16 @@
     <value>True</value>
   </data>
   <data name="rbArNone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 18</value>
+    <value>8, 37</value>
   </data>
   <data name="rbArNone.Size" type="System.Drawing.Size, System.Drawing">
-    <value>81, 17</value>
+    <value>123, 17</value>
   </data>
   <data name="rbArNone.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
   <data name="rbArNone.Text" xml:space="preserve">
-    <value>&amp;Don't verify</value>
+    <value>&amp;Don't verify, encode</value>
   </data>
   <data name="rbArNone.ToolTip" xml:space="preserve">
     <value>Don't contact the AccurateRip database for validation</value>
@@ -1340,30 +1373,6 @@
   </data>
   <data name="&gt;&gt;rbArNone.ZOrder" xml:space="preserve">
     <value>4</value>
-  </data>
-  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>238, 211</value>
-  </data>
-  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 118</value>
-  </data>
-  <data name="grpAccurateRip.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
-  <data name="grpAccurateRip.Text" xml:space="preserve">
-    <value>AccurateRip</value>
-  </data>
-  <data name="&gt;&gt;grpAccurateRip.Name" xml:space="preserve">
-    <value>grpAccurateRip</value>
-  </data>
-  <data name="&gt;&gt;grpAccurateRip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;grpAccurateRip.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;grpAccurateRip.ZOrder" xml:space="preserve">
-    <value>2</value>
   </data>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>0, 339</value>
@@ -1435,6 +1444,33 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnCUECreator.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="rbAPE.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbAPE.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 51</value>
+  </data>
+  <data name="rbAPE.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 17</value>
+  </data>
+  <data name="rbAPE.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="rbAPE.Text" xml:space="preserve">
+    <value>APE</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Name" xml:space="preserve">
+    <value>rbAPE</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">

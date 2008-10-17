@@ -34,6 +34,7 @@ namespace JDP {
 		WAV,
 		FLAC,
 		WavPack,
+		APE,
 		NoAudio
 	}
 
@@ -44,6 +45,7 @@ namespace JDP {
 			{
 				case OutputAudioFormat.FLAC: return ".flac";
 				case OutputAudioFormat.WavPack: return ".wv";
+				case OutputAudioFormat.APE: return ".ape";
 				case OutputAudioFormat.WAV: return ".wav";
 				case OutputAudioFormat.NoAudio: return ".dummy";
 			}
@@ -214,8 +216,7 @@ namespace JDP {
 		public string specialExceptions;
 		public bool replaceSpaces;
 		public bool embedLog;
-
-		private string[] _charMap;
+		public bool fillUpCUE;
 
 		public CUEConfig()
 		{
@@ -237,11 +238,11 @@ namespace JDP {
 			keepOriginalFilenames = true;
 			trackFilenameFormat = "%N-%A-%T";
 			singleFilenameFormat = "%F";
-			removeSpecial = true;
+			removeSpecial = false;
 			specialExceptions = "-()";
 			replaceSpaces = true;
 			embedLog = true;
-			BuildCharMap();
+			fillUpCUE = true;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -268,6 +269,7 @@ namespace JDP {
 			sw.Save("SpecialCharactersExceptions", specialExceptions);
 			sw.Save("ReplaceSpaces", replaceSpaces ? "1" : "0");
 			sw.Save("EmbedLog", embedLog ? "1" : "0");
+			sw.Save("FillUpCUE", fillUpCUE ? "1" : "0");
 		}
 
 		public void Load(SettingsReader sr)
@@ -351,59 +353,30 @@ namespace JDP {
 			val = sr.Load("EmbedLog");
 			embedLog = (val != null) ? (val != "0") : true;
 
-			BuildCharMap();
+			val = sr.Load("FillUpCUE");
+			fillUpCUE  = (val != null) ? (val != "0") : true;
 		}
 
-		public void BuildCharMap()
-		{
-			System.Collections.BitArray allowed = new System.Collections.BitArray(256, true);
-			char[] invalid = Path.GetInvalidFileNameChars();
-			int i;
-
-			if (removeSpecial)
-			{
-				byte[] exceptions = CUESheet.Encoding.GetBytes(specialExceptions);
-
-				for (i = 0; i <= 255; i++)
-				{
-					allowed[i] = ((i >= 'a') && (i <= 'z')) ||
-								 ((i >= 'A') && (i <= 'Z')) ||
-								 ((i >= '0') && (i <= '9')) ||
-								 (i == ' ') || (i == '_');
-				}
-
-				for (i = 0; i < exceptions.Length; i++)
-				{
-					allowed[exceptions[i]] = true;
-				}
-			}
-
-			for (i = 0; i < invalid.Length; i++)
-			{
-				allowed[invalid[i]] = false;
-			}
-
-			_charMap = new string[256];
-			for (i = 0; i <= 255; i++)
-			{
-				if (allowed[i])
-				{
-					_charMap[i] = CUESheet.Encoding.GetString(new byte[] { (byte)i });
-				}
-				else
-				{
-					_charMap[i] = String.Empty;
-				}
-			}
-		}
 		public string CleanseString (string s)
 		{
 			StringBuilder sb = new StringBuilder();
-			byte[] b = CUESheet.Encoding.GetBytes(s);
+			char[] invalid = Path.GetInvalidFileNameChars();
 
-			for (int i = 0; i < b.Length; i++)
+			s = Encoding.Default.GetString(Encoding.Default.GetBytes(s));
+
+			for (int i = 0; i < s.Length; i++)
 			{
-				sb.Append(_charMap[b[i]]);
+				char ch = s[i];
+				if (removeSpecial && specialExceptions.IndexOf(ch) < 0 && !(
+					((ch >= 'a') && (ch <= 'z')) ||
+					((ch >= 'A') && (ch <= 'Z')) ||
+					((ch >= '0') && (ch <= '9')) ||
+					(ch == ' ') || (ch == '_')))
+					ch = '_';
+				if (Array.IndexOf(invalid, ch) >= 0)
+					sb.Append("_");
+				else
+					sb.Append (ch);
 			}
 
 			return sb.ToString();
@@ -472,8 +445,6 @@ namespace JDP {
 			seenDataTrack = false;
 			accDisks = new List<AccDisk>();
 			_hasEmbeddedCUESheet = false;
-
-			_config.BuildCharMap();
 
 			TextReader sr;
 
@@ -710,18 +681,21 @@ namespace JDP {
 				_albumTags = _tracks[0]._trackTags;
 				_tracks[0]._trackTags = new NameValueCollection();
 			}
-			if (General.FindCUELine(_attributes, "PERFORMER") == null && GetCommonTag("ALBUM ARTIST") != null)
-				General.SetCUELine(_attributes, "PERFORMER", GetCommonTag("ALBUM ARTIST"), true);
-			if (General.FindCUELine(_attributes, "PERFORMER") == null && GetCommonTag("ARTIST") != null)
-				General.SetCUELine(_attributes, "PERFORMER", GetCommonTag("ARTIST"), true);
-			if (General.FindCUELine(_attributes, "TITLE") == null && GetCommonTag("ALBUM") != null)
-				General.SetCUELine(_attributes, "TITLE", GetCommonTag("ALBUM"), true);
-			if (General.FindCUELine(_attributes, "REM", "DATE") == null && GetCommonTag("DATE") != null)
-				General.SetCUELine(_attributes, "REM", "DATE", GetCommonTag("DATE"), false);
-			if (General.FindCUELine(_attributes, "REM", "DATE") == null && GetCommonTag("YEAR") != null)
-				General.SetCUELine(_attributes, "REM", "DATE", GetCommonTag("YEAR"), false);
-			if (General.FindCUELine(_attributes, "REM", "GENRE") == null && GetCommonTag("GENRE") != null)
-				General.SetCUELine(_attributes, "REM", "GENRE", GetCommonTag("GENRE"), true);
+			if (_config.fillUpCUE)
+			{
+				if (General.FindCUELine(_attributes, "PERFORMER") == null && GetCommonTag("ALBUM ARTIST") != null)
+					General.SetCUELine(_attributes, "PERFORMER", GetCommonTag("ALBUM ARTIST"), true);
+				if (General.FindCUELine(_attributes, "PERFORMER") == null && GetCommonTag("ARTIST") != null)
+					General.SetCUELine(_attributes, "PERFORMER", GetCommonTag("ARTIST"), true);
+				if (General.FindCUELine(_attributes, "TITLE") == null && GetCommonTag("ALBUM") != null)
+					General.SetCUELine(_attributes, "TITLE", GetCommonTag("ALBUM"), true);
+				if (General.FindCUELine(_attributes, "REM", "DATE") == null && GetCommonTag("DATE") != null)
+					General.SetCUELine(_attributes, "REM", "DATE", GetCommonTag("DATE"), false);
+				if (General.FindCUELine(_attributes, "REM", "DATE") == null && GetCommonTag("YEAR") != null)
+					General.SetCUELine(_attributes, "REM", "DATE", GetCommonTag("YEAR"), false);
+				if (General.FindCUELine(_attributes, "REM", "GENRE") == null && GetCommonTag("GENRE") != null)
+					General.SetCUELine(_attributes, "REM", "GENRE", GetCommonTag("GENRE"), true);
+			}
 			if (_accurateRipId == null)
 				_accurateRipId = GetCommonTag("ACCURATERIPID");
 
@@ -762,7 +736,7 @@ namespace JDP {
 
 		public static Encoding Encoding {
 			get {
-				return Encoding.GetEncoding(1252);
+				return Encoding.Default;
 			}
 		}
 
@@ -932,8 +906,13 @@ namespace JDP {
 		}
 
 		public void Write(string path, CUEStyle style) {
-			StreamWriter sw = new StreamWriter(path, false, CUESheet.Encoding);
-			Write (sw, style);
+			StringWriter sw = new StringWriter();
+			Write(sw, style);
+			sw.Close();
+			bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(sw.ToString())) != sw.ToString();
+			StreamWriter sw1 = new StreamWriter(path, false, utf8Required?Encoding.UTF8:CUESheet.Encoding);
+			sw1.Write(sw.ToString());
+			sw1.Close();
 		}
 
 		public void Write(TextWriter sw, CUEStyle style) {
@@ -1602,7 +1581,7 @@ namespace JDP {
 			{
 				iDest++;
 				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
-				if (audioDest is FLACWriter || audioDest is WavPackWriter)
+				if (!(audioDest is WAVWriter))
 				{
 					NameValueCollection destTags = new NameValueCollection();
 

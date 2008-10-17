@@ -42,6 +42,7 @@ namespace JDP {
 			chkArNoUnverifiedAudio.Checked = _config.noUnverifiedOutput;
 			chkArFixOffset.Checked = _config.fixOffset;
 			chkEmbedLog.Checked = _config.embedLog;
+			chkFillUpCUE.Checked = _config.fillUpCUE;
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -94,6 +95,7 @@ namespace JDP {
 			_config.noUnverifiedOutput = chkArNoUnverifiedAudio.Checked;
 			_config.fixOffset = chkArFixOffset.Checked;
 			_config.embedLog = chkEmbedLog.Checked;
+			_config.fillUpCUE = chkFillUpCUE.Checked;
 		}
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)

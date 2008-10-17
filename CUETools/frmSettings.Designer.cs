@@ -26,6 +26,7 @@ namespace JDP {
 			this.components = new System.ComponentModel.Container();
 			System.Windows.Forms.Button btnCancel;
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
+			this.chkEmbedLog = new System.Windows.Forms.CheckBox();
 			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
 			this.chkAutoCorrectFilenames = new System.Windows.Forms.CheckBox();
 			this.chkPreserveHTOA = new System.Windows.Forms.CheckBox();
@@ -65,7 +66,7 @@ namespace JDP {
 			this.lblTrackFilenameFormat = new System.Windows.Forms.Label();
 			this.lblSingleFilenameFormat = new System.Windows.Forms.Label();
 			this.txtSingleFilenameFormat = new System.Windows.Forms.TextBox();
-			this.chkEmbedLog = new System.Windows.Forms.CheckBox();
+			this.chkFillUpCUE = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
@@ -93,6 +94,7 @@ namespace JDP {
 			// 
 			// grpGeneral
 			// 
+			this.grpGeneral.Controls.Add(this.chkFillUpCUE);
 			this.grpGeneral.Controls.Add(this.chkEmbedLog);
 			this.grpGeneral.Controls.Add(this.numericWriteOffset);
 			this.grpGeneral.Controls.Add(this.chkAutoCorrectFilenames);
@@ -104,6 +106,17 @@ namespace JDP {
 			this.grpGeneral.TabIndex = 0;
 			this.grpGeneral.TabStop = false;
 			this.grpGeneral.Text = "General";
+			// 
+			// chkEmbedLog
+			// 
+			this.chkEmbedLog.AutoSize = true;
+			this.chkEmbedLog.Location = new System.Drawing.Point(12, 78);
+			this.chkEmbedLog.Name = "chkEmbedLog";
+			this.chkEmbedLog.Size = new System.Drawing.Size(134, 17);
+			this.chkEmbedLog.TabIndex = 6;
+			this.chkEmbedLog.Text = "Embed log file as a tag";
+			this.toolTip1.SetToolTip(this.chkEmbedLog, "File should be in the same directory as source file and have a .log extension");
+			this.chkEmbedLog.UseVisualStyleBackColor = true;
 			// 
 			// numericWriteOffset
 			// 
@@ -600,16 +613,15 @@ namespace JDP {
 			this.txtSingleFilenameFormat.TabIndex = 2;
 			this.txtSingleFilenameFormat.Text = "%F";
 			// 
-			// chkEmbedLog
+			// chkFillUpCUE
 			// 
-			this.chkEmbedLog.AutoSize = true;
-			this.chkEmbedLog.Location = new System.Drawing.Point(12, 78);
-			this.chkEmbedLog.Name = "chkEmbedLog";
-			this.chkEmbedLog.Size = new System.Drawing.Size(134, 17);
-			this.chkEmbedLog.TabIndex = 6;
-			this.chkEmbedLog.Text = "Embed log file as a tag";
-			this.toolTip1.SetToolTip(this.chkEmbedLog, "File should be in the same directory as source file and have a .log extension");
-			this.chkEmbedLog.UseVisualStyleBackColor = true;
+			this.chkFillUpCUE.AutoSize = true;
+			this.chkFillUpCUE.Location = new System.Drawing.Point(12, 95);
+			this.chkFillUpCUE.Name = "chkFillUpCUE";
+			this.chkFillUpCUE.Size = new System.Drawing.Size(187, 17);
+			this.chkFillUpCUE.TabIndex = 7;
+			this.chkFillUpCUE.Text = "Fill up missing CUE data from tags";
+			this.chkFillUpCUE.UseVisualStyleBackColor = true;
 			// 
 			// frmSettings
 			// 
@@ -697,6 +709,7 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox chkArFixOffset;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.CheckBox chkEmbedLog;
+		private System.Windows.Forms.CheckBox chkFillUpCUE;
 
 	}
 }

@@ -51,6 +51,8 @@ namespace JDP {
 					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate); break;
 				case ".wv":
 					dest = new WavPackWriter(path, bitsPerSample, channelCount, sampleRate); break;
+				case ".ape":
+					dest = new APEWriter(path, bitsPerSample, channelCount, sampleRate); break;
 				case ".dummy":
 					dest = new DummyWriter(path, bitsPerSample, channelCount, sampleRate); break;
 				default:
@@ -708,6 +710,81 @@ namespace JDP {
 		}
 	}
 
+	class APEWriter : IAudioDest
+	{
+		APEDotNet.APEWriter _apeWriter;
+		//int[,] _sampleBuffer;
+		int _bitsPerSample;
+		int _channelCount;
+		int _sampleRate;
+
+		public APEWriter(string path, int bitsPerSample, int channelCount, int sampleRate)
+		{
+			if (bitsPerSample != 16)
+			{
+				throw new Exception("Bits per sample must be 16.");
+			}
+			_bitsPerSample = bitsPerSample;
+			_channelCount = channelCount;
+			_sampleRate = sampleRate;
+			_apeWriter = new APEDotNet.APEWriter(path, bitsPerSample, channelCount, sampleRate);
+		}
+
+		public long FinalSampleCount
+		{
+			get { return _apeWriter.FinalSampleCount; }
+			set { _apeWriter.FinalSampleCount = (int) value; }
+		}
+		public int CompressionLevel
+		{
+			get { return _apeWriter.CompressionLevel; }
+			set { _apeWriter.CompressionLevel = value; }
+		}
+		public bool SetTags(NameValueCollection tags)
+		{
+			_apeWriter.SetTags(tags);
+			return true;
+		}
+		public void Close()
+		{
+			_apeWriter.Close();
+		}
+		private unsafe void BytesToAPESamples_16(byte[] inSamples, int inByteOffset,
+			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount)
+		{
+			uint loopCount = sampleCount * (uint)channelCount;
+
+			if ((inSamples.Length - inByteOffset < loopCount * 2) ||
+				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
+			{
+				throw new IndexOutOfRangeException();
+			}
+
+			fixed (byte* pInSamplesFixed = &inSamples[inByteOffset])
+			{
+				fixed (int* pOutSamplesFixed = &outSamples[outSampleOffset, 0])
+				{
+					short* pInSamples = (short*)pInSamplesFixed;
+					int* pOutSamples = pOutSamplesFixed;
+
+					for (int i = 0; i < loopCount; i++)
+					{
+						*(pOutSamples++) = (int)*(pInSamples++);
+					}
+				}
+			}
+		}
+		public void Write(byte[] buff, uint sampleCount)
+		{
+			//if ((_sampleBuffer == null) || (_sampleBuffer.GetLength(0) < sampleCount))
+			//{
+			//    _sampleBuffer = new int[sampleCount, _channelCount];
+			//}
+			//BytesToAPESamples_16(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount);
+			//_apeWriter.Write(_sampleBuffer, (int)sampleCount);
+			_apeWriter.Write (buff, sampleCount);
+		}
+	}
 
 	class WavPackReader : IAudioSource {
 		WavPackDotNet.WavPackReader _wavPackReader;

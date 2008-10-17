@@ -44,8 +44,8 @@ namespace JDP {
 			OpenFileDialog fileDlg = new OpenFileDialog();
 			DialogResult dlgRes;
 
-			fileDlg.Title = "Input CUE Sheet or FLAC image";
-			fileDlg.Filter = "CUE Sheets (*.cue)|*.cue|FLAC images (*.flac)|*.flac";
+			fileDlg.Title = "Input CUE Sheet or album image";
+			fileDlg.Filter = "CUE Sheets (*.cue)|*.cue|FLAC images (*.flac)|*.flac|WavPack images (*.wv)|*.wv|APE images (*.ape)|*.ape";
 
 			dlgRes = fileDlg.ShowDialog();
 			if (dlgRes == DialogResult.OK) {
@@ -113,7 +113,6 @@ namespace JDP {
 
 				_writeOffset = settingsForm.WriteOffset;
 				_config = settingsForm.Config;
-				_config.BuildCharMap();
 				UpdateOutputPath();
 			}
 		}
@@ -124,7 +123,7 @@ namespace JDP {
 				StringWriter sw = new StringWriter();
 				sw.WriteLine("CUE Tools v1.9.2");
 				sw.WriteLine("Copyright 2006-2007 Moitah http://www.moitah.net/.");
-				sw.WriteLine("AccurateRip, Monkey's Audio (APE) input and FLAC embedded CUE sheet support added in 2008 by Greg Chudov, gchudov@gmail.com.");
+				sw.WriteLine("AccurateRip, Monkey's Audio and embedded CUE sheet support added in 2008 by Greg Chudov, gchudov@gmail.com.");
 				sw.WriteLine("Thanks go out to Christopher Key and Whitehobbit for insight on AccurateRip functionality and to Mr Spoon for permission to use the database.");
 				sw.WriteLine("Monkey's Audio library by Matthew T. Ashland.");
 				reportForm.Message = sw.ToString();
@@ -397,7 +396,7 @@ namespace JDP {
 			btnFilenameCorrector.Enabled = !running;
 			btnCUECreator.Enabled = !running;
 			btnBatch.Enabled = !running;
-			btnConvert.Text = running ? "&Stop" : "&Convert";
+			btnConvert.Text = running ? "&Stop" : "&Go";
 			toolStripStatusLabel1.Text = String.Empty;
 			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
@@ -680,6 +679,7 @@ namespace JDP {
 			get {
 				if (rbFLAC.Checked)    return OutputAudioFormat.FLAC;
 				if (rbWavPack.Checked) return OutputAudioFormat.WavPack;
+				if (rbAPE.Checked)	   return OutputAudioFormat.APE;
 				if (rbNoAudio.Checked) return OutputAudioFormat.NoAudio;
 									   return OutputAudioFormat.WAV;
 			}
@@ -687,7 +687,8 @@ namespace JDP {
 				switch (value) {
 					case OutputAudioFormat.FLAC:    rbFLAC.Checked = true; break;
 					case OutputAudioFormat.WavPack: rbWavPack.Checked = true; break;
-					case OutputAudioFormat.WAV:     rbWAV.Checked = true; break;
+					case OutputAudioFormat.APE: rbAPE.Checked = true; break;
+					case OutputAudioFormat.WAV: rbWAV.Checked = true; break;
 					case OutputAudioFormat.NoAudio: rbNoAudio.Checked = true; break;
 				}
 			}
@@ -803,7 +804,7 @@ namespace JDP {
 
 		private void updateOutputStyles()
 		{
-			rbEmbedCUE.Enabled = rbFLAC.Checked || rbWavPack.Checked;
+			rbEmbedCUE.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbAPE.Checked;
 			rbNoAudio.Enabled = rbWAV.Enabled = !rbEmbedCUE.Checked;
 		}
 
@@ -889,6 +890,11 @@ namespace JDP {
 					ShowErrorMessage(ex);
 				}
 			}
+		}
+
+		private void rbAPE_CheckedChanged(object sender, EventArgs e)
+		{
+			updateOutputStyles();
 		}
 	}
 
