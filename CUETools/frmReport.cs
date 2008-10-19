@@ -12,7 +12,9 @@ namespace JDP
 		public frmReport()
 		{
 			InitializeComponent();
+			txtReport.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 		}
+
 		public string Message {
 			get { return txtReport.Text; }
 			set { txtReport.Text = value; }

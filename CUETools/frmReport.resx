@@ -147,9 +147,6 @@
   <data name="&gt;&gt;btnClose.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="txtReport.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
   <data name="txtReport.Font" type="System.Drawing.Font, System.Drawing">
     <value>Courier New, 8.25pt</value>
   </data>
