@@ -1489,8 +1489,10 @@ namespace CUEToolsLib
 						NameValueCollection tags = audioSource.Tags;
 						CleanupTags(tags, "ACCURATERIP");
 						GenerateAccurateRipTags (tags, 0, bestOffset, -1);
+#if !MONO
 						if (audioSource is FLACReader)
 							((FLACReader)audioSource).UpdateTags();
+#endif
 						audioSource.Close();
 						audioSource = null;
 					} else if (_hasTrackFilenames)
@@ -1499,6 +1501,7 @@ namespace CUEToolsLib
 						{
 							string src = _sourcePaths[iTrack + (_hasHTOAFilename ? 1 : 0)];
 							IAudioSource audioSource = AudioReadWrite.GetAudioSource(src);
+#if !MONO
 							if (audioSource is FLACReader)
 							{
 								NameValueCollection tags = audioSource.Tags;
@@ -1506,6 +1509,7 @@ namespace CUEToolsLib
 								GenerateAccurateRipTags (tags, 0, bestOffset, iTrack);
 								((FLACReader)audioSource).UpdateTags();
 							}
+#endif
 							audioSource.Close();
 							audioSource = null;
 						}
@@ -1679,6 +1683,7 @@ namespace CUEToolsLib
 						if (audioDest != null) audioDest.Close();
 						iDest++;
 						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
+#if !MONO
 						if (audioDest is FLACWriter)
 						{
 							NameValueCollection destTags = new NameValueCollection();
@@ -1729,6 +1734,7 @@ namespace CUEToolsLib
 							}
 							((FLACWriter)audioDest).SetTags(destTags);
 						}
+#endif
 					}
 
 					if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0)) {
@@ -1948,6 +1954,7 @@ namespace CUEToolsLib
 
 			IAudioDest dest = AudioReadWrite.GetAudioDest(path, 16, 2, 44100, finalSampleCount);
 
+#if !MONO
 			if (dest is FLACWriter) {
 				FLACWriter w = (FLACWriter)dest;
 				w.CompressionLevel = (int) _config.flacCompressionLevel;
@@ -1958,6 +1965,7 @@ namespace CUEToolsLib
 				w.CompressionMode = _config.wvCompressionMode;
 				w.ExtraMode = _config.wvExtraMode;
 			}
+#endif
 
 			return dest;
 		}

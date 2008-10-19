@@ -28,44 +28,36 @@ namespace JDP
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.button1 = new System.Windows.Forms.Button();
-			this.textBox1 = new System.Windows.Forms.TextBox();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmReport));
+			this.btnClose = new System.Windows.Forms.Button();
+			this.txtReport = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
-			// button1
+			// btnClose
 			// 
-			this.button1.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.button1.Location = new System.Drawing.Point(254, 322);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(75, 23);
-			this.button1.TabIndex = 0;
-			this.button1.Text = "Close";
-			this.button1.UseVisualStyleBackColor = true;
+			resources.ApplyResources(this.btnClose, "btnClose");
+			this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+			this.btnClose.Name = "btnClose";
+			this.btnClose.UseVisualStyleBackColor = true;
 			// 
-			// textBox1
+			// txtReport
 			// 
-			this.textBox1.BackColor = System.Drawing.SystemColors.Control;
-			this.textBox1.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			this.textBox1.Location = new System.Drawing.Point(21, 16);
-			this.textBox1.Multiline = true;
-			this.textBox1.Name = "textBox1";
-			this.textBox1.ReadOnly = true;
-			this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.textBox1.Size = new System.Drawing.Size(540, 287);
-			this.textBox1.TabIndex = 1;
+			resources.ApplyResources(this.txtReport, "txtReport");
+			this.txtReport.BackColor = System.Drawing.SystemColors.Control;
+			this.txtReport.Name = "txtReport";
+			this.txtReport.ReadOnly = true;
 			// 
 			// frmReport
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.CancelButton = this.button1;
-			this.ClientSize = new System.Drawing.Size(582, 357);
-			this.Controls.Add(this.textBox1);
-			this.Controls.Add(this.button1);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+			this.CancelButton = this.btnClose;
+			this.Controls.Add(this.txtReport);
+			this.Controls.Add(this.btnClose);
 			this.MaximizeBox = false;
+			this.MinimizeBox = false;
 			this.Name = "frmReport";
-			this.Text = "Status report";
+			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -73,7 +65,7 @@ namespace JDP
 
 		#endregion
 
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.TextBox textBox1;
+		private System.Windows.Forms.Button btnClose;
+		private System.Windows.Forms.TextBox txtReport;
 	}
 }

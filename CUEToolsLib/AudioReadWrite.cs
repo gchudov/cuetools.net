@@ -31,12 +31,14 @@ namespace CUEToolsLib {
 			switch (Path.GetExtension(path).ToLower()) {
 				case ".wav":
 					return new WAVReader(path);
+#if !MONO
 				case ".flac":
 					return new FLACReader(path);
 				case ".wv":
 					return new WavPackReader(path);
 				case ".ape":
 					return new APEReader(path);
+#endif
 				default:
 					throw new Exception("Unsupported audio type.");
 			}
@@ -47,6 +49,7 @@ namespace CUEToolsLib {
 			switch (Path.GetExtension(path).ToLower()) {
 				case ".wav":
 					dest = new WAVWriter(path, bitsPerSample, channelCount, sampleRate); break;
+#if !MONO
 				case ".flac":
 					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate); break;
 				case ".wv":
@@ -55,6 +58,7 @@ namespace CUEToolsLib {
 					dest = new APEWriter(path, bitsPerSample, channelCount, sampleRate); break;
 				case ".dummy":
 					dest = new DummyWriter(path, bitsPerSample, channelCount, sampleRate); break;
+#endif
 				default:
 					throw new Exception("Unsupported audio type.");
 			}
@@ -378,6 +382,7 @@ namespace CUEToolsLib {
 		}
 	}
 
+#if !MONO
 	class FLACReader : IAudioSource {
 		FLACDotNet.FLACReader _flacReader;
 		int[,] _sampleBuffer;
@@ -588,7 +593,9 @@ namespace CUEToolsLib {
 			_flacWriter.Write(_sampleBuffer, (int) sampleCount);
 		}
 	}
+#endif
 
+#if !MONO
 	class APEReader : IAudioSource {
 		APEDotNet.APEReader _apeReader;
 		int[,] _sampleBuffer;
@@ -785,7 +792,9 @@ namespace CUEToolsLib {
 			_apeWriter.Write (buff, sampleCount);
 		}
 	}
+#endif
 
+#if !MONO
 	class WavPackReader : IAudioSource {
 		WavPackDotNet.WavPackReader _wavPackReader;
 
@@ -965,4 +974,5 @@ namespace CUEToolsLib {
 			_wavPackWriter.Write(_sampleBuffer, (int) sampleCount);
 		}
 	}
+#endif
 }

@@ -119,7 +119,7 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnConvert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>410, 290</value>
+    <value>412, 307</value>
   </data>
   <data name="btnConvert.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -144,10 +144,10 @@
     <value>11</value>
   </data>
   <data name="btnBrowseOutput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>461, 49</value>
+    <value>452, 49</value>
   </data>
   <data name="btnBrowseOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 23</value>
+    <value>71, 23</value>
   </data>
   <data name="btnBrowseOutput.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -168,10 +168,10 @@
     <value>0</value>
   </data>
   <data name="btnBrowseInput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>461, 20</value>
+    <value>452, 20</value>
   </data>
   <data name="btnBrowseInput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 23</value>
+    <value>71, 23</value>
   </data>
   <data name="btnBrowseInput.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -249,7 +249,7 @@
     <value>59, 48</value>
   </data>
   <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>396, 21</value>
+    <value>385, 21</value>
   </data>
   <data name="txtOutputPath.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -270,7 +270,7 @@
     <value>59, 22</value>
   </data>
   <data name="txtInputPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>396, 21</value>
+    <value>385, 21</value>
   </data>
   <data name="txtInputPath.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -288,10 +288,10 @@
     <value>5</value>
   </data>
   <data name="grpCUEPaths.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 2</value>
+    <value>8, 4</value>
   </data>
   <data name="grpCUEPaths.Size" type="System.Drawing.Size, System.Drawing">
-    <value>534, 84</value>
+    <value>535, 84</value>
   </data>
   <data name="grpCUEPaths.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -319,13 +319,13 @@
     <value>NoControl</value>
   </data>
   <data name="rbEmbedCUE.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 19</value>
+    <value>11, 19</value>
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 17</value>
   </data>
   <data name="rbEmbedCUE.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>0</value>
   </data>
   <data name="rbEmbedCUE.Text" xml:space="preserve">
     <value>&amp;Embedded</value>
@@ -352,13 +352,13 @@
     <value>True</value>
   </data>
   <data name="rbGapsLeftOut.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 87</value>
+    <value>11, 87</value>
   </data>
   <data name="rbGapsLeftOut.Size" type="System.Drawing.Size, System.Drawing">
     <value>92, 17</value>
   </data>
   <data name="rbGapsLeftOut.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="rbGapsLeftOut.Text" xml:space="preserve">
     <value>Gaps Left Out</value>
@@ -382,13 +382,13 @@
     <value>True</value>
   </data>
   <data name="rbGapsPrepended.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 70</value>
+    <value>11, 70</value>
   </data>
   <data name="rbGapsPrepended.Size" type="System.Drawing.Size, System.Drawing">
     <value>104, 17</value>
   </data>
   <data name="rbGapsPrepended.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="rbGapsPrepended.Text" xml:space="preserve">
     <value>Gaps Prepended</value>
@@ -412,13 +412,13 @@
     <value>True</value>
   </data>
   <data name="rbGapsAppended.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 53</value>
+    <value>11, 53</value>
   </data>
   <data name="rbGapsAppended.Size" type="System.Drawing.Size, System.Drawing">
     <value>101, 17</value>
   </data>
   <data name="rbGapsAppended.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="rbGapsAppended.Text" xml:space="preserve">
     <value>Gaps &amp;Appended</value>
@@ -442,13 +442,13 @@
     <value>True</value>
   </data>
   <data name="rbSingleFile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 36</value>
+    <value>11, 36</value>
   </data>
   <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
     <value>106, 17</value>
   </data>
   <data name="rbSingleFile.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="rbSingleFile.Text" xml:space="preserve">
     <value>&amp;Single File + CUE</value>
@@ -469,10 +469,10 @@
     <value>4</value>
   </data>
   <data name="grpOutputStyle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>114, 211</value>
+    <value>108, 211</value>
   </data>
   <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>119, 118</value>
+    <value>128, 119</value>
   </data>
   <data name="grpOutputStyle.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -493,13 +493,13 @@
     <value>9</value>
   </data>
   <data name="btnAbout.Location" type="System.Drawing.Point, System.Drawing">
-    <value>410, 135</value>
+    <value>412, 152</value>
   </data>
   <data name="btnAbout.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
   </data>
   <data name="btnAbout.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="btnAbout.Text" xml:space="preserve">
     <value>About</value>
@@ -517,7 +517,7 @@
     <value>8</value>
   </data>
   <data name="txtCustomFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>144, 62</value>
+    <value>140, 62</value>
   </data>
   <data name="txtCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>178, 21</value>
@@ -544,7 +544,7 @@
     <value>True</value>
   </data>
   <data name="rbCustomFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 66</value>
+    <value>10, 66</value>
   </data>
   <data name="rbCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>119, 17</value>
@@ -568,7 +568,7 @@
     <value>1</value>
   </data>
   <data name="txtCreateSubdirectory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>144, 20</value>
+    <value>140, 20</value>
   </data>
   <data name="txtCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
     <value>178, 21</value>
@@ -595,7 +595,7 @@
     <value>True</value>
   </data>
   <data name="rbDontGenerate.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 89</value>
+    <value>10, 89</value>
   </data>
   <data name="rbDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 17</value>
@@ -622,7 +622,7 @@
     <value>True</value>
   </data>
   <data name="rbCreateSubdirectory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 20</value>
+    <value>10, 20</value>
   </data>
   <data name="rbCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
     <value>125, 17</value>
@@ -649,7 +649,7 @@
     <value>True</value>
   </data>
   <data name="rbAppendFilename.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 43</value>
+    <value>10, 43</value>
   </data>
   <data name="rbAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
     <value>122, 17</value>
@@ -673,7 +673,7 @@
     <value>5</value>
   </data>
   <data name="txtAppendFilename.Location" type="System.Drawing.Point, System.Drawing">
-    <value>144, 41</value>
+    <value>140, 41</value>
   </data>
   <data name="txtAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
     <value>178, 21</value>
@@ -697,10 +697,10 @@
     <value>6</value>
   </data>
   <data name="grpOutputPathGeneration.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 92</value>
+    <value>8, 92</value>
   </data>
   <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
-    <value>328, 113</value>
+    <value>330, 115</value>
   </data>
   <data name="grpOutputPathGeneration.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -724,13 +724,13 @@
     <value>True</value>
   </data>
   <data name="rbAPE.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 51</value>
+    <value>10, 51</value>
   </data>
   <data name="rbAPE.Size" type="System.Drawing.Size, System.Drawing">
     <value>44, 17</value>
   </data>
   <data name="rbAPE.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>2</value>
   </data>
   <data name="rbAPE.Text" xml:space="preserve">
     <value>APE</value>
@@ -751,13 +751,13 @@
     <value>True</value>
   </data>
   <data name="rbNoAudio.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 85</value>
+    <value>10, 85</value>
   </data>
   <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
     <value>50, 17</value>
   </data>
   <data name="rbNoAudio.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>4</value>
   </data>
   <data name="rbNoAudio.Text" xml:space="preserve">
     <value>&amp;None</value>
@@ -781,13 +781,13 @@
     <value>True</value>
   </data>
   <data name="rbWavPack.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 34</value>
+    <value>10, 34</value>
   </data>
   <data name="rbWavPack.Size" type="System.Drawing.Size, System.Drawing">
     <value>69, 17</value>
   </data>
   <data name="rbWavPack.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>1</value>
   </data>
   <data name="rbWavPack.Text" xml:space="preserve">
     <value>Wav&amp;Pack</value>
@@ -808,13 +808,13 @@
     <value>True</value>
   </data>
   <data name="rbFLAC.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 17</value>
+    <value>10, 17</value>
   </data>
   <data name="rbFLAC.Size" type="System.Drawing.Size, System.Drawing">
     <value>50, 17</value>
   </data>
   <data name="rbFLAC.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>0</value>
   </data>
   <data name="rbFLAC.Text" xml:space="preserve">
     <value>&amp;FLAC</value>
@@ -835,13 +835,13 @@
     <value>True</value>
   </data>
   <data name="rbWAV.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 68</value>
+    <value>10, 68</value>
   </data>
   <data name="rbWAV.Size" type="System.Drawing.Size, System.Drawing">
     <value>48, 17</value>
   </data>
   <data name="rbWAV.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="rbWAV.Text" xml:space="preserve">
     <value>&amp;WAV</value>
@@ -859,10 +859,10 @@
     <value>4</value>
   </data>
   <data name="grpAudioOutput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 211</value>
+    <value>8, 211</value>
   </data>
   <data name="grpAudioOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>96, 118</value>
+    <value>92, 119</value>
   </data>
   <data name="grpAudioOutput.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -883,7 +883,7 @@
     <value>6</value>
   </data>
   <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>410, 259</value>
+    <value>412, 276</value>
   </data>
   <data name="btnBatch.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -907,7 +907,7 @@
     <value>5</value>
   </data>
   <data name="btnFilenameCorrector.Location" type="System.Drawing.Point, System.Drawing">
-    <value>410, 228</value>
+    <value>412, 245</value>
   </data>
   <data name="btnFilenameCorrector.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -931,13 +931,13 @@
     <value>4</value>
   </data>
   <data name="btnSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>410, 166</value>
+    <value>412, 183</value>
   </data>
   <data name="btnSettings.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
   </data>
   <data name="btnSettings.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="btnSettings.Text" xml:space="preserve">
     <value>Advanced Settings...</value>
@@ -958,16 +958,16 @@
     <value>True</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 89</value>
+    <value>8, 89</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>57, 13</value>
+    <value>61, 13</value>
   </data>
   <data name="label1.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>3</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
-    <value>Data track</value>
+    <value>Data track:</value>
   </data>
   <data name="&gt;&gt;label1.Name" xml:space="preserve">
     <value>label1</value>
@@ -982,7 +982,7 @@
     <value>0</value>
   </data>
   <data name="txtDataTrackLength.Location" type="System.Drawing.Point, System.Drawing">
-    <value>68, 86</value>
+    <value>78, 86</value>
   </data>
   <data name="txtDataTrackLength.Mask" xml:space="preserve">
     <value>00:00:00</value>
@@ -991,7 +991,7 @@
     <value>0</value>
   </data>
   <data name="txtDataTrackLength.Size" type="System.Drawing.Size, System.Drawing">
-    <value>53, 21</value>
+    <value>54, 21</value>
   </data>
   <data name="txtDataTrackLength.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1015,13 +1015,13 @@
     <value>True</value>
   </data>
   <data name="rbArApplyOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 20</value>
+    <value>10, 20</value>
   </data>
   <data name="rbArApplyOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 17</value>
   </data>
   <data name="rbArApplyOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>0</value>
   </data>
   <data name="rbArApplyOffset.Text" xml:space="preserve">
     <value>Verify, &amp;then encode</value>
@@ -1045,13 +1045,13 @@
     <value>True</value>
   </data>
   <data name="rbArVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 54</value>
+    <value>10, 54</value>
   </data>
   <data name="rbArVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>122, 17</value>
   </data>
   <data name="rbArVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="rbArVerify.Text" xml:space="preserve">
     <value>&amp;Verify, don't encode</value>
@@ -1075,13 +1075,13 @@
     <value>True</value>
   </data>
   <data name="rbArNone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 37</value>
+    <value>10, 37</value>
   </data>
   <data name="rbArNone.Size" type="System.Drawing.Size, System.Drawing">
     <value>123, 17</value>
   </data>
   <data name="rbArNone.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="rbArNone.Text" xml:space="preserve">
     <value>&amp;Don't verify, encode</value>
@@ -1102,13 +1102,13 @@
     <value>4</value>
   </data>
   <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>238, 211</value>
+    <value>244, 211</value>
   </data>
   <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 118</value>
+    <value>144, 119</value>
   </data>
   <data name="grpAccurateRip.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+    <value>4</value>
   </data>
   <data name="grpAccurateRip.Text" xml:space="preserve">
     <value>AccurateRip</value>
@@ -1129,7 +1129,7 @@
     <value>0, 339</value>
   </metadata>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>254, 17</value>
+    <value>252, 17</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -1150,10 +1150,10 @@
     <value>0, 339</value>
   </data>
   <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>553, 22</value>
+    <value>551, 22</value>
   </data>
   <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>11</value>
   </data>
   <data name="statusStrip1.Text" xml:space="preserve">
     <value>statusStrip1</value>
@@ -1174,13 +1174,13 @@
     <value>NoControl</value>
   </data>
   <data name="btnCUECreator.Location" type="System.Drawing.Point, System.Drawing">
-    <value>410, 197</value>
+    <value>412, 214</value>
   </data>
   <data name="btnCUECreator.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
   </data>
   <data name="btnCUECreator.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>8</value>
   </data>
   <data name="btnCUECreator.Text" xml:space="preserve">
     <value>CUE Sheet Creator...</value>
@@ -1204,7 +1204,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>553, 361</value>
+    <value>551, 361</value>
   </data>
   <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
     <value>Tahoma, 8.25pt</value>

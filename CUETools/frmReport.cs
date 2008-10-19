@@ -14,8 +14,8 @@ namespace JDP
 			InitializeComponent();
 		}
 		public string Message {
-			get { return textBox1.Text; }
-			set { textBox1.Text = value; }
+			get { return txtReport.Text; }
+			set { txtReport.Text = value; }
 		}
 	}
 }
