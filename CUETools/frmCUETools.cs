@@ -48,6 +48,12 @@ namespace JDP {
 			fileDlg.Title = "Input CUE Sheet or album image";
 			fileDlg.Filter = "CUE Sheets (*.cue)|*.cue|FLAC images (*.flac)|*.flac|WavPack images (*.wv)|*.wv|APE images (*.ape)|*.ape";
 
+			try
+			{
+				if (Directory.Exists (Path.GetDirectoryName (txtInputPath.Text)))
+					fileDlg.InitialDirectory = Path.GetDirectoryName (txtInputPath.Text);
+			}
+			catch { }
 			dlgRes = fileDlg.ShowDialog();
 			if (dlgRes == DialogResult.OK) {
 				txtInputPath.Text = fileDlg.FileName;
@@ -86,6 +92,12 @@ namespace JDP {
 			FolderBrowserDialog folderDialog = new FolderBrowserDialog();
 			folderDialog.Description = "Select the folder containing the CUE sheets you want to convert.  Subfolders will be included automatically.";
 			folderDialog.ShowNewFolderButton = false;
+			try
+			{
+				if (Directory.Exists(Path.GetDirectoryName(txtInputPath.Text)))
+					folderDialog.SelectedPath = Path.GetDirectoryName(txtInputPath.Text);
+			}
+			catch { }
 			if (folderDialog.ShowDialog() == DialogResult.OK) {
 				if (!CheckWriteOffset()) return;
 				AddDirToBatch(folderDialog.SelectedPath);

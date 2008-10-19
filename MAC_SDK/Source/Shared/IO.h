@@ -23,7 +23,7 @@ public:
     virtual ~CIO() { };
 
     // open / close
-    virtual int Open(const wchar_t * pName) = 0;
+    virtual int Open(const wchar_t * pName, int fReadonly = 0) = 0;
     virtual int Close() = 0;
     
     // read / write

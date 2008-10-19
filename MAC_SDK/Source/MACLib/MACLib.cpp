@@ -75,7 +75,7 @@ IAPEDecompress * __stdcall CreateIAPEDecompress(const str_utf16 * pFilename, int
     else if ((wcsicmp(pExtension, L".mac") == 0) || (wcsicmp(pExtension, L".ape") == 0))
     {
         // plain .ape file
-        pAPEInfo = new CAPEInfo(&nErrorCode, pFilename);
+        pAPEInfo = new CAPEInfo(&nErrorCode, pFilename, NULL, 1);
     }
 
     // fail if we couldn't get the file information

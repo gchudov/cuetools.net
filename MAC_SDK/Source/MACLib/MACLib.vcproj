@@ -49,10 +49,10 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;UNICODE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				PrecompiledHeaderFile=".\Debug/MACLib.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
+				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -139,7 +139,6 @@
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
-				Description=""
 				CommandLine=""
 			/>
 			<Tool
@@ -198,7 +197,6 @@
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="all.h"
-				PrecompiledHeaderFile=".\Release/MACLib.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -277,7 +275,6 @@
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="all.h"
-				PrecompiledHeaderFile=".\x64\Release/MACLib.pch"
 				AssemblerListingLocation=".\x64\Release/"
 				ObjectFile=".\x64\Release/"
 				ProgramDataBaseFileName=".\x64\Release/"
@@ -296,7 +293,6 @@
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
-				Description=""
 				CommandLine=""
 			/>
 			<Tool

@@ -11,7 +11,7 @@ CAPEInfo:
 /*****************************************************************************************
 Construction
 *****************************************************************************************/
-CAPEInfo::CAPEInfo(int * pErrorCode, const wchar_t * pFilename, CAPETag * pTag) 
+CAPEInfo::CAPEInfo(int * pErrorCode, const wchar_t * pFilename, CAPETag * pTag, bool fReadOnly) 
 {
     *pErrorCode = ERROR_SUCCESS;
     CloseFile();
@@ -19,7 +19,7 @@ CAPEInfo::CAPEInfo(int * pErrorCode, const wchar_t * pFilename, CAPETag * pTag)
     // open the file
     m_spIO.Assign(new IO_CLASS_NAME);
     
-    if (m_spIO->Open(pFilename) != 0)
+    if (m_spIO->Open(pFilename, fReadOnly) != 0)
     {
         CloseFile();
         *pErrorCode = ERROR_INVALID_INPUT_FILE;

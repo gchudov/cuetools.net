@@ -49,6 +49,7 @@ namespace JDP {
 			this.rbAppendFilename = new System.Windows.Forms.RadioButton();
 			this.txtAppendFilename = new System.Windows.Forms.TextBox();
 			this.grpAudioOutput = new System.Windows.Forms.GroupBox();
+			this.rbAPE = new System.Windows.Forms.RadioButton();
 			this.rbNoAudio = new System.Windows.Forms.RadioButton();
 			this.rbWavPack = new System.Windows.Forms.RadioButton();
 			this.rbFLAC = new System.Windows.Forms.RadioButton();
@@ -68,7 +69,6 @@ namespace JDP {
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.btnCUECreator = new System.Windows.Forms.Button();
-			this.rbAPE = new System.Windows.Forms.RadioButton();
 			this.grpCUEPaths.SuspendLayout();
 			this.grpOutputStyle.SuspendLayout();
 			this.grpOutputPathGeneration.SuspendLayout();
@@ -266,6 +266,14 @@ namespace JDP {
 			this.grpAudioOutput.Name = "grpAudioOutput";
 			this.grpAudioOutput.TabStop = false;
 			// 
+			// rbAPE
+			// 
+			resources.ApplyResources(this.rbAPE, "rbAPE");
+			this.rbAPE.Name = "rbAPE";
+			this.rbAPE.TabStop = true;
+			this.rbAPE.UseVisualStyleBackColor = true;
+			this.rbAPE.CheckedChanged += new System.EventHandler(this.rbAPE_CheckedChanged);
+			// 
 			// rbNoAudio
 			// 
 			resources.ApplyResources(this.rbNoAudio, "rbNoAudio");
@@ -410,14 +418,6 @@ namespace JDP {
 			this.btnCUECreator.Name = "btnCUECreator";
 			this.btnCUECreator.UseVisualStyleBackColor = true;
 			this.btnCUECreator.Click += new System.EventHandler(this.btnCUECreator_Click);
-			// 
-			// rbAPE
-			// 
-			resources.ApplyResources(this.rbAPE, "rbAPE");
-			this.rbAPE.Name = "rbAPE";
-			this.rbAPE.TabStop = true;
-			this.rbAPE.UseVisualStyleBackColor = true;
-			this.rbAPE.CheckedChanged += new System.EventHandler(this.rbAPE_CheckedChanged);
 			// 
 			// frmCUETools
 			// 

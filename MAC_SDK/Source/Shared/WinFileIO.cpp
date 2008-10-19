@@ -18,7 +18,7 @@ CWinFileIO::~CWinFileIO()
     Close();
 }
 
-int CWinFileIO::Open(const wchar_t * pName)
+int CWinFileIO::Open(const wchar_t * pName, int fReadonly)
 {
     Close();
 
@@ -28,7 +28,9 @@ int CWinFileIO::Open(const wchar_t * pName)
         CSmartPtr<char> spName(GetANSIFromUTF16(pName), TRUE);
     #endif
 
-    m_hFile = ::CreateFile(spName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	m_hFile = INVALID_HANDLE_VALUE;
+	if (!fReadonly)
+		m_hFile = ::CreateFile(spName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (m_hFile == INVALID_HANDLE_VALUE) 
     {
         m_hFile = ::CreateFile(spName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

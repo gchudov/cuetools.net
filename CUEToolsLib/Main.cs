@@ -221,18 +221,18 @@ namespace CUEToolsLib
 
 		public CUEConfig()
 		{
-			fixWhenConfidence = 1;
+			fixWhenConfidence = 2;
 			fixWhenPercent = 51;
-			encodeWhenConfidence = 1;
+			encodeWhenConfidence = 2;
 			encodeWhenPercent = 100;
-			fixOffset = true;
+			fixOffset = false;
 			noUnverifiedOutput = false;
 			writeArTags = true;
 			writeArLog = true;
 
 			autoCorrectFilenames = true;
 			flacVerify = false;
-			flacCompressionLevel = 5;
+			flacCompressionLevel = 8;
 			preserveHTOA = false;
 			wvCompressionMode = 1;
 			wvExtraMode = 0;
