@@ -71,6 +71,29 @@ namespace CUEToolsLib
 		public string Load(string name) {
 			return _settings.ContainsKey(name) ? _settings[name] : null;
 		}
+
+		public bool? LoadBoolean(string name) {
+			string val = Load(name);
+			if (val == "0") return false;
+			if (val == "1") return true;
+			return null;
+		}
+
+		public int? LoadInt32(string name, int? min, int? max) {
+			int val;
+			if (!Int32.TryParse(Load(name), out val)) return null;
+			if (min.HasValue && (val < min.Value)) return null;
+			if (max.HasValue && (val > max.Value)) return null;
+			return val;
+		}
+
+		public uint? LoadUInt32(string name, uint? min, uint? max) {
+			uint val;
+			if (!UInt32.TryParse(Load(name), out val)) return null;
+			if (min.HasValue && (val < min.Value)) return null;
+			if (max.HasValue && (val > max.Value)) return null;
+			return val;
+		}
 	}
 
 	public class SettingsWriter {
@@ -84,6 +107,18 @@ namespace CUEToolsLib
 
 		public void Save(string name, string value) {
 			_sw.WriteLine(name + "=" + value);
+		}
+
+		public void Save(string name, bool value) {
+			Save(name, value ? "1" : "0");
+		}
+
+		public void Save(string name, int value) {
+			Save(name, value.ToString());
+		}
+
+		public void Save(string name, uint value) {
+			Save(name, value.ToString());
 		}
 
 		public void Close() {

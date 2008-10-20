@@ -248,114 +248,56 @@ namespace CUEToolsLib
 
 		public void Save (SettingsWriter sw)
 		{
-			sw.Save("ArFixWhenConfidence", fixWhenConfidence.ToString());
-			sw.Save("ArFixWhenPercent", fixWhenPercent.ToString());
-			sw.Save("ArEncodeWhenConfidence", encodeWhenConfidence.ToString());
-			sw.Save("ArEncodeWhenPercent", encodeWhenPercent.ToString());
-			sw.Save("ArNoUnverifiedOutput", noUnverifiedOutput ? "1" : "0");
-			sw.Save("ArFixOffset", fixOffset ? "1" : "0");
-			sw.Save("ArWriteCRC", writeArTags ? "1" : "0");
-			sw.Save("ArWriteLog", writeArLog ? "1" : "0");
+			sw.Save("ArFixWhenConfidence", fixWhenConfidence);
+			sw.Save("ArFixWhenPercent", fixWhenPercent);
+			sw.Save("ArEncodeWhenConfidence", encodeWhenConfidence);
+			sw.Save("ArEncodeWhenPercent", encodeWhenPercent);
+			sw.Save("ArNoUnverifiedOutput", noUnverifiedOutput);
+			sw.Save("ArFixOffset", fixOffset);
+			sw.Save("ArWriteCRC", writeArTags);
+			sw.Save("ArWriteLog", writeArLog);
 
-			sw.Save("AutoCorrectFilenames", autoCorrectFilenames ? "1" : "0");
-			sw.Save("FLACVerify", flacVerify ? "1" : "0");
-			sw.Save("FLACCompressionLevel", flacCompressionLevel.ToString());
-			sw.Save("PreserveHTOA", preserveHTOA ? "1" : "0");
-			sw.Save("WVCompressionMode", wvCompressionMode.ToString());
-			sw.Save("WVExtraMode", wvExtraMode.ToString());
-			sw.Save("KeepOriginalFilenames", keepOriginalFilenames ? "1" : "0");
+			sw.Save("PreserveHTOA", preserveHTOA);
+			sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
+			sw.Save("FLACCompressionLevel", flacCompressionLevel);
+			sw.Save("FLACVerify", flacVerify);
+			sw.Save("WVCompressionMode", wvCompressionMode);
+			sw.Save("WVExtraMode", wvExtraMode);
+			sw.Save("KeepOriginalFilenames", keepOriginalFilenames);
 			sw.Save("SingleFilenameFormat", singleFilenameFormat);
 			sw.Save("TrackFilenameFormat", trackFilenameFormat);
-			sw.Save("RemoveSpecialCharacters", removeSpecial ? "1" : "0");
+			sw.Save("RemoveSpecialCharacters", removeSpecial);
 			sw.Save("SpecialCharactersExceptions", specialExceptions);
-			sw.Save("ReplaceSpaces", replaceSpaces ? "1" : "0");
-			sw.Save("EmbedLog", embedLog ? "1" : "0");
-			sw.Save("FillUpCUE", fillUpCUE ? "1" : "0");
+			sw.Save("ReplaceSpaces", replaceSpaces);
+			sw.Save("EmbedLog", embedLog);
+			sw.Save("FillUpCUE", fillUpCUE);
 		}
 
 		public void Load(SettingsReader sr)
 		{
-			string val;
+			fixWhenConfidence = sr.LoadUInt32("ArFixWhenConfidence", 1, 1000) ?? 1;
+			fixWhenPercent = sr.LoadUInt32("ArFixWhenPercent", 1, 100) ?? 50;
+			encodeWhenConfidence = sr.LoadUInt32("ArEncodeWhenConfidence", 1, 1000) ?? 1;
+			encodeWhenPercent = sr.LoadUInt32("ArEncodeWhenPercent", 1, 100) ?? 50;
+			noUnverifiedOutput = sr.LoadBoolean("ArNoUnverifiedOutput") ?? true;
+			fixOffset = sr.LoadBoolean("ArFixOffset") ?? true;
+			writeArTags = sr.LoadBoolean("ArWriteCRC") ?? true;
+			writeArLog = sr.LoadBoolean("ArWriteLog") ?? true;
 
-			val = sr.Load("ArFixWhenConfidence");
-			if ((val == null) || !UInt32.TryParse(val, out fixWhenConfidence) ||
-				fixWhenConfidence <= 0 || fixWhenConfidence > 1000)
-				fixWhenConfidence = 1;
-
-			val = sr.Load("ArFixWhenPercent");
-			if ((val == null) || !UInt32.TryParse(val, out fixWhenPercent) ||
-				fixWhenPercent <= 0 || fixWhenPercent > 100)
-				fixWhenPercent = 50;
-
-			val = sr.Load("ArEncodeWhenConfidence");
-			if ((val == null) || !UInt32.TryParse(val, out encodeWhenConfidence) ||
-				encodeWhenConfidence <= 0 || encodeWhenConfidence > 1000)
-				encodeWhenConfidence = 1;
-
-			val = sr.Load("ArEncodeWhenPercent");
-			if ((val == null) || !UInt32.TryParse(val, out encodeWhenPercent) ||
-				encodeWhenPercent <= 0 || encodeWhenPercent > 100)
-				encodeWhenPercent = 50;
-
-			val = sr.Load("ArNoUnverifiedOutput");
-			noUnverifiedOutput = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("ArFixOffset");
-			fixOffset = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("ArWriteCRC");
-			writeArTags = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("ArWriteLog");
-			writeArLog = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("PreserveHTOA");
-			preserveHTOA = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("AutoCorrectFilenames");
-			autoCorrectFilenames = (val != null) ? (val != "0") : false;
-
-			val = sr.Load("FLACCompressionLevel");
-			if ((val == null) || !UInt32.TryParse(val, out flacCompressionLevel) ||
-				flacCompressionLevel > 8)
-				flacCompressionLevel = 5;
-
-			val = sr.Load("FLACVerify");
-			flacVerify = (val != null) ? (val != "0") : false;
-
-			val = sr.Load("WVCompressionMode");
-			if ((val == null) || !Int32.TryParse(val, out wvCompressionMode) ||
-				(wvCompressionMode < 0) || (wvCompressionMode > 3))
-				wvCompressionMode = 1;
-
-			val = sr.Load("WVExtraMode");
-			if ((val == null) || !Int32.TryParse(val, out wvExtraMode) ||
-				(wvExtraMode < 0) || (wvExtraMode > 6))
-				wvExtraMode = 0;
-
-			val = sr.Load("KeepOriginalFilenames");
-			keepOriginalFilenames = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("SingleFilenameFormat");
-			singleFilenameFormat = (val != null) ? val : "%F";
-
-			val = sr.Load("TrackFilenameFormat");
-			trackFilenameFormat = (val != null) ? val : "%N-%A-%T";
-
-			val = sr.Load("RemoveSpecialCharacters");
-			removeSpecial = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("SpecialCharactersExceptions");
-			specialExceptions = (val != null) ? val : "-()";
-
-			val = sr.Load("ReplaceSpaces");
-			replaceSpaces = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("EmbedLog");
-			embedLog = (val != null) ? (val != "0") : true;
-
-			val = sr.Load("FillUpCUE");
-			fillUpCUE  = (val != null) ? (val != "0") : true;
+			preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
+			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? false;
+			flacCompressionLevel = sr.LoadUInt32("FLACCompressionLevel", 0, 8) ?? 5;
+			flacVerify = sr.LoadBoolean("FLACVerify") ?? false;
+			wvCompressionMode = sr.LoadInt32("WVCompressionMode", 0, 3) ?? 1;
+			wvExtraMode = sr.LoadInt32("WVExtraMode", 0, 6) ?? 0;
+			keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? true;
+			singleFilenameFormat =  sr.Load("SingleFilenameFormat") ?? "%F";
+			trackFilenameFormat = sr.Load("TrackFilenameFormat") ?? "%N-%A-%T";
+			removeSpecial = sr.LoadBoolean("RemoveSpecialCharacters") ?? true;
+			specialExceptions = sr.Load("SpecialCharactersExceptions") ?? "-()";
+			replaceSpaces = sr.LoadBoolean("ReplaceSpaces") ?? true;
+			embedLog = sr.LoadBoolean("EmbedLog") ?? true;
+			fillUpCUE = sr.LoadBoolean("FillUpCUE") ?? true;
 		}
 
 		public string CleanseString (string s)
@@ -1724,7 +1666,7 @@ namespace CUEToolsLib
 								destTags.Add("TITLE", track.Title);
 							if (destTags.Get("ARTIST") == null && "" != track.Artist)
 								destTags.Add("ARTIST", track.Artist);
-							destTags.Add("TRACKNUMBER", iTrack.ToString());
+							destTags.Add("TRACKNUMBER", (iTrack + 1).ToString());
 							if (_accurateRipId != null && _config.writeArTags)
 							{
 								if (_accurateOffset && accResult == HttpStatusCode.OK)
