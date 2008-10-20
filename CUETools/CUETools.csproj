@@ -115,6 +115,10 @@
       <SubType>Designer</SubType>
       <DependentUpon>frmCUETools.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmCUETools.ru-RU.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmCUETools.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmFilenameCorrector.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
@@ -124,6 +128,10 @@
       <DependentUpon>frmReport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmSettings.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSettings.ru-RU.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmSettings.cs</DependentUpon>
     </EmbeddedResource>

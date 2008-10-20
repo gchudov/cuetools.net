@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="btnConvert.Text" xml:space="preserve">
+    <value>Поехали</value>
+  </data>
+  <data name="btnConvert.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnBrowseOutput.Text" xml:space="preserve">
+    <value>Выбор...</value>
+  </data>
+  <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnBrowseInput.Text" xml:space="preserve">
+    <value>Выбор...</value>
+  </data>
+  <data name="btnBrowseInput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="lblOutput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 13</value>
+  </data>
+  <data name="lblOutput.Text" xml:space="preserve">
+    <value>Выход:</value>
+  </data>
+  <data name="lblOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="lblInput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>36, 13</value>
+  </data>
+  <data name="lblInput.Text" xml:space="preserve">
+    <value>&amp;Вход:</value>
+  </data>
+  <data name="lblInput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtOutputPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtInputPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpCUEPaths.Text" xml:space="preserve">
+    <value>Пути к файлам</value>
+  </data>
+  <data name="grpCUEPaths.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
+    <value>86, 17</value>
+  </data>
+  <data name="rbEmbedCUE.Text" xml:space="preserve">
+    <value>Встроенный</value>
+  </data>
+  <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
+    <value>Создать образ диска в виде одного аудио-файла со встроеным .cue (вложенным в него в виде тага CUESHEET)</value>
+  </data>
+  <data name="rbGapsLeftOut.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 17</value>
+  </data>
+  <data name="rbGapsLeftOut.Text" xml:space="preserve">
+    <value>Без зазоров</value>
+  </data>
+  <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
+    <value>Порезать на треки, зазоры выкинуть (не рекомендуется)</value>
+  </data>
+  <data name="rbGapsPrepended.Size" type="System.Drawing.Size, System.Drawing">
+    <value>110, 17</value>
+  </data>
+  <data name="rbGapsPrepended.Text" xml:space="preserve">
+    <value>Зазоры в начале</value>
+  </data>
+  <data name="rbGapsPrepended.ToolTip" xml:space="preserve">
+    <value>Порезать на треки, зазоры помещаются в начало трека (не рекомендуется)</value>
+  </data>
+  <data name="rbGapsAppended.Size" type="System.Drawing.Size, System.Drawing">
+    <value>104, 17</value>
+  </data>
+  <data name="rbGapsAppended.Text" xml:space="preserve">
+    <value>Зазоры в конце</value>
+  </data>
+  <data name="rbGapsAppended.ToolTip" xml:space="preserve">
+    <value>Порезать на треки, зазоры помещаются в конец трека</value>
+  </data>
+  <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>90, 17</value>
+  </data>
+  <data name="rbSingleFile.Text" xml:space="preserve">
+    <value>Образ + CUE</value>
+  </data>
+  <data name="rbSingleFile.ToolTip" xml:space="preserve">
+    <value>Создать образ диска в виде одного аудио-файла и .cue файла</value>
+  </data>
+  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>130, 118</value>
+  </data>
+  <data name="grpOutputStyle.Text" xml:space="preserve">
+    <value>Стиль CUE</value>
+  </data>
+  <data name="grpOutputStyle.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnAbout.Text" xml:space="preserve">
+    <value>О программе</value>
+  </data>
+  <data name="btnAbout.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 21</value>
+  </data>
+  <data name="txtCustomFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 17</value>
+  </data>
+  <data name="rbCustomFormat.Text" xml:space="preserve">
+    <value>По шаблону:</value>
+  </data>
+  <data name="rbCustomFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 21</value>
+  </data>
+  <data name="txtCreateSubdirectory.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 17</value>
+  </data>
+  <data name="rbDontGenerate.Text" xml:space="preserve">
+    <value>Вручную</value>
+  </data>
+  <data name="rbDontGenerate.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 17</value>
+  </data>
+  <data name="rbCreateSubdirectory.Text" xml:space="preserve">
+    <value>Создать каталог:</value>
+  </data>
+  <data name="rbCreateSubdirectory.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
+    <value>117, 17</value>
+  </data>
+  <data name="rbAppendFilename.Text" xml:space="preserve">
+    <value>Суффикс к имени:</value>
+  </data>
+  <data name="rbAppendFilename.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 21</value>
+  </data>
+  <data name="txtAppendFilename.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
+    <value>392, 113</value>
+  </data>
+  <data name="grpOutputPathGeneration.Text" xml:space="preserve">
+    <value>Путь для выходных файлов</value>
+  </data>
+  <data name="grpOutputPathGeneration.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAPE.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
+    <value>76, 17</value>
+  </data>
+  <data name="rbNoAudio.Text" xml:space="preserve">
+    <value>Без аудио</value>
+  </data>
+  <data name="rbWavPack.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbFLAC.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbWAV.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpAudioOutput.Text" xml:space="preserve">
+    <value>Формат аудио</value>
+  </data>
+  <data name="grpAudioOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnBatch.Text" xml:space="preserve">
+    <value>Обработать папку...</value>
+  </data>
+  <data name="btnBatch.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnFilenameCorrector.Text" xml:space="preserve">
+    <value>Исправить имена...</value>
+  </data>
+  <data name="btnFilenameCorrector.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnSettings.Text" xml:space="preserve">
+    <value>Настройки...</value>
+  </data>
+  <data name="btnSettings.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 13</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Данные</value>
+  </data>
+  <data name="label1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
+    <value>Не используется для обычных музыкальных дисков. "Улучшенные" компакт диски с треком данных не найдутся в базе данных, если не указать длину трека данных. Её часто можно найти в логе EAC. Если лог EAC лежит в той же папке что и .cue, и имеет такое же имя как .cue файл, то он будет проанализирован автоматически и тут опять же ничего не надо будет вводить.</value>
+  </data>
+  <data name="rbArApplyOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 17</value>
+  </data>
+  <data name="rbArApplyOffset.Text" xml:space="preserve">
+    <value>Проверить и записать</value>
+  </data>
+  <data name="rbArApplyOffset.ToolTip" xml:space="preserve">
+    <value>На первом проходе проверить точность рипа по базе AccurateRip с учетом возможных смещений.  На втором проходе, сконвертировать, возможно с применением коррекции смещения (в зависимости от настроек)</value>
+  </data>
+  <data name="rbArVerify.Size" type="System.Drawing.Size, System.Drawing">
+    <value>118, 17</value>
+  </data>
+  <data name="rbArVerify.Text" xml:space="preserve">
+    <value>Только проверить</value>
+  </data>
+  <data name="rbArVerify.ToolTip" xml:space="preserve">
+    <value>Проверить точность рипа по базе AccurateRip с учетом возможных смещений</value>
+  </data>
+  <data name="rbArNone.Size" type="System.Drawing.Size, System.Drawing">
+    <value>95, 17</value>
+  </data>
+  <data name="rbArNone.Text" xml:space="preserve">
+    <value>Не проверять</value>
+  </data>
+  <data name="rbArNone.ToolTip" xml:space="preserve">
+    <value>Сконвертировать, не обращаясь к базе данных AccurateRip</value>
+  </data>
+  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
+    <value>250, 211</value>
+  </data>
+  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 118</value>
+  </data>
+  <data name="grpAccurateRip.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="statusStrip1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnCUECreator.Text" xml:space="preserve">
+    <value>Создать CUE...</value>
+  </data>
+  <data name="btnCUECreator.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="$this.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+</root>
