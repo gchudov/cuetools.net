@@ -26,6 +26,7 @@ using System.Text;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading;
 
 namespace CUEToolsLib
 {
@@ -327,7 +328,7 @@ namespace CUEToolsLib
 	}
 
 	public class CUESheet {
-		private bool _stop;
+		private bool _stop, _pause;
 		private List<CUELine> _attributes;
 		private List<TrackInfo> _tracks;
 		private List<SourceInfo> _sources;
@@ -364,6 +365,7 @@ namespace CUEToolsLib
 			NameValueCollection _trackTags = null;
 
 			_stop = false;
+			_pause = false;
 			_attributes = new List<CUELine>();
 			_tracks = new List<TrackInfo>();
 			_sources = new List<SourceInfo>();
@@ -1746,6 +1748,11 @@ namespace CUEToolsLib
 								try { audioDest.Close(); } catch {}
 								throw new StopException();
 							}
+							if (_pause)
+							{
+								statusDel ("Paused...", 0, 0);
+								Monitor.Wait(this);
+							}
 						}
 					}
 				}
@@ -1880,7 +1887,27 @@ namespace CUEToolsLib
 
 		public void Stop() {
 			lock (this) {
+				if (_pause)
+				{
+					_pause = false;
+					Monitor.Pulse(this);
+				}
 				_stop = true;
+			}
+		}
+
+		public void Pause()
+		{
+			lock (this)
+			{
+				if (_pause)
+				{
+					_pause = false;
+					Monitor.Pulse(this);
+				} else
+				{
+					_pause = true;
+				}
 			}
 		}
 

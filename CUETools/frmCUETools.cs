@@ -74,13 +74,10 @@ namespace JDP {
 		}
 
 		private void btnConvert_Click(object sender, EventArgs e) {
-			if ((_workThread != null) && (_workThread.IsAlive)) {
-				_workClass.Stop();
-			}
-			else {
-				if (!CheckWriteOffset()) return;
-				StartConvert();
-			}
+			if ((_workThread != null) && (_workThread.IsAlive))
+				return;
+			if (!CheckWriteOffset()) return;
+			StartConvert();
 		}
 
 		private void btnBatch_Click(object sender, EventArgs e) {
@@ -409,7 +406,10 @@ namespace JDP {
 			btnFilenameCorrector.Enabled = !running;
 			btnCUECreator.Enabled = !running;
 			btnBatch.Enabled = !running;
-			btnConvert.Text = running ? "&Stop" : "&Go";
+			btnConvert.Enabled = !running;
+			btnConvert.Visible = !running;
+			btnStop.Enabled = btnPause.Enabled = running;
+			btnStop.Visible = btnPause.Visible = running;
 			toolStripStatusLabel1.Text = String.Empty;
 			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
@@ -908,6 +908,18 @@ namespace JDP {
 		private void rbAPE_CheckedChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
+		}
+
+		private void btnStop_Click(object sender, EventArgs e)
+		{
+			if ((_workThread != null) && (_workThread.IsAlive))
+				_workClass.Stop();
+		}
+
+		private void btnPause_Click(object sender, EventArgs e)
+		{
+			if ((_workThread != null) && (_workThread.IsAlive))
+				_workClass.Pause();
 		}
 	}
 
