@@ -199,6 +199,8 @@ namespace JDP
 
 				_workThread = new Thread(WriteAudioFilesThread);
 				_workClass = cueSheet;
+				_workThread.Priority = ThreadPriority.BelowNormal;
+				_workThread.IsBackground = true;
 				_workThread.Start(cueSheet);
 			}
 			catch (Exception ex)

@@ -128,19 +128,9 @@ namespace JDP {
 		}
 
 		private void btnAbout_Click(object sender, EventArgs e) {
-			using (frmReport reportForm = new frmReport())
+			using (frmAbout aboutForm = new frmAbout())
 			{
-				StringWriter sw = new StringWriter();
-				sw.WriteLine("CUE Tools v1.9.2");
-				sw.WriteLine("Copyright 2006-2007 Moitah http://www.moitah.net/.");
-				sw.WriteLine("AccurateRip, Monkey's Audio and embedded CUE sheet support added in 2008 by Greg Chudov, gchudov@gmail.com.");
-				sw.WriteLine("Thanks go out to Christopher Key and Whitehobbit for insight on AccurateRip functionality and to Mr Spoon for permission to use the database.");
-				sw.WriteLine("Monkey's Audio library by Matthew T. Ashland.");
-				reportForm.Message = sw.ToString();
-				sw.Close();
-				CenterSubForm(reportForm);
-				reportForm.Text = "About CUE Tools";
-				reportForm.ShowDialog(this);
+				aboutForm.ShowDialog(this);
 			}
 		}
 
@@ -296,6 +286,9 @@ namespace JDP {
 					p[2] = cueStyle;
 
 					SetupControls(true);
+					//System.Diagnostics; Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
+					_workThread.Priority = ThreadPriority.BelowNormal;
+					_workThread.IsBackground = true;
 					_workThread.Start(p);
 				}
 				else {

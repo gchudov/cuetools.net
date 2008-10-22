@@ -33,6 +33,14 @@ namespace JDP {
 			chkWVExtraMode.Checked = (_config.wvExtraMode != 0);
 			chkWVExtraMode_CheckedChanged(null, null);
 			if (_config.wvExtraMode != 0) numWVExtraMode.Value = _config.wvExtraMode;
+			switch (_config.apeCompressionLevel)
+			{
+				case 1: rbAPEfast.Checked = true; break;
+				case 2: rbAPEnormal.Checked = true; break;
+				case 3: rbAPEhigh.Checked = true; break;
+				case 4: rbAPEextrahigh.Checked = true; break;
+				case 5: rbAPEinsane.Checked = true; break;
+			}
 			chkKeepOriginalFilenames.Checked = _config.keepOriginalFilenames;
 			txtSingleFilenameFormat.Text = _config.singleFilenameFormat;
 			txtTrackFilenameFormat.Text = _config.trackFilenameFormat;
@@ -44,6 +52,7 @@ namespace JDP {
 			chkArFixOffset.Checked = _config.fixOffset;
 			chkEmbedLog.Checked = _config.embedLog;
 			chkFillUpCUE.Checked = _config.fillUpCUE;
+			chkFilenamesANSISafe.Checked = _config.filenamesANSISafe;
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -86,6 +95,11 @@ namespace JDP {
 			else _config.wvCompressionMode = 1;
 			if (!chkWVExtraMode.Checked) _config.wvExtraMode = 0;
 			else _config.wvExtraMode = (int) numWVExtraMode.Value;
+			_config.apeCompressionLevel = (uint) (rbAPEfast.Checked ? 1 :
+				rbAPEnormal.Checked ? 2 :
+				rbAPEhigh.Checked ? 3 :
+				rbAPEextrahigh.Checked ? 4 :
+				rbAPEinsane.Checked ? 5 : 2);
 			_config.keepOriginalFilenames = chkKeepOriginalFilenames.Checked;
 			_config.singleFilenameFormat = txtSingleFilenameFormat.Text;
 			_config.trackFilenameFormat = txtTrackFilenameFormat.Text;
@@ -97,6 +111,7 @@ namespace JDP {
 			_config.fixOffset = chkArFixOffset.Checked;
 			_config.embedLog = chkEmbedLog.Checked;
 			_config.fillUpCUE = chkFillUpCUE.Checked;
+			_config.filenamesANSISafe = chkFilenamesANSISafe.Checked;
 		}
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)

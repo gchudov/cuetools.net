@@ -208,6 +208,7 @@ namespace CUEToolsLib
 		public bool autoCorrectFilenames;
 		public bool flacVerify;
 		public uint flacCompressionLevel;
+		public uint apeCompressionLevel;
 		public bool preserveHTOA;
 		public int wvCompressionMode;
 		public int wvExtraMode;
@@ -219,6 +220,7 @@ namespace CUEToolsLib
 		public bool replaceSpaces;
 		public bool embedLog;
 		public bool fillUpCUE;
+		public bool filenamesANSISafe;
 
 		public CUEConfig()
 		{
@@ -234,7 +236,8 @@ namespace CUEToolsLib
 			autoCorrectFilenames = true;
 			flacVerify = false;
 			flacCompressionLevel = 8;
-			preserveHTOA = false;
+			apeCompressionLevel = 2;
+			preserveHTOA = true;
 			wvCompressionMode = 1;
 			wvExtraMode = 0;
 			keepOriginalFilenames = true;
@@ -245,6 +248,7 @@ namespace CUEToolsLib
 			replaceSpaces = true;
 			embedLog = true;
 			fillUpCUE = true;
+			filenamesANSISafe = true;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -261,6 +265,7 @@ namespace CUEToolsLib
 			sw.Save("PreserveHTOA", preserveHTOA);
 			sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
 			sw.Save("FLACCompressionLevel", flacCompressionLevel);
+			sw.Save("APECompressionLevel", apeCompressionLevel);
 			sw.Save("FLACVerify", flacVerify);
 			sw.Save("WVCompressionMode", wvCompressionMode);
 			sw.Save("WVExtraMode", wvExtraMode);
@@ -272,33 +277,36 @@ namespace CUEToolsLib
 			sw.Save("ReplaceSpaces", replaceSpaces);
 			sw.Save("EmbedLog", embedLog);
 			sw.Save("FillUpCUE", fillUpCUE);
+			sw.Save("FilenamesANSISafe", filenamesANSISafe);
 		}
 
 		public void Load(SettingsReader sr)
 		{
-			fixWhenConfidence = sr.LoadUInt32("ArFixWhenConfidence", 1, 1000) ?? 1;
-			fixWhenPercent = sr.LoadUInt32("ArFixWhenPercent", 1, 100) ?? 50;
-			encodeWhenConfidence = sr.LoadUInt32("ArEncodeWhenConfidence", 1, 1000) ?? 1;
-			encodeWhenPercent = sr.LoadUInt32("ArEncodeWhenPercent", 1, 100) ?? 50;
-			noUnverifiedOutput = sr.LoadBoolean("ArNoUnverifiedOutput") ?? true;
-			fixOffset = sr.LoadBoolean("ArFixOffset") ?? true;
+			fixWhenConfidence = sr.LoadUInt32("ArFixWhenConfidence", 1, 1000) ?? 2;
+			fixWhenPercent = sr.LoadUInt32("ArFixWhenPercent", 1, 100) ?? 51;
+			encodeWhenConfidence = sr.LoadUInt32("ArEncodeWhenConfidence", 1, 1000) ?? 2;
+			encodeWhenPercent = sr.LoadUInt32("ArEncodeWhenPercent", 1, 100) ?? 100;
+			noUnverifiedOutput = sr.LoadBoolean("ArNoUnverifiedOutput") ?? false;
+			fixOffset = sr.LoadBoolean("ArFixOffset") ?? false;
 			writeArTags = sr.LoadBoolean("ArWriteCRC") ?? true;
 			writeArLog = sr.LoadBoolean("ArWriteLog") ?? true;
 
 			preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
-			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? false;
-			flacCompressionLevel = sr.LoadUInt32("FLACCompressionLevel", 0, 8) ?? 5;
+			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
+			flacCompressionLevel = sr.LoadUInt32("FLACCompressionLevel", 0, 8) ?? 8;
 			flacVerify = sr.LoadBoolean("FLACVerify") ?? false;
+			apeCompressionLevel = sr.LoadUInt32("APECompressionLevel", 1, 5) ?? 2;
 			wvCompressionMode = sr.LoadInt32("WVCompressionMode", 0, 3) ?? 1;
 			wvExtraMode = sr.LoadInt32("WVExtraMode", 0, 6) ?? 0;
 			keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? true;
 			singleFilenameFormat =  sr.Load("SingleFilenameFormat") ?? "%F";
 			trackFilenameFormat = sr.Load("TrackFilenameFormat") ?? "%N-%A-%T";
-			removeSpecial = sr.LoadBoolean("RemoveSpecialCharacters") ?? true;
+			removeSpecial = sr.LoadBoolean("RemoveSpecialCharacters") ?? false;
 			specialExceptions = sr.Load("SpecialCharactersExceptions") ?? "-()";
 			replaceSpaces = sr.LoadBoolean("ReplaceSpaces") ?? true;
 			embedLog = sr.LoadBoolean("EmbedLog") ?? true;
 			fillUpCUE = sr.LoadBoolean("FillUpCUE") ?? true;
+			filenamesANSISafe = sr.LoadBoolean("FilenamesANSISafe") ?? true;
 		}
 
 		public string CleanseString (string s)
@@ -306,7 +314,8 @@ namespace CUEToolsLib
 			StringBuilder sb = new StringBuilder();
 			char[] invalid = Path.GetInvalidFileNameChars();
 
-			s = Encoding.Default.GetString(Encoding.Default.GetBytes(s));
+			if (filenamesANSISafe)
+				s = Encoding.Default.GetString(Encoding.Default.GetBytes(s));
 
 			for (int i = 0; i < s.Length; i++)
 			{
@@ -1263,6 +1272,7 @@ namespace CUEToolsLib
 						matching3 += accDisks[iDisk].tracks[iTrack].count;
 			}
 			tags.Add(String.Format("{0}ACCURATERIPCRC", prefix), String.Format("{0:x8}", _tracks[iTrack].OffsetedCRC[_arOffsetRange - offset]));
+			tags.Add(String.Format("{0}AccurateRipDiscId", prefix), String.Format("{0:000}-{1}-{2:00}", TrackCount, _accurateRipId, iTrack+1));
 			tags.Add(String.Format("{0}ACCURATERIPCOUNT", prefix), String.Format("{0}", matching));
 			tags.Add(String.Format("{0}ACCURATERIPCOUNTALLOFFSETS", prefix), String.Format("{0}", matching3));
 			tags.Add(String.Format("{0}ACCURATERIPTOTAL", prefix), String.Format("{0}", total));
@@ -1376,10 +1386,19 @@ namespace CUEToolsLib
 
 				if (accResult != HttpStatusCode.OK)
 				{
-					if  (!_accurateOffset)
+					if (!_accurateOffset || _config.noUnverifiedOutput)
+					{
+						if (_config.writeArLog)
+						{
+							if (dir != "" && !Directory.Exists(dir))
+								Directory.CreateDirectory(dir);
+							StreamWriter sw = new StreamWriter(Path.ChangeExtension(_cuePath, ".accurip"),
+								false, CUESheet.Encoding);
+							GenerateAccurateRipLog(sw);
+							sw.Close();
+						}
 						return;
-					if (_config.noUnverifiedOutput)
-						return;
+					}
 				}
 				else if (_accurateOffset)
 				{
@@ -1472,6 +1491,106 @@ namespace CUEToolsLib
 			}
 		}
 
+		private void SetTrackTags(IAudioDest audioDest, int iTrack, int bestOffset)
+		{
+			NameValueCollection destTags = new NameValueCollection();
+
+			if (_hasEmbeddedCUESheet)
+			{
+				string trackPrefix = String.Format ("cue_track{0:00}_", iTrack + 1);
+				string[] keys = _albumTags.AllKeys;
+				for (int i = 0; i < keys.Length; i++)
+				{
+					if (keys[i].ToLower().StartsWith(trackPrefix)
+						|| !keys[i].ToLower().StartsWith("cue_track"))
+					{
+						string name = keys[i].ToLower().StartsWith(trackPrefix) ? 
+							keys[i].Substring(trackPrefix.Length) : keys[i];
+						string[] values = _albumTags.GetValues(keys[i]);
+						for (int j = 0; j < values.Length; j++)
+							destTags.Add(name, values[j]);
+					}
+				}
+			}
+			else if (_hasTrackFilenames)
+				destTags.Add(_tracks[iTrack]._trackTags);
+			else if (_hasSingleFilename)
+			{
+				// TODO?
+			}
+
+			destTags.Remove("CUESHEET");
+			destTags.Remove("TRACKNUMBER");
+			destTags.Remove("LOG");
+			destTags.Remove("LOGFILE");
+			destTags.Remove("EACLOG");
+			CleanupTags(destTags, "ACCURATERIP");
+			CleanupTags(destTags, "REPLAYGAIN");
+
+			if (destTags.Get("TITLE") == null && "" != _tracks[iTrack].Title)
+				destTags.Add("TITLE", _tracks[iTrack].Title);
+			if (destTags.Get("ARTIST") == null && "" != _tracks[iTrack].Artist)
+				destTags.Add("ARTIST", _tracks[iTrack].Artist);
+			destTags.Add("TRACKNUMBER", (iTrack + 1).ToString());
+			if (_accurateRipId != null && _config.writeArTags)
+			{
+				if (_accurateOffset && accResult == HttpStatusCode.OK)
+					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, iTrack);
+				else
+					destTags.Add("ACCURATERIPID", _accurateRipId);
+			}
+			audioDest.SetTags(destTags);
+		}
+
+		private void SetAlbumTags(IAudioDest audioDest, int bestOffset, bool fWithCUE)
+		{
+			NameValueCollection destTags = new NameValueCollection();
+
+			if (_hasEmbeddedCUESheet || _hasSingleFilename)
+				destTags.Add(_albumTags);
+			else if (_hasTrackFilenames)
+			{
+				// TODO
+			}
+
+			destTags.Remove("CUESHEET");
+			CleanupTags(destTags, "ACCURATERIP");
+			CleanupTags(destTags, "REPLAYGAIN");
+
+			if (fWithCUE)
+			{
+				StringWriter sw = new StringWriter();
+				Write(sw, CUEStyle.SingleFileWithCUE);
+				destTags.Add("CUESHEET", sw.ToString());
+				sw.Close();
+			}
+			else
+			{
+				string[] keys = destTags.AllKeys;
+				for (int i = 0; i < keys.Length; i++)
+					if (keys[i].ToLower().StartsWith("cue_track"))
+						destTags.Remove(keys[i]);
+			}
+
+			if (_config.embedLog)
+			{
+				destTags.Remove("LOG");
+				destTags.Remove("LOGFILE");
+				destTags.Remove("EACLOG");
+				if (_eacLog != null)
+					destTags.Add("LOG", _eacLog);
+			}
+
+			if (_accurateRipId != null && _config.writeArTags)
+			{
+				if (fWithCUE && _accurateOffset && accResult == HttpStatusCode.OK)
+					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, -1);
+				else
+					destTags.Add("ACCURATERIPID", _accurateRipId);
+			}
+			audioDest.SetTags(destTags);
+		}
+
 		public void WriteAudioFilesPass(string dir, CUEStyle style, SetStatus statusDel, string[] destPaths, int[] destLengths, bool htoaToFile, bool noOutput)
 		{
 			const int buffLen = 16384;
@@ -1526,58 +1645,17 @@ namespace CUEToolsLib
 				_appliedWriteOffset = true;
 			}
 
+			uint tracksMatch;
+			int bestOffset = _writeOffset;
+			if (!noOutput && _accurateRipId != null && _config.writeArTags && _accurateOffset && accResult == HttpStatusCode.OK)
+				FindBestOffset(1, true, out tracksMatch, out bestOffset);
+
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 			{
 				iDest++;
 				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
-				if (!(audioDest is WAVWriter))
-				{
-					NameValueCollection destTags = new NameValueCollection();
-
-					if (_hasEmbeddedCUESheet || _hasSingleFilename)
-						destTags.Add(_albumTags);
-					else if (_hasTrackFilenames)
-					{
-						// TODO
-					}
-
-					destTags.Remove ("CUESHEET");
-					CleanupTags(destTags, "ACCURATERIP");
-					CleanupTags(destTags, "REPLAYGAIN");
-
-					if (style == CUEStyle.SingleFileWithCUE)
-					{
-						StringWriter sw = new StringWriter();
-						Write(sw, style);
-						destTags.Add("CUESHEET", sw.ToString());
-						sw.Close();
-					}
-					else
-					{
-						string[] keys = destTags.AllKeys;
-						for (int i = 0; i < keys.Length; i++)
-							if (keys[i].ToLower().StartsWith("cue_track"))
-								destTags.Remove(keys[i]);						
-					}
-
-					if (_config.embedLog)
-					{
-						destTags.Remove("LOG");
-						destTags.Remove("LOGFILE");
-						destTags.Remove("EACLOG");
-						if (_eacLog != null)
-							destTags.Add("LOG", _eacLog);
-					}
-
-					if (_accurateRipId != null && _config.writeArTags)
-					{
-						if (style == CUEStyle.SingleFileWithCUE && _accurateOffset && accResult == HttpStatusCode.OK)
-							GenerateAccurateRipTags(destTags, _writeOffset, _writeOffset, -1);
-						else
-							destTags.Add("ACCURATERIPID", _accurateRipId);
-					}
-					audioDest.SetTags(destTags);
-				}
+				if (!noOutput)
+					SetAlbumTags(audioDest, bestOffset, style == CUEStyle.SingleFileWithCUE);
 			}
 
 			if (_accurateRip && noOutput)
@@ -1606,6 +1684,8 @@ namespace CUEToolsLib
 					if (audioDest != null) audioDest.Close();
 					iDest++;
 					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
+					if (!noOutput)
+						SetTrackTags(audioDest, iTrack, bestOffset);
 				}		
 
 				for (iIndex = 0; iIndex <= track.LastIndex; iIndex++) {
@@ -1627,58 +1707,8 @@ namespace CUEToolsLib
 						if (audioDest != null) audioDest.Close();
 						iDest++;
 						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
-#if !MONO
-						if (audioDest is FLACWriter)
-						{
-							NameValueCollection destTags = new NameValueCollection();
-
-							if (_hasEmbeddedCUESheet)
-							{
-								string trackPrefix = String.Format ("cue_track{0:00}_", iTrack + 1);
-								string[] keys = _albumTags.AllKeys;
-								for (int i = 0; i < keys.Length; i++)
-								{
-									if (keys[i].ToLower().StartsWith(trackPrefix)
-										|| !keys[i].ToLower().StartsWith("cue_track"))
-									{
-										string name = keys[i].ToLower().StartsWith(trackPrefix) ? 
-											keys[i].Substring(trackPrefix.Length) : keys[i];
-										string[] values = _albumTags.GetValues(keys[i]);
-										for (int j = 0; j < values.Length; j++)
-											destTags.Add(name, values[j]);
-									}
-								}
-							}
-							else if (_hasTrackFilenames)
-								destTags.Add(track._trackTags);
-							else if (_hasSingleFilename)
-							{
-								// TODO?
-							}
-
-							destTags.Remove("CUESHEET");
-							destTags.Remove("TRACKNUMBER");
-							destTags.Remove("LOG");
-							destTags.Remove("LOGFILE");
-							destTags.Remove("EACLOG");
-							CleanupTags(destTags, "ACCURATERIP");
-							CleanupTags(destTags, "REPLAYGAIN");
-
-							if (destTags.Get("TITLE") == null && "" != track.Title)
-								destTags.Add("TITLE", track.Title);
-							if (destTags.Get("ARTIST") == null && "" != track.Artist)
-								destTags.Add("ARTIST", track.Artist);
-							destTags.Add("TRACKNUMBER", (iTrack + 1).ToString());
-							if (_accurateRipId != null && _config.writeArTags)
-							{
-								if (_accurateOffset && accResult == HttpStatusCode.OK)
-									GenerateAccurateRipTags(destTags, _writeOffset, _writeOffset, iTrack);
-								else
-									destTags.Add("ACCURATERIPID", _accurateRipId);
-							}
-							((FLACWriter)audioDest).SetTags(destTags);
-						}
-#endif
+						if (!noOutput)
+							SetTrackTags(audioDest, iTrack, bestOffset);
 					}
 
 					if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0)) {
@@ -1933,6 +1963,11 @@ namespace CUEToolsLib
 				WavPackWriter w = (WavPackWriter)dest;
 				w.CompressionMode = _config.wvCompressionMode;
 				w.ExtraMode = _config.wvExtraMode;
+			}
+			if (dest is APEWriter)
+			{
+				APEWriter w = (APEWriter)dest;
+				w.CompressionLevel = (int) _config.apeCompressionLevel;
 			}
 #endif
 

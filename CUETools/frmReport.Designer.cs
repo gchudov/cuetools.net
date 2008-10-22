@@ -42,8 +42,8 @@ namespace JDP
 			// 
 			// txtReport
 			// 
-			resources.ApplyResources(this.txtReport, "txtReport");
 			this.txtReport.BackColor = System.Drawing.SystemColors.Control;
+			resources.ApplyResources(this.txtReport, "txtReport");
 			this.txtReport.Name = "txtReport";
 			this.txtReport.ReadOnly = true;
 			// 
@@ -57,6 +57,7 @@ namespace JDP
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "frmReport";
+			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.ResumeLayout(false);
 			this.PerformLayout();
