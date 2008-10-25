@@ -1521,7 +1521,7 @@ namespace CUEToolsLib
 						GenerateAccurateRipTags (tags, 0, bestOffset, -1);
 #if !MONO
 						if (audioSource is FLACReader)
-							((FLACReader)audioSource).UpdateTags();
+							((FLACReader)audioSource).UpdateTags (true);
 #endif
 						audioSource.Close();
 						audioSource = null;
@@ -1537,7 +1537,7 @@ namespace CUEToolsLib
 								NameValueCollection tags = audioSource.Tags;
 								CleanupTags(tags, "ACCURATERIP");
 								GenerateAccurateRipTags (tags, 0, bestOffset, iTrack);
-								((FLACReader)audioSource).UpdateTags();
+								((FLACReader)audioSource).UpdateTags(true);
 							}
 #endif
 							audioSource.Close();

@@ -176,6 +176,8 @@ namespace APETagsDotNet
 		public APETagDotNet (string filename, bool analyze, bool isReadonly)
 		{
 			m_spIO = new FileStream(filename, FileMode.Open, isReadonly?FileAccess.Read:FileAccess.ReadWrite, FileShare.Read);
+			m_spInfo = new FileInfo(filename);
+			m_lastModified = m_spInfo.LastWriteTime;
 			m_bAnalyzed = false;
 			m_aryFields = new APETagField[0];
 			m_nTagBytes = 0;
@@ -578,6 +580,7 @@ namespace APETagsDotNet
 			m_spIO.Seek(0, SeekOrigin.End);
 			m_spIO.Write(pBuffer, 0, pBuffer.Length);    
 			m_spIO.Seek(nOriginalPosition, SeekOrigin.Begin);
+			//m_spInfo.LastWriteTime = m_lastModified;
 		}
 		private bool LoadField(byte[] pBuffer, ref int nLocation)
 		{
@@ -627,6 +630,8 @@ namespace APETagsDotNet
 
 		// private data
 		private FileStream m_spIO;
+		private FileInfo m_spInfo;
+		private DateTime m_lastModified;
 		private bool m_bAnalyzed;
 		private int m_nTagBytes;
 		private APETagField[] m_aryFields;

@@ -104,7 +104,8 @@ namespace CUEToolsLib {
 
 		public WAVReader(string path) {
 			_path = path;
-			_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+			//_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+			_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
 			_br = new BinaryReader(_fs);
 
 			ParseHeaders();
@@ -416,9 +417,9 @@ namespace CUEToolsLib {
 			set { _flacReader.Tags = value; }
 		}
 
-		public bool UpdateTags()
+		public bool UpdateTags(bool preserveTime)
 		{
-			return _flacReader.UpdateTags();
+			return _flacReader.UpdateTags(preserveTime);
 		}
 
 		public ulong Length {

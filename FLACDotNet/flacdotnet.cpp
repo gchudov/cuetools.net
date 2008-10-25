@@ -160,7 +160,7 @@ namespace FLACDotNet {
 			}
 		}
 
-		bool UpdateTags ()
+		bool UpdateTags (bool preserveTime)
 		{
 		    Close ();
 		    
@@ -219,7 +219,7 @@ namespace FLACDotNet {
 		    FLAC__metadata_iterator_insert_block_after (i, vorbiscomment);
 		    FLAC__metadata_iterator_delete (i);
 		    FLAC__metadata_chain_sort_padding (chain);
-		    res = FLAC__metadata_chain_write (chain, true, false);
+		    res = FLAC__metadata_chain_write (chain, true, preserveTime);
 		    FLAC__metadata_chain_delete (chain);
 		    return 0 != res;
 		}
