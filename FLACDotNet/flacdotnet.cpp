@@ -145,6 +145,12 @@ namespace FLACDotNet {
 			}
 		}
 
+		property String^ Path { 
+			String^ get() { 
+				return _path; 
+			} 
+		}
+
 		property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
 				return _tags;
@@ -434,6 +440,12 @@ namespace FLACDotNet {
 
 		void SetTags (NameValueCollection^ tags) {
 			_tags = tags;
+		}
+
+		property String^ Path { 
+			String^ get() { 
+				return _path; 
+			} 
 		}
 
 		void Write(array<Int32, 2>^ sampleBuffer, Int32 sampleCount) {

@@ -20,6 +20,12 @@ namespace JDP
 			_audioFormat = OutputAudioFormat.WAV;
 			_accurateRip = true;
 			_accurateOffset = false;
+			_batchPaths = new List<string>();
+		}
+
+		public void AddInputPath(string path)
+		{
+			_batchPaths.Add(path);
 		}
 
 		public string InputPath
@@ -48,8 +54,16 @@ namespace JDP
 		bool _accurateRip;
 		bool _accurateOffset;
 		DateTime _startedAt;
+		List<string> _batchPaths;
 
-		public void SetStatus(string status, uint percentTrack, double percentDisk)
+		public string ShortenString(string input, int max)
+		{
+			if (input.Length < max) 
+				return input;
+			return "..." + input.Substring(input.Length - max);
+		}
+
+		public void SetStatus(string status, uint percentTrack, double percentDisk, string input, string output)
 		{
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
@@ -66,6 +80,15 @@ namespace JDP
 					Text = status;
 				progressBar1.Value = (int)percentTrack;
 				progressBar2.Value = (int)(percentDisk*100);
+				string inputSuffix = output != null ? "=>" : "";
+				if (input == null)
+					txtInputFile.Text = inputSuffix;
+				else 
+					txtInputFile.Text = ShortenString(input, 120) + " " + inputSuffix;
+				if (output == null)
+					txtOutputFile.Text = "";
+				else
+					txtOutputFile.Text = ShortenString(output, 120);
 			});
 		}
 
@@ -78,36 +101,31 @@ namespace JDP
 				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathOut), _cueStyle, new SetStatus(this.SetStatus));
 				this.Invoke((MethodInvoker)delegate()
 				{
-					//if (_batchPaths.Count == 0)
-					{
-						//TimeSpan span = DateTime.Now - _startedAt;
+					if (_batchPaths.Count == 0)
 						Text = "Done.";
-						progressBar1.Value = 0;
-						progressBar2.Value = 0;
-						if (cueSheet.AccurateRip)
-						{
-							StringWriter sw = new StringWriter();
-							cueSheet.GenerateAccurateRipLog(sw);
-							textBox1.Text = sw.ToString();
-							sw.Close();
-							textBox1.Show();
-						}
+
+					//TimeSpan span = DateTime.Now - _startedAt;
+					progressBar1.Value = 0;
+					progressBar2.Value = 0;
+					if (cueSheet.AccurateRip)
+					{
+						StringWriter sw = new StringWriter();
+						cueSheet.GenerateAccurateRipLog(sw);
+						textBox1.Text += sw.ToString();
+						sw.Close();
+						textBox1.Show();
 					}
+					textBox1.Text += "----------------------------------------------------------\r\n";
+					textBox1.Select(0, 0);
 				});
 			}
 			catch (StopException)
 			{
-				////_batchPaths.Clear();
-				//this.Invoke((MethodInvoker)delegate()
-				//{
-				//    MessageBox.Show("Conversion was stopped.", "Stopped", MessageBoxButtons.OK,
-				//        MessageBoxIcon.Exclamation);
-				//    Close();
-				//});
-
+				_batchPaths.Clear();
 				this.Invoke((MethodInvoker)delegate()
 				{
 					Text = "Aborted.";
+					textBox1.Text += "Aborted.";
 					progressBar1.Value = 0;
 					progressBar2.Value = 0;
 				});
@@ -116,32 +134,29 @@ namespace JDP
 			{
 				this.Invoke((MethodInvoker)delegate()
 				{
-					//if (_batchPaths.Count == 0) SetupControls(false);
-					//if (!ShowErrorMessage(ex))
-					//{
-					//    _batchPaths.Clear();
-					//    SetupControls(false);
-					//}
 					Text = "Error: " + ex.Message;
+					textBox1.Show();
+					textBox1.Text += "Error: " + ex.Message + "\r\n";
+					textBox1.Text += "----------------------------------------------------------\r\n";
+					textBox1.Select(0, 0);
 				});
 			}
 
-			//if (_batchPaths.Count != 0)
-			//{
-			//    _batchPaths.RemoveAt(0);
-			//    this.BeginInvoke((MethodInvoker)delegate()
-			//    {
-			//        if (_batchPaths.Count == 0)
-			//        {
-			//            SetupControls(false);
-			//            ShowBatchDoneMessage();
-			//        }
-			//        else
-			//        {
-			//            StartConvert();
-			//        }
-			//    });
-			//}
+			if (_batchPaths.Count != 0)
+			{
+				_batchPaths.RemoveAt(0);
+				this.BeginInvoke((MethodInvoker)delegate()
+				{
+					if (_batchPaths.Count == 0)
+					{
+						Text = "All done.";
+					}
+					else
+					{
+						StartConvert();
+					}
+				});
+			}
 		}
 
 		public void StartConvert()
@@ -153,15 +168,16 @@ namespace JDP
 				_startedAt = DateTime.Now;
 
 				_workThread = null;
-				//if (_batchPaths.Count != 0)
-				//{
-				//    txtInputPath.Text = _batchPaths[0];
-				//}
+				if (_batchPaths.Count != 0)
+				    pathIn = _batchPaths[0];
+
+				pathIn = Path.GetFullPath(pathIn);
+
+				textBox1.Text += "Processing " + pathIn + ":\r\n";
+				textBox1.Select (0,0);
 
 				if (!File.Exists(pathIn))
-				{
 					throw new Exception("Input CUE Sheet not found.");
-				}
 
 				bool outputAudio = _accurateOffset || !_accurateRip;
 				cueSheet = new CUESheet(pathIn, _config);
@@ -180,10 +196,7 @@ namespace JDP
 						}
 					}
 					if (!pathFound)
-					{
-						Text = "Could not create a folder";
-						return;
-					}
+						throw new Exception("Could not create a folder.");
 				} else
 					pathOut = pathIn;
 				cueSheet.GenerateFilenames(_audioFormat, pathOut);
@@ -206,17 +219,25 @@ namespace JDP
 			catch (Exception ex)
 			{
 				Text = "Error: " + ex.Message;
-				//if (!ShowErrorMessage(ex))
-				//{
-				//     _batchPaths.Clear();
-				//}
-				//Close();
+				textBox1.Show();
+				textBox1.Text += "Error: " + ex.Message + "\r\n";
+				textBox1.Text += "----------------------------------------------------------\r\n";
+				textBox1.Select(0, 0);
+			}
+			if ((_workThread == null) && (_batchPaths.Count != 0))
+			{
+				_batchPaths.RemoveAt(0);
+				if (_batchPaths.Count == 0)
+				{
+					Text = "All done.";
+				}
+				else
+					StartConvert();
 			}
 		}
 
 		private void frmBatch_Load(object sender, EventArgs e)
 		{
-			//_batchPaths = new List<string>();
 			textBox1.Hide();
 			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
 			string val;
@@ -230,6 +251,9 @@ namespace JDP
 				_audioFormat = (val != null) ? (OutputAudioFormat)Int32.Parse(val) : OutputAudioFormat.WAV;
 			}
 			catch { };
+
+			if (_accurateOffset || !_accurateRip)
+				txtOutputFile.Show();
 
 			StartConvert();
 		}

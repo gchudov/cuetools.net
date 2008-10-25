@@ -114,6 +114,12 @@ namespace WavPackDotNet {
 			}
 		}
 
+		property String^ Path { 
+			String^ get() { 
+				return _path; 
+			} 
+		}
+
 		property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
 				if (!_tags) 
@@ -248,6 +254,12 @@ namespace WavPackDotNet {
 			}
 
 			_samplesWritten += sampleCount;
+		}
+
+		property String^ Path { 
+			String^ get() { 
+				return _path; 
+			} 
 		}
 
 		void SetTags (NameValueCollection^ tags) {

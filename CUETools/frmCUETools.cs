@@ -379,7 +379,7 @@ namespace JDP {
 			}
 		}
 
-		public void SetStatus(string status, uint percentTrack, double percentDisk) {
+		public void SetStatus(string status, uint percentTrack, double percentDisk, string input, string output) {
 			this.BeginInvoke((MethodInvoker)delegate() {
 				toolStripStatusLabel1.Text = status;
 				toolStripProgressBar1.Value = (int)percentTrack;

@@ -367,11 +367,18 @@ namespace APETagsDotNet
 			APETagField pAPETagField = GetTagField (Index);
 			if (pAPETagField == null)
 				return null;
+			byte[] value = pAPETagField.FieldValue;
 			if (m_nAPETagVersion < 2000)
-				return new ASCIIEncoding().GetString(pAPETagField.FieldValue);
+			{
+				if (value.Length > 0 && value[value.Length - 1] == 0)
+					Array.Resize(ref value, value.Length - 1);
+				return new ASCIIEncoding().GetString(value);
+			}
 			if (!pAPETagField.IsUTF8Text)
 				return null;
-			return new UTF8Encoding().GetString(pAPETagField.FieldValue);
+			if (value.Length > 0 && value[value.Length - 1] == 0)
+				Array.Resize(ref value, value.Length - 1);
+			return new UTF8Encoding().GetString(value);
 		}
 
 		public NameValueCollection GetStringTags(bool mapToFlac) 

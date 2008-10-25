@@ -17,6 +17,7 @@ namespace CUEToolsLib {
 		int BitsPerSample { get; }
 		int ChannelCount { get; }
 		int SampleRate { get; }
+		string Path { get; }
 	}
 
 	public interface IAudioDest {
@@ -24,6 +25,7 @@ namespace CUEToolsLib {
 		bool SetTags(NameValueCollection tags);
 		void Close();
 		long FinalSampleCount { set; }
+		string Path { get; }
 	}
 
 	public static class AudioReadWrite {
@@ -87,6 +89,8 @@ namespace CUEToolsLib {
 
 		public void Write(byte[] buff, uint sampleCount) {
 		}
+
+		public string Path { get { return null; } }
 	}
 
 	public class WAVReader : IAudioSource {
@@ -96,8 +100,10 @@ namespace CUEToolsLib {
 		ulong _samplePos, _sampleLen;
 		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		bool _largeFile;
+		string _path;
 
 		public WAVReader(string path) {
+			_path = path;
 			_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			_br = new BinaryReader(_fs);
 
@@ -283,6 +289,8 @@ namespace CUEToolsLib {
 
 			return sampleCount;
 		}
+
+		public string Path { get { return _path; } }
 	}
 
 	public class WAVWriter : IAudioDest {
@@ -290,8 +298,10 @@ namespace CUEToolsLib {
 		BinaryWriter _bw;
 		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		long _sampleLen;
+		string _path;
 
 		public WAVWriter(string path, int bitsPerSample, int channelCount, int sampleRate) {
+			_path = path;
 			_bitsPerSample = bitsPerSample;
 			_channelCount = channelCount;
 			_sampleRate = sampleRate;
@@ -380,6 +390,8 @@ namespace CUEToolsLib {
 				_sampleLen += sampleCount;
 			}
 		}
+
+		public string Path { get { return _path; } }
 	}
 
 #if !MONO
@@ -506,6 +518,8 @@ namespace CUEToolsLib {
 
 			return sampleCount;
 		}
+
+		public string Path { get { return _flacReader.Path; } }
 	}
 
 	class FLACWriter : IAudioDest {
@@ -592,6 +606,8 @@ namespace CUEToolsLib {
 			BytesToFLACSamples_16(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount);
 			_flacWriter.Write(_sampleBuffer, (int) sampleCount);
 		}
+
+		public string Path { get { return _flacWriter.Path; } }
 	}
 #endif
 
@@ -715,6 +731,8 @@ namespace CUEToolsLib {
 
 			return sampleCount;
 		}
+
+		public string Path { get { return _apeReader.Path; } }
 	}
 
 	class APEWriter : IAudioDest
@@ -791,6 +809,7 @@ namespace CUEToolsLib {
 			//_apeWriter.Write(_sampleBuffer, (int)sampleCount);
 			_apeWriter.Write (buff, sampleCount);
 		}
+		public string Path { get { return _apeWriter.Path; } }
 	}
 #endif
 
@@ -887,6 +906,8 @@ namespace CUEToolsLib {
 
 			return sampleCount;
 		}
+
+		public string Path { get { return _wavPackReader.Path; } }
 	}
 
 	class WavPackWriter : IAudioDest {
@@ -973,6 +994,8 @@ namespace CUEToolsLib {
 			BytesToWavPackSamples_16(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount);
 			_wavPackWriter.Write(_sampleBuffer, (int) sampleCount);
 		}
+
+		public string Path { get { return _wavPackWriter.Path; } }
 	}
 #endif
 }

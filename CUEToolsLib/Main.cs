@@ -186,7 +186,7 @@ namespace CUEToolsLib
 		}
 	}
 
-	public delegate void SetStatus(string status, uint percentTrack, double percentDisk);
+	public delegate void SetStatus(string status, uint percentTrack, double percentDisk, string input, string output);
 
 	public enum CUEStyle {
 		SingleFileWithCUE,
@@ -221,6 +221,7 @@ namespace CUEToolsLib
 		public bool embedLog;
 		public bool fillUpCUE;
 		public bool filenamesANSISafe;
+		public bool bruteForceDTL;
 
 		public CUEConfig()
 		{
@@ -249,6 +250,7 @@ namespace CUEToolsLib
 			embedLog = true;
 			fillUpCUE = true;
 			filenamesANSISafe = true;
+			bruteForceDTL = false;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -278,6 +280,7 @@ namespace CUEToolsLib
 			sw.Save("EmbedLog", embedLog);
 			sw.Save("FillUpCUE", fillUpCUE);
 			sw.Save("FilenamesANSISafe", filenamesANSISafe);
+			sw.Save("BruteForceDTL", bruteForceDTL);
 		}
 
 		public void Load(SettingsReader sr)
@@ -307,6 +310,7 @@ namespace CUEToolsLib
 			embedLog = sr.LoadBoolean("EmbedLog") ?? true;
 			fillUpCUE = sr.LoadBoolean("FillUpCUE") ?? true;
 			filenamesANSISafe = sr.LoadBoolean("FilenamesANSISafe") ?? true;
+			bruteForceDTL = sr.LoadBoolean("BruteForceDTL") ?? false;
 		}
 
 		public string CleanseString (string s)
@@ -349,7 +353,9 @@ namespace CUEToolsLib
 		private int _writeOffset;
 		private bool _accurateRip, _accurateOffset;
 		private uint? _dataTrackLength;
+		private uint? _minDataTrackLength;
 		private string _accurateRipId;
+		private string _accurateRipIdActual;
 		private string _eacLog;
 		private string _cuePath;
 		private NameValueCollection _albumTags;
@@ -357,6 +363,7 @@ namespace CUEToolsLib
 		private HttpStatusCode accResult;
 		private const int _arOffsetRange = 5 * 588 - 1;
 		CUEConfig _config;
+		string _cddbDiscIdTag;
 
 		public CUESheet(string pathIn, CUEConfig config)
 		{
@@ -386,6 +393,7 @@ namespace CUEToolsLib
 			_accurateOffset = false;
 			_appliedWriteOffset = false;
 			_dataTrackLength = null;
+			_minDataTrackLength = null;
 			_albumTags = new NameValueCollection();
 			cueDir = Path.GetDirectoryName(pathIn);
 			pathAudio = null;
@@ -684,8 +692,19 @@ namespace CUEToolsLib
 						catch { }
 				}
 			}
-			if (_accurateRipId == null && _dataTrackLength != null)
-				CalculateAccurateRipId();
+
+			CUELine cddbDiscIdLine = General.FindCUELine(_attributes, "REM", "DISCID");
+			_cddbDiscIdTag = cddbDiscIdLine != null && cddbDiscIdLine.Params.Count == 3 ? cddbDiscIdLine.Params[2] : null;
+			if (_cddbDiscIdTag == null) _cddbDiscIdTag = GetCommonTag("DISCID");
+
+			if (_dataTrackLength != null)
+				_accurateRipIdActual = _accurateRipId = CalculateAccurateRipId();
+			else
+			{
+				_accurateRipIdActual = CalculateAccurateRipId();
+				if (_accurateRipId == null)
+					_accurateRipId = _accurateRipIdActual;
+			}
 		}
 
 		public static Encoding Encoding {
@@ -950,7 +969,7 @@ namespace CUEToolsLib
 			return (uint) (data[pos] + ( data[pos+1] << 8 ) + ( data[pos+2] << 16 ) + ( data[pos+3] << 24) );
 		}
 
-		private void CalculateAccurateRipId ()
+		private string CalculateAccurateRipId ()
 		{
 			// Calculate the three disc ids used by AR
 			uint discId1 = 0;
@@ -979,6 +998,16 @@ namespace CUEToolsLib
 			discId1 += trackOffset;
 			discId2 += (trackOffset == 0 ? 1 : trackOffset) * ((uint)TrackCount + 1);
 
+			if (!_dataTrackLength.HasValue && _cddbDiscIdTag != null)
+			{
+				uint cddbDiscIdNum = UInt32.Parse(_cddbDiscIdTag, NumberStyles.HexNumber);
+				if ((cddbDiscIdNum & 0xff) == TrackCount + 1)
+				{
+					uint lengthFromTag = ((cddbDiscIdNum >> 8) & 0xffff);
+					_minDataTrackLength = ((lengthFromTag + (uint)(_tracks[0].IndexLengths[0] / 75)) - 152) * 75 - trackOffset;
+				}
+			}
+
 			cddbDiscId = ((cddbDiscId % 255) << 24) + 
 				(((uint)(trackOffset / 75) - (uint)(_tracks[0].IndexLengths[0] / 75)) << 8) + 
 				(uint)(TrackCount + (_dataTrackLength.HasValue  ? 1 : 0));
@@ -987,7 +1016,7 @@ namespace CUEToolsLib
 			discId2 &= 0xFFFFFFFF;
 			cddbDiscId &= 0xFFFFFFFF;
 
-			_accurateRipId = String.Format("{0:x8}-{1:x8}-{2:x8}", discId1, discId2, cddbDiscId);
+			return String.Format("{0:x8}-{1:x8}-{2:x8}", discId1, discId2, cddbDiscId);
 		}
 
 		public void ContactAccurateRip()
@@ -996,10 +1025,7 @@ namespace CUEToolsLib
 			uint discId1 = 0;
 			uint discId2 = 0;
 			uint cddbDiscId = 0;
-
-			if (_accurateRipId == null)
-				CalculateAccurateRipId ();
-			
+		
 			string[] n = _accurateRipId.Split('-');
 			if (n.Length != 3) {
 				throw new Exception("Invalid accurateRipId.");
@@ -1212,22 +1238,34 @@ namespace CUEToolsLib
 		{
 			int iTrack;
 			sw.WriteLine (String.Format("[Disc ID: {0}]", _accurateRipId));
-			if (0 != _writeOffset)
-				sw.WriteLine(String.Format("Offset applied: {0}", _writeOffset));
-			sw.WriteLine(String.Format("Track\t[ CRC    ] Status"));
+			if (_dataTrackLength.HasValue)
+				sw.WriteLine("Assuming a data track was present, length {0}.", General.TimeToString(_dataTrackLength.Value));
+			else
+			{
+				if (_minDataTrackLength.HasValue)
+					sw.WriteLine("Data track was probably present, length {0}-{1}.", General.TimeToString(_minDataTrackLength.Value), General.TimeToString(_minDataTrackLength.Value + 74));
+				if (_accurateRipIdActual != _accurateRipId)
+					sw.WriteLine("Using preserved id, actual id is {0}.", _accurateRipIdActual);
+			}
 			if (accResult == HttpStatusCode.NotFound)
 			{
-				for (iTrack = 0; iTrack < TrackCount; iTrack++)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Disk not present in database", iTrack + 1, _tracks[iTrack].CRC));
+				sw.WriteLine("Disk not present in database.");
+				//for (iTrack = 0; iTrack < TrackCount; iTrack++)
+				//    sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Disk not present in database", iTrack + 1, _tracks[iTrack].CRC));
 			}
 			else if (accResult != HttpStatusCode.OK)
 			{
-				for (iTrack = 0; iTrack < TrackCount; iTrack++)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Database access error {2}", iTrack + 1, _tracks[iTrack].CRC, accResult.ToString()));
+				sw.WriteLine("Database access error: " + accResult.ToString());
+				//for (iTrack = 0; iTrack < TrackCount; iTrack++)
+				//    sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Database access error {2}", iTrack + 1, _tracks[iTrack].CRC, accResult.ToString()));
 			}
 			else
 			{
-				GenerateAccurateRipLog(sw, _writeOffset);
+				if (0 != _writeOffset)
+					sw.WriteLine(String.Format("Offset applied: {0}", _writeOffset));
+				int offsetApplied = _accurateOffset ? _writeOffset : 0;
+				sw.WriteLine(String.Format("Track\t[ CRC    ] Status"));
+				GenerateAccurateRipLog(sw, offsetApplied);
 				uint offsets_match = 0;
 				for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 				{
@@ -1237,7 +1275,7 @@ namespace CUEToolsLib
 							if ( (_tracks[iTrack].OffsetedCRC[_arOffsetRange - oi] == accDisks[di].tracks[iTrack].CRC && accDisks[di].tracks[iTrack].CRC != 0) ||
 								 (_tracks[iTrack].OffsetedFrame450CRC[_arOffsetRange - oi] == accDisks[di].tracks[iTrack].Frame450CRC && accDisks[di].tracks[iTrack].Frame450CRC != 0) )
 								matches++;
-					if (matches != 0 && oi != _writeOffset)
+					if (matches != 0 && oi != offsetApplied)
 					{
 						if (offsets_match++ > 10)
 						{
@@ -1381,8 +1419,37 @@ namespace CUEToolsLib
 			bool SkipOutput = false;
 
 			if (_accurateRip) {
-				statusDel((string)"Contacting AccurateRip database...", 0, 0);
-				ContactAccurateRip();
+				statusDel((string)"Contacting AccurateRip database...", 0, 0, null, null);
+				if (!_dataTrackLength.HasValue && _minDataTrackLength.HasValue && _accurateRipId == _accurateRipIdActual && _config.bruteForceDTL)
+				{
+					uint minDTL = _minDataTrackLength.Value;
+					for (uint dtl = minDTL; dtl < minDTL + 75; dtl++)
+					{
+						_dataTrackLength = dtl;
+						_accurateRipId = CalculateAccurateRipId();
+						ContactAccurateRip();
+						if (accResult != HttpStatusCode.NotFound)
+							break;
+						statusDel((string)"Contacting AccurateRip database...", 0, (dtl-minDTL)/75.0, null, null);
+						lock (this) {
+							if (_stop)
+								throw new StopException();
+							if (_pause)
+							{
+								statusDel("Paused...", 0, 0, null, null);
+								Monitor.Wait(this);
+							}
+							else
+								Monitor.Wait(this, 1000);
+						}
+					}
+					if (accResult != HttpStatusCode.OK)
+					{
+						_dataTrackLength = null;
+						_accurateRipId = _accurateRipIdActual;
+					}
+				} else
+					ContactAccurateRip();
 
 				if (accResult != HttpStatusCode.OK)
 				{
@@ -1390,7 +1457,7 @@ namespace CUEToolsLib
 					{
 						if (_config.writeArLog)
 						{
-							if (dir != "" && !Directory.Exists(dir))
+							if (!Directory.Exists(dir))
 								Directory.CreateDirectory(dir);
 							StreamWriter sw = new StreamWriter(Path.ChangeExtension(_cuePath, ".accurip"),
 								false, CUESheet.Encoding);
@@ -1439,7 +1506,7 @@ namespace CUEToolsLib
 
 			if (_accurateRip)
 			{
-				statusDel((string)"Generating AccurateRip report...", 0, 0);
+				statusDel((string)"Generating AccurateRip report...", 0, 0, null, null);
 				if (!_accurateOffset && _config.writeArTags && _writeOffset == 0)
 				{
 					uint tracksMatch;
@@ -1554,6 +1621,7 @@ namespace CUEToolsLib
 			}
 
 			destTags.Remove("CUESHEET");
+			destTags.Remove("TITLE");
 			CleanupTags(destTags, "ACCURATERIP");
 			CleanupTags(destTags, "REPLAYGAIN");
 
@@ -1675,7 +1743,7 @@ namespace CUEToolsLib
 					diskLength += _tracks[iTrack].IndexLengths[iIndex] * 588;
 
 
-			statusDel(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0);
+			statusDel(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0, null, null);
 
 			for (iTrack = 0; iTrack < TrackCount; iTrack++) {
 				track = _tracks[iTrack];
@@ -1740,7 +1808,8 @@ namespace CUEToolsLib
 							double diskPercent = ((float)diskOffset) / diskLength;
 							if (trackPercent != lastTrackPercent)
 								statusDel(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
-									noOutput?"Verifying":"Writing"), trackPercent, diskPercent);
+									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent, 
+									audioSource.Path, discardOutput ? null : audioDest.Path);
 							lastTrackPercent = trackPercent;
 						}
 
@@ -1780,7 +1849,7 @@ namespace CUEToolsLib
 							}
 							if (_pause)
 							{
-								statusDel ("Paused...", 0, 0);
+								statusDel ("Paused...", 0, 0, null, null);
 								Monitor.Wait(this);
 							}
 						}
@@ -2097,8 +2166,7 @@ namespace CUEToolsLib
 				if (dtl != 0)
 				{
 					_dataTrackLength = dtl;
-					if (_accurateRip && _accurateRipId == null)
-						CalculateAccurateRipId ();
+					_accurateRipId = _accurateRipIdActual = CalculateAccurateRipId();
 				}
 			}
 		}
@@ -2403,5 +2471,7 @@ namespace CUEToolsLib
 
 		public void Close() {
 		}
+
+		public string Path { get { return null; } }
 	}
 }

@@ -41,7 +41,7 @@ namespace ArCueDotNet
 			sw.Close();
 			Console.Write(sw.ToString());
 		}
-		public static void ArCueSetStatus(string status, uint percentTrack, double percentDisk)
+		public static void ArCueSetStatus(string status, uint percentTrack, double percentDisk, string input, string output)
 		{
 		}
 	}
