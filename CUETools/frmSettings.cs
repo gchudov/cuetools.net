@@ -24,8 +24,10 @@ namespace JDP {
 			numFixWhenPercent.Value = _config.fixWhenPercent;
 			numEncodeWhenConfidence.Value = _config.encodeWhenConfidence;
 			numEncodeWhenPercent.Value = _config.encodeWhenPercent;
+			chkEncodeWhenZeroOffset.Checked = _config.encodeWhenZeroOffset;
 			chkFLACVerify.Checked = _config.flacVerify;
-			chkArAddCRCs.Checked = _config.writeArTags;
+			chkWriteArTagsOnConvert.Checked = _config.writeArTagsOnConvert;
+			chkWriteARTagsOnVerify.Checked = _config.writeArTagsOnVerify;
 			if (_config.wvCompressionMode == 0) rbWVFast.Checked = true;
 			if (_config.wvCompressionMode == 1) rbWVNormal.Checked = true;
 			if (_config.wvCompressionMode == 2) rbWVHigh.Checked = true;
@@ -47,7 +49,8 @@ namespace JDP {
 			chkRemoveSpecial.Checked = _config.removeSpecial;
 			txtSpecialExceptions.Text = _config.specialExceptions;
 			chkReplaceSpaces.Checked = _config.replaceSpaces;
-			chkArSaveLog.Checked = _config.writeArLog;
+			chkWriteArLogOnConvert.Checked = _config.writeArLogOnConvert;
+			chkWriteARLogOnVerify.Checked = _config.writeArLogOnVerify;
 			chkArNoUnverifiedAudio.Checked = _config.noUnverifiedOutput;
 			chkArFixOffset.Checked = _config.fixOffset;
 			chkEmbedLog.Checked = _config.embedLog;
@@ -87,8 +90,10 @@ namespace JDP {
 			_config.fixWhenConfidence = (uint)numFixWhenConfidence.Value;
 			_config.encodeWhenPercent = (uint)numEncodeWhenPercent.Value;
 			_config.encodeWhenConfidence = (uint)numEncodeWhenConfidence.Value;
+			_config.encodeWhenZeroOffset = chkEncodeWhenZeroOffset.Checked;
 			_config.flacVerify = chkFLACVerify.Checked;
-			_config.writeArTags = chkArAddCRCs.Checked;
+			_config.writeArTagsOnConvert = chkWriteArTagsOnConvert.Checked;
+			_config.writeArTagsOnVerify = chkWriteARTagsOnVerify.Checked;
 			if (rbWVFast.Checked) _config.wvCompressionMode = 0;
 			else if (rbWVHigh.Checked) _config.wvCompressionMode = 2;
 			else if (rbWVVeryHigh.Checked) _config.wvCompressionMode = 3;
@@ -106,7 +111,8 @@ namespace JDP {
 			_config.removeSpecial = chkRemoveSpecial.Checked;
 			_config.specialExceptions = txtSpecialExceptions.Text;
 			_config.replaceSpaces = chkReplaceSpaces.Checked;
-			_config.writeArLog = chkArSaveLog.Checked;
+			_config.writeArLogOnConvert = chkWriteArLogOnConvert.Checked;
+			_config.writeArLogOnVerify = chkWriteARLogOnVerify.Checked;
 			_config.noUnverifiedOutput = chkArNoUnverifiedAudio.Checked;
 			_config.fixOffset = chkArFixOffset.Checked;
 			_config.embedLog = chkEmbedLog.Checked;
@@ -116,14 +122,19 @@ namespace JDP {
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)
 		{
-			numFixWhenConfidence.Enabled = chkArFixOffset.Checked;
-			numFixWhenPercent.Enabled = chkArFixOffset.Checked;
+			numFixWhenConfidence.Enabled =
+			labelFixWhenConfidence.Enabled =
+			numFixWhenPercent.Enabled = 
+			labelFixWhenPercent.Enabled = chkArFixOffset.Checked;
 		}
 
 		private void chkArNoUnverifiedAudio_CheckedChanged(object sender, EventArgs e)
 		{
-			numEncodeWhenConfidence.Enabled = chkArNoUnverifiedAudio.Checked;
-			numEncodeWhenPercent.Enabled = chkArNoUnverifiedAudio.Checked;
+			numEncodeWhenConfidence.Enabled = 
+			labelEncodeWhenConfidence.Enabled = 
+			numEncodeWhenPercent.Enabled = 
+			labelEncodeWhenPercent.Enabled =
+			chkEncodeWhenZeroOffset.Enabled = chkArNoUnverifiedAudio.Checked;
 		}
 	}
 }

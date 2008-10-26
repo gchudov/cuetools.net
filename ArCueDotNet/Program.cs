@@ -22,8 +22,8 @@ namespace ArCueDotNet
 				return;
 			}
 			CUEConfig config = new CUEConfig();
-			config.writeArLog = false;
-			config.writeArTags = false;
+			config.writeArLogOnVerify = false;
+			config.writeArTagsOnVerify = false;
 			config.autoCorrectFilenames = true;
 			StringWriter sw = new StringWriter();
 			try

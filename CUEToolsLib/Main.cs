@@ -201,8 +201,11 @@ namespace CUEToolsLib
 		public uint fixWhenPercent;
 		public uint encodeWhenConfidence;
 		public uint encodeWhenPercent;
-		public bool writeArTags;
-		public bool writeArLog;
+		public bool encodeWhenZeroOffset;
+		public bool writeArTagsOnVerify;
+		public bool writeArLogOnVerify;
+		public bool writeArTagsOnConvert;
+		public bool writeArLogOnConvert;
 		public bool fixOffset;
 		public bool noUnverifiedOutput;
 		public bool autoCorrectFilenames;
@@ -229,10 +232,13 @@ namespace CUEToolsLib
 			fixWhenPercent = 51;
 			encodeWhenConfidence = 2;
 			encodeWhenPercent = 100;
+			encodeWhenZeroOffset = false;
 			fixOffset = false;
 			noUnverifiedOutput = false;
-			writeArTags = true;
-			writeArLog = true;
+			writeArTagsOnConvert = true;
+			writeArLogOnConvert = true;
+			writeArTagsOnVerify = false;
+			writeArLogOnVerify = true;
 
 			autoCorrectFilenames = true;
 			flacVerify = false;
@@ -259,10 +265,13 @@ namespace CUEToolsLib
 			sw.Save("ArFixWhenPercent", fixWhenPercent);
 			sw.Save("ArEncodeWhenConfidence", encodeWhenConfidence);
 			sw.Save("ArEncodeWhenPercent", encodeWhenPercent);
+			sw.Save("ArEncodeWhenZeroOffset", encodeWhenZeroOffset);
 			sw.Save("ArNoUnverifiedOutput", noUnverifiedOutput);
 			sw.Save("ArFixOffset", fixOffset);
-			sw.Save("ArWriteCRC", writeArTags);
-			sw.Save("ArWriteLog", writeArLog);
+			sw.Save("ArWriteCRC", writeArTagsOnConvert);
+			sw.Save("ArWriteLog", writeArLogOnConvert);
+			sw.Save("ArWriteTagsOnVerify", writeArTagsOnVerify);
+			sw.Save("ArWriteLogOnVerify", writeArLogOnVerify);
 
 			sw.Save("PreserveHTOA", preserveHTOA);
 			sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
@@ -289,10 +298,13 @@ namespace CUEToolsLib
 			fixWhenPercent = sr.LoadUInt32("ArFixWhenPercent", 1, 100) ?? 51;
 			encodeWhenConfidence = sr.LoadUInt32("ArEncodeWhenConfidence", 1, 1000) ?? 2;
 			encodeWhenPercent = sr.LoadUInt32("ArEncodeWhenPercent", 1, 100) ?? 100;
+			encodeWhenZeroOffset = sr.LoadBoolean("ArEncodeWhenZeroOffset") ?? false;
 			noUnverifiedOutput = sr.LoadBoolean("ArNoUnverifiedOutput") ?? false;
 			fixOffset = sr.LoadBoolean("ArFixOffset") ?? false;
-			writeArTags = sr.LoadBoolean("ArWriteCRC") ?? true;
-			writeArLog = sr.LoadBoolean("ArWriteLog") ?? true;
+			writeArTagsOnConvert = sr.LoadBoolean("ArWriteCRC") ?? true;
+			writeArLogOnConvert = sr.LoadBoolean("ArWriteLog") ?? true;
+			writeArTagsOnVerify = sr.LoadBoolean("ArWriteTagsOnVerify") ?? false;
+			writeArLogOnVerify = sr.LoadBoolean("ArWriteLogOnVerify") ?? true;
 
 			preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
 			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
@@ -897,7 +909,7 @@ namespace CUEToolsLib
 			uint timeRelativeToFileStart = 0;
 
 			using (sw) {
-				if (_accurateRipId != null && _config.writeArTags)
+				if (_accurateRipId != null && _config.writeArTagsOnConvert)
 					WriteLine(sw, 0, "REM ACCURATERIPID " +
 						_accurateRipId);
 
@@ -1455,7 +1467,8 @@ namespace CUEToolsLib
 				{
 					if (!_accurateOffset || _config.noUnverifiedOutput)
 					{
-						if (_config.writeArLog)
+						if ((_accurateOffset && _config.writeArLogOnConvert)  || 
+							(!_accurateOffset && _config.writeArLogOnVerify))
 						{
 							if (!Directory.Exists(dir))
 								Directory.CreateDirectory(dir);
@@ -1478,7 +1491,7 @@ namespace CUEToolsLib
 					if (_config.noUnverifiedOutput)
 					{
 						FindBestOffset(_config.encodeWhenConfidence, false, out tracksMatch, out bestOffset);
-						if (tracksMatch * 100 < _config.encodeWhenPercent * TrackCount)
+						if (tracksMatch * 100 < _config.encodeWhenPercent * TrackCount || (_config.encodeWhenZeroOffset && bestOffset != 0))
 							SkipOutput = true;
 					}
 
@@ -1507,7 +1520,7 @@ namespace CUEToolsLib
 			if (_accurateRip)
 			{
 				statusDel((string)"Generating AccurateRip report...", 0, 0, null, null);
-				if (!_accurateOffset && _config.writeArTags && _writeOffset == 0)
+				if (!_accurateOffset && _config.writeArTagsOnVerify && _writeOffset == 0)
 				{
 					uint tracksMatch;
 					int bestOffset;
@@ -1546,7 +1559,8 @@ namespace CUEToolsLib
 					}
 				}
 
-				if (_config.writeArLog)
+				if ((_accurateOffset && _config.writeArLogOnConvert) ||
+					(!_accurateOffset && _config.writeArLogOnVerify))
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
@@ -1599,7 +1613,7 @@ namespace CUEToolsLib
 			if (destTags.Get("ARTIST") == null && "" != _tracks[iTrack].Artist)
 				destTags.Add("ARTIST", _tracks[iTrack].Artist);
 			destTags.Add("TRACKNUMBER", (iTrack + 1).ToString());
-			if (_accurateRipId != null && _config.writeArTags)
+			if (_accurateRipId != null && _config.writeArTagsOnConvert)
 			{
 				if (_accurateOffset && accResult == HttpStatusCode.OK)
 					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, iTrack);
@@ -1649,7 +1663,7 @@ namespace CUEToolsLib
 					destTags.Add("LOG", _eacLog);
 			}
 
-			if (_accurateRipId != null && _config.writeArTags)
+			if (_accurateRipId != null && _config.writeArTagsOnConvert)
 			{
 				if (fWithCUE && _accurateOffset && accResult == HttpStatusCode.OK)
 					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, -1);
@@ -1715,7 +1729,7 @@ namespace CUEToolsLib
 
 			uint tracksMatch;
 			int bestOffset = _writeOffset;
-			if (!noOutput && _accurateRipId != null && _config.writeArTags && _accurateOffset && accResult == HttpStatusCode.OK)
+			if (!noOutput && _accurateRipId != null && _config.writeArTagsOnConvert && _accurateOffset && accResult == HttpStatusCode.OK)
 				FindBestOffset(1, true, out tracksMatch, out bestOffset);
 
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
