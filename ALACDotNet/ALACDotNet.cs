@@ -33,6 +33,7 @@ namespace ALACDotNet
 			_path = path;
 			m_spIO = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			_buff = new byte[4];
+			_tags = new NameValueCollection();
 			qtmovie_read();
 			if (!_formatRead || _bitsPerSample != 16 || _channelCount != 2 || _sampleRate != 44100)
 				throw new Exception("Invalid ALAC file.");
@@ -788,13 +789,6 @@ namespace ALACDotNet
 			}
 		}
 
-		/* 'udta' user data.. contains tag info */
-		private void read_chunk_udta(UInt32 chunk_len)
-		{
-			/* don't need anything from here atm, skip */
-			skip_chunk(chunk_len);
-		}
-
 		private void read_chunk_tkhd(UInt32 chunk_len)
 		{
 			/* don't need anything from here atm, skip */
@@ -824,6 +818,178 @@ namespace ALACDotNet
 		{
 			/* don't need anything from here atm, skip */
 			skip_chunk(chunk_len);
+		}
+
+		private void mov_parse_udta_string(string name, UInt32 chunk_len)
+		{
+			ushort str_size = stream_read_uint16();
+			ushort language = stream_read_uint16();
+			byte[] value = new byte[str_size];
+			if (m_spIO.Read(value, 0, str_size) != str_size)
+				throw new Exception("Decoding failed.");
+			_tags.Add (name, Encoding.Default.GetString(value));
+		}
+
+		/* 'ilst' tag info */
+		private void read_chunk_ilst_tag(UInt32 chunk_len, string name)
+		{
+			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			while (size_remaining > 0)
+			{
+				UInt32 sub_chunk_len = stream_read_uint32();
+				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
+					throw new Exception("strange size for chunk inside stbl.");
+
+				UInt32 sub_chunk_id = stream_read_uint32();
+				switch (sub_chunk_id)
+				{
+					case FCC_DATA:
+						UInt32 unknown01 = stream_read_uint32(); 
+						UInt32 unknown00 = stream_read_uint32(); // language?
+						int str_size = (int) sub_chunk_len - 16;
+						if (str_size <= 0)
+							break;
+
+						if (name == "TRACKNUMBER")
+						{
+							byte[] value = new byte[str_size];
+							if (m_spIO.Read(value, 0, str_size) != str_size)
+								throw new Exception("Decoding failed.");
+							if (str_size >= 4)
+								_tags.Add("TRACKNUMBER", value[3].ToString());
+							if (str_size >= 6)
+								_tags.Add("TOTALTRACKS", value[5].ToString());
+						}
+						else if (name == "DISCNUMBER")
+						{
+							byte[] value = new byte[str_size];
+							if (m_spIO.Read(value, 0, str_size) != str_size)
+								throw new Exception("Decoding failed.");
+							if (str_size >= 4)
+								_tags.Add("DISCNUMBER", value[3].ToString());
+							if (str_size >= 6)
+								_tags.Add("TOTALDISCS", value[5].ToString());
+						}
+						else
+						{
+							byte[] value = new byte[str_size];
+							if (m_spIO.Read(value, 0, str_size) != str_size)
+								throw new Exception("Decoding failed.");
+							_tags.Add(name, new UTF8Encoding().GetString(value));
+						}
+						break;
+					default:
+						stream_skip(sub_chunk_len - 8);
+						break;
+				}
+				size_remaining -= sub_chunk_len;
+			}
+		}
+
+		/* 'ilst' tag info */
+		private void read_chunk_ilst(UInt32 chunk_len)
+		{
+			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			while (size_remaining > 0)
+			{
+				UInt32 sub_chunk_len = stream_read_uint32();
+				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
+					throw new Exception("strange size for chunk inside stbl.");
+
+				UInt32 sub_chunk_id = stream_read_uint32();
+				switch (sub_chunk_id)
+				{
+					case FCC_UDTA_NAM:
+						read_chunk_ilst_tag(sub_chunk_len, "TITLE");
+						break;
+					case FCC_UDTA_ART:
+						read_chunk_ilst_tag(sub_chunk_len, "ARTIST");
+						break;
+					case FCC_UDTA_ALB:
+						read_chunk_ilst_tag(sub_chunk_len, "ALBUM");
+						break;
+					case FCC_UDTA_DAY:
+						read_chunk_ilst_tag(sub_chunk_len, "DATE");
+						break;
+					case FCC_UDTA_GEN:
+						read_chunk_ilst_tag(sub_chunk_len, "GENRE");
+						break;
+					case FCC_TRKN:
+						read_chunk_ilst_tag(sub_chunk_len, "TRACKNUMBER");
+						break;
+					case FCC_DISK:
+						read_chunk_ilst_tag(sub_chunk_len, "DISCNUMBER");
+						break;
+					//case MKTAG(0xa9,'w','r','t'):
+					//    mov_parse_udta_string(pb, c->fc->author,    sizeof(c->fc->author));
+					//    break;
+					//case MKTAG(0xa9,'c','p','y'):
+					//    mov_parse_udta_string(pb, c->fc->copyright, sizeof(c->fc->copyright));
+					//    break;
+					//case MKTAG(0xa9,'i','n','f'):
+					//    mov_parse_udta_string(pb, c->fc->comment,   sizeof(c->fc->comment));
+					//    break;
+					default:
+						stream_skip(sub_chunk_len - 8);
+						break;
+				}
+				size_remaining -= sub_chunk_len;
+			}
+		}
+
+		/* 'meta' tag info */
+		private void read_chunk_meta(UInt32 chunk_len)
+		{
+			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			stream_read_uint32();
+			size_remaining -= 4;
+			//stream_skip(size_remaining);
+			// hdlr
+			while (size_remaining > 0)
+			{
+				UInt32 sub_chunk_len = stream_read_uint32();
+				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
+					throw new Exception("strange size for chunk inside stbl.");
+
+				UInt32 sub_chunk_id = stream_read_uint32();
+				switch (sub_chunk_id)
+				{
+					case FCC_ILST:
+						read_chunk_ilst(sub_chunk_len);
+					    break;
+					default:
+						stream_skip(sub_chunk_len - 8);
+						break;
+				}
+				size_remaining -= sub_chunk_len;
+			}
+		}
+
+		/* 'udta' user data.. contains tag info */
+		private void read_chunk_udta(UInt32 chunk_len)
+		{
+			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			while (size_remaining > 0)
+			{
+				UInt32 sub_chunk_len = stream_read_uint32();
+				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
+					throw new Exception("strange size for chunk inside stbl.");
+
+				UInt32 sub_chunk_id = stream_read_uint32();
+				switch (sub_chunk_id)
+				{
+					case FCC_META:
+						read_chunk_meta(sub_chunk_len);
+						break;
+					//case FCC_UDTA_NAM:
+					//    mov_parse_udta_string("TITLE", sub_chunk_id);
+					//    break;
+					default:
+						stream_skip(sub_chunk_len - 8);
+						break;
+				}
+				size_remaining -= sub_chunk_len;
+			}
 		}
 
 		private void read_chunk_stsd(UInt32 chunk_len)
@@ -1366,5 +1532,16 @@ namespace ALACDotNet
 		const UInt32 FCC_STSC = ('s' << 24) + ('t' << 16) + ('s' << 8) + ('c' << 0);
 		const UInt32 FCC_STCO = ('s' << 24) + ('t' << 16) + ('c' << 8) + ('o' << 0);
 		const UInt32 FCC_ALAC = ('a' << 24) + ('l' << 16) + ('a' << 8) + ('c' << 0);
+		const UInt32 FCC_META = ('m' << 24) + ('e' << 16) + ('t' << 8) + ('a' << 0);
+		const UInt32 FCC_ILST = ('i' << 24) + ('l' << 16) + ('s' << 8) + ('t' << 0);
+		const UInt32 FCC_DATA = ('d' << 24) + ('a' << 16) + ('t' << 8) + ('a' << 0);
+		const UInt32 FCC_TRKN = ('t' << 24) + ('r' << 16) + ('k' << 8) + ('n' << 0);
+		const UInt32 FCC_DISK = ('d' << 24) + ('i' << 16) + ('s' << 8) + ('k' << 0);
+		const UInt32 FCC_UDTA_NAM = (0xa9000000) + ('n' << 16) + ('a' << 8) + ('m' << 0);
+		const UInt32 FCC_UDTA_ART = (0xa9000000) + ('A' << 16) + ('R' << 8) + ('T' << 0);
+		const UInt32 FCC_UDTA_ALB = (0xa9000000) + ('a' << 16) + ('l' << 8) + ('b' << 0);
+		const UInt32 FCC_UDTA_DAY = (0xa9000000) + ('d' << 16) + ('a' << 8) + ('y' << 0);
+		const UInt32 FCC_UDTA_GEN = (0xa9000000) + ('g' << 16) + ('e' << 8) + ('n' << 0);
 	}
 }
+	
