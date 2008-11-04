@@ -124,6 +124,18 @@
     <value>Общие</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
+    <value>224, 17</value>
+  </data>
+  <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
+    <value>Создавать .cue даже при встраивании</value>
+  </data>
+  <data name="chkCreateM3U.Size" type="System.Drawing.Size, System.Drawing">
+    <value>166, 17</value>
+  </data>
+  <data name="chkCreateM3U.Text" xml:space="preserve">
+    <value>Создавать плейлисты .m3u</value>
+  </data>
   <data name="chkFillUpCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>221, 17</value>
   </data>
@@ -177,6 +189,12 @@
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Верификация</value>
+  </data>
+  <data name="chkWVStoreMD5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>119, 17</value>
+  </data>
+  <data name="chkWVStoreMD5.Text" xml:space="preserve">
+    <value>MD5-хеширование</value>
   </data>
   <data name="chkWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>89, 17</value>
@@ -339,6 +357,24 @@
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
     <value>Добавлять тэги ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL в исходные файлы. Можно настроить foobar2000 на их отображение, чтобы видеть качество рипа и популярность дисков в вашей библиотеке.</value>
   </data>
+  <data name="chkHDCDDecode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 17</value>
+  </data>
+  <data name="chkHDCDDecode.Text" xml:space="preserve">
+    <value>Декодировать в 24 бита</value>
+  </data>
+  <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
+    <value>Декодирование HDCD - необратимый процесс. Результирующие файлы не могут быть записаны на CD. Создаются файлы с разрешением 24 бита, но подлинное разрешение составляет 20 бит.</value>
+  </data>
+  <data name="chkHDCDStopLooking.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 17</value>
+  </data>
+  <data name="chkHDCDStopLooking.Text" xml:space="preserve">
+    <value>Определять по 750 фреймам</value>
+  </data>
+  <data name="chkHDCDStopLooking.ToolTip" xml:space="preserve">
+    <value>Прекращать поиск HDCD-кодировки, если её не обнаружено в первых 10 секундах аудио данных.</value>
+  </data>
   <data name="grpAudioFilenames.Text" xml:space="preserve">
     <value>Имена аудиофайлов</value>
   </data>
@@ -389,6 +425,15 @@
   </data>
   <data name="tabPage3.Text" xml:space="preserve">
     <value>Форматы</value>
+  </data>
+  <data name="grpHDCD.Text" xml:space="preserve">
+    <value>Параметры</value>
+  </data>
+  <data name="chkHDCDDetect.Size" type="System.Drawing.Size, System.Drawing">
+    <value>120, 17</value>
+  </data>
+  <data name="chkHDCDDetect.Text" xml:space="preserve">
+    <value>Определять HDCD</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Продвинутые настройки</value>

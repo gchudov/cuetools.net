@@ -32,6 +32,7 @@
 using namespace System;
 using namespace System::Runtime::InteropServices;
 using namespace System::Collections::Specialized;
+using namespace System::Security::Cryptography;
 using namespace APETagsDotNet;
 
 #include <stdio.h>
@@ -187,6 +188,13 @@ namespace WavPackDotNet {
 		}
 
 		void Close() {
+			if (_md5Sum)
+			{
+				_md5hasher->TransformFinalBlock (gcnew array<unsigned char>(1), 0, 0);
+				pin_ptr<unsigned char> md5_digest = &_md5hasher->Hash[0];
+				WavpackStoreMD5Sum (_wpc, md5_digest);
+			}
+
 			WavpackFlushSamples(_wpc);
 			_wpc = WavpackCloseFile(_wpc);
 			fclose(_hFile);
@@ -244,11 +252,28 @@ namespace WavPackDotNet {
 			}
 		}
 
+		property bool MD5Sum {
+			bool get() {
+				return _md5Sum;
+			}
+			void set(bool value) {
+				_md5Sum = value;
+			}
+		}
+
+		void UpdateHash(array<unsigned char>^ buff, Int32 len) 
+		{
+			if (!_initialized) Initialize();
+
+			if (!_md5Sum || !_md5hasher)
+				throw gcnew Exception("MD5 not enabled.");
+			_md5hasher->TransformBlock (buff, 0, len,  buff, 0);
+		}
+
 		void Write(array<Int32, 2>^ sampleBuffer, Int32 sampleCount) {
 			if (!_initialized) Initialize();
 
 			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
-
 			if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount)) {
 				throw gcnew Exception("An error occurred while encoding.");
 			}
@@ -275,6 +300,8 @@ namespace WavPackDotNet {
 		Int32 _compressionMode, _extraMode;
 		NameValueCollection^ _tags;
 		String^ _path;
+		bool _md5Sum;
+		MD5^ _md5hasher;
 
 		void Initialize() {
 			WavpackConfig config;
@@ -296,6 +323,11 @@ namespace WavPackDotNet {
 			if (_extraMode != 0) {
 				config.flags |= CONFIG_EXTRA_MODE;
 				config.xmode = _extraMode;
+			}
+			if (_md5Sum)
+			{
+				_md5hasher = gcnew MD5CryptoServiceProvider ();
+				config.flags |= CONFIG_MD5_CHECKSUM;
 			}
 
 			if (!WavpackSetConfiguration(_wpc, &config, (_finalSampleCount == 0) ? -1 : _finalSampleCount)) {

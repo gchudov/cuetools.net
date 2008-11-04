@@ -89,13 +89,25 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ALACDotNet\ALACDotNet.csproj">
+      <Project>{F2EC7193-D5E5-4252-9803-5CEB407E910F}</Project>
+      <Name>ALACDotNet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\APEDotNet\APEDotNet.vcproj">
       <Project>{9AE965C4-301E-4C01-B90F-297AF341ACC6}</Project>
       <Name>APEDotNet</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AudioCodecsDotNet\AudioCodecsDotNet.csproj">
+      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
+      <Name>AudioCodecsDotNet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FLACDotNet\FLACDotNet.vcproj">
       <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
       <Name>FLACDotNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HDCDDotNet\HDCDDotNet.csproj">
+      <Project>{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}</Project>
+      <Name>HDCDDotNet</Name>
     </ProjectReference>
     <ProjectReference Include="..\WavPackDotNet\WavPackDotNet.vcproj">
       <Project>{CC2E74B6-534A-43D8-9F16-AC03FE955000}</Project>

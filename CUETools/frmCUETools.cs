@@ -401,8 +401,9 @@ namespace JDP {
 			btnBatch.Enabled = !running;
 			btnConvert.Enabled = !running;
 			btnConvert.Visible = !running;
-			btnStop.Enabled = btnPause.Enabled = running;
+			btnStop.Enabled = btnPause.Enabled = btnResume.Enabled = running;
 			btnStop.Visible = btnPause.Visible = running;
+			btnResume.Visible = false;
 			toolStripStatusLabel1.Text = String.Empty;
 			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
@@ -852,7 +853,7 @@ namespace JDP {
 			string[] cueFiles = Directory.GetFiles(dir, "*.cue");
 			if (cueFiles.Length == 0)
 			{
-				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape" };
+				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
 				for (int i = 0; i < audioExts.Length; i++)
 				{
 					string [] audioFiles = Directory.GetFiles(dir, audioExts[i]);
@@ -912,7 +913,11 @@ namespace JDP {
 		private void btnPause_Click(object sender, EventArgs e)
 		{
 			if ((_workThread != null) && (_workThread.IsAlive))
+			{
 				_workClass.Pause();
+				btnPause.Visible = !btnPause.Visible;
+				btnResume.Visible = !btnResume.Visible;
+			}
 		}
 	}
 

@@ -3,31 +3,12 @@ using System.IO;
 using FLACDotNet;
 using WavPackDotNet;
 using APEDotNet;
+using ALACDotNet;
+using AudioCodecsDotNet;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
 namespace CUEToolsLib {
-	public interface IAudioSource {
-		uint Read(byte[] buff, uint sampleCount);
-		ulong Length { get; }
-		ulong Position { get; set; }
-		NameValueCollection Tags { get; set; }
-		ulong Remaining { get; }
-		void Close();
-		int BitsPerSample { get; }
-		int ChannelCount { get; }
-		int SampleRate { get; }
-		string Path { get; }
-	}
-
-	public interface IAudioDest {
-		void Write(byte[] buff, uint sampleCount);
-		bool SetTags(NameValueCollection tags);
-		void Close();
-		long FinalSampleCount { set; }
-		string Path { get; }
-	}
-
 	public static class AudioReadWrite {
 		public static IAudioSource GetAudioSource(string path) {
 			switch (Path.GetExtension(path).ToLower()) {
@@ -40,6 +21,8 @@ namespace CUEToolsLib {
 					return new WavPackReader(path);
 				case ".ape":
 					return new APEReader(path);
+				case ".m4a":
+					return new ALACReader(path);
 #endif
 				default:
 					throw new Exception("Unsupported audio type.");
@@ -67,332 +50,6 @@ namespace CUEToolsLib {
 			dest.FinalSampleCount = finalSampleCount;
 			return dest;
 		}
-	}
-
-	public class DummyWriter : IAudioDest {
-
-		public DummyWriter (string path, int bitsPerSample, int channelCount, int sampleRate) {
-		}
-
-		public bool SetTags(NameValueCollection tags)
-		{
-			return false;
-		}
-
-		public void Close() {
-		}
-
-		public long FinalSampleCount {
-			set {
-			}
-		}
-
-		public void Write(byte[] buff, uint sampleCount) {
-		}
-
-		public string Path { get { return null; } }
-	}
-
-	public class WAVReader : IAudioSource {
-		FileStream _fs;
-		BinaryReader _br;
-		ulong _dataOffset, _dataLen;
-		ulong _samplePos, _sampleLen;
-		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
-		bool _largeFile;
-		string _path;
-
-		public WAVReader(string path) {
-			_path = path;
-			//_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-			_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
-			_br = new BinaryReader(_fs);
-
-			ParseHeaders();
-
-			_sampleLen = _dataLen / (uint)_blockAlign;
-			Position = 0;
-		}
-
-		public void Close() {
-			_br.Close();
-
-			_br = null;
-			_fs = null;
-		}
-
-		private void ParseHeaders() {
-			const long maxFileSize = 0x7FFFFFFEL;
-			const uint fccRIFF = 0x46464952;
-			const uint fccWAVE = 0x45564157;
-			const uint fccFormat = 0x20746D66;
-			const uint fccData = 0x61746164;
-
-			uint lenRIFF;
-			long fileEnd;
-			bool foundFormat, foundData;
-
-			if (_br.ReadUInt32() != fccRIFF) {
-				throw new Exception("Not a valid RIFF file.");
-			}
-
-			lenRIFF = _br.ReadUInt32();
-			fileEnd = (long)lenRIFF + 8;
-
-			if (_br.ReadUInt32() != fccWAVE) {
-				throw new Exception("Not a valid WAVE file.");
-			}
-
-			_largeFile = false;
-			foundFormat = false;
-			foundData = false;
-
-			while (_fs.Position < fileEnd) {
-				uint ckID, ckSize, ckSizePadded;
-				long ckEnd;
-
-				ckID = _br.ReadUInt32();
-				ckSize = _br.ReadUInt32();
-				ckSizePadded = (ckSize + 1U) & ~1U;
-				ckEnd = _fs.Position + (long)ckSizePadded;
-
-				if (ckID == fccFormat) {
-					foundFormat = true;
-
-					if (_br.ReadUInt16() != 1) {
-						throw new Exception("WAVE must be PCM format.");
-					}
-					_channelCount = _br.ReadInt16();
-					_sampleRate = _br.ReadInt32();
-					_br.ReadInt32();
-					_blockAlign = _br.ReadInt16();
-					_bitsPerSample = _br.ReadInt16();
-				}
-				else if (ckID == fccData) {
-					foundData = true;
-
-					_dataOffset = (ulong) _fs.Position;
-					if (_fs.Length <= maxFileSize) {
-						_dataLen = ckSize;
-					}
-					else {
-						_largeFile = true;
-						_dataLen = ((ulong)_fs.Length) - _dataOffset;
-					}
-				}
-
-				if ((foundFormat & foundData) || _largeFile) {
-					break;
-				}
-
-				_fs.Seek(ckEnd, SeekOrigin.Begin);
-			}
-
-			if ((foundFormat & foundData) == false) {
-				throw new Exception("Format or data chunk not found.");
-			}
-
-			if (_channelCount <= 0) {
-				throw new Exception("Channel count is invalid.");
-			}
-			if (_sampleRate <= 0) {
-				throw new Exception("Sample rate is invalid.");
-			}
-			if (_blockAlign != (_channelCount * ((_bitsPerSample + 7) / 8))) {
-				throw new Exception("Block align is invalid.");
-			}
-			if ((_bitsPerSample <= 0) || (_bitsPerSample > 32)) {
-				throw new Exception("Bits per sample is invalid.");
-			}
-		}
-
-		public ulong Position {
-			get {
-				return _samplePos;
-			}
-			set {
-				ulong seekPos;
-
-				if (value > _sampleLen) {
-					_samplePos = _sampleLen;
-				}
-				else {
-					_samplePos = value;
-				}
-
-				seekPos = _dataOffset + (_samplePos * (uint)_blockAlign);
-				_fs.Seek((long) seekPos, SeekOrigin.Begin);
-			}
-		}
-
-		public ulong Length {
-			get {
-				return _sampleLen;
-			}
-		}
-
-		public ulong Remaining {
-			get {
-				return _sampleLen - _samplePos;
-			}
-		}
-
-		public int ChannelCount {
-			get {
-				return _channelCount;
-			}
-		}
-
-		public int SampleRate {
-			get {
-				return _sampleRate;
-			}
-		}
-
-		public int BitsPerSample {
-			get {
-				return _bitsPerSample;
-			}
-		}
-
-		public int BlockAlign {
-			get {
-				return _blockAlign;
-			}
-		}
-
-		public NameValueCollection Tags {
-			get {
-				return new NameValueCollection();
-			}
-			set {
-			}
-		}
-
-		public void GetTags(out List<string> names, out List<string> values)
-		{
-			names = new List<string>();
-			values = new List<string>();
-		}
-
-		public uint Read(byte[] buff, uint sampleCount) {
-			if (sampleCount > Remaining)
-				sampleCount = (uint) Remaining;
-
-			uint byteCount = sampleCount * (uint) _blockAlign;
-
-			if (sampleCount != 0) {
-				if (_fs.Read(buff, 0, (int) byteCount) != byteCount) {
-					throw new Exception("Incomplete file read.");
-				}
-				_samplePos += sampleCount;
-			}
-
-			return sampleCount;
-		}
-
-		public string Path { get { return _path; } }
-	}
-
-	public class WAVWriter : IAudioDest {
-		FileStream _fs;
-		BinaryWriter _bw;
-		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
-		long _sampleLen;
-		string _path;
-
-		public WAVWriter(string path, int bitsPerSample, int channelCount, int sampleRate) {
-			_path = path;
-			_bitsPerSample = bitsPerSample;
-			_channelCount = channelCount;
-			_sampleRate = sampleRate;
-			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
-
-			_fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
-			_bw = new BinaryWriter(_fs);
-
-			WriteHeaders();
-		}
-
-		public bool SetTags(NameValueCollection tags)
-		{
-			return false;
-		}
-
-		private void WriteHeaders() {
-			const uint fccRIFF = 0x46464952;
-			const uint fccWAVE = 0x45564157;
-			const uint fccFormat = 0x20746D66;
-			const uint fccData = 0x61746164;
-
-			_bw.Write(fccRIFF);
-			_bw.Write((uint)0);
-			_bw.Write(fccWAVE);
-
-			_bw.Write(fccFormat);
-			_bw.Write((uint)16);
-			_bw.Write((ushort)1);
-			_bw.Write((ushort)_channelCount);
-			_bw.Write((uint)_sampleRate);
-			_bw.Write((uint)(_sampleRate * _blockAlign));
-			_bw.Write((ushort)_blockAlign);
-			_bw.Write((ushort)_bitsPerSample);
-
-			_bw.Write(fccData);
-			_bw.Write((uint)0);
-		}
-
-		public void Close() {
-			const long maxFileSize = 0x7FFFFFFEL;
-			long dataLen, dataLenPadded;
-
-			dataLen = _sampleLen * _blockAlign;
-
-			if ((dataLen & 1) == 1) {
-				_bw.Write((byte)0);
-			}
-
-			if ((dataLen + 44) > maxFileSize) {
-				dataLen = ((maxFileSize - 44) / _blockAlign) * _blockAlign;
-			}
-
-			dataLenPadded = ((dataLen & 1) == 1) ? (dataLen + 1) : dataLen;
-
-			_bw.Seek(4, SeekOrigin.Begin);
-			_bw.Write((uint)(dataLenPadded + 36));
-
-			_bw.Seek(40, SeekOrigin.Begin);
-			_bw.Write((uint)dataLen);
-
-			_bw.Close();
-
-			_bw = null;
-			_fs = null;
-		}
-
-		public long Position {
-			get {
-				return _sampleLen;
-			}
-		}
-
-		public long FinalSampleCount {
-			set {
-			}
-		}
-
-		public void Write(byte[] buff, uint sampleCount) {
-			if (sampleCount < 0) {
-				sampleCount = 0;
-			}
-
-			if (sampleCount != 0) {
-				_fs.Write(buff, 0, (int) sampleCount * _blockAlign);
-				_sampleLen += sampleCount;
-			}
-		}
-
-		public string Path { get { return _path; } }
 	}
 
 #if !MONO
@@ -469,29 +126,6 @@ namespace CUEToolsLib {
 			}
 		}
 
-		private unsafe void FLACSamplesToBytes_16(int[,] inSamples, uint inSampleOffset,
-			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount)
-		{
-			uint loopCount = sampleCount * (uint) channelCount;
-
-			if ((inSamples.GetLength(0) - inSampleOffset < sampleCount) ||
-				(outSamples.Length - outByteOffset < loopCount * 2))
-			{
-				throw new IndexOutOfRangeException();
-			}
-
-			fixed (int* pInSamplesFixed = &inSamples[inSampleOffset, 0]) {
-				fixed (byte* pOutSamplesFixed = &outSamples[outByteOffset]) {
-					int* pInSamples = pInSamplesFixed;
-					short* pOutSamples = (short*)pOutSamplesFixed;
-
-					for (int i = 0; i < loopCount; i++) {
-						*(pOutSamples++) = (short)*(pInSamples++);
-					}
-				}
-			}
-		}
-
 		public uint Read(byte[] buff, uint sampleCount) {
 			if (_flacReader.BitsPerSample != 16) {
 				throw new Exception("Reading is only supported for 16 bit sample depth.");
@@ -509,7 +143,7 @@ namespace CUEToolsLib {
 
 				copyCount = Math.Min(samplesNeeded, SamplesInBuffer);
 
-				FLACSamplesToBytes_16(_sampleBuffer, _bufferOffset, buff, buffOffset,
+				AudioCodecsDotNet.AudioCodecsDotNet.FLACSamplesToBytes_16(_sampleBuffer, _bufferOffset, buff, buffOffset,
 					copyCount, chanCount);
 
 				samplesNeeded -= copyCount;
@@ -525,14 +159,13 @@ namespace CUEToolsLib {
 
 	class FLACWriter : IAudioDest {
 		FLACDotNet.FLACWriter _flacWriter;
-		int[,] _sampleBuffer;
 		int _bitsPerSample;
 		int _channelCount;
 		int _sampleRate;
 
 		public FLACWriter(string path, int bitsPerSample, int channelCount, int sampleRate) {
-			if (bitsPerSample != 16) {
-				throw new Exception("Bits per sample must be 16.");
+			if (bitsPerSample != 16 && bitsPerSample != 24) {
+				throw new Exception("Bits per sample must be 16 or 24.");
 			}
 			_bitsPerSample = bitsPerSample;
 			_channelCount = channelCount;
@@ -577,35 +210,9 @@ namespace CUEToolsLib {
 			_flacWriter.Close();
 		}
 
-		private unsafe void BytesToFLACSamples_16(byte[] inSamples, int inByteOffset,
-			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount)
+		public void Write(int[,] buff, uint sampleCount)
 		{
-			uint loopCount = sampleCount * (uint) channelCount;
-
-			if ((inSamples.Length - inByteOffset < loopCount * 2) ||
-				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
-			{
-				throw new IndexOutOfRangeException();
-			}
-
-			fixed (byte* pInSamplesFixed = &inSamples[inByteOffset]) {
-				fixed (int* pOutSamplesFixed = &outSamples[outSampleOffset, 0]) {
-					short* pInSamples = (short*)pInSamplesFixed;
-					int* pOutSamples = pOutSamplesFixed;
-
-					for (int i = 0; i < loopCount; i++) {
-						*(pOutSamples++) = (int)*(pInSamples++);
-					}
-				}
-			}
-		}
-
-		public void Write(byte[] buff, uint sampleCount) {
-			if ((_sampleBuffer == null) || (_sampleBuffer.GetLength(0) < sampleCount)) {
-				_sampleBuffer = new int[sampleCount, _channelCount];
-			}
-			BytesToFLACSamples_16(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount);
-			_flacWriter.Write(_sampleBuffer, (int) sampleCount);
+			_flacWriter.Write(buff, (int) sampleCount);
 		}
 
 		public string Path { get { return _flacWriter.Path; } }
@@ -739,20 +346,22 @@ namespace CUEToolsLib {
 	class APEWriter : IAudioDest
 	{
 		APEDotNet.APEWriter _apeWriter;
-		//int[,] _sampleBuffer;
+		byte[] _sampleBuffer;
 		int _bitsPerSample;
 		int _channelCount;
 		int _sampleRate;
+		int _blockAlign;
 
 		public APEWriter(string path, int bitsPerSample, int channelCount, int sampleRate)
 		{
-			if (bitsPerSample != 16)
+			if (bitsPerSample != 16 && bitsPerSample != 24)
 			{
-				throw new Exception("Bits per sample must be 16.");
+				throw new Exception("Bits per sample must be 16 or 24.");
 			}
 			_bitsPerSample = bitsPerSample;
 			_channelCount = channelCount;
 			_sampleRate = sampleRate;
+			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
 			_apeWriter = new APEDotNet.APEWriter(path, bitsPerSample, channelCount, sampleRate);
 		}
 
@@ -775,40 +384,12 @@ namespace CUEToolsLib {
 		{
 			_apeWriter.Close();
 		}
-		private unsafe void BytesToAPESamples_16(byte[] inSamples, int inByteOffset,
-			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount)
+		public void Write(int [,] buff, uint sampleCount)
 		{
-			uint loopCount = sampleCount * (uint)channelCount;
-
-			if ((inSamples.Length - inByteOffset < loopCount * 2) ||
-				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
-			{
-				throw new IndexOutOfRangeException();
-			}
-
-			fixed (byte* pInSamplesFixed = &inSamples[inByteOffset])
-			{
-				fixed (int* pOutSamplesFixed = &outSamples[outSampleOffset, 0])
-				{
-					short* pInSamples = (short*)pInSamplesFixed;
-					int* pOutSamples = pOutSamplesFixed;
-
-					for (int i = 0; i < loopCount; i++)
-					{
-						*(pOutSamples++) = (int)*(pInSamples++);
-					}
-				}
-			}
-		}
-		public void Write(byte[] buff, uint sampleCount)
-		{
-			//if ((_sampleBuffer == null) || (_sampleBuffer.GetLength(0) < sampleCount))
-			//{
-			//    _sampleBuffer = new int[sampleCount, _channelCount];
-			//}
-			//BytesToAPESamples_16(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount);
-			//_apeWriter.Write(_sampleBuffer, (int)sampleCount);
-			_apeWriter.Write (buff, sampleCount);
+			if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _blockAlign)
+				_sampleBuffer = new byte[sampleCount * _blockAlign];
+			AudioCodecsDotNet.AudioCodecsDotNet.FLACSamplesToBytes (buff, 0, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
+			_apeWriter.Write(_sampleBuffer, sampleCount);
 		}
 		public string Path { get { return _apeWriter.Path; } }
 	}
@@ -871,29 +452,6 @@ namespace CUEToolsLib {
 			set { _wavPackReader.Tags = value; }
 		}
 
-		private unsafe void WavPackSamplesToBytes_16(int[,] inSamples, uint inSampleOffset,
-			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount)
-		{
-			uint loopCount = sampleCount * (uint) channelCount;
-
-			if ((inSamples.GetLength(0) - inSampleOffset < sampleCount) ||
-				(outSamples.Length - outByteOffset < loopCount * 2))
-			{
-				throw new IndexOutOfRangeException();
-			}
-
-			fixed (int* pInSamplesFixed = &inSamples[inSampleOffset, 0]) {
-				fixed (byte* pOutSamplesFixed = &outSamples[outByteOffset]) {
-					int* pInSamples = pInSamplesFixed;
-					short* pOutSamples = (short*)pOutSamplesFixed;
-
-					for (int i = 0; i < loopCount; i++) {
-						*(pOutSamples++) = (short)*(pInSamples++);
-					}
-				}
-			}
-		}
-
 		public uint Read(byte[] buff, uint sampleCount) {
 			if (_wavPackReader.BitsPerSample != 16) {
 				throw new Exception("Reading is only supported for 16 bit sample depth.");
@@ -903,8 +461,7 @@ namespace CUEToolsLib {
 
 			sampleBuffer = new int[sampleCount * 2, chanCount];
 			_wavPackReader.Read(sampleBuffer, (int) sampleCount);
-			WavPackSamplesToBytes_16(sampleBuffer, 0, buff, 0, sampleCount, chanCount);
-
+			AudioCodecsDotNet.AudioCodecsDotNet.FLACSamplesToBytes_16(sampleBuffer, 0, buff, 0, sampleCount, chanCount);
 			return sampleCount;
 		}
 
@@ -913,18 +470,21 @@ namespace CUEToolsLib {
 
 	class WavPackWriter : IAudioDest {
 		WavPackDotNet.WavPackWriter _wavPackWriter;
-		int[,] _sampleBuffer;
 		int _bitsPerSample;
 		int _channelCount;
 		int _sampleRate;
+		int _blockAlign;
+		byte[] _sampleBuffer;
 
 		public WavPackWriter(string path, int bitsPerSample, int channelCount, int sampleRate) {
-			if (bitsPerSample != 16) {
-				throw new Exception("Bits per sample must be 16.");
+			if (bitsPerSample != 16 && bitsPerSample != 24)
+			{
+				throw new Exception("Bits per sample must be 16 or 24.");
 			}
 			_bitsPerSample = bitsPerSample;
 			_channelCount = channelCount;
 			_sampleRate = sampleRate;
+			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
 			_wavPackWriter = new WavPackDotNet.WavPackWriter(path, bitsPerSample, channelCount, sampleRate);
 		}
 
@@ -961,39 +521,31 @@ namespace CUEToolsLib {
 			}
 		}
 
+		public bool MD5Sum
+		{
+			get
+			{
+				return _wavPackWriter.MD5Sum;
+			}
+			set
+			{
+				_wavPackWriter.MD5Sum = value;
+			}
+		}
+
 		public void Close() {
 			_wavPackWriter.Close();
 		}
 
-		private unsafe void BytesToWavPackSamples_16(byte[] inSamples, int inByteOffset,
-			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount)
-		{
-			uint loopCount = sampleCount * (uint) channelCount;
-
-			if ((inSamples.Length - inByteOffset < loopCount * 2) ||
-				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
+		public void Write(int[,] sampleBuffer, uint sampleCount) {
+			if (MD5Sum)
 			{
-				throw new IndexOutOfRangeException();
+				if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _blockAlign)
+					_sampleBuffer = new byte[sampleCount * _blockAlign];
+				AudioCodecsDotNet.AudioCodecsDotNet.FLACSamplesToBytes(sampleBuffer, 0, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
+				_wavPackWriter.UpdateHash(_sampleBuffer, (int) sampleCount * _blockAlign);
 			}
-
-			fixed (byte* pInSamplesFixed = &inSamples[inByteOffset]) {
-				fixed (int* pOutSamplesFixed = &outSamples[outSampleOffset, 0]) {
-					short* pInSamples = (short*)pInSamplesFixed;
-					int* pOutSamples = pOutSamplesFixed;
-
-					for (int i = 0; i < loopCount; i++) {
-						*(pOutSamples++) = (int)*(pInSamples++);
-					}
-				}
-			}
-		}
-
-		public void Write(byte[] buff, uint sampleCount) {
-			if ((_sampleBuffer == null) || (_sampleBuffer.GetLength(0) < sampleCount)) {
-				_sampleBuffer = new int[sampleCount, _channelCount];
-			}
-			BytesToWavPackSamples_16(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount);
-			_wavPackWriter.Write(_sampleBuffer, (int) sampleCount);
+			_wavPackWriter.Write(sampleBuffer, (int) sampleCount);
 		}
 
 		public string Path { get { return _wavPackWriter.Path; } }

@@ -120,6 +120,9 @@
   <data name="grpFLAC.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="chkHDCDDetect.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
     <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to input files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
   </data>
@@ -129,6 +132,9 @@
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
     <value>73, 23</value>
+  </data>
+  <data name="chkWriteArTagsOnConvert.Size" type="System.Drawing.Size, System.Drawing">
+    <value>137, 17</value>
   </data>
   <data name="&gt;&gt;txtSpecialExceptions.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -143,11 +149,11 @@
   <data name="chkArNoUnverifiedAudio.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 20</value>
   </data>
-  <data name="tabControl1.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="&gt;&gt;groupBox3.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;rbAPEhigh.Type" xml:space="preserve">
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -155,14 +161,14 @@
   <data name="chkPreserveHTOA.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 44</value>
   </data>
-  <data name="numericFLACCompressionLevel.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+  <data name="&gt;&gt;labelEncodeWhenConfidence.Name" xml:space="preserve">
+    <value>labelEncodeWhenConfidence</value>
   </data>
   <data name="rbWVHigh.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
-  <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+  <data name="chkHDCDDecode.Text" xml:space="preserve">
+    <value>Decode HDCD to 24 bit</value>
   </data>
   <data name="lblSingleFilenameFormat.Text" xml:space="preserve">
     <value>Single format:</value>
@@ -197,17 +203,26 @@
   <data name="txtTrackFilenameFormat.Text" xml:space="preserve">
     <value>%N-%A-%T</value>
   </data>
+  <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
+    <value>HDCD decoding is irreversable. Resulting files cannot be burned to the CD. 24-bit audio files are created, but the actual resolution is 20 bit</value>
+  </data>
   <data name="&gt;&gt;btnOK.Name" xml:space="preserve">
     <value>btnOK</value>
   </data>
   <data name="groupBox2.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
+  <data name="labelFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 101</value>
+  </data>
   <data name="numWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>36, 21</value>
   </data>
   <data name="&gt;&gt;chkReplaceSpaces.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="btnOK.Location" type="System.Drawing.Point, System.Drawing">
+    <value>194, 271</value>
   </data>
   <data name="txtTrackFilenameFormat.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -217,6 +232,9 @@
   </data>
   <data name="rbWVVeryHigh.Size" type="System.Drawing.Size, System.Drawing">
     <value>71, 17</value>
+  </data>
+  <data name="rbAPEhigh.Size" type="System.Drawing.Size, System.Drawing">
+    <value>46, 17</value>
   </data>
   <data name="chkWriteArLogOnConvert.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 172</value>
@@ -239,8 +257,15 @@
   <data name="rbAPEinsane.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
   </data>
-  <data name="txtTrackFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>149, 21</value>
+  <data name="chkHDCDDetect.Text" xml:space="preserve">
+    <value>Detect HDCD encoding</value>
+  </data>
+  <data name="rbWVHigh.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="tabPage3.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
   </data>
   <data name="&gt;&gt;chkEmbedLog.Parent" xml:space="preserve">
     <value>grpGeneral</value>
@@ -248,23 +273,29 @@
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Write offset (samples):</value>
   </data>
-  <data name="rbAPEnormal.Size" type="System.Drawing.Size, System.Drawing">
-    <value>58, 17</value>
+  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="chkArFixOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>81, 17</value>
   </data>
   <data name="&gt;&gt;chkWVExtraMode.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;chkFillUpCUE.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="chkHDCDDetect.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
+  <data name="&gt;&gt;chkFillUpCUE.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="chkFLACVerify.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;chkHDCDStopLooking.Name" xml:space="preserve">
+    <value>chkHDCDStopLooking</value>
   </data>
   <data name="&gt;&gt;groupBox3.Name" xml:space="preserve">
     <value>groupBox3</value>
+  </data>
+  <data name="&gt;&gt;txtSpecialExceptions.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -281,17 +312,17 @@
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>542, 307</value>
   </data>
-  <data name="&gt;&gt;rbAPEnormal.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="txtSingleFilenameFormat.ToolTip" xml:space="preserve">
+  <data name="rbAPEextrahigh.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="txtSingleFilenameFormat.Text" xml:space="preserve">
     <value>%F</value>
   </data>
-  <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+  <data name="grpHDCD.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="&gt;&gt;chkArNoUnverifiedAudio.Parent" xml:space="preserve">
     <value>groupBox1</value>
@@ -323,9 +354,6 @@
   <data name="lblFLACCompressionLevel.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 93</value>
   </data>
-  <data name="&gt;&gt;grpGeneral.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
@@ -344,15 +372,11 @@
   <data name="btnOK.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="chkEncodeWhenZeroOffset.RightToLeft" type="System.Windows.Forms.RightToLeft, System.Windows.Forms">
     <value>Yes</value>
   </data>
-  <data name="&gt;&gt;labelEncodeWhenConfidence.Name" xml:space="preserve">
-    <value>labelEncodeWhenConfidence</value>
+  <data name="labelFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
   </data>
   <data name="&gt;&gt;grpFLAC.Name" xml:space="preserve">
     <value>grpFLAC</value>
@@ -360,17 +384,26 @@
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
+  <data name="chkCreateCUEFileWhenEmbedded.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 129</value>
   </data>
-  <data name="chkPreserveHTOA.ToolTip" xml:space="preserve">
-    <value />
+  <data name="rbWVFast.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 19</value>
+  </data>
+  <data name="&gt;&gt;chkWVStoreMD5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="rbAPEextrahigh.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
+  <data name="&gt;&gt;chkCreateM3U.Name" xml:space="preserve">
+    <value>chkCreateM3U</value>
+  </data>
   <data name="&gt;&gt;chkArNoUnverifiedAudio.Name" xml:space="preserve">
     <value>chkArNoUnverifiedAudio</value>
+  </data>
+  <data name="tabPage4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 22</value>
   </data>
   <data name="&gt;&gt;tabPage2.Parent" xml:space="preserve">
     <value>tabControl1</value>
@@ -390,11 +423,17 @@
   <data name="&gt;&gt;numEncodeWhenConfidence.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
+  <data name="&gt;&gt;chkHDCDDetect.Name" xml:space="preserve">
+    <value>chkHDCDDetect</value>
+  </data>
   <data name="labelFixWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
     <value>101, 23</value>
   </data>
   <data name="numWVExtraMode.Location" type="System.Drawing.Point, System.Drawing">
     <value>103, 91</value>
+  </data>
+  <data name="grpHDCD.Text" xml:space="preserve">
+    <value>HDCD options</value>
   </data>
   <data name="&gt;&gt;lblTrackFilenameFormat.Name" xml:space="preserve">
     <value>lblTrackFilenameFormat</value>
@@ -407,9 +446,6 @@
   </data>
   <data name="&gt;&gt;tabPage3.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenConfidence.Name" xml:space="preserve">
-    <value>labelFixWhenConfidence</value>
   </data>
   <data name="&gt;&gt;labelFixWhenPercent.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -442,13 +478,16 @@
     <value>4, 22</value>
   </data>
   <data name="&gt;&gt;chkWVExtraMode.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="grpWavPack.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
   <data name="labelEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
     <value>108, 21</value>
+  </data>
+  <data name="&gt;&gt;chkWVStoreMD5.Name" xml:space="preserve">
+    <value>chkWVStoreMD5</value>
   </data>
   <data name="rbAPEinsane.Size" type="System.Drawing.Size, System.Drawing">
     <value>58, 17</value>
@@ -465,13 +504,13 @@
   <data name="chkWVExtraMode.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 92</value>
   </data>
-  <data name="tabPage2.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;chkEmbedLog.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkCreateM3U.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="labelEncodeWhenPercent.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
@@ -480,17 +519,23 @@
   <data name="&gt;&gt;chkWriteARLogOnVerify.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="chkRemoveSpecial.Size" type="System.Drawing.Size, System.Drawing">
-    <value>194, 17</value>
+  <data name="&gt;&gt;labelFixWhenConfidence.Name" xml:space="preserve">
+    <value>labelFixWhenConfidence</value>
   </data>
   <data name="&gt;&gt;labelFixWhenConfidence.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="chkWVStoreMD5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>125, 17</value>
   </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Locate audio files if missing</value>
   </data>
   <data name="lblTrackFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>72, 13</value>
+  </data>
+  <data name="&gt;&gt;txtSingleFilenameFormat.Name" xml:space="preserve">
+    <value>txtSingleFilenameFormat</value>
   </data>
   <data name="tabPage3.Text" xml:space="preserve">
     <value>Codecs</value>
@@ -502,7 +547,7 @@
     <value>2</value>
   </data>
   <data name="&gt;&gt;numericWriteOffset.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="numericWriteOffset.ToolTip" xml:space="preserve">
     <value />
@@ -525,17 +570,17 @@
   <data name="chkPreserveHTOA.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="chkWVStoreMD5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 114</value>
+  </data>
   <data name="&gt;&gt;rbAPEnormal.Type" xml:space="preserve">
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="tabPage2.Text" xml:space="preserve">
-    <value>AccurateRip</value>
+  <data name="&gt;&gt;chkCreateM3U.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
-  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="rbWVFast.Size" type="System.Drawing.Size, System.Drawing">
-    <value>46, 17</value>
+  <data name="grpHDCD.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
   </data>
   <data name="&gt;&gt;grpWavPack.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -552,14 +597,17 @@
   <data name="chkFillUpCUE.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="lblTrackFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 71</value>
+  <data name="chkHDCDStopLooking.Size" type="System.Drawing.Size, System.Drawing">
+    <value>168, 17</value>
   </data>
-  <data name="$this.ToolTip" xml:space="preserve">
-    <value />
+  <data name="&gt;&gt;grpHDCD.Name" xml:space="preserve">
+    <value>grpHDCD</value>
   </data>
   <data name="chkKeepOriginalFilenames.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
+  </data>
+  <data name="lblSingleFilenameFormat.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="&gt;&gt;chkWriteArTagsOnConvert.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -570,14 +618,11 @@
   <data name="&gt;&gt;rbAPEfast.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="grpFLAC.Text" xml:space="preserve">
-    <value>FLAC</value>
+  <data name="&gt;&gt;grpGeneral.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;chkWriteARLogOnVerify.Name" xml:space="preserve">
     <value>chkWriteARLogOnVerify</value>
-  </data>
-  <data name="&gt;&gt;numEncodeWhenPercent.ZOrder" xml:space="preserve">
-    <value>5</value>
   </data>
   <data name="lblTrackFilenameFormat.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -588,17 +633,23 @@
   <data name="btnCancel.Location" type="System.Drawing.Point, System.Drawing">
     <value>273, 271</value>
   </data>
+  <data name="chkHDCDDetect.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
   <data name="&gt;&gt;numericFLACCompressionLevel.Name" xml:space="preserve">
     <value>numericFLACCompressionLevel</value>
   </data>
   <data name="chkWriteARTagsOnVerify.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="rbAPEfast.Size" type="System.Drawing.Size, System.Drawing">
-    <value>46, 17</value>
+  <data name="&gt;&gt;groupBox2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="txtSingleFilenameFormat.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
+  </data>
+  <data name="rbAPEinsane.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="&gt;&gt;chkWriteARLogOnVerify.Parent" xml:space="preserve">
     <value>groupBox3</value>
@@ -606,14 +657,8 @@
   <data name="labelFixWhenConfidence.Text" xml:space="preserve">
     <value>with confidence &gt;=</value>
   </data>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 13</value>
-  </data>
-  <data name="&gt;&gt;rbWVFast.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="tabControl1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
+  <data name="numEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
+    <value>38, 21</value>
   </data>
   <data name="chkRemoveSpecial.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 100</value>
@@ -621,14 +666,14 @@
   <data name="&gt;&gt;rbAPEextrahigh.Parent" xml:space="preserve">
     <value>groupBox2</value>
   </data>
+  <data name="&gt;&gt;chkHDCDDecode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="chkFilenamesANSISafe.ToolTip" xml:space="preserve">
     <value>Only allow characters, which are present in ANSI codepage, for compatibility with non-unicode applications</value>
   </data>
   <data name="&gt;&gt;txtSpecialExceptions.Parent" xml:space="preserve">
     <value>grpAudioFilenames</value>
-  </data>
-  <data name="chkReplaceSpaces.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
   </data>
   <data name="numFixWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
     <value>38, 21</value>
@@ -642,8 +687,11 @@
   <data name="&gt;&gt;grpFLAC.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="chkWriteARLogOnVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 17</value>
+  <data name="chkCreateM3U.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="grpFLAC.Text" xml:space="preserve">
+    <value>FLAC</value>
   </data>
   <data name="chkWriteARLogOnVerify.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -652,7 +700,7 @@
     <value>chkEmbedLog</value>
   </data>
   <data name="&gt;&gt;rbWVNormal.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="&gt;&gt;chkRemoveSpecial.Name" xml:space="preserve">
     <value>chkRemoveSpecial</value>
@@ -666,14 +714,8 @@
   <data name="&gt;&gt;numericFLACCompressionLevel.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;rbWVVeryHigh.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;grpAudioFilenames.Name" xml:space="preserve">
-    <value>grpAudioFilenames</value>
-  </data>
-  <data name="&gt;&gt;chkRemoveSpecial.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="rbAPEfast.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="btnOK.Size" type="System.Drawing.Size, System.Drawing">
     <value>73, 23</value>
@@ -684,17 +726,17 @@
   <data name="lblFLACCompressionLevel.Text" xml:space="preserve">
     <value>Compression level:</value>
   </data>
+  <data name="&gt;&gt;numWVExtraMode.Name" xml:space="preserve">
+    <value>numWVExtraMode</value>
+  </data>
   <data name="&gt;&gt;numFixWhenPercent.Name" xml:space="preserve">
     <value>numFixWhenPercent</value>
-  </data>
-  <data name="&gt;&gt;btnCancel.ZOrder" xml:space="preserve">
-    <value>1</value>
   </data>
   <data name="chkFilenamesANSISafe.Text" xml:space="preserve">
     <value>Force ANSI filenames</value>
   </data>
-  <data name="rbAPEfast.ToolTip" xml:space="preserve">
-    <value />
+  <data name="chkEncodeWhenZeroOffset.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
   <data name="&gt;&gt;chkArFixOffset.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -720,8 +762,8 @@
   <data name="rbWVFast.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;chkKeepOriginalFilenames.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;lblFLACCompressionLevel.Parent" xml:space="preserve">
+    <value>grpFLAC</value>
   </data>
   <data name="&gt;&gt;grpAudioFilenames.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -735,8 +777,8 @@
   <data name="&gt;&gt;tabPage1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="chkWriteArTagsOnConvert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 149</value>
+  <data name="&gt;&gt;chkHDCDDetect.Parent" xml:space="preserve">
+    <value>tabPage4</value>
   </data>
   <data name="numericFLACCompressionLevel.ToolTip" xml:space="preserve">
     <value />
@@ -762,14 +804,14 @@
   <data name="&gt;&gt;grpWavPack.Parent" xml:space="preserve">
     <value>tabPage3</value>
   </data>
+  <data name="lblFLACCompressionLevel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 13</value>
+  </data>
   <data name="numEncodeWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
     <value>235, 40</value>
   </data>
   <data name="&gt;&gt;tabPage2.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;grpFLAC.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;lblFLACCompressionLevel.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -780,6 +822,15 @@
   <data name="&gt;&gt;numEncodeWhenConfidence.Name" xml:space="preserve">
     <value>numEncodeWhenConfidence</value>
   </data>
+  <data name="chkWVStoreMD5.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;chkWriteArLogOnConvert.Name" xml:space="preserve">
+    <value>chkWriteArLogOnConvert</value>
+  </data>
+  <data name="&gt;&gt;chkFLACVerify.Name" xml:space="preserve">
+    <value>chkFLACVerify</value>
+  </data>
   <data name="tabPage1.Text" xml:space="preserve">
     <value>CUETools</value>
   </data>
@@ -789,20 +840,23 @@
   <data name="&gt;&gt;chkArNoUnverifiedAudio.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="numFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+  <data name="&gt;&gt;chkHDCDDecode.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;chkAutoCorrectFilenames.Name" xml:space="preserve">
+    <value>chkAutoCorrectFilenames</value>
   </data>
   <data name="chkAutoCorrectFilenames.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;chkFillUpCUE.Name" xml:space="preserve">
-    <value>chkFillUpCUE</value>
+  <data name="chkWriteARLogOnVerify.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
   </data>
   <data name="&gt;&gt;labelEncodeWhenPercent.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
-  <data name="chkWriteARLogOnVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 172</value>
+  <data name="&gt;&gt;grpFLAC.Parent" xml:space="preserve">
+    <value>tabPage3</value>
   </data>
   <data name="&gt;&gt;btnCancel.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -822,6 +876,9 @@
   <data name="chkRemoveSpecial.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="chkEmbedLog.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
   <data name="txtSingleFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>97, 40</value>
   </data>
@@ -831,14 +888,11 @@
   <data name="&gt;&gt;numEncodeWhenPercent.Name" xml:space="preserve">
     <value>numEncodeWhenPercent</value>
   </data>
-  <data name="&gt;&gt;chkFLACVerify.Parent" xml:space="preserve">
-    <value>grpFLAC</value>
-  </data>
   <data name="chkAutoCorrectFilenames.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 61</value>
   </data>
-  <data name="&gt;&gt;rbAPEinsane.Name" xml:space="preserve">
-    <value>rbAPEinsane</value>
+  <data name="&gt;&gt;numericWriteOffset.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;lblSingleFilenameFormat.ZOrder" xml:space="preserve">
     <value>7</value>
@@ -850,7 +904,7 @@
     <value>2</value>
   </data>
   <data name="&gt;&gt;chkAutoCorrectFilenames.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="&gt;&gt;tabControl1.Name" xml:space="preserve">
     <value>tabControl1</value>
@@ -858,17 +912,20 @@
   <data name="&gt;&gt;txtSingleFilenameFormat.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
+  <data name="chkWVStoreMD5.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkWriteArLogOnConvert.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
-  <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
-    <value>Write AccurateRip tags</value>
-  </data>
   <data name="&gt;&gt;lblWriteOffset.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
-  <data name="&gt;&gt;rbWVNormal.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;btnOK.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;chkArFixOffset.Parent" xml:space="preserve">
+    <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numFixWhenPercent.ZOrder" xml:space="preserve">
     <value>12</value>
@@ -894,11 +951,14 @@
   <data name="chkWriteArTagsOnConvert.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="rbAPEinsane.ToolTip" xml:space="preserve">
-    <value />
+  <data name="chkHDCDStopLooking.ToolTip" xml:space="preserve">
+    <value>Stop looking for HDCD information, If none found in first 10 seconds of the disc</value>
   </data>
   <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>118, 13</value>
+  </data>
+  <data name="&gt;&gt;chkHDCDDecode.Parent" xml:space="preserve">
+    <value>grpHDCD</value>
   </data>
   <data name="numericFLACCompressionLevel.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
@@ -909,6 +969,9 @@
   <data name="&gt;&gt;chkWriteArTagsOnConvert.Name" xml:space="preserve">
     <value>chkWriteArTagsOnConvert</value>
   </data>
+  <data name="&gt;&gt;numEncodeWhenPercent.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
   <data name="chkArFixOffset.ToolTip" xml:space="preserve">
     <value />
   </data>
@@ -918,8 +981,8 @@
   <data name="chkArNoUnverifiedAudio.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="tabControl1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
+  <data name="&gt;&gt;tabPage3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="chkRemoveSpecial.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -936,6 +999,9 @@
   <data name="numWVExtraMode.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
   </data>
+  <data name="numFixWhenConfidence.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkFillUpCUE.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
   </data>
@@ -946,10 +1012,13 @@
     <value>lblFLACCompressionLevel</value>
   </data>
   <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>145, 119</value>
+    <value>145, 148</value>
   </data>
   <data name="&gt;&gt;numWVExtraMode.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;chkPreserveHTOA.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
   </data>
   <data name="txtTrackFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>97, 68</value>
@@ -960,11 +1029,17 @@
   <data name="&gt;&gt;rbAPEfast.Type" xml:space="preserve">
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;btnOK.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="tabPage4.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
   </data>
   <data name="&gt;&gt;chkAutoCorrectFilenames.Parent" xml:space="preserve">
     <value>grpGeneral</value>
+  </data>
+  <data name="&gt;&gt;rbWVFast.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="chkHDCDStopLooking.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;tabControl1.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -978,8 +1053,11 @@
   <data name="&gt;&gt;chkReplaceSpaces.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
+  </data>
   <data name="&gt;&gt;chkPreserveHTOA.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
     <value>543, 253</value>
@@ -987,14 +1065,17 @@
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterParent</value>
   </data>
-  <data name="labelEncodeWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+  <data name="chkCreateM3U.Size" type="System.Drawing.Size, System.Drawing">
+    <value>127, 17</value>
   </data>
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="chkReplaceSpaces.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+  <data name="chkCreateM3U.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="chkHDCDDecode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 43</value>
   </data>
   <data name="chkWriteARTagsOnVerify.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1002,17 +1083,20 @@
   <data name="txtSpecialExceptions.Text" xml:space="preserve">
     <value>-()</value>
   </data>
-  <data name="chkWVExtraMode.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
   <data name="rbWVFast.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>137, 17</value>
   </data>
+  <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="&gt;&gt;groupBox1.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="chkCreateCUEFileWhenEmbedded.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;numFixWhenPercent.Type" xml:space="preserve">
     <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1020,17 +1104,11 @@
   <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
     <value>295, 215</value>
   </data>
-  <data name="rbAPEnormal.Text" xml:space="preserve">
-    <value>Normal</value>
-  </data>
   <data name="&gt;&gt;rbAPEfast.Parent" xml:space="preserve">
     <value>groupBox2</value>
   </data>
-  <data name="&gt;&gt;lblSingleFilenameFormat.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="lblSingleFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 43</value>
+  <data name="rbAPEnormal.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkWriteARTagsOnVerify.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1053,8 +1131,8 @@
   <data name="&gt;&gt;chkAutoCorrectFilenames.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="chkWriteARLogOnVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+  <data name="&gt;&gt;chkWVStoreMD5.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;rbWVNormal.Name" xml:space="preserve">
     <value>rbWVNormal</value>
@@ -1068,8 +1146,11 @@
   <data name="groupBox3.Text" xml:space="preserve">
     <value>Verify</value>
   </data>
-  <data name="&gt;&gt;chkPreserveHTOA.Parent" xml:space="preserve">
-    <value>grpGeneral</value>
+  <data name="&gt;&gt;chkRemoveSpecial.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
+    <value>189, 17</value>
   </data>
   <data name="&gt;&gt;chkFLACVerify.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -1101,11 +1182,11 @@
   <data name="rbWVNormal.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
-  <data name="&gt;&gt;lblTrackFilenameFormat.ZOrder" xml:space="preserve">
-    <value>6</value>
+  <data name="numEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
+    <value>235, 19</value>
   </data>
-  <data name="numEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
-    <value>38, 21</value>
+  <data name="lblSingleFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 43</value>
   </data>
   <data name="rbWVNormal.Size" type="System.Drawing.Size, System.Drawing">
     <value>58, 17</value>
@@ -1122,14 +1203,23 @@
   <data name="&gt;&gt;lblTrackFilenameFormat.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="grpAudioFilenames.Location" type="System.Drawing.Point, System.Drawing">
+    <value>264, 6</value>
+  </data>
   <data name="chkEncodeWhenZeroOffset.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
   </data>
   <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
     <value>226, 6</value>
   </data>
+  <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
+    <value>133, 20</value>
+  </data>
   <data name="&gt;&gt;labelEncodeWhenConfidence.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;grpHDCD.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;rbAPEextrahigh.Name" xml:space="preserve">
     <value>rbAPEextrahigh</value>
@@ -1146,11 +1236,20 @@
   <data name="&gt;&gt;labelEncodeWhenPercent.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;grpHDCD.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;labelEncodeWhenConfidence.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
   <data name="&gt;&gt;chkArFixOffset.Name" xml:space="preserve">
     <value>chkArFixOffset</value>
   </data>
+  <data name="&gt;&gt;chkHDCDDetect.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="grpFLAC.Size" type="System.Drawing.Size, System.Drawing">
-    <value>204, 119</value>
+    <value>204, 148</value>
   </data>
   <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
     <value>toolTip1</value>
@@ -1161,8 +1260,11 @@
   <data name="chkKeepOriginalFilenames.Text" xml:space="preserve">
     <value>Keep original filenames</value>
   </data>
-  <data name="txtSpecialExceptions.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+  <data name="&gt;&gt;lblSingleFilenameFormat.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
+    <value>Create .cue file even if embedded</value>
   </data>
   <data name="rbAPEextrahigh.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1170,17 +1272,23 @@
   <data name="labelEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
     <value>101, 13</value>
   </data>
-  <data name="&gt;&gt;numericFLACCompressionLevel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="chkHDCDDecode.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
-  <data name="&gt;&gt;rbWVHigh.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="chkReplaceSpaces.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="&gt;&gt;numWVExtraMode.Name" xml:space="preserve">
-    <value>numWVExtraMode</value>
+  <data name="rbAPEfast.Size" type="System.Drawing.Size, System.Drawing">
+    <value>46, 17</value>
+  </data>
+  <data name="tabPage4.Text" xml:space="preserve">
+    <value>HDCD</value>
   </data>
   <data name="&gt;&gt;labelEncodeWhenPercent.Name" xml:space="preserve">
     <value>labelEncodeWhenPercent</value>
+  </data>
+  <data name="&gt;&gt;lblTrackFilenameFormat.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Text" xml:space="preserve">
     <value>Write AccurateRip tags</value>
@@ -1188,8 +1296,8 @@
   <data name="chkKeepOriginalFilenames.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.ZOrder" xml:space="preserve">
-    <value>4</value>
+  <data name="tabControl1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
   </data>
   <data name="&gt;&gt;labelFixWhenPercent.Parent" xml:space="preserve">
     <value>groupBox1</value>
@@ -1197,14 +1305,23 @@
   <data name="rbAPEextrahigh.Text" xml:space="preserve">
     <value>Extra High</value>
   </data>
+  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="chkFLACVerify.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
   <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>173, 62</value>
   </data>
-  <data name="&gt;&gt;btnOK.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="txtTrackFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>149, 21</value>
   </data>
   <data name="chkFillUpCUE.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 95</value>
+  </data>
+  <data name="chkHDCDDetect.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 19</value>
   </data>
   <data name="&gt;&gt;rbAPEfast.Name" xml:space="preserve">
     <value>rbAPEfast</value>
@@ -1212,17 +1329,23 @@
   <data name="rbWVHigh.Location" type="System.Drawing.Point, System.Drawing">
     <value>13, 53</value>
   </data>
-  <data name="&gt;&gt;txtSingleFilenameFormat.Name" xml:space="preserve">
-    <value>txtSingleFilenameFormat</value>
+  <data name="numericFLACCompressionLevel.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="rbAPEnormal.Text" xml:space="preserve">
+    <value>Normal</value>
   </data>
   <data name="&gt;&gt;chkPreserveHTOA.Name" xml:space="preserve">
     <value>chkPreserveHTOA</value>
   </data>
-  <data name="chkArFixOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>81, 17</value>
+  <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
+    <value>Write AccurateRip tags</value>
   </data>
   <data name="labelEncodeWhenPercent.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
+  </data>
+  <data name="&gt;&gt;rbAPEinsane.Name" xml:space="preserve">
+    <value>rbAPEinsane</value>
   </data>
   <data name="rbWVHigh.Text" xml:space="preserve">
     <value>High</value>
@@ -1230,8 +1353,20 @@
   <data name="grpGeneral.Size" type="System.Drawing.Size, System.Drawing">
     <value>252, 204</value>
   </data>
+  <data name="&gt;&gt;grpAudioFilenames.Name" xml:space="preserve">
+    <value>grpAudioFilenames</value>
+  </data>
+  <data name="&gt;&gt;chkArNoUnverifiedAudio.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="chkCreateM3U.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 112</value>
+  </data>
   <data name="numericWriteOffset.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
+  </data>
+  <data name="chkArFixOffset.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
   </data>
   <data name="chkAutoCorrectFilenames.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1242,8 +1377,8 @@
   <data name="grpGeneral.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="tabPage3.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 3, 3, 3</value>
+  <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
   </data>
   <data name="grpGeneral.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 6</value>
@@ -1254,14 +1389,20 @@
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Verify, then convert</value>
   </data>
-  <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
-    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to output files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
+  <data name="chkCreateCUEFileWhenEmbedded.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkWriteArTagsOnConvert.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 149</value>
+  </data>
+  <data name="&gt;&gt;grpHDCD.Parent" xml:space="preserve">
+    <value>tabPage4</value>
   </data>
   <data name="chkReplaceSpaces.Size" type="System.Drawing.Size, System.Drawing">
     <value>185, 17</value>
   </data>
-  <data name="rbWVFast.Location" type="System.Drawing.Point, System.Drawing">
-    <value>13, 19</value>
+  <data name="&gt;&gt;rbAPEnormal.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
     <value>Write AccurateRip log</value>
@@ -1270,34 +1411,40 @@
     <value>4, 22</value>
   </data>
   <data name="grpWavPack.Size" type="System.Drawing.Size, System.Drawing">
-    <value>146, 119</value>
+    <value>146, 148</value>
   </data>
-  <data name="chkArNoUnverifiedAudio.ToolTip" xml:space="preserve">
-    <value />
+  <data name="chkCreateM3U.Text" xml:space="preserve">
+    <value>Create .m3u playlists</value>
   </data>
-  <data name="chkFLACVerify.ToolTip" xml:space="preserve">
-    <value />
+  <data name="&gt;&gt;tabPage2.Name" xml:space="preserve">
+    <value>tabPage2</value>
   </data>
-  <data name="&gt;&gt;btnOK.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;tabPage4.Name" xml:space="preserve">
+    <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;tabPage3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;chkFilenamesANSISafe.Name" xml:space="preserve">
+    <value>chkFilenamesANSISafe</value>
+  </data>
+  <data name="tabControl1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
   </data>
   <data name="lblWriteOffset.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;grpGeneral.Name" xml:space="preserve">
-    <value>grpGeneral</value>
+  <data name="chkHDCDStopLooking.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
   </data>
   <data name="grpGeneral.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
+  <data name="&gt;&gt;chkReplaceSpaces.Name" xml:space="preserve">
+    <value>chkReplaceSpaces</value>
+  </data>
   <data name="grpAudioFilenames.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
-  <data name="lblTrackFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
+  <data name="rbWVFast.Size" type="System.Drawing.Size, System.Drawing">
+    <value>46, 17</value>
   </data>
   <data name="groupBox2.Text" xml:space="preserve">
     <value>Monkey's Audio (.ape)</value>
@@ -1305,13 +1452,13 @@
   <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="lblFLACCompressionLevel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>97, 13</value>
+  <data name="chkCreateCUEFileWhenEmbedded.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
   </data>
   <data name="chkWriteArLogOnConvert.Size" type="System.Drawing.Size, System.Drawing">
     <value>130, 17</value>
   </data>
-  <data name="rbAPEnormal.ToolTip" xml:space="preserve">
+  <data name="chkCreateM3U.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="numEncodeWhenConfidence.ToolTip" xml:space="preserve">
@@ -1320,11 +1467,14 @@
   <data name="numFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
     <value>235, 101</value>
   </data>
+  <data name="txtSpecialExceptions.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
   <data name="&gt;&gt;rbWVHigh.Name" xml:space="preserve">
     <value>rbWVHigh</value>
   </data>
-  <data name="&gt;&gt;tabPage2.Name" xml:space="preserve">
-    <value>tabPage2</value>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>6, 13</value>
   </data>
   <data name="&gt;&gt;groupBox2.Parent" xml:space="preserve">
     <value>tabPage3</value>
@@ -1335,8 +1485,8 @@
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Remove special characters except:</value>
   </data>
-  <data name="chkWVExtraMode.Text" xml:space="preserve">
-    <value>Extra mode:</value>
+  <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>535, 227</value>
   </data>
   <data name="&gt;&gt;lblTrackFilenameFormat.Parent" xml:space="preserve">
     <value>grpAudioFilenames</value>
@@ -1344,17 +1494,32 @@
   <data name="&gt;&gt;groupBox2.Name" xml:space="preserve">
     <value>groupBox2</value>
   </data>
-  <data name="rbAPEextrahigh.ToolTip" xml:space="preserve">
+  <data name="lblTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="&gt;&gt;chkWVExtraMode.Name" xml:space="preserve">
+    <value>chkWVExtraMode</value>
   </data>
   <data name="lblFLACCompressionLevel.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="numericWriteOffset.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
   <data name="labelEncodeWhenPercent.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="&gt;&gt;chkHDCDStopLooking.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="rbWVNormal.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
+  </data>
+  <data name="grpHDCD.Size" type="System.Drawing.Size, System.Drawing">
+    <value>203, 165</value>
+  </data>
+  <data name="chkFLACVerify.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="txtSpecialExceptions.Size" type="System.Drawing.Size, System.Drawing">
     <value>149, 21</value>
@@ -1362,14 +1527,20 @@
   <data name="rbAPEnormal.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
+  <data name="&gt;&gt;lblWriteOffset.Name" xml:space="preserve">
+    <value>lblWriteOffset</value>
+  </data>
   <data name="&gt;&gt;chkEmbedLog.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="numericFLACCompressionLevel.Size" type="System.Drawing.Size, System.Drawing">
     <value>36, 21</value>
   </data>
-  <data name="rbWVHigh.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="chkRemoveSpecial.Size" type="System.Drawing.Size, System.Drawing">
+    <value>194, 17</value>
+  </data>
+  <data name="chkHDCDDetect.Size" type="System.Drawing.Size, System.Drawing">
+    <value>135, 17</value>
   </data>
   <data name="lblSingleFilenameFormat.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -1380,35 +1551,47 @@
   <data name="&gt;&gt;chkWriteArLogOnConvert.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
-  <data name="chkEmbedLog.TabIndex" type="System.Int32, mscorlib">
+  <data name="&gt;&gt;labelEncodeWhenPercent.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
   <data name="labelEncodeWhenConfidence.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;numEncodeWhenPercent.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;btnOK.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage4.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="&gt;&gt;chkWriteArTagsOnConvert.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="chkKeepOriginalFilenames.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 20</value>
+  <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.Name" xml:space="preserve">
+    <value>chkCreateCUEFileWhenEmbedded</value>
   </data>
-  <data name="rbAPEhigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>46, 17</value>
+  <data name="&gt;&gt;chkHDCDDecode.Name" xml:space="preserve">
+    <value>chkHDCDDecode</value>
   </data>
-  <data name="&gt;&gt;chkRemoveSpecial.Parent" xml:space="preserve">
-    <value>grpAudioFilenames</value>
+  <data name="chkEmbedLog.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="chkWriteARLogOnVerify.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 172</value>
+  </data>
+  <data name="tabPage2.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
     <value>Replace spaces with underscores</value>
   </data>
-  <data name="chkFLACVerify.Text" xml:space="preserve">
-    <value>Verify</value>
+  <data name="&gt;&gt;grpFLAC.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;chkArNoUnverifiedAudio.ZOrder" xml:space="preserve">
-    <value>8</value>
+  <data name="chkHDCDStopLooking.Text" xml:space="preserve">
+    <value>Stop looking after 750 frames</value>
+  </data>
+  <data name="chkReplaceSpaces.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
   </data>
   <data name="chkAutoCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>155, 17</value>
@@ -1419,7 +1602,7 @@
   <data name="numFixWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
     <value>235, 80</value>
   </data>
-  <data name="numFixWhenConfidence.ToolTip" xml:space="preserve">
+  <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="&gt;&gt;chkWVExtraMode.Parent" xml:space="preserve">
@@ -1428,11 +1611,14 @@
   <data name="&gt;&gt;txtSingleFilenameFormat.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="chkHDCDDecode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 17</value>
+  </data>
   <data name="&gt;&gt;numFixWhenConfidence.Name" xml:space="preserve">
     <value>numFixWhenConfidence</value>
   </data>
-  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>AccurateRip</value>
   </data>
   <data name="&gt;&gt;rbWVFast.Type" xml:space="preserve">
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1440,8 +1626,8 @@
   <data name="&gt;&gt;btnCancel.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="btnOK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>194, 271</value>
+  <data name="&gt;&gt;rbWVHigh.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="chkArNoUnverifiedAudio.Text" xml:space="preserve">
     <value>Encode only if</value>
@@ -1449,26 +1635,41 @@
   <data name="lblFLACCompressionLevel.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
+  <data name="&gt;&gt;chkRemoveSpecial.Parent" xml:space="preserve">
+    <value>grpAudioFilenames</value>
+  </data>
   <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
     <value>535, 227</value>
   </data>
-  <data name="&gt;&gt;chkFLACVerify.Name" xml:space="preserve">
-    <value>chkFLACVerify</value>
+  <data name="chkWVExtraMode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="&gt;&gt;chkWriteArLogOnConvert.Name" xml:space="preserve">
-    <value>chkWriteArLogOnConvert</value>
+  <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
   </data>
-  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
-    <value>tabControl1</value>
+  <data name="chkKeepOriginalFilenames.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 20</value>
   </data>
-  <data name="grpAudioFilenames.Location" type="System.Drawing.Point, System.Drawing">
-    <value>264, 6</value>
+  <data name="&gt;&gt;chkKeepOriginalFilenames.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="numFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="tabControl1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="&gt;&gt;lblSingleFilenameFormat.Name" xml:space="preserve">
     <value>lblSingleFilenameFormat</value>
   </data>
-  <data name="labelEncodeWhenPercent.Text" xml:space="preserve">
-    <value>% of verified tracks &gt;=</value>
+  <data name="chkWVExtraMode.Text" xml:space="preserve">
+    <value>Extra mode:</value>
+  </data>
+  <data name="txtSingleFilenameFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkWVStoreMD5.Text" xml:space="preserve">
+    <value>Store MD5 checksum</value>
   </data>
   <data name="&gt;&gt;rbAPEextrahigh.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -1476,20 +1677,14 @@
   <data name="chkReplaceSpaces.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="chkPreserveHTOA.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
   <data name="chkWriteArLogOnConvert.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="&gt;&gt;grpGeneral.ZOrder" xml:space="preserve">
-    <value>0</value>
   </data>
   <data name="tabPage2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 3, 3, 3</value>
   </data>
-  <data name="numericWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 21</value>
+  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 149</value>
@@ -1497,8 +1692,8 @@
   <data name="labelFixWhenPercent.Text" xml:space="preserve">
     <value>% of verified tracks &gt;=</value>
   </data>
-  <data name="numericWriteOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+  <data name="tabPage4.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
   </data>
   <data name="chkWriteARLogOnVerify.ToolTip" xml:space="preserve">
     <value />
@@ -1506,14 +1701,14 @@
   <data name="rbAPEextrahigh.Location" type="System.Drawing.Point, System.Drawing">
     <value>13, 71</value>
   </data>
-  <data name="&gt;&gt;chkArFixOffset.Parent" xml:space="preserve">
-    <value>groupBox1</value>
+  <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
   </data>
-  <data name="&gt;&gt;numericWriteOffset.Parent" xml:space="preserve">
-    <value>grpGeneral</value>
+  <data name="labelEncodeWhenConfidence.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
-  <data name="&gt;&gt;txtSpecialExceptions.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
+    <value>Track format:</value>
   </data>
   <data name="numEncodeWhenPercent.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1521,20 +1716,23 @@
   <data name="&gt;&gt;chkPreserveHTOA.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;numFixWhenConfidence.ZOrder" xml:space="preserve">
-    <value>10</value>
+  <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
+    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to output files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
   </data>
-  <data name="&gt;&gt;numEncodeWhenPercent.Parent" xml:space="preserve">
-    <value>groupBox1</value>
+  <data name="grpHDCD.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 42</value>
+  </data>
+  <data name="&gt;&gt;btnOK.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Advanced Settings</value>
   </data>
+  <data name="&gt;&gt;tabPage4.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
   <data name="chkArFixOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 81</value>
-  </data>
-  <data name="lblTrackFilenameFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
   </data>
   <data name="&gt;&gt;numWVExtraMode.Type" xml:space="preserve">
     <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1542,14 +1740,17 @@
   <data name="&gt;&gt;lblFLACCompressionLevel.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="&gt;&gt;groupBox2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;chkCreateM3U.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
+  </data>
+  <data name="$this.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkFilenamesANSISafe.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
-  <data name="chkKeepOriginalFilenames.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;chkFillUpCUE.Name" xml:space="preserve">
+    <value>chkFillUpCUE</value>
   </data>
   <data name="chkFilenamesANSISafe.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 172</value>
@@ -1560,11 +1761,14 @@
   <data name="btnCancel.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
-  <data name="chkArFixOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+  <data name="&gt;&gt;chkHDCDStopLooking.Parent" xml:space="preserve">
+    <value>grpHDCD</value>
   </data>
   <data name="groupBox3.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
+  </data>
+  <data name="chkPreserveHTOA.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="labelFixWhenConfidence.ToolTip" xml:space="preserve">
     <value />
@@ -1575,11 +1779,8 @@
   <data name="numWVExtraMode.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbWVVeryHigh.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;chkFilenamesANSISafe.Name" xml:space="preserve">
-    <value>chkFilenamesANSISafe</value>
+  <data name="&gt;&gt;numEncodeWhenPercent.ZOrder" xml:space="preserve">
+    <value>5</value>
   </data>
   <data name="chkRemoveSpecial.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1590,17 +1791,17 @@
   <data name="&gt;&gt;tabPage2.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="lblSingleFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
+  <data name="&gt;&gt;chkHDCDDetect.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
-  <data name="chkEmbedLog.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="rbAPEnormal.Size" type="System.Drawing.Size, System.Drawing">
+    <value>58, 17</value>
   </data>
   <data name="rbAPEfast.Text" xml:space="preserve">
     <value>Fast</value>
   </data>
-  <data name="numEncodeWhenPercent.ToolTip" xml:space="preserve">
-    <value />
+  <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 8.25pt</value>
   </data>
   <data name="&gt;&gt;rbWVHigh.Parent" xml:space="preserve">
     <value>grpWavPack</value>
@@ -1635,11 +1836,17 @@
   <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
     <value>535, 227</value>
   </data>
-  <data name="numEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>235, 19</value>
+  <data name="numEncodeWhenPercent.ToolTip" xml:space="preserve">
+    <value />
   </data>
-  <data name="&gt;&gt;grpFLAC.Parent" xml:space="preserve">
-    <value>tabPage3</value>
+  <data name="&gt;&gt;chkHDCDStopLooking.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkFLACVerify.Parent" xml:space="preserve">
+    <value>grpFLAC</value>
+  </data>
+  <data name="&gt;&gt;btnCancel.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="lblWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 23</value>
@@ -1665,14 +1872,14 @@
   <data name="btnCancel.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkAutoCorrectFilenames.ToolTip" xml:space="preserve">
-    <value>Preprocess with filename corrector if unable to locate audio files</value>
+  <data name="chkWVStoreMD5.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
   </data>
   <data name="&gt;&gt;btnCancel.Name" xml:space="preserve">
     <value>btnCancel</value>
   </data>
-  <data name="labelFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 101</value>
+  <data name="lblTrackFilenameFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
   </data>
   <data name="&gt;&gt;numericWriteOffset.Name" xml:space="preserve">
     <value>numericWriteOffset</value>
@@ -1680,29 +1887,38 @@
   <data name="numFixWhenPercent.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
   </data>
-  <data name="chkEncodeWhenZeroOffset.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
+  <data name="&gt;&gt;grpGeneral.Name" xml:space="preserve">
+    <value>grpGeneral</value>
   </data>
-  <data name="labelFixWhenPercent.ToolTip" xml:space="preserve">
-    <value />
+  <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
+    <value>with confidence &gt;=</value>
+  </data>
+  <data name="numericWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>62, 21</value>
   </data>
   <data name="&gt;&gt;rbAPEhigh.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="&gt;&gt;labelEncodeWhenConfidence.Parent" xml:space="preserve">
-    <value>groupBox1</value>
+  <data name="chkPreserveHTOA.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
   </data>
   <data name="lblWriteOffset.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
   <data name="txtSingleFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>149, 21</value>
   </data>
-  <data name="rbAPEhigh.Text" xml:space="preserve">
-    <value>High</value>
+  <data name="chkFLACVerify.Text" xml:space="preserve">
+    <value>Verify</value>
   </data>
-  <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
-    <value>Track format:</value>
+  <data name="chkHDCDStopLooking.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 20</value>
+  </data>
+  <data name="tabPage4.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="&gt;&gt;numericFLACCompressionLevel.Parent" xml:space="preserve">
     <value>grpFLAC</value>
@@ -1714,7 +1930,7 @@
     <value>6, 6</value>
   </data>
   <data name="&gt;&gt;rbWVVeryHigh.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="groupBox1.ToolTip" xml:space="preserve">
     <value />
@@ -1725,26 +1941,35 @@
   <data name="tabControl1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="&gt;&gt;lblWriteOffset.Name" xml:space="preserve">
-    <value>lblWriteOffset</value>
+  <data name="labelEncodeWhenConfidence.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
   </data>
-  <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>133, 20</value>
+  <data name="numEncodeWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
+    <value>38, 21</value>
   </data>
-  <data name="&gt;&gt;chkReplaceSpaces.Name" xml:space="preserve">
-    <value>chkReplaceSpaces</value>
+  <data name="rbAPEhigh.Text" xml:space="preserve">
+    <value>High</value>
   </data>
-  <data name="labelFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+  <data name="chkHDCDDecode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
-    <value>with confidence &gt;=</value>
+  <data name="chkWriteARLogOnVerify.Size" type="System.Drawing.Size, System.Drawing">
+    <value>130, 17</value>
+  </data>
+  <data name="labelFixWhenPercent.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="&gt;&gt;rbWVVeryHigh.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;numericFLACCompressionLevel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="rbAPEhigh.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
-    <value>tabPage2</value>
+  <data name="&gt;&gt;grpGeneral.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
     <value />
@@ -1755,11 +1980,17 @@
   <data name="rbAPEfast.Location" type="System.Drawing.Point, System.Drawing">
     <value>13, 20</value>
   </data>
-  <data name="&gt;&gt;lblFLACCompressionLevel.Parent" xml:space="preserve">
-    <value>grpFLAC</value>
+  <data name="&gt;&gt;rbWVNormal.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="chkAutoCorrectFilenames.ToolTip" xml:space="preserve">
+    <value>Preprocess with filename corrector if unable to locate audio files</value>
   </data>
   <data name="labelFixWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
     <value>121, 23</value>
+  </data>
+  <data name="labelEncodeWhenPercent.Text" xml:space="preserve">
+    <value>% of verified tracks &gt;=</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1767,17 +1998,14 @@
   <data name="tabPage3.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 22</value>
   </data>
-  <data name="&gt;&gt;chkWVExtraMode.Name" xml:space="preserve">
-    <value>chkWVExtraMode</value>
+  <data name="chkKeepOriginalFilenames.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;lblWriteOffset.Parent" xml:space="preserve">
     <value>grpGeneral</value>
   </data>
-  <data name="labelEncodeWhenConfidence.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="&gt;&gt;txtTrackFilenameFormat.Parent" xml:space="preserve">
-    <value>grpAudioFilenames</value>
+  <data name="&gt;&gt;numFixWhenConfidence.ZOrder" xml:space="preserve">
+    <value>10</value>
   </data>
   <data name="lblFLACCompressionLevel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1788,20 +2016,26 @@
   <data name="groupBox3.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="&gt;&gt;txtTrackFilenameFormat.Parent" xml:space="preserve">
+    <value>grpAudioFilenames</value>
+  </data>
   <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
     <value>166, 6</value>
   </data>
   <data name="&gt;&gt;chkFLACVerify.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="chkWriteArTagsOnConvert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>137, 17</value>
+  <data name="lblTrackFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 71</value>
   </data>
-  <data name="numEncodeWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>38, 21</value>
+  <data name="chkArNoUnverifiedAudio.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="grpGeneral.Text" xml:space="preserve">
     <value>General</value>
+  </data>
+  <data name="&gt;&gt;numEncodeWhenPercent.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="rbAPEinsane.Location" type="System.Drawing.Point, System.Drawing">
     <value>13, 88</value>
@@ -1812,11 +2046,14 @@
   <data name="numFixWhenPercent.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="&gt;&gt;chkWVStoreMD5.Parent" xml:space="preserve">
+    <value>grpWavPack</value>
+  </data>
   <data name="&gt;&gt;rbWVFast.Name" xml:space="preserve">
     <value>rbWVFast</value>
   </data>
-  <data name="&gt;&gt;chkAutoCorrectFilenames.Name" xml:space="preserve">
-    <value>chkAutoCorrectFilenames</value>
+  <data name="rbWVVeryHigh.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <metadata name="btnCancel.GenerateMember" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>False</value>

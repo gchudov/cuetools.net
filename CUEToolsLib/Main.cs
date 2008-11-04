@@ -27,6 +27,8 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading;
+using AudioCodecsDotNet;
+using HDCDDotNet;
 
 namespace CUEToolsLib
 {
@@ -215,6 +217,7 @@ namespace CUEToolsLib
 		public bool preserveHTOA;
 		public int wvCompressionMode;
 		public int wvExtraMode;
+		public bool wvStoreMD5;
 		public bool keepOriginalFilenames;
 		public string trackFilenameFormat;
 		public string singleFilenameFormat;
@@ -225,6 +228,11 @@ namespace CUEToolsLib
 		public bool fillUpCUE;
 		public bool filenamesANSISafe;
 		public bool bruteForceDTL;
+		public bool detectHDCD;
+		public bool decodeHDCD;
+		public bool wait750FramesForHDCD;
+		public bool createM3U;
+		public bool createCUEFileWhenEmbedded;
 
 		public CUEConfig()
 		{
@@ -247,6 +255,7 @@ namespace CUEToolsLib
 			preserveHTOA = true;
 			wvCompressionMode = 1;
 			wvExtraMode = 0;
+			wvStoreMD5 = false;
 			keepOriginalFilenames = true;
 			trackFilenameFormat = "%N-%A-%T";
 			singleFilenameFormat = "%F";
@@ -257,6 +266,11 @@ namespace CUEToolsLib
 			fillUpCUE = true;
 			filenamesANSISafe = true;
 			bruteForceDTL = false;
+			detectHDCD = true;
+			wait750FramesForHDCD = true;
+			decodeHDCD = false;
+			createM3U = false;
+			createCUEFileWhenEmbedded = false;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -280,6 +294,7 @@ namespace CUEToolsLib
 			sw.Save("FLACVerify", flacVerify);
 			sw.Save("WVCompressionMode", wvCompressionMode);
 			sw.Save("WVExtraMode", wvExtraMode);
+			sw.Save("WVStoreMD5", wvStoreMD5);
 			sw.Save("KeepOriginalFilenames", keepOriginalFilenames);
 			sw.Save("SingleFilenameFormat", singleFilenameFormat);
 			sw.Save("TrackFilenameFormat", trackFilenameFormat);
@@ -290,6 +305,11 @@ namespace CUEToolsLib
 			sw.Save("FillUpCUE", fillUpCUE);
 			sw.Save("FilenamesANSISafe", filenamesANSISafe);
 			sw.Save("BruteForceDTL", bruteForceDTL);
+			sw.Save("DetectHDCD", detectHDCD);
+			sw.Save("Wait750FramesForHDCD", wait750FramesForHDCD);
+			sw.Save("DecodeHDCD", decodeHDCD);
+			sw.Save("CreateM3U", createM3U);
+			sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
 		}
 
 		public void Load(SettingsReader sr)
@@ -313,6 +333,7 @@ namespace CUEToolsLib
 			apeCompressionLevel = sr.LoadUInt32("APECompressionLevel", 1, 5) ?? 2;
 			wvCompressionMode = sr.LoadInt32("WVCompressionMode", 0, 3) ?? 1;
 			wvExtraMode = sr.LoadInt32("WVExtraMode", 0, 6) ?? 0;
+			wvStoreMD5 = sr.LoadBoolean("WVStoreMD5") ?? false;
 			keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? true;
 			singleFilenameFormat =  sr.Load("SingleFilenameFormat") ?? "%F";
 			trackFilenameFormat = sr.Load("TrackFilenameFormat") ?? "%N-%A-%T";
@@ -323,6 +344,11 @@ namespace CUEToolsLib
 			fillUpCUE = sr.LoadBoolean("FillUpCUE") ?? true;
 			filenamesANSISafe = sr.LoadBoolean("FilenamesANSISafe") ?? true;
 			bruteForceDTL = sr.LoadBoolean("BruteForceDTL") ?? false;
+			detectHDCD = sr.LoadBoolean("DetectHDCD") ?? true;
+			wait750FramesForHDCD = sr.LoadBoolean("Wait750FramesForHDCD") ?? true;
+			decodeHDCD = sr.LoadBoolean("DecodeHDCD") ?? false;
+			createM3U = sr.LoadBoolean("CreateM3U") ?? false;
+			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
 		}
 
 		public string CleanseString (string s)
@@ -374,12 +400,20 @@ namespace CUEToolsLib
 		private List<AccDisk> accDisks;
 		private HttpStatusCode accResult;
 		private const int _arOffsetRange = 5 * 588 - 1;
+		private HDCDDotNet.HDCDDotNet hdcdDecoder;
 		CUEConfig _config;
 		string _cddbDiscIdTag;
 
 		public CUESheet(string pathIn, CUEConfig config)
 		{
 			_config = config;
+
+			hdcdDecoder = null;
+			if (_config.detectHDCD)
+			{
+				try { hdcdDecoder = new HDCDDotNet.HDCDDotNet(2, 44100, _config.decodeHDCD); }
+				catch { }
+			}
 
 			string cueDir, lineStr, command, pathAudio, fileType;
 			CUELine line;
@@ -890,6 +924,31 @@ namespace CUEToolsLib
 			return (int)audioSource.Length;
 		}
 
+		public void WriteM3U(string path, CUEStyle style)
+		{
+			StringWriter sw = new StringWriter();
+			WriteM3U(sw, style);
+			sw.Close();
+			bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(sw.ToString())) != sw.ToString();
+			StreamWriter sw1 = new StreamWriter(path, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
+			sw1.Write(sw.ToString());
+			sw1.Close();
+		}
+
+		public void WriteM3U(TextWriter sw, CUEStyle style)
+		{
+			int iTrack;
+			bool htoaToFile = ((style == CUEStyle.GapsAppended) && _config.preserveHTOA &&
+				(_tracks[0].IndexLengths[0] != 0));
+
+			if (htoaToFile) {
+				WriteLine(sw, 0, _htoaFilename);
+			}
+			for (iTrack = 0; iTrack < TrackCount; iTrack++) {
+				WriteLine(sw, 0, _trackFilenames[iTrack]);
+			}
+		}
+
 		public void Write(string path, CUEStyle style) {
 			StringWriter sw = new StringWriter();
 			Write(sw, style);
@@ -1064,11 +1123,19 @@ namespace CUEToolsLib
 
 					// Allocate byte buffer to hold stream contents
 					byte [] urlData = new byte[13];
-					long urlDataLen;
+					int urlDataLen, bytesRead;
 		
 					accDisks.Clear();
-					while ( 0 != (urlDataLen = respStream.Read(urlData, 0, 13)) )
+					while ( true )
 					{
+						for (urlDataLen = 0; urlDataLen < 13; urlDataLen += bytesRead)
+						{
+							bytesRead = respStream.Read(urlData, urlDataLen, 13 - urlDataLen);
+							if (0 == bytesRead)
+								break;
+						}
+						if (urlDataLen == 0)
+							break;
 						if (urlDataLen < 13)
 						{
 							accResult = HttpStatusCode.PartialContent;
@@ -1082,11 +1149,14 @@ namespace CUEToolsLib
 
 						for (int i = 0; i < dsk.count; i++)
 						{
-							urlDataLen = respStream.Read(urlData, 0, 9);
-							if (urlDataLen < 9)
+							for (urlDataLen = 0; urlDataLen < 9; urlDataLen += bytesRead)
 							{
-								accResult = HttpStatusCode.PartialContent;
-								return;
+								bytesRead = respStream.Read(urlData, urlDataLen, 9 - urlDataLen);
+								if (0 == bytesRead)
+								{
+									accResult = HttpStatusCode.PartialContent;
+									return;
+								}
 							}
 							AccTrack trk = new AccTrack();
 							trk.count = urlData[0];
@@ -1259,6 +1329,20 @@ namespace CUEToolsLib
 				if (_accurateRipIdActual != _accurateRipId)
 					sw.WriteLine("Using preserved id, actual id is {0}.", _accurateRipIdActual);
 			}
+
+			if (hdcdDecoder != null && hdcdDecoder.Detected)
+			{
+				hdcd_decoder_statistics stats;
+				hdcdDecoder.GetStatistics(out stats);
+				sw.WriteLine("HDCD: peak extend: {0}, transient filter: {1}, gain: {2}",
+					(stats.enabled_peak_extend ? (stats.disabled_peak_extend ? "some" : "yes") : "none"),
+					(stats.enabled_transient_filter ? (stats.disabled_transient_filter ? "some" : "yes") : "none"),
+					stats.min_gain_adjustment == stats.max_gain_adjustment ? 
+					(stats.min_gain_adjustment == 1.0 ? "none" : String.Format ("{0:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20))) :
+					String.Format ("{0:0.0}dB..{1:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20), (Math.Log10(stats.max_gain_adjustment) * 20))
+					);
+			}
+
 			if (accResult == HttpStatusCode.NotFound)
 			{
 				sw.WriteLine("Disk not present in database.");
@@ -1513,6 +1597,10 @@ namespace CUEToolsLib
 						Directory.CreateDirectory(dir);
 					if (style != CUEStyle.SingleFileWithCUE)
 						Write(_cuePath, style);
+					else if (_config.createCUEFileWhenEmbedded)
+						Write(Path.ChangeExtension(_cuePath, ".cue"), style);
+					if (style != CUEStyle.SingleFileWithCUE && style != CUEStyle.SingleFile && _config.createM3U)
+						WriteM3U(Path.ChangeExtension(_cuePath, ".m3u"), style);
 				}
 				WriteAudioFilesPass(dir, style, statusDel, destPaths, destLengths, htoaToFile, verifyOnly);
 			}
@@ -1681,6 +1769,7 @@ namespace CUEToolsLib
 			TrackInfo track;
 			IAudioSource audioSource = null;
 			IAudioDest audioDest = null;
+			IAudioDest decodedAudioDest = null;
 			bool discardOutput;
 			int iSource = -1;
 			int iDest = -1;
@@ -1732,13 +1821,24 @@ namespace CUEToolsLib
 			if (!noOutput && _accurateRipId != null && _config.writeArTagsOnConvert && _accurateOffset && accResult == HttpStatusCode.OK)
 				FindBestOffset(1, true, out tracksMatch, out bestOffset);
 
+			if (hdcdDecoder != null)
+				hdcdDecoder.Reset();
+
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 			{
 				iDest++;
-				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
+				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
 				if (!noOutput)
 					SetAlbumTags(audioDest, bestOffset, style == CUEStyle.SingleFileWithCUE);
+				if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
+				{
+					decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
+						destLengths[iDest], noOutput, 24);
+					SetAlbumTags(decodedAudioDest, bestOffset, style == CUEStyle.SingleFileWithCUE);
+				}
 			}
+
+			int[,] sampleBuffer = null;
 
 			if (_accurateRip && noOutput)
 				for (iTrack = 0; iTrack < TrackCount; iTrack++)
@@ -1765,9 +1865,18 @@ namespace CUEToolsLib
 				if ((style == CUEStyle.GapsPrepended) || (style == CUEStyle.GapsLeftOut)) {
 					if (audioDest != null) audioDest.Close();
 					iDest++;
-					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
+					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
 					if (!noOutput)
 						SetTrackTags(audioDest, iTrack, bestOffset);
+					if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
+					{
+						hdcdDecoder.AudioDest = null;
+						if (decodedAudioDest != null)
+							decodedAudioDest.Close();
+						decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
+							destLengths[iDest], noOutput, 24);
+						SetTrackTags(decodedAudioDest, iTrack, bestOffset);
+					}
 				}		
 
 				for (iIndex = 0; iIndex <= track.LastIndex; iIndex++) {
@@ -1788,16 +1897,30 @@ namespace CUEToolsLib
 					if ((style == CUEStyle.GapsAppended) && (iIndex == 1)) {
 						if (audioDest != null) audioDest.Close();
 						iDest++;
-						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
+						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
 						if (!noOutput)
 							SetTrackTags(audioDest, iTrack, bestOffset);
+						if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
+						{
+							hdcdDecoder.AudioDest = null;
+							if (decodedAudioDest != null)
+								decodedAudioDest.Close();
+							decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
+								destLengths[iDest], noOutput, 24);
+							SetTrackTags(decodedAudioDest, iTrack, bestOffset);
+						}
 					}
 
 					if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0)) {
 						discardOutput = !htoaToFile;
 						if (htoaToFile) {
 							iDest++;
-							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
+							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
+							if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
+							{
+								decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
+									destLengths[iDest], noOutput, 24);
+							}
 						}
 					}
 					else if ((style == CUEStyle.GapsLeftOut) && (iIndex == 0)) {
@@ -1828,7 +1951,24 @@ namespace CUEToolsLib
 						}
 
 						audioSource.Read(buff, copyCount);
-						if (!discardOutput) audioDest.Write(buff, copyCount);
+						if (sampleBuffer == null || sampleBuffer.GetLength(0) < copyCount)
+							sampleBuffer = new int[copyCount, audioSource.ChannelCount];
+						AudioCodecsDotNet.AudioCodecsDotNet.BytesToFLACSamples_16(buff, 0, sampleBuffer, 0, copyCount, audioSource.ChannelCount);
+						if (!discardOutput) audioDest.Write(sampleBuffer, copyCount);
+						if (_config.detectHDCD && hdcdDecoder != null)
+						{
+							if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && !hdcdDecoder.Detected)
+							{
+								hdcdDecoder.AudioDest = null;
+								hdcdDecoder = null;
+							}
+							else
+							{
+								if (_config.decodeHDCD)
+									hdcdDecoder.AudioDest = (discardOutput || noOutput) ? null : decodedAudioDest;
+								hdcdDecoder.Process(sampleBuffer, copyCount);
+							}
+						}
 						if (_accurateRip && noOutput && (iTrack != 0 || iIndex != 0))
 						unsafe {
 							fixed (byte * pBuff = &buff[0])
@@ -1857,8 +1997,18 @@ namespace CUEToolsLib
 
 						lock (this) {
 							if (_stop) {
+								if (hdcdDecoder != null)
+									hdcdDecoder.AudioDest = null;
 								audioSource.Close();
-								try { audioDest.Close(); } catch {}
+								try {
+									if (audioDest != null) audioDest.Close();									
+								} catch { }
+								// need two separate try/catches, 
+								// because Close always throws an exception, and 
+								// we want both streams closed.
+								try {
+									if (decodedAudioDest != null) decodedAudioDest.Close();
+								} catch { }
 								throw new StopException();
 							}
 							if (_pause)
@@ -1871,8 +2021,12 @@ namespace CUEToolsLib
 				}
 			}
 
+			if (hdcdDecoder != null)
+				hdcdDecoder.AudioDest = null;
 			if (audioSource != null) audioSource.Close();
 			audioDest.Close();
+			if (decodedAudioDest != null)
+				decodedAudioDest.Close();
 		}
 
 		public static string CorrectAudioFilenames(string path, bool always) {
@@ -2030,11 +2184,11 @@ namespace CUEToolsLib
 			}
 		}
 
-		private IAudioDest GetAudioDest(string path, int finalSampleCount, bool noOutput) {
+		private IAudioDest GetAudioDest(string path, int finalSampleCount, bool noOutput, int bitsPerSample) {
 			if (noOutput)
-				return new DummyWriter(path, 16, 2, 44100);
+				return new DummyWriter(path, bitsPerSample, 2, 44100);
 
-			IAudioDest dest = AudioReadWrite.GetAudioDest(path, 16, 2, 44100, finalSampleCount);
+			IAudioDest dest = AudioReadWrite.GetAudioDest(path, bitsPerSample, 2, 44100, finalSampleCount);
 
 #if !MONO
 			if (dest is FLACWriter) {
@@ -2046,6 +2200,7 @@ namespace CUEToolsLib
 				WavPackWriter w = (WavPackWriter)dest;
 				w.CompressionMode = _config.wvCompressionMode;
 				w.ExtraMode = _config.wvExtraMode;
+				w.MD5Sum = _config.wvStoreMD5;
 			}
 			if (dest is APEWriter)
 			{
@@ -2405,87 +2560,5 @@ namespace CUEToolsLib
 	public class StopException : Exception {
 		public StopException() : base() {
 		}
-	}
-
-	class SilenceGenerator : IAudioSource {
-		private ulong _sampleOffset, _sampleCount;
-
-		public SilenceGenerator(uint sampleCount) {
-			_sampleOffset = 0;
-			_sampleCount = sampleCount;
-		}
-
-		public ulong Length {
-			get {
-				return _sampleCount;
-			}
-		}
-
-		public ulong Remaining {
-			get {
-				return _sampleCount - _sampleOffset;
-			}
-		}
-
-		public ulong Position {
-			get {
-				return _sampleOffset;
-			}
-			set {
-				_sampleOffset = value;
-			}
-		}
-
-		public int BitsPerSample {
-			get {
-				return 16;
-			}
-		}
-
-		public int ChannelCount {
-			get {
-				return 2;
-			}
-		}
-
-		public int SampleRate {
-			get {
-				return 44100;
-			}
-		}
-
-		public NameValueCollection Tags
-		{
-			get
-			{
-				return new NameValueCollection();
-			}
-			set
-			{
-			}
-		}
-
-		public uint Read(byte[] buff, uint sampleCount) {
-			uint samplesRemaining, byteCount, i;
-
-			samplesRemaining = (uint) (_sampleCount - _sampleOffset);
-			if (sampleCount > samplesRemaining) {
-				sampleCount = samplesRemaining;
-			}
-
-			byteCount = sampleCount * 2 * 2;
-			for (i = 0; i < byteCount; i++) {
-				buff[i] = 0;
-			}
-
-			_sampleOffset += sampleCount;
-
-			return sampleCount;
-		}
-
-		public void Close() {
-		}
-
-		public string Path { get { return null; } }
 	}
 }

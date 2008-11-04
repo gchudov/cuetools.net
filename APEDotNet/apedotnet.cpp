@@ -45,7 +45,6 @@ namespace APEDotNet {
 
 			pAPEDecompress = NULL;
 			_sampleOffset = 0;
-			_samplesWaiting = false;
 			_path = path;
 			pBuffer = NULL;
 
@@ -109,7 +108,6 @@ namespace APEDotNet {
 			}
 			void set(Int64 offset) {
 				_sampleOffset = offset;
-				_samplesWaiting = false;
 				if (pAPEDecompress->Seek ((int) offset /*? */))
 					throw gcnew Exception("Unable to seek.");
 			}
@@ -168,7 +166,6 @@ namespace APEDotNet {
 
 			sampleBuffer = _sampleBuffer;
 			_sampleOffset += nBlocksRetrieved;
-			_samplesWaiting = false;
 
 			return sampleCount;
 		}
@@ -180,7 +177,6 @@ namespace APEDotNet {
 		Int64 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		int nBlockAlign;
-		bool _samplesWaiting;
 		unsigned char * pBuffer;
 		String^ _path;
 
@@ -223,6 +219,7 @@ namespace APEDotNet {
 			_bitsPerSample = bitsPerSample;
 			_channelCount = channelCount;
 			_sampleRate = sampleRate;
+			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
 
 			int nRetVal;
 			pAPECompress = CreateIAPECompress (&nRetVal);
@@ -282,14 +279,9 @@ namespace APEDotNet {
 
 		void Write(array<unsigned char>^ sampleBuffer, UInt32 sampleCount) {
 			if (!_initialized) Initialize();
-
 			pin_ptr<unsigned char> pSampleBuffer = &sampleBuffer[0];
-
-			if (pAPECompress->AddData (pSampleBuffer, sampleCount * sizeof (int)))
-			{
+			if (pAPECompress->AddData (pSampleBuffer, sampleCount * _blockAlign))
 				throw gcnew Exception("An error occurred while encoding.");
-			}
-
 			_samplesWritten += sampleCount;
 		}
 
@@ -307,7 +299,7 @@ namespace APEDotNet {
 		IAPECompress * pAPECompress;
 		bool _initialized;
 		Int32 _finalSampleCount, _samplesWritten;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		Int32 _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		Int32 _compressionLevel;
 		NameValueCollection^ _tags;
 		String^ _path;
@@ -322,7 +314,7 @@ namespace APEDotNet {
 			FillWaveFormatEx (&waveFormat, _sampleRate, _bitsPerSample, _channelCount);
 			res = pAPECompress->Start ((const wchar_t*)pathChars.ToPointer(), 
 				&waveFormat, 
-				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * sizeof (int),
+				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * _blockAlign,
 				_compressionLevel, 
 				NULL, 
 				CREATE_WAV_HEADER_ON_DECOMPRESSION);

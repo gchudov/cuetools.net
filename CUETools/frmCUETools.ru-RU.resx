@@ -304,4 +304,7 @@
   <data name="btnPause.Text" xml:space="preserve">
     <value>Пауза</value>
   </data>
+  <data name="btnResume.Text" xml:space="preserve">
+    <value>&amp;Поехали</value>
+  </data>
 </root>

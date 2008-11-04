@@ -35,6 +35,7 @@ namespace JDP {
 			chkWVExtraMode.Checked = (_config.wvExtraMode != 0);
 			chkWVExtraMode_CheckedChanged(null, null);
 			if (_config.wvExtraMode != 0) numWVExtraMode.Value = _config.wvExtraMode;
+			chkWVStoreMD5.Checked = _config.wvStoreMD5;
 			switch (_config.apeCompressionLevel)
 			{
 				case 1: rbAPEfast.Checked = true; break;
@@ -56,6 +57,11 @@ namespace JDP {
 			chkEmbedLog.Checked = _config.embedLog;
 			chkFillUpCUE.Checked = _config.fillUpCUE;
 			chkFilenamesANSISafe.Checked = _config.filenamesANSISafe;
+			chkHDCDDetect.Checked = _config.detectHDCD;
+			chkHDCDDecode.Checked = _config.decodeHDCD;
+			chkHDCDStopLooking.Checked = _config.wait750FramesForHDCD;
+			chkCreateM3U.Checked = _config.createM3U;
+			chkCreateCUEFileWhenEmbedded.Checked = _config.createCUEFileWhenEmbedded;
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -72,12 +78,7 @@ namespace JDP {
 		}
 
 		private void chkWVExtraMode_CheckedChanged(object sender, EventArgs e) {
-			if (chkWVExtraMode.Checked) {
-				numWVExtraMode.Enabled = true;
-			}
-			else {
-				numWVExtraMode.Enabled = false;
-			}
+			numWVExtraMode.Enabled = chkWVExtraMode.Checked;
 		}
 
 		private void btnOK_Click(object sender, EventArgs e)
@@ -100,6 +101,7 @@ namespace JDP {
 			else _config.wvCompressionMode = 1;
 			if (!chkWVExtraMode.Checked) _config.wvExtraMode = 0;
 			else _config.wvExtraMode = (int) numWVExtraMode.Value;
+			_config.wvStoreMD5 = chkWVStoreMD5.Checked;
 			_config.apeCompressionLevel = (uint) (rbAPEfast.Checked ? 1 :
 				rbAPEnormal.Checked ? 2 :
 				rbAPEhigh.Checked ? 3 :
@@ -118,6 +120,11 @@ namespace JDP {
 			_config.embedLog = chkEmbedLog.Checked;
 			_config.fillUpCUE = chkFillUpCUE.Checked;
 			_config.filenamesANSISafe = chkFilenamesANSISafe.Checked;
+			_config.detectHDCD = chkHDCDDetect.Checked;
+			_config.wait750FramesForHDCD = chkHDCDStopLooking.Checked;
+			_config.decodeHDCD = chkHDCDDecode.Checked;
+			_config.createM3U = chkCreateM3U.Checked;
+			_config.createCUEFileWhenEmbedded = chkCreateCUEFileWhenEmbedded.Checked;
 		}
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)
@@ -135,6 +142,11 @@ namespace JDP {
 			numEncodeWhenPercent.Enabled = 
 			labelEncodeWhenPercent.Enabled =
 			chkEncodeWhenZeroOffset.Enabled = chkArNoUnverifiedAudio.Checked;
+		}
+
+		private void chkHDCDDetect_CheckedChanged(object sender, EventArgs e)
+		{
+			grpHDCD.Enabled = chkHDCDDetect.Checked;
 		}
 	}
 }

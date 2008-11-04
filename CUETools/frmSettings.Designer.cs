@@ -27,6 +27,8 @@ namespace JDP {
 			System.Windows.Forms.Button btnCancel;
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSettings));
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
+			this.chkCreateCUEFileWhenEmbedded = new System.Windows.Forms.CheckBox();
+			this.chkCreateM3U = new System.Windows.Forms.CheckBox();
 			this.chkFillUpCUE = new System.Windows.Forms.CheckBox();
 			this.chkEmbedLog = new System.Windows.Forms.CheckBox();
 			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
@@ -39,6 +41,7 @@ namespace JDP {
 			this.chkFLACVerify = new System.Windows.Forms.CheckBox();
 			this.btnOK = new System.Windows.Forms.Button();
 			this.grpWavPack = new System.Windows.Forms.GroupBox();
+			this.chkWVStoreMD5 = new System.Windows.Forms.CheckBox();
 			this.numWVExtraMode = new System.Windows.Forms.NumericUpDown();
 			this.chkWVExtraMode = new System.Windows.Forms.CheckBox();
 			this.rbWVVeryHigh = new System.Windows.Forms.RadioButton();
@@ -62,6 +65,8 @@ namespace JDP {
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.chkFilenamesANSISafe = new System.Windows.Forms.CheckBox();
 			this.chkWriteARTagsOnVerify = new System.Windows.Forms.CheckBox();
+			this.chkHDCDDecode = new System.Windows.Forms.CheckBox();
+			this.chkHDCDStopLooking = new System.Windows.Forms.CheckBox();
 			this.grpAudioFilenames = new System.Windows.Forms.GroupBox();
 			this.chkKeepOriginalFilenames = new System.Windows.Forms.CheckBox();
 			this.txtSpecialExceptions = new System.Windows.Forms.TextBox();
@@ -83,6 +88,9 @@ namespace JDP {
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
 			this.chkWriteARLogOnVerify = new System.Windows.Forms.CheckBox();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
+			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this.grpHDCD = new System.Windows.Forms.GroupBox();
+			this.chkHDCDDetect = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
@@ -102,6 +110,8 @@ namespace JDP {
 			this.tabPage2.SuspendLayout();
 			this.groupBox3.SuspendLayout();
 			this.tabPage3.SuspendLayout();
+			this.tabPage4.SuspendLayout();
+			this.grpHDCD.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnCancel
@@ -122,6 +132,8 @@ namespace JDP {
 			this.grpGeneral.AccessibleName = null;
 			resources.ApplyResources(this.grpGeneral, "grpGeneral");
 			this.grpGeneral.BackgroundImage = null;
+			this.grpGeneral.Controls.Add(this.chkCreateCUEFileWhenEmbedded);
+			this.grpGeneral.Controls.Add(this.chkCreateM3U);
 			this.grpGeneral.Controls.Add(this.chkFillUpCUE);
 			this.grpGeneral.Controls.Add(this.chkEmbedLog);
 			this.grpGeneral.Controls.Add(this.numericWriteOffset);
@@ -132,6 +144,28 @@ namespace JDP {
 			this.grpGeneral.Name = "grpGeneral";
 			this.grpGeneral.TabStop = false;
 			this.toolTip1.SetToolTip(this.grpGeneral, resources.GetString("grpGeneral.ToolTip"));
+			// 
+			// chkCreateCUEFileWhenEmbedded
+			// 
+			this.chkCreateCUEFileWhenEmbedded.AccessibleDescription = null;
+			this.chkCreateCUEFileWhenEmbedded.AccessibleName = null;
+			resources.ApplyResources(this.chkCreateCUEFileWhenEmbedded, "chkCreateCUEFileWhenEmbedded");
+			this.chkCreateCUEFileWhenEmbedded.BackgroundImage = null;
+			this.chkCreateCUEFileWhenEmbedded.Font = null;
+			this.chkCreateCUEFileWhenEmbedded.Name = "chkCreateCUEFileWhenEmbedded";
+			this.toolTip1.SetToolTip(this.chkCreateCUEFileWhenEmbedded, resources.GetString("chkCreateCUEFileWhenEmbedded.ToolTip"));
+			this.chkCreateCUEFileWhenEmbedded.UseVisualStyleBackColor = true;
+			// 
+			// chkCreateM3U
+			// 
+			this.chkCreateM3U.AccessibleDescription = null;
+			this.chkCreateM3U.AccessibleName = null;
+			resources.ApplyResources(this.chkCreateM3U, "chkCreateM3U");
+			this.chkCreateM3U.BackgroundImage = null;
+			this.chkCreateM3U.Font = null;
+			this.chkCreateM3U.Name = "chkCreateM3U";
+			this.toolTip1.SetToolTip(this.chkCreateM3U, resources.GetString("chkCreateM3U.ToolTip"));
+			this.chkCreateM3U.UseVisualStyleBackColor = true;
 			// 
 			// chkFillUpCUE
 			// 
@@ -277,6 +311,7 @@ namespace JDP {
 			this.grpWavPack.AccessibleName = null;
 			resources.ApplyResources(this.grpWavPack, "grpWavPack");
 			this.grpWavPack.BackgroundImage = null;
+			this.grpWavPack.Controls.Add(this.chkWVStoreMD5);
 			this.grpWavPack.Controls.Add(this.numWVExtraMode);
 			this.grpWavPack.Controls.Add(this.chkWVExtraMode);
 			this.grpWavPack.Controls.Add(this.rbWVVeryHigh);
@@ -287,6 +322,17 @@ namespace JDP {
 			this.grpWavPack.Name = "grpWavPack";
 			this.grpWavPack.TabStop = false;
 			this.toolTip1.SetToolTip(this.grpWavPack, resources.GetString("grpWavPack.ToolTip"));
+			// 
+			// chkWVStoreMD5
+			// 
+			this.chkWVStoreMD5.AccessibleDescription = null;
+			this.chkWVStoreMD5.AccessibleName = null;
+			resources.ApplyResources(this.chkWVStoreMD5, "chkWVStoreMD5");
+			this.chkWVStoreMD5.BackgroundImage = null;
+			this.chkWVStoreMD5.Font = null;
+			this.chkWVStoreMD5.Name = "chkWVStoreMD5";
+			this.toolTip1.SetToolTip(this.chkWVStoreMD5, resources.GetString("chkWVStoreMD5.ToolTip"));
+			this.chkWVStoreMD5.UseVisualStyleBackColor = true;
 			// 
 			// numWVExtraMode
 			// 
@@ -611,6 +657,28 @@ namespace JDP {
 			this.toolTip1.SetToolTip(this.chkWriteARTagsOnVerify, resources.GetString("chkWriteARTagsOnVerify.ToolTip"));
 			this.chkWriteARTagsOnVerify.UseVisualStyleBackColor = true;
 			// 
+			// chkHDCDDecode
+			// 
+			this.chkHDCDDecode.AccessibleDescription = null;
+			this.chkHDCDDecode.AccessibleName = null;
+			resources.ApplyResources(this.chkHDCDDecode, "chkHDCDDecode");
+			this.chkHDCDDecode.BackgroundImage = null;
+			this.chkHDCDDecode.Font = null;
+			this.chkHDCDDecode.Name = "chkHDCDDecode";
+			this.toolTip1.SetToolTip(this.chkHDCDDecode, resources.GetString("chkHDCDDecode.ToolTip"));
+			this.chkHDCDDecode.UseVisualStyleBackColor = true;
+			// 
+			// chkHDCDStopLooking
+			// 
+			this.chkHDCDStopLooking.AccessibleDescription = null;
+			this.chkHDCDStopLooking.AccessibleName = null;
+			resources.ApplyResources(this.chkHDCDStopLooking, "chkHDCDStopLooking");
+			this.chkHDCDStopLooking.BackgroundImage = null;
+			this.chkHDCDStopLooking.Font = null;
+			this.chkHDCDStopLooking.Name = "chkHDCDStopLooking";
+			this.toolTip1.SetToolTip(this.chkHDCDStopLooking, resources.GetString("chkHDCDStopLooking.ToolTip"));
+			this.chkHDCDStopLooking.UseVisualStyleBackColor = true;
+			// 
 			// grpAudioFilenames
 			// 
 			this.grpAudioFilenames.AccessibleDescription = null;
@@ -803,6 +871,7 @@ namespace JDP {
 			this.tabControl1.Controls.Add(this.tabPage1);
 			this.tabControl1.Controls.Add(this.tabPage2);
 			this.tabControl1.Controls.Add(this.tabPage3);
+			this.tabControl1.Controls.Add(this.tabPage4);
 			this.tabControl1.Font = null;
 			this.tabControl1.HotTrack = true;
 			this.tabControl1.Multiline = true;
@@ -876,6 +945,44 @@ namespace JDP {
 			this.tabPage3.Name = "tabPage3";
 			this.toolTip1.SetToolTip(this.tabPage3, resources.GetString("tabPage3.ToolTip"));
 			// 
+			// tabPage4
+			// 
+			this.tabPage4.AccessibleDescription = null;
+			this.tabPage4.AccessibleName = null;
+			resources.ApplyResources(this.tabPage4, "tabPage4");
+			this.tabPage4.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage4.BackgroundImage = null;
+			this.tabPage4.Controls.Add(this.grpHDCD);
+			this.tabPage4.Controls.Add(this.chkHDCDDetect);
+			this.tabPage4.Font = null;
+			this.tabPage4.Name = "tabPage4";
+			this.toolTip1.SetToolTip(this.tabPage4, resources.GetString("tabPage4.ToolTip"));
+			// 
+			// grpHDCD
+			// 
+			this.grpHDCD.AccessibleDescription = null;
+			this.grpHDCD.AccessibleName = null;
+			resources.ApplyResources(this.grpHDCD, "grpHDCD");
+			this.grpHDCD.BackgroundImage = null;
+			this.grpHDCD.Controls.Add(this.chkHDCDStopLooking);
+			this.grpHDCD.Controls.Add(this.chkHDCDDecode);
+			this.grpHDCD.Font = null;
+			this.grpHDCD.Name = "grpHDCD";
+			this.grpHDCD.TabStop = false;
+			this.toolTip1.SetToolTip(this.grpHDCD, resources.GetString("grpHDCD.ToolTip"));
+			// 
+			// chkHDCDDetect
+			// 
+			this.chkHDCDDetect.AccessibleDescription = null;
+			this.chkHDCDDetect.AccessibleName = null;
+			resources.ApplyResources(this.chkHDCDDetect, "chkHDCDDetect");
+			this.chkHDCDDetect.BackgroundImage = null;
+			this.chkHDCDDetect.Font = null;
+			this.chkHDCDDetect.Name = "chkHDCDDetect";
+			this.toolTip1.SetToolTip(this.chkHDCDDetect, resources.GetString("chkHDCDDetect.ToolTip"));
+			this.chkHDCDDetect.UseVisualStyleBackColor = true;
+			this.chkHDCDDetect.CheckedChanged += new System.EventHandler(this.chkHDCDDetect_CheckedChanged);
+			// 
 			// frmSettings
 			// 
 			this.AcceptButton = this.btnOK;
@@ -924,6 +1031,10 @@ namespace JDP {
 			this.groupBox3.ResumeLayout(false);
 			this.groupBox3.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
+			this.tabPage4.ResumeLayout(false);
+			this.tabPage4.PerformLayout();
+			this.grpHDCD.ResumeLayout(false);
+			this.grpHDCD.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -987,6 +1098,14 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox chkWriteARLogOnVerify;
 		private System.Windows.Forms.CheckBox chkWriteARTagsOnVerify;
 		private System.Windows.Forms.CheckBox chkEncodeWhenZeroOffset;
+		private System.Windows.Forms.TabPage tabPage4;
+		private System.Windows.Forms.CheckBox chkHDCDDecode;
+		private System.Windows.Forms.CheckBox chkHDCDDetect;
+		private System.Windows.Forms.CheckBox chkWVStoreMD5;
+		private System.Windows.Forms.GroupBox grpHDCD;
+		private System.Windows.Forms.CheckBox chkHDCDStopLooking;
+		private System.Windows.Forms.CheckBox chkCreateM3U;
+		private System.Windows.Forms.CheckBox chkCreateCUEFileWhenEmbedded;
 
 	}
 }
