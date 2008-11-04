@@ -1716,10 +1716,32 @@ namespace CUEToolsLib
 			NameValueCollection destTags = new NameValueCollection();
 
 			if (_hasEmbeddedCUESheet || _hasSingleFilename)
+			{
 				destTags.Add(_albumTags);
+				if (!fWithCUE)
+					CleanupTags(destTags, "CUE_TRACK");
+			}
 			else if (_hasTrackFilenames)
 			{
-				// TODO
+				for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+				{
+					string[] keys = _tracks[iTrack]._trackTags.AllKeys;
+					for (int i = 0; i < keys.Length; i++)
+					{
+						string singleValue = GetCommonTag (keys[i]);
+						if (singleValue != null)
+						{
+							if (destTags.Get(keys[i]) == null)
+								destTags.Add(keys[i], singleValue);
+						}
+						else if (fWithCUE)
+						{
+							string[] values = _tracks[iTrack]._trackTags.GetValues(keys[i]);
+							for (int j = 0; j < values.Length; j++)
+								destTags.Add(String.Format("cue_track{0:00}_{1}", iTrack + 1, keys[i]), values[j]);
+						}
+					}
+				}
 			}
 
 			destTags.Remove("CUESHEET");
@@ -1733,13 +1755,6 @@ namespace CUEToolsLib
 				Write(sw, CUEStyle.SingleFileWithCUE);
 				destTags.Add("CUESHEET", sw.ToString());
 				sw.Close();
-			}
-			else
-			{
-				string[] keys = destTags.AllKeys;
-				for (int i = 0; i < keys.Length; i++)
-					if (keys[i].ToLower().StartsWith("cue_track"))
-						destTags.Remove(keys[i]);
 			}
 
 			if (_config.embedLog)
