@@ -355,6 +355,7 @@ namespace JDP {
 						MessageBoxIcon.Exclamation);
 				});
 			}
+#if !DEBUG
 			catch (Exception ex) {
 				this.Invoke((MethodInvoker)delegate() {
 					if (_batchPaths.Count == 0) SetupControls(false);
@@ -364,6 +365,7 @@ namespace JDP {
 					}
 				});
 			}
+#endif
 
 			if (_batchPaths.Count != 0) {
 				_batchPaths.RemoveAt(0);
@@ -862,7 +864,7 @@ namespace JDP {
 					Array.Sort (audioFiles);
 					string cueName = Path.GetFileName(dir) + ".cuetools" + audioExts[i].Substring(1) + ".cue";
 					cueName = Path.Combine(dir, cueName);
-					StreamWriter sw = new StreamWriter(cueName, false, CUESheet.Encoding);
+					StringWriter sw = new StringWriter();
 					sw.WriteLine(String.Format("REM COMMENT \"CUETools generated dummy CUE sheet\""));
 					for (int iFile = 0; iFile < audioFiles.Length; iFile++)
 					{
@@ -871,6 +873,10 @@ namespace JDP {
 						sw.WriteLine(String.Format("    INDEX 01 00:00:00"));
 					}
 					sw.Close();
+					bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(sw.ToString())) != sw.ToString();
+					StreamWriter sw1 = new StreamWriter(cueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
+					sw1.Write(sw.ToString());
+					sw1.Close();
 					break;
 				}
 			}
