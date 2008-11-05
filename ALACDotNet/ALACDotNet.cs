@@ -286,12 +286,12 @@ namespace ALACDotNet
 		}
 
 		/* supports reading 1 to 16 bits, in big endian format */
-		private unsafe uint peekbits_16(byte* buff, int pos, int bits)
+		private unsafe uint peekbits_9(byte* buff, int pos)
 		{
-			uint result = (((uint)buff[pos]) << 16) | (((uint)buff[pos + 1]) << 8) | ((uint)buff[pos + 2]);
+			uint result = (((uint)buff[pos]) << 8) | (((uint)buff[pos + 1]));
 			result <<= _bitaccumulator;
-			result &= 0x00ffffff;
-			result >>= 24 - bits;
+			result &= 0x0000ffff;
+			result >>= 7;
 			return result;
 		}
 
@@ -363,35 +363,34 @@ namespace ALACDotNet
 				_bitaccumulator *= -1;
 		}
 
-		private static int count_leading_zeros(uint input, int first)
+		private static int count_leading_zeroes(uint input)
 		{
 			int zeroes = 1;
-			int check = first;
-			while (check > 0)
-			{
-				uint shifted_input = input >> check;
-				if (shifted_input == 0) 
-					zeroes += check; 
-				else
-					input = shifted_input;
-				check >>= 1;
-			}
-			return zeroes - (int)input;
-		}
-
-		private static int count_leading_zeros(uint input)
-		{
-			int zeroes = 1;
-			int check = 16;
-			while (check > 0)
-			{
-				uint shifted_input = input >> check;
-				if (shifted_input == 0)
-					zeroes += check;
-				else
-					input = shifted_input;
-				check >>= 1;
-			}
+			uint shifted_input = input >> 16;
+			if (shifted_input == 0)
+				zeroes += 16;
+			else
+				input = shifted_input;
+			shifted_input = input >> 8;
+			if (shifted_input == 0)
+				zeroes += 8;
+			else
+				input = shifted_input;
+			shifted_input = input >> 4;
+			if (shifted_input == 0)
+				zeroes += 4;
+			else
+				input = shifted_input;
+			shifted_input = input >> 2;
+			if (shifted_input == 0)
+				zeroes += 2;
+			else
+				input = shifted_input;
+			shifted_input = input >> 1;
+			if (shifted_input == 0)
+				zeroes ++;
+			else
+				input = shifted_input;
 			return zeroes - (int)input;
 		}
 
@@ -405,9 +404,11 @@ namespace ALACDotNet
 				pr->predictor_coef_num = (int)readbits(_framesBuffer, ref pos, 5);
 
 				/* read the predictor table */
-				for (int i = 0; i < pr->predictor_coef_num; i++)
+				pr->predictor_coef_table_sum = 0;
+				for (int i = pr->predictor_coef_num - 1; i >= 0; i--)
 				{
 					pr->predictor_coef_table[i] = (short)readbits(_framesBuffer, ref pos, 16);
+					pr->predictor_coef_table_sum += pr->predictor_coef_table[i];
 				}
 			}
 		}
@@ -415,14 +416,30 @@ namespace ALACDotNet
 		private unsafe int decode_scalar(byte * buff, ref int pos, int k, int limit, int readsamplesize)
 		{
 			int x = 0;
-			//while (x <= 8 && readbit(_framesBuffer, ref pos) != 0)
-			//    x++;
-			uint next = peekbits_16(buff, pos, 9);
-			for (x = 0; (next & 0x100) != 0; x++)
+			uint next = peekbits_9(buff, pos);
+			if (next == 0x1ff) /* RICE THRESHOLD 9 bits */
+			{
+				skipbits(ref pos, 9);
+				return (int)readbits(buff, ref pos, readsamplesize);
+			}
+			if ((next & 0x1e0) == 0x1e0)
+			{
+				x += 4;
+				next <<= 4;
+			}
+			if ((next & 0x180) == 0x180)
+			{
+				x += 2;
+				next <<= 2;
+			}
+			if ((next & 0x100) == 0x100)
+			{
+				x += 1;
 				next <<= 1;
-			skipbits(ref pos, x >= 9 ? 9 : x + 1);
-			if (x > 8) /* RICE THRESHOLD */
-				return (int) readbits(buff, ref pos, readsamplesize);
+			}
+			x += (int) (next & 0x100) >> 8;
+			//x = count_leading_zeroes((~next) & 0x1ff) - 23;
+			skipbits(ref pos, x + 1);
 			if (k >= limit)
 				k = limit;
 			if (k == 1)
@@ -448,31 +465,21 @@ namespace ALACDotNet
 
 				for (int output_count = 0; output_count < output_size; output_count++)
 				{
-					int x = 0;
-					int x_modified;
-					int final_val;
-
-					x = decode_scalar(buff, ref pos, 31 - count_leading_zeros((history >> 9) + 3), rice_kmodifier, readsamplesize);
-
-					x_modified = sign_modifier + x;
-					final_val = (x_modified + 1) / 2;
-					if ((x_modified & 1) != 0) final_val *= -1;
-
-					output_buffer[output_count] = final_val;
-
+					int x = sign_modifier + decode_scalar(buff, ref pos, 31 - count_leading_zeroes((history >> 9) + 3), rice_kmodifier, readsamplesize);
+					output_buffer[output_count] = ((x + 1) >> 1) * (1 - ((x & 1) << 1));
 					sign_modifier = 0;
 
 					/* now update the history */
-					history = (uint)(history + (x_modified * rice_historymult)
+					history = (uint)(history + (x * rice_historymult)
 							 - ((history * rice_historymult) >> 9));
 
-					if (x_modified > 0xffff)
+					if (x > 0xffff)
 						history = 0xffff;
 
 					/* special case: there may be compressed blocks of 0 */
 					if ((history < 128) && (output_count + 1 < output_size))
 					{
-						int k = 7 - (31 - count_leading_zeros(history)) + (((int)history + 16) >> 6);
+						int k = 7 - (31 - count_leading_zeroes(history)) + (((int)history + 16) >> 6);
 						int block_size = decode_scalar(buff, ref pos, k, rice_kmodifier, 16);
 						if (block_size > 0)
 						{
@@ -495,153 +502,102 @@ namespace ALACDotNet
 			return (val << (32 - bits)) >> (32 - bits);
 		}
 
-		private static int sign_only(int v)
+		private static short sign_only(int v)
 		{
-			return v == 0 ? 0 : v > 0 ? 1 : -1;
+			return (short)(1 - ((v >> 30) & 2));
 		}
 
 		private unsafe void predictor_decompress_fir_adapt(uint output_size, ref predictor_t predictor_info, ref int[] error_buffer, ref int[] buffer_out, int readsamplesize)
 		{
 			int i;
 
-			/* first sample always copies */
-			buffer_out[0] = error_buffer[0];
-
-			if (predictor_info.predictor_coef_num == 0)
-			{
-				if (output_size <= 1)
-					return;
-				for (i = 1; i < output_size; i++)
-					buffer_out[i] = error_buffer[i];
-				return;
-			}
-
-			if (predictor_info.predictor_coef_num == 0x1f)
-			{ /* 11111 - max value of predictor_coef_num */
-				/* second-best case scenario for fir decompression,
-				 * error describes a small difference from the previous sample only
-				 */
-				if (output_size <= 1)
-					return;
-				for (i = 0; i < output_size - 1; i++)
-				{
-					int prev_value;
-					int error_value;
-
-					prev_value = buffer_out[i];
-					error_value = error_buffer[i + 1];
-					buffer_out[i + 1] =
-						extend_sign32((prev_value + error_value), readsamplesize);
-				}
-				return;
-			}
-
-			/* read warm-up samples */
-			if (predictor_info.predictor_coef_num > 0)
-				for (i = 0; i < predictor_info.predictor_coef_num; i++)
-				{
-					int val;
-
-					val = buffer_out[i] + error_buffer[i + 1];
-					val = extend_sign32(val, readsamplesize);
-					buffer_out[i + 1] = val;
-				}
-
-			//#if 0
-			//            /* 4 and 8 are very common cases (the only ones i've seen). these
-			//             * should be unrolled and optimized
-			//             */
-			//            if (predictor_coef_num == 4) {
-			//                /* FIXME: optimized general case */
-			//                return;
-			//            }
-
-			//            if (predictor_coef_table == 8) {
-			//                /* FIXME: optimized general case */
-			//                return;
-			//            }
-			//#endif
-
-			/* general case */
-			if (predictor_info.predictor_coef_num > 0)
 			fixed (predictor_t* pr = &predictor_info)
-			fixed (int * buf_out = &buffer_out[0], buf_err = &error_buffer[0])
+			fixed (int* buf_out = &buffer_out[0], buf_err = &error_buffer[0])
 			{
-				int pos = 0;
+				if (pr->predictor_coef_num == 0)
+				{
+					for (i = 0; i < output_size; i++)
+						buf_out[i] = buf_err[i];
+					return;
+				}
 
-				for (i = (int) predictor_info.predictor_coef_num + 1; i < output_size; i++)
+				int sample = 0;
+
+				if (pr->predictor_coef_num == 0x1f)
+				{ /* 11111 - max value of predictor_coef_num */
+					/* second-best case scenario for fir decompression,
+					 * error describes a small difference from the previous sample only
+					 */
+					if (output_size <= 1)
+						return;
+					for (i = 0; i < output_size; i++)
+					{
+						sample += buf_err[i];
+						buf_out[i] = sample;
+					}
+					return;
+				}
+
+				if (output_size <= predictor_info.predictor_coef_num || pr->predictor_coef_num < 0)
+					throw new Exception("invalid output size");
+
+				/* read warm-up samples */
+				for (i = 0; i <= predictor_info.predictor_coef_num; i++)
+				{
+					sample += buf_err[i];
+					buf_out[i] = sample;
+				}
+
+				/* general case */
+				int* buf_pos = buf_out;
+				int predictor_coef_table_sum = pr->predictor_coef_table_sum;
+				for (i = (int)pr->predictor_coef_num + 1; i < output_size; i++)
 				{
 					int j;
 					int sum = 0;
 					int outval;
 					int error_val = buf_err[i];
+					int sample_val = *(buf_pos++);
 
-					for (j = 0; j < predictor_info.predictor_coef_num; j++)
+					for (j = 0; j < pr->predictor_coef_num; j++)
+						sum += buf_pos[j] * pr->predictor_coef_table[j];
+					sum -= predictor_coef_table_sum * sample_val;
+					outval = (1 << (pr->prediction_quantitization - 1)) + sum;
+					outval >>= pr->prediction_quantitization;
+					outval += sample_val + error_val;
+
+					buf_pos[pr->predictor_coef_num] = outval;
+
+					if (error_val != 0)
 					{
-						sum += (buf_out[pos + predictor_info.predictor_coef_num - j] - buf_out[pos]) *
-							   pr->predictor_coef_table[j];
-					}
-
-					outval = (1 << (predictor_info.prediction_quantitization - 1)) + sum;
-					outval = outval >> predictor_info.prediction_quantitization;
-					outval = outval + buf_out[pos] + error_val;
-					outval = extend_sign32(outval, readsamplesize);
-
-					buf_out[pos + pr->predictor_coef_num + 1] = outval;
-
-					if (error_val > 0)
-					{
-						int predictor_num = pr->predictor_coef_num - 1;
-
-						while (predictor_num >= 0 && error_val > 0)
+						short error_sign = sign_only(error_val);
+						for (j = 0; j < pr->predictor_coef_num; j++)
 						{
-							int val = buf_out[pos] - buf_out[pos + predictor_info.predictor_coef_num - predictor_num];
-							short sign = (short) sign_only(val);
-
-							pr->predictor_coef_table[predictor_num] -= sign;
-
-							val *= sign; /* absolute value */
-
-							error_val -= ((val >> predictor_info.prediction_quantitization) *
-										  (predictor_info.predictor_coef_num - predictor_num));
-
-							predictor_num--;
+							int val = sample_val - buf_pos[j];
+							if (val == 0) 
+								continue;
+							short sign = sign_only(error_sign * val);
+							pr->predictor_coef_table[j] -= sign;
+							predictor_coef_table_sum -= sign;
+							val *= sign; /* absolute value with same sign as error */
+							error_val -= (val >> pr->prediction_quantitization) * (j + 1);
+							if (error_val * error_sign <= 0)
+								break;
 						}
 					}
-					else if (error_val < 0)
-					{
-						int predictor_num = predictor_info.predictor_coef_num - 1;
-
-						while (predictor_num >= 0 && error_val < 0)
-						{
-							int val = buf_out[pos] - buf_out[pos + predictor_info.predictor_coef_num - predictor_num];
-							short sign = (short) sign_only(- val);
-
-							pr->predictor_coef_table[predictor_num] -= sign;
-
-							val *= sign; /* neg value */
-
-							error_val -= ((val >> predictor_info.prediction_quantitization) *
-										  (predictor_info.predictor_coef_num - predictor_num));
-
-							predictor_num--;
-						}
-					}
-
-					pos++;
 				}
+				pr->predictor_coef_table_sum = predictor_coef_table_sum;
 			}
 		}
 
-		private unsafe void deinterlace_16(uint numsamples, byte interlacing_shift, byte interlacing_leftweight)
+		private unsafe void deinterlace(uint numsamples, byte interlacing_shift, byte interlacing_leftweight)
 		{
-			int i;
-
 			if (numsamples <= 0)
 				return;
 
+			int i;
 			fixed (int* buf_a = &_outputsamples_buffer_a[0], buf_b = _outputsamples_buffer_b)
-			fixed (byte * buf_s = &_samplesBuffer[0])
+			fixed (byte* buf_s = &_samplesBuffer[0])
 			{
 				/* weighted interlacing */
 				if (interlacing_leftweight != 0)
@@ -735,14 +691,9 @@ namespace ALACDotNet
 			if (_bitsPerSample != 16)
 				throw new Exception("Not 16 bit");
 
-			deinterlace_16(outputSamples, interlacing_shift, interlacing_leftweight);
+			deinterlace(outputSamples, interlacing_shift, interlacing_leftweight);
 
 			_samplesInBuffer = outputSamples;
-		}
-
-		private void skip_chunk(UInt32 chunk_len)
-		{
-			stream_skip(chunk_len - 8); /* FIXME WRONG */
 		}
 
 		/* 'mvhd' movie header atom */
@@ -794,11 +745,11 @@ namespace ALACDotNet
 			}
 		}
 
-		private void read_chunk_stsd(UInt32 chunk_len)
+		private void qtmovie_read_chunk_stsd(string path, uint length, object param)
 		{
 			uint i;
 			UInt32 numentries;
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			UInt32 size_remaining = length;
 
 			/* version */
 			stream_read_uint8();
@@ -905,11 +856,11 @@ namespace ALACDotNet
 			}
 		}
 
-		private void read_chunk_stts(UInt32 chunk_len)
+		private void qtmovie_read_chunk_stts(string path, uint length, object param)
 		{
 			uint i;
 			UInt32 numentries;
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			UInt32 size_remaining = length;
 
 			/* version */
 			stream_read_uint8();
@@ -940,11 +891,11 @@ namespace ALACDotNet
 			}
 		}
 
-		private void read_chunk_stsz(UInt32 chunk_len)
+		private void qtmovie_read_chunk_stsz(string path, uint length, object param)
 		{
 			uint i;
 			UInt32 numentries;
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			UInt32 size_remaining = length;
 
 			/* version */
 			stream_read_uint8();
@@ -980,77 +931,6 @@ namespace ALACDotNet
 			{
 				throw new Exception("ehm, size remianing?\n");
 				//stream_skip(qtmovie->stream, size_remaining);
-			}
-		}
-
-		private void read_chunk_stbl(UInt32 chunk_len)
-		{
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
-			while (size_remaining > 0)
-			{
-				UInt32 sub_chunk_len = stream_read_uint32();
-				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
-					throw new Exception("strange size for chunk inside stbl.");
-
-				UInt32 sub_chunk_id = stream_read_uint32();
-				switch (sub_chunk_id)
-				{
-					case FCC_STSD:
-						read_chunk_stsd(sub_chunk_len);
-						break;
-					case FCC_STTS:
-						read_chunk_stts(sub_chunk_len);
-						break;
-					case FCC_STSZ:
-						read_chunk_stsz(sub_chunk_len);
-						break;
-					case FCC_STSC:
-					case FCC_STCO:
-						/* skip these, no indexing for us! */
-						stream_skip(sub_chunk_len - 8);
-						break;
-					default:
-						throw new Exception(String.Format("(stbl) unknown chunk id: {0}.", sub_chunk_id));
-				}
-				size_remaining -= sub_chunk_len;
-			}
-		}
-
-		private void qtmovie_read_chunk_minf(string path, uint length, object param)
-		{
-			UInt32 dinf_size, stbl_size;
-			UInt32 size_remaining = length; /* FIXME WRONG */
-
-			/**** SOUND HEADER CHUNK ****/
-			if (stream_read_uint32() != 16)
-				throw new Exception("unexpected size in media info\n");
-			if (stream_read_uint32() != FCC_SMHD)
-				throw new Exception("not a sound header! can't handle this.\n");
-			/* now skip the rest */
-			stream_skip(16 - 8);
-			size_remaining -= 16;
-			/****/
-
-			/**** DINF CHUNK ****/
-			dinf_size = stream_read_uint32();
-			if (stream_read_uint32() != FCC_DINF)
-				throw new Exception("expected dinf, didn't get it.");
-			/* skip it */
-			stream_skip(dinf_size - 8);
-			size_remaining -= dinf_size;
-			/****/
-
-			/**** SAMPLE TABLE ****/
-			stbl_size = stream_read_uint32();
-			if (stream_read_uint32() != FCC_STBL)
-				throw new Exception("expected stbl, didn't get it.");
-			read_chunk_stbl(stbl_size);
-			size_remaining -= stbl_size;
-
-			if (size_remaining > 0)
-			{
-				throw new Exception("oops\n");
-				//stream_skip(size_remaining);
 			}
 		}
 
@@ -1278,7 +1158,15 @@ namespace ALACDotNet
 			qtmovie_add_nul_parser("top.moov.trak.edts");
 			qtmovie_add_lst_parser("top.moov.trak.mdia", null);
 			qtmovie_add_any_parser("top.moov.trak.mdia.hdlr", new qtmovie_read_atom(qtmovie_read_chunk_hdlr), null);
-			qtmovie_add_any_parser("top.moov.trak.mdia.minf", new qtmovie_read_atom(qtmovie_read_chunk_minf), null);
+			qtmovie_add_lst_parser("top.moov.trak.mdia.minf", null); 
+			qtmovie_add_nul_parser("top.moov.trak.mdia.minf.smhd"); // required, unused
+			qtmovie_add_nul_parser("top.moov.trak.mdia.minf.dinf"); // required, unused
+			qtmovie_add_lst_parser("top.moov.trak.mdia.minf.stbl", null); // SAMPLE TABLE, required
+			qtmovie_add_any_parser("top.moov.trak.mdia.minf.stbl.stsd", new qtmovie_read_atom(qtmovie_read_chunk_stsd), null); // _codecData
+			qtmovie_add_any_parser("top.moov.trak.mdia.minf.stbl.stts", new qtmovie_read_atom(qtmovie_read_chunk_stts), null); // _time_to_sample_*
+			qtmovie_add_any_parser("top.moov.trak.mdia.minf.stbl.stsz", new qtmovie_read_atom(qtmovie_read_chunk_stsz), null); // _sample_byte_size
+			qtmovie_add_nul_parser("top.moov.trak.mdia.minf.stbl.stsc"); /* skip these, no indexing for us! */
+			qtmovie_add_nul_parser("top.moov.trak.mdia.minf.stbl.stco"); /* skip these, no indexing for us! */
 			qtmovie_add_lst_parser("top.moov.udta", null);
 			qtmovie_add_lst_parser("top.moov.udta.meta", (uint)4);
 			qtmovie_add_lst_parser("top.moov.udta.meta.ilst", null);
@@ -1376,6 +1264,7 @@ namespace ALACDotNet
 		unsafe struct predictor_t
 		{
 			public fixed short predictor_coef_table[32];
+			public int predictor_coef_table_sum;
 			public int predictor_coef_num;
 			public int prediction_type;
 			public int prediction_quantitization;
@@ -1387,14 +1276,6 @@ namespace ALACDotNet
 		const UInt32 FCC_MDAT = ('m' << 24) + ('d' << 16) + ('a' << 8) + ('t' << 0);
 		const UInt32 FCC_FREE = ('f' << 24) + ('r' << 16) + ('e' << 8) + ('e' << 0);
 		const UInt32 FCC_M4A = ('M' << 24) + ('4' << 16) + ('A' << 8) + (' ' << 0);
-		const UInt32 FCC_SMHD = ('s' << 24) + ('m' << 16) + ('h' << 8) + ('d' << 0);
-		const UInt32 FCC_DINF = ('d' << 24) + ('i' << 16) + ('n' << 8) + ('f' << 0);
-		const UInt32 FCC_STBL = ('s' << 24) + ('t' << 16) + ('b' << 8) + ('l' << 0);
-		const UInt32 FCC_STSD = ('s' << 24) + ('t' << 16) + ('s' << 8) + ('d' << 0);
-		const UInt32 FCC_STTS = ('s' << 24) + ('t' << 16) + ('t' << 8) + ('s' << 0);
-		const UInt32 FCC_STSZ = ('s' << 24) + ('t' << 16) + ('s' << 8) + ('z' << 0);
-		const UInt32 FCC_STSC = ('s' << 24) + ('t' << 16) + ('s' << 8) + ('c' << 0);
-		const UInt32 FCC_STCO = ('s' << 24) + ('t' << 16) + ('c' << 8) + ('o' << 0);
 		const UInt32 FCC_ALAC = ('a' << 24) + ('l' << 16) + ('a' << 8) + ('c' << 0);
 	}
 }
