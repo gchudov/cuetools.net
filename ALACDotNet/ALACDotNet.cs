@@ -32,7 +32,7 @@ namespace ALACDotNet
 		{
 			_path = path;
 			m_spIO = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-			_buff = new byte[4];
+			_buff = new byte[512];
 			_tags = new NameValueCollection();
 			qtmovie_read();
 			if (!_formatRead || _bitsPerSample != 16 || _channelCount != 2 || _sampleRate != 44100)
@@ -215,6 +215,15 @@ namespace ALACDotNet
 			sampleSize = _sample_byte_size[iSample];
 		}
 
+		private byte [] stream_read_bytes(int len)
+		{
+			if (len > 512)
+				throw new Exception("Decoding failed.");
+			if (m_spIO.Read(_buff, 0, len) != len)
+				throw new Exception("Decoding failed.");
+			return _buff;
+		}
+
 		private uint read_uint32(byte [] buff, int pos)
 		{
 			return (uint)((buff[pos] << 24) + (buff[pos+1] << 16) + (buff[pos+2] << 8) + (buff[pos+3] << 0));
@@ -222,9 +231,7 @@ namespace ALACDotNet
 
 		private uint stream_read_uint32()
 		{
-			if (m_spIO.Read(_buff, 0, 4) != 4)
-				throw new Exception("Decoding failed.");
-			return read_uint32 (_buff, 0);
+			return read_uint32(stream_read_bytes(4), 0);
 		}
 
 		private ushort read_uint16(byte[] buff, int pos)
@@ -234,9 +241,7 @@ namespace ALACDotNet
 
 		private ushort stream_read_uint16()
 		{
-			if (m_spIO.Read(_buff, 0, 2) != 2)
-				throw new Exception("Decoding failed.");
-			return read_uint16 (_buff, 0);
+			return read_uint16(stream_read_bytes(2), 0);
 		}
 
 		private byte read_uint8(byte[] buff, int pos)
@@ -246,9 +251,7 @@ namespace ALACDotNet
 
 		private byte stream_read_uint8()
 		{
-			if (m_spIO.Read(_buff, 0, 1) != 1)
-				throw new Exception("Decoding failed.");
-			return read_uint8 (_buff, 0);
+			return stream_read_bytes(1)[0];
 		}
 
 		private void stream_skip (UInt32 skip)
@@ -743,9 +746,9 @@ namespace ALACDotNet
 		}
 
 		/* 'mvhd' movie header atom */
-		private void read_chunk_mvhd(UInt32 chunk_len)
+		private void qtmovie_read_chunk_mvhd(string path, uint length, object param)
 		{
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			UInt32 size_remaining = length;
 
 			/* version */
 			stream_read_uint8();
@@ -789,37 +792,6 @@ namespace ALACDotNet
 				throw new Exception("ehm, size remianing?");
 				// stream_skip(size_remaining);
 			}
-		}
-
-		private void read_chunk_tkhd(UInt32 chunk_len)
-		{
-			/* don't need anything from here atm, skip */
-			skip_chunk(chunk_len);
-		}
-
-		private void read_chunk_mdhd(UInt32 chunk_len)
-		{
-			/* don't need anything from here atm, skip */
-			skip_chunk(chunk_len);
-		}
-
-		/* 'iods' */
-		private void read_chunk_iods(UInt32 chunk_len)
-		{
-			/* don't need anything from here atm, skip */
-			skip_chunk(chunk_len);
-		}
-
-		private void read_chunk_edts(UInt32 chunk_len)
-		{
-			/* don't need anything from here atm, skip */
-			skip_chunk(chunk_len);
-		}
-
-		private void read_chunk_elst(UInt32 chunk_len)
-		{
-			/* don't need anything from here atm, skip */
-			skip_chunk(chunk_len);
 		}
 
 		private void read_chunk_stsd(UInt32 chunk_len)
@@ -1038,16 +1010,16 @@ namespace ALACDotNet
 						stream_skip(sub_chunk_len - 8);
 						break;
 					default:
-						throw new Exception(String.Format("(trak) unknown chunk id: {0}.", sub_chunk_id));
+						throw new Exception(String.Format("(stbl) unknown chunk id: {0}.", sub_chunk_id));
 				}
 				size_remaining -= sub_chunk_len;
 			}
 		}
 
-		private void read_chunk_minf(UInt32 chunk_len)
+		private void qtmovie_read_chunk_minf(string path, uint length, object param)
 		{
 			UInt32 dinf_size, stbl_size;
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			UInt32 size_remaining = length; /* FIXME WRONG */
 
 			/**** SOUND HEADER CHUNK ****/
 			if (stream_read_uint32() != 16)
@@ -1083,10 +1055,10 @@ namespace ALACDotNet
 		}
 
 		/* media handler inside mdia */
-		private void read_chunk_hdlr(UInt32 chunk_len)
+		private void qtmovie_read_chunk_hdlr(string path, uint length, object param)
 		{
 			UInt32 comptype, compsubtype;
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
+			UInt32 size_remaining = length;
 
 			/* version */
 			stream_read_uint8();
@@ -1119,66 +1091,6 @@ namespace ALACDotNet
 
 			if (size_remaining > 0)
 				stream_skip(size_remaining);
-		}
-
-
-		private void read_chunk_mdia(UInt32 chunk_len)
-		{
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
-			while (size_remaining > 0)
-			{
-				UInt32 sub_chunk_len = stream_read_uint32();
-				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
-					throw new Exception("strange size for chunk inside mdia.");
-
-				UInt32 sub_chunk_id = stream_read_uint32();
-				switch (sub_chunk_id)
-				{
-					case FCC_MDHD:
-						read_chunk_mdhd(sub_chunk_len);
-						break;
-					case FCC_HDLR:
-						read_chunk_hdlr(sub_chunk_len);
-						break;
-					case FCC_MINF:
-						read_chunk_minf(sub_chunk_len);
-						break;
-					default:
-						throw new Exception(String.Format("(mdia) unknown chunk id: {0}.", sub_chunk_id));
-				}
-
-				size_remaining -= sub_chunk_len;
-			}
-		}
-
-		/* 'trak' - a movie track - contains other atoms */
-		private void read_chunk_trak(UInt32 chunk_len)
-		{
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
-			while (size_remaining > 0)
-			{
-				UInt32 sub_chunk_len = stream_read_uint32(); ;
-				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
-					throw new Exception("strange size for chunk inside trak.");
-
-				UInt32 sub_chunk_id = stream_read_uint32();
-				switch (sub_chunk_id)
-				{
-					case FCC_TKHD:
-						read_chunk_tkhd(sub_chunk_len);
-						break;
-					case FCC_MDIA:
-						read_chunk_mdia(sub_chunk_len);
-						break;
-					case FCC_EDTS:
-						read_chunk_edts(sub_chunk_len);
-						break;
-					default:
-						throw new Exception(String.Format("(trak) unknown chunk id: {0}.", sub_chunk_id));
-				}
-
-				size_remaining -= sub_chunk_len;
-			}
 		}
 
 		private void read_chunk_ftyp(UInt32 chunk_len)
@@ -1216,59 +1128,18 @@ namespace ALACDotNet
 			//#endif
 		}
 
-		private void read_chunk_moov(UInt32 chunk_len)
-		{
-			UInt32 size_remaining = chunk_len - 8; /* FIXME WRONG */
-			while (size_remaining > 0)
-			{
-				UInt32 sub_chunk_len = stream_read_uint32();
-				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
-					throw new Exception("strange size for chunk inside moov.");
-				UInt32 sub_chunk_id = stream_read_uint32();
-				switch (sub_chunk_id)
-				{
-					case FCC_MVHD:
-						read_chunk_mvhd(sub_chunk_len);
-						break;
-					case FCC_TRAK:
-						read_chunk_trak(sub_chunk_len);
-						break;
-					case FCC_UDTA:
-						qtmovie_read_lst("top.moov", sub_chunk_len-8, null);
-						break;
-					case FCC_ELST:
-						read_chunk_elst(sub_chunk_len);
-						break;
-					case FCC_IODS:
-						read_chunk_iods(sub_chunk_len);
-						break;
-					default:
-						throw new Exception(String.Format("(moov) unknown chunk id: {0}.", sub_chunk_id));
-				}
-				size_remaining -= sub_chunk_len;
-			}
-		}
-
 		private delegate void qtmovie_read_atom (string path, uint length, object param);
 
 		private void qtmovie_read_meta_name(string path, uint length, object param)
 		{
 			uint language = stream_read_uint32();
-			length -= 4;
-			byte[] value = new byte[length];
-			if (m_spIO.Read(value, 0, (int) length) != length)
-				throw new Exception(path + ": decoding failed.");
-			_meta_name = new ASCIIEncoding().GetString(value);
+			_meta_name = new ASCIIEncoding().GetString(stream_read_bytes((int)length - 4), 0, (int)length - 4);
 		}
 
 		private void qtmovie_read_meta_mean(string path, uint length, object param)
 		{
 			uint language = stream_read_uint32();
-			length -= 4;
-			byte[] value = new byte[length];
-			if (m_spIO.Read(value, 0, (int) length) != length)
-				throw new Exception(path + ": decoding failed.");
-			_meta_mean = new ASCIIEncoding().GetString(value);
+			_meta_mean = new ASCIIEncoding().GetString(stream_read_bytes((int)length - 4), 0, (int)length - 4);
 		}
 
 		private void qtmovie_read_meta_data(string path, uint length, object param)
@@ -1278,10 +1149,7 @@ namespace ALACDotNet
 			int str_size = (int)length - 8;
 			if (str_size <= 0) return;
 			if (tag_format != 1) throw new Exception(path + ": not a string");
-			byte[] value = new byte[str_size];
-			if (m_spIO.Read(value, 0, str_size) != str_size)
-				throw new Exception(path + ": decoding failed.");
-			_meta_data = new UTF8Encoding().GetString(value);
+			_meta_data = new UTF8Encoding().GetString(stream_read_bytes(str_size), 0, str_size);
 		}
 
 		private void qtmovie_read_meta_freeform(string path, uint length, object param)
@@ -1328,6 +1196,11 @@ namespace ALACDotNet
 			}
 		}
 
+		private void qtmovie_read_nul(string path, uint length, object param)
+		{
+			stream_skip(length);
+		}
+		
 		private void qtmovie_read_lst(string path, uint length, object param)
 		{
 			uint size_remaining = length;
@@ -1345,8 +1218,7 @@ namespace ALACDotNet
 				uint sub_chunk_len = stream_read_uint32();
 				if (sub_chunk_len <= 1 || sub_chunk_len > size_remaining)
 					throw new Exception("strange size for chunk inside "+path+".");
-				if (m_spIO.Read(_buff, 0, 4) != 4)
-					throw new Exception("Decoding failed.");
+				stream_read_bytes(4);
 				for (int c = 0; c < 4; c++)
 					chunk_path.Append((char)_buff[c]);
 
@@ -1361,7 +1233,7 @@ namespace ALACDotNet
 			}
 		}
 
-		private void qtmovie_add_parser (string path, qtmovie_read_atom handler, object param)
+		private void qtmovie_add_any_parser (string path, qtmovie_read_atom handler, object param)
 		{
 			_qtmovie_parsers.Add(path, handler);
 			_qtmovie_parser_params.Add(path, param);
@@ -1369,19 +1241,24 @@ namespace ALACDotNet
 
 		private void qtmovie_add_lst_parser(string path, object param)
 		{
-			qtmovie_add_parser(path, new qtmovie_read_atom(qtmovie_read_lst), param);
+			qtmovie_add_any_parser(path, new qtmovie_read_atom(qtmovie_read_lst), param);
+		}
+
+		private void qtmovie_add_nul_parser(string path)
+		{
+			qtmovie_add_any_parser(path, new qtmovie_read_atom(qtmovie_read_nul), null);
 		}
 
 		private void qtmovie_add_tag_parser(string path, string flacName)
 		{
-			qtmovie_add_parser(path, new qtmovie_read_atom(qtmovie_read_meta_string), flacName);
-			qtmovie_add_parser(path + ".data", new qtmovie_read_atom(qtmovie_read_meta_data), null);
+			qtmovie_add_any_parser(path, new qtmovie_read_atom(qtmovie_read_meta_string), flacName);
+			qtmovie_add_any_parser(path + ".data", new qtmovie_read_atom(qtmovie_read_meta_data), null);
 		}
 
 		private void qtmovie_add_tag_parser(string path)
 		{
 			qtmovie_add_lst_parser(path, null);
-			qtmovie_add_parser(path + ".data", new qtmovie_read_atom(qtmovie_read_meta_binary), null);
+			qtmovie_add_any_parser(path + ".data", new qtmovie_read_atom(qtmovie_read_meta_binary), null);
 		}
 		
 		private void qtmovie_read()
@@ -1392,20 +1269,31 @@ namespace ALACDotNet
 			_qtmovie_parsers = new Dictionary<string, qtmovie_read_atom>();
 			_qtmovie_parser_params = new Dictionary<string, object>();
 
-			qtmovie_add_lst_parser("top.moov.meta", (uint)4);
-			qtmovie_add_lst_parser("top.moov.meta.ilst", null);
-			qtmovie_add_tag_parser("top.moov.meta.ilst.©nam", "TITLE");
-			qtmovie_add_tag_parser("top.moov.meta.ilst.©ART", "ARTIST");
-			qtmovie_add_tag_parser("top.moov.meta.ilst.©wrt", "COMPOSER");
-			qtmovie_add_tag_parser("top.moov.meta.ilst.©alb", "ALBUM");
-			qtmovie_add_tag_parser("top.moov.meta.ilst.©day", "DATE");
-			qtmovie_add_tag_parser("top.moov.meta.ilst.©gen", "GENRE");
-			qtmovie_add_tag_parser("top.moov.meta.ilst.disk");
-			qtmovie_add_tag_parser("top.moov.meta.ilst.trkn");
-			qtmovie_add_parser("top.moov.meta.ilst.----", new qtmovie_read_atom(qtmovie_read_meta_freeform), null);
-			qtmovie_add_parser("top.moov.meta.ilst.----.mean", new qtmovie_read_atom(qtmovie_read_meta_mean), null);
-			qtmovie_add_parser("top.moov.meta.ilst.----.name", new qtmovie_read_atom(qtmovie_read_meta_name), null);
-			qtmovie_add_parser("top.moov.meta.ilst.----.data", new qtmovie_read_atom(qtmovie_read_meta_data), null);
+			qtmovie_add_lst_parser("top.moov", null);
+			qtmovie_add_any_parser("top.moov.mvhd", new qtmovie_read_atom(qtmovie_read_chunk_mvhd), null);
+			qtmovie_add_nul_parser("top.moov.elst");
+			qtmovie_add_nul_parser("top.moov.iods");
+			qtmovie_add_lst_parser("top.moov.trak", null); /* 'trak' - a movie track */
+			qtmovie_add_nul_parser("top.moov.trak.tkhd");
+			qtmovie_add_nul_parser("top.moov.trak.edts");
+			qtmovie_add_lst_parser("top.moov.trak.mdia", null);
+			qtmovie_add_any_parser("top.moov.trak.mdia.hdlr", new qtmovie_read_atom(qtmovie_read_chunk_hdlr), null);
+			qtmovie_add_any_parser("top.moov.trak.mdia.minf", new qtmovie_read_atom(qtmovie_read_chunk_minf), null);
+			qtmovie_add_lst_parser("top.moov.udta", null);
+			qtmovie_add_lst_parser("top.moov.udta.meta", (uint)4);
+			qtmovie_add_lst_parser("top.moov.udta.meta.ilst", null);
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©nam", "TITLE");
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©ART", "ARTIST");
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©wrt", "COMPOSER");
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©alb", "ALBUM");
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©day", "DATE");
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©gen", "GENRE");
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.disk");
+			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.trkn");
+			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----", new qtmovie_read_atom(qtmovie_read_meta_freeform), null);
+			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.mean", new qtmovie_read_atom(qtmovie_read_meta_mean), null);
+			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.name", new qtmovie_read_atom(qtmovie_read_meta_name), null);
+			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.data", new qtmovie_read_atom(qtmovie_read_meta_data), null);
 
 			while (true)
 			{
@@ -1419,7 +1307,7 @@ namespace ALACDotNet
 						read_chunk_ftyp(chunk_len);
 						break;
 					case FCC_MOOV:
-						read_chunk_moov(chunk_len);
+						qtmovie_read_lst("top.moov", chunk_len - 8, null);
 						if (found_mdat)
 						{
 							m_spIO.Position = _saved_mdat_pos;
@@ -1499,17 +1387,6 @@ namespace ALACDotNet
 		const UInt32 FCC_MDAT = ('m' << 24) + ('d' << 16) + ('a' << 8) + ('t' << 0);
 		const UInt32 FCC_FREE = ('f' << 24) + ('r' << 16) + ('e' << 8) + ('e' << 0);
 		const UInt32 FCC_M4A = ('M' << 24) + ('4' << 16) + ('A' << 8) + (' ' << 0);
-		const UInt32 FCC_MVHD = ('m' << 24) + ('v' << 16) + ('h' << 8) + ('d' << 0);
-		const UInt32 FCC_TRAK = ('t' << 24) + ('r' << 16) + ('a' << 8) + ('k' << 0);
-		const UInt32 FCC_UDTA = ('u' << 24) + ('d' << 16) + ('t' << 8) + ('a' << 0);
-		const UInt32 FCC_ELST = ('e' << 24) + ('l' << 16) + ('s' << 8) + ('t' << 0);
-		const UInt32 FCC_IODS = ('i' << 24) + ('o' << 16) + ('d' << 8) + ('s' << 0);
-		const UInt32 FCC_TKHD = ('t' << 24) + ('k' << 16) + ('h' << 8) + ('d' << 0);
-		const UInt32 FCC_MDIA = ('m' << 24) + ('d' << 16) + ('i' << 8) + ('a' << 0);
-		const UInt32 FCC_EDTS = ('e' << 24) + ('d' << 16) + ('t' << 8) + ('s' << 0);
-		const UInt32 FCC_MDHD = ('m' << 24) + ('d' << 16) + ('h' << 8) + ('d' << 0);
-		const UInt32 FCC_HDLR = ('h' << 24) + ('d' << 16) + ('l' << 8) + ('r' << 0);
-		const UInt32 FCC_MINF = ('m' << 24) + ('i' << 16) + ('n' << 8) + ('f' << 0);
 		const UInt32 FCC_SMHD = ('s' << 24) + ('m' << 16) + ('h' << 8) + ('d' << 0);
 		const UInt32 FCC_DINF = ('d' << 24) + ('i' << 16) + ('n' << 8) + ('f' << 0);
 		const UInt32 FCC_STBL = ('s' << 24) + ('t' << 16) + ('b' << 8) + ('l' << 0);
