@@ -1734,7 +1734,7 @@ namespace CUEToolsLib
 							if (destTags.Get(keys[i]) == null)
 								destTags.Add(keys[i], singleValue);
 						}
-						else if (fWithCUE)
+						else if (fWithCUE && keys[i].ToUpper() != "TRACKNUMBER")
 						{
 							string[] values = _tracks[iTrack]._trackTags.GetValues(keys[i]);
 							for (int j = 0; j < values.Length; j++)
@@ -2045,7 +2045,7 @@ namespace CUEToolsLib
 		}
 
 		public static string CorrectAudioFilenames(string path, bool always) {
-			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape" };
+			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
 			List<string> lines = new List<string>();
 			List<int> filePos = new List<int>();
 			List<string> origFiles = new List<string>();
