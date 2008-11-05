@@ -194,7 +194,8 @@ namespace HDCDDotNet
 #if !MONO
 			if (_decoder != IntPtr.Zero) 
 				hdcd_decoder_delete(_decoder);
-			_gch.Free();
+			if (_gch.IsAllocated) 
+				_gch.Free();
 #endif
 		}
 
