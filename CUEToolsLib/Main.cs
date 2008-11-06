@@ -486,6 +486,7 @@ namespace CUEToolsLib
 				{
 					StreamReader logReader = new StreamReader(Path.ChangeExtension(pathIn, ".log"), CUESheet.Encoding);
 					_eacLog = logReader.ReadToEnd();
+					logReader.Close();
 				}
 				catch { }
 			}
@@ -2071,6 +2072,7 @@ namespace CUEToolsLib
 						}
 					}
 				}
+				sr.Close();
 			}
 
 			if (!foundAll || always)
@@ -2090,7 +2092,7 @@ namespace CUEToolsLib
 						audioFiles = newFiles.ToArray();
 						break;
 					}
-					audioFiles = Directory.GetFiles(dir, audioExts[i]);
+					audioFiles = Directory.GetFiles(dir == "" ? "." : dir, audioExts[i]);
 					if (audioFiles.Length == filePos.Count)
 					{
 						break;
