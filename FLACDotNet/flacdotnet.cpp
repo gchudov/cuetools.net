@@ -70,7 +70,7 @@ namespace FLACDotNet {
 			_decoderActive = false;
 
 			_sampleOffset = 0;
-			_samplesWaiting = false;
+			_samplesWaiting = 0;
 			_sampleBuffer = nullptr;
 			_path = path;
 
@@ -138,7 +138,7 @@ namespace FLACDotNet {
 			}
 			void set(Int64 offset) {
 				_sampleOffset = offset;
-				_samplesWaiting = false;
+				_samplesWaiting = 0;
 				if (!FLAC__stream_decoder_seek_absolute(_decoder, offset)) {
 					throw gcnew Exception("Unable to seek.");
 				}
@@ -237,20 +237,18 @@ namespace FLACDotNet {
 			_decoderActive = false;
 		}
 
-		Int32 Read([Out] array<Int32, 2>^% sampleBuffer) {
-			int sampleCount;
-
-			while (!_samplesWaiting) {
+		Int32 Read([Out] array<Int32, 2>^% sampleBuffer) 
+		{
+			while (_samplesWaiting == 0) {
 				if (!FLAC__stream_decoder_process_single(_decoder)) {
 					throw gcnew Exception("An error occurred while decoding.");
 				}
 			}
 
-			sampleCount = _sampleBuffer->GetLength(0);
+			int sampleCount = _samplesWaiting;
 			sampleBuffer = _sampleBuffer;
 			_sampleOffset += sampleCount;
-			_samplesWaiting = false;
-
+			_samplesWaiting = 0;
 			return sampleCount;
 		}
 
@@ -262,7 +260,7 @@ namespace FLACDotNet {
 		Int64 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		array<Int32, 2>^ _sampleBuffer;
-		bool _samplesWaiting;
+		int _samplesWaiting;
 		NameValueCollection^ _tags;
 		String^ _path;
 		bool _decoderActive;
@@ -272,7 +270,7 @@ namespace FLACDotNet {
 		{
 			Int32 sampleCount = frame->header.blocksize;
 
-			if (_samplesWaiting) {
+			if (_samplesWaiting > 0) {
 				throw gcnew Exception("Received unrequested samples.");
 			}
 
@@ -283,7 +281,7 @@ namespace FLACDotNet {
 				throw gcnew Exception("Format changes within a file are not allowed.");
 			}
 
-			if ((_sampleBuffer == nullptr) || (_sampleBuffer->GetLength(0) != sampleCount)) {
+			if ((_sampleBuffer == nullptr) || (_sampleBuffer->GetLength(0) < sampleCount)) {
 				_sampleBuffer = gcnew array<Int32, 2>(sampleCount, _channelCount);
 			}
 
@@ -299,7 +297,7 @@ namespace FLACDotNet {
 				}
 			}
 
-			_samplesWaiting = true;
+			_samplesWaiting = sampleCount;
 
 			return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 		}

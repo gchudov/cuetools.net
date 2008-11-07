@@ -628,6 +628,7 @@ namespace CUEToolsLib
 						}
 					}
 				}
+				sr.Close();
 			}
 
 			if (trackNumber == 0) {
@@ -1179,7 +1180,7 @@ namespace CUEToolsLib
 			}		 
 		}
 
-		unsafe private void CalculateAccurateRipCRCsSemifast(UInt32* samples, uint count, int iTrack, uint currentOffset, uint previousOffset, uint trackLength)
+		unsafe private void CalculateAccurateRipCRCsSemifast(int* samples, uint count, int iTrack, uint currentOffset, uint previousOffset, uint trackLength)
 		{
 			fixed (uint* CRCsA = iTrack != 0 ? _tracks[iTrack - 1].OffsetedCRC : null,
 				CRCsB = _tracks[iTrack].OffsetedCRC,
@@ -1187,7 +1188,7 @@ namespace CUEToolsLib
 			{
 				for (uint si = 0; si < count; si++)
 				{
-					uint sampleValue = samples[si];
+					uint sampleValue = (uint) ((samples[2 * si] & 0xffff) + (samples[2 * si + 1] << 16));
 					int i;
 					int iB = Math.Max(0, _arOffsetRange - (int)(currentOffset + si));
 					int iC = Math.Min(2 * _arOffsetRange + 1, _arOffsetRange + (int)trackLength - (int)(currentOffset + si));
@@ -1215,41 +1216,44 @@ namespace CUEToolsLib
 			}
 		}
 
-		unsafe private void CalculateAccurateRipCRCs(UInt32* samples, uint count, int iTrack, uint currentOffset, uint previousOffset, uint trackLength)
+		unsafe private void CalculateAccurateRipCRCs(int* samples, uint count, int iTrack, uint currentOffset, uint previousOffset, uint trackLength)
 		{
 			for (int si = 0; si < count; si++)
+			{
+				uint sampleValue = (uint)((samples[2 * si] & 0xffff) + (samples[2 * si + 1] << 16));
 				for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 				{
 					int iTrack2 = iTrack;
-					int currentOffset2 = (int) currentOffset + si - oi;
+					int currentOffset2 = (int)currentOffset + si - oi;
 
 					if (currentOffset2 < 5 * 588 - 1 && iTrack == 0)
-						// we are in the skipped area at the start of the disk
+					// we are in the skipped area at the start of the disk
 					{
 						continue;
 					}
-					else if (currentOffset2 < 0) 
-						// offset takes us to previous track
+					else if (currentOffset2 < 0)
+					// offset takes us to previous track
 					{
 						iTrack2--;
-						currentOffset2 += (int) previousOffset;
+						currentOffset2 += (int)previousOffset;
 					}
 					else if (currentOffset2 >= trackLength - 5 * 588 && iTrack == TrackCount - 1)
-						// we are in the skipped area at the end of the disc
+					// we are in the skipped area at the end of the disc
 					{
 						continue;
 					}
 					else if (currentOffset2 >= trackLength)
-						// offset takes us to the next track
+					// offset takes us to the next track
 					{
 						iTrack2++;
-						currentOffset2 -= (int) trackLength;
+						currentOffset2 -= (int)trackLength;
 					}
-					_tracks[iTrack2].OffsetedCRC[_arOffsetRange - oi] += (uint)(samples [si] * (currentOffset2 + 1));
+					_tracks[iTrack2].OffsetedCRC[_arOffsetRange - oi] += sampleValue * (uint) (currentOffset2 + 1);
 				}
+			}
 		}
 
-		unsafe private void CalculateAccurateRipCRCsFast(UInt32* samples, uint count, int iTrack, uint currentOffset)
+		unsafe private void CalculateAccurateRipCRCsFast(int* samples, uint count, int iTrack, uint currentOffset)
 		{
 			int s1 = (int) Math.Min(count, Math.Max(0, 450 * 588 - _arOffsetRange - (int)currentOffset));
 			int s2 = (int) Math.Min(count, Math.Max(0, 451 * 588 + _arOffsetRange - (int)currentOffset));
@@ -1260,8 +1264,9 @@ namespace CUEToolsLib
 						int magicFrameOffset = (int)currentOffset + sj - 450 * 588 + 1;
 						int firstOffset = Math.Max(-_arOffsetRange, magicFrameOffset - 588);
 						int lastOffset = Math.Min(magicFrameOffset - 1, _arOffsetRange);
+						uint sampleValue = (uint)((samples[2 * sj] & 0xffff) + (samples[2 * sj + 1] << 16));
 						for (int oi = firstOffset; oi <= lastOffset; oi++)
-							FrameCRCs[_arOffsetRange - oi] += (uint)(samples[sj] * (magicFrameOffset - oi));
+							FrameCRCs[_arOffsetRange - oi] += sampleValue * (uint)(magicFrameOffset - oi);
 					}
 			fixed (uint* CRCs = _tracks[iTrack].OffsetedCRC)
 			{
@@ -1269,7 +1274,7 @@ namespace CUEToolsLib
 				currentOffset += (uint) _arOffsetRange + 1;
 				for (uint si = 0; si < count; si++)
 				{
-					uint sampleValue = samples[si];
+					uint sampleValue = (uint)((samples[2 * si] & 0xffff) + (samples[2 * si + 1] << 16));
 					stepSum += sampleValue;
 					baseSum += sampleValue * (uint)(currentOffset + si);
 				}
@@ -1747,6 +1752,7 @@ namespace CUEToolsLib
 
 			destTags.Remove("CUESHEET");
 			destTags.Remove("TITLE");
+			destTags.Remove("TRACKNUMBER");
 			CleanupTags(destTags, "ACCURATERIP");
 			CleanupTags(destTags, "REPLAYGAIN");
 
@@ -1781,7 +1787,7 @@ namespace CUEToolsLib
 		{
 			const int buffLen = 16384;
 			int iTrack, iIndex;
-			byte[] buff = new byte[buffLen * 2 * 2];
+			int[,] sampleBuffer = new int[buffLen, 2];
 			TrackInfo track;
 			IAudioSource audioSource = null;
 			IAudioDest audioDest = null;
@@ -1853,8 +1859,6 @@ namespace CUEToolsLib
 					SetAlbumTags(decodedAudioDest, bestOffset, style == CUEStyle.SingleFileWithCUE);
 				}
 			}
-
-			int[,] sampleBuffer = null;
 
 			if (_accurateRip && noOutput)
 				for (iTrack = 0; iTrack < TrackCount; iTrack++)
@@ -1966,10 +1970,7 @@ namespace CUEToolsLib
 							lastTrackPercent = trackPercent;
 						}
 
-						audioSource.Read(buff, copyCount);
-						if (sampleBuffer == null || sampleBuffer.GetLength(0) < copyCount)
-							sampleBuffer = new int[copyCount, audioSource.ChannelCount];
-						AudioCodecsDotNet.AudioCodecsDotNet.BytesToFLACSamples_16(buff, 0, sampleBuffer, 0, copyCount, audioSource.ChannelCount);
+						audioSource.Read(sampleBuffer, copyCount);					
 						if (!discardOutput) audioDest.Write(sampleBuffer, copyCount);
 						if (_config.detectHDCD && hdcdDecoder != null)
 						{
@@ -1987,23 +1988,22 @@ namespace CUEToolsLib
 						}
 						if (_accurateRip && noOutput && (iTrack != 0 || iIndex != 0))
 						unsafe {
-							fixed (byte * pBuff = &buff[0])
+							fixed (int *pSampleBuff = &sampleBuffer[0,0])
 							{
-								UInt32 * samples = (UInt32*) pBuff;
 								int iTrack2 = iTrack - (iIndex == 0 ? 1 : 0);
 
 								uint si1 = (uint) Math.Min(copyCount, Math.Max(0, 588*(iTrack2 == 0?10:5) - (int) currentOffset));
 								uint si2 = (uint) Math.Min(copyCount, Math.Max(si1, trackLength - (int) currentOffset - 588 * (iTrack2 == TrackCount - 1?10:5)));
 								if (iTrack2 == 0)
-									CalculateAccurateRipCRCs (samples, si1, iTrack2, currentOffset, previousOffset, trackLength);
+									CalculateAccurateRipCRCs (pSampleBuff, si1, iTrack2, currentOffset, previousOffset, trackLength);
 								else
-									CalculateAccurateRipCRCsSemifast (samples, si1, iTrack2, currentOffset, previousOffset, trackLength);
+									CalculateAccurateRipCRCsSemifast(pSampleBuff, si1, iTrack2, currentOffset, previousOffset, trackLength);
 								if (si2 > si1)
-									CalculateAccurateRipCRCsFast (samples+si1, (uint)(si2 - si1), iTrack2, currentOffset + si1);
+									CalculateAccurateRipCRCsFast(pSampleBuff + si1 * 2, (uint)(si2 - si1), iTrack2, currentOffset + si1);
 								if (iTrack2 == TrackCount - 1)
-									CalculateAccurateRipCRCs (samples+si2, copyCount-si2, iTrack2, currentOffset+si2, previousOffset, trackLength);
+									CalculateAccurateRipCRCs(pSampleBuff + si2*2, copyCount - si2, iTrack2, currentOffset + si2, previousOffset, trackLength);
 								else
-									CalculateAccurateRipCRCsSemifast (samples + si2, copyCount - si2, iTrack2, currentOffset + si2, previousOffset, trackLength);
+									CalculateAccurateRipCRCsSemifast(pSampleBuff + si2*2, copyCount - si2, iTrack2, currentOffset + si2, previousOffset, trackLength);
 							}
 						}
 						currentOffset += copyCount;

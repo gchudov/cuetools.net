@@ -126,7 +126,7 @@ namespace CUEToolsLib {
 			}
 		}
 
-		public uint Read(byte[] buff, uint sampleCount) {
+		public uint Read(int [,] buff, uint sampleCount) {
 			if (_flacReader.BitsPerSample != 16) {
 				throw new Exception("Reading is only supported for 16 bit sample depth.");
 			}
@@ -142,12 +142,10 @@ namespace CUEToolsLib {
 				}
 
 				copyCount = Math.Min(samplesNeeded, SamplesInBuffer);
-
-				AudioCodecsDotNet.AudioCodecsDotNet.FLACSamplesToBytes_16(_sampleBuffer, _bufferOffset, buff, buffOffset,
-					copyCount, chanCount);
+				Array.Copy(_sampleBuffer, _bufferOffset * chanCount, buff, buffOffset * chanCount, copyCount * chanCount);
 
 				samplesNeeded -= copyCount;
-				buffOffset += copyCount * (uint) chanCount * 2;
+				buffOffset += copyCount;
 				_bufferOffset += copyCount;
 			}
 
@@ -288,30 +286,30 @@ namespace CUEToolsLib {
 			set { _apeReader.Tags = value; }
 		}
 
-		private unsafe void APESamplesToBytes_16(int[,] inSamples, uint inSampleOffset,
-			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount)
+		private unsafe void APESamplesToFLACSamples(int[,] inSamples, uint inSampleOffset,
+			int[,] outSamples, uint outSampleOffset, uint sampleCount, int channelCount)
 		{
 			uint loopCount = sampleCount * (uint) channelCount;
 
 			if ((inSamples.GetLength(0) - inSampleOffset < sampleCount) ||
-				(outSamples.Length - outByteOffset < loopCount * 2))
+				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
 			{
 				throw new IndexOutOfRangeException();
 			}
 
 			fixed (int* pInSamplesFixed = &inSamples[inSampleOffset, 0]) {
-				fixed (byte* pOutSamplesFixed = &outSamples[outByteOffset]) {
+				fixed (int * pOutSamplesFixed = &outSamples[outSampleOffset, 0]) {
 					int* pInSamples = pInSamplesFixed;
-					short* pOutSamples = (short*)pOutSamplesFixed;
+					int* pOutSamples = pOutSamplesFixed;
 
 					for (int i = 0; i < loopCount; i++) {
-						*(pOutSamples++) = (short)*(pInSamples++);
+						*(pOutSamples++) = *(pInSamples++);
 					}
 				}
 			}
 		}
 
-		public uint Read(byte[] buff, uint sampleCount) {
+		public uint Read(int[,] buff, uint sampleCount) {
 			if (_apeReader.BitsPerSample != 16) {
 				throw new Exception("Reading is only supported for 16 bit sample depth.");
 			}
@@ -329,11 +327,11 @@ namespace CUEToolsLib {
 
 				copyCount = Math.Min(samplesNeeded, SamplesInBuffer);
 
-				APESamplesToBytes_16(_sampleBuffer, _bufferOffset, buff, buffOffset,
+				APESamplesToFLACSamples(_sampleBuffer, _bufferOffset, buff, buffOffset,
 					copyCount, chanCount);
 
 				samplesNeeded -= copyCount;
-				buffOffset += copyCount * (uint) chanCount * 2;
+				buffOffset += copyCount;
 				_bufferOffset += copyCount;
 			}
 
@@ -452,16 +450,11 @@ namespace CUEToolsLib {
 			set { _wavPackReader.Tags = value; }
 		}
 
-		public uint Read(byte[] buff, uint sampleCount) {
+		public uint Read(int[,] buff, uint sampleCount) {
 			if (_wavPackReader.BitsPerSample != 16) {
 				throw new Exception("Reading is only supported for 16 bit sample depth.");
 			}
-			int chanCount = _wavPackReader.ChannelCount;
-			int[,] sampleBuffer;
-
-			sampleBuffer = new int[sampleCount * 2, chanCount];
-			_wavPackReader.Read(sampleBuffer, (int) sampleCount);
-			AudioCodecsDotNet.AudioCodecsDotNet.FLACSamplesToBytes_16(sampleBuffer, 0, buff, 0, sampleCount, chanCount);
+			_wavPackReader.Read(buff, (int) sampleCount);
 			return sampleCount;
 		}
 

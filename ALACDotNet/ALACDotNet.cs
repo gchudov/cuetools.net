@@ -40,7 +40,7 @@ namespace ALACDotNet
 			_saved_mdat_pos = m_spIO.Position;
 		}
 
-		public uint Read(byte[] buff, uint sampleCount)
+		public uint Read(int[,] buff, uint sampleCount)
 		{
 			if (_predicterror_buffer_a == null)
 			{
@@ -62,24 +62,23 @@ namespace ALACDotNet
 				_outputsamples_buffer_b = new int[setinfo_max_samples_per_frame];
 
 				_samplesInBuffer = 0;
-				_samplesBuffer = new byte[setinfo_max_samples_per_frame*4];
 				_framesBuffer = new byte[65536];
 			}
 
-			ulong offset = 0;
+			uint offset = 0;
 
 			while (_samplesInBuffer < sampleCount)
 			{
 				if (_samplesInBuffer > 0)
 				{
-					Array.Copy(_samplesBuffer, (long) _samplesBufferOffset * 4, buff, (long)offset * 4, (long)_samplesInBuffer * 4);
+					deinterlace(buff, offset);
 					sampleCount -= (uint) _samplesInBuffer;
 					offset += _samplesInBuffer;
 					_samplesInBuffer = 0;
 					_samplesBufferOffset = 0;
 				}
 
-				ulong sampleDuration;
+				uint sampleDuration;
 				uint sampleSize;
 				if ((int) _iSample >= _sample_byte_size.Length)
 					return (uint)offset;
@@ -93,7 +92,7 @@ namespace ALACDotNet
 				_iSample++;
 			}
 
-			Array.Copy(_samplesBuffer, (long) _samplesBufferOffset * 4, buff, (long)offset * 4, (long)sampleCount * 4);
+			deinterlace(buff, offset);
 			_samplesInBuffer -= sampleCount;
 			_samplesBufferOffset += sampleCount;
 			if (_samplesInBuffer == 0)
@@ -136,7 +135,7 @@ namespace ALACDotNet
 				
 				_iSample = 0;
 				ulong durOffs = 0;
-				ulong sampleDuration;
+				uint sampleDuration;
 				long fileOffs = 0;
 				uint sampleSize;
 				do
@@ -152,7 +151,7 @@ namespace ALACDotNet
 					_iSample++;
 				} while (durOffs <= value);
 				m_spIO.Position = _saved_mdat_pos + fileOffs - sampleSize;
-				_samplesBufferOffset = sampleDuration - durOffs + value;
+				_samplesBufferOffset = (uint) (value + sampleDuration - durOffs);
 				_iSample--;
 			}
 		}
@@ -201,7 +200,7 @@ namespace ALACDotNet
 			} 
 		}
 
-		private void get_sample_info(ulong iSample, out ulong sampleDuration, out uint sampleSize)
+		private void get_sample_info(ulong iSample, out uint sampleDuration, out uint sampleSize)
 		{
 			// if (iSample >= _sample_byte_size.Length)
 			uint duration_index_accum = 0;
@@ -590,43 +589,39 @@ namespace ALACDotNet
 			}
 		}
 
-		private unsafe void deinterlace(uint numsamples, byte interlacing_shift, byte interlacing_leftweight)
+		private unsafe void deinterlace(int [,] samplesBuffer, uint offset)
 		{
-			if (numsamples <= 0)
+			if (_samplesInBuffer <= 0)
 				return;
 
 			int i;
-			fixed (int* buf_a = &_outputsamples_buffer_a[0], buf_b = _outputsamples_buffer_b)
-			fixed (byte* buf_s = &_samplesBuffer[0])
+			fixed (int* buf_a = &_outputsamples_buffer_a[_samplesBufferOffset], buf_b = &_outputsamples_buffer_b[_samplesBufferOffset])
+			fixed (int* buf_s = &samplesBuffer[offset, 0])
 			{
 				/* weighted interlacing */
-				if (interlacing_leftweight != 0)
+				if (_interlacing_leftweight != 0)
 				{
-					for (i = 0; i < numsamples; i++)
+					for (i = 0; i < _samplesInBuffer; i++)
 					{
 						int a = buf_a[i];
 						int b = buf_b[i];
 
-						a -= (b * interlacing_leftweight) >> interlacing_shift;
+						a -= (b * _interlacing_leftweight) >> _interlacing_shift;
 						b += a;
 
-						buf_s[i * 4] = (byte)(b & 0xff);
-						buf_s[i * 4 + 1] = (byte)((b >> 8) & 0xff);
-						buf_s[i * 4 + 2] = (byte)(a & 0xff);
-						buf_s[i * 4 + 3] = (byte)((a >> 8) & 0xff);
+						buf_s[i * 2] = b;
+						buf_s[i * 2 + 1] = a;
 					}
 					return;
 				}
 
 				/* otherwise basic interlacing took place */
-				for (i = 0; i < numsamples; i++)
+				for (i = 0; i < _samplesInBuffer; i++)
 				{
 					int a = buf_a[i];
 					int b = buf_b[i];
-					buf_s[i * 4] = (byte)(a & 0xff);
-					buf_s[i * 4 + 1] = (byte)((a >> 8) & 0xff);
-					buf_s[i * 4 + 2] = (byte)(b & 0xff);
-					buf_s[i * 4 + 3] = (byte)((b >> 8) & 0xff);
+					buf_s[i * 2] = a;
+					buf_s[i * 2 + 1] = b;
 				}
 			}
 		}
@@ -640,8 +635,6 @@ namespace ALACDotNet
 			if (channels != 1)
 				throw new Exception("Not stereo");
 
-			byte interlacing_shift;
-			byte interlacing_leftweight;
 			readbits(_framesBuffer, ref pos, 4);
 			readbits(_framesBuffer, ref pos, 12); /* unknown, skip 12 bits */
 			bool hassize = 0 != readbits(_framesBuffer, ref pos, 1); /* the output sample size is stored soon */
@@ -654,8 +647,8 @@ namespace ALACDotNet
 			{
 				/* compressed */
 
-				interlacing_shift = (byte)readbits(_framesBuffer, ref pos, 8);
-				interlacing_leftweight = (byte)readbits(_framesBuffer, ref pos, 8);
+				_interlacing_shift = (byte)readbits(_framesBuffer, ref pos, 8);
+				_interlacing_leftweight = (byte)readbits(_framesBuffer, ref pos, 8);
 
 				if (wasted_bytes != 0)
 					throw new Exception("FIXME: unimplemented, unhandling of wasted_bytes");
@@ -684,14 +677,12 @@ namespace ALACDotNet
 					_outputsamples_buffer_b[i] = extend_sign32((int)readbits(_framesBuffer, ref pos, _bitsPerSample), _bitsPerSample);
 				}
 				/* wasted_bytes = 0; */
-				interlacing_shift = 0;
-				interlacing_leftweight = 0;
+				_interlacing_shift = 0;
+				_interlacing_leftweight = 0;
 			}
 
 			if (_bitsPerSample != 16)
 				throw new Exception("Not 16 bit");
-
-			deinterlace(outputSamples, interlacing_shift, interlacing_leftweight);
 
 			_samplesInBuffer = outputSamples;
 		}
@@ -1245,16 +1236,16 @@ namespace ALACDotNet
 		predictor_t predictor_info_b;
 
 		NameValueCollection _tags;
-		ulong _samplesInBuffer;
-		byte[] _samplesBuffer;
+		uint _samplesInBuffer, _samplesBufferOffset;
 		byte[] _framesBuffer;
 		byte[] _buff;
+		byte _interlacing_shift;
+		byte _interlacing_leftweight;
 		int _sampleRate;
 		int _channelCount;
 		int _bitsPerSample;
 		ulong _sampleCount;
 		ulong _sampleOffset;
-		ulong _samplesBufferOffset;
 		ulong _iSample;
 
 		Dictionary<string, qtmovie_read_atom> _qtmovie_parsers;

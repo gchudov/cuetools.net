@@ -8,7 +8,7 @@ namespace AudioCodecsDotNet
 {
 	public interface IAudioSource
 	{
-		uint Read(byte[] buff, uint sampleCount);
+		uint Read(int[,] buff, uint sampleCount);
 		ulong Length { get; }
 		ulong Position { get; set; }
 		NameValueCollection Tags { get; set; }
@@ -228,24 +228,17 @@ namespace AudioCodecsDotNet
 			}
 		}
 
-		public uint Read(byte[] buff, uint sampleCount)
+		public uint Read(int [,] buff, uint sampleCount)
 		{
-			uint samplesRemaining, byteCount, i;
-
-			samplesRemaining = (uint)(_sampleCount - _sampleOffset);
+			uint samplesRemaining = (uint)(_sampleCount - _sampleOffset);
 			if (sampleCount > samplesRemaining)
-			{
 				sampleCount = samplesRemaining;
-			}
 
-			byteCount = sampleCount * 2 * 2;
-			for (i = 0; i < byteCount; i++)
-			{
-				buff[i] = 0;
-			}
+			for (uint i = 0; i < sampleCount; i++)
+				for (int j = 0; j < buff.GetLength(1); j++)
+					buff[i,j] = 0;
 
 			_sampleOffset += sampleCount;
-
 			return sampleCount;
 		}
 
@@ -265,6 +258,7 @@ namespace AudioCodecsDotNet
 		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		bool _largeFile;
 		string _path;
+		private byte[] _sampleBuffer;
 
 		public WAVReader(string path)
 		{
@@ -476,22 +470,21 @@ namespace AudioCodecsDotNet
 			values = new List<string>();
 		}
 
-		public uint Read(byte[] buff, uint sampleCount)
+		public uint Read(int[,] buff, uint sampleCount)
 		{
 			if (sampleCount > Remaining)
 				sampleCount = (uint)Remaining;
 
-			uint byteCount = sampleCount * (uint)_blockAlign;
-
-			if (sampleCount != 0)
-			{
-				if (_fs.Read(buff, 0, (int)byteCount) != byteCount)
-				{
-					throw new Exception("Incomplete file read.");
-				}
-				_samplePos += sampleCount;
-			}
-
+			if (sampleCount == 0)
+				return 0;
+			int byteCount = (int) sampleCount * _blockAlign;
+			if (_sampleBuffer == null || _sampleBuffer.Length < byteCount)
+				_sampleBuffer = new byte[byteCount];
+			if (_fs.Read(_sampleBuffer, 0, (int)byteCount) != byteCount)
+				throw new Exception("Incomplete file read.");
+			AudioCodecsDotNet.BytesToFLACSamples_16 (_sampleBuffer, 0, buff, 0,
+				sampleCount, _channelCount);
+			_samplePos += sampleCount;
 			return sampleCount;
 		}
 
@@ -600,7 +593,7 @@ namespace AudioCodecsDotNet
 		{
 			if (sampleCount == 0)
 				return;
-			if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _channelCount)
+			if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _blockAlign)
 				_sampleBuffer = new byte[sampleCount * _blockAlign];
 			AudioCodecsDotNet.FLACSamplesToBytes(buff, 0, _sampleBuffer, 0,
 				sampleCount, _channelCount, _bitsPerSample);

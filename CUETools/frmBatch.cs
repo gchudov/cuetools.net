@@ -130,6 +130,7 @@ namespace JDP
 					progressBar2.Value = 0;
 				});
 			}
+#if !DEBUG
 			catch (Exception ex)
 			{
 				this.Invoke((MethodInvoker)delegate()
@@ -141,6 +142,7 @@ namespace JDP
 					textBox1.Select(0, 0);
 				});
 			}
+#endif
 
 			if (_batchPaths.Count != 0)
 			{
