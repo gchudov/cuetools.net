@@ -62,6 +62,7 @@ namespace JDP {
 			chkHDCDStopLooking.Checked = _config.wait750FramesForHDCD;
 			chkCreateM3U.Checked = _config.createM3U;
 			chkCreateCUEFileWhenEmbedded.Checked = _config.createCUEFileWhenEmbedded;
+			chkTruncateExtra4206Samples.Checked = _config.truncate4608ExtraSamples;
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -125,6 +126,7 @@ namespace JDP {
 			_config.decodeHDCD = chkHDCDDecode.Checked;
 			_config.createM3U = chkCreateM3U.Checked;
 			_config.createCUEFileWhenEmbedded = chkCreateCUEFileWhenEmbedded.Checked;
+			_config.truncate4608ExtraSamples = chkTruncateExtra4206Samples.Checked;
 		}
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)

@@ -233,6 +233,7 @@ namespace CUEToolsLib
 		public bool wait750FramesForHDCD;
 		public bool createM3U;
 		public bool createCUEFileWhenEmbedded;
+		public bool truncate4608ExtraSamples;
 
 		public CUEConfig()
 		{
@@ -271,6 +272,7 @@ namespace CUEToolsLib
 			decodeHDCD = false;
 			createM3U = false;
 			createCUEFileWhenEmbedded = false;
+			truncate4608ExtraSamples = true;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -310,6 +312,7 @@ namespace CUEToolsLib
 			sw.Save("DecodeHDCD", decodeHDCD);
 			sw.Save("CreateM3U", createM3U);
 			sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
+			sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
 		}
 
 		public void Load(SettingsReader sr)
@@ -349,6 +352,7 @@ namespace CUEToolsLib
 			decodeHDCD = sr.LoadBoolean("DecodeHDCD") ?? false;
 			createM3U = sr.LoadBoolean("CreateM3U") ?? false;
 			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
+			truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
 		}
 
 		public string CleanseString (string s)
@@ -387,7 +391,7 @@ namespace CUEToolsLib
 		private string _htoaFilename, _singleFilename;
 		private bool _hasHTOAFilename, _hasTrackFilenames, _hasSingleFilename, _appliedWriteOffset;
 		private bool _hasEmbeddedCUESheet;
-		private bool _paddedToFrame, _usePregapForFirstTrackInSingleFile;
+		private bool _paddedToFrame, _truncated4608, _usePregapForFirstTrackInSingleFile;
 		private int _writeOffset;
 		private bool _accurateRip, _accurateOffset;
 		private uint? _dataTrackLength;
@@ -434,6 +438,7 @@ namespace CUEToolsLib
 			_sourcePaths = new List<string>();
 			_cuePath = null;
 			_paddedToFrame = false;
+			_truncated4608 = false;
 			_usePregapForFirstTrackInSingleFile = false;
 			_accurateRip = false;
 			_accurateOffset = false;
@@ -522,11 +527,16 @@ namespace CUEToolsLib
 								absoluteFileStartTime += fileTimeLengthFrames;
 								NameValueCollection tags;
 								fileTimeLengthSamples = GetSampleLength(pathAudio, out tags);
+								if ((fileTimeLengthSamples % 588) == 492 && _config.truncate4608ExtraSamples)
+								{
+									_truncated4608 = true;
+									fileTimeLengthSamples -= 4608;
+								}
+								fileTimeLengthFrames = (int)((fileTimeLengthSamples + 587) / 588);
 								if (_hasEmbeddedCUESheet)
 									_albumTags = tags;
 								else
 									_trackTags = tags;
-								fileTimeLengthFrames = (int)((fileTimeLengthSamples + 587) / 588);
 								seenFirstFileIndex = false;
 							}
 						}
@@ -753,6 +763,17 @@ namespace CUEToolsLib
 				if (_accurateRipId == null)
 					_accurateRipId = _accurateRipIdActual;
 			}
+			//if (!_dataTrackLength.HasValue && _cddbDiscIdTag != null)
+			//{
+			//    uint cddbDiscIdNum = UInt32.Parse(_cddbDiscIdTag, NumberStyles.HexNumber);
+			//    if ((cddbDiscIdNum & 0xff) == TrackCount)
+			//    {
+			//        _cutOneFrame = true;
+			//        string cddbDiscIdTagCut = CalculateAccurateRipId().Split('-')[2];
+			//        if (cddbDiscIdTagCut.ToUpper() != _cddbDiscIdTag.ToUpper())
+			//            _cutOneFrame = false;
+			//    }
+			//}
 		}
 
 		public static Encoding Encoding {
@@ -1334,6 +1355,10 @@ namespace CUEToolsLib
 					sw.WriteLine("Data track was probably present, length {0}-{1}.", General.TimeToString(_minDataTrackLength.Value), General.TimeToString(_minDataTrackLength.Value + 74));
 				if (_accurateRipIdActual != _accurateRipId)
 					sw.WriteLine("Using preserved id, actual id is {0}.", _accurateRipIdActual);
+				if (_truncated4608)
+					sw.WriteLine("Truncated 4608 extra samples in some input files.");
+				if (_paddedToFrame)
+					sw.WriteLine("Padded some input files to a frame boundary.");
 			}
 
 			if (hdcdDecoder != null && hdcdDecoder.Detected)
@@ -2077,6 +2102,7 @@ namespace CUEToolsLib
 
 			if (!foundAll || always)
 			{
+				foundAll = false;
 				for (i = 0; i < audioExts.Length; i++)
 				{
 					foundAll = true;
@@ -2092,22 +2118,23 @@ namespace CUEToolsLib
 						audioFiles = newFiles.ToArray();
 						break;
 					}
+				}
+				if (!foundAll)
+				for (i = 0; i < audioExts.Length; i++)
+				{
 					audioFiles = Directory.GetFiles(dir == "" ? "." : dir, audioExts[i]);
 					if (audioFiles.Length == filePos.Count)
 					{
+						Array.Sort(audioFiles);
+						foundAll = true;
 						break;
 					}
 				}
-				if (i == audioExts.Length)
-				{
+				if (!foundAll)
 					throw new Exception("Unable to locate the audio files.");
-				}
-				Array.Sort(audioFiles);
 
 				for (i = 0; i < filePos.Count; i++)
-				{
 					lines[filePos[i]] = "FILE \"" + Path.GetFileName(audioFiles[i]) + "\" WAVE";
-				}
 			}
 
 			using (StringWriter sw = new StringWriter()) {

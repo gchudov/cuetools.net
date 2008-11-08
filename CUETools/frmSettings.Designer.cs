@@ -27,6 +27,7 @@ namespace JDP {
 			System.Windows.Forms.Button btnCancel;
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSettings));
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
+			this.chkTruncateExtra4206Samples = new System.Windows.Forms.CheckBox();
 			this.chkCreateCUEFileWhenEmbedded = new System.Windows.Forms.CheckBox();
 			this.chkCreateM3U = new System.Windows.Forms.CheckBox();
 			this.chkFillUpCUE = new System.Windows.Forms.CheckBox();
@@ -132,6 +133,7 @@ namespace JDP {
 			this.grpGeneral.AccessibleName = null;
 			resources.ApplyResources(this.grpGeneral, "grpGeneral");
 			this.grpGeneral.BackgroundImage = null;
+			this.grpGeneral.Controls.Add(this.chkTruncateExtra4206Samples);
 			this.grpGeneral.Controls.Add(this.chkCreateCUEFileWhenEmbedded);
 			this.grpGeneral.Controls.Add(this.chkCreateM3U);
 			this.grpGeneral.Controls.Add(this.chkFillUpCUE);
@@ -144,6 +146,17 @@ namespace JDP {
 			this.grpGeneral.Name = "grpGeneral";
 			this.grpGeneral.TabStop = false;
 			this.toolTip1.SetToolTip(this.grpGeneral, resources.GetString("grpGeneral.ToolTip"));
+			// 
+			// chkTruncateExtra4206Samples
+			// 
+			this.chkTruncateExtra4206Samples.AccessibleDescription = null;
+			this.chkTruncateExtra4206Samples.AccessibleName = null;
+			resources.ApplyResources(this.chkTruncateExtra4206Samples, "chkTruncateExtra4206Samples");
+			this.chkTruncateExtra4206Samples.BackgroundImage = null;
+			this.chkTruncateExtra4206Samples.Font = null;
+			this.chkTruncateExtra4206Samples.Name = "chkTruncateExtra4206Samples";
+			this.toolTip1.SetToolTip(this.chkTruncateExtra4206Samples, resources.GetString("chkTruncateExtra4206Samples.ToolTip"));
+			this.chkTruncateExtra4206Samples.UseVisualStyleBackColor = true;
 			// 
 			// chkCreateCUEFileWhenEmbedded
 			// 
@@ -1106,6 +1119,7 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox chkHDCDStopLooking;
 		private System.Windows.Forms.CheckBox chkCreateM3U;
 		private System.Windows.Forms.CheckBox chkCreateCUEFileWhenEmbedded;
+		private System.Windows.Forms.CheckBox chkTruncateExtra4206Samples;
 
 	}
 }
