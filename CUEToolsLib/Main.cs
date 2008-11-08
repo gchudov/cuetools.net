@@ -234,6 +234,7 @@ namespace CUEToolsLib
 		public bool createM3U;
 		public bool createCUEFileWhenEmbedded;
 		public bool truncate4608ExtraSamples;
+		public bool processPriorityIdle;
 
 		public CUEConfig()
 		{
@@ -273,6 +274,7 @@ namespace CUEToolsLib
 			createM3U = false;
 			createCUEFileWhenEmbedded = false;
 			truncate4608ExtraSamples = true;
+			processPriorityIdle = true;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -313,6 +315,7 @@ namespace CUEToolsLib
 			sw.Save("CreateM3U", createM3U);
 			sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
 			sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
+			sw.Save("ProcessPriorityIdle", processPriorityIdle);
 		}
 
 		public void Load(SettingsReader sr)
@@ -353,6 +356,7 @@ namespace CUEToolsLib
 			createM3U = sr.LoadBoolean("CreateM3U") ?? false;
 			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
 			truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
+			processPriorityIdle = sr.LoadBoolean("ProcessPriorityIdle") ?? true;
 		}
 
 		public string CleanseString (string s)
@@ -461,6 +465,18 @@ namespace CUEToolsLib
 
 			TextReader sr;
 
+			if (Directory.Exists(pathIn))
+			{
+				if (cueDir + Path.DirectorySeparatorChar != pathIn)
+					throw new Exception("Input directory must end on path separator character.");
+				string cueSheet = null;
+				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
+				for (i = 0; i < audioExts.Length && cueSheet == null; i++)
+					cueSheet = CUESheet.CreateDummyCUESheet(pathIn, audioExts[i]);
+				if (cueSheet == null)
+					throw new Exception("Input directory doesn't contain supported audio files.");
+				sr = new StringReader(cueSheet);				
+			} else
 			if (Path.GetExtension(pathIn).ToLower() != ".cue")
 			{
 				IAudioSource audioSource;
@@ -2068,6 +2084,24 @@ namespace CUEToolsLib
 			audioDest.Close();
 			if (decodedAudioDest != null)
 				decodedAudioDest.Close();
+		}
+
+		public static string CreateDummyCUESheet(string path, string extension)
+		{
+			string[] audioFiles = Directory.GetFiles(path, extension);
+			if (audioFiles.Length < 2)
+				return null;
+			Array.Sort(audioFiles);
+			StringWriter sw = new StringWriter();
+			sw.WriteLine(String.Format("REM COMMENT \"CUETools generated dummy CUE sheet\""));
+			for (int iFile = 0; iFile < audioFiles.Length; iFile++)
+			{
+				sw.WriteLine(String.Format("FILE \"{0}\" WAVE", Path.GetFileName(audioFiles[iFile])));
+				sw.WriteLine(String.Format("  TRACK {0:00} AUDIO", iFile + 1));
+				sw.WriteLine(String.Format("    INDEX 01 00:00:00"));
+			}
+			sw.Close();
+			return sw.ToString();
 		}
 
 		public static string CorrectAudioFilenames(string path, bool always) {

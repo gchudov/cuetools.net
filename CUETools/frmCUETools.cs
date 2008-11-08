@@ -32,6 +32,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
 using CUEToolsLib;
 
 namespace JDP {
@@ -189,6 +190,8 @@ namespace JDP {
 		private void frmCUETools_Load(object sender, EventArgs e) {
 			_batchPaths = new List<string>();
 			LoadSettings();
+			if (_config.processPriorityIdle)
+				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 			SetupControls(false);
 			UpdateOutputPath();
 			updateOutputStyles();
@@ -226,8 +229,15 @@ namespace JDP {
 				bool outputCUE = (cueStyle != CUEStyle.SingleFileWithCUE) && !rbArVerify.Checked;
 				bool accurateRip = !rbArNone.Checked;
 
-				if (!File.Exists(pathIn)) {
-					throw new Exception("Input CUE Sheet not found.");
+				if (!File.Exists(pathIn))
+				{
+					if (!Directory.Exists(pathIn))
+						throw new Exception("Input CUE Sheet not found.");
+					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
+					{
+						pathIn = pathIn + Path.DirectorySeparatorChar;
+						txtInputPath.Text = pathIn;
+					}
 				}
 
 				cueSheet = new CUESheet(pathIn, _config);
@@ -285,8 +295,7 @@ namespace JDP {
 					p[1] = outDir;
 					p[2] = cueStyle;
 
-					SetupControls(true);
-					//System.Diagnostics; Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
+					SetupControls(true);					
 					_workThread.Priority = ThreadPriority.BelowNormal;
 					_workThread.IsBackground = true;
 					_workThread.Start(p);
@@ -776,9 +785,20 @@ namespace JDP {
 			pathIn = txtInputPath.Text;
 			pathOut = String.Empty;
 
-			if ((pathIn.Length != 0) && File.Exists(pathIn)) {
-				dir = Path.GetDirectoryName(pathIn);
-				file = Path.GetFileNameWithoutExtension(pathIn);
+			if ((pathIn.Length != 0) && (File.Exists(pathIn) || Directory.Exists(pathIn)))
+			{
+				if (Directory.Exists(pathIn))
+				{
+					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
+						pathIn = pathIn + Path.DirectorySeparatorChar;
+					dir = Path.GetDirectoryName(pathIn);
+					file = Path.GetFileNameWithoutExtension(dir);
+				}
+				else
+				{
+					dir = Path.GetDirectoryName(pathIn);
+					file = Path.GetFileNameWithoutExtension(pathIn);
+				}
 				ext = ".cue";
 
 				if (rbEmbedCUE.Checked)
@@ -858,24 +878,14 @@ namespace JDP {
 				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
 				for (int i = 0; i < audioExts.Length; i++)
 				{
-					string [] audioFiles = Directory.GetFiles(dir, audioExts[i]);
-					if (audioFiles.Length < 2)
+					string cueSheet = CUESheet.CreateDummyCUESheet(dir, audioExts[i]);
+					if (cueSheet == null)
 						continue;
-					Array.Sort (audioFiles);
 					string cueName = Path.GetFileName(dir) + ".cuetools" + audioExts[i].Substring(1) + ".cue";
 					cueName = Path.Combine(dir, cueName);
-					StringWriter sw = new StringWriter();
-					sw.WriteLine(String.Format("REM COMMENT \"CUETools generated dummy CUE sheet\""));
-					for (int iFile = 0; iFile < audioFiles.Length; iFile++)
-					{
-						sw.WriteLine(String.Format("FILE \"{0}\" WAVE", Path.GetFileName (audioFiles[iFile])));
-						sw.WriteLine(String.Format("  TRACK {0:00} AUDIO", iFile+1));
-						sw.WriteLine(String.Format("    INDEX 01 00:00:00"));
-					}
-					sw.Close();
-					bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(sw.ToString())) != sw.ToString();
+					bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheet)) != cueSheet;
 					StreamWriter sw1 = new StreamWriter(cueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
-					sw1.Write(sw.ToString());
+					sw1.Write(cueSheet);
 					sw1.Close();
 					break;
 				}

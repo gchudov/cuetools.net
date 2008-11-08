@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
 using CUEToolsLib;
 
 namespace JDP
@@ -178,8 +179,16 @@ namespace JDP
 				textBox1.Text += "Processing " + pathIn + ":\r\n";
 				textBox1.Select (0,0);
 
+				string cueName;
 				if (!File.Exists(pathIn))
-					throw new Exception("Input CUE Sheet not found.");
+				{
+					if (!Directory.Exists (pathIn))
+						throw new Exception("Input CUE Sheet not found.");
+					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
+						pathIn = pathIn + Path.DirectorySeparatorChar;
+					cueName = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(pathIn)) + ".cue";
+				} else
+					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
 
 				bool outputAudio = _accurateOffset || !_accurateRip;
 				cueSheet = new CUESheet(pathIn, _config);
@@ -192,7 +201,7 @@ namespace JDP
 						if (!Directory.Exists(outDir))
 						{
 							Directory.CreateDirectory(outDir);
-							pathOut = Path.Combine(outDir, Path.GetFileNameWithoutExtension(pathIn) + ".cue");
+							pathOut = Path.Combine(outDir, cueName);
 							pathFound = true;
 							break;
 						}
@@ -200,7 +209,7 @@ namespace JDP
 					if (!pathFound)
 						throw new Exception("Could not create a folder.");
 				} else
-					pathOut = pathIn;
+					pathOut = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
 				cueSheet.GenerateFilenames(_audioFormat, pathOut);
 				if (outputAudio)
 				{
@@ -253,6 +262,9 @@ namespace JDP
 				_audioFormat = (val != null) ? (OutputAudioFormat)Int32.Parse(val) : OutputAudioFormat.WAV;
 			}
 			catch { };
+
+			if (_config.processPriorityIdle)
+				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
 			if (_accurateOffset || !_accurateRip)
 				txtOutputFile.Show();
