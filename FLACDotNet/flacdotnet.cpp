@@ -31,6 +31,7 @@
 
 using namespace System;
 using namespace System::Text;
+using namespace System::IO;
 using namespace System::Collections::Generic;
 using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
@@ -55,17 +56,30 @@ namespace FLACDotNet {
 	public delegate void DecoderMetadataDelegate(const FLAC__StreamDecoder *decoder, const FLAC__StreamMetadata *metadata, void *client_data);
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
 	public delegate void DecoderErrorDelegate(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorStatus status, void *client_data);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate FLAC__StreamDecoderReadStatus DecoderReadDelegate (const FLAC__StreamDecoder *decoder, FLAC__byte buffer[], size_t *bytes, void *client_data);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate FLAC__StreamDecoderSeekStatus DecoderSeekDelegate (const FLAC__StreamDecoder *decoder, FLAC__uint64 absolute_byte_offset, void *client_data);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate FLAC__StreamDecoderTellStatus DecoderTellDelegate (const FLAC__StreamDecoder *decoder, FLAC__uint64 *absolute_byte_offset, void *client_data);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate FLAC__StreamDecoderLengthStatus DecoderLengthDelegate (const FLAC__StreamDecoder *decoder, FLAC__uint64 *stream_length, void *client_data);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate FLAC__bool DecoderEofDelegate (const FLAC__StreamDecoder *decoder, void *client_data);
 
 	public ref class FLACReader {
 	public:
 		FLACReader(String^ path) {
-			IntPtr pathChars;
-			FILE *hFile;
 			_tags = gcnew NameValueCollection();
 
 			_writeDel = gcnew DecoderWriteDelegate(this, &FLACReader::WriteCallback);
 			_metadataDel = gcnew DecoderMetadataDelegate(this, &FLACReader::MetadataCallback);
 			_errorDel = gcnew DecoderErrorDelegate(this, &FLACReader::ErrorCallback);
+			_readDel = gcnew DecoderReadDelegate(this, &FLACReader::ReadCallback);
+			_seekDel = gcnew DecoderSeekDelegate(this, &FLACReader::SeekCallback);
+			_tellDel = gcnew DecoderTellDelegate(this, &FLACReader::TellCallback);
+			_lengthDel = gcnew DecoderLengthDelegate(this, &FLACReader::LengthCallback);
+			_eofDel = gcnew DecoderEofDelegate(this, &FLACReader::EofCallback);
 
 			_decoderActive = false;
 
@@ -74,19 +88,19 @@ namespace FLACDotNet {
 			_sampleBuffer = nullptr;
 			_path = path;
 
-			pathChars = Marshal::StringToHGlobalUni(_path);
-			hFile = _wfopen ((const wchar_t*)pathChars.ToPointer(), L"rb");
-			Marshal::FreeHGlobal(pathChars);
-			if (!hFile) {
-				throw gcnew Exception("Unable to open file.");
-			}
+			_IO = gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
 
 			_decoder = FLAC__stream_decoder_new();
 
 			if (!FLAC__stream_decoder_set_metadata_respond (_decoder, FLAC__METADATA_TYPE_VORBIS_COMMENT))
 				throw gcnew Exception("Unable to setup the decoder.");
 
-			if (FLAC__stream_decoder_init_FILE(_decoder, hFile,
+			if (FLAC__stream_decoder_init_stream(_decoder, 
+				(FLAC__StreamDecoderReadCallback)Marshal::GetFunctionPointerForDelegate(_readDel).ToPointer(),
+				_IO->CanSeek?(FLAC__StreamDecoderSeekCallback)Marshal::GetFunctionPointerForDelegate(_seekDel).ToPointer():NULL,
+				_IO->CanSeek?(FLAC__StreamDecoderTellCallback)Marshal::GetFunctionPointerForDelegate(_tellDel).ToPointer():NULL,
+				_IO->CanSeek?(FLAC__StreamDecoderLengthCallback)Marshal::GetFunctionPointerForDelegate(_lengthDel).ToPointer():NULL,
+				_IO->CanSeek?(FLAC__StreamDecoderEofCallback)Marshal::GetFunctionPointerForDelegate(_eofDel).ToPointer():NULL,
 				(FLAC__StreamDecoderWriteCallback)Marshal::GetFunctionPointerForDelegate(_writeDel).ToPointer(),
 				(FLAC__StreamDecoderMetadataCallback)Marshal::GetFunctionPointerForDelegate(_metadataDel).ToPointer(),
 				(FLAC__StreamDecoderErrorCallback)Marshal::GetFunctionPointerForDelegate(_errorDel).ToPointer(),
@@ -231,10 +245,14 @@ namespace FLACDotNet {
 		}
 
 		void Close() {
-			if (!_decoderActive) return;
-			FLAC__stream_decoder_finish(_decoder);
-			FLAC__stream_decoder_delete(_decoder);
-			_decoderActive = false;
+			if (_decoderActive) 
+			{
+				FLAC__stream_decoder_finish(_decoder);
+				FLAC__stream_decoder_delete(_decoder);
+				_decoderActive = false;
+			}
+			if (_IO != nullptr) 
+				_IO->Close ();
 		}
 
 		Int32 Read([Out] array<Int32, 2>^% sampleBuffer) 
@@ -256,14 +274,21 @@ namespace FLACDotNet {
 		DecoderWriteDelegate^ _writeDel;
 		DecoderMetadataDelegate^ _metadataDel;
 		DecoderErrorDelegate^ _errorDel;
+		DecoderReadDelegate^ _readDel;
+		DecoderSeekDelegate^ _seekDel;
+		DecoderTellDelegate^ _tellDel;
+		DecoderLengthDelegate^ _lengthDel;
+		DecoderEofDelegate^ _eofDel;
 		FLAC__StreamDecoder *_decoder;
 		Int64 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		array<Int32, 2>^ _sampleBuffer;
+		array<unsigned char>^ _readBuffer;
 		int _samplesWaiting;
 		NameValueCollection^ _tags;
 		String^ _path;
 		bool _decoderActive;
+		FileStream^ _IO;
 
 		FLAC__StreamDecoderWriteStatus WriteCallback(const FLAC__StreamDecoder *decoder,
 			const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data)
@@ -344,6 +369,56 @@ namespace FLACDotNet {
 				default:
 					throw gcnew Exception("An unknown error has occurred.");
 			}
+		}
+
+		FLAC__StreamDecoderReadStatus ReadCallback (const FLAC__StreamDecoder *decoder, FLAC__byte buffer[], size_t *bytes, void *client_data)
+		{
+			if(*bytes == 0)
+				return FLAC__STREAM_DECODER_READ_STATUS_ABORT; /* abort to avoid a deadlock */
+
+			if (_readBuffer == nullptr || _readBuffer->Length < *bytes)
+				_readBuffer = gcnew array<unsigned char>(*bytes < 0x4000 ? 0x4000 : *bytes);
+
+			*bytes = _IO->Read (_readBuffer, 0, *bytes);
+			//if(ferror(decoder->private_->file))
+				//return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
+			//else 
+			if(*bytes == 0)
+				return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+
+			Marshal::Copy (_readBuffer, 0, (IntPtr)buffer, *bytes);
+			return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+		}
+
+		FLAC__StreamDecoderSeekStatus SeekCallback (const FLAC__StreamDecoder *decoder, FLAC__uint64 absolute_byte_offset, void *client_data)
+		{
+			//if (!_IO->CanSeek)
+			//	return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
+			_IO->Position = absolute_byte_offset;
+			//if( < 0)
+				//return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
+			return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
+		}
+
+		FLAC__StreamDecoderTellStatus TellCallback (const FLAC__StreamDecoder *decoder, FLAC__uint64 *absolute_byte_offset, void *client_data)
+		{
+			*absolute_byte_offset = _IO->Position;
+			// FLAC__STREAM_DECODER_TELL_STATUS_ERROR;
+			return FLAC__STREAM_DECODER_TELL_STATUS_OK;
+		}
+
+		FLAC__StreamDecoderLengthStatus LengthCallback (const FLAC__StreamDecoder *decoder, FLAC__uint64 *stream_length, void *client_data)
+		{
+			//if (!_IO->CanSeek)
+			//	return FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
+			// FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR;
+			*stream_length = _IO->Length;
+			return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
+		}
+
+		FLAC__bool EofCallback (const FLAC__StreamDecoder *decoder, void *client_data)
+		{
+			return _IO->Position == _IO->Length;
 		}
 	};
 
