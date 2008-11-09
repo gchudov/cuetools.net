@@ -156,8 +156,8 @@ namespace APEDotNet {
 			array<Int32,2>^ _sampleBuffer = gcnew array<Int32,2> (nBlocksRetrieved, 2);
 		    interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, 0];
 
-		    unsigned short * pAPEBuffer = (unsigned short *) pBuffer;
-		    unsigned short * pAPEBufferEnd = (unsigned short *) pBuffer + 2 * nBlocksRetrieved;
+		    short * pAPEBuffer = (short *) pBuffer;
+		    short * pAPEBufferEnd = (short *) pBuffer + 2 * nBlocksRetrieved;
 
 		    while (pAPEBuffer < pAPEBufferEnd) {
 			    *(pMyBuffer++) = *(pAPEBuffer++);
@@ -327,4 +327,39 @@ namespace APEDotNet {
 			_initialized = true;
 		}
 	};
+
+#if 0
+extern "C" 
+{
+    BOOL GetMMXAvailable();
+    int CalculateDotProduct8(const short* pA, const short* pB, int nOrder);
+};
+
+	public ref class SSE2Functions
+	{
+	public:
+		SSE2Functions ()
+		{
+			_haveSSE2 = GetMMXAvailable();
+		}
+		int SumInts (short*a, short*b, int count)
+		{
+			if (_haveSSE2 && count == 8)
+				return CalculateDotProduct8(a, b, count);
+			int sum = 0;
+			for (int j = 0; j < count; j++)
+				sum += a[j] * b[j];
+			return sum;
+		}
+		int SumInts (int*a, short*b, int count)
+		{
+			int sum = 0;
+			for (int j = 0; j < count; j++)
+				sum += a[j] * b[j];
+			return sum;
+		}
+	private:
+		bool _haveSSE2;
+	};
+#endif
 }

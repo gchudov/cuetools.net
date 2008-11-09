@@ -327,8 +327,10 @@ namespace CUEToolsLib {
 
 				copyCount = Math.Min(samplesNeeded, SamplesInBuffer);
 
-				APESamplesToFLACSamples(_sampleBuffer, _bufferOffset, buff, buffOffset,
-					copyCount, chanCount);
+
+				Array.Copy(_sampleBuffer, _bufferOffset * chanCount, buff, buffOffset * chanCount, copyCount * chanCount);
+				//APESamplesToFLACSamples(_sampleBuffer, _bufferOffset, buff, buffOffset,
+				//    copyCount, chanCount);
 
 				samplesNeeded -= copyCount;
 				buffOffset += copyCount;

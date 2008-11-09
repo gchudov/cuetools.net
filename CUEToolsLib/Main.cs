@@ -232,6 +232,7 @@ namespace CUEToolsLib
 		public bool decodeHDCD;
 		public bool wait750FramesForHDCD;
 		public bool createM3U;
+		public bool createTOC;
 		public bool createCUEFileWhenEmbedded;
 		public bool truncate4608ExtraSamples;
 		public bool processPriorityIdle;
@@ -272,6 +273,7 @@ namespace CUEToolsLib
 			wait750FramesForHDCD = true;
 			decodeHDCD = false;
 			createM3U = false;
+			createTOC = false;
 			createCUEFileWhenEmbedded = false;
 			truncate4608ExtraSamples = true;
 			processPriorityIdle = true;
@@ -313,6 +315,7 @@ namespace CUEToolsLib
 			sw.Save("Wait750FramesForHDCD", wait750FramesForHDCD);
 			sw.Save("DecodeHDCD", decodeHDCD);
 			sw.Save("CreateM3U", createM3U);
+			sw.Save("CreateTOC", createTOC);
 			sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
 			sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
 			sw.Save("ProcessPriorityIdle", processPriorityIdle);
@@ -354,6 +357,7 @@ namespace CUEToolsLib
 			wait750FramesForHDCD = sr.LoadBoolean("Wait750FramesForHDCD") ?? true;
 			decodeHDCD = sr.LoadBoolean("DecodeHDCD") ?? false;
 			createM3U = sr.LoadBoolean("CreateM3U") ?? false;
+			createTOC = sr.LoadBoolean("CreateTOC") ?? false;
 			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
 			truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
 			processPriorityIdle = sr.LoadBoolean("ProcessPriorityIdle") ?? true;
@@ -988,6 +992,25 @@ namespace CUEToolsLib
 			}
 		}
 
+		public void WriteTOC(string path)
+		{
+			StreamWriter sw = new StreamWriter(path, false, CUESheet.Encoding);
+			WriteTOC(sw);
+			sw.Close();
+		}
+
+		public void WriteTOC(TextWriter sw)
+		{
+			uint trackOffset = 150;
+			for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+			{
+				trackOffset += _tracks[iTrack].IndexLengths[0]; 
+				WriteLine(sw, 0, "\t" + trackOffset);
+				for (int iIndex = 1; iIndex <= _tracks[iTrack].LastIndex; iIndex++)
+					trackOffset += _tracks[iTrack].IndexLengths[iIndex];
+			}
+		}
+
 		public void Write(string path, CUEStyle style) {
 			StringWriter sw = new StringWriter();
 			Write(sw, style);
@@ -1367,6 +1390,8 @@ namespace CUEToolsLib
 				sw.WriteLine("Assuming a data track was present, length {0}.", General.TimeToString(_dataTrackLength.Value));
 			else
 			{
+				if (_cddbDiscIdTag != null && _accurateRipId.Split('-')[2].ToUpper() != _cddbDiscIdTag.ToUpper())
+					sw.WriteLine("CDDBId mismatch: {0} vs {1}", _cddbDiscIdTag.ToUpper(), _accurateRipId.Split('-')[2].ToUpper());
 				if (_minDataTrackLength.HasValue)
 					sw.WriteLine("Data track was probably present, length {0}-{1}.", General.TimeToString(_minDataTrackLength.Value), General.TimeToString(_minDataTrackLength.Value + 74));
 				if (_accurateRipIdActual != _accurateRipId)
@@ -1608,6 +1633,12 @@ namespace CUEToolsLib
 							GenerateAccurateRipLog(sw);
 							sw.Close();
 						}
+						if (_config.createTOC)
+						{
+							if (!Directory.Exists(dir))
+								Directory.CreateDirectory(dir);
+							WriteTOC(Path.ChangeExtension(_cuePath, ".toc"));
+						}
 						return;
 					}
 				}
@@ -1703,6 +1734,12 @@ namespace CUEToolsLib
 						false, CUESheet.Encoding);
 					GenerateAccurateRipLog(sw);
 					sw.Close();
+				}
+				if (_config.createTOC)
+				{
+					if (!Directory.Exists(dir))
+						Directory.CreateDirectory(dir);
+					WriteTOC(Path.ChangeExtension(_cuePath, ".toc"));
 				}
 			}
 		}
