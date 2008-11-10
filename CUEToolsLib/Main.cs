@@ -31,6 +31,9 @@ using AudioCodecsDotNet;
 using HDCDDotNet;
 #if !MONO
 using UnRarDotNet;
+using FLACDotNet;
+using APEDotNet;
+using WavPackDotNet;
 #endif
 
 namespace CUEToolsLib

@@ -116,7 +116,7 @@ namespace HDCDDotNet
 		{
 			if (_inSampleBuffer == null || _inSampleBuffer.GetLength(0) < sampleCount)
 				_inSampleBuffer = new int[sampleCount, _channelCount];
-			AudioCodecsDotNet.AudioCodecsDotNet.BytesToFLACSamples_16(buff, 0, _inSampleBuffer, 0, sampleCount, _channelCount);
+			AudioSamples.BytesToFLACSamples_16(buff, 0, _inSampleBuffer, 0, sampleCount, _channelCount);
 			Process(_inSampleBuffer, sampleCount);
 		}
 

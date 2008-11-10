@@ -35,6 +35,7 @@ using namespace System::IO;
 using namespace System::Collections::Generic;
 using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
+using namespace AudioCodecsDotNet;
 
 #include "FLAC\all.h"
 #include <string>
@@ -67,9 +68,11 @@ namespace FLACDotNet {
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
 	public delegate FLAC__bool DecoderEofDelegate (const FLAC__StreamDecoder *decoder, void *client_data);
 
-	public ref class FLACReader {
+	public ref class FLACReader : public IAudioSource
+	{
 	public:
-		FLACReader(String^ path, Stream^ IO) {
+		FLACReader(String^ path, Stream^ IO)
+		{
 			_tags = gcnew NameValueCollection();
 
 			_writeDel = gcnew DecoderWriteDelegate(this, &FLACReader::WriteCallback);
@@ -84,9 +87,10 @@ namespace FLACDotNet {
 			_decoderActive = false;
 
 			_sampleOffset = 0;
-			_samplesWaiting = 0;
 			_sampleBuffer = nullptr;
 			_path = path;
+			_bufferOffset = 0;
+			_bufferLength = 0;
 
 			_IO = (IO != nullptr) ? IO : gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
 
@@ -122,50 +126,53 @@ namespace FLACDotNet {
 		    Close ();
 		}
 
-		property Int32 BitsPerSample {
+		virtual property Int32 BitsPerSample {
 			Int32 get() {
 				return _bitsPerSample;
 			}
 		}
 
-		property Int32 ChannelCount {
+		virtual property Int32 ChannelCount {
 			Int32 get() {
 				return _channelCount;
 			}
 		}
 
-		property Int32 SampleRate {
+		virtual property Int32 SampleRate {
 			Int32 get() {
 				return _sampleRate;
 			}
 		}
 
-		property Int64 Length {
-			Int64 get() {
+		virtual property UInt64 Length {
+			UInt64 get() {
 				return _sampleCount;
 			}
 		}
 
-		property Int64 Position {
-			Int64 get() {
-				return _sampleOffset;
+		virtual property UInt64 Position {
+			UInt64 get() 
+			{
+				return _sampleOffset - SamplesInBuffer;
 			}
-			void set(Int64 offset) {
+			void set(UInt64 offset) 
+			{
 				_sampleOffset = offset;
-				_samplesWaiting = 0;
+				_bufferOffset = 0;
+				_bufferLength = 0;
 				if (!FLAC__stream_decoder_seek_absolute(_decoder, offset)) {
 					throw gcnew Exception("Unable to seek.");
 				}
 			}
 		}
 
-		property String^ Path { 
+		virtual property String^ Path { 
 			String^ get() { 
 				return _path; 
 			} 
 		}
 
-		property NameValueCollection^ Tags {
+		virtual property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
 				return _tags;
 			}
@@ -238,13 +245,13 @@ namespace FLACDotNet {
 		    return 0 != res;
 		}
 
-		property Int64 Remaining {
-			Int64 get() {
-				return _sampleCount - _sampleOffset;
+		virtual property UInt64 Remaining {
+			UInt64 get() {
+				return _sampleCount - _sampleOffset + SamplesInBuffer;
 			}
 		}
 
-		void Close() {
+		virtual void Close() {
 			if (_decoderActive) 
 			{
 				FLAC__stream_decoder_finish(_decoder);
@@ -258,18 +265,30 @@ namespace FLACDotNet {
 			}
 		}
 
-		Int32 Read([Out] array<Int32, 2>^% sampleBuffer) 
+		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
 		{
-			while (_samplesWaiting == 0) {
-				if (!FLAC__stream_decoder_process_single(_decoder)) {
-					throw gcnew Exception("An error occurred while decoding.");
-				}
-			}
+			UInt32 buffOffset = 0;
+			UInt32 samplesNeeded = sampleCount;
 
-			int sampleCount = _samplesWaiting;
-			sampleBuffer = _sampleBuffer;
-			_sampleOffset += sampleCount;
-			_samplesWaiting = 0;
+			while (samplesNeeded != 0) 
+			{
+				if (SamplesInBuffer == 0) 
+				{
+					_bufferOffset = 0;
+					_bufferLength = 0;
+					do
+					{
+						if (!FLAC__stream_decoder_process_single(_decoder))
+							throw gcnew Exception("An error occurred while decoding.");
+					} while (_bufferLength == 0);
+					_sampleOffset += _bufferLength;
+				}
+				UInt32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
+				Array::Copy(_sampleBuffer, _bufferOffset * _channelCount, buff, buffOffset * _channelCount, copyCount * _channelCount);
+				samplesNeeded -= copyCount;
+				buffOffset += copyCount;
+				_bufferOffset += copyCount;
+			}
 			return sampleCount;
 		}
 
@@ -287,18 +306,25 @@ namespace FLACDotNet {
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		array<Int32, 2>^ _sampleBuffer;
 		array<unsigned char>^ _readBuffer;
-		int _samplesWaiting;
 		NameValueCollection^ _tags;
 		String^ _path;
 		bool _decoderActive;
 		Stream^ _IO;
+		UInt32 _bufferOffset, _bufferLength;
+
+		property UInt32 SamplesInBuffer {
+			UInt32 get () 
+			{
+				return (UInt32) (_bufferLength - _bufferOffset);
+			}
+		}
 
 		FLAC__StreamDecoderWriteStatus WriteCallback(const FLAC__StreamDecoder *decoder,
 			const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data)
 		{
 			Int32 sampleCount = frame->header.blocksize;
 
-			if (_samplesWaiting > 0) {
+			if (_bufferLength > 0) {
 				throw gcnew Exception("Received unrequested samples.");
 			}
 
@@ -325,8 +351,7 @@ namespace FLACDotNet {
 				}
 			}
 
-			_samplesWaiting = sampleCount;
-
+			_bufferLength = sampleCount;
 			return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 		}
 
@@ -425,9 +450,14 @@ namespace FLACDotNet {
 		}
 	};
 
-	public ref class FLACWriter {
+	public ref class FLACWriter : IAudioDest 
+	{
 	public:
-		FLACWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) {
+		FLACWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		{
+			if (bitsPerSample != 16 && bitsPerSample != 24)
+				throw gcnew Exception("Bits per sample must be 16 or 24.");
+
 			_initialized = false;
 			_path = path;
 			_finalSampleCount = 0;
@@ -447,7 +477,7 @@ namespace FLACDotNet {
 			FLAC__stream_encoder_set_sample_rate(_encoder, sampleRate);
 		}
 
-		void Close() {
+		virtual void Close() {
 			FLAC__stream_encoder_finish(_encoder);
 
 			for (int i = 0; i < _metadataCount; i++) {
@@ -466,7 +496,7 @@ namespace FLACDotNet {
 			_tags->Clear ();
 		}
 
-		property Int64 FinalSampleCount {
+		virtual property Int64 FinalSampleCount {
 			Int64 get() {
 				return _finalSampleCount;
 			}
@@ -479,6 +509,32 @@ namespace FLACDotNet {
 				}
 				_finalSampleCount = value;
 			}
+		}
+
+		virtual bool SetTags (NameValueCollection^ tags) 
+		{
+			_tags = tags;
+			return true;
+		}
+
+		virtual property String^ Path { 
+			String^ get() { 
+				return _path; 
+			} 
+		}
+
+		virtual void Write(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) {
+			if (!_initialized) Initialize();
+
+			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
+
+			if (!FLAC__stream_encoder_process_interleaved(_encoder,
+				(const FLAC__int32*)pSampleBuffer, sampleCount))
+			{
+				throw gcnew Exception("An error occurred while encoding.");
+			}
+
+			_samplesWritten += sampleCount;
 		}
 
 		property Int32 CompressionLevel {
@@ -512,30 +568,6 @@ namespace FLACDotNet {
 				}
 				_paddingLength = value;
 			}
-		}
-
-		void SetTags (NameValueCollection^ tags) {
-			_tags = tags;
-		}
-
-		property String^ Path { 
-			String^ get() { 
-				return _path; 
-			} 
-		}
-
-		void Write(array<Int32, 2>^ sampleBuffer, Int32 sampleCount) {
-			if (!_initialized) Initialize();
-
-			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
-
-			if (!FLAC__stream_encoder_process_interleaved(_encoder,
-				(const FLAC__int32*)pSampleBuffer, sampleCount))
-			{
-				throw gcnew Exception("An error occurred while encoding.");
-			}
-
-			_samplesWritten += sampleCount;
 		}
 
 	private:

@@ -7,6 +7,7 @@ using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
 using namespace System::IO;
 using namespace APETagsDotNet;
+using namespace AudioCodecsDotNet;
 
 #ifndef _WAVEFORMATEX_
 #define _WAVEFORMATEX_
@@ -102,14 +103,16 @@ namespace APEDotNet {
 		GCHandle _gchBuffer;
 	};
 
-	public ref class APEReader {
+	public ref class APEReader : public IAudioSource
+	{
 	public:
-		APEReader(String^ path, Stream^ IO) {
-
+		APEReader(String^ path, Stream^ IO) 
+		{
 			pAPEDecompress = NULL;
 			_sampleOffset = 0;
+			_bufferOffset = 0;
+			_bufferLength = 0;
 			_path = path;
-			pBuffer = NULL;
 
 			int nRetVal = 0;
 	
@@ -129,7 +132,7 @@ namespace APEDotNet {
 
 			// make a buffer to hold 16384 blocks of audio data
 			nBlockAlign = pAPEDecompress->GetInfo (APE_INFO_BLOCK_ALIGN, 0, 0);
-			pBuffer = new unsigned char [16384 * nBlockAlign];
+			_samplesBuffer = gcnew array<unsigned char> (16384 * nBlockAlign);
 
 			// loop through the whole file
 			_sampleCount = pAPEDecompress->GetInfo (APE_DECOMPRESS_TOTAL_BLOCKS, 0, 0); // * ?
@@ -137,7 +140,6 @@ namespace APEDotNet {
 
 		~APEReader ()
 		{
-			if (pBuffer) delete [] pBuffer;
 			if (_winFileIO)
 				delete _winFileIO;
 			if (_gchIO.IsAllocated) 
@@ -146,50 +148,57 @@ namespace APEDotNet {
 				_gchReadBuffer.Free();
 		}
 
-		property Int32 BitsPerSample {
+		virtual property Int32 BitsPerSample {
 			Int32 get() {
 				return _bitsPerSample;
 			}
 		}
 
-		property Int32 ChannelCount {
+		virtual property Int32 ChannelCount {
 			Int32 get() {
 				return _channelCount;
 			}
 		}
 
-		property Int32 SampleRate {
+		virtual property Int32 SampleRate {
 			Int32 get() {
 				return _sampleRate;
 			}
 		}
 
-		property Int64 Length {
-			Int64 get() {
+		virtual property UInt64 Length {
+			UInt64 get() {
 				return _sampleCount;
 			}
 		}
 
-		property Int64 Position {
-			Int64 get() {
-				return _sampleOffset;
+		virtual property UInt64 Position 
+		{
+			UInt64 get() {
+				return _sampleOffset - SamplesInBuffer;
 			}
-			void set(Int64 offset) {
+			void set(UInt64 offset) {
 				_sampleOffset = offset;
+				_bufferOffset = 0;
+				_bufferLength = 0;
 				if (pAPEDecompress->Seek ((int) offset /*? */))
 					throw gcnew Exception("Unable to seek.");
 			}
 		}
 
-		property Int64 Remaining {
-			Int64 get() {
-				return _sampleCount - _sampleOffset;
+		virtual property UInt64 Remaining {
+			UInt64 get() {
+				return _sampleCount - _sampleOffset + SamplesInBuffer;
 			}
 		}
 
-		void Close() {
-			if (pAPEDecompress) delete pAPEDecompress;
-			pAPEDecompress = NULL;
+		virtual void Close() 
+		{
+			if (pAPEDecompress) 
+			{
+				delete pAPEDecompress;
+				pAPEDecompress = NULL;
+			}		
 			if (_IO != nullptr) 
 			{
 				_IO->Close ();
@@ -197,14 +206,15 @@ namespace APEDotNet {
 			}
 		}
 
-		property String^ Path { 
+		virtual property String^ Path { 
 			String^ get() { 
 				return _path; 
 			} 
 		}
 
-		property NameValueCollection^ Tags {
-			NameValueCollection^ get () {
+		virtual property NameValueCollection^ Tags {
+			NameValueCollection^ get () 
+			{
 				if (!_tags) 
 				{
 					APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
@@ -213,33 +223,35 @@ namespace APEDotNet {
 				}
 				return _tags;
 			}
-			void set (NameValueCollection ^tags) {
+			void set (NameValueCollection ^tags) 
+			{
 				_tags = tags;
 			}
 		}
 
-		Int32 Read([Out] array<Int32, 2>^% sampleBuffer) {
-			int sampleCount;
+		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
+		{
+			UInt32 buffOffset = 0;
+			UInt32 samplesNeeded = sampleCount;
 
-			int nBlocksRetrieved;
-			if (pAPEDecompress->GetData ((char *) pBuffer, 16384, &nBlocksRetrieved))
-			    throw gcnew Exception("An error occurred while decoding.");
-
-			sampleCount = nBlocksRetrieved;
-			array<Int32,2>^ _sampleBuffer = gcnew array<Int32,2> (nBlocksRetrieved, 2);
-		    interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, 0];
-
-		    short * pAPEBuffer = (short *) pBuffer;
-		    short * pAPEBufferEnd = (short *) pBuffer + 2 * nBlocksRetrieved;
-
-		    while (pAPEBuffer < pAPEBufferEnd) {
-			    *(pMyBuffer++) = *(pAPEBuffer++);
-			    *(pMyBuffer++) = *(pAPEBuffer++);
-		    }
-
-			sampleBuffer = _sampleBuffer;
-			_sampleOffset += nBlocksRetrieved;
-
+			while (samplesNeeded != 0) 
+			{
+				if (SamplesInBuffer == 0) 
+				{
+					int nBlocksRetrieved;
+					pin_ptr<unsigned char> pSampleBuffer = &_samplesBuffer[0];
+					if (pAPEDecompress->GetData ((char *) pSampleBuffer, 16384, &nBlocksRetrieved))
+						throw gcnew Exception("An error occurred while decoding.");
+					_bufferOffset = 0;
+					_bufferLength = nBlocksRetrieved;
+					_sampleOffset += nBlocksRetrieved;
+				}
+				UInt32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
+				AudioSamples::BytesToFLACSamples_16(_samplesBuffer, _bufferOffset*nBlockAlign, buff, buffOffset, copyCount, _channelCount);
+				samplesNeeded -= copyCount;
+				buffOffset += copyCount;
+				_bufferOffset += copyCount;
+			}
 			return sampleCount;
 		}
 
@@ -249,22 +261,33 @@ namespace APEDotNet {
 		NameValueCollection^ _tags;
 		Int64 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		UInt32 _bufferOffset, _bufferLength;
 		int nBlockAlign;
-		unsigned char * pBuffer;
+		array<unsigned char>^ _samplesBuffer;
 		String^ _path;
 		Stream^ _IO;
 		array<unsigned char>^ _readBuffer;
 		CWinFileIO* _winFileIO;
 		GCHandle _gchIO, _gchReadBuffer;
+
+		property UInt32 SamplesInBuffer 
+		{
+			UInt32 get () 
+			{
+				return (UInt32) (_bufferLength - _bufferOffset);
+			}
+		}
 	};
 
-	public ref class APEWriter {
+	public ref class APEWriter : IAudioDest
+	{
 	public:
-		APEWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) {
-
-			if ((channelCount != 1) && (channelCount != 2)) {
+		APEWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		{
+			if (bitsPerSample != 16 && bitsPerSample != 24)
+				throw gcnew Exception("Bits per sample must be 16 or 24.");
+			if (channelCount != 1 && channelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
-			}
 
 			_path = path;
 			_tags = gcnew NameValueCollection();
@@ -279,9 +302,8 @@ namespace APEDotNet {
 
 			int nRetVal;
 			pAPECompress = CreateIAPECompress (&nRetVal);
-			if (!pAPECompress) {
-				throw gcnew Exception("Unable to open file.");
-			}
+			if (!pAPECompress)
+				throw gcnew Exception("Unable to open APE compressor.");
 		}
 
 		~APEWriter()
@@ -294,7 +316,8 @@ namespace APEDotNet {
 				_gchBuffer.Free();
 		}
 
-		void Close() {
+		virtual void Close() 
+		{
 			if (pAPECompress) 
 			{
 				pAPECompress->Finish (NULL, 0, 0);
@@ -322,19 +345,45 @@ namespace APEDotNet {
 			}
 		}
 
-		property Int32 FinalSampleCount {
-			Int32 get() {
+		virtual property Int64 FinalSampleCount 
+		{
+			Int64 get() 
+			{
 				return _finalSampleCount;
 			}
-			void set(Int32 value) {
-				if (value < 0) {
+			void set(Int64 value) 
+			{
+				if (value < 0)
 					throw gcnew Exception("Invalid final sample count.");
-				}
-				if (_initialized) {
+				if (_initialized)
 					throw gcnew Exception("Final sample count cannot be changed after encoding begins.");
-				}
 				_finalSampleCount = value;
 			}
+		}
+
+		virtual void Write(array<Int32,2>^ buff, UInt32 sampleCount) 
+		{
+			if (_sampleBuffer == nullptr || _sampleBuffer.Length < sampleCount * _blockAlign)
+				_sampleBuffer = gcnew array<unsigned char>(sampleCount * _blockAlign);
+			AudioSamples::FLACSamplesToBytes(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
+			if (!_initialized) Initialize();
+			pin_ptr<unsigned char> pSampleBuffer = &_sampleBuffer[0];
+			if (pAPECompress->AddData (pSampleBuffer, sampleCount * _blockAlign))
+				throw gcnew Exception("An error occurred while encoding.");
+			_samplesWritten += sampleCount;
+		}
+
+		virtual property String^ Path 
+		{
+			String^ get() { 
+				return _path; 
+			} 
+		}
+
+		virtual bool SetTags (NameValueCollection^ tags) 
+		{
+			_tags = tags;
+			return true;
 		}
 
 		property Int32 CompressionLevel {
@@ -349,24 +398,6 @@ namespace APEDotNet {
 			}
 		}
 
-		void Write(array<unsigned char>^ sampleBuffer, UInt32 sampleCount) {
-			if (!_initialized) Initialize();
-			pin_ptr<unsigned char> pSampleBuffer = &sampleBuffer[0];
-			if (pAPECompress->AddData (pSampleBuffer, sampleCount * _blockAlign))
-				throw gcnew Exception("An error occurred while encoding.");
-			_samplesWritten += sampleCount;
-		}
-
-		property String^ Path { 
-			String^ get() { 
-				return _path; 
-			} 
-		}
-
-		void SetTags (NameValueCollection^ tags) {
-			_tags = tags;
-		}
-
 	private:
 		IAPECompress * pAPECompress;
 		bool _initialized;
@@ -379,6 +410,7 @@ namespace APEDotNet {
 		GCHandle _gchIO, _gchBuffer;
 		CWinFileIO* _winFileIO;
 		array<unsigned char>^ _writeBuffer;
+		array<unsigned char>^ _sampleBuffer;
 
 		void Initialize() {
 			_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::ReadWrite, FileShare::Read);
@@ -408,7 +440,10 @@ namespace APEDotNet {
 	{
 		array<unsigned char>^ buff = (array<unsigned char>^) _gchBuffer.Target;
 		if (buff->Length < nBytesToRead)
+		{
 			Array::Resize (buff, nBytesToRead);
+			_gchBuffer.Target = buff;
+		}
 		int len = ((Stream^)_gchIO.Target)->Read (buff, 0, nBytesToRead);
 		if (len) Marshal::Copy (buff, 0, (IntPtr)pBuffer, len);
 		*pBytesRead = len;
@@ -419,7 +454,10 @@ namespace APEDotNet {
 	{
 		array<unsigned char>^ buff = (array<unsigned char>^) _gchBuffer.Target;
 		if (buff->Length < nBytesToWrite)
+		{
 			Array::Resize (buff, nBytesToWrite);
+			_gchBuffer.Target = buff;
+		}
 		Marshal::Copy ((IntPtr)(void*)pBuffer, buff, 0, nBytesToWrite);
 		((Stream^)_gchIO.Target)->Write (buff, 0, nBytesToWrite);
 		*pBytesWritten = nBytesToWrite;

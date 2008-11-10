@@ -35,6 +35,7 @@ using namespace System::Collections::Specialized;
 using namespace System::Security::Cryptography;
 using namespace System::IO;
 using namespace APETagsDotNet;
+using namespace AudioCodecsDotNet;
 
 #include <stdio.h>
 #include <memory.h>
@@ -59,9 +60,11 @@ namespace WavPackDotNet {
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
 	public delegate int DecoderCanSeekDelegate(void *id);
 
-	public ref class WavPackReader {
+	public ref class WavPackReader : public IAudioSource 
+	{
 	public:
-		WavPackReader(String^ path, Stream^ IO, Stream^ IO_WVC) {
+		WavPackReader(String^ path, Stream^ IO, Stream^ IO_WVC) 
+		{
 			char errorMessage[256];
 
 			_readDel = gcnew DecoderReadDelegate (this, &WavPackReader::ReadCallback);
@@ -89,14 +92,6 @@ namespace WavPackDotNet {
 			_IO = (IO != nullptr) ? IO : gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
 			_IO_WVC = (IO != nullptr) ? IO_WVC : System::IO::File::Exists (path+"c") ? gcnew FileStream (path+"c", FileMode::Open, FileAccess::Read, FileShare::Read) : nullptr;
 
-			//IntPtr pathChars;
-			//pathChars = Marshal::StringToHGlobalUni(path);
-			//size_t pathLen = wcslen ((const wchar_t*)pathChars.ToPointer())+1;
-			//wchar_t * pPath = new wchar_t[pathLen];
-			//memcpy ((void*) pPath, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
-			//Marshal::FreeHGlobal(pathChars);
-			//_wpc = WavpackOpenFileInput (pPath, errorMessage, OPEN_WVC, 0);
-
 			_wpc = WavpackOpenFileInputEx (ioReader, "v", _IO_WVC != nullptr ? "c" : NULL, errorMessage, OPEN_WVC, 0);
 			if (_wpc == NULL) {
 				throw gcnew Exception("Unable to initialize the decoder.");
@@ -114,35 +109,35 @@ namespace WavPackDotNet {
 			delete ioReader;
 		}
 
-		property Int32 BitsPerSample {
+		virtual property Int32 BitsPerSample {
 			Int32 get() {
 				return _bitsPerSample;
 			}
 		}
 
-		property Int32 ChannelCount {
+		virtual property Int32 ChannelCount {
 			Int32 get() {
 				return _channelCount;
 			}
 		}
 
-		property Int32 SampleRate {
+		virtual property Int32 SampleRate {
 			Int32 get() {
 				return _sampleRate;
 			}
 		}
 
-		property Int32 Length {
-			Int32 get() {
+		virtual property UInt64 Length {
+			UInt64 get() {
 				return _sampleCount;
 			}
 		}
 
-		property Int32 Position {
-			Int32 get() {
+		virtual property UInt64 Position {
+			UInt64 get() {
 				return _sampleOffset;
 			}
-			void set(Int32 offset) {
+			void set(UInt64 offset) {
 				_sampleOffset = offset;
 				if (!WavpackSeekSample(_wpc, offset)) {
 					throw gcnew Exception("Unable to seek.");
@@ -150,19 +145,19 @@ namespace WavPackDotNet {
 			}
 		}
 
-		property Int32 Remaining {
-			Int32 get() {
+		virtual property UInt64 Remaining {
+			UInt64 get() {
 				return _sampleCount - _sampleOffset;
 			}
 		}
 
-		property String^ Path { 
+		virtual property String^ Path { 
 			String^ get() { 
 				return _path; 
 			} 
 		}
 
-		property NameValueCollection^ Tags {
+		virtual property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
 				if (!_tags) 
 				{
@@ -177,7 +172,7 @@ namespace WavPackDotNet {
 			}
 		}
 
-		void Close() 
+		virtual void Close() 
 		{
 			_wpc = WavpackCloseFile(_wpc);
 			if (_IO != nullptr) 
@@ -192,16 +187,14 @@ namespace WavPackDotNet {
 			}
 		}
 
-		void Read(array<Int32, 2>^ sampleBuffer, Int32 sampleCount) {
+		virtual UInt32 Read(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) 
+		{
 			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
-			int samplesRead;
-			
-			samplesRead = WavpackUnpackSamples(_wpc, pSampleBuffer, sampleCount);
+			int samplesRead = WavpackUnpackSamples(_wpc, pSampleBuffer, sampleCount);
 			_sampleOffset += samplesRead;
-			
-			if (samplesRead != sampleCount) {
+			if (samplesRead != sampleCount)
 				throw gcnew Exception("Decoder returned a different number of samples than requested.");
-			}
+			return sampleCount;
 		}
 
 	private:
@@ -312,14 +305,17 @@ namespace WavPackDotNet {
 		}
 	};
 
-	public ref class WavPackWriter {
+	public ref class WavPackWriter : IAudioDest 
+	{
 	public:
-		WavPackWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) {
+		WavPackWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		{
 			IntPtr pathChars;
 
-			if ((channelCount != 1) && (channelCount != 2)) {
+			if (channelCount != 1 && channelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
-			}
+			if (bitsPerSample != 16 && bitsPerSample != 24)
+				throw gcnew Exception("Bits per sample must be 16 or 24.");
 
 			_path = path;
 			_tags = gcnew NameValueCollection();
@@ -330,6 +326,7 @@ namespace WavPackDotNet {
 			_bitsPerSample = bitsPerSample;
 			_channelCount = channelCount;
 			_sampleRate = sampleRate;
+			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
 
 			pathChars = Marshal::StringToHGlobalUni(path);
 			_hFile = _wfopen((const wchar_t*)pathChars.ToPointer(), L"w+b");
@@ -339,7 +336,8 @@ namespace WavPackDotNet {
 			}
 		}
 
-		void Close() {
+		virtual void Close() 
+		{
 			if (_md5Sum)
 			{
 				_md5hasher->TransformFinalBlock (gcnew array<unsigned char>(1), 0, 0);
@@ -365,19 +363,54 @@ namespace WavPackDotNet {
 			}
 		}
 
-		property Int32 FinalSampleCount {
-			Int32 get() {
+		virtual property Int64 FinalSampleCount 
+		{
+			Int64 get() 
+			{
 				return _finalSampleCount;
 			}
-			void set(Int32 value) {
-				if (value < 0) {
+			void set(Int64 value) 
+			{
+				if (value < 0)
 					throw gcnew Exception("Invalid final sample count.");
-				}
-				if (_initialized) {
+				if (_initialized)
 					throw gcnew Exception("Final sample count cannot be changed after encoding begins.");
-				}
 				_finalSampleCount = value;
 			}
+		}
+
+		virtual void Write(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) 
+		{
+			if (!_initialized) 
+				Initialize();
+
+			if (MD5Sum)
+			{
+				if (_sampleBuffer == nullptr || _sampleBuffer.Length < sampleCount * _blockAlign)
+					_sampleBuffer = gcnew array<unsigned char>(sampleCount * _blockAlign);
+				AudioSamples::FLACSamplesToBytes(sampleBuffer, 0, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
+				UpdateHash(_sampleBuffer, (int) sampleCount * _blockAlign);
+			}
+
+			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
+			if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount)) {
+				throw gcnew Exception("An error occurred while encoding.");
+			}
+
+			_samplesWritten += sampleCount;
+		}
+
+		virtual property String^ Path 
+		{
+			String^ get() { 
+				return _path; 
+			} 
+		}
+
+		virtual bool SetTags (NameValueCollection^ tags) 
+		{
+			_tags = tags;
+			return true;
 		}
 
 		property Int32 CompressionMode {
@@ -422,38 +455,18 @@ namespace WavPackDotNet {
 			_md5hasher->TransformBlock (buff, 0, len,  buff, 0);
 		}
 
-		void Write(array<Int32, 2>^ sampleBuffer, Int32 sampleCount) {
-			if (!_initialized) Initialize();
-
-			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
-			if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount)) {
-				throw gcnew Exception("An error occurred while encoding.");
-			}
-
-			_samplesWritten += sampleCount;
-		}
-
-		property String^ Path { 
-			String^ get() { 
-				return _path; 
-			} 
-		}
-
-		void SetTags (NameValueCollection^ tags) {
-			_tags = tags;
-		}
-
 	private:
 		FILE *_hFile;
 		bool _initialized;
 		WavpackContext *_wpc;
 		Int32 _finalSampleCount, _samplesWritten;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		Int32 _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		Int32 _compressionMode, _extraMode;
 		NameValueCollection^ _tags;
 		String^ _path;
 		bool _md5Sum;
 		MD5^ _md5hasher;
+		array<unsigned char>^ _sampleBuffer;
 
 		void Initialize() {
 			WavpackConfig config;

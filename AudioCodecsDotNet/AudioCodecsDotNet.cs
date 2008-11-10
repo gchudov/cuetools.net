@@ -29,7 +29,7 @@ namespace AudioCodecsDotNet
 		string Path { get; }
 	}
 
-	public class AudioCodecsDotNet
+	public class AudioSamples
 	{
 		public static unsafe void FLACSamplesToBytes_16(int[,] inSamples, uint inSampleOffset,
 			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount)
@@ -92,9 +92,9 @@ namespace AudioCodecsDotNet
 			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount, int bitsPerSample)
 		{
 			if (bitsPerSample == 16)
-				AudioCodecsDotNet.FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
+				AudioSamples.FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
 			else if (bitsPerSample == 24)
-				AudioCodecsDotNet.FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
+				AudioSamples.FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
 			else
 				throw new Exception("Unsupported bitsPerSample value");
 		}
@@ -483,7 +483,7 @@ namespace AudioCodecsDotNet
 				_sampleBuffer = new byte[byteCount];
 			if (_IO.Read(_sampleBuffer, 0, (int)byteCount) != byteCount)
 				throw new Exception("Incomplete file read.");
-			AudioCodecsDotNet.BytesToFLACSamples_16 (_sampleBuffer, 0, buff, 0,
+			AudioSamples.BytesToFLACSamples_16(_sampleBuffer, 0, buff, 0,
 				sampleCount, _channelCount);
 			_samplePos += sampleCount;
 			return sampleCount;
@@ -596,7 +596,7 @@ namespace AudioCodecsDotNet
 				return;
 			if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _blockAlign)
 				_sampleBuffer = new byte[sampleCount * _blockAlign];
-			AudioCodecsDotNet.FLACSamplesToBytes(buff, 0, _sampleBuffer, 0,
+			AudioSamples.FLACSamplesToBytes(buff, 0, _sampleBuffer, 0,
 				sampleCount, _channelCount, _bitsPerSample);
 			_IO.Write(_sampleBuffer, 0, (int)sampleCount * _blockAlign);
 			_sampleLen += sampleCount;
