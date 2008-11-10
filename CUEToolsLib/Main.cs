@@ -29,6 +29,9 @@ using System.Net;
 using System.Threading;
 using AudioCodecsDotNet;
 using HDCDDotNet;
+#if !MONO
+using UnRarDotNet;
+#endif
 
 namespace CUEToolsLib
 {
@@ -415,6 +418,8 @@ namespace CUEToolsLib
 		private HDCDDotNet.HDCDDotNet hdcdDecoder;
 		CUEConfig _config;
 		string _cddbDiscIdTag;
+		private bool _isArchive;
+		private string _archivePath;
 
 		public CUESheet(string pathIn, CUEConfig config)
 		{
@@ -466,6 +471,7 @@ namespace CUEToolsLib
 			seenDataTrack = false;
 			accDisks = new List<AccDisk>();
 			_hasEmbeddedCUESheet = false;
+			_isArchive = false;
 
 			TextReader sr;
 
@@ -480,8 +486,56 @@ namespace CUEToolsLib
 				if (cueSheet == null)
 					throw new Exception("Input directory doesn't contain supported audio files.");
 				sr = new StringReader(cueSheet);				
+			} 
+#if !MONO
+			else if (Path.GetExtension(pathIn).ToLower() == ".rar")
+			{
+				Unrar _unrar = new Unrar();
+				string cueName = null, cueText = null;
+				_unrar.Open(pathIn, Unrar.OpenMode.List);
+				while (_unrar.ReadHeader())
+				{
+					if (!_unrar.CurrentFile.IsDirectory && Path.GetExtension(_unrar.CurrentFile.FileName).ToLower() == ".cue")
+					{
+						cueName = _unrar.CurrentFile.FileName;
+						break;
+					}
+					else
+						_unrar.Skip();
+				}
+				_unrar.Close();
+				if (cueName != null)
+				try
+				{
+					RarStream rarStream = new RarStream(pathIn, cueName);
+					StreamReader cueReader = new StreamReader(rarStream, CUESheet.Encoding);
+					cueText = cueReader.ReadToEnd();
+					cueReader.Close();
+					rarStream.Close();
+				}
+				catch { }	
+				if (cueText == null)
+					throw new Exception("Input archive doesn't contain a cue sheet.");
+				sr = new StringReader(cueText);
+				_isArchive = true;
+				_archivePath = pathIn;
+			}
+#endif
+			else if (Path.GetExtension(pathIn).ToLower() == ".cue")
+			{
+				if (_config.autoCorrectFilenames)
+					sr = new StringReader (CorrectAudioFilenames(pathIn, false));
+				else
+					sr = new StreamReader (pathIn, CUESheet.Encoding);
+
+				try
+				{
+					StreamReader logReader = new StreamReader(Path.ChangeExtension(pathIn, ".log"), CUESheet.Encoding);
+					_eacLog = logReader.ReadToEnd();
+					logReader.Close();
+				}
+				catch { }
 			} else
-			if (Path.GetExtension(pathIn).ToLower() != ".cue")
 			{
 				IAudioSource audioSource;
 				NameValueCollection tags;
@@ -500,20 +554,6 @@ namespace CUEToolsLib
 				sr = new StringReader (cuesheetTag);
 				pathAudio = pathIn;
 				_hasEmbeddedCUESheet = true;
-			} else
-			{
-				if (_config.autoCorrectFilenames)
-					sr = new StringReader (CorrectAudioFilenames(pathIn, false));
-				else
-					sr = new StreamReader (pathIn, CUESheet.Encoding);
-
-				try
-				{
-					StreamReader logReader = new StreamReader(Path.ChangeExtension(pathIn, ".log"), CUESheet.Encoding);
-					_eacLog = logReader.ReadToEnd();
-					logReader.Close();
-				}
-				catch { }
 			}
 
 			using (sr) {
@@ -533,10 +573,17 @@ namespace CUEToolsLib
 							else {
 								if (!_hasEmbeddedCUESheet)
 								{
-									pathAudio = LocateFile(cueDir, line.Params[1]);
-									if (pathAudio == null)
+#if !MONO
+									if (_isArchive)
+										pathAudio = line.Params[1];
+									else
 									{
-										throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
+#endif
+										pathAudio = LocateFile(cueDir, line.Params[1]);
+										if (pathAudio == null)
+										{
+											throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
+										}
 									}
 								} else
 								{
@@ -645,6 +692,18 @@ namespace CUEToolsLib
 						{
 							_accurateRipId = line.Params[2];
 						}
+						//else if ((command == "REM") &&
+						//   (line.Params.Count == 3) &&
+						//   (line.Params[1].ToUpper() == "SHORTEN"))
+						//{
+						//    fileTimeLengthFrames -= General.TimeFromString(line.Params[2]);
+						//}							
+						//else if ((command == "REM") &&
+						//   (line.Params.Count == 3) &&
+						//   (line.Params[1].ToUpper() == "LENGTHEN"))
+						//{
+						//    fileTimeLengthFrames += General.TimeFromString(line.Params[2]);
+						//}							
 						else
 						{
 							if (trackInfo != null)
@@ -951,7 +1010,14 @@ namespace CUEToolsLib
 		{
 			IAudioSource audioSource;
 
-			audioSource = AudioReadWrite.GetAudioSource(path);
+#if !MONO
+			if (_isArchive)
+			{
+				RarStream IO = new RarStream(_archivePath, path);
+				audioSource = AudioReadWrite.GetAudioSource(path, IO);
+			} else
+#endif
+				audioSource = AudioReadWrite.GetAudioSource(path);
 
 			if ((audioSource.BitsPerSample != 16) ||
 				(audioSource.ChannelCount != 2) ||
@@ -1686,7 +1752,7 @@ namespace CUEToolsLib
 			if (_accurateRip)
 			{
 				statusDel((string)"Generating AccurateRip report...", 0, 0, null, null);
-				if (!_accurateOffset && _config.writeArTagsOnVerify && _writeOffset == 0)
+				if (!_accurateOffset && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive)
 				{
 					uint tracksMatch;
 					int bestOffset;
@@ -2141,7 +2207,15 @@ namespace CUEToolsLib
 			return sw.ToString();
 		}
 
-		public static string CorrectAudioFilenames(string path, bool always) {
+		public static string CorrectAudioFilenames(string path, bool always)
+		{
+			StreamReader sr = new StreamReader(path, CUESheet.Encoding);
+			string cue = sr.ReadToEnd();
+			sr.Close();
+			return CorrectAudioFilenames(Path.GetDirectoryName(path), cue, always);
+		}
+
+		public static string CorrectAudioFilenames(string dir, string cue, bool always) {
 			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
 			List<string> lines = new List<string>();
 			List<int> filePos = new List<int>();
@@ -2150,12 +2224,9 @@ namespace CUEToolsLib
 			string[] audioFiles = null;
 			string lineStr;
 			CUELine line;
-			string dir;
 			int i;
 
-			dir = Path.GetDirectoryName(path);
-
-			using (StreamReader sr = new StreamReader(path, CUESheet.Encoding)) {
+			using (StringReader sr = new StringReader(cue)) {
 				while ((lineStr = sr.ReadLine()) != null) {
 					lines.Add(lineStr);
 					line = new CUELine(lineStr);
@@ -2335,10 +2406,19 @@ namespace CUEToolsLib
 				audioSource = new SilenceGenerator(sourceInfo.Offset + sourceInfo.Length);
 			}
 			else {
-				audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path);
+#if !MONO
+				if (_isArchive)
+				{
+					RarStream IO = new RarStream(_archivePath, sourceInfo.Path);
+					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path, IO);
+				}
+				else
+#endif
+					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path);
 			}
 
-			audioSource.Position = sourceInfo.Offset;
+			if (sourceInfo.Offset != 0)
+				audioSource.Position = sourceInfo.Offset;
 
 			return audioSource;
 		}

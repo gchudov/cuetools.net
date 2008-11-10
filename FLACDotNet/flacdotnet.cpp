@@ -69,7 +69,7 @@ namespace FLACDotNet {
 
 	public ref class FLACReader {
 	public:
-		FLACReader(String^ path) {
+		FLACReader(String^ path, Stream^ IO) {
 			_tags = gcnew NameValueCollection();
 
 			_writeDel = gcnew DecoderWriteDelegate(this, &FLACReader::WriteCallback);
@@ -88,7 +88,10 @@ namespace FLACDotNet {
 			_sampleBuffer = nullptr;
 			_path = path;
 
-			_IO = gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
+			if (IO)
+				_IO = IO;
+			else
+				_IO = gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
 
 			_decoder = FLAC__stream_decoder_new();
 
@@ -252,7 +255,10 @@ namespace FLACDotNet {
 				_decoderActive = false;
 			}
 			if (_IO != nullptr) 
+			{
 				_IO->Close ();
+				_IO = nullptr;
+			}
 		}
 
 		Int32 Read([Out] array<Int32, 2>^% sampleBuffer) 
@@ -288,7 +294,7 @@ namespace FLACDotNet {
 		NameValueCollection^ _tags;
 		String^ _path;
 		bool _decoderActive;
-		FileStream^ _IO;
+		Stream^ _IO;
 
 		FLAC__StreamDecoderWriteStatus WriteCallback(const FLAC__StreamDecoder *decoder,
 			const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data)

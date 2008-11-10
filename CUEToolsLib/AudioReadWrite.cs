@@ -28,6 +28,18 @@ namespace CUEToolsLib {
 					throw new Exception("Unsupported audio type.");
 			}
 		}
+		public static IAudioSource GetAudioSource(string path, Stream IO)
+		{
+			switch (Path.GetExtension(path).ToLower())
+			{
+#if !MONO
+				case ".flac":
+					return new FLACReader(path, IO);
+#endif
+				default:
+					throw new Exception("Unsupported audio type in archive.");
+			}
+		}
 
 		public static IAudioDest GetAudioDest(string path, int bitsPerSample, int channelCount, int sampleRate, long finalSampleCount) {
 			IAudioDest dest;
@@ -59,7 +71,14 @@ namespace CUEToolsLib {
 		uint _bufferOffset, _bufferLength;
 
 		public FLACReader(string path) {
-			_flacReader = new FLACDotNet.FLACReader(path);
+			_flacReader = new FLACDotNet.FLACReader(path, null);
+			_bufferOffset = 0;
+			_bufferLength = 0;
+		}
+
+		public FLACReader(string path, Stream IO)
+		{
+			_flacReader = new FLACDotNet.FLACReader(path, IO);
 			_bufferOffset = 0;
 			_bufferLength = 0;
 		}

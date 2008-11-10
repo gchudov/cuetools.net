@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioCodecsDotNet", "..\Aud
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ALACDotNet", "..\ALACDotNet\ALACDotNet.csproj", "{F2EC7193-D5E5-4252-9803-5CEB407E910F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnRarDotNet", "..\UnRarDotNet\UnRarDotNet.csproj", "{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -200,6 +202,16 @@ Global
 		{F2EC7193-D5E5-4252-9803-5CEB407E910F}.Release|x64.Build.0 = Release|x64
 		{F2EC7193-D5E5-4252-9803-5CEB407E910F}.Release|x86.ActiveCfg = Release|x86
 		{F2EC7193-D5E5-4252-9803-5CEB407E910F}.Release|x86.Build.0 = Release|x86
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Debug|x64.ActiveCfg = Debug|x64
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Debug|x64.Build.0 = Debug|x64
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Debug|x86.ActiveCfg = Debug|x86
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Debug|x86.Build.0 = Debug|x86
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Release|x64.ActiveCfg = Release|x64
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Release|x64.Build.0 = Release|x64
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Release|x86.ActiveCfg = Release|x86
+		{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
