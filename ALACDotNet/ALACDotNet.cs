@@ -28,16 +28,16 @@ namespace ALACDotNet
 {
 	public class ALACReader : IAudioSource
 	{
-		public ALACReader(string path)
+		public ALACReader(string path, Stream IO)
 		{
 			_path = path;
-			m_spIO = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+			_IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			_buff = new byte[512];
 			_tags = new NameValueCollection();
 			qtmovie_read();
 			if (!_formatRead || _bitsPerSample != 16 || _channelCount != 2 || _sampleRate != 44100)
 				throw new Exception("Invalid ALAC file.");
-			_saved_mdat_pos = m_spIO.Position;
+			_saved_mdat_pos = _IO.Position;
 		}
 
 		public uint Read(int[,] buff, uint sampleCount)
@@ -83,7 +83,7 @@ namespace ALACDotNet
 				if ((int) _iSample >= _sample_byte_size.Length)
 					return (uint)offset;
 				get_sample_info(_iSample, out sampleDuration, out sampleSize);
-				m_spIO.Read(_framesBuffer, 0, (int) sampleSize);
+				_IO.Read(_framesBuffer, 0, (int) sampleSize);
 				decodeFrame(sampleDuration, sampleSize);
 				if (sampleDuration != _samplesInBuffer)
 					throw new Exception("sample count mismatch");
@@ -102,7 +102,7 @@ namespace ALACDotNet
 
 		public void Close()
 		{
-			m_spIO.Close();
+			_IO.Close();
 		}
 
 		public ulong Length
@@ -142,7 +142,7 @@ namespace ALACDotNet
 				{
 					if (durOffs == value)
 					{
-						m_spIO.Position = _saved_mdat_pos + fileOffs;
+						_IO.Position = _saved_mdat_pos + fileOffs;
 						return;
 					}
 					get_sample_info(_iSample, out sampleDuration, out sampleSize);
@@ -150,7 +150,7 @@ namespace ALACDotNet
 					fileOffs += sampleSize;
 					_iSample++;
 				} while (durOffs <= value);
-				m_spIO.Position = _saved_mdat_pos + fileOffs - sampleSize;
+				_IO.Position = _saved_mdat_pos + fileOffs - sampleSize;
 				_samplesBufferOffset = (uint) (value + sampleDuration - durOffs);
 				_iSample--;
 			}
@@ -218,7 +218,7 @@ namespace ALACDotNet
 		{
 			if (len > 512)
 				throw new Exception("Decoding failed.");
-			if (m_spIO.Read(_buff, 0, len) != len)
+			if (_IO.Read(_buff, 0, len) != len)
 				throw new Exception("Decoding failed.");
 			return _buff;
 		}
@@ -255,7 +255,7 @@ namespace ALACDotNet
 
 		private void stream_skip (UInt32 skip)
 		{
-			m_spIO.Position += skip;
+			_IO.Position += skip;
 		}
 
 		/* supports reading 1 to 24 bits, in big endian format */
@@ -834,7 +834,7 @@ namespace ALACDotNet
 				_codecData[0] = 0; _codecData[1] = 0; _codecData[2] = 0; _codecData[3] = 0x0C;
 				_codecData[4] = (byte)'f'; _codecData[5] = (byte)'r'; _codecData[6] = (byte)'m'; _codecData[7] = (byte)'a';
 				_codecData[8] = (byte)'a'; _codecData[9] = (byte)'l'; _codecData[10] = (byte)'a'; _codecData[11] = (byte)'c';
-				m_spIO.Read(_codecData, 12, (int)entry_remaining);
+				_IO.Read(_codecData, 12, (int)entry_remaining);
 				entry_remaining -= entry_remaining;
 
 				//#endif
@@ -957,7 +957,7 @@ namespace ALACDotNet
 			/* name */
 			UInt32 strlen = stream_read_uint8();
 			byte[] str = new byte[strlen];
-			m_spIO.Read(str, 0, (int)strlen);
+			_IO.Read(str, 0, (int)strlen);
 			size_remaining -= 1 + strlen;
 
 			if (size_remaining > 0)
@@ -989,7 +989,7 @@ namespace ALACDotNet
 				return;
 			if (skip_mdat)
 			{
-				_saved_mdat_pos = m_spIO.Position;
+				_saved_mdat_pos = _IO.Position;
 				stream_skip(size_remaining);
 			}
 			//#if 0
@@ -1049,7 +1049,7 @@ namespace ALACDotNet
 			if (str_size <= 0) return;
 			if (tag_format != 0) throw new Exception(path + " not a binary");
 			byte[] value = new byte[str_size];
-			if (m_spIO.Read(value, 0, str_size) != str_size)
+			if (_IO.Read(value, 0, str_size) != str_size)
 				throw new Exception("Decoding failed.");
 			if (path.EndsWith(".trkn.data"))
 			{
@@ -1189,7 +1189,7 @@ namespace ALACDotNet
 						qtmovie_read_lst("top.moov", chunk_len - 8, null);
 						if (found_mdat)
 						{
-							m_spIO.Position = _saved_mdat_pos;
+							_IO.Position = _saved_mdat_pos;
 							return;
 						}
 						found_moov = true;
@@ -1216,7 +1216,7 @@ namespace ALACDotNet
 		}
 
 		string _path;
-		FileStream m_spIO;
+		Stream _IO;
 
 		byte[] _codecData;
 		uint[] _time_to_sample_count, _time_to_sample_duration, _sample_byte_size;

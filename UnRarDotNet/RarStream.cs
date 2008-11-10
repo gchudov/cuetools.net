@@ -58,7 +58,7 @@ namespace UnRarDotNet
 		}
 		public override long Position
 		{
-			get { return _pos; }
+			get { return _seek_to == null ? _pos : _seek_to.Value; }
 			set { Seek(value, SeekOrigin.Begin); }
 		}
 		public override void Close()
@@ -143,25 +143,30 @@ namespace UnRarDotNet
 					Monitor.Wait(this);
 				if (_size == null)
 					throw new NotSupportedException();
-				switch (origin)
-				{
-					case SeekOrigin.Begin:
-						_seek_to = offset;
-						break;
-					case SeekOrigin.Current:
-						_seek_to = _pos + offset;
-						break;
-					case SeekOrigin.End:
-						_seek_to = _size.Value + offset;
-						break;
-				}
-				if (_seek_to.Value == _pos)
-				{
-					_seek_to = null;
-					return _pos;
-				}
-				return _seek_to.Value;
 			}
+			switch (origin)
+			{
+				case SeekOrigin.Begin:
+					_seek_to = offset;
+					break;
+				case SeekOrigin.Current:
+					_seek_to = Position + offset;
+					break;
+				case SeekOrigin.End:
+					_seek_to = _size.Value + offset;
+					break;
+			}
+			if (_seek_to.Value == _pos)
+			{
+				_seek_to = null;
+				return _pos;
+			}
+			if (_seek_to.Value < _pos)
+			{
+				_seek_to = null;
+				throw new NotSupportedException("cannot seek backwards");
+			}
+			return _seek_to.Value;
 		}
 		public override void Write(byte[] array, int offset, int count)
 		{

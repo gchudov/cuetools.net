@@ -22,7 +22,7 @@ namespace CUEToolsLib {
 				case ".ape":
 					return new APEReader(path);
 				case ".m4a":
-					return new ALACReader(path);
+					return new ALACReader(path, null);
 #endif
 				default:
 					throw new Exception("Unsupported audio type.");
@@ -37,6 +37,8 @@ namespace CUEToolsLib {
 #if !MONO
 				case ".flac":
 					return new FLACReader(path, IO);
+				case ".m4a":
+					return new ALACReader(path, IO);
 #endif
 				default:
 					throw new Exception("Unsupported audio type in archive.");
