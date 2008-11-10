@@ -88,10 +88,7 @@ namespace FLACDotNet {
 			_sampleBuffer = nullptr;
 			_path = path;
 
-			if (IO)
-				_IO = IO;
-			else
-				_IO = gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
+			_IO = (IO != nullptr) ? IO : gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
 
 			_decoder = FLAC__stream_decoder_new();
 

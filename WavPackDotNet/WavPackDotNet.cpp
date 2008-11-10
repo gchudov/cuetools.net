@@ -33,6 +33,7 @@ using namespace System;
 using namespace System::Runtime::InteropServices;
 using namespace System::Collections::Specialized;
 using namespace System::Security::Cryptography;
+using namespace System::IO;
 using namespace APETagsDotNet;
 
 #include <stdio.h>
@@ -43,21 +44,60 @@ using namespace APETagsDotNet;
 namespace WavPackDotNet {
 	int write_block(void *id, void *data, int32_t length);
 
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate int32_t DecoderReadDelegate(void *id, void *data, int32_t bcount);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate uint32_t DecoderTellDelegate(void *id);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate int DecoderSeekDelegate(void *id, uint32_t pos);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate int DecoderSeekRelativeDelegate(void *id, int32_t delta, int mode);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate int DecoderPushBackDelegate(void *id, int c);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate uint32_t DecoderLengthDelegate(void *id);
+	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+	public delegate int DecoderCanSeekDelegate(void *id);
+
 	public ref class WavPackReader {
 	public:
-		WavPackReader(String^ path) {
-			IntPtr pathChars;
+		WavPackReader(String^ path, Stream^ IO, Stream^ IO_WVC) {
 			char errorMessage[256];
+
+			_readDel = gcnew DecoderReadDelegate (this, &WavPackReader::ReadCallback);
+			_tellDel = gcnew DecoderTellDelegate (this, &WavPackReader::TellCallback);
+			_seekDel = gcnew DecoderSeekDelegate (this, &WavPackReader::SeekCallback);
+			_seekRelDel = gcnew DecoderSeekRelativeDelegate (this, &WavPackReader::SeekRelCallback);
+			_pushBackDel = gcnew DecoderPushBackDelegate (this, &WavPackReader::PushBackCallback);
+			_lengthDel = gcnew DecoderLengthDelegate (this, &WavPackReader::LengthCallback);
+			_canSeekDel = gcnew DecoderCanSeekDelegate (this, &WavPackReader::CanSeekCallback);
+
+			ioReader = new WavpackStreamReader;
+			ioReader->read_bytes = (int32_t (*)(void *, void *, int32_t)) Marshal::GetFunctionPointerForDelegate(_readDel).ToPointer();
+			ioReader->get_pos = (uint32_t (*)(void *)) Marshal::GetFunctionPointerForDelegate(_tellDel).ToPointer();
+			ioReader->set_pos_abs = (int (*)(void *, uint32_t)) Marshal::GetFunctionPointerForDelegate(_seekDel).ToPointer();
+			ioReader->set_pos_rel = (int (*)(void *, int32_t, int)) Marshal::GetFunctionPointerForDelegate(_seekRelDel).ToPointer();
+			ioReader->push_back_byte = (int (*)(void *, int)) Marshal::GetFunctionPointerForDelegate(_pushBackDel).ToPointer();
+			ioReader->get_length = (uint32_t (*)(void *)) Marshal::GetFunctionPointerForDelegate(_lengthDel).ToPointer();
+			ioReader->can_seek = (int (*)(void *)) Marshal::GetFunctionPointerForDelegate(_canSeekDel).ToPointer();
+			ioReader->write_bytes = NULL;
+
+			_IO_ungetc = _IO_WVC_ungetc = -1;
 
 			_path = path;
 
-			pathChars = Marshal::StringToHGlobalUni(path);
-			size_t pathLen = wcslen ((const wchar_t*)pathChars.ToPointer())+1;
-			wchar_t * pPath = new wchar_t[pathLen];
-			memcpy ((void*) pPath, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
-			Marshal::FreeHGlobal(pathChars);
+			_IO = (IO != nullptr) ? IO : gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
+			_IO_WVC = (IO != nullptr) ? IO_WVC : System::IO::File::Exists (path+"c") ? gcnew FileStream (path+"c", FileMode::Open, FileAccess::Read, FileShare::Read) : nullptr;
 
-			_wpc = WavpackOpenFileInput (pPath, errorMessage, OPEN_WVC, 0);
+			//IntPtr pathChars;
+			//pathChars = Marshal::StringToHGlobalUni(path);
+			//size_t pathLen = wcslen ((const wchar_t*)pathChars.ToPointer())+1;
+			//wchar_t * pPath = new wchar_t[pathLen];
+			//memcpy ((void*) pPath, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
+			//Marshal::FreeHGlobal(pathChars);
+			//_wpc = WavpackOpenFileInput (pPath, errorMessage, OPEN_WVC, 0);
+
+			_wpc = WavpackOpenFileInputEx (ioReader, "v", _IO_WVC != nullptr ? "c" : NULL, errorMessage, OPEN_WVC, 0);
 			if (_wpc == NULL) {
 				throw gcnew Exception("Unable to initialize the decoder.");
 			}
@@ -71,6 +111,7 @@ namespace WavPackDotNet {
 
 		~WavPackReader()
 		{
+			delete ioReader;
 		}
 
 		property Int32 BitsPerSample {
@@ -125,7 +166,7 @@ namespace WavPackDotNet {
 			NameValueCollection^ get () {
 				if (!_tags) 
 				{
-					APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, true);
+					APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
 					_tags = apeTag->GetStringTags (true);
 					apeTag->Close ();
 				}
@@ -136,8 +177,19 @@ namespace WavPackDotNet {
 			}
 		}
 
-		void Close() {
+		void Close() 
+		{
 			_wpc = WavpackCloseFile(_wpc);
+			if (_IO != nullptr) 
+			{
+				_IO->Close ();
+				_IO = nullptr;
+			}
+			if (_IO_WVC != nullptr) 
+			{
+				_IO_WVC->Close ();
+				_IO_WVC = nullptr;
+			}
 		}
 
 		void Read(array<Int32, 2>^ sampleBuffer, Int32 sampleCount) {
@@ -158,6 +210,106 @@ namespace WavPackDotNet {
 		Int32 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		String^ _path;
+		Stream^ _IO;
+		Stream^ _IO_WVC;
+		DecoderReadDelegate^ _readDel;
+		DecoderTellDelegate^ _tellDel;
+		DecoderSeekDelegate^ _seekDel;
+		DecoderSeekRelativeDelegate^ _seekRelDel;
+		DecoderPushBackDelegate^ _pushBackDel;
+		DecoderLengthDelegate^ _lengthDel;
+		DecoderCanSeekDelegate^ _canSeekDel;
+		array<unsigned char>^ _readBuffer;
+		int _IO_ungetc, _IO_WVC_ungetc;
+		WavpackStreamReader* ioReader;
+
+		int32_t ReadCallback (void *id, void *data, int32_t bcount)
+		{
+			Stream^ IO = (*(char*)id=='c') ? _IO_WVC : _IO;
+			int IO_ungetc = (*(char*)id=='c') ? _IO_WVC_ungetc : _IO_ungetc;
+			int unget_len = 0;
+
+			if (IO_ungetc != -1)
+			{
+				*(unsigned char*)data = (unsigned char) IO_ungetc;
+				if (IO == _IO)
+					_IO_ungetc = -1;
+				else
+					_IO_WVC_ungetc = -1;
+				bcount --;
+				if (!bcount)
+					return 1;
+				data = 1 + (unsigned char*)data;
+				unget_len = 1;
+			}
+
+			if (_readBuffer == nullptr || _readBuffer->Length < bcount)
+				_readBuffer = gcnew array<unsigned char>(bcount < 0x4000 ? 0x4000 : bcount);		
+			int len = IO->Read (_readBuffer, 0, bcount);
+			if (len) Marshal::Copy (_readBuffer, 0, (IntPtr)data, len);
+			return len + unget_len;
+		}
+
+		uint32_t TellCallback(void *id)
+		{
+			Stream^ IO = (*(char*)id=='c') ? _IO_WVC : _IO;
+			return IO->Position;
+		}
+
+		int SeekCallback (void *id, uint32_t pos)
+		{
+			Stream^ IO = (*(char*)id=='c') ? _IO_WVC : _IO;
+			IO->Position = pos;
+			return 0;
+		}
+
+		int SeekRelCallback (void *id, int32_t delta, int mode)
+		{
+			Stream^ IO = (*(char*)id=='c') ? _IO_WVC : _IO;
+			switch (mode)
+			{
+			case SEEK_SET:
+				IO->Seek (delta, System::IO::SeekOrigin::Begin);
+				break;
+			case SEEK_END:
+				IO->Seek (delta, System::IO::SeekOrigin::End);
+				break;
+			case SEEK_CUR:
+				IO->Seek (delta, System::IO::SeekOrigin::Current);
+				break;
+			default:
+				return -1;
+			}			
+			return 0;
+		}
+
+		int PushBackCallback (void *id, int c)
+		{
+			Stream^ IO = (*(char*)id=='c') ? _IO_WVC : _IO;
+			if (IO == _IO)
+			{
+				if (_IO_ungetc != -1)
+					throw gcnew Exception("Double PushBackCallback unsupported.");
+				_IO_ungetc = c;
+			} else
+			{
+				if (_IO_WVC_ungetc != -1)
+					throw gcnew Exception("Double PushBackCallback unsupported.");
+				_IO_WVC_ungetc = c;
+			} 
+		}
+
+		uint32_t LengthCallback (void *id)
+		{
+			Stream^ IO = (*(char*)id=='c') ? _IO_WVC : _IO;
+			return IO->Length;
+		}
+
+		int CanSeekCallback(void *id)
+		{
+			Stream^ IO = (*(char*)id=='c') ? _IO_WVC : _IO;
+			return IO->CanSeek;
+		}
 	};
 
 	public ref class WavPackWriter {

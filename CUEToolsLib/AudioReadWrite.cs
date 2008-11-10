@@ -18,7 +18,7 @@ namespace CUEToolsLib {
 				case ".flac":
 					return new FLACReader(path, null);
 				case ".wv":
-					return new WavPackReader(path);
+					return new WavPackReader(path, null, null);
 				case ".ape":
 					return new APEReader(path);
 				case ".m4a":
@@ -37,6 +37,8 @@ namespace CUEToolsLib {
 #if !MONO
 				case ".flac":
 					return new FLACReader(path, IO);
+				case ".wv":
+					return new WavPackReader(path, IO, null);
 				case ".m4a":
 					return new ALACReader(path, IO);
 #endif
@@ -416,8 +418,8 @@ namespace CUEToolsLib {
 	class WavPackReader : IAudioSource {
 		WavPackDotNet.WavPackReader _wavPackReader;
 
-		public WavPackReader(string path) {
-			_wavPackReader = new WavPackDotNet.WavPackReader(path);
+		public WavPackReader(string path, Stream IO, Stream IO_WVC) {
+			_wavPackReader = new WavPackDotNet.WavPackReader(path, IO, IO_WVC);
 		}
 
 		public void Close() {

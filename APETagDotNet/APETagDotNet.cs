@@ -177,6 +177,7 @@ namespace APETagsDotNet
 		{
 			m_spIO = new FileStream(filename, FileMode.Open, isReadonly?FileAccess.Read:FileAccess.ReadWrite, FileShare.Read);
 			m_spInfo = new FileInfo(filename);
+			_closeIO = true;
 			m_lastModified = m_spInfo.LastWriteTime;
 			m_bAnalyzed = false;
 			m_aryFields = new APETagField[0];
@@ -185,9 +186,27 @@ namespace APETagsDotNet
 			if (analyze) Analyze ();
 		}
 
+		// create an APE tags object
+		// bAnalyze determines whether it will analyze immediately or on the first request
+		// be careful with multiple threads / file pointer movement if you don't analyze immediately
+		public APETagDotNet(Stream IO, bool analyze)
+		{
+			m_spIO = IO;
+			_closeIO = false;
+			m_bAnalyzed = false;
+			m_aryFields = new APETagField[0];
+			m_nTagBytes = 0;
+			m_bIgnoreReadOnly = false;
+			if (analyze) Analyze();
+		}
+
 		public void Close ()
 		{
-			m_spIO.Close ();
+			if (_closeIO)
+			{
+				m_spIO.Close();
+				m_spIO = null;
+			}
 			ClearFields ();
 		}
 	    
@@ -629,7 +648,7 @@ namespace APETagsDotNet
 		//int GetFieldID3String(string pFieldName, char * pBuffer, int nBytes);
 
 		// private data
-		private FileStream m_spIO;
+		private Stream m_spIO;
 		private FileInfo m_spInfo;
 		private DateTime m_lastModified;
 		private bool m_bAnalyzed;
@@ -639,5 +658,6 @@ namespace APETagsDotNet
 		private int m_nAPETagVersion;
 		//private bool m_bHasID3Tag;
 		private bool m_bIgnoreReadOnly;
+		private bool _closeIO;
 	};
 }

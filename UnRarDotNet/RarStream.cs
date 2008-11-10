@@ -13,18 +13,20 @@ namespace UnRarDotNet
 {
 	public class RarStream : Stream
 	{
-		public RarStream(string archive, string fileName)
+		public RarStream(string path, string fileName)
 		{
-			_stop = false;
+			_close = false;
+			_eof = false;
+			_rewind = false;
 			_unrar = new Unrar();
 			_buffer = null;
 			_offset = 0;
 			_length = 0;
 			_pos = 0;
+			_path = path;
+			_fileName = fileName;
 			_unrar.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
 			_unrar.DataAvailable += new DataAvailableHandler(unrar_DataAvailable);
-			_unrar.Open(archive, Unrar.OpenMode.Extract);
-			_fileName = fileName;
 			_workThread = new Thread(Decompress);
 			_workThread.Priority = ThreadPriority.BelowNormal;
 			_workThread.IsBackground = true;
@@ -48,7 +50,7 @@ namespace UnRarDotNet
 			{
 				lock (this)
 				{
-					while (_size == null && !_stop)
+					while (_size == null && !_close)
 						Monitor.Wait(this);
 				}
 				if (_size == null)
@@ -65,7 +67,7 @@ namespace UnRarDotNet
 		{
 			lock (this)
 			{
-				_stop = true;
+				_close = true;
 				Monitor.Pulse(this);
 			}
 			if (_workThread != null)
@@ -95,7 +97,7 @@ namespace UnRarDotNet
 			{
 				lock (this)
 				{
-					while (_buffer == null && !_stop)
+					while (_buffer == null && !_eof)
 						Monitor.Wait(this);
 					if (_buffer == null)
 						return total;
@@ -139,7 +141,7 @@ namespace UnRarDotNet
 		{
 			lock (this)
 			{
-				while (_size == null && !_stop)
+				while (_size == null && !_close)
 					Monitor.Wait(this);
 				if (_size == null)
 					throw new NotSupportedException();
@@ -163,8 +165,15 @@ namespace UnRarDotNet
 			}
 			if (_seek_to.Value < _pos)
 			{
-				_seek_to = null;
-				throw new NotSupportedException("cannot seek backwards");
+				lock (this)
+				{
+					_pos = 0;
+					_rewind = true;
+					_buffer = null;
+					Monitor.Pulse(this);
+				}
+				//_seek_to = null;
+				//throw new NotSupportedException("cannot seek backwards");
 			}
 			return _seek_to.Value;
 		}
@@ -176,12 +185,13 @@ namespace UnRarDotNet
 		private Unrar _unrar;
 		private string _fileName;
 		private Thread _workThread;
-		private bool _stop;
+		private bool _close, _rewind, _eof;
 		private byte[] _buffer;
 		int _offset, _length;
 		long? _size;
 		long? _seek_to;
 		long _pos;
+		string _path;
 
 		private void unrar_PasswordRequired(object sender, PasswordRequiredEventArgs e)
 		{
@@ -193,9 +203,15 @@ namespace UnRarDotNet
 		{
 			lock (this)
 			{
-				while (_buffer != null && !_stop)
+				while (_buffer != null && !_close)
 					Monitor.Wait(this);
-				if (_stop)
+				if (_close)
+				{
+					e.ContinueOperation = false;
+					Monitor.Pulse(this);
+					return;
+				}
+				if (_rewind)
 				{
 					e.ContinueOperation = false;
 					Monitor.Pulse(this);
@@ -213,28 +229,47 @@ namespace UnRarDotNet
 		{
 			//try
 			{
-				while (_unrar.ReadHeader())
+				do
 				{
-					if (_unrar.CurrentFile.FileName == _fileName)
+					_unrar.Open(_path, Unrar.OpenMode.Extract);
+					while (_unrar.ReadHeader())
 					{
-						lock (this)
+						if (_unrar.CurrentFile.FileName == _fileName)
 						{
-							_size = _unrar.CurrentFile.UnpackedSize;
-							Monitor.Pulse(this);
+							lock (this)
+							{
+								if (_size == null)
+								{
+									_size = _unrar.CurrentFile.UnpackedSize;
+									Monitor.Pulse(this);
+								}
+							}
+							_unrar.Test();
+							break;
 						}
-						_unrar.Test();
-						break;
+						else
+							_unrar.Skip();
 					}
-					else
-						_unrar.Skip();
-				}
+					_unrar.Close();
+					lock (this)
+					{
+						_eof = true;
+						Monitor.Pulse(this);
+						while (!_rewind && !_close)
+							Monitor.Wait(this);
+						if (_close)
+							break;
+						_rewind = false;
+						_eof = false;
+					}
+				} while (true);
 			}
 			//catch (StopExtractionException)
 			//{
 			//}
 			lock (this)
 			{
-				_stop = true;
+				_close = true;
 				Monitor.Pulse(this);
 			}
 		}
