@@ -251,7 +251,7 @@ namespace AudioCodecsDotNet
 
 	public class WAVReader : IAudioSource
 	{
-		FileStream _fs;
+		Stream _IO;
 		BinaryReader _br;
 		ulong _dataOffset, _dataLen;
 		ulong _samplePos, _sampleLen;
@@ -260,12 +260,11 @@ namespace AudioCodecsDotNet
 		string _path;
 		private byte[] _sampleBuffer;
 
-		public WAVReader(string path)
+		public WAVReader(string path, Stream IO)
 		{
 			_path = path;
-			//_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-			_fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
-			_br = new BinaryReader(_fs);
+			_IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
+			_br = new BinaryReader(_IO);
 
 			ParseHeaders();
 
@@ -275,10 +274,12 @@ namespace AudioCodecsDotNet
 
 		public void Close()
 		{
-			_br.Close();
-
-			_br = null;
-			_fs = null;
+			if (_br != null)
+			{
+				_br.Close();
+				_br = null;
+			}
+			_IO = null;
 		}
 
 		private void ParseHeaders()
@@ -310,7 +311,7 @@ namespace AudioCodecsDotNet
 			foundFormat = false;
 			foundData = false;
 
-			while (_fs.Position < fileEnd)
+			while (_IO.Position < fileEnd)
 			{
 				uint ckID, ckSize, ckSizePadded;
 				long ckEnd;
@@ -318,7 +319,7 @@ namespace AudioCodecsDotNet
 				ckID = _br.ReadUInt32();
 				ckSize = _br.ReadUInt32();
 				ckSizePadded = (ckSize + 1U) & ~1U;
-				ckEnd = _fs.Position + (long)ckSizePadded;
+				ckEnd = _IO.Position + (long)ckSizePadded;
 
 				if (ckID == fccFormat)
 				{
@@ -338,15 +339,15 @@ namespace AudioCodecsDotNet
 				{
 					foundData = true;
 
-					_dataOffset = (ulong)_fs.Position;
-					if (_fs.Length <= maxFileSize)
+					_dataOffset = (ulong)_IO.Position;
+					if (_IO.Length <= maxFileSize)
 					{
 						_dataLen = ckSize;
 					}
 					else
 					{
 						_largeFile = true;
-						_dataLen = ((ulong)_fs.Length) - _dataOffset;
+						_dataLen = ((ulong)_IO.Length) - _dataOffset;
 					}
 				}
 
@@ -355,7 +356,7 @@ namespace AudioCodecsDotNet
 					break;
 				}
 
-				_fs.Seek(ckEnd, SeekOrigin.Begin);
+				_IO.Seek(ckEnd, SeekOrigin.Begin);
 			}
 
 			if ((foundFormat & foundData) == false)
@@ -401,7 +402,7 @@ namespace AudioCodecsDotNet
 				}
 
 				seekPos = _dataOffset + (_samplePos * (uint)_blockAlign);
-				_fs.Seek((long)seekPos, SeekOrigin.Begin);
+				_IO.Seek((long)seekPos, SeekOrigin.Begin);
 			}
 		}
 
@@ -480,7 +481,7 @@ namespace AudioCodecsDotNet
 			int byteCount = (int) sampleCount * _blockAlign;
 			if (_sampleBuffer == null || _sampleBuffer.Length < byteCount)
 				_sampleBuffer = new byte[byteCount];
-			if (_fs.Read(_sampleBuffer, 0, (int)byteCount) != byteCount)
+			if (_IO.Read(_sampleBuffer, 0, (int)byteCount) != byteCount)
 				throw new Exception("Incomplete file read.");
 			AudioCodecsDotNet.BytesToFLACSamples_16 (_sampleBuffer, 0, buff, 0,
 				sampleCount, _channelCount);
@@ -493,7 +494,7 @@ namespace AudioCodecsDotNet
 
 	public class WAVWriter : IAudioDest
 	{
-		FileStream _fs;
+		FileStream _IO;
 		BinaryWriter _bw;
 		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		long _sampleLen;
@@ -508,8 +509,8 @@ namespace AudioCodecsDotNet
 			_sampleRate = sampleRate;
 			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
 
-			_fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
-			_bw = new BinaryWriter(_fs);
+			_IO = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+			_bw = new BinaryWriter(_IO);
 
 			WriteHeaders();
 		}
@@ -571,7 +572,7 @@ namespace AudioCodecsDotNet
 			_bw.Close();
 
 			_bw = null;
-			_fs = null;
+			_IO = null;
 		}
 
 		public long Position
@@ -597,7 +598,7 @@ namespace AudioCodecsDotNet
 				_sampleBuffer = new byte[sampleCount * _blockAlign];
 			AudioCodecsDotNet.FLACSamplesToBytes(buff, 0, _sampleBuffer, 0,
 				sampleCount, _channelCount, _bitsPerSample);
-			_fs.Write(_sampleBuffer, 0, (int)sampleCount * _blockAlign);
+			_IO.Write(_sampleBuffer, 0, (int)sampleCount * _blockAlign);
 			_sampleLen += sampleCount;
 		}
 

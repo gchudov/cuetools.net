@@ -13,10 +13,10 @@ namespace CUEToolsLib {
 		public static IAudioSource GetAudioSource(string path) {
 			switch (Path.GetExtension(path).ToLower()) {
 				case ".wav":
-					return new WAVReader(path);
+					return new WAVReader(path, null);
 #if !MONO
 				case ".flac":
-					return new FLACReader(path);
+					return new FLACReader(path, null);
 				case ".wv":
 					return new WavPackReader(path);
 				case ".ape":
@@ -32,6 +32,8 @@ namespace CUEToolsLib {
 		{
 			switch (Path.GetExtension(path).ToLower())
 			{
+				case ".wav":
+					return new WAVReader(path, IO);
 #if !MONO
 				case ".flac":
 					return new FLACReader(path, IO);
@@ -69,12 +71,6 @@ namespace CUEToolsLib {
 		FLACDotNet.FLACReader _flacReader;
 		int[,] _sampleBuffer;
 		uint _bufferOffset, _bufferLength;
-
-		public FLACReader(string path) {
-			_flacReader = new FLACDotNet.FLACReader(path, null);
-			_bufferOffset = 0;
-			_bufferLength = 0;
-		}
 
 		public FLACReader(string path, Stream IO)
 		{

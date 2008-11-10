@@ -20,6 +20,7 @@ namespace UnRarDotNet
 			_buffer = null;
 			_offset = 0;
 			_length = 0;
+			_pos = 0;
 			_unrar.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
 			_unrar.DataAvailable += new DataAvailableHandler(unrar_DataAvailable);
 			_unrar.Open(archive, Unrar.OpenMode.Extract);
@@ -35,7 +36,7 @@ namespace UnRarDotNet
 		}
 		public override bool CanSeek
 		{
-			get { return false; }
+			get { return true; }
 		}
 		public override bool CanWrite
 		{
@@ -43,11 +44,21 @@ namespace UnRarDotNet
 		}
 		public override long Length
 		{
-			get { throw new NotSupportedException(); }
+			get
+			{
+				lock (this)
+				{
+					while (_size == null && !_stop)
+						Monitor.Wait(this);
+				}
+				if (_size == null)
+					throw new NotSupportedException();
+				return _size.Value;
+			}
 		}
 		public override long Position
 		{
-			get { throw new NotSupportedException(); }
+			get { return _pos; }
 			set { Seek(value, SeekOrigin.Begin); }
 		}
 		public override void Close()
@@ -57,9 +68,16 @@ namespace UnRarDotNet
 				_stop = true;
 				Monitor.Pulse(this);
 			}
-			_workThread.Join();
-			_workThread = null;
-			_unrar.Close();
+			if (_workThread != null)
+			{
+				_workThread.Join();
+				_workThread = null;
+			}
+			if (_unrar != null)
+			{
+				_unrar.Close();
+				_unrar = null;
+			}
 			base.Close();
 		}
 		public override void Flush()
@@ -81,16 +99,34 @@ namespace UnRarDotNet
 						Monitor.Wait(this);
 					if (_buffer == null)
 						return total;
+					if (_seek_to != null)
+					{
+						if (_seek_to.Value < _pos)
+							throw new NotSupportedException();
+						if (_length <= _seek_to.Value - _pos)
+						{
+							_pos += _length;
+							_buffer = null;
+							Monitor.Pulse(this);
+							continue;
+						}
+						_offset += (int)(_seek_to.Value - _pos);
+						_length -= (int)(_seek_to.Value - _pos);
+						_pos = _seek_to.Value;
+						_seek_to = null;
+					}
 					if (_length > count)
 					{
 						Array.Copy(_buffer, _offset, array, offset, count);
 						total += count;
+						_pos += count;
 						_offset += count;
 						_length -= count;
 						return total;
 					}
 					Array.Copy(_buffer, _offset, array, offset, _length);
 					total += _length;
+					_pos += _length;
 					offset += _length;
 					count -= _length;
 					_buffer = null;
@@ -101,7 +137,31 @@ namespace UnRarDotNet
 		}
 		public override long Seek(long offset, SeekOrigin origin)
 		{
-			throw new NotSupportedException();
+			lock (this)
+			{
+				while (_size == null && !_stop)
+					Monitor.Wait(this);
+				if (_size == null)
+					throw new NotSupportedException();
+				switch (origin)
+				{
+					case SeekOrigin.Begin:
+						_seek_to = offset;
+						break;
+					case SeekOrigin.Current:
+						_seek_to = _pos + offset;
+						break;
+					case SeekOrigin.End:
+						_seek_to = _size.Value + offset;
+						break;
+				}
+				if (_seek_to.Value == _pos)
+				{
+					_seek_to = null;
+					return _pos;
+				}
+				return _seek_to.Value;
+			}
 		}
 		public override void Write(byte[] array, int offset, int count)
 		{
@@ -114,6 +174,9 @@ namespace UnRarDotNet
 		private bool _stop;
 		private byte[] _buffer;
 		int _offset, _length;
+		long? _size;
+		long? _seek_to;
+		long _pos;
 
 		private void unrar_PasswordRequired(object sender, PasswordRequiredEventArgs e)
 		{
@@ -149,13 +212,12 @@ namespace UnRarDotNet
 				{
 					if (_unrar.CurrentFile.FileName == _fileName)
 					{
-						// unrar.CurrentFile.UnpackedSize;
-						_unrar.Test();
 						lock (this)
 						{
-							_stop = true;
+							_size = _unrar.CurrentFile.UnpackedSize;
 							Monitor.Pulse(this);
 						}
+						_unrar.Test();
 						break;
 					}
 					else
@@ -165,6 +227,11 @@ namespace UnRarDotNet
 			//catch (StopExtractionException)
 			//{
 			//}
+			lock (this)
+			{
+				_stop = true;
+				Monitor.Pulse(this);
+			}
 		}
 	}
 }
