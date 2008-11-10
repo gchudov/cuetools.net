@@ -1,6 +1,8 @@
 #include "All.h"
 #include "ID3Genres.h"
+#ifndef NO_TAG
 #include "APETag.h"
+#endif
 #include "CharacterHelper.h"
 #include "IO.h"
 #include IO_HEADER_FILE

@@ -10,40 +10,24 @@ using System.Collections.Specialized;
 
 namespace CUEToolsLib {
 	public static class AudioReadWrite {
-		public static IAudioSource GetAudioSource(string path) {
-			switch (Path.GetExtension(path).ToLower()) {
-				case ".wav":
-					return new WAVReader(path, null);
-#if !MONO
-				case ".flac":
-					return new FLACReader(path, null);
-				case ".wv":
-					return new WavPackReader(path, null, null);
-				case ".ape":
-					return new APEReader(path);
-				case ".m4a":
-					return new ALACReader(path, null);
-#endif
-				default:
-					throw new Exception("Unsupported audio type.");
-			}
-		}
 		public static IAudioSource GetAudioSource(string path, Stream IO)
 		{
 			switch (Path.GetExtension(path).ToLower())
 			{
 				case ".wav":
 					return new WAVReader(path, IO);
+				case ".m4a":
+					return new ALACReader(path, IO);
 #if !MONO
 				case ".flac":
 					return new FLACReader(path, IO);
 				case ".wv":
 					return new WavPackReader(path, IO, null);
-				case ".m4a":
-					return new ALACReader(path, IO);
+				case ".ape":
+					return new APEReader(path, IO);
 #endif
 				default:
-					throw new Exception("Unsupported audio type in archive.");
+					throw new Exception("Unsupported audio type.");
 			}
 		}
 
@@ -242,8 +226,8 @@ namespace CUEToolsLib {
 		int[,] _sampleBuffer;
 		uint _bufferOffset, _bufferLength;
 
-		public APEReader(string path) {
-			_apeReader = new APEDotNet.APEReader(path);
+		public APEReader(string path, Stream IO) {
+			_apeReader = new APEDotNet.APEReader(path, IO);
 			_bufferOffset = 0;
 			_bufferLength = 0;
 		}

@@ -51,7 +51,7 @@ Global compiler settings (useful for porting)
 #endif
 #endif
 
-#define BACKWARDS_COMPATIBILITY
+#define NO_BACKWARDS_COMPATIBILITY
 
 #define ENABLE_COMPRESSION_MODE_FAST
 #define ENABLE_COMPRESSION_MODE_NORMAL
@@ -71,7 +71,7 @@ Global compiler settings (useful for porting)
 
     #define IO_USE_WIN_FILE_IO
     #define IO_HEADER_FILE                              "WinFileIO.h"
-    #define IO_CLASS_NAME                               CWinFileIO
+    #define NO_IO_CLASS_NAME                               CWinFileIO
     #define DLLEXPORT                                   __declspec(dllexport)
     #define SLEEP(MILLISECONDS)                         ::Sleep(MILLISECONDS)
     #define MESSAGEBOX(PARENT, TEXT, CAPTION, TYPE)     ::MessageBox(PARENT, TEXT, CAPTION, TYPE)

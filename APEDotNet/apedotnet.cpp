@@ -5,6 +5,7 @@ using namespace System::Text;
 using namespace System::Collections::Generic;
 using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
+using namespace System::IO;
 using namespace APETagsDotNet;
 
 #ifndef _WAVEFORMATEX_
@@ -35,13 +36,75 @@ typedef struct tWAVEFORMATEX
 
 #include "All.h"
 #include "MACLib.h"
+#include "IO.h"
 
 namespace APEDotNet {
 
+	class CWinFileIO : public CIO
+	{
+	public:
+
+		// construction / destruction
+		CWinFileIO(GCHandle gchIO, GCHandle gchBuffer)
+		{
+			_gchIO = gchIO;
+			_gchBuffer = gchBuffer;
+		}
+		~CWinFileIO()
+		{
+		}
+
+		// open / close
+		int Open(const wchar_t * pName)
+		{
+			throw gcnew Exception("CIO::Open Unsupported.");
+		}
+		int Close()
+		{
+			throw gcnew Exception("CIO::Close Unsupported.");
+		}
+	    
+		// read / write
+		int Read(void * pBuffer, unsigned int nBytesToRead, unsigned int * pBytesRead);
+		int Write(const void * pBuffer, unsigned int nBytesToWrite, unsigned int * pBytesWritten);
+	    
+		// seek
+		int Seek(int nDistance, unsigned int nMoveMode);
+	    
+		// other functions
+		int SetEOF()
+		{
+			throw gcnew Exception("CIO::SetEOF unsupported.");
+		}
+
+		// creation / destruction
+		int Create(const wchar_t * pName)
+		{
+			throw gcnew Exception("CIO::Create unsupported.");
+		}
+
+		int Delete()
+		{
+			throw gcnew Exception("CIO::Delete unsupported.");
+		}
+
+		// attributes
+		int GetPosition();
+		int GetSize();
+
+		int GetName(wchar_t * pBuffer)
+		{
+			throw gcnew Exception("CIO::GetName unsupported.");
+		}
+
+	private:
+		GCHandle _gchIO;
+		GCHandle _gchBuffer;
+	};
+
 	public ref class APEReader {
 	public:
-		APEReader(String^ path) {
-			IntPtr pathChars;
+		APEReader(String^ path, Stream^ IO) {
 
 			pAPEDecompress = NULL;
 			_sampleOffset = 0;
@@ -49,14 +112,13 @@ namespace APEDotNet {
 			pBuffer = NULL;
 
 			int nRetVal = 0;
-
-			pathChars = Marshal::StringToHGlobalUni(path);
-			size_t pathLen = wcslen ((const wchar_t*)pathChars.ToPointer())+1;
-			wchar_t * pPath = new wchar_t[pathLen];
-			memcpy ((void*) pPath, (const wchar_t*)pathChars.ToPointer(), pathLen*sizeof(wchar_t));
-			Marshal::FreeHGlobal(pathChars);
-
-			pAPEDecompress = CreateIAPEDecompress (pPath, &nRetVal);
+	
+			_IO = (IO != nullptr) ? IO : gcnew FileStream (path, FileMode::Open, FileAccess::Read, FileShare::Read);
+			_readBuffer = gcnew array<unsigned char>(0x4000);
+			_gchIO = GCHandle::Alloc(_IO);
+			_gchReadBuffer = GCHandle::Alloc(_readBuffer);
+			_winFileIO = new CWinFileIO(_gchIO, _gchReadBuffer);
+			pAPEDecompress = CreateIAPEDecompressEx (_winFileIO, &nRetVal);
 			if (!pAPEDecompress) {
 				throw gcnew Exception("Unable to open file.");
 			}
@@ -76,6 +138,12 @@ namespace APEDotNet {
 		~APEReader ()
 		{
 			if (pBuffer) delete [] pBuffer;
+			if (_winFileIO)
+				delete _winFileIO;
+			if (_gchIO.IsAllocated) 
+				_gchIO.Free();		
+			if (_gchReadBuffer.IsAllocated)
+				_gchReadBuffer.Free();
 		}
 
 		property Int32 BitsPerSample {
@@ -122,6 +190,11 @@ namespace APEDotNet {
 		void Close() {
 			if (pAPEDecompress) delete pAPEDecompress;
 			pAPEDecompress = NULL;
+			if (_IO != nullptr) 
+			{
+				_IO->Close ();
+				_IO = nullptr;
+			}
 		}
 
 		property String^ Path { 
@@ -134,7 +207,7 @@ namespace APEDotNet {
 			NameValueCollection^ get () {
 				if (!_tags) 
 				{
-					APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, true);
+					APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
 					_tags = apeTag->GetStringTags (true);
 					apeTag->Close ();
 				}
@@ -179,28 +252,10 @@ namespace APEDotNet {
 		int nBlockAlign;
 		unsigned char * pBuffer;
 		String^ _path;
-
-#if 0
-		APE__StreamDecoderWriteStatus WriteCallback(const APE__StreamDecoder *decoder,
-			const APE__Frame *frame, const APE__int32 * const buffer[], void *client_data)
-		{
-			if ((_sampleBuffer == nullptr) || (_sampleBuffer->GetLength(0) != sampleCount)) {
-				_sampleBuffer = gcnew array<Int32, 2>(sampleCount, _channelCount);
-			}
-
-			for (Int32 iChan = 0; iChan < _channelCount; iChan++) {
-				interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, iChan];
-				const APE__int32 *pAPEBuffer = buffer[iChan];
-				const APE__int32 *pAPEBufferEnd = pAPEBuffer + sampleCount;
-
-				while (pAPEBuffer < pAPEBufferEnd) {
-					*pMyBuffer = *pAPEBuffer;
-					pMyBuffer += _channelCount;
-					pAPEBuffer++;
-				}
-			}
-		}
-#endif
+		Stream^ _IO;
+		array<unsigned char>^ _readBuffer;
+		CWinFileIO* _winFileIO;
+		GCHandle _gchIO, _gchReadBuffer;
 	};
 
 	public ref class APEWriter {
@@ -213,6 +268,7 @@ namespace APEDotNet {
 
 			_path = path;
 			_tags = gcnew NameValueCollection();
+			_winFileIO = NULL;
 
 			_compressionLevel = COMPRESSION_LEVEL_NORMAL;
 
@@ -226,6 +282,16 @@ namespace APEDotNet {
 			if (!pAPECompress) {
 				throw gcnew Exception("Unable to open file.");
 			}
+		}
+
+		~APEWriter()
+		{
+			if (_winFileIO)
+				delete _winFileIO;
+			if (_gchIO.IsAllocated) 
+				_gchIO.Free();		
+			if (_gchBuffer.IsAllocated)
+				_gchBuffer.Free();
 		}
 
 		void Close() {
@@ -242,11 +308,17 @@ namespace APEDotNet {
 
 			if (_tags->Count > 0)
 			{
-				APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
+				APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
 				apeTag->SetStringTags (_tags, true);
 				apeTag->Save();
 				apeTag->Close();
 				_tags->Clear ();
+			}
+
+			if (_IO != nullptr) 
+			{
+				_IO->Close ();
+				_IO = nullptr;
 			}
 		}
 
@@ -303,30 +375,85 @@ namespace APEDotNet {
 		Int32 _compressionLevel;
 		NameValueCollection^ _tags;
 		String^ _path;
+		Stream^ _IO;
+		GCHandle _gchIO, _gchBuffer;
+		CWinFileIO* _winFileIO;
+		array<unsigned char>^ _writeBuffer;
 
 		void Initialize() {
-			IntPtr pathChars;
-			int res;
-			WAVEFORMATEX waveFormat;
+			_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::ReadWrite, FileShare::Read);
+			_writeBuffer = gcnew array<unsigned char>(0x4000);
 
-			pathChars = Marshal::StringToHGlobalUni(_path);
-			
+			_gchIO = GCHandle::Alloc(_IO);
+			_gchBuffer = GCHandle::Alloc(_writeBuffer);
+			_winFileIO = new CWinFileIO(_gchIO, _gchBuffer);
+
+			WAVEFORMATEX waveFormat;
 			FillWaveFormatEx (&waveFormat, _sampleRate, _bitsPerSample, _channelCount);
-			res = pAPECompress->Start ((const wchar_t*)pathChars.ToPointer(), 
+
+			int res = pAPECompress->StartEx (_winFileIO,
 				&waveFormat, 
 				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * _blockAlign,
 				_compressionLevel, 
 				NULL, 
 				CREATE_WAV_HEADER_ON_DECOMPRESSION);
-			Marshal::FreeHGlobal(pathChars);
 			if (res)
-			{
 				throw gcnew Exception("Unable to create the encoder.");
-			}
 
 			_initialized = true;
 		}
 	};
+
+	int CWinFileIO::Read(void * pBuffer, unsigned int nBytesToRead, unsigned int * pBytesRead)
+	{
+		array<unsigned char>^ buff = (array<unsigned char>^) _gchBuffer.Target;
+		if (buff->Length < nBytesToRead)
+			Array::Resize (buff, nBytesToRead);
+		int len = ((Stream^)_gchIO.Target)->Read (buff, 0, nBytesToRead);
+		if (len) Marshal::Copy (buff, 0, (IntPtr)pBuffer, len);
+		*pBytesRead = len;
+		return 0;
+	}
+
+	int CWinFileIO::Write(const void * pBuffer, unsigned int nBytesToWrite, unsigned int * pBytesWritten)
+	{
+		array<unsigned char>^ buff = (array<unsigned char>^) _gchBuffer.Target;
+		if (buff->Length < nBytesToWrite)
+			Array::Resize (buff, nBytesToWrite);
+		Marshal::Copy ((IntPtr)(void*)pBuffer, buff, 0, nBytesToWrite);
+		((Stream^)_gchIO.Target)->Write (buff, 0, nBytesToWrite);
+		*pBytesWritten = nBytesToWrite;
+		return 0;
+	}
+
+	int CWinFileIO::GetPosition()
+	{
+		return ((Stream^)_gchIO.Target)->Position;
+	}
+
+	int CWinFileIO::GetSize()
+	{
+		return ((Stream^)_gchIO.Target)->Length;
+	}
+
+	int CWinFileIO::Seek(int delta, unsigned int mode)
+	{
+		switch (mode)
+		{
+		case FILE_BEGIN:
+			((Stream^)_gchIO.Target)->Seek (delta, System::IO::SeekOrigin::Begin);
+			break;
+		case FILE_END:
+			((Stream^)_gchIO.Target)->Seek (delta, System::IO::SeekOrigin::End);
+			break;
+		case FILE_CURRENT:
+			((Stream^)_gchIO.Target)->Seek (delta, System::IO::SeekOrigin::Current);
+			break;
+		default:
+			return -1;
+		}			
+		return 0;
+	}
 
 #if 0
 extern "C" 

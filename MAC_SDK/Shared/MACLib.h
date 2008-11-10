@@ -306,9 +306,11 @@ public:
     //        on decompression)
     //////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef IO_CLASS_NAME
     virtual int Start(const str_utf16 * pOutputFilename, const WAVEFORMATEX * pwfeInput, 
         int nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, int nCompressionLevel = COMPRESSION_LEVEL_NORMAL, 
         const void * pHeaderData = NULL, int nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION) = 0;
+#endif
 
     virtual int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, 
         int nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, int nCompressionLevel = COMPRESSION_LEVEL_NORMAL, 

@@ -42,6 +42,7 @@ IAPEDecompress * CreateIAPEDecompressCore(CAPEInfo * pAPEInfo, int nStartBlock, 
     return pAPEDecompress;
 }
 
+#ifdef IO_CLASS_NAME
 IAPEDecompress * __stdcall CreateIAPEDecompress(const str_utf16 * pFilename, int * pErrorCode)
 {
     // error check the parameters
@@ -68,7 +69,11 @@ IAPEDecompress * __stdcall CreateIAPEDecompress(const str_utf16 * pFilename, int
         CAPELink APELink(pFilename);
         if (APELink.GetIsLinkFile())
         {
+#ifndef NO_TAG
             pAPEInfo = new CAPEInfo(&nErrorCode, APELink.GetImageFilename(), new CAPETag(pFilename, TRUE));
+#else
+            pAPEInfo = new CAPEInfo(&nErrorCode, APELink.GetImageFilename(), NULL);
+#endif
             nStartBlock = APELink.GetStartBlock(); nFinishBlock = APELink.GetFinishBlock();
         }
     }
@@ -90,6 +95,7 @@ IAPEDecompress * __stdcall CreateIAPEDecompress(const str_utf16 * pFilename, int
     if (pErrorCode) *pErrorCode = nErrorCode;
     return pAPEDecompress;
 }
+#endif
 
 IAPEDecompress * __stdcall CreateIAPEDecompressEx(CIO * pIO, int * pErrorCode)
 {

@@ -11,6 +11,7 @@ CAPEInfo:
 /*****************************************************************************************
 Construction
 *****************************************************************************************/
+#ifdef IO_CLASS_NAME
 CAPEInfo::CAPEInfo(int * pErrorCode, const wchar_t * pFilename, CAPETag * pTag, bool fReadOnly) 
 {
     *pErrorCode = ERROR_SUCCESS;
@@ -34,6 +35,7 @@ CAPEInfo::CAPEInfo(int * pErrorCode, const wchar_t * pFilename, CAPETag * pTag, 
         return;
     }
 
+#ifndef NO_TAG
     // get the tag (do this second so that we don't do it on failure)
     if (pTag == NULL)
     {
@@ -49,8 +51,9 @@ CAPEInfo::CAPEInfo(int * pErrorCode, const wchar_t * pFilename, CAPETag * pTag, 
     {
         m_spAPETag.Assign(pTag);
     }
-
+#endif
 }
+#endif
 
 CAPEInfo::CAPEInfo(int * pErrorCode, CIO * pIO, CAPETag * pTag)
 {
@@ -67,11 +70,13 @@ CAPEInfo::CAPEInfo(int * pErrorCode, CIO * pIO, CAPETag * pTag)
         return;
     }
 
+#ifndef NO_TAG
     // get the tag (do this second so that we don't do it on failure)
     if (pTag == NULL)
-        m_spAPETag.Assign(new CAPETag(m_spIO, TRUE));
+        m_spAPETag.Assign(new CAPETag(m_spIO, FALSE));
     else
         m_spAPETag.Assign(pTag);
+#endif
 }
 
 
@@ -94,7 +99,9 @@ int CAPEInfo::CloseFile()
     m_APEFileInfo.spSeekByteTable.Delete();
     m_APEFileInfo.spAPEDescriptor.Delete();
     
+#ifndef NO_TAG
     m_spAPETag.Delete();
+#endif
     
     // re-initialize variables
     m_APEFileInfo.nSeekTableElements = 0;
@@ -275,6 +282,7 @@ int CAPEInfo::GetInfo(APE_DECOMPRESS_FIELDS Field, int nParam1, int nParam2)
         }
         break;
     }
+#ifndef NO_TAG
     case APE_INFO_WAV_TERMINATING_DATA:
     {
         char * pBuffer = (char *) nParam1;
@@ -303,6 +311,7 @@ int CAPEInfo::GetInfo(APE_DECOMPRESS_FIELDS Field, int nParam1, int nParam2)
         }
         break;
     }
+#endif
     case APE_INFO_WAVEFORMATEX:
     {
         WAVEFORMATEX * pWaveFormatEx = (WAVEFORMATEX *) nParam1;
@@ -313,6 +322,7 @@ int CAPEInfo::GetInfo(APE_DECOMPRESS_FIELDS Field, int nParam1, int nParam2)
     case APE_INFO_IO_SOURCE:
         nRetVal = (int) m_spIO.GetPtr();
         break;
+#ifndef NO_TAG
     case APE_INFO_FRAME_BYTES:
     {
         int nFrame = nParam1;
@@ -331,6 +341,7 @@ int CAPEInfo::GetInfo(APE_DECOMPRESS_FIELDS Field, int nParam1, int nParam2)
         }
         break;
     }
+#endif
     case APE_INFO_FRAME_BLOCKS:
     {
         int nFrame = nParam1;
@@ -349,9 +360,11 @@ int CAPEInfo::GetInfo(APE_DECOMPRESS_FIELDS Field, int nParam1, int nParam2)
         }
         break;
     }
+#ifndef NO_TAG
     case APE_INFO_TAG:
         nRetVal = (int) m_spAPETag.GetPtr();
         break;
+#endif
     case APE_INTERNAL_INFO:
         nRetVal = (int) &m_APEFileInfo;
         break;

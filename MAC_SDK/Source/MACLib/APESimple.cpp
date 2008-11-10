@@ -382,7 +382,11 @@ int DecompressCore(const str_utf16 * pInputFilename, const str_utf16 * pOutputFi
         else if (nOutputMode == UNMAC_DECODER_OUTPUT_APE)
         {
             // write the WAV data and any tag
+#ifndef NO_TAG
             int nTagBytes = GET_TAG(spAPEDecompress)->GetTagBytes();
+#else
+			int nTagBytes = 0;
+#endif
             BOOL bHasTag = (nTagBytes > 0);
             int nTerminatingBytes = nTagBytes;
             nTerminatingBytes += spAPEDecompress->GetInfo(APE_INFO_WAV_TERMINATING_BYTES);

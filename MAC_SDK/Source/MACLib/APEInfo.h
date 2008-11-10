@@ -22,7 +22,11 @@ WARNING:
 #define APE_APEINFO_H
 
 #include "IO.h"
+#ifndef NO_TAG
 #include "APETag.h"
+#else
+#define CAPETag void
+#endif
 #include "MACLib.h"
 
 /*****************************************************************************************
@@ -93,7 +97,9 @@ private:
     // internal variables
     BOOL m_bHasFileInformationLoaded;
     CSmartPtr<CIO> m_spIO;
+#ifndef NO_TAG
     CSmartPtr<CAPETag> m_spAPETag;
+#endif
     APE_FILE_INFO    m_APEFileInfo;
 };
 

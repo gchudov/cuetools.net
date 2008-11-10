@@ -1,6 +1,8 @@
 #include "All.h"
 #include "APECompress.h"
+#ifdef IO_CLASS_NAME
 #include IO_HEADER_FILE
+#endif
 #include "APECompressCreate.h"
 #include "WAVInputSource.h"
 
@@ -28,6 +30,7 @@ CAPECompress::~CAPECompress()
     }
 }
 
+#ifdef IO_CLASS_NAME
 int CAPECompress::Start(const wchar_t * pOutputFilename, const WAVEFORMATEX * pwfeInput, int nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int nHeaderBytes)
 {
     m_pioOutput = new IO_CLASS_NAME;
@@ -48,6 +51,7 @@ int CAPECompress::Start(const wchar_t * pOutputFilename, const WAVEFORMATEX * pw
 
     return ERROR_SUCCESS;
 }
+#endif
 
 int CAPECompress::StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, int nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int nHeaderBytes)
 {

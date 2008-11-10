@@ -541,7 +541,7 @@ namespace CUEToolsLib
 				NameValueCollection tags;
 				string cuesheetTag = null;
 
-				audioSource = AudioReadWrite.GetAudioSource(pathIn);
+				audioSource = AudioReadWrite.GetAudioSource(pathIn,null);
 				tags = audioSource.Tags;
 				cuesheetTag = tags.Get("CUESHEET");
 				_accurateRipId = tags.Get("ACCURATERIPID");
@@ -1017,7 +1017,7 @@ namespace CUEToolsLib
 				audioSource = AudioReadWrite.GetAudioSource(path, IO);
 			} else
 #endif
-				audioSource = AudioReadWrite.GetAudioSource(path);
+				audioSource = AudioReadWrite.GetAudioSource(path, null);
 
 			if ((audioSource.BitsPerSample != 16) ||
 				(audioSource.ChannelCount != 2) ||
@@ -1760,7 +1760,7 @@ namespace CUEToolsLib
 
 					if (_hasEmbeddedCUESheet)
 					{
-						IAudioSource audioSource = AudioReadWrite.GetAudioSource(_sourcePaths[0]);
+						IAudioSource audioSource = AudioReadWrite.GetAudioSource(_sourcePaths[0], null);
 						NameValueCollection tags = audioSource.Tags;
 						CleanupTags(tags, "ACCURATERIP");
 						GenerateAccurateRipTags (tags, 0, bestOffset, -1);
@@ -1775,7 +1775,7 @@ namespace CUEToolsLib
 						for (int iTrack = 0; iTrack < TrackCount; iTrack++)
 						{
 							string src = _sourcePaths[iTrack + (_hasHTOAFilename ? 1 : 0)];
-							IAudioSource audioSource = AudioReadWrite.GetAudioSource(src);
+							IAudioSource audioSource = AudioReadWrite.GetAudioSource(src, null);
 #if !MONO
 							if (audioSource is FLACReader)
 							{
@@ -2414,7 +2414,7 @@ namespace CUEToolsLib
 				}
 				else
 #endif
-					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path);
+					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path, null);
 			}
 
 			if (sourceInfo.Offset != 0)
