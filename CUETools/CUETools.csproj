@@ -96,6 +96,12 @@
     <Compile Include="frmFilenameCorrector.Designer.cs">
       <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmPassword.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPassword.Designer.cs">
+      <DependentUpon>frmPassword.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmReport.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -139,6 +145,10 @@
     <EmbeddedResource Include="frmFilenameCorrector.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPassword.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmPassword.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmReport.resx">
       <SubType>Designer</SubType>

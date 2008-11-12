@@ -194,8 +194,6 @@ namespace CUEToolsLib
 		}
 	}
 
-	public delegate void SetStatus(string status, uint percentTrack, double percentDisk, string input, string output);
-
 	public enum CUEStyle {
 		SingleFileWithCUE,
 		SingleFile,
@@ -396,6 +394,24 @@ namespace CUEToolsLib
 		}
 	}
 
+	public class CUEToolsProgressEventArgs
+	{
+		public string status = string.Empty;
+		public uint percentTrack = 0;
+		public double percentDisk = 0.0;
+		public string input = string.Empty;
+		public string output = string.Empty;
+	}
+
+	public class ArchivePasswordRequiredEventArgs
+	{
+		public string Password = string.Empty;
+		public bool ContinueOperation = true;
+	}
+
+	public delegate void CUEToolsProgressHandler(object sender, CUEToolsProgressEventArgs e);
+	public delegate void ArchivePasswordRequiredHandler(object sender, ArchivePasswordRequiredEventArgs e);
+
 	public class CUESheet {
 		private bool _stop, _pause;
 		private List<CUELine> _attributes;
@@ -423,35 +439,23 @@ namespace CUEToolsLib
 		string _cddbDiscIdTag;
 		private bool _isArchive;
 		private string _archivePath;
+		private string _archivePassword;
+		private CUEToolsProgressEventArgs _progress;
 
-		public CUESheet(string pathIn, CUEConfig config)
+		public event ArchivePasswordRequiredHandler PasswordRequired;
+		public event CUEToolsProgressHandler CUEToolsProgress;
+
+		public CUESheet(CUEConfig config)
 		{
 			_config = config;
-
-			hdcdDecoder = null;
-			if (_config.detectHDCD)
-			{
-				try { hdcdDecoder = new HDCDDotNet.HDCDDotNet(2, 44100, _config.decodeHDCD); }
-				catch { }
-			}
-
-			string cueDir, lineStr, command, pathAudio, fileType;
-			CUELine line;
-			TrackInfo trackInfo;
-			int tempTimeLength, timeRelativeToFileStart, absoluteFileStartTime;
-			int fileTimeLengthSamples, fileTimeLengthFrames, i, trackNumber;
-			bool seenFirstFileIndex, seenDataTrack;
-			List<IndexInfo> indexes;
-			IndexInfo indexInfo;
-			SourceInfo sourceInfo;
-			NameValueCollection _trackTags = null;
-
-			_stop = false;
-			_pause = false;
+			_progress = new CUEToolsProgressEventArgs();
 			_attributes = new List<CUELine>();
 			_tracks = new List<TrackInfo>();
 			_sources = new List<SourceInfo>();
 			_sourcePaths = new List<string>();
+			_albumTags = new NameValueCollection();
+			_stop = false;
+			_pause = false;
 			_cuePath = null;
 			_paddedToFrame = false;
 			_truncated4608 = false;
@@ -461,20 +465,37 @@ namespace CUEToolsLib
 			_appliedWriteOffset = false;
 			_dataTrackLength = null;
 			_minDataTrackLength = null;
-			_albumTags = new NameValueCollection();
+			hdcdDecoder = null;
+			_hasEmbeddedCUESheet = false;
+			_isArchive = false;
+			accDisks = new List<AccDisk>();
+		}
+
+		public void Open(string pathIn)
+		{
+			if (_config.detectHDCD)
+			{
+				try { hdcdDecoder = new HDCDDotNet.HDCDDotNet(2, 44100, _config.decodeHDCD); }
+				catch { }
+			}
+
+			string cueDir, lineStr, command, pathAudio = null, fileType;
+			CUELine line;
+			TrackInfo trackInfo;
+			int tempTimeLength, timeRelativeToFileStart, absoluteFileStartTime;
+			int fileTimeLengthSamples, fileTimeLengthFrames, i, trackNumber;
+			bool seenFirstFileIndex = false, seenDataTrack = false;
+			List<IndexInfo> indexes = new List<IndexInfo>();
+			IndexInfo indexInfo;
+			SourceInfo sourceInfo;
+			NameValueCollection _trackTags = null;
+
 			cueDir = Path.GetDirectoryName(pathIn);
-			pathAudio = null;
-			indexes = new List<IndexInfo>();
 			trackInfo = null;
 			absoluteFileStartTime = 0;
 			fileTimeLengthSamples = 0;
 			fileTimeLengthFrames = 0;
 			trackNumber = 0;
-			seenFirstFileIndex = false;
-			seenDataTrack = false;
-			accDisks = new List<AccDisk>();
-			_hasEmbeddedCUESheet = false;
-			_isArchive = false;
 
 			TextReader sr;
 
@@ -494,6 +515,7 @@ namespace CUEToolsLib
 			else if (Path.GetExtension(pathIn).ToLower() == ".rar")
 			{
 				Unrar _unrar = new Unrar();
+				_unrar.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
 				string cueName = null, cueText = null;
 				_unrar.Open(pathIn, Unrar.OpenMode.List);
 				while (_unrar.ReadHeader())
@@ -508,15 +530,16 @@ namespace CUEToolsLib
 				}
 				_unrar.Close();
 				if (cueName != null)
-				try
 				{
 					RarStream rarStream = new RarStream(pathIn, cueName);
+					rarStream.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
 					StreamReader cueReader = new StreamReader(rarStream, CUESheet.Encoding);
 					cueText = cueReader.ReadToEnd();
 					cueReader.Close();
 					rarStream.Close();
+					if (cueText == "")
+						throw new Exception("Empty cue sheet.");
 				}
-				catch { }	
 				if (cueText == null)
 					throw new Exception("Input archive doesn't contain a cue sheet.");
 				sr = new StringReader(cueText);
@@ -864,6 +887,49 @@ namespace CUEToolsLib
 			}
 		}
 
+		private void ShowProgress(string status, uint percentTrack, double percentDisk, string input, string output)
+		{
+			if (this.CUEToolsProgress == null)
+				return;
+			_progress.status = status;
+			_progress.percentTrack = percentTrack;
+			_progress.percentDisk = percentDisk;
+			_progress.input = input;
+			_progress.output = output;
+			this.CUEToolsProgress(this, _progress);
+		}
+
+#if !MONO
+		private void unrar_ExtractionProgress(object sender, ExtractionProgressEventArgs e)
+		{
+			_progress.percentTrack = (uint) Math.Round(e.PercentComplete);
+			this.CUEToolsProgress(this, _progress);
+		}
+
+		private void unrar_PasswordRequired(object sender, PasswordRequiredEventArgs e)
+		{
+			if (_archivePassword != null)
+			{
+				e.ContinueOperation = true;
+				e.Password = _archivePassword;
+				return;
+			}
+			if (this.PasswordRequired != null)
+			{
+				ArchivePasswordRequiredEventArgs e1 = new ArchivePasswordRequiredEventArgs();
+				this.PasswordRequired(this, e1);
+				if (e1.ContinueOperation && e1.Password != "")
+				{
+					_archivePassword = e1.Password;
+					e.ContinueOperation = true;
+					e.Password = e1.Password;
+					return;
+				} 
+			}
+			throw new IOException("Password is required for extraction.");
+		}
+#endif
+
 		public string GetCommonTag(string tagName)
 		{
 			if (_hasEmbeddedCUESheet || _hasSingleFilename)
@@ -1013,10 +1079,13 @@ namespace CUEToolsLib
 		{
 			IAudioSource audioSource;
 
+			ShowProgress("Opening source file...", 0, 0.0, path, null);
 #if !MONO
 			if (_isArchive)
 			{
 				RarStream IO = new RarStream(_archivePath, path);
+				IO.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
+				IO.ExtractionProgress += new ExtractionProgressHandler(unrar_ExtractionProgress);
 				audioSource = AudioReadWrite.GetAudioSource(path, IO);
 			} else
 #endif
@@ -1618,7 +1687,7 @@ namespace CUEToolsLib
 			outTracksMatch = bestTracksMatch;
 		}
 
-		public void WriteAudioFiles(string dir, CUEStyle style, SetStatus statusDel) {
+		public void WriteAudioFiles(string dir, CUEStyle style) {
 			string[] destPaths;
 			int[] destLengths;
 			bool htoaToFile = ((style == CUEStyle.GapsAppended) && _config.preserveHTOA &&
@@ -1656,7 +1725,7 @@ namespace CUEToolsLib
 			bool SkipOutput = false;
 
 			if (_accurateRip) {
-				statusDel((string)"Contacting AccurateRip database...", 0, 0, null, null);
+				ShowProgress((string)"Contacting AccurateRip database...", 0, 0, null, null);
 				if (!_dataTrackLength.HasValue && _minDataTrackLength.HasValue && _accurateRipId == _accurateRipIdActual && _config.bruteForceDTL)
 				{
 					uint minDTL = _minDataTrackLength.Value;
@@ -1667,13 +1736,13 @@ namespace CUEToolsLib
 						ContactAccurateRip();
 						if (accResult != HttpStatusCode.NotFound)
 							break;
-						statusDel((string)"Contacting AccurateRip database...", 0, (dtl-minDTL)/75.0, null, null);
+						ShowProgress((string)"Contacting AccurateRip database...", 0, (dtl - minDTL) / 75.0, null, null);
 						lock (this) {
 							if (_stop)
 								throw new StopException();
 							if (_pause)
 							{
-								statusDel("Paused...", 0, 0, null, null);
+								ShowProgress("Paused...", 0, 0, null, null);
 								Monitor.Wait(this);
 							}
 							else
@@ -1714,7 +1783,7 @@ namespace CUEToolsLib
 				else if (_accurateOffset)
 				{
 					_writeOffset = 0;
-					WriteAudioFilesPass(dir, style, statusDel, destPaths, destLengths, htoaToFile, true);
+					WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, true);
 
 					uint tracksMatch;
 					int bestOffset;
@@ -1749,12 +1818,12 @@ namespace CUEToolsLib
 					if (style != CUEStyle.SingleFileWithCUE && style != CUEStyle.SingleFile && _config.createM3U)
 						WriteM3U(Path.ChangeExtension(_cuePath, ".m3u"), style);
 				}
-				WriteAudioFilesPass(dir, style, statusDel, destPaths, destLengths, htoaToFile, verifyOnly);
+				WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, verifyOnly);
 			}
 
 			if (_accurateRip)
 			{
-				statusDel((string)"Generating AccurateRip report...", 0, 0, null, null);
+				ShowProgress((string)"Generating AccurateRip report...", 0, 0, null, null);
 				if (!_accurateOffset && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive)
 				{
 					uint tracksMatch;
@@ -1930,7 +1999,7 @@ namespace CUEToolsLib
 			audioDest.SetTags(destTags);
 		}
 
-		public void WriteAudioFilesPass(string dir, CUEStyle style, SetStatus statusDel, string[] destPaths, int[] destLengths, bool htoaToFile, bool noOutput)
+		public void WriteAudioFilesPass(string dir, CUEStyle style, string[] destPaths, int[] destLengths, bool htoaToFile, bool noOutput)
 		{
 			const int buffLen = 16384;
 			int iTrack, iIndex;
@@ -2024,7 +2093,7 @@ namespace CUEToolsLib
 					diskLength += _tracks[iTrack].IndexLengths[iIndex] * 588;
 
 
-			statusDel(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0, null, null);
+			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0, null, null);
 
 			for (iTrack = 0; iTrack < TrackCount; iTrack++) {
 				track = _tracks[iTrack];
@@ -2111,7 +2180,7 @@ namespace CUEToolsLib
 							trackPercent = (uint)(currentOffset / 0.01 / trackLength);
 							double diskPercent = ((float)diskOffset) / diskLength;
 							if (trackPercent != lastTrackPercent)
-								statusDel(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
+								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
 									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent, 
 									audioSource.Path, discardOutput ? null : audioDest.Path);
 							lastTrackPercent = trackPercent;
@@ -2176,7 +2245,7 @@ namespace CUEToolsLib
 							}
 							if (_pause)
 							{
-								statusDel ("Paused...", 0, 0, null, null);
+								ShowProgress("Paused...", 0, 0, null, null);
 								Monitor.Wait(this);
 							}
 						}
@@ -2413,6 +2482,7 @@ namespace CUEToolsLib
 				if (_isArchive)
 				{
 					RarStream IO = new RarStream(_archivePath, sourceInfo.Path);
+					IO.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
 					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path, IO);
 				}
 				else

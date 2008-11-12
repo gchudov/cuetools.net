@@ -28,10 +28,11 @@ namespace ArCueDotNet
 			StringWriter sw = new StringWriter();
 			try
 			{
-				CUESheet cueSheet = new CUESheet(pathIn, config);
+				CUESheet cueSheet = new CUESheet(config);
+				cueSheet.Open(pathIn);
 				cueSheet.GenerateFilenames(OutputAudioFormat.NoAudio, pathIn);
 				cueSheet.AccurateRip = true;
-				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathIn), CUEStyle.SingleFile, new SetStatus(ArCueSetStatus));
+				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathIn), CUEStyle.SingleFile);
 				cueSheet.GenerateAccurateRipLog(sw);
 			}
 			catch (Exception ex)
@@ -40,9 +41,6 @@ namespace ArCueDotNet
 			}
 			sw.Close();
 			Console.Write(sw.ToString());
-		}
-		public static void ArCueSetStatus(string status, uint percentTrack, double percentDisk, string input, string output)
-		{
 		}
 	}
 }

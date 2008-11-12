@@ -57,39 +57,55 @@ namespace JDP
 		DateTime _startedAt;
 		List<string> _batchPaths;
 
-		public string ShortenString(string input, int max)
+		public static string ShortenString(string input, int max)
 		{
 			if (input.Length < max) 
 				return input;
 			return "..." + input.Substring(input.Length - max);
 		}
 
-		public void SetStatus(string status, uint percentTrack, double percentDisk, string input, string output)
+		public void SetStatus(object sender, CUEToolsProgressEventArgs e)
 		{
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
-				if (percentDisk == 0)
+				if (e.percentDisk == 0)
 				{
 					_startedAt = DateTime.Now;
+					Text = e.status;
 				}
-				else if (percentDisk > 0.02)
+				else if (e.percentDisk > 0.02)
 				{
 					TimeSpan span = DateTime.Now - _startedAt;
-					TimeSpan eta = new TimeSpan ((long) (span.Ticks/percentDisk));
-					Text = String.Format("{0}, ETA {1}:{2:00}.", status, (int)eta.TotalMinutes, eta.Seconds);
+					TimeSpan eta = new TimeSpan ((long) (span.Ticks/e.percentDisk));
+					Text = String.Format("{0}, ETA {1}:{2:00}.", e.status, (int)eta.TotalMinutes, eta.Seconds);
 				} else
-					Text = status;
-				progressBar1.Value = (int)percentTrack;
-				progressBar2.Value = (int)(percentDisk*100);
-				string inputSuffix = output != null ? "=>" : "";
-				if (input == null)
+					Text = e.status;
+				progressBar1.Value = (int)e.percentTrack;
+				progressBar2.Value = (int)(e.percentDisk*100);
+				string inputSuffix = e.output != null ? "=>" : "";
+				if (e.input == null)
 					txtInputFile.Text = inputSuffix;
 				else 
-					txtInputFile.Text = ShortenString(input, 120) + " " + inputSuffix;
-				if (output == null)
+					txtInputFile.Text = ShortenString(e.input, 120) + " " + inputSuffix;
+				if (e.output == null)
 					txtOutputFile.Text = "";
 				else
-					txtOutputFile.Text = ShortenString(output, 120);
+					txtOutputFile.Text = ShortenString(e.output, 120);
+			});
+		}
+
+		private void PasswordRequired(object sender, ArchivePasswordRequiredEventArgs e)
+		{
+			this.Invoke((MethodInvoker)delegate()
+			{
+				frmPassword dlg = new frmPassword();
+				if (dlg.ShowDialog(this) == DialogResult.OK)
+				{
+					e.Password = dlg.txtPassword.Text;
+					e.ContinueOperation = true;
+				}
+				else
+					e.ContinueOperation = false;
 			});
 		}
 
@@ -99,7 +115,59 @@ namespace JDP
 
 			try
 			{
-				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathOut), _cueStyle, new SetStatus(this.SetStatus));
+				_startedAt = DateTime.Now;
+				if (_batchPaths.Count != 0)
+					pathIn = _batchPaths[0];
+
+				pathIn = Path.GetFullPath(pathIn);
+
+				textBox1.Text += "Processing " + pathIn + ":\r\n";
+				textBox1.Select(0, 0);
+
+				string cueName;
+				if (!File.Exists(pathIn))
+				{
+					if (!Directory.Exists(pathIn))
+						throw new Exception("Input CUE Sheet not found.");
+					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
+						pathIn = pathIn + Path.DirectorySeparatorChar;
+					cueName = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(pathIn)) + ".cue";
+				}
+				else
+					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
+
+				bool outputAudio = _accurateOffset || !_accurateRip;
+				cueSheet.Open(pathIn);
+				if (outputAudio)
+				{
+					bool pathFound = false;
+					for (int i = 0; i < 20; i++)
+					{
+						string outDir = Path.Combine(Path.GetDirectoryName(pathIn), "CUEToolsOutput" + (i > 0 ? String.Format("({0})", i) : ""));
+						if (!Directory.Exists(outDir))
+						{
+							Directory.CreateDirectory(outDir);
+							pathOut = Path.Combine(outDir, cueName);
+							pathFound = true;
+							break;
+						}
+					}
+					if (!pathFound)
+						throw new Exception("Could not create a folder.");
+				}
+				else
+					pathOut = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
+				cueSheet.GenerateFilenames(_audioFormat, pathOut);
+				if (outputAudio)
+				{
+					if (_cueStyle == CUEStyle.SingleFileWithCUE)
+						cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), General.FormatExtension(_audioFormat));
+				}
+
+				cueSheet.UsePregapForFirstTrackInSingleFile = false;
+				cueSheet.AccurateRip = _accurateRip;
+				cueSheet.AccurateOffset = _accurateOffset;
+				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathOut), _cueStyle);
 				this.Invoke((MethodInvoker)delegate()
 				{
 					if (_batchPaths.Count == 0)
@@ -138,8 +206,10 @@ namespace JDP
 				{
 					Text = "Error: " + ex.Message;
 					textBox1.Show();
-					textBox1.Text += "Error: " + ex.Message + "\r\n";
-					textBox1.Text += "----------------------------------------------------------\r\n";
+					textBox1.Text += "Error";
+					for (Exception e = ex; e != null; e = e.InnerException)
+						textBox1.Text += ": " + e.Message;
+					textBox1.Text += "\r\n----------------------------------------------------------\r\n";
 					textBox1.Select(0, 0);
 				});
 			}
@@ -164,62 +234,11 @@ namespace JDP
 
 		public void StartConvert()
 		{
-			CUESheet cueSheet;
-
 			try
 			{
-				_startedAt = DateTime.Now;
-
-				_workThread = null;
-				if (_batchPaths.Count != 0)
-				    pathIn = _batchPaths[0];
-
-				pathIn = Path.GetFullPath(pathIn);
-
-				textBox1.Text += "Processing " + pathIn + ":\r\n";
-				textBox1.Select (0,0);
-
-				string cueName;
-				if (!File.Exists(pathIn))
-				{
-					if (!Directory.Exists (pathIn))
-						throw new Exception("Input CUE Sheet not found.");
-					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
-						pathIn = pathIn + Path.DirectorySeparatorChar;
-					cueName = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(pathIn)) + ".cue";
-				} else
-					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
-
-				bool outputAudio = _accurateOffset || !_accurateRip;
-				cueSheet = new CUESheet(pathIn, _config);
-				if (outputAudio)
-				{
-					bool pathFound = false;
-					for (int i = 0; i < 20; i++)
-					{
-						string outDir = Path.Combine(Path.GetDirectoryName (pathIn), "CUEToolsOutput" + (i > 0? String.Format("({0})",i) : ""));
-						if (!Directory.Exists(outDir))
-						{
-							Directory.CreateDirectory(outDir);
-							pathOut = Path.Combine(outDir, cueName);
-							pathFound = true;
-							break;
-						}
-					}
-					if (!pathFound)
-						throw new Exception("Could not create a folder.");
-				} else
-					pathOut = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
-				cueSheet.GenerateFilenames(_audioFormat, pathOut);
-				if (outputAudio)
-				{
-					if (_cueStyle == CUEStyle.SingleFileWithCUE)
-						cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName (pathOut), General.FormatExtension (_audioFormat));
-				}
-
-				cueSheet.UsePregapForFirstTrackInSingleFile = false;
-				cueSheet.AccurateRip = _accurateRip;
-				cueSheet.AccurateOffset = _accurateOffset;
+				CUESheet cueSheet = new CUESheet(_config);
+				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
+				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
 
 				_workThread = new Thread(WriteAudioFilesThread);
 				_workClass = cueSheet;
@@ -234,16 +253,6 @@ namespace JDP
 				textBox1.Text += "Error: " + ex.Message + "\r\n";
 				textBox1.Text += "----------------------------------------------------------\r\n";
 				textBox1.Select(0, 0);
-			}
-			if ((_workThread == null) && (_batchPaths.Count != 0))
-			{
-				_batchPaths.RemoveAt(0);
-				if (_batchPaths.Count == 0)
-				{
-					Text = "All done.";
-				}
-				else
-					StartConvert();
 			}
 		}
 

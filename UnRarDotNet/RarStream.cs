@@ -25,12 +25,7 @@ namespace UnRarDotNet
 			_pos = 0;
 			_path = path;
 			_fileName = fileName;
-			_unrar.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
-			_unrar.DataAvailable += new DataAvailableHandler(unrar_DataAvailable);
-			_workThread = new Thread(Decompress);
-			_workThread.Priority = ThreadPriority.BelowNormal;
-			_workThread.IsBackground = true;
-			_workThread.Start(null);
+			_workThread = null;
 		}
 		public override bool CanRead
 		{
@@ -48,11 +43,14 @@ namespace UnRarDotNet
 		{
 			get
 			{
+				Go();
 				lock (this)
 				{
 					while (_size == null && !_close)
 						Monitor.Wait(this);
 				}
+				if (_ex != null)
+					throw _ex;
 				if (_size == null)
 					throw new NotSupportedException();
 				return _size.Value;
@@ -93,12 +91,15 @@ namespace UnRarDotNet
 		public override int Read(byte[] array, int offset, int count)
 		{
 			int total = 0;
+			Go();
 			while (count > 0)
 			{
 				lock (this)
 				{
-					while (_buffer == null && !_eof)
+					while (_buffer == null && !_eof && !_close)
 						Monitor.Wait(this);
+					if (_close)
+						throw new IOException("Decompression failed", _ex);
 					if (_buffer == null)
 						return total;
 					if (_seek_to != null)
@@ -139,6 +140,7 @@ namespace UnRarDotNet
 		}
 		public override long Seek(long offset, SeekOrigin origin)
 		{
+			Go();
 			lock (this)
 			{
 				while (_size == null && !_close)
@@ -181,22 +183,28 @@ namespace UnRarDotNet
 		{
 			throw new NotSupportedException();
 		}
+		public event PasswordRequiredHandler PasswordRequired;
+		public event ExtractionProgressHandler ExtractionProgress;
 
 		private Unrar _unrar;
 		private string _fileName;
 		private Thread _workThread;
 		private bool _close, _rewind, _eof;
 		private byte[] _buffer;
+		private Exception _ex;
 		int _offset, _length;
 		long? _size;
 		long? _seek_to;
 		long _pos;
 		string _path;
 
-		private void unrar_PasswordRequired(object sender, PasswordRequiredEventArgs e)
+		private void Go()
 		{
-			e.Password = "PARS";
-			e.ContinueOperation = true;
+			if (_workThread != null) return;
+			_workThread = new Thread(Decompress);
+			_workThread.Priority = ThreadPriority.BelowNormal;
+			_workThread.IsBackground = true;
+			_workThread.Start(null);
 		}
 
 		private void unrar_DataAvailable(object sender, DataAvailableEventArgs e)
@@ -227,7 +235,10 @@ namespace UnRarDotNet
 
 		private void Decompress(object o)
 		{
-			//try
+			_unrar.DataAvailable += new DataAvailableHandler(unrar_DataAvailable);
+			_unrar.PasswordRequired += PasswordRequired;
+			_unrar.ExtractionProgress += ExtractionProgress;
+			try
 			{
 				do
 				{
@@ -264,9 +275,10 @@ namespace UnRarDotNet
 					}
 				} while (true);
 			}
-			//catch (StopExtractionException)
-			//{
-			//}
+			catch (Exception ex)
+			{
+				_ex = ex;
+			}
 			lock (this)
 			{
 				_close = true;

@@ -240,10 +240,11 @@ namespace JDP {
 					}
 				}
 
-				cueSheet = new CUESheet(pathIn, _config);
-
+				cueSheet = new CUESheet(_config);
+				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
 				cueSheet.WriteOffset = _writeOffset;
-
+				cueSheet.Open(pathIn);
+				
 				UpdateOutputPath(cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
 				pathOut = txtOutputPath.Text;
 				cueSheet.GenerateFilenames(SelectedOutputAudioFormat, pathOut);
@@ -326,6 +327,22 @@ namespace JDP {
 			}
 		}
 
+		private void PasswordRequired(object sender, ArchivePasswordRequiredEventArgs e)
+		{
+			//if (this.InvokeRequired)
+			//    this.Invoke(this.PasswordRequired, sender, e);
+			//this.Invoke((MethodInvoker)delegate()
+			//{
+				frmPassword dlg = new frmPassword();
+				if (dlg.ShowDialog() == DialogResult.OK)
+				{
+					e.Password = dlg.txtPassword.Text;
+					e.ContinueOperation = true;
+				} else
+					e.ContinueOperation = false;
+			//});
+		}
+
 		private void WriteAudioFilesThread(object o) {
 			object[] p = (object[])o;
 
@@ -334,7 +351,8 @@ namespace JDP {
 			CUEStyle cueStyle = (CUEStyle)p[2];
 
 			try {
-				cueSheet.WriteAudioFiles(outDir, cueStyle, new SetStatus(this.SetStatus));
+				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
+				cueSheet.WriteAudioFiles(outDir, cueStyle);
 				this.Invoke((MethodInvoker)delegate() {
 					if (_batchPaths.Count == 0)
 					{
@@ -390,11 +408,12 @@ namespace JDP {
 			}
 		}
 
-		public void SetStatus(string status, uint percentTrack, double percentDisk, string input, string output) {
+		public void SetStatus(object sender, CUEToolsProgressEventArgs e)
+		{
 			this.BeginInvoke((MethodInvoker)delegate() {
-				toolStripStatusLabel1.Text = status;
-				toolStripProgressBar1.Value = (int)percentTrack;
-				toolStripProgressBar2.Value = (int)(percentDisk*100);
+				toolStripStatusLabel1.Text = e.status;
+				toolStripProgressBar1.Value = (int)e.percentTrack;
+				toolStripProgressBar2.Value = (int)(e.percentDisk*100);
 			});
 		}
 
