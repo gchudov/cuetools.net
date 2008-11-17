@@ -26,7 +26,9 @@ using System.Text;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography;
 using System.Threading;
+using System.Xml;
 using AudioCodecsDotNet;
 using HDCDDotNet;
 #if !MONO
@@ -428,6 +430,8 @@ namespace CUEToolsLib
 		private uint? _minDataTrackLength;
 		private string _accurateRipId;
 		private string _accurateRipIdActual;
+		private string _mbDiscId;
+		private string _mbReleaseId;
 		private string _eacLog;
 		private string _cuePath;
 		private NameValueCollection _albumTags;
@@ -1376,6 +1380,123 @@ namespace CUEToolsLib
 				else
 					accResult = HttpStatusCode.BadRequest;
 			}		 
+		}
+
+		private void CalculateMusicBrainzDiscID() {
+			StringBuilder mbSB = new StringBuilder();
+			byte[] hashBytes;
+			uint trackOffset = 150;
+
+			for (int iTrack = 0; iTrack < TrackCount; iTrack++) {
+				TrackInfo track = _tracks[iTrack];
+
+				trackOffset += track.IndexLengths[0];
+				mbSB.AppendFormat("{0:X8}", trackOffset);
+
+				for (int iIndex = 1; iIndex <= track.LastIndex; iIndex++)
+					trackOffset += track.IndexLengths[iIndex];
+			}
+			mbSB.Insert(0, String.Format("{0:X2}{1:X2}{2:X8}", 1, TrackCount, trackOffset));
+			mbSB.Append(new string('0', (99 - TrackCount) * 8));
+
+			hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(mbSB.ToString()));
+			_mbDiscId = Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
+			System.Diagnostics.Debug.WriteLine(_mbDiscId);
+		}
+
+		private void GetMetadataFromMusicBrainz() {
+			if (_mbDiscId == null) return;
+
+			using (Stream respStream = HttpGetToStream(
+				"http://musicbrainz.org/ws/1/release/?type=xml&limit=1&discid=" + _mbDiscId))
+			{
+				XmlDocument xd = GetXmlDocument(respStream);
+				XmlNode xn;
+				
+				xn = xd.SelectSingleNode("/metadata/release-list/release");
+				if (xn != null)
+					_mbReleaseId = xn.Attributes["id"].InnerText;
+			}
+
+			if (_mbReleaseId == null) return;
+
+			using (Stream respStream = HttpGetToStream(String.Format(
+				"http://musicbrainz.org/ws/1/release/{0}?type=xml&inc=artist+tracks", _mbReleaseId)))
+			{
+				string discArtist = null;
+				string discTitle = null;
+				XmlDocument xd = GetXmlDocument(respStream);
+				XmlNode xn;
+
+				XmlNode xnRelease = xd.DocumentElement.SelectSingleNode("/metadata/release");
+				if (xnRelease == null) return;
+
+				XmlNodeList xnlTracks = xnRelease.SelectNodes("track-list/track");
+				if (xnlTracks.Count != TrackCount) return;
+
+				xn = xnRelease.SelectSingleNode("title");
+				if (xn != null)
+					discTitle = xn.InnerText;
+				
+				xn = xnRelease.SelectSingleNode("artist/name");
+				if (xn != null)
+					discArtist = xn.InnerText;
+
+				Artist = discArtist;
+				Title = discTitle;
+
+				for (int iTrack = 0; iTrack < TrackCount; iTrack++) {
+					string trackArtist = null;
+					string trackTitle = null;
+					XmlNode xnTrack = xnlTracks[iTrack];
+					TrackInfo trackInfo = Tracks[iTrack];
+
+					xn = xnTrack.SelectSingleNode("title");
+					if (xn != null)
+						trackTitle = xn.InnerText;
+
+					xn = xnTrack.SelectSingleNode("artist/name");
+					if (xn != null)
+						trackArtist = xn.InnerText;
+
+					trackInfo.Artist = trackArtist ?? discArtist;
+					trackInfo.Title = trackTitle;
+				}
+			}
+		}
+
+		private XmlDocument GetXmlDocument(Stream stream) {
+			XmlDocument xd = new XmlDocument();
+			
+			xd.Load(stream);
+
+			if (xd.DocumentElement.NamespaceURI.Length > 0) {
+				// Strip namespace to simplify xpath expressions
+				XmlDocument xdNew = new XmlDocument();
+				xd.DocumentElement.SetAttribute("xmlns", String.Empty);
+				xdNew.LoadXml(xd.OuterXml);
+				xd = xdNew;
+			}
+
+			return xd;
+		}
+
+		private Stream HttpGetToStream(string url) {
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+			req.UserAgent = "CUE Tools";
+			try {
+				HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+				return resp.GetResponseStream();
+			}
+			catch (WebException ex) {
+				if (ex.Status == WebExceptionStatus.ProtocolError) {
+					HttpStatusCode code = ((HttpWebResponse)ex.Response).StatusCode;
+					if (code == HttpStatusCode.NotFound) {
+						throw new HttpNotFoundException();
+					}
+				}
+				throw;
+			}
 		}
 
 		unsafe private void CalculateAccurateRipCRCsSemifast(int* samples, uint count, int iTrack, uint currentOffset, uint previousOffset, uint trackLength)
@@ -2564,12 +2685,18 @@ namespace CUEToolsLib
 				CUELine line = General.FindCUELine(_attributes, "PERFORMER");
 				return (line == null) ? String.Empty : line.Params[1];
 			}
+			set {
+				General.SetCUELine(_attributes, "PERFORMER", value, true);
+			}
 		}
 
 		public string Title {
 			get {
 				CUELine line = General.FindCUELine(_attributes, "TITLE");
 				return (line == null) ? String.Empty : line.Params[1];
+			}
+			set {
+				General.SetCUELine(_attributes, "TITLE", value, true);
 			}
 		}
 
@@ -2828,5 +2955,8 @@ namespace CUEToolsLib
 	public class StopException : Exception {
 		public StopException() : base() {
 		}
+	}
+
+	class HttpNotFoundException : Exception {
 	}
 }
