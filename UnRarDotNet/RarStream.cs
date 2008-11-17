@@ -49,10 +49,8 @@ namespace UnRarDotNet
 					while (_size == null && !_close)
 						Monitor.Wait(this);
 				}
-				if (_ex != null)
-					throw _ex;
-				if (_size == null)
-					throw new NotSupportedException();
+				if (_close)
+					throw new IOException("Decompression failed", _ex);
 				return _size.Value;
 			}
 		}
@@ -140,14 +138,6 @@ namespace UnRarDotNet
 		}
 		public override long Seek(long offset, SeekOrigin origin)
 		{
-			Go();
-			lock (this)
-			{
-				while (_size == null && !_close)
-					Monitor.Wait(this);
-				if (_size == null)
-					throw new NotSupportedException();
-			}
 			switch (origin)
 			{
 				case SeekOrigin.Begin:
@@ -157,8 +147,13 @@ namespace UnRarDotNet
 					_seek_to = Position + offset;
 					break;
 				case SeekOrigin.End:
-					_seek_to = _size.Value + offset;
+					_seek_to = Length + offset;
 					break;
+			}
+			if (_seek_to.Value > Length)
+			{
+				_seek_to = null;
+				throw new IOException("Invalid seek");
 			}
 			if (_seek_to.Value == _pos)
 			{
@@ -174,8 +169,6 @@ namespace UnRarDotNet
 					_buffer = null;
 					Monitor.Pulse(this);
 				}
-				//_seek_to = null;
-				//throw new NotSupportedException("cannot seek backwards");
 			}
 			return _seek_to.Value;
 		}
@@ -242,6 +235,7 @@ namespace UnRarDotNet
 			{
 				do
 				{
+					bool foundFile = false;
 					_unrar.Open(_path, Unrar.OpenMode.Extract);
 					while (_unrar.ReadHeader())
 					{
@@ -256,6 +250,7 @@ namespace UnRarDotNet
 								}
 							}
 							_unrar.Test();
+							foundFile = true;
 							break;
 						}
 						else
@@ -264,14 +259,22 @@ namespace UnRarDotNet
 					_unrar.Close();
 					lock (this)
 					{
-						_eof = true;
-						Monitor.Pulse(this);
-						while (!_rewind && !_close)
-							Monitor.Wait(this);
-						if (_close)
+						if (!foundFile)
+						{
+							_ex = new FileNotFoundException();
 							break;
-						_rewind = false;
-						_eof = false;
+						}
+						else
+						{
+							_eof = true;
+							Monitor.Pulse(this);
+							while (!_rewind && !_close)
+								Monitor.Wait(this);
+							if (_close)
+								break;
+							_rewind = false;
+							_eof = false;
+						}
 					}
 				} while (true);
 			}
