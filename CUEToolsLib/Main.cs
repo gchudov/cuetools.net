@@ -442,6 +442,8 @@ namespace CUEToolsLib
 		CUEConfig _config;
 		string _cddbDiscIdTag;
 		private bool _isArchive;
+		private List<string> _archiveContents;
+		private string _archiveCUEpath;
 		private string _archivePath;
 		private string _archivePassword;
 		private CUEToolsProgressEventArgs _progress;
@@ -522,15 +524,16 @@ namespace CUEToolsLib
 				_unrar.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
 				string cueName = null, cueText = null;
 				_unrar.Open(pathIn, Unrar.OpenMode.List);
+				_archiveContents = new List<string>();
 				while (_unrar.ReadHeader())
 				{
-					if (!_unrar.CurrentFile.IsDirectory && Path.GetExtension(_unrar.CurrentFile.FileName).ToLower() == ".cue")
+					if (!_unrar.CurrentFile.IsDirectory)
 					{
-						cueName = _unrar.CurrentFile.FileName;
-						break;
+						_archiveContents.Add(_unrar.CurrentFile.FileName);
+						if (Path.GetExtension(_unrar.CurrentFile.FileName).ToLower() == ".cue")
+							cueName = _unrar.CurrentFile.FileName;
 					}
-					else
-						_unrar.Skip();
+					_unrar.Skip();
 				}
 				_unrar.Close();
 				if (cueName != null)
@@ -546,6 +549,7 @@ namespace CUEToolsLib
 				}
 				if (cueText == null)
 					throw new Exception("Input archive doesn't contain a cue sheet.");
+				_archiveCUEpath = Path.GetDirectoryName(cueName);
 				sr = new StringReader(cueText);
 				_isArchive = true;
 				_archivePath = pathIn;
@@ -603,18 +607,12 @@ namespace CUEToolsLib
 							else {
 								if (!_hasEmbeddedCUESheet)
 								{
-#if !MONO
 									if (_isArchive)
-										pathAudio = line.Params[1];
-									else
-									{
-#endif
-										pathAudio = LocateFile(cueDir, line.Params[1]);
-										if (pathAudio == null)
-										{
-											throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
-										}
-									}
+										pathAudio = LocateFile(_archiveCUEpath, line.Params[1], _archiveContents);
+                                    else
+										pathAudio = LocateFile(cueDir, line.Params[1], null);
+									if (pathAudio == null)
+										throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
 								} else
 								{
 									if (_sourcePaths.Count > 0 )
@@ -956,7 +954,7 @@ namespace CUEToolsLib
 			return null;
 		}
 
-		private static string LocateFile(string dir, string file) {
+		private static string LocateFile(string dir, string file, List<string> contents) {
 			List<string> dirList, fileList;
 			string altDir, path;
 
@@ -977,10 +975,9 @@ namespace CUEToolsLib
 			for (int iDir = 0; iDir < dirList.Count; iDir++) {
 				for (int iFile = 0; iFile < fileList.Count; iFile++) {
 					path = Path.Combine(dirList[iDir], fileList[iFile]);
-
-					if (File.Exists(path)) {
+					if ( (contents == null && File.Exists(path))
+						|| (contents != null && contents.Contains (path)))
 						return path;
-					}
 				}
 			}
 
@@ -1083,7 +1080,7 @@ namespace CUEToolsLib
 		{
 			IAudioSource audioSource;
 
-			ShowProgress("Opening source file...", 0, 0.0, path, null);
+			ShowProgress("Analyzing input file...", 0, 0.0, path, null);
 #if !MONO
 			if (_isArchive)
 			{
@@ -2428,7 +2425,7 @@ namespace CUEToolsLib
 						if ((fileType != "BINARY") && (fileType != "MOTOROLA")) {
 							filePos.Add(lines.Count - 1);
 							origFiles.Add(line.Params[1]);
-							foundAll &= (LocateFile(dir, line.Params[1]) != null);
+							foundAll &= (LocateFile(dir, line.Params[1], null) != null);
 						}
 					}
 				}
@@ -2445,7 +2442,7 @@ namespace CUEToolsLib
 					for (int j = 0; j < origFiles.Count; j++)
 					{
 						string newFilename = Path.ChangeExtension(Path.GetFileName(origFiles[j]), audioExts[i].Substring(1));
-						foundAll &= LocateFile(dir, newFilename) != null;
+						foundAll &= LocateFile(dir, newFilename, null) != null;
 						newFiles.Add (newFilename);
 					}
 					if (foundAll)
