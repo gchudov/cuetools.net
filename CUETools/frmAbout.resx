@@ -138,7 +138,7 @@
     <value>27, 22</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>About CUETools v1.9.2</value>
+    <value>About CUETools v1.9.3</value>
   </data>
   <data name="&gt;&gt;button1.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -177,13 +177,16 @@
     <value>Close</value>
   </data>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>AccurateRip, Monkey's Audio and 
-embedded CUE sheet support added in 2008 
-by Greg Chudov, gchudov@gmail.com.
-Thanks go out to Christopher Key and Whitehobbit 
-for insight on AccurateRip functionality,
-and to Mr Spoon for permission to use the database.
-Monkey's Audio library by Matthew T. Ashland.</value>
+    <value>AccurateRip, Monkey's Audio, Apple Lossless, RAR archives, tags
+and HDCD support (c)  Gregory S. Chudov, gchudov@gmail.com.
+Thanks go out to Christopher Key and Whitehobbit for insight on AccurateRip
+functionality, and to Mr Spoon for permission to use the database.
+
+MAC_SDK (c) Matthew T. Ashland
+mp4 decoder (c) David Hammerton
+unrar.dll (c) Alexander Roshal
+Unrar.cs (c) Michael A. McCloskey
+hdcd.dll (c) Christopher Key</value>
   </data>
   <data name="&gt;&gt;linkLabel1.Name" xml:space="preserve">
     <value>linkLabel1</value>
@@ -233,8 +236,5 @@ Monkey's Audio library by Matthew T. Ashland.</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </metadata>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>Russian (Russia)</value>
   </metadata>
 </root>

@@ -25,6 +25,7 @@ namespace AudioCodecsDotNet
 		void Write(int[,] buff, uint sampleCount);
 		bool SetTags(NameValueCollection tags);
 		void Close();
+		void Delete();
 		long FinalSampleCount { set; }
 		string Path { get; }
 	}
@@ -138,6 +139,10 @@ namespace AudioCodecsDotNet
 		}
 
 		public void Close()
+		{
+		}
+
+		public void Delete()
 		{
 		}
 
@@ -573,6 +578,14 @@ namespace AudioCodecsDotNet
 
 			_bw = null;
 			_IO = null;
+		}
+
+		public void Delete()
+		{
+			_bw.Close();
+			_bw = null;
+			_IO = null;
+			File.Delete(_path);
 		}
 
 		public long Position

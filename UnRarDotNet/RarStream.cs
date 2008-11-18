@@ -231,7 +231,9 @@ namespace UnRarDotNet
 			_unrar.DataAvailable += new DataAvailableHandler(unrar_DataAvailable);
 			_unrar.PasswordRequired += PasswordRequired;
 			_unrar.ExtractionProgress += ExtractionProgress;
+#if !DEBUG
 			try
+#endif
 			{
 				do
 				{
@@ -278,10 +280,12 @@ namespace UnRarDotNet
 					}
 				} while (true);
 			}
+#if !DEBUG
 			catch (Exception ex)
 			{
 				_ex = ex;
 			}
+#endif
 			lock (this)
 			{
 				_close = true;

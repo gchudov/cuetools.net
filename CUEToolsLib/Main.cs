@@ -241,7 +241,6 @@ namespace CUEToolsLib
 		public bool createTOC;
 		public bool createCUEFileWhenEmbedded;
 		public bool truncate4608ExtraSamples;
-		public bool processPriorityIdle;
 
 		public CUEConfig()
 		{
@@ -282,7 +281,6 @@ namespace CUEToolsLib
 			createTOC = false;
 			createCUEFileWhenEmbedded = false;
 			truncate4608ExtraSamples = true;
-			processPriorityIdle = true;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -324,7 +322,6 @@ namespace CUEToolsLib
 			sw.Save("CreateTOC", createTOC);
 			sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
 			sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
-			sw.Save("ProcessPriorityIdle", processPriorityIdle);
 		}
 
 		public void Load(SettingsReader sr)
@@ -366,7 +363,6 @@ namespace CUEToolsLib
 			createTOC = sr.LoadBoolean("CreateTOC") ?? false;
 			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
 			truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
-			processPriorityIdle = sr.LoadBoolean("ProcessPriorityIdle") ?? true;
 		}
 
 		public string CleanseString (string s)
@@ -380,16 +376,16 @@ namespace CUEToolsLib
 			for (int i = 0; i < s.Length; i++)
 			{
 				char ch = s[i];
-				if (removeSpecial && specialExceptions.IndexOf(ch) < 0 && !(
+				if (filenamesANSISafe && removeSpecial && specialExceptions.IndexOf(ch) < 0 && !(
 					((ch >= 'a') && (ch <= 'z')) ||
 					((ch >= 'A') && (ch <= 'Z')) ||
 					((ch >= '0') && (ch <= '9')) ||
 					(ch == ' ') || (ch == '_')))
 					ch = '_';
-				if (Array.IndexOf(invalid, ch) >= 0)
+				if ((Array.IndexOf(invalid, ch) >= 0) || (replaceSpaces && ch == ' '))
 					sb.Append("_");
 				else
-					sb.Append (ch);
+					sb.Append(ch);
 			}
 
 			return sb.ToString();
@@ -904,7 +900,9 @@ namespace CUEToolsLib
 #if !MONO
 		private void unrar_ExtractionProgress(object sender, ExtractionProgressEventArgs e)
 		{
-			_progress.percentTrack = (uint) Math.Round(e.PercentComplete);
+			if (this.CUEToolsProgress == null)
+				return;
+			_progress.percentTrack = (uint)Math.Round(e.PercentComplete);
 			this.CUEToolsProgress(this, _progress);
 		}
 
@@ -1010,6 +1008,9 @@ namespace CUEToolsLib
 			replace.Add(null);
 			replace.Add(Path.GetFileNameWithoutExtension(outputPath));
 
+			if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD)
+				extension = ".24bit" + extension;
+
 			if (_config.keepOriginalFilenames && HasSingleFilename)
 			{
 				SingleFilename = Path.ChangeExtension(SingleFilename, extension);
@@ -1018,15 +1019,8 @@ namespace CUEToolsLib
 			{
 				filename = General.ReplaceMultiple(_config.singleFilenameFormat, find, replace);
 				if (filename == null)
-				{
 					filename = "Range";
-				}
-				if (_config.replaceSpaces)
-				{
-					filename = filename.Replace(' ', '_');
-				}
 				filename += extension;
-
 				SingleFilename = filename;
 			}
 
@@ -1055,13 +1049,7 @@ namespace CUEToolsLib
 
 					filename = General.ReplaceMultiple(_config.trackFilenameFormat, find, replace);
 					if (filename == null)
-					{
 						filename = replace[2];
-					}
-					if (_config.replaceSpaces)
-					{
-						filename = filename.Replace(' ', '_');
-					}
 					filename += extension;
 
 					if (htoa)
@@ -2125,11 +2113,11 @@ namespace CUEToolsLib
 			TrackInfo track;
 			IAudioSource audioSource = null;
 			IAudioDest audioDest = null;
-			IAudioDest decodedAudioDest = null;
 			bool discardOutput;
 			int iSource = -1;
 			int iDest = -1;
 			uint samplesRemSource = 0;
+			int bitsPerSample = (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput) ? 24 : 16;
 
 			if (_writeOffset != 0)
 			{
@@ -2183,15 +2171,9 @@ namespace CUEToolsLib
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 			{
 				iDest++;
-				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
+				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
 				if (!noOutput)
 					SetAlbumTags(audioDest, bestOffset, style == CUEStyle.SingleFileWithCUE);
-				if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
-				{
-					decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
-						destLengths[iDest], noOutput, 24);
-					SetAlbumTags(decodedAudioDest, bestOffset, style == CUEStyle.SingleFileWithCUE);
-				}
 			}
 
 			if (_accurateRip && noOutput)
@@ -2217,20 +2199,14 @@ namespace CUEToolsLib
 				track = _tracks[iTrack];
 
 				if ((style == CUEStyle.GapsPrepended) || (style == CUEStyle.GapsLeftOut)) {
-					if (audioDest != null) audioDest.Close();
 					iDest++;
-					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
+					if (hdcdDecoder != null)
+						hdcdDecoder.AudioDest = null;
+					if (audioDest != null)
+						audioDest.Close();
+					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
 					if (!noOutput)
 						SetTrackTags(audioDest, iTrack, bestOffset);
-					if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
-					{
-						hdcdDecoder.AudioDest = null;
-						if (decodedAudioDest != null)
-							decodedAudioDest.Close();
-						decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
-							destLengths[iDest], noOutput, 24);
-						SetTrackTags(decodedAudioDest, iTrack, bestOffset);
-					}
 				}		
 
 				for (iIndex = 0; iIndex <= track.LastIndex; iIndex++) {
@@ -2248,33 +2224,23 @@ namespace CUEToolsLib
 							trackLength += _tracks[iTrack + 1].IndexLengths[0] * 588;
 					}
 
-					if ((style == CUEStyle.GapsAppended) && (iIndex == 1)) {
-						if (audioDest != null) audioDest.Close();
+					if ((style == CUEStyle.GapsAppended) && (iIndex == 1)) 
+					{
+						if (hdcdDecoder != null)
+							hdcdDecoder.AudioDest = null;
+						if (audioDest != null)
+							audioDest.Close();
 						iDest++;
-						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
+						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
 						if (!noOutput)
 							SetTrackTags(audioDest, iTrack, bestOffset);
-						if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
-						{
-							hdcdDecoder.AudioDest = null;
-							if (decodedAudioDest != null)
-								decodedAudioDest.Close();
-							decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
-								destLengths[iDest], noOutput, 24);
-							SetTrackTags(decodedAudioDest, iTrack, bestOffset);
-						}
 					}
 
 					if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0)) {
 						discardOutput = !htoaToFile;
 						if (htoaToFile) {
 							iDest++;
-							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, 16);
-							if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput)
-							{
-								decodedAudioDest = GetAudioDest(Path.ChangeExtension(destPaths[iDest], ".24bit" + Path.GetExtension(destPaths[iDest])),
-									destLengths[iDest], noOutput, 24);
-							}
+							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
 						}
 					}
 					else if ((style == CUEStyle.GapsLeftOut) && (iIndex == 0)) {
@@ -2304,20 +2270,30 @@ namespace CUEToolsLib
 							lastTrackPercent = trackPercent;
 						}
 
-						audioSource.Read(sampleBuffer, copyCount);					
-						if (!discardOutput) audioDest.Write(sampleBuffer, copyCount);
-						if (_config.detectHDCD && hdcdDecoder != null)
+						audioSource.Read(sampleBuffer, copyCount);
+						if (!discardOutput)
 						{
-							if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && !hdcdDecoder.Detected)
+							if (!_config.detectHDCD || !_config.decodeHDCD || hdcdDecoder == null)
+								audioDest.Write(sampleBuffer, copyCount);
+							if (_config.detectHDCD && hdcdDecoder != null)
 							{
-								hdcdDecoder.AudioDest = null;
-								hdcdDecoder = null;
-							}
-							else
-							{
-								if (_config.decodeHDCD)
-									hdcdDecoder.AudioDest = (discardOutput || noOutput) ? null : decodedAudioDest;
-								hdcdDecoder.Process(sampleBuffer, copyCount);
+								if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && !hdcdDecoder.Detected)
+								{
+									hdcdDecoder.AudioDest = null;
+									hdcdDecoder = null;
+									if (_config.decodeHDCD)
+									{
+										audioSource.Close();
+										audioDest.Delete();
+										throw new Exception("HDCD not detected.");
+									}
+								}
+								else
+								{
+									if (_config.decodeHDCD)
+										hdcdDecoder.AudioDest = (discardOutput || noOutput) ? null : audioDest;
+									hdcdDecoder.Process(sampleBuffer, copyCount);
+								}
 							}
 						}
 						if (_accurateRip && noOutput && (iTrack != 0 || iIndex != 0))
@@ -2353,12 +2329,6 @@ namespace CUEToolsLib
 								try {
 									if (audioDest != null) audioDest.Close();									
 								} catch { }
-								// need two separate try/catches, 
-								// because Close always throws an exception, and 
-								// we want both streams closed.
-								try {
-									if (decodedAudioDest != null) decodedAudioDest.Close();
-								} catch { }
 								throw new StopException();
 							}
 							if (_pause)
@@ -2373,10 +2343,10 @@ namespace CUEToolsLib
 
 			if (hdcdDecoder != null)
 				hdcdDecoder.AudioDest = null;
-			if (audioSource != null) audioSource.Close();
-			audioDest.Close();
-			if (decodedAudioDest != null)
-				decodedAudioDest.Close();
+			if (audioSource != null) 
+				audioSource.Close();
+			if (audioDest != null)
+				audioDest.Close();
 		}
 
 		public static string CreateDummyCUESheet(string path, string extension)

@@ -119,14 +119,17 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="textBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>415, 149</value>
+    <value>415, 214</value>
   </data>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>Библиотека Monkey's Audio (c) Matthew T. Ashland.
-Поддержка AccurateRip, Monkey's Audio и встроенных .cue 
-добавлена в 2008 году Григорием Чудовым, gchudov@gmail.com.
-Спасибо Christopher Key и Whitehobbit за их исследования принципов 
-работы AccurateRip, и Mr Spoon за разрешение пользоваться базой данных.
+    <value>Поддержка AccurateRip, Monkey's Audio, Apple Lossless, RAR архивов,
+тэгов и HDCD добавлена в 2008 году Григорием Чудовым, gchudov@gmail.com.
+Спасибо Christopher Key и Whitehobbit за их исследования принципов работы
+AccurateRip, и Mr Spoon за разрешение пользоваться базой данных.
+
+MAC_SDK (c) Matthew T. Ashland, mp4 decoder (c) David Hammerton, 
+unrar.dll (c) Alexander Roshal, Unrar.cs (c) Michael A. McCloskey
+hdcd.dll (c) Christopher Key
 
 Пользуясь возможностью, хотел бы попросить российских 
 граждан требовать от своего правительства немедленного
@@ -134,9 +137,12 @@
 с оккупированных грузинских территорий. Григорий Чудов.</value>
   </data>
   <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 208</value>
+    <value>182, 261</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>439, 296</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUETools v1.9.2: О программе</value>
+    <value>CUETools v1.9.3: О программе</value>
   </data>
 </root>

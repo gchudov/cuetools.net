@@ -47,7 +47,7 @@ namespace JDP {
 			DialogResult dlgRes;
 
 			fileDlg.Title = "Input CUE Sheet or album image";
-			fileDlg.Filter = "CUE Sheets (*.cue)|*.cue|FLAC images (*.flac)|*.flac|WavPack images (*.wv)|*.wv|APE images (*.ape)|*.ape";
+			fileDlg.Filter = "CUE Sheets (*.cue)|*.cue|FLAC images (*.flac)|*.flac|WavPack images (*.wv)|*.wv|APE images (*.ape)|*.ape|RAR archives (*.rar)|*.rar";
 
 			try
 			{
@@ -117,12 +117,14 @@ namespace JDP {
 		private void btnSettings_Click(object sender, EventArgs e) {
 			using (frmSettings settingsForm = new frmSettings()) {
 				settingsForm.WriteOffset = _writeOffset;
+				settingsForm.ReducePriority = _reducePriority;
 				settingsForm.Config = _config;
 
 				CenterSubForm(settingsForm);
 				settingsForm.ShowDialog();
 
 				_writeOffset = settingsForm.WriteOffset;
+				_reducePriority = settingsForm.ReducePriority;
 				_config = settingsForm.Config;
 				UpdateOutputPath();
 			}
@@ -190,7 +192,7 @@ namespace JDP {
 		private void frmCUETools_Load(object sender, EventArgs e) {
 			_batchPaths = new List<string>();
 			LoadSettings();
-			if (_config.processPriorityIdle)
+			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 			SetupControls(false);
 			UpdateOutputPath();
@@ -208,6 +210,7 @@ namespace JDP {
 		List<string> _batchPaths;
 		bool _usePregapForFirstTrackInSingleFile;
 		int _writeOffset;
+		bool _reducePriority;
 		Thread _workThread;
 		CUESheet _workClass;
 		CUEConfig _config;
@@ -440,7 +443,10 @@ namespace JDP {
 		}
 
 		private bool ShowErrorMessage(Exception ex) {
-			DialogResult dlgRes = MessageBox.Show(ex.Message, "Error", (_batchPaths.Count == 0) ? 
+			string message = "Exception";
+			for (Exception e = ex; e != null; e = e.InnerException)
+				message += ": " + e.Message;
+			DialogResult dlgRes = MessageBox.Show(this, message, "Error", (_batchPaths.Count == 0) ? 
 				MessageBoxButtons.OK : MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
 			return (dlgRes == DialogResult.OK);
 		}
@@ -487,89 +493,32 @@ namespace JDP {
 
 		private void LoadSettings() {
 			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
-			string val;
-
-			val = sr.Load("OutputPathGeneration");
-			if (val != null) {
-				try {
-					SelectedOutputPathGeneration = (OutputPathGeneration)Int32.Parse(val);
-				}
-				catch { }
-			}
-
-			val = sr.Load("OutputSubdirectory");
-			if (val != null) {
-				txtCreateSubdirectory.Text = val;
-			}
-
-			val = sr.Load("OutputFilenameSuffix");
-			if (val != null) {
-				txtAppendFilename.Text = val;
-			}
-
-			val = sr.Load("OutputCustomFormat");
-			if (val != null) {
-				txtCustomFormat.Text = val;
-			}
-
-			val = sr.Load("OutputAudioFormat");
-			if (val != null) {
-				try {
-					SelectedOutputAudioFormat = (OutputAudioFormat)Int32.Parse(val);
-				}
-				catch { }
-			}
-
-			val = sr.Load("AccurateRipMode");
-			if (val != null) {
-				try {
-					SelectedAccurateRipMode = (AccurateRipMode)Int32.Parse(val);
-				}
-				catch { }
-			}
-
-			val = sr.Load("CUEStyle");
-			if (val != null) {
-				try {
-					SelectedCUEStyle = (CUEStyle)Int32.Parse(val);
-				}
-				catch { }
-			}
-
-			val = sr.Load("WriteOffset");
-			if (val != null) {
-				if (!Int32.TryParse(val, out _writeOffset)) _writeOffset = 0;
-			}
-
-			val = sr.Load("UsePregapForFirstTrackInSingleFile");
-			_usePregapForFirstTrackInSingleFile = (val != null) ? (val != "0") : false;
-
+			txtCreateSubdirectory.Text = sr.Load("OutputSubdirectory") ?? "New";
+			txtAppendFilename.Text = sr.Load("OutputFilenameSuffix") ?? "-New";
+			txtCustomFormat.Text = sr.Load("OutputCustomFormat") ?? "%1:-2\\New\\%-1\\%F.cue";
+			SelectedOutputPathGeneration = (OutputPathGeneration?)sr.LoadInt32("OutputPathGeneration", null, null) ?? OutputPathGeneration.CreateSubdirectory;
+			SelectedOutputAudioFormat = (OutputAudioFormat?)sr.LoadInt32("OutputAudioFormat", null, null) ?? OutputAudioFormat.WAV;
+			SelectedAccurateRipMode = (AccurateRipMode?)sr.LoadInt32("AccurateRipMode", null, null) ?? AccurateRipMode.None;
+			SelectedCUEStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
+			_writeOffset = sr.LoadInt32("WriteOffset", null, null) ?? 0;
+			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
+			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
 			_config.Load(sr);
 		}
 
 		private void SaveSettings() {
 			SettingsWriter sw = new SettingsWriter("CUE Tools", "settings.txt");
-
-			sw.Save("OutputPathGeneration", ((int)SelectedOutputPathGeneration).ToString());
-
+			sw.Save("OutputPathGeneration", (int)SelectedOutputPathGeneration);
 			sw.Save("OutputSubdirectory", txtCreateSubdirectory.Text);
-
 			sw.Save("OutputFilenameSuffix", txtAppendFilename.Text);
-
 			sw.Save("OutputCustomFormat", txtCustomFormat.Text);
-
-			sw.Save("OutputAudioFormat", ((int)SelectedOutputAudioFormat).ToString());
-
-			sw.Save("AccurateRipMode", ((int)SelectedAccurateRipMode).ToString());
-
-			sw.Save("CUEStyle", ((int)SelectedCUEStyle).ToString());
-
-			sw.Save("WriteOffset", _writeOffset.ToString());
-
-			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile ? "1" : "0");
-
+			sw.Save("OutputAudioFormat", (int)SelectedOutputAudioFormat);
+			sw.Save("AccurateRipMode", (int)SelectedAccurateRipMode);
+			sw.Save("CUEStyle", (int)SelectedCUEStyle);
+			sw.Save("WriteOffset", _writeOffset);
+			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
+			sw.Save("ReducePriority", _reducePriority);
 			_config.Save(sw);
-
 			sw.Close();
 		}
 

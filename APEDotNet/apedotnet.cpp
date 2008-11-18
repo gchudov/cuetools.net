@@ -345,6 +345,12 @@ namespace APEDotNet {
 			}
 		}
 
+		virtual void Delete()
+		{
+			try { Close (); } catch (Exception^) {}
+			File::Delete(_path);
+		}
+
 		virtual property Int64 FinalSampleCount 
 		{
 			Int64 get() 

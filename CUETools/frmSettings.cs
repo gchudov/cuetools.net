@@ -9,6 +9,7 @@ using CUEToolsLib;
 namespace JDP {
 	public partial class frmSettings : Form {
 		int _writeOffset;
+		bool _reducePriority;
 		CUEConfig _config;
 
 		public frmSettings() {
@@ -16,6 +17,7 @@ namespace JDP {
 		}
 
 		private void frmSettings_Load(object sender, EventArgs e) {
+			chkReducePriority.Checked = _reducePriority;
 			numericWriteOffset.Value = _writeOffset;
 			chkPreserveHTOA.Checked = _config.preserveHTOA;
 			chkAutoCorrectFilenames.Checked = _config.autoCorrectFilenames;
@@ -73,6 +75,12 @@ namespace JDP {
 			set { _writeOffset = value; }
 		}
 
+		public bool ReducePriority
+		{
+			get { return _reducePriority; }
+			set { _reducePriority = value; }
+		}
+
 		public CUEConfig Config {
 			get { return _config; }
 			set { _config = value; }
@@ -85,6 +93,7 @@ namespace JDP {
 		private void btnOK_Click(object sender, EventArgs e)
 		{
 			_writeOffset = (int)numericWriteOffset.Value;
+			_reducePriority = chkReducePriority.Checked;
 			_config.preserveHTOA = chkPreserveHTOA.Checked;
 			_config.autoCorrectFilenames = chkAutoCorrectFilenames.Checked;
 			_config.flacCompressionLevel = (uint)numericFLACCompressionLevel.Value;
@@ -149,6 +158,17 @@ namespace JDP {
 		private void chkHDCDDetect_CheckedChanged(object sender, EventArgs e)
 		{
 			grpHDCD.Enabled = chkHDCDDetect.Checked;
+		}
+
+		private void chkFilenamesANSISafe_CheckedChanged(object sender, EventArgs e)
+		{
+			chkRemoveSpecial.Enabled = chkFilenamesANSISafe.Checked;
+			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked && chkFilenamesANSISafe.Checked;
+		}
+
+		private void chkRemoveSpecial_CheckedChanged(object sender, EventArgs e)
+		{
+			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked;
 		}
 	}
 }

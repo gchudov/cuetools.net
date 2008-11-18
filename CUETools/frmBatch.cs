@@ -54,6 +54,7 @@ namespace JDP
 		string pathOut;
 		bool _accurateRip;
 		bool _accurateOffset;
+		bool _reducePriority;
 		DateTime _startedAt;
 		List<string> _batchPaths;
 
@@ -260,19 +261,13 @@ namespace JDP
 		{
 			textBox1.Hide();
 			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
-			string val;
+
 			_config.Load(sr);
-
-			try
-			{
-				val = sr.Load("CUEStyle");
-				_cueStyle = (val != null) ? (CUEStyle)Int32.Parse(val) : CUEStyle.SingleFile;
-				val = sr.Load("OutputAudioFormat");
-				_audioFormat = (val != null) ? (OutputAudioFormat)Int32.Parse(val) : OutputAudioFormat.WAV;
-			}
-			catch { };
-
-			if (_config.processPriorityIdle)
+			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
+			_cueStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
+			_audioFormat = (OutputAudioFormat?)sr.LoadInt32("OutputAudioFormat", null, null) ?? OutputAudioFormat.WAV;
+			
+			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
 			if (_accurateOffset || !_accurateRip)
