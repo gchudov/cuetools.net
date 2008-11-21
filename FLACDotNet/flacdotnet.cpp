@@ -468,6 +468,7 @@ namespace FLACDotNet {
 			_compressionLevel = 5;
 			_paddingLength = 8192;
 			_verify = false;
+			_blockSize = 0;
 			_tags = gcnew NameValueCollection();
 
 			_encoder = FLAC__stream_encoder_new();
@@ -514,6 +515,14 @@ namespace FLACDotNet {
 					throw gcnew Exception("Final sample count cannot be changed after encoding begins.");
 				}
 				_finalSampleCount = value;
+			}
+		}
+
+		virtual property Int64 BlockSize
+		{
+			void set(Int64 value) 
+			{
+				_blockSize = value;
 			}
 		}
 
@@ -580,7 +589,7 @@ namespace FLACDotNet {
 		FLAC__StreamEncoder *_encoder;
 		bool _initialized;
 		String^ _path;
-		Int64 _finalSampleCount, _samplesWritten;
+		Int64 _finalSampleCount, _samplesWritten, _blockSize;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		Int32 _compressionLevel;
 		Int32 _paddingLength;
@@ -656,6 +665,9 @@ namespace FLACDotNet {
 			}
 
 			FLAC__stream_encoder_set_compression_level(_encoder, _compressionLevel);
+
+			if (_blockSize > 0)
+				FLAC__stream_encoder_set_blocksize(_encoder, (unsigned)_blockSize);
 
 			pathChars = Marshal::StringToHGlobalUni(_path);
 			hFile = _wfopen((const wchar_t*)pathChars.ToPointer(), L"w+b");

@@ -55,6 +55,7 @@ namespace JDP
 		bool _accurateRip;
 		bool _accurateOffset;
 		bool _reducePriority;
+		bool _lossyWAV;
 		DateTime _startedAt;
 		List<string> _batchPaths;
 
@@ -158,7 +159,7 @@ namespace JDP
 				}
 				else
 					pathOut = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
-				cueSheet.GenerateFilenames(_audioFormat, pathOut);
+				cueSheet.GenerateFilenames(_audioFormat, pathOut, _lossyWAV);
 				if (outputAudio)
 				{
 					if (_cueStyle == CUEStyle.SingleFileWithCUE)
@@ -266,6 +267,7 @@ namespace JDP
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
 			_cueStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
 			_audioFormat = (OutputAudioFormat?)sr.LoadInt32("OutputAudioFormat", null, null) ?? OutputAudioFormat.WAV;
+			_lossyWAV = sr.LoadBoolean("LossyWav") ?? false;
 			
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;

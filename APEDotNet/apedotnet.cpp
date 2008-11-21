@@ -367,6 +367,13 @@ namespace APEDotNet {
 			}
 		}
 
+		virtual property Int64 BlockSize
+		{
+			void set(Int64 value)
+			{
+			}
+		}
+
 		virtual void Write(array<Int32,2>^ buff, UInt32 sampleCount) 
 		{
 			if (_sampleBuffer == nullptr || _sampleBuffer.Length < sampleCount * _blockAlign)

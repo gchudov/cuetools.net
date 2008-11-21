@@ -65,6 +65,7 @@ namespace JDP {
 			chkCreateM3U.Checked = _config.createM3U;
 			chkCreateCUEFileWhenEmbedded.Checked = _config.createCUEFileWhenEmbedded;
 			chkTruncateExtra4206Samples.Checked = _config.truncate4608ExtraSamples;
+			numericLossyWAVQuality.Value = _config.lossyWAVQuality;
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -97,6 +98,7 @@ namespace JDP {
 			_config.preserveHTOA = chkPreserveHTOA.Checked;
 			_config.autoCorrectFilenames = chkAutoCorrectFilenames.Checked;
 			_config.flacCompressionLevel = (uint)numericFLACCompressionLevel.Value;
+			_config.lossyWAVQuality = (int)numericLossyWAVQuality.Value;
 			_config.fixWhenPercent = (uint)numFixWhenPercent.Value;
 			_config.fixWhenConfidence = (uint)numFixWhenConfidence.Value;
 			_config.encodeWhenPercent = (uint)numEncodeWhenPercent.Value;

@@ -29,15 +29,37 @@ using AudioCodecsDotNet;
 
 namespace LossyWAVDotNet
 {
-	public class LossyWAV : IAudioDest
+	public class LossyWAVWriter : IAudioDest
 	{
 		#region Public Methods
 
-		public bool SetTags(NameValueCollection tags)
+		public LossyWAVWriter(IAudioDest audioDest, IAudioDest lwcdfDest, int bitsPerSample, int channelCount, int sampleRate, double quality)
 		{
-			if (_audioDest != null) _audioDest.SetTags(tags);
-			if (_lwcdfDest != null) _lwcdfDest.SetTags(tags);
-			return true;
+			_audioDest = audioDest;
+			_lwcdfDest = lwcdfDest;
+			channels = channelCount;
+			samplerate = sampleRate;
+			bitspersample = bitsPerSample;
+
+			int quality_integer = (int)Math.Floor(quality);
+
+			fft_analysis_string = new string[4] { "0100010", "0110010", "0111010", "0111110" };
+			bool[] quality_auto_fft32_on = { false, false, false, true, true, true, true, true, true, true, true };
+			double[] quality_noise_threshold_shifts = { 20, 16, 9, 6, 3, 0, -2.4, -4.8, -7.2, -9.6, -12 };
+			double[] quality_signal_to_noise_ratio = { -18, -22, -23.5, -23.5, -23.5, -25, -28, -31, -34, -37, -40 };
+			double[] quality_dynamic_minimum_bits_to_keep = { 2.5, 2.75, 3.00, 3.25, 3.50, 3.75, 4.0, 4.25, 4.5, 4.75, 5.00 };
+			double[] quality_maximum_clips_per_channel = { 3, 3, 3, 3, 2, 1, 0, 0, 0, 0, 0 };
+
+			this_analysis_number = 2;
+			impulse = quality_auto_fft32_on[quality_integer];
+			linkchannels = false;
+			noise_threshold_shift = Math.Round(interpolate_param(quality_noise_threshold_shifts, quality) * 1000) / 1000;
+			snr_value = Math.Round(interpolate_param(quality_signal_to_noise_ratio, quality) * 1000) / 1000;
+			dynamic_minimum_bits_to_keep = Math.Round(interpolate_param(quality_dynamic_minimum_bits_to_keep, quality) * 1000) / 1000;
+			maximum_clips_per_channel = (int)Math.Round(interpolate_param(quality_maximum_clips_per_channel, quality));
+			scaling_factor = 1.0;
+			shaping_factor = Math.Min(1, quality / 10);
+			shaping_is_on = shaping_factor > 0;
 		}
 
 		public void Close()
@@ -58,26 +80,6 @@ namespace LossyWAVDotNet
 			}
 			if (_audioDest != null) _audioDest.Close();
 			if (_lwcdfDest != null) _lwcdfDest.Close();
-		}
-
-		public void Delete()
-		{
-			if (_audioDest != null) _audioDest.Delete();
-			if (_lwcdfDest != null) _lwcdfDest.Delete();
-		}
-
-		public long FinalSampleCount
-		{
-			set
-			{
-				if (_audioDest != null) _audioDest.FinalSampleCount = value;
-				if (_lwcdfDest != null) _lwcdfDest.FinalSampleCount = value;
-			}
-		}
-
-		public long BlockSize
-		{
-			set { }
 		}
 
 		public void Write(int[,] buff, uint sampleCount)
@@ -107,35 +109,33 @@ namespace LossyWAVDotNet
 			}
 		}
 
+		public bool SetTags(NameValueCollection tags)
+		{
+			if (_audioDest != null) _audioDest.SetTags(tags);
+			if (_lwcdfDest != null) _lwcdfDest.SetTags(tags);
+			return true;
+		}
+
 		public string Path { get { return _audioDest.Path; } }
 
-		public LossyWAV(IAudioDest audioDest, IAudioDest lwcdfDest, int bitsPerSample, int channelCount, int sampleRate, double quality)
+		public void Delete()
 		{
-			_audioDest = audioDest;
-			_lwcdfDest = lwcdfDest;
-			channels = channelCount;
-			samplerate = sampleRate;
-			bitspersample = bitsPerSample;
+			if (_audioDest != null) _audioDest.Delete();
+			if (_lwcdfDest != null) _lwcdfDest.Delete();
+		}
 
-			int quality_integer = (int)Math.Floor(quality);
+		public long FinalSampleCount
+		{
+			set
+			{
+				if (_audioDest != null) _audioDest.FinalSampleCount = value;
+				if (_lwcdfDest != null) _lwcdfDest.FinalSampleCount = value;
+			}
+		}
 
-			fft_analysis_string = new string[4] { "0100010", "0110010", "0111010", "0111110" };
-			bool[] quality_auto_fft32_on = { false, false, false, true, true, true, true, true, true, true, true };
-			double[] quality_noise_threshold_shifts = { 20, 16, 9, 6, 3, 0, -2.4, -4.8, -7.2, -9.6, -12 };
-			double[] quality_signal_to_noise_ratio = { -18, -22, -23.5, -23.5, -23.5, -25, -28, -31, -34, -37, -40 };
-			double[] quality_dynamic_minimum_bits_to_keep = { 2.5, 2.75, 3.00, 3.25, 3.50, 3.75, 4.0, 4.25, 4.5, 4.75, 5.00 };
-			double[] quality_maximum_clips_per_channel = { 3, 3, 3, 3, 2, 1, 0, 0, 0, 0, 0 };
-
-			this_analysis_number = 2;
-			impulse = quality_auto_fft32_on[quality_integer];
-			linkchannels = false;
-			noise_threshold_shift = Math.Round(interpolate_param(quality_noise_threshold_shifts, quality) * 1000) / 1000;
-			snr_value = Math.Round(interpolate_param(quality_signal_to_noise_ratio, quality) * 1000) / 1000;
-			dynamic_minimum_bits_to_keep = Math.Round(interpolate_param(quality_dynamic_minimum_bits_to_keep, quality) * 1000) / 1000;
-			maximum_clips_per_channel = (int)Math.Round(interpolate_param(quality_maximum_clips_per_channel, quality));
-			scaling_factor = 1.0;
-			shaping_factor = Math.Min(1, quality / 10);
-			shaping_is_on = shaping_factor > 0;
+		public long BlockSize
+		{
+			set { }
 		}
 
 		public int Analysis
@@ -193,17 +193,6 @@ namespace LossyWAVDotNet
 				frequency_limit = value;
 			}
 		}
-
-		//public void Process()
-		//{
-		//    read_codec_next_block();
-		//    while (next_codec_block_size > 0)
-		//    {
-		//        shift_codec_blocks();
-		//        read_codec_next_block();
-		//        process_this_codec_block();
-		//    }
-		//}
 		#endregion
 
 		#region Private Methods
@@ -424,7 +413,7 @@ namespace LossyWAVDotNet
 			if (_audioDest != null && _audioDest is WAVWriter) ((WAVWriter)_audioDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
 			if (_lwcdfDest != null && _lwcdfDest is WAVWriter) ((WAVWriter)_lwcdfDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
 			_audioDest.BlockSize = codec_block_size;
-			_lwcdfDest.BlockSize = codec_block_size;
+			_lwcdfDest.BlockSize = codec_block_size * 2;
 		}
 
 		double fill_fft_input(int actual_analysis_block_start, int this_fft_length, int channel)
@@ -692,12 +681,6 @@ namespace LossyWAVDotNet
 			}
 		}
 
-		//void read_codec_next_block()
-		//{
-		//    uint size = Math.Min((uint)(_audioSource.Length - _audioSource.Position), codec_block_size);
-		//    next_codec_block_size = (int)_audioSource.Read(rotating_blocks_ptr[3], size);
-		//}
-
 		unsafe static void shuffle_in_place_dcomplex(double* fft_ptr, int* reversedbits_ptr, int bits)
 		{
 			for (int i = 0; i < 1 << bits; i++)
@@ -856,5 +839,121 @@ namespace LossyWAVDotNet
 		public short bits_lost;
 		public short clipped_samples;
 	}
+
+	public class LossyWAVReader : IAudioSource
+	{
+		public LossyWAVReader(IAudioSource audioSource, IAudioSource lwcdfSource)
+		{
+			_audioSource = audioSource;
+			_lwcdfSource = lwcdfSource;
+
+			if (_audioSource.Length != _lwcdfSource.Length)
+				throw new Exception("Data not same length");
+			if (_audioSource.BitsPerSample != _lwcdfSource.BitsPerSample
+				|| _audioSource.ChannelCount != _lwcdfSource.ChannelCount
+				|| _audioSource.SampleRate != _lwcdfSource.SampleRate)
+				throw new Exception("FMT Data mismatch");
+
+			scaling_factor = 1.0; // !!!! Need to read 'fact' chunks or tags here
+		}
+
+		public uint Read(int[,] buff, uint sampleCount)
+		{
+			if (sampleBuffer == null || sampleBuffer.Length < sampleCount)
+				sampleBuffer = new int[sampleCount, _audioSource.ChannelCount];
+			sampleCount = _audioSource.Read(buff, sampleCount);
+			if (sampleCount != _lwcdfSource.Read(sampleBuffer, sampleCount))
+				throw new Exception("size mismatch");
+			for (uint i = 0; i < sampleCount; i++)
+				for (int c = 0; c < _audioSource.ChannelCount; c++)
+					buff[i,c] = (int)Math.Round(buff[i, c] / scaling_factor + sampleBuffer[i, c]);
+			return sampleCount;
+		}
+
+		public ulong Length
+		{
+			get
+			{
+				return _audioSource.Length;
+			}
+		}
+
+		public ulong Position
+		{
+			get
+			{
+				return _audioSource.Position;
+			}
+			set
+			{
+				_audioSource.Position = value;
+				_lwcdfSource.Position = value;
+			}
+		}
+
+		public ulong Remaining
+		{
+			get
+			{
+				return _audioSource.Remaining;
+			}
+		}
+
+		public int BitsPerSample
+		{
+			get
+			{
+				return _audioSource.BitsPerSample;
+			}
+		}
+
+		public int ChannelCount
+		{
+			get
+			{
+				return _audioSource.ChannelCount;
+			}
+		}
+
+		public int SampleRate
+		{
+			get
+			{
+				return _audioSource.SampleRate;
+			}
+		}
+
+		public NameValueCollection Tags
+		{
+			get
+			{
+				return _audioSource.Tags;
+			}
+			set
+			{
+				_audioSource.Tags = value;
+			}
+		}
+
+		public string Path
+		{
+			get
+			{
+				return _audioSource.Path;
+			}
+		}
+
+
+		public void Close()
+		{
+			_audioSource.Close();
+			_lwcdfSource.Close();
+		}
+
+		IAudioSource _audioSource, _lwcdfSource;
+		double scaling_factor;
+		int[,] sampleBuffer;
+	}
+
 	#endregion
 }

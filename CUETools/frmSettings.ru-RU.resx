@@ -124,11 +124,23 @@
     <value />
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="chkReducePriority.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 17</value>
+  </data>
+  <data name="chkReducePriority.Text" xml:space="preserve">
+    <value>Понизить приоритет процесса</value>
+  </data>
+  <data name="chkReducePriority.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkTruncateExtra4206Samples.Size" type="System.Drawing.Size, System.Drawing">
     <value>202, 17</value>
   </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
     <value>Выкидывать лишние 4206 сэмплов</value>
+  </data>
+  <data name="chkTruncateExtra4206Samples.ToolTip" xml:space="preserve">
+    <value>Некоторые FLAC-кодировщики добавляют лишние 4206 пустых сэмплов в конце файла. Эту ситуацию можно легко обнаружить и исправить.</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
     <value>224, 17</value>
@@ -203,13 +215,13 @@
     <value />
   </data>
   <data name="numericFLACCompressionLevel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>147, 88</value>
+    <value>113, 44</value>
   </data>
   <data name="numericFLACCompressionLevel.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="lblFLACCompressionLevel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 90</value>
+    <value>9, 46</value>
   </data>
   <data name="lblFLACCompressionLevel.Size" type="System.Drawing.Size, System.Drawing">
     <value>94, 13</value>
@@ -586,6 +598,21 @@
     <value />
   </data>
   <data name="tabPage2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="numericLossyWAVQuality.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 13</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Качество:</value>
+  </data>
+  <data name="label1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="groupBox4.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="tabPage3.Text" xml:space="preserve">

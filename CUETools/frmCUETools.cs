@@ -250,7 +250,7 @@ namespace JDP {
 				
 				UpdateOutputPath(cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
 				pathOut = txtOutputPath.Text;
-				cueSheet.GenerateFilenames(SelectedOutputAudioFormat, pathOut);
+				cueSheet.GenerateFilenames(SelectedOutputAudioFormat, pathOut, chkLossyWAV.Checked);
 				outDir = Path.GetDirectoryName(pathOut);
 				if (cueStyle == CUEStyle.SingleFileWithCUE)
 					cueSheet.SingleFilename = Path.GetFileName (pathOut);
@@ -503,6 +503,7 @@ namespace JDP {
 			_writeOffset = sr.LoadInt32("WriteOffset", null, null) ?? 0;
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
+			chkLossyWAV.Checked = sr.LoadBoolean("LossyWav") ?? false;
 			_config.Load(sr);
 		}
 
@@ -518,6 +519,7 @@ namespace JDP {
 			sw.Save("WriteOffset", _writeOffset);
 			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
 			sw.Save("ReducePriority", _reducePriority);
+			sw.Save("LossyWav", chkLossyWAV.Checked);
 			_config.Save(sw);
 			sw.Close();
 		}
@@ -768,9 +770,12 @@ namespace JDP {
 					file = Path.GetFileNameWithoutExtension(pathIn);
 				}
 				ext = ".cue";
-
 				if (rbEmbedCUE.Checked)
 					ext = General.FormatExtension (SelectedOutputAudioFormat);
+				if (chkLossyWAV.Checked)
+					ext = ".lossy" + ext;
+				if (_config.detectHDCD && _config.decodeHDCD)
+					ext = ".24bit" + ext;
 				
 				if (rbCreateSubdirectory.Checked) {
 					pathOut = Path.Combine(Path.Combine(dir, txtCreateSubdirectory.Text), file + ext);
@@ -802,7 +807,10 @@ namespace JDP {
 		private void updateOutputStyles()
 		{
 			rbEmbedCUE.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbAPE.Checked;
-			rbNoAudio.Enabled = rbWAV.Enabled = !rbEmbedCUE.Checked;
+			chkLossyWAV.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbWAV.Checked;
+			rbNoAudio.Enabled = !rbEmbedCUE.Checked && !chkLossyWAV.Checked;
+			rbWAV.Enabled = !rbEmbedCUE.Checked;
+			rbAPE.Enabled = !chkLossyWAV.Checked;
 		}
 
 		private void rbWAV_CheckedChanged(object sender, EventArgs e)
@@ -813,11 +821,13 @@ namespace JDP {
 		private void rbFLAC_CheckedChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
+			UpdateOutputPath();
 		}
 
 		private void rbWavPack_CheckedChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
+			UpdateOutputPath();
 		}
 
 		private void rbEmbedCUE_CheckedChanged(object sender, EventArgs e)
@@ -886,6 +896,7 @@ namespace JDP {
 		private void rbAPE_CheckedChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
+			UpdateOutputPath();
 		}
 
 		private void btnStop_Click(object sender, EventArgs e)
@@ -902,6 +913,12 @@ namespace JDP {
 				btnPause.Visible = !btnPause.Visible;
 				btnResume.Visible = !btnResume.Visible;
 			}
+		}
+
+		private void chkLossyWAV_CheckedChanged(object sender, EventArgs e)
+		{
+			updateOutputStyles();
+			UpdateOutputPath();
 		}
 	}
 

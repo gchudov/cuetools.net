@@ -109,6 +109,10 @@
       <Project>{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}</Project>
       <Name>HDCDDotNet</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LossyWAVDotNet\LossyWAVDotNet.csproj">
+      <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
+      <Name>LossyWAVDotNet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UnRarDotNet\UnRarDotNet.csproj">
       <Project>{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}</Project>
       <Name>UnRarDotNet</Name>

@@ -322,6 +322,7 @@ namespace WavPackDotNet {
 
 			_compressionMode = 1;
 			_extraMode = 0;
+			_blockSize = 0;
 
 			_bitsPerSample = bitsPerSample;
 			_channelCount = channelCount;
@@ -382,6 +383,14 @@ namespace WavPackDotNet {
 				if (_initialized)
 					throw gcnew Exception("Final sample count cannot be changed after encoding begins.");
 				_finalSampleCount = value;
+			}
+		}
+
+		virtual property Int64 BlockSize
+		{
+			void set(Int64 value) 
+			{
+				_blockSize = value;
 			}
 		}
 
@@ -467,7 +476,7 @@ namespace WavPackDotNet {
 		WavpackContext *_wpc;
 		Int32 _finalSampleCount, _samplesWritten;
 		Int32 _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
-		Int32 _compressionMode, _extraMode;
+		Int32 _compressionMode, _extraMode, _blockSize;
 		NameValueCollection^ _tags;
 		String^ _path;
 		bool _md5Sum;
@@ -500,6 +509,9 @@ namespace WavPackDotNet {
 				_md5hasher = gcnew MD5CryptoServiceProvider ();
 				config.flags |= CONFIG_MD5_CHECKSUM;
 			}
+			config.block_samples = (int)_blockSize;
+			if (_blockSize > 0 && _blockSize < 2048)
+				config.flags |= CONFIG_MERGE_BLOCKS;
 
 			if (!WavpackSetConfiguration(_wpc, &config, (_finalSampleCount == 0) ? -1 : _finalSampleCount)) {
 				throw gcnew Exception("Invalid configuration setting.");

@@ -27,6 +27,7 @@ namespace AudioCodecsDotNet
 		void Close();
 		void Delete();
 		long FinalSampleCount { set; }
+		long BlockSize { set; }
 		string Path { get; }
 	}
 
@@ -148,9 +149,12 @@ namespace AudioCodecsDotNet
 
 		public long FinalSampleCount
 		{
-			set
-			{
-			}
+			set	{ }
+		}
+
+		public long BlockSize
+		{
+			set	{ }
 		}
 
 		public void Write(int[,] buff, uint sampleCount)
@@ -505,6 +509,7 @@ namespace AudioCodecsDotNet
 		long _sampleLen;
 		string _path;
 		private byte[] _sampleBuffer;
+		long hdrLen = 44;
 
 		public WAVWriter(string path, int bitsPerSample, int channelCount, int sampleRate)
 		{
@@ -523,6 +528,22 @@ namespace AudioCodecsDotNet
 		public bool SetTags(NameValueCollection tags)
 		{
 			return false;
+		}
+
+		public void WriteChunk(uint fcc, byte[] data)
+		{
+			if (_sampleLen > 0)
+				throw new Exception("data already written, no chunks allowed");
+			const uint fccData = 0x61746164;
+			_bw.Seek((int)hdrLen - 8, SeekOrigin.Begin);
+			_bw.Write(fcc);
+			_bw.Write((uint)data.Length);
+			_bw.Write(data);
+			if ((data.Length & 1) != 0)
+				_bw.Write((byte) 0);
+			_bw.Write(fccData);
+			_bw.Write((uint)0);
+			hdrLen += data.Length + (data.Length & 1) + 8;
 		}
 
 		private void WriteHeaders()
@@ -552,26 +573,22 @@ namespace AudioCodecsDotNet
 		public void Close()
 		{
 			const long maxFileSize = 0x7FFFFFFEL;
-			long dataLen, dataLenPadded;
+			long dataLen, dataLenPadded;		
 
 			dataLen = _sampleLen * _blockAlign;
 
 			if ((dataLen & 1) == 1)
-			{
 				_bw.Write((byte)0);
-			}
 
-			if ((dataLen + 44) > maxFileSize)
-			{
-				dataLen = ((maxFileSize - 44) / _blockAlign) * _blockAlign;
-			}
+			if (dataLen + hdrLen > maxFileSize)
+				dataLen = ((maxFileSize - hdrLen) / _blockAlign) * _blockAlign;
 
-			dataLenPadded = ((dataLen & 1) == 1) ? (dataLen + 1) : dataLen;
+			dataLenPadded = dataLen + (dataLen & 1);
 
 			_bw.Seek(4, SeekOrigin.Begin);
-			_bw.Write((uint)(dataLenPadded + 36));
+			_bw.Write((uint)(dataLenPadded + hdrLen - 8));
 
-			_bw.Seek(40, SeekOrigin.Begin);
+			_bw.Seek((int)hdrLen-4, SeekOrigin.Begin);
 			_bw.Write((uint)dataLen);
 
 			_bw.Close();
@@ -598,9 +615,12 @@ namespace AudioCodecsDotNet
 
 		public long FinalSampleCount
 		{
-			set
-			{
-			}
+			set { }
+		}
+
+		public long BlockSize
+		{
+			set { }
 		}
 
 		public void Write(int[,] buff, uint sampleCount)

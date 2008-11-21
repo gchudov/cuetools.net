@@ -4,15 +4,16 @@ using FLACDotNet;
 using WavPackDotNet;
 using APEDotNet;
 using ALACDotNet;
+using LossyWAVDotNet;
 using AudioCodecsDotNet;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
 namespace CUEToolsLib {
 	public static class AudioReadWrite {
-		public static IAudioSource GetAudioSource(string path, Stream IO)
+		public static IAudioSource GetAudioSource(string path, Stream IO, string extension)
 		{
-			switch (Path.GetExtension(path).ToLower())
+			switch (extension)
 			{
 				case ".wav":
 					return new WAVReader(path, IO);
@@ -31,26 +32,65 @@ namespace CUEToolsLib {
 			}
 		}
 
-		public static IAudioDest GetAudioDest(string path, int bitsPerSample, int channelCount, int sampleRate, long finalSampleCount) {
+		public static IAudioSource GetAudioSource(string path, Stream IO)
+		{
+			string extension = Path.GetExtension(path).ToLower();
+			string filename = Path.GetFileNameWithoutExtension(path);
+			string secondExtension = Path.GetExtension(filename).ToLower();
+			if (secondExtension != ".lossy" && secondExtension != ".lwcdf")
+				return GetAudioSource(path, IO, extension);
+
+			string lossyPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lossy" + extension);
+			string lwcdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lwcdf" + extension);
+			IAudioSource lossySource = GetAudioSource(lossyPath, null, extension);
+			IAudioSource lwcdfSource = GetAudioSource(lwcdfPath, null, extension);
+			return new LossyWAVReader(lossySource, lwcdfSource);
+		}
+
+		public static IAudioDest GetAudioDest(string path, int bitsPerSample, int channelCount, int sampleRate, long finalSampleCount, string extension, CUEConfig config) {
 			IAudioDest dest;
-			switch (Path.GetExtension(path).ToLower()) {
+			switch (extension) {
 				case ".wav":
-					dest = new WAVWriter(path, bitsPerSample, channelCount, sampleRate); break;
+					dest = new WAVWriter(path, bitsPerSample, channelCount, sampleRate); 
+					break;
 #if !MONO
 				case ".flac":
-					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate); break;
+					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate);
+					((FLACWriter)dest).CompressionLevel = (int)config.flacCompressionLevel;
+					((FLACWriter)dest).Verify = config.flacVerify;
+					break;
 				case ".wv":
-					dest = new WavPackWriter(path, bitsPerSample, channelCount, sampleRate); break;
+					dest = new WavPackWriter(path, bitsPerSample, channelCount, sampleRate);
+					((WavPackWriter)dest).CompressionMode = config.wvCompressionMode;
+					((WavPackWriter)dest).ExtraMode = config.wvExtraMode;
+					((WavPackWriter)dest).MD5Sum = config.wvStoreMD5;
+					break;
 				case ".ape":
-					dest = new APEWriter(path, bitsPerSample, channelCount, sampleRate); break;
+					dest = new APEWriter(path, bitsPerSample, channelCount, sampleRate);
+					((APEWriter)dest).CompressionLevel = (int)config.apeCompressionLevel;
+					break;
 				case ".dummy":
-					dest = new DummyWriter(path, bitsPerSample, channelCount, sampleRate); break;
+					dest = new DummyWriter(path, bitsPerSample, channelCount, sampleRate); 
+					break;
 #endif
 				default:
 					throw new Exception("Unsupported audio type.");
 			}
 			dest.FinalSampleCount = finalSampleCount;
 			return dest;
+		}
+
+		public static IAudioDest GetAudioDest(string path, int bitsPerSample, int channelCount, int sampleRate, long finalSampleCount, CUEConfig config)
+		{
+			string extension = Path.GetExtension(path).ToLower();
+			string filename = Path.GetFileNameWithoutExtension(path);
+			if (Path.GetExtension(filename).ToLower() != ".lossy")
+				return GetAudioDest(path, bitsPerSample, channelCount, sampleRate, finalSampleCount, extension, config);
+
+			string lwcdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lwcdf" + extension);
+			IAudioDest lossyDest = GetAudioDest(path, bitsPerSample, channelCount, sampleRate, finalSampleCount, extension, config);
+			IAudioDest lwcdfDest = GetAudioDest(lwcdfPath, bitsPerSample, channelCount, sampleRate, finalSampleCount, extension, config);
+			return new LossyWAVWriter(lossyDest, lwcdfDest, bitsPerSample, channelCount, sampleRate, config.lossyWAVQuality);
 		}
 	}
 }

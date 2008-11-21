@@ -31,6 +31,7 @@ using System.Threading;
 using System.Xml;
 using AudioCodecsDotNet;
 using HDCDDotNet;
+using LossyWAVDotNet;
 #if !MONO
 using UnRarDotNet;
 using FLACDotNet;
@@ -241,6 +242,7 @@ namespace CUEToolsLib
 		public bool createTOC;
 		public bool createCUEFileWhenEmbedded;
 		public bool truncate4608ExtraSamples;
+		public int lossyWAVQuality;
 
 		public CUEConfig()
 		{
@@ -281,6 +283,7 @@ namespace CUEToolsLib
 			createTOC = false;
 			createCUEFileWhenEmbedded = false;
 			truncate4608ExtraSamples = true;
+			lossyWAVQuality = 5;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -322,6 +325,7 @@ namespace CUEToolsLib
 			sw.Save("CreateTOC", createTOC);
 			sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
 			sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
+			sw.Save("LossyWAVQuality", lossyWAVQuality);
 		}
 
 		public void Load(SettingsReader sr)
@@ -363,6 +367,7 @@ namespace CUEToolsLib
 			createTOC = sr.LoadBoolean("CreateTOC") ?? false;
 			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
 			truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
+			lossyWAVQuality = sr.LoadInt32("LossyWAVQuality", 0, 10) ?? 5;
 		}
 
 		public string CleanseString (string s)
@@ -982,7 +987,7 @@ namespace CUEToolsLib
 			return null;
 		}
 
-		public void GenerateFilenames (OutputAudioFormat format, string outputPath)
+		public void GenerateFilenames (OutputAudioFormat format, string outputPath, bool lossyWAV)
 		{
 			_cuePath = outputPath;
 
@@ -1008,6 +1013,8 @@ namespace CUEToolsLib
 			replace.Add(null);
 			replace.Add(Path.GetFileNameWithoutExtension(outputPath));
 
+			if (lossyWAV)
+				extension = ".lossy" + extension;
 			if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD)
 				extension = ".24bit" + extension;
 
@@ -2534,28 +2541,7 @@ namespace CUEToolsLib
 			if (noOutput)
 				return new DummyWriter(path, bitsPerSample, 2, 44100);
 
-			IAudioDest dest = AudioReadWrite.GetAudioDest(path, bitsPerSample, 2, 44100, finalSampleCount);
-
-#if !MONO
-			if (dest is FLACWriter) {
-				FLACWriter w = (FLACWriter)dest;
-				w.CompressionLevel = (int) _config.flacCompressionLevel;
-				w.Verify = _config.flacVerify;
-			}
-			if (dest is WavPackWriter) {
-				WavPackWriter w = (WavPackWriter)dest;
-				w.CompressionMode = _config.wvCompressionMode;
-				w.ExtraMode = _config.wvExtraMode;
-				w.MD5Sum = _config.wvStoreMD5;
-			}
-			if (dest is APEWriter)
-			{
-				APEWriter w = (APEWriter)dest;
-				w.CompressionLevel = (int) _config.apeCompressionLevel;
-			}
-#endif
-
-			return dest;
+			return AudioReadWrite.GetAudioDest(path, bitsPerSample, 2, 44100, finalSampleCount, _config);
 		}
 
 		private IAudioSource GetAudioSource(int sourceIndex) {

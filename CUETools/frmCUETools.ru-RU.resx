@@ -143,7 +143,7 @@
     <value>&amp;Вход:</value>
   </data>
   <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 118</value>
+    <value>130, 137</value>
   </data>
   <data name="grpOutputStyle.Text" xml:space="preserve">
     <value>Стиль CUE</value>
@@ -257,7 +257,7 @@
     <value>250, 211</value>
   </data>
   <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 118</value>
+    <value>154, 137</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 13</value>
