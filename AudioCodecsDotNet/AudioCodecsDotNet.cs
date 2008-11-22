@@ -26,6 +26,7 @@ namespace AudioCodecsDotNet
 		bool SetTags(NameValueCollection tags);
 		void Close();
 		void Delete();
+		int BitsPerSample { get; }
 		long FinalSampleCount { set; }
 		long BlockSize { set; }
 		string Path { get; }
@@ -60,7 +61,7 @@ namespace AudioCodecsDotNet
 		}
 		
 		public static unsafe void FLACSamplesToBytes_24(int[,] inSamples, uint inSampleOffset,
-			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount)
+			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount, int wastedBits)
 		{
 			uint loopCount = sampleCount * (uint)channelCount;
 
@@ -79,7 +80,7 @@ namespace AudioCodecsDotNet
 
 					for (int i = 0; i < loopCount; i++)
 					{
-						uint sample_out = (uint)*(pInSamples++);
+						uint sample_out = (uint)*(pInSamples++) << wastedBits;
 						*(pOutSamples++) = (byte)(sample_out & 0xFF);
 						sample_out >>= 8;
 						*(pOutSamples++) = (byte)(sample_out & 0xFF);
@@ -95,8 +96,8 @@ namespace AudioCodecsDotNet
 		{
 			if (bitsPerSample == 16)
 				AudioSamples.FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
-			else if (bitsPerSample == 24)
-				AudioSamples.FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
+			else if (bitsPerSample > 16 && bitsPerSample <= 24)
+				AudioSamples.FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount, 24 - bitsPerSample);
 			else
 				throw new Exception("Unsupported bitsPerSample value");
 		}
@@ -132,6 +133,7 @@ namespace AudioCodecsDotNet
 	{
 		public DummyWriter(string path, int bitsPerSample, int channelCount, int sampleRate)
 		{
+			_bitsPerSample = bitsPerSample;
 		}
 
 		public bool SetTags(NameValueCollection tags)
@@ -157,11 +159,18 @@ namespace AudioCodecsDotNet
 			set	{ }
 		}
 
+		public int BitsPerSample
+		{
+			get { return _bitsPerSample;  }
+		}
+
 		public void Write(int[,] buff, uint sampleCount)
 		{
 		}
 
 		public string Path { get { return null; } }
+
+		int _bitsPerSample;
 	}
 
 	public class SilenceGenerator : IAudioSource
@@ -278,7 +287,6 @@ namespace AudioCodecsDotNet
 			ParseHeaders();
 
 			_sampleLen = _dataLen / (uint)_blockAlign;
-			Position = 0;
 		}
 
 		public void Close()
@@ -319,8 +327,8 @@ namespace AudioCodecsDotNet
 			_largeFile = false;
 			foundFormat = false;
 			foundData = false;
-
-			while (_IO.Position < fileEnd)
+			long pos = 12;
+			do
 			{
 				uint ckID, ckSize, ckSizePadded;
 				long ckEnd;
@@ -328,7 +336,8 @@ namespace AudioCodecsDotNet
 				ckID = _br.ReadUInt32();
 				ckSize = _br.ReadUInt32();
 				ckSizePadded = (ckSize + 1U) & ~1U;
-				ckEnd = _IO.Position + (long)ckSizePadded;
+				pos += 8;
+				ckEnd = pos + (long)ckSizePadded;
 
 				if (ckID == fccFormat)
 				{
@@ -343,13 +352,14 @@ namespace AudioCodecsDotNet
 					_br.ReadInt32();
 					_blockAlign = _br.ReadInt16();
 					_bitsPerSample = _br.ReadInt16();
+					pos += 16;
 				}
 				else if (ckID == fccData)
 				{
 					foundData = true;
 
-					_dataOffset = (ulong)_IO.Position;
-					if (_IO.Length <= maxFileSize)
+					_dataOffset = (ulong)pos;
+					if (!_IO.CanSeek || _IO.Length <= maxFileSize)
 					{
 						_dataLen = ckSize;
 					}
@@ -361,34 +371,26 @@ namespace AudioCodecsDotNet
 				}
 
 				if ((foundFormat & foundData) || _largeFile)
-				{
 					break;
-				}
-
-				_IO.Seek(ckEnd, SeekOrigin.Begin);
-			}
+				if (_IO.CanSeek)
+					_IO.Seek(ckEnd, SeekOrigin.Begin);
+				else
+					_br.ReadBytes((int)(ckEnd - pos));
+				pos = ckEnd;
+			} while (true);
 
 			if ((foundFormat & foundData) == false)
-			{
 				throw new Exception("Format or data chunk not found.");
-			}
-
 			if (_channelCount <= 0)
-			{
 				throw new Exception("Channel count is invalid.");
-			}
 			if (_sampleRate <= 0)
-			{
 				throw new Exception("Sample rate is invalid.");
-			}
 			if (_blockAlign != (_channelCount * ((_bitsPerSample + 7) / 8)))
-			{
 				throw new Exception("Block align is invalid.");
-			}
 			if ((_bitsPerSample <= 0) || (_bitsPerSample > 32))
-			{
 				throw new Exception("Bits per sample is invalid.");
-			}
+			if (pos != (long)_dataOffset)
+				Position = 0;
 		}
 
 		public ulong Position
@@ -558,16 +560,48 @@ namespace AudioCodecsDotNet
 			_bw.Write(fccWAVE);
 
 			_bw.Write(fccFormat);
-			_bw.Write((uint)16);
-			_bw.Write((ushort)1);
+			if (_bitsPerSample != 16 && _bitsPerSample != 24)
+			{
+				_bw.Write((uint)40);
+				//_bw.Write((uint)16);
+				_bw.Write((ushort)0xfffe); // WAVEX follows
+			}
+			else
+			{
+				_bw.Write((uint)16);
+				_bw.Write((ushort)1); // PCM
+			}
 			_bw.Write((ushort)_channelCount);
 			_bw.Write((uint)_sampleRate);
 			_bw.Write((uint)(_sampleRate * _blockAlign));
 			_bw.Write((ushort)_blockAlign);
-			_bw.Write((ushort)_bitsPerSample);
+			_bw.Write((ushort)((_bitsPerSample+7)/8*8));
+			hdrLen = 36;
+
+			if (_bitsPerSample != 16 && _bitsPerSample != 24)
+			{
+				_bw.Write((ushort)22); // length of WAVEX structure
+				_bw.Write((ushort)_bitsPerSample);
+				_bw.Write((uint)3); // speaker positions (3 == stereo)
+				_bw.Write((ushort)1); // PCM
+				_bw.Write((ushort)0);
+				_bw.Write((ushort)0);
+				_bw.Write((ushort)0x10);
+				_bw.Write((byte)0x80);
+				_bw.Write((byte)0x00);
+				_bw.Write((byte)0x00);
+				_bw.Write((byte)0xaa);
+				_bw.Write((byte)0x00);
+				_bw.Write((byte)0x38);
+				_bw.Write((byte)0x9b);
+				_bw.Write((byte)0x71);
+
+				hdrLen += 24;
+			}
 
 			_bw.Write(fccData);
 			_bw.Write((uint)0);
+			hdrLen += 8;
 		}
 
 		public void Close()
@@ -621,6 +655,11 @@ namespace AudioCodecsDotNet
 		public long BlockSize
 		{
 			set { }
+		}
+
+		public int BitsPerSample
+		{
+			get { return _bitsPerSample; }
 		}
 
 		public void Write(int[,] buff, uint sampleCount)
