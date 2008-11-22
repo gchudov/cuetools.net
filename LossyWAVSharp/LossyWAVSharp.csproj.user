@@ -1,6 +1,10 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <StartArguments>-</StartArguments>
+    <StartArguments>"06 - Garden of Dreams - Mr. Hope Goes to Wall Street.wav" --stdout</StartArguments>
+    <StartWorkingDirectory>C:\Work\cuetoolsnet\bin\x64\Release\</StartWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <StartArguments>"06 - Garden of Dreams - Mr. Hope Goes to Wall Street.wav" --stdout</StartArguments>
     <StartWorkingDirectory>C:\Work\cuetoolsnet\bin\x64\Release\</StartWorkingDirectory>
   </PropertyGroup>
 </Project>

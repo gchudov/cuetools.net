@@ -505,15 +505,19 @@ namespace AudioCodecsDotNet
 
 	public class WAVWriter : IAudioDest
 	{
-		FileStream _IO;
+		Stream _IO;
 		BinaryWriter _bw;
 		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		long _sampleLen;
 		string _path;
 		private byte[] _sampleBuffer;
-		long hdrLen = 44;
+		long hdrLen = 0;
+		bool _headersWritten = false;
+		long _finalSampleCount;
+		List<byte[]> _chunks = null;
+		List<uint> _chunkFCCs = null;
 
-		public WAVWriter(string path, int bitsPerSample, int channelCount, int sampleRate)
+		public WAVWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO)
 		{
 			_path = path;
 			_bitsPerSample = bitsPerSample;
@@ -521,10 +525,8 @@ namespace AudioCodecsDotNet
 			_sampleRate = sampleRate;
 			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
 
-			_IO = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+			_IO = IO != null ? IO : new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
 			_bw = new BinaryWriter(_IO);
-
-			WriteHeaders();
 		}
 
 		public bool SetTags(NameValueCollection tags)
@@ -536,16 +538,14 @@ namespace AudioCodecsDotNet
 		{
 			if (_sampleLen > 0)
 				throw new Exception("data already written, no chunks allowed");
-			const uint fccData = 0x61746164;
-			_bw.Seek((int)hdrLen - 8, SeekOrigin.Begin);
-			_bw.Write(fcc);
-			_bw.Write((uint)data.Length);
-			_bw.Write(data);
-			if ((data.Length & 1) != 0)
-				_bw.Write((byte) 0);
-			_bw.Write(fccData);
-			_bw.Write((uint)0);
-			hdrLen += data.Length + (data.Length & 1) + 8;
+			if (_chunks == null)
+			{
+				_chunks = new List<byte[]>();
+				_chunkFCCs = new List<uint>();
+			}
+			_chunkFCCs.Add(fcc);
+			_chunks.Add(data);
+			hdrLen += 8 + data.Length + (data.Length & 1);
 		}
 
 		private void WriteHeaders()
@@ -555,15 +555,20 @@ namespace AudioCodecsDotNet
 			const uint fccFormat = 0x20746D66;
 			const uint fccData = 0x61746164;
 
-			_bw.Write(fccRIFF);
-			_bw.Write((uint)0);
-			_bw.Write(fccWAVE);
+			bool wavex = _bitsPerSample != 16 && _bitsPerSample != 24;
 
+			hdrLen += 36 + (wavex ? 24 : 0) + 8;
+
+			uint dataLen = (uint) (_finalSampleCount * _blockAlign);
+			uint dataLenPadded = dataLen + (dataLen & 1);
+
+			_bw.Write(fccRIFF);
+			_bw.Write((uint)(dataLenPadded + hdrLen - 8));
+			_bw.Write(fccWAVE);
 			_bw.Write(fccFormat);
-			if (_bitsPerSample != 16 && _bitsPerSample != 24)
+			if (wavex)
 			{
 				_bw.Write((uint)40);
-				//_bw.Write((uint)16);
 				_bw.Write((ushort)0xfffe); // WAVEX follows
 			}
 			else
@@ -576,9 +581,7 @@ namespace AudioCodecsDotNet
 			_bw.Write((uint)(_sampleRate * _blockAlign));
 			_bw.Write((ushort)_blockAlign);
 			_bw.Write((ushort)((_bitsPerSample+7)/8*8));
-			hdrLen = 36;
-
-			if (_bitsPerSample != 16 && _bitsPerSample != 24)
+			if (wavex)
 			{
 				_bw.Write((ushort)22); // length of WAVEX structure
 				_bw.Write((ushort)_bitsPerSample);
@@ -595,40 +598,49 @@ namespace AudioCodecsDotNet
 				_bw.Write((byte)0x38);
 				_bw.Write((byte)0x9b);
 				_bw.Write((byte)0x71);
-
-				hdrLen += 24;
 			}
+			if (_chunks != null)
+				for (int i = 0; i < _chunks.Count; i++)
+				{
+					_bw.Write(_chunkFCCs[i]);
+					_bw.Write((uint)_chunks[i].Length);
+					_bw.Write(_chunks[i]);
+					if ((_chunks[i].Length & 1) != 0)
+						_bw.Write((byte)0);
+				}
 
 			_bw.Write(fccData);
-			_bw.Write((uint)0);
-			hdrLen += 8;
+			_bw.Write(dataLen);
+
+			_headersWritten = true;
 		}
 
 		public void Close()
 		{
-			const long maxFileSize = 0x7FFFFFFEL;
-			long dataLen, dataLenPadded;		
+			if (_finalSampleCount == 0)
+			{
+				const long maxFileSize = 0x7FFFFFFEL;
+				long dataLen = _sampleLen * _blockAlign;
+				if ((dataLen & 1) == 1)
+					_bw.Write((byte)0);
+				if (dataLen + hdrLen > maxFileSize)
+					dataLen = ((maxFileSize - hdrLen) / _blockAlign) * _blockAlign;
+				long dataLenPadded = dataLen + (dataLen & 1);
 
-			dataLen = _sampleLen * _blockAlign;
+				_bw.Seek(4, SeekOrigin.Begin);
+				_bw.Write((uint)(dataLenPadded + hdrLen - 8));
 
-			if ((dataLen & 1) == 1)
-				_bw.Write((byte)0);
-
-			if (dataLen + hdrLen > maxFileSize)
-				dataLen = ((maxFileSize - hdrLen) / _blockAlign) * _blockAlign;
-
-			dataLenPadded = dataLen + (dataLen & 1);
-
-			_bw.Seek(4, SeekOrigin.Begin);
-			_bw.Write((uint)(dataLenPadded + hdrLen - 8));
-
-			_bw.Seek((int)hdrLen-4, SeekOrigin.Begin);
-			_bw.Write((uint)dataLen);
+				_bw.Seek((int)hdrLen - 4, SeekOrigin.Begin);
+				_bw.Write((uint)dataLen);
+			}
 
 			_bw.Close();
 
 			_bw = null;
 			_IO = null;
+
+			if (_finalSampleCount != 0 && _sampleLen != _finalSampleCount)
+				throw new Exception("Samples written differs from the expected sample count.");
 		}
 
 		public void Delete()
@@ -649,7 +661,7 @@ namespace AudioCodecsDotNet
 
 		public long FinalSampleCount
 		{
-			set { }
+			set { _finalSampleCount = value;  }
 		}
 
 		public long BlockSize
@@ -666,6 +678,8 @@ namespace AudioCodecsDotNet
 		{
 			if (sampleCount == 0)
 				return;
+			if (!_headersWritten)
+				WriteHeaders();
 			if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _blockAlign)
 				_sampleBuffer = new byte[sampleCount * _blockAlign];
 			AudioSamples.FLACSamplesToBytes(buff, 0, _sampleBuffer, 0,

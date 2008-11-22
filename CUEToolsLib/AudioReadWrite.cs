@@ -51,7 +51,7 @@ namespace CUEToolsLib {
 			IAudioDest dest;
 			switch (extension) {
 				case ".wav":
-					dest = new WAVWriter(path, bitsPerSample, channelCount, sampleRate); 
+					dest = new WAVWriter(path, bitsPerSample, channelCount, sampleRate, null);
 					break;
 #if !MONO
 				case ".flac":

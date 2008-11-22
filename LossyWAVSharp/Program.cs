@@ -28,10 +28,12 @@ namespace LossyWAVSharp
 			Console.WriteLine();
 			Console.WriteLine("Advanced Options:");
 			Console.WriteLine();
+			Console.WriteLine("-                    if filename=\"-\" then WAV input is taken from STDIN.");
 			Console.WriteLine("-q, --quality <n>    quality preset (10=highest quality, 0=lowest bitrate;");
  			Console.WriteLine("                     default = --standard = 5; --insane = 10; --extreme = 7.5;");
  			Console.WriteLine("                     --portable = 2.5)");
 			Console.WriteLine("-N  --stdinname <t>  pseudo filename to use when input from STDIN.");
+			Console.WriteLine("    --stdout         write processed WAV output to STDOUT.");
 		}
 
 		static void Main(string[] args)
@@ -50,6 +52,7 @@ namespace LossyWAVSharp
 			string stdinName = null;
 			double quality = 5.0;
 			bool createCorrection = false;
+			bool toStdout = false;
 			for (int arg = 1; arg < args.Length; arg++)
 			{
 				bool ok = true;
@@ -67,6 +70,8 @@ namespace LossyWAVSharp
 					stdinName = args[arg];
 				else if ((args[arg] == "-q" || args[arg] == "--quality") && ++arg < args.Length)
 					ok = double.TryParse(args[arg], out quality);
+				else if (args[arg] == "--stdout")
+					toStdout = true;
 				else
 					ok = false;
 				if (!ok)
@@ -75,20 +80,22 @@ namespace LossyWAVSharp
 					return;
 				}
 			}
-			//Stream stdout = Console.OpenStandardOutput();
 			DateTime start = DateTime.Now;
 			TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
+#if !DEBUG
 			try
+#endif
 			{
 				WAVReader audioSource = new WAVReader(sourceFile, (sourceFile == "-" ? Console.OpenStandardInput() : null));
 				if (sourceFile == "-" && stdinName != null) sourceFile = stdinName;
-				WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
-				WAVWriter lwcdfDest = createCorrection ? new WAVWriter(Path.ChangeExtension(sourceFile, ".lwcdf.wav"), audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate) : null;
+				WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
+				WAVWriter lwcdfDest = createCorrection ? new WAVWriter(Path.ChangeExtension(sourceFile, ".lwcdf.wav"), audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, null) : null;
 				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, quality);
 				int[,] buff = new int[0x1000, audioSource.ChannelCount];
 
 				Console.WriteLine("Filename  : {0}", sourceFile);
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
+				lossyWAV.FinalSampleCount = (long) audioSource.Length;
 
 				do
 				{
@@ -119,12 +126,14 @@ namespace LossyWAVSharp
 				audioSource.Close();
 				lossyWAV.Close();
 			}
+#if !DEBUG
 			catch (Exception ex)
 			{
 				Console.WriteLine();
 				Console.WriteLine("Error: {0}", ex.Message);
-				Console.WriteLine("{0}", ex.StackTrace);
+				//Console.WriteLine("{0}", ex.StackTrace);
 			}
+#endif
 		}
 	}
 }
