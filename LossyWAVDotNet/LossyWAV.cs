@@ -33,6 +33,8 @@ namespace LossyWAVDotNet
 	{
 		#region Public Methods
 
+		public const string version_string = "1.1.1#";
+
 		public LossyWAVWriter(IAudioDest audioDest, IAudioDest lwcdfDest, int bitsPerSample, int channelCount, int sampleRate, double quality)
 		{
 			_audioDest = audioDest;
@@ -40,6 +42,11 @@ namespace LossyWAVDotNet
 			channels = channelCount;
 			samplerate = sampleRate;
 			bitspersample = bitsPerSample;
+
+			if (_audioDest != null && _audioDest.BitsPerSample > bitsPerSample)
+				throw new Exception("audio parameters mismatch");
+			if (_lwcdfDest != null && _lwcdfDest.BitsPerSample != bitsPerSample)
+				throw new Exception("audio parameters mismatch");
 
 			int quality_integer = (int)Math.Floor(quality);
 
@@ -136,6 +143,26 @@ namespace LossyWAVDotNet
 		public long BlockSize
 		{
 			set { }
+		}
+
+		public int BitsPerSample
+		{
+			get { return bitspersample; }
+		}
+
+		public int OverallBitsRemoved
+		{
+			get { return overall_bits_removed; }
+		}
+
+		public int BlocksProcessed
+		{
+			get { return blocks_processed; }
+		}
+
+		public int SamplesProcessed
+		{
+			get { return (blocks_processed - 1) * codec_block_size + this_codec_block_size; }
 		}
 
 		public int Analysis
@@ -367,9 +394,9 @@ namespace LossyWAVDotNet
 				for (int i = analysis_recs[analysis_number].lo_bins; i <= analysis_recs[analysis_number].hi_bins; i++)
 				{
 					double f_tfb = i * analysis_recs[analysis_number].bin_width;
-					double sp = (float)(1 + Math.Pow(Math.Min(f_dfb, f_tfb - f_lfb) / f_dfb, SP) * SW);
+					double sp = 1 + Math.Pow(Math.Min(f_dfb, f_tfb - f_lfb) / f_dfb, SP) * SW;
 					int sp_int = (int)Math.Floor(sp - 1);
-					double sp_rem = Math.Max(0, sp - sp_int - (1 - (sp_int & 1))) / 2F;
+					double sp_rem = Math.Max(0, sp - sp_int - (1 - (sp_int & 1))) / 2.0;
 					analysis_recs[analysis_number].spreading_averages_int[i] = sp_int;
 					analysis_recs[analysis_number].spreading_averages_rem[i] = (float)sp_rem;
 					analysis_recs[analysis_number].spreading_averages_rec[i] = (float)(1 / sp);
@@ -400,20 +427,19 @@ namespace LossyWAVDotNet
 				rotating_blocks_ptr[i] = new int[codec_block_size, channels];
 			btrd_codec_block = new int[codec_block_size, channels];
 			corr_codec_block = new int[codec_block_size, channels];
-			blocks_processed = 1;
+			blocks_processed = 0;
 			overall_bits_removed = 0;
 			overall_bits_lost = 0;
 			initialized = true;
 
 			const uint fccFact = 0x74636166;
-			string version_string = "lossyWAV 1.1.1#";
 			string datestamp = DateTime.Now.ToString();
 			string parameter_string = "--standard "; // !!!!!
-			string factString = version_string + " @ " + datestamp + ", " + parameter_string + "\r\n\0";
+			string factString = "lossyWAV " + version_string + " @ " + datestamp + ", " + parameter_string + "\r\n\0";
 			if (_audioDest != null && _audioDest is WAVWriter) ((WAVWriter)_audioDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
 			if (_lwcdfDest != null && _lwcdfDest is WAVWriter) ((WAVWriter)_lwcdfDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
-			_audioDest.BlockSize = codec_block_size;
-			_lwcdfDest.BlockSize = codec_block_size * 2;
+			if (_audioDest != null) _audioDest.BlockSize = codec_block_size;
+			if (_lwcdfDest != null) _lwcdfDest.BlockSize = codec_block_size * 2;
 		}
 
 		double fill_fft_input(int actual_analysis_block_start, int this_fft_length, int channel)
@@ -443,7 +469,7 @@ namespace LossyWAVDotNet
 			}
 			sc_i = analysis_recs[analysis_number].hi_bins + 1;
 			sc_x = Math.Sqrt(fastsqr(fft_array[sc_i * 2]) + fastsqr(fft_array[sc_i * 2 + 1])) * analysis_recs[analysis_number].skewing_function[sc_i];
-			sc_y += sc_x;
+			//sc_y += sc_x;
 			fft_result[sc_i] = sc_x;
 
 			double snr_value_exp = Math.Pow(2, snr_value / lg2x20);
@@ -463,6 +489,12 @@ namespace LossyWAVDotNet
 
 		void remove_bits(int channel, short bits_to_remove_from_this_channel)
 		{
+			short min_bits_to_remove = 0;
+			if (_audioDest != null && _audioDest.BitsPerSample < bitspersample)
+				min_bits_to_remove = (short) (bitspersample - _audioDest.BitsPerSample);
+			if (bits_to_remove_from_this_channel < min_bits_to_remove)
+				bits_to_remove_from_this_channel = min_bits_to_remove;
+
 			channel_recs[channel].bits_to_remove = bits_to_remove_from_this_channel;
 			channel_recs[channel].bits_lost = 0;
 			channel_recs[channel].clipped_samples = 0;
@@ -528,7 +560,7 @@ namespace LossyWAVDotNet
 				channel_recs[channel].clipped_samples = this_channel_clips;
 				if (this_channel_clips <= maximum_clips_per_channel)
 					break;
-				if (bits_to_remove_from_this_channel == 0)
+				if (bits_to_remove_from_this_channel <= min_bits_to_remove)
 					break;
 				bits_to_remove_from_this_channel--;
 				channel_recs[channel].bits_lost++;
@@ -648,7 +680,17 @@ namespace LossyWAVDotNet
 				clipped_samples += channel_recs[channel].clipped_samples;
 			}
 
-			if (_audioDest != null) _audioDest.Write(btrd_codec_block, (uint)this_codec_block_size);
+			if (_audioDest != null)
+			{
+				if (_audioDest.BitsPerSample < bitspersample)
+				{
+					int sh = bitspersample - _audioDest.BitsPerSample;
+					for (int i = 0; i < this_codec_block_size; i++)
+						for (int c = 0; c < channels; c++)
+							btrd_codec_block[i, c] >>= sh;
+				}
+				_audioDest.Write(btrd_codec_block, (uint)this_codec_block_size);
+			}
 			if (_lwcdfDest != null) _lwcdfDest.Write(corr_codec_block, (uint)this_codec_block_size);
 		}
 
