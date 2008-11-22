@@ -66,6 +66,8 @@ namespace JDP {
 			chkCreateCUEFileWhenEmbedded.Checked = _config.createCUEFileWhenEmbedded;
 			chkTruncateExtra4206Samples.Checked = _config.truncate4608ExtraSamples;
 			numericLossyWAVQuality.Value = _config.lossyWAVQuality;
+			chkHDCDLW16.Checked = _config.decodeHDCDtoLW16;
+			chkHDCD24bit.Checked = _config.decodeHDCDto24bit;
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -138,6 +140,8 @@ namespace JDP {
 			_config.createM3U = chkCreateM3U.Checked;
 			_config.createCUEFileWhenEmbedded = chkCreateCUEFileWhenEmbedded.Checked;
 			_config.truncate4608ExtraSamples = chkTruncateExtra4206Samples.Checked;
+			_config.decodeHDCDtoLW16 = chkHDCDLW16.Checked;
+			_config.decodeHDCDto24bit = chkHDCD24bit.Checked;
 		}
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)
@@ -171,6 +175,12 @@ namespace JDP {
 		private void chkRemoveSpecial_CheckedChanged(object sender, EventArgs e)
 		{
 			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked;
+		}
+
+		private void chkHDCDDecode_CheckedChanged(object sender, EventArgs e)
+		{
+			chkHDCDLW16.Enabled = chkHDCDDecode.Checked;
+			chkHDCD24bit.Enabled = chkHDCDDecode.Checked;
 		}
 	}
 }

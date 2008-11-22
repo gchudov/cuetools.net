@@ -246,11 +246,11 @@ namespace JDP {
 				cueSheet = new CUESheet(_config);
 				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
 				cueSheet.WriteOffset = _writeOffset;
-				cueSheet.Open(pathIn);
+				cueSheet.Open(pathIn, chkLossyWAV.Checked);
 				
 				UpdateOutputPath(cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
 				pathOut = txtOutputPath.Text;
-				cueSheet.GenerateFilenames(SelectedOutputAudioFormat, pathOut, chkLossyWAV.Checked);
+				cueSheet.GenerateFilenames(SelectedOutputAudioFormat, pathOut);
 				outDir = Path.GetDirectoryName(pathOut);
 				if (cueStyle == CUEStyle.SingleFileWithCUE)
 					cueSheet.SingleFilename = Path.GetFileName (pathOut);
@@ -774,8 +774,13 @@ namespace JDP {
 					ext = General.FormatExtension (SelectedOutputAudioFormat);
 				if (chkLossyWAV.Checked)
 					ext = ".lossy" + ext;
-				if (_config.detectHDCD && _config.decodeHDCD)
-					ext = ".24bit" + ext;
+				if (_config.detectHDCD && _config.decodeHDCD && (!chkLossyWAV.Checked || !_config.decodeHDCDtoLW16))
+				{
+					if (_config.decodeHDCDto24bit)
+						ext = ".24bit" + ext;
+					else
+						ext = ".20bit" + ext;
+				}
 				
 				if (rbCreateSubdirectory.Checked) {
 					pathOut = Path.Combine(Path.Combine(dir, txtCreateSubdirectory.Text), file + ext);
@@ -919,6 +924,12 @@ namespace JDP {
 		{
 			updateOutputStyles();
 			UpdateOutputPath();
+		}
+
+		private void rbArApplyOffset_CheckedChanged(object sender, EventArgs e)
+		{
+			UpdateOutputPath();
+			SetupControls(false);
 		}
 	}
 

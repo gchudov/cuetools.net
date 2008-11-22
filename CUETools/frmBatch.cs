@@ -139,7 +139,7 @@ namespace JDP
 					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
 
 				bool outputAudio = _accurateOffset || !_accurateRip;
-				cueSheet.Open(pathIn);
+				cueSheet.Open(pathIn, _lossyWAV);
 				if (outputAudio)
 				{
 					bool pathFound = false;
@@ -159,7 +159,7 @@ namespace JDP
 				}
 				else
 					pathOut = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
-				cueSheet.GenerateFilenames(_audioFormat, pathOut, _lossyWAV);
+				cueSheet.GenerateFilenames(_audioFormat, pathOut);
 				if (outputAudio)
 				{
 					if (_cueStyle == CUEStyle.SingleFileWithCUE)

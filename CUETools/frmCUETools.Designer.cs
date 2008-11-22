@@ -371,6 +371,7 @@ namespace JDP {
 			this.rbArApplyOffset.Name = "rbArApplyOffset";
 			this.toolTip1.SetToolTip(this.rbArApplyOffset, resources.GetString("rbArApplyOffset.ToolTip"));
 			this.rbArApplyOffset.UseVisualStyleBackColor = true;
+			this.rbArApplyOffset.CheckedChanged += new System.EventHandler(this.rbArApplyOffset_CheckedChanged);
 			// 
 			// rbArVerify
 			// 

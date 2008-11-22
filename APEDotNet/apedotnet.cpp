@@ -284,10 +284,10 @@ namespace APEDotNet {
 	public:
 		APEWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
 		{
-			if (bitsPerSample != 16 && bitsPerSample != 24)
-				throw gcnew Exception("Bits per sample must be 16 or 24.");
 			if (channelCount != 1 && channelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
+			if (bitsPerSample != 16 && bitsPerSample != 24)
+				throw gcnew Exception("Monkey's Audio doesn't support selected bits per sample value.");
 
 			_path = path;
 			_tags = gcnew NameValueCollection();
@@ -372,6 +372,11 @@ namespace APEDotNet {
 			void set(Int64 value)
 			{
 			}
+		}
+
+		virtual property int BitsPerSample
+		{
+			int get() { return _bitsPerSample;  }
 		}
 
 		virtual void Write(array<Int32,2>^ buff, UInt32 sampleCount) 

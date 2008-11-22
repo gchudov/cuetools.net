@@ -243,6 +243,8 @@ namespace CUEToolsLib
 		public bool createCUEFileWhenEmbedded;
 		public bool truncate4608ExtraSamples;
 		public int lossyWAVQuality;
+		public bool decodeHDCDtoLW16;
+		public bool decodeHDCDto24bit;
 
 		public CUEConfig()
 		{
@@ -284,6 +286,8 @@ namespace CUEToolsLib
 			createCUEFileWhenEmbedded = false;
 			truncate4608ExtraSamples = true;
 			lossyWAVQuality = 5;
+			decodeHDCDtoLW16 = false;
+			decodeHDCDto24bit = true;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -326,6 +330,8 @@ namespace CUEToolsLib
 			sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
 			sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
 			sw.Save("LossyWAVQuality", lossyWAVQuality);
+			sw.Save("DecodeHDCDToLossyWAV16", decodeHDCDtoLW16);
+			sw.Save("DecodeHDCDTo24bit", decodeHDCDto24bit);
 		}
 
 		public void Load(SettingsReader sr)
@@ -368,6 +374,8 @@ namespace CUEToolsLib
 			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
 			truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
 			lossyWAVQuality = sr.LoadInt32("LossyWAVQuality", 0, 10) ?? 5;
+			decodeHDCDtoLW16 = sr.LoadBoolean("DecodeHDCDToLossyWAV16") ?? false;
+			decodeHDCDto24bit = sr.LoadBoolean("DecodeHDCDTo24bit") ?? true;
 		}
 
 		public string CleanseString (string s)
@@ -440,6 +448,7 @@ namespace CUEToolsLib
 		private HttpStatusCode accResult;
 		private const int _arOffsetRange = 5 * 588 - 1;
 		private HDCDDotNet.HDCDDotNet hdcdDecoder;
+		private bool _outputLossyWAV = false;
 		CUEConfig _config;
 		string _cddbDiscIdTag;
 		private bool _isArchive;
@@ -478,11 +487,12 @@ namespace CUEToolsLib
 			accDisks = new List<AccDisk>();
 		}
 
-		public void Open(string pathIn)
+		public void Open(string pathIn, bool outputLossyWAV)
 		{
+			_outputLossyWAV = outputLossyWAV;
 			if (_config.detectHDCD)
 			{
-				try { hdcdDecoder = new HDCDDotNet.HDCDDotNet(2, 44100, _config.decodeHDCD); }
+				try { hdcdDecoder = new HDCDDotNet.HDCDDotNet(2, 44100, ((_outputLossyWAV && _config.decodeHDCDtoLW16) || !_config.decodeHDCDto24bit) ? 20 : 24, _config.decodeHDCD); }
 				catch { }
 			}
 
@@ -987,7 +997,7 @@ namespace CUEToolsLib
 			return null;
 		}
 
-		public void GenerateFilenames (OutputAudioFormat format, string outputPath, bool lossyWAV)
+		public void GenerateFilenames (OutputAudioFormat format, string outputPath)
 		{
 			_cuePath = outputPath;
 
@@ -1013,10 +1023,15 @@ namespace CUEToolsLib
 			replace.Add(null);
 			replace.Add(Path.GetFileNameWithoutExtension(outputPath));
 
-			if (lossyWAV)
+			if (_outputLossyWAV)
 				extension = ".lossy" + extension;
-			if (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD)
-				extension = ".24bit" + extension;
+			if (_config.detectHDCD && _config.decodeHDCD && (!_outputLossyWAV || !_config.decodeHDCDtoLW16))
+			{
+				if (_config.decodeHDCDto24bit )
+					extension = ".24bit" + extension;
+				else
+					extension = ".20bit" + extension;
+			}
 
 			if (_config.keepOriginalFilenames && HasSingleFilename)
 			{
@@ -2124,7 +2139,6 @@ namespace CUEToolsLib
 			int iSource = -1;
 			int iDest = -1;
 			uint samplesRemSource = 0;
-			int bitsPerSample = (_config.detectHDCD && hdcdDecoder != null && _config.decodeHDCD && !noOutput) ? 24 : 16;
 
 			if (_writeOffset != 0)
 			{
@@ -2178,7 +2192,7 @@ namespace CUEToolsLib
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 			{
 				iDest++;
-				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
+				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
 				if (!noOutput)
 					SetAlbumTags(audioDest, bestOffset, style == CUEStyle.SingleFileWithCUE);
 			}
@@ -2211,7 +2225,7 @@ namespace CUEToolsLib
 						hdcdDecoder.AudioDest = null;
 					if (audioDest != null)
 						audioDest.Close();
-					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
+					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
 					if (!noOutput)
 						SetTrackTags(audioDest, iTrack, bestOffset);
 				}		
@@ -2238,7 +2252,7 @@ namespace CUEToolsLib
 						if (audioDest != null)
 							audioDest.Close();
 						iDest++;
-						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
+						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
 						if (!noOutput)
 							SetTrackTags(audioDest, iTrack, bestOffset);
 					}
@@ -2247,7 +2261,7 @@ namespace CUEToolsLib
 						discardOutput = !htoaToFile;
 						if (htoaToFile) {
 							iDest++;
-							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput, bitsPerSample);
+							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
 						}
 					}
 					else if ((style == CUEStyle.GapsLeftOut) && (iIndex == 0)) {
@@ -2280,7 +2294,7 @@ namespace CUEToolsLib
 						audioSource.Read(sampleBuffer, copyCount);
 						if (!discardOutput)
 						{
-							if (!_config.detectHDCD || !_config.decodeHDCD || hdcdDecoder == null)
+							if (!_config.detectHDCD || !_config.decodeHDCD)
 								audioDest.Write(sampleBuffer, copyCount);
 							if (_config.detectHDCD && hdcdDecoder != null)
 							{
@@ -2537,11 +2551,11 @@ namespace CUEToolsLib
 			}
 		}
 
-		private IAudioDest GetAudioDest(string path, int finalSampleCount, bool noOutput, int bitsPerSample) {
+		private IAudioDest GetAudioDest(string path, int finalSampleCount, bool noOutput) 
+		{
 			if (noOutput)
-				return new DummyWriter(path, bitsPerSample, 2, 44100);
-
-			return AudioReadWrite.GetAudioDest(path, bitsPerSample, 2, 44100, finalSampleCount, _config);
+				return new DummyWriter(path, (_config.detectHDCD && _config.decodeHDCD) ? 24 : 16, 2, 44100);
+			return AudioReadWrite.GetAudioDest(path, finalSampleCount, _config);
 		}
 
 		private IAudioSource GetAudioSource(int sourceIndex) {

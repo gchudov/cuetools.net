@@ -69,6 +69,8 @@ namespace JDP {
 			this.chkWriteARTagsOnVerify = new System.Windows.Forms.CheckBox();
 			this.chkHDCDDecode = new System.Windows.Forms.CheckBox();
 			this.chkHDCDStopLooking = new System.Windows.Forms.CheckBox();
+			this.chkHDCD24bit = new System.Windows.Forms.CheckBox();
+			this.chkHDCDLW16 = new System.Windows.Forms.CheckBox();
 			this.grpAudioFilenames = new System.Windows.Forms.GroupBox();
 			this.chkKeepOriginalFilenames = new System.Windows.Forms.CheckBox();
 			this.txtSpecialExceptions = new System.Windows.Forms.TextBox();
@@ -699,6 +701,7 @@ namespace JDP {
 			this.chkHDCDDecode.Name = "chkHDCDDecode";
 			this.toolTip1.SetToolTip(this.chkHDCDDecode, resources.GetString("chkHDCDDecode.ToolTip"));
 			this.chkHDCDDecode.UseVisualStyleBackColor = true;
+			this.chkHDCDDecode.CheckedChanged += new System.EventHandler(this.chkHDCDDecode_CheckedChanged);
 			// 
 			// chkHDCDStopLooking
 			// 
@@ -710,6 +713,28 @@ namespace JDP {
 			this.chkHDCDStopLooking.Name = "chkHDCDStopLooking";
 			this.toolTip1.SetToolTip(this.chkHDCDStopLooking, resources.GetString("chkHDCDStopLooking.ToolTip"));
 			this.chkHDCDStopLooking.UseVisualStyleBackColor = true;
+			// 
+			// chkHDCD24bit
+			// 
+			this.chkHDCD24bit.AccessibleDescription = null;
+			this.chkHDCD24bit.AccessibleName = null;
+			resources.ApplyResources(this.chkHDCD24bit, "chkHDCD24bit");
+			this.chkHDCD24bit.BackgroundImage = null;
+			this.chkHDCD24bit.Font = null;
+			this.chkHDCD24bit.Name = "chkHDCD24bit";
+			this.toolTip1.SetToolTip(this.chkHDCD24bit, resources.GetString("chkHDCD24bit.ToolTip"));
+			this.chkHDCD24bit.UseVisualStyleBackColor = true;
+			// 
+			// chkHDCDLW16
+			// 
+			this.chkHDCDLW16.AccessibleDescription = null;
+			this.chkHDCDLW16.AccessibleName = null;
+			resources.ApplyResources(this.chkHDCDLW16, "chkHDCDLW16");
+			this.chkHDCDLW16.BackgroundImage = null;
+			this.chkHDCDLW16.Font = null;
+			this.chkHDCDLW16.Name = "chkHDCDLW16";
+			this.toolTip1.SetToolTip(this.chkHDCDLW16, resources.GetString("chkHDCDLW16.ToolTip"));
+			this.chkHDCDLW16.UseVisualStyleBackColor = true;
 			// 
 			// grpAudioFilenames
 			// 
@@ -1039,6 +1064,8 @@ namespace JDP {
 			this.grpHDCD.AccessibleName = null;
 			resources.ApplyResources(this.grpHDCD, "grpHDCD");
 			this.grpHDCD.BackgroundImage = null;
+			this.grpHDCD.Controls.Add(this.chkHDCD24bit);
+			this.grpHDCD.Controls.Add(this.chkHDCDLW16);
 			this.grpHDCD.Controls.Add(this.chkHDCDStopLooking);
 			this.grpHDCD.Controls.Add(this.chkHDCDDecode);
 			this.grpHDCD.Font = null;
@@ -1189,6 +1216,8 @@ namespace JDP {
 		private System.Windows.Forms.GroupBox groupBox4;
 		private System.Windows.Forms.NumericUpDown numericLossyWAVQuality;
 		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.CheckBox chkHDCDLW16;
+		private System.Windows.Forms.CheckBox chkHDCD24bit;
 
 	}
 }

@@ -314,8 +314,8 @@ namespace WavPackDotNet {
 
 			if (channelCount != 1 && channelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
-			if (bitsPerSample != 16 && bitsPerSample != 24)
-				throw gcnew Exception("Bits per sample must be 16 or 24.");
+			if (bitsPerSample < 16 || bitsPerSample > 24)
+				throw gcnew Exception("Bits per sample must be 16..24.");
 
 			_path = path;
 			_tags = gcnew NameValueCollection();
@@ -394,6 +394,11 @@ namespace WavPackDotNet {
 			}
 		}
 
+		virtual property int BitsPerSample
+		{
+			int get() { return _bitsPerSample;  }
+		}
+
 		virtual void Write(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) 
 		{
 			if (!_initialized) 
@@ -407,9 +412,21 @@ namespace WavPackDotNet {
 				UpdateHash(_sampleBuffer, (int) sampleCount * _blockAlign);
 			}
 
-			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
-			if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount)) {
-				throw gcnew Exception("An error occurred while encoding.");
+			if ((_bitsPerSample & 7) != 0)
+			{
+				if (_shiftedSampleBuffer == nullptr || _shiftedSampleBuffer.GetLength(0) < sampleCount)
+					_shiftedSampleBuffer = gcnew array<int,2>(sampleCount, _channelCount);
+				for (int i = 0; i < sampleCount; i++)
+					for (int c = 0; c < _channelCount; c++)
+						_shiftedSampleBuffer[i,c] = sampleBuffer[i,c] << 8 - (_bitsPerSample & 7);
+				pin_ptr<Int32> pSampleBuffer = &_shiftedSampleBuffer[0, 0];
+				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount))
+					throw gcnew Exception("An error occurred while encoding.");
+			} else
+			{
+				pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
+				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount))
+					throw gcnew Exception("An error occurred while encoding.");
 			}
 
 			_samplesWritten += sampleCount;
@@ -482,6 +499,7 @@ namespace WavPackDotNet {
 		bool _md5Sum;
 		MD5^ _md5hasher;
 		array<unsigned char>^ _sampleBuffer;
+		array<int,2>^ _shiftedSampleBuffer;
 
 		void Initialize() {
 			WavpackConfig config;

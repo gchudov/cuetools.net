@@ -455,8 +455,8 @@ namespace FLACDotNet {
 	public:
 		FLACWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
 		{
-			if (bitsPerSample != 16 && bitsPerSample != 24)
-				throw gcnew Exception("Bits per sample must be 16 or 24.");
+			if (bitsPerSample < 16 || bitsPerSample > 24)
+				throw gcnew Exception("Bits per sample must be 16..24.");
 
 			_initialized = false;
 			_path = path;
@@ -524,6 +524,11 @@ namespace FLACDotNet {
 			{
 				_blockSize = value;
 			}
+		}
+
+		virtual property int BitsPerSample
+		{
+			int get() { return _bitsPerSample;  }
 		}
 
 		virtual bool SetTags (NameValueCollection^ tags) 

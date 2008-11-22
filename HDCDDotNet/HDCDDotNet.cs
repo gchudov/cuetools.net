@@ -28,7 +28,7 @@ namespace HDCDDotNet
 
 	public class HDCDDotNet
 	{
-		public HDCDDotNet (Int16 channels, Int32 sample_rate, bool decode)
+		public HDCDDotNet (Int16 channels, Int32 sample_rate, Int32 output_bps, bool decode)
 		{
 			_decoder = IntPtr.Zero;
 #if !MONO
@@ -40,7 +40,7 @@ namespace HDCDDotNet
 			b &= hdcd_decoder_set_num_channels(_decoder, channels);
 			b &= hdcd_decoder_set_sample_rate(_decoder, sample_rate);
 			b &= hdcd_decoder_set_input_bps(_decoder, 16);
-			b &= hdcd_decoder_set_output_bps(_decoder, 24);
+			b &= hdcd_decoder_set_output_bps(_decoder, (short) output_bps);
 			if (!b)
 				throw new Exception("Failed to set up HDCD _decoder parameters.");
 			_decoderCallback = decode ? new hdcd_decoder_write_callback(DecoderCallback) : null;
