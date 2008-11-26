@@ -37,10 +37,11 @@ namespace CUETools.Ripper.SCSI
 	{
 		byte[] cdtext = null;
 		private Device m_device;
-		uint _sampleOffset = 0;
+		int _sampleOffset = 0;
 		uint _samplesInBuffer = 0;
 		uint _samplesBufferOffset = 0;
 		uint _samplesBufferSector = 0;
+		int _driveOffset = 0;
 		const int CB_AUDIO = 588 * 4 + 16;
 		const int NSECTORS = 32;
 		int _currentTrack = -1, _currentIndex = -1, _currentTrackActualStart = -1;
@@ -141,26 +142,129 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
+		private void ProcessSubchannel(int sector, int Sectors2Read)
+		{
+			for (int iSector = 0; iSector < Sectors2Read; iSector++)
+			{
+				int q_pos = (iSector + 1) * (588 * 4 + 16) - 16;
+				int ctl = _sectorBuffer[q_pos + 0] >> 4;
+				int adr = _sectorBuffer[q_pos + 0] & 7;
+				bool preemph = (ctl == 1);
+				switch (adr)
+				{
+					case 1: // current position
+						{
+							int iTrack = fromBCD(_sectorBuffer[q_pos + 1]);
+							int iIndex = fromBCD(_sectorBuffer[q_pos + 2]);
+							if (iTrack != _currentTrack)
+							{
+								_currentTrack = iTrack;
+								_currentTrackActualStart = sector + iSector;
+								_currentIndex = iIndex;
+								if (_currentIndex == 1)
+									_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex(1, _toc.tracks[iTrack - 1].Start.Sector));
+								else if (_currentIndex != 0)
+									throw new Exception("invalid index");
+							}
+							else
+								if (iIndex != _currentIndex)
+								{
+									if (iIndex != _currentIndex + 1)
+										throw new Exception("invalid index");
+									_currentIndex = iIndex;
+									if (_currentIndex == 1)
+									{
+										int pregap = sector + iSector - _currentTrackActualStart;
+										_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex(0, (uint)(_toc.tracks[iTrack - 1].Start.Sector - pregap)));
+										_currentTrackActualStart = sector + iSector;
+									}
+									_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex((uint)iIndex, (uint)(_toc.tracks[iTrack - 1].Start.Sector + sector + iSector - _currentTrackActualStart)));
+									_currentIndex = iIndex;
+								}
+							break;
+						}
+					case 2: // catalog
+						if (_toc._catalog == null)
+						{
+							StringBuilder catalog = new StringBuilder();
+							for (int i = 1; i < 8; i++)
+								catalog.AppendFormat("{0:x2}", _sectorBuffer[q_pos + i]);
+							_toc._catalog = catalog.ToString(0, 13);
+						}
+						break;
+					case 3: //isrc
+						break;
+				}
+			}
+		}
+
+		private unsafe void FetchSectors(int sector, int Sectors2Read)
+		{
+			fixed (byte* data = _sectorBuffer)
+			{
+				Device.CommandStatus st = m_device.ReadCDAndSubChannel(2, 1, true, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), Sectors2Read * (2352 + 16));
+				if (st != Device.CommandStatus.Success)
+					throw new Exception("SCSI error");
+			}
+			ProcessSubchannel(sector, Sectors2Read);
+		}
+
 		public unsafe uint Read(int[,] buff, uint sampleCount)
 		{
 			if (_toc == null)
 				throw new Exception("invalid TOC");
-			if (_sampleOffset >= (uint)Length)
+			if (_sampleOffset - _driveOffset >= (uint)Length)
 				return 0;
-			if (_sampleOffset + sampleCount > Length)
-				sampleCount = (uint)Length - _sampleOffset;
+			if (_sampleOffset > (uint)Length)
+			{
+				int samplesRead = _sampleOffset - (int)Length;
+				for (int i = 0; i < samplesRead; i++)
+					for (int c = 0; c < ChannelCount; c++)
+						buff[i, c] = 0;
+				_sampleOffset += samplesRead;
+				return 0;
+			}
+			if ((uint)(_sampleOffset - _driveOffset + sampleCount) > Length)
+				sampleCount = (uint)((int)Length + _driveOffset - _sampleOffset);
+			int silenceCount = 0;
+			if ((uint)(_sampleOffset + sampleCount) > Length)
+			{
+				silenceCount = _sampleOffset + (int)sampleCount - (int)Length;
+				sampleCount -= (uint) silenceCount;
+			}
 			uint pos = 0;
+			if (_sampleOffset < 0)
+			{
+				uint nullSamplesRead = Math.Min((uint)-_sampleOffset, sampleCount);
+				for (int i = 0; i < nullSamplesRead; i++)
+					for (int c = 0; c < ChannelCount; c++)
+						buff[i, c] = 0;
+				pos += nullSamplesRead;
+				sampleCount -= nullSamplesRead;
+				_sampleOffset += (int)nullSamplesRead;
+				if (sampleCount == 0)
+					return pos;
+			}
 			if (_samplesInBuffer > 0)
 			{
 				uint samplesRead = Math.Min(_samplesInBuffer, sampleCount);
 				AudioSamples.BytesToFLACSamples_16(_sectorBuffer, (int)(_samplesBufferSector * (588 * 4 + 16) + _samplesBufferOffset * 4), buff, (int)pos, samplesRead, 2);
 				pos += samplesRead;
 				sampleCount -= samplesRead;
-				_sampleOffset += samplesRead;
+				_sampleOffset += (int) samplesRead;
 				if (sampleCount == 0)
 				{
 					_samplesInBuffer -= samplesRead;
 					_samplesBufferOffset += samplesRead;
+					if (silenceCount > 0)
+					{
+						uint nullSamplesRead = (uint) silenceCount;
+						for (int i = 0; i < nullSamplesRead; i++)
+							for (int c = 0; c < ChannelCount; c++)
+								buff[pos + i, c] = 0;
+						pos += nullSamplesRead;
+						_sampleOffset += (int)nullSamplesRead;
+					}
 					return pos;
 				}
 				_samplesInBuffer = 0;
@@ -173,78 +277,40 @@ namespace CUETools.Ripper.SCSI
 			for (int sector = firstSector; sector < lastSector; sector += NSECTORS)
 			{
 				int Sectors2Read = ((sector + NSECTORS) < lastSector) ? NSECTORS : (lastSector - sector);
-				fixed (byte* data = _sectorBuffer)
-				{
-					Device.CommandStatus st = m_device.ReadCDAndSubChannel(2, 1, true, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), Sectors2Read * (2352 + 16));
-					if (st != Device.CommandStatus.Success)
-						throw new Exception("SCSI error");
-				}
+				FetchSectors(sector, Sectors2Read);
 				for (int iSector = 0; iSector < Sectors2Read; iSector++)
 				{
-					uint samplesRead = Math.Min(sampleCount, 588U) - (_sampleOffset % 588);
+					uint samplesRead = (uint) (Math.Min((int)sampleCount, 588) - (_sampleOffset % 588));
 					AudioSamples.BytesToFLACSamples_16(_sectorBuffer, iSector * (588 * 4 + 16) + ((int)_sampleOffset % 588) * 4, buff, (int)pos, samplesRead, 2);
-					{
-						int q_pos = (iSector + 1) * (588 * 4 + 16) - 16;
-						int ctl = _sectorBuffer[q_pos + 0] >> 4;
-						int adr = _sectorBuffer[q_pos + 0] & 7;
-						bool preemph = (ctl == 1);
-						switch (adr)
-						{
-							case 1: // current position
-								{
-									int iTrack = fromBCD(_sectorBuffer[q_pos + 1]);
-									int iIndex = fromBCD(_sectorBuffer[q_pos + 2]);
-									if (iTrack != _currentTrack)
-									{
-										_currentTrack = iTrack;
-										_currentTrackActualStart = sector + iSector;
-										_currentIndex = iIndex;
-										if (_currentIndex == 1)
-											_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex(1, _toc.tracks[iTrack - 1].Start.Sector));
-										else if (_currentIndex != 0)
-											throw new Exception("invalid index");
-									}
-									else
-										if (iIndex != _currentIndex)
-										{
-											if (iIndex != _currentIndex + 1)
-												throw new Exception("invalid index");
-											_currentIndex = iIndex;
-											if (_currentIndex == 1)
-											{
-												int pregap = sector + iSector - _currentTrackActualStart;
-												_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex(0, (uint)(_toc.tracks[iTrack - 1].Start.Sector - pregap)));
-												_currentTrackActualStart = sector + iSector;
-											}
-											_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex((uint)iIndex, (uint)(_toc.tracks[iTrack - 1].Start.Sector + sector + iSector - _currentTrackActualStart)));
-											_currentIndex = iIndex;
-										}
-									break;
-								}
-							case 2: // catalog
-								if (_toc._catalog == null)
-								{
-									StringBuilder catalog = new StringBuilder();
-									for (int i = 1; i < 8; i++)
-										catalog.AppendFormat("{0:x2}", _sectorBuffer[q_pos + i]);
-									_toc._catalog = catalog.ToString(0, 13);
-								}
-								break;
-							case 3: //isrc
-								break;
-						}
-					}
 					pos += samplesRead;
 					sampleCount -= samplesRead;
-					_sampleOffset += samplesRead;
+					_sampleOffset += (int) samplesRead;
 					if (sampleCount == 0)
 					{
 						_samplesBufferSector = (uint)iSector;
 						_samplesBufferOffset = samplesRead;
 						_samplesInBuffer = 588U - samplesRead;
+						if (silenceCount > 0)
+						{
+							uint nullSamplesRead = (uint)silenceCount;
+							for (int i = 0; i < nullSamplesRead; i++)
+								for (int c = 0; c < ChannelCount; c++)
+									buff[pos + i, c] = 0;
+							pos += nullSamplesRead;
+							_sampleOffset += (int)nullSamplesRead;
+						}
 						return pos;
 					}
 				}
+			}
+			if (silenceCount > 0)
+			{
+				uint nullSamplesRead = (uint)silenceCount;
+				for (int i = 0; i < nullSamplesRead; i++)
+					for (int c = 0; c < ChannelCount; c++)
+						buff[pos + i, c] = 0;
+				pos += nullSamplesRead;
+				_sampleOffset += (int)nullSamplesRead;
 			}
 			return pos;
 		}
@@ -306,11 +372,11 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return _sampleOffset;
+				return (ulong)(_sampleOffset - _driveOffset);
 			}
 			set
 			{
-				_sampleOffset = (uint)value;
+				_sampleOffset = (int) value + _driveOffset;
 			}
 		}
 
@@ -319,6 +385,19 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				return Length - Position;
+			}
+		}
+
+		public int DriveOffset
+		{
+			get
+			{
+				return _driveOffset;
+			}
+			set
+			{
+				_driveOffset = value;
+				_sampleOffset = value;
 			}
 		}
 

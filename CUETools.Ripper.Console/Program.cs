@@ -55,6 +55,7 @@ namespace CUETools.ConsoleRipper
 			{
 				CDDriveReader audioSource = new CDDriveReader();
 				audioSource.Open('D');
+				audioSource.DriveOffset = 48;
 
 				StreamWriter logWriter = new StreamWriter(Path.ChangeExtension(destFile, ".log"));
 				logWriter.WriteLine("{0}", programVersion);
