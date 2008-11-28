@@ -845,10 +845,15 @@ namespace CUETools.Processor
 			if (_cddbDiscIdTag == null) _cddbDiscIdTag = GetCommonTag("DISCID");
 
 			if (_dataTrackLength != null)
-				_accurateRipIdActual = _accurateRipId = CalculateAccurateRipId();
+			{
+				CDImageLayout toc2 = new CDImageLayout(_toc);
+				toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, _dataTrackLength.Value, false));
+				toc2.Length += 152 * 75 + _dataTrackLength.Value;
+				_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
+			}
 			else
 			{
-				_accurateRipIdActual = CalculateAccurateRipId();
+				_accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
 				if (_accurateRipId == null)
 					_accurateRipId = _accurateRipIdActual;
 			}
@@ -1204,61 +1209,6 @@ namespace CUETools.Processor
 			}
 		}
 
-		private uint sumDigits(uint n) 
-		{
-		    uint r = 0;
-		    while (n > 0) 
-		    {
-				r = r + (n % 10);
-				n = n / 10;
-		    }
-		    return r;
-		}
-
-		private string CalculateAccurateRipId ()
-		{
-			// Calculate the three disc ids used by AR
-			uint discId1 = 0;
-			uint discId2 = 0;
-			uint cddbDiscId = 0;
-
-			for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
-			{
-				discId1 += _toc[iTrack].Start;
-				discId2 += (_toc[iTrack].Start == 0 ? 1 : _toc[iTrack].Start) * ((uint)iTrack);
-				cddbDiscId += sumDigits(_toc[iTrack].Start / 75 + 2);
-			}
-			uint trackOffset = _toc.Length;
-			if (_dataTrackLength.HasValue)
-			{
-				trackOffset += ((90 + 60) * 75) + 150; // 90 second lead-out, 60 second lead-in, 150 sector gap
-				cddbDiscId += sumDigits((uint)(trackOffset / 75) + 2);
-				trackOffset += _dataTrackLength.Value;
-			}
-			discId1 += trackOffset;
-			discId2 += (trackOffset == 0 ? 1 : trackOffset) * ((uint)TrackCount + 1);
-
-			if (!_dataTrackLength.HasValue && _cddbDiscIdTag != null)
-			{
-				uint cddbDiscIdNum = UInt32.Parse(_cddbDiscIdTag, NumberStyles.HexNumber);
-				if ((cddbDiscIdNum & 0xff) == TrackCount + 1)
-				{
-					uint lengthFromTag = ((cddbDiscIdNum >> 8) & 0xffff);
-					_minDataTrackLength = ((lengthFromTag + _toc[1].Start / 75) - 152) * 75 - trackOffset;
-				}
-			}
-
-			cddbDiscId = ((cddbDiscId % 255) << 24) +
-				((trackOffset / 75 - _toc[1].Start / 75) << 8) + 
-				(uint)(TrackCount + (_dataTrackLength.HasValue  ? 1 : 0));
-
-			discId1 &= 0xFFFFFFFF;
-			discId2 &= 0xFFFFFFFF;
-			cddbDiscId &= 0xFFFFFFFF;
-
-			return String.Format("{0:x8}-{1:x8}-{2:x8}", discId1, discId2, cddbDiscId);
-		}
-
 		private void CalculateMusicBrainzDiscID() {
 			StringBuilder mbSB = new StringBuilder();
 			mbSB.AppendFormat("{0:X2}{1:X2}{2:X8}", 1, TrackCount, _toc.Length + 150);
@@ -1575,13 +1525,19 @@ namespace CUETools.Processor
 				if (!_dataTrackLength.HasValue && _minDataTrackLength.HasValue && _accurateRipId == _accurateRipIdActual && _config.bruteForceDTL)
 				{
 					uint minDTL = _minDataTrackLength.Value;
+					CDImageLayout toc2 = new CDImageLayout(_toc);
+					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, minDTL, false));
 					for (uint dtl = minDTL; dtl < minDTL + 75; dtl++)
 					{
-						_dataTrackLength = dtl;
-						_accurateRipId = CalculateAccurateRipId();
+						toc2[_toc.TrackCount].Length = dtl;
+						toc2.Length = _toc.Length + 152 * 75 + dtl;
+						_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
 						_arVerify.ContactAccurateRip(_accurateRipId);
 						if (_arVerify.AccResult != HttpStatusCode.NotFound)
+						{
+							_dataTrackLength = dtl;
 							break;
+						}
 						ShowProgress((string)"Contacting AccurateRip database...", 0, (dtl - minDTL) / 75.0, null, null);
 						lock (this) {
 							if (_stop)
@@ -1597,7 +1553,6 @@ namespace CUETools.Processor
 					}
 					if (_arVerify.AccResult != HttpStatusCode.OK)
 					{
-						_dataTrackLength = null;
 						_accurateRipId = _accurateRipIdActual;
 					}
 				} else
@@ -2372,7 +2327,10 @@ namespace CUETools.Processor
 				if (dtl != 0)
 				{
 					_dataTrackLength = dtl;
-					_accurateRipId = _accurateRipIdActual = CalculateAccurateRipId();
+					CDImageLayout toc2 = new CDImageLayout(_toc);
+					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, dtl, false));
+					toc2.Length += 152 * 75 + dtl;
+					_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
 				}
 			}
 		}

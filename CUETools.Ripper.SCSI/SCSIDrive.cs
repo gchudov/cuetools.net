@@ -410,16 +410,5 @@ namespace CUETools.Ripper.SCSI
 		{
 			return (hex >> 4) * 10 + (hex & 15);
 		}
-
-		private uint sumDigits(uint n)
-		{
-			uint r = 0;
-			while (n > 0)
-			{
-				r = r + (n % 10);
-				n = n / 10;
-			}
-			return r;
-		}
 	}
 }

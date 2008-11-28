@@ -20,6 +20,13 @@ namespace CUETools.CDImage
 			_index = index;
 		}
 
+		public CDTrackIndex(CDTrackIndex src)
+		{
+			_length = src._length;
+			_start = src._start;
+			_index = src._index;
+		}
+
 		public uint Start
 		{
 			get
@@ -63,7 +70,7 @@ namespace CUETools.CDImage
 		uint _start, _length, _index;
 	}
 
-	public class CDTrack
+	public class CDTrack : ICloneable
 	{
 		public CDTrack(uint number, uint start, uint length, bool isAudio)
 		{
@@ -73,6 +80,22 @@ namespace CUETools.CDImage
 			_isAudio = isAudio;
 			_indexes = new List<CDTrackIndex>();
 			_indexes.Add(new CDTrackIndex(0, start, 0));
+		}
+
+		public CDTrack(CDTrack src)
+		{
+			_number = src._number;
+			_start = src._start;
+			_length = src._length;
+			_isAudio = src._isAudio;
+			_indexes = new List<CDTrackIndex>();
+			for (int i = 0; i < src._indexes.Count; i++)
+				_indexes.Add(new CDTrackIndex(src._indexes[i]));
+		}
+
+		public object Clone()
+		{
+			return new CDTrack(this);
 		}
 
 		public uint Start
@@ -199,12 +222,27 @@ namespace CUETools.CDImage
 		uint _number;
 	}
 
-	public class CDImageLayout
+	public class CDImageLayout : ICloneable
 	{
 		public CDImageLayout(uint length)
 		{
 			_tracks = new List<CDTrack>();
 			_length = length;
+		}
+
+		public CDImageLayout(CDImageLayout src)
+		{
+			_length = src._length;
+			_catalog = src._catalog;
+			_audioTracks = src._audioTracks;
+			_tracks = new List<CDTrack>();
+			for (int i = 0; i < src.TrackCount; i++)
+				_tracks.Add(new CDTrack(src._tracks[i]));
+		}
+
+		public object Clone()
+		{
+			return new CDImageLayout(this);
 		}
 
 		public uint Length
