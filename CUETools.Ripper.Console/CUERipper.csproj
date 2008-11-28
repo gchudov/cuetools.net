@@ -7,8 +7,8 @@
     <ProjectGuid>{9253A314-1821-42BF-B02F-2BF986B1765D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUETools.Ripper.Console</RootNamespace>
-    <AssemblyName>CUETools.Ripper.Console</AssemblyName>
+    <RootNamespace>CUERipper</RootNamespace>
+    <AssemblyName>CUERipper</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -81,9 +81,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioCodecsDotNet\AudioCodecsDotNet.csproj">
+    <ProjectReference Include="..\AudioCodecsDotNet\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>AudioCodecsDotNet</Name>
+      <Name>CUETools.Codecs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
+      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
+      <Name>CUETools.AccurateRip</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
+      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
+      <Name>CUETools.CDImage</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>

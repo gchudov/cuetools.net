@@ -185,9 +185,9 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUEToolsLib\CUEToolsLib.csproj">
+    <ProjectReference Include="..\CUEToolsLib\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
-      <Name>CUEToolsLib</Name>
+      <Name>CUETools.Processor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

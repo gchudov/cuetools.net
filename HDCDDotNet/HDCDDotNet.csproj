@@ -85,9 +85,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioCodecsDotNet\AudioCodecsDotNet.csproj">
+    <ProjectReference Include="..\AudioCodecsDotNet\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>AudioCodecsDotNet</Name>
+      <Name>CUETools.Codecs</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

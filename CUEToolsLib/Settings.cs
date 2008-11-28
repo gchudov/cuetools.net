@@ -24,9 +24,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CUEToolsLib
+namespace CUETools.Processor
 {
-	static class SettingsShared {
+	static class SettingsShared 
+	{
 		public static string GetMyAppDataDir(string appName) {
 			string appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 			string myAppDataDir = Path.Combine(appDataDir, appName);

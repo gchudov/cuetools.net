@@ -85,9 +85,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioCodecsDotNet\AudioCodecsDotNet.csproj">
+    <ProjectReference Include="..\AudioCodecsDotNet\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>AudioCodecsDotNet</Name>
+      <Name>CUETools.Codecs</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bwg.Logging\Bwg.Logging.csproj">
       <Project>{F2DFEB00-BB35-4665-85EA-CB8C7729A6B7}</Project>
@@ -96,6 +96,10 @@
     <ProjectReference Include="..\Bwg.Scsi\Bwg.Scsi.csproj">
       <Project>{A05B6AA6-0EC3-495D-BCC4-ECE1210071A8}</Project>
       <Name>Bwg.Scsi</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
+      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
+      <Name>CUETools.CDImage</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

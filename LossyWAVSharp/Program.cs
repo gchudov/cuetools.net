@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using LossyWAVDotNet;
-using AudioCodecsDotNet;
+using CUETools.Codecs;
+using CUETools.Codecs.LossyWAV;
 
 namespace LossyWAVSharp
 {

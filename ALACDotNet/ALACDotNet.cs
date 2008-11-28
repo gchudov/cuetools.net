@@ -3,7 +3,7 @@ using System.Text;
 using System.IO;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using AudioCodecsDotNet;
+using CUETools.Codecs;
 
 //Copyright (c) 2008 Gregory S. Chudov.
 //This library is based on ALAC decoder by David Hammerton.
@@ -25,7 +25,7 @@ using AudioCodecsDotNet;
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 
-namespace ALACDotNet
+namespace CUETools.Codecs.ALAC
 {
 	public class ALACReader : IAudioSource
 	{

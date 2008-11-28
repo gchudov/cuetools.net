@@ -24,15 +24,16 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using CUETools.Ripper.SCSI;
-using AudioCodecsDotNet;
+using CUETools.Codecs;
+using CUETools.AccurateRip;
 
-namespace CUETools.ConsoleRipper
+namespace CUERipper
 {
 	class Program
 	{
 		static void Usage()
 		{
-			Console.WriteLine("Usage    : CUETools.Ripper.Console.exe <file.wav>");
+			Console.WriteLine("Usage    : CUERipper.exe <file.wav>");
 			Console.WriteLine();
 		}
 
@@ -56,36 +57,18 @@ namespace CUETools.ConsoleRipper
 				CDDriveReader audioSource = new CDDriveReader();
 				audioSource.Open('D');
 				audioSource.DriveOffset = 48;
-
-				StreamWriter logWriter = new StreamWriter(Path.ChangeExtension(destFile, ".log"));
-				logWriter.WriteLine("{0}", programVersion);
-				logWriter.WriteLine();
-				logWriter.WriteLine("Extraction logfile from {0}",DateTime.Now);
-				logWriter.WriteLine();
-				logWriter.WriteLine("Used drive  : {0}", audioSource.Path);
-				logWriter.WriteLine();
-				logWriter.WriteLine("TOC of the extracted CD");
-				logWriter.WriteLine();
-				logWriter.WriteLine("     Track |   Start  |  Length  | Start sector | End sector");
-				logWriter.WriteLine("    ---------------------------------------------------------");
-				for (int track = 0; track < audioSource.TOC.tracks.Count; track++)
-					logWriter.WriteLine("{0,9}  | {1,8} | {2,8} | {3,9}    | {4,9}",
-						audioSource.TOC.tracks[track].Number,
-						audioSource.TOC.tracks[track].Start.MSF,
-						audioSource.TOC.tracks[track].Length.MSF,
-						audioSource.TOC.tracks[track].Start.Sector,
-						audioSource.TOC.tracks[track].End.Sector);
-				logWriter.Close();
-
-				//audioSource.Close();
-				//return;
-
+			
 				bool toStdout = false;
+				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
 				WAVWriter audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
 				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
 
-				Console.WriteLine("Filename  : {0}", destFile);
+				arVerify.ContactAccurateRip(audioSource.TOC._ArId);
+
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
+				Console.WriteLine("Filename  : {0}", destFile);
+				Console.WriteLine("AR status : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
+
 				audioDest.FinalSampleCount = (long) audioSource.Length;
 
 				DateTime start = DateTime.Now;
@@ -95,6 +78,7 @@ namespace CUETools.ConsoleRipper
 				{
 					uint samplesRead = audioSource.Read(buff, Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining));
 					if (samplesRead == 0) break;
+					arVerify.Write(buff, samplesRead);
 					audioDest.Write(buff, samplesRead);
 					TimeSpan elapsed = DateTime.Now - start;
 					if ((elapsed - lastPrint).TotalMilliseconds > 60)
@@ -117,18 +101,50 @@ namespace CUETools.ConsoleRipper
 					);
 				audioDest.Close();
 
+				StreamWriter logWriter = new StreamWriter(Path.ChangeExtension(destFile, ".log"));
+				logWriter.WriteLine("{0}", programVersion);
+				logWriter.WriteLine();
+				logWriter.WriteLine("Extraction logfile from {0}", DateTime.Now);
+				logWriter.WriteLine();
+				logWriter.WriteLine("Used drive  : {0}", audioSource.Path);
+				logWriter.WriteLine();
+				logWriter.WriteLine("Read offset correction                      : {0}", audioSource.DriveOffset);
+				logWriter.WriteLine();
+				logWriter.WriteLine("TOC of the extracted CD");
+				logWriter.WriteLine();
+				logWriter.WriteLine("     Track |   Start  |  Length  | Start sector | End sector");
+				logWriter.WriteLine("    ---------------------------------------------------------");
+				for (int track = 1; track <= audioSource.TOC.TrackCount; track++)
+					logWriter.WriteLine("{0,9}  | {1,8} | {2,8} | {3,9}    | {4,9}",
+						audioSource.TOC[track].Number,
+						audioSource.TOC[track].StartMSF,
+						audioSource.TOC[track].LengthMSF,
+						audioSource.TOC[track].Start,
+						audioSource.TOC[track].End);
+				logWriter.WriteLine();
+				logWriter.WriteLine("AccurateRip summary");
+				logWriter.WriteLine();
+				logWriter.WriteLine("Track\t[ CRC    ] Status");
+				arVerify.GenerateAccurateRipLog(logWriter, 0);
+				logWriter.WriteLine();
+				logWriter.WriteLine("End of status report");
+				logWriter.Close();
+
 				StreamWriter cueWriter = new StreamWriter(Path.ChangeExtension(destFile, ".cue"));
 				cueWriter.WriteLine("REM DISCID {0}", audioSource.TOC._cddbId);
 				cueWriter.WriteLine("REM ACCURATERIPID {0}", audioSource.TOC._ArId);
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", programVersion);
-				if (audioSource.TOC._catalog != null)
-					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC._catalog);
+				if (audioSource.TOC.Catalog != null)
+					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Catalog);
 				cueWriter.WriteLine("FILE \"{0}\" WAVE", destFile);
-				for (int track = 0; track < audioSource.TOC.tracks.Count; track++)
+				for (int track = 1; track <= audioSource.TOC.TrackCount; track++)
+				if (audioSource.TOC[track].IsAudio)
 				{
-					cueWriter.WriteLine("  TRACK {0:00} AUDIO", audioSource.TOC.tracks[track].Number);
-					for (int index = 0; index < audioSource.TOC.tracks[track].indexes.Count; index ++)
-						cueWriter.WriteLine("    INDEX {0:00} {1}", audioSource.TOC.tracks[track].indexes[index].Index, audioSource.TOC.tracks[track].indexes[index].MSF);
+					cueWriter.WriteLine("  TRACK {0:00} AUDIO", audioSource.TOC[track].Number);
+					if (audioSource.TOC[track].ISRC != null)
+						cueWriter.WriteLine("    ISRC {0}", audioSource.TOC[track].ISRC);
+					for (int index = audioSource.TOC[track].Pregap > 0 ? 0 : 1; index <= audioSource.TOC[track].LastIndex; index++)
+						cueWriter.WriteLine("    INDEX {0:00} {1}", index, audioSource.TOC[track][index].MSF);
 				}
 				cueWriter.Close();
 

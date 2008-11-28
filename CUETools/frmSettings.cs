@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using CUEToolsLib;
+using CUETools.Processor;
 
 namespace JDP {
 	public partial class frmSettings : Form {

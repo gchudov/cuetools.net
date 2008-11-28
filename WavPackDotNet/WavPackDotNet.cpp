@@ -35,7 +35,7 @@ using namespace System::Collections::Specialized;
 using namespace System::Security::Cryptography;
 using namespace System::IO;
 using namespace APETagsDotNet;
-using namespace AudioCodecsDotNet;
+using namespace CUETools::Codecs;
 
 #include <stdio.h>
 #include <memory.h>

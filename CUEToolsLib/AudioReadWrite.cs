@@ -3,13 +3,14 @@ using System.IO;
 using FLACDotNet;
 using WavPackDotNet;
 using APEDotNet;
-using ALACDotNet;
-using LossyWAVDotNet;
-using AudioCodecsDotNet;
+using CUETools.Codecs;
+using CUETools.Codecs.ALAC;
+using CUETools.Codecs.LossyWAV;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace CUEToolsLib {
+namespace CUETools.Processor
+{
 	public static class AudioReadWrite {
 		public static IAudioSource GetAudioSource(string path, Stream IO, string extension)
 		{

@@ -26,7 +26,8 @@ using System.Collections.Specialized;
 using System.Text;
 using Bwg.Scsi;
 using Bwg.Logging;
-using AudioCodecsDotNet;
+using CUETools.CDImage;
+using CUETools.Codecs;
 
 namespace CUETools.Ripper.SCSI
 {
@@ -46,9 +47,9 @@ namespace CUETools.Ripper.SCSI
 		const int NSECTORS = 32;
 		int _currentTrack = -1, _currentIndex = -1, _currentTrackActualStart = -1;
 		Logger m_logger = null;
-		CDImage _toc;
+		CDImageLayout _toc;
 
-		public CDImage TOC
+		public CDImageLayout TOC
 		{
 			get
 			{
@@ -105,20 +106,23 @@ namespace CUETools.Ripper.SCSI
 			st = m_device.ReadCDText(out cdtext);
 			// new CDTextEncoderDecoder
 
-			_toc = new CDImage(toc[toc.Count - 1].StartSector);
+			_toc = new CDImageLayout(toc[toc.Count - 1].StartSector);
 			uint cddbDiscId = 0;
 			uint discId1 = 0;
 			uint discId2 = 0;
 			for (int iTrack = 0; iTrack < toc.Count - 1; iTrack++)
 			{
-				_toc.tracks.Add(new CDTrack((uint)iTrack + 1, toc[iTrack].StartSector,
-					toc[iTrack + 1].StartSector - toc[iTrack].StartSector));
-				discId1 += toc[iTrack].StartSector;
-				discId2 += (toc[iTrack].StartSector == 0 ? 1 : toc[iTrack].StartSector) * ((uint)iTrack + 1);
+				_toc.AddTrack(new CDTrack((uint)iTrack + 1, toc[iTrack].StartSector,
+					toc[iTrack + 1].StartSector - toc[iTrack].StartSector, toc[iTrack].Control == 0));
 				cddbDiscId += sumDigits((uint)(toc[iTrack].StartSector / 75) + 2);
+				if (toc[iTrack].Control == 0)
+				{
+					discId1 += toc[iTrack].StartSector;
+					discId2 += (toc[iTrack].StartSector == 0 ? 1 : toc[iTrack].StartSector) * ((uint)iTrack + 1);
+				}
 			}
 			discId1 += toc[toc.Count - 1].StartSector;
-			discId2 += (toc[toc.Count - 1].StartSector == 0 ? 1 : toc[toc.Count - 1].StartSector) * ((uint)toc.Count);
+			discId2 += (toc[toc.Count - 1].StartSector == 0 ? 1 : toc[toc.Count - 1].StartSector) * (_toc.AudioTracks+1);
 			discId1 &= 0xFFFFFFFF;
 			discId2 &= 0xFFFFFFFF;
 			cddbDiscId = (((cddbDiscId % 255) << 24) +
@@ -156,43 +160,62 @@ namespace CUETools.Ripper.SCSI
 						{
 							int iTrack = fromBCD(_sectorBuffer[q_pos + 1]);
 							int iIndex = fromBCD(_sectorBuffer[q_pos + 2]);
+							if (iTrack == 110)
+								throw new Exception("lead out area encountred");
+							if (iTrack == 0)
+								throw new Exception("lead in area encountred");
 							if (iTrack != _currentTrack)
 							{
 								_currentTrack = iTrack;
 								_currentTrackActualStart = sector + iSector;
 								_currentIndex = iIndex;
 								if (_currentIndex == 1)
-									_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex(1, _toc.tracks[iTrack - 1].Start.Sector));
+									_toc[iTrack].AddIndex(new CDTrackIndex(1, _toc[iTrack].Start));
 								else if (_currentIndex != 0)
 									throw new Exception("invalid index");
 							}
-							else
-								if (iIndex != _currentIndex)
+							else if (iIndex != _currentIndex)
+							{
+								if (iIndex != _currentIndex + 1)
+									throw new Exception("invalid index");
+								_currentIndex = iIndex;
+								if (_currentIndex == 1)
 								{
-									if (iIndex != _currentIndex + 1)
-										throw new Exception("invalid index");
-									_currentIndex = iIndex;
-									if (_currentIndex == 1)
-									{
-										int pregap = sector + iSector - _currentTrackActualStart;
-										_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex(0, (uint)(_toc.tracks[iTrack - 1].Start.Sector - pregap)));
-										_currentTrackActualStart = sector + iSector;
-									}
-									_toc.tracks[iTrack - 1].indexes.Add(new CDTrackIndex((uint)iIndex, (uint)(_toc.tracks[iTrack - 1].Start.Sector + sector + iSector - _currentTrackActualStart)));
-									_currentIndex = iIndex;
+									int pregap = sector + iSector - _currentTrackActualStart;
+									_toc[iTrack].AddIndex(new CDTrackIndex(0, (uint)(_toc[iTrack].Start - pregap), (uint)pregap));
+									_currentTrackActualStart = sector + iSector;
 								}
+								_toc[iTrack].AddIndex(new CDTrackIndex((uint)iIndex, (uint)(_toc[iTrack].Start + sector + iSector - _currentTrackActualStart)));
+								_currentIndex = iIndex;
+							}
 							break;
 						}
 					case 2: // catalog
-						if (_toc._catalog == null)
+						if (_toc.Catalog == null)
 						{
 							StringBuilder catalog = new StringBuilder();
 							for (int i = 1; i < 8; i++)
 								catalog.AppendFormat("{0:x2}", _sectorBuffer[q_pos + i]);
-							_toc._catalog = catalog.ToString(0, 13);
+							_toc.Catalog = catalog.ToString(0, 13);
 						}
 						break;
 					case 3: //isrc
+						if (_toc[_currentTrack].ISRC == null)
+						{
+							StringBuilder isrc = new StringBuilder();
+							char[] ISRC6 = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '#', '#', '#', '#', '#', '#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+							isrc.Append(ISRC6[_sectorBuffer[q_pos + 1] >> 2]);
+							isrc.Append(ISRC6[((_sectorBuffer[q_pos + 1] & 0x3) << 4) + (_sectorBuffer[q_pos + 2] >> 4)]);
+							isrc.Append(ISRC6[((_sectorBuffer[q_pos + 2] & 0xf) << 2) + (_sectorBuffer[q_pos + 3] >> 6)]);
+							isrc.Append(ISRC6[(_sectorBuffer[q_pos + 3] & 0x3f)]);
+							isrc.Append(ISRC6[_sectorBuffer[q_pos + 4] >> 2]);
+							isrc.Append(ISRC6[((_sectorBuffer[q_pos + 4] & 0x3) << 4) + (_sectorBuffer[q_pos + 5] >> 4)]);
+							isrc.AppendFormat("{0:x}", _sectorBuffer[q_pos + 5] & 0xf);
+							isrc.AppendFormat("{0:x2}", _sectorBuffer[q_pos + 6]);
+							isrc.AppendFormat("{0:x2}", _sectorBuffer[q_pos + 7]);
+							isrc.AppendFormat("{0:x}", _sectorBuffer[q_pos + 8] >> 4);
+							_toc[_currentTrack].ISRC = isrc.ToString();
+						}
 						break;
 				}
 			}
@@ -321,7 +344,7 @@ namespace CUETools.Ripper.SCSI
 			{
 				if (_toc == null)
 					throw new Exception("invalid TOC");
-				return (ulong)588 * _toc.Length.Sector;
+				return (ulong)588 * (_toc.Length - (_toc[_toc.TrackCount].IsAudio ? 0 : _toc[_toc.TrackCount].Length + 152 * 75));
 			}
 		}
 
@@ -418,114 +441,5 @@ namespace CUETools.Ripper.SCSI
 			}
 			return r;
 		}
-	}
-
-	public class CDTrackIndex
-	{
-		public CDTrackIndex(uint index, uint sector)
-		{
-			_sector = sector;
-			_index = index;
-		}
-
-		public uint Sector
-		{
-			get
-			{
-				return _sector;
-			}
-		}
-
-		public uint Index
-		{
-			get
-			{
-				return _index;
-			}
-		}
-
-		public string MSF
-		{
-			get
-			{
-				return new MinuteSecondFrame(_sector).ToString("M:S:F");
-			}
-		}
-
-		uint _sector;
-		uint _index;
-	}
-
-	public class CDTrack
-	{
-		public CDTrack(uint number, uint start, uint length)
-		{
-			_number = number;
-			_start = start;
-			_length = length;
-			indexes = new List<CDTrackIndex>();
-		}
-
-		public CDTrackIndex Start
-		{
-			get
-			{
-				return new CDTrackIndex(0, _start);
-			}
-		}
-
-		public CDTrackIndex Length
-		{
-			get
-			{
-				return new CDTrackIndex(0, _length);
-			}
-		}
-
-		public CDTrackIndex End
-		{
-			get
-			{
-				return new CDTrackIndex(0, _start + _length - 1);
-			}
-		}
-
-		public uint Number
-		{
-			get
-			{
-				return _number;
-			}
-		}
-
-		public IList<CDTrackIndex> indexes;
-
-		uint _start;
-		uint _length;
-		uint _number;
-	}
-
-	public class CDImage
-	{
-		public CDImage(uint length)
-		{
-			tracks = new List<CDTrack>();
-			_length = length;
-		}
-
-		public IList<CDTrack> tracks;
-
-		public CDTrackIndex Length
-		{
-			get
-			{
-				return new CDTrackIndex(0, _length);
-			}
-		}
-
-		public string _catalog;
-		public string _cddbId;
-		public string _ArId;
-		uint _length;
 	}
 }

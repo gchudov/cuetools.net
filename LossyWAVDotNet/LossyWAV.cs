@@ -25,9 +25,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
-using AudioCodecsDotNet;
+using CUETools.Codecs;
 
-namespace LossyWAVDotNet
+namespace CUETools.Codecs.LossyWAV
 {
 	public class LossyWAVWriter : IAudioDest
 	{

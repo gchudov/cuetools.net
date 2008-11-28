@@ -7,7 +7,7 @@ using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
 using namespace System::IO;
 using namespace APETagsDotNet;
-using namespace AudioCodecsDotNet;
+using namespace CUETools::Codecs;
 
 #ifndef _WAVEFORMATEX_
 #define _WAVEFORMATEX_
