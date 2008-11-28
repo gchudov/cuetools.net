@@ -7,8 +7,8 @@
     <ProjectGuid>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AudioCodecsDotNet</RootNamespace>
-    <AssemblyName>AudioCodecsDotNet</AssemblyName>
+    <RootNamespace>CUETools.Codecs</RootNamespace>
+    <AssemblyName>CUETools.Codecs</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -81,7 +81,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AudioCodecsDotNet.cs" />
+    <Compile Include="Codecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
