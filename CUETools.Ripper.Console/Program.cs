@@ -62,8 +62,10 @@ namespace CUERipper
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
 				WAVWriter audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
 				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
+				string CDDBId = AccurateRipVerify.CalculateCDDBId(audioSource.TOC);
+				string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);
 
-				arVerify.ContactAccurateRip(audioSource.TOC._ArId);
+				arVerify.ContactAccurateRip(ArId);
 
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
 				Console.WriteLine("Filename  : {0}", destFile);
@@ -131,8 +133,8 @@ namespace CUERipper
 				logWriter.Close();
 
 				StreamWriter cueWriter = new StreamWriter(Path.ChangeExtension(destFile, ".cue"));
-				cueWriter.WriteLine("REM DISCID {0}", audioSource.TOC._cddbId);
-				cueWriter.WriteLine("REM ACCURATERIPID {0}", audioSource.TOC._ArId);
+				cueWriter.WriteLine("REM DISCID {0}", CDDBId);
+				cueWriter.WriteLine("REM ACCURATERIPID {0}", ArId);
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", programVersion);
 				if (audioSource.TOC.Catalog != null)
 					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Catalog);

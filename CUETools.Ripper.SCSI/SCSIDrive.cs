@@ -107,29 +107,9 @@ namespace CUETools.Ripper.SCSI
 			// new CDTextEncoderDecoder
 
 			_toc = new CDImageLayout(toc[toc.Count - 1].StartSector);
-			uint cddbDiscId = 0;
-			uint discId1 = 0;
-			uint discId2 = 0;
 			for (int iTrack = 0; iTrack < toc.Count - 1; iTrack++)
-			{
 				_toc.AddTrack(new CDTrack((uint)iTrack + 1, toc[iTrack].StartSector,
 					toc[iTrack + 1].StartSector - toc[iTrack].StartSector, toc[iTrack].Control == 0));
-				cddbDiscId += sumDigits((uint)(toc[iTrack].StartSector / 75) + 2);
-				if (toc[iTrack].Control == 0)
-				{
-					discId1 += toc[iTrack].StartSector;
-					discId2 += (toc[iTrack].StartSector == 0 ? 1 : toc[iTrack].StartSector) * ((uint)iTrack + 1);
-				}
-			}
-			discId1 += toc[toc.Count - 1].StartSector;
-			discId2 += (toc[toc.Count - 1].StartSector == 0 ? 1 : toc[toc.Count - 1].StartSector) * (_toc.AudioTracks+1);
-			discId1 &= 0xFFFFFFFF;
-			discId2 &= 0xFFFFFFFF;
-			cddbDiscId = (((cddbDiscId % 255) << 24) +
-				(((uint)(toc[toc.Count - 1].StartSector / 75) - (uint)(toc[0].StartSector / 75)) << 8) +
-				(uint)(toc.Count - 1)) & 0xFFFFFFFF;
-			_toc._cddbId = string.Format("{0:X8}", cddbDiscId);
-			_toc._ArId = string.Format("{0:x8}-{1:x8}-{2:x8}", discId1, discId2, cddbDiscId);
 			return true;
 		}
 

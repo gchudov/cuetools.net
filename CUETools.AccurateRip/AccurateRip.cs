@@ -362,49 +362,42 @@ namespace CUETools.AccurateRip
 			}
 		}
 
-		//private string CalculateAccurateRipId()
-		//{
-		//    // Calculate the three disc ids used by AR
-		//    uint discId1 = 0;
-		//    uint discId2 = 0;
-		//    uint cddbDiscId = 0;
+		private static uint sumDigits(uint n)
+		{
+			uint r = 0;
+			while (n > 0)
+			{
+				r = r + (n % 10);
+				n = n / 10;
+			}
+			return r;
+		}
 
-		//    for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
-		//    {
-		//        discId1 += _toc[iTrack].Start;
-		//        discId2 += (_toc[iTrack].Start == 0 ? 1 : _toc[iTrack].Start) * ((uint)iTrack);
-		//        cddbDiscId += sumDigits(_toc[iTrack].Start / 75 + 2);
-		//    }
-		//    uint trackOffset = _toc.Length;
-		//    if (_dataTrackLength.HasValue)
-		//    {
-		//        trackOffset += ((90 + 60) * 75) + 150; // 90 second lead-out, 60 second lead-in, 150 sector gap
-		//        cddbDiscId += sumDigits((uint)(trackOffset / 75) + 2);
-		//        trackOffset += _dataTrackLength.Value;
-		//    }
-		//    discId1 += trackOffset;
-		//    discId2 += (trackOffset == 0 ? 1 : trackOffset) * ((uint)TrackCount + 1);
+		public static string CalculateCDDBId(CDImageLayout toc)
+		{
+			uint cddbDiscId = 0;
+			for (int iTrack = 1; iTrack <= toc.TrackCount; iTrack++)
+				cddbDiscId += sumDigits(toc[iTrack].Start / 75 + 2);
+			return string.Format("{0:X8}", ((cddbDiscId << 24) + ((toc.Length / 75 - toc[1].Start / 75) << 8) + (uint)toc.TrackCount) & 0xFFFFFFFF);
+		}
 
-		//    if (!_dataTrackLength.HasValue && _cddbDiscIdTag != null)
-		//    {
-		//        uint cddbDiscIdNum = UInt32.Parse(_cddbDiscIdTag, NumberStyles.HexNumber);
-		//        if ((cddbDiscIdNum & 0xff) == TrackCount + 1)
-		//        {
-		//            uint lengthFromTag = ((cddbDiscIdNum >> 8) & 0xffff);
-		//            _minDataTrackLength = ((lengthFromTag + _toc[1].Start / 75) - 152) * 75 - trackOffset;
-		//        }
-		//    }
-
-		//    cddbDiscId = ((cddbDiscId % 255) << 24) +
-		//        ((trackOffset / 75 - _toc[1].Start / 75) << 8) +
-		//        (uint)(TrackCount + (_dataTrackLength.HasValue ? 1 : 0));
-
-		//    discId1 &= 0xFFFFFFFF;
-		//    discId2 &= 0xFFFFFFFF;
-		//    cddbDiscId &= 0xFFFFFFFF;
-
-		//    return String.Format("{0:x8}-{1:x8}-{2:x8}", discId1, discId2, cddbDiscId);
-		//}
+		public static string CalculateAccurateRipId(CDImageLayout toc)
+		{
+			// Calculate the three disc ids used by AR
+			uint discId1 = 0;
+			uint discId2 = 0;
+			for (int iTrack = 1; iTrack <= toc.TrackCount; iTrack++)
+				if (toc[iTrack].IsAudio)
+				{
+					discId1 += toc[iTrack].Start;
+					discId2 += Math.Max(toc[iTrack].Start, 1) * toc[iTrack].Number;
+				}
+			discId1 += toc.Length;
+			discId2 += Math.Max(toc.Length, 1) * ((uint)toc.AudioTracks + 1);
+			discId1 &= 0xFFFFFFFF;
+			discId2 &= 0xFFFFFFFF;
+			return string.Format("{0:x8}-{1:x8}-{2}", discId1, discId2, CalculateCDDBId(toc).ToLower());
+		}
 
 		public List<AccDisk> AccDisks
 		{

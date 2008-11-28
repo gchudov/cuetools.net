@@ -299,9 +299,6 @@ namespace CUETools.CDImage
 			return String.Format("{0:00}:{1:00}:{2:00}", min, sec, frame);
 		}
 
-		public string _cddbId;
-		public string _ArId;
-
 		uint _length;
 		string _catalog;
 		IList<CDTrack> _tracks;
