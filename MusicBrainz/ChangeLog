@@ -1,0 +1,503 @@
+2008-09-20  Scott Peterson <lunchtimemama@gmail.com> 
+
+	
+
+2008-09-20  Scott Peterson <lunchtimemama@gmail.com>
+
+	* MusicBrainz/Track.cs : GetDuration now returns a TimeSpan rather
+	  than a uint. Don't know how I missed that.
+	* MusicBrainz/MusicBrainzObject.cs: Added GetPropertyOrDefault
+	  overload which uses the "default" keyword for the default value.
+
+2008-08-17  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Release.cs,
+	  MusicBrainz/Track.cs: Made protected members internal. Minor
+	  refactoring.
+	* MusicBrainz/Relation.cs: UrlRelations uses Uri instead of string.
+	* MusicBrainz/Label.cs: Made protected members internal. Minor
+	  refactoring. Fixed bug with Country.
+	* MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/MusicBrainzItem.cs:
+	  Made protected members internal.
+	* MusicBrainz/XmlRequestEventArgs.cs: Use Uri instead of string.
+	* MusicBrainz/LocalDisc.cs: Made protected members internal. Removed
+	  ThreadStatic attributes and went for locks instead. This is the way
+	  we concurentize our code, concurentize our code, concurentize our
+	  code. TrackDuration is now an array of TimeSpans rather than ints.
+	  Because that's more awesome. SubissionUrl is now a Uri rather than
+	  a string. For the same reason. Added LocalDiscException class to
+	  wrap problems with the hardware layer code.
+	* MusicBrainz/MusicBrainzException.cs: Minor refactoring.
+	* MusicBrainz/Query.cs: Throw ArgumentOutOfRangeException instead of
+	  IndexOutOfRangeException because Framework Design Guidelines told
+	  me to. Removed ToList and ToArray. People can use the
+	  IEnumerable<T> extension methods if they want.
+	* MusicBrainz/Artist.cs: Made protected members internal. Removed
+	  ThreadStatic attribute from static field and added locks for proper
+	  concurrency handling. GetReleases (ArtistReleaseType) no longer
+	  changes the Artist.ArtistReleaseType to the provided argument.
+	  Added ReleaseArtistType enum to replace the various bool for
+	  ArtistReleaseType (confusing names, I know. Tough titties).
+	* MusicBrainz/MusicBrainzService.cs: Got rid of ThreadStatic and added
+	  locks. Yeah! Changed ServiceUrl to Uri from string. Yeah again!
+
+2008-08-05  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Made some protected methods static.
+	* MusicBrainz/LocalDisc.cs: Changed protected properties to protected
+	  fields and changed an array property to a method.
+	* MusicBrainz/DiscLinux.cs, MusicBrainz/DiscWin32.cs: Changed class
+	  name to match file name and changed protected properties to
+	  protected fields.
+	* MusicBrainz/Query.cs: Changed attribute public readonly fields to
+	  public readonly properties.
+	* MusicBrainz/Artist.cs: Made public static field ThreadStatic and made
+	  a private method static.
+	* MusicBrainz/MusicBrainzService.cs: Made public static fields
+	  ThreadStatic.
+
+2008-07-21  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Simplified relation creation
+	  slightly and added equivilance operator overload.
+	* MusicBrainz/LinuxDisc.cs, MusicBrainz/DiscLinux.cs: Renamed back to
+	  DiscLinux
+	* MusicBrainz/Query.cs: Renamed some public parameters to follow FDG
+	  style and changed some public methods to return IList instead of
+	  List.
+	* MusicBrainz/Win32Disc.cs, MusicBrainz/DiscWin32.cs: Renamed back to
+	  DiscWin32
+	* MusicBrainz/Artist.cs: Added equivilance operator overload to
+	  ArtistReleaseType type.
+
+2008-04-15  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Relation.cs,
+	  MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Event.cs,
+	  MusicBrainz/Disc.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/XmlRequestEventArgs.cs, MusicBrainz/LocalDisc.cs,
+	  MusicBrainz/Utils.cs, MusicBrainz/LinuxDisc.cs,
+	  MusicBrainz/Track.cs, MusicBrainz/MusicBrainzException.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Query.cs,
+	  MusicBrainz/Win32Disc.cs, MusicBrainz/Artist.cs,
+	  MusicBrainz/MusicBrainzService.cs: API BREAKING CHANGE!!! We now
+	  use methods rather than properties if accessing the member can
+	  incur an HTTP request. Update your code accordingly.
+
+2008-04-05  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Release.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Utils.cs,
+	  MusicBrainz/Track.cs, MusicBrainz/MusicBrainzItem.cs: Some better
+	  string building.
+
+2008-04-05  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz.mdp, MusicBrainz/Relation.cs,
+	  MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/LocalDisc.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/Query.cs, MusicBrainz/MusicBrainzItem.cs,
+	  MusicBrainz/Artist.cs, MusicBrainz/MusicBrainzService.cs:
+	  Reorganized some code.
+	* MusicBrainz/DiscLinux.cs, MusicBrainz/LinuxDisc.cs,
+	  MusicBrainz/DiscWin32.cs, MusicBrainz/Win32Disc.cs: Renamed
+
+2008-04-05  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Relation.cs,
+	  MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Event.cs,
+	  MusicBrainz/Disc.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/XmlRequestEventArgs.cs, MusicBrainz/LocalDisc.cs,
+	  MusicBrainz/Utils.cs, MusicBrainz/DiscLinux.cs,
+	  MusicBrainz/Track.cs, MusicBrainz/MusicBrainzException.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Query.cs,
+	  MusicBrainz/DiscWin32.cs, MusicBrainz/Artist.cs,
+	  MusicBrainz/MusicBrainzService.cs: Put the license in a region
+	  (yeah for the managed MD text editor!) and a few whitespace fixes.
+
+2008-03-31  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Relation.cs: Renamed RelationPrimitive to RelationBase.
+
+2008-03-31  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/Event.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Artist.cs: Formatting
+	  fixes.
+
+2008-03-31  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Release.cs: Changed ReleaseQueryParameters.DiscID to
+	  DiscId. This is an API breaking change (good thing we're not at
+	  1.0!)
+
+2008-03-31  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Relation.cs,
+	  MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Event.cs,
+	  MusicBrainz/Disc.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/XmlRequestEventArgs.cs, MusicBrainz/LocalDisc.cs,
+	  MusicBrainz/DiscLinux.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzException.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Query.cs,
+	  MusicBrainz/DiscWin32.cs, MusicBrainz/MusicBrainzService.cs:
+	  Relicensed to MIT/X11
+	* MusicBrainz/Utils.cs: Relicensed to MIT/X11. New override for
+	  EnumToString takes a StringBuider.
+	* MusicBrainz/Artist.cs: Relicensed to MIT/X11. ArtistReleaseType now
+	  support specifying a ReleaseType and a ReleaseStatus.
+
+2008-03-30  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Release.cs: Instantiate tracks with the artist of the
+	  release.
+	* MusicBrainz/Track.cs: Use new constructor.
+	* MusicBrainz/MusicBrainzItem.cs: Added the ability for a
+	  MusicBrainzItem to be instantiated with an Artist. This artist will
+	  only be used if no artist was found in the XML.
+
+2008-03-25  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Release.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/Artist.cs: Whitespace fixes which have somehow managed
+	  to escape my attention, and used the AsReadOnly convenience method.
+
+2008-03-21  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Query.cs: Add new PerfectMatch() method which returns a
+	  result if it is the only result with a score of 100. If no result
+	  has a score of 100, or if more than one result have a score of 100,
+	  null is returned.
+
+2008-03-14  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/Event.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Artist.cs: Whitespace fixes.
+	  I don't know where these tabs come from.
+
+2008-02-13  Scott Peterson <lunchtimemama@gmail.com> 
+
+	Got rid of unused Properties direcotry and AssemblyInfo.cs
+
+2008-02-25  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Disc.cs: Use TryParse instead of a bunch of stuff.
+
+2008-02-25  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/LocalDisc.cs: Added SubmissionUrl property.
+
+2008-02-25  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Whatspace fixes.
+
+2008-02-25  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Fixed bug w/ Release getting and
+	  querying.
+
+2008-02-25  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Improved a params method performance.
+	  Used TimeSpan and DateTime operators.
+	* MusicBrainz/Release.cs: Improved a params method performance.
+
+2008-02-23  Scott Peterson <lunchtimemama@gmail.com> 
+
+	Renamed MusicBrainzObject.Mbid to just Id.
+
+	* MusicBrainz/MusicBrainzService.cs: Added static class for containing all
+	  static setting pertaining globally to the use of the library. I think
+	  this is more logical than sticking this stuff in the abstract
+	  MusicBrainzObject type.
+
+2008-02-22  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Relation.cs: Got rid of unneeded using.
+
+2008-02-22  Scott Peterson <lunchtimemama@gmail.com> 
+
+	Various whitespace fixes, refactoring, and using immutable collections
+
+	* MusicBrainz/Utilities.cs, MusicBrainz/Utils.cs: Renamed Utilities class to
+	  Utils. It's internal, so an abriviated name is just fine.
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Release.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Artist.cs: Renamed MBID to
+	  Mbid, made to use ReadOnlyCollection instead of List.
+	* MusicBrainz/Label.cs: Renamed MBID to Mbid
+	* MusicBrainz/Disc.cs, MusicBrainz/LocalDisc.cs: Split off local-disc
+	  specific stuff into LocalDisc.
+	* MusicBrainz/DiscLinux.cs, MusicBrainz/DiscWin32.cs: Inherit from LocalDisc
+	* MusicBrainz/Query.cs: Added First () method which returns just the first
+	  result (same as the implicit conversion to T).
+
+2008-02-22  Scott Peterson <lunchtimemama@gmail.com> 
+
+	More white space fixes
+
+2008-02-21  Scott Peterson <lunchtimemama@gmail.com> 
+
+	Whitespace changes. I'll probably work things a little more.
+
+2008-02-21  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Track.cs: Added new overload to Query().
+
+2008-02-20  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/MusicBrainzItem.cs: Made the abstract classes' constructors
+	  internal. Since the all of the concrete classes are sealed, this
+	  prevents any external assembly from inheriting from MusicBrainzObject &
+	  al.
+
+2008-02-13  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Release.cs: Changed return type of QueryFromDevice from
+	  Release to Query<Release> (since Query<T> can now be implicitly
+	  converted to T).
+	* MusicBrainz/Query.cs: Improvement to implicit conversion to prevent bad
+	  performance after the conversion has been made when attempting to
+	  enumerate.
+
+2008-02-13  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Utilities.cs: Fixed bug in EnumToString.
+	* MusicBrainz/Query.cs: Minor changes
+
+2008-02-13  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/Artist.cs: Got rid of Query*Single methods.
+	* MusicBrainz/Query.cs: Fancy new methods and operators.
+
+2008-02-13  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/DiscLinux.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Query.cs: More aesthetic use
+	  of nullable types.
+
+2008-02-09  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/DiscLinux.cs: Minor refactor.
+	* MusicBrainz/DiscWin32.cs: Removed unnessisary ref.
+
+2008-02-09  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/DiscLinux.cs: Fixed linux disc id code.
+	* MusicBrainz/DiscWin32.cs: Whitespace.
+
+2008-02-09  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Disc.cs, MusicBrainz/DiscLinux.cs: More work on the linux
+	  discid. Still not there yet. Damn marshaling.
+
+2008-02-09  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/DiscLinux.cs: Improvements to the linux discid implimentation.
+	  Still doesn't work, but getting closer.
+
+2008-02-09  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Fixed bug when query returns no results.
+	* MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/Artist.cs: Whitespace fixes
+	* MusicBrainz/Disc.cs, MusicBrainz/DiscWin32.cs: Rejiggered
+	* MusicBrainz/DiscLinux.cs: Added linux DiscId implementation
+
+2008-02-07  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Release.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/Track.cs, MusicBrainz/MusicBrainzItem.cs,
+	  MusicBrainz/Query.cs, MusicBrainz/Artist.cs: Refactored LINQ-related
+	  attributes.
+
+2008-02-03  Scott Peterson <lunchtimemama@gmail.com> 
+
+	* MusicBrainz/Utilities.cs: Minor improvement to enum-to-string method.
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Event.cs,
+	  MusicBrainz/MusicBrainzException.cs, MusicBrainz/Query.cs: Sealed some
+	  classes.
+
+2007-12-31  Scott Peterson <lunchtimemama> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Fixed generic constraint syntax that was
+	  a problem for csc.
+
+2007-12-09  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Event.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Artist.cs: Reverted
+	  pluralization (my mistake)
+
+2007-12-08  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/Event.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzItem.cs, MusicBrainz/Artist.cs: Refactored
+	  enumeration names to be plural.
+
+2007-12-08  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Slight improvement to property handling.
+
+2007-12-08  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/Track.cs, MusicBrainz/MusicBrainzItem.cs,
+	  MusicBrainz/Artist.cs: Property access is now nicer.
+
+2007-11-13  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Track.cs: Added null argument check and a LINQ attribute.
+
+2007-11-13  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Disc.cs,
+	  MusicBrainz/Track.cs, MusicBrainz/Artist.cs: Added argument null-checks
+	  for public methods.
+
+2007-11-12  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Fixed bug when queries returned no
+	  results.
+
+2007-11-09  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Utilities.cs, MusicBrainz/MusicBrainzObject.cs,
+	  MusicBrainz/Relation.cs, MusicBrainz/Label.cs, MusicBrainz/Release.cs,
+	  MusicBrainz/Event.cs, MusicBrainz/Disc.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzException.cs, MusicBrainz/MusicBrainzItem.cs,
+	  MusicBrainz/Query.cs, MusicBrainz/DiscWin32.cs, MusicBrainz/Artist.cs:
+	  Relicenced.
+	* MusicBrainz/LinqBoilerplate.cs, MusicBrainz/Linq.cs: Removed for now.
+
+2007-11-06  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Release.cs: Fixed bug with events list.
+
+2007-11-06  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/MusicBrainzEntity.cs,
+	  MusicBrainz/Track.cs, MusicBrainz/MusicBrainzItem.cs: Made LINQ-ready.
+	* MusicBrainz/LinqBoilerplate.cs, MusicBrainz/Linq.cs: Created a LINQ
+	  provider.
+	* MusicBrainz/Query.cs: Added some custom atts used by the LINQ provider.
+	* MusicBrainz/Artist.cs: Made LINQ-ready. Fixed a silly sintax thing that
+	  makes MSBuild barf. BWAAA!
+	* Makefile.am: Changed from wildcard *.cs to specific enumeration of source
+	  files (because we now have some .cs files (the LINQ ones) which we do
+	  not want to compile (... yet!)).
+
+2007-10-31  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Made the ProviderUrl a public field.
+	  Renamed a few methods.
+	* MusicBrainz/Query.cs: Refactored a method.
+
+2007-10-31  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Release.cs: Fixed bug with ReleaseQueryParameter using
+	  "language" instead of "lang" as a query parameter.
+
+2007-10-30  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Artist.cs: Artist's will now fetch their Releases during
+	  Artist.Get().
+
+2007-10-30  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Utilities.cs: Moved percent-encoding code to Utilities class.
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Release.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/MusicBrainzItem.cs: Made to use Utilities.PercentEncoding().
+	* MusicBrainz/Query.cs: Got rid of stupid class QueryParameters.
+	* MusicBrainz/Artist.cs: Got rid of stupid overload for Get()
+
+2007-10-30  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Utilities.cs, MusicBrainz/Relation.cs,
+	  MusicBrainz/MusicBrainzObject.cs, MusicBrainz/Label.cs,
+	  MusicBrainz/Release.cs, MusicBrainz/Event.cs, MusicBrainz/Disc.cs,
+	  MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/Query.cs, MusicBrainz/MusicBrainzItem.cs,
+	  MusicBrainz/MusicBrainzException.cs, MusicBrainz/DiscWin32.cs,
+	  MusicBrainz/Artist.cs: Added copyright notice and MIT licence.
+
+2007-10-30  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs: Refactored Query methods (got rid of
+	  them).
+	* MusicBrainz/Label.cs, MusicBrainz/Track.cs, MusicBrainz/Artist.cs:
+	  Refactored Query methods.
+	* MusicBrainz/Release.cs: Refactored Query methods, spelling correction in
+	  ReleaseFormat.Cassette.
+	* MusicBrainz/Disc.cs: Changed Id to ID. It seems better.
+	* MusicBrainz/MusicBrainzEntity.cs: Got rid of EntityQueryParameters (a
+	  stupid class).
+	* MusicBrainz/Query.cs: Removed non-generic Query class (a stupid class to
+	  begin with) and made a bunch of things private because the client really
+	  shouldn't need to know about how we're doing things. Refactored
+	  constructor a little.
+
+2007-10-27  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/MusicBrainzObject.cs, MusicBrainz/MusicBrainzItem.cs: Method
+	  accessor tightened up and method name changed.
+	* MusicBrainz/Label.cs, MusicBrainz/Release.cs, MusicBrainz/Track.cs,
+	  MusicBrainz/Artist.cs: Method accessor tightened up.
+	* MusicBrainz/MusicBrainzEntity.cs: Method name changed.
+
+2007-10-27  Scott Peterson <scottp@gnome.org> 
+
+	* MusicBrainz/Disc.cs: Made to use System.Security.Cryptography.SHA1.
+	* MusicBrainz/SHA1MusicBrainz.cs: Removed. It turns out
+	  System.Security.Cryptography.SHA1 does the trick.
+
+2007-10-27  Scott Peterson <scottp@gnome.org> 
+
+	* ChangeLog: ChangeLog updated.
+
+2007-10-27  Scott Peterson  <scottp@gnome.org>
+	* MusicBrainz/Utilities.cs: Cleaned out a bunch of obsolete code.
+	* MusicBrainz/MusicBrainzObject.cs: Made HaveAllRels a protected
+	  property and removed redundant constructors.
+	* MusicBrainz/Label.cs, MusicBrainz/Track.cs: Minor changes to
+	  constructors.
+	* MusicBrainz/Release.cs: Minor changes to constructors and change
+	  which fixes a theoretical bug where Tracks would not have
+	  relations.
+	* MusicBrainz/MusicBrainzEntity.cs, MusicBrainz/MusicBrainzItem.cs:
+	  Removed redundant constructors as per changes in MusicBrainzObject.
+	* MusicBrainz/Query.cs: Removed obsolete ArtistReleaseIncs field.
+	* MusicBrainz/Artist.cs: Minor changes to constructors and a new way of
+	  specifying releases: Added ArtistRelease class and simplified code
+	  regarding releases. Also made very fancy use of the coalesces
+	  operator!
+	* MusicBrainz/Inc.cs: Removed. Changes in the way artists' handle
+	  releases finally obsoletes this class.
+
+2007-10-27  Aaron Bockover  <abock@gnome.org>
+
+	* src/MusicBrainz/MusicBrainz/*.cs: Renamed the namespace from 
+	MusicBrainzSharp to MusicBrainz
+
+	* configure.ac:
+	* m4/monodoc.m4: 
+	* docs/: Added Monodoc support 
+
+2007-10-27  Aaron Bockover  <abock@gnome.org>
+
+	* musicbrainz-sharp: Set up initial project infrastructure for Scott
+

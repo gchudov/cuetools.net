@@ -97,6 +97,10 @@
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
+      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
+      <Name>MusicBrainz</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

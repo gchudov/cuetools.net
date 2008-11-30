@@ -1,0 +1,7 @@
+When writing code for MusicBrainz-Sharp, follow the Mono coding guidlines [1].
+
+MusicBrainz-Sharp is in the public domain. In order to preserve the freedom of the code, any patches or code which is submitted to MusicBrainz-Sharp must include the following disclaimer:
+
+The author or authors of this code dedicate any and all copyright interest in this code to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this code under copyright law.
+
+[1] http://www.mono-project.com/Coding_Guidelines

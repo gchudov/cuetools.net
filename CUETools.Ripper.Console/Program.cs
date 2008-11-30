@@ -27,6 +27,7 @@ using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
+using MusicBrainz;
 
 namespace CUERipper
 {
@@ -40,7 +41,7 @@ namespace CUERipper
 
 		static void Main(string[] args)
 		{
-			string programVersion = "CUERipper v1.9.3";
+			string programVersion = "CUERipper v1.9.3 Copyright (C) 2008 Gregory S. Chudov";
 			Console.SetOut(Console.Error);
 			Console.WriteLine("{0}", programVersion);
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
@@ -68,19 +69,37 @@ namespace CUERipper
 			
 				bool toStdout = false;
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
-				WAVWriter audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
 				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
 				string CDDBId = AccurateRipVerify.CalculateCDDBId(audioSource.TOC);
 				string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);
+				Release release;
+				ReleaseQueryParameters p = new ReleaseQueryParameters();
+				p.DiscId = audioSource.TOC.MusicBrainzId;
+				Query<Release> results = Release.Query(p);
 
 				arVerify.ContactAccurateRip(ArId);
 
-				Console.WriteLine("Drive     : {0}", audioSource.Path);
-				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, CDImageLayout.TimeToString((uint)(audioSource.Length / 588)));
-				Console.WriteLine("Filename  : {0}", destFile);
-				Console.WriteLine("AR status : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
+				try
+				{
+					release = results.First();
+				}
+				catch
+				{
+					release = null;
+				}
 
-				audioDest.FinalSampleCount = (long) audioSource.Length;
+				if (destFile == null || destFile == "")
+					destFile = (release == null) ? "cdimage.wav" : release.GetArtist() + " - " + release.GetTitle() + ".wav";
+
+				Console.WriteLine("Drive       : {0}", audioSource.Path);
+				Console.WriteLine("Filename    : {0}", destFile);
+				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString((uint)(audioSource.Length / 588)));
+				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
+				Console.WriteLine("MusicBrainz : {0}", release == null ? "not found" : release.GetArtist() + " - " + release.GetTitle());
+
+				WAVWriter audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
+				audioDest.FinalSampleCount = (long)audioSource.Length;
+
 
 				DateTime start = DateTime.Now;
 				TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
@@ -94,7 +113,7 @@ namespace CUERipper
 					TimeSpan elapsed = DateTime.Now - start;
 					if ((elapsed - lastPrint).TotalMilliseconds > 60)
 					{
-						Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
+						Console.Write("\rProgress    : {0:00}%; {1:0.00}x; {2}/{3}",
 							100.0 * audioSource.Position / audioSource.Length,
 							audioSource.Position / elapsed.TotalSeconds / audioSource.SampleRate,
 							elapsed,
@@ -105,8 +124,8 @@ namespace CUERipper
 				} while (true);
 
 				TimeSpan totalElapsed = DateTime.Now - start;
-				Console.Error.Write("\r                                                                         \r");
-				Console.WriteLine("Results   : {0:0.00}x; {1}",
+				Console.Write("\r                                                                           \r");
+				Console.WriteLine("Results     : {0:0.00}x; {1}",
 					audioSource.Length / totalElapsed.TotalSeconds / audioSource.SampleRate,
 					totalElapsed
 					);
@@ -146,11 +165,23 @@ namespace CUERipper
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", programVersion);
 				if (audioSource.TOC.Catalog != null)
 					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Catalog);
+				if (release != null)
+				{
+					if (release.GetEvents().Count > 0)
+						cueWriter.WriteLine("DATE {0}", release.GetEvents()[0].Date);
+					cueWriter.WriteLine("PERFORMER {0}", release.GetArtist());
+					cueWriter.WriteLine("TITLE {0}", release.GetTitle());
+				}
 				cueWriter.WriteLine("FILE \"{0}\" WAVE", destFile);
 				for (int track = 1; track <= audioSource.TOC.TrackCount; track++)
 				if (audioSource.TOC[track].IsAudio)
 				{
 					cueWriter.WriteLine("  TRACK {0:00} AUDIO", audioSource.TOC[track].Number);
+					if (release != null && release.GetTracks().Count >= audioSource.TOC[track].Number)
+					{
+						cueWriter.WriteLine("    TITLE {0}", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetTitle());
+						cueWriter.WriteLine("    PERFORMER {0}", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetArtist());
+					}
 					if (audioSource.TOC[track].ISRC != null)
 						cueWriter.WriteLine("    ISRC {0}", audioSource.TOC[track].ISRC);
 					for (int index = audioSource.TOC[track].Pregap > 0 ? 0 : 1; index <= audioSource.TOC[track].LastIndex; index++)

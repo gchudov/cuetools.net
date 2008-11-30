@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace CUETools.CDImage
@@ -283,7 +284,7 @@ namespace CUETools.CDImage
 			}
 		}
 
-		public String Catalog
+		public string Catalog
 		{
 			get
 			{
@@ -292,6 +293,20 @@ namespace CUETools.CDImage
 			set
 			{
 				_catalog = value;
+			}
+		}
+
+		public string MusicBrainzId
+		{
+			get
+			{
+				StringBuilder mbSB = new StringBuilder();
+				mbSB.AppendFormat("{0:X2}{1:X2}{2:X8}", 1, AudioTracks, _tracks[(int)AudioTracks-1].End + 1 + 150);
+				for (int iTrack = 0; iTrack < AudioTracks; iTrack++)
+					mbSB.AppendFormat("{0:X8}", _tracks[iTrack].Start + 150);
+				mbSB.Append(new string('0', (99 - (int)AudioTracks) * 8));
+				byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(mbSB.ToString()));
+				return Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
 			}
 		}
 

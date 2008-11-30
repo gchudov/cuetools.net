@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <ProjectGuid>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MusicBrainz</RootNamespace>
+    <AssemblyName>MusicBrainz</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>.</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AssemblyKeyFile>.</AssemblyKeyFile>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <RunWithWarnings>false</RunWithWarnings>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>.</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AssemblyKeyFile>.</AssemblyKeyFile>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <TargetFrameworkVersion>v1.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Xml" />
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="MusicBrainz\Artist.cs" />
+    <Compile Include="MusicBrainz\Disc.cs" />
+    <Compile Include="MusicBrainz\Event.cs" />
+    <Compile Include="MusicBrainz\Label.cs" />
+    <Compile Include="MusicBrainz\MusicBrainzEntity.cs" />
+    <Compile Include="MusicBrainz\MusicBrainzException.cs" />
+    <Compile Include="MusicBrainz\MusicBrainzItem.cs" />
+    <Compile Include="MusicBrainz\MusicBrainzObject.cs" />
+    <Compile Include="MusicBrainz\Query.cs" />
+    <Compile Include="MusicBrainz\Relation.cs" />
+    <Compile Include="MusicBrainz\Release.cs" />
+    <Compile Include="MusicBrainz\Track.cs" />
+    <Compile Include="MusicBrainz\Utils.cs" />
+    <Compile Include="MusicBrainz\XmlRequestEventArgs.cs" />
+    <Compile Include="MusicBrainz\MusicBrainzService.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties xmlns="">
+        <MonoDevelop.Autotools.MakefileInfo IntegrationEnabled="true" RelativeMakefileName="Makefile.am" BuildTargetName="" CleanTargetName="" SyncReferences="true" IsAutotoolsProject="true" RelativeConfigureInPath="../..">
+          <BuildFilesVar Sync="true" Name="SOURCES" />
+          <DeployFilesVar />
+          <ResourcesVar Name="REFERENCES" />
+          <OthersVar />
+          <GacRefVar Sync="true" Name="REFERENCES" Prefix="-r:" />
+          <AsmRefVar Sync="true" Name="REFERENCES" Prefix="-r:" />
+          <ProjectRefVar Sync="true" Name="REFERENCES" Prefix="-r:" />
+        </MonoDevelop.Autotools.MakefileInfo>
+        <MonoDevelop.ChangeLogAddIn.ChangeLogInfo policy="UseParentPolicy" />
+      </Properties>
+    </MonoDevelop>
+    <VisualStudio />
+  </ProjectExtensions>
+</Project>

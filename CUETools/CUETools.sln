@@ -71,6 +71,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.CDImage", "..\CUET
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.AccurateRip", "..\CUETools.AccurateRip\CUETools.AccurateRip.csproj", "{5802C7E9-157E-4124-946D-70B5AE48A5A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicBrainz", "..\MusicBrainz\MusicBrainz.csproj", "{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -342,6 +344,18 @@ Global
 		{5802C7E9-157E-4124-946D-70B5AE48A5A1}.Release|x64.Build.0 = Release|x64
 		{5802C7E9-157E-4124-946D-70B5AE48A5A1}.Release|x86.ActiveCfg = Release|x86
 		{5802C7E9-157E-4124-946D-70B5AE48A5A1}.Release|x86.Build.0 = Release|x86
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Debug|x64.Build.0 = Debug|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Debug|x86.Build.0 = Debug|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Release|x64.ActiveCfg = Release|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Release|x64.Build.0 = Release|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Release|x86.ActiveCfg = Release|Any CPU
+		{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
