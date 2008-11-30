@@ -805,6 +805,11 @@ namespace CUETools.Processor
 				if (General.FindCUELine(_attributes, "REM", "GENRE") == null && GetCommonTag("GENRE") != null)
 					General.SetCUELine(_attributes, "REM", "GENRE", GetCommonTag("GENRE"), true);
 			}
+
+			CUELine cddbDiscIdLine = General.FindCUELine(_attributes, "REM", "DISCID");
+			_cddbDiscIdTag = cddbDiscIdLine != null && cddbDiscIdLine.Params.Count == 3 ? cddbDiscIdLine.Params[2] : null;
+			if (_cddbDiscIdTag == null) _cddbDiscIdTag = GetCommonTag("DISCID");
+
 			if (_accurateRipId == null)
 				_accurateRipId = GetCommonTag("ACCURATERIPID");
 
@@ -833,22 +838,26 @@ namespace CUETools.Processor
 					_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(tocFromLog);
 			}
 
-			CUELine cddbDiscIdLine = General.FindCUELine(_attributes, "REM", "DISCID");
-			_cddbDiscIdTag = cddbDiscIdLine != null && cddbDiscIdLine.Params.Count == 3 ? cddbDiscIdLine.Params[2] : null;
-			if (_cddbDiscIdTag == null) _cddbDiscIdTag = GetCommonTag("DISCID");
-
-			if (_dataTrackLength != null)
+			if (_accurateRipId == null && _dataTrackLength != null)
 			{
 				CDImageLayout toc2 = new CDImageLayout(_toc);
 				toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152U * 75U, _dataTrackLength.Value, false));
-				_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
+				_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
 			}
-			else
+
+			if (_dataTrackLength == null && _cddbDiscIdTag != null)
 			{
-				_accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
-				if (_accurateRipId == null)
-					_accurateRipId = _accurateRipIdActual;
+				uint cddbDiscIdNum;
+				if (uint.TryParse(_cddbDiscIdTag, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out cddbDiscIdNum) && (cddbDiscIdNum & 0xff) == TrackCount + 1)
+				{
+					uint lengthFromTag = ((cddbDiscIdNum >> 8) & 0xffff);
+					_minDataTrackLength = ((lengthFromTag + _toc[1].Start / 75) - 152) * 75 - _toc.Length;
+				}
 			}
+
+			_accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
+			if (_accurateRipId == null)
+				_accurateRipId = _accurateRipIdActual;
 
 			_arVerify = new AccurateRipVerify(_toc);
 
@@ -1484,7 +1493,7 @@ namespace CUETools.Processor
 					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, minDTL, false));
 					for (uint dtl = minDTL; dtl < minDTL + 75; dtl++)
 					{
-						toc2[_toc.TrackCount].Length = dtl;
+						toc2[toc2.TrackCount].Length = dtl;
 						_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
 						_arVerify.ContactAccurateRip(_accurateRipId);
 						if (_arVerify.AccResult != HttpStatusCode.NotFound)
