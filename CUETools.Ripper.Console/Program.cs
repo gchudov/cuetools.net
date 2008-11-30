@@ -126,8 +126,7 @@ namespace CUERipper
 				logWriter.WriteLine();
 				logWriter.WriteLine("AccurateRip summary");
 				logWriter.WriteLine();
-				logWriter.WriteLine("Track\t[ CRC    ] Status");
-				arVerify.GenerateAccurateRipLog(logWriter, 0);
+				arVerify.GenerateFullLog(logWriter, 0);
 				logWriter.WriteLine();
 				logWriter.WriteLine("End of status report");
 				logWriter.Close();

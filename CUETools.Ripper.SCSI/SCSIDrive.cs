@@ -106,10 +106,13 @@ namespace CUETools.Ripper.SCSI
 			st = m_device.ReadCDText(out cdtext);
 			// new CDTextEncoderDecoder
 
-			_toc = new CDImageLayout(toc[toc.Count - 1].StartSector);
+			_toc = new CDImageLayout();
 			for (int iTrack = 0; iTrack < toc.Count - 1; iTrack++)
-				_toc.AddTrack(new CDTrack((uint)iTrack + 1, toc[iTrack].StartSector,
-					toc[iTrack + 1].StartSector - toc[iTrack].StartSector, toc[iTrack].Control == 0));
+				_toc.AddTrack(new CDTrack((uint)iTrack + 1, 
+					toc[iTrack].StartSector,
+					toc[iTrack + 1].StartSector - toc[iTrack].StartSector - 
+					    ((toc[iTrack + 1].Control == 0 || iTrack + 1 == toc.Count - 1) ? 0U : 152U * 75U), 
+					toc[iTrack].Control == 0));
 			return true;
 		}
 
@@ -324,7 +327,7 @@ namespace CUETools.Ripper.SCSI
 			{
 				if (_toc == null)
 					throw new Exception("invalid TOC");
-				return (ulong)588 * (_toc.Length - (_toc[_toc.TrackCount].IsAudio ? 0 : _toc[_toc.TrackCount].Length + 152 * 75));
+				return (ulong)588 * (_toc[_toc.TrackCount].IsAudio ? _toc[_toc.TrackCount].End + 1 : _toc[_toc.TrackCount - 1].End + 1);
 			}
 		}
 

@@ -224,15 +224,13 @@ namespace CUETools.CDImage
 
 	public class CDImageLayout : ICloneable
 	{
-		public CDImageLayout(uint length)
+		public CDImageLayout()
 		{
 			_tracks = new List<CDTrack>();
-			_length = length;
 		}
 
 		public CDImageLayout(CDImageLayout src)
 		{
-			_length = src._length;
 			_catalog = src._catalog;
 			_audioTracks = src._audioTracks;
 			_tracks = new List<CDTrack>();
@@ -249,11 +247,7 @@ namespace CUETools.CDImage
 		{
 			get
 			{
-				return _length;
-			}
-			set
-			{
-				_length = value;
+				return TrackCount > 0 ? _tracks[TrackCount - 1].End + 1U : 0U;
 			}
 		}
 
@@ -337,7 +331,6 @@ namespace CUETools.CDImage
 			return String.Format("{0:00}:{1:00}:{2:00}", min, sec, frame);
 		}
 
-		uint _length;
 		string _catalog;
 		IList<CDTrack> _tracks;
 		uint _audioTracks;

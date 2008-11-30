@@ -326,7 +326,7 @@ namespace CUETools.AccurateRip
 			get { throw new Exception("unsupported"); }
 		}
 
-		public void GenerateAccurateRipLog(TextWriter sw, int oi)
+		public void GenerateLog(TextWriter sw, int oi)
 		{
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
@@ -359,6 +359,47 @@ namespace CUETools.AccurateRip
 					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Partial match to pressing(s) #{4} ", iTrack + 1, CRC(iTrack, oi), count, partials, partpressings));
 				else
 					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] (00/{2:00}) No matches", iTrack + 1, CRC(iTrack, oi), count));
+			}
+		}
+
+		public void GenerateFullLog(TextWriter sw, int offsetApplied)
+		{
+			if (AccResult == HttpStatusCode.NotFound)
+			{
+				sw.WriteLine("Disk not present in database.");
+				//for (iTrack = 0; iTrack < TrackCount; iTrack++)
+				//    sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Disk not present in database", iTrack + 1, _tracks[iTrack].CRC));
+			}
+			else if (AccResult != HttpStatusCode.OK)
+			{
+				sw.WriteLine("Database access error: " + AccResult.ToString());
+				//for (iTrack = 0; iTrack < TrackCount; iTrack++)
+				//    sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Database access error {2}", iTrack + 1, _tracks[iTrack].CRC, accResult.ToString()));
+			}
+			else
+			{
+				sw.WriteLine("Track\t[ CRC    ] Status");
+				GenerateLog(sw, offsetApplied);
+				uint offsets_match = 0;
+				for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+				{
+					uint matches = 0;
+					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+						for (int di = 0; di < (int)AccDisks.Count; di++)
+							if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0) ||
+								 (CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC && AccDisks[di].tracks[iTrack].Frame450CRC != 0))
+								matches++;
+					if (matches != 0 && oi != offsetApplied)
+					{
+						if (offsets_match++ > 10)
+						{
+							sw.WriteLine("More than 10 offsets match!");
+							break;
+						}
+						sw.WriteLine("Offsetted by {0}:", oi);
+						GenerateLog(sw, oi);
+					}
+				}
 			}
 		}
 
