@@ -109,6 +109,10 @@
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
+      <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
+      <Name>CUETools.Ripper.SCSI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FLACDotNet\FLACDotNet.vcproj">
       <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
       <Name>FLACDotNet</Name>
@@ -120,6 +124,10 @@
     <ProjectReference Include="..\LossyWAVDotNet\CUETools.Codecs.LossyWAV.csproj">
       <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
       <Name>CUETools.Codecs.LossyWAV</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
+      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
+      <Name>MusicBrainz</Name>
     </ProjectReference>
     <ProjectReference Include="..\UnRarDotNet\UnRarDotNet.csproj">
       <Project>{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}</Project>

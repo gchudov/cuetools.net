@@ -34,6 +34,8 @@ using CUETools.Codecs;
 using CUETools.Codecs.LossyWAV;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
+using CUETools.Ripper.SCSI;
+using MusicBrainz;
 #if !MONO
 using UnRarDotNet;
 using FLACDotNet;
@@ -421,8 +423,9 @@ namespace CUETools.Processor
 		private const int _arOffsetRange = 5 * 588 - 1;
 		private HDCDDotNet.HDCDDotNet hdcdDecoder;
 		private bool _outputLossyWAV = false;
-		CUEConfig _config;
-		string _cddbDiscIdTag;
+		private CUEConfig _config;
+		private string _cddbDiscIdTag;
+		private bool _isCD;
 		private bool _isArchive;
 		private List<string> _archiveContents;
 		private string _archiveCUEpath;
@@ -440,6 +443,7 @@ namespace CUETools.Processor
 			_progress = new CUEToolsProgressEventArgs();
 			_attributes = new List<CUELine>();
 			_tracks = new List<TrackInfo>();
+			_trackFilenames = new List<string>();
 			_toc = new CDImageLayout();
 			_sources = new List<SourceInfo>();
 			_sourcePaths = new List<string>();
@@ -458,39 +462,86 @@ namespace CUETools.Processor
 			hdcdDecoder = null;
 			_hasEmbeddedCUESheet = false;
 			_isArchive = false;
+			_isCD = false;
 		}
 
 		public void Open(string pathIn, bool outputLossyWAV)
 		{
-			_outputLossyWAV = outputLossyWAV;
 			if (_config.detectHDCD)
 			{
 				try { hdcdDecoder = new HDCDDotNet.HDCDDotNet(2, 44100, ((_outputLossyWAV && _config.decodeHDCDtoLW16) || !_config.decodeHDCDto24bit) ? 20 : 24, _config.decodeHDCD); }
 				catch { }
 			}
+			_outputLossyWAV = outputLossyWAV;
+			SourceInfo sourceInfo;
+			string cueDir = Path.GetDirectoryName(pathIn) ?? pathIn;
+#if !MONO
+			if (cueDir == pathIn)
+			{
+				CDDriveReader ripper = new CDDriveReader();
+				ripper.Open(pathIn[0]);
+				// We needed to clone TOC in case we reuse the ripper, because it's going to modify it.
+				//_toc = (CDImageLayout)ripper.TOC.Clone();
+				_toc = (CDImageLayout)ripper.TOC;
+				sourceInfo.Path = pathIn;
+				sourceInfo.Offset = 0;
+				sourceInfo.Length = (uint)ripper.Length;
+				ripper.Close();
+				if (_toc.AudioTracks > 0)
+				{
+					_isCD = true;
+					_sources.Add(sourceInfo);
+					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+					{
+						_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
+						_tracks.Add(new TrackInfo());
+					}
+					_hasTrackFilenames = false;
+					_accurateRipId = _accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
+					_arVerify = new AccurateRipVerify(_toc);
 
-			string cueDir, lineStr, command, pathAudio = null, fileType;
+					Release release;
+					ReleaseQueryParameters p = new ReleaseQueryParameters();
+					p.DiscId = _toc.MusicBrainzId;
+					Query<Release> results = Release.Query(p);
+					MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+					_progress.percentDisk = 0;
+					try
+					{
+						release = results.First();
+						General.SetCUELine(_attributes, "PERFORMER", release.GetArtist(), true);
+						General.SetCUELine(_attributes, "TITLE", release.GetTitle(), true);
+						General.SetCUELine(_attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
+						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+						{
+							General.SetCUELine(_tracks[iTrack].Attributes, "TITLE", release.GetTracks()[iTrack].GetTitle(), true);
+							General.SetCUELine(_tracks[iTrack].Attributes, "PERFORMER ", release.GetTracks()[iTrack].GetArtist(), true);
+						}
+					}
+					catch
+					{
+						release = null;
+					}
+					return;
+				}
+			}
+#endif
+
+			string lineStr, command, pathAudio = null, fileType;
 			CUELine line;
-			TrackInfo trackInfo;
-			int timeRelativeToFileStart, absoluteFileStartTime;
-			int fileTimeLengthSamples, fileTimeLengthFrames, i;
+			TrackInfo trackInfo = null;
+			int timeRelativeToFileStart, absoluteFileStartTime = 0;
+			int fileTimeLengthSamples = 0, fileTimeLengthFrames = 0, i;
 			int trackNumber = 0;
 			bool seenFirstFileIndex = false, seenDataTrack = false;
 			List<IndexInfo> indexes = new List<IndexInfo>();
 			IndexInfo indexInfo;
-			SourceInfo sourceInfo;
 			NameValueCollection _trackTags = null;
-
-			cueDir = Path.GetDirectoryName(pathIn);
-			trackInfo = null;
-			absoluteFileStartTime = 0;
-			fileTimeLengthSamples = 0;
-			fileTimeLengthFrames = 0;
 			TextReader sr;
 
 			if (Directory.Exists(pathIn))
 			{
-				if (cueDir + Path.DirectorySeparatorChar != pathIn)
+				if (cueDir + Path.DirectorySeparatorChar != pathIn && cueDir != pathIn)
 					throw new Exception("Input directory must end on path separator character.");
 				string cueSheet = null;
 				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
@@ -768,7 +819,6 @@ namespace CUETools.Processor
 			_htoaFilename = _hasHTOAFilename ? Path.GetFileName(_sourcePaths[0]) : "01.00.wav";
 
 			_hasTrackFilenames = (_sourcePaths.Count == TrackCount) || _hasHTOAFilename;
-			_trackFilenames = new List<string>();
 			for (i = 0; i < TrackCount; i++) {
 				_trackFilenames.Add( _hasTrackFilenames ? Path.GetFileName(
 					_sourcePaths[i + (_hasHTOAFilename ? 1 : 0)]) : String.Format("{0:00}.wav", i + 1) );
@@ -892,6 +942,18 @@ namespace CUETools.Processor
 		}
 
 #if !MONO
+		private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
+		{
+			if (this.CUEToolsProgress == null)
+				return;
+			_progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
+			_progress.percentTrack = 0;
+			_progress.input = e.Uri.ToString();
+			_progress.output = null;
+			_progress.status = "Looking up album via MusicBrainz";
+			this.CUEToolsProgress(this, _progress);
+		}
+
 		private void unrar_ExtractionProgress(object sender, ExtractionProgressEventArgs e)
 		{
 			if (this.CUEToolsProgress == null)
@@ -1210,14 +1272,7 @@ namespace CUETools.Processor
 		}
 
 		private void CalculateMusicBrainzDiscID() {
-			StringBuilder mbSB = new StringBuilder();
-			mbSB.AppendFormat("{0:X2}{1:X2}{2:X8}", 1, TrackCount, _toc.Length + 150);
-			for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
-				mbSB.AppendFormat("{0:X8}", _toc[iTrack].Start + 150);
-			mbSB.Append(new string('0', (99 - TrackCount) * 8));
-
-			byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(mbSB.ToString()));
-			_mbDiscId = Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
+			_mbDiscId = _toc.MusicBrainzId;
 			System.Diagnostics.Debug.WriteLine(_mbDiscId);
 		}
 
@@ -1834,7 +1889,8 @@ namespace CUETools.Processor
 
 			uint currentOffset = 0, previousOffset = 0;
 			uint trackLength = _toc.Pregap * 588;
-			uint diskLength = _toc.Length * 588, diskOffset = 0;
+			uint diskLength = 588 * (_toc[_toc.TrackCount].IsAudio ? _toc[_toc.TrackCount].End + 1 : _toc[_toc.TrackCount - 1].End + 1);
+			uint diskOffset = 0;
 
 			if (_accurateRip && noOutput)
 				_arVerify.Init();
@@ -1908,11 +1964,12 @@ namespace CUETools.Processor
 							if (trackPercent != lastTrackPercent)
 								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
 									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent, 
-									audioSource.Path, discardOutput ? null : audioDest.Path);
+									_isCD ? audioSource.Path + ": " + _tracks[iTrack].Title : audioSource.Path, discardOutput ? null : audioDest.Path);
 							lastTrackPercent = trackPercent;
 						}
 
-						audioSource.Read(sampleBuffer, copyCount);
+						if (audioSource.Read(sampleBuffer, copyCount) != copyCount)
+							throw new Exception("samples read != samples expected");
 						if (!discardOutput)
 						{
 							if (!_config.detectHDCD || !_config.decodeHDCD)
@@ -2159,6 +2216,13 @@ namespace CUETools.Processor
 			}
 			else {
 #if !MONO
+				if (_isCD)
+				{
+					CDDriveReader ripper = new CDDriveReader();
+					ripper.Open(sourceInfo.Path[0]);
+					ripper.DriveOffset = 48;
+					audioSource = ripper;
+				} else
 				if (_isArchive)
 				{
 					RarStream IO = new RarStream(_archivePath, sourceInfo.Path);

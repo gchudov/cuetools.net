@@ -761,7 +761,7 @@ namespace JDP {
 				{
 					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
 						pathIn = pathIn + Path.DirectorySeparatorChar;
-					dir = Path.GetDirectoryName(pathIn);
+					dir = Path.GetDirectoryName(pathIn) ?? pathIn;
 					file = Path.GetFileNameWithoutExtension(dir);
 				}
 				else

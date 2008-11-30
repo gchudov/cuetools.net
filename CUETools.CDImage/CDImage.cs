@@ -81,6 +81,7 @@ namespace CUETools.CDImage
 			_isAudio = isAudio;
 			_indexes = new List<CDTrackIndex>();
 			_indexes.Add(new CDTrackIndex(0, start, 0));
+			_indexes.Add(new CDTrackIndex(1, start, length));
 		}
 
 		public CDTrack(CDTrack src)
@@ -209,8 +210,8 @@ namespace CUETools.CDImage
 
 		public void AddIndex(CDTrackIndex index)
 		{
-			if (index.Index == 0)
-				_indexes[0] = index;
+			if (index.Index < 2)
+				_indexes[(int)index.Index] = index;
 			else
 				_indexes.Add(index);
 		}

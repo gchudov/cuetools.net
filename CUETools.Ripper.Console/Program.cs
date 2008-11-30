@@ -27,6 +27,7 @@ using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
+using FLACDotNet;
 using MusicBrainz;
 
 namespace CUERipper
@@ -67,7 +68,7 @@ namespace CUERipper
 				audioSource.Open(driveLetter);
 				audioSource.DriveOffset = 48;
 			
-				bool toStdout = false;
+				//bool toStdout = false;
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
 				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
 				string CDDBId = AccurateRipVerify.CalculateCDDBId(audioSource.TOC);
@@ -89,7 +90,7 @@ namespace CUERipper
 				}
 
 				if (destFile == null || destFile == "")
-					destFile = (release == null) ? "cdimage.wav" : release.GetArtist() + " - " + release.GetTitle() + ".wav";
+					destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Filename    : {0}", destFile);
@@ -97,7 +98,8 @@ namespace CUERipper
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 				Console.WriteLine("MusicBrainz : {0}", release == null ? "not found" : release.GetArtist() + " - " + release.GetTitle());
 
-				WAVWriter audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
+				IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
+				//IAudioDest audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
 				audioDest.FinalSampleCount = (long)audioSource.Length;
 
 
@@ -131,7 +133,7 @@ namespace CUERipper
 					);
 				audioDest.Close();
 
-				StreamWriter logWriter = new StreamWriter(Path.ChangeExtension(destFile, ".log"));
+				StringWriter logWriter = new StringWriter();
 				logWriter.WriteLine("{0}", programVersion);
 				logWriter.WriteLine();
 				logWriter.WriteLine("Extraction logfile from {0}", DateTime.Now);
@@ -157,20 +159,23 @@ namespace CUERipper
 				arVerify.GenerateFullLog(logWriter, 0);
 				logWriter.WriteLine();
 				logWriter.WriteLine("End of status report");
-				logWriter.Close();
+				logWriter.Close();				
+				StreamWriter logFile = new StreamWriter(Path.ChangeExtension(destFile, ".log"));
+				logFile.Write(logWriter.ToString());
+				logFile.Close();
 
-				StreamWriter cueWriter = new StreamWriter(Path.ChangeExtension(destFile, ".cue"));
+				StringWriter cueWriter = new StringWriter();
 				cueWriter.WriteLine("REM DISCID {0}", CDDBId);
 				cueWriter.WriteLine("REM ACCURATERIPID {0}", ArId);
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", programVersion);
+				if (release != null && release.GetEvents().Count > 0)
+					cueWriter.WriteLine("REM DATE {0}", release.GetEvents()[0].Date.Substring(0,4));
 				if (audioSource.TOC.Catalog != null)
 					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Catalog);
 				if (release != null)
 				{
-					if (release.GetEvents().Count > 0)
-						cueWriter.WriteLine("DATE {0}", release.GetEvents()[0].Date);
-					cueWriter.WriteLine("PERFORMER {0}", release.GetArtist());
-					cueWriter.WriteLine("TITLE {0}", release.GetTitle());
+					cueWriter.WriteLine("PERFORMER \"{0}\"", release.GetArtist());
+					cueWriter.WriteLine("TITLE \"{0}\"", release.GetTitle());
 				}
 				cueWriter.WriteLine("FILE \"{0}\" WAVE", destFile);
 				for (int track = 1; track <= audioSource.TOC.TrackCount; track++)
@@ -179,8 +184,8 @@ namespace CUERipper
 					cueWriter.WriteLine("  TRACK {0:00} AUDIO", audioSource.TOC[track].Number);
 					if (release != null && release.GetTracks().Count >= audioSource.TOC[track].Number)
 					{
-						cueWriter.WriteLine("    TITLE {0}", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetTitle());
-						cueWriter.WriteLine("    PERFORMER {0}", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetArtist());
+						cueWriter.WriteLine("    TITLE \"{0}\"", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetTitle());
+						cueWriter.WriteLine("    PERFORMER \"{0}\"", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetArtist());
 					}
 					if (audioSource.TOC[track].ISRC != null)
 						cueWriter.WriteLine("    ISRC {0}", audioSource.TOC[track].ISRC);
@@ -188,8 +193,16 @@ namespace CUERipper
 						cueWriter.WriteLine("    INDEX {0:00} {1}", index, audioSource.TOC[track][index].MSF);
 				}
 				cueWriter.Close();
+				StreamWriter cueFile = new StreamWriter(Path.ChangeExtension(destFile, ".cue"));
+				cueFile.Write(cueWriter.ToString());
+				cueFile.Close();
 
 				audioSource.Close();
+
+				FLACReader tagger = new FLACReader(destFile, null);
+				tagger.Tags.Add("CUESHEET", cueWriter.ToString());
+				tagger.Tags.Add("LOG", logWriter.ToString());
+				tagger.UpdateTags(false);
 			}
 #if !DEBUG
 			catch (Exception ex)

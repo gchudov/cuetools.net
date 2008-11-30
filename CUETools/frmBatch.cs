@@ -133,7 +133,7 @@ namespace JDP
 						throw new Exception("Input CUE Sheet not found.");
 					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
 						pathIn = pathIn + Path.DirectorySeparatorChar;
-					cueName = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(pathIn)) + ".cue";
+					cueName = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(pathIn) ?? pathIn) + ".cue";
 				}
 				else
 					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
@@ -145,7 +145,7 @@ namespace JDP
 					bool pathFound = false;
 					for (int i = 0; i < 20; i++)
 					{
-						string outDir = Path.Combine(Path.GetDirectoryName(pathIn), "CUEToolsOutput" + (i > 0 ? String.Format("({0})", i) : ""));
+						string outDir = Path.Combine(Path.GetDirectoryName(pathIn) ?? pathIn, "CUEToolsOutput" + (i > 0 ? String.Format("({0})", i) : ""));
 						if (!Directory.Exists(outDir))
 						{
 							Directory.CreateDirectory(outDir);
@@ -158,7 +158,7 @@ namespace JDP
 						throw new Exception("Could not create a folder.");
 				}
 				else
-					pathOut = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
+					pathOut = Path.Combine(Path.GetDirectoryName(pathIn) ?? pathIn, cueName);
 				cueSheet.GenerateFilenames(_audioFormat, pathOut);
 				if (outputAudio)
 				{

@@ -68,15 +68,15 @@ namespace CUETools.Ripper.SCSI
 		{
 			Device.CommandStatus st;
 
-			m_info = DeviceInfo.CreateDevice(Drive + ":");
-
 			// Open the base device
 			m_device = new Device(m_logger);
 			if (!m_device.Open(Drive))
-				throw new Exception("SCSI error");
+				throw new Exception("Open failed: SCSI error");
 
+			// Get device info
+			m_info = DeviceInfo.CreateDevice(Drive + ":");
 			if (!m_info.ExtractInfo(m_device))
-				throw new Exception("SCSI error");
+				throw new Exception("ExtractInfo failed: SCSI error");
 
 			//// Open/Initialize the driver
 			//Drive m_drive = new Drive(dev);
@@ -100,16 +100,16 @@ namespace CUETools.Ripper.SCSI
 			SpeedDescriptorList speed_list;
 			st = m_device.GetSpeed(out speed_list);
 			if (st != Device.CommandStatus.Success)
-				throw new Exception("SCSI error");
+				throw new Exception("GetSpeed failed: SCSI error");
 
 			st = m_device.SetCdSpeed(Device.RotationalControl.CLVandNonPureCav, Device.OptimumSpeed, Device.OptimumSpeed);
 			if (st != Device.CommandStatus.Success)
-				throw new Exception("SCSI error");
+				throw new Exception("SetCdSpeed failed: SCSI error");
 
 			IList<TocEntry> toc;
 			st = m_device.ReadToc((byte)0, false, out toc);
 			if (st != Device.CommandStatus.Success)
-				throw new Exception("SCSI error");
+				throw new Exception("ReadToc failed: SCSI error");
 
 			st = m_device.ReadCDText(out cdtext);
 			// new CDTextEncoderDecoder
@@ -126,6 +126,8 @@ namespace CUETools.Ripper.SCSI
 
 		public void Close()
 		{
+			m_device.Close();
+			m_device = null;
 			_toc = null;
 		}
 
@@ -218,7 +220,7 @@ namespace CUETools.Ripper.SCSI
 			{
 				Device.CommandStatus st = m_device.ReadCDAndSubChannel(2, 1, true, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), Sectors2Read * (2352 + 16));
 				if (st != Device.CommandStatus.Success)
-					throw new Exception("SCSI error");
+					throw new Exception("ReadCDAndSubChannel failed: SCSI error");
 			}
 			ProcessSubchannel(sector, Sectors2Read);
 		}
@@ -226,7 +228,7 @@ namespace CUETools.Ripper.SCSI
 		public unsafe uint Read(int[,] buff, uint sampleCount)
 		{
 			if (_toc == null)
-				throw new Exception("invalid TOC");
+				throw new Exception("Read: invalid TOC");
 			if (_sampleOffset - _driveOffset >= (uint)Length)
 				return 0;
 			if (_sampleOffset > (uint)Length)
@@ -287,7 +289,7 @@ namespace CUETools.Ripper.SCSI
 			}
 			// if (_sampleOffset < PreGapLength && !_overreadIntoPreGap ... ?
 			int firstSector = (int)_sampleOffset / 588;
-			int lastSector = (int)(_sampleOffset + sampleCount + 577) / 588;
+			int lastSector = (int)(_sampleOffset + sampleCount + 587) / 588;
 			for (int sector = firstSector; sector < lastSector; sector += NSECTORS)
 			{
 				int Sectors2Read = ((sector + NSECTORS) < lastSector) ? NSECTORS : (lastSector - sector);
