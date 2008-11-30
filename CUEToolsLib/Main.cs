@@ -816,7 +816,6 @@ namespace CUETools.Processor
 			if (_accurateRipId == null && _dataTrackLength == null && _eacLog != null)
 			{
 				sr = new StringReader(_eacLog);
-				uint lastAudioSector = 0;
 				bool isEACLog = false;
 				CDImageLayout tocFromLog = new CDImageLayout();
 				while ((lineStr = sr.ReadLine()) != null)

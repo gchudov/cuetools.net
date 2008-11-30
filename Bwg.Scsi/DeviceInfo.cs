@@ -155,6 +155,16 @@ namespace Bwg.Scsi
             m_devices.Add(newdev);
             return newdev;
         }
+        /// <summary>
+        /// This method returns or creates a unique device info structure based on the
+        /// drive letter for a given drive.
+        /// </summary>
+        /// <param name="letter">the drive letter for the drive</param>
+        /// <returns>the single DeviceInfo object that represents this drive</returns>
+		public static DeviceInfo CreateDevice(string letter)
+		{
+			return CreateDevice(DeviceManager.GetNtDeviceNameForDrive(letter),letter);
+		}
         #endregion
     }
 }

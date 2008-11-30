@@ -168,7 +168,12 @@ namespace Bwg.Scsi
 
         #region private methods
 
-        private static string GetNtDeviceNameForDrive(string name)
+		/// <summary>
+		/// Return the NT name for a drive given its drive letter
+		/// </summary>
+		/// <param name="name">the drive letter</param>
+		/// <returns>the NT name</returns>
+		public static string GetNtDeviceNameForDrive(string name)
         {
             string result;
             const int buflen = 512;

@@ -25,6 +25,7 @@ using System.Text;
 using System.Collections.Generic;
 using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
+using CUETools.CDImage;
 using CUETools.AccurateRip;
 
 namespace CUERipper
@@ -50,12 +51,19 @@ namespace CUERipper
 				return;
 			}
 			string destFile = args[0];
+			char[] drives = CDDriveReader.DrivesAvailable();
+			if (drives.Length < 1)
+			{
+				Console.WriteLine("No CD drives found.");
+				return;
+			}
+			char driveLetter = drives[0];
 #if !DEBUG
 			try
 #endif
 			{
 				CDDriveReader audioSource = new CDDriveReader();
-				audioSource.Open('D');
+				audioSource.Open(driveLetter);
 				audioSource.DriveOffset = 48;
 			
 				bool toStdout = false;
@@ -67,7 +75,8 @@ namespace CUERipper
 
 				arVerify.ContactAccurateRip(ArId);
 
-				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
+				Console.WriteLine("Drive     : {0}", audioSource.Path);
+				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, CDImageLayout.TimeToString((uint)(audioSource.Length / 588)));
 				Console.WriteLine("Filename  : {0}", destFile);
 				Console.WriteLine("AR status : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 

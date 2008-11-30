@@ -24,6 +24,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
+using System.IO;
 using Bwg.Scsi;
 using Bwg.Logging;
 using CUETools.CDImage;
@@ -46,8 +47,9 @@ namespace CUETools.Ripper.SCSI
 		const int CB_AUDIO = 588 * 4 + 16;
 		const int NSECTORS = 32;
 		int _currentTrack = -1, _currentIndex = -1, _currentTrackActualStart = -1;
-		Logger m_logger = null;
+		Logger m_logger;
 		CDImageLayout _toc;
+		DeviceInfo m_info;
 
 		public CDImageLayout TOC
 		{
@@ -59,15 +61,21 @@ namespace CUETools.Ripper.SCSI
 
 		public CDDriveReader()
 		{
+			m_logger = new Logger();
 		}
 
 		public bool Open(char Drive)
 		{
 			Device.CommandStatus st;
 
+			m_info = DeviceInfo.CreateDevice(Drive + ":");
+
 			// Open the base device
 			m_device = new Device(m_logger);
 			if (!m_device.Open(Drive))
+				throw new Exception("SCSI error");
+
+			if (!m_info.ExtractInfo(m_device))
 				throw new Exception("SCSI error");
 
 			//// Open/Initialize the driver
@@ -370,7 +378,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return m_device.Name;
+				return m_info.LongDesc;
 			}
 		}
 
@@ -412,6 +420,15 @@ namespace CUETools.Ripper.SCSI
 		private int fromBCD(byte hex)
 		{
 			return (hex >> 4) * 10 + (hex & 15);
+		}
+
+		public static char[] DrivesAvailable()
+		{
+			List<char> result = new List<char>();
+			foreach (DriveInfo info in DriveInfo.GetDrives())
+				if (info.DriveType == DriveType.CDRom)
+					result.Add(info.Name[0]);
+			return result.ToArray();
 		}
 	}
 }
