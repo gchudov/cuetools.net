@@ -102,7 +102,7 @@ namespace CUETools.Ripper.SCSI
 			if (st != Device.CommandStatus.Success)
 				throw new Exception("GetSpeed failed: SCSI error");
 
-			st = m_device.SetCdSpeed(Device.RotationalControl.CLVandNonPureCav, Device.OptimumSpeed, Device.OptimumSpeed);
+			st = m_device.SetCdSpeed(Device.RotationalControl.CLVandNonPureCav, 32767/*Device.OptimumSpeed*/, Device.OptimumSpeed);
 			if (st != Device.CommandStatus.Success)
 				throw new Exception("SetCdSpeed failed: SCSI error");
 
@@ -121,6 +121,8 @@ namespace CUETools.Ripper.SCSI
 					toc[iTrack + 1].StartSector - toc[iTrack].StartSector - 
 					    ((toc[iTrack + 1].Control == 0 || iTrack + 1 == toc.Count - 1) ? 0U : 152U * 75U), 
 					toc[iTrack].Control == 0));
+			if (_toc[1].IsAudio)
+				_toc[1][0].Start = 0;
 			return true;
 		}
 
@@ -162,9 +164,7 @@ namespace CUETools.Ripper.SCSI
 								_currentTrack = iTrack;
 								_currentTrackActualStart = sector + iSector;
 								_currentIndex = iIndex;
-								if (_currentIndex == 1)
-									_toc[iTrack].AddIndex(new CDTrackIndex(1, _toc[iTrack].Start));
-								else if (_currentIndex != 0)
+								if (_currentIndex != 1 && _currentIndex != 0)
 									throw new Exception("invalid index");
 							}
 							else if (iIndex != _currentIndex)
@@ -174,11 +174,11 @@ namespace CUETools.Ripper.SCSI
 								_currentIndex = iIndex;
 								if (_currentIndex == 1)
 								{
-									int pregap = sector + iSector - _currentTrackActualStart;
-									_toc[iTrack].AddIndex(new CDTrackIndex(0, (uint)(_toc[iTrack].Start - pregap), (uint)pregap));
+									uint pregap = (uint) (sector + iSector - _currentTrackActualStart);
+									_toc[iTrack][0].Start = _toc[iTrack].Start - pregap;
 									_currentTrackActualStart = sector + iSector;
-								}
-								_toc[iTrack].AddIndex(new CDTrackIndex((uint)iIndex, (uint)(_toc[iTrack].Start + sector + iSector - _currentTrackActualStart)));
+								} else
+									_toc[iTrack].AddIndex(new CDTrackIndex((uint)iIndex, (uint)(_toc[iTrack].Start + sector + iSector - _currentTrackActualStart)));
 								_currentIndex = iIndex;
 							}
 							break;

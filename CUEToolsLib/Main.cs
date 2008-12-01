@@ -796,18 +796,21 @@ namespace CUETools.Processor
 			// Calculate the length of each index
 			for (i = 0; i < indexes.Count - 1; i++) 
 			{
-				int length = indexes[i + 1].Time - indexes[i].Time;
-				if (length < 0)
+				if (indexes[i + 1].Time - indexes[i].Time < 0)
 					throw new Exception("Indexes must be in chronological order.");
-				_toc[indexes[i].Track].AddIndex(new CDTrackIndex((uint)indexes[i].Index, (uint)indexes[i].Time, (uint)length));
+				if ((indexes[i+1].Track != indexes[i].Track || indexes[i+1].Index != indexes[i].Index + 1) &&
+					(indexes[i + 1].Track != indexes[i].Track + 1 || indexes[i].Index < 1 || indexes[i + 1].Index > 1))
+					throw new Exception("Indexes must be in chronological order.");
+				if (indexes[i].Index == 1 && (i == 0 || indexes[i - 1].Index != 0))
+					_toc[indexes[i].Track].AddIndex(new CDTrackIndex(0U, (uint)indexes[i].Time));
+				_toc[indexes[i].Track].AddIndex(new CDTrackIndex((uint)indexes[i].Index, (uint)indexes[i].Time));
+				//_toc[indexes[i].Track].AddIndex(new CDTrackIndex((uint)indexes[i].Index, (uint)indexes[i].Time, (uint)length));
 			}
 			// Calculate the length of each track
-			for (i = 1; i <= TrackCount; i++)
+			for (int iTrack = 1; iTrack <= TrackCount; iTrack++)
 			{
-				if (_toc[i].LastIndex < 1)
-					throw new Exception("Track must have an INDEX 01.");
-				_toc[i].Start = _toc[i][1].Start;
-				_toc[i].Length = (i == TrackCount ? (uint)indexes[indexes.Count - 1].Time - _toc[i].Start : _toc[i + 1][1].Start - _toc[i].Start);
+				_toc[iTrack].Start = _toc[iTrack][1].Start;
+				_toc[iTrack].Length = (iTrack == TrackCount ? (uint)indexes[indexes.Count - 1].Time - _toc[iTrack].Start : _toc[iTrack + 1][1].Start - _toc[iTrack].Start);
 			}
 
 			// Store the audio filenames, generating generic names if necessary
@@ -1205,33 +1208,29 @@ namespace CUETools.Processor
 			sw1.Close();
 		}
 
-		public void Write(TextWriter sw, CUEStyle style) {
+		public void Write(TextWriter sw, CUEStyle style) 
+		{
 			int i, iTrack, iIndex;
-			TrackInfo track;
-			bool htoaToFile = ((style == CUEStyle.GapsAppended) && _config.preserveHTOA &&
-				(_toc.Pregap != 0));
+			bool htoaToFile = (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0);
 
 			uint timeRelativeToFileStart = 0;
 
-			using (sw) {
+			using (sw) 
+			{
 				if (_accurateRipId != null && _config.writeArTagsOnConvert)
-					WriteLine(sw, 0, "REM ACCURATERIPID " +
-						_accurateRipId);
+					WriteLine(sw, 0, "REM ACCURATERIPID " + _accurateRipId);
 
-				for (i = 0; i < _attributes.Count; i++) {
+				for (i = 0; i < _attributes.Count; i++)
 					WriteLine(sw, 0, _attributes[i]);
-				}
 
-				if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE) {
+				if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 					WriteLine(sw, 0, String.Format("FILE \"{0}\" WAVE", _singleFilename));
-				}
-				if (htoaToFile) {
+
+				if (htoaToFile)
 					WriteLine(sw, 0, String.Format("FILE \"{0}\" WAVE", _htoaFilename));
-				}
 
-				for (iTrack = 0; iTrack < TrackCount; iTrack++) {
-					track = _tracks[iTrack];
-
+				for (iTrack = 0; iTrack < TrackCount; iTrack++) 
+				{
 					if ((style == CUEStyle.GapsPrepended) ||
 						(style == CUEStyle.GapsLeftOut) ||
 						((style == CUEStyle.GapsAppended) &&
@@ -1242,30 +1241,30 @@ namespace CUETools.Processor
 					}
 
 					WriteLine(sw, 1, String.Format("TRACK {0:00} AUDIO", iTrack + 1));
-					for (i = 0; i < track.Attributes.Count; i++) {
-						WriteLine(sw, 2, track.Attributes[i]);
-					}
+					for (i = 0; i < _tracks[iTrack].Attributes.Count; i++)
+						WriteLine(sw, 2, _tracks[iTrack].Attributes[i]);
 
-					for (iIndex = 0; iIndex <= _toc[iTrack+1].LastIndex; iIndex++) {
-						if (_toc[iTrack+1][iIndex].Length != 0) {
-							if ((iIndex == 0) &&
-								((style == CUEStyle.GapsLeftOut) ||
-								((style == CUEStyle.GapsAppended) && (iTrack == 0) && !htoaToFile) ||
-								((style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE) && (iTrack == 0) && _usePregapForFirstTrackInSingleFile)))
+					if (_toc[iTrack + 1].Pregap != 0)
+					{
+						if (((style == CUEStyle.GapsLeftOut) ||
+							((style == CUEStyle.GapsAppended) && (iTrack == 0) && !htoaToFile) ||
+							((style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE) && (iTrack == 0) && _usePregapForFirstTrackInSingleFile)))
+							WriteLine(sw, 2, "PREGAP " + CDImageLayout.TimeToString(_toc[iTrack + 1].Pregap));
+						else
+						{
+							WriteLine(sw, 2, String.Format("INDEX 00 {0}", CDImageLayout.TimeToString(timeRelativeToFileStart)));
+							timeRelativeToFileStart += _toc[iTrack + 1].Pregap;
+							if (style == CUEStyle.GapsAppended)
 							{
-								WriteLine(sw, 2, "PREGAP " + CDImageLayout.TimeToString(_toc[iTrack + 1][iIndex].Length));
-							}
-							else {
-								WriteLine(sw, 2, String.Format( "INDEX {0:00} {1}", iIndex,
-									CDImageLayout.TimeToString(timeRelativeToFileStart)));
-								timeRelativeToFileStart += _toc[iTrack + 1][iIndex].Length;
-
-								if ((style == CUEStyle.GapsAppended) && (iIndex == 0)) {
-									WriteLine(sw, 0, String.Format("FILE \"{0}\" WAVE", _trackFilenames[iTrack]));
-									timeRelativeToFileStart = 0;
-								}
+								WriteLine(sw, 0, String.Format("FILE \"{0}\" WAVE", _trackFilenames[iTrack]));
+								timeRelativeToFileStart = 0;
 							}
 						}
+					}
+					for (iIndex = 1; iIndex <= _toc[iTrack+1].LastIndex; iIndex++)
+					{
+						WriteLine(sw, 2, String.Format( "INDEX {0:00} {1}", iIndex, CDImageLayout.TimeToString(timeRelativeToFileStart)));
+						timeRelativeToFileStart += _toc.IndexLength(iTrack + 1, iIndex);
 					}
 				}
 			}
@@ -1913,7 +1912,7 @@ namespace CUETools.Processor
 
 				for (iIndex = 0; iIndex <= _toc[iTrack+1].LastIndex; iIndex++) {
 					uint trackPercent= 0, lastTrackPercent= 101;
-					uint samplesRemIndex = _toc[iTrack + 1][iIndex].Length * 588;
+					uint samplesRemIndex = _toc.IndexLength(iTrack + 1, iIndex) * 588;
 
 					if (iIndex == 1)
 					{
@@ -1963,8 +1962,8 @@ namespace CUETools.Processor
 							double diskPercent = ((float)diskOffset) / diskLength;
 							if (trackPercent != lastTrackPercent)
 								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
-									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent, 
-									_isCD ? audioSource.Path + ": " + _tracks[iTrack].Title : audioSource.Path, discardOutput ? null : audioDest.Path);
+									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent,
+									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
 							lastTrackPercent = trackPercent;
 						}
 
@@ -2129,7 +2128,8 @@ namespace CUETools.Processor
 			}
 		}
 
-		private int[] CalculateAudioFileLengths(CUEStyle style) {
+		private int[] CalculateAudioFileLengths(CUEStyle style) 
+		{
 			int iTrack, iIndex, iFile;
 			TrackInfo track;
 			int[] fileLengths;
@@ -2161,7 +2161,7 @@ namespace CUETools.Processor
 						discardOutput = (style == CUEStyle.GapsLeftOut && iIndex == 0);
 
 					if (!discardOutput)
-						fileLengths[iFile] += (int) _toc[iTrack+1][iIndex].Length * 588;
+						fileLengths[iFile] += (int)_toc.IndexLength(iTrack + 1, iIndex) * 588;
 				}
 			}
 

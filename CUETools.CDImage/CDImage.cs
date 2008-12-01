@@ -11,19 +11,10 @@ namespace CUETools.CDImage
 		{
 			_start = start;
 			_index = index;
-			_length = 0;
-		}
-
-		public CDTrackIndex(uint index, uint start, uint length)
-		{
-			_length = length;
-			_start = start;
-			_index = index;
 		}
 
 		public CDTrackIndex(CDTrackIndex src)
 		{
-			_length = src._length;
 			_start = src._start;
 			_index = src._index;
 		}
@@ -37,18 +28,6 @@ namespace CUETools.CDImage
 			set
 			{
 				_start = value;
-			}
-		}
-
-		public uint Length
-		{
-			get
-			{
-				return _length;
-			}
-			set
-			{
-				_length = value;
 			}
 		}
 
@@ -68,7 +47,7 @@ namespace CUETools.CDImage
 			}
 		}
 
-		uint _start, _length, _index;
+		uint _start, _index;
 	}
 
 	public class CDTrack : ICloneable
@@ -80,8 +59,8 @@ namespace CUETools.CDImage
 			_length = length;
 			_isAudio = isAudio;
 			_indexes = new List<CDTrackIndex>();
-			_indexes.Add(new CDTrackIndex(0, start, 0));
-			_indexes.Add(new CDTrackIndex(1, start, length));
+			_indexes.Add(new CDTrackIndex(0, start));
+			_indexes.Add(new CDTrackIndex(1, start));
 		}
 
 		public CDTrack(CDTrack src)
@@ -180,7 +159,7 @@ namespace CUETools.CDImage
 		{
 			get
 			{
-				return _indexes[0].Length;
+				return _start - _indexes[0].Start;
 			}
 		}
 
@@ -316,6 +295,15 @@ namespace CUETools.CDImage
 			_tracks.Add(track);
 			if (track.IsAudio)
 				_audioTracks++;
+		}
+
+		public uint IndexLength(int iTrack, int iIndex)
+		{
+			if (iIndex < _tracks[iTrack - 1].LastIndex)
+				return _tracks[iTrack - 1][iIndex + 1].Start - _tracks[iTrack - 1][iIndex].Start;
+			if (iTrack < AudioTracks)
+				return _tracks[iTrack][0].Start - _tracks[iTrack - 1][iIndex].Start;
+			return _tracks[iTrack - 1].End + 1 - _tracks[iTrack - 1][iIndex].Start;
 		}
 
 		public static int TimeFromString(string s)
