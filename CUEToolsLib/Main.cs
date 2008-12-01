@@ -489,14 +489,13 @@ namespace CUETools.Processor
 			{
 				CDDriveReader ripper = new CDDriveReader();
 				ripper.Open(pathIn[0]);
-				// We needed to clone TOC in case we reuse the ripper, because it's going to modify it.
-				//_toc = (CDImageLayout)ripper.TOC.Clone();
-				_toc = (CDImageLayout)ripper.TOC;
-				_driveName = ripper.Path;
-				_driveOffset = ripper.DriveOffset = 48;
+				_toc = ripper.TOC;
+				_driveName = ripper.ARName;
 				ripper.Close();
 				if (_toc.AudioTracks > 0)
 				{
+					if (!AccurateRipVerify.FindDriveReadOffset(_driveName, out _driveOffset))
+						throw new Exception("Failed to find drive read offset for drive" + _driveName);
 					_isCD = true;
 					SourceInfo cdInfo;
 					cdInfo.Path = pathIn;

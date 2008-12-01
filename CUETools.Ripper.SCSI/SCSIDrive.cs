@@ -389,6 +389,14 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
+		public string ARName
+		{
+			get
+			{
+				return m_info.InquiryData.VendorIdentification + " - " + m_info.InquiryData.ProductIdentification;
+			}
+		}
+
 		public ulong Position
 		{
 			get

@@ -34,12 +34,6 @@ namespace CUERipper
 {
 	class Program
 	{
-		static void Usage()
-		{
-			Console.WriteLine("Usage    : CUERipper.exe <file.wav>");
-			Console.WriteLine();
-		}
-
 		static void Main(string[] args)
 		{
 			string programVersion = "CUERipper v1.9.3 Copyright (C) 2008 Gregory S. Chudov";
@@ -47,12 +41,7 @@ namespace CUERipper
 			Console.WriteLine("{0}", programVersion);
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
-			if (args.Length < 1)
-			{
-				Usage();
-				return;
-			}
-			string destFile = args[0];
+
 			char[] drives = CDDriveReader.DrivesAvailable();
 			if (drives.Length < 1)
 			{
@@ -66,7 +55,10 @@ namespace CUERipper
 			{
 				CDDriveReader audioSource = new CDDriveReader();
 				audioSource.Open(driveLetter);
-				audioSource.DriveOffset = 48;
+				int driveOffset;
+				if (!AccurateRipVerify.FindDriveReadOffset(audioSource.ARName, out driveOffset))
+					throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
+				audioSource.DriveOffset = driveOffset;
 			
 				//bool toStdout = false;
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
@@ -89,17 +81,16 @@ namespace CUERipper
 					release = null;
 				}
 
-				if (destFile == null || destFile == "")
-					destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
+				string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
+				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
 				Console.WriteLine("Filename    : {0}", destFile);
 				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 				Console.WriteLine("MusicBrainz : {0}", release == null ? "not found" : release.GetArtist() + " - " + release.GetTitle());
 
 				IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
-				//IAudioDest audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
 				audioDest.FinalSampleCount = (long)audioSource.Length;
 
 

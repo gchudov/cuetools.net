@@ -414,6 +414,71 @@ namespace CUETools.AccurateRip
 			return r;
 		}
 
+		static string CachePath
+		{
+			get
+			{
+				string cache = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CUE Tools"), "AccurateRipCache");
+				if (!Directory.Exists(cache))
+					Directory.CreateDirectory(cache);
+				return cache;
+			}
+		}
+
+		public static bool FindDriveReadOffset(string driveName, out int driveReadOffset)
+		{
+			string fileName = System.IO.Path.Combine(CachePath, "DriveOffsets.bin");
+			if (!File.Exists(fileName))
+			{
+				HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://www.accuraterip.com/accuraterip/DriveOffsets.bin");
+				req.Method = "GET";
+				try
+				{
+					HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+					if (resp.StatusCode != HttpStatusCode.OK)
+					{
+						driveReadOffset = 0;
+						return false;
+					}
+					Stream respStream = resp.GetResponseStream();
+					FileStream myOffsetsSaved = new FileStream(fileName, FileMode.CreateNew, FileAccess.Write);
+					byte [] buff = new byte[0x8000];
+					do
+					{
+						int count = respStream.Read(buff, 0, buff.Length);
+						if (count == 0) break;
+						myOffsetsSaved.Write(buff, 0, count);
+					} while (true);
+					respStream.Close();
+					myOffsetsSaved.Close();
+				}
+				catch (WebException ex)
+				{
+					driveReadOffset = 0;
+					return false;
+				}
+			}
+			FileStream myOffsets = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+			BinaryReader offsetReader = new BinaryReader(myOffsets);
+			do
+			{
+				short readOffset = offsetReader.ReadInt16();
+				byte[] name = offsetReader.ReadBytes(0x21);
+				byte[] misc = offsetReader.ReadBytes(0x22);
+				int len = name.Length;
+				while (len > 0 && name[len - 1] == '\0') len--;
+				string strname = Encoding.ASCII.GetString(name,0,len);
+				if (strname == driveName)
+				{
+					driveReadOffset = readOffset;
+					return true;
+				}
+			} while (myOffsets.Position + 0x45 <= myOffsets.Length);
+			offsetReader.Close();
+			driveReadOffset = 0;
+			return false;
+		}
+
 		public static string CalculateCDDBId(CDImageLayout toc)
 		{
 			uint cddbDiscId = 0;
