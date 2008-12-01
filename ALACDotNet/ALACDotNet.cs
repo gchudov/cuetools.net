@@ -193,6 +193,11 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
+		public bool UpdateTags(bool preserveTime)
+		{
+			return false;
+		}
+
 		public string Path 
 		{
 			get 

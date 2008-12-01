@@ -228,9 +228,9 @@ namespace JDP {
 				pathIn = txtInputPath.Text;
 				cueStyle = SelectedCUEStyle;
 
-				bool outputAudio = !rbNoAudio.Checked && !rbArVerify.Checked;
-				bool outputCUE = (cueStyle != CUEStyle.SingleFileWithCUE) && !rbArVerify.Checked;
-				bool accurateRip = !rbArNone.Checked;
+				AccurateRipMode accurateRip = SelectedAccurateRipMode;
+				bool outputAudio = !rbNoAudio.Checked && accurateRip != AccurateRipMode.Verify;
+				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify;
 
 				if (!File.Exists(pathIn))
 				{
@@ -286,10 +286,11 @@ namespace JDP {
 
 				cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
 				cueSheet.AccurateRip = accurateRip;
-				cueSheet.AccurateOffset = rbArApplyOffset.Checked;
-				cueSheet.DataTrackLength = txtDataTrackLength.Text;
+				if (accurateRip != AccurateRipMode.None)
+					cueSheet.DataTrackLength = txtDataTrackLength.Text;
 
-				if (outputAudio || accurateRip) {
+				if (outputAudio || accurateRip != AccurateRipMode.None)
+				{
 					object[] p = new object[3];
 
 					_workThread = new Thread(WriteAudioFilesThread);
@@ -308,7 +309,7 @@ namespace JDP {
 					if (!Directory.Exists(outDir))
 						Directory.CreateDirectory(outDir);
 					if (outputCUE)
-						cueSheet.Write(pathOut, cueStyle);
+						cueSheet.WriteText(pathOut, cueSheet.CUESheetContents(cueStyle));
 					ShowFinishedMessage(cueSheet.PaddedToFrame);
 				}
 			}
@@ -359,7 +360,7 @@ namespace JDP {
 				this.Invoke((MethodInvoker)delegate() {
 					if (_batchPaths.Count == 0)
 					{
-						if (cueSheet.AccurateRip)
+						if (cueSheet.AccurateRip != AccurateRipMode.None)
 						{
 							using (frmReport reportForm = new frmReport())
 							{
@@ -682,17 +683,32 @@ namespace JDP {
 			}
 		}
 
-		private AccurateRipMode SelectedAccurateRipMode {
-			get {
-				if (rbArVerify.Checked)			return AccurateRipMode.Verify;
-				if (rbArApplyOffset.Checked)			return AccurateRipMode.Offset;
-				return AccurateRipMode.None;
+		private AccurateRipMode SelectedAccurateRipMode
+		{
+			get
+			{
+				return
+					rbArVerify.Checked ? AccurateRipMode.Verify :
+					rbArApplyOffset.Checked ? AccurateRipMode.VerifyThenConvert :
+					rbArAndEncode.Checked ? AccurateRipMode.VerifyAndConvert :
+					AccurateRipMode.None;
 			}
-			set {
-				switch (value) {
-					case AccurateRipMode.Verify:		rbArVerify.Checked = true; break;
-					case AccurateRipMode.Offset:		rbArApplyOffset.Checked = true; break;
-					default:			rbArNone.Checked = true; break;
+			set
+			{
+				switch (value)
+				{
+					case AccurateRipMode.Verify:
+						rbArVerify.Checked = true;
+						break;
+					case AccurateRipMode.VerifyThenConvert:
+						rbArApplyOffset.Checked = true;
+						break;
+					case AccurateRipMode.VerifyAndConvert:
+						rbArAndEncode.Checked = true;
+						break;
+					default:
+						rbArNone.Checked = true;
+						break;
 				}
 			}
 		}
@@ -938,11 +954,5 @@ namespace JDP {
 		AppendFilename,
 		CustomFormat,
 		Disabled
-	}
-
-	enum AccurateRipMode {
-		None,
-		Verify,
-		Offset
 	}
 }

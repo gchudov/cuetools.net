@@ -120,14 +120,20 @@
   <data name="btnConvert.Text" xml:space="preserve">
     <value>Поехали</value>
   </data>
-  <data name="grpCUEPaths.Text" xml:space="preserve">
-    <value>Пути к файлам</value>
+  <data name="btnConvert.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="btnBrowseOutput.Text" xml:space="preserve">
     <value>Выбор...</value>
   </data>
+  <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnBrowseInput.Text" xml:space="preserve">
     <value>Выбор...</value>
+  </data>
+  <data name="btnBrowseInput.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="lblOutput.Size" type="System.Drawing.Size, System.Drawing">
@@ -136,17 +142,29 @@
   <data name="lblOutput.Text" xml:space="preserve">
     <value>Выход:</value>
   </data>
+  <data name="lblOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="lblInput.Size" type="System.Drawing.Size, System.Drawing">
     <value>36, 13</value>
   </data>
   <data name="lblInput.Text" xml:space="preserve">
     <value>&amp;Вход:</value>
   </data>
-  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 137</value>
+  <data name="lblInput.ToolTip" xml:space="preserve">
+    <value />
   </data>
-  <data name="grpOutputStyle.Text" xml:space="preserve">
-    <value>Стиль CUE</value>
+  <data name="txtOutputPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtInputPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpCUEPaths.Text" xml:space="preserve">
+    <value>Пути к файлам</value>
+  </data>
+  <data name="grpCUEPaths.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 17</value>
@@ -193,17 +211,26 @@
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
     <value>Создать образ диска в виде одного аудио-файла и .cue файла</value>
   </data>
+  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>130, 137</value>
+  </data>
+  <data name="grpOutputStyle.Text" xml:space="preserve">
+    <value>Стиль CUE</value>
+  </data>
+  <data name="grpOutputStyle.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnAbout.Text" xml:space="preserve">
     <value>О программе</value>
   </data>
-  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
-    <value>392, 113</value>
-  </data>
-  <data name="grpOutputPathGeneration.Text" xml:space="preserve">
-    <value>Путь для выходных файлов</value>
+  <data name="btnAbout.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="txtCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 21</value>
+  </data>
+  <data name="txtCustomFormat.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>89, 17</value>
@@ -211,8 +238,14 @@
   <data name="rbCustomFormat.Text" xml:space="preserve">
     <value>По шаблону:</value>
   </data>
+  <data name="rbCustomFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="txtCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 21</value>
+  </data>
+  <data name="txtCreateSubdirectory.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 17</value>
@@ -220,11 +253,17 @@
   <data name="rbDontGenerate.Text" xml:space="preserve">
     <value>Вручную</value>
   </data>
+  <data name="rbDontGenerate.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="rbCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
     <value>116, 17</value>
   </data>
   <data name="rbCreateSubdirectory.Text" xml:space="preserve">
     <value>Создать каталог:</value>
+  </data>
+  <data name="rbCreateSubdirectory.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
     <value>117, 17</value>
@@ -232,11 +271,26 @@
   <data name="rbAppendFilename.Text" xml:space="preserve">
     <value>Суффикс к имени:</value>
   </data>
+  <data name="rbAppendFilename.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="txtAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 21</value>
   </data>
-  <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Формат аудио</value>
+  <data name="txtAppendFilename.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
+    <value>392, 113</value>
+  </data>
+  <data name="grpOutputPathGeneration.Text" xml:space="preserve">
+    <value>Путь для выходных файлов</value>
+  </data>
+  <data name="grpOutputPathGeneration.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAPE.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
     <value>76, 17</value>
@@ -244,26 +298,56 @@
   <data name="rbNoAudio.Text" xml:space="preserve">
     <value>Без аудио</value>
   </data>
+  <data name="rbWavPack.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbFLAC.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbWAV.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpAudioOutput.Text" xml:space="preserve">
+    <value>Формат аудио</value>
+  </data>
+  <data name="grpAudioOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnBatch.Text" xml:space="preserve">
     <value>Обработать папку...</value>
+  </data>
+  <data name="btnBatch.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="btnFilenameCorrector.Text" xml:space="preserve">
     <value>Исправить имена...</value>
   </data>
+  <data name="btnFilenameCorrector.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnSettings.Text" xml:space="preserve">
     <value>Настройки...</value>
   </data>
-  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 211</value>
+  <data name="btnSettings.ToolTip" xml:space="preserve">
+    <value />
   </data>
-  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 137</value>
+  <data name="rbArAndEncode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 17</value>
+  </data>
+  <data name="rbArAndEncode.Text" xml:space="preserve">
+    <value>Записать и проверить</value>
+  </data>
+  <data name="rbArAndEncode.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 13</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Данные</value>
+  </data>
+  <data name="label1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
     <value>Не используется для обычных музыкальных дисков. "Улучшенные" компакт диски с треком данных не найдутся в базе данных, если не указать длину трека данных. Её часто можно найти в логе EAC. Если лог EAC лежит в той же папке что и .cue, и имеет такое же имя как .cue файл, то он будет проанализирован автоматически и тут опять же ничего не надо будет вводить.</value>
@@ -295,16 +379,43 @@
   <data name="rbArNone.ToolTip" xml:space="preserve">
     <value>Сконвертировать, не обращаясь к базе данных AccurateRip</value>
   </data>
+  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
+    <value>250, 211</value>
+  </data>
+  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 137</value>
+  </data>
+  <data name="grpAccurateRip.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="statusStrip1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnCUECreator.Text" xml:space="preserve">
     <value>Создать CUE...</value>
+  </data>
+  <data name="btnCUECreator.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="btnStop.Text" xml:space="preserve">
     <value>Стоп</value>
   </data>
+  <data name="btnStop.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnPause.Text" xml:space="preserve">
     <value>Пауза</value>
   </data>
+  <data name="btnPause.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Поехали</value>
+  </data>
+  <data name="btnResume.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="$this.ToolTip" xml:space="preserve">
+    <value />
   </data>
 </root>

@@ -12,6 +12,7 @@ namespace CUETools.Codecs
 		ulong Length { get; }
 		ulong Position { get; set; }
 		NameValueCollection Tags { get; set; }
+		bool UpdateTags(bool preserveTime);
 		ulong Remaining { get; }
 		void Close();
 		int BitsPerSample { get; }
@@ -246,6 +247,11 @@ namespace CUETools.Codecs
 			}
 		}
 
+		public bool UpdateTags(bool preserveTime)
+		{
+			return false;
+		}
+
 		public uint Read(int [,] buff, uint sampleCount)
 		{
 			uint samplesRemaining = (uint)(_sampleCount - _sampleOffset);
@@ -474,6 +480,11 @@ namespace CUETools.Codecs
 			set
 			{
 			}
+		}
+
+		public bool UpdateTags(bool preserveTime)
+		{
+			return false;
 		}
 
 		public void GetTags(out List<string> names, out List<string> values)

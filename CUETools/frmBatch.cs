@@ -19,8 +19,7 @@ namespace JDP
 			_config = new CUEConfig();
 			_cueStyle = CUEStyle.SingleFile;
 			_audioFormat = OutputAudioFormat.WAV;
-			_accurateRip = true;
-			_accurateOffset = false;
+			_accurateRip = AccurateRipMode.Verify;
 			_batchPaths = new List<string>();
 		}
 
@@ -34,15 +33,11 @@ namespace JDP
 			get { return pathIn; }
 			set { pathIn = value; }
 		}
-		public bool AccurateRip
+
+		public AccurateRipMode AccurateRip
 		{
 			get { return _accurateRip; }
 			set { _accurateRip = value; }
-		}
-		public bool AccurateOffset
-		{
-			get { return _accurateOffset; }
-			set { _accurateOffset = value; }
 		}
 
 		Thread _workThread;
@@ -52,8 +47,7 @@ namespace JDP
 		OutputAudioFormat _audioFormat;
 		string pathIn;
 		string pathOut;
-		bool _accurateRip;
-		bool _accurateOffset;
+		AccurateRipMode _accurateRip;
 		bool _reducePriority;
 		bool _lossyWAV;
 		DateTime _startedAt;
@@ -138,7 +132,7 @@ namespace JDP
 				else
 					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
 
-				bool outputAudio = _accurateOffset || !_accurateRip;
+				bool outputAudio = _accurateRip != AccurateRipMode.Verify;
 				cueSheet.Open(pathIn, _lossyWAV);
 				if (outputAudio)
 				{
@@ -168,7 +162,6 @@ namespace JDP
 
 				cueSheet.UsePregapForFirstTrackInSingleFile = false;
 				cueSheet.AccurateRip = _accurateRip;
-				cueSheet.AccurateOffset = _accurateOffset;
 				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathOut), _cueStyle);
 				this.Invoke((MethodInvoker)delegate()
 				{
@@ -178,7 +171,7 @@ namespace JDP
 					//TimeSpan span = DateTime.Now - _startedAt;
 					progressBar1.Value = 0;
 					progressBar2.Value = 0;
-					if (cueSheet.AccurateRip)
+					if (cueSheet.AccurateRip != AccurateRipMode.None)
 					{
 						StringWriter sw = new StringWriter();
 						cueSheet.GenerateAccurateRipLog(sw);
@@ -272,7 +265,7 @@ namespace JDP
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			if (_accurateOffset || !_accurateRip)
+			if (_accurateRip != AccurateRipMode.Verify)
 				txtOutputFile.Show();
 
 			StartConvert();

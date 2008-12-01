@@ -172,6 +172,11 @@ namespace WavPackDotNet {
 			}
 		}
 
+		virtual bool UpdateTags(bool preserveTime)
+		{
+			return false;
+		}
+
 		virtual void Close() 
 		{
 			_wpc = WavpackCloseFile(_wpc);

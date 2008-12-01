@@ -229,6 +229,11 @@ namespace APEDotNet {
 			}
 		}
 
+		virtual bool UpdateTags(bool preserveTime)
+		{
+			return false;
+		}
+
 		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
 		{
 			UInt32 buffOffset = 0;

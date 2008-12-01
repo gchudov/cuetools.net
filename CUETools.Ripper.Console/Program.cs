@@ -94,7 +94,7 @@ namespace CUERipper
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Filename    : {0}", destFile);
-				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString((uint)(audioSource.Length / 588)));
+				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 				Console.WriteLine("MusicBrainz : {0}", release == null ? "not found" : release.GetArtist() + " - " + release.GetTitle());
 

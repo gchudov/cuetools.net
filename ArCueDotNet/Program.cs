@@ -31,7 +31,7 @@ namespace ArCueDotNet
 				CUESheet cueSheet = new CUESheet(config);
 				cueSheet.Open(pathIn, false);
 				cueSheet.GenerateFilenames(OutputAudioFormat.NoAudio, pathIn);
-				cueSheet.AccurateRip = true;
+				cueSheet.AccurateRip = AccurateRipMode.Verify;
 				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathIn), CUEStyle.SingleFile);
 				cueSheet.GenerateAccurateRipLog(sw);
 			}

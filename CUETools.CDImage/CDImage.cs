@@ -264,6 +264,16 @@ namespace CUETools.CDImage
 			}
 		}
 
+		public uint AudioLength
+		{
+			get
+			{
+				return _tracks[TrackCount - 1].IsAudio ?
+					_tracks[TrackCount - 1].End + 1 :
+					_tracks[TrackCount - 2].End + 1;
+			}
+		}
+
 		public string Catalog
 		{
 			get

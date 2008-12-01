@@ -181,7 +181,7 @@ namespace FLACDotNet {
 			}
 		}
 
-		bool UpdateTags (bool preserveTime)
+		virtual bool UpdateTags (bool preserveTime)
 		{
 		    Close ();
 		    

@@ -977,6 +977,11 @@ namespace CUETools.Codecs.LossyWAV
 			}
 		}
 
+		public bool UpdateTags(bool preserveTime)
+		{
+			return _audioSource.UpdateTags(preserveTime);
+		}
+
 		public string Path
 		{
 			get

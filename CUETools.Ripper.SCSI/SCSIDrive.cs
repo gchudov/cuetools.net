@@ -337,7 +337,7 @@ namespace CUETools.Ripper.SCSI
 			{
 				if (_toc == null)
 					throw new Exception("invalid TOC");
-				return (ulong)588 * (_toc[_toc.TrackCount].IsAudio ? _toc[_toc.TrackCount].End + 1 : _toc[_toc.TrackCount - 1].End + 1);
+				return (ulong)588 * _toc.AudioLength;
 			}
 		}
 
@@ -374,6 +374,11 @@ namespace CUETools.Ripper.SCSI
 			set
 			{
 			}
+		}
+
+		public bool UpdateTags(bool preserveTime)
+		{
+			return false;
 		}
 
 		public string Path

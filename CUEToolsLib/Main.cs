@@ -20,6 +20,7 @@
 // ****************************************************************************
 
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
@@ -43,7 +44,6 @@ using FLACDotNet;
 
 namespace CUETools.Processor
 {
-
 	public enum OutputAudioFormat
 	{
 		WAV,
@@ -51,6 +51,23 @@ namespace CUETools.Processor
 		WavPack,
 		APE,
 		NoAudio
+	}
+
+	public enum AccurateRipMode
+	{
+		None,
+		Verify,
+		VerifyThenConvert,
+		VerifyAndConvert
+	}
+
+	public enum CUEStyle
+	{
+		SingleFileWithCUE,
+		SingleFile,
+		GapsPrepended,
+		GapsAppended,
+		GapsLeftOut
 	}
 
 	public static class General {
@@ -98,7 +115,7 @@ namespace CUETools.Processor
 			{
 				line = new CUELine();
 				line.Params.Add(command); line.IsQuoted.Add(false);
-				line.Params.Add(value); line.IsQuoted.Add(true);
+				line.Params.Add(value); line.IsQuoted.Add(quoted);
 				list.Add(line);
 			}
 			else
@@ -116,7 +133,7 @@ namespace CUETools.Processor
 				line = new CUELine();
 				line.Params.Add(command); line.IsQuoted.Add(false);
 				line.Params.Add(command2); line.IsQuoted.Add(false);
-				line.Params.Add(value); line.IsQuoted.Add(true);
+				line.Params.Add(value); line.IsQuoted.Add(quoted);
 				list.Add(line);
 			}
 			else
@@ -171,14 +188,6 @@ namespace CUETools.Processor
 		{
 			return ((s != null) && (s.Length == 0)) ? null : s;
 		}
-	}
-
-	public enum CUEStyle {
-		SingleFileWithCUE,
-		SingleFile,
-		GapsPrepended,
-		GapsAppended,
-		GapsLeftOut
 	}
 
 	public class CUEConfig {
@@ -410,7 +419,7 @@ namespace CUETools.Processor
 		private bool _hasEmbeddedCUESheet;
 		private bool _paddedToFrame, _truncated4608, _usePregapForFirstTrackInSingleFile;
 		private int _writeOffset;
-		private bool _accurateRip, _accurateOffset;
+		private AccurateRipMode _accurateRipMode;
 		private uint? _dataTrackLength;
 		private uint? _minDataTrackLength;
 		private string _accurateRipId;
@@ -426,6 +435,8 @@ namespace CUETools.Processor
 		private CUEConfig _config;
 		private string _cddbDiscIdTag;
 		private bool _isCD;
+		private string _driveName;
+		private int _driveOffset;
 		private bool _isArchive;
 		private List<string> _archiveContents;
 		private string _archiveCUEpath;
@@ -454,8 +465,7 @@ namespace CUETools.Processor
 			_paddedToFrame = false;
 			_truncated4608 = false;
 			_usePregapForFirstTrackInSingleFile = false;
-			_accurateRip = false;
-			_accurateOffset = false;
+			_accurateRipMode = AccurateRipMode.None;
 			_appliedWriteOffset = false;
 			_dataTrackLength = null;
 			_minDataTrackLength = null;
@@ -473,7 +483,6 @@ namespace CUETools.Processor
 				catch { }
 			}
 			_outputLossyWAV = outputLossyWAV;
-			SourceInfo sourceInfo;
 			string cueDir = Path.GetDirectoryName(pathIn) ?? pathIn;
 #if !MONO
 			if (cueDir == pathIn)
@@ -483,14 +492,17 @@ namespace CUETools.Processor
 				// We needed to clone TOC in case we reuse the ripper, because it's going to modify it.
 				//_toc = (CDImageLayout)ripper.TOC.Clone();
 				_toc = (CDImageLayout)ripper.TOC;
-				sourceInfo.Path = pathIn;
-				sourceInfo.Offset = 0;
-				sourceInfo.Length = (uint)ripper.Length;
+				_driveName = ripper.Path;
+				_driveOffset = ripper.DriveOffset = 48;
 				ripper.Close();
 				if (_toc.AudioTracks > 0)
 				{
 					_isCD = true;
-					_sources.Add(sourceInfo);
+					SourceInfo cdInfo;
+					cdInfo.Path = pathIn;
+					cdInfo.Offset = 0;
+					cdInfo.Length = _toc.AudioLength * 588;
+					_sources.Add(cdInfo);
 					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 					{
 						_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
@@ -509,9 +521,11 @@ namespace CUETools.Processor
 					try
 					{
 						release = results.First();
+						General.SetCUELine(_attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(_toc), false);
+						General.SetCUELine(_attributes, "REM", "COMMENT", VersionString(), true);
+						General.SetCUELine(_attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
 						General.SetCUELine(_attributes, "PERFORMER", release.GetArtist(), true);
 						General.SetCUELine(_attributes, "TITLE", release.GetTitle(), true);
-						General.SetCUELine(_attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
 						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 						{
 							General.SetCUELine(_tracks[iTrack].Attributes, "TITLE", release.GetTracks()[iTrack].GetTitle(), true);
@@ -527,6 +541,7 @@ namespace CUETools.Processor
 			}
 #endif
 
+			SourceInfo sourceInfo;
 			string lineStr, command, pathAudio = null, fileType;
 			CUELine line;
 			TrackInfo trackInfo = null;
@@ -1160,56 +1175,83 @@ namespace CUETools.Processor
 			return (int)audioSource.Length;
 		}
 
-		public void WriteM3U(string path, CUEStyle style)
+		public void WriteText(string path, string text)
 		{
-			StringWriter sw = new StringWriter();
-			WriteM3U(sw, style);
-			sw.Close();
-			bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(sw.ToString())) != sw.ToString();
+			bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(text)) != text;
 			StreamWriter sw1 = new StreamWriter(path, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
-			sw1.Write(sw.ToString());
+			sw1.Write(text);
 			sw1.Close();
 		}
 
-		public void WriteM3U(TextWriter sw, CUEStyle style)
+		public string VersionString()
 		{
-			int iTrack;
-			bool htoaToFile = ((style == CUEStyle.GapsAppended) && _config.preserveHTOA &&
-				(_toc.Pregap != 0));
+			return Assembly.GetExecutingAssembly().GetName().Name + " " + Assembly.GetExecutingAssembly().GetName().Version;
+		}
 
-			if (htoaToFile) {
+		public string LOGContents()
+		{
+			if (!_isCD)
+				return null;
+#if !MONO
+			StringWriter logWriter = new StringWriter();
+			logWriter.WriteLine("{0}", VersionString());
+			logWriter.WriteLine();
+			logWriter.WriteLine("Extraction logfile from {0}", DateTime.Now);
+			logWriter.WriteLine();
+			logWriter.WriteLine("Used drive  : {0}", _driveName);
+			logWriter.WriteLine();
+			logWriter.WriteLine("Read offset correction                      : {0}", _driveOffset);
+			logWriter.WriteLine();
+			logWriter.WriteLine("TOC of the extracted CD");
+			logWriter.WriteLine();
+			logWriter.WriteLine("     Track |   Start  |  Length  | Start sector | End sector");
+			logWriter.WriteLine("    ---------------------------------------------------------");
+			for (int track = 1; track <= _toc.TrackCount; track++)
+				logWriter.WriteLine("{0,9}  | {1,8} | {2,8} | {3,9}    | {4,9}",
+					_toc[track].Number,
+					_toc[track].StartMSF,
+					_toc[track].LengthMSF,
+					_toc[track].Start,
+					_toc[track].End);
+			logWriter.WriteLine();
+			if (_accurateRipMode != AccurateRipMode.None)
+			{
+				logWriter.WriteLine("AccurateRip summary");
+				logWriter.WriteLine();
+				_arVerify.GenerateFullLog(logWriter, 0);
+				logWriter.WriteLine();
+			}
+			logWriter.WriteLine("End of status report");
+			logWriter.Close();
+			return logWriter.ToString();
+#else
+			return null;
+#endif
+		}
+
+		public string M3UContents(CUEStyle style)
+		{
+			StringWriter sw = new StringWriter();
+			if (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0)
 				WriteLine(sw, 0, _htoaFilename);
-			}
-			for (iTrack = 0; iTrack < TrackCount; iTrack++) {
+			for (int iTrack = 0; iTrack < TrackCount; iTrack++)
 				WriteLine(sw, 0, _trackFilenames[iTrack]);
-			}
-		}
-
-		public void WriteTOC(string path)
-		{
-			StreamWriter sw = new StreamWriter(path, false, CUESheet.Encoding);
-			WriteTOC(sw);
 			sw.Close();
+			return sw.ToString();
 		}
 
-		public void WriteTOC(TextWriter sw)
+		public string TOCContents()
 		{
+			StringWriter sw = new StringWriter();
 			for (int iTrack = 0; iTrack < TrackCount; iTrack++)
 				WriteLine(sw, 0, "\t" + _toc[iTrack+1].Start + 150);
-		}
-
-		public void Write(string path, CUEStyle style) {
-			StringWriter sw = new StringWriter();
-			Write(sw, style);
 			sw.Close();
-			bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(sw.ToString())) != sw.ToString();
-			StreamWriter sw1 = new StreamWriter(path, false, utf8Required?Encoding.UTF8:CUESheet.Encoding);
-			sw1.Write(sw.ToString());
-			sw1.Close();
+			return sw.ToString();
 		}
 
-		public void Write(TextWriter sw, CUEStyle style) 
+		public string CUESheetContents(CUEStyle style) 
 		{
+			StringWriter sw = new StringWriter();
 			int i, iTrack, iIndex;
 			bool htoaToFile = (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0);
 
@@ -1217,7 +1259,7 @@ namespace CUETools.Processor
 
 			using (sw) 
 			{
-				if (_accurateRipId != null && _config.writeArTagsOnConvert)
+				if (_config.writeArTagsOnConvert)
 					WriteLine(sw, 0, "REM ACCURATERIPID " + _accurateRipId);
 
 				for (i = 0; i < _attributes.Count; i++)
@@ -1268,106 +1310,8 @@ namespace CUETools.Processor
 					}
 				}
 			}
-		}
-
-		private void CalculateMusicBrainzDiscID() {
-			_mbDiscId = _toc.MusicBrainzId;
-			System.Diagnostics.Debug.WriteLine(_mbDiscId);
-		}
-
-		private void GetMetadataFromMusicBrainz() {
-			if (_mbDiscId == null) return;
-
-			using (Stream respStream = HttpGetToStream(
-				"http://musicbrainz.org/ws/1/release/?type=xml&limit=1&discid=" + _mbDiscId))
-			{
-				XmlDocument xd = GetXmlDocument(respStream);
-				XmlNode xn;
-				
-				xn = xd.SelectSingleNode("/metadata/release-list/release");
-				if (xn != null)
-					_mbReleaseId = xn.Attributes["id"].InnerText;
-			}
-
-			if (_mbReleaseId == null) return;
-
-			using (Stream respStream = HttpGetToStream(String.Format(
-				"http://musicbrainz.org/ws/1/release/{0}?type=xml&inc=artist+tracks", _mbReleaseId)))
-			{
-				string discArtist = null;
-				string discTitle = null;
-				XmlDocument xd = GetXmlDocument(respStream);
-				XmlNode xn;
-
-				XmlNode xnRelease = xd.DocumentElement.SelectSingleNode("/metadata/release");
-				if (xnRelease == null) return;
-
-				XmlNodeList xnlTracks = xnRelease.SelectNodes("track-list/track");
-				if (xnlTracks.Count != TrackCount) return;
-
-				xn = xnRelease.SelectSingleNode("title");
-				if (xn != null)
-					discTitle = xn.InnerText;
-				
-				xn = xnRelease.SelectSingleNode("artist/name");
-				if (xn != null)
-					discArtist = xn.InnerText;
-
-				Artist = discArtist;
-				Title = discTitle;
-
-				for (int iTrack = 0; iTrack < TrackCount; iTrack++) {
-					string trackArtist = null;
-					string trackTitle = null;
-					XmlNode xnTrack = xnlTracks[iTrack];
-					TrackInfo trackInfo = Tracks[iTrack];
-
-					xn = xnTrack.SelectSingleNode("title");
-					if (xn != null)
-						trackTitle = xn.InnerText;
-
-					xn = xnTrack.SelectSingleNode("artist/name");
-					if (xn != null)
-						trackArtist = xn.InnerText;
-
-					trackInfo.Artist = trackArtist ?? discArtist;
-					trackInfo.Title = trackTitle;
-				}
-			}
-		}
-
-		private XmlDocument GetXmlDocument(Stream stream) {
-			XmlDocument xd = new XmlDocument();
-			
-			xd.Load(stream);
-
-			if (xd.DocumentElement.NamespaceURI.Length > 0) {
-				// Strip namespace to simplify xpath expressions
-				XmlDocument xdNew = new XmlDocument();
-				xd.DocumentElement.SetAttribute("xmlns", String.Empty);
-				xdNew.LoadXml(xd.OuterXml);
-				xd = xdNew;
-			}
-
-			return xd;
-		}
-
-		private Stream HttpGetToStream(string url) {
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-			req.UserAgent = "CUE Tools";
-			try {
-				HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-				return resp.GetResponseStream();
-			}
-			catch (WebException ex) {
-				if (ex.Status == WebExceptionStatus.ProtocolError) {
-					HttpStatusCode code = ((HttpWebResponse)ex.Response).StatusCode;
-					if (code == HttpStatusCode.NotFound) {
-						throw new HttpNotFoundException();
-					}
-				}
-				throw;
-			}
+			sw.Close();
+			return sw.ToString();
 		}
 
 		public void GenerateAccurateRipLog(TextWriter sw)
@@ -1405,7 +1349,7 @@ namespace CUETools.Processor
 
 			if (0 != _writeOffset)
 				sw.WriteLine("Offset applied: {0}", _writeOffset);
-			_arVerify.GenerateFullLog(sw, _accurateOffset ? _writeOffset : 0);
+			_arVerify.GenerateFullLog(sw, _accurateRipMode == AccurateRipMode.VerifyThenConvert ? _writeOffset : 0);
 		}
 
 		public void GenerateAccurateRipTagsForTrack(NameValueCollection tags, int offset, int bestOffset, int iTrack, string prefix)
@@ -1524,7 +1468,7 @@ namespace CUETools.Processor
 				}
 			}
 
-			if ( !_accurateRip || _accurateOffset )
+			if ( _accurateRipMode != AccurateRipMode.Verify )
 			for (int i = 0; i < destPaths.Length; i++) {
 				for (int j = 0; j < _sourcePaths.Count; j++) {
 					if (destPaths[i].ToLower() == _sourcePaths[j].ToLower()) {
@@ -1537,7 +1481,8 @@ namespace CUETools.Processor
 
 			bool SkipOutput = false;
 
-			if (_accurateRip) {
+			if (_accurateRipMode != AccurateRipMode.None)
+			{
 				ShowProgress((string)"Contacting AccurateRip database...", 0, 0, null, null);
 				if (!_dataTrackLength.HasValue && _minDataTrackLength.HasValue && _accurateRipId == _accurateRipIdActual && _config.bruteForceDTL)
 				{
@@ -1576,10 +1521,10 @@ namespace CUETools.Processor
 
 				if (_arVerify.AccResult != HttpStatusCode.OK)
 				{
-					if (!_accurateOffset || _config.noUnverifiedOutput)
+					if (_accurateRipMode == AccurateRipMode.Verify || _config.noUnverifiedOutput)
 					{
-						if ((_accurateOffset && _config.writeArLogOnConvert)  || 
-							(!_accurateOffset && _config.writeArLogOnVerify))
+						if ((_accurateRipMode != AccurateRipMode.Verify && _config.writeArLogOnConvert) ||
+							(_accurateRipMode == AccurateRipMode.Verify && _config.writeArLogOnVerify))
 						{
 							if (!Directory.Exists(dir))
 								Directory.CreateDirectory(dir);
@@ -1592,12 +1537,12 @@ namespace CUETools.Processor
 						{
 							if (!Directory.Exists(dir))
 								Directory.CreateDirectory(dir);
-							WriteTOC(Path.ChangeExtension(_cuePath, ".toc"));
+							WriteText(Path.ChangeExtension(_cuePath, ".toc"), TOCContents());
 						}
 						return;
 					}
 				}
-				else if (_accurateOffset)
+				else if (_accurateRipMode == AccurateRipMode.VerifyThenConvert)
 				{
 					_writeOffset = 0;
 					WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, true);
@@ -1623,25 +1568,59 @@ namespace CUETools.Processor
 
 			if (!SkipOutput)
 			{
-				bool verifyOnly = _accurateRip && !_accurateOffset;
-				if (!verifyOnly)
+				if (_accurateRipMode != AccurateRipMode.Verify)
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
-					if (style != CUEStyle.SingleFileWithCUE)
-						Write(_cuePath, style);
-					else if (_config.createCUEFileWhenEmbedded)
-						Write(Path.ChangeExtension(_cuePath, ".cue"), style);
-					if (style != CUEStyle.SingleFileWithCUE && style != CUEStyle.SingleFile && _config.createM3U)
-						WriteM3U(Path.ChangeExtension(_cuePath, ".m3u"), style);
 				}
-				WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, verifyOnly);
+				WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, _accurateRipMode == AccurateRipMode.Verify);
+				if (_accurateRipMode != AccurateRipMode.Verify)
+				{
+					string logContents = LOGContents();
+					string cueContents = CUESheetContents(style);
+
+					if (logContents != null)
+						WriteText(Path.ChangeExtension(_cuePath, ".log"), logContents);
+					if (style != CUEStyle.SingleFileWithCUE)
+						WriteText(_cuePath, cueContents);
+					else
+					{
+						if (_config.createCUEFileWhenEmbedded)
+							WriteText(Path.ChangeExtension(_cuePath, ".cue"), cueContents);
+#if !MONO
+						if (_accurateRipMode == AccurateRipMode.VerifyAndConvert ||
+							(_accurateRipMode != AccurateRipMode.VerifyThenConvert && _isCD))
+						{
+							IAudioSource audioSource = AudioReadWrite.GetAudioSource(destPaths[0], null);
+							if (audioSource is FLACReader)
+							{
+								if (_isCD)
+								{
+									audioSource.Tags.Add("CUESHEET", cueContents);
+									audioSource.Tags.Add("LOG", logContents);
+								}
+								uint tracksMatch;
+								int bestOffset;
+								FindBestOffset(1, true, out tracksMatch, out bestOffset);
+								if (_accurateRipMode == AccurateRipMode.VerifyAndConvert && _arVerify.AccResult == HttpStatusCode.OK)
+									GenerateAccurateRipTags(audioSource.Tags, 0, bestOffset, -1);
+								else
+									audioSource.Tags.Add("ACCURATERIPID", _accurateRipId);
+								audioSource.UpdateTags(false);
+							}
+							audioSource.Close();
+						}
+#endif
+					}
+					if (style != CUEStyle.SingleFileWithCUE && style != CUEStyle.SingleFile && _config.createM3U)
+						WriteText(Path.ChangeExtension(_cuePath, ".m3u"), M3UContents(style));
+				}
 			}
 
-			if (_accurateRip)
+			if (_accurateRipMode != AccurateRipMode.None)
 			{
 				ShowProgress((string)"Generating AccurateRip report...", 0, 0, null, null);
-				if (!_accurateOffset && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive)
+				if (_accurateRipMode == AccurateRipMode.Verify && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
 				{
 					uint tracksMatch;
 					int bestOffset;
@@ -1655,7 +1634,7 @@ namespace CUETools.Processor
 						GenerateAccurateRipTags (tags, 0, bestOffset, -1);
 #if !MONO
 						if (audioSource is FLACReader)
-							((FLACReader)audioSource).UpdateTags (true);
+							audioSource.UpdateTags (true);
 #endif
 						audioSource.Close();
 						audioSource = null;
@@ -1671,7 +1650,7 @@ namespace CUETools.Processor
 								NameValueCollection tags = audioSource.Tags;
 								CleanupTags(tags, "ACCURATERIP");
 								GenerateAccurateRipTags (tags, 0, bestOffset, iTrack);
-								((FLACReader)audioSource).UpdateTags(true);
+								audioSource.UpdateTags(true);
 							}
 #endif
 							audioSource.Close();
@@ -1680,8 +1659,8 @@ namespace CUETools.Processor
 					}
 				}
 
-				if ((_accurateOffset && _config.writeArLogOnConvert) ||
-					(!_accurateOffset && _config.writeArLogOnVerify))
+				if ((_accurateRipMode != AccurateRipMode.Verify && _config.writeArLogOnConvert) ||
+					(_accurateRipMode == AccurateRipMode.Verify && _config.writeArLogOnVerify))
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
@@ -1694,7 +1673,7 @@ namespace CUETools.Processor
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
-					WriteTOC(Path.ChangeExtension(_cuePath, ".toc"));
+					WriteText(Path.ChangeExtension(_cuePath, ".toc"), TOCContents());
 				}
 			}
 		}
@@ -1740,9 +1719,9 @@ namespace CUETools.Processor
 			if (destTags.Get("ARTIST") == null && "" != _tracks[iTrack].Artist)
 				destTags.Add("ARTIST", _tracks[iTrack].Artist);
 			destTags.Add("TRACKNUMBER", (iTrack + 1).ToString());
-			if (_accurateRipId != null && _config.writeArTagsOnConvert)
+			if (_config.writeArTagsOnConvert)
 			{
-				if (_accurateOffset && _arVerify.AccResult == HttpStatusCode.OK)
+				if (_accurateRipMode == AccurateRipMode.VerifyThenConvert && _arVerify.AccResult == HttpStatusCode.OK)
 					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, iTrack);
 				else
 					destTags.Add("ACCURATERIPID", _accurateRipId);
@@ -1789,13 +1768,8 @@ namespace CUETools.Processor
 			CleanupTags(destTags, "ACCURATERIP");
 			CleanupTags(destTags, "REPLAYGAIN");
 
-			if (fWithCUE)
-			{
-				StringWriter sw = new StringWriter();
-				Write(sw, CUEStyle.SingleFileWithCUE);
-				destTags.Add("CUESHEET", sw.ToString());
-				sw.Close();
-			}
+			if (fWithCUE && (!_isCD || _accurateRipMode == AccurateRipMode.VerifyThenConvert))
+				destTags.Add("CUESHEET", CUESheetContents(CUEStyle.SingleFileWithCUE));
 
 			if (_config.embedLog)
 			{
@@ -1806,9 +1780,9 @@ namespace CUETools.Processor
 					destTags.Add("LOG", _eacLog);
 			}
 
-			if (_accurateRipId != null && _config.writeArTagsOnConvert)
+			if (_config.writeArTagsOnConvert)
 			{
-				if (fWithCUE && _accurateOffset && _arVerify.AccResult == HttpStatusCode.OK)
+				if (fWithCUE && _accurateRipMode == AccurateRipMode.VerifyThenConvert && _arVerify.AccResult == HttpStatusCode.OK)
 					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, -1);
 				else
 					destTags.Add("ACCURATERIPID", _accurateRipId);
@@ -1828,6 +1802,7 @@ namespace CUETools.Processor
 			int iSource = -1;
 			int iDest = -1;
 			uint samplesRemSource = 0;
+			CDImageLayout updatedTOC = null;
 
 			if (_writeOffset != 0)
 			{
@@ -1872,7 +1847,7 @@ namespace CUETools.Processor
 
 			uint tracksMatch;
 			int bestOffset = _writeOffset;
-			if (!noOutput && _accurateRipId != null && _config.writeArTagsOnConvert && _accurateOffset && _arVerify.AccResult == HttpStatusCode.OK)
+			if (!noOutput && _accurateRipMode == AccurateRipMode.VerifyThenConvert && _config.writeArTagsOnConvert && _arVerify.AccResult == HttpStatusCode.OK)
 				FindBestOffset(1, true, out tracksMatch, out bestOffset);
 
 			if (hdcdDecoder != null)
@@ -1891,7 +1866,7 @@ namespace CUETools.Processor
 			uint diskLength = 588 * (_toc[_toc.TrackCount].IsAudio ? _toc[_toc.TrackCount].End + 1 : _toc[_toc.TrackCount - 1].End + 1);
 			uint diskOffset = 0;
 
-			if (_accurateRip && noOutput)
+			if (_accurateRipMode != AccurateRipMode.None && (noOutput || _accurateRipMode == AccurateRipMode.VerifyAndConvert))
 				_arVerify.Init();
 
 			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0, null, null);
@@ -1949,6 +1924,10 @@ namespace CUETools.Processor
 
 					while (samplesRemIndex != 0) {
 						if (samplesRemSource == 0) {
+#if !MONO
+							if (_isCD && audioSource != null && audioSource is CDDriveReader)
+								updatedTOC = ((CDDriveReader)audioSource).TOC;
+#endif
 							if (audioSource != null) audioSource.Close();
 							audioSource = GetAudioSource(++iSource);
 							samplesRemSource = (uint) _sources[iSource].Length;
@@ -1994,7 +1973,7 @@ namespace CUETools.Processor
 								}
 							}
 						}
-						if (_accurateRip && noOutput)
+						if (_accurateRipMode != AccurateRipMode.None && (noOutput || _accurateRipMode == AccurateRipMode.VerifyAndConvert))
 							_arVerify.Write(sampleBuffer, copyCount);
 
 						currentOffset += copyCount;
@@ -2021,6 +2000,20 @@ namespace CUETools.Processor
 					}
 				}
 			}
+
+#if !MONO
+			if (_isCD && audioSource != null && audioSource is CDDriveReader)
+				updatedTOC = ((CDDriveReader)audioSource).TOC;
+			if (updatedTOC != null)
+			{
+				_toc = updatedTOC;
+				if (_toc.Catalog != null)
+					General.SetCUELine(_attributes, "CATALOG", _toc.Catalog, false);
+				for (iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
+					if (_toc[iTrack].IsAudio && _toc[iTrack].ISRC != null)
+						General.SetCUELine(_tracks[iTrack - 1].Attributes, "ISRC", _toc[iTrack].ISRC, false);
+			}
+#endif
 
 			if (hdcdDecoder != null)
 				hdcdDecoder.AudioDest = null;
@@ -2220,7 +2213,7 @@ namespace CUETools.Processor
 				{
 					CDDriveReader ripper = new CDDriveReader();
 					ripper.Open(sourceInfo.Path[0]);
-					ripper.DriveOffset = 48;
+					ripper.DriveOffset = _driveOffset;
 					audioSource = ripper;
 				} else
 				if (_isArchive)
@@ -2369,31 +2362,27 @@ namespace CUETools.Processor
 			}
 		}
 
-		public CUEConfig Config {
-			get {
+		public CUEConfig Config
+		{
+			get
+			{
 				return _config;
 			}
 		}
 
-		public bool AccurateRip {
-			get {
-				return _accurateRip;
+		public AccurateRipMode AccurateRip
+		{
+			get
+			{
+				return _accurateRipMode;
 			}
-			set {
-				_accurateRip = value;
-			}
-		}
-
-		public bool AccurateOffset {
-			get {
-				return _accurateOffset;
-			}
-			set {
-				_accurateOffset = value;
+			set
+			{
+				_accurateRipMode = value;
 			}
 		}
 
-		CDImageLayout _toc;
+		private CDImageLayout _toc;
 	}
 
 	public class CUELine {
@@ -2524,8 +2513,5 @@ namespace CUETools.Processor
 	public class StopException : Exception {
 		public StopException() : base() {
 		}
-	}
-
-	class HttpNotFoundException : Exception {
 	}
 }
