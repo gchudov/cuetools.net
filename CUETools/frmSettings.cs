@@ -35,7 +35,6 @@ namespace JDP {
 			if (_config.wvCompressionMode == 2) rbWVHigh.Checked = true;
 			if (_config.wvCompressionMode == 3) rbWVVeryHigh.Checked = true;
 			chkWVExtraMode.Checked = (_config.wvExtraMode != 0);
-			chkWVExtraMode_CheckedChanged(null, null);
 			if (_config.wvExtraMode != 0) numWVExtraMode.Value = _config.wvExtraMode;
 			chkWVStoreMD5.Checked = _config.wvStoreMD5;
 			switch (_config.apeCompressionLevel)
@@ -68,6 +67,8 @@ namespace JDP {
 			numericLossyWAVQuality.Value = _config.lossyWAVQuality;
 			chkHDCDLW16.Checked = _config.decodeHDCDtoLW16;
 			chkHDCD24bit.Checked = _config.decodeHDCDto24bit;
+
+			EnableDisable();
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
@@ -90,7 +91,7 @@ namespace JDP {
 		}
 
 		private void chkWVExtraMode_CheckedChanged(object sender, EventArgs e) {
-			numWVExtraMode.Enabled = chkWVExtraMode.Checked;
+			EnableDisable();
 		}
 
 		private void btnOK_Click(object sender, EventArgs e)
@@ -144,43 +145,59 @@ namespace JDP {
 			_config.decodeHDCDto24bit = chkHDCD24bit.Checked;
 		}
 
-		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)
+		private void EnableDisable()
 		{
 			numFixWhenConfidence.Enabled =
 			labelFixWhenConfidence.Enabled =
-			numFixWhenPercent.Enabled = 
+			numFixWhenPercent.Enabled =
 			labelFixWhenPercent.Enabled = chkArFixOffset.Checked;
+
+			numEncodeWhenConfidence.Enabled =
+			labelEncodeWhenConfidence.Enabled =
+			numEncodeWhenPercent.Enabled =
+			labelEncodeWhenPercent.Enabled =
+			chkEncodeWhenZeroOffset.Enabled = chkArNoUnverifiedAudio.Checked;
+
+			grpHDCD.Enabled = chkHDCDDetect.Checked;
+			chkHDCDLW16.Enabled = chkHDCDDetect.Checked && chkHDCDDecode.Checked;
+			chkHDCD24bit.Enabled = chkHDCDDetect.Checked && chkHDCDDecode.Checked;
+
+			chkRemoveSpecial.Enabled = chkFilenamesANSISafe.Checked;
+			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked && chkFilenamesANSISafe.Checked;
+
+			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked;
+
+			numWVExtraMode.Enabled = chkWVExtraMode.Checked;
+		}
+
+		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)
+		{
+			EnableDisable();
 		}
 
 		private void chkArNoUnverifiedAudio_CheckedChanged(object sender, EventArgs e)
 		{
-			numEncodeWhenConfidence.Enabled = 
-			labelEncodeWhenConfidence.Enabled = 
-			numEncodeWhenPercent.Enabled = 
-			labelEncodeWhenPercent.Enabled =
-			chkEncodeWhenZeroOffset.Enabled = chkArNoUnverifiedAudio.Checked;
+			EnableDisable();
 		}
 
 		private void chkHDCDDetect_CheckedChanged(object sender, EventArgs e)
 		{
-			grpHDCD.Enabled = chkHDCDDetect.Checked;
+			EnableDisable();
 		}
 
 		private void chkFilenamesANSISafe_CheckedChanged(object sender, EventArgs e)
 		{
-			chkRemoveSpecial.Enabled = chkFilenamesANSISafe.Checked;
-			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked && chkFilenamesANSISafe.Checked;
+			EnableDisable();
 		}
 
 		private void chkRemoveSpecial_CheckedChanged(object sender, EventArgs e)
 		{
-			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked;
+			EnableDisable();
 		}
 
 		private void chkHDCDDecode_CheckedChanged(object sender, EventArgs e)
 		{
-			chkHDCDLW16.Enabled = chkHDCDDecode.Checked;
-			chkHDCD24bit.Enabled = chkHDCDDecode.Checked;
+			EnableDisable();
 		}
 	}
 }

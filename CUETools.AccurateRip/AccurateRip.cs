@@ -127,7 +127,12 @@ namespace CUETools.AccurateRip
 
 		public uint CRC(int iTrack)
 		{
-			return CRC(iTrack);
+			return _offsetedCRC[iTrack, _arOffsetRange];
+		}
+
+		public uint BackupCRC(int iTrack)
+		{
+			return _backupCRC[iTrack];
 		}
 
 		public uint CRC(int iTrack, int oi)
@@ -184,6 +189,13 @@ namespace CUETools.AccurateRip
 			_sampleCount = 0;
 			_samplesRemTrack = _toc.Pregap * 588;
 			CheckPosition();
+		}
+
+		public void CreateBackup(int writeOffset)
+		{
+			_backupCRC = new uint[_toc.AudioTracks];
+			for (int i = 0; i < _toc.AudioTracks; i++)
+				_backupCRC[i] = CRC(i, writeOffset);
 		}
 
 		private void CheckPosition()
@@ -538,6 +550,7 @@ namespace CUETools.AccurateRip
 		private HttpStatusCode _accResult;
 		private uint[,] _offsetedCRC;
 		private uint[,] _offsetedFrame450CRC;
+		private uint[] _backupCRC;
 
 		private const int _arOffsetRange = 5 * 588 - 1;
 	}

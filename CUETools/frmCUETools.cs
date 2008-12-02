@@ -364,7 +364,14 @@ namespace JDP {
 				{
 					if (_batchPaths.Count == 0)
 					{
-						if (cueSheet.AccurateRip != AccurateRipMode.None)
+						if (cueSheet.IsCD)
+						{
+							frmReport reportForm = new frmReport();
+							reportForm.Message = cueSheet.LOGContents();
+							CenterSubForm(reportForm);
+							reportForm.ShowDialog(this);
+						}
+						else if (cueSheet.AccurateRip != AccurateRipMode.None)
 						{
 							frmReport reportForm = new frmReport();
 							StringWriter sw = new StringWriter();

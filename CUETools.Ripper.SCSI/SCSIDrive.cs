@@ -430,6 +430,12 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
+		public static string RipperVersion()
+		{
+			return "CUERipper v1.9.3 Copyright (C) 2008 Gregory S. Chudov";
+			// ripper.GetName().Name + " " + ripper.GetName().Version;
+		}
+
 		byte[] _sectorBuffer = new byte[CB_AUDIO * NSECTORS];
 
 		private int fromBCD(byte hex)

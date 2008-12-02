@@ -171,7 +171,12 @@ namespace JDP
 					//TimeSpan span = DateTime.Now - _startedAt;
 					progressBar1.Value = 0;
 					progressBar2.Value = 0;
-					if (cueSheet.AccurateRip != AccurateRipMode.None)
+					if (cueSheet.IsCD)
+					{
+						textBox1.Text += cueSheet.LOGContents();
+						textBox1.Show();
+					}
+					else if (cueSheet.AccurateRip != AccurateRipMode.None)
 					{
 						StringWriter sw = new StringWriter();
 						cueSheet.GenerateAccurateRipLog(sw);

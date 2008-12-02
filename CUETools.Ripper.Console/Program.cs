@@ -38,7 +38,7 @@ namespace CUERipper
 		{
 			string programVersion = "CUERipper v1.9.3 Copyright (C) 2008 Gregory S. Chudov";
 			Console.SetOut(Console.Error);
-			Console.WriteLine("{0}", programVersion);
+			Console.WriteLine("{0}", CDDriveReader.RipperVersion());
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 
