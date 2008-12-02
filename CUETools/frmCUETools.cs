@@ -216,22 +216,15 @@ namespace JDP {
 		CUEConfig _config;
 
 		private void StartConvert() {
-			string pathIn, pathOut, outDir;
-			CUESheet cueSheet;
-			CUEStyle cueStyle;
-
-			try {
+			try
+			{
 				_workThread = null;
-				if (_batchPaths.Count != 0) {
+				if (_batchPaths.Count != 0)
+				{
 					txtInputPath.Text = _batchPaths[0];
 				}
-				pathIn = txtInputPath.Text;
-				cueStyle = SelectedCUEStyle;
 
-				AccurateRipMode accurateRip = SelectedAccurateRipMode;
-				bool outputAudio = !rbNoAudio.Checked && accurateRip != AccurateRipMode.Verify;
-				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify;
-
+				string pathIn = txtInputPath.Text;
 				if (!File.Exists(pathIn))
 				{
 					if (!Directory.Exists(pathIn))
@@ -243,100 +236,47 @@ namespace JDP {
 					}
 				}
 
-				cueSheet = new CUESheet(_config);
+				CUESheet cueSheet = new CUESheet(_config);
 				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
+				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
 				cueSheet.WriteOffset = _writeOffset;
-				cueSheet.Open(pathIn, chkLossyWAV.Checked);
-				
-				UpdateOutputPath(cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
-				pathOut = txtOutputPath.Text;
-				cueSheet.GenerateFilenames(SelectedOutputAudioFormat, pathOut);
-				outDir = Path.GetDirectoryName(pathOut);
-				if (cueStyle == CUEStyle.SingleFileWithCUE)
-					cueSheet.SingleFilename = Path.GetFileName (pathOut);
 
-				bool outputExists = false;
-				if (outputCUE)
-					outputExists = File.Exists(pathOut);
-				if (outputAudio) {
-					if (cueStyle == CUEStyle.SingleFile || cueStyle == CUEStyle.SingleFileWithCUE) {
-						outputExists |= File.Exists(Path.Combine(outDir, cueSheet.SingleFilename));
-					}
-					else {
-						if ((cueStyle == CUEStyle.GapsAppended) && _config.preserveHTOA) {
-							outputExists |= File.Exists(Path.Combine(outDir, cueSheet.HTOAFilename));
-						}
-						for (int i = 0; i < cueSheet.TrackCount; i++) {
-							outputExists |= File.Exists(Path.Combine(outDir, cueSheet.TrackFilenames[i]));
-						}
-					}
-				}
-				if (outputExists) {
-					DialogResult dlgRes = MessageBox.Show("One or more output file already exists, " +
-						"do you want to overwrite?", "Overwrite?", (_batchPaths.Count == 0) ?
-						MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+				object[] p = new object[6];
 
-					if (dlgRes == DialogResult.Cancel) {
-						_batchPaths.Clear();
-					}
-					if (dlgRes != DialogResult.Yes) {
-						goto SkipConversion;
-					}
-				}
+				_workThread = new Thread(WriteAudioFilesThread);
+				_workClass = cueSheet;
 
-				cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
-				cueSheet.AccurateRip = accurateRip;
-				if (accurateRip != AccurateRipMode.None)
-					cueSheet.DataTrackLength = txtDataTrackLength.Text;
+				p[0] = cueSheet;
+				p[1] = pathIn;
+				p[2] = SelectedCUEStyle;
+				p[3] = SelectedAccurateRipMode;
+				p[4] = SelectedOutputAudioFormat;
+				p[5] = chkLossyWAV.Checked;
 
-				if (outputAudio || accurateRip != AccurateRipMode.None)
-				{
-					object[] p = new object[3];
-
-					_workThread = new Thread(WriteAudioFilesThread);
-					_workClass = cueSheet;
-
-					p[0] = cueSheet;
-					p[1] = outDir;
-					p[2] = cueStyle;
-
-					SetupControls(true);					
-					_workThread.Priority = ThreadPriority.BelowNormal;
-					_workThread.IsBackground = true;
-					_workThread.Start(p);
-				}
-				else {
-					if (!Directory.Exists(outDir))
-						Directory.CreateDirectory(outDir);
-					if (outputCUE)
-						cueSheet.WriteText(pathOut, cueSheet.CUESheetContents(cueStyle));
-					ShowFinishedMessage(cueSheet.PaddedToFrame);
-				}
+				SetupControls(true);
+				_workThread.Priority = ThreadPriority.BelowNormal;
+				_workThread.IsBackground = true;
+				_workThread.Start(p);
 			}
-			catch (Exception ex) {
-				if (!ShowErrorMessage(ex)) {
+			catch (Exception ex)
+			{
+				if (!ShowErrorMessage(ex))
 					_batchPaths.Clear();
-				}
-			}
-
-		SkipConversion:
-			if ((_workThread == null) && (_batchPaths.Count != 0)) {
-				_batchPaths.RemoveAt(0);
-				if (_batchPaths.Count == 0) {
-					ShowBatchDoneMessage();
-				}
-				else {
-					StartConvert();
+				if ((_workThread == null) && (_batchPaths.Count != 0))
+				{
+					_batchPaths.RemoveAt(0);
+					if (_batchPaths.Count == 0)
+						ShowBatchDoneMessage();
+					else
+						StartConvert();
 				}
 			}
 		}
 
 		private void PasswordRequired(object sender, ArchivePasswordRequiredEventArgs e)
 		{
-			//if (this.InvokeRequired)
-			//    this.Invoke(this.PasswordRequired, sender, e);
-			//this.Invoke((MethodInvoker)delegate()
-			//{
+			this.Invoke((MethodInvoker)delegate()
+			{
 				frmPassword dlg = new frmPassword();
 				if (dlg.ShowDialog() == DialogResult.OK)
 				{
@@ -344,33 +284,95 @@ namespace JDP {
 					e.ContinueOperation = true;
 				} else
 					e.ContinueOperation = false;
-			//});
+			});
 		}
 
 		private void WriteAudioFilesThread(object o) {
 			object[] p = (object[])o;
 
 			CUESheet cueSheet = (CUESheet)p[0];
-			string outDir = (string)p[1];
+			string pathIn = (string)p[1];
 			CUEStyle cueStyle = (CUEStyle)p[2];
+			AccurateRipMode accurateRip = (AccurateRipMode)p[3];
+			OutputAudioFormat outputFormat = (OutputAudioFormat)p[4];
+			bool lossyWAV = (bool)p[5];
 
-			try {
-				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
-				cueSheet.WriteAudioFiles(outDir, cueStyle);
-				this.Invoke((MethodInvoker)delegate() {
+			try
+			{
+
+				bool outputAudio = outputFormat != OutputAudioFormat.NoAudio && accurateRip != AccurateRipMode.Verify;
+				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify;
+				string pathOut = null;
+
+				cueSheet.Open(pathIn, lossyWAV);
+
+				this.Invoke((MethodInvoker)delegate()
+				{
+					UpdateOutputPath(cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
+					pathOut = txtOutputPath.Text;
+				});
+
+				cueSheet.GenerateFilenames(outputFormat, pathOut);
+				string outDir = Path.GetDirectoryName(pathOut);
+				if (cueStyle == CUEStyle.SingleFileWithCUE)
+					cueSheet.SingleFilename = Path.GetFileName(pathOut);
+
+				bool outputExists = false;
+				if (outputCUE)
+					outputExists = File.Exists(pathOut);
+				if (outputAudio)
+				{
+					if (cueStyle == CUEStyle.SingleFile || cueStyle == CUEStyle.SingleFileWithCUE)
+						outputExists |= File.Exists(Path.Combine(outDir, cueSheet.SingleFilename));
+					else
+					{
+						if (cueStyle == CUEStyle.GapsAppended && _config.preserveHTOA)
+							outputExists |= File.Exists(Path.Combine(outDir, cueSheet.HTOAFilename));
+						for (int i = 0; i < cueSheet.TrackCount; i++)
+							outputExists |= File.Exists(Path.Combine(outDir, cueSheet.TrackFilenames[i]));
+					}
+				}
+				DialogResult dlgRes = DialogResult.Cancel;
+				if (outputExists)
+				{
+					this.Invoke((MethodInvoker)delegate()
+					{
+						dlgRes = MessageBox.Show("One or more output file already exists, " +
+							"do you want to overwrite?", "Overwrite?", (_batchPaths.Count == 0) ?
+							MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+					});
+
+					if (dlgRes == DialogResult.Yes)
+						outputExists = false;
+					else if (dlgRes == DialogResult.Cancel || _batchPaths.Count == 0)
+					{
+						_batchPaths.Clear();
+						SetupControls(false);
+						return;
+					}
+				}
+				if (!outputExists)
+				{
+					cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
+					cueSheet.AccurateRip = accurateRip;
+					if (accurateRip != AccurateRipMode.None)
+						cueSheet.DataTrackLength = txtDataTrackLength.Text;
+
+					cueSheet.WriteAudioFiles(outDir, cueStyle);
+				}
+				this.Invoke((MethodInvoker)delegate()
+				{
 					if (_batchPaths.Count == 0)
 					{
 						if (cueSheet.AccurateRip != AccurateRipMode.None)
 						{
-							using (frmReport reportForm = new frmReport())
-							{
-								StringWriter sw = new StringWriter();
-								cueSheet.GenerateAccurateRipLog(sw);
-								reportForm.Message = sw.ToString();
-								sw.Close();
-								CenterSubForm(reportForm);
-								reportForm.ShowDialog(this);
-							}
+							frmReport reportForm = new frmReport();
+							StringWriter sw = new StringWriter();
+							cueSheet.GenerateAccurateRipLog(sw);
+							reportForm.Message = sw.ToString();
+							sw.Close();
+							CenterSubForm(reportForm);
+							reportForm.ShowDialog(this);
 						}
 						else
 							ShowFinishedMessage(cueSheet.PaddedToFrame);
@@ -378,19 +380,24 @@ namespace JDP {
 					}
 				});
 			}
-			catch (StopException) {
+			catch (StopException)
+			{
 				_batchPaths.Clear();
-				this.Invoke((MethodInvoker)delegate() {
+				this.Invoke((MethodInvoker)delegate()
+				{
 					SetupControls(false);
 					MessageBox.Show("Conversion was stopped.", "Stopped", MessageBoxButtons.OK,
 						MessageBoxIcon.Exclamation);
 				});
 			}
 #if !DEBUG
-			catch (Exception ex) {
-				this.Invoke((MethodInvoker)delegate() {
+			catch (Exception ex)
+			{
+				this.Invoke((MethodInvoker)delegate()
+				{
 					if (_batchPaths.Count == 0) SetupControls(false);
-					if (!ShowErrorMessage(ex)) {
+					if (!ShowErrorMessage(ex))
+					{
 						_batchPaths.Clear();
 						SetupControls(false);
 					}

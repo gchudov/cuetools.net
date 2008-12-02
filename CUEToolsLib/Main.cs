@@ -818,8 +818,8 @@ namespace CUETools.Processor
 				if (indexes[i].Index == 1 && (i == 0 || indexes[i - 1].Index != 0))
 					_toc[indexes[i].Track].AddIndex(new CDTrackIndex(0U, (uint)indexes[i].Time));
 				_toc[indexes[i].Track].AddIndex(new CDTrackIndex((uint)indexes[i].Index, (uint)indexes[i].Time));
-				//_toc[indexes[i].Track].AddIndex(new CDTrackIndex((uint)indexes[i].Index, (uint)indexes[i].Time, (uint)length));
 			}
+
 			// Calculate the length of each track
 			for (int iTrack = 1; iTrack <= TrackCount; iTrack++)
 			{
@@ -1449,9 +1449,11 @@ namespace CUETools.Processor
 			bool htoaToFile = ((style == CUEStyle.GapsAppended) && _config.preserveHTOA &&
 				(_toc.Pregap != 0));
 
-			if (_usePregapForFirstTrackInSingleFile) {
+			if (_isCD && (style == CUEStyle.GapsLeftOut || style == CUEStyle.GapsPrepended) && (_accurateRipMode == AccurateRipMode.None || _accurateRipMode == AccurateRipMode.VerifyAndConvert))
+				throw new Exception("When ripping a CD, gaps Left Out/Gaps prepended modes can only be used in verify-then-convert mode");
+
+			if (_usePregapForFirstTrackInSingleFile)
 				throw new Exception("UsePregapForFirstTrackInSingleFile is not supported for writing audio files.");
-			}
 
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE) {
 				destPaths = new string[1];
@@ -1540,6 +1542,11 @@ namespace CUETools.Processor
 						}
 						return;
 					}
+					if (_accurateRipMode == AccurateRipMode.VerifyThenConvert && _isCD)
+					{
+						_writeOffset = 0;
+						WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, true);
+					}
 				}
 				else if (_accurateRipMode == AccurateRipMode.VerifyThenConvert)
 				{
@@ -1572,6 +1579,8 @@ namespace CUETools.Processor
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
 				}
+				if (_isCD)
+					destLengths = CalculateAudioFileLengths(style); // need to recalc, might have changed after scanning the CD
 				WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, _accurateRipMode == AccurateRipMode.Verify);
 				if (_accurateRipMode != AccurateRipMode.Verify)
 				{
@@ -1581,33 +1590,58 @@ namespace CUETools.Processor
 					if (logContents != null)
 						WriteText(Path.ChangeExtension(_cuePath, ".log"), logContents);
 					if (style != CUEStyle.SingleFileWithCUE)
+					{
 						WriteText(_cuePath, cueContents);
+#if !MONO
+						if (_accurateRipMode == AccurateRipMode.VerifyAndConvert &&
+							_config.writeArTagsOnConvert &&
+							_arVerify.AccResult == HttpStatusCode.OK)
+						{
+							uint tracksMatch;
+							int bestOffset;
+							FindBestOffset(1, true, out tracksMatch, out bestOffset);
+							for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+							{
+								IAudioSource audioSource = AudioReadWrite.GetAudioSource(destPaths[iTrack + (htoaToFile ? 1 : 0)], null);
+								CleanupTags(audioSource.Tags, "ACCURATERIP");
+								GenerateAccurateRipTags(audioSource.Tags, 0, bestOffset, iTrack);
+								audioSource.UpdateTags(false);
+								audioSource.Close();
+								audioSource = null;
+							}
+						}
+#endif
+					}
 					else
 					{
 						if (_config.createCUEFileWhenEmbedded)
 							WriteText(Path.ChangeExtension(_cuePath, ".cue"), cueContents);
 #if !MONO
-						if (_accurateRipMode == AccurateRipMode.VerifyAndConvert ||
-							(_accurateRipMode != AccurateRipMode.VerifyThenConvert && _isCD))
+						if ((_accurateRipMode == AccurateRipMode.VerifyAndConvert &&
+							_config.writeArTagsOnConvert &&
+							_arVerify.AccResult == HttpStatusCode.OK) ||
+							(_accurateRipMode != AccurateRipMode.VerifyThenConvert &&
+							_isCD))
 						{
 							IAudioSource audioSource = AudioReadWrite.GetAudioSource(destPaths[0], null);
-							if (audioSource is FLACReader)
+							if (_isCD)
 							{
-								if (_isCD)
-								{
-									audioSource.Tags.Add("CUESHEET", cueContents);
-									audioSource.Tags.Add("LOG", logContents);
-								}
-								uint tracksMatch;
-								int bestOffset;
-								FindBestOffset(1, true, out tracksMatch, out bestOffset);
-								if (_accurateRipMode == AccurateRipMode.VerifyAndConvert && _arVerify.AccResult == HttpStatusCode.OK)
-									GenerateAccurateRipTags(audioSource.Tags, 0, bestOffset, -1);
-								else
-									audioSource.Tags.Add("ACCURATERIPID", _accurateRipId);
-								audioSource.UpdateTags(false);
+								audioSource.Tags.Add("CUESHEET", cueContents);
+								audioSource.Tags.Add("LOG", logContents);
 							}
+							uint tracksMatch;
+							int bestOffset;
+							FindBestOffset(1, true, out tracksMatch, out bestOffset);
+							if (_accurateRipMode == AccurateRipMode.VerifyAndConvert &&
+								_config.writeArTagsOnConvert &&
+								_arVerify.AccResult == HttpStatusCode.OK)
+							{
+								CleanupTags(audioSource.Tags, "ACCURATERIP");
+								GenerateAccurateRipTags(audioSource.Tags, 0, bestOffset, -1);
+							}
+							audioSource.UpdateTags(false);
 							audioSource.Close();
+							audioSource = null;
 						}
 #endif
 					}
@@ -1870,134 +1904,153 @@ namespace CUETools.Processor
 
 			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0, null, null);
 
-			for (iTrack = 0; iTrack < TrackCount; iTrack++) {
-				track = _tracks[iTrack];
+			try
+			{
+				for (iTrack = 0; iTrack < TrackCount; iTrack++)
+				{
+					track = _tracks[iTrack];
 
-				if ((style == CUEStyle.GapsPrepended) || (style == CUEStyle.GapsLeftOut)) {
-					iDest++;
-					if (hdcdDecoder != null)
-						hdcdDecoder.AudioDest = null;
-					if (audioDest != null)
-						audioDest.Close();
-					audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
-					if (!noOutput)
-						SetTrackTags(audioDest, iTrack, bestOffset);
-				}		
-
-				for (iIndex = 0; iIndex <= _toc[iTrack+1].LastIndex; iIndex++) {
-					uint trackPercent= 0, lastTrackPercent= 101;
-					uint samplesRemIndex = _toc.IndexLength(iTrack + 1, iIndex) * 588;
-
-					if (iIndex == 1)
+					if ((style == CUEStyle.GapsPrepended) || (style == CUEStyle.GapsLeftOut))
 					{
-						previousOffset = currentOffset;
-						currentOffset = 0;
-						trackLength = _toc[iTrack + 1].Length * 588;
-					}
-
-					if ((style == CUEStyle.GapsAppended) && (iIndex == 1)) 
-					{
+						iDest++;
 						if (hdcdDecoder != null)
 							hdcdDecoder.AudioDest = null;
 						if (audioDest != null)
 							audioDest.Close();
-						iDest++;
 						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
 						if (!noOutput)
 							SetTrackTags(audioDest, iTrack, bestOffset);
 					}
 
-					if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0)) {
-						discardOutput = !htoaToFile;
-						if (htoaToFile) {
+					for (iIndex = 0; iIndex <= _toc[iTrack + 1].LastIndex; iIndex++)
+					{
+						uint trackPercent = 0, lastTrackPercent = 101;
+						uint samplesRemIndex = _toc.IndexLength(iTrack + 1, iIndex) * 588;
+
+						if (iIndex == 1)
+						{
+							previousOffset = currentOffset;
+							currentOffset = 0;
+							trackLength = _toc[iTrack + 1].Length * 588;
+						}
+
+						if ((style == CUEStyle.GapsAppended) && (iIndex == 1))
+						{
+							if (hdcdDecoder != null)
+								hdcdDecoder.AudioDest = null;
+							if (audioDest != null)
+								audioDest.Close();
 							iDest++;
 							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
-						}
-					}
-					else if ((style == CUEStyle.GapsLeftOut) && (iIndex == 0)) {
-						discardOutput = true;
-					}
-					else {
-						discardOutput = false;
-					}
-
-					while (samplesRemIndex != 0) {
-						if (samplesRemSource == 0) {
-#if !MONO
-							if (_isCD && audioSource != null && audioSource is CDDriveReader)
-								updatedTOC = ((CDDriveReader)audioSource).TOC;
-#endif
-							if (audioSource != null) audioSource.Close();
-							audioSource = GetAudioSource(++iSource);
-							samplesRemSource = (uint) _sources[iSource].Length;
+							if (!noOutput)
+								SetTrackTags(audioDest, iTrack, bestOffset);
 						}
 
-						uint copyCount = (uint) Math.Min(Math.Min(samplesRemIndex, samplesRemSource), buffLen);
-
-						if ( trackLength > 0 )
+						if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0))
 						{
-							trackPercent = (uint)(currentOffset / 0.01 / trackLength);
-							double diskPercent = ((float)diskOffset) / diskLength;
-							if (trackPercent != lastTrackPercent)
-								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
-									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent,
-									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
-							lastTrackPercent = trackPercent;
-						}
-
-						if (audioSource.Read(sampleBuffer, copyCount) != copyCount)
-							throw new Exception("samples read != samples expected");
-						if (!discardOutput)
-						{
-							if (!_config.detectHDCD || !_config.decodeHDCD)
-								audioDest.Write(sampleBuffer, copyCount);
-							if (_config.detectHDCD && hdcdDecoder != null)
+							discardOutput = !htoaToFile;
+							if (htoaToFile)
 							{
-								if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && !hdcdDecoder.Detected)
+								iDest++;
+								audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], noOutput);
+							}
+						}
+						else if ((style == CUEStyle.GapsLeftOut) && (iIndex == 0))
+						{
+							discardOutput = true;
+						}
+						else
+						{
+							discardOutput = false;
+						}
+
+						while (samplesRemIndex != 0)
+						{
+							if (samplesRemSource == 0)
+							{
+#if !MONO
+								if (_isCD && audioSource != null && audioSource is CDDriveReader)
+									updatedTOC = ((CDDriveReader)audioSource).TOC;
+#endif
+								if (audioSource != null) audioSource.Close();
+								audioSource = GetAudioSource(++iSource);
+								samplesRemSource = (uint)_sources[iSource].Length;
+							}
+
+							uint copyCount = (uint)Math.Min(Math.Min(samplesRemIndex, samplesRemSource), buffLen);
+
+							if (trackLength > 0)
+							{
+								trackPercent = (uint)(currentOffset / 0.01 / trackLength);
+								double diskPercent = ((float)diskOffset) / diskLength;
+								if (trackPercent != lastTrackPercent)
+									ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
+										noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent,
+										_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
+								lastTrackPercent = trackPercent;
+							}
+
+							if (audioSource.Read(sampleBuffer, copyCount) != copyCount)
+								throw new Exception("samples read != samples expected");
+							if (!discardOutput)
+							{
+								if (!_config.detectHDCD || !_config.decodeHDCD)
+									audioDest.Write(sampleBuffer, copyCount);
+								if (_config.detectHDCD && hdcdDecoder != null)
 								{
-									hdcdDecoder.AudioDest = null;
-									hdcdDecoder = null;
-									if (_config.decodeHDCD)
+									if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && !hdcdDecoder.Detected)
 									{
-										audioSource.Close();
-										audioDest.Delete();
-										throw new Exception("HDCD not detected.");
+										hdcdDecoder.AudioDest = null;
+										hdcdDecoder = null;
+										if (_config.decodeHDCD)
+										{
+											audioSource.Close();
+											audioDest.Delete();
+											throw new Exception("HDCD not detected.");
+										}
+									}
+									else
+									{
+										if (_config.decodeHDCD)
+											hdcdDecoder.AudioDest = (discardOutput || noOutput) ? null : audioDest;
+										hdcdDecoder.Process(sampleBuffer, copyCount);
 									}
 								}
-								else
-								{
-									if (_config.decodeHDCD)
-										hdcdDecoder.AudioDest = (discardOutput || noOutput) ? null : audioDest;
-									hdcdDecoder.Process(sampleBuffer, copyCount);
-								}
 							}
-						}
-						if (_accurateRipMode != AccurateRipMode.None && (noOutput || _accurateRipMode == AccurateRipMode.VerifyAndConvert))
-							_arVerify.Write(sampleBuffer, copyCount);
+							if (_accurateRipMode != AccurateRipMode.None && (noOutput || _accurateRipMode == AccurateRipMode.VerifyAndConvert))
+								_arVerify.Write(sampleBuffer, copyCount);
 
-						currentOffset += copyCount;
-						diskOffset += copyCount;
-						samplesRemIndex -= copyCount;
-						samplesRemSource -= copyCount;
+							currentOffset += copyCount;
+							diskOffset += copyCount;
+							samplesRemIndex -= copyCount;
+							samplesRemSource -= copyCount;
 
-						lock (this) {
-							if (_stop) {
-								if (hdcdDecoder != null)
-									hdcdDecoder.AudioDest = null;
-								audioSource.Close();
-								try {
-									if (audioDest != null) audioDest.Close();									
-								} catch { }
-								throw new StopException();
-							}
-							if (_pause)
+							lock (this)
 							{
-								ShowProgress("Paused...", 0, 0, null, null);
-								Monitor.Wait(this);
+								if (_stop)
+									throw new StopException();
+								if (_pause)
+								{
+									ShowProgress("Paused...", 0, 0, null, null);
+									Monitor.Wait(this);
+								}
 							}
 						}
 					}
 				}
+			}
+			catch (Exception ex)
+			{
+				if (hdcdDecoder != null)
+					hdcdDecoder.AudioDest = null;
+				hdcdDecoder = null;
+				try { if (audioSource != null) audioSource.Close(); }
+				catch { }
+				audioSource = null;
+				try { if (audioDest != null) audioDest.Close(); } 
+				catch { }
+				audioDest = null;
+				throw ex;
 			}
 
 #if !MONO
