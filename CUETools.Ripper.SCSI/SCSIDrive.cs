@@ -393,7 +393,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return m_info.InquiryData.VendorIdentification + " - " + m_info.InquiryData.ProductIdentification;
+				return m_info.InquiryData.VendorIdentification.TrimEnd(' ','\0').PadRight(8,' ') + " - " + m_info.InquiryData.ProductIdentification.TrimEnd(' ','\0');
 			}
 		}
 
