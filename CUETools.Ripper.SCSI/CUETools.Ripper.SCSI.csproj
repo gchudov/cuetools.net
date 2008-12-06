@@ -81,6 +81,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CRC16CCITT.cs" />
+    <Compile Include="Galois.cs" />
+    <Compile Include="RsDecode.cs" />
+    <Compile Include="RsEncode.cs" />
     <Compile Include="SCSIDrive.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

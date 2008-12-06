@@ -939,7 +939,7 @@ namespace Bwg.Scsi
         }
         #endregion
 
-        private CommandStatus SendCommand(Command cmd)
+        public CommandStatus SendCommand(Command cmd)
         {
             return (m_ossize == 32) ? SendCommand32(cmd) : SendCommand64(cmd);
         }
@@ -1971,7 +1971,7 @@ namespace Bwg.Scsi
         /// <param name="data">The buffer to receive the data</param>
         /// <param name="size">The size of the buffer given by the data parameter</param>
         /// <returns></returns>
-        public CommandStatus Read(bool force, bool streaming, uint lba, uint length, IntPtr data, ushort size)
+        public CommandStatus Read(bool force, bool streaming, uint lba, uint length, IntPtr data, int size)
         {
             if (m_logger != null)
             {
@@ -2134,15 +2134,16 @@ namespace Bwg.Scsi
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="mode">subchannel mode</param>
-		/// <param name="exp"></param>
+		/// <param name="mode">subchannel mode (+16 bytes if equals 2)</param>
+		/// <param name="c2">report C2 errors (+296 bytes if true)</param>
+		/// <param name="exp">expected sector type</param>
 		/// <param name="dap"></param>
 		/// <param name="start"></param>
 		/// <param name="length"></param>
 		/// <param name="data">the memory area </param>
 		/// <param name="size">the size of the memory area given by the data parameter</param>
 		/// <returns></returns>
-		public CommandStatus ReadCDAndSubChannel(byte mode, byte exp, bool dap, uint start, uint length, IntPtr data, int size)
+		public CommandStatus ReadCDAndSubChannel(byte mode, bool c2, byte exp, bool dap, uint start, uint length, IntPtr data, int size)
 		{
 			if (m_logger != null)
 			{
@@ -2161,10 +2162,13 @@ namespace Bwg.Scsi
 				byte b = (byte)((exp & 0x07) << 2);
 				if (dap)
 					b |= 0x02;
+				byte byte9 = 0x10;
+				if (c2)
+					byte9 |= 0x02;
 				cmd.SetCDB8(1, b);
 				cmd.SetCDB32(2, start);
 				cmd.SetCDB24(6, length);
-				cmd.SetCDB8(9, 0x10);           // User data only
+				cmd.SetCDB8(9, byte9); // User data + possibly c2 errors
 				cmd.SetCDB8(10, mode);          // Subchannel
 
 				CommandStatus st = SendCommand(cmd);

@@ -27,13 +27,60 @@ using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
-using FLACDotNet;
+//using FLACDotNet;
 using MusicBrainz;
 
 namespace CUERipper
 {
+	class ProgressMeter
+	{
+		public DateTime realStart;
+
+		public ProgressMeter()
+		{
+			realStart = DateTime.Now;
+			//TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
+		}
+
+		public void ReadProgress(object sender, ReadProgressArgs e)
+		{
+			CDDriveReader audioSource = (CDDriveReader)sender;
+			int processed = e.Position - e.PassStart;
+			TimeSpan elapsed = DateTime.Now - e.PassTime;
+			double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
+			TimeSpan totalElapsed = DateTime.Now - realStart;
+			TimeSpan totalEstimated = TimeSpan.FromMilliseconds(totalElapsed.TotalMilliseconds / Math.Max(1, (e.PassStart + (processed + e.Pass * (e.PassEnd - e.PassStart)) / 16)) * audioSource.TOC.AudioLength);
+
+			// if ((elapsed - lastPrint).TotalMilliseconds > 60) ;
+			Console.Write("\r{9} : {0:00}%; {1:00.00}x; {2} ({10:0.00}%) errors; {3:d2}:{4:d2}:{5:d2}/{6:d2}:{7:d2}:{8:d2}        ",
+				100.0 * e.Position / audioSource.TOC.AudioLength,
+				speed,
+				e.ErrorsCount,
+				totalElapsed.Hours, totalElapsed.Minutes, totalElapsed.Seconds,
+				totalEstimated.Hours, totalEstimated.Minutes, totalEstimated.Seconds,
+				e.Pass < 1 ? "Progress   " : string.Format("Retry {0:00}   ", e.Pass),
+				processed > 0 ? 100.0 * e.ErrorsCount / processed / (4 * 588) : 0
+			);
+			//lastPrint = elapsed;
+		}
+	}
+
 	class Program
 	{
+		static void Usage()
+		{
+			string drives = "";
+			char[] drivesAvailable = CDDriveReader.DrivesAvailable();
+			for (int i = 0; i < drivesAvailable.Length; i++)
+				drives += string.Format("{0}: ", drivesAvailable[i]);
+			Console.WriteLine("Usage    : CUERipper.exe <options>");
+			Console.WriteLine();
+			//Console.WriteLine("-S, --secure             secure mode, read each block twice;");
+			Console.WriteLine("-P, --paranoid           maximum level of error correction;");
+			Console.WriteLine("-D, --drive <letter>     use a specific CD drive, e.g. {0};", drives);
+			Console.WriteLine("-O, --offset <samples>   use specific drive read offset;");
+		}
+
 		static void Main(string[] args)
 		{
 			string programVersion = "CUERipper v1.9.3 Copyright (C) 2008 Gregory S. Chudov";
@@ -42,25 +89,65 @@ namespace CUERipper
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 
-			char[] drives = CDDriveReader.DrivesAvailable();
-			if (drives.Length < 1)
+			int correctionQuality = 1;
+			string driveLetter = null;
+			int driveOffset = 0;
+			for (int arg = 0; arg < args.Length; arg++)
 			{
-				Console.WriteLine("No CD drives found.");
-				return;
+				bool ok = true;
+				if (args[arg] == "-P" || args[arg] == "--paranoid")
+					correctionQuality = 4;
+				//else if (args[arg] == "-B" || args[arg] == "--burst")
+				//    correctionQuality = 1;
+				else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
+					driveLetter = args[arg];
+				else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
+					ok = int.TryParse(args[arg], out driveOffset);
+				else
+					ok = false;
+				if (!ok)
+				{
+					Usage();
+					return;
+				}
 			}
-			char driveLetter = drives[0];
+			
+			char[] drives;
+			if (driveLetter == null || driveLetter.Length < 1)
+			{
+				drives = CDDriveReader.DrivesAvailable();
+				if (drives.Length < 1)
+				{
+					Console.WriteLine("No CD drives found.");
+					return;
+				}
+			}
+			else
+			{
+				drives = new char[1];
+				drives[0] = driveLetter[0];
+			}
+
 #if !DEBUG
 			try
 #endif
 			{
 				CDDriveReader audioSource = new CDDriveReader();
-				audioSource.Open(driveLetter);
-				int driveOffset;
-				if (!AccurateRipVerify.FindDriveReadOffset(audioSource.ARName, out driveOffset))
-					throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
+				audioSource.Open(drives[0]);
+				
+				if (audioSource.TOC.AudioTracks < 1)
+				{
+					Console.WriteLine("{0}: CD does not contain any audio tracks.", audioSource.Path);
+					audioSource.Close();
+					return;
+				}
+				if (driveOffset == 0)
+					if (!AccurateRipVerify.FindDriveReadOffset(audioSource.ARName, out driveOffset))
+						Console.WriteLine("Unknown read offset for drive {0}!!!", audioSource.Path);
+						//throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
 				audioSource.DriveOffset = driveOffset;
+				audioSource.CorrectionQuality = correctionQuality;
 			
-				//bool toStdout = false;
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
 				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
 				string CDDBId = AccurateRipVerify.CalculateCDDBId(audioSource.TOC);
@@ -81,7 +168,8 @@ namespace CUERipper
 					release = null;
 				}
 
-				string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
+				//string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
+				string destFile = (release == null) ? "cdimage.wav" : release.GetArtist() + " - " + release.GetTitle() + ".wav";
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
@@ -90,48 +178,53 @@ namespace CUERipper
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 				Console.WriteLine("MusicBrainz : {0}", release == null ? "not found" : release.GetArtist() + " - " + release.GetTitle());
 
-				IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
+				//IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
+				IAudioDest audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, null);
 				audioDest.FinalSampleCount = (long)audioSource.Length;
 
-
-				DateTime start = DateTime.Now;
-				TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
+				ProgressMeter meter = new ProgressMeter();
+				audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(meter.ReadProgress);
 
 				do
 				{
-					uint samplesRead = audioSource.Read(buff, Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining));
+					uint toRead = Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining);
+					uint samplesRead = audioSource.Read(buff, toRead);
 					if (samplesRead == 0) break;
+					if (samplesRead != toRead)
+						throw new Exception("samples read != samples requested");
 					arVerify.Write(buff, samplesRead);
 					audioDest.Write(buff, samplesRead);
-					TimeSpan elapsed = DateTime.Now - start;
-					if ((elapsed - lastPrint).TotalMilliseconds > 60)
-					{
-						Console.Write("\rProgress    : {0:00}%; {1:0.00}x; {2}/{3}",
-							100.0 * audioSource.Position / audioSource.Length,
-							audioSource.Position / elapsed.TotalSeconds / audioSource.SampleRate,
-							elapsed,
-							TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
-							);
-						lastPrint = elapsed;
-					}
 				} while (true);
 
-				TimeSpan totalElapsed = DateTime.Now - start;
-				Console.Write("\r                                                                           \r");
-				Console.WriteLine("Results     : {0:0.00}x; {1}",
+				TimeSpan totalElapsed = DateTime.Now - meter.realStart;
+				Console.Write("\r                                                                             \r");
+				Console.WriteLine("Results     : {0:0.00}x; {1:d5} errors; {2:d2}:{3:d2}:{4:d2}",
 					audioSource.Length / totalElapsed.TotalSeconds / audioSource.SampleRate,
-					totalElapsed
+					audioSource.ErrorsCount,
+					totalElapsed.Hours, totalElapsed.Minutes, totalElapsed.Seconds
 					);
 				audioDest.Close();
 
 				StringWriter logWriter = new StringWriter();
 				logWriter.WriteLine("{0}", programVersion);
-				logWriter.WriteLine();
 				logWriter.WriteLine("Extraction logfile from {0}", DateTime.Now);
-				logWriter.WriteLine();
 				logWriter.WriteLine("Used drive  : {0}", audioSource.Path);
-				logWriter.WriteLine();
 				logWriter.WriteLine("Read offset correction                      : {0}", audioSource.DriveOffset);
+				bool wereErrors = false;
+				for (int iTrack = 1; iTrack <= audioSource.TOC.AudioTracks; iTrack++)
+					for (uint iSector = audioSource.TOC[iTrack].Start; iSector <= audioSource.TOC[iTrack].End; iSector ++)
+						if (audioSource.Errors[(int)iSector])
+						{
+							if (!wereErrors)
+							{
+								logWriter.WriteLine();
+								logWriter.WriteLine("Errors detected");
+								logWriter.WriteLine();
+							}
+							wereErrors = true;
+							logWriter.WriteLine("Track {0} contains errors", iTrack);
+							break;
+						}
 				logWriter.WriteLine();
 				logWriter.WriteLine("TOC of the extracted CD");
 				logWriter.WriteLine();
@@ -180,6 +273,8 @@ namespace CUERipper
 					}
 					if (audioSource.TOC[track].ISRC != null)
 						cueWriter.WriteLine("    ISRC {0}", audioSource.TOC[track].ISRC);
+					if (audioSource.TOC[track].PreEmphasis)
+						cueWriter.WriteLine("    FLAGS PRE");
 					for (int index = audioSource.TOC[track].Pregap > 0 ? 0 : 1; index <= audioSource.TOC[track].LastIndex; index++)
 						cueWriter.WriteLine("    INDEX {0:00} {1}", index, audioSource.TOC[track][index].MSF);
 				}
@@ -190,10 +285,10 @@ namespace CUERipper
 
 				audioSource.Close();
 
-				FLACReader tagger = new FLACReader(destFile, null);
-				tagger.Tags.Add("CUESHEET", cueWriter.ToString());
-				tagger.Tags.Add("LOG", logWriter.ToString());
-				tagger.UpdateTags(false);
+				//FLACReader tagger = new FLACReader(destFile, null);
+				//tagger.Tags.Add("CUESHEET", cueWriter.ToString());
+				//tagger.Tags.Add("LOG", logWriter.ToString());
+				//tagger.UpdateTags(false);
 			}
 #if !DEBUG
 			catch (Exception ex)
@@ -204,5 +299,17 @@ namespace CUERipper
 			}
 #endif
 		}
+
+		//private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
+		//{
+		//    if (this.CUEToolsProgress == null)
+		//        return;
+		//    _progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
+		//    _progress.percentTrack = 0;
+		//    _progress.input = e.Uri.ToString();
+		//    _progress.output = null;
+		//    _progress.status = "Looking up album via MusicBrainz";
+		//    this.CUEToolsProgress(this, _progress);
+		//}
 	}
 }

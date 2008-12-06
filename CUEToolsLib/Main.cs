@@ -20,6 +20,7 @@
 // ****************************************************************************
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
@@ -436,6 +437,7 @@ namespace CUETools.Processor
 		private bool _isCD;
 		private string _driveName;
 		private int _driveOffset;
+		private BitArray _cdErrors;
 		private bool _isArchive;
 		private List<string> _archiveContents;
 		private string _archiveCUEpath;
@@ -696,7 +698,7 @@ namespace CUETools.Processor
 								}
 								trackInfo = new TrackInfo();
 								_tracks.Add(trackInfo);
-								_toc.AddTrack(new CDTrack((uint)trackNumber, 0, 0, true));
+								_toc.AddTrack(new CDTrack((uint)trackNumber, 0, 0, true, false));
 							}
 						}
 						else if (seenDataTrack) {
@@ -892,7 +894,7 @@ namespace CUETools.Processor
 						uint trNo, trStart, trEnd;
 						if (n.Length == 5 && uint.TryParse(n[0], out trNo) && uint.TryParse(n[3], out trStart) && uint.TryParse(n[4], out trEnd))
 							tocFromLog.AddTrack(new CDTrack(trNo, trStart, trEnd + 1 - trStart,
-								tocFromLog.TrackCount < _toc.TrackCount || trStart != tocFromLog[tocFromLog.TrackCount].End + 1U + 152U * 75U));
+								tocFromLog.TrackCount < _toc.TrackCount || trStart != tocFromLog[tocFromLog.TrackCount].End + 1U + 152U * 75U, false));
 					} else
 						if (lineStr.StartsWith("TOC of the extracted CD") 
 							|| lineStr.StartsWith("Exact Audio Copy")
@@ -906,7 +908,7 @@ namespace CUETools.Processor
 			if (_accurateRipId == null && _dataTrackLength != null)
 			{
 				CDImageLayout toc2 = new CDImageLayout(_toc);
-				toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152U * 75U, _dataTrackLength.Value, false));
+				toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152U * 75U, _dataTrackLength.Value, false, false));
 				_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
 			}
 
@@ -1216,18 +1218,39 @@ namespace CUETools.Processor
 					_toc[track].LengthMSF,
 					_toc[track].Start,
 					_toc[track].End);
-			logWriter.WriteLine();
-			if (_accurateRipMode == AccurateRipMode.VerifyThenConvert)
-				for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
-					if (_arVerify.BackupCRC(iTrack) != _arVerify.CRC(iTrack))
-						logWriter.WriteLine("Track {0} CRC mismatch: test {1:X8} vs copy {2:X8}", iTrack + 1, _arVerify.BackupCRC(iTrack), _arVerify.CRC(iTrack));
+			bool wereErrors = false;
+			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+			{
+				int cdErrors = 0;
+				bool crcMismatch = _accurateRipMode == AccurateRipMode.VerifyThenConvert &&
+					_arVerify.BackupCRC(iTrack) != _arVerify.CRC(iTrack);
+				for (uint iSector = _toc[iTrack + 1].Start; iSector <= _toc[iTrack + 1].End; iSector++)
+					if (_cdErrors[(int)iSector])
+						cdErrors++;
+				if (crcMismatch || cdErrors != 0)
+				{
+					if (!wereErrors)
+					{
+						logWriter.WriteLine();
+						logWriter.WriteLine("Errors detected");
+						logWriter.WriteLine();
+					}
+					wereErrors = true;
+					if (crcMismatch)
+						logWriter.WriteLine("Track {0} contains {1} errors, CRC mismatch: test {2:X8} vs copy {3:X8}", iTrack + 1, cdErrors, _arVerify.BackupCRC(iTrack), _arVerify.CRC(iTrack));
+					else
+						logWriter.WriteLine("Track {0} contains {1} errors", iTrack + 1, cdErrors);
+				}
+			}
 			if (_accurateRipMode != AccurateRipMode.None)
 			{
+				logWriter.WriteLine();
 				logWriter.WriteLine("AccurateRip summary");
 				logWriter.WriteLine();
 				_arVerify.GenerateFullLog(logWriter, 0);
 				logWriter.WriteLine();
 			}
+			logWriter.WriteLine();
 			logWriter.WriteLine("End of status report");
 			logWriter.Close();
 			return logWriter.ToString();
@@ -1494,7 +1517,7 @@ namespace CUETools.Processor
 				{
 					uint minDTL = _minDataTrackLength.Value;
 					CDImageLayout toc2 = new CDImageLayout(_toc);
-					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, minDTL, false));
+					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, minDTL, false, false));
 					for (uint dtl = minDTL; dtl < minDTL + 75; dtl++)
 					{
 						toc2[toc2.TrackCount].Length = dtl;
@@ -1608,7 +1631,7 @@ namespace CUETools.Processor
 					{
 						WriteText(_cuePath, cueContents);
 #if !MONO
-						if (needNewCRCs)
+						if (needNewCRCs && style != CUEStyle.SingleFile)
 						{
 							for (int iTrack = 0; iTrack < TrackCount; iTrack++)
 							{
@@ -1972,7 +1995,10 @@ namespace CUETools.Processor
 							{
 #if !MONO
 								if (_isCD && audioSource != null && audioSource is CDDriveReader)
+								{
 									updatedTOC = ((CDDriveReader)audioSource).TOC;
+									_cdErrors = ((CDDriveReader)audioSource).Errors;
+								}
 #endif
 								if (audioSource != null) audioSource.Close();
 								audioSource = GetAudioSource(++iSource);
@@ -2057,15 +2083,22 @@ namespace CUETools.Processor
 
 #if !MONO
 			if (_isCD && audioSource != null && audioSource is CDDriveReader)
+			{
 				updatedTOC = ((CDDriveReader)audioSource).TOC;
+				_cdErrors = ((CDDriveReader)audioSource).Errors;
+			}
 			if (updatedTOC != null)
 			{
 				_toc = updatedTOC;
 				if (_toc.Catalog != null)
 					General.SetCUELine(_attributes, "CATALOG", _toc.Catalog, false);
 				for (iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
+				{
 					if (_toc[iTrack].IsAudio && _toc[iTrack].ISRC != null)
 						General.SetCUELine(_tracks[iTrack - 1].Attributes, "ISRC", _toc[iTrack].ISRC, false);
+					if (_toc[iTrack].IsAudio && _toc[iTrack].PreEmphasis)
+						General.SetCUELine(_tracks[iTrack - 1].Attributes, "FLAGS", "PRE", false);
+				}
 			}
 #endif
 
@@ -2401,7 +2434,7 @@ namespace CUETools.Processor
 				{
 					_dataTrackLength = dtl;
 					CDImageLayout toc2 = new CDImageLayout(_toc);
-					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, dtl, false));
+					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, dtl, false, false));
 					_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
 				}
 			}

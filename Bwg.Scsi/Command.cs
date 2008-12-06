@@ -29,7 +29,7 @@ using System.Diagnostics;
 
 namespace Bwg.Scsi
 {
-    class Command : IDisposable
+	public class Command : IDisposable
     {
         [DllImport("ntdll.dll")]
         internal static extern void RtlZeroMemory(IntPtr dest, int size);

@@ -52,12 +52,13 @@ namespace CUETools.CDImage
 
 	public class CDTrack : ICloneable
 	{
-		public CDTrack(uint number, uint start, uint length, bool isAudio)
+		public CDTrack(uint number, uint start, uint length, bool isAudio, bool preEmpasis)
 		{
 			_number = number;
 			_start = start;
 			_length = length;
 			_isAudio = isAudio;
+			_preEmphasis = preEmpasis;
 			_indexes = new List<CDTrackIndex>();
 			_indexes.Add(new CDTrackIndex(0, start));
 			_indexes.Add(new CDTrackIndex(1, start));
@@ -69,6 +70,7 @@ namespace CUETools.CDImage
 			_start = src._start;
 			_length = src._length;
 			_isAudio = src._isAudio;
+			_preEmphasis = src._preEmphasis;
 			_indexes = new List<CDTrackIndex>();
 			for (int i = 0; i < src._indexes.Count; i++)
 				_indexes.Add(new CDTrackIndex(src._indexes[i]));
@@ -187,6 +189,18 @@ namespace CUETools.CDImage
 			}
 		}
 
+		public bool PreEmphasis
+		{
+			get
+			{
+				return _preEmphasis;
+			}
+			set
+			{
+				_preEmphasis = value;
+			}
+		}
+
 		public void AddIndex(CDTrackIndex index)
 		{
 			if (index.Index < 2)
@@ -198,6 +212,7 @@ namespace CUETools.CDImage
 		IList<CDTrackIndex> _indexes;
 		string _isrc;
 		bool _isAudio;
+		bool _preEmphasis;
 		uint _start;
 		uint _length;
 		uint _number;
