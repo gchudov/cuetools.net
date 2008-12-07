@@ -2131,11 +2131,31 @@ namespace Bwg.Scsi
             return CommandStatus.Success;
         }
 
+		public enum SubChannelMode
+		{
+			None,
+			QOnly, /// + 16 bytes
+			RWMode /// + 96 bytes
+		};
+
+		public enum C2ErrorMode
+		{
+			None,
+			Mode294, /// +294 bytes
+			Mode296, /// +296 bytes
+		};
+
+		public enum MainChannelSelection
+		{
+			UserData,
+			F8h
+		};
+
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="mode">subchannel mode (+16 bytes if equals 2)</param>
-		/// <param name="c2">report C2 errors (+296 bytes if true)</param>
+		/// <param name="submode">subchannel mode</param>
+		/// <param name="c2mode">C2 errors report mode</param>
 		/// <param name="exp">expected sector type</param>
 		/// <param name="dap"></param>
 		/// <param name="start"></param>
@@ -2143,28 +2163,33 @@ namespace Bwg.Scsi
 		/// <param name="data">the memory area </param>
 		/// <param name="size">the size of the memory area given by the data parameter</param>
 		/// <returns></returns>
-		public CommandStatus ReadCDAndSubChannel(byte mode, bool c2, byte exp, bool dap, uint start, uint length, IntPtr data, int size)
+		public CommandStatus ReadCDAndSubChannel(MainChannelSelection mainmode, SubChannelMode submode, C2ErrorMode c2mode, byte exp, bool dap, uint start, uint length, IntPtr data, int timeout)
 		{
 			if (m_logger != null)
 			{
-				string args = exp.ToString() + ", " + dap.ToString() + ", " + start.ToString() + ", " + length.ToString() + ", data, " + size.ToString();
+				string args = exp.ToString() + ", " + dap.ToString() + ", " + start.ToString() + ", " + length.ToString() + ", data";
 				m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, 8, "Bwg.Scsi.Device.ReadCD(" + args + ")"));
 			}
 
-			if (mode != 1 && mode != 2 && mode != 4)
-				throw new Exception("invalid read mode for ReadSubchannel() call");
+			int size = (4 * 588 +
+				(submode == SubChannelMode.QOnly ? 16 : submode == SubChannelMode.RWMode ? 96 : 0) +
+				(c2mode == C2ErrorMode.Mode294 ? 294 : c2mode == C2ErrorMode.Mode296 ? 296 : 0)) * (int) length;
+
+			byte mode = (byte) (submode == SubChannelMode.QOnly ? 2 : submode == SubChannelMode.RWMode ? 4 : 0);
 
 			if (exp != 1 && exp != 2 && exp != 3 && exp != 4 && exp != 5)
 				return CommandStatus.NotSupported;
 
-			using (Command cmd = new Command(ScsiCommandCode.ReadCd, 12, data, size, Command.CmdDirection.In, 5 * 60))
+			using (Command cmd = new Command(ScsiCommandCode.ReadCd, 12, data, size, Command.CmdDirection.In, timeout))
 			{
 				byte b = (byte)((exp & 0x07) << 2);
 				if (dap)
 					b |= 0x02;
-				byte byte9 = 0x10;
-				if (c2)
+				byte byte9 = (byte) (mainmode == MainChannelSelection.UserData ? 0x10 : 0xF8);
+				if (c2mode == C2ErrorMode.Mode294)
 					byte9 |= 0x02;
+				else if (c2mode == C2ErrorMode.Mode296)
+					byte9 |= 0x04;
 				cmd.SetCDB8(1, b);
 				cmd.SetCDB32(2, start);
 				cmd.SetCDB24(6, length);
@@ -2250,7 +2275,7 @@ namespace Bwg.Scsi
         /// <param name="data"></param>
         /// <param name="mode">the subchannel mode</param>
         /// <returns></returns>
-        public CommandStatus ReadSubChannel(byte mode, uint sector, uint length, ref byte[] data)
+        public CommandStatus ReadSubChannel(byte mode, uint sector, uint length, ref byte[] data, int timeout)
         {
             byte bytes_per_sector;
 
@@ -2271,7 +2296,7 @@ namespace Bwg.Scsi
                 throw new Exception("data buffer is not large enough to hold the data requested");
 
 
-            using (Command cmd = new Command(ScsiCommandCode.ReadCd, 12, (int)(length * bytes_per_sector), Command.CmdDirection.In, 10 * 60))
+            using (Command cmd = new Command(ScsiCommandCode.ReadCd, 12, (int)(length * bytes_per_sector), Command.CmdDirection.In, timeout))
             {
                 cmd.SetCDB32(2, sector);            // The sector number to start with
                 cmd.SetCDB24(6, length);            // The length in sectors

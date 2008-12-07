@@ -79,6 +79,7 @@ namespace CUERipper
 			Console.WriteLine("-P, --paranoid           maximum level of error correction;");
 			Console.WriteLine("-D, --drive <letter>     use a specific CD drive, e.g. {0};", drives);
 			Console.WriteLine("-O, --offset <samples>   use specific drive read offset;");
+			Console.WriteLine("-T, --test               detect read command;");
 		}
 
 		static void Main(string[] args)
@@ -92,11 +93,14 @@ namespace CUERipper
 			int correctionQuality = 1;
 			string driveLetter = null;
 			int driveOffset = 0;
+			bool test = false;
 			for (int arg = 0; arg < args.Length; arg++)
 			{
 				bool ok = true;
 				if (args[arg] == "-P" || args[arg] == "--paranoid")
 					correctionQuality = 4;
+				if (args[arg] == "-T" || args[arg] == "--test")
+					test = true;
 				//else if (args[arg] == "-B" || args[arg] == "--burst")
 				//    correctionQuality = 1;
 				else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
@@ -145,8 +149,14 @@ namespace CUERipper
 					if (!AccurateRipVerify.FindDriveReadOffset(audioSource.ARName, out driveOffset))
 						Console.WriteLine("Unknown read offset for drive {0}!!!", audioSource.Path);
 						//throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
+				if (test)
+				{
+					Console.Write(audioSource.TestReadCommand());
+					return;
+				}
 				audioSource.DriveOffset = driveOffset;
 				audioSource.CorrectionQuality = correctionQuality;
+				audioSource.DebugMessages = true;
 			
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
 				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
