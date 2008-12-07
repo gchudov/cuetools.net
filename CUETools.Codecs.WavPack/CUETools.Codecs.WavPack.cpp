@@ -172,20 +172,9 @@ namespace WavPackDotNet {
 			}
 		}
 
-		virtual bool UpdateTags(bool preserveTime)
-		{
-			Close ();
-			APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
-			apeTag->SetStringTags (_tags, true);
-			apeTag->Save();
-			apeTag->Close();
-			return true;
-		}
-
 		virtual void Close() 
 		{
-			if (_wpc != NULL)
-				_wpc = WavpackCloseFile(_wpc);
+			_wpc = WavpackCloseFile(_wpc);
 			if (_IO != nullptr) 
 			{
 				_IO->Close ();

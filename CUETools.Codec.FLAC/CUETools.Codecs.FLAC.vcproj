@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="FLACDotNet"
+	Name="CUETools.Codecs.FLAC"
 	ProjectGUID="{E70FA90A-7012-4A52-86B5-362B699D1540}"
-	RootNamespace="FLACDotNet"
+	RootNamespace="CUETools.Codecs.FLAC"
 	Keyword="ManagedCProj"
 	>
 	<Platforms>
@@ -344,7 +344,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FLACDotNet.cpp"
+				RelativePath=".\CUETools.Codecs.FLAC.cpp"
 				>
 			</File>
 		</Filter>

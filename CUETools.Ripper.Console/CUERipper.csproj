@@ -81,7 +81,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioCodecsDotNet\CUETools.Codecs.csproj">
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
     </ProjectReference>
@@ -97,7 +97,7 @@
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FLACDotNet\FLACDotNet.vcproj">
+    <ProjectReference Include="..\CUETools.Codec.FLAC\CUETools.Codecs.FLAC.vcproj">
       <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
       <Name>FLACDotNet</Name>
     </ProjectReference>

@@ -229,16 +229,6 @@ namespace APEDotNet {
 			}
 		}
 
-		virtual bool UpdateTags(bool preserveTime)
-		{
-			Close ();
-			APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
-			apeTag->SetStringTags (_tags, true);
-			apeTag->Save();
-			apeTag->Close();
-			return true;
-		}
-
 		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
 		{
 			UInt32 buffOffset = 0;

@@ -185,7 +185,7 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUEToolsLib\CUETools.Processor.csproj">
+    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
     </ProjectReference>

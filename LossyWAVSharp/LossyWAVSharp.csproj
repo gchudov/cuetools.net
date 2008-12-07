@@ -81,11 +81,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioCodecsDotNet\CUETools.Codecs.csproj">
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>AudioCodecsDotNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LossyWAVDotNet\CUETools.Codecs.LossyWAV.csproj">
+    <ProjectReference Include="..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj">
       <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
       <Name>LossyWAVDotNet</Name>
     </ProjectReference>
