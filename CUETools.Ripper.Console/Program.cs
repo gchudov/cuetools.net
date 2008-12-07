@@ -30,7 +30,7 @@ using CUETools.AccurateRip;
 //using FLACDotNet;
 using MusicBrainz;
 
-namespace CUERipper
+namespace CUETools.ConsoleRipper
 {
 	class ProgressMeter
 	{

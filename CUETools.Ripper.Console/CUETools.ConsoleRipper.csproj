@@ -7,8 +7,8 @@
     <ProjectGuid>{9253A314-1821-42BF-B02F-2BF986B1765D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUERipper</RootNamespace>
-    <AssemblyName>CUERipper</AssemblyName>
+    <RootNamespace>CUETools.ConsoleRipper</RootNamespace>
+    <AssemblyName>CUETools.ConsoleRipper</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -96,10 +96,6 @@
     <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs.FLAC\CUETools.Codecs.FLAC.vcproj">
-      <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
-      <Name>FLACDotNet</Name>
     </ProjectReference>
     <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
       <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
