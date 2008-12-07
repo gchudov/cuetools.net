@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools", "CUETools.csproj", "{EF351583-A9CD-4530-92C3-20AC02136BC2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.FLAC", "..\CUETools.Codec.FLAC\CUETools.Codecs.FLAC.vcproj", "{E70FA90A-7012-4A52-86B5-362B699D1540}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.FLAC", "..\CUETools.Codecs.FLAC\CUETools.Codecs.FLAC.vcproj", "{E70FA90A-7012-4A52-86B5-362B699D1540}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4CEFBC84-C215-11DB-8314-0800200C9A66} = {4CEFBC84-C215-11DB-8314-0800200C9A66}
 	EndProjectSection
