@@ -45,16 +45,19 @@ namespace CUETools.Ripper.SCSI
 		int _driveOffset = 0;
 		int _correctionQuality = 1;
 		int _currentStart = -1, _currentEnd = -1, _currentErrorsCount = 0;
-		const int CB_AUDIO = 588 * 4 + 2 + 294 + 16;
-		const int NSECTORS = 32;
-		const int MSECTORS = 10000000 / CB_AUDIO;
+		const int CB_AUDIO = 4 * 588 + 2 + 294 + 16;
+		const int NSECTORS = 16;
+		const int MSECTORS = 10000000 / (4 * 588);
 		int _currentTrack = -1, _currentIndex = -1, _currentTrackActualStart = -1;
 		Logger m_logger;
 		CDImageLayout _toc;
-		DeviceInfo m_info;
+		char m_device_letter;
+		InquiryResult m_inqury_result;
+		int m_max_sectors;
+		int _timeout = 10;
 		Crc16Ccitt _crc;
 		List<ScanResults> _scanResults;
-		ScanResults _currentScan;
+		ScanResults _currentScan = null;
 		BitArray _errors;
 		int _errorsCount;
 		byte[] _currentData = new byte[MSECTORS * 4 * 588];
@@ -63,6 +66,7 @@ namespace CUETools.Ripper.SCSI
 		Device.MainChannelSelection _mainChannelMode = Device.MainChannelSelection.UserData;
 		Device.SubChannelMode _subChannelMode = Device.SubChannelMode.None;
 		Device.C2ErrorMode _c2ErrorMode = Device.C2ErrorMode.Mode296;
+		string m_test_result;
 		byte[] _readBuffer = new byte[NSECTORS * CB_AUDIO];
 		byte[] _subchannelBuffer = new byte[NSECTORS * 16];
 
@@ -92,6 +96,18 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
+		public int Timeout
+		{
+			get
+			{
+				return _timeout;
+			}
+			set
+			{
+				_timeout = value;
+			}
+		}
+
 		public bool DebugMessages
 		{
 			get
@@ -101,6 +117,35 @@ namespace CUETools.Ripper.SCSI
 			set
 			{
 				_debugMessages = value;
+			}
+		}
+
+		public string AutoDetectReadCommand
+		{
+			get
+			{
+				if (m_test_result == null)
+					TestReadCommand();
+				return m_test_result;
+			}
+		}
+
+		public string CurrentReadCommand
+		{
+			get
+			{
+				return string.Format("BEh, {0}, {1}, {2}, {3} blocks at a time", (_mainChannelMode == Device.MainChannelSelection.UserData ? "10h" : "F8h"),
+					(_subChannelMode == Device.SubChannelMode.None ? "00h" : _subChannelMode == Device.SubChannelMode.QOnly ? "02h" : "04h"),
+					(_c2ErrorMode == Device.C2ErrorMode.None ? "00h" : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? "01h" : "04h"),
+					m_max_sectors);
+			}
+		}
+
+		public string ChosenReadCommand
+		{
+			get
+			{
+				return m_test_result == null && !TestReadCommand() ? "not detected" : CurrentReadCommand;
 			}
 		}
 
@@ -115,15 +160,19 @@ namespace CUETools.Ripper.SCSI
 			Device.CommandStatus st;
 
 			// Open the base device
+			m_device_letter = Drive;
 			m_device = new Device(m_logger);
-			if (!m_device.Open(Drive))
+			if (!m_device.Open(m_device_letter))
 				throw new Exception("Open failed: SCSI error");
 
 			// Get device info
-			m_info = DeviceInfo.CreateDevice(Drive + ":");
-			if (!m_info.ExtractInfo(m_device))
-				throw new Exception("ExtractInfo failed: SCSI error");
+			st = m_device.Inquiry(out m_inqury_result);
+			if (st != Device.CommandStatus.Success || !m_inqury_result.Valid)
+				throw new SCSIException("Inquiry", m_device, st);
+			if (m_inqury_result.PeripheralQualifier != 0 || m_inqury_result.PeripheralDeviceType != Device.MMCDeviceType)
+				throw new Exception(Path + " is not an MMC device");
 
+			m_max_sectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
 			//// Open/Initialize the driver
 			//Drive m_drive = new Drive(dev);
 			//DiskOperationError status = m_drive.Initialize();
@@ -195,7 +244,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return Math.Min(m_device.MaximumTransferLength / CB_AUDIO - 1, NSECTORS) * 588;
+				return m_max_sectors * 588;
 			}
 		}
 
@@ -204,27 +253,30 @@ namespace CUETools.Ripper.SCSI
 			int posCount = 0;
 			for (int iSector = 0; iSector < Sectors2Read; iSector++)
 			{
-				int q_pos = (sector - _currentStart + iSector + 1) * CB_AUDIO - 16;
-				int ctl = _currentScan.Data[q_pos + 0] >> 4;
-				int adr = _currentScan.Data[q_pos + 0] & 7;
+				int q_pos = sector - _currentStart + iSector;
+				int ctl = _currentScan.QData[q_pos, 0] >> 4;
+				int adr = _currentScan.QData[q_pos, 0] & 7;
 				bool preemph = (ctl & 1) == 1;
 				switch (adr)
 				{
 					case 1: // current position
 						{
-							int iTrack = fromBCD(_currentScan.Data[q_pos + 1]);
-							int iIndex = fromBCD(_currentScan.Data[q_pos + 2]);
-							int mm = fromBCD(_currentScan.Data[q_pos + 7]);
-							int ss = fromBCD(_currentScan.Data[q_pos + 8]);
-							int ff = fromBCD(_currentScan.Data[q_pos + 9]);
+							int iTrack = fromBCD(_currentScan.QData[q_pos, 1]);
+							int iIndex = fromBCD(_currentScan.QData[q_pos, 2]);
+							int mm = fromBCD(_currentScan.QData[q_pos, 7]);
+							int ss = fromBCD(_currentScan.QData[q_pos, 8]);
+							int ff = fromBCD(_currentScan.QData[q_pos, 9]);
 							int sec = ff + 75 * (ss + 60 * mm) - 150; // sector + iSector;
 							//if (sec != sector + iSector)
 							//    System.Console.WriteLine("\rLost sync: {0} vs {1} ({2:X} vs {3:X})", CDImageLayout.TimeToString((uint)(sector + iSector)), CDImageLayout.TimeToString((uint)sec), sector + iSector, sec);
-							ushort crc = _crc.ComputeChecksum(_currentScan.Data, q_pos, 10);
+							byte[] tmp = new byte[16];
+							for (int i = 0; i < 10; i++)
+								_subchannelBuffer[i] = _currentScan.QData[q_pos, i];
+							ushort crc = _crc.ComputeChecksum(_subchannelBuffer, 0, 10);
 							crc ^= 0xffff;
-							if (_currentScan.Data[q_pos + 10] != 0 && _currentScan.Data[q_pos + 11] != 0 &&
-								((crc & 0xff) != _currentScan.Data[q_pos + 11] ||
-								(crc >> 8) != _currentScan.Data[q_pos + 10])
+							if (_currentScan.QData[q_pos, 10] != 0 && _currentScan.QData[q_pos, 11] != 0 &&
+								((crc & 0xff) != _currentScan.QData[q_pos, 11] ||
+								(crc >> 8) != _currentScan.QData[q_pos, 10])
 								)
 							{
 								if (_debugMessages)
@@ -276,7 +328,7 @@ namespace CUETools.Ripper.SCSI
 						{
 							StringBuilder catalog = new StringBuilder();
 							for (int i = 1; i < 8; i++)
-								catalog.AppendFormat("{0:x2}", _currentScan.Data[q_pos + i]);
+								catalog.AppendFormat("{0:x2}", _currentScan.QData[q_pos, i]);
 							_toc.Catalog = catalog.ToString(0, 13);
 						}
 						break;
@@ -284,16 +336,16 @@ namespace CUETools.Ripper.SCSI
 						if (_toc[_currentTrack].ISRC == null)
 						{
 							StringBuilder isrc = new StringBuilder();
-							isrc.Append(from6bit(_currentScan.Data[q_pos + 1] >> 2));
-							isrc.Append(from6bit(((_currentScan.Data[q_pos + 1] & 0x3) << 4) + (0x0f & (_currentScan.Data[q_pos + 2] >> 4))));
-							isrc.Append(from6bit(((_currentScan.Data[q_pos + 2] & 0xf) << 2) + (0x03 & (_currentScan.Data[q_pos + 3] >> 6))));
-							isrc.Append(from6bit((_currentScan.Data[q_pos + 3] & 0x3f)));
-							isrc.Append(from6bit(_currentScan.Data[q_pos + 4] >> 2));
-							isrc.Append(from6bit(((_currentScan.Data[q_pos + 4] & 0x3) << 4) + (0x0f & (_currentScan.Data[q_pos + 5] >> 4))));
-							isrc.AppendFormat("{0:x}", _currentScan.Data[q_pos + 5] & 0xf);
-							isrc.AppendFormat("{0:x2}", _currentScan.Data[q_pos + 6]);
-							isrc.AppendFormat("{0:x2}", _currentScan.Data[q_pos + 7]);
-							isrc.AppendFormat("{0:x}", _currentScan.Data[q_pos + 8] >> 4);
+							isrc.Append(from6bit(_currentScan.QData[q_pos, 1] >> 2));
+							isrc.Append(from6bit(((_currentScan.QData[q_pos, 1] & 0x3) << 4) + (0x0f & (_currentScan.QData[q_pos, 2] >> 4))));
+							isrc.Append(from6bit(((_currentScan.QData[q_pos, 2] & 0xf) << 2) + (0x03 & (_currentScan.QData[q_pos, 3] >> 6))));
+							isrc.Append(from6bit((_currentScan.QData[q_pos, 3] & 0x3f)));
+							isrc.Append(from6bit(_currentScan.QData[q_pos, 4] >> 2));
+							isrc.Append(from6bit(((_currentScan.QData[q_pos, 4] & 0x3) << 4) + (0x0f & (_currentScan.QData[q_pos, 5] >> 4))));
+							isrc.AppendFormat("{0:x}", _currentScan.QData[q_pos, 5] & 0xf);
+							isrc.AppendFormat("{0:x2}", _currentScan.QData[q_pos, 6]);
+							isrc.AppendFormat("{0:x2}", _currentScan.QData[q_pos, 7]);
+							isrc.AppendFormat("{0:x}", _currentScan.QData[q_pos, 8] >> 4);
 							_toc[_currentTrack].ISRC = isrc.ToString();
 						}
 						break;
@@ -302,105 +354,123 @@ namespace CUETools.Ripper.SCSI
 			return posCount;
 		}
 
-		public unsafe string TestReadCommand()
+		public unsafe bool TestReadCommand()
 		{
-			byte[] test = new byte[CB_AUDIO];
-			string s = "";
-			fixed (byte* data = test)
-			{
-				for (int m = 0; m <= 1; m++)
-					for (int q = 0; q <= 2; q++)
-						for (int c = 0; c <= 2; c++)
-						{
-							Device.MainChannelSelection[] mainmode = { Device.MainChannelSelection.UserData, Device.MainChannelSelection.F8h };
-							Device.SubChannelMode[] submode = { Device.SubChannelMode.None, Device.SubChannelMode.QOnly, Device.SubChannelMode.RWMode };
-							Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.None, Device.C2ErrorMode.Mode294, Device.C2ErrorMode.Mode296 };
-							Device.CommandStatus st = m_device.ReadCDAndSubChannel(mainmode[m], submode[q], c2mode[c], 1, false, (uint)0, (uint)1, (IntPtr)((void*)data), 3);
-							s += string.Format("M{0}Q{1}C{2}: {3}\n", m, q, c, (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
-						}
-			}
-			return s;
+			Device.MainChannelSelection[] mainmode = { Device.MainChannelSelection.UserData, Device.MainChannelSelection.F8h };
+			Device.SubChannelMode[] submode = { Device.SubChannelMode.None, Device.SubChannelMode.QOnly, Device.SubChannelMode.RWMode };
+			Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.Mode296, Device.C2ErrorMode.Mode294, Device.C2ErrorMode.None };
+			bool found = false;
+			ScanResults saved = _currentScan;
+			_currentScan = new ScanResults(MSECTORS);
+			for (int m = 0; m <= 1 && !found; m++)
+				for (int q = 0; q <= 2 && !found; q++)
+					for (int c = 0; c <= 2 && !found; c++)
+					{
+						_mainChannelMode = mainmode[m];
+						_subChannelMode = submode[q];
+						_c2ErrorMode = c2mode[c];
+						m_max_sectors = 1;
+						Device.CommandStatus st = FetchSectors(0, 1, false);
+						m_test_result += string.Format("{0}: {1}\n", CurrentReadCommand, (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
+						found = st == Device.CommandStatus.Success && _subChannelMode != Device.SubChannelMode.RWMode;
+					}
+			m_max_sectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
+			if (found)
+				for (int n = 1; n <= m_max_sectors; n++)
+				{
+					Device.CommandStatus st = FetchSectors(0, n, false);
+					if (st != Device.CommandStatus.Success)
+					{
+						m_test_result += string.Format("Maximum sectors: {0}, else {1}; max length {2}\n", n - 1, (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()), m_device.MaximumTransferLength);
+						m_max_sectors = n - 1;
+						break;
+					}
+				}
+			m_test_result += "Chosen " + CurrentReadCommand + "\n";
+			_currentScan = saved;
+			return found;
 		}
 
-
-		private void ReorganiseSectors(int sector, int Sectors2Read)
+		private unsafe void  ReorganiseSectors(int sector, int Sectors2Read)
 		{
-			if (_subChannelMode == Device.SubChannelMode.QOnly && _c2ErrorMode == Device.C2ErrorMode.Mode296)
-			{
-				Array.Copy(_readBuffer, 0, _currentScan.Data, (sector - _currentStart) * CB_AUDIO, Sectors2Read * CB_AUDIO);
-				return;
-			}
-			// fill Q subchannel
-			if (_subChannelMode == Device.SubChannelMode.None)
-			{
-				Device.CommandStatus st = m_device.ReadSubChannel(2, (uint)sector, (uint)Sectors2Read, ref _subchannelBuffer, 10);
-				if (st != Device.CommandStatus.Success)
-					throw new Exception("ReadSubChannel: " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
-				for (int iSector = 0; iSector < Sectors2Read; iSector++)
-					Array.Copy(_subchannelBuffer, iSector * 16, _currentScan.Data, (sector - _currentStart + iSector + 1) * CB_AUDIO - 16, 16);
-			}
 			int c2Size = _c2ErrorMode == Device.C2ErrorMode.None ? 0 : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? 294 : 296;
 			int oldSize = 4 * 588 +	c2Size + (_subChannelMode == Device.SubChannelMode.None ? 0 : 16);
-			// fill Data & C2
-			// TODO: handle other c2 modes here...
-			for (int iSector = 0; iSector < Sectors2Read; iSector++)
-				Array.Copy(_readBuffer, iSector * oldSize, _currentScan.Data, (sector - _currentStart + iSector) * CB_AUDIO, 4 * 588 + 296);
+			fixed (byte* readBuf = _readBuffer, qBuf = _subchannelBuffer, userData = _currentScan.UserData, c2Data = _currentScan.C2Data, qData = _currentScan.QData)
+			{
+				for (int iSector = 0; iSector < Sectors2Read; iSector++)
+				{
+					byte* sectorPtr = readBuf + iSector * oldSize;
+					byte* userDataPtr = userData + (sector - _currentStart + iSector) * 4 * 588;
+					byte* c2DataPtr = c2Data + (sector - _currentStart + iSector) * 294;
+					byte* qDataPtr = qData + (sector - _currentStart + iSector) * 16;
+
+					for (int sample = 0; sample < 4 * 588; sample++)
+						userDataPtr[sample] = sectorPtr[sample];
+					if (_c2ErrorMode != Device.C2ErrorMode.None)
+						for (int c2 = 0; c2 < 294; c2++)
+							c2DataPtr[c2] = sectorPtr[4 * 588 + c2Size - 294];
+					else
+						for (int c2 = 0; c2 < 294; c2++)
+							c2DataPtr[c2] = 0xff;
+					if (_subChannelMode != Device.SubChannelMode.None)
+						for (int qi = 0; qi < 16; qi++)
+							qDataPtr[qi] = sectorPtr[4 * 588 + c2Size];
+					else
+						for (int qi = 0; qi < 16; qi++)
+							qDataPtr[qi] = qBuf[iSector * 16 + qi];
+				}
+			}
 		}
 
-		private unsafe void FetchSectors(int sector, int Sectors2Read)
+		private unsafe Device.CommandStatus FetchSectors(int sector, int Sectors2Read, bool abort)
 		{
+			Device.CommandStatus st;
 			fixed (byte* data = _readBuffer)
 			{
-				//Device.CommandStatus st;
-				//using (Command cmd = new Command(ScsiCommandCode.Read12, 12, (IntPtr)((void*)data), Sectors2Read * 588 * 4, Command.CmdDirection.In, 5 * 60))
-				//{
-				//    //cmd.SetCDB8(1, 4); // force from media
-				//    cmd.SetCDB32(2, sector);
-				//    cmd.SetCDB32(6, Sectors2Read);
-				//    //cmd.SetCDB8(10, 0x80); // streaming
-				//    st= m_device.SendCommand(cmd);
-				//}
-				Device.CommandStatus st = m_device.ReadCDAndSubChannel(_mainChannelMode, _subChannelMode, _c2ErrorMode, 1, false, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), 10);
-				if (st == Device.CommandStatus.Success)
+				st = m_device.ReadCDAndSubChannel(_mainChannelMode, _subChannelMode, _c2ErrorMode, 1, false, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), _timeout);
+			}
+			if (st == Device.CommandStatus.Success)
+			{
+				if (_subChannelMode == Device.SubChannelMode.None)
 				{
-					ReorganiseSectors(sector, Sectors2Read);
-					return;
-				}
-				if (sector == 0 && _subChannelMode != Device.SubChannelMode.None)
-				{
-					_subChannelMode = Device.SubChannelMode.None;
-					if (_debugMessages)
-						System.Console.WriteLine("\nFailed to read CD data with subchannel. Switching to ReadCD without subchannel + ReadSubchannel.");
-					st = m_device.ReadCDAndSubChannel(_mainChannelMode, _subChannelMode, _c2ErrorMode, 1, false, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), 10);
+					st = m_device.ReadSubChannel(2, (uint)sector, (uint)Sectors2Read, ref _subchannelBuffer, _timeout);
 					if (st == Device.CommandStatus.Success)
 					{
 						ReorganiseSectors(sector, Sectors2Read);
-						return;
+						return st;
 					}
 				}
-				if (sector != 0 && st == Device.CommandStatus.DeviceFailed && m_device.GetSenseAsc() == 0x64 && m_device.GetSenseAscq() == 0x00)
+				else
 				{
-					int iErrors = 0;
-					for (int iSector = 0; iSector < Sectors2Read; iSector++)
-					{
-						st = m_device.ReadCDAndSubChannel(_mainChannelMode, _subChannelMode, _c2ErrorMode, 1, false, (uint)(sector + iSector), 1U, (IntPtr)((void*)data), 5);
-						if (st != Device.CommandStatus.Success)
-						{
-							iErrors ++;
-							for (int iPos = 0; iPos < CB_AUDIO; iPos++)
-								_currentScan.Data[(sector + iSector - _currentStart) * CB_AUDIO + iPos] = (iPos == 4 * 588 || (iPos >= 4 * 588 + 2 && iPos < 4 * 588 + 2 + 294)) ? (byte)255 : (byte)0;
-							if (_debugMessages)
-								System.Console.WriteLine("\nSector lost");
-						} else
-							ReorganiseSectors(sector+iSector, 1);
-					}
-					if (iErrors < Sectors2Read)
-						return;
+					ReorganiseSectors(sector, Sectors2Read);
+					return st;
 				}
-				string status = (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString());
-				string test = TestReadCommand();
-				throw new Exception("ReadCD: " + status + "; Autodetect: " + test);
 			}
+			if (!abort)
+				return st;
+			SCSIException ex = new SCSIException("ReadCD", m_device, st);
+			if (sector != 0 && Sectors2Read > 1 && st == Device.CommandStatus.DeviceFailed && m_device.GetSenseAsc() == 0x64 && m_device.GetSenseAscq() == 0x00)
+			{
+				int iErrors = 0;
+				for (int iSector = 0; iSector < Sectors2Read; iSector++)
+				{
+					if (FetchSectors(sector + iSector, 1, false) != Device.CommandStatus.Success)
+					{
+						iErrors ++;
+						for (int i = 0; i < 4 * 588; i++)
+							_currentScan.UserData[sector + iSector - _currentStart, i] = 0;
+						for (int i = 0; i < 294; i++)
+							_currentScan.C2Data[sector + iSector - _currentStart, i] = 0xff;
+						for (int i = 0; i < 16; i++)
+							_currentScan.QData[sector + iSector - _currentStart, i] = 0;
+						if (_debugMessages)
+							System.Console.WriteLine("\nSector lost");
+					}
+				}
+				if (iErrors < Sectors2Read)
+					return Device.CommandStatus.Success;
+			}
+			throw new Exception(ex.Message + "; Autodetect: " + m_test_result);
 		}
 
 		private unsafe void CorrectSectors(int sector, int Sectors2Read, bool findWorst, bool markErrors)
@@ -410,20 +480,19 @@ namespace CUETools.Ripper.SCSI
 			{
 				for (int iPar = 0; iPar < 4 * 588; iPar++)
 				{
-					int dataPos = (sector - _currentStart + iSector) * CB_AUDIO + iPar;
-					int c2Pos = (sector - _currentStart + iSector) * CB_AUDIO + 2 + 4 * 588 + iPar / 8;
+					int pos = sector - _currentStart + iSector;
 					int c2Bit = 0x80 >> (iPar % 8);
 
 					Array.Clear(valueScore, 0, 256);
-
-					byte bestValue = _currentScan.Data[dataPos];
-					valueScore[bestValue] += 1 + (((_currentScan.Data[c2Pos] & c2Bit) == 0) ? c2Score : 0);
+					byte bestValue = _currentScan.UserData[pos, iPar];
+					valueScore[bestValue] += 1 + (((_currentScan.C2Data[pos, iPar/8] & c2Bit) == 0) ? c2Score : 0);
 					int totalScore = valueScore[bestValue];
 					for (int result = 0; result < _scanResults.Count; result++)
 					{
-						byte value = _scanResults[result].Data[dataPos];
-						valueScore[value] += 1 + (((_scanResults[result].Data[c2Pos] & c2Bit) == 0) ? c2Score : 0);
-						totalScore += 1 + (((_scanResults[result].Data[c2Pos] & c2Bit) == 0) ? c2Score : 0);
+						byte value = _scanResults[result].UserData[pos, iPar];
+						int score = 1 + (((_scanResults[result].C2Data[pos, iPar/8] & c2Bit) == 0) ? c2Score : 0);
+						valueScore[value] += score;
+						totalScore += score;
 						if (valueScore[value] > valueScore[bestValue])
 							bestValue = value;
 					}
@@ -434,8 +503,8 @@ namespace CUETools.Ripper.SCSI
 					if (findWorst)
 					{
 						for (int result = 0; result < _scanResults.Count; result++)
-							_scanResults[result].Quality += Math.Min(0, valueScore[_scanResults[result].Data[dataPos]] - c2Score - 1);
-						_currentScan.Quality += Math.Min(0, valueScore[_currentScan.Data[dataPos]] - c2Score - 1);
+							_scanResults[result].Quality += Math.Min(0, valueScore[_scanResults[result].UserData[pos, iPar]] - c2Score - 1);
+						_currentScan.Quality += Math.Min(0, valueScore[_currentScan.UserData[pos, iPar]] - c2Score - 1);
 					}
 					if (markErrors)
 					{
@@ -508,6 +577,9 @@ namespace CUETools.Ripper.SCSI
 			if (_currentStart == MSECTORS * (iSector / MSECTORS))
 				return;
 
+			if (m_test_result == null && !TestReadCommand())
+				throw new Exception("failed to autodetect read command: " + m_test_result);
+
 			_currentStart = MSECTORS * (iSector / MSECTORS);
 			_currentEnd = Math.Min(_currentStart + MSECTORS, (int)_toc.AudioLength);
 			_scanResults = new List<ScanResults>();
@@ -522,24 +594,24 @@ namespace CUETools.Ripper.SCSI
 			for (int pass = 0; pass <= nPasses + nExtraPasses; pass++)
 			{
 				DateTime PassTime = DateTime.Now, LastFetch = DateTime.Now;
-				_currentScan = new ScanResults(MSECTORS, CB_AUDIO);
+				_currentScan = new ScanResults(MSECTORS);
 				_currentErrorsCount = 0;
-				int nSectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
-				for (int sector = _currentStart; sector < _currentEnd; sector += nSectors)
+				for (int sector = _currentStart; sector < _currentEnd; sector += m_max_sectors)
 				{
-					int Sectors2Read = Math.Min(nSectors, _currentEnd - sector);
+					int Sectors2Read = Math.Min(m_max_sectors, _currentEnd - sector);
 					int speed = pass == 4 || pass == 5 ? 4 : pass == 8 || pass == 9 ? 2 : pass == 17 || pass == 18 ? 1 : 0;
 					if (speed != 0)
-						Thread.Sleep(Math.Max(1, 1000 * nSectors / (75 * speed) - (int)((DateTime.Now - LastFetch).TotalMilliseconds)));
+						Thread.Sleep(Math.Max(1, 1000 * Sectors2Read / (75 * speed) - (int)((DateTime.Now - LastFetch).TotalMilliseconds)));
 					LastFetch = DateTime.Now;
-					FetchSectors(sector, Sectors2Read);
+					FetchSectors(sector, Sectors2Read, true);
 
 					if (ProcessSubchannel(sector, Sectors2Read, pass == 0) == 0 && _subChannelMode != Device.SubChannelMode.None && sector == 0)
 					{
 						if (_debugMessages)
 							System.Console.WriteLine("\nGot no subchannel using ReadCD. Switching to ReadSubchannel.");
 						_subChannelMode = Device.SubChannelMode.None;
-						FetchSectors(sector, Sectors2Read);
+						// TODO: move to TestReadCommand
+						FetchSectors(sector, Sectors2Read, true);
 					}
 					CorrectSectors(sector, Sectors2Read, pass > nPasses, pass == nPasses + nExtraPasses);
 					if (ReadProgress != null)
@@ -710,7 +782,11 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return m_info.LongDesc;
+				string result = m_device_letter + ": ";
+				result += "[" + m_inqury_result.VendorIdentification + " " +
+					m_inqury_result.ProductIdentification + " " +
+					m_inqury_result.FirmwareVersion + "]";
+				return result;
 			}
 		}
 
@@ -718,7 +794,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return m_info.InquiryData.VendorIdentification.TrimEnd(' ','\0').PadRight(8,' ') + " - " + m_info.InquiryData.ProductIdentification.TrimEnd(' ','\0');
+				return m_inqury_result.VendorIdentification.TrimEnd(' ', '\0').PadRight(8, ' ') + " - " + m_inqury_result.ProductIdentification.TrimEnd(' ', '\0');
 			}
 		}
 
@@ -797,13 +873,28 @@ namespace CUETools.Ripper.SCSI
 
 	internal class ScanResults
 	{
-		public byte[] Data;
+		public byte[,] UserData;
+		public byte[,] C2Data;
+		public byte[,] QData;
 		public long Quality;
 
-		public ScanResults(int msector, int cbaudio)
+		public ScanResults(int msector)
 		{
-			Data = new byte[msector * cbaudio];
+			//byte[] a1 = new byte[msector * 4 * 588];
+			//byte[] a2 = new byte[msector * 294];
+			//byte[] a3 = new byte[msector * 16];
+			UserData = new byte[msector, 4 * 588];
+			C2Data = new byte[msector, 294];
+			QData = new byte[msector, 16];
 			Quality = 0;
+		}
+	}
+
+	public sealed class SCSIException : Exception
+	{
+		public SCSIException(string args, Device device, Device.CommandStatus st)
+			: base(args + ": " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(device.GetSenseAsc(), device.GetSenseAscq()) : st.ToString()))
+		{
 		}
 	}
 

@@ -393,7 +393,7 @@ namespace CUETools.Processor
 	public class CUEToolsProgressEventArgs
 	{
 		public string status = string.Empty;
-		public uint percentTrack = 0;
+		public double percentTrck = 0;
 		public double percentDisk = 0.0;
 		public string input = string.Empty;
 		public string output = string.Empty;
@@ -947,12 +947,12 @@ namespace CUETools.Processor
 			}
 		}
 
-		private void ShowProgress(string status, uint percentTrack, double percentDisk, string input, string output)
+		private void ShowProgress(string status, double percentTrack, double percentDisk, string input, string output)
 		{
 			if (this.CUEToolsProgress == null)
 				return;
 			_progress.status = status;
-			_progress.percentTrack = percentTrack;
+			_progress.percentTrck = percentTrack;
 			_progress.percentDisk = percentDisk;
 			_progress.input = input;
 			_progress.output = output;
@@ -960,12 +960,36 @@ namespace CUETools.Processor
 		}
 
 #if !MONO
+		private void CDReadProgress(object sender, ReadProgressArgs e)
+		{
+			lock (this)
+			{
+				if (_stop)
+					throw new StopException();
+				if (_pause)
+				{
+					ShowProgress("Paused...", 0, 0, null, null);
+					Monitor.Wait(this);
+				}
+			}
+			if (this.CUEToolsProgress == null)
+				return;
+			CDDriveReader audioSource = (CDDriveReader)sender;
+			int processed = e.Position - e.PassStart;
+			TimeSpan elapsed = DateTime.Now - e.PassTime;
+			double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
+			_progress.percentDisk = (double)(e.PassStart + (processed + e.Pass * (e.PassEnd - e.PassStart)) / (audioSource.CorrectionQuality + 1)) / audioSource.TOC.AudioLength;
+			_progress.percentTrck = (double) (e.Position - e.PassStart) / (e.PassEnd - e.PassStart);
+			_progress.status = string.Format("Ripping @{0:00.00}x {1}", speed, e.Pass > 0 ? " (Retry " + e.Pass.ToString() + ")" : "");
+			this.CUEToolsProgress(this, _progress);
+		}
+
 		private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
 		{
 			if (this.CUEToolsProgress == null)
 				return;
 			_progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
-			_progress.percentTrack = 0;
+			_progress.percentTrck = 0;
 			_progress.input = e.Uri.ToString();
 			_progress.output = null;
 			_progress.status = "Looking up album via MusicBrainz";
@@ -976,7 +1000,7 @@ namespace CUETools.Processor
 		{
 			if (this.CUEToolsProgress == null)
 				return;
-			_progress.percentTrack = (uint)Math.Round(e.PercentComplete);
+			_progress.percentTrck = e.PercentComplete/100;
 			this.CUEToolsProgress(this, _progress);
 		}
 
@@ -1149,7 +1173,7 @@ namespace CUETools.Processor
 		{
 			IAudioSource audioSource;
 
-			ShowProgress("Analyzing input file...", 0, 0.0, path, null);
+			ShowProgress("Analyzing input file...", 0.0, 0.0, path, null);
 #if !MONO
 			if (_isArchive)
 			{
@@ -1193,6 +1217,8 @@ namespace CUETools.Processor
 			logWriter.WriteLine("Extraction logfile from : {0}", DateTime.Now);
 			logWriter.WriteLine("Used drive              : {0}", _driveName);
 			logWriter.WriteLine("Read offset correction  : {0}", _driveOffset);
+			//logWriter.WriteLine("Read command            : {0}", );
+			//logWriter.WriteLine("Secure mode             : {0}", );
 			if (hdcdDecoder != null && hdcdDecoder.Detected)
 			{
 				hdcd_decoder_statistics stats;
@@ -1949,7 +1975,6 @@ namespace CUETools.Processor
 
 					for (iIndex = 0; iIndex <= _toc[iTrack + 1].LastIndex; iIndex++)
 					{
-						uint trackPercent = 0, lastTrackPercent = 101;
 						uint samplesRemIndex = _toc.IndexLength(iTrack + 1, iIndex) * 588;
 
 						if (iIndex == 1)
@@ -2007,15 +2032,13 @@ namespace CUETools.Processor
 
 							uint copyCount = (uint)Math.Min(Math.Min(samplesRemIndex, samplesRemSource), buffLen);
 
-							if (trackLength > 0)
+							if (trackLength > 0 && !_isCD)
 							{
-								trackPercent = (uint)(currentOffset / 0.01 / trackLength);
-								double diskPercent = ((float)diskOffset) / diskLength;
-								if (trackPercent != lastTrackPercent)
-									ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, trackPercent,
-										noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent,
-										_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
-								lastTrackPercent = trackPercent;
+								double trackPercent = (double)currentOffset / trackLength;
+								double diskPercent = (double)diskOffset / diskLength;
+								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (uint)(100*trackPercent),
+									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent,
+									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
 							}
 
 							if (audioSource.Read(sampleBuffer, copyCount) != copyCount)
@@ -2301,6 +2324,7 @@ namespace CUETools.Processor
 					CDDriveReader ripper = new CDDriveReader();
 					ripper.Open(sourceInfo.Path[0]);
 					ripper.DriveOffset = _driveOffset;
+					ripper.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
 					audioSource = ripper;
 				} else
 				if (_isArchive)

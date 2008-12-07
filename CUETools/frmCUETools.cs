@@ -316,6 +316,8 @@ namespace JDP {
 				string outDir = Path.GetDirectoryName(pathOut);
 				if (cueStyle == CUEStyle.SingleFileWithCUE)
 					cueSheet.SingleFilename = Path.GetFileName(pathOut);
+				if (outDir == "")
+					outDir = ".";
 
 				bool outputExists = false;
 				if (outputCUE)
@@ -430,8 +432,8 @@ namespace JDP {
 		{
 			this.BeginInvoke((MethodInvoker)delegate() {
 				toolStripStatusLabel1.Text = e.status;
-				toolStripProgressBar1.Value = (int)e.percentTrack;
-				toolStripProgressBar2.Value = (int)(e.percentDisk*100);
+				toolStripProgressBar1.Value = Math.Max(0,Math.Min(100,(int)(e.percentTrck*100)));
+				toolStripProgressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percentDisk*100)));
 			});
 		}
 

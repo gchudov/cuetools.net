@@ -49,7 +49,7 @@ namespace CUERipper
 			TimeSpan elapsed = DateTime.Now - e.PassTime;
 			double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
 			TimeSpan totalElapsed = DateTime.Now - realStart;
-			TimeSpan totalEstimated = TimeSpan.FromMilliseconds(totalElapsed.TotalMilliseconds / Math.Max(1, (e.PassStart + (processed + e.Pass * (e.PassEnd - e.PassStart)) / 16)) * audioSource.TOC.AudioLength);
+			TimeSpan totalEstimated = TimeSpan.FromMilliseconds(totalElapsed.TotalMilliseconds / Math.Max(1, (e.PassStart + (processed + e.Pass * (e.PassEnd - e.PassStart)) / (audioSource.CorrectionQuality + 1))) * audioSource.TOC.AudioLength);
 
 			// if ((elapsed - lastPrint).TotalMilliseconds > 60) ;
 			Console.Write("\r{9} : {0:00}%; {1:00.00}x; {2} ({10:0.00}%) errors; {3:d2}:{4:d2}:{5:d2}/{6:d2}:{7:d2}:{8:d2}        ",
@@ -151,7 +151,7 @@ namespace CUERipper
 						//throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
 				if (test)
 				{
-					Console.Write(audioSource.TestReadCommand());
+					Console.Write(audioSource.AutoDetectReadCommand);
 					return;
 				}
 				audioSource.DriveOffset = driveOffset;
@@ -183,6 +183,8 @@ namespace CUERipper
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
+				Console.WriteLine("Read cmd    : {0}", audioSource.ChosenReadCommand);
+				Console.WriteLine("Secure mode : {0}", audioSource.CorrectionQuality);
 				Console.WriteLine("Filename    : {0}", destFile);
 				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);

@@ -76,8 +76,8 @@ namespace JDP
 					Text = String.Format("{0}, ETA {1}:{2:00}.", e.status, (int)eta.TotalMinutes, eta.Seconds);
 				} else
 					Text = e.status;
-				progressBar1.Value = (int)e.percentTrack;
-				progressBar2.Value = (int)(e.percentDisk*100);
+				progressBar1.Value = Math.Max(0,Math.Min(100,(int)(e.percentTrck*100)));
+				progressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percentDisk*100)));
 				string inputSuffix = e.output != null ? "=>" : "";
 				if (e.input == null)
 					txtInputFile.Text = inputSuffix;

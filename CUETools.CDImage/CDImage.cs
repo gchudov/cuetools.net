@@ -283,9 +283,7 @@ namespace CUETools.CDImage
 		{
 			get
 			{
-				return _tracks[TrackCount - 1].IsAudio ?
-					_tracks[TrackCount - 1].End + 1 :
-					_tracks[TrackCount - 2].End + 1;
+				return AudioTracks > 0 ? _tracks[(int)_audioTracks - 1].End + 1U : 0U;
 			}
 		}
 
