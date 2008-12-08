@@ -192,17 +192,23 @@
   <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="TrackNo.Text" xml:space="preserve">
-    <value>#</value>
-  </data>
-  <data name="TrackNo.Width" type="System.Int32, mscorlib">
-    <value>30</value>
+  <data name="Title.DisplayIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
   <data name="Title.Text" xml:space="preserve">
     <value>Title</value>
   </data>
   <data name="Title.Width" type="System.Int32, mscorlib">
     <value>307</value>
+  </data>
+  <data name="TrackNo.DisplayIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="TrackNo.Text" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="TrackNo.Width" type="System.Int32, mscorlib">
+    <value>30</value>
   </data>
   <data name="Start.Text" xml:space="preserve">
     <value>Start</value>
@@ -489,16 +495,16 @@
   <data name="&gt;&gt;toolStripProgressBar2.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripProgressBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;TrackNo.Name" xml:space="preserve">
-    <value>TrackNo</value>
-  </data>
-  <data name="&gt;&gt;TrackNo.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;Title.Name" xml:space="preserve">
     <value>Title</value>
   </data>
   <data name="&gt;&gt;Title.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TrackNo.Name" xml:space="preserve">
+    <value>TrackNo</value>
+  </data>
+  <data name="&gt;&gt;TrackNo.Type" xml:space="preserve">
     <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;Start.Name" xml:space="preserve">

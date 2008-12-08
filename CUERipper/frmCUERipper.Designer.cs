@@ -36,8 +36,8 @@ namespace CUERipper
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.listTracks = new System.Windows.Forms.ListView();
-			this.TrackNo = new System.Windows.Forms.ColumnHeader();
 			this.Title = new System.Windows.Forms.ColumnHeader();
+			this.TrackNo = new System.Windows.Forms.ColumnHeader();
 			this.Start = new System.Windows.Forms.ColumnHeader();
 			this.Length = new System.Windows.Forms.ColumnHeader();
 			this.buttonGo = new System.Windows.Forms.Button();
@@ -96,23 +96,27 @@ namespace CUERipper
 			// 
 			resources.ApplyResources(this.listTracks, "listTracks");
 			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.TrackNo,
             this.Title,
+            this.TrackNo,
             this.Start,
             this.Length});
 			this.listTracks.FullRowSelect = true;
 			this.listTracks.GridLines = true;
+			this.listTracks.LabelEdit = true;
 			this.listTracks.Name = "listTracks";
 			this.listTracks.UseCompatibleStateImageBehavior = false;
 			this.listTracks.View = System.Windows.Forms.View.Details;
-			// 
-			// TrackNo
-			// 
-			resources.ApplyResources(this.TrackNo, "TrackNo");
+			this.listTracks.DoubleClick += new System.EventHandler(this.listTracks_DoubleClick);
+			this.listTracks.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.listTracks_PreviewKeyDown);
+			this.listTracks.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listTracks_KeyDown);
 			// 
 			// Title
 			// 
 			resources.ApplyResources(this.Title, "Title");
+			// 
+			// TrackNo
+			// 
+			resources.ApplyResources(this.TrackNo, "TrackNo");
 			// 
 			// Start
 			// 

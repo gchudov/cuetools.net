@@ -124,7 +124,10 @@ namespace CUERipper
 				});
 			}
 			_workThread = null;
-			SetupControls();
+			this.BeginInvoke((MethodInvoker)delegate()
+			{
+				SetupControls();
+			});
 		}
 
 		private void buttonGo_Click(object sender, EventArgs e)
@@ -182,14 +185,14 @@ namespace CUERipper
 			if (comboRelease.SelectedItem == null || comboRelease.SelectedItem is string)
 			{
 				for (int i = 1; i <= _reader.TOC.AudioTracks; i++)
-					listTracks.Items.Add(new ListViewItem(new string[] { _reader.TOC[i].Number.ToString(), "Track " + _reader.TOC[i].Number.ToString(), _reader.TOC[i].StartMSF, _reader.TOC[i].LengthMSF }));
+					listTracks.Items.Add(new ListViewItem(new string[] { "Track " + _reader.TOC[i].Number.ToString(), _reader.TOC[i].Number.ToString(), _reader.TOC[i].StartMSF, _reader.TOC[i].LengthMSF }));
 				return;
 			}
 			Release release = (Release) comboRelease.SelectedItem;
 			for (int i = 1; i <= _reader.TOC.AudioTracks; i++)
 			{
 				Track track = release.GetTracks()[(int)_reader.TOC[i].Number - 1];
-				listTracks.Items.Add(new ListViewItem(new string[] { _reader.TOC[i].Number.ToString(), track.GetTitle(), _reader.TOC[i].StartMSF, _reader.TOC[i].LengthMSF }));
+				listTracks.Items.Add(new ListViewItem(new string[] { track.GetTitle(), _reader.TOC[i].Number.ToString(), _reader.TOC[i].StartMSF, _reader.TOC[i].LengthMSF }));
 			}
 		}
 
@@ -246,9 +249,9 @@ namespace CUERipper
 					comboRelease.Items.Add("MusicBrainz: not found");
 			});
 			_workThread = null;
-			SetupControls();
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
+				SetupControls();
 				comboRelease.SelectedIndex = 0;
 			});
 		}
@@ -271,6 +274,33 @@ namespace CUERipper
 			_workThread.IsBackground = true;
 			SetupControls();
 			_workThread.Start(_reader);
+		}
+
+		private void listTracks_DoubleClick(object sender, EventArgs e)
+		{
+			listTracks.FocusedItem.BeginEdit();
+		}
+
+		private void listTracks_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.F2)
+			{
+				listTracks.FocusedItem.BeginEdit();
+			}
+		}
+
+		private void listTracks_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+		{
+			if (e.KeyCode == Keys.Enter)
+			{
+				if (listTracks.FocusedItem.Index + 1 < listTracks.Items.Count)// && e.Label != null)
+				{
+					listTracks.FocusedItem.Selected = false;
+					listTracks.FocusedItem = listTracks.Items[listTracks.FocusedItem.Index + 1];
+					listTracks.FocusedItem.Selected = true;
+					listTracks.FocusedItem.BeginEdit();
+				}
+			}
 		}
 	}
 
