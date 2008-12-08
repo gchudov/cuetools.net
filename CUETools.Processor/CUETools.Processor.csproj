@@ -95,7 +95,7 @@
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.APE\CUETools.Codecs.APE.vcproj">
       <Project>{9AE965C4-301E-4C01-B90F-297AF341ACC6}</Project>
-      <Name>APEDotNet</Name>
+      <Name>CUETools.Codecs.APE</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
@@ -115,7 +115,7 @@
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.FLAC\CUETools.Codecs.FLAC.vcproj">
       <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
-      <Name>FLACDotNet</Name>
+      <Name>CUETools.Codecs.FLAC</Name>
     </ProjectReference>
     <ProjectReference Include="..\HDCDDotNet\HDCDDotNet.csproj">
       <Project>{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}</Project>
@@ -135,7 +135,7 @@
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.WavPack\CUETools.Codecs.WavPack.vcproj">
       <Project>{CC2E74B6-534A-43D8-9F16-AC03FE955000}</Project>
-      <Name>WavPackDotNet</Name>
+      <Name>CUETools.Codecs.WavPack</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
