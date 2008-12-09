@@ -270,9 +270,6 @@
   <data name="&gt;&gt;buttonGo.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="comboLossless.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
   <data name="comboLossless.Items" xml:space="preserve">
     <value>lossless</value>
   </data>
@@ -303,14 +300,11 @@
   <data name="&gt;&gt;comboLossless.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="comboCodec.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
   <data name="comboCodec.Items" xml:space="preserve">
     <value>flac</value>
   </data>
   <data name="comboCodec.Items1" xml:space="preserve">
-    <value>WavPack</value>
+    <value>wv</value>
   </data>
   <data name="comboCodec.Items2" xml:space="preserve">
     <value>wav</value>
@@ -338,9 +332,6 @@
   </data>
   <data name="&gt;&gt;comboCodec.ZOrder" xml:space="preserve">
     <value>4</value>
-  </data>
-  <data name="comboImage.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
   </data>
   <data name="comboImage.Items" xml:space="preserve">
     <value>image</value>

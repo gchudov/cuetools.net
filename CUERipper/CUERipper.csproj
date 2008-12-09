@@ -125,6 +125,10 @@
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
+      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
+      <Name>CUETools.Processor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>

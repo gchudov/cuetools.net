@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using FLACDotNet;
-using WavPackDotNet;
-using APEDotNet;
 using CUETools.Codecs;
 using CUETools.Codecs.ALAC;
+using CUETools.Codecs.FLAC;
+using CUETools.Codecs.WavPack;
+using CUETools.Codecs.APE;
 using CUETools.Codecs.LossyWAV;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -95,7 +95,7 @@ namespace CUETools.Processor
 			int destBitsPerSample = (config.detectHDCD && config.decodeHDCD) ? ((!config.decodeHDCDtoLW16 && config.decodeHDCDto24bit) ? 24 : 20) : 16;
 			int lossyBitsPerSample = (config.detectHDCD && config.decodeHDCD && !config.decodeHDCDtoLW16) ? 24 : 16;
 			IAudioDest lossyDest = GetAudioDest(path, lossyBitsPerSample, 2, 44100, finalSampleCount, extension, config);
-			IAudioDest lwcdfDest = GetAudioDest(lwcdfPath, destBitsPerSample, 2, 44100, finalSampleCount, extension, config);
+			IAudioDest lwcdfDest = config.lossyWAVHybrid ? GetAudioDest(lwcdfPath, destBitsPerSample, 2, 44100, finalSampleCount, extension, config) : null;
 			return new LossyWAVWriter(lossyDest, lwcdfDest, destBitsPerSample, 2, 44100, config.lossyWAVQuality);
 		}
 	}

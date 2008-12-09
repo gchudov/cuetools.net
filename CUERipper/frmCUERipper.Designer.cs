@@ -136,34 +136,34 @@ namespace CUERipper
 			// comboLossless
 			// 
 			this.comboLossless.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			resources.ApplyResources(this.comboLossless, "comboLossless");
 			this.comboLossless.FormattingEnabled = true;
 			this.comboLossless.Items.AddRange(new object[] {
             resources.GetString("comboLossless.Items"),
             resources.GetString("comboLossless.Items1"),
             resources.GetString("comboLossless.Items2")});
+			resources.ApplyResources(this.comboLossless, "comboLossless");
 			this.comboLossless.Name = "comboLossless";
 			// 
 			// comboCodec
 			// 
 			this.comboCodec.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			resources.ApplyResources(this.comboCodec, "comboCodec");
 			this.comboCodec.FormattingEnabled = true;
 			this.comboCodec.Items.AddRange(new object[] {
             resources.GetString("comboCodec.Items"),
             resources.GetString("comboCodec.Items1"),
             resources.GetString("comboCodec.Items2"),
             resources.GetString("comboCodec.Items3")});
+			resources.ApplyResources(this.comboCodec, "comboCodec");
 			this.comboCodec.Name = "comboCodec";
 			// 
 			// comboImage
 			// 
 			this.comboImage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			resources.ApplyResources(this.comboImage, "comboImage");
 			this.comboImage.FormattingEnabled = true;
 			this.comboImage.Items.AddRange(new object[] {
             resources.GetString("comboImage.Items"),
             resources.GetString("comboImage.Items1")});
+			resources.ApplyResources(this.comboImage, "comboImage");
 			this.comboImage.Name = "comboImage";
 			// 
 			// buttonAbort

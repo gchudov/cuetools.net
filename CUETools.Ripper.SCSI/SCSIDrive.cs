@@ -806,6 +806,8 @@ namespace CUETools.Ripper.SCSI
 			}
 			set
 			{
+				_currentTrack = -1;
+				_currentIndex = -1;
 				_sampleOffset = (int) value + _driveOffset;
 			}
 		}

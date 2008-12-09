@@ -304,7 +304,7 @@ namespace JDP {
 				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify;
 				string pathOut = null;
 
-				cueSheet.Open(pathIn, lossyWAV);
+				cueSheet.Open(pathIn);
 
 				this.Invoke((MethodInvoker)delegate()
 				{
@@ -312,7 +312,7 @@ namespace JDP {
 					pathOut = txtOutputPath.Text;
 				});
 
-				cueSheet.GenerateFilenames(outputFormat, pathOut);
+				cueSheet.GenerateFilenames(outputFormat, lossyWAV, pathOut);
 				string outDir = Path.GetDirectoryName(pathOut);
 				if (cueStyle == CUEStyle.SingleFileWithCUE)
 					cueSheet.SingleFilename = Path.GetFileName(pathOut);

@@ -85,8 +85,10 @@ namespace CUETools.Codecs.LossyWAV
 					process_this_codec_block();
 				}
 			}
+			if (_lwcdfDest != null) 
+				try { _lwcdfDest.Close(); }
+				catch { }
 			if (_audioDest != null) _audioDest.Close();
-			if (_lwcdfDest != null) _lwcdfDest.Close();
 		}
 
 		public void Write(int[,] buff, uint sampleCount)
