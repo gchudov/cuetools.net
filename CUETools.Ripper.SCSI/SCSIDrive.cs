@@ -170,10 +170,11 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				return _readCDCommand == ReadCDCommand.Unknown ? "unknown" :
-					string.Format("{0}, {1}, {2}, {3}, {4} blocks at a time", 
+					string.Format("{0}, {1}, {2}{3}, {4}, {5} blocks at a time", 
 					(_readCDCommand == ReadCDCommand.ReadCdBEh ? "BEh" : "D8h"),
 					(_mainChannelMode == Device.MainChannelSelection.UserData ? "10h" : "F8h"),
 					(_subChannelMode == Device.SubChannelMode.None ? "00h" : _subChannelMode == Device.SubChannelMode.QOnly ? "02h" : "04h"),
+					_qChannelInBCD ? "" : "nonBCD",
 					(_c2ErrorMode == Device.C2ErrorMode.None ? "00h" : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? "01h" : "04h"),
 					m_max_sectors);
 			}
@@ -1049,7 +1050,7 @@ namespace CUETools.Ripper.SCSI
 
 		private byte toBCD(int val)
 		{
-			return (byte) ((val / 10) << 4 + (val % 10));
+			return (byte)(((val / 10) << 4) + (val % 10));
 		}
 
 		private char from6bit(int bcd)
