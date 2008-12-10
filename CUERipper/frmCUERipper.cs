@@ -39,6 +39,20 @@ namespace CUERipper
 
 		private void frmCUERipper_Load(object sender, EventArgs e)
 		{
+			//byte[] _subchannelBuffer0 = { 0x1, 0x01, 0x01, 0x00, 0x00, 0x10, 0x00, 0x00, 0x02, 0x10, 0x75, 0x4E };
+			//byte[] _subchannelBuffer1 = { 0x21, 0x01, 0x01, 0x00, 0x00, 0x11, 0x00, 0x00, 0x02, 0x11, 0xCF, 0x3E };
+			//byte[] _subchannelBuffer2 = { 0x21, 0x01, 0x01, 0x00, 0x00, 0x12, 0x00, 0x00, 0x02, 0x12, 0x11, 0x8F };
+			//Crc16Ccitt _crc = new Crc16Ccitt(InitialCrcValue.Zeros);
+			//ushort crc0a = (ushort)(_crc.ComputeChecksum(_subchannelBuffer0, 0, 10) ^ 0xffff);
+			//ushort crc0b = (ushort)(_subchannelBuffer0[11] + (_subchannelBuffer0[10] << 8));
+			//ushort crc1a = (ushort)(_crc.ComputeChecksum(_subchannelBuffer1, 0, 10) ^ 0xffff);
+			//ushort crc1b = (ushort)(_subchannelBuffer1[11] + (_subchannelBuffer1[10] << 8));
+			//ushort crc2a = (ushort)(_crc.ComputeChecksum(_subchannelBuffer2, 0, 10) ^ 0xffff);
+			//ushort crc2b = (ushort)(_subchannelBuffer2[11] + (_subchannelBuffer2[10] << 8));
+			//if (crc0a != crc0b || crc1a != crc1b || crc2a != crc2b)
+			//{
+			//}
+
 			foreach(char drive in CDDriveReader.DrivesAvailable())
 			{
 				CDDriveReader reader = new CDDriveReader();

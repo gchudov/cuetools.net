@@ -6,7 +6,7 @@ namespace CUETools.Ripper.SCSI
 {
 	public enum InitialCrcValue { Zeros, NonZero1 = 0xffff, NonZero2 = 0x1D0F }
 
-	class Crc16Ccitt
+	public class Crc16Ccitt
 	{
 		const ushort poly = 4129;
 		ushort[] table = new ushort[256];

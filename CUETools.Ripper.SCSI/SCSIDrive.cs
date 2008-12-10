@@ -76,6 +76,7 @@ namespace CUETools.Ripper.SCSI
 		string _autodetectResult;
 		byte[] _readBuffer = new byte[NSECTORS * CB_AUDIO];
 		byte[] _subchannelBuffer = new byte[NSECTORS * 16];
+		bool _qChannelInBCD = true;
 
 		public event EventHandler<ReadProgressArgs> ReadProgress;
 
@@ -292,36 +293,47 @@ namespace CUETools.Ripper.SCSI
 				int adr = QData[_currentScan, q_pos,  0] & 7;
 				bool preemph = (ctl & 1) == 1;
 				bool dcp = (ctl & 2) == 2;
+
+				for (int i = 0; i < 10; i++)
+					_subchannelBuffer[i] = QData[_currentScan, q_pos, i];
+				if (!_qChannelInBCD && adr == 1)
+				{
+					_subchannelBuffer[3] = toBCD(_subchannelBuffer[3]);
+					_subchannelBuffer[4] = toBCD(_subchannelBuffer[4]);
+					_subchannelBuffer[5] = toBCD(_subchannelBuffer[5]);
+					_subchannelBuffer[7] = toBCD(_subchannelBuffer[7]);
+					_subchannelBuffer[8] = toBCD(_subchannelBuffer[8]);
+					_subchannelBuffer[9] = toBCD(_subchannelBuffer[9]);
+				}
+				ushort crc = _crc.ComputeChecksum(_subchannelBuffer, 0, 10);
+				crc ^= 0xffff;
+				if ((QData[_currentScan, q_pos, 10] != 0 || QData[_currentScan, q_pos, 11] != 0) &&
+					((byte)(crc & 0xff) != QData[_currentScan, q_pos, 11] || (byte)(crc >> 8) != QData[_currentScan, q_pos, 10])
+					)
+				{
+					if (!updateMap)
+						continue;
+					_crcErrorsCount++;
+					if (_debugMessages && _crcErrorsCount < 4)
+					{
+						StringBuilder st = new StringBuilder();
+						for (int i = 0; i < 12; i++)
+							st.AppendFormat(",0x{0:X2}", QData[_currentScan, q_pos, i]);
+						System.Console.WriteLine("\nCRC error@{0}{1}", CDImageLayout.TimeToString((uint)(sector + iSector)), st.ToString());
+					}
+					continue;
+				}
 				switch (adr)
 				{
 					case 1: // current position
 						{
 							int iTrack = fromBCD(QData[_currentScan, q_pos, 1]);
 							int iIndex = fromBCD(QData[_currentScan, q_pos, 2]);
-							int mm = fromBCD(QData[_currentScan, q_pos, 7]);
-							int ss = fromBCD(QData[_currentScan, q_pos, 8]);
-							int ff = fromBCD(QData[_currentScan, q_pos, 9]);
-							int sec = ff + 75 * (ss + 60 * mm) - 150; // sector + iSector;
+							int mm = _qChannelInBCD ? fromBCD(QData[_currentScan, q_pos, 7]) : QData[_currentScan, q_pos, 7];
+							int ss = _qChannelInBCD ? fromBCD(QData[_currentScan, q_pos, 8]) : QData[_currentScan, q_pos, 8];
+							int ff = _qChannelInBCD ? fromBCD(QData[_currentScan, q_pos, 9]) : QData[_currentScan, q_pos, 9];
 							//if (sec != sector + iSector)
 							//    System.Console.WriteLine("\rLost sync: {0} vs {1} ({2:X} vs {3:X})", CDImageLayout.TimeToString((uint)(sector + iSector)), CDImageLayout.TimeToString((uint)sec), sector + iSector, sec);
-							for (int i = 0; i < 10; i++)
-								_subchannelBuffer[i] = QData[_currentScan, q_pos, i];
-							ushort crc = _crc.ComputeChecksum(_subchannelBuffer, 0, 10);
-							crc ^= 0xffff;
-							if ((QData[_currentScan, q_pos, 10] != 0 || QData[_currentScan, q_pos, 11] != 0) &&
-								((byte)(crc & 0xff) != QData[_currentScan, q_pos, 11] || (byte)(crc >> 8) != QData[_currentScan, q_pos, 10])
-								)
-							{
-								_crcErrorsCount ++;
-								if (_debugMessages && _crcErrorsCount < 4)
-								{
-									StringBuilder st = new StringBuilder();
-									for (int i = 0; i < 12; i++)
-										st.AppendFormat(" 0x{0:X2}", QData[_currentScan, q_pos, i]);
-									System.Console.WriteLine("\nCRC error at {0}:{1}", CDImageLayout.TimeToString((uint)(sector + iSector)), st.ToString());
-								}
-								continue;
-							}
 							if (iTrack == 110)
 							{
 								if (sector + iSector + 75 < _toc.AudioLength)
@@ -334,6 +346,7 @@ namespace CUETools.Ripper.SCSI
 							posCount++;
 							if (!updateMap)
 								break;
+							int sec = ff + 75 * (ss + 60 * mm) - 150; // sector + iSector;
 							if (iTrack > _toc.AudioTracks)
 								throw new Exception("strange track number encountred");
 							if (iTrack != _currentTrack)
@@ -444,10 +457,18 @@ namespace CUETools.Ripper.SCSI
 							DateTime tm = DateTime.Now;
 							Device.CommandStatus st = FetchSectors(sector, m_max_sectors, false, false);
 							TimeSpan delay = DateTime.Now - tm;
-							if (st == Device.CommandStatus.Success && _subChannelMode == Device.SubChannelMode.QOnly && ProcessSubchannel(sector, m_max_sectors, false) == 0)
+							if (st == Device.CommandStatus.Success && _subChannelMode == Device.SubChannelMode.QOnly)
 							{
-								_autodetectResult += string.Format("{0}: {1}\n", CurrentReadCommand, "Got no subchannel information");
-								continue;
+								_qChannelInBCD = false;
+								int sub1 = ProcessSubchannel(sector, m_max_sectors, false);
+								_qChannelInBCD = true;
+								int sub2 = ProcessSubchannel(sector, m_max_sectors, false);
+								_qChannelInBCD = sub2 >= sub1;
+								if (sub1 == 0 && sub2 == 0)
+								{
+									_autodetectResult += string.Format("{0}: {1}\n", CurrentReadCommand, "Got no subchannel information");
+									continue;
+								}
 							}
 							_autodetectResult += string.Format("{0}: {1} ({2}ms)\n", CurrentReadCommand, (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()), delay.TotalMilliseconds);
 							found = st == Device.CommandStatus.Success && _subChannelMode != Device.SubChannelMode.RWMode;// && _subChannelMode != Device.SubChannelMode.QOnly;
@@ -1024,6 +1045,11 @@ namespace CUETools.Ripper.SCSI
 		private int fromBCD(byte hex)
 		{
 			return (hex >> 4) * 10 + (hex & 15);
+		}
+
+		private byte toBCD(int val)
+		{
+			return (byte) ((val / 10) << 4 + (val % 10));
 		}
 
 		private char from6bit(int bcd)
