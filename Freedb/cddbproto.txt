@@ -1,0 +1,885 @@
+CDDB Server Protocol
+--------------------
+
+By Steve Scherf and Ti Kan
+(Protocol level 5 & 6 specification by freedb developer team)
+
+
+Applies to cddbd 1.5.2
+$Id: CDDBPROTO,v 1.10.2.2 2006/04/14 14:45:06 joerg78 Exp $
+
+
+Notation:
+-> : client to server
+<- : server to client
+
+terminating marker: `.' character in the beginning of a line
+
+
+Server response code (three digit code):
+
+First digit:
+1xx	Informative message
+2xx	Command OK
+3xx	Command OK so far, continue
+4xx	Command OK, but cannot be performed for some specified reasons
+5xx	Command unimplemented, incorrect, or program error
+ 
+Second digit:
+x0x	Ready for further commands
+x1x	More server-to-client output follows (until terminating marker)
+x2x	More client-to-server input follows (until terminating marker)
+x3x	Connection will close
+
+Third digit:
+xx[0-9]	Command-specific code
+
+Note: "*" means, that the command is only for administrative use and requires
+special access permissions, that normal users don't have.
+
+
+CDDB Protocol Level 1:
+----------------------
+
+Server sign-on banner:
+----------------------
+<- code hostname CDDBP server version ready at date
+
+    code:
+	200	OK, read/write allowed
+	201	OK, read only
+	432	No connections allowed: permission denied
+	433	No connections allowed: X users allowed, Y currently active
+	434	No connections allowed: system load too high
+    hostname:
+	Server host name.  Example: xyz.fubar.com
+    version:
+	Version number of server software.  Example: v1.0PL0
+    date:
+	Current date and time.  Example: Wed Mar 13 00:41:34 1996
+
+
+Initial client-server handshake:
+--------------------------------
+Note: This handshake must occur before other cddb commands
+      are accepted by the server.
+
+Client command:
+-> cddb hello username hostname clientname version
+
+    username:
+	Login name of user.  Example: johndoe
+    hostname:
+	Host name of client.  Example: abc.fubar.com
+    clientname:
+	The name of the connecting client.  Example: xmcd, cda, EasyCD,
+	et cetera. Do not use the name of another client which already
+	exists.
+    version:
+	Version number of client software.  Example: v1.0PL0
+
+Server response:
+<- code hello and welcome username@hostname running clientname version
+
+    code:
+	200	Handshake successful
+	431	Handshake not successful, closing connection
+	402	Already shook hands
+
+
+List the genre categories:
+--------------------------
+Client command:
+-> cddb lscat
+
+Server response:
+<- code Okay category list follows (until terminating marker)
+<- category
+<- category
+<- (more categories...)
+<- .
+
+    code:
+	210	Okay category list follows 
+    category:
+	CD category.  Example: rock
+
+
+Query database for matching entries:
+------------------------------------
+Client command:
+-> cddb query discid ntrks off1 off2 ... nsecs
+
+    discid:
+	CD disc ID number.  Example: f50a3b13
+    ntrks:
+	Total number of tracks on CD.
+    off1, off2, ...:
+	Frame offset of the starting location of each track.
+    nsecs:
+	Total playing length of CD in seconds.
+
+Server response:
+<- code categ discid dtitle
+	or
+<- code close matches found
+<- categ discid dtitle
+<- categ discid dtitle
+<- (more matches...)
+<- .
+
+    code:
+	200	Found exact match
+	211	Found inexact matches, list follows (until terminating marker)
+	202	No match found
+	403	Database entry is corrupt
+	409	No handshake
+    categ:
+	CD category.  Example: rock
+    discid:
+	CD disc ID number of the found entry.  Example: f50a3b13
+    dtitle:
+	The Disc Artist and Disc Title (The DTITLE line).  For example:
+	Pink Floyd / The Dark Side of the Moon
+
+
+Read entry from database:
+-------------------------
+Client command:
+-> cddb read categ discid
+
+    categ:
+	CD category.  Example: rock
+    discid:
+	CD disc ID number.  Example: f50a3b13
+
+Server response:
+<- code categ discid
+<- # xmcd 2.0 CD database file
+<- # ...
+<- (CDDB data...)
+<- .
+	or
+<- code categ discid No such CD entry in database.
+
+    code:
+	210	OK, CDDB database entry follows (until terminating marker)
+	401	Specified CDDB entry not found.
+	402	Server error.
+	403	Database entry is corrupt.
+	409	No handshake.
+    categ:
+	CD category.  Example: rock
+    discid:
+	CD disc ID number.  Example: f50a3b13
+
+
+* Delete entry from database:
+-----------------------------
+Client command:
+-> cddb unlink categ discid
+
+    categ:
+	CD category.  Example: rock
+    discid:
+	CD disc ID number.  Example: f50a3b13
+
+Server response:
+<- code and message
+
+    code and message:
+	200 OK, file has been deleted.
+	401 Permission denied.
+	402 File access failed.
+	501 Invalid category: categ.
+    categ:
+	CD category.  Example: rock
+
+
+* Write entry to database:
+--------------------------
+Client command:
+-> cddb write categ discid
+
+    categ:
+	CD category.  Example: rock
+    discid:
+	CD disc ID number.  Example: f50a3b13
+
+Server response:
+<- code and message
+
+    code and message:
+	320	OK, input CDDB data (until terminating marker)
+	401	Permission denied.
+	402	Server file system full/file access failed.
+	409	No handshake.
+
+Client data:
+-> # xmcd 2.0 CD database file
+-> # ...
+-> (CDDB data)
+-> .
+
+Server response:
+<- code message
+
+    code:
+	200	CDDB entry accepted
+	501	Entry rejected: reason for rejection.
+    message:
+	Message string to indicate write status:
+	CDDB entry accepted, or CDDB entry rejected.
+
+
+Discid calculation:
+------------------
+Client command:
+-> discid ntrks off_1 off_2 ... off_n nsecs
+	
+	ntrks:  
+		total number of tracks on CD.
+        off_X:  
+		frame offset of track X.
+        nsecs:  
+		total playing length of the CD in seconds.
+
+Server response:
+<- code Disc ID is discid
+
+	code:
+		200 Calculated disc ID properly
+		500 Command Syntax error
+	discid:
+		CD disc ID number calculated from the given arguments.
+
+
+* Get a server system file:
+---------------------------
+Client command:
+-> get file
+
+    file:
+	filename of the file to get
+	
+Server response:
+
+<- code message
+
+	or
+
+<- code OK, (filename) follows (until terminating `.')
+<- (file content)
+<- .
+
+    code and message:
+	210 OK, %s follows (until terminating `.')
+	401 Permission denied.
+	402 File access failed.
+	402 File not found.
+	
+
+Help information:
+-----------------
+Client command:
+-> help
+	or
+-> help cmd
+
+    cmd:
+	CDDB command.  Example: quit
+
+	or
+
+-> help cmd subcmd
+
+    cmd:
+	CDDB command.  Example: cddb
+    subcmd:
+	CDDB command argument.  Example: query
+
+Server response:
+<- code Help information follows
+<- (help data ...)
+<- .
+	or
+<- code no help information available
+
+    code:
+	210	OK, help information follows (until terminating marker)
+	401	No help information available
+
+
+* Log statistics:
+-----------------
+Client command:
+-> log [[-l lines] [start date [end date]] | [day [days]] | [get]]
+
+    lines:
+	The maximum number of lines to print for each data list in the
+	log statistics.
+    start date:
+	The date after which statistics should be calculated. Date is
+	of the format: hh[mm[ss[MM[DD[[CC]YY]]]]]
+
+	E.g.:	201200053196 for 8:12 PM on May 31, 1996.
+		20120005312096 for 8:12 PM on May 31, 2096.
+		080530 for today at at 8:15 and 30 seconds.
+
+	If the century ("CC") is omitted, a reasonable guess is made. If
+	this argument is omitted, all messages are considered.
+    end date:
+	The date after which statistics should not be calculated. If
+	omitted, the end date is assumed to be the current date.
+    day:
+	The string "day". This solitary argument will cause a log search
+	of messages generated within the last day.
+    days:
+	A positive numerical argument which modifies the number of days'
+        messages to searh. If this argument is left out, the default is 1.
+    get:
+	The string "get". This solitary argument will cause the server
+	to send the contents of the log file.
+
+Server response:
+<- code Log summary follows
+<- (log stats)
+<- .
+	or
+<- code Log follows
+<- (log stats)
+<- .
+
+    code:
+	210	OK, log summary follows (until terminating marker)
+	211	OK, log follows (until terminating marker)
+	401	Permission denied
+	402	No log information available
+	501	Invalid start/end date
+
+
+Message of the day:
+------------------
+Client command:
+-> motd
+
+Server response:
+<- code Last modified: date MOTD follows (until terminating marker)
+<- (message text)
+<- .
+
+    code:
+	210	Last modified: 05/31/96 06:31:14 MOTD follows (until terminating marker)
+	401	No message of the day available
+    date:
+	The date the text of the message of the day was modified. The date
+	appears in the following format:
+
+		05/31/96 06:31:14
+
+	This value may be used by client software as a message timestamp
+	for purposes of determining if it has already been displayed. This
+	format was chosen because it is more easily parsed than the standard
+	ctime() format.
+
+
+Server protocol level:
+----------------------
+Client command:
+-> proto [level]
+
+    level:
+	The (numerical) protocol level to set the server to.
+
+Server response:
+<- code CDDB protocol level: current cur_level, supported supported_level
+	or
+<- code OK, protocol version now: cur_level
+
+    code:
+	200	CDDB protocol level: current cur_level, supported supp_level
+	201	OK, protocol version now: cur_level
+	501	Illegal protocol level.
+	502	Protocol level already cur_level.
+    cur_level:
+	The current protocol level at which the server is running.
+    supported_level:
+	The maximum supported protocol level.
+
+
+* Put a server system file:
+---------------------------
+Client command:
+-> put file
+
+    file:
+	sites or motd
+
+Server response: 
+<- code message
+
+    code and message:
+	320 OK, input file data (terminate with `.')
+	401 Permission denied.
+	402 File access failed.
+	402 Not a regular file.
+
+Client data:
+-> (file data of the file, that shall be written)
+-> .
+
+Server response
+
+<- code message
+
+    code and message:
+	200 Put successful.
+	402 File access failed.
+	501 Input too long.
+
+
+Close connection to server:
+---------------------------
+Client command:
+-> quit
+
+Server response:
+<- code hostname message
+
+    code and message:
+	230 Closing connection.  Goodbye.
+	530 error, closing connection.
+    hostname:
+	Server host name.  Example: xyz.fubar.com
+
+
+Server sites:
+--------------
+Client command:
+-> sites
+
+Server response:
+<- code OK, site information follows (until terminating `.')
+<- (data)
+<- .
+
+    code:
+	210	Ok, site information follows
+	401	No site information available.
+
+    The data format is as follows:
+	site port latitude longitude description
+
+    The fields are as follows:
+	site:
+	    The Internet address of the remote site.
+	port:
+	    The port at which the server resides on that site.
+	latitude:
+	    The latitude of the server site. The format is as follows:
+		CDDD.MM
+	    Where "C" is the compass direction (N, S), "DDD" is the
+	    degrees, and "MM" is the minutes.
+	longitude:
+	    The longitude of the server site. Format is as above, except
+	    the compass direction must be one of (E, W).
+	description:
+	    A short description of the geographical location of the site.
+
+    Example:
+	us.freedb.org 8880 N037.21 W121.55 San Jose, CA USA
+
+
+Server status:
+--------------
+Client command:
+-> stat
+
+Server response:
+<- code OK, status information follows (until terminating `.')
+<- (data)
+<- .
+
+    code:
+	210	Ok, status information follows
+
+    The possible data is as follows:
+	current proto: <current_level>
+	    An integer representing the server's current operating protocol
+	    level.
+	max proto:     <max_level>
+	    The maximum supported protocol level.
+	gets:          <yes | no>
+	    Whether or not the client is allowed to get log information,
+	    according to the string "yes" or "no".
+	updates:       <yes | no>
+	    Whether or not the client is allowed to initiate a database
+	    update, according to the string "yes" or "no".
+	posting:       <yes | no>
+	    Whether or not the client is allowed to post new entries,
+	    according to the string "yes" or "no".
+	quotes:        <yes | no>
+	    Whether or not quoted arguments are enabled, according to
+	    the string "yes" or "no".
+	current users: <num_users>
+	    The number of users currently connected to the server.
+	max users:     <num_max_users>
+	    The number of users that can concurrently connect to the server.
+	strip ext:	<yes | no>
+	    Whether or not extended data is stripped by the server before
+	    presented to the user.
+	Database entries: <num_db_entries>
+	    The total number of entries in the database.
+	Database entries by category:
+	    This field is followed by a list of catgories and the number
+	    of entries in that category. Each entry is of the following
+	    format:
+
+		<white space>catgory: <num_db_entries>
+
+	    The list of entries is terminated by the first line that does
+	    not begin with white space.
+
+	* Pending file transmissions:
+	    This field is followed by a list of sites that are fed new
+	    database entries at periodic intervals, and the number of
+	    entries that have yet to be transmitted to that site.
+	    Each entry is of the following format:
+
+		<white space>site: <num_db_entries>
+
+	    The list of entries is terminated by the first line that does
+	    not begin with white space.
+
+	This list may grow as needed, so clients must expect possible
+	unrecognizable data. Also, additional fields may be added to
+	the currently existing lines, although no existing fields will
+	be removed or change position.
+	
+
+* Database update:
+----------------
+Client command:
+-> update
+
+Server response:
+<- code Updating the database.
+	or
+<- code Permission denied.
+	or
+<- code Unable to update the database.
+
+    code:
+	200 Updating the database.
+	401 Permission denied.
+	402 Unable to update the database.
+
+
+* Perform user validation:
+--------------------------
+Client command:
+-> validate
+
+Server response:
+<- 503 Validation not required.
+
+or
+
+<- 320 OK, input validation string, salt=saltvalue (terminate with newline)
+
+Client data:
+-> validation string
+
+Server response:
+
+-> code message
+
+    code and message:
+	200 Validation successful.
+	501 Incorrect validation string length.
+	502 Invalid validation string.
+
+
+Server version:
+---------------
+Client command:
+-> ver
+
+Server response:
+<- code servername version copyright
+	or
+<- code Version information follows
+
+    code:
+	200	Version information.
+	211	OK, version information follows (until terminating marker)
+    version:
+	Server version.  Example: v1.5PL0
+    copyright:
+	Copyright string.  Example: Copyright (c) 1996-2001 Steve Scherf et al.
+
+
+* Server users:
+---------------
+Client command:
+-> whom
+
+Server response:
+<- code message
+
+    code and message:
+	210	OK, user list follows (until terminating marker)
+	401	No user information available.
+
+
+General errors:
+---------------
+
+Server response:
+<- code error
+    code:
+	402	Server error.
+	408	CGI environment error.
+	500	Command syntax error, command unknown, command unimplemented.
+	530	Server error, server timeout.
+
+
+Reserved errors:
+----------------
+
+The following error codes are reserved, and will never be returned as a
+response to a CDDB protocol command. They are intended to be used internally
+by clients that have a need for generating pseudo-responses.
+
+	600-699
+
+
+CDDB Protocol Level 2:
+----------------------
+
+In all respects, protocol level 2 is the same as level 1, with the exceptions
+listed below.
+
+Arguments to commands may be surrounded by double quotes. All characters
+within the quotes, including white space, are included in the argument. All
+white space is replaced by the `_' (2Dh) character by the server. White space
+is defined as ` ' (20h) and `^I' (control-I, or 09h).
+
+Arguments containing quotes that should not be interpreted with the special
+meaning described above should be escaped with a preceding backslash character,
+or '\' (5Ch). If an actual backslash appears in an argument, it should be
+escaped with a preceding backslash. In both cases, the preceding backslash
+will be removed from the input before being interpreted.
+
+
+CDDB Protocol Level 3:
+----------------------
+
+Protocol level 3 is the same as level 2, with the exception listed below.
+
+The output of the "sites" command has changed to meet the folowing description:
+
+    The data format is as follows:
+	site protocol port address latitude longitude description
+
+    The fields are as follows:
+	site:
+	    The Internet address of the remote site.
+	protocol:
+	    The transfer protocol used to access the site.
+	port:
+	    The port at which the server resides on that site.
+	address:
+	    Any additional addressing information needed to access the
+	    server. For example, for HTTP protocol servers, this would be
+	    the path to the CDDB server CGI script. This field will be
+	    "-" if no additional addressing information is needed.
+	latitude:
+	    The latitude of the server site. The format is as follows:
+		CDDD.MM
+	    Where "C" is the compass direction (N, S), "DDD" is the
+	    degrees, and "MM" is the minutes.
+	longitude:
+	    The longitude of the server site. Format is as above, except
+	    the compass direction must be one of (E, W).
+	description:
+	    A short description of the geographical location of the site.
+
+    Example:
+	us.freedb.org cddbp 8880 - N037.21 W121.55 San Jose, CA USA
+	us.freedb.org http 80 /~cddb/cddb.cgi N037.21 W121.55 San Jose, CA USA
+
+Note that a site may appear once for each type of protocol it supports for
+accessing the server.
+
+
+CDDB Protocol Level 4:
+----------------------
+
+Protocol level 4 is the same as level 3, with the exception listed below.
+
+The output of the "cddb query" command may result in multiple exact matches.
+A new response code, 210, has been added to indicate that more than one
+exact match has been found.
+
+Server response:
+----------------
+<- code exact matches found
+<- categ discid dtitle
+<- categ discid dtitle
+<- (more matches...)
+<- .
+
+    code:
+        210 Found exact matches, list follows (until terminating marker)
+
+
+CDDB Protocol Level 5:
+----------------------
+
+Protocol level 5 is the same as level 4, with the following exception:
+
+The database entries returned when issuing the "cddb read" command now also 
+contain DYEAR and DGENRE fields (between the DTITLE and the TTITLE's).
+For more info on the new database entry fields take a look at the
+database format specification
+
+
+CDDB Protocol Level 6:
+----------------------
+
+Protocol level 6 is the same as level 5 except that the character set
+is now UTF-8 instead of ISO-8859-1. Note that UTF-8 is an extension of
+US-ASCII, just like ISO-8859-1 is an extension of US-ASCII, so there
+is no difference between levels 5 and 6 as far as 7-bit ASCII data is
+concerned.
+
+Clients can convert data between UTF-8 and the user's preferred
+character set using the iconv program and library function which are
+provided by glibc-2.2 or by the portable library libiconv. (They are
+also provided by the C library on some non-glibc systems, but often in
+a buggy or incompatible form.) For example, to convert data to UTF-8
+from the character set of the current locale in a shell script use
+"iconv -t utf-8 < in > out".
+
+For more information about Unicode and UTF-8 see:
+
+    ftp://ftp.ilog.fr/pub/Users/haible/utf8/Unicode-HOWTO.html
+    http://www.cl.cam.ac.uk/~mgk25/unicode.html
+
+
+Addendum A: Proper use of CDDBP:
+--------------------------------
+
+There are a few guidelines that must be followed in order to make proper use
+of CDDBP:
+
+- When handshaking with the server via the "cddb hello" command, the client
+  must specify its own name and version, not that of some other client (such
+  as xmcd).
+
+- Before performing a "cddb read", the client program MUST perform a
+  "cddb query". Failure to do so may result in the client program receiving
+  incorrect data from the server. Also, without performing a query, the
+  client program will not benefit from close matches in the event of the
+  lack of an exact match in the database.
+
+
+Addendum B: CDDBP under HTTP:
+-----------------------------
+
+Accessing a server as a CGI script is done in much the same way as through
+direct interaction. The command set is identical, though the method of
+communication is through CDDBP commands encapsulated in the HTTP protocol.
+The only limitation is that a single command may be executed per connection,
+since HTTP is not truly interactive. For the server to be accessed in this
+way, it must reside on the target host at a known URL which is accessible by
+the host HTTP server. The client program must connect to the HTTP server on
+the target host and issue an HTTP command with the appropriate CDDBP command
+encapsulated within.
+
+Commands may be submitted to servers in CGI mode using either the "GET" or
+"POST" HTTP commands. Both methods are supported, and there is no real
+difference between how both are to be used other than the syntactical
+difference between the two methods. The "POST" method may provide the ability
+to issue longer commands, though, depending on the architecture of the system
+on which the server resides.
+
+The server command must be sent as part of the "Request-URL" in the case
+of the "GET" method, and as the "Entity-Body" in the case of the "POST"
+method. In both cases, the command must be of the following form:
+
+cmd=server+command&hello=joe+my.host.com+clientname+version&proto=6
+
+Where the text following the "cmd=" represents the CDDBP command to be
+executed, the text following the "hello=" represents the arguments to
+the "cddb hello" command that is implied by this operation, and the
+text following the "proto=" represents the argument to the "proto" command
+that is implied by this operation.
+
+The "+" characters in the input represent spaces, and will be translated
+by the server before performing the request. Special characters may be
+represented by the sequence "%XX" where "XX" is a two-digit hex number
+corresponding to the ASCII (ISO-8859-1) sequence of that character. The
+"&" characters denote separations between the command, hello and proto
+arguments. Newlines and carriage returns must not appear anywhere in the
+string except at the end.
+
+All CDDBP commands are supported under HTTP, except for "cddb hello",
+"cddb write", "proto", "put", "validate" and "quit".
+
+For example, should user "joe" on system "my.host.com" be running xmcd 2.1,
+a read request for his currenly playing CD might look like this:
+
+cmd=cddb+read+rock+12345678&hello=joe+my.host.com+xmcd+2.1&proto=3
+
+The server will perform the implied "proto" and "cddb hello" commands,
+and then perform the requested "cddb read" command.
+
+Server response to the command is encapsulated in the HTTP server response,
+and appears in the "Entity-Body" exactly as it would appear using the CDDBP
+protocol. Note that the HTTP response "Entity-Header" is not guaranteed to
+contain a "Content-Length" field, so clients should be prepared to accept
+variable length input. This is no different from operation under CDDBP. The
+header will always contain a Mime "Content-Type" field which describes the
+body of data as "text/plain".
+
+For more detailed information on HTTP and Mime, see RFC 1945 and RFC 1521.
+
+
+Addendum C: CDDBP under SMTP:
+-----------------------------
+
+The use of e-mail mode (SMTP) commands is simple. A special subject line
+lets the server know that the e-mail contains a command, and somewhere in the
+body there should be a HTTP-style server command; the server will execute
+only one such commands per e-mail.
+
+The subject for e-mail commands should look like this:
+
+Subject: cddb #command arbitrary_string
+
+The "arbitrary_string" should be some randomly-chosen string. The server
+will include this string in the subject of the response. The rest of the
+subject should appear literally as it does here.
+
+Somewhere in the body of the e-mail should be exactly one server command. For
+example:
+
+cmd=motd&hello=joe+my.host.com+xmcd_via_email+v1.0&proto=6
+
+As you might have noticed, this command is exactly the same as a HTTP-mode
+CDDBP command. The command response will be mailed to the sender. Upon
+successful completion of an e-mail command request (even if the command
+itself was not successful), the reply will contain a subject which looks
+like this:
+
+Subject cddb #response ok arbitrary_string
+
+Should the server be unable to process the e-mail command for some reason, the
+subject will look like this:
+
+Subject cddb #response failed arbitrary_string
+
+In both cases, the "arbitrary_string" is the same as the one specified in the
+initial command e-mail.

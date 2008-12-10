@@ -73,6 +73,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
@@ -111,6 +112,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="app.config" />
     <None Include="Properties\DataSources\MusicBrainz.Release.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -142,6 +144,10 @@
     <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Freedb\Freedb.csproj">
+      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
+      <Name>Freedb</Name>
     </ProjectReference>
     <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
       <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>

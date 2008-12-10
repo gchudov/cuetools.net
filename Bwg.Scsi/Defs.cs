@@ -23,7 +23,7 @@
 
 namespace Bwg.Scsi
 {
-    public enum ScsiCommandCode
+    enum ScsiCommandCode
     {
         TestUnitReady = 0x00,
         RequestSense = 0x03,

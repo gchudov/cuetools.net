@@ -516,8 +516,6 @@ namespace CUETools.Processor
 
 		public void FillFromMusicBrainz(Release release)
 		{
-			General.SetCUELine(_attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(_toc), false);
-			General.SetCUELine(_attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
 			if (release.GetEvents().Count > 0)
 				General.SetCUELine(_attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
 			Artist = release.GetArtist();

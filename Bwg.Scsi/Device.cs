@@ -939,7 +939,7 @@ namespace Bwg.Scsi
         }
         #endregion
 
-        public CommandStatus SendCommand(Command cmd)
+        private CommandStatus SendCommand(Command cmd)
         {
             return (m_ossize == 32) ? SendCommand32(cmd) : SendCommand64(cmd);
         }
@@ -2131,29 +2131,51 @@ namespace Bwg.Scsi
             return CommandStatus.Success;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public enum SubChannelMode
 		{
+			/// <summary></summary>
 			None,
-			QOnly, /// + 16 bytes
-			RWMode /// + 96 bytes
+			/// <summary>+ 16 bytes</summary>
+			QOnly,
+			/// <summary>+ 96 bytes</summary>
+			RWMode 
 		};
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public enum C2ErrorMode
 		{
+			/// <summary></summary>
 			None,
-			Mode294, /// +294 bytes
-			Mode296, /// +296 bytes
+			/// <summary> +294 bytes</summary>
+			Mode294,
+			/// <summary> +296 bytes</summary>
+			Mode296, 
 		};
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public enum MainChannelSelection
 		{
+			/// <summary>
+			/// 
+			/// </summary>
 			UserData,
+			/// <summary>
+			/// 
+			/// </summary>
 			F8h
 		};
 
 		/// <summary>
 		/// 
 		/// </summary>
+		/// <param name="mainmode">main channel mode</param>
 		/// <param name="submode">subchannel mode</param>
 		/// <param name="c2mode">C2 errors report mode</param>
 		/// <param name="exp">expected sector type</param>
@@ -2309,6 +2331,7 @@ namespace Bwg.Scsi
         /// <param name="length"></param>
         /// <param name="data"></param>
         /// <param name="mode">the subchannel mode</param>
+		/// <param name="timeout">timeout (in seconds)</param>
         /// <returns></returns>
         public CommandStatus ReadSubChannel(byte mode, uint sector, uint length, ref byte[] data, int timeout)
         {

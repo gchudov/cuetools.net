@@ -491,6 +491,16 @@ namespace CUETools.AccurateRip
 			return false;
 		}
 
+		public static string CalculateCDDBQuery(CDImageLayout toc)
+		{
+			StringBuilder query = new StringBuilder(CalculateCDDBId(toc));
+			query.AppendFormat("+{0}", toc.TrackCount);
+			for (int iTrack = 1; iTrack <= toc.TrackCount; iTrack++)
+				query.AppendFormat("+{0}", toc[iTrack].Start + 150);
+			query.AppendFormat("+{0}", toc.Length / 75 - toc[1].Start / 75);
+			return query.ToString();
+		}
+
 		public static string CalculateCDDBId(CDImageLayout toc)
 		{
 			uint cddbDiscId = 0;

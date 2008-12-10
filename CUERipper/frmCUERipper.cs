@@ -8,12 +8,14 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Configuration;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
 using CUETools.Codecs;
 using CUETools.Processor;
 using CUETools.Ripper.SCSI;
 using MusicBrainz;
+using Freedb;
 
 namespace CUERipper
 {
@@ -228,6 +230,35 @@ namespace CUERipper
 			});
 		}
 
+		private CUESheet CreateCUESheet(CDDriveReader audioSource, Release release, CDEntry cdEntry)
+		{
+			CUESheet cueSheet = new CUESheet(_config);
+			cueSheet.OpenCD(audioSource);
+			General.SetCUELine(cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
+			General.SetCUELine(cueSheet.Attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
+			if (release != null)
+				cueSheet.FillFromMusicBrainz(release);
+			else if (cdEntry != null)
+			{
+				cueSheet.Artist = cdEntry.Artist;
+				cueSheet.Title = cdEntry.Title;
+				General.SetCUELine(cueSheet.Attributes, "REM", "DATE", cdEntry.Year, false);
+				General.SetCUELine(cueSheet.Attributes, "REM", "GENRE", cdEntry.Genre, true);
+				for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
+					cueSheet.Tracks[i].Title = cdEntry.Tracks[i].Title;
+			}
+			else
+			{
+				cueSheet.Artist = "Unknown Artist";
+				cueSheet.Title = "Unknown Title";
+				for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
+					cueSheet.Tracks[i].Title = string.Format("Track {0:00}", i + 1);
+			}
+			cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
+			cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
+			return cueSheet;
+		}
+
 		private void Lookup(object o)
 		{
 			CDDriveReader audioSource = (CDDriveReader)o;
@@ -242,11 +273,7 @@ namespace CUERipper
 				{
 					release.GetEvents();
 					release.GetTracks();
-					CUESheet cueSheet = new CUESheet(_config);
-					cueSheet.OpenCD(audioSource);
-					cueSheet.FillFromMusicBrainz(release);
-					cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
-					cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
+					CUESheet cueSheet = CreateCUESheet(audioSource, release, null);
 					this.BeginInvoke((MethodInvoker)delegate()
 					{
 						comboRelease.Items.Add(cueSheet);
@@ -257,20 +284,63 @@ namespace CUERipper
 			{
 			}
 			MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+
+
+			FreedbHelper m_freedb = new FreedbHelper();
+
+			m_freedb.UserName = "gchudov";
+			m_freedb.Hostname = "gmail.com";
+			m_freedb.ClientName = "CUERipper";
+			m_freedb.Version = "1.0";
+			m_freedb.SetDefaultSiteAddress(Properties.Settings.Default.MAIN_FREEDB_SITEADDRESS);
+			
+			QueryResult queryResult;
+			QueryResultCollection coll;
+			string code = string.Empty;
+			try
+			{
+				code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(audioSource.TOC), out queryResult, out coll);
+				if (code == FreedbHelper.ResponseCodes.CODE_200)
+				{
+					CDEntry cdEntry;
+					code = m_freedb.Read(queryResult, out cdEntry);
+					if (code == FreedbHelper.ResponseCodes.CODE_210)
+					{
+						CUESheet cueSheet = CreateCUESheet(audioSource, null, cdEntry);
+						this.BeginInvoke((MethodInvoker)delegate()
+						{
+							comboRelease.Items.Add(cueSheet);
+						});
+					}
+				}
+				else
+				if (code == FreedbHelper.ResponseCodes.CODE_210 ||
+					code == FreedbHelper.ResponseCodes.CODE_211 )
+				{
+					foreach (QueryResult qr in coll)
+					{
+						CDEntry cdEntry;
+						code = m_freedb.Read(qr, out cdEntry);
+						if (code == FreedbHelper.ResponseCodes.CODE_210)
+						{
+							CUESheet cueSheet = CreateCUESheet(audioSource, null, cdEntry);
+							this.BeginInvoke((MethodInvoker)delegate()
+							{
+								comboRelease.Items.Add(cueSheet);
+							});
+						}
+					}
+				}
+			}
+			catch (Exception)
+			{
+			}
+
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				if (comboRelease.Items.Count == 0)
 				{
-					CUESheet cueSheet = new CUESheet(_config);
-					cueSheet.OpenCD(audioSource);
-					General.SetCUELine(cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
-					General.SetCUELine(cueSheet.Attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
-					cueSheet.Artist = "Unknown Artist";
-					cueSheet.Title = "Unknown Title";
-					cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
-					cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
-					for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
-						cueSheet.Tracks[i].Title = string.Format("Track {0:00}", i + 1);
+					CUESheet cueSheet = CreateCUESheet(audioSource, null, null);
 					comboRelease.Items.Add(cueSheet);
 				}
 			});
@@ -332,7 +402,8 @@ namespace CUERipper
 		private void listTracks_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
 			CUESheet cueSheet = (CUESheet)comboRelease.SelectedItem;
-			cueSheet.Tracks[e.Item].Title = e.Label;
+			if (e.Label != null)
+				cueSheet.Tracks[e.Item].Title = e.Label;
 		}
 
 		private void editToolStripMenuItem_Click(object sender, EventArgs e)
