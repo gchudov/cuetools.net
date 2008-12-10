@@ -439,9 +439,7 @@ namespace CUETools.Processor
 		private CUEConfig _config;
 		private string _cddbDiscIdTag;
 		private bool _isCD;
-		private string _driveName;
-		private int _driveOffset;
-		private BitArray _cdErrors;
+		private CDDriveReader _ripper;
 		private bool _isArchive;
 		private List<string> _archiveContents;
 		private string _archiveCUEpath;
@@ -481,17 +479,55 @@ namespace CUETools.Processor
 			_isCD = false;
 		}
 
-		public void OpenTOC(CDImageLayout toc)
+		public void OpenCD(CDDriveReader ripper)
 		{
-			_toc = toc;
+			_ripper = ripper;
+			_toc = (CDImageLayout)_ripper.TOC.Clone();
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
 				_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
 				_tracks.Add(new TrackInfo());
 			}
-			_hasTrackFilenames = false;
 			_accurateRipId = _accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
 			_arVerify = new AccurateRipVerify(_toc);
+			_isCD = true;
+			SourceInfo cdInfo;
+			cdInfo.Path = _ripper.ARName;
+			cdInfo.Offset = 0;
+			cdInfo.Length = _toc.AudioLength * 588;
+			_sources.Add(cdInfo);
+			_ripper.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
+		}
+
+		public void Close()
+		{
+			if (_ripper != null)
+				_ripper.Close();
+			_ripper = null;
+		}
+
+		public AccurateRipVerify ArVerify
+		{
+			get
+			{
+				return _arVerify;
+			}
+		}
+
+		public void FillFromMusicBrainz(Release release)
+		{
+			General.SetCUELine(_attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(_toc), false);
+			General.SetCUELine(_attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
+			if (release.GetEvents().Count > 0)
+				General.SetCUELine(_attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
+			Artist = release.GetArtist();
+			Title = release.GetTitle();
+			for (int i = 1; i <= _toc.AudioTracks; i++)
+			{
+				Track track = release.GetTracks()[(int)_toc[i].Number - 1];
+				Tracks[i - 1].Title = track.GetTitle();
+				Tracks[i - 1].Artist = track.GetArtist();
+			}
 		}
 
 		public void Open(string pathIn)
@@ -502,27 +538,13 @@ namespace CUETools.Processor
 			{
 				CDDriveReader ripper = new CDDriveReader();
 				ripper.Open(pathIn[0]);
-				_toc = ripper.TOC;
-				_driveName = ripper.ARName;
-				ripper.Close();
-				if (_toc.AudioTracks > 0)
+				if (ripper.TOC.AudioTracks > 0)
 				{
-					if (!AccurateRipVerify.FindDriveReadOffset(_driveName, out _driveOffset))
-						throw new Exception("Failed to find drive read offset for drive" + _driveName);
-					_isCD = true;
-					SourceInfo cdInfo;
-					cdInfo.Path = pathIn;
-					cdInfo.Offset = 0;
-					cdInfo.Length = _toc.AudioLength * 588;
-					_sources.Add(cdInfo);
-					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
-					{
-						_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
-						_tracks.Add(new TrackInfo());
-					}
-					_hasTrackFilenames = false;
-					_accurateRipId = _accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
-					_arVerify = new AccurateRipVerify(_toc);
+					OpenCD(ripper);
+					int driveOffset;
+					if (!AccurateRipVerify.FindDriveReadOffset(_ripper.ARName, out driveOffset))
+						throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
+					_ripper.DriveOffset = driveOffset;
 
 					Release release;
 					ReleaseQueryParameters p = new ReleaseQueryParameters();
@@ -533,15 +555,11 @@ namespace CUETools.Processor
 					try
 					{
 						release = results.First();
-						General.SetCUELine(_attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(_toc), false);
-						General.SetCUELine(_attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
-						General.SetCUELine(_attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
-						General.SetCUELine(_attributes, "PERFORMER", release.GetArtist(), true);
-						General.SetCUELine(_attributes, "TITLE", release.GetTitle(), true);
-						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+						if (release != null)
 						{
-							General.SetCUELine(_tracks[iTrack].Attributes, "TITLE", release.GetTracks()[iTrack].GetTitle(), true);
-							General.SetCUELine(_tracks[iTrack].Attributes, "PERFORMER ", release.GetTracks()[iTrack].GetArtist(), true);
+							release.GetEvents();
+							release.GetTracks();
+							FillFromMusicBrainz(release);
 						}
 					}
 					catch
@@ -1212,7 +1230,7 @@ namespace CUETools.Processor
 			return (int)audioSource.Length;
 		}
 
-		public void WriteText(string path, string text)
+		public static void WriteText(string path, string text)
 		{
 			bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(text)) != text;
 			StreamWriter sw1 = new StreamWriter(path, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
@@ -1222,16 +1240,18 @@ namespace CUETools.Processor
 
 		public string LOGContents()
 		{
-			if (!_isCD)
+			if (!_isCD || _ripper == null)
 				return null;
 #if !MONO
 			StringWriter logWriter = new StringWriter();
 			logWriter.WriteLine("{0}", CDDriveReader.RipperVersion());
 			logWriter.WriteLine("Extraction logfile from : {0}", DateTime.Now);
-			logWriter.WriteLine("Used drive              : {0}", _driveName);
-			logWriter.WriteLine("Read offset correction  : {0}", _driveOffset);
-			//logWriter.WriteLine("Read command            : {0}", );
-			//logWriter.WriteLine("Secure mode             : {0}", );
+			logWriter.WriteLine("Used drive              : {0}", _ripper.ARName);
+			logWriter.WriteLine("Read offset correction  : {0}", _ripper.DriveOffset);
+			logWriter.WriteLine("Read command            : {0}", _ripper.CurrentReadCommand);
+			logWriter.WriteLine("Secure mode             : {0}", _ripper.CorrectionQuality);
+			logWriter.WriteLine("Disk length             : {0}", CDImageLayout.TimeToString(_toc.AudioLength));
+			logWriter.WriteLine("AccurateRip             : {0}", _arVerify.ARStatus == null ? "ok" : _arVerify.ARStatus);
 			if (hdcdDecoder != null && hdcdDecoder.Detected)
 			{
 				hdcd_decoder_statistics stats;
@@ -1264,7 +1284,7 @@ namespace CUETools.Processor
 				bool crcMismatch = _accurateRipMode == AccurateRipMode.VerifyThenConvert &&
 					_arVerify.BackupCRC(iTrack) != _arVerify.CRC(iTrack);
 				for (uint iSector = _toc[iTrack + 1].Start; iSector <= _toc[iTrack + 1].End; iSector++)
-					if (_cdErrors[(int)iSector])
+					if (_ripper.Errors[(int)iSector])
 						cdErrors++;
 				if (crcMismatch || cdErrors != 0)
 				{
@@ -2040,10 +2060,9 @@ namespace CUETools.Processor
 								if (_isCD && audioSource != null && audioSource is CDDriveReader)
 								{
 									updatedTOC = ((CDDriveReader)audioSource).TOC;
-									_cdErrors = ((CDDriveReader)audioSource).Errors;
 								}
 #endif
-								if (audioSource != null) audioSource.Close();
+								if (audioSource != null && !_isCD) audioSource.Close();
 								audioSource = GetAudioSource(++iSource);
 								samplesRemSource = (uint)_sources[iSource].Length;
 							}
@@ -2073,7 +2092,7 @@ namespace CUETools.Processor
 										hdcdDecoder = null;
 										if (_config.decodeHDCD)
 										{
-											audioSource.Close();
+											if (!_isCD) audioSource.Close();
 											audioDest.Delete();
 											throw new Exception("HDCD not detected.");
 										}
@@ -2113,7 +2132,7 @@ namespace CUETools.Processor
 				if (hdcdDecoder != null)
 					hdcdDecoder.AudioDest = null;
 				hdcdDecoder = null;
-				try { if (audioSource != null) audioSource.Close(); }
+				try { if (audioSource != null && !_isCD) audioSource.Close(); }
 				catch { }
 				audioSource = null;
 				try { if (audioDest != null) audioDest.Close(); } 
@@ -2126,7 +2145,6 @@ namespace CUETools.Processor
 			if (_isCD && audioSource != null && audioSource is CDDriveReader)
 			{
 				updatedTOC = ((CDDriveReader)audioSource).TOC;
-				_cdErrors = ((CDDriveReader)audioSource).Errors;
 			}
 			if (updatedTOC != null)
 			{
@@ -2134,10 +2152,15 @@ namespace CUETools.Processor
 				if (_toc.Catalog != null)
 					General.SetCUELine(_attributes, "CATALOG", _toc.Catalog, false);
 				for (iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
+					if (_toc[iTrack].IsAudio)
 				{
-					if (_toc[iTrack].IsAudio && _toc[iTrack].ISRC != null)
+					if (_toc[iTrack].ISRC != null)
 						General.SetCUELine(_tracks[iTrack - 1].Attributes, "ISRC", _toc[iTrack].ISRC, false);
-					if (_toc[iTrack].IsAudio && _toc[iTrack].PreEmphasis)
+					//if (_toc[iTrack].DCP || _toc[iTrack].PreEmphasis)
+					//cueWriter.WriteLine("    FLAGS{0}{1}", audioSource.TOC[track].PreEmphasis ? " PRE" : "", audioSource.TOC[track].DCP ? " DCP" : "");
+					if (_toc[iTrack].DCP)
+						General.SetCUELine(_tracks[iTrack - 1].Attributes, "FLAGS", "DCP", false);
+					if (_toc[iTrack].PreEmphasis)
 						General.SetCUELine(_tracks[iTrack - 1].Attributes, "FLAGS", "PRE", false);
 				}
 			}
@@ -2145,7 +2168,7 @@ namespace CUETools.Processor
 
 			if (hdcdDecoder != null)
 				hdcdDecoder.AudioDest = null;
-			if (audioSource != null) 
+			if (audioSource != null && !_isCD)
 				audioSource.Close();
 			if (audioDest != null)
 				audioDest.Close();
@@ -2339,11 +2362,8 @@ namespace CUETools.Processor
 #if !MONO
 				if (_isCD)
 				{
-					CDDriveReader ripper = new CDDriveReader();
-					ripper.Open(sourceInfo.Path[0]);
-					ripper.DriveOffset = _driveOffset;
-					ripper.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
-					audioSource = ripper;
+					audioSource = _ripper;
+					audioSource.Position = 0;
 				} else
 				if (_isArchive)
 				{

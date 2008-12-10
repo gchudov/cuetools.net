@@ -2161,7 +2161,7 @@ namespace Bwg.Scsi
 		/// <param name="start"></param>
 		/// <param name="length"></param>
 		/// <param name="data">the memory area </param>
-		/// <param name="size">the size of the memory area given by the data parameter</param>
+		/// <param name="timeout">timeout (in seconds)</param>
 		/// <returns></returns>
 		public CommandStatus ReadCDAndSubChannel(MainChannelSelection mainmode, SubChannelMode submode, C2ErrorMode c2mode, byte exp, bool dap, uint start, uint length, IntPtr data, int timeout)
 		{
@@ -2195,6 +2195,41 @@ namespace Bwg.Scsi
 				cmd.SetCDB24(6, length);
 				cmd.SetCDB8(9, byte9); // User data + possibly c2 errors
 				cmd.SetCDB8(10, mode);          // Subchannel
+
+				CommandStatus st = SendCommand(cmd);
+				if (st != CommandStatus.Success)
+					return st;
+			}
+
+			return CommandStatus.Success;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="submode">subchannel mode</param>
+		/// <param name="start"></param>
+		/// <param name="length"></param>
+		/// <param name="data">the memory area </param>
+		/// <param name="timeout">timeout (in seconds)</param>
+		/// <returns></returns>
+		public CommandStatus ReadCDDA(SubChannelMode submode, uint start, uint length, IntPtr data, int timeout)
+		{
+			if (m_logger != null)
+			{
+				string args = start.ToString() + ", " + length.ToString() + ", data";
+				m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, 8, "Bwg.Scsi.Device.ReadCDDA(" + args + ")"));
+			}
+
+			byte mode = (byte)(submode == SubChannelMode.QOnly ? 1 : submode == SubChannelMode.RWMode ? 2 : 0);
+			int size = 4 * 588 + (submode == SubChannelMode.QOnly ? 16 : submode == SubChannelMode.RWMode ? 96 : 0);
+
+			using (Command cmd = new Command(ScsiCommandCode.ReadCDDA, 12, data, size, Command.CmdDirection.In, timeout))
+			{
+				cmd.SetCDB8(1, 0 << 5); // lun
+				cmd.SetCDB32(2, start);
+				cmd.SetCDB24(7, length);
+				cmd.SetCDB8(10, mode); // Subchannel
 
 				CommandStatus st = SendCommand(cmd);
 				if (st != CommandStatus.Success)

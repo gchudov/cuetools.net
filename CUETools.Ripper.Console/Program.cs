@@ -75,11 +75,14 @@ namespace CUETools.ConsoleRipper
 				drives += string.Format("{0}: ", drivesAvailable[i]);
 			Console.WriteLine("Usage    : CUERipper.exe <options>");
 			Console.WriteLine();
-			//Console.WriteLine("-S, --secure             secure mode, read each block twice;");
+			Console.WriteLine("-S, --secure             secure mode, read each block twice (default);");
+			Console.WriteLine("-B, --burst              burst (1 pass) mode;");
 			Console.WriteLine("-P, --paranoid           maximum level of error correction;");
 			Console.WriteLine("-D, --drive <letter>     use a specific CD drive, e.g. {0};", drives);
 			Console.WriteLine("-O, --offset <samples>   use specific drive read offset;");
 			Console.WriteLine("-T, --test               detect read command;");
+			Console.WriteLine("--d8                     force D8h read command;");
+			Console.WriteLine("--be                     force BEh read command;");
 		}
 
 		static void Main(string[] args)
@@ -94,15 +97,22 @@ namespace CUETools.ConsoleRipper
 			string driveLetter = null;
 			int driveOffset = 0;
 			bool test = false;
+			bool forceD8 = false, forceBE = false;
 			for (int arg = 0; arg < args.Length; arg++)
 			{
 				bool ok = true;
 				if (args[arg] == "-P" || args[arg] == "--paranoid")
 					correctionQuality = 4;
-				if (args[arg] == "-T" || args[arg] == "--test")
+				else if (args[arg] == "-S" || args[arg] == "--secure")
+					correctionQuality = 1;
+				else if (args[arg] == "-B" || args[arg] == "--burst")
+					correctionQuality = 0;
+				else if (args[arg] == "-T" || args[arg] == "--test")
 					test = true;
-				//else if (args[arg] == "-B" || args[arg] == "--burst")
-				//    correctionQuality = 1;
+				else if (args[arg] == "--d8")
+					forceD8 = true;
+				else if (args[arg] == "--be")
+					forceBE = true;
 				else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
 					driveLetter = args[arg];
 				else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
@@ -149,14 +159,18 @@ namespace CUETools.ConsoleRipper
 					if (!AccurateRipVerify.FindDriveReadOffset(audioSource.ARName, out driveOffset))
 						Console.WriteLine("Unknown read offset for drive {0}!!!", audioSource.Path);
 						//throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
-				if (test)
-				{
-					Console.Write(audioSource.AutoDetectReadCommand);
-					return;
-				}
+
 				audioSource.DriveOffset = driveOffset;
 				audioSource.CorrectionQuality = correctionQuality;
 				audioSource.DebugMessages = true;
+				if (forceD8) audioSource.ForceD8 = true;
+				if (forceBE) audioSource.ForceBE = true;
+				string readCmd = audioSource.AutoDetectReadCommand;
+				if (test)
+				{
+					Console.Write(readCmd);
+					return;
+				}
 			
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
 				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
@@ -183,7 +197,7 @@ namespace CUETools.ConsoleRipper
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
-				Console.WriteLine("Read cmd    : {0}", audioSource.ChosenReadCommand);
+				Console.WriteLine("Read cmd    : {0}", audioSource.CurrentReadCommand);
 				Console.WriteLine("Secure mode : {0}", audioSource.CorrectionQuality);
 				Console.WriteLine("Filename    : {0}", destFile);
 				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
@@ -285,8 +299,8 @@ namespace CUETools.ConsoleRipper
 					}
 					if (audioSource.TOC[track].ISRC != null)
 						cueWriter.WriteLine("    ISRC {0}", audioSource.TOC[track].ISRC);
-					if (audioSource.TOC[track].PreEmphasis)
-						cueWriter.WriteLine("    FLAGS PRE");
+					if (audioSource.TOC[track].DCP || audioSource.TOC[track].PreEmphasis)
+						cueWriter.WriteLine("    FLAGS{0}{1}", audioSource.TOC[track].PreEmphasis ? " PRE" : "", audioSource.TOC[track].DCP ? " DCP" : "");
 					for (int index = audioSource.TOC[track].Pregap > 0 ? 0 : 1; index <= audioSource.TOC[track].LastIndex; index++)
 						cueWriter.WriteLine("    INDEX {0:00} {1}", index, audioSource.TOC[track][index].MSF);
 				}

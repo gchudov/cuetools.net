@@ -76,6 +76,7 @@ namespace Bwg.Scsi
         SetCdSpeed = 0xBB,
         MechanismStatus = 0xBD,
         ReadCd = 0xBE,
-        SendDvdStructure = 0xBF
+        SendDvdStructure = 0xBF,
+		ReadCDDA = 0xD8
     } ;
 }

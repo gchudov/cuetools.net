@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -25,6 +26,7 @@ namespace CUERipper
 		private OutputAudioFormat _format;
 		private CUEStyle _style;
 		private CUESheet _cueSheet;
+		private string _pathOut;
 
 		public frmCUERipper()
 		{
@@ -39,7 +41,13 @@ namespace CUERipper
 			{
 				CDDriveReader reader = new CDDriveReader();
 				if (reader.Open(drive))
+				{
+					int driveOffset;
+					if (!AccurateRipVerify.FindDriveReadOffset(reader.ARName, out driveOffset))
+						; //throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
+					reader.DriveOffset = driveOffset;
 					comboDrives.Items.Add(reader);
+				}
 			}
 			if (comboDrives.Items.Count == 0)
 				comboDrives.Items.Add("No CD drives found");
@@ -105,58 +113,18 @@ namespace CUERipper
 		{
 			CDDriveReader audioSource = (CDDriveReader)o;
 			audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
-			int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
-			AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
-			string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);
 
-			arVerify.ContactAccurateRip(ArId);
-
-			IAudioDest audioDest = null;
-
+			CUESheet.WriteText(_pathOut, _cueSheet.CUESheetContents(_style));
+			CUESheet.WriteText(Path.ChangeExtension(_pathOut, ".log"), _cueSheet.LOGContents());
 			try
 			{
-				audioSource.Position = 0;
-				if (_style == CUEStyle.SingleFile || _style == CUEStyle.SingleFileWithCUE)
-					audioDest = AudioReadWrite.GetAudioDest(_cueSheet.SingleFilename, (long)audioSource.Length, _config);
-
-				for (int iTrack = 0; iTrack <= audioSource.TOC.AudioTracks; iTrack++)
-				{
-					uint samplesRemTrack = (iTrack > 0 ? audioSource.TOC[iTrack].Length : audioSource.TOC.Pregap) * 588;
-					if (_style == CUEStyle.GapsAppended)
-					{
-						if (audioDest != null)
-							audioDest.Close();
-						audioDest = AudioReadWrite.GetAudioDest(iTrack > 0 ? _cueSheet.TrackFilenames[iTrack - 1] : _cueSheet.HTOAFilename, (long)samplesRemTrack, _config);
-					}
-					while (samplesRemTrack > 0)
-					{
-						uint toRead = Math.Min((uint)buff.GetLength(0), (uint)samplesRemTrack);
-						uint samplesRead = audioSource.Read(buff, toRead);
-						if (samplesRead != toRead)
-							throw new Exception("samples read != samples requested");
-						arVerify.Write(buff, samplesRead);
-						audioDest.Write(buff, samplesRead);
-						samplesRemTrack -= samplesRead;
-					}
-				}
-
-				if (audioDest != null)
-					audioDest.Close();
-				audioDest = null;
+				_cueSheet.WriteAudioFiles(".", _style);
 			}
 			catch (StopException)
 			{
-				if (audioDest != null) 
-					try { audioDest.Close(); }
-					catch { };
-				audioDest = null;
 			}
 			catch (Exception ex)
 			{
-				if (audioDest != null)
-					try { audioDest.Close(); }
-					catch { };
-				audioDest = null;
 				this.Invoke((MethodInvoker)delegate()
 				{
 					string message = "Exception";
@@ -165,6 +133,7 @@ namespace CUERipper
 					DialogResult dlgRes = MessageBox.Show(this, message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				});
 			}
+			audioSource.ReadProgress -= new EventHandler<ReadProgressArgs>(CDReadProgress);
 			_workThread = null;
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
@@ -176,17 +145,20 @@ namespace CUERipper
 		{
 			if (_reader == null)
 				return;
-			
+
+			_style = comboImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
+				CUEStyle.GapsAppended;
+			_pathOut = _config.CleanseString(_cueSheet.Artist) + " - " + 
+				_config.CleanseString(_cueSheet.Title) + ".cue";
 			_config.lossyWAVHybrid = comboLossless.SelectedIndex == 1; // _cueSheet.Config?
-			_config.singleFilenameFormat = "%D - %C.cue";
+			if (_style == CUEStyle.SingleFileWithCUE)
+				_cueSheet.SingleFilename = Path.GetFileName(_pathOut);
 			_format = (string)comboCodec.SelectedItem == "wav" ? OutputAudioFormat.WAV :
 				(string)comboCodec.SelectedItem == "flac" ? OutputAudioFormat.FLAC :
 				(string)comboCodec.SelectedItem == "wv" ? OutputAudioFormat.WavPack :
 				(string)comboCodec.SelectedItem == "ape" ? OutputAudioFormat.APE :
 				OutputAudioFormat.NoAudio;
-			_style = comboImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
-				CUEStyle.GapsAppended;
-			_cueSheet.GenerateFilenames(_format, comboLossless.SelectedIndex != 0, ".");
+			_cueSheet.GenerateFilenames(_format, comboLossless.SelectedIndex != 0, _pathOut);
 
 			_workThread = new Thread(Rip);
 			_workThread.Priority = ThreadPriority.BelowNormal;
@@ -197,31 +169,12 @@ namespace CUERipper
 
 		private void buttonAbort_Click(object sender, EventArgs e)
 		{
-			lock (_startStop)
-			{
-				if (_startStop._pause)
-				{
-					_startStop._pause = false;
-					Monitor.Pulse(_startStop);
-				}
-				_startStop._stop = true;
-			}
+			_startStop.Stop();
 		}
 
 		private void buttonPause_Click(object sender, EventArgs e)
 		{
-			lock (_startStop)
-			{
-				if (_startStop._pause)
-				{
-					_startStop._pause = false;
-					Monitor.Pulse(_startStop);
-				}
-				else
-				{
-					_startStop._pause = true;
-				}
-			}
+			_startStop.Pause();
 		}
 
 		private void comboRelease_Format(object sender, ListControlConvertEventArgs e)
@@ -283,27 +236,25 @@ namespace CUERipper
 			p.DiscId = audioSource.TOC.MusicBrainzId;
 			Query<Release> results = Release.Query(p);
 			MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-			foreach (Release release in results)
+			try
 			{
-				release.GetEvents();
-				release.GetTracks();
-				
-				this.BeginInvoke((MethodInvoker)delegate()
+				foreach (Release release in results)
 				{
+					release.GetEvents();
+					release.GetTracks();
 					CUESheet cueSheet = new CUESheet(_config);
-					cueSheet.OpenTOC(audioSource.TOC);
-					cueSheet.Artist = release.GetArtist();
-					cueSheet.Title = release.GetTitle();
-					if (release.GetEvents().Count > 0)
-						General.SetCUELine(cueSheet.Attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
-					for (int i = 1; i <= audioSource.TOC.AudioTracks; i++)
+					cueSheet.OpenCD(audioSource);
+					cueSheet.FillFromMusicBrainz(release);
+					cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
+					cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
+					this.BeginInvoke((MethodInvoker)delegate()
 					{
-						Track track = release.GetTracks()[(int)audioSource.TOC[i].Number - 1];
-						cueSheet.Tracks[i - 1].Title = track.GetTitle();
-						cueSheet.Tracks[i - 1].Artist = track.GetArtist();
-					}
-					comboRelease.Items.Add(cueSheet);
-				});
+						comboRelease.Items.Add(cueSheet);
+					});
+				}
+			}
+			catch (Exception)
+			{
 			}
 			MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 			this.BeginInvoke((MethodInvoker)delegate()
@@ -311,9 +262,16 @@ namespace CUERipper
 				if (comboRelease.Items.Count == 0)
 				{
 					CUESheet cueSheet = new CUESheet(_config);
-					cueSheet.OpenTOC(audioSource.TOC); 
+					cueSheet.OpenCD(audioSource);
+					General.SetCUELine(cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
+					General.SetCUELine(cueSheet.Attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
+					cueSheet.Artist = "Unknown Artist";
+					cueSheet.Title = "Unknown Title";
+					cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
+					cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
+					for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
+						cueSheet.Tracks[i].Title = string.Format("Track {0:00}", i + 1);
 					comboRelease.Items.Add(cueSheet);
-					// cueSheet.Tracks[i - 1].Title = "Track " + _reader.TOC[i].Number.ToString();
 				}
 			});
 			_workThread = null;
@@ -370,13 +328,20 @@ namespace CUERipper
 				}
 			}
 		}
-	}
 
-	public class StopException : Exception
-	{
-		public StopException()
-			: base()
+		private void listTracks_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
+			CUESheet cueSheet = (CUESheet)comboRelease.SelectedItem;
+			cueSheet.Tracks[e.Item].Title = e.Label;
+		}
+
+		private void editToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			CUESheet cueSheet = (CUESheet)comboRelease.SelectedItem;
+			frmRelease frm = new frmRelease();
+			frm.CUE = cueSheet;
+			frm.ShowDialog();
+			comboRelease.Items[comboRelease.SelectedIndex] = cueSheet;
 		}
 	}
 
@@ -387,6 +352,35 @@ namespace CUERipper
 		{
 			_stop = false;
 			_pause = false;
+		}
+
+		public void Stop()
+		{
+			lock (this)
+			{
+				if (_pause)
+				{
+					_pause = false;
+					Monitor.Pulse(this);
+				}
+				_stop = true;
+			}
+		}
+
+		public void Pause()
+		{
+			lock (this)
+			{
+				if (_pause)
+				{
+					_pause = false;
+					Monitor.Pulse(this);
+				}
+				else
+				{
+					_pause = true;
+				}
+			}
 		}
 	}
 }

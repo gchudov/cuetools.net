@@ -201,6 +201,18 @@ namespace CUETools.CDImage
 			}
 		}
 
+		public bool DCP
+		{
+			get
+			{
+				return _dcp;
+			}
+			set
+			{
+				_dcp = value;
+			}
+		}
+
 		public void AddIndex(CDTrackIndex index)
 		{
 			if (index.Index < 2)
@@ -212,7 +224,7 @@ namespace CUETools.CDImage
 		IList<CDTrackIndex> _indexes;
 		string _isrc;
 		bool _isAudio;
-		bool _preEmphasis;
+		bool _preEmphasis, _dcp;
 		uint _start;
 		uint _length;
 		uint _number;

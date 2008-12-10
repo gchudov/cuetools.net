@@ -348,6 +348,7 @@ namespace JDP {
 						outputExists = false;
 					else if (dlgRes == DialogResult.Cancel || _batchPaths.Count == 0)
 					{
+						cueSheet.Close();
 						_batchPaths.Clear();
 						SetupControls(false);
 						return;
@@ -413,6 +414,7 @@ namespace JDP {
 				});
 			}
 #endif
+			cueSheet.Close();
 
 			if (_batchPaths.Count != 0) {
 				_batchPaths.RemoveAt(0);
