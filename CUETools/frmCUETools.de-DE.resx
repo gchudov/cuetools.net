@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="btnConvert.Text" xml:space="preserve">
+    <value>&amp;Los</value>
+  </data>
+  <data name="btnBrowseOutput.Text" xml:space="preserve">
+    <value>Durchsuchen...</value>
+  </data>
+  <data name="btnBrowseInput.Text" xml:space="preserve">
+    <value>Durchsuchen...</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="lblOutput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>53, 13</value>
+  </data>
+  <data name="lblOutput.Text" xml:space="preserve">
+    <value>&amp;Ausgabe:</value>
+  </data>
+  <data name="grpCUEPaths.Text" xml:space="preserve">
+    <value>CUE-Pfade</value>
+  </data>
+  <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
+    <value>81, 17</value>
+  </data>
+  <data name="rbEmbedCUE.Text" xml:space="preserve">
+    <value>&amp;Eingebettet</value>
+  </data>
+  <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
+    <value>Erstelle einzelne Datei mit eingebettetem CUE-Sheet</value>
+  </data>
+  <data name="rbGapsLeftOut.Size" type="System.Drawing.Size, System.Drawing">
+    <value>120, 17</value>
+  </data>
+  <data name="rbGapsLeftOut.Text" xml:space="preserve">
+    <value>Lücken ausgelassen</value>
+  </data>
+  <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
+    <value>Erstelle mehrere Dateien ohne Lücken</value>
+  </data>
+  <data name="rbGapsPrepended.Size" type="System.Drawing.Size, System.Drawing">
+    <value>124, 17</value>
+  </data>
+  <data name="rbGapsPrepended.Text" xml:space="preserve">
+    <value>Lücken vorangestellt</value>
+  </data>
+  <data name="rbGapsPrepended.ToolTip" xml:space="preserve">
+    <value>Erstelle mehrere Dateien mit vorangestellten Lücken</value>
+  </data>
+  <data name="rbGapsAppended.Size" type="System.Drawing.Size, System.Drawing">
+    <value>113, 17</value>
+  </data>
+  <data name="rbGapsAppended.Text" xml:space="preserve">
+    <value>Lücken &amp;angehängt</value>
+  </data>
+  <data name="rbGapsAppended.ToolTip" xml:space="preserve">
+    <value>Erstelle mehrere Dateien mit nachgestellten Lücken</value>
+  </data>
+  <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>126, 17</value>
+  </data>
+  <data name="rbSingleFile.Text" xml:space="preserve">
+    <value>&amp;Einzelne Datei + CUE</value>
+  </data>
+  <data name="rbSingleFile.ToolTip" xml:space="preserve">
+    <value>Erstelle einzelne Datei + CUE-Sheet</value>
+  </data>
+  <data name="grpOutputStyle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>97, 211</value>
+  </data>
+  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>141, 137</value>
+  </data>
+  <data name="grpOutputStyle.Text" xml:space="preserve">
+    <value>CUE-Stil</value>
+  </data>
+  <data name="btnAbout.Text" xml:space="preserve">
+    <value>Über</value>
+  </data>
+  <data name="txtCustomFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>163, 62</value>
+  </data>
+  <data name="txtCustomFormat.Text" xml:space="preserve">
+    <value>%1:-2\Neu\%-1\%F.cue</value>
+  </data>
+  <data name="rbCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>134, 17</value>
+  </data>
+  <data name="rbCustomFormat.Text" xml:space="preserve">
+    <value>Nutze eigenes Format:</value>
+  </data>
+  <data name="txtCreateSubdirectory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>163, 20</value>
+  </data>
+  <data name="txtCreateSubdirectory.Text" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="rbDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
+    <value>61, 17</value>
+  </data>
+  <data name="rbDontGenerate.Text" xml:space="preserve">
+    <value>&amp;Manuell</value>
+  </data>
+  <data name="rbCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>147, 17</value>
+  </data>
+  <data name="rbCreateSubdirectory.Text" xml:space="preserve">
+    <value>E&amp;rstelle Unterverzeichnis:</value>
+  </data>
+  <data name="rbAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 17</value>
+  </data>
+  <data name="rbAppendFilename.Text" xml:space="preserve">
+    <value>An Dateinamen anhängen:</value>
+  </data>
+  <data name="txtAppendFilename.Location" type="System.Drawing.Point, System.Drawing">
+    <value>163, 42</value>
+  </data>
+  <data name="txtAppendFilename.Text" xml:space="preserve">
+    <value>-Neu</value>
+  </data>
+  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
+    <value>398, 115</value>
+  </data>
+  <data name="grpOutputPathGeneration.Text" xml:space="preserve">
+    <value>Ausgabepfad</value>
+  </data>
+  <data name="chkLossyWAV.ToolTip" xml:space="preserve">
+    <value>Erstelle ein Paar von Dateien - .lossy.wav(flac usw.) und .lwcdf.wav(flac usw.). Die verlustbehaftete (lossy) Datei enthält komprimierte Musik, aber gemeinsam mit der lwcdf-Datei können die originalen Audiodaten wiederhergestellt werden.</value>
+  </data>
+  <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="rbNoAudio.Text" xml:space="preserve">
+    <value>Kei&amp;ne</value>
+  </data>
+  <data name="rbNoAudio.ToolTip" xml:space="preserve">
+    <value>Erstelle keine Audiodateien, nur CUE-Sheet</value>
+  </data>
+  <data name="grpAudioOutput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>83, 137</value>
+  </data>
+  <data name="grpAudioOutput.Text" xml:space="preserve">
+    <value>Audioausgabe</value>
+  </data>
+  <data name="btnBatch.Text" xml:space="preserve">
+    <value>Stapel...</value>
+  </data>
+  <data name="btnFilenameCorrector.Text" xml:space="preserve">
+    <value>Dateinamenkorrektur...</value>
+  </data>
+  <data name="btnSettings.Text" xml:space="preserve">
+    <value>Erweiterte Einstellungen...</value>
+  </data>
+  <data name="rbArAndEncode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 37</value>
+  </data>
+  <data name="rbArAndEncode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>144, 17</value>
+  </data>
+  <data name="rbArAndEncode.Text" xml:space="preserve">
+    <value>Kodieren und verifizieren</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Datenspur:</value>
+  </data>
+  <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
+    <value>Nicht für normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren können nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die Länge der Datenspur. Sie können sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie müssen hier nichts eingeben.</value>
+  </data>
+  <data name="rbArApplyOffset.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 20</value>
+  </data>
+  <data name="rbArApplyOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 17</value>
+  </data>
+  <data name="rbArApplyOffset.Text" xml:space="preserve">
+    <value>Verifizieren, &amp;dann kodieren</value>
+  </data>
+  <data name="rbArApplyOffset.ToolTip" xml:space="preserve">
+    <value>Im ersten Durchlauf verifizieren und versuchen, eine Offsetkorrektur zu finden, die das Auslesen nach der AccurateRip-Datenbank korrekt macht. Im zweiten Durchlauf unter Berücksichtigung dieser Korrektur konvertieren.</value>
+  </data>
+  <data name="rbArVerify.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 71</value>
+  </data>
+  <data name="rbArVerify.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 17</value>
+  </data>
+  <data name="rbArVerify.Text" xml:space="preserve">
+    <value>&amp;Verifizieren, nicht kodieren</value>
+  </data>
+  <data name="rbArVerify.ToolTip" xml:space="preserve">
+    <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image anhand dieser zu verifizieren</value>
+  </data>
+  <data name="rbArNone.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 54</value>
+  </data>
+  <data name="rbArNone.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 17</value>
+  </data>
+  <data name="rbArNone.Text" xml:space="preserve">
+    <value>&amp;Nicht verifizieren, kodieren</value>
+  </data>
+  <data name="rbArNone.ToolTip" xml:space="preserve">
+    <value>Die AccurateRip-Datenbank zur Verifizierung nicht kontaktieren</value>
+  </data>
+  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>162, 137</value>
+  </data>
+  <data name="btnCUECreator.Text" xml:space="preserve">
+    <value>CUE-Sheet erstellen...</value>
+  </data>
+  <data name="btnStop.Text" xml:space="preserve">
+    <value>&amp;Stopp</value>
+  </data>
+  <data name="btnResume.Text" xml:space="preserve">
+    <value>&amp;Fortsetzen</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>CUE-Werkzeuge</value>
+  </data>
+</root>
