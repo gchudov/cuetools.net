@@ -3,12 +3,14 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Threading;
 
 namespace CUETools.Codecs
 {
 	public interface IAudioSource
 	{
 		uint Read(int[,] buff, uint sampleCount);
+		int[,] Read(int[,] buff);
 		ulong Length { get; }
 		ulong Position { get; set; }
 		NameValueCollection Tags { get; set; }
@@ -127,6 +129,19 @@ namespace CUETools.Codecs
 					}
 				}
 			}
+		}
+
+		public static int[,] Read(IAudioSource source, int[,] buff)
+		{
+			if (source.Remaining == 0) return null;
+			uint toRead = Math.Min(65536U, (uint)source.Remaining);
+			if (buff == null || (ulong)buff.GetLength(0) > source.Remaining)
+				buff = new int[toRead, source.ChannelCount];
+			else
+				toRead = (uint)buff.GetLength(0);
+			uint samplesRead = source.Read(buff, toRead);
+			if (samplesRead != toRead) throw new Exception("samples read != requested");
+			return buff;
 		}
 	}
 
@@ -264,6 +279,19 @@ namespace CUETools.Codecs
 
 			_sampleOffset += sampleCount;
 			return sampleCount;
+		}
+
+		public int[,] Read(int[,] buff)
+		{
+			if (buff != null && buff.GetLength(0) <= (int)Remaining)
+			{
+				_sampleOffset += (ulong) buff.GetLength(0);
+				Array.Clear(buff, 0, buff.Length);
+				return buff;
+			}
+			ulong samples = Math.Min(Remaining, (ulong)4096);
+			_sampleCount += samples;
+			return new int[samples, ChannelCount];
 		}
 
 		public void Close()
@@ -487,12 +515,6 @@ namespace CUETools.Codecs
 			return false;
 		}
 
-		public void GetTags(out List<string> names, out List<string> values)
-		{
-			names = new List<string>();
-			values = new List<string>();
-		}
-
 		public uint Read(int[,] buff, uint sampleCount)
 		{
 			if (sampleCount > Remaining)
@@ -509,6 +531,11 @@ namespace CUETools.Codecs
 				sampleCount, _channelCount);
 			_samplePos += sampleCount;
 			return sampleCount;
+		}
+
+		public int[,] Read(int[,] buff)
+		{
+			return AudioSamples.Read(this, buff);
 		}
 
 		public string Path { get { return _path; } }
@@ -700,5 +727,284 @@ namespace CUETools.Codecs
 		}
 
 		public string Path { get { return _path; } }
+	}
+
+	public class AudioPipe : IAudioSource//, IDisposable
+	{
+		private readonly Queue<int[,]> _buffer = new Queue<int[,]>();
+		int _bitsPerSample, _channelCount, _sampleRate, _bufferPos;
+		ulong _sampleLen, _samplePos;
+		private int _maxLength;
+		private Thread _workThread;
+		IAudioSource _source;
+		bool _close = false;
+		Exception _ex = null;
+
+		public AudioPipe(IAudioSource source, int maxLength)
+		{
+			_source = source;
+			_maxLength = maxLength;
+			_bitsPerSample = _source.BitsPerSample;
+			_channelCount = _source.ChannelCount;
+			_sampleRate = _source.SampleRate;
+			_sampleLen = _source.Length;
+			_samplePos = 0;
+			_bufferPos = 0;
+		}
+
+		private void Decompress(object o)
+		{
+			// catch
+			try
+			{
+				do
+				{
+					//int[,] buff = new int[65536, 2];
+					//uint toRead = Math.Min((uint)buff.GetLength(0), (uint)_source.Remaining);
+					//uint samplesRead = _source.Read(buff, toRead);
+					int[,] buff = _source.Read(null);
+					if (buff == null) break;
+					//uint samplesRead = buff.GetLength(0);
+					//if (samplesRead == 0) break;
+					//if (samplesRead != toRead)
+					//    throw new Exception("samples read != samples requested");
+					Write(buff);
+				} while (true);
+			}
+			catch (Exception ex)
+			{
+				lock (_buffer)
+				{
+					_ex = ex;
+					Monitor.Pulse(_buffer);
+				}
+			}
+		}
+
+		private void Go()
+		{
+			if (_workThread != null || _ex != null) return;
+			_workThread = new Thread(Decompress);
+			_workThread.Priority = ThreadPriority.BelowNormal;
+			_workThread.IsBackground = true;
+			_workThread.Start(null);
+		}
+
+		//public new void Dispose()
+		//{
+		//    _buffer.Clear();
+		//}
+
+		public void Close()
+		{
+			lock (_buffer)
+			{
+				_close = true;
+				Monitor.Pulse(_buffer);
+			}
+			if (_workThread != null)
+			{
+				_workThread.Join();
+				_workThread = null;
+			}
+			_buffer.Clear();
+		}
+
+		public ulong Position
+		{
+			get
+			{
+				return _samplePos;
+			}
+			set
+			{
+				throw new Exception("not supported");
+			}
+		}
+
+		public ulong Length
+		{
+			get
+			{
+				return _sampleLen;
+			}
+		}
+
+		public ulong Remaining
+		{
+			get
+			{
+				return _sampleLen - _samplePos;
+			}
+		}
+
+		public int ChannelCount
+		{
+			get
+			{
+				return _channelCount;
+			}
+		}
+
+		public int SampleRate
+		{
+			get
+			{
+				return _sampleRate;
+			}
+		}
+
+		public int BitsPerSample
+		{
+			get
+			{
+				return _bitsPerSample;
+			}
+		}
+
+		public NameValueCollection Tags
+		{
+			get
+			{
+				return _source.Tags;
+				//return new NameValueCollection();
+			}
+			set
+			{
+			}
+		}
+
+		public bool UpdateTags(bool preserveTime)
+		{
+			return false;
+		}
+
+		public int[,] Read(int[,] buff)
+		{
+			Go();
+			if (Remaining == 0)
+				return null;
+			if (_bufferPos != 0)
+				throw new Exception("Mixed Read usage not yet suppoted");
+			lock (_buffer)
+			{
+				while (_buffer.Count == 0 && _ex == null)
+					Monitor.Wait(_buffer);
+				if (_ex != null)
+					throw _ex;
+				buff = _buffer.Dequeue();
+				Monitor.Pulse(_buffer);
+			}
+			return buff;
+		}
+
+		public uint Read(int[,] buff, uint sampleCount)
+		{
+			Go();
+			if (sampleCount > Remaining)
+				sampleCount = (uint)Remaining;
+			int pos = 0;
+			while (sampleCount > 0)
+			{
+				lock (_buffer)
+				{
+					while (_buffer.Count == 0 && _ex == null)
+						Monitor.Wait(_buffer);
+					if (_ex != null)
+						throw _ex;
+					int[,] chunk = _buffer.Peek();
+					int copyCount = Math.Min((int)sampleCount, chunk.GetLength(0) - _bufferPos);
+					Array.Copy(chunk, _bufferPos * _channelCount, buff, pos * _channelCount, copyCount * _channelCount);
+					pos += copyCount;
+					sampleCount -= (uint) copyCount;
+					_samplePos += (ulong) copyCount;
+					_bufferPos += copyCount;
+					if (_bufferPos == chunk.GetLength(0))
+					{
+						_buffer.Dequeue(); // .Finalize?
+						_bufferPos = 0;
+						Monitor.Pulse(_buffer);
+					}
+				}
+			}
+			return (uint) pos;
+		}
+
+		public void Write(int[,] buff)
+		{
+			lock (_buffer)
+			{
+				while (_buffer.Count >= _maxLength && !_close)
+					Monitor.Wait(_buffer);
+				if (_close)
+					throw new Exception("Decompression aborted");
+				//_flushed = false;
+				_buffer.Enqueue(buff);
+				Monitor.Pulse(_buffer);
+			}
+		}
+
+		public string Path { get { return _source.Path; } }
+	}
+
+	public class Crc32
+	{
+		uint[] table = new uint[256];
+
+		public uint ComputeChecksum(uint crc, byte val)
+		{
+			return (crc >> 8) ^ table[(crc & 0xff) ^ val];
+		}
+
+		public uint ComputeChecksum(uint crc, byte[] bytes, int pos, int count)
+		{
+			for (int i = pos; i < pos + count; i++)
+				crc = ComputeChecksum(crc, bytes[i]);
+			return crc;
+		}
+
+		public uint ComputeChecksum(uint crc, uint s)
+		{
+			return ComputeChecksum(ComputeChecksum(ComputeChecksum(ComputeChecksum(
+				crc, (byte)s), (byte)(s >> 8)), (byte)(s >> 16)), (byte)(s >> 24));
+		}
+
+		public unsafe uint ComputeChecksum(uint crc, int * samples, uint count)
+		{
+			for (uint i = 0; i < count; i++)
+			{
+				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
+				crc = ComputeChecksum(ComputeChecksum(ComputeChecksum(ComputeChecksum(
+					crc, (byte)s1), (byte)(s1 >> 8)), (byte)(s2)), (byte)(s2 >> 8));
+			}
+			return crc;
+		}
+
+		uint Reflect(uint val, int ch)
+		{
+			uint value = 0;
+			// Swap bit 0 for bit 7
+			// bit 1 for bit 6, etc.
+			for (int i = 1; i < (ch + 1); i++)
+			{
+				if (0 != (val & 1))
+					value |= 1U << (ch - i);
+				val >>= 1;
+			}
+			return value;
+		}
+
+		const uint ulPolynomial = 0x04c11db7;
+
+		public Crc32()
+		{
+			for (uint i = 0; i < table.Length; i++)
+			{
+				table[i] = Reflect(i, 8) << 24;
+				for (int j = 0; j < 8; j++)
+					table[i] = (table[i] << 1) ^ ((table[i] & (1U << 31)) == 0 ? 0 : ulPolynomial);
+				table[i] = Reflect(table[i], 32);
+			}
+		}
 	}
 }

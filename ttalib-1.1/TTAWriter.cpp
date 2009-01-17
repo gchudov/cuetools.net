@@ -28,6 +28,8 @@
  */
 
 #include "stdafx.h"
+#include "BitWriter.h"
+#include "TTAError.h"
 #include "TTAWriter.h"
 #include "filters3.h"
 

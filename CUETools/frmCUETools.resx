@@ -119,7 +119,7 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnConvert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 307</value>
+    <value>412, 339</value>
   </data>
   <data name="btnConvert.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -141,7 +141,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnConvert.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>15</value>
   </data>
   <data name="btnBrowseOutput.Location" type="System.Drawing.Point, System.Drawing">
     <value>452, 49</value>
@@ -309,7 +309,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpCUEPaths.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>14</value>
   </data>
   <data name="rbEmbedCUE.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -472,7 +472,7 @@
     <value>108, 211</value>
   </data>
   <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>128, 137</value>
+    <value>128, 164</value>
   </data>
   <data name="grpOutputStyle.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -490,10 +490,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpOutputStyle.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>13</value>
   </data>
   <data name="btnAbout.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 152</value>
+    <value>412, 184</value>
   </data>
   <data name="btnAbout.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -514,10 +514,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnAbout.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="txtCustomFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>140, 62</value>
+    <value>166, 60</value>
   </data>
   <data name="txtCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>226, 21</value>
@@ -568,7 +568,7 @@
     <value>1</value>
   </data>
   <data name="txtCreateSubdirectory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>140, 20</value>
+    <value>166, 18</value>
   </data>
   <data name="txtCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
     <value>226, 21</value>
@@ -673,7 +673,7 @@
     <value>5</value>
   </data>
   <data name="txtAppendFilename.Location" type="System.Drawing.Point, System.Drawing">
-    <value>140, 41</value>
+    <value>166, 39</value>
   </data>
   <data name="txtAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
     <value>226, 21</value>
@@ -700,7 +700,7 @@
     <value>8, 92</value>
   </data>
   <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
-    <value>380, 115</value>
+    <value>398, 115</value>
   </data>
   <data name="grpOutputPathGeneration.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -718,13 +718,40 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpOutputPathGeneration.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
+  </data>
+  <data name="rbTTA.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbTTA.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 68</value>
+  </data>
+  <data name="rbTTA.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 17</value>
+  </data>
+  <data name="rbTTA.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="rbTTA.Text" xml:space="preserve">
+    <value>TTA</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.Name" xml:space="preserve">
+    <value>rbTTA</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="chkLossyWAV.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="chkLossyWAV.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 109</value>
+    <value>6, 141</value>
   </data>
   <data name="chkLossyWAV.Size" type="System.Drawing.Size, System.Drawing">
     <value>76, 17</value>
@@ -748,7 +775,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;chkLossyWAV.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="rbAPE.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -775,13 +802,13 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbAPE.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="rbNoAudio.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="rbNoAudio.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 85</value>
+    <value>10, 102</value>
   </data>
   <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
     <value>50, 17</value>
@@ -805,7 +832,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbNoAudio.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="rbWavPack.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -832,7 +859,34 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbWavPack.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="rbWAV.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbWAV.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 85</value>
+  </data>
+  <data name="rbWAV.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 17</value>
+  </data>
+  <data name="rbWAV.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
+  </data>
+  <data name="rbWAV.Text" xml:space="preserve">
+    <value>&amp;WAV</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.Name" xml:space="preserve">
+    <value>rbWAV</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.ZOrder" xml:space="preserve">
+    <value>5</value>
   </data>
   <data name="rbFLAC.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -859,40 +913,13 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbFLAC.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="rbWAV.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="rbWAV.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 68</value>
-  </data>
-  <data name="rbWAV.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 17</value>
-  </data>
-  <data name="rbWAV.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="rbWAV.Text" xml:space="preserve">
-    <value>&amp;WAV</value>
-  </data>
-  <data name="&gt;&gt;rbWAV.Name" xml:space="preserve">
-    <value>rbWAV</value>
-  </data>
-  <data name="&gt;&gt;rbWAV.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbWAV.Parent" xml:space="preserve">
-    <value>grpAudioOutput</value>
-  </data>
-  <data name="&gt;&gt;rbWAV.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="grpAudioOutput.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 211</value>
   </data>
   <data name="grpAudioOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 137</value>
+    <value>92, 164</value>
   </data>
   <data name="grpAudioOutput.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -910,10 +937,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpAudioOutput.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 276</value>
+    <value>412, 308</value>
   </data>
   <data name="btnBatch.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -934,10 +961,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnBatch.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="btnFilenameCorrector.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 245</value>
+    <value>412, 277</value>
   </data>
   <data name="btnFilenameCorrector.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -958,10 +985,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnFilenameCorrector.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="btnSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 183</value>
+    <value>412, 215</value>
   </data>
   <data name="btnSettings.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -982,7 +1009,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnSettings.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="rbArAndEncode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1015,7 +1042,7 @@
     <value>True</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 106</value>
+    <value>7, 141</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>61, 13</value>
@@ -1039,7 +1066,7 @@
     <value>1</value>
   </data>
   <data name="txtDataTrackLength.Location" type="System.Drawing.Point, System.Drawing">
-    <value>77, 103</value>
+    <value>77, 138</value>
   </data>
   <data name="txtDataTrackLength.Mask" xml:space="preserve">
     <value>00:00:00</value>
@@ -1162,7 +1189,7 @@
     <value>244, 211</value>
   </data>
   <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 137</value>
+    <value>162, 164</value>
   </data>
   <data name="grpAccurateRip.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1180,13 +1207,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpAccurateRip.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>0, 359</value>
+    <value>0, 378</value>
   </metadata>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>221, 17</value>
+    <value>253, 17</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -1204,10 +1231,10 @@
     <value>Disk progress</value>
   </data>
   <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 359</value>
+    <value>0, 378</value>
   </data>
   <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>551, 22</value>
+    <value>552, 22</value>
   </data>
   <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1225,13 +1252,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="btnCUECreator.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="btnCUECreator.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 214</value>
+    <value>412, 246</value>
   </data>
   <data name="btnCUECreator.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
@@ -1252,13 +1279,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnCUECreator.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="btnStop.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="btnStop.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 307</value>
+    <value>412, 339</value>
   </data>
   <data name="btnStop.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 23</value>
@@ -1282,13 +1309,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnStop.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="btnPause.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="btnPause.Location" type="System.Drawing.Point, System.Drawing">
-    <value>477, 307</value>
+    <value>477, 339</value>
   </data>
   <data name="btnPause.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 23</value>
@@ -1312,13 +1339,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnPause.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="btnResume.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="btnResume.Location" type="System.Drawing.Point, System.Drawing">
-    <value>477, 307</value>
+    <value>477, 339</value>
   </data>
   <data name="btnResume.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 23</value>
@@ -1342,6 +1369,111 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnResume.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="rbFreedbAlways.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbFreedbAlways.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 53</value>
+  </data>
+  <data name="rbFreedbAlways.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 17</value>
+  </data>
+  <data name="rbFreedbAlways.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="rbFreedbAlways.Text" xml:space="preserve">
+    <value>Always</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbAlways.Name" xml:space="preserve">
+    <value>rbFreedbAlways</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbAlways.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbAlways.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbAlways.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="rbFreedbIf.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbFreedbIf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 36</value>
+  </data>
+  <data name="rbFreedbIf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>72, 17</value>
+  </data>
+  <data name="rbFreedbIf.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="rbFreedbIf.Text" xml:space="preserve">
+    <value>If needed</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbIf.Name" xml:space="preserve">
+    <value>rbFreedbIf</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbIf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbIf.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbIf.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="rbFreedbNever.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbFreedbNever.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 19</value>
+  </data>
+  <data name="rbFreedbNever.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 17</value>
+  </data>
+  <data name="rbFreedbNever.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="rbFreedbNever.Text" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbNever.Name" xml:space="preserve">
+    <value>rbFreedbNever</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbNever.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbNever.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;rbFreedbNever.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>412, 92</value>
+  </data>
+  <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>131, 86</value>
+  </data>
+  <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Freedb lookup</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.Name" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
@@ -1351,7 +1483,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>551, 381</value>
+    <value>552, 400</value>
   </data>
   <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
     <value>Tahoma, 8.25pt</value>

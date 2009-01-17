@@ -901,6 +901,11 @@ namespace CUETools.Codecs.LossyWAV
 			scaling_factor = 1.0; // !!!! Need to read 'fact' chunks or tags here
 		}
 
+		public int[,] Read(int[,] buff)
+		{
+			return AudioSamples.Read(this, buff);
+		}
+
 		public uint Read(int[,] buff, uint sampleCount)
 		{
 			if (sampleBuffer == null || sampleBuffer.Length < sampleCount)

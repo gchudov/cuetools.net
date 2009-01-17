@@ -60,12 +60,26 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap freedb {
+            get {
+                object obj = ResourceManager.GetObject("freedb", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to &amp;Go.
         /// </summary>
         internal static string Go {
             get {
                 return ResourceManager.GetString("Go", resourceCulture);
+            }
+        }
+        
+        internal static System.Drawing.Bitmap musicbrainz {
+            get {
+                object obj = ResourceManager.GetObject("musicbrainz", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

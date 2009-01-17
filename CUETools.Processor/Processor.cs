@@ -37,6 +37,7 @@ using CUETools.CDImage;
 using CUETools.AccurateRip;
 using CUETools.Ripper.SCSI;
 using MusicBrainz;
+using Freedb;
 #if !MONO
 using UnRarDotNet;
 using CUETools.Codecs.FLAC;
@@ -50,6 +51,7 @@ namespace CUETools.Processor
 		FLAC,
 		WavPack,
 		APE,
+		TTA,
 		NoAudio
 	}
 
@@ -78,6 +80,7 @@ namespace CUETools.Processor
 				case OutputAudioFormat.FLAC: return ".flac";
 				case OutputAudioFormat.WavPack: return ".wv";
 				case OutputAudioFormat.APE: return ".ape";
+				case OutputAudioFormat.TTA: return ".tta";
 				case OutputAudioFormat.WAV: return ".wav";
 				case OutputAudioFormat.NoAudio: return ".dummy";
 			}
@@ -107,6 +110,23 @@ namespace CUETools.Processor
 			}
 			return null;
 		}
+
+		//public static CUELine FindCUELine(List<CUELine> list, string [] commands)
+		//{
+		//    foreach (CUELine line in list)
+		//    {
+		//        if (line.Params.Count < commands.Length)
+		//            continue;
+		//        for (int i = 0; i < commands.Length; i++)
+		//        {
+		//            if (line.Params[i].ToUpper() != commands[i].ToUpper())
+		//                break;
+		//            if (i == commands.Length - 1)
+		//                return line;
+		//        }
+		//    }
+		//    return null;
+		//}
 
 		public static void SetCUELine(List<CUELine> list, string command, string value, bool quoted)
 		{
@@ -141,6 +161,22 @@ namespace CUETools.Processor
 				line.Params[2] = value;
 				line.IsQuoted[2] = quoted;
 			}
+		}
+
+		public static void DelCUELine(List<CUELine> list, string command, string command2)
+		{
+			CUELine line = General.FindCUELine(list, command, command2);
+			if (line == null)
+				return;
+			list.Remove(line);
+		}
+
+		public static void DelCUELine(List<CUELine> list, string command)
+		{
+			CUELine line = General.FindCUELine(list, command);
+			if (line == null)
+				return;
+			list.Remove(line);
 		}
 
 		public static string ReplaceMultiple(string s, List<string> find, List<string> replace)
@@ -217,7 +253,9 @@ namespace CUETools.Processor
 		public string specialExceptions;
 		public bool replaceSpaces;
 		public bool embedLog;
+		public bool extractLog;
 		public bool fillUpCUE;
+		public bool overwriteCUEData;
 		public bool filenamesANSISafe;
 		public bool bruteForceDTL;
 		public bool detectHDCD;
@@ -261,7 +299,9 @@ namespace CUETools.Processor
 			specialExceptions = "-()";
 			replaceSpaces = false;
 			embedLog = true;
+			extractLog = true;
 			fillUpCUE = true;
+			overwriteCUEData = false;
 			filenamesANSISafe = true;
 			bruteForceDTL = false;
 			detectHDCD = true;
@@ -269,7 +309,7 @@ namespace CUETools.Processor
 			decodeHDCD = false;
 			createM3U = false;
 			createTOC = false;
-			createCUEFileWhenEmbedded = false;
+			createCUEFileWhenEmbedded = true;
 			truncate4608ExtraSamples = true;
 			lossyWAVQuality = 5;
 			lossyWAVHybrid = true;
@@ -306,7 +346,9 @@ namespace CUETools.Processor
 			sw.Save("SpecialCharactersExceptions", specialExceptions);
 			sw.Save("ReplaceSpaces", replaceSpaces);
 			sw.Save("EmbedLog", embedLog);
+			sw.Save("ExtractLog", extractLog);
 			sw.Save("FillUpCUE", fillUpCUE);
+			sw.Save("OverwriteCUEData", overwriteCUEData);			
 			sw.Save("FilenamesANSISafe", filenamesANSISafe);
 			sw.Save("BruteForceDTL", bruteForceDTL);
 			sw.Save("DetectHDCD", detectHDCD);
@@ -351,7 +393,9 @@ namespace CUETools.Processor
 			specialExceptions = sr.Load("SpecialCharactersExceptions") ?? "-()";
 			replaceSpaces = sr.LoadBoolean("ReplaceSpaces") ?? false;
 			embedLog = sr.LoadBoolean("EmbedLog") ?? true;
+			extractLog = sr.LoadBoolean("ExtractLog") ?? true;
 			fillUpCUE = sr.LoadBoolean("FillUpCUE") ?? true;
+			overwriteCUEData = sr.LoadBoolean("OverwriteCUEData") ?? false;
 			filenamesANSISafe = sr.LoadBoolean("FilenamesANSISafe") ?? true;
 			bruteForceDTL = sr.LoadBoolean("BruteForceDTL") ?? false;
 			detectHDCD = sr.LoadBoolean("DetectHDCD") ?? true;
@@ -359,7 +403,7 @@ namespace CUETools.Processor
 			decodeHDCD = sr.LoadBoolean("DecodeHDCD") ?? false;
 			createM3U = sr.LoadBoolean("CreateM3U") ?? false;
 			createTOC = sr.LoadBoolean("CreateTOC") ?? false;
-			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? false;
+			createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? true;
 			truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
 			lossyWAVQuality = sr.LoadInt32("LossyWAVQuality", 0, 10) ?? 5;
 			lossyWAVHybrid = sr.LoadBoolean("LossyWAVHybrid") ?? true;
@@ -409,6 +453,13 @@ namespace CUETools.Processor
 		public bool ContinueOperation = true;
 	}
 
+	public class CUEToolsSelectionEventArgs
+	{
+		public string[] choices;
+		public int selection = -1;
+	}
+
+	public delegate void CUEToolsSelectionHandler(object sender, CUEToolsSelectionEventArgs e);
 	public delegate void CUEToolsProgressHandler(object sender, CUEToolsProgressEventArgs e);
 	public delegate void ArchivePasswordRequiredHandler(object sender, ArchivePasswordRequiredEventArgs e);
 
@@ -451,6 +502,7 @@ namespace CUETools.Processor
 
 		public event ArchivePasswordRequiredHandler PasswordRequired;
 		public event CUEToolsProgressHandler CUEToolsProgress;
+		public event CUEToolsSelectionHandler CUEToolsSelection;
 
 		public CUESheet(CUEConfig config)
 		{
@@ -514,18 +566,104 @@ namespace CUETools.Processor
 			}
 		}
 
-		public void FillFromMusicBrainz(Release release)
+		public void FillFromMusicBrainz(MusicBrainz.Release release)
 		{
-			if (release.GetEvents().Count > 0)
-				General.SetCUELine(_attributes, "REM", "DATE", release.GetEvents()[0].Date.Substring(0, 4), false);
+			Year = release.GetEvents().Count > 0 ? release.GetEvents()[0].Date.Substring(0, 4) : "";
 			Artist = release.GetArtist();
 			Title = release.GetTitle();
+			//Catalog = release.GetEvents().Count > 0 ? release.GetEvents()[0].Barcode : "";
 			for (int i = 1; i <= _toc.AudioTracks; i++)
 			{
-				Track track = release.GetTracks()[(int)_toc[i].Number - 1];
+				MusicBrainz.Track track = release.GetTracks()[(int)_toc[i].Number - 1];
 				Tracks[i - 1].Title = track.GetTitle();
 				Tracks[i - 1].Artist = track.GetArtist();
 			}
+		}
+
+		public void FillFromFreedb(Freedb.CDEntry cdEntry)
+		{
+			Year = cdEntry.Year;
+			Genre = cdEntry.Genre;
+			Artist = cdEntry.Artist;
+			Title = cdEntry.Title;
+			for (int i = 0; i < _toc.AudioTracks; i++)
+				Tracks[i].Title = cdEntry.Tracks[i].Title;
+		}
+
+		public List<object> LookupAlbumInfo()
+		{
+			List<object> Releases = new List<object>();
+
+			ReleaseQueryParameters p = new ReleaseQueryParameters();
+			p.DiscId = _toc.MusicBrainzId;
+			Query<Release> results = Release.Query(p);
+			MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+			_progress.percentDisk = 0;
+			try
+			{
+				foreach (MusicBrainz.Release release in results)
+				{
+					release.GetEvents();
+					release.GetTracks();
+					try
+					{
+						foreach (MusicBrainz.Track track in release.GetTracks())
+							;
+					} catch { }
+					try
+					{
+						foreach (MusicBrainz.Event ev in release.GetEvents())
+							;
+					} catch { }
+					Releases.Add(release);
+				}
+			} catch { }
+			MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+			//if (release != null)
+			//{
+			//    FillFromMusicBrainz(release);
+			//    return;
+			//}
+			//if (cdEntry != null)
+			//    FillFromFreedb(cdEntry);
+
+			FreedbHelper m_freedb = new FreedbHelper();
+
+			m_freedb.UserName = "gchudov";
+			m_freedb.Hostname = "gmail.com";
+			m_freedb.ClientName = "CUETools";
+			m_freedb.Version = "1.9.4";
+			m_freedb.SetDefaultSiteAddress("freedb.org");
+
+			QueryResult queryResult;
+			QueryResultCollection coll;
+			string code = string.Empty;
+			CDEntry cdEntry = null;
+			try
+			{
+				code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(_toc), out queryResult, out coll);
+				if (code == FreedbHelper.ResponseCodes.CODE_200)
+				{
+					code = m_freedb.Read(queryResult, out cdEntry);
+					if (code == FreedbHelper.ResponseCodes.CODE_210)
+						Releases.Add(cdEntry);
+				}
+				else
+					if (code == FreedbHelper.ResponseCodes.CODE_210 ||
+						code == FreedbHelper.ResponseCodes.CODE_211)
+					{
+						foreach (QueryResult qr in coll)
+						{
+							code = m_freedb.Read(qr, out cdEntry);
+							if (code == FreedbHelper.ResponseCodes.CODE_210)
+								Releases.Add(cdEntry);
+						}
+					}
+			}
+			catch (Exception)
+			{
+			}
+			return Releases;
 		}
 
 		public void Open(string pathIn)
@@ -543,27 +681,7 @@ namespace CUETools.Processor
 					if (!AccurateRipVerify.FindDriveReadOffset(_ripper.ARName, out driveOffset))
 						throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
 					_ripper.DriveOffset = driveOffset;
-
-					Release release;
-					ReleaseQueryParameters p = new ReleaseQueryParameters();
-					p.DiscId = _toc.MusicBrainzId;
-					Query<Release> results = Release.Query(p);
-					MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-					_progress.percentDisk = 0;
-					try
-					{
-						release = results.First();
-						if (release != null)
-						{
-							release.GetEvents();
-							release.GetTracks();
-							FillFromMusicBrainz(release);
-						}
-					}
-					catch
-					{
-						release = null;
-					}
+					LookupAlbumInfo();
 					return;
 				}
 			}
@@ -587,32 +705,79 @@ namespace CUETools.Processor
 				if (cueDir + Path.DirectorySeparatorChar != pathIn && cueDir != pathIn)
 					throw new Exception("Input directory must end on path separator character.");
 				string cueSheet = null;
-				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
+				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta" };
 				for (i = 0; i < audioExts.Length && cueSheet == null; i++)
 					cueSheet = CUESheet.CreateDummyCUESheet(pathIn, audioExts[i]);
 				if (cueSheet == null)
 					throw new Exception("Input directory doesn't contain supported audio files.");
 				sr = new StringReader(cueSheet);				
+				if (CUEToolsSelection != null)
+				{
+					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+					e.choices = Directory.GetFiles(pathIn, "*.log");
+					if (e.choices.Length > 0)
+					{
+						CUEToolsSelection(this, e);
+						if (e.selection != -1)
+						{
+							StreamReader logReader = new StreamReader(e.choices[e.selection], CUESheet.Encoding);
+							_eacLog = logReader.ReadToEnd();
+							logReader.Close();
+						}
+					}
+				}
 			} 
 #if !MONO
 			else if (Path.GetExtension(pathIn).ToLower() == ".rar")
 			{
 				Unrar _unrar = new Unrar();
 				_unrar.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
-				string cueName = null, cueText = null;
+				string cueName = null, cueText = null, logName = null;
+				List<string> cueNames = new List<string>();
+				List<string> logNames = new List<string>();
 				_unrar.Open(pathIn, Unrar.OpenMode.List);
 				_archiveContents = new List<string>();
 				while (_unrar.ReadHeader())
 				{
 					if (!_unrar.CurrentFile.IsDirectory)
-					{
 						_archiveContents.Add(_unrar.CurrentFile.FileName);
-						if (Path.GetExtension(_unrar.CurrentFile.FileName).ToLower() == ".cue")
-							cueName = _unrar.CurrentFile.FileName;
-					}
 					_unrar.Skip();
 				}
 				_unrar.Close();
+				foreach (string s in _archiveContents)
+				{
+					if (Path.GetExtension(s).ToLower() == ".cue")
+						cueNames.Add(s);
+					if (Path.GetExtension(s).ToLower() == ".log")
+						logNames.Add(s);
+				}
+
+				if (cueNames.Count == 0)
+					throw new Exception("Input archive doesn't contain a cue sheet.");
+				if (cueNames.Count == 1)
+					cueName = cueNames[0];
+				if (cueName == null && CUEToolsSelection != null)
+				{
+					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+					e.choices = cueNames.ToArray();
+					CUEToolsSelection(this, e);
+					if (e.selection != -1)
+						cueName = e.choices[e.selection];
+				}
+				if (cueName == null)
+					throw new Exception("Input archive contains several cue sheets.");
+
+				if (logNames.Contains(Path.ChangeExtension(cueName, ".log")))
+					logName = Path.ChangeExtension(cueName, ".log");
+				if (logName == null && CUEToolsSelection != null && logNames.Count > 0)
+				{
+					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+					e.choices = logNames.ToArray();
+					CUEToolsSelection(this, e);
+					if (e.selection != -1)
+						logName = e.choices[e.selection];
+				}
+
 				if (cueName != null)
 				{
 					RarStream rarStream = new RarStream(pathIn, cueName);
@@ -626,7 +791,18 @@ namespace CUETools.Processor
 				}
 				if (cueText == null)
 					throw new Exception("Input archive doesn't contain a cue sheet.");
+				if (logName != null)
+				{
+					RarStream rarStream = new RarStream(pathIn, logName);
+					rarStream.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
+					StreamReader logReader = new StreamReader(rarStream, CUESheet.Encoding);
+					_eacLog = logReader.ReadToEnd();
+					logReader.Close();
+					rarStream.Close();
+				}
 				_archiveCUEpath = Path.GetDirectoryName(cueName);
+				if (_config.autoCorrectFilenames)
+					cueText = CorrectAudioFilenames(_archiveCUEpath, cueText, false, _archiveContents);
 				sr = new StringReader(cueText);
 				_isArchive = true;
 				_archivePath = pathIn;
@@ -639,13 +815,28 @@ namespace CUETools.Processor
 				else
 					sr = new StreamReader (pathIn, CUESheet.Encoding);
 
-				try
+				string logPath = Path.ChangeExtension(pathIn, ".log");
+				if (File.Exists(logPath))
 				{
-					StreamReader logReader = new StreamReader(Path.ChangeExtension(pathIn, ".log"), CUESheet.Encoding);
+					StreamReader logReader = new StreamReader(logPath, CUESheet.Encoding);
 					_eacLog = logReader.ReadToEnd();
 					logReader.Close();
 				}
-				catch { }
+				else if (CUEToolsSelection != null)
+				{
+					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+					e.choices = Directory.GetFiles(cueDir, "*.log");
+					if (e.choices.Length > 0)
+					{
+						CUEToolsSelection(this, e);
+						if (e.selection != -1)
+						{
+							StreamReader logReader = new StreamReader(e.choices[e.selection], CUESheet.Encoding);
+							_eacLog = logReader.ReadToEnd();
+							logReader.Close();
+						}
+					}
+				}
 			} else
 			{
 				IAudioSource audioSource;
@@ -869,18 +1060,6 @@ namespace CUETools.Processor
 				_trackFilenames.Add( _hasTrackFilenames ? Path.GetFileName(
 					_sourcePaths[i + (_hasHTOAFilename ? 1 : 0)]) : String.Format("{0:00}.wav", i + 1) );
 			}
-
-			if (_hasTrackFilenames)
-				for (i = 0; i < TrackCount; i++)
-				{
-					TrackInfo track = _tracks[i];
-					string artist = track._trackTags.Get("ARTIST");
-					string title = track._trackTags.Get("TITLE");
-					if (track.Artist == "" && artist != null)
-						track.Artist = artist;
-					if (track.Title == "" && title != null)
-						track.Title = title;
-				}
 			if (!_hasEmbeddedCUESheet && _hasSingleFilename)
 			{
 				_albumTags = _tracks[0]._trackTags;
@@ -888,18 +1067,30 @@ namespace CUETools.Processor
 			}
 			if (_config.fillUpCUE)
 			{
-				if (General.FindCUELine(_attributes, "PERFORMER") == null && GetCommonTag("ALBUM ARTIST") != null)
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "PERFORMER") == null) && GetCommonTag("ALBUM ARTIST") != null)
 					General.SetCUELine(_attributes, "PERFORMER", GetCommonTag("ALBUM ARTIST"), true);
-				if (General.FindCUELine(_attributes, "PERFORMER") == null && GetCommonTag("ARTIST") != null)
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "PERFORMER") == null) && GetCommonTag("ARTIST") != null)
 					General.SetCUELine(_attributes, "PERFORMER", GetCommonTag("ARTIST"), true);
-				if (General.FindCUELine(_attributes, "TITLE") == null && GetCommonTag("ALBUM") != null)
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "TITLE") == null) && GetCommonTag("ALBUM") != null)
 					General.SetCUELine(_attributes, "TITLE", GetCommonTag("ALBUM"), true);
-				if (General.FindCUELine(_attributes, "REM", "DATE") == null && GetCommonTag("DATE") != null)
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "DATE") == null) && GetCommonTag("DATE") != null)
 					General.SetCUELine(_attributes, "REM", "DATE", GetCommonTag("DATE"), false);
-				if (General.FindCUELine(_attributes, "REM", "DATE") == null && GetCommonTag("YEAR") != null)
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "DATE") == null) && GetCommonTag("YEAR") != null)
 					General.SetCUELine(_attributes, "REM", "DATE", GetCommonTag("YEAR"), false);
-				if (General.FindCUELine(_attributes, "REM", "GENRE") == null && GetCommonTag("GENRE") != null)
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "GENRE") == null) && GetCommonTag("GENRE") != null)
 					General.SetCUELine(_attributes, "REM", "GENRE", GetCommonTag("GENRE"), true);
+				for (i = 0; i < TrackCount; i++)
+				{
+					TrackInfo track = _tracks[i];
+					string artist = _hasTrackFilenames ? track._trackTags.Get("ARTIST") :
+						_hasEmbeddedCUESheet ? _albumTags.Get(String.Format("cue_track{0:00}_ARTIST", i + 1)) : null;
+					string title = _hasTrackFilenames ? track._trackTags.Get("TITLE") :
+						_hasEmbeddedCUESheet ? _albumTags.Get(String.Format("cue_track{0:00}_TITLE", i + 1)) : null;
+					if ((_config.overwriteCUEData || track.Artist == "") && artist != null)
+						track.Artist = artist;
+					if ((_config.overwriteCUEData || track.Title == "") && title != null)
+						track.Title = title;
+				}
 			}
 
 			CUELine cddbDiscIdLine = General.FindCUELine(_attributes, "REM", "DISCID");
@@ -1127,6 +1318,7 @@ namespace CUETools.Processor
 			find.Add("%A"); // 3: Track artist
 			find.Add("%T"); // 4: Track title
 			find.Add("%F"); // 5: Input filename
+			find.Add("%Y"); // 6: Album date
 
 			replace.Add(General.EmptyStringToNull(_config.CleanseString(Artist)));
 			replace.Add(General.EmptyStringToNull(_config.CleanseString(Title)));
@@ -1134,7 +1326,8 @@ namespace CUETools.Processor
 			replace.Add(null);
 			replace.Add(null);
 			replace.Add(Path.GetFileNameWithoutExtension(outputPath));
-
+			replace.Add(General.EmptyStringToNull(_config.CleanseString(Year)));
+			
 			if (_outputLossyWAV)
 				extension = ".lossy" + extension;
 			if (_config.detectHDCD && _config.decodeHDCD && (!_outputLossyWAV || !_config.decodeHDCDtoLW16))
@@ -1331,7 +1524,7 @@ namespace CUETools.Processor
 		{
 			StringWriter sw = new StringWriter();
 			for (int iTrack = 0; iTrack < TrackCount; iTrack++)
-				WriteLine(sw, 0, "\t" + _toc[iTrack+1].Start + 150);
+				sw.WriteLine("\t{0}", _toc[iTrack+1].Start + 150);
 			sw.Close();
 			return sw.ToString();
 		}
@@ -1684,6 +1877,9 @@ namespace CUETools.Processor
 
 					if (logContents != null)
 						WriteText(Path.ChangeExtension(_cuePath, ".log"), logContents);
+					else
+					if (_eacLog != null && _config.extractLog)
+						WriteText(Path.ChangeExtension(_cuePath, ".log"), _eacLog);
 					if (style != CUEStyle.SingleFileWithCUE)
 					{
 						WriteText(_cuePath, cueContents);
@@ -1823,6 +2019,7 @@ namespace CUETools.Processor
 
 			destTags.Remove("CUESHEET");
 			destTags.Remove("TRACKNUMBER");
+			destTags.Remove("TOTALTRACKS");
 			destTags.Remove("LOG");
 			destTags.Remove("LOGFILE");
 			destTags.Remove("EACLOG");
@@ -1833,7 +2030,18 @@ namespace CUETools.Processor
 				destTags.Add("TITLE", _tracks[iTrack].Title);
 			if (destTags.Get("ARTIST") == null && "" != _tracks[iTrack].Artist)
 				destTags.Add("ARTIST", _tracks[iTrack].Artist);
-			destTags.Add("TRACKNUMBER", (iTrack + 1).ToString());
+			if (destTags.Get("ARTIST") == null && "" != Artist)
+				destTags.Add("ARTIST", Artist);
+			if (destTags.Get("ALBUM ARTIST") == null && "" != Artist)
+				destTags.Add("ALBUM ARTIST", Artist);
+			if (destTags.Get("ALBUM") == null && "" != Title)
+				destTags.Add("ALBUM", Title);
+			if (destTags.Get("DATE") == null && "" != Year)
+				destTags.Add("DATE", Year);
+			if (destTags.Get("GENRE") == null && "" != Genre)
+				destTags.Add("GENRE", Genre);
+			destTags.Add("TRACKNUMBER", (iTrack + 1).ToString("00"));
+			destTags.Add("TOTALTRACKS", TrackCount.ToString("00"));
 			if (_config.writeArTagsOnConvert)
 			{
 				if (!_isCD && _accurateRipMode == AccurateRipMode.VerifyThenConvert && _arVerify.AccResult == HttpStatusCode.OK)
@@ -1917,7 +2125,7 @@ namespace CUETools.Processor
 			int iSource = -1;
 			int iDest = -1;
 			uint samplesRemSource = 0;
-			CDImageLayout updatedTOC = null;
+			//CDImageLayout updatedTOC = null;
 
 			if (_writeOffset != 0)
 			{
@@ -2054,12 +2262,10 @@ namespace CUETools.Processor
 						{
 							if (samplesRemSource == 0)
 							{
-#if !MONO
-								if (_isCD && audioSource != null && audioSource is CDDriveReader)
-								{
-									updatedTOC = ((CDDriveReader)audioSource).TOC;
-								}
-#endif
+//#if !MONO
+//                                if (_isCD && audioSource != null && audioSource is CDDriveReader)
+//                                    updatedTOC = ((CDDriveReader)audioSource).TOC;
+//#endif
 								if (audioSource != null && !_isCD) audioSource.Close();
 								audioSource = GetAudioSource(++iSource);
 								samplesRemSource = (uint)_sources[iSource].Length;
@@ -2140,15 +2346,13 @@ namespace CUETools.Processor
 			}
 
 #if !MONO
-			if (_isCD && audioSource != null && audioSource is CDDriveReader)
+			//if (_isCD && audioSource != null && audioSource is CDDriveReader)
+			//    updatedTOC = ((CDDriveReader)audioSource).TOC;
+			if (_isCD)
 			{
-				updatedTOC = ((CDDriveReader)audioSource).TOC;
-			}
-			if (updatedTOC != null)
-			{
-				_toc = updatedTOC;
+				_toc = (CDImageLayout)_ripper.TOC.Clone();
 				if (_toc.Catalog != null)
-					General.SetCUELine(_attributes, "CATALOG", _toc.Catalog, false);
+					Catalog = _toc.Catalog;
 				for (iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
 					if (_toc[iTrack].IsAudio)
 				{
@@ -2195,11 +2399,12 @@ namespace CUETools.Processor
 			StreamReader sr = new StreamReader(path, CUESheet.Encoding);
 			string cue = sr.ReadToEnd();
 			sr.Close();
-			return CorrectAudioFilenames(Path.GetDirectoryName(path), cue, always);
+			return CorrectAudioFilenames(Path.GetDirectoryName(path), cue, always, null);
 		}
 
-		public static string CorrectAudioFilenames(string dir, string cue, bool always) {
-			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
+		public static string CorrectAudioFilenames(string dir, string cue, bool always, List<string> files) 
+		{
+			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta" };
 			List<string> lines = new List<string>();
 			List<int> filePos = new List<int>();
 			List<string> origFiles = new List<string>();
@@ -2218,7 +2423,7 @@ namespace CUETools.Processor
 						if ((fileType != "BINARY") && (fileType != "MOTOROLA")) {
 							filePos.Add(lines.Count - 1);
 							origFiles.Add(line.Params[1]);
-							foundAll &= (LocateFile(dir, line.Params[1], null) != null);
+							foundAll &= (LocateFile(dir, line.Params[1], files) != null);
 						}
 					}
 				}
@@ -2235,7 +2440,7 @@ namespace CUETools.Processor
 					for (int j = 0; j < origFiles.Count; j++)
 					{
 						string newFilename = Path.ChangeExtension(Path.GetFileName(origFiles[j]), audioExts[i].Substring(1));
-						foundAll &= LocateFile(dir, newFilename, null) != null;
+						foundAll &= LocateFile(dir, newFilename, files) != null;
 						newFiles.Add (newFilename);
 					}
 					if (foundAll)
@@ -2247,7 +2452,15 @@ namespace CUETools.Processor
 				if (!foundAll)
 				for (i = 0; i < audioExts.Length; i++)
 				{
-					audioFiles = Directory.GetFiles(dir == "" ? "." : dir, audioExts[i]);
+					if (files == null)
+						audioFiles = Directory.GetFiles(dir == "" ? "." : dir, audioExts[i]);
+					else
+					{
+						audioFiles = files.FindAll(delegate(string s)
+						{
+							return Path.GetDirectoryName(s) == dir && Path.GetExtension(s) == audioExts[i].Substring(1);
+						}).ToArray();
+					}
 					if (audioFiles.Length == filePos.Count)
 					{
 						Array.Sort(audioFiles);
@@ -2360,8 +2573,9 @@ namespace CUETools.Processor
 #if !MONO
 				if (_isCD)
 				{
-					audioSource = _ripper;
-					audioSource.Position = 0;
+					_ripper.Position = 0;
+					//audioSource = _ripper;
+					audioSource = new AudioPipe(_ripper, 3);
 				} else
 				if (_isArchive)
 				{
@@ -2446,17 +2660,65 @@ namespace CUETools.Processor
 		public string Artist {
 			get {
 				CUELine line = General.FindCUELine(_attributes, "PERFORMER");
-				return (line == null) ? String.Empty : line.Params[1];
+				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
 			}
 			set {
 				General.SetCUELine(_attributes, "PERFORMER", value, true);
 			}
 		}
 
+		public string Year
+		{
+			get
+			{
+				CUELine line = General.FindCUELine(_attributes, "REM", "DATE");
+				return ( line == null || line.Params.Count < 3 ) ? String.Empty : line.Params[2];
+			}
+			set
+			{
+				if (value != "")
+					General.SetCUELine(_attributes, "REM", "DATE", value, false);
+				else
+					General.DelCUELine(_attributes, "REM", "DATE");
+			}
+		}
+
+		public string Genre
+		{
+			get
+			{
+				CUELine line = General.FindCUELine(_attributes, "REM", "GENRE");
+				return (line == null  || line.Params.Count < 3) ? String.Empty : line.Params[2];
+			}
+			set
+			{
+				if (value != "")
+					General.SetCUELine(_attributes, "REM", "GENRE", value, true);
+				else
+					General.DelCUELine(_attributes, "REM", "GENRE");
+			}
+		}
+
+		public string Catalog
+		{
+			get
+			{
+				CUELine line = General.FindCUELine(_attributes, "CATALOG");
+				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
+			}
+			set
+			{
+				if (value != "")
+					General.SetCUELine(_attributes, "CATALOG", value, false);
+				else
+					General.DelCUELine(_attributes, "CATALOG");
+			}
+		}
+
 		public string Title {
 			get {
 				CUELine line = General.FindCUELine(_attributes, "TITLE");
-				return (line == null) ? String.Empty : line.Params[1];
+				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
 			}
 			set {
 				General.SetCUELine(_attributes, "TITLE", value, true);
@@ -2631,7 +2893,7 @@ namespace CUETools.Processor
 		public string Artist {
 			get {
 				CUELine line = General.FindCUELine(_attributes, "PERFORMER");
-				return (line == null) ? String.Empty : line.Params[1];
+				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
 			}
 			set
 			{
@@ -2642,7 +2904,7 @@ namespace CUETools.Processor
 		public string Title {
 			get {
 				CUELine line = General.FindCUELine(_attributes, "TITLE");
-				return (line == null) ? String.Empty : line.Params[1];
+				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
 			}
 			set
 			{

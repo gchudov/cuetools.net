@@ -37,11 +37,24 @@ namespace CUERipper
 			_startStop = new StartStop();
 		}
 
+		//private byte toBCD(int val)
+		//{
+		//    return (byte)(((val / 10) << 4) + (val % 10));
+		//}
+
 		private void frmCUERipper_Load(object sender, EventArgs e)
 		{
-			//byte[] _subchannelBuffer0 = { 0x1, 0x01, 0x01, 0x00, 0x00, 0x10, 0x00, 0x00, 0x02, 0x10, 0x75, 0x4E };
+			//byte[] _subchannelBuffer0 = { 0x01, 0x01, 0x01, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x02, 0x0A, 0x4C, 0x43 };
 			//byte[] _subchannelBuffer1 = { 0x21, 0x01, 0x01, 0x00, 0x00, 0x11, 0x00, 0x00, 0x02, 0x11, 0xCF, 0x3E };
 			//byte[] _subchannelBuffer2 = { 0x21, 0x01, 0x01, 0x00, 0x00, 0x12, 0x00, 0x00, 0x02, 0x12, 0x11, 0x8F };
+
+			//_subchannelBuffer0[3] = toBCD(_subchannelBuffer0[3]);
+			//_subchannelBuffer0[4] = toBCD(_subchannelBuffer0[4]);
+			//_subchannelBuffer0[5] = toBCD(_subchannelBuffer0[5]);
+			//_subchannelBuffer0[7] = toBCD(_subchannelBuffer0[7]);
+			//_subchannelBuffer0[8] = toBCD(_subchannelBuffer0[8]);
+			//_subchannelBuffer0[9] = toBCD(_subchannelBuffer0[9]);
+
 			//Crc16Ccitt _crc = new Crc16Ccitt(InitialCrcValue.Zeros);
 			//ushort crc0a = (ushort)(_crc.ComputeChecksum(_subchannelBuffer0, 0, 10) ^ 0xffff);
 			//ushort crc0b = (ushort)(_subchannelBuffer0[11] + (_subchannelBuffer0[10] << 8));
@@ -49,21 +62,25 @@ namespace CUERipper
 			//ushort crc1b = (ushort)(_subchannelBuffer1[11] + (_subchannelBuffer1[10] << 8));
 			//ushort crc2a = (ushort)(_crc.ComputeChecksum(_subchannelBuffer2, 0, 10) ^ 0xffff);
 			//ushort crc2b = (ushort)(_subchannelBuffer2[11] + (_subchannelBuffer2[10] << 8));
-			//if (crc0a != crc0b || crc1a != crc1b || crc2a != crc2b)
+			//if (crc0a != crc0b) // || crc1a != crc1b || crc2a != crc2b)
 			//{
 			//}
 
 			foreach(char drive in CDDriveReader.DrivesAvailable())
 			{
 				CDDriveReader reader = new CDDriveReader();
-				if (reader.Open(drive))
+				int driveOffset;
+				try
 				{
-					int driveOffset;
-					if (!AccurateRipVerify.FindDriveReadOffset(reader.ARName, out driveOffset))
-						; //throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
-					reader.DriveOffset = driveOffset;
-					comboDrives.Items.Add(reader);
+					reader.Open(drive);
 				}
+				catch
+				{
+				}
+				if (!AccurateRipVerify.FindDriveReadOffset(reader.ARName, out driveOffset))
+					; //throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
+				reader.DriveOffset = driveOffset;
+				comboDrives.Items.Add(reader);
 			}
 			if (comboDrives.Items.Count == 0)
 				comboDrives.Items.Add("No CD drives found");
@@ -119,9 +136,15 @@ namespace CUERipper
 
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
+				//Color color = ColorTranslator.FromWin32(e.ErrorsCount == 0 || e.Position == 0 ? (byte)0 : (byte)(Math.Log(1 + e.ErrorsCount / e.Position, 2) * 255));
 				toolStripStatusLabel1.Text = status;
 				toolStripProgressBar1.Value = Math.Max(0, Math.Min(100, (int)(percentTrck * 100)));
+				//toolStripProgressBar1.ProgressBar.Style = ProgressBarStyle.Blocks;
 				toolStripProgressBar2.Value = Math.Max(0, Math.Min(100, (int)(percentDisk * 100)));
+				//if (e.ErrorsCount == 0 || e.Position == 0)
+					//toolStripProgressBar3.Value = 0;
+				//else
+					//toolStripProgressBar3.Value = Math.Min(100, (int)(100 + Math.Log10(e.ErrorsCount / e.Position / 4 / 588) * 100));
 			});
 		}
 
@@ -130,11 +153,11 @@ namespace CUERipper
 			CDDriveReader audioSource = (CDDriveReader)o;
 			audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
 
-			CUESheet.WriteText(_pathOut, _cueSheet.CUESheetContents(_style));
-			CUESheet.WriteText(Path.ChangeExtension(_pathOut, ".log"), _cueSheet.LOGContents());
 			try
 			{
 				_cueSheet.WriteAudioFiles(".", _style);
+				//CUESheet.WriteText(_pathOut, _cueSheet.CUESheetContents(_style));
+				//CUESheet.WriteText(Path.ChangeExtension(_pathOut, ".log"), _cueSheet.LOGContents());
 			}
 			catch (StopException)
 			{
@@ -197,8 +220,8 @@ namespace CUERipper
 		{
 			if (e.ListItem is string)
 				return;
-			CUELine date = General.FindCUELine(((CUESheet)e.ListItem).Attributes, "REM", "DATE");
-			e.Value = string.Format("{0}{1} - {2}", date != null ? date.Params[2] + ": " : "", ((CUESheet)e.ListItem).Artist, ((CUESheet)e.ListItem).Title);
+			ReleaseInfo r = (ReleaseInfo)(e.ListItem);
+			e.Value = string.Format("{0}{1} - {2}", r.cueSheet.Year != "" ? r.cueSheet.Year + ": " : "", r.cueSheet.Artist, r.cueSheet.Title);
 		}
 
 		private void comboRelease_SelectedIndexChanged(object sender, EventArgs e)
@@ -206,7 +229,7 @@ namespace CUERipper
 			listTracks.Items.Clear();
 			if (comboRelease.SelectedItem == null || comboRelease.SelectedItem is string)
 				return;
-			_cueSheet = (CUESheet)comboRelease.SelectedItem;
+			_cueSheet = ((ReleaseInfo)comboRelease.SelectedItem).cueSheet;
 			for (int i = 1; i <= _reader.TOC.AudioTracks; i++)
 				listTracks.Items.Add(new ListViewItem(new string[] { 
 					_cueSheet.Tracks[i-1].Title, 
@@ -238,39 +261,39 @@ namespace CUERipper
 			}
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
-				toolStripStatusLabel1.Text = "Looking up album via MusicBrainz";
+				toolStripStatusLabel1.Text = "Looking up album via " + (e == null ? "FreeDB" : "MusicBrainz");
 				toolStripProgressBar1.Value = 0;
-				toolStripProgressBar2.Value = (100 + toolStripProgressBar2.Value) / 2;
+				toolStripProgressBar2.Value = (100 + 2 * toolStripProgressBar2.Value) / 3;
 			});
 		}
 
-		private CUESheet CreateCUESheet(CDDriveReader audioSource, Release release, CDEntry cdEntry)
+		private ReleaseInfo CreateCUESheet(CDDriveReader audioSource, Release release, CDEntry cdEntry)
 		{
-			CUESheet cueSheet = new CUESheet(_config);
-			cueSheet.OpenCD(audioSource);
-			General.SetCUELine(cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
-			General.SetCUELine(cueSheet.Attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
+			ReleaseInfo r = new ReleaseInfo();
+			r.cueSheet = new CUESheet(_config);
+			r.cueSheet.OpenCD(audioSource);
+			General.SetCUELine(r.cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
+			General.SetCUELine(r.cueSheet.Attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
 			if (release != null)
-				cueSheet.FillFromMusicBrainz(release);
+			{
+				r.cueSheet.FillFromMusicBrainz(release);
+				r.bitmap = Properties.Resources.musicbrainz;
+			}
 			else if (cdEntry != null)
 			{
-				cueSheet.Artist = cdEntry.Artist;
-				cueSheet.Title = cdEntry.Title;
-				General.SetCUELine(cueSheet.Attributes, "REM", "DATE", cdEntry.Year, false);
-				General.SetCUELine(cueSheet.Attributes, "REM", "GENRE", cdEntry.Genre, true);
-				for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
-					cueSheet.Tracks[i].Title = cdEntry.Tracks[i].Title;
+				r.cueSheet.FillFromFreedb(cdEntry);
+				r.bitmap = Properties.Resources.freedb;
 			}
 			else
 			{
-				cueSheet.Artist = "Unknown Artist";
-				cueSheet.Title = "Unknown Title";
+				r.cueSheet.Artist = "Unknown Artist";
+				r.cueSheet.Title = "Unknown Title";
 				for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
-					cueSheet.Tracks[i].Title = string.Format("Track {0:00}", i + 1);
+					r.cueSheet.Tracks[i].Title = string.Format("Track {0:00}", i + 1);
 			}
-			cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
-			cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
-			return cueSheet;
+			r.cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
+			r.cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
+			return r;
 		}
 
 		private void Lookup(object o)
@@ -287,10 +310,10 @@ namespace CUERipper
 				{
 					release.GetEvents();
 					release.GetTracks();
-					CUESheet cueSheet = CreateCUESheet(audioSource, release, null);
+					ReleaseInfo r = CreateCUESheet(audioSource, release, null);
 					this.BeginInvoke((MethodInvoker)delegate()
 					{
-						comboRelease.Items.Add(cueSheet);
+						comboRelease.Items.Add(r);
 					});
 				}
 			}
@@ -313,17 +336,19 @@ namespace CUERipper
 			string code = string.Empty;
 			try
 			{
+				MusicBrainz_LookupProgress(this, null);
 				code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(audioSource.TOC), out queryResult, out coll);
 				if (code == FreedbHelper.ResponseCodes.CODE_200)
 				{
 					CDEntry cdEntry;
+					MusicBrainz_LookupProgress(this, null);
 					code = m_freedb.Read(queryResult, out cdEntry);
 					if (code == FreedbHelper.ResponseCodes.CODE_210)
 					{
-						CUESheet cueSheet = CreateCUESheet(audioSource, null, cdEntry);
+						ReleaseInfo r = CreateCUESheet(audioSource, null, cdEntry);
 						this.BeginInvoke((MethodInvoker)delegate()
 						{
-							comboRelease.Items.Add(cueSheet);
+							comboRelease.Items.Add(r);
 						});
 					}
 				}
@@ -334,13 +359,14 @@ namespace CUERipper
 					foreach (QueryResult qr in coll)
 					{
 						CDEntry cdEntry;
+						MusicBrainz_LookupProgress(this, null);
 						code = m_freedb.Read(qr, out cdEntry);
 						if (code == FreedbHelper.ResponseCodes.CODE_210)
 						{
-							CUESheet cueSheet = CreateCUESheet(audioSource, null, cdEntry);
+							ReleaseInfo r = CreateCUESheet(audioSource, null, cdEntry);
 							this.BeginInvoke((MethodInvoker)delegate()
 							{
-								comboRelease.Items.Add(cueSheet);
+								comboRelease.Items.Add(r);
 							});
 						}
 					}
@@ -354,8 +380,8 @@ namespace CUERipper
 			{
 				if (comboRelease.Items.Count == 0)
 				{
-					CUESheet cueSheet = CreateCUESheet(audioSource, null, null);
-					comboRelease.Items.Add(cueSheet);
+					ReleaseInfo r = CreateCUESheet(audioSource, null, null);
+					comboRelease.Items.Add(r);
 				}
 			});
 			_workThread = null;
@@ -373,9 +399,21 @@ namespace CUERipper
 			if (comboDrives.SelectedItem is string)
 				return;
 			_reader = (CDDriveReader)comboDrives.SelectedItem;
+			try
+			{
+				_reader.Open(_reader.Path[0]);
+			}
+			catch (Exception ex)
+			{
+				_reader.Close();
+				comboRelease.Items.Add(ex.Message);
+				comboRelease.SelectedIndex = 0;
+				return;
+			}
 			if (_reader.TOC.AudioTracks == 0)
 			{
 				comboRelease.Items.Add("No audio tracks");
+				comboRelease.SelectedIndex = 0;
 				return;
 			}
 			comboRelease_SelectedIndexChanged(sender, e);
@@ -415,18 +453,37 @@ namespace CUERipper
 
 		private void listTracks_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
-			CUESheet cueSheet = (CUESheet)comboRelease.SelectedItem;
+			CUESheet cueSheet = ((ReleaseInfo)comboRelease.SelectedItem).cueSheet;
 			if (e.Label != null)
 				cueSheet.Tracks[e.Item].Title = e.Label;
 		}
 
 		private void editToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			CUESheet cueSheet = (CUESheet)comboRelease.SelectedItem;
-			frmRelease frm = new frmRelease();
+			CUESheet cueSheet = ((ReleaseInfo)comboRelease.SelectedItem).cueSheet;
+			frmProperties frm = new frmProperties();
 			frm.CUE = cueSheet;
 			frm.ShowDialog();
-			comboRelease.Items[comboRelease.SelectedIndex] = cueSheet;
+		}
+
+		private void comboRelease_DrawItem(object sender, DrawItemEventArgs e)
+		{
+			e.DrawBackground();
+			StringFormat format = new StringFormat();
+			format.FormatFlags = StringFormatFlags.NoClip;
+			format.Alignment = StringAlignment.Near;
+			if (e.Index >= 0 && e.Index < comboRelease.Items.Count)
+			{
+				string text = comboRelease.GetItemText(comboRelease.Items[e.Index]);
+				if (comboRelease.Items[e.Index] is ReleaseInfo)
+				{
+					Bitmap ImageToDraw = ((ReleaseInfo)comboRelease.Items[e.Index]).bitmap;
+					e.Graphics.DrawImage(ImageToDraw, new Rectangle(e.Bounds.X, e.Bounds.Y, e.Bounds.Height, e.Bounds.Height));
+					//e.Graphics.DrawImage(ImageToDraw, new Rectangle(e.Bounds.X + e.Bounds.Width - ImageToDraw.Width, e.Bounds.Y, ImageToDraw.Width, e.Bounds.Height));
+				}
+				e.Graphics.DrawString(text, e.Font, new SolidBrush(e.ForeColor), new RectangleF((float)e.Bounds.X + e.Bounds.Height, (float)e.Bounds.Y, (float)(e.Bounds.Width - e.Bounds.Height), (float)e.Bounds.Height), format);
+			}
+			e.DrawFocusRectangle();
 		}
 	}
 
@@ -467,5 +524,11 @@ namespace CUERipper
 				}
 			}
 		}
+	}
+
+	class ReleaseInfo
+	{
+		public CUESheet cueSheet;
+		public Bitmap bitmap;
 	}
 }

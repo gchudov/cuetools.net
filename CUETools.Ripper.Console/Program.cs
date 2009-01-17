@@ -97,7 +97,7 @@ namespace CUETools.ConsoleRipper
 			string driveLetter = null;
 			int driveOffset = 0;
 			bool test = false;
-			bool forceD8 = false, forceBE = false;
+			bool forceD8 = false, forceBE = false, quiet = false;
 			for (int arg = 0; arg < args.Length; arg++)
 			{
 				bool ok = true;
@@ -113,6 +113,8 @@ namespace CUETools.ConsoleRipper
 					forceD8 = true;
 				else if (args[arg] == "--be")
 					forceBE = true;
+				else if (args[arg] == "-Q" || args[arg] == "--quiet")
+					quiet = true;
 				else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
 					driveLetter = args[arg];
 				else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
@@ -162,7 +164,7 @@ namespace CUETools.ConsoleRipper
 
 				audioSource.DriveOffset = driveOffset;
 				audioSource.CorrectionQuality = correctionQuality;
-				audioSource.DebugMessages = true;
+				audioSource.DebugMessages = !quiet;
 				if (forceD8) audioSource.ForceD8 = true;
 				if (forceBE) audioSource.ForceBE = true;
 				string readCmd = audioSource.AutoDetectReadCommand;

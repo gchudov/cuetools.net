@@ -37,9 +37,10 @@ namespace JDP
 			// 
 			resources.ApplyResources(this.comboRelease, "comboRelease");
 			this.comboRelease.BackColor = System.Drawing.SystemColors.Control;
+			this.comboRelease.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
 			this.comboRelease.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboRelease.FormattingEnabled = true;
 			this.comboRelease.Name = "comboRelease";
+			this.comboRelease.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboRelease_DrawItem);
 			// 
 			// button1
 			// 
@@ -57,6 +58,8 @@ namespace JDP
 			this.Controls.Add(this.comboRelease);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
 			this.Name = "frmChoice";
+			this.Load += new System.EventHandler(this.frmChoice_Load);
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmChoice_FormClosing);
 			this.ResumeLayout(false);
 
 		}

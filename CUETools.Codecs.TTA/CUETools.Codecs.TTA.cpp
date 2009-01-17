@@ -4,9 +4,12 @@
 
 #include "CUETools.Codecs.TTA.h"
 
+using namespace APETagsDotNet;
+
 typedef void * HANDLE;
 
 #include "../TTALib-1.1/TTAReader.h"
+#include "../TTALib-1.1/TTAWriter.h"
 #include "../TTALib-1.1/TTAError.h"
 
 namespace CUETools { 
@@ -31,7 +34,7 @@ namespace TTA {
 	public:
 		TTAReader(String^ path, Stream^ IO)
 		{
-			_tags = gcnew NameValueCollection();
+			_tags = nullptr;
 			_sampleOffset = 0;
 			_sampleBuffer = nullptr;
 			_path = path;
@@ -127,6 +130,12 @@ namespace TTA {
 
 		virtual property NameValueCollection^ Tags {
 			NameValueCollection^ get () {
+				if (!_tags) 
+				{
+					APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
+					_tags = apeTag->GetStringTags (true);
+					apeTag->Close ();
+				}
 				return _tags;
 			}
 			void set (NameValueCollection ^tags) {
@@ -136,7 +145,12 @@ namespace TTA {
 
 		virtual bool UpdateTags (bool preserveTime)
 		{
-		    return false;
+			Close ();
+			APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
+			apeTag->SetStringTags (_tags, true);
+			apeTag->Save();
+			apeTag->Close();
+			return true;
 		}
 
 		virtual property UInt64 Remaining {
@@ -193,7 +207,14 @@ namespace TTA {
 					do
 					{
 						long * buf;
-						int samplesInBuf = _ttaReader->GetBlock(&buf);
+						int samplesInBuf;
+						try
+						{
+							samplesInBuf = _ttaReader->GetBlock(&buf);
+						} catch (TTALib::TTAException ex)
+						{
+							throw gcnew Exception(String::Format("TTA decoder: {0}", gcnew String(TTAErrorsStr[ex.GetErrNo()])));
+						}
 						if (samplesInBuf == 0)
 							throw gcnew Exception("An error occurred while decoding.");
 						processBlock (buf, samplesInBuf);
@@ -225,6 +246,247 @@ namespace TTA {
 			{
 				return (UInt32) (_bufferLength - _bufferOffset);
 			}
+		}
+	};
+
+	public ref class TTAWriter : IAudioDest 
+	{
+	public:
+		TTAWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		{
+			if (bitsPerSample < 16 || bitsPerSample > 24)
+				throw gcnew Exception("Bits per sample must be 16..24.");
+
+			_initialized = false;
+			_sampleBuffer = nullptr;
+			_path = path;
+			_finalSampleCount = 0;
+			_samplesWritten = 0;
+			_bitsPerSample = bitsPerSample;
+			_channelCount = channelCount;
+			_sampleRate = sampleRate;
+			_compressionLevel = 5;
+			_blockSize = 0;
+			_tags = gcnew NameValueCollection();
+		}
+
+		virtual void Close() {
+			//FLAC__stream_encoder_finish(_encoder);
+			//for (int i = 0; i < _metadataCount; i++) {
+			//	FLAC__metadata_object_delete(_metadataList[i]);
+			//}
+
+			if (_ttaWriter)
+			{
+				try
+				{
+					delete _ttaWriter;
+				} catch (TTALib::TTAException ex)
+				{
+					_ttaWriter = nullptr;
+					throw gcnew Exception(String::Format("TTA encoder: {0}", gcnew String(TTAErrorsStr[ex.GetErrNo()])));
+				}
+				_ttaWriter = nullptr;
+			}
+
+			if (_IO)
+				_IO->Close();
+
+			if (_tags->Count > 0)
+			{
+				APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
+				apeTag->SetStringTags (_tags, true);
+				apeTag->Save();
+				apeTag->Close();
+				_tags->Clear ();
+			}
+
+			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
+				throw gcnew Exception("Samples written differs from the expected sample count.");
+			}
+			_tags->Clear ();
+		}
+
+		virtual void Delete()
+		{
+			try { Close (); } catch (Exception^) {}
+			File::Delete(_path);
+		}
+
+		virtual property Int64 FinalSampleCount {
+			Int64 get() {
+				return _finalSampleCount;
+			}
+			void set(Int64 value) {
+				if (value < 0) {
+					throw gcnew Exception("Invalid final sample count.");
+				}
+				if (_initialized) {
+					throw gcnew Exception("Final sample count cannot be changed after encoding begins.");
+				}
+				_finalSampleCount = value;
+			}
+		}
+
+		virtual property Int64 BlockSize
+		{
+			void set(Int64 value) 
+			{
+				_blockSize = value;
+			}
+		}
+
+		virtual property int BitsPerSample
+		{
+			int get() { return _bitsPerSample;  }
+		}
+
+		virtual bool SetTags (NameValueCollection^ tags) 
+		{
+			_tags = tags;
+			return true;
+		}
+
+		virtual property String^ Path { 
+			String^ get() { 
+				return _path; 
+			} 
+		}
+
+		virtual void Write(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) {
+			if (!_initialized) Initialize();
+
+			if ((_sampleBuffer == nullptr) || (_sampleBuffer->Length < sampleCount * _channelCount))
+				_sampleBuffer = gcnew array<long> (sampleCount * _channelCount);
+
+			interior_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
+			interior_ptr<long> pTTABuffer = &_sampleBuffer[0];
+			for (int i = 0; i < sampleCount * _channelCount; i++) 
+				pTTABuffer[i] = pSampleBuffer[i];
+
+			pin_ptr<long> buffer = &_sampleBuffer[0];
+			try
+			{
+				_ttaWriter->CompressBlock(buffer, sampleCount);
+			} catch (TTALib::TTAException ex)
+			{
+				throw gcnew Exception(String::Format("TTA encoder: {0}", gcnew String(TTAErrorsStr[ex.GetErrNo()])));
+			}
+
+			_samplesWritten += sampleCount;
+		}
+
+		property Int32 CompressionLevel {
+			Int32 get() {
+				return _compressionLevel;
+			}
+			void set(Int32 value) {
+				if ((value < 0) || (value > 8)) {
+					throw gcnew Exception("Invalid compression level.");
+				}
+				_compressionLevel = value;
+			}
+		}
+
+	private:
+		TTALib::TTAWriter* _ttaWriter;
+		FileStream^ _IO;
+		array<long>^ _sampleBuffer;
+		bool _initialized;
+		String^ _path;
+		Int64 _finalSampleCount, _samplesWritten, _blockSize;
+		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		Int32 _compressionLevel;
+		NameValueCollection^ _tags;
+
+		void Initialize() 
+		{
+			if (!_finalSampleCount)
+				throw gcnew Exception("FinalSampleCount not set.");
+
+			//FLAC__StreamMetadata *padding, *seektable, *vorbiscomment;
+
+			//_metadataList = new FLAC__StreamMetadata*[8];
+			//_metadataCount = 0;
+
+			//if (_finalSampleCount != 0) {
+			//	seektable = FLAC__metadata_object_new(FLAC__METADATA_TYPE_SEEKTABLE);
+			//	FLAC__metadata_object_seektable_template_append_spaced_points_by_samples(
+			//		seektable, _sampleRate * 10, _finalSampleCount);
+			//	FLAC__metadata_object_seektable_template_sort(seektable, true);
+			//	_metadataList[_metadataCount++] = seektable;
+			//}
+
+			//vorbiscomment = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
+
+			//for (int tagno = 0; tagno < _tags->Count; tagno++)
+			//{
+			//	String ^ tag_name = _tags->GetKey(tagno);
+			//	int tag_len = tag_name->Length;
+			//    char * tag = new char [tag_len + 1];
+			//    IntPtr nameChars = Marshal::StringToHGlobalAnsi(tag_name);
+			//    memcpy (tag, (const char*)nameChars.ToPointer(), tag_len);
+			//    Marshal::FreeHGlobal(nameChars);
+			//    tag[tag_len] = 0;
+
+			//	array<String^>^ tag_values = _tags->GetValues(tagno);
+			//	for (int valno = 0; valno < tag_values->Length; valno++)
+			//	{
+			//		UTF8Encoding^ enc = gcnew UTF8Encoding();
+			//		array<Byte>^ value_array = enc->GetBytes (tag_values[valno]);
+			//		int value_len = value_array->Length;
+			//		char * value = new char [value_len + 1];
+			//		Marshal::Copy (value_array, 0, (IntPtr) value, value_len);
+			//		value[value_len] = 0;
+
+			//		FLAC__StreamMetadata_VorbisComment_Entry entry;
+			//		/* create and entry and append it */
+			//		if(!FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, tag, value)) {
+			//			throw gcnew Exception("Unable to add tags, must be valid utf8.");
+			//		}
+			//		if(!FLAC__metadata_object_vorbiscomment_append_comment(vorbiscomment, entry, /*copy=*/false)) {
+			//			throw gcnew Exception("Unable to add tags.");
+			//		}
+			//		delete [] value;
+			//	}
+			//    delete [] tag;
+			//}
+			//_metadataList[_metadataCount++] = vorbiscomment;
+	 
+			//if (_paddingLength != 0) {
+			//	padding = FLAC__metadata_object_new(FLAC__METADATA_TYPE_PADDING);
+			//	padding->length = _paddingLength;
+			//	_metadataList[_metadataCount++] = padding;
+			//}
+
+			//FLAC__stream_encoder_set_metadata(_encoder, _metadataList, _metadataCount);
+
+			//FLAC__stream_encoder_set_verify(_encoder, _verify);
+
+			//if (_finalSampleCount != 0) {
+			//	FLAC__stream_encoder_set_total_samples_estimate(_encoder, _finalSampleCount);
+			//}
+
+			//FLAC__stream_encoder_set_compression_level(_encoder, _compressionLevel);
+
+			//if (_blockSize > 0)
+			//	FLAC__stream_encoder_set_blocksize(_encoder, (unsigned)_blockSize);
+
+			//if (FLAC__stream_encoder_init_FILE(_encoder, hFile, NULL, NULL) !=
+			//	FLAC__STREAM_ENCODER_INIT_STATUS_OK)
+			//{
+			//	throw gcnew Exception("Unable to initialize the encoder.");
+			//}
+
+			_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::Write, FileShare::Read);
+			try 
+			{
+				_ttaWriter = new TTALib::TTAWriter((HANDLE)_IO->Handle, 0, WAVE_FORMAT_PCM, _channelCount, _bitsPerSample, _sampleRate, _finalSampleCount);
+			} catch (TTALib::TTAException ex)
+			{
+				throw gcnew Exception(String::Format("TTA encoder: {0}", gcnew String(TTAErrorsStr[ex.GetErrNo()])));
+			}
+			_initialized = true;
 		}
 	};
 }

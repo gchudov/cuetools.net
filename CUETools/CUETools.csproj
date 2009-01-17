@@ -90,6 +90,12 @@
     <Compile Include="frmBatch.Designer.cs">
       <DependentUpon>frmBatch.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmChoice.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmChoice.Designer.cs">
+      <DependentUpon>frmChoice.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmFilenameCorrector.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,6 +140,14 @@
       <SubType>Designer</SubType>
       <DependentUpon>frmBatch.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmChoice.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmChoice.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmCUETools.de-DE.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmCUETools.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmCUETools.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmCUETools.cs</DependentUpon>
@@ -153,6 +167,10 @@
     <EmbeddedResource Include="frmReport.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmReport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSettings.de-DE.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmSettings.resx">
       <SubType>Designer</SubType>
@@ -189,6 +207,20 @@
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Freedb\Freedb.csproj">
+      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
+      <Name>Freedb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
+      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
+      <Name>MusicBrainz</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\freedb.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\musicbrainz.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

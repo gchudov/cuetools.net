@@ -80,10 +80,18 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioReadWrite.cs" />
+    <Compile Include="frmProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmProperties.Designer.cs">
+      <DependentUpon>frmProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Processor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
@@ -96,6 +104,10 @@
     <ProjectReference Include="..\CUETools.Codecs.APE\CUETools.Codecs.APE.vcproj">
       <Project>{9AE965C4-301E-4C01-B90F-297AF341ACC6}</Project>
       <Name>CUETools.Codecs.APE</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.Codecs.TTA\CUETools.Codecs.TTA.vcproj">
+      <Project>{1D1E99BC-6D22-41C0-BD94-FF4DD5EC725B}</Project>
+      <Name>CUETools.Codecs.TTA</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
@@ -117,6 +129,10 @@
       <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
       <Name>CUETools.Codecs.FLAC</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Freedb\Freedb.csproj">
+      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
+      <Name>Freedb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HDCDDotNet\HDCDDotNet.csproj">
       <Project>{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}</Project>
       <Name>HDCDDotNet</Name>
@@ -137,6 +153,12 @@
       <Project>{CC2E74B6-534A-43D8-9F16-AC03FE955000}</Project>
       <Name>CUETools.Codecs.WavPack</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="frmProperties.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmProperties.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

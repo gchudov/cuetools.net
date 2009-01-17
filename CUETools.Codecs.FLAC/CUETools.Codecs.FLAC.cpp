@@ -265,6 +265,11 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			}
 		}
 
+		virtual array<Int32, 2>^ Read(array<Int32, 2>^ buff)
+		{
+			return AudioSamples::Read(this, buff);
+		}
+
 		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
 		{
 			UInt32 buffOffset = 0;

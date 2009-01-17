@@ -48,7 +48,8 @@ namespace CUETools.Ripper.SCSI
 		const int CB_AUDIO = 4 * 588 + 2 + 294 + 16;
 		const int MAXSCANS = 20;
 		const int NSECTORS = 16;
-		const int MSECTORS = 5*1024*1024 / (4 * 588);
+		//const int MSECTORS = 5*1024*1024 / (4 * 588);
+		const int MSECTORS = 2400;
 		int _currentTrack = -1, _currentIndex = -1, _currentTrackActualStart = -1;
 		Logger m_logger;
 		CDImageLayout _toc;
@@ -170,12 +171,12 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				return _readCDCommand == ReadCDCommand.Unknown ? "unknown" :
-					string.Format("{0}, {1}, {2}{3}, {4}, {5} blocks at a time", 
+					string.Format("{0}, {1:X2}h, {2}{3}, {4} blocks at a time", 
 					(_readCDCommand == ReadCDCommand.ReadCdBEh ? "BEh" : "D8h"),
-					(_mainChannelMode == Device.MainChannelSelection.UserData ? "10h" : "F8h"),
+					(_mainChannelMode == Device.MainChannelSelection.UserData ? 0x10 : 0xF8) +
+					(_c2ErrorMode == Device.C2ErrorMode.None ? 0 : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? 2 : 4),
 					(_subChannelMode == Device.SubChannelMode.None ? "00h" : _subChannelMode == Device.SubChannelMode.QOnly ? "02h" : "04h"),
 					_qChannelInBCD ? "" : "nonBCD",
-					(_c2ErrorMode == Device.C2ErrorMode.None ? "00h" : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? "01h" : "04h"),
 					m_max_sectors);
 			}
 		}
@@ -196,9 +197,15 @@ namespace CUETools.Ripper.SCSI
 
 			// Open the base device
 			m_device_letter = Drive;
+			if (m_device != null)
+				Close();
+
 			m_device = new Device(m_logger);
 			if (!m_device.Open(m_device_letter))
+			{
+				m_device = null;
 				throw new Exception("Open failed: SCSI error");
+			}
 
 			// Get device info
 			st = m_device.Inquiry(out m_inqury_result);
@@ -249,7 +256,8 @@ namespace CUETools.Ripper.SCSI
 			IList<TocEntry> toc;
 			st = m_device.ReadToc((byte)0, false, out toc);
 			if (st != Device.CommandStatus.Success)
-				throw new Exception("ReadTOC: " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
+				throw new SCSIException("ReadTOC", m_device, st);
+				//throw new Exception("ReadTOC: " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
 
 			st = m_device.ReadCDText(out cdtext);
 			// new CDTextEncoderDecoder
@@ -265,7 +273,7 @@ namespace CUETools.Ripper.SCSI
 			if (_toc[1].IsAudio)
 				_toc[1][0].Start = 0;
 			if (_toc.AudioLength > 0)
-				_errors = new BitArray((int)_toc.AudioLength); // !!!
+				Position = 0;
 			return true;
 		}
 
@@ -320,7 +328,7 @@ namespace CUETools.Ripper.SCSI
 						StringBuilder st = new StringBuilder();
 						for (int i = 0; i < 12; i++)
 							st.AppendFormat(",0x{0:X2}", QData[_currentScan, q_pos, i]);
-						System.Console.WriteLine("\nCRC error@{0}{1}", CDImageLayout.TimeToString((uint)(sector + iSector)), st.ToString());
+						System.Console.WriteLine("\rCRC error@{0}{1};", CDImageLayout.TimeToString((uint)(sector + iSector)), st.ToString());
 					}
 					continue;
 				}
@@ -452,7 +460,7 @@ namespace CUETools.Ripper.SCSI
 							_mainChannelMode = mainmode[m];
 							if (_forceReadCommand != ReadCDCommand.Unknown && _readCDCommand != _forceReadCommand)
 								continue;
-							if (_readCDCommand == ReadCDCommand.ReadCdD8h && (_c2ErrorMode != Device.C2ErrorMode.None || _mainChannelMode != Device.MainChannelSelection.UserData))
+							if (_readCDCommand == ReadCDCommand.ReadCdD8h) // && (_c2ErrorMode != Device.C2ErrorMode.None || _mainChannelMode != Device.MainChannelSelection.UserData))
 								continue;
 							Array.Clear(_readBuffer, 0, _readBuffer.Length); // fill with something nasty instead?
 							DateTime tm = DateTime.Now;
@@ -530,6 +538,13 @@ namespace CUETools.Ripper.SCSI
 			Device.CommandStatus st;
 			fixed (byte* data = _readBuffer)
 			{
+				if (_debugMessages)
+				{
+					int size = (4 * 588 +
+						(_subChannelMode == Device.SubChannelMode.QOnly ? 16 : _subChannelMode == Device.SubChannelMode.RWMode ? 96 : 0) +
+						(_c2ErrorMode == Device.C2ErrorMode.Mode294 ? 294 : _c2ErrorMode == Device.C2ErrorMode.Mode296 ? 296 : 0)) * (int)Sectors2Read;
+					MemSet(data, size, 0xff);
+				}
 				if (_readCDCommand == ReadCDCommand.ReadCdBEh)
 					st = m_device.ReadCDAndSubChannel(_mainChannelMode, _subChannelMode, _c2ErrorMode, 1, false, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), _timeout);
 				else
@@ -618,6 +633,86 @@ namespace CUETools.Ripper.SCSI
 				throw new Exception("wierd IntPtr.Size");
 		}
 
+		private unsafe void MemSet(byte* buf, int count, byte val)
+		{
+			Int32 intVal = (((((val << 8) + val) << 8) + val) << 8) + val;
+			if (IntPtr.Size == 4)
+			{
+				Int32* start = (Int32*)buf;
+				Int32* end = (Int32*)(buf + count);
+				while (start < end)
+					*(start++) = intVal;
+				for (int i = 0; i < (count & 3); i++)
+					buf[count - i - 1] = val;
+			}
+			else if (IntPtr.Size == 8)
+			{
+				Int64 int64Val = ((Int64)intVal << 32) + intVal;
+				Int64* start = (Int64*)buf;
+				Int64* end = (Int64*)(buf + count);
+				while (start < end)
+					*(start++) = int64Val;
+				for (int i = 0; i < (count & 7); i++)
+					buf[count - i - 1] = val;
+			}
+			else
+				throw new Exception("wierd IntPtr.Size");
+		}
+
+		private void PrintErrors(int pass, int sector, int Sectors2Read, byte[] realData)
+		{
+			for (int iSector = 0; iSector < Sectors2Read; iSector++)
+			{
+				int pos = sector - _currentStart + iSector;
+				if (_debugMessages)
+				{
+					StringBuilder st = new StringBuilder();
+					for (int i = 0; i < 294; i++)
+						if (C2Data[_currentScan, pos, i] != 0)
+						{
+							for (int j = i; j < i + 23; j++)
+								if (j < 294)
+									st.AppendFormat("{0:X2}", C2Data[_currentScan, pos, j]);
+								else
+									st.Append("  ");
+							System.Console.WriteLine("\rC2 error @{0}[{1:000}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
+							return;
+						}
+					//for (int i = 0; i < 4 * 588; i++)
+					//    if (_currentData[pos * 4 * 588 + i] != realData[pos * 4 * 588 + i])
+					//    {
+					//        StringBuilder st = new StringBuilder();
+					//        for (int j = i; j < i + 25; j++)
+					//            if (j < 4 * 588)
+					//                st.AppendFormat("{0:X2}", realData[pos * 4 * 588 + j]);
+					//            else
+					//                st.Append("  ");
+					//        System.Console.WriteLine("\r{0}[--][{1:X3}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
+					//        st.Length = 0;
+					//        for (int result = 0; result <= pass; result++)
+					//        {
+					//            for (int j = i; j < i + 25; j++)
+					//                if (j < 4 * 588)
+					//                    st.AppendFormat("{0:X2}", UserData[result, pos, j]);
+					//                else
+					//                    st.Append("  ");
+					//            System.Console.WriteLine("\r{0}[{3:X2}][{1:X3}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString(), result);
+					//            st.Length = 0;
+					//            //int c2Bit = 0x80 >> (i % 8);
+					//            //byte value = UserData[result, pos, i];
+					//            //short score = (short)(1 + (((C2Data[result, pos, i >> 3] & c2Bit) == 0) ? (short) 10 : (short)0));
+					//            //st.AppendFormat("{0:X2}[{1:X2}]", value, score);
+					//        }
+					//        i += 25;
+					//        //return;
+					//        //while (st.Length < 46)
+					//        //    st.Append(' ');
+					//        //System.Console.WriteLine("\rReal error @{0}[{1:000}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
+					//    }
+				}
+			}
+		}
+
 		private unsafe void CorrectSectors0(int sector, int Sectors2Read)
 		{
 			for (int iSector = 0; iSector < Sectors2Read; iSector++)
@@ -645,6 +740,8 @@ namespace CUETools.Ripper.SCSI
 					int err2 = (C2Data[1, pos, iPar >> 3] >> (iPar & 7)) & 1;
 					_currentErrorsCount += err1 | err2 | (val1 != val2 ? 1 : 0);
 					_currentData[pos * 4 * 588 + iPar] = err1 != 0 ? val2 : val1;
+					//if (_debugMessages && ((C2Data[_currentScan, pos, iPar >> 3] >> (iPar & 7)) & 1) != 0 && _currentErrorsCount < 10)
+					//    System.Console.WriteLine("\rC2 error @{0}, byte {1:0000}                                    ", CDImageLayout.TimeToString((uint)(sector + iSector)), iPar);
 				}
 			}
 		}
@@ -686,6 +783,8 @@ namespace CUETools.Ripper.SCSI
 								if (valueScore[value] > valueScore[bestValue])
 									bestValue = value;
 							}
+//							if (_debugMessages && ((C2Data[_currentScan, pos, iPar >> 3] >> (iPar & 7)) & 1) != 0 && _currentErrorsCount < 10)
+//								System.Console.WriteLine("\rC2 error @{0}, byte {1:0000}                                    ", CDImageLayout.TimeToString((uint)(sector + iSector)), iPar);
 							bool fError = valueScore[bestValue] <= _correctionQuality + c2Score + totalScore / 2;
 							if (fError)
 								_currentErrorsCount++;
@@ -775,8 +874,8 @@ namespace CUETools.Ripper.SCSI
 
 			//FileStream correctFile = new FileStream("correct.wav", FileMode.Open);
 			//byte[] realData = new byte[MSECTORS * 4 * 588];
-			//correctFile.Seek(0x2C + start * 588 * 4, SeekOrigin.Begin);
-			//if (correctFile.Read(realData, 0, MSECTORS * 4 * 588) != MSECTORS * 4 * 588)
+			//correctFile.Seek(0x2C + _currentStart * 588 * 4, SeekOrigin.Begin);
+			//if (correctFile.Read(realData, _driveOffset * 4, MSECTORS * 4 * 588 - _driveOffset * 4) != MSECTORS * 4 * 588 - _driveOffset * 4)
 			//    throw new Exception("read");
 			//correctFile.Close();
 
@@ -816,6 +915,7 @@ namespace CUETools.Ripper.SCSI
 							ProcessSubchannel(sector, Sectors2Read, true);
 						//DateTime LastFetched = DateTime.Now;
 						CorrectSectors(Math.Min(pass, MAXSCANS - 1), sector, Sectors2Read, pass >= MAXSCANS - 1, pass == MAXSCANS - 1 + nExtraPasses);
+						PrintErrors(Math.Min(pass, MAXSCANS - 1), sector, Sectors2Read, /*realData*/null);
 						//TimeSpan delay2 = DateTime.Now - LastFetched;
 						//if (sector == _currentStart)
 							//System.Console.WriteLine("\n{0},{1}", delay1.TotalMilliseconds, delay2.TotalMilliseconds);
@@ -856,20 +956,38 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
+		public int[,] Read(int[,] buff)
+		{
+			if (_toc == null)
+				throw new Exception("Read: invalid TOC");
+			if (_sampleOffset - _driveOffset >= (uint)Length)
+				return null;
+			if (_sampleOffset >= (int)Length)
+				return new int[_driveOffset - (_sampleOffset - (int)Length), ChannelCount];
+			if (_sampleOffset < 0)
+				return new int[-_sampleOffset, ChannelCount];
+			PrefetchSector((int)_sampleOffset / 588);
+			int samplesRead = Math.Min(_currentEnd * 588, (int)Length + _driveOffset) - _sampleOffset;
+			buff = new int[samplesRead, ChannelCount];
+			AudioSamples.BytesToFLACSamples_16(_currentData, (_sampleOffset - _currentStart * 588) * 4, buff, 0, (uint) samplesRead, 2);
+			_sampleOffset = _currentEnd * 588;
+			return buff;
+		}
+
 		public uint Read(int[,] buff, uint sampleCount)
 		{
 			if (_toc == null)
 				throw new Exception("Read: invalid TOC");
 			if (_sampleOffset - _driveOffset >= (uint)Length)
 			    return 0;
-			if (_sampleOffset > (uint)Length)
+			if (_sampleOffset >= (uint)Length)
 			{
-			    int samplesRead = _sampleOffset - (int)Length;
+				int samplesRead = _driveOffset - (_sampleOffset - (int)Length);
 			    for (int i = 0; i < samplesRead; i++)
 			        for (int c = 0; c < ChannelCount; c++)
 			            buff[i, c] = 0;
 			    _sampleOffset += samplesRead;
-			    return 0;
+			    return (uint) samplesRead;
 			}
 			if ((uint)(_sampleOffset - _driveOffset + sampleCount) > Length)
 			    sampleCount = (uint)((int)Length + _driveOffset - _sampleOffset);
@@ -999,7 +1117,7 @@ namespace CUETools.Ripper.SCSI
 				_currentIndex = -1;
 				_crcErrorsCount = 0;
 				_errorsCount = 0;				
-				_errors = new BitArray((int)_toc.AudioLength);
+				_errors = new BitArray((int)_toc.AudioLength); // !!!
 				_sampleOffset = (int)value + _driveOffset;
 			}
 		}
@@ -1039,7 +1157,7 @@ namespace CUETools.Ripper.SCSI
 
 		public static string RipperVersion()
 		{
-			return "CUERipper v1.9.3 Copyright (C) 2008 Gregory S. Chudov";
+			return "CUERipper v1.9.4 Copyright (C) 2008 Gregory S. Chudov";
 			// ripper.GetName().Name + " " + ripper.GetName().Version;
 		}
 

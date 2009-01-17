@@ -56,6 +56,7 @@ namespace JDP {
 			chkArNoUnverifiedAudio.Checked = _config.noUnverifiedOutput;
 			chkArFixOffset.Checked = _config.fixOffset;
 			chkEmbedLog.Checked = _config.embedLog;
+			chkExtractLog.Checked = _config.extractLog;
 			chkFillUpCUE.Checked = _config.fillUpCUE;
 			chkFilenamesANSISafe.Checked = _config.filenamesANSISafe;
 			chkHDCDDetect.Checked = _config.detectHDCD;
@@ -67,6 +68,7 @@ namespace JDP {
 			numericLossyWAVQuality.Value = _config.lossyWAVQuality;
 			chkHDCDLW16.Checked = _config.decodeHDCDtoLW16;
 			chkHDCD24bit.Checked = _config.decodeHDCDto24bit;
+			chkOverwriteTags.Checked = _config.overwriteCUEData;
 
 			EnableDisable();
 		}
@@ -133,6 +135,7 @@ namespace JDP {
 			_config.noUnverifiedOutput = chkArNoUnverifiedAudio.Checked;
 			_config.fixOffset = chkArFixOffset.Checked;
 			_config.embedLog = chkEmbedLog.Checked;
+			_config.extractLog = chkExtractLog.Checked;
 			_config.fillUpCUE = chkFillUpCUE.Checked;
 			_config.filenamesANSISafe = chkFilenamesANSISafe.Checked;
 			_config.detectHDCD = chkHDCDDetect.Checked;
@@ -143,6 +146,7 @@ namespace JDP {
 			_config.truncate4608ExtraSamples = chkTruncateExtra4206Samples.Checked;
 			_config.decodeHDCDtoLW16 = chkHDCDLW16.Checked;
 			_config.decodeHDCDto24bit = chkHDCD24bit.Checked;
+			_config.overwriteCUEData = chkOverwriteTags.Checked;
 		}
 
 		private void EnableDisable()
@@ -168,6 +172,8 @@ namespace JDP {
 			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked;
 
 			numWVExtraMode.Enabled = chkWVExtraMode.Checked;
+
+			chkOverwriteTags.Enabled = chkFillUpCUE.Checked;
 		}
 
 		private void chkArFixOffset_CheckedChanged(object sender, EventArgs e)
@@ -196,6 +202,11 @@ namespace JDP {
 		}
 
 		private void chkHDCDDecode_CheckedChanged(object sender, EventArgs e)
+		{
+			EnableDisable();
+		}
+
+		private void chkFillUpCUE_CheckedChanged(object sender, EventArgs e)
 		{
 			EnableDisable();
 		}

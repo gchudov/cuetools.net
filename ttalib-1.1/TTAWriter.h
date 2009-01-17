@@ -28,8 +28,6 @@
  */
 
 #pragma once
-#include "BitWriter.h"
-#include "TTAError.h"
 #include "TTACommon.h"
 
 #define WAVE_FORMAT_PCM	1
@@ -37,6 +35,8 @@
 
 namespace TTALib 
 {
+	class BitWriter;
+
 	class TTAWriter
 	{
 		HANDLE hOutFile;

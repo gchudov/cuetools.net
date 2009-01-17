@@ -38,7 +38,7 @@ namespace MusicBrainz
         #region Private Fields
         
         static DateTime last_accessed;
-        static readonly TimeSpan min_interval = new TimeSpan (0, 0, 1); // 1 second
+        static readonly TimeSpan min_interval = new TimeSpan (1000000); // 0.1 second
         static readonly object server_mutex = new object ();
         static readonly string [] rels_params = new string [] {
             "artist-rels",
@@ -383,9 +383,12 @@ namespace MusicBrainz
             Monitor.Enter (server_mutex);
 
             // Don't access the MB server twice within a second
-            TimeSpan time = DateTime.Now - last_accessed;
-            if (min_interval > time)
-                Thread.Sleep ((min_interval - time).Milliseconds);
+			if (last_accessed != null)
+			{
+				TimeSpan time = DateTime.Now - last_accessed;
+				if (min_interval > time)
+					Thread.Sleep((min_interval - time).Milliseconds);
+			}
 
             WebRequest request = WebRequest.Create (url);
             bool cache_implemented = false;

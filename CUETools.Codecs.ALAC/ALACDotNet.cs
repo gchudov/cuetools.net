@@ -41,6 +41,11 @@ namespace CUETools.Codecs.ALAC
 			_saved_mdat_pos = _IO.Position;
 		}
 
+		public int[,] Read(int[,] buff)
+		{
+			return AudioSamples.Read(this, buff);
+		}
+
 		public uint Read(int[,] buff, uint sampleCount)
 		{
 			if (_predicterror_buffer_a == null)

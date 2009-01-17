@@ -120,11 +120,20 @@
   <data name="btnConvert.Text" xml:space="preserve">
     <value>&amp;Los</value>
   </data>
+  <data name="btnConvert.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnBrowseOutput.Text" xml:space="preserve">
     <value>Durchsuchen...</value>
   </data>
+  <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnBrowseInput.Text" xml:space="preserve">
     <value>Durchsuchen...</value>
+  </data>
+  <data name="btnBrowseInput.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="lblOutput.Size" type="System.Drawing.Size, System.Drawing">
@@ -133,8 +142,23 @@
   <data name="lblOutput.Text" xml:space="preserve">
     <value>&amp;Ausgabe:</value>
   </data>
+  <data name="lblOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="lblInput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtOutputPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtInputPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="grpCUEPaths.Text" xml:space="preserve">
     <value>CUE-Pfade</value>
+  </data>
+  <data name="grpCUEPaths.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>81, 17</value>
@@ -185,13 +209,19 @@
     <value>97, 211</value>
   </data>
   <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>141, 137</value>
+    <value>141, 164</value>
   </data>
   <data name="grpOutputStyle.Text" xml:space="preserve">
     <value>CUE-Stil</value>
   </data>
+  <data name="grpOutputStyle.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnAbout.Text" xml:space="preserve">
     <value>Über</value>
+  </data>
+  <data name="btnAbout.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="txtCustomFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>163, 62</value>
@@ -199,11 +229,17 @@
   <data name="txtCustomFormat.Text" xml:space="preserve">
     <value>%1:-2\Neu\%-1\%F.cue</value>
   </data>
+  <data name="txtCustomFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="rbCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 17</value>
   </data>
   <data name="rbCustomFormat.Text" xml:space="preserve">
     <value>Nutze eigenes Format:</value>
+  </data>
+  <data name="rbCustomFormat.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="txtCreateSubdirectory.Location" type="System.Drawing.Point, System.Drawing">
     <value>163, 20</value>
@@ -211,11 +247,17 @@
   <data name="txtCreateSubdirectory.Text" xml:space="preserve">
     <value>Neu</value>
   </data>
+  <data name="txtCreateSubdirectory.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="rbDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
     <value>61, 17</value>
   </data>
   <data name="rbDontGenerate.Text" xml:space="preserve">
     <value>&amp;Manuell</value>
+  </data>
+  <data name="rbDontGenerate.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
     <value>147, 17</value>
@@ -223,11 +265,17 @@
   <data name="rbCreateSubdirectory.Text" xml:space="preserve">
     <value>E&amp;rstelle Unterverzeichnis:</value>
   </data>
+  <data name="rbCreateSubdirectory.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="rbAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
     <value>153, 17</value>
   </data>
   <data name="rbAppendFilename.Text" xml:space="preserve">
     <value>An Dateinamen anhängen:</value>
+  </data>
+  <data name="rbAppendFilename.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="txtAppendFilename.Location" type="System.Drawing.Point, System.Drawing">
     <value>163, 42</value>
@@ -235,14 +283,23 @@
   <data name="txtAppendFilename.Text" xml:space="preserve">
     <value>-Neu</value>
   </data>
-  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
-    <value>398, 115</value>
+  <data name="txtAppendFilename.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="grpOutputPathGeneration.Text" xml:space="preserve">
     <value>Ausgabepfad</value>
   </data>
+  <data name="grpOutputPathGeneration.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbTTA.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkLossyWAV.ToolTip" xml:space="preserve">
     <value>Erstelle ein Paar von Dateien - .lossy.wav(flac usw.) und .lwcdf.wav(flac usw.). Die verlustbehaftete (lossy) Datei enthält komprimierte Musik, aber gemeinsam mit der lwcdf-Datei können die originalen Audiodaten wiederhergestellt werden.</value>
+  </data>
+  <data name="rbAPE.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 17</value>
@@ -253,20 +310,44 @@
   <data name="rbNoAudio.ToolTip" xml:space="preserve">
     <value>Erstelle keine Audiodateien, nur CUE-Sheet</value>
   </data>
+  <data name="rbWavPack.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbWAV.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbFLAC.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="grpAudioOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 137</value>
+    <value>83, 164</value>
   </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Audioausgabe</value>
   </data>
+  <data name="grpAudioOutput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>412, 307</value>
+  </data>
   <data name="btnBatch.Text" xml:space="preserve">
     <value>Stapel...</value>
+  </data>
+  <data name="btnBatch.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="btnFilenameCorrector.Text" xml:space="preserve">
     <value>Dateinamenkorrektur...</value>
   </data>
+  <data name="btnFilenameCorrector.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnSettings.Text" xml:space="preserve">
     <value>Erweiterte Einstellungen...</value>
+  </data>
+  <data name="btnSettings.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbArAndEncode.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 37</value>
@@ -277,8 +358,14 @@
   <data name="rbArAndEncode.Text" xml:space="preserve">
     <value>Kodieren und verifizieren</value>
   </data>
+  <data name="rbArAndEncode.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Datenspur:</value>
+  </data>
+  <data name="label1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
     <value>Nicht für normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren können nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die Länge der Datenspur. Sie können sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie müssen hier nichts eingeben.</value>
@@ -319,19 +406,40 @@
   <data name="rbArNone.ToolTip" xml:space="preserve">
     <value>Die AccurateRip-Datenbank zur Verifizierung nicht kontaktieren</value>
   </data>
-  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>162, 137</value>
+  <data name="grpAccurateRip.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="statusStrip1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="btnCUECreator.Text" xml:space="preserve">
     <value>CUE-Sheet erstellen...</value>
   </data>
+  <data name="btnCUECreator.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="btnStop.Text" xml:space="preserve">
     <value>&amp;Stopp</value>
+  </data>
+  <data name="btnStop.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnPause.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Fortsetzen</value>
   </data>
+  <data name="btnResume.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="groupBox1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>CUE-Werkzeuge</value>
+  </data>
+  <data name="$this.ToolTip" xml:space="preserve">
+    <value />
   </data>
 </root>

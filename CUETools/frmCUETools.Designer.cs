@@ -49,12 +49,13 @@ namespace JDP {
 			this.rbAppendFilename = new System.Windows.Forms.RadioButton();
 			this.txtAppendFilename = new System.Windows.Forms.TextBox();
 			this.grpAudioOutput = new System.Windows.Forms.GroupBox();
+			this.rbTTA = new System.Windows.Forms.RadioButton();
 			this.chkLossyWAV = new System.Windows.Forms.CheckBox();
 			this.rbAPE = new System.Windows.Forms.RadioButton();
 			this.rbNoAudio = new System.Windows.Forms.RadioButton();
 			this.rbWavPack = new System.Windows.Forms.RadioButton();
-			this.rbFLAC = new System.Windows.Forms.RadioButton();
 			this.rbWAV = new System.Windows.Forms.RadioButton();
+			this.rbFLAC = new System.Windows.Forms.RadioButton();
 			this.btnBatch = new System.Windows.Forms.Button();
 			this.btnFilenameCorrector = new System.Windows.Forms.Button();
 			this.btnSettings = new System.Windows.Forms.Button();
@@ -74,12 +75,17 @@ namespace JDP {
 			this.btnStop = new System.Windows.Forms.Button();
 			this.btnPause = new System.Windows.Forms.Button();
 			this.btnResume = new System.Windows.Forms.Button();
+			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.rbFreedbNever = new System.Windows.Forms.RadioButton();
+			this.rbFreedbIf = new System.Windows.Forms.RadioButton();
+			this.rbFreedbAlways = new System.Windows.Forms.RadioButton();
 			this.grpCUEPaths.SuspendLayout();
 			this.grpOutputStyle.SuspendLayout();
 			this.grpOutputPathGeneration.SuspendLayout();
 			this.grpAudioOutput.SuspendLayout();
 			this.grpAccurateRip.SuspendLayout();
 			this.statusStrip1.SuspendLayout();
+			this.groupBox1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnConvert
@@ -262,15 +268,24 @@ namespace JDP {
 			// 
 			// grpAudioOutput
 			// 
+			this.grpAudioOutput.Controls.Add(this.rbTTA);
 			this.grpAudioOutput.Controls.Add(this.chkLossyWAV);
 			this.grpAudioOutput.Controls.Add(this.rbAPE);
 			this.grpAudioOutput.Controls.Add(this.rbNoAudio);
 			this.grpAudioOutput.Controls.Add(this.rbWavPack);
-			this.grpAudioOutput.Controls.Add(this.rbFLAC);
 			this.grpAudioOutput.Controls.Add(this.rbWAV);
+			this.grpAudioOutput.Controls.Add(this.rbFLAC);
 			resources.ApplyResources(this.grpAudioOutput, "grpAudioOutput");
 			this.grpAudioOutput.Name = "grpAudioOutput";
 			this.grpAudioOutput.TabStop = false;
+			// 
+			// rbTTA
+			// 
+			resources.ApplyResources(this.rbTTA, "rbTTA");
+			this.rbTTA.Name = "rbTTA";
+			this.rbTTA.TabStop = true;
+			this.rbTTA.UseVisualStyleBackColor = true;
+			this.rbTTA.CheckedChanged += new System.EventHandler(this.rbTTA_CheckedChanged);
 			// 
 			// chkLossyWAV
 			// 
@@ -303,13 +318,6 @@ namespace JDP {
 			this.rbWavPack.UseVisualStyleBackColor = true;
 			this.rbWavPack.CheckedChanged += new System.EventHandler(this.rbWavPack_CheckedChanged);
 			// 
-			// rbFLAC
-			// 
-			resources.ApplyResources(this.rbFLAC, "rbFLAC");
-			this.rbFLAC.Name = "rbFLAC";
-			this.rbFLAC.UseVisualStyleBackColor = true;
-			this.rbFLAC.CheckedChanged += new System.EventHandler(this.rbFLAC_CheckedChanged);
-			// 
 			// rbWAV
 			// 
 			resources.ApplyResources(this.rbWAV, "rbWAV");
@@ -318,6 +326,13 @@ namespace JDP {
 			this.rbWAV.TabStop = true;
 			this.rbWAV.UseVisualStyleBackColor = true;
 			this.rbWAV.CheckedChanged += new System.EventHandler(this.rbWAV_CheckedChanged);
+			// 
+			// rbFLAC
+			// 
+			resources.ApplyResources(this.rbFLAC, "rbFLAC");
+			this.rbFLAC.Name = "rbFLAC";
+			this.rbFLAC.UseVisualStyleBackColor = true;
+			this.rbFLAC.CheckedChanged += new System.EventHandler(this.rbFLAC_CheckedChanged);
 			// 
 			// btnBatch
 			// 
@@ -463,10 +478,41 @@ namespace JDP {
 			this.btnResume.UseVisualStyleBackColor = true;
 			this.btnResume.Click += new System.EventHandler(this.btnPause_Click);
 			// 
+			// groupBox1
+			// 
+			this.groupBox1.Controls.Add(this.rbFreedbAlways);
+			this.groupBox1.Controls.Add(this.rbFreedbIf);
+			this.groupBox1.Controls.Add(this.rbFreedbNever);
+			resources.ApplyResources(this.groupBox1, "groupBox1");
+			this.groupBox1.Name = "groupBox1";
+			this.groupBox1.TabStop = false;
+			// 
+			// rbFreedbNever
+			// 
+			resources.ApplyResources(this.rbFreedbNever, "rbFreedbNever");
+			this.rbFreedbNever.Name = "rbFreedbNever";
+			this.rbFreedbNever.TabStop = true;
+			this.rbFreedbNever.UseVisualStyleBackColor = true;
+			// 
+			// rbFreedbIf
+			// 
+			resources.ApplyResources(this.rbFreedbIf, "rbFreedbIf");
+			this.rbFreedbIf.Name = "rbFreedbIf";
+			this.rbFreedbIf.TabStop = true;
+			this.rbFreedbIf.UseVisualStyleBackColor = true;
+			// 
+			// rbFreedbAlways
+			// 
+			resources.ApplyResources(this.rbFreedbAlways, "rbFreedbAlways");
+			this.rbFreedbAlways.Name = "rbFreedbAlways";
+			this.rbFreedbAlways.TabStop = true;
+			this.rbFreedbAlways.UseVisualStyleBackColor = true;
+			// 
 			// frmCUETools
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.groupBox1);
 			this.Controls.Add(this.btnResume);
 			this.Controls.Add(this.btnPause);
 			this.Controls.Add(this.btnStop);
@@ -499,6 +545,8 @@ namespace JDP {
 			this.grpAccurateRip.PerformLayout();
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
+			this.groupBox1.ResumeLayout(false);
+			this.groupBox1.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -555,6 +603,11 @@ namespace JDP {
 		private System.Windows.Forms.Button btnResume;
 		private System.Windows.Forms.CheckBox chkLossyWAV;
 		private System.Windows.Forms.RadioButton rbArAndEncode;
+		private System.Windows.Forms.RadioButton rbTTA;
+		private System.Windows.Forms.GroupBox groupBox1;
+		private System.Windows.Forms.RadioButton rbFreedbAlways;
+		private System.Windows.Forms.RadioButton rbFreedbIf;
+		private System.Windows.Forms.RadioButton rbFreedbNever;
 	}
 }
 

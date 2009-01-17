@@ -155,9 +155,18 @@ static const unsigned FLAC__CPUINFO_IA32_CPUID_EXTENDED_AMD_EXTMMX = 0x00400000;
 void FLAC__cpu_info(FLAC__CPUInfo *info)
 {
 /*
+ * IA64-specific
+ */
+#if defined FLAC__CPU_IA64
+	info->type = FLAC__CPUINFO_TYPE_IA64;
+#if !defined FLAC__NO_ASM && defined FLAC__HAS_NASM
+	info->use_asm = true;
+#endif
+
+#elif defined FLAC__CPU_IA32
+/*
  * IA32-specific
  */
-#ifdef FLAC__CPU_IA32
 	info->type = FLAC__CPUINFO_TYPE_IA32;
 #if !defined FLAC__NO_ASM && defined FLAC__HAS_NASM
 	info->use_asm = true; /* we assume a minimum of 80386 with FLAC__CPU_IA32 */

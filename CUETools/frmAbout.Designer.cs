@@ -32,6 +32,7 @@ namespace JDP
 			this.linkLabel1 = new System.Windows.Forms.LinkLabel();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.button1 = new System.Windows.Forms.Button();
+			this.linkLabel2 = new System.Windows.Forms.LinkLabel();
 			this.SuspendLayout();
 			// 
 			// linkLabel1
@@ -67,6 +68,16 @@ namespace JDP
 			this.button1.Name = "button1";
 			this.button1.UseVisualStyleBackColor = true;
 			// 
+			// linkLabel2
+			// 
+			this.linkLabel2.AccessibleDescription = null;
+			this.linkLabel2.AccessibleName = null;
+			resources.ApplyResources(this.linkLabel2, "linkLabel2");
+			this.linkLabel2.Font = null;
+			this.linkLabel2.Name = "linkLabel2";
+			this.linkLabel2.TabStop = true;
+			this.linkLabel2.UseCompatibleTextRendering = true;
+			// 
 			// frmAbout
 			// 
 			this.AccessibleDescription = null;
@@ -75,6 +86,7 @@ namespace JDP
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackgroundImage = null;
 			this.CancelButton = this.button1;
+			this.Controls.Add(this.linkLabel2);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.linkLabel1);
@@ -97,5 +109,6 @@ namespace JDP
 		private System.Windows.Forms.LinkLabel linkLabel1;
 		private System.Windows.Forms.TextBox textBox1;
 		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.LinkLabel linkLabel2;
 	}
 }

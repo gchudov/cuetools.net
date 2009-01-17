@@ -198,6 +198,11 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
+		virtual array<Int32, 2>^ Read(array<Int32, 2>^ buff)
+		{
+			return AudioSamples::Read(this, buff);
+		}
+
 		virtual UInt32 Read(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) 
 		{
 			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];

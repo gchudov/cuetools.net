@@ -2,9 +2,12 @@ using System;
 using System.IO;
 using CUETools.Codecs;
 using CUETools.Codecs.ALAC;
+#if !MONO
 using CUETools.Codecs.FLAC;
 using CUETools.Codecs.WavPack;
 using CUETools.Codecs.APE;
+using CUETools.Codecs.TTA;
+#endif
 using CUETools.Codecs.LossyWAV;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -27,9 +30,11 @@ namespace CUETools.Processor
 					return new WavPackReader(path, IO, null);
 				case ".ape":
 					return new APEReader(path, IO);
+				case ".tta":
+					return new TTAReader(path, IO);
 #endif
 				default:
-					throw new Exception("Unsupported audio type.");
+					throw new Exception("Unsupported audio type: " + path);
 			}
 		}
 
@@ -44,7 +49,15 @@ namespace CUETools.Processor
 			string lossyPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lossy" + extension);
 			string lwcdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lwcdf" + extension);
 			IAudioSource lossySource = GetAudioSource(lossyPath, null, extension);
-			IAudioSource lwcdfSource = GetAudioSource(lwcdfPath, null, extension);
+			IAudioSource lwcdfSource = null;
+			try
+			{
+				lwcdfSource = GetAudioSource(lwcdfPath, null, extension);
+			}
+			catch
+			{
+				return lossySource;
+			}
 			return new LossyWAVReader(lossySource, lwcdfSource);
 		}
 
@@ -70,12 +83,15 @@ namespace CUETools.Processor
 					dest = new APEWriter(path, bitsPerSample, channelCount, sampleRate);
 					((APEWriter)dest).CompressionLevel = (int)config.apeCompressionLevel;
 					break;
+				case ".tta":
+					dest = new TTAWriter(path, bitsPerSample, channelCount, sampleRate);
+					break;
 				case ".dummy":
 					dest = new DummyWriter(path, bitsPerSample, channelCount, sampleRate); 
 					break;
 #endif
 				default:
-					throw new Exception("Unsupported audio type.");
+					throw new Exception("Unsupported audio type: " + path);
 			}
 			dest.FinalSampleCount = finalSampleCount;
 			return dest;

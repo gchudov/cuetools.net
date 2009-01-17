@@ -239,6 +239,7 @@ namespace JDP {
 				CUESheet cueSheet = new CUESheet(_config);
 				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
 				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
+				cueSheet.CUEToolsSelection += new CUEToolsSelectionHandler(MakeSelection);
 				cueSheet.WriteOffset = _writeOffset;
 
 				object[] p = new object[6];
@@ -287,6 +288,21 @@ namespace JDP {
 			});
 		}
 
+		private void MakeSelection(object sender, CUEToolsSelectionEventArgs e)
+		{
+			if (_batchPaths.Count != 0)
+				return;
+			this.Invoke((MethodInvoker)delegate()
+			{
+				frmChoice dlg = new frmChoice();
+				foreach (string s in e.choices)
+					dlg.comboRelease.Items.Add(s);
+				dlg.comboRelease.SelectedIndex = 0;
+				if (dlg.ShowDialog(this) == DialogResult.OK)
+					e.selection = dlg.comboRelease.SelectedIndex;
+			});
+		}
+
 		private void WriteAudioFilesThread(object o) {
 			object[] p = (object[])o;
 
@@ -296,6 +312,7 @@ namespace JDP {
 			AccurateRipMode accurateRip = (AccurateRipMode)p[3];
 			OutputAudioFormat outputFormat = (OutputAudioFormat)p[4];
 			bool lossyWAV = (bool)p[5];
+			DialogResult dlgRes = DialogResult.OK;
 
 			try
 			{
@@ -303,14 +320,41 @@ namespace JDP {
 				bool outputAudio = outputFormat != OutputAudioFormat.NoAudio && accurateRip != AccurateRipMode.Verify;
 				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify;
 				string pathOut = null;
+				List<object> releases = null;
 
 				cueSheet.Open(pathIn);
 
+				if (_batchPaths.Count == 0 && accurateRip != AccurateRipMode.Verify)
+				{
+					if (rbFreedbAlways.Checked || (rbFreedbIf.Checked && 
+						(cueSheet.Artist == "" || cueSheet.Title == "" || cueSheet.Year == "")))
+						releases = cueSheet.LookupAlbumInfo();
+				}
+
 				this.Invoke((MethodInvoker)delegate()
 				{
-					UpdateOutputPath(cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
+					if (releases != null && releases.Count > 0)
+					{
+						frmChoice dlg = new frmChoice();
+						foreach (object release in releases)
+							dlg.comboRelease.Items.Add(release);
+						dlg.comboRelease.SelectedIndex = 0;
+						dlg.CUE = cueSheet;
+						if (dlg.ShowDialog(this) == DialogResult.Cancel)
+						{
+							cueSheet.Close();
+							SetupControls(false);
+						}
+					}
+					UpdateOutputPath(
+						cueSheet.Year != "" ? cueSheet.Year : "YYYY", 
+						cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", 
+						cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
 					pathOut = txtOutputPath.Text;
 				});
+
+				if (dlgRes == DialogResult.Cancel)
+					return;
 
 				cueSheet.GenerateFilenames(outputFormat, lossyWAV, pathOut);
 				string outDir = Path.GetDirectoryName(pathOut);
@@ -334,23 +378,22 @@ namespace JDP {
 							outputExists |= File.Exists(Path.Combine(outDir, cueSheet.TrackFilenames[i]));
 					}
 				}
-				DialogResult dlgRes = DialogResult.Cancel;
+				dlgRes = DialogResult.Cancel;
 				if (outputExists)
 				{
 					this.Invoke((MethodInvoker)delegate()
 					{
-						dlgRes = MessageBox.Show("One or more output file already exists, " +
+						dlgRes = MessageBox.Show(this, "One or more output file already exists, " +
 							"do you want to overwrite?", "Overwrite?", (_batchPaths.Count == 0) ?
 							MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+						if (dlgRes == DialogResult.Yes)
+							outputExists = false;
+						else if (_batchPaths.Count == 0)
+							SetupControls(false);
 					});
-
-					if (dlgRes == DialogResult.Yes)
-						outputExists = false;
-					else if (dlgRes == DialogResult.Cancel || _batchPaths.Count == 0)
+					if (outputExists && _batchPaths.Count == 0)
 					{
 						cueSheet.Close();
-						_batchPaths.Clear();
-						SetupControls(false);
 						return;
 					}
 				}
@@ -396,7 +439,7 @@ namespace JDP {
 				this.Invoke((MethodInvoker)delegate()
 				{
 					SetupControls(false);
-					MessageBox.Show("Conversion was stopped.", "Stopped", MessageBoxButtons.OK,
+					MessageBox.Show(this, "Conversion was stopped.", "Stopped", MessageBoxButtons.OK,
 						MessageBoxIcon.Exclamation);
 				});
 			}
@@ -475,17 +518,17 @@ namespace JDP {
 				return;
 			}
 			if (warnAboutPadding) {
-				MessageBox.Show("One or more input file doesn't end on a CD frame boundary.  " +
+				MessageBox.Show(this, "One or more input file doesn't end on a CD frame boundary.  " +
 					"The output has been padded where necessary to fix this.  If your input " +
 					"files are from a CD source, this may indicate a problem with your files.",
 					"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 			}
-			MessageBox.Show("Conversion was successful!", "Done", MessageBoxButtons.OK,
+			MessageBox.Show(this, "Conversion was successful!", "Done", MessageBoxButtons.OK,
 				MessageBoxIcon.Information);
 		}
 
 		private void ShowBatchDoneMessage() {
-			MessageBox.Show("Batch conversion is complete!", "Done", MessageBoxButtons.OK,
+			MessageBox.Show(this, "Batch conversion is complete!", "Done", MessageBoxButtons.OK,
 				MessageBoxIcon.Information);
 		}
 
@@ -494,7 +537,7 @@ namespace JDP {
 				return true;
 			}
 
-			DialogResult dlgRes = MessageBox.Show("Write offset setting is non-zero which " +
+			DialogResult dlgRes = MessageBox.Show(this, "Write offset setting is non-zero which " +
 				"will cause some samples to be discarded.  You should only use this setting " +
 				"to make temporary files for burning.  Are you sure you want to continue?",
 				"Write offset is enabled", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
@@ -523,6 +566,12 @@ namespace JDP {
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
 			chkLossyWAV.Checked = sr.LoadBoolean("LossyWav") ?? false;
+			switch (sr.LoadInt32("FreedbLookup", null, null) ?? 2)
+			{
+				case 0: rbFreedbNever.Checked = true; break;
+				case 1: rbFreedbIf.Checked = true; break;
+				case 2: rbFreedbAlways.Checked = true; break;
+			}
 			_config.Load(sr);
 		}
 
@@ -539,6 +588,7 @@ namespace JDP {
 			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
 			sw.Save("ReducePriority", _reducePriority);
 			sw.Save("LossyWav", chkLossyWAV.Checked);
+			sw.Save("FreedbLookup", rbFreedbNever.Checked ? 0 : rbFreedbIf.Checked ? 1 : 2);
 			_config.Save(sw);
 			sw.Close();
 		}
@@ -687,6 +737,7 @@ namespace JDP {
 				if (rbFLAC.Checked)    return OutputAudioFormat.FLAC;
 				if (rbWavPack.Checked) return OutputAudioFormat.WavPack;
 				if (rbAPE.Checked)	   return OutputAudioFormat.APE;
+				if (rbTTA.Checked)	   return OutputAudioFormat.TTA;
 				if (rbNoAudio.Checked) return OutputAudioFormat.NoAudio;
 									   return OutputAudioFormat.WAV;
 			}
@@ -695,6 +746,7 @@ namespace JDP {
 					case OutputAudioFormat.FLAC:    rbFLAC.Checked = true; break;
 					case OutputAudioFormat.WavPack: rbWavPack.Checked = true; break;
 					case OutputAudioFormat.APE: rbAPE.Checked = true; break;
+					case OutputAudioFormat.TTA: rbTTA.Checked = true; break;
 					case OutputAudioFormat.WAV: rbWAV.Checked = true; break;
 					case OutputAudioFormat.NoAudio: rbNoAudio.Checked = true; break;
 				}
@@ -760,10 +812,10 @@ namespace JDP {
 		}
 
 		private void UpdateOutputPath() {
-			UpdateOutputPath("Artist", "Album");
+			UpdateOutputPath("YYYY", "Artist", "Album");
 		}
 
-		private void UpdateOutputPath(string artist, string album) {
+		private void UpdateOutputPath(string year, string artist, string album) {
 			/* if (rbArVerify.Checked)
 			{
 				txtOutputPath.Text = txtInputPath.Text;
@@ -779,11 +831,11 @@ namespace JDP {
 			{
 				txtOutputPath.ReadOnly = true;
 				btnBrowseOutput.Enabled = false;
-				txtOutputPath.Text = GenerateOutputPath(artist, album);
+				txtOutputPath.Text = GenerateOutputPath(year, artist, album);
 			}
 		}
 
-		private string GenerateOutputPath(string artist, string album) {
+		private string GenerateOutputPath(string year, string artist, string album) {
 			string pathIn, pathOut, dir, file, ext;
 
 			pathIn = txtInputPath.Text;
@@ -830,8 +882,10 @@ namespace JDP {
 
 					find.Add("%D");
 					find.Add("%C");
+					find.Add("%Y");
 					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
 					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
+					replace.Add(year);
 					BuildOutputPathFindReplace(pathIn, format, find, replace);
 
 					pathOut = General.ReplaceMultiple(format, find, replace);
@@ -849,7 +903,7 @@ namespace JDP {
 			chkLossyWAV.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbWAV.Checked;
 			rbNoAudio.Enabled = !rbEmbedCUE.Checked && !chkLossyWAV.Checked;
 			rbWAV.Enabled = !rbEmbedCUE.Checked;
-			rbAPE.Enabled = !chkLossyWAV.Checked;
+			rbTTA.Enabled = rbAPE.Enabled = !chkLossyWAV.Checked;
 		}
 
 		private void rbWAV_CheckedChanged(object sender, EventArgs e)
@@ -892,7 +946,7 @@ namespace JDP {
 			string[] cueFiles = Directory.GetFiles(dir, "*.cue");
 			if (cueFiles.Length == 0)
 			{
-				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a" };
+				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta" };
 				for (int i = 0; i < audioExts.Length; i++)
 				{
 					string cueSheet = CUESheet.CreateDummyCUESheet(dir, audioExts[i]);
@@ -964,6 +1018,12 @@ namespace JDP {
 		{
 			UpdateOutputPath();
 			SetupControls(false);
+		}
+
+		private void rbTTA_CheckedChanged(object sender, EventArgs e)
+		{
+			updateOutputStyles();
+			UpdateOutputPath();
 		}
 	}
 

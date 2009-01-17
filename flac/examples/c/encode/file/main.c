@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	}
 
 	ok &= FLAC__stream_encoder_set_verify(encoder, true);
-	ok &= FLAC__stream_encoder_set_compression_level(encoder, 5);
+	ok &= FLAC__stream_encoder_set_compression_level(encoder, 7);
 	ok &= FLAC__stream_encoder_set_channels(encoder, channels);
 	ok &= FLAC__stream_encoder_set_bits_per_sample(encoder, bps);
 	ok &= FLAC__stream_encoder_set_sample_rate(encoder, sample_rate);

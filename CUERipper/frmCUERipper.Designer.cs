@@ -47,12 +47,13 @@ namespace CUERipper
 			this.buttonAbort = new System.Windows.Forms.Button();
 			this.buttonPause = new System.Windows.Forms.Button();
 			this.comboRelease = new System.Windows.Forms.ComboBox();
-			this.releaseBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.contextMenuStripRelease = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.releaseBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.statusStrip1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).BeginInit();
 			this.contextMenuStripRelease.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// comboDrives
@@ -84,6 +85,7 @@ namespace CUERipper
 			// toolStripProgressBar1
 			// 
 			this.toolStripProgressBar1.AutoToolTip = true;
+			this.toolStripProgressBar1.MarqueeAnimationSpeed = 500;
 			this.toolStripProgressBar1.Name = "toolStripProgressBar1";
 			resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
 			this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
@@ -187,16 +189,15 @@ namespace CUERipper
 			// comboRelease
 			// 
 			resources.ApplyResources(this.comboRelease, "comboRelease");
+			this.comboRelease.BackColor = System.Drawing.SystemColors.Control;
 			this.comboRelease.ContextMenuStrip = this.contextMenuStripRelease;
+			this.comboRelease.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
 			this.comboRelease.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.comboRelease.FormattingEnabled = true;
 			this.comboRelease.Name = "comboRelease";
+			this.comboRelease.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboRelease_DrawItem);
 			this.comboRelease.SelectedIndexChanged += new System.EventHandler(this.comboRelease_SelectedIndexChanged);
 			this.comboRelease.Format += new System.Windows.Forms.ListControlConvertEventHandler(this.comboRelease_Format);
-			// 
-			// releaseBindingSource
-			// 
-			this.releaseBindingSource.DataSource = typeof(MusicBrainz.Release);
 			// 
 			// contextMenuStripRelease
 			// 
@@ -210,6 +211,16 @@ namespace CUERipper
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
 			resources.ApplyResources(this.editToolStripMenuItem, "editToolStripMenuItem");
 			this.editToolStripMenuItem.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
+			// 
+			// toolStripMenuItem1
+			// 
+			this.toolStripMenuItem1.Image = global::CUERipper.Properties.Resources.cddb;
+			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+			resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
+			// 
+			// releaseBindingSource
+			// 
+			this.releaseBindingSource.DataSource = typeof(MusicBrainz.Release);
 			// 
 			// frmCUERipper
 			// 
@@ -232,8 +243,8 @@ namespace CUERipper
 			this.Load += new System.EventHandler(this.frmCUERipper_Load);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).EndInit();
 			this.contextMenuStripRelease.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -261,6 +272,7 @@ namespace CUERipper
 		private System.Windows.Forms.BindingSource releaseBindingSource;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStripRelease;
 		private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
 	}
 }
 

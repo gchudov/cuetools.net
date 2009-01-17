@@ -935,6 +935,17 @@ static FLAC__StreamEncoderInitStatus init_stream_internal_(
 			encoder->private_->local_fixed_compute_best_predictor = FLAC__fixed_compute_best_predictor_asm_ia32_mmx_cmov;
 #   endif /* FLAC__HAS_NASM */
 #  endif /* FLAC__CPU_IA32 */
+#  ifdef FLAC__CPU_IA64
+		FLAC__ASSERT(encoder->private_->cpuinfo.type == FLAC__CPUINFO_TYPE_IA64);
+#   ifdef FLAC__HAS_NASM
+		if(encoder->protected_->max_lpc_order < 4)
+			encoder->private_->local_lpc_compute_autocorrelation = FLAC__lpc_compute_autocorrelation_asm_ia64_sse_lag_4;
+		else if(encoder->protected_->max_lpc_order < 8)
+			encoder->private_->local_lpc_compute_autocorrelation = FLAC__lpc_compute_autocorrelation_asm_ia64_sse_lag_8;
+		//else if(encoder->protected_->max_lpc_order < 12)
+		//	encoder->private_->local_lpc_compute_autocorrelation = FLAC__lpc_compute_autocorrelation_asm_ia64_sse_lag_12;
+#   endif /* FLAC__HAS_NASM */
+#  endif /* FLAC__CPU_IA64 */
 	}
 # endif /* !FLAC__NO_ASM */
 #endif /* !FLAC__INTEGER_ONLY_LIBRARY */
