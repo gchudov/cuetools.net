@@ -124,13 +124,13 @@
     <value />
   </data>
   <data name="btnBrowseOutput.Text" xml:space="preserve">
-    <value>Durchsuchen...</value>
+    <value>...</value>
   </data>
   <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="btnBrowseInput.Text" xml:space="preserve">
-    <value>Durchsuchen...</value>
+    <value>...</value>
   </data>
   <data name="btnBrowseInput.ToolTip" xml:space="preserve">
     <value />
@@ -323,7 +323,7 @@
     <value>83, 164</value>
   </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Audioausgabe</value>
+    <value>Audio</value>
   </data>
   <data name="grpAudioOutput.ToolTip" xml:space="preserve">
     <value />
@@ -344,7 +344,7 @@
     <value />
   </data>
   <data name="btnSettings.Text" xml:space="preserve">
-    <value>Erweiterte Einstellungen...</value>
+    <value>Einstellungen</value>
   </data>
   <data name="btnSettings.ToolTip" xml:space="preserve">
     <value />
@@ -437,7 +437,7 @@
     <value />
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUE-Werkzeuge</value>
+    <value>CUE-Tools</value>
   </data>
   <data name="$this.ToolTip" xml:space="preserve">
     <value />

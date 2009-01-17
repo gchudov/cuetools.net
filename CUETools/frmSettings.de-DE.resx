@@ -178,8 +178,11 @@
   <data name="chkPreserveHTOA.Text" xml:space="preserve">
     <value>HTOA für Ausgabe mit angehängten Lücken beibehalten</value>
   </data>
+  <data name="lblWriteOffset.Text" xml:space="preserve">
+    <value>Schreibe Offset:</value>
+  </data>
   <data name="grpGeneral.Size" type="System.Drawing.Size, System.Drawing">
-    <value>271, 204</value>
+    <value>271, 249</value>
   </data>
   <data name="grpGeneral.Text" xml:space="preserve">
     <value>Allgemein</value>
@@ -371,7 +374,7 @@
     <value>92, 13</value>
   </data>
   <data name="lblSingleFilenameFormat.Text" xml:space="preserve">
-    <value>Einzelnes Format:</value>
+    <value>Einzelformat:</value>
   </data>
   <data name="txtSingleFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>137, 21</value>
@@ -435,5 +438,8 @@
   </data>
   <data name="chkHDCDDetect.Text" xml:space="preserve">
     <value>Erkenne HDCD-Kodierung</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Erweiterte Einstellungen</value>
   </data>
 </root>
