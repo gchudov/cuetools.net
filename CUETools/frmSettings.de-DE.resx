@@ -121,6 +121,9 @@
     <value>Abbrechen</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="chkExtractLog.Text" xml:space="preserve">
+    <value>Extrahier Logdatei</value>
+  </data>
   <data name="chkReducePriority.Size" type="System.Drawing.Size, System.Drawing">
     <value>209, 17</value>
   </data>
@@ -176,7 +179,7 @@
     <value>295, 17</value>
   </data>
   <data name="chkPreserveHTOA.Text" xml:space="preserve">
-    <value>HTOA für Ausgabe mit angehängten Lücken beibehalten</value>
+    <value>HTOA für Ausg. mit angeh. Lücken beibehalten</value>
   </data>
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Schreibe Offset:</value>
@@ -203,7 +206,7 @@
     <value>154, 17</value>
   </data>
   <data name="chkWVStoreMD5.Text" xml:space="preserve">
-    <value>Speichere MD5-Prüfsumme</value>
+    <value>Speichere MD5-Wert</value>
   </data>
   <data name="chkWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>87, 17</value>
@@ -263,7 +266,7 @@
     <value>150, 13</value>
   </data>
   <data name="labelEncodeWhenPercent.Text" xml:space="preserve">
-    <value>% der verifizierten Tracks &gt;=</value>
+    <value>% der verif. Tracks &gt;=</value>
   </data>
   <data name="labelEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
     <value>91, 13</value>
@@ -281,7 +284,7 @@
     <value>mit Vertrauen &gt;=</value>
   </data>
   <data name="labelFixWhenPercent.Text" xml:space="preserve">
-    <value>% der verifizierten Tracks &gt;=</value>
+    <value>% der verif. Tracks &gt;=</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Verifizieren, dann konvertieren</value>
@@ -332,7 +335,7 @@
     <value>Wenn lossyWAV nicht verwendet wird, für Kompatibilität auf 24 Bit erweitern</value>
   </data>
   <data name="chkHDCDLW16.Size" type="System.Drawing.Size, System.Drawing">
-    <value>174, 17</value>
+    <value>172, 17</value>
   </data>
   <data name="chkHDCDLW16.Text" xml:space="preserve">
     <value>Speichere als 16-Bit-LossyWAV</value>
