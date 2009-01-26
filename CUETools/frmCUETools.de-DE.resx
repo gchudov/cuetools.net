@@ -154,8 +154,20 @@
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
+    <value>62, 48</value>
+  </data>
+  <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
+    <value>382, 21</value>
+  </data>
   <data name="txtInputPath.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="txtInputPath.Location" type="System.Drawing.Point, System.Drawing">
+    <value>62, 22</value>
+  </data>
+  <data name="txtInputPath.Size" type="System.Drawing.Size, System.Drawing">
+    <value>382, 21</value>
   </data>
   <data name="grpCUEPaths.Text" xml:space="preserve">
     <value>CUE-Pfade</value>
