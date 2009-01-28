@@ -241,6 +241,7 @@ namespace CUETools.CDImage
 		{
 			_catalog = src._catalog;
 			_audioTracks = src._audioTracks;
+			_firstAudio = src._firstAudio;
 			_tracks = new List<CDTrack>();
 			for (int i = 0; i < src.TrackCount; i++)
 				_tracks.Add(new CDTrack(src._tracks[i]));
@@ -287,7 +288,15 @@ namespace CUETools.CDImage
 		{
 			get
 			{
-				return _audioTracks;
+				return (uint) _audioTracks;
+			}
+		}
+
+		public int FirstAudio
+		{
+			get
+			{
+				return _firstAudio + 1;
 			}
 		}
 
@@ -295,7 +304,7 @@ namespace CUETools.CDImage
 		{
 			get
 			{
-				return AudioTracks > 0 ? _tracks[(int)_audioTracks - 1].End + 1U : 0U;
+				return AudioTracks > 0 ? _tracks[_firstAudio + _audioTracks - 1].End + 1U - _tracks[_firstAudio].Start + _tracks[_firstAudio].Pregap : 0U;
 			}
 		}
 
@@ -329,7 +338,11 @@ namespace CUETools.CDImage
 		{
 			_tracks.Add(track);
 			if (track.IsAudio)
+			{
 				_audioTracks++;
+				if (!_tracks[_firstAudio].IsAudio)
+					_firstAudio = _tracks.Count - 1;
+			}
 		}
 
 		public uint IndexLength(int iTrack, int iIndex)
@@ -372,6 +385,7 @@ namespace CUETools.CDImage
 
 		string _catalog;
 		IList<CDTrack> _tracks;
-		uint _audioTracks;
+		int _audioTracks;
+		int _firstAudio;
 	}
 }

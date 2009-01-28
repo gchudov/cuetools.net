@@ -53,6 +53,8 @@ namespace LossyWAVSharp
 			double quality = 5.0;
 			bool createCorrection = false;
 			bool toStdout = false;
+			int outputBPS = 0;
+
 			for (int arg = 1; arg < args.Length; arg++)
 			{
 				bool ok = true;
@@ -66,6 +68,8 @@ namespace LossyWAVSharp
 					quality = 2.5;
 				else if (args[arg] == "-C" || args[arg] == "--correction")
 					createCorrection = true;
+				else if (args[arg] == "--16")
+					outputBPS = 16;
 				else if ((args[arg] == "-N" || args[arg] == "--stdinname") && ++arg < args.Length)
 					stdinName = args[arg];
 				else if ((args[arg] == "-q" || args[arg] == "--quality") && ++arg < args.Length)
@@ -88,7 +92,7 @@ namespace LossyWAVSharp
 			{
 				WAVReader audioSource = new WAVReader(sourceFile, (sourceFile == "-" ? Console.OpenStandardInput() : null));
 				if (sourceFile == "-" && stdinName != null) sourceFile = stdinName;
-				WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
+				WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), outputBPS == 0 ? audioSource.BitsPerSample : outputBPS, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
 				WAVWriter lwcdfDest = createCorrection ? new WAVWriter(Path.ChangeExtension(sourceFile, ".lwcdf.wav"), audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, null) : null;
 				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, quality);
 				int[,] buff = new int[0x1000, audioSource.ChannelCount];

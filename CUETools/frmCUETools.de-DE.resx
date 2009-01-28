@@ -145,13 +145,13 @@
   <data name="lblOutput.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="lblInput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>49, 13</value>
+  </data>
   <data name="lblInput.Text" xml:space="preserve">
     <value>E&amp;ingabe:</value>
   </data>
   <data name="lblInput.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
@@ -160,7 +160,7 @@
   <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
     <value>382, 21</value>
   </data>
-  <data name="txtInputPath.ToolTip" xml:space="preserve">
+  <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="txtInputPath.Location" type="System.Drawing.Point, System.Drawing">
@@ -168,6 +168,9 @@
   </data>
   <data name="txtInputPath.Size" type="System.Drawing.Size, System.Drawing">
     <value>382, 21</value>
+  </data>
+  <data name="txtInputPath.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="grpCUEPaths.Text" xml:space="preserve">
     <value>CUE-Pfade</value>
@@ -448,14 +451,32 @@
   <data name="btnResume.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="rbFreedbAlways.Size" type="System.Drawing.Size, System.Drawing">
+    <value>55, 17</value>
+  </data>
   <data name="rbFreedbAlways.Text" xml:space="preserve">
     <value>Immer</value>
+  </data>
+  <data name="rbFreedbAlways.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbFreedbIf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 17</value>
   </data>
   <data name="rbFreedbIf.Text" xml:space="preserve">
     <value>Wenn nötig</value>
   </data>
+  <data name="rbFreedbIf.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbFreedbNever.Size" type="System.Drawing.Size, System.Drawing">
+    <value>40, 17</value>
+  </data>
   <data name="rbFreedbNever.Text" xml:space="preserve">
     <value>Nie</value>
+  </data>
+  <data name="rbFreedbNever.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>FreeDB-Abfrage</value>

@@ -131,6 +131,43 @@ namespace CUETools.Codecs
 			}
 		}
 
+		public static unsafe void BytesToFLACSamples_24(byte[] inSamples, int inByteOffset,
+			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount, int wastedBits)
+		{
+			uint loopCount = sampleCount * (uint)channelCount;
+
+			if ((inSamples.Length - inByteOffset < loopCount * 3) ||
+				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
+				throw new IndexOutOfRangeException();
+
+			fixed (byte* pInSamplesFixed = &inSamples[inByteOffset])
+			{
+				fixed (int* pOutSamplesFixed = &outSamples[outSampleOffset, 0])
+				{
+					byte* pInSamples = (byte*)pInSamplesFixed;
+					int* pOutSamples = pOutSamplesFixed;
+					for (int i = 0; i < loopCount; i++)
+					{
+						int sample = (int)*(pInSamples++);
+						sample += (int)*(pInSamples++) << 8;
+						sample += (int)*(pInSamples++) << 16;
+						*(pOutSamples++) = (sample << 8) >> (8 + wastedBits);
+					}
+				}
+			}
+		}
+
+		public static unsafe void BytesToFLACSamples(byte[] inSamples, int inByteOffset,
+			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount, int bitsPerSample)
+		{
+			if (bitsPerSample == 16)
+				AudioSamples.BytesToFLACSamples_16(inSamples, inByteOffset, outSamples, outSampleOffset, sampleCount, channelCount);
+			else if (bitsPerSample > 16 && bitsPerSample <= 24)
+				AudioSamples.BytesToFLACSamples_24(inSamples, inByteOffset, outSamples, outSampleOffset, sampleCount, channelCount, 24 - bitsPerSample);
+			else
+				throw new Exception("Unsupported bitsPerSample value");
+		}
+
 		public static int[,] Read(IAudioSource source, int[,] buff)
 		{
 			if (source.Remaining == 0) return null;
@@ -527,8 +564,8 @@ namespace CUETools.Codecs
 				_sampleBuffer = new byte[byteCount];
 			if (_IO.Read(_sampleBuffer, 0, (int)byteCount) != byteCount)
 				throw new Exception("Incomplete file read.");
-			AudioSamples.BytesToFLACSamples_16(_sampleBuffer, 0, buff, 0,
-				sampleCount, _channelCount);
+			AudioSamples.BytesToFLACSamples(_sampleBuffer, 0, buff, 0,
+				sampleCount, _channelCount, _bitsPerSample);
 			_samplePos += sampleCount;
 			return sampleCount;
 		}
@@ -975,7 +1012,20 @@ namespace CUETools.Codecs
 			{
 				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
 				crc = ComputeChecksum(ComputeChecksum(ComputeChecksum(ComputeChecksum(
-					crc, (byte)s1), (byte)(s1 >> 8)), (byte)(s2)), (byte)(s2 >> 8));
+					crc, (byte)s1), (byte)(s1 >> 8)), (byte)s2), (byte)(s2 >> 8));
+			}
+			return crc;
+		}
+
+		public unsafe uint ComputeChecksumWONULL(uint crc, int* samples, uint count)
+		{
+			for (uint i = 0; i < count; i++)
+			{
+				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
+				if (s1 != 0)
+					crc = ComputeChecksum(ComputeChecksum(crc, (byte)s1), (byte)(s1 >> 8));
+				if (s2 != 0)
+					crc = ComputeChecksum(ComputeChecksum(crc, (byte)s2), (byte)(s2 >> 8));
 			}
 			return crc;
 		}

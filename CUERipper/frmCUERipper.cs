@@ -345,11 +345,24 @@ namespace CUERipper
 					code = m_freedb.Read(queryResult, out cdEntry);
 					if (code == FreedbHelper.ResponseCodes.CODE_210)
 					{
+						Encoding iso = Encoding.GetEncoding("iso-8859-1");
 						ReleaseInfo r = CreateCUESheet(audioSource, null, cdEntry);
 						this.BeginInvoke((MethodInvoker)delegate()
 						{
 							comboRelease.Items.Add(r);
 						});
+						if (Encoding.Default.GetString(iso.GetBytes(cdEntry.Title)) != cdEntry.Title)
+						{
+							cdEntry.Artist = Encoding.Default.GetString(iso.GetBytes(cdEntry.Artist));
+							cdEntry.Title = Encoding.Default.GetString(iso.GetBytes(cdEntry.Title));
+							for (int i = 0; i < cdEntry.Tracks.Count; i++)
+								cdEntry.Tracks[i].Title = Encoding.Default.GetString(iso.GetBytes(cdEntry.Tracks[i].Title));
+							r = CreateCUESheet(audioSource, null, cdEntry);
+							this.BeginInvoke((MethodInvoker)delegate()
+							{
+								comboRelease.Items.Add(r);
+							});
+						}
 					}
 				}
 				else
@@ -478,7 +491,8 @@ namespace CUERipper
 				if (comboRelease.Items[e.Index] is ReleaseInfo)
 				{
 					Bitmap ImageToDraw = ((ReleaseInfo)comboRelease.Items[e.Index]).bitmap;
-					e.Graphics.DrawImage(ImageToDraw, new Rectangle(e.Bounds.X, e.Bounds.Y, e.Bounds.Height, e.Bounds.Height));
+					if (ImageToDraw != null)
+						e.Graphics.DrawImage(ImageToDraw, new Rectangle(e.Bounds.X, e.Bounds.Y, e.Bounds.Height, e.Bounds.Height));
 					//e.Graphics.DrawImage(ImageToDraw, new Rectangle(e.Bounds.X + e.Bounds.Width - ImageToDraw.Width, e.Bounds.Y, ImageToDraw.Width, e.Bounds.Height));
 				}
 				e.Graphics.DrawString(text, e.Font, new SolidBrush(e.ForeColor), new RectangleF((float)e.Bounds.X + e.Bounds.Height, (float)e.Bounds.Y, (float)(e.Bounds.Width - e.Bounds.Height), (float)e.Bounds.Height), format);

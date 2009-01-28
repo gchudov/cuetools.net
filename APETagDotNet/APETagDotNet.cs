@@ -263,7 +263,7 @@ namespace APETagsDotNet
 			bool bAPETagRemoved = true;
 
 			bool bFailedToRemove = false;
-
+			
 			while (bID3Removed || bAPETagRemoved)
 			{
 				bID3Removed = false;
@@ -445,7 +445,8 @@ namespace APETagsDotNet
 		// remove a specific field
 		void RemoveField(string pFieldName) 
 		{
-			RemoveField(GetTagFieldIndex(pFieldName));
+			int idx = GetTagFieldIndex(pFieldName);
+			if (idx >= 0) RemoveField(idx);
 		}
 
 		void RemoveField(int nIndex)

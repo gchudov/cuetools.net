@@ -269,11 +269,13 @@ namespace CUETools.Ripper.SCSI
 					toc[iTrack + 1].StartSector - toc[iTrack].StartSector - 
 					    ((toc[iTrack + 1].Control < 4 || iTrack + 1 == toc.Count - 1) ? 0U : 152U * 75U), 
 					toc[iTrack].Control < 4,
-					(toc[iTrack].Control & 1) == 1));
-			if (_toc[1].IsAudio)
-				_toc[1][0].Start = 0;
+					(toc[iTrack].Control & 1) == 1));			
 			if (_toc.AudioLength > 0)
+			{
+				if (_toc[1].IsAudio)
+					_toc[1][0].Start = 0;
 				Position = 0;
+			}
 			return true;
 		}
 
@@ -356,7 +358,7 @@ namespace CUETools.Ripper.SCSI
 							if (!updateMap)
 								break;
 							int sec = ff + 75 * (ss + 60 * mm) - 150; // sector + iSector;
-							if (iTrack > _toc.AudioTracks)
+							if (iTrack >= _toc.FirstAudio + _toc.AudioTracks)
 								throw new Exception("strange track number encountred");
 							if (iTrack != _currentTrack)
 							{
@@ -546,13 +548,13 @@ namespace CUETools.Ripper.SCSI
 					MemSet(data, size, 0xff);
 				}
 				if (_readCDCommand == ReadCDCommand.ReadCdBEh)
-					st = m_device.ReadCDAndSubChannel(_mainChannelMode, _subChannelMode, _c2ErrorMode, 1, false, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), _timeout);
+					st = m_device.ReadCDAndSubChannel(_mainChannelMode, _subChannelMode, _c2ErrorMode, 1, false, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)Sectors2Read, (IntPtr)((void*)data), _timeout);
 				else
-					st = m_device.ReadCDDA(_subChannelMode, (uint)sector, (uint)Sectors2Read, (IntPtr)((void*)data), _timeout);
+					st = m_device.ReadCDDA(_subChannelMode, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)Sectors2Read, (IntPtr)((void*)data), _timeout);
 			}
 			
 			if (st == Device.CommandStatus.Success && _subChannelMode == Device.SubChannelMode.None && subchannel)
-				st = m_device.ReadSubChannel(2, (uint)sector, (uint)Sectors2Read, ref _subchannelBuffer, _timeout);
+				st = m_device.ReadSubChannel(2, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)Sectors2Read, ref _subchannelBuffer, _timeout);
 
 			if (st == Device.CommandStatus.Success)
 			{

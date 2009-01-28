@@ -417,7 +417,8 @@ namespace JDP {
 							CenterSubForm(reportForm);
 							reportForm.ShowDialog(this);
 						}
-						else if (cueSheet.AccurateRip != AccurateRipMode.None)
+						else if (cueSheet.AccurateRip == AccurateRipMode.Verify ||
+						(cueSheet.AccurateRip != AccurateRipMode.None && outputFormat != OutputAudioFormat.NoAudio))
 						{
 							frmReport reportForm = new frmReport();
 							StringWriter sw = new StringWriter();
@@ -488,6 +489,7 @@ namespace JDP {
 			grpAudioOutput.Enabled = !running && !rbArVerify.Checked;
 			grpAccurateRip.Enabled = !running;
 			grpOutputStyle.Enabled = !running && !rbArVerify.Checked;
+			groupBox1.Enabled = !running && !rbArVerify.Checked;
 			txtDataTrackLength.Enabled = !running && !rbArNone.Checked;
 			btnAbout.Enabled = !running;
 			btnSettings.Enabled = !running;

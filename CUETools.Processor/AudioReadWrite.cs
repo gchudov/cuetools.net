@@ -97,22 +97,18 @@ namespace CUETools.Processor
 			return dest;
 		}
 
-		public static IAudioDest GetAudioDest(string path, long finalSampleCount, CUEConfig config)
+		public static IAudioDest GetAudioDest(string path, long finalSampleCount, int bitsPerSample, int sampleRate, CUEConfig config)
 		{
 			string extension = Path.GetExtension(path).ToLower();
 			string filename = Path.GetFileNameWithoutExtension(path);
 			if (Path.GetExtension(filename).ToLower() != ".lossy")
-			{
-				int bitsPerSample = (config.detectHDCD && config.decodeHDCD) ? (config.decodeHDCDto24bit ? 24 : 20) : 16;
-				return GetAudioDest(path, bitsPerSample, 2, 44100, finalSampleCount, extension, config);
-			}
+				return GetAudioDest(path, bitsPerSample, 2, sampleRate, finalSampleCount, extension, config);
 
 			string lwcdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lwcdf" + extension);
-			int destBitsPerSample = (config.detectHDCD && config.decodeHDCD) ? ((!config.decodeHDCDtoLW16 && config.decodeHDCDto24bit) ? 24 : 20) : 16;
 			int lossyBitsPerSample = (config.detectHDCD && config.decodeHDCD && !config.decodeHDCDtoLW16) ? 24 : 16;
-			IAudioDest lossyDest = GetAudioDest(path, lossyBitsPerSample, 2, 44100, finalSampleCount, extension, config);
-			IAudioDest lwcdfDest = config.lossyWAVHybrid ? GetAudioDest(lwcdfPath, destBitsPerSample, 2, 44100, finalSampleCount, extension, config) : null;
-			return new LossyWAVWriter(lossyDest, lwcdfDest, destBitsPerSample, 2, 44100, config.lossyWAVQuality);
+			IAudioDest lossyDest = GetAudioDest(path, lossyBitsPerSample, 2, sampleRate, finalSampleCount, extension, config);
+			IAudioDest lwcdfDest = config.lossyWAVHybrid ? GetAudioDest(lwcdfPath, bitsPerSample, 2, sampleRate, finalSampleCount, extension, config) : null;
+			return new LossyWAVWriter(lossyDest, lwcdfDest, bitsPerSample, 2, sampleRate, config.lossyWAVQuality);
 		}
 	}
 }

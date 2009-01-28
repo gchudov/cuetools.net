@@ -28,19 +28,20 @@ namespace HDCDDotNet
 
 	public class HDCDDotNet
 	{
-		public HDCDDotNet (Int16 channels, Int32 sample_rate, Int32 output_bps, bool decode)
+		public HDCDDotNet (int channels, int sample_rate, int output_bps, bool decode)
 		{
 			_decoder = IntPtr.Zero;
 #if !MONO
 			_decoder = hdcd_decoder_new();
 			_channelCount = channels;
+			_bitsPerSample = output_bps;
 			if (_decoder == IntPtr.Zero)
 				throw new Exception("Failed to initialize HDCD decoder.");
 			bool b = true;
-			b &= hdcd_decoder_set_num_channels(_decoder, channels);
+			b &= hdcd_decoder_set_num_channels(_decoder, (short) _channelCount);
 			b &= hdcd_decoder_set_sample_rate(_decoder, sample_rate);
 			b &= hdcd_decoder_set_input_bps(_decoder, 16);
-			b &= hdcd_decoder_set_output_bps(_decoder, (short) output_bps);
+			b &= hdcd_decoder_set_output_bps(_decoder, (short)_bitsPerSample);
 			if (!b)
 				throw new Exception("Failed to set up HDCD _decoder parameters.");
 			_decoderCallback = decode ? new hdcd_decoder_write_callback(DecoderCallback) : null;
@@ -76,11 +77,27 @@ namespace HDCDDotNet
 			}
 		}
 
+		public bool Decoding
+		{
+			get
+			{
+				return _decoderCallback != null;
+			}
+		}
+
 		public int Channels
 		{
 			get
 			{
 				return _channelCount;
+			}
+		}
+
+		public int BitsPerSample
+		{
+			get
+			{
+				return _bitsPerSample;
 			}
 		}
 
@@ -184,7 +201,7 @@ namespace HDCDDotNet
 		private IntPtr _decoder;
 		private int[,] _inSampleBuffer;
 		private int[,] _outSampleBuffer;
-		private int _channelCount;
+		private int _channelCount, _bitsPerSample;
 		hdcd_decoder_write_callback _decoderCallback;
 		IAudioDest _audioDest;
 		GCHandle _gch;
