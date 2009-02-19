@@ -1041,6 +1041,72 @@ namespace JDP {
 			updateOutputStyles();
 			UpdateOutputPath();
 		}
+
+		private void btnCodec_Click(object sender, EventArgs e)
+		{
+			contextMenuStripUDC.Show(btnCodec, btnCodec.Width, btnCodec.Height);
+			return;
+		}
+
+		private void contextMenuStripUDC_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+			contextMenuStripUDC.Hide();
+			string executable = null, extension = null, decParams = null, encParams = null;
+			bool apev2 = false, id3v2 = false;
+			switch (e.ClickedItem.Text)
+			{
+				case "TAK":
+					extension = "tak";
+					executable = "takc.exe";
+					decParams = "-d %I -";
+					encParams = "-e -p4m -overwrite - %O";
+					apev2 = true;
+					id3v2 = false;
+					break;
+				case "MP3":
+					extension = "mp3";
+					executable = "lame.exe";
+					decParams = "--decode %I -";
+					encParams = "--vbr-new -V2 - %O";
+					apev2 = false;
+					id3v2 = true;
+					break;
+				case "OGG":
+					extension = "ogg";
+					executable = "oggenc.exe";
+					encParams = "- -o %O";
+					decParams = "";
+					apev2 = false;
+					id3v2 = false;
+					break;
+				default:
+					return;
+			}
+
+			string path = Path.Combine(Application.StartupPath, executable);
+			if (!File.Exists(path))
+			{
+				OpenFileDialog fileDlg = new OpenFileDialog();
+				DialogResult dlgRes;
+				fileDlg.Title = "Select the path to encoder";
+				fileDlg.Filter = executable + "|" + executable;
+				if (Directory.Exists(Application.StartupPath))
+					fileDlg.InitialDirectory = Application.StartupPath;
+				dlgRes = fileDlg.ShowDialog();
+				if (dlgRes != DialogResult.OK)
+					return;
+				path = fileDlg.FileName;
+			}
+			_config.udc1Extension = extension;
+			_config.udc1Decoder = path;
+			_config.udc1Params = decParams;
+			_config.udc1Encoder = path;
+			_config.udc1EncParams = encParams;
+			_config.udc1APEv2 = apev2;
+			_config.udc1ID3v2 = id3v2;
+			updateOutputStyles();
+			UpdateOutputPath();
+		}
 	}
 
 	enum OutputPathGeneration {

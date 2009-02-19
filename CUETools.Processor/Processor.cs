@@ -273,7 +273,7 @@ namespace CUETools.Processor
 		public bool decodeHDCDtoLW16;
 		public bool decodeHDCDto24bit;
 		public string udc1Extension, udc1Decoder, udc1Params, udc1Encoder, udc1EncParams;
-		public bool udc1APEv2;
+		public bool udc1APEv2, udc1ID3v2;
 
 		public CUEConfig()
 		{
@@ -322,7 +322,7 @@ namespace CUETools.Processor
 			decodeHDCDto24bit = true;
 
 			udc1Extension = udc1Decoder = udc1Params = udc1Encoder = udc1EncParams = "";
-			udc1APEv2 = false;
+			udc1ID3v2 = udc1APEv2 = false;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -378,6 +378,7 @@ namespace CUETools.Processor
 				sw.Save("UDC1Encoder", udc1Encoder);
 				sw.Save("UDC1EncParams", udc1EncParams);
 				sw.Save("UDC1APEv2", udc1APEv2);
+				sw.Save("UDC1ID3v2", udc1ID3v2);
 			}
 		}
 
@@ -433,6 +434,7 @@ namespace CUETools.Processor
 			udc1Encoder = sr.Load("UDC1Encoder") ?? "";
 			udc1EncParams = sr.Load("UDC1EncParams") ?? "";
 			udc1APEv2 = sr.LoadBoolean("UDC1APEv2") ?? false;
+			udc1ID3v2 = sr.LoadBoolean("UDC1ID3v2") ?? false;
 		}
 
 		public string CleanseString (string s)

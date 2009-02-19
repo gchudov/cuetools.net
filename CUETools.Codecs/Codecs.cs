@@ -810,16 +810,14 @@ namespace CUETools.Codecs
 	public class UserDefinedReader : IAudioSource
 	{
 		string _path, _decoder, _decoderParams;
-		bool _apev2tags;
 		Process _decoderProcess;
 		WAVReader rdr;
 
-		public UserDefinedReader(string path, Stream IO, string decoder, string decoderParams, bool apev2tags)
+		public UserDefinedReader(string path, Stream IO, string decoder, string decoderParams)
 		{
 			_path = path;
 			_decoder = decoder;
 			_decoderParams = decoderParams;
-			_apev2tags = apev2tags;
 			_decoderProcess = null;
 			rdr = null;
 		}

@@ -9,17 +9,22 @@ namespace CUETools.Processor
 	{
 		public static bool UpdateTags(TagLib.File fileInfo, NameValueCollection tags, CUEConfig config)
 		{
-			if (fileInfo is TagLib.Flac.File)
+			if (fileInfo is TagLib.Riff.File)
+				return false;
+			TagLib.Ogg.XiphComment xiph = (TagLib.Ogg.XiphComment)fileInfo.GetTag(TagLib.TagTypes.Xiph);
+			if (xiph != null)
 			{
-				TagLib.Ogg.XiphComment xiph = (TagLib.Ogg.XiphComment)fileInfo.GetTag(TagLib.TagTypes.Xiph);
 				foreach (string tag in tags.AllKeys)
 					xiph.SetField(tag, tags.GetValues(tag));
 				return true;
 			}
-			if (fileInfo is TagLib.Riff.File)
-				return false;
 			if (fileInfo is TagLib.UserDefined.File && !(fileInfo as TagLib.UserDefined.File).SupportsAPEv2)
-				return false;
+			{
+				if (!(fileInfo as TagLib.UserDefined.File).SupportsID3v2)
+					return false;
+				TagLib.Id3v2.Tag id3v2 = (TagLib.Id3v2.Tag)fileInfo.GetTag(TagLib.TagTypes.Id3v2, true);
+				return true;
+			}
 			TagLib.Ape.Tag ape = (TagLib.Ape.Tag)fileInfo.GetTag(TagLib.TagTypes.Ape, true);
 			foreach (string tag in tags.AllKeys)
 				ape.SetValue(XiphTagNameToApe(tag), tags.GetValues(tag));

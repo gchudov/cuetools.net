@@ -49,6 +49,7 @@ namespace JDP {
 			this.rbAppendFilename = new System.Windows.Forms.RadioButton();
 			this.txtAppendFilename = new System.Windows.Forms.TextBox();
 			this.grpAudioOutput = new System.Windows.Forms.GroupBox();
+			this.rbUDC1 = new System.Windows.Forms.RadioButton();
 			this.rbTTA = new System.Windows.Forms.RadioButton();
 			this.chkLossyWAV = new System.Windows.Forms.CheckBox();
 			this.rbAPE = new System.Windows.Forms.RadioButton();
@@ -79,7 +80,11 @@ namespace JDP {
 			this.rbFreedbAlways = new System.Windows.Forms.RadioButton();
 			this.rbFreedbIf = new System.Windows.Forms.RadioButton();
 			this.rbFreedbNever = new System.Windows.Forms.RadioButton();
-			this.rbUDC1 = new System.Windows.Forms.RadioButton();
+			this.btnCodec = new System.Windows.Forms.Button();
+			this.contextMenuStripUDC = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.tAKToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.mP3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.oGGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.grpCUEPaths.SuspendLayout();
 			this.grpOutputStyle.SuspendLayout();
 			this.grpOutputPathGeneration.SuspendLayout();
@@ -87,6 +92,7 @@ namespace JDP {
 			this.grpAccurateRip.SuspendLayout();
 			this.statusStrip1.SuspendLayout();
 			this.groupBox1.SuspendLayout();
+			this.contextMenuStripUDC.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnConvert
@@ -269,6 +275,7 @@ namespace JDP {
 			// 
 			// grpAudioOutput
 			// 
+			this.grpAudioOutput.Controls.Add(this.btnCodec);
 			this.grpAudioOutput.Controls.Add(this.rbUDC1);
 			this.grpAudioOutput.Controls.Add(this.rbTTA);
 			this.grpAudioOutput.Controls.Add(this.chkLossyWAV);
@@ -280,6 +287,14 @@ namespace JDP {
 			resources.ApplyResources(this.grpAudioOutput, "grpAudioOutput");
 			this.grpAudioOutput.Name = "grpAudioOutput";
 			this.grpAudioOutput.TabStop = false;
+			// 
+			// rbUDC1
+			// 
+			resources.ApplyResources(this.rbUDC1, "rbUDC1");
+			this.rbUDC1.Name = "rbUDC1";
+			this.rbUDC1.TabStop = true;
+			this.rbUDC1.UseVisualStyleBackColor = true;
+			this.rbUDC1.CheckedChanged += new System.EventHandler(this.rbUDC1_CheckedChanged);
 			// 
 			// rbTTA
 			// 
@@ -510,13 +525,37 @@ namespace JDP {
 			this.rbFreedbNever.TabStop = true;
 			this.rbFreedbNever.UseVisualStyleBackColor = true;
 			// 
-			// rbUDC1
+			// btnCodec
 			// 
-			resources.ApplyResources(this.rbUDC1, "rbUDC1");
-			this.rbUDC1.Name = "rbUDC1";
-			this.rbUDC1.TabStop = true;
-			this.rbUDC1.UseVisualStyleBackColor = true;
-			this.rbUDC1.CheckedChanged += new System.EventHandler(this.rbUDC1_CheckedChanged);
+			resources.ApplyResources(this.btnCodec, "btnCodec");
+			this.btnCodec.Name = "btnCodec";
+			this.btnCodec.UseVisualStyleBackColor = true;
+			this.btnCodec.Click += new System.EventHandler(this.btnCodec_Click);
+			// 
+			// contextMenuStripUDC
+			// 
+			this.contextMenuStripUDC.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tAKToolStripMenuItem,
+            this.mP3ToolStripMenuItem,
+            this.oGGToolStripMenuItem});
+			this.contextMenuStripUDC.Name = "contextMenuStripUDC";
+			resources.ApplyResources(this.contextMenuStripUDC, "contextMenuStripUDC");
+			this.contextMenuStripUDC.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripUDC_ItemClicked);
+			// 
+			// tAKToolStripMenuItem
+			// 
+			this.tAKToolStripMenuItem.Name = "tAKToolStripMenuItem";
+			resources.ApplyResources(this.tAKToolStripMenuItem, "tAKToolStripMenuItem");
+			// 
+			// mP3ToolStripMenuItem
+			// 
+			this.mP3ToolStripMenuItem.Name = "mP3ToolStripMenuItem";
+			resources.ApplyResources(this.mP3ToolStripMenuItem, "mP3ToolStripMenuItem");
+			// 
+			// oGGToolStripMenuItem
+			// 
+			this.oGGToolStripMenuItem.Name = "oGGToolStripMenuItem";
+			resources.ApplyResources(this.oGGToolStripMenuItem, "oGGToolStripMenuItem");
 			// 
 			// frmCUETools
 			// 
@@ -557,6 +596,7 @@ namespace JDP {
 			this.statusStrip1.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
+			this.contextMenuStripUDC.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -619,6 +659,11 @@ namespace JDP {
 		private System.Windows.Forms.RadioButton rbFreedbIf;
 		private System.Windows.Forms.RadioButton rbFreedbNever;
 		private System.Windows.Forms.RadioButton rbUDC1;
+		private System.Windows.Forms.Button btnCodec;
+		private System.Windows.Forms.ContextMenuStrip contextMenuStripUDC;
+		private System.Windows.Forms.ToolStripMenuItem tAKToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem mP3ToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem oGGToolStripMenuItem;
 	}
 }
 

@@ -76,6 +76,7 @@ namespace JDP {
 			textUDC1Encoder.Text = _config.udc1Encoder;
 			textUDC1EncParams.Text = _config.udc1EncParams;
 			chkUDC1APEv2.Checked = _config.udc1APEv2;
+			chkUDC1ID3v2.Checked = _config.udc1ID3v2;
 			EnableDisable();
 		}
 
@@ -160,6 +161,7 @@ namespace JDP {
 			_config.udc1Encoder = textUDC1Encoder.Text;
 			_config.udc1EncParams = textUDC1EncParams.Text;
 			_config.udc1APEv2 = chkUDC1APEv2.Checked;
+			_config.udc1ID3v2 = chkUDC1ID3v2.Checked;
 		}
 
 		private void EnableDisable()

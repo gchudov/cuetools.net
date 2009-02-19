@@ -141,7 +141,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnConvert.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>16</value>
   </data>
   <data name="&gt;&gt;btnBrowseOutput.Name" xml:space="preserve">
     <value>btnBrowseOutput</value>
@@ -237,7 +237,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpCUEPaths.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>15</value>
   </data>
   <data name="btnBrowseOutput.Location" type="System.Drawing.Point, System.Drawing">
     <value>452, 49</value>
@@ -465,7 +465,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpOutputStyle.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>14</value>
   </data>
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>153, 8</value>
@@ -646,7 +646,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnAbout.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>13</value>
   </data>
   <data name="&gt;&gt;txtCustomFormat.Name" xml:space="preserve">
     <value>txtCustomFormat</value>
@@ -754,7 +754,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpOutputPathGeneration.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="txtCustomFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>166, 60</value>
@@ -936,6 +936,138 @@
   <data name="&gt;&gt;txtAppendFilename.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
+  <data name="&gt;&gt;btnCodec.Name" xml:space="preserve">
+    <value>btnCodec</value>
+  </data>
+  <data name="&gt;&gt;btnCodec.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnCodec.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;btnCodec.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;rbUDC1.Name" xml:space="preserve">
+    <value>rbUDC1</value>
+  </data>
+  <data name="&gt;&gt;rbUDC1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbUDC1.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbUDC1.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.Name" xml:space="preserve">
+    <value>rbTTA</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbTTA.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;chkLossyWAV.Name" xml:space="preserve">
+    <value>chkLossyWAV</value>
+  </data>
+  <data name="&gt;&gt;chkLossyWAV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkLossyWAV.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;chkLossyWAV.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Name" xml:space="preserve">
+    <value>rbAPE</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbAPE.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;rbNoAudio.Name" xml:space="preserve">
+    <value>rbNoAudio</value>
+  </data>
+  <data name="&gt;&gt;rbNoAudio.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbNoAudio.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbNoAudio.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;rbWavPack.Name" xml:space="preserve">
+    <value>rbWavPack</value>
+  </data>
+  <data name="&gt;&gt;rbWavPack.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbWavPack.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbWavPack.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.Name" xml:space="preserve">
+    <value>rbWAV</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbWAV.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;rbFLAC.Name" xml:space="preserve">
+    <value>rbFLAC</value>
+  </data>
+  <data name="&gt;&gt;rbFLAC.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbFLAC.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;rbFLAC.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="grpAudioOutput.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 211</value>
+  </data>
+  <data name="grpAudioOutput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 164</value>
+  </data>
+  <data name="grpAudioOutput.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="grpAudioOutput.Text" xml:space="preserve">
+    <value>Audio Output</value>
+  </data>
+  <data name="&gt;&gt;grpAudioOutput.Name" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;grpAudioOutput.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;grpAudioOutput.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;grpAudioOutput.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
   <data name="rbUDC1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -961,7 +1093,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbUDC1.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="rbTTA.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -988,7 +1120,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbTTA.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="chkLossyWAV.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1018,7 +1150,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;chkLossyWAV.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="rbAPE.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1045,7 +1177,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbAPE.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="rbNoAudio.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1075,7 +1207,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbNoAudio.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="rbWavPack.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1102,7 +1234,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbWavPack.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="rbWAV.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1129,7 +1261,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbWAV.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="rbFLAC.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1156,31 +1288,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;rbFLAC.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="grpAudioOutput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 211</value>
-  </data>
-  <data name="grpAudioOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 164</value>
-  </data>
-  <data name="grpAudioOutput.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Audio Output</value>
-  </data>
-  <data name="&gt;&gt;grpAudioOutput.Name" xml:space="preserve">
-    <value>grpAudioOutput</value>
-  </data>
-  <data name="&gt;&gt;grpAudioOutput.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;grpAudioOutput.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;grpAudioOutput.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>8</value>
   </data>
   <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
     <value>412, 308</value>
@@ -1204,7 +1312,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnBatch.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="btnFilenameCorrector.Location" type="System.Drawing.Point, System.Drawing">
     <value>412, 277</value>
@@ -1228,7 +1336,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnFilenameCorrector.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="btnSettings.Location" type="System.Drawing.Point, System.Drawing">
     <value>412, 215</value>
@@ -1252,7 +1360,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnSettings.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="&gt;&gt;rbArAndEncode.Name" xml:space="preserve">
     <value>rbArAndEncode</value>
@@ -1348,7 +1456,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpAccurateRip.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="rbArAndEncode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1525,7 +1633,7 @@
     <value>5</value>
   </data>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>0, 378</value>
+    <value>424, 8</value>
   </metadata>
   <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 378</value>
@@ -1549,7 +1657,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
     <value>253, 17</value>
@@ -1597,7 +1705,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnCUECreator.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="btnStop.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -1627,7 +1735,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnStop.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="btnPause.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -1657,7 +1765,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnPause.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="btnResume.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -1687,7 +1795,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnResume.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="&gt;&gt;rbFreedbAlways.Name" xml:space="preserve">
     <value>rbFreedbAlways</value>
@@ -1747,7 +1855,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="rbFreedbAlways.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1830,6 +1938,63 @@
   <data name="&gt;&gt;rbFreedbNever.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="btnCodec.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Popup</value>
+  </data>
+  <data name="btnCodec.Location" type="System.Drawing.Point, System.Drawing">
+    <value>66, 117</value>
+  </data>
+  <data name="btnCodec.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
+  </data>
+  <data name="btnCodec.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="btnCodec.Text" xml:space="preserve">
+    <value>&gt;</value>
+  </data>
+  <data name="&gt;&gt;btnCodec.Name" xml:space="preserve">
+    <value>btnCodec</value>
+  </data>
+  <data name="&gt;&gt;btnCodec.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnCodec.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;btnCodec.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="contextMenuStripUDC.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>250, 8</value>
+  </metadata>
+  <data name="tAKToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 22</value>
+  </data>
+  <data name="tAKToolStripMenuItem.Text" xml:space="preserve">
+    <value>TAK</value>
+  </data>
+  <data name="mP3ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 22</value>
+  </data>
+  <data name="mP3ToolStripMenuItem.Text" xml:space="preserve">
+    <value>MP3</value>
+  </data>
+  <data name="oGGToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 22</value>
+  </data>
+  <data name="oGGToolStripMenuItem.Text" xml:space="preserve">
+    <value>OGG</value>
+  </data>
+  <data name="contextMenuStripUDC.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 92</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStripUDC.Name" xml:space="preserve">
+    <value>contextMenuStripUDC</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStripUDC.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -1871,6 +2036,24 @@
   </data>
   <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tAKToolStripMenuItem.Name" xml:space="preserve">
+    <value>tAKToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;tAKToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;mP3ToolStripMenuItem.Name" xml:space="preserve">
+    <value>mP3ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;mP3ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;oGGToolStripMenuItem.Name" xml:space="preserve">
+    <value>oGGToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;oGGToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmCUETools</value>

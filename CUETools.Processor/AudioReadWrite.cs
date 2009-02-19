@@ -35,7 +35,7 @@ namespace CUETools.Processor
 #endif
 				default:
 					if (extension == "." + config.udc1Extension && config.udc1Decoder != "")
-						return new UserDefinedReader(path, IO, config.udc1Decoder, config.udc1Params, config.udc1APEv2);
+						return new UserDefinedReader(path, IO, config.udc1Decoder, config.udc1Params);
 					throw new Exception("Unsupported audio type: " + path);
 			}
 		}

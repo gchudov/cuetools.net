@@ -1998,6 +1998,33 @@
   <data name="&gt;&gt;tabPage8.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="chkUDC1ID3v2.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="chkUDC1ID3v2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>268, 8</value>
+  </data>
+  <data name="chkUDC1ID3v2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>79, 17</value>
+  </data>
+  <data name="chkUDC1ID3v2.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="chkUDC1ID3v2.Text" xml:space="preserve">
+    <value>ID3v2 tags</value>
+  </data>
+  <data name="&gt;&gt;chkUDC1ID3v2.Name" xml:space="preserve">
+    <value>chkUDC1ID3v2</value>
+  </data>
+  <data name="&gt;&gt;chkUDC1ID3v2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkUDC1ID3v2.Parent" xml:space="preserve">
+    <value>tabPage9</value>
+  </data>
+  <data name="&gt;&gt;chkUDC1ID3v2.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="chkUDC1APEv2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -2023,7 +2050,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;chkUDC1APEv2.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="label6.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2050,7 +2077,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;label6.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="label5.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2077,7 +2104,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;label5.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="textUDC1EncParams.Location" type="System.Drawing.Point, System.Drawing">
     <value>89, 114</value>
@@ -2098,7 +2125,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;textUDC1EncParams.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="textUDC1Encoder.Location" type="System.Drawing.Point, System.Drawing">
     <value>89, 87</value>
@@ -2119,7 +2146,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;textUDC1Encoder.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="textUDC1Params.Location" type="System.Drawing.Point, System.Drawing">
     <value>89, 60</value>
@@ -2140,7 +2167,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;textUDC1Params.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="textUDC1Decoder.Location" type="System.Drawing.Point, System.Drawing">
     <value>89, 33</value>
@@ -2161,7 +2188,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;textUDC1Decoder.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="textUDC1Extension.Location" type="System.Drawing.Point, System.Drawing">
     <value>89, 6</value>
@@ -2182,7 +2209,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;textUDC1Extension.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="label4.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2209,7 +2236,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;label4.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="label3.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2236,7 +2263,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="label2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2263,7 +2290,7 @@
     <value>tabPage9</value>
   </data>
   <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
   </data>
   <data name="tabPage9.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 22</value>

@@ -98,21 +98,22 @@ namespace JDP {
 			this.tabPage8 = new System.Windows.Forms.TabPage();
 			this.label1 = new System.Windows.Forms.Label();
 			this.numericLossyWAVQuality = new System.Windows.Forms.NumericUpDown();
+			this.tabPage9 = new System.Windows.Forms.TabPage();
+			this.chkUDC1APEv2 = new System.Windows.Forms.CheckBox();
+			this.label6 = new System.Windows.Forms.Label();
+			this.label5 = new System.Windows.Forms.Label();
+			this.textUDC1EncParams = new System.Windows.Forms.TextBox();
+			this.textUDC1Encoder = new System.Windows.Forms.TextBox();
+			this.textUDC1Params = new System.Windows.Forms.TextBox();
+			this.textUDC1Decoder = new System.Windows.Forms.TextBox();
+			this.textUDC1Extension = new System.Windows.Forms.TextBox();
+			this.label4 = new System.Windows.Forms.Label();
+			this.label3 = new System.Windows.Forms.Label();
+			this.label2 = new System.Windows.Forms.Label();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.grpHDCD = new System.Windows.Forms.GroupBox();
 			this.chkHDCDDetect = new System.Windows.Forms.CheckBox();
-			this.tabPage9 = new System.Windows.Forms.TabPage();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label3 = new System.Windows.Forms.Label();
-			this.label4 = new System.Windows.Forms.Label();
-			this.textUDC1Extension = new System.Windows.Forms.TextBox();
-			this.textUDC1Decoder = new System.Windows.Forms.TextBox();
-			this.textUDC1Params = new System.Windows.Forms.TextBox();
-			this.textUDC1Encoder = new System.Windows.Forms.TextBox();
-			this.textUDC1EncParams = new System.Windows.Forms.TextBox();
-			this.label5 = new System.Windows.Forms.Label();
-			this.label6 = new System.Windows.Forms.Label();
-			this.chkUDC1APEv2 = new System.Windows.Forms.CheckBox();
+			this.chkUDC1ID3v2 = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
@@ -135,9 +136,9 @@ namespace JDP {
 			this.tabPage7.SuspendLayout();
 			this.tabPage8.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).BeginInit();
+			this.tabPage9.SuspendLayout();
 			this.tabPage4.SuspendLayout();
 			this.grpHDCD.SuspendLayout();
-			this.tabPage9.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnCancel
@@ -768,6 +769,80 @@ namespace JDP {
             0,
             0});
 			// 
+			// tabPage9
+			// 
+			this.tabPage9.Controls.Add(this.chkUDC1ID3v2);
+			this.tabPage9.Controls.Add(this.chkUDC1APEv2);
+			this.tabPage9.Controls.Add(this.label6);
+			this.tabPage9.Controls.Add(this.label5);
+			this.tabPage9.Controls.Add(this.textUDC1EncParams);
+			this.tabPage9.Controls.Add(this.textUDC1Encoder);
+			this.tabPage9.Controls.Add(this.textUDC1Params);
+			this.tabPage9.Controls.Add(this.textUDC1Decoder);
+			this.tabPage9.Controls.Add(this.textUDC1Extension);
+			this.tabPage9.Controls.Add(this.label4);
+			this.tabPage9.Controls.Add(this.label3);
+			this.tabPage9.Controls.Add(this.label2);
+			resources.ApplyResources(this.tabPage9, "tabPage9");
+			this.tabPage9.Name = "tabPage9";
+			this.tabPage9.UseVisualStyleBackColor = true;
+			// 
+			// chkUDC1APEv2
+			// 
+			resources.ApplyResources(this.chkUDC1APEv2, "chkUDC1APEv2");
+			this.chkUDC1APEv2.Name = "chkUDC1APEv2";
+			this.chkUDC1APEv2.UseVisualStyleBackColor = true;
+			// 
+			// label6
+			// 
+			resources.ApplyResources(this.label6, "label6");
+			this.label6.Name = "label6";
+			// 
+			// label5
+			// 
+			resources.ApplyResources(this.label5, "label5");
+			this.label5.Name = "label5";
+			// 
+			// textUDC1EncParams
+			// 
+			resources.ApplyResources(this.textUDC1EncParams, "textUDC1EncParams");
+			this.textUDC1EncParams.Name = "textUDC1EncParams";
+			// 
+			// textUDC1Encoder
+			// 
+			resources.ApplyResources(this.textUDC1Encoder, "textUDC1Encoder");
+			this.textUDC1Encoder.Name = "textUDC1Encoder";
+			// 
+			// textUDC1Params
+			// 
+			resources.ApplyResources(this.textUDC1Params, "textUDC1Params");
+			this.textUDC1Params.Name = "textUDC1Params";
+			// 
+			// textUDC1Decoder
+			// 
+			resources.ApplyResources(this.textUDC1Decoder, "textUDC1Decoder");
+			this.textUDC1Decoder.Name = "textUDC1Decoder";
+			// 
+			// textUDC1Extension
+			// 
+			resources.ApplyResources(this.textUDC1Extension, "textUDC1Extension");
+			this.textUDC1Extension.Name = "textUDC1Extension";
+			// 
+			// label4
+			// 
+			resources.ApplyResources(this.label4, "label4");
+			this.label4.Name = "label4";
+			// 
+			// label3
+			// 
+			resources.ApplyResources(this.label3, "label3");
+			this.label3.Name = "label3";
+			// 
+			// label2
+			// 
+			resources.ApplyResources(this.label2, "label2");
+			this.label2.Name = "label2";
+			// 
 			// tabPage4
 			// 
 			this.tabPage4.BackColor = System.Drawing.SystemColors.Control;
@@ -793,78 +868,11 @@ namespace JDP {
 			this.chkHDCDDetect.UseVisualStyleBackColor = true;
 			this.chkHDCDDetect.CheckedChanged += new System.EventHandler(this.chkHDCDDetect_CheckedChanged);
 			// 
-			// tabPage9
+			// chkUDC1ID3v2
 			// 
-			this.tabPage9.Controls.Add(this.chkUDC1APEv2);
-			this.tabPage9.Controls.Add(this.label6);
-			this.tabPage9.Controls.Add(this.label5);
-			this.tabPage9.Controls.Add(this.textUDC1EncParams);
-			this.tabPage9.Controls.Add(this.textUDC1Encoder);
-			this.tabPage9.Controls.Add(this.textUDC1Params);
-			this.tabPage9.Controls.Add(this.textUDC1Decoder);
-			this.tabPage9.Controls.Add(this.textUDC1Extension);
-			this.tabPage9.Controls.Add(this.label4);
-			this.tabPage9.Controls.Add(this.label3);
-			this.tabPage9.Controls.Add(this.label2);
-			resources.ApplyResources(this.tabPage9, "tabPage9");
-			this.tabPage9.Name = "tabPage9";
-			this.tabPage9.UseVisualStyleBackColor = true;
-			// 
-			// label2
-			// 
-			resources.ApplyResources(this.label2, "label2");
-			this.label2.Name = "label2";
-			// 
-			// label3
-			// 
-			resources.ApplyResources(this.label3, "label3");
-			this.label3.Name = "label3";
-			// 
-			// label4
-			// 
-			resources.ApplyResources(this.label4, "label4");
-			this.label4.Name = "label4";
-			// 
-			// textUDC1Extension
-			// 
-			resources.ApplyResources(this.textUDC1Extension, "textUDC1Extension");
-			this.textUDC1Extension.Name = "textUDC1Extension";
-			// 
-			// textUDC1Decoder
-			// 
-			resources.ApplyResources(this.textUDC1Decoder, "textUDC1Decoder");
-			this.textUDC1Decoder.Name = "textUDC1Decoder";
-			// 
-			// textUDC1Params
-			// 
-			resources.ApplyResources(this.textUDC1Params, "textUDC1Params");
-			this.textUDC1Params.Name = "textUDC1Params";
-			// 
-			// textUDC1Encoder
-			// 
-			resources.ApplyResources(this.textUDC1Encoder, "textUDC1Encoder");
-			this.textUDC1Encoder.Name = "textUDC1Encoder";
-			// 
-			// textUDC1EncParams
-			// 
-			resources.ApplyResources(this.textUDC1EncParams, "textUDC1EncParams");
-			this.textUDC1EncParams.Name = "textUDC1EncParams";
-			// 
-			// label5
-			// 
-			resources.ApplyResources(this.label5, "label5");
-			this.label5.Name = "label5";
-			// 
-			// label6
-			// 
-			resources.ApplyResources(this.label6, "label6");
-			this.label6.Name = "label6";
-			// 
-			// chkUDC1APEv2
-			// 
-			resources.ApplyResources(this.chkUDC1APEv2, "chkUDC1APEv2");
-			this.chkUDC1APEv2.Name = "chkUDC1APEv2";
-			this.chkUDC1APEv2.UseVisualStyleBackColor = true;
+			resources.ApplyResources(this.chkUDC1ID3v2, "chkUDC1ID3v2");
+			this.chkUDC1ID3v2.Name = "chkUDC1ID3v2";
+			this.chkUDC1ID3v2.UseVisualStyleBackColor = true;
 			// 
 			// frmSettings
 			// 
@@ -912,12 +920,12 @@ namespace JDP {
 			this.tabPage8.ResumeLayout(false);
 			this.tabPage8.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).EndInit();
+			this.tabPage9.ResumeLayout(false);
+			this.tabPage9.PerformLayout();
 			this.tabPage4.ResumeLayout(false);
 			this.tabPage4.PerformLayout();
 			this.grpHDCD.ResumeLayout(false);
 			this.grpHDCD.PerformLayout();
-			this.tabPage9.ResumeLayout(false);
-			this.tabPage9.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -1011,6 +1019,7 @@ namespace JDP {
 		private System.Windows.Forms.TextBox textUDC1EncParams;
 		private System.Windows.Forms.TextBox textUDC1Encoder;
 		private System.Windows.Forms.CheckBox chkUDC1APEv2;
+		private System.Windows.Forms.CheckBox chkUDC1ID3v2;
 
 	}
 }
