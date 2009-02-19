@@ -157,7 +157,7 @@ namespace JDP
 				if (outputAudio)
 				{
 					if (_cueStyle == CUEStyle.SingleFileWithCUE)
-						cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), General.FormatExtension(_audioFormat));
+						cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), General.FormatExtension(_audioFormat, _config));
 				}
 
 				cueSheet.UsePregapForFirstTrackInSingleFile = false;

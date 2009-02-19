@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Text;
 using CUETools.Codecs;
 
@@ -116,13 +115,6 @@ namespace CUETools.Codecs.LossyWAV
 				Array.Copy(buff, pos * channels, sampleBuffer, samplesInBuffer * channels, sampleCount * channels);
 				samplesInBuffer += (int) sampleCount;
 			}
-		}
-
-		public bool SetTags(NameValueCollection tags)
-		{
-			if (_audioDest != null) _audioDest.SetTags(tags);
-			if (_lwcdfDest != null) _lwcdfDest.SetTags(tags);
-			return true;
 		}
 
 		public string Path { get { return _audioDest.Path; } }
@@ -970,23 +962,6 @@ namespace CUETools.Codecs.LossyWAV
 			{
 				return _audioSource.SampleRate;
 			}
-		}
-
-		public NameValueCollection Tags
-		{
-			get
-			{
-				return _audioSource.Tags;
-			}
-			set
-			{
-				_audioSource.Tags = value;
-			}
-		}
-
-		public bool UpdateTags(bool preserveTime)
-		{
-			return _audioSource.UpdateTags(preserveTime);
 		}
 
 		public string Path

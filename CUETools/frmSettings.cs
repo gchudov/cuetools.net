@@ -70,6 +70,12 @@ namespace JDP {
 			chkHDCD24bit.Checked = _config.decodeHDCDto24bit;
 			chkOverwriteTags.Checked = _config.overwriteCUEData;
 
+			textUDC1Extension.Text = _config.udc1Extension;
+			textUDC1Decoder.Text = _config.udc1Decoder;
+			textUDC1Params.Text = _config.udc1Params;
+			textUDC1Encoder.Text = _config.udc1Encoder;
+			textUDC1EncParams.Text = _config.udc1EncParams;
+			chkUDC1APEv2.Checked = _config.udc1APEv2;
 			EnableDisable();
 		}
 
@@ -147,6 +153,13 @@ namespace JDP {
 			_config.decodeHDCDtoLW16 = chkHDCDLW16.Checked;
 			_config.decodeHDCDto24bit = chkHDCD24bit.Checked;
 			_config.overwriteCUEData = chkOverwriteTags.Checked;
+
+			_config.udc1Extension = textUDC1Extension.Text;
+			_config.udc1Decoder = textUDC1Decoder.Text;
+			_config.udc1Params = textUDC1Params.Text;
+			_config.udc1Encoder = textUDC1Encoder.Text;
+			_config.udc1EncParams = textUDC1EncParams.Text;
+			_config.udc1APEv2 = chkUDC1APEv2.Checked;
 		}
 
 		private void EnableDisable()

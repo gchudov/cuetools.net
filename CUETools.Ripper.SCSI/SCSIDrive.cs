@@ -23,7 +23,6 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Text;
 using System.IO;
 using Bwg.Scsi;
@@ -1067,22 +1066,6 @@ namespace CUETools.Ripper.SCSI
 			{
 				return 44100;
 			}
-		}
-
-		public NameValueCollection Tags
-		{
-			get
-			{
-				return null;
-			}
-			set
-			{
-			}
-		}
-
-		public bool UpdateTags(bool preserveTime)
-		{
-			return false;
 		}
 
 		public string Path

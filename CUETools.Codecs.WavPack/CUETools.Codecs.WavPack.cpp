@@ -31,10 +31,8 @@
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
-using namespace System::Collections::Specialized;
 using namespace System::Security::Cryptography;
 using namespace System::IO;
-using namespace APETagsDotNet;
 using namespace CUETools::Codecs;
 
 #include <stdio.h>
@@ -157,31 +155,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			} 
 		}
 
-		virtual property NameValueCollection^ Tags {
-			NameValueCollection^ get () {
-				if (!_tags) 
-				{
-					APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
-					_tags = apeTag->GetStringTags (true);
-					apeTag->Close ();
-				}
-				return _tags;
-			}
-			void set (NameValueCollection ^tags) {
-				_tags = tags;
-			}
-		}
-
-		virtual bool UpdateTags(bool preserveTime)
-		{
-			Close ();
-			APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
-			apeTag->SetStringTags (_tags, true);
-			apeTag->Save();
-			apeTag->Close();
-			return true;
-		}
-
 		virtual void Close() 
 		{
 			if (_wpc != NULL)
@@ -215,7 +188,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 
 	private:
 		WavpackContext *_wpc;
-		NameValueCollection^ _tags;
 		Int32 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		String^ _path;
@@ -334,7 +306,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 				throw gcnew Exception("Bits per sample must be 16..24.");
 
 			_path = path;
-			_tags = gcnew NameValueCollection();
 
 			_compressionMode = 1;
 			_extraMode = 0;
@@ -366,18 +337,8 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			_wpc = WavpackCloseFile(_wpc);
 			fclose(_hFile);
 
-			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
+			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount))
 				throw gcnew Exception("Samples written differs from the expected sample count.");
-			}
-
-			if (_tags->Count > 0)
-			{
-				APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
-				apeTag->SetStringTags (_tags, true);
-				apeTag->Save();
-				apeTag->Close();
-				_tags->Clear ();
-			}
 		}
 
 		virtual void Delete()
@@ -455,12 +416,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			} 
 		}
 
-		virtual bool SetTags (NameValueCollection^ tags) 
-		{
-			_tags = tags;
-			return true;
-		}
-
 		property Int32 CompressionMode {
 			Int32 get() {
 				return _compressionMode;
@@ -510,7 +465,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		Int32 _finalSampleCount, _samplesWritten;
 		Int32 _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		Int32 _compressionMode, _extraMode, _blockSize;
-		NameValueCollection^ _tags;
 		String^ _path;
 		bool _md5Sum;
 		MD5^ _md5hasher;

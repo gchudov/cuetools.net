@@ -4,8 +4,6 @@
 
 #include "CUETools.Codecs.TTA.h"
 
-using namespace APETagsDotNet;
-
 typedef void * HANDLE;
 
 #include "../TTALib-1.1/TTAReader.h"
@@ -34,7 +32,6 @@ namespace TTA {
 	public:
 		TTAReader(String^ path, Stream^ IO)
 		{
-			_tags = nullptr;
 			_sampleOffset = 0;
 			_sampleBuffer = nullptr;
 			_path = path;
@@ -128,31 +125,6 @@ namespace TTA {
 			} 
 		}
 
-		virtual property NameValueCollection^ Tags {
-			NameValueCollection^ get () {
-				if (!_tags) 
-				{
-					APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
-					_tags = apeTag->GetStringTags (true);
-					apeTag->Close ();
-				}
-				return _tags;
-			}
-			void set (NameValueCollection ^tags) {
-				_tags = tags;
-			}
-		}
-
-		virtual bool UpdateTags (bool preserveTime)
-		{
-			Close ();
-			APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
-			apeTag->SetStringTags (_tags, true);
-			apeTag->Save();
-			apeTag->Close();
-			return true;
-		}
-
 		virtual property UInt64 Remaining {
 			UInt64 get() {
 				return _sampleCount - _sampleOffset + SamplesInBuffer;
@@ -235,7 +207,6 @@ namespace TTA {
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		array<Int32, 2>^ _sampleBuffer;
 		array<unsigned char>^ _readBuffer;
-		NameValueCollection^ _tags;
 		String^ _path;
 		Stream^ _IO;
 		UInt32 _bufferOffset, _bufferLength;
@@ -267,7 +238,6 @@ namespace TTA {
 			_sampleRate = sampleRate;
 			_compressionLevel = 5;
 			_blockSize = 0;
-			_tags = gcnew NameValueCollection();
 		}
 
 		virtual void Close() {
@@ -292,19 +262,8 @@ namespace TTA {
 			if (_IO)
 				_IO->Close();
 
-			if (_tags->Count > 0)
-			{
-				APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
-				apeTag->SetStringTags (_tags, true);
-				apeTag->Save();
-				apeTag->Close();
-				_tags->Clear ();
-			}
-
-			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
+			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount))
 				throw gcnew Exception("Samples written differs from the expected sample count.");
-			}
-			_tags->Clear ();
 		}
 
 		virtual void Delete()
@@ -339,12 +298,6 @@ namespace TTA {
 		virtual property int BitsPerSample
 		{
 			int get() { return _bitsPerSample;  }
-		}
-
-		virtual bool SetTags (NameValueCollection^ tags) 
-		{
-			_tags = tags;
-			return true;
 		}
 
 		virtual property String^ Path { 
@@ -397,7 +350,6 @@ namespace TTA {
 		Int64 _finalSampleCount, _samplesWritten, _blockSize;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		Int32 _compressionLevel;
-		NameValueCollection^ _tags;
 
 		void Initialize() 
 		{

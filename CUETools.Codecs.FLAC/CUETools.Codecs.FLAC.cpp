@@ -33,7 +33,6 @@ using namespace System;
 using namespace System::Text;
 using namespace System::IO;
 using namespace System::Collections::Generic;
-using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
 using namespace CUETools::Codecs;
 
@@ -73,8 +72,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 	public:
 		FLACReader(String^ path, Stream^ IO)
 		{
-			_tags = gcnew NameValueCollection();
-
 			_writeDel = gcnew DecoderWriteDelegate(this, &FLACReader::WriteCallback);
 			_metadataDel = gcnew DecoderMetadataDelegate(this, &FLACReader::MetadataCallback);
 			_errorDel = gcnew DecoderErrorDelegate(this, &FLACReader::ErrorCallback);
@@ -172,78 +169,69 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			} 
 		}
 
-		virtual property NameValueCollection^ Tags {
-			NameValueCollection^ get () {
-				return _tags;
-			}
-			void set (NameValueCollection ^tags) {
-				_tags = tags;
-			}
-		}
+		//virtual bool UpdateTags (bool preserveTime)
+		//{
+		//    Close ();
+		//    
+		//    FLAC__Metadata_Chain* chain = FLAC__metadata_chain_new ();
+		//    if (!chain) return false;
 
-		virtual bool UpdateTags (bool preserveTime)
-		{
-		    Close ();
-		    
-		    FLAC__Metadata_Chain* chain = FLAC__metadata_chain_new ();
-		    if (!chain) return false;
+		//    IntPtr pathChars = Marshal::StringToHGlobalAnsi(_path);
+		//    int res = FLAC__metadata_chain_read (chain, (const char*)pathChars.ToPointer());
+		//    Marshal::FreeHGlobal(pathChars);
+		//    if (!res) {
+		//		FLAC__metadata_chain_delete (chain);
+		//		return false;
+		//    }
+		//    FLAC__Metadata_Iterator* i = FLAC__metadata_iterator_new ();
+		//    FLAC__metadata_iterator_init (i, chain);
+		//    do {
+		//		FLAC__StreamMetadata* metadata = FLAC__metadata_iterator_get_block (i);
+		//		if (metadata->type == FLAC__METADATA_TYPE_VORBIS_COMMENT)
+		//			FLAC__metadata_iterator_delete_block (i, false);
+		//    } while (FLAC__metadata_iterator_next (i));
 
-		    IntPtr pathChars = Marshal::StringToHGlobalAnsi(_path);
-		    int res = FLAC__metadata_chain_read (chain, (const char*)pathChars.ToPointer());
-		    Marshal::FreeHGlobal(pathChars);
-		    if (!res) {
-				FLAC__metadata_chain_delete (chain);
-				return false;
-		    }
-		    FLAC__Metadata_Iterator* i = FLAC__metadata_iterator_new ();
-		    FLAC__metadata_iterator_init (i, chain);
-		    do {
-				FLAC__StreamMetadata* metadata = FLAC__metadata_iterator_get_block (i);
-				if (metadata->type == FLAC__METADATA_TYPE_VORBIS_COMMENT)
-					FLAC__metadata_iterator_delete_block (i, false);
-		    } while (FLAC__metadata_iterator_next (i));
+		//    FLAC__StreamMetadata * vorbiscomment = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
+		//    for (int tagno = 0; tagno <_tags->Count; tagno++)
+		//    {
+		//		String ^ tag_name = _tags->GetKey(tagno);
+		//		int tag_len = tag_name->Length;
+		//		char * tag = new char [tag_len + 1];
+		//		IntPtr nameChars = Marshal::StringToHGlobalAnsi(tag_name);
+		//		memcpy (tag, (const char*)nameChars.ToPointer(), tag_len);
+		//		Marshal::FreeHGlobal(nameChars);
+		//		tag[tag_len] = 0;
 
-		    FLAC__StreamMetadata * vorbiscomment = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
-		    for (int tagno = 0; tagno <_tags->Count; tagno++)
-		    {
-				String ^ tag_name = _tags->GetKey(tagno);
-				int tag_len = tag_name->Length;
-				char * tag = new char [tag_len + 1];
-				IntPtr nameChars = Marshal::StringToHGlobalAnsi(tag_name);
-				memcpy (tag, (const char*)nameChars.ToPointer(), tag_len);
-				Marshal::FreeHGlobal(nameChars);
-				tag[tag_len] = 0;
+		//		array<String^>^ tag_values = _tags->GetValues(tagno);
+		//		for (int valno = 0; valno < tag_values->Length; valno++)
+		//		{
+		//			UTF8Encoding^ enc = gcnew UTF8Encoding();
+		//			array<Byte>^ value_array = enc->GetBytes (tag_values[valno]);
+		//			int value_len = value_array->Length;
+		//			char * value = new char [value_len + 1];
+		//			Marshal::Copy (value_array, 0, (IntPtr) value, value_len);
+		//			value[value_len] = 0;
 
-				array<String^>^ tag_values = _tags->GetValues(tagno);
-				for (int valno = 0; valno < tag_values->Length; valno++)
-				{
-					UTF8Encoding^ enc = gcnew UTF8Encoding();
-					array<Byte>^ value_array = enc->GetBytes (tag_values[valno]);
-					int value_len = value_array->Length;
-					char * value = new char [value_len + 1];
-					Marshal::Copy (value_array, 0, (IntPtr) value, value_len);
-					value[value_len] = 0;
+		//			FLAC__StreamMetadata_VorbisComment_Entry entry;
+		//			/* create and entry and append it */
+		//			if(!FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, tag, value)) {
+		//				throw gcnew Exception("Unable to add tags, must be valid utf8.");
+		//			}
+		//			if(!FLAC__metadata_object_vorbiscomment_append_comment(vorbiscomment, entry, /*copy=*/false)) {
+		//				throw gcnew Exception("Unable to add tags.");
+		//			}
+		//			delete [] value;
+		//		}
+		//		delete [] tag;
+		//    }
 
-					FLAC__StreamMetadata_VorbisComment_Entry entry;
-					/* create and entry and append it */
-					if(!FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, tag, value)) {
-						throw gcnew Exception("Unable to add tags, must be valid utf8.");
-					}
-					if(!FLAC__metadata_object_vorbiscomment_append_comment(vorbiscomment, entry, /*copy=*/false)) {
-						throw gcnew Exception("Unable to add tags.");
-					}
-					delete [] value;
-				}
-				delete [] tag;
-		    }
-
-		    FLAC__metadata_iterator_insert_block_after (i, vorbiscomment);
-		    FLAC__metadata_iterator_delete (i);
-		    FLAC__metadata_chain_sort_padding (chain);
-		    res = FLAC__metadata_chain_write (chain, true, preserveTime);
-		    FLAC__metadata_chain_delete (chain);
-		    return 0 != res;
-		}
+		//    FLAC__metadata_iterator_insert_block_after (i, vorbiscomment);
+		//    FLAC__metadata_iterator_delete (i);
+		//    FLAC__metadata_chain_sort_padding (chain);
+		//    res = FLAC__metadata_chain_write (chain, true, preserveTime);
+		//    FLAC__metadata_chain_delete (chain);
+		//    return 0 != res;
+		//}
 
 		virtual property UInt64 Remaining {
 			UInt64 get() {
@@ -311,7 +299,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		array<Int32, 2>^ _sampleBuffer;
 		array<unsigned char>^ _readBuffer;
-		NameValueCollection^ _tags;
 		String^ _path;
 		bool _decoderActive;
 		Stream^ _IO;
@@ -370,23 +357,23 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				_sampleRate = metadata->data.stream_info.sample_rate;
 				_sampleCount = metadata->data.stream_info.total_samples;
 			}
-			if (metadata->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) 
-			{
-			    for (unsigned tagno = 0; tagno < metadata->data.vorbis_comment.num_comments; tagno ++)
-			    {
-					char * field_name, * field_value;
-					if(!FLAC__metadata_object_vorbiscomment_entry_to_name_value_pair(metadata->data.vorbis_comment.comments[tagno], &field_name, &field_value)) 
-						throw gcnew Exception("Unable to parse vorbis comment.");
-					String^ name = Marshal::PtrToStringAnsi ((IntPtr) field_name);
-					free (field_name);	    
-					array<Byte>^ bvalue = gcnew array<Byte>((int) strlen (field_value));
-					Marshal::Copy ((IntPtr) field_value, bvalue, 0, (int) strlen (field_value));
-					free (field_value);
-					UTF8Encoding^ enc = gcnew UTF8Encoding();
-					String ^value = enc->GetString (bvalue);
-					_tags->Add (name, value);
-				}
-			}
+			//if (metadata->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) 
+			//{
+			//    for (unsigned tagno = 0; tagno < metadata->data.vorbis_comment.num_comments; tagno ++)
+			//    {
+			//		char * field_name, * field_value;
+			//		if(!FLAC__metadata_object_vorbiscomment_entry_to_name_value_pair(metadata->data.vorbis_comment.comments[tagno], &field_name, &field_value)) 
+			//			throw gcnew Exception("Unable to parse vorbis comment.");
+			//		String^ name = Marshal::PtrToStringAnsi ((IntPtr) field_name);
+			//		free (field_name);	    
+			//		array<Byte>^ bvalue = gcnew array<Byte>((int) strlen (field_value));
+			//		Marshal::Copy ((IntPtr) field_value, bvalue, 0, (int) strlen (field_value));
+			//		free (field_value);
+			//		UTF8Encoding^ enc = gcnew UTF8Encoding();
+			//		String ^value = enc->GetString (bvalue);
+			//		_tags->Add (name, value);
+			//	}
+			//}
 		}
 
 		void ErrorCallback(const FLAC__StreamDecoder *decoder,
@@ -474,7 +461,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			_paddingLength = 8192;
 			_verify = false;
 			_blockSize = 0;
-			_tags = gcnew NameValueCollection();
 
 			_encoder = FLAC__stream_encoder_new();
 
@@ -495,11 +481,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 
 			FLAC__stream_encoder_delete(_encoder);
 
-			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
+			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount))
 				throw gcnew Exception("Samples written differs from the expected sample count.");
-			}
-
-			_tags->Clear ();
 		}
 
 		virtual void Delete()
@@ -536,12 +519,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			int get() { return _bitsPerSample;  }
 		}
 
-		virtual bool SetTags (NameValueCollection^ tags) 
-		{
-			_tags = tags;
-			return true;
-		}
-
 		virtual property String^ Path { 
 			String^ get() { 
 				return _path; 
@@ -556,7 +533,18 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			if (!FLAC__stream_encoder_process_interleaved(_encoder,
 				(const FLAC__int32*)pSampleBuffer, sampleCount))
 			{
-				throw gcnew Exception("An error occurred while encoding.");
+				String^ state = gcnew String(FLAC__StreamEncoderStateString[FLAC__stream_encoder_get_state(_encoder)]);
+				if (FLAC__stream_encoder_get_state(_encoder) == FLAC__STREAM_ENCODER_VERIFY_MISMATCH_IN_AUDIO_DATA)
+				{
+					FLAC__uint64 absolute_sample;
+					unsigned frame_number;
+					unsigned channel;
+					unsigned sample;
+					FLAC__int32 expected, got;
+					FLAC__stream_encoder_get_verify_decoder_error_stats(_encoder, &absolute_sample, &frame_number, &channel, &sample, &expected, &got);
+					state = state + String::Format("({0:x} instead of {1:x} @{2:x})", got, expected, absolute_sample);
+				}
+				throw gcnew Exception("An error occurred while encoding: " + state);
 			}
 
 			_samplesWritten += sampleCount;
@@ -606,7 +594,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		Boolean _verify;
 		FLAC__StreamMetadata **_metadataList;
 		int _metadataCount;
-		NameValueCollection^ _tags;
 
 		void Initialize() {
 			FLAC__StreamMetadata *padding, *seektable, *vorbiscomment;
@@ -625,39 +612,38 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			}
 
 			vorbiscomment = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
+			//for (int tagno = 0; tagno < _tags->Count; tagno++)
+			//{
+			//	String ^ tag_name = _tags->GetKey(tagno);
+			//	int tag_len = tag_name->Length;
+			//    char * tag = new char [tag_len + 1];
+			//    IntPtr nameChars = Marshal::StringToHGlobalAnsi(tag_name);
+			//    memcpy (tag, (const char*)nameChars.ToPointer(), tag_len);
+			//    Marshal::FreeHGlobal(nameChars);
+			//    tag[tag_len] = 0;
 
-			for (int tagno = 0; tagno < _tags->Count; tagno++)
-			{
-				String ^ tag_name = _tags->GetKey(tagno);
-				int tag_len = tag_name->Length;
-			    char * tag = new char [tag_len + 1];
-			    IntPtr nameChars = Marshal::StringToHGlobalAnsi(tag_name);
-			    memcpy (tag, (const char*)nameChars.ToPointer(), tag_len);
-			    Marshal::FreeHGlobal(nameChars);
-			    tag[tag_len] = 0;
+			//	array<String^>^ tag_values = _tags->GetValues(tagno);
+			//	for (int valno = 0; valno < tag_values->Length; valno++)
+			//	{
+			//		UTF8Encoding^ enc = gcnew UTF8Encoding();
+			//		array<Byte>^ value_array = enc->GetBytes (tag_values[valno]);
+			//		int value_len = value_array->Length;
+			//		char * value = new char [value_len + 1];
+			//		Marshal::Copy (value_array, 0, (IntPtr) value, value_len);
+			//		value[value_len] = 0;
 
-				array<String^>^ tag_values = _tags->GetValues(tagno);
-				for (int valno = 0; valno < tag_values->Length; valno++)
-				{
-					UTF8Encoding^ enc = gcnew UTF8Encoding();
-					array<Byte>^ value_array = enc->GetBytes (tag_values[valno]);
-					int value_len = value_array->Length;
-					char * value = new char [value_len + 1];
-					Marshal::Copy (value_array, 0, (IntPtr) value, value_len);
-					value[value_len] = 0;
-
-					FLAC__StreamMetadata_VorbisComment_Entry entry;
-					/* create and entry and append it */
-					if(!FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, tag, value)) {
-						throw gcnew Exception("Unable to add tags, must be valid utf8.");
-					}
-					if(!FLAC__metadata_object_vorbiscomment_append_comment(vorbiscomment, entry, /*copy=*/false)) {
-						throw gcnew Exception("Unable to add tags.");
-					}
-					delete [] value;
-				}
-			    delete [] tag;
-			}
+			//		FLAC__StreamMetadata_VorbisComment_Entry entry;
+			//		/* create and entry and append it */
+			//		if(!FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, tag, value)) {
+			//			throw gcnew Exception("Unable to add tags, must be valid utf8.");
+			//		}
+			//		if(!FLAC__metadata_object_vorbiscomment_append_comment(vorbiscomment, entry, /*copy=*/false)) {
+			//			throw gcnew Exception("Unable to add tags.");
+			//		}
+			//		delete [] value;
+			//	}
+			//    delete [] tag;
+			//}
 			_metadataList[_metadataCount++] = vorbiscomment;
 	 
 			if (_paddingLength != 0) {

@@ -334,12 +334,8 @@
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 		/>
 		<ProjectReference
-			ReferencedProjectIdentifier="{CA200BCB-DFC6-4153-9BD4-785BC768B26B}"
-			RelativePathToProject="..\APETagDotNet\APETagDotNet.csproj"
-		/>
-		<ProjectReference
 			ReferencedProjectIdentifier="{6458A13A-30EF-45A9-9D58-E5031B17BEE2}"
-			RelativePathToProject="..\AudioCodecsDotNet\AudioCodecsDotNet.csproj"
+			RelativePathToProject="..\CUETools.Codecs\CUETools.Codecs.csproj"
 		/>
 	</References>
 	<Files>
@@ -349,11 +345,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\CUETools.Codecs.APE.cpp"
+				RelativePath=".\AssemblyInfo.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\AssemblyInfo.cpp"
+				RelativePath=".\CUETools.Codecs.APE.cpp"
 				>
 			</File>
 			<File

@@ -36,7 +36,7 @@
 
 static void progress_callback(const FLAC__StreamEncoder *encoder, FLAC__uint64 bytes_written, FLAC__uint64 samples_written, unsigned frames_written, unsigned total_frames_estimate, void *client_data);
 
-#define READSIZE 1024
+#define READSIZE 0x4000
 
 static unsigned total_samples = 0; /* can use a 32-bit number due to WAVE size limitations */
 static FLAC__byte buffer[READSIZE/*samples*/ * 2/*bytes_per_sample*/ * 2/*channels*/]; /* we read the WAVE data into here */
@@ -140,7 +140,11 @@ int main(int argc, char *argv[])
 					pcm[i] = (FLAC__int32)(((FLAC__int16)(FLAC__int8)buffer[2*i+1] << 8) | (FLAC__int16)buffer[2*i]);
 				}
 				/* feed samples to encoder */
-				ok = FLAC__stream_encoder_process_interleaved(encoder, pcm, need);
+				if (!FLAC__stream_encoder_process_interleaved(encoder, pcm, need))
+				{
+					fprintf(stderr, "ERROR: encode\n");
+					ok = false;
+				}
 			}
 			left -= need;
 		}
@@ -166,7 +170,7 @@ void progress_callback(const FLAC__StreamEncoder *encoder, FLAC__uint64 bytes_wr
 	(void)encoder, (void)client_data;
 
 #ifdef _MSC_VER
-	fprintf(stderr, "wrote %I64u bytes, %I64u/%u samples, %u/%u frames\n", bytes_written, samples_written, total_samples, frames_written, total_frames_estimate);
+	//fprintf(stderr, "wrote %I64u bytes, %I64u/%u samples, %u/%u frames\n", bytes_written, samples_written, total_samples, frames_written, total_frames_estimate);
 #else
 	fprintf(stderr, "wrote %llu bytes, %llu/%u samples, %u/%u frames\n", bytes_written, samples_written, total_samples, frames_written, total_frames_estimate);
 #endif

@@ -476,7 +476,7 @@ namespace CUETools.Codecs.ALAC
 				for (int output_count = 0; output_count < output_size; output_count++)
 				{
 					int x = sign_modifier + decode_scalar(buff, ref pos, 31 - count_leading_zeroes((history >> 9) + 3), rice_kmodifier, readsamplesize);
-					output_buffer[output_count] = ((x + 1) >> 1) * (1 - ((x & 1) << 1));
+					output_buffer[output_count] = (x >> 1) ^ - (x & 1);
 					sign_modifier = 0;
 
 					/* now update the history */
@@ -542,7 +542,7 @@ namespace CUETools.Codecs.ALAC
 						return;
 					for (i = 0; i < output_size; i++)
 					{
-						sample += buf_err[i];
+						sample = extend_sign32(sample + buf_err[i], readsamplesize);
 						buf_out[i] = sample;
 					}
 					return;
@@ -554,7 +554,7 @@ namespace CUETools.Codecs.ALAC
 				/* read warm-up samples */
 				for (i = 0; i <= predictor_info.predictor_coef_num; i++)
 				{
-					sample += buf_err[i];
+					sample = extend_sign32(sample + buf_err[i], readsamplesize);
 					buf_out[i] = sample;
 				}
 
@@ -576,7 +576,7 @@ namespace CUETools.Codecs.ALAC
 					outval >>= pr->prediction_quantitization;
 					outval += sample_val + error_val;
 
-					buf_pos[pr->predictor_coef_num] = outval;
+					buf_pos[pr->predictor_coef_num] = extend_sign32(outval, readsamplesize);
 
 					if (error_val != 0)
 					{
@@ -614,14 +614,20 @@ namespace CUETools.Codecs.ALAC
 				{
 					for (i = 0; i < _samplesInBuffer; i++)
 					{
-						int a = buf_a[i];
-						int b = buf_b[i];
+						int midright = buf_a[i];
+						int diff = buf_b[i];
 
-						a -= (b * _interlacing_leftweight) >> _interlacing_shift;
-						b += a;
+						midright -= (diff * _interlacing_leftweight) >> _interlacing_shift;
 
-						buf_s[i * 2] = b;
-						buf_s[i * 2 + 1] = a;
+						buf_s[i * 2] = midright + diff;
+						buf_s[i * 2 + 1] = midright;
+
+#if DEBUG
+						if (buf_s[i * 2] >= (1 << _bitsPerSample) || buf_s[i * 2] < -(1 << _bitsPerSample) ||
+							buf_s[i * 2 + 1] >= (1 << _bitsPerSample) || buf_s[i * 2 + 1] < -(1 << _bitsPerSample)
+							)
+							throw new Exception("overflow in ALAC decoder");
+#endif
 					}
 					return;
 				}
@@ -1169,21 +1175,22 @@ namespace CUETools.Codecs.ALAC
 			qtmovie_add_any_parser("top.moov.trak.mdia.minf.stbl.stsz", new qtmovie_read_atom(qtmovie_read_chunk_stsz), null); // _sample_byte_size
 			qtmovie_add_nul_parser("top.moov.trak.mdia.minf.stbl.stsc"); /* skip these, no indexing for us! */
 			qtmovie_add_nul_parser("top.moov.trak.mdia.minf.stbl.stco"); /* skip these, no indexing for us! */
-			qtmovie_add_lst_parser("top.moov.udta", null);
-			qtmovie_add_lst_parser("top.moov.udta.meta", (uint)4);
-			qtmovie_add_lst_parser("top.moov.udta.meta.ilst", null);
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©nam", "TITLE");
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©ART", "ARTIST");
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©wrt", "COMPOSER");
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©alb", "ALBUM");
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©day", "DATE");
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©gen", "GENRE");
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.disk");
-			qtmovie_add_tag_parser("top.moov.udta.meta.ilst.trkn");
-			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----", new qtmovie_read_atom(qtmovie_read_meta_freeform), null);
-			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.mean", new qtmovie_read_atom(qtmovie_read_meta_mean), null);
-			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.name", new qtmovie_read_atom(qtmovie_read_meta_name), null);
-			qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.data", new qtmovie_read_atom(qtmovie_read_meta_data), null);
+			qtmovie_add_nul_parser("top.moov.udta");
+			//qtmovie_add_lst_parser("top.moov.udta", null);
+			//qtmovie_add_lst_parser("top.moov.udta.meta", (uint)4);
+			//qtmovie_add_lst_parser("top.moov.udta.meta.ilst", null);
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©nam", "TITLE");
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©ART", "ARTIST");
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©wrt", "COMPOSER");
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©alb", "ALBUM");
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©day", "DATE");
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.©gen", "GENRE");
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.disk");
+			//qtmovie_add_tag_parser("top.moov.udta.meta.ilst.trkn");
+			//qtmovie_add_any_parser("top.moov.udta.meta.ilst.----", new qtmovie_read_atom(qtmovie_read_meta_freeform), null);
+			//qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.mean", new qtmovie_read_atom(qtmovie_read_meta_mean), null);
+			//qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.name", new qtmovie_read_atom(qtmovie_read_meta_name), null);
+			//qtmovie_add_any_parser("top.moov.udta.meta.ilst.----.data", new qtmovie_read_atom(qtmovie_read_meta_data), null);
 
 			while (true)
 			{

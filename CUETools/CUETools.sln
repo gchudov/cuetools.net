@@ -10,7 +10,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.FLAC", "..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.APE", "..\CUETools.Codecs.APE\CUETools.Codecs.APE.vcproj", "{9AE965C4-301E-4C01-B90F-297AF341ACC6}"
 	ProjectSection(ProjectDependencies) = postProject
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B} = {CA200BCB-DFC6-4153-9BD4-785BC768B26B}
 		{0B9C97D4-61B8-4294-A1DF-BA90752A1779} = {0B9C97D4-61B8-4294-A1DF-BA90752A1779}
 	EndProjectSection
 EndProject
@@ -19,7 +18,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.WavPack", "..\CUETools.Codecs.WavPack\CUETools.Codecs.WavPack.vcproj", "{CC2E74B6-534A-43D8-9F16-AC03FE955000}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5CCCB9CF-0384-458F-BA08-72B73866840F} = {5CCCB9CF-0384-458F-BA08-72B73866840F}
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B} = {CA200BCB-DFC6-4153-9BD4-785BC768B26B}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MACLib", "..\MAC_SDK\Source\MACLib\MACLib.vcproj", "{0B9C97D4-61B8-4294-A1DF-BA90752A1779}"
@@ -27,8 +25,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodecWrappers", "CodecWrappers", "{85F88959-C9E9-4989-ACB1-67BA9D1BEFE7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libFLAC_static", "..\flac\src\libFLAC\libFLAC_static.vcproj", "{4CEFBC84-C215-11DB-8314-0800200C9A66}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APETagDotNet", "..\APETagDotNet\APETagDotNet.csproj", "{CA200BCB-DFC6-4153-9BD4-785BC768B26B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwavpack", "..\wavpack-4.5.0\src\libwavpack.vcproj", "{5CCCB9CF-0384-458F-BA08-72B73866840F}"
 EndProject
@@ -86,6 +82,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.TTA", "..\C
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Converter", "..\CUETools.Converter\CUETools.Converter.csproj", "{115CC5B0-0385-41CD-8A23-6A7EA4C51926}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taglib-sharp", "..\..\taglib-sharp\taglib-sharp.csproj", "{4CC18776-125E-4318-9D24-D60110AD9697}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -159,18 +157,6 @@ Global
 		{4CEFBC84-C215-11DB-8314-0800200C9A66}.Release|x64.Build.0 = Release|x64
 		{4CEFBC84-C215-11DB-8314-0800200C9A66}.Release|x86.ActiveCfg = Release|Win32
 		{4CEFBC84-C215-11DB-8314-0800200C9A66}.Release|x86.Build.0 = Release|Win32
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Debug|x64.ActiveCfg = Debug|x64
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Debug|x64.Build.0 = Debug|x64
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Debug|x86.ActiveCfg = Debug|x86
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Debug|x86.Build.0 = Debug|x86
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Release|x64.ActiveCfg = Release|x64
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Release|x64.Build.0 = Release|x64
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Release|x86.ActiveCfg = Release|x86
-		{CA200BCB-DFC6-4153-9BD4-785BC768B26B}.Release|x86.Build.0 = Release|x86
 		{5CCCB9CF-0384-458F-BA08-72B73866840F}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{5CCCB9CF-0384-458F-BA08-72B73866840F}.Debug|x64.ActiveCfg = Debug|x64
 		{5CCCB9CF-0384-458F-BA08-72B73866840F}.Debug|x64.Build.0 = Debug|x64
@@ -425,6 +411,18 @@ Global
 		{115CC5B0-0385-41CD-8A23-6A7EA4C51926}.Release|x64.Build.0 = Release|x64
 		{115CC5B0-0385-41CD-8A23-6A7EA4C51926}.Release|x86.ActiveCfg = Release|x86
 		{115CC5B0-0385-41CD-8A23-6A7EA4C51926}.Release|x86.Build.0 = Release|x86
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Debug|x64.Build.0 = Debug|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Debug|x86.Build.0 = Debug|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Release|x64.ActiveCfg = Release|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Release|x64.Build.0 = Release|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Release|x86.ActiveCfg = Release|Any CPU
+		{4CC18776-125E-4318-9D24-D60110AD9697}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Text;
 using System.Globalization;
 using System.Net;
@@ -346,11 +345,6 @@ namespace CUETools.AccurateRip
 				else
 					_accResult = HttpStatusCode.BadRequest;
 			}
-		}
-
-		public bool SetTags(NameValueCollection tags)
-		{
-			throw new Exception("unsupported");
 		}
 
 		public void Close()

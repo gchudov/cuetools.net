@@ -126,6 +126,7 @@ namespace JDP {
 				_writeOffset = settingsForm.WriteOffset;
 				_reducePriority = settingsForm.ReducePriority;
 				_config = settingsForm.Config;
+				updateOutputStyles();
 				UpdateOutputPath();
 			}
 		}
@@ -741,7 +742,10 @@ namespace JDP {
 				if (rbAPE.Checked)	   return OutputAudioFormat.APE;
 				if (rbTTA.Checked)	   return OutputAudioFormat.TTA;
 				if (rbNoAudio.Checked) return OutputAudioFormat.NoAudio;
-									   return OutputAudioFormat.WAV;
+				if (rbWAV.Checked)     return OutputAudioFormat.WAV;
+				if (rbUDC1.Checked)	   return OutputAudioFormat.UDC1;
+				return OutputAudioFormat.NoAudio;
+				//throw new Exception("output format invalid");
 			}
 			set {
 				switch (value) {
@@ -751,6 +755,7 @@ namespace JDP {
 					case OutputAudioFormat.TTA: rbTTA.Checked = true; break;
 					case OutputAudioFormat.WAV: rbWAV.Checked = true; break;
 					case OutputAudioFormat.NoAudio: rbNoAudio.Checked = true; break;
+					case OutputAudioFormat.UDC1: rbUDC1.Checked = true; break;
 				}
 			}
 		}
@@ -859,7 +864,7 @@ namespace JDP {
 				}
 				ext = ".cue";
 				if (rbEmbedCUE.Checked)
-					ext = General.FormatExtension (SelectedOutputAudioFormat);
+					ext = General.FormatExtension (SelectedOutputAudioFormat, _config);
 				if (chkLossyWAV.Checked)
 					ext = ".lossy" + ext;
 				if (_config.detectHDCD && _config.decodeHDCD && (!chkLossyWAV.Checked || !_config.decodeHDCDtoLW16))
@@ -901,11 +906,14 @@ namespace JDP {
 
 		private void updateOutputStyles()
 		{
-			rbEmbedCUE.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbAPE.Checked;
+			rbEmbedCUE.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbAPE.Checked || (rbUDC1.Checked && _config.udc1APEv2);
 			chkLossyWAV.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbWAV.Checked;
 			rbNoAudio.Enabled = !rbEmbedCUE.Checked && !chkLossyWAV.Checked;
 			rbWAV.Enabled = !rbEmbedCUE.Checked;
 			rbTTA.Enabled = rbAPE.Enabled = !chkLossyWAV.Checked;
+			rbUDC1.Enabled = _config.udc1Extension != "" && _config.udc1Encoder != "" && (_config.udc1APEv2 || !rbEmbedCUE.Checked) && !chkLossyWAV.Checked;
+			rbUDC1.Text = _config.udc1Extension == "" ? "User" : _config.udc1Extension.ToUpper(); 
+			// _config.udc1Extension.Substring(0, 1).ToUpper() + _config.udc1Extension.Substring(1);
 		}
 
 		private void rbWAV_CheckedChanged(object sender, EventArgs e)
@@ -1023,6 +1031,12 @@ namespace JDP {
 		}
 
 		private void rbTTA_CheckedChanged(object sender, EventArgs e)
+		{
+			updateOutputStyles();
+			UpdateOutputPath();
+		}
+
+		private void rbUDC1_CheckedChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
 			UpdateOutputPath();

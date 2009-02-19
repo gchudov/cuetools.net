@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Threading;
+using System.Diagnostics;
 
 namespace CUETools.Codecs
 {
@@ -13,8 +13,6 @@ namespace CUETools.Codecs
 		int[,] Read(int[,] buff);
 		ulong Length { get; }
 		ulong Position { get; set; }
-		NameValueCollection Tags { get; set; }
-		bool UpdateTags(bool preserveTime);
 		ulong Remaining { get; }
 		void Close();
 		int BitsPerSample { get; }
@@ -26,7 +24,6 @@ namespace CUETools.Codecs
 	public interface IAudioDest
 	{
 		void Write(int[,] buff, uint sampleCount);
-		bool SetTags(NameValueCollection tags);
 		void Close();
 		void Delete();
 		int BitsPerSample { get; }
@@ -189,11 +186,6 @@ namespace CUETools.Codecs
 			_bitsPerSample = bitsPerSample;
 		}
 
-		public bool SetTags(NameValueCollection tags)
-		{
-			return false;
-		}
-
 		public void Close()
 		{
 		}
@@ -286,22 +278,6 @@ namespace CUETools.Codecs
 			{
 				return 44100;
 			}
-		}
-
-		public NameValueCollection Tags
-		{
-			get
-			{
-				return new NameValueCollection();
-			}
-			set
-			{
-			}
-		}
-
-		public bool UpdateTags(bool preserveTime)
-		{
-			return false;
 		}
 
 		public uint Read(int [,] buff, uint sampleCount)
@@ -536,22 +512,6 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public NameValueCollection Tags
-		{
-			get
-			{
-				return new NameValueCollection();
-			}
-			set
-			{
-			}
-		}
-
-		public bool UpdateTags(bool preserveTime)
-		{
-			return false;
-		}
-
 		public uint Read(int[,] buff, uint sampleCount)
 		{
 			if (sampleCount > Remaining)
@@ -562,8 +522,14 @@ namespace CUETools.Codecs
 			int byteCount = (int) sampleCount * _blockAlign;
 			if (_sampleBuffer == null || _sampleBuffer.Length < byteCount)
 				_sampleBuffer = new byte[byteCount];
-			if (_IO.Read(_sampleBuffer, 0, (int)byteCount) != byteCount)
-				throw new Exception("Incomplete file read.");
+			int pos = 0;
+			do
+			{
+				int len = _IO.Read(_sampleBuffer, pos, (int)byteCount - pos);
+				if (len <= 0)
+					throw new Exception("Incomplete file read.");
+				pos += len;
+			} while (pos < byteCount);
 			AudioSamples.BytesToFLACSamples(_sampleBuffer, 0, buff, 0,
 				sampleCount, _channelCount, _bitsPerSample);
 			_samplePos += sampleCount;
@@ -602,11 +568,6 @@ namespace CUETools.Codecs
 
 			_IO = IO != null ? IO : new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
 			_bw = new BinaryWriter(_IO);
-		}
-
-		public bool SetTags(NameValueCollection tags)
-		{
-			return false;
 		}
 
 		public void WriteChunk(uint fcc, byte[] data)
@@ -766,6 +727,219 @@ namespace CUETools.Codecs
 		public string Path { get { return _path; } }
 	}
 
+	public class UserDefinedWriter : IAudioDest
+	{
+		string _path, _encoder, _encoderParams;
+		Process _encoderProcess;
+		WAVWriter wrt;
+
+		public UserDefinedWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO, string encoder, string encoderParams)
+		{
+			_path = path;
+			_encoder = encoder;
+			_encoderParams = encoderParams;
+
+			_encoderProcess = new Process();
+			_encoderProcess.StartInfo.FileName = _encoder;
+			_encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"");
+			_encoderProcess.StartInfo.CreateNoWindow = true;
+			_encoderProcess.StartInfo.RedirectStandardInput = true;
+			_encoderProcess.StartInfo.UseShellExecute = false;
+			bool started = false;
+			Exception ex = null;
+			try
+			{
+				started = _encoderProcess.Start();
+			}
+			catch (Exception _ex)
+			{
+				ex = _ex;
+			}
+			if (!started)
+				throw new Exception(_encoder + ": " + (ex == null ? "please check the path" : ex.Message));
+			wrt = new WAVWriter(path, bitsPerSample, channelCount, sampleRate, _encoderProcess.StandardInput.BaseStream);
+		}
+
+		public void Close()
+		{
+			wrt.Close();
+			if (!_encoderProcess.HasExited)
+				_encoderProcess.WaitForExit();
+			if (_encoderProcess.ExitCode != 0)
+				throw new Exception(String.Format("{0} returned error code {1}", _encoder, _encoderProcess.ExitCode));
+		}
+
+		public void Delete()
+		{
+			Close();
+			File.Delete(_path);
+		}
+
+		public long Position
+		{
+			get
+			{
+				return wrt.Position;
+			}
+		}
+
+		public long FinalSampleCount
+		{
+			set { wrt.FinalSampleCount = value; }
+		}
+
+		public long BlockSize
+		{
+			set { }
+		}
+
+		public int BitsPerSample
+		{
+			get { return wrt.BitsPerSample; }
+		}
+
+		public void Write(int[,] buff, uint sampleCount)
+		{
+			wrt.Write(buff, sampleCount);
+			//_sampleLen += sampleCount;
+		}
+
+		public string Path { get { return _path; } }
+	}
+
+	public class UserDefinedReader : IAudioSource
+	{
+		string _path, _decoder, _decoderParams;
+		bool _apev2tags;
+		Process _decoderProcess;
+		WAVReader rdr;
+
+		public UserDefinedReader(string path, Stream IO, string decoder, string decoderParams, bool apev2tags)
+		{
+			_path = path;
+			_decoder = decoder;
+			_decoderParams = decoderParams;
+			_apev2tags = apev2tags;
+			_decoderProcess = null;
+			rdr = null;
+		}
+
+		void Initialize()
+		{
+			if (_decoderProcess != null)
+				return;
+			_decoderProcess = new Process();
+			_decoderProcess.StartInfo.FileName = _decoder;
+			_decoderProcess.StartInfo.Arguments = _decoderParams.Replace("%I", "\"" + _path + "\"");
+			_decoderProcess.StartInfo.CreateNoWindow = true;
+			_decoderProcess.StartInfo.RedirectStandardOutput = true;
+			_decoderProcess.StartInfo.UseShellExecute = false;
+			bool started = false;
+			Exception ex = null;
+			try
+			{
+				started = _decoderProcess.Start();
+			}
+			catch (Exception _ex)
+			{
+				ex = _ex;
+			}
+			if (!started)
+				throw new Exception(_decoder + ": " + (ex == null ? "please check the path" : ex.Message));
+			rdr = new WAVReader(_path, _decoderProcess.StandardOutput.BaseStream);
+		}
+
+		public void Close()
+		{
+			if (rdr != null)
+				rdr.Close();
+			if (_decoderProcess != null && !_decoderProcess.HasExited)
+				try { _decoderProcess.Kill(); _decoderProcess.WaitForExit(); }
+				catch { }
+		}
+
+		public ulong Position
+		{
+			get
+			{
+				Initialize();
+				return rdr.Position;
+			}
+			set
+			{
+				Initialize();
+				rdr.Position = value;
+			}
+		}
+
+		public ulong Length
+		{
+			get
+			{
+				Initialize();
+				return rdr.Length;
+			}
+		}
+
+		public ulong Remaining
+		{
+			get
+			{
+				Initialize();
+				return rdr.Remaining;
+			}
+		}
+
+		public int ChannelCount
+		{
+			get
+			{
+				Initialize();
+				return rdr.ChannelCount;
+			}
+		}
+
+		public int SampleRate
+		{
+			get
+			{
+				Initialize();
+				return rdr.SampleRate;
+			}
+		}
+
+		public int BitsPerSample
+		{
+			get
+			{
+				Initialize();
+				return rdr.BitsPerSample;
+			}
+		}
+
+		public int BlockAlign
+		{
+			get
+			{
+				Initialize();
+				return rdr.BlockAlign;
+			}
+		}
+
+		public uint Read(int[,] buff, uint sampleCount)
+		{
+			Initialize();
+			return rdr.Read(buff, sampleCount);
+		}
+
+		public int[,] Read(int[,] buff)
+		{
+			return AudioSamples.Read(this, buff);
+		}
+
+		public string Path { get { return _path; } }
+	}
+
 	public class AudioPipe : IAudioSource//, IDisposable
 	{
 		private readonly Queue<int[,]> _buffer = new Queue<int[,]>();
@@ -899,22 +1073,6 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public NameValueCollection Tags
-		{
-			get
-			{
-				return _source.Tags;
-				//return new NameValueCollection();
-			}
-			set
-			{
-			}
-		}
-
-		public bool UpdateTags(bool preserveTime)
-		{
-			return false;
-		}
 
 		public int[,] Read(int[,] buff)
 		{

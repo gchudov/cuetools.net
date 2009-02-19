@@ -332,10 +332,6 @@
 			ReferencedProjectIdentifier="{6458A13A-30EF-45A9-9D58-E5031B17BEE2}"
 			RelativePathToProject="..\CUETools.Codecs\CUETools.Codecs.csproj"
 		/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{CA200BCB-DFC6-4153-9BD4-785BC768B26B}"
-			RelativePathToProject="..\APETagDotNet\APETagDotNet.csproj"
-		/>
 	</References>
 	<Files>
 		<Filter

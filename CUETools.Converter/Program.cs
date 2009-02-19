@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Text;
 using CUETools.Codecs;
 using CUETools.Processor;
@@ -33,16 +34,18 @@ namespace CUETools.Converter
 			DateTime start = DateTime.Now;
 			TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
 			CUEConfig config = new CUEConfig();
+
+			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
+			config.Load(sr);
 			config.lossyWAVHybrid = false;
 #if !DEBUG
 			try
 #endif
 			{
-				IAudioSource audioSource = AudioReadWrite.GetAudioSource(sourceFile, null);
+				IAudioSource audioSource = AudioReadWrite.GetAudioSource(sourceFile, null, config);
 				IAudioDest audioDest = AudioReadWrite.GetAudioDest(destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, config);
-				int[,] buff = new int[0x1000, audioSource.ChannelCount];
+				int[,] buff = new int[0x4000, audioSource.ChannelCount];
 
-				audioDest.SetTags(audioSource.Tags);
 				Console.WriteLine("Filename  : {0}", sourceFile);
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
 
@@ -72,6 +75,16 @@ namespace CUETools.Converter
 					);
 				audioSource.Close();
 				audioDest.Close();
+
+				TagLib.UserDefined.AdditionalFileTypes.Config = config;
+				TagLib.File sourceInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(sourceFile));
+				TagLib.File destInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+				if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config))
+				{
+					sourceInfo.Tag.CopyTo(destInfo.Tag, true);
+					destInfo.Tag.Pictures = sourceInfo.Tag.Pictures;
+					destInfo.Save();
+				}
 			}
 #if !DEBUG
 			catch (Exception ex)

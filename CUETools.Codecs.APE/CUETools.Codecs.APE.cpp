@@ -3,10 +3,8 @@
 using namespace System;
 using namespace System::Text;
 using namespace System::Collections::Generic;
-using namespace System::Collections::Specialized;
 using namespace System::Runtime::InteropServices;
 using namespace System::IO;
-using namespace APETagsDotNet;
 using namespace CUETools::Codecs;
 
 #ifndef _WAVEFORMATEX_
@@ -212,33 +210,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 			} 
 		}
 
-		virtual property NameValueCollection^ Tags {
-			NameValueCollection^ get () 
-			{
-				if (!_tags) 
-				{
-					APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
-					_tags = apeTag->GetStringTags (true);
-					apeTag->Close ();
-				}
-				return _tags;
-			}
-			void set (NameValueCollection ^tags) 
-			{
-				_tags = tags;
-			}
-		}
-
-		virtual bool UpdateTags(bool preserveTime)
-		{
-			Close ();
-			APETagDotNet^ apeTag = gcnew APETagDotNet (_path, true, false);
-			apeTag->SetStringTags (_tags, true);
-			apeTag->Save();
-			apeTag->Close();
-			return true;
-		}
-
 		virtual array<Int32, 2>^ Read(array<Int32, 2>^ buff)
 		{
 			return AudioSamples::Read(this, buff);
@@ -273,7 +244,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 	private:
 		IAPEDecompress * pAPEDecompress;
 
-		NameValueCollection^ _tags;
 		Int64 _sampleCount, _sampleOffset;
 		Int32 _bitsPerSample, _channelCount, _sampleRate;
 		UInt32 _bufferOffset, _bufferLength;
@@ -305,7 +275,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 				throw gcnew Exception("Monkey's Audio doesn't support selected bits per sample value.");
 
 			_path = path;
-			_tags = gcnew NameValueCollection();
 			_winFileIO = NULL;
 
 			_compressionLevel = COMPRESSION_LEVEL_NORMAL;
@@ -342,15 +311,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 
 			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
 				throw gcnew Exception("Samples written differs from the expected sample count.");
-			}
-
-			if (_tags->Count > 0)
-			{
-				APETagDotNet^ apeTag = gcnew APETagDotNet (_IO, true);
-				apeTag->SetStringTags (_tags, true);
-				apeTag->Save();
-				apeTag->Close();
-				_tags->Clear ();
 			}
 
 			if (_IO != nullptr) 
@@ -413,12 +373,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 			} 
 		}
 
-		virtual bool SetTags (NameValueCollection^ tags) 
-		{
-			_tags = tags;
-			return true;
-		}
-
 		property Int32 CompressionLevel {
 			Int32 get() {
 				return _compressionLevel;
@@ -437,7 +391,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 		Int32 _finalSampleCount, _samplesWritten;
 		Int32 _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		Int32 _compressionLevel;
-		NameValueCollection^ _tags;
 		String^ _path;
 		Stream^ _IO;
 		GCHandle _gchIO, _gchBuffer;

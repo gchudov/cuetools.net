@@ -15,7 +15,7 @@ using System.Collections.Specialized;
 namespace CUETools.Processor
 {
 	public static class AudioReadWrite {
-		public static IAudioSource GetAudioSource(string path, Stream IO, string extension)
+		public static IAudioSource GetAudioSource(string path, Stream IO, string extension, CUEConfig config)
 		{
 			switch (extension)
 			{
@@ -34,25 +34,27 @@ namespace CUETools.Processor
 					return new TTAReader(path, IO);
 #endif
 				default:
+					if (extension == "." + config.udc1Extension && config.udc1Decoder != "")
+						return new UserDefinedReader(path, IO, config.udc1Decoder, config.udc1Params, config.udc1APEv2);
 					throw new Exception("Unsupported audio type: " + path);
 			}
 		}
 
-		public static IAudioSource GetAudioSource(string path, Stream IO)
+		public static IAudioSource GetAudioSource(string path, Stream IO, CUEConfig config)
 		{
 			string extension = Path.GetExtension(path).ToLower();
 			string filename = Path.GetFileNameWithoutExtension(path);
 			string secondExtension = Path.GetExtension(filename).ToLower();
 			if (secondExtension != ".lossy" && secondExtension != ".lwcdf")
-				return GetAudioSource(path, IO, extension);
+				return GetAudioSource(path, IO, extension, config);
 
 			string lossyPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lossy" + extension);
 			string lwcdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lwcdf" + extension);
-			IAudioSource lossySource = GetAudioSource(lossyPath, null, extension);
+			IAudioSource lossySource = GetAudioSource(lossyPath, null, extension, config);
 			IAudioSource lwcdfSource = null;
 			try
 			{
-				lwcdfSource = GetAudioSource(lwcdfPath, null, extension);
+				lwcdfSource = GetAudioSource(lwcdfPath, null, extension, config);
 			}
 			catch
 			{
@@ -91,6 +93,11 @@ namespace CUETools.Processor
 					break;
 #endif
 				default:
+					if (extension == "." + config.udc1Extension && config.udc1Encoder != "")
+					{
+						dest = new UserDefinedWriter(path, bitsPerSample, channelCount, sampleRate, null, config.udc1Encoder, config.udc1EncParams);
+						break;
+					}
 					throw new Exception("Unsupported audio type: " + path);
 			}
 			dest.FinalSampleCount = finalSampleCount;
