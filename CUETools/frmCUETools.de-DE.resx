@@ -304,6 +304,9 @@
   <data name="txtAppendFilename.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="grpAudioOutput.Text" xml:space="preserve">
+    <value>Audioausgabe</value>
+  </data>
   <data name="grpOutputPathGeneration.Text" xml:space="preserve">
     <value>Ausgabepfad</value>
   </data>
@@ -477,6 +480,18 @@
   </data>
   <data name="rbFreedbNever.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="btnCodec.Text" xml:space="preserve">
+    <value>&gt;</value>
+  </data>
+  <data name="tAKToolStripMenuItem.Text" xml:space="preserve">
+    <value>TAK</value>
+  </data>
+  <data name="mP3ToolStripMenuItem.Text" xml:space="preserve">
+    <value>MP3</value>
+  </data>
+  <data name="oGGToolStripMenuItem.Text" xml:space="preserve">
+    <value>OGG</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>FreeDB-Abfrage</value>

@@ -445,4 +445,40 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Erweiterte Einstellungen</value>
   </data>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>FLAC</value>
+  </data>
+  <data name="tabPage6.Text" xml:space="preserve">
+    <value>WavPack</value>
+  </data>
+  <data name="tabPage7.Text" xml:space="preserve">
+    <value>Monkey's Audio</value>
+  </data>
+  <data name="tabPage8.Text" xml:space="preserve">
+    <value>LossyWAV</value>
+  </data>
+  <data name="tabPage9.Text" xml:space="preserve">
+    <value>Benutzerdefiniert</value>
+  </data>
+  <data name="chkUDC1ID3v2.Text" xml:space="preserve">
+    <value>ID3v2-Tags</value>
+  </data>
+  <data name="chkUDC1APEv2.Text" xml:space="preserve">
+    <value>APEv2-Tags</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Erweiterung</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Decoder</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Encoder</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
 </root>
