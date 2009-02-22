@@ -61,6 +61,7 @@ namespace CUETools.Processor
 	{
 		None,
 		Verify,
+		VerifyPlusCRCs,
 		VerifyThenConvert,
 		VerifyAndConvert
 	}
@@ -479,9 +480,23 @@ namespace CUETools.Processor
 		public bool ContinueOperation = true;
 	}
 
+	public class CUEToolsSourceFile
+	{
+		public string path;
+		public string contents;
+		public bool isEAC;
+
+		public CUEToolsSourceFile(string _path, StreamReader reader)
+		{
+			path = _path;
+			contents = reader.ReadToEnd();
+			reader.Close();
+		}
+	}
+
 	public class CUEToolsSelectionEventArgs
 	{
-		public string[] choices;
+		public object[] choices;
 		public int selection = -1;
 	}
 
@@ -740,22 +755,13 @@ namespace CUETools.Processor
 					cueSheet = CUESheet.CreateDummyCUESheet(pathIn, "*." + _config.udc1Extension);
 				if (cueSheet == null)
 					throw new Exception("Input directory doesn't contain supported audio files.");
-				sr = new StringReader(cueSheet);				
-				if (CUEToolsSelection != null)
-				{
-					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
-					e.choices = Directory.GetFiles(pathIn, "*.log");
-					if (e.choices.Length > 0)
-					{
-						CUEToolsSelection(this, e);
-						if (e.selection != -1)
-						{
-							StreamReader logReader = new StreamReader(e.choices[e.selection], CUESheet.Encoding);
-							_eacLog = logReader.ReadToEnd();
-							logReader.Close();
-						}
-					}
-				}
+				sr = new StringReader(cueSheet);
+
+				List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+				foreach (string logPath in Directory.GetFiles(pathIn, "*.log"))
+					logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding)));
+				CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, null, false);
+				_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
 			} 
 			else if (Path.GetExtension(pathIn).ToLower() == ".zip" || Path.GetExtension(pathIn).ToLower() == ".rar")
 			{				
@@ -795,64 +801,28 @@ namespace CUETools.Processor
 					}
 				}
 
-				string cueName = null, cueText = null, logName = null;
-				List<string> cueNames = new List<string>();
-				List<string> logNames = new List<string>();
-
+				List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+				List<CUEToolsSourceFile> cueFiles = new List<CUEToolsSourceFile>();
 				foreach (string s in _archiveContents)
 				{
-					if (Path.GetExtension(s).ToLower() == ".cue")
-						cueNames.Add(s);
-					if (Path.GetExtension(s).ToLower() == ".log")
-						logNames.Add(s);
+					if (Path.GetExtension(s).ToLower() == ".cue" || Path.GetExtension(s).ToLower() == ".log")
+					{
+						Stream archiveStream = OpenArchive(s, false);
+						CUEToolsSourceFile sourceFile = new CUEToolsSourceFile(s, new StreamReader(archiveStream, CUESheet.Encoding));
+						archiveStream.Close();
+						if (Path.GetExtension(s).ToLower() == ".cue")
+							cueFiles.Add(sourceFile);
+						else
+							logFiles.Add(sourceFile);
+					}
 				}
-				if (cueNames.Count == 0)
-					throw new Exception("Input archive doesn't contain a cue sheet.");
-				if (cueNames.Count == 1)
-					cueName = cueNames[0];
-				if (cueName == null && CUEToolsSelection != null)
-				{
-					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
-					e.choices = cueNames.ToArray();
-					CUEToolsSelection(this, e);
-					if (e.selection != -1)
-						cueName = e.choices[e.selection];
-				}
-				if (cueName == null)
-					throw new Exception("Input archive contains several cue sheets.");
-
-				if (logNames.Contains(Path.ChangeExtension(cueName, ".log")))
-					logName = Path.ChangeExtension(cueName, ".log");
-				if (logName == null && CUEToolsSelection != null && logNames.Count > 0)
-				{
-					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
-					e.choices = logNames.ToArray();
-					CUEToolsSelection(this, e);
-					if (e.selection != -1)
-						logName = e.choices[e.selection];
-				}
-
-				if (cueName != null)
-				{
-					Stream archiveStream = OpenArchive(cueName, false);
-					StreamReader cueReader = new StreamReader(archiveStream, CUESheet.Encoding);
-					cueText = cueReader.ReadToEnd();
-					cueReader.Close();
-					archiveStream.Close();
-					if (cueText == "")
-						throw new Exception("Empty cue sheet.");
-				}
-				if (cueText == null)
-					throw new Exception("Input archive doesn't contain a cue sheet.");
-				if (logName != null)
-				{
-					Stream archiveStream = OpenArchive(logName, false);
-					StreamReader logReader = new StreamReader(archiveStream, CUESheet.Encoding);
-					_eacLog = logReader.ReadToEnd();
-					logReader.Close();
-					archiveStream.Close();
-				}
-				_archiveCUEpath = Path.GetDirectoryName(cueName);
+				CUEToolsSourceFile selectedCUEFile = ChooseFile(cueFiles, null, true);
+				if (selectedCUEFile == null || selectedCUEFile.contents == "")
+					throw new Exception("Input archive doesn't contain a usable cue sheet.");
+				CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, Path.GetFileNameWithoutExtension(selectedCUEFile.path), true);
+				_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
+				_archiveCUEpath = Path.GetDirectoryName(selectedCUEFile.path);
+				string cueText = selectedCUEFile.contents;
 				if (_config.autoCorrectFilenames)
 					cueText = CorrectAudioFilenames(_archiveCUEpath, cueText, false, _archiveContents);
 				sr = new StringReader(cueText);
@@ -864,29 +834,13 @@ namespace CUETools.Processor
 				else
 					sr = new StreamReader (pathIn, CUESheet.Encoding);
 
-				string logPath = Path.ChangeExtension(pathIn, ".log");
-				if (System.IO.File.Exists(logPath))
-				{
-					StreamReader logReader = new StreamReader(logPath, CUESheet.Encoding);
-					_eacLog = logReader.ReadToEnd();
-					logReader.Close();
-				}
-				else if (CUEToolsSelection != null)
-				{
-					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
-					e.choices = Directory.GetFiles(cueDir == "" ? "." : cueDir, "*.log");
-					if (e.choices.Length > 0)
-					{
-						CUEToolsSelection(this, e);
-						if (e.selection != -1)
-						{
-							StreamReader logReader = new StreamReader(e.choices[e.selection], CUESheet.Encoding);
-							_eacLog = logReader.ReadToEnd();
-							logReader.Close();
-						}
-					}
-				}
-			} else
+				List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+				foreach (string logPath in Directory.GetFiles(cueDir == "" ? "." : cueDir, "*.log"))
+					logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding)));
+				CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, Path.GetFileNameWithoutExtension(pathIn), false);
+				_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
+			}
+			else
 			{
 				string cuesheetTag = null;
 				TagLib.File fileInfo;
@@ -1332,6 +1286,43 @@ namespace CUETools.Processor
 			}
 		}
 
+		internal CUEToolsSourceFile ChooseFile(List<CUEToolsSourceFile> sourceFiles, string defaultFileName, bool quietIfSingle)
+		{
+			if (sourceFiles.Count <= 0)
+				return null;
+
+			if (defaultFileName != null)
+			{
+				CUEToolsSourceFile defaultFile = null;
+				foreach (CUEToolsSourceFile file in sourceFiles)
+					if (Path.GetFileNameWithoutExtension(file.path).ToLower() == defaultFileName.ToLower())
+					{
+						if (defaultFile != null)
+						{
+							defaultFile = null;
+							break;
+						}
+						defaultFile = file;
+					}
+				if (defaultFile != null)
+					return defaultFile;
+			}
+
+			if (quietIfSingle && sourceFiles.Count == 1)
+				return sourceFiles[0];
+
+			if (CUEToolsSelection == null)
+				return null;
+
+			CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+			e.choices = sourceFiles.ToArray();
+			CUEToolsSelection(this, e);
+			if (e.selection == -1)
+				return null;
+
+			return sourceFiles[e.selection];
+		}
+
 		internal Stream OpenArchive(string fileName, bool showProgress)
 		{
 #if !MONO
@@ -1347,9 +1338,9 @@ namespace CUETools.Processor
 			if (Path.GetExtension(_archivePath).ToLower() == ".zip")
 			{
 				SeekableZipStream zipStream = new SeekableZipStream(_archivePath, fileName);
-				zipStream.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
+				zipStream.PasswordRequired += new ZipPasswordRequiredHandler(unzip_PasswordRequired);
 				if (showProgress)
-					zipStream.ExtractionProgress += new ExtractionProgressHandler(unrar_ExtractionProgress);
+					zipStream.ExtractionProgress += new ZipExtractionProgressHandler(unzip_ExtractionProgress);
 				return zipStream;
 			}
 			throw new Exception("Unknown archive type.");
@@ -1370,16 +1361,7 @@ namespace CUETools.Processor
 #if !MONO
 		private void CDReadProgress(object sender, ReadProgressArgs e)
 		{
-			lock (this)
-			{
-				if (_stop)
-					throw new StopException();
-				if (_pause)
-				{
-					ShowProgress("Paused...", 0, 0, null, null);
-					Monitor.Wait(this);
-				}
-			}
+			CheckStop();
 			if (this.CUEToolsProgress == null)
 				return;
 			CDDriveReader audioSource = (CDDriveReader)sender;
@@ -1406,6 +1388,7 @@ namespace CUETools.Processor
 
 		private void unrar_ExtractionProgress(object sender, ExtractionProgressEventArgs e)
 		{
+			CheckStop();
 			if (this.CUEToolsProgress == null)
 				return;
 			_progress.percentTrck = e.PercentComplete/100;
@@ -1435,6 +1418,38 @@ namespace CUETools.Processor
 			throw new IOException("Password is required for extraction.");
 		}
 #endif
+
+		private void unzip_ExtractionProgress(object sender, ZipExtractionProgressEventArgs e)
+		{
+			CheckStop();
+			if (this.CUEToolsProgress == null)
+				return;
+			_progress.percentTrck = e.PercentComplete / 100;
+			this.CUEToolsProgress(this, _progress);
+		}
+
+		private void unzip_PasswordRequired(object sender, ZipPasswordRequiredEventArgs e)
+		{
+			if (_archivePassword != null)
+			{
+				e.ContinueOperation = true;
+				e.Password = _archivePassword;
+				return;
+			}
+			if (this.PasswordRequired != null)
+			{
+				ArchivePasswordRequiredEventArgs e1 = new ArchivePasswordRequiredEventArgs();
+				this.PasswordRequired(this, e1);
+				if (e1.ContinueOperation && e1.Password != "")
+				{
+					_archivePassword = e1.Password;
+					e.ContinueOperation = true;
+					e.Password = e1.Password;
+					return;
+				}
+			}
+			throw new IOException("Password is required for extraction.");
+		}
 
 		public delegate string GetStringTagProvider(TagLib.File file);
 		
@@ -1943,7 +1958,7 @@ namespace CUETools.Processor
 				}
 			}
 
-			if (_accurateRipMode != AccurateRipMode.Verify)
+			if (_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs)
 				for (int i = 0; i < destPaths.Length; i++)
 					for (int j = 0; j < _sourcePaths.Count; j++)
 						if (destPaths[i].ToLower() == _sourcePaths[j].ToLower())
@@ -1972,17 +1987,10 @@ namespace CUETools.Processor
 							break;
 						}
 						ShowProgress((string)"Contacting AccurateRip database...", 0, (dtl - minDTL) / 75.0, null, null);
+						CheckStop();
 						lock (this)
 						{
-							if (_stop)
-								throw new StopException();
-							if (_pause)
-							{
-								ShowProgress("Paused...", 0, 0, null, null);
-								Monitor.Wait(this);
-							}
-							else
-								Monitor.Wait(this, 1000);
+							Monitor.Wait(this, 1000);
 						}
 					}
 					if (_arVerify.AccResult != HttpStatusCode.OK)
@@ -1992,6 +2000,23 @@ namespace CUETools.Processor
 				}
 				else
 					_arVerify.ContactAccurateRip(_accurateRipId);
+
+				if (_accurateRipMode == AccurateRipMode.Verify)
+				{
+					if (_arVerify.AccResult != HttpStatusCode.OK)
+					{
+						if (_config.writeArLogOnVerify)
+						{
+							if (!Directory.Exists(dir))
+								Directory.CreateDirectory(dir);
+							StreamWriter sw = new StreamWriter(Path.ChangeExtension(_cuePath, ".accurip"),
+								false, CUESheet.Encoding);
+							GenerateAccurateRipLog(sw);
+							sw.Close();
+						}
+						return;
+					}
+				}
 
 				if (_accurateRipMode == AccurateRipMode.VerifyThenConvert)
 				{
@@ -2047,16 +2072,16 @@ namespace CUETools.Processor
 
 			if (!SkipOutput)
 			{
-				if (_accurateRipMode != AccurateRipMode.Verify)
+				if (_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs)
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
 				}
 				if (_isCD)
 					destLengths = CalculateAudioFileLengths(style); // need to recalc, might have changed after scanning the CD
-				if (_outputFormat != OutputAudioFormat.NoAudio || _accurateRipMode == AccurateRipMode.Verify)
-					WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, _accurateRipMode == AccurateRipMode.Verify);
-				if (_accurateRipMode != AccurateRipMode.Verify)
+				if (_outputFormat != OutputAudioFormat.NoAudio || _accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs)
+					WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, _accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs);
+				if (_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs)
 				{
 					string logContents = LOGContents();
 					string cueContents = CUESheetContents(style);
@@ -2140,11 +2165,12 @@ namespace CUETools.Processor
 				}
 			}
 
-			if (_accurateRipMode == AccurateRipMode.Verify || 
+			if (_accurateRipMode == AccurateRipMode.Verify ||
+				_accurateRipMode == AccurateRipMode.VerifyPlusCRCs ||
 				(_accurateRipMode != AccurateRipMode.None && _outputFormat != OutputAudioFormat.NoAudio))
 			{
 				ShowProgress((string)"Generating AccurateRip report...", 0, 0, null, null);
-				if (_accurateRipMode == AccurateRipMode.Verify && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
+				if ((_accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs) && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
 				{
 					uint tracksMatch;
 					int bestOffset;
@@ -2174,8 +2200,8 @@ namespace CUETools.Processor
 					}
 				}
 
-				if ((_accurateRipMode != AccurateRipMode.Verify && _config.writeArLogOnConvert) ||
-					(_accurateRipMode == AccurateRipMode.Verify && _config.writeArLogOnVerify))
+				if ((_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs && _config.writeArLogOnConvert) ||
+					((_accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs) && _config.writeArLogOnVerify))
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
@@ -2525,16 +2551,7 @@ namespace CUETools.Processor
 							samplesRemIndex -= copyCount;
 							samplesRemSource -= copyCount;
 
-							lock (this)
-							{
-								if (_stop)
-									throw new StopException();
-								if (_pause)
-								{
-									ShowProgress("Paused...", 0, 0, null, null);
-									Monitor.Wait(this);
-								}
-							}
+							CheckStop();
 						}
 					}
 				}
@@ -2734,6 +2751,20 @@ namespace CUETools.Processor
 			return fileLengths;
 		}
 
+		private void CheckStop()
+		{
+			lock (this)
+			{
+				if (_stop)
+					throw new StopException();
+				if (_pause)
+				{
+					ShowProgress("Paused...", 0, 0, null, null);
+					Monitor.Wait(this);
+				}
+			}
+		}
+
 		public void Stop() {
 			lock (this) {
 				if (_pause)
@@ -2763,6 +2794,14 @@ namespace CUETools.Processor
 		public int TrackCount {
 			get {
 				return _tracks.Count;
+			}
+		}
+
+		public CDImageLayout TOC
+		{
+			get
+			{
+				return _toc;
 			}
 		}
 
@@ -3005,123 +3044,6 @@ namespace CUETools.Processor
 				return _isCD;
 			}
 		}
-	}
-
-	public class SeekableZipStream : Stream
-	{
-		ZipFile zipFile;
-		ZipEntry zipEntry;
-		Stream zipStream;
-		long position;
-		byte[] temp;
-
-		public SeekableZipStream(string path, string fileName)
-		{
-			zipFile = new ZipFile(path);
-			zipEntry = zipFile.GetEntry(fileName);
-			if (zipEntry == null)
-				throw new Exception("Archive entry not found.");
-			zipStream = zipFile.GetInputStream(zipEntry);
-			temp = new byte[65536];
-			position = 0;
-		}
-		public override bool CanRead
-		{
-			get { return true; }
-		}
-		public override bool CanSeek
-		{
-			get { return true; }
-		}
-		public override bool CanWrite
-		{
-			get { return false; }
-		}
-		public override long Length
-		{
-			get
-			{
-				return zipEntry.Size;
-			}
-		}
-		public override long Position
-		{
-			get { return position; }
-			set { Seek(value, SeekOrigin.Begin); }
-		}
-		public override void Close()
-		{
-			zipStream.Close();
-			zipEntry = null;
-			zipFile.Close();
-		}
-		public override void Flush()
-		{
-			throw new NotSupportedException();
-		}
-		public override void SetLength(long value)
-		{
-			throw new NotSupportedException();
-		}
-		public override int Read(byte[] buffer, int offset, int count)
-		{
-			if (position == 0 && zipEntry.IsCrypted && ((ZipInputStream)zipStream).Password == null && PasswordRequired != null)
-			{
-				PasswordRequiredEventArgs e = new PasswordRequiredEventArgs();
-				PasswordRequired(this, e);
-				if (e.ContinueOperation && e.Password.Length > 0)
-					((ZipInputStream)zipStream).Password = e.Password;
-			}
-			// TODO: always save to a local temp circular buffer for optimization of the backwards seek.
-			int total = zipStream.Read(buffer, offset, count);
-			position += total;
-			if (ExtractionProgress != null)
-			{
-				ExtractionProgressEventArgs e = new ExtractionProgressEventArgs();
-				e.BytesExtracted = position;
-				e.FileName = zipEntry.Name;
-				e.FileSize = zipEntry.Size;
-				e.PercentComplete = 100.0 * position / zipEntry.Size;
-				ExtractionProgress(this, e);
-			}
-			return total;
-		}
-		public override long Seek(long offset, SeekOrigin origin)
-		{
-			long seek_to;
-			switch (origin)
-			{
-				case SeekOrigin.Begin:
-					seek_to = offset;
-					break;
-				case SeekOrigin.Current:
-					seek_to = Position + offset;
-					break;
-				case SeekOrigin.End:
-					seek_to = Length + offset;
-					break;
-				default:
-					throw new NotSupportedException();
-			}
-			if (seek_to < 0 || seek_to > Length)
-				throw new IOException("Invalid seek");
-			if (seek_to < position)
-			{
-				zipStream.Close();
-				zipStream = zipFile.GetInputStream(zipEntry);
-				position = 0;
-			}
-			while (seek_to > position)
-				if (Read(temp, 0, (int) Math.Min(seek_to - position, (long) temp.Length)) <= 0)
-					throw new IOException("Invalid seek");
-			return position;
-		}
-		public override void Write(byte[] array, int offset, int count)
-		{
-			throw new NotSupportedException();
-		}
-		public event PasswordRequiredHandler PasswordRequired;
-		public event ExtractionProgressHandler ExtractionProgress;
 	}
 
 	public class ArchiveFileAbstraction : TagLib.File.IFileAbstraction

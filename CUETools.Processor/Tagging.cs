@@ -18,6 +18,8 @@ namespace CUETools.Processor
 					xiph.SetField(tag, tags.GetValues(tag));
 				return true;
 			}
+			if (fileInfo is TagLib.Mpeg4.File)
+				return true;
 			if (fileInfo is TagLib.UserDefined.File && !(fileInfo as TagLib.UserDefined.File).SupportsAPEv2)
 			{
 				if (!(fileInfo as TagLib.UserDefined.File).SupportsID3v2)

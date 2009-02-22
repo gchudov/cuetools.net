@@ -9,6 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>JDP</RootNamespace>
     <AssemblyName>CUETools</AssemblyName>
+    <ApplicationIcon>Resources\cue.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -203,6 +204,10 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
+      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
+      <Name>CUETools.CDImage</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
@@ -221,6 +226,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\musicbrainz.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\cue.ico" />
+    <Content Include="Resources\eac.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -97,7 +97,7 @@ namespace UnRarDotNet
 					while (_buffer == null && !_eof && !_close)
 						Monitor.Wait(this);
 					if (_close)
-						throw new IOException("Decompression failed", _ex);
+						throw _ex ?? new IOException("Decompression failed");
 					if (_buffer == null)
 						return total;
 					if (_seek_to != null)

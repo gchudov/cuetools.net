@@ -296,11 +296,9 @@ namespace JDP {
 			this.Invoke((MethodInvoker)delegate()
 			{
 				frmChoice dlg = new frmChoice();
-				foreach (string s in e.choices)
-					dlg.comboRelease.Items.Add(s);
-				dlg.comboRelease.SelectedIndex = 0;
+				dlg.Choices = e.choices;
 				if (dlg.ShowDialog(this) == DialogResult.OK)
-					e.selection = dlg.comboRelease.SelectedIndex;
+					e.selection = dlg.ChosenIndex;
 			});
 		}
 
@@ -318,14 +316,14 @@ namespace JDP {
 			try
 			{
 
-				bool outputAudio = outputFormat != OutputAudioFormat.NoAudio && accurateRip != AccurateRipMode.Verify;
-				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify;
+				bool outputAudio = outputFormat != OutputAudioFormat.NoAudio && accurateRip != AccurateRipMode.Verify && accurateRip != AccurateRipMode.VerifyPlusCRCs;
+				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify && accurateRip != AccurateRipMode.VerifyPlusCRCs;
 				string pathOut = null;
 				List<object> releases = null;
 
 				cueSheet.Open(pathIn);
 
-				if (_batchPaths.Count == 0 && accurateRip != AccurateRipMode.Verify)
+				if (_batchPaths.Count == 0 && accurateRip != AccurateRipMode.Verify && accurateRip != AccurateRipMode.VerifyPlusCRCs)
 				{
 					if (rbFreedbAlways.Checked || (rbFreedbIf.Checked && 
 						(cueSheet.Artist == "" || cueSheet.Title == "" || cueSheet.Year == "")))
@@ -337,11 +335,10 @@ namespace JDP {
 					if (releases != null && releases.Count > 0)
 					{
 						frmChoice dlg = new frmChoice();
-						foreach (object release in releases)
-							dlg.comboRelease.Items.Add(release);
-						dlg.comboRelease.SelectedIndex = 0;
 						dlg.CUE = cueSheet;
-						if (dlg.ShowDialog(this) == DialogResult.Cancel)
+						dlg.Choices = releases;
+						dlgRes = dlg.ShowDialog(this);
+						if (dlgRes == DialogResult.Cancel)
 						{
 							cueSheet.Close();
 							SetupControls(false);
@@ -419,6 +416,7 @@ namespace JDP {
 							reportForm.ShowDialog(this);
 						}
 						else if (cueSheet.AccurateRip == AccurateRipMode.Verify ||
+							cueSheet.AccurateRip == AccurateRipMode.VerifyPlusCRCs ||
 						(cueSheet.AccurateRip != AccurateRipMode.None && outputFormat != OutputAudioFormat.NoAudio))
 						{
 							frmReport reportForm = new frmReport();
@@ -487,10 +485,10 @@ namespace JDP {
 		private void SetupControls(bool running) {
 			grpCUEPaths.Enabled = !running;
 			grpOutputPathGeneration.Enabled = !running;
-			grpAudioOutput.Enabled = !running && !rbArVerify.Checked;
+			grpAudioOutput.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
 			grpAccurateRip.Enabled = !running;
-			grpOutputStyle.Enabled = !running && !rbArVerify.Checked;
-			groupBox1.Enabled = !running && !rbArVerify.Checked;
+			grpOutputStyle.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
+			groupBox1.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
 			txtDataTrackLength.Enabled = !running && !rbArNone.Checked;
 			btnAbout.Enabled = !running;
 			btnSettings.Enabled = !running;
@@ -536,7 +534,8 @@ namespace JDP {
 		}
 
 		private bool CheckWriteOffset() {
-			if ((_writeOffset == 0) || rbNoAudio.Checked || rbArVerify.Checked) {
+			if ((_writeOffset == 0) || rbNoAudio.Checked || rbArVerify.Checked || rbArPlusCRC.Checked)
+			{
 				return true;
 			}
 
@@ -765,6 +764,7 @@ namespace JDP {
 			get
 			{
 				return
+					rbArPlusCRC.Checked ? AccurateRipMode.VerifyPlusCRCs :
 					rbArVerify.Checked ? AccurateRipMode.Verify :
 					rbArApplyOffset.Checked ? AccurateRipMode.VerifyThenConvert :
 					rbArAndEncode.Checked ? AccurateRipMode.VerifyAndConvert :
@@ -774,6 +774,9 @@ namespace JDP {
 			{
 				switch (value)
 				{
+					case AccurateRipMode.VerifyPlusCRCs:
+						rbArPlusCRC.Checked = true;
+						break;
 					case AccurateRipMode.Verify:
 						rbArVerify.Checked = true;
 						break;
@@ -1063,6 +1066,14 @@ namespace JDP {
 					apev2 = true;
 					id3v2 = false;
 					break;
+				case "ALAC":
+					extension = "m4a";
+					executable = "ffmpeg.exe";
+					decParams = "%I -f wav -";
+					encParams = "-i - -f ipod -acodec alac -y %O";
+					apev2 = false;
+					id3v2 = false;
+					break;
 				case "MP3":
 					extension = "mp3";
 					executable = "lame.exe";
@@ -1106,6 +1117,12 @@ namespace JDP {
 			_config.udc1ID3v2 = id3v2;
 			updateOutputStyles();
 			UpdateOutputPath();
+		}
+
+		private void rbArPlusCRC_CheckedChanged(object sender, EventArgs e)
+		{
+			UpdateOutputPath();
+			SetupControls(false);
 		}
 	}
 

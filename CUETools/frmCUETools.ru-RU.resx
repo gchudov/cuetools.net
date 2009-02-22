@@ -124,6 +124,9 @@
   <data name="btnConvert.Text" xml:space="preserve">
     <value>Поехали</value>
   </data>
+  <data name="grpCUEPaths.Text" xml:space="preserve">
+    <value>Пути к файлам</value>
+  </data>
   <data name="btnBrowseOutput.Text" xml:space="preserve">
     <value>Выбор...</value>
   </data>
@@ -142,8 +145,11 @@
   <data name="lblInput.Text" xml:space="preserve">
     <value>&amp;Вход:</value>
   </data>
-  <data name="grpCUEPaths.Text" xml:space="preserve">
-    <value>Пути к файлам</value>
+  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>130, 164</value>
+  </data>
+  <data name="grpOutputStyle.Text" xml:space="preserve">
+    <value>Стиль CUE</value>
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 17</value>
@@ -190,17 +196,17 @@
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
     <value>Создать образ диска в виде одного аудио-файла и .cue файла</value>
   </data>
-  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 164</value>
-  </data>
-  <data name="grpOutputStyle.Text" xml:space="preserve">
-    <value>Стиль CUE</value>
-  </data>
   <data name="btnAbout.Location" type="System.Drawing.Point, System.Drawing">
     <value>412, 191</value>
   </data>
   <data name="btnAbout.Text" xml:space="preserve">
     <value>О программе</value>
+  </data>
+  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
+    <value>392, 113</value>
+  </data>
+  <data name="grpOutputPathGeneration.Text" xml:space="preserve">
+    <value>Путь для выходных файлов</value>
   </data>
   <data name="txtCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 21</value>
@@ -235,20 +241,14 @@
   <data name="txtAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 21</value>
   </data>
-  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
-    <value>392, 113</value>
-  </data>
-  <data name="grpOutputPathGeneration.Text" xml:space="preserve">
-    <value>Путь для выходных файлов</value>
+  <data name="grpAudioOutput.Text" xml:space="preserve">
+    <value>Формат аудио</value>
   </data>
   <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
     <value>76, 17</value>
   </data>
   <data name="rbNoAudio.Text" xml:space="preserve">
     <value>Без аудио</value>
-  </data>
-  <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Формат аудио</value>
   </data>
   <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
     <value>412, 315</value>
@@ -267,6 +267,18 @@
   </data>
   <data name="btnSettings.Text" xml:space="preserve">
     <value>Настройки...</value>
+  </data>
+  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
+    <value>250, 211</value>
+  </data>
+  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 164</value>
+  </data>
+  <data name="rbArPlusCRC.Size" type="System.Drawing.Size, System.Drawing">
+    <value>115, 17</value>
+  </data>
+  <data name="rbArPlusCRC.Text" xml:space="preserve">
+    <value>Проверить + CRC</value>
   </data>
   <data name="rbArAndEncode.Size" type="System.Drawing.Size, System.Drawing">
     <value>138, 17</value>
@@ -310,12 +322,6 @@
   <data name="rbArNone.ToolTip" xml:space="preserve">
     <value>Сконвертировать, не обращаясь к базе данных AccurateRip</value>
   </data>
-  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 211</value>
-  </data>
-  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 164</value>
-  </data>
   <data name="btnCUECreator.Location" type="System.Drawing.Point, System.Drawing">
     <value>412, 253</value>
   </data>
@@ -339,5 +345,33 @@
   </data>
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Поехали</value>
+  </data>
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAEAEBAAAAAACABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAB
+        AAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAwMDAAMDcwADwyqYABAQEAAgICAAMDAwAERERABYW
+        FgAcHBwAIiIiACkpKQBVVVUATU1NAEJCQgA5OTkAgHz/AFBQ/wCTANYA/+zMAMbW7wDW5+cAkKmtAAAA
+        MwAAAGYAAACZAAAAzAAAMwAAADMzAAAzZgAAM5kAADPMAAAz/wAAZgAAAGYzAABmZgAAZpkAAGbMAABm
+        /wAAmQAAAJkzAACZZgAAmZkAAJnMAACZ/wAAzAAAAMwzAADMZgAAzJkAAMzMAADM/wAA/2YAAP+ZAAD/
+        zAAzAAAAMwAzADMAZgAzAJkAMwDMADMA/wAzMwAAMzMzADMzZgAzM5kAMzPMADMz/wAzZgAAM2YzADNm
+        ZgAzZpkAM2bMADNm/wAzmQAAM5kzADOZZgAzmZkAM5nMADOZ/wAzzAAAM8wzADPMZgAzzJkAM8zMADPM
+        /wAz/zMAM/9mADP/mQAz/8wAM///AGYAAABmADMAZgBmAGYAmQBmAMwAZgD/AGYzAABmMzMAZjNmAGYz
+        mQBmM8wAZjP/AGZmAABmZjMAZmZmAGZmmQBmZswAZpkAAGaZMwBmmWYAZpmZAGaZzABmmf8AZswAAGbM
+        MwBmzJkAZszMAGbM/wBm/wAAZv8zAGb/mQBm/8wAzAD/AP8AzACZmQAAmTOZAJkAmQCZAMwAmQAAAJkz
+        MwCZAGYAmTPMAJkA/wCZZgAAmWYzAJkzZgCZZpkAmWbMAJkz/wCZmTMAmZlmAJmZmQCZmcwAmZn/AJnM
+        AACZzDMAZsxmAJnMmQCZzMwAmcz/AJn/AACZ/zMAmcxmAJn/mQCZ/8wAmf//AMwAAACZADMAzABmAMwA
+        mQDMAMwAmTMAAMwzMwDMM2YAzDOZAMwzzADMM/8AzGYAAMxmMwCZZmYAzGaZAMxmzACZZv8AzJkAAMyZ
+        MwDMmWYAzJmZAMyZzADMmf8AzMwAAMzMMwDMzGYAzMyZAMzMzADMzP8AzP8AAMz/MwCZ/2YAzP+ZAMz/
+        zADM//8AzAAzAP8AZgD/AJkAzDMAAP8zMwD/M2YA/zOZAP8zzAD/M/8A/2YAAP9mMwDMZmYA/2aZAP9m
+        zADMZv8A/5kAAP+ZMwD/mWYA/5mZAP+ZzAD/mf8A/8wAAP/MMwD/zGYA/8yZAP/MzAD/zP8A//8zAMz/
+        ZgD//5kA///MAGZm/wBm/2YAZv//AP9mZgD/Zv8A//9mACEApQBfX18Ad3d3AIaGhgCWlpYAy8vLALKy
+        sgDX19cA3d3dAOPj4wDq6uoA8fHxAPj4+ADw+/8ApKCgAICAgAAAAP8AAP8AAAD//wD/AAAA/wD/AP//
+        AAD///8ACgoKCgrr6+vr6+sKCgoKCgoKCu/r7/Pz8/Pv6+8KCgoKCuvr7/Pz8/Pz8+/r6woKCu/r8/Pz
+        8/Pz8/Pz8+vvCu/r8/Pz8/Pz8/Pz8/Pz6+/r7/Pz8/Pz8/Pz8/Pz8+/r6/PrCgrz6woK6/MKCgrz6+vz
+        CvPz8wrz8wrzCvPz8+vr8wrz8/MK8/MK8woK8/Pr6/MK8/PzCvPzCvMK8/Pz6+vv6woK8wrz8wrzCgoK
+        7+vv6/Pz8/Pz8/Pz8/Pz8+vvCu/r8/Pz8/Pz8/Pz8+vvCgoK6+vv8/Pz8/Pz7+vrCgoKCgrv6+/z8/Pz
+        7+vvCgoKCgoKCu/r6+vr6+vvCgoKCvgfAADgBwAAwAMAAIABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAIABAADAAwAA4AcAAPAPAAA=
+</value>
   </data>
 </root>

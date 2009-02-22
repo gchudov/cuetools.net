@@ -329,7 +329,7 @@ namespace TagLib.UserDefined {
 
 		private static TagLib.File UserDefinedResolver(TagLib.File.IFileAbstraction abstraction, string mimetype, TagLib.ReadStyle style)
 		{
-			if (mimetype == "taglib/flac" || mimetype == "taglib/wv" || mimetype == "taglib/ape" || mimetype == "taglib/wav" || mimetype == "taglib/ogg")
+			if (mimetype == "taglib/flac" || mimetype == "taglib/wv" || mimetype == "taglib/ape" || mimetype == "taglib/wav" || mimetype == "taglib/ogg" || mimetype == "taglib/m4a")
 				return null;
 			if (mimetype == "taglib/tta")
 				return new File(abstraction, style, true, false);

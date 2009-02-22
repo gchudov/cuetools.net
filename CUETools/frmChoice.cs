@@ -20,68 +20,215 @@ namespace JDP
 
 		public CUESheet CUE;
 
-		private void comboRelease_DrawItem(object sender, DrawItemEventArgs e)
-		{
-			e.DrawBackground();
-			StringFormat format = new StringFormat();
-			format.FormatFlags = StringFormatFlags.NoClip;
-			format.Alignment = StringAlignment.Near;
-			if (e.Index >= 0 && e.Index < comboRelease.Items.Count)
-			{
-				string text = null;
-				Bitmap ImageToDraw = null;
-				if (comboRelease.Items[e.Index] is string)
-				{
-					text = (string) comboRelease.Items[e.Index];
-					//comboRelease.GetItemText(comboRelease.Items[e.Index]);
-				}
-				else if (comboRelease.Items[e.Index] is MusicBrainz.Release)
-				{
-					ImageToDraw = Properties.Resources.musicbrainz;
-					MusicBrainz.Release release = (MusicBrainz.Release) comboRelease.Items[e.Index];
-					text = String.Format("{0}{1} - {2}", 
-						release.GetEvents().Count > 0 ? release.GetEvents()[0].Date.Substring(0, 4) + ": " : "",
-						release.GetArtist(),
-						release.GetTitle());
-				}
-				else if (comboRelease.Items[e.Index] is CDEntry)
-				{
-					ImageToDraw = Properties.Resources.freedb;
-					CDEntry cdEntry = (CDEntry)comboRelease.Items[e.Index];
-					text = String.Format("{0}: {1} - {2}",
-						cdEntry.Year,
-						cdEntry.Artist,
-						cdEntry.Title);
-				}
-				if (ImageToDraw != null)
-					e.Graphics.DrawImage(ImageToDraw, new Rectangle(e.Bounds.X, e.Bounds.Y, e.Bounds.Height, e.Bounds.Height));
-					//e.Graphics.DrawImage(ImageToDraw, new Rectangle(e.Bounds.X + e.Bounds.Width - ImageToDraw.Width, e.Bounds.Y, ImageToDraw.Width, e.Bounds.Height));
-				if (text != null)
-					e.Graphics.DrawString(text, e.Font, new SolidBrush(e.ForeColor), new RectangleF((float)e.Bounds.X + e.Bounds.Height, (float)e.Bounds.Y, (float)(e.Bounds.Width - e.Bounds.Height), (float)e.Bounds.Height), format);
-			}
-			//e.DrawFocusRectangle();
-		}
-
 		private void frmChoice_Load(object sender, EventArgs e)
 		{
 			button1.Select();
 		}
 
+		public IEnumerable<object> Choices
+		{
+			set
+			{
+				bool isCD = false;
+				foreach(object i in value)
+				{
+					string text = "";
+					int image = -1;
+					if (i is string)
+						text = i as string;
+					else if (i is CUEToolsSourceFile)
+					{
+						text = (i as CUEToolsSourceFile).path;
+						image = 0;
+					}
+					else if (i is MusicBrainz.Release)
+					{
+						MusicBrainz.Release release = i as MusicBrainz.Release;
+						text = String.Format("{0}: {1} - {2}",
+							release.GetEvents().Count > 0 ? release.GetEvents()[0].Date.Substring(0, 4) : "YYYY",
+							release.GetArtist(),
+							release.GetTitle());
+						image = 2;
+						isCD = true;
+					}
+					else if (i is Freedb.CDEntry)
+					{
+						CDEntry cdEntry = i as CDEntry;
+						text = String.Format("{0}: {1} - {2}",
+							cdEntry.Year,
+							cdEntry.Artist,
+							cdEntry.Title);
+						image = 1;
+						isCD = true;
+					}
+					ListViewItem item = new ListViewItem(text, image);
+					item.Tag = i;
+					listChoices.Items.Add(item);
+				}
+				if (isCD)
+				{
+					if (CUE == null)
+						throw new Exception("selecting release information, but cue sheet has not been set");
+					string text = String.Format("{0}: {1} - {2}",
+						CUE.Year == "" ? "YYYY" : CUE.Year,
+						CUE.Artist == "" ? "Unknown Artist" : CUE.Artist,
+						CUE.Title == "" ? "Unknown Title" : CUE.Title);
+					ListViewItem item = new ListViewItem(text, 3);
+					item.Tag = CUE;
+					listChoices.Items.Insert(0, item);
+					textBox1.Hide();
+					listTracks.Show();
+					btnEdit.Show();
+				}
+				if (listChoices.Items.Count > 0)
+					listChoices.Items[0].Selected = true;
+			}
+		}
+
+		public int ChosenIndex
+		{
+			get
+			{
+				return listChoices.SelectedItems.Count > 0 ? listChoices.SelectedItems[0].Index : -1;
+			}
+		}
+
+		public object ChosenObject
+		{
+			get
+			{
+				return listChoices.SelectedItems.Count > 0 ? listChoices.SelectedItems[0].Tag : null;
+			}
+		}
+
 		private void frmChoice_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK)
+			object item = ChosenObject;
+			if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK || item == null)
 				return;
-			if (comboRelease.SelectedItem != null && comboRelease.SelectedItem is MusicBrainz.Release)
-				CUE.FillFromMusicBrainz((MusicBrainz.Release)comboRelease.SelectedItem);
+			if (item is MusicBrainz.Release)
+				CUE.FillFromMusicBrainz((MusicBrainz.Release)item);
+			else if (item is CDEntry)
+				CUE.FillFromFreedb((CDEntry)item);
+		}
+
+		private void listChoices_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			object item = ChosenObject;
+			if (item != null && item is CUEToolsSourceFile)
+				textBox1.Text = (item as CUEToolsSourceFile).contents;
+			else if (item != null && item is MusicBrainz.Release)
+			{
+				MusicBrainz.Release release = item as MusicBrainz.Release;
+				listTracks.Items.Clear();
+				foreach (MusicBrainz.Track track in release.GetTracks())
+				{
+					listTracks.Items.Add(new ListViewItem(new string[] { 
+						track.GetTitle(), 
+						(listTracks.Items.Count + 1).ToString(),
+						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
+					}));
+				}
+			}
+			else if (item != null && item is CDEntry)
+			{
+				CDEntry cdEntry = item as CDEntry;
+				listTracks.Items.Clear();
+				foreach (Freedb.Track track in cdEntry.Tracks)
+				{
+					listTracks.Items.Add(new ListViewItem(new string[] { 
+						track.Title, 						
+						(listTracks.Items.Count + 1).ToString(),
+						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
+					}));
+				}
+			}
+			else if (item != null && item is CUESheet)
+			{
+				CUESheet cueSheet = item as CUESheet;
+				listTracks.Items.Clear();
+				foreach (TrackInfo track in cueSheet.Tracks)
+				{
+					listTracks.Items.Add(new ListViewItem(new string[] { 
+						track.Title, 						
+						(listTracks.Items.Count + 1).ToString(),
+						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
+					}));
+				}
+			}
 			else
-				if (comboRelease.SelectedItem != null && comboRelease.SelectedItem is CDEntry)
-					CUE.FillFromFreedb((CDEntry)comboRelease.SelectedItem);
-				else
-					return;
+			{
+				listTracks.Items.Clear();
+				textBox1.Text = "";
+			}
+		}
+
+		private void btnEdit_Click(object sender, EventArgs e)
+		{
+			object item = ChosenObject;
+			if (item == null || CUE == null)
+				return;
+			if (item is MusicBrainz.Release)
+				CUE.FillFromMusicBrainz((MusicBrainz.Release)item);
+			else if (item is CDEntry)
+				CUE.FillFromFreedb((CDEntry)item);
+			else if (!(item is CUESheet))
+				return;
+			listChoices.Items[0].Selected = true;
+			listChoices.Items[0].Text = String.Format("{0}: {1} - {2}",
+				CUE.Year == "" ? "YYYY" : CUE.Year,
+				CUE.Artist == "" ? "Unknown Artist" : CUE.Artist,
+				CUE.Title == "" ? "Unknown Title" : CUE.Title);
 			frmProperties frm = new frmProperties();
 			frm.CUE = CUE;
-			if (frm.ShowDialog(this) != DialogResult.OK)
-				e.Cancel = true;
+			if (frm.ShowDialog(this) == DialogResult.OK)
+				listChoices.Items[0].Text = String.Format("{0}: {1} - {2}",
+					CUE.Year == "" ? "YYYY" : CUE.Year,
+					CUE.Artist == "" ? "Unknown Artist" : CUE.Artist,
+					CUE.Title == "" ? "Unknown Title" : CUE.Title);
+		}
+
+		private void listTracks_DoubleClick(object sender, EventArgs e)
+		{
+			listTracks.FocusedItem.BeginEdit();
+		}
+
+		private void listTracks_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.F2)
+				listTracks.FocusedItem.BeginEdit();
+		}
+
+		private void listTracks_BeforeLabelEdit(object sender, LabelEditEventArgs e)
+		{
+			object item = ChosenObject;
+			if (item == null || !(item is CUESheet))
+			{
+				e.CancelEdit = true;
+				return;
+			}
+		}
+
+		private void listTracks_AfterLabelEdit(object sender, LabelEditEventArgs e)
+		{
+			if (e.Label != null)
+			{
+				CUE.Tracks[e.Item].Title = e.Label;
+			}
+		}
+
+		private void listTracks_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+		{
+			if (e.KeyCode == Keys.Enter)
+			{
+			    if (listTracks.FocusedItem.Index + 1 < listTracks.Items.Count) // && e.editing
+			    {
+			        listTracks.FocusedItem.Selected = false;
+			        listTracks.FocusedItem = listTracks.Items[listTracks.FocusedItem.Index + 1];
+			        listTracks.FocusedItem.Selected = true;
+			        listTracks.FocusedItem.BeginEdit();
+			    }
+			}
 		}
 	}
 }
