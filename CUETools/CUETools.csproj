@@ -229,6 +229,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\cue.ico" />
+    <Content Include="Resources\cue_32.ico" />
     <Content Include="Resources\eac.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

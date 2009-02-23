@@ -304,13 +304,19 @@
   <data name="txtAppendFilename.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Audioausgabe</value>
-  </data>
   <data name="grpOutputPathGeneration.Text" xml:space="preserve">
     <value>Ausgabepfad</value>
   </data>
   <data name="grpOutputPathGeneration.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnCodec.Location" type="System.Drawing.Point, System.Drawing">
+    <value>61, 117</value>
+  </data>
+  <data name="btnCodec.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbUDC1.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="rbTTA.ToolTip" xml:space="preserve">
@@ -369,6 +375,9 @@
   </data>
   <data name="btnSettings.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="rbArPlusCRC.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 88</value>
   </data>
   <data name="rbArAndEncode.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 37</value>
@@ -481,23 +490,42 @@
   <data name="rbFreedbNever.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="btnCodec.Text" xml:space="preserve">
-    <value>&gt;</value>
-  </data>
-  <data name="tAKToolStripMenuItem.Text" xml:space="preserve">
-    <value>TAK</value>
-  </data>
-  <data name="mP3ToolStripMenuItem.Text" xml:space="preserve">
-    <value>MP3</value>
-  </data>
-  <data name="oGGToolStripMenuItem.Text" xml:space="preserve">
-    <value>OGG</value>
-  </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>FreeDB-Abfrage</value>
   </data>
   <data name="groupBox1.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="contextMenuStripUDC.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAEAEBAAAAAACABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAB
+        AAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAwMDAAMDcwADwyqYABAQEAAgICAAMDAwAERERABYW
+        FgAcHBwAIiIiACkpKQBVVVUATU1NAEJCQgA5OTkAgHz/AFBQ/wCTANYA/+zMAMbW7wDW5+cAkKmtAAAA
+        MwAAAGYAAACZAAAAzAAAMwAAADMzAAAzZgAAM5kAADPMAAAz/wAAZgAAAGYzAABmZgAAZpkAAGbMAABm
+        /wAAmQAAAJkzAACZZgAAmZkAAJnMAACZ/wAAzAAAAMwzAADMZgAAzJkAAMzMAADM/wAA/2YAAP+ZAAD/
+        zAAzAAAAMwAzADMAZgAzAJkAMwDMADMA/wAzMwAAMzMzADMzZgAzM5kAMzPMADMz/wAzZgAAM2YzADNm
+        ZgAzZpkAM2bMADNm/wAzmQAAM5kzADOZZgAzmZkAM5nMADOZ/wAzzAAAM8wzADPMZgAzzJkAM8zMADPM
+        /wAz/zMAM/9mADP/mQAz/8wAM///AGYAAABmADMAZgBmAGYAmQBmAMwAZgD/AGYzAABmMzMAZjNmAGYz
+        mQBmM8wAZjP/AGZmAABmZjMAZmZmAGZmmQBmZswAZpkAAGaZMwBmmWYAZpmZAGaZzABmmf8AZswAAGbM
+        MwBmzJkAZszMAGbM/wBm/wAAZv8zAGb/mQBm/8wAzAD/AP8AzACZmQAAmTOZAJkAmQCZAMwAmQAAAJkz
+        MwCZAGYAmTPMAJkA/wCZZgAAmWYzAJkzZgCZZpkAmWbMAJkz/wCZmTMAmZlmAJmZmQCZmcwAmZn/AJnM
+        AACZzDMAZsxmAJnMmQCZzMwAmcz/AJn/AACZ/zMAmcxmAJn/mQCZ/8wAmf//AMwAAACZADMAzABmAMwA
+        mQDMAMwAmTMAAMwzMwDMM2YAzDOZAMwzzADMM/8AzGYAAMxmMwCZZmYAzGaZAMxmzACZZv8AzJkAAMyZ
+        MwDMmWYAzJmZAMyZzADMmf8AzMwAAMzMMwDMzGYAzMyZAMzMzADMzP8AzP8AAMz/MwCZ/2YAzP+ZAMz/
+        zADM//8AzAAzAP8AZgD/AJkAzDMAAP8zMwD/M2YA/zOZAP8zzAD/M/8A/2YAAP9mMwDMZmYA/2aZAP9m
+        zADMZv8A/5kAAP+ZMwD/mWYA/5mZAP+ZzAD/mf8A/8wAAP/MMwD/zGYA/8yZAP/MzAD/zP8A//8zAMz/
+        ZgD//5kA///MAGZm/wBm/2YAZv//AP9mZgD/Zv8A//9mACEApQBfX18Ad3d3AIaGhgCWlpYAy8vLALKy
+        sgDX19cA3d3dAOPj4wDq6uoA8fHxAPj4+ADw+/8ApKCgAICAgAAAAP8AAP8AAAD//wD/AAAA/wD/AP//
+        AAD///8ACgoKCgrr6+vr6+sKCgoKCgoKCu/r7/Pz8/Pv6+8KCgoKCuvr7/Pz8/Pz8+/r6woKCu/r8/Pz
+        8/Pz8/Pz8+vvCu/r8/Pz8/Pz8/Pz8/Pz6+/r7/Pz8/Pz8/Pz8/Pz8+/r6/PrCgrz6woK6/MKCgrz6+vz
+        CvPz8wrz8wrzCvPz8+vr8wrz8/MK8/MK8woK8/Pr6/MK8/PzCvPzCvMK8/Pz6+vv6woK8wrz8wrzCgoK
+        7+vv6/Pz8/Pz8/Pz8/Pz8+vvCu/r8/Pz8/Pz8/Pz8+vvCgoK6+vv8/Pz8/Pz7+vrCgoKCgrv6+/z8/Pz
+        7+vvCgoKCgoKCu/r6+vr6+vvCgoKCvgfAADgBwAAwAMAAIABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAIABAADAAwAA4AcAAPAPAAA=
+</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>CUE-Tools</value>

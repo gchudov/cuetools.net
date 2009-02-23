@@ -1189,6 +1189,7 @@ namespace CUETools.Processor
 							else
 								if (lineStr.StartsWith("TOC of the extracted CD")
 									|| lineStr.StartsWith("Exact Audio Copy")
+									|| lineStr.StartsWith("EAC extraction logfile")
 									|| lineStr.StartsWith("CUERipper"))
 									isEACLog = true;
 						}
@@ -1250,13 +1251,21 @@ namespace CUETools.Processor
 					if (isEACLog && trNo <= TrackCount)
 					{
 						string[] s = { "Copy CRC ", "CRC копии" };
+						string[] s1 = { "CRC" };
 						string[] n = lineStr.Split(s, StringSplitOptions.None);
 						uint crc;
-						if (n.Length == 2 && uint.TryParse(n[1], NumberStyles.HexNumber, CultureInfo.CurrentCulture, out crc))
+						if (n.Length == 2 && uint.TryParse(n[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out crc))
 							_arVerify.CRCLOG(trNo++, crc);
+						else if (n.Length == 1)
+						{
+							n = lineStr.Split(s1, StringSplitOptions.None);
+							if (n.Length == 2 && n[0].Trim() == "" && uint.TryParse(n[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out crc))
+								_arVerify.CRCLOG(trNo++, crc);
+						}
 					}
 					else
-						if (lineStr.StartsWith("Exact Audio Copy"))
+						if (lineStr.StartsWith("Exact Audio Copy")
+							|| lineStr.StartsWith("EAC extraction logfile"))
 							isEACLog = true;
 				}
 				if (trNo == 2)

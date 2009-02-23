@@ -148,7 +148,7 @@
     <value>180, 228</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>About CUETools v1.9.4</value>
+    <value>About CUETools v1.9.5</value>
   </data>
   <data name="linkLabel2.LinkArea" type="System.Windows.Forms.LinkArea, System.Windows.Forms">
     <value>36, 28</value>
@@ -272,5 +272,8 @@ hdcd.dll (c) Christopher Key</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
+  </metadata>
+  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>Russian (Russia)</value>
   </metadata>
 </root>

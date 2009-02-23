@@ -158,7 +158,8 @@ namespace CUERipper
             resources.GetString("comboCodec.Items"),
             resources.GetString("comboCodec.Items1"),
             resources.GetString("comboCodec.Items2"),
-            resources.GetString("comboCodec.Items3")});
+            resources.GetString("comboCodec.Items3"),
+            resources.GetString("comboCodec.Items4")});
 			resources.ApplyResources(this.comboCodec, "comboCodec");
 			this.comboCodec.Name = "comboCodec";
 			// 

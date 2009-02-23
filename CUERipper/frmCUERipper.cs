@@ -66,9 +66,53 @@ namespace CUERipper
 			//{
 			//}
 
-			foreach(char drive in CDDriveReader.DrivesAvailable())
+			UpdateDrives();
+			comboLossless.SelectedIndex = 0;
+			comboCodec.SelectedIndex = 0;
+			comboImage.SelectedIndex = 0;
+		}
+
+		#region private constants
+		/// <summary>
+		/// The window message of interest, device change
+		/// </summary>
+		const int WM_DEVICECHANGE = 0x0219;
+		const ushort DBT_DEVICEARRIVAL = 0x8000;
+		const ushort DBT_DEVICEREMOVECOMPLETE = 0x8004;
+		const ushort DBT_DEVNODES_CHANGED = 0x0007;
+		#endregion
+
+		/// <summary>
+		/// This method is called when a window message is processed by the dotnet application
+		/// framework.  We override this method and look for the WM_DEVICECHANGE message. All
+		/// messages are delivered to the base class for processing, but if the WM_DEVICECHANGE
+		/// method is seen, we also alert any BWGBURN programs that the media in the drive may
+		/// have changed.
+		/// </summary>
+		/// <param name="m">the windows message being processed</param>
+		protected override void WndProc(ref Message m)
+		{
+			if (m.Msg == WM_DEVICECHANGE)
+			{
+				int val = m.WParam.ToInt32();
+				if (val == DBT_DEVICEARRIVAL || val == DBT_DEVICEREMOVECOMPLETE)
+					UpdateDrive();
+				else if (val == DBT_DEVNODES_CHANGED)
+					UpdateDrives();
+			}
+			base.WndProc(ref m);
+		}
+
+		private void UpdateDrives()
+		{
+			buttonGo.Enabled = false;
+			comboDrives.Items.Clear();
+			comboRelease.Items.Clear();
+			listTracks.Items.Clear();
+			foreach (char drive in CDDriveReader.DrivesAvailable())
 			{
 				CDDriveReader reader = new CDDriveReader();
+				string arName = null;
 				int driveOffset;
 				try
 				{
@@ -77,7 +121,16 @@ namespace CUERipper
 				catch
 				{
 				}
-				if (!AccurateRipVerify.FindDriveReadOffset(reader.ARName, out driveOffset))
+				try
+				{
+					arName = reader.ARName;
+				}
+				catch (Exception ex)
+				{
+					comboDrives.Items.Add(drive + ": " + ex.Message);
+					continue;
+				}
+				if (!AccurateRipVerify.FindDriveReadOffset(arName, out driveOffset))
 					; //throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
 				reader.DriveOffset = driveOffset;
 				comboDrives.Items.Add(reader);
@@ -85,9 +138,6 @@ namespace CUERipper
 			if (comboDrives.Items.Count == 0)
 				comboDrives.Items.Add("No CD drives found");
 			comboDrives.SelectedIndex = 0;
-			comboLossless.SelectedIndex = 0;
-			comboCodec.SelectedIndex = 0;
-			comboImage.SelectedIndex = 0;
 		}
 
 		private void SetupControls ()
@@ -196,6 +246,7 @@ namespace CUERipper
 				(string)comboCodec.SelectedItem == "flac" ? OutputAudioFormat.FLAC :
 				(string)comboCodec.SelectedItem == "wv" ? OutputAudioFormat.WavPack :
 				(string)comboCodec.SelectedItem == "ape" ? OutputAudioFormat.APE :
+				(string)comboCodec.SelectedItem == "tta" ? OutputAudioFormat.TTA :
 				OutputAudioFormat.NoAudio;
 			_cueSheet.GenerateFilenames(_format, comboLossless.SelectedIndex != 0, _pathOut);
 
@@ -224,7 +275,7 @@ namespace CUERipper
 			e.Value = string.Format("{0}{1} - {2}", r.cueSheet.Year != "" ? r.cueSheet.Year + ": " : "", r.cueSheet.Artist, r.cueSheet.Title);
 		}
 
-		private void comboRelease_SelectedIndexChanged(object sender, EventArgs e)
+		private void UpdateRelease()
 		{
 			listTracks.Items.Clear();
 			if (comboRelease.SelectedItem == null || comboRelease.SelectedItem is string)
@@ -236,6 +287,11 @@ namespace CUERipper
 					_reader.TOC[i].Number.ToString(), 
 					_reader.TOC[i].StartMSF, 
 					_reader.TOC[i].LengthMSF }));
+		}
+
+		private void comboRelease_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			UpdateRelease();
 		}
 
 		private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
@@ -405,12 +461,16 @@ namespace CUERipper
 			});
 		}
 
-		private void comboDrives_SelectedIndexChanged(object sender, EventArgs e)
+		private void UpdateDrive()
 		{
+			buttonGo.Enabled = false;
 			comboRelease.Items.Clear();
 			listTracks.Items.Clear();
 			if (comboDrives.SelectedItem is string)
+			{
+				_reader = null;
 				return;
+			}
 			_reader = (CDDriveReader)comboDrives.SelectedItem;
 			try
 			{
@@ -429,12 +489,17 @@ namespace CUERipper
 				comboRelease.SelectedIndex = 0;
 				return;
 			}
-			comboRelease_SelectedIndexChanged(sender, e);
+			UpdateRelease();
 			_workThread = new Thread(Lookup);
 			_workThread.Priority = ThreadPriority.BelowNormal;
 			_workThread.IsBackground = true;
 			SetupControls();
 			_workThread.Start(_reader);
+		}
+
+		private void comboDrives_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			UpdateDrive();
 		}
 
 		private void listTracks_DoubleClick(object sender, EventArgs e)

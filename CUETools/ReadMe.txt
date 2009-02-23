@@ -30,6 +30,7 @@ characters and replace spaces audio filename settings also apply to %D and %C
 here:
   %D - Album artist
   %C - Album title
+  %Y - Album release year
   %F - Filename of the input CUE sheet without extension
   %0 - Full directory of the input CUE sheet
   %x (where x is an integer) - Part of the directory of the input CUE sheet.

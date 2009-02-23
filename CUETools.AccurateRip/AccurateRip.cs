@@ -16,6 +16,7 @@ namespace CUETools.AccurateRip
 			_toc = toc;
 			_accDisks = new List<AccDisk>();
 			_crc32 = new Crc32();
+			_hasLogCRC = false;
 			_CRCLOG = new uint[_toc.AudioTracks + 1];
 			for (int i = 0; i <= _toc.AudioTracks; i++)
 				_CRCLOG[i] = 0;
@@ -170,6 +171,7 @@ namespace CUETools.AccurateRip
 
 		public void CRCLOG(int iTrack, uint value)
 		{
+			_hasLogCRC = true;
 			_CRCLOG[iTrack] = value;
 		}
 
@@ -456,7 +458,7 @@ namespace CUETools.AccurateRip
 			if (CRC32(0) != 0)
 			{
 				sw.WriteLine("");
-				sw.WriteLine("Track\t[ CRC32  ]\t[W/O NULL]\t[  LOG   ]");
+				sw.WriteLine("Track\t[ CRC32  ]\t[W/O NULL]\t{0:10}", _hasLogCRC ? "[  LOG   ]" : "");
 				sw.WriteLine(String.Format(" --\t[{0:X8}]\t[{1:X8}]\t{2:10}", CRC32(0), CRCWONULL(0), CRCLOG(0) == CRC32(0) ? "  CRC32   " : CRCLOG(0) == CRCWONULL(0) ? " W/O NULL " : CRCLOG(0) == 0 ? "" : String.Format("[{0:X8}]", CRCLOG(0))));
 				for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
 					sw.WriteLine(String.Format(" {0:00}\t[{1:X8}]\t[{2:X8}]\t{3:10}", iTrack, CRC32(iTrack), CRCWONULL(iTrack), CRCLOG(iTrack) == CRC32(iTrack)  ? "  CRC32   " : CRCLOG(iTrack) == CRCWONULL(iTrack) ? " W/O NULL " : CRCLOG(iTrack) == 0 ? "" : String.Format("[{0:X8}]", CRCLOG(iTrack))));
@@ -614,6 +616,8 @@ namespace CUETools.AccurateRip
 		private uint[] _backupCRC;
 
 		Crc32 _crc32;
+
+		private bool _hasLogCRC;
 
 		private const int _arOffsetRange = 5 * 588 - 1;
 	}
