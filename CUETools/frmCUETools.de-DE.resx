@@ -172,6 +172,9 @@
   <data name="txtInputPath.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="rbUDC1.Text" xml:space="preserve">
+    <value>eigene</value>
+  </data>
   <data name="grpCUEPaths.Text" xml:space="preserve">
     <value>CUE-Pfade</value>
   </data>
@@ -419,10 +422,16 @@
     <value>152, 17</value>
   </data>
   <data name="rbArVerify.Text" xml:space="preserve">
-    <value>&amp;Verifizieren, nicht kodieren</value>
+    <value>&amp;Verifiziere nur AR</value>
   </data>
   <data name="rbArVerify.ToolTip" xml:space="preserve">
     <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image anhand dieser zu verifizieren</value>
+  </data>
+  <data name="rbArPlusCRC.Text" xml:space="preserve">
+    <value>Verifiziere AR + CRCs</value>
+  </data>
+  <data name="rbArPlusCRC.ToolTip" xml:space="preserve">
+    <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image sowohl anhand dieser als auch anhand der CRC-Werte zu verifizieren</value>
   </data>
   <data name="rbArNone.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 54</value>

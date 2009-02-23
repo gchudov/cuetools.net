@@ -181,6 +181,12 @@
   <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="chkOverwriteTags.Text" xml:space="preserve">
+    <value>CUE-Daten überschreiben</value>
+  </data>
+  <data name="chkOverwriteTags.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkEmbedLog.Size" type="System.Drawing.Size, System.Drawing">
     <value>150, 17</value>
   </data>
@@ -434,7 +440,7 @@
     <value>Nicht mehr nach HDCD-Informationen suchen, wenn sie in den ersten 10 Sekunden der CD nicht zu finden sind</value>
   </data>
   <data name="chkHDCD24bit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 17</value>
+    <value>180, 17</value>
   </data>
   <data name="chkHDCD24bit.Text" xml:space="preserve">
     <value>Speichere als 24-Bit-"verlustfrei"</value>
