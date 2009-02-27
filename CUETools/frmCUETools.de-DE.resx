@@ -172,9 +172,6 @@
   <data name="txtInputPath.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbUDC1.Text" xml:space="preserve">
-    <value>eigene</value>
-  </data>
   <data name="grpCUEPaths.Text" xml:space="preserve">
     <value>CUE-Pfade</value>
   </data>
@@ -319,6 +316,12 @@
   <data name="btnCodec.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="rbUDC1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>57, 17</value>
+  </data>
+  <data name="rbUDC1.Text" xml:space="preserve">
+    <value>eigene</value>
+  </data>
   <data name="rbUDC1.ToolTip" xml:space="preserve">
     <value />
   </data>
@@ -385,6 +388,15 @@
   <data name="rbArPlusCRC.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 88</value>
   </data>
+  <data name="rbArPlusCRC.Size" type="System.Drawing.Size, System.Drawing">
+    <value>129, 17</value>
+  </data>
+  <data name="rbArPlusCRC.Text" xml:space="preserve">
+    <value>Verifiziere AR + CRCs</value>
+  </data>
+  <data name="rbArPlusCRC.ToolTip" xml:space="preserve">
+    <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image sowohl anhand dieser als auch anhand der CRC-Werte zu verifizieren</value>
+  </data>
   <data name="rbArAndEncode.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 37</value>
   </data>
@@ -422,19 +434,13 @@
     <value>6, 71</value>
   </data>
   <data name="rbArVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>152, 17</value>
+    <value>108, 17</value>
   </data>
   <data name="rbArVerify.Text" xml:space="preserve">
     <value>&amp;Verifiziere nur AR</value>
   </data>
   <data name="rbArVerify.ToolTip" xml:space="preserve">
     <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image anhand dieser zu verifizieren</value>
-  </data>
-  <data name="rbArPlusCRC.Text" xml:space="preserve">
-    <value>Verifiziere AR + CRCs</value>
-  </data>
-  <data name="rbArPlusCRC.ToolTip" xml:space="preserve">
-    <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image sowohl anhand dieser als auch anhand der CRC-Werte zu verifizieren</value>
   </data>
   <data name="rbArNone.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 54</value>
