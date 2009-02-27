@@ -62,6 +62,8 @@ namespace JDP {
 			this.btnFilenameCorrector = new System.Windows.Forms.Button();
 			this.btnSettings = new System.Windows.Forms.Button();
 			this.grpAccurateRip = new System.Windows.Forms.GroupBox();
+			this.txtPreGapLength = new System.Windows.Forms.MaskedTextBox();
+			this.label2 = new System.Windows.Forms.Label();
 			this.rbArPlusCRC = new System.Windows.Forms.RadioButton();
 			this.rbArAndEncode = new System.Windows.Forms.RadioButton();
 			this.label1 = new System.Windows.Forms.Label();
@@ -561,6 +563,8 @@ namespace JDP {
 			this.grpAccurateRip.AccessibleName = null;
 			resources.ApplyResources(this.grpAccurateRip, "grpAccurateRip");
 			this.grpAccurateRip.BackgroundImage = null;
+			this.grpAccurateRip.Controls.Add(this.txtPreGapLength);
+			this.grpAccurateRip.Controls.Add(this.label2);
 			this.grpAccurateRip.Controls.Add(this.rbArPlusCRC);
 			this.grpAccurateRip.Controls.Add(this.rbArAndEncode);
 			this.grpAccurateRip.Controls.Add(this.label1);
@@ -572,6 +576,29 @@ namespace JDP {
 			this.grpAccurateRip.Name = "grpAccurateRip";
 			this.grpAccurateRip.TabStop = false;
 			this.toolTip1.SetToolTip(this.grpAccurateRip, resources.GetString("grpAccurateRip.ToolTip"));
+			// 
+			// txtPreGapLength
+			// 
+			this.txtPreGapLength.AccessibleDescription = null;
+			this.txtPreGapLength.AccessibleName = null;
+			resources.ApplyResources(this.txtPreGapLength, "txtPreGapLength");
+			this.txtPreGapLength.BackgroundImage = null;
+			this.txtPreGapLength.Culture = new System.Globalization.CultureInfo("");
+			this.txtPreGapLength.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
+			this.txtPreGapLength.Font = null;
+			this.txtPreGapLength.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Overwrite;
+			this.txtPreGapLength.Name = "txtPreGapLength";
+			this.txtPreGapLength.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
+			this.toolTip1.SetToolTip(this.txtPreGapLength, resources.GetString("txtPreGapLength.ToolTip"));
+			// 
+			// label2
+			// 
+			this.label2.AccessibleDescription = null;
+			this.label2.AccessibleName = null;
+			resources.ApplyResources(this.label2, "label2");
+			this.label2.Font = null;
+			this.label2.Name = "label2";
+			this.toolTip1.SetToolTip(this.label2, resources.GetString("label2.ToolTip"));
 			// 
 			// rbArPlusCRC
 			// 
@@ -999,6 +1026,8 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
 		private System.Windows.Forms.RadioButton rbArPlusCRC;
+		private System.Windows.Forms.MaskedTextBox txtPreGapLength;
+		private System.Windows.Forms.Label label2;
 	}
 }
 

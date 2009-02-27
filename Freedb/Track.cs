@@ -28,6 +28,7 @@ namespace Freedb
 
 		private string m_Title;
 		private string m_ExtendedData;
+		private int m_FrameOffset;
 		
 		#region Public Properties
 		/// <summary>
@@ -57,6 +58,21 @@ namespace Freedb
 			set
 			{
 				this.m_Title = value;
+			}
+		}
+
+		/// <summary>
+		/// Property FrameOffset (int)
+		/// </summary>
+		public int FrameOffset
+		{
+			get
+			{
+				return this.m_FrameOffset;
+			}
+			set
+			{
+				this.m_FrameOffset = value;
 			}
 		}
 		#endregion

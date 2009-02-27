@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using CUETools.CDImage;
 using CUETools.Processor;
 using MusicBrainz;
 using Freedb;
@@ -112,11 +113,23 @@ namespace JDP
 				CUE.FillFromFreedb((CDEntry)item);
 		}
 
+		private void AutoResizeTracks()
+		{
+			listTracks.Columns[1].AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+			listTracks.Columns[2].AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+			listTracks.Columns[3].AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+			int widthAvailable = listTracks.Width - listTracks.Columns[1].Width - listTracks.Columns[2].Width - listTracks.Columns[3].Width - listTracks.Padding.Horizontal - 24;
+			if (listTracks.Columns[0].Width < widthAvailable)
+				listTracks.Columns[0].Width = widthAvailable;
+		}
+
 		private void listChoices_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			object item = ChosenObject;
 			if (item != null && item is CUEToolsSourceFile)
-				textBox1.Text = (item as CUEToolsSourceFile).contents;
+			{
+				textBox1.Text = (item as CUEToolsSourceFile).contents.Replace("\r\n", "\r").Replace("\r", "\r\n");
+			}
 			else if (item != null && item is MusicBrainz.Release)
 			{
 				MusicBrainz.Release release = item as MusicBrainz.Release;
@@ -126,22 +139,27 @@ namespace JDP
 					listTracks.Items.Add(new ListViewItem(new string[] { 
 						track.GetTitle(), 
 						(listTracks.Items.Count + 1).ToString(),
+						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].StartMSF,
 						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
 					}));
 				}
+				AutoResizeTracks();
 			}
 			else if (item != null && item is CDEntry)
 			{
 				CDEntry cdEntry = item as CDEntry;
+				
 				listTracks.Items.Clear();
 				foreach (Freedb.Track track in cdEntry.Tracks)
 				{
 					listTracks.Items.Add(new ListViewItem(new string[] { 
 						track.Title, 						
 						(listTracks.Items.Count + 1).ToString(),
+						CDImageLayout.TimeToString((uint)track.FrameOffset - 150),
 						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
 					}));
 				}
+				AutoResizeTracks();
 			}
 			else if (item != null && item is CUESheet)
 			{
@@ -152,9 +170,11 @@ namespace JDP
 					listTracks.Items.Add(new ListViewItem(new string[] { 
 						track.Title, 						
 						(listTracks.Items.Count + 1).ToString(),
+						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].StartMSF,
 						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
 					}));
 				}
+				AutoResizeTracks();
 			}
 			else
 			{

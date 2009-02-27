@@ -199,13 +199,41 @@ namespace Freedb
 
 		private bool Parse(StringCollection data)
 		{
+			int offsetNumber = -1;
 			foreach (string line in data)
 			{
 
 				// check for comment
 
 				if (line[0] == '#')
+				{
+					if (offsetNumber == -2)
+						continue;
+					if (offsetNumber == -1)
+					{
+						if (line.Substring(1).Trim() != "Track frame offsets:")
+							continue;
+						offsetNumber = 0;
+						continue;
+					}
+					if (line.Substring(1).Trim() == "" || line.Substring(1).Trim()[0] == 'D')
+					{
+						offsetNumber = -2;
+						continue;
+					}
+					int offset;
+					if (!int.TryParse(line.Substring(1).Trim(), out offset))
+					{
+						Debug.WriteLine("Failed to parse track FrameOffset: " + line);
+						continue;
+					}
+					//may need to concatenate track info
+					while (offsetNumber >= m_Tracks.Count)
+						this.m_Tracks.Add(new Track(""));
+					m_Tracks[offsetNumber].FrameOffset = offset;
+					offsetNumber++;
 					continue;
+				}
 
 				int index = line.IndexOf('=');
 				if (index == -1) // couldn't find equal sign have no clue what the data is

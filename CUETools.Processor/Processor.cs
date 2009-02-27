@@ -635,39 +635,6 @@ namespace CUETools.Processor
 		{
 			List<object> Releases = new List<object>();
 
-			ReleaseQueryParameters p = new ReleaseQueryParameters();
-			p.DiscId = _toc.MusicBrainzId;
-			Query<Release> results = Release.Query(p);
-			MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-			_progress.percentDisk = 0;
-			try
-			{
-				foreach (MusicBrainz.Release release in results)
-				{
-					release.GetEvents();
-					release.GetTracks();
-					try
-					{
-						foreach (MusicBrainz.Track track in release.GetTracks())
-							;
-					} catch { }
-					try
-					{
-						foreach (MusicBrainz.Event ev in release.GetEvents())
-							;
-					} catch { }
-					Releases.Add(release);
-				}
-			} catch { }
-			MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-			//if (release != null)
-			//{
-			//    FillFromMusicBrainz(release);
-			//    return;
-			//}
-			//if (cdEntry != null)
-			//    FillFromFreedb(cdEntry);
-
 			FreedbHelper m_freedb = new FreedbHelper();
 
 			m_freedb.UserName = "gchudov";
@@ -679,9 +646,9 @@ namespace CUETools.Processor
 			QueryResult queryResult;
 			QueryResultCollection coll;
 			string code = string.Empty;
-			CDEntry cdEntry = null;
 			try
 			{
+				CDEntry cdEntry = null;
 				code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(_toc), out queryResult, out coll);
 				if (code == FreedbHelper.ResponseCodes.CODE_200)
 				{
@@ -704,7 +671,139 @@ namespace CUETools.Processor
 			catch (Exception)
 			{
 			}
+
+			StringCollection DiscIds = new StringCollection();
+			DiscIds.Add(_toc.MusicBrainzId);
+			//if (_tocFromLog != null && !DiscIds.Contains(_tocFromLog.MusicBrainzId))
+			//	DiscIds.Add(_tocFromLog.MusicBrainzId);
+			foreach (CDEntry cdEntry in Releases)
+			{
+				CDImageLayout toc = TocFromCDEntry(cdEntry);
+				if (!DiscIds.Contains(toc.MusicBrainzId))
+					DiscIds.Add(toc.MusicBrainzId);
+			}
+
+			MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+			_progress.percentDisk = 0;
+			foreach (string DiscId in DiscIds)
+			{
+				ReleaseQueryParameters p = new ReleaseQueryParameters();
+				p.DiscId = DiscId;
+				Query<Release> results = Release.Query(p);
+				try
+				{
+					foreach (MusicBrainz.Release release in results)
+					{
+						release.GetEvents();
+						release.GetTracks();
+						try
+						{
+							foreach (MusicBrainz.Track track in release.GetTracks())
+								;
+						}
+						catch { }
+						try
+						{
+							foreach (MusicBrainz.Event ev in release.GetEvents())
+								;
+						}
+						catch { }
+						Releases.Add(release);
+					}
+				}
+				catch { }
+			}
+			MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+			//if (release != null)
+			//{
+			//    FillFromMusicBrainz(release);
+			//    return;
+			//}
+			//if (cdEntry != null)
+			//    FillFromFreedb(cdEntry);
 			return Releases;
+		}
+
+		public CDImageLayout TocFromCDEntry(CDEntry cdEntry)
+		{
+			CDImageLayout tocFromCDEntry = new CDImageLayout();
+			for (int i = 0; i < cdEntry.Tracks.Count; i++)
+			{
+				if (i >= _toc.TrackCount)
+					break;
+				tocFromCDEntry.AddTrack(new CDTrack((uint)i + 1,
+					(uint) cdEntry.Tracks[i].FrameOffset - 150,
+					(i + 1 < cdEntry.Tracks.Count) ? (uint) (cdEntry.Tracks[i + 1].FrameOffset - cdEntry.Tracks[i].FrameOffset) : _toc[i + 1].Length,
+					_toc[i + 1].IsAudio,
+					false/*preEmphasis*/));
+			}
+			if (tocFromCDEntry.TrackCount > 0 && tocFromCDEntry[1].IsAudio)
+				tocFromCDEntry[1][0].Start = 0;
+			return tocFromCDEntry;
+		}
+
+		public CDImageLayout TocFromLog(string eacLog)
+		{
+			CDImageLayout tocFromLog = new CDImageLayout();
+			using (StringReader sr = new StringReader(eacLog))
+			{
+				bool isEACLog = false;
+				bool iscdda2wavlog = false;
+				string lineStr;
+				int prevTrNo = 1, prevTrStart = 0;
+				while ((lineStr = sr.ReadLine()) != null)
+				{
+					if (isEACLog)
+					{
+						string[] n = lineStr.Split('|');
+						uint trNo, trStart, trEnd;
+						if (n.Length == 5 && uint.TryParse(n[0], out trNo) && uint.TryParse(n[3], out trStart) && uint.TryParse(n[4], out trEnd) && trNo == tocFromLog.TrackCount + 1)
+						{
+							bool isAudio = true;
+							if (tocFromLog.TrackCount >= _toc.TrackCount &&
+								trStart == tocFromLog[tocFromLog.TrackCount].End + 1U + 152U * 75U
+								)
+								isAudio = false;
+							if (tocFromLog.TrackCount < _toc.TrackCount &&
+								!_toc[tocFromLog.TrackCount + 1].IsAudio
+								)
+								isAudio = false;
+							tocFromLog.AddTrack(new CDTrack(trNo, trStart, trEnd + 1 - trStart, isAudio, false));
+						}
+					}
+					else if (iscdda2wavlog)
+					{
+						foreach (string entry in lineStr.Split(','))
+						{
+							string[] n = entry.Split('(');
+							if (n.Length < 2) continue;
+							// assert n.Length == 2;
+							string key = n[0].Trim(' ', '.');
+							int trStart = int.Parse(n[1].Trim(' ', ')'));
+							bool isAudio = true; // !!!
+							if (key != "1")
+								tocFromLog.AddTrack(new CDTrack((uint)prevTrNo, (uint)prevTrStart, (uint)(trStart - prevTrStart), isAudio, false));
+							if (key == "lead-out")
+							{
+								iscdda2wavlog = false;
+								break;
+							}
+							prevTrNo = int.Parse(key);
+							prevTrStart = trStart;
+						}
+					}
+					else if (lineStr.StartsWith("TOC of the extracted CD")
+						|| lineStr.StartsWith("Exact Audio Copy")
+						|| lineStr.StartsWith("EAC extraction logfile")
+						|| lineStr.StartsWith("CUERipper"))
+						isEACLog = true;
+					else if (lineStr.StartsWith("Table of Contents: starting sectors"))
+						iscdda2wavlog = true;
+				}
+			}
+			if (tocFromLog.TrackCount > 0 && tocFromLog[1].IsAudio)
+				tocFromLog[1][0].Start = 0;
+			return tocFromLog;
 		}
 
 		public void Open(string pathIn)
@@ -858,6 +957,8 @@ namespace CUETools.Processor
 				_hasEmbeddedCUESheet = true;
 			}
 
+			string dataTrackLength = null;
+
 			using (sr) {
 				while ((lineStr = sr.ReadLine()) != null) {
 					line = new CUELine(lineStr);
@@ -987,7 +1088,7 @@ namespace CUETools.Processor
 							(line.Params.Count == 3) &&
 							(line.Params[1].ToUpper() == "DATATRACKLENGTH"))
 						{
-							_dataTrackLength = (uint)CDImageLayout.TimeFromString(line.Params[2]);
+							dataTrackLength = line.Params[2];
 						}
 						else if ((command == "REM") &&
 						   (line.Params.Count == 3) &&
@@ -1149,50 +1250,24 @@ namespace CUETools.Processor
 			if (_accurateRipId == null)
 				_accurateRipId = GetCommonMiscTag("ACCURATERIPID");
 
+			CDImageLayout tocFromLog = _eacLog == null ? null : TocFromLog(_eacLog);
+
+			if (tocFromLog != null && tocFromLog.Pregap > _toc.Pregap)
+				PreGapLength = tocFromLog.Pregap;
+
 			if (_accurateRipId == null)
 			{
-				if (_dataTrackLength != null)
-				{
-					// TODO: check if we have a data track of unknown length already, and just change it's length!
-					CDImageLayout toc2 = new CDImageLayout(_toc);
-					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152U * 75U, _dataTrackLength.Value, false, false));
-					_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
-				}
+				if (dataTrackLength != null)
+					DataTrackLength = dataTrackLength;
 				else
 				{
 					bool dtlFound = false;
-					if (_eacLog != null)
+					if (tocFromLog != null)
 					{
-						sr = new StringReader(_eacLog);
-						bool isEACLog = false;
-						CDImageLayout tocFromLog = new CDImageLayout();
-						while ((lineStr = sr.ReadLine()) != null)
-						{
-							if (isEACLog)
-							{
-								string[] n = lineStr.Split('|');
-								uint trNo, trStart, trEnd;
-								if (n.Length == 5 && uint.TryParse(n[0], out trNo) && uint.TryParse(n[3], out trStart) && uint.TryParse(n[4], out trEnd) && trNo == tocFromLog.TrackCount + 1)
-								{
-									bool isAudio = true;
-									if (tocFromLog.TrackCount >= _toc.TrackCount &&
-										trStart == tocFromLog[tocFromLog.TrackCount].End + 1U + 152U * 75U
-										)
-										isAudio = false;
-									if (tocFromLog.TrackCount < _toc.TrackCount &&
-										!_toc[tocFromLog.TrackCount + 1].IsAudio
-										)
-										isAudio = false;
-									tocFromLog.AddTrack(new CDTrack(trNo, trStart, trEnd + 1 - trStart, isAudio, false));
-								}
-							}
-							else
-								if (lineStr.StartsWith("TOC of the extracted CD")
-									|| lineStr.StartsWith("Exact Audio Copy")
-									|| lineStr.StartsWith("EAC extraction logfile")
-									|| lineStr.StartsWith("CUERipper"))
-									isEACLog = true;
-						}
+						// TODO: can just use smth like
+						// DataTrackLength = tocFromLog.DataTrackLengthMSF; 
+						// The only proplem is DataTrackLength property doesn't set last track's offset.
+
 						if (tocFromLog.TrackCount == _toc.TrackCount + 1 && !tocFromLog[tocFromLog.TrackCount].IsAudio)
 						{
 							//_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(tocFromLog);
@@ -1815,6 +1890,8 @@ namespace CUETools.Processor
 		{
 			sw.WriteLine("[Verification date: {0}]", DateTime.Now);
 			sw.WriteLine("[Disc ID: {0}]", _accurateRipId);
+			if (PreGapLength != 0)
+				sw.WriteLine("Pregap length {0}.", PreGapLengthMSF);
 			if (_dataTrackLength.HasValue)
 				sw.WriteLine("Assuming a data track was present, length {0}.", CDImageLayout.TimeToString(_dataTrackLength.Value));
 			else
@@ -3009,11 +3086,73 @@ namespace CUETools.Processor
 				uint dtl = (uint)CDImageLayout.TimeFromString(value);
 				if (dtl != 0)
 				{
+					if (!_toc[1].IsAudio)
+					{
+						for (int i = 2; i <= _toc.TrackCount; i++)
+						{
+							_toc[i].Start += dtl - _toc[1].Length;
+							for (int j = 0; j <= _toc[i].LastIndex; j++)
+								_toc[i][j].Start += dtl - _toc[1].Length;
+						}
+						_toc[1].Length = dtl;
+					}
+					else if (!_toc[_toc.TrackCount].IsAudio)
+					{
+						//_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
+						_toc[_toc.TrackCount].Length = dtl;
+						//_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
+						//_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
+					}
+					else
+						_toc.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152U * 75U, dtl, false, false));
 					_dataTrackLength = dtl;
-					CDImageLayout toc2 = new CDImageLayout(_toc);
-					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, dtl, false, false));
-					_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
+					_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(_toc);
 				}
+			}
+		}
+
+		public string PreGapLengthMSF
+		{
+			get
+			{
+				return CDImageLayout.TimeToString(_toc.Pregap);
+			}
+			set
+			{
+				PreGapLength = (uint) CDImageLayout.TimeFromString(value);
+			}
+		}
+
+		public uint PreGapLength
+		{
+			get
+			{
+				return _toc.Pregap;
+			}
+			set
+			{
+				if (value == _toc.Pregap || value == 0)
+					return;
+				if (!_toc[1].IsAudio)
+					throw new Exception("can't set pregap to a data track");
+				if (value < _toc.Pregap)
+					throw new Exception("can't set negative pregap");
+				uint offs = value - _toc.Pregap;
+				for (int i = 1; i <= _toc.TrackCount; i++)
+				{
+					_toc[i].Start += offs;
+					for (int j = 0; j <= _toc[i].LastIndex; j++)
+						_toc[i][j].Start += offs;
+				}
+				_toc[1][0].Start = 0;
+
+				SourceInfo sourceInfo;
+				sourceInfo.Path = null;
+				sourceInfo.Offset = 0;
+				sourceInfo.Length = offs * 588;
+				_sources.Insert(0, sourceInfo);
+
+				_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(_toc);
 			}
 		}
 

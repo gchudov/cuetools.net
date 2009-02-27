@@ -259,6 +259,36 @@
   <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
+  <data name="Title.DisplayIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="Title.Text" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Title.Width" type="System.Int32, mscorlib">
+    <value>360</value>
+  </data>
+  <data name="TrackNo.DisplayIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="TrackNo.Text" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="TrackNo.Width" type="System.Int32, mscorlib">
+    <value>30</value>
+  </data>
+  <data name="Start.Text" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Start.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
+    <value>Right</value>
+  </data>
+  <data name="Length.Text" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="Length.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
+    <value>Right</value>
+  </data>
   <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 90</value>
   </data>
@@ -282,30 +312,6 @@
   </data>
   <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
     <value>1</value>
-  </data>
-  <data name="Title.DisplayIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="Title.Text" xml:space="preserve">
-    <value>Title</value>
-  </data>
-  <data name="Title.Width" type="System.Int32, mscorlib">
-    <value>455</value>
-  </data>
-  <data name="TrackNo.DisplayIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="TrackNo.Text" xml:space="preserve">
-    <value>#</value>
-  </data>
-  <data name="TrackNo.Width" type="System.Int32, mscorlib">
-    <value>30</value>
-  </data>
-  <data name="Length.Text" xml:space="preserve">
-    <value>Length</value>
-  </data>
-  <data name="Length.Width" type="System.Int32, mscorlib">
-    <value>62</value>
   </data>
   <data name="btnEdit.Location" type="System.Drawing.Point, System.Drawing">
     <value>407, 293</value>
@@ -377,6 +383,12 @@
     <value>Length</value>
   </data>
   <data name="&gt;&gt;Length.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Start.Name" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="&gt;&gt;Start.Type" xml:space="preserve">
     <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

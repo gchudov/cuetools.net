@@ -40,6 +40,7 @@ namespace JDP
 			this.TrackNo = new System.Windows.Forms.ColumnHeader();
 			this.Length = new System.Windows.Forms.ColumnHeader();
 			this.btnEdit = new System.Windows.Forms.Button();
+			this.Start = new System.Windows.Forms.ColumnHeader();
 			this.SuspendLayout();
 			// 
 			// button1
@@ -91,6 +92,7 @@ namespace JDP
 			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Title,
             this.TrackNo,
+            this.Start,
             this.Length});
 			this.listTracks.FullRowSelect = true;
 			this.listTracks.GridLines = true;
@@ -123,6 +125,10 @@ namespace JDP
 			this.btnEdit.UseVisualStyleBackColor = true;
 			this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
 			// 
+			// Start
+			// 
+			resources.ApplyResources(this.Start, "Start");
+			// 
 			// frmChoice
 			// 
 			this.AcceptButton = this.button1;
@@ -133,8 +139,10 @@ namespace JDP
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.listChoices);
 			this.Controls.Add(this.button1);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+			this.MaximizeBox = false;
 			this.Name = "frmChoice";
+			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.Load += new System.EventHandler(this.frmChoice_Load);
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmChoice_FormClosing);
 			this.ResumeLayout(false);
@@ -154,5 +162,6 @@ namespace JDP
 		private System.Windows.Forms.ColumnHeader TrackNo;
 		private System.Windows.Forms.ColumnHeader Length;
 		private System.Windows.Forms.Button btnEdit;
+		private System.Windows.Forms.ColumnHeader Start;
 	}
 }

@@ -401,6 +401,7 @@ namespace JDP {
 					cueSheet.AccurateRip = accurateRip;
 					if (accurateRip != AccurateRipMode.None)
 						cueSheet.DataTrackLength = txtDataTrackLength.Text;
+					cueSheet.PreGapLengthMSF = txtPreGapLength.Text;
 
 					cueSheet.WriteAudioFiles(outDir, cueStyle);
 				}
@@ -490,6 +491,7 @@ namespace JDP {
 			grpOutputStyle.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
 			groupBox1.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
 			txtDataTrackLength.Enabled = !running && !rbArNone.Checked;
+			txtPreGapLength.Enabled = !running;
 			btnAbout.Enabled = !running;
 			btnSettings.Enabled = !running;
 			btnFilenameCorrector.Enabled = !running;
