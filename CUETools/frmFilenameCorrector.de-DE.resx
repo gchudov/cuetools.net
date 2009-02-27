@@ -117,58 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="lblDescription.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 8</value>
-  </data>
-  <data name="lblDescription.Size" type="System.Drawing.Size, System.Drawing">
-    <value>272, 144</value>
-  </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="lblDescription.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
   <data name="lblDescription.Text" xml:space="preserve">
     <value>Lassen Sie die CUE-Sheets hier fallen, um die Dateinamen in ihnen zu korrigieren. Die Audiodateien müssen sich im selben Ordner wie die CUE-Sheets befinden. Die Anzahl der Audiodateien in dem Verzeichnis muss mit der Anzahl der referenzierten Stücke übereinstimmen. Die Audiodateien müssen so benannt sein, dass sie beim Sortieren nach dem Dateinamen in der richtigen Reihenfolge angezeigt werden. Um mehrere CUE-Sheets gleichzeitig zu korrigieren, suchen Sie nach *.cue.</value>
   </data>
-  <data name="lblDescription.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
-  </data>
-  <data name="&gt;&gt;lblDescription.Name" xml:space="preserve">
-    <value>lblDescription</value>
-  </data>
-  <data name="&gt;&gt;lblDescription.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;lblDescription.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;lblDescription.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 13</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>286, 159</value>
-  </data>
-  <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
-    <value>Manual</value>
-  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Dateinamenkorrektor</value>
-  </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>frmFilenameCorrector</value>
-  </data>
-  <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

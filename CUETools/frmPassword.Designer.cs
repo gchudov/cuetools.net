@@ -35,25 +35,38 @@ namespace JDP
 			// 
 			// txtPassword
 			// 
+			this.txtPassword.AccessibleDescription = null;
+			this.txtPassword.AccessibleName = null;
 			resources.ApplyResources(this.txtPassword, "txtPassword");
+			this.txtPassword.BackgroundImage = null;
+			this.txtPassword.Font = null;
 			this.txtPassword.Name = "txtPassword";
 			this.txtPassword.UseSystemPasswordChar = true;
 			// 
 			// button1
 			// 
-			this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this.button1.AccessibleDescription = null;
+			this.button1.AccessibleName = null;
 			resources.ApplyResources(this.button1, "button1");
+			this.button1.BackgroundImage = null;
+			this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this.button1.Font = null;
 			this.button1.Name = "button1";
 			this.button1.UseVisualStyleBackColor = true;
 			// 
 			// frmPassword
 			// 
 			this.AcceptButton = this.button1;
+			this.AccessibleDescription = null;
+			this.AccessibleName = null;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.BackgroundImage = null;
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.txtPassword);
+			this.Font = null;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+			this.Icon = null;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "frmPassword";

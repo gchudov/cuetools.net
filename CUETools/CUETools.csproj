@@ -165,13 +165,25 @@
       <SubType>Designer</SubType>
       <DependentUpon>frmCUETools.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmFilenameCorrector.de-DE.resx">
+      <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmFilenameCorrector.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmPassword.de-DE.resx">
+      <DependentUpon>frmPassword.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmPassword.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmPassword.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmReport.de-DE.resx">
+      <DependentUpon>frmReport.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmReport.resx">
       <SubType>Designer</SubType>
