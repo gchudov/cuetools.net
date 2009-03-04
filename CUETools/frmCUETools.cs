@@ -412,7 +412,7 @@ namespace JDP {
 						if (cueSheet.IsCD)
 						{
 							frmReport reportForm = new frmReport();
-							reportForm.Message = cueSheet.LOGContents();
+							reportForm.Message = cueSheet.LOGContents;
 							CenterSubForm(reportForm);
 							reportForm.ShowDialog(this);
 						}

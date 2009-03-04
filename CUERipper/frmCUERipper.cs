@@ -29,6 +29,7 @@ namespace CUERipper
 		private CUEStyle _style;
 		private CUESheet _cueSheet;
 		private string _pathOut;
+		private string _pathFormat;
 
 		public frmCUERipper()
 		{
@@ -66,10 +67,15 @@ namespace CUERipper
 			//{
 			//}
 
+			SettingsReader sr = new SettingsReader("CUERipper", "settings.txt");
+			_config.createEACLOG = sr.LoadBoolean("CreateEACLOG") ?? false;
+			_config.preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? false;
+			_config.createM3U = sr.LoadBoolean("CreateM3U") ?? true;
+			_pathFormat = sr.Load("PathFormat") ?? "%D\\%Y - %C\\%D - %C.cue";
+			comboLossless.SelectedIndex = sr.LoadInt32("ComboLossless", 0, comboLossless.Items.Count - 1) ?? 0;
+			comboCodec.SelectedIndex = sr.LoadInt32("ComboCodec", 0, comboCodec.Items.Count - 1) ?? 0;
+			comboImage.SelectedIndex = sr.LoadInt32("ComboImage", 0, comboImage.Items.Count - 1) ?? 0;
 			UpdateDrives();
-			comboLossless.SelectedIndex = 0;
-			comboCodec.SelectedIndex = 0;
-			comboImage.SelectedIndex = 0;
 		}
 
 		#region private constants
@@ -117,18 +123,19 @@ namespace CUERipper
 				try
 				{
 					reader.Open(drive);
-				}
-				catch
-				{
-				}
-				try
-				{
 					arName = reader.ARName;
 				}
 				catch (Exception ex)
 				{
-					comboDrives.Items.Add(drive + ": " + ex.Message);
-					continue;
+					try
+					{
+						arName = reader.ARName;
+					}
+					catch
+					{
+						comboDrives.Items.Add(drive + ": " + ex.Message);
+						continue;
+					}
 				}
 				if (!AccurateRipVerify.FindDriveReadOffset(arName, out driveOffset))
 					; //throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
@@ -205,13 +212,15 @@ namespace CUERipper
 
 			try
 			{
-				_cueSheet.WriteAudioFiles(".", _style);
+				string outDir = Path.GetDirectoryName(_pathOut);
+				_cueSheet.WriteAudioFiles(outDir == "" ? "." : outDir, _style);
 				//CUESheet.WriteText(_pathOut, _cueSheet.CUESheetContents(_style));
 				//CUESheet.WriteText(Path.ChangeExtension(_pathOut, ".log"), _cueSheet.LOGContents());
 			}
 			catch (StopException)
 			{
 			}
+#if !DEBUG
 			catch (Exception ex)
 			{
 				this.Invoke((MethodInvoker)delegate()
@@ -222,12 +231,27 @@ namespace CUERipper
 					DialogResult dlgRes = MessageBox.Show(this, message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				});
 			}
+#endif
 			audioSource.ReadProgress -= new EventHandler<ReadProgressArgs>(CDReadProgress);
 			_workThread = null;
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				SetupControls();
 			});
+		}
+
+		private string GenerateOutputPath()
+		{
+			List<string> find = new List<string>();
+			find.Add("%D");
+			find.Add("%C");
+			find.Add("%Y");
+			List<string> replace = new List<string>();
+			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Artist)));
+			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Title)));
+			replace.Add(_cueSheet.Year);
+
+			return Path.ChangeExtension(General.ReplaceMultiple(_pathFormat, find, replace) ?? "image.cue", ".cue");
 		}
 
 		private void buttonGo_Click(object sender, EventArgs e)
@@ -237,8 +261,7 @@ namespace CUERipper
 
 			_style = comboImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
 				CUEStyle.GapsAppended;
-			_pathOut = _config.CleanseString(_cueSheet.Artist) + " - " + 
-				_config.CleanseString(_cueSheet.Title) + ".cue";
+			_pathOut = GenerateOutputPath();
 			_config.lossyWAVHybrid = comboLossless.SelectedIndex == 1; // _cueSheet.Config?
 			if (_style == CUEStyle.SingleFileWithCUE)
 				_cueSheet.SingleFilename = Path.GetFileName(_pathOut);
@@ -281,12 +304,14 @@ namespace CUERipper
 			if (comboRelease.SelectedItem == null || comboRelease.SelectedItem is string)
 				return;
 			_cueSheet = ((ReleaseInfo)comboRelease.SelectedItem).cueSheet;
-			for (int i = 1; i <= _reader.TOC.AudioTracks; i++)
+			for (int i = 1; i <= _reader.TOC.TrackCount; i++)
+			{
 				listTracks.Items.Add(new ListViewItem(new string[] { 
-					_cueSheet.Tracks[i-1].Title, 
+					_reader.TOC[i].IsAudio ? _cueSheet.Tracks[i - _reader.TOC.FirstAudio].Title : "Data track",
 					_reader.TOC[i].Number.ToString(), 
 					_reader.TOC[i].StartMSF, 
 					_reader.TOC[i].LengthMSF }));
+			}
 		}
 
 		private void comboRelease_SelectedIndexChanged(object sender, EventArgs e)
@@ -445,24 +470,26 @@ namespace CUERipper
 			{
 			}
 
-			this.BeginInvoke((MethodInvoker)delegate()
+			if (comboRelease.Items.Count == 0)
 			{
-				if (comboRelease.Items.Count == 0)
+				ReleaseInfo r = CreateCUESheet(audioSource, null, null);
+				this.BeginInvoke((MethodInvoker)delegate()
 				{
-					ReleaseInfo r = CreateCUESheet(audioSource, null, null);
 					comboRelease.Items.Add(r);
-				}
-			});
+				});
+			}
 			_workThread = null;
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				SetupControls();
 				comboRelease.SelectedIndex = 0;
+				toolStripStatusAr.Visible = ((ReleaseInfo) comboRelease.SelectedItem).cueSheet.ArVerify.ARStatus == null;
 			});
 		}
 
 		private void UpdateDrive()
 		{
+			toolStripStatusAr.Visible = false;
 			buttonGo.Enabled = false;
 			comboRelease.Items.Clear();
 			listTracks.Items.Clear();
@@ -532,8 +559,10 @@ namespace CUERipper
 		private void listTracks_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
 			CUESheet cueSheet = ((ReleaseInfo)comboRelease.SelectedItem).cueSheet;
-			if (e.Label != null)
+			if (e.Label != null && _reader.TOC[e.Item + 1].IsAudio)
 				cueSheet.Tracks[e.Item].Title = e.Label;
+			else
+				e.CancelEdit = true;
 		}
 
 		private void editToolStripMenuItem_Click(object sender, EventArgs e)
@@ -563,6 +592,25 @@ namespace CUERipper
 				e.Graphics.DrawString(text, e.Font, new SolidBrush(e.ForeColor), new RectangleF((float)e.Bounds.X + e.Bounds.Height, (float)e.Bounds.Y, (float)(e.Bounds.Width - e.Bounds.Height), (float)e.Bounds.Height), format);
 			}
 			e.DrawFocusRectangle();
+		}
+
+		private void frmCUERipper_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			SettingsWriter sw = new SettingsWriter("CUERipper", "settings.txt");
+			if (_config.createEACLOG) sw.Save("CreateEACLOG", _config.createEACLOG);
+			sw.Save("PreserveHTOA", _config.preserveHTOA);
+			sw.Save("CreateM3U", _config.createM3U);
+			sw.Save("ComboLossless", comboLossless.SelectedIndex);
+			sw.Save("ComboCodec", comboCodec.SelectedIndex);
+			sw.Save("ComboImage", comboImage.SelectedIndex);
+			sw.Save("PathFormat", _pathFormat);
+			sw.Close();
+		}
+
+		private void listTracks_BeforeLabelEdit(object sender, LabelEditEventArgs e)
+		{
+			if (!_reader.TOC[e.Item + 1].IsAudio)
+				e.CancelEdit = true;
 		}
 	}
 

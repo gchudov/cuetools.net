@@ -35,6 +35,8 @@ namespace CUERipper
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
+			this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusAr = new System.Windows.Forms.ToolStripStatusLabel();
 			this.listTracks = new System.Windows.Forms.ListView();
 			this.Title = new System.Windows.Forms.ColumnHeader();
 			this.TrackNo = new System.Windows.Forms.ColumnHeader();
@@ -71,7 +73,9 @@ namespace CUERipper
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripProgressBar1,
-            this.toolStripProgressBar2});
+            this.toolStripProgressBar2,
+            this.toolStripStatusLabel2,
+            this.toolStripStatusAr});
 			resources.ApplyResources(this.statusStrip1, "statusStrip1");
 			this.statusStrip1.Name = "statusStrip1";
 			this.statusStrip1.SizingGrip = false;
@@ -97,6 +101,19 @@ namespace CUERipper
 			resources.ApplyResources(this.toolStripProgressBar2, "toolStripProgressBar2");
 			this.toolStripProgressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
 			// 
+			// toolStripStatusLabel2
+			// 
+			this.toolStripStatusLabel2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+			resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
+			// 
+			// toolStripStatusAr
+			// 
+			this.toolStripStatusAr.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripStatusAr.Image = global::CUERipper.Properties.Resources.arok;
+			this.toolStripStatusAr.Name = "toolStripStatusAr";
+			resources.ApplyResources(this.toolStripStatusAr, "toolStripStatusAr");
+			// 
 			// listTracks
 			// 
 			resources.ApplyResources(this.listTracks, "listTracks");
@@ -114,6 +131,7 @@ namespace CUERipper
 			this.listTracks.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_AfterLabelEdit);
 			this.listTracks.DoubleClick += new System.EventHandler(this.listTracks_DoubleClick);
 			this.listTracks.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.listTracks_PreviewKeyDown);
+			this.listTracks.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_BeforeLabelEdit);
 			this.listTracks.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listTracks_KeyDown);
 			// 
 			// Title
@@ -242,6 +260,7 @@ namespace CUERipper
 			this.Name = "frmCUERipper";
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.Load += new System.EventHandler(this.frmCUERipper_Load);
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmCUERipper_FormClosed);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
 			this.contextMenuStripRelease.ResumeLayout(false);
@@ -274,6 +293,8 @@ namespace CUERipper
 		private System.Windows.Forms.ContextMenuStrip contextMenuStripRelease;
 		private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusAr;
 	}
 }
 

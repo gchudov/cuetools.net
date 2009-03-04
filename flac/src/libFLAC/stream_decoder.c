@@ -151,6 +151,7 @@ typedef struct FLAC__StreamDecoderPrivate {
 #if FLAC__HAS_OGG
 	FLAC__bool is_ogg;
 #endif
+	FLAC__bool disable_asm;
 	FLAC__StreamDecoderReadCallback read_callback;
 	FLAC__StreamDecoderSeekCallback seek_callback;
 	FLAC__StreamDecoderTellCallback tell_callback;
@@ -408,7 +409,12 @@ static FLAC__StreamDecoderInitStatus init_stream_internal_(
 	/*
 	 * get the CPU info and set the function pointers
 	 */
-	FLAC__cpu_info(&decoder->private_->cpuinfo);
+	if (decoder->private_->disable_asm)
+	{
+		decoder->private_->cpuinfo.type = FLAC__CPUINFO_TYPE_UNKNOWN;
+		decoder->private_->cpuinfo.use_asm = false;
+	} else
+		FLAC__cpu_info(&decoder->private_->cpuinfo);
 	/* first default to the non-asm routines */
 	decoder->private_->local_lpc_restore_signal = FLAC__lpc_restore_signal;
 	decoder->private_->local_lpc_restore_signal_64bit = FLAC__lpc_restore_signal_wide;
@@ -750,6 +756,16 @@ FLAC_API FLAC__bool FLAC__stream_decoder_set_md5_checking(FLAC__StreamDecoder *d
 	if(decoder->protected_->state != FLAC__STREAM_DECODER_UNINITIALIZED)
 		return false;
 	decoder->protected_->md5_checking = value;
+	return true;
+}
+
+FLAC_API FLAC__bool FLAC__stream_decoder_set_disable_asm(FLAC__StreamDecoder *decoder, FLAC__bool value)
+{
+	FLAC__ASSERT(0 != decoder);
+	FLAC__ASSERT(0 != decoder->protected_);
+	if(decoder->protected_->state != FLAC__STREAM_DECODER_UNINITIALIZED)
+		return false;
+	decoder->private_->disable_asm = value;
 	return true;
 }
 

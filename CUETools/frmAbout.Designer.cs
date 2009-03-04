@@ -37,62 +37,43 @@ namespace JDP
 			// 
 			// linkLabel1
 			// 
-			this.linkLabel1.AccessibleDescription = null;
-			this.linkLabel1.AccessibleName = null;
 			resources.ApplyResources(this.linkLabel1, "linkLabel1");
-			this.linkLabel1.Font = null;
 			this.linkLabel1.Name = "linkLabel1";
 			this.linkLabel1.TabStop = true;
 			this.linkLabel1.UseCompatibleTextRendering = true;
 			// 
 			// textBox1
 			// 
-			this.textBox1.AccessibleDescription = null;
-			this.textBox1.AccessibleName = null;
-			resources.ApplyResources(this.textBox1, "textBox1");
 			this.textBox1.BackColor = System.Drawing.SystemColors.Control;
-			this.textBox1.BackgroundImage = null;
 			this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.textBox1.Font = null;
+			resources.ApplyResources(this.textBox1, "textBox1");
 			this.textBox1.Name = "textBox1";
 			this.textBox1.ReadOnly = true;
 			// 
 			// button1
 			// 
-			this.button1.AccessibleDescription = null;
-			this.button1.AccessibleName = null;
-			resources.ApplyResources(this.button1, "button1");
-			this.button1.BackgroundImage = null;
 			this.button1.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.button1.Font = null;
+			resources.ApplyResources(this.button1, "button1");
 			this.button1.Name = "button1";
 			this.button1.UseVisualStyleBackColor = true;
 			// 
 			// linkLabel2
 			// 
-			this.linkLabel2.AccessibleDescription = null;
-			this.linkLabel2.AccessibleName = null;
 			resources.ApplyResources(this.linkLabel2, "linkLabel2");
-			this.linkLabel2.Font = null;
 			this.linkLabel2.Name = "linkLabel2";
 			this.linkLabel2.TabStop = true;
 			this.linkLabel2.UseCompatibleTextRendering = true;
 			// 
 			// frmAbout
 			// 
-			this.AccessibleDescription = null;
-			this.AccessibleName = null;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackgroundImage = null;
 			this.CancelButton = this.button1;
 			this.Controls.Add(this.linkLabel2);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.linkLabel1);
-			this.Font = null;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
-			this.Icon = null;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "frmAbout";

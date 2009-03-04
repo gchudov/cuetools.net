@@ -60,6 +60,13 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap arok {
+            get {
+                object obj = ResourceManager.GetObject("arok", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap cddb {
             get {
                 object obj = ResourceManager.GetObject("cddb", resourceCulture);

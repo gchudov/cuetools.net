@@ -39,6 +39,7 @@ namespace CUETools.Codecs.ALAC
 			if (!_formatRead || _bitsPerSample != 16 || _channelCount != 2 || _sampleRate != 44100)
 				throw new Exception("Invalid ALAC file.");
 			_saved_mdat_pos = _IO.Position;
+			calculate_length();
 		}
 
 		public int[,] Read(int[,] buff)
@@ -58,9 +59,9 @@ namespace CUETools.Codecs.ALAC
 				setinfo_rice_kmodifier = read_uint8(_codecData, 32);
 				byte setinfo_7f = read_uint8(_codecData, 33);
 				ushort setinfo_80 = read_uint16(_codecData, 34);
-				uint setinfo_82 = read_uint32(_codecData, 38);
-				uint setinfo_86 = read_uint32(_codecData, 42);
-				uint setinfo_8a_rate = read_uint32(_codecData, 44);
+				uint setinfo_82 = read_uint32(_codecData, 36); // maxframesize
+				uint setinfo_86 = read_uint32(_codecData, 40); // bitrate
+				uint setinfo_8a_rate = read_uint32(_codecData, 44); // samplerate
 
 				_predicterror_buffer_a = new int[setinfo_max_samples_per_frame];
 				_predicterror_buffer_b = new int[setinfo_max_samples_per_frame];
@@ -223,6 +224,14 @@ namespace CUETools.Codecs.ALAC
 			}
 			sampleDuration = _time_to_sample_duration[duration_cur_index];
 			sampleSize = _sample_byte_size[iSample];
+		}
+
+		private void calculate_length()
+		{
+			_sampleCount = 0;
+			uint duration_cur_index = 0;
+			for (duration_cur_index = 0; duration_cur_index < _time_to_sample_count.Length; duration_cur_index++)
+				_sampleCount += _time_to_sample_count[duration_cur_index] * _time_to_sample_duration[duration_cur_index];
 		}
 
 		private byte [] stream_read_bytes(int len)

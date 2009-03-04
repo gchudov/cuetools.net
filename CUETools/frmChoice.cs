@@ -150,13 +150,14 @@ namespace JDP
 				CDEntry cdEntry = item as CDEntry;
 				
 				listTracks.Items.Clear();
-				foreach (Freedb.Track track in cdEntry.Tracks)
+				for (int i = 0; i < cdEntry.Tracks.Count; i++)
 				{
 					listTracks.Items.Add(new ListViewItem(new string[] { 
-						track.Title, 						
-						(listTracks.Items.Count + 1).ToString(),
-						CDImageLayout.TimeToString((uint)track.FrameOffset - 150),
-						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
+						cdEntry.Tracks[i].Title, 						
+						(i + 1).ToString(),
+						CDImageLayout.TimeToString((uint)cdEntry.Tracks[i].FrameOffset - 150),
+						CDImageLayout.TimeToString((i + 1 < cdEntry.Tracks.Count) ? (uint) (cdEntry.Tracks[i + 1].FrameOffset - cdEntry.Tracks[i].FrameOffset) :
+							(CUE == null || i >= CUE.TOC.TrackCount) ? 0 : CUE.TOC[i + 1].Length)
 					}));
 				}
 				AutoResizeTracks();

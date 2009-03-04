@@ -330,6 +330,7 @@ static FILE *get_binary_stdout_(void);
  ***********************************************************************/
 
 typedef struct FLAC__StreamEncoderPrivate {
+	FLAC__bool disable_asm;
 	unsigned input_capacity;                          /* current size (in samples) of the signal and residual buffers */
 	FLAC__int32 *integer_signal[FLAC__MAX_CHANNELS];  /* the integer version of the input signal */
 	FLAC__int32 *integer_signal_mid_side[2];          /* the integer version of the mid-side input signal (stereo only) */
@@ -891,7 +892,12 @@ static FLAC__StreamEncoderInitStatus init_stream_internal_(
 	/*
 	 * get the CPU info and set the function pointers
 	 */
-	FLAC__cpu_info(&encoder->private_->cpuinfo);
+	if (encoder->private_->disable_asm)
+	{
+		encoder->private_->cpuinfo.type = FLAC__CPUINFO_TYPE_UNKNOWN;
+		encoder->private_->cpuinfo.use_asm = false;
+	} else
+		FLAC__cpu_info(&encoder->private_->cpuinfo);
 	/* first default to the non-asm routines */
 #ifndef FLAC__INTEGER_ONLY_LIBRARY
 	encoder->private_->local_lpc_compute_autocorrelation = FLAC__lpc_compute_autocorrelation;
@@ -1428,6 +1434,16 @@ FLAC_API FLAC__bool FLAC__stream_encoder_set_do_md5(FLAC__StreamEncoder *encoder
 	if(encoder->protected_->state != FLAC__STREAM_ENCODER_UNINITIALIZED)
 		return false;
 	encoder->protected_->do_md5 = value;
+	return true;
+}
+
+FLAC_API FLAC__bool FLAC__stream_encoder_set_disable_asm(FLAC__StreamEncoder *encoder, FLAC__bool value)
+{
+	FLAC__ASSERT(0 != encoder);
+	FLAC__ASSERT(0 != encoder->protected_);
+	if(encoder->protected_->state != FLAC__STREAM_ENCODER_UNINITIALIZED)
+		return false;
+	encoder->private_->disable_asm = value;
 	return true;
 }
 

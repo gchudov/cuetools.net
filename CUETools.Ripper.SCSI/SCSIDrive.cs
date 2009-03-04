@@ -201,10 +201,7 @@ namespace CUETools.Ripper.SCSI
 
 			m_device = new Device(m_logger);
 			if (!m_device.Open(m_device_letter))
-			{
-				m_device = null;
-				throw new Exception("Open failed: SCSI error");
-			}
+				throw new Exception("Open failed: " + WinDev.Win32ErrorToString(m_device.LastError));
 
 			// Get device info
 			st = m_device.Inquiry(out m_inqury_result);
@@ -1085,6 +1082,14 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				return m_inqury_result.VendorIdentification.TrimEnd(' ', '\0').PadRight(8, ' ') + " - " + m_inqury_result.ProductIdentification.TrimEnd(' ', '\0');
+			}
+		}
+
+		public string EACName
+		{
+			get
+			{
+				return m_inqury_result.VendorIdentification.TrimEnd(' ', '\0') + " " + m_inqury_result.ProductIdentification.TrimEnd(' ', '\0');
 			}
 		}
 

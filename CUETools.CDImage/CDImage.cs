@@ -71,6 +71,8 @@ namespace CUETools.CDImage
 			_length = src._length;
 			_isAudio = src._isAudio;
 			_preEmphasis = src._preEmphasis;
+			_dcp = src._dcp;
+			_isrc = src._isrc;
 			_indexes = new List<CDTrackIndex>();
 			for (int i = 0; i < src._indexes.Count; i++)
 				_indexes.Add(new CDTrackIndex(src._indexes[i]));
@@ -370,7 +372,7 @@ namespace CUETools.CDImage
 			return frame + (sec * 75) + (min * 60 * 75);
 		}
 
-		public static string TimeToString(uint t)
+		public static string TimeToString(string format, uint t)
 		{
 			uint min, sec, frame;
 
@@ -380,7 +382,12 @@ namespace CUETools.CDImage
 			t /= 60;
 			min = t;
 
-			return String.Format("{0:00}:{1:00}:{2:00}", min, sec, frame);
+			return String.Format(format, min, sec, frame);
+		}
+
+		public static string TimeToString(uint t)
+		{
+			return TimeToString("{0:00}:{1:00}:{2:00}", t);
 		}
 
 		string _catalog;

@@ -70,7 +70,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 	public ref class FLACReader : public IAudioSource
 	{
 	public:
-		FLACReader(String^ path, Stream^ IO)
+		FLACReader(String^ path, Stream^ IO, bool disableAsm)
 		{
 			_writeDel = gcnew DecoderWriteDelegate(this, &FLACReader::WriteCallback);
 			_metadataDel = gcnew DecoderMetadataDelegate(this, &FLACReader::MetadataCallback);
@@ -94,6 +94,9 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			_decoder = FLAC__stream_decoder_new();
 
 			if (!FLAC__stream_decoder_set_metadata_respond (_decoder, FLAC__METADATA_TYPE_VORBIS_COMMENT))
+				throw gcnew Exception("Unable to setup the decoder.");
+
+			if (!FLAC__stream_decoder_set_disable_asm(_decoder, disableAsm))
 				throw gcnew Exception("Unable to setup the decoder.");
 
 			if (FLAC__stream_decoder_init_stream(_decoder, 
@@ -451,6 +454,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				throw gcnew Exception("Bits per sample must be 16..24.");
 
 			_initialized = false;
+			_disableAsm = false;
 			_path = path;
 			_finalSampleCount = 0;
 			_samplesWritten = 0;
@@ -571,6 +575,15 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			}
 		}
 
+		property Boolean DisableAsm {
+			Boolean get() {
+				return _disableAsm;
+			}
+			void set(Boolean value) {
+				_disableAsm = value;
+			}
+		}
+
 		property Int32 PaddingLength {
 			Int32 get() {
 				return _paddingLength;
@@ -594,6 +607,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		Boolean _verify;
 		FLAC__StreamMetadata **_metadataList;
 		int _metadataCount;
+		bool _disableAsm;
 
 		void Initialize() {
 			FLAC__StreamMetadata *padding, *seektable, *vorbiscomment;
@@ -655,6 +669,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			FLAC__stream_encoder_set_metadata(_encoder, _metadataList, _metadataCount);
 
 			FLAC__stream_encoder_set_verify(_encoder, _verify);
+
+			FLAC__stream_encoder_set_disable_asm(_encoder, _disableAsm);
 
 			if (_finalSampleCount != 0) {
 				FLAC__stream_encoder_set_total_samples_estimate(_encoder, _finalSampleCount);

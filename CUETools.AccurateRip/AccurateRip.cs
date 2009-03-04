@@ -144,6 +144,32 @@ namespace CUETools.AccurateRip
 			return _offsetedCRC[iTrack, _arOffsetRange];
 		}
 
+		public uint Confidence(int iTrack)
+		{
+			if (ARStatus != null)
+				return 0U;
+			uint conf = 0;
+			for (int di = 0; di < (int)AccDisks.Count; di++)
+				if (CRC(iTrack) == AccDisks[di].tracks[iTrack].CRC)
+					conf += AccDisks[di].tracks[iTrack].count;
+			return conf;
+		}
+
+		public uint Total(int iTrack)
+		{
+			if (ARStatus != null)
+				return 0U;
+			uint total = 0;
+			for (int di = 0; di < (int)AccDisks.Count; di++)
+				total += AccDisks[di].tracks[iTrack].count;
+			return total;
+		}
+
+		public uint DBCRC(int iTrack)
+		{
+			return ARStatus == null ? AccDisks[0].tracks[iTrack].CRC : 0U;
+		}
+
 		public uint BackupCRC(int iTrack)
 		{
 			return _backupCRC[iTrack];

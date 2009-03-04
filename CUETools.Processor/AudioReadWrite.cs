@@ -25,7 +25,7 @@ namespace CUETools.Processor
 					return new ALACReader(path, IO);
 #if !MONO
 				case ".flac":
-					return new FLACReader(path, IO);
+					return new FLACReader(path, IO, config.disableAsm);
 				case ".wv":
 					return new WavPackReader(path, IO, null);
 				case ".ape":
@@ -74,6 +74,7 @@ namespace CUETools.Processor
 					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate);
 					((FLACWriter)dest).CompressionLevel = (int)config.flacCompressionLevel;
 					((FLACWriter)dest).Verify = config.flacVerify;
+					((FLACWriter)dest).DisableAsm = config.disableAsm;
 					break;
 				case ".wv":
 					dest = new WavPackWriter(path, bitsPerSample, channelCount, sampleRate);

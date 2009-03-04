@@ -132,7 +132,7 @@ namespace JDP
 				else
 					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
 
-				bool outputAudio = _accurateRip != AccurateRipMode.Verify;
+				bool outputAudio = _accurateRip != AccurateRipMode.Verify && _accurateRip != AccurateRipMode.VerifyPlusCRCs;
 				cueSheet.Open(pathIn);
 				if (outputAudio)
 				{
@@ -173,7 +173,7 @@ namespace JDP
 					progressBar2.Value = 0;
 					if (cueSheet.IsCD)
 					{
-						textBox1.Text += cueSheet.LOGContents();
+						textBox1.Text += cueSheet.LOGContents;
 						textBox1.Show();
 					}
 					else if (cueSheet.AccurateRip != AccurateRipMode.None)
@@ -270,7 +270,7 @@ namespace JDP
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			if (_accurateRip != AccurateRipMode.Verify)
+			if (_accurateRip != AccurateRipMode.Verify && _accurateRip != AccurateRipMode.VerifyPlusCRCs)
 				txtOutputFile.Show();
 
 			StartConvert();

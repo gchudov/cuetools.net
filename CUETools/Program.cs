@@ -12,12 +12,13 @@ namespace JDP {
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			if (args.Length > 1 && (args[0] == "/verify" || args[0] == "/convert" || args[0] == "/fix"))
+			if (args.Length > 1 && (args[0] == "/verify" || args[0] == "/crc" || args[0] == "/convert" || args[0] == "/fix"))
 			{
 				frmBatch batch = new frmBatch();
 				batch.AccurateRip =
 					args[0] == "/convert" ? AccurateRipMode.VerifyAndConvert :
 					args[0] == "/fix" ? AccurateRipMode.VerifyThenConvert :
+					args[0] == "/crc" ? AccurateRipMode.VerifyPlusCRCs :
 					AccurateRipMode.Verify;
 
 				if (args.Length == 2 && args[1][0] != '@')

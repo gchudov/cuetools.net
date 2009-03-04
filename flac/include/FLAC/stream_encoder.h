@@ -742,6 +742,8 @@ FLAC_API FLAC__bool FLAC__stream_encoder_set_ogg_serial_number(FLAC__StreamEncod
  */
 FLAC_API FLAC__bool FLAC__stream_encoder_set_verify(FLAC__StreamEncoder *encoder, FLAC__bool value);
 
+FLAC_API FLAC__bool FLAC__stream_encoder_set_disable_asm(FLAC__StreamEncoder *encoder, FLAC__bool value);
+
 /** Set the <A HREF="../format.html#subset">Subset</A> flag.  If \c true,
  *  the encoder will comply with the Subset and will check the
  *  settings during FLAC__stream_encoder_init_*() to see if all settings
