@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="oGGToolStripMenuItem.Text" xml:space="preserve">
+    <value>OGG</value>
+  </data>
+  <data name="SelectedNodeName.Text" xml:space="preserve">
+    <value>Ausgewählte Datei</value>
+  </data>
+  <data name="btnResume.Text" xml:space="preserve">
+    <value>Weite&amp;r</value>
+  </data>
   <data name="btnConvert.Text" xml:space="preserve">
     <value>&amp;Los</value>
   </data>
@@ -230,7 +239,7 @@
     <value />
   </data>
   <data name="rbAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 17</value>
+    <value>151, 17</value>
   </data>
   <data name="rbAppendFilename.Text" xml:space="preserve">
     <value>An Dateinamen anhängen:</value>
@@ -313,13 +322,52 @@
   <data name="chkRecursive.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbActionCreateCUESheet.ToolTip" xml:space="preserve">
-    <value />
+  <data name="chkMulti.Text" xml:space="preserve">
+    <value>Multiple</value>
   </data>
   <data name="chkMulti.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="rbActionEncode.Text" xml:space="preserve">
+    <value>&amp;Nicht verif., kodieren</value>
+  </data>
+  <data name="rbActionEncode.ToolTip" xml:space="preserve">
+    <value>Kodiert, ohne die AccurateRip-Datenbank zu kontaktieren.</value>
+  </data>
+  <data name="rbActionVerify.Text" xml:space="preserve">
+    <value>&amp;Nur AR verifiz.</value>
+  </data>
+  <data name="rbActionVerify.ToolTip" xml:space="preserve">
+    <value>Kontaktiert die AccurateRip-Datenbank und verifiziert das Image anhand dieser.</value>
+  </data>
+  <data name="rbActionVerifyThenEncode.Text" xml:space="preserve">
+    <value>Verifizieren, dann kodieren</value>
+  </data>
+  <data name="rbActionVerifyThenEncode.ToolTip" xml:space="preserve">
+    <value>Verifiziert beim ersten Durchlauf verifizieren und versucht, eine Offsetkorrektur zu finden, die das Image anhand der AR-Datenbank korrigiert. Kodiert beim zweiten Durchlauf unter Berücksichtigung dieser Korrektur.</value>
+  </data>
+  <data name="rbActionVerifyAndEncode.Text" xml:space="preserve">
+    <value>Verif. und kodieren</value>
+  </data>
   <data name="rbActionVerifyAndEncode.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbActionVerifyAndCRCs.Text" xml:space="preserve">
+    <value>Verif. AR und CRC</value>
+  </data>
+  <data name="rbActionVerifyAndCRCs.ToolTip" xml:space="preserve">
+    <value>Kontaktiert die AccurateRip-Datenbank und verifiziert das Image anhand der CRC-Werte.</value>
+  </data>
+  <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
+    <value>Erzeuge leeres CUE</value>
+  </data>
+  <data name="rbActionCreateCUESheet.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbActionCorrectFilenames.Text" xml:space="preserve">
+    <value>Korrigiere Dateinamen</value>
+  </data>
+  <data name="rbActionCorrectFilenames.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="grpAction.ToolTip" xml:space="preserve">
@@ -336,6 +384,9 @@
   </data>
   <data name="label1.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="txtPreGapLength.ToolTip" xml:space="preserve">
+    <value>Das Pregap ist eine mit Stille oder versteckten Audiodaten gefüllte Zeitspanne vor dem Beginn der ersten Tonspur. Normalerweise ist diese aus dem CUE-Sheet bekannt, aber falls Sie ohne CUE-Sheet arbeiten, können Sie diesen Wert manuell ändern.</value>
   </data>
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
     <value>Nicht für normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren können nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die Länge der Datenspur. Sie können sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie müssen hier nichts eingeben.</value>
@@ -404,6 +455,9 @@
   </data>
   <data name="rbFreedbNever.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="grpFreedb.Text" xml:space="preserve">
+    <value>FreeDB-Abfrage</value>
   </data>
   <data name="grpFreedb.ToolTip" xml:space="preserve">
     <value />
