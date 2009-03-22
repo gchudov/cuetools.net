@@ -156,6 +156,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="arok.ico" />
+    <None Include="Resources\accuraterip_16.bmp" />
+    <None Include="Resources\accuraterip.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

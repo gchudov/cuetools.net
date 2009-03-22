@@ -19,7 +19,7 @@ namespace JDP
 			_config = new CUEConfig();
 			_cueStyle = CUEStyle.SingleFile;
 			_audioFormat = OutputAudioFormat.WAV;
-			_accurateRip = AccurateRipMode.Verify;
+			_accurateRip = CUEAction.Verify;
 			_batchPaths = new List<string>();
 		}
 
@@ -34,7 +34,7 @@ namespace JDP
 			set { pathIn = value; }
 		}
 
-		public AccurateRipMode AccurateRip
+		public CUEAction AccurateRip
 		{
 			get { return _accurateRip; }
 			set { _accurateRip = value; }
@@ -47,7 +47,7 @@ namespace JDP
 		OutputAudioFormat _audioFormat;
 		string pathIn;
 		string pathOut;
-		AccurateRipMode _accurateRip;
+		CUEAction _accurateRip;
 		bool _reducePriority;
 		bool _lossyWAV;
 		DateTime _startedAt;
@@ -132,8 +132,10 @@ namespace JDP
 				else
 					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
 
-				bool outputAudio = _accurateRip != AccurateRipMode.Verify && _accurateRip != AccurateRipMode.VerifyPlusCRCs;
+				bool outputAudio = _accurateRip != CUEAction.Verify && _accurateRip != CUEAction.VerifyPlusCRCs;
+				cueSheet.Action = _accurateRip;
 				cueSheet.Open(pathIn);
+				cueSheet.Lookup();
 				if (outputAudio)
 				{
 					bool pathFound = false;
@@ -161,7 +163,6 @@ namespace JDP
 				}
 
 				cueSheet.UsePregapForFirstTrackInSingleFile = false;
-				cueSheet.AccurateRip = _accurateRip;
 				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathOut), _cueStyle);
 				this.Invoke((MethodInvoker)delegate()
 				{
@@ -176,7 +177,7 @@ namespace JDP
 						textBox1.Text += cueSheet.LOGContents;
 						textBox1.Show();
 					}
-					else if (cueSheet.AccurateRip != AccurateRipMode.None)
+					else if (cueSheet.Action != CUEAction.Convert)
 					{
 						StringWriter sw = new StringWriter();
 						cueSheet.GenerateAccurateRipLog(sw);
@@ -270,7 +271,7 @@ namespace JDP
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			if (_accurateRip != AccurateRipMode.Verify && _accurateRip != AccurateRipMode.VerifyPlusCRCs)
+			if (_accurateRip != CUEAction.Verify && _accurateRip != CUEAction.VerifyPlusCRCs)
 				txtOutputFile.Show();
 
 			StartConvert();

@@ -129,55 +129,10 @@
   <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="btnBrowseInput.Text" xml:space="preserve">
-    <value>...</value>
-  </data>
-  <data name="btnBrowseInput.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="lblOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>53, 13</value>
-  </data>
-  <data name="lblOutput.Text" xml:space="preserve">
-    <value>&amp;Ausgabe:</value>
-  </data>
-  <data name="lblOutput.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="lblInput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>49, 13</value>
-  </data>
-  <data name="lblInput.Text" xml:space="preserve">
-    <value>E&amp;ingabe:</value>
-  </data>
-  <data name="lblInput.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>62, 48</value>
-  </data>
-  <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>382, 21</value>
-  </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="txtInputPath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>62, 22</value>
-  </data>
-  <data name="txtInputPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>382, 21</value>
-  </data>
-  <data name="txtInputPath.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="grpCUEPaths.Text" xml:space="preserve">
-    <value>CUE-Pfade</value>
-  </data>
-  <data name="grpCUEPaths.ToolTip" xml:space="preserve">
-    <value />
-  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>81, 17</value>
   </data>
@@ -223,12 +178,6 @@
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
     <value>Erstelle einzelne Datei + CUE-Sheet</value>
   </data>
-  <data name="grpOutputStyle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>97, 211</value>
-  </data>
-  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>141, 164</value>
-  </data>
   <data name="grpOutputStyle.Text" xml:space="preserve">
     <value>CUE-Stil</value>
   </data>
@@ -240,9 +189,6 @@
   </data>
   <data name="btnAbout.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="txtCustomFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>163, 62</value>
   </data>
   <data name="txtCustomFormat.Text" xml:space="preserve">
     <value>%1:-2\Neu\%-1\%F.cue</value>
@@ -258,9 +204,6 @@
   </data>
   <data name="rbCustomFormat.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="txtCreateSubdirectory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>163, 20</value>
   </data>
   <data name="txtCreateSubdirectory.Text" xml:space="preserve">
     <value>Neu</value>
@@ -295,9 +238,6 @@
   <data name="rbAppendFilename.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="txtAppendFilename.Location" type="System.Drawing.Point, System.Drawing">
-    <value>163, 42</value>
-  </data>
   <data name="txtAppendFilename.Text" xml:space="preserve">
     <value>-Neu</value>
   </data>
@@ -309,9 +249,6 @@
   </data>
   <data name="grpOutputPathGeneration.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="btnCodec.Location" type="System.Drawing.Point, System.Drawing">
-    <value>61, 117</value>
   </data>
   <data name="btnCodec.ToolTip" xml:space="preserve">
     <value />
@@ -352,28 +289,10 @@
   <data name="rbFLAC.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="grpAudioOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 164</value>
-  </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Audio</value>
   </data>
   <data name="grpAudioOutput.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 307</value>
-  </data>
-  <data name="btnBatch.Text" xml:space="preserve">
-    <value>Stapel...</value>
-  </data>
-  <data name="btnBatch.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="btnFilenameCorrector.Text" xml:space="preserve">
-    <value>Dateinamenkorrektur...</value>
-  </data>
-  <data name="btnFilenameCorrector.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="btnSettings.Text" xml:space="preserve">
@@ -382,32 +301,35 @@
   <data name="btnSettings.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="rbActionCorrectFilenames.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkRecursive.Size" type="System.Drawing.Size, System.Drawing">
+    <value>56, 17</value>
+  </data>
+  <data name="chkRecursive.Text" xml:space="preserve">
+    <value>Stapel</value>
+  </data>
+  <data name="chkRecursive.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbActionCreateCUESheet.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkMulti.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbActionVerifyAndEncode.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpAction.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="label2.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbArPlusCRC.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 88</value>
-  </data>
-  <data name="rbArPlusCRC.Size" type="System.Drawing.Size, System.Drawing">
-    <value>129, 17</value>
-  </data>
-  <data name="rbArPlusCRC.Text" xml:space="preserve">
-    <value>Verifiziere AR + CRCs</value>
-  </data>
-  <data name="rbArPlusCRC.ToolTip" xml:space="preserve">
-    <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image sowohl anhand dieser als auch anhand der CRC-Werte zu verifizieren</value>
-  </data>
-  <data name="rbArAndEncode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 37</value>
-  </data>
-  <data name="rbArAndEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 17</value>
-  </data>
-  <data name="rbArAndEncode.Text" xml:space="preserve">
-    <value>Kodieren und verifizieren</value>
-  </data>
-  <data name="rbArAndEncode.ToolTip" xml:space="preserve">
-    <value />
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>61, 13</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Datenspur:</value>
@@ -418,52 +340,27 @@
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
     <value>Nicht für normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren können nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die Länge der Datenspur. Sie können sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie müssen hier nichts eingeben.</value>
   </data>
-  <data name="rbArApplyOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 20</value>
-  </data>
-  <data name="rbArApplyOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 17</value>
-  </data>
-  <data name="rbArApplyOffset.Text" xml:space="preserve">
-    <value>Verifizieren, &amp;dann kodieren</value>
-  </data>
-  <data name="rbArApplyOffset.ToolTip" xml:space="preserve">
-    <value>Im ersten Durchlauf verifizieren und versuchen, eine Offsetkorrektur zu finden, die das Auslesen nach der AccurateRip-Datenbank korrekt macht. Im zweiten Durchlauf unter Berücksichtigung dieser Korrektur konvertieren.</value>
-  </data>
-  <data name="rbArVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 71</value>
-  </data>
-  <data name="rbArVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>108, 17</value>
-  </data>
-  <data name="rbArVerify.Text" xml:space="preserve">
-    <value>&amp;Verifiziere nur AR</value>
-  </data>
-  <data name="rbArVerify.ToolTip" xml:space="preserve">
-    <value>Kontaktiere die AccurateRip-Datenbank und versuche, das Image anhand dieser zu verifizieren</value>
-  </data>
-  <data name="rbArNone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 54</value>
-  </data>
-  <data name="rbArNone.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 17</value>
-  </data>
-  <data name="rbArNone.Text" xml:space="preserve">
-    <value>&amp;Nicht verifizieren, kodieren</value>
-  </data>
-  <data name="rbArNone.ToolTip" xml:space="preserve">
-    <value>Die AccurateRip-Datenbank zur Verifizierung nicht kontaktieren</value>
-  </data>
-  <data name="grpAccurateRip.ToolTip" xml:space="preserve">
-    <value />
+  <data name="toolStripStatusLabelAR.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAyNJREFUOE9tkm1P
+        mmcYhh+zbsm+Ntlf2Jd92n/Yx21p1nTZlplZ0mJD2+mYG119AakITi2tmoK0a33p1BL7MtcpXRCrKNbK
+        EEOd1qLYCigSERB5e4BjxGVZSLyTM3dyJcdx3cl9lglHHKcTHO43wk76XSH/Tl44/t4x4cP3jwsfffBW
+        mUiOt8uOlR3FCaN9KWplSaq+F5FehnItVN4ooOgroLpfoHM0i9WVoATOkz0cPP8DVBUxaiRFqAq+VqSR
+        NoPcAOqBAi0PChif5Lg3LeLeyJRKujQrKC9uFeEEZ8rTVFQWOCsv8OMVaOwW6TCDaQyGpvJYnDEW18J4
+        Vjf+lyh++JsL8g0qZLuclojITmdRSEGnBP3tPHeKr7tvh8kXB2zuwU40SjwRIp2KI1y7NcUFtQtJ4yLl
+        dUFkNVHqzqeplwRwTsKzheLWmQzLfgjs5wgn4wR3XrIbWSAVW0D4rvURZ7SzSLQuzuq8KDTb6BpizD/N
+        4VsPsvxqle2oSHBfJJTe5/XeCpGEm+TBHLmkFUF6/S6SjlFknRMoutzo9D6M19cJBGL8aRs/vCOJOP5M
+        Ar+4TlR0I+bsFMTHxZgRKnXdVGsHUGofoGmyYaybpafGw4zZR+YgSTy6j3fJy5u1ZWKBv8juPoHoCLno
+        EOz1Igyaf6OpsQtDm5mJu4sMVlmY7VwibAsRdAcITqwSsT4jNW0ns/wYvEMUXv8CwQ5S4YcIfr+f2+0G
+        luweVu2+oqCHTdsa4flNkk4/3t4xEiOjYC3C8wPklwzkvXrwtUHK8+9XGi/V011ZzYbVwda4h9BTF5HZ
+        l2z3PiRuNJIe7EIc0ZO36SjMFtvl+Yn4ytXSMjlu9WD56hzZkXESjjkyUzOE1LWk26pJ3ZRz8Gsxjy6S
+        GJcQc5tK4f+6/fxeH2MVnzMnPcmr8yfZrvmErYZPCbR+zGbHCXx3vsAx3HI0PDw8jMlkor9Zze9VUqbP
+        fckL+Slc9Z/hVJ9iUvsNN9Xf8vPVdgyG7lKJxWKhv78fvV5Pi6YZtVqFUnUZTcMltLW1qBqU1Deqi2lC
+        c6WZ9vZWbhgNh5J/AJcIo/TEh255AAAAAElFTkSuQmCC
+</value>
   </data>
   <data name="statusStrip1.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="btnCUECreator.Text" xml:space="preserve">
-    <value>CUE-Sheet erstellen...</value>
-  </data>
-  <data name="btnCUECreator.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="btnStop.Text" xml:space="preserve">
@@ -508,13 +405,40 @@
   <data name="rbFreedbNever.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="groupBox1.Text" xml:space="preserve">
-    <value>FreeDB-Abfrage</value>
-  </data>
-  <data name="groupBox1.ToolTip" xml:space="preserve">
+  <data name="grpFreedb.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="contextMenuStripUDC.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtInputPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="textBatchReport.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="fileSystemTreeView1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpInput.Text" xml:space="preserve">
+    <value>E&amp;ingabe</value>
+  </data>
+  <data name="grpInput.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="lblWriteOffset.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpExtra.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="contextMenuStripFileTree.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="panel1.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -544,9 +468,6 @@
         7+vvCgoKCgoKCu/r6+vr6+vvCgoKCvgfAADgBwAAwAMAAIABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         AAAAAAAAAAAAAIABAADAAwAA4AcAAPAPAAA=
 </value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>CUE-Tools</value>
   </data>
   <data name="$this.ToolTip" xml:space="preserve">
     <value />

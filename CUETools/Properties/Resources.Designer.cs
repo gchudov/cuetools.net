@@ -60,6 +60,34 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap accuraterip {
+            get {
+                object obj = ResourceManager.GetObject("accuraterip", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap accuraterip16 {
+            get {
+                object obj = ResourceManager.GetObject("accuraterip16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon cue {
+            get {
+                object obj = ResourceManager.GetObject("cue", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap flac {
+            get {
+                object obj = ResourceManager.GetObject("flac", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap freedb {
             get {
                 object obj = ResourceManager.GetObject("freedb", resourceCulture);
@@ -98,6 +126,20 @@ namespace JDP.Properties {
         internal static string Verify {
             get {
                 return ResourceManager.GetString("Verify", resourceCulture);
+            }
+        }
+        
+        internal static System.Drawing.Bitmap wav {
+            get {
+                object obj = ResourceManager.GetObject("wav", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap wv {
+            get {
+                object obj = ResourceManager.GetObject("wv", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

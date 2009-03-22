@@ -27,6 +27,7 @@ namespace JDP {
 			System.Windows.Forms.Button btnCancel;
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSettings));
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
+			this.chkSingleInstance = new System.Windows.Forms.CheckBox();
 			this.chkOverwriteTags = new System.Windows.Forms.CheckBox();
 			this.chkExtractLog = new System.Windows.Forms.CheckBox();
 			this.chkReducePriority = new System.Windows.Forms.CheckBox();
@@ -35,10 +36,8 @@ namespace JDP {
 			this.chkCreateM3U = new System.Windows.Forms.CheckBox();
 			this.chkFillUpCUE = new System.Windows.Forms.CheckBox();
 			this.chkEmbedLog = new System.Windows.Forms.CheckBox();
-			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
 			this.chkAutoCorrectFilenames = new System.Windows.Forms.CheckBox();
 			this.chkPreserveHTOA = new System.Windows.Forms.CheckBox();
-			this.lblWriteOffset = new System.Windows.Forms.Label();
 			this.numericFLACCompressionLevel = new System.Windows.Forms.NumericUpDown();
 			this.lblFLACCompressionLevel = new System.Windows.Forms.Label();
 			this.chkFLACVerify = new System.Windows.Forms.CheckBox();
@@ -111,12 +110,12 @@ namespace JDP {
 			this.label4 = new System.Windows.Forms.Label();
 			this.label3 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
+			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.grpHDCD = new System.Windows.Forms.GroupBox();
 			this.chkHDCDDetect = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).BeginInit();
 			this.groupBox1.SuspendLayout();
@@ -159,6 +158,7 @@ namespace JDP {
 			this.grpGeneral.AccessibleName = null;
 			resources.ApplyResources(this.grpGeneral, "grpGeneral");
 			this.grpGeneral.BackgroundImage = null;
+			this.grpGeneral.Controls.Add(this.chkSingleInstance);
 			this.grpGeneral.Controls.Add(this.chkOverwriteTags);
 			this.grpGeneral.Controls.Add(this.chkExtractLog);
 			this.grpGeneral.Controls.Add(this.chkReducePriority);
@@ -167,14 +167,23 @@ namespace JDP {
 			this.grpGeneral.Controls.Add(this.chkCreateM3U);
 			this.grpGeneral.Controls.Add(this.chkFillUpCUE);
 			this.grpGeneral.Controls.Add(this.chkEmbedLog);
-			this.grpGeneral.Controls.Add(this.numericWriteOffset);
 			this.grpGeneral.Controls.Add(this.chkAutoCorrectFilenames);
 			this.grpGeneral.Controls.Add(this.chkPreserveHTOA);
-			this.grpGeneral.Controls.Add(this.lblWriteOffset);
 			this.grpGeneral.Font = null;
 			this.grpGeneral.Name = "grpGeneral";
 			this.grpGeneral.TabStop = false;
 			this.toolTip1.SetToolTip(this.grpGeneral, resources.GetString("grpGeneral.ToolTip"));
+			// 
+			// chkSingleInstance
+			// 
+			this.chkSingleInstance.AccessibleDescription = null;
+			this.chkSingleInstance.AccessibleName = null;
+			resources.ApplyResources(this.chkSingleInstance, "chkSingleInstance");
+			this.chkSingleInstance.BackgroundImage = null;
+			this.chkSingleInstance.Font = null;
+			this.chkSingleInstance.Name = "chkSingleInstance";
+			this.toolTip1.SetToolTip(this.chkSingleInstance, resources.GetString("chkSingleInstance.ToolTip"));
+			this.chkSingleInstance.UseVisualStyleBackColor = true;
 			// 
 			// chkOverwriteTags
 			// 
@@ -265,25 +274,6 @@ namespace JDP {
 			this.toolTip1.SetToolTip(this.chkEmbedLog, resources.GetString("chkEmbedLog.ToolTip"));
 			this.chkEmbedLog.UseVisualStyleBackColor = true;
 			// 
-			// numericWriteOffset
-			// 
-			this.numericWriteOffset.AccessibleDescription = null;
-			this.numericWriteOffset.AccessibleName = null;
-			resources.ApplyResources(this.numericWriteOffset, "numericWriteOffset");
-			this.numericWriteOffset.Font = null;
-			this.numericWriteOffset.Maximum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            0});
-			this.numericWriteOffset.Minimum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            -2147483648});
-			this.numericWriteOffset.Name = "numericWriteOffset";
-			this.toolTip1.SetToolTip(this.numericWriteOffset, resources.GetString("numericWriteOffset.ToolTip"));
-			// 
 			// chkAutoCorrectFilenames
 			// 
 			this.chkAutoCorrectFilenames.AccessibleDescription = null;
@@ -305,15 +295,6 @@ namespace JDP {
 			this.chkPreserveHTOA.Name = "chkPreserveHTOA";
 			this.toolTip1.SetToolTip(this.chkPreserveHTOA, resources.GetString("chkPreserveHTOA.ToolTip"));
 			this.chkPreserveHTOA.UseVisualStyleBackColor = true;
-			// 
-			// lblWriteOffset
-			// 
-			this.lblWriteOffset.AccessibleDescription = null;
-			this.lblWriteOffset.AccessibleName = null;
-			resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
-			this.lblWriteOffset.Font = null;
-			this.lblWriteOffset.Name = "lblWriteOffset";
-			this.toolTip1.SetToolTip(this.lblWriteOffset, resources.GetString("lblWriteOffset.ToolTip"));
 			// 
 			// numericFLACCompressionLevel
 			// 
@@ -1008,6 +989,7 @@ namespace JDP {
 			this.tabControl2.Controls.Add(this.tabPage8);
 			this.tabControl2.Controls.Add(this.tabPage9);
 			this.tabControl2.Font = null;
+			this.tabControl2.ImageList = this.imageList1;
 			this.tabControl2.Multiline = true;
 			this.tabControl2.Name = "tabControl2";
 			this.tabControl2.SelectedIndex = 0;
@@ -1018,6 +1000,7 @@ namespace JDP {
 			this.tabPage5.AccessibleDescription = null;
 			this.tabPage5.AccessibleName = null;
 			resources.ApplyResources(this.tabPage5, "tabPage5");
+			this.tabPage5.BackColor = System.Drawing.Color.Transparent;
 			this.tabPage5.BackgroundImage = null;
 			this.tabPage5.Controls.Add(this.numericFLACCompressionLevel);
 			this.tabPage5.Controls.Add(this.lblFLACCompressionLevel);
@@ -1242,6 +1225,13 @@ namespace JDP {
 			this.label2.Name = "label2";
 			this.toolTip1.SetToolTip(this.label2, resources.GetString("label2.ToolTip"));
 			// 
+			// imageList1
+			// 
+			this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+			this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+			this.imageList1.Images.SetKeyName(0, "flac");
+			this.imageList1.Images.SetKeyName(1, "wv");
+			// 
 			// tabPage4
 			// 
 			this.tabPage4.AccessibleDescription = null;
@@ -1306,7 +1296,6 @@ namespace JDP {
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmSettings_FormClosing);
 			this.grpGeneral.ResumeLayout(false);
 			this.grpGeneral.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).EndInit();
 			this.groupBox1.ResumeLayout(false);
@@ -1347,7 +1336,6 @@ namespace JDP {
 
 		private System.Windows.Forms.GroupBox grpGeneral;
 		private System.Windows.Forms.CheckBox chkPreserveHTOA;
-		private System.Windows.Forms.Label lblWriteOffset;
 		private System.Windows.Forms.Label lblFLACCompressionLevel;
 		private System.Windows.Forms.CheckBox chkFLACVerify;
 		private System.Windows.Forms.Button btnOK;
@@ -1360,7 +1348,6 @@ namespace JDP {
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.CheckBox chkWriteArTagsOnConvert;
 		private System.Windows.Forms.NumericUpDown numericFLACCompressionLevel;
-		private System.Windows.Forms.NumericUpDown numericWriteOffset;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.NumericUpDown numFixWhenPercent;
 		private System.Windows.Forms.Label labelFixWhenPercent;
@@ -1433,6 +1420,8 @@ namespace JDP {
 		private System.Windows.Forms.TextBox textUDC1Encoder;
 		private System.Windows.Forms.CheckBox chkUDC1APEv2;
 		private System.Windows.Forms.CheckBox chkUDC1ID3v2;
+		private System.Windows.Forms.ImageList imageList1;
+		private System.Windows.Forms.CheckBox chkSingleInstance;
 
 	}
 }

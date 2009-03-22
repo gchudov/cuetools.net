@@ -265,7 +265,7 @@ hdcd.dll (c) Christopher Key</value>
     <value>CenterParent</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>About CUETools v1.9.5a</value>
+    <value>About CUETools</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmAbout</value>

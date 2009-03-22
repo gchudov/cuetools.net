@@ -71,10 +71,15 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\CUETools.Processor\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -224,9 +229,25 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\taglib-sharp\taglib-sharp.csproj">
+      <Project>{4CC18776-125E-4318-9D24-D60110AD9697}</Project>
+      <Name>taglib-sharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUEControls\CUEControls.csproj">
+      <Project>{CA4D64E6-6544-4A29-8BA5-7DB08D50D072}</Project>
+      <Name>CUEControls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
+      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
+      <Name>CUETools.AccurateRip</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
+      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
+      <Name>CUETools.Codecs</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
@@ -248,9 +269,15 @@
     <None Include="Resources\musicbrainz.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\accuraterip.jpg" />
+    <Content Include="Resources\accuraterip_16.bmp" />
+    <Content Include="Resources\AR.ico" />
     <Content Include="Resources\cue.ico" />
     <Content Include="Resources\cue_32.ico" />
     <Content Include="Resources\eac.ico" />
+    <Content Include="Resources\flac.ico" />
+    <Content Include="Resources\icon-wv.png" />
+    <Content Include="Resources\wav.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

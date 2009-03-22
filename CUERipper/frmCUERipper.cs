@@ -353,8 +353,10 @@ namespace CUERipper
 			ReleaseInfo r = new ReleaseInfo();
 			r.cueSheet = new CUESheet(_config);
 			r.cueSheet.OpenCD(audioSource);
+			General.SetCUELine(r.cueSheet.Attributes, "REM", "GENRE", "", true);
+			General.SetCUELine(r.cueSheet.Attributes, "REM", "DATE", "", false);
 			General.SetCUELine(r.cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
-			General.SetCUELine(r.cueSheet.Attributes, "REM", "COMMENT", CDDriveReader.RipperVersion(), true);
+			General.SetCUELine(r.cueSheet.Attributes, "REM", "COMMENT", _config.createEACLOG ? "ExactAudioCopy v0.99pb4" : CDDriveReader.RipperVersion(), true);
 			if (release != null)
 			{
 				r.cueSheet.FillFromMusicBrainz(release);
@@ -372,7 +374,9 @@ namespace CUERipper
 				for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
 					r.cueSheet.Tracks[i].Title = string.Format("Track {0:00}", i + 1);
 			}
-			r.cueSheet.AccurateRip = AccurateRipMode.VerifyAndConvert;
+			if (r.cueSheet.Genre == "") r.cueSheet.Genre = "";
+			if (r.cueSheet.Year == "") r.cueSheet.Year = "";
+			r.cueSheet.Action = CUEAction.VerifyAndConvert;
 			r.cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
 			return r;
 		}
@@ -483,7 +487,10 @@ namespace CUERipper
 			{
 				SetupControls();
 				comboRelease.SelectedIndex = 0;
-				toolStripStatusAr.Visible = ((ReleaseInfo) comboRelease.SelectedItem).cueSheet.ArVerify.ARStatus == null;
+				CUESheet cueSheet = ((ReleaseInfo)comboRelease.SelectedItem).cueSheet;
+				toolStripStatusAr.Visible = true; //  cueSheet.ArVerify.ARStatus == null;
+				toolStripStatusAr.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.Total(0).ToString() : "?";
+				toolStripStatusAr.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
 			});
 		}
 

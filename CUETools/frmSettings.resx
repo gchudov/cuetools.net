@@ -178,7 +178,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="tabPage6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>512, 223</value>
+    <value>512, 222</value>
   </data>
   <data name="grpAudioFilenames.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -197,9 +197,6 @@
   </data>
   <data name="chkTruncateExtra4206Samples.ToolTip" xml:space="preserve">
     <value>Some erroneous FLAC encoders add extra 4608 zero samples at the end of each file. These extra samples can be detected  and removed.</value>
-  </data>
-  <data name="btnOK.Text" xml:space="preserve">
-    <value>OK</value>
   </data>
   <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
     <value>toolTip1</value>
@@ -276,9 +273,6 @@
   <data name="&gt;&gt;rbWVHigh.Type" xml:space="preserve">
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;numericWriteOffset.Name" xml:space="preserve">
-    <value>numericWriteOffset</value>
-  </data>
   <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 63</value>
   </data>
@@ -292,7 +286,7 @@
     <value>Write AccurateRip tags</value>
   </data>
   <data name="tabPage6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 22</value>
+    <value>4, 23</value>
   </data>
   <data name="chkUDC1ID3v2.Size" type="System.Drawing.Size, System.Drawing">
     <value>79, 17</value>
@@ -363,6 +357,9 @@
   <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
     <value>Track format:</value>
   </data>
+  <data name="&gt;&gt;imageList1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="tabPage7.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
@@ -380,6 +377,9 @@
   </data>
   <data name="chkReplaceSpaces.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
+  </data>
+  <data name="&gt;&gt;chkSingleInstance.Name" xml:space="preserve">
+    <value>chkSingleInstance</value>
   </data>
   <data name="&gt;&gt;label5.Name" xml:space="preserve">
     <value>label5</value>
@@ -535,10 +535,10 @@
     <value>38, 21</value>
   </data>
   <data name="chkAutoCorrectFilenames.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 61</value>
+    <value>12, 55</value>
   </data>
-  <data name="&gt;&gt;numericWriteOffset.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;textUDC1EncParams.Parent" xml:space="preserve">
+    <value>tabPage9</value>
   </data>
   <data name="rbWVVeryHigh.ToolTip" xml:space="preserve">
     <value />
@@ -597,9 +597,6 @@
   <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
     <value>54, 13</value>
   </data>
-  <data name="&gt;&gt;lblWriteOffset.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;lblFLACCompressionLevel.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
@@ -608,6 +605,9 @@
   </data>
   <data name="chkHDCD24bit.ToolTip" xml:space="preserve">
     <value>When not using lossyWAV, extend to 24 bit for compatibility</value>
+  </data>
+  <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;rbWVVeryHigh.Type" xml:space="preserve">
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -675,8 +675,8 @@
   <data name="&gt;&gt;rbAPEnormal.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="rbAPEextrahigh.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 57</value>
+  <data name="&gt;&gt;chkWVStoreMD5.Name" xml:space="preserve">
+    <value>chkWVStoreMD5</value>
   </data>
   <data name="&gt;&gt;chkFillUpCUE.Name" xml:space="preserve">
     <value>chkFillUpCUE</value>
@@ -756,8 +756,8 @@
   <data name="textUDC1EncParams.Location" type="System.Drawing.Point, System.Drawing">
     <value>89, 114</value>
   </data>
-  <data name="&gt;&gt;chkFilenamesANSISafe.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="btnOK.Text" xml:space="preserve">
+    <value>OK</value>
   </data>
   <data name="btnOK.Size" type="System.Drawing.Size, System.Drawing">
     <value>73, 23</value>
@@ -789,14 +789,8 @@
   <data name="&gt;&gt;chkCreateM3U.Parent" xml:space="preserve">
     <value>grpGeneral</value>
   </data>
-  <data name="&gt;&gt;numericWriteOffset.Parent" xml:space="preserve">
-    <value>grpGeneral</value>
-  </data>
   <data name="&gt;&gt;lblSingleFilenameFormat.Name" xml:space="preserve">
     <value>lblSingleFilenameFormat</value>
-  </data>
-  <data name="numericWriteOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
   </data>
   <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>62, 13</value>
@@ -839,6 +833,12 @@
   </data>
   <data name="tabPage7.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 3, 3, 3</value>
+  </data>
+  <data name="&gt;&gt;txtTrackFilenameFormat.Name" xml:space="preserve">
+    <value>txtTrackFilenameFormat</value>
+  </data>
+  <data name="chkSingleInstance.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
   </data>
   <data name="tabControl1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
@@ -885,9 +885,6 @@
   <data name="&gt;&gt;chkEncodeWhenZeroOffset.Name" xml:space="preserve">
     <value>chkEncodeWhenZeroOffset</value>
   </data>
-  <data name="lblWriteOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Remove special characters except:</value>
   </data>
@@ -916,7 +913,7 @@
     <value>8</value>
   </data>
   <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="&gt;&gt;grpGeneral.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -930,11 +927,8 @@
   <data name="&gt;&gt;grpHDCD.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="chkCreateM3U.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="textUDC1Decoder.Location" type="System.Drawing.Point, System.Drawing">
-    <value>89, 33</value>
+  <data name="&gt;&gt;chkFilenamesANSISafe.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
     <value>with confidence &gt;=</value>
@@ -976,7 +970,7 @@
     <value>label4</value>
   </data>
   <data name="&gt;&gt;chkEmbedLog.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="&gt;&gt;rbWVHigh.Parent" xml:space="preserve">
     <value>tabPage6</value>
@@ -1005,6 +999,9 @@
   <data name="rbWVNormal.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 23</value>
   </data>
+  <data name="&gt;&gt;imageList1.Name" xml:space="preserve">
+    <value>imageList1</value>
+  </data>
   <data name="&gt;&gt;tabPage9.Parent" xml:space="preserve">
     <value>tabControl2</value>
   </data>
@@ -1013,6 +1010,9 @@
   </data>
   <data name="&gt;&gt;chkArFixOffset.Name" xml:space="preserve">
     <value>chkArFixOffset</value>
+  </data>
+  <data name="chkSingleInstance.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbWVFast.Text" xml:space="preserve">
     <value>Fast</value>
@@ -1062,9 +1062,6 @@
   <data name="chkWriteARTagsOnVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>137, 17</value>
   </data>
-  <data name="chkEmbedLog.Text" xml:space="preserve">
-    <value>Embed log file as a tag</value>
-  </data>
   <data name="&gt;&gt;chkFilenamesANSISafe.Parent" xml:space="preserve">
     <value>grpAudioFilenames</value>
   </data>
@@ -1075,7 +1072,7 @@
     <value>Detect HDCD encoding</value>
   </data>
   <data name="tabPage7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 22</value>
+    <value>4, 23</value>
   </data>
   <data name="&gt;&gt;chkEmbedLog.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1110,14 +1107,14 @@
   <data name="&gt;&gt;numericLossyWAVQuality.Type" xml:space="preserve">
     <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="label2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
   <data name="chkFilenamesANSISafe.Size" type="System.Drawing.Size, System.Drawing">
     <value>128, 17</value>
-  </data>
-  <data name="&gt;&gt;lblWriteOffset.ZOrder" xml:space="preserve">
-    <value>11</value>
   </data>
   <data name="&gt;&gt;textUDC1Encoder.ZOrder" xml:space="preserve">
     <value>5</value>
@@ -1174,7 +1171,7 @@
     <value>1</value>
   </data>
   <data name="tabPage8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>512, 223</value>
+    <value>512, 222</value>
   </data>
   <data name="labelEncodeWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
     <value>121, 13</value>
@@ -1198,7 +1195,7 @@
     <value>520, 249</value>
   </data>
   <data name="&gt;&gt;chkFillUpCUE.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="&gt;&gt;numericFLACCompressionLevel.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -1209,14 +1206,14 @@
   <data name="chkEmbedLog.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
   </data>
-  <data name="&gt;&gt;lblWriteOffset.Name" xml:space="preserve">
-    <value>lblWriteOffset</value>
+  <data name="&gt;&gt;chkSingleInstance.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;txtSingleFilenameFormat.Parent" xml:space="preserve">
     <value>grpAudioFilenames</value>
   </data>
   <data name="tabPage7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>512, 223</value>
+    <value>512, 222</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Text" xml:space="preserve">
     <value>Write AccurateRip tags</value>
@@ -1254,9 +1251,6 @@
   <data name="&gt;&gt;chkRemoveSpecial.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>133, 20</value>
-  </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>45, 13</value>
   </data>
@@ -1275,8 +1269,8 @@
   <data name="&gt;&gt;textUDC1EncParams.Name" xml:space="preserve">
     <value>textUDC1EncParams</value>
   </data>
-  <data name="&gt;&gt;txtTrackFilenameFormat.Name" xml:space="preserve">
-    <value>txtTrackFilenameFormat</value>
+  <data name="chkCreateM3U.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.ToolTip" xml:space="preserve">
     <value />
@@ -1294,7 +1288,7 @@
     <value>0</value>
   </data>
   <data name="tabPage9.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 22</value>
+    <value>4, 23</value>
   </data>
   <data name="rbAPEhigh.Size" type="System.Drawing.Size, System.Drawing">
     <value>46, 17</value>
@@ -1310,9 +1304,6 @@
   </data>
   <data name="chkCreateM3U.Text" xml:space="preserve">
     <value>Create .m3u playlists</value>
-  </data>
-  <data name="numericWriteOffset.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
-    <value>Right</value>
   </data>
   <data name="&gt;&gt;textUDC1Decoder.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1359,9 +1350,6 @@
   <data name="&gt;&gt;numEncodeWhenConfidence.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
-  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkArFixOffset.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
@@ -1397,9 +1385,6 @@
   </data>
   <data name="lblTrackFilenameFormat.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
-  </data>
-  <data name="lblWriteOffset.Text" xml:space="preserve">
-    <value>Write offset (samples):</value>
   </data>
   <data name="chkUDC1APEv2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1459,7 +1444,7 @@
     <value>tabPage6</value>
   </data>
   <data name="chkOverwriteTags.Location" type="System.Drawing.Point, System.Drawing">
-    <value>30, 198</value>
+    <value>30, 191</value>
   </data>
   <data name="chkWriteArLogOnConvert.ToolTip" xml:space="preserve">
     <value />
@@ -1489,7 +1474,7 @@
     <value />
   </data>
   <data name="chkTruncateExtra4206Samples.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 146</value>
+    <value>12, 140</value>
   </data>
   <data name="&gt;&gt;tabPage3.Parent" xml:space="preserve">
     <value>tabControl1</value>
@@ -1499,9 +1484,6 @@
   </data>
   <data name="&gt;&gt;btnOK.Name" xml:space="preserve">
     <value>btnOK</value>
-  </data>
-  <data name="&gt;&gt;numericWriteOffset.ZOrder" xml:space="preserve">
-    <value>8</value>
   </data>
   <data name="chkAutoCorrectFilenames.ToolTip" xml:space="preserve">
     <value>Preprocess with filename corrector if unable to locate audio files</value>
@@ -1581,6 +1563,9 @@
   <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;chkSingleInstance.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
+  </data>
   <data name="rbWVNormal.Text" xml:space="preserve">
     <value>Normal</value>
   </data>
@@ -1592,9 +1577,6 @@
   </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
     <value>Reduce process priority to Idle</value>
-  </data>
-  <data name="numFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
     <value>543, 287</value>
@@ -1620,8 +1602,8 @@
   <data name="&gt;&gt;chkFilenamesANSISafe.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="lblWriteOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+  <data name="numFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
   </data>
   <data name="chkExtractLog.Size" type="System.Drawing.Size, System.Drawing">
     <value>95, 17</value>
@@ -1671,6 +1653,9 @@
   <data name="&gt;&gt;lblSingleFilenameFormat.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;chkSingleInstance.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;chkHDCDLW16.Parent" xml:space="preserve">
     <value>grpHDCD</value>
   </data>
@@ -1711,13 +1696,16 @@
     <value>CUETools</value>
   </data>
   <data name="tabPage5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 22</value>
+    <value>4, 23</value>
   </data>
   <data name="&gt;&gt;chkPreserveHTOA.Name" xml:space="preserve">
     <value>chkPreserveHTOA</value>
   </data>
   <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="chkSingleInstance.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 21</value>
   </data>
   <data name="tabControl2.ToolTip" xml:space="preserve">
     <value />
@@ -1735,7 +1723,7 @@
     <value>tabPage8</value>
   </data>
   <data name="tabPage9.Size" type="System.Drawing.Size, System.Drawing">
-    <value>512, 223</value>
+    <value>512, 222</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenConfidence.Name" xml:space="preserve">
     <value>numEncodeWhenConfidence</value>
@@ -1807,7 +1795,7 @@
     <value />
   </data>
   <data name="&gt;&gt;chkTruncateExtra4206Samples.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="label5.ToolTip" xml:space="preserve">
     <value />
@@ -1831,13 +1819,13 @@
     <value>4</value>
   </data>
   <data name="&gt;&gt;chkOverwriteTags.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="tabPage2.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 22</value>
   </data>
   <data name="chkEmbedLog.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 78</value>
+    <value>12, 72</value>
   </data>
   <data name="&gt;&gt;lblTrackFilenameFormat.ZOrder" xml:space="preserve">
     <value>6</value>
@@ -1861,7 +1849,7 @@
     <value>0</value>
   </data>
   <data name="tabPage5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>512, 223</value>
+    <value>512, 222</value>
   </data>
   <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
     <value>226, 6</value>
@@ -1876,7 +1864,7 @@
     <value>Compression level:</value>
   </data>
   <data name="chkExtractLog.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 95</value>
+    <value>12, 89</value>
   </data>
   <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
     <value />
@@ -1893,8 +1881,8 @@
   <data name="&gt;&gt;chkEncodeWhenZeroOffset.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="lblWriteOffset.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="chkEmbedLog.Text" xml:space="preserve">
+    <value>Embed log file as a tag</value>
   </data>
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
     <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to input files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
@@ -1908,14 +1896,17 @@
   <data name="txtSpecialExceptions.Text" xml:space="preserve">
     <value>-()</value>
   </data>
+  <data name="chkSingleInstance.Size" type="System.Drawing.Size, System.Drawing">
+    <value>156, 17</value>
+  </data>
   <data name="&gt;&gt;numWVExtraMode.Type" xml:space="preserve">
     <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="chkWVExtraMode.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="rbAPEextrahigh.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 57</value>
   </data>
   <data name="chkUDC1ID3v2.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -2001,17 +1992,14 @@
   <data name="labelEncodeWhenConfidence.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
   </data>
-  <data name="&gt;&gt;chkWVStoreMD5.Name" xml:space="preserve">
-    <value>chkWVStoreMD5</value>
-  </data>
   <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.Parent" xml:space="preserve">
     <value>grpGeneral</value>
   </data>
   <data name="tabPage3.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 22</value>
   </data>
-  <data name="lblWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 23</value>
+  <data name="textUDC1Decoder.Location" type="System.Drawing.Point, System.Drawing">
+    <value>89, 33</value>
   </data>
   <data name="tabPage5.Text" xml:space="preserve">
     <value>FLAC</value>
@@ -2100,9 +2088,6 @@
   <data name="chkReplaceSpaces.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="numericWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 21</value>
-  </data>
   <data name="chkEncodeWhenZeroOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>100, 17</value>
   </data>
@@ -2142,9 +2127,6 @@
   <data name="&gt;&gt;label6.Name" xml:space="preserve">
     <value>label6</value>
   </data>
-  <data name="&gt;&gt;lblWriteOffset.Parent" xml:space="preserve">
-    <value>grpGeneral</value>
-  </data>
   <data name="label5.Text" xml:space="preserve">
     <value>Encoder</value>
   </data>
@@ -2152,7 +2134,7 @@
     <value>grpAudioFilenames</value>
   </data>
   <data name="chkReducePriority.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 163</value>
+    <value>12, 38</value>
   </data>
   <data name="&gt;&gt;numWVExtraMode.Name" xml:space="preserve">
     <value>numWVExtraMode</value>
@@ -2164,7 +2146,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkReducePriority.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="chkWriteArTagsOnConvert.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 149</value>
@@ -2196,6 +2178,9 @@
   <data name="&gt;&gt;txtSingleFilenameFormat.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="rbWVNormal.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -2218,7 +2203,7 @@
     <value />
   </data>
   <data name="chkCreateM3U.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 112</value>
+    <value>12, 106</value>
   </data>
   <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>62, 13</value>
@@ -2247,8 +2232,8 @@
   <data name="lblFLACCompressionLevel.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 8</value>
   </data>
-  <data name="label2.ToolTip" xml:space="preserve">
-    <value />
+  <data name="chkSingleInstance.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="label4.ToolTip" xml:space="preserve">
     <value />
@@ -2301,9 +2286,6 @@
   <data name="&gt;&gt;grpAudioFilenames.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;lblSingleFilenameFormat.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
   <data name="labelEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
     <value>108, 21</value>
   </data>
@@ -2355,6 +2337,9 @@
   <data name="&gt;&gt;chkCreateM3U.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="chkSingleInstance.Text" xml:space="preserve">
+    <value>One instance of application</value>
+  </data>
   <data name="&gt;&gt;tabControl2.Name" xml:space="preserve">
     <value>tabControl2</value>
   </data>
@@ -2370,8 +2355,73 @@
   <data name="rbAPEnormal.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbWVNormal.ToolTip" xml:space="preserve">
-    <value />
+  <data name="imageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
+        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABm
+        DQAAAk1TRnQBSQFMAgEBAgEAAQQBAAEEAQABEAEAARABAAT/ASEBEAj/AUIBTQE2BwABNgMAASgDAAFA
+        AwABEAMAAQEBAAEgBgABEBUAAf8DAAH/AR0BaQEUAf8BHQFpARQB/wMAAf8BHQFpARQB/wEdAWkBFAH/
+        AwAB/wMAAf8BHQEcAR0B/wElASQBJQH/ARQBGAEUAf8DAAH/AwAB/wMAAf8DAAX/AQkBBQEDAf8BCgEG
+        AQMB/wEKAQYBAwH/AQoBBgEDAf8BCwEGAQMB/wEMAQcBBAH/AQoBBgEDAf8BCgEGAQMB/wEKAQYBAwH/
+        AQoBBgEDAf8BCgEGAQMB/wEKAQYBAwH/AQoBBgEDAf8BCQEFAQMF/4AAAVYBWQFWAf8BLQEsAS0B/wE1
+        Ad8BPgH/ATUB3wE+Af8DAAH/ATUB3wE+Af8BNQHfAT4B/wMAAf8DAAH/AYwBjgGMAf8B1gHTAdYB/wHW
+        AdMB1gH/AVYBVQFWAf8DAAH/AwAB/wMAAf8BCgEGAQMB/wHOAY4BXQH/Ac4BjgFdAf8B1AGTAWAB/wHO
+        AY4BXQH/AaYBbwFLAf8BHgETAQwB/wHOAY4BXQH/Ac4BjgFdAf8BzgGOAV0B/wHOAY4BXQH/Ac4BjgFd
+        Af8BzgGOAV0B/wHOAY4BXQH/Ac4BjgFdAf8BCgEGAQMB/4AAAW8BcQFvAf8BLQEsAS0B/wE1Ad8BPgH/
+        ATUB3wE+Af8DAAH/ATUB3wE+Af8BNQHfAT4B/wMAAf8DAAH/AbUBtgG1Cf8BbwFxAW8B/wMAAf8DAAH/
+        AwAB/wEMAQcBBAH/Ac4BjgFdAf8BzgGOAV0B/wHOAY4BXQH/Ac4BjgFdAf8B0AGQAV0B/wMAAf8BlQFj
+        AUEB/wHOAY4BXQH/AdIBkAFfAf8B0wGRAV8B/wHTAZEBXwH/AdMBkQFfAf8BzgGOAV0B/wHOAY4BXQH/
+        AQsBBgEDAf+AAAFvAXEBbwH/AS0BLAEtAf8BAAEgAQAB/wEEASwBBAH/AwAB/wEEASwBDAH/AQQBJAEE
+        Af8DAAH/AwAB/wG1AbIBtQn/AW8BbQFvAf8DAAH/AwAB/wMAAf8BDAEHAQQB/wHOAY4BXQH/Ac4BjgFd
+        Af8BzgGOAV0B/wHQAY8BXQH/Ac4BjgFdAf8BGwERAQkB/wEnARoBEAH/Ac4BjgFdAf8BzgGOAV0B/wHO
+        AY4BXQH/Ac4BjgFdAf8B0AGPAV4B/wHOAY4BXQH/Ac4BjgFdAf8BCwEGAQMB/4AAAW8BcQFvAf8BLQEs
+        AS0B/wElAa4BLQH/ASUBrgEtAf8DAAH/ASUBrgEtAf8BJQGuAS0B/wMAAf8DAAH/AbUBsgG1Cf8BbwFt
+        AW8B/wMAAf8DAAH/AwAB/wEMAQcBBAH/Ac4BjgFdAf8BzgGOAV0B/wHOAY4BXQH/Ac4BjgFdAf8BzgGO
+        AV0B/wGYAWUBQwH/AwAB/wMAAf8DAAH/ATMBIQEVAf8BzgGOAV0B/wHOAY4BXQH/Ac4BjgFdAf8BzgGO
+        AV0B/wELAQYBAwH/gAABbwFxAW8B/wEtASwBLQH/ATUB3wE+Af8BNQHfAT4B/wMAAf8BNQHfAT4B/wE1
+        Ad8BPgH/AwAB/wMAAf8BtQGyAbUJ/wFvAW0BbwH/AwAB/wMAAf8DAAH/AQwBBwEEAf8BzgGOAV0B/wHS
+        AZEBXgH/Ac4BjgFdAf8B0QGQAV4B/wHOAY4BXQH/Ac4BjgFdAf8DAAH/AU0BNAEiAf8BrQFzAU4B/wEs
+        AR0BEwH/AwAB/wHOAY4BXQH/Ac4BjgFdAf8BzgGOAV0B/wELAQYBAwH/gAABbwFxAW8B/wEtASwBLQH/
+        ATUB3wE+Af8BNQHfAT4B/wMAAf8BNQHfAT4B/wE1Ad8BPgH/AwAB/wMAAf8BrQGuAa0J/wFnAWkBZwH/
+        AwAB/wMAAf8DAAH/AQwBBwEEAf8BzgGOAV0B/wHRAZABXgH/Ac4BjgFdAf8BkQFgAUAB/wHOAY4BXQH/
+        Ac4BjgFdAf8BPQEoARoB/wEEAQIBAAH/Ac4BjgFdAf8BzgGOAV0B/wMAAf8BQQEsARwB/wHOAY4BXQH/
+        Ac4BjgFdAf8BCwEGAQMB/4AAAW8BcQFvAf8BLQEsAS0B/wEAASQBJQH/AQABLAEtAf8DAAH/AQABLAEt
+        Af8BAAEkASUB/wMAAf8DAAH/Aa0BqgGtCf8BZwFlAWcB/wMAAf8DAAH/AwAB/wEMAQcBBAH/Ac4BjgFd
+        Af8BzgGOAV0B/wHOAY4BXQH/AwAB/wGrAXIBTAH/Ac4BjgFdAf8BuQF7AVIB/wMAAf8BzgGOAV0B/wHO
+        AY4BXQH/AQQBAgEBAf8BEAEIAQYB/wHOAY4BXQH/Ac4BjgFdAf8BCwEGAQMB/4AAAW8BcQFvAf8BLQEs
+        AS0B/wEAAZ4BnAH/AQABngGcAf8DAAH/AQABngGcAf8BAAGeAZwB/wEUASABHRn/ASUBJAElAf8DAAH/
+        AQwBBwEEAf8BzgGOAV0B/wHOAY4BXQH/Ac4BjgFdAf8DAAH/ARkBEAEKAf8BzgGOAV0B/wHEAYcBWgH/
+        AwAB/wMAAf8DAAH/AwAB/wGHAVgBOgH/Ac4BjgFdAf8BzgGOAV0B/wELAQYBAwH/gAABbwFxAW8B/wEt
+        ASwBLQH/AQAD/wEAA/8DAAH/AQAD/wEAA/8DABn/ASUBJAElAf8DAAH/AQwBBwEEAf8BzgGOAV0B/wHO
+        AY4BXQH/Ac4BjgFdAf8DAAH/AwAB/wGqAXABSwH/AZkBZgFEAf8DAAH/AwAB/wGiAWoBRwH/Ac4BjgFd
+        Af8BzgGOAV0B/wHOAY4BXQH/Ac4BjgFdAf8BCwEGAQMB/4AAAW8BcQFvAf8BLQEsAS0B/wEAA/8BAAP/
+        AwAB/wEAA/8BAAP/AwAB/wFWAVEBTgH/Ad4B2wHeCf8BtQGyAbUB/wF3AXkBdwH/AQQBCAEEAf8DAAH/
+        AQwBBwEEAf8BzgGOAV0B/wHOAY4BXQH/AZ4BaAFGAf8DAAH/AV0BPgEqAf8BEwEMAQcB/wFhAUEBLAH/
+        ARsBEgEKAf8BJwEaAREB/wFBASsBHAH/Ac4BjgFdAf8B0QGQAV4B/wHOAY4BXQH/Ac4BjgFdAf8BCwEG
+        AQMB/4AAAW8BcQFvAf8BLQEsAS0B/wMAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wMAAf8BlAGWAZQJ/wG1
+        AbYBtQH/AwAB/wMAAf8DAAH/AQwBBwEEAf8BzgGOAV0B/wHOAY4BXQH/AXMBTgE1Af8DAAH/Ac4BjgFd
+        Af8DAAH/AwAB/wFTATgBJgH/Aa4BdQFOAf8DAAH/Ac4BjgFdAf8BzgGOAV0B/wHTAZEBXwH/AdQBkwFg
+        Af8BCwEGAQMB/4AAAZwBmgGcAf8BLQEsAS0B/wIAAaUB/wIAAaUB/wMAAf8DAAH/AwAB/wMAAf8DAAH/
+        AS0BLAEtEf8BvQG6Ab0B/wMAAf8BDAEHAQQB/wHOAY4BXQH/Ac4BjgFdAf8BQQErAR0B/wMAAf8BzgGO
+        AV0B/wFsAUkBMAH/AwAB/wGDAVYBOgH/Ac4BjgFdAf8DAAH/ATIBIAEWAf8BzgGOAV0B/wHOAY4BXQH/
+        AdQBkwFgAf8BCwEGAQMB/4AAAZQBkgGUAf8BLQEsAS0B/wIAAv8CAAL/AwAB/wMAAf8DAAH/AwAB/wMA
+        Af8DAAH/AZwBmgGcDf8BlAGWAZQB/wMAAf8BDAEHAQQB/wHOAY4BXQH/Ac4BjgFdAf8BAgIAAf8BJAEY
+        AQ8B/wHOAY4BXQH/Ac4BjgFdAf8DAAH/AZ8BaQFHAf8BzgGOAV0B/wGLAVsBPQH/AwAB/wHOAY4BXQH/
+        Ac4BjgFdAf8BzgGOAV0B/wELAQYBAwH/gAABpQGmAaUB/wGUAZIBlAH/AgABpQH/AgABtQH/AS0BLAEt
+        Af8BLQEsAS0B/wEtASwBLQH/AS0BLAEtAf8BLQEsAS0B/wEtASwBLQH/AS0BMAEtAf8BTgFRAU4B/wGt
+        AaoBrQH/Aa0BqgGtAf8BRgFJAUYB/wMAAf8BCgEGAQMB/wHOAY4BXQH/Ac4BjgFdAf8BcwFNATQB/wGl
+        AW4BSQH/Ac4BjgFdAf8BzgGOAV0B/wGYAWUBQwH/Ac4BjgFdAf8BzgGOAV0B/wHOAY4BXQH/AW4BSwEy
+        Af8BrgFzAU4B/wHOAY4BXQH/Ac4BjgFdAf8BCgEGAQMB/4AAAd4B2wHeAf8BpQGmAaUB/wGlAaYBpQH/
+        AXcBdQF3Af8BbwFxAW8B/wFvAXEBbwH/AW8BcQFvAf8BbwFxAW8B/wFvAXEBbwH/AW8BcQFvAf8BbwFx
+        AW8B/wFvAXEBbwH/AW8BcQFvAf8BLQEsAS0B/wEtASwBLQH/AwAF/wEKAQYBAwH/AQsBBwEDAf8BDAEH
+        AQQB/wEMAQcBAwH/AQsBBwEDAf8BCwEHAQMB/wEMAQcBAwH/AQwBBwEDAf8BCwEHAQMB/wELAQcBAwH/
+        AQwBBwEEAf8BDAEHAQMB/wELAQcBAwH/AQoBBgEDBf+AAAFCAU0BPgcAAT4DAAEoAwABQAMAARADAAEB
+        AQABAQUAAYAXAAP/lwAL
+</value>
+  </data>
+  <data name="tabPage6.ImageKey" xml:space="preserve">
+    <value>wv</value>
   </data>
   <data name="&gt;&gt;chkRemoveSpecial.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -2398,7 +2448,7 @@
     <value>textUDC1Extension</value>
   </data>
   <data name="&gt;&gt;chkExtractLog.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="tabPage2.ToolTip" xml:space="preserve">
     <value />
@@ -2499,8 +2549,8 @@
   <data name="&gt;&gt;chkTruncateExtra4206Samples.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textUDC1EncParams.Parent" xml:space="preserve">
-    <value>tabPage9</value>
+  <data name="tabPage5.ImageKey" xml:space="preserve">
+    <value>flac</value>
   </data>
   <data name="btnCancel.ToolTip" xml:space="preserve">
     <value />
@@ -2512,13 +2562,13 @@
     <value />
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 129</value>
+    <value>12, 123</value>
   </data>
   <data name="btnOK.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
   </data>
   <data name="&gt;&gt;chkCreateM3U.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="rbAPEinsane.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 74</value>
@@ -2539,7 +2589,7 @@
     <value>1</value>
   </data>
   <data name="tabPage8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 22</value>
+    <value>4, 23</value>
   </data>
   <data name="&gt;&gt;tabControl1.Name" xml:space="preserve">
     <value>tabControl1</value>
@@ -2596,7 +2646,7 @@
     <value>Yes</value>
   </data>
   <data name="chkPreserveHTOA.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 44</value>
+    <value>12, 157</value>
   </data>
   <data name="&gt;&gt;chkUDC1ID3v2.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -2674,7 +2724,7 @@
     <value>chkWriteARLogOnVerify</value>
   </data>
   <data name="chkFillUpCUE.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 181</value>
+    <value>12, 174</value>
   </data>
   <data name="&gt;&gt;label1.Parent" xml:space="preserve">
     <value>tabPage8</value>
@@ -2685,8 +2735,8 @@
   <data name="&gt;&gt;chkWVExtraMode.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>118, 13</value>
+  <data name="&gt;&gt;lblSingleFilenameFormat.ZOrder" xml:space="preserve">
+    <value>7</value>
   </data>
   <data name="&gt;&gt;tabPage6.Name" xml:space="preserve">
     <value>tabPage6</value>
@@ -2735,5 +2785,8 @@
   </metadata>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
+  </metadata>
+  <metadata name="imageList1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>114, 17</value>
   </metadata>
 </root>

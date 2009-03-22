@@ -8,7 +8,6 @@ using CUETools.Processor;
 
 namespace JDP {
 	public partial class frmSettings : Form {
-		int _writeOffset;
 		bool _reducePriority;
 		CUEConfig _config;
 
@@ -18,7 +17,6 @@ namespace JDP {
 
 		private void frmSettings_Load(object sender, EventArgs e) {
 			chkReducePriority.Checked = _reducePriority;
-			numericWriteOffset.Value = _writeOffset;
 			chkPreserveHTOA.Checked = _config.preserveHTOA;
 			chkAutoCorrectFilenames.Checked = _config.autoCorrectFilenames;
 			numericFLACCompressionLevel.Value = _config.flacCompressionLevel;
@@ -69,6 +67,7 @@ namespace JDP {
 			chkHDCDLW16.Checked = _config.decodeHDCDtoLW16;
 			chkHDCD24bit.Checked = _config.decodeHDCDto24bit;
 			chkOverwriteTags.Checked = _config.overwriteCUEData;
+			chkSingleInstance.Checked = _config.oneInstance;
 
 			textUDC1Extension.Text = _config.udc1Extension;
 			textUDC1Decoder.Text = _config.udc1Decoder;
@@ -81,11 +80,6 @@ namespace JDP {
 		}
 
 		private void frmSettings_FormClosing(object sender, FormClosingEventArgs e) {
-		}
-
-		public int WriteOffset {
-			get { return _writeOffset; }
-			set { _writeOffset = value; }
 		}
 
 		public bool ReducePriority
@@ -105,7 +99,6 @@ namespace JDP {
 
 		private void btnOK_Click(object sender, EventArgs e)
 		{
-			_writeOffset = (int)numericWriteOffset.Value;
 			_reducePriority = chkReducePriority.Checked;
 			_config.preserveHTOA = chkPreserveHTOA.Checked;
 			_config.autoCorrectFilenames = chkAutoCorrectFilenames.Checked;
@@ -154,6 +147,7 @@ namespace JDP {
 			_config.decodeHDCDtoLW16 = chkHDCDLW16.Checked;
 			_config.decodeHDCDto24bit = chkHDCD24bit.Checked;
 			_config.overwriteCUEData = chkOverwriteTags.Checked;
+			_config.oneInstance = chkSingleInstance.Checked;
 
 			_config.udc1Extension = textUDC1Extension.Text;
 			_config.udc1Decoder = textUDC1Decoder.Text;

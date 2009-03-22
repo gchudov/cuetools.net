@@ -35,36 +35,26 @@ namespace JDP
 			// 
 			// btnClose
 			// 
-			this.btnClose.AccessibleDescription = null;
-			this.btnClose.AccessibleName = null;
 			resources.ApplyResources(this.btnClose, "btnClose");
-			this.btnClose.BackgroundImage = null;
 			this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.btnClose.Font = null;
 			this.btnClose.Name = "btnClose";
 			this.btnClose.UseVisualStyleBackColor = true;
 			// 
 			// txtReport
 			// 
-			this.txtReport.AccessibleDescription = null;
-			this.txtReport.AccessibleName = null;
 			resources.ApplyResources(this.txtReport, "txtReport");
 			this.txtReport.BackColor = System.Drawing.SystemColors.Control;
-			this.txtReport.BackgroundImage = null;
+			this.txtReport.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.txtReport.Name = "txtReport";
 			this.txtReport.ReadOnly = true;
 			// 
 			// frmReport
 			// 
-			this.AccessibleDescription = null;
-			this.AccessibleName = null;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackgroundImage = null;
 			this.CancelButton = this.btnClose;
 			this.Controls.Add(this.txtReport);
 			this.Controls.Add(this.btnClose);
-			this.Icon = null;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "frmReport";

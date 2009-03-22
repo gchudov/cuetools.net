@@ -26,7 +26,7 @@ namespace Freedb
 	/// <summary>
 	/// Summary description for CDEntry.
 	/// </summary>
-	public class CDEntry
+	public class CDEntry : ICloneable
 	{
 
 
@@ -196,6 +196,24 @@ namespace Freedb
 			}
 		}
 
+		public CDEntry(CDEntry src)
+		{
+			m_Discid = src.m_Discid;
+			m_Artist = src.m_Artist;
+			m_Title = src.m_Title;
+			m_Year = src.m_Year;
+			m_Genre = src.m_Genre;
+			m_ExtendedData = src.m_ExtendedData;
+			m_PlayOrder = src.m_PlayOrder;
+			m_Tracks = new TrackCollection();
+			foreach (Track tr in src.m_Tracks)
+				m_Tracks.Add(new Track(tr));
+		}
+
+		public object Clone()
+		{
+			return new CDEntry(this);
+		}
 
 		private bool Parse(StringCollection data)
 		{

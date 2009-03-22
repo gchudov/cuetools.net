@@ -36,7 +36,7 @@ namespace CUETools.Ripper.SCSI
 	/// <summary>
 	/// 
 	/// </summary>
-	public class CDDriveReader : IAudioSource
+	public class CDDriveReader : IAudioSource, IDisposable
 	{
 		byte[] cdtext = null;
 		private Device m_device;
@@ -277,9 +277,15 @@ namespace CUETools.Ripper.SCSI
 
 		public void Close()
 		{
-			m_device.Close();
+			if (m_device != null)
+				m_device.Close();
 			m_device = null;
 			_toc = null;
+		}
+
+		public void Dispose()
+		{
+			Close();
 		}
 
 		public int BestBlockSize

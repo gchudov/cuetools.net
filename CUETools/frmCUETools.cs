@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -40,25 +41,10 @@ namespace JDP {
 		public frmCUETools() {
 			_config = new CUEConfig();
 			InitializeComponent();
-		}
-
-		private void btnBrowseInput_Click(object sender, EventArgs e) {
-			OpenFileDialog fileDlg = new OpenFileDialog();
-			DialogResult dlgRes;
-
-			fileDlg.Title = "Input CUE Sheet or album image";
-			fileDlg.Filter = "CUE Sheets (*.cue)|*.cue|FLAC images (*.flac)|*.flac|WavPack images (*.wv)|*.wv|APE images (*.ape)|*.ape|RAR archives (*.rar)|*.rar";
-
-			try
-			{
-				if (Directory.Exists (Path.GetDirectoryName (txtInputPath.Text)))
-					fileDlg.InitialDirectory = Path.GetDirectoryName (txtInputPath.Text);
-			}
-			catch { }
-			dlgRes = fileDlg.ShowDialog();
-			if (dlgRes == DialogResult.OK) {
-				txtInputPath.Text = fileDlg.FileName;
-			}
+			m_icon_mgr = new CUEControls.ShellIconMgr();
+			m_icon_mgr.SetExtensionIcon(".flac", global::JDP.Properties.Resources.flac);
+			m_icon_mgr.SetExtensionIcon(".wv", global::JDP.Properties.Resources.wv);
+			m_icon_mgr.SetExtensionIcon(".cue", global::JDP.Properties.Resources.cue);
 		}
 
 		private void btnBrowseOutput_Click(object sender, EventArgs e) {
@@ -74,60 +60,68 @@ namespace JDP {
 			}
 		}
 
+		private void AddNodesToBatch(TreeNodeCollection nodes)
+		{
+			foreach (TreeNode node in nodes)
+			{
+				if (node.Checked && node.Tag is FileSystemInfo)
+				{
+					_batchPaths.Add(((FileSystemInfo)node.Tag).FullName);
+					if (!chkRecursive.Checked)
+						AddNodesToBatch(node.Nodes);
+				}
+				else
+					AddNodesToBatch(node.Nodes);
+				node.Checked = false;
+			}
+		}
+
 		private void btnConvert_Click(object sender, EventArgs e) {
 			if ((_workThread != null) && (_workThread.IsAlive))
 				return;
 			if (!CheckWriteOffset()) return;
-			StartConvert();
-		}
-
-		private void btnBatch_Click(object sender, EventArgs e) {
-			if (rbDontGenerate.Checked) {
-				MessageBox.Show("Batch mode cannot be used with the output path set manually.",
+			_batchReport = new StringBuilder();
+			_batchRoot = null;
+			_batchProcessed = 0;
+			if (!chkMulti.Checked && !chkRecursive.Checked)
+			{
+				StartConvert();
+				return;
+			}
+			if (rbDontGenerate.Checked)
+			{
+				MessageBox.Show(this, "Batch mode cannot be used with the output path set manually.",
 					"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
-			FolderBrowserDialog folderDialog = new FolderBrowserDialog();
-			folderDialog.Description = "Select the folder containing the CUE sheets you want to convert.  Subfolders will be included automatically.";
-			folderDialog.ShowNewFolderButton = false;
-			try
+			if (chkMulti.Checked)
+				AddNodesToBatch(fileSystemTreeView1.Nodes);
+			else
 			{
-				if (Directory.Exists(Path.GetDirectoryName(txtInputPath.Text)))
-					folderDialog.SelectedPath = Path.GetDirectoryName(txtInputPath.Text);
+				_batchPaths.Add(txtInputPath.Text);
+				_batchRoot = txtInputPath.Text;
 			}
-			catch { }
-			if (folderDialog.ShowDialog() == DialogResult.OK) {
-				if (!CheckWriteOffset()) return;
-				AddDirToBatch(folderDialog.SelectedPath);
-				StartConvert();
+			if (_batchPaths.Count == 0)
+			{
+				MessageBox.Show(this, "Nothing selected!", "Done", MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+				return;
 			}
-		}
-
-		private void btnFilenameCorrector_Click(object sender, EventArgs e) {
-			if ((_fcForm == null) || _fcForm.IsDisposed) {
-				_fcForm = new frmFilenameCorrector();
-				CenterSubForm(_fcForm);
-				_fcForm.Show();
-			}
-			else {
-				_fcForm.Activate();
-			}
+			StartConvert();
 		}
 
 		private void btnSettings_Click(object sender, EventArgs e) {
 			using (frmSettings settingsForm = new frmSettings()) {
-				settingsForm.WriteOffset = _writeOffset;
 				settingsForm.ReducePriority = _reducePriority;
 				settingsForm.Config = _config;
 
-				CenterSubForm(settingsForm);
 				settingsForm.ShowDialog();
 
-				_writeOffset = settingsForm.WriteOffset;
 				_reducePriority = settingsForm.ReducePriority;
 				_config = settingsForm.Config;
 				updateOutputStyles();
 				UpdateOutputPath();
+				SaveSettings();
 			}
 		}
 
@@ -164,6 +158,7 @@ namespace JDP {
 
 		private void txtInputPath_TextChanged(object sender, EventArgs e) {
 			UpdateOutputPath();
+			UpdateActions();
 		}
 
 		private void rbCreateSubdirectory_CheckedChanged(object sender, EventArgs e) {
@@ -195,6 +190,27 @@ namespace JDP {
 			LoadSettings();
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
+
+			fileSystemTreeView1.CheckBoxes = chkMulti.Checked;
+			fileSystemTreeView1.IconManager = m_icon_mgr;
+			if (InputPath != "")
+			{
+				TreeNode node = null;
+				try
+				{
+					node = fileSystemTreeView1.LookupNode(InputPath) ??
+						fileSystemTreeView1.LookupNode(Path.GetDirectoryName(InputPath));
+				}
+				catch
+				{
+				}
+				if (node != null)
+				{
+					fileSystemTreeView1.SelectedNode = node;
+					node.Expand();
+				}
+			}
+
 			SetupControls(false);
 			UpdateOutputPath();
 			updateOutputStyles();
@@ -207,14 +223,21 @@ namespace JDP {
 
 		// ********************************************************************************
 
-		frmFilenameCorrector _fcForm;
+		private CUEControls.ShellIconMgr m_icon_mgr;
 		List<string> _batchPaths;
+		StringBuilder _batchReport;
+		string _batchRoot;
+		int _batchProcessed;
 		bool _usePregapForFirstTrackInSingleFile;
-		int _writeOffset;
 		bool _reducePriority;
 		Thread _workThread;
 		CUESheet _workClass;
 		CUEConfig _config;
+
+		private bool IsCDROM(string pathIn)
+		{
+			return pathIn.Length == 3 && pathIn.Substring(1) == ":\\" && new DriveInfo(pathIn).DriveType == DriveType.CDRom;
+		}
 
 		private void StartConvert() {
 			try
@@ -223,12 +246,13 @@ namespace JDP {
 				if (_batchPaths.Count != 0)
 				{
 					txtInputPath.Text = _batchPaths[0];
+					txtInputPath.SelectAll();
 				}
 
 				string pathIn = txtInputPath.Text;
 				if (!File.Exists(pathIn))
 				{
-					if (!Directory.Exists(pathIn))
+					if (!Directory.Exists(pathIn) && !IsCDROM(pathIn))
 						throw new Exception("Input CUE Sheet not found.");
 					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
 					{
@@ -241,9 +265,9 @@ namespace JDP {
 				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
 				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
 				cueSheet.CUEToolsSelection += new CUEToolsSelectionHandler(MakeSelection);
-				cueSheet.WriteOffset = _writeOffset;
+				cueSheet.WriteOffset = (int)numericWriteOffset.Value;
 
-				object[] p = new object[6];
+				object[] p = new object[7];
 
 				_workThread = new Thread(WriteAudioFilesThread);
 				_workClass = cueSheet;
@@ -251,9 +275,10 @@ namespace JDP {
 				p[0] = cueSheet;
 				p[1] = pathIn;
 				p[2] = SelectedCUEStyle;
-				p[3] = SelectedAccurateRipMode;
+				p[3] = SelectedAction;
 				p[4] = SelectedOutputAudioFormat;
 				p[5] = chkLossyWAV.Checked;
+				p[6] = chkRecursive.Checked;
 
 				SetupControls(true);
 				_workThread.Priority = ThreadPriority.BelowNormal;
@@ -268,7 +293,12 @@ namespace JDP {
 				{
 					_batchPaths.RemoveAt(0);
 					if (_batchPaths.Count == 0)
-						ShowBatchDoneMessage();
+					{
+						frmReport reportForm = new frmReport();
+						reportForm.Message = _batchReport.ToString();
+						reportForm.ShowDialog(this);
+						//ShowBatchDoneMessage();
+					}
 					else
 						StartConvert();
 				}
@@ -302,108 +332,269 @@ namespace JDP {
 			});
 		}
 
+		private bool TryDummyCUE(string pathIn, out string cueSheetContents, out string ext)
+		{
+			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta", "*.tak" };
+			for (int i = 0; i < audioExts.Length; i++)
+			{
+				cueSheetContents = CUESheet.CreateDummyCUESheet(pathIn, audioExts[i]);
+				if (cueSheetContents != null)
+				{
+					ext = audioExts[i].Substring(1);
+					return true;
+				}
+			}
+			cueSheetContents = null;
+			ext = null;
+			return false;
+		}
+
+		private void BatchLog(string format, string pathIn, params object[] args)
+		{
+			if (_batchRoot == null || !pathIn.StartsWith(_batchRoot))
+				_batchReport.Append(pathIn);
+			else
+			{
+				_batchReport.Append(".");
+				_batchReport.Append(pathIn, _batchRoot.Length, pathIn.Length - _batchRoot.Length);
+			}
+			_batchReport.Append(": ");
+			_batchReport.AppendFormat(format, args);
+			_batchReport.Append("\r\n");
+		}
+
 		private void WriteAudioFilesThread(object o) {
 			object[] p = (object[])o;
 
 			CUESheet cueSheet = (CUESheet)p[0];
 			string pathIn = (string)p[1];
 			CUEStyle cueStyle = (CUEStyle)p[2];
-			AccurateRipMode accurateRip = (AccurateRipMode)p[3];
+			CUEAction action = (CUEAction)p[3];
 			OutputAudioFormat outputFormat = (OutputAudioFormat)p[4];
 			bool lossyWAV = (bool)p[5];
+			bool recursive = (bool)p[6];
 			DialogResult dlgRes = DialogResult.OK;
 
 			try
 			{
-
-				bool outputAudio = outputFormat != OutputAudioFormat.NoAudio && accurateRip != AccurateRipMode.Verify && accurateRip != AccurateRipMode.VerifyPlusCRCs;
-				bool outputCUE = cueStyle != CUEStyle.SingleFileWithCUE && accurateRip != AccurateRipMode.Verify && accurateRip != AccurateRipMode.VerifyPlusCRCs;
-				string pathOut = null;
-				List<object> releases = null;
-
-				cueSheet.Open(pathIn);
-
-				if (_batchPaths.Count == 0 && accurateRip != AccurateRipMode.Verify && accurateRip != AccurateRipMode.VerifyPlusCRCs)
+				if (action == CUEAction.CreateDummyCUE)
 				{
-					if (rbFreedbAlways.Checked || (rbFreedbIf.Checked && 
-						(cueSheet.Artist == "" || cueSheet.Title == "" || cueSheet.Year == "")))
-						releases = cueSheet.LookupAlbumInfo();
-				}
-
-				this.Invoke((MethodInvoker)delegate()
-				{
-					if (releases != null && releases.Count > 0)
+					if (_batchPaths.Count > 0 && Directory.Exists(pathIn))
 					{
-						frmChoice dlg = new frmChoice();
-						dlg.CUE = cueSheet;
-						dlg.Choices = releases;
-						dlgRes = dlg.ShowDialog(this);
-						if (dlgRes == DialogResult.Cancel)
-						{
-							cueSheet.Close();
-							SetupControls(false);
-						}
+						if (recursive)
+							_batchPaths.InsertRange(1, Directory.GetDirectories(pathIn));
 					}
-					UpdateOutputPath(
-						cueSheet.Year != "" ? cueSheet.Year : "YYYY", 
-						cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist", 
-						cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
-					pathOut = txtOutputPath.Text;
-				});
-
-				if (dlgRes == DialogResult.Cancel)
-					return;
-
-				cueSheet.GenerateFilenames(outputFormat, lossyWAV, pathOut);
-				string outDir = Path.GetDirectoryName(pathOut);
-				if (cueStyle == CUEStyle.SingleFileWithCUE)
-					cueSheet.SingleFilename = Path.GetFileName(pathOut);
-				if (outDir == "")
-					outDir = ".";
-
-				bool outputExists = false;
-				if (outputCUE)
-					outputExists = File.Exists(pathOut);
-				if (outputAudio)
-				{
-					if (cueStyle == CUEStyle.SingleFile || cueStyle == CUEStyle.SingleFileWithCUE)
-						outputExists |= File.Exists(Path.Combine(outDir, cueSheet.SingleFilename));
+					if (!Directory.Exists(pathIn))
+						BatchLog("no such directory.", pathIn);
 					else
 					{
-						if (cueStyle == CUEStyle.GapsAppended && _config.preserveHTOA)
-							outputExists |= File.Exists(Path.Combine(outDir, cueSheet.HTOAFilename));
-						for (int i = 0; i < cueSheet.TrackCount; i++)
-							outputExists |= File.Exists(Path.Combine(outDir, cueSheet.TrackFilenames[i]));
+						if (Directory.GetFiles(pathIn, "*.cue").Length != 0)
+							BatchLog("already contains a cue sheet.", pathIn);
+						else
+						{
+							string cueSheetContents, ext;
+							if (TryDummyCUE(pathIn, out cueSheetContents, out ext))
+							{
+								string cueName = Path.GetFileName(Path.GetDirectoryName(pathIn)) + ".cuetools" + ext + ".cue";
+								string fullCueName = Path.Combine(pathIn, cueName);
+								bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheetContents)) != cueSheetContents;
+								StreamWriter sw1 = new StreamWriter(fullCueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
+								sw1.Write(cueSheetContents);
+								sw1.Close();
+								BatchLog("created ok.", fullCueName);
+							} else
+								BatchLog("no audio files.", pathIn);
+						}
 					}
 				}
-				dlgRes = DialogResult.Cancel;
-				if (outputExists)
+				else if (action == CUEAction.CorrectFilenames)
 				{
-					this.Invoke((MethodInvoker)delegate()
+					if (_batchPaths.Count > 0 && Directory.Exists(pathIn))
 					{
-						dlgRes = MessageBox.Show(this, "One or more output file already exists, " +
-							"do you want to overwrite?", "Overwrite?", (_batchPaths.Count == 0) ?
-							MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-						if (dlgRes == DialogResult.Yes)
-							outputExists = false;
-						else if (_batchPaths.Count == 0)
-							SetupControls(false);
-					});
-					if (outputExists && _batchPaths.Count == 0)
+						string [] cues = Directory.GetFiles(pathIn, "*.cue", recursive ? 
+							SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+						if (cues.Length == 0)
+							BatchLog("no cue files.", pathIn);
+						else
+							_batchPaths.InsertRange(1, cues);
+					}
+					try
 					{
-						cueSheet.Close();
-						return;
+						if (Directory.Exists(pathIn))
+						{
+							if (_batchPaths.Count == 0)
+								throw new Exception ("is a directory");
+						}
+						else
+						{
+							if (Path.GetExtension(pathIn).ToLower() != ".cue")
+								throw new Exception("is not a .cue file");
+							string cue = null;
+							using (StreamReader sr = new StreamReader(pathIn, CUESheet.Encoding))
+								cue = sr.ReadToEnd();
+							string fixedCue = CUESheet.CorrectAudioFilenames(Path.GetDirectoryName(pathIn), cue, true, null);
+							if (fixedCue != cue)
+							{
+								using (StreamWriter sw = new StreamWriter(pathIn, false, CUESheet.Encoding))
+									sw.Write(fixedCue);
+								BatchLog("corrected.", pathIn);
+							}
+							else
+								BatchLog("no changes.", pathIn);
+						}
+					}
+					catch (Exception ex)
+					{
+						BatchLog("{0}.", pathIn, ex.Message);
 					}
 				}
-				if (!outputExists)
+				else
 				{
-					cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
-					cueSheet.AccurateRip = accurateRip;
-					if (accurateRip != AccurateRipMode.None)
-						cueSheet.DataTrackLength = txtDataTrackLength.Text;
-					cueSheet.PreGapLengthMSF = txtPreGapLength.Text;
+					bool foundImages = false;
+					bool foundAudio = false;
+					bool processThis = true;
 
-					cueSheet.WriteAudioFiles(outDir, cueStyle);
+					if (_batchPaths.Count > 0 && Directory.Exists(pathIn))
+					{
+						if (recursive)
+							_batchPaths.InsertRange(1, Directory.GetDirectories(pathIn));
+						string[] cueFiles = Directory.GetFiles(pathIn, "*.cue");
+						if (cueFiles.Length > 0)
+						{
+							_batchPaths.InsertRange(1, cueFiles);
+							foundImages = true;
+						}
+						else
+						{
+							string cueSheetContents, ext1;
+							foundAudio = TryDummyCUE(pathIn, out cueSheetContents, out ext1);
+							string[] audioExts = new string[] { "*.flac", "*.wv", "*.ape" };
+							foreach (string ext in audioExts)
+								foreach (string audioFile in Directory.GetFiles(pathIn, ext))
+								{
+									TagLib.UserDefined.AdditionalFileTypes.Config = _config;
+									TagLib.File.IFileAbstraction file = new TagLib.File.LocalFileAbstraction(audioFile);
+									try
+									{
+										TagLib.File fileInfo = TagLib.File.Create(file);
+										NameValueCollection tags = Tagging.Analyze(fileInfo);
+										if (tags.Get("CUESHEET") != null)
+										{
+											_batchPaths.Insert(1, audioFile);
+											foundImages = true;
+										}
+									}
+									catch
+									{
+									}
+								}
+						}
+						processThis = !foundImages && foundAudio;
+					}
+
+					if (processThis)
+					{
+						bool convertAction = action == CUEAction.Convert || action == CUEAction.VerifyAndConvert || action == CUEAction.VerifyThenConvert;
+						string pathOut = null;
+						List<object> releases = null;
+
+						cueSheet.Action = action;
+						cueSheet.Open(pathIn);
+						if (action != CUEAction.Convert)
+							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
+						cueSheet.PreGapLengthMSF = txtPreGapLength.Text;
+						cueSheet.Lookup();
+
+						if (_batchPaths.Count == 0 && convertAction)
+						{
+							if (rbFreedbAlways.Checked || (rbFreedbIf.Checked &&
+								(cueSheet.Artist == "" || cueSheet.Title == "" || cueSheet.Year == "")))
+								releases = cueSheet.LookupAlbumInfo();
+						}
+
+						this.Invoke((MethodInvoker)delegate()
+						{
+							toolStripStatusLabelAR.Visible = action != CUEAction.Convert;// && cueSheet.ArVerify.ARStatus == null;
+							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.Total(0).ToString() : "?";
+							toolStripStatusLabelAR.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
+							if (releases != null)
+							{
+								frmChoice dlg = new frmChoice();
+								dlg.CUE = cueSheet;
+								dlg.Choices = releases;
+								dlgRes = dlg.ShowDialog(this);
+								if (dlgRes == DialogResult.Cancel)
+								{
+									cueSheet.Close();
+									SetupControls(false);
+								}
+							}
+							UpdateOutputPath(
+								cueSheet.Year != "" ? cueSheet.Year : "YYYY",
+								cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist",
+								cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
+							pathOut = txtOutputPath.Text;
+						});
+
+						if (dlgRes == DialogResult.Cancel)
+							return;
+
+						bool outputAudio = convertAction && outputFormat != OutputAudioFormat.NoAudio;
+						bool outputCUE = convertAction && (cueStyle == CUEStyle.SingleFile || (cueStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded));
+
+						cueSheet.GenerateFilenames(outputFormat, lossyWAV, pathOut);
+						string outDir = Path.GetDirectoryName(pathOut);
+						if (cueStyle == CUEStyle.SingleFileWithCUE)
+							cueSheet.SingleFilename = Path.GetFileName(pathOut);
+						if (outDir == "")
+							outDir = ".";
+
+						bool outputExists = false;
+						if (outputCUE)
+							outputExists = File.Exists(pathOut);
+						if (outputAudio)
+						{
+							if (cueStyle == CUEStyle.SingleFile || cueStyle == CUEStyle.SingleFileWithCUE)
+								outputExists |= File.Exists(Path.Combine(outDir, cueSheet.SingleFilename));
+							else
+							{
+								if (cueStyle == CUEStyle.GapsAppended && _config.preserveHTOA)
+									outputExists |= File.Exists(Path.Combine(outDir, cueSheet.HTOAFilename));
+								for (int i = 0; i < cueSheet.TrackCount; i++)
+									outputExists |= File.Exists(Path.Combine(outDir, cueSheet.TrackFilenames[i]));
+							}
+						}
+						dlgRes = DialogResult.Cancel;
+						if (outputExists)
+						{
+							this.Invoke((MethodInvoker)delegate()
+							{
+								dlgRes = MessageBox.Show(this, "One or more output file already exists, " +
+									"do you want to overwrite?", "Overwrite?", (_batchPaths.Count == 0) ?
+									MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+								if (dlgRes == DialogResult.Yes)
+									outputExists = false;
+								else if (_batchPaths.Count == 0)
+									SetupControls(false);
+							});
+							if (outputExists && _batchPaths.Count == 0)
+							{
+								cueSheet.Close();
+								return;
+							}
+						}
+						if (!outputExists)
+						{
+							cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
+							string status = cueSheet.WriteAudioFiles(outDir, cueStyle);
+							if (_batchPaths.Count > 0)
+							{
+								_batchProcessed++;
+								BatchLog("{0}.", pathIn, status);
+							}
+							cueSheet.CheckStop();
+						}
+					}
 				}
 				this.Invoke((MethodInvoker)delegate()
 				{
@@ -413,19 +604,23 @@ namespace JDP {
 						{
 							frmReport reportForm = new frmReport();
 							reportForm.Message = cueSheet.LOGContents;
-							CenterSubForm(reportForm);
 							reportForm.ShowDialog(this);
 						}
-						else if (cueSheet.AccurateRip == AccurateRipMode.Verify ||
-							cueSheet.AccurateRip == AccurateRipMode.VerifyPlusCRCs ||
-						(cueSheet.AccurateRip != AccurateRipMode.None && outputFormat != OutputAudioFormat.NoAudio))
+						else if (action == CUEAction.CreateDummyCUE || action == CUEAction.CorrectFilenames)
+						{
+							frmReport reportForm = new frmReport();
+							reportForm.Message = _batchReport.ToString();
+							reportForm.ShowDialog(this);
+						}
+						else if (cueSheet.Action == CUEAction.Verify ||
+							cueSheet.Action == CUEAction.VerifyPlusCRCs ||
+						(cueSheet.Action != CUEAction.Convert && outputFormat != OutputAudioFormat.NoAudio))
 						{
 							frmReport reportForm = new frmReport();
 							StringWriter sw = new StringWriter();
 							cueSheet.GenerateAccurateRipLog(sw);
 							reportForm.Message = sw.ToString();
 							sw.Close();
-							CenterSubForm(reportForm);
 							reportForm.ShowDialog(this);
 						}
 						else
@@ -433,6 +628,31 @@ namespace JDP {
 						SetupControls(false);
 					}
 				});
+			}
+			catch (StopException)
+			{
+			}
+#if !DEBUG
+			catch (Exception ex)
+			{
+				if (_batchPaths.Count == 0)
+				{
+					this.Invoke((MethodInvoker)delegate()
+					{
+						SetupControls(false);
+						ShowErrorMessage(ex);
+					});
+				}
+				else
+				{
+					_batchProcessed++;
+					BatchLog("{0}.", pathIn, ex.Message);
+				}
+			}
+#endif
+			try
+			{
+				cueSheet.CheckStop();
 			}
 			catch (StopException)
 			{
@@ -444,20 +664,6 @@ namespace JDP {
 						MessageBoxIcon.Exclamation);
 				});
 			}
-#if !DEBUG
-			catch (Exception ex)
-			{
-				this.Invoke((MethodInvoker)delegate()
-				{
-					if (_batchPaths.Count == 0) SetupControls(false);
-					if (!ShowErrorMessage(ex))
-					{
-						_batchPaths.Clear();
-						SetupControls(false);
-					}
-				});
-			}
-#endif
 			cueSheet.Close();
 
 			if (_batchPaths.Count != 0) {
@@ -465,7 +671,10 @@ namespace JDP {
 				this.BeginInvoke((MethodInvoker)delegate() {
 					if (_batchPaths.Count == 0) {
 						SetupControls(false);
-						ShowBatchDoneMessage();
+						frmReport reportForm = new frmReport();
+						reportForm.Message = _batchReport.ToString();
+						reportForm.ShowDialog(this);
+						//ShowBatchDoneMessage();
 					}
 					else {
 						StartConvert();
@@ -484,20 +693,20 @@ namespace JDP {
 		}
 
 		private void SetupControls(bool running) {
-			grpCUEPaths.Enabled = !running;
+			bool converting = (SelectedAction == CUEAction.Convert || SelectedAction == CUEAction.VerifyAndConvert || SelectedAction == CUEAction.VerifyThenConvert);
+			bool verifying = (SelectedAction == CUEAction.Verify || SelectedAction == CUEAction.VerifyPlusCRCs || SelectedAction == CUEAction.VerifyAndConvert || SelectedAction == CUEAction.VerifyThenConvert);
+			//grpInput.Enabled = !running;
+			txtInputPath.Enabled = !running;
+			grpExtra.Enabled = !running;
 			grpOutputPathGeneration.Enabled = !running;
-			grpAudioOutput.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
-			grpAccurateRip.Enabled = !running;
-			grpOutputStyle.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
-			groupBox1.Enabled = !running && !rbArVerify.Checked && !rbArPlusCRC.Checked;
-			txtDataTrackLength.Enabled = !running && !rbArNone.Checked;
+			grpAudioOutput.Enabled = !running && converting;
+			grpAction.Enabled = !running;
+			grpOutputStyle.Enabled = !running && converting;
+			grpFreedb.Enabled = !running && converting;
+			txtDataTrackLength.Enabled = !running && verifying;
 			txtPreGapLength.Enabled = !running;
 			btnAbout.Enabled = !running;
 			btnSettings.Enabled = !running;
-			btnFilenameCorrector.Enabled = !running;
-			btnCUECreator.Enabled = !running;
-			btnBatch.Enabled = !running;
-			btnConvert.Enabled = !running;
 			btnConvert.Visible = !running;
 			btnStop.Enabled = btnPause.Enabled = btnResume.Enabled = running;
 			btnStop.Visible = btnPause.Visible = running;
@@ -505,6 +714,31 @@ namespace JDP {
 			toolStripStatusLabel1.Text = String.Empty;
 			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
+			toolStripStatusLabelAR.Visible = false;			
+			if (_batchPaths.Count > 0)
+			{
+				fileSystemTreeView1.Visible = false;
+				textBatchReport.Visible = true;
+				textBatchReport.Text = _batchReport.ToString();
+				textBatchReport.SelectAll();
+				textBatchReport.ScrollToCaret();
+				//toolStripStatusLabelProcessed.Visible = true;
+				//toolStripStatusLabelProcessed.Text = "Processed: " + _batchProcessed.ToString();
+				//toolStripStatusLabelProcessed.ToolTipText = _batchReport.ToString();
+			}
+			else
+			{
+				bool wasHidden = !fileSystemTreeView1.Visible;
+				fileSystemTreeView1.Visible = true;
+				toolStripStatusLabelProcessed.Visible = false;
+				textBatchReport.Visible = false;
+				if (wasHidden && fileSystemTreeView1.SelectedPath != null)
+				{
+					txtInputPath.Text = fileSystemTreeView1.SelectedPath;
+					txtInputPath.SelectAll();
+				}
+			}
+			UpdateActions();
 		}
 
 		private bool ShowErrorMessage(Exception ex) {
@@ -530,13 +764,13 @@ namespace JDP {
 				MessageBoxIcon.Information);
 		}
 
-		private void ShowBatchDoneMessage() {
-			MessageBox.Show(this, "Batch conversion is complete!", "Done", MessageBoxButtons.OK,
-				MessageBoxIcon.Information);
-		}
+		//private void ShowBatchDoneMessage() {
+		//    MessageBox.Show(this, "Batch conversion is complete!", "Done", MessageBoxButtons.OK,
+		//        MessageBoxIcon.Information);
+		//}
 
 		private bool CheckWriteOffset() {
-			if ((_writeOffset == 0) || rbNoAudio.Checked || rbArVerify.Checked || rbArPlusCRC.Checked)
+			if (numericWriteOffset.Value == 0 || rbNoAudio.Checked || rbActionVerify.Checked || rbActionVerifyAndCRCs.Checked)
 			{
 				return true;
 			}
@@ -548,27 +782,20 @@ namespace JDP {
 			return (dlgRes == DialogResult.Yes);
 		}
 
-		private void AddDirToBatch(string dir) {
-			string[] files = Directory.GetFiles(dir, "*.cue");
-			string[] subDirs = Directory.GetDirectories(dir);
-			_batchPaths.AddRange(files);
-			foreach (string subDir in subDirs) {
-				AddDirToBatch(subDir);
-			}
-		}
-
 		private void LoadSettings() {
 			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
 			txtCreateSubdirectory.Text = sr.Load("OutputSubdirectory") ?? "New";
 			txtAppendFilename.Text = sr.Load("OutputFilenameSuffix") ?? "-New";
-			txtCustomFormat.Text = sr.Load("OutputCustomFormat") ?? "%1:-2\\New\\%-1\\%F.cue";
+			txtCustomFormat.Text = sr.Load("OutputCustomFormat") ?? "%music%\\Converted\\%artist%\\%year% - %album%\\%artist% - %album%.cue";
 			SelectedOutputPathGeneration = (OutputPathGeneration?)sr.LoadInt32("OutputPathGeneration", null, null) ?? OutputPathGeneration.CreateSubdirectory;
 			SelectedOutputAudioFormat = (OutputAudioFormat?)sr.LoadInt32("OutputAudioFormat", null, null) ?? OutputAudioFormat.WAV;
-			SelectedAccurateRipMode = (AccurateRipMode?)sr.LoadInt32("AccurateRipMode", null, null) ?? AccurateRipMode.None;
+			SelectedAction = (CUEAction?)sr.LoadInt32("AccurateRipMode", null, null) ?? CUEAction.Convert;
 			SelectedCUEStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
-			_writeOffset = sr.LoadInt32("WriteOffset", null, null) ?? 0;
+			numericWriteOffset.Value = sr.LoadInt32("WriteOffset", null, null) ?? 0;
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
+			chkMulti.Checked = sr.LoadBoolean("BatchProcessing") ?? false;
+			chkRecursive.Checked = sr.LoadBoolean("RecursiveProcessing") ?? true;
 			chkLossyWAV.Checked = sr.LoadBoolean("LossyWav") ?? false;
 			switch (sr.LoadInt32("FreedbLookup", null, null) ?? 2)
 			{
@@ -586,11 +813,13 @@ namespace JDP {
 			sw.Save("OutputFilenameSuffix", txtAppendFilename.Text);
 			sw.Save("OutputCustomFormat", txtCustomFormat.Text);
 			sw.Save("OutputAudioFormat", (int)SelectedOutputAudioFormat);
-			sw.Save("AccurateRipMode", (int)SelectedAccurateRipMode);
+			sw.Save("AccurateRipMode", (int)SelectedAction);
 			sw.Save("CUEStyle", (int)SelectedCUEStyle);
-			sw.Save("WriteOffset", _writeOffset);
+			sw.Save("WriteOffset", (int)numericWriteOffset.Value);
 			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
 			sw.Save("ReducePriority", _reducePriority);
+			sw.Save("BatchProcessing", chkMulti.Checked);
+			sw.Save("RecursiveProcessing", chkRecursive.Checked);
 			sw.Save("LossyWav", chkLossyWAV.Checked);
 			sw.Save("FreedbLookup", rbFreedbNever.Checked ? 0 : rbFreedbIf.Checked ? 1 : 2);
 			_config.Save(sw);
@@ -656,6 +885,8 @@ namespace JDP {
 		}
 
 		private string GetDirectoryElements(string dir, int first, int last) {
+			if (dir == null)
+				return "";
 			string[] dirSplit = dir.Split(Path.DirectorySeparatorChar,
 				Path.AltDirectorySeparatorChar);
 			int count = dirSplit.Length;
@@ -761,66 +992,46 @@ namespace JDP {
 			}
 		}
 
-		private AccurateRipMode SelectedAccurateRipMode
+		private CUEAction SelectedAction
 		{
 			get
 			{
 				return
-					rbArPlusCRC.Checked ? AccurateRipMode.VerifyPlusCRCs :
-					rbArVerify.Checked ? AccurateRipMode.Verify :
-					rbArApplyOffset.Checked ? AccurateRipMode.VerifyThenConvert :
-					rbArAndEncode.Checked ? AccurateRipMode.VerifyAndConvert :
-					AccurateRipMode.None;
+					rbActionVerifyAndCRCs.Checked ? CUEAction.VerifyPlusCRCs :
+					rbActionVerify.Checked ? CUEAction.Verify :
+					rbActionVerifyThenEncode.Checked ? CUEAction.VerifyThenConvert :
+					rbActionVerifyAndEncode.Checked ? CUEAction.VerifyAndConvert :
+					rbActionCorrectFilenames.Checked ? CUEAction.CorrectFilenames :
+					rbActionCreateCUESheet.Checked ? CUEAction.CreateDummyCUE :
+					CUEAction.Convert;
 			}
 			set
 			{
 				switch (value)
 				{
-					case AccurateRipMode.VerifyPlusCRCs:
-						rbArPlusCRC.Checked = true;
+					case CUEAction.VerifyPlusCRCs:
+						rbActionVerifyAndCRCs.Checked = true;
 						break;
-					case AccurateRipMode.Verify:
-						rbArVerify.Checked = true;
+					case CUEAction.Verify:
+						rbActionVerify.Checked = true;
 						break;
-					case AccurateRipMode.VerifyThenConvert:
-						rbArApplyOffset.Checked = true;
+					case CUEAction.VerifyThenConvert:
+						rbActionVerifyThenEncode.Checked = true;
 						break;
-					case AccurateRipMode.VerifyAndConvert:
-						rbArAndEncode.Checked = true;
+					case CUEAction.VerifyAndConvert:
+						rbActionVerifyAndEncode.Checked = true;
+						break;
+					case CUEAction.CorrectFilenames:
+						rbActionCorrectFilenames.Checked = true;
+						break;
+					case CUEAction.CreateDummyCUE:
+						rbActionCreateCUESheet.Checked = true;
 						break;
 					default:
-						rbArNone.Checked = true;
+						rbActionEncode.Checked = true;
 						break;
 				}
 			}
-		}
-
-		private void CenterSubForm(Form form) {
-			int centerX, centerY, formX, formY;
-			Rectangle formRect, maxRect;
-
-			centerX = ((Left * 2) + Width ) / 2;
-			centerY = ((Top  * 2) + Height) / 2;
-			formX   = ((Left * 2) + Width  - form.Width ) / 2;
-			formY   = ((Top  * 2) + Height - form.Height) / 2;
-
-			formRect = new Rectangle(formX, formY, form.Width, form.Height);
-			maxRect = Screen.GetWorkingArea(new Point(centerX, centerY));
-
-			if (formRect.Right > maxRect.Right) {
-				formRect.X -= formRect.Right - maxRect.Right;
-			}
-			if (formRect.Bottom > maxRect.Bottom) {
-				formRect.Y -= formRect.Bottom - maxRect.Bottom;
-			}
-			if (formRect.X < maxRect.X) {
-				formRect.X = maxRect.X;
-			}
-			if (formRect.Y < maxRect.Y) {
-				formRect.Y = maxRect.Y;
-			}
-
-			form.Location = formRect.Location;
 		}
 
 		private void UpdateOutputPath() {
@@ -892,11 +1103,19 @@ namespace JDP {
 					List<string> replace = new List<string>();
 					bool rs = _config.replaceSpaces;
 
+					find.Add("%music%");
+					find.Add("%artist%");
 					find.Add("%D");
+					find.Add("%album%");
 					find.Add("%C");
+					find.Add("%year%");
 					find.Add("%Y");
+					replace.Add(m_icon_mgr.GetFolderPath(CUEControls.ExtraSpecialFolder.MyMusic));
+					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
 					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
 					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
+					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
+					replace.Add(year);
 					replace.Add(year);
 					BuildOutputPathFindReplace(pathIn, format, find, replace);
 
@@ -950,57 +1169,6 @@ namespace JDP {
 			UpdateOutputPath();
 		}
 
-		private void rbArVerify_CheckedChanged(object sender, EventArgs e)
-		{
-			UpdateOutputPath();
-			SetupControls (false);
-		}
-
-		private void CUECreator (string dir)
-		{
-			string[] cueFiles = Directory.GetFiles(dir, "*.cue");
-			if (cueFiles.Length == 0)
-			{
-				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta" };
-				for (int i = 0; i < audioExts.Length; i++)
-				{
-					string cueSheet = CUESheet.CreateDummyCUESheet(dir, audioExts[i]);
-					if (cueSheet == null)
-						continue;
-					string cueName = Path.GetFileName(dir) + ".cuetools" + audioExts[i].Substring(1) + ".cue";
-					cueName = Path.Combine(dir, cueName);
-					bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheet)) != cueSheet;
-					StreamWriter sw1 = new StreamWriter(cueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
-					sw1.Write(cueSheet);
-					sw1.Close();
-					break;
-				}
-			}
-			string[] subDirs = Directory.GetDirectories(dir);
-			foreach (string subDir in subDirs)
-			{
-				CUECreator (subDir);
-			}
-		}
-
-        private void btnCUECreator_Click(object sender, EventArgs e)
-        {
-			FolderBrowserDialog folderDialog = new FolderBrowserDialog();
-			folderDialog.Description = "Select the folder containing the audio files without CUE sheets. Subfolders will be included automatically.";
-			folderDialog.ShowNewFolderButton = false;
-			if (folderDialog.ShowDialog() == DialogResult.OK)
-			{
-				try
-				{
-					CUECreator(folderDialog.SelectedPath);
-				}
-				catch (Exception ex)
-				{
-					ShowErrorMessage(ex);
-				}
-			}
-		}
-
 		private void rbAPE_CheckedChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
@@ -1027,12 +1195,6 @@ namespace JDP {
 		{
 			updateOutputStyles();
 			UpdateOutputPath();
-		}
-
-		private void rbArApplyOffset_CheckedChanged(object sender, EventArgs e)
-		{
-			UpdateOutputPath();
-			SetupControls(false);
 		}
 
 		private void rbTTA_CheckedChanged(object sender, EventArgs e)
@@ -1121,11 +1283,304 @@ namespace JDP {
 			UpdateOutputPath();
 		}
 
-		private void rbArPlusCRC_CheckedChanged(object sender, EventArgs e)
+		private void fileSystemTreeView1_NodeAttributes(object sender, CUEControls.FileSystemTreeViewNodeAttributesEventArgs e)
+		{
+			if ((e.file.Attributes & FileAttributes.Hidden) != 0)
+			{
+				e.isVisible = false;
+				return;
+			}
+			if ((e.file.Attributes & FileAttributes.Directory) != 0)
+			{
+				e.isVisible = true;
+				e.isExpandable = true;
+				//		  e.isExpandable = false;
+				//        foreach (FileSystemInfo subfile in ((DirectoryInfo)e.file).GetFileSystemInfos())
+				//            if (IsVisible(subfile))
+				//            {
+				//                e.isExpandable = true;
+				//                break;
+				//            }
+				return;
+			}
+			string ext = e.file.Extension.ToLower();
+			if (ext == ".cue")
+			{
+				e.isVisible = true;
+				e.isExpandable = false;
+				return;
+			}
+			if (ext == ".zip")
+			{
+				e.isVisible = false;
+				e.isExpandable = false;
+				try
+				{
+					using (ICSharpCode.SharpZipLib.Zip.ZipFile unzip = new ICSharpCode.SharpZipLib.Zip.ZipFile(e.file.FullName))
+					{
+						foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in unzip)
+						{
+							if (entry.IsFile && Path.GetExtension(entry.Name).ToLower() == ".cue")
+							{
+								e.isVisible = true;
+								break;
+							}
+
+						}
+						unzip.Close();
+					}
+				}
+				catch
+				{
+				}
+				return;
+			}
+			if (ext == ".rar")
+			{
+				e.isVisible = true;
+				e.isExpandable = false;
+				return;
+			}
+			if (ext != "" && ".flac;.ape;.wv;".Contains(ext))
+			{
+				TagLib.UserDefined.AdditionalFileTypes.Config = _config;
+				TagLib.File.IFileAbstraction file = new TagLib.File.LocalFileAbstraction(e.file.FullName);
+				try
+				{
+					TagLib.File fileInfo = TagLib.File.Create(file);
+					NameValueCollection tags = Tagging.Analyze(fileInfo);
+					e.isVisible = tags.Get("CUESHEET") != null;
+				}
+				catch
+				{
+					e.isVisible = false;
+				}
+				e.isExpandable = false;
+				return;
+			}
+			return;
+		}
+
+		private void UpdateActions()
+		{
+			if (chkMulti.Checked)
+			{
+				rbActionCorrectFilenames.Enabled = true;
+				rbActionCreateCUESheet.Enabled = true;
+				rbActionEncode.Enabled = true;
+				rbActionVerifyAndCRCs.Enabled = true;
+				rbActionVerify.Enabled = true;
+				rbActionVerifyThenEncode.Enabled = true;
+				rbActionVerifyAndEncode.Enabled = true;
+			}
+			else if (chkRecursive.Checked)
+			{
+				string pathIn = txtInputPath.Text;
+				rbActionCorrectFilenames.Enabled = 
+					rbActionCreateCUESheet.Enabled =
+					rbActionVerifyAndEncode.Enabled =
+					rbActionVerifyThenEncode.Enabled =
+					rbActionVerify.Enabled =
+					rbActionVerifyAndCRCs.Enabled =
+					rbActionEncode.Enabled = pathIn.Length != 0 && Directory.Exists(pathIn);
+			}
+			else
+			{
+				string pathIn = txtInputPath.Text;
+				string cueSheetContents, ext;
+				rbActionCorrectFilenames.Enabled = pathIn.Length != 0
+					&& File.Exists(pathIn)
+					&& Path.GetExtension(pathIn).ToLower() == ".cue";
+				rbActionCreateCUESheet.Enabled = pathIn.Length != 0
+					&& Directory.Exists(pathIn)
+					&& Directory.GetFiles(pathIn, "*.cue").Length == 0
+					&& TryDummyCUE(pathIn, out cueSheetContents, out ext);
+				rbActionVerifyAndEncode.Enabled =
+					rbActionVerifyThenEncode.Enabled =
+					rbActionVerify.Enabled =
+					rbActionVerifyAndCRCs.Enabled =
+					rbActionEncode.Enabled = pathIn.Length != 0
+						&& (File.Exists(pathIn) || IsCDROM(pathIn) || rbActionCreateCUESheet.Enabled);
+			}
+			btnConvert.Enabled = btnConvert.Visible &&
+				 ((rbActionCorrectFilenames.Enabled && rbActionCorrectFilenames.Checked)
+				|| (rbActionCreateCUESheet.Enabled && rbActionCreateCUESheet.Checked)
+				|| (rbActionEncode.Enabled && rbActionEncode.Checked)
+				|| (rbActionVerifyAndCRCs.Enabled && rbActionVerifyAndCRCs.Checked)
+				|| (rbActionVerify.Enabled && rbActionVerify.Checked)
+				|| (rbActionVerifyThenEncode.Enabled && rbActionVerifyThenEncode.Checked)
+				|| (rbActionVerifyAndEncode.Enabled && rbActionVerifyAndEncode.Checked));
+		}
+
+		private void fileSystemTreeView1_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			if (fileSystemTreeView1.SelectedPath != null)
+			{
+				txtInputPath.Text = fileSystemTreeView1.SelectedPath;
+				txtInputPath.SelectAll();
+			}
+		}
+
+		private void chkMulti_CheckedChanged(object sender, EventArgs e)
+		{
+			fileSystemTreeView1.CheckBoxes = chkMulti.Checked;
+			if (fileSystemTreeView1.SelectedNode != null)
+			{
+				if (chkMulti.Checked)
+					fileSystemTreeView1.SelectedNode.Checked = true;
+				fileSystemTreeView1.SelectedNode.Expand();
+			}
+			UpdateActions();
+		}
+
+		private void chkRecursive_CheckedChanged(object sender, EventArgs e)
+		{
+			UpdateActions();
+		}
+
+		private void fileSystemTreeView1_AfterExpand(object sender, TreeViewEventArgs e)
+		{
+			fileSystemTreeView1_AfterCheck(sender, e);
+		}
+
+		private void fileSystemTreeView1_AfterCheck(object sender, TreeViewEventArgs e)
+		{
+			if (chkMulti.Checked && chkRecursive.Checked)
+				foreach (TreeNode node in e.Node.Nodes)
+					node.Checked = e.Node.Checked;
+		}
+
+		private void fileSystemTreeView1_DragEnter(object sender, DragEventArgs e)
+		{
+			if (e.Data.GetDataPresent(DataFormats.FileDrop))
+			{
+				e.Effect = DragDropEffects.Copy;
+			}
+		}
+
+		private void fileSystemTreeView1_DragDrop(object sender, DragEventArgs e)
+		{
+			if (e.Data.GetDataPresent(DataFormats.FileDrop))
+			{
+				string[] folders = e.Data.GetData(DataFormats.FileDrop) as string[];
+				if (folders != null)
+				{
+					if (folders.Length > 1 && !chkMulti.Checked)
+					{
+						chkMulti.Checked = true;
+						if (fileSystemTreeView1.SelectedNode != null && fileSystemTreeView1.SelectedNode.Checked)
+							fileSystemTreeView1.SelectedNode.Checked = false;
+					}
+					if (chkMulti.Checked)
+						foreach (string folder in folders)
+						{
+							TreeNode node = fileSystemTreeView1.LookupNode(folder);
+							if (node != null) node.Checked = true;
+						}
+					else
+						fileSystemTreeView1.SelectedPath = folders[0];
+					fileSystemTreeView1.Focus();
+				}
+			}
+		}
+
+		private void rbAction_CheckedChanged(object sender, EventArgs e)
 		{
 			UpdateOutputPath();
 			SetupControls(false);
 		}
+
+		public void OnSecondCall(string[] args)
+		{
+			this.Invoke((MethodInvoker)delegate()
+			{
+				if (args.Length == 1)
+				{
+					TreeNode node = null;
+					try
+					{
+						node = fileSystemTreeView1.LookupNode(args[0]) ??
+							fileSystemTreeView1.LookupNode(Path.GetDirectoryName(args[0]));
+					}
+					catch
+					{
+					}
+					if (node != null)
+					{
+						fileSystemTreeView1.SelectedNode = node;
+						node.Expand();
+					}
+				}
+				if (WindowState == FormWindowState.Minimized)
+					WindowState = FormWindowState.Normal;
+				fileSystemTreeView1.Select();
+				Activate();
+			});
+		}
+
+		private void setAsMyMusicFolderToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			DirectoryInfo dir = (DirectoryInfo)contextMenuStripFileTree.Tag;
+			try
+			{
+				fileSystemTreeView1.IconManager.SetFolderPath(CUEControls.ExtraSpecialFolder.MyMusic, dir.FullName);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+			fileSystemTreeView1.Nodes[0].Collapse();
+			fileSystemTreeView1.SelectedFolder = CUEControls.ExtraSpecialFolder.MyMusic;
+			fileSystemTreeView1.SelectedNode.Expand();
+		}
+
+		private void resetToOriginalLocationToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			CUEControls.ExtraSpecialFolder dir = (CUEControls.ExtraSpecialFolder)contextMenuStripFileTree.Tag;
+			try
+			{
+				fileSystemTreeView1.IconManager.SetFolderPath(dir, null);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+			fileSystemTreeView1.Nodes[0].Collapse();
+			fileSystemTreeView1.SelectedFolder = CUEControls.ExtraSpecialFolder.MyMusic;
+			fileSystemTreeView1.SelectedNode.Expand();
+		}
+
+		private void fileSystemTreeView1_MouseDown(object sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Right)
+			{				
+				TreeViewHitTestInfo info = fileSystemTreeView1.HitTest(e.Location);
+				if (info.Node != null)
+				{
+					contextMenuStripFileTree.Tag = info.Node.Tag;
+					SelectedNodeName.Text = info.Node.Text;
+					SelectedNodeName.Image = m_icon_mgr.ImageList.Images[info.Node.ImageIndex];
+					if (info.Node.Tag is DirectoryInfo)
+					{
+						resetToOriginalLocationToolStripMenuItem.Visible = false;
+						setAsMyMusicFolderToolStripMenuItem.Visible = true;
+						setAsMyMusicFolderToolStripMenuItem.Image = m_icon_mgr.ImageList.Images[m_icon_mgr.GetIconIndex(CUEControls.ExtraSpecialFolder.MyMusic, true)];
+					}
+					else if (info.Node.Tag is CUEControls.ExtraSpecialFolder && ((CUEControls.ExtraSpecialFolder)info.Node.Tag) == CUEControls.ExtraSpecialFolder.MyMusic)
+					{
+						resetToOriginalLocationToolStripMenuItem.Visible = true;
+						setAsMyMusicFolderToolStripMenuItem.Visible = false;
+					}
+					else
+						return;
+					fileSystemTreeView1.SelectedNode = info.Node;
+					contextMenuStripFileTree.Show(fileSystemTreeView1, e.Location);
+				}					
+			}
+		}
+
 	}
 
 	enum OutputPathGeneration {

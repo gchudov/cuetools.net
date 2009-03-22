@@ -23,7 +23,7 @@ namespace Freedb
 	/// <summary>
 	/// Summary description for Track.
 	/// </summary>
-	public class Track
+	public class Track : ICloneable
 	{
 
 		private string m_Title;
@@ -108,8 +108,21 @@ namespace Freedb
 			m_Title = title;
 			m_ExtendedData = extendedData;
 		}
-	
-	
-	
+
+		/// <summary>
+		/// Create an instance of a Track passing in a track
+		/// </summary>
+		/// <param name="title"></param>
+		public Track(Track src)
+		{
+			m_Title = src.m_Title;
+			m_ExtendedData = src.m_ExtendedData;
+			m_FrameOffset = src.m_FrameOffset;
+		}
+
+		public object Clone()
+		{
+			return new Track(this);
+		}
 	}
 }

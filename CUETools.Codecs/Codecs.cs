@@ -408,6 +408,8 @@ namespace CUETools.Codecs
 					_dataOffset = (ulong)pos;
 					if (!_IO.CanSeek || _IO.Length <= maxFileSize)
 					{
+						if (ckSize == 0x7fffffff)
+							throw new Exception("WAVE stream length unknown");
 						_dataLen = ckSize;
 					}
 					else
@@ -750,6 +752,8 @@ namespace CUETools.Codecs
 			try
 			{
 				started = _encoderProcess.Start();
+				if (started)
+					_encoderProcess.PriorityClass = Process.GetCurrentProcess().PriorityClass;
 			}
 			catch (Exception _ex)
 			{
@@ -837,6 +841,8 @@ namespace CUETools.Codecs
 			try
 			{
 				started = _decoderProcess.Start();
+				if (started)
+					_decoderProcess.PriorityClass = Process.GetCurrentProcess().PriorityClass;
 			}
 			catch (Exception _ex)
 			{

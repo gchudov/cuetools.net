@@ -29,9 +29,10 @@ namespace ArCueDotNet
 			try
 			{
 				CUESheet cueSheet = new CUESheet(config);
+				cueSheet.Action = CUEAction.Verify;
 				cueSheet.Open(pathIn);
+				cueSheet.Lookup();
 				cueSheet.GenerateFilenames(OutputAudioFormat.NoAudio, false, pathIn);
-				cueSheet.AccurateRip = AccurateRipMode.Verify;
 				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathIn), CUEStyle.SingleFile);
 				cueSheet.GenerateAccurateRipLog(sw);
 			}

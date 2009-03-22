@@ -120,15 +120,45 @@
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Отмена</value>
   </data>
-  <data name="grpGeneral.Text" xml:space="preserve">
-    <value>Общие</value>
+  <data name="btnCancel.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="chkSingleInstance.Size" type="System.Drawing.Size, System.Drawing">
+    <value>182, 17</value>
+  </data>
+  <data name="chkSingleInstance.Text" xml:space="preserve">
+    <value>Только одно окно приложения</value>
+  </data>
+  <data name="chkSingleInstance.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkOverwriteTags.Size" type="System.Drawing.Size, System.Drawing">
+    <value>186, 17</value>
+  </data>
+  <data name="chkOverwriteTags.Text" xml:space="preserve">
+    <value>Игнорируя информацию из .cue</value>
+  </data>
+  <data name="chkOverwriteTags.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkExtractLog.Size" type="System.Drawing.Size, System.Drawing">
+    <value>127, 17</value>
+  </data>
+  <data name="chkExtractLog.Text" xml:space="preserve">
+    <value>Извлечь .log в файл</value>
+  </data>
+  <data name="chkExtractLog.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkReducePriority.Size" type="System.Drawing.Size, System.Drawing">
     <value>180, 17</value>
   </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
     <value>Понизить приоритет процесса</value>
+  </data>
+  <data name="chkReducePriority.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkTruncateExtra4206Samples.Size" type="System.Drawing.Size, System.Drawing">
     <value>202, 17</value>
@@ -145,17 +175,26 @@
   <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
     <value>Создавать .cue даже при встраивании</value>
   </data>
+  <data name="chkCreateCUEFileWhenEmbedded.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkCreateM3U.Size" type="System.Drawing.Size, System.Drawing">
     <value>166, 17</value>
   </data>
   <data name="chkCreateM3U.Text" xml:space="preserve">
     <value>Создавать плейлисты .m3u</value>
   </data>
+  <data name="chkCreateM3U.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkFillUpCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>221, 17</value>
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
     <value>Пополнить .cue информацией из тэгов</value>
+  </data>
+  <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkEmbedLog.Size" type="System.Drawing.Size, System.Drawing">
     <value>156, 17</value>
@@ -181,11 +220,17 @@
   <data name="chkPreserveHTOA.Text" xml:space="preserve">
     <value>Сохранять HTOA при разбивке на треки</value>
   </data>
-  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 13</value>
+  <data name="chkPreserveHTOA.ToolTip" xml:space="preserve">
+    <value />
   </data>
-  <data name="lblWriteOffset.Text" xml:space="preserve">
-    <value>Смещение (сэмплов):</value>
+  <data name="grpGeneral.Text" xml:space="preserve">
+    <value>Общие</value>
+  </data>
+  <data name="grpGeneral.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="numericFLACCompressionLevel.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="lblFLACCompressionLevel.Size" type="System.Drawing.Size, System.Drawing">
     <value>94, 13</value>
@@ -193,11 +238,20 @@
   <data name="lblFLACCompressionLevel.Text" xml:space="preserve">
     <value>Уровень сжатия:</value>
   </data>
+  <data name="lblFLACCompressionLevel.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkFLACVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>94, 17</value>
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Верификация</value>
+  </data>
+  <data name="chkFLACVerify.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="btnOK.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkWVStoreMD5.Size" type="System.Drawing.Size, System.Drawing">
     <value>119, 17</value>
@@ -205,11 +259,20 @@
   <data name="chkWVStoreMD5.Text" xml:space="preserve">
     <value>MD5-хеширование</value>
   </data>
+  <data name="chkWVStoreMD5.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="numWVExtraMode.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>89, 17</value>
   </data>
   <data name="chkWVExtraMode.Text" xml:space="preserve">
     <value>Доп. режим:</value>
+  </data>
+  <data name="chkWVExtraMode.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbWVVeryHigh.Size" type="System.Drawing.Size, System.Drawing">
     <value>103, 17</value>
@@ -217,11 +280,17 @@
   <data name="rbWVVeryHigh.Text" xml:space="preserve">
     <value>Очень высокий</value>
   </data>
+  <data name="rbWVVeryHigh.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="rbWVHigh.Size" type="System.Drawing.Size, System.Drawing">
     <value>68, 17</value>
   </data>
   <data name="rbWVHigh.Text" xml:space="preserve">
     <value>Высокий</value>
+  </data>
+  <data name="rbWVHigh.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="rbWVNormal.Size" type="System.Drawing.Size, System.Drawing">
     <value>69, 17</value>
@@ -229,14 +298,17 @@
   <data name="rbWVNormal.Text" xml:space="preserve">
     <value>Средний</value>
   </data>
+  <data name="rbWVNormal.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="rbWVFast.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 17</value>
   </data>
   <data name="rbWVFast.Text" xml:space="preserve">
     <value>Быстрый</value>
   </data>
-  <data name="groupBox1.Text" xml:space="preserve">
-    <value>Проверить и записать</value>
+  <data name="rbWVFast.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>150, 77</value>
@@ -247,6 +319,9 @@
   <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
     <value>и нулевым смещением</value>
   </data>
+  <data name="chkEncodeWhenZeroOffset.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkArFixOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 100</value>
   </data>
@@ -256,6 +331,9 @@
   <data name="chkArFixOffset.Text" xml:space="preserve">
     <value>Исправлять смещение если</value>
   </data>
+  <data name="chkArFixOffset.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkWriteArLogOnConvert.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 181</value>
   </data>
@@ -264,6 +342,9 @@
   </data>
   <data name="chkWriteArLogOnConvert.Text" xml:space="preserve">
     <value>Записывать отчет AccurateRip</value>
+  </data>
+  <data name="chkWriteArLogOnConvert.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkWriteArTagsOnConvert.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 164</value>
@@ -286,8 +367,14 @@
   <data name="labelEncodeWhenPercent.Text" xml:space="preserve">
     <value>% проверенных треков &gt;=</value>
   </data>
+  <data name="labelEncodeWhenPercent.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="numEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
     <value>250, 35</value>
+  </data>
+  <data name="numEncodeWhenPercent.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="labelEncodeWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
     <value>125, 58</value>
@@ -298,14 +385,23 @@
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
     <value>с достоверностью &gt;=</value>
   </data>
+  <data name="labelEncodeWhenConfidence.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="numEncodeWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
     <value>250, 56</value>
+  </data>
+  <data name="numEncodeWhenConfidence.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkArNoUnverifiedAudio.Size" type="System.Drawing.Size, System.Drawing">
     <value>176, 17</value>
   </data>
   <data name="chkArNoUnverifiedAudio.Text" xml:space="preserve">
     <value>Конвертировать только если</value>
+  </data>
+  <data name="chkArNoUnverifiedAudio.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="labelFixWhenConfidence.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
@@ -324,8 +420,14 @@
   <data name="labelFixWhenConfidence.Text" xml:space="preserve">
     <value>с достоверностью &gt;=</value>
   </data>
+  <data name="labelFixWhenConfidence.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="numFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
     <value>251, 137</value>
+  </data>
+  <data name="numFixWhenConfidence.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="labelFixWhenPercent.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -342,8 +444,20 @@
   <data name="labelFixWhenPercent.Text" xml:space="preserve">
     <value>% проверенных треков &gt;=</value>
   </data>
+  <data name="labelFixWhenPercent.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="numFixWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
     <value>250, 116</value>
+  </data>
+  <data name="numFixWhenPercent.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Проверить и записать</value>
+  </data>
+  <data name="groupBox1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkFilenamesANSISafe.Size" type="System.Drawing.Size, System.Drawing">
     <value>207, 17</value>
@@ -402,14 +516,17 @@
   <data name="chkHDCDLW16.ToolTip" xml:space="preserve">
     <value>При конвертации в lossyWAV, обрезать до 16 бит</value>
   </data>
-  <data name="grpAudioFilenames.Text" xml:space="preserve">
-    <value>Имена аудиофайлов</value>
-  </data>
   <data name="chkKeepOriginalFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>157, 17</value>
   </data>
   <data name="chkKeepOriginalFilenames.Text" xml:space="preserve">
     <value>Сохранять оригинальные</value>
+  </data>
+  <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtSpecialExceptions.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkRemoveSpecial.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 17</value>
@@ -417,11 +534,20 @@
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Удалять специальные символы кроме:</value>
   </data>
+  <data name="chkRemoveSpecial.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="chkReplaceSpaces.Size" type="System.Drawing.Size, System.Drawing">
     <value>209, 17</value>
   </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
     <value>Заменять пробелы подчеркиванями</value>
+  </data>
+  <data name="chkReplaceSpaces.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="lblTrackFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 75</value>
@@ -432,14 +558,44 @@
   <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
     <value>Трек:</value>
   </data>
+  <data name="lblTrackFilenameFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="lblSingleFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 13</value>
   </data>
   <data name="lblSingleFilenameFormat.Text" xml:space="preserve">
     <value>Образ диска:</value>
   </data>
-  <data name="groupBox3.Text" xml:space="preserve">
-    <value>При проверке</value>
+  <data name="lblSingleFilenameFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="txtSingleFilenameFormat.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="grpAudioFilenames.Text" xml:space="preserve">
+    <value>Имена аудиофайлов</value>
+  </data>
+  <data name="grpAudioFilenames.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAPEinsane.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAPEextrahigh.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAPEhigh.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAPEnormal.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="rbAPEfast.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkWriteARLogOnVerify.Location" type="System.Drawing.Point, System.Drawing">
     <value>5, 181</value>
@@ -450,8 +606,26 @@
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
     <value>Записывать отчет AccurateRip</value>
   </data>
-  <data name="tabPage3.Text" xml:space="preserve">
-    <value>Форматы</value>
+  <data name="chkWriteARLogOnVerify.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="groupBox3.Text" xml:space="preserve">
+    <value>При проверке</value>
+  </data>
+  <data name="groupBox3.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage5.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage6.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage7.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 13</value>
@@ -459,8 +633,133 @@
   <data name="label1.Text" xml:space="preserve">
     <value>Качество:</value>
   </data>
+  <data name="label1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="numericLossyWAVQuality.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage8.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkUDC1ID3v2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="chkUDC1APEv2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="label6.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="label5.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="textUDC1EncParams.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="textUDC1Encoder.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="textUDC1Params.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="textUDC1Decoder.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="textUDC1Extension.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="label4.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="label3.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="label2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage9.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="imageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
+        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABm
+        DQAAAk1TRnQBSQFMAgEBAgEAAQQBAAEEAQABEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        AwABEAMAAQEBAAEgBgABEBUAAf8DAAH/ARwBaAETAf8BHAFoARMB/wMAAf8BHAFoARMB/wEcAWgBEwH/
+        AwAB/wMAAf8BHAEbARwB/wEkASMBJAH/ARMBFwETAf8DAAH/AwAB/wMAAf8DAAX/AQgBBAECAf8BCQEF
+        AQIB/wEJAQUBAgH/AQkBBQECAf8BCgEFAQIB/wELAQYBAwH/AQkBBQECAf8BCQEFAQIB/wEJAQUBAgH/
+        AQkBBQECAf8BCQEFAQIB/wEJAQUBAgH/AQkBBQECAf8BCAEEAQIF/4AAAVUBWAFVAf8BLAErASwB/wE0
+        Ad8BPQH/ATQB3wE9Af8DAAH/ATQB3wE9Af8BNAHfAT0B/wMAAf8DAAH/AYwBjgGMAf8B1gHTAdYB/wHW
+        AdMB1gH/AVUBVAFVAf8DAAH/AwAB/wMAAf8BCQEFAQIB/wHOAY4BXAH/Ac4BjgFcAf8B1AGTAV8B/wHO
+        AY4BXAH/AaYBbgFKAf8BHQESAQsB/wHOAY4BXAH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFc
+        Af8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BCQEFAQIB/4AAAW4BcAFuAf8BLAErASwB/wE0Ad8BPQH/
+        ATQB3wE9Af8DAAH/ATQB3wE9Af8BNAHfAT0B/wMAAf8DAAH/AbUBtgG1Cf8BbgFwAW4B/wMAAf8DAAH/
+        AwAB/wELAQYBAwH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8B0AGQAVwB/wMAAf8BlQFi
+        AUAB/wHOAY4BXAH/AdIBkAFeAf8B0wGRAV4B/wHTAZEBXgH/AdMBkQFeAf8BzgGOAVwB/wHOAY4BXAH/
+        AQoBBQECAf+AAAFuAXABbgH/ASwBKwEsAf8BAAEfAQAB/wEDASsBAwH/AwAB/wEDASsBCwH/AQMBIwED
+        Af8DAAH/AwAB/wG1AbIBtQn/AW4BbAFuAf8DAAH/AwAB/wMAAf8BCwEGAQMB/wHOAY4BXAH/Ac4BjgFc
+        Af8BzgGOAVwB/wHQAY8BXAH/Ac4BjgFcAf8BGgEQAQgB/wEmARkBDwH/Ac4BjgFcAf8BzgGOAVwB/wHO
+        AY4BXAH/Ac4BjgFcAf8B0AGPAV0B/wHOAY4BXAH/Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAEr
+        ASwB/wEkAa4BLAH/ASQBrgEsAf8DAAH/ASQBrgEsAf8BJAGuASwB/wMAAf8DAAH/AbUBsgG1Cf8BbgFs
+        AW4B/wMAAf8DAAH/AwAB/wELAQYBAwH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BzgGO
+        AVwB/wGYAWQBQgH/AwAB/wMAAf8DAAH/ATIBIAEUAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BzgGO
+        AVwB/wEKAQUBAgH/gAABbgFwAW4B/wEsASsBLAH/ATQB3wE9Af8BNAHfAT0B/wMAAf8BNAHfAT0B/wE0
+        Ad8BPQH/AwAB/wMAAf8BtQGyAbUJ/wFuAWwBbgH/AwAB/wMAAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHS
+        AZEBXQH/Ac4BjgFcAf8B0QGQAV0B/wHOAY4BXAH/Ac4BjgFcAf8DAAH/AUwBMwEhAf8BrQFyAU0B/wEr
+        ARwBEgH/AwAB/wHOAY4BXAH/Ac4BjgFcAf8BzgGOAVwB/wEKAQUBAgH/gAABbgFwAW4B/wEsASsBLAH/
+        ATQB3wE9Af8BNAHfAT0B/wMAAf8BNAHfAT0B/wE0Ad8BPQH/AwAB/wMAAf8BrQGuAa0J/wFmAWgBZgH/
+        AwAB/wMAAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHRAZABXQH/Ac4BjgFcAf8BkQFfAT8B/wHOAY4BXAH/
+        Ac4BjgFcAf8BPAEnARkB/wEDAQEBAAH/Ac4BjgFcAf8BzgGOAVwB/wMAAf8BQAErARsB/wHOAY4BXAH/
+        Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAErASwB/wEAASMBJAH/AQABKwEsAf8DAAH/AQABKwEs
+        Af8BAAEjASQB/wMAAf8DAAH/Aa0BqgGtCf8BZgFkAWYB/wMAAf8DAAH/AwAB/wELAQYBAwH/Ac4BjgFc
+        Af8BzgGOAVwB/wHOAY4BXAH/AwAB/wGrAXEBSwH/Ac4BjgFcAf8BuQF6AVEB/wMAAf8BzgGOAVwB/wHO
+        AY4BXAH/AQMBAQEAAf8BDwEHAQUB/wHOAY4BXAH/Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAEr
+        ASwB/wEAAZ4BnAH/AQABngGcAf8DAAH/AQABngGcAf8BAAGeAZwB/wETAR8BHBn/ASQBIwEkAf8DAAH/
+        AQsBBgEDAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8DAAH/ARgBDwEJAf8BzgGOAVwB/wHEAYcBWQH/
+        AwAB/wMAAf8DAAH/AwAB/wGHAVcBOQH/Ac4BjgFcAf8BzgGOAVwB/wEKAQUBAgH/gAABbgFwAW4B/wEs
+        ASsBLAH/AQAD/wEAA/8DAAH/AQAD/wEAA/8DABn/ASQBIwEkAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHO
+        AY4BXAH/Ac4BjgFcAf8DAAH/AwAB/wGqAW8BSgH/AZkBZQFDAf8DAAH/AwAB/wGiAWkBRgH/Ac4BjgFc
+        Af8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAErASwB/wEAA/8BAAP/
+        AwAB/wEAA/8BAAP/AwAB/wFVAVABTQH/Ad4B2wHeCf8BtQGyAbUB/wF2AXgBdgH/AQMBBwEDAf8DAAH/
+        AQsBBgEDAf8BzgGOAVwB/wHOAY4BXAH/AZ4BZwFFAf8DAAH/AVwBPQEpAf8BEgELAQYB/wFgAUABKwH/
+        ARoBEQEJAf8BJgEZARAB/wFAASoBGwH/Ac4BjgFcAf8B0QGQAV0B/wHOAY4BXAH/Ac4BjgFcAf8BCgEF
+        AQIB/4AAAW4BcAFuAf8BLAErASwB/wMAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wMAAf8BlAGWAZQJ/wG1
+        AbYBtQH/AwAB/wMAAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHOAY4BXAH/AXIBTQE0Af8DAAH/Ac4BjgFc
+        Af8DAAH/AwAB/wFSATcBJQH/Aa4BdAFNAf8DAAH/Ac4BjgFcAf8BzgGOAVwB/wHTAZEBXgH/AdQBkwFf
+        Af8BCgEFAQIB/4AAAZwBmgGcAf8BLAErASwB/wIAAaUB/wIAAaUB/wMAAf8DAAH/AwAB/wMAAf8DAAH/
+        ASwBKwEsEf8BvQG6Ab0B/wMAAf8BCwEGAQMB/wHOAY4BXAH/Ac4BjgFcAf8BQAEqARwB/wMAAf8BzgGO
+        AVwB/wFrAUgBLwH/AwAB/wGDAVUBOQH/Ac4BjgFcAf8DAAH/ATEBHwEVAf8BzgGOAVwB/wHOAY4BXAH/
+        AdQBkwFfAf8BCgEFAQIB/4AAAZQBkgGUAf8BLAErASwB/wIAAv8CAAL/AwAB/wMAAf8DAAH/AwAB/wMA
+        Af8DAAH/AZwBmgGcDf8BlAGWAZQB/wMAAf8BCwEGAQMB/wHOAY4BXAH/Ac4BjgFcAf8BAQIAAf8BIwEX
+        AQ4B/wHOAY4BXAH/Ac4BjgFcAf8DAAH/AZ8BaAFGAf8BzgGOAVwB/wGLAVoBPAH/AwAB/wHOAY4BXAH/
+        Ac4BjgFcAf8BzgGOAVwB/wEKAQUBAgH/gAABpQGmAaUB/wGUAZIBlAH/AgABpQH/AgABtQH/ASwBKwEs
+        Af8BLAErASwB/wEsASsBLAH/ASwBKwEsAf8BLAErASwB/wEsASsBLAH/ASwBLwEsAf8BTQFQAU0B/wGt
+        AaoBrQH/Aa0BqgGtAf8BRQFIAUUB/wMAAf8BCQEFAQIB/wHOAY4BXAH/Ac4BjgFcAf8BcgFMATMB/wGl
+        AW0BSAH/Ac4BjgFcAf8BzgGOAVwB/wGYAWQBQgH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/AW0BSgEx
+        Af8BrgFyAU0B/wHOAY4BXAH/Ac4BjgFcAf8BCQEFAQIB/4AAAd4B2wHeAf8BpQGmAaUB/wGlAaYBpQH/
+        AXYBdAF2Af8BbgFwAW4B/wFuAXABbgH/AW4BcAFuAf8BbgFwAW4B/wFuAXABbgH/AW4BcAFuAf8BbgFw
+        AW4B/wFuAXABbgH/AW4BcAFuAf8BLAErASwB/wEsASsBLAH/AwAF/wEJAQUBAgH/AQoBBgECAf8BCwEG
+        AQMB/wELAQYBAgH/AQoBBgECAf8BCgEGAQIB/wELAQYBAgH/AQsBBgECAf8BCgEGAQIB/wEKAQYBAgH/
+        AQsBBgEDAf8BCwEGAQIB/wEKAQYBAgH/AQkBBQECBf+AAAFCAU0BPgcAAT4DAAEoAwABQAMAARADAAEB
+        AQABAQUAAYAXAAP/gQAL
+</value>
+  </data>
+  <data name="tabControl2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage3.Text" xml:space="preserve">
+    <value>Форматы</value>
+  </data>
+  <data name="tabPage3.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="grpHDCD.Text" xml:space="preserve">
     <value>Параметры</value>
+  </data>
+  <data name="grpHDCD.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="chkHDCDDetect.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 17</value>
@@ -468,7 +767,19 @@
   <data name="chkHDCDDetect.Text" xml:space="preserve">
     <value>Определять HDCD</value>
   </data>
+  <data name="chkHDCDDetect.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabPage4.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="tabControl1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Продвинутые настройки</value>
+  </data>
+  <data name="$this.ToolTip" xml:space="preserve">
+    <value />
   </data>
 </root>

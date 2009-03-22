@@ -41,31 +41,24 @@ namespace JDP
 			this.Start = new System.Windows.Forms.ColumnHeader();
 			this.Length = new System.Windows.Forms.ColumnHeader();
 			this.btnEdit = new System.Windows.Forms.Button();
+			this.chkFixEncoding = new System.Windows.Forms.CheckBox();
 			this.SuspendLayout();
 			// 
 			// button1
 			// 
-			this.button1.AccessibleDescription = null;
-			this.button1.AccessibleName = null;
-			resources.ApplyResources(this.button1, "button1");
-			this.button1.BackgroundImage = null;
 			this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-			this.button1.Font = null;
+			resources.ApplyResources(this.button1, "button1");
 			this.button1.Name = "button1";
 			this.button1.UseVisualStyleBackColor = true;
 			// 
 			// listChoices
 			// 
-			this.listChoices.AccessibleDescription = null;
-			this.listChoices.AccessibleName = null;
-			resources.ApplyResources(this.listChoices, "listChoices");
-			this.listChoices.BackgroundImage = null;
 			this.listChoices.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1});
-			this.listChoices.Font = null;
 			this.listChoices.FullRowSelect = true;
 			this.listChoices.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this.listChoices.HideSelection = false;
+			resources.ApplyResources(this.listChoices, "listChoices");
 			this.listChoices.MultiSelect = false;
 			this.listChoices.Name = "listChoices";
 			this.listChoices.ShowItemToolTips = true;
@@ -89,26 +82,19 @@ namespace JDP
 			// 
 			// textBox1
 			// 
-			this.textBox1.AccessibleDescription = null;
-			this.textBox1.AccessibleName = null;
-			resources.ApplyResources(this.textBox1, "textBox1");
-			this.textBox1.BackgroundImage = null;
 			this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			resources.ApplyResources(this.textBox1, "textBox1");
 			this.textBox1.Name = "textBox1";
 			this.textBox1.ReadOnly = true;
 			// 
 			// listTracks
 			// 
-			this.listTracks.AccessibleDescription = null;
-			this.listTracks.AccessibleName = null;
 			resources.ApplyResources(this.listTracks, "listTracks");
-			this.listTracks.BackgroundImage = null;
 			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Title,
             this.TrackNo,
             this.Start,
             this.Length});
-			this.listTracks.Font = null;
 			this.listTracks.FullRowSelect = true;
 			this.listTracks.GridLines = true;
 			this.listTracks.LabelEdit = true;
@@ -139,31 +125,30 @@ namespace JDP
 			// 
 			// btnEdit
 			// 
-			this.btnEdit.AccessibleDescription = null;
-			this.btnEdit.AccessibleName = null;
 			resources.ApplyResources(this.btnEdit, "btnEdit");
-			this.btnEdit.BackgroundImage = null;
-			this.btnEdit.Font = null;
 			this.btnEdit.Name = "btnEdit";
 			this.btnEdit.UseVisualStyleBackColor = true;
 			this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
 			// 
+			// chkFixEncoding
+			// 
+			resources.ApplyResources(this.chkFixEncoding, "chkFixEncoding");
+			this.chkFixEncoding.Name = "chkFixEncoding";
+			this.chkFixEncoding.UseVisualStyleBackColor = true;
+			this.chkFixEncoding.CheckedChanged += new System.EventHandler(this.chkFixEncoding_CheckedChanged);
+			// 
 			// frmChoice
 			// 
 			this.AcceptButton = this.button1;
-			this.AccessibleDescription = null;
-			this.AccessibleName = null;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackgroundImage = null;
+			this.Controls.Add(this.chkFixEncoding);
 			this.Controls.Add(this.btnEdit);
 			this.Controls.Add(this.listTracks);
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.listChoices);
 			this.Controls.Add(this.button1);
-			this.Font = null;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-			this.Icon = null;
 			this.MaximizeBox = false;
 			this.Name = "frmChoice";
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
@@ -187,5 +172,6 @@ namespace JDP
 		private System.Windows.Forms.ColumnHeader Length;
 		private System.Windows.Forms.Button btnEdit;
 		private System.Windows.Forms.ColumnHeader Start;
+		private System.Windows.Forms.CheckBox chkFixEncoding;
 	}
 }

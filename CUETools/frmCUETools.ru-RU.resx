@@ -117,40 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="btnConvert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 346</value>
-  </data>
   <data name="btnConvert.Text" xml:space="preserve">
     <value>Поехали</value>
-  </data>
-  <data name="grpCUEPaths.Text" xml:space="preserve">
-    <value>Пути к файлам</value>
   </data>
   <data name="btnBrowseOutput.Text" xml:space="preserve">
     <value>Выбор...</value>
   </data>
-  <data name="btnBrowseInput.Text" xml:space="preserve">
-    <value>Выбор...</value>
-  </data>
-  <data name="lblOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>44, 13</value>
-  </data>
-  <data name="lblOutput.Text" xml:space="preserve">
-    <value>Выход:</value>
-  </data>
-  <data name="lblInput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>36, 13</value>
-  </data>
-  <data name="lblInput.Text" xml:space="preserve">
-    <value>&amp;Вход:</value>
-  </data>
-  <data name="grpOutputStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 164</value>
-  </data>
   <data name="grpOutputStyle.Text" xml:space="preserve">
     <value>Стиль CUE</value>
   </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 17</value>
   </data>
@@ -196,29 +172,17 @@
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
     <value>Создать образ диска в виде одного аудио-файла и .cue файла</value>
   </data>
-  <data name="btnAbout.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 191</value>
-  </data>
   <data name="btnAbout.Text" xml:space="preserve">
     <value>О программе</value>
   </data>
-  <data name="grpOutputPathGeneration.Size" type="System.Drawing.Size, System.Drawing">
-    <value>392, 113</value>
-  </data>
   <data name="grpOutputPathGeneration.Text" xml:space="preserve">
     <value>Путь для выходных файлов</value>
-  </data>
-  <data name="txtCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>240, 21</value>
   </data>
   <data name="rbCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>89, 17</value>
   </data>
   <data name="rbCustomFormat.Text" xml:space="preserve">
     <value>По шаблону:</value>
-  </data>
-  <data name="txtCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
-    <value>240, 21</value>
   </data>
   <data name="rbDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 17</value>
@@ -238,9 +202,6 @@
   <data name="rbAppendFilename.Text" xml:space="preserve">
     <value>Суффикс к имени:</value>
   </data>
-  <data name="txtAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
-    <value>240, 21</value>
-  </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Формат аудио</value>
   </data>
@@ -250,41 +211,74 @@
   <data name="rbNoAudio.Text" xml:space="preserve">
     <value>Без аудио</value>
   </data>
-  <data name="btnBatch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 315</value>
-  </data>
-  <data name="btnBatch.Text" xml:space="preserve">
-    <value>Обработать папку...</value>
-  </data>
-  <data name="btnFilenameCorrector.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 284</value>
-  </data>
-  <data name="btnFilenameCorrector.Text" xml:space="preserve">
-    <value>Исправить имена...</value>
-  </data>
-  <data name="btnSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 222</value>
-  </data>
   <data name="btnSettings.Text" xml:space="preserve">
     <value>Настройки...</value>
   </data>
-  <data name="grpAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 211</value>
+  <data name="rbActionCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 17</value>
   </data>
-  <data name="grpAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 164</value>
+  <data name="rbActionCorrectFilenames.Text" xml:space="preserve">
+    <value>Исправить имена файлов</value>
   </data>
-  <data name="rbArPlusCRC.Size" type="System.Drawing.Size, System.Drawing">
-    <value>115, 17</value>
+  <data name="chkRecursive.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 17</value>
   </data>
-  <data name="rbArPlusCRC.Text" xml:space="preserve">
-    <value>Проверить + CRC</value>
+  <data name="chkRecursive.Text" xml:space="preserve">
+    <value>В папке</value>
   </data>
-  <data name="rbArAndEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 17</value>
+  <data name="rbActionCreateCUESheet.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 17</value>
   </data>
-  <data name="rbArAndEncode.Text" xml:space="preserve">
-    <value>Записать и проверить</value>
+  <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
+    <value>Создать .cue</value>
+  </data>
+  <data name="chkMulti.Location" type="System.Drawing.Point, System.Drawing">
+    <value>81, 148</value>
+  </data>
+  <data name="chkMulti.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 17</value>
+  </data>
+  <data name="chkMulti.Text" xml:space="preserve">
+    <value>Несколько</value>
+  </data>
+  <data name="rbActionVerifyAndCRCs.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 17</value>
+  </data>
+  <data name="rbActionVerifyAndCRCs.Text" xml:space="preserve">
+    <value>Проверка + CRC</value>
+  </data>
+  <data name="rbActionVerifyAndEncode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 17</value>
+  </data>
+  <data name="rbActionVerifyAndEncode.Text" xml:space="preserve">
+    <value>Конвертация + проверка</value>
+  </data>
+  <data name="rbActionVerifyThenEncode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>147, 17</value>
+  </data>
+  <data name="rbActionVerifyThenEncode.Text" xml:space="preserve">
+    <value>Проверка, конвертация</value>
+  </data>
+  <data name="rbActionVerify.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 17</value>
+  </data>
+  <data name="rbActionVerify.Text" xml:space="preserve">
+    <value>Только проверка</value>
+  </data>
+  <data name="rbActionEncode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 17</value>
+  </data>
+  <data name="rbActionEncode.Text" xml:space="preserve">
+    <value>Конвертация</value>
+  </data>
+  <data name="grpAction.Text" xml:space="preserve">
+    <value>Действие</value>
+  </data>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>41, 13</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Pregap</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 13</value>
@@ -295,56 +289,67 @@
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
     <value>Не используется для обычных музыкальных дисков. "Улучшенные" компакт диски с треком данных не найдутся в базе данных, если не указать длину трека данных. Её часто можно найти в логе EAC. Если лог EAC лежит в той же папке что и .cue, и имеет такое же имя как .cue файл, то он будет проанализирован автоматически и тут опять же ничего не надо будет вводить.</value>
   </data>
-  <data name="rbArApplyOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 17</value>
-  </data>
-  <data name="rbArApplyOffset.Text" xml:space="preserve">
-    <value>Проверить и записать</value>
-  </data>
-  <data name="rbArApplyOffset.ToolTip" xml:space="preserve">
-    <value>На первом проходе проверить точность рипа по базе AccurateRip с учетом возможных смещений.  На втором проходе, сконвертировать, возможно с применением коррекции смещения (в зависимости от настроек)</value>
-  </data>
-  <data name="rbArVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>118, 17</value>
-  </data>
-  <data name="rbArVerify.Text" xml:space="preserve">
-    <value>Только проверить</value>
-  </data>
-  <data name="rbArVerify.ToolTip" xml:space="preserve">
-    <value>Проверить точность рипа по базе AccurateRip с учетом возможных смещений</value>
-  </data>
-  <data name="rbArNone.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 17</value>
-  </data>
-  <data name="rbArNone.Text" xml:space="preserve">
-    <value>Не проверять</value>
-  </data>
-  <data name="rbArNone.ToolTip" xml:space="preserve">
-    <value>Сконвертировать, не обращаясь к базе данных AccurateRip</value>
-  </data>
-  <data name="btnCUECreator.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 253</value>
-  </data>
-  <data name="btnCUECreator.Text" xml:space="preserve">
-    <value>Создать CUE...</value>
-  </data>
-  <data name="btnStop.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 346</value>
+  <data name="toolStripStatusLabelAR.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAyNJREFUOE9tkm1P
+        mmcYhh+zbsm+Ntlf2Jd92n/Yx21p1nTZlplZ0mJD2+mYG119AakITi2tmoK0a33p1BL7MtcpXRCrKNbK
+        EEOd1qLYCigSERB5e4BjxGVZSLyTM3dyJcdx3cl9lglHHKcTHO43wk76XSH/Tl44/t4x4cP3jwsfffBW
+        mUiOt8uOlR3FCaN9KWplSaq+F5FehnItVN4ooOgroLpfoHM0i9WVoATOkz0cPP8DVBUxaiRFqAq+VqSR
+        NoPcAOqBAi0PChif5Lg3LeLeyJRKujQrKC9uFeEEZ8rTVFQWOCsv8OMVaOwW6TCDaQyGpvJYnDEW18J4
+        Vjf+lyh++JsL8g0qZLuclojITmdRSEGnBP3tPHeKr7tvh8kXB2zuwU40SjwRIp2KI1y7NcUFtQtJ4yLl
+        dUFkNVHqzqeplwRwTsKzheLWmQzLfgjs5wgn4wR3XrIbWSAVW0D4rvURZ7SzSLQuzuq8KDTb6BpizD/N
+        4VsPsvxqle2oSHBfJJTe5/XeCpGEm+TBHLmkFUF6/S6SjlFknRMoutzo9D6M19cJBGL8aRs/vCOJOP5M
+        Ar+4TlR0I+bsFMTHxZgRKnXdVGsHUGofoGmyYaybpafGw4zZR+YgSTy6j3fJy5u1ZWKBv8juPoHoCLno
+        EOz1Igyaf6OpsQtDm5mJu4sMVlmY7VwibAsRdAcITqwSsT4jNW0ns/wYvEMUXv8CwQ5S4YcIfr+f2+0G
+        luweVu2+oqCHTdsa4flNkk4/3t4xEiOjYC3C8wPklwzkvXrwtUHK8+9XGi/V011ZzYbVwda4h9BTF5HZ
+        l2z3PiRuNJIe7EIc0ZO36SjMFtvl+Yn4ytXSMjlu9WD56hzZkXESjjkyUzOE1LWk26pJ3ZRz8Gsxjy6S
+        GJcQc5tK4f+6/fxeH2MVnzMnPcmr8yfZrvmErYZPCbR+zGbHCXx3vsAx3HI0PDw8jMlkor9Zze9VUqbP
+        fckL+Slc9Z/hVJ9iUvsNN9Xf8vPVdgyG7lKJxWKhv78fvV5Pi6YZtVqFUnUZTcMltLW1qBqU1Deqi2lC
+        c6WZ9vZWbhgNh5J/AJcIo/TEh255AAAAAElFTkSuQmCC
+</value>
   </data>
   <data name="btnStop.Text" xml:space="preserve">
     <value>Стоп</value>
   </data>
-  <data name="btnPause.Location" type="System.Drawing.Point, System.Drawing">
-    <value>477, 346</value>
-  </data>
   <data name="btnPause.Text" xml:space="preserve">
     <value>Пауза</value>
   </data>
-  <data name="btnResume.Location" type="System.Drawing.Point, System.Drawing">
-    <value>477, 346</value>
-  </data>
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Поехали</value>
+  </data>
+  <data name="rbFreedbAlways.Size" type="System.Drawing.Size, System.Drawing">
+    <value>60, 17</value>
+  </data>
+  <data name="rbFreedbAlways.Text" xml:space="preserve">
+    <value>Всегда</value>
+  </data>
+  <data name="rbFreedbIf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>76, 17</value>
+  </data>
+  <data name="rbFreedbIf.Text" xml:space="preserve">
+    <value>Если надо</value>
+  </data>
+  <data name="rbFreedbNever.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 17</value>
+  </data>
+  <data name="rbFreedbNever.Text" xml:space="preserve">
+    <value>Никогда</value>
+  </data>
+  <data name="grpFreedb.Text" xml:space="preserve">
+    <value>Поиск в Freedb</value>
+  </data>
+  <data name="grpInput.Text" xml:space="preserve">
+    <value>Исходный файл</value>
+  </data>
+  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 13</value>
+  </data>
+  <data name="lblWriteOffset.Text" xml:space="preserve">
+    <value>Смещение</value>
+  </data>
+  <data name="grpExtra.Text" xml:space="preserve">
+    <value>Дополнительно</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

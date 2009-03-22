@@ -33,10 +33,10 @@ namespace CUERipper
 			this.comboDrives = new System.Windows.Forms.ComboBox();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusAr = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusAr = new System.Windows.Forms.ToolStripStatusLabel();
 			this.listTracks = new System.Windows.Forms.ListView();
 			this.Title = new System.Windows.Forms.ColumnHeader();
 			this.TrackNo = new System.Windows.Forms.ColumnHeader();
@@ -72,12 +72,13 @@ namespace CUERipper
 			// 
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
+            this.toolStripStatusAr,
             this.toolStripProgressBar1,
             this.toolStripProgressBar2,
-            this.toolStripStatusLabel2,
-            this.toolStripStatusAr});
+            this.toolStripStatusLabel2});
 			resources.ApplyResources(this.statusStrip1, "statusStrip1");
 			this.statusStrip1.Name = "statusStrip1";
+			this.statusStrip1.ShowItemToolTips = true;
 			this.statusStrip1.SizingGrip = false;
 			// 
 			// toolStripStatusLabel1
@@ -85,6 +86,12 @@ namespace CUERipper
 			this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
 			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
 			this.toolStripStatusLabel1.Spring = true;
+			// 
+			// toolStripStatusAr
+			// 
+			this.toolStripStatusAr.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			resources.ApplyResources(this.toolStripStatusAr, "toolStripStatusAr");
+			this.toolStripStatusAr.Name = "toolStripStatusAr";
 			// 
 			// toolStripProgressBar1
 			// 
@@ -106,13 +113,6 @@ namespace CUERipper
 			this.toolStripStatusLabel2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
 			resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
-			// 
-			// toolStripStatusAr
-			// 
-			this.toolStripStatusAr.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.toolStripStatusAr.Image = global::CUERipper.Properties.Resources.arok;
-			this.toolStripStatusAr.Name = "toolStripStatusAr";
-			resources.ApplyResources(this.toolStripStatusAr, "toolStripStatusAr");
 			// 
 			// listTracks
 			// 

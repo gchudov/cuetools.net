@@ -26,50 +26,47 @@ namespace JDP
 			button1.Select();
 		}
 
+		private ListViewItem ToItem(object i)
+		{
+			string text = "";
+			int image = -1;
+			if (i is string)
+				text = i as string;
+			else if (i is CUEToolsSourceFile)
+			{
+				text = (i as CUEToolsSourceFile).path;
+				image = 0;
+			}
+			else if (i is MusicBrainz.Release)
+			{
+				ReleaseInfo r = new ReleaseInfo(CUE, i as MusicBrainz.Release);
+				text = r.Text;
+				image = 2;
+				i = r;
+			}
+			else if (i is Freedb.CDEntry)
+			{
+				ReleaseInfo r = new ReleaseInfo(CUE, i as Freedb.CDEntry);
+				text = r.Text;
+				image = 1;
+				i = r;
+			}
+			ListViewItem item = new ListViewItem(text, image);
+			item.Tag = i;
+			return item;
+		}
+
 		public IEnumerable<object> Choices
 		{
 			set
 			{
-				bool isCD = false;
 				foreach(object i in value)
 				{
-					string text = "";
-					int image = -1;
-					if (i is string)
-						text = i as string;
-					else if (i is CUEToolsSourceFile)
-					{
-						text = (i as CUEToolsSourceFile).path;
-						image = 0;
-					}
-					else if (i is MusicBrainz.Release)
-					{
-						MusicBrainz.Release release = i as MusicBrainz.Release;
-						text = String.Format("{0}: {1} - {2}",
-							release.GetEvents().Count > 0 ? release.GetEvents()[0].Date.Substring(0, 4) : "YYYY",
-							release.GetArtist(),
-							release.GetTitle());
-						image = 2;
-						isCD = true;
-					}
-					else if (i is Freedb.CDEntry)
-					{
-						CDEntry cdEntry = i as CDEntry;
-						text = String.Format("{0}: {1} - {2}",
-							cdEntry.Year,
-							cdEntry.Artist,
-							cdEntry.Title);
-						image = 1;
-						isCD = true;
-					}
-					ListViewItem item = new ListViewItem(text, image);
-					item.Tag = i;
+					ListViewItem item = ToItem(i);
 					listChoices.Items.Add(item);
 				}
-				if (isCD)
+				if (CUE != null)
 				{
-					if (CUE == null)
-						throw new Exception("selecting release information, but cue sheet has not been set");
 					string text = String.Format("{0}: {1} - {2}",
 						CUE.Year == "" ? "YYYY" : CUE.Year,
 						CUE.Artist == "" ? "Unknown Artist" : CUE.Artist,
@@ -105,12 +102,9 @@ namespace JDP
 		private void frmChoice_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			object item = ChosenObject;
-			if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK || item == null)
+			if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK || item == null || !(item is ReleaseInfo))
 				return;
-			if (item is MusicBrainz.Release)
-				CUE.FillFromMusicBrainz((MusicBrainz.Release)item);
-			else if (item is CDEntry)
-				CUE.FillFromFreedb((CDEntry)item);
+			(item as ReleaseInfo).FillCUE();
 		}
 
 		private void AutoResizeTracks()
@@ -128,39 +122,37 @@ namespace JDP
 			object item = ChosenObject;
 			if (item != null && item is CUEToolsSourceFile)
 			{
-				textBox1.Text = (item as CUEToolsSourceFile).contents.Replace("\r\n", "\r").Replace("\r", "\r\n");
+				textBox1.Text = (item as CUEToolsSourceFile).contents.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+				chkFixEncoding.Visible = false;
 			}
-			else if (item != null && item is MusicBrainz.Release)
+			else if (item != null && item is ReleaseInfo)
 			{
-				MusicBrainz.Release release = item as MusicBrainz.Release;
+				ReleaseInfo r = (item as ReleaseInfo);
 				listTracks.Items.Clear();
-				foreach (MusicBrainz.Track track in release.GetTracks())
-				{
-					listTracks.Items.Add(new ListViewItem(new string[] { 
-						track.GetTitle(), 
-						(listTracks.Items.Count + 1).ToString(),
-						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].StartMSF,
-						CUE == null ? "" : CUE.TOC[listTracks.Items.Count + 1].LengthMSF
-					}));
-				}
-				AutoResizeTracks();
-			}
-			else if (item != null && item is CDEntry)
-			{
-				CDEntry cdEntry = item as CDEntry;
-				
-				listTracks.Items.Clear();
-				for (int i = 0; i < cdEntry.Tracks.Count; i++)
-				{
-					listTracks.Items.Add(new ListViewItem(new string[] { 
-						cdEntry.Tracks[i].Title, 						
+				if (r.musicbrainz != null)
+					foreach (MusicBrainz.Track track in r.musicbrainz.GetTracks())
+					{
+						listTracks.Items.Add(new ListViewItem(new string[] { 
+							track.GetTitle(), 
+							(listTracks.Items.Count + 1).ToString(),
+							CUE == null ? "" : CUE.TOC[listTracks.Items.Count + CUE.TOC.FirstAudio].StartMSF,
+							CUE == null ? "" : CUE.TOC[listTracks.Items.Count + CUE.TOC.FirstAudio].LengthMSF
+						}));
+					}
+				if (r.freedb != null)
+					for (int i = 0; i < r.freedb.Tracks.Count; i++)
+					{
+						listTracks.Items.Add(new ListViewItem(new string[] { 
+						r.freedb.Tracks[i].Title,
 						(i + 1).ToString(),
-						CDImageLayout.TimeToString((uint)cdEntry.Tracks[i].FrameOffset - 150),
-						CDImageLayout.TimeToString((i + 1 < cdEntry.Tracks.Count) ? (uint) (cdEntry.Tracks[i + 1].FrameOffset - cdEntry.Tracks[i].FrameOffset) :
-							(CUE == null || i >= CUE.TOC.TrackCount) ? 0 : CUE.TOC[i + 1].Length)
+						CDImageLayout.TimeToString((uint)r.freedb.Tracks[i].FrameOffset - 150),
+						CDImageLayout.TimeToString((i + 1 < r.freedb.Tracks.Count) ? (uint) (r.freedb.Tracks[i + 1].FrameOffset - r.freedb.Tracks[i].FrameOffset) :
+							(CUE == null || i >= CUE.TOC.TrackCount) ? 0 : CUE.TOC[i + CUE.TOC.FirstAudio].Length)
 					}));
-				}
+					}
 				AutoResizeTracks();
+				chkFixEncoding.Visible = r.freedb != null;
+				chkFixEncoding.Checked = r.freedb_latin1 != null;
 			}
 			else if (item != null && item is CUESheet)
 			{
@@ -176,10 +168,12 @@ namespace JDP
 					}));
 				}
 				AutoResizeTracks();
+				chkFixEncoding.Visible = false;
 			}
 			else
 			{
 				listTracks.Items.Clear();
+				chkFixEncoding.Visible = false;
 				textBox1.Text = "";
 			}
 		}
@@ -189,10 +183,8 @@ namespace JDP
 			object item = ChosenObject;
 			if (item == null || CUE == null)
 				return;
-			if (item is MusicBrainz.Release)
-				CUE.FillFromMusicBrainz((MusicBrainz.Release)item);
-			else if (item is CDEntry)
-				CUE.FillFromFreedb((CDEntry)item);
+			if (item is ReleaseInfo)
+				(item as ReleaseInfo).FillCUE();
 			else if (!(item is CUESheet))
 				return;
 			listChoices.Items[0].Selected = true;
@@ -250,6 +242,98 @@ namespace JDP
 			        listTracks.FocusedItem.BeginEdit();
 			    }
 			}
+		}
+
+		private void chkFixEncoding_CheckedChanged(object sender, EventArgs e)
+		{
+			if (listChoices.SelectedItems.Count > 0)
+			{
+				ListViewItem item = listChoices.Items[listChoices.SelectedItems[0].Index];
+				if (item.Tag is ReleaseInfo)
+				{
+					ReleaseInfo r = item.Tag as ReleaseInfo;
+					if ((r.freedb_latin1 == null) == chkFixEncoding.Checked)
+					{
+						r.FixEncoding();
+						item.Text = r.Text;
+						for (int i = 0; i < r.freedb.Tracks.Count; i++)
+							listTracks.Items[i].Text = r.freedb.Tracks[i].Title;
+					}
+				}
+			}
+		}
+	}
+
+	sealed class ReleaseInfo
+	{
+		public Freedb.CDEntry freedb_latin1;
+		public Freedb.CDEntry freedb;
+		public MusicBrainz.Release musicbrainz;
+		public CUESheet CUE;
+		private Encoding iso;
+
+		public ReleaseInfo(CUESheet cue, Freedb.CDEntry release)
+		{
+			CUE = cue;
+			iso = Encoding.GetEncoding("iso-8859-1");
+			freedb_latin1 = null;
+			freedb = release;
+		}
+
+		public ReleaseInfo(CUESheet cue, MusicBrainz.Release release)
+		{
+			CUE = cue;
+			iso = Encoding.GetEncoding("iso-8859-1");
+			musicbrainz = release;
+		}
+
+		private string FixEncoding(string src)
+		{
+			return Encoding.Default.GetString(iso.GetBytes(src));
+		}
+
+		public string Text
+		{
+			get
+			{
+				if (musicbrainz != null)
+					return string.Format("{0}: {1} - {2}",
+						musicbrainz.GetEvents().Count > 0 ? musicbrainz.GetEvents()[0].Date.Substring(0, 4) : "YYYY",
+						musicbrainz.GetArtist(),
+						musicbrainz.GetTitle());
+				if (freedb != null)
+					return string.Format("{0}: {1} - {2}",
+						freedb.Year,
+						freedb.Artist,
+						freedb.Title);
+				return null;
+			}
+		}
+
+		public void FixEncoding()
+		{
+			if (freedb == null)
+				return;
+			if (freedb_latin1 != null)
+			{
+				freedb = freedb_latin1;
+				freedb_latin1 = null;
+				return;
+			}
+			freedb_latin1 = freedb;
+			freedb = new Freedb.CDEntry(freedb_latin1);
+			freedb.Artist = FixEncoding(freedb.Artist);
+			freedb.Title = FixEncoding(freedb.Title);
+			foreach (Freedb.Track tr in freedb.Tracks)
+				tr.Title = FixEncoding(tr.Title);
+		}
+
+		public void FillCUE()
+		{
+			if (musicbrainz != null)
+				CUE.FillFromMusicBrainz(musicbrainz);
+			else if (freedb != null)
+				CUE.FillFromFreedb(freedb);
 		}
 	}
 }

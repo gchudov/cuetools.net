@@ -60,6 +60,13 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap accuraterip16 {
+            get {
+                object obj = ResourceManager.GetObject("accuraterip16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap arok {
             get {
                 object obj = ResourceManager.GetObject("arok", resourceCulture);

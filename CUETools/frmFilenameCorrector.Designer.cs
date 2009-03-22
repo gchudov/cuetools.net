@@ -29,23 +29,16 @@ namespace JDP {
 			// 
 			// lblDescription
 			// 
-			this.lblDescription.AccessibleDescription = null;
-			this.lblDescription.AccessibleName = null;
 			resources.ApplyResources(this.lblDescription, "lblDescription");
-			this.lblDescription.Font = null;
 			this.lblDescription.Name = "lblDescription";
 			// 
 			// frmFilenameCorrector
 			// 
-			this.AccessibleDescription = null;
-			this.AccessibleName = null;
 			this.AllowDrop = true;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackgroundImage = null;
 			this.Controls.Add(this.lblDescription);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-			this.Icon = null;
 			this.MaximizeBox = false;
 			this.Name = "frmFilenameCorrector";
 			this.TopMost = true;

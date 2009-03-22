@@ -57,13 +57,15 @@ namespace CUETools.Processor
 		UDC1
 	}
 
-	public enum AccurateRipMode
+	public enum CUEAction
 	{
-		None,
+		Convert,
 		Verify,
 		VerifyPlusCRCs,
 		VerifyThenConvert,
-		VerifyAndConvert
+		VerifyAndConvert,
+		CreateDummyCUE,
+		CorrectFilenames
 	}
 
 	public enum CUEStyle
@@ -144,8 +146,12 @@ namespace CUETools.Processor
 			}
 			else
 			{
-				line.Params[1] = value;
-				line.IsQuoted[1] = quoted;
+				while (line.Params.Count > 1)
+				{
+					line.Params.RemoveAt(1);
+					line.IsQuoted.RemoveAt(1);
+				}
+				line.Params.Add(value); line.IsQuoted.Add(quoted);
 			}
 		}
 
@@ -162,8 +168,12 @@ namespace CUETools.Processor
 			}
 			else
 			{
-				line.Params[2] = value;
-				line.IsQuoted[2] = quoted;
+				while (line.Params.Count > 2)
+				{
+					line.Params.RemoveAt(2);
+					line.IsQuoted.RemoveAt(2);
+				}
+				line.Params.Add(value); line.IsQuoted.Add(quoted);
 			}
 		}
 
@@ -277,6 +287,7 @@ namespace CUETools.Processor
 		public string udc1Extension, udc1Decoder, udc1Params, udc1Encoder, udc1EncParams;
 		public bool udc1APEv2, udc1ID3v2;
 		public bool disableAsm;
+		public bool oneInstance;
 
 		public CUEConfig()
 		{
@@ -329,6 +340,7 @@ namespace CUETools.Processor
 			udc1ID3v2 = udc1APEv2 = false;
 
 			disableAsm = false;
+			oneInstance = true;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -378,6 +390,7 @@ namespace CUETools.Processor
 			sw.Save("DecodeHDCDToLossyWAV16", decodeHDCDtoLW16);
 			sw.Save("DecodeHDCDTo24bit", decodeHDCDto24bit);
 			sw.Save("DisableAsm", disableAsm);
+			sw.Save("OneInstance", oneInstance);
 			if (udc1Extension != "")
 			{
 				sw.Save("UDC1Extension", udc1Extension);
@@ -438,6 +451,7 @@ namespace CUETools.Processor
 			decodeHDCDto24bit = sr.LoadBoolean("DecodeHDCDTo24bit") ?? true;
 
 			disableAsm = sr.LoadBoolean("DisableAsm") ?? false;
+			oneInstance = sr.LoadBoolean("OneInstance") ?? true;
 
 			udc1Extension = sr.Load("UDC1Extension") ?? "";
 			udc1Decoder = sr.Load("UDC1Decoder") ?? "";
@@ -525,11 +539,9 @@ namespace CUETools.Processor
 		private bool _hasEmbeddedCUESheet;
 		private bool _paddedToFrame, _truncated4608, _usePregapForFirstTrackInSingleFile;
 		private int _writeOffset;
-		private AccurateRipMode _accurateRipMode;
-		private uint? _dataTrackLength;
+		private CUEAction _action;
 		private uint? _minDataTrackLength;
 		private string _accurateRipId;
-		private string _accurateRipIdActual;
 		private string _eacLog;
 		private string _cuePath;
 		private TagLib.File _fileInfo;
@@ -571,9 +583,8 @@ namespace CUETools.Processor
 			_paddedToFrame = false;
 			_truncated4608 = false;
 			_usePregapForFirstTrackInSingleFile = false;
-			_accurateRipMode = AccurateRipMode.None;
+			_action = CUEAction.Convert;
 			_appliedWriteOffset = false;
-			_dataTrackLength = null;
 			_minDataTrackLength = null;
 			hdcdDecoder = null;
 			_hasEmbeddedCUESheet = false;
@@ -590,7 +601,6 @@ namespace CUETools.Processor
 				_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
 				_tracks.Add(new TrackInfo());
 			}
-			_accurateRipId = _accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
 			_arVerify = new AccurateRipVerify(_toc);
 			_isCD = true;
 			SourceInfo cdInfo;
@@ -833,16 +843,25 @@ namespace CUETools.Processor
 			if (cueDir == pathIn)
 			{
 				CDDriveReader ripper = new CDDriveReader();
-				ripper.Open(pathIn[0]);
-				if (ripper.TOC.AudioTracks > 0)
+				try
 				{
-					OpenCD(ripper);
-					int driveOffset;
-					if (!AccurateRipVerify.FindDriveReadOffset(_ripper.ARName, out driveOffset))
-						throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
-					_ripper.DriveOffset = driveOffset;
-					LookupAlbumInfo();
-					return;
+					ripper.Open(pathIn[0]);
+					if (ripper.TOC.AudioTracks > 0)
+					{
+						OpenCD(ripper);
+						int driveOffset;
+						if (!AccurateRipVerify.FindDriveReadOffset(_ripper.ARName, out driveOffset))
+							throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
+						_ripper.DriveOffset = driveOffset;
+						LookupAlbumInfo();
+						return;
+					}
+				}
+				catch
+				{
+					ripper.Dispose();
+					_ripper = null;
+					throw;
 				}
 			}
 #endif
@@ -977,8 +996,6 @@ namespace CUETools.Processor
 				_hasEmbeddedCUESheet = true;
 			}
 
-			string dataTrackLength = null;
-
 			using (sr) {
 				while ((lineStr = sr.ReadLine()) != null) {
 					line = new CUELine(lineStr);
@@ -1105,12 +1122,6 @@ namespace CUETools.Processor
 							// Remove ReplayGain lines
 						}
 						else if ((command == "REM") &&
-							(line.Params.Count == 3) &&
-							(line.Params[1].ToUpper() == "DATATRACKLENGTH"))
-						{
-							dataTrackLength = line.Params[2];
-						}
-						else if ((command == "REM") &&
 						   (line.Params.Count == 3) &&
 						   (line.Params[1].ToUpper() == "ACCURATERIPID"))
 						{
@@ -1168,6 +1179,7 @@ namespace CUETools.Processor
 			// Add dummy index 01 for data track
 			if (!_toc[_toc.TrackCount].IsAudio && indexes[indexes.Count - 1].Index == 0)
 			{
+				fileTimeLengthFrames += 152 * 75;
 				indexInfo.Track = trackNumber;
 				indexInfo.Index = 1;
 				indexInfo.Time = absoluteFileStartTime + fileTimeLengthFrames;
@@ -1197,7 +1209,12 @@ namespace CUETools.Processor
 			for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
 			{
 				_toc[iTrack].Start = _toc[iTrack][1].Start;
-				_toc[iTrack].Length = (iTrack == _toc.TrackCount ? (uint)indexes[indexes.Count - 1].Time - _toc[iTrack].Start : _toc[iTrack + 1][1].Start - _toc[iTrack].Start);
+				_toc[iTrack].Length = iTrack == _toc.TrackCount
+					? (uint)indexes[indexes.Count - 1].Time - _toc[iTrack].Start
+					: _toc[iTrack + 1].IsAudio
+						? _toc[iTrack + 1][1].Start - _toc[iTrack].Start
+						: _toc[iTrack + 1][0].Start - _toc[iTrack].Start;
+
 			}
 
 			// Store the audio filenames, generating generic names if necessary
@@ -1272,67 +1289,35 @@ namespace CUETools.Processor
 
 			CDImageLayout tocFromLog = _eacLog == null ? null : TocFromLog(_eacLog);
 
+			// use pregap from log
 			if (tocFromLog != null && tocFromLog.Pregap > _toc.Pregap)
 				PreGapLength = tocFromLog.Pregap;
 
-			if (_accurateRipId == null)
+			// use data track length from log
+			if (tocFromLog != null && tocFromLog.AudioTracks == _toc.AudioTracks && tocFromLog.TrackCount == tocFromLog.AudioTracks + 1)
 			{
-				if (dataTrackLength != null)
-					DataTrackLength = dataTrackLength;
-				else
+				if (!tocFromLog[tocFromLog.TrackCount].IsAudio)
 				{
-					bool dtlFound = false;
-					if (tocFromLog != null)
-					{
-						// TODO: can just use smth like
-						// DataTrackLength = tocFromLog.DataTrackLengthMSF; 
-						// The only proplem is DataTrackLength property doesn't set last track's offset.
-
-						if (tocFromLog.TrackCount == _toc.TrackCount + 1 && !tocFromLog[tocFromLog.TrackCount].IsAudio)
-						{
-							//_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(tocFromLog);
-							_toc.AddTrack(new CDTrack((uint)tocFromLog.TrackCount, tocFromLog[tocFromLog.TrackCount].Start, tocFromLog[tocFromLog.TrackCount].Length, false, false));
-							dtlFound = true;
-						}
-						else if (tocFromLog.TrackCount == _toc.TrackCount)
-						{
-							if (!tocFromLog[1].IsAudio)
-							{
-								for (i = 2; i <= _toc.TrackCount; i++)
-								{
-									_toc[i].Start += tocFromLog[1].Length - _toc[1].Length;
-									for (int j = 0; j <= _toc[i].LastIndex; j++)
-										_toc[i][j].Start += tocFromLog[1].Length - _toc[1].Length;
-								}
-								_toc[1].Length = tocFromLog[1].Length;
-								dtlFound = true;
-							}
-							else if (!tocFromLog[tocFromLog.TrackCount].IsAudio)
-							{
-								_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
-								_toc[_toc.TrackCount].Length = tocFromLog[_toc.TrackCount].Length;
-								_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
-								_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
-								dtlFound = true;
-							}
-						}
-					}
-					if (!dtlFound && _cddbDiscIdTag != null)
-					{
-						uint cddbDiscIdNum;
-						if (uint.TryParse(_cddbDiscIdTag, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out cddbDiscIdNum) && (cddbDiscIdNum & 0xff) == _toc.TrackCount + 1)
-						{
-							uint lengthFromTag = ((cddbDiscIdNum >> 8) & 0xffff);
-							_minDataTrackLength = ((lengthFromTag + _toc[1].Start / 75) - 152) * 75 - _toc.Length;
-						}
-					}
-				}
+					DataTrackLength = tocFromLog[tocFromLog.TrackCount].Length;
+					_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
+					_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
+					_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
+				} else
+					DataTrackLength = tocFromLog[1].Length;
 			}
 
-			_accurateRipIdActual = AccurateRipVerify.CalculateAccurateRipId(_toc);
-
-			if (_accurateRipId == null)
-				_accurateRipId = _accurateRipIdActual;
+			// use data track length range from cddbId
+			if (DataTrackLength == 0 && _cddbDiscIdTag != null)
+			{
+				uint cddbDiscIdNum;
+				if (uint.TryParse(_cddbDiscIdTag, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out cddbDiscIdNum) && (cddbDiscIdNum & 0xff) == _toc.AudioTracks + 1)
+				{
+					if (_toc.TrackCount == _toc.AudioTracks)
+						_toc.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, 0, false, false));
+					uint lengthFromTag = ((cddbDiscIdNum >> 8) & 0xffff);
+					_minDataTrackLength = (lengthFromTag + _toc[1].Start / 75) * 75 - _toc.Length;
+				}
+			}
 
 			_arVerify = new AccurateRipVerify(_toc);
 
@@ -1370,18 +1355,43 @@ namespace CUETools.Processor
 						_arVerify.CRCLOG(1, 0);
 				}
 			}
+		}
 
-			//if (!_dataTrackLength.HasValue && _cddbDiscIdTag != null)
-			//{
-			//    uint cddbDiscIdNum = UInt32.Parse(_cddbDiscIdTag, NumberStyles.HexNumber);
-			//    if ((cddbDiscIdNum & 0xff) == TrackCount)
-			//    {
-			//        _cutOneFrame = true;
-			//        string cddbDiscIdTagCut = CalculateAccurateRipId().Split('-')[2];
-			//        if (cddbDiscIdTagCut.ToUpper() != _cddbDiscIdTag.ToUpper())
-			//            _cutOneFrame = false;
-			//    }
-			//}
+		public void Lookup()
+		{
+			if (_action == CUEAction.Verify 
+				|| _action == CUEAction.VerifyAndConvert 
+				|| _action == CUEAction.VerifyPlusCRCs 
+				|| _action == CUEAction.VerifyThenConvert
+				)
+			{
+				ShowProgress((string)"Contacting AccurateRip database...", 0, 0, null, null);
+				if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0 && _minDataTrackLength.HasValue && _accurateRipId == null && _config.bruteForceDTL)
+				{
+					uint minDTL = _minDataTrackLength.Value;
+					CDImageLayout toc2 = new CDImageLayout(_toc);
+					for (uint dtl = minDTL; dtl < minDTL + 75; dtl++)
+					{
+						toc2[toc2.TrackCount].Length = dtl;
+						_arVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(toc2));
+						if (_arVerify.AccResult != HttpStatusCode.NotFound)
+						{
+							DataTrackLength = dtl;
+							break;
+						}
+						ShowProgress((string)"Contacting AccurateRip database...", 0, (dtl - minDTL) / 75.0, null, null);
+						CheckStop();
+						lock (this)
+						{
+							Monitor.Wait(this, 500);
+						}
+					}
+				}
+				else
+				{
+					_arVerify.ContactAccurateRip(_accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
+				}
+			}
 		}
 
 		public static Encoding Encoding {
@@ -1968,7 +1978,7 @@ namespace CUETools.Processor
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
 				int cdErrors = 0;
-				bool crcMismatch = _accurateRipMode == AccurateRipMode.VerifyThenConvert &&
+				bool crcMismatch = _action == CUEAction.VerifyThenConvert &&
 					_arVerify.BackupCRC(iTrack) != _arVerify.CRC(iTrack);
 				for (uint iSector = _toc[iTrack + 1].Start; iSector <= _toc[iTrack + 1].End; iSector++)
 					if (_ripper.Errors[(int)iSector])
@@ -1988,7 +1998,7 @@ namespace CUETools.Processor
 						logWriter.WriteLine("Track {0} contains {1} errors", iTrack + 1, cdErrors);
 				}
 			}
-			if (_accurateRipMode != AccurateRipMode.None)
+			if (_action != CUEAction.Convert)
 			{
 				logWriter.WriteLine();
 				logWriter.WriteLine("AccurateRip summary");
@@ -2034,7 +2044,7 @@ namespace CUETools.Processor
 			using (sw) 
 			{
 				if (_config.writeArTagsOnConvert)
-					WriteLine(sw, 0, "REM ACCURATERIPID " + _accurateRipId);
+					WriteLine(sw, 0, "REM ACCURATERIPID " + (_accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc)));
 
 				for (i = 0; i < _attributes.Count; i++)
 					WriteLine(sw, 0, _attributes[i]);
@@ -2091,24 +2101,24 @@ namespace CUETools.Processor
 		public void GenerateAccurateRipLog(TextWriter sw)
 		{
 			sw.WriteLine("[Verification date: {0}]", DateTime.Now);
-			sw.WriteLine("[Disc ID: {0}]", _accurateRipId);
+			sw.WriteLine("[Disc ID: {0}]", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
 			if (PreGapLength != 0)
 				sw.WriteLine("Pregap length {0}.", PreGapLengthMSF);
-			if (_dataTrackLength.HasValue)
-				sw.WriteLine("Assuming a data track was present, length {0}.", CDImageLayout.TimeToString(_dataTrackLength.Value));
-			else
-			{
-				if (_cddbDiscIdTag != null && _accurateRipId.Split('-')[2].ToUpper() != _cddbDiscIdTag.ToUpper())
-					sw.WriteLine("CDDBId mismatch: {0} vs {1}", _cddbDiscIdTag.ToUpper(), _accurateRipId.Split('-')[2].ToUpper());
-				if (_minDataTrackLength.HasValue)
-					sw.WriteLine("Data track was probably present, length {0}-{1}.", CDImageLayout.TimeToString(_minDataTrackLength.Value), CDImageLayout.TimeToString(_minDataTrackLength.Value + 74));
-				if (_accurateRipIdActual != _accurateRipId)
-					sw.WriteLine("Using preserved id, actual id is {0}.", _accurateRipIdActual);
-				if (_truncated4608)
-					sw.WriteLine("Truncated 4608 extra samples in some input files.");
-				if (_paddedToFrame)
-					sw.WriteLine("Padded some input files to a frame boundary.");
-			}
+			if (!_toc[1].IsAudio)
+				sw.WriteLine("Playstation type data track length {0}.", _toc[1].LengthMSF);
+			if (!_toc[_toc.TrackCount].IsAudio)
+				sw.WriteLine("CD-Extra data track length {0}.", 
+					_toc[_toc.TrackCount].Length == 0 && _minDataTrackLength.HasValue ? 
+						CDImageLayout.TimeToString(_minDataTrackLength.Value) + " - " + CDImageLayout.TimeToString(_minDataTrackLength.Value + 74) : 
+						_toc[_toc.TrackCount].LengthMSF );
+			if (_cddbDiscIdTag != null && AccurateRipVerify.CalculateCDDBId(_toc).ToUpper() != _cddbDiscIdTag.ToUpper() && !_minDataTrackLength.HasValue)
+				sw.WriteLine("CDDBId mismatch: {0} vs {1}", _cddbDiscIdTag.ToUpper(), AccurateRipVerify.CalculateCDDBId(_toc).ToUpper());
+			if (_accurateRipId != null && AccurateRipVerify.CalculateAccurateRipId(_toc) != _accurateRipId)
+				sw.WriteLine("Using preserved id, actual id is {0}.", AccurateRipVerify.CalculateAccurateRipId(_toc));
+			if (_truncated4608)
+				sw.WriteLine("Truncated 4608 extra samples in some input files.");
+			if (_paddedToFrame)
+				sw.WriteLine("Padded some input files to a frame boundary.");
 
 			if (hdcdDecoder != null && hdcdDecoder.Detected)
 			{
@@ -2149,7 +2159,7 @@ namespace CUETools.Processor
 						matching3 += _arVerify.AccDisks[iDisk].tracks[iTrack].count;
 			}
 			tags.Add(String.Format("{0}ACCURATERIPCRC", prefix), String.Format("{0:x8}", _arVerify.CRC(iTrack, offset)));
-			tags.Add(String.Format("{0}AccurateRipDiscId", prefix), String.Format("{0:000}-{1}-{2:00}", TrackCount, _accurateRipId, iTrack+1));
+			tags.Add(String.Format("{0}AccurateRipDiscId", prefix), String.Format("{0:000}-{1}-{2:00}", TrackCount, _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc), iTrack + 1));
 			tags.Add(String.Format("{0}ACCURATERIPCOUNT", prefix), String.Format("{0}", matching));
 			tags.Add(String.Format("{0}ACCURATERIPCOUNTALLOFFSETS", prefix), String.Format("{0}", matching3));
 			tags.Add(String.Format("{0}ACCURATERIPTOTAL", prefix), String.Format("{0}", total));
@@ -2159,7 +2169,7 @@ namespace CUETools.Processor
 
 		public void GenerateAccurateRipTags(NameValueCollection tags, int offset, int bestOffset, int iTrack)
 		{
-			tags.Add("ACCURATERIPID", _accurateRipId);
+			tags.Add("ACCURATERIPID", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
 			if (bestOffset != offset)
 				tags.Add("ACCURATERIPOFFSET", String.Format("{1}{0}", bestOffset - offset, bestOffset > offset ? "+" : ""));
 			if (iTrack != -1)
@@ -2220,13 +2230,13 @@ namespace CUETools.Processor
 			outTracksMatch = bestTracksMatch;
 		}
 
-		public void WriteAudioFiles(string dir, CUEStyle style) {
+		public string WriteAudioFiles(string dir, CUEStyle style) {
 			string[] destPaths;
 			int[] destLengths;
 			bool htoaToFile = ((style == CUEStyle.GapsAppended) && _config.preserveHTOA &&
 				(_toc.Pregap != 0));
 
-			if (_isCD && (style == CUEStyle.GapsLeftOut || style == CUEStyle.GapsPrepended) && (_accurateRipMode == AccurateRipMode.None || _accurateRipMode == AccurateRipMode.VerifyAndConvert))
+			if (_isCD && (style == CUEStyle.GapsLeftOut || style == CUEStyle.GapsPrepended) && (_action == CUEAction.Convert || _action == CUEAction.VerifyAndConvert))
 				throw new Exception("When ripping a CD, gaps Left Out/Gaps prepended modes can only be used in verify-then-convert mode");
 
 			if (_usePregapForFirstTrackInSingleFile)
@@ -2246,7 +2256,7 @@ namespace CUETools.Processor
 				}
 			}
 
-			if (_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs)
+			if (_action != CUEAction.Verify && _action != CUEAction.VerifyPlusCRCs)
 				for (int i = 0; i < destPaths.Length; i++)
 					for (int j = 0; j < _sourcePaths.Count; j++)
 						if (destPaths[i].ToLower() == _sourcePaths[j].ToLower())
@@ -2256,64 +2266,32 @@ namespace CUETools.Processor
 
 			bool SkipOutput = false;
 
-			if (_accurateRipMode != AccurateRipMode.None)
-			{
-				ShowProgress((string)"Contacting AccurateRip database...", 0, 0, null, null);
-				if (!_dataTrackLength.HasValue && _minDataTrackLength.HasValue && _accurateRipId == _accurateRipIdActual && _config.bruteForceDTL)
-				{
-					uint minDTL = _minDataTrackLength.Value;
-					CDImageLayout toc2 = new CDImageLayout(_toc);
-					toc2.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152 * 75, minDTL, false, false));
-					for (uint dtl = minDTL; dtl < minDTL + 75; dtl++)
-					{
-						toc2[toc2.TrackCount].Length = dtl;
-						_accurateRipId = AccurateRipVerify.CalculateAccurateRipId(toc2);
-						_arVerify.ContactAccurateRip(_accurateRipId);
-						if (_arVerify.AccResult != HttpStatusCode.NotFound)
-						{
-							_dataTrackLength = dtl;
-							break;
-						}
-						ShowProgress((string)"Contacting AccurateRip database...", 0, (dtl - minDTL) / 75.0, null, null);
-						CheckStop();
-						lock (this)
-						{
-							Monitor.Wait(this, 1000);
-						}
-					}
-					if (_arVerify.AccResult != HttpStatusCode.OK)
-					{
-						_accurateRipId = _accurateRipIdActual;
-					}
-				}
-				else
-				{
-					//CDImageLayout toc2 = new CDImageLayout(_toc);
-					//bool found = false;
-					//for (uint len = 0; len < 150; len++)
-					//{
-					//    toc2[toc2.TrackCount].Length = _toc[_toc.TrackCount].Length + len;
-					//    string id = AccurateRipVerify.CalculateAccurateRipId(toc2);
-					//    _arVerify.ContactAccurateRip(id);
-					//    if (_arVerify.AccResult != HttpStatusCode.NotFound)
-					//    {
-					//        _accurateRipId = id;
-					//        found = true;
-					//        break;
-					//    }
-					//    ShowProgress((string)"Contacting AccurateRip database...", 0, len / 150.0, null, null);
-					//    CheckStop();
-					//    lock (this) { Monitor.Wait(this, 1000); }
-					//}
-					//if (!found)
-					_arVerify.ContactAccurateRip(_accurateRipId);
-				}
+			// Lookup();
 
-				if (_accurateRipMode == AccurateRipMode.Verify)
+			if (_action == CUEAction.Verify)
+			{
+				if (_arVerify.AccResult != HttpStatusCode.OK)
 				{
-					if (_arVerify.AccResult != HttpStatusCode.OK)
+					if (_config.writeArLogOnVerify)
 					{
-						if (_config.writeArLogOnVerify)
+						if (!Directory.Exists(dir))
+							Directory.CreateDirectory(dir);
+						StreamWriter sw = new StreamWriter(Path.ChangeExtension(_cuePath, ".accurip"),
+							false, CUESheet.Encoding);
+						GenerateAccurateRipLog(sw);
+						sw.Close();
+					}
+					return _arVerify.ARStatus;
+				}
+			}
+
+			if (_action == CUEAction.VerifyThenConvert)
+			{
+				if (_arVerify.AccResult != HttpStatusCode.OK && !_isCD)
+				{
+					if (_config.noUnverifiedOutput)
+					{
+						if (_config.writeArLogOnConvert)
 						{
 							if (!Directory.Exists(dir))
 								Directory.CreateDirectory(dir);
@@ -2322,87 +2300,74 @@ namespace CUETools.Processor
 							GenerateAccurateRipLog(sw);
 							sw.Close();
 						}
-						return;
+						if (_config.createTOC)
+						{
+							if (!Directory.Exists(dir))
+								Directory.CreateDirectory(dir);
+							WriteText(Path.ChangeExtension(_cuePath, ".toc"), TOCContents());
+						}
+						return _arVerify.ARStatus;
 					}
 				}
-
-				if (_accurateRipMode == AccurateRipMode.VerifyThenConvert)
+				else
 				{
-					if (_arVerify.AccResult != HttpStatusCode.OK && !_isCD)
+					_writeOffset = 0;
+					WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, true);
+					if (!_isCD)
 					{
+						uint tracksMatch;
+						int bestOffset;
+
 						if (_config.noUnverifiedOutput)
 						{
-							if (_config.writeArLogOnConvert)
-							{
-								if (!Directory.Exists(dir))
-									Directory.CreateDirectory(dir);
-								StreamWriter sw = new StreamWriter(Path.ChangeExtension(_cuePath, ".accurip"),
-									false, CUESheet.Encoding);
-								GenerateAccurateRipLog(sw);
-								sw.Close();
-							}
-							if (_config.createTOC)
-							{
-								if (!Directory.Exists(dir))
-									Directory.CreateDirectory(dir);
-								WriteText(Path.ChangeExtension(_cuePath, ".toc"), TOCContents());
-							}
-							return;
+							FindBestOffset(_config.encodeWhenConfidence, false, out tracksMatch, out bestOffset);
+							if (tracksMatch * 100 < _config.encodeWhenPercent * TrackCount || (_config.encodeWhenZeroOffset && bestOffset != 0))
+								SkipOutput = true;
 						}
-					}
-					else
-					{
-						_writeOffset = 0;
-						WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, true);
-						if (!_isCD)
+
+						if (!SkipOutput && _config.fixOffset)
 						{
-							uint tracksMatch;
-							int bestOffset;
-
-							if (_config.noUnverifiedOutput)
-							{
-								FindBestOffset(_config.encodeWhenConfidence, false, out tracksMatch, out bestOffset);
-								if (tracksMatch * 100 < _config.encodeWhenPercent * TrackCount || (_config.encodeWhenZeroOffset && bestOffset != 0))
-									SkipOutput = true;
-							}
-
-							if (!SkipOutput && _config.fixOffset)
-							{
-								FindBestOffset(_config.fixWhenConfidence, false, out tracksMatch, out bestOffset);
-								if (tracksMatch * 100 >= _config.fixWhenPercent * TrackCount)
-									_writeOffset = bestOffset;
-							}
+							FindBestOffset(_config.fixWhenConfidence, false, out tracksMatch, out bestOffset);
+							if (tracksMatch * 100 >= _config.fixWhenPercent * TrackCount)
+								_writeOffset = bestOffset;
 						}
-						_arVerify.CreateBackup(_writeOffset);
 					}
+					_arVerify.CreateBackup(_writeOffset);
 				}
 			}
 
 			if (!SkipOutput)
 			{
-				if (_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs)
+				if (_action != CUEAction.Verify && _action != CUEAction.VerifyPlusCRCs)
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
 				}
 				if (_isCD)
 					destLengths = CalculateAudioFileLengths(style); // need to recalc, might have changed after scanning the CD
-				if (_outputFormat != OutputAudioFormat.NoAudio || _accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs)
-					WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, _accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs);
+				if (_outputFormat != OutputAudioFormat.NoAudio || _action == CUEAction.Verify || _action == CUEAction.VerifyPlusCRCs)
+					WriteAudioFilesPass(dir, style, destPaths, destLengths, htoaToFile, _action == CUEAction.Verify || _action == CUEAction.VerifyPlusCRCs);
 				CreateRipperLOG(destPaths, style);
-				if (_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs)
+				if (_action == CUEAction.Convert || _action == CUEAction.VerifyAndConvert || _action == CUEAction.VerifyThenConvert)
 				{
 					string cueContents = CUESheetContents(style);
 					uint tracksMatch = 0;
 					int bestOffset = 0;
 					
-					if (_accurateRipMode != AccurateRipMode.None &&
+					if (_action != CUEAction.Convert &&
 						_config.writeArTagsOnConvert &&
 						_arVerify.AccResult == HttpStatusCode.OK)
 						FindBestOffset(1, true, out tracksMatch, out bestOffset);
 
+					if (_config.createEACLOG)
+					{
+						if (_ripperLog != null)
+							_ripperLog = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(_ripperLog));
+						cueContents = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueContents));
+					}
+
 					if (_ripperLog != null)
-						WriteText(Path.ChangeExtension(_cuePath, ".log"), _ripperLog, _config.createEACLOG ? CUESheet.Encoding : Encoding.UTF8);
+						WriteText(Path.ChangeExtension(_cuePath, ".log"), _ripperLog);
 					else
 						if (_eacLog != null && _config.extractLog)
 							WriteText(Path.ChangeExtension(_cuePath, ".log"), _eacLog);
@@ -2486,12 +2451,12 @@ namespace CUETools.Processor
 				}
 			}
 
-			if (_accurateRipMode == AccurateRipMode.Verify ||
-				_accurateRipMode == AccurateRipMode.VerifyPlusCRCs ||
-				(_accurateRipMode != AccurateRipMode.None && _outputFormat != OutputAudioFormat.NoAudio))
+			if (_action == CUEAction.Verify ||
+				_action == CUEAction.VerifyPlusCRCs ||
+				(_action != CUEAction.Convert && _outputFormat != OutputAudioFormat.NoAudio))
 			{
 				ShowProgress((string)"Generating AccurateRip report...", 0, 0, null, null);
-				if ((_accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs) && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
+				if ((_action == CUEAction.Verify || _action == CUEAction.VerifyPlusCRCs) && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
 				{
 					uint tracksMatch;
 					int bestOffset;
@@ -2521,8 +2486,8 @@ namespace CUETools.Processor
 					}
 				}
 
-				if ((_accurateRipMode != AccurateRipMode.Verify && _accurateRipMode != AccurateRipMode.VerifyPlusCRCs && _config.writeArLogOnConvert) ||
-					((_accurateRipMode == AccurateRipMode.Verify || _accurateRipMode == AccurateRipMode.VerifyPlusCRCs) && _config.writeArLogOnVerify))
+				if ((_action != CUEAction.Verify && _action != CUEAction.VerifyPlusCRCs && _config.writeArLogOnConvert) ||
+					((_action == CUEAction.Verify || _action == CUEAction.VerifyPlusCRCs) && _config.writeArLogOnVerify))
 				{
 					if (!Directory.Exists(dir))
 						Directory.CreateDirectory(dir);
@@ -2538,6 +2503,7 @@ namespace CUETools.Processor
 					WriteText(Path.ChangeExtension(_cuePath, ".toc"), TOCContents());
 				}
 			}
+			return "done";
 		}
 
 		private NameValueCollection GenerateTrackTags(int iTrack, int bestOffset)
@@ -2593,10 +2559,10 @@ namespace CUETools.Processor
 
 			if (_config.writeArTagsOnConvert)
 			{
-				if (_accurateRipMode != AccurateRipMode.None && _arVerify.AccResult == HttpStatusCode.OK)
+				if (_action != CUEAction.Convert && _arVerify.AccResult == HttpStatusCode.OK)
 					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, iTrack);
 				else
-					destTags.Add("ACCURATERIPID", _accurateRipId);
+					destTags.Add("ACCURATERIPID", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
 			}
 			return destTags;
 		}
@@ -2667,10 +2633,10 @@ namespace CUETools.Processor
 
 			if (_config.writeArTagsOnConvert)
 			{
-				if (fWithCUE && _accurateRipMode != AccurateRipMode.None && _arVerify.AccResult == HttpStatusCode.OK)
+				if (fWithCUE && _action != CUEAction.Convert && _arVerify.AccResult == HttpStatusCode.OK)
 					GenerateAccurateRipTags(destTags, _writeOffset, bestOffset, -1);
 				else
-					destTags.Add("ACCURATERIPID", _accurateRipId);
+					destTags.Add("ACCURATERIPID", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
 			}
 			return destTags;
 		}
@@ -2748,7 +2714,7 @@ namespace CUETools.Processor
 			uint diskLength = 588 * _toc.AudioLength;
 			uint diskOffset = 0;
 
-			if (_accurateRipMode != AccurateRipMode.None)
+			if (_action != CUEAction.Convert)
 				_arVerify.Init();
 
 			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0, null, null);
@@ -2861,7 +2827,7 @@ namespace CUETools.Processor
 									}
 								}
 							}
-							if (_accurateRipMode != AccurateRipMode.None)
+							if (_action != CUEAction.Convert)
 								_arVerify.Write(sampleBuffer, copyCount);
 							if (iTrack > 0 || iIndex > 0)
 								Tracks[iTrack + (iIndex == 0 ? -1 : 0)].MeasurePeakLevel(sampleBuffer, copyCount);
@@ -2905,7 +2871,7 @@ namespace CUETools.Processor
 					if (_toc[_toc.FirstAudio + iTrack].ISRC != null)
 						General.SetCUELine(_tracks[iTrack].Attributes, "ISRC", _toc[_toc.FirstAudio + iTrack].ISRC, false);
 					if (_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis)
-						General.SetCUELine(_tracks[iTrack].Attributes, "FLAGS", (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : ""), false);
+						_tracks[iTrack].Attributes.Add(new CUELine("FLAGS" + (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : "")));
 				}
 			}
 #endif
@@ -2946,7 +2912,7 @@ namespace CUETools.Processor
 
 		public static string CorrectAudioFilenames(string dir, string cue, bool always, List<string> files) 
 		{
-			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta" };
+			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta", "*.tak", "*.ogg" };
 			List<string> lines = new List<string>();
 			List<int> filePos = new List<int>();
 			List<string> origFiles = new List<string>();
@@ -3012,7 +2978,7 @@ namespace CUETools.Processor
 					}
 				}
 				if (!foundAll)
-					throw new Exception("Unable to locate the audio files.");
+					throw new Exception("unable to locate the audio files");
 
 				for (i = 0; i < filePos.Count; i++)
 					lines[filePos[i]] = "FILE \"" + Path.GetFileName(audioFiles[i]) + "\" WAVE";
@@ -3067,7 +3033,7 @@ namespace CUETools.Processor
 			return fileLengths;
 		}
 
-		private void CheckStop()
+		public void CheckStop()
 		{
 			lock (this)
 			{
@@ -3305,39 +3271,52 @@ namespace CUETools.Processor
 			}
 		}
 
-		public string DataTrackLength
+		public uint DataTrackLength
 		{
 			get
 			{
-				return CDImageLayout.TimeToString(_dataTrackLength.HasValue ? _dataTrackLength.Value : 0);
+				if (!_toc[1].IsAudio)
+					return _toc[1].Length;
+				else if (!_toc[_toc.TrackCount].IsAudio)
+					return _toc[_toc.TrackCount].Length;
+				else
+					return 0U;
 			}
 			set
 			{
-				uint dtl = (uint)CDImageLayout.TimeFromString(value);
-				if (dtl != 0)
+				if (value == 0)
+					return;
+				if (!_toc[1].IsAudio)
 				{
-					if (!_toc[1].IsAudio)
+					for (int i = 2; i <= _toc.TrackCount; i++)
 					{
-						for (int i = 2; i <= _toc.TrackCount; i++)
-						{
-							_toc[i].Start += dtl - _toc[1].Length;
-							for (int j = 0; j <= _toc[i].LastIndex; j++)
-								_toc[i][j].Start += dtl - _toc[1].Length;
-						}
-						_toc[1].Length = dtl;
+						_toc[i].Start += value - _toc[1].Length;
+						for (int j = 0; j <= _toc[i].LastIndex; j++)
+							_toc[i][j].Start += value - _toc[1].Length;
 					}
-					else if (!_toc[_toc.TrackCount].IsAudio)
-					{
-						//_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
-						_toc[_toc.TrackCount].Length = dtl;
-						//_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
-						//_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
-					}
-					else
-						_toc.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152U * 75U, dtl, false, false));
-					_dataTrackLength = dtl;
-					_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(_toc);
+					_toc[1].Length = value;
 				}
+				else if (!_toc[_toc.TrackCount].IsAudio)
+				{
+					//_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
+					_toc[_toc.TrackCount].Length = value;
+					//_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
+					//_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
+				}
+				else
+					_toc.AddTrack(new CDTrack((uint)_toc.TrackCount, _toc.Length + 152U * 75U, value, false, false));
+			}
+		}
+
+		public string DataTrackLengthMSF
+		{
+			get
+			{
+				return CDImageLayout.TimeToString(DataTrackLength);
+			}
+			set
+			{
+				DataTrackLength = (uint) CDImageLayout.TimeFromString(value);
 			}
 		}
 
@@ -3381,8 +3360,6 @@ namespace CUETools.Processor
 				sourceInfo.Offset = 0;
 				sourceInfo.Length = offs * 588;
 				_sources.Insert(0, sourceInfo);
-
-				_accurateRipIdActual = _accurateRipId = AccurateRipVerify.CalculateAccurateRipId(_toc);
 			}
 		}
 
@@ -3403,15 +3380,15 @@ namespace CUETools.Processor
 			}
 		}
 
-		public AccurateRipMode AccurateRip
+		public CUEAction Action
 		{
 			get
 			{
-				return _accurateRipMode;
+				return _action;
 			}
 			set
 			{
-				_accurateRipMode = value;
+				_action = value;
 			}
 		}
 
