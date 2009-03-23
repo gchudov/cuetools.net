@@ -120,6 +120,13 @@
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
+  <data name="labelLanguage.Text" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="chkSingleInstance.Text" xml:space="preserve">
+    <value>Auf eine Instanz beschränken</value>
+  </data>
+  </data>
   <data name="btnCancel.ToolTip" xml:space="preserve">
     <value />
   </data>
@@ -141,9 +148,6 @@
   </data>
   <data name="chkExtractLog.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkSingleInstance.Text" xml:space="preserve">
-    <value>Auf eine Instanz beschränken</value>
   </data>
   <data name="chkSingleInstance.ToolTip" xml:space="preserve">
     <value />
