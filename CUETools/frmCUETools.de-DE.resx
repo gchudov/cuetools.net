@@ -117,6 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="btnConvert.Text" xml:space="preserve">
+    <value>&amp;Los</value>
+  </data>
+  <data name="btnBrowseOutput.Text" xml:space="preserve">
+    <value>...</value>
+  <data name="grpOutputStyle.Text" xml:space="preserve">
+    <value>CUE-Stil</value>
+  </data>
+  <data name="rbEmbedCUE.Text" xml:space="preserve">
+    <value>&amp;Eingebettet</value>
+  </data>
+  <data name="rbGapsLeftOut.Text" xml:space="preserve">
+    <value>Lücken ausgelassen</value>
+  </data>
+  <data name="btnConvert.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="mP3ToolStripMenuItem.Text" xml:space="preserve">
+    <value>MP3</value>
+  </data>
   <data name="oGGToolStripMenuItem.Text" xml:space="preserve">
     <value>OGG</value>
   </data>
@@ -126,15 +146,6 @@
   <data name="btnResume.Text" xml:space="preserve">
     <value>Weite&amp;r</value>
   </data>
-  <data name="btnConvert.Text" xml:space="preserve">
-    <value>&amp;Los</value>
-  </data>
-  <data name="btnConvert.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="btnBrowseOutput.Text" xml:space="preserve">
-    <value>...</value>
-  </data>
   <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
     <value />
   </data>
@@ -142,14 +153,8 @@
     <value />
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="rbEmbedCUE.Text" xml:space="preserve">
-    <value>&amp;Eingebettet</value>
-  </data>
   <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
     <value>Erstelle einzelne Datei mit eingebettetem CUE-Sheet</value>
-  </data>
-  <data name="rbGapsLeftOut.Text" xml:space="preserve">
-    <value>Lücken ausgelassen</value>
   </data>
   <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
     <value>Erstelle mehrere Dateien ohne Lücken</value>
@@ -171,9 +176,6 @@
   </data>
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
     <value>Erstelle einzelne Datei + CUE-Sheet</value>
-  </data>
-  <data name="grpOutputStyle.Text" xml:space="preserve">
-    <value>CUE-Stil</value>
   </data>
   <data name="grpOutputStyle.ToolTip" xml:space="preserve">
     <value />
