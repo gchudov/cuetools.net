@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using CUETools.Processor;
 using System.Threading;
+using System.Globalization;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Ipc;
 
@@ -52,9 +53,10 @@ namespace JDP {
 			string myId = "BZ92759C-63Q7-444e-ADA6-E495634A493D";
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			frmCUETools form = new frmCUETools();
 			CUEConfig config = new CUEConfig();
 			config.Load(new SettingsReader("CUE Tools", "settings.txt"));
+			Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(config.language);
+			frmCUETools form = new frmCUETools();
 			if (!config.oneInstance || SingletonController.IamFirst(myId, new SingletonController.ReceiveDelegate(form.OnSecondCall)))
 			{
 				if (args.Length == 1)

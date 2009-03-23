@@ -127,17 +127,11 @@
     <value>Стиль CUE</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 17</value>
-  </data>
   <data name="rbEmbedCUE.Text" xml:space="preserve">
     <value>Встроенный</value>
   </data>
   <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
     <value>Создать образ диска в виде одного аудио-файла со встроеным .cue (вложенным в него в виде тага CUESHEET)</value>
-  </data>
-  <data name="rbGapsLeftOut.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 17</value>
   </data>
   <data name="rbGapsLeftOut.Text" xml:space="preserve">
     <value>Без зазоров</value>
@@ -145,26 +139,17 @@
   <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
     <value>Порезать на треки, зазоры выкинуть (не рекомендуется)</value>
   </data>
-  <data name="rbGapsPrepended.Size" type="System.Drawing.Size, System.Drawing">
-    <value>110, 17</value>
-  </data>
   <data name="rbGapsPrepended.Text" xml:space="preserve">
     <value>Зазоры в начале</value>
   </data>
   <data name="rbGapsPrepended.ToolTip" xml:space="preserve">
     <value>Порезать на треки, зазоры помещаются в начало трека (не рекомендуется)</value>
   </data>
-  <data name="rbGapsAppended.Size" type="System.Drawing.Size, System.Drawing">
-    <value>104, 17</value>
-  </data>
   <data name="rbGapsAppended.Text" xml:space="preserve">
     <value>Зазоры в конце</value>
   </data>
   <data name="rbGapsAppended.ToolTip" xml:space="preserve">
     <value>Порезать на треки, зазоры помещаются в конец трека</value>
-  </data>
-  <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>90, 17</value>
   </data>
   <data name="rbSingleFile.Text" xml:space="preserve">
     <value>Образ + CUE</value>
@@ -178,26 +163,14 @@
   <data name="grpOutputPathGeneration.Text" xml:space="preserve">
     <value>Путь для выходных файлов</value>
   </data>
-  <data name="rbCustomFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 17</value>
-  </data>
   <data name="rbCustomFormat.Text" xml:space="preserve">
     <value>По шаблону:</value>
-  </data>
-  <data name="rbDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 17</value>
   </data>
   <data name="rbDontGenerate.Text" xml:space="preserve">
     <value>Вручную</value>
   </data>
-  <data name="rbCreateSubdirectory.Size" type="System.Drawing.Size, System.Drawing">
-    <value>116, 17</value>
-  </data>
   <data name="rbCreateSubdirectory.Text" xml:space="preserve">
     <value>Создать каталог:</value>
-  </data>
-  <data name="rbAppendFilename.Size" type="System.Drawing.Size, System.Drawing">
-    <value>117, 17</value>
   </data>
   <data name="rbAppendFilename.Text" xml:space="preserve">
     <value>Суффикс к имени:</value>
@@ -205,29 +178,17 @@
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Формат аудио</value>
   </data>
-  <data name="rbNoAudio.Size" type="System.Drawing.Size, System.Drawing">
-    <value>76, 17</value>
-  </data>
   <data name="rbNoAudio.Text" xml:space="preserve">
     <value>Без аудио</value>
   </data>
   <data name="btnSettings.Text" xml:space="preserve">
     <value>Настройки...</value>
   </data>
-  <data name="rbActionCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 17</value>
-  </data>
   <data name="rbActionCorrectFilenames.Text" xml:space="preserve">
     <value>Исправить имена файлов</value>
   </data>
-  <data name="chkRecursive.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 17</value>
-  </data>
   <data name="chkRecursive.Text" xml:space="preserve">
     <value>В папке</value>
-  </data>
-  <data name="rbActionCreateCUESheet.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 17</value>
   </data>
   <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
     <value>Создать .cue</value>
@@ -235,38 +196,20 @@
   <data name="chkMulti.Location" type="System.Drawing.Point, System.Drawing">
     <value>81, 148</value>
   </data>
-  <data name="chkMulti.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 17</value>
-  </data>
   <data name="chkMulti.Text" xml:space="preserve">
     <value>Несколько</value>
-  </data>
-  <data name="rbActionVerifyAndCRCs.Size" type="System.Drawing.Size, System.Drawing">
-    <value>109, 17</value>
   </data>
   <data name="rbActionVerifyAndCRCs.Text" xml:space="preserve">
     <value>Проверка + CRC</value>
   </data>
-  <data name="rbActionVerifyAndEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 17</value>
-  </data>
   <data name="rbActionVerifyAndEncode.Text" xml:space="preserve">
     <value>Конвертация + проверка</value>
-  </data>
-  <data name="rbActionVerifyThenEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>147, 17</value>
   </data>
   <data name="rbActionVerifyThenEncode.Text" xml:space="preserve">
     <value>Проверка, конвертация</value>
   </data>
-  <data name="rbActionVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 17</value>
-  </data>
   <data name="rbActionVerify.Text" xml:space="preserve">
     <value>Только проверка</value>
-  </data>
-  <data name="rbActionEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 17</value>
   </data>
   <data name="rbActionEncode.Text" xml:space="preserve">
     <value>Конвертация</value>
@@ -274,14 +217,8 @@
   <data name="grpAction.Text" xml:space="preserve">
     <value>Действие</value>
   </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>41, 13</value>
-  </data>
   <data name="label2.Text" xml:space="preserve">
     <value>Pregap</value>
-  </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 13</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Данные</value>
@@ -318,20 +255,11 @@
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Поехали</value>
   </data>
-  <data name="rbFreedbAlways.Size" type="System.Drawing.Size, System.Drawing">
-    <value>60, 17</value>
-  </data>
   <data name="rbFreedbAlways.Text" xml:space="preserve">
     <value>Всегда</value>
   </data>
-  <data name="rbFreedbIf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>76, 17</value>
-  </data>
   <data name="rbFreedbIf.Text" xml:space="preserve">
     <value>Если надо</value>
-  </data>
-  <data name="rbFreedbNever.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 17</value>
   </data>
   <data name="rbFreedbNever.Text" xml:space="preserve">
     <value>Никогда</value>
@@ -341,9 +269,6 @@
   </data>
   <data name="grpInput.Text" xml:space="preserve">
     <value>Исходный файл</value>
-  </data>
-  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 13</value>
   </data>
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Смещение</value>

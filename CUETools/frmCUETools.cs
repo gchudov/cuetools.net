@@ -32,6 +32,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Globalization;
 using System.Threading;
 using System.Diagnostics;
 using CUETools.Processor;
@@ -110,12 +111,26 @@ namespace JDP {
 			StartConvert();
 		}
 
+		private void ChangeCulture(Control control, ComponentResourceManager resources)
+		{
+			resources.ApplyResources(control, control.Name, Thread.CurrentThread.CurrentUICulture);
+			foreach (Control c in control.Controls)
+				ChangeCulture(c, resources);
+		}
+
 		private void btnSettings_Click(object sender, EventArgs e) {
 			using (frmSettings settingsForm = new frmSettings()) {
 				settingsForm.ReducePriority = _reducePriority;
 				settingsForm.Config = _config;
 
 				settingsForm.ShowDialog();
+
+				if (Thread.CurrentThread.CurrentUICulture != CultureInfo.GetCultureInfo(_config.language))
+				{
+					Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(_config.language);
+					ComponentResourceManager resources = new ComponentResourceManager(typeof(frmCUETools));
+					ChangeCulture(this, resources);
+				}
 
 				_reducePriority = settingsForm.ReducePriority;
 				_config = settingsForm.Config;

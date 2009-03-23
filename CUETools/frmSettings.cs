@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Globalization;
+using System.Threading;
 using CUETools.Processor;
 
 namespace JDP {
@@ -76,6 +78,24 @@ namespace JDP {
 			textUDC1EncParams.Text = _config.udc1EncParams;
 			chkUDC1APEv2.Checked = _config.udc1APEv2;
 			chkUDC1ID3v2.Checked = _config.udc1ID3v2;
+
+			string[] cultures = { "en-US", "de-DE", "ru-RU", "en-EN" };
+			foreach (string culture in cultures)
+			{
+				try
+				{
+					CultureInfo info = CultureInfo.GetCultureInfo(culture);
+					comboLanguage.Items.Add(info);
+					if (culture == _config.language)
+						comboLanguage.SelectedItem = info;
+				}
+				catch
+				{
+				}
+			}
+			if (comboLanguage.SelectedItem == null)
+				comboLanguage.SelectedItem = comboLanguage.Items[0];
+			
 			EnableDisable();
 		}
 
@@ -156,6 +176,8 @@ namespace JDP {
 			_config.udc1EncParams = textUDC1EncParams.Text;
 			_config.udc1APEv2 = chkUDC1APEv2.Checked;
 			_config.udc1ID3v2 = chkUDC1ID3v2.Checked;
+
+			_config.language = ((CultureInfo)comboLanguage.SelectedItem).Name;
 		}
 
 		private void EnableDisable()
