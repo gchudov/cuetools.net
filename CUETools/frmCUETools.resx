@@ -1209,138 +1209,6 @@
   <data name="&gt;&gt;btnSettings.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="&gt;&gt;rbActionCorrectFilenames.Name" xml:space="preserve">
-    <value>rbActionCorrectFilenames</value>
-  </data>
-  <data name="&gt;&gt;rbActionCorrectFilenames.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbActionCorrectFilenames.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;rbActionCorrectFilenames.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.Name" xml:space="preserve">
-    <value>chkRecursive</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;rbActionCreateCUESheet.Name" xml:space="preserve">
-    <value>rbActionCreateCUESheet</value>
-  </data>
-  <data name="&gt;&gt;rbActionCreateCUESheet.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbActionCreateCUESheet.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;rbActionCreateCUESheet.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.Name" xml:space="preserve">
-    <value>chkMulti</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndCRCs.Name" xml:space="preserve">
-    <value>rbActionVerifyAndCRCs</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndCRCs.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndCRCs.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndCRCs.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndEncode.Name" xml:space="preserve">
-    <value>rbActionVerifyAndEncode</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndEncode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndEncode.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyAndEncode.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyThenEncode.Name" xml:space="preserve">
-    <value>rbActionVerifyThenEncode</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyThenEncode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyThenEncode.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerifyThenEncode.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerify.Name" xml:space="preserve">
-    <value>rbActionVerify</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerify.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerify.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;rbActionVerify.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;rbActionEncode.Name" xml:space="preserve">
-    <value>rbActionEncode</value>
-  </data>
-  <data name="&gt;&gt;rbActionEncode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbActionEncode.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;rbActionEncode.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="grpAction.Location" type="System.Drawing.Point, System.Drawing">
-    <value>255, 159</value>
-  </data>
-  <data name="grpAction.Size" type="System.Drawing.Size, System.Drawing">
-    <value>165, 171</value>
-  </data>
-  <data name="grpAction.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="grpAction.Text" xml:space="preserve">
-    <value>Action</value>
-  </data>
-  <data name="&gt;&gt;grpAction.Name" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;grpAction.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;grpAction.Parent" xml:space="preserve">
-    <value>panel1</value>
-  </data>
-  <data name="&gt;&gt;grpAction.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
   <data name="rbActionCorrectFilenames.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1371,36 +1239,6 @@
   <data name="&gt;&gt;rbActionCorrectFilenames.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="chkRecursive.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="chkRecursive.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="chkRecursive.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 148</value>
-  </data>
-  <data name="chkRecursive.Size" type="System.Drawing.Size, System.Drawing">
-    <value>73, 17</value>
-  </data>
-  <data name="chkRecursive.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="chkRecursive.Text" xml:space="preserve">
-    <value>Recursive</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.Name" xml:space="preserve">
-    <value>chkRecursive</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;chkRecursive.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
   <data name="rbActionCreateCUESheet.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1429,37 +1267,7 @@
     <value>grpAction</value>
   </data>
   <data name="&gt;&gt;rbActionCreateCUESheet.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="chkMulti.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="chkMulti.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="chkMulti.Location" type="System.Drawing.Point, System.Drawing">
-    <value>89, 148</value>
-  </data>
-  <data name="chkMulti.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 17</value>
-  </data>
-  <data name="chkMulti.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
-  </data>
-  <data name="chkMulti.Text" xml:space="preserve">
-    <value>Multiple</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.Name" xml:space="preserve">
-    <value>chkMulti</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.Parent" xml:space="preserve">
-    <value>grpAction</value>
-  </data>
-  <data name="&gt;&gt;chkMulti.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>1</value>
   </data>
   <data name="rbActionVerifyAndCRCs.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1492,7 +1300,7 @@
     <value>grpAction</value>
   </data>
   <data name="&gt;&gt;rbActionVerifyAndCRCs.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>2</value>
   </data>
   <data name="rbActionVerifyAndEncode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1522,7 +1330,7 @@
     <value>grpAction</value>
   </data>
   <data name="&gt;&gt;rbActionVerifyAndEncode.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>3</value>
   </data>
   <data name="rbActionVerifyThenEncode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1555,7 +1363,7 @@
     <value>grpAction</value>
   </data>
   <data name="&gt;&gt;rbActionVerifyThenEncode.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>4</value>
   </data>
   <data name="rbActionVerify.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1588,7 +1396,7 @@
     <value>grpAction</value>
   </data>
   <data name="&gt;&gt;rbActionVerify.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>5</value>
   </data>
   <data name="rbActionEncode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1621,7 +1429,61 @@
     <value>grpAction</value>
   </data>
   <data name="&gt;&gt;rbActionEncode.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>6</value>
+  </data>
+  <data name="grpAction.Location" type="System.Drawing.Point, System.Drawing">
+    <value>255, 159</value>
+  </data>
+  <data name="grpAction.Size" type="System.Drawing.Size, System.Drawing">
+    <value>165, 171</value>
+  </data>
+  <data name="grpAction.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="grpAction.Text" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="&gt;&gt;grpAction.Name" xml:space="preserve">
+    <value>grpAction</value>
+  </data>
+  <data name="&gt;&gt;grpAction.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;grpAction.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;grpAction.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="chkMulti.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="chkMulti.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="chkMulti.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 20</value>
+  </data>
+  <data name="chkMulti.Size" type="System.Drawing.Size, System.Drawing">
+    <value>15, 14</value>
+  </data>
+  <data name="chkMulti.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="chkMulti.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;chkMulti.Name" xml:space="preserve">
+    <value>chkMulti</value>
+  </data>
+  <data name="&gt;&gt;chkMulti.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkMulti.Parent" xml:space="preserve">
+    <value>grpInput</value>
+  </data>
+  <data name="&gt;&gt;chkMulti.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="txtPreGapLength.Location" type="System.Drawing.Point, System.Drawing">
     <value>76, 14</value>
@@ -2157,10 +2019,10 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="txtInputPath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 16</value>
+    <value>28, 16</value>
   </data>
   <data name="txtInputPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>226, 21</value>
+    <value>204, 21</value>
   </data>
   <data name="txtInputPath.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -2179,54 +2041,6 @@
   </data>
   <data name="grpInput.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
-  </data>
-  <data name="&gt;&gt;textBatchReport.Name" xml:space="preserve">
-    <value>textBatchReport</value>
-  </data>
-  <data name="&gt;&gt;textBatchReport.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBatchReport.Parent" xml:space="preserve">
-    <value>grpInput</value>
-  </data>
-  <data name="&gt;&gt;textBatchReport.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;fileSystemTreeView1.Name" xml:space="preserve">
-    <value>fileSystemTreeView1</value>
-  </data>
-  <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=1.0.3368.28004, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
-    <value>grpInput</value>
-  </data>
-  <data name="&gt;&gt;fileSystemTreeView1.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="grpInput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 5</value>
-  </data>
-  <data name="grpInput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 414</value>
-  </data>
-  <data name="grpInput.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="grpInput.Text" xml:space="preserve">
-    <value>Input</value>
-  </data>
-  <data name="&gt;&gt;grpInput.Name" xml:space="preserve">
-    <value>grpInput</value>
-  </data>
-  <data name="&gt;&gt;grpInput.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;grpInput.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;grpInput.ZOrder" xml:space="preserve">
-    <value>3</value>
   </data>
   <data name="textBatchReport.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
@@ -2280,13 +2094,37 @@
     <value>fileSystemTreeView1</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=1.0.3368.28004, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.FileSystemTreeView, CUEControls, Version=1.0.3371.39361, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
     <value>grpInput</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.ZOrder" xml:space="preserve">
     <value>1</value>
+  </data>
+  <data name="grpInput.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 5</value>
+  </data>
+  <data name="grpInput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>238, 414</value>
+  </data>
+  <data name="grpInput.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="grpInput.Text" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="&gt;&gt;grpInput.Name" xml:space="preserve">
+    <value>grpInput</value>
+  </data>
+  <data name="&gt;&gt;grpInput.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;grpInput.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;grpInput.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="&gt;&gt;numericWriteOffset.Name" xml:space="preserve">
     <value>numericWriteOffset</value>

@@ -155,6 +155,53 @@ namespace CUETools.AccurateRip
 			return conf;
 		}
 
+		public uint WorstTotal()
+		{
+			uint worstTotal = 0;
+			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+			{
+				uint sumTotal = Total(iTrack);
+				if (iTrack == 0 || worstTotal > sumTotal)
+					worstTotal = sumTotal;
+			}
+			return worstTotal;
+		}
+
+		public uint WorstConfidence()
+		{
+			uint worstConfidence = 0;
+			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+			{
+				uint sumConfidence = SumConfidence(iTrack);
+				if (iTrack == 0 || worstConfidence > sumConfidence)
+					worstConfidence = sumConfidence;
+			}
+			return worstConfidence;
+		}
+
+		public uint SumConfidence(int iTrack)
+		{
+			if (ARStatus != null)
+				return 0U;
+			uint conf = 0;
+			for (int iDisk = 0; iDisk < AccDisks.Count; iDisk++)
+				for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+					if (CRC(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].CRC)
+						conf += AccDisks[iDisk].tracks[iTrack].count;
+			return conf;
+		}
+
+		public uint Confidence(int iTrack, int oi)
+		{
+			if (ARStatus != null)
+				return 0U;
+			uint conf = 0;
+			for (int di = 0; di < (int)AccDisks.Count; di++)
+				if (CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC)
+					conf += AccDisks[di].tracks[iTrack].count;
+			return conf;
+		}
+
 		public uint Total(int iTrack)
 		{
 			if (ARStatus != null)

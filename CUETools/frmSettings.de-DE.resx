@@ -126,22 +126,15 @@
   <data name="chkSingleInstance.Text" xml:space="preserve">
     <value>Auf eine Instanz beschränken</value>
   </data>
-  </data>
   <data name="btnCancel.ToolTip" xml:space="preserve">
     <value />
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="chkOverwriteTags.Size" type="System.Drawing.Size, System.Drawing">
-    <value>150, 17</value>
-  </data>
   <data name="chkOverwriteTags.Text" xml:space="preserve">
     <value>CUE-Daten überschreiben</value>
   </data>
   <data name="chkOverwriteTags.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkExtractLog.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 17</value>
   </data>
   <data name="chkExtractLog.Text" xml:space="preserve">
     <value>Extrahiere Logdatei</value>
@@ -152,17 +145,11 @@
   <data name="chkSingleInstance.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkReducePriority.Size" type="System.Drawing.Size, System.Drawing">
-    <value>209, 17</value>
-  </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
     <value>Reduziere Prozesspriorität auf Untätig</value>
   </data>
   <data name="chkReducePriority.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkTruncateExtra4206Samples.Size" type="System.Drawing.Size, System.Drawing">
-    <value>225, 17</value>
   </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
     <value>Nullsamples abschneiden, falls vorhanden</value>
@@ -170,17 +157,11 @@
   <data name="chkTruncateExtra4206Samples.ToolTip" xml:space="preserve">
     <value>Einige fehlerhafte FLAC-Kodierer fügen am Ende jeder Datei zusätzliche 4608 Nullsamples ein. Sie können automatisch erkannt und entfernt werden</value>
   </data>
-  <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
-    <value>232, 17</value>
-  </data>
   <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
     <value>Erstelle .cue-Datei auch, wenn eingebettet</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkCreateM3U.Size" type="System.Drawing.Size, System.Drawing">
-    <value>151, 17</value>
   </data>
   <data name="chkCreateM3U.Text" xml:space="preserve">
     <value>Erstelle .m3u-Abspiellisten</value>
@@ -188,17 +169,11 @@
   <data name="chkCreateM3U.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkFillUpCUE.Size" type="System.Drawing.Size, System.Drawing">
-    <value>255, 17</value>
-  </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
     <value>Fehlende CUE-Daten anhand der Tags auffüllen</value>
   </data>
   <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkEmbedLog.Size" type="System.Drawing.Size, System.Drawing">
-    <value>150, 17</value>
   </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
     <value>Bette Logdatei als Tag ein</value>
@@ -209,17 +184,11 @@
   <data name="numericWriteOffset.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkAutoCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>183, 17</value>
-  </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Audiodaten suchen, falls fehlend</value>
   </data>
   <data name="chkAutoCorrectFilenames.ToolTip" xml:space="preserve">
     <value>Zuvor Dateinamen korrigieren, wenn Audiodaten nicht gefunden werden können</value>
-  </data>
-  <data name="chkPreserveHTOA.Size" type="System.Drawing.Size, System.Drawing">
-    <value>251, 17</value>
   </data>
   <data name="chkPreserveHTOA.Text" xml:space="preserve">
     <value>HTOA für Ausg. mit angeh. Lücken beibehalten</value>
@@ -227,17 +196,11 @@
   <data name="chkPreserveHTOA.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 13</value>
-  </data>
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Schreibe Offset:</value>
   </data>
   <data name="lblWriteOffset.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="grpGeneral.Size" type="System.Drawing.Size, System.Drawing">
-    <value>271, 249</value>
   </data>
   <data name="grpGeneral.Text" xml:space="preserve">
     <value>Allgemein</value>
@@ -248,17 +211,11 @@
   <data name="numericFLACCompressionLevel.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="lblFLACCompressionLevel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>101, 13</value>
-  </data>
   <data name="lblFLACCompressionLevel.Text" xml:space="preserve">
     <value>Kompressionsstufe:</value>
   </data>
   <data name="lblFLACCompressionLevel.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkFLACVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>79, 17</value>
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Verifizieren</value>
@@ -278,26 +235,17 @@
   <data name="numWVExtraMode.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>87, 17</value>
-  </data>
   <data name="chkWVExtraMode.Text" xml:space="preserve">
     <value>Extramodus:</value>
   </data>
   <data name="chkWVExtraMode.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbWVVeryHigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>73, 17</value>
-  </data>
   <data name="rbWVVeryHigh.Text" xml:space="preserve">
     <value>Sehr hoch</value>
   </data>
   <data name="rbWVVeryHigh.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="rbWVHigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>49, 17</value>
   </data>
   <data name="rbWVHigh.Text" xml:space="preserve">
     <value>Hoch</value>
@@ -308,20 +256,11 @@
   <data name="rbWVNormal.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbWVFast.Size" type="System.Drawing.Size, System.Drawing">
-    <value>58, 17</value>
-  </data>
   <data name="rbWVFast.Text" xml:space="preserve">
     <value>Schnell</value>
   </data>
   <data name="rbWVFast.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>174, 62</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 17</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
     <value>und Null-Offset</value>
@@ -329,17 +268,11 @@
   <data name="chkEncodeWhenZeroOffset.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkArFixOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 17</value>
-  </data>
   <data name="chkArFixOffset.Text" xml:space="preserve">
-    <value>Korrigiere Offset, falls</value>
+    <value>Korrigiere Offset, falls % der verif. Tracks &gt;=</value>
   </data>
   <data name="chkArFixOffset.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkWriteArLogOnConvert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>149, 17</value>
   </data>
   <data name="chkWriteArLogOnConvert.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Log</value>
@@ -347,29 +280,14 @@
   <data name="chkWriteArLogOnConvert.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkWriteArTagsOnConvert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>155, 17</value>
-  </data>
   <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Tags</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
     <value>Füge den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzu.  Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
   </data>
-  <data name="labelEncodeWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>119, 13</value>
-  </data>
-  <data name="labelEncodeWhenPercent.Text" xml:space="preserve">
-    <value>% der verif. Tracks &gt;=</value>
-  </data>
-  <data name="labelEncodeWhenPercent.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="numEncodeWhenPercent.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="labelEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
-    <value>91, 13</value>
   </data>
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
     <value>mit Vertrauen &gt;=</value>
@@ -380,11 +298,8 @@
   <data name="numEncodeWhenConfidence.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkArNoUnverifiedAudio.Size" type="System.Drawing.Size, System.Drawing">
-    <value>113, 17</value>
-  </data>
   <data name="chkArNoUnverifiedAudio.Text" xml:space="preserve">
-    <value>Nur kodieren, falls</value>
+    <value>Nur kodieren, falls % der verif. Tracks &gt;=</value>
   </data>
   <data name="chkArNoUnverifiedAudio.ToolTip" xml:space="preserve">
     <value />
@@ -398,12 +313,6 @@
   <data name="numFixWhenConfidence.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="labelFixWhenPercent.Text" xml:space="preserve">
-    <value>% der verif. Tracks &gt;=</value>
-  </data>
-  <data name="labelFixWhenPercent.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="numFixWhenPercent.ToolTip" xml:space="preserve">
     <value />
   </data>
@@ -413,17 +322,11 @@
   <data name="groupBox1.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkFilenamesANSISafe.Size" type="System.Drawing.Size, System.Drawing">
-    <value>163, 17</value>
-  </data>
   <data name="chkFilenamesANSISafe.Text" xml:space="preserve">
     <value>ANSI-Dateinamen erzwingen</value>
   </data>
   <data name="chkFilenamesANSISafe.ToolTip" xml:space="preserve">
     <value>Zur Kompatibilität mit Nicht-Unicode-Anwendungen nur Zeichen erlauben, die in der ANSI-Codepage vorhanden sind.</value>
-  </data>
-  <data name="chkWriteARTagsOnVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>155, 17</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Tags</value>
@@ -431,17 +334,11 @@
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
     <value>Füge den Eingabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzu. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
   </data>
-  <data name="chkHDCDDecode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 17</value>
-  </data>
   <data name="chkHDCDDecode.Text" xml:space="preserve">
     <value>Dekodiere HDCD auf 20 Bit</value>
   </data>
   <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
     <value>HDCD-Dekodierung ist nicht umkehrbar. Die resultierenden Dateien können nicht auf CD gebrannt werden. 24-Bit-Audiodateien werden erstellt, aber die eigentliche Bitrate beträgt 20 Bit</value>
-  </data>
-  <data name="chkHDCDStopLooking.Size" type="System.Drawing.Size, System.Drawing">
-    <value>163, 17</value>
   </data>
   <data name="chkHDCDStopLooking.Text" xml:space="preserve">
     <value>Nach 750 Frames abbrechen</value>
@@ -449,17 +346,11 @@
   <data name="chkHDCDStopLooking.ToolTip" xml:space="preserve">
     <value>Nicht mehr nach HDCD-Informationen suchen, wenn sie in den ersten 10 Sekunden der CD nicht zu finden sind</value>
   </data>
-  <data name="chkHDCD24bit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>179, 17</value>
-  </data>
   <data name="chkHDCD24bit.Text" xml:space="preserve">
     <value>Speichere als 24-Bit-"verlustfrei"</value>
   </data>
   <data name="chkHDCD24bit.ToolTip" xml:space="preserve">
     <value>Wenn lossyWAV nicht verwendet wird, für Kompatibilität auf 24 Bit erweitern</value>
-  </data>
-  <data name="chkHDCDLW16.Size" type="System.Drawing.Size, System.Drawing">
-    <value>174, 17</value>
   </data>
   <data name="chkHDCDLW16.Text" xml:space="preserve">
     <value>Speichere als 16-Bit-LossyWAV</value>
@@ -467,23 +358,14 @@
   <data name="chkHDCDLW16.ToolTip" xml:space="preserve">
     <value>Beim Konvertieren in lossyWAV auf 16 Bit beschneiden</value>
   </data>
-  <data name="chkKeepOriginalFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>187, 17</value>
-  </data>
   <data name="chkKeepOriginalFilenames.Text" xml:space="preserve">
     <value>Originale Dateinamen beibehalten</value>
   </data>
   <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="txtSpecialExceptions.Size" type="System.Drawing.Size, System.Drawing">
-    <value>137, 21</value>
-  </data>
   <data name="txtSpecialExceptions.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkRemoveSpecial.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 17</value>
   </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Entferne Sonderzeichen außer:</value>
@@ -491,23 +373,14 @@
   <data name="chkRemoveSpecial.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkReplaceSpaces.Size" type="System.Drawing.Size, System.Drawing">
-    <value>207, 17</value>
-  </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
     <value>Ersetze Leerzeichen mit Unterstrichen</value>
   </data>
   <data name="chkReplaceSpaces.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="txtTrackFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>137, 21</value>
-  </data>
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="lblTrackFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>69, 13</value>
   </data>
   <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
     <value>Trackformat:</value>
@@ -515,26 +388,14 @@
   <data name="lblTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="lblSingleFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 13</value>
-  </data>
   <data name="lblSingleFilenameFormat.Text" xml:space="preserve">
     <value>Einzelformat:</value>
   </data>
   <data name="lblSingleFilenameFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="txtSingleFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>137, 21</value>
-  </data>
   <data name="txtSingleFilenameFormat.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="grpAudioFilenames.Location" type="System.Drawing.Point, System.Drawing">
-    <value>283, 6</value>
-  </data>
-  <data name="grpAudioFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>246, 204</value>
   </data>
   <data name="grpAudioFilenames.Text" xml:space="preserve">
     <value>Audio-Dateinamen</value>
@@ -542,26 +403,17 @@
   <data name="grpAudioFilenames.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbAPEinsane.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 17</value>
-  </data>
   <data name="rbAPEinsane.Text" xml:space="preserve">
     <value>Verrückt</value>
   </data>
   <data name="rbAPEinsane.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbAPEextrahigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>73, 17</value>
-  </data>
   <data name="rbAPEextrahigh.Text" xml:space="preserve">
     <value>Sehr hoch</value>
   </data>
   <data name="rbAPEextrahigh.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="rbAPEhigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>49, 17</value>
   </data>
   <data name="rbAPEhigh.Text" xml:space="preserve">
     <value>Hoch</value>
@@ -572,9 +424,6 @@
   <data name="rbAPEnormal.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbAPEfast.Size" type="System.Drawing.Size, System.Drawing">
-    <value>58, 17</value>
-  </data>
   <data name="rbAPEfast.Text" xml:space="preserve">
     <value>Schnell</value>
   </data>
@@ -583,9 +432,6 @@
   </data>
   <data name="tabPage1.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkWriteARLogOnVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>149, 17</value>
   </data>
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Log</value>
@@ -611,9 +457,6 @@
   <data name="tabPage7.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>49, 13</value>
-  </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Qualität:</value>
   </data>
@@ -626,26 +469,17 @@
   <data name="tabPage8.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkUDC1ID3v2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 17</value>
-  </data>
   <data name="chkUDC1ID3v2.Text" xml:space="preserve">
     <value>ID3v2-Tags</value>
   </data>
   <data name="chkUDC1ID3v2.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkUDC1APEv2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>84, 17</value>
-  </data>
   <data name="chkUDC1APEv2.Text" xml:space="preserve">
     <value>APEv2-Tags</value>
   </data>
   <data name="chkUDC1APEv2.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>57, 13</value>
   </data>
   <data name="label6.Text" xml:space="preserve">
     <value>Parameter</value>
@@ -671,9 +505,6 @@
   <data name="textUDC1Extension.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>57, 13</value>
-  </data>
   <data name="label4.Text" xml:space="preserve">
     <value>Parameter</value>
   </data>
@@ -682,9 +513,6 @@
   </data>
   <data name="label3.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 13</value>
   </data>
   <data name="label2.Text" xml:space="preserve">
     <value>Erweiterung</value>
@@ -704,17 +532,11 @@
   <data name="tabPage3.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="grpHDCD.Size" type="System.Drawing.Size, System.Drawing">
-    <value>205, 165</value>
-  </data>
   <data name="grpHDCD.Text" xml:space="preserve">
     <value>HDCD-Optionen</value>
   </data>
   <data name="grpHDCD.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkHDCDDetect.Size" type="System.Drawing.Size, System.Drawing">
-    <value>148, 17</value>
   </data>
   <data name="chkHDCDDetect.Text" xml:space="preserve">
     <value>Erkenne HDCD-Kodierung</value>

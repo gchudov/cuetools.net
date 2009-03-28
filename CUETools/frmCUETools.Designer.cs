@@ -56,7 +56,6 @@ namespace JDP {
 			this.btnSettings = new System.Windows.Forms.Button();
 			this.grpAction = new System.Windows.Forms.GroupBox();
 			this.rbActionCorrectFilenames = new System.Windows.Forms.RadioButton();
-			this.chkRecursive = new System.Windows.Forms.CheckBox();
 			this.rbActionCreateCUESheet = new System.Windows.Forms.RadioButton();
 			this.chkMulti = new System.Windows.Forms.CheckBox();
 			this.rbActionVerifyAndCRCs = new System.Windows.Forms.RadioButton();
@@ -357,9 +356,7 @@ namespace JDP {
 			// grpAction
 			// 
 			this.grpAction.Controls.Add(this.rbActionCorrectFilenames);
-			this.grpAction.Controls.Add(this.chkRecursive);
 			this.grpAction.Controls.Add(this.rbActionCreateCUESheet);
-			this.grpAction.Controls.Add(this.chkMulti);
 			this.grpAction.Controls.Add(this.rbActionVerifyAndCRCs);
 			this.grpAction.Controls.Add(this.rbActionVerifyAndEncode);
 			this.grpAction.Controls.Add(this.rbActionVerifyThenEncode);
@@ -376,13 +373,6 @@ namespace JDP {
 			this.rbActionCorrectFilenames.TabStop = true;
 			this.rbActionCorrectFilenames.UseVisualStyleBackColor = true;
 			this.rbActionCorrectFilenames.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
-			// 
-			// chkRecursive
-			// 
-			resources.ApplyResources(this.chkRecursive, "chkRecursive");
-			this.chkRecursive.Name = "chkRecursive";
-			this.chkRecursive.UseVisualStyleBackColor = true;
-			this.chkRecursive.CheckedChanged += new System.EventHandler(this.chkRecursive_CheckedChanged);
 			// 
 			// rbActionCreateCUESheet
 			// 
@@ -661,6 +651,7 @@ namespace JDP {
 			this.grpInput.Controls.Add(this.textBatchReport);
 			this.grpInput.Controls.Add(this.fileSystemTreeView1);
 			this.grpInput.Controls.Add(this.txtInputPath);
+			this.grpInput.Controls.Add(this.chkMulti);
 			this.grpInput.Name = "grpInput";
 			this.grpInput.TabStop = false;
 			// 
@@ -690,7 +681,7 @@ namespace JDP {
         CUEControls.ExtraSpecialFolder.MyMusic,
         CUEControls.ExtraSpecialFolder.CommonMusic};
 			this.fileSystemTreeView1.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterCheck);
-			this.fileSystemTreeView1.NodeAttributes += new CUEControls.FileSystemTreeViewNodeAttributesHandler(this.fileSystemTreeView1_NodeAttributes);
+			this.fileSystemTreeView1.NodeExpand += new CUEControls.FileSystemTreeViewNodeExpandHandler(this.fileSystemTreeView1_NodeExpand);
 			this.fileSystemTreeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.fileSystemTreeView1_DragDrop);
 			this.fileSystemTreeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterSelect);
 			this.fileSystemTreeView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fileSystemTreeView1_MouseDown);
@@ -878,7 +869,6 @@ namespace JDP {
 		private CUEControls.FileSystemTreeView fileSystemTreeView1;
 		private System.Windows.Forms.TextBox txtInputPath;
 		private System.Windows.Forms.CheckBox chkMulti;
-		private System.Windows.Forms.CheckBox chkRecursive;
 		private System.Windows.Forms.GroupBox grpInput;
 		private System.Windows.Forms.GroupBox grpExtra;
 		private System.Windows.Forms.RadioButton rbActionCorrectFilenames;

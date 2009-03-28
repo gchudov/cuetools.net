@@ -123,18 +123,11 @@
   <data name="btnCancel.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="chkSingleInstance.Size" type="System.Drawing.Size, System.Drawing">
-    <value>182, 17</value>
-  </data>
   <data name="chkSingleInstance.Text" xml:space="preserve">
     <value>Только одно окно приложения</value>
   </data>
   <data name="chkSingleInstance.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkOverwriteTags.Size" type="System.Drawing.Size, System.Drawing">
-    <value>186, 17</value>
   </data>
   <data name="chkOverwriteTags.Text" xml:space="preserve">
     <value>Игнорируя информацию из .cue</value>
@@ -142,17 +135,11 @@
   <data name="chkOverwriteTags.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkExtractLog.Size" type="System.Drawing.Size, System.Drawing">
-    <value>127, 17</value>
-  </data>
   <data name="chkExtractLog.Text" xml:space="preserve">
     <value>Извлечь .log в файл</value>
   </data>
   <data name="chkExtractLog.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkReducePriority.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 17</value>
   </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
     <value>Понизить приоритет процесса</value>
@@ -160,17 +147,11 @@
   <data name="chkReducePriority.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkTruncateExtra4206Samples.Size" type="System.Drawing.Size, System.Drawing">
-    <value>202, 17</value>
-  </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
     <value>Выкидывать лишние 4608 сэмплов</value>
   </data>
   <data name="chkTruncateExtra4206Samples.ToolTip" xml:space="preserve">
     <value>Некоторые FLAC-кодировщики добавляют лишние 4608 пустых сэмплов в конце файла. Эту ситуацию можно легко обнаружить и исправить.</value>
-  </data>
-  <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
-    <value>224, 17</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
     <value>Создавать .cue даже при встраивании</value>
@@ -178,17 +159,11 @@
   <data name="chkCreateCUEFileWhenEmbedded.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkCreateM3U.Size" type="System.Drawing.Size, System.Drawing">
-    <value>166, 17</value>
-  </data>
   <data name="chkCreateM3U.Text" xml:space="preserve">
     <value>Создавать плейлисты .m3u</value>
   </data>
   <data name="chkCreateM3U.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkFillUpCUE.Size" type="System.Drawing.Size, System.Drawing">
-    <value>221, 17</value>
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
     <value>Пополнить .cue информацией из тэгов</value>
@@ -196,26 +171,17 @@
   <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkEmbedLog.Size" type="System.Drawing.Size, System.Drawing">
-    <value>156, 17</value>
-  </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
     <value>Встроить .log в виде тэга</value>
   </data>
   <data name="chkEmbedLog.ToolTip" xml:space="preserve">
     <value>Работает, если .log лежит в той же папке и имеет то же имя, что и исходный файл</value>
   </data>
-  <data name="chkAutoCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>213, 17</value>
-  </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Автоматически искать аудио файлы</value>
   </data>
   <data name="chkAutoCorrectFilenames.ToolTip" xml:space="preserve">
     <value>Автоматически исправить имена, если .cue ссылается на несуществующие файлы</value>
-  </data>
-  <data name="chkPreserveHTOA.Size" type="System.Drawing.Size, System.Drawing">
-    <value>231, 17</value>
   </data>
   <data name="chkPreserveHTOA.Text" xml:space="preserve">
     <value>Сохранять HTOA при разбивке на треки</value>
@@ -232,17 +198,11 @@
   <data name="numericFLACCompressionLevel.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="lblFLACCompressionLevel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>94, 13</value>
-  </data>
   <data name="lblFLACCompressionLevel.Text" xml:space="preserve">
     <value>Уровень сжатия:</value>
   </data>
   <data name="lblFLACCompressionLevel.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkFLACVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>94, 17</value>
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Верификация</value>
@@ -253,9 +213,6 @@
   <data name="btnOK.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkWVStoreMD5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>119, 17</value>
-  </data>
   <data name="chkWVStoreMD5.Text" xml:space="preserve">
     <value>MD5-хеширование</value>
   </data>
@@ -265,17 +222,11 @@
   <data name="numWVExtraMode.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 17</value>
-  </data>
   <data name="chkWVExtraMode.Text" xml:space="preserve">
     <value>Доп. режим:</value>
   </data>
   <data name="chkWVExtraMode.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="rbWVVeryHigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>103, 17</value>
   </data>
   <data name="rbWVVeryHigh.Text" xml:space="preserve">
     <value>Очень высокий</value>
@@ -283,17 +234,11 @@
   <data name="rbWVVeryHigh.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbWVHigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 17</value>
-  </data>
   <data name="rbWVHigh.Text" xml:space="preserve">
     <value>Высокий</value>
   </data>
   <data name="rbWVHigh.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="rbWVNormal.Size" type="System.Drawing.Size, System.Drawing">
-    <value>69, 17</value>
   </data>
   <data name="rbWVNormal.Text" xml:space="preserve">
     <value>Средний</value>
@@ -301,20 +246,11 @@
   <data name="rbWVNormal.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="rbWVFast.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 17</value>
-  </data>
   <data name="rbWVFast.Text" xml:space="preserve">
     <value>Быстрый</value>
   </data>
   <data name="rbWVFast.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>150, 77</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 17</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
     <value>и нулевым смещением</value>
@@ -322,23 +258,11 @@
   <data name="chkEncodeWhenZeroOffset.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkArFixOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 100</value>
-  </data>
-  <data name="chkArFixOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>165, 17</value>
-  </data>
   <data name="chkArFixOffset.Text" xml:space="preserve">
-    <value>Исправлять смещение если</value>
+    <value>Исправлять смещение при % треков &gt;=</value>
   </data>
   <data name="chkArFixOffset.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkWriteArLogOnConvert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 181</value>
-  </data>
-  <data name="chkWriteArLogOnConvert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 17</value>
   </data>
   <data name="chkWriteArLogOnConvert.Text" xml:space="preserve">
     <value>Записывать отчет AccurateRip</value>
@@ -346,41 +270,14 @@
   <data name="chkWriteArLogOnConvert.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkWriteArTagsOnConvert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 164</value>
-  </data>
-  <data name="chkWriteArTagsOnConvert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>173, 17</value>
-  </data>
   <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
     <value>Записывать тэги AccurateRip</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
     <value>Добавлять тэги ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL в выходные файлы. Можно настроить foobar2000 на их отображение, чтобы видеть качество рипа и популярность дисков в вашей библиотеке.</value>
   </data>
-  <data name="labelEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 37</value>
-  </data>
-  <data name="labelEncodeWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>147, 13</value>
-  </data>
-  <data name="labelEncodeWhenPercent.Text" xml:space="preserve">
-    <value>% проверенных треков &gt;=</value>
-  </data>
-  <data name="labelEncodeWhenPercent.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="numEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 35</value>
-  </data>
   <data name="numEncodeWhenPercent.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="labelEncodeWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 58</value>
-  </data>
-  <data name="labelEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
-    <value>120, 13</value>
   </data>
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
     <value>с достоверностью &gt;=</value>
@@ -388,34 +285,14 @@
   <data name="labelEncodeWhenConfidence.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="numEncodeWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 56</value>
-  </data>
   <data name="numEncodeWhenConfidence.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkArNoUnverifiedAudio.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 17</value>
-  </data>
   <data name="chkArNoUnverifiedAudio.Text" xml:space="preserve">
-    <value>Конвертировать только если</value>
+    <value>Конвертация при % верных треков &gt;=</value>
   </data>
   <data name="chkArNoUnverifiedAudio.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="labelFixWhenConfidence.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="labelFixWhenConfidence.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 139</value>
-  </data>
-  <data name="labelFixWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
-    <value>120, 13</value>
   </data>
   <data name="labelFixWhenConfidence.Text" xml:space="preserve">
     <value>с достоверностью &gt;=</value>
@@ -423,32 +300,8 @@
   <data name="labelFixWhenConfidence.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="numFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>251, 137</value>
-  </data>
   <data name="numFixWhenConfidence.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="labelFixWhenPercent.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="labelFixWhenPercent.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelFixWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 118</value>
-  </data>
-  <data name="labelFixWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>147, 13</value>
-  </data>
-  <data name="labelFixWhenPercent.Text" xml:space="preserve">
-    <value>% проверенных треков &gt;=</value>
-  </data>
-  <data name="labelFixWhenPercent.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="numFixWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 116</value>
   </data>
   <data name="numFixWhenPercent.ToolTip" xml:space="preserve">
     <value />
@@ -459,20 +312,11 @@
   <data name="groupBox1.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkFilenamesANSISafe.Size" type="System.Drawing.Size, System.Drawing">
-    <value>207, 17</value>
-  </data>
   <data name="chkFilenamesANSISafe.Text" xml:space="preserve">
     <value>Только символы из ANSI кодировки</value>
   </data>
   <data name="chkFilenamesANSISafe.ToolTip" xml:space="preserve">
     <value>Использовать только символы, присутствующие в ANSI (1251) кодировке, для совместимости с приложениями, не поддерживающими Unicode (такими, как Far manager)</value>
-  </data>
-  <data name="chkWriteARTagsOnVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 164</value>
-  </data>
-  <data name="chkWriteARTagsOnVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>173, 17</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Text" xml:space="preserve">
     <value>Записывать тэги AccurateRip</value>
@@ -480,17 +324,11 @@
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
     <value>Добавлять тэги ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL в исходные файлы. Можно настроить foobar2000 на их отображение, чтобы видеть качество рипа и популярность дисков в вашей библиотеке.</value>
   </data>
-  <data name="chkHDCDDecode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>146, 17</value>
-  </data>
   <data name="chkHDCDDecode.Text" xml:space="preserve">
     <value>Декодировать в 20 бит</value>
   </data>
   <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
     <value>Декодирование HDCD - необратимый процесс. Результирующие файлы не могут быть записаны на CD. Создаются файлы с разрешением 24 бита, но подлинное разрешение составляет 20 бит.</value>
-  </data>
-  <data name="chkHDCDStopLooking.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 17</value>
   </data>
   <data name="chkHDCDStopLooking.Text" xml:space="preserve">
     <value>Определять по 750 фреймам</value>
@@ -498,26 +336,17 @@
   <data name="chkHDCDStopLooking.ToolTip" xml:space="preserve">
     <value>Прекращать поиск HDCD-кодировки, если её не обнаружено в первых 10 секундах аудио данных.</value>
   </data>
-  <data name="chkHDCD24bit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 17</value>
-  </data>
   <data name="chkHDCD24bit.Text" xml:space="preserve">
     <value>Записывать 24 бит "lossless"</value>
   </data>
   <data name="chkHDCD24bit.ToolTip" xml:space="preserve">
     <value>Когда не используется lossyWAV, расширить до 24 бит для совместимости</value>
   </data>
-  <data name="chkHDCDLW16.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 17</value>
-  </data>
   <data name="chkHDCDLW16.Text" xml:space="preserve">
     <value>Записывать 16 бит LossyWAV</value>
   </data>
   <data name="chkHDCDLW16.ToolTip" xml:space="preserve">
     <value>При конвертации в lossyWAV, обрезать до 16 бит</value>
-  </data>
-  <data name="chkKeepOriginalFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>157, 17</value>
   </data>
   <data name="chkKeepOriginalFilenames.Text" xml:space="preserve">
     <value>Сохранять оригинальные</value>
@@ -528,17 +357,11 @@
   <data name="txtSpecialExceptions.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkRemoveSpecial.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 17</value>
-  </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Удалять специальные символы кроме:</value>
   </data>
   <data name="chkRemoveSpecial.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkReplaceSpaces.Size" type="System.Drawing.Size, System.Drawing">
-    <value>209, 17</value>
   </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
     <value>Заменять пробелы подчеркиванями</value>
@@ -549,20 +372,11 @@
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="lblTrackFilenameFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 75</value>
-  </data>
-  <data name="lblTrackFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>35, 13</value>
-  </data>
   <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
     <value>Трек:</value>
   </data>
   <data name="lblTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="lblSingleFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 13</value>
   </data>
   <data name="lblSingleFilenameFormat.Text" xml:space="preserve">
     <value>Образ диска:</value>
@@ -597,12 +411,6 @@
   <data name="tabPage1.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkWriteARLogOnVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 181</value>
-  </data>
-  <data name="chkWriteARLogOnVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 17</value>
-  </data>
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
     <value>Записывать отчет AccurateRip</value>
   </data>
@@ -626,9 +434,6 @@
   </data>
   <data name="tabPage7.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 13</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Качество:</value>
@@ -760,9 +565,6 @@
   </data>
   <data name="grpHDCD.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="chkHDCDDetect.Size" type="System.Drawing.Size, System.Drawing">
-    <value>120, 17</value>
   </data>
   <data name="chkHDCDDetect.Text" xml:space="preserve">
     <value>Определять HDCD</value>

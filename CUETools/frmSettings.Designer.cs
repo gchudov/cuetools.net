@@ -27,6 +27,8 @@ namespace JDP {
 			System.Windows.Forms.Button btnCancel;
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSettings));
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
+			this.labelLanguage = new System.Windows.Forms.Label();
+			this.comboLanguage = new System.Windows.Forms.ComboBox();
 			this.chkSingleInstance = new System.Windows.Forms.CheckBox();
 			this.chkOverwriteTags = new System.Windows.Forms.CheckBox();
 			this.chkExtractLog = new System.Windows.Forms.CheckBox();
@@ -54,14 +56,12 @@ namespace JDP {
 			this.chkArFixOffset = new System.Windows.Forms.CheckBox();
 			this.chkWriteArLogOnConvert = new System.Windows.Forms.CheckBox();
 			this.chkWriteArTagsOnConvert = new System.Windows.Forms.CheckBox();
-			this.labelEncodeWhenPercent = new System.Windows.Forms.Label();
 			this.numEncodeWhenPercent = new System.Windows.Forms.NumericUpDown();
 			this.labelEncodeWhenConfidence = new System.Windows.Forms.Label();
 			this.numEncodeWhenConfidence = new System.Windows.Forms.NumericUpDown();
 			this.chkArNoUnverifiedAudio = new System.Windows.Forms.CheckBox();
 			this.labelFixWhenConfidence = new System.Windows.Forms.Label();
 			this.numFixWhenConfidence = new System.Windows.Forms.NumericUpDown();
-			this.labelFixWhenPercent = new System.Windows.Forms.Label();
 			this.numFixWhenPercent = new System.Windows.Forms.NumericUpDown();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.chkFilenamesANSISafe = new System.Windows.Forms.CheckBox();
@@ -114,8 +114,6 @@ namespace JDP {
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.grpHDCD = new System.Windows.Forms.GroupBox();
 			this.chkHDCDDetect = new System.Windows.Forms.CheckBox();
-			this.comboLanguage = new System.Windows.Forms.ComboBox();
-			this.labelLanguage = new System.Windows.Forms.Label();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).BeginInit();
@@ -167,6 +165,19 @@ namespace JDP {
 			resources.ApplyResources(this.grpGeneral, "grpGeneral");
 			this.grpGeneral.Name = "grpGeneral";
 			this.grpGeneral.TabStop = false;
+			// 
+			// labelLanguage
+			// 
+			resources.ApplyResources(this.labelLanguage, "labelLanguage");
+			this.labelLanguage.Name = "labelLanguage";
+			// 
+			// comboLanguage
+			// 
+			this.comboLanguage.DisplayMember = "EnglishName";
+			this.comboLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboLanguage.FormattingEnabled = true;
+			resources.ApplyResources(this.comboLanguage, "comboLanguage");
+			this.comboLanguage.Name = "comboLanguage";
 			// 
 			// chkSingleInstance
 			// 
@@ -337,14 +348,12 @@ namespace JDP {
 			this.groupBox1.Controls.Add(this.chkArFixOffset);
 			this.groupBox1.Controls.Add(this.chkWriteArLogOnConvert);
 			this.groupBox1.Controls.Add(this.chkWriteArTagsOnConvert);
-			this.groupBox1.Controls.Add(this.labelEncodeWhenPercent);
 			this.groupBox1.Controls.Add(this.numEncodeWhenPercent);
 			this.groupBox1.Controls.Add(this.labelEncodeWhenConfidence);
 			this.groupBox1.Controls.Add(this.numEncodeWhenConfidence);
 			this.groupBox1.Controls.Add(this.chkArNoUnverifiedAudio);
 			this.groupBox1.Controls.Add(this.labelFixWhenConfidence);
 			this.groupBox1.Controls.Add(this.numFixWhenConfidence);
-			this.groupBox1.Controls.Add(this.labelFixWhenPercent);
 			this.groupBox1.Controls.Add(this.numFixWhenPercent);
 			resources.ApplyResources(this.groupBox1, "groupBox1");
 			this.groupBox1.Name = "groupBox1";
@@ -381,11 +390,6 @@ namespace JDP {
 			this.chkWriteArTagsOnConvert.Name = "chkWriteArTagsOnConvert";
 			this.toolTip1.SetToolTip(this.chkWriteArTagsOnConvert, resources.GetString("chkWriteArTagsOnConvert.ToolTip"));
 			this.chkWriteArTagsOnConvert.UseVisualStyleBackColor = true;
-			// 
-			// labelEncodeWhenPercent
-			// 
-			resources.ApplyResources(this.labelEncodeWhenPercent, "labelEncodeWhenPercent");
-			this.labelEncodeWhenPercent.Name = "labelEncodeWhenPercent";
 			// 
 			// numEncodeWhenPercent
 			// 
@@ -455,11 +459,6 @@ namespace JDP {
             0,
             0,
             0});
-			// 
-			// labelFixWhenPercent
-			// 
-			resources.ApplyResources(this.labelFixWhenPercent, "labelFixWhenPercent");
-			this.labelFixWhenPercent.Name = "labelFixWhenPercent";
 			// 
 			// numFixWhenPercent
 			// 
@@ -871,19 +870,6 @@ namespace JDP {
 			this.chkHDCDDetect.UseVisualStyleBackColor = true;
 			this.chkHDCDDetect.CheckedChanged += new System.EventHandler(this.chkHDCDDetect_CheckedChanged);
 			// 
-			// comboLanguage
-			// 
-			this.comboLanguage.DisplayMember = "EnglishName";
-			this.comboLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboLanguage.FormattingEnabled = true;
-			resources.ApplyResources(this.comboLanguage, "comboLanguage");
-			this.comboLanguage.Name = "comboLanguage";
-			// 
-			// labelLanguage
-			// 
-			resources.ApplyResources(this.labelLanguage, "labelLanguage");
-			this.labelLanguage.Name = "labelLanguage";
-			// 
 			// frmSettings
 			// 
 			this.AcceptButton = this.btnOK;
@@ -957,7 +943,6 @@ namespace JDP {
 		private System.Windows.Forms.NumericUpDown numericFLACCompressionLevel;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.NumericUpDown numFixWhenPercent;
-		private System.Windows.Forms.Label labelFixWhenPercent;
 		private System.Windows.Forms.Label labelFixWhenConfidence;
 		private System.Windows.Forms.NumericUpDown numFixWhenConfidence;
 		private System.Windows.Forms.GroupBox grpAudioFilenames;
@@ -976,7 +961,6 @@ namespace JDP {
 		private System.Windows.Forms.NumericUpDown numEncodeWhenConfidence;
 		private System.Windows.Forms.NumericUpDown numEncodeWhenPercent;
 		private System.Windows.Forms.CheckBox chkArFixOffset;
-		private System.Windows.Forms.Label labelEncodeWhenPercent;
 		private System.Windows.Forms.CheckBox chkEmbedLog;
 		private System.Windows.Forms.CheckBox chkFillUpCUE;
 		private System.Windows.Forms.CheckBox chkFilenamesANSISafe;

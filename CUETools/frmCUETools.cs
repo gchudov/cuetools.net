@@ -65,15 +65,10 @@ namespace JDP {
 		{
 			foreach (TreeNode node in nodes)
 			{
-				if (node.Checked && node.Tag is FileSystemInfo)
-				{
-					_batchPaths.Add(((FileSystemInfo)node.Tag).FullName);
-					if (!chkRecursive.Checked)
-						AddNodesToBatch(node.Nodes);
-				}
-				else
+				if (node.IsExpanded)
 					AddNodesToBatch(node.Nodes);
-				node.Checked = false;
+				else if (node.Checked && node.Tag is FileSystemInfo)
+					_batchPaths.Add(((FileSystemInfo)node.Tag).FullName);
 			}
 		}
 
@@ -84,7 +79,7 @@ namespace JDP {
 			_batchReport = new StringBuilder();
 			_batchRoot = null;
 			_batchProcessed = 0;
-			if (!chkMulti.Checked && !chkRecursive.Checked)
+			if (!chkMulti.Checked && !Directory.Exists(txtInputPath.Text))
 			{
 				StartConvert();
 				return;
@@ -99,8 +94,10 @@ namespace JDP {
 				AddNodesToBatch(fileSystemTreeView1.Nodes);
 			else
 			{
-				_batchPaths.Add(txtInputPath.Text);
 				_batchRoot = txtInputPath.Text;
+				if (Directory.Exists(_batchRoot) && !_batchRoot.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
+					_batchRoot = _batchRoot + Path.DirectorySeparatorChar;
+				_batchPaths.Add(_batchRoot);
 			}
 			if (_batchPaths.Count == 0)
 			{
@@ -265,16 +262,13 @@ namespace JDP {
 				}
 
 				string pathIn = txtInputPath.Text;
-				if (!File.Exists(pathIn))
-				{
-					if (!Directory.Exists(pathIn) && !IsCDROM(pathIn))
-						throw new Exception("Input CUE Sheet not found.");
-					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
-					{
-						pathIn = pathIn + Path.DirectorySeparatorChar;
-						txtInputPath.Text = pathIn;
-					}
-				}
+				if (!File.Exists(pathIn) && !Directory.Exists(pathIn) && !IsCDROM(pathIn))
+					throw new Exception("Invalid input path.");
+				//if (Directory.Exists(pathIn) && !pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
+				//{
+				//    pathIn = pathIn + Path.DirectorySeparatorChar;
+				//    txtInputPath.Text = pathIn;
+				//}
 
 				CUESheet cueSheet = new CUESheet(_config);
 				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
@@ -293,7 +287,6 @@ namespace JDP {
 				p[3] = SelectedAction;
 				p[4] = SelectedOutputAudioFormat;
 				p[5] = chkLossyWAV.Checked;
-				p[6] = chkRecursive.Checked;
 
 				SetupControls(true);
 				_workThread.Priority = ThreadPriority.BelowNormal;
@@ -347,30 +340,13 @@ namespace JDP {
 			});
 		}
 
-		private bool TryDummyCUE(string pathIn, out string cueSheetContents, out string ext)
-		{
-			string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta", "*.tak" };
-			for (int i = 0; i < audioExts.Length; i++)
-			{
-				cueSheetContents = CUESheet.CreateDummyCUESheet(pathIn, audioExts[i]);
-				if (cueSheetContents != null)
-				{
-					ext = audioExts[i].Substring(1);
-					return true;
-				}
-			}
-			cueSheetContents = null;
-			ext = null;
-			return false;
-		}
-
 		private void BatchLog(string format, string pathIn, params object[] args)
 		{
-			if (_batchRoot == null || !pathIn.StartsWith(_batchRoot))
+			if (_batchRoot == null || !pathIn.StartsWith(_batchRoot) || pathIn == _batchRoot)
 				_batchReport.Append(pathIn);
 			else
 			{
-				_batchReport.Append(".");
+				_batchReport.Append(".\\");
 				_batchReport.Append(pathIn, _batchRoot.Length, pathIn.Length - _batchRoot.Length);
 			}
 			_batchReport.Append(": ");
@@ -387,131 +363,105 @@ namespace JDP {
 			CUEAction action = (CUEAction)p[3];
 			OutputAudioFormat outputFormat = (OutputAudioFormat)p[4];
 			bool lossyWAV = (bool)p[5];
-			bool recursive = (bool)p[6];
 			DialogResult dlgRes = DialogResult.OK;
 
 			try
 			{
 				if (action == CUEAction.CreateDummyCUE)
 				{
-					if (_batchPaths.Count > 0 && Directory.Exists(pathIn))
+					if (Directory.Exists(pathIn))
 					{
-						if (recursive)
-							_batchPaths.InsertRange(1, Directory.GetDirectories(pathIn));
+						if (_batchPaths.Count == 0)
+							throw new Exception("is a directory");
+						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, pathIn);
+						int directoriesFound = 0, cueSheetsFound = 0;
+						foreach (FileGroupInfo fileGroup in fileGroups)
+							if (fileGroup.type == FileGroupInfoType.Folder)
+								_batchPaths.Insert(++directoriesFound, fileGroup.main.FullName);
+						foreach (FileGroupInfo fileGroup in fileGroups)
+							if (fileGroup.type == FileGroupInfoType.CUESheetFile)
+								throw new Exception("already contains a cue sheet");
+						foreach (FileGroupInfo fileGroup in fileGroups)
+							if (fileGroup.type == FileGroupInfoType.TrackFiles)
+								_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
 					}
-					if (!Directory.Exists(pathIn))
-						BatchLog("no such directory.", pathIn);
 					else
 					{
-						if (Directory.GetFiles(pathIn, "*.cue").Length != 0)
-							BatchLog("already contains a cue sheet.", pathIn);
-						else
-						{
-							string cueSheetContents, ext;
-							if (TryDummyCUE(pathIn, out cueSheetContents, out ext))
-							{
-								string cueName = Path.GetFileName(Path.GetDirectoryName(pathIn)) + ".cuetools" + ext + ".cue";
-								string fullCueName = Path.Combine(pathIn, cueName);
-								bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheetContents)) != cueSheetContents;
-								StreamWriter sw1 = new StreamWriter(fullCueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
-								sw1.Write(cueSheetContents);
-								sw1.Close();
-								BatchLog("created ok.", fullCueName);
-							} else
-								BatchLog("no audio files.", pathIn);
-						}
+						pathIn = Path.GetFullPath(pathIn);
+						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, Path.GetDirectoryName(pathIn));
+						FileGroupInfo fileGroup = FileGroupInfo.WhichContains(fileGroups, pathIn);
+						if (fileGroup == null)
+							throw new Exception("doesn't seem to be part of an album");
+						string cueSheetContents = CUESheet.CreateDummyCUESheet(fileGroup);
+						string cueName = Path.GetFileName(Path.GetDirectoryName(pathIn)) + (fileGroup.discNo != 1 ? ".cd" + fileGroup.discNo.ToString() : "") + ".cuetools" + Path.GetExtension(pathIn) + ".cue";
+						string fullCueName = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
+						bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheetContents)) != cueSheetContents;
+						StreamWriter sw1 = new StreamWriter(fullCueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
+						sw1.Write(cueSheetContents);
+						sw1.Close();
+						BatchLog("created ok.", fullCueName);
 					}
 				}
 				else if (action == CUEAction.CorrectFilenames)
 				{
-					if (_batchPaths.Count > 0 && Directory.Exists(pathIn))
+					if (Directory.Exists(pathIn))
 					{
-						string [] cues = Directory.GetFiles(pathIn, "*.cue", recursive ? 
-							SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+						if (_batchPaths.Count == 0)
+							throw new Exception("is a directory");
+						string[] cues = Directory.GetFiles(pathIn, "*.cue", SearchOption.AllDirectories);
 						if (cues.Length == 0)
 							BatchLog("no cue files.", pathIn);
 						else
 							_batchPaths.InsertRange(1, cues);
 					}
-					try
+					else
 					{
-						if (Directory.Exists(pathIn))
+						if (Path.GetExtension(pathIn).ToLower() != ".cue")
+							throw new Exception("is not a .cue file");
+						string cue = null;
+						using (StreamReader sr = new StreamReader(pathIn, CUESheet.Encoding))
+							cue = sr.ReadToEnd();
+						string fixedCue = CUESheet.CorrectAudioFilenames(Path.GetDirectoryName(pathIn), cue, true, null);
+						if (fixedCue != cue)
 						{
-							if (_batchPaths.Count == 0)
-								throw new Exception ("is a directory");
+							using (StreamWriter sw = new StreamWriter(pathIn, false, CUESheet.Encoding))
+								sw.Write(fixedCue);
+							BatchLog("corrected.", pathIn);
 						}
 						else
-						{
-							if (Path.GetExtension(pathIn).ToLower() != ".cue")
-								throw new Exception("is not a .cue file");
-							string cue = null;
-							using (StreamReader sr = new StreamReader(pathIn, CUESheet.Encoding))
-								cue = sr.ReadToEnd();
-							string fixedCue = CUESheet.CorrectAudioFilenames(Path.GetDirectoryName(pathIn), cue, true, null);
-							if (fixedCue != cue)
-							{
-								using (StreamWriter sw = new StreamWriter(pathIn, false, CUESheet.Encoding))
-									sw.Write(fixedCue);
-								BatchLog("corrected.", pathIn);
-							}
-							else
-								BatchLog("no changes.", pathIn);
-						}
-					}
-					catch (Exception ex)
-					{
-						BatchLog("{0}.", pathIn, ex.Message);
+							BatchLog("no changes.", pathIn);
 					}
 				}
 				else
 				{
-					bool foundImages = false;
-					bool foundAudio = false;
-					bool processThis = true;
-
-					if (_batchPaths.Count > 0 && Directory.Exists(pathIn))
+					if (Directory.Exists(pathIn))
 					{
-						if (recursive)
-							_batchPaths.InsertRange(1, Directory.GetDirectories(pathIn));
-						string[] cueFiles = Directory.GetFiles(pathIn, "*.cue");
-						if (cueFiles.Length > 0)
-						{
-							_batchPaths.InsertRange(1, cueFiles);
-							foundImages = true;
-						}
-						else
-						{
-							string cueSheetContents, ext1;
-							foundAudio = TryDummyCUE(pathIn, out cueSheetContents, out ext1);
-							string[] audioExts = new string[] { "*.flac", "*.wv", "*.ape" };
-							foreach (string ext in audioExts)
-								foreach (string audioFile in Directory.GetFiles(pathIn, ext))
-								{
-									TagLib.UserDefined.AdditionalFileTypes.Config = _config;
-									TagLib.File.IFileAbstraction file = new TagLib.File.LocalFileAbstraction(audioFile);
-									try
-									{
-										TagLib.File fileInfo = TagLib.File.Create(file);
-										NameValueCollection tags = Tagging.Analyze(fileInfo);
-										if (tags.Get("CUESHEET") != null)
-										{
-											_batchPaths.Insert(1, audioFile);
-											foundImages = true;
-										}
-									}
-									catch
-									{
-									}
-								}
-						}
-						processThis = !foundImages && foundAudio;
-					}
-
-					if (processThis)
+						if (_batchPaths.Count == 0)
+							throw new Exception("is a directory");
+						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, pathIn);
+						int directoriesFound = 0, cueSheetsFound = 0;
+						foreach(FileGroupInfo fileGroup in fileGroups)
+							if (fileGroup.type == FileGroupInfoType.Folder)
+								_batchPaths.Insert(++directoriesFound, fileGroup.main.FullName);
+						foreach (FileGroupInfo fileGroup in fileGroups)
+							if (fileGroup.type == FileGroupInfoType.CUESheetFile)
+								_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
+						if (cueSheetsFound == 0)
+							foreach (FileGroupInfo fileGroup in fileGroups)
+								if (fileGroup.type == FileGroupInfoType.FileWithCUE)
+									_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
+						if (cueSheetsFound == 0)
+							foreach (FileGroupInfo fileGroup in fileGroups)
+								if (fileGroup.type == FileGroupInfoType.TrackFiles)
+									_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
+					} else
 					{
 						bool convertAction = action == CUEAction.Convert || action == CUEAction.VerifyAndConvert || action == CUEAction.VerifyThenConvert;
 						string pathOut = null;
 						List<object> releases = null;
+
+						if (Directory.Exists(pathIn) && !pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
+							pathIn = pathIn + Path.DirectorySeparatorChar;
 
 						cueSheet.Action = action;
 						cueSheet.Open(pathIn);
@@ -530,7 +480,7 @@ namespace JDP {
 						this.Invoke((MethodInvoker)delegate()
 						{
 							toolStripStatusLabelAR.Visible = action != CUEAction.Convert;// && cueSheet.ArVerify.ARStatus == null;
-							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.Total(0).ToString() : "?";
+							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.WorstTotal().ToString() : "?";
 							toolStripStatusLabelAR.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
 							if (releases != null)
 							{
@@ -545,6 +495,7 @@ namespace JDP {
 								}
 							}
 							UpdateOutputPath(
+								pathIn,
 								cueSheet.Year != "" ? cueSheet.Year : "YYYY",
 								cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist",
 								cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
@@ -711,13 +662,14 @@ namespace JDP {
 			bool converting = (SelectedAction == CUEAction.Convert || SelectedAction == CUEAction.VerifyAndConvert || SelectedAction == CUEAction.VerifyThenConvert);
 			bool verifying = (SelectedAction == CUEAction.Verify || SelectedAction == CUEAction.VerifyPlusCRCs || SelectedAction == CUEAction.VerifyAndConvert || SelectedAction == CUEAction.VerifyThenConvert);
 			//grpInput.Enabled = !running;
+			fileSystemTreeView1.Enabled = !running;
 			txtInputPath.Enabled = !running;
 			grpExtra.Enabled = !running;
 			grpOutputPathGeneration.Enabled = !running;
 			grpAudioOutput.Enabled = !running && converting;
 			grpAction.Enabled = !running;
 			grpOutputStyle.Enabled = !running && converting;
-			grpFreedb.Enabled = !running && converting;
+			grpFreedb.Enabled = !running && !chkMulti.Checked && converting;
 			txtDataTrackLength.Enabled = !running && verifying;
 			txtPreGapLength.Enabled = !running;
 			btnAbout.Enabled = !running;
@@ -810,7 +762,6 @@ namespace JDP {
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
 			chkMulti.Checked = sr.LoadBoolean("BatchProcessing") ?? false;
-			chkRecursive.Checked = sr.LoadBoolean("RecursiveProcessing") ?? true;
 			chkLossyWAV.Checked = sr.LoadBoolean("LossyWav") ?? false;
 			switch (sr.LoadInt32("FreedbLookup", null, null) ?? 2)
 			{
@@ -834,7 +785,6 @@ namespace JDP {
 			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
 			sw.Save("ReducePriority", _reducePriority);
 			sw.Save("BatchProcessing", chkMulti.Checked);
-			sw.Save("RecursiveProcessing", chkRecursive.Checked);
 			sw.Save("LossyWav", chkLossyWAV.Checked);
 			sw.Save("FreedbLookup", rbFreedbNever.Checked ? 0 : rbFreedbIf.Checked ? 1 : 2);
 			_config.Save(sw);
@@ -1050,10 +1000,10 @@ namespace JDP {
 		}
 
 		private void UpdateOutputPath() {
-			UpdateOutputPath("YYYY", "Artist", "Album");
+			UpdateOutputPath(txtInputPath.Text, "YYYY", "Artist", "Album");
 		}
 
-		private void UpdateOutputPath(string year, string artist, string album) {
+		private void UpdateOutputPath(string pathIn, string year, string artist, string album) {
 			/* if (rbArVerify.Checked)
 			{
 				txtOutputPath.Text = txtInputPath.Text;
@@ -1069,14 +1019,14 @@ namespace JDP {
 			{
 				txtOutputPath.ReadOnly = true;
 				btnBrowseOutput.Enabled = false;
-				txtOutputPath.Text = GenerateOutputPath(year, artist, album);
+				txtOutputPath.Text = GenerateOutputPath(pathIn, year, artist, album);
 			}
 		}
 
-		private string GenerateOutputPath(string year, string artist, string album) {
-			string pathIn, pathOut, dir, file, ext;
+		private string GenerateOutputPath(string pathIn, string year, string artist, string album) 
+		{
+			string pathOut, dir, file, ext;
 
-			pathIn = txtInputPath.Text;
 			pathOut = String.Empty;
 
 			if ((pathIn.Length != 0) && (File.Exists(pathIn) || Directory.Exists(pathIn)))
@@ -1298,82 +1248,17 @@ namespace JDP {
 			UpdateOutputPath();
 		}
 
-		private void fileSystemTreeView1_NodeAttributes(object sender, CUEControls.FileSystemTreeViewNodeAttributesEventArgs e)
+		private void fileSystemTreeView1_NodeExpand(object sender, CUEControls.FileSystemTreeViewNodeExpandEventArgs e)
 		{
-			if ((e.file.Attributes & FileAttributes.Hidden) != 0)
+			List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, e.files);
+			foreach (FileGroupInfo fileGroup in fileGroups)
 			{
-				e.isVisible = false;
-				return;
+				TreeNode node = fileSystemTreeView1.NewNode(fileGroup.main, fileGroup.type == FileGroupInfoType.Folder);
+				if (fileGroup.type == FileGroupInfoType.TrackFiles)
+					node.Text = node.Text + ": " + fileGroup.files.Count.ToString() + " files";
+				e.node.Nodes.Add(node);
 			}
-			if ((e.file.Attributes & FileAttributes.Directory) != 0)
-			{
-				e.isVisible = true;
-				e.isExpandable = true;
-				//		  e.isExpandable = false;
-				//        foreach (FileSystemInfo subfile in ((DirectoryInfo)e.file).GetFileSystemInfos())
-				//            if (IsVisible(subfile))
-				//            {
-				//                e.isExpandable = true;
-				//                break;
-				//            }
-				return;
-			}
-			string ext = e.file.Extension.ToLower();
-			if (ext == ".cue")
-			{
-				e.isVisible = true;
-				e.isExpandable = false;
-				return;
-			}
-			if (ext == ".zip")
-			{
-				e.isVisible = false;
-				e.isExpandable = false;
-				try
-				{
-					using (ICSharpCode.SharpZipLib.Zip.ZipFile unzip = new ICSharpCode.SharpZipLib.Zip.ZipFile(e.file.FullName))
-					{
-						foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in unzip)
-						{
-							if (entry.IsFile && Path.GetExtension(entry.Name).ToLower() == ".cue")
-							{
-								e.isVisible = true;
-								break;
-							}
-
-						}
-						unzip.Close();
-					}
-				}
-				catch
-				{
-				}
-				return;
-			}
-			if (ext == ".rar")
-			{
-				e.isVisible = true;
-				e.isExpandable = false;
-				return;
-			}
-			if (ext != "" && ".flac;.ape;.wv;".Contains(ext))
-			{
-				TagLib.UserDefined.AdditionalFileTypes.Config = _config;
-				TagLib.File.IFileAbstraction file = new TagLib.File.LocalFileAbstraction(e.file.FullName);
-				try
-				{
-					TagLib.File fileInfo = TagLib.File.Create(file);
-					NameValueCollection tags = Tagging.Analyze(fileInfo);
-					e.isVisible = tags.Get("CUESHEET") != null;
-				}
-				catch
-				{
-					e.isVisible = false;
-				}
-				e.isExpandable = false;
-				return;
-			}
-			return;
+			//toolTip1.Show
 		}
 
 		private void UpdateActions()
@@ -1388,34 +1273,21 @@ namespace JDP {
 				rbActionVerifyThenEncode.Enabled = true;
 				rbActionVerifyAndEncode.Enabled = true;
 			}
-			else if (chkRecursive.Checked)
-			{
-				string pathIn = txtInputPath.Text;
-				rbActionCorrectFilenames.Enabled = 
-					rbActionCreateCUESheet.Enabled =
-					rbActionVerifyAndEncode.Enabled =
-					rbActionVerifyThenEncode.Enabled =
-					rbActionVerify.Enabled =
-					rbActionVerifyAndCRCs.Enabled =
-					rbActionEncode.Enabled = pathIn.Length != 0 && Directory.Exists(pathIn);
-			}
 			else
 			{
 				string pathIn = txtInputPath.Text;
-				string cueSheetContents, ext;
 				rbActionCorrectFilenames.Enabled = pathIn.Length != 0
-					&& File.Exists(pathIn)
-					&& Path.GetExtension(pathIn).ToLower() == ".cue";
+					&& ((File.Exists(pathIn) && Path.GetExtension(pathIn).ToLower() == ".cue")
+					 || Directory.Exists(pathIn));
 				rbActionCreateCUESheet.Enabled = pathIn.Length != 0
-					&& Directory.Exists(pathIn)
-					&& Directory.GetFiles(pathIn, "*.cue").Length == 0
-					&& TryDummyCUE(pathIn, out cueSheetContents, out ext);
+					&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_config, pathIn) != null)
+					 || Directory.Exists(pathIn));
 				rbActionVerifyAndEncode.Enabled =
 					rbActionVerifyThenEncode.Enabled =
 					rbActionVerify.Enabled =
 					rbActionVerifyAndCRCs.Enabled =
-					rbActionEncode.Enabled = pathIn.Length != 0
-						&& (File.Exists(pathIn) || IsCDROM(pathIn) || rbActionCreateCUESheet.Enabled);
+					rbActionEncode.Enabled = pathIn.Length != 0 
+					    && (File.Exists(pathIn) || Directory.Exists(pathIn) || IsCDROM(pathIn));
 			}
 			btnConvert.Enabled = btnConvert.Visible &&
 				 ((rbActionCorrectFilenames.Enabled && rbActionCorrectFilenames.Checked)
@@ -1439,18 +1311,22 @@ namespace JDP {
 		private void chkMulti_CheckedChanged(object sender, EventArgs e)
 		{
 			fileSystemTreeView1.CheckBoxes = chkMulti.Checked;
-			if (fileSystemTreeView1.SelectedNode != null)
+			if (fileSystemTreeView1.SelectedNode == null)
 			{
-				if (chkMulti.Checked)
-					fileSystemTreeView1.SelectedNode.Checked = true;
-				fileSystemTreeView1.SelectedNode.Expand();
+				if (fileSystemTreeView1.Nodes.Count > 0)
+					fileSystemTreeView1.SelectedNode = fileSystemTreeView1.Nodes[0];
+				else
+					return;
 			}
-			UpdateActions();
+			if (chkMulti.Checked && fileSystemTreeView1.SelectedNode.Tag is FileSystemInfo)
+				fileSystemTreeView1.SelectedNode.Checked = true;
+			fileSystemTreeView1.SelectedNode.Expand();
+			SetupControls(false);
 		}
 
 		private void chkRecursive_CheckedChanged(object sender, EventArgs e)
 		{
-			UpdateActions();
+			SetupControls(false);
 		}
 
 		private void fileSystemTreeView1_AfterExpand(object sender, TreeViewEventArgs e)
@@ -1460,7 +1336,7 @@ namespace JDP {
 
 		private void fileSystemTreeView1_AfterCheck(object sender, TreeViewEventArgs e)
 		{
-			if (chkMulti.Checked && chkRecursive.Checked)
+			if (chkMulti.Checked)
 				foreach (TreeNode node in e.Node.Nodes)
 					node.Checked = e.Node.Checked;
 		}
@@ -1595,7 +1471,6 @@ namespace JDP {
 				}					
 			}
 		}
-
 	}
 
 	enum OutputPathGeneration {

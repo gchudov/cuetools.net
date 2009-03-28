@@ -288,6 +288,7 @@ namespace CUETools.Processor
 		public bool udc1APEv2, udc1ID3v2;
 		public bool disableAsm;
 		public bool oneInstance;
+		public string language;
 
 		public CUEConfig()
 		{
@@ -341,6 +342,8 @@ namespace CUETools.Processor
 
 			disableAsm = false;
 			oneInstance = true;
+
+			language = Thread.CurrentThread.CurrentUICulture.Name;
 		}
 
 		public void Save (SettingsWriter sw)
@@ -401,6 +404,7 @@ namespace CUETools.Processor
 				sw.Save("UDC1APEv2", udc1APEv2);
 				sw.Save("UDC1ID3v2", udc1ID3v2);
 			}
+			sw.Save("Language", language);
 		}
 
 		public void Load(SettingsReader sr)
@@ -460,6 +464,8 @@ namespace CUETools.Processor
 			udc1EncParams = sr.Load("UDC1EncParams") ?? "";
 			udc1APEv2 = sr.LoadBoolean("UDC1APEv2") ?? false;
 			udc1ID3v2 = sr.LoadBoolean("UDC1ID3v2") ?? false;
+
+			language = sr.Load("Language") ?? Thread.CurrentThread.CurrentUICulture.Name;
 		}
 
 		public string CleanseString (string s)
@@ -882,25 +888,26 @@ namespace CUETools.Processor
 			TextReader sr;
 
 			if (Directory.Exists(pathIn))
-			{
-				if (cueDir + Path.DirectorySeparatorChar != pathIn && cueDir != pathIn)
-					throw new Exception("Input directory must end on path separator character.");
-				string cueSheet = null;
-				string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta" };
-				for (i = 0; i < audioExts.Length && cueSheet == null; i++)
-					cueSheet = CUESheet.CreateDummyCUESheet(pathIn, audioExts[i]);
-				if (_config.udc1Extension != null && cueSheet == null)
-					cueSheet = CUESheet.CreateDummyCUESheet(pathIn, "*." + _config.udc1Extension);
-				if (cueSheet == null)
-					throw new Exception("Input directory doesn't contain supported audio files.");
-				sr = new StringReader(cueSheet);
+				throw new Exception("is a directory");
+			//{
+			//    if (cueDir + Path.DirectorySeparatorChar != pathIn && cueDir != pathIn)
+			//        throw new Exception("Input directory must end on path separator character.");
+			//    string cueSheet = null;
+			//    string[] audioExts = new string[] { "*.wav", "*.flac", "*.wv", "*.ape", "*.m4a", "*.tta" };
+			//    for (i = 0; i < audioExts.Length && cueSheet == null; i++)
+			//        cueSheet = CUESheet.CreateDummyCUESheet(pathIn, audioExts[i]);
+			//    if (_config.udc1Extension != null && cueSheet == null)
+			//        cueSheet = CUESheet.CreateDummyCUESheet(pathIn, "*." + _config.udc1Extension);
+			//    if (cueSheet == null)
+			//        throw new Exception("Input directory doesn't contain supported audio files.");
+			//    sr = new StringReader(cueSheet);
 
-				List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
-				foreach (string logPath in Directory.GetFiles(pathIn, "*.log"))
-					logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding)));
-				CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, null, false);
-				_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
-			} 
+			//    List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+			//    foreach (string logPath in Directory.GetFiles(pathIn, "*.log"))
+			//        logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding)));
+			//    CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, null, false);
+			//    _eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
+			//} 
 			else if (Path.GetExtension(pathIn).ToLower() == ".zip" || Path.GetExtension(pathIn).ToLower() == ".rar")
 			{				
 				_archiveContents = new List<string>();
@@ -980,20 +987,38 @@ namespace CUETools.Processor
 			}
 			else
 			{
-				string cuesheetTag = null;
-				TagLib.File fileInfo;
-				GetSampleLength(pathIn, out fileInfo);
-				NameValueCollection tags = Tagging.Analyze(fileInfo);
-				cuesheetTag = tags.Get("CUESHEET");
-				_accurateRipId = tags.Get("ACCURATERIPID");
-				_eacLog = tags.Get("LOG");
-				if (_eacLog == null) _eacLog = tags.Get("LOGFILE");
-				if (_eacLog == null) _eacLog = tags.Get("EACLOG");
-				if (cuesheetTag == null)
-					throw new Exception("Input file does not contain a .cue sheet.");
-				sr = new StringReader (cuesheetTag);
-				pathAudio = pathIn;
-				_hasEmbeddedCUESheet = true;
+				string extension = Path.GetExtension(pathIn).ToLower();
+				sr = null;
+				if (extension == ".flac" || extension == ".wv" || extension == ".ape")
+				{
+					string cuesheetTag = null;
+					TagLib.File fileInfo;
+					GetSampleLength(pathIn, out fileInfo);
+					NameValueCollection tags = Tagging.Analyze(fileInfo);
+					cuesheetTag = tags.Get("CUESHEET");
+					_accurateRipId = tags.Get("ACCURATERIPID");
+					_eacLog = tags.Get("LOG");
+					if (_eacLog == null) _eacLog = tags.Get("LOGFILE");
+					if (_eacLog == null) _eacLog = tags.Get("EACLOG");
+					if (cuesheetTag != null)
+					{
+						sr = new StringReader(cuesheetTag);
+						pathAudio = pathIn;
+						_hasEmbeddedCUESheet = true;
+					}
+				}
+				if (!_hasEmbeddedCUESheet)
+				{
+					string cueSheet = CUESheet.CreateDummyCUESheet(_config, pathIn);
+					if (cueSheet == null)
+						throw new Exception("Input file doesn't seem to contain a cue sheet or be part of an album.");
+					sr = new StringReader(cueSheet);
+					List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+					foreach (string logPath in Directory.GetFiles(cueDir == "" ? "." : cueDir, "*.log"))
+						logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding)));
+					CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, null, false);
+					_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
+				}
 			}
 
 			using (sr) {
@@ -1114,13 +1139,13 @@ namespace CUETools.Processor
 						else if (command == "POSTGAP") {
 							throw new Exception("POSTGAP command isn't supported.");
 						}
-						else if ((command == "REM") &&
-							(line.Params.Count >= 3) &&
-							(line.Params[1].Length >= 10) &&
-							(line.Params[1].Substring(0, 10).ToUpper() == "REPLAYGAIN"))
-						{
-							// Remove ReplayGain lines
-						}
+						//else if ((command == "REM") &&
+						//    (line.Params.Count >= 3) &&
+						//    (line.Params[1].Length >= 10) &&
+						//    (line.Params[1].Substring(0, 10).ToUpper() == "REPLAYGAIN"))
+						//{
+						//    // Remove ReplayGain lines
+						//}
 						else if ((command == "REM") &&
 						   (line.Params.Count == 3) &&
 						   (line.Params[1].ToUpper() == "ACCURATERIPID"))
@@ -2138,33 +2163,43 @@ namespace CUETools.Processor
 			_arVerify.GenerateFullLog(sw, 0);
 		}
 
+		public string GenerateAccurateRipStatus()
+		{
+			string prefix = "";
+			if (hdcdDecoder != null && hdcdDecoder.Detected)
+				prefix += "hdcd detected, ";
+			if (_action == CUEAction.Verify ||
+				_action == CUEAction.VerifyPlusCRCs ||
+				(_action != CUEAction.Convert && _outputFormat != OutputAudioFormat.NoAudio))
+			{
+				if (_arVerify.ARStatus != null)
+					prefix += _arVerify.ARStatus;
+				else
+				{
+					uint tracksMatch = 0;
+					int bestOffset = 0;
+					FindBestOffset(1, false, out tracksMatch, out bestOffset);
+					if (bestOffset != 0)
+						prefix += string.Format("offset {0}, ", bestOffset);
+					if (tracksMatch == TrackCount)
+						prefix += string.Format("rip accurate ({0}/{1})", _arVerify.WorstConfidence(), _arVerify.WorstTotal());
+					else
+						prefix += "rip not accurate";
+				}
+			} else
+				prefix += "done";
+			return prefix;
+		}
+
 		public void GenerateAccurateRipTagsForTrack(NameValueCollection tags, int offset, int bestOffset, int iTrack, string prefix)
 		{
-			uint total = 0;
-			uint matching = 0;
-			uint matching2 = 0;
-			uint matching3 = 0;
-			for (int iDisk = 0; iDisk < _arVerify.AccDisks.Count; iDisk++)
-			{
-				total += _arVerify.AccDisks[iDisk].tracks[iTrack].count;
-				if (_arVerify.CRC(iTrack, offset) ==
-					_arVerify.AccDisks[iDisk].tracks[iTrack].CRC)
-					matching += _arVerify.AccDisks[iDisk].tracks[iTrack].count;
-				if (_arVerify.CRC(iTrack, bestOffset) ==
-					_arVerify.AccDisks[iDisk].tracks[iTrack].CRC)
-					matching2 += _arVerify.AccDisks[iDisk].tracks[iTrack].count;
-				for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
-					if (_arVerify.CRC(iTrack, oi) ==
-						_arVerify.AccDisks[iDisk].tracks[iTrack].CRC)
-						matching3 += _arVerify.AccDisks[iDisk].tracks[iTrack].count;
-			}
 			tags.Add(String.Format("{0}ACCURATERIPCRC", prefix), String.Format("{0:x8}", _arVerify.CRC(iTrack, offset)));
 			tags.Add(String.Format("{0}AccurateRipDiscId", prefix), String.Format("{0:000}-{1}-{2:00}", TrackCount, _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc), iTrack + 1));
-			tags.Add(String.Format("{0}ACCURATERIPCOUNT", prefix), String.Format("{0}", matching));
-			tags.Add(String.Format("{0}ACCURATERIPCOUNTALLOFFSETS", prefix), String.Format("{0}", matching3));
-			tags.Add(String.Format("{0}ACCURATERIPTOTAL", prefix), String.Format("{0}", total));
+			tags.Add(String.Format("{0}ACCURATERIPCOUNT", prefix), String.Format("{0}", _arVerify.Confidence(iTrack, offset)));
+			tags.Add(String.Format("{0}ACCURATERIPCOUNTALLOFFSETS", prefix), String.Format("{0}", _arVerify.SumConfidence(iTrack)));
+			tags.Add(String.Format("{0}ACCURATERIPTOTAL", prefix), String.Format("{0}", _arVerify.Total(iTrack)));
 			if (bestOffset != offset)
-				tags.Add(String.Format("{0}ACCURATERIPCOUNTWITHOFFSET", prefix), String.Format("{0}", matching2));
+				tags.Add(String.Format("{0}ACCURATERIPCOUNTWITHOFFSET", prefix), String.Format("{0}", _arVerify.Confidence(iTrack, bestOffset)));
 		}
 
 		public void GenerateAccurateRipTags(NameValueCollection tags, int offset, int bestOffset, int iTrack)
@@ -2503,7 +2538,7 @@ namespace CUETools.Processor
 					WriteText(Path.ChangeExtension(_cuePath, ".toc"), TOCContents());
 				}
 			}
-			return "done";
+			return GenerateAccurateRipStatus();
 		}
 
 		private NameValueCollection GenerateTrackTags(int iTrack, int bestOffset)
@@ -2555,7 +2590,7 @@ namespace CUETools.Processor
 			// these are not valid
 			destTags.Remove("CUESHEET");
 			CleanupTags(destTags, "ACCURATERIP");
-			CleanupTags(destTags, "REPLAYGAIN");
+			//CleanupTags(destTags, "REPLAYGAIN");
 
 			if (_config.writeArTagsOnConvert)
 			{
@@ -2616,7 +2651,7 @@ namespace CUETools.Processor
 
 			// these are not valid
 			CleanupTags(destTags, "ACCURATERIP");
-			CleanupTags(destTags, "REPLAYGAIN");
+			//CleanupTags(destTags, "REPLAYGAIN");
 
 			destTags.Remove("CUESHEET");
 			if (fWithCUE)
@@ -2884,18 +2919,23 @@ namespace CUETools.Processor
 				audioDest.Close();
 		}
 
-		public static string CreateDummyCUESheet(string path, string extension)
+		public static string CreateDummyCUESheet(CUEConfig _config, string pathIn)
 		{
-			string[] audioFiles = Directory.GetFiles(path, extension);
-			if (audioFiles.Length < 2)
-				return null;
-			Array.Sort(audioFiles);
+			pathIn = Path.GetFullPath(pathIn);
+			List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, Path.GetDirectoryName(pathIn));
+			FileGroupInfo fileGroup = FileGroupInfo.WhichContains(fileGroups, pathIn);
+			return fileGroup == null ? null : CreateDummyCUESheet(fileGroup);
+		}
+
+		public static string CreateDummyCUESheet(FileGroupInfo fileGroup)
+		{
 			StringWriter sw = new StringWriter();
 			sw.WriteLine(String.Format("REM COMMENT \"CUETools generated dummy CUE sheet\""));
-			for (int iFile = 0; iFile < audioFiles.Length; iFile++)
+			int trackNo = 0;
+			foreach (FileSystemInfo file in fileGroup.files)
 			{
-				sw.WriteLine(String.Format("FILE \"{0}\" WAVE", Path.GetFileName(audioFiles[iFile])));
-				sw.WriteLine(String.Format("  TRACK {0:00} AUDIO", iFile + 1));
+				sw.WriteLine(String.Format("FILE \"{0}\" WAVE", file.Name));
+				sw.WriteLine(String.Format("  TRACK {0:00} AUDIO", ++trackNo));
 				sw.WriteLine(String.Format("    INDEX 01 00:00:00"));
 			}
 			sw.Close();
@@ -3398,6 +3438,161 @@ namespace CUETools.Processor
 			{
 				return _isCD;
 			}
+		}
+
+		public static List<FileGroupInfo> ScanFolder(CUEConfig _config, string path)
+		{
+			DirectoryInfo dir = new DirectoryInfo(path);
+			return ScanFolder(_config, dir.GetFileSystemInfos());
+		}
+
+		public static List<FileGroupInfo> ScanFolder(CUEConfig _config, IEnumerable<FileSystemInfo> files)
+		{
+			List<string> audioExtensions = new List<string>(new string[] { ".flac", ".wv", ".ape", ".wav", ".m4a", ".tta", ".tak" });
+			List<string> embeddedExtensions = new List<string>(new string[] { ".flac", ".wv", ".ape", ".tak" });
+			List<FileGroupInfo> fileGroups = new List<FileGroupInfo>();
+			foreach (FileSystemInfo file in files)
+			{
+				if ((file.Attributes & FileAttributes.Hidden) != 0)
+					continue;
+				if ((file.Attributes & FileAttributes.Directory) != 0)
+				{
+					// foreach (FileSystemInfo subfile in ((DirectoryInfo)e.file).GetFileSystemInfos())
+					// if (IsVisible(subfile))
+					// {
+					//     e.isExpandable = true;
+					//  break;
+					// }
+					fileGroups.Add(new FileGroupInfo(file, FileGroupInfoType.Folder));
+					continue;
+				}
+				string ext = file.Extension.ToLower();
+				if (ext == ".cue")
+				{
+					fileGroups.Add(new FileGroupInfo(file, FileGroupInfoType.CUESheetFile));
+					continue;
+				}
+				if (ext == ".zip")
+				{
+					fileGroups.Add(new FileGroupInfo(file, FileGroupInfoType.Archive));
+					//try
+					//{
+					//    using (ICSharpCode.SharpZipLib.Zip.ZipFile unzip = new ICSharpCode.SharpZipLib.Zip.ZipFile(file.FullName))
+					//    {
+					//        foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in unzip)
+					//        {
+					//            if (entry.IsFile && Path.GetExtension(entry.Name).ToLower() == ".cue")
+					//            {
+					//                e.node.Nodes.Add(fileSystemTreeView1.NewNode(file, false));
+					//                break;
+					//            }
+
+					//        }
+					//        unzip.Close();
+					//    }
+					//}
+					//catch
+					//{
+					//}
+					continue;
+				}
+				if (ext == ".rar")
+				{
+					fileGroups.Add(new FileGroupInfo(file, FileGroupInfoType.Archive));
+					continue;
+				}
+				if (audioExtensions.Contains(ext))
+				{
+					uint disc = 0;
+					bool cueFound = false;
+					TagLib.UserDefined.AdditionalFileTypes.Config = _config;
+					TagLib.File.IFileAbstraction fileAbsraction = new TagLib.File.LocalFileAbstraction(file.FullName);
+					try
+					{
+						TagLib.File fileInfo = TagLib.File.Create(fileAbsraction);
+						disc = fileInfo.Tag.Disc;
+						cueFound = embeddedExtensions.Contains(ext) && Tagging.Analyze(fileInfo).Get("CUESHEET") != null;
+					}
+					catch { }
+					if (cueFound)
+					{
+						fileGroups.Add(new FileGroupInfo(file, FileGroupInfoType.FileWithCUE));
+						continue;
+					}
+					disc = Math.Min(5, Math.Max(1, disc));
+					FileGroupInfo groupFound = null;
+					foreach (FileGroupInfo fileGroup in fileGroups)
+					{
+						if (fileGroup.type == FileGroupInfoType.TrackFiles && fileGroup.discNo == disc && fileGroup.main.Extension.ToLower() == ext)
+						{
+							groupFound = fileGroup;
+							break;
+						}
+					}
+					if (groupFound != null)
+					{
+						groupFound.files.Add(file);
+					}
+					else
+					{
+						groupFound = new FileGroupInfo(file, FileGroupInfoType.TrackFiles);
+						groupFound.discNo = disc;
+						groupFound.files.Add(file);
+						fileGroups.Add(groupFound);
+						// TODO: tracks must be sorted according to tracknumer (or filename if missing)
+					}
+				}
+			}
+			fileGroups.RemoveAll(new Predicate<FileGroupInfo>(FileGroupInfo.IsExcessive));
+			return fileGroups;
+		}
+	}
+
+	public enum FileGroupInfoType
+	{
+		Folder,
+		Archive,
+		CUESheetFile,
+		FileWithCUE,
+		TrackFiles
+	}
+	public class FileGroupInfo
+	{
+		public List<FileSystemInfo> files;
+		public FileSystemInfo main;
+		public FileGroupInfoType type;
+		public uint discNo;
+
+		public FileGroupInfo(FileSystemInfo _main, FileGroupInfoType _type)
+		{
+			main = _main;
+			type = _type;
+			files = new List<FileSystemInfo>();
+		}
+
+		public static bool IsExcessive(FileGroupInfo group)
+		{
+			return group.type == FileGroupInfoType.TrackFiles && group.files.Count < 2;
+		}
+
+		public bool Contains(string pathIn)
+		{
+			if (type != FileGroupInfoType.TrackFiles)
+				return false;
+			bool found = false;
+			foreach (FileSystemInfo file in files)
+				if (file.FullName.ToLower() == pathIn.ToLower())
+					found = true;
+			return found;
+		}
+		public static FileGroupInfo WhichContains(IEnumerable<FileGroupInfo> fileGroups, string pathIn)
+		{
+			foreach (FileGroupInfo fileGroup in fileGroups)
+			{
+				if (fileGroup.type == FileGroupInfoType.TrackFiles && fileGroup.Contains(pathIn))
+					return fileGroup;
+			}
+			return null;
 		}
 	}
 

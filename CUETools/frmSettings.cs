@@ -79,7 +79,7 @@ namespace JDP {
 			chkUDC1APEv2.Checked = _config.udc1APEv2;
 			chkUDC1ID3v2.Checked = _config.udc1ID3v2;
 
-			string[] cultures = { "en-US", "de-DE", "ru-RU", "en-EN" };
+			string[] cultures = { "en-US", "de-DE", "ru-RU" };
 			foreach (string culture in cultures)
 			{
 				try
@@ -184,13 +184,11 @@ namespace JDP {
 		{
 			numFixWhenConfidence.Enabled =
 			labelFixWhenConfidence.Enabled =
-			numFixWhenPercent.Enabled =
-			labelFixWhenPercent.Enabled = chkArFixOffset.Checked;
+			numFixWhenPercent.Enabled = chkArFixOffset.Checked;
 
 			numEncodeWhenConfidence.Enabled =
 			labelEncodeWhenConfidence.Enabled =
 			numEncodeWhenPercent.Enabled =
-			labelEncodeWhenPercent.Enabled =
 			chkEncodeWhenZeroOffset.Enabled = chkArNoUnverifiedAudio.Checked;
 
 			grpHDCD.Enabled = chkHDCDDetect.Checked;

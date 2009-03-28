@@ -129,7 +129,7 @@
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btnCancel.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>2</value>
   </data>
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Cancel</value>
@@ -156,7 +156,7 @@
     <value>54, 13</value>
   </data>
   <data name="labelLanguage.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>11</value>
   </data>
   <data name="labelLanguage.Text" xml:space="preserve">
     <value>Language</value>
@@ -180,7 +180,7 @@
     <value>166, 21</value>
   </data>
   <data name="comboLanguage.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
+    <value>12</value>
   </data>
   <data name="&gt;&gt;comboLanguage.Name" xml:space="preserve">
     <value>comboLanguage</value>
@@ -201,13 +201,13 @@
     <value>12, 21</value>
   </data>
   <data name="chkSingleInstance.Size" type="System.Drawing.Size, System.Drawing">
-    <value>156, 17</value>
+    <value>151, 17</value>
   </data>
   <data name="chkSingleInstance.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>0</value>
   </data>
   <data name="chkSingleInstance.Text" xml:space="preserve">
-    <value>One instance of application</value>
+    <value>Disallow multiple instances</value>
   </data>
   <data name="&gt;&gt;chkSingleInstance.Name" xml:space="preserve">
     <value>chkSingleInstance</value>
@@ -231,7 +231,7 @@
     <value>122, 17</value>
   </data>
   <data name="chkOverwriteTags.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+    <value>10</value>
   </data>
   <data name="chkOverwriteTags.Text" xml:space="preserve">
     <value>Overwrite CUE data</value>
@@ -262,7 +262,7 @@
     <value>95, 17</value>
   </data>
   <data name="chkExtractLog.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+    <value>4</value>
   </data>
   <data name="chkExtractLog.Text" xml:space="preserve">
     <value>Extract log file</value>
@@ -292,7 +292,7 @@
     <value>173, 17</value>
   </data>
   <data name="chkReducePriority.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>1</value>
   </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
     <value>Reduce process priority to Idle</value>
@@ -322,7 +322,7 @@
     <value>215, 17</value>
   </data>
   <data name="chkTruncateExtra4206Samples.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+    <value>7</value>
   </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
     <value>Truncate extra 4608 samples if present</value>
@@ -352,7 +352,7 @@
     <value>189, 17</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>6</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
     <value>Create .cue file even if embedded</value>
@@ -379,7 +379,7 @@
     <value>127, 17</value>
   </data>
   <data name="chkCreateM3U.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="chkCreateM3U.Text" xml:space="preserve">
     <value>Create .m3u playlists</value>
@@ -406,7 +406,7 @@
     <value>187, 17</value>
   </data>
   <data name="chkFillUpCUE.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>9</value>
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
     <value>Fill up missing CUE data from tags</value>
@@ -433,7 +433,7 @@
     <value>134, 17</value>
   </data>
   <data name="chkEmbedLog.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>3</value>
   </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
     <value>Embed log file as a tag</value>
@@ -463,7 +463,7 @@
     <value>155, 17</value>
   </data>
   <data name="chkAutoCorrectFilenames.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>2</value>
   </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Locate audio files if missing</value>
@@ -493,7 +493,7 @@
     <value>229, 17</value>
   </data>
   <data name="chkPreserveHTOA.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>8</value>
   </data>
   <data name="chkPreserveHTOA.Text" xml:space="preserve">
     <value>Preserve HTOA for gaps appended output</value>
@@ -541,7 +541,7 @@
     <value>36, 21</value>
   </data>
   <data name="numericFLACCompressionLevel.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="numericFLACCompressionLevel.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
@@ -568,7 +568,7 @@
     <value>97, 13</value>
   </data>
   <data name="lblFLACCompressionLevel.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>0</value>
   </data>
   <data name="lblFLACCompressionLevel.Text" xml:space="preserve">
     <value>Compression level:</value>
@@ -595,7 +595,7 @@
     <value>54, 17</value>
   </data>
   <data name="chkFLACVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>2</value>
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Verify</value>
@@ -619,7 +619,7 @@
     <value>73, 23</value>
   </data>
   <data name="btnOK.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>1</value>
   </data>
   <data name="btnOK.Text" xml:space="preserve">
     <value>OK</value>
@@ -870,18 +870,6 @@
   <data name="&gt;&gt;chkWriteArTagsOnConvert.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.Name" xml:space="preserve">
-    <value>labelEncodeWhenPercent</value>
-  </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.Parent" xml:space="preserve">
-    <value>groupBox1</value>
-  </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <data name="&gt;&gt;numEncodeWhenPercent.Name" xml:space="preserve">
     <value>numEncodeWhenPercent</value>
   </data>
@@ -892,7 +880,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenPercent.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>4</value>
   </data>
   <data name="&gt;&gt;labelEncodeWhenConfidence.Name" xml:space="preserve">
     <value>labelEncodeWhenConfidence</value>
@@ -904,7 +892,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;labelEncodeWhenConfidence.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenConfidence.Name" xml:space="preserve">
     <value>numEncodeWhenConfidence</value>
@@ -916,7 +904,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenConfidence.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>6</value>
   </data>
   <data name="&gt;&gt;chkArNoUnverifiedAudio.Name" xml:space="preserve">
     <value>chkArNoUnverifiedAudio</value>
@@ -928,7 +916,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;chkArNoUnverifiedAudio.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>7</value>
   </data>
   <data name="&gt;&gt;labelFixWhenConfidence.Name" xml:space="preserve">
     <value>labelFixWhenConfidence</value>
@@ -940,7 +928,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;labelFixWhenConfidence.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>8</value>
   </data>
   <data name="&gt;&gt;numFixWhenConfidence.Name" xml:space="preserve">
     <value>numFixWhenConfidence</value>
@@ -952,19 +940,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numFixWhenConfidence.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.Name" xml:space="preserve">
-    <value>labelFixWhenPercent</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.Parent" xml:space="preserve">
-    <value>groupBox1</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>9</value>
   </data>
   <data name="&gt;&gt;numFixWhenPercent.Name" xml:space="preserve">
     <value>numFixWhenPercent</value>
@@ -976,16 +952,16 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numFixWhenPercent.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>10</value>
   </data>
   <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>226, 6</value>
+    <value>211, 6</value>
   </data>
   <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>295, 215</value>
+    <value>310, 215</value>
   </data>
   <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Verify, then convert</value>
@@ -1009,7 +985,7 @@
     <value>True</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>173, 62</value>
+    <value>204, 61</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.RightToLeft" type="System.Windows.Forms.RightToLeft, System.Windows.Forms">
     <value>Yes</value>
@@ -1018,7 +994,7 @@
     <value>100, 17</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>4</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
     <value>and zero offset</value>
@@ -1039,16 +1015,16 @@
     <value>True</value>
   </data>
   <data name="chkArFixOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 81</value>
+    <value>6, 85</value>
   </data>
   <data name="chkArFixOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>81, 17</value>
+    <value>198, 17</value>
   </data>
   <data name="chkArFixOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>5</value>
   </data>
   <data name="chkArFixOffset.Text" xml:space="preserve">
-    <value>Fix offset if</value>
+    <value>Fix offset if % of verified tracks &gt;=</value>
   </data>
   <data name="&gt;&gt;chkArFixOffset.Name" xml:space="preserve">
     <value>chkArFixOffset</value>
@@ -1072,7 +1048,7 @@
     <value>130, 17</value>
   </data>
   <data name="chkWriteArLogOnConvert.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>10</value>
   </data>
   <data name="chkWriteArLogOnConvert.Text" xml:space="preserve">
     <value>Write AccurateRip log</value>
@@ -1089,6 +1065,9 @@
   <data name="&gt;&gt;chkWriteArLogOnConvert.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="chkWriteArTagsOnConvert.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1099,7 +1078,7 @@
     <value>137, 17</value>
   </data>
   <data name="chkWriteArTagsOnConvert.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>9</value>
   </data>
   <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
     <value>Write AccurateRip tags</value>
@@ -1119,44 +1098,14 @@
   <data name="&gt;&gt;chkWriteArTagsOnConvert.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="labelEncodeWhenPercent.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="labelEncodeWhenPercent.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>108, 21</value>
-  </data>
-  <data name="labelEncodeWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 13</value>
-  </data>
-  <data name="labelEncodeWhenPercent.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="labelEncodeWhenPercent.Text" xml:space="preserve">
-    <value>% of verified tracks &gt;=</value>
-  </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.Name" xml:space="preserve">
-    <value>labelEncodeWhenPercent</value>
-  </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.Parent" xml:space="preserve">
-    <value>groupBox1</value>
-  </data>
-  <data name="&gt;&gt;labelEncodeWhenPercent.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <data name="numEncodeWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>235, 19</value>
+    <value>266, 19</value>
   </data>
   <data name="numEncodeWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
     <value>38, 21</value>
   </data>
   <data name="numEncodeWhenPercent.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenPercent.Name" xml:space="preserve">
     <value>numEncodeWhenPercent</value>
@@ -1168,7 +1117,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenPercent.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>4</value>
   </data>
   <data name="labelEncodeWhenConfidence.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -1177,13 +1126,13 @@
     <value>True</value>
   </data>
   <data name="labelEncodeWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 42</value>
+    <value>21, 42</value>
   </data>
   <data name="labelEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
     <value>101, 13</value>
   </data>
   <data name="labelEncodeWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>2</value>
   </data>
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
     <value>with confidence &gt;=</value>
@@ -1198,16 +1147,16 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;labelEncodeWhenConfidence.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="numEncodeWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>235, 40</value>
+    <value>266, 40</value>
   </data>
   <data name="numEncodeWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
     <value>38, 21</value>
   </data>
   <data name="numEncodeWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>3</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenConfidence.Name" xml:space="preserve">
     <value>numEncodeWhenConfidence</value>
@@ -1219,7 +1168,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numEncodeWhenConfidence.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>6</value>
   </data>
   <data name="chkArNoUnverifiedAudio.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1228,13 +1177,13 @@
     <value>6, 20</value>
   </data>
   <data name="chkArNoUnverifiedAudio.Size" type="System.Drawing.Size, System.Drawing">
-    <value>93, 17</value>
+    <value>210, 17</value>
   </data>
   <data name="chkArNoUnverifiedAudio.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>0</value>
   </data>
   <data name="chkArNoUnverifiedAudio.Text" xml:space="preserve">
-    <value>Encode only if</value>
+    <value>Encode only if % of verified tracks &gt;=</value>
   </data>
   <data name="&gt;&gt;chkArNoUnverifiedAudio.Name" xml:space="preserve">
     <value>chkArNoUnverifiedAudio</value>
@@ -1246,16 +1195,22 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;chkArNoUnverifiedAudio.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>7</value>
+  </data>
+  <data name="labelFixWhenConfidence.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="labelFixWhenConfidence.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="labelFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 101</value>
+    <value>21, 107</value>
   </data>
   <data name="labelFixWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
-    <value>101, 23</value>
+    <value>101, 13</value>
   </data>
   <data name="labelFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+    <value>7</value>
   </data>
   <data name="labelFixWhenConfidence.Text" xml:space="preserve">
     <value>with confidence &gt;=</value>
@@ -1270,16 +1225,16 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;labelFixWhenConfidence.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>8</value>
   </data>
   <data name="numFixWhenConfidence.Location" type="System.Drawing.Point, System.Drawing">
-    <value>235, 101</value>
+    <value>267, 105</value>
   </data>
   <data name="numFixWhenConfidence.Size" type="System.Drawing.Size, System.Drawing">
     <value>37, 21</value>
   </data>
   <data name="numFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+    <value>8</value>
   </data>
   <data name="&gt;&gt;numFixWhenConfidence.Name" xml:space="preserve">
     <value>numFixWhenConfidence</value>
@@ -1291,40 +1246,16 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numFixWhenConfidence.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="labelFixWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>108, 82</value>
-  </data>
-  <data name="labelFixWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 23</value>
-  </data>
-  <data name="labelFixWhenPercent.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="labelFixWhenPercent.Text" xml:space="preserve">
-    <value>% of verified tracks &gt;=</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.Name" xml:space="preserve">
-    <value>labelFixWhenPercent</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.Parent" xml:space="preserve">
-    <value>groupBox1</value>
-  </data>
-  <data name="&gt;&gt;labelFixWhenPercent.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>9</value>
   </data>
   <data name="numFixWhenPercent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>235, 80</value>
+    <value>266, 84</value>
   </data>
   <data name="numFixWhenPercent.Size" type="System.Drawing.Size, System.Drawing">
     <value>38, 21</value>
   </data>
   <data name="numFixWhenPercent.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>6</value>
   </data>
   <data name="&gt;&gt;numFixWhenPercent.Name" xml:space="preserve">
     <value>numFixWhenPercent</value>
@@ -1336,7 +1267,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;numFixWhenPercent.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>10</value>
   </data>
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
@@ -1351,7 +1282,7 @@
     <value>128, 17</value>
   </data>
   <data name="chkFilenamesANSISafe.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>5</value>
   </data>
   <data name="chkFilenamesANSISafe.Text" xml:space="preserve">
     <value>Force ANSI filenames</value>
@@ -1384,7 +1315,7 @@
     <value>137, 17</value>
   </data>
   <data name="chkWriteARTagsOnVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>0</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Text" xml:space="preserve">
     <value>Write AccurateRip tags</value>
@@ -1444,7 +1375,7 @@
     <value>168, 17</value>
   </data>
   <data name="chkHDCDStopLooking.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>0</value>
   </data>
   <data name="chkHDCDStopLooking.Text" xml:space="preserve">
     <value>Stop looking after 750 frames</value>
@@ -1477,7 +1408,7 @@
     <value>143, 17</value>
   </data>
   <data name="chkHDCD24bit.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>3</value>
   </data>
   <data name="chkHDCD24bit.Text" xml:space="preserve">
     <value>Store as 24 bit "lossless"</value>
@@ -1507,7 +1438,7 @@
     <value>149, 17</value>
   </data>
   <data name="chkHDCDLW16.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>2</value>
   </data>
   <data name="chkHDCDLW16.Text" xml:space="preserve">
     <value>Store as 16 bit LossyWAV</value>
@@ -1684,7 +1615,7 @@
     <value>149, 21</value>
   </data>
   <data name="txtSpecialExceptions.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="txtSpecialExceptions.Text" xml:space="preserve">
     <value>-()</value>
@@ -1714,7 +1645,7 @@
     <value>194, 17</value>
   </data>
   <data name="chkRemoveSpecial.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Remove special characters except:</value>
@@ -1744,7 +1675,7 @@
     <value>185, 17</value>
   </data>
   <data name="chkReplaceSpaces.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
     <value>Replace spaces with underscores</value>
@@ -2173,7 +2104,7 @@
     <value>543, 287</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;tabControl1.Name" xml:space="preserve">
     <value>tabControl1</value>
@@ -2203,10 +2134,10 @@
     <value>8, 6</value>
   </data>
   <data name="groupBox3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>212, 215</value>
+    <value>197, 215</value>
   </data>
   <data name="groupBox3.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>0</value>
   </data>
   <data name="groupBox3.Text" xml:space="preserve">
     <value>Verify</value>
@@ -2236,7 +2167,7 @@
     <value>130, 17</value>
   </data>
   <data name="chkWriteARLogOnVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>1</value>
   </data>
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
     <value>Write AccurateRip log</value>
@@ -2569,65 +2500,65 @@
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABm
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABg
         DQAAAk1TRnQBSQFMAgEBAgEAAQQBAAEEAQABEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
-        AwABEAMAAQEBAAEgBgABEBUAAf8DAAH/ARwBaAETAf8BHAFoARMB/wMAAf8BHAFoARMB/wEcAWgBEwH/
-        AwAB/wMAAf8BHAEbARwB/wEkASMBJAH/ARMBFwETAf8DAAH/AwAB/wMAAf8DAAX/AQgBBAECAf8BCQEF
-        AQIB/wEJAQUBAgH/AQkBBQECAf8BCgEFAQIB/wELAQYBAwH/AQkBBQECAf8BCQEFAQIB/wEJAQUBAgH/
-        AQkBBQECAf8BCQEFAQIB/wEJAQUBAgH/AQkBBQECAf8BCAEEAQIF/4AAAVUBWAFVAf8BLAErASwB/wE0
-        Ad8BPQH/ATQB3wE9Af8DAAH/ATQB3wE9Af8BNAHfAT0B/wMAAf8DAAH/AYwBjgGMAf8B1gHTAdYB/wHW
-        AdMB1gH/AVUBVAFVAf8DAAH/AwAB/wMAAf8BCQEFAQIB/wHOAY4BXAH/Ac4BjgFcAf8B1AGTAV8B/wHO
-        AY4BXAH/AaYBbgFKAf8BHQESAQsB/wHOAY4BXAH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFc
-        Af8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BCQEFAQIB/4AAAW4BcAFuAf8BLAErASwB/wE0Ad8BPQH/
-        ATQB3wE9Af8DAAH/ATQB3wE9Af8BNAHfAT0B/wMAAf8DAAH/AbUBtgG1Cf8BbgFwAW4B/wMAAf8DAAH/
-        AwAB/wELAQYBAwH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8B0AGQAVwB/wMAAf8BlQFi
-        AUAB/wHOAY4BXAH/AdIBkAFeAf8B0wGRAV4B/wHTAZEBXgH/AdMBkQFeAf8BzgGOAVwB/wHOAY4BXAH/
-        AQoBBQECAf+AAAFuAXABbgH/ASwBKwEsAf8BAAEfAQAB/wEDASsBAwH/AwAB/wEDASsBCwH/AQMBIwED
-        Af8DAAH/AwAB/wG1AbIBtQn/AW4BbAFuAf8DAAH/AwAB/wMAAf8BCwEGAQMB/wHOAY4BXAH/Ac4BjgFc
-        Af8BzgGOAVwB/wHQAY8BXAH/Ac4BjgFcAf8BGgEQAQgB/wEmARkBDwH/Ac4BjgFcAf8BzgGOAVwB/wHO
-        AY4BXAH/Ac4BjgFcAf8B0AGPAV0B/wHOAY4BXAH/Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAEr
-        ASwB/wEkAa4BLAH/ASQBrgEsAf8DAAH/ASQBrgEsAf8BJAGuASwB/wMAAf8DAAH/AbUBsgG1Cf8BbgFs
-        AW4B/wMAAf8DAAH/AwAB/wELAQYBAwH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BzgGO
-        AVwB/wGYAWQBQgH/AwAB/wMAAf8DAAH/ATIBIAEUAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BzgGO
-        AVwB/wEKAQUBAgH/gAABbgFwAW4B/wEsASsBLAH/ATQB3wE9Af8BNAHfAT0B/wMAAf8BNAHfAT0B/wE0
-        Ad8BPQH/AwAB/wMAAf8BtQGyAbUJ/wFuAWwBbgH/AwAB/wMAAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHS
-        AZEBXQH/Ac4BjgFcAf8B0QGQAV0B/wHOAY4BXAH/Ac4BjgFcAf8DAAH/AUwBMwEhAf8BrQFyAU0B/wEr
-        ARwBEgH/AwAB/wHOAY4BXAH/Ac4BjgFcAf8BzgGOAVwB/wEKAQUBAgH/gAABbgFwAW4B/wEsASsBLAH/
-        ATQB3wE9Af8BNAHfAT0B/wMAAf8BNAHfAT0B/wE0Ad8BPQH/AwAB/wMAAf8BrQGuAa0J/wFmAWgBZgH/
-        AwAB/wMAAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHRAZABXQH/Ac4BjgFcAf8BkQFfAT8B/wHOAY4BXAH/
-        Ac4BjgFcAf8BPAEnARkB/wEDAQEBAAH/Ac4BjgFcAf8BzgGOAVwB/wMAAf8BQAErARsB/wHOAY4BXAH/
-        Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAErASwB/wEAASMBJAH/AQABKwEsAf8DAAH/AQABKwEs
-        Af8BAAEjASQB/wMAAf8DAAH/Aa0BqgGtCf8BZgFkAWYB/wMAAf8DAAH/AwAB/wELAQYBAwH/Ac4BjgFc
-        Af8BzgGOAVwB/wHOAY4BXAH/AwAB/wGrAXEBSwH/Ac4BjgFcAf8BuQF6AVEB/wMAAf8BzgGOAVwB/wHO
-        AY4BXAH/AQMBAQEAAf8BDwEHAQUB/wHOAY4BXAH/Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAEr
-        ASwB/wEAAZ4BnAH/AQABngGcAf8DAAH/AQABngGcAf8BAAGeAZwB/wETAR8BHBn/ASQBIwEkAf8DAAH/
-        AQsBBgEDAf8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8DAAH/ARgBDwEJAf8BzgGOAVwB/wHEAYcBWQH/
-        AwAB/wMAAf8DAAH/AwAB/wGHAVcBOQH/Ac4BjgFcAf8BzgGOAVwB/wEKAQUBAgH/gAABbgFwAW4B/wEs
-        ASsBLAH/AQAD/wEAA/8DAAH/AQAD/wEAA/8DABn/ASQBIwEkAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHO
-        AY4BXAH/Ac4BjgFcAf8DAAH/AwAB/wGqAW8BSgH/AZkBZQFDAf8DAAH/AwAB/wGiAWkBRgH/Ac4BjgFc
-        Af8BzgGOAVwB/wHOAY4BXAH/Ac4BjgFcAf8BCgEFAQIB/4AAAW4BcAFuAf8BLAErASwB/wEAA/8BAAP/
-        AwAB/wEAA/8BAAP/AwAB/wFVAVABTQH/Ad4B2wHeCf8BtQGyAbUB/wF2AXgBdgH/AQMBBwEDAf8DAAH/
-        AQsBBgEDAf8BzgGOAVwB/wHOAY4BXAH/AZ4BZwFFAf8DAAH/AVwBPQEpAf8BEgELAQYB/wFgAUABKwH/
-        ARoBEQEJAf8BJgEZARAB/wFAASoBGwH/Ac4BjgFcAf8B0QGQAV0B/wHOAY4BXAH/Ac4BjgFcAf8BCgEF
-        AQIB/4AAAW4BcAFuAf8BLAErASwB/wMAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wMAAf8BlAGWAZQJ/wG1
-        AbYBtQH/AwAB/wMAAf8DAAH/AQsBBgEDAf8BzgGOAVwB/wHOAY4BXAH/AXIBTQE0Af8DAAH/Ac4BjgFc
-        Af8DAAH/AwAB/wFSATcBJQH/Aa4BdAFNAf8DAAH/Ac4BjgFcAf8BzgGOAVwB/wHTAZEBXgH/AdQBkwFf
-        Af8BCgEFAQIB/4AAAZwBmgGcAf8BLAErASwB/wIAAaUB/wIAAaUB/wMAAf8DAAH/AwAB/wMAAf8DAAH/
-        ASwBKwEsEf8BvQG6Ab0B/wMAAf8BCwEGAQMB/wHOAY4BXAH/Ac4BjgFcAf8BQAEqARwB/wMAAf8BzgGO
-        AVwB/wFrAUgBLwH/AwAB/wGDAVUBOQH/Ac4BjgFcAf8DAAH/ATEBHwEVAf8BzgGOAVwB/wHOAY4BXAH/
-        AdQBkwFfAf8BCgEFAQIB/4AAAZQBkgGUAf8BLAErASwB/wIAAv8CAAL/AwAB/wMAAf8DAAH/AwAB/wMA
-        Af8DAAH/AZwBmgGcDf8BlAGWAZQB/wMAAf8BCwEGAQMB/wHOAY4BXAH/Ac4BjgFcAf8BAQIAAf8BIwEX
-        AQ4B/wHOAY4BXAH/Ac4BjgFcAf8DAAH/AZ8BaAFGAf8BzgGOAVwB/wGLAVoBPAH/AwAB/wHOAY4BXAH/
-        Ac4BjgFcAf8BzgGOAVwB/wEKAQUBAgH/gAABpQGmAaUB/wGUAZIBlAH/AgABpQH/AgABtQH/ASwBKwEs
-        Af8BLAErASwB/wEsASsBLAH/ASwBKwEsAf8BLAErASwB/wEsASsBLAH/ASwBLwEsAf8BTQFQAU0B/wGt
-        AaoBrQH/Aa0BqgGtAf8BRQFIAUUB/wMAAf8BCQEFAQIB/wHOAY4BXAH/Ac4BjgFcAf8BcgFMATMB/wGl
-        AW0BSAH/Ac4BjgFcAf8BzgGOAVwB/wGYAWQBQgH/Ac4BjgFcAf8BzgGOAVwB/wHOAY4BXAH/AW0BSgEx
-        Af8BrgFyAU0B/wHOAY4BXAH/Ac4BjgFcAf8BCQEFAQIB/4AAAd4B2wHeAf8BpQGmAaUB/wGlAaYBpQH/
-        AXYBdAF2Af8BbgFwAW4B/wFuAXABbgH/AW4BcAFuAf8BbgFwAW4B/wFuAXABbgH/AW4BcAFuAf8BbgFw
-        AW4B/wFuAXABbgH/AW4BcAFuAf8BLAErASwB/wEsASsBLAH/AwAF/wEJAQUBAgH/AQoBBgECAf8BCwEG
-        AQMB/wELAQYBAgH/AQoBBgECAf8BCgEGAQIB/wELAQYBAgH/AQsBBgECAf8BCgEGAQIB/wEKAQYBAgH/
-        AQsBBgEDAf8BCwEGAQIB/wEKAQYBAgH/AQkBBQECBf+AAAFCAU0BPgcAAT4DAAEoAwABQAMAARADAAEB
-        AQABAQUAAYAXAAP/gQAL
+        AwABEAMAAQEBAAEgBgABEBUAAf8DAAH/ARsBZwESAf8BGwFnARIB/wMAAf8BGwFnARIB/wEbAWcBEgH/
+        AwAB/wMAAf8BGwEaARsB/wEjASIBIwH/ARIBFgESAf8DAAH/AwAB/wMAAf8DAAX/AQcBAwEBAf8BCAEE
+        AQEB/wEIAQQBAQH/AQgBBAEBAf8BCQEEAQEB/wEKAQUBAgH/AQgBBAEBAf8BCAEEAQEB/wEIAQQBAQH/
+        AQgBBAEBAf8BCAEEAQEB/wEIAQQBAQH/AQgBBAEBAf8BBwEDAQEF/4AAAVQBVwFUAf8BKwEqASsB/wEz
+        Ad8BPAH/ATMB3wE8Af8DAAH/ATMB3wE8Af8BMwHfATwB/wMAAf8DAAH/AYwBjgGMAf8B1gHTAdYB/wHW
+        AdMB1gH/AVQBUwFUAf8DAAH/AwAB/wMAAf8BCAEEAQEB/wHOAY4BWwH/Ac4BjgFbAf8B1AGTAV4B/wHO
+        AY4BWwH/AaYBbQFJAf8BHAERAQoB/wHOAY4BWwH/Ac4BjgFbAf8BzgGOAVsB/wHOAY4BWwH/Ac4BjgFb
+        Af8BzgGOAVsB/wHOAY4BWwH/Ac4BjgFbAf8BCAEEAQEB/4AAAW0BbwFtAf8BKwEqASsB/wEzAd8BPAH/
+        ATMB3wE8Af8DAAH/ATMB3wE8Af8BMwHfATwB/wMAAf8DAAH/AbUBtgG1Cf8BbQFvAW0B/wMAAf8DAAH/
+        AwAB/wEKAQUBAgH/Ac4BjgFbAf8BzgGOAVsB/wHOAY4BWwH/Ac4BjgFbAf8B0AGQAVsB/wMAAf8BlQFh
+        AT8B/wHOAY4BWwH/AdIBkAFdAf8B0wGRAV0B/wHTAZEBXQH/AdMBkQFdAf8BzgGOAVsB/wHOAY4BWwH/
+        AQkBBAEBAf+AAAFtAW8BbQH/ASsBKgErAf8BAAEeAQAB/wECASoBAgH/AwAB/wECASoBCgH/AQIBIgEC
+        Af8DAAH/AwAB/wG1AbIBtQn/AW0BawFtAf8DAAH/AwAB/wMAAf8BCgEFAQIB/wHOAY4BWwH/Ac4BjgFb
+        Af8BzgGOAVsB/wHQAY8BWwH/Ac4BjgFbAf8BGQEPAQcB/wElARgBDgH/Ac4BjgFbAf8BzgGOAVsB/wHO
+        AY4BWwH/Ac4BjgFbAf8B0AGPAVwB/wHOAY4BWwH/Ac4BjgFbAf8BCQEEAQEB/4AAAW0BbwFtAf8BKwEq
+        ASsB/wEjAa4BKwH/ASMBrgErAf8DAAH/ASMBrgErAf8BIwGuASsB/wMAAf8DAAH/AbUBsgG1Cf8BbQFr
+        AW0B/wMAAf8DAAH/AwAB/wEKAQUBAgH/Ac4BjgFbAf8BzgGOAVsB/wHOAY4BWwH/Ac4BjgFbAf8BzgGO
+        AVsB/wGYAWMBQQH/AwAB/wMAAf8DAAH/ATEBHwETAf8BzgGOAVsB/wHOAY4BWwH/Ac4BjgFbAf8BzgGO
+        AVsB/wEJAQQBAQH/gAABbQFvAW0B/wErASoBKwH/ATMB3wE8Af8BMwHfATwB/wMAAf8BMwHfATwB/wEz
+        Ad8BPAH/AwAB/wMAAf8BtQGyAbUJ/wFtAWsBbQH/AwAB/wMAAf8DAAH/AQoBBQECAf8BzgGOAVsB/wHS
+        AZEBXAH/Ac4BjgFbAf8B0QGQAVwB/wHOAY4BWwH/Ac4BjgFbAf8DAAH/AUsBMgEgAf8BrQFxAUwB/wEq
+        ARsBEQH/AwAB/wHOAY4BWwH/Ac4BjgFbAf8BzgGOAVsB/wEJAQQBAQH/gAABbQFvAW0B/wErASoBKwH/
+        ATMB3wE8Af8BMwHfATwB/wMAAf8BMwHfATwB/wEzAd8BPAH/AwAB/wMAAf8BrQGuAa0J/wFlAWcBZQH/
+        AwAB/wMAAf8DAAH/AQoBBQECAf8BzgGOAVsB/wHRAZABXAH/Ac4BjgFbAf8BkQFeAT4B/wHOAY4BWwH/
+        Ac4BjgFbAf8BOwEmARgB/wECAgAB/wHOAY4BWwH/Ac4BjgFbAf8DAAH/AT8BKgEaAf8BzgGOAVsB/wHO
+        AY4BWwH/AQkBBAEBAf+AAAFtAW8BbQH/ASsBKgErAf8BAAEiASMB/wEAASoBKwH/AwAB/wEAASoBKwH/
+        AQABIgEjAf8DAAH/AwAB/wGtAaoBrQn/AWUBYwFlAf8DAAH/AwAB/wMAAf8BCgEFAQIB/wHOAY4BWwH/
+        Ac4BjgFbAf8BzgGOAVsB/wMAAf8BqwFwAUoB/wHOAY4BWwH/AbkBeQFQAf8DAAH/Ac4BjgFbAf8BzgGO
+        AVsB/wECAgAB/wEOAQYBBAH/Ac4BjgFbAf8BzgGOAVsB/wEJAQQBAQH/gAABbQFvAW0B/wErASoBKwH/
+        AQABngGcAf8BAAGeAZwB/wMAAf8BAAGeAZwB/wEAAZ4BnAH/ARIBHgEbGf8BIwEiASMB/wMAAf8BCgEF
+        AQIB/wHOAY4BWwH/Ac4BjgFbAf8BzgGOAVsB/wMAAf8BFwEOAQgB/wHOAY4BWwH/AcQBhwFYAf8DAAH/
+        AwAB/wMAAf8DAAH/AYcBVgE4Af8BzgGOAVsB/wHOAY4BWwH/AQkBBAEBAf+AAAFtAW8BbQH/ASsBKgEr
+        Af8BAAP/AQAD/wMAAf8BAAP/AQAD/wMAGf8BIwEiASMB/wMAAf8BCgEFAQIB/wHOAY4BWwH/Ac4BjgFb
+        Af8BzgGOAVsB/wMAAf8DAAH/AaoBbgFJAf8BmQFkAUIB/wMAAf8DAAH/AaIBaAFFAf8BzgGOAVsB/wHO
+        AY4BWwH/Ac4BjgFbAf8BzgGOAVsB/wEJAQQBAQH/gAABbQFvAW0B/wErASoBKwH/AQAD/wEAA/8DAAH/
+        AQAD/wEAA/8DAAH/AVQBTwFMAf8B3gHbAd4J/wG1AbIBtQH/AXUBdwF1Af8BAgEGAQIB/wMAAf8BCgEF
+        AQIB/wHOAY4BWwH/Ac4BjgFbAf8BngFmAUQB/wMAAf8BWwE8ASgB/wERAQoBBQH/AV8BPwEqAf8BGQEQ
+        AQgB/wElARgBDwH/AT8BKQEaAf8BzgGOAVsB/wHRAZABXAH/Ac4BjgFbAf8BzgGOAVsB/wEJAQQBAQH/
+        gAABbQFvAW0B/wErASoBKwH/AwAB/wMAAf8DAAH/AwAB/wMAAf8DAAH/AwAB/wGUAZYBlAn/AbUBtgG1
+        Af8DAAH/AwAB/wMAAf8BCgEFAQIB/wHOAY4BWwH/Ac4BjgFbAf8BcQFMATMB/wMAAf8BzgGOAVsB/wMA
+        Af8DAAH/AVEBNgEkAf8BrgFzAUwB/wMAAf8BzgGOAVsB/wHOAY4BWwH/AdMBkQFdAf8B1AGTAV4B/wEJ
+        AQQBAQH/gAABnAGaAZwB/wErASoBKwH/AgABpQH/AgABpQH/AwAB/wMAAf8DAAH/AwAB/wMAAf8BKwEq
+        ASsR/wG9AboBvQH/AwAB/wEKAQUBAgH/Ac4BjgFbAf8BzgGOAVsB/wE/ASkBGwH/AwAB/wHOAY4BWwH/
+        AWoBRwEuAf8DAAH/AYMBVAE4Af8BzgGOAVsB/wMAAf8BMAEeARQB/wHOAY4BWwH/Ac4BjgFbAf8B1AGT
+        AV4B/wEJAQQBAQH/gAABlAGSAZQB/wErASoBKwH/AgAC/wIAAv8DAAH/AwAB/wMAAf8DAAH/AwAB/wMA
+        Af8BnAGaAZwN/wGUAZYBlAH/AwAB/wEKAQUBAgH/Ac4BjgFbAf8BzgGOAVsB/wMAAf8BIgEWAQ0B/wHO
+        AY4BWwH/Ac4BjgFbAf8DAAH/AZ8BZwFFAf8BzgGOAVsB/wGLAVkBOwH/AwAB/wHOAY4BWwH/Ac4BjgFb
+        Af8BzgGOAVsB/wEJAQQBAQH/gAABpQGmAaUB/wGUAZIBlAH/AgABpQH/AgABtQH/ASsBKgErAf8BKwEq
+        ASsB/wErASoBKwH/ASsBKgErAf8BKwEqASsB/wErASoBKwH/ASsBLgErAf8BTAFPAUwB/wGtAaoBrQH/
+        Aa0BqgGtAf8BRAFHAUQB/wMAAf8BCAEEAQEB/wHOAY4BWwH/Ac4BjgFbAf8BcQFLATIB/wGlAWwBRwH/
+        Ac4BjgFbAf8BzgGOAVsB/wGYAWMBQQH/Ac4BjgFbAf8BzgGOAVsB/wHOAY4BWwH/AWwBSQEwAf8BrgFx
+        AUwB/wHOAY4BWwH/Ac4BjgFbAf8BCAEEAQEB/4AAAd4B2wHeAf8BpQGmAaUB/wGlAaYBpQH/AXUBcwF1
+        Af8BbQFvAW0B/wFtAW8BbQH/AW0BbwFtAf8BbQFvAW0B/wFtAW8BbQH/AW0BbwFtAf8BbQFvAW0B/wFt
+        AW8BbQH/AW0BbwFtAf8BKwEqASsB/wErASoBKwH/AwAF/wEIAQQBAQH/AQkBBQEBAf8BCgEFAQIB/wEK
+        AQUBAQH/AQkBBQEBAf8BCQEFAQEB/wEKAQUBAQH/AQoBBQEBAf8BCQEFAQEB/wEJAQUBAQH/AQoBBQEC
+        Af8BCgEFAQEB/wEJAQUBAQH/AQgBBAEBBf+AAAFCAU0BPgcAAT4DAAEoAwABQAMAARADAAEBAQABAQUA
+        AYAXAAP/gQAL
 </value>
   </data>
   <data name="tabControl2.Location" type="System.Drawing.Point, System.Drawing">
@@ -2637,7 +2568,7 @@
     <value>520, 249</value>
   </data>
   <data name="tabControl2.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;tabControl2.Name" xml:space="preserve">
     <value>tabControl2</value>
@@ -2715,7 +2646,7 @@
     <value>79, 17</value>
   </data>
   <data name="chkUDC1ID3v2.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+    <value>3</value>
   </data>
   <data name="chkUDC1ID3v2.Text" xml:space="preserve">
     <value>ID3v2 tags</value>
@@ -2742,7 +2673,7 @@
     <value>81, 17</value>
   </data>
   <data name="chkUDC1APEv2.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+    <value>2</value>
   </data>
   <data name="chkUDC1APEv2.Text" xml:space="preserve">
     <value>APEv2 tags</value>
@@ -2769,7 +2700,7 @@
     <value>62, 13</value>
   </data>
   <data name="label6.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="label6.Text" xml:space="preserve">
     <value>Parameters</value>
@@ -2820,7 +2751,7 @@
     <value>417, 21</value>
   </data>
   <data name="textUDC1EncParams.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>11</value>
   </data>
   <data name="&gt;&gt;textUDC1EncParams.Name" xml:space="preserve">
     <value>textUDC1EncParams</value>
@@ -2841,7 +2772,7 @@
     <value>417, 21</value>
   </data>
   <data name="textUDC1Encoder.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>9</value>
   </data>
   <data name="&gt;&gt;textUDC1Encoder.Name" xml:space="preserve">
     <value>textUDC1Encoder</value>
@@ -2862,7 +2793,7 @@
     <value>417, 21</value>
   </data>
   <data name="textUDC1Params.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="&gt;&gt;textUDC1Params.Name" xml:space="preserve">
     <value>textUDC1Params</value>
@@ -2883,7 +2814,7 @@
     <value>417, 21</value>
   </data>
   <data name="textUDC1Decoder.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="&gt;&gt;textUDC1Decoder.Name" xml:space="preserve">
     <value>textUDC1Decoder</value>
@@ -2904,7 +2835,7 @@
     <value>67, 21</value>
   </data>
   <data name="textUDC1Extension.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;textUDC1Extension.Name" xml:space="preserve">
     <value>textUDC1Extension</value>
@@ -2928,7 +2859,7 @@
     <value>62, 13</value>
   </data>
   <data name="label4.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>6</value>
   </data>
   <data name="label4.Text" xml:space="preserve">
     <value>Parameters</value>
@@ -2955,7 +2886,7 @@
     <value>47, 13</value>
   </data>
   <data name="label3.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>4</value>
   </data>
   <data name="label3.Text" xml:space="preserve">
     <value>Decoder</value>
@@ -3006,7 +2937,7 @@
     <value>203, 165</value>
   </data>
   <data name="grpHDCD.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="grpHDCD.Text" xml:space="preserve">
     <value>HDCD options</value>

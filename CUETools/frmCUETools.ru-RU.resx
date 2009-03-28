@@ -193,12 +193,6 @@
   <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
     <value>Создать .cue</value>
   </data>
-  <data name="chkMulti.Location" type="System.Drawing.Point, System.Drawing">
-    <value>81, 148</value>
-  </data>
-  <data name="chkMulti.Text" xml:space="preserve">
-    <value>Несколько</value>
-  </data>
   <data name="rbActionVerifyAndCRCs.Text" xml:space="preserve">
     <value>Проверка + CRC</value>
   </data>

@@ -55,7 +55,8 @@ namespace JDP {
 			Application.SetCompatibleTextRenderingDefault(false);
 			CUEConfig config = new CUEConfig();
 			config.Load(new SettingsReader("CUE Tools", "settings.txt"));
-			Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(config.language);
+			try { Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(config.language); }
+			catch { }
 			frmCUETools form = new frmCUETools();
 			if (!config.oneInstance || SingletonController.IamFirst(myId, new SingletonController.ReceiveDelegate(form.OnSecondCall)))
 			{
