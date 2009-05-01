@@ -489,7 +489,7 @@ namespace CUETools.AccurateRip
 			}
 		}
 
-		public void GenerateFullLog(TextWriter sw, int offsetApplied)
+		public void GenerateFullLog(TextWriter sw, bool verbose)
 		{
 			if (AccResult == HttpStatusCode.NotFound)
 			{
@@ -505,30 +505,74 @@ namespace CUETools.AccurateRip
 			}
 			else
 			{
-				sw.WriteLine("Track\t[ CRC    ] Status");
-				GenerateLog(sw, offsetApplied);
-				uint offsets_match = 0;
-				for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+				if (verbose)
 				{
-					uint matches = 0;
-					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
-						for (int di = 0; di < (int)AccDisks.Count; di++)
-							if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0) ||
-								 (CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC && AccDisks[di].tracks[iTrack].Frame450CRC != 0))
-								matches++;
-					if (matches != 0 && oi != offsetApplied)
+					sw.WriteLine("Track\t[ CRC    ] Status");
+					GenerateLog(sw, 0);
+					uint offsets_match = 0;
+					for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 					{
-						if (offsets_match++ > 10)
+						uint matches = 0;
+						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+							for (int di = 0; di < (int)AccDisks.Count; di++)
+								if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0) ||
+									 (CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC && AccDisks[di].tracks[iTrack].Frame450CRC != 0))
+									matches++;
+						if (matches != 0 && oi != 0)
 						{
-							sw.WriteLine("More than 10 offsets match!");
-							break;
+							if (offsets_match++ > 10)
+							{
+								sw.WriteLine("More than 10 offsets match!");
+								break;
+							}
+							sw.WriteLine("Offsetted by {0}:", oi);
+							GenerateLog(sw, oi);
 						}
-						sw.WriteLine("Offsetted by {0}:", oi);
-						GenerateLog(sw, oi);
+					}
+				}
+				else
+				{
+					sw.WriteLine("Track\t Status");
+					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+					{
+						uint total = Total(iTrack);
+						uint conf = 0, part = 0;
+						bool zeroOffset = false;
+						string pressings = "";
+						for (int iDisk = 0; iDisk < AccDisks.Count; iDisk++)
+							for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+							{
+								if (CRC(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].CRC)
+								{
+									conf += AccDisks[iDisk].tracks[iTrack].count;
+									if (oi == 0)
+										zeroOffset = true;
+									if (pressings != "")
+										pressings = pressings + ",";
+									pressings = pressings + oi.ToString();
+								} else
+								if (CRC450(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].Frame450CRC)
+								{
+									part += AccDisks[iDisk].tracks[iTrack].count;
+									if (pressings != "")
+										pressings = pressings + ",";
+									pressings = pressings + oi.ToString();
+								}
+							}
+						if (conf > 0 && zeroOffset)
+							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped", iTrack + 1, total, conf));
+						else if (conf > 0)
+							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped with offset(s) {3}", iTrack + 1, total, conf, pressings));
+						else if (part > 0)
+							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) NOT ACCURATE even with offset(s) {3}", iTrack + 1, total, part, pressings));
+						else if (total > 0)
+							sw.WriteLine(String.Format(" {0:00}\t (00/{1:00}) No matches", iTrack + 1, total));
+						else
+							sw.WriteLine(String.Format(" {0:00}\t (00/00) Track not present in database", iTrack + 1));
 					}
 				}
 			}
-			if (CRC32(0) != 0)
+			if (CRC32(0) != 0 && (_hasLogCRC || verbose))
 			{
 				sw.WriteLine("");
 				sw.WriteLine("Track\t[ CRC32  ]\t[W/O NULL]\t{0:10}", _hasLogCRC ? "[  LOG   ]" : "");

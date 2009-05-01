@@ -25,17 +25,19 @@ namespace CUERipper
 		private CDDriveReader _reader = null;
 		private StartStop _startStop;
 		private CUEConfig _config;
-		private OutputAudioFormat _format;
-		private CUEStyle _style;
+		private string _format;
 		private CUESheet _cueSheet;
 		private string _pathOut;
 		private string _pathFormat;
+		string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat;
+		private CUEControls.ShellIconMgr m_icon_mgr;
 
 		public frmCUERipper()
 		{
 			InitializeComponent();
 			_config = new CUEConfig();
 			_startStop = new StartStop();
+			m_icon_mgr = new CUEControls.ShellIconMgr();
 		}
 
 		//private byte toBCD(int val)
@@ -67,13 +69,17 @@ namespace CUERipper
 			//{
 			//}
 
-			SettingsReader sr = new SettingsReader("CUERipper", "settings.txt");
+			SettingsReader sr = new SettingsReader("CUERipper", "settings.txt", Application.ExecutablePath);
+			_defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
+			_defaultLossyFormat = sr.Load("DefaultLossyFormat") ?? "mp3";
+			_defaultHybridFormat = sr.Load("DefaultHybridFormat") ?? "lossy.flac";
 			_config.createEACLOG = sr.LoadBoolean("CreateEACLOG") ?? false;
 			_config.preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? false;
 			_config.createM3U = sr.LoadBoolean("CreateM3U") ?? true;
-			_pathFormat = sr.Load("PathFormat") ?? "%D\\%Y - %C\\%D - %C.cue";
-			comboLossless.SelectedIndex = sr.LoadInt32("ComboLossless", 0, comboLossless.Items.Count - 1) ?? 0;
-			comboCodec.SelectedIndex = sr.LoadInt32("ComboCodec", 0, comboCodec.Items.Count - 1) ?? 0;
+			_pathFormat = sr.Load("PathFormat") ?? "%music%\\%artist%\\%year% - %album%\\%artist% - %album%.cue";
+			checkBoxEACMode.Checked = _config.createEACLOG;
+			SelectedOutputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? AudioEncoderType.Lossless;
+			comboBoxAudioFormat.SelectedIndex = sr.LoadInt32("ComboCodec", 0, comboBoxAudioFormat.Items.Count - 1) ?? 0;
 			comboImage.SelectedIndex = sr.LoadInt32("ComboImage", 0, comboImage.Items.Count - 1) ?? 0;
 			UpdateDrives();
 		}
@@ -153,9 +159,7 @@ namespace CUERipper
 			listTracks.Enabled =
 			comboDrives.Enabled =
 			comboRelease.Enabled =
-			comboCodec.Enabled = 
-			comboImage.Enabled = 
-			comboLossless.Enabled = !running;
+			groupBoxSettings.Enabled = !running;
 			buttonPause.Visible = buttonPause.Enabled = buttonAbort.Visible = buttonAbort.Enabled = running;
 			buttonGo.Visible = buttonGo.Enabled = !running;
 			toolStripStatusLabel1.Text = String.Empty;
@@ -209,11 +213,11 @@ namespace CUERipper
 		{
 			CDDriveReader audioSource = (CDDriveReader)o;
 			audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
+			audioSource.DriveOffset = (int)numericWriteOffset.Value;
 
 			try
 			{
-				string outDir = Path.GetDirectoryName(_pathOut);
-				_cueSheet.WriteAudioFiles(outDir == "" ? "." : outDir, _style);
+				_cueSheet.Go();
 				//CUESheet.WriteText(_pathOut, _cueSheet.CUESheetContents(_style));
 				//CUESheet.WriteText(Path.ChangeExtension(_pathOut, ".log"), _cueSheet.LOGContents());
 			}
@@ -243,12 +247,20 @@ namespace CUERipper
 		private string GenerateOutputPath()
 		{
 			List<string> find = new List<string>();
+			find.Add("%music%");
+			find.Add("%artist%");
 			find.Add("%D");
+			find.Add("%album%");
 			find.Add("%C");
+			find.Add("%year%");
 			find.Add("%Y");
 			List<string> replace = new List<string>();
+			replace.Add(m_icon_mgr.GetFolderPath(CUEControls.ExtraSpecialFolder.MyMusic));
+			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Artist)));
 			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Artist)));
 			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Title)));
+			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Title)));
+			replace.Add(_cueSheet.Year);
 			replace.Add(_cueSheet.Year);
 
 			return Path.ChangeExtension(General.ReplaceMultiple(_pathFormat, find, replace) ?? "image.cue", ".cue");
@@ -259,19 +271,13 @@ namespace CUERipper
 			if (_reader == null)
 				return;
 
-			_style = comboImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
+			_cueSheet.OutputStyle = comboImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
 				CUEStyle.GapsAppended;
 			_pathOut = GenerateOutputPath();
-			_config.lossyWAVHybrid = comboLossless.SelectedIndex == 1; // _cueSheet.Config?
-			if (_style == CUEStyle.SingleFileWithCUE)
+			if (_cueSheet.OutputStyle == CUEStyle.SingleFileWithCUE)
 				_cueSheet.SingleFilename = Path.GetFileName(_pathOut);
-			_format = (string)comboCodec.SelectedItem == "wav" ? OutputAudioFormat.WAV :
-				(string)comboCodec.SelectedItem == "flac" ? OutputAudioFormat.FLAC :
-				(string)comboCodec.SelectedItem == "wv" ? OutputAudioFormat.WavPack :
-				(string)comboCodec.SelectedItem == "ape" ? OutputAudioFormat.APE :
-				(string)comboCodec.SelectedItem == "tta" ? OutputAudioFormat.TTA :
-				OutputAudioFormat.NoAudio;
-			_cueSheet.GenerateFilenames(_format, comboLossless.SelectedIndex != 0, _pathOut);
+			_format = (string)comboBoxAudioFormat.SelectedItem;
+			_cueSheet.GenerateFilenames(SelectedOutputAudioType, _format, _pathOut);
 
 			_workThread = new Thread(Rip);
 			_workThread.Priority = ThreadPriority.BelowNormal;
@@ -353,6 +359,7 @@ namespace CUERipper
 			ReleaseInfo r = new ReleaseInfo();
 			r.cueSheet = new CUESheet(_config);
 			r.cueSheet.OpenCD(audioSource);
+			//r.cueSheet.WriteOffset = 
 			General.SetCUELine(r.cueSheet.Attributes, "REM", "GENRE", "", true);
 			General.SetCUELine(r.cueSheet.Attributes, "REM", "DATE", "", false);
 			General.SetCUELine(r.cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
@@ -488,7 +495,7 @@ namespace CUERipper
 				SetupControls();
 				comboRelease.SelectedIndex = 0;
 				CUESheet cueSheet = ((ReleaseInfo)comboRelease.SelectedItem).cueSheet;
-				toolStripStatusAr.Visible = true; //  cueSheet.ArVerify.ARStatus == null;
+				toolStripStatusAr.Visible = cueSheet.ArVerify.ARStatus == null;
 				toolStripStatusAr.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.Total(0).ToString() : "?";
 				toolStripStatusAr.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
 			});
@@ -509,9 +516,11 @@ namespace CUERipper
 			try
 			{
 				_reader.Open(_reader.Path[0]);
+				numericWriteOffset.Value = _reader.DriveOffset;
 			}
 			catch (Exception ex)
 			{
+				numericWriteOffset.Value = _reader.DriveOffset;
 				_reader.Close();
 				comboRelease.Items.Add(ex.Message);
 				comboRelease.SelectedIndex = 0;
@@ -603,12 +612,15 @@ namespace CUERipper
 
 		private void frmCUERipper_FormClosed(object sender, FormClosedEventArgs e)
 		{
-			SettingsWriter sw = new SettingsWriter("CUERipper", "settings.txt");
-			if (_config.createEACLOG) sw.Save("CreateEACLOG", _config.createEACLOG);
+			SettingsWriter sw = new SettingsWriter("CUERipper", "settings.txt", Application.ExecutablePath);
+			sw.Save("DefaultLosslessFormat", _defaultLosslessFormat);
+			sw.Save("DefaultLossyFormat", _defaultLossyFormat);
+			sw.Save("DefaultHybridFormat", _defaultHybridFormat);
+			sw.Save("CreateEACLOG", _config.createEACLOG);
 			sw.Save("PreserveHTOA", _config.preserveHTOA);
 			sw.Save("CreateM3U", _config.createM3U);
-			sw.Save("ComboLossless", comboLossless.SelectedIndex);
-			sw.Save("ComboCodec", comboCodec.SelectedIndex);
+			sw.Save("OutputAudioType", (int)SelectedOutputAudioType);
+			sw.Save("ComboCodec", comboBoxAudioFormat.SelectedIndex);
 			sw.Save("ComboImage", comboImage.SelectedIndex);
 			sw.Save("PathFormat", _pathFormat);
 			sw.Close();
@@ -618,6 +630,139 @@ namespace CUERipper
 		{
 			if (!_reader.TOC[e.Item + 1].IsAudio)
 				e.CancelEdit = true;
+		}
+
+		private string SelectedOutputAudioFormat
+		{
+			get
+			{
+				return (string)(comboBoxAudioFormat.SelectedItem ?? "dummy");
+			}
+			set
+			{
+				comboBoxAudioFormat.SelectedItem = value;
+			}
+		}
+
+		private CUEToolsFormat SelectedOutputAudioFmt
+		{
+			get
+			{
+				CUEToolsFormat fmt;
+				if (comboBoxAudioFormat.SelectedItem == null)
+					return null;
+				string formatName = (string)comboBoxAudioFormat.SelectedItem;
+				if (formatName.StartsWith("lossy."))
+					formatName = formatName.Substring(6);
+				return _config.formats.TryGetValue(formatName, out fmt) ? fmt : null;
+			}
+		}
+
+		private AudioEncoderType SelectedOutputAudioType
+		{
+			get
+			{
+				return
+					radioButtonAudioHybrid.Checked ? AudioEncoderType.Hybrid :
+					radioButtonAudioLossy.Checked ? AudioEncoderType.Lossy :
+					AudioEncoderType.Lossless;
+			}
+			set
+			{
+				switch (value)
+				{
+					case AudioEncoderType.Hybrid:
+						radioButtonAudioHybrid.Checked = true;
+						break;
+					case AudioEncoderType.Lossy:
+						radioButtonAudioLossy.Checked = true;
+						break;
+					default:
+						radioButtonAudioLossless.Checked = true;
+						break;
+				}
+			}
+		}
+
+		private void checkBoxEACMode_CheckedChanged(object sender, EventArgs e)
+		{
+			_config.createEACLOG = checkBoxEACMode.Checked;
+		}
+
+		private void radioButtonAudioLossless_CheckedChanged(object sender, EventArgs e)
+		{
+			if (sender is RadioButton && !((RadioButton)sender).Checked)
+				return;
+			//labelFormat.ImageKey = null;
+			comboBoxAudioFormat.Items.Clear();
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			{
+				if (SelectedOutputAudioType == AudioEncoderType.Lossless && !format.Value.allowLossless)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Hybrid) // && format.Key != "wv") TODO!!!!!
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Lossy && !format.Value.allowLossy)
+					continue;
+				comboBoxAudioFormat.Items.Add(format.Key);
+			}
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			{
+				if (!format.Value.allowLossyWAV)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
+					continue;
+				comboBoxAudioFormat.Items.Add("lossy." + format.Key);
+			}
+			switch (SelectedOutputAudioType)
+			{
+				case AudioEncoderType.Lossless:
+					SelectedOutputAudioFormat = _defaultLosslessFormat;
+					break;
+				case AudioEncoderType.Lossy:
+					SelectedOutputAudioFormat = _defaultLossyFormat;
+					break;
+				case AudioEncoderType.Hybrid:
+					SelectedOutputAudioFormat = _defaultHybridFormat;
+					break;
+			}
+		}
+
+		private void comboBoxAudioFormat_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			//labelFormat.ImageKey = SelectedOutputAudioFmt == null ? null : "." + SelectedOutputAudioFmt.extension;
+			comboBoxEncoder.Items.Clear();
+			if (SelectedOutputAudioFmt == null)
+				return;
+
+			foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
+				if (encoder.Value.extension == SelectedOutputAudioFmt.extension)
+				{
+					if (SelectedOutputAudioFormat.StartsWith("lossy.") && !encoder.Value.lossless)
+						continue;
+					else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Value.lossless)
+						continue;
+					else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.Value.lossless)
+						continue;
+					comboBoxEncoder.Items.Add(encoder.Key);
+				}
+			comboBoxEncoder.SelectedItem = SelectedOutputAudioFormat.StartsWith("lossy.") ? SelectedOutputAudioFmt.encoderLossless
+				: SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
+				: SelectedOutputAudioFmt.encoderLossy;
+			comboBoxEncoder.Enabled = true;
+		}
+
+		private void comboBoxEncoder_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (SelectedOutputAudioFormat == null)
+				return;
+			if (SelectedOutputAudioFormat.StartsWith("lossy."))
+				SelectedOutputAudioFmt.encoderLossless = (string)comboBoxEncoder.SelectedItem;
+			else if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+				SelectedOutputAudioFmt.encoderLossless = (string)comboBoxEncoder.SelectedItem;
+			else
+				SelectedOutputAudioFmt.encoderLossy = (string)comboBoxEncoder.SelectedItem;
 		}
 	}
 

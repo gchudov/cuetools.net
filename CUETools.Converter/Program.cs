@@ -35,15 +35,14 @@ namespace CUETools.Converter
 			TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
 			CUEConfig config = new CUEConfig();
 
-			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
+			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", null);
 			config.Load(sr);
-			config.lossyWAVHybrid = false;
 #if !DEBUG
 			try
 #endif
 			{
 				IAudioSource audioSource = AudioReadWrite.GetAudioSource(sourceFile, null, config);
-				IAudioDest audioDest = AudioReadWrite.GetAudioDest(destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, config);
+				IAudioDest audioDest = AudioReadWrite.GetAudioDest(AudioEncoderType.Lossless, destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, config);
 				int[,] buff = new int[0x4000, audioSource.ChannelCount];
 
 				Console.WriteLine("Filename  : {0}", sourceFile);

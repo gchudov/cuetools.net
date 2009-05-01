@@ -43,8 +43,7 @@ namespace CUERipper
 			this.Start = new System.Windows.Forms.ColumnHeader();
 			this.Length = new System.Windows.Forms.ColumnHeader();
 			this.buttonGo = new System.Windows.Forms.Button();
-			this.comboLossless = new System.Windows.Forms.ComboBox();
-			this.comboCodec = new System.Windows.Forms.ComboBox();
+			this.comboBoxAudioFormat = new System.Windows.Forms.ComboBox();
 			this.comboImage = new System.Windows.Forms.ComboBox();
 			this.buttonAbort = new System.Windows.Forms.Button();
 			this.buttonPause = new System.Windows.Forms.Button();
@@ -53,9 +52,19 @@ namespace CUERipper
 			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.releaseBindingSource = new System.Windows.Forms.BindingSource(this.components);
+			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
+			this.lblWriteOffset = new System.Windows.Forms.Label();
+			this.comboBoxEncoder = new System.Windows.Forms.ComboBox();
+			this.radioButtonAudioLossy = new System.Windows.Forms.RadioButton();
+			this.radioButtonAudioHybrid = new System.Windows.Forms.RadioButton();
+			this.radioButtonAudioLossless = new System.Windows.Forms.RadioButton();
+			this.checkBoxEACMode = new System.Windows.Forms.CheckBox();
+			this.groupBoxSettings = new System.Windows.Forms.GroupBox();
 			this.statusStrip1.SuspendLayout();
 			this.contextMenuStripRelease.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
+			this.groupBoxSettings.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// comboDrives
@@ -157,29 +166,19 @@ namespace CUERipper
 			this.buttonGo.UseVisualStyleBackColor = true;
 			this.buttonGo.Click += new System.EventHandler(this.buttonGo_Click);
 			// 
-			// comboLossless
+			// comboBoxAudioFormat
 			// 
-			this.comboLossless.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboLossless.FormattingEnabled = true;
-			this.comboLossless.Items.AddRange(new object[] {
-            resources.GetString("comboLossless.Items"),
-            resources.GetString("comboLossless.Items1"),
-            resources.GetString("comboLossless.Items2")});
-			resources.ApplyResources(this.comboLossless, "comboLossless");
-			this.comboLossless.Name = "comboLossless";
-			// 
-			// comboCodec
-			// 
-			this.comboCodec.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboCodec.FormattingEnabled = true;
-			this.comboCodec.Items.AddRange(new object[] {
-            resources.GetString("comboCodec.Items"),
-            resources.GetString("comboCodec.Items1"),
-            resources.GetString("comboCodec.Items2"),
-            resources.GetString("comboCodec.Items3"),
-            resources.GetString("comboCodec.Items4")});
-			resources.ApplyResources(this.comboCodec, "comboCodec");
-			this.comboCodec.Name = "comboCodec";
+			this.comboBoxAudioFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxAudioFormat.FormattingEnabled = true;
+			this.comboBoxAudioFormat.Items.AddRange(new object[] {
+            resources.GetString("comboBoxAudioFormat.Items"),
+            resources.GetString("comboBoxAudioFormat.Items1"),
+            resources.GetString("comboBoxAudioFormat.Items2"),
+            resources.GetString("comboBoxAudioFormat.Items3"),
+            resources.GetString("comboBoxAudioFormat.Items4")});
+			resources.ApplyResources(this.comboBoxAudioFormat, "comboBoxAudioFormat");
+			this.comboBoxAudioFormat.Name = "comboBoxAudioFormat";
+			this.comboBoxAudioFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxAudioFormat_SelectedIndexChanged);
 			// 
 			// comboImage
 			// 
@@ -241,18 +240,90 @@ namespace CUERipper
 			// 
 			this.releaseBindingSource.DataSource = typeof(MusicBrainz.Release);
 			// 
+			// numericWriteOffset
+			// 
+			resources.ApplyResources(this.numericWriteOffset, "numericWriteOffset");
+			this.numericWriteOffset.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+			this.numericWriteOffset.Minimum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            -2147483648});
+			this.numericWriteOffset.Name = "numericWriteOffset";
+			// 
+			// lblWriteOffset
+			// 
+			resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
+			this.lblWriteOffset.Name = "lblWriteOffset";
+			// 
+			// comboBoxEncoder
+			// 
+			this.comboBoxEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxEncoder.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxEncoder, "comboBoxEncoder");
+			this.comboBoxEncoder.Name = "comboBoxEncoder";
+			this.comboBoxEncoder.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoder_SelectedIndexChanged);
+			// 
+			// radioButtonAudioLossy
+			// 
+			resources.ApplyResources(this.radioButtonAudioLossy, "radioButtonAudioLossy");
+			this.radioButtonAudioLossy.Name = "radioButtonAudioLossy";
+			this.radioButtonAudioLossy.TabStop = true;
+			this.radioButtonAudioLossy.UseVisualStyleBackColor = true;
+			this.radioButtonAudioLossy.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
+			// 
+			// radioButtonAudioHybrid
+			// 
+			resources.ApplyResources(this.radioButtonAudioHybrid, "radioButtonAudioHybrid");
+			this.radioButtonAudioHybrid.Name = "radioButtonAudioHybrid";
+			this.radioButtonAudioHybrid.TabStop = true;
+			this.radioButtonAudioHybrid.UseVisualStyleBackColor = true;
+			this.radioButtonAudioHybrid.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
+			// 
+			// radioButtonAudioLossless
+			// 
+			resources.ApplyResources(this.radioButtonAudioLossless, "radioButtonAudioLossless");
+			this.radioButtonAudioLossless.Name = "radioButtonAudioLossless";
+			this.radioButtonAudioLossless.TabStop = true;
+			this.radioButtonAudioLossless.UseVisualStyleBackColor = true;
+			this.radioButtonAudioLossless.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
+			// 
+			// checkBoxEACMode
+			// 
+			resources.ApplyResources(this.checkBoxEACMode, "checkBoxEACMode");
+			this.checkBoxEACMode.Name = "checkBoxEACMode";
+			this.checkBoxEACMode.UseVisualStyleBackColor = true;
+			this.checkBoxEACMode.CheckedChanged += new System.EventHandler(this.checkBoxEACMode_CheckedChanged);
+			// 
+			// groupBoxSettings
+			// 
+			this.groupBoxSettings.Controls.Add(this.radioButtonAudioLossless);
+			this.groupBoxSettings.Controls.Add(this.comboBoxAudioFormat);
+			this.groupBoxSettings.Controls.Add(this.checkBoxEACMode);
+			this.groupBoxSettings.Controls.Add(this.lblWriteOffset);
+			this.groupBoxSettings.Controls.Add(this.numericWriteOffset);
+			this.groupBoxSettings.Controls.Add(this.comboImage);
+			this.groupBoxSettings.Controls.Add(this.radioButtonAudioLossy);
+			this.groupBoxSettings.Controls.Add(this.comboBoxEncoder);
+			this.groupBoxSettings.Controls.Add(this.radioButtonAudioHybrid);
+			resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
+			this.groupBoxSettings.Name = "groupBoxSettings";
+			this.groupBoxSettings.TabStop = false;
+			// 
 			// frmCUERipper
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.groupBoxSettings);
 			this.Controls.Add(this.comboRelease);
 			this.Controls.Add(this.buttonPause);
-			this.Controls.Add(this.buttonAbort);
-			this.Controls.Add(this.comboImage);
-			this.Controls.Add(this.comboCodec);
-			this.Controls.Add(this.comboLossless);
-			this.Controls.Add(this.buttonGo);
 			this.Controls.Add(this.listTracks);
+			this.Controls.Add(this.buttonAbort);
+			this.Controls.Add(this.buttonGo);
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.comboDrives);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -265,6 +336,9 @@ namespace CUERipper
 			this.statusStrip1.PerformLayout();
 			this.contextMenuStripRelease.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).EndInit();
+			this.groupBoxSettings.ResumeLayout(false);
+			this.groupBoxSettings.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -283,8 +357,7 @@ namespace CUERipper
 		private System.Windows.Forms.ColumnHeader Start;
 		private System.Windows.Forms.ColumnHeader Length;
 		private System.Windows.Forms.Button buttonGo;
-		private System.Windows.Forms.ComboBox comboLossless;
-		private System.Windows.Forms.ComboBox comboCodec;
+		private System.Windows.Forms.ComboBox comboBoxAudioFormat;
 		private System.Windows.Forms.ComboBox comboImage;
 		private System.Windows.Forms.Button buttonAbort;
 		private System.Windows.Forms.Button buttonPause;
@@ -295,6 +368,14 @@ namespace CUERipper
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusAr;
+		private System.Windows.Forms.NumericUpDown numericWriteOffset;
+		private System.Windows.Forms.Label lblWriteOffset;
+		private System.Windows.Forms.ComboBox comboBoxEncoder;
+		private System.Windows.Forms.RadioButton radioButtonAudioLossy;
+		private System.Windows.Forms.RadioButton radioButtonAudioHybrid;
+		private System.Windows.Forms.RadioButton radioButtonAudioLossless;
+		private System.Windows.Forms.CheckBox checkBoxEACMode;
+		private System.Windows.Forms.GroupBox groupBoxSettings;
 	}
 }
 

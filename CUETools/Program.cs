@@ -14,15 +14,13 @@ namespace JDP {
 		[STAThread]
 		static void Main(string[] args)
 		{
-			if (args.Length > 1 && (args[0] == "/verify" || args[0] == "/crc" || args[0] == "/convert" || args[0] == "/fix"))
+			if (args.Length > 1 && (args[0] == "/verify" || args[0] == "/convert"))
 			{
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				frmBatch batch = new frmBatch();
 				batch.AccurateRip =
 					args[0] == "/convert" ? CUEAction.VerifyAndConvert :
-					args[0] == "/fix" ? CUEAction.VerifyThenConvert :
-					args[0] == "/crc" ? CUEAction.VerifyPlusCRCs :
 					CUEAction.Verify;
 
 				if (args.Length == 2 && args[1][0] != '@')
@@ -53,8 +51,9 @@ namespace JDP {
 			string myId = "BZ92759C-63Q7-444e-ADA6-E495634A493D";
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
+
 			CUEConfig config = new CUEConfig();
-			config.Load(new SettingsReader("CUE Tools", "settings.txt"));
+			config.Load(new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath));
 			try { Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(config.language); }
 			catch { }
 			frmCUETools form = new frmCUETools();
@@ -80,7 +79,7 @@ namespace JDP {
     {
 		private static IpcChannel m_IPCChannel = null;
 
-		public delegate void ReceiveDelegate(string[] args);
+		public delegate bool ReceiveDelegate(string[] args);
 
         static private ReceiveDelegate m_Receive = null;
         static public ReceiveDelegate Receiver
@@ -138,24 +137,25 @@ namespace JDP {
             SingletonController ctrl;
             IpcChannel channel = new IpcChannel();
 			System.Runtime.Remoting.Channels.ChannelServices.RegisterChannel(channel, false);
+			bool result = false;
             try
             {
 				ctrl = (SingletonController)Activator.GetObject(typeof(SingletonController), "ipc://" + id + "/SingletonController");
-				ctrl.Receive(s);
+				result = ctrl.Receive(s);
 			}
             catch
             {
+            }
+			if (!result)
 				MessageBox.Show("Another instance of the application seems to be running, but not responding.",
 					"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+		}
 
-        public void Receive(string[] s)
+        public bool Receive(string[] s)
         {
-            if (m_Receive != null)
-            {
-                m_Receive(s);
-            }
+			if (m_Receive == null)
+				return false;
+             return m_Receive(s);
         }
     }
 }

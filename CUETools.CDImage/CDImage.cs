@@ -165,6 +165,10 @@ namespace CUETools.CDImage
 			{
 				return _start - _indexes[0].Start;
 			}
+			set
+			{
+				_indexes[0].Start = _start - value;
+			}
 		}
 
 		public CDTrackIndex this[int key]

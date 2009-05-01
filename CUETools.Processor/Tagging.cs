@@ -19,10 +19,15 @@ namespace CUETools.Processor
 				return true;
 			}
 			if (fileInfo is TagLib.Mpeg4.File)
-				return true;
-			if (fileInfo is TagLib.UserDefined.File && !(fileInfo as TagLib.UserDefined.File).SupportsAPEv2)
 			{
-				if (!(fileInfo as TagLib.UserDefined.File).SupportsID3v2)
+				// remove fb2k/nero nasty tags mess
+				((TagLib.Mpeg4.File)fileInfo).UserData.RemoveChild("tags");
+				TagLib.Mpeg4.AppleTag mpeg4 = (TagLib.Mpeg4.AppleTag)fileInfo.GetTag(TagLib.TagTypes.Apple, true);
+				return true;
+			}
+			if (fileInfo is TagLib.UserDefined.File && (fileInfo as TagLib.UserDefined.File).Tagger != CUEToolsTagger.APEv2)
+			{
+				if ((fileInfo as TagLib.UserDefined.File).Tagger != CUEToolsTagger.ID3v2)
 					return false;
 				TagLib.Id3v2.Tag id3v2 = (TagLib.Id3v2.Tag)fileInfo.GetTag(TagLib.TagTypes.Id3v2, true);
 				return true;

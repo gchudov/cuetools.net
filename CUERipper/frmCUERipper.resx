@@ -126,7 +126,7 @@
     <value>6, 6</value>
   </data>
   <data name="comboDrives.Size" type="System.Drawing.Size, System.Drawing">
-    <value>481, 21</value>
+    <value>487, 21</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="comboDrives.TabIndex" type="System.Int32, mscorlib">
@@ -142,13 +142,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboDrives.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>8</value>
   </data>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>0, 371</value>
+    <value>0, 443</value>
   </metadata>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 17</value>
+    <value>260, 17</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -201,10 +201,10 @@
     <value>toolStripStatusAr</value>
   </data>
   <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 371</value>
+    <value>0, 443</value>
   </data>
   <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>499, 22</value>
+    <value>505, 22</value>
   </data>
   <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -222,7 +222,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>7</value>
   </data>
   <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -234,7 +234,7 @@
     <value>Title</value>
   </data>
   <data name="Title.Width" type="System.Int32, mscorlib">
-    <value>307</value>
+    <value>292</value>
   </data>
   <data name="TrackNo.DisplayIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -261,7 +261,7 @@
     <value>6, 60</value>
   </data>
   <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>481, 269</value>
+    <value>487, 272</value>
   </data>
   <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -276,7 +276,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>4</value>
   </data>
   <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -285,10 +285,10 @@
     <value>NoControl</value>
   </data>
   <data name="buttonGo.Location" type="System.Drawing.Point, System.Drawing">
-    <value>396, 335</value>
+    <value>382, 406</value>
   </data>
   <data name="buttonGo.Size" type="System.Drawing.Size, System.Drawing">
-    <value>91, 33</value>
+    <value>111, 33</value>
   </data>
   <data name="buttonGo.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -306,73 +306,43 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonGo.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="comboLossless.Items" xml:space="preserve">
-    <value>lossless</value>
-  </data>
-  <data name="comboLossless.Items1" xml:space="preserve">
-    <value>hybrid</value>
-  </data>
-  <data name="comboLossless.Items2" xml:space="preserve">
-    <value>lossy</value>
-  </data>
-  <data name="comboLossless.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 335</value>
-  </data>
-  <data name="comboLossless.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 21</value>
-  </data>
-  <data name="comboLossless.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;comboLossless.Name" xml:space="preserve">
-    <value>comboLossless</value>
-  </data>
-  <data name="&gt;&gt;comboLossless.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboLossless.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;comboLossless.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="comboCodec.Items" xml:space="preserve">
+  <data name="comboBoxAudioFormat.Items" xml:space="preserve">
     <value>flac</value>
   </data>
-  <data name="comboCodec.Items1" xml:space="preserve">
+  <data name="comboBoxAudioFormat.Items1" xml:space="preserve">
     <value>wv</value>
   </data>
-  <data name="comboCodec.Items2" xml:space="preserve">
+  <data name="comboBoxAudioFormat.Items2" xml:space="preserve">
     <value>wav</value>
   </data>
-  <data name="comboCodec.Items3" xml:space="preserve">
+  <data name="comboBoxAudioFormat.Items3" xml:space="preserve">
     <value>ape</value>
   </data>
-  <data name="comboCodec.Items4" xml:space="preserve">
+  <data name="comboBoxAudioFormat.Items4" xml:space="preserve">
     <value>tta</value>
   </data>
-  <data name="comboCodec.Location" type="System.Drawing.Point, System.Drawing">
-    <value>82, 335</value>
+  <data name="comboBoxAudioFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>103, 20</value>
   </data>
-  <data name="comboCodec.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 21</value>
+  <data name="comboBoxAudioFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 21</value>
   </data>
-  <data name="comboCodec.TabIndex" type="System.Int32, mscorlib">
+  <data name="comboBoxAudioFormat.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
   </data>
-  <data name="&gt;&gt;comboCodec.Name" xml:space="preserve">
-    <value>comboCodec</value>
+  <data name="&gt;&gt;comboBoxAudioFormat.Name" xml:space="preserve">
+    <value>comboBoxAudioFormat</value>
   </data>
-  <data name="&gt;&gt;comboCodec.Type" xml:space="preserve">
+  <data name="&gt;&gt;comboBoxAudioFormat.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;comboCodec.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;comboBoxAudioFormat.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
   </data>
-  <data name="&gt;&gt;comboCodec.ZOrder" xml:space="preserve">
-    <value>5</value>
+  <data name="&gt;&gt;comboBoxAudioFormat.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="comboImage.Items" xml:space="preserve">
     <value>image</value>
@@ -381,10 +351,10 @@
     <value>tracks</value>
   </data>
   <data name="comboImage.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 335</value>
+    <value>103, 49</value>
   </data>
   <data name="comboImage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 21</value>
+    <value>89, 21</value>
   </data>
   <data name="comboImage.TabIndex" type="System.Int32, mscorlib">
     <value>18</value>
@@ -396,10 +366,10 @@
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;comboImage.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;comboImage.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="buttonAbort.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -408,10 +378,10 @@
     <value>NoControl</value>
   </data>
   <data name="buttonAbort.Location" type="System.Drawing.Point, System.Drawing">
-    <value>396, 335</value>
+    <value>382, 406</value>
   </data>
   <data name="buttonAbort.Size" type="System.Drawing.Size, System.Drawing">
-    <value>91, 33</value>
+    <value>111, 33</value>
   </data>
   <data name="buttonAbort.TabIndex" type="System.Int32, mscorlib">
     <value>19</value>
@@ -432,7 +402,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonAbort.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="buttonPause.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -441,10 +411,10 @@
     <value>NoControl</value>
   </data>
   <data name="buttonPause.Location" type="System.Drawing.Point, System.Drawing">
-    <value>299, 335</value>
+    <value>382, 367</value>
   </data>
   <data name="buttonPause.Size" type="System.Drawing.Size, System.Drawing">
-    <value>91, 33</value>
+    <value>111, 33</value>
   </data>
   <data name="buttonPause.TabIndex" type="System.Int32, mscorlib">
     <value>20</value>
@@ -465,7 +435,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonPause.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="comboRelease.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -492,7 +462,7 @@
     <value>6, 33</value>
   </data>
   <data name="comboRelease.Size" type="System.Drawing.Size, System.Drawing">
-    <value>481, 21</value>
+    <value>487, 21</value>
   </data>
   <data name="comboRelease.TabIndex" type="System.Int32, mscorlib">
     <value>21</value>
@@ -507,7 +477,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboRelease.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>181, 22</value>
@@ -518,6 +488,219 @@
   <metadata name="releaseBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>116, 371</value>
   </metadata>
+  <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
+    <value>305, 19</value>
+  </data>
+  <data name="numericWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 20</value>
+  </data>
+  <data name="numericWriteOffset.TabIndex" type="System.Int32, mscorlib">
+    <value>22</value>
+  </data>
+  <data name="numericWriteOffset.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
+    <value>Right</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.Name" xml:space="preserve">
+    <value>numericWriteOffset</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="lblWriteOffset.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="lblWriteOffset.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="lblWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
+    <value>237, 21</value>
+  </data>
+  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>62, 13</value>
+  </data>
+  <data name="lblWriteOffset.TabIndex" type="System.Int32, mscorlib">
+    <value>23</value>
+  </data>
+  <data name="lblWriteOffset.Text" xml:space="preserve">
+    <value>Read offset</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.Name" xml:space="preserve">
+    <value>lblWriteOffset</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="comboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
+    <value>103, 78</value>
+  </data>
+  <data name="comboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 21</value>
+  </data>
+  <data name="comboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
+    <value>24</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.Name" xml:space="preserve">
+    <value>comboBoxEncoder</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="radioButtonAudioLossy.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAudioLossy.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="radioButtonAudioLossy.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 36</value>
+  </data>
+  <data name="radioButtonAudioLossy.Size" type="System.Drawing.Size, System.Drawing">
+    <value>52, 17</value>
+  </data>
+  <data name="radioButtonAudioLossy.TabIndex" type="System.Int32, mscorlib">
+    <value>27</value>
+  </data>
+  <data name="radioButtonAudioLossy.Text" xml:space="preserve">
+    <value>Lossy</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.Name" xml:space="preserve">
+    <value>radioButtonAudioLossy</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="radioButtonAudioHybrid.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAudioHybrid.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="radioButtonAudioHybrid.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 53</value>
+  </data>
+  <data name="radioButtonAudioHybrid.Size" type="System.Drawing.Size, System.Drawing">
+    <value>55, 17</value>
+  </data>
+  <data name="radioButtonAudioHybrid.TabIndex" type="System.Int32, mscorlib">
+    <value>26</value>
+  </data>
+  <data name="radioButtonAudioHybrid.Text" xml:space="preserve">
+    <value>Hybrid</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioHybrid.Name" xml:space="preserve">
+    <value>radioButtonAudioHybrid</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioHybrid.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioHybrid.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioHybrid.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="radioButtonAudioLossless.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAudioLossless.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="radioButtonAudioLossless.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 19</value>
+  </data>
+  <data name="radioButtonAudioLossless.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 17</value>
+  </data>
+  <data name="radioButtonAudioLossless.TabIndex" type="System.Int32, mscorlib">
+    <value>25</value>
+  </data>
+  <data name="radioButtonAudioLossless.Text" xml:space="preserve">
+    <value>Lossless</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.Name" xml:space="preserve">
+    <value>radioButtonAudioLossless</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="checkBoxEACMode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxEACMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 77</value>
+  </data>
+  <data name="checkBoxEACMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>76, 17</value>
+  </data>
+  <data name="checkBoxEACMode.TabIndex" type="System.Int32, mscorlib">
+    <value>28</value>
+  </data>
+  <data name="checkBoxEACMode.Text" xml:space="preserve">
+    <value>EAC mode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.Name" xml:space="preserve">
+    <value>checkBoxEACMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="groupBoxSettings.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 332</value>
+  </data>
+  <data name="groupBoxSettings.Size" type="System.Drawing.Size, System.Drawing">
+    <value>370, 108</value>
+  </data>
+  <data name="groupBoxSettings.TabIndex" type="System.Int32, mscorlib">
+    <value>29</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.Name" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -525,7 +708,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>499, 393</value>
+    <value>505, 465</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -559,7 +742,7 @@
     <value>CenterScreen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 1.9.5a</value>
+    <value>CUERipper 2.0.2</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>

@@ -29,37 +29,21 @@ namespace JDP {
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
 			this.labelLanguage = new System.Windows.Forms.Label();
 			this.comboLanguage = new System.Windows.Forms.ComboBox();
-			this.chkSingleInstance = new System.Windows.Forms.CheckBox();
-			this.chkOverwriteTags = new System.Windows.Forms.CheckBox();
-			this.chkExtractLog = new System.Windows.Forms.CheckBox();
+			this.chkAllowMultipleInstances = new System.Windows.Forms.CheckBox();
 			this.chkReducePriority = new System.Windows.Forms.CheckBox();
 			this.chkTruncateExtra4206Samples = new System.Windows.Forms.CheckBox();
 			this.chkCreateCUEFileWhenEmbedded = new System.Windows.Forms.CheckBox();
 			this.chkCreateM3U = new System.Windows.Forms.CheckBox();
-			this.chkFillUpCUE = new System.Windows.Forms.CheckBox();
-			this.chkEmbedLog = new System.Windows.Forms.CheckBox();
 			this.chkAutoCorrectFilenames = new System.Windows.Forms.CheckBox();
 			this.chkPreserveHTOA = new System.Windows.Forms.CheckBox();
-			this.numericFLACCompressionLevel = new System.Windows.Forms.NumericUpDown();
-			this.lblFLACCompressionLevel = new System.Windows.Forms.Label();
-			this.chkFLACVerify = new System.Windows.Forms.CheckBox();
 			this.btnOK = new System.Windows.Forms.Button();
-			this.chkWVStoreMD5 = new System.Windows.Forms.CheckBox();
-			this.numWVExtraMode = new System.Windows.Forms.NumericUpDown();
-			this.chkWVExtraMode = new System.Windows.Forms.CheckBox();
-			this.rbWVVeryHigh = new System.Windows.Forms.RadioButton();
-			this.rbWVHigh = new System.Windows.Forms.RadioButton();
-			this.rbWVNormal = new System.Windows.Forms.RadioButton();
-			this.rbWVFast = new System.Windows.Forms.RadioButton();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.chkEncodeWhenZeroOffset = new System.Windows.Forms.CheckBox();
-			this.chkArFixOffset = new System.Windows.Forms.CheckBox();
 			this.chkWriteArLogOnConvert = new System.Windows.Forms.CheckBox();
 			this.chkWriteArTagsOnConvert = new System.Windows.Forms.CheckBox();
+			this.chkEncodeWhenZeroOffset = new System.Windows.Forms.CheckBox();
 			this.numEncodeWhenPercent = new System.Windows.Forms.NumericUpDown();
 			this.labelEncodeWhenConfidence = new System.Windows.Forms.Label();
 			this.numEncodeWhenConfidence = new System.Windows.Forms.NumericUpDown();
-			this.chkArNoUnverifiedAudio = new System.Windows.Forms.CheckBox();
 			this.labelFixWhenConfidence = new System.Windows.Forms.Label();
 			this.numFixWhenConfidence = new System.Windows.Forms.NumericUpDown();
 			this.numFixWhenPercent = new System.Windows.Forms.NumericUpDown();
@@ -70,6 +54,7 @@ namespace JDP {
 			this.chkHDCDStopLooking = new System.Windows.Forms.CheckBox();
 			this.chkHDCD24bit = new System.Windows.Forms.CheckBox();
 			this.chkHDCDLW16 = new System.Windows.Forms.CheckBox();
+			this.chkEmbedLog = new System.Windows.Forms.CheckBox();
 			this.grpAudioFilenames = new System.Windows.Forms.GroupBox();
 			this.chkKeepOriginalFilenames = new System.Windows.Forms.CheckBox();
 			this.txtSpecialExceptions = new System.Windows.Forms.TextBox();
@@ -79,45 +64,108 @@ namespace JDP {
 			this.lblTrackFilenameFormat = new System.Windows.Forms.Label();
 			this.lblSingleFilenameFormat = new System.Windows.Forms.Label();
 			this.txtSingleFilenameFormat = new System.Windows.Forms.TextBox();
-			this.rbAPEinsane = new System.Windows.Forms.RadioButton();
-			this.rbAPEextrahigh = new System.Windows.Forms.RadioButton();
-			this.rbAPEhigh = new System.Windows.Forms.RadioButton();
-			this.rbAPEnormal = new System.Windows.Forms.RadioButton();
-			this.rbAPEfast = new System.Windows.Forms.RadioButton();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this.tabPage6 = new System.Windows.Forms.TabPage();
+			this.groupBoxTagging = new System.Windows.Forms.GroupBox();
+			this.checkBoxEmbedAlbumArt = new System.Windows.Forms.CheckBox();
+			this.checkBoxCopyBasicTags = new System.Windows.Forms.CheckBox();
+			this.checkBoxCopyAlbumArt = new System.Windows.Forms.CheckBox();
+			this.checkBoxWriteCUETags = new System.Windows.Forms.CheckBox();
+			this.checkBoxCopyUnknownTags = new System.Windows.Forms.CheckBox();
+			this.chkOverwriteTags = new System.Windows.Forms.CheckBox();
+			this.chkFillUpCUE = new System.Windows.Forms.CheckBox();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
-			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.groupBoxARLog = new System.Windows.Forms.GroupBox();
+			this.textBoxARLogExtension = new System.Windows.Forms.TextBox();
+			this.labelLogFileExtension = new System.Windows.Forms.Label();
+			this.checkBoxARLogVerbose = new System.Windows.Forms.CheckBox();
+			this.groupBox5 = new System.Windows.Forms.GroupBox();
+			this.label2 = new System.Windows.Forms.Label();
+			this.groupBox4 = new System.Windows.Forms.GroupBox();
+			this.checkBoxFixToNearest = new System.Windows.Forms.CheckBox();
+			this.label3 = new System.Windows.Forms.Label();
+			this.groupBoxVerify = new System.Windows.Forms.GroupBox();
+			this.checkBoxARVerifyUseSourceFolder = new System.Windows.Forms.CheckBox();
 			this.chkWriteARLogOnVerify = new System.Windows.Forms.CheckBox();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
-			this.tabControl2 = new System.Windows.Forms.TabControl();
-			this.tabPage5 = new System.Windows.Forms.TabPage();
-			this.tabPage6 = new System.Windows.Forms.TabPage();
-			this.tabPage7 = new System.Windows.Forms.TabPage();
-			this.tabPage8 = new System.Windows.Forms.TabPage();
+			this.groupBoxFormat = new System.Windows.Forms.GroupBox();
+			this.comboFormatLossyEncoder = new System.Windows.Forms.ComboBox();
+			this.labelFormatLossyEncoder = new System.Windows.Forms.Label();
+			this.checkBoxFormatAllowLossy = new System.Windows.Forms.CheckBox();
+			this.comboFormatLosslessEncoder = new System.Windows.Forms.ComboBox();
+			this.checkBoxFormatSupportsLossyWAV = new System.Windows.Forms.CheckBox();
+			this.labelFormatLosslessEncoder = new System.Windows.Forms.Label();
+			this.checkBoxFormatEmbedCUESheet = new System.Windows.Forms.CheckBox();
+			this.comboFormatDecoder = new System.Windows.Forms.ComboBox();
+			this.checkBoxFormatAllowLossless = new System.Windows.Forms.CheckBox();
+			this.labelFormatDefaultDecoder = new System.Windows.Forms.Label();
+			this.labelFormatTagger = new System.Windows.Forms.Label();
+			this.comboBoxFormatTagger = new System.Windows.Forms.ComboBox();
+			this.listViewFormats = new System.Windows.Forms.ListView();
+			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+			this.tabPage10 = new System.Windows.Forms.TabPage();
+			this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
+			this.checkBoxEncoderLossless = new System.Windows.Forms.CheckBox();
+			this.textBoxEncoderPath = new System.Windows.Forms.TextBox();
+			this.textBoxEncoderParameters = new System.Windows.Forms.TextBox();
+			this.labelEncoderPath = new System.Windows.Forms.Label();
+			this.labelEncoderParameters = new System.Windows.Forms.Label();
+			this.comboBoxEncoderExtension = new System.Windows.Forms.ComboBox();
+			this.listViewEncoders = new System.Windows.Forms.ListView();
+			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+			this.groupBoxLibMAC_SDK = new System.Windows.Forms.GroupBox();
+			this.rbAPEinsane = new System.Windows.Forms.RadioButton();
+			this.rbAPEfast = new System.Windows.Forms.RadioButton();
+			this.rbAPEextrahigh = new System.Windows.Forms.RadioButton();
+			this.rbAPEnormal = new System.Windows.Forms.RadioButton();
+			this.rbAPEhigh = new System.Windows.Forms.RadioButton();
+			this.groupBoxLibWavpack = new System.Windows.Forms.GroupBox();
+			this.chkWVStoreMD5 = new System.Windows.Forms.CheckBox();
+			this.rbWVFast = new System.Windows.Forms.RadioButton();
+			this.numWVExtraMode = new System.Windows.Forms.NumericUpDown();
+			this.rbWVHigh = new System.Windows.Forms.RadioButton();
+			this.rbWVVeryHigh = new System.Windows.Forms.RadioButton();
+			this.chkWVExtraMode = new System.Windows.Forms.CheckBox();
+			this.rbWVNormal = new System.Windows.Forms.RadioButton();
+			this.groupBoxLibFLAC = new System.Windows.Forms.GroupBox();
+			this.lblFLACCompressionLevel = new System.Windows.Forms.Label();
+			this.numericFLACCompressionLevel = new System.Windows.Forms.NumericUpDown();
+			this.chkFLACVerify = new System.Windows.Forms.CheckBox();
+			this.labelEncoderExtension = new System.Windows.Forms.Label();
+			this.tabPage11 = new System.Windows.Forms.TabPage();
+			this.comboBoxDecoderExtension = new System.Windows.Forms.ComboBox();
+			this.groupBoxExternalDecoder = new System.Windows.Forms.GroupBox();
+			this.textBoxDecoderPath = new System.Windows.Forms.TextBox();
+			this.labelDecoderPath = new System.Windows.Forms.Label();
+			this.labelDecoderParameters = new System.Windows.Forms.Label();
+			this.textBoxDecoderParameters = new System.Windows.Forms.TextBox();
+			this.listViewDecoders = new System.Windows.Forms.ListView();
+			this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
+			this.labelDecoderExtension = new System.Windows.Forms.Label();
+			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.numericLossyWAVQuality = new System.Windows.Forms.NumericUpDown();
-			this.tabPage9 = new System.Windows.Forms.TabPage();
-			this.chkUDC1ID3v2 = new System.Windows.Forms.CheckBox();
-			this.chkUDC1APEv2 = new System.Windows.Forms.CheckBox();
-			this.label6 = new System.Windows.Forms.Label();
-			this.label5 = new System.Windows.Forms.Label();
-			this.textUDC1EncParams = new System.Windows.Forms.TextBox();
-			this.textUDC1Encoder = new System.Windows.Forms.TextBox();
-			this.textUDC1Params = new System.Windows.Forms.TextBox();
-			this.textUDC1Decoder = new System.Windows.Forms.TextBox();
-			this.textUDC1Extension = new System.Windows.Forms.TextBox();
-			this.label4 = new System.Windows.Forms.Label();
-			this.label3 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
-			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.grpHDCD = new System.Windows.Forms.GroupBox();
 			this.chkHDCDDetect = new System.Windows.Forms.CheckBox();
+			this.tabPage5 = new System.Windows.Forms.TabPage();
+			this.richTextBoxScript = new System.Windows.Forms.RichTextBox();
+			this.buttonScriptCompile = new System.Windows.Forms.Button();
+			this.groupBoxScriptConditions = new System.Windows.Forms.GroupBox();
+			this.listViewScriptConditions = new System.Windows.Forms.ListView();
+			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
+			this.listViewScripts = new System.Windows.Forms.ListView();
+			this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+			this.labelFormatDecoder = new System.Windows.Forms.Label();
+			this.labelFormatEncoder = new System.Windows.Forms.Label();
+			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
+			this.groupBoxAlbumArt = new System.Windows.Forms.GroupBox();
+			this.chkExtractLog = new System.Windows.Forms.CheckBox();
+			this.numericUpDownMaxResolution = new System.Windows.Forms.NumericUpDown();
+			this.labelAlbumArtMaximumResolution = new System.Windows.Forms.Label();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).BeginInit();
 			this.groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenPercent)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenConfidence)).BeginInit();
@@ -126,18 +174,32 @@ namespace JDP {
 			this.grpAudioFilenames.SuspendLayout();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
-			this.tabPage2.SuspendLayout();
-			this.groupBox3.SuspendLayout();
-			this.tabPage3.SuspendLayout();
-			this.tabControl2.SuspendLayout();
-			this.tabPage5.SuspendLayout();
 			this.tabPage6.SuspendLayout();
-			this.tabPage7.SuspendLayout();
-			this.tabPage8.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).BeginInit();
-			this.tabPage9.SuspendLayout();
+			this.groupBoxTagging.SuspendLayout();
+			this.tabPage2.SuspendLayout();
+			this.groupBoxARLog.SuspendLayout();
+			this.groupBox5.SuspendLayout();
+			this.groupBox4.SuspendLayout();
+			this.groupBoxVerify.SuspendLayout();
+			this.tabPage3.SuspendLayout();
+			this.groupBoxFormat.SuspendLayout();
+			this.tabPage10.SuspendLayout();
+			this.groupBoxExternalEncoder.SuspendLayout();
+			this.groupBoxLibMAC_SDK.SuspendLayout();
+			this.groupBoxLibWavpack.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).BeginInit();
+			this.groupBoxLibFLAC.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).BeginInit();
+			this.tabPage11.SuspendLayout();
+			this.groupBoxExternalDecoder.SuspendLayout();
 			this.tabPage4.SuspendLayout();
+			this.groupBox2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).BeginInit();
 			this.grpHDCD.SuspendLayout();
+			this.tabPage5.SuspendLayout();
+			this.groupBoxScriptConditions.SuspendLayout();
+			this.groupBoxAlbumArt.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnCancel
@@ -151,15 +213,11 @@ namespace JDP {
 			// 
 			this.grpGeneral.Controls.Add(this.labelLanguage);
 			this.grpGeneral.Controls.Add(this.comboLanguage);
-			this.grpGeneral.Controls.Add(this.chkSingleInstance);
-			this.grpGeneral.Controls.Add(this.chkOverwriteTags);
-			this.grpGeneral.Controls.Add(this.chkExtractLog);
+			this.grpGeneral.Controls.Add(this.chkAllowMultipleInstances);
 			this.grpGeneral.Controls.Add(this.chkReducePriority);
 			this.grpGeneral.Controls.Add(this.chkTruncateExtra4206Samples);
 			this.grpGeneral.Controls.Add(this.chkCreateCUEFileWhenEmbedded);
 			this.grpGeneral.Controls.Add(this.chkCreateM3U);
-			this.grpGeneral.Controls.Add(this.chkFillUpCUE);
-			this.grpGeneral.Controls.Add(this.chkEmbedLog);
 			this.grpGeneral.Controls.Add(this.chkAutoCorrectFilenames);
 			this.grpGeneral.Controls.Add(this.chkPreserveHTOA);
 			resources.ApplyResources(this.grpGeneral, "grpGeneral");
@@ -179,23 +237,11 @@ namespace JDP {
 			resources.ApplyResources(this.comboLanguage, "comboLanguage");
 			this.comboLanguage.Name = "comboLanguage";
 			// 
-			// chkSingleInstance
+			// chkAllowMultipleInstances
 			// 
-			resources.ApplyResources(this.chkSingleInstance, "chkSingleInstance");
-			this.chkSingleInstance.Name = "chkSingleInstance";
-			this.chkSingleInstance.UseVisualStyleBackColor = true;
-			// 
-			// chkOverwriteTags
-			// 
-			resources.ApplyResources(this.chkOverwriteTags, "chkOverwriteTags");
-			this.chkOverwriteTags.Name = "chkOverwriteTags";
-			this.chkOverwriteTags.UseVisualStyleBackColor = true;
-			// 
-			// chkExtractLog
-			// 
-			resources.ApplyResources(this.chkExtractLog, "chkExtractLog");
-			this.chkExtractLog.Name = "chkExtractLog";
-			this.chkExtractLog.UseVisualStyleBackColor = true;
+			resources.ApplyResources(this.chkAllowMultipleInstances, "chkAllowMultipleInstances");
+			this.chkAllowMultipleInstances.Name = "chkAllowMultipleInstances";
+			this.chkAllowMultipleInstances.UseVisualStyleBackColor = true;
 			// 
 			// chkReducePriority
 			// 
@@ -222,20 +268,6 @@ namespace JDP {
 			this.chkCreateM3U.Name = "chkCreateM3U";
 			this.chkCreateM3U.UseVisualStyleBackColor = true;
 			// 
-			// chkFillUpCUE
-			// 
-			resources.ApplyResources(this.chkFillUpCUE, "chkFillUpCUE");
-			this.chkFillUpCUE.Name = "chkFillUpCUE";
-			this.chkFillUpCUE.UseVisualStyleBackColor = true;
-			this.chkFillUpCUE.CheckedChanged += new System.EventHandler(this.chkFillUpCUE_CheckedChanged);
-			// 
-			// chkEmbedLog
-			// 
-			resources.ApplyResources(this.chkEmbedLog, "chkEmbedLog");
-			this.chkEmbedLog.Name = "chkEmbedLog";
-			this.toolTip1.SetToolTip(this.chkEmbedLog, resources.GetString("chkEmbedLog.ToolTip"));
-			this.chkEmbedLog.UseVisualStyleBackColor = true;
-			// 
 			// chkAutoCorrectFilenames
 			// 
 			resources.ApplyResources(this.chkAutoCorrectFilenames, "chkAutoCorrectFilenames");
@@ -249,32 +281,6 @@ namespace JDP {
 			this.chkPreserveHTOA.Name = "chkPreserveHTOA";
 			this.chkPreserveHTOA.UseVisualStyleBackColor = true;
 			// 
-			// numericFLACCompressionLevel
-			// 
-			resources.ApplyResources(this.numericFLACCompressionLevel, "numericFLACCompressionLevel");
-			this.numericFLACCompressionLevel.Maximum = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-			this.numericFLACCompressionLevel.Name = "numericFLACCompressionLevel";
-			this.numericFLACCompressionLevel.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-			// 
-			// lblFLACCompressionLevel
-			// 
-			resources.ApplyResources(this.lblFLACCompressionLevel, "lblFLACCompressionLevel");
-			this.lblFLACCompressionLevel.Name = "lblFLACCompressionLevel";
-			// 
-			// chkFLACVerify
-			// 
-			resources.ApplyResources(this.chkFLACVerify, "chkFLACVerify");
-			this.chkFLACVerify.Name = "chkFLACVerify";
-			this.chkFLACVerify.UseVisualStyleBackColor = true;
-			// 
 			// btnOK
 			// 
 			this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
@@ -283,96 +289,13 @@ namespace JDP {
 			this.btnOK.UseVisualStyleBackColor = true;
 			this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
 			// 
-			// chkWVStoreMD5
-			// 
-			resources.ApplyResources(this.chkWVStoreMD5, "chkWVStoreMD5");
-			this.chkWVStoreMD5.Name = "chkWVStoreMD5";
-			this.chkWVStoreMD5.UseVisualStyleBackColor = true;
-			// 
-			// numWVExtraMode
-			// 
-			resources.ApplyResources(this.numWVExtraMode, "numWVExtraMode");
-			this.numWVExtraMode.Maximum = new decimal(new int[] {
-            6,
-            0,
-            0,
-            0});
-			this.numWVExtraMode.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this.numWVExtraMode.Name = "numWVExtraMode";
-			this.numWVExtraMode.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// chkWVExtraMode
-			// 
-			resources.ApplyResources(this.chkWVExtraMode, "chkWVExtraMode");
-			this.chkWVExtraMode.Name = "chkWVExtraMode";
-			this.chkWVExtraMode.UseVisualStyleBackColor = true;
-			this.chkWVExtraMode.CheckedChanged += new System.EventHandler(this.chkWVExtraMode_CheckedChanged);
-			// 
-			// rbWVVeryHigh
-			// 
-			resources.ApplyResources(this.rbWVVeryHigh, "rbWVVeryHigh");
-			this.rbWVVeryHigh.Name = "rbWVVeryHigh";
-			this.rbWVVeryHigh.UseVisualStyleBackColor = true;
-			// 
-			// rbWVHigh
-			// 
-			resources.ApplyResources(this.rbWVHigh, "rbWVHigh");
-			this.rbWVHigh.Name = "rbWVHigh";
-			this.rbWVHigh.UseVisualStyleBackColor = true;
-			// 
-			// rbWVNormal
-			// 
-			resources.ApplyResources(this.rbWVNormal, "rbWVNormal");
-			this.rbWVNormal.Checked = true;
-			this.rbWVNormal.Name = "rbWVNormal";
-			this.rbWVNormal.TabStop = true;
-			this.rbWVNormal.UseVisualStyleBackColor = true;
-			// 
-			// rbWVFast
-			// 
-			resources.ApplyResources(this.rbWVFast, "rbWVFast");
-			this.rbWVFast.Name = "rbWVFast";
-			this.rbWVFast.UseVisualStyleBackColor = true;
-			// 
 			// groupBox1
 			// 
-			this.groupBox1.Controls.Add(this.chkEncodeWhenZeroOffset);
-			this.groupBox1.Controls.Add(this.chkArFixOffset);
 			this.groupBox1.Controls.Add(this.chkWriteArLogOnConvert);
 			this.groupBox1.Controls.Add(this.chkWriteArTagsOnConvert);
-			this.groupBox1.Controls.Add(this.numEncodeWhenPercent);
-			this.groupBox1.Controls.Add(this.labelEncodeWhenConfidence);
-			this.groupBox1.Controls.Add(this.numEncodeWhenConfidence);
-			this.groupBox1.Controls.Add(this.chkArNoUnverifiedAudio);
-			this.groupBox1.Controls.Add(this.labelFixWhenConfidence);
-			this.groupBox1.Controls.Add(this.numFixWhenConfidence);
-			this.groupBox1.Controls.Add(this.numFixWhenPercent);
 			resources.ApplyResources(this.groupBox1, "groupBox1");
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.TabStop = false;
-			// 
-			// chkEncodeWhenZeroOffset
-			// 
-			resources.ApplyResources(this.chkEncodeWhenZeroOffset, "chkEncodeWhenZeroOffset");
-			this.chkEncodeWhenZeroOffset.Name = "chkEncodeWhenZeroOffset";
-			this.chkEncodeWhenZeroOffset.UseVisualStyleBackColor = true;
-			// 
-			// chkArFixOffset
-			// 
-			resources.ApplyResources(this.chkArFixOffset, "chkArFixOffset");
-			this.chkArFixOffset.Checked = true;
-			this.chkArFixOffset.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.chkArFixOffset.Name = "chkArFixOffset";
-			this.chkArFixOffset.UseVisualStyleBackColor = true;
-			this.chkArFixOffset.CheckedChanged += new System.EventHandler(this.chkArFixOffset_CheckedChanged);
 			// 
 			// chkWriteArLogOnConvert
 			// 
@@ -391,14 +314,20 @@ namespace JDP {
 			this.toolTip1.SetToolTip(this.chkWriteArTagsOnConvert, resources.GetString("chkWriteArTagsOnConvert.ToolTip"));
 			this.chkWriteArTagsOnConvert.UseVisualStyleBackColor = true;
 			// 
+			// chkEncodeWhenZeroOffset
+			// 
+			resources.ApplyResources(this.chkEncodeWhenZeroOffset, "chkEncodeWhenZeroOffset");
+			this.chkEncodeWhenZeroOffset.Name = "chkEncodeWhenZeroOffset";
+			this.chkEncodeWhenZeroOffset.UseVisualStyleBackColor = true;
+			// 
 			// numEncodeWhenPercent
 			// 
+			resources.ApplyResources(this.numEncodeWhenPercent, "numEncodeWhenPercent");
 			this.numEncodeWhenPercent.Increment = new decimal(new int[] {
             5,
             0,
             0,
             0});
-			resources.ApplyResources(this.numEncodeWhenPercent, "numEncodeWhenPercent");
 			this.numEncodeWhenPercent.Minimum = new decimal(new int[] {
             1,
             0,
@@ -431,15 +360,6 @@ namespace JDP {
             0,
             0});
 			// 
-			// chkArNoUnverifiedAudio
-			// 
-			resources.ApplyResources(this.chkArNoUnverifiedAudio, "chkArNoUnverifiedAudio");
-			this.chkArNoUnverifiedAudio.Checked = true;
-			this.chkArNoUnverifiedAudio.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.chkArNoUnverifiedAudio.Name = "chkArNoUnverifiedAudio";
-			this.chkArNoUnverifiedAudio.UseVisualStyleBackColor = true;
-			this.chkArNoUnverifiedAudio.CheckedChanged += new System.EventHandler(this.chkArNoUnverifiedAudio_CheckedChanged);
-			// 
 			// labelFixWhenConfidence
 			// 
 			resources.ApplyResources(this.labelFixWhenConfidence, "labelFixWhenConfidence");
@@ -462,12 +382,12 @@ namespace JDP {
 			// 
 			// numFixWhenPercent
 			// 
+			resources.ApplyResources(this.numFixWhenPercent, "numFixWhenPercent");
 			this.numFixWhenPercent.Increment = new decimal(new int[] {
             5,
             0,
             0,
             0});
-			resources.ApplyResources(this.numFixWhenPercent, "numFixWhenPercent");
 			this.numFixWhenPercent.Minimum = new decimal(new int[] {
             1,
             0,
@@ -531,6 +451,13 @@ namespace JDP {
 			this.chkHDCDLW16.Name = "chkHDCDLW16";
 			this.toolTip1.SetToolTip(this.chkHDCDLW16, resources.GetString("chkHDCDLW16.ToolTip"));
 			this.chkHDCDLW16.UseVisualStyleBackColor = true;
+			// 
+			// chkEmbedLog
+			// 
+			resources.ApplyResources(this.chkEmbedLog, "chkEmbedLog");
+			this.chkEmbedLog.Name = "chkEmbedLog";
+			this.toolTip1.SetToolTip(this.chkEmbedLog, resources.GetString("chkEmbedLog.ToolTip"));
+			this.chkEmbedLog.UseVisualStyleBackColor = true;
 			// 
 			// grpAudioFilenames
 			// 
@@ -597,76 +524,182 @@ namespace JDP {
 			resources.ApplyResources(this.txtSingleFilenameFormat, "txtSingleFilenameFormat");
 			this.txtSingleFilenameFormat.Name = "txtSingleFilenameFormat";
 			// 
-			// rbAPEinsane
-			// 
-			resources.ApplyResources(this.rbAPEinsane, "rbAPEinsane");
-			this.rbAPEinsane.Name = "rbAPEinsane";
-			this.rbAPEinsane.TabStop = true;
-			this.rbAPEinsane.UseVisualStyleBackColor = true;
-			// 
-			// rbAPEextrahigh
-			// 
-			resources.ApplyResources(this.rbAPEextrahigh, "rbAPEextrahigh");
-			this.rbAPEextrahigh.Name = "rbAPEextrahigh";
-			this.rbAPEextrahigh.TabStop = true;
-			this.rbAPEextrahigh.UseVisualStyleBackColor = true;
-			// 
-			// rbAPEhigh
-			// 
-			resources.ApplyResources(this.rbAPEhigh, "rbAPEhigh");
-			this.rbAPEhigh.Name = "rbAPEhigh";
-			this.rbAPEhigh.TabStop = true;
-			this.rbAPEhigh.UseVisualStyleBackColor = true;
-			// 
-			// rbAPEnormal
-			// 
-			resources.ApplyResources(this.rbAPEnormal, "rbAPEnormal");
-			this.rbAPEnormal.Name = "rbAPEnormal";
-			this.rbAPEnormal.TabStop = true;
-			this.rbAPEnormal.UseVisualStyleBackColor = true;
-			// 
-			// rbAPEfast
-			// 
-			resources.ApplyResources(this.rbAPEfast, "rbAPEfast");
-			this.rbAPEfast.Name = "rbAPEfast";
-			this.rbAPEfast.TabStop = true;
-			this.rbAPEfast.UseVisualStyleBackColor = true;
-			// 
 			// tabControl1
 			// 
 			resources.ApplyResources(this.tabControl1, "tabControl1");
 			this.tabControl1.Controls.Add(this.tabPage1);
+			this.tabControl1.Controls.Add(this.tabPage6);
 			this.tabControl1.Controls.Add(this.tabPage2);
 			this.tabControl1.Controls.Add(this.tabPage3);
+			this.tabControl1.Controls.Add(this.tabPage10);
+			this.tabControl1.Controls.Add(this.tabPage11);
 			this.tabControl1.Controls.Add(this.tabPage4);
+			this.tabControl1.Controls.Add(this.tabPage5);
 			this.tabControl1.HotTrack = true;
 			this.tabControl1.Multiline = true;
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
+			this.tabControl1.Deselecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Deselecting);
 			// 
 			// tabPage1
 			// 
-			this.tabPage1.BackColor = System.Drawing.Color.Transparent;
+			this.tabPage1.BackColor = System.Drawing.SystemColors.Control;
 			this.tabPage1.Controls.Add(this.grpGeneral);
 			this.tabPage1.Controls.Add(this.grpAudioFilenames);
 			resources.ApplyResources(this.tabPage1, "tabPage1");
 			this.tabPage1.Name = "tabPage1";
 			// 
+			// tabPage6
+			// 
+			this.tabPage6.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage6.Controls.Add(this.groupBoxAlbumArt);
+			this.tabPage6.Controls.Add(this.groupBoxTagging);
+			resources.ApplyResources(this.tabPage6, "tabPage6");
+			this.tabPage6.Name = "tabPage6";
+			// 
+			// groupBoxTagging
+			// 
+			this.groupBoxTagging.Controls.Add(this.chkExtractLog);
+			this.groupBoxTagging.Controls.Add(this.checkBoxCopyBasicTags);
+			this.groupBoxTagging.Controls.Add(this.checkBoxWriteCUETags);
+			this.groupBoxTagging.Controls.Add(this.checkBoxCopyUnknownTags);
+			this.groupBoxTagging.Controls.Add(this.chkOverwriteTags);
+			this.groupBoxTagging.Controls.Add(this.chkFillUpCUE);
+			this.groupBoxTagging.Controls.Add(this.chkEmbedLog);
+			resources.ApplyResources(this.groupBoxTagging, "groupBoxTagging");
+			this.groupBoxTagging.Name = "groupBoxTagging";
+			this.groupBoxTagging.TabStop = false;
+			// 
+			// checkBoxEmbedAlbumArt
+			// 
+			resources.ApplyResources(this.checkBoxEmbedAlbumArt, "checkBoxEmbedAlbumArt");
+			this.checkBoxEmbedAlbumArt.Name = "checkBoxEmbedAlbumArt";
+			this.checkBoxEmbedAlbumArt.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxCopyBasicTags
+			// 
+			resources.ApplyResources(this.checkBoxCopyBasicTags, "checkBoxCopyBasicTags");
+			this.checkBoxCopyBasicTags.Name = "checkBoxCopyBasicTags";
+			this.checkBoxCopyBasicTags.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxCopyAlbumArt
+			// 
+			resources.ApplyResources(this.checkBoxCopyAlbumArt, "checkBoxCopyAlbumArt");
+			this.checkBoxCopyAlbumArt.Name = "checkBoxCopyAlbumArt";
+			this.checkBoxCopyAlbumArt.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxWriteCUETags
+			// 
+			resources.ApplyResources(this.checkBoxWriteCUETags, "checkBoxWriteCUETags");
+			this.checkBoxWriteCUETags.Name = "checkBoxWriteCUETags";
+			this.checkBoxWriteCUETags.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxCopyUnknownTags
+			// 
+			resources.ApplyResources(this.checkBoxCopyUnknownTags, "checkBoxCopyUnknownTags");
+			this.checkBoxCopyUnknownTags.Name = "checkBoxCopyUnknownTags";
+			this.checkBoxCopyUnknownTags.UseVisualStyleBackColor = true;
+			// 
+			// chkOverwriteTags
+			// 
+			resources.ApplyResources(this.chkOverwriteTags, "chkOverwriteTags");
+			this.chkOverwriteTags.Name = "chkOverwriteTags";
+			this.chkOverwriteTags.UseVisualStyleBackColor = true;
+			// 
+			// chkFillUpCUE
+			// 
+			resources.ApplyResources(this.chkFillUpCUE, "chkFillUpCUE");
+			this.chkFillUpCUE.Name = "chkFillUpCUE";
+			this.chkFillUpCUE.UseVisualStyleBackColor = true;
+			// 
 			// tabPage2
 			// 
 			this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
-			this.tabPage2.Controls.Add(this.groupBox3);
+			this.tabPage2.Controls.Add(this.groupBoxARLog);
+			this.tabPage2.Controls.Add(this.groupBox5);
+			this.tabPage2.Controls.Add(this.groupBox4);
+			this.tabPage2.Controls.Add(this.groupBoxVerify);
 			this.tabPage2.Controls.Add(this.groupBox1);
 			resources.ApplyResources(this.tabPage2, "tabPage2");
 			this.tabPage2.Name = "tabPage2";
 			// 
-			// groupBox3
+			// groupBoxARLog
 			// 
-			this.groupBox3.Controls.Add(this.chkWriteARLogOnVerify);
-			this.groupBox3.Controls.Add(this.chkWriteARTagsOnVerify);
-			resources.ApplyResources(this.groupBox3, "groupBox3");
-			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.TabStop = false;
+			this.groupBoxARLog.Controls.Add(this.textBoxARLogExtension);
+			this.groupBoxARLog.Controls.Add(this.labelLogFileExtension);
+			this.groupBoxARLog.Controls.Add(this.checkBoxARLogVerbose);
+			resources.ApplyResources(this.groupBoxARLog, "groupBoxARLog");
+			this.groupBoxARLog.Name = "groupBoxARLog";
+			this.groupBoxARLog.TabStop = false;
+			// 
+			// textBoxARLogExtension
+			// 
+			resources.ApplyResources(this.textBoxARLogExtension, "textBoxARLogExtension");
+			this.textBoxARLogExtension.Name = "textBoxARLogExtension";
+			// 
+			// labelLogFileExtension
+			// 
+			resources.ApplyResources(this.labelLogFileExtension, "labelLogFileExtension");
+			this.labelLogFileExtension.Name = "labelLogFileExtension";
+			// 
+			// checkBoxARLogVerbose
+			// 
+			resources.ApplyResources(this.checkBoxARLogVerbose, "checkBoxARLogVerbose");
+			this.checkBoxARLogVerbose.Name = "checkBoxARLogVerbose";
+			this.checkBoxARLogVerbose.UseVisualStyleBackColor = true;
+			// 
+			// groupBox5
+			// 
+			this.groupBox5.Controls.Add(this.label2);
+			this.groupBox5.Controls.Add(this.chkEncodeWhenZeroOffset);
+			this.groupBox5.Controls.Add(this.numEncodeWhenConfidence);
+			this.groupBox5.Controls.Add(this.labelEncodeWhenConfidence);
+			this.groupBox5.Controls.Add(this.numEncodeWhenPercent);
+			resources.ApplyResources(this.groupBox5, "groupBox5");
+			this.groupBox5.Name = "groupBox5";
+			this.groupBox5.TabStop = false;
+			// 
+			// label2
+			// 
+			resources.ApplyResources(this.label2, "label2");
+			this.label2.Name = "label2";
+			// 
+			// groupBox4
+			// 
+			this.groupBox4.Controls.Add(this.checkBoxFixToNearest);
+			this.groupBox4.Controls.Add(this.label3);
+			this.groupBox4.Controls.Add(this.labelFixWhenConfidence);
+			this.groupBox4.Controls.Add(this.numFixWhenConfidence);
+			this.groupBox4.Controls.Add(this.numFixWhenPercent);
+			resources.ApplyResources(this.groupBox4, "groupBox4");
+			this.groupBox4.Name = "groupBox4";
+			this.groupBox4.TabStop = false;
+			// 
+			// checkBoxFixToNearest
+			// 
+			resources.ApplyResources(this.checkBoxFixToNearest, "checkBoxFixToNearest");
+			this.checkBoxFixToNearest.Name = "checkBoxFixToNearest";
+			this.checkBoxFixToNearest.UseVisualStyleBackColor = true;
+			// 
+			// label3
+			// 
+			resources.ApplyResources(this.label3, "label3");
+			this.label3.Name = "label3";
+			// 
+			// groupBoxVerify
+			// 
+			this.groupBoxVerify.Controls.Add(this.checkBoxARVerifyUseSourceFolder);
+			this.groupBoxVerify.Controls.Add(this.chkWriteARLogOnVerify);
+			this.groupBoxVerify.Controls.Add(this.chkWriteARTagsOnVerify);
+			resources.ApplyResources(this.groupBoxVerify, "groupBoxVerify");
+			this.groupBoxVerify.Name = "groupBoxVerify";
+			this.groupBoxVerify.TabStop = false;
+			// 
+			// checkBoxARVerifyUseSourceFolder
+			// 
+			resources.ApplyResources(this.checkBoxARVerifyUseSourceFolder, "checkBoxARVerifyUseSourceFolder");
+			this.checkBoxARVerifyUseSourceFolder.Name = "checkBoxARVerifyUseSourceFolder";
+			this.checkBoxARVerifyUseSourceFolder.UseVisualStyleBackColor = true;
 			// 
 			// chkWriteARLogOnVerify
 			// 
@@ -679,64 +712,459 @@ namespace JDP {
 			// tabPage3
 			// 
 			this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
-			this.tabPage3.Controls.Add(this.tabControl2);
+			this.tabPage3.Controls.Add(this.groupBoxFormat);
+			this.tabPage3.Controls.Add(this.listViewFormats);
 			resources.ApplyResources(this.tabPage3, "tabPage3");
 			this.tabPage3.Name = "tabPage3";
 			// 
-			// tabControl2
+			// groupBoxFormat
 			// 
-			this.tabControl2.Controls.Add(this.tabPage5);
-			this.tabControl2.Controls.Add(this.tabPage6);
-			this.tabControl2.Controls.Add(this.tabPage7);
-			this.tabControl2.Controls.Add(this.tabPage8);
-			this.tabControl2.Controls.Add(this.tabPage9);
-			this.tabControl2.ImageList = this.imageList1;
-			resources.ApplyResources(this.tabControl2, "tabControl2");
-			this.tabControl2.Multiline = true;
-			this.tabControl2.Name = "tabControl2";
-			this.tabControl2.SelectedIndex = 0;
+			this.groupBoxFormat.Controls.Add(this.comboFormatLossyEncoder);
+			this.groupBoxFormat.Controls.Add(this.labelFormatLossyEncoder);
+			this.groupBoxFormat.Controls.Add(this.checkBoxFormatAllowLossy);
+			this.groupBoxFormat.Controls.Add(this.comboFormatLosslessEncoder);
+			this.groupBoxFormat.Controls.Add(this.checkBoxFormatSupportsLossyWAV);
+			this.groupBoxFormat.Controls.Add(this.labelFormatLosslessEncoder);
+			this.groupBoxFormat.Controls.Add(this.checkBoxFormatEmbedCUESheet);
+			this.groupBoxFormat.Controls.Add(this.comboFormatDecoder);
+			this.groupBoxFormat.Controls.Add(this.checkBoxFormatAllowLossless);
+			this.groupBoxFormat.Controls.Add(this.labelFormatDefaultDecoder);
+			this.groupBoxFormat.Controls.Add(this.labelFormatTagger);
+			this.groupBoxFormat.Controls.Add(this.comboBoxFormatTagger);
+			resources.ApplyResources(this.groupBoxFormat, "groupBoxFormat");
+			this.groupBoxFormat.Name = "groupBoxFormat";
+			this.groupBoxFormat.TabStop = false;
 			// 
-			// tabPage5
+			// comboFormatLossyEncoder
 			// 
-			this.tabPage5.BackColor = System.Drawing.Color.Transparent;
-			this.tabPage5.Controls.Add(this.numericFLACCompressionLevel);
-			this.tabPage5.Controls.Add(this.lblFLACCompressionLevel);
-			this.tabPage5.Controls.Add(this.chkFLACVerify);
-			resources.ApplyResources(this.tabPage5, "tabPage5");
-			this.tabPage5.Name = "tabPage5";
-			this.tabPage5.UseVisualStyleBackColor = true;
+			this.comboFormatLossyEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboFormatLossyEncoder.FormattingEnabled = true;
+			resources.ApplyResources(this.comboFormatLossyEncoder, "comboFormatLossyEncoder");
+			this.comboFormatLossyEncoder.Name = "comboFormatLossyEncoder";
 			// 
-			// tabPage6
+			// labelFormatLossyEncoder
 			// 
-			this.tabPage6.Controls.Add(this.chkWVStoreMD5);
-			this.tabPage6.Controls.Add(this.numWVExtraMode);
-			this.tabPage6.Controls.Add(this.rbWVFast);
-			this.tabPage6.Controls.Add(this.chkWVExtraMode);
-			this.tabPage6.Controls.Add(this.rbWVNormal);
-			this.tabPage6.Controls.Add(this.rbWVVeryHigh);
-			this.tabPage6.Controls.Add(this.rbWVHigh);
-			resources.ApplyResources(this.tabPage6, "tabPage6");
-			this.tabPage6.Name = "tabPage6";
-			this.tabPage6.UseVisualStyleBackColor = true;
+			resources.ApplyResources(this.labelFormatLossyEncoder, "labelFormatLossyEncoder");
+			this.labelFormatLossyEncoder.Name = "labelFormatLossyEncoder";
 			// 
-			// tabPage7
+			// checkBoxFormatAllowLossy
 			// 
-			this.tabPage7.Controls.Add(this.rbAPEinsane);
-			this.tabPage7.Controls.Add(this.rbAPEextrahigh);
-			this.tabPage7.Controls.Add(this.rbAPEfast);
-			this.tabPage7.Controls.Add(this.rbAPEhigh);
-			this.tabPage7.Controls.Add(this.rbAPEnormal);
-			resources.ApplyResources(this.tabPage7, "tabPage7");
-			this.tabPage7.Name = "tabPage7";
-			this.tabPage7.UseVisualStyleBackColor = true;
+			resources.ApplyResources(this.checkBoxFormatAllowLossy, "checkBoxFormatAllowLossy");
+			this.checkBoxFormatAllowLossy.Name = "checkBoxFormatAllowLossy";
+			this.checkBoxFormatAllowLossy.UseVisualStyleBackColor = true;
 			// 
-			// tabPage8
+			// comboFormatLosslessEncoder
 			// 
-			this.tabPage8.Controls.Add(this.label1);
-			this.tabPage8.Controls.Add(this.numericLossyWAVQuality);
-			resources.ApplyResources(this.tabPage8, "tabPage8");
-			this.tabPage8.Name = "tabPage8";
-			this.tabPage8.UseVisualStyleBackColor = true;
+			this.comboFormatLosslessEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboFormatLosslessEncoder.FormattingEnabled = true;
+			resources.ApplyResources(this.comboFormatLosslessEncoder, "comboFormatLosslessEncoder");
+			this.comboFormatLosslessEncoder.Name = "comboFormatLosslessEncoder";
+			// 
+			// checkBoxFormatSupportsLossyWAV
+			// 
+			resources.ApplyResources(this.checkBoxFormatSupportsLossyWAV, "checkBoxFormatSupportsLossyWAV");
+			this.checkBoxFormatSupportsLossyWAV.Name = "checkBoxFormatSupportsLossyWAV";
+			this.checkBoxFormatSupportsLossyWAV.UseVisualStyleBackColor = true;
+			// 
+			// labelFormatLosslessEncoder
+			// 
+			resources.ApplyResources(this.labelFormatLosslessEncoder, "labelFormatLosslessEncoder");
+			this.labelFormatLosslessEncoder.Name = "labelFormatLosslessEncoder";
+			// 
+			// checkBoxFormatEmbedCUESheet
+			// 
+			resources.ApplyResources(this.checkBoxFormatEmbedCUESheet, "checkBoxFormatEmbedCUESheet");
+			this.checkBoxFormatEmbedCUESheet.Name = "checkBoxFormatEmbedCUESheet";
+			this.checkBoxFormatEmbedCUESheet.UseVisualStyleBackColor = true;
+			// 
+			// comboFormatDecoder
+			// 
+			this.comboFormatDecoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboFormatDecoder.FormattingEnabled = true;
+			resources.ApplyResources(this.comboFormatDecoder, "comboFormatDecoder");
+			this.comboFormatDecoder.Name = "comboFormatDecoder";
+			// 
+			// checkBoxFormatAllowLossless
+			// 
+			resources.ApplyResources(this.checkBoxFormatAllowLossless, "checkBoxFormatAllowLossless");
+			this.checkBoxFormatAllowLossless.Name = "checkBoxFormatAllowLossless";
+			this.checkBoxFormatAllowLossless.UseVisualStyleBackColor = true;
+			// 
+			// labelFormatDefaultDecoder
+			// 
+			resources.ApplyResources(this.labelFormatDefaultDecoder, "labelFormatDefaultDecoder");
+			this.labelFormatDefaultDecoder.Name = "labelFormatDefaultDecoder";
+			// 
+			// labelFormatTagger
+			// 
+			resources.ApplyResources(this.labelFormatTagger, "labelFormatTagger");
+			this.labelFormatTagger.Name = "labelFormatTagger";
+			// 
+			// comboBoxFormatTagger
+			// 
+			this.comboBoxFormatTagger.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxFormatTagger.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxFormatTagger, "comboBoxFormatTagger");
+			this.comboBoxFormatTagger.Name = "comboBoxFormatTagger";
+			// 
+			// listViewFormats
+			// 
+			this.listViewFormats.BackColor = System.Drawing.SystemColors.Control;
+			this.listViewFormats.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listViewFormats.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1});
+			this.listViewFormats.FullRowSelect = true;
+			this.listViewFormats.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this.listViewFormats.HideSelection = false;
+			this.listViewFormats.LabelEdit = true;
+			resources.ApplyResources(this.listViewFormats, "listViewFormats");
+			this.listViewFormats.MultiSelect = false;
+			this.listViewFormats.Name = "listViewFormats";
+			this.listViewFormats.UseCompatibleStateImageBehavior = false;
+			this.listViewFormats.View = System.Windows.Forms.View.Details;
+			this.listViewFormats.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewFormats_AfterLabelEdit);
+			this.listViewFormats.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewFormats_ItemSelectionChanged);
+			this.listViewFormats.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewFormats_BeforeLabelEdit);
+			this.listViewFormats.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewFormats_KeyDown);
+			// 
+			// columnHeader1
+			// 
+			resources.ApplyResources(this.columnHeader1, "columnHeader1");
+			// 
+			// tabPage10
+			// 
+			this.tabPage10.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage10.Controls.Add(this.groupBoxExternalEncoder);
+			this.tabPage10.Controls.Add(this.comboBoxEncoderExtension);
+			this.tabPage10.Controls.Add(this.listViewEncoders);
+			this.tabPage10.Controls.Add(this.groupBoxLibMAC_SDK);
+			this.tabPage10.Controls.Add(this.groupBoxLibWavpack);
+			this.tabPage10.Controls.Add(this.groupBoxLibFLAC);
+			this.tabPage10.Controls.Add(this.labelEncoderExtension);
+			resources.ApplyResources(this.tabPage10, "tabPage10");
+			this.tabPage10.Name = "tabPage10";
+			// 
+			// groupBoxExternalEncoder
+			// 
+			resources.ApplyResources(this.groupBoxExternalEncoder, "groupBoxExternalEncoder");
+			this.groupBoxExternalEncoder.Controls.Add(this.checkBoxEncoderLossless);
+			this.groupBoxExternalEncoder.Controls.Add(this.textBoxEncoderPath);
+			this.groupBoxExternalEncoder.Controls.Add(this.textBoxEncoderParameters);
+			this.groupBoxExternalEncoder.Controls.Add(this.labelEncoderPath);
+			this.groupBoxExternalEncoder.Controls.Add(this.labelEncoderParameters);
+			this.groupBoxExternalEncoder.Name = "groupBoxExternalEncoder";
+			this.groupBoxExternalEncoder.TabStop = false;
+			// 
+			// checkBoxEncoderLossless
+			// 
+			resources.ApplyResources(this.checkBoxEncoderLossless, "checkBoxEncoderLossless");
+			this.checkBoxEncoderLossless.Name = "checkBoxEncoderLossless";
+			this.checkBoxEncoderLossless.UseVisualStyleBackColor = true;
+			// 
+			// textBoxEncoderPath
+			// 
+			resources.ApplyResources(this.textBoxEncoderPath, "textBoxEncoderPath");
+			this.textBoxEncoderPath.Name = "textBoxEncoderPath";
+			// 
+			// textBoxEncoderParameters
+			// 
+			resources.ApplyResources(this.textBoxEncoderParameters, "textBoxEncoderParameters");
+			this.textBoxEncoderParameters.Name = "textBoxEncoderParameters";
+			// 
+			// labelEncoderPath
+			// 
+			resources.ApplyResources(this.labelEncoderPath, "labelEncoderPath");
+			this.labelEncoderPath.Name = "labelEncoderPath";
+			// 
+			// labelEncoderParameters
+			// 
+			resources.ApplyResources(this.labelEncoderParameters, "labelEncoderParameters");
+			this.labelEncoderParameters.Name = "labelEncoderParameters";
+			// 
+			// comboBoxEncoderExtension
+			// 
+			this.comboBoxEncoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxEncoderExtension.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxEncoderExtension, "comboBoxEncoderExtension");
+			this.comboBoxEncoderExtension.Name = "comboBoxEncoderExtension";
+			this.comboBoxEncoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoderExtension_SelectedIndexChanged);
+			// 
+			// listViewEncoders
+			// 
+			this.listViewEncoders.BackColor = System.Drawing.SystemColors.Control;
+			this.listViewEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listViewEncoders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader3});
+			this.listViewEncoders.FullRowSelect = true;
+			this.listViewEncoders.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this.listViewEncoders.HideSelection = false;
+			this.listViewEncoders.LabelEdit = true;
+			resources.ApplyResources(this.listViewEncoders, "listViewEncoders");
+			this.listViewEncoders.MultiSelect = false;
+			this.listViewEncoders.Name = "listViewEncoders";
+			this.listViewEncoders.UseCompatibleStateImageBehavior = false;
+			this.listViewEncoders.View = System.Windows.Forms.View.Details;
+			this.listViewEncoders.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewEncoders_AfterLabelEdit);
+			this.listViewEncoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewEncoders_ItemSelectionChanged);
+			this.listViewEncoders.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewEncoders_BeforeLabelEdit);
+			this.listViewEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewEncoders_KeyDown);
+			// 
+			// columnHeader3
+			// 
+			resources.ApplyResources(this.columnHeader3, "columnHeader3");
+			// 
+			// groupBoxLibMAC_SDK
+			// 
+			this.groupBoxLibMAC_SDK.Controls.Add(this.rbAPEinsane);
+			this.groupBoxLibMAC_SDK.Controls.Add(this.rbAPEfast);
+			this.groupBoxLibMAC_SDK.Controls.Add(this.rbAPEextrahigh);
+			this.groupBoxLibMAC_SDK.Controls.Add(this.rbAPEnormal);
+			this.groupBoxLibMAC_SDK.Controls.Add(this.rbAPEhigh);
+			resources.ApplyResources(this.groupBoxLibMAC_SDK, "groupBoxLibMAC_SDK");
+			this.groupBoxLibMAC_SDK.Name = "groupBoxLibMAC_SDK";
+			this.groupBoxLibMAC_SDK.TabStop = false;
+			// 
+			// rbAPEinsane
+			// 
+			resources.ApplyResources(this.rbAPEinsane, "rbAPEinsane");
+			this.rbAPEinsane.Name = "rbAPEinsane";
+			this.rbAPEinsane.TabStop = true;
+			this.rbAPEinsane.UseVisualStyleBackColor = true;
+			// 
+			// rbAPEfast
+			// 
+			resources.ApplyResources(this.rbAPEfast, "rbAPEfast");
+			this.rbAPEfast.Name = "rbAPEfast";
+			this.rbAPEfast.TabStop = true;
+			this.rbAPEfast.UseVisualStyleBackColor = true;
+			// 
+			// rbAPEextrahigh
+			// 
+			resources.ApplyResources(this.rbAPEextrahigh, "rbAPEextrahigh");
+			this.rbAPEextrahigh.Name = "rbAPEextrahigh";
+			this.rbAPEextrahigh.TabStop = true;
+			this.rbAPEextrahigh.UseVisualStyleBackColor = true;
+			// 
+			// rbAPEnormal
+			// 
+			resources.ApplyResources(this.rbAPEnormal, "rbAPEnormal");
+			this.rbAPEnormal.Name = "rbAPEnormal";
+			this.rbAPEnormal.TabStop = true;
+			this.rbAPEnormal.UseVisualStyleBackColor = true;
+			// 
+			// rbAPEhigh
+			// 
+			resources.ApplyResources(this.rbAPEhigh, "rbAPEhigh");
+			this.rbAPEhigh.Name = "rbAPEhigh";
+			this.rbAPEhigh.TabStop = true;
+			this.rbAPEhigh.UseVisualStyleBackColor = true;
+			// 
+			// groupBoxLibWavpack
+			// 
+			this.groupBoxLibWavpack.Controls.Add(this.chkWVStoreMD5);
+			this.groupBoxLibWavpack.Controls.Add(this.rbWVFast);
+			this.groupBoxLibWavpack.Controls.Add(this.numWVExtraMode);
+			this.groupBoxLibWavpack.Controls.Add(this.rbWVHigh);
+			this.groupBoxLibWavpack.Controls.Add(this.rbWVVeryHigh);
+			this.groupBoxLibWavpack.Controls.Add(this.chkWVExtraMode);
+			this.groupBoxLibWavpack.Controls.Add(this.rbWVNormal);
+			resources.ApplyResources(this.groupBoxLibWavpack, "groupBoxLibWavpack");
+			this.groupBoxLibWavpack.Name = "groupBoxLibWavpack";
+			this.groupBoxLibWavpack.TabStop = false;
+			// 
+			// chkWVStoreMD5
+			// 
+			resources.ApplyResources(this.chkWVStoreMD5, "chkWVStoreMD5");
+			this.chkWVStoreMD5.Name = "chkWVStoreMD5";
+			this.chkWVStoreMD5.UseVisualStyleBackColor = true;
+			// 
+			// rbWVFast
+			// 
+			resources.ApplyResources(this.rbWVFast, "rbWVFast");
+			this.rbWVFast.Name = "rbWVFast";
+			this.rbWVFast.UseVisualStyleBackColor = true;
+			// 
+			// numWVExtraMode
+			// 
+			resources.ApplyResources(this.numWVExtraMode, "numWVExtraMode");
+			this.numWVExtraMode.Maximum = new decimal(new int[] {
+            6,
+            0,
+            0,
+            0});
+			this.numWVExtraMode.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.numWVExtraMode.Name = "numWVExtraMode";
+			this.numWVExtraMode.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			// 
+			// rbWVHigh
+			// 
+			resources.ApplyResources(this.rbWVHigh, "rbWVHigh");
+			this.rbWVHigh.Name = "rbWVHigh";
+			this.rbWVHigh.UseVisualStyleBackColor = true;
+			// 
+			// rbWVVeryHigh
+			// 
+			resources.ApplyResources(this.rbWVVeryHigh, "rbWVVeryHigh");
+			this.rbWVVeryHigh.Name = "rbWVVeryHigh";
+			this.rbWVVeryHigh.UseVisualStyleBackColor = true;
+			// 
+			// chkWVExtraMode
+			// 
+			resources.ApplyResources(this.chkWVExtraMode, "chkWVExtraMode");
+			this.chkWVExtraMode.Name = "chkWVExtraMode";
+			this.chkWVExtraMode.UseVisualStyleBackColor = true;
+			// 
+			// rbWVNormal
+			// 
+			resources.ApplyResources(this.rbWVNormal, "rbWVNormal");
+			this.rbWVNormal.Checked = true;
+			this.rbWVNormal.Name = "rbWVNormal";
+			this.rbWVNormal.TabStop = true;
+			this.rbWVNormal.UseVisualStyleBackColor = true;
+			// 
+			// groupBoxLibFLAC
+			// 
+			this.groupBoxLibFLAC.Controls.Add(this.lblFLACCompressionLevel);
+			this.groupBoxLibFLAC.Controls.Add(this.numericFLACCompressionLevel);
+			this.groupBoxLibFLAC.Controls.Add(this.chkFLACVerify);
+			resources.ApplyResources(this.groupBoxLibFLAC, "groupBoxLibFLAC");
+			this.groupBoxLibFLAC.Name = "groupBoxLibFLAC";
+			this.groupBoxLibFLAC.TabStop = false;
+			// 
+			// lblFLACCompressionLevel
+			// 
+			resources.ApplyResources(this.lblFLACCompressionLevel, "lblFLACCompressionLevel");
+			this.lblFLACCompressionLevel.Name = "lblFLACCompressionLevel";
+			// 
+			// numericFLACCompressionLevel
+			// 
+			resources.ApplyResources(this.numericFLACCompressionLevel, "numericFLACCompressionLevel");
+			this.numericFLACCompressionLevel.Maximum = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+			this.numericFLACCompressionLevel.Name = "numericFLACCompressionLevel";
+			this.numericFLACCompressionLevel.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+			// 
+			// chkFLACVerify
+			// 
+			resources.ApplyResources(this.chkFLACVerify, "chkFLACVerify");
+			this.chkFLACVerify.Name = "chkFLACVerify";
+			this.chkFLACVerify.UseVisualStyleBackColor = true;
+			// 
+			// labelEncoderExtension
+			// 
+			resources.ApplyResources(this.labelEncoderExtension, "labelEncoderExtension");
+			this.labelEncoderExtension.MinimumSize = new System.Drawing.Size(100, 16);
+			this.labelEncoderExtension.Name = "labelEncoderExtension";
+			// 
+			// tabPage11
+			// 
+			this.tabPage11.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage11.Controls.Add(this.comboBoxDecoderExtension);
+			this.tabPage11.Controls.Add(this.groupBoxExternalDecoder);
+			this.tabPage11.Controls.Add(this.listViewDecoders);
+			this.tabPage11.Controls.Add(this.labelDecoderExtension);
+			resources.ApplyResources(this.tabPage11, "tabPage11");
+			this.tabPage11.Name = "tabPage11";
+			// 
+			// comboBoxDecoderExtension
+			// 
+			this.comboBoxDecoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxDecoderExtension.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxDecoderExtension, "comboBoxDecoderExtension");
+			this.comboBoxDecoderExtension.Name = "comboBoxDecoderExtension";
+			this.comboBoxDecoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxDecoderExtension_SelectedIndexChanged);
+			// 
+			// groupBoxExternalDecoder
+			// 
+			this.groupBoxExternalDecoder.Controls.Add(this.textBoxDecoderPath);
+			this.groupBoxExternalDecoder.Controls.Add(this.labelDecoderPath);
+			this.groupBoxExternalDecoder.Controls.Add(this.labelDecoderParameters);
+			this.groupBoxExternalDecoder.Controls.Add(this.textBoxDecoderParameters);
+			resources.ApplyResources(this.groupBoxExternalDecoder, "groupBoxExternalDecoder");
+			this.groupBoxExternalDecoder.Name = "groupBoxExternalDecoder";
+			this.groupBoxExternalDecoder.TabStop = false;
+			// 
+			// textBoxDecoderPath
+			// 
+			resources.ApplyResources(this.textBoxDecoderPath, "textBoxDecoderPath");
+			this.textBoxDecoderPath.Name = "textBoxDecoderPath";
+			// 
+			// labelDecoderPath
+			// 
+			resources.ApplyResources(this.labelDecoderPath, "labelDecoderPath");
+			this.labelDecoderPath.Name = "labelDecoderPath";
+			// 
+			// labelDecoderParameters
+			// 
+			resources.ApplyResources(this.labelDecoderParameters, "labelDecoderParameters");
+			this.labelDecoderParameters.Name = "labelDecoderParameters";
+			// 
+			// textBoxDecoderParameters
+			// 
+			resources.ApplyResources(this.textBoxDecoderParameters, "textBoxDecoderParameters");
+			this.textBoxDecoderParameters.Name = "textBoxDecoderParameters";
+			// 
+			// listViewDecoders
+			// 
+			this.listViewDecoders.BackColor = System.Drawing.SystemColors.Control;
+			this.listViewDecoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listViewDecoders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader4});
+			this.listViewDecoders.FullRowSelect = true;
+			this.listViewDecoders.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this.listViewDecoders.HideSelection = false;
+			this.listViewDecoders.LabelEdit = true;
+			resources.ApplyResources(this.listViewDecoders, "listViewDecoders");
+			this.listViewDecoders.MultiSelect = false;
+			this.listViewDecoders.Name = "listViewDecoders";
+			this.listViewDecoders.UseCompatibleStateImageBehavior = false;
+			this.listViewDecoders.View = System.Windows.Forms.View.Details;
+			this.listViewDecoders.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_AfterLabelEdit);
+			this.listViewDecoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewDecoders_ItemSelectionChanged);
+			this.listViewDecoders.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_BeforeLabelEdit);
+			this.listViewDecoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewDecoders_KeyDown);
+			// 
+			// columnHeader4
+			// 
+			resources.ApplyResources(this.columnHeader4, "columnHeader4");
+			// 
+			// labelDecoderExtension
+			// 
+			resources.ApplyResources(this.labelDecoderExtension, "labelDecoderExtension");
+			this.labelDecoderExtension.MinimumSize = new System.Drawing.Size(100, 16);
+			this.labelDecoderExtension.Name = "labelDecoderExtension";
+			// 
+			// tabPage4
+			// 
+			this.tabPage4.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage4.Controls.Add(this.groupBox2);
+			this.tabPage4.Controls.Add(this.grpHDCD);
+			this.tabPage4.Controls.Add(this.chkHDCDDetect);
+			resources.ApplyResources(this.tabPage4, "tabPage4");
+			this.tabPage4.Name = "tabPage4";
+			// 
+			// groupBox2
+			// 
+			this.groupBox2.Controls.Add(this.label1);
+			this.groupBox2.Controls.Add(this.numericLossyWAVQuality);
+			resources.ApplyResources(this.groupBox2, "groupBox2");
+			this.groupBox2.Name = "groupBox2";
+			this.groupBox2.TabStop = false;
 			// 
 			// label1
 			// 
@@ -758,101 +1186,6 @@ namespace JDP {
             0,
             0});
 			// 
-			// tabPage9
-			// 
-			this.tabPage9.Controls.Add(this.chkUDC1ID3v2);
-			this.tabPage9.Controls.Add(this.chkUDC1APEv2);
-			this.tabPage9.Controls.Add(this.label6);
-			this.tabPage9.Controls.Add(this.label5);
-			this.tabPage9.Controls.Add(this.textUDC1EncParams);
-			this.tabPage9.Controls.Add(this.textUDC1Encoder);
-			this.tabPage9.Controls.Add(this.textUDC1Params);
-			this.tabPage9.Controls.Add(this.textUDC1Decoder);
-			this.tabPage9.Controls.Add(this.textUDC1Extension);
-			this.tabPage9.Controls.Add(this.label4);
-			this.tabPage9.Controls.Add(this.label3);
-			this.tabPage9.Controls.Add(this.label2);
-			resources.ApplyResources(this.tabPage9, "tabPage9");
-			this.tabPage9.Name = "tabPage9";
-			this.tabPage9.UseVisualStyleBackColor = true;
-			// 
-			// chkUDC1ID3v2
-			// 
-			resources.ApplyResources(this.chkUDC1ID3v2, "chkUDC1ID3v2");
-			this.chkUDC1ID3v2.Name = "chkUDC1ID3v2";
-			this.chkUDC1ID3v2.UseVisualStyleBackColor = true;
-			// 
-			// chkUDC1APEv2
-			// 
-			resources.ApplyResources(this.chkUDC1APEv2, "chkUDC1APEv2");
-			this.chkUDC1APEv2.Name = "chkUDC1APEv2";
-			this.chkUDC1APEv2.UseVisualStyleBackColor = true;
-			// 
-			// label6
-			// 
-			resources.ApplyResources(this.label6, "label6");
-			this.label6.Name = "label6";
-			// 
-			// label5
-			// 
-			resources.ApplyResources(this.label5, "label5");
-			this.label5.Name = "label5";
-			// 
-			// textUDC1EncParams
-			// 
-			resources.ApplyResources(this.textUDC1EncParams, "textUDC1EncParams");
-			this.textUDC1EncParams.Name = "textUDC1EncParams";
-			// 
-			// textUDC1Encoder
-			// 
-			resources.ApplyResources(this.textUDC1Encoder, "textUDC1Encoder");
-			this.textUDC1Encoder.Name = "textUDC1Encoder";
-			// 
-			// textUDC1Params
-			// 
-			resources.ApplyResources(this.textUDC1Params, "textUDC1Params");
-			this.textUDC1Params.Name = "textUDC1Params";
-			// 
-			// textUDC1Decoder
-			// 
-			resources.ApplyResources(this.textUDC1Decoder, "textUDC1Decoder");
-			this.textUDC1Decoder.Name = "textUDC1Decoder";
-			// 
-			// textUDC1Extension
-			// 
-			resources.ApplyResources(this.textUDC1Extension, "textUDC1Extension");
-			this.textUDC1Extension.Name = "textUDC1Extension";
-			// 
-			// label4
-			// 
-			resources.ApplyResources(this.label4, "label4");
-			this.label4.Name = "label4";
-			// 
-			// label3
-			// 
-			resources.ApplyResources(this.label3, "label3");
-			this.label3.Name = "label3";
-			// 
-			// label2
-			// 
-			resources.ApplyResources(this.label2, "label2");
-			this.label2.Name = "label2";
-			// 
-			// imageList1
-			// 
-			this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-			this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-			this.imageList1.Images.SetKeyName(0, "flac");
-			this.imageList1.Images.SetKeyName(1, "wv");
-			// 
-			// tabPage4
-			// 
-			this.tabPage4.BackColor = System.Drawing.SystemColors.Control;
-			this.tabPage4.Controls.Add(this.grpHDCD);
-			this.tabPage4.Controls.Add(this.chkHDCDDetect);
-			resources.ApplyResources(this.tabPage4, "tabPage4");
-			this.tabPage4.Name = "tabPage4";
-			// 
 			// grpHDCD
 			// 
 			this.grpHDCD.Controls.Add(this.chkHDCD24bit);
@@ -869,6 +1202,144 @@ namespace JDP {
 			this.chkHDCDDetect.Name = "chkHDCDDetect";
 			this.chkHDCDDetect.UseVisualStyleBackColor = true;
 			this.chkHDCDDetect.CheckedChanged += new System.EventHandler(this.chkHDCDDetect_CheckedChanged);
+			// 
+			// tabPage5
+			// 
+			this.tabPage5.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage5.Controls.Add(this.richTextBoxScript);
+			this.tabPage5.Controls.Add(this.buttonScriptCompile);
+			this.tabPage5.Controls.Add(this.groupBoxScriptConditions);
+			this.tabPage5.Controls.Add(this.listViewScripts);
+			resources.ApplyResources(this.tabPage5, "tabPage5");
+			this.tabPage5.Name = "tabPage5";
+			// 
+			// richTextBoxScript
+			// 
+			this.richTextBoxScript.AcceptsTab = true;
+			this.richTextBoxScript.DetectUrls = false;
+			resources.ApplyResources(this.richTextBoxScript, "richTextBoxScript");
+			this.richTextBoxScript.Name = "richTextBoxScript";
+			// 
+			// buttonScriptCompile
+			// 
+			resources.ApplyResources(this.buttonScriptCompile, "buttonScriptCompile");
+			this.buttonScriptCompile.Name = "buttonScriptCompile";
+			this.buttonScriptCompile.UseVisualStyleBackColor = true;
+			this.buttonScriptCompile.Click += new System.EventHandler(this.buttonScriptCompile_Click);
+			// 
+			// groupBoxScriptConditions
+			// 
+			this.groupBoxScriptConditions.Controls.Add(this.listViewScriptConditions);
+			resources.ApplyResources(this.groupBoxScriptConditions, "groupBoxScriptConditions");
+			this.groupBoxScriptConditions.Name = "groupBoxScriptConditions";
+			this.groupBoxScriptConditions.TabStop = false;
+			// 
+			// listViewScriptConditions
+			// 
+			this.listViewScriptConditions.BackColor = System.Drawing.SystemColors.Control;
+			this.listViewScriptConditions.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listViewScriptConditions.CheckBoxes = true;
+			this.listViewScriptConditions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader6});
+			this.listViewScriptConditions.FullRowSelect = true;
+			this.listViewScriptConditions.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this.listViewScriptConditions.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            ((System.Windows.Forms.ListViewItem)(resources.GetObject("listViewScriptConditions.Items"))),
+            ((System.Windows.Forms.ListViewItem)(resources.GetObject("listViewScriptConditions.Items1"))),
+            ((System.Windows.Forms.ListViewItem)(resources.GetObject("listViewScriptConditions.Items2")))});
+			resources.ApplyResources(this.listViewScriptConditions, "listViewScriptConditions");
+			this.listViewScriptConditions.MultiSelect = false;
+			this.listViewScriptConditions.Name = "listViewScriptConditions";
+			this.listViewScriptConditions.UseCompatibleStateImageBehavior = false;
+			this.listViewScriptConditions.View = System.Windows.Forms.View.Details;
+			// 
+			// columnHeader6
+			// 
+			resources.ApplyResources(this.columnHeader6, "columnHeader6");
+			// 
+			// listViewScripts
+			// 
+			this.listViewScripts.BackColor = System.Drawing.SystemColors.Control;
+			this.listViewScripts.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listViewScripts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader5});
+			this.listViewScripts.FullRowSelect = true;
+			this.listViewScripts.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this.listViewScripts.HideSelection = false;
+			this.listViewScripts.LabelEdit = true;
+			resources.ApplyResources(this.listViewScripts, "listViewScripts");
+			this.listViewScripts.MultiSelect = false;
+			this.listViewScripts.Name = "listViewScripts";
+			this.listViewScripts.UseCompatibleStateImageBehavior = false;
+			this.listViewScripts.View = System.Windows.Forms.View.Details;
+			this.listViewScripts.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewScripts_AfterLabelEdit);
+			this.listViewScripts.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewScripts_ItemSelectionChanged);
+			this.listViewScripts.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewScripts_BeforeLabelEdit);
+			this.listViewScripts.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewScripts_KeyDown);
+			// 
+			// columnHeader5
+			// 
+			resources.ApplyResources(this.columnHeader5, "columnHeader5");
+			// 
+			// labelFormatDecoder
+			// 
+			resources.ApplyResources(this.labelFormatDecoder, "labelFormatDecoder");
+			this.labelFormatDecoder.Name = "labelFormatDecoder";
+			// 
+			// labelFormatEncoder
+			// 
+			resources.ApplyResources(this.labelFormatEncoder, "labelFormatEncoder");
+			this.labelFormatEncoder.Name = "labelFormatEncoder";
+			// 
+			// columnHeader2
+			// 
+			resources.ApplyResources(this.columnHeader2, "columnHeader2");
+			// 
+			// groupBoxAlbumArt
+			// 
+			this.groupBoxAlbumArt.Controls.Add(this.labelAlbumArtMaximumResolution);
+			this.groupBoxAlbumArt.Controls.Add(this.numericUpDownMaxResolution);
+			this.groupBoxAlbumArt.Controls.Add(this.checkBoxEmbedAlbumArt);
+			this.groupBoxAlbumArt.Controls.Add(this.checkBoxCopyAlbumArt);
+			resources.ApplyResources(this.groupBoxAlbumArt, "groupBoxAlbumArt");
+			this.groupBoxAlbumArt.Name = "groupBoxAlbumArt";
+			this.groupBoxAlbumArt.TabStop = false;
+			// 
+			// chkExtractLog
+			// 
+			resources.ApplyResources(this.chkExtractLog, "chkExtractLog");
+			this.chkExtractLog.Name = "chkExtractLog";
+			this.chkExtractLog.UseVisualStyleBackColor = true;
+			// 
+			// numericUpDownMaxResolution
+			// 
+			this.numericUpDownMaxResolution.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+			resources.ApplyResources(this.numericUpDownMaxResolution, "numericUpDownMaxResolution");
+			this.numericUpDownMaxResolution.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+			this.numericUpDownMaxResolution.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+			this.numericUpDownMaxResolution.Name = "numericUpDownMaxResolution";
+			this.numericUpDownMaxResolution.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+			// 
+			// labelAlbumArtMaximumResolution
+			// 
+			resources.ApplyResources(this.labelAlbumArtMaximumResolution, "labelAlbumArtMaximumResolution");
+			this.labelAlbumArtMaximumResolution.Name = "labelAlbumArtMaximumResolution";
 			// 
 			// frmSettings
 			// 
@@ -889,8 +1360,6 @@ namespace JDP {
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmSettings_FormClosing);
 			this.grpGeneral.ResumeLayout(false);
 			this.grpGeneral.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).EndInit();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenPercent)).EndInit();
@@ -901,26 +1370,49 @@ namespace JDP {
 			this.grpAudioFilenames.PerformLayout();
 			this.tabControl1.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
-			this.tabPage2.ResumeLayout(false);
-			this.groupBox3.ResumeLayout(false);
-			this.groupBox3.PerformLayout();
-			this.tabPage3.ResumeLayout(false);
-			this.tabControl2.ResumeLayout(false);
-			this.tabPage5.ResumeLayout(false);
-			this.tabPage5.PerformLayout();
 			this.tabPage6.ResumeLayout(false);
-			this.tabPage6.PerformLayout();
-			this.tabPage7.ResumeLayout(false);
-			this.tabPage7.PerformLayout();
-			this.tabPage8.ResumeLayout(false);
-			this.tabPage8.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).EndInit();
-			this.tabPage9.ResumeLayout(false);
-			this.tabPage9.PerformLayout();
+			this.groupBoxTagging.ResumeLayout(false);
+			this.groupBoxTagging.PerformLayout();
+			this.tabPage2.ResumeLayout(false);
+			this.groupBoxARLog.ResumeLayout(false);
+			this.groupBoxARLog.PerformLayout();
+			this.groupBox5.ResumeLayout(false);
+			this.groupBox5.PerformLayout();
+			this.groupBox4.ResumeLayout(false);
+			this.groupBox4.PerformLayout();
+			this.groupBoxVerify.ResumeLayout(false);
+			this.groupBoxVerify.PerformLayout();
+			this.tabPage3.ResumeLayout(false);
+			this.groupBoxFormat.ResumeLayout(false);
+			this.groupBoxFormat.PerformLayout();
+			this.tabPage10.ResumeLayout(false);
+			this.tabPage10.PerformLayout();
+			this.groupBoxExternalEncoder.ResumeLayout(false);
+			this.groupBoxExternalEncoder.PerformLayout();
+			this.groupBoxLibMAC_SDK.ResumeLayout(false);
+			this.groupBoxLibMAC_SDK.PerformLayout();
+			this.groupBoxLibWavpack.ResumeLayout(false);
+			this.groupBoxLibWavpack.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).EndInit();
+			this.groupBoxLibFLAC.ResumeLayout(false);
+			this.groupBoxLibFLAC.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericFLACCompressionLevel)).EndInit();
+			this.tabPage11.ResumeLayout(false);
+			this.tabPage11.PerformLayout();
+			this.groupBoxExternalDecoder.ResumeLayout(false);
+			this.groupBoxExternalDecoder.PerformLayout();
 			this.tabPage4.ResumeLayout(false);
 			this.tabPage4.PerformLayout();
+			this.groupBox2.ResumeLayout(false);
+			this.groupBox2.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).EndInit();
 			this.grpHDCD.ResumeLayout(false);
 			this.grpHDCD.PerformLayout();
+			this.tabPage5.ResumeLayout(false);
+			this.groupBoxScriptConditions.ResumeLayout(false);
+			this.groupBoxAlbumArt.ResumeLayout(false);
+			this.groupBoxAlbumArt.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -929,18 +1421,10 @@ namespace JDP {
 
 		private System.Windows.Forms.GroupBox grpGeneral;
 		private System.Windows.Forms.CheckBox chkPreserveHTOA;
-		private System.Windows.Forms.Label lblFLACCompressionLevel;
-		private System.Windows.Forms.CheckBox chkFLACVerify;
 		private System.Windows.Forms.Button btnOK;
-		private System.Windows.Forms.RadioButton rbWVVeryHigh;
-		private System.Windows.Forms.RadioButton rbWVHigh;
-		private System.Windows.Forms.RadioButton rbWVNormal;
-		private System.Windows.Forms.RadioButton rbWVFast;
-		private System.Windows.Forms.CheckBox chkWVExtraMode;
 		private System.Windows.Forms.CheckBox chkAutoCorrectFilenames;
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.CheckBox chkWriteArTagsOnConvert;
-		private System.Windows.Forms.NumericUpDown numericFLACCompressionLevel;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.NumericUpDown numFixWhenPercent;
 		private System.Windows.Forms.Label labelFixWhenConfidence;
@@ -954,67 +1438,125 @@ namespace JDP {
 		private System.Windows.Forms.Label lblTrackFilenameFormat;
 		private System.Windows.Forms.Label lblSingleFilenameFormat;
 		private System.Windows.Forms.TextBox txtSingleFilenameFormat;
-		private System.Windows.Forms.CheckBox chkArNoUnverifiedAudio;
 		private System.Windows.Forms.CheckBox chkWriteArLogOnConvert;
-		private System.Windows.Forms.NumericUpDown numWVExtraMode;
 		private System.Windows.Forms.Label labelEncodeWhenConfidence;
 		private System.Windows.Forms.NumericUpDown numEncodeWhenConfidence;
 		private System.Windows.Forms.NumericUpDown numEncodeWhenPercent;
-		private System.Windows.Forms.CheckBox chkArFixOffset;
-		private System.Windows.Forms.CheckBox chkEmbedLog;
-		private System.Windows.Forms.CheckBox chkFillUpCUE;
 		private System.Windows.Forms.CheckBox chkFilenamesANSISafe;
-		private System.Windows.Forms.RadioButton rbAPEinsane;
-		private System.Windows.Forms.RadioButton rbAPEextrahigh;
-		private System.Windows.Forms.RadioButton rbAPEhigh;
-		private System.Windows.Forms.RadioButton rbAPEnormal;
-		private System.Windows.Forms.RadioButton rbAPEfast;
 		private System.Windows.Forms.TabControl tabControl1;
 		private System.Windows.Forms.TabPage tabPage1;
 		private System.Windows.Forms.TabPage tabPage2;
 		private System.Windows.Forms.TabPage tabPage3;
-		private System.Windows.Forms.GroupBox groupBox3;
+		private System.Windows.Forms.GroupBox groupBoxVerify;
 		private System.Windows.Forms.CheckBox chkWriteARLogOnVerify;
 		private System.Windows.Forms.CheckBox chkWriteARTagsOnVerify;
 		private System.Windows.Forms.CheckBox chkEncodeWhenZeroOffset;
 		private System.Windows.Forms.TabPage tabPage4;
 		private System.Windows.Forms.CheckBox chkHDCDDecode;
 		private System.Windows.Forms.CheckBox chkHDCDDetect;
-		private System.Windows.Forms.CheckBox chkWVStoreMD5;
 		private System.Windows.Forms.GroupBox grpHDCD;
 		private System.Windows.Forms.CheckBox chkHDCDStopLooking;
 		private System.Windows.Forms.CheckBox chkCreateM3U;
 		private System.Windows.Forms.CheckBox chkCreateCUEFileWhenEmbedded;
 		private System.Windows.Forms.CheckBox chkTruncateExtra4206Samples;
 		private System.Windows.Forms.CheckBox chkReducePriority;
-		private System.Windows.Forms.NumericUpDown numericLossyWAVQuality;
-		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.CheckBox chkHDCDLW16;
 		private System.Windows.Forms.CheckBox chkHDCD24bit;
-		private System.Windows.Forms.CheckBox chkExtractLog;
-		private System.Windows.Forms.CheckBox chkOverwriteTags;
-		private System.Windows.Forms.TabControl tabControl2;
-		private System.Windows.Forms.TabPage tabPage5;
-		private System.Windows.Forms.TabPage tabPage6;
-		private System.Windows.Forms.TabPage tabPage7;
-		private System.Windows.Forms.TabPage tabPage8;
-		private System.Windows.Forms.TabPage tabPage9;
-		private System.Windows.Forms.TextBox textUDC1Params;
-		private System.Windows.Forms.TextBox textUDC1Decoder;
-		private System.Windows.Forms.TextBox textUDC1Extension;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.TextBox textUDC1EncParams;
-		private System.Windows.Forms.TextBox textUDC1Encoder;
-		private System.Windows.Forms.CheckBox chkUDC1APEv2;
-		private System.Windows.Forms.CheckBox chkUDC1ID3v2;
-		private System.Windows.Forms.ImageList imageList1;
-		private System.Windows.Forms.CheckBox chkSingleInstance;
+		private System.Windows.Forms.CheckBox chkAllowMultipleInstances;
 		private System.Windows.Forms.Label labelLanguage;
 		private System.Windows.Forms.ComboBox comboLanguage;
+		private System.Windows.Forms.TabPage tabPage10;
+		private System.Windows.Forms.GroupBox groupBoxLibMAC_SDK;
+		private System.Windows.Forms.RadioButton rbAPEinsane;
+		private System.Windows.Forms.RadioButton rbAPEfast;
+		private System.Windows.Forms.RadioButton rbAPEextrahigh;
+		private System.Windows.Forms.RadioButton rbAPEnormal;
+		private System.Windows.Forms.RadioButton rbAPEhigh;
+		private System.Windows.Forms.GroupBox groupBoxLibWavpack;
+		private System.Windows.Forms.CheckBox chkWVStoreMD5;
+		private System.Windows.Forms.RadioButton rbWVFast;
+		private System.Windows.Forms.NumericUpDown numWVExtraMode;
+		private System.Windows.Forms.RadioButton rbWVHigh;
+		private System.Windows.Forms.RadioButton rbWVVeryHigh;
+		private System.Windows.Forms.CheckBox chkWVExtraMode;
+		private System.Windows.Forms.RadioButton rbWVNormal;
+		private System.Windows.Forms.GroupBox groupBoxExternalEncoder;
+		private System.Windows.Forms.TextBox textBoxEncoderPath;
+		private System.Windows.Forms.TextBox textBoxEncoderParameters;
+		private System.Windows.Forms.Label labelEncoderPath;
+		private System.Windows.Forms.Label labelEncoderParameters;
+		private System.Windows.Forms.GroupBox groupBoxLibFLAC;
+		private System.Windows.Forms.Label lblFLACCompressionLevel;
+		private System.Windows.Forms.NumericUpDown numericFLACCompressionLevel;
+		private System.Windows.Forms.CheckBox chkFLACVerify;
+		private System.Windows.Forms.Label labelEncoderExtension;
+		private System.Windows.Forms.TabPage tabPage11;
+		private System.Windows.Forms.TextBox textBoxDecoderParameters;
+		private System.Windows.Forms.TextBox textBoxDecoderPath;
+		private System.Windows.Forms.Label labelDecoderParameters;
+		private System.Windows.Forms.Label labelDecoderPath;
+		private System.Windows.Forms.Label labelDecoderExtension;
+		private System.Windows.Forms.GroupBox groupBox2;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.NumericUpDown numericLossyWAVQuality;
+		private System.Windows.Forms.ColumnHeader columnHeader2;
+		private System.Windows.Forms.Label labelFormatDefaultDecoder;
+		private System.Windows.Forms.Label labelFormatLosslessEncoder;
+		private System.Windows.Forms.ListView listViewFormats;
+		private System.Windows.Forms.ColumnHeader columnHeader1;
+		private System.Windows.Forms.ComboBox comboFormatDecoder;
+		private System.Windows.Forms.Label labelFormatDecoder;
+		private System.Windows.Forms.ComboBox comboFormatLosslessEncoder;
+		private System.Windows.Forms.Label labelFormatEncoder;
+		private System.Windows.Forms.ListView listViewEncoders;
+		private System.Windows.Forms.ColumnHeader columnHeader3;
+		private System.Windows.Forms.ListView listViewDecoders;
+		private System.Windows.Forms.ColumnHeader columnHeader4;
+		private System.Windows.Forms.ComboBox comboBoxEncoderExtension;
+		private System.Windows.Forms.GroupBox groupBoxExternalDecoder;
+		private System.Windows.Forms.ComboBox comboBoxDecoderExtension;
+		private System.Windows.Forms.Label labelFormatTagger;
+		private System.Windows.Forms.ComboBox comboBoxFormatTagger;
+		private System.Windows.Forms.CheckBox checkBoxFormatSupportsLossyWAV;
+		private System.Windows.Forms.CheckBox checkBoxFormatEmbedCUESheet;
+		private System.Windows.Forms.CheckBox checkBoxFormatAllowLossless;
+		private System.Windows.Forms.GroupBox groupBoxFormat;
+		private System.Windows.Forms.CheckBox checkBoxEncoderLossless;
+		private System.Windows.Forms.CheckBox checkBoxFormatAllowLossy;
+		private System.Windows.Forms.ComboBox comboFormatLossyEncoder;
+		private System.Windows.Forms.Label labelFormatLossyEncoder;
+		private System.Windows.Forms.TabPage tabPage5;
+		private System.Windows.Forms.GroupBox groupBoxScriptConditions;
+		private System.Windows.Forms.ListView listViewScripts;
+		private System.Windows.Forms.ColumnHeader columnHeader5;
+		private System.Windows.Forms.ListView listViewScriptConditions;
+		private System.Windows.Forms.ColumnHeader columnHeader6;
+		private System.Windows.Forms.Button buttonScriptCompile;
+		private System.Windows.Forms.RichTextBox richTextBoxScript;
+		private System.Windows.Forms.GroupBox groupBox4;
+		private System.Windows.Forms.GroupBox groupBox5;
+		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.GroupBox groupBoxARLog;
+		private System.Windows.Forms.TextBox textBoxARLogExtension;
+		private System.Windows.Forms.Label labelLogFileExtension;
+		private System.Windows.Forms.CheckBox checkBoxARLogVerbose;
+		private System.Windows.Forms.CheckBox checkBoxARVerifyUseSourceFolder;
+		private System.Windows.Forms.TabPage tabPage6;
+		private System.Windows.Forms.GroupBox groupBoxTagging;
+		private System.Windows.Forms.CheckBox checkBoxCopyUnknownTags;
+		private System.Windows.Forms.CheckBox chkOverwriteTags;
+		private System.Windows.Forms.CheckBox chkFillUpCUE;
+		private System.Windows.Forms.CheckBox chkEmbedLog;
+		private System.Windows.Forms.CheckBox checkBoxWriteCUETags;
+		private System.Windows.Forms.CheckBox checkBoxCopyAlbumArt;
+		private System.Windows.Forms.CheckBox checkBoxCopyBasicTags;
+		private System.Windows.Forms.CheckBox checkBoxFixToNearest;
+		private System.Windows.Forms.CheckBox checkBoxEmbedAlbumArt;
+		private System.Windows.Forms.GroupBox groupBoxAlbumArt;
+		private System.Windows.Forms.Label labelAlbumArtMaximumResolution;
+		private System.Windows.Forms.NumericUpDown numericUpDownMaxResolution;
+		private System.Windows.Forms.CheckBox chkExtractLog;
 
 	}
 }

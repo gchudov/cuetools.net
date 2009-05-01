@@ -30,10 +30,11 @@ namespace ArCueDotNet
 			{
 				CUESheet cueSheet = new CUESheet(config);
 				cueSheet.Action = CUEAction.Verify;
+				//cueSheet.OutputStyle = CUEStyle.SingleFile;
 				cueSheet.Open(pathIn);
 				cueSheet.Lookup();
-				cueSheet.GenerateFilenames(OutputAudioFormat.NoAudio, false, pathIn);
-				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathIn), CUEStyle.SingleFile);
+				cueSheet.GenerateFilenames(AudioEncoderType.NoAudio, "dummy", pathIn);
+				cueSheet.Go();
 				cueSheet.GenerateAccurateRipLog(sw);
 			}
 			catch (Exception ex)

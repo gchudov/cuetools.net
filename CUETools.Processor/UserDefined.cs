@@ -27,6 +27,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using TagLib;
 
 namespace TagLib.UserDefined {
@@ -45,9 +46,7 @@ namespace TagLib.UserDefined {
 	{
 		#region Private Fields
 
-		private bool _supportsAPEv2 = true;
-
-		private bool _supportsID3v2 = true;
+		private CUETools.Processor.CUEToolsTagger tagger;
 		
 		#endregion
 		
@@ -72,17 +71,20 @@ namespace TagLib.UserDefined {
 		/// <exception cref="ArgumentNullException">
 		///    <paramref name="path" /> is <see langword="null" />.
 		/// </exception>
-		public File (string path, ReadStyle propertiesStyle, bool supportsAPEv2, bool supportsID3v2)
+		public File (string path, ReadStyle propertiesStyle, CUETools.Processor.CUEToolsTagger _tagger)
 			: base (path, propertiesStyle)
 		{
-			_supportsAPEv2 = supportsAPEv2;
-			_supportsID3v2 = supportsID3v2;
-			// Make sure we have an APE tag.
-			if (_supportsAPEv2)
-				GetTag(TagTypes.Ape, true);
-			else
-				if (_supportsID3v2)
+			tagger = _tagger;
+			// Make sure we have a tag.
+			switch (tagger)
+			{
+				case CUETools.Processor.CUEToolsTagger.APEv2:
+					GetTag(TagTypes.Ape, true);
+					break;
+				case CUETools.Processor.CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
+					break;
+			}
 		}
 		
 		/// <summary>
@@ -97,17 +99,20 @@ namespace TagLib.UserDefined {
 		/// <exception cref="ArgumentNullException">
 		///    <paramref name="path" /> is <see langword="null" />.
 		/// </exception>
-		public File(string path, bool supportsAPEv2, bool supportsID3v2)
+		public File(string path, CUETools.Processor.CUEToolsTagger _tagger)
 			: base(path)
 		{
-			_supportsAPEv2 = supportsAPEv2;
-			_supportsID3v2 = supportsID3v2;
-			// Make sure we have an APE tag.
-			if (_supportsAPEv2)
-				GetTag(TagTypes.Ape, true);
-			else
-				if (_supportsID3v2)
+			tagger = _tagger;
+			// Make sure we have a tag.
+			switch (tagger)
+			{
+				case CUETools.Processor.CUEToolsTagger.APEv2:
+					GetTag(TagTypes.Ape, true);
+					break;
+				case CUETools.Processor.CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
+					break;
+			}
 		}
 		
 		/// <summary>
@@ -129,17 +134,20 @@ namespace TagLib.UserDefined {
 		///    />.
 		/// </exception>
 		public File (File.IFileAbstraction abstraction,
-					 ReadStyle propertiesStyle, bool supportsAPEv2, bool supportsID3v2)
+					 ReadStyle propertiesStyle, CUETools.Processor.CUEToolsTagger _tagger)
 			: base (abstraction, propertiesStyle)
 		{
-			_supportsAPEv2 = supportsAPEv2;
-			_supportsID3v2 = supportsID3v2;
-			// Make sure we have an APE tag.
-			if (_supportsAPEv2)
-				GetTag(TagTypes.Ape, true);
-			else
-				if (_supportsID3v2)
+			tagger = _tagger;
+			// Make sure we have a tag.
+			switch (tagger)
+			{
+				case CUETools.Processor.CUEToolsTagger.APEv2:
+					GetTag(TagTypes.Ape, true);
+					break;
+				case CUETools.Processor.CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
+					break;
+			}
 		}
 		
 		/// <summary>
@@ -155,17 +163,20 @@ namespace TagLib.UserDefined {
 		///    <paramref name="abstraction" /> is <see langword="null"
 		///    />.
 		/// </exception>
-		public File(File.IFileAbstraction abstraction, bool supportsAPEv2, bool supportsID3v2)
+		public File(File.IFileAbstraction abstraction, CUETools.Processor.CUEToolsTagger _tagger)
 			: base (abstraction)
 		{
-			_supportsAPEv2 = supportsAPEv2;
-			_supportsID3v2 = supportsID3v2;
-			// Make sure we have an APE tag.
-			if (_supportsAPEv2)
-				GetTag(TagTypes.Ape, true);
-			else
-				if (_supportsID3v2)
+			tagger = _tagger;
+			// Make sure we have a tag.
+			switch (tagger)
+			{
+				case CUETools.Processor.CUEToolsTagger.APEv2:
+					GetTag(TagTypes.Ape, true);
+					break;
+				case CUETools.Processor.CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
+					break;
+			}
 		}
 		
 		#endregion
@@ -174,22 +185,13 @@ namespace TagLib.UserDefined {
 		
 		#region Public Methods
 
-		public bool SupportsAPEv2
+		public CUETools.Processor.CUEToolsTagger Tagger
 		{
 			get
 			{
-				return _supportsAPEv2;
+				return tagger;
 			}
-		}
-
-		public bool SupportsID3v2
-		{
-			get
-			{
-				return _supportsID3v2;
-			}
-		}
-		
+		}	
 
 		/// <summary>
 		///    Gets a tag of a specified type from the current instance,
@@ -329,12 +331,9 @@ namespace TagLib.UserDefined {
 
 		private static TagLib.File UserDefinedResolver(TagLib.File.IFileAbstraction abstraction, string mimetype, TagLib.ReadStyle style)
 		{
-			if (mimetype == "taglib/flac" || mimetype == "taglib/wv" || mimetype == "taglib/ape" || mimetype == "taglib/wav" || mimetype == "taglib/ogg" || mimetype == "taglib/m4a" || mimetype == "taglib/mp3")
-				return null;
-			if (mimetype == "taglib/tta")
-				return new File(abstraction, style, true, false);
-			if (mimetype == "taglib/" + _config.udc1Extension)
-				return new File(abstraction, style, _config.udc1APEv2, _config.udc1ID3v2);
+			foreach (KeyValuePair<string,CUETools.Processor.CUEToolsFormat> fmt in _config.formats)
+				if (fmt.Value.tagger != CUETools.Processor.CUEToolsTagger.TagLibSharp && mimetype == "taglib/" + fmt.Key)
+					return new File(abstraction, style, fmt.Value.tagger);
 			return null;
 		}
 

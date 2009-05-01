@@ -43,26 +43,36 @@ namespace CUETools.Processor
 	public class SettingsReader {
 		Dictionary<string, string> _settings;
 
-		public SettingsReader(string appName, string fileName) {
+		public SettingsReader(string appName, string fileName, string appPath) {
 			_settings = new Dictionary<string, string>();
+			bool userProfilesEnabled = (appPath == null || File.Exists(Path.Combine(Path.GetDirectoryName(appPath), "user_profiles_enabled")));
 
-			string path = Path.Combine(SettingsShared.GetMyAppDataDir(appName), fileName);
+			string path = Path.Combine(
+				userProfilesEnabled ? SettingsShared.GetMyAppDataDir(appName) : Path.GetDirectoryName(appPath),
+				userProfilesEnabled ? fileName : appName + "." + fileName);
 			if (!File.Exists(path)) {
 				return;
 			}
 
 			using (StreamReader sr = new StreamReader(path, Encoding.UTF8)) {
-				string line, name, val;
+				string line, name = null, val;
 				int pos;
 
 				while ((line = sr.ReadLine()) != null) {
 					pos = line.IndexOf('=');
 					if (pos != -1) {
-						name = line.Substring(0, pos);
-						val = line.Substring(pos + 1);
-
-						if (!_settings.ContainsKey(name)) {
-							_settings.Add(name, val);
+						if (pos > 0)
+						{
+							name = line.Substring(0, pos);
+							val = line.Substring(pos + 1);
+							if (!_settings.ContainsKey(name))
+								_settings.Add(name, val);
+						}
+						else
+						{
+							val = line.Substring(pos + 1);
+							if (_settings.ContainsKey(name))
+								_settings[name] += "\r\n" + val;
 						}
 					}
 				}
@@ -100,14 +110,29 @@ namespace CUETools.Processor
 	public class SettingsWriter {
 		StreamWriter _sw;
 
-		public SettingsWriter(string appName, string fileName) {
-			string path = Path.Combine(SettingsShared.GetMyAppDataDir(appName), fileName);
+		public SettingsWriter(string appName, string fileName, string appPath)
+		{
+			bool userProfilesEnabled = (appPath == null || File.Exists(Path.Combine(Path.GetDirectoryName(appPath), "user_profiles_enabled")));
+			string path = Path.Combine(
+				userProfilesEnabled ? SettingsShared.GetMyAppDataDir(appName) : Path.GetDirectoryName(appPath),
+				userProfilesEnabled ? fileName : appName + "." + fileName);
 
 			_sw = new StreamWriter(path, false, Encoding.UTF8);
 		}
 
 		public void Save(string name, string value) {
 			_sw.WriteLine(name + "=" + value);
+		}
+
+		public void SaveText(string name, string value)
+		{
+			_sw.Write(name);
+			using (StringReader sr = new StringReader(value))
+			{
+				string lineStr;
+				while ((lineStr = sr.ReadLine()) != null)
+					_sw.WriteLine("=" + lineStr);
+			}
 		}
 
 		public void Save(string name, bool value) {

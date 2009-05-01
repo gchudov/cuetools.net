@@ -102,12 +102,6 @@
     <Compile Include="frmChoice.Designer.cs">
       <DependentUpon>frmChoice.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmFilenameCorrector.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmFilenameCorrector.Designer.cs">
-      <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
-    </Compile>
     <Compile Include="frmPassword.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -169,14 +163,6 @@
     <EmbeddedResource Include="frmCUETools.ru-RU.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmCUETools.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmFilenameCorrector.de-DE.resx">
-      <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmFilenameCorrector.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmFilenameCorrector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmPassword.de-DE.resx">
       <DependentUpon>frmPassword.cs</DependentUpon>
@@ -271,13 +257,30 @@
   <ItemGroup>
     <None Include="Resources\accuraterip.jpg" />
     <Content Include="Resources\accuraterip_16.bmp" />
+    <None Include="Resources\ape.ico" />
     <Content Include="Resources\AR.ico" />
+    <Content Include="Resources\cd2.png" />
+    <None Include="Resources\cog.ico" />
     <Content Include="Resources\cue.ico" />
+    <None Include="Resources\cue2.ico" />
+    <None Include="Resources\cue3.ico" />
     <Content Include="Resources\cue_32.ico" />
     <Content Include="Resources\eac.ico" />
     <Content Include="Resources\flac.ico" />
+    <None Include="Resources\freedb.ico" />
     <Content Include="Resources\icon-wv.png" />
+    <None Include="Resources\cuetools.icl" />
+    <None Include="Resources\settings.ico" />
+    <None Include="Resources\information.ico" />
+    <None Include="Resources\info2.bmp" />
+    <None Include="Resources\information.png" />
+    <None Include="Resources\ipod_sound.ico" />
+    <None Include="Resources\ogg.ico" />
+    <None Include="Resources\mp3.ico" />
     <Content Include="Resources\wav.bmp" />
+    <None Include="Resources\wv.ico" />
+    <None Include="Resources\wave.ico" />
+    <None Include="Resources\tta.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

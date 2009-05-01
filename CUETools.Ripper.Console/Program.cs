@@ -268,7 +268,7 @@ namespace CUETools.ConsoleRipper
 				logWriter.WriteLine();
 				logWriter.WriteLine("AccurateRip summary");
 				logWriter.WriteLine();
-				arVerify.GenerateFullLog(logWriter, 0);
+				arVerify.GenerateFullLog(logWriter, true);
 				logWriter.WriteLine();
 				logWriter.WriteLine("End of status report");
 				logWriter.Close();				

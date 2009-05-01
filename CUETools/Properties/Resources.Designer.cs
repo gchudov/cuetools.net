@@ -74,9 +74,44 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Icon ape {
+            get {
+                object obj = ResourceManager.GetObject("ape", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap AR {
+            get {
+                object obj = ResourceManager.GetObject("AR", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap cog {
+            get {
+                object obj = ResourceManager.GetObject("cog", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon cue {
             get {
                 object obj = ResourceManager.GetObject("cue", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon cue2 {
+            get {
+                object obj = ResourceManager.GetObject("cue2", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon cue3 {
+            get {
+                object obj = ResourceManager.GetObject("cue3", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -88,10 +123,24 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Icon flac1 {
+            get {
+                object obj = ResourceManager.GetObject("flac1", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap freedb {
             get {
                 object obj = ResourceManager.GetObject("freedb", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon freedb1 {
+            get {
+                object obj = ResourceManager.GetObject("freedb1", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -104,9 +153,58 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap info2 {
+            get {
+                object obj = ResourceManager.GetObject("info2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap information {
+            get {
+                object obj = ResourceManager.GetObject("information", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon ipod_sound {
+            get {
+                object obj = ResourceManager.GetObject("ipod_sound", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon mp3 {
+            get {
+                object obj = ResourceManager.GetObject("mp3", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap musicbrainz {
             get {
                 object obj = ResourceManager.GetObject("musicbrainz", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon musicbrainz1 {
+            get {
+                object obj = ResourceManager.GetObject("musicbrainz1", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon ogg {
+            get {
+                object obj = ResourceManager.GetObject("ogg", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap settings {
+            get {
+                object obj = ResourceManager.GetObject("settings", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -117,6 +215,13 @@ namespace JDP.Properties {
         internal static string Stop {
             get {
                 return ResourceManager.GetString("Stop", resourceCulture);
+            }
+        }
+        
+        internal static System.Drawing.Icon tta {
+            get {
+                object obj = ResourceManager.GetObject("tta", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -136,10 +241,24 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Icon wave {
+            get {
+                object obj = ResourceManager.GetObject("wave", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap wv {
             get {
                 object obj = ResourceManager.GetObject("wv", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon wv1 {
+            get {
+                object obj = ResourceManager.GetObject("wv1", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
     }

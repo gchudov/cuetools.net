@@ -18,7 +18,7 @@ namespace JDP
 			InitializeComponent();
 			_config = new CUEConfig();
 			_cueStyle = CUEStyle.SingleFile;
-			_audioFormat = OutputAudioFormat.WAV;
+			_audioFormat = "wav";
 			_accurateRip = CUEAction.Verify;
 			_batchPaths = new List<string>();
 		}
@@ -44,12 +44,11 @@ namespace JDP
 		CUESheet _workClass;
 		CUEConfig _config;
 		CUEStyle _cueStyle;
-		OutputAudioFormat _audioFormat;
+		string _audioFormat;
 		string pathIn;
 		string pathOut;
 		CUEAction _accurateRip;
 		bool _reducePriority;
-		bool _lossyWAV;
 		DateTime _startedAt;
 		List<string> _batchPaths;
 
@@ -132,8 +131,9 @@ namespace JDP
 				else
 					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
 
-				bool outputAudio = _accurateRip != CUEAction.Verify && _accurateRip != CUEAction.VerifyPlusCRCs;
+				bool outputAudio = _accurateRip != CUEAction.Verify;
 				cueSheet.Action = _accurateRip;
+				cueSheet.OutputStyle = _cueStyle;
 				cueSheet.Open(pathIn);
 				cueSheet.Lookup();
 				if (outputAudio)
@@ -155,15 +155,15 @@ namespace JDP
 				}
 				else
 					pathOut = Path.Combine(Path.GetDirectoryName(pathIn) ?? pathIn, cueName);
-				cueSheet.GenerateFilenames(_audioFormat, _lossyWAV, pathOut);
+				cueSheet.GenerateFilenames(AudioEncoderType.Lossless, _audioFormat, pathOut);
 				if (outputAudio)
 				{
 					if (_cueStyle == CUEStyle.SingleFileWithCUE)
-						cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), General.FormatExtension(_audioFormat, _config));
+						cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), "." + _audioFormat);
 				}
 
 				cueSheet.UsePregapForFirstTrackInSingleFile = false;
-				cueSheet.WriteAudioFiles(Path.GetDirectoryName(pathOut), _cueStyle);
+				cueSheet.Go();
 				this.Invoke((MethodInvoker)delegate()
 				{
 					if (_batchPaths.Count == 0)
@@ -260,18 +260,18 @@ namespace JDP
 		private void frmBatch_Load(object sender, EventArgs e)
 		{
 			textBox1.Hide();
-			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
+			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath);
 
 			_config.Load(sr);
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
 			_cueStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
-			_audioFormat = (OutputAudioFormat?)sr.LoadInt32("OutputAudioFormat", null, null) ?? OutputAudioFormat.WAV;
-			_lossyWAV = sr.LoadBoolean("LossyWav") ?? false;
+			_audioFormat = sr.Load("OutputAudioFmt") ?? "flac";
+			//_lossyWAV = sr.LoadBoolean("LossyWav") ?? false;
 			
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			if (_accurateRip != CUEAction.Verify && _accurateRip != CUEAction.VerifyPlusCRCs)
+			if (_accurateRip != CUEAction.Verify)
 				txtOutputFile.Show();
 
 			StartConvert();

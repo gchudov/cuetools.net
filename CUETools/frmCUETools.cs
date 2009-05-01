@@ -32,10 +32,12 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Net;
 using System.Globalization;
 using System.Threading;
 using System.Diagnostics;
 using CUETools.Processor;
+using CUETools.CDImage;
 
 namespace JDP {
 	public partial class frmCUETools : Form {
@@ -43,9 +45,15 @@ namespace JDP {
 			_config = new CUEConfig();
 			InitializeComponent();
 			m_icon_mgr = new CUEControls.ShellIconMgr();
-			m_icon_mgr.SetExtensionIcon(".flac", global::JDP.Properties.Resources.flac);
-			m_icon_mgr.SetExtensionIcon(".wv", global::JDP.Properties.Resources.wv);
-			m_icon_mgr.SetExtensionIcon(".cue", global::JDP.Properties.Resources.cue);
+			m_icon_mgr.SetExtensionIcon(".flac", global::JDP.Properties.Resources.flac1);
+			m_icon_mgr.SetExtensionIcon(".wv", global::JDP.Properties.Resources.wv1);
+			m_icon_mgr.SetExtensionIcon(".ape", global::JDP.Properties.Resources.ape);
+			m_icon_mgr.SetExtensionIcon(".tta", global::JDP.Properties.Resources.tta);
+			m_icon_mgr.SetExtensionIcon(".wav", global::JDP.Properties.Resources.wave);
+			m_icon_mgr.SetExtensionIcon(".mp3", global::JDP.Properties.Resources.mp3);
+			m_icon_mgr.SetExtensionIcon(".m4a", global::JDP.Properties.Resources.ipod_sound);
+			m_icon_mgr.SetExtensionIcon(".ogg", global::JDP.Properties.Resources.ogg);
+			m_icon_mgr.SetExtensionIcon(".cue", global::JDP.Properties.Resources.cue3);
 		}
 
 		private void btnBrowseOutput_Click(object sender, EventArgs e) {
@@ -67,7 +75,7 @@ namespace JDP {
 			{
 				if (node.IsExpanded)
 					AddNodesToBatch(node.Nodes);
-				else if (node.Checked && node.Tag is FileSystemInfo)
+				else if ((chkMulti.CheckState == CheckState.Indeterminate || node.Checked) && node.Tag is FileSystemInfo)
 					_batchPaths.Add(((FileSystemInfo)node.Tag).FullName);
 			}
 		}
@@ -79,7 +87,32 @@ namespace JDP {
 			_batchReport = new StringBuilder();
 			_batchRoot = null;
 			_batchProcessed = 0;
-			if (!chkMulti.Checked && !Directory.Exists(txtInputPath.Text))
+
+			// TODO!!!
+			//if (SelectedOutputAudioFmt != null)
+			//{
+			//    CUEToolsUDC encoder = _config.encoders[SelectedOutputAudioFmt.encoder];
+			//    if (encoder.path != null)
+			//    {
+			//        if (Path.GetDirectoryName(encoder.path) == "" && Directory.Exists(Application.StartupPath))
+			//            encoder.path = Path.Combine(Application.StartupPath, encoder.path);
+			//        if (!File.Exists(encoder.path))
+			//        {
+			//            string executable = Path.GetFileName(encoder.path);
+			//            OpenFileDialog fileDlg = new OpenFileDialog();
+			//            DialogResult dlgRes;
+			//            fileDlg.Title = "Select the path to encoder";
+			//            fileDlg.Filter = executable + "|" + executable;
+			//            if (Directory.Exists(Application.StartupPath))
+			//                fileDlg.InitialDirectory = Application.StartupPath;
+			//            dlgRes = fileDlg.ShowDialog();
+			//            if (dlgRes == DialogResult.OK)
+			//                encoder.path = fileDlg.FileName;
+			//        }
+			//    }
+			//}
+
+			if (chkMulti.CheckState == CheckState.Unchecked && !Directory.Exists(txtInputPath.Text))
 			{
 				StartConvert();
 				return;
@@ -117,6 +150,7 @@ namespace JDP {
 
 		private void btnSettings_Click(object sender, EventArgs e) {
 			using (frmSettings settingsForm = new frmSettings()) {
+				settingsForm.IconMgr = m_icon_mgr;
 				settingsForm.ReducePriority = _reducePriority;
 				settingsForm.Config = _config;
 
@@ -126,13 +160,18 @@ namespace JDP {
 				{
 					Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(_config.language);
 					ComponentResourceManager resources = new ComponentResourceManager(typeof(frmCUETools));
+					int savedWidth = Width;
+					Width = MinimumSize.Width;
 					ChangeCulture(this, resources);
+					Width = savedWidth;
+					PerformLayout();
 				}
 
 				_reducePriority = settingsForm.ReducePriority;
 				_config = settingsForm.Config;
 				updateOutputStyles();
 				UpdateOutputPath();
+				SetupScripts();
 				SaveSettings();
 			}
 		}
@@ -155,6 +194,8 @@ namespace JDP {
 				string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 				if (files.Length == 1) {
 					((TextBox)sender).Text = files[0];
+					if (chkMulti.CheckState == CheckState.Unchecked)
+						fileSystemTreeView1.SelectedPath = files[0];
 				}
 			}
 		}
@@ -199,11 +240,14 @@ namespace JDP {
 
 		private void frmCUETools_Load(object sender, EventArgs e) {
 			_batchPaths = new List<string>();
+			labelFormat.ImageList = m_icon_mgr.ImageList;
+			labelCorrectorFormat.ImageList = m_icon_mgr.ImageList;
 			LoadSettings();
+
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			fileSystemTreeView1.CheckBoxes = chkMulti.Checked;
+			fileSystemTreeView1.CheckBoxes = chkMulti.CheckState == CheckState.Checked;
 			fileSystemTreeView1.IconManager = m_icon_mgr;
 			if (InputPath != "")
 			{
@@ -226,6 +270,7 @@ namespace JDP {
 			SetupControls(false);
 			UpdateOutputPath();
 			updateOutputStyles();
+			SetupScripts();
 		}
 
 		private void frmCUETools_FormClosed(object sender, FormClosedEventArgs e) {
@@ -242,6 +287,7 @@ namespace JDP {
 		int _batchProcessed;
 		bool _usePregapForFirstTrackInSingleFile;
 		bool _reducePriority;
+		string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat, _defaultNoAudioFormat;
 		Thread _workThread;
 		CUESheet _workClass;
 		CUEConfig _config;
@@ -262,8 +308,8 @@ namespace JDP {
 				}
 
 				string pathIn = txtInputPath.Text;
-				if (!File.Exists(pathIn) && !Directory.Exists(pathIn) && !IsCDROM(pathIn))
-					throw new Exception("Invalid input path.");
+				//if (!File.Exists(pathIn) && !Directory.Exists(pathIn) && !IsCDROM(pathIn))
+				//    throw new Exception("Invalid input path.");
 				//if (Directory.Exists(pathIn) && !pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
 				//{
 				//    pathIn = pathIn + Path.DirectorySeparatorChar;
@@ -286,7 +332,8 @@ namespace JDP {
 				p[2] = SelectedCUEStyle;
 				p[3] = SelectedAction;
 				p[4] = SelectedOutputAudioFormat;
-				p[5] = chkLossyWAV.Checked;
+				p[5] = SelectedOutputAudioType;
+				p[6] = comboBoxScript.SelectedItem;
 
 				SetupControls(true);
 				_workThread.Priority = ThreadPriority.BelowNormal;
@@ -361,9 +408,11 @@ namespace JDP {
 			string pathIn = (string)p[1];
 			CUEStyle cueStyle = (CUEStyle)p[2];
 			CUEAction action = (CUEAction)p[3];
-			OutputAudioFormat outputFormat = (OutputAudioFormat)p[4];
-			bool lossyWAV = (bool)p[5];
+			string outputFormat = (string)p[4];
+			AudioEncoderType audioEncoderType = (AudioEncoderType)p[5];
+			CUEToolsScript script = (CUEToolsScript)p[6];
 			DialogResult dlgRes = DialogResult.OK;
+			string status = null;
 
 			try
 			{
@@ -382,24 +431,46 @@ namespace JDP {
 							if (fileGroup.type == FileGroupInfoType.CUESheetFile)
 								throw new Exception("already contains a cue sheet");
 						foreach (FileGroupInfo fileGroup in fileGroups)
-							if (fileGroup.type == FileGroupInfoType.TrackFiles)
+							if (fileGroup.type == FileGroupInfoType.TrackFiles || fileGroup.type == FileGroupInfoType.FileWithCUE)
 								_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
 					}
-					else
+					else if (File.Exists(pathIn))
 					{
 						pathIn = Path.GetFullPath(pathIn);
 						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, Path.GetDirectoryName(pathIn));
-						FileGroupInfo fileGroup = FileGroupInfo.WhichContains(fileGroups, pathIn);
+						FileGroupInfo fileGroup = FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.TrackFiles)
+							?? FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.FileWithCUE);
 						if (fileGroup == null)
 							throw new Exception("doesn't seem to be part of an album");
-						string cueSheetContents = CUESheet.CreateDummyCUESheet(fileGroup);
-						string cueName = Path.GetFileName(Path.GetDirectoryName(pathIn)) + (fileGroup.discNo != 1 ? ".cd" + fileGroup.discNo.ToString() : "") + ".cuetools" + Path.GetExtension(pathIn) + ".cue";
-						string fullCueName = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
+						string cueSheetContents;
+						if (_batchPaths.Count == 0)
+						{
+							cueSheet.Open(fileGroup.main.FullName);
+							cueSheetContents = cueSheet.CUESheetContents();
+							cueSheet.Close();
+						} else
+							cueSheetContents = CUESheet.CreateDummyCUESheet(_config, fileGroup);
+						string fullCueName;
+						if (fileGroup.type == FileGroupInfoType.FileWithCUE)
+							fullCueName = Path.ChangeExtension(fileGroup.main.FullName, ".cue");
+						else
+						{
+							string cueName = Path.GetFileName(Path.GetDirectoryName(pathIn)) + (fileGroup.discNo != 1 ? ".cd" + fileGroup.discNo.ToString() : "") + ".cuetools" + Path.GetExtension(pathIn) + ".cue";
+							fullCueName = Path.Combine(Path.GetDirectoryName(pathIn), cueName);
+						}
+						if (File.Exists(fullCueName))
+							throw new Exception("file already exists");
 						bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheetContents)) != cueSheetContents;
 						StreamWriter sw1 = new StreamWriter(fullCueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
 						sw1.Write(cueSheetContents);
 						sw1.Close();
 						BatchLog("created ok.", fullCueName);
+					}
+					else
+					{
+						//if (_batchPaths.Count > 0)
+						//BatchLog("invalid path", pathIn);
+						throw new Exception("invalid path");
 					}
 				}
 				else if (action == CUEAction.CorrectFilenames)
@@ -414,23 +485,64 @@ namespace JDP {
 						else
 							_batchPaths.InsertRange(1, cues);
 					}
-					else
+					else if (File.Exists(pathIn))
 					{
 						if (Path.GetExtension(pathIn).ToLower() != ".cue")
 							throw new Exception("is not a .cue file");
 						string cue = null;
 						using (StreamReader sr = new StreamReader(pathIn, CUESheet.Encoding))
 							cue = sr.ReadToEnd();
-						string fixedCue = CUESheet.CorrectAudioFilenames(Path.GetDirectoryName(pathIn), cue, true, null);
+						string extension;
+						string fixedCue;
+						if (rbCorrectorLocateFiles.Checked)
+							fixedCue = CUESheet.CorrectAudioFilenames(_config, Path.GetDirectoryName(pathIn), cue, true, null, out extension);
+						else
+						{
+							extension = (string)comboBoxCorrectorFormat.SelectedItem;
+							using (StringReader sr = new StringReader(cue))
+							{
+								using (StringWriter sw = new StringWriter())
+								{
+									string lineStr;
+									while ((lineStr = sr.ReadLine()) != null)
+									{
+										CUELine line = new CUELine(lineStr);
+										if (line.Params.Count == 3 && line.Params[0].ToUpper() == "FILE" 
+											&& (line.Params[2].ToUpper() != "BINARY" && line.Params[2].ToUpper() != "MOTOROLA")
+											)
+											sw.WriteLine("FILE \"" + Path.ChangeExtension(line.Params[1], "." + extension) + "\" WAVE");
+										else
+											sw.WriteLine(lineStr);
+									}
+									fixedCue = sw.ToString();
+								}
+							}
+						}
 						if (fixedCue != cue)
 						{
-							using (StreamWriter sw = new StreamWriter(pathIn, false, CUESheet.Encoding))
-								sw.Write(fixedCue);
-							BatchLog("corrected.", pathIn);
+							if (checkBoxCorrectorOverwrite.Checked)
+							{
+								using (StreamWriter sw = new StreamWriter(pathIn, false, CUESheet.Encoding))
+									sw.Write(fixedCue);
+								BatchLog("corrected ({0}).", pathIn, extension);
+							}
+							else
+							{
+								string pathFixed = Path.ChangeExtension(pathIn, extension + ".cue");
+								if (File.Exists(pathFixed))
+									BatchLog("corrected cue already exists.", pathIn);
+								else
+								{
+									using (StreamWriter sw = new StreamWriter(pathFixed, false, CUESheet.Encoding))
+										sw.Write(fixedCue);
+									BatchLog("corrected ({0}).", pathIn, extension);
+								}
+							}
 						}
 						else
 							BatchLog("no changes.", pathIn);
-					}
+					} else
+						throw new Exception("invalid path");
 				}
 				else
 				{
@@ -454,9 +566,10 @@ namespace JDP {
 							foreach (FileGroupInfo fileGroup in fileGroups)
 								if (fileGroup.type == FileGroupInfoType.TrackFiles)
 									_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
-					} else
+					}
+					else if (File.Exists(pathIn) || IsCDROM(pathIn))
 					{
-						bool convertAction = action == CUEAction.Convert || action == CUEAction.VerifyAndConvert || action == CUEAction.VerifyThenConvert;
+						bool convertAction = action == CUEAction.Convert || action == CUEAction.VerifyAndConvert;
 						string pathOut = null;
 						List<object> releases = null;
 
@@ -464,6 +577,7 @@ namespace JDP {
 							pathIn = pathIn + Path.DirectorySeparatorChar;
 
 						cueSheet.Action = action;
+						cueSheet.OutputStyle = cueStyle;
 						cueSheet.Open(pathIn);
 						if (action != CUEAction.Convert)
 							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
@@ -505,10 +619,10 @@ namespace JDP {
 						if (dlgRes == DialogResult.Cancel)
 							return;
 
-						bool outputAudio = convertAction && outputFormat != OutputAudioFormat.NoAudio;
-						bool outputCUE = convertAction && (cueStyle == CUEStyle.SingleFile || (cueStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded));
+						bool outputAudio = convertAction && audioEncoderType != AudioEncoderType.NoAudio;
+						bool outputCUE = convertAction && (cueStyle != CUEStyle.SingleFileWithCUE || _config.createCUEFileWhenEmbedded);
 
-						cueSheet.GenerateFilenames(outputFormat, lossyWAV, pathOut);
+						cueSheet.GenerateFilenames(audioEncoderType, outputFormat, pathOut);
 						string outDir = Path.GetDirectoryName(pathOut);
 						if (cueStyle == CUEStyle.SingleFileWithCUE)
 							cueSheet.SingleFilename = Path.GetFileName(pathOut);
@@ -552,15 +666,70 @@ namespace JDP {
 						if (!outputExists)
 						{
 							cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
-							string status = cueSheet.WriteAudioFiles(outDir, cueStyle);
-							if (_batchPaths.Count > 0)
+							if (script == null)
+								status = cueSheet.Go();
+							else if (script.builtin)
+							{
+								CUESheet processor = cueSheet;
+								if (script.name == "default")
+									status = processor.Go();
+								if (script.name == "only if found")
+									status = processor.ArVerify.AccResult != HttpStatusCode.OK ?
+										processor.WriteReport() :
+										processor.Go();
+								if (script.name == "fix offset")
+								{
+									if (processor.ArVerify.AccResult != HttpStatusCode.OK)
+										status = processor.WriteReport();
+									else
+									{
+										processor.WriteOffset = 0;
+										processor.Action = CUEAction.Verify;
+										status = processor.Go();
+
+										uint tracksMatch;
+										int bestOffset;
+										processor.FindBestOffset(processor.Config.fixOffsetMinimumConfidence, !processor.Config.fixOffsetToNearest, out tracksMatch, out bestOffset);
+										if (tracksMatch * 100 >= processor.Config.fixOffsetMinimumTracksPercent * processor.TrackCount)
+										{
+											processor.WriteOffset = bestOffset;
+											processor.Action = CUEAction.VerifyAndConvert;
+											status = processor.Go();
+										}
+									}
+								}
+								if (script.name == "encode if verified")
+								{
+									if (processor.ArVerify.AccResult != HttpStatusCode.OK)
+										status = processor.WriteReport();
+									else
+									{
+										processor.Action = CUEAction.Verify;
+										status = processor.Go();
+
+										uint tracksMatch;
+										int bestOffset;
+										processor.FindBestOffset(processor.Config.encodeWhenConfidence, false, out tracksMatch, out bestOffset);
+										if (tracksMatch * 100 >= processor.Config.encodeWhenPercent * processor.TrackCount &&  (!_config.encodeWhenZeroOffset || bestOffset == 0))
+										{
+											processor.Action = CUEAction.VerifyAndConvert;
+											status = processor.Go();
+										}
+									}
+								}
+							}
+							else
+								status = cueSheet.ExecuteScript(script.code);
+								
+							//if (_batchPaths.Count > 0)
 							{
 								_batchProcessed++;
 								BatchLog("{0}.", pathIn, status);
 							}
 							cueSheet.CheckStop();
 						}
-					}
+					} else
+						throw new Exception("invalid path");
 				}
 				this.Invoke((MethodInvoker)delegate()
 				{
@@ -579,12 +748,13 @@ namespace JDP {
 							reportForm.ShowDialog(this);
 						}
 						else if (cueSheet.Action == CUEAction.Verify ||
-							cueSheet.Action == CUEAction.VerifyPlusCRCs ||
-						(cueSheet.Action != CUEAction.Convert && outputFormat != OutputAudioFormat.NoAudio))
+							(cueSheet.Action == CUEAction.VerifyAndConvert && audioEncoderType != AudioEncoderType.NoAudio))
 						{
 							frmReport reportForm = new frmReport();
 							StringWriter sw = new StringWriter();
 							cueSheet.GenerateAccurateRipLog(sw);
+							if (status != null)
+								reportForm.Text += ": " + status;
 							reportForm.Message = sw.ToString();
 							sw.Close();
 							reportForm.ShowDialog(this);
@@ -659,12 +829,15 @@ namespace JDP {
 		}
 
 		private void SetupControls(bool running) {
-			bool converting = (SelectedAction == CUEAction.Convert || SelectedAction == CUEAction.VerifyAndConvert || SelectedAction == CUEAction.VerifyThenConvert);
-			bool verifying = (SelectedAction == CUEAction.Verify || SelectedAction == CUEAction.VerifyPlusCRCs || SelectedAction == CUEAction.VerifyAndConvert || SelectedAction == CUEAction.VerifyThenConvert);
+			bool converting = (SelectedAction == CUEAction.Convert || SelectedAction == CUEAction.VerifyAndConvert);
+			bool verifying = (SelectedAction == CUEAction.Verify || SelectedAction == CUEAction.VerifyAndConvert);
 			//grpInput.Enabled = !running;
 			fileSystemTreeView1.Enabled = !running;
 			txtInputPath.Enabled = !running;
-			grpExtra.Enabled = !running;
+			txtInputPath.ReadOnly = chkMulti.Checked;
+			chkMulti.Enabled = !running;
+			grpExtra.Enabled = !running && (converting || verifying);
+			groupBoxCorrector.Enabled = !running && SelectedAction == CUEAction.CorrectFilenames;
 			grpOutputPathGeneration.Enabled = !running;
 			grpAudioOutput.Enabled = !running && converting;
 			grpAction.Enabled = !running;
@@ -686,6 +859,7 @@ namespace JDP {
 			{
 				fileSystemTreeView1.Visible = false;
 				textBatchReport.Visible = true;
+				textBatchReport.ReadOnly = true;
 				textBatchReport.Text = _batchReport.ToString();
 				textBatchReport.SelectAll();
 				textBatchReport.ScrollToCaret();
@@ -693,6 +867,12 @@ namespace JDP {
 				//toolStripStatusLabelProcessed.Text = "Processed: " + _batchProcessed.ToString();
 				//toolStripStatusLabelProcessed.ToolTipText = _batchReport.ToString();
 			}
+			//else if (chkMulti.CheckState == CheckState.Indeterminate)
+			//{
+			//    fileSystemTreeView1.Visible = false;
+			//    textBatchReport.Visible = true;
+			//    textBatchReport.ReadOnly = false;
+			//}
 			else
 			{
 				bool wasHidden = !fileSystemTreeView1.Visible;
@@ -705,7 +885,20 @@ namespace JDP {
 					txtInputPath.SelectAll();
 				}
 			}
-			UpdateActions();
+
+			if (!running)
+				UpdateActions();
+
+			//rbGapsLeftOut.Visible = 
+			//    rbGapsPrepended.Visible = 
+			//    rbCorrectorLocateFiles.Visible =
+			//    rbCorrectorChangeExtension.Visible =
+			//    comboBoxCorrectorFormat.Visible =
+			//    radioButtonAudioHybrid.Visible = 
+			//    radioButtonAudioNone.Visible =
+			//    grpExtra.Visible = 
+			//    comboBoxScript.Visible =
+			//    checkBoxAdvancedMode.Checked;
 		}
 
 		private bool ShowErrorMessage(Exception ex) {
@@ -737,7 +930,7 @@ namespace JDP {
 		//}
 
 		private bool CheckWriteOffset() {
-			if (numericWriteOffset.Value == 0 || rbNoAudio.Checked || rbActionVerify.Checked || rbActionVerifyAndCRCs.Checked)
+			if (numericWriteOffset.Value == 0 || SelectedOutputAudioType == AudioEncoderType.NoAudio || rbActionVerify.Checked)
 			{
 				return true;
 			}
@@ -750,43 +943,72 @@ namespace JDP {
 		}
 
 		private void LoadSettings() {
-			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt");
+			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath);
+			_config.Load(sr);
+			_defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
+			_defaultLossyFormat = sr.Load("DefaultLossyFormat") ?? "mp3";
+			_defaultHybridFormat = sr.Load("DefaultHybridFormat") ?? "lossy.flac";
+			_defaultNoAudioFormat = sr.Load("DefaultNoAudioFormat") ?? "wav";
 			txtCreateSubdirectory.Text = sr.Load("OutputSubdirectory") ?? "New";
 			txtAppendFilename.Text = sr.Load("OutputFilenameSuffix") ?? "-New";
 			txtCustomFormat.Text = sr.Load("OutputCustomFormat") ?? "%music%\\Converted\\%artist%\\%year% - %album%\\%artist% - %album%.cue";
-			SelectedOutputPathGeneration = (OutputPathGeneration?)sr.LoadInt32("OutputPathGeneration", null, null) ?? OutputPathGeneration.CreateSubdirectory;
-			SelectedOutputAudioFormat = (OutputAudioFormat?)sr.LoadInt32("OutputAudioFormat", null, null) ?? OutputAudioFormat.WAV;
-			SelectedAction = (CUEAction?)sr.LoadInt32("AccurateRipMode", null, null) ?? CUEAction.Convert;
+			SelectedOutputPathGeneration = (OutputPathGeneration?)sr.LoadInt32("OutputPathGeneration", null, null) ?? OutputPathGeneration.CustomFormat;
+			SelectedOutputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? AudioEncoderType.Lossless;
+			SelectedOutputAudioFormat = sr.Load("OutputAudioFmt") ?? "flac";
+			SelectedAction = (CUEAction?)sr.LoadInt32("AccurateRipMode", null, null) ?? CUEAction.VerifyAndConvert;
 			SelectedCUEStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
 			numericWriteOffset.Value = sr.LoadInt32("WriteOffset", null, null) ?? 0;
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
-			chkMulti.Checked = sr.LoadBoolean("BatchProcessing") ?? false;
-			chkLossyWAV.Checked = sr.LoadBoolean("LossyWav") ?? false;
+			chkMulti.CheckState = (CheckState) (sr.LoadInt32("BatchProcessing", (int) CheckState.Unchecked, (int) CheckState.Indeterminate) ?? (int) CheckState.Unchecked);
 			switch (sr.LoadInt32("FreedbLookup", null, null) ?? 2)
 			{
 				case 0: rbFreedbNever.Checked = true; break;
 				case 1: rbFreedbIf.Checked = true; break;
 				case 2: rbFreedbAlways.Checked = true; break;
 			}
-			_config.Load(sr);
+			rbCorrectorChangeExtension.Checked = true;
+			switch (sr.LoadInt32("CorrectorLookup", null, null) ?? 0)
+			{
+				case 0: rbCorrectorLocateFiles.Checked = true; break;
+				case 1: rbCorrectorChangeExtension.Checked = true; break;
+			}
+			checkBoxCorrectorOverwrite.Checked = sr.LoadBoolean("CorrectorOverwrite") ?? true;
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+				comboBoxCorrectorFormat.Items.Add(format.Key);
+			comboBoxCorrectorFormat.SelectedItem = sr.Load("CorrectorFormat") ?? "flac";
+			Width = sr.LoadInt32("Width", Width, null) ?? Width;
+			Top = sr.LoadInt32("Top", 0, null) ?? Top;
+			Left = sr.LoadInt32("Left", 0, null) ?? Left;
+			PerformLayout();
 		}
 
 		private void SaveSettings() {
-			SettingsWriter sw = new SettingsWriter("CUE Tools", "settings.txt");
+			SettingsWriter sw = new SettingsWriter("CUE Tools", "settings.txt", Application.ExecutablePath);
+			SaveScripts(SelectedAction);
+			sw.Save("DefaultLosslessFormat", _defaultLosslessFormat);
+			sw.Save("DefaultLossyFormat", _defaultLossyFormat);
+			sw.Save("DefaultHybridFormat", _defaultHybridFormat);
+			sw.Save("DefaultNoAudioFormat", _defaultNoAudioFormat);
 			sw.Save("OutputPathGeneration", (int)SelectedOutputPathGeneration);
 			sw.Save("OutputSubdirectory", txtCreateSubdirectory.Text);
 			sw.Save("OutputFilenameSuffix", txtAppendFilename.Text);
 			sw.Save("OutputCustomFormat", txtCustomFormat.Text);
-			sw.Save("OutputAudioFormat", (int)SelectedOutputAudioFormat);
+			sw.Save("OutputAudioFmt", SelectedOutputAudioFormat);
+			sw.Save("OutputAudioType", (int)SelectedOutputAudioType);
 			sw.Save("AccurateRipMode", (int)SelectedAction);
 			sw.Save("CUEStyle", (int)SelectedCUEStyle);
 			sw.Save("WriteOffset", (int)numericWriteOffset.Value);
 			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
 			sw.Save("ReducePriority", _reducePriority);
-			sw.Save("BatchProcessing", chkMulti.Checked);
-			sw.Save("LossyWav", chkLossyWAV.Checked);
+			sw.Save("BatchProcessing", (int)chkMulti.CheckState);
 			sw.Save("FreedbLookup", rbFreedbNever.Checked ? 0 : rbFreedbIf.Checked ? 1 : 2);
+			sw.Save("CorrectorLookup", rbCorrectorLocateFiles.Checked ? 0 : 1);
+			sw.Save("CorrectorOverwrite", checkBoxCorrectorOverwrite.Checked);
+			sw.Save("CorrectorFormat", (string) (comboBoxCorrectorFormat.SelectedItem ?? "flac"));
+			sw.Save("Width", Width);
+			sw.Save("Top", Top);
+			sw.Save("Left", Left);
 			_config.Save(sw);
 			sw.Close();
 		}
@@ -932,28 +1154,58 @@ namespace JDP {
 			}
 		}
 
-		private OutputAudioFormat SelectedOutputAudioFormat {
-			get {
-				if (rbFLAC.Checked)    return OutputAudioFormat.FLAC;
-				if (rbWavPack.Checked) return OutputAudioFormat.WavPack;
-				if (rbAPE.Checked)	   return OutputAudioFormat.APE;
-				if (rbTTA.Checked)	   return OutputAudioFormat.TTA;
-				if (rbNoAudio.Checked) return OutputAudioFormat.NoAudio;
-				if (rbWAV.Checked)     return OutputAudioFormat.WAV;
-				if (rbUDC1.Checked)	   return OutputAudioFormat.UDC1;
-				return OutputAudioFormat.NoAudio;
-				//throw new Exception("output format invalid");
+		private CUEToolsFormat SelectedOutputAudioFmt
+		{
+			get
+			{
+				CUEToolsFormat fmt;
+				if (comboBoxAudioFormat.SelectedItem == null)
+					return null;
+				string formatName = (string)comboBoxAudioFormat.SelectedItem;
+				if (formatName.StartsWith("lossy."))
+					formatName = formatName.Substring(6);
+				return _config.formats.TryGetValue(formatName, out fmt) ? fmt : null;
 			}
-			set {
-				switch (value) {
-					case OutputAudioFormat.FLAC:    rbFLAC.Checked = true; break;
-					case OutputAudioFormat.WavPack: rbWavPack.Checked = true; break;
-					case OutputAudioFormat.APE: rbAPE.Checked = true; break;
-					case OutputAudioFormat.TTA: rbTTA.Checked = true; break;
-					case OutputAudioFormat.WAV: rbWAV.Checked = true; break;
-					case OutputAudioFormat.NoAudio: rbNoAudio.Checked = true; break;
-					case OutputAudioFormat.UDC1: rbUDC1.Checked = true; break;
+		}
+
+		private AudioEncoderType SelectedOutputAudioType
+		{
+			get
+			{
+				return
+					radioButtonAudioNone.Checked ? AudioEncoderType.NoAudio :
+					radioButtonAudioHybrid.Checked ? AudioEncoderType.Hybrid :
+					radioButtonAudioLossy.Checked ? AudioEncoderType.Lossy :
+					AudioEncoderType.Lossless;
+			}
+			set
+			{
+				switch (value)
+				{
+					case AudioEncoderType.NoAudio:
+						radioButtonAudioNone.Checked = true;
+						break;
+					case AudioEncoderType.Hybrid:
+						radioButtonAudioHybrid.Checked = true;
+						break;
+					case AudioEncoderType.Lossy:
+						radioButtonAudioLossy.Checked = true;
+						break;
+					default:
+						radioButtonAudioLossless.Checked = true;
+						break;
 				}
+			}
+		}
+
+		private string SelectedOutputAudioFormat {
+			get 
+			{
+				return (string) (comboBoxAudioFormat.SelectedItem ?? "dummy");
+			}
+			set
+			{
+				comboBoxAudioFormat.SelectedItem = value;
 			}
 		}
 
@@ -962,9 +1214,7 @@ namespace JDP {
 			get
 			{
 				return
-					rbActionVerifyAndCRCs.Checked ? CUEAction.VerifyPlusCRCs :
 					rbActionVerify.Checked ? CUEAction.Verify :
-					rbActionVerifyThenEncode.Checked ? CUEAction.VerifyThenConvert :
 					rbActionVerifyAndEncode.Checked ? CUEAction.VerifyAndConvert :
 					rbActionCorrectFilenames.Checked ? CUEAction.CorrectFilenames :
 					rbActionCreateCUESheet.Checked ? CUEAction.CreateDummyCUE :
@@ -974,14 +1224,8 @@ namespace JDP {
 			{
 				switch (value)
 				{
-					case CUEAction.VerifyPlusCRCs:
-						rbActionVerifyAndCRCs.Checked = true;
-						break;
 					case CUEAction.Verify:
 						rbActionVerify.Checked = true;
-						break;
-					case CUEAction.VerifyThenConvert:
-						rbActionVerifyThenEncode.Checked = true;
 						break;
 					case CUEAction.VerifyAndConvert:
 						rbActionVerifyAndEncode.Checked = true;
@@ -1025,6 +1269,15 @@ namespace JDP {
 
 		private string GenerateOutputPath(string pathIn, string year, string artist, string album) 
 		{
+			if (!IsCDROM(pathIn) && !File.Exists(pathIn) && !Directory.Exists(pathIn))
+				return "";
+			if (SelectedAction == CUEAction.Verify && _config.arLogToSourceFolder)
+				return Path.ChangeExtension(pathIn, ".cue");
+			if (SelectedAction == CUEAction.CreateDummyCUE)
+				return Path.ChangeExtension(pathIn, ".cue");
+			if (SelectedAction == CUEAction.CorrectFilenames)
+				return pathIn;
+
 			string pathOut, dir, file, ext;
 
 			pathOut = String.Empty;
@@ -1045,10 +1298,8 @@ namespace JDP {
 				}
 				ext = ".cue";
 				if (rbEmbedCUE.Checked)
-					ext = General.FormatExtension (SelectedOutputAudioFormat, _config);
-				if (chkLossyWAV.Checked)
-					ext = ".lossy" + ext;
-				if (_config.detectHDCD && _config.decodeHDCD && (!chkLossyWAV.Checked || !_config.decodeHDCDtoLW16))
+					ext = "." + SelectedOutputAudioFormat;
+				if (_config.detectHDCD && _config.decodeHDCD && (!ext.StartsWith(".lossy.") || !_config.decodeHDCDtoLW16))
 				{
 					if (_config.decodeHDCDto24bit)
 						ext = ".24bit" + ext;
@@ -1095,46 +1346,12 @@ namespace JDP {
 
 		private void updateOutputStyles()
 		{
-			rbEmbedCUE.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbAPE.Checked || (rbUDC1.Checked && _config.udc1APEv2);
-			chkLossyWAV.Enabled = rbFLAC.Checked || rbWavPack.Checked || rbWAV.Checked;
-			rbNoAudio.Enabled = !rbEmbedCUE.Checked && !chkLossyWAV.Checked;
-			rbWAV.Enabled = !rbEmbedCUE.Checked;
-			rbTTA.Enabled = rbAPE.Enabled = !chkLossyWAV.Checked;
-			rbUDC1.Enabled = _config.udc1Extension != "" && _config.udc1Encoder != "" && (_config.udc1APEv2 || !rbEmbedCUE.Checked) && !chkLossyWAV.Checked;
-			rbUDC1.Text = _config.udc1Extension == "" ? "User" : _config.udc1Extension.ToUpper(); 
-			// _config.udc1Extension.Substring(0, 1).ToUpper() + _config.udc1Extension.Substring(1);
-		}
-
-		private void rbWAV_CheckedChanged(object sender, EventArgs e)
-		{
-			updateOutputStyles();
-		}
-
-		private void rbFLAC_CheckedChanged(object sender, EventArgs e)
-		{
-			updateOutputStyles();
-			UpdateOutputPath();
-		}
-
-		private void rbWavPack_CheckedChanged(object sender, EventArgs e)
-		{
-			updateOutputStyles();
-			UpdateOutputPath();
+			rbEmbedCUE.Enabled = SelectedOutputAudioType != AudioEncoderType.NoAudio && SelectedOutputAudioFmt != null && SelectedOutputAudioFmt.allowEmbed;
+			//checkBoxNoAudio.Enabled = !rbEmbedCUE.Checked;
+			//comboBoxAudioFormat.Enabled = ;
 		}
 
 		private void rbEmbedCUE_CheckedChanged(object sender, EventArgs e)
-		{
-			updateOutputStyles();
-			UpdateOutputPath();
-		}
-
-		private void rbNoAudio_CheckedChanged(object sender, EventArgs e)
-		{
-			updateOutputStyles();
-			UpdateOutputPath();
-		}
-
-		private void rbAPE_CheckedChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
 			UpdateOutputPath();
@@ -1162,90 +1379,19 @@ namespace JDP {
 			UpdateOutputPath();
 		}
 
-		private void rbTTA_CheckedChanged(object sender, EventArgs e)
-		{
-			updateOutputStyles();
-			UpdateOutputPath();
-		}
-
-		private void rbUDC1_CheckedChanged(object sender, EventArgs e)
-		{
-			updateOutputStyles();
-			UpdateOutputPath();
-		}
-
 		private void btnCodec_Click(object sender, EventArgs e)
 		{
-			contextMenuStripUDC.Show(btnCodec, btnCodec.Width, btnCodec.Height);
-			return;
 		}
 
-		private void contextMenuStripUDC_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		private void fileSystemTreeView1_KeyDown(object sender, KeyEventArgs e)
 		{
-			contextMenuStripUDC.Hide();
-			string executable = null, extension = null, decParams = null, encParams = null;
-			bool apev2 = false, id3v2 = false;
-			switch (e.ClickedItem.Text)
-			{
-				case "TAK":
-					extension = "tak";
-					executable = "takc.exe";
-					decParams = "-d %I -";
-					encParams = "-e -p4m -overwrite - %O";
-					apev2 = true;
-					id3v2 = false;
-					break;
-				case "ALAC":
-					extension = "m4a";
-					executable = "ffmpeg.exe";
-					decParams = "%I -f wav -";
-					encParams = "-i - -f ipod -acodec alac -y %O";
-					apev2 = false;
-					id3v2 = false;
-					break;
-				case "MP3":
-					extension = "mp3";
-					executable = "lame.exe";
-					decParams = "--decode %I -";
-					encParams = "--vbr-new -V2 - %O";
-					apev2 = false;
-					id3v2 = true;
-					break;
-				case "OGG":
-					extension = "ogg";
-					executable = "oggenc.exe";
-					encParams = "- -o %O";
-					decParams = "";
-					apev2 = false;
-					id3v2 = false;
-					break;
-				default:
-					return;
-			}
-
-			string path = Path.Combine(Application.StartupPath, executable);
-			if (!File.Exists(path))
-			{
-				OpenFileDialog fileDlg = new OpenFileDialog();
-				DialogResult dlgRes;
-				fileDlg.Title = "Select the path to encoder";
-				fileDlg.Filter = executable + "|" + executable;
-				if (Directory.Exists(Application.StartupPath))
-					fileDlg.InitialDirectory = Application.StartupPath;
-				dlgRes = fileDlg.ShowDialog();
-				if (dlgRes != DialogResult.OK)
-					return;
-				path = fileDlg.FileName;
-			}
-			_config.udc1Extension = extension;
-			_config.udc1Decoder = path;
-			_config.udc1Params = decParams;
-			_config.udc1Encoder = path;
-			_config.udc1EncParams = encParams;
-			_config.udc1APEv2 = apev2;
-			_config.udc1ID3v2 = id3v2;
-			updateOutputStyles();
-			UpdateOutputPath();
+			if (e.KeyCode != Keys.F5) return;
+			if (fileSystemTreeView1.Nodes.Count == 0) return;
+			string was = fileSystemTreeView1.SelectedPath;
+			fileSystemTreeView1.Nodes[0].Collapse();
+			fileSystemTreeView1.Nodes[0].Expand();
+			if (was != null)
+				fileSystemTreeView1.SelectedPath = was;
 		}
 
 		private void fileSystemTreeView1_NodeExpand(object sender, CUEControls.FileSystemTreeViewNodeExpandEventArgs e)
@@ -1268,10 +1414,9 @@ namespace JDP {
 				rbActionCorrectFilenames.Enabled = true;
 				rbActionCreateCUESheet.Enabled = true;
 				rbActionEncode.Enabled = true;
-				rbActionVerifyAndCRCs.Enabled = true;
 				rbActionVerify.Enabled = true;
-				rbActionVerifyThenEncode.Enabled = true;
 				rbActionVerifyAndEncode.Enabled = true;
+				rbDontGenerate.Enabled = false;
 			}
 			else
 			{
@@ -1283,20 +1428,21 @@ namespace JDP {
 					&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_config, pathIn) != null)
 					 || Directory.Exists(pathIn));
 				rbActionVerifyAndEncode.Enabled =
-					rbActionVerifyThenEncode.Enabled =
 					rbActionVerify.Enabled =
-					rbActionVerifyAndCRCs.Enabled =
 					rbActionEncode.Enabled = pathIn.Length != 0 
 					    && (File.Exists(pathIn) || Directory.Exists(pathIn) || IsCDROM(pathIn));
+				rbDontGenerate.Enabled = pathIn.Length != 0
+				    && (IsCDROM(pathIn) || File.Exists(pathIn));
 			}
+
 			btnConvert.Enabled = btnConvert.Visible &&
 				 ((rbActionCorrectFilenames.Enabled && rbActionCorrectFilenames.Checked)
 				|| (rbActionCreateCUESheet.Enabled && rbActionCreateCUESheet.Checked)
 				|| (rbActionEncode.Enabled && rbActionEncode.Checked)
-				|| (rbActionVerifyAndCRCs.Enabled && rbActionVerifyAndCRCs.Checked)
 				|| (rbActionVerify.Enabled && rbActionVerify.Checked)
-				|| (rbActionVerifyThenEncode.Enabled && rbActionVerifyThenEncode.Checked)
 				|| (rbActionVerifyAndEncode.Enabled && rbActionVerifyAndEncode.Checked));
+
+			comboBoxScript.Enabled = btnConvert.Enabled && comboBoxScript.Items.Count > 1;
 		}
 
 		private void fileSystemTreeView1_AfterSelect(object sender, TreeViewEventArgs e)
@@ -1306,22 +1452,6 @@ namespace JDP {
 				txtInputPath.Text = fileSystemTreeView1.SelectedPath;
 				txtInputPath.SelectAll();
 			}
-		}
-
-		private void chkMulti_CheckedChanged(object sender, EventArgs e)
-		{
-			fileSystemTreeView1.CheckBoxes = chkMulti.Checked;
-			if (fileSystemTreeView1.SelectedNode == null)
-			{
-				if (fileSystemTreeView1.Nodes.Count > 0)
-					fileSystemTreeView1.SelectedNode = fileSystemTreeView1.Nodes[0];
-				else
-					return;
-			}
-			if (chkMulti.Checked && fileSystemTreeView1.SelectedNode.Tag is FileSystemInfo)
-				fileSystemTreeView1.SelectedNode.Checked = true;
-			fileSystemTreeView1.SelectedNode.Expand();
-			SetupControls(false);
 		}
 
 		private void chkRecursive_CheckedChanged(object sender, EventArgs e)
@@ -1356,50 +1486,140 @@ namespace JDP {
 				string[] folders = e.Data.GetData(DataFormats.FileDrop) as string[];
 				if (folders != null)
 				{
-					if (folders.Length > 1 && !chkMulti.Checked)
+					//if (folders.Length > 1 && !chkMulti.Checked)
+					//{
+					//    chkMulti.CheckState = CheckState.Checked;
+					//    if (fileSystemTreeView1.SelectedNode != null && fileSystemTreeView1.SelectedNode.Checked)
+					//        fileSystemTreeView1.SelectedNode.Checked = false;
+					//}
+					if (folders.Length > 1 && chkMulti.CheckState == CheckState.Unchecked)
+						chkMulti.CheckState = CheckState.Indeterminate;
+					switch (chkMulti.CheckState)
 					{
-						chkMulti.Checked = true;
-						if (fileSystemTreeView1.SelectedNode != null && fileSystemTreeView1.SelectedNode.Checked)
-							fileSystemTreeView1.SelectedNode.Checked = false;
+						case CheckState.Unchecked:
+							fileSystemTreeView1.SelectedPath = folders[0];
+							break;
+						case CheckState.Checked:
+							foreach (string folder in folders)
+							{
+								TreeNode node = fileSystemTreeView1.LookupNode(folder);
+								if (node != null) node.Checked = true;
+							}
+							break;
+						case CheckState.Indeterminate:
+							fileSystemTreeView1.Nodes.Clear();
+							foreach (string folder in folders)
+							{
+								TreeNode node = Directory.Exists(folder)
+									? fileSystemTreeView1.NewNode(new DirectoryInfo(folder), true)
+									: fileSystemTreeView1.NewNode(new FileInfo(folder), false);
+								fileSystemTreeView1.Nodes.Add(node);
+							}
+							break;
 					}
-					if (chkMulti.Checked)
-						foreach (string folder in folders)
-						{
-							TreeNode node = fileSystemTreeView1.LookupNode(folder);
-							if (node != null) node.Checked = true;
-						}
-					else
-						fileSystemTreeView1.SelectedPath = folders[0];
 					fileSystemTreeView1.Focus();
 				}
 			}
 		}
 
+		private void SetupScripts()
+		{
+			comboBoxScript.Items.Clear();
+			foreach (KeyValuePair<string, CUEToolsScript> script in _config.scripts)
+				if (script.Value.conditions.Contains(SelectedAction))
+					comboBoxScript.Items.Add(script.Value);
+			comboBoxScript.Enabled = btnConvert.Enabled && comboBoxScript.Items.Count > 1;
+			comboBoxScript.SelectedItem = comboBoxScript.Items.Count > 0 ? comboBoxScript.Items[0] : null;
+			try
+			{
+				switch (SelectedAction)
+				{
+					case CUEAction.Verify:
+						comboBoxScript.SelectedItem = _config.scripts[_config.defaultVerifyScript];
+						break;
+					case CUEAction.Convert:
+						comboBoxScript.SelectedItem = _config.scripts[_config.defaultConvertScript];
+						break;
+					case CUEAction.VerifyAndConvert:
+						comboBoxScript.SelectedItem = _config.scripts[_config.defaultVerifyAndConvertScript];
+						break;
+				}
+			}
+			catch
+			{
+			}
+		}
+
+		private void SaveScripts(CUEAction action)
+		{
+			switch (action)
+			{
+				case CUEAction.Verify:
+					_config.defaultVerifyScript = ((CUEToolsScript)comboBoxScript.SelectedItem).name;
+					break;
+				case CUEAction.Convert:
+					_config.defaultConvertScript = ((CUEToolsScript)comboBoxScript.SelectedItem).name;
+					break;
+				case CUEAction.VerifyAndConvert:
+					_config.defaultVerifyAndConvertScript = ((CUEToolsScript)comboBoxScript.SelectedItem).name;
+					break;
+			}
+		}
+
 		private void rbAction_CheckedChanged(object sender, EventArgs e)
 		{
+			if (sender is RadioButton && !((RadioButton)sender).Checked)
+			{
+				if (sender == rbActionVerify && comboBoxScript.SelectedItem != null)
+					SaveScripts(CUEAction.Verify);
+				if (sender == rbActionEncode && comboBoxScript.SelectedItem != null)
+					SaveScripts(CUEAction.Convert);
+				if (sender == rbActionVerifyAndEncode && comboBoxScript.SelectedItem != null)
+					SaveScripts(CUEAction.VerifyAndConvert);
+				return;
+			}
 			UpdateOutputPath();
+			SetupScripts();
 			SetupControls(false);
 		}
 
-		public void OnSecondCall(string[] args)
+		public bool OnSecondCall(string[] args)
 		{
+			if ((_workThread != null) && (_workThread.IsAlive))
+				return false;
 			this.Invoke((MethodInvoker)delegate()
 			{
 				if (args.Length == 1)
 				{
-					TreeNode node = null;
-					try
+					if (chkMulti.CheckState == CheckState.Indeterminate)
 					{
-						node = fileSystemTreeView1.LookupNode(args[0]) ??
-							fileSystemTreeView1.LookupNode(Path.GetDirectoryName(args[0]));
+						fileSystemTreeView1.Nodes.Clear();
+						string folder = args[0];
+						{
+							TreeNode node = Directory.Exists(folder)
+								? fileSystemTreeView1.NewNode(new DirectoryInfo(folder), true)
+								: fileSystemTreeView1.NewNode(new FileInfo(folder), false);
+							fileSystemTreeView1.Nodes.Add(node);
+						}
 					}
-					catch
+					else
 					{
-					}
-					if (node != null)
-					{
-						fileSystemTreeView1.SelectedNode = node;
-						node.Expand();
+						TreeNode node = null;
+						try
+						{
+							node = fileSystemTreeView1.LookupNode(args[0]) ??
+								fileSystemTreeView1.LookupNode(Path.GetDirectoryName(args[0]));
+						}
+						catch
+						{
+						}
+						if (node != null)
+						{
+							fileSystemTreeView1.SelectedNode = node;
+							node.Expand();
+							if (chkMulti.CheckState == CheckState.Checked)
+								node.Checked = true;
+						}
 					}
 				}
 				if (WindowState == FormWindowState.Minimized)
@@ -1407,6 +1627,7 @@ namespace JDP {
 				fileSystemTreeView1.Select();
 				Activate();
 			});
+			return true;
 		}
 
 		private void setAsMyMusicFolderToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1470,6 +1691,170 @@ namespace JDP {
 					contextMenuStripFileTree.Show(fileSystemTreeView1, e.Location);
 				}					
 			}
+		}
+
+		private void chkMulti_CheckStateChanged(object sender, EventArgs e)
+		{
+			switch (chkMulti.CheckState)
+			{
+				case CheckState.Unchecked:
+					fileSystemTreeView1.CheckBoxes = false;
+					fileSystemTreeView1.Nodes.Clear();
+					fileSystemTreeView1.IconManager = m_icon_mgr;
+					if (fileSystemTreeView1.Nodes.Count > 0)
+						fileSystemTreeView1.Nodes[0].Expand();
+					try { fileSystemTreeView1.SelectedPath = txtInputPath.Text; }
+					catch { }
+					break;
+				case CheckState.Checked:
+					fileSystemTreeView1.CheckBoxes = true;
+					if (fileSystemTreeView1.SelectedNode == null && fileSystemTreeView1.Nodes.Count > 0)
+						fileSystemTreeView1.SelectedNode = fileSystemTreeView1.Nodes[0];
+					if (fileSystemTreeView1.SelectedNode != null && fileSystemTreeView1.SelectedNode.Tag is FileSystemInfo)
+					{
+						fileSystemTreeView1.SelectedNode.Checked = true;
+						fileSystemTreeView1.SelectedNode.Expand();
+					}
+					break;
+				case CheckState.Indeterminate:
+					fileSystemTreeView1.CheckBoxes = false;
+					fileSystemTreeView1.Nodes.Clear();
+					int icon = m_icon_mgr.GetIconIndex(CUEControls.ExtraSpecialFolder.Desktop, true);
+					fileSystemTreeView1.Nodes.Add(null, "Drag the files here", icon, icon);
+					break;
+			}
+			SetupControls(false);
+		}
+
+		private void comboBoxAudioFormat_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			updateOutputStyles();
+			UpdateOutputPath();
+			labelFormat.ImageKey = SelectedOutputAudioFmt == null ? null : "." + SelectedOutputAudioFmt.extension;
+			comboBoxEncoder.Items.Clear();
+			if (SelectedOutputAudioFmt == null)
+				return;
+
+			if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
+			{
+				comboBoxEncoder.Enabled = false;
+			}
+			else
+			{
+				foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
+					if (encoder.Value.extension == SelectedOutputAudioFmt.extension)
+					{
+						if (SelectedOutputAudioFormat.StartsWith("lossy.") && !encoder.Value.lossless)
+							continue;
+						else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Value.lossless)
+							continue;
+						else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.Value.lossless)
+							continue;
+						comboBoxEncoder.Items.Add(encoder.Key);
+					}
+				comboBoxEncoder.SelectedItem = SelectedOutputAudioFormat.StartsWith("lossy.") ? SelectedOutputAudioFmt.encoderLossless
+					: SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
+					: SelectedOutputAudioFmt.encoderLossy;
+				comboBoxEncoder.Enabled = true;
+			}
+
+			switch (SelectedOutputAudioType)
+			{
+				case AudioEncoderType.Lossless:
+					_defaultLosslessFormat = SelectedOutputAudioFormat;
+					break;
+				case AudioEncoderType.Lossy:
+					_defaultLossyFormat = SelectedOutputAudioFormat;
+					break;
+				case AudioEncoderType.Hybrid:
+					_defaultHybridFormat = SelectedOutputAudioFormat;
+					break;
+				case AudioEncoderType.NoAudio:
+					_defaultNoAudioFormat = SelectedOutputAudioFormat;
+					break;
+			}
+		}
+
+		private void comboBoxCorrectorFormat_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			CUEToolsFormat fmt;
+			if (comboBoxCorrectorFormat.SelectedItem == null || !_config.formats.TryGetValue((string)comboBoxCorrectorFormat.SelectedItem, out fmt))
+				return;
+			labelCorrectorFormat.ImageKey = "." + fmt.extension;
+		}
+
+		private void rbCorrectorChangeExtension_CheckedChanged(object sender, EventArgs e)
+		{
+			labelCorrectorFormat.Visible = comboBoxCorrectorFormat.Enabled = rbCorrectorChangeExtension.Checked;
+		}
+
+		private void radioButtonAudioLossless_CheckedChanged(object sender, EventArgs e)
+		{
+			if (sender is RadioButton && !((RadioButton)sender).Checked)
+				return;
+			labelFormat.ImageKey = null;
+			comboBoxAudioFormat.Items.Clear();
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			{
+				if (SelectedOutputAudioType == AudioEncoderType.Lossless && !format.Value.allowLossless)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Hybrid) // && format.Key != "wv") TODO!!!!!
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Lossy && !format.Value.allowLossy)
+					continue;
+				//if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
+				//continue;
+				comboBoxAudioFormat.Items.Add(format.Key);
+			}
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			{
+				if (!format.Value.allowLossyWAV)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
+					continue;
+				comboBoxAudioFormat.Items.Add("lossy." + format.Key);
+			}
+			switch (SelectedOutputAudioType)
+			{
+				case AudioEncoderType.Lossless:
+					SelectedOutputAudioFormat = _defaultLosslessFormat;
+					break;
+				case AudioEncoderType.Lossy:
+					SelectedOutputAudioFormat = _defaultLossyFormat;
+					break;
+				case AudioEncoderType.Hybrid:
+					SelectedOutputAudioFormat = _defaultHybridFormat;
+					break;
+				case AudioEncoderType.NoAudio:
+					SelectedOutputAudioFormat = _defaultNoAudioFormat;
+					break;
+			}
+			//if (comboBoxAudioFormat.Items.Count > 0)
+			//    comboBoxAudioFormat.SelectedIndex = 0;
+			//comboBoxAudioFormat.Enabled = comboBoxAudioFormat.Items.Count > 0;
+			updateOutputStyles();
+			UpdateOutputPath();
+		}
+
+		private void comboBoxEncoder_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
+				return;
+			if (SelectedOutputAudioFormat == null)
+				return;
+			if (SelectedOutputAudioFormat.StartsWith("lossy."))
+				SelectedOutputAudioFmt.encoderLossless = (string) comboBoxEncoder.SelectedItem;
+			else if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+				SelectedOutputAudioFmt.encoderLossless = (string) comboBoxEncoder.SelectedItem;
+			else
+				SelectedOutputAudioFmt.encoderLossy = (string) comboBoxEncoder.SelectedItem;
+		}
+
+		private void checkBoxAdvancedMode_CheckedChanged(object sender, EventArgs e)
+		{
+			SetupControls(false);
 		}
 	}
 
