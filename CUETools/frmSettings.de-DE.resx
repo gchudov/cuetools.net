@@ -136,14 +136,32 @@
   <data name="chkOverwriteTags.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="checkBoxCopyBasicTags.Text" xml:space="preserve">
+    <value>Basistags kopieren</value>
+  </data>
+  <data name="checkBoxCopyUnknownTags.Text" xml:space="preserve">
+    <value>Unbekannte Tags kopieren</value>
+  </data>
+  <data name="groupBoxAlbumArt.Text" xml:space="preserve">
+    <value>Coverbilder</value>
+  </data>
+  <data name="checkBoxCopyAlbumArt.Text" xml:space="preserve">
+    <value>Coverbilder kopieren</value>
+  </data>
+  <data name="checkBoxEmbedAlbumArt.Text" xml:space="preserve">
+    <value>Folder.jpg einbetten</value>
+  </data>
+  <data name="labelAlbumArtMaximumResolution.Text" xml:space="preserve">
+    <value>Größe ändern, falls Auflösung &gt;</value>
+  </data>
   <data name="chkExtractLog.Text" xml:space="preserve">
-    <value>Extrahiere Logdatei</value>
+    <value>Logdatei extrahieren</value>
   </data>
   <data name="chkExtractLog.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="chkSingleInstance.ToolTip" xml:space="preserve">
-    <value />
+  <data name="chkAllowMultipleInstances.Text" xml:space="preserve">
+    <value>Erlaube mehrere Instanzen</value>
   </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
     <value>Reduziere Prozesspriorität auf Untätig</value>
@@ -180,6 +198,9 @@
   </data>
   <data name="chkEmbedLog.ToolTip" xml:space="preserve">
     <value>Die Datei sollte im gleichen Verzeichnis sein und die Erweiterung .log haben.</value>
+  </data>
+  <data name="checkBoxWriteCUETags.Text" xml:space="preserve">
+    <value>Schreibe Basistags aus CUE-Datei</value>
   </data>
   <data name="numericWriteOffset.ToolTip" xml:space="preserve">
     <value />
@@ -285,6 +306,24 @@
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
     <value>Füge den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzu.  Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
+  </data>
+  <data name="checkBoxARVerifyUseSourceFolder.Text" xml:space="preserve">
+    <value>In Quellordner</value>
+  </data>
+  <data name="groupBoxARLog.Text" xml:space="preserve">
+    <value>Logdatei</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>% der verif. Tracks &gt;=</value>
+  </data>
+  <data name="checkBoxFixToNearest.Text" xml:space="preserve">
+    <value>zu nächstem</value>
+  </data>
+  <data name="labelLogFileExtension.Text" xml:space="preserve">
+    <value>Erweiterung</value>
+  </data>
+  <data name="checkBoxARLogVerbose.Text" xml:space="preserve">
+    <value>ausführlich</value>
   </data>
   <data name="numEncodeWhenPercent.ToolTip" xml:space="preserve">
     <value />
@@ -439,23 +478,11 @@
   <data name="chkWriteARLogOnVerify.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="groupBox3.Text" xml:space="preserve">
+  <data name="groupBoxVerify.Text" xml:space="preserve">
     <value>Verifizieren</value>
   </data>
-  <data name="groupBox3.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabPage2.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabPage5.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabPage6.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabPage7.ToolTip" xml:space="preserve">
-    <value />
+  <data name="tabPage6.Text" xml:space="preserve">
+    <value>Taggen</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Qualität:</value>
@@ -463,11 +490,74 @@
   <data name="label1.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="numericLossyWAVQuality.ToolTip" xml:space="preserve">
-    <value />
+  <data name="groupBox5.Text" xml:space="preserve">
+    <value>Codieren, falls verifiziert</value>
   </data>
-  <data name="tabPage8.ToolTip" xml:space="preserve">
-    <value />
+  <data name="groupBox4.Text" xml:space="preserve">
+    <value>Offset korrigieren</value>
+  </data>
+  <data name="tabPage3.Text" xml:space="preserve">
+    <value>Formate</value>
+  </data>
+  <data name="labelFormatLosslessEncoder.Text" xml:space="preserve">
+    <value>Encoder (verlustfrei)</value>
+  </data>
+  <data name="labelFormatLossyEncoder.Text" xml:space="preserve">
+    <value>Encoder (verlustbehaftet)</value>
+  </data>
+  <data name="checkBoxFormatAllowLossy.Text" xml:space="preserve">
+    <value>Unterstützt verlustbehaftete Codierung</value>
+  </data>
+  <data name="checkBoxFormatSupportsLossyWAV.Text" xml:space="preserve">
+    <value>Unterstützt LossyWAV</value>
+  </data>
+  <data name="checkBoxFormatAllowLossless.Text" xml:space="preserve">
+    <value>Unterstützt verlustfreie Codierung</value>
+  </data>
+  <data name="checkBoxFormatEmbedCUESheet.Text" xml:space="preserve">
+    <value>Unterstützt eingebettete CUE-Sheets</value>
+  </data>
+  <data name="tabPage10.Text" xml:space="preserve">
+    <value>Encoder</value>
+  </data>
+  <data name="labelEncoderExtension.Text" xml:space="preserve">
+    <value>Erweiterung</value>
+  </data>
+  <data name="groupBoxLibFLAC.Text" xml:space="preserve">
+    <value>libFLAC-Optionen</value>
+  </data>
+  <data name="groupBoxLibWavpack.Text" xml:space="preserve">
+    <value>WavPack-Optionen</value>
+  </data>
+  <data name="groupBoxLibMAC_SDK.Text" xml:space="preserve">
+    <value>Monkey's-Audio-Optionen</value>
+  </data>
+  <data name="groupBoxExternalEncoder.Text" xml:space="preserve">
+    <value>Externer Encoder</value>
+  </data>
+  <data name="labelEncoderParameters.Text" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="checkBoxEncoderLossless.Text" xml:space="preserve">
+    <value>Verlustfrei</value>
+  </data>
+  <data name="tabPage11.Text" xml:space="preserve">
+    <value>Decoder</value>
+  </data>
+  <data name="labelDecoderExtension.Text" xml:space="preserve">
+    <value>Erweiterung</value>
+  </data>
+  <data name="groupBoxExternalDecoder.Text" xml:space="preserve">
+    <value>Externer Decoder</value>
+  </data>
+  <data name="labelDecoderParameters.Text" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="groupBoxScriptConditions.Text" xml:space="preserve">
+    <value>Bedingungen</value>
+  </data>
+  <data name="buttonScriptCompile.Text" xml:space="preserve">
+    <value>Kompilieren</value>
   </data>
   <data name="chkUDC1ID3v2.Text" xml:space="preserve">
     <value>ID3v2-Tags</value>

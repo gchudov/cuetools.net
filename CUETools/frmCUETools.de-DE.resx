@@ -262,8 +262,17 @@
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Audio</value>
   </data>
-  <data name="grpAudioOutput.ToolTip" xml:space="preserve">
-    <value />
+  <data name="radioButtonAudioLossless.Text" xml:space="preserve">
+    <value>Verlustfrei</value>
+  </data>
+  <data name="radioButtonAudioLossless.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 17</value>
+  </data>
+  <data name="radioButtonAudioLossy.Text" xml:space="preserve">
+    <value>Verlustbehaftet</value>
+  </data>
+  <data name="radioButtonAudioLossy.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 17</value>
   </data>
   <data name="btnSettings.Text" xml:space="preserve">
     <value>Einstellungen</value>
@@ -336,6 +345,18 @@
   </data>
   <data name="label1.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="groupBoxCorrector.Text" xml:space="preserve">
+    <value>Korrektur</value>
+  </data>
+  <data name="checkBoxCorrectorOverwrite.Text" xml:space="preserve">
+    <value>CUE überschr.</value>
+  </data>
+  <data name="rbCorrectorLocateFiles.Text" xml:space="preserve">
+    <value>Dateien suchen</value>
+  </data>
+  <data name="rbCorrectorChangeExtension.Text" xml:space="preserve">
+    <value>Neue Erweiterung</value>
   </data>
   <data name="txtPreGapLength.ToolTip" xml:space="preserve">
     <value>Das Pregap ist eine mit Stille oder versteckten Audiodaten gefüllte Zeitspanne vor dem Beginn der ersten Tonspur. Normalerweise ist diese aus dem CUE-Sheet bekannt, aber falls Sie ohne CUE-Sheet arbeiten, können Sie diesen Wert manuell ändern.</value>
