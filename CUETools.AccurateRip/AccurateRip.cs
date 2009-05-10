@@ -538,25 +538,22 @@ namespace CUETools.AccurateRip
 						uint total = Total(iTrack);
 						uint conf = 0, part = 0;
 						bool zeroOffset = false;
-						string pressings = "";
-						for (int iDisk = 0; iDisk < AccDisks.Count; iDisk++)
-							for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+						//string pressings = "";
+						StringBuilder pressings = new StringBuilder();
+						for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+							for (int iDisk = 0; iDisk < AccDisks.Count; iDisk++)
 							{
-								if (CRC(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].CRC)
+								if (CRC(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].CRC && (AccDisks[iDisk].tracks[iTrack].CRC != 0 || oi == 0))
 								{
 									conf += AccDisks[iDisk].tracks[iTrack].count;
 									if (oi == 0)
 										zeroOffset = true;
-									if (pressings != "")
-										pressings = pressings + ",";
-									pressings = pressings + oi.ToString();
-								} else
-								if (CRC450(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].Frame450CRC)
+									pressings.AppendFormat("{0}{1}({2})", pressings.Length > 0 ? "," : "", oi, AccDisks[iDisk].tracks[iTrack].count);
+								}
+								else if (CRC450(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].Frame450CRC && (AccDisks[iDisk].tracks[iTrack].Frame450CRC != 0 || oi == 0))
 								{
 									part += AccDisks[iDisk].tracks[iTrack].count;
-									if (pressings != "")
-										pressings = pressings + ",";
-									pressings = pressings + oi.ToString();
+									pressings.AppendFormat("{0}{1}({2})", pressings.Length > 0 ? "," : "", oi, AccDisks[iDisk].tracks[iTrack].count);
 								}
 							}
 						if (conf > 0 && zeroOffset)
@@ -578,7 +575,33 @@ namespace CUETools.AccurateRip
 				sw.WriteLine("Track\t[ CRC32  ]\t[W/O NULL]\t{0:10}", _hasLogCRC ? "[  LOG   ]" : "");
 				sw.WriteLine(String.Format(" --\t[{0:X8}]\t[{1:X8}]\t{2:10}", CRC32(0), CRCWONULL(0), CRCLOG(0) == CRC32(0) ? "  CRC32   " : CRCLOG(0) == CRCWONULL(0) ? " W/O NULL " : CRCLOG(0) == 0 ? "" : String.Format("[{0:X8}]", CRCLOG(0))));
 				for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:X8}]\t[{2:X8}]\t{3:10}", iTrack, CRC32(iTrack), CRCWONULL(iTrack), CRCLOG(iTrack) == CRC32(iTrack)  ? "  CRC32   " : CRCLOG(iTrack) == CRCWONULL(iTrack) ? " W/O NULL " : CRCLOG(iTrack) == 0 ? "" : String.Format("[{0:X8}]", CRCLOG(iTrack))));
+				{
+					string inLog, extra = "";
+					if (CRCLOG(iTrack) == CRC32(iTrack))
+						inLog = "  CRC32   ";
+					else if (CRCLOG(iTrack) == CRCWONULL(iTrack))
+						inLog = " W/O NULL ";
+					else if (CRCLOG(iTrack) == 0)
+						inLog = "";
+					else
+					{
+						inLog = String.Format("[{0:X8}]", CRCLOG(iTrack));
+						for (int jTrack = 1; jTrack <= _toc.AudioTracks; jTrack++)
+						{
+							if (CRCLOG(iTrack) == CRC32(jTrack))
+							{
+								extra = string.Format(": CRC32 for track {0}", jTrack);
+								break;
+							}
+							if (CRCLOG(iTrack) == CRCWONULL(jTrack))
+							{
+								inLog = string.Format(": W/O NULL for track {0}", jTrack);
+								break;
+							}
+						}
+					}
+					sw.WriteLine(String.Format(" {0:00}\t[{1:X8}]\t[{2:X8}]\t{3:10}{4}", iTrack, CRC32(iTrack), CRCWONULL(iTrack), inLog, extra));
+				}
 			}
 		}
 

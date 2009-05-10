@@ -127,6 +127,11 @@ namespace CUETools.Processor
 		public void SaveText(string name, string value)
 		{
 			_sw.Write(name);
+			if (value == "")
+			{
+				_sw.WriteLine("=");
+				return;
+			}
 			using (StringReader sr = new StringReader(value))
 			{
 				string lineStr;

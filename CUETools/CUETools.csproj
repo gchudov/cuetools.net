@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>JDP</RootNamespace>
     <AssemblyName>CUETools</AssemblyName>
-    <ApplicationIcon>Resources\cue.ico</ApplicationIcon>
+    <ApplicationIcon>cue2.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -256,6 +256,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\accuraterip.jpg" />
+    <Content Include="cue2.ico" />
     <Content Include="Resources\accuraterip_16.bmp" />
     <None Include="Resources\ape.ico" />
     <Content Include="Resources\AR.ico" />

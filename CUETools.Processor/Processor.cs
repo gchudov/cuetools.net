@@ -505,7 +505,7 @@ namespace CUETools.Processor
 			encoders.Add("lame 256", new CUEToolsUDC("lame 256", "mp3", false, "lame.exe", "-m s -q 0 -b 256 --noreplaygain - %O"));
 			encoders.Add("lame 320", new CUEToolsUDC("lame 320", "mp3", false, "lame.exe", "-m s -q 0 -b 320 --noreplaygain - %O"));
 			encoders.Add("oggenc", new CUEToolsUDC("oggenc", "ogg", false, "oggenc.exe", "-q 3 - -o %O"));
-			encoders.Add("nero aac", new CUEToolsUDC("nero aac", "mp4", false, "neroAacEnc.exe", "-q 0.4 -if - -of %O"));
+			encoders.Add("nero aac", new CUEToolsUDC("nero aac", "m4a", false, "neroAacEnc.exe", "-q 0.4 -if - -of %O"));
 
 			decoders = new Dictionary<string, CUEToolsUDC>();
 #if !MONO
@@ -928,6 +928,7 @@ return processor.Go();
 		private string _eacLog;
 		private string _inputPath, _inputDir;
 		private string _outputPath;
+		private string[] _destPaths;
 		private TagLib.File _fileInfo;
 		private const int _arOffsetRange = 5 * 588 - 1;
 		private HDCDDotNet.HDCDDotNet hdcdDecoder;
@@ -1009,6 +1010,18 @@ return processor.Go();
 			get
 			{
 				return _arVerify;
+			}
+		}
+
+		public CDDriveReader CDRipper
+		{
+			get
+			{
+				return _ripper;
+			}
+			set
+			{
+				_ripper = value;
 			}
 		}
 
@@ -1538,13 +1551,21 @@ return processor.Go();
 									}
 								}
 							}
-							else if (fileIsBinary)
+							else
 							{
-								fileTimeLengthFrames = timeRelativeToFileStart + 150;
-								sourceInfo.Path = null;
-								sourceInfo.Offset = 0;
-								sourceInfo.Length = 150 * 588;
-								_sources.Add(sourceInfo);
+								if (fileIsBinary)
+								{
+									fileTimeLengthFrames = timeRelativeToFileStart + 150;
+									sourceInfo.Path = null;
+									sourceInfo.Offset = 0;
+									sourceInfo.Length = 150 * 588;
+									_sources.Add(sourceInfo);
+								}
+								else
+								{
+									if (timeRelativeToFileStart > fileTimeLengthFrames)
+										throw new Exception(string.Format("TRACK {0} INDEX {1} is at {2}, which is past {3} - the end of source file {4}", trackNumber, line.Params[1], CDImageLayout.TimeToString((uint)timeRelativeToFileStart), CDImageLayout.TimeToString((uint)fileTimeLengthFrames), pathAudio));
+								}
 							}
 							indexInfo.Track = trackNumber;
 							indexInfo.Index = Int32.Parse(line.Params[1]);
@@ -1754,9 +1775,9 @@ return processor.Go();
 				if (PreGapLength < tocFromLog.Pregap)
 					PreGapLength = tocFromLog.Pregap;
 				int trNo;
-				for (trNo = 2; trNo <= tocFromLog.TrackCount; trNo++)
-					if (_toc[trNo].Pregap < tocFromLog[trNo].Pregap)
-						_toc[trNo].Pregap = tocFromLog[trNo].Pregap;
+				for (trNo = 1; trNo < tocFromLog.AudioTracks && trNo < _toc.AudioTracks; trNo++)
+					if (_toc[_toc.FirstAudio + trNo].Pregap < tocFromLog[tocFromLog.FirstAudio + trNo].Pregap)
+						_toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
 			}
 
 			// use data track length from log
@@ -2181,6 +2202,22 @@ return processor.Go();
 					}
 				}
 			}
+
+			if (OutputStyle == CUEStyle.SingleFile || OutputStyle == CUEStyle.SingleFileWithCUE)
+			{
+				_destPaths = new string[1];
+				_destPaths[0] = Path.Combine(OutputDir, _singleFilename);
+			}
+			else
+			{
+				bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
+					(_toc.Pregap != 0));
+				_destPaths = new string[TrackCount + (htoaToFile ? 1 : 0)];
+				if (htoaToFile)
+					_destPaths[0] = Path.Combine(OutputDir, _htoaFilename);
+				for (int i = 0; i < TrackCount; i++)
+					_destPaths[i + (htoaToFile ? 1 : 0)] = Path.Combine(OutputDir, _trackFilenames[i]);
+			}
 		}
 
 		private int GetSampleLength(string path, out TagLib.File fileInfo)
@@ -2228,7 +2265,7 @@ return processor.Go();
 		}
 
 #if !MONO
-		public void CreateExactAudioCopyLOG(string[] destPaths, CUEStyle style)
+		public void CreateExactAudioCopyLOG()
 		{
 			StringWriter logWriter = new StringWriter(CultureInfo.InvariantCulture);
 			string eacHeader = "Exact Audio Copy V0.99 prebeta 4 from 23. January 2008\r\n" +
@@ -2252,12 +2289,8 @@ return processor.Go();
 				"Used interface                              : Native Win32 interface for Win NT & 2000\r\n" +
 				"Gap handling                                : Appended to previous track\r\n" +
 				"\r\n" +
-				"Used output format              : User Defined Encoder\r\n" +
-				"Selected bitrate                : 768 kBit/s\r\n" +
-				"Quality                         : High\r\n" +
-				"Add ID3 tag                     : No\r\n" +
-				"Command line compressor         : C:\\Program Files (x86)\\EAC\\FLAC\\FLAC.EXE\r\n" +
-				"Additional command line options : -8 -V -T \"ARTIST=%a\" -T \"TITLE=%t\" -T \"ALBUM=%g\" -T \"DATE=%y\" -T \"TRACKNUMBER=%n\" -T \"GENRE=%m\" %s -o %d\r\n";
+				"Used output format : Internal WAV Routines\r\n" +
+				"Sample format      : 44.100 Hz; 16 Bit; Stereo\r\n";
 
 			logWriter.WriteLine(eacHeader, 
 				DateTime.Now,
@@ -2280,24 +2313,24 @@ return processor.Go();
 					_toc[track].End);
 			logWriter.WriteLine();
 
-			bool htoaToFile = ((style == CUEStyle.GapsAppended) && _config.preserveHTOA &&
+			bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
 				(_toc.Pregap != 0));
 			int accurateTracks = 0, knownTracks = 0;
-			if (style != CUEStyle.SingleFile && style != CUEStyle.SingleFileWithCUE)
+			if (OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE)
 			{
 				logWriter.WriteLine();
 				for (int track = 0; track < _toc.AudioTracks; track++)
 				{
 					logWriter.WriteLine("Track {0,2}", track + 1);
 					logWriter.WriteLine();
-					logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(destPaths[track + (htoaToFile ? 1 : 0)]), ".wav"));
+					logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(_destPaths[track + (htoaToFile ? 1 : 0)]), ".wav"));
 					if (_toc[track + _toc.FirstAudio].Pregap > 0 || track + _toc.FirstAudio == 1)
 					{
 						logWriter.WriteLine();
-						logWriter.WriteLine("     Pre-gap length  {0}", CDImageLayout.TimeToString("0:{0:00}:{1:00}.{2:00}", _toc[track + _toc.FirstAudio].Pregap + (track + _toc.FirstAudio == 1 ? 150U : 0U)));
+						logWriter.WriteLine("     Pre-gap length  0:{0}.{1:00}", CDImageLayout.TimeToString("{0:00}:{1:00}", _toc[track + _toc.FirstAudio].Pregap + (track + _toc.FirstAudio == 1 ? 150U : 0U)), (_toc[track + _toc.FirstAudio].Pregap % 75) * 100 / 75);
 					}
 					logWriter.WriteLine();
-					logWriter.WriteLine("     Peak level {0:F1} %", Tracks[track].PeakLevel / 327.68);
+					logWriter.WriteLine("     Peak level {0:F1} %", (Tracks[track].PeakLevel * 1000 / 32768) * 0.1);
 					logWriter.WriteLine("     Track quality 100.0 %");
 					logWriter.WriteLine("     Test CRC {0:X8}", _arVerify.CRC32(track + 1));
 					logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(track + 1));
@@ -2307,7 +2340,7 @@ return processor.Go();
 					{
 						knownTracks++;
 						if (_arVerify.Confidence(track) == 0)
-							logWriter.WriteLine("     Track cannot be verified as accurate (confidence {0})  [{1:X8}], AccurateRip returned [{2:X8}]", _arVerify.Total(track), _arVerify.CRC(track), _arVerify.DBCRC(track));
+							logWriter.WriteLine("     Cannot be verified as accurate (confidence {0})  [{1:X8}], AccurateRip returned [{2:X8}]", _arVerify.Total(track), _arVerify.CRC(track), _arVerify.DBCRC(track));
 						else
 						{
 							logWriter.WriteLine("     Accurately ripped (confidence {0})  [{1:X8}]", _arVerify.Confidence(track), _arVerify.CRC(track));
@@ -2325,9 +2358,13 @@ return processor.Go();
 				logWriter.WriteLine();
 				logWriter.WriteLine("Selected range");
 				logWriter.WriteLine();
-				logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(destPaths[0]), ".wav"));
+				logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(_destPaths[0]), ".wav"));
 				logWriter.WriteLine();
-				logWriter.WriteLine("     Peak level {0:F1} %", Tracks[0].PeakLevel / 327.68); // TODO: max(tracks)
+				int PeakLevel = 0;
+				for (int track = 0; track < TrackCount; track++)
+					if (PeakLevel < Tracks[track].PeakLevel)
+						PeakLevel = Tracks[track].PeakLevel;
+				logWriter.WriteLine("     Peak level {0:F1} %", (PeakLevel * 1000 / 32768) * 0.1);
 				logWriter.WriteLine("     Range quality 100.0 %");
 				logWriter.WriteLine("     Test CRC {0:X8}", _arVerify.CRC32(0));
 				logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(0));
@@ -2337,18 +2374,19 @@ return processor.Go();
 				logWriter.WriteLine();
 				logWriter.WriteLine();
 				logWriter.WriteLine("AccurateRip summary");
-				for (int track = 1; track <= _toc.TrackCount; track++)
+				logWriter.WriteLine();
+				for (int track = 0; track < _toc.AudioTracks; track++)
 				{
-					if (_arVerify.Total(track - 1) == 0)
-						logWriter.WriteLine("Track {0,2}  not present in AccurateRip database", track + 1);
+					if (_arVerify.Total(track) == 0)
+						logWriter.WriteLine("Track {0,2}  not present in database", track + 1);
 					else
 					{
 						knownTracks++;
-						if (_arVerify.Confidence(track - 1) == 0)
-							logWriter.WriteLine("Track {3,2}  cannot be verified as accurate (confidence {0})  [{1:X8}], AccurateRip returned [{2:X8}]", _arVerify.Total(track - 1), _arVerify.CRC(track - 1), _arVerify.DBCRC(track - 1), track + 1);
+						if (_arVerify.Confidence(track) == 0)
+							logWriter.WriteLine("Track {3,2}  cannot be verified as accurate (confidence {0})  [{1:X8}], AccurateRip returned [{2:X8}]", _arVerify.Total(track), _arVerify.CRC(track), _arVerify.DBCRC(track), track + 1);
 						else
 						{
-							logWriter.WriteLine("Track {2,2}       Accurately ripped (confidence {0})  [{1:X8}]", _arVerify.Confidence(track - 1), _arVerify.CRC(track - 1), track + 1);
+							logWriter.WriteLine("Track {2,2}  accurately ripped (confidence {0})  [{1:X8}]", _arVerify.Confidence(track), _arVerify.CRC(track), track + 1);
 							accurateTracks++;
 						}
 					}
@@ -2358,7 +2396,10 @@ return processor.Go();
 			if (knownTracks == 0)
 				logWriter.WriteLine("None of the tracks are present in the AccurateRip database");
 			else if (accurateTracks == 0)
-				logWriter.WriteLine("No tracks could be verified as accurate\r\nYou may have a different pressing from the one(s) in the database\r\n");
+			{
+				logWriter.WriteLine("No tracks could be verified as accurate");
+				logWriter.WriteLine("You may have a different pressing from the one(s) in the database");
+			}
 			else if (accurateTracks == TrackCount)
 				logWriter.WriteLine("All tracks accurately ripped");
 			else
@@ -2370,7 +2411,7 @@ return processor.Go();
 				logWriter.WriteLine("Some tracks could not be verified as accurate");
 			}
 			logWriter.WriteLine();
-			if (style != CUEStyle.SingleFile && style != CUEStyle.SingleFileWithCUE)
+			if (OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE)
 			{
 				logWriter.WriteLine("No errors occurred");
 				logWriter.WriteLine();
@@ -2381,14 +2422,14 @@ return processor.Go();
 		}
 #endif
 
-		public void CreateRipperLOG(string[] destPaths, CUEStyle style)
+		public void CreateRipperLOG()
 		{
 			if (!_isCD || _ripper == null || _ripperLog != null)
 				return;
 #if !MONO
 			if (_config.createEACLOG)
 			{
-				CreateExactAudioCopyLOG(destPaths, style);
+				CreateExactAudioCopyLOG();
 				return;
 			}
 			StringWriter logWriter = new StringWriter();
@@ -2435,7 +2476,7 @@ return processor.Go();
 					_toc[track].LastIndex);
 			logWriter.WriteLine();
 			logWriter.WriteLine("Destination files");
-			foreach (string path in destPaths)
+			foreach (string path in _destPaths)
 				logWriter.WriteLine("    {0}", path);
 			bool wereErrors = false;
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
@@ -2712,11 +2753,9 @@ return processor.Go();
 
 		public string Go()
 		{
-			string[] destPaths;
 			int[] destLengths;
 			bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
 				(_toc.Pregap != 0));
-			string dir = OutputDir;
 
 			if (_isCD && (OutputStyle == CUEStyle.GapsLeftOut || OutputStyle == CUEStyle.GapsPrepended) && (_action == CUEAction.Convert || _action == CUEAction.VerifyAndConvert))
 				throw new Exception("When ripping a CD, gaps Left Out/Gaps prepended modes can only be used in verify-then-convert mode");
@@ -2724,44 +2763,27 @@ return processor.Go();
 			if (_usePregapForFirstTrackInSingleFile)
 				throw new Exception("UsePregapForFirstTrackInSingleFile is not supported for writing audio files.");
 
-			if (OutputStyle == CUEStyle.SingleFile || OutputStyle == CUEStyle.SingleFileWithCUE)
-			{
-				destPaths = new string[1];
-				destPaths[0] = Path.Combine(dir, _singleFilename);
-			}
-			else
-			{
-				destPaths = new string[TrackCount + (htoaToFile ? 1 : 0)];
-				if (htoaToFile)
-				{
-					destPaths[0] = Path.Combine(dir, _htoaFilename);
-				}
-				for (int i = 0; i < TrackCount; i++)
-				{
-					destPaths[i + (htoaToFile ? 1 : 0)] = Path.Combine(dir, _trackFilenames[i]);
-				}
-			}
-
 			if (_action != CUEAction.Verify)
-				for (int i = 0; i < destPaths.Length; i++)
+				for (int i = 0; i < _destPaths.Length; i++)
 					for (int j = 0; j < _sourcePaths.Count; j++)
-						if (destPaths[i].ToLower() == _sourcePaths[j].ToLower())
+						if (_destPaths[i].ToLower() == _sourcePaths[j].ToLower())
 							throw new Exception("Source and destination audio file paths cannot be the same.");
 
 			destLengths = CalculateAudioFileLengths(OutputStyle);
+
+			// TODO: if (_isCD) might need to recalc, might have changed after scanning the CD
 
 			// Lookup();
 			
 			if (_action != CUEAction.Verify)
 			{
-				if (!Directory.Exists(dir))
-					Directory.CreateDirectory(dir);
+				if (!Directory.Exists(OutputDir))
+					Directory.CreateDirectory(OutputDir);
 			}
-			if (_isCD)
-				destLengths = CalculateAudioFileLengths(OutputStyle); // need to recalc, might have changed after scanning the CD
+			
 			if (_audioEncoderType != AudioEncoderType.NoAudio || _action == CUEAction.Verify)
-				WriteAudioFilesPass(dir, OutputStyle, destPaths, destLengths, htoaToFile, _action == CUEAction.Verify);
-			CreateRipperLOG(destPaths, OutputStyle);
+				WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
+			CreateRipperLOG();
 			if (_action == CUEAction.Convert || _action == CUEAction.VerifyAndConvert)
 			{
 				string cueContents = CUESheetContents(OutputStyle);
@@ -2796,7 +2818,7 @@ return processor.Go();
 					{
 						NameValueCollection tags = GenerateAlbumTags(bestOffset, OutputStyle == CUEStyle.SingleFileWithCUE, _ripperLog ?? _eacLog);
 						TagLib.UserDefined.AdditionalFileTypes.Config = _config;
-						TagLib.File fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destPaths[0]));
+						TagLib.File fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(_destPaths[0]));
 						if (Tagging.UpdateTags(fileInfo, tags, _config))
 						{
 							TagLib.File sourceFileInfo = _tracks[0]._fileInfo ?? _fileInfo;
@@ -2848,7 +2870,7 @@ return processor.Go();
 					if (_audioEncoderType != AudioEncoderType.NoAudio)
 						for (int iTrack = 0; iTrack < TrackCount; iTrack++)
 						{
-							string path = destPaths[iTrack + (htoaToFile ? 1 : 0)];
+							string path = _destPaths[iTrack + (htoaToFile ? 1 : 0)];
 							NameValueCollection tags = GenerateTrackTags(iTrack, bestOffset);
 							TagLib.UserDefined.AdditionalFileTypes.Config = _config;
 							TagLib.File fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(path));
@@ -3146,7 +3168,7 @@ return processor.Go();
 			return destTags;
 		}
 
-		public void WriteAudioFilesPass(string dir, CUEStyle style, string[] destPaths, int[] destLengths, bool htoaToFile, bool noOutput)
+		public void WriteAudioFilesPass(string dir, CUEStyle style, int[] destLengths, bool htoaToFile, bool noOutput)
 		{
 			const int buffLen = 16384;
 			int iTrack, iIndex;
@@ -3211,7 +3233,7 @@ return processor.Go();
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 			{
 				iDest++;
-				audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
+				audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
 			}
 
 			uint currentOffset = 0, previousOffset = 0;
@@ -3239,7 +3261,7 @@ return processor.Go();
 							hdcdDecoder.AudioDest = null;
 						if (audioDest != null)
 							audioDest.Close();
-						audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
+						audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
 					}
 
 					for (iIndex = 0; iIndex <= _toc[_toc.FirstAudio + iTrack].LastIndex; iIndex++)
@@ -3260,7 +3282,7 @@ return processor.Go();
 							if (audioDest != null)
 								audioDest.Close();
 							iDest++;
-							audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
+							audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
 						}
 
 						if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0))
@@ -3269,7 +3291,7 @@ return processor.Go();
 							if (htoaToFile)
 							{
 								iDest++;
-								audioDest = GetAudioDest(destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
+								audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, noOutput);
 							}
 						}
 						else if ((style == CUEStyle.GapsLeftOut) && (iIndex == 0))

@@ -837,6 +837,8 @@ namespace JDP {
 
 		private static int WordLength(string text, int pos)
 		{
+			if (pos >= text.Length)
+				return 1;
 			if ((text[pos] >= 'a' && text[pos] <= 'z') ||
 				(text[pos] >= 'A' && text[pos] <= 'Z') ||
 				(text[pos] == '_'))
