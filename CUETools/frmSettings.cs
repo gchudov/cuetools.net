@@ -87,6 +87,7 @@ namespace JDP {
 			checkBoxCopyBasicTags.Checked = _config.copyBasicTags;
 			checkBoxCopyUnknownTags.Checked = _config.copyUnknownTags;
 			checkBoxCopyAlbumArt.Checked = _config.copyAlbumArt;
+			checkBoxExtractAlbumArt.Checked = _config.extractAlbumArt;
 			checkBoxEmbedAlbumArt.Checked = _config.embedAlbumArt;
 			checkBoxARVerifyUseSourceFolder.Checked = _config.arLogToSourceFolder;
 			checkBoxARLogVerbose.Checked = _config.arLogVerbose;
@@ -147,6 +148,10 @@ namespace JDP {
 				item.Tag = script.Value;
 				listViewScripts.Items.Add(item);
 			}
+			ComponentResourceManager resources = new ComponentResourceManager(typeof(frmCUETools));
+			listViewScriptConditions.Items.Add(resources.GetString("rbActionVerify.Text").Replace("&", ""));
+			listViewScriptConditions.Items.Add(resources.GetString("rbActionVerifyAndEncode.Text").Replace("&", ""));
+			listViewScriptConditions.Items.Add(resources.GetString("rbActionEncode.Text").Replace("&", ""));
 			listViewScriptConditions.Items[0].Tag = CUEAction.Verify;
 			listViewScriptConditions.Items[1].Tag = CUEAction.VerifyAndConvert;
 			listViewScriptConditions.Items[2].Tag = CUEAction.Convert;
@@ -244,6 +249,7 @@ namespace JDP {
 			_config.copyBasicTags = checkBoxCopyBasicTags.Checked;
 			_config.copyUnknownTags = checkBoxCopyUnknownTags.Checked;
 			_config.copyAlbumArt = checkBoxCopyAlbumArt.Checked;
+			_config.extractAlbumArt = checkBoxExtractAlbumArt.Checked;
 			_config.embedAlbumArt = checkBoxEmbedAlbumArt.Checked;
 
 			_config.arLogToSourceFolder = checkBoxARVerifyUseSourceFolder.Checked;

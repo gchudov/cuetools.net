@@ -67,10 +67,14 @@ namespace JDP {
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this.tabPage6 = new System.Windows.Forms.TabPage();
-			this.groupBoxTagging = new System.Windows.Forms.GroupBox();
+			this.groupBoxAlbumArt = new System.Windows.Forms.GroupBox();
+			this.labelAlbumArtMaximumResolution = new System.Windows.Forms.Label();
+			this.numericUpDownMaxResolution = new System.Windows.Forms.NumericUpDown();
 			this.checkBoxEmbedAlbumArt = new System.Windows.Forms.CheckBox();
-			this.checkBoxCopyBasicTags = new System.Windows.Forms.CheckBox();
 			this.checkBoxCopyAlbumArt = new System.Windows.Forms.CheckBox();
+			this.groupBoxTagging = new System.Windows.Forms.GroupBox();
+			this.chkExtractLog = new System.Windows.Forms.CheckBox();
+			this.checkBoxCopyBasicTags = new System.Windows.Forms.CheckBox();
 			this.checkBoxWriteCUETags = new System.Windows.Forms.CheckBox();
 			this.checkBoxCopyUnknownTags = new System.Windows.Forms.CheckBox();
 			this.chkOverwriteTags = new System.Windows.Forms.CheckBox();
@@ -160,10 +164,7 @@ namespace JDP {
 			this.labelFormatDecoder = new System.Windows.Forms.Label();
 			this.labelFormatEncoder = new System.Windows.Forms.Label();
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-			this.groupBoxAlbumArt = new System.Windows.Forms.GroupBox();
-			this.chkExtractLog = new System.Windows.Forms.CheckBox();
-			this.numericUpDownMaxResolution = new System.Windows.Forms.NumericUpDown();
-			this.labelAlbumArtMaximumResolution = new System.Windows.Forms.Label();
+			this.checkBoxExtractAlbumArt = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -175,6 +176,8 @@ namespace JDP {
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage6.SuspendLayout();
+			this.groupBoxAlbumArt.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).BeginInit();
 			this.groupBoxTagging.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.groupBoxARLog.SuspendLayout();
@@ -198,8 +201,6 @@ namespace JDP {
 			this.grpHDCD.SuspendLayout();
 			this.tabPage5.SuspendLayout();
 			this.groupBoxScriptConditions.SuspendLayout();
-			this.groupBoxAlbumArt.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// btnCancel
@@ -557,6 +558,59 @@ namespace JDP {
 			resources.ApplyResources(this.tabPage6, "tabPage6");
 			this.tabPage6.Name = "tabPage6";
 			// 
+			// groupBoxAlbumArt
+			// 
+			this.groupBoxAlbumArt.Controls.Add(this.checkBoxExtractAlbumArt);
+			this.groupBoxAlbumArt.Controls.Add(this.labelAlbumArtMaximumResolution);
+			this.groupBoxAlbumArt.Controls.Add(this.numericUpDownMaxResolution);
+			this.groupBoxAlbumArt.Controls.Add(this.checkBoxEmbedAlbumArt);
+			this.groupBoxAlbumArt.Controls.Add(this.checkBoxCopyAlbumArt);
+			resources.ApplyResources(this.groupBoxAlbumArt, "groupBoxAlbumArt");
+			this.groupBoxAlbumArt.Name = "groupBoxAlbumArt";
+			this.groupBoxAlbumArt.TabStop = false;
+			// 
+			// labelAlbumArtMaximumResolution
+			// 
+			resources.ApplyResources(this.labelAlbumArtMaximumResolution, "labelAlbumArtMaximumResolution");
+			this.labelAlbumArtMaximumResolution.Name = "labelAlbumArtMaximumResolution";
+			// 
+			// numericUpDownMaxResolution
+			// 
+			this.numericUpDownMaxResolution.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+			resources.ApplyResources(this.numericUpDownMaxResolution, "numericUpDownMaxResolution");
+			this.numericUpDownMaxResolution.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+			this.numericUpDownMaxResolution.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+			this.numericUpDownMaxResolution.Name = "numericUpDownMaxResolution";
+			this.numericUpDownMaxResolution.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+			// 
+			// checkBoxEmbedAlbumArt
+			// 
+			resources.ApplyResources(this.checkBoxEmbedAlbumArt, "checkBoxEmbedAlbumArt");
+			this.checkBoxEmbedAlbumArt.Name = "checkBoxEmbedAlbumArt";
+			this.checkBoxEmbedAlbumArt.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxCopyAlbumArt
+			// 
+			resources.ApplyResources(this.checkBoxCopyAlbumArt, "checkBoxCopyAlbumArt");
+			this.checkBoxCopyAlbumArt.Name = "checkBoxCopyAlbumArt";
+			this.checkBoxCopyAlbumArt.UseVisualStyleBackColor = true;
+			// 
 			// groupBoxTagging
 			// 
 			this.groupBoxTagging.Controls.Add(this.chkExtractLog);
@@ -570,23 +624,17 @@ namespace JDP {
 			this.groupBoxTagging.Name = "groupBoxTagging";
 			this.groupBoxTagging.TabStop = false;
 			// 
-			// checkBoxEmbedAlbumArt
+			// chkExtractLog
 			// 
-			resources.ApplyResources(this.checkBoxEmbedAlbumArt, "checkBoxEmbedAlbumArt");
-			this.checkBoxEmbedAlbumArt.Name = "checkBoxEmbedAlbumArt";
-			this.checkBoxEmbedAlbumArt.UseVisualStyleBackColor = true;
+			resources.ApplyResources(this.chkExtractLog, "chkExtractLog");
+			this.chkExtractLog.Name = "chkExtractLog";
+			this.chkExtractLog.UseVisualStyleBackColor = true;
 			// 
 			// checkBoxCopyBasicTags
 			// 
 			resources.ApplyResources(this.checkBoxCopyBasicTags, "checkBoxCopyBasicTags");
 			this.checkBoxCopyBasicTags.Name = "checkBoxCopyBasicTags";
 			this.checkBoxCopyBasicTags.UseVisualStyleBackColor = true;
-			// 
-			// checkBoxCopyAlbumArt
-			// 
-			resources.ApplyResources(this.checkBoxCopyAlbumArt, "checkBoxCopyAlbumArt");
-			this.checkBoxCopyAlbumArt.Name = "checkBoxCopyAlbumArt";
-			this.checkBoxCopyAlbumArt.UseVisualStyleBackColor = true;
 			// 
 			// checkBoxWriteCUETags
 			// 
@@ -1243,10 +1291,6 @@ namespace JDP {
             this.columnHeader6});
 			this.listViewScriptConditions.FullRowSelect = true;
 			this.listViewScriptConditions.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-			this.listViewScriptConditions.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            ((System.Windows.Forms.ListViewItem)(resources.GetObject("listViewScriptConditions.Items"))),
-            ((System.Windows.Forms.ListViewItem)(resources.GetObject("listViewScriptConditions.Items1"))),
-            ((System.Windows.Forms.ListViewItem)(resources.GetObject("listViewScriptConditions.Items2")))});
 			resources.ApplyResources(this.listViewScriptConditions, "listViewScriptConditions");
 			this.listViewScriptConditions.MultiSelect = false;
 			this.listViewScriptConditions.Name = "listViewScriptConditions";
@@ -1295,51 +1339,11 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.columnHeader2, "columnHeader2");
 			// 
-			// groupBoxAlbumArt
+			// checkBoxExtractAlbumArt
 			// 
-			this.groupBoxAlbumArt.Controls.Add(this.labelAlbumArtMaximumResolution);
-			this.groupBoxAlbumArt.Controls.Add(this.numericUpDownMaxResolution);
-			this.groupBoxAlbumArt.Controls.Add(this.checkBoxEmbedAlbumArt);
-			this.groupBoxAlbumArt.Controls.Add(this.checkBoxCopyAlbumArt);
-			resources.ApplyResources(this.groupBoxAlbumArt, "groupBoxAlbumArt");
-			this.groupBoxAlbumArt.Name = "groupBoxAlbumArt";
-			this.groupBoxAlbumArt.TabStop = false;
-			// 
-			// chkExtractLog
-			// 
-			resources.ApplyResources(this.chkExtractLog, "chkExtractLog");
-			this.chkExtractLog.Name = "chkExtractLog";
-			this.chkExtractLog.UseVisualStyleBackColor = true;
-			// 
-			// numericUpDownMaxResolution
-			// 
-			this.numericUpDownMaxResolution.Increment = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-			resources.ApplyResources(this.numericUpDownMaxResolution, "numericUpDownMaxResolution");
-			this.numericUpDownMaxResolution.Maximum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            0});
-			this.numericUpDownMaxResolution.Minimum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-			this.numericUpDownMaxResolution.Name = "numericUpDownMaxResolution";
-			this.numericUpDownMaxResolution.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-			// 
-			// labelAlbumArtMaximumResolution
-			// 
-			resources.ApplyResources(this.labelAlbumArtMaximumResolution, "labelAlbumArtMaximumResolution");
-			this.labelAlbumArtMaximumResolution.Name = "labelAlbumArtMaximumResolution";
+			resources.ApplyResources(this.checkBoxExtractAlbumArt, "checkBoxExtractAlbumArt");
+			this.checkBoxExtractAlbumArt.Name = "checkBoxExtractAlbumArt";
+			this.checkBoxExtractAlbumArt.UseVisualStyleBackColor = true;
 			// 
 			// frmSettings
 			// 
@@ -1371,6 +1375,9 @@ namespace JDP {
 			this.tabControl1.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
 			this.tabPage6.ResumeLayout(false);
+			this.groupBoxAlbumArt.ResumeLayout(false);
+			this.groupBoxAlbumArt.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).EndInit();
 			this.groupBoxTagging.ResumeLayout(false);
 			this.groupBoxTagging.PerformLayout();
 			this.tabPage2.ResumeLayout(false);
@@ -1410,9 +1417,6 @@ namespace JDP {
 			this.grpHDCD.PerformLayout();
 			this.tabPage5.ResumeLayout(false);
 			this.groupBoxScriptConditions.ResumeLayout(false);
-			this.groupBoxAlbumArt.ResumeLayout(false);
-			this.groupBoxAlbumArt.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -1557,6 +1561,7 @@ namespace JDP {
 		private System.Windows.Forms.Label labelAlbumArtMaximumResolution;
 		private System.Windows.Forms.NumericUpDown numericUpDownMaxResolution;
 		private System.Windows.Forms.CheckBox chkExtractLog;
+		private System.Windows.Forms.CheckBox checkBoxExtractAlbumArt;
 
 	}
 }

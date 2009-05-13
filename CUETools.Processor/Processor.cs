@@ -408,7 +408,7 @@ namespace CUETools.Processor
 		public bool copyUnknownTags;
 		public bool copyAlbumArt;
 		public bool embedAlbumArt;
-		//public bool extractAlbumArt;
+		public bool extractAlbumArt;
 		public bool arLogToSourceFolder;
 		public bool arLogVerbose;
 		public bool fixOffsetToNearest;
@@ -469,6 +469,7 @@ namespace CUETools.Processor
 			copyUnknownTags = true;
 			copyAlbumArt = true;
 			embedAlbumArt = true;
+			extractAlbumArt = true;
 			maxAlbumArtSize = 300;
 
 			arLogToSourceFolder = false;
@@ -618,6 +619,7 @@ return processor.Go();
 			sw.Save("CopyUnknownTags", copyUnknownTags);
 			sw.Save("CopyAlbumArt", copyAlbumArt);
 			sw.Save("EmbedAlbumArt", embedAlbumArt);
+			sw.Save("ExtractAlbumArt", extractAlbumArt);
 			sw.Save("MaxAlbumArtSize", maxAlbumArtSize);
 
 			sw.Save("ArLogToSourceFolder", arLogToSourceFolder);
@@ -737,7 +739,8 @@ return processor.Go();
 			copyUnknownTags = sr.LoadBoolean("CopyUnknownTags") ?? true;
 			copyAlbumArt = sr.LoadBoolean("CopyAlbumArt") ?? true;
 			embedAlbumArt = sr.LoadBoolean("EmbedAlbumArt") ?? true;
-			maxAlbumArtSize = sr.LoadInt32("MaxAlbumArtSize", 100, 3000) ?? maxAlbumArtSize;
+			extractAlbumArt = sr.LoadBoolean("ExtractAlbumArt") ?? true;
+			maxAlbumArtSize = sr.LoadInt32("MaxAlbumArtSize", 100, 10000) ?? maxAlbumArtSize;
 
 			arLogToSourceFolder = sr.LoadBoolean("ArLogToSourceFolder") ?? arLogToSourceFolder;
 			arLogVerbose = sr.LoadBoolean("ArLogVerbose") ?? arLogVerbose;
@@ -2234,7 +2237,8 @@ return processor.Go();
 			if ((audioSource.BitsPerSample != 16) ||
 				(audioSource.ChannelCount != 2) ||
 				(audioSource.SampleRate != 44100) ||
-				(audioSource.Length > Int32.MaxValue))
+				(audioSource.Length == 0) ||
+				(audioSource.Length >= Int32.MaxValue))
 			{
 				audioSource.Close();
 				throw new Exception("Audio format is invalid.");
@@ -2851,6 +2855,9 @@ return processor.Go();
 									fileInfo.Tag.Year = sourceFileInfo.Tag.Year;
 							}
 
+							if (_config.extractAlbumArt && sourceFileInfo.Tag.Pictures.Length > 0)
+								ExtractCover(sourceFileInfo);
+
 							// copy album art
 							if (_config.copyAlbumArt && sourceFileInfo != null)
 								fileInfo.Tag.Pictures = sourceFileInfo.Tag.Pictures;
@@ -2910,6 +2917,9 @@ return processor.Go();
 										fileInfo.Tag.Genres = sourceFileInfo.Tag.Genres;
 								}
 
+								if (_config.extractAlbumArt && sourceFileInfo.Tag.Pictures.Length > 0)
+									ExtractCover(sourceFileInfo);
+
 								if (_config.copyAlbumArt && sourceFileInfo != null)
 									fileInfo.Tag.Pictures = sourceFileInfo.Tag.Pictures;
 
@@ -2955,29 +2965,50 @@ return processor.Go();
 			return b;
 		}
 
+		public void ExtractCover(TagLib.File fileInfo)
+		{
+			string imgPath = Path.Combine(OutputDir, "Folder.jpg");
+			if (File.Exists(imgPath))
+				return;
+
+			foreach (TagLib.IPicture picture in fileInfo.Tag.Pictures)
+			{
+				if (picture.Type == TagLib.PictureType.FrontCover)
+				{
+					if (picture.MimeType == "image/jpeg")
+					{
+						using (FileStream file = new FileStream(imgPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read))
+						{
+							file.Write(picture.Data.Data, 0, picture.Data.Count);
+							return;
+						}
+					}
+				}
+			}
+		}
+
 		public void EmbedCover(TagLib.File fileInfo)
 		{
 			string imgPath = Path.Combine(_inputDir, "Folder.jpg");
-			if (File.Exists(imgPath))
+			if (!File.Exists(imgPath))
+				return;
+			using (Image img = Image.FromFile(imgPath))
 			{
-				using (Image img = Image.FromFile(imgPath))
+				if (img.Width > _config.maxAlbumArtSize || img.Height > _config.maxAlbumArtSize)
 				{
-					if (img.Width > _config.maxAlbumArtSize || img.Height > _config.maxAlbumArtSize)
+					using (Bitmap small = resizeImage(img, new Size(_config.maxAlbumArtSize, _config.maxAlbumArtSize)))
 					{
-						using (Bitmap small = resizeImage(img, new Size(_config.maxAlbumArtSize, _config.maxAlbumArtSize)))
+						using (MemoryStream encoded = new MemoryStream())
 						{
-							using (MemoryStream encoded = new MemoryStream())
-							{
-								//System.Drawing.Imaging.EncoderParameters encoderParams = new EncoderParameters(1);
-								//encoderParams.Param[0] = new System.Drawing.Imaging.EncoderParameter(Encoder.Quality, quality);
-								small.Save(encoded, System.Drawing.Imaging.ImageFormat.Jpeg);
-								fileInfo.Tag.Pictures = new TagLib.Picture[] { new TagLib.Picture(new TagLib.ByteVector(encoded.ToArray())) };
-							}
+							//System.Drawing.Imaging.EncoderParameters encoderParams = new EncoderParameters(1);
+							//encoderParams.Param[0] = new System.Drawing.Imaging.EncoderParameter(Encoder.Quality, quality);
+							small.Save(encoded, System.Drawing.Imaging.ImageFormat.Jpeg);
+							fileInfo.Tag.Pictures = new TagLib.Picture[] { new TagLib.Picture(new TagLib.ByteVector(encoded.ToArray())) };
 						}
 					}
-					else
-						fileInfo.Tag.Pictures = new TagLib.Picture[] { new TagLib.Picture(imgPath) };
 				}
+				else
+					fileInfo.Tag.Pictures = new TagLib.Picture[] { new TagLib.Picture(imgPath) };
 			}
 		}
 
