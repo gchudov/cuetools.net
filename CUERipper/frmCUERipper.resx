@@ -179,6 +179,9 @@
   <data name="toolStripStatusAr.Size" type="System.Drawing.Size, System.Drawing">
     <value>16, 17</value>
   </data>
+  <data name="toolStripStatusAr.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
+    <value>Overlay</value>
+  </data>
   <data name="toolStripStatusAr.ToolTipText" xml:space="preserve">
     <value>Album found in AccurateRip database.</value>
   </data>
@@ -227,6 +230,27 @@
   <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
+  <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 60</value>
+  </data>
+  <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
+    <value>487, 272</value>
+  </data>
+  <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;listTracks.Name" xml:space="preserve">
+    <value>listTracks</value>
+  </data>
+  <data name="&gt;&gt;listTracks.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;listTracks.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
   <data name="Title.DisplayIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
@@ -256,27 +280,6 @@
   </data>
   <data name="Length.Width" type="System.Int32, mscorlib">
     <value>70</value>
-  </data>
-  <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 60</value>
-  </data>
-  <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>487, 272</value>
-  </data>
-  <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;listTracks.Name" xml:space="preserve">
-    <value>listTracks</value>
-  </data>
-  <data name="&gt;&gt;listTracks.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;listTracks.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
-    <value>4</value>
   </data>
   <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -443,12 +446,6 @@
   <metadata name="contextMenuStripRelease.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>285, 58</value>
   </metadata>
-  <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>94, 22</value>
-  </data>
-  <data name="editToolStripMenuItem.Text" xml:space="preserve">
-    <value>Edit</value>
-  </data>
   <data name="contextMenuStripRelease.Size" type="System.Drawing.Size, System.Drawing">
     <value>95, 26</value>
   </data>
@@ -478,6 +475,12 @@
   </data>
   <data name="&gt;&gt;comboRelease.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>94, 22</value>
+  </data>
+  <data name="editToolStripMenuItem.Text" xml:space="preserve">
+    <value>Edit</value>
   </data>
   <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>181, 22</value>

@@ -160,13 +160,13 @@
       <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
       <Name>MusicBrainz</Name>
     </ProjectReference>
-    <ProjectReference Include="..\UnRarDotNet\UnRarDotNet.csproj">
-      <Project>{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}</Project>
-      <Name>UnRarDotNet</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.WavPack\CUETools.Codecs.WavPack.vcproj">
       <Project>{CC2E74B6-534A-43D8-9F16-AC03FE955000}</Project>
       <Name>CUETools.Codecs.WavPack</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UnRarDotNet\UnRarDotNet.csproj">
+      <Project>{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}</Project>
+      <Name>UnRarDotNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

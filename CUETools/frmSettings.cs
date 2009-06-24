@@ -14,13 +14,13 @@ namespace JDP {
 	public partial class frmSettings : Form {
 		bool _reducePriority;
 		CUEConfig _config;
-		private ShellIconMgr m_icon_mgr;
+		private IIconManager m_icon_mgr;
 
 		public frmSettings() {
 			InitializeComponent();
 		}
 
-		public ShellIconMgr IconMgr
+		public IIconManager IconMgr
 		{
 			get
 			{
@@ -34,9 +34,8 @@ namespace JDP {
 
 		private void frmSettings_Load(object sender, EventArgs e) {
 			chkReducePriority.Checked = _reducePriority;
-			chkPreserveHTOA.Checked = _config.preserveHTOA;
+			checkBoxCheckForUpdates.Checked = _config.checkForUpdates;
 			chkAutoCorrectFilenames.Checked = _config.autoCorrectFilenames;
-			numericFLACCompressionLevel.Value = _config.flacCompressionLevel;
 			numFixWhenConfidence.Value = _config.fixOffsetMinimumConfidence;
 			numFixWhenPercent.Value = _config.fixOffsetMinimumTracksPercent;
 			numEncodeWhenConfidence.Value = _config.encodeWhenConfidence;
@@ -45,21 +44,9 @@ namespace JDP {
 			chkFLACVerify.Checked = _config.flacVerify;
 			chkWriteArTagsOnConvert.Checked = _config.writeArTagsOnConvert;
 			chkWriteARTagsOnVerify.Checked = _config.writeArTagsOnVerify;
-			if (_config.wvCompressionMode == 0) rbWVFast.Checked = true;
-			if (_config.wvCompressionMode == 1) rbWVNormal.Checked = true;
-			if (_config.wvCompressionMode == 2) rbWVHigh.Checked = true;
-			if (_config.wvCompressionMode == 3) rbWVVeryHigh.Checked = true;
 			chkWVExtraMode.Checked = (_config.wvExtraMode != 0);
 			if (_config.wvExtraMode != 0) numWVExtraMode.Value = _config.wvExtraMode;
 			chkWVStoreMD5.Checked = _config.wvStoreMD5;
-			switch (_config.apeCompressionLevel)
-			{
-				case 1: rbAPEfast.Checked = true; break;
-				case 2: rbAPEnormal.Checked = true; break;
-				case 3: rbAPEhigh.Checked = true; break;
-				case 4: rbAPEextrahigh.Checked = true; break;
-				case 5: rbAPEinsane.Checked = true; break;
-			}
 			chkKeepOriginalFilenames.Checked = _config.keepOriginalFilenames;
 			txtSingleFilenameFormat.Text = _config.singleFilenameFormat;
 			txtTrackFilenameFormat.Text = _config.trackFilenameFormat;
@@ -94,6 +81,22 @@ namespace JDP {
 			checkBoxFixToNearest.Checked = _config.fixOffsetToNearest;
 			textBoxARLogExtension.Text = _config.arLogExtension;
 			numericUpDownMaxResolution.Value = _config.maxAlbumArtSize;
+
+			switch (_config.gapsHandling)
+			{
+				case CUEStyle.GapsAppended:
+					if (_config.preserveHTOA)
+						rbGapsPlusHTOA.Checked = true;
+					else
+						rbGapsAppended.Checked = true;
+					break;
+				case CUEStyle.GapsPrepended:
+					rbGapsPrepended.Checked = true;
+					break;
+				case CUEStyle.GapsLeftOut:
+					rbGapsLeftOut.Checked = true;
+					break;
+			}
 
 			string[] cultures = { "en-US", "de-DE", "ru-RU" };
 			foreach (string culture in cultures)
@@ -199,9 +202,12 @@ namespace JDP {
 				listViewScripts.SelectedItems[0].Selected = false;
 
 			_reducePriority = chkReducePriority.Checked;
-			_config.preserveHTOA = chkPreserveHTOA.Checked;
+			_config.checkForUpdates = checkBoxCheckForUpdates.Checked;
+			_config.preserveHTOA = rbGapsPlusHTOA.Checked;
+			_config.gapsHandling = rbGapsPrepended.Checked ? CUEStyle.GapsPrepended :
+				rbGapsLeftOut.Checked ? CUEStyle.GapsLeftOut :
+				CUEStyle.GapsAppended;
 			_config.autoCorrectFilenames = chkAutoCorrectFilenames.Checked;
-			_config.flacCompressionLevel = (uint)numericFLACCompressionLevel.Value;
 			_config.lossyWAVQuality = (int)numericLossyWAVQuality.Value;
 			_config.fixOffsetMinimumTracksPercent = (uint)numFixWhenPercent.Value;
 			_config.fixOffsetMinimumConfidence = (uint)numFixWhenConfidence.Value;
@@ -211,18 +217,9 @@ namespace JDP {
 			_config.flacVerify = chkFLACVerify.Checked;
 			_config.writeArTagsOnConvert = chkWriteArTagsOnConvert.Checked;
 			_config.writeArTagsOnVerify = chkWriteARTagsOnVerify.Checked;
-			if (rbWVFast.Checked) _config.wvCompressionMode = 0;
-			else if (rbWVHigh.Checked) _config.wvCompressionMode = 2;
-			else if (rbWVVeryHigh.Checked) _config.wvCompressionMode = 3;
-			else _config.wvCompressionMode = 1;
 			if (!chkWVExtraMode.Checked) _config.wvExtraMode = 0;
 			else _config.wvExtraMode = (int) numWVExtraMode.Value;
 			_config.wvStoreMD5 = chkWVStoreMD5.Checked;
-			_config.apeCompressionLevel = (uint) (rbAPEfast.Checked ? 1 :
-				rbAPEnormal.Checked ? 2 :
-				rbAPEhigh.Checked ? 3 :
-				rbAPEextrahigh.Checked ? 4 :
-				rbAPEinsane.Checked ? 5 : 2);
 			_config.keepOriginalFilenames = chkKeepOriginalFilenames.Checked;
 			_config.singleFilenameFormat = txtSingleFilenameFormat.Text;
 			_config.trackFilenameFormat = txtTrackFilenameFormat.Text;
@@ -521,6 +518,7 @@ namespace JDP {
 					groupBoxExternalEncoder.Visible = true;
 					textBoxEncoderPath.Text = encoder.path;
 					textBoxEncoderParameters.Text = encoder.parameters;
+					textBoxEncoderModes.Text = encoder.supported_modes;
 					checkBoxEncoderLossless.Checked = encoder.lossless;
 					checkBoxEncoderLossless.Enabled = _config.formats.TryGetValue(encoder.extension, out format) && format.allowLossless && format.allowLossy;
 				}
@@ -564,6 +562,7 @@ namespace JDP {
 					}
 					encoder.path = textBoxEncoderPath.Text;
 					encoder.parameters = textBoxEncoderParameters.Text;
+					encoder.supported_modes = textBoxEncoderModes.Text;
 					encoder.lossless = checkBoxEncoderLossless.Checked;
 				}
 
@@ -612,7 +611,7 @@ namespace JDP {
 						CUEToolsUDC encoder;
 						if (_config.encoders.TryGetValue("new", out encoder))
 							return;
-						encoder = new CUEToolsUDC("new", "wav", true, "", "");
+						encoder = new CUEToolsUDC("new", "wav", true, "", "", "", "");
 						_config.encoders.Add("new", encoder);
 						ListViewItem item = new ListViewItem(encoder.name);
 						item.Tag = encoder;
@@ -719,7 +718,7 @@ namespace JDP {
 						CUEToolsUDC decoder;
 						if (_config.decoders.TryGetValue("new", out decoder))
 							return;
-						decoder = new CUEToolsUDC("new", "wav", true, "", "");
+						decoder = new CUEToolsUDC("new", "wav", true, "", "", "", "");
 						_config.decoders.Add("new", decoder);
 						ListViewItem item = new ListViewItem(decoder.name);
 						item.Tag = decoder;

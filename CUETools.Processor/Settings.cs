@@ -38,21 +38,38 @@ namespace CUETools.Processor
 
 			return myAppDataDir;
 		}
+
+		public static string GetProfileDir(string appName, string appPath)
+		{
+			bool userProfilesEnabled = (appPath == null || File.Exists(Path.Combine(Path.GetDirectoryName(appPath), "user_profiles_enabled")));
+			string appDataDir = userProfilesEnabled ? 
+				Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) :
+				Path.GetDirectoryName(appPath);
+			string myAppDataDir = Path.Combine(appDataDir, appName);
+			if (!Directory.Exists(myAppDataDir))
+				Directory.CreateDirectory(myAppDataDir);
+			return myAppDataDir;
+		}
 	}
 
 	public class SettingsReader {
 		Dictionary<string, string> _settings;
+		string profilePath;
+
+		public string ProfilePath
+		{
+			get
+			{
+				return profilePath;
+			}
+		}
 
 		public SettingsReader(string appName, string fileName, string appPath) {
 			_settings = new Dictionary<string, string>();
-			bool userProfilesEnabled = (appPath == null || File.Exists(Path.Combine(Path.GetDirectoryName(appPath), "user_profiles_enabled")));
-
-			string path = Path.Combine(
-				userProfilesEnabled ? SettingsShared.GetMyAppDataDir(appName) : Path.GetDirectoryName(appPath),
-				userProfilesEnabled ? fileName : appName + "." + fileName);
-			if (!File.Exists(path)) {
+			profilePath = SettingsShared.GetProfileDir(appName, appPath);
+			string path = Path.Combine(profilePath, fileName);
+			if (!File.Exists(path))
 				return;
-			}
 
 			using (StreamReader sr = new StreamReader(path, Encoding.UTF8)) {
 				string line, name = null, val;
@@ -105,6 +122,22 @@ namespace CUETools.Processor
 			if (max.HasValue && (val > max.Value)) return null;
 			return val;
 		}
+
+		public long? LoadLong(string name, long? min, long? max)
+		{
+			long val;
+			if (!long.TryParse(Load(name), out val)) return null;
+			if (min.HasValue && (val < min.Value)) return null;
+			if (max.HasValue && (val > max.Value)) return null;
+			return val;
+		}
+
+		public DateTime? LoadDate(string name)
+		{
+			long? val = LoadLong(name, null, null);
+			if (!val.HasValue) return null;
+			return DateTime.FromBinary(val.Value);
+		}
 	}
 
 	public class SettingsWriter {
@@ -112,11 +145,7 @@ namespace CUETools.Processor
 
 		public SettingsWriter(string appName, string fileName, string appPath)
 		{
-			bool userProfilesEnabled = (appPath == null || File.Exists(Path.Combine(Path.GetDirectoryName(appPath), "user_profiles_enabled")));
-			string path = Path.Combine(
-				userProfilesEnabled ? SettingsShared.GetMyAppDataDir(appName) : Path.GetDirectoryName(appPath),
-				userProfilesEnabled ? fileName : appName + "." + fileName);
-
+			string path = Path.Combine(SettingsShared.GetProfileDir(appName, appPath), fileName);
 			_sw = new StreamWriter(path, false, Encoding.UTF8);
 		}
 
@@ -150,6 +179,16 @@ namespace CUETools.Processor
 
 		public void Save(string name, uint value) {
 			Save(name, value.ToString());
+		}
+
+		public void Save(string name, long value)
+		{
+			Save(name, value.ToString());
+		}
+
+		public void Save(string name, DateTime value)
+		{
+			Save(name, value.ToBinary());
 		}
 
 		public void Close() {

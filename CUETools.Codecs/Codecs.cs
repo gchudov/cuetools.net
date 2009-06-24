@@ -731,19 +731,20 @@ namespace CUETools.Codecs
 
 	public class UserDefinedWriter : IAudioDest
 	{
-		string _path, _encoder, _encoderParams;
+		string _path, _encoder, _encoderParams, _encoderMode;
 		Process _encoderProcess;
 		WAVWriter wrt;
 
-		public UserDefinedWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO, string encoder, string encoderParams)
+		public UserDefinedWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO, string encoder, string encoderParams, string encoderMode)
 		{
 			_path = path;
 			_encoder = encoder;
 			_encoderParams = encoderParams;
+			_encoderMode = encoderMode;
 
 			_encoderProcess = new Process();
 			_encoderProcess.StartInfo.FileName = _encoder;
-			_encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"");
+			_encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"").Replace("%M", encoderMode);
 			_encoderProcess.StartInfo.CreateNoWindow = true;
 			_encoderProcess.StartInfo.RedirectStandardInput = true;
 			_encoderProcess.StartInfo.UseShellExecute = false;

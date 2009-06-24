@@ -196,6 +196,110 @@ namespace CUETools.Processor
 			list.Remove(line);
 		}
 
+		class TitleFormatFunctionInfo
+		{
+			public string func;
+			public List<int> positions;
+			public List<bool> found;
+
+			public TitleFormatFunctionInfo(string _func, int position)
+			{
+				func = _func;
+				positions = new List<int>();
+				found = new List<bool>();
+				NextArg(position);
+			}
+
+			public void Found()
+			{
+				found[found.Count - 1] = true;
+			}
+
+			public void NextArg(int position)
+			{
+				positions.Add(position);
+				found.Add(false);
+			}
+
+			public string GetArg(StringBuilder sb, int no)
+			{
+				return sb.ToString().Substring(positions[no], 
+					((no == positions.Count - 1) ? sb.Length : positions[no + 1]) - positions[no]);
+			}
+
+			public int GetIntArg(StringBuilder sb, int no)
+			{
+				int res;
+				return int.TryParse(GetArg(sb, no), out res) ? res : 0;
+			}
+
+			void Returns(StringBuilder sb, string res)
+			{
+				sb.Length = positions[0];
+				sb.Append(res);
+			}
+
+			public bool Finalise(StringBuilder sb)
+			{
+				switch (func)
+				{
+					case "[":
+						if (positions.Count != 1)
+							return false;
+						if (!found[0])
+							sb.Length = positions[0];
+						return true;
+					case "if":
+						if (positions.Count != 3)
+							return false;
+						Returns(sb, GetArg(sb, found[0] ? 1 : 2));
+						return true;
+					case "if2":
+						if (positions.Count != 2)
+							return false;
+						Returns(sb, GetArg(sb, found[0] ? 0 : 1));
+						return true;
+					case "if3":
+						if (positions.Count < 1)
+							return false;
+						for (int argno = 0; argno < positions.Count; argno++)
+							if (found[argno] || argno == positions.Count - 1)
+							{
+								Returns(sb, GetArg(sb, argno));
+								return true;
+							}
+						return false;
+					case "ifgreater":
+						if (positions.Count != 4)
+							return false;
+						Returns(sb, GetArg(sb, (GetIntArg(sb, 0) > GetIntArg(sb, 1)) ? 2 : 3));
+						return true;
+					case "iflonger":
+						if (positions.Count != 4)
+							return false;
+						Returns(sb, GetArg(sb, (GetArg(sb, 0).Length > GetIntArg(sb, 1)) ? 2 : 3));
+						return true;
+					case "ifequal":
+						if (positions.Count != 4)
+							return false;
+						Returns(sb, GetArg(sb, (GetIntArg(sb, 0) == GetIntArg(sb, 1)) ? 2 : 3));
+						return true;
+					case "len":
+						if (positions.Count != 1)
+							return false;
+						Returns(sb, GetArg(sb, 0).Length.ToString());
+						return true;
+					case "max":
+						if (positions.Count != 2)
+							return false;
+						Returns(sb, Math.Max(GetIntArg(sb, 0), GetIntArg(sb, 1)).ToString());
+						return true;
+				}
+				return false;
+			}
+
+		}
+
 		public static string ReplaceMultiple(string s, List<string> find, List<string> replace)
 		{
 			if (find.Count != replace.Count)
@@ -206,22 +310,98 @@ namespace CUETools.Processor
 			int iChar, iFind;
 			string f;
 			bool found;
+			List<TitleFormatFunctionInfo> formatFunctions = new List<TitleFormatFunctionInfo>();
+			bool quote = false;
 
 			sb = new StringBuilder();
 
 			for (iChar = 0; iChar < s.Length; iChar++)
 			{
 				found = false;
+
+				if (quote)
+				{
+					if (s[iChar] == '\'')
+					{
+						if (iChar > 0 && s[iChar-1] == '\'')
+							sb.Append(s[iChar]);
+						quote = false;
+						continue;
+					}
+					sb.Append(s[iChar]);
+					continue;
+				}
+
+				if (s[iChar] == '\'')
+				{
+					quote = true;
+					continue;
+				}
+
+				if (s[iChar] == '[')
+				{
+					formatFunctions.Add(new TitleFormatFunctionInfo("[", sb.Length));
+					continue;
+				}
+
+				if (s[iChar] == '$')
+				{
+					int funcEnd = s.IndexOf('(', iChar + 1);
+					if (funcEnd < 0)
+						return null;
+					formatFunctions.Add(new TitleFormatFunctionInfo(s.Substring(iChar + 1, funcEnd - iChar - 1), sb.Length));
+					iChar = funcEnd;
+					continue;
+				}
+
+				if (s[iChar] == ',')
+				{
+					if (formatFunctions.Count < 1)
+						return null;
+					formatFunctions[formatFunctions.Count - 1].NextArg(sb.Length);
+					continue;
+				}
+
+				if (s[iChar] == ']')
+				{
+					if (formatFunctions.Count < 1 ||
+						formatFunctions[formatFunctions.Count - 1].func != "[" 
+						|| !formatFunctions[formatFunctions.Count - 1].Finalise(sb))
+						return null;
+					formatFunctions.RemoveAt(formatFunctions.Count - 1);
+					continue;
+				}
+
+				if (s[iChar] == ')')
+				{
+					if (formatFunctions.Count < 1 ||
+						formatFunctions[formatFunctions.Count - 1].func == "["
+						|| !formatFunctions[formatFunctions.Count - 1].Finalise(sb))
+						return null;
+					formatFunctions.RemoveAt(formatFunctions.Count - 1);
+					continue;
+				}
+
 				for (iFind = 0; iFind < find.Count; iFind++)
 				{
 					f = find[iFind];
 					if ((f.Length <= (s.Length - iChar)) && (s.Substring(iChar, f.Length) == f))
 					{
-						if (replace[iFind] == null)
+						if (formatFunctions.Count > 0)
 						{
-							return null;
+							if (replace[iFind] != null)
+							{
+								formatFunctions[formatFunctions.Count - 1].Found();
+								sb.Append(replace[iFind]);
+							}
 						}
-						sb.Append(replace[iFind]);
+						else
+						{
+							if (replace[iFind] != null)
+								sb.Append(replace[iFind]);
+							else
+								return null;
+						}
 						iChar += f.Length - 1;
 						found = true;
 						break;
@@ -293,6 +473,8 @@ namespace CUETools.Processor
 			string _name,
 			string _extension,
 			bool _lossless,
+			string _supported_modes,
+			string _default_mode,
 			string _path,
 			string _parameters
 			)
@@ -300,6 +482,8 @@ namespace CUETools.Processor
 			name = _name;
 			extension = _extension;
 			lossless = _lossless;
+			supported_modes = _supported_modes;
+			default_mode = _default_mode;
 			path = _path;
 			parameters = _parameters;
 			className = null;
@@ -308,11 +492,15 @@ namespace CUETools.Processor
 			string _name,
 			string _extension,
 			bool _lossless,
+			string _supported_modes,
+			string _default_mode,
 			string _className)
 		{
 			name = _name;
 			extension = _extension;
 			lossless = _lossless;
+			supported_modes = _supported_modes;
+			default_mode = _default_mode;
 			path = null;
 			parameters = null;
 			className = _className;
@@ -326,7 +514,29 @@ namespace CUETools.Processor
 		public string path;
 		public string parameters;
 		public string className;
+		public string supported_modes;
+		public string default_mode;
 		public bool lossless;
+		public string[] SupportedModes
+		{
+			get
+			{
+				return supported_modes.Split(' ');
+			}
+		}
+		public int DefaultModeIndex
+		{
+			get
+			{
+				string[] modes = supported_modes.Split(' ');
+				if (modes == null || modes.Length < 2)
+					return -1;
+				for (int i = 0; i < modes.Length; i++)
+					if (modes[i] == default_mode)
+						return i;
+				return -1;
+			}
+		}
 	}
 
 	public class CUEToolsScript
@@ -364,10 +574,7 @@ namespace CUETools.Processor
 		public bool noUnverifiedOutput;
 		public bool autoCorrectFilenames;
 		public bool flacVerify;
-		public uint flacCompressionLevel;
-		public uint apeCompressionLevel;
 		public bool preserveHTOA;
-		public int wvCompressionMode;
 		public int wvExtraMode;
 		public bool wvStoreMD5;
 		public bool keepOriginalFilenames;
@@ -395,6 +602,7 @@ namespace CUETools.Processor
 		public bool decodeHDCDto24bit;
 		public bool disableAsm;
 		public bool oneInstance;
+		public bool checkForUpdates;
 		public string language;
 		public Dictionary<string, CUEToolsFormat> formats;
 		public Dictionary<string, CUEToolsUDC> encoders;
@@ -414,6 +622,7 @@ namespace CUETools.Processor
 		public bool fixOffsetToNearest;
 		public int maxAlbumArtSize;
 		public string arLogExtension;
+		public CUEStyle gapsHandling;
 
 		public CUEConfig()
 		{
@@ -431,10 +640,7 @@ namespace CUETools.Processor
 
 			autoCorrectFilenames = true;
 			flacVerify = false;
-			flacCompressionLevel = 8;
-			apeCompressionLevel = 2;
 			preserveHTOA = true;
-			wvCompressionMode = 1;
 			wvExtraMode = 0;
 			wvStoreMD5 = false;
 			keepOriginalFilenames = false;
@@ -463,6 +669,7 @@ namespace CUETools.Processor
 
 			disableAsm = false;
 			oneInstance = true;
+			checkForUpdates = true;
 
 			writeBasicTagsFromCUEData = true;
 			copyBasicTags = true;
@@ -476,6 +683,8 @@ namespace CUETools.Processor
 			arLogVerbose = true;
 			fixOffsetToNearest = true;
 			arLogExtension = ".accurip";
+
+			gapsHandling = CUEStyle.GapsAppended;
 
 			language = Thread.CurrentThread.CurrentUICulture.Name;
 
@@ -492,33 +701,31 @@ namespace CUETools.Processor
 
 			encoders = new Dictionary<string, CUEToolsUDC>();
 #if !MONO
-			encoders.Add("libFLAC", new CUEToolsUDC("libFLAC", "flac", true, "FLACWriter"));
-			encoders.Add("libwavpack", new CUEToolsUDC("libwavpack", "wv", true, "WavPackWriter"));
-			encoders.Add("MAC_SDK", new CUEToolsUDC("MAC_SDK", "ape", true, "APEWriter"));
-			encoders.Add("ttalib", new CUEToolsUDC("ttalib", "tta", true, "TTAWriter"));
+			encoders.Add("libFLAC", new CUEToolsUDC("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", "FLACWriter"));
+			encoders.Add("libwavpack", new CUEToolsUDC("libwavpack", "wv", true, "fast normal high high+", "normal", "WavPackWriter"));
+			encoders.Add("MAC_SDK", new CUEToolsUDC("MAC_SDK", "ape", true, "fast normal high extra insane", "high", "APEWriter"));
+			encoders.Add("ttalib", new CUEToolsUDC("ttalib", "tta", true, "", "", "TTAWriter"));
 #endif
-			encoders.Add("builtin wav", new CUEToolsUDC("builtin wav", "wav", true, "WAVWriter"));
-			encoders.Add("flake", new CUEToolsUDC("flake", "flac", true, "flake.exe", "-10 - -o %O"));
-			encoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "takc.exe", "-e -p4m -overwrite - %O"));
-			encoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
-			encoders.Add("lame -V2", new CUEToolsUDC("lame -V2", "mp3", false, "lame.exe", "--vbr-new -V2 - %O"));
-			encoders.Add("lame -V0", new CUEToolsUDC("lame -V0", "mp3", false, "lame.exe", "--vbr-new -V0 - %O"));
-			encoders.Add("lame 256", new CUEToolsUDC("lame 256", "mp3", false, "lame.exe", "-m s -q 0 -b 256 --noreplaygain - %O"));
-			encoders.Add("lame 320", new CUEToolsUDC("lame 320", "mp3", false, "lame.exe", "-m s -q 0 -b 320 --noreplaygain - %O"));
-			encoders.Add("oggenc", new CUEToolsUDC("oggenc", "ogg", false, "oggenc.exe", "-q 3 - -o %O"));
-			encoders.Add("nero aac", new CUEToolsUDC("nero aac", "m4a", false, "neroAacEnc.exe", "-q 0.4 -if - -of %O"));
+			encoders.Add("builtin wav", new CUEToolsUDC("builtin wav", "wav", true, "", "", "WAVWriter"));
+			encoders.Add("flake", new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "10", "flake.exe", "-%M - -o %O"));
+			encoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
+			encoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
+			encoders.Add("lame vbr", new CUEToolsUDC("lame -V2", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
+			encoders.Add("lame cbr", new CUEToolsUDC("lame 320", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
+			encoders.Add("oggenc", new CUEToolsUDC("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
+			encoders.Add("nero aac", new CUEToolsUDC("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
 
 			decoders = new Dictionary<string, CUEToolsUDC>();
 #if !MONO
-			decoders.Add("libFLAC", new CUEToolsUDC("libFLAC", "flac", true, "FLACReader"));
-			decoders.Add("libwavpack", new CUEToolsUDC("libwavpack", "wv", true, "WavPackReader"));
-			decoders.Add("MAC_SDK", new CUEToolsUDC("MAC_SDK", "ape", true, "APEReader"));
-			decoders.Add("ttalib", new CUEToolsUDC("ttalib", "tta", true, "TTAReader"));
+			decoders.Add("libFLAC", new CUEToolsUDC("libFLAC", "flac", true, "", "", "FLACReader"));
+			decoders.Add("libwavpack", new CUEToolsUDC("libwavpack", "wv", true, "", "", "WavPackReader"));
+			decoders.Add("MAC_SDK", new CUEToolsUDC("MAC_SDK", "ape", true, "", "", "APEReader"));
+			decoders.Add("ttalib", new CUEToolsUDC("ttalib", "tta", true, "", "", "TTAReader"));
 #endif
-			decoders.Add("builtin wav", new CUEToolsUDC("builtin wav", "wav", true, "WAVReader"));
-			decoders.Add("builtin alac", new CUEToolsUDC("builtin alac", "m4a", true, "ALACReader"));
-			decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "takc.exe", "-d %I -"));
-			decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "ffmpeg.exe", "%I -f wav -"));
+			decoders.Add("builtin wav", new CUEToolsUDC("builtin wav", "wav", true, "", "", "WAVReader"));
+			decoders.Add("builtin alac", new CUEToolsUDC("builtin alac", "m4a", true, "", "", "ALACReader"));
+			decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
+			decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "%I -f wav -"));
 
 			scripts = new Dictionary<string, CUEToolsScript>();
 			scripts.Add("default", new CUEToolsScript("default", true,
@@ -567,6 +774,7 @@ return processor.Go();
 
 		public void Save (SettingsWriter sw)
 		{
+			sw.Save("Version", 203);
 			sw.Save("ArFixWhenConfidence", fixOffsetMinimumConfidence);
 			sw.Save("ArFixWhenPercent", fixOffsetMinimumTracksPercent);
 			sw.Save("ArEncodeWhenConfidence", encodeWhenConfidence);
@@ -581,10 +789,7 @@ return processor.Go();
 
 			sw.Save("PreserveHTOA", preserveHTOA);
 			sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
-			sw.Save("FLACCompressionLevel", flacCompressionLevel);
-			sw.Save("APECompressionLevel", apeCompressionLevel);
 			sw.Save("FLACVerify", flacVerify);
-			sw.Save("WVCompressionMode", wvCompressionMode);
 			sw.Save("WVExtraMode", wvExtraMode);
 			sw.Save("WVStoreMD5", wvStoreMD5);
 			sw.Save("KeepOriginalFilenames", keepOriginalFilenames);
@@ -612,6 +817,7 @@ return processor.Go();
 			sw.Save("DecodeHDCDTo24bit", decodeHDCDto24bit);
 			sw.Save("DisableAsm", disableAsm);
 			sw.Save("OneInstance", oneInstance);
+			sw.Save("CheckForUpdates", checkForUpdates);
 			sw.Save("Language", language);
 
 			sw.Save("WriteBasicTagsFromCUEData", writeBasicTagsFromCUEData);
@@ -636,6 +842,8 @@ return processor.Go();
 					sw.Save(string.Format("ExternalEncoder{0}Path", nEncoders), encoder.Value.path);
 					sw.Save(string.Format("ExternalEncoder{0}Parameters", nEncoders), encoder.Value.parameters);
 					sw.Save(string.Format("ExternalEncoder{0}Lossless", nEncoders), encoder.Value.lossless);
+					sw.Save(string.Format("ExternalEncoder{0}Modes", nEncoders), encoder.Value.supported_modes);
+					sw.Save(string.Format("ExternalEncoder{0}Mode", nEncoders), encoder.Value.default_mode);
 					nEncoders++;
 				}
 			sw.Save("ExternalEncoders", nEncoders);
@@ -683,10 +891,14 @@ return processor.Go();
 			sw.Save("DefaultVerifyScript", defaultVerifyScript);
 			sw.Save("DefaultConvertScript", defaultConvertScript);
 			sw.Save("DefaultVerifyAndConvertScript", defaultVerifyAndConvertScript);
+
+			sw.Save("GapsHandling", (int)gapsHandling);
 		}
 
 		public void Load(SettingsReader sr)
 		{
+			int version = sr.LoadInt32("Version", null, null) ?? 202;
+
 			fixOffsetMinimumConfidence = sr.LoadUInt32("ArFixWhenConfidence", 1, 1000) ?? 2;
 			fixOffsetMinimumTracksPercent = sr.LoadUInt32("ArFixWhenPercent", 1, 100) ?? 51;
 			encodeWhenConfidence = sr.LoadUInt32("ArEncodeWhenConfidence", 1, 1000) ?? 2;
@@ -701,10 +913,7 @@ return processor.Go();
 
 			preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
 			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
-			flacCompressionLevel = sr.LoadUInt32("FLACCompressionLevel", 0, 8) ?? 8;
 			flacVerify = sr.LoadBoolean("FLACVerify") ?? false;
-			apeCompressionLevel = sr.LoadUInt32("APECompressionLevel", 1, 5) ?? 2;
-			wvCompressionMode = sr.LoadInt32("WVCompressionMode", 0, 3) ?? 1;
 			wvExtraMode = sr.LoadInt32("WVExtraMode", 0, 6) ?? 0;
 			wvStoreMD5 = sr.LoadBoolean("WVStoreMD5") ?? false;
 			keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? false;
@@ -733,6 +942,7 @@ return processor.Go();
 
 			disableAsm = sr.LoadBoolean("DisableAsm") ?? false;
 			oneInstance = sr.LoadBoolean("OneInstance") ?? true;
+			checkForUpdates = sr.LoadBoolean("CheckForUpdates") ?? true;
 
 			writeBasicTagsFromCUEData = sr.LoadBoolean("WriteBasicTagsFromCUEData") ?? true;
 			copyBasicTags = sr.LoadBoolean("CopyBasicTags") ?? true;
@@ -755,10 +965,12 @@ return processor.Go();
 				string path = sr.Load(string.Format("ExternalEncoder{0}Path", nEncoders));
 				string parameters = sr.Load(string.Format("ExternalEncoder{0}Parameters", nEncoders));
 				bool lossless = sr.LoadBoolean(string.Format("ExternalEncoder{0}Lossless", nEncoders)) ?? true;
+				string supported_modes = sr.Load(string.Format("ExternalEncoder{0}Modes", nEncoders)) ?? "";
+				string default_mode = sr.Load(string.Format("ExternalEncoder{0}Mode", nEncoders)) ?? "";
 				CUEToolsUDC encoder;
 				if (!encoders.TryGetValue(name, out encoder))
-					encoders.Add(name, new CUEToolsUDC(name, extension, lossless, path, parameters));
-				else
+					encoders.Add(name, new CUEToolsUDC(name, extension, lossless, supported_modes, default_mode, path, parameters));
+				else if (version == 203)
 				{
 					if (encoder.path != null)
 					{
@@ -767,6 +979,8 @@ return processor.Go();
 						encoder.parameters = parameters;
 						encoder.lossless = lossless;
 					}
+					encoder.supported_modes = supported_modes;
+					encoder.default_mode = default_mode;
 				}
 			}
 			
@@ -779,7 +993,7 @@ return processor.Go();
 				string parameters = sr.Load(string.Format("ExternalDecoder{0}Parameters", nDecoders));
 				CUEToolsUDC decoder;
 				if (!decoders.TryGetValue(name, out decoder))
-					decoders.Add(name, new CUEToolsUDC(name, extension, true, path, parameters));
+					decoders.Add(name, new CUEToolsUDC(name, extension, true, "", "", path, parameters));
 				else
 				{
 					decoder.extension = extension;
@@ -844,6 +1058,8 @@ return processor.Go();
 			defaultVerifyScript = sr.Load("DefaultVerifyScript") ?? "default";
 			defaultConvertScript = sr.Load("DefaultConvertScript") ?? "default";
 			defaultVerifyAndConvertScript = sr.Load("DefaultVerifyAndConvertScript") ?? "default";
+
+			gapsHandling = (CUEStyle?)sr.LoadInt32("GapsHandling", null, null) ?? gapsHandling;
 
 			language = sr.Load("Language") ?? Thread.CurrentThread.CurrentUICulture.Name;
 		}
@@ -1489,8 +1705,6 @@ return processor.Go();
 										pathAudio = LocateFile(_archiveCUEpath, line.Params[1], _archiveContents);
                                     else
 										pathAudio = LocateFile(_inputDir, line.Params[1], null);
-									if (pathAudio == null)
-										throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
 								} else
 								{
 									pathAudio = _inputPath;
@@ -1499,18 +1713,31 @@ return processor.Go();
 								}
 								_sourcePaths.Add(pathAudio);
 								absoluteFileStartTime += fileTimeLengthFrames;
-								TagLib.File fileInfo;
-								fileTimeLengthSamples = GetSampleLength(pathAudio, out fileInfo);
-								if ((fileTimeLengthSamples % 588) == 492 && _config.truncate4608ExtraSamples)
+								if (pathAudio == null)
 								{
-									_truncated4608 = true;
-									fileTimeLengthSamples -= 4608;
+									throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
+									//fileTimeLengthFrames = 75 * 60 * 70;;
+									//fileTimeLengthSamples = fileTimeLengthFrames * 588;
+									//if (_hasEmbeddedCUESheet)
+									//    _fileInfo = null;
+									//else
+									//    _trackFileInfo = null;
 								}
-								fileTimeLengthFrames = (int)((fileTimeLengthSamples + 587) / 588);
-								if (_hasEmbeddedCUESheet)
-									_fileInfo = fileInfo;
 								else
-									_trackFileInfo = fileInfo;
+								{
+									TagLib.File fileInfo;
+									fileTimeLengthSamples = GetSampleLength(pathAudio, out fileInfo);
+									if ((fileTimeLengthSamples % 588) == 492 && _config.truncate4608ExtraSamples)
+									{
+										_truncated4608 = true;
+										fileTimeLengthSamples -= 4608;
+									}
+									fileTimeLengthFrames = (int)((fileTimeLengthSamples + 587) / 588);
+									if (_hasEmbeddedCUESheet)
+										_fileInfo = fileInfo;
+									else
+										_trackFileInfo = fileInfo;
+								}
 								seenFirstFileIndex = false;
 							}
 						}
@@ -1746,14 +1973,26 @@ return processor.Go();
 					if (value != null)
 						General.SetCUELine(_attributes, "REM", "GENRE", value, true);
 				}
+				if (_config.overwriteCUEData || TotalDiscs == "")
+				{
+					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.DiscCount != 0 ? file.Tag.DiscCount.ToString() : null; });
+					if (value != null)
+						TotalDiscs = value;
+				}
+				if (_config.overwriteCUEData || DiscNumber == "")
+				{
+					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.Disc != 0 ? file.Tag.Disc.ToString() : null; });
+					if (value != null)
+						DiscNumber = value;
+				}
 				for (i = 0; i < TrackCount; i++)
 				{
 					TrackInfo track = _tracks[i];
-					string artist = _hasTrackFilenames ? track._fileInfo.Tag.JoinedPerformers :
-						_hasEmbeddedCUESheet ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_ARTIST", i + 1))) :
+					string artist = _hasTrackFilenames && track._fileInfo  != null ? track._fileInfo.Tag.JoinedPerformers :
+						_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_ARTIST", i + 1))) :
 						null;
-					string title = _hasTrackFilenames ? track._fileInfo.Tag.Title :
-						_hasEmbeddedCUESheet ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_TITLE", i + 1))) :
+					string title = _hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
+						_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_TITLE", i + 1))) :
 						null;
 					if ((_config.overwriteCUEData || track.Artist == "") && artist != null && artist != "")
 						track.Artist = artist;
@@ -1775,12 +2014,53 @@ return processor.Go();
 			// use pregaps from log
 			if (tocFromLog != null)
 			{
+				//int srcNo = (int) _toc[_toc.FirstAudio].LastIndex - (PreGapLength == 0 ? 1 : 0);
 				if (PreGapLength < tocFromLog.Pregap)
+				{
 					PreGapLength = tocFromLog.Pregap;
+					//srcNo ++;
+				}
 				int trNo;
 				for (trNo = 1; trNo < tocFromLog.AudioTracks && trNo < _toc.AudioTracks; trNo++)
+				{
 					if (_toc[_toc.FirstAudio + trNo].Pregap < tocFromLog[tocFromLog.FirstAudio + trNo].Pregap)
 						_toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
+				}
+				//if (_toc[_toc.FirstAudio].Length > tocFromLog[tocFromLog.FirstAudio].Length)
+				//{
+				//    uint offs = _toc[_toc.FirstAudio].Length - tocFromLog[tocFromLog.FirstAudio].Length;
+				//    _toc[_toc.FirstAudio].Length -= offs;
+
+				//    sourceInfo = _sources[srcNo];
+				//    sourceInfo.Length -= offs * 588;
+				//    _sources[srcNo] = sourceInfo;
+				//    for (i = _toc.FirstAudio + 1; i <= _toc.TrackCount; i++)
+				//    {
+				//        _toc[i].Start -= offs;
+				//        for (int j = 0; j <= _toc[i].LastIndex; j++)
+				//            if (i != _toc.FirstAudio + 1 || j != 0 || _toc[i][0].Start == _toc[i][1].Start)
+				//                _toc[i][j].Start -= offs;
+				//    }
+				//}
+				//for (trNo = 1; trNo < tocFromLog.AudioTracks && trNo < _toc.AudioTracks; trNo++)
+				//{
+				//    srcNo ++;
+				//    if (_toc[_toc.FirstAudio + trNo].Length > tocFromLog[tocFromLog.FirstAudio + trNo].Length)
+				//    {
+				//        uint offs = _toc[_toc.FirstAudio + trNo].Length - tocFromLog[tocFromLog.FirstAudio + trNo].Length;
+				//        _toc[_toc.FirstAudio + trNo].Length -= offs;
+				//        sourceInfo = _sources[srcNo];
+				//        sourceInfo.Length -= offs * 588;
+				//        _sources[srcNo] = sourceInfo;
+				//        for (i = _toc.FirstAudio + trNo + 1; i <= _toc.TrackCount; i++)
+				//        {
+				//            _toc[i].Start -= offs;
+				//            for (int j = 0; j <= _toc[i].LastIndex; j++)
+				//                if (i != _toc.FirstAudio + trNo + 1 || j != 0 || _toc[i][0].Start == _toc[i][1].Start)
+				//                    _toc[i][j].Start -= offs;
+				//        }
+				//    }
+				//}
 			}
 
 			// use data track length from log
@@ -2066,7 +2346,8 @@ return processor.Go();
 				for (int i = 0; i < TrackCount; i++)
 				{
 					TrackInfo track = _tracks[i];
-					string newValue = General.EmptyStringToNull(provider(track._fileInfo));
+					string newValue = track._fileInfo == null ? null:
+						General.EmptyStringToNull(provider(track._fileInfo));
 					if (tagValue == null)
 						tagValue = newValue;
 					else
@@ -2830,13 +3111,17 @@ return processor.Go();
 							// first, use cue sheet information
 							if (_config.writeBasicTagsFromCUEData)
 							{
-								uint year;
+								uint temp;
 								if (fileInfo.Tag.Album == null && Title != "") fileInfo.Tag.Album = Title;
 								//if (fileInfo.Tag.Performers.Length == 0) fileInfo.Tag.Performers = new string[] { _tracks[iTrack].Artist != "" ? _tracks[iTrack].Artist : Artist };
 								if (fileInfo.Tag.AlbumArtists.Length == 0 && Artist != "") fileInfo.Tag.AlbumArtists = new string[] { Artist };
 								if (fileInfo.Tag.Genres.Length == 0 && Genre != "") fileInfo.Tag.Genres = new string[] { Genre };
-								if (fileInfo.Tag.Year == 0 && Year != "" && uint.TryParse(Year, out year))
-									fileInfo.Tag.Year = year;
+								if (fileInfo.Tag.DiscCount == 0 && TotalDiscs != "" && uint.TryParse(TotalDiscs, out temp))
+									fileInfo.Tag.DiscCount = temp;
+								if (fileInfo.Tag.Disc == 0 && DiscNumber != "" && uint.TryParse(DiscNumber, out temp)) 
+									fileInfo.Tag.Disc = temp;
+								if (fileInfo.Tag.Year == 0 && Year != "" && uint.TryParse(Year, out temp))
+									fileInfo.Tag.Year = temp;
 							}
 							
 							// fill up missing information from tags
@@ -2855,7 +3140,7 @@ return processor.Go();
 									fileInfo.Tag.Year = sourceFileInfo.Tag.Year;
 							}
 
-							if (_config.extractAlbumArt && sourceFileInfo.Tag.Pictures.Length > 0)
+							if (_config.extractAlbumArt && sourceFileInfo != null && sourceFileInfo.Tag.Pictures.Length > 0)
 								ExtractCover(sourceFileInfo);
 
 							// copy album art
@@ -2887,7 +3172,7 @@ return processor.Go();
 
 								if (_config.writeBasicTagsFromCUEData)
 								{
-									uint year;
+									uint temp;
 									fileInfo.Tag.TrackCount = (uint)TrackCount;
 									fileInfo.Tag.Track = (uint)iTrack + 1;
 									//fileInfo.Tag.Title = _tracks[iTrack]._fileInfo != null ? _tracks[iTrack]._fileInfo.Tag.Title : _tracks[iTrack].Title;
@@ -2897,8 +3182,12 @@ return processor.Go();
 									if (fileInfo.Tag.Performers.Length == 0 && Artist != "") fileInfo.Tag.Performers = new string[] { Artist };
 									if (fileInfo.Tag.AlbumArtists.Length == 0 && Artist != "") fileInfo.Tag.AlbumArtists = new string[] { Artist };
 									if (fileInfo.Tag.Genres.Length == 0 && Genre != "") fileInfo.Tag.Genres = new string[] { Genre };
-									if (fileInfo.Tag.Year == 0 && Year != "" && uint.TryParse(Year, out year))
-										fileInfo.Tag.Year = year;
+									if (fileInfo.Tag.DiscCount == 0 && TotalDiscs != "" && uint.TryParse(TotalDiscs, out temp))
+										fileInfo.Tag.DiscCount = temp;
+									if (fileInfo.Tag.Disc == 0 && DiscNumber != "" && uint.TryParse(DiscNumber, out temp))
+										fileInfo.Tag.Disc = temp;
+									if (fileInfo.Tag.Year == 0 && Year != "" && uint.TryParse(Year, out temp))
+										fileInfo.Tag.Year = temp;
 								}
 
 								if (_config.copyBasicTags && sourceFileInfo != null)
@@ -2917,7 +3206,7 @@ return processor.Go();
 										fileInfo.Tag.Genres = sourceFileInfo.Tag.Genres;
 								}
 
-								if (_config.extractAlbumArt && sourceFileInfo.Tag.Pictures.Length > 0)
+								if (_config.extractAlbumArt && sourceFileInfo != null && sourceFileInfo.Tag.Pictures.Length > 0)
 									ExtractCover(sourceFileInfo);
 
 								if (_config.copyAlbumArt && sourceFileInfo != null)
@@ -3787,6 +4076,15 @@ return processor.Go();
 			}
 		}
 
+		public NameValueCollection Tags
+		{
+			get
+			{
+				TagLib.File fileInfo = _tracks[0]._fileInfo ?? _fileInfo;
+				return fileInfo != null ? Tagging.Analyze(fileInfo) : null;
+			}
+		}
+
 		public string Artist {
 			get {
 				CUELine line = General.FindCUELine(_attributes, "PERFORMER");
@@ -3810,6 +4108,38 @@ return processor.Go();
 					General.SetCUELine(_attributes, "REM", "DATE", value, false);
 				else
 					General.DelCUELine(_attributes, "REM", "DATE");
+			}
+		}
+
+		public string DiscNumber
+		{
+			get
+			{
+				CUELine line = General.FindCUELine(_attributes, "REM", "DISCNUMBER");
+				return (line == null || line.Params.Count < 3) ? String.Empty : line.Params[2];
+			}
+			set
+			{
+				if (value != "")
+					General.SetCUELine(_attributes, "REM", "DISCNUMBER", value, false);
+				else
+					General.DelCUELine(_attributes, "REM", "DISCNUMBER");
+			}
+		}
+
+		public string TotalDiscs
+		{
+			get
+			{
+				CUELine line = General.FindCUELine(_attributes, "REM", "TOTALDISCS");
+				return (line == null || line.Params.Count < 3) ? String.Empty : line.Params[2];
+			}
+			set
+			{
+				if (value != "")
+					General.SetCUELine(_attributes, "REM", "TOTALDISCS", value, false);
+				else
+					General.DelCUELine(_attributes, "REM", "TOTALDISCS");
 			}
 		}
 

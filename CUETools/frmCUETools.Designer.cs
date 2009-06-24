@@ -25,389 +25,140 @@ namespace JDP {
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmCUETools));
-			this.btnConvert = new System.Windows.Forms.Button();
-			this.btnBrowseOutput = new System.Windows.Forms.Button();
-			this.txtOutputPath = new System.Windows.Forms.TextBox();
-			this.grpOutputStyle = new System.Windows.Forms.GroupBox();
-			this.rbEmbedCUE = new System.Windows.Forms.RadioButton();
-			this.rbGapsLeftOut = new System.Windows.Forms.RadioButton();
-			this.rbGapsPrepended = new System.Windows.Forms.RadioButton();
-			this.rbGapsAppended = new System.Windows.Forms.RadioButton();
-			this.rbSingleFile = new System.Windows.Forms.RadioButton();
-			this.btnAbout = new System.Windows.Forms.Button();
-			this.grpOutputPathGeneration = new System.Windows.Forms.GroupBox();
-			this.txtCustomFormat = new System.Windows.Forms.TextBox();
-			this.rbCustomFormat = new System.Windows.Forms.RadioButton();
-			this.txtCreateSubdirectory = new System.Windows.Forms.TextBox();
-			this.rbDontGenerate = new System.Windows.Forms.RadioButton();
-			this.rbCreateSubdirectory = new System.Windows.Forms.RadioButton();
-			this.rbAppendFilename = new System.Windows.Forms.RadioButton();
-			this.txtAppendFilename = new System.Windows.Forms.TextBox();
-			this.grpAudioOutput = new System.Windows.Forms.GroupBox();
-			this.labelFormat = new System.Windows.Forms.Label();
-			this.comboBoxAudioFormat = new System.Windows.Forms.ComboBox();
-			this.btnSettings = new System.Windows.Forms.Button();
-			this.grpAction = new System.Windows.Forms.GroupBox();
-			this.comboBoxScript = new System.Windows.Forms.ComboBox();
-			this.rbActionCorrectFilenames = new System.Windows.Forms.RadioButton();
-			this.rbActionCreateCUESheet = new System.Windows.Forms.RadioButton();
-			this.rbActionVerifyAndEncode = new System.Windows.Forms.RadioButton();
-			this.rbActionVerify = new System.Windows.Forms.RadioButton();
-			this.rbActionEncode = new System.Windows.Forms.RadioButton();
-			this.chkMulti = new System.Windows.Forms.CheckBox();
-			this.txtPreGapLength = new System.Windows.Forms.MaskedTextBox();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label1 = new System.Windows.Forms.Label();
-			this.txtDataTrackLength = new System.Windows.Forms.MaskedTextBox();
-			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
+			this.statusStrip2 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabelProcessed = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabelWV = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabelFLAC = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabelAR = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
-			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.btnStop = new System.Windows.Forms.Button();
-			this.btnPause = new System.Windows.Forms.Button();
-			this.btnResume = new System.Windows.Forms.Button();
-			this.grpFreedb = new System.Windows.Forms.GroupBox();
-			this.rbFreedbAlways = new System.Windows.Forms.RadioButton();
-			this.rbFreedbIf = new System.Windows.Forms.RadioButton();
-			this.rbFreedbNever = new System.Windows.Forms.RadioButton();
-			this.txtInputPath = new System.Windows.Forms.TextBox();
+			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
 			this.grpInput = new System.Windows.Forms.GroupBox();
 			this.textBatchReport = new System.Windows.Forms.TextBox();
 			this.fileSystemTreeView1 = new CUEControls.FileSystemTreeView();
-			this.grpExtra = new System.Windows.Forms.GroupBox();
-			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
-			this.lblWriteOffset = new System.Windows.Forms.Label();
-			this.contextMenuStripFileTree = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.SelectedNodeName = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-			this.setAsMyMusicFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.resetToOriginalLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.panel1 = new System.Windows.Forms.Panel();
+			this.grpOutputPathGeneration = new System.Windows.Forms.GroupBox();
+			this.labelOutputTemplate = new System.Windows.Forms.Label();
+			this.labelOutput = new System.Windows.Forms.Label();
+			this.labelInput = new System.Windows.Forms.Label();
+			this.checkBoxDontGenerate = new System.Windows.Forms.CheckBox();
+			this.comboBoxOutputFormat = new System.Windows.Forms.ComboBox();
+			this.txtInputPath = new System.Windows.Forms.TextBox();
+			this.btnBrowseOutput = new System.Windows.Forms.Button();
+			this.txtOutputPath = new System.Windows.Forms.TextBox();
+			this.grpAudioOutput = new System.Windows.Forms.GroupBox();
+			this.labelEncoderMaxMode = new System.Windows.Forms.Label();
+			this.labelEncoderMinMode = new System.Windows.Forms.Label();
+			this.labelEncoderMode = new System.Windows.Forms.Label();
+			this.trackBarEncoderMode = new System.Windows.Forms.TrackBar();
+			this.comboBoxEncoder = new System.Windows.Forms.ComboBox();
+			this.radioButtonAudioNone = new System.Windows.Forms.RadioButton();
+			this.radioButtonAudioLossy = new System.Windows.Forms.RadioButton();
+			this.radioButtonAudioHybrid = new System.Windows.Forms.RadioButton();
+			this.radioButtonAudioLossless = new System.Windows.Forms.RadioButton();
+			this.labelFormat = new System.Windows.Forms.Label();
+			this.comboBoxAudioFormat = new System.Windows.Forms.ComboBox();
 			this.groupBoxCorrector = new System.Windows.Forms.GroupBox();
 			this.rbCorrectorLocateFiles = new System.Windows.Forms.RadioButton();
 			this.rbCorrectorChangeExtension = new System.Windows.Forms.RadioButton();
 			this.checkBoxCorrectorOverwrite = new System.Windows.Forms.CheckBox();
 			this.labelCorrectorFormat = new System.Windows.Forms.Label();
 			this.comboBoxCorrectorFormat = new System.Windows.Forms.ComboBox();
-			this.radioButtonAudioLossless = new System.Windows.Forms.RadioButton();
-			this.radioButtonAudioHybrid = new System.Windows.Forms.RadioButton();
-			this.radioButtonAudioLossy = new System.Windows.Forms.RadioButton();
-			this.radioButtonAudioNone = new System.Windows.Forms.RadioButton();
-			this.comboBoxEncoder = new System.Windows.Forms.ComboBox();
+			this.grpAction = new System.Windows.Forms.GroupBox();
 			this.checkBoxAdvancedMode = new System.Windows.Forms.CheckBox();
-			this.grpOutputStyle.SuspendLayout();
+			this.comboBoxScript = new System.Windows.Forms.ComboBox();
+			this.rbActionCorrectFilenames = new System.Windows.Forms.RadioButton();
+			this.rbActionCreateCUESheet = new System.Windows.Forms.RadioButton();
+			this.rbActionVerifyAndEncode = new System.Windows.Forms.RadioButton();
+			this.rbActionVerify = new System.Windows.Forms.RadioButton();
+			this.rbActionEncode = new System.Windows.Forms.RadioButton();
+			this.btnAbout = new System.Windows.Forms.Button();
+			this.btnConvert = new System.Windows.Forms.Button();
+			this.grpExtra = new System.Windows.Forms.GroupBox();
+			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
+			this.txtPreGapLength = new System.Windows.Forms.MaskedTextBox();
+			this.lblWriteOffset = new System.Windows.Forms.Label();
+			this.labelPregap = new System.Windows.Forms.Label();
+			this.txtDataTrackLength = new System.Windows.Forms.MaskedTextBox();
+			this.labelDataTrack = new System.Windows.Forms.Label();
+			this.grpFreedb = new System.Windows.Forms.GroupBox();
+			this.rbFreedbAlways = new System.Windows.Forms.RadioButton();
+			this.rbFreedbIf = new System.Windows.Forms.RadioButton();
+			this.rbFreedbNever = new System.Windows.Forms.RadioButton();
+			this.btnResume = new System.Windows.Forms.Button();
+			this.btnPause = new System.Windows.Forms.Button();
+			this.grpOutputStyle = new System.Windows.Forms.GroupBox();
+			this.rbTracks = new System.Windows.Forms.RadioButton();
+			this.rbEmbedCUE = new System.Windows.Forms.RadioButton();
+			this.rbSingleFile = new System.Windows.Forms.RadioButton();
+			this.btnSettings = new System.Windows.Forms.Button();
+			this.btnStop = new System.Windows.Forms.Button();
+			this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+			this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
+			this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+			this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
+			this.toolStripButton5 = new System.Windows.Forms.ToolStripButton();
+			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.contextMenuStripFileTree = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.SelectedNodeName = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+			this.setAsMyMusicFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.resetToOriginalLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.labelMotd = new System.Windows.Forms.Label();
+			this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
+			this.toolStripContainer1.ContentPanel.SuspendLayout();
+			this.toolStripContainer1.LeftToolStripPanel.SuspendLayout();
+			this.toolStripContainer1.SuspendLayout();
+			this.statusStrip2.SuspendLayout();
+			this.splitContainer1.Panel1.SuspendLayout();
+			this.splitContainer1.Panel2.SuspendLayout();
+			this.splitContainer1.SuspendLayout();
+			this.grpInput.SuspendLayout();
 			this.grpOutputPathGeneration.SuspendLayout();
 			this.grpAudioOutput.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).BeginInit();
+			this.groupBoxCorrector.SuspendLayout();
 			this.grpAction.SuspendLayout();
-			this.statusStrip1.SuspendLayout();
-			this.grpFreedb.SuspendLayout();
-			this.grpInput.SuspendLayout();
 			this.grpExtra.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
+			this.grpFreedb.SuspendLayout();
+			this.grpOutputStyle.SuspendLayout();
+			this.toolStrip1.SuspendLayout();
 			this.contextMenuStripFileTree.SuspendLayout();
-			this.panel1.SuspendLayout();
-			this.groupBoxCorrector.SuspendLayout();
 			this.SuspendLayout();
 			// 
-			// btnConvert
+			// toolStripContainer1
 			// 
-			resources.ApplyResources(this.btnConvert, "btnConvert");
-			this.btnConvert.Name = "btnConvert";
-			this.btnConvert.UseVisualStyleBackColor = true;
-			this.btnConvert.Click += new System.EventHandler(this.btnConvert_Click);
 			// 
-			// btnBrowseOutput
+			// toolStripContainer1.BottomToolStripPanel
 			// 
-			resources.ApplyResources(this.btnBrowseOutput, "btnBrowseOutput");
-			this.btnBrowseOutput.Name = "btnBrowseOutput";
-			this.btnBrowseOutput.UseVisualStyleBackColor = true;
-			this.btnBrowseOutput.Click += new System.EventHandler(this.btnBrowseOutput_Click);
+			this.toolStripContainer1.BottomToolStripPanel.Controls.Add(this.statusStrip2);
 			// 
-			// txtOutputPath
+			// toolStripContainer1.ContentPanel
 			// 
-			this.txtOutputPath.AllowDrop = true;
-			resources.ApplyResources(this.txtOutputPath, "txtOutputPath");
-			this.txtOutputPath.Name = "txtOutputPath";
-			this.txtOutputPath.DragDrop += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragDrop);
-			this.txtOutputPath.DragEnter += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragEnter);
+			resources.ApplyResources(this.toolStripContainer1.ContentPanel, "toolStripContainer1.ContentPanel");
+			this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
+			resources.ApplyResources(this.toolStripContainer1, "toolStripContainer1");
 			// 
-			// grpOutputStyle
+			// toolStripContainer1.LeftToolStripPanel
 			// 
-			this.grpOutputStyle.Controls.Add(this.rbEmbedCUE);
-			this.grpOutputStyle.Controls.Add(this.rbGapsLeftOut);
-			this.grpOutputStyle.Controls.Add(this.rbGapsPrepended);
-			this.grpOutputStyle.Controls.Add(this.rbGapsAppended);
-			this.grpOutputStyle.Controls.Add(this.rbSingleFile);
-			resources.ApplyResources(this.grpOutputStyle, "grpOutputStyle");
-			this.grpOutputStyle.Name = "grpOutputStyle";
-			this.grpOutputStyle.TabStop = false;
+			this.toolStripContainer1.LeftToolStripPanel.Controls.Add(this.toolStrip1);
+			this.toolStripContainer1.Name = "toolStripContainer1";
+			this.toolStripContainer1.RightToolStripPanelVisible = false;
+			this.toolStripContainer1.TopToolStripPanelVisible = false;
 			// 
-			// rbEmbedCUE
+			// statusStrip2
 			// 
-			resources.ApplyResources(this.rbEmbedCUE, "rbEmbedCUE");
-			this.rbEmbedCUE.Name = "rbEmbedCUE";
-			this.rbEmbedCUE.TabStop = true;
-			this.toolTip1.SetToolTip(this.rbEmbedCUE, resources.GetString("rbEmbedCUE.ToolTip"));
-			this.rbEmbedCUE.UseVisualStyleBackColor = true;
-			this.rbEmbedCUE.CheckedChanged += new System.EventHandler(this.rbEmbedCUE_CheckedChanged);
-			// 
-			// rbGapsLeftOut
-			// 
-			resources.ApplyResources(this.rbGapsLeftOut, "rbGapsLeftOut");
-			this.rbGapsLeftOut.Name = "rbGapsLeftOut";
-			this.toolTip1.SetToolTip(this.rbGapsLeftOut, resources.GetString("rbGapsLeftOut.ToolTip"));
-			this.rbGapsLeftOut.UseVisualStyleBackColor = true;
-			// 
-			// rbGapsPrepended
-			// 
-			resources.ApplyResources(this.rbGapsPrepended, "rbGapsPrepended");
-			this.rbGapsPrepended.Name = "rbGapsPrepended";
-			this.toolTip1.SetToolTip(this.rbGapsPrepended, resources.GetString("rbGapsPrepended.ToolTip"));
-			this.rbGapsPrepended.UseVisualStyleBackColor = true;
-			// 
-			// rbGapsAppended
-			// 
-			resources.ApplyResources(this.rbGapsAppended, "rbGapsAppended");
-			this.rbGapsAppended.Name = "rbGapsAppended";
-			this.toolTip1.SetToolTip(this.rbGapsAppended, resources.GetString("rbGapsAppended.ToolTip"));
-			this.rbGapsAppended.UseVisualStyleBackColor = true;
-			// 
-			// rbSingleFile
-			// 
-			resources.ApplyResources(this.rbSingleFile, "rbSingleFile");
-			this.rbSingleFile.Checked = true;
-			this.rbSingleFile.Name = "rbSingleFile";
-			this.rbSingleFile.TabStop = true;
-			this.toolTip1.SetToolTip(this.rbSingleFile, resources.GetString("rbSingleFile.ToolTip"));
-			this.rbSingleFile.UseVisualStyleBackColor = true;
-			// 
-			// btnAbout
-			// 
-			this.btnAbout.Image = global::JDP.Properties.Resources.information;
-			resources.ApplyResources(this.btnAbout, "btnAbout");
-			this.btnAbout.Name = "btnAbout";
-			this.btnAbout.UseVisualStyleBackColor = true;
-			this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
-			// 
-			// grpOutputPathGeneration
-			// 
-			this.grpOutputPathGeneration.Controls.Add(this.btnBrowseOutput);
-			this.grpOutputPathGeneration.Controls.Add(this.txtOutputPath);
-			this.grpOutputPathGeneration.Controls.Add(this.txtCustomFormat);
-			this.grpOutputPathGeneration.Controls.Add(this.rbCustomFormat);
-			this.grpOutputPathGeneration.Controls.Add(this.txtCreateSubdirectory);
-			this.grpOutputPathGeneration.Controls.Add(this.rbDontGenerate);
-			this.grpOutputPathGeneration.Controls.Add(this.rbCreateSubdirectory);
-			this.grpOutputPathGeneration.Controls.Add(this.rbAppendFilename);
-			this.grpOutputPathGeneration.Controls.Add(this.txtAppendFilename);
-			resources.ApplyResources(this.grpOutputPathGeneration, "grpOutputPathGeneration");
-			this.grpOutputPathGeneration.Name = "grpOutputPathGeneration";
-			this.grpOutputPathGeneration.TabStop = false;
-			// 
-			// txtCustomFormat
-			// 
-			resources.ApplyResources(this.txtCustomFormat, "txtCustomFormat");
-			this.txtCustomFormat.Name = "txtCustomFormat";
-			this.txtCustomFormat.TextChanged += new System.EventHandler(this.txtCustomFormat_TextChanged);
-			// 
-			// rbCustomFormat
-			// 
-			resources.ApplyResources(this.rbCustomFormat, "rbCustomFormat");
-			this.rbCustomFormat.Name = "rbCustomFormat";
-			this.rbCustomFormat.TabStop = true;
-			this.rbCustomFormat.UseVisualStyleBackColor = true;
-			this.rbCustomFormat.CheckedChanged += new System.EventHandler(this.rbCustomFormat_CheckedChanged);
-			// 
-			// txtCreateSubdirectory
-			// 
-			resources.ApplyResources(this.txtCreateSubdirectory, "txtCreateSubdirectory");
-			this.txtCreateSubdirectory.Name = "txtCreateSubdirectory";
-			this.txtCreateSubdirectory.TextChanged += new System.EventHandler(this.txtCreateSubdirectory_TextChanged);
-			// 
-			// rbDontGenerate
-			// 
-			resources.ApplyResources(this.rbDontGenerate, "rbDontGenerate");
-			this.rbDontGenerate.Name = "rbDontGenerate";
-			this.rbDontGenerate.UseVisualStyleBackColor = true;
-			// 
-			// rbCreateSubdirectory
-			// 
-			resources.ApplyResources(this.rbCreateSubdirectory, "rbCreateSubdirectory");
-			this.rbCreateSubdirectory.Checked = true;
-			this.rbCreateSubdirectory.Name = "rbCreateSubdirectory";
-			this.rbCreateSubdirectory.TabStop = true;
-			this.rbCreateSubdirectory.UseVisualStyleBackColor = true;
-			this.rbCreateSubdirectory.CheckedChanged += new System.EventHandler(this.rbCreateSubdirectory_CheckedChanged);
-			// 
-			// rbAppendFilename
-			// 
-			resources.ApplyResources(this.rbAppendFilename, "rbAppendFilename");
-			this.rbAppendFilename.Name = "rbAppendFilename";
-			this.rbAppendFilename.UseVisualStyleBackColor = true;
-			this.rbAppendFilename.CheckedChanged += new System.EventHandler(this.rbAppendFilename_CheckedChanged);
-			// 
-			// txtAppendFilename
-			// 
-			resources.ApplyResources(this.txtAppendFilename, "txtAppendFilename");
-			this.txtAppendFilename.Name = "txtAppendFilename";
-			this.txtAppendFilename.TextChanged += new System.EventHandler(this.txtAppendFilename_TextChanged);
-			// 
-			// grpAudioOutput
-			// 
-			this.grpAudioOutput.Controls.Add(this.comboBoxEncoder);
-			this.grpAudioOutput.Controls.Add(this.radioButtonAudioNone);
-			this.grpAudioOutput.Controls.Add(this.radioButtonAudioLossy);
-			this.grpAudioOutput.Controls.Add(this.radioButtonAudioHybrid);
-			this.grpAudioOutput.Controls.Add(this.radioButtonAudioLossless);
-			this.grpAudioOutput.Controls.Add(this.labelFormat);
-			this.grpAudioOutput.Controls.Add(this.comboBoxAudioFormat);
-			resources.ApplyResources(this.grpAudioOutput, "grpAudioOutput");
-			this.grpAudioOutput.Name = "grpAudioOutput";
-			this.grpAudioOutput.TabStop = false;
-			// 
-			// labelFormat
-			// 
-			resources.ApplyResources(this.labelFormat, "labelFormat");
-			this.labelFormat.MinimumSize = new System.Drawing.Size(16, 16);
-			this.labelFormat.Name = "labelFormat";
-			// 
-			// comboBoxAudioFormat
-			// 
-			this.comboBoxAudioFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboBoxAudioFormat.FormattingEnabled = true;
-			resources.ApplyResources(this.comboBoxAudioFormat, "comboBoxAudioFormat");
-			this.comboBoxAudioFormat.Name = "comboBoxAudioFormat";
-			this.comboBoxAudioFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxAudioFormat_SelectedIndexChanged);
-			// 
-			// btnSettings
-			// 
-			this.btnSettings.Image = global::JDP.Properties.Resources.cog;
-			resources.ApplyResources(this.btnSettings, "btnSettings");
-			this.btnSettings.Name = "btnSettings";
-			this.btnSettings.UseVisualStyleBackColor = true;
-			this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
-			// 
-			// grpAction
-			// 
-			this.grpAction.Controls.Add(this.checkBoxAdvancedMode);
-			this.grpAction.Controls.Add(this.comboBoxScript);
-			this.grpAction.Controls.Add(this.rbActionCorrectFilenames);
-			this.grpAction.Controls.Add(this.rbActionCreateCUESheet);
-			this.grpAction.Controls.Add(this.rbActionVerifyAndEncode);
-			this.grpAction.Controls.Add(this.rbActionVerify);
-			this.grpAction.Controls.Add(this.rbActionEncode);
-			resources.ApplyResources(this.grpAction, "grpAction");
-			this.grpAction.Name = "grpAction";
-			this.grpAction.TabStop = false;
-			// 
-			// comboBoxScript
-			// 
-			this.comboBoxScript.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboBoxScript.FormattingEnabled = true;
-			resources.ApplyResources(this.comboBoxScript, "comboBoxScript");
-			this.comboBoxScript.Name = "comboBoxScript";
-			// 
-			// rbActionCorrectFilenames
-			// 
-			resources.ApplyResources(this.rbActionCorrectFilenames, "rbActionCorrectFilenames");
-			this.rbActionCorrectFilenames.Name = "rbActionCorrectFilenames";
-			this.rbActionCorrectFilenames.TabStop = true;
-			this.rbActionCorrectFilenames.UseVisualStyleBackColor = true;
-			this.rbActionCorrectFilenames.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
-			// 
-			// rbActionCreateCUESheet
-			// 
-			resources.ApplyResources(this.rbActionCreateCUESheet, "rbActionCreateCUESheet");
-			this.rbActionCreateCUESheet.Name = "rbActionCreateCUESheet";
-			this.rbActionCreateCUESheet.TabStop = true;
-			this.rbActionCreateCUESheet.UseVisualStyleBackColor = true;
-			this.rbActionCreateCUESheet.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
-			// 
-			// rbActionVerifyAndEncode
-			// 
-			resources.ApplyResources(this.rbActionVerifyAndEncode, "rbActionVerifyAndEncode");
-			this.rbActionVerifyAndEncode.Name = "rbActionVerifyAndEncode";
-			this.rbActionVerifyAndEncode.TabStop = true;
-			this.rbActionVerifyAndEncode.UseVisualStyleBackColor = true;
-			this.rbActionVerifyAndEncode.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
-			// 
-			// rbActionVerify
-			// 
-			resources.ApplyResources(this.rbActionVerify, "rbActionVerify");
-			this.rbActionVerify.Name = "rbActionVerify";
-			this.toolTip1.SetToolTip(this.rbActionVerify, resources.GetString("rbActionVerify.ToolTip"));
-			this.rbActionVerify.UseVisualStyleBackColor = true;
-			this.rbActionVerify.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
-			// 
-			// rbActionEncode
-			// 
-			resources.ApplyResources(this.rbActionEncode, "rbActionEncode");
-			this.rbActionEncode.Checked = true;
-			this.rbActionEncode.Name = "rbActionEncode";
-			this.rbActionEncode.TabStop = true;
-			this.toolTip1.SetToolTip(this.rbActionEncode, resources.GetString("rbActionEncode.ToolTip"));
-			this.rbActionEncode.UseVisualStyleBackColor = true;
-			this.rbActionEncode.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
-			// 
-			// chkMulti
-			// 
-			resources.ApplyResources(this.chkMulti, "chkMulti");
-			this.chkMulti.Name = "chkMulti";
-			this.chkMulti.ThreeState = true;
-			this.chkMulti.UseVisualStyleBackColor = true;
-			this.chkMulti.CheckStateChanged += new System.EventHandler(this.chkMulti_CheckStateChanged);
-			// 
-			// txtPreGapLength
-			// 
-			this.txtPreGapLength.Culture = new System.Globalization.CultureInfo("");
-			this.txtPreGapLength.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
-			this.txtPreGapLength.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Overwrite;
-			resources.ApplyResources(this.txtPreGapLength, "txtPreGapLength");
-			this.txtPreGapLength.Name = "txtPreGapLength";
-			this.txtPreGapLength.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
-			this.toolTip1.SetToolTip(this.txtPreGapLength, resources.GetString("txtPreGapLength.ToolTip"));
-			// 
-			// label2
-			// 
-			resources.ApplyResources(this.label2, "label2");
-			this.label2.Name = "label2";
-			// 
-			// label1
-			// 
-			resources.ApplyResources(this.label1, "label1");
-			this.label1.Name = "label1";
-			// 
-			// txtDataTrackLength
-			// 
-			this.txtDataTrackLength.Culture = new System.Globalization.CultureInfo("");
-			this.txtDataTrackLength.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
-			this.txtDataTrackLength.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Overwrite;
-			resources.ApplyResources(this.txtDataTrackLength, "txtDataTrackLength");
-			this.txtDataTrackLength.Name = "txtDataTrackLength";
-			this.txtDataTrackLength.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
-			this.toolTip1.SetToolTip(this.txtDataTrackLength, resources.GetString("txtDataTrackLength.ToolTip"));
-			// 
-			// statusStrip1
-			// 
-			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+			resources.ApplyResources(this.statusStrip2, "statusStrip2");
+			this.statusStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabelProcessed,
-            this.toolStripStatusLabel2,
-            this.toolStripStatusLabelWV,
-            this.toolStripStatusLabelFLAC,
             this.toolStripStatusLabelAR,
             this.toolStripProgressBar1,
             this.toolStripProgressBar2});
-			resources.ApplyResources(this.statusStrip1, "statusStrip1");
-			this.statusStrip1.Name = "statusStrip1";
-			this.statusStrip1.ShowItemToolTips = true;
-			this.statusStrip1.SizingGrip = false;
+			this.statusStrip2.Name = "statusStrip2";
 			// 
 			// toolStripStatusLabel1
 			// 
@@ -419,27 +170,6 @@ namespace JDP {
 			// 
 			this.toolStripStatusLabelProcessed.Name = "toolStripStatusLabelProcessed";
 			resources.ApplyResources(this.toolStripStatusLabelProcessed, "toolStripStatusLabelProcessed");
-			// 
-			// toolStripStatusLabel2
-			// 
-			this.toolStripStatusLabel2.Image = global::JDP.Properties.Resources.wav;
-			resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
-			this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-			this.toolStripStatusLabel2.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
-			// 
-			// toolStripStatusLabelWV
-			// 
-			this.toolStripStatusLabelWV.Image = global::JDP.Properties.Resources.wv;
-			resources.ApplyResources(this.toolStripStatusLabelWV, "toolStripStatusLabelWV");
-			this.toolStripStatusLabelWV.Name = "toolStripStatusLabelWV";
-			this.toolStripStatusLabelWV.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
-			// 
-			// toolStripStatusLabelFLAC
-			// 
-			this.toolStripStatusLabelFLAC.Image = global::JDP.Properties.Resources.flac;
-			this.toolStripStatusLabelFLAC.Name = "toolStripStatusLabelFLAC";
-			this.toolStripStatusLabelFLAC.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
-			resources.ApplyResources(this.toolStripStatusLabelFLAC, "toolStripStatusLabelFLAC");
 			// 
 			// toolStripStatusLabelAR
 			// 
@@ -462,80 +192,39 @@ namespace JDP {
 			resources.ApplyResources(this.toolStripProgressBar2, "toolStripProgressBar2");
 			this.toolStripProgressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
 			// 
-			// toolTip1
+			// splitContainer1
 			// 
-			this.toolTip1.AutoPopDelay = 15000;
-			this.toolTip1.InitialDelay = 500;
-			this.toolTip1.ReshowDelay = 100;
+			resources.ApplyResources(this.splitContainer1, "splitContainer1");
+			this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+			this.splitContainer1.MinimumSize = new System.Drawing.Size(685, 0);
+			this.splitContainer1.Name = "splitContainer1";
 			// 
-			// btnStop
+			// splitContainer1.Panel1
 			// 
-			resources.ApplyResources(this.btnStop, "btnStop");
-			this.btnStop.Name = "btnStop";
-			this.btnStop.UseVisualStyleBackColor = true;
-			this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+			this.splitContainer1.Panel1.Controls.Add(this.grpInput);
 			// 
-			// btnPause
+			// splitContainer1.Panel2
 			// 
-			resources.ApplyResources(this.btnPause, "btnPause");
-			this.btnPause.Name = "btnPause";
-			this.btnPause.UseVisualStyleBackColor = true;
-			this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
-			// 
-			// btnResume
-			// 
-			resources.ApplyResources(this.btnResume, "btnResume");
-			this.btnResume.Name = "btnResume";
-			this.btnResume.UseVisualStyleBackColor = true;
-			this.btnResume.Click += new System.EventHandler(this.btnPause_Click);
-			// 
-			// grpFreedb
-			// 
-			this.grpFreedb.Controls.Add(this.rbFreedbAlways);
-			this.grpFreedb.Controls.Add(this.rbFreedbIf);
-			this.grpFreedb.Controls.Add(this.rbFreedbNever);
-			resources.ApplyResources(this.grpFreedb, "grpFreedb");
-			this.grpFreedb.Name = "grpFreedb";
-			this.grpFreedb.TabStop = false;
-			// 
-			// rbFreedbAlways
-			// 
-			resources.ApplyResources(this.rbFreedbAlways, "rbFreedbAlways");
-			this.rbFreedbAlways.Name = "rbFreedbAlways";
-			this.rbFreedbAlways.TabStop = true;
-			this.rbFreedbAlways.UseVisualStyleBackColor = true;
-			// 
-			// rbFreedbIf
-			// 
-			resources.ApplyResources(this.rbFreedbIf, "rbFreedbIf");
-			this.rbFreedbIf.Name = "rbFreedbIf";
-			this.rbFreedbIf.TabStop = true;
-			this.rbFreedbIf.UseVisualStyleBackColor = true;
-			// 
-			// rbFreedbNever
-			// 
-			resources.ApplyResources(this.rbFreedbNever, "rbFreedbNever");
-			this.rbFreedbNever.Name = "rbFreedbNever";
-			this.rbFreedbNever.TabStop = true;
-			this.rbFreedbNever.UseVisualStyleBackColor = true;
-			// 
-			// txtInputPath
-			// 
-			this.txtInputPath.AllowDrop = true;
-			resources.ApplyResources(this.txtInputPath, "txtInputPath");
-			this.txtInputPath.BackColor = System.Drawing.SystemColors.Control;
-			this.txtInputPath.Name = "txtInputPath";
-			this.txtInputPath.TextChanged += new System.EventHandler(this.txtInputPath_TextChanged);
-			this.txtInputPath.DragDrop += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragDrop);
-			this.txtInputPath.DragEnter += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragEnter);
+			this.splitContainer1.Panel2.Controls.Add(this.labelMotd);
+			this.splitContainer1.Panel2.Controls.Add(this.grpOutputPathGeneration);
+			this.splitContainer1.Panel2.Controls.Add(this.grpAudioOutput);
+			this.splitContainer1.Panel2.Controls.Add(this.groupBoxCorrector);
+			this.splitContainer1.Panel2.Controls.Add(this.grpAction);
+			this.splitContainer1.Panel2.Controls.Add(this.btnAbout);
+			this.splitContainer1.Panel2.Controls.Add(this.btnConvert);
+			this.splitContainer1.Panel2.Controls.Add(this.grpExtra);
+			this.splitContainer1.Panel2.Controls.Add(this.grpFreedb);
+			this.splitContainer1.Panel2.Controls.Add(this.btnResume);
+			this.splitContainer1.Panel2.Controls.Add(this.btnPause);
+			this.splitContainer1.Panel2.Controls.Add(this.grpOutputStyle);
+			this.splitContainer1.Panel2.Controls.Add(this.btnSettings);
+			this.splitContainer1.Panel2.Controls.Add(this.btnStop);
 			// 
 			// grpInput
 			// 
 			resources.ApplyResources(this.grpInput, "grpInput");
 			this.grpInput.Controls.Add(this.textBatchReport);
 			this.grpInput.Controls.Add(this.fileSystemTreeView1);
-			this.grpInput.Controls.Add(this.txtInputPath);
-			this.grpInput.Controls.Add(this.chkMulti);
 			this.grpInput.Name = "grpInput";
 			this.grpInput.TabStop = false;
 			// 
@@ -573,14 +262,325 @@ namespace JDP {
 			this.fileSystemTreeView1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.fileSystemTreeView1_KeyDown);
 			this.fileSystemTreeView1.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterExpand);
 			// 
+			// grpOutputPathGeneration
+			// 
+			this.grpOutputPathGeneration.Controls.Add(this.labelOutputTemplate);
+			this.grpOutputPathGeneration.Controls.Add(this.labelOutput);
+			this.grpOutputPathGeneration.Controls.Add(this.labelInput);
+			this.grpOutputPathGeneration.Controls.Add(this.checkBoxDontGenerate);
+			this.grpOutputPathGeneration.Controls.Add(this.comboBoxOutputFormat);
+			this.grpOutputPathGeneration.Controls.Add(this.txtInputPath);
+			this.grpOutputPathGeneration.Controls.Add(this.btnBrowseOutput);
+			this.grpOutputPathGeneration.Controls.Add(this.txtOutputPath);
+			resources.ApplyResources(this.grpOutputPathGeneration, "grpOutputPathGeneration");
+			this.grpOutputPathGeneration.Name = "grpOutputPathGeneration";
+			this.grpOutputPathGeneration.TabStop = false;
+			// 
+			// labelOutputTemplate
+			// 
+			resources.ApplyResources(this.labelOutputTemplate, "labelOutputTemplate");
+			this.labelOutputTemplate.Name = "labelOutputTemplate";
+			// 
+			// labelOutput
+			// 
+			resources.ApplyResources(this.labelOutput, "labelOutput");
+			this.labelOutput.Name = "labelOutput";
+			// 
+			// labelInput
+			// 
+			resources.ApplyResources(this.labelInput, "labelInput");
+			this.labelInput.Name = "labelInput";
+			// 
+			// checkBoxDontGenerate
+			// 
+			resources.ApplyResources(this.checkBoxDontGenerate, "checkBoxDontGenerate");
+			this.checkBoxDontGenerate.Name = "checkBoxDontGenerate";
+			this.toolTip1.SetToolTip(this.checkBoxDontGenerate, resources.GetString("checkBoxDontGenerate.ToolTip"));
+			this.checkBoxDontGenerate.UseVisualStyleBackColor = true;
+			this.checkBoxDontGenerate.CheckedChanged += new System.EventHandler(this.checkBoxDontGenerate_CheckedChanged);
+			// 
+			// comboBoxOutputFormat
+			// 
+			this.comboBoxOutputFormat.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxOutputFormat, "comboBoxOutputFormat");
+			this.comboBoxOutputFormat.Name = "comboBoxOutputFormat";
+			this.toolTip1.SetToolTip(this.comboBoxOutputFormat, resources.GetString("comboBoxOutputFormat.ToolTip"));
+			this.comboBoxOutputFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxOutputFormat_SelectedIndexChanged);
+			this.comboBoxOutputFormat.TextUpdate += new System.EventHandler(this.comboBoxOutputFormat_TextUpdate);
+			// 
+			// txtInputPath
+			// 
+			this.txtInputPath.AllowDrop = true;
+			resources.ApplyResources(this.txtInputPath, "txtInputPath");
+			this.txtInputPath.BackColor = System.Drawing.SystemColors.Window;
+			this.txtInputPath.Name = "txtInputPath";
+			this.toolTip1.SetToolTip(this.txtInputPath, resources.GetString("txtInputPath.ToolTip"));
+			this.txtInputPath.TextChanged += new System.EventHandler(this.txtInputPath_TextChanged);
+			this.txtInputPath.DragDrop += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragDrop);
+			this.txtInputPath.DragEnter += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragEnter);
+			// 
+			// btnBrowseOutput
+			// 
+			resources.ApplyResources(this.btnBrowseOutput, "btnBrowseOutput");
+			this.btnBrowseOutput.Name = "btnBrowseOutput";
+			this.toolTip1.SetToolTip(this.btnBrowseOutput, resources.GetString("btnBrowseOutput.ToolTip"));
+			this.btnBrowseOutput.UseVisualStyleBackColor = true;
+			this.btnBrowseOutput.Click += new System.EventHandler(this.btnBrowseOutput_Click);
+			// 
+			// txtOutputPath
+			// 
+			this.txtOutputPath.AllowDrop = true;
+			resources.ApplyResources(this.txtOutputPath, "txtOutputPath");
+			this.txtOutputPath.Name = "txtOutputPath";
+			this.toolTip1.SetToolTip(this.txtOutputPath, resources.GetString("txtOutputPath.ToolTip"));
+			this.txtOutputPath.DragDrop += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragDrop);
+			this.txtOutputPath.DragEnter += new System.Windows.Forms.DragEventHandler(this.PathTextBox_DragEnter);
+			// 
+			// grpAudioOutput
+			// 
+			this.grpAudioOutput.Controls.Add(this.labelEncoderMaxMode);
+			this.grpAudioOutput.Controls.Add(this.labelEncoderMinMode);
+			this.grpAudioOutput.Controls.Add(this.labelEncoderMode);
+			this.grpAudioOutput.Controls.Add(this.trackBarEncoderMode);
+			this.grpAudioOutput.Controls.Add(this.comboBoxEncoder);
+			this.grpAudioOutput.Controls.Add(this.radioButtonAudioNone);
+			this.grpAudioOutput.Controls.Add(this.radioButtonAudioLossy);
+			this.grpAudioOutput.Controls.Add(this.radioButtonAudioHybrid);
+			this.grpAudioOutput.Controls.Add(this.radioButtonAudioLossless);
+			this.grpAudioOutput.Controls.Add(this.labelFormat);
+			this.grpAudioOutput.Controls.Add(this.comboBoxAudioFormat);
+			resources.ApplyResources(this.grpAudioOutput, "grpAudioOutput");
+			this.grpAudioOutput.Name = "grpAudioOutput";
+			this.grpAudioOutput.TabStop = false;
+			// 
+			// labelEncoderMaxMode
+			// 
+			resources.ApplyResources(this.labelEncoderMaxMode, "labelEncoderMaxMode");
+			this.labelEncoderMaxMode.Name = "labelEncoderMaxMode";
+			// 
+			// labelEncoderMinMode
+			// 
+			resources.ApplyResources(this.labelEncoderMinMode, "labelEncoderMinMode");
+			this.labelEncoderMinMode.Name = "labelEncoderMinMode";
+			// 
+			// labelEncoderMode
+			// 
+			resources.ApplyResources(this.labelEncoderMode, "labelEncoderMode");
+			this.labelEncoderMode.Name = "labelEncoderMode";
+			this.toolTip1.SetToolTip(this.labelEncoderMode, resources.GetString("labelEncoderMode.ToolTip"));
+			// 
+			// trackBarEncoderMode
+			// 
+			resources.ApplyResources(this.trackBarEncoderMode, "trackBarEncoderMode");
+			this.trackBarEncoderMode.LargeChange = 1;
+			this.trackBarEncoderMode.Name = "trackBarEncoderMode";
+			this.trackBarEncoderMode.Scroll += new System.EventHandler(this.trackBarEncoderMode_Scroll);
+			// 
+			// comboBoxEncoder
+			// 
+			this.comboBoxEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxEncoder.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxEncoder, "comboBoxEncoder");
+			this.comboBoxEncoder.Name = "comboBoxEncoder";
+			this.toolTip1.SetToolTip(this.comboBoxEncoder, resources.GetString("comboBoxEncoder.ToolTip"));
+			this.comboBoxEncoder.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoder_SelectedIndexChanged);
+			// 
+			// radioButtonAudioNone
+			// 
+			resources.ApplyResources(this.radioButtonAudioNone, "radioButtonAudioNone");
+			this.radioButtonAudioNone.Name = "radioButtonAudioNone";
+			this.radioButtonAudioNone.TabStop = true;
+			this.toolTip1.SetToolTip(this.radioButtonAudioNone, resources.GetString("radioButtonAudioNone.ToolTip"));
+			this.radioButtonAudioNone.UseVisualStyleBackColor = true;
+			this.radioButtonAudioNone.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
+			// 
+			// radioButtonAudioLossy
+			// 
+			resources.ApplyResources(this.radioButtonAudioLossy, "radioButtonAudioLossy");
+			this.radioButtonAudioLossy.Name = "radioButtonAudioLossy";
+			this.radioButtonAudioLossy.TabStop = true;
+			this.toolTip1.SetToolTip(this.radioButtonAudioLossy, resources.GetString("radioButtonAudioLossy.ToolTip"));
+			this.radioButtonAudioLossy.UseVisualStyleBackColor = true;
+			this.radioButtonAudioLossy.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
+			// 
+			// radioButtonAudioHybrid
+			// 
+			resources.ApplyResources(this.radioButtonAudioHybrid, "radioButtonAudioHybrid");
+			this.radioButtonAudioHybrid.Name = "radioButtonAudioHybrid";
+			this.radioButtonAudioHybrid.TabStop = true;
+			this.toolTip1.SetToolTip(this.radioButtonAudioHybrid, resources.GetString("radioButtonAudioHybrid.ToolTip"));
+			this.radioButtonAudioHybrid.UseVisualStyleBackColor = true;
+			this.radioButtonAudioHybrid.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
+			// 
+			// radioButtonAudioLossless
+			// 
+			resources.ApplyResources(this.radioButtonAudioLossless, "radioButtonAudioLossless");
+			this.radioButtonAudioLossless.Name = "radioButtonAudioLossless";
+			this.radioButtonAudioLossless.TabStop = true;
+			this.toolTip1.SetToolTip(this.radioButtonAudioLossless, resources.GetString("radioButtonAudioLossless.ToolTip"));
+			this.radioButtonAudioLossless.UseVisualStyleBackColor = true;
+			this.radioButtonAudioLossless.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
+			// 
+			// labelFormat
+			// 
+			resources.ApplyResources(this.labelFormat, "labelFormat");
+			this.labelFormat.MinimumSize = new System.Drawing.Size(16, 16);
+			this.labelFormat.Name = "labelFormat";
+			// 
+			// comboBoxAudioFormat
+			// 
+			this.comboBoxAudioFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxAudioFormat.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxAudioFormat, "comboBoxAudioFormat");
+			this.comboBoxAudioFormat.Name = "comboBoxAudioFormat";
+			this.toolTip1.SetToolTip(this.comboBoxAudioFormat, resources.GetString("comboBoxAudioFormat.ToolTip"));
+			this.comboBoxAudioFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxAudioFormat_SelectedIndexChanged);
+			// 
+			// groupBoxCorrector
+			// 
+			this.groupBoxCorrector.Controls.Add(this.rbCorrectorLocateFiles);
+			this.groupBoxCorrector.Controls.Add(this.rbCorrectorChangeExtension);
+			this.groupBoxCorrector.Controls.Add(this.checkBoxCorrectorOverwrite);
+			this.groupBoxCorrector.Controls.Add(this.labelCorrectorFormat);
+			this.groupBoxCorrector.Controls.Add(this.comboBoxCorrectorFormat);
+			resources.ApplyResources(this.groupBoxCorrector, "groupBoxCorrector");
+			this.groupBoxCorrector.Name = "groupBoxCorrector";
+			this.groupBoxCorrector.TabStop = false;
+			// 
+			// rbCorrectorLocateFiles
+			// 
+			resources.ApplyResources(this.rbCorrectorLocateFiles, "rbCorrectorLocateFiles");
+			this.rbCorrectorLocateFiles.Name = "rbCorrectorLocateFiles";
+			this.rbCorrectorLocateFiles.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbCorrectorLocateFiles, resources.GetString("rbCorrectorLocateFiles.ToolTip"));
+			this.rbCorrectorLocateFiles.UseVisualStyleBackColor = true;
+			// 
+			// rbCorrectorChangeExtension
+			// 
+			resources.ApplyResources(this.rbCorrectorChangeExtension, "rbCorrectorChangeExtension");
+			this.rbCorrectorChangeExtension.Name = "rbCorrectorChangeExtension";
+			this.rbCorrectorChangeExtension.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbCorrectorChangeExtension, resources.GetString("rbCorrectorChangeExtension.ToolTip"));
+			this.rbCorrectorChangeExtension.UseVisualStyleBackColor = true;
+			this.rbCorrectorChangeExtension.CheckedChanged += new System.EventHandler(this.rbCorrectorChangeExtension_CheckedChanged);
+			// 
+			// checkBoxCorrectorOverwrite
+			// 
+			resources.ApplyResources(this.checkBoxCorrectorOverwrite, "checkBoxCorrectorOverwrite");
+			this.checkBoxCorrectorOverwrite.Name = "checkBoxCorrectorOverwrite";
+			this.toolTip1.SetToolTip(this.checkBoxCorrectorOverwrite, resources.GetString("checkBoxCorrectorOverwrite.ToolTip"));
+			this.checkBoxCorrectorOverwrite.UseVisualStyleBackColor = true;
+			// 
+			// labelCorrectorFormat
+			// 
+			resources.ApplyResources(this.labelCorrectorFormat, "labelCorrectorFormat");
+			this.labelCorrectorFormat.MinimumSize = new System.Drawing.Size(16, 16);
+			this.labelCorrectorFormat.Name = "labelCorrectorFormat";
+			// 
+			// comboBoxCorrectorFormat
+			// 
+			this.comboBoxCorrectorFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxCorrectorFormat.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxCorrectorFormat, "comboBoxCorrectorFormat");
+			this.comboBoxCorrectorFormat.Name = "comboBoxCorrectorFormat";
+			this.comboBoxCorrectorFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxCorrectorFormat_SelectedIndexChanged);
+			// 
+			// grpAction
+			// 
+			this.grpAction.Controls.Add(this.checkBoxAdvancedMode);
+			this.grpAction.Controls.Add(this.comboBoxScript);
+			this.grpAction.Controls.Add(this.rbActionCorrectFilenames);
+			this.grpAction.Controls.Add(this.rbActionCreateCUESheet);
+			this.grpAction.Controls.Add(this.rbActionVerifyAndEncode);
+			this.grpAction.Controls.Add(this.rbActionVerify);
+			this.grpAction.Controls.Add(this.rbActionEncode);
+			resources.ApplyResources(this.grpAction, "grpAction");
+			this.grpAction.Name = "grpAction";
+			this.grpAction.TabStop = false;
+			// 
+			// checkBoxAdvancedMode
+			// 
+			resources.ApplyResources(this.checkBoxAdvancedMode, "checkBoxAdvancedMode");
+			this.checkBoxAdvancedMode.Name = "checkBoxAdvancedMode";
+			this.checkBoxAdvancedMode.UseVisualStyleBackColor = true;
+			this.checkBoxAdvancedMode.CheckedChanged += new System.EventHandler(this.checkBoxAdvancedMode_CheckedChanged);
+			// 
+			// comboBoxScript
+			// 
+			this.comboBoxScript.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxScript.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxScript, "comboBoxScript");
+			this.comboBoxScript.Name = "comboBoxScript";
+			this.toolTip1.SetToolTip(this.comboBoxScript, resources.GetString("comboBoxScript.ToolTip"));
+			// 
+			// rbActionCorrectFilenames
+			// 
+			resources.ApplyResources(this.rbActionCorrectFilenames, "rbActionCorrectFilenames");
+			this.rbActionCorrectFilenames.Name = "rbActionCorrectFilenames";
+			this.rbActionCorrectFilenames.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbActionCorrectFilenames, resources.GetString("rbActionCorrectFilenames.ToolTip"));
+			this.rbActionCorrectFilenames.UseVisualStyleBackColor = true;
+			this.rbActionCorrectFilenames.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
+			// 
+			// rbActionCreateCUESheet
+			// 
+			resources.ApplyResources(this.rbActionCreateCUESheet, "rbActionCreateCUESheet");
+			this.rbActionCreateCUESheet.Name = "rbActionCreateCUESheet";
+			this.rbActionCreateCUESheet.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbActionCreateCUESheet, resources.GetString("rbActionCreateCUESheet.ToolTip"));
+			this.rbActionCreateCUESheet.UseVisualStyleBackColor = true;
+			this.rbActionCreateCUESheet.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
+			// 
+			// rbActionVerifyAndEncode
+			// 
+			resources.ApplyResources(this.rbActionVerifyAndEncode, "rbActionVerifyAndEncode");
+			this.rbActionVerifyAndEncode.Name = "rbActionVerifyAndEncode";
+			this.rbActionVerifyAndEncode.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbActionVerifyAndEncode, resources.GetString("rbActionVerifyAndEncode.ToolTip"));
+			this.rbActionVerifyAndEncode.UseVisualStyleBackColor = true;
+			this.rbActionVerifyAndEncode.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
+			// 
+			// rbActionVerify
+			// 
+			resources.ApplyResources(this.rbActionVerify, "rbActionVerify");
+			this.rbActionVerify.Name = "rbActionVerify";
+			this.toolTip1.SetToolTip(this.rbActionVerify, resources.GetString("rbActionVerify.ToolTip"));
+			this.rbActionVerify.UseVisualStyleBackColor = true;
+			this.rbActionVerify.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
+			// 
+			// rbActionEncode
+			// 
+			resources.ApplyResources(this.rbActionEncode, "rbActionEncode");
+			this.rbActionEncode.Checked = true;
+			this.rbActionEncode.Name = "rbActionEncode";
+			this.rbActionEncode.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbActionEncode, resources.GetString("rbActionEncode.ToolTip"));
+			this.rbActionEncode.UseVisualStyleBackColor = true;
+			this.rbActionEncode.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
+			// 
+			// btnAbout
+			// 
+			this.btnAbout.Image = global::JDP.Properties.Resources.information;
+			resources.ApplyResources(this.btnAbout, "btnAbout");
+			this.btnAbout.Name = "btnAbout";
+			this.btnAbout.UseVisualStyleBackColor = true;
+			this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
+			// 
+			// btnConvert
+			// 
+			resources.ApplyResources(this.btnConvert, "btnConvert");
+			this.btnConvert.Name = "btnConvert";
+			this.btnConvert.UseVisualStyleBackColor = true;
+			this.btnConvert.Click += new System.EventHandler(this.btnConvert_Click);
+			// 
 			// grpExtra
 			// 
 			this.grpExtra.Controls.Add(this.numericWriteOffset);
 			this.grpExtra.Controls.Add(this.txtPreGapLength);
 			this.grpExtra.Controls.Add(this.lblWriteOffset);
-			this.grpExtra.Controls.Add(this.label2);
+			this.grpExtra.Controls.Add(this.labelPregap);
 			this.grpExtra.Controls.Add(this.txtDataTrackLength);
-			this.grpExtra.Controls.Add(this.label1);
+			this.grpExtra.Controls.Add(this.labelDataTrack);
 			resources.ApplyResources(this.grpExtra, "grpExtra");
 			this.grpExtra.Name = "grpExtra";
 			this.grpExtra.TabStop = false;
@@ -599,11 +599,210 @@ namespace JDP {
             0,
             -2147483648});
 			this.numericWriteOffset.Name = "numericWriteOffset";
+			this.toolTip1.SetToolTip(this.numericWriteOffset, resources.GetString("numericWriteOffset.ToolTip"));
+			// 
+			// txtPreGapLength
+			// 
+			this.txtPreGapLength.Culture = new System.Globalization.CultureInfo("");
+			this.txtPreGapLength.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
+			this.txtPreGapLength.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Overwrite;
+			resources.ApplyResources(this.txtPreGapLength, "txtPreGapLength");
+			this.txtPreGapLength.Name = "txtPreGapLength";
+			this.txtPreGapLength.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
+			this.toolTip1.SetToolTip(this.txtPreGapLength, resources.GetString("txtPreGapLength.ToolTip"));
 			// 
 			// lblWriteOffset
 			// 
 			resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
 			this.lblWriteOffset.Name = "lblWriteOffset";
+			// 
+			// labelPregap
+			// 
+			resources.ApplyResources(this.labelPregap, "labelPregap");
+			this.labelPregap.Name = "labelPregap";
+			// 
+			// txtDataTrackLength
+			// 
+			this.txtDataTrackLength.Culture = new System.Globalization.CultureInfo("");
+			this.txtDataTrackLength.CutCopyMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
+			this.txtDataTrackLength.InsertKeyMode = System.Windows.Forms.InsertKeyMode.Overwrite;
+			resources.ApplyResources(this.txtDataTrackLength, "txtDataTrackLength");
+			this.txtDataTrackLength.Name = "txtDataTrackLength";
+			this.txtDataTrackLength.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
+			this.toolTip1.SetToolTip(this.txtDataTrackLength, resources.GetString("txtDataTrackLength.ToolTip"));
+			// 
+			// labelDataTrack
+			// 
+			resources.ApplyResources(this.labelDataTrack, "labelDataTrack");
+			this.labelDataTrack.Name = "labelDataTrack";
+			// 
+			// grpFreedb
+			// 
+			this.grpFreedb.Controls.Add(this.rbFreedbAlways);
+			this.grpFreedb.Controls.Add(this.rbFreedbIf);
+			this.grpFreedb.Controls.Add(this.rbFreedbNever);
+			resources.ApplyResources(this.grpFreedb, "grpFreedb");
+			this.grpFreedb.Name = "grpFreedb";
+			this.grpFreedb.TabStop = false;
+			// 
+			// rbFreedbAlways
+			// 
+			resources.ApplyResources(this.rbFreedbAlways, "rbFreedbAlways");
+			this.rbFreedbAlways.Name = "rbFreedbAlways";
+			this.rbFreedbAlways.TabStop = true;
+			this.rbFreedbAlways.UseVisualStyleBackColor = true;
+			// 
+			// rbFreedbIf
+			// 
+			resources.ApplyResources(this.rbFreedbIf, "rbFreedbIf");
+			this.rbFreedbIf.Name = "rbFreedbIf";
+			this.rbFreedbIf.TabStop = true;
+			this.rbFreedbIf.UseVisualStyleBackColor = true;
+			// 
+			// rbFreedbNever
+			// 
+			resources.ApplyResources(this.rbFreedbNever, "rbFreedbNever");
+			this.rbFreedbNever.Name = "rbFreedbNever";
+			this.rbFreedbNever.TabStop = true;
+			this.rbFreedbNever.UseVisualStyleBackColor = true;
+			// 
+			// btnResume
+			// 
+			resources.ApplyResources(this.btnResume, "btnResume");
+			this.btnResume.Name = "btnResume";
+			this.btnResume.UseVisualStyleBackColor = true;
+			this.btnResume.Click += new System.EventHandler(this.btnPause_Click);
+			// 
+			// btnPause
+			// 
+			resources.ApplyResources(this.btnPause, "btnPause");
+			this.btnPause.Name = "btnPause";
+			this.btnPause.UseVisualStyleBackColor = true;
+			this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
+			// 
+			// grpOutputStyle
+			// 
+			this.grpOutputStyle.Controls.Add(this.rbTracks);
+			this.grpOutputStyle.Controls.Add(this.rbEmbedCUE);
+			this.grpOutputStyle.Controls.Add(this.rbSingleFile);
+			resources.ApplyResources(this.grpOutputStyle, "grpOutputStyle");
+			this.grpOutputStyle.Name = "grpOutputStyle";
+			this.grpOutputStyle.TabStop = false;
+			// 
+			// rbTracks
+			// 
+			resources.ApplyResources(this.rbTracks, "rbTracks");
+			this.rbTracks.Name = "rbTracks";
+			this.rbTracks.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbTracks, resources.GetString("rbTracks.ToolTip"));
+			this.rbTracks.UseVisualStyleBackColor = true;
+			// 
+			// rbEmbedCUE
+			// 
+			resources.ApplyResources(this.rbEmbedCUE, "rbEmbedCUE");
+			this.rbEmbedCUE.Name = "rbEmbedCUE";
+			this.rbEmbedCUE.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbEmbedCUE, resources.GetString("rbEmbedCUE.ToolTip"));
+			this.rbEmbedCUE.UseVisualStyleBackColor = true;
+			this.rbEmbedCUE.CheckedChanged += new System.EventHandler(this.rbEmbedCUE_CheckedChanged);
+			// 
+			// rbSingleFile
+			// 
+			resources.ApplyResources(this.rbSingleFile, "rbSingleFile");
+			this.rbSingleFile.Checked = true;
+			this.rbSingleFile.Name = "rbSingleFile";
+			this.rbSingleFile.TabStop = true;
+			this.toolTip1.SetToolTip(this.rbSingleFile, resources.GetString("rbSingleFile.ToolTip"));
+			this.rbSingleFile.UseVisualStyleBackColor = true;
+			// 
+			// btnSettings
+			// 
+			this.btnSettings.Image = global::JDP.Properties.Resources.cog;
+			resources.ApplyResources(this.btnSettings, "btnSettings");
+			this.btnSettings.Name = "btnSettings";
+			this.btnSettings.UseVisualStyleBackColor = true;
+			this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
+			// 
+			// btnStop
+			// 
+			resources.ApplyResources(this.btnStop, "btnStop");
+			this.btnStop.Name = "btnStop";
+			this.btnStop.UseVisualStyleBackColor = true;
+			this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+			// 
+			// toolStrip1
+			// 
+			resources.ApplyResources(this.toolStrip1, "toolStrip1");
+			this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripSeparator1,
+            this.toolStripButton1,
+            this.toolStripButton2,
+            this.toolStripButton3,
+            this.toolStripButton4,
+            this.toolStripButton5,
+            this.toolStripSeparator3});
+			this.toolStrip1.Name = "toolStrip1";
+			this.toolStrip1.TextDirection = System.Windows.Forms.ToolStripTextDirection.Vertical90;
+			// 
+			// toolStripSeparator1
+			// 
+			resources.ApplyResources(this.toolStripSeparator1, "toolStripSeparator1");
+			this.toolStripSeparator1.Name = "toolStripSeparator1";
+			this.toolStripSeparator1.TextDirection = System.Windows.Forms.ToolStripTextDirection.Vertical90;
+			// 
+			// toolStripButton1
+			// 
+			resources.ApplyResources(this.toolStripButton1, "toolStripButton1");
+			this.toolStripButton1.BackColor = System.Drawing.SystemColors.Control;
+			this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripButton1.Image = global::JDP.Properties.Resources.folder;
+			this.toolStripButton1.Name = "toolStripButton1";
+			this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
+			// 
+			// toolStripButton2
+			// 
+			resources.ApplyResources(this.toolStripButton2, "toolStripButton2");
+			this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripButton2.Image = global::JDP.Properties.Resources.folder_add;
+			this.toolStripButton2.Name = "toolStripButton2";
+			this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+			// 
+			// toolStripButton3
+			// 
+			resources.ApplyResources(this.toolStripButton3, "toolStripButton3");
+			this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripButton3.Image = global::JDP.Properties.Resources.folder_feed;
+			this.toolStripButton3.Name = "toolStripButton3";
+			this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
+			// 
+			// toolStripButton4
+			// 
+			resources.ApplyResources(this.toolStripButton4, "toolStripButton4");
+			this.toolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripButton4.Image = global::JDP.Properties.Resources.folder_page;
+			this.toolStripButton4.Name = "toolStripButton4";
+			this.toolStripButton4.Click += new System.EventHandler(this.toolStripButton4_Click);
+			// 
+			// toolStripButton5
+			// 
+			resources.ApplyResources(this.toolStripButton5, "toolStripButton5");
+			this.toolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripButton5.Image = global::JDP.Properties.Resources.folder_delete;
+			this.toolStripButton5.Name = "toolStripButton5";
+			this.toolStripButton5.Click += new System.EventHandler(this.toolStripButton5_Click);
+			// 
+			// toolStripSeparator3
+			// 
+			resources.ApplyResources(this.toolStripSeparator3, "toolStripSeparator3");
+			this.toolStripSeparator3.Name = "toolStripSeparator3";
+			this.toolStripSeparator3.TextDirection = System.Windows.Forms.ToolStripTextDirection.Vertical90;
+			// 
+			// toolTip1
+			// 
+			this.toolTip1.AutoPopDelay = 15000;
+			this.toolTip1.InitialDelay = 500;
+			this.toolTip1.ReshowDelay = 100;
 			// 
 			// contextMenuStripFileTree
 			// 
@@ -637,151 +836,56 @@ namespace JDP {
 			resources.ApplyResources(this.resetToOriginalLocationToolStripMenuItem, "resetToOriginalLocationToolStripMenuItem");
 			this.resetToOriginalLocationToolStripMenuItem.Click += new System.EventHandler(this.resetToOriginalLocationToolStripMenuItem_Click);
 			// 
-			// panel1
+			// labelMotd
 			// 
-			resources.ApplyResources(this.panel1, "panel1");
-			this.panel1.Controls.Add(this.groupBoxCorrector);
-			this.panel1.Controls.Add(this.grpOutputPathGeneration);
-			this.panel1.Controls.Add(this.btnStop);
-			this.panel1.Controls.Add(this.btnConvert);
-			this.panel1.Controls.Add(this.grpAction);
-			this.panel1.Controls.Add(this.btnSettings);
-			this.panel1.Controls.Add(this.grpExtra);
-			this.panel1.Controls.Add(this.btnAbout);
-			this.panel1.Controls.Add(this.grpOutputStyle);
-			this.panel1.Controls.Add(this.grpFreedb);
-			this.panel1.Controls.Add(this.grpAudioOutput);
-			this.panel1.Controls.Add(this.btnPause);
-			this.panel1.Controls.Add(this.btnResume);
-			this.panel1.Name = "panel1";
-			// 
-			// groupBoxCorrector
-			// 
-			this.groupBoxCorrector.Controls.Add(this.rbCorrectorLocateFiles);
-			this.groupBoxCorrector.Controls.Add(this.rbCorrectorChangeExtension);
-			this.groupBoxCorrector.Controls.Add(this.checkBoxCorrectorOverwrite);
-			this.groupBoxCorrector.Controls.Add(this.labelCorrectorFormat);
-			this.groupBoxCorrector.Controls.Add(this.comboBoxCorrectorFormat);
-			resources.ApplyResources(this.groupBoxCorrector, "groupBoxCorrector");
-			this.groupBoxCorrector.Name = "groupBoxCorrector";
-			this.groupBoxCorrector.TabStop = false;
-			// 
-			// rbCorrectorLocateFiles
-			// 
-			resources.ApplyResources(this.rbCorrectorLocateFiles, "rbCorrectorLocateFiles");
-			this.rbCorrectorLocateFiles.Name = "rbCorrectorLocateFiles";
-			this.rbCorrectorLocateFiles.TabStop = true;
-			this.rbCorrectorLocateFiles.UseVisualStyleBackColor = true;
-			// 
-			// rbCorrectorChangeExtension
-			// 
-			resources.ApplyResources(this.rbCorrectorChangeExtension, "rbCorrectorChangeExtension");
-			this.rbCorrectorChangeExtension.Name = "rbCorrectorChangeExtension";
-			this.rbCorrectorChangeExtension.TabStop = true;
-			this.rbCorrectorChangeExtension.UseVisualStyleBackColor = true;
-			this.rbCorrectorChangeExtension.CheckedChanged += new System.EventHandler(this.rbCorrectorChangeExtension_CheckedChanged);
-			// 
-			// checkBoxCorrectorOverwrite
-			// 
-			resources.ApplyResources(this.checkBoxCorrectorOverwrite, "checkBoxCorrectorOverwrite");
-			this.checkBoxCorrectorOverwrite.Name = "checkBoxCorrectorOverwrite";
-			this.checkBoxCorrectorOverwrite.UseVisualStyleBackColor = true;
-			// 
-			// labelCorrectorFormat
-			// 
-			resources.ApplyResources(this.labelCorrectorFormat, "labelCorrectorFormat");
-			this.labelCorrectorFormat.MinimumSize = new System.Drawing.Size(16, 16);
-			this.labelCorrectorFormat.Name = "labelCorrectorFormat";
-			// 
-			// comboBoxCorrectorFormat
-			// 
-			this.comboBoxCorrectorFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboBoxCorrectorFormat.FormattingEnabled = true;
-			resources.ApplyResources(this.comboBoxCorrectorFormat, "comboBoxCorrectorFormat");
-			this.comboBoxCorrectorFormat.Name = "comboBoxCorrectorFormat";
-			this.comboBoxCorrectorFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxCorrectorFormat_SelectedIndexChanged);
-			// 
-			// radioButtonAudioLossless
-			// 
-			resources.ApplyResources(this.radioButtonAudioLossless, "radioButtonAudioLossless");
-			this.radioButtonAudioLossless.Name = "radioButtonAudioLossless";
-			this.radioButtonAudioLossless.TabStop = true;
-			this.radioButtonAudioLossless.UseVisualStyleBackColor = true;
-			this.radioButtonAudioLossless.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-			// 
-			// radioButtonAudioHybrid
-			// 
-			resources.ApplyResources(this.radioButtonAudioHybrid, "radioButtonAudioHybrid");
-			this.radioButtonAudioHybrid.Name = "radioButtonAudioHybrid";
-			this.radioButtonAudioHybrid.TabStop = true;
-			this.radioButtonAudioHybrid.UseVisualStyleBackColor = true;
-			this.radioButtonAudioHybrid.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-			// 
-			// radioButtonAudioLossy
-			// 
-			resources.ApplyResources(this.radioButtonAudioLossy, "radioButtonAudioLossy");
-			this.radioButtonAudioLossy.Name = "radioButtonAudioLossy";
-			this.radioButtonAudioLossy.TabStop = true;
-			this.radioButtonAudioLossy.UseVisualStyleBackColor = true;
-			this.radioButtonAudioLossy.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-			// 
-			// radioButtonAudioNone
-			// 
-			resources.ApplyResources(this.radioButtonAudioNone, "radioButtonAudioNone");
-			this.radioButtonAudioNone.Name = "radioButtonAudioNone";
-			this.radioButtonAudioNone.TabStop = true;
-			this.radioButtonAudioNone.UseVisualStyleBackColor = true;
-			this.radioButtonAudioNone.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-			// 
-			// comboBoxEncoder
-			// 
-			this.comboBoxEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.comboBoxEncoder.FormattingEnabled = true;
-			resources.ApplyResources(this.comboBoxEncoder, "comboBoxEncoder");
-			this.comboBoxEncoder.Name = "comboBoxEncoder";
-			this.comboBoxEncoder.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoder_SelectedIndexChanged);
-			// 
-			// checkBoxAdvancedMode
-			// 
-			resources.ApplyResources(this.checkBoxAdvancedMode, "checkBoxAdvancedMode");
-			this.checkBoxAdvancedMode.Name = "checkBoxAdvancedMode";
-			this.checkBoxAdvancedMode.UseVisualStyleBackColor = true;
-			this.checkBoxAdvancedMode.CheckedChanged += new System.EventHandler(this.checkBoxAdvancedMode_CheckedChanged);
+			resources.ApplyResources(this.labelMotd, "labelMotd");
+			this.labelMotd.MinimumSize = new System.Drawing.Size(150, 50);
+			this.labelMotd.Name = "labelMotd";
 			// 
 			// frmCUETools
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.grpInput);
-			this.Controls.Add(this.panel1);
-			this.Controls.Add(this.statusStrip1);
+			this.Controls.Add(this.toolStripContainer1);
 			this.MaximizeBox = false;
 			this.Name = "frmCUETools";
 			this.Load += new System.EventHandler(this.frmCUETools_Load);
 			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmCUETools_FormClosed);
-			this.grpOutputStyle.ResumeLayout(false);
-			this.grpOutputStyle.PerformLayout();
+			this.toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
+			this.toolStripContainer1.BottomToolStripPanel.PerformLayout();
+			this.toolStripContainer1.ContentPanel.ResumeLayout(false);
+			this.toolStripContainer1.LeftToolStripPanel.ResumeLayout(false);
+			this.toolStripContainer1.LeftToolStripPanel.PerformLayout();
+			this.toolStripContainer1.ResumeLayout(false);
+			this.toolStripContainer1.PerformLayout();
+			this.statusStrip2.ResumeLayout(false);
+			this.statusStrip2.PerformLayout();
+			this.splitContainer1.Panel1.ResumeLayout(false);
+			this.splitContainer1.Panel2.ResumeLayout(false);
+			this.splitContainer1.Panel2.PerformLayout();
+			this.splitContainer1.ResumeLayout(false);
+			this.grpInput.ResumeLayout(false);
+			this.grpInput.PerformLayout();
 			this.grpOutputPathGeneration.ResumeLayout(false);
 			this.grpOutputPathGeneration.PerformLayout();
 			this.grpAudioOutput.ResumeLayout(false);
 			this.grpAudioOutput.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).EndInit();
+			this.groupBoxCorrector.ResumeLayout(false);
+			this.groupBoxCorrector.PerformLayout();
 			this.grpAction.ResumeLayout(false);
 			this.grpAction.PerformLayout();
-			this.statusStrip1.ResumeLayout(false);
-			this.statusStrip1.PerformLayout();
-			this.grpFreedb.ResumeLayout(false);
-			this.grpFreedb.PerformLayout();
-			this.grpInput.ResumeLayout(false);
-			this.grpInput.PerformLayout();
 			this.grpExtra.ResumeLayout(false);
 			this.grpExtra.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).EndInit();
+			this.grpFreedb.ResumeLayout(false);
+			this.grpFreedb.PerformLayout();
+			this.grpOutputStyle.ResumeLayout(false);
+			this.grpOutputStyle.PerformLayout();
+			this.toolStrip1.ResumeLayout(false);
+			this.toolStrip1.PerformLayout();
 			this.contextMenuStripFileTree.ResumeLayout(false);
-			this.panel1.ResumeLayout(false);
-			this.groupBoxCorrector.ResumeLayout(false);
-			this.groupBoxCorrector.PerformLayout();
 			this.ResumeLayout(false);
-			this.PerformLayout();
 
 		}
 
@@ -792,31 +896,17 @@ namespace JDP {
 		private System.Windows.Forms.TextBox txtOutputPath;
 		private System.Windows.Forms.GroupBox grpOutputStyle;
 		private System.Windows.Forms.Button btnAbout;
-		private System.Windows.Forms.RadioButton rbGapsLeftOut;
-		private System.Windows.Forms.RadioButton rbGapsPrepended;
-		private System.Windows.Forms.RadioButton rbGapsAppended;
 		private System.Windows.Forms.RadioButton rbSingleFile;
 		private System.Windows.Forms.GroupBox grpOutputPathGeneration;
-		private System.Windows.Forms.RadioButton rbDontGenerate;
-		private System.Windows.Forms.RadioButton rbCreateSubdirectory;
-		private System.Windows.Forms.RadioButton rbAppendFilename;
-		private System.Windows.Forms.TextBox txtAppendFilename;
-		private System.Windows.Forms.TextBox txtCreateSubdirectory;
 		private System.Windows.Forms.GroupBox grpAudioOutput;
-		private System.Windows.Forms.RadioButton rbCustomFormat;
-		private System.Windows.Forms.TextBox txtCustomFormat;
 		private System.Windows.Forms.Button btnSettings;
 		private System.Windows.Forms.GroupBox grpAction;
 		private System.Windows.Forms.RadioButton rbActionVerify;
 		private System.Windows.Forms.RadioButton rbActionEncode;
-		private System.Windows.Forms.StatusStrip statusStrip1;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar2;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.RadioButton rbEmbedCUE;
 		private System.Windows.Forms.MaskedTextBox txtDataTrackLength;
-		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Label labelDataTrack;
 		private System.Windows.Forms.Button btnStop;
 		private System.Windows.Forms.Button btnPause;
 		private System.Windows.Forms.Button btnResume;
@@ -826,10 +916,9 @@ namespace JDP {
 		private System.Windows.Forms.RadioButton rbFreedbIf;
 		private System.Windows.Forms.RadioButton rbFreedbNever;
 		private System.Windows.Forms.MaskedTextBox txtPreGapLength;
-		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.Label labelPregap;
 		private CUEControls.FileSystemTreeView fileSystemTreeView1;
 		private System.Windows.Forms.TextBox txtInputPath;
-		private System.Windows.Forms.CheckBox chkMulti;
 		private System.Windows.Forms.GroupBox grpInput;
 		private System.Windows.Forms.GroupBox grpExtra;
 		private System.Windows.Forms.RadioButton rbActionCorrectFilenames;
@@ -839,15 +928,9 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripMenuItem SelectedNodeName;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 		private System.Windows.Forms.ToolStripMenuItem resetToOriginalLocationToolStripMenuItem;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelAR;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelFLAC;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelWV;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
 		private System.Windows.Forms.NumericUpDown numericWriteOffset;
 		private System.Windows.Forms.Label lblWriteOffset;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelProcessed;
 		private System.Windows.Forms.TextBox textBatchReport;
-		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.ComboBox comboBoxAudioFormat;
 		private System.Windows.Forms.Label labelFormat;
 		private System.Windows.Forms.GroupBox groupBoxCorrector;
@@ -863,6 +946,33 @@ namespace JDP {
 		private System.Windows.Forms.RadioButton radioButtonAudioLossless;
 		private System.Windows.Forms.ComboBox comboBoxEncoder;
 		private System.Windows.Forms.CheckBox checkBoxAdvancedMode;
+		private System.Windows.Forms.SplitContainer splitContainer1;
+		private System.Windows.Forms.ToolStripContainer toolStripContainer1;
+		private System.Windows.Forms.ToolStrip toolStrip1;
+		private System.Windows.Forms.ToolStripButton toolStripButton1;
+		private System.Windows.Forms.ToolStripButton toolStripButton2;
+		private System.Windows.Forms.ToolStripButton toolStripButton3;
+		private System.Windows.Forms.ToolStripButton toolStripButton4;
+		private System.Windows.Forms.ToolStripButton toolStripButton5;
+		private System.Windows.Forms.StatusStrip statusStrip2;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelProcessed;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelAR;
+		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar2;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+		private System.Windows.Forms.ComboBox comboBoxOutputFormat;
+		private System.Windows.Forms.CheckBox checkBoxDontGenerate;
+		private System.Windows.Forms.Label labelOutput;
+		private System.Windows.Forms.Label labelInput;
+		private System.Windows.Forms.Label labelOutputTemplate;
+		private System.Windows.Forms.TrackBar trackBarEncoderMode;
+		private System.Windows.Forms.Label labelEncoderMode;
+		private System.Windows.Forms.Label labelEncoderMaxMode;
+		private System.Windows.Forms.Label labelEncoderMinMode;
+		private System.Windows.Forms.RadioButton rbTracks;
+		private System.Windows.Forms.Label labelMotd;
 	}
 }
 

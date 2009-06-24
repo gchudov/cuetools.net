@@ -98,7 +98,6 @@ namespace CUERipper
 			// 
 			// toolStripStatusAr
 			// 
-			this.toolStripStatusAr.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			resources.ApplyResources(this.toolStripStatusAr, "toolStripStatusAr");
 			this.toolStripStatusAr.Name = "toolStripStatusAr";
 			// 

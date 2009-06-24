@@ -23,6 +23,24 @@ namespace CUETools.AccurateRip
 			Init();
 		}
 
+
+/*
+Like in the slow function, the outer loop enumerates samples, and the inner loops enumerate offsets.
+I move the IF's out of the innter loop by breaking up offsets into three categories.
+First range of offsets are those offsets, which can move our current sample into previous track.
+Second range of offsets are those offsets, which don't move our current sample out of current track.
+And the third range of offsets are those offsets, which move our current sample into next track.
+
+The first boundary is the (positive) distance from the track start to the current sample. E.G. the 13th sample of a track (currentOffset + si == 13) will be moved into previous track by any offset > 13, and will stay in the current track when offset is <= 13.
+
+The second boundary is the (negative) distance from the next track start to the current sample. (trackLength - (currentOffset + si)).
+
+I use Max/Min functions to make sure the boundaries don't leave the offset range that i'm using.
+
+For each range i calculate baseSum, which is an AR CRC of the current sample, using the last offset in this range.
+All the other CRC's in this offset range are calculated by consequently adding sampleValue to the previous sum.
+*/
+
 		unsafe private void CalculateAccurateRipCRCsSemifast(int* samples, uint count, int iTrack, uint currentOffset, uint previousOffset, uint trackLength)
 		{
 			fixed (uint* CRCsA = &_offsetedCRC[Math.Max(0, iTrack - 1), 0],

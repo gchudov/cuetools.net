@@ -42,7 +42,7 @@ namespace CUEControls
 	public partial class FileSystemTreeView : TreeView
 	{
 		private const string DummyNodeText = "DUMMY";
-		private ShellIconMgr m_icon_mgr;
+		private IIconManager m_icon_mgr;
 		private ExtraSpecialFolder[] m_extra_folders;
 
 		#region Public event declarations
@@ -65,7 +65,7 @@ namespace CUEControls
 		/// This property is the ICON manager for the icons
 		/// </summary>
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public ShellIconMgr IconManager
+		public IIconManager IconManager
 		{
 			get
 			{
@@ -188,7 +188,11 @@ namespace CUEControls
 
 			string specialPath = m_icon_mgr.GetFolderPath(ExtraSpecialFolder.Desktop);
 			if (specialPath != null && path.StartsWith(specialPath.ToUpper()))
+			{
+				if (path == specialPath.ToUpper())
+					return desktop;
 				top = desktop;
+			}
 
 			foreach (TreeNode node in desktop.Nodes)
 				if (node.Tag is ExtraSpecialFolder)
@@ -332,6 +336,8 @@ namespace CUEControls
 						catch { }
 					break;
 				case ExtraSpecialFolder.MyComputer:
+					if (m_icon_mgr.GetFolderPath(path) == "/")
+						break;
 					foreach (DriveInfo di in DriveInfo.GetDrives())
 						try { node.Nodes.Add(NewNode(new DirectoryInfo(di.Name), true)); }
 						catch { }

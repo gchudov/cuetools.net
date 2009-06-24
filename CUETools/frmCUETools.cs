@@ -44,7 +44,11 @@ namespace JDP {
 		public frmCUETools() {
 			_config = new CUEConfig();
 			InitializeComponent();
-			m_icon_mgr = new CUEControls.ShellIconMgr();
+			//splitContainer1.AutoScaleMode = AutoScaleMode.Font;
+			if (Type.GetType("Mono.Runtime", false) == null)
+				m_icon_mgr = new CUEControls.ShellIconMgr();
+			else
+				m_icon_mgr = new CUEControls.MonoIconMgr();
 			m_icon_mgr.SetExtensionIcon(".flac", global::JDP.Properties.Resources.flac1);
 			m_icon_mgr.SetExtensionIcon(".wv", global::JDP.Properties.Resources.wv1);
 			m_icon_mgr.SetExtensionIcon(".ape", global::JDP.Properties.Resources.ape);
@@ -69,13 +73,24 @@ namespace JDP {
 			}
 		}
 
-		private void AddNodesToBatch(TreeNodeCollection nodes)
+		private void AddCheckedNodesToBatch(TreeNodeCollection nodes)
 		{
 			foreach (TreeNode node in nodes)
 			{
 				if (node.IsExpanded)
-					AddNodesToBatch(node.Nodes);
-				else if ((chkMulti.CheckState == CheckState.Indeterminate || node.Checked) && node.Tag is FileSystemInfo)
+					AddCheckedNodesToBatch(node.Nodes);
+				else if (node.Checked && node.Tag is FileSystemInfo)
+					_batchPaths.Add(((FileSystemInfo)node.Tag).FullName);
+			}
+		}
+
+		private void AddAllNodesToBatch(TreeNodeCollection nodes)
+		{
+			foreach (TreeNode node in nodes)
+			{
+				if (node.IsExpanded)
+					AddAllNodesToBatch(node.Nodes);
+				else if (node.Tag is FileSystemInfo)
 					_batchPaths.Add(((FileSystemInfo)node.Tag).FullName);
 			}
 		}
@@ -83,6 +98,14 @@ namespace JDP {
 		private void btnConvert_Click(object sender, EventArgs e) {
 			if ((_workThread != null) && (_workThread.IsAlive))
 				return;
+
+			if (!comboBoxOutputFormat.Items.Contains(comboBoxOutputFormat.Text) && comboBoxOutputFormat.Text.Contains("%"))
+			{
+				comboBoxOutputFormat.Items.Insert(OutputPathTemplates.Length, comboBoxOutputFormat.Text);
+				if (comboBoxOutputFormat.Items.Count > OutputPathTemplates.Length + 10)
+					comboBoxOutputFormat.Items.RemoveAt(OutputPathTemplates.Length + 10);
+			}
+
 			if (!CheckWriteOffset()) return;
 			_batchReport = new StringBuilder();
 			_batchRoot = null;
@@ -112,22 +135,26 @@ namespace JDP {
 			//    }
 			//}
 
-			if (chkMulti.CheckState == CheckState.Unchecked && !Directory.Exists(txtInputPath.Text))
+			if (FileBrowserState != FileBrowserStateEnum.Checkboxes 
+				&& FileBrowserState != FileBrowserStateEnum.DragDrop 
+				&& !Directory.Exists(InputPath))
 			{
 				StartConvert();
 				return;
 			}
-			if (rbDontGenerate.Checked)
+			if (checkBoxDontGenerate.Checked)
 			{
 				MessageBox.Show(this, "Batch mode cannot be used with the output path set manually.",
 					"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
-			if (chkMulti.Checked)
-				AddNodesToBatch(fileSystemTreeView1.Nodes);
+			if (FileBrowserState == FileBrowserStateEnum.Checkboxes)
+				AddCheckedNodesToBatch(fileSystemTreeView1.Nodes);
+			else if (FileBrowserState == FileBrowserStateEnum.DragDrop)
+				AddAllNodesToBatch(fileSystemTreeView1.Nodes);
 			else
 			{
-				_batchRoot = txtInputPath.Text;
+				_batchRoot = InputPath;
 				if (Directory.Exists(_batchRoot) && !_batchRoot.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
 					_batchRoot = _batchRoot + Path.DirectorySeparatorChar;
 				_batchPaths.Add(_batchRoot);
@@ -194,7 +221,7 @@ namespace JDP {
 				string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 				if (files.Length == 1) {
 					((TextBox)sender).Text = files[0];
-					if (chkMulti.CheckState == CheckState.Unchecked)
+					if (FileBrowserState == FileBrowserStateEnum.Tree)
 						fileSystemTreeView1.SelectedPath = files[0];
 				}
 			}
@@ -209,32 +236,24 @@ namespace JDP {
 			}
 		}
 
-		private void txtInputPath_TextChanged(object sender, EventArgs e) {
+		private void txtInputPath_TextChanged(object sender, EventArgs e) 
+		{
 			UpdateOutputPath();
 			UpdateActions();
 		}
 
-		private void rbCreateSubdirectory_CheckedChanged(object sender, EventArgs e) {
+		private void checkBoxDontGenerate_CheckedChanged(object sender, EventArgs e)
+		{
 			UpdateOutputPath();
 		}
 
-		private void rbAppendFilename_CheckedChanged(object sender, EventArgs e) {
+		private void comboBoxOutputFormat_TextUpdate(object sender, EventArgs e)
+		{
 			UpdateOutputPath();
 		}
 
-		private void rbCustomFormat_CheckedChanged(object sender, EventArgs e) {
-			UpdateOutputPath();
-		}
-
-		private void txtCreateSubdirectory_TextChanged(object sender, EventArgs e) {
-			UpdateOutputPath();
-		}
-
-		private void txtAppendFilename_TextChanged(object sender, EventArgs e) {
-			UpdateOutputPath();
-		}
-
-		private void txtCustomFormat_TextChanged(object sender, EventArgs e) {
+		private void comboBoxOutputFormat_SelectedIndexChanged(object sender, EventArgs e)
+		{
 			UpdateOutputPath();
 		}
 
@@ -242,30 +261,54 @@ namespace JDP {
 			_batchPaths = new List<string>();
 			labelFormat.ImageList = m_icon_mgr.ImageList;
 			labelCorrectorFormat.ImageList = m_icon_mgr.ImageList;
+			MinimumWidth = MinimumSize.Width;
+			SplitterDistance = 207;
 			LoadSettings();
+			//splitContainer1.SplitterDistance = splitContainer1.Width - splitContainer1.SplitterWidth - grpOutputPathGeneration.Width - grpOutputPathGeneration.Margin.Horizontal - 8;
 
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			fileSystemTreeView1.CheckBoxes = chkMulti.CheckState == CheckState.Checked;
-			fileSystemTreeView1.IconManager = m_icon_mgr;
-			if (InputPath != "")
-			{
-				TreeNode node = null;
+			//fileSystemTreeView1.CheckBoxes = FileBrowserState == FileBrowserStateEnum.Checkboxes;
+			//fileSystemTreeView1.IconManager = m_icon_mgr;
+			//if (InputPath != "")
+			//{
+			//    TreeNode node = null;
+			//    try
+			//    {
+			//        node = fileSystemTreeView1.LookupNode(InputPath) ??
+			//            fileSystemTreeView1.LookupNode(Path.GetDirectoryName(InputPath));
+			//    }
+			//    catch
+			//    {
+			//    }
+			//    if (node != null)
+			//    {
+			//        fileSystemTreeView1.SelectedNode = node;
+			//        node.Expand();
+			//    }
+			//}
+
+			if (File.Exists(MOTDImagePath))
+				try { labelMotd.Image = Image.FromFile(MOTDImagePath); }
+				catch { }
+
+			if (File.Exists(MOTDTextPath))
 				try
 				{
-					node = fileSystemTreeView1.LookupNode(InputPath) ??
-						fileSystemTreeView1.LookupNode(Path.GetDirectoryName(InputPath));
+					using (StreamReader sr = new StreamReader(MOTDTextPath, Encoding.UTF8))
+					{
+						string version = sr.ReadLine();
+						if (version != MOTDVersion)
+						{
+							string motd = sr.ReadToEnd();
+							_batchReport = new StringBuilder();
+							_batchReport.Append(motd);
+							FileBrowserState = FileBrowserStateEnum.BatchLog;
+						}
+					}
 				}
-				catch
-				{
-				}
-				if (node != null)
-				{
-					fileSystemTreeView1.SelectedNode = node;
-					node.Expand();
-				}
-			}
+				catch { }
 
 			SetupControls(false);
 			UpdateOutputPath();
@@ -278,9 +321,17 @@ namespace JDP {
 		}
 
 
+		public enum FileBrowserStateEnum
+		{
+			Tree = 0,
+			Checkboxes = 1,
+			DragDrop = 2,
+			BatchLog = 3,
+			Hidden = 4
+		}
 		// ********************************************************************************
 
-		private CUEControls.ShellIconMgr m_icon_mgr;
+		private CUEControls.IIconManager m_icon_mgr;
 		List<string> _batchPaths;
 		StringBuilder _batchReport;
 		string _batchRoot;
@@ -291,6 +342,17 @@ namespace JDP {
 		Thread _workThread;
 		CUESheet _workClass;
 		CUEConfig _config;
+		int MinimumWidth;
+		int SplitterDistance;
+		FileBrowserStateEnum _fileBrowserState = FileBrowserStateEnum.BatchLog;
+		FileBrowserStateEnum _fileBrowserControlState = FileBrowserStateEnum.BatchLog;
+		DateTime lastMOTD;
+		string profilePath;
+		string [] OutputPathTemplates = {
+			"%music%\\Converted\\%artist%\\[%year% - ]%album%[ - %edition%]$ifgreater($max(%discnumber%,%totaldiscs%),1, - cd %discnumber%,)[' ('%unique%')']\\%artist% - %album%[ - %edition%].cue",
+			"[%directoryname%\\]%filename%-new[%unique%].cue",
+			"[%directoryname%\\]new[%unique%]\\%filename%.cue"
+		};
 
 		private bool IsCDROM(string pathIn)
 		{
@@ -303,17 +365,17 @@ namespace JDP {
 				_workThread = null;
 				if (_batchPaths.Count != 0)
 				{
-					txtInputPath.Text = _batchPaths[0];
+					InputPath = _batchPaths[0];
 					txtInputPath.SelectAll();
 				}
 
-				string pathIn = txtInputPath.Text;
+				string pathIn = InputPath;
 				//if (!File.Exists(pathIn) && !Directory.Exists(pathIn) && !IsCDROM(pathIn))
 				//    throw new Exception("Invalid input path.");
 				//if (Directory.Exists(pathIn) && !pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
 				//{
 				//    pathIn = pathIn + Path.DirectorySeparatorChar;
-				//    txtInputPath.Text = pathIn;
+				//    InputPath = pathIn;
 				//}
 
 				CUESheet cueSheet = new CUESheet(_config);
@@ -401,6 +463,30 @@ namespace JDP {
 			_batchReport.Append("\r\n");
 		}
 
+		string MOTDImagePath
+		{
+			get
+			{
+				return System.IO.Path.Combine(profilePath, "motd.jpg");
+			}
+		}
+
+		string MOTDTextPath
+		{
+			get
+			{
+				return System.IO.Path.Combine(profilePath, "motd.txt");
+			}
+		}
+
+		string MOTDVersion
+		{
+			get
+			{
+				return "CUETools 2.0.3";
+			}
+		}
+
 		private void WriteAudioFilesThread(object o) {
 			object[] p = (object[])o;
 
@@ -416,6 +502,88 @@ namespace JDP {
 
 			try
 			{
+				if (_config.checkForUpdates && DateTime.UtcNow - lastMOTD > TimeSpan.FromDays(1) && _batchReport.Length == 0)
+				{
+					this.Invoke((MethodInvoker)delegate()
+					{
+						toolStripStatusLabel1.Text = "Checking for updates...";
+					});
+					HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://cuetools.net/motd/motd.jpg");
+					req.Method = "GET";
+					try
+					{
+						using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
+						if (resp.StatusCode == HttpStatusCode.OK)
+						{
+							using (Stream respStream = resp.GetResponseStream())
+							using (FileStream motd = new FileStream(MOTDImagePath, FileMode.CreateNew, FileAccess.Write))
+							{
+								byte[] buff = new byte[0x8000];
+								do
+								{
+									int count = respStream.Read(buff, 0, buff.Length);
+									if (count == 0) break;
+									motd.Write(buff, 0, count);
+								} while (true);
+							}
+						}
+						else
+						{
+							File.Delete(MOTDImagePath);
+						}
+						lastMOTD = DateTime.UtcNow;
+					}
+					catch { }
+					
+					this.Invoke((MethodInvoker)delegate() 
+					{ 
+						if (File.Exists(MOTDImagePath))
+							try { labelMotd.Image = Image.FromFile(MOTDImagePath); }
+							catch { }
+						else
+							labelMotd.Image = null;
+					});
+
+					req = (HttpWebRequest)WebRequest.Create("http://cuetools.net/motd/motd.txt");
+					req.Method = "GET";
+					try
+					{
+						using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
+						{
+							if (resp.StatusCode == HttpStatusCode.OK)
+							{
+								using (Stream respStream = resp.GetResponseStream())
+								using (FileStream motd = new FileStream(MOTDTextPath, FileMode.CreateNew, FileAccess.Write))
+								using (StreamReader sr = new StreamReader(respStream, Encoding.UTF8))
+								using (StreamWriter sw = new StreamWriter(motd, Encoding.UTF8))
+								{
+									string motdText = sr.ReadToEnd();
+									sw.Write(motdText);
+								}
+							}
+							else
+							{
+								File.Delete(MOTDTextPath);
+							}
+						}
+						lastMOTD = DateTime.UtcNow;
+					}
+					catch { }
+					if (File.Exists(MOTDTextPath))
+						try 
+						{
+							using (StreamReader sr = new StreamReader(MOTDTextPath, Encoding.UTF8))
+							{
+								string version = sr.ReadLine();
+								if (version != MOTDVersion)
+								{
+									string motd = sr.ReadToEnd();
+									_batchReport.Append(motd);
+								}
+							}
+						}
+						catch { }
+				}
 				if (action == CUEAction.CreateDummyCUE)
 				{
 					if (Directory.Exists(pathIn))
@@ -448,7 +616,8 @@ namespace JDP {
 							cueSheet.Open(fileGroup.main.FullName);
 							cueSheetContents = cueSheet.CUESheetContents();
 							cueSheet.Close();
-						} else
+						}
+						else
 							cueSheetContents = CUESheet.CreateDummyCUESheet(_config, fileGroup);
 						string fullCueName;
 						if (fileGroup.type == FileGroupInfoType.FileWithCUE)
@@ -507,7 +676,7 @@ namespace JDP {
 									while ((lineStr = sr.ReadLine()) != null)
 									{
 										CUELine line = new CUELine(lineStr);
-										if (line.Params.Count == 3 && line.Params[0].ToUpper() == "FILE" 
+										if (line.Params.Count == 3 && line.Params[0].ToUpper() == "FILE"
 											&& (line.Params[2].ToUpper() != "BINARY" && line.Params[2].ToUpper() != "MOTOROLA")
 											)
 											sw.WriteLine("FILE \"" + Path.ChangeExtension(line.Params[1], "." + extension) + "\" WAVE");
@@ -541,7 +710,8 @@ namespace JDP {
 						}
 						else
 							BatchLog("no changes.", pathIn);
-					} else
+					}
+					else
 						throw new Exception("invalid path");
 				}
 				else
@@ -552,7 +722,7 @@ namespace JDP {
 							throw new Exception("is a directory");
 						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, pathIn);
 						int directoriesFound = 0, cueSheetsFound = 0;
-						foreach(FileGroupInfo fileGroup in fileGroups)
+						foreach (FileGroupInfo fileGroup in fileGroups)
 							if (fileGroup.type == FileGroupInfoType.Folder)
 								_batchPaths.Insert(++directoriesFound, fileGroup.main.FullName);
 						foreach (FileGroupInfo fileGroup in fileGroups)
@@ -609,10 +779,14 @@ namespace JDP {
 								}
 							}
 							UpdateOutputPath(
+								cueSheet.Tags,
 								pathIn,
-								cueSheet.Year != "" ? cueSheet.Year : "YYYY",
+								General.EmptyStringToNull(cueSheet.Year),
 								cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist",
-								cueSheet.Title != "" ? cueSheet.Title : "Unknown Title");
+								cueSheet.Title != "" ? cueSheet.Title : "Unknown Title",
+								General.EmptyStringToNull(cueSheet.DiscNumber),
+								General.EmptyStringToNull(cueSheet.TotalDiscs)
+								);
 							pathOut = txtOutputPath.Text;
 						});
 
@@ -710,7 +884,7 @@ namespace JDP {
 										uint tracksMatch;
 										int bestOffset;
 										processor.FindBestOffset(processor.Config.encodeWhenConfidence, false, out tracksMatch, out bestOffset);
-										if (tracksMatch * 100 >= processor.Config.encodeWhenPercent * processor.TrackCount &&  (!_config.encodeWhenZeroOffset || bestOffset == 0))
+										if (tracksMatch * 100 >= processor.Config.encodeWhenPercent * processor.TrackCount && (!_config.encodeWhenZeroOffset || bestOffset == 0))
 										{
 											processor.Action = CUEAction.VerifyAndConvert;
 											status = processor.Go();
@@ -720,7 +894,7 @@ namespace JDP {
 							}
 							else
 								status = cueSheet.ExecuteScript(script.code);
-								
+
 							//if (_batchPaths.Count > 0)
 							{
 								_batchProcessed++;
@@ -728,7 +902,8 @@ namespace JDP {
 							}
 							cueSheet.CheckStop();
 						}
-					} else
+					}
+					else
 						throw new Exception("invalid path");
 				}
 				this.Invoke((MethodInvoker)delegate()
@@ -743,21 +918,30 @@ namespace JDP {
 						}
 						else if (action == CUEAction.CreateDummyCUE || action == CUEAction.CorrectFilenames)
 						{
-							frmReport reportForm = new frmReport();
-							reportForm.Message = _batchReport.ToString();
-							reportForm.ShowDialog(this);
+							FileBrowserState = FileBrowserStateEnum.BatchLog;
+							//frmReport reportForm = new frmReport();
+							//reportForm.Message = _batchReport.ToString();
+							//reportForm.ShowDialog(this);
 						}
 						else if (cueSheet.Action == CUEAction.Verify ||
 							(cueSheet.Action == CUEAction.VerifyAndConvert && audioEncoderType != AudioEncoderType.NoAudio))
 						{
-							frmReport reportForm = new frmReport();
-							StringWriter sw = new StringWriter();
-							cueSheet.GenerateAccurateRipLog(sw);
-							if (status != null)
-								reportForm.Text += ": " + status;
-							reportForm.Message = sw.ToString();
-							sw.Close();
-							reportForm.ShowDialog(this);
+							using (StringWriter sw = new StringWriter())
+							{
+								cueSheet.GenerateAccurateRipLog(sw);
+								_batchReport.Append(sw.ToString());
+							}
+							FileBrowserState = FileBrowserStateEnum.BatchLog;
+
+							//frmReport reportForm = new frmReport();
+							//StringWriter sw = new StringWriter();
+							//cueSheet.GenerateAccurateRipLog(sw);
+							//if (status != null)
+							//    reportForm.Text += ": " + status;
+							//reportForm.Message = sw.ToString();
+							//_batchReport.Append(sw.ToString());
+							//sw.Close();
+							//reportForm.ShowDialog(this);
 						}
 						else
 							ShowFinishedMessage(cueSheet.PaddedToFrame);
@@ -807,9 +991,10 @@ namespace JDP {
 				this.BeginInvoke((MethodInvoker)delegate() {
 					if (_batchPaths.Count == 0) {
 						SetupControls(false);
-						frmReport reportForm = new frmReport();
-						reportForm.Message = _batchReport.ToString();
-						reportForm.ShowDialog(this);
+						FileBrowserState = FileBrowserStateEnum.BatchLog;
+						//frmReport reportForm = new frmReport();
+						//reportForm.Message = _batchReport.ToString();
+						//reportForm.ShowDialog(this);
 						//ShowBatchDoneMessage();
 					}
 					else {
@@ -832,17 +1017,17 @@ namespace JDP {
 			bool converting = (SelectedAction == CUEAction.Convert || SelectedAction == CUEAction.VerifyAndConvert);
 			bool verifying = (SelectedAction == CUEAction.Verify || SelectedAction == CUEAction.VerifyAndConvert);
 			//grpInput.Enabled = !running;
+			toolStrip1.Enabled = !running;
 			fileSystemTreeView1.Enabled = !running;
 			txtInputPath.Enabled = !running;
-			txtInputPath.ReadOnly = chkMulti.Checked;
-			chkMulti.Enabled = !running;
+			txtInputPath.ReadOnly = FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes;
 			grpExtra.Enabled = !running && (converting || verifying);
 			groupBoxCorrector.Enabled = !running && SelectedAction == CUEAction.CorrectFilenames;
 			grpOutputPathGeneration.Enabled = !running;
 			grpAudioOutput.Enabled = !running && converting;
 			grpAction.Enabled = !running;
 			grpOutputStyle.Enabled = !running && converting;
-			grpFreedb.Enabled = !running && !chkMulti.Checked && converting;
+			grpFreedb.Enabled = !running && !(FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes) && converting;
 			txtDataTrackLength.Enabled = !running && verifying;
 			txtPreGapLength.Enabled = !running;
 			btnAbout.Enabled = !running;
@@ -855,19 +1040,22 @@ namespace JDP {
 			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
 			toolStripStatusLabelAR.Visible = false;			
-			if (_batchPaths.Count > 0)
+			if (_batchPaths.Count > 0 || FileBrowserState == FileBrowserStateEnum.BatchLog)
 			{
 				fileSystemTreeView1.Visible = false;
 				textBatchReport.Visible = true;
 				textBatchReport.ReadOnly = true;
-				textBatchReport.Text = _batchReport.ToString();
+				if (_batchReport != null)
+					textBatchReport.Text = _batchReport.ToString();
+				else
+					textBatchReport.Text = "";
 				textBatchReport.SelectAll();
 				textBatchReport.ScrollToCaret();
 				//toolStripStatusLabelProcessed.Visible = true;
 				//toolStripStatusLabelProcessed.Text = "Processed: " + _batchProcessed.ToString();
 				//toolStripStatusLabelProcessed.ToolTipText = _batchReport.ToString();
 			}
-			//else if (chkMulti.CheckState == CheckState.Indeterminate)
+			//else if (FileBrowserState == FileBrowserStateEnum.DragDrop)
 			//{
 			//    fileSystemTreeView1.Visible = false;
 			//    textBatchReport.Visible = true;
@@ -875,15 +1063,15 @@ namespace JDP {
 			//}
 			else
 			{
-				bool wasHidden = !fileSystemTreeView1.Visible;
+				//bool wasHidden = !fileSystemTreeView1.Visible;
 				fileSystemTreeView1.Visible = true;
 				toolStripStatusLabelProcessed.Visible = false;
 				textBatchReport.Visible = false;
-				if (wasHidden && fileSystemTreeView1.SelectedPath != null)
-				{
-					txtInputPath.Text = fileSystemTreeView1.SelectedPath;
-					txtInputPath.SelectAll();
-				}
+				//if (wasHidden && fileSystemTreeView1.SelectedPath != null)
+				//{
+				//    InputPath = fileSystemTreeView1.SelectedPath;
+				//    txtInputPath.SelectAll();
+				//}
 			}
 
 			if (!running)
@@ -944,15 +1132,20 @@ namespace JDP {
 
 		private void LoadSettings() {
 			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath);
+			profilePath = sr.ProfilePath;
 			_config.Load(sr);
+			lastMOTD = sr.LoadDate("LastMOTD") ?? DateTime.FromBinary(0);
 			_defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
 			_defaultLossyFormat = sr.Load("DefaultLossyFormat") ?? "mp3";
 			_defaultHybridFormat = sr.Load("DefaultHybridFormat") ?? "lossy.flac";
 			_defaultNoAudioFormat = sr.Load("DefaultNoAudioFormat") ?? "wav";
-			txtCreateSubdirectory.Text = sr.Load("OutputSubdirectory") ?? "New";
-			txtAppendFilename.Text = sr.Load("OutputFilenameSuffix") ?? "-New";
-			txtCustomFormat.Text = sr.Load("OutputCustomFormat") ?? "%music%\\Converted\\%artist%\\%year% - %album%\\%artist% - %album%.cue";
-			SelectedOutputPathGeneration = (OutputPathGeneration?)sr.LoadInt32("OutputPathGeneration", null, null) ?? OutputPathGeneration.CustomFormat;
+			int iFormat, nFormats = sr.LoadInt32("OutputPathTemplates", 0, 10) ?? 0;
+			for (iFormat = 0; iFormat < OutputPathTemplates.Length; iFormat++)
+				comboBoxOutputFormat.Items.Add(OutputPathTemplates[iFormat]);
+			for (iFormat = nFormats - 1; iFormat >= 0; iFormat --)
+				comboBoxOutputFormat.Items.Add(sr.Load(string.Format("OutputPathTemplate{0}", iFormat)) ?? "");
+			comboBoxOutputFormat.Text = sr.Load("OutputPathTemplate") ?? comboBoxOutputFormat.Items[0].ToString();
+			checkBoxDontGenerate.Checked = sr.LoadBoolean("DontGenerate") ?? false;
 			SelectedOutputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? AudioEncoderType.Lossless;
 			SelectedOutputAudioFormat = sr.Load("OutputAudioFmt") ?? "flac";
 			SelectedAction = (CUEAction?)sr.LoadInt32("AccurateRipMode", null, null) ?? CUEAction.VerifyAndConvert;
@@ -960,7 +1153,7 @@ namespace JDP {
 			numericWriteOffset.Value = sr.LoadInt32("WriteOffset", null, null) ?? 0;
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
-			chkMulti.CheckState = (CheckState) (sr.LoadInt32("BatchProcessing", (int) CheckState.Unchecked, (int) CheckState.Indeterminate) ?? (int) CheckState.Unchecked);
+			FileBrowserState = (FileBrowserStateEnum)(sr.LoadInt32("FileBrowserState", (int)FileBrowserStateEnum.Tree, (int)FileBrowserStateEnum.Hidden) ?? (int)FileBrowserStateEnum.Tree);
 			switch (sr.LoadInt32("FreedbLookup", null, null) ?? 2)
 			{
 				case 0: rbFreedbNever.Checked = true; break;
@@ -981,19 +1174,24 @@ namespace JDP {
 			Top = sr.LoadInt32("Top", 0, null) ?? Top;
 			Left = sr.LoadInt32("Left", 0, null) ?? Left;
 			PerformLayout();
+			if (InputPath == "")
+				InputPath = sr.Load("InputPath") ?? "";
 		}
 
 		private void SaveSettings() {
 			SettingsWriter sw = new SettingsWriter("CUE Tools", "settings.txt", Application.ExecutablePath);
 			SaveScripts(SelectedAction);
+			sw.Save("LastMOTD", lastMOTD);
+			sw.Save("InputPath", InputPath);
 			sw.Save("DefaultLosslessFormat", _defaultLosslessFormat);
 			sw.Save("DefaultLossyFormat", _defaultLossyFormat);
 			sw.Save("DefaultHybridFormat", _defaultHybridFormat);
 			sw.Save("DefaultNoAudioFormat", _defaultNoAudioFormat);
-			sw.Save("OutputPathGeneration", (int)SelectedOutputPathGeneration);
-			sw.Save("OutputSubdirectory", txtCreateSubdirectory.Text);
-			sw.Save("OutputFilenameSuffix", txtAppendFilename.Text);
-			sw.Save("OutputCustomFormat", txtCustomFormat.Text);
+			sw.Save("DontGenerate", checkBoxDontGenerate.Checked);
+			sw.Save("OutputPathTemplates", comboBoxOutputFormat.Items.Count - OutputPathTemplates.Length);
+			for (int iFormat = comboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathTemplates.Length; iFormat--)
+				sw.Save(string.Format("OutputPathTemplate{0}", iFormat - OutputPathTemplates.Length), comboBoxOutputFormat.Items[iFormat].ToString());
+			sw.Save("OutputPathTemplate", comboBoxOutputFormat.Text);
 			sw.Save("OutputAudioFmt", SelectedOutputAudioFormat);
 			sw.Save("OutputAudioType", (int)SelectedOutputAudioType);
 			sw.Save("AccurateRipMode", (int)SelectedAction);
@@ -1001,7 +1199,7 @@ namespace JDP {
 			sw.Save("WriteOffset", (int)numericWriteOffset.Value);
 			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
 			sw.Save("ReducePriority", _reducePriority);
-			sw.Save("BatchProcessing", (int)chkMulti.CheckState);
+			sw.Save("FileBrowserState", (int)FileBrowserState);
 			sw.Save("FreedbLookup", rbFreedbNever.Checked ? 0 : rbFreedbIf.Checked ? 1 : 2);
 			sw.Save("CorrectorLookup", rbCorrectorLocateFiles.Checked ? 0 : 1);
 			sw.Save("CorrectorOverwrite", checkBoxCorrectorOverwrite.Checked);
@@ -1068,7 +1266,11 @@ namespace JDP {
 			}
 
 			find.Add("%F");
+			find.Add("%filename%");
+			find.Add("%directoryname%");
 			replace.Add(Path.GetFileNameWithoutExtension(inputPath));
+			replace.Add(Path.GetFileNameWithoutExtension(inputPath));
+			replace.Add(General.EmptyStringToNull(Path.GetDirectoryName(inputPath)));
 		}
 
 		private string GetDirectoryElements(string dir, int first, int last) {
@@ -1120,36 +1322,15 @@ namespace JDP {
 
 		private CUEStyle SelectedCUEStyle {
 			get {
-				if (rbGapsAppended.Checked)	 return CUEStyle.GapsAppended;
-				if (rbGapsPrepended.Checked) return CUEStyle.GapsPrepended;
-				if (rbGapsLeftOut.Checked)	 return CUEStyle.GapsLeftOut;
 				if (rbEmbedCUE.Checked)		return CUEStyle.SingleFileWithCUE;
-											 return CUEStyle.SingleFile;
+				if (rbSingleFile.Checked)   return CUEStyle.SingleFile;
+				return _config.gapsHandling;
 			}
 			set {
 				switch (value) {
 					case CUEStyle.SingleFileWithCUE: rbEmbedCUE.Checked = true; break;
 					case CUEStyle.SingleFile:	 rbSingleFile.Checked = true; break;
-					case CUEStyle.GapsAppended:	 rbGapsAppended.Checked = true; break;
-					case CUEStyle.GapsPrepended: rbGapsPrepended.Checked = true; break;
-					case CUEStyle.GapsLeftOut:	 rbGapsLeftOut.Checked = true; break;
-				}
-			}
-		}
-
-		private OutputPathGeneration SelectedOutputPathGeneration {
-			get {
-				if (rbCreateSubdirectory.Checked) return OutputPathGeneration.CreateSubdirectory;
-				if (rbAppendFilename.Checked)	  return OutputPathGeneration.AppendFilename;
-				if (rbCustomFormat.Checked)		  return OutputPathGeneration.CustomFormat;
-												  return OutputPathGeneration.Disabled;
-			}
-			set {
-				switch (value) {
-					case OutputPathGeneration.CreateSubdirectory: rbCreateSubdirectory.Checked = true; break;
-					case OutputPathGeneration.AppendFilename:	  rbAppendFilename.Checked = true; break;
-					case OutputPathGeneration.CustomFormat:		  rbCustomFormat.Checked = true; break;
-					case OutputPathGeneration.Disabled:			  rbDontGenerate.Checked = true; break;
+					default: rbTracks.Checked = true; break;
 				}
 			}
 		}
@@ -1209,6 +1390,121 @@ namespace JDP {
 			}
 		}
 
+		private FileBrowserStateEnum FileBrowserState
+		{
+			get
+			{
+				return _fileBrowserState;
+			}
+			set
+			{
+				toolStripButton1.BackColor = SystemColors.Control;
+				toolStripButton2.BackColor = SystemColors.Control;
+				toolStripButton3.BackColor = SystemColors.Control;
+				toolStripButton4.BackColor = SystemColors.Control;
+				toolStripButton5.BackColor = SystemColors.Control;
+				ToolStripButton btn;
+				switch (value)
+				{
+					case FileBrowserStateEnum.Tree: btn = toolStripButton1; break;
+					case FileBrowserStateEnum.Checkboxes: btn = toolStripButton2; break;
+					case FileBrowserStateEnum.DragDrop: btn = toolStripButton3; break;
+					case FileBrowserStateEnum.BatchLog: btn = toolStripButton4; break;
+					case FileBrowserStateEnum.Hidden: btn = toolStripButton5; break;
+					default: return;
+				}
+				btn.BackColor = SystemColors.ButtonShadow;
+				grpInput.Text = btn.Text;
+
+				if (value == _fileBrowserState)
+					return;
+
+				Application.UseWaitCursor = true;
+
+				if (value != FileBrowserStateEnum.Hidden && _fileBrowserState == FileBrowserStateEnum.Hidden)
+				{
+					MinimumSize = new Size(MinimumWidth, MinimumSize.Height);
+					MaximumSize = new Size(MinimumWidth * 2, MinimumSize.Height);
+					Width = MinimumSize.Width;
+					splitContainer1.Panel1Collapsed = false;
+					splitContainer1.SplitterDistance = SplitterDistance;
+					PerformLayout();
+				}
+
+				if (value == FileBrowserStateEnum.Hidden && _fileBrowserState != FileBrowserStateEnum.Hidden)
+				{
+					splitContainer1.Panel1Collapsed = true;
+					Width = MinimumSize.Width;
+					MinimumSize = new Size(MinimumWidth - SplitterDistance, MinimumSize.Height);
+					//MinimumSize = new Size(Width - splitContainer1.Panel1.Width, MinimumSize.Height);
+					MaximumSize = MinimumSize;
+					//PerformLayout();
+				}
+
+				switch (value)
+				{
+					case FileBrowserStateEnum.Tree:
+					case FileBrowserStateEnum.Checkboxes:
+						if (_fileBrowserControlState != value)
+						{
+							fileSystemTreeView1.CheckBoxes = value == FileBrowserStateEnum.Checkboxes;
+							if (_fileBrowserControlState != FileBrowserStateEnum.Tree &&
+								_fileBrowserControlState != FileBrowserStateEnum.Checkboxes)
+							{
+								fileSystemTreeView1.Nodes.Clear();
+								fileSystemTreeView1.IconManager = m_icon_mgr;
+								if (InputPath != "")
+								{
+									TreeNode node = null;
+									try
+									{
+										node = fileSystemTreeView1.LookupNode(InputPath) ??
+											fileSystemTreeView1.LookupNode(Path.GetDirectoryName(InputPath));
+									}
+									catch
+									{
+									}
+									if (node != null)
+									{
+										fileSystemTreeView1.SelectedNode = node;
+										node.Expand();
+									}
+								}
+							}
+							if (fileSystemTreeView1.Nodes.Count > 0)
+								fileSystemTreeView1.Nodes[0].Expand();
+							if (value == FileBrowserStateEnum.Checkboxes
+								&& fileSystemTreeView1.SelectedNode != null
+								&& fileSystemTreeView1.SelectedNode.Tag is FileSystemInfo)
+							{
+								fileSystemTreeView1.SelectedNode.Checked = true;
+								fileSystemTreeView1.SelectedNode.Expand();
+							}
+							_fileBrowserControlState = value;
+						}
+						fileSystemTreeView1.Select();
+						break;
+					case FileBrowserStateEnum.DragDrop:
+						if (_fileBrowserControlState != value)
+						{
+							fileSystemTreeView1.CheckBoxes = false;
+							fileSystemTreeView1.Nodes.Clear();
+							int icon = m_icon_mgr.GetIconIndex(CUEControls.ExtraSpecialFolder.Desktop, true);
+							fileSystemTreeView1.Nodes.Add(null, "Drag the files here", icon, icon);
+							fileSystemTreeView1.IconManager = m_icon_mgr;
+							_fileBrowserControlState = value;
+						}
+						fileSystemTreeView1.Select();
+					    break;
+					case FileBrowserStateEnum.BatchLog:
+					case FileBrowserStateEnum.Hidden:
+						break;
+				}
+				Application.UseWaitCursor = false;
+				_fileBrowserState = value;
+			}
+		}
+
 		private CUEAction SelectedAction
 		{
 			get
@@ -1243,31 +1539,52 @@ namespace JDP {
 			}
 		}
 
-		private void UpdateOutputPath() {
-			UpdateOutputPath(txtInputPath.Text, "YYYY", "Artist", "Album");
+		private void UpdateOutputPath() {			 
+			UpdateOutputPath(new NameValueCollection(), InputPath, null, "Artist", "Album", null, null);
 		}
 
-		private void UpdateOutputPath(string pathIn, string year, string artist, string album) {
+		private void UpdateOutputPath(NameValueCollection tags, string pathIn, string year, string artist, string album, string disc, string totaldiscs)
+		{
 			/* if (rbArVerify.Checked)
 			{
-				txtOutputPath.Text = txtInputPath.Text;
+				txtOutputPath.Text = InputPath;
 				txtOutputPath.ReadOnly = true;
 				btnBrowseOutput.Enabled = false;
 			}
-			else */ if (rbDontGenerate.Checked)
+			else */
+			if (checkBoxDontGenerate.Checked)
 			{
 				txtOutputPath.ReadOnly = false;
+				comboBoxOutputFormat.Enabled = false;
 				btnBrowseOutput.Enabled = true;
 			}
 			else
 			{
 				txtOutputPath.ReadOnly = true;
+				comboBoxOutputFormat.Enabled =
+					SelectedAction != CUEAction.CorrectFilenames &&
+					SelectedAction != CUEAction.CreateDummyCUE &&
+					(SelectedAction != CUEAction.Verify || !_config.arLogToSourceFolder);
+
 				btnBrowseOutput.Enabled = false;
-				txtOutputPath.Text = GenerateOutputPath(pathIn, year, artist, album);
+				txtOutputPath.Text = GenerateOutputPath(tags, pathIn, year, artist, album, disc, totaldiscs, null);
+				int unique = 1;
+				try
+				{
+					while (File.Exists(txtOutputPath.Text))
+					{
+						string newPath = GenerateOutputPath(tags, pathIn, year, artist, album, disc, totaldiscs, unique.ToString());
+						if (newPath == txtOutputPath.Text)
+							break;
+						txtOutputPath.Text = newPath;
+						unique++;
+					}
+				}
+				catch { }
 			}
 		}
 
-		private string GenerateOutputPath(string pathIn, string year, string artist, string album) 
+		private string GenerateOutputPath(NameValueCollection tags, string pathIn, string year, string artist, string album, string disc, string totaldiscs, string unique)
 		{
 			if (!IsCDROM(pathIn) && !File.Exists(pathIn) && !Directory.Exists(pathIn))
 				return "";
@@ -1306,39 +1623,48 @@ namespace JDP {
 					else
 						ext = ".20bit" + ext;
 				}
-				
-				if (rbCreateSubdirectory.Checked) {
-					pathOut = Path.Combine(Path.Combine(dir, txtCreateSubdirectory.Text), file + ext);
-				}
-				else if (rbAppendFilename.Checked) {
-					pathOut = Path.Combine(dir, file + txtAppendFilename.Text + ext);
-				}
-				else if (rbCustomFormat.Checked) {
-					string format = txtCustomFormat.Text;
-					List<string> find = new List<string>();
-					List<string> replace = new List<string>();
-					bool rs = _config.replaceSpaces;
 
-					find.Add("%music%");
-					find.Add("%artist%");
-					find.Add("%D");
-					find.Add("%album%");
-					find.Add("%C");
-					find.Add("%year%");
-					find.Add("%Y");
-					replace.Add(m_icon_mgr.GetFolderPath(CUEControls.ExtraSpecialFolder.MyMusic));
-					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
-					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
-					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
-					replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
-					replace.Add(year);
-					replace.Add(year);
-					BuildOutputPathFindReplace(pathIn, format, find, replace);
+				string format = comboBoxOutputFormat.Text;
+				List<string> find = new List<string>();
+				List<string> replace = new List<string>();
+				bool rs = _config.replaceSpaces;
 
-					pathOut = General.ReplaceMultiple(format, find, replace);
-					if (pathOut == null) pathOut = String.Empty;
-					pathOut = Path.ChangeExtension(pathOut, ext);
+				find.Add("%music%");
+				find.Add("%artist%");
+				find.Add("%D");
+				find.Add("%album%");
+				find.Add("%C");
+				find.Add("%year%");
+				find.Add("%Y");
+				find.Add("%discnumber%");
+				find.Add("%totaldiscs%");
+				find.Add("%unique%");
+				replace.Add(m_icon_mgr.GetFolderPath(CUEControls.ExtraSpecialFolder.MyMusic));
+				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
+				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
+				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
+				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
+				replace.Add(year);
+				replace.Add(year);
+				replace.Add(disc);
+				replace.Add(totaldiscs);
+				replace.Add(unique);
+				BuildOutputPathFindReplace(pathIn, format, find, replace);
+				string[] keys = tags.AllKeys;
+				for (int i = 0; i < keys.Length; i++)
+				{
+					string key = '%' + keys[i].ToLower() + '%';
+					string val = tags.Get(keys[i]);
+					if (!find.Contains(key) && val != null && val != "")
+					{
+						find.Add(key);
+						replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? val.Replace(' ', '_') : val)));
+					}
 				}
+
+				pathOut = General.ReplaceMultiple(format, find, replace);
+				if (pathOut == null) pathOut = String.Empty;
+				pathOut = Path.ChangeExtension(pathOut, ext);
 			}
 
 			return pathOut;
@@ -1409,18 +1735,18 @@ namespace JDP {
 
 		private void UpdateActions()
 		{
-			if (chkMulti.Checked)
+			if (FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes)
 			{
 				rbActionCorrectFilenames.Enabled = true;
 				rbActionCreateCUESheet.Enabled = true;
 				rbActionEncode.Enabled = true;
 				rbActionVerify.Enabled = true;
 				rbActionVerifyAndEncode.Enabled = true;
-				rbDontGenerate.Enabled = false;
+				checkBoxDontGenerate.Enabled = false;
 			}
 			else
 			{
-				string pathIn = txtInputPath.Text;
+				string pathIn = InputPath;
 				rbActionCorrectFilenames.Enabled = pathIn.Length != 0
 					&& ((File.Exists(pathIn) && Path.GetExtension(pathIn).ToLower() == ".cue")
 					 || Directory.Exists(pathIn));
@@ -1431,7 +1757,7 @@ namespace JDP {
 					rbActionVerify.Enabled =
 					rbActionEncode.Enabled = pathIn.Length != 0 
 					    && (File.Exists(pathIn) || Directory.Exists(pathIn) || IsCDROM(pathIn));
-				rbDontGenerate.Enabled = pathIn.Length != 0
+				checkBoxDontGenerate.Enabled = pathIn.Length != 0
 				    && (IsCDROM(pathIn) || File.Exists(pathIn));
 			}
 
@@ -1449,7 +1775,7 @@ namespace JDP {
 		{
 			if (fileSystemTreeView1.SelectedPath != null)
 			{
-				txtInputPath.Text = fileSystemTreeView1.SelectedPath;
+				InputPath = fileSystemTreeView1.SelectedPath;
 				txtInputPath.SelectAll();
 			}
 		}
@@ -1466,7 +1792,7 @@ namespace JDP {
 
 		private void fileSystemTreeView1_AfterCheck(object sender, TreeViewEventArgs e)
 		{
-			if (chkMulti.Checked)
+			if (FileBrowserState == FileBrowserStateEnum.Checkboxes)
 				foreach (TreeNode node in e.Node.Nodes)
 					node.Checked = e.Node.Checked;
 		}
@@ -1486,27 +1812,27 @@ namespace JDP {
 				string[] folders = e.Data.GetData(DataFormats.FileDrop) as string[];
 				if (folders != null)
 				{
-					//if (folders.Length > 1 && !chkMulti.Checked)
+					//if (folders.Length > 1 && !(FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes))
 					//{
-					//    chkMulti.CheckState = CheckState.Checked;
+					//    FileBrowserState = FileBrowserStateEnum.Checked;
 					//    if (fileSystemTreeView1.SelectedNode != null && fileSystemTreeView1.SelectedNode.Checked)
 					//        fileSystemTreeView1.SelectedNode.Checked = false;
 					//}
-					if (folders.Length > 1 && chkMulti.CheckState == CheckState.Unchecked)
-						chkMulti.CheckState = CheckState.Indeterminate;
-					switch (chkMulti.CheckState)
+					if (folders.Length > 1 && FileBrowserState == FileBrowserStateEnum.Tree)
+						FileBrowserState = FileBrowserStateEnum.DragDrop;
+					switch (FileBrowserState)
 					{
-						case CheckState.Unchecked:
+						case FileBrowserStateEnum.Tree:
 							fileSystemTreeView1.SelectedPath = folders[0];
 							break;
-						case CheckState.Checked:
+						case FileBrowserStateEnum.Checkboxes:
 							foreach (string folder in folders)
 							{
 								TreeNode node = fileSystemTreeView1.LookupNode(folder);
 								if (node != null) node.Checked = true;
 							}
 							break;
-						case CheckState.Indeterminate:
+						case FileBrowserStateEnum.DragDrop:
 							fileSystemTreeView1.Nodes.Clear();
 							foreach (string folder in folders)
 							{
@@ -1591,40 +1917,40 @@ namespace JDP {
 			{
 				if (args.Length == 1)
 				{
-					if (chkMulti.CheckState == CheckState.Indeterminate)
+					InputPath = args[0];
+					TreeNode node = null;
+					switch (FileBrowserState)
 					{
-						fileSystemTreeView1.Nodes.Clear();
-						string folder = args[0];
-						{
-							TreeNode node = Directory.Exists(folder)
-								? fileSystemTreeView1.NewNode(new DirectoryInfo(folder), true)
-								: fileSystemTreeView1.NewNode(new FileInfo(folder), false);
+						case FileBrowserStateEnum.DragDrop:
+							fileSystemTreeView1.Nodes.Clear();
+							node = Directory.Exists(InputPath)
+								? fileSystemTreeView1.NewNode(new DirectoryInfo(InputPath), true)
+								: fileSystemTreeView1.NewNode(new FileInfo(InputPath), false);
 							fileSystemTreeView1.Nodes.Add(node);
-						}
-					}
-					else
-					{
-						TreeNode node = null;
-						try
-						{
-							node = fileSystemTreeView1.LookupNode(args[0]) ??
-								fileSystemTreeView1.LookupNode(Path.GetDirectoryName(args[0]));
-						}
-						catch
-						{
-						}
-						if (node != null)
-						{
-							fileSystemTreeView1.SelectedNode = node;
-							node.Expand();
-							if (chkMulti.CheckState == CheckState.Checked)
-								node.Checked = true;
-						}
+							break;
+						case FileBrowserStateEnum.Tree:
+						case FileBrowserStateEnum.Checkboxes:
+							try
+							{
+								node = fileSystemTreeView1.LookupNode(args[0]) ??
+									fileSystemTreeView1.LookupNode(Path.GetDirectoryName(args[0]));
+							}
+							catch
+							{
+							}
+							if (node != null)
+							{
+								fileSystemTreeView1.SelectedNode = node;
+								node.Expand();
+								if (FileBrowserState == FileBrowserStateEnum.Checkboxes)
+									node.Checked = true;
+							}
+							fileSystemTreeView1.Select();
+							break;
 					}
 				}
 				if (WindowState == FormWindowState.Minimized)
 					WindowState = FormWindowState.Normal;
-				fileSystemTreeView1.Select();
 				Activate();
 			});
 			return true;
@@ -1693,39 +2019,6 @@ namespace JDP {
 			}
 		}
 
-		private void chkMulti_CheckStateChanged(object sender, EventArgs e)
-		{
-			switch (chkMulti.CheckState)
-			{
-				case CheckState.Unchecked:
-					fileSystemTreeView1.CheckBoxes = false;
-					fileSystemTreeView1.Nodes.Clear();
-					fileSystemTreeView1.IconManager = m_icon_mgr;
-					if (fileSystemTreeView1.Nodes.Count > 0)
-						fileSystemTreeView1.Nodes[0].Expand();
-					try { fileSystemTreeView1.SelectedPath = txtInputPath.Text; }
-					catch { }
-					break;
-				case CheckState.Checked:
-					fileSystemTreeView1.CheckBoxes = true;
-					if (fileSystemTreeView1.SelectedNode == null && fileSystemTreeView1.Nodes.Count > 0)
-						fileSystemTreeView1.SelectedNode = fileSystemTreeView1.Nodes[0];
-					if (fileSystemTreeView1.SelectedNode != null && fileSystemTreeView1.SelectedNode.Tag is FileSystemInfo)
-					{
-						fileSystemTreeView1.SelectedNode.Checked = true;
-						fileSystemTreeView1.SelectedNode.Expand();
-					}
-					break;
-				case CheckState.Indeterminate:
-					fileSystemTreeView1.CheckBoxes = false;
-					fileSystemTreeView1.Nodes.Clear();
-					int icon = m_icon_mgr.GetIconIndex(CUEControls.ExtraSpecialFolder.Desktop, true);
-					fileSystemTreeView1.Nodes.Add(null, "Drag the files here", icon, icon);
-					break;
-			}
-			SetupControls(false);
-		}
-
 		private void comboBoxAudioFormat_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			updateOutputStyles();
@@ -1744,9 +2037,11 @@ namespace JDP {
 				foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
 					if (encoder.Value.extension == SelectedOutputAudioFmt.extension)
 					{
-						if (SelectedOutputAudioFormat.StartsWith("lossy.") && !encoder.Value.lossless)
-							continue;
-						else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Value.lossless)
+						if (SelectedOutputAudioFormat.StartsWith("lossy."))
+						{
+							if (!encoder.Value.lossless)
+								continue;
+						} else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Value.lossless)
 							continue;
 						else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.Value.lossless)
 							continue;
@@ -1844,24 +2139,78 @@ namespace JDP {
 				return;
 			if (SelectedOutputAudioFormat == null)
 				return;
+			string encoder_name = (string)comboBoxEncoder.SelectedItem;
 			if (SelectedOutputAudioFormat.StartsWith("lossy."))
-				SelectedOutputAudioFmt.encoderLossless = (string) comboBoxEncoder.SelectedItem;
+				SelectedOutputAudioFmt.encoderLossless = encoder_name;
 			else if (SelectedOutputAudioType == AudioEncoderType.Lossless)
-				SelectedOutputAudioFmt.encoderLossless = (string) comboBoxEncoder.SelectedItem;
+				SelectedOutputAudioFmt.encoderLossless = encoder_name;
 			else
-				SelectedOutputAudioFmt.encoderLossy = (string) comboBoxEncoder.SelectedItem;
+				SelectedOutputAudioFmt.encoderLossy = encoder_name;
+			CUEToolsUDC encoder = _config.encoders[encoder_name];
+			string [] modes = encoder.SupportedModes;
+			if (modes == null || modes.Length < 2)
+			{
+				trackBarEncoderMode.Visible = false;
+				labelEncoderMode.Visible = false;
+				labelEncoderMinMode.Visible = false;
+				labelEncoderMaxMode.Visible = false;
+			}
+			else
+			{
+				trackBarEncoderMode.Maximum = modes.Length - 1;
+				trackBarEncoderMode.Value = encoder.DefaultModeIndex == -1 ? modes.Length - 1 : encoder.DefaultModeIndex;
+				labelEncoderMode.Text = encoder.default_mode;
+				labelEncoderMinMode.Text = modes[0];
+				labelEncoderMaxMode.Text = modes[modes.Length - 1];
+				trackBarEncoderMode.Visible = true;
+				labelEncoderMode.Visible = true;
+				labelEncoderMinMode.Visible = true;
+				labelEncoderMaxMode.Visible = true;
+			}
+		}
+
+		private void trackBarEncoderMode_Scroll(object sender, EventArgs e)
+		{
+			string encoder_name = (string)comboBoxEncoder.SelectedItem;
+			CUEToolsUDC encoder = _config.encoders[encoder_name];
+			string[] modes = encoder.SupportedModes;
+			encoder.default_mode = modes[trackBarEncoderMode.Value];
+			labelEncoderMode.Text = encoder.default_mode;
 		}
 
 		private void checkBoxAdvancedMode_CheckedChanged(object sender, EventArgs e)
 		{
 			SetupControls(false);
 		}
-	}
 
-	enum OutputPathGeneration {
-		CreateSubdirectory,
-		AppendFilename,
-		CustomFormat,
-		Disabled
+		private void toolStripButton1_Click(object sender, EventArgs e)
+		{
+			FileBrowserState = FileBrowserStateEnum.Tree;
+			SetupControls(false);
+		}
+
+		private void toolStripButton2_Click(object sender, EventArgs e)
+		{
+			FileBrowserState = FileBrowserStateEnum.Checkboxes;
+			SetupControls(false);
+		}
+
+		private void toolStripButton3_Click(object sender, EventArgs e)
+		{
+			FileBrowserState = FileBrowserStateEnum.DragDrop;
+			SetupControls(false);
+		}
+
+		private void toolStripButton4_Click(object sender, EventArgs e)
+		{
+			FileBrowserState = FileBrowserStateEnum.BatchLog;
+			SetupControls(false);
+		}
+
+		private void toolStripButton5_Click(object sender, EventArgs e)
+		{
+			FileBrowserState = FileBrowserStateEnum.Hidden;
+			SetupControls(false);
+		}
 	}
 }

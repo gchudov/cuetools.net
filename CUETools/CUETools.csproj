@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\mono\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -278,6 +278,11 @@
     <None Include="Resources\ipod_sound.ico" />
     <None Include="Resources\ogg.ico" />
     <None Include="Resources\mp3.ico" />
+    <None Include="Resources\more\icons\folder.png" />
+    <None Include="Resources\more\icons\folder_add.png" />
+    <None Include="Resources\more\icons\folder_delete.png" />
+    <None Include="Resources\more\icons\folder_feed.png" />
+    <None Include="Resources\more\icons\folder_page.png" />
     <Content Include="Resources\wav.bmp" />
     <None Include="Resources\wv.ico" />
     <None Include="Resources\wave.ico" />

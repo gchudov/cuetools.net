@@ -95,19 +95,19 @@ namespace CUETools.Processor
 #if !MONO
 				case "FLACWriter":
 					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate);
-					((FLACWriter)dest).CompressionLevel = (int)config.flacCompressionLevel;
+					((FLACWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
 					((FLACWriter)dest).Verify = config.flacVerify;
 					((FLACWriter)dest).DisableAsm = config.disableAsm;
 					break;
 				case "WavPackWriter":
 					dest = new WavPackWriter(path, bitsPerSample, channelCount, sampleRate);
-					((WavPackWriter)dest).CompressionMode = config.wvCompressionMode;
+					((WavPackWriter)dest).CompressionMode = encoder.DefaultModeIndex;
 					((WavPackWriter)dest).ExtraMode = config.wvExtraMode;
 					((WavPackWriter)dest).MD5Sum = config.wvStoreMD5;
 					break;
 				case "APEWriter":
 					dest = new APEWriter(path, bitsPerSample, channelCount, sampleRate);
-					((APEWriter)dest).CompressionLevel = (int)config.apeCompressionLevel;
+					((APEWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
 					break;
 				case "TTAWriter":
 					dest = new TTAWriter(path, bitsPerSample, channelCount, sampleRate);
@@ -116,7 +116,7 @@ namespace CUETools.Processor
 				default:
 					if (encoder.path == null)
 						throw new Exception("Unsupported audio type: " + path);
-					dest = new UserDefinedWriter(path, bitsPerSample, channelCount, sampleRate, null, encoder.path, encoder.parameters);
+					dest = new UserDefinedWriter(path, bitsPerSample, channelCount, sampleRate, null, encoder.path, encoder.parameters, encoder.default_mode);
 					break;
 			}
 			dest.FinalSampleCount = finalSampleCount;
