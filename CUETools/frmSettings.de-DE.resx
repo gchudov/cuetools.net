@@ -172,6 +172,12 @@
   <data name="chkReducePriority.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
+    <value>Prüfe auf Aktualisierungen</value>
+  </data>
+  <data name="checkBoxCheckForUpdates.ToolTip" xml:space="preserve">
+    <value>Prüfe auf Aktualisierungen beim Start des Programms</value>
+  </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
     <value>Nullsamples abschneiden, falls vorhanden</value>
   </data>
@@ -445,6 +451,33 @@
   <data name="grpAudioFilenames.ToolTip" xml:space="preserve">
     <value />
   </data>
+  <data name="groupBoxGaps.Text" xml:space="preserve">
+    <value>Lücken</value>
+  </data>
+  <data name="rbGapsPlusHTOA.Text" xml:space="preserve">
+    <value>Lücken &amp;angehängt + HTOA</value>
+  </data>
+  <data name="rbGapsPlusHTOA.ToolTip" xml:space="preserve">
+    <value>Lücken werden an vorige Spur angehängt. Die HTOA (Hidden Track One Audio, d.h. die Lücke vor der ersten Spur) wird in einer separaten Datei gespeichert.</value>
+  </data>
+  <data name="rbGapsAppended.Text" xml:space="preserve">
+    <value>Lücken angehängt</value>
+  </data>
+  <data name="rbGapsAppended.ToolTip" xml:space="preserve">
+    <value>Lücken werden an das vorige Stück angehängt. Die HTOA wird nicht gespeichert.</value>
+  </data>
+  <data name="rbGapsPrepended.Text" xml:space="preserve">
+    <value>Lücken vorangestellt</value>
+  </data>
+  <data name="rbGapsPrepended.ToolTip" xml:space="preserve">
+    <value>Lücken werden vor das nächste Stück gestellt.</value>
+  </data>
+  <data name="rbGapsLeftOut.Text" xml:space="preserve">
+    <value>Lücken ausgelassen</value>
+  </data>
+  <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
+    <value>Lücken werden ausgelassen und durch Stille ersetzt.</value>
+  </data>
   <data name="rbAPEinsane.Text" xml:space="preserve">
     <value>Verrückt</value>
   </data>
@@ -537,6 +570,9 @@
   </data>
   <data name="groupBoxExternalEncoder.Text" xml:space="preserve">
     <value>Externer Encoder</value>
+  </data>
+  <data name="labelEncoderModes.Text" xml:space="preserve">
+    <value>Modi</value>
   </data>
   <data name="labelEncoderParameters.Text" xml:space="preserve">
     <value>Parameter</value>

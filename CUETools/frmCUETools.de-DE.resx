@@ -145,8 +145,11 @@
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="grpOutputPathGeneration.Text" xml:space="preserve">
-    <value>Ausgabepfad</value>
+  <data name="labelOutput.Text" xml:space="preserve">
+    <value>Output:</value>
+  </data>
+  <data name="labelOutputTemplate.Text" xml:space="preserve">
+    <value>Vorlage:</value>
   </data>
   <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 17</value>
@@ -160,11 +163,23 @@
   <data name="radioButtonAudioLossy.Text" xml:space="preserve">
     <value>Verlustbehaftet</value>
   </data>
+  <data name="radioButtonAudioLossy.ToolTip" xml:space="preserve">
+    <value>Codecs, die die Audioqualität senken</value>
+  </data>
+  <data name="radioButtonAudioHybrid.Text" xml:space="preserve">
+    <value>Hybrid</value>
+  </data>
+  <data name="radioButtonAudioHybrid.ToolTip" xml:space="preserve">
+    <value>Hybride Codecs</value>
+  </data>
   <data name="radioButtonAudioLossless.Size" type="System.Drawing.Size, System.Drawing">
     <value>74, 17</value>
   </data>
   <data name="radioButtonAudioLossless.Text" xml:space="preserve">
     <value>Verlustfrei</value>
+  </data>
+  <data name="radioButtonAudioLossless.ToolTip" xml:space="preserve">
+    <value>Codecs, die eine bitgenaue Kopie erstellen</value>
   </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Audio</value>
@@ -235,6 +250,9 @@
   <data name="rbActionEncode.ToolTip" xml:space="preserve">
     <value>Kodiert, ohne die AccurateRip-Datenbank zu kontaktieren.</value>
   </data>
+  <data name="comboBoxScript.ToolTip" xml:space="preserve">
+    <value>Eigenes Script ausführen</value>
+  </data>
   <data name="btnAbout.Text" xml:space="preserve">
     <value>Über</value>
   </data>
@@ -295,6 +313,12 @@
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
     <value>Erstelle einzelne Datei + CUE-Sheet</value>
   </data>
+  <data name="rbTracks.Text" xml:space="preserve">
+    <value>Einzelda&amp;teien</value>
+  </data>
+  <data name="rbTracks.ToolTip" xml:space="preserve">
+    <value>Erstelle eine Datei pro Stück. Die Verhalten bei Lücken kann in den erweiterten Einstellungen geändert werden.</value>
+  </data>
   <data name="grpOutputStyle.Text" xml:space="preserve">
     <value>CUE-Stil</value>
   </data>
@@ -303,6 +327,21 @@
   </data>
   <data name="btnStop.Text" xml:space="preserve">
     <value>&amp;Stopp</value>
+  </data>
+  <data name="toolStripButton1.Text" xml:space="preserve">
+    <value>Dateiauswahl</value>
+  </data>
+  <data name="toolStripButton2.Text" xml:space="preserve">
+    <value>Mehrfache Dateiauswahl</value>
+  </data>
+  <data name="toolStripButton3.Text" xml:space="preserve">
+    <value>Drag'n'drop-Modus</value>
+  </data>
+  <data name="toolStripButton4.Text" xml:space="preserve">
+    <value>Logdatei</value>
+  </data>
+  <data name="toolStripButton5.Text" xml:space="preserve">
+    <value>Ausblenden</value>
   </data>
   <data name="SelectedNodeName.Text" xml:space="preserve">
     <value>Ausgewählte Datei</value>
