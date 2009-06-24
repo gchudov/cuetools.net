@@ -145,6 +145,9 @@
   <data name="groupBoxAlbumArt.Text" xml:space="preserve">
     <value>Coverbilder</value>
   </data>
+  <data name="checkBoxExtractAlbumArt.Text" xml:space="preserve">
+    <value>Coverbilder als Folder.jpg extrahieren</value>
+  </data>
   <data name="checkBoxCopyAlbumArt.Text" xml:space="preserve">
     <value>Coverbilder kopieren</value>
   </data>
@@ -188,7 +191,7 @@
     <value />
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
-    <value>Fehlende CUE-Daten anhand der Tags auffüllen</value>
+    <value>Fehlende CUE-Daten mit Tags füllen</value>
   </data>
   <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
     <value />
@@ -491,7 +494,7 @@
     <value />
   </data>
   <data name="groupBox5.Text" xml:space="preserve">
-    <value>Codieren, falls verifiziert</value>
+    <value>Kodieren, falls verifiziert</value>
   </data>
   <data name="groupBox4.Text" xml:space="preserve">
     <value>Offset korrigieren</value>
@@ -602,12 +605,6 @@
     <value />
   </data>
   <data name="label3.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>Erweiterung</value>
-  </data>
-  <data name="label2.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="tabPage9.Text" xml:space="preserve">
