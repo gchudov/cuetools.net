@@ -514,7 +514,7 @@ namespace JDP {
 						if (resp.StatusCode == HttpStatusCode.OK)
 						{
 							using (Stream respStream = resp.GetResponseStream())
-							using (FileStream motd = new FileStream(MOTDImagePath, FileMode.CreateNew, FileAccess.Write))
+							using (FileStream motd = new FileStream(MOTDImagePath, FileMode.Create, FileAccess.Write))
 							{
 								byte[] buff = new byte[0x8000];
 								do
@@ -551,7 +551,7 @@ namespace JDP {
 							if (resp.StatusCode == HttpStatusCode.OK)
 							{
 								using (Stream respStream = resp.GetResponseStream())
-								using (FileStream motd = new FileStream(MOTDTextPath, FileMode.CreateNew, FileAccess.Write))
+								using (FileStream motd = new FileStream(MOTDTextPath, FileMode.Create, FileAccess.Write))
 								using (StreamReader sr = new StreamReader(respStream, Encoding.UTF8))
 								using (StreamWriter sw = new StreamWriter(motd, Encoding.UTF8))
 								{

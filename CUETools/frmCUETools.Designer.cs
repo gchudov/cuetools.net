@@ -26,12 +26,6 @@ namespace JDP {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmCUETools));
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
-			this.statusStrip2 = new System.Windows.Forms.StatusStrip();
-			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabelProcessed = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabelAR = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
-			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.grpInput = new System.Windows.Forms.GroupBox();
 			this.textBatchReport = new System.Windows.Forms.TextBox();
@@ -110,11 +104,16 @@ namespace JDP {
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.setAsMyMusicFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.resetToOriginalLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
+			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusLabelAR = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusLabelProcessed = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.ContentPanel.SuspendLayout();
 			this.toolStripContainer1.LeftToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.SuspendLayout();
-			this.statusStrip2.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.grpInput.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
@@ -131,6 +130,7 @@ namespace JDP {
 			this.panel1.SuspendLayout();
 			this.toolStrip1.SuspendLayout();
 			this.contextMenuStripFileTree.SuspendLayout();
+			this.statusStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// toolStripContainer1
@@ -138,7 +138,7 @@ namespace JDP {
 			// 
 			// toolStripContainer1.BottomToolStripPanel
 			// 
-			this.toolStripContainer1.BottomToolStripPanel.Controls.Add(this.statusStrip2);
+			this.toolStripContainer1.BottomToolStripPanel.Controls.Add(this.statusStrip1);
 			// 
 			// toolStripContainer1.ContentPanel
 			// 
@@ -153,49 +153,6 @@ namespace JDP {
 			this.toolStripContainer1.Name = "toolStripContainer1";
 			this.toolStripContainer1.RightToolStripPanelVisible = false;
 			this.toolStripContainer1.TopToolStripPanelVisible = false;
-			// 
-			// statusStrip2
-			// 
-			resources.ApplyResources(this.statusStrip2, "statusStrip2");
-			this.statusStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1,
-            this.toolStripStatusLabelProcessed,
-            this.toolStripStatusLabelAR,
-            this.toolStripProgressBar1,
-            this.toolStripProgressBar2});
-			this.statusStrip2.Name = "statusStrip2";
-			// 
-			// toolStripStatusLabel1
-			// 
-			this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
-			this.toolStripStatusLabel1.Spring = true;
-			// 
-			// toolStripStatusLabelProcessed
-			// 
-			this.toolStripStatusLabelProcessed.Name = "toolStripStatusLabelProcessed";
-			resources.ApplyResources(this.toolStripStatusLabelProcessed, "toolStripStatusLabelProcessed");
-			// 
-			// toolStripStatusLabelAR
-			// 
-			resources.ApplyResources(this.toolStripStatusLabelAR, "toolStripStatusLabelAR");
-			this.toolStripStatusLabelAR.Image = global::JDP.Properties.Resources.AR;
-			this.toolStripStatusLabelAR.Name = "toolStripStatusLabelAR";
-			this.toolStripStatusLabelAR.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
-			// 
-			// toolStripProgressBar1
-			// 
-			this.toolStripProgressBar1.AutoToolTip = true;
-			this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-			resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
-			this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-			// 
-			// toolStripProgressBar2
-			// 
-			this.toolStripProgressBar2.AutoToolTip = true;
-			this.toolStripProgressBar2.Name = "toolStripProgressBar2";
-			resources.ApplyResources(this.toolStripProgressBar2, "toolStripProgressBar2");
-			this.toolStripProgressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
 			// 
 			// tableLayoutPanel1
 			// 
@@ -759,6 +716,7 @@ namespace JDP {
 			// 
 			// toolStrip1
 			// 
+			resources.ApplyResources(this.toolStrip1, "toolStrip1");
 			this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripSeparator1,
@@ -768,7 +726,6 @@ namespace JDP {
             this.toolStripButton4,
             this.toolStripButton5,
             this.toolStripSeparator3});
-			resources.ApplyResources(this.toolStrip1, "toolStrip1");
 			this.toolStrip1.MaximumSize = new System.Drawing.Size(32, 0);
 			this.toolStrip1.Name = "toolStrip1";
 			this.toolStrip1.TextDirection = System.Windows.Forms.ToolStripTextDirection.Vertical90;
@@ -864,6 +821,50 @@ namespace JDP {
 			resources.ApplyResources(this.resetToOriginalLocationToolStripMenuItem, "resetToOriginalLocationToolStripMenuItem");
 			this.resetToOriginalLocationToolStripMenuItem.Click += new System.EventHandler(this.resetToOriginalLocationToolStripMenuItem_Click);
 			// 
+			// statusStrip1
+			// 
+			resources.ApplyResources(this.statusStrip1, "statusStrip1");
+			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1,
+            this.toolStripStatusLabelProcessed,
+            this.toolStripStatusLabelAR,
+            this.toolStripProgressBar1,
+            this.toolStripProgressBar2});
+			this.statusStrip1.Name = "statusStrip1";
+			// 
+			// toolStripProgressBar2
+			// 
+			this.toolStripProgressBar2.AutoToolTip = true;
+			this.toolStripProgressBar2.Name = "toolStripProgressBar2";
+			resources.ApplyResources(this.toolStripProgressBar2, "toolStripProgressBar2");
+			this.toolStripProgressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+			// 
+			// toolStripProgressBar1
+			// 
+			this.toolStripProgressBar1.AutoToolTip = true;
+			this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+			resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
+			this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+			// 
+			// toolStripStatusLabel1
+			// 
+			this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
+			this.toolStripStatusLabel1.Spring = true;
+			// 
+			// toolStripStatusLabelAR
+			// 
+			this.toolStripStatusLabelAR.AutoToolTip = true;
+			resources.ApplyResources(this.toolStripStatusLabelAR, "toolStripStatusLabelAR");
+			this.toolStripStatusLabelAR.Image = global::JDP.Properties.Resources.AR;
+			this.toolStripStatusLabelAR.Name = "toolStripStatusLabelAR";
+			this.toolStripStatusLabelAR.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
+			// 
+			// toolStripStatusLabelProcessed
+			// 
+			this.toolStripStatusLabelProcessed.Name = "toolStripStatusLabelProcessed";
+			resources.ApplyResources(this.toolStripStatusLabelProcessed, "toolStripStatusLabelProcessed");
+			// 
 			// frmCUETools
 			// 
 			resources.ApplyResources(this, "$this");
@@ -880,8 +881,6 @@ namespace JDP {
 			this.toolStripContainer1.LeftToolStripPanel.PerformLayout();
 			this.toolStripContainer1.ResumeLayout(false);
 			this.toolStripContainer1.PerformLayout();
-			this.statusStrip2.ResumeLayout(false);
-			this.statusStrip2.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.grpInput.ResumeLayout(false);
 			this.grpInput.PerformLayout();
@@ -907,6 +906,8 @@ namespace JDP {
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
 			this.contextMenuStripFileTree.ResumeLayout(false);
+			this.statusStrip1.ResumeLayout(false);
+			this.statusStrip1.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -975,12 +976,6 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripButton toolStripButton3;
 		private System.Windows.Forms.ToolStripButton toolStripButton4;
 		private System.Windows.Forms.ToolStripButton toolStripButton5;
-		private System.Windows.Forms.StatusStrip statusStrip2;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelProcessed;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelAR;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar2;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
 		private System.Windows.Forms.ComboBox comboBoxOutputFormat;
@@ -998,6 +993,12 @@ namespace JDP {
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
 		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.StatusStrip statusStrip1;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelProcessed;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelAR;
+		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar2;
 	}
 }
 

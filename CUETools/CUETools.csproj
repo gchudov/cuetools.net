@@ -19,16 +19,16 @@
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
+    <UpdateMode>Background</UpdateMode>
+    <UpdateInterval>1</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdatePeriodically>true</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://cuetools.net/install/cuetools/</InstallUrl>
     <SupportUrl>http://cuetools.net/</SupportUrl>
     <ProductName>CUETools</ProductName>
-    <PublisherName>Gregory S. Chudov</PublisherName>
+    <PublisherName>CUETools</PublisherName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <ApplicationVersion>2.0.3.%2a</ApplicationVersion>
@@ -281,6 +281,10 @@
     <None Include="CUETools_TemporaryKey.pfx" />
     <None Include="Resources\accuraterip.jpg" />
     <Content Include="cue2.ico" />
+    <Content Include="hdcd.dll">
+    </Content>
+    <Content Include="unrar.dll">
+    </Content>
     <Content Include="Resources\accuraterip_16.bmp" />
     <None Include="Resources\ape.ico" />
     <Content Include="Resources\AR.ico" />
@@ -311,6 +315,9 @@
     <None Include="Resources\wv.ico" />
     <None Include="Resources\wave.ico" />
     <None Include="Resources\tta.ico" />
+    <Content Include="user_profiles_enabled">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
@@ -323,6 +330,29 @@
       <ProductName>Visual C++ Runtime Libraries %28x86%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <PublishFile Include="de-DE\CUETools.resources">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <FileType>Satellite</FileType>
+    </PublishFile>
+    <PublishFile Include="ru-RU\CUETools.resources">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <FileType>Satellite</FileType>
+    </PublishFile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="InstallFiles\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
