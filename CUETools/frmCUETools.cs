@@ -262,9 +262,7 @@ namespace JDP {
 			labelFormat.ImageList = m_icon_mgr.ImageList;
 			labelCorrectorFormat.ImageList = m_icon_mgr.ImageList;
 			MinimumWidth = MinimumSize.Width;
-			SplitterDistance = 207;
 			LoadSettings();
-			//splitContainer1.SplitterDistance = splitContainer1.Width - splitContainer1.SplitterWidth - grpOutputPathGeneration.Width - grpOutputPathGeneration.Margin.Horizontal - 8;
 
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
@@ -343,7 +341,7 @@ namespace JDP {
 		CUESheet _workClass;
 		CUEConfig _config;
 		int MinimumWidth;
-		int SplitterDistance;
+		int WidthIncrement;
 		FileBrowserStateEnum _fileBrowserState = FileBrowserStateEnum.BatchLog;
 		FileBrowserStateEnum _fileBrowserControlState = FileBrowserStateEnum.BatchLog;
 		DateTime lastMOTD;
@@ -1153,7 +1151,6 @@ namespace JDP {
 			numericWriteOffset.Value = sr.LoadInt32("WriteOffset", null, null) ?? 0;
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
-			FileBrowserState = (FileBrowserStateEnum)(sr.LoadInt32("FileBrowserState", (int)FileBrowserStateEnum.Tree, (int)FileBrowserStateEnum.Hidden) ?? (int)FileBrowserStateEnum.Tree);
 			switch (sr.LoadInt32("FreedbLookup", null, null) ?? 2)
 			{
 				case 0: rbFreedbNever.Checked = true; break;
@@ -1170,7 +1167,8 @@ namespace JDP {
 			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
 				comboBoxCorrectorFormat.Items.Add(format.Key);
 			comboBoxCorrectorFormat.SelectedItem = sr.Load("CorrectorFormat") ?? "flac";
-			Width = sr.LoadInt32("Width", Width, null) ?? Width;
+			Width = MinimumWidth + sr.LoadInt32("WidthIncrement", 0, null) ?? 0;
+			FileBrowserState = (FileBrowserStateEnum)(sr.LoadInt32("FileBrowserState", (int)FileBrowserStateEnum.Tree, (int)FileBrowserStateEnum.Hidden) ?? (int)FileBrowserStateEnum.Tree);
 			Top = sr.LoadInt32("Top", 0, null) ?? Top;
 			Left = sr.LoadInt32("Left", 0, null) ?? Left;
 			PerformLayout();
@@ -1204,7 +1202,7 @@ namespace JDP {
 			sw.Save("CorrectorLookup", rbCorrectorLocateFiles.Checked ? 0 : 1);
 			sw.Save("CorrectorOverwrite", checkBoxCorrectorOverwrite.Checked);
 			sw.Save("CorrectorFormat", (string) (comboBoxCorrectorFormat.SelectedItem ?? "flac"));
-			sw.Save("Width", Width);
+			sw.Save("WidthIncrement", FileBrowserState == FileBrowserStateEnum.Hidden ? WidthIncrement : Width - MinimumWidth);
 			sw.Save("Top", Top);
 			sw.Save("Left", Left);
 			_config.Save(sw);
@@ -1419,26 +1417,23 @@ namespace JDP {
 				if (value == _fileBrowserState)
 					return;
 
-				Application.UseWaitCursor = true;
+				UseWaitCursor = true;
 
 				if (value != FileBrowserStateEnum.Hidden && _fileBrowserState == FileBrowserStateEnum.Hidden)
 				{
 					MinimumSize = new Size(MinimumWidth, MinimumSize.Height);
 					MaximumSize = new Size(MinimumWidth * 2, MinimumSize.Height);
-					Width = MinimumSize.Width;
-					splitContainer1.Panel1Collapsed = false;
-					splitContainer1.SplitterDistance = SplitterDistance;
+					Width = MinimumWidth + WidthIncrement;
 					PerformLayout();
 				}
 
 				if (value == FileBrowserStateEnum.Hidden && _fileBrowserState != FileBrowserStateEnum.Hidden)
 				{
-					splitContainer1.Panel1Collapsed = true;
-					Width = MinimumSize.Width;
-					MinimumSize = new Size(MinimumWidth - SplitterDistance, MinimumSize.Height);
-					//MinimumSize = new Size(Width - splitContainer1.Panel1.Width, MinimumSize.Height);
+					WidthIncrement = Width - MinimumWidth;
+					MinimumSize = new Size(Width - grpInput.Width, MinimumSize.Height);
 					MaximumSize = MinimumSize;
-					//PerformLayout();
+					Width = MinimumSize.Width;
+					PerformLayout();
 				}
 
 				switch (value)
@@ -1500,7 +1495,7 @@ namespace JDP {
 					case FileBrowserStateEnum.Hidden:
 						break;
 				}
-				Application.UseWaitCursor = false;
+				UseWaitCursor = false;
 				_fileBrowserState = value;
 			}
 		}

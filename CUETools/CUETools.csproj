@@ -10,6 +10,29 @@
     <RootNamespace>JDP</RootNamespace>
     <AssemblyName>CUETools</AssemblyName>
     <ApplicationIcon>cue2.ico</ApplicationIcon>
+    <ManifestCertificateThumbprint>611F49E043614FEDCFF1B128868CC8DC0B6656C5</ManifestCertificateThumbprint>
+    <ManifestKeyFile>CUETools_TemporaryKey.pfx</ManifestKeyFile>
+    <GenerateManifests>true</GenerateManifests>
+    <SignManifests>true</SignManifests>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <PublishUrl>ftp://cuetools.net/cuetools.net/install/cuetools/</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://cuetools.net/install/cuetools/</InstallUrl>
+    <SupportUrl>http://cuetools.net/</SupportUrl>
+    <ProductName>CUETools</ProductName>
+    <PublisherName>Gregory S. Chudov</PublisherName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>publish.htm</WebPage>
+    <ApplicationVersion>2.0.3.%2a</ApplicationVersion>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -255,6 +278,7 @@
     <None Include="Resources\musicbrainz.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CUETools_TemporaryKey.pfx" />
     <None Include="Resources\accuraterip.jpg" />
     <Content Include="cue2.ico" />
     <Content Include="Resources\accuraterip_16.bmp" />
@@ -287,6 +311,18 @@
     <None Include="Resources\wv.ico" />
     <None Include="Resources\wave.ico" />
     <None Include="Resources\tta.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Visual.C++.8.0.x86">
+      <Visible>False</Visible>
+      <ProductName>Visual C++ Runtime Libraries %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
