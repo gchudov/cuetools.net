@@ -157,6 +157,9 @@
   <data name="radioButtonAudioNone.Text" xml:space="preserve">
     <value>Kei&amp;ne</value>
   </data>
+  <data name="radioButtonAudioNone.ToolTip" xml:space="preserve">
+    <value>Keine Audioausgabe</value>
+  </data>
   <data name="radioButtonAudioLossy.Size" type="System.Drawing.Size, System.Drawing">
     <value>100, 17</value>
   </data>
@@ -181,8 +184,14 @@
   <data name="radioButtonAudioLossless.ToolTip" xml:space="preserve">
     <value>Codecs, die eine bitgenaue Kopie erstellen</value>
   </data>
+  <data name="comboBoxEncoder.ToolTip" xml:space="preserve">
+    <value>Zu verwendender Encoder</value>
+  </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Audio</value>
+  </data>
+  <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
+    <value>Audiodateiformat</value>
   </data>
   <data name="rbCorrectorLocateFiles.Size" type="System.Drawing.Size, System.Drawing">
     <value>99, 17</value>
