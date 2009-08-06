@@ -181,8 +181,8 @@
   <data name="checkBoxCorrectorOverwrite.Size" type="System.Drawing.Size, System.Drawing">
     <value>95, 17</value>
   </data>
-  <data name="groupBoxCorrector.Text" xml:space="preserve">
-    <value>Korrektur</value>
+  <data name="grpAction.Text" xml:space="preserve">
+    <value>Aktion</value>
   </data>
   <data name="rbActionCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 17</value>
@@ -252,6 +252,9 @@
   </data>
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Fortsetzen</value>
+  </data>
+  <data name="groupBoxMode.Text" xml:space="preserve">
+    <value>Modus</value>
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>81, 17</value>
@@ -345,7 +348,7 @@
     <value>E&amp;ingabe:</value>
   </data>
   <data name="toolStripLabelOutput.Text" xml:space="preserve">
-    <value>Output:</value>
+    <value>Aus&gabe:</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
     <value>Neue Erweiterung</value>
@@ -377,7 +380,25 @@
   <data name="toolStripMenuItemOutputManual.Text" xml:space="preserve">
     <value>Manuell</value>
   </data>
-  <data name="toolStripMenuItemOutputTemplate.Text" xml:space="preserve">
-    <value>Vorlage</value>
+  <data name="labelOutputTemplate.Text" xml:space="preserve">
+    <value>Vorlage:</value>
+  </data>
+  <data name="comboBoxOutputFormat.ToolTip" xml:space="preserve">
+    <value>Vorlage für Ausgabedateien (foobar2000-Format)</value>
+  </data>
+  <data name="toolStripTextBoxAddProfile.ToolTipText" xml:space="preserve">
+    <value>Neues Profil erstellen</value>
+  </data>
+  <data name="toolStripMenuItemDeleteProfile.Text" xml:space="preserve">
+    <value>löschen</value>
+  </data>
+  <data name="toolStripMenuItemDeleteProfile.ToolTipText" xml:space="preserve">
+    <value>Derzeitiges Profil löschen</value>
+  </data>
+  <data name="defaultToolStripMenuItem.Text" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="toolStripDropDownButtonProfile.Text" xml:space="preserve">
+    <value>Standard</value>
   </data>
 </root>
