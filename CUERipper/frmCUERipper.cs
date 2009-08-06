@@ -736,16 +736,16 @@ namespace CUERipper
 			if (SelectedOutputAudioFmt == null)
 				return;
 
-			foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
-				if (encoder.Value.extension == SelectedOutputAudioFmt.extension)
+			foreach (CUEToolsUDC encoder in _config.encoders)
+				if (encoder.extension == SelectedOutputAudioFmt.extension)
 				{
-					if (SelectedOutputAudioFormat.StartsWith("lossy.") && !encoder.Value.lossless)
+					if (SelectedOutputAudioFormat.StartsWith("lossy.") && !encoder.lossless)
 						continue;
-					else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Value.lossless)
+					else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.lossless)
 						continue;
-					else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.Value.lossless)
+					else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.lossless)
 						continue;
-					comboBoxEncoder.Items.Add(encoder.Key);
+					comboBoxEncoder.Items.Add(encoder);
 				}
 			comboBoxEncoder.SelectedItem = SelectedOutputAudioFormat.StartsWith("lossy.") ? SelectedOutputAudioFmt.encoderLossless
 				: SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
@@ -757,12 +757,13 @@ namespace CUERipper
 		{
 			if (SelectedOutputAudioFormat == null)
 				return;
+			CUEToolsUDC encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
 			if (SelectedOutputAudioFormat.StartsWith("lossy."))
-				SelectedOutputAudioFmt.encoderLossless = (string)comboBoxEncoder.SelectedItem;
+				SelectedOutputAudioFmt.encoderLossless = encoder;
 			else if (SelectedOutputAudioType == AudioEncoderType.Lossless)
-				SelectedOutputAudioFmt.encoderLossless = (string)comboBoxEncoder.SelectedItem;
+				SelectedOutputAudioFmt.encoderLossless = encoder;
 			else
-				SelectedOutputAudioFmt.encoderLossy = (string)comboBoxEncoder.SelectedItem;
+				SelectedOutputAudioFmt.encoderLossy = encoder;
 		}
 	}
 

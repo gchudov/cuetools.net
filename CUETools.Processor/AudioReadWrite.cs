@@ -81,11 +81,10 @@ namespace CUETools.Processor
 			CUEToolsFormat fmt;
 			if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
 				throw new Exception("Unsupported audio type: " + path);
-			string encoderName = audioEncoderType == AudioEncoderType.Lossless ? fmt.encoderLossless : 
+			CUEToolsUDC encoder = audioEncoderType == AudioEncoderType.Lossless ? fmt.encoderLossless : 
 				audioEncoderType == AudioEncoderType.Lossy ? fmt.encoderLossy :
 				null;
-			CUEToolsUDC encoder;
-			if (encoderName == null || !config.encoders.TryGetValue(encoderName, out encoder))
+			if (encoder == null)
 				throw new Exception("Unsupported audio type: " + path);
 			switch (encoder.className)
 			{

@@ -42,7 +42,7 @@ using CUETools.CDImage;
 namespace JDP {
 	public partial class frmCUETools : Form {
 		public frmCUETools() {
-			_config = new CUEConfig();
+			_profile = _defaultProfile = new CUEToolsProfile("default");
 			InitializeComponent();
 			//splitContainer1.AutoScaleMode = AutoScaleMode.Font;
 			if (Type.GetType("Mono.Runtime", false) == null)
@@ -58,19 +58,6 @@ namespace JDP {
 			m_icon_mgr.SetExtensionIcon(".m4a", global::JDP.Properties.Resources.ipod_sound);
 			m_icon_mgr.SetExtensionIcon(".ogg", global::JDP.Properties.Resources.ogg);
 			m_icon_mgr.SetExtensionIcon(".cue", global::JDP.Properties.Resources.cue3);
-		}
-
-		private void btnBrowseOutput_Click(object sender, EventArgs e) {
-			SaveFileDialog fileDlg = new SaveFileDialog();
-			DialogResult dlgRes;
-
-			fileDlg.Title = "Output CUE Sheet";
-			fileDlg.Filter = "CUE Sheets (*.cue)|*.cue";
-
-			dlgRes = fileDlg.ShowDialog();
-			if (dlgRes == DialogResult.OK) {
-				txtOutputPath.Text = fileDlg.FileName;
-			}
 		}
 
 		private void AddCheckedNodesToBatch(TreeNodeCollection nodes)
@@ -101,9 +88,9 @@ namespace JDP {
 
 			if (!comboBoxOutputFormat.Items.Contains(comboBoxOutputFormat.Text) && comboBoxOutputFormat.Text.Contains("%"))
 			{
-				comboBoxOutputFormat.Items.Insert(OutputPathTemplates.Length, comboBoxOutputFormat.Text);
-				if (comboBoxOutputFormat.Items.Count > OutputPathTemplates.Length + 10)
-					comboBoxOutputFormat.Items.RemoveAt(OutputPathTemplates.Length + 10);
+				comboBoxOutputFormat.Items.Insert(OutputPathUseTemplates.Length, comboBoxOutputFormat.Text);
+				if (comboBoxOutputFormat.Items.Count > OutputPathUseTemplates.Length + 10)
+					comboBoxOutputFormat.Items.RemoveAt(OutputPathUseTemplates.Length + 10);
 			}
 
 			if (!CheckWriteOffset()) return;
@@ -114,7 +101,7 @@ namespace JDP {
 			// TODO!!!
 			//if (SelectedOutputAudioFmt != null)
 			//{
-			//    CUEToolsUDC encoder = _config.encoders[SelectedOutputAudioFmt.encoder];
+			//    CUEToolsUDC encoder = _profile._config.encoders[SelectedOutputAudioFmt.encoder];
 			//    if (encoder.path != null)
 			//    {
 			//        if (Path.GetDirectoryName(encoder.path) == "" && Directory.Exists(Application.StartupPath))
@@ -142,7 +129,7 @@ namespace JDP {
 				StartConvert();
 				return;
 			}
-			if (checkBoxDontGenerate.Checked)
+			if (!OutputPathUseTemplate)
 			{
 				MessageBox.Show(this, "Batch mode cannot be used with the output path set manually.",
 					"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -175,17 +162,22 @@ namespace JDP {
 				ChangeCulture(c, resources);
 		}
 
-		private void btnSettings_Click(object sender, EventArgs e) {
-			using (frmSettings settingsForm = new frmSettings()) {
+		private void toolStripButtonSettings_Click(object sender, EventArgs e)
+		{
+			using (frmSettings settingsForm = new frmSettings())
+			{
 				settingsForm.IconMgr = m_icon_mgr;
 				settingsForm.ReducePriority = _reducePriority;
-				settingsForm.Config = _config;
+				settingsForm.Config = _profile._config;
 
-				settingsForm.ShowDialog();
+				DialogResult res = settingsForm.ShowDialog(this);
 
-				if (Thread.CurrentThread.CurrentUICulture != CultureInfo.GetCultureInfo(_config.language))
+				if (res == DialogResult.Cancel)
+					return;
+
+				if (Thread.CurrentThread.CurrentUICulture != CultureInfo.GetCultureInfo(_profile._config.language))
 				{
-					Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(_config.language);
+					Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(_profile._config.language);
 					ComponentResourceManager resources = new ComponentResourceManager(typeof(frmCUETools));
 					int savedWidth = Width;
 					Width = MinimumSize.Width;
@@ -195,15 +187,14 @@ namespace JDP {
 				}
 
 				_reducePriority = settingsForm.ReducePriority;
-				_config = settingsForm.Config;
-				updateOutputStyles();
-				UpdateOutputPath();
+				SelectedOutputAudioType = SelectedOutputAudioType;
 				SetupScripts();
 				SaveSettings();
 			}
 		}
 
-		private void btnAbout_Click(object sender, EventArgs e) {
+		private void toolStripButtonAbout_Click(object sender, EventArgs e)
+		{
 			using (frmAbout aboutForm = new frmAbout())
 			{
 				aboutForm.ShowDialog(this);
@@ -242,11 +233,6 @@ namespace JDP {
 			UpdateActions();
 		}
 
-		private void checkBoxDontGenerate_CheckedChanged(object sender, EventArgs e)
-		{
-			UpdateOutputPath();
-		}
-
 		private void comboBoxOutputFormat_TextUpdate(object sender, EventArgs e)
 		{
 			UpdateOutputPath();
@@ -260,8 +246,11 @@ namespace JDP {
 		private void frmCUETools_Load(object sender, EventArgs e) {
 			_batchPaths = new List<string>();
 			labelFormat.ImageList = m_icon_mgr.ImageList;
-			labelCorrectorFormat.ImageList = m_icon_mgr.ImageList;
-			MinimumWidth = MinimumSize.Width;
+			toolStripCorrectorFormat.ImageList = m_icon_mgr.ImageList;
+			toolStripDropDownButtonCorrectorFormat.DropDown.ImageList = m_icon_mgr.ImageList;
+			OpenMinimumSize = MinimumSize;
+			ClosedMinimumSize = new Size(Width - grpInput.Width, Height - textBatchReport.Height);
+			SizeIncrement = Size - OpenMinimumSize;
 			LoadSettings();
 
 			if (_reducePriority)
@@ -287,9 +276,11 @@ namespace JDP {
 			//    }
 			//}
 
+			motdImage = null;
 			if (File.Exists(MOTDImagePath))
-				try { labelMotd.Image = Image.FromFile(MOTDImagePath); }
-				catch { }
+				using (FileStream imageStream = new FileStream(MOTDImagePath, FileMode.Open, FileAccess.Read))
+					try { motdImage = Image.FromStream(imageStream); }
+					catch { }
 
 			if (File.Exists(MOTDTextPath))
 				try
@@ -302,7 +293,7 @@ namespace JDP {
 							string motd = sr.ReadToEnd();
 							_batchReport = new StringBuilder();
 							_batchReport.Append(motd);
-							FileBrowserState = FileBrowserStateEnum.BatchLog;
+							ReportState = true;
 						}
 					}
 				}
@@ -311,7 +302,6 @@ namespace JDP {
 			SetupControls(false);
 			UpdateOutputPath();
 			updateOutputStyles();
-			SetupScripts();
 		}
 
 		private void frmCUETools_FormClosed(object sender, FormClosedEventArgs e) {
@@ -324,9 +314,14 @@ namespace JDP {
 			Tree = 0,
 			Checkboxes = 1,
 			DragDrop = 2,
-			BatchLog = 3,
 			Hidden = 4
 		}
+
+		private enum CorrectorModeEnum {
+			Locate = 0,
+			Extension = 1
+		}
+
 		// ********************************************************************************
 
 		private CUEControls.IIconManager m_icon_mgr;
@@ -339,14 +334,17 @@ namespace JDP {
 		string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat, _defaultNoAudioFormat;
 		Thread _workThread;
 		CUESheet _workClass;
-		CUEConfig _config;
-		int MinimumWidth;
-		int WidthIncrement;
-		FileBrowserStateEnum _fileBrowserState = FileBrowserStateEnum.BatchLog;
-		FileBrowserStateEnum _fileBrowserControlState = FileBrowserStateEnum.BatchLog;
+		CUEToolsProfile _profile, _defaultProfile;
+		Size OpenMinimumSize, ClosedMinimumSize, SizeIncrement;
+		FileBrowserStateEnum _fileBrowserState = FileBrowserStateEnum.DragDrop;
+		FileBrowserStateEnum _fileBrowserControlState = FileBrowserStateEnum.Hidden;
+		bool _outputPathUseTemplate = true;
+		bool _reportState = true;
+		CorrectorModeEnum _correctorMode;
 		DateTime lastMOTD;
+		Image motdImage = null;
 		string profilePath;
-		string [] OutputPathTemplates = {
+		string [] OutputPathUseTemplates = {
 			"%music%\\Converted\\%artist%\\[%year% - ]%album%[ - %edition%]$ifgreater($max(%discnumber%,%totaldiscs%),1, - cd %discnumber%,)[' ('%unique%')']\\%artist% - %album%[ - %edition%].cue",
 			"[%directoryname%\\]%filename%-new[%unique%].cue",
 			"[%directoryname%\\]new[%unique%]\\%filename%.cue"
@@ -376,7 +374,7 @@ namespace JDP {
 				//    InputPath = pathIn;
 				//}
 
-				CUESheet cueSheet = new CUESheet(_config);
+				CUESheet cueSheet = new CUESheet(_profile._config);
 				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
 				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
 				cueSheet.CUEToolsSelection += new CUEToolsSelectionHandler(MakeSelection);
@@ -481,7 +479,7 @@ namespace JDP {
 		{
 			get
 			{
-				return "CUETools 2.0.3";
+				return "CUETools 2.0.4";
 			}
 		}
 
@@ -500,7 +498,7 @@ namespace JDP {
 
 			try
 			{
-				if (_config.checkForUpdates && DateTime.UtcNow - lastMOTD > TimeSpan.FromDays(1) && _batchReport.Length == 0)
+				if (_profile._config.checkForUpdates && DateTime.UtcNow - lastMOTD > TimeSpan.FromDays(1) && _batchReport.Length == 0)
 				{
 					this.Invoke((MethodInvoker)delegate()
 					{
@@ -511,36 +509,44 @@ namespace JDP {
 					try
 					{
 						using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
-						if (resp.StatusCode == HttpStatusCode.OK)
-						{
-							using (Stream respStream = resp.GetResponseStream())
-							using (FileStream motd = new FileStream(MOTDImagePath, FileMode.Create, FileAccess.Write))
+							if (resp.StatusCode == HttpStatusCode.OK)
 							{
-								byte[] buff = new byte[0x8000];
-								do
+								using (Stream respStream = resp.GetResponseStream())
+								using (FileStream motd = new FileStream(MOTDImagePath, FileMode.Create, FileAccess.Write))
 								{
-									int count = respStream.Read(buff, 0, buff.Length);
-									if (count == 0) break;
-									motd.Write(buff, 0, count);
-								} while (true);
+									byte[] buff = new byte[0x8000];
+									do
+									{
+										int count = respStream.Read(buff, 0, buff.Length);
+										if (count == 0) break;
+										motd.Write(buff, 0, count);
+									} while (true);
+								}
 							}
-						}
-						else
-						{
-							File.Delete(MOTDImagePath);
-						}
+							else
+							{
+								File.Delete(MOTDImagePath);
+							}
 						lastMOTD = DateTime.UtcNow;
 					}
-					catch { }
-					
-					this.Invoke((MethodInvoker)delegate() 
-					{ 
-						if (File.Exists(MOTDImagePath))
-							try { labelMotd.Image = Image.FromFile(MOTDImagePath); }
+					catch (WebException ex)
+					{
+						if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response != null && ex.Response is HttpWebResponse)
+						{
+							HttpWebResponse resp = (HttpWebResponse)ex.Response;
+							if (resp.StatusCode == HttpStatusCode.NotFound)
+							{
+								File.Delete(MOTDImagePath);
+								lastMOTD = DateTime.UtcNow;
+							}
+						}
+					}
+
+					motdImage = null;
+					if (File.Exists(MOTDImagePath))
+						using (FileStream imageStream = new FileStream(MOTDImagePath, FileMode.Open, FileAccess.Read))
+							try { motdImage = Image.FromStream(imageStream); }
 							catch { }
-						else
-							labelMotd.Image = null;
-					});
 
 					req = (HttpWebRequest)WebRequest.Create("http://cuetools.net/motd/motd.txt");
 					req.Method = "GET";
@@ -568,7 +574,7 @@ namespace JDP {
 					}
 					catch { }
 					if (File.Exists(MOTDTextPath))
-						try 
+						try
 						{
 							using (StreamReader sr = new StreamReader(MOTDTextPath, Encoding.UTF8))
 							{
@@ -588,7 +594,7 @@ namespace JDP {
 					{
 						if (_batchPaths.Count == 0)
 							throw new Exception("is a directory");
-						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, pathIn);
+						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_profile._config, pathIn);
 						int directoriesFound = 0, cueSheetsFound = 0;
 						foreach (FileGroupInfo fileGroup in fileGroups)
 							if (fileGroup.type == FileGroupInfoType.Folder)
@@ -603,7 +609,7 @@ namespace JDP {
 					else if (File.Exists(pathIn))
 					{
 						pathIn = Path.GetFullPath(pathIn);
-						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, Path.GetDirectoryName(pathIn));
+						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_profile._config, Path.GetDirectoryName(pathIn));
 						FileGroupInfo fileGroup = FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.TrackFiles)
 							?? FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.FileWithCUE);
 						if (fileGroup == null)
@@ -616,7 +622,7 @@ namespace JDP {
 							cueSheet.Close();
 						}
 						else
-							cueSheetContents = CUESheet.CreateDummyCUESheet(_config, fileGroup);
+							cueSheetContents = CUESheet.CreateDummyCUESheet(_profile._config, fileGroup);
 						string fullCueName;
 						if (fileGroup.type == FileGroupInfoType.FileWithCUE)
 							fullCueName = Path.ChangeExtension(fileGroup.main.FullName, ".cue");
@@ -661,11 +667,11 @@ namespace JDP {
 							cue = sr.ReadToEnd();
 						string extension;
 						string fixedCue;
-						if (rbCorrectorLocateFiles.Checked)
-							fixedCue = CUESheet.CorrectAudioFilenames(_config, Path.GetDirectoryName(pathIn), cue, true, null, out extension);
+						if (CorrectorMode == CorrectorModeEnum.Locate)
+							fixedCue = CUESheet.CorrectAudioFilenames(_profile._config, Path.GetDirectoryName(pathIn), cue, true, null, out extension);
 						else
 						{
-							extension = (string)comboBoxCorrectorFormat.SelectedItem;
+							extension = toolStripDropDownButtonCorrectorFormat.Text;
 							using (StringReader sr = new StringReader(cue))
 							{
 								using (StringWriter sw = new StringWriter())
@@ -687,7 +693,7 @@ namespace JDP {
 						}
 						if (fixedCue != cue)
 						{
-							if (checkBoxCorrectorOverwrite.Checked)
+							if (toolStripButtonCorrectorOverwrite.Checked)
 							{
 								using (StreamWriter sw = new StreamWriter(pathIn, false, CUESheet.Encoding))
 									sw.Write(fixedCue);
@@ -718,7 +724,7 @@ namespace JDP {
 					{
 						if (_batchPaths.Count == 0)
 							throw new Exception("is a directory");
-						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, pathIn);
+						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_profile._config, pathIn);
 						int directoriesFound = 0, cueSheetsFound = 0;
 						foreach (FileGroupInfo fileGroup in fileGroups)
 							if (fileGroup.type == FileGroupInfoType.Folder)
@@ -754,9 +760,8 @@ namespace JDP {
 
 						if (_batchPaths.Count == 0 && convertAction)
 						{
-							if (rbFreedbAlways.Checked || (rbFreedbIf.Checked &&
-								(cueSheet.Artist == "" || cueSheet.Title == "" || cueSheet.Year == "")))
-								releases = cueSheet.LookupAlbumInfo();
+							if (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked)
+								releases = cueSheet.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked);
 						}
 
 						this.Invoke((MethodInvoker)delegate()
@@ -776,23 +781,19 @@ namespace JDP {
 									SetupControls(false);
 								}
 							}
-							UpdateOutputPath(
-								cueSheet.Tags,
-								pathIn,
-								General.EmptyStringToNull(cueSheet.Year),
-								cueSheet.Artist != "" ? cueSheet.Artist : "Unknown Artist",
-								cueSheet.Title != "" ? cueSheet.Title : "Unknown Title",
-								General.EmptyStringToNull(cueSheet.DiscNumber),
-								General.EmptyStringToNull(cueSheet.TotalDiscs)
-								);
+							UpdateOutputPath(pathIn, cueSheet);
 							pathOut = txtOutputPath.Text;
+							if (dlgRes != DialogResult.Cancel && cueSheet.AlbumArt != null && cueSheet.AlbumArt.Length != 0)
+								pictureBoxMotd.Image = cueSheet.Cover;
+							else
+								pictureBoxMotd.Image = motdImage;
 						});
 
 						if (dlgRes == DialogResult.Cancel)
 							return;
 
 						bool outputAudio = convertAction && audioEncoderType != AudioEncoderType.NoAudio;
-						bool outputCUE = convertAction && (cueStyle != CUEStyle.SingleFileWithCUE || _config.createCUEFileWhenEmbedded);
+						bool outputCUE = convertAction && (cueStyle != CUEStyle.SingleFileWithCUE || _profile._config.createCUEFileWhenEmbedded);
 
 						cueSheet.GenerateFilenames(audioEncoderType, outputFormat, pathOut);
 						string outDir = Path.GetDirectoryName(pathOut);
@@ -810,7 +811,7 @@ namespace JDP {
 								outputExists |= File.Exists(Path.Combine(outDir, cueSheet.SingleFilename));
 							else
 							{
-								if (cueStyle == CUEStyle.GapsAppended && _config.preserveHTOA)
+								if (cueStyle == CUEStyle.GapsAppended && _profile._config.preserveHTOA)
 									outputExists |= File.Exists(Path.Combine(outDir, cueSheet.HTOAFilename));
 								for (int i = 0; i < cueSheet.TrackCount; i++)
 									outputExists |= File.Exists(Path.Combine(outDir, cueSheet.TrackFilenames[i]));
@@ -840,58 +841,8 @@ namespace JDP {
 							cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
 							if (script == null)
 								status = cueSheet.Go();
-							else if (script.builtin)
-							{
-								CUESheet processor = cueSheet;
-								if (script.name == "default")
-									status = processor.Go();
-								if (script.name == "only if found")
-									status = processor.ArVerify.AccResult != HttpStatusCode.OK ?
-										processor.WriteReport() :
-										processor.Go();
-								if (script.name == "fix offset")
-								{
-									if (processor.ArVerify.AccResult != HttpStatusCode.OK)
-										status = processor.WriteReport();
-									else
-									{
-										processor.WriteOffset = 0;
-										processor.Action = CUEAction.Verify;
-										status = processor.Go();
-
-										uint tracksMatch;
-										int bestOffset;
-										processor.FindBestOffset(processor.Config.fixOffsetMinimumConfidence, !processor.Config.fixOffsetToNearest, out tracksMatch, out bestOffset);
-										if (tracksMatch * 100 >= processor.Config.fixOffsetMinimumTracksPercent * processor.TrackCount)
-										{
-											processor.WriteOffset = bestOffset;
-											processor.Action = CUEAction.VerifyAndConvert;
-											status = processor.Go();
-										}
-									}
-								}
-								if (script.name == "encode if verified")
-								{
-									if (processor.ArVerify.AccResult != HttpStatusCode.OK)
-										status = processor.WriteReport();
-									else
-									{
-										processor.Action = CUEAction.Verify;
-										status = processor.Go();
-
-										uint tracksMatch;
-										int bestOffset;
-										processor.FindBestOffset(processor.Config.encodeWhenConfidence, false, out tracksMatch, out bestOffset);
-										if (tracksMatch * 100 >= processor.Config.encodeWhenPercent * processor.TrackCount && (!_config.encodeWhenZeroOffset || bestOffset == 0))
-										{
-											processor.Action = CUEAction.VerifyAndConvert;
-											status = processor.Go();
-										}
-									}
-								}
-							}
 							else
-								status = cueSheet.ExecuteScript(script.code);
+								status = cueSheet.ExecuteScript(script);
 
 							//if (_batchPaths.Count > 0)
 							{
@@ -916,7 +867,7 @@ namespace JDP {
 						}
 						else if (action == CUEAction.CreateDummyCUE || action == CUEAction.CorrectFilenames)
 						{
-							FileBrowserState = FileBrowserStateEnum.BatchLog;
+							ReportState = true;
 							//frmReport reportForm = new frmReport();
 							//reportForm.Message = _batchReport.ToString();
 							//reportForm.ShowDialog(this);
@@ -929,7 +880,7 @@ namespace JDP {
 								cueSheet.GenerateAccurateRipLog(sw);
 								_batchReport.Append(sw.ToString());
 							}
-							FileBrowserState = FileBrowserStateEnum.BatchLog;
+							ReportState = true;
 
 							//frmReport reportForm = new frmReport();
 							//StringWriter sw = new StringWriter();
@@ -989,7 +940,7 @@ namespace JDP {
 				this.BeginInvoke((MethodInvoker)delegate() {
 					if (_batchPaths.Count == 0) {
 						SetupControls(false);
-						FileBrowserState = FileBrowserStateEnum.BatchLog;
+						ReportState = true;
 						//frmReport reportForm = new frmReport();
 						//reportForm.Message = _batchReport.ToString();
 						//reportForm.ShowDialog(this);
@@ -1015,21 +966,25 @@ namespace JDP {
 			bool converting = (SelectedAction == CUEAction.Convert || SelectedAction == CUEAction.VerifyAndConvert);
 			bool verifying = (SelectedAction == CUEAction.Verify || SelectedAction == CUEAction.VerifyAndConvert);
 			//grpInput.Enabled = !running;
-			toolStrip1.Enabled = !running;
+			toolStripMenu.Enabled = !running;
 			fileSystemTreeView1.Enabled = !running;
 			txtInputPath.Enabled = !running;
 			txtInputPath.ReadOnly = FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes;
 			grpExtra.Enabled = !running && (converting || verifying);
-			groupBoxCorrector.Enabled = !running && SelectedAction == CUEAction.CorrectFilenames;
+			//groupBoxCorrector.Enabled = !running && SelectedAction == CUEAction.CorrectFilenames;
+			//grpOutputStyle.Enabled = !running && converting;
+			groupBoxMode.Enabled = !running;
+			toolStripCorrectorFormat.Visible = SelectedAction == CUEAction.CorrectFilenames;
+			tableLayoutPanelCUEStyle.Visible = converting;
 			grpOutputPathGeneration.Enabled = !running;
 			grpAudioOutput.Enabled = !running && converting;
 			grpAction.Enabled = !running;
-			grpOutputStyle.Enabled = !running && converting;
-			grpFreedb.Enabled = !running && !(FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes) && converting;
+			checkBoxUseFreeDb.Enabled = 
+				checkBoxUseMusicBrainz.Enabled =
+				checkBoxUseAccurateRip.Enabled =
+				!running && !(FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes) && converting;
 			txtDataTrackLength.Enabled = !running && verifying;
 			txtPreGapLength.Enabled = !running;
-			btnAbout.Enabled = !running;
-			btnSettings.Enabled = !running;
 			btnConvert.Visible = !running;
 			btnStop.Enabled = btnPause.Enabled = btnResume.Enabled = running;
 			btnStop.Visible = btnPause.Visible = running;
@@ -1037,43 +992,22 @@ namespace JDP {
 			toolStripStatusLabel1.Text = String.Empty;
 			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
-			toolStripStatusLabelAR.Visible = false;			
-			if (_batchPaths.Count > 0 || FileBrowserState == FileBrowserStateEnum.BatchLog)
+			toolStripStatusLabelAR.Visible = false;
+			if (ReportState)
 			{
-				fileSystemTreeView1.Visible = false;
-				textBatchReport.Visible = true;
-				textBatchReport.ReadOnly = true;
 				if (_batchReport != null)
 					textBatchReport.Text = _batchReport.ToString();
 				else
 					textBatchReport.Text = "";
-				textBatchReport.SelectAll();
-				textBatchReport.ScrollToCaret();
-				//toolStripStatusLabelProcessed.Visible = true;
-				//toolStripStatusLabelProcessed.Text = "Processed: " + _batchProcessed.ToString();
-				//toolStripStatusLabelProcessed.ToolTipText = _batchReport.ToString();
-			}
-			//else if (FileBrowserState == FileBrowserStateEnum.DragDrop)
-			//{
-			//    fileSystemTreeView1.Visible = false;
-			//    textBatchReport.Visible = true;
-			//    textBatchReport.ReadOnly = false;
-			//}
-			else
-			{
-				//bool wasHidden = !fileSystemTreeView1.Visible;
-				fileSystemTreeView1.Visible = true;
-				toolStripStatusLabelProcessed.Visible = false;
-				textBatchReport.Visible = false;
-				//if (wasHidden && fileSystemTreeView1.SelectedPath != null)
-				//{
-				//    InputPath = fileSystemTreeView1.SelectedPath;
-				//    txtInputPath.SelectAll();
-				//}
+				//textBatchReport.SelectAll();
+				//textBatchReport.ScrollToCaret();
 			}
 
 			if (!running)
+			{
 				UpdateActions();
+				pictureBoxMotd.Image = motdImage;
+			}
 
 			//rbGapsLeftOut.Visible = 
 			//    rbGapsPrepended.Visible = 
@@ -1128,55 +1062,128 @@ namespace JDP {
 			return (dlgRes == DialogResult.Yes);
 		}
 
+		private void ActivateProfile()
+		{
+			SelectedOutputAudioType = _profile._outputAudioType;
+			SelectedOutputAudioFormat = _profile._outputAudioFormat;
+			SelectedAction = _profile._action;
+			SelectedCUEStyle = _profile._CUEStyle;
+			numericWriteOffset.Value = _profile._writeOffset;
+			comboBoxOutputFormat.Text = _profile._outputTemplate ?? comboBoxOutputFormat.Items[0].ToString();
+			toolStripDropDownButtonProfile.Text = _profile._name;
+			SelectedScript = _profile._script;
+			checkBoxUseFreeDb.Checked = _profile._useFreeDb;
+			checkBoxUseMusicBrainz.Checked = _profile._useMusicBrainz;
+			checkBoxUseAccurateRip.Checked = _profile._useAccurateRip;
+		}
+
+		private void ActivateProfile(string profileName)
+		{
+			if (profileName == _defaultProfile._name)
+				return;
+			_profile = new CUEToolsProfile(profileName);
+			SettingsReader sr = new SettingsReader("CUE Tools", string.Format("profile-{0}.txt", _profile._name), Application.ExecutablePath);
+			_profile.Load(sr);
+			_profile._config.encoders = _defaultProfile._config.encoders;
+			_profile._config.decoders = _defaultProfile._config.decoders;
+			_profile._config.formats = _defaultProfile._config.formats;
+			_profile._config.scripts = _defaultProfile._config.scripts;
+			ActivateProfile();
+		}
+
+		private void DeactivateProfile()
+		{
+			SaveProfile();
+
+			if (_profile != _defaultProfile)
+			{
+				_defaultProfile._config.encoders = _profile._config.encoders;
+				_defaultProfile._config.decoders = _profile._config.decoders;
+				_defaultProfile._config.formats = _profile._config.formats;
+				_defaultProfile._config.scripts = _profile._config.scripts;
+				_profile = _defaultProfile;
+				ActivateProfile();
+			}
+		}
+
+		private void SaveProfile()
+		{
+			_profile._outputAudioType = SelectedOutputAudioType;
+			_profile._outputAudioFormat = SelectedOutputAudioFormat;
+			_profile._action = SelectedAction;
+			_profile._CUEStyle = SelectedCUEStyle;
+			_profile._writeOffset = (int) numericWriteOffset.Value;
+			_profile._outputTemplate = comboBoxOutputFormat.Text;
+			_profile._script = SelectedScript;
+			_profile._useFreeDb = checkBoxUseFreeDb.Checked;
+			_profile._useMusicBrainz = checkBoxUseMusicBrainz.Checked;
+			_profile._useAccurateRip = checkBoxUseAccurateRip.Checked;
+			
+			if (_profile != _defaultProfile)
+			{
+				SettingsWriter sw = new SettingsWriter("CUE Tools", string.Format("profile-{0}.txt", _profile._name), Application.ExecutablePath);
+				_profile.Save(sw);
+				sw.Close();
+			}
+		}
+
 		private void LoadSettings() {
 			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath);
 			profilePath = sr.ProfilePath;
-			_config.Load(sr);
+			_profile.Load(sr);
 			lastMOTD = sr.LoadDate("LastMOTD") ?? DateTime.FromBinary(0);
 			_defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
 			_defaultLossyFormat = sr.Load("DefaultLossyFormat") ?? "mp3";
 			_defaultHybridFormat = sr.Load("DefaultHybridFormat") ?? "lossy.flac";
 			_defaultNoAudioFormat = sr.Load("DefaultNoAudioFormat") ?? "wav";
-			int iFormat, nFormats = sr.LoadInt32("OutputPathTemplates", 0, 10) ?? 0;
-			for (iFormat = 0; iFormat < OutputPathTemplates.Length; iFormat++)
-				comboBoxOutputFormat.Items.Add(OutputPathTemplates[iFormat]);
+			int iFormat, nFormats = sr.LoadInt32("OutputPathUseTemplates", 0, 10) ?? 0;
+			for (iFormat = 0; iFormat < OutputPathUseTemplates.Length; iFormat++)
+				comboBoxOutputFormat.Items.Add(OutputPathUseTemplates[iFormat]);
 			for (iFormat = nFormats - 1; iFormat >= 0; iFormat --)
-				comboBoxOutputFormat.Items.Add(sr.Load(string.Format("OutputPathTemplate{0}", iFormat)) ?? "");
-			comboBoxOutputFormat.Text = sr.Load("OutputPathTemplate") ?? comboBoxOutputFormat.Items[0].ToString();
-			checkBoxDontGenerate.Checked = sr.LoadBoolean("DontGenerate") ?? false;
-			SelectedOutputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? AudioEncoderType.Lossless;
-			SelectedOutputAudioFormat = sr.Load("OutputAudioFmt") ?? "flac";
-			SelectedAction = (CUEAction?)sr.LoadInt32("AccurateRipMode", null, null) ?? CUEAction.VerifyAndConvert;
-			SelectedCUEStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
-			numericWriteOffset.Value = sr.LoadInt32("WriteOffset", null, null) ?? 0;
+				comboBoxOutputFormat.Items.Add(sr.Load(string.Format("OutputPathUseTemplate{0}", iFormat)) ?? "");
+			OutputPathUseTemplate = !(sr.LoadBoolean("DontGenerate") ?? false);
+
+			ActivateProfile();
+
 			_usePregapForFirstTrackInSingleFile = sr.LoadBoolean("UsePregapForFirstTrackInSingleFile") ?? false;
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
-			switch (sr.LoadInt32("FreedbLookup", null, null) ?? 2)
+			CorrectorMode = (CorrectorModeEnum)(sr.LoadInt32("CorrectorLookup", null, null) ?? (int) CorrectorModeEnum.Locate);
+			toolStripButtonCorrectorOverwrite.Checked = sr.LoadBoolean("CorrectorOverwrite") ?? true;
+			string correctorFormat = sr.Load("CorrectorFormat") ?? "flac";
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _profile._config.formats)
 			{
-				case 0: rbFreedbNever.Checked = true; break;
-				case 1: rbFreedbIf.Checked = true; break;
-				case 2: rbFreedbAlways.Checked = true; break;
+				ToolStripItem item = new ToolStripMenuItem(format.Key);
+				item.ImageKey = "." + format.Value.extension;
+				toolStripDropDownButtonCorrectorFormat.DropDownItems.Add(item);
+				if (correctorFormat == format.Key)
+				{
+					toolStripDropDownButtonCorrectorFormat.Text = item.Text;
+					toolStripDropDownButtonCorrectorFormat.ImageKey = item.ImageKey;
+				}
 			}
-			rbCorrectorChangeExtension.Checked = true;
-			switch (sr.LoadInt32("CorrectorLookup", null, null) ?? 0)
-			{
-				case 0: rbCorrectorLocateFiles.Checked = true; break;
-				case 1: rbCorrectorChangeExtension.Checked = true; break;
-			}
-			checkBoxCorrectorOverwrite.Checked = sr.LoadBoolean("CorrectorOverwrite") ?? true;
-			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
-				comboBoxCorrectorFormat.Items.Add(format.Key);
-			comboBoxCorrectorFormat.SelectedItem = sr.Load("CorrectorFormat") ?? "flac";
-			Width = MinimumWidth + sr.LoadInt32("WidthIncrement", 0, null) ?? 0;
-			FileBrowserState = (FileBrowserStateEnum)(sr.LoadInt32("FileBrowserState", (int)FileBrowserStateEnum.Tree, (int)FileBrowserStateEnum.Hidden) ?? (int)FileBrowserStateEnum.Tree);
+			SizeIncrement.Width = sr.LoadInt32("WidthIncrement", 0, null) ?? 0;
+			SizeIncrement.Height = sr.LoadInt32("HeightIncrement", 0, null) ?? 0;
+			Size = OpenMinimumSize + SizeIncrement;
 			Top = sr.LoadInt32("Top", 0, null) ?? Top;
 			Left = sr.LoadInt32("Left", 0, null) ?? Left;
-			PerformLayout();
 			if (InputPath == "")
+			{
 				InputPath = sr.Load("InputPath") ?? "";
+				FileBrowserState = (FileBrowserStateEnum)(sr.LoadInt32("FileBrowserState", (int)FileBrowserStateEnum.Tree, (int)FileBrowserStateEnum.Hidden) ?? (int)FileBrowserStateEnum.Hidden);
+			}
+			else
+				FileBrowserState = FileBrowserStateEnum.Hidden;
+			ReportState = sr.LoadBoolean("ReportState") ?? false;
+			PerformLayout();
+			string profiles = sr.Load("Profiles") ?? "verify convert fix";
+			foreach (string prof in profiles.Split(' '))
+				toolStripDropDownButtonProfile.DropDownItems.Add(prof);
 		}
 
-		private void SaveSettings() {
+		private void SaveSettings() 
+		{
+			SaveProfile();
+
 			SettingsWriter sw = new SettingsWriter("CUE Tools", "settings.txt", Application.ExecutablePath);
 			SaveScripts(SelectedAction);
 			sw.Save("LastMOTD", lastMOTD);
@@ -1185,144 +1192,46 @@ namespace JDP {
 			sw.Save("DefaultLossyFormat", _defaultLossyFormat);
 			sw.Save("DefaultHybridFormat", _defaultHybridFormat);
 			sw.Save("DefaultNoAudioFormat", _defaultNoAudioFormat);
-			sw.Save("DontGenerate", checkBoxDontGenerate.Checked);
-			sw.Save("OutputPathTemplates", comboBoxOutputFormat.Items.Count - OutputPathTemplates.Length);
-			for (int iFormat = comboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathTemplates.Length; iFormat--)
-				sw.Save(string.Format("OutputPathTemplate{0}", iFormat - OutputPathTemplates.Length), comboBoxOutputFormat.Items[iFormat].ToString());
-			sw.Save("OutputPathTemplate", comboBoxOutputFormat.Text);
-			sw.Save("OutputAudioFmt", SelectedOutputAudioFormat);
-			sw.Save("OutputAudioType", (int)SelectedOutputAudioType);
-			sw.Save("AccurateRipMode", (int)SelectedAction);
-			sw.Save("CUEStyle", (int)SelectedCUEStyle);
-			sw.Save("WriteOffset", (int)numericWriteOffset.Value);
+			sw.Save("DontGenerate", !_outputPathUseTemplate);
+			sw.Save("OutputPathUseTemplates", comboBoxOutputFormat.Items.Count - OutputPathUseTemplates.Length);
+			for (int iFormat = comboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathUseTemplates.Length; iFormat--)
+				sw.Save(string.Format("OutputPathUseTemplate{0}", iFormat - OutputPathUseTemplates.Length), comboBoxOutputFormat.Items[iFormat].ToString());
+
 			sw.Save("UsePregapForFirstTrackInSingleFile", _usePregapForFirstTrackInSingleFile);
 			sw.Save("ReducePriority", _reducePriority);
 			sw.Save("FileBrowserState", (int)FileBrowserState);
-			sw.Save("FreedbLookup", rbFreedbNever.Checked ? 0 : rbFreedbIf.Checked ? 1 : 2);
-			sw.Save("CorrectorLookup", rbCorrectorLocateFiles.Checked ? 0 : 1);
-			sw.Save("CorrectorOverwrite", checkBoxCorrectorOverwrite.Checked);
-			sw.Save("CorrectorFormat", (string) (comboBoxCorrectorFormat.SelectedItem ?? "flac"));
-			sw.Save("WidthIncrement", FileBrowserState == FileBrowserStateEnum.Hidden ? WidthIncrement : Width - MinimumWidth);
+			sw.Save("ReportState", ReportState);
+			sw.Save("CorrectorLookup", (int) CorrectorMode);
+			sw.Save("CorrectorOverwrite", toolStripButtonCorrectorOverwrite.Checked);
+			sw.Save("CorrectorFormat", toolStripDropDownButtonCorrectorFormat.Text);
+			sw.Save("WidthIncrement", FileBrowserState == FileBrowserStateEnum.Hidden ? SizeIncrement.Width : Width - OpenMinimumSize.Width);
+			sw.Save("HeightIncrement", !ReportState ? SizeIncrement.Height : Height - OpenMinimumSize.Height);
 			sw.Save("Top", Top);
 			sw.Save("Left", Left);
-			_config.Save(sw);
+
+			StringBuilder profiles = new StringBuilder();
+			foreach(ToolStripItem item in toolStripDropDownButtonProfile.DropDownItems)
+				if (item != toolStripTextBoxAddProfile
+					&& item != toolStripMenuItemDeleteProfile
+					&& item != defaultToolStripMenuItem
+					&& item != toolStripSeparator5
+					)
+				{
+					if (profiles.Length > 0)
+						profiles.Append(' ');
+					profiles.Append(item.Text);
+				}
+			sw.Save("Profiles", profiles.ToString());
+
+			_defaultProfile.Save(sw);
 			sw.Close();
-		}
-
-		private void BuildOutputPathFindReplace(string inputPath, string format, List<string> find, List<string> replace) {
-			int i, j, first, last, maxFindLen;
-			string range;
-			string[] rangeSplit;
-			List<string> tmpFind = new List<string>();
-			List<string> tmpReplace = new List<string>();
-
-			i = 0;
-			last = 0;
-			while (i < format.Length) {
-				if (format[i++] == '%') {
-					j = i;
-					while (j < format.Length) {
-						char c = format[j];
-						if (((c < '0') || (c > '9')) && (c != '-') && (c != ':')) {
-							break;
-						}
-						j++;
-					}
-					range = format.Substring(i, j - i);
-					if (range.Length != 0) {
-						rangeSplit = range.Split(new char[] { ':' }, 2);
-						if (Int32.TryParse(rangeSplit[0], out first)) {
-							if (rangeSplit.Length == 1) {
-								last = first;
-							}
-							if ((rangeSplit.Length == 1) || Int32.TryParse(rangeSplit[1], out last)) {
-								tmpFind.Add("%" + range);
-								tmpReplace.Add(General.EmptyStringToNull(GetDirectoryElements(Path.GetDirectoryName(inputPath), first, last)));
-							}
-						}
-					}
-					i = j;
-				}
-			}
-
-			// Sort so that longest find strings are first, so when the replacing is done the
-			// longer strings are checked first.  This avoids problems with overlapping find
-			// strings, for example if one of the strings is "%1" and another is "%1:3".
-			maxFindLen = 0;
-			for (i = 0; i < tmpFind.Count; i++) {
-				if (tmpFind[i].Length > maxFindLen) {
-					maxFindLen = tmpFind[i].Length;
-				}
-			}
-			for (j = maxFindLen; j >= 1; j--) {
-				for (i = 0; i < tmpFind.Count; i++) {
-					if (tmpFind[i].Length == j) {
-						find.Add(tmpFind[i]);
-						replace.Add(tmpReplace[i]);
-					}
-				}
-			}
-
-			find.Add("%F");
-			find.Add("%filename%");
-			find.Add("%directoryname%");
-			replace.Add(Path.GetFileNameWithoutExtension(inputPath));
-			replace.Add(Path.GetFileNameWithoutExtension(inputPath));
-			replace.Add(General.EmptyStringToNull(Path.GetDirectoryName(inputPath)));
-		}
-
-		private string GetDirectoryElements(string dir, int first, int last) {
-			if (dir == null)
-				return "";
-			string[] dirSplit = dir.Split(Path.DirectorySeparatorChar,
-				Path.AltDirectorySeparatorChar);
-			int count = dirSplit.Length;
-
-			if ((first == 0) && (last == 0)) {
-				first = 1;
-				last = count;
-			}
-
-			if (first < 0) first = (count + 1) + first;
-			if (last < 0) last = (count + 1) + last;
-
-			if ((first < 1) && (last < 1)) {
-				return String.Empty;
-			}
-			else if ((first > count) && (last > count)) {
-				return String.Empty;
-			}
-			else {
-				int i;
-				StringBuilder sb = new StringBuilder();
-
-				if (first < 1) first = 1;
-				if (first > count) first = count;
-				if (last < 1) last = 1;
-				if (last > count) last = count;
-
-				if (last >= first) {
-					for (i = first; i <= last; i++) {
-						sb.Append(dirSplit[i - 1]);
-						sb.Append(Path.DirectorySeparatorChar);
-					}
-				}
-				else {
-					for (i = first; i >= last; i--) {
-						sb.Append(dirSplit[i - 1]);
-						sb.Append(Path.DirectorySeparatorChar);
-					}
-				}
-
-				return sb.ToString(0, sb.Length - 1);
-			}
 		}
 
 		private CUEStyle SelectedCUEStyle {
 			get {
 				if (rbEmbedCUE.Checked)		return CUEStyle.SingleFileWithCUE;
 				if (rbSingleFile.Checked)   return CUEStyle.SingleFile;
-				return _config.gapsHandling;
+				return _profile._config.gapsHandling;
 			}
 			set {
 				switch (value) {
@@ -1343,7 +1252,7 @@ namespace JDP {
 				string formatName = (string)comboBoxAudioFormat.SelectedItem;
 				if (formatName.StartsWith("lossy."))
 					formatName = formatName.Substring(6);
-				return _config.formats.TryGetValue(formatName, out fmt) ? fmt : null;
+				return _profile._config.formats.TryGetValue(formatName, out fmt) ? fmt : null;
 			}
 		}
 
@@ -1362,15 +1271,19 @@ namespace JDP {
 				switch (value)
 				{
 					case AudioEncoderType.NoAudio:
+						radioButtonAudioNone.Checked = false;
 						radioButtonAudioNone.Checked = true;
 						break;
 					case AudioEncoderType.Hybrid:
+						radioButtonAudioHybrid.Checked = false;
 						radioButtonAudioHybrid.Checked = true;
 						break;
 					case AudioEncoderType.Lossy:
+						radioButtonAudioLossy.Checked = false;
 						radioButtonAudioLossy.Checked = true;
 						break;
 					default:
+						radioButtonAudioLossless.Checked = false;
 						radioButtonAudioLossless.Checked = true;
 						break;
 				}
@@ -1388,6 +1301,71 @@ namespace JDP {
 			}
 		}
 
+		private void ResetSize()
+		{
+			MinimumSize = new Size(
+				_fileBrowserState == FileBrowserStateEnum.Hidden ? ClosedMinimumSize.Width : OpenMinimumSize.Width,
+				!_reportState ? ClosedMinimumSize.Height : OpenMinimumSize.Height);
+			MaximumSize = new Size(
+				_fileBrowserState == FileBrowserStateEnum.Hidden ? ClosedMinimumSize.Width : 4 * OpenMinimumSize.Width,
+				!_reportState ? ClosedMinimumSize.Height : 4 * OpenMinimumSize.Height);
+			Width = _fileBrowserState == FileBrowserStateEnum.Hidden ? ClosedMinimumSize.Width : OpenMinimumSize.Width + SizeIncrement.Width;
+			Height = !_reportState ? ClosedMinimumSize.Height : OpenMinimumSize.Height + SizeIncrement.Height;
+			PerformLayout();
+		}
+
+		private void SaveSize()
+		{
+			if (_fileBrowserState != FileBrowserStateEnum.Hidden)
+				SizeIncrement.Width = Width - OpenMinimumSize.Width;
+			if (_reportState)
+				SizeIncrement.Height = Height - OpenMinimumSize.Height;
+		}
+
+		private bool ReportState
+		{
+			get
+			{
+				return _reportState;
+			}
+			set
+			{
+				toolStripButtonShowLog.Checked = value;
+				SaveSize();
+				_reportState = value;
+				ResetSize();
+			}
+		}
+
+		bool OutputPathUseTemplate
+		{
+			get
+			{
+				return _outputPathUseTemplate;
+			}
+			set
+			{
+				_outputPathUseTemplate = value;
+				toolStripSplitButtonOutputBrowser.DefaultItem = _outputPathUseTemplate
+					? toolStripMenuItemOutputManual : toolStripMenuItemOutputBrowse;
+				toolStripSplitButtonOutputBrowser.Text = toolStripSplitButtonOutputBrowser.DefaultItem.Text;
+				toolStripSplitButtonOutputBrowser.Image = toolStripSplitButtonOutputBrowser.DefaultItem.Image;
+				UpdateOutputPath();
+			}
+		}
+
+		private ToolStripMenuItem FileBrowserStateButton(FileBrowserStateEnum state)
+		{
+			switch (state)
+			{
+				case FileBrowserStateEnum.Tree: return toolStripMenuItemInputBrowserFiles;
+				case FileBrowserStateEnum.Checkboxes: return toolStripMenuItemInputBrowserMulti;
+				case FileBrowserStateEnum.DragDrop: return toolStripMenuItemInputBrowserDrag;
+				case FileBrowserStateEnum.Hidden: return toolStripMenuItemInputBrowserHide;
+			}
+			return null;
+		}
+
 		private FileBrowserStateEnum FileBrowserState
 		{
 			get
@@ -1396,50 +1374,30 @@ namespace JDP {
 			}
 			set
 			{
-				toolStripButton1.BackColor = SystemColors.Control;
-				toolStripButton2.BackColor = SystemColors.Control;
-				toolStripButton3.BackColor = SystemColors.Control;
-				toolStripButton4.BackColor = SystemColors.Control;
-				toolStripButton5.BackColor = SystemColors.Control;
-				ToolStripButton btn;
-				switch (value)
-				{
-					case FileBrowserStateEnum.Tree: btn = toolStripButton1; break;
-					case FileBrowserStateEnum.Checkboxes: btn = toolStripButton2; break;
-					case FileBrowserStateEnum.DragDrop: btn = toolStripButton3; break;
-					case FileBrowserStateEnum.BatchLog: btn = toolStripButton4; break;
-					case FileBrowserStateEnum.Hidden: btn = toolStripButton5; break;
-					default: return;
-				}
-				btn.BackColor = SystemColors.ButtonShadow;
-				grpInput.Text = btn.Text;
+				ToolStripMenuItem inputBtn = FileBrowserStateButton(value);
+				ToolStripMenuItem defaultBtn = FileBrowserStateButton(value != FileBrowserStateEnum.Hidden
+					? FileBrowserStateEnum.Hidden : _fileBrowserControlState == FileBrowserStateEnum.Hidden
+					? FileBrowserStateEnum.Tree : _fileBrowserControlState);
+				toolStripSplitButtonInputBrowser.Text = defaultBtn.Text;
+				toolStripSplitButtonInputBrowser.Image = defaultBtn.Image;
+				toolStripSplitButtonInputBrowser.DefaultItem = defaultBtn;
+				grpInput.Text = inputBtn.Text;
 
-				if (value == _fileBrowserState)
+				if (value == _fileBrowserState && _fileBrowserControlState != FileBrowserStateEnum.Hidden)
 					return;
 
 				UseWaitCursor = true;
 
-				if (value != FileBrowserStateEnum.Hidden && _fileBrowserState == FileBrowserStateEnum.Hidden)
-				{
-					MinimumSize = new Size(MinimumWidth, MinimumSize.Height);
-					MaximumSize = new Size(MinimumWidth * 2, MinimumSize.Height);
-					Width = MinimumWidth + WidthIncrement;
-					PerformLayout();
-				}
-
-				if (value == FileBrowserStateEnum.Hidden && _fileBrowserState != FileBrowserStateEnum.Hidden)
-				{
-					WidthIncrement = Width - MinimumWidth;
-					MinimumSize = new Size(Width - grpInput.Width, MinimumSize.Height);
-					MaximumSize = MinimumSize;
-					Width = MinimumSize.Width;
-					PerformLayout();
-				}
+				SaveSize();
+				_fileBrowserState = value;
+				ResetSize();
 
 				switch (value)
 				{
 					case FileBrowserStateEnum.Tree:
 					case FileBrowserStateEnum.Checkboxes:
+						if (value == FileBrowserStateEnum.Checkboxes)
+							OutputPathUseTemplate = true;
 						if (_fileBrowserControlState != value)
 						{
 							fileSystemTreeView1.CheckBoxes = value == FileBrowserStateEnum.Checkboxes;
@@ -1480,6 +1438,7 @@ namespace JDP {
 						fileSystemTreeView1.Select();
 						break;
 					case FileBrowserStateEnum.DragDrop:
+						OutputPathUseTemplate = true;
 						if (_fileBrowserControlState != value)
 						{
 							fileSystemTreeView1.CheckBoxes = false;
@@ -1491,12 +1450,10 @@ namespace JDP {
 						}
 						fileSystemTreeView1.Select();
 					    break;
-					case FileBrowserStateEnum.BatchLog:
 					case FileBrowserStateEnum.Hidden:
 						break;
 				}
 				UseWaitCursor = false;
-				_fileBrowserState = value;
 			}
 		}
 
@@ -1506,9 +1463,9 @@ namespace JDP {
 			{
 				return
 					rbActionVerify.Checked ? CUEAction.Verify :
-					rbActionVerifyAndEncode.Checked ? CUEAction.VerifyAndConvert :
 					rbActionCorrectFilenames.Checked ? CUEAction.CorrectFilenames :
 					rbActionCreateCUESheet.Checked ? CUEAction.CreateDummyCUE :
+					checkBoxUseAccurateRip.Checked ? CUEAction.VerifyAndConvert :
 					CUEAction.Convert;
 			}
 			set
@@ -1517,9 +1474,6 @@ namespace JDP {
 				{
 					case CUEAction.Verify:
 						rbActionVerify.Checked = true;
-						break;
-					case CUEAction.VerifyAndConvert:
-						rbActionVerifyAndEncode.Checked = true;
 						break;
 					case CUEAction.CorrectFilenames:
 						rbActionCorrectFilenames.Checked = true;
@@ -1534,24 +1488,17 @@ namespace JDP {
 			}
 		}
 
-		private void UpdateOutputPath() {			 
-			UpdateOutputPath(new NameValueCollection(), InputPath, null, "Artist", "Album", null, null);
+		private void UpdateOutputPath() 
+		{
+			UpdateOutputPath(InputPath, null);
 		}
 
-		private void UpdateOutputPath(NameValueCollection tags, string pathIn, string year, string artist, string album, string disc, string totaldiscs)
+		private void UpdateOutputPath(string pathIn, CUESheet cueSheet)
 		{
-			/* if (rbArVerify.Checked)
-			{
-				txtOutputPath.Text = InputPath;
-				txtOutputPath.ReadOnly = true;
-				btnBrowseOutput.Enabled = false;
-			}
-			else */
-			if (checkBoxDontGenerate.Checked)
+			if (!OutputPathUseTemplate)
 			{
 				txtOutputPath.ReadOnly = false;
 				comboBoxOutputFormat.Enabled = false;
-				btnBrowseOutput.Enabled = true;
 			}
 			else
 			{
@@ -1559,110 +1506,17 @@ namespace JDP {
 				comboBoxOutputFormat.Enabled =
 					SelectedAction != CUEAction.CorrectFilenames &&
 					SelectedAction != CUEAction.CreateDummyCUE &&
-					(SelectedAction != CUEAction.Verify || !_config.arLogToSourceFolder);
+					(SelectedAction != CUEAction.Verify || !_profile._config.arLogToSourceFolder);
 
-				btnBrowseOutput.Enabled = false;
-				txtOutputPath.Text = GenerateOutputPath(tags, pathIn, year, artist, album, disc, totaldiscs, null);
-				int unique = 1;
-				try
-				{
-					while (File.Exists(txtOutputPath.Text))
-					{
-						string newPath = GenerateOutputPath(tags, pathIn, year, artist, album, disc, totaldiscs, unique.ToString());
-						if (newPath == txtOutputPath.Text)
-							break;
-						txtOutputPath.Text = newPath;
-						unique++;
-					}
-				}
-				catch { }
+				txtOutputPath.Text = CUESheet.GenerateUniqueOutputPath(
+					_profile._config,
+					comboBoxOutputFormat.Text,
+					SelectedCUEStyle == CUEStyle.SingleFileWithCUE ? "." + SelectedOutputAudioFormat : ".cue",
+					SelectedAction,
+					new NameValueCollection(),
+					pathIn,
+					cueSheet);
 			}
-		}
-
-		private string GenerateOutputPath(NameValueCollection tags, string pathIn, string year, string artist, string album, string disc, string totaldiscs, string unique)
-		{
-			if (!IsCDROM(pathIn) && !File.Exists(pathIn) && !Directory.Exists(pathIn))
-				return "";
-			if (SelectedAction == CUEAction.Verify && _config.arLogToSourceFolder)
-				return Path.ChangeExtension(pathIn, ".cue");
-			if (SelectedAction == CUEAction.CreateDummyCUE)
-				return Path.ChangeExtension(pathIn, ".cue");
-			if (SelectedAction == CUEAction.CorrectFilenames)
-				return pathIn;
-
-			string pathOut, dir, file, ext;
-
-			pathOut = String.Empty;
-
-			if ((pathIn.Length != 0) && (File.Exists(pathIn) || Directory.Exists(pathIn)))
-			{
-				if (Directory.Exists(pathIn))
-				{
-					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
-						pathIn = pathIn + Path.DirectorySeparatorChar;
-					dir = Path.GetDirectoryName(pathIn) ?? pathIn;
-					file = Path.GetFileNameWithoutExtension(dir);
-				}
-				else
-				{
-					dir = Path.GetDirectoryName(pathIn);
-					file = Path.GetFileNameWithoutExtension(pathIn);
-				}
-				ext = ".cue";
-				if (rbEmbedCUE.Checked)
-					ext = "." + SelectedOutputAudioFormat;
-				if (_config.detectHDCD && _config.decodeHDCD && (!ext.StartsWith(".lossy.") || !_config.decodeHDCDtoLW16))
-				{
-					if (_config.decodeHDCDto24bit)
-						ext = ".24bit" + ext;
-					else
-						ext = ".20bit" + ext;
-				}
-
-				string format = comboBoxOutputFormat.Text;
-				List<string> find = new List<string>();
-				List<string> replace = new List<string>();
-				bool rs = _config.replaceSpaces;
-
-				find.Add("%music%");
-				find.Add("%artist%");
-				find.Add("%D");
-				find.Add("%album%");
-				find.Add("%C");
-				find.Add("%year%");
-				find.Add("%Y");
-				find.Add("%discnumber%");
-				find.Add("%totaldiscs%");
-				find.Add("%unique%");
-				replace.Add(m_icon_mgr.GetFolderPath(CUEControls.ExtraSpecialFolder.MyMusic));
-				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
-				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? artist.Replace(' ', '_') : artist)));
-				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
-				replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? album.Replace(' ', '_') : album)));
-				replace.Add(year);
-				replace.Add(year);
-				replace.Add(disc);
-				replace.Add(totaldiscs);
-				replace.Add(unique);
-				BuildOutputPathFindReplace(pathIn, format, find, replace);
-				string[] keys = tags.AllKeys;
-				for (int i = 0; i < keys.Length; i++)
-				{
-					string key = '%' + keys[i].ToLower() + '%';
-					string val = tags.Get(keys[i]);
-					if (!find.Contains(key) && val != null && val != "")
-					{
-						find.Add(key);
-						replace.Add(General.EmptyStringToNull(_config.CleanseString(rs ? val.Replace(' ', '_') : val)));
-					}
-				}
-
-				pathOut = General.ReplaceMultiple(format, find, replace);
-				if (pathOut == null) pathOut = String.Empty;
-				pathOut = Path.ChangeExtension(pathOut, ext);
-			}
-
-			return pathOut;
 		}
 
 		private void updateOutputStyles()
@@ -1717,7 +1571,7 @@ namespace JDP {
 
 		private void fileSystemTreeView1_NodeExpand(object sender, CUEControls.FileSystemTreeViewNodeExpandEventArgs e)
 		{
-			List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, e.files);
+			List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_profile._config, e.files);
 			foreach (FileGroupInfo fileGroup in fileGroups)
 			{
 				TreeNode node = fileSystemTreeView1.NewNode(fileGroup.main, fileGroup.type == FileGroupInfoType.Folder);
@@ -1736,8 +1590,9 @@ namespace JDP {
 				rbActionCreateCUESheet.Enabled = true;
 				rbActionEncode.Enabled = true;
 				rbActionVerify.Enabled = true;
-				rbActionVerifyAndEncode.Enabled = true;
-				checkBoxDontGenerate.Enabled = false;
+				//toolStripSplitButtonOutputBrowser.Enabled = false;
+				toolStripMenuItemOutputManual.Enabled = 
+					toolStripMenuItemOutputBrowse.Enabled = false;
 			}
 			else
 			{
@@ -1746,14 +1601,15 @@ namespace JDP {
 					&& ((File.Exists(pathIn) && Path.GetExtension(pathIn).ToLower() == ".cue")
 					 || Directory.Exists(pathIn));
 				rbActionCreateCUESheet.Enabled = pathIn.Length != 0
-					&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_config, pathIn) != null)
+					&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_profile._config, pathIn) != null)
 					 || Directory.Exists(pathIn));
-				rbActionVerifyAndEncode.Enabled =
-					rbActionVerify.Enabled =
+				rbActionVerify.Enabled =
 					rbActionEncode.Enabled = pathIn.Length != 0 
 					    && (File.Exists(pathIn) || Directory.Exists(pathIn) || IsCDROM(pathIn));
-				checkBoxDontGenerate.Enabled = pathIn.Length != 0
-				    && (IsCDROM(pathIn) || File.Exists(pathIn));
+				toolStripMenuItemOutputManual.Enabled = 
+					toolStripMenuItemOutputBrowse.Enabled = 
+						pathIn.Length != 0
+						&& (IsCDROM(pathIn) || File.Exists(pathIn));
 			}
 
 			btnConvert.Enabled = btnConvert.Visible &&
@@ -1761,7 +1617,7 @@ namespace JDP {
 				|| (rbActionCreateCUESheet.Enabled && rbActionCreateCUESheet.Checked)
 				|| (rbActionEncode.Enabled && rbActionEncode.Checked)
 				|| (rbActionVerify.Enabled && rbActionVerify.Checked)
-				|| (rbActionVerifyAndEncode.Enabled && rbActionVerifyAndEncode.Checked));
+				);
 
 			comboBoxScript.Enabled = btnConvert.Enabled && comboBoxScript.Items.Count > 1;
 		}
@@ -1843,31 +1699,39 @@ namespace JDP {
 			}
 		}
 
+		private string SelectedScript
+		{
+			get
+			{
+				return comboBoxScript.SelectedItem != null ? ((CUEToolsScript)comboBoxScript.SelectedItem).name : "default";
+			}
+			set
+			{
+				comboBoxScript.Items.Clear();
+				foreach (KeyValuePair<string, CUEToolsScript> script in _profile._config.scripts)
+					if (script.Value.conditions.Contains(SelectedAction))
+						comboBoxScript.Items.Add(script.Value);
+				comboBoxScript.Enabled = btnConvert.Enabled && comboBoxScript.Items.Count > 1;
+				comboBoxScript.SelectedItem =
+					(value != null && _profile._config.scripts.ContainsKey(value)) ? _profile._config.scripts[value] :
+					(comboBoxScript.Items.Count > 0 ? comboBoxScript.Items[0] : null);
+			}
+		}
+
 		private void SetupScripts()
 		{
-			comboBoxScript.Items.Clear();
-			foreach (KeyValuePair<string, CUEToolsScript> script in _config.scripts)
-				if (script.Value.conditions.Contains(SelectedAction))
-					comboBoxScript.Items.Add(script.Value);
-			comboBoxScript.Enabled = btnConvert.Enabled && comboBoxScript.Items.Count > 1;
-			comboBoxScript.SelectedItem = comboBoxScript.Items.Count > 0 ? comboBoxScript.Items[0] : null;
-			try
+			switch (SelectedAction)
 			{
-				switch (SelectedAction)
-				{
-					case CUEAction.Verify:
-						comboBoxScript.SelectedItem = _config.scripts[_config.defaultVerifyScript];
-						break;
-					case CUEAction.Convert:
-						comboBoxScript.SelectedItem = _config.scripts[_config.defaultConvertScript];
-						break;
-					case CUEAction.VerifyAndConvert:
-						comboBoxScript.SelectedItem = _config.scripts[_config.defaultVerifyAndConvertScript];
-						break;
-				}
-			}
-			catch
-			{
+				case CUEAction.Verify:
+					SelectedScript = _profile._config.defaultVerifyScript;
+					break;
+				case CUEAction.Convert:
+				case CUEAction.VerifyAndConvert:
+					SelectedScript = _profile._config.defaultVerifyAndConvertScript;
+					break;
+				default:
+					SelectedScript = null;
+					break;
 			}
 		}
 
@@ -1876,13 +1740,11 @@ namespace JDP {
 			switch (action)
 			{
 				case CUEAction.Verify:
-					_config.defaultVerifyScript = ((CUEToolsScript)comboBoxScript.SelectedItem).name;
+					_profile._config.defaultVerifyScript = SelectedScript;
 					break;
 				case CUEAction.Convert:
-					_config.defaultConvertScript = ((CUEToolsScript)comboBoxScript.SelectedItem).name;
-					break;
 				case CUEAction.VerifyAndConvert:
-					_config.defaultVerifyAndConvertScript = ((CUEToolsScript)comboBoxScript.SelectedItem).name;
+					_profile._config.defaultVerifyAndConvertScript = SelectedScript;
 					break;
 			}
 		}
@@ -1894,8 +1756,6 @@ namespace JDP {
 				if (sender == rbActionVerify && comboBoxScript.SelectedItem != null)
 					SaveScripts(CUEAction.Verify);
 				if (sender == rbActionEncode && comboBoxScript.SelectedItem != null)
-					SaveScripts(CUEAction.Convert);
-				if (sender == rbActionVerifyAndEncode && comboBoxScript.SelectedItem != null)
 					SaveScripts(CUEAction.VerifyAndConvert);
 				return;
 			}
@@ -2029,18 +1889,18 @@ namespace JDP {
 			}
 			else
 			{
-				foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
-					if (encoder.Value.extension == SelectedOutputAudioFmt.extension)
+				foreach (CUEToolsUDC encoder in _profile._config.encoders)
+					if (encoder.extension == SelectedOutputAudioFmt.extension)
 					{
 						if (SelectedOutputAudioFormat.StartsWith("lossy."))
 						{
-							if (!encoder.Value.lossless)
+							if (!encoder.lossless)
 								continue;
-						} else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Value.lossless)
+						} else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.lossless)
 							continue;
-						else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.Value.lossless)
+						else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.lossless)
 							continue;
-						comboBoxEncoder.Items.Add(encoder.Key);
+						comboBoxEncoder.Items.Add(encoder);
 					}
 				comboBoxEncoder.SelectedItem = SelectedOutputAudioFormat.StartsWith("lossy.") ? SelectedOutputAudioFmt.encoderLossless
 					: SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
@@ -2065,26 +1925,13 @@ namespace JDP {
 			}
 		}
 
-		private void comboBoxCorrectorFormat_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			CUEToolsFormat fmt;
-			if (comboBoxCorrectorFormat.SelectedItem == null || !_config.formats.TryGetValue((string)comboBoxCorrectorFormat.SelectedItem, out fmt))
-				return;
-			labelCorrectorFormat.ImageKey = "." + fmt.extension;
-		}
-
-		private void rbCorrectorChangeExtension_CheckedChanged(object sender, EventArgs e)
-		{
-			labelCorrectorFormat.Visible = comboBoxCorrectorFormat.Enabled = rbCorrectorChangeExtension.Checked;
-		}
-
 		private void radioButtonAudioLossless_CheckedChanged(object sender, EventArgs e)
 		{
 			if (sender is RadioButton && !((RadioButton)sender).Checked)
 				return;
 			labelFormat.ImageKey = null;
 			comboBoxAudioFormat.Items.Clear();
-			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _profile._config.formats)
 			{
 				if (SelectedOutputAudioType == AudioEncoderType.Lossless && !format.Value.allowLossless)
 					continue;
@@ -2096,7 +1943,7 @@ namespace JDP {
 				//continue;
 				comboBoxAudioFormat.Items.Add(format.Key);
 			}
-			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _profile._config.formats)
 			{
 				if (!format.Value.allowLossyWAV)
 					continue;
@@ -2134,14 +1981,13 @@ namespace JDP {
 				return;
 			if (SelectedOutputAudioFormat == null)
 				return;
-			string encoder_name = (string)comboBoxEncoder.SelectedItem;
+			CUEToolsUDC encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
 			if (SelectedOutputAudioFormat.StartsWith("lossy."))
-				SelectedOutputAudioFmt.encoderLossless = encoder_name;
+				SelectedOutputAudioFmt.encoderLossless = encoder;
 			else if (SelectedOutputAudioType == AudioEncoderType.Lossless)
-				SelectedOutputAudioFmt.encoderLossless = encoder_name;
+				SelectedOutputAudioFmt.encoderLossless = encoder;
 			else
-				SelectedOutputAudioFmt.encoderLossy = encoder_name;
-			CUEToolsUDC encoder = _config.encoders[encoder_name];
+				SelectedOutputAudioFmt.encoderLossy = encoder;
 			string [] modes = encoder.SupportedModes;
 			if (modes == null || modes.Length < 2)
 			{
@@ -2166,16 +2012,10 @@ namespace JDP {
 
 		private void trackBarEncoderMode_Scroll(object sender, EventArgs e)
 		{
-			string encoder_name = (string)comboBoxEncoder.SelectedItem;
-			CUEToolsUDC encoder = _config.encoders[encoder_name];
+			CUEToolsUDC encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
 			string[] modes = encoder.SupportedModes;
 			encoder.default_mode = modes[trackBarEncoderMode.Value];
 			labelEncoderMode.Text = encoder.default_mode;
-		}
-
-		private void checkBoxAdvancedMode_CheckedChanged(object sender, EventArgs e)
-		{
-			SetupControls(false);
 		}
 
 		private void toolStripButton1_Click(object sender, EventArgs e)
@@ -2198,13 +2038,176 @@ namespace JDP {
 
 		private void toolStripButton4_Click(object sender, EventArgs e)
 		{
-			FileBrowserState = FileBrowserStateEnum.BatchLog;
+			ReportState = !ReportState;
 			SetupControls(false);
 		}
 
 		private void toolStripButton5_Click(object sender, EventArgs e)
 		{
 			FileBrowserState = FileBrowserStateEnum.Hidden;
+			SetupControls(false);
+		}
+
+		private void toolStripButtonHelp_Click(object sender, EventArgs e)
+		{
+			System.Diagnostics.Process.Start("http://www.cuetools.net");
+		}
+
+		private void toolStripDropDownButtonProfile_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+			if (e.ClickedItem == toolStripTextBoxAddProfile
+			  || e.ClickedItem == toolStripSeparator5)
+				return;
+			if (e.ClickedItem == toolStripMenuItemDeleteProfile)
+			{
+				foreach(ToolStripItem item in toolStripDropDownButtonProfile.DropDownItems)
+					if (item.Text == toolStripDropDownButtonProfile.Text
+						&& item != toolStripTextBoxAddProfile
+						&& item != toolStripMenuItemDeleteProfile
+						&& item != defaultToolStripMenuItem
+						)
+					{
+						toolStripDropDownButtonProfile.DropDownItems.Remove(item);
+						_profile = _defaultProfile;
+						ActivateProfile();
+						return;
+					}
+				return;
+			}
+			string profileName = e.ClickedItem.Text;
+			if (profileName == _profile._name)
+				return;
+			DeactivateProfile();
+			ActivateProfile(profileName);
+		}
+
+		private void toolStripTextBoxAddProfile_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode != Keys.Enter) return;
+			if (toolStripTextBoxAddProfile.Text.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+				|| toolStripTextBoxAddProfile.Text.IndexOf(' ') >= 0
+				|| toolStripTextBoxAddProfile.Text.Length <= 0)
+			{
+				//System.Media.SystemSounds.Beep.Play();
+				return;
+			}			
+			ToolStripItem item = toolStripDropDownButtonProfile.DropDownItems.Add(toolStripTextBoxAddProfile.Text);
+			toolStripDropDownButtonProfile.DropDown.Close();
+			e.Handled = true;
+			e.SuppressKeyPress = true;
+
+			string profileName = item.Text;
+			DeactivateProfile();
+			_profile = new CUEToolsProfile(profileName);
+			ActivateProfile();
+		}
+
+		private void toolStripSplitButtonInputBrowser_ButtonClick(object sender, EventArgs e)
+		{
+			//FileBrowserState = _fileBrowserState != FileBrowserStateEnum.Hidden
+			//    ? FileBrowserStateEnum.Hidden
+			//    : _fileBrowserControlState == FileBrowserStateEnum.Hidden
+			//    ? FileBrowserStateEnum.Tree
+			//    : _fileBrowserControlState;
+			//SetupControls(false);
+		}
+
+		private void toolStripSplitButtonInputBrowser_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+			toolStripSplitButtonInputBrowser.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
+			if (e.ClickedItem == toolStripMenuItemInputBrowserFiles)
+				FileBrowserState = FileBrowserStateEnum.Tree;
+			if (e.ClickedItem == toolStripMenuItemInputBrowserMulti)
+				FileBrowserState = FileBrowserStateEnum.Checkboxes;
+			if (e.ClickedItem == toolStripMenuItemInputBrowserDrag)
+				FileBrowserState = FileBrowserStateEnum.DragDrop;
+			if (e.ClickedItem == toolStripMenuItemInputBrowserHide)
+				FileBrowserState = FileBrowserStateEnum.Hidden;
+			SetupControls(false);
+		}
+
+		private void toolStripSplitButtonOutputBrowser_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+			toolStripSplitButtonOutputBrowser.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
+			if (e.ClickedItem == toolStripMenuItemOutputBrowse)
+			{
+				OutputPathUseTemplate = false;
+				SaveFileDialog fileDlg = new SaveFileDialog();
+				DialogResult dlgRes;
+
+				fileDlg.Title = "Output CUE Sheet";
+				fileDlg.Filter = "CUE Sheets (*.cue)|*.cue";
+
+				dlgRes = fileDlg.ShowDialog();
+				if (dlgRes == DialogResult.OK)
+					txtOutputPath.Text = fileDlg.FileName;
+				UpdateOutputPath();
+				return;
+			}
+			if (e.ClickedItem == toolStripMenuItemOutputManual)
+			{
+				OutputPathUseTemplate = false;
+				UpdateOutputPath();
+				return;
+			}
+			if (e.ClickedItem == toolStripMenuItemOutputTemplate)
+			{
+				OutputPathUseTemplate = true;
+				UpdateOutputPath();
+				return;
+			}
+		}
+
+		private void toolStripDropDownButtonCorrectorFormat_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+			CUEToolsFormat fmt;
+			if (!_profile._config.formats.TryGetValue(e.ClickedItem.Text, out fmt))
+				return;
+			toolStripDropDownButtonCorrectorFormat.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
+			toolStripDropDownButtonCorrectorFormat.ImageKey = e.ClickedItem.ImageKey;
+			toolStripDropDownButtonCorrectorFormat.Text = e.ClickedItem.Text;
+		}
+
+		private CorrectorModeEnum CorrectorMode
+		{
+			get
+			{
+				return _correctorMode;
+			}
+			set
+			{
+				ToolStripMenuItem item = null;
+				switch (value)
+				{
+					case CorrectorModeEnum.Extension:
+						item = toolStripMenuItemCorrectorModeChangeExtension;
+						break;
+					case CorrectorModeEnum.Locate:
+						item = toolStripMenuItemCorrectorModeLocateFiles;
+						break;
+				}
+				toolStripDropDownButtonCorrectorMode.Text = item.Text;
+				toolStripDropDownButtonCorrectorMode.Image = item.Image;
+				toolStripDropDownButtonCorrectorMode.ToolTipText = item.ToolTipText;
+				toolStripDropDownButtonCorrectorFormat.Visible = value == CorrectorModeEnum.Extension;
+				_correctorMode = value;
+			}
+		}
+
+		private void toolStripDropDownButtonCorrectorMode_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+			CorrectorMode = e.ClickedItem == toolStripMenuItemCorrectorModeChangeExtension ?
+				CorrectorModeEnum.Extension : CorrectorModeEnum.Locate;
+		}
+
+		private void pictureBoxMotd_Click(object sender, EventArgs e)
+		{
+			if (motdImage != null && pictureBoxMotd.Image == motdImage)
+				System.Diagnostics.Process.Start("http://www.cuetools.net/doku.php/cuetools:download");
+		}
+
+		private void checkBoxUseAccurateRip_CheckedChanged(object sender, EventArgs e)
+		{
 			SetupControls(false);
 		}
 	}

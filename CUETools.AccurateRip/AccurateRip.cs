@@ -478,30 +478,18 @@ All the other CRC's in this offset range are calculated by consequently adding s
 				uint count = 0;
 				uint partials = 0;
 				uint conf = 0;
-				string pressings = "";
-				string partpressings = "";
 				for (int di = 0; di < (int)AccDisks.Count; di++)
 				{
 					count += AccDisks[di].tracks[iTrack].count;
 					if (CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC)
-					{
 						conf += AccDisks[di].tracks[iTrack].count;
-						if (pressings != "")
-							pressings = pressings + ",";
-						pressings = pressings + (di + 1).ToString();
-					}
 					if (CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC)
-					{
 						partials += AccDisks[di].tracks[iTrack].count;
-						if (partpressings != "")
-							partpressings = partpressings + ",";
-						partpressings = partpressings + (di + 1).ToString();
-					}
 				}
 				if (conf > 0)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Accurately ripped as in pressing(s) #{4}", iTrack + 1, CRC(iTrack, oi), count, conf, pressings));
+					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Accurately ripped", iTrack + 1, CRC(iTrack, oi), count, conf));
 				else if (partials > 0)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Partial match to pressing(s) #{4} ", iTrack + 1, CRC(iTrack, oi), count, partials, partpressings));
+					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Partial match", iTrack + 1, CRC(iTrack, oi), count, partials));
 				else
 					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] (00/{2:00}) No matches", iTrack + 1, CRC(iTrack, oi), count));
 			}
@@ -533,14 +521,42 @@ All the other CRC's in this offset range are calculated by consequently adding s
 						uint matches = 0;
 						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 							for (int di = 0; di < (int)AccDisks.Count; di++)
-								if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0) ||
-									 (CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC && AccDisks[di].tracks[iTrack].Frame450CRC != 0))
+								if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0))
+								{
 									matches++;
-						if (matches != 0 && oi != 0)
+									break;
+								}
+						if (matches == _toc.AudioTracks && oi != 0)
 						{
-							if (offsets_match++ > 10)
+							if (offsets_match++ > 16)
 							{
-								sw.WriteLine("More than 10 offsets match!");
+								sw.WriteLine("More than 16 offsets match!");
+								break;
+							}
+							sw.WriteLine("Offsetted by {0}:", oi);
+							GenerateLog(sw, oi);
+						}
+					}
+					offsets_match = 0;
+					for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+					{
+						uint matches = 0, partials = 0;
+						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+							for (int di = 0; di < (int)AccDisks.Count; di++)
+							{
+								if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0))
+								{
+									matches ++;
+									break;
+								}
+								if ((CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC && AccDisks[di].tracks[iTrack].Frame450CRC != 0))
+									partials++;
+							}
+						if (matches != _toc.AudioTracks && oi != 0 && matches + partials != 0)
+						{
+							if (offsets_match++ > 16)
+							{
+								sw.WriteLine("More than 16 offsets match!");
 								break;
 							}
 							sw.WriteLine("Offsetted by {0}:", oi);
@@ -554,9 +570,8 @@ All the other CRC's in this offset range are calculated by consequently adding s
 					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 					{
 						uint total = Total(iTrack);
-						uint conf = 0, part = 0;
+						uint conf = 0;
 						bool zeroOffset = false;
-						//string pressings = "";
 						StringBuilder pressings = new StringBuilder();
 						for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 							for (int iDisk = 0; iDisk < AccDisks.Count; iDisk++)
@@ -568,20 +583,15 @@ All the other CRC's in this offset range are calculated by consequently adding s
 										zeroOffset = true;
 									pressings.AppendFormat("{0}{1}({2})", pressings.Length > 0 ? "," : "", oi, AccDisks[iDisk].tracks[iTrack].count);
 								}
-								else if (CRC450(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].Frame450CRC && (AccDisks[iDisk].tracks[iTrack].Frame450CRC != 0 || oi == 0))
-								{
-									part += AccDisks[iDisk].tracks[iTrack].count;
-									pressings.AppendFormat("{0}{1}({2})", pressings.Length > 0 ? "," : "", oi, AccDisks[iDisk].tracks[iTrack].count);
-								}
 							}
-						if (conf > 0 && zeroOffset)
+						if (conf > 0 && zeroOffset && pressings.Length == 0)
 							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped", iTrack + 1, total, conf));
+						else if (conf > 0 && zeroOffset)
+							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped, all offset(s) {3}", iTrack + 1, total, conf, pressings));
 						else if (conf > 0)
 							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped with offset(s) {3}", iTrack + 1, total, conf, pressings));
-						else if (part > 0)
-							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) NOT ACCURATE even with offset(s) {3}", iTrack + 1, total, part, pressings));
 						else if (total > 0)
-							sw.WriteLine(String.Format(" {0:00}\t (00/{1:00}) No matches", iTrack + 1, total));
+							sw.WriteLine(String.Format(" {0:00}\t (00/{1:00}) NOT ACCURATE", iTrack + 1, total));
 						else
 							sw.WriteLine(String.Format(" {0:00}\t (00/00) Track not present in database", iTrack + 1));
 					}

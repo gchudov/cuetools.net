@@ -14,14 +14,12 @@ namespace JDP {
 		[STAThread]
 		static void Main(string[] args)
 		{
-			if (args.Length > 1 && (args[0] == "/verify" || args[0] == "/convert"))
+			if (args.Length > 1 && args[0].Length > 1 && args[0][0] == '/')
 			{
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				frmBatch batch = new frmBatch();
-				batch.AccurateRip =
-					args[0] == "/convert" ? CUEAction.VerifyAndConvert :
-					CUEAction.Verify;
+				batch.Profile = args[0].Substring(1);
 
 				if (args.Length == 2 && args[1][0] != '@')
 					batch.InputPath = args[1];

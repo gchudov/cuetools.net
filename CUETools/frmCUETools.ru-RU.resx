@@ -151,38 +151,17 @@
   <data name="labelOutput.Size" type="System.Drawing.Size, System.Drawing">
     <value>44, 13</value>
   </data>
-  <data name="labelOutput.Text" xml:space="preserve">
-    <value>Выход:</value>
-  </data>
-  <data name="labelOutput.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="labelInput.Size" type="System.Drawing.Size, System.Drawing">
     <value>36, 13</value>
   </data>
-  <data name="labelInput.Text" xml:space="preserve">
-    <value>Вход:</value>
-  </data>
-  <data name="labelInput.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="checkBoxDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
     <value>71, 17</value>
-  </data>
-  <data name="checkBoxDontGenerate.Text" xml:space="preserve">
-    <value>Вручную</value>
-  </data>
-  <data name="checkBoxDontGenerate.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="comboBoxOutputFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="txtInputPath.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="btnBrowseOutput.Text" xml:space="preserve">
-    <value>Выбор...</value>
   </data>
   <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
     <value />
@@ -250,20 +229,8 @@
   <data name="rbCorrectorLocateFiles.Size" type="System.Drawing.Size, System.Drawing">
     <value>96, 17</value>
   </data>
-  <data name="rbCorrectorLocateFiles.Text" xml:space="preserve">
-    <value>Поиск файлов</value>
-  </data>
-  <data name="rbCorrectorLocateFiles.ToolTip" xml:space="preserve">
-    <value>Автоматический поиск переименованных файлов</value>
-  </data>
   <data name="rbCorrectorChangeExtension.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 17</value>
-  </data>
-  <data name="rbCorrectorChangeExtension.Text" xml:space="preserve">
-    <value>Расширение</value>
-  </data>
-  <data name="rbCorrectorChangeExtension.ToolTip" xml:space="preserve">
-    <value>Заменить расширение аудио-файлов</value>
   </data>
   <data name="checkBoxCorrectorOverwrite.Text" xml:space="preserve">
     <value>Заменить CUE</value>
@@ -338,12 +305,6 @@
     <value>Действие</value>
   </data>
   <data name="grpAction.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="btnAbout.Text" xml:space="preserve">
-    <value>О программе</value>
-  </data>
-  <data name="btnAbout.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="btnConvert.Text" xml:space="preserve">
@@ -470,12 +431,6 @@
   <data name="grpOutputStyle.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="btnSettings.Text" xml:space="preserve">
-    <value>Настройки...</value>
-  </data>
-  <data name="btnSettings.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="btnStop.Text" xml:space="preserve">
     <value>Стоп</value>
   </data>
@@ -490,21 +445,6 @@
   </data>
   <data name="toolStripContainer1.ContentPanel.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="toolStripButton1.Text" xml:space="preserve">
-    <value>Проводник</value>
-  </data>
-  <data name="toolStripButton2.Text" xml:space="preserve">
-    <value>Проводник (пакетный режим)</value>
-  </data>
-  <data name="toolStripButton3.Text" xml:space="preserve">
-    <value>Режим drag'n'drop</value>
-  </data>
-  <data name="toolStripButton4.Text" xml:space="preserve">
-    <value>Журнал работы</value>
-  </data>
-  <data name="toolStripButton5.Text" xml:space="preserve">
-    <value>Скрыть</value>
   </data>
   <data name="toolStrip1.ToolTip" xml:space="preserve">
     <value />
@@ -923,5 +863,68 @@
   </data>
   <data name="$this.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
+    <value>Использовать AccurateRip</value>
+  </data>
+  <data name="checkBoxUseFreeDb.ToolTip" xml:space="preserve">
+    <value>Использовать FreeDb</value>
+  </data>
+  <data name="checkBoxUseMusicBrainz.ToolTip" xml:space="preserve">
+    <value>Использовать MusicBrainz</value>
+  </data>
+  <data name="toolStripButtonAbout.Text" xml:space="preserve">
+    <value>О программе</value>
+  </data>
+  <data name="toolStripButtonHelp.Text" xml:space="preserve">
+    <value>Сайт</value>
+  </data>
+  <data name="toolStripButtonSettings.Text" xml:space="preserve">
+    <value>Настройки...</value>
+  </data>
+  <data name="toolStripButtonShowLog.Text" xml:space="preserve">
+    <value>Журнал работы</value>
+  </data>
+  <data name="toolStripMenuItemInputBrowserDrag.Text" xml:space="preserve">
+    <value>Режим drag'n'drop</value>
+  </data>
+  <data name="toolStripMenuItemInputBrowserFiles.Text" xml:space="preserve">
+    <value>Проводник</value>
+  </data>
+  <data name="toolStripMenuItemInputBrowserHide.Text" xml:space="preserve">
+    <value>Скрыть проводник</value>
+  </data>
+  <data name="toolStripMenuItemInputBrowserMulti.Text" xml:space="preserve">
+    <value>Проводник (пакетный режим)</value>
+  </data>
+  <data name="toolStripMenuItemOutputBrowse.Text" xml:space="preserve">
+    <value>Проводник</value>
+  </data>
+  <data name="toolStripMenuItemOutputManual.Text" xml:space="preserve">
+    <value>Вручную</value>
+  </data>
+  <data name="toolStripMenuItemOutputTemplate.Text" xml:space="preserve">
+    <value>По шаблону</value>
+  </data>
+  <data name="toolStripButtonCorrectorOverwrite.Text" xml:space="preserve">
+    <value>Заменить CUE</value>
+  </data>
+  <data name="toolStripLabelInput.Text" xml:space="preserve">
+    <value>Вход:</value>
+  </data>
+  <data name="toolStripLabelOutput.Text" xml:space="preserve">
+    <value>Выход:</value>
+  </data>
+  <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
+    <value>Расширение</value>
+  </data>
+  <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
+    <value>Заменить расширение аудио-файлов</value>
+  </data>
+  <data name="toolStripMenuItemCorrectorModeLocateFiles.Text" xml:space="preserve">
+    <value>Поиск файлов</value>
+  </data>
+  <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
+    <value>Автоматический поиск переименованных файлов</value>
   </data>
 </root>

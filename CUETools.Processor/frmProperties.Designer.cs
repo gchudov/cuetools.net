@@ -41,6 +41,10 @@ namespace CUETools.Processor
 			this.textCatalog = new System.Windows.Forms.TextBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
+			this.labelCD = new System.Windows.Forms.Label();
+			this.textBoxDiscNumber = new System.Windows.Forms.TextBox();
+			this.textBoxTotalDiscs = new System.Windows.Forms.TextBox();
+			this.labelSlash = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// textArtist
@@ -108,12 +112,36 @@ namespace CUETools.Processor
 			resources.ApplyResources(this.label5, "label5");
 			this.label5.Name = "label5";
 			// 
+			// labelCD
+			// 
+			resources.ApplyResources(this.labelCD, "labelCD");
+			this.labelCD.Name = "labelCD";
+			// 
+			// textBoxDiscNumber
+			// 
+			resources.ApplyResources(this.textBoxDiscNumber, "textBoxDiscNumber");
+			this.textBoxDiscNumber.Name = "textBoxDiscNumber";
+			// 
+			// textBoxTotalDiscs
+			// 
+			resources.ApplyResources(this.textBoxTotalDiscs, "textBoxTotalDiscs");
+			this.textBoxTotalDiscs.Name = "textBoxTotalDiscs";
+			// 
+			// labelSlash
+			// 
+			resources.ApplyResources(this.labelSlash, "labelSlash");
+			this.labelSlash.Name = "labelSlash";
+			// 
 			// frmProperties
 			// 
 			this.AcceptButton = this.button1;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.button2;
+			this.Controls.Add(this.labelSlash);
+			this.Controls.Add(this.textBoxTotalDiscs);
+			this.Controls.Add(this.textBoxDiscNumber);
+			this.Controls.Add(this.labelCD);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.textCatalog);
@@ -148,5 +176,9 @@ namespace CUETools.Processor
 		private System.Windows.Forms.TextBox textCatalog;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.Label labelCD;
+		private System.Windows.Forms.TextBox textBoxDiscNumber;
+		private System.Windows.Forms.TextBox textBoxTotalDiscs;
+		private System.Windows.Forms.Label labelSlash;
 	}
 }

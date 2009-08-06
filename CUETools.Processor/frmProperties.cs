@@ -23,6 +23,8 @@ namespace CUETools.Processor
 			textYear.Text = _cueSheet.Year;
 			textGenre.Text = _cueSheet.Genre;
 			textCatalog.Text = _cueSheet.Catalog;
+			textBoxDiscNumber.Text = _cueSheet.DiscNumber;
+			textBoxTotalDiscs.Text = _cueSheet.TotalDiscs;
 		}
 
 		public CUESheet CUE
@@ -41,11 +43,16 @@ namespace CUETools.Processor
 
 		private void button1_Click(object sender, EventArgs e)
 		{
+			foreach (TrackInfo track in _cueSheet.Tracks)
+				if (track.Artist == _cueSheet.Artist)
+					track.Artist = textArtist.Text;
 			_cueSheet.Artist = textArtist.Text;
 			_cueSheet.Title = textTitle.Text;
 			_cueSheet.Year = textYear.Text;
 			_cueSheet.Genre = textGenre.Text;
 			_cueSheet.Catalog = textCatalog.Text;
+			_cueSheet.DiscNumber = textBoxDiscNumber.Text;
+			_cueSheet.TotalDiscs = textBoxTotalDiscs.Text;
 		}
 	}
 }

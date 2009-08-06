@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -17,9 +18,6 @@ namespace JDP
 		{
 			InitializeComponent();
 			_config = new CUEConfig();
-			_cueStyle = CUEStyle.SingleFile;
-			_audioFormat = "wav";
-			_accurateRip = CUEAction.Verify;
 			_batchPaths = new List<string>();
 		}
 
@@ -34,20 +32,19 @@ namespace JDP
 			set { pathIn = value; }
 		}
 
-		public CUEAction AccurateRip
+		public string Profile
 		{
-			get { return _accurateRip; }
-			set { _accurateRip = value; }
+			get { return _profileName; }
+			set { _profileName = value; }
 		}
 
+		CUEConfig _config;
+		CUEToolsProfile _profile = null;
+		string _profileName = "verify";
 		Thread _workThread;
 		CUESheet _workClass;
-		CUEConfig _config;
-		CUEStyle _cueStyle;
-		string _audioFormat;
 		string pathIn;
 		string pathOut;
-		CUEAction _accurateRip;
 		bool _reducePriority;
 		DateTime _startedAt;
 		List<string> _batchPaths;
@@ -107,6 +104,7 @@ namespace JDP
 		private void WriteAudioFilesThread(object o)
 		{
 			CUESheet cueSheet = (CUESheet)o;
+			CUEToolsScript script = _profile._script == null || !_config.scripts.ContainsKey(_profile._script) ? null : _config.scripts[_profile._script];
 
 			try
 			{
@@ -119,51 +117,34 @@ namespace JDP
 				textBox1.Text += "Processing " + pathIn + ":\r\n";
 				textBox1.Select(0, 0);
 
-				string cueName;
-				if (!File.Exists(pathIn))
-				{
-					if (!Directory.Exists(pathIn))
-						throw new Exception("Input CUE Sheet not found.");
-					if (!pathIn.EndsWith(new string(Path.DirectorySeparatorChar, 1)))
-						pathIn = pathIn + Path.DirectorySeparatorChar;
-					cueName = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(pathIn) ?? pathIn) + ".cue";
-				}
-				else
-					cueName = Path.GetFileNameWithoutExtension(pathIn) + ".cue";
+				if (!File.Exists(pathIn) && !Directory.Exists(pathIn))
+					throw new Exception("Input CUE Sheet not found.");
 
-				bool outputAudio = _accurateRip != CUEAction.Verify;
-				cueSheet.Action = _accurateRip;
-				cueSheet.OutputStyle = _cueStyle;
+				cueSheet.Action = _profile._action;
+				cueSheet.OutputStyle = _profile._CUEStyle;
+				cueSheet.WriteOffset = _profile._writeOffset;
 				cueSheet.Open(pathIn);
 				cueSheet.Lookup();
-				if (outputAudio)
-				{
-					bool pathFound = false;
-					for (int i = 0; i < 20; i++)
-					{
-						string outDir = Path.Combine(Path.GetDirectoryName(pathIn) ?? pathIn, "CUEToolsOutput" + (i > 0 ? String.Format("({0})", i) : ""));
-						if (!Directory.Exists(outDir))
-						{
-							Directory.CreateDirectory(outDir);
-							pathOut = Path.Combine(outDir, cueName);
-							pathFound = true;
-							break;
-						}
-					}
-					if (!pathFound)
-						throw new Exception("Could not create a folder.");
-				}
-				else
-					pathOut = Path.Combine(Path.GetDirectoryName(pathIn) ?? pathIn, cueName);
-				cueSheet.GenerateFilenames(AudioEncoderType.Lossless, _audioFormat, pathOut);
-				if (outputAudio)
-				{
-					if (_cueStyle == CUEStyle.SingleFileWithCUE)
-						cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), "." + _audioFormat);
-				}
+
+				pathOut = CUESheet.GenerateUniqueOutputPath(_config, 
+					_profile._outputTemplate, 
+					_profile._CUEStyle == CUEStyle.SingleFileWithCUE ? "." + _profile._outputAudioFormat : ".cue", 
+					_profile._action, 
+					new NameValueCollection(),
+					pathIn, 
+					cueSheet);
+				if (pathOut == "" || (_profile._action != CUEAction.Verify && File.Exists(pathOut)))
+					throw new Exception("Could not generate output path.");
+
+				cueSheet.GenerateFilenames(_profile._outputAudioType, _profile._outputAudioFormat, pathOut);
+				if (_profile._action != CUEAction.Verify && _profile._CUEStyle == CUEStyle.SingleFileWithCUE)
+					cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), "." + _profile._outputAudioFormat);
 
 				cueSheet.UsePregapForFirstTrackInSingleFile = false;
-				cueSheet.Go();
+				if (script == null)
+					cueSheet.Go();
+				else
+					/* status = */ cueSheet.ExecuteScript(script);
 				this.Invoke((MethodInvoker)delegate()
 				{
 					if (_batchPaths.Count == 0)
@@ -261,17 +242,17 @@ namespace JDP
 		{
 			textBox1.Hide();
 			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath);
-
 			_config.Load(sr);
 			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
-			_cueStyle = (CUEStyle?)sr.LoadInt32("CUEStyle", null, null) ?? CUEStyle.SingleFileWithCUE;
-			_audioFormat = sr.Load("OutputAudioFmt") ?? "flac";
-			//_lossyWAV = sr.LoadBoolean("LossyWav") ?? false;
+
+			_profile = new CUEToolsProfile(_profileName);
+			sr = new SettingsReader("CUE Tools", string.Format("profile-{0}.txt", _profileName), Application.ExecutablePath);
+			_profile.Load(sr);
 			
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			if (_accurateRip != CUEAction.Verify)
+			if (_profile._action != CUEAction.Verify)
 				txtOutputFile.Show();
 
 			StartConvert();

@@ -27,6 +27,7 @@ namespace JDP {
 			System.Windows.Forms.Button btnCancel;
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSettings));
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
+			this.checkBoxCheckForUpdates = new System.Windows.Forms.CheckBox();
 			this.chkAllowMultipleInstances = new System.Windows.Forms.CheckBox();
 			this.chkReducePriority = new System.Windows.Forms.CheckBox();
 			this.chkTruncateExtra4206Samples = new System.Windows.Forms.CheckBox();
@@ -58,6 +59,8 @@ namespace JDP {
 			this.txtTrackFilenameFormat = new System.Windows.Forms.TextBox();
 			this.txtSingleFilenameFormat = new System.Windows.Forms.TextBox();
 			this.textBoxEncoderModes = new System.Windows.Forms.TextBox();
+			this.encodersBindingSource = new System.Windows.Forms.BindingSource(this.components);
+			this.cUEConfigBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.checkBoxEncoderLossless = new System.Windows.Forms.CheckBox();
 			this.textBoxEncoderPath = new System.Windows.Forms.TextBox();
 			this.textBoxEncoderParameters = new System.Windows.Forms.TextBox();
@@ -65,6 +68,7 @@ namespace JDP {
 			this.rbGapsPrepended = new System.Windows.Forms.RadioButton();
 			this.rbGapsAppended = new System.Windows.Forms.RadioButton();
 			this.rbGapsPlusHTOA = new System.Windows.Forms.RadioButton();
+			this.textBoxEncoderName = new System.Windows.Forms.TextBox();
 			this.grpAudioFilenames = new System.Windows.Forms.GroupBox();
 			this.txtSpecialExceptions = new System.Windows.Forms.TextBox();
 			this.chkRemoveSpecial = new System.Windows.Forms.CheckBox();
@@ -76,11 +80,13 @@ namespace JDP {
 			this.groupBoxGaps = new System.Windows.Forms.GroupBox();
 			this.tabPage6 = new System.Windows.Forms.TabPage();
 			this.groupBoxAlbumArt = new System.Windows.Forms.GroupBox();
+			this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+			this.checkBoxCopyAlbumArt = new System.Windows.Forms.CheckBox();
 			this.checkBoxExtractAlbumArt = new System.Windows.Forms.CheckBox();
+			this.checkBoxEmbedAlbumArt = new System.Windows.Forms.CheckBox();
 			this.labelAlbumArtMaximumResolution = new System.Windows.Forms.Label();
 			this.numericUpDownMaxResolution = new System.Windows.Forms.NumericUpDown();
-			this.checkBoxEmbedAlbumArt = new System.Windows.Forms.CheckBox();
-			this.checkBoxCopyAlbumArt = new System.Windows.Forms.CheckBox();
+			this.textBoxAlArtFilenameFormat = new System.Windows.Forms.TextBox();
 			this.groupBoxTagging = new System.Windows.Forms.GroupBox();
 			this.chkExtractLog = new System.Windows.Forms.CheckBox();
 			this.checkBoxCopyBasicTags = new System.Windows.Forms.CheckBox();
@@ -94,8 +100,10 @@ namespace JDP {
 			this.labelLogFileExtension = new System.Windows.Forms.Label();
 			this.checkBoxARLogVerbose = new System.Windows.Forms.CheckBox();
 			this.groupBox5 = new System.Windows.Forms.GroupBox();
+			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.label2 = new System.Windows.Forms.Label();
 			this.groupBox4 = new System.Windows.Forms.GroupBox();
+			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.checkBoxFixToNearest = new System.Windows.Forms.CheckBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.groupBoxVerify = new System.Windows.Forms.GroupBox();
@@ -118,13 +126,15 @@ namespace JDP {
 			this.listViewFormats = new System.Windows.Forms.ListView();
 			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
 			this.tabPage10 = new System.Windows.Forms.TabPage();
+			this.buttonEncoderDelete = new System.Windows.Forms.Button();
+			this.buttonEncoderAdd = new System.Windows.Forms.Button();
+			this.listBoxEncoders = new System.Windows.Forms.ListBox();
 			this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
+			this.labelEncoderName = new System.Windows.Forms.Label();
 			this.labelEncoderModes = new System.Windows.Forms.Label();
 			this.labelEncoderPath = new System.Windows.Forms.Label();
 			this.labelEncoderParameters = new System.Windows.Forms.Label();
 			this.comboBoxEncoderExtension = new System.Windows.Forms.ComboBox();
-			this.listViewEncoders = new System.Windows.Forms.ListView();
-			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
 			this.groupBoxLibMAC_SDK = new System.Windows.Forms.GroupBox();
 			this.groupBoxLibWavpack = new System.Windows.Forms.GroupBox();
 			this.chkWVStoreMD5 = new System.Windows.Forms.CheckBox();
@@ -160,7 +170,6 @@ namespace JDP {
 			this.labelFormatDecoder = new System.Windows.Forms.Label();
 			this.labelFormatEncoder = new System.Windows.Forms.Label();
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-			this.checkBoxCheckForUpdates = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -168,18 +177,23 @@ namespace JDP {
 			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenConfidence)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenConfidence)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenPercent)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cUEConfigBindingSource)).BeginInit();
 			this.grpAudioFilenames.SuspendLayout();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.groupBoxGaps.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.groupBoxAlbumArt.SuspendLayout();
+			this.tableLayoutPanel3.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).BeginInit();
 			this.groupBoxTagging.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.groupBoxARLog.SuspendLayout();
 			this.groupBox5.SuspendLayout();
+			this.tableLayoutPanel2.SuspendLayout();
 			this.groupBox4.SuspendLayout();
+			this.tableLayoutPanel1.SuspendLayout();
 			this.groupBoxVerify.SuspendLayout();
 			this.tabPage3.SuspendLayout();
 			this.groupBoxFormat.SuspendLayout();
@@ -217,6 +231,13 @@ namespace JDP {
 			resources.ApplyResources(this.grpGeneral, "grpGeneral");
 			this.grpGeneral.Name = "grpGeneral";
 			this.grpGeneral.TabStop = false;
+			// 
+			// checkBoxCheckForUpdates
+			// 
+			resources.ApplyResources(this.checkBoxCheckForUpdates, "checkBoxCheckForUpdates");
+			this.checkBoxCheckForUpdates.Name = "checkBoxCheckForUpdates";
+			this.toolTip1.SetToolTip(this.checkBoxCheckForUpdates, resources.GetString("checkBoxCheckForUpdates.ToolTip"));
+			this.checkBoxCheckForUpdates.UseVisualStyleBackColor = true;
 			// 
 			// chkAllowMultipleInstances
 			// 
@@ -309,9 +330,9 @@ namespace JDP {
 			// 
 			// chkEncodeWhenZeroOffset
 			// 
+			this.tableLayoutPanel2.SetColumnSpan(this.chkEncodeWhenZeroOffset, 2);
 			resources.ApplyResources(this.chkEncodeWhenZeroOffset, "chkEncodeWhenZeroOffset");
 			this.chkEncodeWhenZeroOffset.Name = "chkEncodeWhenZeroOffset";
-			this.chkEncodeWhenZeroOffset.UseVisualStyleBackColor = true;
 			// 
 			// numEncodeWhenPercent
 			// 
@@ -463,6 +484,13 @@ namespace JDP {
 			// 
 			// txtTrackFilenameFormat
 			// 
+			this.txtTrackFilenameFormat.AutoCompleteCustomSource.AddRange(new string[] {
+            resources.GetString("txtTrackFilenameFormat.AutoCompleteCustomSource"),
+            resources.GetString("txtTrackFilenameFormat.AutoCompleteCustomSource1"),
+            resources.GetString("txtTrackFilenameFormat.AutoCompleteCustomSource2"),
+            resources.GetString("txtTrackFilenameFormat.AutoCompleteCustomSource3")});
+			this.txtTrackFilenameFormat.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.txtTrackFilenameFormat.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
 			resources.ApplyResources(this.txtTrackFilenameFormat, "txtTrackFilenameFormat");
 			this.txtTrackFilenameFormat.Name = "txtTrackFilenameFormat";
 			this.toolTip1.SetToolTip(this.txtTrackFilenameFormat, resources.GetString("txtTrackFilenameFormat.ToolTip"));
@@ -475,25 +503,40 @@ namespace JDP {
 			// 
 			// textBoxEncoderModes
 			// 
+			this.textBoxEncoderModes.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "SupportedModesStr", true));
 			resources.ApplyResources(this.textBoxEncoderModes, "textBoxEncoderModes");
 			this.textBoxEncoderModes.Name = "textBoxEncoderModes";
 			this.toolTip1.SetToolTip(this.textBoxEncoderModes, resources.GetString("textBoxEncoderModes.ToolTip"));
 			// 
+			// encodersBindingSource
+			// 
+			this.encodersBindingSource.AllowNew = true;
+			this.encodersBindingSource.DataMember = "Encoders";
+			this.encodersBindingSource.DataSource = this.cUEConfigBindingSource;
+			this.encodersBindingSource.CurrentItemChanged += new System.EventHandler(this.encodersBindingSource_CurrentItemChanged);
+			// 
+			// cUEConfigBindingSource
+			// 
+			this.cUEConfigBindingSource.DataSource = typeof(CUETools.Processor.CUEConfig);
+			// 
 			// checkBoxEncoderLossless
 			// 
 			resources.ApplyResources(this.checkBoxEncoderLossless, "checkBoxEncoderLossless");
+			this.checkBoxEncoderLossless.DataBindings.Add(new System.Windows.Forms.Binding("CheckState", this.encodersBindingSource, "Lossless", true));
 			this.checkBoxEncoderLossless.Name = "checkBoxEncoderLossless";
 			this.toolTip1.SetToolTip(this.checkBoxEncoderLossless, resources.GetString("checkBoxEncoderLossless.ToolTip"));
 			this.checkBoxEncoderLossless.UseVisualStyleBackColor = true;
 			// 
 			// textBoxEncoderPath
 			// 
+			this.textBoxEncoderPath.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Path", true));
 			resources.ApplyResources(this.textBoxEncoderPath, "textBoxEncoderPath");
 			this.textBoxEncoderPath.Name = "textBoxEncoderPath";
 			this.toolTip1.SetToolTip(this.textBoxEncoderPath, resources.GetString("textBoxEncoderPath.ToolTip"));
 			// 
 			// textBoxEncoderParameters
 			// 
+			this.textBoxEncoderParameters.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Parameters", true));
 			resources.ApplyResources(this.textBoxEncoderParameters, "textBoxEncoderParameters");
 			this.textBoxEncoderParameters.Name = "textBoxEncoderParameters";
 			this.toolTip1.SetToolTip(this.textBoxEncoderParameters, resources.GetString("textBoxEncoderParameters.ToolTip"));
@@ -526,6 +569,13 @@ namespace JDP {
 			this.rbGapsPlusHTOA.TabStop = true;
 			this.toolTip1.SetToolTip(this.rbGapsPlusHTOA, resources.GetString("rbGapsPlusHTOA.ToolTip"));
 			this.rbGapsPlusHTOA.UseVisualStyleBackColor = true;
+			// 
+			// textBoxEncoderName
+			// 
+			this.textBoxEncoderName.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Name", true));
+			resources.ApplyResources(this.textBoxEncoderName, "textBoxEncoderName");
+			this.textBoxEncoderName.Name = "textBoxEncoderName";
+			this.toolTip1.SetToolTip(this.textBoxEncoderName, resources.GetString("textBoxEncoderName.ToolTip"));
 			// 
 			// grpAudioFilenames
 			// 
@@ -622,14 +672,28 @@ namespace JDP {
 			// 
 			// groupBoxAlbumArt
 			// 
-			this.groupBoxAlbumArt.Controls.Add(this.checkBoxExtractAlbumArt);
-			this.groupBoxAlbumArt.Controls.Add(this.labelAlbumArtMaximumResolution);
-			this.groupBoxAlbumArt.Controls.Add(this.numericUpDownMaxResolution);
-			this.groupBoxAlbumArt.Controls.Add(this.checkBoxEmbedAlbumArt);
-			this.groupBoxAlbumArt.Controls.Add(this.checkBoxCopyAlbumArt);
+			this.groupBoxAlbumArt.Controls.Add(this.tableLayoutPanel3);
 			resources.ApplyResources(this.groupBoxAlbumArt, "groupBoxAlbumArt");
 			this.groupBoxAlbumArt.Name = "groupBoxAlbumArt";
 			this.groupBoxAlbumArt.TabStop = false;
+			// 
+			// tableLayoutPanel3
+			// 
+			resources.ApplyResources(this.tableLayoutPanel3, "tableLayoutPanel3");
+			this.tableLayoutPanel3.Controls.Add(this.checkBoxCopyAlbumArt, 0, 0);
+			this.tableLayoutPanel3.Controls.Add(this.checkBoxExtractAlbumArt, 0, 2);
+			this.tableLayoutPanel3.Controls.Add(this.checkBoxEmbedAlbumArt, 0, 1);
+			this.tableLayoutPanel3.Controls.Add(this.labelAlbumArtMaximumResolution, 0, 3);
+			this.tableLayoutPanel3.Controls.Add(this.numericUpDownMaxResolution, 2, 3);
+			this.tableLayoutPanel3.Controls.Add(this.textBoxAlArtFilenameFormat, 1, 2);
+			this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+			// 
+			// checkBoxCopyAlbumArt
+			// 
+			resources.ApplyResources(this.checkBoxCopyAlbumArt, "checkBoxCopyAlbumArt");
+			this.checkBoxCopyAlbumArt.DataBindings.Add(new System.Windows.Forms.Binding("CheckState", this.cUEConfigBindingSource, "CopyAlbumArt", true));
+			this.checkBoxCopyAlbumArt.Name = "checkBoxCopyAlbumArt";
+			this.checkBoxCopyAlbumArt.UseVisualStyleBackColor = true;
 			// 
 			// checkBoxExtractAlbumArt
 			// 
@@ -637,19 +701,26 @@ namespace JDP {
 			this.checkBoxExtractAlbumArt.Name = "checkBoxExtractAlbumArt";
 			this.checkBoxExtractAlbumArt.UseVisualStyleBackColor = true;
 			// 
+			// checkBoxEmbedAlbumArt
+			// 
+			resources.ApplyResources(this.checkBoxEmbedAlbumArt, "checkBoxEmbedAlbumArt");
+			this.checkBoxEmbedAlbumArt.Name = "checkBoxEmbedAlbumArt";
+			this.checkBoxEmbedAlbumArt.UseVisualStyleBackColor = true;
+			// 
 			// labelAlbumArtMaximumResolution
 			// 
+			this.tableLayoutPanel3.SetColumnSpan(this.labelAlbumArtMaximumResolution, 2);
 			resources.ApplyResources(this.labelAlbumArtMaximumResolution, "labelAlbumArtMaximumResolution");
 			this.labelAlbumArtMaximumResolution.Name = "labelAlbumArtMaximumResolution";
 			// 
 			// numericUpDownMaxResolution
 			// 
+			resources.ApplyResources(this.numericUpDownMaxResolution, "numericUpDownMaxResolution");
 			this.numericUpDownMaxResolution.Increment = new decimal(new int[] {
             100,
             0,
             0,
             0});
-			resources.ApplyResources(this.numericUpDownMaxResolution, "numericUpDownMaxResolution");
 			this.numericUpDownMaxResolution.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -667,17 +738,19 @@ namespace JDP {
             0,
             0});
 			// 
-			// checkBoxEmbedAlbumArt
+			// textBoxAlArtFilenameFormat
 			// 
-			resources.ApplyResources(this.checkBoxEmbedAlbumArt, "checkBoxEmbedAlbumArt");
-			this.checkBoxEmbedAlbumArt.Name = "checkBoxEmbedAlbumArt";
-			this.checkBoxEmbedAlbumArt.UseVisualStyleBackColor = true;
-			// 
-			// checkBoxCopyAlbumArt
-			// 
-			resources.ApplyResources(this.checkBoxCopyAlbumArt, "checkBoxCopyAlbumArt");
-			this.checkBoxCopyAlbumArt.Name = "checkBoxCopyAlbumArt";
-			this.checkBoxCopyAlbumArt.UseVisualStyleBackColor = true;
+			this.textBoxAlArtFilenameFormat.AutoCompleteCustomSource.AddRange(new string[] {
+            resources.GetString("textBoxAlArtFilenameFormat.AutoCompleteCustomSource"),
+            resources.GetString("textBoxAlArtFilenameFormat.AutoCompleteCustomSource1"),
+            resources.GetString("textBoxAlArtFilenameFormat.AutoCompleteCustomSource2"),
+            resources.GetString("textBoxAlArtFilenameFormat.AutoCompleteCustomSource3")});
+			this.textBoxAlArtFilenameFormat.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.textBoxAlArtFilenameFormat.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+			this.tableLayoutPanel3.SetColumnSpan(this.textBoxAlArtFilenameFormat, 2);
+			this.textBoxAlArtFilenameFormat.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.cUEConfigBindingSource, "AlArtFilenameFormat", true));
+			resources.ApplyResources(this.textBoxAlArtFilenameFormat, "textBoxAlArtFilenameFormat");
+			this.textBoxAlArtFilenameFormat.Name = "textBoxAlArtFilenameFormat";
 			// 
 			// groupBoxTagging
 			// 
@@ -750,6 +823,13 @@ namespace JDP {
 			// 
 			// textBoxARLogExtension
 			// 
+			this.textBoxARLogExtension.AutoCompleteCustomSource.AddRange(new string[] {
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource"),
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource1"),
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource2")});
+			this.textBoxARLogExtension.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.textBoxARLogExtension.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+			this.textBoxARLogExtension.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.cUEConfigBindingSource, "ArLogFilenameFormat", true));
 			resources.ApplyResources(this.textBoxARLogExtension, "textBoxARLogExtension");
 			this.textBoxARLogExtension.Name = "textBoxARLogExtension";
 			// 
@@ -766,14 +846,20 @@ namespace JDP {
 			// 
 			// groupBox5
 			// 
-			this.groupBox5.Controls.Add(this.label2);
-			this.groupBox5.Controls.Add(this.chkEncodeWhenZeroOffset);
-			this.groupBox5.Controls.Add(this.numEncodeWhenConfidence);
-			this.groupBox5.Controls.Add(this.labelEncodeWhenConfidence);
-			this.groupBox5.Controls.Add(this.numEncodeWhenPercent);
+			this.groupBox5.Controls.Add(this.tableLayoutPanel2);
 			resources.ApplyResources(this.groupBox5, "groupBox5");
 			this.groupBox5.Name = "groupBox5";
 			this.groupBox5.TabStop = false;
+			// 
+			// tableLayoutPanel2
+			// 
+			resources.ApplyResources(this.tableLayoutPanel2, "tableLayoutPanel2");
+			this.tableLayoutPanel2.Controls.Add(this.label2, 0, 0);
+			this.tableLayoutPanel2.Controls.Add(this.chkEncodeWhenZeroOffset, 0, 2);
+			this.tableLayoutPanel2.Controls.Add(this.numEncodeWhenPercent, 1, 0);
+			this.tableLayoutPanel2.Controls.Add(this.labelEncodeWhenConfidence, 0, 1);
+			this.tableLayoutPanel2.Controls.Add(this.numEncodeWhenConfidence, 1, 1);
+			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
 			// 
 			// label2
 			// 
@@ -782,18 +868,25 @@ namespace JDP {
 			// 
 			// groupBox4
 			// 
-			this.groupBox4.Controls.Add(this.checkBoxFixToNearest);
-			this.groupBox4.Controls.Add(this.label3);
-			this.groupBox4.Controls.Add(this.labelFixWhenConfidence);
-			this.groupBox4.Controls.Add(this.numFixWhenConfidence);
-			this.groupBox4.Controls.Add(this.numFixWhenPercent);
+			this.groupBox4.Controls.Add(this.tableLayoutPanel1);
 			resources.ApplyResources(this.groupBox4, "groupBox4");
 			this.groupBox4.Name = "groupBox4";
 			this.groupBox4.TabStop = false;
 			// 
+			// tableLayoutPanel1
+			// 
+			resources.ApplyResources(this.tableLayoutPanel1, "tableLayoutPanel1");
+			this.tableLayoutPanel1.Controls.Add(this.checkBoxFixToNearest, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this.label3, 0, 0);
+			this.tableLayoutPanel1.Controls.Add(this.numFixWhenConfidence, 1, 1);
+			this.tableLayoutPanel1.Controls.Add(this.labelFixWhenConfidence, 0, 1);
+			this.tableLayoutPanel1.Controls.Add(this.numFixWhenPercent, 1, 0);
+			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+			// 
 			// checkBoxFixToNearest
 			// 
 			resources.ApplyResources(this.checkBoxFixToNearest, "checkBoxFixToNearest");
+			this.tableLayoutPanel1.SetColumnSpan(this.checkBoxFixToNearest, 2);
 			this.checkBoxFixToNearest.Name = "checkBoxFixToNearest";
 			this.checkBoxFixToNearest.UseVisualStyleBackColor = true;
 			// 
@@ -949,29 +1042,64 @@ namespace JDP {
 			// 
 			// tabPage10
 			// 
+			resources.ApplyResources(this.tabPage10, "tabPage10");
 			this.tabPage10.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage10.Controls.Add(this.buttonEncoderDelete);
+			this.tabPage10.Controls.Add(this.buttonEncoderAdd);
+			this.tabPage10.Controls.Add(this.listBoxEncoders);
 			this.tabPage10.Controls.Add(this.groupBoxExternalEncoder);
 			this.tabPage10.Controls.Add(this.comboBoxEncoderExtension);
-			this.tabPage10.Controls.Add(this.listViewEncoders);
 			this.tabPage10.Controls.Add(this.groupBoxLibMAC_SDK);
 			this.tabPage10.Controls.Add(this.groupBoxLibWavpack);
 			this.tabPage10.Controls.Add(this.groupBoxLibFLAC);
 			this.tabPage10.Controls.Add(this.labelEncoderExtension);
-			resources.ApplyResources(this.tabPage10, "tabPage10");
 			this.tabPage10.Name = "tabPage10";
+			// 
+			// buttonEncoderDelete
+			// 
+			this.buttonEncoderDelete.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.encodersBindingSource, "CanBeDeleted", true));
+			resources.ApplyResources(this.buttonEncoderDelete, "buttonEncoderDelete");
+			this.buttonEncoderDelete.Name = "buttonEncoderDelete";
+			this.buttonEncoderDelete.UseVisualStyleBackColor = true;
+			this.buttonEncoderDelete.Click += new System.EventHandler(this.buttonEncoderDelete_Click);
+			// 
+			// buttonEncoderAdd
+			// 
+			resources.ApplyResources(this.buttonEncoderAdd, "buttonEncoderAdd");
+			this.buttonEncoderAdd.Name = "buttonEncoderAdd";
+			this.buttonEncoderAdd.UseVisualStyleBackColor = true;
+			this.buttonEncoderAdd.Click += new System.EventHandler(this.buttonEncoderAdd_Click);
+			// 
+			// listBoxEncoders
+			// 
+			this.listBoxEncoders.BackColor = System.Drawing.SystemColors.Control;
+			this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listBoxEncoders.DataSource = this.encodersBindingSource;
+			this.listBoxEncoders.DisplayMember = "Name";
+			this.listBoxEncoders.FormattingEnabled = true;
+			resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
+			this.listBoxEncoders.Name = "listBoxEncoders";
+			this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);
 			// 
 			// groupBoxExternalEncoder
 			// 
 			resources.ApplyResources(this.groupBoxExternalEncoder, "groupBoxExternalEncoder");
+			this.groupBoxExternalEncoder.Controls.Add(this.labelEncoderName);
+			this.groupBoxExternalEncoder.Controls.Add(this.textBoxEncoderName);
+			this.groupBoxExternalEncoder.Controls.Add(this.textBoxEncoderPath);
 			this.groupBoxExternalEncoder.Controls.Add(this.labelEncoderModes);
 			this.groupBoxExternalEncoder.Controls.Add(this.textBoxEncoderModes);
 			this.groupBoxExternalEncoder.Controls.Add(this.checkBoxEncoderLossless);
-			this.groupBoxExternalEncoder.Controls.Add(this.textBoxEncoderPath);
 			this.groupBoxExternalEncoder.Controls.Add(this.textBoxEncoderParameters);
 			this.groupBoxExternalEncoder.Controls.Add(this.labelEncoderPath);
 			this.groupBoxExternalEncoder.Controls.Add(this.labelEncoderParameters);
 			this.groupBoxExternalEncoder.Name = "groupBoxExternalEncoder";
 			this.groupBoxExternalEncoder.TabStop = false;
+			// 
+			// labelEncoderName
+			// 
+			resources.ApplyResources(this.labelEncoderName, "labelEncoderName");
+			this.labelEncoderName.Name = "labelEncoderName";
 			// 
 			// labelEncoderModes
 			// 
@@ -990,35 +1118,12 @@ namespace JDP {
 			// 
 			// comboBoxEncoderExtension
 			// 
+			this.comboBoxEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.encodersBindingSource, "Extension", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
 			this.comboBoxEncoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.comboBoxEncoderExtension.FormattingEnabled = true;
 			resources.ApplyResources(this.comboBoxEncoderExtension, "comboBoxEncoderExtension");
 			this.comboBoxEncoderExtension.Name = "comboBoxEncoderExtension";
 			this.comboBoxEncoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoderExtension_SelectedIndexChanged);
-			// 
-			// listViewEncoders
-			// 
-			this.listViewEncoders.BackColor = System.Drawing.SystemColors.Control;
-			this.listViewEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.listViewEncoders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader3});
-			this.listViewEncoders.FullRowSelect = true;
-			this.listViewEncoders.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-			this.listViewEncoders.HideSelection = false;
-			this.listViewEncoders.LabelEdit = true;
-			resources.ApplyResources(this.listViewEncoders, "listViewEncoders");
-			this.listViewEncoders.MultiSelect = false;
-			this.listViewEncoders.Name = "listViewEncoders";
-			this.listViewEncoders.UseCompatibleStateImageBehavior = false;
-			this.listViewEncoders.View = System.Windows.Forms.View.Details;
-			this.listViewEncoders.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewEncoders_AfterLabelEdit);
-			this.listViewEncoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewEncoders_ItemSelectionChanged);
-			this.listViewEncoders.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewEncoders_BeforeLabelEdit);
-			this.listViewEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewEncoders_KeyDown);
-			// 
-			// columnHeader3
-			// 
-			resources.ApplyResources(this.columnHeader3, "columnHeader3");
 			// 
 			// groupBoxLibMAC_SDK
 			// 
@@ -1083,6 +1188,7 @@ namespace JDP {
 			// labelEncoderExtension
 			// 
 			resources.ApplyResources(this.labelEncoderExtension, "labelEncoderExtension");
+			this.labelEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("ImageKey", this.encodersBindingSource, "DotExtension", true, System.Windows.Forms.DataSourceUpdateMode.Never));
 			this.labelEncoderExtension.MinimumSize = new System.Drawing.Size(100, 16);
 			this.labelEncoderExtension.Name = "labelEncoderExtension";
 			// 
@@ -1306,13 +1412,6 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.columnHeader2, "columnHeader2");
 			// 
-			// checkBoxCheckForUpdates
-			// 
-			resources.ApplyResources(this.checkBoxCheckForUpdates, "checkBoxCheckForUpdates");
-			this.checkBoxCheckForUpdates.Name = "checkBoxCheckForUpdates";
-			this.toolTip1.SetToolTip(this.checkBoxCheckForUpdates, resources.GetString("checkBoxCheckForUpdates.ToolTip"));
-			this.checkBoxCheckForUpdates.UseVisualStyleBackColor = true;
-			// 
 			// frmSettings
 			// 
 			this.AcceptButton = this.btnOK;
@@ -1338,6 +1437,8 @@ namespace JDP {
 			((System.ComponentModel.ISupportInitialize)(this.numEncodeWhenConfidence)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenConfidence)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFixWhenPercent)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cUEConfigBindingSource)).EndInit();
 			this.grpAudioFilenames.ResumeLayout(false);
 			this.grpAudioFilenames.PerformLayout();
 			this.tabControl1.ResumeLayout(false);
@@ -1347,7 +1448,8 @@ namespace JDP {
 			this.groupBoxGaps.PerformLayout();
 			this.tabPage6.ResumeLayout(false);
 			this.groupBoxAlbumArt.ResumeLayout(false);
-			this.groupBoxAlbumArt.PerformLayout();
+			this.tableLayoutPanel3.ResumeLayout(false);
+			this.tableLayoutPanel3.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxResolution)).EndInit();
 			this.groupBoxTagging.ResumeLayout(false);
 			this.groupBoxTagging.PerformLayout();
@@ -1355,9 +1457,10 @@ namespace JDP {
 			this.groupBoxARLog.ResumeLayout(false);
 			this.groupBoxARLog.PerformLayout();
 			this.groupBox5.ResumeLayout(false);
-			this.groupBox5.PerformLayout();
+			this.tableLayoutPanel2.ResumeLayout(false);
 			this.groupBox4.ResumeLayout(false);
-			this.groupBox4.PerformLayout();
+			this.tableLayoutPanel1.ResumeLayout(false);
+			this.tableLayoutPanel1.PerformLayout();
 			this.groupBoxVerify.ResumeLayout(false);
 			this.groupBoxVerify.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
@@ -1468,8 +1571,6 @@ namespace JDP {
 		private System.Windows.Forms.Label labelFormatDecoder;
 		private System.Windows.Forms.ComboBox comboFormatLosslessEncoder;
 		private System.Windows.Forms.Label labelFormatEncoder;
-		private System.Windows.Forms.ListView listViewEncoders;
-		private System.Windows.Forms.ColumnHeader columnHeader3;
 		private System.Windows.Forms.ListView listViewDecoders;
 		private System.Windows.Forms.ColumnHeader columnHeader4;
 		private System.Windows.Forms.ComboBox comboBoxEncoderExtension;
@@ -1526,6 +1627,17 @@ namespace JDP {
 		private System.Windows.Forms.RadioButton rbGapsLeftOut;
 		private System.Windows.Forms.RadioButton rbGapsPrepended;
 		private System.Windows.Forms.CheckBox checkBoxCheckForUpdates;
+		private System.Windows.Forms.BindingSource cUEConfigBindingSource;
+		private System.Windows.Forms.BindingSource encodersBindingSource;
+		private System.Windows.Forms.ListBox listBoxEncoders;
+		private System.Windows.Forms.TextBox textBoxEncoderName;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+		private System.Windows.Forms.Button buttonEncoderDelete;
+		private System.Windows.Forms.Button buttonEncoderAdd;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+		private System.Windows.Forms.TextBox textBoxAlArtFilenameFormat;
+		private System.Windows.Forms.Label labelEncoderName;
 
 	}
 }

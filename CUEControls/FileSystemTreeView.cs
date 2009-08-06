@@ -27,6 +27,7 @@ using System.Drawing;
 using System.Data;
 using System.Text;
 using System.Windows.Forms;
+using System.Windows.Forms.Design;
 using System.IO;
 
 namespace CUEControls
@@ -401,5 +402,20 @@ namespace CUEControls
 	{
 		public TreeNode node;
 		public FileSystemInfo[] files;
+	}
+
+	[ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.ToolStrip | ToolStripItemDesignerAvailability.StatusStrip)]
+	public partial class ToolStripCheckedBox : ToolStripControlHost
+	{
+		public ToolStripCheckedBox()
+			: base(new CheckBox())
+		{
+		}
+
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+		public CheckBox MyCheckBox
+		{
+			get { return (CheckBox)this.Control; }
+		}
 	}
 }

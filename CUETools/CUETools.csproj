@@ -279,10 +279,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CUETools_TemporaryKey.pfx" />
+    <None Include="Properties\DataSources\CUETools.Processor.CUEConfig.datasource" />
     <None Include="Resources\accuraterip.jpg" />
     <Content Include="cue2.ico" />
     <Content Include="hdcd.dll">
     </Content>
+    <None Include="Resources\freedb16.png" />
+    <None Include="Resources\more\icons\report.png" />
+    <None Include="Resources\report.png" />
+    <None Include="Resources\more\icons\world_go.png" />
+    <None Include="Resources\world_go.png" />
+    <None Include="Resources\disk.png" />
+    <None Include="Resources\find.png" />
+    <None Include="Resources\link_go.png" />
+    <None Include="Resources\basket.png" />
+    <None Include="Resources\delete.png" />
     <Content Include="unrar.dll">
     </Content>
     <Content Include="Resources\accuraterip_16.bmp" />

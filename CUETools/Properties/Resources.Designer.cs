@@ -60,13 +60,6 @@ namespace JDP.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap accuraterip {
-            get {
-                object obj = ResourceManager.GetObject("accuraterip", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
         internal static System.Drawing.Bitmap accuraterip16 {
             get {
                 object obj = ResourceManager.GetObject("accuraterip16", resourceCulture);
@@ -84,6 +77,13 @@ namespace JDP.Properties {
         internal static System.Drawing.Bitmap AR {
             get {
                 object obj = ResourceManager.GetObject("AR", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap basket {
+            get {
+                object obj = ResourceManager.GetObject("basket", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -113,6 +113,27 @@ namespace JDP.Properties {
             get {
                 object obj = ResourceManager.GetObject("cue3", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap delete {
+            get {
+                object obj = ResourceManager.GetObject("delete", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap disk {
+            get {
+                object obj = ResourceManager.GetObject("disk", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap find {
+            get {
+                object obj = ResourceManager.GetObject("find", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -179,6 +200,13 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap freedb16 {
+            get {
+                object obj = ResourceManager.GetObject("freedb16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to &amp;Go.
         /// </summary>
@@ -209,6 +237,13 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap link_go {
+            get {
+                object obj = ResourceManager.GetObject("link_go", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon mp3 {
             get {
                 object obj = ResourceManager.GetObject("mp3", resourceCulture);
@@ -234,6 +269,13 @@ namespace JDP.Properties {
             get {
                 object obj = ResourceManager.GetObject("ogg", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap report {
+            get {
+                object obj = ResourceManager.GetObject("report", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -280,6 +322,13 @@ namespace JDP.Properties {
             get {
                 object obj = ResourceManager.GetObject("wave", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap world_go {
+            get {
+                object obj = ResourceManager.GetObject("world_go", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

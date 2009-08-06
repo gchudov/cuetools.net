@@ -32,7 +32,10 @@ namespace JDP {
 			}
 		}	
 
-		private void frmSettings_Load(object sender, EventArgs e) {
+		private void frmSettings_Load(object sender, EventArgs e) 
+		{
+			cUEConfigBindingSource.DataSource = _config;
+			
 			chkReducePriority.Checked = _reducePriority;
 			checkBoxCheckForUpdates.Checked = _config.checkForUpdates;
 			chkAutoCorrectFilenames.Checked = _config.autoCorrectFilenames;
@@ -73,13 +76,13 @@ namespace JDP {
 			checkBoxWriteCUETags.Checked = _config.writeBasicTagsFromCUEData;
 			checkBoxCopyBasicTags.Checked = _config.copyBasicTags;
 			checkBoxCopyUnknownTags.Checked = _config.copyUnknownTags;
-			checkBoxCopyAlbumArt.Checked = _config.copyAlbumArt;
+			//checkBoxCopyAlbumArt.Checked = _config.copyAlbumArt;
 			checkBoxExtractAlbumArt.Checked = _config.extractAlbumArt;
 			checkBoxEmbedAlbumArt.Checked = _config.embedAlbumArt;
 			checkBoxARVerifyUseSourceFolder.Checked = _config.arLogToSourceFolder;
 			checkBoxARLogVerbose.Checked = _config.arLogVerbose;
 			checkBoxFixToNearest.Checked = _config.fixOffsetToNearest;
-			textBoxARLogExtension.Text = _config.arLogExtension;
+			//textBoxARLogExtension.Text = _config.arLogFilenameFormat;
 			numericUpDownMaxResolution.Value = _config.maxAlbumArtSize;
 
 			switch (_config.gapsHandling)
@@ -115,13 +118,6 @@ namespace JDP {
 			if (comboLanguage.SelectedItem == null)
 				comboLanguage.SelectedItem = comboLanguage.Items[0];
 			
-			foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
-			{
-				ListViewItem item = new ListViewItem(encoder.Key);
-				item.Tag = encoder.Value;
-				listViewEncoders.Items.Add(item);
-			}
-			//listViewEncoders.Items[0].Selected = true;
 			foreach (KeyValuePair<string, CUEToolsUDC> decoder in _config.decoders)
 				if (decoder.Value.path != null)
 				{
@@ -153,11 +149,9 @@ namespace JDP {
 			}
 			ComponentResourceManager resources = new ComponentResourceManager(typeof(frmCUETools));
 			listViewScriptConditions.Items.Add(resources.GetString("rbActionVerify.Text").Replace("&", ""));
-			listViewScriptConditions.Items.Add(resources.GetString("rbActionVerifyAndEncode.Text").Replace("&", ""));
 			listViewScriptConditions.Items.Add(resources.GetString("rbActionEncode.Text").Replace("&", ""));
 			listViewScriptConditions.Items[0].Tag = CUEAction.Verify;
 			listViewScriptConditions.Items[1].Tag = CUEAction.VerifyAndConvert;
-			listViewScriptConditions.Items[2].Tag = CUEAction.Convert;
 
 			EnableDisable();
 		}
@@ -194,8 +188,6 @@ namespace JDP {
 		{
 			if (listViewFormats.SelectedIndices.Count > 0)
 				listViewFormats.Items[listViewFormats.SelectedIndices[0]].Selected = false;
-			if (listViewEncoders.SelectedIndices.Count > 0)
-				listViewEncoders.Items[listViewEncoders.SelectedIndices[0]].Selected = false;
 			if (listViewDecoders.SelectedIndices.Count > 0)
 				listViewDecoders.Items[listViewDecoders.SelectedIndices[0]].Selected = false;
 			if (listViewScripts.SelectedItems.Count > 0)
@@ -245,14 +237,14 @@ namespace JDP {
 			_config.writeBasicTagsFromCUEData = checkBoxWriteCUETags.Checked ;
 			_config.copyBasicTags = checkBoxCopyBasicTags.Checked;
 			_config.copyUnknownTags = checkBoxCopyUnknownTags.Checked;
-			_config.copyAlbumArt = checkBoxCopyAlbumArt.Checked;
+			//_config.copyAlbumArt = checkBoxCopyAlbumArt.Checked;
 			_config.extractAlbumArt = checkBoxExtractAlbumArt.Checked;
 			_config.embedAlbumArt = checkBoxEmbedAlbumArt.Checked;
 
 			_config.arLogToSourceFolder = checkBoxARVerifyUseSourceFolder.Checked;
 			_config.arLogVerbose = checkBoxARLogVerbose.Checked;
 			_config.fixOffsetToNearest = checkBoxFixToNearest.Checked;
-			_config.arLogExtension = textBoxARLogExtension.Text;
+			//_config.arLogFilenameFormat = textBoxARLogExtension.Text;
 			_config.maxAlbumArtSize = (int) numericUpDownMaxResolution.Value;
 
 			_config.language = ((CultureInfo)comboLanguage.SelectedItem).Name;
@@ -313,8 +305,6 @@ namespace JDP {
 		{
 			if (listViewFormats.SelectedItems.Count > 0)
 				listViewFormats.SelectedItems[0].Selected = false;
-			if (listViewEncoders.SelectedItems.Count > 0)
-				listViewEncoders.SelectedItems[0].Selected = false;
 			if (listViewDecoders.SelectedItems.Count > 0)
 				listViewDecoders.SelectedItems[0].Selected = false;
 			if (listViewScripts.SelectedItems.Count > 0)
@@ -343,9 +333,9 @@ namespace JDP {
 				return;
 			}
 
-			foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
-				if (encoder.Value.extension == format.extension)
-					encoder.Value.extension = e.Label;
+			foreach (CUEToolsUDC encoder in _config.encoders)
+				if (encoder.extension == format.extension)
+					encoder.extension = e.Label;
 
 			foreach (KeyValuePair<string, CUEToolsUDC> decoder in _config.decoders)
 				if (decoder.Value.extension == format.extension)
@@ -402,19 +392,13 @@ namespace JDP {
 								}
 						}
 						List<string> encodersToRemove = new List<string>();
-						foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
-							if (encoder.Value.extension == format.extension)
-								encodersToRemove.Add(encoder.Key);
+						foreach (CUEToolsUDC encoder in _config.encoders)
+							if (encoder.extension == format.extension)
+								encodersToRemove.Add(encoder.name);
 						foreach (string encoder in encodersToRemove)
-						{
-							_config.encoders.Remove(encoder);
-							foreach (ListViewItem item in listViewEncoders.Items)
-								if (item.Text == encoder)
-								{
-									item.Remove();
-									break;
-								}
-						}
+							_config.encoders.Remove(_config.encoders[encoder]);
+						comboBoxEncoderExtension.Items.Remove(format.extension);
+						comboBoxDecoderExtension.Items.Remove(format.extension);
 						_config.formats.Remove(format.extension);
 						listViewFormats.SelectedItems[0].Remove();
 						break;
@@ -431,16 +415,16 @@ namespace JDP {
 					return;
 
 				comboFormatLosslessEncoder.Items.Clear();
-				foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
-					if (encoder.Value.extension == format.extension && encoder.Value.lossless)
-						comboFormatLosslessEncoder.Items.Add(encoder.Key);
+				foreach (CUEToolsUDC encoder in _config.encoders)
+					if (encoder.extension == format.extension && encoder.lossless)
+						comboFormatLosslessEncoder.Items.Add(encoder);
 				comboFormatLosslessEncoder.SelectedItem = format.encoderLossless;
 				comboFormatLosslessEncoder.Enabled = format.allowLossless;
 
 				comboFormatLossyEncoder.Items.Clear();
-				foreach (KeyValuePair<string, CUEToolsUDC> encoder in _config.encoders)
-					if (encoder.Value.extension == format.extension && !encoder.Value.lossless)
-						comboFormatLossyEncoder.Items.Add(encoder.Key);
+				foreach (CUEToolsUDC encoder in _config.encoders)
+					if (encoder.extension == format.extension && !encoder.lossless)
+						comboFormatLossyEncoder.Items.Add(encoder);
 				comboFormatLossyEncoder.SelectedItem = format.encoderLossy;
 				comboFormatLossyEncoder.Enabled = format.allowLossy;
 
@@ -475,8 +459,8 @@ namespace JDP {
 				if (format == null)
 					return;
 
-				format.encoderLossless = (string)comboFormatLosslessEncoder.SelectedItem;
-				format.encoderLossy = (string)comboFormatLossyEncoder.SelectedItem;
+				format.encoderLossless = (CUEToolsUDC)comboFormatLosslessEncoder.SelectedItem;
+				format.encoderLossy = (CUEToolsUDC)comboFormatLossyEncoder.SelectedItem;
 				format.decoder = (string)comboFormatDecoder.SelectedItem;
 				if (!format.builtin)
 				{
@@ -491,149 +475,47 @@ namespace JDP {
 
 		private void comboBoxEncoderExtension_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			labelEncoderExtension.ImageKey = "." + (string)comboBoxEncoderExtension.SelectedItem;
-			CUEToolsFormat format;
-			if (_config.formats.TryGetValue((string)comboBoxEncoderExtension.SelectedItem, out format))
-			{
-				checkBoxEncoderLossless.Enabled = format.allowLossless && format.allowLossy;
-				if (!checkBoxEncoderLossless.Enabled)
-					checkBoxEncoderLossless.Checked = format.allowLossless;
-			}
+			// Setting DataSourceUpdateMode to OnPropertyChanged doesn't seem 
+			// to do the trick, so updating manually
+			comboBoxEncoderExtension.DataBindings["SelectedItem"].WriteValue();
 		}
 
-		private void listViewEncoders_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+		private void encodersBindingSource_CurrentItemChanged(object sender, EventArgs e)
 		{
-			if (e.IsSelected)
+			CUEToolsUDC encoder = encodersBindingSource.Current as CUEToolsUDC;
+			CUEToolsFormat format = _config.formats[encoder.extension]; // _config.formats.TryGetValue(encoder.extension, out format)
+
+			labelEncoderExtension.Visible = encoder != null;
+			comboBoxEncoderExtension.Visible = encoder != null;
+			comboBoxEncoderExtension.Enabled = encoder != null && encoder.path != null;
+			groupBoxExternalEncoder.Visible = encoder != null && encoder.path != null;
+			groupBoxLibFLAC.Visible = encoder != null && encoder.path == null && encoder.className == "FLACWriter";
+			groupBoxLibWavpack.Visible = encoder != null && encoder.path == null && encoder.className == "WavPackWriter";
+			groupBoxLibMAC_SDK.Visible = encoder != null && encoder.path == null && encoder.className == "APEWriter";
+			checkBoxEncoderLossless.Enabled = encoder != null && format != null && format.allowLossless && format.allowLossy;
+			if (!checkBoxEncoderLossless.Enabled && encoder != null && format != null && encoder.Lossless != format.allowLossless)
+				encoder.Lossless = format.allowLossless;
+
+			foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)
 			{
-				CUEToolsUDC encoder = (CUEToolsUDC)e.Item.Tag;
-				if (encoder == null) return;
-
-				comboBoxEncoderExtension.Visible = true;
-				comboBoxEncoderExtension.SelectedItem = encoder.extension;
-				labelEncoderExtension.Visible = true;
-				if (encoder.path != null)
-				{
-					CUEToolsFormat format;
-					comboBoxEncoderExtension.Enabled = true;
-					groupBoxExternalEncoder.Visible = true;
-					textBoxEncoderPath.Text = encoder.path;
-					textBoxEncoderParameters.Text = encoder.parameters;
-					textBoxEncoderModes.Text = encoder.supported_modes;
-					checkBoxEncoderLossless.Checked = encoder.lossless;
-					checkBoxEncoderLossless.Enabled = _config.formats.TryGetValue(encoder.extension, out format) && format.allowLossless && format.allowLossy;
-				}
-				else
-				{
-					comboBoxEncoderExtension.Enabled = false;
-					switch (encoder.className)
-					{
-						case "FLACWriter":
-							groupBoxLibFLAC.Visible = true;
-							break;
-						case "WavPackWriter":
-							groupBoxLibWavpack.Visible = true;
-							break;
-						case "APEWriter":
-							groupBoxLibMAC_SDK.Visible = true;
-							break;
-					}
-				}
-			}
-			else
-			{
-				CUEToolsUDC encoder = (CUEToolsUDC)e.Item.Tag;
-				if (encoder == null) return;
-
-				if (encoder.path != null)
-				{
-					if (encoder.extension != (string)comboBoxEncoderExtension.SelectedItem || encoder.lossless != checkBoxEncoderLossless.Checked)
-					{
-						if (listViewFormats.SelectedItems.Count > 0)
-							listViewFormats.SelectedItems[0].Selected = false;
-						CUEToolsFormat format;
-						if (_config.formats.TryGetValue(encoder.extension, out format))
-						{
-							if (format.encoderLossless == encoder.name)
-								format.encoderLossless = null;
-							if (format.encoderLossy == encoder.name)
-								format.encoderLossy = null;
-						}
-						encoder.extension = (string)comboBoxEncoderExtension.SelectedItem;
-					}
-					encoder.path = textBoxEncoderPath.Text;
-					encoder.parameters = textBoxEncoderParameters.Text;
-					encoder.supported_modes = textBoxEncoderModes.Text;
-					encoder.lossless = checkBoxEncoderLossless.Checked;
-				}
-
-				comboBoxEncoderExtension.Visible = false;
-				labelEncoderExtension.Visible = false;
-				groupBoxExternalEncoder.Visible = false;
-				groupBoxLibFLAC.Visible = false;
-				groupBoxLibWavpack.Visible = false;
-				groupBoxLibMAC_SDK.Visible = false;
+				CUEToolsFormat fmt = fmtEntry.Value;
+				if (fmt.encoderLossless == encoder && (fmt.extension != encoder.extension || !encoder.Lossless))
+					fmt.encoderLossless = null;
+				if (fmt.encoderLossy == encoder && (fmt.extension != encoder.extension || encoder.Lossless))
+					fmt.encoderLossy = null;
 			}
 		}
 
-		private void listViewEncoders_BeforeLabelEdit(object sender, LabelEditEventArgs e)
-		{
-			CUEToolsUDC encoder = (CUEToolsUDC)listViewEncoders.Items[e.Item].Tag;
-			if (encoder.path == null)
-				e.CancelEdit = true;
-		}
-
-		private void listViewEncoders_AfterLabelEdit(object sender, LabelEditEventArgs e)
-		{
-			CUEToolsUDC encoder;
-			if (e.Label == null || _config.encoders.TryGetValue(e.Label, out encoder))
-			{
-				e.CancelEdit = true;
-				return;
-			}
-			encoder = (CUEToolsUDC) listViewEncoders.Items[e.Item].Tag;
-			if (listViewFormats.SelectedItems.Count > 0)
-				listViewFormats.SelectedItems[0].Selected = false;
-			if (_config.formats[encoder.extension].encoderLossless == encoder.name)
-				_config.formats[encoder.extension].encoderLossless = e.Label;
-			if (_config.formats[encoder.extension].encoderLossy == encoder.name)
-				_config.formats[encoder.extension].encoderLossy = e.Label;
-			_config.encoders.Remove(encoder.name);
-			encoder.name = e.Label;
-			_config.encoders.Add(encoder.name, encoder);
-		}
-
-		private void listViewEncoders_KeyDown(object sender, KeyEventArgs e)
+		private void listBoxEncoders_KeyDown(object sender, KeyEventArgs e)
 		{
 			switch (e.KeyCode)
 			{
 				case Keys.Insert:
-					{
-						CUEToolsUDC encoder;
-						if (_config.encoders.TryGetValue("new", out encoder))
-							return;
-						encoder = new CUEToolsUDC("new", "wav", true, "", "", "", "");
-						_config.encoders.Add("new", encoder);
-						ListViewItem item = new ListViewItem(encoder.name);
-						item.Tag = encoder;
-						listViewEncoders.Items.Add(item);
-						item.BeginEdit();
-						break;
-					}
+					buttonEncoderAdd_Click(sender, e);
+					break;
 				case Keys.Delete:
-					{
-						if (listViewEncoders.SelectedItems.Count <= 0)
-							return;
-						CUEToolsUDC encoder = (CUEToolsUDC)listViewEncoders.SelectedItems[0].Tag;
-						if (encoder.path == null)
-							return;
-						if (_config.formats[encoder.extension].encoderLossless == encoder.name)
-							_config.formats[encoder.extension].encoderLossless = null;
-						if (_config.formats[encoder.extension].encoderLossy == encoder.name)
-							_config.formats[encoder.extension].encoderLossy = null;
-						_config.encoders.Remove(encoder.name);
-						listViewEncoders.Items.Remove(listViewEncoders.SelectedItems[0]);
-						break;
-					}
+					buttonEncoderDelete_Click(sender, e);
+					break;
 			}
 		}
 
@@ -911,6 +793,23 @@ namespace JDP {
 				return;
 			}
 			MessageBox.Show(this, "Script compiled successfully.", "Ok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+		}
+
+		private void buttonEncoderAdd_Click(object sender, EventArgs e)
+		{
+			encodersBindingSource.AddNew();
+		}
+
+		private void buttonEncoderDelete_Click(object sender, EventArgs e)
+		{
+			CUEToolsUDC encoder = encodersBindingSource.Current as CUEToolsUDC;
+			if (encoder == null || !encoder.CanBeDeleted)
+				return;
+			if (_config.formats[encoder.extension].encoderLossless == encoder)
+				_config.formats[encoder.extension].encoderLossless = null;
+			if (_config.formats[encoder.extension].encoderLossy == encoder)
+				_config.formats[encoder.extension].encoderLossy = null;
+			encodersBindingSource.RemoveCurrent();
 		}
 	}
 }
