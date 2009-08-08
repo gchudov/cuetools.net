@@ -256,26 +256,6 @@ namespace JDP {
 			if (_reducePriority)
 				Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-			//fileSystemTreeView1.CheckBoxes = FileBrowserState == FileBrowserStateEnum.Checkboxes;
-			//fileSystemTreeView1.IconManager = m_icon_mgr;
-			//if (InputPath != "")
-			//{
-			//    TreeNode node = null;
-			//    try
-			//    {
-			//        node = fileSystemTreeView1.LookupNode(InputPath) ??
-			//            fileSystemTreeView1.LookupNode(Path.GetDirectoryName(InputPath));
-			//    }
-			//    catch
-			//    {
-			//    }
-			//    if (node != null)
-			//    {
-			//        fileSystemTreeView1.SelectedNode = node;
-			//        node.Expand();
-			//    }
-			//}
-
 			motdImage = null;
 			if (File.Exists(MOTDImagePath))
 				using (FileStream imageStream = new FileStream(MOTDImagePath, FileMode.Open, FileAccess.Read))
@@ -495,6 +475,8 @@ namespace JDP {
 			CUEToolsScript script = (CUEToolsScript)p[6];
 			DialogResult dlgRes = DialogResult.OK;
 			string status = null;
+			bool outputAudio = action == CUEAction.Encode && audioEncoderType != AudioEncoderType.NoAudio;
+			bool useAR = action == CUEAction.Verify || (outputAudio && checkBoxUseAccurateRip.Checked);
 
 			try
 			{
@@ -743,7 +725,6 @@ namespace JDP {
 					}
 					else if (File.Exists(pathIn) || IsCDROM(pathIn))
 					{
-						bool convertAction = action == CUEAction.Convert || action == CUEAction.VerifyAndConvert;
 						string pathOut = null;
 						List<object> releases = null;
 
@@ -753,12 +734,14 @@ namespace JDP {
 						cueSheet.Action = action;
 						cueSheet.OutputStyle = cueStyle;
 						cueSheet.Open(pathIn);
-						if (action != CUEAction.Convert)
-							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
 						cueSheet.PreGapLengthMSF = txtPreGapLength.Text;
-						cueSheet.Lookup();
+						if (useAR)
+						{
+							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
+							cueSheet.UseAccurateRip();
+						}
 
-						if (_batchPaths.Count == 0 && convertAction)
+						if (_batchPaths.Count == 0 && action == CUEAction.Encode)
 						{
 							if (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked)
 								releases = cueSheet.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked);
@@ -766,7 +749,7 @@ namespace JDP {
 
 						this.Invoke((MethodInvoker)delegate()
 						{
-							toolStripStatusLabelAR.Visible = action != CUEAction.Convert;// && cueSheet.ArVerify.ARStatus == null;
+							toolStripStatusLabelAR.Visible = useAR;// && cueSheet.ArVerify.ARStatus == null;
 							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.WorstTotal().ToString() : "?";
 							toolStripStatusLabelAR.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
 							if (releases != null)
@@ -792,31 +775,10 @@ namespace JDP {
 						if (dlgRes == DialogResult.Cancel)
 							return;
 
-						bool outputAudio = convertAction && audioEncoderType != AudioEncoderType.NoAudio;
-						bool outputCUE = convertAction && (cueStyle != CUEStyle.SingleFileWithCUE || _profile._config.createCUEFileWhenEmbedded);
-
 						cueSheet.GenerateFilenames(audioEncoderType, outputFormat, pathOut);
-						string outDir = Path.GetDirectoryName(pathOut);
-						if (cueStyle == CUEStyle.SingleFileWithCUE)
-							cueSheet.SingleFilename = Path.GetFileName(pathOut);
-						if (outDir == "")
-							outDir = ".";
 
-						bool outputExists = false;
-						if (outputCUE)
-							outputExists = File.Exists(pathOut);
-						if (outputAudio)
-						{
-							if (cueStyle == CUEStyle.SingleFile || cueStyle == CUEStyle.SingleFileWithCUE)
-								outputExists |= File.Exists(Path.Combine(outDir, cueSheet.SingleFilename));
-							else
-							{
-								if (cueStyle == CUEStyle.GapsAppended && _profile._config.preserveHTOA)
-									outputExists |= File.Exists(Path.Combine(outDir, cueSheet.HTOAFilename));
-								for (int i = 0; i < cueSheet.TrackCount; i++)
-									outputExists |= File.Exists(Path.Combine(outDir, cueSheet.TrackFilenames[i]));
-							}
-						}
+						bool outputExists = cueSheet.OutputExists();
+
 						dlgRes = DialogResult.Cancel;
 						if (outputExists)
 						{
@@ -872,8 +834,7 @@ namespace JDP {
 							//reportForm.Message = _batchReport.ToString();
 							//reportForm.ShowDialog(this);
 						}
-						else if (cueSheet.Action == CUEAction.Verify ||
-							(cueSheet.Action == CUEAction.VerifyAndConvert && audioEncoderType != AudioEncoderType.NoAudio))
+						else if (useAR)
 						{
 							using (StringWriter sw = new StringWriter())
 							{
@@ -963,8 +924,8 @@ namespace JDP {
 		}
 
 		private void SetupControls(bool running) {
-			bool converting = (SelectedAction == CUEAction.Convert || SelectedAction == CUEAction.VerifyAndConvert);
-			bool verifying = (SelectedAction == CUEAction.Verify || SelectedAction == CUEAction.VerifyAndConvert);
+			bool converting = (SelectedAction == CUEAction.Encode);
+			bool verifying = (SelectedAction == CUEAction.Verify || (SelectedAction == CUEAction.Encode && SelectedOutputAudioType != AudioEncoderType.NoAudio && checkBoxUseAccurateRip.Checked));
 			//grpInput.Enabled = !running;
 			toolStripMenu.Enabled = !running;
 			fileSystemTreeView1.Enabled = !running;
@@ -979,10 +940,10 @@ namespace JDP {
 			grpOutputPathGeneration.Enabled = !running;
 			grpAudioOutput.Enabled = !running && converting;
 			grpAction.Enabled = !running;
-			checkBoxUseFreeDb.Enabled = 
-				checkBoxUseMusicBrainz.Enabled =
-				checkBoxUseAccurateRip.Enabled =
-				!running && !(FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes) && converting;
+			//checkBoxUseFreeDb.Enabled = 
+			//    checkBoxUseMusicBrainz.Enabled =
+			//    checkBoxUseAccurateRip.Enabled =
+			//    !(FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes) && converting;
 			txtDataTrackLength.Enabled = !running && verifying;
 			txtPreGapLength.Enabled = !running;
 			btnConvert.Visible = !running;
@@ -1350,6 +1311,7 @@ namespace JDP {
 					? toolStripMenuItemOutputManual : toolStripMenuItemOutputBrowse;
 				toolStripSplitButtonOutputBrowser.Text = toolStripSplitButtonOutputBrowser.DefaultItem.Text;
 				toolStripSplitButtonOutputBrowser.Image = toolStripSplitButtonOutputBrowser.DefaultItem.Image;
+				toolStripSplitButtonOutputBrowser.Enabled = toolStripSplitButtonOutputBrowser.DefaultItem.Enabled;
 				UpdateOutputPath();
 			}
 		}
@@ -1375,6 +1337,7 @@ namespace JDP {
 			set
 			{
 				ToolStripMenuItem inputBtn = FileBrowserStateButton(value);
+				if (inputBtn == null) { value = FileBrowserStateEnum.Hidden; inputBtn = toolStripMenuItemInputBrowserHide; }
 				ToolStripMenuItem defaultBtn = FileBrowserStateButton(value != FileBrowserStateEnum.Hidden
 					? FileBrowserStateEnum.Hidden : _fileBrowserControlState == FileBrowserStateEnum.Hidden
 					? FileBrowserStateEnum.Tree : _fileBrowserControlState);
@@ -1465,8 +1428,7 @@ namespace JDP {
 					rbActionVerify.Checked ? CUEAction.Verify :
 					rbActionCorrectFilenames.Checked ? CUEAction.CorrectFilenames :
 					rbActionCreateCUESheet.Checked ? CUEAction.CreateDummyCUE :
-					checkBoxUseAccurateRip.Checked ? CUEAction.VerifyAndConvert :
-					CUEAction.Convert;
+					CUEAction.Encode;
 			}
 			set
 			{
@@ -1707,9 +1669,10 @@ namespace JDP {
 			}
 			set
 			{
+				CUEAction action = SelectedAction;
 				comboBoxScript.Items.Clear();
 				foreach (KeyValuePair<string, CUEToolsScript> script in _profile._config.scripts)
-					if (script.Value.conditions.Contains(SelectedAction))
+					if (script.Value.conditions.Contains(action))
 						comboBoxScript.Items.Add(script.Value);
 				comboBoxScript.Enabled = btnConvert.Enabled && comboBoxScript.Items.Count > 1;
 				comboBoxScript.SelectedItem =
@@ -1725,9 +1688,8 @@ namespace JDP {
 				case CUEAction.Verify:
 					SelectedScript = _profile._config.defaultVerifyScript;
 					break;
-				case CUEAction.Convert:
-				case CUEAction.VerifyAndConvert:
-					SelectedScript = _profile._config.defaultVerifyAndConvertScript;
+				case CUEAction.Encode:
+					SelectedScript = _profile._config.defaultEncodeScript;
 					break;
 				default:
 					SelectedScript = null;
@@ -1742,9 +1704,8 @@ namespace JDP {
 				case CUEAction.Verify:
 					_profile._config.defaultVerifyScript = SelectedScript;
 					break;
-				case CUEAction.Convert:
-				case CUEAction.VerifyAndConvert:
-					_profile._config.defaultVerifyAndConvertScript = SelectedScript;
+				case CUEAction.Encode:
+					_profile._config.defaultEncodeScript = SelectedScript;
 					break;
 			}
 		}
@@ -1756,7 +1717,7 @@ namespace JDP {
 				if (sender == rbActionVerify && comboBoxScript.SelectedItem != null)
 					SaveScripts(CUEAction.Verify);
 				if (sender == rbActionEncode && comboBoxScript.SelectedItem != null)
-					SaveScripts(CUEAction.VerifyAndConvert);
+					SaveScripts(CUEAction.Encode);
 				return;
 			}
 			UpdateOutputPath();

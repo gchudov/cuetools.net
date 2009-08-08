@@ -629,15 +629,18 @@ namespace JDP {
 			// toolStripOutput
 			// 
 			resources.ApplyResources(this.toolStripOutput, "toolStripOutput");
+			this.toolStripOutput.GripMargin = new System.Windows.Forms.Padding(0);
 			this.toolStripOutput.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this.toolStripOutput.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripLabelOutput,
             this.toolStripSplitButtonOutputBrowser});
+			this.toolStripOutput.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this.toolStripOutput.Name = "toolStripOutput";
 			this.toolStripOutput.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
 			// 
 			// toolStripLabelOutput
 			// 
+			this.toolStripLabelOutput.Margin = new System.Windows.Forms.Padding(0);
 			this.toolStripLabelOutput.Name = "toolStripLabelOutput";
 			resources.ApplyResources(this.toolStripLabelOutput, "toolStripLabelOutput");
 			// 

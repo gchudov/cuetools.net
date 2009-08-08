@@ -497,6 +497,8 @@ namespace JDP {
 			// 
 			// txtSingleFilenameFormat
 			// 
+			this.txtSingleFilenameFormat.AutoCompleteCustomSource.AddRange(new string[] {
+            resources.GetString("txtSingleFilenameFormat.AutoCompleteCustomSource")});
 			resources.ApplyResources(this.txtSingleFilenameFormat, "txtSingleFilenameFormat");
 			this.txtSingleFilenameFormat.Name = "txtSingleFilenameFormat";
 			this.toolTip1.SetToolTip(this.txtSingleFilenameFormat, resources.GetString("txtSingleFilenameFormat.ToolTip"));
@@ -826,7 +828,12 @@ namespace JDP {
 			this.textBoxARLogExtension.AutoCompleteCustomSource.AddRange(new string[] {
             resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource"),
             resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource1"),
-            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource2")});
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource2"),
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource3"),
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource4"),
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource5"),
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource6"),
+            resources.GetString("textBoxARLogExtension.AutoCompleteCustomSource7")});
 			this.textBoxARLogExtension.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
 			this.textBoxARLogExtension.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
 			this.textBoxARLogExtension.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.cUEConfigBindingSource, "ArLogFilenameFormat", true));

@@ -348,7 +348,7 @@
     <value>E&amp;ingabe:</value>
   </data>
   <data name="toolStripLabelOutput.Text" xml:space="preserve">
-    <value>Aus&gabe:</value>
+    <value>Aus&amp;gabe:</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
     <value>Neue Erweiterung</value>

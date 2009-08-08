@@ -69,7 +69,7 @@ namespace CUETools.Processor
 			return new LossyWAVReader(lossySource, lwcdfSource);
 		}
 
-		public static IAudioDest GetAudioDest(AudioEncoderType audioEncoderType, string path, int bitsPerSample, int channelCount, int sampleRate, long finalSampleCount, string extension, CUEConfig config) 
+		public static IAudioDest GetAudioDest(AudioEncoderType audioEncoderType, string path, int bitsPerSample, int channelCount, int sampleRate, long finalSampleCount, int padding, string extension, CUEConfig config) 
 		{
 			IAudioDest dest;
 			if (audioEncoderType == AudioEncoderType.NoAudio || extension == ".dummy")
@@ -94,6 +94,7 @@ namespace CUETools.Processor
 #if !MONO
 				case "FLACWriter":
 					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate);
+					((FLACWriter)dest).PaddingLength = padding;
 					((FLACWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
 					((FLACWriter)dest).Verify = config.flacVerify;
 					((FLACWriter)dest).DisableAsm = config.disableAsm;
@@ -115,24 +116,24 @@ namespace CUETools.Processor
 				default:
 					if (encoder.path == null)
 						throw new Exception("Unsupported audio type: " + path);
-					dest = new UserDefinedWriter(path, bitsPerSample, channelCount, sampleRate, null, encoder.path, encoder.parameters, encoder.default_mode);
+					dest = new UserDefinedWriter(path, bitsPerSample, channelCount, sampleRate, null, encoder.path, encoder.parameters, encoder.default_mode, padding);
 					break;
 			}
 			dest.FinalSampleCount = finalSampleCount;
 			return dest;
 		}
 
-		public static IAudioDest GetAudioDest(AudioEncoderType audioEncoderType, string path, long finalSampleCount, int bitsPerSample, int sampleRate, CUEConfig config)
+		public static IAudioDest GetAudioDest(AudioEncoderType audioEncoderType, string path, long finalSampleCount, int bitsPerSample, int sampleRate, int padding, CUEConfig config)
 		{
 			string extension = Path.GetExtension(path).ToLower();
 			string filename = Path.GetFileNameWithoutExtension(path);
 			if (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == AudioEncoderType.Lossless || Path.GetExtension(filename).ToLower() != ".lossy")
-				return GetAudioDest(audioEncoderType, path, bitsPerSample, 2, sampleRate, finalSampleCount, extension, config);
+				return GetAudioDest(audioEncoderType, path, bitsPerSample, 2, sampleRate, finalSampleCount, padding, extension, config);
 
 			string lwcdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(filename) + ".lwcdf" + extension);
 			int lossyBitsPerSample = (config.detectHDCD && config.decodeHDCD && !config.decodeHDCDtoLW16) ? 24 : 16;
-			IAudioDest lossyDest = GetAudioDest(AudioEncoderType.Lossless, path, lossyBitsPerSample, 2, sampleRate, finalSampleCount, extension, config);
-			IAudioDest lwcdfDest = audioEncoderType == AudioEncoderType.Hybrid ? GetAudioDest(AudioEncoderType.Lossless, lwcdfPath, bitsPerSample, 2, sampleRate, finalSampleCount, extension, config) : null;
+			IAudioDest lossyDest = GetAudioDest(AudioEncoderType.Lossless, path, lossyBitsPerSample, 2, sampleRate, finalSampleCount, padding, extension, config);
+			IAudioDest lwcdfDest = audioEncoderType == AudioEncoderType.Hybrid ? GetAudioDest(AudioEncoderType.Lossless, lwcdfPath, bitsPerSample, 2, sampleRate, finalSampleCount, padding, extension, config) : null;
 			return new LossyWAVWriter(lossyDest, lwcdfDest, bitsPerSample, 2, sampleRate, config.lossyWAVQuality);
 		}
 	}

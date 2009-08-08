@@ -45,7 +45,7 @@ namespace JDP {
 			numEncodeWhenPercent.Value = _config.encodeWhenPercent;
 			chkEncodeWhenZeroOffset.Checked = _config.encodeWhenZeroOffset;
 			chkFLACVerify.Checked = _config.flacVerify;
-			chkWriteArTagsOnConvert.Checked = _config.writeArTagsOnConvert;
+			chkWriteArTagsOnConvert.Checked = _config.writeArTagsOnEncode;
 			chkWriteARTagsOnVerify.Checked = _config.writeArTagsOnVerify;
 			chkWVExtraMode.Checked = (_config.wvExtraMode != 0);
 			if (_config.wvExtraMode != 0) numWVExtraMode.Value = _config.wvExtraMode;
@@ -151,7 +151,7 @@ namespace JDP {
 			listViewScriptConditions.Items.Add(resources.GetString("rbActionVerify.Text").Replace("&", ""));
 			listViewScriptConditions.Items.Add(resources.GetString("rbActionEncode.Text").Replace("&", ""));
 			listViewScriptConditions.Items[0].Tag = CUEAction.Verify;
-			listViewScriptConditions.Items[1].Tag = CUEAction.VerifyAndConvert;
+			listViewScriptConditions.Items[1].Tag = CUEAction.Encode;
 
 			EnableDisable();
 		}
@@ -207,7 +207,7 @@ namespace JDP {
 			_config.encodeWhenConfidence = (uint)numEncodeWhenConfidence.Value;
 			_config.encodeWhenZeroOffset = chkEncodeWhenZeroOffset.Checked;
 			_config.flacVerify = chkFLACVerify.Checked;
-			_config.writeArTagsOnConvert = chkWriteArTagsOnConvert.Checked;
+			_config.writeArTagsOnEncode = chkWriteArTagsOnConvert.Checked;
 			_config.writeArTagsOnVerify = chkWriteARTagsOnVerify.Checked;
 			if (!chkWVExtraMode.Checked) _config.wvExtraMode = 0;
 			else _config.wvExtraMode = (int) numWVExtraMode.Value;

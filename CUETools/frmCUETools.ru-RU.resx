@@ -927,4 +927,7 @@
   <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
     <value>Автоматический поиск переименованных файлов</value>
   </data>
+  <data name="groupBoxMode.Text" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
 </root>

@@ -114,17 +114,28 @@ namespace JDP
 
 				pathIn = Path.GetFullPath(pathIn);
 
-				textBox1.Text += "Processing " + pathIn + ":\r\n";
-				textBox1.Select(0, 0);
+				this.Invoke((MethodInvoker)delegate()
+				{
+					textBox1.Text += "Processing " + pathIn + ":\r\n";
+					textBox1.Select(0, 0);
+				});
 
 				if (!File.Exists(pathIn) && !Directory.Exists(pathIn))
 					throw new Exception("Input CUE Sheet not found.");
+
+				if (_profile._action == CUEAction.CorrectFilenames)
+					throw new Exception("CorrectFilenames action not yet supported in commandline mode.");
+				if (_profile._action == CUEAction.CreateDummyCUE)
+					throw new Exception("CreateDummyCUE action not yet supported in commandline mode.");
+
+				bool useAR = _profile._action == CUEAction.Verify || _profile._useAccurateRip;
 
 				cueSheet.Action = _profile._action;
 				cueSheet.OutputStyle = _profile._CUEStyle;
 				cueSheet.WriteOffset = _profile._writeOffset;
 				cueSheet.Open(pathIn);
-				cueSheet.Lookup();
+				if (useAR)
+					cueSheet.UseAccurateRip();
 
 				pathOut = CUESheet.GenerateUniqueOutputPath(_config, 
 					_profile._outputTemplate, 
@@ -137,10 +148,8 @@ namespace JDP
 					throw new Exception("Could not generate output path.");
 
 				cueSheet.GenerateFilenames(_profile._outputAudioType, _profile._outputAudioFormat, pathOut);
-				if (_profile._action != CUEAction.Verify && _profile._CUEStyle == CUEStyle.SingleFileWithCUE)
-					cueSheet.SingleFilename = Path.ChangeExtension(Path.GetFileName(pathOut), "." + _profile._outputAudioFormat);
-
 				cueSheet.UsePregapForFirstTrackInSingleFile = false;
+
 				if (script == null)
 					cueSheet.Go();
 				else
@@ -158,7 +167,7 @@ namespace JDP
 						textBox1.Text += cueSheet.LOGContents;
 						textBox1.Show();
 					}
-					else if (cueSheet.Action != CUEAction.Convert)
+					else if (useAR)
 					{
 						StringWriter sw = new StringWriter();
 						cueSheet.GenerateAccurateRipLog(sw);

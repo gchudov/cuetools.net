@@ -42,7 +42,7 @@ namespace CUETools.Converter
 #endif
 			{
 				IAudioSource audioSource = AudioReadWrite.GetAudioSource(sourceFile, null, config);
-				IAudioDest audioDest = AudioReadWrite.GetAudioDest(AudioEncoderType.Lossless, destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, config);
+				IAudioDest audioDest = AudioReadWrite.GetAudioDest(AudioEncoderType.Lossless, destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, 8192, config);
 				int[,] buff = new int[0x4000, audioSource.ChannelCount];
 
 				Console.WriteLine("Filename  : {0}", sourceFile);

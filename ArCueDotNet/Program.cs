@@ -32,7 +32,7 @@ namespace ArCueDotNet
 				cueSheet.Action = CUEAction.Verify;
 				//cueSheet.OutputStyle = CUEStyle.SingleFile;
 				cueSheet.Open(pathIn);
-				cueSheet.Lookup();
+				cueSheet.UseAccurateRip();
 				cueSheet.GenerateFilenames(AudioEncoderType.NoAudio, "dummy", pathIn);
 				cueSheet.Go();
 				cueSheet.GenerateAccurateRipLog(sw);

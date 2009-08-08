@@ -735,7 +735,7 @@ namespace CUETools.Codecs
 		Process _encoderProcess;
 		WAVWriter wrt;
 
-		public UserDefinedWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO, string encoder, string encoderParams, string encoderMode)
+		public UserDefinedWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO, string encoder, string encoderParams, string encoderMode, int padding)
 		{
 			_path = path;
 			_encoder = encoder;
@@ -744,7 +744,7 @@ namespace CUETools.Codecs
 
 			_encoderProcess = new Process();
 			_encoderProcess.StartInfo.FileName = _encoder;
-			_encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"").Replace("%M", encoderMode);
+			_encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"").Replace("%M", encoderMode).Replace("%P", padding.ToString());
 			_encoderProcess.StartInfo.CreateNoWindow = true;
 			_encoderProcess.StartInfo.RedirectStandardInput = true;
 			_encoderProcess.StartInfo.UseShellExecute = false;

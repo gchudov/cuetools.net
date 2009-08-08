@@ -76,7 +76,7 @@ namespace CUERipper
 			_config.createEACLOG = sr.LoadBoolean("CreateEACLOG") ?? false;
 			_config.preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? false;
 			_config.createM3U = sr.LoadBoolean("CreateM3U") ?? true;
-			_pathFormat = sr.Load("PathFormat") ?? "%music%\\%artist%\\%year% - %album%\\%artist% - %album%.cue";
+			_pathFormat = sr.Load("PathFormat") ?? "%music%\\%artist%\\[%year% - ]%album%\\%artist% - %album%.cue";
 			checkBoxEACMode.Checked = _config.createEACLOG;
 			SelectedOutputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? AudioEncoderType.Lossless;
 			comboBoxAudioFormat.SelectedIndex = sr.LoadInt32("ComboCodec", 0, comboBoxAudioFormat.Items.Count - 1) ?? 0;
@@ -244,39 +244,22 @@ namespace CUERipper
 			});
 		}
 
-		private string GenerateOutputPath()
-		{
-			List<string> find = new List<string>();
-			find.Add("%music%");
-			find.Add("%artist%");
-			find.Add("%D");
-			find.Add("%album%");
-			find.Add("%C");
-			find.Add("%year%");
-			find.Add("%Y");
-			List<string> replace = new List<string>();
-			replace.Add(m_icon_mgr.GetFolderPath(CUEControls.ExtraSpecialFolder.MyMusic));
-			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Artist)));
-			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Artist)));
-			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Title)));
-			replace.Add(General.EmptyStringToNull(_config.CleanseString(_cueSheet.Title)));
-			replace.Add(_cueSheet.Year);
-			replace.Add(_cueSheet.Year);
-
-			return Path.ChangeExtension(General.ReplaceMultiple(_pathFormat, find, replace) ?? "image.cue", ".cue");
-		}
-
 		private void buttonGo_Click(object sender, EventArgs e)
 		{
 			if (_reader == null)
 				return;
 
+			_format = (string)comboBoxAudioFormat.SelectedItem;
 			_cueSheet.OutputStyle = comboImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
 				CUEStyle.GapsAppended;
-			_pathOut = GenerateOutputPath();
-			if (_cueSheet.OutputStyle == CUEStyle.SingleFileWithCUE)
-				_cueSheet.SingleFilename = Path.GetFileName(_pathOut);
-			_format = (string)comboBoxAudioFormat.SelectedItem;
+			_pathOut = _cueSheet.GenerateUniqueOutputPath(_pathFormat,
+					_cueSheet.OutputStyle == CUEStyle.SingleFileWithCUE ? "." + _format : ".cue",
+					CUEAction.Encode, null);
+			if (_pathOut == "")
+			{
+				MessageBox.Show(this, "Output path generation failed", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
 			_cueSheet.GenerateFilenames(SelectedOutputAudioType, _format, _pathOut);
 
 			_workThread = new Thread(Rip);
@@ -383,8 +366,9 @@ namespace CUERipper
 			}
 			if (r.cueSheet.Genre == "") r.cueSheet.Genre = "";
 			if (r.cueSheet.Year == "") r.cueSheet.Year = "";
-			r.cueSheet.Action = CUEAction.VerifyAndConvert;
-			r.cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
+			r.cueSheet.Action = CUEAction.Encode;
+			r.cueSheet.UseAccurateRip();
+			//r.cueSheet.ArVerify.ContactAccurateRip(AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC));
 			return r;
 		}
 
