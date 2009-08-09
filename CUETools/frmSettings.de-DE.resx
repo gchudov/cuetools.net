@@ -433,6 +433,9 @@
   <data name="labelEncoderModes.Text" xml:space="preserve">
     <value>Modi</value>
   </data>
+  <data name="labelEncoderPath.Text" xml:space="preserve">
+    <value>Pfad</value>
+  </data>
   <data name="labelEncoderParameters.Text" xml:space="preserve">
     <value>Parameter</value>
   </data>
@@ -447,6 +450,9 @@
   </data>
   <data name="groupBoxExternalDecoder.Text" xml:space="preserve">
     <value>Externer Decoder</value>
+  </data>
+  <data name="labelDecoderPath.Text" xml:space="preserve">
+    <value>Pfad</value>
   </data>
   <data name="labelDecoderParameters.Text" xml:space="preserve">
     <value>Parameter</value>
