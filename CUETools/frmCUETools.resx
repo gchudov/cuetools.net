@@ -1063,7 +1063,7 @@
     <value>Locate files</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
-    <value>Try to locate missing files automaticly</value>
+    <value>Try to locate missing files automatically</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.Size" type="System.Drawing.Size, System.Drawing">
     <value>168, 22</value>

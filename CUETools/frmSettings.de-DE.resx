@@ -123,18 +123,15 @@
   <data name="labelLanguage.Text" xml:space="preserve">
     <value>Sprache</value>
   </data>
+  <data name="comboLanguage.ToolTip" xml:space="preserve">
+    <value>Sprache der CUETools-Oberfläche</value>
+  </data>
   <data name="chkSingleInstance.Text" xml:space="preserve">
     <value>Auf eine Instanz beschränken</value>
-  </data>
-  <data name="btnCancel.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="chkOverwriteTags.Text" xml:space="preserve">
     <value>CUE-Daten überschreiben</value>
-  </data>
-  <data name="chkOverwriteTags.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="checkBoxCopyBasicTags.Text" xml:space="preserve">
     <value>Basistags kopieren</value>
@@ -160,17 +157,17 @@
   <data name="chkExtractLog.Text" xml:space="preserve">
     <value>Logdatei extrahieren</value>
   </data>
-  <data name="chkExtractLog.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkAllowMultipleInstances.Text" xml:space="preserve">
     <value>Erlaube mehrere Instanzen</value>
+  </data>
+  <data name="chkAllowMultipleInstances.ToolTip" xml:space="preserve">
+    <value>Ermöglicht das Öffnen mehrerer CUETools-Fenster zur gleichen Zeit.</value>
   </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
     <value>Reduziere Prozesspriorität auf Untätig</value>
   </data>
   <data name="chkReducePriority.ToolTip" xml:space="preserve">
-    <value />
+    <value>Reduziere Prozesspriorität, nutze Leerlaufzeit zum Arbeiten</value>
   </data>
   <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
     <value>Prüfe auf Aktualisierungen</value>
@@ -182,25 +179,22 @@
     <value>Nullsamples abschneiden, falls vorhanden</value>
   </data>
   <data name="chkTruncateExtra4206Samples.ToolTip" xml:space="preserve">
-    <value>Einige fehlerhafte FLAC-Kodierer fügen am Ende jeder Datei zusätzliche 4608 Nullsamples ein. Sie können automatisch erkannt und entfernt werden</value>
+    <value>Einige fehlerhafte FLAC-Kodierer fügen am Ende jeder Datei zusätzliche 4608 Nullsamples ein. Sie können automatisch erkannt und entfernt werden.</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
     <value>Erstelle .cue-Datei auch, wenn eingebettet</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.ToolTip" xml:space="preserve">
-    <value />
+    <value>Erstellt auch beim Einbetten in Audiodateien eine separate CUE-Datei.</value>
   </data>
   <data name="chkCreateM3U.Text" xml:space="preserve">
     <value>Erstelle .m3u-Abspiellisten</value>
   </data>
   <data name="chkCreateM3U.ToolTip" xml:space="preserve">
-    <value />
+    <value>Erstellt M3U-Playlistdateien für Einzeltracks.</value>
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
     <value>Fehlende CUE-Daten mit Tags füllen</value>
-  </data>
-  <data name="chkFillUpCUE.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
     <value>Bette Logdatei als Tag ein</value>
@@ -211,110 +205,44 @@
   <data name="checkBoxWriteCUETags.Text" xml:space="preserve">
     <value>Schreibe Basistags aus CUE-Datei</value>
   </data>
-  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Audiodaten suchen, falls fehlend</value>
   </data>
   <data name="chkAutoCorrectFilenames.ToolTip" xml:space="preserve">
     <value>Zuvor Dateinamen korrigieren, wenn Audiodaten nicht gefunden werden können</value>
   </data>
-  <data name="chkPreserveHTOA.Text" xml:space="preserve">
-    <value>HTOA für Ausg. mit angeh. Lücken beibehalten</value>
-  </data>
-  <data name="chkPreserveHTOA.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="lblWriteOffset.Text" xml:space="preserve">
-    <value>Schreibe Offset:</value>
-  </data>
-  <data name="lblWriteOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="grpGeneral.Text" xml:space="preserve">
     <value>Allgemein</value>
-  </data>
-  <data name="grpGeneral.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="numericFLACCompressionLevel.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="lblFLACCompressionLevel.Text" xml:space="preserve">
-    <value>Kompressionsstufe:</value>
-  </data>
-  <data name="lblFLACCompressionLevel.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Verifizieren</value>
   </data>
-  <data name="chkFLACVerify.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="btnOK.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkWVStoreMD5.Text" xml:space="preserve">
     <value>Speichere MD5-Wert</value>
-  </data>
-  <data name="chkWVStoreMD5.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="numWVExtraMode.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="chkWVExtraMode.Text" xml:space="preserve">
     <value>Extramodus:</value>
   </data>
-  <data name="chkWVExtraMode.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="rbWVVeryHigh.Text" xml:space="preserve">
     <value>Sehr hoch</value>
-  </data>
-  <data name="rbWVVeryHigh.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="rbWVHigh.Text" xml:space="preserve">
     <value>Hoch</value>
   </data>
-  <data name="rbWVHigh.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="rbWVNormal.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="rbWVFast.Text" xml:space="preserve">
     <value>Schnell</value>
-  </data>
-  <data name="rbWVFast.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
     <value>und Null-Offset</value>
   </data>
-  <data name="chkEncodeWhenZeroOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="chkArFixOffset.Text" xml:space="preserve">
-    <value>Korrigiere Offset, falls % der verif. Tracks &gt;=</value>
-  </data>
-  <data name="chkArFixOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkWriteArLogOnConvert.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Log</value>
-  </data>
-  <data name="chkWriteArLogOnConvert.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Tags</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
-    <value>Füge den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzu.  Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
+    <value>Füge den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzu. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
   </data>
   <data name="checkBoxARVerifyUseSourceFolder.Text" xml:space="preserve">
     <value>In Quellordner</value>
@@ -334,41 +262,14 @@
   <data name="checkBoxARLogVerbose.Text" xml:space="preserve">
     <value>ausführlich</value>
   </data>
-  <data name="numEncodeWhenPercent.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
     <value>mit Vertrauen &gt;=</value>
-  </data>
-  <data name="labelEncodeWhenConfidence.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="numEncodeWhenConfidence.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="chkArNoUnverifiedAudio.Text" xml:space="preserve">
-    <value>Nur kodieren, falls % der verif. Tracks &gt;=</value>
-  </data>
-  <data name="chkArNoUnverifiedAudio.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="labelFixWhenConfidence.Text" xml:space="preserve">
     <value>mit Vertrauen &gt;=</value>
   </data>
-  <data name="labelFixWhenConfidence.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="numFixWhenConfidence.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="numFixWhenPercent.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Verifizieren, dann konvertieren</value>
-  </data>
-  <data name="groupBox1.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="chkFilenamesANSISafe.Text" xml:space="preserve">
     <value>ANSI-Dateinamen erzwingen</value>
@@ -410,46 +311,28 @@
     <value>Originale Dateinamen beibehalten</value>
   </data>
   <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="txtSpecialExceptions.ToolTip" xml:space="preserve">
-    <value />
+    <value>Audiodateien denselben Namen wie im Origina-CUE-Sheet geben, falls möglich</value>
   </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Entferne Sonderzeichen außer:</value>
   </data>
-  <data name="chkRemoveSpecial.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
     <value>Ersetze Leerzeichen mit Unterstrichen</value>
   </data>
-  <data name="chkReplaceSpaces.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
+    <value>Vorlage für den Namen der Audiodateien bei Datei-pro-Track-Images</value>
   </data>
   <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
     <value>Trackformat:</value>
   </data>
-  <data name="lblTrackFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="lblSingleFilenameFormat.Text" xml:space="preserve">
     <value>Einzelformat:</value>
   </data>
-  <data name="lblSingleFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="txtSingleFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
+    <value>Vorlage für den Namen der Audiodateien bei Einzeldatei-Images</value>
   </data>
   <data name="grpAudioFilenames.Text" xml:space="preserve">
     <value>Audio-Dateinamen</value>
-  </data>
-  <data name="grpAudioFilenames.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="groupBoxGaps.Text" xml:space="preserve">
     <value>Lücken</value>
@@ -481,38 +364,17 @@
   <data name="rbAPEinsane.Text" xml:space="preserve">
     <value>Verrückt</value>
   </data>
-  <data name="rbAPEinsane.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="rbAPEextrahigh.Text" xml:space="preserve">
     <value>Sehr hoch</value>
-  </data>
-  <data name="rbAPEextrahigh.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="rbAPEhigh.Text" xml:space="preserve">
     <value>Hoch</value>
   </data>
-  <data name="rbAPEhigh.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="rbAPEnormal.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="rbAPEfast.Text" xml:space="preserve">
     <value>Schnell</value>
   </data>
-  <data name="rbAPEfast.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabPage1.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Log</value>
-  </data>
-  <data name="chkWriteARLogOnVerify.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="groupBoxVerify.Text" xml:space="preserve">
     <value>Verifizieren</value>
@@ -522,9 +384,6 @@
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Qualität:</value>
-  </data>
-  <data name="label1.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="groupBox5.Text" xml:space="preserve">
     <value>Kodieren, falls verifiziert</value>
@@ -598,62 +457,17 @@
   <data name="buttonScriptCompile.Text" xml:space="preserve">
     <value>Kompilieren</value>
   </data>
-  <data name="chkUDC1ID3v2.Text" xml:space="preserve">
-    <value>ID3v2-Tags</value>
-  </data>
-  <data name="chkUDC1ID3v2.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="chkUDC1APEv2.Text" xml:space="preserve">
-    <value>APEv2-Tags</value>
-  </data>
-  <data name="chkUDC1APEv2.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="label6.Text" xml:space="preserve">
     <value>Parameter</value>
-  </data>
-  <data name="label6.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="label5.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="textUDC1EncParams.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="textUDC1Encoder.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="textUDC1Params.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="textUDC1Decoder.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="textUDC1Extension.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="label4.Text" xml:space="preserve">
     <value>Parameter</value>
   </data>
-  <data name="label4.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="label3.ToolTip" xml:space="preserve">
-    <value />
+  <data name="label3.Text" xml:space="preserve">
+    <value>% der verif. Tracks &gt;=</value>
   </data>
   <data name="tabPage9.Text" xml:space="preserve">
     <value>Benutzerdefiniert</value>
-  </data>
-  <data name="tabPage9.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabControl2.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabPage3.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="grpHDCD.Text" xml:space="preserve">
     <value>HDCD-Optionen</value>

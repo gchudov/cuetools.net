@@ -125,10 +125,10 @@
     <value>62, 17</value>
   </data>
   <data name="txtInputPath.ToolTip" xml:space="preserve">
-    <value />
+    <value>Eingabedatei</value>
   </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
-    <value />
+    <value>Ausgabedatei</value>
   </data>
   <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 17</value>
@@ -191,7 +191,7 @@
     <value>Korrigiere Dateinamen</value>
   </data>
   <data name="rbActionCorrectFilenames.ToolTip" xml:space="preserve">
-    <value />
+    <value>Dateinamen in CUE-Sheets korrigieren</value>
   </data>
   <data name="rbActionCreateCUESheet.Size" type="System.Drawing.Size, System.Drawing">
     <value>119, 17</value>
@@ -200,7 +200,7 @@
     <value>Erzeuge leeres CUE</value>
   </data>
   <data name="rbActionCreateCUESheet.ToolTip" xml:space="preserve">
-    <value />
+    <value>Ein CUE-Sheet für mehrere Dateien erstellen und vorhandene CUE-Sheets entpacken</value>
   </data>
   <data name="rbActionVerifyAndEncode.Size" type="System.Drawing.Size, System.Drawing">
     <value>116, 17</value>
@@ -336,7 +336,7 @@
     <value>CUE überschr.</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
-    <value />
+    <value>CUETools-Website</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
     <value>Einstellungen</value>
@@ -354,13 +354,13 @@
     <value>Neue Erweiterung</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
-    <value />
+    <value>Ersetze Erweiterung von Audiodateien mit dieser:</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.Text" xml:space="preserve">
     <value>Dateien suchen</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
-    <value />
+    <value>Versuche fehlende Dateien automatisch zu finden</value>
   </data>
   <data name="toolStripMenuItemInputBrowserDrag.Text" xml:space="preserve">
     <value>Drag'n'drop-Modus</value>
