@@ -4,19 +4,39 @@ using System.Text;
 
 namespace CUETools.Codecs.FLAKE
 {
-	class BitReader
+	unsafe class BitReader
 	{
-		byte[] buffer;
-		byte[] byte_to_unary_table;
+		byte* buffer;
 		int pos, len;
 		int _bitaccumulator;
+		uint cache;
+
+		static readonly byte[] byte_to_unary_table = new byte[] 
+		{
+			8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		};
 
 		public int Position
 		{
 			get { return pos; }
 		}
 
-		public byte[] Buffer
+		public byte* Buffer
 		{
 			get
 			{
@@ -24,110 +44,93 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		public BitReader(byte[] _buffer, int _pos, int _len)
+		public BitReader(byte* _buffer, int _pos, int _len)
 		{
 			buffer = _buffer;
 			pos = _pos;
 			len = _len;
 			_bitaccumulator = 0;
-
-			byte_to_unary_table = new byte[] {
-				8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
-				3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-				2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-				2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-			};
+			cache = peek4();
 		}
 
-		/* supports reading 1 to 24 bits, in big endian format */
-		public uint readbits_24(int bits)
+		public uint peek4()
 		{
-			uint result = (((uint)buffer[pos]) << 24) | (((uint)buffer[pos + 1]) << 16) | (((uint)buffer[pos + 2]) << 8) | ((uint)buffer[pos + 3]);
+			//uint result = ((((uint)buffer[pos]) << 24) | (((uint)buffer[pos + 1]) << 16) | (((uint)buffer[pos + 2]) << 8) | ((uint)buffer[pos + 3])) << _bitaccumulator;
+			byte* b = buffer + pos;
+			uint result = *(b++);
+			result = (result << 8) + *(b++);
+			result = (result << 8) + *(b++);
+			result = (result << 8) + *(b++);
 			result <<= _bitaccumulator;
-			result >>= 32 - bits;
-
-			int new_accumulator = (_bitaccumulator + bits);
-			pos += (new_accumulator >> 3);
-			_bitaccumulator = (new_accumulator & 7);
 			return result;
 		}
 
-		public uint readbits_8(int bits)
-		{
-			uint result = (((uint)buffer[pos]) << 24) | (((uint)buffer[pos + 1]) << 16);
-			result <<= _bitaccumulator;
-			result >>= 32 - bits;
-
-			int new_accumulator = (_bitaccumulator + bits);
-			pos += (new_accumulator >> 3);
-			_bitaccumulator = (new_accumulator & 7);
-			return result;
-		}
-
-		public uint peekbits_24(int bits)
-		{
-			uint result = (((uint)buffer[pos]) << 24) | (((uint)buffer[pos + 1]) << 16) | (((uint)buffer[pos + 2]) << 8) | ((uint)buffer[pos + 3]);
-			result <<= _bitaccumulator;
-			result >>= 32 - bits;
-			return result;
-		}
-
-		///* supports reading 1 to 16 bits, in big endian format */
-		//private unsafe uint peekbits_9(byte* buff, int pos)
-		//{
-		//    uint result = (((uint)buff[pos]) << 8) | (((uint)buff[pos + 1]));
-		//    result <<= _bitaccumulator;
-		//    result &= 0x0000ffff;
-		//    result >>= 7;
-		//    return result;
-		//}
-
-		/* supports reading 1 to 16 bits, in big endian format */
+		/* skip any number of bits */
 		public void skipbits(int bits)
 		{
 			int new_accumulator = (_bitaccumulator + bits);
 			pos += (new_accumulator >> 3);
 			_bitaccumulator = (new_accumulator & 7);
+			cache = peek4();
+		}
+
+		/* skip up to 8 bits */
+		public void skipbits8(int bits)
+		{
+			cache <<= bits;
+			int new_accumulator = (_bitaccumulator + bits);
+			pos += (new_accumulator >> 3);
+			_bitaccumulator = (new_accumulator & 7);
+			cache |= ((uint)buffer[pos + 3] << _bitaccumulator);
+		}
+
+		/* supports reading 1 to 24 bits, in big endian format */
+		public uint readbits24(int bits)
+		{
+			//uint result = peek4() >> (32 - bits);
+			uint result = cache >> (32 - bits);
+			skipbits(bits);
+			return result;
+		}
+
+		public uint peekbits24(int bits)
+		{
+			return cache >> 32 - bits;
 		}
 
 		/* supports reading 1 to 32 bits, in big endian format */
 		public uint readbits(int bits)
 		{
+			uint result = cache >> 32 - bits;
 			if (bits <= 24)
-				return readbits_24(bits);
+			{
+				skipbits(bits);
+				return result;
+			}
+			skipbits(24);
+			result |= cache >> 56 - bits;
+			skipbits(bits - 24);
+			return result;
+		}
 
-			ulong result = (((ulong)buffer[pos]) << 32) | (((ulong)buffer[pos + 1]) << 24) | (((ulong)buffer[pos + 2]) << 16) | (((ulong)buffer[pos + 3]) << 8) | ((ulong)buffer[pos + 4]);
-			result <<= _bitaccumulator;
-			result &= 0x00ffffffffff;
-			result >>= 40 - bits;
-			int new_accumulator = (_bitaccumulator + bits);
-			pos += (new_accumulator >> 3);
-			_bitaccumulator = (new_accumulator & 7);
-			return (uint)result;
+		public ulong readbits64(int bits)
+		{
+			if (bits <= 24)
+				return readbits24(bits);
+			ulong result = readbits24(24);
+			bits -= 24;
+			if (bits <= 24)
+				return (result << bits) | readbits24(bits);
+			result = (result << 24) | readbits24(24);
+			bits -= 24;
+			return (result << bits) | readbits24(bits);
 		}
 
 		/* reads a single bit */
 		public uint readbit()
 		{
-			int new_accumulator;
-			uint result = buffer[pos];
-			result <<= _bitaccumulator;
-			result = result >> 7 & 1;
-			new_accumulator = (_bitaccumulator + 1);
-			pos += (new_accumulator / 8);
-			_bitaccumulator = (new_accumulator % 8);
+			uint result = cache >> 31;
+			skipbits8(1);
 			return result;
 		}
 
@@ -135,33 +138,28 @@ namespace CUETools.Codecs.FLAKE
 		{
 			uint val = 0;
 
-			int result = (buffer[pos] << _bitaccumulator) & 0xff;
-			if (result == 0)
+			uint result = cache >> 24;
+			while (result == 0)
 			{
-				val = 8 - (uint)_bitaccumulator;
-				_bitaccumulator = 0;
-				pos++;
-				return val + read_unary();
-				// check eof
+				val += 8;
+				skipbits8(8);
+				result = cache >> 24;
 			}
-			
-			val = byte_to_unary_table[result];
 
-			int new_accumulator = (_bitaccumulator + (int)val + 1);
-			pos += (new_accumulator / 8);
-			_bitaccumulator = (new_accumulator % 8);
+			val += byte_to_unary_table[result];
+			skipbits8((int)(val & 7) + 1);
 			return val;
 		}
 
 		public void flush()
 		{
 			if (_bitaccumulator > 0)
-				readbits(8 - _bitaccumulator);
+				skipbits8(8 - _bitaccumulator);
 		}
 
 		public int readbits_signed(int bits)
 		{
-			int val = (int) readbits(bits);
+			int val = (int)readbits(bits);
 			val <<= (32 - bits);
 			val >>= (32 - bits);
 			return val;
@@ -223,15 +221,7 @@ namespace CUETools.Codecs.FLAKE
 		public int read_rice_signed(int k)
 		{
 			uint msbs = read_unary();
-			uint lsbs = readbits_24(k);
-			uint uval = (msbs << k) | lsbs;
-			return (int)(uval >> 1 ^ -(int)(uval & 1));
-		}
-
-		public int read_rice_signed8(int k)
-		{
-			uint msbs = read_unary();
-			uint lsbs = readbits_8(k);
+			uint lsbs = readbits24(k);
 			uint uval = (msbs << k) | lsbs;
 			return (int)(uval >> 1 ^ -(int)(uval & 1));
 		}
@@ -240,6 +230,50 @@ namespace CUETools.Codecs.FLAKE
 		{
 			uint uval = read_unary();
 			return (int)(uval >> 1 ^ -(int)(uval & 1));
+		}
+
+		public void read_rice_block(int n, int k, int* r)
+		{
+			fixed (byte* unary_table = byte_to_unary_table)
+			{
+				if (k == 0)
+					for (int i = n; i > 0; i--)
+						*(r++) = read_unary_signed();
+				else if (k <= 8)
+					for (int i = n; i > 0; i--)
+					{
+						//*(r++) = read_rice_signed((int)k);
+						uint bits = unary_table[cache >> 24];
+						uint msbs = bits;
+						while (bits == 8)
+						{
+							skipbits8(8);
+							bits = unary_table[cache >> 24];
+							msbs += bits;
+						}
+						skipbits8((int)(msbs & 7) + 1);
+						uint uval = (msbs << k) | (cache >> (32 - k));
+						skipbits8(k);
+						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
+					}
+				else
+					for (int i = n; i > 0; i--)
+					{
+						//*(r++) = read_rice_signed((int)k);
+						uint bits = unary_table[cache >> 24];
+						uint msbs = bits;
+						while (bits == 8)
+						{
+							skipbits8(8);
+							bits = unary_table[cache >> 24];
+							msbs += bits;
+						}
+						skipbits8((int)(msbs & 7) + 1);
+						uint uval = (msbs << k) | (cache >> (32 - k));
+						skipbits(k);
+						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
+					}
+			}
 		}
 	}
 }

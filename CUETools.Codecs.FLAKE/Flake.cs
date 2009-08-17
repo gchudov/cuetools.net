@@ -10,6 +10,15 @@ namespace CUETools.Codecs.FLAKE
 		public const int MAX_RICE_PARAM = 14;
 		public const int MAX_PARTITION_ORDER = 8;
 		public const int MAX_PARTITIONS = 1 << MAX_PARTITION_ORDER;
+
+		public static readonly int[] flac_samplerates = new int[16] {
+				0, 0, 0, 0,
+				8000, 16000, 22050, 24000, 32000, 44100, 48000, 96000,
+				0, 0, 0, 0
+			};
+		public static readonly int[] flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };
+		public static readonly int[] flac_bitdepths = new int[8] { 0, 8, 12, 0, 16, 20, 24, 0 };
+
 		public static int log2i(int v)
 		{
 			return log2i((uint)v);
@@ -97,17 +106,30 @@ namespace CUETools.Codecs.FLAKE
 			for (int i = n; i > 0; i--)
 				*(res++) = *(smp++);
 		}
+		unsafe public static void memcpy(byte* res, byte* smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = *(smp++);
+		}
 		unsafe public static void memset(int* res, int smp, int n)
 		{
 			for (int i = n; i > 0; i--)
 				*(res++) = smp;
+		}
+		unsafe public static void interlace(int* res, int* src1, int* src2, int n)
+		{
+			for (int i = n; i > 0; i--)
+			{
+				*(res++) = *(src1++);
+				*(res++) = *(src2++);
+			}
 		}
 	}
 
 	unsafe struct RiceContext
 	{
 		public int porder;					/* partition order */
-		public fixed uint rparams[Flake.MAX_PARTITIONS];  /* Rice parameters */
+		public fixed int rparams[Flake.MAX_PARTITIONS];  /* Rice parameters */
 		public fixed int esc_bps[Flake.MAX_PARTITIONS];	/* bps if using escape code */
 	};
 
@@ -214,6 +236,13 @@ namespace CUETools.Codecs.FLAKE
 		Flattop = 8
 	}
 
+	public struct SeekPoint
+	{
+		public ulong number;
+		public ulong offset;
+		public uint framesize;
+	}
+
 	public enum MetadataType
 	{
 
@@ -227,22 +256,34 @@ namespace CUETools.Codecs.FLAKE
 		/// </summary>
 		FLAC__METADATA_TYPE_PADDING = 1,
 
+		/// <summary>
+		/// <A HREF="../format.html#metadata_block_application">APPLICATION</A> block 
+		/// </summary>
 		FLAC__METADATA_TYPE_APPLICATION = 2,
-		/**< <A HREF="../format.html#metadata_block_application">APPLICATION</A> block */
 
+		/// <summary>
+		/// <A HREF="../format.html#metadata_block_seektable">SEEKTABLE</A> block
+		/// </summary>
 		FLAC__METADATA_TYPE_SEEKTABLE = 3,
-		/**< <A HREF="../format.html#metadata_block_seektable">SEEKTABLE</A> block */
 
+		/// <summary>
+		/// <A HREF="../format.html#metadata_block_vorbis_comment">VORBISCOMMENT</A> block (a.k.a. FLAC tags)
+		/// </summary>
 		FLAC__METADATA_TYPE_VORBIS_COMMENT = 4,
-		/**< <A HREF="../format.html#metadata_block_vorbis_comment">VORBISCOMMENT</A> block (a.k.a. FLAC tags) */
 
+		/// <summary>
+		/// <A HREF="../format.html#metadata_block_cuesheet">CUESHEET</A> block
+		/// </summary>
 		FLAC__METADATA_TYPE_CUESHEET = 5,
-		/**< <A HREF="../format.html#metadata_block_cuesheet">CUESHEET</A> block */
 
+		/// <summary>
+		/// <A HREF="../format.html#metadata_block_picture">PICTURE</A> block
+		/// </summary>
 		FLAC__METADATA_TYPE_PICTURE = 6,
-		/**< <A HREF="../format.html#metadata_block_picture">PICTURE</A> block */
 
+		/// <summary>
+		/// marker to denote beginning of undefined type range; this number will increase as new metadata types are added
+		/// </summary>
 		FLAC__METADATA_TYPE_UNDEFINED = 7
-		/**< marker to denote beginning of undefined type range; this number will increase as new metadata types are added */
 	};
 }

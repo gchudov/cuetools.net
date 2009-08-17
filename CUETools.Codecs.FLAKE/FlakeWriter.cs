@@ -80,14 +80,6 @@ namespace CUETools.Codecs.FLAKE
 			if (channelCount != 2)
 				throw new Exception("ChannelCount must be 2.");
 
-			flac_samplerates = new int[16] {
-				0, 0, 0, 0,
-				8000, 16000, 22050, 24000, 32000, 44100, 48000, 96000,
-				0, 0, 0, 0
-			};
-			flac_bitdepths = new int[8] { 0, 8, 12, 0, 16, 20, 24, 0 };
-			flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };
-
 			channels = channelCount;
 			sample_rate = sampleRate;
 			bits_per_sample = (uint) bitsPerSample;
@@ -334,9 +326,9 @@ namespace CUETools.Codecs.FLAKE
 			{
 				for (i = 0; i < 15; i++)
 				{
-					if (eparams.block_size == flac_blocksizes[i])
+					if (eparams.block_size == Flake.flac_blocksizes[i])
 					{
-						frame->blocksize = flac_blocksizes[i];
+						frame->blocksize = Flake.flac_blocksizes[i];
 						frame->bs_code0 = i;
 						frame->bs_code1 = -1;
 						break;
@@ -394,7 +386,7 @@ namespace CUETools.Codecs.FLAKE
 		//    return (uint)k_opt;
 		//}
 
-		static unsafe uint find_optimal_rice_param(uint sum, uint n, out uint nbits_best)
+		static unsafe int find_optimal_rice_param(uint sum, uint n, out uint nbits_best)
 		{
 			int k_opt = 0;
 			uint a = n;
@@ -412,7 +404,7 @@ namespace CUETools.Codecs.FLAKE
 				}
 			}
 			nbits_best = nbits;
-			return (uint)k_opt;
+			return k_opt;
 		}
 
 		unsafe uint calc_decorr_score(FlacFrame* frame, int ch, FlacSubframe* sub)
@@ -845,7 +837,7 @@ namespace CUETools.Codecs.FLAKE
 			int j = sub->order;
 			for (int p = 0; p < (1 << porder); p++)
 			{
-				int k = (int) sub->rc.rparams[p];
+				int k = sub->rc.rparams[p];
 				bitwriter.writebits(4, k);
 				if (p == 1) res_cnt = psize;
 				for (int i = 0; i < res_cnt && j < frame->blocksize; i++, j++)
@@ -1247,19 +1239,16 @@ namespace CUETools.Codecs.FLAKE
 
 		public string Path { get { return _path; } }
 
-		int[] flac_samplerates;
-		int[] flac_bitdepths;
-		int[] flac_blocksizes;
 		string vendor_string = "Flake#0.1";
 
 		int select_blocksize(int samplerate, int time_ms)
 		{
-			int blocksize = flac_blocksizes[1];
+			int blocksize = Flake.flac_blocksizes[1];
 			int target = (samplerate * time_ms) / 1000;
-			for (int i = 0; i < flac_blocksizes.Length; i++)
-				if (target >= flac_blocksizes[i] && flac_blocksizes[i] > blocksize)
+			for (int i = 0; i < Flake.flac_blocksizes.Length; i++)
+				if (target >= Flake.flac_blocksizes[i] && Flake.flac_blocksizes[i] > blocksize)
 				{
-					blocksize = flac_blocksizes[i];
+					blocksize = Flake.flac_blocksizes[i];
 				}
 			return blocksize;
 		}
@@ -1271,7 +1260,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// metadata header
 			bitwriter.writebits(1, last);
-			bitwriter.writebits(7, 0);
+			bitwriter.writebits(7, (int)MetadataType.FLAC__METADATA_TYPE_STREAMINFO);
 			bitwriter.writebits(24, 34);
 
 			if (eparams.variable_block_size > 0)
@@ -1312,7 +1301,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// metadata header
 			bitwriter.writebits(1, last);
-			bitwriter.writebits(7, 4);
+			bitwriter.writebits(7, (int)MetadataType.FLAC__METADATA_TYPE_VORBIS_COMMENT);
 			bitwriter.writebits(24, vendor_len + 8);
 
 			comment[pos + 4] = (byte)(vendor_len & 0xFF);
@@ -1337,7 +1326,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// metadata header
 			bitwriter.writebits(1, last);
-			bitwriter.writebits(7, 1);
+			bitwriter.writebits(7, (int)MetadataType.FLAC__METADATA_TYPE_PADDING);
 			bitwriter.writebits(24, padlen);
 
 			return padlen + 4;
@@ -1384,7 +1373,7 @@ namespace CUETools.Codecs.FLAKE
 			// find samplerate in table
 			for (i = 4; i < 12; i++)
 			{
-				if (sample_rate == flac_samplerates[i])
+				if (sample_rate == Flake.flac_samplerates[i])
 				{
 					sr_code0 = i;
 					break;
@@ -1397,7 +1386,7 @@ namespace CUETools.Codecs.FLAKE
 
 			for (i = 1; i < 8; i++)
 			{
-				if (bits_per_sample == flac_bitdepths[i])
+				if (bits_per_sample == Flake.flac_bitdepths[i])
 				{
 					bps_code = i;
 					break;
