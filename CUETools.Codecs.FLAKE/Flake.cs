@@ -215,7 +215,7 @@ namespace CUETools.Codecs.FLAKE
 		Tukey = 2,
 		Hann = 4,
 		Flattop = 8,
-		TukeyFlattop = 10
+		TukFlat = 10
 	}
 
 	public struct SeekPoint

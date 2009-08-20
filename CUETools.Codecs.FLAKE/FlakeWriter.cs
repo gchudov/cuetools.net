@@ -95,7 +95,7 @@ namespace CUETools.Codecs.FLAKE
 			_IO = IO;
 
 			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)];
-			residualBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)];
+			residualBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 5 : channels + 1)];
 			windowBuffer = new double[Flake.MAX_BLOCKSIZE * lpc.MAX_LPC_WINDOWS];
 
 			eparams.flake_set_defaults(_compressionLevel);
@@ -853,7 +853,7 @@ namespace CUETools.Codecs.FLAKE
 							        est_order = r + 1;
 							        break;
 							    }
-							for (int r = Math.Min(max_order, 2 * eparams.max_fixed_order) - 1; r >= 0; r--)
+							for (int r = Math.Min(max_order, 8) - 1; r >= 0; r--)
 								if (Math.Abs(reff[r]) > 0.1)
 								{
 									est_order2 = r + 1;
@@ -1138,19 +1138,19 @@ namespace CUETools.Codecs.FLAKE
 
 		unsafe int encode_frame()
 		{
-			FlacFrame* frame = stackalloc FlacFrame[1];
-			FlacSubframeInfo* sf = stackalloc FlacSubframeInfo[channels * 3];
+			FlacFrame frame;
+			//= stackalloc FlacFrame[1];
+			FlacSubframeInfo* sf = stackalloc FlacSubframeInfo[channels * 2];
 
 			fixed (int* s = samplesBuffer, r = residualBuffer)
 			{
-				frame->subframes = sf;
-				init_frame(frame);
-				int* current_residual = stackalloc int[frame->blocksize * 3];
-				bool alreadyEncoded = false;
-				if (frame->blocksize != _windowsize && frame->blocksize > 4)
+				frame.subframes = sf;
+
+				init_frame(&frame);
+				if (frame.blocksize != _windowsize && frame.blocksize > 4)
 					fixed (double* window = windowBuffer)
 					{
-						_windowsize = frame->blocksize;
+						_windowsize = frame.blocksize;
 						_windowcount = 0;
 						if ((eparams.window_function & WindowFunction.Welch) != 0)
 							window_welch(window + (_windowcount++)*_windowsize, _windowsize);
@@ -1164,120 +1164,110 @@ namespace CUETools.Codecs.FLAKE
 							throw new Exception("invalid windowfunction");
 					}
 
-				if (channels != 2 || frame->blocksize <= 32 || eparams.stereo_method == StereoMethod.Independent)
+				if (channels != 2 || frame.blocksize <= 32 || eparams.stereo_method == StereoMethod.Independent)
 				{
-					frame->ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
-					frame->current.residual = current_residual;
+					frame.current.residual = r + channels * Flake.MAX_BLOCKSIZE;
+					frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 					for (int ch = 0; ch < channels; ch++)
-						initialize_subframe(frame, ch, s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bits_per_sample);
+						initialize_subframe(&frame, ch, s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bits_per_sample);
+
+					for (int ch = 0; ch < channels; ch++)
+						encode_residual(&frame, ch, eparams.prediction_type, eparams.order_method);
 				}
 				else
 				{
-					FlacFrame* frameM = stackalloc FlacFrame[1];
-					FlacFrame* frameS = stackalloc FlacFrame[1];
-					init_frame(frameS);
-					frameS->subframes = sf + channels;
-					frameS->ch_mode = ChannelMode.LeftRight;
-					frameS->current.residual = current_residual;
-					init_frame(frameM);
-					frameM->subframes = sf + channels * 2;
-					frameM->ch_mode = ChannelMode.MidSide;
-					frameM->current.residual = current_residual + frame->blocksize;
-
-					channel_decorrelation(s, s + Flake.MAX_BLOCKSIZE, s + 2 * Flake.MAX_BLOCKSIZE, s + 3 * Flake.MAX_BLOCKSIZE, frame->blocksize);
-
-					for (int ch = 0; ch < channels; ch++)
-					{
-						initialize_subframe(frameS, ch, s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bits_per_sample);
-						initialize_subframe(frameM, ch, s + (channels + ch) * Flake.MAX_BLOCKSIZE, r + (channels + ch) * Flake.MAX_BLOCKSIZE, bits_per_sample + (uint)ch);
-					}
+					channel_decorrelation(s, s + Flake.MAX_BLOCKSIZE, s + 2 * Flake.MAX_BLOCKSIZE, s + 3 * Flake.MAX_BLOCKSIZE, frame.blocksize);
+					frame.current.residual = r + 4 * Flake.MAX_BLOCKSIZE;
+					for (int ch = 0; ch < 4; ch++)
+						initialize_subframe(&frame, ch, s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bits_per_sample + (ch == 3 ? 1U : 0U));
 
 					uint bitsBest = UINT32_MAX;
 					ChannelMode modeBest = ChannelMode.LeftRight;
 
-					if (eparams.stereo_method == StereoMethod.Estimate)
+					switch (eparams.stereo_method)
 					{
-						frameM->subframes[0].best.size = (uint)frame->blocksize * 32 + calc_decorr_score(frameM, 0);
-						frameM->subframes[1].best.size = (uint)frame->blocksize * 32 + calc_decorr_score(frameM, 1);
-						frameS->subframes[0].best.size = (uint)frame->blocksize * 32 + calc_decorr_score(frameS, 0);
-						frameS->subframes[1].best.size = (uint)frame->blocksize * 32 + calc_decorr_score(frameS, 1);
+						case StereoMethod.Estimate:
+							for (int ch = 0; ch < 4; ch++)
+								frame.subframes[ch].best.size = (uint)frame.blocksize * 32 + calc_decorr_score(&frame, ch);
+							break;
+						case StereoMethod.Evaluate:
+							{
+								int max_prediction_order = eparams.max_prediction_order;
+								int max_fixed_order = eparams.max_fixed_order;
+								int min_fixed_order = eparams.min_fixed_order;
+								int lpc_precision_search = eparams.lpc_precision_search;
+								OrderMethod omethod = OrderMethod.Estimate8;
+								eparams.min_fixed_order = 2;
+								eparams.max_fixed_order = 2;
+								eparams.lpc_precision_search = 0;
+								if (eparams.max_prediction_order > 12)
+									eparams.max_prediction_order = 8;
+								for (int ch = 0; ch < 4; ch++)
+									encode_residual(&frame, ch, eparams.prediction_type, omethod);
+								eparams.min_fixed_order = min_fixed_order;
+								eparams.max_fixed_order = max_fixed_order;
+								eparams.max_prediction_order = max_prediction_order;
+								eparams.lpc_precision_search = lpc_precision_search;
+								break;
+							}
+						case StereoMethod.Search:
+							for (int ch = 0; ch < 4; ch++)
+								encode_residual(&frame, ch, eparams.prediction_type, eparams.order_method);
+							break;
 					}
-					else if (eparams.stereo_method == StereoMethod.Evaluate)
+					if (bitsBest > frame.subframes[2].best.size + frame.subframes[3].best.size)
 					{
-						int max_prediction_order = eparams.max_prediction_order;
-						int max_fixed_order = eparams.max_fixed_order;
-						int min_fixed_order = eparams.min_fixed_order;
-						int lpc_precision_search = eparams.lpc_precision_search;
-						OrderMethod omethod = OrderMethod.Estimate8;
-						eparams.min_fixed_order = 2;
-						eparams.max_fixed_order = 2;
-						eparams.lpc_precision_search = 0;
-						if (eparams.max_prediction_order > 12)
-							eparams.max_prediction_order = 8;
-						encode_residual(frameM, 0, eparams.prediction_type, omethod);
-						encode_residual(frameM, 1, eparams.prediction_type, omethod);
-						encode_residual(frameS, 0, eparams.prediction_type, omethod);
-						encode_residual(frameS, 1, eparams.prediction_type, omethod);
-						eparams.min_fixed_order = min_fixed_order;
-						eparams.max_fixed_order = max_fixed_order;
-						eparams.max_prediction_order = max_prediction_order;
-						eparams.lpc_precision_search = lpc_precision_search;
-					}
-					else // StereoMethod.Search
-					{
-						encode_residual(frameM, 0, eparams.prediction_type, eparams.order_method);
-						encode_residual(frameM, 1, eparams.prediction_type, eparams.order_method);
-						encode_residual(frameS, 0, eparams.prediction_type, eparams.order_method);
-						encode_residual(frameS, 1, eparams.prediction_type, eparams.order_method);
-						alreadyEncoded = true;
-					}
-
-					if (bitsBest > frameM->subframes[0].best.size + frameM->subframes[1].best.size)
-					{
-						bitsBest = frameM->subframes[0].best.size + frameM->subframes[1].best.size;
+						bitsBest = frame.subframes[2].best.size + frame.subframes[3].best.size;
 						modeBest = ChannelMode.MidSide;
-						frame->subframes[0] = frameM->subframes[0];
-						frame->subframes[1] = frameM->subframes[1];
 					}
-					if (bitsBest > frameM->subframes[1].best.size + frameS->subframes[1].best.size)
+					if (bitsBest > frame.subframes[3].best.size + frame.subframes[1].best.size)
 					{
-						bitsBest = frameM->subframes[1].best.size + frameS->subframes[1].best.size;
+						bitsBest = frame.subframes[3].best.size + frame.subframes[1].best.size;
 						modeBest = ChannelMode.RightSide;
-						frame->subframes[0] = frameM->subframes[1];
-						frame->subframes[1] = frameS->subframes[1];
 					}
-					if (bitsBest > frameM->subframes[1].best.size + frameS->subframes[0].best.size)
+					if (bitsBest > frame.subframes[3].best.size + frame.subframes[0].best.size)
 					{
-						bitsBest = frameM->subframes[1].best.size + frameS->subframes[0].best.size;
+						bitsBest = frame.subframes[3].best.size + frame.subframes[0].best.size;
 						modeBest = ChannelMode.LeftSide;
-						frame->subframes[0] = frameS->subframes[0];
-						frame->subframes[1] = frameM->subframes[1];
 					}
-					if (bitsBest > frameS->subframes[0].best.size + frameS->subframes[1].best.size)
+					if (bitsBest > frame.subframes[0].best.size + frame.subframes[1].best.size)
 					{
-						bitsBest = frameS->subframes[0].best.size + frameS->subframes[1].best.size;
+						bitsBest = frame.subframes[0].best.size + frame.subframes[1].best.size;
 						modeBest = ChannelMode.LeftRight;
-						frame->subframes[0] = frameS->subframes[0];
-						frame->subframes[1] = frameS->subframes[1];
 					}
-					frame->ch_mode = modeBest;
-					frame->current.residual = current_residual + 2 * frame->blocksize;
-					if (eparams.stereo_method == StereoMethod.Evaluate)
+					switch(modeBest)
 					{
-						encode_residual(frame, 0, PredictionType.Estimated, eparams.order_method);
-						encode_residual(frame, 1, PredictionType.Estimated, eparams.order_method);
-						alreadyEncoded = true;
+						case ChannelMode.MidSide:
+							frame.subframes[0] = frame.subframes[2];
+							frame.subframes[1] = frame.subframes[3];
+							break;
+						case ChannelMode.RightSide:
+							frame.subframes[0] = frame.subframes[3];
+							break;
+						case ChannelMode.LeftSide:
+							frame.subframes[1] = frame.subframes[3];
+							break;
+					}
+					frame.ch_mode = modeBest;
+					switch (eparams.stereo_method)
+					{
+						case StereoMethod.Estimate:
+							for (int ch = 0; ch < channels; ch++)
+								encode_residual(&frame, ch, eparams.prediction_type, eparams.order_method);
+							break;
+						case StereoMethod.Evaluate:
+							for (int ch = 0; ch < channels; ch++)
+								encode_residual(&frame, ch, PredictionType.Estimated, eparams.order_method);
+							break;
+						case StereoMethod.Search:
+							break;
 					}
 				}
 
-				if (!alreadyEncoded)
-					for (int ch = 0; ch < channels; ch++)
-						encode_residual(frame, ch, eparams.prediction_type, eparams.order_method);
-
 				BitWriter bitwriter = new BitWriter(frame_buffer, 0, max_frame_size);
 
-				output_frame_header(frame, bitwriter);
-				output_subframes(frame, bitwriter);
+				output_frame_header(&frame, bitwriter);
+				output_subframes(&frame, bitwriter);
 				output_frame_footer(bitwriter);
 
 				if (frame_buffer != null)
@@ -1745,88 +1735,103 @@ namespace CUETools.Codecs.FLAKE
 			// default to level 5 params
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
 			order_method = OrderMethod.Estimate;
-			stereo_method = StereoMethod.Estimate;
+			stereo_method = StereoMethod.Evaluate;
 			block_size = 0;
 			block_time_ms = 105;			
 			prediction_type = PredictionType.Search;
 			min_prediction_order = 1;
-			max_prediction_order = 12;
-			min_fixed_order = 0;
-			max_fixed_order = 4;
+			max_prediction_order = 8;
+			min_fixed_order = 2;
+			max_fixed_order = 2;
 			min_partition_order = 0;
-			max_partition_order = 6;
+			max_partition_order = 4;
 			variable_block_size = 0;
 			lpc_precision_search = 0;
 			do_md5 = true;
-			do_verify = true;
+			do_verify = false;
 			do_seektable = true; 
 
 			// differences from level 5
 			switch (lvl)
 			{
 				case 0:
-					stereo_method = StereoMethod.Independent;
 					block_time_ms = 27;
 					prediction_type = PredictionType.Fixed;
-					min_fixed_order = 2;
-					max_fixed_order = 2;
-					min_partition_order = 4;
-					max_partition_order = 4;
 					break;
 				case 1:
-					block_time_ms = 27;
-					prediction_type = PredictionType.Fixed;
-					min_fixed_order = 2;
-					max_fixed_order = 3;
-					min_partition_order = 2;
-					max_partition_order = 2;
+					prediction_type = PredictionType.Levinson;
+					stereo_method = StereoMethod.Independent;
+					window_function = WindowFunction.Welch;
 					break;
 				case 2:
-					block_time_ms = 27;
-					prediction_type = PredictionType.Fixed;
-					//prediction_type = PredictionType.Fixed;
-					min_fixed_order = 2;
-					max_fixed_order = 4;
-					//min_partition_order = 0;
-					//max_partition_order = 3;
+					prediction_type = PredictionType.Search;
+					stereo_method = StereoMethod.Independent;
+					window_function = WindowFunction.Welch;
+					max_prediction_order = 12;
 					break;
 				case 3:
 					prediction_type = PredictionType.Levinson;
+					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Welch;
-					max_prediction_order = 8;
 					break;
 				case 4:
 					prediction_type = PredictionType.Levinson;
+					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Welch;
+					max_prediction_order = 12;
 					break;
 				case 5:
-					prediction_type = PredictionType.Levinson;
+					prediction_type = PredictionType.Search;
+					stereo_method = StereoMethod.Evaluate;
+					window_function = WindowFunction.Welch;
+					max_partition_order = 6;
+					max_prediction_order = 12;
 					break;
 				case 6:
+					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Evaluate;
+					window_function = WindowFunction.Flattop | WindowFunction.Tukey;
+					max_partition_order = 6;
+					max_prediction_order = 12;
 					break;
 				case 7:
-					order_method = OrderMethod.LogSearch;
+					prediction_type = PredictionType.Search;
 					stereo_method = StereoMethod.Evaluate;
+					window_function = WindowFunction.Flattop | WindowFunction.Tukey;
+					max_partition_order = 6;
+					max_prediction_order = 12;
+					min_fixed_order = 0;
+					max_fixed_order = 4;
+					lpc_precision_search = 1;
 					break;
 				case 8:
-					order_method = OrderMethod.Search;
+					prediction_type = PredictionType.Search;
 					stereo_method = StereoMethod.Evaluate;
+					window_function = WindowFunction.Flattop | WindowFunction.Tukey;
+					order_method = OrderMethod.EstSearch;
+					max_partition_order = 6;
+					max_prediction_order = 12;
+					min_fixed_order = 0;
+					max_fixed_order = 4;
+					lpc_precision_search = 1;
 					break;
 				case 9:
-					stereo_method = StereoMethod.Evaluate;
 					max_prediction_order = 32;
 					break;
 				case 10:
-					order_method = OrderMethod.LogFast;
-					stereo_method = StereoMethod.Evaluate;
+					min_fixed_order = 0;
+					max_fixed_order = 4;
+					max_partition_order = 6;
 					max_prediction_order = 32;
+					lpc_precision_search = 1;
 					break;
 				case 11:
-					order_method = OrderMethod.LogSearch;
-					stereo_method = StereoMethod.Evaluate;
+					order_method = OrderMethod.EstSearch;
+					min_fixed_order = 0;
+					max_fixed_order = 4;
+					max_partition_order = 6;
 					max_prediction_order = 32;
-					max_partition_order = 8;
+					lpc_precision_search = 1;
 					break;
 				case 99:
 					order_method = OrderMethod.Search;
