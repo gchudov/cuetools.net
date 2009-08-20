@@ -38,6 +38,17 @@ namespace CUETools.Codecs.FLAKE
 			writebits(bits, (uint)val);
 		}
 
+		public void writebits64(int bits, ulong val)
+		{
+			if (bits > 32)
+			{
+				writebits(bits - 32, (uint)(val >> 32));
+				val &= 0xffffffffL;
+				bits = 32;
+			}
+			writebits(bits, (uint)val);
+		}
+
 		public void writebits(int bits, uint val)
 		{
 			//assert(bits == 32 || val < (1U << bits));
@@ -100,11 +111,25 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
+		public void write_unary_signed(int val)
+		{
+			// convert signed to unsigned
+			int v = -2 * val - 1;
+			v ^= (v >> 31);
+
+			// write quotient in unary
+			int q = v + 1;
+			while (q > 31)
+			{
+				writebits(31, 0);
+				q -= 31;
+			}
+			writebits(q, 1);
+		}
+
 		public void write_rice_signed(int k, int val)
 		{
 			int v, q;
-
-			if (k < 0) return;
 
 			// convert signed to unsigned
 			v = -2 * val - 1;

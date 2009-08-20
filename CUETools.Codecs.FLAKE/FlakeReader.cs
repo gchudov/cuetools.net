@@ -118,13 +118,28 @@ namespace CUETools.Codecs.FLAKE
 			{
 				if (value > _sampleCount)
 					throw new Exception("seeking past end of stream");
-				if (value < Position)
-					throw new Exception("backwards seeking not yet supported");
-				if (seek_table != null)
+				if (value < Position || value > _sampleOffset)
 				{
-
+					if (seek_table != null && _IO.CanSeek)
+					{
+						int best_st = -1;
+						for (int st = 0; st < seek_table.Length; st++)
+						{
+							if (seek_table[st].number <= value &&
+								(best_st == -1 || seek_table[st].number > seek_table[best_st].number))
+								best_st = st;
+						}
+						if (best_st != -1)
+						{
+							_framesBufferLength = 0;
+							_samplesInBuffer = 0;
+							_IO.Position = (long)seek_table[best_st].offset + first_frame_offset;
+							_sampleOffset = seek_table[best_st].number;
+						}
+					}
+					if (value < Position)
+						throw new Exception("cannot seek backwards without seek table");
 				}
-
 				while (value > _sampleOffset)
 				{
 					_samplesInBuffer = 0;
@@ -313,14 +328,14 @@ namespace CUETools.Codecs.FLAKE
 		unsafe void decode_subframe_constant(BitReader bitreader, FlacFrame* frame, int ch)
 		{
 			int obits = (int)frame->subframes[ch].obits;
-			frame->subframes[ch].residual[0] = bitreader.readbits_signed(obits);
+			frame->subframes[ch].best.residual[0] = bitreader.readbits_signed(obits);
 		}
 
 		unsafe void decode_subframe_verbatim(BitReader bitreader, FlacFrame* frame, int ch)
 		{
 			int obits = (int)frame->subframes[ch].obits;
 			for (int i = 0; i < frame->blocksize; i++)
-				frame->subframes[ch].residual[i] = bitreader.readbits_signed(obits);
+				frame->subframes[ch].best.residual[i] = bitreader.readbits_signed(obits);
 		}
 
 		unsafe void decode_residual(BitReader bitreader, FlacFrame* frame, int ch)
@@ -330,25 +345,25 @@ namespace CUETools.Codecs.FLAKE
 			if (coding_method != 0 && coding_method != 1) // if 1, then parameter length == 5 bits instead of 4
 				throw new Exception("unsupported residual coding");
 			// partition order
-			frame->subframes[ch].rc.porder = (int)bitreader.readbits(4);
-			if (frame->subframes[ch].rc.porder > 8)
+			frame->subframes[ch].best.rc.porder = (int)bitreader.readbits(4);
+			if (frame->subframes[ch].best.rc.porder > 8)
 				throw new Exception("invalid partition order");
-			int psize = frame->blocksize >> frame->subframes[ch].rc.porder;
-			int res_cnt = psize - frame->subframes[ch].order;
+			int psize = frame->blocksize >> frame->subframes[ch].best.rc.porder;
+			int res_cnt = psize - frame->subframes[ch].best.order;
 
 			int rice_len = 4 + (int)coding_method;
 			// residual
-			int j = frame->subframes[ch].order;
-			int* r = frame->subframes[ch].residual + j;
-			for (int p = 0; p < (1 << frame->subframes[ch].rc.porder); p++)
+			int j = frame->subframes[ch].best.order;
+			int* r = frame->subframes[ch].best.residual + j;
+			for (int p = 0; p < (1 << frame->subframes[ch].best.rc.porder); p++)
 			{
 				if (p == 1) res_cnt = psize;
 				int n = Math.Min(res_cnt, frame->blocksize - j);
 
-				int k = frame->subframes[ch].rc.rparams[p] = (int)bitreader.readbits(rice_len);
+				int k = frame->subframes[ch].best.rc.rparams[p] = (int)bitreader.readbits(rice_len);
 				if (k == (1 << rice_len) - 1)
 				{
-					k = frame->subframes[ch].rc.esc_bps[p] = (int)bitreader.readbits(5);
+					k = frame->subframes[ch].best.rc.esc_bps[p] = (int)bitreader.readbits(5);
 					for (int i = n; i > 0; i--)
 						*(r++) = bitreader.readbits_signed((int)k);
 				}
@@ -365,8 +380,8 @@ namespace CUETools.Codecs.FLAKE
 		{
 			// warm-up samples
 			int obits = (int)frame->subframes[ch].obits;
-			for (int i = 0; i < frame->subframes[ch].order; i++)
-				frame->subframes[ch].residual[i] = bitreader.readbits_signed(obits);
+			for (int i = 0; i < frame->subframes[ch].best.order; i++)
+				frame->subframes[ch].best.residual[i] = bitreader.readbits_signed(obits);
 
 			// residual
 			decode_residual(bitreader, frame, ch);
@@ -376,14 +391,14 @@ namespace CUETools.Codecs.FLAKE
 		{
 			// warm-up samples
 			int obits = (int)frame->subframes[ch].obits;
-			for (int i = 0; i < frame->subframes[ch].order; i++)
-				frame->subframes[ch].residual[i] = bitreader.readbits_signed(obits);
+			for (int i = 0; i < frame->subframes[ch].best.order; i++)
+				frame->subframes[ch].best.residual[i] = bitreader.readbits_signed(obits);
 
 			// LPC coefficients
-			frame->subframes[ch].cbits = (int)bitreader.readbits(4) + 1; // lpc_precision
-			frame->subframes[ch].shift = bitreader.readbits_signed(5);
-			for (int i = 0; i < frame->subframes[ch].order; i++)
-				frame->subframes[ch].coefs[i] = bitreader.readbits_signed(frame->subframes[ch].cbits);
+			frame->subframes[ch].best.cbits = (int)bitreader.readbits(4) + 1; // lpc_precision
+			frame->subframes[ch].best.shift = bitreader.readbits_signed(5);
+			for (int i = 0; i < frame->subframes[ch].best.order; i++)
+				frame->subframes[ch].best.coefs[i] = bitreader.readbits_signed(frame->subframes[ch].best.cbits);
 
 			// residual
 			decode_residual(bitreader, frame, ch);
@@ -411,25 +426,25 @@ namespace CUETools.Codecs.FLAKE
 					case ChannelMode.RightSide: frame->subframes[ch].obits += 1 - (uint)ch; break;
 				}
 
-				frame->subframes[ch].type = (SubframeType)type_code;
-				frame->subframes[ch].order = 0;
+				frame->subframes[ch].best.type = (SubframeType)type_code;
+				frame->subframes[ch].best.order = 0;
 
 				if ((type_code & (uint)SubframeType.LPC) != 0)
 				{
-					frame->subframes[ch].order = (type_code - (int)SubframeType.LPC) + 1;
-					frame->subframes[ch].type = SubframeType.LPC;
+					frame->subframes[ch].best.order = (type_code - (int)SubframeType.LPC) + 1;
+					frame->subframes[ch].best.type = SubframeType.LPC;
 				}
 				else if ((type_code & (uint)SubframeType.Fixed) != 0)
 				{
-					frame->subframes[ch].order = (type_code - (int)SubframeType.Fixed);
-					frame->subframes[ch].type = SubframeType.Fixed;
+					frame->subframes[ch].best.order = (type_code - (int)SubframeType.Fixed);
+					frame->subframes[ch].best.type = SubframeType.Fixed;
 				}
 
-				frame->subframes[ch].residual = r + ch * Flake.MAX_BLOCKSIZE;
+				frame->subframes[ch].best.residual = r + ch * Flake.MAX_BLOCKSIZE;
 				frame->subframes[ch].samples = s + ch * Flake.MAX_BLOCKSIZE;
 
 				// subframe
-				switch (frame->subframes[ch].type)
+				switch (frame->subframes[ch].best.type)
 				{
 					case SubframeType.Constant:
 						decode_subframe_constant(bitreader, frame, ch);
@@ -451,14 +466,14 @@ namespace CUETools.Codecs.FLAKE
 
 		unsafe void restore_samples_fixed(FlacFrame* frame, int ch)
 		{
-			FlacSubframe* sub = frame->subframes + ch;
+			FlacSubframeInfo* sub = frame->subframes + ch;
 
-			Flake.memcpy(sub->samples, sub->residual, sub->order);
-			int* data = sub->samples + sub->order;
-			int* residual = sub->residual + sub->order;
-			int data_len = frame->blocksize - sub->order;
+			Flake.memcpy(sub->samples, sub->best.residual, sub->best.order);
+			int* data = sub->samples + sub->best.order;
+			int* residual = sub->best.residual + sub->best.order;
+			int data_len = frame->blocksize - sub->best.order;
 			int s0, s1, s2;
-			switch (sub->order)
+			switch (sub->best.order)
 			{
 				case 0:
 					Flake.memcpy(data, residual, data_len);
@@ -497,27 +512,27 @@ namespace CUETools.Codecs.FLAKE
 
 		unsafe void restore_samples_lpc(FlacFrame* frame, int ch)
 		{
-			FlacSubframe* sub = frame->subframes + ch;
+			FlacSubframeInfo* sub = frame->subframes + ch;
 			ulong csum = 0;
-			for (int i = sub->order; i > 0; i--)
-				csum += (ulong)Math.Abs(sub->coefs[i - 1]);
+			for (int i = sub->best.order; i > 0; i--)
+				csum += (ulong)Math.Abs(sub->best.coefs[i - 1]);
 			if ((csum << (int)sub->obits) >= 1UL << 32)
-				lpc.decode_residual_long(sub->residual, sub->samples, frame->blocksize, sub->order, sub->coefs, sub->shift);
+				lpc.decode_residual_long(sub->best.residual, sub->samples, frame->blocksize, sub->best.order, sub->best.coefs, sub->best.shift);
 			else
-				lpc.decode_residual(sub->residual, sub->samples, frame->blocksize, sub->order, sub->coefs, sub->shift);
+				lpc.decode_residual(sub->best.residual, sub->samples, frame->blocksize, sub->best.order, sub->best.coefs, sub->best.shift);
 		}
 
 		unsafe void restore_samples(FlacFrame* frame)
 		{
 			for (int ch = 0; ch < channels; ch++)
 			{
-				switch (frame->subframes[ch].type)
+				switch (frame->subframes[ch].best.type)
 				{
 					case SubframeType.Constant:
-						Flake.memset(frame->subframes[ch].samples, frame->subframes[ch].residual[0], frame->blocksize);
+						Flake.memset(frame->subframes[ch].samples, frame->subframes[ch].best.residual[0], frame->blocksize);
 						break;
 					case SubframeType.Verbatim:
-						Flake.memcpy(frame->subframes[ch].samples, frame->subframes[ch].residual, frame->blocksize);
+						Flake.memcpy(frame->subframes[ch].samples, frame->subframes[ch].best.residual, frame->blocksize);
 						break;
 					case SubframeType.Fixed:
 						restore_samples_fixed(frame, ch);
@@ -574,12 +589,12 @@ namespace CUETools.Codecs.FLAKE
 			{
 				BitReader bitreader = new BitReader(buf, pos, len);
 				FlacFrame frame;
-				FlacSubframe* subframes = stackalloc FlacSubframe[channels];
+				FlacSubframeInfo* subframes = stackalloc FlacSubframeInfo[channels];
 				frame.subframes = subframes;
 				decode_frame_header(bitreader, &frame);
 				decode_subframes(bitreader, &frame);
 				bitreader.flush();
-				ushort crc = crc16.ComputeChecksum(bitreader.Buffer, pos, bitreader.Position - pos);
+				ushort crc = crc16.ComputeChecksum(bitreader.Buffer + pos, bitreader.Position - pos);
 				if (crc != bitreader.readbits(16))
 					throw new Exception("frame crc mismatch");
 				restore_samples(&frame);
@@ -691,17 +706,13 @@ namespace CUETools.Codecs.FLAKE
 					}
 					else if (type == MetadataType.FLAC__METADATA_TYPE_SEEKTABLE)
 					{
-						const int FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN = 64; /* bits */
-						const int FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN = 64; /* bits */
-						const int FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN = 16; /* bits */
-
 						int num_entries = len / 18;
 						seek_table = new SeekPoint[num_entries];
 						for (int e = 0; e < num_entries; e++)
 						{
-							seek_table[e].number = bitreader.readbits64(FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN);
-							seek_table[e].offset = bitreader.readbits64(FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN);
-							seek_table[e].framesize = bitreader.readbits24(FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN);
+							seek_table[e].number = bitreader.readbits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN);
+							seek_table[e].offset = bitreader.readbits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN);
+							seek_table[e].framesize = bitreader.readbits24(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN);
 						}
 					}
 					if (_framesBufferLength < 4 + len)

@@ -28,7 +28,7 @@ namespace CUETools.Codecs.FLAKE
 		 * Calculates autocorrelation data from audio samples
 		 * A Welch window function is applied before calculation.
 		 */
-		static unsafe void
+		static public unsafe void
 			compute_autocorr(/*const*/ int* data, uint len, uint lag, double* autoc, double* window)
 		{
 			double* data1 = stackalloc double[(int)len + 16];
@@ -83,7 +83,7 @@ namespace CUETools.Codecs.FLAKE
 		 * Levinson-Durbin recursion.
 		 * Produces LPC coefficients from autocorrelation data.
 		 */
-		static unsafe void
+		public static unsafe void
 		compute_lpc_coefs(/*const*/ double* autoc, uint max_order, double* reff,
 						  double* lpc/*[][MAX_LPC_ORDER]*/)
 		{
@@ -139,19 +139,12 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		/**
-		 * Compute LPC coefs for Flake.OrderMethod._EST
-		 * Faster LPC coeff computation by first calculating the reflection coefficients
-		 * using Schur recursion. That allows for estimating the optimal order before
-		 * running Levinson recursion.
-		 */
-		static unsafe uint
-		compute_lpc_coefs_est(/*const*/ double* autoc, uint max_order,
-							  double* lpc/*[][MAX_LPC_ORDER]*/)
+		public static unsafe void
+		compute_schur_reflection(/*const*/ double* autoc, uint max_order,
+							  double* reff/*[][MAX_LPC_ORDER]*/)
 		{
 			double* gen0 = stackalloc double[MAX_LPC_ORDER];
 			double* gen1 = stackalloc double[MAX_LPC_ORDER];
-			double* reff = stackalloc double[MAX_LPC_ORDER];
 
 			// Schur recursion
 			for (uint i = 0; i < max_order; i++)
@@ -170,6 +163,22 @@ namespace CUETools.Codecs.FLAKE
 				reff[i] = -gen1[0] / error;
 				error += gen1[0] * reff[i];
 			}
+		}
+
+		/**
+		 * Compute LPC coefs for Flake.OrderMethod._EST
+		 * Faster LPC coeff computation by first calculating the reflection coefficients
+		 * using Schur recursion. That allows for estimating the optimal order before
+		 * running Levinson recursion.
+		 */
+		public static unsafe uint
+		compute_lpc_coefs_est(/*const*/ double* autoc, uint max_order,
+							  double* lpc/*[][MAX_LPC_ORDER]*/)
+		{
+			double* reff = stackalloc double[MAX_LPC_ORDER];
+
+			// Schur recursion
+			compute_schur_reflection(autoc, max_order, reff);
 
 			// Estimate optimal order using reflection coefficients
 			uint order_est = 1;
@@ -391,6 +400,132 @@ namespace CUETools.Codecs.FLAKE
 						pred += c1 * *(s++);
 						pred += c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
+					}
+					break;
+			}
+		}
+
+		public static unsafe void
+		encode_residual_long(int* res, int* smp, int n, int order,
+			int* coefs, int shift)
+		{
+			for (int i = 0; i < order; i++)
+				res[i] = smp[i];
+
+			int* s = smp;
+			int* r = res + order;
+			int c0 = coefs[0];
+			int c1 = coefs[1];
+			switch (order)
+			{
+				case 1:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
+					}
+					break;
+				case 2:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *(s--) - (int)(pred >> shift);
+					}
+					break;
+				case 3:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = coefs[2] * (long)*(s++);
+						pred += c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
+						s -= 2;
+					}
+					break;
+				case 4:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = coefs[3] * (long)*(s++);
+						pred += coefs[2] * (long)*(s++);
+						pred += c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
+						s -= 3;
+					}
+					break;
+				case 5:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = coefs[4] * (long)*(s++);
+						pred += coefs[3] * (long)*(s++);
+						pred += coefs[2] * (long)*(s++);
+						pred += c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
+						s -= 4;
+					}
+					break;
+				case 6:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = coefs[5] * (long)*(s++);
+						pred += coefs[4] * (long)*(s++);
+						pred += coefs[3] * (long)*(s++);
+						pred += coefs[2] * (long)*(s++);
+						pred += c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
+						s -= 5;
+					}
+					break;
+				case 7:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = coefs[6] * (long)*(s++);
+						pred += coefs[5] * (long)*(s++);
+						pred += coefs[4] * (long)*(s++);
+						pred += coefs[3] * (long)*(s++);
+						pred += coefs[2] * (long)*(s++);
+						pred += c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
+						s -= 6;
+					}
+					break;
+				case 8:
+					for (int i = n - order; i > 0; i--)
+					{
+						long pred = coefs[7] * (long)*(s++);
+						pred += coefs[6] * (long)*(s++);
+						pred += coefs[5] * (long)*(s++);
+						pred += coefs[4] * (long)*(s++);
+						pred += coefs[3] * (long)*(s++);
+						pred += coefs[2] * (long)*(s++);
+						pred += c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
+						s -= 7;
+					}
+					break;
+				default:
+					for (int i = order; i < n; i++)
+					{
+						s = smp + i - order;
+						long pred = 0;
+						int* co = coefs + order - 1;
+						int* c7 = coefs + 7;
+						while (co > c7)
+							pred += *(co--) * (long)*(s++);
+						pred += coefs[7] * (long)*(s++);
+						pred += coefs[6] * (long)*(s++);
+						pred += coefs[5] * (long)*(s++);
+						pred += coefs[4] * (long)*(s++);
+						pred += coefs[3] * (long)*(s++);
+						pred += coefs[2] * (long)*(s++);
+						pred += c1 * (long)*(s++);
+						pred += c0 * (long)*(s++);
+						*(r++) = *s - (int)(pred >> shift);
 					}
 					break;
 			}

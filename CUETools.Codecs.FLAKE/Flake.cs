@@ -11,6 +11,10 @@ namespace CUETools.Codecs.FLAKE
 		public const int MAX_PARTITION_ORDER = 8;
 		public const int MAX_PARTITIONS = 1 << MAX_PARTITION_ORDER;
 
+		public const int FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN = 64; /* bits */
+		public const int FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN = 64; /* bits */
+		public const int FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN = 16; /* bits */
+
 		public static readonly int[] flac_samplerates = new int[16] {
 				0, 0, 0, 0,
 				8000, 16000, 22050, 24000, 32000, 44100, 48000, 96000,
@@ -39,59 +43,22 @@ namespace CUETools.Codecs.FLAKE
 
 		public static PredictionType LookupPredictionType(string name)
 		{
-			switch (name)
-			{
-				case "fixed": return PredictionType.Fixed;
-				case "levinson": return PredictionType.Levinson;
-				case "search" : return PredictionType.Search;
-			}
-			return (PredictionType)Int32.Parse(name);
+			return (PredictionType)(Enum.Parse(typeof(PredictionType), name, true));
 		}
 
 		public static StereoMethod LookupStereoMethod(string name)
 		{
-			switch (name)
-			{
-				case "independent": return StereoMethod.Independent;
-				case "estimate": return StereoMethod.Estimate;
-				case "estimate2": return StereoMethod.Estimate2;
-				case "estimate3": return StereoMethod.Estimate3;
-				case "estimate4": return StereoMethod.Estimate4;
-				case "estimate5": return StereoMethod.Estimate5;
-				case "search": return StereoMethod.Search;
-			}
-			return (StereoMethod)Int32.Parse(name);
+			return (StereoMethod)(Enum.Parse(typeof(StereoMethod), name, true));
 		}
 
 		public static OrderMethod LookupOrderMethod(string name)
 		{
-			switch (name)
-			{
-				case "estimate": return OrderMethod.Estimate;
-				case "logfast": return OrderMethod.LogFast;
-				case "logsearch": return OrderMethod.LogSearch;
-				case "estsearch": return OrderMethod.EstSearch;
-				case "search": return OrderMethod.Search;
-			}
-			return (OrderMethod)Int32.Parse(name);
+			return (OrderMethod)(Enum.Parse(typeof(OrderMethod), name, true));
 		}
 
 		public static WindowFunction LookupWindowFunction(string name)
 		{
-			string[] parts = name.Split(',');
-			WindowFunction res = (WindowFunction)0;
-			foreach (string part in parts)
-			{
-				switch (part)
-				{
-					case "welch": res |= WindowFunction.Welch; break;
-					case "tukey": res |= WindowFunction.Tukey; break;
-					case "hann": res |= WindowFunction.Hann; break;
-					case "flattop": res |= WindowFunction.Flattop; break;
-					default: res |= (WindowFunction)Int32.Parse(name); break;
-				}
-			}
-			return res;
+			return (WindowFunction)(Enum.Parse(typeof(WindowFunction), name, true));
 		}
 
 		unsafe public static bool memcmp(int* res, int* smp, int n)
@@ -124,6 +91,14 @@ namespace CUETools.Codecs.FLAKE
 				*(res++) = *(src2++);
 			}
 		}
+		unsafe public static void deinterlace(int* dst1, int* dst2, int* src, int n)
+		{
+			for (int i = n; i > 0; i--)
+			{
+				*(dst1++) = *(src++);
+				*(dst2++) = *(src++);
+			}
+		}
 	}
 
 	unsafe struct RiceContext
@@ -137,18 +112,26 @@ namespace CUETools.Codecs.FLAKE
 	{
 		public SubframeType type;
 		public int order;
-		public uint obits;
-		public uint wbits;
-		public int cbits;
-		public int shift;
-		public fixed int coefs[lpc.MAX_LPC_ORDER];
-		public int* samples;
 		public int* residual;
 		public RiceContext rc;
 		public uint size;
-		public fixed uint done_lpcs[lpc.MAX_LPC_WINDOWS];
-		public uint done_fixed;
+
+		public int cbits;
+		public int shift;
+		public fixed int coefs[lpc.MAX_LPC_ORDER];
 		public int window;
+	};
+
+	unsafe struct FlacSubframeInfo
+	{
+		public FlacSubframe best;
+		public uint obits;
+		public uint wbits;
+		public int* samples;
+		public fixed uint done_lpcs[lpc.MAX_LPC_WINDOWS * 2];
+		public uint done_fixed;
+		public fixed double lpcs_reff[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS];
+		public fixed int lpcs_order[lpc.MAX_LPC_WINDOWS];
 	};
 
 	unsafe struct FlacFrame
@@ -158,7 +141,7 @@ namespace CUETools.Codecs.FLAKE
 		public ChannelMode ch_mode;
 		public int ch_order0, ch_order1;
 		public byte crc8;
-		public FlacSubframe* subframes;
+		public FlacSubframeInfo* subframes;
 		public uint frame_count;
 		public FlacSubframe current;
 	}
@@ -170,6 +153,7 @@ namespace CUETools.Codecs.FLAKE
 		LogFast = 2,
 		LogSearch = 3,
 		EstSearch = 4,
+		Estimate8 = 6,
 		Search = 5
 	}
 
@@ -204,11 +188,8 @@ namespace CUETools.Codecs.FLAKE
 	{
 		Independent = 0,
 		Estimate = 1,
-		Estimate2 = 2,
-		Estimate3 = 3,
-		Estimate4 = 4,
-		Estimate5 = 5,
-		Search = 9
+		Evaluate = 2,
+		Search = 3
 	}
 
 	public enum SubframeType
@@ -233,7 +214,8 @@ namespace CUETools.Codecs.FLAKE
 		Welch = 1,
 		Tukey = 2,
 		Hann = 4,
-		Flattop = 8
+		Flattop = 8,
+		TukeyFlattop = 10
 	}
 
 	public struct SeekPoint
