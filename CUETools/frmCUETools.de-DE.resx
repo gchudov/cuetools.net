@@ -118,6 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="toolStripStatusLabelAR.ToolTipText" xml:space="preserve">
+    <value>Album in AccurateRip-Datenbank gefunden.</value>
+  </data>
+  <data name="toolStripStatusLabelProcessed.Text" xml:space="preserve">
+    <value>Restzeit</value>
+  </data>
+  <data name="toolStripProgressBar1.ToolTipText" xml:space="preserve">
+    <value>Trackfortschritt</value>
+  </data>
+  <data name="toolStripProgressBar2.ToolTipText" xml:space="preserve">
+    <value>Gesamtfortschritt</value>
+  </data>
   <data name="labelInput.Size" type="System.Drawing.Size, System.Drawing">
     <value>49, 13</value>
   </data>
@@ -128,16 +140,16 @@
     <value>Eingabe</value>
   </data>
   <data name="txtInputPath.ToolTip" xml:space="preserve">
-    <value />
+    <value>Eingabedatei</value>
   </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
-    <value />
+    <value>Ausgabedatei</value>
   </data>
   <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 17</value>
   </data>
   <data name="radioButtonAudioNone.Text" xml:space="preserve">
-    <value>Kei&amp;ne</value>
+    <value>Keine</value>
   </data>
   <data name="radioButtonAudioNone.ToolTip" xml:space="preserve">
     <value>Keine Audioausgabe</value>
@@ -170,7 +182,7 @@
     <value>Zu verwendender Encoder</value>
   </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Audio</value>
+    <value>Audioausgabe</value>
   </data>
   <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
     <value>Audiodateiformat</value>
@@ -232,8 +244,14 @@
   <data name="btnConvert.Text" xml:space="preserve">
     <value>&amp;Los</value>
   </data>
+  <data name="labelPregap.Text" xml:space="preserve">
+    <value>Pregap</value>
+  </data>
+  <data name="lblWriteOffset.Text" xml:space="preserve">
+    <value>Offset</value>
+  </data>
   <data name="numericWriteOffset.ToolTip" xml:space="preserve">
-    <value />
+    <value>Offset in Samples</value>
   </data>
   <data name="txtPreGapLength.ToolTip" xml:space="preserve">
     <value>Das Pregap ist eine mit Stille oder versteckten Audiodaten gefüllte Zeitspanne vor dem Beginn der ersten Tonspur. Normalerweise ist diese aus dem CUE-Sheet bekannt, aber falls Sie ohne CUE-Sheet arbeiten, können Sie diesen Wert manuell ändern.</value>
@@ -243,6 +261,9 @@
   </data>
   <data name="labelDataTrack.Text" xml:space="preserve">
     <value>Datenspur</value>
+  </data>
+  <data name="grpExtra.Text" xml:space="preserve">
+    <value>Extra</value>
   </data>
   <data name="rbFreedbAlways.Size" type="System.Drawing.Size, System.Drawing">
     <value>55, 17</value>
@@ -259,6 +280,9 @@
   <data name="groupBoxMode.Text" xml:space="preserve">
     <value>Modus</value>
   </data>
+  <data name="labelEncoderMode.ToolTip" xml:space="preserve">
+    <value>Für verlustfreie Formate der Grad der Kompression. Für verlustbehaftete Formate die Qualität.</value>
+  </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>81, 17</value>
   </data>
@@ -272,7 +296,7 @@
     <value>126, 17</value>
   </data>
   <data name="rbSingleFile.Text" xml:space="preserve">
-    <value>&amp;Einzelne Datei + CUE</value>
+    <value>Image + CUE</value>
   </data>
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
     <value>Erstelle einzelne Datei + CUE-Sheet</value>
@@ -321,7 +345,7 @@
 </value>
   </data>
   <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
-    <value>AccurateRip-Abfrage</value>
+    <value>Verwende AccurateRip</value>
   </data>
   <data name="checkBoxUseFreeDb.ToolTip" xml:space="preserve">
     <value>FreeDB-Abfrage</value>
@@ -336,7 +360,7 @@
     <value>Über</value>
   </data>
   <data name="toolStripButtonCorrectorOverwrite.Text" xml:space="preserve">
-    <value>CUE überschr.</value>
+    <value>Überschreiben</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
     <value />
@@ -347,23 +371,26 @@
   <data name="toolStripButtonShowLog.Text" xml:space="preserve">
     <value>Logdatei</value>
   </data>
+  <data name="toolStripSplitButtonInputBrowser.Text" xml:space="preserve">
+    <value>Dateiauswahl öffnen/schließen</value>
+  </data>
   <data name="toolStripLabelInput.Text" xml:space="preserve">
     <value>E&amp;ingabe:</value>
   </data>
   <data name="toolStripLabelOutput.Text" xml:space="preserve">
     <value>Aus&amp;gabe:</value>
   </data>
-  <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
-    <value>Neue Erweiterung</value>
-  </data>
-  <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
-    <value />
-  </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.Text" xml:space="preserve">
     <value>Dateien suchen</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
-    <value />
+    <value>Versuche fehlende Dateien automatisch zu finden</value>
+  </data>
+  <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
+    <value>Andere Erweiterung</value>
+  </data>
+  <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
+    <value>Ersetze Erweiterung für Audiodateien mit dieser:</value>
   </data>
   <data name="toolStripMenuItemInputBrowserDrag.Text" xml:space="preserve">
     <value>Drag'n'drop-Modus</value>
@@ -382,6 +409,9 @@
   </data>
   <data name="toolStripMenuItemOutputManual.Text" xml:space="preserve">
     <value>Manuell</value>
+  </data>
+  <data name="toolStripMenuItemOutputTemplate.Text" xml:space="preserve">
+    <value>Verwende Vorlage</value>
   </data>
   <data name="labelOutputTemplate.Text" xml:space="preserve">
     <value>Vorlage:</value>
@@ -403,5 +433,14 @@
   </data>
   <data name="toolStripDropDownButtonProfile.Text" xml:space="preserve">
     <value>Standard</value>
+  </data>
+  <data name="toolStripDropDownButtonProfile.ToolTip" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="setAsMyMusicFolderToolStripMenuItem.Text" xml:space="preserve">
+    <value>Für meine Musik verwenden</value>
+  </data>
+  <data name="resetToOriginalLocationToolStripMenuItem.Text" xml:space="preserve">
+    <value>Ursprüngliches Verzeichnis nutzen</value>
   </data>
 </root>
