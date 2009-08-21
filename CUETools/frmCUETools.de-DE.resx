@@ -118,6 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="toolStripStatusLabelProcessed.Text" xml:space="preserve">
+    <value>Verarbeitet: 0</value>
+  </data>
+  <data name="grpInput.Text" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
+  <data name="groupBoxMode.Text" xml:space="preserve">
+    <value>Modus</value>
+  </data>
   <data name="labelInput.Size" type="System.Drawing.Size, System.Drawing">
     <value>49, 13</value>
   </data>
@@ -167,7 +176,7 @@
     <value>Zu verwendender Encoder</value>
   </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Audio</value>
+    <value>Audioausgabe</value>
   </data>
   <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
     <value>Audiodateiformat</value>
@@ -180,6 +189,9 @@
   </data>
   <data name="checkBoxCorrectorOverwrite.Size" type="System.Drawing.Size, System.Drawing">
     <value>95, 17</value>
+  </data>
+  <data name="grpExtra.Text" xml:space="preserve">
+    <value>Extra</value>
   </data>
   <data name="grpAction.Text" xml:space="preserve">
     <value>Aktion</value>
@@ -327,13 +339,13 @@
     <value>MusicBrainz-Abfrage</value>
   </data>
   <data name="grpOutputPathGeneration.Text" xml:space="preserve">
-    <value>CUE-Path</value>
+    <value>CUE-Pfade</value>
   </data>
   <data name="toolStripButtonAbout.Text" xml:space="preserve">
     <value>Über</value>
   </data>
   <data name="toolStripButtonCorrectorOverwrite.Text" xml:space="preserve">
-    <value>CUE überschr.</value>
+    <value>Überschreiben</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
     <value>CUETools-Website</value>
@@ -351,10 +363,13 @@
     <value>Aus&amp;gabe:</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
-    <value>Neue Erweiterung</value>
+    <value>Andere Erweiterung</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
     <value>Ersetze Erweiterung von Audiodateien mit dieser:</value>
+  </data>
+  <data name="toolStripDropDownButtonCorrectorMode.Text" xml:space="preserve">
+    <value>Dateien suchen</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.Text" xml:space="preserve">
     <value>Dateien suchen</value>
@@ -400,5 +415,11 @@
   </data>
   <data name="toolStripDropDownButtonProfile.Text" xml:space="preserve">
     <value>Standard</value>
+  </data>
+  <data name="toolStripDropDownButtonProfile.ToolTipText" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="toolStripSplitButtonInputBrowser.Text" xml:space="preserve">
+    <value>Eingabebrowser öffnen/schließen</value>
   </data>
 </root>
