@@ -17,7 +17,6 @@ namespace JDP
 		public frmBatch()
 		{
 			InitializeComponent();
-			_config = new CUEConfig();
 			_batchPaths = new List<string>();
 		}
 
@@ -38,7 +37,6 @@ namespace JDP
 			set { _profileName = value; }
 		}
 
-		CUEConfig _config;
 		CUEToolsProfile _profile = null;
 		string _profileName = "verify";
 		Thread _workThread;
@@ -104,7 +102,7 @@ namespace JDP
 		private void WriteAudioFilesThread(object o)
 		{
 			CUESheet cueSheet = (CUESheet)o;
-			CUEToolsScript script = _profile._script == null || !_config.scripts.ContainsKey(_profile._script) ? null : _config.scripts[_profile._script];
+			CUEToolsScript script = _profile._script == null || !_profile._config.scripts.ContainsKey(_profile._script) ? null : _profile._config.scripts[_profile._script];
 
 			try
 			{
@@ -137,7 +135,7 @@ namespace JDP
 				if (useAR)
 					cueSheet.UseAccurateRip();
 
-				pathOut = CUESheet.GenerateUniqueOutputPath(_config, 
+				pathOut = CUESheet.GenerateUniqueOutputPath(_profile._config, 
 					_profile._outputTemplate, 
 					_profile._CUEStyle == CUEStyle.SingleFileWithCUE ? "." + _profile._outputAudioFormat : ".cue", 
 					_profile._action, 
@@ -227,7 +225,7 @@ namespace JDP
 		{
 			try
 			{
-				CUESheet cueSheet = new CUESheet(_config);
+				CUESheet cueSheet = new CUESheet(_profile._config);
 				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
 				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
 
@@ -250,12 +248,13 @@ namespace JDP
 		private void frmBatch_Load(object sender, EventArgs e)
 		{
 			textBox1.Hide();
-			SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath);
-			_config.Load(sr);
-			_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
+			//SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", Application.ExecutablePath);
+			//_profile.Load(sr);
+			//_reducePriority = sr.LoadBoolean("ReducePriority") ?? true;
+			_reducePriority = true;
 
 			_profile = new CUEToolsProfile(_profileName);
-			sr = new SettingsReader("CUE Tools", string.Format("profile-{0}.txt", _profileName), Application.ExecutablePath);
+			SettingsReader sr = new SettingsReader("CUE Tools", string.Format("profile-{0}.txt", _profileName), Application.ExecutablePath);
 			_profile.Load(sr);
 			
 			if (_reducePriority)

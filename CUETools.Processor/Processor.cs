@@ -911,12 +911,13 @@ namespace CUETools.Processor
 			encoders = new CUEToolsUDCList();
 #if !MONO
 			encoders.Add(new CUEToolsUDC("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", "FLACWriter"));
+			encoders.Add(new CUEToolsUDC("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "5", "FlakeWriter"));
 			encoders.Add(new CUEToolsUDC("libwavpack", "wv", true, "fast normal high high+", "normal", "WavPackWriter"));
 			encoders.Add(new CUEToolsUDC("MAC_SDK", "ape", true, "fast normal high extra insane", "high", "APEWriter"));
 			encoders.Add(new CUEToolsUDC("ttalib", "tta", true, "", "", "TTAWriter"));
 #endif
 			encoders.Add(new CUEToolsUDC("builtin wav", "wav", true, "", "", "WAVWriter"));
-			encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "10", "flake.exe", "-%M - -o %O"));
+			encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "10", "flake.exe", "-%M - -o %O -p %P"));
 			encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
 			encoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
 			encoders.Add(new CUEToolsUDC("lame vbr", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
@@ -931,6 +932,7 @@ namespace CUETools.Processor
 			decoders.Add("MAC_SDK", new CUEToolsUDC("MAC_SDK", "ape", true, "", "", "APEReader"));
 			decoders.Add("ttalib", new CUEToolsUDC("ttalib", "tta", true, "", "", "TTAReader"));
 #endif
+			decoders.Add("libFlake", new CUEToolsUDC("libFlake", "flac", true, "", "", "FlakeReader"));
 			decoders.Add("builtin wav", new CUEToolsUDC("builtin wav", "wav", true, "", "", "WAVReader"));
 			decoders.Add("builtin alac", new CUEToolsUDC("builtin alac", "m4a", true, "", "", "ALACReader"));
 			decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
@@ -1400,6 +1402,7 @@ return processor.Go();
 		public string status = string.Empty;
 		public double percentTrck = 0;
 		public double percentDisk = 0.0;
+		public int offset = 0;
 		public string input = string.Empty;
 		public string output = string.Empty;
 	}
@@ -1586,7 +1589,7 @@ return processor.Go();
 
 			if (useFreedb)
 			{
-				ShowProgress("Looking up album via freedb...", 0.0, 0.0, null, null);
+				ShowProgress("Looking up album via Freedb...", 0.0, 0.0, null, null);
 
 				FreedbHelper m_freedb = new FreedbHelper();
 
@@ -1633,6 +1636,8 @@ return processor.Go();
 
 			if (useMusicBrainz)
 			{
+				ShowProgress("Looking up album via MusicBrainz...", 0.0, 0.0, null, null);
+
 				StringCollection DiscIds = new StringCollection();
 				DiscIds.Add(_toc.MusicBrainzId);
 				//if (_tocFromLog != null && !DiscIds.Contains(_tocFromLog.MusicBrainzId))
@@ -1645,7 +1650,6 @@ return processor.Go();
 				}
 
 				MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-				_progress.percentDisk = 0;
 				foreach (string DiscId in DiscIds)
 				{
 					ReleaseQueryParameters p = new ReleaseQueryParameters();
@@ -2555,6 +2559,20 @@ return processor.Go();
 			_progress.status = status;
 			_progress.percentTrck = percentTrack;
 			_progress.percentDisk = percentDisk;
+			_progress.offset = 0;
+			_progress.input = input;
+			_progress.output = output;
+			this.CUEToolsProgress(this, _progress);
+		}
+
+		private void ShowProgress(string status, double percentTrack, int diskOffset, int diskLength, string input, string output)
+		{
+			if (this.CUEToolsProgress == null)
+				return;
+			_progress.status = status;
+			_progress.percentTrck = percentTrack;
+			_progress.percentDisk = (double)diskOffset / diskLength;
+			_progress.offset = diskOffset;
 			_progress.input = input;
 			_progress.output = output;
 			this.CUEToolsProgress(this, _progress);
@@ -2572,6 +2590,7 @@ return processor.Go();
 			double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
 			_progress.percentDisk = (double)(e.PassStart + (processed + e.Pass * (e.PassEnd - e.PassStart)) / (audioSource.CorrectionQuality + 1)) / audioSource.TOC.AudioLength;
 			_progress.percentTrck = (double) (e.Position - e.PassStart) / (e.PassEnd - e.PassStart);
+			_progress.offset = 0;
 			_progress.status = string.Format("Ripping @{0:00.00}x {1}", speed, e.Pass > 0 ? " (Retry " + e.Pass.ToString() + ")" : "");
 			this.CUEToolsProgress(this, _progress);
 		}
@@ -2582,6 +2601,7 @@ return processor.Go();
 				return;
 			_progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
 			_progress.percentTrck = 0;
+			_progress.offset = 0;
 			_progress.input = e.Uri.ToString();
 			_progress.output = null;
 			_progress.status = "Looking up album via MusicBrainz";
@@ -4100,9 +4120,8 @@ return processor.Go();
 							if (trackLength > 0 && !_isCD)
 							{
 								double trackPercent = (double)currentOffset / trackLength;
-								double diskPercent = (double)diskOffset / diskLength;
 								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (uint)(100*trackPercent),
-									noOutput ? "Verifying" : "Writing"), trackPercent, diskPercent,
+									noOutput ? "Verifying" : "Writing"), trackPercent, (int)diskOffset, (int)diskLength,
 									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
 							}
 
@@ -4111,7 +4130,7 @@ return processor.Go();
 							if (!discardOutput)
 							{
 								if (!_config.detectHDCD || !_config.decodeHDCD)
-									audioDest.Write(sampleBuffer, copyCount);
+									audioDest.Write(sampleBuffer, 0, (int)copyCount);
 								if (_config.detectHDCD && hdcdDecoder != null)
 								{
 									if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && !hdcdDecoder.Detected)
@@ -4134,7 +4153,7 @@ return processor.Go();
 								}
 							}
 							if (_useAccurateRip)
-								_arVerify.Write(sampleBuffer, copyCount);
+								_arVerify.Write(sampleBuffer, 0, (int)copyCount);
 							if (iTrack > 0 || iIndex > 0)
 								Tracks[iTrack + (iIndex == 0 ? -1 : 0)].MeasurePeakLevel(sampleBuffer, copyCount);
 
@@ -4157,7 +4176,7 @@ return processor.Go();
 				try { if (audioSource != null && !_isCD) audioSource.Close(); }
 				catch { }
 				audioSource = null;
-				try { if (audioDest != null) audioDest.Close(); } 
+				try { if (audioDest != null) audioDest.Delete(); } 
 				catch { }
 				audioDest = null;
 				throw ex;

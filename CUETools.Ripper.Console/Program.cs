@@ -220,8 +220,8 @@ namespace CUETools.ConsoleRipper
 					if (samplesRead == 0) break;
 					if (samplesRead != toRead)
 						throw new Exception("samples read != samples requested");
-					arVerify.Write(buff, samplesRead);
-					audioDest.Write(buff, samplesRead);
+					arVerify.Write(buff, 0, (int)samplesRead);
+					audioDest.Write(buff, 0, (int)samplesRead);
 				} while (true);
 
 				TimeSpan totalElapsed = DateTime.Now - meter.realStart;

@@ -271,9 +271,10 @@ All the other CRC's in this offset range are calculated by consequently adding s
 			return _offsetedFrame450CRC[iTrack, _arOffsetRange - oi];
 		}
 
-		public void Write(int[,] sampleBuffer, uint sampleCount)
+		public void Write(int[,] sampleBuffer, int offset, int count)
 		{
-			for (uint pos = 0; pos < sampleCount; )
+			uint sampleCount = (uint)count;
+			for (uint pos = (uint)offset; pos < sampleCount; )
 			{
 				uint copyCount = Math.Min(sampleCount - pos, (uint)_samplesRemTrack);
 				unsafe

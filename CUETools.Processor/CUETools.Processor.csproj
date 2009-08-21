@@ -120,6 +120,10 @@
       <Project>{9AE965C4-301E-4C01-B90F-297AF341ACC6}</Project>
       <Name>CUETools.Codecs.APE</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
+      <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
+      <Name>CUETools.Codecs.FLAKE</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.TTA\CUETools.Codecs.TTA.vcproj">
       <Project>{1D1E99BC-6D22-41C0-BD94-FF4DD5EC725B}</Project>
       <Name>CUETools.Codecs.TTA</Name>

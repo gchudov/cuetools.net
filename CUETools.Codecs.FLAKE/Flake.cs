@@ -144,6 +144,7 @@ namespace CUETools.Codecs.FLAKE
 		public FlacSubframeInfo* subframes;
 		public uint frame_count;
 		public FlacSubframe current;
+		public double* window_buffer;
 	}
 
 	public enum OrderMethod

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using CUETools.Codecs;
 using CUETools.Codecs.ALAC;
+using CUETools.Codecs.FLAKE;
 #if !MONO
 using CUETools.Codecs.FLAC;
 using CUETools.Codecs.WavPack;
@@ -29,6 +30,8 @@ namespace CUETools.Processor
 					return new WAVReader(path, IO);
 				case "ALACReader":
 					return new ALACReader(path, IO);
+				case "FlakeReader":
+					return new FlakeReader(path, IO);
 #if !MONO
 				case "FLACReader":
 					return new FLACReader(path, IO, config.disableAsm);
@@ -98,6 +101,12 @@ namespace CUETools.Processor
 					((FLACWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
 					((FLACWriter)dest).Verify = config.flacVerify;
 					((FLACWriter)dest).DisableAsm = config.disableAsm;
+					break;
+				case "FlakeWriter":
+					dest = new FlakeWriter(path, bitsPerSample, channelCount, sampleRate, null);
+					((FlakeWriter)dest).PaddingLength = padding;
+					((FlakeWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
+					dest = new BufferedWriter(dest, 128 * 1024);
 					break;
 				case "WavPackWriter":
 					dest = new WavPackWriter(path, bitsPerSample, channelCount, sampleRate);

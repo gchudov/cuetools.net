@@ -321,6 +321,7 @@ namespace JDP {
 		bool _outputPathUseTemplate = true;
 		bool _reportState = true;
 		CorrectorModeEnum _correctorMode;
+		DateTime _startedAt;
 		DateTime lastMOTD;
 		Image motdImage = null;
 		string profilePath;
@@ -917,6 +918,30 @@ namespace JDP {
 		public void SetStatus(object sender, CUEToolsProgressEventArgs e)
 		{
 			this.BeginInvoke((MethodInvoker)delegate() {
+				if (e.percentDisk == 0)
+				{
+					_startedAt = DateTime.Now;
+					toolStripStatusLabelProcessed.Visible = false;
+					toolStripProgressBar1.ToolTipText = "";
+					toolStripProgressBar2.ToolTipText = "";
+				}
+				else if (e.percentDisk > 0.02)
+				{
+					TimeSpan span = DateTime.Now - _startedAt;
+					TimeSpan eta = new TimeSpan((long)(span.Ticks / e.percentDisk));
+					if (span.TotalSeconds > 0 && e.offset > 0)
+					{
+						double speed = e.offset / span.TotalSeconds / 44100;
+						toolStripProgressBar1.ToolTipText = String.Format("{0:00.00}x", speed);
+					} else
+						toolStripProgressBar1.ToolTipText = "";
+					toolStripProgressBar2.ToolTipText = String.Format("{0}:{1:00}/{2}:{3:00}", (int)span.TotalMinutes, span.Seconds, (int)eta.TotalMinutes, eta.Seconds);
+					if (FileBrowserState != FileBrowserStateEnum.Hidden)
+					{
+						toolStripStatusLabelProcessed.Text = String.Format("{0}@{1}", toolStripProgressBar2.ToolTipText, toolStripProgressBar1.ToolTipText);
+						toolStripStatusLabelProcessed.Visible = true;
+					}
+				}
 				toolStripStatusLabel1.Text = e.status;
 				toolStripProgressBar1.Value = Math.Max(0,Math.Min(100,(int)(e.percentTrck*100)));
 				toolStripProgressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percentDisk*100)));
@@ -968,6 +993,7 @@ namespace JDP {
 			{
 				UpdateActions();
 				pictureBoxMotd.Image = motdImage;
+				toolStripStatusLabelProcessed.Visible = false;
 			}
 
 			//rbGapsLeftOut.Visible = 

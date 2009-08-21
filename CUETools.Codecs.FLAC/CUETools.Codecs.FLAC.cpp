@@ -274,6 +274,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 					_bufferLength = 0;
 					do
 					{
+						if (FLAC__stream_decoder_get_state(_decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
+							return sampleCount - samplesNeeded;
 						if (!FLAC__stream_decoder_process_single(_decoder))
 							throw gcnew Exception("An error occurred while decoding.");
 					} while (_bufferLength == 0);
@@ -529,10 +531,10 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			} 
 		}
 
-		virtual void Write(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) {
+		virtual void Write(array<Int32, 2>^ sampleBuffer, int offset, int sampleCount) {
 			if (!_initialized) Initialize();
 
-			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
+			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[offset, 0];
 
 			if (!FLAC__stream_encoder_process_interleaved(_encoder,
 				(const FLAC__int32*)pSampleBuffer, sampleCount))

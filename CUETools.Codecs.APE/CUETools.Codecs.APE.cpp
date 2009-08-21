@@ -354,11 +354,11 @@ namespace CUETools { namespace Codecs { namespace APE {
 			int get() { return _bitsPerSample;  }
 		}
 
-		virtual void Write(array<Int32,2>^ buff, UInt32 sampleCount) 
+		virtual void Write(array<Int32,2>^ buff, int offset, int sampleCount) 
 		{
 			if (_sampleBuffer == nullptr || _sampleBuffer.Length < sampleCount * _blockAlign)
 				_sampleBuffer = gcnew array<unsigned char>(sampleCount * _blockAlign);
-			AudioSamples::FLACSamplesToBytes(buff, 0, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
+			AudioSamples::FLACSamplesToBytes(buff, offset, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
 			if (!_initialized) Initialize();
 			pin_ptr<unsigned char> pSampleBuffer = &_sampleBuffer[0];
 			if (pAPECompress->AddData (pSampleBuffer, sampleCount * _blockAlign))

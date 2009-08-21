@@ -234,7 +234,7 @@ namespace HDCDDotNet
 				for (int i = 0; i < loopCount; i++)
 					*(pOutSamples++) = *(pInSamples++);
 			}
-			AudioDest.Write(_outSampleBuffer, (uint)samples);
+			AudioDest.Write(_outSampleBuffer, 0, samples);
 			return true;
 		}
 

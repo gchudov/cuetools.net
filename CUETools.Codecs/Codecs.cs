@@ -23,7 +23,7 @@ namespace CUETools.Codecs
 
 	public interface IAudioDest
 	{
-		void Write(int[,] buff, uint sampleCount);
+		void Write(int[,] buff, int pos, int sampleCount);
 		void Close();
 		void Delete();
 		int BitsPerSample { get; }
@@ -34,10 +34,10 @@ namespace CUETools.Codecs
 
 	public class AudioSamples
 	{
-		public static unsafe void FLACSamplesToBytes_16(int[,] inSamples, uint inSampleOffset,
-			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount)
+		public static unsafe void FLACSamplesToBytes_16(int[,] inSamples, int inSampleOffset,
+			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount)
 		{
-			uint loopCount = sampleCount * (uint)channelCount;
+			int loopCount = sampleCount * channelCount;
 
 			if ((inSamples.GetLength(0) - inSampleOffset < sampleCount) ||
 				(outSamples.Length - outByteOffset < loopCount * 2))
@@ -60,10 +60,10 @@ namespace CUETools.Codecs
 			}
 		}
 		
-		public static unsafe void FLACSamplesToBytes_24(int[,] inSamples, uint inSampleOffset,
-			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount, int wastedBits)
+		public static unsafe void FLACSamplesToBytes_24(int[,] inSamples, int inSampleOffset,
+			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount, int wastedBits)
 		{
-			uint loopCount = sampleCount * (uint)channelCount;
+			int loopCount = sampleCount * channelCount;
 
 			if ((inSamples.GetLength(0) - inSampleOffset < sampleCount) ||
 				(outSamples.Length - outByteOffset < loopCount * 3))
@@ -91,8 +91,8 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public static unsafe void FLACSamplesToBytes(int[,] inSamples, uint inSampleOffset,
-			byte[] outSamples, uint outByteOffset, uint sampleCount, int channelCount, int bitsPerSample)
+		public static unsafe void FLACSamplesToBytes(int[,] inSamples, int inSampleOffset,
+			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount, int bitsPerSample)
 		{
 			if (bitsPerSample == 16)
 				AudioSamples.FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
@@ -209,7 +209,7 @@ namespace CUETools.Codecs
 			get { return _bitsPerSample;  }
 		}
 
-		public void Write(int[,] buff, uint sampleCount)
+		public void Write(int[,] buff, int pos, int sampleCount)
 		{
 		}
 
@@ -712,7 +712,7 @@ namespace CUETools.Codecs
 			get { return _bitsPerSample; }
 		}
 
-		public void Write(int[,] buff, uint sampleCount)
+		public void Write(int[,] buff, int pos, int sampleCount)
 		{
 			if (sampleCount == 0)
 				return;
@@ -720,7 +720,7 @@ namespace CUETools.Codecs
 				WriteHeaders();
 			if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _blockAlign)
 				_sampleBuffer = new byte[sampleCount * _blockAlign];
-			AudioSamples.FLACSamplesToBytes(buff, 0, _sampleBuffer, 0,
+			AudioSamples.FLACSamplesToBytes(buff, pos, _sampleBuffer, 0,
 				sampleCount, _channelCount, _bitsPerSample);
 			_IO.Write(_sampleBuffer, 0, (int)sampleCount * _blockAlign);
 			_sampleLen += sampleCount;
@@ -729,11 +729,270 @@ namespace CUETools.Codecs
 		public string Path { get { return _path; } }
 	}
 
+	public class CyclicBuffer
+	{
+		public delegate void FlushOutput(byte[] buffer, int pos, int chunk, object to);
+		public delegate void CloseOutput(object to);
+
+		private byte[] _buffer;
+		private int _size;
+		private int _start = 0; // moved only by Write
+		private int _end = 0; // moved only by Read
+		private bool _eof = false;
+		private Thread _readThread = null, _writeThread = null;
+
+		public event FlushOutput flushOutput;
+		public event CloseOutput closeOutput;
+
+		public CyclicBuffer(int len)
+		{
+			_size = len;
+			_buffer = new byte[len];
+		}
+
+		public CyclicBuffer(int len, Stream input, Stream output)
+		{
+			_size = len;
+			_buffer = new byte[len];
+			ReadFrom(input);
+			WriteTo(output);
+		}
+
+		public void ReadFrom(Stream input)
+		{
+			_readThread = new Thread(PumpRead);
+			_readThread.Priority = ThreadPriority.Highest;
+			_readThread.IsBackground = true;
+			_readThread.Start(input);
+		}
+
+		public void WriteTo(Stream output)
+		{
+			WriteTo(flushOutputToStream, closeOutputToStream, ThreadPriority.Highest, output);
+		}
+
+		public void WriteTo(FlushOutput flushOutputDelegate, CloseOutput closeOutputDelegate, ThreadPriority priority, object to)
+		{
+			if (flushOutputDelegate != null)
+				flushOutput += flushOutputDelegate;
+			if (closeOutputDelegate != null)
+				closeOutput += closeOutputDelegate;
+			_writeThread = new Thread(FlushThread);
+			_writeThread.Priority = priority;
+			_writeThread.IsBackground = true;
+			_writeThread.Start(to);
+		}
+
+		void closeOutputToStream(object to)
+		{
+			((Stream)to).Close();
+		}
+
+		void flushOutputToStream(byte[] buffer, int pos, int chunk, object to)
+		{
+			((Stream)to).Write(buffer, pos, chunk);
+		}
+
+		int DataAvailable
+		{
+			get
+			{
+				return _end - _start;
+			}
+		}
+
+		int FreeSpace
+		{
+			get
+			{
+				return _size - DataAvailable;
+			}
+		}
+
+		private void PumpRead(object o)
+		{
+			while (Read((Stream)o))
+				;
+			SetEOF();
+		}
+
+		public void Close()
+		{
+			if (_readThread != null)
+			{
+				_readThread.Join();
+				_readThread = null;
+			}
+			SetEOF();
+			if (_writeThread != null)
+			{
+				_writeThread.Join();
+				_writeThread = null;
+			}
+		}
+
+		public void SetEOF()
+		{
+			lock (this)
+			{
+				_eof = true;
+				Monitor.Pulse(this);
+			}
+		}
+
+		public bool Read(Stream input)
+		{
+			int pos, chunk;
+			lock (this)
+			{
+				while (FreeSpace == 0)
+					Monitor.Wait(this);
+				pos = _end % _size;
+				chunk = Math.Min(FreeSpace, _size - pos);
+			}
+			chunk = input.Read(_buffer, pos, chunk);
+			if (chunk == 0)
+				return false;
+			lock (this)
+			{
+				_end += chunk;
+				Monitor.Pulse(this);
+			}
+			return true;
+		}
+
+		public void Read(byte[] array, int offset, int count)
+		{
+			int pos, chunk;
+			while (count > 0)
+			{
+				lock (this)
+				{
+					while (FreeSpace == 0)
+						Monitor.Wait(this);
+					pos = _end % _size;
+					chunk = Math.Min(FreeSpace, _size - pos);
+					chunk = Math.Min(chunk, count);
+				}
+				Array.Copy(array, offset, _buffer, pos, chunk);
+				lock (this)
+				{
+					_end += chunk;
+					Monitor.Pulse(this);
+				}
+				count -= chunk;
+				offset += chunk;
+			}
+		}
+
+		private void FlushThread(object to)
+		{
+			while (true)
+			{
+				int pos, chunk;
+				lock (this)
+				{
+					while (DataAvailable == 0 && !_eof)
+						Monitor.Wait(this);
+					if (DataAvailable == 0)
+						break;
+					pos = _start % _size;
+					chunk = Math.Min(DataAvailable, _size - pos);
+				}
+				if (flushOutput != null)
+					flushOutput(_buffer, pos, chunk, to);
+				lock (this)
+				{
+					_start += chunk;
+					Monitor.Pulse(this);
+				}
+			}
+			if (closeOutput != null)
+				closeOutput(to);
+		}
+	}
+
+	public class CycilcBufferOutputStream : Stream
+	{
+		CyclicBuffer _buffer;
+
+		public CycilcBufferOutputStream(CyclicBuffer buffer)
+		{
+			_buffer = buffer;
+		}
+
+		public CycilcBufferOutputStream(Stream output, int size)
+		{
+			_buffer = new CyclicBuffer(size);
+			_buffer.WriteTo(output);
+		}
+
+		public override bool CanRead
+		{
+			get { return false; }
+		}
+
+		public override bool CanSeek
+		{
+			get { return false; }
+		}
+
+		public override bool CanWrite
+		{
+			get { return true; }
+		}
+
+		public override long Length
+		{
+			get
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		public override long Position
+		{
+			get { throw new NotSupportedException(); }
+			set { throw new NotSupportedException(); }
+		}
+
+		public override void Close()
+		{
+			_buffer.Close();
+		}
+
+		public override void Flush()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void SetLength(long value)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override int Read(byte[] array, int offset, int count)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Write(byte[] array, int offset, int count)
+		{
+			_buffer.Read(array, offset, count);
+		}
+	}
+
 	public class UserDefinedWriter : IAudioDest
 	{
 		string _path, _encoder, _encoderParams, _encoderMode;
 		Process _encoderProcess;
 		WAVWriter wrt;
+		CyclicBuffer outputBuffer = null;
 
 		public UserDefinedWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO, string encoder, string encoderParams, string encoderMode, int padding)
 		{
@@ -748,6 +1007,8 @@ namespace CUETools.Codecs
 			_encoderProcess.StartInfo.CreateNoWindow = true;
 			_encoderProcess.StartInfo.RedirectStandardInput = true;
 			_encoderProcess.StartInfo.UseShellExecute = false;
+			if (!_encoderParams.Contains("%O"))
+				_encoderProcess.StartInfo.RedirectStandardOutput = true;
 			bool started = false;
 			Exception ex = null;
 			try
@@ -762,7 +1023,13 @@ namespace CUETools.Codecs
 			}
 			if (!started)
 				throw new Exception(_encoder + ": " + (ex == null ? "please check the path" : ex.Message));
-			wrt = new WAVWriter(path, bitsPerSample, channelCount, sampleRate, _encoderProcess.StandardInput.BaseStream);
+			if (_encoderProcess.StartInfo.RedirectStandardOutput)
+			{
+				Stream outputStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+				outputBuffer = new CyclicBuffer(2 * 1024 * 1024, _encoderProcess.StandardOutput.BaseStream, outputStream);
+			}
+			Stream inputStream = new CycilcBufferOutputStream(_encoderProcess.StandardInput.BaseStream, 128 * 1024);
+			wrt = new WAVWriter(path, bitsPerSample, channelCount, sampleRate, inputStream);
 		}
 
 		public void Close()
@@ -770,6 +1037,8 @@ namespace CUETools.Codecs
 			wrt.Close();
 			if (!_encoderProcess.HasExited)
 				_encoderProcess.WaitForExit();
+			if (outputBuffer != null)
+				outputBuffer.Close();
 			if (_encoderProcess.ExitCode != 0)
 				throw new Exception(String.Format("{0} returned error code {1}", _encoder, _encoderProcess.ExitCode));
 		}
@@ -803,9 +1072,9 @@ namespace CUETools.Codecs
 			get { return wrt.BitsPerSample; }
 		}
 
-		public void Write(int[,] buff, uint sampleCount)
+		public void Write(int[,] buff, int pos, int sampleCount)
 		{
-			wrt.Write(buff, sampleCount);
+			wrt.Write(buff, pos, sampleCount);
 			//_sampleLen += sampleCount;
 		}
 
@@ -1147,77 +1416,241 @@ namespace CUETools.Codecs
 		public string Path { get { return _source.Path; } }
 	}
 
-	public class Crc32
+	public class BufferedWriter: IAudioDest
 	{
-		uint[] table = new uint[256];
+		IAudioDest _writer;
+		Thread _flushThread = null;
+		private int[,] _buffer;
+		private int _size;
+		private int _channels = 2;
+		private int _start = 0; // moved only by Write
+		private int _end = 0; // moved only by Read
+		private bool _eof = false, _delete = false;
+		Exception exceptionOnFlush = null;
 
-		public uint ComputeChecksum(uint crc, byte val)
+		public long FinalSampleCount
 		{
-			return (crc >> 8) ^ table[(crc & 0xff) ^ val];
+			//get { return _writer.FinalSampleCount; }
+			set	{ _writer.FinalSampleCount = value; }
 		}
 
-		public uint ComputeChecksum(uint crc, byte[] bytes, int pos, int count)
+		public long BlockSize
 		{
-			for (int i = pos; i < pos + count; i++)
-				crc = ComputeChecksum(crc, bytes[i]);
-			return crc;
+			set	{ _writer.BlockSize = value; }
 		}
 
-		public uint ComputeChecksum(uint crc, uint s)
+		public int BitsPerSample
 		{
-			return ComputeChecksum(ComputeChecksum(ComputeChecksum(ComputeChecksum(
-				crc, (byte)s), (byte)(s >> 8)), (byte)(s >> 16)), (byte)(s >> 24));
+			get { return _writer.BitsPerSample;  }
 		}
 
-		public unsafe uint ComputeChecksum(uint crc, int * samples, uint count)
+		public int Channels
 		{
-			for (uint i = 0; i < count; i++)
+			get { return _channels; } // !!!! writer.Channels
+		}
+
+		// public bool ReadSource(IAudioSource input)
+
+		public void Write(int[,] samples, int offset, int count)
+		{
+			int pos, chunk;
+			while (count > 0)
 			{
-				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
-				crc = ComputeChecksum(ComputeChecksum(ComputeChecksum(ComputeChecksum(
-					crc, (byte)s1), (byte)(s1 >> 8)), (byte)s2), (byte)(s2 >> 8));
+				lock (this)
+				{
+					while (FreeSpace == 0 && exceptionOnFlush == null)
+						Monitor.Wait(this);
+					if (exceptionOnFlush != null)
+					{
+						Exception ex = exceptionOnFlush;
+						exceptionOnFlush = null;
+						throw ex;
+					}
+					pos = _end % _size;
+					chunk = Math.Min(FreeSpace, _size - pos);
+					chunk = Math.Min(chunk, count);
+				}
+				Array.Copy(samples, offset * Channels, _buffer, pos * Channels, chunk * Channels);
+				lock (this)
+				{
+					_end += chunk;
+					Monitor.Pulse(this);
+				}
+				count -= chunk;
+				offset += chunk;
 			}
-			return crc;
 		}
 
-		public unsafe uint ComputeChecksumWONULL(uint crc, int* samples, uint count)
+		public string Path { get { return _writer.Path; } }
+
+		public BufferedWriter(IAudioDest writer, int size)
 		{
-			for (uint i = 0; i < count; i++)
-			{
-				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
-				if (s1 != 0)
-					crc = ComputeChecksum(ComputeChecksum(crc, (byte)s1), (byte)(s1 >> 8));
-				if (s2 != 0)
-					crc = ComputeChecksum(ComputeChecksum(crc, (byte)s2), (byte)(s2 >> 8));
-			}
-			return crc;
+			_writer = writer;
+			_size = size;
+			_buffer = new int[_size, Channels]; 
+			_flushThread = new Thread(Flush);
+			//_writeThread.Priority = ThreadPriority.Normal;
+			_flushThread.IsBackground = true;
+			_flushThread.Start(_writer);
 		}
 
-		uint Reflect(uint val, int ch)
+		int DataAvailable
 		{
-			uint value = 0;
-			// Swap bit 0 for bit 7
-			// bit 1 for bit 6, etc.
-			for (int i = 1; i < (ch + 1); i++)
+			get
 			{
-				if (0 != (val & 1))
-					value |= 1U << (ch - i);
-				val >>= 1;
+				return _end - _start;
 			}
-			return value;
 		}
 
-		const uint ulPolynomial = 0x04c11db7;
-
-		public Crc32()
+		int FreeSpace
 		{
-			for (uint i = 0; i < table.Length; i++)
+			get
 			{
-				table[i] = Reflect(i, 8) << 24;
-				for (int j = 0; j < 8; j++)
-					table[i] = (table[i] << 1) ^ ((table[i] & (1U << 31)) == 0 ? 0 : ulPolynomial);
-				table[i] = Reflect(table[i], 32);
+				return _size - DataAvailable;
 			}
+		}
+
+		public void Delete()
+		{
+			SetEOF(true);
+			if (_flushThread != null)
+			{
+				_flushThread.Join();
+				_flushThread = null;
+			}
+		}
+
+		public void Close()
+		{
+			SetEOF(false);
+			if (_flushThread != null)
+			{
+				_flushThread.Join();
+				_flushThread = null;
+			}
+			if (exceptionOnFlush != null)
+			{
+				Exception ex = exceptionOnFlush;
+				exceptionOnFlush = null;
+				throw ex;
+			}
+		}
+
+		public void SetEOF(bool delete)
+		{
+			lock (this)
+			{
+				_eof = true;
+				_delete = delete;
+				Monitor.Pulse(this);
+			}
+		}
+		
+		public void Flush(object o)
+		{
+			IAudioDest dest = (IAudioDest)o;
+			try
+			{
+				do
+				{
+					int pos, chunk;
+					lock (this)
+					{
+						while (DataAvailable == 0 && !_eof)
+							Monitor.Wait(this);
+						if (DataAvailable == 0)
+						{
+							if (_delete)
+								dest.Delete();
+							else
+								dest.Close();
+							return;
+						}
+						pos = _start % _size;
+						chunk = Math.Min(DataAvailable, _size - pos);
+					}
+					dest.Write(_buffer, pos, chunk);
+					lock (this)
+					{
+						_start += chunk;
+						Monitor.Pulse(this);
+					}
+				}
+				while (true);
+			}
+			catch (Exception ex)
+			{
+				lock (this)
+				{
+					exceptionOnFlush = ex;
+					Monitor.Pulse(this);
+					dest.Delete();
+				}
+			}
+		}
+	}
+	
+	public class NullStream : Stream
+	{
+		public NullStream()
+		{
+		}
+
+		public override bool CanRead
+		{
+			get { return false; }
+		}
+
+		public override bool CanSeek
+		{
+			get { return false; }
+		}
+
+		public override bool CanWrite
+		{
+			get { return true; }
+		}
+
+		public override long Length
+		{
+			get
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		public override long Position
+		{
+			get { throw new NotSupportedException(); }
+			set { throw new NotSupportedException(); }
+		}
+
+		public override void Close()
+		{
+		}
+
+		public override void Flush()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void SetLength(long value)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override int Read(byte[] array, int offset, int count)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Write(byte[] array, int offset, int count)
+		{
 		}
 	}
 }

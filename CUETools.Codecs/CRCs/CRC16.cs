@@ -8,22 +8,18 @@ namespace CUETools.Codecs
 	{
 		ushort[] table = new ushort[256];
 
-		public ushort ComputeChecksum(byte[] bytes, int pos, int count)
+		public unsafe ushort ComputeChecksum(byte[] bytes, int pos, int count)
 		{
-			ushort crc = 0;
-			for (int i = pos; i < pos + count; i++)
-			{
-				crc = (ushort)(((crc << 8) & 0xffff) ^ table[(crc >> 8) ^ bytes[i]]);
-			}
-			return crc;
+			fixed (byte* bs = bytes)
+				return ComputeChecksum(bs + pos, count);
 		}
 
-		public unsafe ushort ComputeChecksum(byte* bytes, int pos, int count)
+		public unsafe ushort ComputeChecksum(byte* bytes, int count)
 		{
 			ushort crc = 0;
 			fixed (ushort* t = table)
-				for (int i = pos; i < pos + count; i++)
-					crc = (ushort)(((crc << 8) & 0xffff) ^ t[(crc >> 8) ^ bytes[i]]);
+				for (int i = count; i > 0; i--)
+					crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ *(bytes++)]);
 			return crc;
 		}
 

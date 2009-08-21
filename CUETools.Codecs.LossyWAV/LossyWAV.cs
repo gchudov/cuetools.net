@@ -90,12 +90,11 @@ namespace CUETools.Codecs.LossyWAV
 			if (_audioDest != null) _audioDest.Close();
 		}
 
-		public void Write(int[,] buff, uint sampleCount)
+		public void Write(int[,] buff, int pos, int sampleCount)
 		{
 			if (!initialized)
 				Initialize();
 
-			long pos = 0;
 			while (sampleCount + samplesInBuffer > codec_block_size)
 			{
 				shift_codec_blocks(); // next_codec_block_size is now zero
@@ -104,7 +103,7 @@ namespace CUETools.Codecs.LossyWAV
 				Array.Copy(buff, pos * channels, rotating_blocks_ptr[3], samplesInBuffer * channels, (codec_block_size - samplesInBuffer) * channels);
 				next_codec_block_size = codec_block_size;
 				pos += codec_block_size - samplesInBuffer;
-				sampleCount -= codec_block_size - (uint)samplesInBuffer;
+				sampleCount -= codec_block_size - samplesInBuffer;
 				samplesInBuffer = 0;
 				if (samplesWritten > 0)
 					process_this_codec_block();
@@ -683,9 +682,9 @@ namespace CUETools.Codecs.LossyWAV
 						for (int c = 0; c < channels; c++)
 							btrd_codec_block[i, c] >>= sh;
 				}
-				_audioDest.Write(btrd_codec_block, (uint)this_codec_block_size);
+				_audioDest.Write(btrd_codec_block, 0, this_codec_block_size);
 			}
-			if (_lwcdfDest != null) _lwcdfDest.Write(corr_codec_block, (uint)this_codec_block_size);
+			if (_lwcdfDest != null) _lwcdfDest.Write(corr_codec_block, 0, this_codec_block_size);
 		}
 
 		void shift_codec_blocks()

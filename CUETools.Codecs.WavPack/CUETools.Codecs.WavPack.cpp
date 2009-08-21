@@ -376,7 +376,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			int get() { return _bitsPerSample;  }
 		}
 
-		virtual void Write(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) 
+		virtual void Write(array<Int32, 2>^ sampleBuffer, int offset, int sampleCount) 
 		{
 			if (!_initialized) 
 				Initialize();
@@ -385,8 +385,8 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			{
 				if (_sampleBuffer == nullptr || _sampleBuffer.Length < sampleCount * _blockAlign)
 					_sampleBuffer = gcnew array<unsigned char>(sampleCount * _blockAlign);
-				AudioSamples::FLACSamplesToBytes(sampleBuffer, 0, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
-				UpdateHash(_sampleBuffer, (int) sampleCount * _blockAlign);
+				AudioSamples::FLACSamplesToBytes(sampleBuffer, offset, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
+				UpdateHash(_sampleBuffer, sampleCount * _blockAlign);
 			}
 
 			if ((_bitsPerSample & 7) != 0)
@@ -395,13 +395,13 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 					_shiftedSampleBuffer = gcnew array<int,2>(sampleCount, _channelCount);
 				for (int i = 0; i < sampleCount; i++)
 					for (int c = 0; c < _channelCount; c++)
-						_shiftedSampleBuffer[i,c] = sampleBuffer[i,c] << 8 - (_bitsPerSample & 7);
+						_shiftedSampleBuffer[i,c] = sampleBuffer[i+offset,c] << 8 - (_bitsPerSample & 7);
 				pin_ptr<Int32> pSampleBuffer = &_shiftedSampleBuffer[0, 0];
 				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount))
 					throw gcnew Exception("An error occurred while encoding.");
 			} else
 			{
-				pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
+				pin_ptr<Int32> pSampleBuffer = &sampleBuffer[offset, 0];
 				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount))
 					throw gcnew Exception("An error occurred while encoding.");
 			}

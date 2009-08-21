@@ -306,13 +306,13 @@ namespace TTA {
 			} 
 		}
 
-		virtual void Write(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) {
+		virtual void Write(array<Int32, 2>^ sampleBuffer, int offset, int sampleCount) {
 			if (!_initialized) Initialize();
 
 			if ((_sampleBuffer == nullptr) || (_sampleBuffer->Length < sampleCount * _channelCount))
 				_sampleBuffer = gcnew array<long> (sampleCount * _channelCount);
 
-			interior_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
+			interior_ptr<Int32> pSampleBuffer = &sampleBuffer[offset, 0];
 			interior_ptr<long> pTTABuffer = &_sampleBuffer[0];
 			for (int i = 0; i < sampleCount * _channelCount; i++) 
 				pTTABuffer[i] = pSampleBuffer[i];

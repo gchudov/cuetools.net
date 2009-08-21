@@ -28,8 +28,8 @@ namespace JDP {
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabelProcessed = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabelAR = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusLabelProcessed = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -177,8 +177,8 @@ namespace JDP {
 			resources.ApplyResources(this.statusStrip1, "statusStrip1");
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
-            this.toolStripStatusLabelProcessed,
             this.toolStripStatusLabelAR,
+            this.toolStripStatusLabelProcessed,
             this.toolStripProgressBar1,
             this.toolStripProgressBar2});
 			this.statusStrip1.Name = "statusStrip1";
@@ -190,17 +190,21 @@ namespace JDP {
 			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
 			this.toolStripStatusLabel1.Spring = true;
 			// 
-			// toolStripStatusLabelProcessed
-			// 
-			this.toolStripStatusLabelProcessed.Name = "toolStripStatusLabelProcessed";
-			resources.ApplyResources(this.toolStripStatusLabelProcessed, "toolStripStatusLabelProcessed");
-			// 
 			// toolStripStatusLabelAR
 			// 
 			resources.ApplyResources(this.toolStripStatusLabelAR, "toolStripStatusLabelAR");
 			this.toolStripStatusLabelAR.Image = global::JDP.Properties.Resources.AR;
 			this.toolStripStatusLabelAR.Name = "toolStripStatusLabelAR";
 			this.toolStripStatusLabelAR.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
+			// 
+			// toolStripStatusLabelProcessed
+			// 
+			this.toolStripStatusLabelProcessed.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+			this.toolStripStatusLabelProcessed.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
+			this.toolStripStatusLabelProcessed.Name = "toolStripStatusLabelProcessed";
+			resources.ApplyResources(this.toolStripStatusLabelProcessed, "toolStripStatusLabelProcessed");
 			// 
 			// toolStripProgressBar1
 			// 

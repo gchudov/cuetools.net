@@ -105,7 +105,7 @@ namespace LossyWAVSharp
 				{
 					uint samplesRead = audioSource.Read(buff, Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining));
 					if (samplesRead == 0) break;
-					lossyWAV.Write(buff, samplesRead);
+					lossyWAV.Write(buff, 0, (int)samplesRead);
 					TimeSpan elapsed = DateTime.Now - start;
 					if ((elapsed - lastPrint).TotalMilliseconds > 60)
 					{

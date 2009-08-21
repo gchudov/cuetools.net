@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
+using System.IO;
 using CUETools.Codecs;
+using CUETools.Codecs.FLAKE;
 using CUETools.Processor;
 
 namespace CUETools.Converter
@@ -19,6 +21,7 @@ namespace CUETools.Converter
 
 		static void Main(string[] args)
 		{
+			TextWriter stdout = Console.Out;
 			Console.SetOut(Console.Error);
 			Console.WriteLine("CUETools.Converter, Copyright (C) 2009 Gregory S. Chudov.");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
@@ -42,7 +45,28 @@ namespace CUETools.Converter
 #endif
 			{
 				IAudioSource audioSource = AudioReadWrite.GetAudioSource(sourceFile, null, config);
-				IAudioDest audioDest = AudioReadWrite.GetAudioDest(AudioEncoderType.Lossless, destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, 8192, config);
+				IAudioDest audioDest;
+				FlakeWriter flake = null;
+				if (destFile == "$flaketest$")
+				{					
+					flake = new FlakeWriter("", audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, new NullStream());
+					//((FlakeWriter)audioDest).CompressionLevel = 6;
+					flake.PredictionType = Flake.LookupPredictionType(args[2]);
+					flake.StereoMethod = Flake.LookupStereoMethod(args[3]);
+					flake.OrderMethod = Flake.LookupOrderMethod(args[4]);
+					flake.WindowFunction = Flake.LookupWindowFunction(args[5]);
+					flake.MinPartitionOrder = Int32.Parse(args[6]);
+					flake.MaxPartitionOrder = Int32.Parse(args[7]);
+					flake.MinLPCOrder = Int32.Parse(args[8]);
+					flake.MaxLPCOrder = Int32.Parse(args[9]);
+					flake.MinFixedOrder = Int32.Parse(args[10]);
+					flake.MaxFixedOrder = Int32.Parse(args[11]);
+					flake.MaxPrecisionSearch = Int32.Parse(args[12]);
+					flake.BlockSize = Int32.Parse(args[13]);
+					audioDest = new BufferedWriter(flake, 512 * 1024);
+				}
+				else
+					audioDest = AudioReadWrite.GetAudioDest(AudioEncoderType.Lossless, destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, 8192, config);
 				int[,] buff = new int[0x4000, audioSource.ChannelCount];
 
 				Console.WriteLine("Filename  : {0}", sourceFile);
@@ -52,7 +76,7 @@ namespace CUETools.Converter
 				{
 					uint samplesRead = audioSource.Read(buff, Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining));
 					if (samplesRead == 0) break;
-					audioDest.Write(buff, samplesRead);
+					audioDest.Write(buff, 0, (int)samplesRead);
 					TimeSpan elapsed = DateTime.Now - start;
 					if ((elapsed - lastPrint).TotalMilliseconds > 60)
 					{
@@ -75,14 +99,39 @@ namespace CUETools.Converter
 				audioSource.Close();
 				audioDest.Close();
 
-				TagLib.UserDefined.AdditionalFileTypes.Config = config;
-				TagLib.File sourceInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(sourceFile));
-				TagLib.File destInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
-				if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config))
+				if (destFile != "$flaketest$")
 				{
-					sourceInfo.Tag.CopyTo(destInfo.Tag, true);
-					destInfo.Tag.Pictures = sourceInfo.Tag.Pictures;
-					destInfo.Save();
+					TagLib.UserDefined.AdditionalFileTypes.Config = config;
+					TagLib.File sourceInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(sourceFile));
+					TagLib.File destInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+					if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config))
+					{
+						sourceInfo.Tag.CopyTo(destInfo.Tag, true);
+						destInfo.Tag.Pictures = sourceInfo.Tag.Pictures;
+						destInfo.Save();
+					}
+				}
+				else
+				{
+					Console.SetOut(stdout);
+					//Console.Out.WriteLine("{0}\t{6}\t{1}\t{2}\t{3}\t{4}\t{5}", 
+					//    "Size    ", "MaxPart", "MaxPred", "Pred      ", "Stereo", "Order", "Time  ");
+					Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}\t{13}",
+						flake.TotalSize,
+						flake.UserProcessorTime.TotalSeconds,
+						flake.PredictionType.ToString().PadRight(15),
+						flake.StereoMethod.ToString().PadRight(15),
+						flake.OrderMethod.ToString().PadRight(15),
+						flake.WindowFunction,
+						flake.MinPartitionOrder,
+						flake.MaxPartitionOrder,
+						flake.MinLPCOrder,
+						flake.MaxLPCOrder,
+						flake.MinFixedOrder,
+						flake.MaxFixedOrder,
+						flake.MaxPrecisionSearch,
+						flake.BlockSize
+						);
 				}
 			}
 #if !DEBUG
