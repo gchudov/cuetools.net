@@ -4,7 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
-using System.Runtime.InteropServices;
+//using System.Runtime.InteropServices;
 using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
@@ -138,10 +138,10 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		[DllImport("kernel32.dll")]
-		static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
-		[DllImport("kernel32.dll")]
-		static extern IntPtr GetCurrentThread();
+		//[DllImport("kernel32.dll")]
+		//static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
+		//[DllImport("kernel32.dll")]
+		//static extern IntPtr GetCurrentThread();
 
 		void DoClose()
 		{
@@ -173,9 +173,9 @@ namespace CUETools.Codecs.FLAKE
 				inited = false;
 			}
 
-			long fake, KernelStart, UserStart;
-			GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
-			_userProcessorTime = new TimeSpan(UserStart);
+			//long fake, KernelStart, UserStart;
+			//GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
+			//_userProcessorTime = new TimeSpan(UserStart);
 		}
 
 		public void Close()
@@ -633,20 +633,21 @@ namespace CUETools.Codecs.FLAKE
 
 		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
 		{
-			uint* res = &data[pred_order];
-
 			// sums for highest level
 			int parts = (1 << pmax);
+			uint* res = data + pred_order;
 			uint cnt = (n >> pmax) - pred_order;
-			for (int i = 0; i < parts; i++)
+			uint sum = 0;
+			for (uint j = cnt; j > 0; j--)
+				sum += *(res++);
+			sums[pmax * Flake.MAX_PARTITIONS + 0] = sum;
+			cnt = (n >> pmax);
+			for (int i = 1; i < parts; i++)
 			{
-				if (i == 1) cnt = (n >> pmax);
-				if (i > 0) res = &data[i * cnt];
-				sums[pmax * Flake.MAX_PARTITIONS + i] = 0;
-				for (int j = 0; j < cnt; j++)
-				{
-					sums[pmax * Flake.MAX_PARTITIONS + i] += res[j];
-				}
+				sum = 0;
+				for (uint j = cnt; j > 0; j--)
+					sum += *(res++);
+				sums[pmax * Flake.MAX_PARTITIONS + i] = sum;
 			}
 			// sums for lower levels
 			for (int i = pmax - 1; i >= pmin; i--)
@@ -855,7 +856,7 @@ namespace CUETools.Codecs.FLAKE
 					if (frame->subframes[ch].lpcs_order[iWindow] != max_order)
 					{
 						double* autoc = stackalloc double[lpc.MAX_LPC_ORDER + 1];
-						lpc.compute_autocorr(smp, (uint)n, (uint)max_order + 1, autoc, frame->window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2);
+						lpc.compute_autocorr(smp, (uint)n, (uint)max_order, autoc, frame->window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2);
 						lpc.compute_schur_reflection(autoc, (uint)max_order, reff);
 						frame->subframes[ch].lpcs_order[iWindow] = max_order;
 					}
@@ -1170,18 +1171,22 @@ namespace CUETools.Codecs.FLAKE
 						int max_fixed_order = eparams.max_fixed_order;
 						int min_fixed_order = eparams.min_fixed_order;
 						int lpc_precision_search = eparams.lpc_precision_search;
+						int max_partition_order = eparams.max_partition_order;
 						OrderMethod omethod = OrderMethod.Estimate8;
 						eparams.min_fixed_order = 2;
 						eparams.max_fixed_order = 2;
 						eparams.lpc_precision_search = 0;
 						if (eparams.max_prediction_order > 12)
 							eparams.max_prediction_order = 8;
+						//if (eparams.max_partition_order > 4)
+							//eparams.max_partition_order = 4;
 						for (int ch = 0; ch < subframes; ch++)
 							encode_residual(frame, ch, eparams.prediction_type, omethod);
 						eparams.min_fixed_order = min_fixed_order;
 						eparams.max_fixed_order = max_fixed_order;
 						eparams.max_prediction_order = max_prediction_order;
 						eparams.lpc_precision_search = lpc_precision_search;
+						eparams.max_partition_order = max_partition_order;
 						break;
 					}
 				case StereoMethod.Search:
@@ -1491,6 +1496,14 @@ namespace CUETools.Codecs.FLAKE
 		{
 			int blocksize = Flake.flac_blocksizes[1];
 			int target = (samplerate * time_ms) / 1000;
+			if (eparams.variable_block_size > 0)
+			{
+				blocksize = 1024;
+				while (target >= blocksize)
+					blocksize <<= 1;
+				return blocksize >> 1;
+			}
+
 			for (int i = 0; i < Flake.flac_blocksizes.Length; i++)
 				if (target >= Flake.flac_blocksizes[i] && Flake.flac_blocksizes[i] > blocksize)
 				{
@@ -1851,7 +1864,7 @@ namespace CUETools.Codecs.FLAKE
 			min_fixed_order = 2;
 			max_fixed_order = 2;
 			min_partition_order = 0;
-			max_partition_order = 4;
+			max_partition_order = 6;
 			variable_block_size = 0;
 			lpc_precision_search = 0;
 			do_md5 = true;
@@ -1864,48 +1877,50 @@ namespace CUETools.Codecs.FLAKE
 				case 0:
 					block_time_ms = 27;
 					prediction_type = PredictionType.Fixed;
+					max_partition_order = 4;
 					break;
 				case 1:
 					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Independent;
 					window_function = WindowFunction.Welch;
+					max_partition_order = 4;
 					break;
 				case 2:
 					prediction_type = PredictionType.Search;
 					stereo_method = StereoMethod.Independent;
 					window_function = WindowFunction.Welch;
 					max_prediction_order = 12;
+					max_partition_order = 4;
 					break;
 				case 3:
 					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Welch;
+					max_partition_order = 4;
 					break;
 				case 4:
 					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Welch;
 					max_prediction_order = 12;
+					max_partition_order = 4;
 					break;
 				case 5:
 					prediction_type = PredictionType.Search;
 					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Welch;
-					max_partition_order = 6;
 					max_prediction_order = 12;
 					break;
 				case 6:
 					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Flattop | WindowFunction.Tukey;
-					max_partition_order = 6;
 					max_prediction_order = 12;
 					break;
 				case 7:
 					prediction_type = PredictionType.Search;
 					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Flattop | WindowFunction.Tukey;
-					max_partition_order = 6;
 					max_prediction_order = 12;
 					min_fixed_order = 0;
 					max_fixed_order = 4;
@@ -1916,31 +1931,28 @@ namespace CUETools.Codecs.FLAKE
 					stereo_method = StereoMethod.Evaluate;
 					window_function = WindowFunction.Flattop | WindowFunction.Tukey;
 					order_method = OrderMethod.EstSearch;
-					max_partition_order = 6;
 					max_prediction_order = 12;
 					min_fixed_order = 0;
 					max_fixed_order = 4;
 					lpc_precision_search = 1;
 					break;
 				case 9:
+					window_function = WindowFunction.Welch;
 					max_prediction_order = 32;
 					break;
 				case 10:
 					min_fixed_order = 0;
 					max_fixed_order = 4;
-					max_partition_order = 6;
 					max_prediction_order = 32;
-					lpc_precision_search = 1;
+					lpc_precision_search = 0;
 					break;
 				case 11:
 					order_method = OrderMethod.EstSearch;
 					min_fixed_order = 0;
 					max_fixed_order = 4;
-					max_partition_order = 6;
 					max_prediction_order = 32;
-					lpc_precision_search = 1;
+					//lpc_precision_search = 1;
 					variable_block_size = 4;
-					block_size = 4096;
 					break;
 			}
 
