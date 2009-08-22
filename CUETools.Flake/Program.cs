@@ -16,7 +16,7 @@ namespace CUETools.FlakeExe
 			Console.WriteLine("Options:");
 			Console.WriteLine();
 			Console.WriteLine(" -0 .. -11            Compression level, default 5.");
-			Console.WriteLine(" -o <file>            Output filename, or \"-\" for stdout.");
+			Console.WriteLine(" -o <file>            Output filename, or \"-\" for stdout, or nul.");
 			Console.WriteLine(" -p #                 Padding bytes.");
 			Console.WriteLine(" -q --quiet           Quiet mode.");
 			Console.WriteLine(" --verify             Verify during encoding.");
@@ -26,7 +26,7 @@ namespace CUETools.FlakeExe
 			Console.WriteLine("Advanced Options:");
 			Console.WriteLine();
 			Console.WriteLine(" -b #                 Block size.");
-			Console.WriteLine(" -v #                 VBR mode.");
+			Console.WriteLine(" -v #                 Variable block size mode (0,4).");
 			Console.WriteLine(" -t <type>            Prediction type (fixed,levinson,search).");
 			Console.WriteLine(" -s <method>          Stereo decorrelation (independent,estimate,evaluate,search).");
 			Console.WriteLine(" -r #[,#]             Rice partition order {max} or {min},{max} (0..8).");
@@ -112,8 +112,8 @@ namespace CUETools.FlakeExe
 				}
 				else if (args[arg] == "--max-precision" && ++arg < args.Length)
 					ok = int.TryParse(args[arg], out max_precision);
-				else if ((args[arg] == "-v" || args[arg] == "--vbr") && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out vbr_mode);
+				else if ((args[arg] == "-v" || args[arg] == "--vbr"))
+					ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
 				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
 					ok = int.TryParse(args[arg], out blocksize);
 				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
@@ -166,39 +166,49 @@ namespace CUETools.FlakeExe
 			IAudioDest audioDest = new BufferedWriter(flake, 512 * 1024);
 			int[,] buff = new int[0x10000, audioSource.ChannelCount];
 
-			if (level >= 0)
-				flake.CompressionLevel = level;
-			if (prediction_type != null)
-				flake.PredictionType = Flake.LookupPredictionType(prediction_type);
-			if (stereo_method != null)
-				flake.StereoMethod = Flake.LookupStereoMethod(stereo_method);
-			if (order_method != null)
-				flake.OrderMethod = Flake.LookupOrderMethod(order_method);
-			if (window_function != null)
-				flake.WindowFunction = Flake.LookupWindowFunction(window_function);
-			if (min_partition_order >= 0)
-				flake.MinPartitionOrder = min_partition_order;
-			if (max_partition_order >= 0)
-				flake.MaxPartitionOrder = max_partition_order;
-			if (min_lpc_order >= 0)
-				flake.MinLPCOrder = min_lpc_order;
-			if (max_lpc_order >= 0)
-				flake.MaxLPCOrder = max_lpc_order;
-			if (min_fixed_order >= 0)
-				flake.MinFixedOrder = min_fixed_order;
-			if (max_fixed_order >= 0)
-				flake.MaxFixedOrder = max_fixed_order;
-			if (max_precision >= 0)
-				flake.MaxPrecisionSearch = max_precision;
-			if (blocksize >= 0)
-				flake.BlockSize = blocksize;
-			if (padding >= 0)
-				flake.PaddingLength = padding;
-			if (vbr_mode >= 0)
-				flake.VBRMode = vbr_mode;
-			flake.DoMD5 = do_md5;
-			flake.DoSeekTable = do_seektable;
-			flake.DoVerify = do_verify;
+			try
+			{
+				if (level >= 0)
+					flake.CompressionLevel = level;
+				if (prediction_type != null)
+					flake.PredictionType = Flake.LookupPredictionType(prediction_type);
+				if (stereo_method != null)
+					flake.StereoMethod = Flake.LookupStereoMethod(stereo_method);
+				if (order_method != null)
+					flake.OrderMethod = Flake.LookupOrderMethod(order_method);
+				if (window_function != null)
+					flake.WindowFunction = Flake.LookupWindowFunction(window_function);
+				if (min_partition_order >= 0)
+					flake.MinPartitionOrder = min_partition_order;
+				if (max_partition_order >= 0)
+					flake.MaxPartitionOrder = max_partition_order;
+				if (min_lpc_order >= 0)
+					flake.MinLPCOrder = min_lpc_order;
+				if (max_lpc_order >= 0)
+					flake.MaxLPCOrder = max_lpc_order;
+				if (min_fixed_order >= 0)
+					flake.MinFixedOrder = min_fixed_order;
+				if (max_fixed_order >= 0)
+					flake.MaxFixedOrder = max_fixed_order;
+				if (max_precision >= 0)
+					flake.MaxPrecisionSearch = max_precision;
+				if (blocksize >= 0)
+					flake.BlockSize = blocksize;
+				if (padding >= 0)
+					flake.PaddingLength = padding;
+				if (vbr_mode >= 0)
+					flake.VBRMode = vbr_mode;
+				flake.DoMD5 = do_md5;
+				flake.DoSeekTable = do_seektable;
+				flake.DoVerify = do_verify;
+			}
+			catch (Exception ex)
+			{
+				Usage();
+				Console.WriteLine("");
+				Console.WriteLine("Error: {0}.", ex.Message);
+				return;
+			}
 
 			if (!quiet)
 			{
