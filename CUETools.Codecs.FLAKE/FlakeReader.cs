@@ -292,9 +292,9 @@ namespace CUETools.Codecs.FLAKE
 		{
 			int header_start = bitreader.Position;
 
-			if (bitreader.readbits(16) != 0xFFF8)
+			if (bitreader.readbits(15) != 0x7FFC)
 				throw new Exception("invalid frame");
-
+			uint vbs = bitreader.readbit();
 			frame->bs_code0 = (int) bitreader.readbits(4);
 			uint sr_code0 = bitreader.readbits(4);
 			frame->ch_mode = (ChannelMode)bitreader.readbits(4);
