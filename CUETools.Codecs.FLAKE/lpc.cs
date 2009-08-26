@@ -29,6 +29,7 @@ namespace CUETools.Codecs.FLAKE
 	{
 		public const int MAX_LPC_ORDER = 32;
 		public const int MAX_LPC_WINDOWS = 4;
+		public const int MAX_LPC_PRECISIONS = 4;
 
 		/**
 		 * Apply Welch window function to audio block
@@ -50,7 +51,7 @@ namespace CUETools.Codecs.FLAKE
 		 * A Welch window function is applied before calculation.
 		 */
 		static public unsafe void
-			compute_autocorr(/*const*/ int* data, uint len, uint lag, double* autoc, double* window)
+			compute_autocorr(/*const*/ int* data, uint len, uint min, uint lag, double* autoc, double* window)
 		{
 			double* data1 = stackalloc double[(int)len + 16];
 			uint i, j;
@@ -65,7 +66,7 @@ namespace CUETools.Codecs.FLAKE
 			}
 			data1[len] = 0;
 
-			for (i = 0; i <= lag; ++i)
+			for (i = min; i <= lag; ++i)
 			{
 				temp = 1.0;
 				temp2 = 1.0;
@@ -289,10 +290,10 @@ namespace CUETools.Codecs.FLAKE
 		{
 			double* autoc = stackalloc double[MAX_LPC_ORDER + 1];
 
-			compute_autocorr(samples, blocksize, max_order + 1, autoc, window);
+			compute_autocorr(samples, blocksize, 0, max_order, autoc, window);
 
 			uint opt_order = max_order;
-			if (omethod == OrderMethod.Estimate || omethod == OrderMethod.EstSearch)
+			if (omethod == OrderMethod.Estimate)
 				opt_order = compute_lpc_coefs_est(autoc, max_order, lpcs);
 			else
 				compute_lpc_coefs(autoc, max_order, null, lpcs);

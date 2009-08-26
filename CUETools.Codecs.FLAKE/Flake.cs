@@ -149,10 +149,11 @@ namespace CUETools.Codecs.FLAKE
 		public uint obits;
 		public uint wbits;
 		public int* samples;
-		public fixed uint done_lpcs[lpc.MAX_LPC_WINDOWS * 2];
+		public fixed uint done_lpcs[lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_PRECISIONS];
 		public uint done_fixed;
-		public fixed double lpcs_reff[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS];
-		public fixed int lpcs_order[lpc.MAX_LPC_WINDOWS];
+		public fixed double reflection_coeffs[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS];
+		public fixed double autocorr_values[(lpc.MAX_LPC_ORDER + 1) * lpc.MAX_LPC_WINDOWS];
+		public fixed int autocorr_orders[lpc.MAX_LPC_WINDOWS];
 	};
 
 	unsafe struct FlacFrame
@@ -174,8 +175,7 @@ namespace CUETools.Codecs.FLAKE
 		Estimate = 1,
 		LogFast = 2,
 		LogSearch = 3,
-		EstSearch = 4,
-		Estimate8 = 6,
+		EstSearch2 = 4,
 		Search = 5
 	}
 

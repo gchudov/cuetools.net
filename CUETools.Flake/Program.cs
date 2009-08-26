@@ -34,6 +34,7 @@ namespace CUETools.FlakeExe
 			Console.WriteLine("LPC options:");
 			Console.WriteLine();
 			Console.WriteLine(" -m <method>          Prediction order search (estimate,estsearch,logfast,search).");
+			Console.WriteLine(" -e #                 Estimation depth (1..32).");
 			Console.WriteLine(" -w <func>[,<func>]   One or more window functions (welch,hann,flattop,tukey).");
 			Console.WriteLine(" -l #[,#]             Prediction order {max} or {min},{max} (1..32).");
 			Console.WriteLine("    --max-precision   Coefficients precision search (0..1).");
@@ -60,7 +61,8 @@ namespace CUETools.FlakeExe
 			int min_partition_order = -1, max_partition_order = -1,
 				min_lpc_order = -1, max_lpc_order = -1,
 				min_fixed_order = -1, max_fixed_order = -1,
-				max_precision = -1, blocksize = -1;
+				min_precision = -1, max_precision = -1,
+				blocksize = -1, estimation_depth = -1;
 			int level = -1, padding = -1, vbr_mode = -1;
 			bool do_md5 = true, do_seektable = true, do_verify = false;
 
@@ -78,7 +80,7 @@ namespace CUETools.FlakeExe
 				else if (args[arg] == "--no-seektable")
 					do_seektable = false;
 				else if (args[arg] == "--no-md5")
-					do_seektable = false;
+					do_md5 = false;
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-t" || args[arg] == "--prediction-type") && ++arg < args.Length)
@@ -110,8 +112,15 @@ namespace CUETools.FlakeExe
 						int.TryParse(args[arg].Split(',')[1], out max_fixed_order)) ||
 						int.TryParse(args[arg], out max_fixed_order);
 				}
-				else if (args[arg] == "--max-precision" && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out max_precision);
+				else if ((args[arg] == "-e" || args[arg] == "--estimation-depth") && ++arg < args.Length)
+					ok = int.TryParse(args[arg], out estimation_depth);
+				else if ((args[arg] == "-c" || args[arg] == "--max-precision") && ++arg < args.Length)
+				{
+					ok = (args[arg].Split(',').Length == 2 &&
+						int.TryParse(args[arg].Split(',')[0], out min_precision) &&
+						int.TryParse(args[arg].Split(',')[1], out max_precision)) ||
+						int.TryParse(args[arg], out max_precision);
+				}
 				else if ((args[arg] == "-v" || args[arg] == "--vbr"))
 					ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
 				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
@@ -192,8 +201,12 @@ namespace CUETools.FlakeExe
 					flake.MaxFixedOrder = max_fixed_order;
 				if (max_precision >= 0)
 					flake.MaxPrecisionSearch = max_precision;
+				if (min_precision >= 0)
+					flake.MinPrecisionSearch = min_precision;
 				if (blocksize >= 0)
 					flake.BlockSize = blocksize;
+				if (estimation_depth >= 0)
+					flake.EstimationDepth = estimation_depth;
 				if (padding >= 0)
 					flake.PaddingLength = padding;
 				if (vbr_mode >= 0)
@@ -252,12 +265,12 @@ namespace CUETools.FlakeExe
 			if (debug)
 			{
 				Console.SetOut(stdout);
-				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}\t{13}\t{14}",
+				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}",
 					flake.TotalSize,
 					flake.UserProcessorTime.TotalSeconds,
 					flake.PredictionType.ToString().PadRight(15),
 					flake.StereoMethod.ToString().PadRight(15),
-					flake.OrderMethod.ToString().PadRight(15),
+					(flake.OrderMethod.ToString() + (flake.OrderMethod == OrderMethod.Estimate ? "(" + flake.EstimationDepth.ToString() + ")" : "")).PadRight(15),
 					flake.WindowFunction,
 					flake.MinPartitionOrder,
 					flake.MaxPartitionOrder,
@@ -265,6 +278,7 @@ namespace CUETools.FlakeExe
 					flake.MaxLPCOrder,
 					flake.MinFixedOrder,
 					flake.MaxFixedOrder,
+					flake.MinPrecisionSearch,
 					flake.MaxPrecisionSearch,
 					flake.BlockSize,
 					flake.VBRMode
