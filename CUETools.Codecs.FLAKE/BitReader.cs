@@ -32,7 +32,7 @@ namespace CUETools.Codecs.FLAKE
 		int _bitaccumulator;
 		uint cache;
 
-		static readonly byte[] byte_to_unary_table = new byte[] 
+		public static readonly byte[] byte_to_unary_table = new byte[] 
 		{
 			8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
 			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,

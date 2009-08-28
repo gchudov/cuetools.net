@@ -804,4 +804,78 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 	}
+
+	/// <summary>
+	/// Context for LPC coefficients calculation and order estimation
+	/// </summary>
+	unsafe class LpcContext
+	{
+		public LpcContext()
+		{
+			reflection_coeffs = new double[lpc.MAX_LPC_ORDER];
+			autocorr_values = new double[lpc.MAX_LPC_ORDER + 1];
+			done_lpcs = new uint[lpc.MAX_LPC_PRECISIONS];
+		}
+
+		/// <summary>
+		/// Reset to initial (blank) state
+		/// </summary>
+		public void Reset()
+		{
+			autocorr_order = 0;
+			for (int iPrecision = 0; iPrecision < lpc.MAX_LPC_PRECISIONS; iPrecision++)
+				done_lpcs[iPrecision] = 0;
+		}
+
+		/// <summary>
+		/// Calculate autocorrelation data and reflection coefficients.
+		/// Can be used to incrementaly compute coefficients for higher orders,
+		/// because it caches them.
+		/// </summary>
+		/// <param name="order">Maximum order</param>
+		/// <param name="samples">Samples pointer</param>
+		/// <param name="blocksize">Block size</param>
+		/// <param name="window">Window function</param>
+		public void GetReflection(int order, int* samples, int blocksize, double* window)
+		{
+			if (autocorr_order > order)
+				return;
+			fixed (double* reff = reflection_coeffs, autoc = autocorr_values)
+			{
+				lpc.compute_autocorr(samples, (uint)blocksize, (uint)autocorr_order, (uint)order, autoc, window);
+				lpc.compute_schur_reflection(autoc, (uint)order, reff);
+				autocorr_order = order + 1;
+			}
+		}
+
+		/// <summary>
+		/// Produces LPC coefficients from autocorrelation data.
+		/// </summary>
+		/// <param name="lpcs">LPC coefficients buffer (for all orders)</param>
+		public void ComputeLPC(double* lpcs)
+		{
+			fixed (double* reff = reflection_coeffs)
+				lpc.compute_lpc_coefs(null, (uint)autocorr_order - 1, reff, lpcs);
+		}
+
+		/// <summary>
+		/// Checks if an order is 'interesting'.
+		/// Lower orders are likely to be useful if next two reflection coefficients are small,
+		/// Higher orders are likely to be useful if reflection coefficient for that order is greater than 0.1 and the next one is not.
+		/// </summary>
+		/// <param name="order"></param>
+		/// <returns></returns>
+		public bool IsInterestingOrder(int order)
+		{
+			return (order > 4 && Math.Abs(reflection_coeffs[order - 1]) >= 0.10 && (order == autocorr_order - 1 || Math.Abs(reflection_coeffs[order]) < 0.10)) ||
+				(order < 6 && order < autocorr_order - 2 && reflection_coeffs[order + 1] * reflection_coeffs[order + 1] + reflection_coeffs[order] * reflection_coeffs[order] < 0.1);
+		}
+
+		double[] autocorr_values;
+		double[] reflection_coeffs;
+		int autocorr_order;
+
+		public uint[] done_lpcs;
+	}
+
 }

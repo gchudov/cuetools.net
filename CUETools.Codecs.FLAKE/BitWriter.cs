@@ -110,6 +110,32 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
+		/// <summary>
+		/// Assumes there's enough space, buffer != null and bits is in range 1..31
+		/// </summary>
+		/// <param name="bits"></param>
+		/// <param name="val"></param>
+		unsafe void writebits_fast(int bits, uint val, ref byte * buf)
+		{
+			if (bits < bit_left)
+			{
+				bit_buf = (bit_buf << bits) | val;
+				bit_left -= bits;
+			}
+			else
+			{
+				uint bb = (bit_buf << bit_left) | (val >> (bits - bit_left));
+				bit_left += (32 - bits);
+
+				*(buf++) = (byte)(bb >> 24);
+				*(buf++) = (byte)(bb >> 16);
+				*(buf++) = (byte)(bb >> 8);
+				*(buf++) = (byte)(bb);
+
+				bit_buf = val;
+			}
+		}
+
 		public void write_utf8(int val)
 		{
 			write_utf8((uint)val);
@@ -150,23 +176,78 @@ namespace CUETools.Codecs.FLAKE
 
 		public void write_rice_signed(int k, int val)
 		{
-			int v, q;
-
 			// convert signed to unsigned
-			v = -2 * val - 1;
+			int v = -2 * val - 1;
 			v ^= (v >> 31);
 
 			// write quotient in unary
-			q = (v >> k) + 1;
-			while (q > 31)
+			int q = (v >> k) + 1;
+			while (q + k > 31)
 			{
-				writebits(31, 0);
-				q -= 31;
+				int b = Math.Min(q + k - 31, 31);
+				writebits(b, 0);
+				q -= b;
 			}
-			writebits(q, 1);
 
-			// write write remainder in binary using 'k' bits
-			writebits(k, v & ((1 << k) - 1));
+			// write remainder in binary using 'k' bits
+			writebits(k + q, (v & ((1 << k) - 1)) | (1 << k));
+		}
+
+		public unsafe void write_rice_block_signed(int k, int* residual, int count)
+		{
+			fixed (byte* fixbuf = &buffer[buf_ptr])
+			{
+				byte* buf = fixbuf;
+				for (int i = count; i > 0; i--)
+				{
+					int v = -2 * *(residual++) - 1;
+					v ^= (v >> 31);
+
+					// write quotient in unary
+					int q = (v >> k) + 1;
+					int bits = k + q;
+					while (bits > 31)
+					{
+						int b = Math.Min(bits - 31, 31);
+						if (b < bit_left)
+						{
+							bit_buf = (bit_buf << b);
+							bit_left -= b;
+						}
+						else
+						{
+							uint bb = bit_buf << bit_left;
+							bit_buf = 0;
+							bit_left += (32 - b);
+							*(buf++) = (byte)(bb >> 24);
+							*(buf++) = (byte)(bb >> 16);
+							*(buf++) = (byte)(bb >> 8);
+							*(buf++) = (byte)(bb);
+						}
+						bits -= b;
+					}
+
+					// write remainder in binary using 'k' bits
+					//writebits_fast(k + q, (uint)((v & ((1 << k) - 1)) | (1 << k)), ref buf);
+					uint val = (uint)((v & ((1 << k) - 1)) | (1 << k));
+					if (bits < bit_left)
+					{
+						bit_buf = (bit_buf << bits) | val;
+						bit_left -= bits;
+					}
+					else
+					{
+						uint bb = (bit_buf << bit_left) | (val >> (bits - bit_left));
+						bit_buf = val;
+						bit_left += (32 - bits);
+						*(buf++) = (byte)(bb >> 24);
+						*(buf++) = (byte)(bb >> 16);
+						*(buf++) = (byte)(bb >> 8);
+						*(buf++) = (byte)(bb);
+					}
+				}
+				buf_ptr += (int)(buf - fixbuf);
+			}
 		}
 
 		public void flush()

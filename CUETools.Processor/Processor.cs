@@ -911,7 +911,7 @@ namespace CUETools.Processor
 			encoders = new CUEToolsUDCList();
 #if !MONO
 			encoders.Add(new CUEToolsUDC("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", "FLACWriter"));
-			encoders.Add(new CUEToolsUDC("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "5", "FlakeWriter"));
+			encoders.Add(new CUEToolsUDC("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", "FlakeWriter"));
 			encoders.Add(new CUEToolsUDC("libwavpack", "wv", true, "fast normal high high+", "normal", "WavPackWriter"));
 			encoders.Add(new CUEToolsUDC("MAC_SDK", "ape", true, "fast normal high extra insane", "high", "APEWriter"));
 			encoders.Add(new CUEToolsUDC("ttalib", "tta", true, "", "", "TTAWriter"));

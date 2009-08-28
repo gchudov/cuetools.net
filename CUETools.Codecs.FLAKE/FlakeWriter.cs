@@ -25,7 +25,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
-//using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
@@ -81,7 +81,7 @@ namespace CUETools.Codecs.FLAKE
 		double[] windowBuffer;
 		int samplesInBuffer = 0;
 
-		int _compressionLevel = 5;
+		int _compressionLevel = 7;
 		int _blocksize = 0;
 		int _totalSize = 0;
 		int _windowsize = 0, _windowcount = 0;
@@ -90,6 +90,7 @@ namespace CUETools.Codecs.FLAKE
 		Crc16 crc16;
 		MD5 md5;
 
+		FlacFrame frame;
 		FlakeReader verify;
 
 		SeekPoint[] seek_table;
@@ -122,6 +123,7 @@ namespace CUETools.Codecs.FLAKE
 
 			crc8 = new Crc8();
 			crc16 = new Crc16();
+			frame = new FlacFrame(channels * 2);
 		}
 
 		public int TotalSize
@@ -159,10 +161,10 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		//[DllImport("kernel32.dll")]
-		//static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
-		//[DllImport("kernel32.dll")]
-		//static extern IntPtr GetCurrentThread();
+		[DllImport("kernel32.dll")]
+		static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
+		[DllImport("kernel32.dll")]
+		static extern IntPtr GetCurrentThread();
 
 		void DoClose()
 		{
@@ -194,9 +196,9 @@ namespace CUETools.Codecs.FLAKE
 				inited = false;
 			}
 
-			//long fake, KernelStart, UserStart;
-			//GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
-			//_userProcessorTime = new TimeSpan(UserStart);
+			long fake, KernelStart, UserStart;
+			GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
+			_userProcessorTime = new TimeSpan(UserStart);
 		}
 
 		public void Close()
@@ -468,43 +470,13 @@ namespace CUETools.Codecs.FLAKE
 			return (uint)shift;
 		}
 
-		unsafe void init_frame(FlacFrame * frame, int bs)
-		{
-			//if (channels == 2)
-			//max_frame_size =			
-
-			int i = 15;
-			if (eparams.variable_block_size == 0)
-			{
-				for (i = 0; i < 15; i++)
-				{
-					if (bs == Flake.flac_blocksizes[i])
-					{
-						frame->blocksize = Flake.flac_blocksizes[i];
-						frame->bs_code0 = i;
-						frame->bs_code1 = -1;
-						break;
-					}
-				}
-			}
-			if (i == 15)
-			{
-				frame->blocksize = bs;
-				if (frame->blocksize <= 256)
-				{
-					frame->bs_code0 = 6;
-					frame->bs_code1 = frame->blocksize - 1;
-				}
-				else
-				{
-					frame->bs_code0 = 7;
-					frame->bs_code1 = frame->blocksize - 1;
-				}
-			}
-		}
-
+		/// <summary>
 		/// Copy channel-interleaved input samples into separate subframes
-		unsafe void copy_samples(int[,] samples, int pos, int block)
+		/// </summary>
+		/// <param name="samples"></param>
+		/// <param name="pos"></param>
+		/// <param name="block"></param>
+ 		unsafe void copy_samples(int[,] samples, int pos, int block)
 		{
 			fixed (int* fsamples = samplesBuffer, src = &samples[pos, 0])
 			{
@@ -562,33 +534,16 @@ namespace CUETools.Codecs.FLAKE
 			return k_opt;
 		}
 
-		unsafe uint calc_decorr_score(FlacFrame* frame, int ch)
+		unsafe uint calc_decorr_score(FlacFrame frame, int ch)
 		{
-			int* s = frame->subframes[ch].samples;
-			int n = frame->blocksize;
+			int* s = frame.subframes[ch].samples;
+			int n = frame.blocksize;
 			ulong sum = 0;
 			for (int i = 2; i < n; i++)
 				sum += (ulong)Math.Abs(s[i] - 2 * s[i - 1] + s[i - 2]);
 			uint nbits;
 			find_optimal_rice_param((uint)(2 * sum), (uint)n, out nbits);
 			return nbits;
-		}
-
-		unsafe void initialize_subframe(FlacFrame* frame, int ch, int *s, int * r, uint bps, uint w)
-		{
-			if (w > bps)
-				throw new Exception("internal error");
-			frame->subframes[ch].samples = s;
-			frame->subframes[ch].obits = bps - w;
-			frame->subframes[ch].wbits = w;
-			frame->subframes[ch].best.residual = r;
-			frame->subframes[ch].best.type = SubframeType.Verbatim;
-			frame->subframes[ch].best.size = UINT32_MAX;
-			for (int iWindow = 0; iWindow < lpc.MAX_LPC_PRECISIONS * lpc.MAX_LPC_WINDOWS; iWindow++)
-				frame->subframes[ch].done_lpcs[iWindow] = 0;
-			frame->subframes[ch].done_fixed = 0;
-			for (int iWindow = 0; iWindow < lpc.MAX_LPC_WINDOWS; iWindow++)
-				frame->subframes[ch].autocorr_orders[iWindow] = 0;
 		}
 
 		unsafe static void channel_decorrelation(int* leftS, int* rightS, int *leftM, int *rightM, int blocksize)
@@ -658,22 +613,20 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		public const uint UINT32_MAX = 0xffffffff;
-
-		static unsafe uint calc_optimal_rice_params(RiceContext* rc, int porder, uint* sums, uint n, uint pred_order)
+		static unsafe uint calc_optimal_rice_params(ref RiceContext rc, int porder, uint* sums, uint n, uint pred_order)
 		{
 			uint part = (1U << porder);
 			uint all_bits = 0;			
-			rc->rparams[0] = find_optimal_rice_param(sums[0], (n >> porder) - pred_order, out all_bits);
+			rc.rparams[0] = find_optimal_rice_param(sums[0], (n >> porder) - pred_order, out all_bits);
 			uint cnt = (n >> porder);
 			for (uint i = 1; i < part; i++)
 			{
 				uint nbits;
-				rc->rparams[i] = find_optimal_rice_param(sums[i], cnt, out nbits);
+				rc.rparams[i] = find_optimal_rice_param(sums[i], cnt, out nbits);
 				all_bits += nbits;
 			}
 			all_bits += (4 * part);
-			rc->porder = porder;
+			rc.porder = porder;
 			return all_bits;
 		}
 
@@ -708,9 +661,9 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		static unsafe uint calc_rice_params(RiceContext* rc, int pmin, int pmax, int* data, uint n, uint pred_order)
+		static unsafe uint calc_rice_params(ref RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order)
 		{
-			RiceContext tmp_rc;
+			RiceContext tmp_rc = new RiceContext(), tmp_rc2;
 			uint* udata = stackalloc uint[(int)n];
 			uint* sums = stackalloc uint[(pmax + 1) * Flake.MAX_PARTITIONS];
 			//uint* bits = stackalloc uint[Flake.MAX_PARTITION_ORDER];
@@ -725,15 +678,17 @@ namespace CUETools.Codecs.FLAKE
 			calc_sums(pmin, pmax, udata, n, pred_order, sums);
 
 			int opt_porder = pmin;
-			uint opt_bits = UINT32_MAX;
+			uint opt_bits = Flake.UINT32_MAX;
 			for (int i = pmin; i <= pmax; i++)
 			{
-				uint bits = calc_optimal_rice_params(&tmp_rc, i, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
+				uint bits = calc_optimal_rice_params(ref tmp_rc, i, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
 				if (bits <= opt_bits)
 				{
 					opt_porder = i;
 					opt_bits = bits;
-					*rc = tmp_rc;
+					tmp_rc2 = rc;
+					rc = tmp_rc;
+					tmp_rc = tmp_rc2;
 				}
 			}
 
@@ -748,128 +703,102 @@ namespace CUETools.Codecs.FLAKE
 			return porder;
 		}
 
-		static unsafe uint calc_rice_params_fixed(RiceContext* rc, int pmin, int pmax,
+		static unsafe uint calc_rice_params_fixed(ref RiceContext rc, int pmin, int pmax,
 			int* data, int n, int pred_order, uint bps)
 		{
 			pmin = get_max_p_order(pmin, n, pred_order);
 			pmax = get_max_p_order(pmax, n, pred_order);
 			uint bits = (uint)pred_order * bps + 6;
-			bits += calc_rice_params(rc, pmin, pmax, data, (uint)n, (uint)pred_order);
+			bits += calc_rice_params(ref rc, pmin, pmax, data, (uint)n, (uint)pred_order);
 			return bits;
 		}
 
-		static unsafe uint calc_rice_params_lpc(RiceContext* rc, int pmin, int pmax,
+		static unsafe uint calc_rice_params_lpc(ref RiceContext rc, int pmin, int pmax,
 			int* data, int n, int pred_order, uint bps, uint precision)
 		{
 			pmin = get_max_p_order(pmin, n, pred_order);
 			pmax = get_max_p_order(pmax, n, pred_order);
 			uint bits = (uint)pred_order * bps + 4 + 5 + (uint)pred_order * precision + 6;
-			bits += calc_rice_params(rc, pmin, pmax, data, (uint)n, (uint)pred_order);
+			bits += calc_rice_params(ref rc, pmin, pmax, data, (uint)n, (uint)pred_order);
 			return bits;
 		}
 
-		unsafe void choose_best_subframe(FlacFrame* frame, int ch)
-		{
-			if (frame->current.size < frame->subframes[ch].best.size)
-			{
-				FlacSubframe tmp = frame->subframes[ch].best;
-				frame->subframes[ch].best = frame->current;
-				frame->current = tmp;
-			}
-		}
-
-		unsafe void encode_residual_lpc_sub(FlacFrame* frame, double * lpcs, int iWindow, int order, int ch)
+		unsafe void encode_residual_lpc_sub(FlacFrame frame, double * lpcs, int iWindow, int order, int ch)
 		{
 			// select LPC precision based on block size
 			uint lpc_precision;
-			if (frame->blocksize <= 192) lpc_precision = 7U;
-			else if (frame->blocksize <= 384) lpc_precision = 8U;
-			else if (frame->blocksize <= 576) lpc_precision = 9U;
-			else if (frame->blocksize <= 1152) lpc_precision = 10U;
-			else if (frame->blocksize <= 2304) lpc_precision = 11U;
-			else if (frame->blocksize <= 4608) lpc_precision = 12U;
-			else if (frame->blocksize <= 8192) lpc_precision = 13U;
-			else if (frame->blocksize <= 16384) lpc_precision = 14U;
+			if (frame.blocksize <= 192) lpc_precision = 7U;
+			else if (frame.blocksize <= 384) lpc_precision = 8U;
+			else if (frame.blocksize <= 576) lpc_precision = 9U;
+			else if (frame.blocksize <= 1152) lpc_precision = 10U;
+			else if (frame.blocksize <= 2304) lpc_precision = 11U;
+			else if (frame.blocksize <= 4608) lpc_precision = 12U;
+			else if (frame.blocksize <= 8192) lpc_precision = 13U;
+			else if (frame.blocksize <= 16384) lpc_precision = 14U;
 			else lpc_precision = 15;
 
 			for (int i_precision = eparams.lpc_min_precision_search; i_precision <= eparams.lpc_max_precision_search && lpc_precision + i_precision < 16; i_precision++)
 				// check if we already calculated with this order, window and precision
-				if ((frame->subframes[ch].done_lpcs[iWindow + i_precision * lpc.MAX_LPC_WINDOWS] & (1U << (order - 1))) == 0)
+				if ((frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[i_precision] & (1U << (order - 1))) == 0)
 				{
-					frame->subframes[ch].done_lpcs[iWindow + i_precision * lpc.MAX_LPC_WINDOWS] |= (1U << (order - 1));
+					frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[i_precision] |= (1U << (order - 1));
 
 					uint cbits = lpc_precision + (uint)i_precision;
 
-					frame->current.type = SubframeType.LPC;
-					frame->current.order = order;
-					frame->current.window = iWindow;
+					frame.current.type = SubframeType.LPC;
+					frame.current.order = order;
+					frame.current.window = iWindow;
 
-					lpc.quantize_lpc_coefs(lpcs + (frame->current.order - 1) * lpc.MAX_LPC_ORDER,
-						frame->current.order, cbits, frame->current.coefs, out frame->current.shift);
+					fixed (int* coefs = frame.current.coefs)
+					{
+						lpc.quantize_lpc_coefs(lpcs + (frame.current.order - 1) * lpc.MAX_LPC_ORDER,
+							frame.current.order, cbits, coefs, out frame.current.shift);
 
-					if (frame->current.shift < 0 || frame->current.shift > 15)
-						throw new Exception("negative shift");
+						if (frame.current.shift < 0 || frame.current.shift > 15)
+							throw new Exception("negative shift");
 
-					ulong csum = 0;
-					for (int i = frame->current.order; i > 0; i--)
-						csum += (ulong)Math.Abs(frame->current.coefs[i - 1]);
+						ulong csum = 0;
+						for (int i = frame.current.order; i > 0; i--)
+							csum += (ulong)Math.Abs(coefs[i - 1]);
 
-					if ((csum << (int)frame->subframes[ch].obits) >= 1UL << 32)
-						lpc.encode_residual_long(frame->current.residual, frame->subframes[ch].samples, frame->blocksize, frame->current.order, frame->current.coefs, frame->current.shift);
-					else
-						lpc.encode_residual(frame->current.residual, frame->subframes[ch].samples, frame->blocksize, frame->current.order, frame->current.coefs, frame->current.shift);
+						if ((csum << (int)frame.subframes[ch].obits) >= 1UL << 32)
+							lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
+						else
+							lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
 
-					frame->current.size = calc_rice_params_lpc(&frame->current.rc, eparams.min_partition_order, eparams.max_partition_order,
-						frame->current.residual, frame->blocksize, frame->current.order, frame->subframes[ch].obits, cbits);
+					}
 
-					choose_best_subframe(frame, ch);
+					frame.current.size = calc_rice_params_lpc(ref frame.current.rc, eparams.min_partition_order, eparams.max_partition_order,
+						frame.current.residual, frame.blocksize, frame.current.order, frame.subframes[ch].obits, cbits);
+
+					frame.ChooseBestSubframe(ch);
 				}
 		}
 
-		unsafe void encode_residual_fixed_sub(FlacFrame* frame, int order, int ch)
+		unsafe void encode_residual_fixed_sub(FlacFrame frame, int order, int ch)
 		{
-			if ((frame->subframes[ch].done_fixed & (1U << order)) != 0)
+			if ((frame.subframes[ch].done_fixed & (1U << order)) != 0)
 				return; // already calculated;
 
-			frame->current.order = order;
-			frame->current.type = SubframeType.Fixed;
+			frame.current.order = order;
+			frame.current.type = SubframeType.Fixed;
 
-			encode_residual_fixed(frame->current.residual, frame->subframes[ch].samples, frame->blocksize, frame->current.order);
+			encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order);
 
-			frame->current.size = calc_rice_params_fixed(&frame->current.rc, eparams.min_partition_order, eparams.max_partition_order,
-				frame->current.residual, frame->blocksize, frame->current.order, frame->subframes[ch].obits);
+			frame.current.size = calc_rice_params_fixed(ref frame.current.rc, eparams.min_partition_order, eparams.max_partition_order,
+				frame.current.residual, frame.blocksize, frame.current.order, frame.subframes[ch].obits);
 
-			frame->subframes[ch].done_fixed |= (1U << order);
+			frame.subframes[ch].done_fixed |= (1U << order);
 
-			choose_best_subframe(frame, ch);
+			frame.ChooseBestSubframe(ch);
 		}
 
-		unsafe static bool is_interesting_order(double* reff, int order, int max_order)
+		unsafe void encode_residual(FlacFrame frame, int ch, PredictionType predict, OrderMethod omethod, int pass)
 		{
-			return (order > 4 && Math.Abs(reff[order - 1]) >= 0.10 && (order == max_order || Math.Abs(reff[order]) < 0.10)) ||
-				(order < 6 && order < max_order - 1 && reff[order + 1] * reff[order + 1] + reff[order] * reff[order] < 0.1);
-		}
-
-		unsafe double* get_reflection_coeffs(FlacFrame* frame, int ch, int order, int iWindow)
-		{
-			double* reff = frame->subframes[ch].reflection_coeffs + iWindow * lpc.MAX_LPC_ORDER;
-			if (frame->subframes[ch].autocorr_orders[iWindow] > order)
-				return reff;
-			double* autoc = frame->subframes[ch].autocorr_values + iWindow * (lpc.MAX_LPC_ORDER + 1);
-			lpc.compute_autocorr(frame->subframes[ch].samples, (uint)frame->blocksize, 
-				(uint)frame->subframes[ch].autocorr_orders[iWindow],
-				(uint)order, autoc, frame->window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2);
-			lpc.compute_schur_reflection(autoc, (uint)order, reff);
-			frame->subframes[ch].autocorr_orders[iWindow] = order + 1;
-			return reff;
-		}
-
-		unsafe void encode_residual(FlacFrame* frame, int ch, PredictionType predict, OrderMethod omethod, int pass)
-		{
-			int* smp = frame->subframes[ch].samples;
-			int i, n = frame->blocksize;
+			int* smp = frame.subframes[ch].samples;
+			int i, n = frame.blocksize;
 			// save best.window, because we can overwrite it later with fixed frame
-			int best_window = frame->subframes[ch].best.type == SubframeType.LPC ? frame->subframes[ch].best.window : -1; 
+			int best_window = frame.subframes[ch].best.type == SubframeType.LPC ? frame.subframes[ch].best.window : -1;
 
 			// CONSTANT
 			for (i = 1; i < n; i++)
@@ -878,16 +807,16 @@ namespace CUETools.Codecs.FLAKE
 			}
 			if (i == n)
 			{
-				frame->subframes[ch].best.type = SubframeType.Constant;
-				frame->subframes[ch].best.residual[0] = smp[0];
-				frame->subframes[ch].best.size = frame->subframes[ch].obits;
+				frame.subframes[ch].best.type = SubframeType.Constant;
+				frame.subframes[ch].best.residual[0] = smp[0];
+				frame.subframes[ch].best.size = frame.subframes[ch].obits;
 				return;
 			}
 
 			// VERBATIM
-			frame->current.type = SubframeType.Verbatim;
-			frame->current.size = frame->subframes[ch].obits * (uint)frame->blocksize;
-			choose_best_subframe(frame, ch);
+			frame.current.type = SubframeType.Verbatim;
+			frame.current.size = frame.subframes[ch].obits * (uint)frame.blocksize;
+			frame.ChooseBestSubframe(ch);
 
 			if (n < 5 || predict == PredictionType.None)
 				return;
@@ -896,7 +825,7 @@ namespace CUETools.Codecs.FLAKE
 			if (predict == PredictionType.Fixed ||
 				(predict == PredictionType.Search && pass != 1) ||
 				//predict == PredictionType.Search ||
-				//(pass == 2 && frame->subframes[ch].best.type == SubframeType.Fixed) ||
+				//(pass == 2 && frame.subframes[ch].best.type == SubframeType.Fixed) ||
 				n <= eparams.max_prediction_order)
 			{
 				int max_fixed_order = Math.Min(eparams.max_fixed_order, 4);
@@ -911,10 +840,10 @@ namespace CUETools.Codecs.FLAKE
 			   (predict == PredictionType.Levinson ||
 				predict == PredictionType.Search)
 				//predict == PredictionType.Search ||
-				//(pass == 2 && frame->subframes[ch].best.type == SubframeType.LPC))
+				//(pass == 2 && frame.subframes[ch].best.type == SubframeType.LPC))
 				)
 			{
-				//double* lpcs = stackalloc double[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
+				double* lpcs = stackalloc double[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
 				int min_order = eparams.min_prediction_order;
 				int max_order = eparams.max_prediction_order;
 
@@ -923,9 +852,10 @@ namespace CUETools.Codecs.FLAKE
 					if (pass == 2 && iWindow != best_window)
 						continue;
 
-					double* reff = get_reflection_coeffs(frame, ch, max_order, iWindow);
-					double* lpcs = stackalloc double[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
-					lpc.compute_lpc_coefs(null, (uint)max_order, reff, lpcs);
+					LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
+					
+					lpc_ctx.GetReflection(max_order, smp, n, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2);
+					lpc_ctx.ComputeLPC(lpcs);
 
 					switch (omethod)
 					{
@@ -939,7 +869,7 @@ namespace CUETools.Codecs.FLAKE
 							{
 								int found = 0;
 								for (i = max_order; i >= min_order && found < eparams.estimation_depth; i--)
-									if (is_interesting_order(reff, i, max_order))
+									if (lpc_ctx.IsInterestingOrder(i))
 									{
 										encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
 										found++;
@@ -953,7 +883,7 @@ namespace CUETools.Codecs.FLAKE
 							{
 								int found = 0;
 								for (i = min_order; i <= max_order && found < eparams.estimation_depth; i++)
-									if (is_interesting_order(reff, i, max_order))
+									if (lpc_ctx.IsInterestingOrder(i))
 									{
 										encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
 										found++;
@@ -981,12 +911,12 @@ namespace CUETools.Codecs.FLAKE
 								if (i < max_order)
 									encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
 							// if found a good order, try to search around it
-							if (frame->subframes[ch].best.type == SubframeType.LPC)
+							if (frame.subframes[ch].best.type == SubframeType.LPC)
 							{
 								// log search (written by Michael Niedermayer for FFmpeg)
 								for (int step = lpc.MAX_LPC_ORDER; step > 0; step >>= 1)
 								{
-									int last = frame->subframes[ch].best.order;
+									int last = frame.subframes[ch].best.order;
 									if (step <= (last + 1) / 2)
 										for (i = last - step; i <= last + step; i += step)
 											if (i >= min_order && i <= max_order)
@@ -1001,27 +931,27 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		unsafe void output_frame_header(FlacFrame* frame, BitWriter bitwriter)
+		unsafe void output_frame_header(FlacFrame frame, BitWriter bitwriter)
 		{
 			bitwriter.writebits(15, 0x7FFC);
 			bitwriter.writebits(1, eparams.variable_block_size > 0 ? 1 : 0);
-			bitwriter.writebits(4, frame->bs_code0);
+			bitwriter.writebits(4, frame.bs_code0);
 			bitwriter.writebits(4, sr_code0);
-			if (frame->ch_mode == ChannelMode.NotStereo)
+			if (frame.ch_mode == ChannelMode.NotStereo)
 				bitwriter.writebits(4, ch_code);
 			else
-				bitwriter.writebits(4, (int) frame->ch_mode);
+				bitwriter.writebits(4, (int) frame.ch_mode);
 			bitwriter.writebits(3, bps_code);
 			bitwriter.writebits(1, 0);
 			bitwriter.write_utf8(frame_count);
 
 			// custom block size
-			if (frame->bs_code1 >= 0)
+			if (frame.bs_code1 >= 0)
 			{
-				if (frame->bs_code1 < 256)
-					bitwriter.writebits(8, frame->bs_code1);
+				if (frame.bs_code1 < 256)
+					bitwriter.writebits(8, frame.bs_code1);
 				else
-					bitwriter.writebits(16, frame->bs_code1);
+					bitwriter.writebits(16, frame.bs_code1);
 			}
 
 			// custom sample rate
@@ -1039,100 +969,97 @@ namespace CUETools.Codecs.FLAKE
 			bitwriter.writebits(8, crc);
 		}
 
-		unsafe void output_residual(FlacFrame* frame, BitWriter bitwriter, FlacSubframeInfo* sub)
+		unsafe void output_residual(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
 		{
 			// rice-encoded block
 			bitwriter.writebits(2, 0);
 
 			// partition order
-			int porder = sub->best.rc.porder;
-			int psize = frame->blocksize >> porder;
+			int porder = sub.best.rc.porder;
+			int psize = frame.blocksize >> porder;
 			//assert(porder >= 0);
 			bitwriter.writebits(4, porder);
-			int res_cnt = psize - sub->best.order;
+			int res_cnt = psize - sub.best.order;
 
 			// residual
-			int j = sub->best.order;
+			int j = sub.best.order;
 			for (int p = 0; p < (1 << porder); p++)
 			{
-				int k = sub->best.rc.rparams[p];
+				int k = sub.best.rc.rparams[p];
 				bitwriter.writebits(4, k);
 				if (p == 1) res_cnt = psize;
-				if (k == 0)
-					for (int i = 0; i < res_cnt && j < frame->blocksize; i++, j++)
-						bitwriter.write_unary_signed(sub->best.residual[j]);
-				else
-					for (int i = 0; i < res_cnt && j < frame->blocksize; i++, j++)
-						bitwriter.write_rice_signed(k, sub->best.residual[j]);
+				int cnt = Math.Min(res_cnt, frame.blocksize - j);
+				bitwriter.write_rice_block_signed(k, sub.best.residual + j, cnt);
+				j += cnt;
 			}
 		}
 
 		unsafe void 
-		output_subframe_constant(FlacFrame* frame, BitWriter bitwriter, FlacSubframeInfo* sub)
+		output_subframe_constant(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
 		{
-			bitwriter.writebits_signed(sub->obits, sub->best.residual[0]);
+			bitwriter.writebits_signed(sub.obits, sub.best.residual[0]);
 		}
 
 		unsafe void
-		output_subframe_verbatim(FlacFrame* frame, BitWriter bitwriter, FlacSubframeInfo* sub)
+		output_subframe_verbatim(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
 		{
-			int n = frame->blocksize;
+			int n = frame.blocksize;
 			for (int i = 0; i < n; i++)
-				bitwriter.writebits_signed(sub->obits, sub->samples[i]); 
+				bitwriter.writebits_signed(sub.obits, sub.samples[i]); 
 			// Don't use residual here, because we don't copy samples to residual for verbatim frames.
 		}
 
 		unsafe void
-		output_subframe_fixed(FlacFrame* frame, BitWriter bitwriter, FlacSubframeInfo* sub)
+		output_subframe_fixed(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
 		{
 			// warm-up samples
-			for (int i = 0; i < sub->best.order; i++)
-				bitwriter.writebits_signed(sub->obits, sub->best.residual[i]);
+			for (int i = 0; i < sub.best.order; i++)
+				bitwriter.writebits_signed(sub.obits, sub.best.residual[i]);
 
 			// residual
 			output_residual(frame, bitwriter, sub);
 		}
 
 		unsafe void
-		output_subframe_lpc(FlacFrame* frame, BitWriter bitwriter, FlacSubframeInfo* sub)
+		output_subframe_lpc(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
 		{
 			// warm-up samples
-			for (int i = 0; i < sub->best.order; i++)
-				bitwriter.writebits_signed(sub->obits, sub->best.residual[i]);
+			for (int i = 0; i < sub.best.order; i++)
+				bitwriter.writebits_signed(sub.obits, sub.best.residual[i]);
 
 			// LPC coefficients
 			int cbits = 1;
-			for (int i = 0; i < sub->best.order; i++)
-				while (cbits < 16 && sub->best.coefs[i] != (sub->best.coefs[i] << (32 - cbits)) >> (32 - cbits))
+			for (int i = 0; i < sub.best.order; i++)
+				while (cbits < 16 && sub.best.coefs[i] != (sub.best.coefs[i] << (32 - cbits)) >> (32 - cbits))
 					cbits++;
 			bitwriter.writebits(4, cbits - 1);
-			bitwriter.writebits_signed(5, sub->best.shift);
-			for (int i = 0; i < sub->best.order; i++)
-				bitwriter.writebits_signed(cbits, sub->best.coefs[i]);
+			bitwriter.writebits_signed(5, sub.best.shift);
+			for (int i = 0; i < sub.best.order; i++)
+				bitwriter.writebits_signed(cbits, sub.best.coefs[i]);
 			
 			// residual
 			output_residual(frame, bitwriter, sub);
 		}
 
-		unsafe void output_subframes(FlacFrame* frame, BitWriter bitwriter)
+		unsafe void output_subframes(FlacFrame frame, BitWriter bitwriter)
 		{
 			for (int ch = 0; ch < channels; ch++)
 			{
-				FlacSubframeInfo* sub = frame->subframes + ch;
+				FlacSubframeInfo sub = frame.subframes[ch];
 				// subframe header
-				int type_code = (int) sub->best.type;
-				if (sub->best.type == SubframeType.Fixed)
-					type_code |= sub->best.order;
-				if (sub->best.type == SubframeType.LPC)
-					type_code |= sub->best.order - 1;
+				int type_code = (int) sub.best.type;
+				if (sub.best.type == SubframeType.Fixed)
+					type_code |= sub.best.order;
+				if (sub.best.type == SubframeType.LPC)
+					type_code |= sub.best.order - 1;
 				bitwriter.writebits(1, 0);
 				bitwriter.writebits(6, type_code);
-				bitwriter.writebits(1, sub->wbits != 0 ? 1 : 0);
-				if (sub->wbits > 0)
-					bitwriter.writebits((int)sub->wbits, 1);
+				bitwriter.writebits(1, sub.wbits != 0 ? 1 : 0);
+				if (sub.wbits > 0)
+					bitwriter.writebits((int)sub.wbits, 1);
 
 				// subframe
-				switch (sub->best.type)
+				switch (sub.best.type)
 				{
 					case SubframeType.Constant:
 						output_subframe_constant(frame, bitwriter, sub);
@@ -1206,7 +1133,7 @@ namespace CUETools.Codecs.FLAKE
 				window[n] = 0.5 - 0.5 * Math.Cos(2.0 * Math.PI * n / N);
 		}
 
-		unsafe void encode_residual_pass1(FlacFrame* frame, int ch)
+		unsafe void encode_residual_pass1(FlacFrame frame, int ch)
 		{
 			int max_prediction_order = eparams.max_prediction_order;
 			int max_fixed_order = eparams.max_fixed_order;
@@ -1230,12 +1157,12 @@ namespace CUETools.Codecs.FLAKE
 			eparams.estimation_depth = estimation_depth;
 		}
 
-		unsafe void encode_residual_pass2(FlacFrame* frame, int ch)
+		unsafe void encode_residual_pass2(FlacFrame frame, int ch)
 		{
 			encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 2);
 		}
 
-		unsafe void encode_residual_onepass(FlacFrame* frame, int ch)
+		unsafe void encode_residual_onepass(FlacFrame frame, int ch)
 		{
 			if (_windowcount > 1)
 			{
@@ -1245,7 +1172,7 @@ namespace CUETools.Codecs.FLAKE
 				encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 0);
 		}
 
-		unsafe void estimate_frame(FlacFrame* frame, bool do_midside)
+		unsafe void estimate_frame(FlacFrame frame, bool do_midside)
 		{
 			int subframes = do_midside ? channels * 2 : channels;
 
@@ -1253,7 +1180,7 @@ namespace CUETools.Codecs.FLAKE
 			{
 				case StereoMethod.Estimate:
 					for (int ch = 0; ch < subframes; ch++)
-						frame->subframes[ch].best.size = (uint)frame->blocksize * 32 + calc_decorr_score(frame, ch);
+						frame.subframes[ch].best.size = (uint)frame.blocksize * 32 + calc_decorr_score(frame, ch);
 					break;
 				case StereoMethod.Evaluate:
 					for (int ch = 0; ch < subframes; ch++)
@@ -1271,67 +1198,53 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		unsafe uint measure_frame_size(FlacFrame* frame, bool do_midside)
+		unsafe uint measure_frame_size(FlacFrame frame, bool do_midside)
 		{
-			uint total = 48 + 16; // crude estimation of header/footer size;
+			// crude estimation of header/footer size
+			uint total = (uint)(32 + ((Flake.log2i(frame_count) + 4) / 5) * 8 + (eparams.variable_block_size != 0 ? 16 : 0) + 16);
 
 			if (do_midside)
 			{
-				uint bitsBest = UINT32_MAX;
+				uint bitsBest = Flake.UINT32_MAX;
 				ChannelMode modeBest = ChannelMode.LeftRight;
 
-				if (bitsBest > frame->subframes[2].best.size + frame->subframes[3].best.size)
+				if (bitsBest > frame.subframes[2].best.size + frame.subframes[3].best.size)
 				{
-					bitsBest = frame->subframes[2].best.size + frame->subframes[3].best.size;
+					bitsBest = frame.subframes[2].best.size + frame.subframes[3].best.size;
 					modeBest = ChannelMode.MidSide;
 				}
-				if (bitsBest > frame->subframes[3].best.size + frame->subframes[1].best.size)
+				if (bitsBest > frame.subframes[3].best.size + frame.subframes[1].best.size)
 				{
-					bitsBest = frame->subframes[3].best.size + frame->subframes[1].best.size;
+					bitsBest = frame.subframes[3].best.size + frame.subframes[1].best.size;
 					modeBest = ChannelMode.RightSide;
 				}
-				if (bitsBest > frame->subframes[3].best.size + frame->subframes[0].best.size)
+				if (bitsBest > frame.subframes[3].best.size + frame.subframes[0].best.size)
 				{
-					bitsBest = frame->subframes[3].best.size + frame->subframes[0].best.size;
+					bitsBest = frame.subframes[3].best.size + frame.subframes[0].best.size;
 					modeBest = ChannelMode.LeftSide;
 				}
-				if (bitsBest > frame->subframes[0].best.size + frame->subframes[1].best.size)
+				if (bitsBest > frame.subframes[0].best.size + frame.subframes[1].best.size)
 				{
-					bitsBest = frame->subframes[0].best.size + frame->subframes[1].best.size;
+					bitsBest = frame.subframes[0].best.size + frame.subframes[1].best.size;
 					modeBest = ChannelMode.LeftRight;
 				}
-				frame->ch_mode = modeBest;
+				frame.ch_mode = modeBest;
 				return total + bitsBest;
 			}
 
 			for (int ch = 0; ch < channels; ch++)
-				total += frame->subframes[ch].best.size;
+				total += frame.subframes[ch].best.size;
 			return total;
 		}
 
-		unsafe void encode_estimated_frame(FlacFrame* frame, bool do_midside)
+		unsafe void encode_estimated_frame(FlacFrame frame)
 		{
-			if (do_midside)
-				switch (frame->ch_mode)
-				{
-					case ChannelMode.MidSide:
-						frame->subframes[0] = frame->subframes[2];
-						frame->subframes[1] = frame->subframes[3];
-						break;
-					case ChannelMode.RightSide:
-						frame->subframes[0] = frame->subframes[3];
-						break;
-					case ChannelMode.LeftSide:
-						frame->subframes[1] = frame->subframes[3];
-						break;
-				}
-
 			switch (eparams.stereo_method)
 			{
 				case StereoMethod.Estimate:
 					for (int ch = 0; ch < channels; ch++)
 					{
-						frame->subframes[ch].best.size = UINT32_MAX;
+						frame.subframes[ch].best.size = Flake.UINT32_MAX;
 						encode_residual_onepass(frame, ch);
 					}
 					break;
@@ -1369,16 +1282,11 @@ namespace CUETools.Codecs.FLAKE
 
 		unsafe int encode_frame(out int size)
 		{
-			FlacFrame frame;
-			FlacFrame frame2, frame3;
-			FlacSubframeInfo* sf = stackalloc FlacSubframeInfo[channels * 6];
-
 			fixed (int* s = samplesBuffer, r = residualBuffer)
 			fixed (double* window = windowBuffer)
 			{
-				frame.subframes = sf;
+				frame.InitSize(eparams.block_size, eparams.variable_block_size != 0);
 
-				init_frame(&frame, eparams.block_size);
 				if (frame.blocksize != _windowsize && frame.blocksize > 4)
 				{
 					_windowsize = frame.blocksize;
@@ -1397,11 +1305,11 @@ namespace CUETools.Codecs.FLAKE
 					frame.current.residual = r + channels * Flake.MAX_BLOCKSIZE;
 					frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 					for (int ch = 0; ch < channels; ch++)
-						initialize_subframe(&frame, ch, s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
+						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
 							bits_per_sample, get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
 
 					for (int ch = 0; ch < channels; ch++)
-						encode_residual_onepass(&frame, ch);
+						encode_residual_onepass(frame, ch);
 				}
 				else
 				{
@@ -1409,41 +1317,43 @@ namespace CUETools.Codecs.FLAKE
 					frame.window_buffer = window;
 					frame.current.residual = r + 4 * Flake.MAX_BLOCKSIZE;
 					for (int ch = 0; ch < 4; ch++)
-						initialize_subframe(&frame, ch, s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, 
+						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, 
 							bits_per_sample + (ch == 3 ? 1U : 0U), get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
-					estimate_frame(&frame, true);
-					uint fs = measure_frame_size(&frame, true);
+					estimate_frame(frame, true);
+					uint fs = measure_frame_size(frame, true);
 
 					if (0 != eparams.variable_block_size)
 					{
+						FlacFrame frame2 = new FlacFrame(channels * 2);
+						FlacFrame frame3 = new FlacFrame(channels * 2);
 						int tumbler = 1;
 						while ((frame.blocksize & 1) == 0 && frame.blocksize >= 1024)
 						{
-							init_frame(&frame2, frame.blocksize / 2);
+							frame2.InitSize(frame.blocksize / 2, true);
 							frame2.window_buffer = frame.window_buffer + frame.blocksize;
 							frame2.current.residual = r + tumbler * 5 * Flake.MAX_BLOCKSIZE;
-							frame2.subframes = sf + tumbler * channels * 2;
 							for (int ch = 0; ch < 4; ch++)
-								initialize_subframe(&frame2, ch, frame.subframes[ch].samples, frame2.current.residual + (ch + 1) * frame2.blocksize,
+								frame2.subframes[ch].Init(frame.subframes[ch].samples, frame2.current.residual + (ch + 1) * frame2.blocksize,
 									frame.subframes[ch].obits + frame.subframes[ch].wbits, frame.subframes[ch].wbits);
-							estimate_frame(&frame2, true);
-							uint fs2 = measure_frame_size(&frame2, true);
+							estimate_frame(frame2, true);
+							uint fs2 = measure_frame_size(frame2, true);
 							uint fs3 = fs2;
 							if (eparams.variable_block_size == 2 || eparams.variable_block_size == 4)
 							{
-								init_frame(&frame3, frame2.blocksize);
+								frame3.InitSize(frame2.blocksize, true);
 								frame3.window_buffer = frame2.window_buffer;
 								frame3.current.residual = frame2.current.residual + 5 * frame2.blocksize;
-								frame3.subframes = sf + channels * 4;
 								for (int ch = 0; ch < 4; ch++)
-									initialize_subframe(&frame3, ch, frame2.subframes[ch].samples + frame2.blocksize, frame3.current.residual + (ch + 1) * frame3.blocksize,
+									frame3.subframes[ch].Init(frame2.subframes[ch].samples + frame2.blocksize, frame3.current.residual + (ch + 1) * frame3.blocksize,
 										frame.subframes[ch].obits + frame.subframes[ch].wbits, frame.subframes[ch].wbits);
-								estimate_frame(&frame3, true);
-								fs3 = measure_frame_size(&frame3, true);
+								estimate_frame(frame3, true);
+								fs3 = measure_frame_size(frame3, true);
 							}
 							if (fs2 + fs3 > fs)
 								break;
+							FlacFrame tmp = frame;
 							frame = frame2;
+							frame2 = tmp;
 							fs = fs2;
 							if (eparams.variable_block_size <= 2)
 								break;
@@ -1451,13 +1361,14 @@ namespace CUETools.Codecs.FLAKE
 						}
 					}
 
-					encode_estimated_frame(&frame, true);
+					frame.ChooseSubframes();
+					encode_estimated_frame(frame);
 				}
 
 				BitWriter bitwriter = new BitWriter(frame_buffer, 0, max_frame_size);
 
-				output_frame_header(&frame, bitwriter);
-				output_subframes(&frame, bitwriter);
+				output_frame_header(frame, bitwriter);
+				output_subframes(frame, bitwriter);
 				output_frame_footer(bitwriter);
 
 				if (frame_buffer != null)
@@ -1598,7 +1509,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// metadata header
 			bitwriter.writebits(1, last);
-			bitwriter.writebits(7, (int)MetadataType.FLAC__METADATA_TYPE_STREAMINFO);
+			bitwriter.writebits(7, (int)MetadataType.StreamInfo);
 			bitwriter.writebits(24, 34);
 
 			if (eparams.variable_block_size > 0)
@@ -1639,7 +1550,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// metadata header
 			bitwriter.writebits(1, last);
-			bitwriter.writebits(7, (int)MetadataType.FLAC__METADATA_TYPE_VORBIS_COMMENT);
+			bitwriter.writebits(7, (int)MetadataType.VorbisComment);
 			bitwriter.writebits(24, vendor_len + 8);
 
 			comment[pos + 4] = (byte)(vendor_len & 0xFF);
@@ -1662,7 +1573,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// metadata header
 			bitwriter.writebits(1, last);
-			bitwriter.writebits(7, (int)MetadataType.FLAC__METADATA_TYPE_SEEKTABLE);
+			bitwriter.writebits(7, (int)MetadataType.Seektable);
 			bitwriter.writebits(24, 18 * seek_table.Length);
 			for (int i = 0; i < seek_table.Length; i++)
 			{
@@ -1684,7 +1595,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// metadata header
 			bitwriter.writebits(1, last);
-			bitwriter.writebits(7, (int)MetadataType.FLAC__METADATA_TYPE_PADDING);
+			bitwriter.writebits(7, (int)MetadataType.Padding);
 			bitwriter.writebits(24, padlen);
 
 			return padlen + 4;
@@ -1947,7 +1858,7 @@ namespace CUETools.Codecs.FLAKE
 			block_time_ms = 105;			
 			prediction_type = PredictionType.Search;
 			min_prediction_order = 1;
-			max_prediction_order = 8;
+			max_prediction_order = 12;
 			estimation_depth = 1;
 			min_fixed_order = 2;
 			max_fixed_order = 2;
@@ -1960,49 +1871,46 @@ namespace CUETools.Codecs.FLAKE
 			do_verify = false;
 			do_seektable = true; 
 
-			// differences from level 5
+			// differences from level 7
 			switch (lvl)
 			{
 				case 0:
-					block_time_ms = 27;
+					block_time_ms = 53;
 					prediction_type = PredictionType.Fixed;
+					stereo_method = StereoMethod.Independent;
 					max_partition_order = 4;
 					break;
 				case 1:
 					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Independent;
 					window_function = WindowFunction.Welch;
+					max_prediction_order = 8;
 					max_partition_order = 4;
 					break;
 				case 2:
 					stereo_method = StereoMethod.Independent;
 					window_function = WindowFunction.Welch;
-					max_prediction_order = 12;
 					max_partition_order = 4;
 					break;
 				case 3:
 					stereo_method = StereoMethod.Estimate;
 					window_function = WindowFunction.Welch;
+					max_prediction_order = 8;
 					break;
 				case 4:
 					stereo_method = StereoMethod.Estimate;
 					window_function = WindowFunction.Welch;
-					max_prediction_order = 12;
 					break;
 				case 5:
 					window_function = WindowFunction.Welch;
-					max_prediction_order = 12;
 					break;
 				case 6:
 					stereo_method = StereoMethod.Estimate;
-					max_prediction_order = 12;
 					break;
 				case 7:
-					max_prediction_order = 12;
 					break;
 				case 8:
 					estimation_depth = 3;
-					max_prediction_order = 12;
 					min_fixed_order = 0;
 					max_fixed_order = 4;
 					lpc_max_precision_search = 2;

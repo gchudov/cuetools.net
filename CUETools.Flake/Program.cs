@@ -15,7 +15,7 @@ namespace CUETools.FlakeExe
 			Console.WriteLine();
 			Console.WriteLine("Options:");
 			Console.WriteLine();
-			Console.WriteLine(" -0 .. -11            Compression level, default 5.");
+			Console.WriteLine(" -0 .. -11            Compression level, default 7.");
 			Console.WriteLine(" -o <file>            Output filename, or \"-\" for stdout, or nul.");
 			Console.WriteLine(" -p #                 Padding bytes.");
 			Console.WriteLine(" -q --quiet           Quiet mode.");
