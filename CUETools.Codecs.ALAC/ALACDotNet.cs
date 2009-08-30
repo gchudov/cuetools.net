@@ -42,6 +42,24 @@ namespace CUETools.Codecs.ALAC
 			calculate_length();
 		}
 
+		public ALACReader(int channels, int bps, int rice_historymult, int rice_initialhistory, int rice_kmodifier, int blocksize)
+		{
+			_channelCount = channels;
+			_bitsPerSample = bps;
+			_sampleRate = 44100;
+
+			setinfo_max_samples_per_frame = (uint)blocksize;
+			setinfo_rice_historymult = (byte)rice_historymult;
+			setinfo_rice_initialhistory = (byte)rice_initialhistory;
+			setinfo_rice_kmodifier = (byte)rice_kmodifier;
+
+			_predicterror_buffer_a = new int[setinfo_max_samples_per_frame];
+			_predicterror_buffer_b = new int[setinfo_max_samples_per_frame];
+			_outputsamples_buffer_a = new int[setinfo_max_samples_per_frame];
+			_outputsamples_buffer_b = new int[setinfo_max_samples_per_frame];
+			_framesBuffer = new byte[65536];
+		}
+
 		public int[,] Read(int[,] buff)
 		{
 			return AudioSamples.Read(this, buff);
@@ -96,7 +114,7 @@ namespace CUETools.Codecs.ALAC
 					return (uint)offset;
 				get_sample_info(_iSample, out sampleDuration, out sampleSize);
 				_IO.Read(_framesBuffer, 0, (int) sampleSize);
-				decodeFrame(sampleDuration, sampleSize);
+				decodeFrame(sampleSize);
 				if (sampleDuration != _samplesInBuffer)
 					throw new Exception("sample count mismatch");
 				_samplesInBuffer -= _samplesBufferOffset;
@@ -157,6 +175,8 @@ namespace CUETools.Codecs.ALAC
 						_IO.Position = _saved_mdat_pos + fileOffs;
 						return;
 					}
+					if ((int)_iSample >= _sample_byte_size.Length)
+						throw new Exception("seeking past end of stream");
 					get_sample_info(_iSample, out sampleDuration, out sampleSize);
 					durOffs += sampleDuration;
 					fileOffs += sampleSize;
@@ -225,6 +245,8 @@ namespace CUETools.Codecs.ALAC
 			while (_time_to_sample_count[duration_cur_index] + duration_index_accum <= iSample)
 			{
 				duration_index_accum += _time_to_sample_count[duration_cur_index];
+				if (duration_cur_index == _time_to_sample_count.Length - 1)
+					throw new Exception("seeking past end of stream");
 				duration_cur_index ++;
 			}
 			sampleDuration = _time_to_sample_duration[duration_cur_index];
@@ -250,7 +272,7 @@ namespace CUETools.Codecs.ALAC
 					get_sample_info(_iSample, out sampleDuration, out sampleSize);
 					InitTables();
 					_IO.Read(_framesBuffer, 0, (int)sampleSize);
-					decodeFrame(sampleDuration, sampleSize);
+					decodeFrame(sampleSize);
 					if (_samplesInBuffer < sampleDuration)
 					{
 						_time_to_sample_duration = new uint[2] { sample_duration_0, _samplesInBuffer };
@@ -395,11 +417,6 @@ namespace CUETools.Codecs.ALAC
 			return result;
 		}
 
-		private static uint SIGN_EXTENDED32(uint val, int bits) 
-		{
-			return ((val << (32 - bits)) >> (32 - bits));
-		}
-
 		private void unreadbits(ref int pos, int bits)
 		{
 			int new_accumulator = (_bitaccumulator - bits);
@@ -412,7 +429,7 @@ namespace CUETools.Codecs.ALAC
 
 		private static int count_leading_zeroes(uint input)
 		{
-			int zeroes = 1;
+			int zeroes = 0;
 			uint shifted_input = input >> 16;
 			if (shifted_input == 0)
 				zeroes += 16;
@@ -423,22 +440,7 @@ namespace CUETools.Codecs.ALAC
 				zeroes += 8;
 			else
 				input = shifted_input;
-			shifted_input = input >> 4;
-			if (shifted_input == 0)
-				zeroes += 4;
-			else
-				input = shifted_input;
-			shifted_input = input >> 2;
-			if (shifted_input == 0)
-				zeroes += 2;
-			else
-				input = shifted_input;
-			shifted_input = input >> 1;
-			if (shifted_input == 0)
-				zeroes ++;
-			else
-				input = shifted_input;
-			return zeroes - (int)input;
+			return zeroes + BitReader.byte_to_unary_table[input];
 		}
 
 		private unsafe void readPredictor(ref int pos, ref predictor_t predictor_info)
@@ -462,30 +464,14 @@ namespace CUETools.Codecs.ALAC
 
 		private unsafe int decode_scalar(byte * buff, ref int pos, int k, int limit, int readsamplesize)
 		{
-			int x = 0;
 			uint next = peekbits_9(buff, pos);
-			if (next == 0x1ff) /* RICE THRESHOLD 9 bits */
+			int x = (next >> 8 == 0) ? 0 : 
+				1 + BitReader.byte_to_unary_table[(~next) & 0xff];
+			if (x == 9) /* RICE THRESHOLD 9 bits */
 			{
 				skipbits(ref pos, 9);
 				return (int)readbits(buff, ref pos, readsamplesize);
 			}
-			if ((next & 0x1e0) == 0x1e0)
-			{
-				x += 4;
-				next <<= 4;
-			}
-			if ((next & 0x180) == 0x180)
-			{
-				x += 2;
-				next <<= 2;
-			}
-			if ((next & 0x100) == 0x100)
-			{
-				x += 1;
-				next <<= 1;
-			}
-			x += (int) (next & 0x100) >> 8;
-			//x = count_leading_zeroes((~next) & 0x1ff) - 23;
 			skipbits(ref pos, x + 1);
 			if (k >= limit)
 				k = limit;
@@ -637,7 +623,7 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		private unsafe void deinterlace(int[,] samplesBuffer, uint offset, uint sampleCount)
+		internal unsafe void deinterlace(int[,] samplesBuffer, uint offset, uint sampleCount)
 		{
 			if (sampleCount <= 0 || sampleCount > _samplesInBuffer)
 				return;
@@ -670,17 +656,18 @@ namespace CUETools.Codecs.ALAC
 				}
 
 				/* otherwise basic interlacing took place */
-				for (i = 0; i < sampleCount; i++)
-				{
-					int a = buf_a[i];
-					int b = buf_b[i];
-					buf_s[i * 2] = a;
-					buf_s[i * 2 + 1] = b;
-				}
+				AudioSamples.Interlace(buf_s, buf_a, buf_b, (int)sampleCount);
 			}
 		}
 
-		private void decodeFrame(ulong sampleDuration, uint sampleSize)
+		internal int DecodeFrame(byte[] buffer, int pos, int len)
+		{
+			Array.Copy(buffer, pos, _framesBuffer, 0, len);
+			decodeFrame((uint)len);
+			return len; // pos
+		}
+
+		private void decodeFrame(uint sampleSize)
 		{
 			_bitaccumulator = 0;
 			int pos = 0;
@@ -723,8 +710,6 @@ namespace CUETools.Codecs.ALAC
 			else
 			{
 				/* not compressed, easy case */
-				if (_bitsPerSample != 16)
-					throw new Exception("Not 16 bit");
 				for (int i = 0; i < outputSamples; i++)
 				{
 					_outputsamples_buffer_a[i] = extend_sign32((int)readbits(_framesBuffer, ref pos, _bitsPerSample), _bitsPerSample);
@@ -735,8 +720,8 @@ namespace CUETools.Codecs.ALAC
 				_interlacing_leftweight = 0;
 			}
 
-			if (_bitsPerSample != 16)
-				throw new Exception("Not 16 bit");
+			if (readbits(_framesBuffer, ref pos, 3) != 7)
+				throw new Exception("Invalid frame.");
 
 			_samplesInBuffer = outputSamples;
 		}

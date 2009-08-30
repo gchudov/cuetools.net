@@ -84,6 +84,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ALACDotNet.cs" />
+    <Compile Include="ALACWriter.cs" />
+    <Compile Include="ALAC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

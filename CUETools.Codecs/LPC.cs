@@ -1,8 +1,6 @@
 /**
- * CUETools.Flake: pure managed FLAC audio encoder
+ * CUETools.Codecs: common audio encoder/decoder routines
  * Copyright (c) 2009 Gregory S. Chudov
- * Based on Flake encoder, http://flake-enc.sourceforge.net/
- * Copyright (c) 2006-2009 Justin Ruggles
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,9 +21,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CUETools.Codecs.FLAKE
+namespace CUETools.Codecs
 {
-	class lpc
+	public class lpc
 	{
 		public const int MAX_LPC_ORDER = 32;
 		public const int MAX_LPC_WINDOWS = 4;
@@ -223,7 +221,7 @@ namespace CUETools.Codecs.FLAKE
 		 */
 		public static unsafe void
 		quantize_lpc_coefs(double* lpc_in, int order, uint precision, int* lpc_out,
-						   out int shift)
+						   out int shift, int max_shift, int zero_shift)
 		{
 			int i;
 			double d, cmax, error;
@@ -242,16 +240,16 @@ namespace CUETools.Codecs.FLAKE
 					cmax = d;
 			}
 			// if maximum value quantizes to zero, return all zeros
-			if (cmax * (1 << 15) < 1.0)
+			if (cmax * (1 << max_shift) < 1.0)
 			{
-				shift = 0;
+				shift = zero_shift;
 				for (i = 0; i < order; i++)
 					lpc_out[i] = 0;
 				return;
 			}
 
 			// calculate level shift which scales max coeff to available bits
-			sh = 15;
+			sh = max_shift;
 			while ((cmax * (1 << sh) > qmax) && (sh > 0))
 			{
 				sh--;
@@ -280,25 +278,6 @@ namespace CUETools.Codecs.FLAKE
 				lpc_out[i] = q;
 			}
 			shift = sh;
-		}
-
-		/**
-		 * Calculate LPC coefficients for multiple orders
-		 */
-		public static unsafe uint
-		calc_coefs(/*const*/ int* samples, uint blocksize, uint max_order, OrderMethod omethod, double* lpcs, double* window)
-		{
-			double* autoc = stackalloc double[MAX_LPC_ORDER + 1];
-
-			compute_autocorr(samples, blocksize, 0, max_order, autoc, window);
-
-			uint opt_order = max_order;
-			if (omethod == OrderMethod.Estimate)
-				opt_order = compute_lpc_coefs_est(autoc, max_order, lpcs);
-			else
-				compute_lpc_coefs(autoc, max_order, null, lpcs);
-
-			return opt_order;
 		}
 
 		public static unsafe void
@@ -808,7 +787,7 @@ namespace CUETools.Codecs.FLAKE
 	/// <summary>
 	/// Context for LPC coefficients calculation and order estimation
 	/// </summary>
-	unsafe class LpcContext
+	unsafe public class LpcContext
 	{
 		public LpcContext()
 		{
@@ -874,6 +853,14 @@ namespace CUETools.Codecs.FLAKE
 		double[] autocorr_values;
 		double[] reflection_coeffs;
 		int autocorr_order;
+
+		public double[] Reflection
+		{
+			get
+			{
+				return reflection_coeffs;
+			}
+		}
 
 		public uint[] done_lpcs;
 	}

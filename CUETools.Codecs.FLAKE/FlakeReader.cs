@@ -223,7 +223,7 @@ namespace CUETools.Codecs.FLAKE
 			if (channels == 2)
 			{
 				fixed (int* res = &buff[offset, 0], src = &samplesBuffer[_samplesBufferOffset])
-					Flake.interlace(res, src, src + Flake.MAX_BLOCKSIZE, count);
+					AudioSamples.Interlace(res, src, src + Flake.MAX_BLOCKSIZE, count);
 			}
 			else
 			{
@@ -280,7 +280,7 @@ namespace CUETools.Codecs.FLAKE
 			else if (_framesBufferLength < _framesBuffer.Length / 2 && _framesBufferOffset >= _framesBuffer.Length / 2)
 			{
 				fixed (byte* buff = _framesBuffer)
-					Flake.memcpy(buff, buff + _framesBufferOffset, _framesBufferLength);
+					AudioSamples.MemCpy(buff, buff + _framesBufferOffset, _framesBufferLength);
 				_framesBufferOffset = 0;
 			}
 			while (_framesBufferLength < _framesBuffer.Length / 2)
@@ -495,7 +495,7 @@ namespace CUETools.Codecs.FLAKE
 		{
 			FlacSubframeInfo sub = frame.subframes[ch];
 
-			Flake.memcpy(sub.samples, sub.best.residual, sub.best.order);
+			AudioSamples.MemCpy(sub.samples, sub.best.residual, sub.best.order);
 			int* data = sub.samples + sub.best.order;
 			int* residual = sub.best.residual + sub.best.order;
 			int data_len = frame.blocksize - sub.best.order;
@@ -503,7 +503,7 @@ namespace CUETools.Codecs.FLAKE
 			switch (sub.best.order)
 			{
 				case 0:
-					Flake.memcpy(data, residual, data_len);
+					AudioSamples.MemCpy(data, residual, data_len);
 					break;
 				case 1:
 					s1 = data[-1];
@@ -559,10 +559,10 @@ namespace CUETools.Codecs.FLAKE
 				switch (frame.subframes[ch].best.type)
 				{
 					case SubframeType.Constant:
-						Flake.memset(frame.subframes[ch].samples, frame.subframes[ch].best.residual[0], frame.blocksize);
+						AudioSamples.MemSet(frame.subframes[ch].samples, frame.subframes[ch].best.residual[0], frame.blocksize);
 						break;
 					case SubframeType.Verbatim:
-						Flake.memcpy(frame.subframes[ch].samples, frame.subframes[ch].best.residual, frame.blocksize);
+						AudioSamples.MemCpy(frame.subframes[ch].samples, frame.subframes[ch].best.residual, frame.blocksize);
 						break;
 					case SubframeType.Fixed:
 						restore_samples_fixed(frame, ch);

@@ -911,11 +911,12 @@ namespace CUETools.Processor
 			encoders = new CUEToolsUDCList();
 #if !MONO
 			encoders.Add(new CUEToolsUDC("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", "FLACWriter"));
-			encoders.Add(new CUEToolsUDC("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", "FlakeWriter"));
 			encoders.Add(new CUEToolsUDC("libwavpack", "wv", true, "fast normal high high+", "normal", "WavPackWriter"));
 			encoders.Add(new CUEToolsUDC("MAC_SDK", "ape", true, "fast normal high extra insane", "high", "APEWriter"));
 			encoders.Add(new CUEToolsUDC("ttalib", "tta", true, "", "", "TTAWriter"));
 #endif
+			encoders.Add(new CUEToolsUDC("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", "FlakeWriter"));
+			encoders.Add(new CUEToolsUDC("libALAC", "m4a", true, "0 1 2 3 4 5 6 7 8", "3", "ALACWriter"));
 			encoders.Add(new CUEToolsUDC("builtin wav", "wav", true, "", "", "WAVWriter"));
 			encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "10", "flake.exe", "-%M - -o %O -p %P"));
 			encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));

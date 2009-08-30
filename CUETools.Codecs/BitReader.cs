@@ -1,8 +1,6 @@
 /**
- * CUETools.Flake: pure managed FLAC audio encoder
+ * CUETools.Codecs: common audio encoder/decoder routines
  * Copyright (c) 2009 Gregory S. Chudov
- * Based on Flake encoder, http://flake-enc.sourceforge.net/
- * Copyright (c) 2006-2009 Justin Ruggles
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,14 +21,27 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CUETools.Codecs.FLAKE
+namespace CUETools.Codecs
 {
-	unsafe class BitReader
+	unsafe public class BitReader
 	{
 		byte* buffer;
 		int pos, len;
 		int _bitaccumulator;
 		uint cache;
+
+		public static int log2i(int v)
+		{
+			return log2i((uint)v);
+		}
+
+		public static int log2i(uint v)
+		{
+			int n = 0;
+			if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
+			if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
+			return n + byte_to_log2_table[v];
+		}
 
 		public static readonly byte[] byte_to_unary_table = new byte[] 
 		{
@@ -50,6 +61,26 @@ namespace CUETools.Codecs.FLAKE
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		};
+
+		public static readonly byte[] byte_to_log2_table = new byte[] 
+		{
+			0,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+			5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
 		};
 
 		public int Position

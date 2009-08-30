@@ -94,6 +94,18 @@ namespace CUETools.Processor
 				case "WAVWriter":
 					dest = new WAVWriter(path, bitsPerSample, channelCount, sampleRate, null);
 					break;
+				case "FlakeWriter":
+					dest = new FlakeWriter(path, bitsPerSample, channelCount, sampleRate, null);
+					((FlakeWriter)dest).PaddingLength = padding;
+					((FlakeWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
+					dest = new BufferedWriter(dest, 128 * 1024);
+					break;
+				case "ALACWriter":
+					dest = new ALACWriter(path, bitsPerSample, channelCount, sampleRate, null);
+					((ALACWriter)dest).PaddingLength = padding;
+					((ALACWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
+					//dest = new BufferedWriter(dest, 128 * 1024);
+					break;
 #if !MONO
 				case "FLACWriter":
 					dest = new FLACWriter(path, bitsPerSample, channelCount, sampleRate);
@@ -101,12 +113,6 @@ namespace CUETools.Processor
 					((FLACWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
 					((FLACWriter)dest).Verify = config.flacVerify;
 					((FLACWriter)dest).DisableAsm = config.disableAsm;
-					break;
-				case "FlakeWriter":
-					dest = new FlakeWriter(path, bitsPerSample, channelCount, sampleRate, null);
-					((FlakeWriter)dest).PaddingLength = padding;
-					((FlakeWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
-					dest = new BufferedWriter(dest, 128 * 1024);
 					break;
 				case "WavPackWriter":
 					dest = new WavPackWriter(path, bitsPerSample, channelCount, sampleRate);

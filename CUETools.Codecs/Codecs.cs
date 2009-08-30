@@ -1,3 +1,22 @@
+/**
+ * CUETools.Codecs: common audio encoder/decoder routines
+ * Copyright (c) 2009 Gregory S. Chudov
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 using System;
 using System.IO;
 using System.Text;
@@ -177,6 +196,52 @@ namespace CUETools.Codecs
 			if (samplesRead != toRead) throw new Exception("samples read != requested");
 			return buff;
 		}
+
+		unsafe public static void Interlace(int* res, int* src1, int* src2, int n)
+		{
+			for (int i = n; i > 0; i--)
+			{
+				*(res++) = *(src1++);
+				*(res++) = *(src2++);
+			}
+		}
+
+		unsafe public static void Deinterlace(int* dst1, int* dst2, int* src, int n)
+		{
+			for (int i = n; i > 0; i--)
+			{
+				*(dst1++) = *(src++);
+				*(dst2++) = *(src++);
+			}
+		}
+
+		unsafe public static bool MemCmp(int* res, int* smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				if (*(res++) != *(smp++))
+					return true;
+			return false;
+		}
+
+		unsafe public static void MemCpy(int* res, int* smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = *(smp++);
+		}
+
+		unsafe public static void MemCpy(byte* res, byte* smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = *(smp++);
+		}
+
+		unsafe public static void MemSet(int* res, int smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = smp;
+		}
+
+		public const uint UINT32_MAX = 0xffffffff;
 	}
 
 	public class DummyWriter : IAudioDest

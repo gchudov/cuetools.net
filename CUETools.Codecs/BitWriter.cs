@@ -1,8 +1,6 @@
 /**
- * CUETools.Flake: pure managed FLAC audio encoder
+ * CUETools.Codecs: common audio encoder/decoder routines
  * Copyright (c) 2009 Gregory S. Chudov
- * Based on Flake encoder, http://flake-enc.sourceforge.net/
- * Copyright (c) 2006-2009 Justin Ruggles
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,9 +21,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CUETools.Codecs.FLAKE
+namespace CUETools.Codecs
 {
-	class BitWriter
+	public class BitWriter
 	{
 		uint bit_buf;
 		int bit_left;
@@ -42,6 +40,24 @@ namespace CUETools.Codecs.FLAKE
 			bit_left = 32;
 			bit_buf = 0;
 			eof = false;
+		}
+
+		public void writebytes(int bytes, byte c)
+		{
+			for (; bytes > 0; bytes--)
+				writebits(8, c);
+		}
+
+		public void write(params char [] chars)
+		{
+			foreach (char c in chars)
+				writebits(8, (byte)c);
+		}
+
+		public void write(string s)
+		{
+			for (int i = 0; i < s.Length; i++)
+				writebits(8, (byte)s[i]);
 		}
 
 		public void writebits_signed(int bits, int val)
@@ -148,7 +164,7 @@ namespace CUETools.Codecs.FLAKE
 				writebits(8, val);
 				return;
 			}
-			int bytes = (Flake.log2i(val) + 4) / 5;
+			int bytes = (BitReader.log2i(val) + 4) / 5;
 			int shift = (bytes - 1) * 6;
 			writebits(8, (256U - (256U >> bytes)) | (val >> shift));
 			while (shift >= 6)
@@ -275,6 +291,11 @@ namespace CUETools.Codecs.FLAKE
 			get
 			{
 				return buf_ptr - buf_start;
+			}
+			set
+			{
+				flush();
+				buf_ptr = buf_start + value;
 			}
 		}
 	}

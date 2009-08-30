@@ -35,12 +35,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BitReader.cs" />
-    <Compile Include="BitWriter.cs" />
     <Compile Include="Flake.cs" />
     <Compile Include="FlakeReader.cs" />
     <Compile Include="FlakeWriter.cs" />
-    <Compile Include="lpc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

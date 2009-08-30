@@ -25,7 +25,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
-using System.Runtime.InteropServices;
+//using System.Runtime.InteropServices;
 using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
@@ -161,10 +161,10 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		[DllImport("kernel32.dll")]
-		static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
-		[DllImport("kernel32.dll")]
-		static extern IntPtr GetCurrentThread();
+		//[DllImport("kernel32.dll")]
+		//static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
+		//[DllImport("kernel32.dll")]
+		//static extern IntPtr GetCurrentThread();
 
 		void DoClose()
 		{
@@ -196,9 +196,9 @@ namespace CUETools.Codecs.FLAKE
 				inited = false;
 			}
 
-			long fake, KernelStart, UserStart;
-			GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
-			_userProcessorTime = new TimeSpan(UserStart);
+			//long fake, KernelStart, UserStart;
+			//GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
+			//_userProcessorTime = new TimeSpan(UserStart);
 		}
 
 		public void Close()
@@ -481,7 +481,7 @@ namespace CUETools.Codecs.FLAKE
 			fixed (int* fsamples = samplesBuffer, src = &samples[pos, 0])
 			{
 				if (channels == 2)
-					Flake.deinterlace(fsamples + samplesInBuffer, fsamples + Flake.MAX_BLOCKSIZE + samplesInBuffer, src, block);
+					AudioSamples.Deinterlace(fsamples + samplesInBuffer, fsamples + Flake.MAX_BLOCKSIZE + samplesInBuffer, src, block);
 				else
 					for (int ch = 0; ch < channels; ch++)
 					{
@@ -557,7 +557,7 @@ namespace CUETools.Codecs.FLAKE
 
 		unsafe void encode_residual_verbatim(int* res, int* smp, uint n)
 		{
-			Flake.memcpy(res, smp, (int) n);
+			AudioSamples.MemCpy(res, smp, (int) n);
 		}
 
 		unsafe void encode_residual_fixed(int* res, int* smp, int n, int order)
@@ -567,7 +567,7 @@ namespace CUETools.Codecs.FLAKE
 			switch (order)
 			{
 				case 0:
-					Flake.memcpy(res, smp, n);
+					AudioSamples.MemCpy(res, smp, n);
 					return;
 				case 1:
 					*(res++) = s1 = *(smp++);
@@ -678,7 +678,7 @@ namespace CUETools.Codecs.FLAKE
 			calc_sums(pmin, pmax, udata, n, pred_order, sums);
 
 			int opt_porder = pmin;
-			uint opt_bits = Flake.UINT32_MAX;
+			uint opt_bits = AudioSamples.UINT32_MAX;
 			for (int i = pmin; i <= pmax; i++)
 			{
 				uint bits = calc_optimal_rice_params(ref tmp_rc, i, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
@@ -697,9 +697,9 @@ namespace CUETools.Codecs.FLAKE
 
 		static int get_max_p_order(int max_porder, int n, int order)
 		{
-			int porder = Math.Min(max_porder, Flake.log2i(n ^ (n - 1)));
+			int porder = Math.Min(max_porder, BitReader.log2i(n ^ (n - 1)));
 			if (order > 0)
-				porder = Math.Min(porder, Flake.log2i(n / order));
+				porder = Math.Min(porder, BitReader.log2i(n / order));
 			return porder;
 		}
 
@@ -752,7 +752,7 @@ namespace CUETools.Codecs.FLAKE
 					fixed (int* coefs = frame.current.coefs)
 					{
 						lpc.quantize_lpc_coefs(lpcs + (frame.current.order - 1) * lpc.MAX_LPC_ORDER,
-							frame.current.order, cbits, coefs, out frame.current.shift);
+							frame.current.order, cbits, coefs, out frame.current.shift, 15, 0);
 
 						if (frame.current.shift < 0 || frame.current.shift > 15)
 							throw new Exception("negative shift");
@@ -1201,11 +1201,11 @@ namespace CUETools.Codecs.FLAKE
 		unsafe uint measure_frame_size(FlacFrame frame, bool do_midside)
 		{
 			// crude estimation of header/footer size
-			uint total = (uint)(32 + ((Flake.log2i(frame_count) + 4) / 5) * 8 + (eparams.variable_block_size != 0 ? 16 : 0) + 16);
+			uint total = (uint)(32 + ((BitReader.log2i(frame_count) + 4) / 5) * 8 + (eparams.variable_block_size != 0 ? 16 : 0) + 16);
 
 			if (do_midside)
 			{
-				uint bitsBest = Flake.UINT32_MAX;
+				uint bitsBest = AudioSamples.UINT32_MAX;
 				ChannelMode modeBest = ChannelMode.LeftRight;
 
 				if (bitsBest > frame.subframes[2].best.size + frame.subframes[3].best.size)
@@ -1244,7 +1244,7 @@ namespace CUETools.Codecs.FLAKE
 				case StereoMethod.Estimate:
 					for (int ch = 0; ch < channels; ch++)
 					{
-						frame.subframes[ch].best.size = Flake.UINT32_MAX;
+						frame.subframes[ch].best.size = AudioSamples.UINT32_MAX;
 						encode_residual_onepass(frame, ch);
 					}
 					break;
@@ -1389,7 +1389,7 @@ namespace CUETools.Codecs.FLAKE
 			{
 				fixed (int* s = verifyBuffer, r = samplesBuffer)
 					for (int ch = 0; ch < channels; ch++)
-						Flake.memcpy(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, eparams.block_size);
+						AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, eparams.block_size);
 			}
 
 			int fs, bs;
@@ -1427,7 +1427,7 @@ namespace CUETools.Codecs.FLAKE
 				fixed (int* s = verifyBuffer, r = verify.Samples)
 				{
 					for (int ch = 0; ch < channels; ch++)
-						if (Flake.memcmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
+						if (AudioSamples.MemCmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
 							throw new Exception("validation failed!");
 				}
 			}
@@ -1436,7 +1436,7 @@ namespace CUETools.Codecs.FLAKE
 			{
 				fixed (int* s = samplesBuffer)
 					for (int ch = 0; ch < channels; ch++)
-						Flake.memcpy(s + ch * Flake.MAX_BLOCKSIZE, s + bs + ch * Flake.MAX_BLOCKSIZE, eparams.block_size - bs);
+						AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, s + bs + ch * Flake.MAX_BLOCKSIZE, eparams.block_size - bs);
 			}
 
 			samplesInBuffer -= bs;
@@ -1770,11 +1770,6 @@ namespace CUETools.Codecs.FLAKE
 		// set by the user prior to calling flake_encode_init
 		// if set to less than 0, defaults to 4096
 		public int padding_size;
-
-		// maximum encoded frame size
-		// this is set by flake_encode_init based on input audio format
-		// it can be used by the user to allocate an output buffer
-		public int max_frame_size;
 
 		// minimum LPC order
 		// set by user prior to calling flake_encode_init

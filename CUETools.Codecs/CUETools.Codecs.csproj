@@ -18,6 +18,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -82,11 +83,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BitReader.cs" />
+    <Compile Include="BitWriter.cs" />
     <Compile Include="Codecs.cs" />
     <Compile Include="CRCs\CRC16.cs" />
     <Compile Include="CRCs\CRC16CCITT.cs" />
     <Compile Include="CRCs\CRC32.cs" />
     <Compile Include="CRCs\CRC8.cs" />
+    <Compile Include="LPC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

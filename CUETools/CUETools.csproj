@@ -12,7 +12,7 @@
     <ApplicationIcon>cue2.ico</ApplicationIcon>
     <ManifestCertificateThumbprint>611F49E043614FEDCFF1B128868CC8DC0B6656C5</ManifestCertificateThumbprint>
     <ManifestKeyFile>CUETools_TemporaryKey.pfx</ManifestKeyFile>
-    <GenerateManifests>true</GenerateManifests>
+    <GenerateManifests>false</GenerateManifests>
     <SignManifests>true</SignManifests>
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <PublishUrl>ftp://cuetools.net/cuetools.net/install/cuetools/</PublishUrl>
@@ -33,6 +33,7 @@
     <WebPage>publish.htm</WebPage>
     <ApplicationVersion>2.0.3.%2a</ApplicationVersion>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetZone>LocalIntranet</TargetZone>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -279,6 +280,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CUETools_TemporaryKey.pfx" />
+    <BaseApplicationManifest Include="Properties\app.manifest" />
     <None Include="Properties\DataSources\CUETools.Processor.CUEConfig.datasource" />
     <None Include="Resources\accuraterip.jpg" />
     <Content Include="cue2.ico" />

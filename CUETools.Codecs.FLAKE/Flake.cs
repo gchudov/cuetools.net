@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
 {
@@ -31,8 +32,6 @@ namespace CUETools.Codecs.FLAKE
 		public const int MAX_RICE_PARAM = 14;
 		public const int MAX_PARTITION_ORDER = 8;
 		public const int MAX_PARTITIONS = 1 << MAX_PARTITION_ORDER;
-
-		public const uint UINT32_MAX = 0xffffffff;
 
 		public const int FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN = 64; /* bits */
 		public const int FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN = 64; /* bits */
@@ -45,25 +44,6 @@ namespace CUETools.Codecs.FLAKE
 			};
 		public static readonly int[] flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };
 		public static readonly int[] flac_bitdepths = new int[8] { 0, 8, 12, 0, 16, 20, 24, 0 };
-
-		public static int log2i(int v)
-		{
-			return log2i((uint)v);
-		}
-		public static int log2i(uint v)
-		{
-			//int i;
-			int n = 0;
-			if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
-			if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
-			if (0 != v) return n + 7 - BitReader.byte_to_unary_table[v];
-			//for (i = 2; i < 256; i <<= 1)
-			//{
-			//    if (v >= i) n++;
-			//    else break;
-			//}
-			return n;
-		}
 
 		public static PredictionType LookupPredictionType(string name)
 		{
@@ -83,45 +63,6 @@ namespace CUETools.Codecs.FLAKE
 		public static WindowFunction LookupWindowFunction(string name)
 		{
 			return (WindowFunction)(Enum.Parse(typeof(WindowFunction), name, true));
-		}
-
-		unsafe public static bool memcmp(int* res, int* smp, int n)
-		{
-			for (int i = n; i > 0; i--)
-				if (*(res++) != *(smp++))
-					return true;
-			return false;
-		}
-		unsafe public static void memcpy(int* res, int* smp, int n)
-		{
-			for (int i = n; i > 0; i--)
-				*(res++) = *(smp++);
-		}
-		unsafe public static void memcpy(byte* res, byte* smp, int n)
-		{
-			for (int i = n; i > 0; i--)
-				*(res++) = *(smp++);
-		}
-		unsafe public static void memset(int* res, int smp, int n)
-		{
-			for (int i = n; i > 0; i--)
-				*(res++) = smp;
-		}
-		unsafe public static void interlace(int* res, int* src1, int* src2, int n)
-		{
-			for (int i = n; i > 0; i--)
-			{
-				*(res++) = *(src1++);
-				*(res++) = *(src2++);
-			}
-		}
-		unsafe public static void deinterlace(int* dst1, int* dst2, int* src, int n)
-		{
-			for (int i = n; i > 0; i--)
-			{
-				*(dst1++) = *(src++);
-				*(dst2++) = *(src++);
-			}
 		}
 	}
 
@@ -186,7 +127,7 @@ namespace CUETools.Codecs.FLAKE
 			wbits = w;
 			best.residual = r;
 			best.type = SubframeType.Verbatim;
-			best.size = Flake.UINT32_MAX;
+			best.size = AudioSamples.UINT32_MAX;
 			for (int iWindow = 0; iWindow < lpc.MAX_LPC_WINDOWS; iWindow++)
 				lpc_ctx[iWindow].Reset();
 			done_fixed = 0;
