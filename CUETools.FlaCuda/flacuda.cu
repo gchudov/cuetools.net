@@ -81,15 +81,15 @@ extern "C" __global__ void cudaComputeAutocor(
 typedef struct
 {
     int residualOrder;
-    int shift;
-    int coefsOffs;
     int samplesOffs;
+    int shift;
+    int reserved;
+    int coefs[32];
 } encodeResidualTaskStruct;
 
 extern "C" __global__ void cudaEncodeResidual(
     int*output,
     int*samples,
-    int*allcoefs,
     encodeResidualTaskStruct *tasks,
     int frameSize,
     int partSize
@@ -98,7 +98,6 @@ extern "C" __global__ void cudaEncodeResidual(
     __shared__ struct {
 	int data[256];
 	int residual[256];
-	int coefs[32];
 	int rice[32];
 	encodeResidualTaskStruct task;
     } shared;
@@ -109,11 +108,9 @@ extern "C" __global__ void cudaEncodeResidual(
     __syncthreads();
     const int pos = blockIdx.x * partSize;
     const int residualOrder = shared.task.residualOrder;
-    const int dataLen = min(frameSize - pos, partSize + residualOrder + 1);
-    const int residualLen = dataLen - residualOrder - 1;
+    const int residualLen = min(frameSize - pos - residualOrder - 1, partSize);
+    const int dataLen = residualLen + residualOrder + 1;
 
-    // fetch coeffs, inverting their order
-    if (tid <= residualOrder) shared.coefs[residualOrder - tid] = allcoefs[shared.task.coefsOffs + tid];
     // fetch samples
     shared.data[tid] = (tid < dataLen ? samples[shared.task.samplesOffs + pos + tid] : 0);
     
@@ -121,7 +118,7 @@ extern "C" __global__ void cudaEncodeResidual(
     __syncthreads();
     long sum = 0;
     for (int c = 0; c <= residualOrder; c++)
-	sum += __mul24(shared.data[tid + c], shared.coefs[c]);
+	sum += __mul24(shared.data[tid + c], shared.task.coefs[residualOrder - c]);
     int res = shared.data[tid + residualOrder + 1] - (sum >> shared.task.shift);
     shared.residual[tid] = __mul24(tid < residualLen, (2 * res) ^ (res >> 31));
     
