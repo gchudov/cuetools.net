@@ -106,7 +106,7 @@ namespace CUETools.Codecs.FlaCuda
 			samplesBuffer = new int[FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)];
 			residualBuffer = new int[FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 10 : channels + 1)];
 			windowBuffer = new float[FlaCudaWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
-			autocorBuffer3int = new int[(lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * 64];
+			autocorBuffer3int = new int[(lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS];
 			autocorBuffer = new float[(lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * 22];
 
 			eparams.flake_set_defaults(_compressionLevel);
@@ -786,6 +786,37 @@ namespace CUETools.Codecs.FlaCuda
 				}
 		}
 
+		unsafe void encode_residual_lpc_sub(FlacFrame frame, int* coefs, int shift, int iWindow, int order, int ch)
+		{
+			frame.current.type = SubframeType.LPC;
+			frame.current.order = order;
+			frame.current.window = iWindow;
+			frame.current.shift = shift;
+			fixed (int* fcoefs = frame.current.coefs)
+				AudioSamples.MemCpy(fcoefs, coefs, order);
+
+			ulong csum = 0;
+			int cbsum = 0;
+			int cbits = 1;
+			for (int i = frame.current.order; i > 0; i--)
+			{
+				csum += (ulong)Math.Abs(coefs[i - 1]);
+				cbsum |= coefs[i - 1];
+			}
+			while (cbits < 16 && cbsum != (cbsum << (32 - cbits)) >> (32 - cbits))
+				cbits++;
+
+			if ((csum << (int)frame.subframes[ch].obits) >= 1UL << 32)
+				lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
+			else
+				lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
+
+			frame.current.size = calc_rice_params_lpc(ref frame.current.rc, eparams.min_partition_order, eparams.max_partition_order,
+				frame.current.residual, frame.blocksize, frame.current.order, frame.subframes[ch].obits, (uint)cbits);
+
+			frame.ChooseBestSubframe(ch);
+		}
+
 		unsafe void encode_residual_fixed_sub(FlacFrame frame, int order, int ch)
 		{
 			if ((frame.subframes[ch].done_fixed & (1U << order)) != 0)
@@ -986,13 +1017,15 @@ namespace CUETools.Codecs.FlaCuda
 				predict == PredictionType.Search)
 				)
 			{
-				float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
+				//float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
 				LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[best_window];
 
-				lpc_ctx.GetReflection(eparams.max_prediction_order, smp, n, frame.window_buffer + best_window * FlaCudaWriter.MAX_BLOCKSIZE * 2);
-				lpc_ctx.ComputeLPC(lpcs);
+				//lpc_ctx.GetReflection(eparams.max_prediction_order, smp, n, frame.window_buffer + best_window * FlaCudaWriter.MAX_BLOCKSIZE * 2);
+				//lpc_ctx.ComputeLPC(lpcs);
 
-				encode_residual_lpc_sub(frame, lpcs, best_window, best_order, ch);
+				fixed (int *coefs = lpc_ctx.coefs)
+					encode_residual_lpc_sub(frame, coefs, lpc_ctx.shift, best_window, best_order, ch);
+				//encode_residual_lpc_sub(frame, lpcs, best_window, best_order, ch);
 			}
 		}
 
@@ -1306,7 +1339,7 @@ namespace CUETools.Codecs.FlaCuda
 					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3 + sizeof(uint) * 2, (uint)(blocks_y*threads_y));
 					cuda.SetParameterSize(cudaComputeAutocor, (uint)(IntPtr.Size * 3) + sizeof(uint) * 3);
 					cuda.SetFunctionBlockShape(cudaComputeAutocor, threads_x, threads_y, 1);
-					cuda.SetFunctionSharedSize(cudaComputeAutocor, (uint)(sizeof(float) * 1090));//545));
+					//cuda.SetFunctionSharedSize(cudaComputeAutocor, (uint)(sizeof(float) * 1090));//545));
 					cuda.Launch(cudaComputeAutocor, blocks, 4 * _windowcount);
 					cuda.CopyDeviceToHost<float>(cudaAutocor, autocorBuffer);
 					//cuda.CopyDeviceToHost<int>(cudaAutocor, autocorBuffer3int);
@@ -1375,6 +1408,9 @@ namespace CUETools.Codecs.FlaCuda
 									frame.subframes[ch].best.order = order;
 									frame.subframes[ch].best.window = iWindow;
 									frame.subframes[ch].best.type = SubframeType.LPC;
+									frame.subframes[ch].lpc_ctx[iWindow].shift = shift[order - 1 + (ch + 4 * iWindow) * lpc.MAX_LPC_ORDER];
+									fixed(int *lcoefs = frame.subframes[ch].lpc_ctx[iWindow].coefs)
+										AudioSamples.MemCpy(lcoefs, coefs + (order - 1) * lpc.MAX_LPC_ORDER + (ch + 4 * iWindow) * lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER, order);
 								}
 							}
 							//uint[] sums_buf = new uint[Flake.MAX_PARTITION_ORDER * Flake.MAX_PARTITIONS];
@@ -1485,7 +1521,7 @@ namespace CUETools.Codecs.FlaCuda
 				fixed (int* s = verifyBuffer, r = verify.Samples)
 				{
 					for (int ch = 0; ch < channels; ch++)
-						if (AudioSamples.MemCmp(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * FlaCudaWriter.MAX_BLOCKSIZE, bs))
+						if (AudioSamples.MemCmp(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
 							throw new Exception("validation failed!");
 				}
 			}
@@ -1506,12 +1542,13 @@ namespace CUETools.Codecs.FlaCuda
 		{
 			if (!inited)
 			{
-				cuda = new CUDA(0, true);
+				cuda = new CUDA(true, InitializationFlags.None);
+				cuda.CreateContext(0, CUCtxFlags.SchedSpin);
 				cuda.LoadModule(System.IO.Path.Combine(Environment.CurrentDirectory, "flacuda.cubin"));
 				cudaComputeAutocor = cuda.GetModuleFunction("cudaComputeAutocor");
 				cudaEncodeResidual = cuda.GetModuleFunction("cudaEncodeResidual");
 				//cudaAutocor = cuda.Allocate((uint)(sizeof(int) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * 3);
-				cudaAutocor = cuda.Allocate((uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * 64);
+				cudaAutocor = cuda.Allocate((uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * 22);
 				cudaSamples = cuda.Allocate((uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)));
 				cudaCoeffs = cuda.Allocate((uint)(sizeof(int) * lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
 				cudaShifts = cuda.Allocate((uint)(sizeof(int) * lpc.MAX_LPC_ORDER * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));

@@ -114,40 +114,34 @@ extern "C" __global__ void cudaEncodeResidual(
 	for (int c = 0; c <= residualOrder; c++)
 	    sum += __mul24(shared.data[tid + c], shared.coefs[residualOrder - c]);
 	int res = shared.data[tid + residualOrder + 1] - (sum >> shared.shift);
-	__syncthreads();
+	//__syncthreads();
 
 	int limit = min(frameSize - pos - residualOrder - 1, step);
-	shared.residual[tid] = tid < limit ? (2 * res) ^ (res >> 31) : 0;
+	shared.residual[tid] = __mul24(tid < limit, (2 * res) ^ (res >> 31));
 
 	__syncthreads();
 	// reduction in shared mem
-	for(unsigned int s=blockDim.x/2; s >= blockDim.y; s>>=1)
-	{
-	    if (threadIdx.x < s)
-		shared.residual[tid] += shared.residual[tid + s];
-	    __syncthreads();
-	}
-	for(unsigned int s=blockDim.y/2; s >= blockDim.x; s>>=1)
-	{
-	    if (threadIdx.y < s)
-		shared.residual[tid] += shared.residual[tid + s * blockDim.x];
-	    __syncthreads();
-	}
-	for(unsigned int s=min(blockDim.x,blockDim.y)/2; s > 0; s>>=1)
-	{
-	    if (threadIdx.x < s && threadIdx.y < s)
-		shared.residual[tid] += shared.residual[tid + s] + shared.residual[tid + s * blockDim.x] + shared.residual[tid + s + s * blockDim.x];
-	    __syncthreads();
-	}
+	if (tid < 128) shared.residual[tid] += shared.residual[tid + 128]; __syncthreads();
+	if (tid < 64) shared.residual[tid] += shared.residual[tid + 64]; __syncthreads();
+	if (tid < 32) shared.residual[tid] += shared.residual[tid + 32]; __syncthreads();
+	shared.residual[tid] += shared.residual[tid + 16];
+	shared.residual[tid] += shared.residual[tid + 8];
+	shared.residual[tid] += shared.residual[tid + 4];
+	shared.residual[tid] += shared.residual[tid + 2];
+	shared.residual[tid] += shared.residual[tid + 1];
+	__syncthreads();
 
-	if (tid < 15) shared.rice[tid] = limit * (tid + 1) + ((shared.residual[0] - (limit >> 1)) >> tid); __syncthreads();
-	if (tid < 8) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 8]); __syncthreads();
-	if (tid < 4) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 4]); __syncthreads();
-	if (tid < 2) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 2]); __syncthreads();
-	if (tid < 1) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 1]); __syncthreads();
-	total += shared.rice[0];
+	if (tid < 16)
+	{
+	    shared.rice[tid] = __mul24(tid == 15, 0x7fffff) + limit * (tid + 1) + ((shared.residual[0] - (limit >> 1)) >> tid);
+	    shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 8]);
+	    shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 4]);
+	    shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 2]);
+	    total += min(shared.rice[tid], shared.rice[tid + 1]); 
+	}
+	__syncthreads();
     }
-  
+    __syncthreads();  
     if (tid == 0)
 	output[blockIdx.x + blockIdx.y * gridDim.x] = total;
 #ifdef __DEVICE_EMULATION__
