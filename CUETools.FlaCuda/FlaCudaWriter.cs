@@ -1298,9 +1298,9 @@ namespace CUETools.Codecs.FlaCuda
 					int blocks_y = ((threads_x - 1) * (threads_y - 1)) / threads_y;
 					int blocks = (frame.blocksize + blocks_y * threads_y - 1) / (blocks_y * threads_y);
 					cuda.CopyHostToDevice(cudaSamples, (IntPtr)s, (uint)FlaCudaWriter.MAX_BLOCKSIZE * 4 * sizeof(int));
-					cuda.SetParameter(cudaComputeAutocor, 0, (uint)cudaSamples.Pointer);
-					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size, (uint)cudaWindow.Pointer);
-					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 2, (uint)cudaAutocor.Pointer);
+					cuda.SetParameter(cudaComputeAutocor, 0, (uint)cudaAutocor.Pointer);
+					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size, (uint)cudaSamples.Pointer);
+					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 2, (uint)cudaWindow.Pointer);
 					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3, (uint)frame.blocksize);
 					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3 + sizeof(uint), (uint)FlaCudaWriter.MAX_BLOCKSIZE);
 					cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3 + sizeof(uint) * 2, (uint)(blocks_y*threads_y));

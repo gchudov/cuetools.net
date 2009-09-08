@@ -67,7 +67,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>nvcc flacuda.cu --maxrregcount 10 --cubin --compiler-bindir "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\bin" --system-include "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\include" 
+    <PostBuildEvent>nvcc flacuda.cu  --maxrregcount 10 --cubin --compiler-bindir "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\bin" --system-include "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\include" 
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

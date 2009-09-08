@@ -36,45 +36,47 @@
 #ifndef _FLACUDA_KERNEL_H_
 #define _FLACUDA_KERNEL_H_
 
-extern "C" __global__ void cudaComputeAutocor(const int * samples, const float * window, float* output, int frameSize, int frameOffset, int blocks)
+extern "C" __global__ void cudaComputeAutocor(
+    float *output,
+    const int *samples,
+    const float *window,
+    int frameSize,
+    int frameOffset,
+    int blocks)
 {
-    extern __shared__ float fshared[];
-    float * const matrix = fshared + 513;//257;
+    __shared__ struct {
+	float data[512];
+	float matrix[512];
+    } shared;
     const int iWin = blockIdx.y >> 2;
     const int iCh = blockIdx.y & 3;
     const int smpBase = iCh * frameOffset;
     const int winBase = iWin * 2 * frameOffset;
     const int pos = blockIdx.x * blocks;
+    const int tid = threadIdx.x + threadIdx.y * blockDim.x;
 
     // fetch blockDim.x*blockDim.y samples
-    int tid = threadIdx.x + threadIdx.y * blockDim.x;
-    fshared[tid] = pos + tid < frameSize ? samples[smpBase + pos + tid] * window[winBase + pos + tid] : 0.0f;
+    shared.data[tid] = pos + tid < frameSize ? samples[smpBase + pos + tid] * window[winBase + pos + tid] : 0.0f;
     __syncthreads();
 
     float s = 0.0f;    
     for (int i = 0; i < blocks; i += blockDim.y) 
-	s += fshared[i + threadIdx.y] * fshared[i + threadIdx.y + threadIdx.x];
-    matrix[tid + threadIdx.y] = s;
+	s += shared.data[i + threadIdx.y] * shared.data[i + threadIdx.y + threadIdx.x];
+    shared.matrix[tid] = s;
     __syncthreads();
 
     // reduction in shared mem
     for(unsigned int s=blockDim.y/2; s>1; s>>=1)
     {
 	if (threadIdx.y < s)
-	    matrix[tid + threadIdx.y] += matrix[threadIdx.x + (s + threadIdx.y) * (1 + blockDim.x)];
+	    shared.matrix[tid] += shared.matrix[tid + s * blockDim.x];
 	__syncthreads();
     }
 
     // return results
     if (threadIdx.y == 0)
-	output[(blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x + threadIdx.x] = matrix[threadIdx.x] + matrix[threadIdx.x + 1 + blockDim.x];
+	output[(blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x + threadIdx.x] = shared.matrix[threadIdx.x] + shared.matrix[threadIdx.x + blockDim.x];
 }
-
-#ifdef __DEVICE_EMULATION__
-#define EMUSYNC __syncthreads()
-#else
-#define EMUSYNC
-#endif
 
 extern "C" __global__ void cudaEncodeResidual(
     int*output,
@@ -88,6 +90,7 @@ extern "C" __global__ void cudaEncodeResidual(
 	int data[256];
 	int residual[256];
 	int coefs[32];
+	int rice[16];
 	int shift;
     } shared;
     const int smpBase = (blockIdx.y & 3) * frameOffset;
@@ -96,20 +99,20 @@ extern "C" __global__ void cudaEncodeResidual(
     const int step = __mul24(blockDim.x, blockDim.y - 1);
     int total = 0;
 
-    shared.residual[tid] = 0;
     if (threadIdx.y == 0) shared.coefs[threadIdx.x] = threadIdx.x <= residualOrder ? allcoefs[threadIdx.x + residualOrder * 32 + blockIdx.y * 32 * 32] : 0;
     if (tid == 0) shared.shift = shifts[32 * blockIdx.y + residualOrder];
-    __syncthreads();
+    if (tid == 0) shared.rice[15] = 0x1fffffff;
     
     for(int pos = 0; pos < frameSize - residualOrder - 1; pos += step)
     {
 	// fetch blockDim.x * blockDim.y samples
-	shared.data[tid] = pos + tid < frameSize ? samples[smpBase + pos + tid] : 0;	
+	shared.data[tid] = (threadIdx.y == 0 && pos != 0) ? shared.data[tid + step]
+	    : (pos + tid < frameSize ? samples[smpBase + pos + tid] : 0);
 	__syncthreads();
 
 	long sum = 0;
 	for (int c = 0; c <= residualOrder; c++)
-	    sum += shared.data[tid + c] * shared.coefs[residualOrder - c];
+	    sum += __mul24(shared.data[tid + c], shared.coefs[residualOrder - c]);
 	int res = shared.data[tid + residualOrder + 1] - (sum >> shared.shift);
 	__syncthreads();
 
@@ -134,33 +137,22 @@ extern "C" __global__ void cudaEncodeResidual(
 	{
 	    if (threadIdx.x < s && threadIdx.y < s)
 		shared.residual[tid] += shared.residual[tid + s] + shared.residual[tid + s * blockDim.x] + shared.residual[tid + s + s * blockDim.x];
-	    EMUSYNC;
+	    __syncthreads();
 	}
 
-#ifndef __DEVICE_EMULATION__
-	if (tid < 16) // Max rice param is really 15
-#endif
-	{
-	    shared.data[tid] = limit * (tid + 1) + ((shared.residual[0] - (limit >> 1)) >> tid); EMUSYNC;
-	    //if (tid == 16) shared.rice[15] = 0x7fffffff;
-#ifndef __DEVICE_EMULATION__
-	    if (threadIdx.x < 8)
-#endif
-	    {
-		shared.data[threadIdx.x] = min(shared.data[threadIdx.x], shared.data[threadIdx.x + 8]); EMUSYNC;
-		shared.data[threadIdx.x] = min(shared.data[threadIdx.x], shared.data[threadIdx.x + 4]); EMUSYNC;
-		shared.data[threadIdx.x] = min(shared.data[threadIdx.x], shared.data[threadIdx.x + 2]); EMUSYNC;
-	    }
-	}
-	total += min(shared.data[0], shared.data[1]);
-	//total += shared.residual[0];
+	if (tid < 15) shared.rice[tid] = limit * (tid + 1) + ((shared.residual[0] - (limit >> 1)) >> tid); __syncthreads();
+	if (tid < 8) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 8]); __syncthreads();
+	if (tid < 4) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 4]); __syncthreads();
+	if (tid < 2) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 2]); __syncthreads();
+	if (tid < 1) shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 1]); __syncthreads();
+	total += shared.rice[0];
     }
   
     if (tid == 0)
 	output[blockIdx.x + blockIdx.y * gridDim.x] = total;
 #ifdef __DEVICE_EMULATION__
     if (tid == 0)
-	printf("%d,%d:2:%d\n", blockIdx.x, blockIdx.y, total);
+	printf("%d,%d:%d\n", blockIdx.x, blockIdx.y, total);
 #endif
 }
 
