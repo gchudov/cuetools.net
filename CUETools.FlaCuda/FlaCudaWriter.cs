@@ -281,8 +281,8 @@ namespace CUETools.Codecs.FlaCuda
 
 		public StereoMethod StereoMethod
 		{
-			get { return eparams.stereo_method; }
-			set { eparams.stereo_method = value; }
+			get { return eparams.do_midside ? StereoMethod.Search : StereoMethod.Independent; }
+			set { eparams.do_midside = value != StereoMethod.Independent; }
 		}
 
 		public int MinPrecisionSearch
@@ -1169,7 +1169,7 @@ namespace CUETools.Codecs.FlaCuda
 					initialize_autocorTasks();
 				}
 
-				bool doMidside = channels == 2 && eparams.stereo_method != StereoMethod.Independent;
+				bool doMidside = channels == 2 && eparams.do_midside;
 				int channelCount = doMidside ? 2 * channels : channels;
 				if (doMidside)
 					channel_decorrelation(s, s + FlaCudaWriter.MAX_BLOCKSIZE, s + 2 * FlaCudaWriter.MAX_BLOCKSIZE, s + 3 * FlaCudaWriter.MAX_BLOCKSIZE, frame.blocksize);
@@ -1598,7 +1598,7 @@ namespace CUETools.Codecs.FlaCuda
 		// valid values are 0 to 2
 		// 0 = independent L+R channels
 		// 1 = mid-side encoding
-		public StereoMethod stereo_method;
+		public bool do_midside;
 
 		// block size in samples
 		// set by the user prior to calling flake_encode_init
@@ -1671,7 +1671,7 @@ namespace CUETools.Codecs.FlaCuda
 
 			// default to level 5 params
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
-			stereo_method = StereoMethod.Search;
+			do_midside = true;
 			block_size = 0;
 			block_time_ms = 105;			
 			min_prediction_order = 1;
@@ -1689,35 +1689,35 @@ namespace CUETools.Codecs.FlaCuda
 			switch (lvl)
 			{
 				case 0:
-					block_time_ms = 53;
-					stereo_method = StereoMethod.Independent;
+					do_midside = false;
+					window_function = WindowFunction.Bartlett;
+					max_prediction_order = 7;
 					max_partition_order = 4;
 					break;
 				case 1:
-					stereo_method = StereoMethod.Independent;
+					do_midside = false;
 					window_function = WindowFunction.Bartlett;
 					max_prediction_order = 8;
 					max_partition_order = 4;
 					break;
 				case 2:
-					stereo_method = StereoMethod.Independent;
+					do_midside = false;
 					window_function = WindowFunction.Bartlett;
 					max_partition_order = 4;
 					break;
 				case 3:
-					stereo_method = StereoMethod.Estimate;
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 8;
+					max_prediction_order = 7;
 					break;
 				case 4:
-					stereo_method = StereoMethod.Estimate;
 					window_function = WindowFunction.Bartlett;
+					max_prediction_order = 8;
 					break;
 				case 5:
 					window_function = WindowFunction.Bartlett;
 					break;
 				case 6:
-					stereo_method = StereoMethod.Estimate;
+					max_prediction_order = 10;
 					break;
 				case 7:
 					break;
