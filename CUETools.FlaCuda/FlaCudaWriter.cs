@@ -1,9 +1,28 @@
+/**
+ * CUETools.FlaCuda: FLAC audio encoder using CUDA
+ * Copyright (c) 2009 Gregory S. Chudov
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Runtime.InteropServices;
+//using System.Runtime.InteropServices;
 using CUETools.Codecs;
 using CUETools.Codecs.FLAKE;
 using GASS.CUDA;
@@ -78,17 +97,20 @@ namespace CUETools.Codecs.FlaCuda
 		CUfunction cudaEncodeResidual;
 		CUdeviceptr cudaSamples;
 		CUdeviceptr cudaWindow;
-		CUdeviceptr cudaAutocor;
+		CUdeviceptr cudaAutocorTasks;
+		CUdeviceptr cudaAutocorOutput;
 		CUdeviceptr cudaResidualTasks;
 		CUdeviceptr cudaResidualOutput;
 		IntPtr samplesBufferPtr = IntPtr.Zero;
-		IntPtr autocorBufferPtr = IntPtr.Zero;
-		IntPtr residualOutputPtr = IntPtr.Zero;
+		IntPtr autocorTasksPtr = IntPtr.Zero;
+		IntPtr autocorOutputPtr = IntPtr.Zero;
 		IntPtr residualTasksPtr = IntPtr.Zero;
+		IntPtr residualOutputPtr = IntPtr.Zero;
 		CUstream cudaStream;
 
 		const int MAX_BLOCKSIZE = 8192;
-		const int maxResidualTasks = MAX_BLOCKSIZE / (256 - 32);
+		const int maxResidualParts = MAX_BLOCKSIZE / (256 - 32);
+		const int maxAutocorParts = MAX_BLOCKSIZE / (256 - 32);
 
 		public FlaCudaWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO)
 		{
@@ -187,13 +209,15 @@ namespace CUETools.Codecs.FlaCuda
 
 				cuda.Free(cudaWindow);
 				cuda.Free(cudaSamples);
-				cuda.Free(cudaAutocor);
+				cuda.Free(cudaAutocorTasks);
+				cuda.Free(cudaAutocorOutput);
 				cuda.Free(cudaResidualTasks);
 				cuda.Free(cudaResidualOutput);
-				CUDADriver.cuMemFreeHost(autocorBufferPtr);
+				CUDADriver.cuMemFreeHost(autocorOutputPtr);
 				CUDADriver.cuMemFreeHost(residualOutputPtr);
 				CUDADriver.cuMemFreeHost(samplesBufferPtr);
 				CUDADriver.cuMemFreeHost(residualTasksPtr);
+				CUDADriver.cuMemFreeHost(autocorTasksPtr);
 				cuda.DestroyStream(cudaStream);
 				cuda.Dispose();
 				inited = false;
@@ -218,13 +242,15 @@ namespace CUETools.Codecs.FlaCuda
 				_IO.Close();
 				cuda.Free(cudaWindow);
 				cuda.Free(cudaSamples);
-				cuda.Free(cudaAutocor);
+				cuda.Free(cudaAutocorTasks);
+				cuda.Free(cudaAutocorOutput);
 				cuda.Free(cudaResidualTasks);
 				cuda.Free(cudaResidualOutput);
-				CUDADriver.cuMemFreeHost(autocorBufferPtr);
+				CUDADriver.cuMemFreeHost(autocorOutputPtr);
 				CUDADriver.cuMemFreeHost(residualOutputPtr);
 				CUDADriver.cuMemFreeHost(samplesBufferPtr);
 				CUDADriver.cuMemFreeHost(residualTasksPtr);
+				CUDADriver.cuMemFreeHost(autocorTasksPtr);
 				cuda.DestroyStream(cudaStream);
 				cuda.Dispose();
 				inited = false;
@@ -251,18 +277,6 @@ namespace CUETools.Codecs.FlaCuda
 		{
 			set { _blocksize = (int)value; }
 			get { return _blocksize == 0 ? eparams.block_size : _blocksize; }
-		}
-
-		public OrderMethod OrderMethod
-		{
-			get { return eparams.order_method; }
-			set { eparams.order_method = value; }
-		}
-
-		public PredictionType PredictionType
-		{
-			get { return eparams.prediction_type; }
-			set { eparams.prediction_type = value; }
 		}
 
 		public StereoMethod StereoMethod
@@ -323,38 +337,6 @@ namespace CUETools.Codecs.FlaCuda
 			set { eparams.variable_block_size = value; }
 		}
 
-		public int MinPredictionOrder
-		{
-			get
-			{
-				return PredictionType == PredictionType.Fixed ?
-					MinFixedOrder : MinLPCOrder;
-			}
-			set
-			{
-				if (PredictionType == PredictionType.Fixed)
-					MinFixedOrder = value;
-				else
-					MinLPCOrder = value;
-			}
-		}
-
-		public int MaxPredictionOrder
-		{
-			get 
-			{
-				return PredictionType == PredictionType.Fixed ?
-					MaxFixedOrder : MaxLPCOrder; 
-			}
-			set
-			{
-				if (PredictionType == PredictionType.Fixed)
-					MaxFixedOrder = value;
-				else
-					MaxLPCOrder = value;
-			}
-		}
-
 		public int MinLPCOrder
 		{
 			get
@@ -380,48 +362,6 @@ namespace CUETools.Codecs.FlaCuda
 				if (value > lpc.MAX_LPC_ORDER || value < eparams.min_prediction_order)
 					throw new Exception("invalid MaxLPCOrder " + value.ToString());
 				eparams.max_prediction_order = value;
-			}
-		}
-
-		public int EstimationDepth
-		{
-			get
-			{
-				return eparams.estimation_depth;
-			}
-			set
-			{
-				if (value > 32 || value < 1)
-					throw new Exception("invalid estimation_depth " + value.ToString());
-				eparams.estimation_depth = value;
-			}
-		}
-
-		public int MinFixedOrder
-		{
-			get
-			{
-				return eparams.min_fixed_order;
-			}
-			set
-			{
-				if (value < 0 || value > eparams.max_fixed_order)
-					throw new Exception("invalid MinFixedOrder " + value.ToString());
-				eparams.min_fixed_order = value;
-			}
-		}
-
-		public int MaxFixedOrder
-		{
-			get
-			{
-				return eparams.max_fixed_order;
-			}
-			set
-			{
-				if (value > 4 || value < eparams.min_fixed_order)
-					throw new Exception("invalid MaxFixedOrder " + value.ToString());
-				eparams.max_fixed_order = value;
 			}
 		}
 
@@ -547,18 +487,6 @@ namespace CUETools.Codecs.FlaCuda
 			}
 			nbits_best = nbits;
 			return k_opt;
-		}
-
-		unsafe uint calc_decorr_score(FlacFrame frame, int ch)
-		{
-			int* s = frame.subframes[ch].samples;
-			int n = frame.blocksize;
-			ulong sum = 0;
-			for (int i = 2; i < n; i++)
-				sum += (ulong)Math.Abs(s[i] - 2 * s[i - 1] + s[i - 2]);
-			uint nbits;
-			find_optimal_rice_param((uint)(2 * sum), (uint)n, out nbits);
-			return nbits;
 		}
 
 		unsafe static void channel_decorrelation(int* leftS, int* rightS, int *leftM, int *rightM, int blocksize)
@@ -754,205 +682,6 @@ namespace CUETools.Codecs.FlaCuda
 			return lpc_precision;
 		}
 
-		unsafe void encode_residual_lpc_sub(FlacFrame frame, float * lpcs, int iWindow, int order, int ch)
-		{
-			// select LPC precision based on block size
-			uint lpc_precision = get_precision(frame.blocksize);
-
-			for (int i_precision = eparams.lpc_min_precision_search; i_precision <= eparams.lpc_max_precision_search && lpc_precision + i_precision < 16; i_precision++)
-				// check if we already calculated with this order, window and precision
-				if ((frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[i_precision] & (1U << (order - 1))) == 0)
-				{
-					frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[i_precision] |= (1U << (order - 1));
-
-					uint cbits = lpc_precision + (uint)i_precision;
-
-					frame.current.type = SubframeType.LPC;
-					frame.current.order = order;
-					frame.current.window = iWindow;
-
-					fixed (int* coefs = frame.current.coefs)
-					{
-						lpc.quantize_lpc_coefs(lpcs + (frame.current.order - 1) * lpc.MAX_LPC_ORDER,
-							frame.current.order, cbits, coefs, out frame.current.shift, 15, 0);
-
-						if (frame.current.shift < 0 || frame.current.shift > 15)
-							throw new Exception("negative shift");
-
-						ulong csum = 0;
-						for (int i = frame.current.order; i > 0; i--)
-							csum += (ulong)Math.Abs(coefs[i - 1]);
-
-						if ((csum << (int)frame.subframes[ch].obits) >= 1UL << 32)
-							lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
-						else
-							lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
-
-					}
-
-					frame.current.size = calc_rice_params_lpc(ref frame.current.rc, eparams.min_partition_order, eparams.max_partition_order,
-						frame.current.residual, frame.blocksize, frame.current.order, frame.subframes[ch].obits, cbits);
-
-					frame.ChooseBestSubframe(ch);
-				}
-		}
-
-		unsafe void encode_residual_fixed_sub(FlacFrame frame, int order, int ch)
-		{
-			if ((frame.subframes[ch].done_fixed & (1U << order)) != 0)
-				return; // already calculated;
-
-			frame.current.order = order;
-			frame.current.type = SubframeType.Fixed;
-
-			encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order);
-
-			frame.current.size = calc_rice_params_fixed(ref frame.current.rc, eparams.min_partition_order, eparams.max_partition_order,
-				frame.current.residual, frame.blocksize, frame.current.order, frame.subframes[ch].obits);
-
-			frame.subframes[ch].done_fixed |= (1U << order);
-
-			frame.ChooseBestSubframe(ch);
-		}
-
-		unsafe void encode_residual(FlacFrame frame, int ch, PredictionType predict, OrderMethod omethod, int pass)
-		{
-			int* smp = frame.subframes[ch].samples;
-			int i, n = frame.blocksize;
-			// save best.window, because we can overwrite it later with fixed frame
-			int best_window = frame.subframes[ch].best.type == SubframeType.LPC ? frame.subframes[ch].best.window : -1;
-
-			// CONSTANT
-			for (i = 1; i < n; i++)
-			{
-				if (smp[i] != smp[0]) break;
-			}
-			if (i == n)
-			{
-				frame.subframes[ch].best.type = SubframeType.Constant;
-				frame.subframes[ch].best.residual[0] = smp[0];
-				frame.subframes[ch].best.size = frame.subframes[ch].obits;
-				return;
-			}
-
-			// VERBATIM
-			frame.current.type = SubframeType.Verbatim;
-			frame.current.size = frame.subframes[ch].obits * (uint)frame.blocksize;
-			frame.ChooseBestSubframe(ch);
-
-			if (n < 5 || predict == PredictionType.None)
-				return;
-
-			// FIXED
-			if (predict == PredictionType.Fixed ||
-				(predict == PredictionType.Search && pass != 1) ||
-				//predict == PredictionType.Search ||
-				//(pass == 2 && frame.subframes[ch].best.type == SubframeType.Fixed) ||
-				n <= eparams.max_prediction_order)
-			{
-				int max_fixed_order = Math.Min(eparams.max_fixed_order, 4);
-				int min_fixed_order = Math.Min(eparams.min_fixed_order, max_fixed_order);
-
-				for (i = min_fixed_order; i <= max_fixed_order; i++)
-					encode_residual_fixed_sub(frame, i, ch);
-			}
-
-			// LPC
-			if (n > eparams.max_prediction_order &&
-			   (predict == PredictionType.Levinson ||
-				predict == PredictionType.Search)
-				//predict == PredictionType.Search ||
-				//(pass == 2 && frame.subframes[ch].best.type == SubframeType.LPC))
-				)
-			{
-				float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
-				int min_order = eparams.min_prediction_order;
-				int max_order = eparams.max_prediction_order;
-
-				for (int iWindow = 0; iWindow < _windowcount; iWindow++)
-				{
-					if (pass == 2 && iWindow != best_window)
-						continue;
-
-					LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
-			
-					lpc_ctx.GetReflection(max_order, smp, n, frame.window_buffer + iWindow * FlaCudaWriter.MAX_BLOCKSIZE * 2);
-					lpc_ctx.ComputeLPC(lpcs);
-
-					switch (omethod)
-					{
-						case OrderMethod.Max:
-							// always use maximum order
-							encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-							break;
-						case OrderMethod.Estimate:
-							// estimated orders
-							// Search at reflection coeff thresholds (where they cross 0.10)
-							{
-								int found = 0;
-								for (i = max_order; i >= min_order && found < eparams.estimation_depth; i--)
-									if (lpc_ctx.IsInterestingOrder(i, max_order))
-									{
-										encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-										found++;
-									}
-								if (0 == found)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, min_order, ch);
-							}
-							break;
-						case OrderMethod.EstSearch2:
-							// Search at reflection coeff thresholds (where they cross 0.10)
-							{
-								int found = 0;
-								for (i = min_order; i <= max_order && found < eparams.estimation_depth; i++)
-									if (lpc_ctx.IsInterestingOrder(i))
-									{
-										encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-										found++;
-									}
-								if (0 == found)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, min_order, ch);
-							}
-							break;
-						case OrderMethod.Search:
-							// brute-force optimal order search
-							for (i = max_order; i >= min_order; i--)
-								encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-							break;
-						case OrderMethod.LogFast:
-							// Try max, est, 32,16,8,4,2,1
-							encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-							for (i = lpc.MAX_LPC_ORDER; i >= min_order; i >>= 1)
-								if (i < max_order)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-							break;
-						case OrderMethod.LogSearch:
-							// do LogFast first
-							encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-							for (i = lpc.MAX_LPC_ORDER; i >= min_order; i >>= 1)
-								if (i < max_order)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-							// if found a good order, try to search around it
-							if (frame.subframes[ch].best.type == SubframeType.LPC)
-							{
-								// log search (written by Michael Niedermayer for FFmpeg)
-								for (int step = lpc.MAX_LPC_ORDER; step > 0; step >>= 1)
-								{
-									int last = frame.subframes[ch].best.order;
-									if (step <= (last + 1) / 2)
-										for (i = last - step; i <= last + step; i += step)
-											if (i >= min_order && i <= max_order)
-												encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-								}
-							}
-							break;
-						default:
-							throw new Exception("unknown ordermethod");
-					}
-				}
-			}
-		}
-
 		unsafe void output_frame_header(FlacFrame frame, BitWriter bitwriter)
 		{
 			bitwriter.writebits(15, 0x7FFC);
@@ -1107,45 +836,6 @@ namespace CUETools.Codecs.FlaCuda
 			bitwriter.flush();
 		}
 
-		unsafe void encode_residual_pass1(FlacFrame frame, int ch)
-		{
-			int max_prediction_order = eparams.max_prediction_order;
-			int max_fixed_order = eparams.max_fixed_order;
-			int min_fixed_order = eparams.min_fixed_order;
-			int lpc_min_precision_search = eparams.lpc_min_precision_search;
-			int lpc_max_precision_search = eparams.lpc_max_precision_search;
-			int max_partition_order = eparams.max_partition_order;
-			int estimation_depth = eparams.estimation_depth;
-			eparams.min_fixed_order = 2;
-			eparams.max_fixed_order = 2;
-			eparams.lpc_min_precision_search = eparams.lpc_max_precision_search;
-			eparams.max_prediction_order = 8;
-			eparams.estimation_depth = 1;
-			encode_residual(frame, ch, eparams.prediction_type, OrderMethod.Estimate, 1);
-			eparams.min_fixed_order = min_fixed_order;
-			eparams.max_fixed_order = max_fixed_order;
-			eparams.max_prediction_order = max_prediction_order;
-			eparams.lpc_min_precision_search = lpc_min_precision_search;
-			eparams.lpc_max_precision_search = lpc_max_precision_search;
-			eparams.max_partition_order = max_partition_order;
-			eparams.estimation_depth = estimation_depth;
-		}
-
-		unsafe void encode_residual_pass2(FlacFrame frame, int ch)
-		{
-			encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 2);
-		}
-
-		unsafe void encode_residual_onepass(FlacFrame frame, int ch)
-		{
-			if (_windowcount > 1)
-			{
-				encode_residual_pass1(frame, ch);
-				encode_residual_pass2(frame, ch);
-			} else
-				encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 0);
-		}
-
 		unsafe uint measure_frame_size(FlacFrame frame, bool do_midside)
 		{
 			// crude estimation of header/footer size
@@ -1263,8 +953,11 @@ namespace CUETools.Codecs.FlaCuda
 				}
 			}
 
+			if (frame.blocksize <= 4)
+				return;
+
 			// LPC
-			for (int ch = 0; ch < 4; ch++)
+			for (int ch = 0; ch < channelsCount; ch++)
 			{
 				for (int iWindow = 0; iWindow < _windowcount; iWindow++)
 				{
@@ -1300,14 +993,14 @@ namespace CUETools.Codecs.FlaCuda
 			}
 
 			// FIXED
-			for (int ch = 0; ch < 4; ch++)
+			for (int ch = 0; ch < channelsCount; ch++)
 			{
 				for (int order = 1; order <= 4 && order < frame.blocksize; order++)
 				{
 					int index = (order - 1) + 4 * ch;
 					int nbits = 0;
 					for (int p = 0; p < partCount; p++)
-						nbits += ((int*)residualOutputPtr)[p + partCount * (index + max_order * _windowcount * 4)];
+						nbits += ((int*)residualOutputPtr)[p + partCount * (index + max_order * _windowcount * channelsCount)];
 					nbits += order * (int)frame.subframes[ch].obits + 6;
 					if (frame.subframes[ch].best.size > nbits)
 					{
@@ -1319,14 +1012,20 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
-		unsafe void estimate_residual(FlacFrame frame, int channelsCount, int max_order, int orders2, int blocks, out int partCount)
+		unsafe void estimate_residual(FlacFrame frame, int channelsCount, int max_order, int autocorPartCount, out int partCount)
 		{
+			encodeResidualTaskStruct* residualTasks = (encodeResidualTaskStruct*)residualTasksPtr;
 			uint cbits = get_precision(frame.blocksize) + 1;
 			int nResidualTasks = 0;
 			int residualThreads = 256;
-			int partSize = residualThreads - 32;
-			
+			int partSize = residualThreads - max_order;
+		
 			partCount = (frame.blocksize + partSize - 1) / partSize;
+			if (partCount > maxResidualParts)
+				throw new Exception("internal error");
+
+			if (frame.blocksize <= 4)
+				return;
 
 			// LPC
 			for (int ch = 0; ch < channelsCount; ch++)
@@ -1336,15 +1035,14 @@ namespace CUETools.Codecs.FlaCuda
 					for (int order = 0; order <= max_order; order++)
 					{
 						ac[order] = 0;
-						for (int i_block = 0; i_block < blocks; i_block++)
-							ac[order] += ((float*)autocorBufferPtr)[orders2 * (i_block + blocks * (ch + channelsCount * iWindow)) + order];
+						for (int i_block = 0; i_block < autocorPartCount; i_block++)
+							ac[order] += ((float*)autocorOutputPtr)[order + (max_order + 1) * (i_block + autocorPartCount * (iWindow + _windowcount * ch))];
 					}
 					frame.subframes[ch].lpc_ctx[iWindow].ComputeReflection(max_order, ac);
 					float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
 					frame.subframes[ch].lpc_ctx[iWindow].ComputeLPC(lpcs);
 					for (int order = 1; order <= max_order; order++)
 					{
-						encodeResidualTaskStruct* residualTasks = (encodeResidualTaskStruct*)residualTasksPtr;
 						residualTasks[nResidualTasks].residualOrder = order - 1;
 						residualTasks[nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE;
 
@@ -1360,7 +1058,6 @@ namespace CUETools.Codecs.FlaCuda
 			{
 				for (int order = 1; order <= 4; order++)
 				{
-					encodeResidualTaskStruct* residualTasks = (encodeResidualTaskStruct*)residualTasksPtr;
 					residualTasks[nResidualTasks].residualOrder = order - 1;
 					residualTasks[nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE;
 					residualTasks[nResidualTasks].shift = 0;
@@ -1404,29 +1101,48 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SynchronizeStream(cudaStream);
 		}
 
-		unsafe void compute_autocorellation(FlacFrame frame, int channelsCount, int orders, out int blocks)
+		unsafe void initialize_autocorTasks()
 		{
-			// TODO!!!! replace 4 with channelsCount.
-			int threads = 512;
-			int threads_x = orders;
-			int threads_y = threads / threads_x;
-			int blocks_y = ((threads_x - 1) * (threads_y - 1)) / threads_y;
+			computeAutocorTaskStruct* autocorTasks = (computeAutocorTaskStruct*)autocorTasksPtr;
+			int nAutocorTasks = 0;
+			for (int ch = 0; ch < (channels == 2 ? 4 : channels); ch++)
+				for (int iWindow = 0; iWindow < _windowcount; iWindow++)
+				{
+					autocorTasks[nAutocorTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE;
+					autocorTasks[nAutocorTasks].windowOffs = iWindow * 2 * FlaCudaWriter.MAX_BLOCKSIZE;
+					nAutocorTasks++;
+				}
+			cuda.CopyHostToDeviceAsync(cudaAutocorTasks, autocorTasksPtr, (uint)(sizeof(computeAutocorTaskStruct) * nAutocorTasks), cudaStream);
+			cuda.SynchronizeStream(cudaStream);
+		}
 
-			blocks = (frame.blocksize + blocks_y * threads_y - 1) / (blocks_y * threads_y);
+		unsafe void compute_autocorellation(FlacFrame frame, int channelsCount, int max_order, out int partCount)
+		{
+			int autocorThreads = 256;
+			int partSize = autocorThreads - max_order;
+			int nAutocorTasks = _windowcount * channelsCount;
 
-			cuda.SetParameter(cudaComputeAutocor, 0, (uint)cudaAutocor.Pointer);
+			partCount = (frame.blocksize + partSize - 1) / partSize;			
+			if (partCount > maxAutocorParts)
+				throw new Exception("internal error");
+
+			if (frame.blocksize <= 4)
+				return;
+
+			cuda.SetParameter(cudaComputeAutocor, 0, (uint)cudaAutocorOutput.Pointer);
 			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size, (uint)cudaSamples.Pointer);
 			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 2, (uint)cudaWindow.Pointer);
-			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3, (uint)frame.blocksize);
-			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3 + sizeof(uint), (uint)FlaCudaWriter.MAX_BLOCKSIZE);
-			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3 + sizeof(uint) * 2, (uint)(blocks_y * threads_y));
-			cuda.SetParameterSize(cudaComputeAutocor, (uint)(IntPtr.Size * 3) + sizeof(uint) * 3);
-			cuda.SetFunctionBlockShape(cudaComputeAutocor, threads_x, threads_y, 1);
+			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 3, (uint)cudaAutocorTasks.Pointer);
+			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 4, (uint)max_order);
+			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 4 + sizeof(uint), (uint)frame.blocksize);
+			cuda.SetParameter(cudaComputeAutocor, IntPtr.Size * 4 + sizeof(uint) * 2, (uint)partSize);
+			cuda.SetParameterSize(cudaComputeAutocor, (uint)(IntPtr.Size * 4) + sizeof(uint) * 3);
+			cuda.SetFunctionBlockShape(cudaComputeAutocor, autocorThreads, 1, 1);
 
 			// issue work to the GPU
-			cuda.CopyHostToDeviceAsync(cudaSamples, samplesBufferPtr, (uint)FlaCudaWriter.MAX_BLOCKSIZE * 4 * sizeof(int), cudaStream);
-			cuda.LaunchAsync(cudaComputeAutocor, blocks, 4 * _windowcount, cudaStream); 
-			cuda.CopyDeviceToHostAsync(cudaAutocor, autocorBufferPtr, (uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * 4 * _windowcount * blocks), cudaStream);
+			cuda.CopyHostToDeviceAsync(cudaSamples, samplesBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channelsCount), cudaStream);
+			cuda.LaunchAsync(cudaComputeAutocor, partCount, nAutocorTasks, cudaStream);
+			cuda.CopyDeviceToHostAsync(cudaAutocorOutput, autocorOutputPtr, (uint)(sizeof(float) * partCount * (max_order + 1) * nAutocorTasks), cudaStream);
 			cuda.SynchronizeStream(cudaStream);
 		}
 		
@@ -1450,40 +1166,33 @@ namespace CUETools.Codecs.FlaCuda
 					if (_windowcount == 0)
 						throw new Exception("invalid windowfunction");
 					cuda.CopyHostToDevice<float>(cudaWindow, windowBuffer);
+					initialize_autocorTasks();
 				}
 
-				if (channels != 2 || frame.blocksize <= 32 || eparams.stereo_method == StereoMethod.Independent)
-				{
-					frame.window_buffer = window;
-					frame.current.residual = r + channels * FlaCudaWriter.MAX_BLOCKSIZE;
-					frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
-					for (int ch = 0; ch < channels; ch++)
-						frame.subframes[ch].Init(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * FlaCudaWriter.MAX_BLOCKSIZE,
-							bits_per_sample, get_wasted_bits(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, frame.blocksize));
-
-					for (int ch = 0; ch < channels; ch++)
-						encode_residual_onepass(frame, ch);
-				}
-				else
-				{
+				bool doMidside = channels == 2 && eparams.stereo_method != StereoMethod.Independent;
+				int channelCount = doMidside ? 2 * channels : channels;
+				if (doMidside)
 					channel_decorrelation(s, s + FlaCudaWriter.MAX_BLOCKSIZE, s + 2 * FlaCudaWriter.MAX_BLOCKSIZE, s + 3 * FlaCudaWriter.MAX_BLOCKSIZE, frame.blocksize);
-					frame.window_buffer = window;
-					frame.current.residual = r + 4 * FlaCudaWriter.MAX_BLOCKSIZE;
-					for (int ch = 0; ch < 4; ch++)
-						frame.subframes[ch].Init(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * FlaCudaWriter.MAX_BLOCKSIZE,
-							bits_per_sample + (ch == 3 ? 1U : 0U), get_wasted_bits(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, frame.blocksize));
 
-					int blocks, orders = 8;
-					while (orders < eparams.max_prediction_order + 1 && orders < 32)
-						orders <<= 1;
-					compute_autocorellation(frame, 4, orders, out blocks);
-					int partCount, max_order = Math.Min(orders - 1, eparams.max_prediction_order);
-					estimate_residual(frame, 4, max_order, orders, blocks, out partCount);
-					select_best_methods(frame, 4, max_order, partCount);
+				frame.window_buffer = window;
+				for (int ch = 0; ch < channelCount; ch++)
+					frame.subframes[ch].Init(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * FlaCudaWriter.MAX_BLOCKSIZE,
+						bits_per_sample + (doMidside && ch == 3 ? 1U : 0U), get_wasted_bits(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, frame.blocksize));
+
+				int autocorPartCount, residualPartCount;
+				compute_autocorellation(frame, channelCount, eparams.max_prediction_order, out autocorPartCount);
+				estimate_residual(frame, channelCount, eparams.max_prediction_order, autocorPartCount, out residualPartCount);
+				select_best_methods(frame, channelCount, eparams.max_prediction_order, residualPartCount);
+
+				if (doMidside)
+				{
 					measure_frame_size(frame, true);
 					frame.ChooseSubframes();
-					encode_residual(frame);
 				}
+				else
+					frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
+
+				encode_residual(frame);
 
 				BitWriter bitwriter = new BitWriter(frame_buffer, 0, max_frame_size);
 
@@ -1574,24 +1283,28 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.LoadModule(System.IO.Path.Combine(Environment.CurrentDirectory, "flacuda.cubin"));
 				cudaComputeAutocor = cuda.GetModuleFunction("cudaComputeAutocor");
 				cudaEncodeResidual = cuda.GetModuleFunction("cudaEncodeResidual");
-				cudaAutocor = cuda.Allocate((uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * 22);
 				cudaSamples = cuda.Allocate((uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)));
 				cudaWindow = cuda.Allocate((uint)sizeof(float) * FlaCudaWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS);
+				cudaAutocorTasks = cuda.Allocate((uint)(sizeof(computeAutocorTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
+				cudaAutocorOutput = cuda.Allocate((uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * maxAutocorParts);
 				cudaResidualTasks = cuda.Allocate((uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS));
-				cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS * maxResidualTasks));
-				CUResult cuErr = CUDADriver.cuMemAllocHost(ref autocorBufferPtr, (uint)(sizeof(float)*(lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * 22));
+				cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_ORDER + 1) * lpc.MAX_LPC_WINDOWS * maxResidualParts));
+				CUResult cuErr = CUDADriver.cuMemAllocHost(ref samplesBufferPtr, (uint)(sizeof(int) * (channels == 2 ? 4 : channels) * FlaCudaWriter.MAX_BLOCKSIZE));
 				if (cuErr == CUResult.Success)
-					cuErr = CUDADriver.cuMemAllocHost(ref samplesBufferPtr, (uint)(sizeof(int) * (channels == 2 ? 4 : channels) * FlaCudaWriter.MAX_BLOCKSIZE));
+					cuErr = CUDADriver.cuMemAllocHost(ref autocorTasksPtr, (uint)(sizeof(computeAutocorTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
 				if (cuErr == CUResult.Success)
-					cuErr = CUDADriver.cuMemAllocHost(ref residualOutputPtr, (uint)(sizeof(int) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER * maxResidualTasks));
+					cuErr = CUDADriver.cuMemAllocHost(ref autocorOutputPtr, (uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * maxAutocorParts));
 				if (cuErr == CUResult.Success)
 					cuErr = CUDADriver.cuMemAllocHost(ref residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER));
+				if (cuErr == CUResult.Success)
+					cuErr = CUDADriver.cuMemAllocHost(ref residualOutputPtr, (uint)(sizeof(int) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER * maxResidualParts));
 				if (cuErr != CUResult.Success)
 				{
-					if (autocorBufferPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(autocorBufferPtr);
-					if (samplesBufferPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(samplesBufferPtr);
-					if (residualOutputPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(residualOutputPtr);
-					if (residualTasksPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(residualTasksPtr);
+					if (samplesBufferPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(samplesBufferPtr); samplesBufferPtr = IntPtr.Zero;
+					if (autocorTasksPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(autocorTasksPtr); autocorTasksPtr = IntPtr.Zero;
+					if (autocorOutputPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(autocorOutputPtr); autocorOutputPtr = IntPtr.Zero;
+					if (residualTasksPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(residualTasksPtr); residualTasksPtr = IntPtr.Zero;
+					if (residualOutputPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(residualOutputPtr); residualOutputPtr = IntPtr.Zero;
 					throw new CUDAException(cuErr);
 				}				
 				cudaStream = cuda.CreateStream();
@@ -1627,7 +1340,7 @@ namespace CUETools.Codecs.FlaCuda
 
 		public string Path { get { return _path; } }
 
-		string vendor_string = "Flake#0.1";
+		string vendor_string = "FlaCuda#0.1";
 
 		int select_blocksize(int samplerate, int time_ms)
 		{
@@ -1879,20 +1592,6 @@ namespace CUETools.Codecs.FlaCuda
 		// higher prediction orders
 		public int compression;
 
-		// prediction order selection method
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 5
-		// 0 = use maximum order only
-		// 1 = use estimation
-		// 2 = 2-level
-		// 3 = 4-level
-		// 4 = 8-level
-		// 5 = full search
-		// 6 = log search
-		public OrderMethod order_method;
-
-
 		// stereo decorrelation method
 		// set by user prior to calling flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
@@ -1929,28 +1628,6 @@ namespace CUETools.Codecs.FlaCuda
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 1 to 32 
 		public int max_prediction_order;
-
-		// Number of LPC orders to try (for estimate mode)
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 1 to 32 
-		public int estimation_depth;
-
-		// minimum fixed prediction order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 4
-		public int min_fixed_order;
-
-		// maximum fixed prediction order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 4
-		public int max_fixed_order;
-
-		// type of linear prediction
-		// set by user prior to calling flake_encode_init
-		public PredictionType prediction_type;
 
 		// minimum partition order
 		// set by user prior to calling flake_encode_init
@@ -1994,16 +1671,11 @@ namespace CUETools.Codecs.FlaCuda
 
 			// default to level 5 params
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
-			order_method = OrderMethod.Estimate;
-			stereo_method = StereoMethod.Evaluate;
+			stereo_method = StereoMethod.Search;
 			block_size = 0;
 			block_time_ms = 105;			
-			prediction_type = PredictionType.Search;
 			min_prediction_order = 1;
 			max_prediction_order = 12;
-			estimation_depth = 1;
-			min_fixed_order = 2;
-			max_fixed_order = 2;
 			min_partition_order = 0;
 			max_partition_order = 6;
 			variable_block_size = 0;
@@ -2018,12 +1690,10 @@ namespace CUETools.Codecs.FlaCuda
 			{
 				case 0:
 					block_time_ms = 53;
-					prediction_type = PredictionType.Fixed;
 					stereo_method = StereoMethod.Independent;
 					max_partition_order = 4;
 					break;
 				case 1:
-					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Independent;
 					window_function = WindowFunction.Bartlett;
 					max_prediction_order = 8;
@@ -2052,9 +1722,6 @@ namespace CUETools.Codecs.FlaCuda
 				case 7:
 					break;
 				case 8:
-					estimation_depth = 3;
-					min_fixed_order = 0;
-					max_fixed_order = 4;
 					lpc_max_precision_search = 2;
 					break;
 				case 9:
@@ -2062,16 +1729,11 @@ namespace CUETools.Codecs.FlaCuda
 					max_prediction_order = 32;
 					break;
 				case 10:
-					min_fixed_order = 0;
-					max_fixed_order = 4;
 					max_prediction_order = 32;
 					//lpc_max_precision_search = 2;
 					break;
 				case 11:
-					min_fixed_order = 0;
-					max_fixed_order = 4;
 					max_prediction_order = 32;
-					estimation_depth = 5;
 					//lpc_max_precision_search = 2;
 					variable_block_size = 4;
 					break;
@@ -2080,6 +1742,12 @@ namespace CUETools.Codecs.FlaCuda
 			return 0;
 		}
 	}
+
+	unsafe struct computeAutocorTaskStruct
+	{
+		public int samplesOffs;
+		public int windowOffs;
+	};
 	
 	unsafe struct encodeResidualTaskStruct
 	{
