@@ -94,16 +94,18 @@ namespace CUETools.Codecs.FlaCuda
 
 		CUDA cuda;
 		CUfunction cudaComputeAutocor;
+		CUfunction cudaComputeLPC;
 		CUfunction cudaEncodeResidual;
 		CUdeviceptr cudaSamples;
 		CUdeviceptr cudaWindow;
 		CUdeviceptr cudaAutocorTasks;
 		CUdeviceptr cudaAutocorOutput;
+		CUdeviceptr cudaCompLPCOutput;
 		CUdeviceptr cudaResidualTasks;
 		CUdeviceptr cudaResidualOutput;
 		IntPtr samplesBufferPtr = IntPtr.Zero;
 		IntPtr autocorTasksPtr = IntPtr.Zero;
-		IntPtr autocorOutputPtr = IntPtr.Zero;
+		IntPtr compLPCOutputPtr = IntPtr.Zero;
 		IntPtr residualTasksPtr = IntPtr.Zero;
 		IntPtr residualOutputPtr = IntPtr.Zero;
 		CUstream cudaStream;
@@ -211,9 +213,10 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.Free(cudaSamples);
 				cuda.Free(cudaAutocorTasks);
 				cuda.Free(cudaAutocorOutput);
+				cuda.Free(cudaCompLPCOutput);
 				cuda.Free(cudaResidualTasks);
 				cuda.Free(cudaResidualOutput);
-				CUDADriver.cuMemFreeHost(autocorOutputPtr);
+				CUDADriver.cuMemFreeHost(compLPCOutputPtr);
 				CUDADriver.cuMemFreeHost(residualOutputPtr);
 				CUDADriver.cuMemFreeHost(samplesBufferPtr);
 				CUDADriver.cuMemFreeHost(residualTasksPtr);
@@ -244,9 +247,10 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.Free(cudaSamples);
 				cuda.Free(cudaAutocorTasks);
 				cuda.Free(cudaAutocorOutput);
+				cuda.Free(cudaCompLPCOutput);
 				cuda.Free(cudaResidualTasks);
 				cuda.Free(cudaResidualOutput);
-				CUDADriver.cuMemFreeHost(autocorOutputPtr);
+				CUDADriver.cuMemFreeHost(compLPCOutputPtr);
 				CUDADriver.cuMemFreeHost(residualOutputPtr);
 				CUDADriver.cuMemFreeHost(samplesBufferPtr);
 				CUDADriver.cuMemFreeHost(residualTasksPtr);
@@ -1031,22 +1035,22 @@ namespace CUETools.Codecs.FlaCuda
 			for (int ch = 0; ch < channelsCount; ch++)
 				for (int iWindow = 0; iWindow < _windowcount; iWindow++)
 				{
-					double* ac = stackalloc double[lpc.MAX_LPC_ORDER + 1];
-					for (int order = 0; order <= max_order; order++)
-					{
-						ac[order] = 0;
-						for (int i_block = 0; i_block < autocorPartCount; i_block++)
-							ac[order] += ((float*)autocorOutputPtr)[order + (max_order + 1) * (i_block + autocorPartCount * (iWindow + _windowcount * ch))];
-					}
-					frame.subframes[ch].lpc_ctx[iWindow].ComputeReflection(max_order, ac);
-					float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
-					frame.subframes[ch].lpc_ctx[iWindow].ComputeLPC(lpcs);
+					//int* lpcs = ((int*)compLPCOutputPtr) + (max_order + 1) * max_order * (iWindow + _windowcount * ch);
+					//for (int order = 1; order <= max_order; order++)
+					//{
+					//    residualTasks[nResidualTasks].residualOrder = order - 1;
+					//    residualTasks[nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE;
+					//    residualTasks[nResidualTasks].shift = lpcs[order + (order - 1) * (max_order + 1)];
+					//    AudioSamples.MemCpy(residualTasks[nResidualTasks].coefs, lpcs + (order - 1) * (max_order + 1), order);
+					//    nResidualTasks++;
+					//}
+					float* lpcs = ((float*)compLPCOutputPtr) + max_order * max_order * (iWindow + _windowcount * ch);
 					for (int order = 1; order <= max_order; order++)
 					{
 						residualTasks[nResidualTasks].residualOrder = order - 1;
 						residualTasks[nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE;
 
-						lpc.quantize_lpc_coefs(lpcs + (order - 1) * lpc.MAX_LPC_ORDER,
+						lpc.quantize_lpc_coefs(lpcs + (order - 1) * max_order,
 							order, cbits, residualTasks[nResidualTasks].coefs,
 							out residualTasks[nResidualTasks].shift, 15, 0);
 
@@ -1119,10 +1123,10 @@ namespace CUETools.Codecs.FlaCuda
 		unsafe void compute_autocorellation(FlacFrame frame, int channelsCount, int max_order, out int partCount)
 		{
 			int autocorThreads = 256;
-			int partSize = autocorThreads - max_order;
+			int partSize = 2 * autocorThreads - max_order;
 			int nAutocorTasks = _windowcount * channelsCount;
 
-			partCount = (frame.blocksize + partSize - 1) / partSize;			
+			partCount = (frame.blocksize + partSize - 1) / partSize;
 			if (partCount > maxAutocorParts)
 				throw new Exception("internal error");
 
@@ -1139,10 +1143,19 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameterSize(cudaComputeAutocor, (uint)(IntPtr.Size * 4) + sizeof(uint) * 3);
 			cuda.SetFunctionBlockShape(cudaComputeAutocor, autocorThreads, 1, 1);
 
+			cuda.SetParameter(cudaComputeLPC, 0, (uint)cudaCompLPCOutput.Pointer);
+			cuda.SetParameter(cudaComputeLPC, IntPtr.Size, (uint)cudaAutocorOutput.Pointer);
+			cuda.SetParameter(cudaComputeLPC, IntPtr.Size * 2, (uint)cudaAutocorTasks.Pointer);
+			cuda.SetParameter(cudaComputeLPC, IntPtr.Size * 3, (uint)max_order);
+			cuda.SetParameter(cudaComputeLPC, IntPtr.Size * 3 + sizeof(uint), (uint)partCount);
+			cuda.SetParameterSize(cudaComputeLPC, (uint)(IntPtr.Size * 3) + sizeof(uint) * 2);
+			cuda.SetFunctionBlockShape(cudaComputeLPC, 32, 1, 1);
+
 			// issue work to the GPU
 			cuda.CopyHostToDeviceAsync(cudaSamples, samplesBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channelsCount), cudaStream);
 			cuda.LaunchAsync(cudaComputeAutocor, partCount, nAutocorTasks, cudaStream);
-			cuda.CopyDeviceToHostAsync(cudaAutocorOutput, autocorOutputPtr, (uint)(sizeof(float) * partCount * (max_order + 1) * nAutocorTasks), cudaStream);
+			cuda.LaunchAsync(cudaComputeLPC, 1, nAutocorTasks, cudaStream);
+			cuda.CopyDeviceToHostAsync(cudaCompLPCOutput, compLPCOutputPtr, (uint)(sizeof(float) * (max_order + 1) * max_order * nAutocorTasks), cudaStream);
 			cuda.SynchronizeStream(cudaStream);
 		}
 		
@@ -1282,18 +1295,20 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.CreateContext(0, CUCtxFlags.SchedSpin);
 				cuda.LoadModule(System.IO.Path.Combine(Environment.CurrentDirectory, "flacuda.cubin"));
 				cudaComputeAutocor = cuda.GetModuleFunction("cudaComputeAutocor");
+				cudaComputeLPC = cuda.GetModuleFunction("cudaComputeLPC");
 				cudaEncodeResidual = cuda.GetModuleFunction("cudaEncodeResidual");
 				cudaSamples = cuda.Allocate((uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)));
 				cudaWindow = cuda.Allocate((uint)sizeof(float) * FlaCudaWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS);
 				cudaAutocorTasks = cuda.Allocate((uint)(sizeof(computeAutocorTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
 				cudaAutocorOutput = cuda.Allocate((uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * maxAutocorParts);
+				cudaCompLPCOutput = cuda.Allocate((uint)(sizeof(float) * lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * maxAutocorParts);
 				cudaResidualTasks = cuda.Allocate((uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS));
 				cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_ORDER + 1) * lpc.MAX_LPC_WINDOWS * maxResidualParts));
 				CUResult cuErr = CUDADriver.cuMemAllocHost(ref samplesBufferPtr, (uint)(sizeof(int) * (channels == 2 ? 4 : channels) * FlaCudaWriter.MAX_BLOCKSIZE));
 				if (cuErr == CUResult.Success)
 					cuErr = CUDADriver.cuMemAllocHost(ref autocorTasksPtr, (uint)(sizeof(computeAutocorTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
 				if (cuErr == CUResult.Success)
-					cuErr = CUDADriver.cuMemAllocHost(ref autocorOutputPtr, (uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * maxAutocorParts));
+					cuErr = CUDADriver.cuMemAllocHost(ref compLPCOutputPtr, (uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * lpc.MAX_LPC_ORDER * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
 				if (cuErr == CUResult.Success)
 					cuErr = CUDADriver.cuMemAllocHost(ref residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER));
 				if (cuErr == CUResult.Success)
@@ -1302,7 +1317,7 @@ namespace CUETools.Codecs.FlaCuda
 				{
 					if (samplesBufferPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(samplesBufferPtr); samplesBufferPtr = IntPtr.Zero;
 					if (autocorTasksPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(autocorTasksPtr); autocorTasksPtr = IntPtr.Zero;
-					if (autocorOutputPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(autocorOutputPtr); autocorOutputPtr = IntPtr.Zero;
+					if (compLPCOutputPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(compLPCOutputPtr); compLPCOutputPtr = IntPtr.Zero;
 					if (residualTasksPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(residualTasksPtr); residualTasksPtr = IntPtr.Zero;
 					if (residualOutputPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(residualOutputPtr); residualOutputPtr = IntPtr.Zero;
 					throw new CUDAException(cuErr);
