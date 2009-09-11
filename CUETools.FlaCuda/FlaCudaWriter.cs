@@ -1095,7 +1095,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(cudaEstimateResidual, sizeof(uint) * 4, (uint)frame.blocksize);
 			cuda.SetParameter(cudaEstimateResidual, sizeof(uint) * 5, (uint)partSize);
 			cuda.SetParameterSize(cudaEstimateResidual, sizeof(uint) * 6);
-			cuda.SetFunctionBlockShape(cudaEstimateResidual, 64, 4, 1);
+			cuda.SetFunctionBlockShape(cudaEstimateResidual, 32, 8, 1);
 
 			//cuda.SetParameter(cudaSumResidualChunks, 0, (uint)cudaResidualSums.Pointer);
 			//cuda.SetParameter(cudaSumResidualChunks, sizeof(uint), (uint)cudaResidualTasks.Pointer);
@@ -1113,7 +1113,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetFunctionBlockShape(cudaSumResidual, 64, 1, 1);
 
 			// issue work to the GPU
-			cuda.LaunchAsync(cudaEstimateResidual, partCount, nResidualTasks / 4, cudaStream);
+			cuda.LaunchAsync(cudaEstimateResidual, partCount, nResidualTasks / 8, cudaStream);
 			//cuda.LaunchAsync(cudaSumResidualChunks, partCount, nResidualTasks, cudaStream);
 			cuda.LaunchAsync(cudaSumResidual, 1, nResidualTasks, cudaStream);
 			cuda.CopyDeviceToHostAsync(cudaResidualTasks, residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * nResidualTasks), cudaStream);
@@ -1709,23 +1709,23 @@ namespace CUETools.Codecs.FlaCuda
 				case 0:
 					do_midside = false;
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 8;
-					max_partition_order = 4;
+					max_prediction_order = 4;
+					max_partition_order = 2;
 					break;
 				case 1:
 					do_midside = false;
-					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 8;
-					max_partition_order = 4;
+					max_prediction_order = 4;
+					max_partition_order = 3;
 					break;
 				case 2:
 					do_midside = false;
 					window_function = WindowFunction.Bartlett;
 					max_partition_order = 4;
+					max_prediction_order = 8;
 					break;
 				case 3:
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 8;
+					max_prediction_order = 6;
 					break;
 				case 4:
 					window_function = WindowFunction.Bartlett;
@@ -1733,27 +1733,24 @@ namespace CUETools.Codecs.FlaCuda
 					break;
 				case 5:
 					window_function = WindowFunction.Bartlett;
+					max_prediction_order = 10;
 					break;
-				case 6:
-					//max_prediction_order = 10;
+				case 6:					
+					window_function = WindowFunction.Bartlett;
 					break;
-				case 7:
+				case 7:					
+					max_prediction_order = 10;
 					break;
 				case 8:
-					lpc_max_precision_search = 2;
 					break;
 				case 9:
-					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 32;
+					max_prediction_order = 16;
 					break;
 				case 10:
-					max_prediction_order = 32;
-					//lpc_max_precision_search = 2;
+					max_prediction_order = 24;
 					break;
 				case 11:
 					max_prediction_order = 32;
-					//lpc_max_precision_search = 2;
-					variable_block_size = 4;
 					break;
 			}
 

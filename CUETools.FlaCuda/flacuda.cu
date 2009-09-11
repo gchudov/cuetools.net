@@ -197,56 +197,61 @@ extern "C" __global__ void cudaEstimateResidual(
 	int data[256];
 	int residual[256];
 	int rice[256];
-	int sums[8];
 	encodeResidualTaskStruct task[8];
     } shared;
     const int tid = threadIdx.x + threadIdx.y * blockDim.x;
-    // fetch task data (8 * 64 == 512 elements);
+    // fetch task data (4 * 64 == 256 elements or 8 * 64 == 512 elements);
     ((int*)&shared.task)[tid] = ((int*)(tasks + blockIdx.y * blockDim.y))[tid];
     ((int*)&shared.task)[tid + 256] = ((int*)(tasks + blockIdx.y * blockDim.y))[tid + 256];
     __syncthreads();
-    const int residualOrder = shared.task[threadIdx.y].residualOrder;
     const int partNumber = blockIdx.x;
     const int pos = partNumber * partSize;
-    const int dataLen = min(frameSize - pos, partSize + max_order) * (residualOrder != 0);
+    const int dataLen = min(frameSize - pos, partSize + max_order);
 
     // fetch samples
     shared.data[tid] = (tid < dataLen ? samples[shared.task[0].samplesOffs + pos + tid] : 0);
-    if (tid < blockDim.y) shared.sums[tid] = 0;
+
+    __syncthreads();
+
+    //if (tid < blockDim.y) shared.sums[tid] = 0;
+    shared.rice[tid] = 0;
 
     // set upper residuals to zero, in case blockDim < 256
     //shared.residual[255 - tid] = 0;
 
-    const int residualLen = min(frameSize - pos - residualOrder, partSize) * (residualOrder != 0);
+    const int residualLen = max(0,min(frameSize - pos - shared.task[threadIdx.y].residualOrder, partSize)) * (shared.task[threadIdx.y].residualOrder != 0);
 
     // reverse coefs
-    if (threadIdx.x < residualOrder) shared.task[threadIdx.y].coefs[threadIdx.x] = shared.task[threadIdx.y].coefs[residualOrder - 1 - threadIdx.x];
-    
-    __syncthreads();
+    if (threadIdx.x < shared.task[threadIdx.y].residualOrder) shared.task[threadIdx.y].coefs[threadIdx.x] = shared.task[threadIdx.y].coefs[shared.task[threadIdx.y].residualOrder - 1 - threadIdx.x];           
 
-    for (int i = 0; i < residualLen; i += blockDim.x)
+    for (int i = threadIdx.x; i - threadIdx.x < residualLen; i += blockDim.x) // += 32
     {
+	const int residualOrder = shared.task[threadIdx.y].residualOrder;
 	// compute residual
 	long sum = 0;
 	for (int c = 0; c < residualOrder; c++)
-	    sum += __mul24(shared.data[i + threadIdx.x + c], shared.task[threadIdx.y].coefs[c]);
-	int res = shared.data[i + threadIdx.x + residualOrder] - (sum >> shared.task[threadIdx.y].shift);
-	shared.residual[tid] = __mul24(i + threadIdx.x < residualLen, (2 * res) ^ (res >> 31));
-	__syncthreads(); if (threadIdx.x < 32) shared.residual[tid] += shared.residual[tid + 32]; __syncthreads();
+	    sum += __mul24(shared.data[i + c], shared.task[threadIdx.y].coefs[c]);
+	int res = shared.data[i + residualOrder] - (sum >> shared.task[threadIdx.y].shift);
+	shared.residual[tid] = __mul24(i < residualLen, (2 * res) ^ (res >> 31));
+	// enable this line when using blockDim.y == 4
+	//__syncthreads(); if (threadIdx.x < 32) shared.residual[tid] += shared.residual[tid + 32]; __syncthreads();
 	shared.residual[tid] += shared.residual[tid + 16];
 	shared.residual[tid] += shared.residual[tid + 8];
 	shared.residual[tid] += shared.residual[tid + 4];
 	shared.residual[tid] += shared.residual[tid + 2];
-	if (threadIdx.x == 0) shared.sums[threadIdx.y] += shared.residual[tid] + shared.residual[tid + 1];
+	//if (threadIdx.x == 0) shared.sums[threadIdx.y] += shared.residual[tid] + shared.residual[tid + 1];
+	shared.rice[tid] += shared.residual[tid] + shared.residual[tid + 1];
     }
    
     // rice parameter search
-    shared.rice[tid] = __mul24(threadIdx.x >= 15, 0x7fffff) + residualLen * (threadIdx.x + 1) + ((shared.sums[threadIdx.y] - (residualLen >> 1)) >> threadIdx.x);
+    //shared.rice[tid] = __mul24(threadIdx.x >= 15, 0x7fffff) + residualLen * (threadIdx.x + 1) + ((shared.sums[threadIdx.y] - (residualLen >> 1)) >> threadIdx.x);
+    shared.rice[tid] = __mul24(threadIdx.x >= 15, 0x7fffff) + residualLen * (threadIdx.x + 1) + ((shared.rice[threadIdx.y * blockDim.x] - (residualLen >> 1)) >> threadIdx.x);
     shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 8]);
     shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 4]);
     shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 2]);
-    if (threadIdx.x == 0 && residualOrder != 0)
-	output[(blockIdx.y * blockDim.y + threadIdx.y) * gridDim.x + blockIdx.x] = min(shared.rice[tid], shared.rice[tid + 1]);
+    shared.rice[tid] = min(shared.rice[tid], shared.rice[tid + 1]);
+    if (threadIdx.x == 0 && shared.task[threadIdx.y].residualOrder != 0)
+	output[(blockIdx.y * blockDim.y + threadIdx.y) * gridDim.x + blockIdx.x] = shared.rice[tid];
 }
 
 // blockDim.x == 256
