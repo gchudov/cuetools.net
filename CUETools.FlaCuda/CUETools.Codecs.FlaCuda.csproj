@@ -54,9 +54,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="flacuda.cu">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Generator>"%24%28CUDA_BIN_PATH%29\nvcc.exe" flacuda.cu --cubin -cbin "%24%28VCInstallDir%29bin"</Generator>
     </None>
+    <EmbeddedResource Include="flacuda.cubin">
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -67,7 +67,8 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>nvcc flacuda.cu  --maxrregcount 10 --cubin --compiler-bindir "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\bin" --system-include "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\include" 
-</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+    <PreBuildEvent>nvcc $(ProjectDir)flacuda.cu  -o $(ProjectDir)\flacuda.cubin --machine 32 --maxrregcount 10 --cubin --compiler-bindir "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\bin" --system-include "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\include"</PreBuildEvent>
   </PropertyGroup>
 </Project>
