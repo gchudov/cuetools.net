@@ -239,7 +239,7 @@ namespace CUETools.Codecs.FlaCuda
 		{
 			DoClose();
 			if (sample_count != 0 && _position != sample_count)
-				throw new Exception("Samples written differs from the expected sample count.");
+				throw new Exception(string.Format("Samples written differs from the expected sample count. Expected {0}, got {1}.", sample_count, _position));
 		}
 
 		public void Delete()
@@ -936,6 +936,10 @@ namespace CUETools.Codecs.FlaCuda
 					residualTasks[nResidualTasks].shift = 0;
 					switch (order)
 					{
+						case 5:
+							residualTasks[nResidualTasks].residualOrder = 1;
+							residualTasks[nResidualTasks].coefs[0] = 0;
+							break;
 						case 1:
 							residualTasks[nResidualTasks].coefs[0] = 1;
 							break;
@@ -1056,17 +1060,18 @@ namespace CUETools.Codecs.FlaCuda
 			// FIXED
 			for (int ch = 0; ch < channelsCount; ch++)
 			{
-				for (int order = 1; order <= 4 && order < frame.blocksize; order++)
+				for (int order = 1; order <= 5 && order < frame.blocksize; order++)
 				{
 					int index = (order - 1) + 8 * ch + ((max_order + 7) & ~7) * _windowcount * channelsCount;
-					int nbits = order * (int)frame.subframes[ch].obits + 6 + residualTasks[index].size;
-					if (residualTasks[index].residualOrder != order)
+					int forder = order == 5 ? 0 : order;
+					int nbits = forder * (int)frame.subframes[ch].obits + 6 + residualTasks[index].size;
+					if (residualTasks[index].residualOrder != (order == 5 ? 1 : order))
 						throw new Exception("oops");
 					if (frame.subframes[ch].best.size > nbits)
 					{
 						frame.subframes[ch].best.type = SubframeType.Fixed;
 						frame.subframes[ch].best.size = (uint)nbits;
-						frame.subframes[ch].best.order = order;
+						frame.subframes[ch].best.order = forder;
 					}
 				}
 			}
@@ -1155,7 +1160,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.CopyHostToDeviceAsync(cudaSamples, samplesBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channelsCount), cudaStream);
 			cuda.LaunchAsync(cudaComputeAutocor, partCount, nAutocorTasks, cudaStream);
 			cuda.LaunchAsync(cudaComputeLPC, 1, nAutocorTasks, cudaStream);
-			cuda.SynchronizeStream(cudaStream);
+			//cuda.SynchronizeStream(cudaStream);
 			//cuda.CopyDeviceToHostAsync(cudaResidualTasks, residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * nResidualTasks), cudaStream1);
 		}
 	
@@ -1709,31 +1714,33 @@ namespace CUETools.Codecs.FlaCuda
 				case 0:
 					do_midside = false;
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 4;
-					max_partition_order = 2;
+					max_prediction_order = 6;
+					max_partition_order = 4;
 					break;
 				case 1:
 					do_midside = false;
-					max_prediction_order = 4;
-					max_partition_order = 3;
+					window_function = WindowFunction.Bartlett;
+					max_prediction_order = 8;
+					max_partition_order = 6;
 					break;
 				case 2:
 					do_midside = false;
-					window_function = WindowFunction.Bartlett;
-					max_partition_order = 4;
+					max_partition_order = 6;
 					max_prediction_order = 8;
 					break;
 				case 3:
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 6;
+					max_partition_order = 4;
+					max_prediction_order = 4;
 					break;
 				case 4:
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 8;
+					max_partition_order = 4;
+					max_prediction_order = 7;
 					break;
 				case 5:
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 10;
+					max_prediction_order = 8;
 					break;
 				case 6:					
 					window_function = WindowFunction.Bartlett;
