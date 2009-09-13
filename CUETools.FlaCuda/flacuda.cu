@@ -24,6 +24,8 @@ typedef struct
 {
     int samplesOffs;
     int windowOffs;
+    int residualOffs;
+    int blocksize;
 } computeAutocorTaskStruct;
 
 typedef struct
@@ -155,7 +157,7 @@ extern "C" __global__ void cudaComputeLPC(
 	if (tid < 32)
 	{
 	    int precision = 13;
-	    int taskNo = (blockIdx.x + blockIdx.y * gridDim.x) * max_order + order;
+	    int taskNo = shared.task.residualOffs + order;
 	    shared.bits[tid] = __mul24((33 - __clz(__float2int_rn(fabs(shared.tmp[tid]) * (1 << 15))) - precision), tid <= order);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 16]);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 8]);
