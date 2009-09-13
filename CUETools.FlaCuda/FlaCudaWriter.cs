@@ -919,7 +919,7 @@ namespace CUETools.Codecs.FlaCuda
 					autocorTasks[nAutocorTasks].windowOffs = iWindow * 2 * FlaCudaWriter.MAX_BLOCKSIZE;
 					nAutocorTasks++;
 					// LPC tasks
-					for (int order = 1; order <= ((max_order + 7) & ~7); order++)
+					for (int order = 1; order <= max_order; order++)
 					{
 						residualTasks[nResidualTasks].residualOrder = order <= max_order ? order : 0;
 						residualTasks[nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE;
@@ -929,7 +929,7 @@ namespace CUETools.Codecs.FlaCuda
 			// Fixed prediction
 			for (int ch = 0; ch < channelsCount; ch++)
 			{
-				for (int order = 1; order <= 8; order++)
+				for (int order = 1; order <= max_order; order++)
 				{
 					residualTasks[nResidualTasks].residualOrder = order <= 4 ? order : 0;
 					residualTasks[nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE;
@@ -944,19 +944,19 @@ namespace CUETools.Codecs.FlaCuda
 							residualTasks[nResidualTasks].coefs[0] = 1;
 							break;
 						case 2:
-							residualTasks[nResidualTasks].coefs[0] = 2;
-							residualTasks[nResidualTasks].coefs[1] = -1;
+							residualTasks[nResidualTasks].coefs[1] = 2;
+							residualTasks[nResidualTasks].coefs[0] = -1;
 							break;
 						case 3:
-							residualTasks[nResidualTasks].coefs[0] = 3;
+							residualTasks[nResidualTasks].coefs[2] = 3;
 							residualTasks[nResidualTasks].coefs[1] = -3;
-							residualTasks[nResidualTasks].coefs[2] = 1;
+							residualTasks[nResidualTasks].coefs[0] = 1;
 							break;
 						case 4:
-							residualTasks[nResidualTasks].coefs[0] = 4;
-							residualTasks[nResidualTasks].coefs[1] = -6;
-							residualTasks[nResidualTasks].coefs[2] = 4;
-							residualTasks[nResidualTasks].coefs[3] = -1;
+							residualTasks[nResidualTasks].coefs[3] = 4;
+							residualTasks[nResidualTasks].coefs[2] = -6;
+							residualTasks[nResidualTasks].coefs[1] = 4;
+							residualTasks[nResidualTasks].coefs[0] = -1;
 							break;
 					}
 					nResidualTasks++;
@@ -1037,7 +1037,7 @@ namespace CUETools.Codecs.FlaCuda
 				{
 					for (int order = 1; order <= max_order && order < frame.blocksize; order++)
 					{
-						int index = (order - 1) + ((max_order + 7) & ~7) * (iWindow + _windowcount * ch);
+						int index = (order - 1) + max_order * (iWindow + _windowcount * ch);
 						int cbits = residualTasks[index].cbits;
 						int nbits = order * (int)frame.subframes[ch].obits + 4 + 5 + order * cbits + 6 + residualTasks[index].size;
 						if (residualTasks[index].residualOrder != order)
@@ -1051,7 +1051,7 @@ namespace CUETools.Codecs.FlaCuda
 							frame.subframes[ch].best.cbits = cbits;
 							frame.subframes[ch].best.shift = residualTasks[index].shift;
 							for (int i = 0; i < order; i++)
-								frame.subframes[ch].best.coefs[i] = residualTasks[index].coefs[i];//order - 1 - i];
+								frame.subframes[ch].best.coefs[i] = residualTasks[index].coefs[order - 1 - i];
 						}
 					}
 				}
@@ -1060,9 +1060,9 @@ namespace CUETools.Codecs.FlaCuda
 			// FIXED
 			for (int ch = 0; ch < channelsCount; ch++)
 			{
-				for (int order = 1; order <= 5 && order < frame.blocksize; order++)
+				for (int order = 1; order <= 5 && order <= max_order && order < frame.blocksize; order++)
 				{
-					int index = (order - 1) + 8 * ch + ((max_order + 7) & ~7) * _windowcount * channelsCount;
+					int index = (order - 1) + max_order * (ch + _windowcount * channelsCount);
 					int forder = order == 5 ? 0 : order;
 					int nbits = forder * (int)frame.subframes[ch].obits + 6 + residualTasks[index].size;
 					if (residualTasks[index].residualOrder != (order == 5 ? 1 : order))
@@ -1086,7 +1086,22 @@ namespace CUETools.Codecs.FlaCuda
 			}
 
 			uint cbits = get_precision(frame.blocksize) + 1;
-			int partSize = 256 - 32;
+			int threads_y;
+			if (max_order >= 4 && max_order <= 8)
+				threads_y = max_order;
+			else if ((max_order % 8) == 0)
+				threads_y = 8;
+			else if ((max_order % 7) == 0)
+				threads_y = 7;
+			else if ((max_order % 6) == 0)
+				threads_y = 6;
+			else if ((max_order % 5) == 0)
+				threads_y = 5;
+			else if ((max_order % 4) == 0)
+				threads_y = 4;
+			else
+				throw new Exception("invalid LPC order");
+			int partSize = 32 * (threads_y - 1);
 
 			partCount = (frame.blocksize + partSize - 1) / partSize;
 
@@ -1100,7 +1115,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(cudaEstimateResidual, sizeof(uint) * 4, (uint)frame.blocksize);
 			cuda.SetParameter(cudaEstimateResidual, sizeof(uint) * 5, (uint)partSize);
 			cuda.SetParameterSize(cudaEstimateResidual, sizeof(uint) * 6);
-			cuda.SetFunctionBlockShape(cudaEstimateResidual, 32, 8, 1);
+			cuda.SetFunctionBlockShape(cudaEstimateResidual, 32, threads_y, 1);
 
 			//cuda.SetParameter(cudaSumResidualChunks, 0, (uint)cudaResidualSums.Pointer);
 			//cuda.SetParameter(cudaSumResidualChunks, sizeof(uint), (uint)cudaResidualTasks.Pointer);
@@ -1118,7 +1133,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetFunctionBlockShape(cudaSumResidual, 64, 1, 1);
 
 			// issue work to the GPU
-			cuda.LaunchAsync(cudaEstimateResidual, partCount, nResidualTasks / 8, cudaStream);
+			cuda.LaunchAsync(cudaEstimateResidual, partCount, nResidualTasks / threads_y, cudaStream);
 			//cuda.LaunchAsync(cudaSumResidualChunks, partCount, nResidualTasks, cudaStream);
 			cuda.LaunchAsync(cudaSumResidual, 1, nResidualTasks, cudaStream);
 			cuda.CopyDeviceToHostAsync(cudaResidualTasks, residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * nResidualTasks), cudaStream);
@@ -1313,7 +1328,7 @@ namespace CUETools.Codecs.FlaCuda
 				cudaWindow = cuda.Allocate((uint)sizeof(float) * FlaCudaWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS);
 				cudaAutocorTasks = cuda.Allocate((uint)(sizeof(computeAutocorTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
 				cudaAutocorOutput = cuda.Allocate((uint)(sizeof(float) * (lpc.MAX_LPC_ORDER + 1) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS) * maxAutocorParts);
-				cudaResidualTasks = cuda.Allocate((uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS + 4)));
+				cudaResidualTasks = cuda.Allocate((uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_ORDER * (lpc.MAX_LPC_WINDOWS + 1)));
 				cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS + 4)));
 				cudaResidualSums = cuda.Allocate((uint)(sizeof(int) * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS + 4) * maxResidualParts));
 				//cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS + 4) * maxResidualParts));
@@ -1321,7 +1336,7 @@ namespace CUETools.Codecs.FlaCuda
 				if (cuErr == CUResult.Success)
 					cuErr = CUDADriver.cuMemAllocHost(ref autocorTasksPtr, (uint)(sizeof(computeAutocorTaskStruct) * (channels == 2 ? 4 : channels) * lpc.MAX_LPC_WINDOWS));
 				if (cuErr == CUResult.Success)
-					cuErr = CUDADriver.cuMemAllocHost(ref residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8)));
+					cuErr = CUDADriver.cuMemAllocHost(ref residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * (channels == 2 ? 4 : channels) * (lpc.MAX_LPC_WINDOWS + 1) * lpc.MAX_LPC_ORDER));
 				if (cuErr != CUResult.Success)
 				{
 					if (samplesBufferPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(samplesBufferPtr); samplesBufferPtr = IntPtr.Zero;
