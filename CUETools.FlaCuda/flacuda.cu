@@ -105,12 +105,12 @@ extern "C" __global__ void cudaComputeLPC(
 {
     __shared__ struct {
 	computeAutocorTaskStruct task;
-	float ldr[32];
-	int   bits[32];
-	float autoc[33];
-	float gen0[32];
-	float gen1[32];
-	float reff[32];
+	volatile float ldr[32];
+	volatile int   bits[32];
+	volatile float autoc[33];
+	volatile float gen0[32];
+	volatile float gen1[32];
+	//volatile float reff[32];
 	int   cbits;
     } shared;
     const int tid = threadIdx.x;
@@ -123,37 +123,31 @@ extern "C" __global__ void cudaComputeLPC(
     if (tid <= max_order) 
 	shared.autoc[tid] = 0.0f;
     
-    __syncthreads();
-
     // add up parts
     for (int part = 0; part < partCount; part++)
 	if (tid <= max_order)
 	    shared.autoc[tid] += autoc[(blockIdx.y * partCount + part) * (max_order + 1) + tid];
     
-    __syncthreads();
-   
     if (tid < 32)
     {
 	shared.gen0[tid] = shared.autoc[tid+1];
 	shared.gen1[tid] = shared.autoc[tid+1];
 	shared.ldr[tid] = 0.0f;
 
-	__syncthreads();
 	float error = shared.autoc[0];
 	for (int order = 0; order < max_order; order++)
 	{
 	    // Schur recursion
 	    float reff = -shared.gen1[0] / error;
-	    if (tid == 0) shared.reff[order] = reff;
+	    //if (tid == 0) shared.reff[order] = reff;
 	    error += shared.gen1[0] * reff;
-	    if (tid < max_order - order - 1)
+	    if (tid < max_order - 1 - order)
 	    {
-		float g1 = shared.gen1[tid + 1] + shared.reff[order] * shared.gen0[tid];
-		float g0 = shared.gen1[tid + 1] * shared.reff[order] + shared.gen0[tid];
+		float g1 = shared.gen1[tid + 1] + reff * shared.gen0[tid];
+		float g0 = shared.gen1[tid + 1] * reff + shared.gen0[tid];
 		shared.gen1[tid] = g1;
 		shared.gen0[tid] = g0;
 	    }
-	    __syncthreads();
 
 	    // Levinson-Durbin recursion
 	    shared.ldr[tid] += (tid < order) * reff * shared.ldr[order - 1 - tid] + (tid  == order) * reff;
