@@ -81,15 +81,12 @@ extern "C" __global__ void cudaComputeAutocor(
 	//if (tid < 256) shared.product[tid] += shared.product[tid + 256]; __syncthreads();
 	if (tid < 128) shared.product[tid] += shared.product[tid + 128]; __syncthreads();
 	if (tid < 64) shared.product[tid] += shared.product[tid + 64]; __syncthreads();
-	if (tid < 32) 
-	{
-	    shared.product[tid] += shared.product[tid + 32];
-	    shared.product[tid] += shared.product[tid + 16];
-	    shared.product[tid] += shared.product[tid + 8];
-	    shared.product[tid] += shared.product[tid + 4];
-	    shared.product[tid] += shared.product[tid + 2];
-	    if (tid == 0) shared.sum[lag] = shared.product[0] + shared.product[1]; 
-	}
+	if (tid < 32) shared.product[tid] += shared.product[tid + 32]; __syncthreads();
+	shared.product[tid] += shared.product[tid + 16];
+	shared.product[tid] += shared.product[tid + 8];
+	shared.product[tid] += shared.product[tid + 4];
+	shared.product[tid] += shared.product[tid + 2];
+	if (tid == 0) shared.sum[lag] = shared.product[0] + shared.product[1]; 
 	__syncthreads();
     }
     // return results
@@ -167,7 +164,7 @@ extern "C" __global__ void cudaComputeLPC(
 	    shared.ldr[tid] += (tid < order) * __fmul_rz(reff, shared.ldr[order - 1 - tid]) + (tid  == order) * reff;
 
 	    // Quantization
-	    int precision = 13;
+	    int precision = 13 - (order > 8);
 	    int taskNo = shared.task.residualOffs + order;
 	    shared.bits[tid] = __mul24((33 - __clz(__float2int_rn(fabs(shared.ldr[tid]) * (1 << 15))) - precision), tid <= order);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 16]);
