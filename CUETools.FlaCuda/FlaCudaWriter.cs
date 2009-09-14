@@ -1171,7 +1171,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(cudaComputeLPC, sizeof(uint) * 3, (uint)max_order);
 			cuda.SetParameter(cudaComputeLPC, sizeof(uint) * 3 + sizeof(uint), (uint)partCount);
 			cuda.SetParameterSize(cudaComputeLPC, (uint)(sizeof(uint) * 3) + sizeof(uint) * 2);
-			cuda.SetFunctionBlockShape(cudaComputeLPC, 64, 1, 1);
+			cuda.SetFunctionBlockShape(cudaComputeLPC, (partCount + 31) & ~31, 1, 1);
 
 			// issue work to the GPU
 			cuda.CopyHostToDeviceAsync(cudaSamples, samplesBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channelsCount), cudaStream);
