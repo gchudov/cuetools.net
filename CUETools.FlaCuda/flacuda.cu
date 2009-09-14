@@ -105,10 +105,12 @@ extern "C" __global__ void cudaComputeLPC(
 {
     __shared__ struct {
 	computeAutocorTaskStruct task;
-	float tmp[32];
-	float buf[32];
+	float ldr[32];
 	int   bits[32];
 	float autoc[33];
+	float gen0[32];
+	float gen1[32];
+	float reff[32];
 	int   cbits;
     } shared;
     const int tid = threadIdx.x;
@@ -129,44 +131,46 @@ extern "C" __global__ void cudaComputeLPC(
 	    shared.autoc[tid] += autoc[(blockIdx.y * partCount + part) * (max_order + 1) + tid];
     
     __syncthreads();
-
+   
     if (tid < 32)
-	shared.tmp[tid] = 0.0f;
-
-    float err = shared.autoc[0];
-
-    for(int order = 0; order < max_order; order++)
     {
-	if (tid < 32)
-	{
-	    shared.buf[tid] = (tid < order) * shared.tmp[tid] * shared.autoc[order - tid];
-	    shared.buf[tid] += shared.buf[tid + 16];
-	    shared.buf[tid] += shared.buf[tid + 8];
-	    shared.buf[tid] += shared.buf[tid + 4];
-	    shared.buf[tid] += shared.buf[tid + 2];
-	    shared.buf[tid] += shared.buf[tid + 1];
-	}
+	shared.gen0[tid] = shared.autoc[tid+1];
+	shared.gen1[tid] = shared.autoc[tid+1];
+	shared.ldr[tid] = 0.0f;
+
 	__syncthreads();
-        
-	float r = (- shared.autoc[order+1] - shared.buf[0]) / err;
-        
-	err *= 1.0f - (r * r);
-        
-	shared.tmp[tid] += (tid < order) * r * shared.tmp[order - 1 - tid] + (tid  == order) * r;
-	
-	if (tid < 32)
+	float error = shared.autoc[0];
+	for (int order = 0; order < max_order; order++)
 	{
+	    // Schur recursion
+	    float reff = -shared.gen1[0] / error;
+	    if (tid == 0) shared.reff[order] = reff;
+	    error += shared.gen1[0] * reff;
+	    if (tid < max_order - order - 1)
+	    {
+		float g1 = shared.gen1[tid + 1] + shared.reff[order] * shared.gen0[tid];
+		float g0 = shared.gen1[tid + 1] * shared.reff[order] + shared.gen0[tid];
+		shared.gen1[tid] = g1;
+		shared.gen0[tid] = g0;
+	    }
+	    __syncthreads();
+
+	    // Levinson-Durbin recursion
+	    shared.ldr[tid] += (tid < order) * reff * shared.ldr[order - 1 - tid] + (tid  == order) * reff;
+
+	    // Quantization
 	    int precision = 13;
 	    int taskNo = shared.task.residualOffs + order;
-	    shared.bits[tid] = __mul24((33 - __clz(__float2int_rn(fabs(shared.tmp[tid]) * (1 << 15))) - precision), tid <= order);
+	    shared.bits[tid] = __mul24((33 - __clz(__float2int_rn(fabs(shared.ldr[tid]) * (1 << 15))) - precision), tid <= order);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 16]);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 8]);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 4]);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 2]);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 1]);
 	    int sh = max(0,min(15, 15 - shared.bits[0]));
+	    
 	    // reverse coefs
-	    int coef = max(-(1 << precision),min((1 << precision)-1,__float2int_rn(-shared.tmp[order - tid] * (1 << sh))));
+	    int coef = max(-(1 << precision),min((1 << precision)-1,__float2int_rn(-shared.ldr[order - tid] * (1 << sh))));
 	    if (tid <= order)
 		output[taskNo].coefs[tid] = coef;
 	    if (tid == 0)
@@ -181,7 +185,6 @@ extern "C" __global__ void cudaComputeLPC(
 	    if (tid == 0)
 		output[taskNo].cbits = cbits;
 	}
-	__syncthreads();
     }
 }
 
