@@ -51,8 +51,8 @@ extern "C" __global__ void cudaComputeAutocor(
 {
     __shared__ struct {
 	float data[512];
-	float product[256];
-	float sum[33];
+	volatile float product[256];
+	volatile float sum[33];
 	computeAutocorTaskStruct task;
     } shared;
     const int tid = threadIdx.x;
@@ -81,15 +81,17 @@ extern "C" __global__ void cudaComputeAutocor(
 	//if (tid < 256) shared.product[tid] += shared.product[tid + 256]; __syncthreads();
 	if (tid < 128) shared.product[tid] += shared.product[tid + 128]; __syncthreads();
 	if (tid < 64) shared.product[tid] += shared.product[tid + 64]; __syncthreads();
-	if (tid < 32) shared.product[tid] += shared.product[tid + 32]; __syncthreads();
-	shared.product[tid] += shared.product[tid + 16];
-	shared.product[tid] += shared.product[tid + 8];
-	shared.product[tid] += shared.product[tid + 4];
-	shared.product[tid] += shared.product[tid + 2];
-	if (tid == 0) shared.sum[lag] = shared.product[0] + shared.product[1]; 
+	if (tid < 32) 
+	{
+	    shared.product[tid] += shared.product[tid + 32];
+	    shared.product[tid] += shared.product[tid + 16];
+	    shared.product[tid] += shared.product[tid + 8];
+	    shared.product[tid] += shared.product[tid + 4];
+	    shared.product[tid] += shared.product[tid + 2];
+	    if (tid == 0) shared.sum[lag] = shared.product[0] + shared.product[1]; 
+	}
 	__syncthreads();
     }
-
     // return results
     if (tid <= max_order)
 	output[(blockIdx.x + blockIdx.y * gridDim.x) * (max_order + 1) + tid] = shared.sum[tid];
@@ -152,17 +154,17 @@ extern "C" __global__ void cudaComputeLPC(
 	    // Schur recursion
 	    float reff = -shared.gen1[0] / error;
 	    //if (tid == 0) shared.reff[order] = reff;
-	    error += shared.gen1[0] * reff;
+	    error += __fmul_rz(shared.gen1[0], reff);
 	    if (tid < max_order - 1 - order)
 	    {
-		float g1 = shared.gen1[tid + 1] + reff * shared.gen0[tid];
-		float g0 = shared.gen1[tid + 1] * reff + shared.gen0[tid];
+		float g1 = shared.gen1[tid + 1] + __fmul_rz(reff, shared.gen0[tid]);
+		float g0 = __fmul_rz(shared.gen1[tid + 1], reff) + shared.gen0[tid];
 		shared.gen1[tid] = g1;
 		shared.gen0[tid] = g0;
 	    }
 
 	    // Levinson-Durbin recursion
-	    shared.ldr[tid] += (tid < order) * reff * shared.ldr[order - 1 - tid] + (tid  == order) * reff;
+	    shared.ldr[tid] += (tid < order) * __fmul_rz(reff, shared.ldr[order - 1 - tid]) + (tid  == order) * reff;
 
 	    // Quantization
 	    int precision = 13;
