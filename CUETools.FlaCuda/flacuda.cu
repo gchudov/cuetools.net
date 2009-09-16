@@ -28,6 +28,14 @@ typedef struct
     int blocksize;
 } computeAutocorTaskStruct;
 
+typedef enum
+{
+    Constant = 0,
+    Verbatim = 1,
+    Fixed = 8,
+    LPC = 32
+} SubframeType;
+
 typedef struct
 {
     int residualOrder; // <= 32
@@ -35,7 +43,10 @@ typedef struct
     int shift;
     int cbits;
     int size;
-    int reserved[11];
+    int type;
+    int obits;
+    int blocksize;
+    int reserved[8];
     int coefs[32];
 } encodeResidualTaskStruct;
 
@@ -201,11 +212,11 @@ extern "C" __global__ void cudaEstimateResidual(
     encodeResidualTaskStruct *tasks,
     int max_order,
     int frameSize,
-    int partSize // should be 224
+    int partSize // should be blockDim.x * blockDim.y == 256
     )
 {
     __shared__ struct {
-	int data[32*8];
+	int data[32*9];
 	volatile int residual[32*8];
 	encodeResidualTaskStruct task[8];
     } shared;
@@ -218,22 +229,24 @@ extern "C" __global__ void cudaEstimateResidual(
 
     // fetch samples
     shared.data[tid] = tid < dataLen ? samples[shared.task[0].samplesOffs + pos + tid] : 0;
-    const int residualLen = max(0,min(frameSize - pos - shared.task[threadIdx.y].residualOrder, partSize)) * (shared.task[threadIdx.y].residualOrder != 0);
+    if (tid < 32) shared.data[tid + partSize] = tid + partSize < dataLen ? samples[shared.task[0].samplesOffs + pos + tid + partSize] : 0;
+    const int residualLen = max(0,min(frameSize - pos - shared.task[threadIdx.y].residualOrder, partSize));
 
     __syncthreads();
 
     shared.residual[tid] = 0;
     shared.task[threadIdx.y].coefs[threadIdx.x] = threadIdx.x < max_order ? tasks[blockIdx.y * blockDim.y + threadIdx.y].coefs[threadIdx.x] : 0;
 
-    for (int i = threadIdx.x; i - threadIdx.x < residualLen; i += blockDim.x) // += 32
+    for (int i = blockDim.y * (shared.task[threadIdx.y].type == Verbatim); i < blockDim.y; i++) // += 32
     {
+	int ptr = threadIdx.x + (i<<5);
 	// compute residual
 	int sum = 0;
 	int c = 0;
 	for (c = 0; c < shared.task[threadIdx.y].residualOrder; c++)
-	    sum += __mul24(shared.data[i + c], shared.task[threadIdx.y].coefs[c]);
-	sum = shared.data[i + c] - (sum >> shared.task[threadIdx.y].shift);
-	shared.residual[tid] += __mul24(i < residualLen, (sum << 1) ^ (sum >> 31));
+	    sum += __mul24(shared.data[ptr + c], shared.task[threadIdx.y].coefs[c]);
+	sum = shared.data[ptr + c] - (sum >> shared.task[threadIdx.y].shift);
+	shared.residual[tid] += __mul24(ptr < residualLen, (sum << 1) ^ (sum >> 31));
     }
 
     // enable this line when using blockDim.x == 64
@@ -250,7 +263,7 @@ extern "C" __global__ void cudaEstimateResidual(
     shared.residual[tid] = min(shared.residual[tid], shared.residual[tid + 4]);
     shared.residual[tid] = min(shared.residual[tid], shared.residual[tid + 2]);
     shared.residual[tid] = min(shared.residual[tid], shared.residual[tid + 1]);
-    if (threadIdx.x == 0 && shared.task[threadIdx.y].residualOrder != 0)
+    if (threadIdx.x == 0)
 	output[(blockIdx.y * blockDim.y + threadIdx.y) * gridDim.x + blockIdx.x] = shared.residual[tid];
 }
 
@@ -342,17 +355,79 @@ extern "C" __global__ void cudaSumResidual(
     shared.partLen[tid] += shared.partLen[tid + 1];
     // return sum
     if (tid == 0)
-	tasks[blockIdx.y].size = shared.partLen[0];
+	tasks[blockIdx.y].size = shared.task.type == Fixed ? 
+	    shared.task.residualOrder * shared.task.obits + 6 + shared.partLen[0] : shared.task.type == LPC ? 
+	    shared.task.residualOrder * shared.task.obits + 4 + 5 + shared.task.residualOrder * shared.task.cbits + 6 + (4 * partCount/2)/* << porder */ + shared.partLen[0] :
+	shared.task.obits * shared.task.blocksize;
+}
+
+#define BEST_INDEX(a,b) ((a) + ((b) - (a)) * (shared.length[b] < shared.length[a]))
+
+extern "C" __global__ void cudaChooseBestResidual(
+    encodeResidualTaskStruct *tasks_out,
+    encodeResidualTaskStruct *tasks,
+    int count
+    )
+{
+    __shared__ struct {
+	volatile int index[128];
+	int length[256];
+    } shared;
+    
+    //shared.index[threadIdx.x] = threadIdx.x;
+    shared.length[threadIdx.x] = (threadIdx.x < count) ? tasks[threadIdx.x + count * blockIdx.y].size : 0x7fffffff;
+
+    __syncthreads();
+
+    //if (threadIdx.x < 128) shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 128]); __syncthreads();
+    if (threadIdx.x < 128) shared.index[threadIdx.x] = BEST_INDEX(threadIdx.x, threadIdx.x + 128); __syncthreads();
+    if (threadIdx.x < 64) shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 64]); __syncthreads();
+    if (threadIdx.x < 32) 
+    {
+	shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 32]);
+	shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 16]);
+	shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 8]);
+	shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 4]);
+	shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 2]);
+	shared.index[threadIdx.x] = BEST_INDEX(shared.index[threadIdx.x], shared.index[threadIdx.x + 1]);
+    }
+    __syncthreads();
+    if (threadIdx.x < sizeof(encodeResidualTaskStruct)/sizeof(int))
+	((int*)(tasks_out + blockIdx.y))[threadIdx.x] = ((int*)(tasks + count * blockIdx.y + shared.index[0]))[threadIdx.x];
+ //   if (threadIdx.x == 0)
+	//tasks[count * blockIdx.y].best = count * blockIdx.y + shared.index[0];
 }
 
 extern "C" __global__ void cudaEncodeResidual(
     int*output,
     int*samples,
-    encodeResidualTaskStruct *tasks,
-    int frameSize,
-    int partSize // should be <= blockDim - max_order
+    encodeResidualTaskStruct *tasks
     )
 {
+    __shared__ struct {
+	int data[256 + 32];
+	encodeResidualTaskStruct task;
+    } shared;
+    const int tid = threadIdx.x;
+    if (threadIdx.x < sizeof(encodeResidualTaskStruct))
+	((int*)&shared.task)[threadIdx.x] = ((int*)(&tasks[blockIdx.y]))[threadIdx.x];
     __syncthreads();
+    const int partSize = blockDim.x;
+    const int pos = blockIdx.x * partSize;
+    const int dataLen = min(shared.task.blocksize - pos, partSize + shared.task.residualOrder);
+
+    // fetch samples
+    shared.data[tid] = tid < dataLen ? samples[shared.task.samplesOffs + pos + tid] : 0;
+    if (tid < 32) shared.data[tid + partSize] = tid + partSize < dataLen ? samples[shared.task.samplesOffs + pos + tid + partSize] : 0;
+    const int residualLen = max(0,min(shared.task.blocksize - pos - shared.task.residualOrder, partSize));
+
+    __syncthreads();
+    
+    // compute residual
+    int sum = 0;
+    for (int c = 0; c < shared.task.residualOrder; c++)
+	sum += __mul24(shared.data[tid + c], shared.task.coefs[c]);
+    if (tid < residualLen)
+	output[shared.task.samplesOffs + pos + tid] = shared.data[tid + shared.task.residualOrder] - (sum >> shared.task.shift);
 }
 #endif
