@@ -26,6 +26,7 @@ typedef struct
     int windowOffs;
     int residualOffs;
     int blocksize;
+    int reserved[12];
 } computeAutocorTaskStruct;
 
 typedef enum
@@ -115,46 +116,41 @@ extern "C" __global__ void cudaComputeAutocor(
     __shared__ struct {
 	float data[512];
 	volatile float product[256];
-	volatile float sum[33];
 	computeAutocorTaskStruct task;
     } shared;
-    const int tid = threadIdx.x;
-    const int tid2 = threadIdx.x + 256;
+    const int tid = threadIdx.x + (threadIdx.y * 32);
     // fetch task data
     if (tid < sizeof(shared.task) / sizeof(int))
 	((int*)&shared.task)[tid] = ((int*)(tasks + blockIdx.y))[tid];
     __syncthreads();
 
-    const int pos = blockIdx.x * partSize;
-    const int productLen = min(frameSize - pos - max_order, partSize);
-    const int dataLen = productLen + max_order;
-
     // fetch samples
-    shared.data[tid] = tid < dataLen ? samples[shared.task.samplesOffs + pos + tid] * window[shared.task.windowOffs + pos + tid]: 0.0f;
-    shared.data[tid2] = tid2 < dataLen ? samples[shared.task.samplesOffs + pos + tid2] * window[shared.task.windowOffs + pos + tid2]: 0.0f;
+    {
+	const int pos = blockIdx.x * partSize;
+	const int dataLen = min(frameSize - pos, partSize + max_order);
+
+	shared.data[tid] = tid < dataLen ? samples[shared.task.samplesOffs + pos + tid] * window[shared.task.windowOffs + pos + tid]: 0.0f;
+	shared.data[tid + 256] = tid + 256 < dataLen ? samples[shared.task.samplesOffs + pos + tid + 256] * window[shared.task.windowOffs + pos + tid + 256]: 0.0f;
+    }
     __syncthreads();
 
-    for (int lag = 0; lag <= max_order; lag++)
+    for (int lag = threadIdx.y; lag <= max_order; lag += 8)
     {
-	shared.product[tid] = (tid < productLen) * shared.data[tid] * shared.data[tid + lag] +
-	    + (tid2 < productLen) * shared.data[tid2] * shared.data[tid2 + lag];
-	__syncthreads();
-
+        const int productLen = min(frameSize - blockIdx.x * partSize - lag, partSize);
+	shared.product[tid] = 0.0;
+	for (int ptr = threadIdx.x; ptr < productLen + threadIdx.x; ptr += 128)
+	    shared.product[tid] += ((ptr < productLen) * shared.data[ptr] * shared.data[ptr + lag]
+				 + (ptr + 32 < productLen) * shared.data[ptr + 32] * shared.data[ptr + 32 + lag])
+				 + ((ptr + 64 < productLen) * shared.data[ptr + 64] * shared.data[ptr + 64 + lag]
+				 + (ptr + 96 < productLen) * shared.data[ptr + 96] * shared.data[ptr + 96 + lag]);
 	// product sum: reduction in shared mem
-	//if (tid < 256) shared.product[tid] += shared.product[tid + 256]; __syncthreads();
-	if (tid < 128) shared.product[tid] += shared.product[tid + 128]; __syncthreads();
-	if (tid < 64) shared.product[tid] += shared.product[tid + 64]; __syncthreads();
-	if (tid < 32) shared.product[tid] += shared.product[tid + 32]; __syncthreads();
-	shared.product[tid] += shared.product[tid + 16];
-	shared.product[tid] += shared.product[tid + 8];
-	shared.product[tid] += shared.product[tid + 4];
-	shared.product[tid] += shared.product[tid + 2];
-	if (tid == 0) shared.sum[lag] = shared.product[0] + shared.product[1]; 
-	__syncthreads();
+	//shared.product[tid] += shared.product[tid + 16];
+	shared.product[tid] = (shared.product[tid] + shared.product[tid + 16]) + (shared.product[tid + 8] + shared.product[tid + 24]);
+	shared.product[tid] = (shared.product[tid] + shared.product[tid + 4]) + (shared.product[tid + 2] + shared.product[tid + 6]);
+	// return results
+	if (threadIdx.x == 0)
+	    output[(blockIdx.x + blockIdx.y * gridDim.x) * (max_order + 1) + lag] = shared.product[tid] + shared.product[tid + 1];
     }
-    // return results
-    if (tid <= max_order)
-	output[(blockIdx.x + blockIdx.y * gridDim.x) * (max_order + 1) + tid] = shared.sum[tid];
 }
 
 extern "C" __global__ void cudaComputeLPC(

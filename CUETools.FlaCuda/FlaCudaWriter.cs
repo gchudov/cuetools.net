@@ -1099,16 +1099,13 @@ namespace CUETools.Codecs.FlaCuda
 
 		unsafe void compute_autocorellation(int blocksize, int channelsCount, int max_order, int nFrames, FlaCudaTask task)
 		{
-			int autocorThreads = 256;
-			int partSize = 2 * autocorThreads - max_order;
-			partSize &= 0xffffff0;
+			if (blocksize <= 4)
+				return;
 
+			int partSize = 256 + 128;// (2 * 256 - max_order) & ~31;
 			int partCount = (blocksize + partSize - 1) / partSize;
 			if (partCount > maxAutocorParts)
 				throw new Exception("internal error");
-
-			if (blocksize <= 4)
-				return;
 
 			cuda.SetParameter(task.cudaStereoDecorr, 0, (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(task.cudaStereoDecorr, sizeof(uint), (uint)MAX_BLOCKSIZE);
@@ -1129,8 +1126,8 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4, (uint)max_order);
 			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint), (uint)blocksize);
 			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint) * 2, (uint)partSize);
-			cuda.SetParameterSize(task.cudaComputeAutocor, (uint)(sizeof(uint) * 4) + sizeof(uint) * 3);
-			cuda.SetFunctionBlockShape(task.cudaComputeAutocor, autocorThreads, 1, 1);
+			cuda.SetParameterSize(task.cudaComputeAutocor, sizeof(uint) * 7U);
+			cuda.SetFunctionBlockShape(task.cudaComputeAutocor, 32, 8, 1);
 
 			cuda.SetParameter(task.cudaComputeLPC, 0, (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint), (uint)task.cudaAutocorOutput.Pointer);
@@ -1768,6 +1765,7 @@ namespace CUETools.Codecs.FlaCuda
 		public int windowOffs;
 		public int residualOffs;
 		public int blocksize;
+		public fixed int reserved[12];
 	};
 	
 	unsafe struct encodeResidualTaskStruct
