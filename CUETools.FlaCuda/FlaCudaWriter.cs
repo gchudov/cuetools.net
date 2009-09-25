@@ -424,6 +424,9 @@ namespace CUETools.Codecs.FlaCuda
 			int* s = ((int*)task.samplesBufferPtr) + samplesInBuffer;
 			fixed (int *src = &samples[pos, 0])
 			{
+				short* dst = ((short*)task.samplesBytesPtr) + samplesInBuffer * channels;
+				for (int i = 0; i < block * channels; i++)
+					dst[i] = (short)src[i];
 				if (channels == 2 && eparams.do_midside)
 					channel_decorrelation(s, s + FlaCudaWriter.MAX_BLOCKSIZE,
 						s + 2 * FlaCudaWriter.MAX_BLOCKSIZE, s + 3 * FlaCudaWriter.MAX_BLOCKSIZE, src, block);
@@ -947,7 +950,7 @@ namespace CUETools.Codecs.FlaCuda
 								csum += (ulong)Math.Abs(coefs[i - 1]);
 							if ((csum << (int)frame.subframes[ch].obits) >= 1UL << 32)
 								lpc.encode_residual_long(frame.subframes[ch].best.residual, frame.subframes[ch].samples, frame.blocksize, frame.subframes[ch].best.order, coefs, frame.subframes[ch].best.shift);
-							else if (encode_on_cpu)
+							else// if (encode_on_cpu)
 								lpc.encode_residual(frame.subframes[ch].best.residual, frame.subframes[ch].samples, frame.blocksize, frame.subframes[ch].best.order, coefs, frame.subframes[ch].best.shift);
 
 							int pmin = get_max_p_order(eparams.min_partition_order, frame.blocksize, frame.subframes[ch].best.order);
@@ -1022,7 +1025,10 @@ namespace CUETools.Codecs.FlaCuda
 			if (blocksize <= 4)
 				return;
 
-			compute_autocorellation(blocksize, channelsCount, max_order, nFrames, task);
+			int autocorPartSize = 256 + 128;// (2 * 256 - max_order) & ~31;
+			int autocorPartCount = (blocksize + autocorPartSize - 1) / autocorPartSize;
+			if (autocorPartCount > maxAutocorParts)
+				throw new Exception("internal error");
 
 			int threads_y;
 			if (task.nResidualTasksPerChannel >= 4 && task.nResidualTasksPerChannel <= 8)
@@ -1039,25 +1045,58 @@ namespace CUETools.Codecs.FlaCuda
 				threads_y = 4;
 			else
 				throw new Exception("invalid LPC order");
-			int partSize = 32 * threads_y;
-			int partCount = (blocksize + partSize - 1) / partSize;
+			int residualPartSize = 32 * threads_y;
+			int residualPartCount = (blocksize + residualPartSize - 1) / residualPartSize;
 
-			if (partCount > maxResidualParts)
+			if (residualPartCount > maxResidualParts)
 				throw new Exception("invalid combination of block size and LPC order");
+
+			CUfunction cudaChannelDecorr = channels == 2 ? (channelsCount == 4 ? task.cudaStereoDecorr : task.cudaChannelDecorr2) : task.cudaChannelDecorr;
+
+			cuda.SetParameter(cudaChannelDecorr, 0, (uint)task.cudaSamples.Pointer);
+			cuda.SetParameter(cudaChannelDecorr, 1 * sizeof(uint), (uint)task.cudaSamplesBytes.Pointer);
+			cuda.SetParameter(cudaChannelDecorr, 2 * sizeof(uint), (uint)MAX_BLOCKSIZE);
+			cuda.SetParameterSize(cudaChannelDecorr, sizeof(uint) * 3U);
+			cuda.SetFunctionBlockShape(cudaChannelDecorr, 256, 1, 1);
+
+			cuda.SetParameter(task.cudaFindWastedBits, 0 * sizeof(uint), (uint)task.cudaResidualTasks.Pointer);
+			cuda.SetParameter(task.cudaFindWastedBits, 1 * sizeof(uint), (uint)task.cudaSamples.Pointer);
+			cuda.SetParameter(task.cudaFindWastedBits, 2 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
+			cuda.SetParameter(task.cudaFindWastedBits, 3 * sizeof(uint), (uint)blocksize);
+			cuda.SetParameterSize(task.cudaFindWastedBits, sizeof(uint) * 4U);
+			cuda.SetFunctionBlockShape(task.cudaFindWastedBits, 256, 1, 1);
+
+			cuda.SetParameter(task.cudaComputeAutocor, 0, (uint)task.cudaAutocorOutput.Pointer);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint), (uint)task.cudaSamples.Pointer);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 2, (uint)cudaWindow.Pointer);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 3, (uint)task.cudaAutocorTasks.Pointer);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4, (uint)max_order);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint), (uint)blocksize);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint) * 2, (uint)autocorPartSize);
+			cuda.SetParameterSize(task.cudaComputeAutocor, sizeof(uint) * 7U);
+			cuda.SetFunctionBlockShape(task.cudaComputeAutocor, 32, 8, 1);
+
+			cuda.SetParameter(task.cudaComputeLPC, 0, (uint)task.cudaResidualTasks.Pointer);
+			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint), (uint)task.cudaAutocorOutput.Pointer);
+			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 2, (uint)task.cudaAutocorTasks.Pointer);
+			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 3, (uint)max_order);
+			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 3 + sizeof(uint), (uint)autocorPartCount);
+			cuda.SetParameterSize(task.cudaComputeLPC, (uint)(sizeof(uint) * 3) + sizeof(uint) * 2);
+			cuda.SetFunctionBlockShape(task.cudaComputeLPC, (autocorPartCount + 31) & ~31, 1, 1);
 
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 0, (uint)task.cudaResidualOutput.Pointer);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 1, (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 2, (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 3, (uint)max_order);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 4, (uint)blocksize);
-			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 5, (uint)partSize);
+			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 5, (uint)residualPartSize);
 			cuda.SetParameterSize(task.cudaEstimateResidual, sizeof(uint) * 6);
 			cuda.SetFunctionBlockShape(task.cudaEstimateResidual, 32, threads_y, 1);
 
 			int nBestTasks = task.nResidualTasks / task.nResidualTasksPerChannel;
 			cuda.SetParameter(task.cudaChooseBestMethod, 0 * sizeof(uint), (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaChooseBestMethod, 1 * sizeof(uint), (uint)task.cudaResidualOutput.Pointer);
-			cuda.SetParameter(task.cudaChooseBestMethod, 2 * sizeof(uint), (uint)partCount);
+			cuda.SetParameter(task.cudaChooseBestMethod, 2 * sizeof(uint), (uint)residualPartCount);
 			cuda.SetParameter(task.cudaChooseBestMethod, 3 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
 			cuda.SetParameterSize(task.cudaChooseBestMethod, sizeof(uint) * 4U);
 			cuda.SetFunctionBlockShape(task.cudaChooseBestMethod, 32, 16, 1);
@@ -1078,10 +1117,14 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaEncodeResidual, 1 * sizeof(uint), (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(task.cudaEncodeResidual, 2 * sizeof(uint), (uint)task.cudaBestResidualTasks.Pointer);
 			cuda.SetParameterSize(task.cudaEncodeResidual, sizeof(uint) * 3U);
-			cuda.SetFunctionBlockShape(task.cudaEncodeResidual, partSize, 1, 1);
+			cuda.SetFunctionBlockShape(task.cudaEncodeResidual, residualPartSize, 1, 1);
 
 			// issue work to the GPU
-			cuda.LaunchAsync(task.cudaEstimateResidual, partCount, (task.nResidualTasks / threads_y * nFrames) / maxFrames, task.stream);
+			cuda.LaunchAsync(cudaChannelDecorr, (nFrames * blocksize + 255) / 256, channels == 2 ? 1 : channels, task.stream);
+			cuda.LaunchAsync(task.cudaFindWastedBits, (task.nResidualTasks / task.nResidualTasksPerChannel * nFrames) / maxFrames, 1, task.stream);
+			cuda.LaunchAsync(task.cudaComputeAutocor, autocorPartCount, (task.nAutocorTasks * nFrames) / maxFrames, task.stream);
+			cuda.LaunchAsync(task.cudaComputeLPC, 1, (task.nAutocorTasks * nFrames) / maxFrames, task.stream);
+			cuda.LaunchAsync(task.cudaEstimateResidual, residualPartCount, (task.nResidualTasks / threads_y * nFrames) / maxFrames, task.stream);
 			cuda.LaunchAsync(task.cudaChooseBestMethod, 1, (nBestTasks * nFrames) / maxFrames, task.stream);
 			if (channels == 2 && channelsCount == 4)
 			{
@@ -1091,60 +1134,12 @@ namespace CUETools.Codecs.FlaCuda
 			else
 				cuda.LaunchAsync(task.cudaCopyBestMethod, 1, (nBestTasks * nFrames) / maxFrames, task.stream);
 			if (!encode_on_cpu)
-				cuda.LaunchAsync(task.cudaEncodeResidual, partCount, (nBestTasks * nFrames) / maxFrames, task.stream);
+				cuda.LaunchAsync(task.cudaEncodeResidual, residualPartCount, (nBestTasks * nFrames) / maxFrames, task.stream);
 			cuda.CopyDeviceToHostAsync(task.cudaBestResidualTasks, task.bestResidualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * ((nBestTasks * nFrames) / maxFrames)), task.stream);
 			if (!encode_on_cpu)
 				cuda.CopyDeviceToHostAsync(task.cudaResidual, task.residualBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channels), task.stream);
 		}
 
-		unsafe void compute_autocorellation(int blocksize, int channelsCount, int max_order, int nFrames, FlaCudaTask task)
-		{
-			if (blocksize <= 4)
-				return;
-
-			int partSize = 256 + 128;// (2 * 256 - max_order) & ~31;
-			int partCount = (blocksize + partSize - 1) / partSize;
-			if (partCount > maxAutocorParts)
-				throw new Exception("internal error");
-
-			cuda.SetParameter(task.cudaStereoDecorr, 0, (uint)task.cudaSamples.Pointer);
-			cuda.SetParameter(task.cudaStereoDecorr, sizeof(uint), (uint)MAX_BLOCKSIZE);
-			cuda.SetParameterSize(task.cudaStereoDecorr, sizeof(uint) * 2U);
-			cuda.SetFunctionBlockShape(task.cudaStereoDecorr, 256, 1, 1);
-
-			cuda.SetParameter(task.cudaFindWastedBits, 0 * sizeof(uint), (uint)task.cudaResidualTasks.Pointer);
-			cuda.SetParameter(task.cudaFindWastedBits, 1 * sizeof(uint), (uint)task.cudaSamples.Pointer);
-			cuda.SetParameter(task.cudaFindWastedBits, 2 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
-			cuda.SetParameter(task.cudaFindWastedBits, 3 * sizeof(uint), (uint)blocksize);
-			cuda.SetParameterSize(task.cudaFindWastedBits, sizeof(uint) * 4U);
-			cuda.SetFunctionBlockShape(task.cudaFindWastedBits, 256, 1, 1);			
-
-			cuda.SetParameter(task.cudaComputeAutocor, 0, (uint)task.cudaAutocorOutput.Pointer);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint), (uint)task.cudaSamples.Pointer);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 2, (uint)cudaWindow.Pointer);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 3, (uint)task.cudaAutocorTasks.Pointer);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4, (uint)max_order);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint), (uint)blocksize);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint) * 2, (uint)partSize);
-			cuda.SetParameterSize(task.cudaComputeAutocor, sizeof(uint) * 7U);
-			cuda.SetFunctionBlockShape(task.cudaComputeAutocor, 32, 8, 1);
-
-			cuda.SetParameter(task.cudaComputeLPC, 0, (uint)task.cudaResidualTasks.Pointer);
-			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint), (uint)task.cudaAutocorOutput.Pointer);
-			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 2, (uint)task.cudaAutocorTasks.Pointer);
-			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 3, (uint)max_order);
-			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 3 + sizeof(uint), (uint)partCount);
-			cuda.SetParameterSize(task.cudaComputeLPC, (uint)(sizeof(uint) * 3) + sizeof(uint) * 2);
-			cuda.SetFunctionBlockShape(task.cudaComputeLPC, (partCount + 31) & ~31, 1, 1);
-
-			// issue work to the GPU
-			if (channels == 2 && channelsCount == 4)
-				cuda.LaunchAsync(task.cudaStereoDecorr, MAX_BLOCKSIZE / 256, 1, task.stream);
-			cuda.LaunchAsync(task.cudaFindWastedBits, (task.nResidualTasks / task.nResidualTasksPerChannel  * nFrames) / maxFrames, 1, task.stream);
-			cuda.LaunchAsync(task.cudaComputeAutocor, partCount, (task.nAutocorTasks * nFrames) / maxFrames, task.stream);
-			cuda.LaunchAsync(task.cudaComputeLPC, 1, (task.nAutocorTasks * nFrames) / maxFrames, task.stream);
-		}
-	
 		unsafe int encode_frame(bool doMidside, int channelCount, int iFrame, FlaCudaTask task)
 		{
 			fixed (int* r = residualBuffer)
@@ -1186,7 +1181,8 @@ namespace CUETools.Codecs.FlaCuda
 			bool doMidside = channels == 2 && eparams.do_midside;
 			int channelCount = doMidside ? 2 * channels : channels;
 
-			cuda.CopyHostToDeviceAsync(task.cudaSamples, task.samplesBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channels), task.stream);
+			//cuda.CopyHostToDeviceAsync(task.cudaSamples, task.samplesBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channels), task.stream);
+			cuda.CopyHostToDeviceAsync(task.cudaSamplesBytes, task.samplesBytesPtr, (uint)(sizeof(short) * channels * eparams.block_size * nFrames), task.stream);
 		}
 
 		unsafe void run_GPU_task(int nFrames, FlaCudaTask task)
@@ -1261,7 +1257,7 @@ namespace CUETools.Codecs.FlaCuda
 				{
 					int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
 					if (decoded != fs || verify.Remaining != (ulong)eparams.block_size)
-						throw new Exception("validation failed!");
+						throw new Exception("validation failed! frame size mismatch");
 					fixed (int* s = task.verifyBuffer, r = verify.Samples)
 					{
 						for (int ch = 0; ch < channels; ch++)
@@ -1341,6 +1337,7 @@ namespace CUETools.Codecs.FlaCuda
 						int* s2 = (int*)task2.samplesBufferPtr;
 						for (int ch = 0; ch < channelCount; ch++)
 							AudioSamples.MemCpy(s2 + ch * FlaCudaWriter.MAX_BLOCKSIZE, s1 + bs + ch * FlaCudaWriter.MAX_BLOCKSIZE, samplesInBuffer - bs);
+						AudioSamples.MemCpy(((short*)task2.samplesBytesPtr), ((short*)task1.samplesBytesPtr) + bs * channels, (samplesInBuffer - bs) * channels);
 					}
 					samplesInBuffer -= bs;
 					have_data = nFrames;
@@ -1790,6 +1787,8 @@ namespace CUETools.Codecs.FlaCuda
 	{
 		CUDA cuda;
 		public CUfunction cudaStereoDecorr;
+		public CUfunction cudaChannelDecorr;
+		public CUfunction cudaChannelDecorr2;
 		public CUfunction cudaFindWastedBits;
 		public CUfunction cudaComputeAutocor;
 		public CUfunction cudaComputeLPC;
@@ -1799,6 +1798,7 @@ namespace CUETools.Codecs.FlaCuda
 		public CUfunction cudaCopyBestMethodStereo;
 		public CUfunction cudaEncodeResidual;
 		public CUdeviceptr cudaSamples;
+		public CUdeviceptr cudaSamplesBytes;
 		public CUdeviceptr cudaResidual;
 		public CUdeviceptr cudaAutocorTasks;
 		public CUdeviceptr cudaAutocorOutput;
@@ -1806,6 +1806,7 @@ namespace CUETools.Codecs.FlaCuda
 		public CUdeviceptr cudaResidualOutput;
 		public CUdeviceptr cudaBestResidualTasks;
 		public IntPtr samplesBufferPtr = IntPtr.Zero;
+		public IntPtr samplesBytesPtr = IntPtr.Zero;
 		public IntPtr residualBufferPtr = IntPtr.Zero;
 		public IntPtr autocorTasksPtr = IntPtr.Zero;
 		public IntPtr residualTasksPtr = IntPtr.Zero;
@@ -1831,6 +1832,7 @@ namespace CUETools.Codecs.FlaCuda
 			bestResidualTasksLen = sizeof(encodeResidualTaskStruct) * channelCount * FlaCudaWriter.maxFrames;
 			samplesBufferLen = sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channelCount;
 
+			cudaSamplesBytes = cuda.Allocate((uint)samplesBufferLen / 2);
 			cudaSamples = cuda.Allocate((uint)samplesBufferLen);
 			cudaResidual = cuda.Allocate((uint)samplesBufferLen);
 			cudaAutocorTasks = cuda.Allocate((uint)autocorTasksLen);
@@ -1839,6 +1841,8 @@ namespace CUETools.Codecs.FlaCuda
 			cudaBestResidualTasks = cuda.Allocate((uint)bestResidualTasksLen);
 			cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * channelCount * (lpc.MAX_LPC_WINDOWS + 1) * lpc.MAX_LPC_ORDER * FlaCudaWriter.maxResidualParts * FlaCudaWriter.maxFrames));
 			CUResult cuErr = CUDADriver.cuMemAllocHost(ref samplesBufferPtr, (uint)samplesBufferLen);
+			if (cuErr == CUResult.Success)
+				cuErr = CUDADriver.cuMemAllocHost(ref samplesBytesPtr, (uint)samplesBufferLen / 2);
 			if (cuErr == CUResult.Success)
 				cuErr = CUDADriver.cuMemAllocHost(ref residualBufferPtr, (uint)samplesBufferLen);			
 			if (cuErr == CUResult.Success)
@@ -1849,6 +1853,7 @@ namespace CUETools.Codecs.FlaCuda
 				cuErr = CUDADriver.cuMemAllocHost(ref bestResidualTasksPtr, (uint)bestResidualTasksLen);
 			if (cuErr != CUResult.Success)
 			{
+				if (samplesBytesPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(samplesBytesPtr); samplesBytesPtr = IntPtr.Zero;
 				if (samplesBufferPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(samplesBufferPtr); samplesBufferPtr = IntPtr.Zero;
 				if (residualBufferPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(residualBufferPtr); residualBufferPtr = IntPtr.Zero;
 				if (autocorTasksPtr != IntPtr.Zero) CUDADriver.cuMemFreeHost(autocorTasksPtr); autocorTasksPtr = IntPtr.Zero;
@@ -1859,6 +1864,8 @@ namespace CUETools.Codecs.FlaCuda
 
 			cudaComputeAutocor = cuda.GetModuleFunction("cudaComputeAutocor");
 			cudaStereoDecorr = cuda.GetModuleFunction("cudaStereoDecorr");
+			cudaChannelDecorr = cuda.GetModuleFunction("cudaChannelDecorr");
+			cudaChannelDecorr2 = cuda.GetModuleFunction("cudaChannelDecorr2");
 			cudaFindWastedBits = cuda.GetModuleFunction("cudaFindWastedBits");
 			cudaComputeLPC = cuda.GetModuleFunction("cudaComputeLPC");
 			cudaEstimateResidual = cuda.GetModuleFunction("cudaEstimateResidual");
@@ -1875,12 +1882,14 @@ namespace CUETools.Codecs.FlaCuda
 		public void Dispose()
 		{
 			cuda.Free(cudaSamples);
+			cuda.Free(cudaSamplesBytes);
 			cuda.Free(cudaResidual);
 			cuda.Free(cudaAutocorTasks);
 			cuda.Free(cudaAutocorOutput);
 			cuda.Free(cudaResidualTasks);
 			cuda.Free(cudaResidualOutput);
 			cuda.Free(cudaBestResidualTasks);
+			CUDADriver.cuMemFreeHost(samplesBytesPtr);
 			CUDADriver.cuMemFreeHost(samplesBufferPtr);
 			CUDADriver.cuMemFreeHost(residualBufferPtr);
 			CUDADriver.cuMemFreeHost(residualTasksPtr);

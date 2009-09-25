@@ -57,17 +57,45 @@ typedef struct
 
 extern "C" __global__ void cudaStereoDecorr(
     int *samples,
+    short2 *src,
     int offset
 )
 {
     const int pos = blockIdx.x * blockDim.x + threadIdx.x;
     if (pos < offset)
     {
-	int l = samples[pos];
-	int r = samples[offset + pos];
-	samples[2 * offset + pos] = (l + r) >> 1;
-	samples[3 * offset + pos] = l - r;
+	short2 s = src[pos];
+	samples[pos] = s.x;
+	samples[1 * offset + pos] = s.y;
+	samples[2 * offset + pos] = (s.x + s.y) >> 1;
+	samples[3 * offset + pos] = s.x - s.y;
     }
+}
+
+extern "C" __global__ void cudaChannelDecorr2(
+    int *samples,
+    short2 *src,
+    int offset
+)
+{
+    const int pos = blockIdx.x * blockDim.x + threadIdx.x;
+    if (pos < offset)
+    {
+	short2 s = src[pos];
+	samples[pos] = s.x;
+	samples[1 * offset + pos] = s.y;
+    }
+}
+
+extern "C" __global__ void cudaChannelDecorr(
+    int *samples,
+    short *src,
+    int offset
+)
+{
+    const int pos = blockIdx.x * blockDim.x + threadIdx.x;
+    if (pos < offset)
+	samples[blockIdx.y * offset + pos] = src[pos * gridDim.y + blockIdx.y];
 }
 
 extern "C" __global__ void cudaFindWastedBits(
@@ -471,7 +499,7 @@ extern "C" __global__ void cudaEncodeResidual(
 	encodeResidualTaskStruct task;
     } shared;
     const int tid = threadIdx.x;
-    if (threadIdx.x < sizeof(encodeResidualTaskStruct))
+    if (threadIdx.x < sizeof(shared.task) / sizeof(int))
 	((int*)&shared.task)[threadIdx.x] = ((int*)(&tasks[blockIdx.y]))[threadIdx.x];
     __syncthreads();
     const int partSize = blockDim.x;
