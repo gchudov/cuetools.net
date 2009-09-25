@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-//using System.Runtime.InteropServices;
 using CUETools.Codecs;
 using CUETools.Codecs.FLAKE;
 using GASS.CUDA;
@@ -75,6 +74,7 @@ namespace CUETools.Codecs.FlaCuda
 		float[] windowBuffer;
 		byte[] md5_buffer;
 		int samplesInBuffer = 0;
+		int max_frames = 0;
 
 		int _compressionLevel = 5;
 		int _blocksize = 0;
@@ -100,10 +100,10 @@ namespace CUETools.Codecs.FlaCuda
 
 		bool encode_on_cpu = true;
 
-		public const int MAX_BLOCKSIZE = 4608 * 4;
-		internal const int maxFrames = 8;
-		internal const int maxResidualParts = 64;
-		internal const int maxAutocorParts = MAX_BLOCKSIZE / (256 - 32);
+		public const int MAX_BLOCKSIZE = 4608 * 8;
+		internal const int maxFrames = 32;
+		internal const int maxResidualParts = (MAX_BLOCKSIZE + 255) / 256;
+		internal const int maxAutocorParts = (MAX_BLOCKSIZE + 255) / 256;
 
 		public FlaCudaWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO)
 		{
@@ -176,12 +176,20 @@ namespace CUETools.Codecs.FlaCuda
 		{
 			if (inited)
 			{
+				int nFrames = samplesInBuffer / eparams.block_size;
+				if (nFrames > 0)
+					do_output_frames(nFrames);
 				if (samplesInBuffer > 0)
 				{
 					eparams.block_size = samplesInBuffer;
-					output_frames(1);
+					do_output_frames(1);
 				}
-				samplesInBuffer = 0;
+				if (task2.frameCount > 0)
+				{
+					cuda.SynchronizeStream(task2.stream);
+					process_result(task2);
+					task2.frameCount = 0;
+				}
 
 				if (_IO.CanSeek)
 				{
@@ -216,10 +224,6 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.Dispose();
 				inited = false;
 			}
-
-			//long fake, KernelStart, UserStart;
-			//GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
-			//_userProcessorTime = new TimeSpan(UserStart);
 		}
 
 		public void Close()
@@ -354,6 +358,34 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
+		public int MinFixedOrder
+		{
+			get
+			{
+				return eparams.min_fixed_order;
+			}
+			set
+			{
+				if (value < 0 || value > eparams.max_fixed_order)
+					throw new Exception("invalid MinFixedOrder " + value.ToString());
+				eparams.min_fixed_order = value;
+			}
+		}
+
+		public int MaxFixedOrder
+		{
+			get
+			{
+				return eparams.max_fixed_order;
+			}
+			set
+			{
+				if (value > 4 || value < eparams.min_fixed_order)
+					throw new Exception("invalid MaxFixedOrder " + value.ToString());
+				eparams.max_fixed_order = value;
+			}
+		}
+
 		public int MinPartitionOrder
 		{
 			get { return eparams.min_partition_order; }
@@ -386,33 +418,6 @@ namespace CUETools.Codecs.FlaCuda
 			get { return 16; }
 		}
 
-		unsafe uint get_wasted_bits(int* signal, int samples)
-		{
-			int i, shift;
-			int x = 0;
-
-			for (i = 0; i < samples && 0 == (x & 1); i++)
-				x |= signal[i];
-
-			if (x == 0)
-			{
-				shift = 0;
-			}
-			else
-			{
-				for (shift = 0; 0 == (x & 1); shift++)
-					x >>= 1;
-			}
-
-			if (shift > 0)
-			{
-				for (i = 0; i < samples; i++)
-					signal[i] >>= shift;
-			}
-
-			return (uint)shift;
-		}
-
 		/// <summary>
 		/// Copy channel-interleaved input samples into separate subframes
 		/// </summary>
@@ -422,7 +427,7 @@ namespace CUETools.Codecs.FlaCuda
  		unsafe void copy_samples(int[,] samples, int pos, int block, FlaCudaTask task)
 		{
 			int* s = ((int*)task.samplesBufferPtr) + samplesInBuffer;
-			fixed (int *src = &samples[pos, 0])
+			fixed (int* src = &samples[pos, 0])
 			{
 				short* dst = ((short*)task.samplesBytesPtr) + samplesInBuffer * channels;
 				for (int i = 0; i < block * channels; i++)
@@ -817,12 +822,13 @@ namespace CUETools.Codecs.FlaCuda
 			_windowcount++;
 		}
 
-		unsafe void initialize_autocorTasks(int blocksize, int channelsCount, int max_order, int nFrames, FlaCudaTask task)
+		unsafe void initialize_autocorTasks(int blocksize, int channelsCount, int nFrames, FlaCudaTask task)
 		{
 			computeAutocorTaskStruct* autocorTasks = (computeAutocorTaskStruct*)task.autocorTasksPtr;
 			task.nAutocorTasks = 0;
 			task.nResidualTasks = 0;
-			task.nResidualTasksPerChannel = (_windowcount * max_order + 6 + 7) & ~7;
+			task.nResidualTasksPerChannel = (_windowcount * eparams.max_prediction_order + 2 + eparams.max_fixed_order - eparams.min_fixed_order + 7) & ~7;
+			task.nAutocorTasksPerChannel = _windowcount;
 			for (int iFrame = 0; iFrame < nFrames; iFrame++)
 			{
 				for (int ch = 0; ch < channelsCount; ch++)
@@ -832,17 +838,17 @@ namespace CUETools.Codecs.FlaCuda
 						// Autocorelation task
 						autocorTasks[task.nAutocorTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * blocksize;
 						autocorTasks[task.nAutocorTasks].windowOffs = iWindow * 2 * FlaCudaWriter.MAX_BLOCKSIZE;
-						autocorTasks[task.nAutocorTasks].residualOffs = max_order * iWindow + task.nResidualTasksPerChannel * (ch + iFrame * channelsCount);
+						autocorTasks[task.nAutocorTasks].residualOffs = eparams.max_prediction_order * iWindow + task.nResidualTasksPerChannel * (ch + iFrame * channelsCount);
 						autocorTasks[task.nAutocorTasks].blocksize = blocksize;
 						task.nAutocorTasks++;
 						// LPC tasks
-						for (int order = 1; order <= max_order; order++)
+						for (int order = 1; order <= eparams.max_prediction_order; order++)
 						{
 							task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.LPC;
 							task.ResidualTasks[task.nResidualTasks].channel = ch;
 							task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
 							task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
-							task.ResidualTasks[task.nResidualTasks].residualOrder = order <= max_order ? order : 0;
+							task.ResidualTasks[task.nResidualTasks].residualOrder = order;
 							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 							task.nResidualTasks++;
@@ -862,7 +868,7 @@ namespace CUETools.Codecs.FlaCuda
 						task.nResidualTasks++;
 					}
 					// Fixed prediction
-					for (int order = 0; order < 5; order++)
+					for (int order = eparams.min_fixed_order; order <= eparams.max_fixed_order; order++)
 					{
 						task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.Fixed;
 						task.ResidualTasks[task.nResidualTasks].channel = ch;
@@ -918,7 +924,7 @@ namespace CUETools.Codecs.FlaCuda
 				throw new Exception("oops");
 			cuda.CopyHostToDeviceAsync(task.cudaAutocorTasks, task.autocorTasksPtr, (uint)(sizeof(computeAutocorTaskStruct) * task.nAutocorTasks), task.stream);
 			cuda.CopyHostToDeviceAsync(task.cudaResidualTasks, task.residualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * task.nResidualTasks), task.stream);
-			task.blocksize = blocksize;
+			task.frameSize = blocksize;
 		}
 
 		unsafe void encode_residual(FlacFrame frame)
@@ -950,7 +956,7 @@ namespace CUETools.Codecs.FlaCuda
 								csum += (ulong)Math.Abs(coefs[i - 1]);
 							if ((csum << (int)frame.subframes[ch].obits) >= 1UL << 32)
 								lpc.encode_residual_long(frame.subframes[ch].best.residual, frame.subframes[ch].samples, frame.blocksize, frame.subframes[ch].best.order, coefs, frame.subframes[ch].best.shift);
-							else// if (encode_on_cpu)
+							else if (encode_on_cpu)
 								lpc.encode_residual(frame.subframes[ch].best.residual, frame.subframes[ch].samples, frame.blocksize, frame.subframes[ch].best.order, coefs, frame.subframes[ch].best.shift);
 
 							int pmin = get_max_p_order(eparams.min_partition_order, frame.blocksize, frame.subframes[ch].best.order);
@@ -971,7 +977,7 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
-		unsafe void select_best_methods(FlacFrame frame, int channelsCount, int max_order, int iFrame, FlaCudaTask task)
+		unsafe void select_best_methods(FlacFrame frame, int channelsCount, int iFrame, FlaCudaTask task)
 		{
 			if (channelsCount == 4 && channels == 2)
 			{
@@ -1020,13 +1026,14 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
-		unsafe void estimate_residual(int blocksize, int channelsCount, int max_order, int nFrames, FlaCudaTask task)
+		unsafe void estimate_residual(FlaCudaTask task, int channelsCount)
 		{
-			if (blocksize <= 4)
+			if (task.frameSize <= 4)
 				return;
 
-			int autocorPartSize = 256 + 128;// (2 * 256 - max_order) & ~31;
-			int autocorPartCount = (blocksize + autocorPartSize - 1) / autocorPartSize;
+			//int autocorPartSize = (2 * 256 - eparams.max_prediction_order) & ~15;
+			int autocorPartSize = 256 + 128;
+			int autocorPartCount = (task.frameSize + autocorPartSize - 1) / autocorPartSize;
 			if (autocorPartCount > maxAutocorParts)
 				throw new Exception("internal error");
 
@@ -1046,14 +1053,14 @@ namespace CUETools.Codecs.FlaCuda
 			else
 				throw new Exception("invalid LPC order");
 			int residualPartSize = 32 * threads_y;
-			int residualPartCount = (blocksize + residualPartSize - 1) / residualPartSize;
+			int residualPartCount = (task.frameSize + residualPartSize - 1) / residualPartSize;
 
 			if (residualPartCount > maxResidualParts)
 				throw new Exception("invalid combination of block size and LPC order");
 
 			CUfunction cudaChannelDecorr = channels == 2 ? (channelsCount == 4 ? task.cudaStereoDecorr : task.cudaChannelDecorr2) : task.cudaChannelDecorr;
 
-			cuda.SetParameter(cudaChannelDecorr, 0, (uint)task.cudaSamples.Pointer);
+			cuda.SetParameter(cudaChannelDecorr, 0 * sizeof(uint), (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(cudaChannelDecorr, 1 * sizeof(uint), (uint)task.cudaSamplesBytes.Pointer);
 			cuda.SetParameter(cudaChannelDecorr, 2 * sizeof(uint), (uint)MAX_BLOCKSIZE);
 			cuda.SetParameterSize(cudaChannelDecorr, sizeof(uint) * 3U);
@@ -1062,7 +1069,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaFindWastedBits, 0 * sizeof(uint), (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaFindWastedBits, 1 * sizeof(uint), (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(task.cudaFindWastedBits, 2 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
-			cuda.SetParameter(task.cudaFindWastedBits, 3 * sizeof(uint), (uint)blocksize);
+			cuda.SetParameter(task.cudaFindWastedBits, 3 * sizeof(uint), (uint)task.frameSize);
 			cuda.SetParameterSize(task.cudaFindWastedBits, sizeof(uint) * 4U);
 			cuda.SetFunctionBlockShape(task.cudaFindWastedBits, 256, 1, 1);
 
@@ -1070,8 +1077,8 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint), (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 2, (uint)cudaWindow.Pointer);
 			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 3, (uint)task.cudaAutocorTasks.Pointer);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4, (uint)max_order);
-			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint), (uint)blocksize);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4, (uint)eparams.max_prediction_order);
+			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint), (uint)task.frameSize);
 			cuda.SetParameter(task.cudaComputeAutocor, sizeof(uint) * 4 + sizeof(uint) * 2, (uint)autocorPartSize);
 			cuda.SetParameterSize(task.cudaComputeAutocor, sizeof(uint) * 7U);
 			cuda.SetFunctionBlockShape(task.cudaComputeAutocor, 32, 8, 1);
@@ -1079,7 +1086,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaComputeLPC, 0, (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint), (uint)task.cudaAutocorOutput.Pointer);
 			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 2, (uint)task.cudaAutocorTasks.Pointer);
-			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 3, (uint)max_order);
+			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 3, (uint)eparams.max_prediction_order);
 			cuda.SetParameter(task.cudaComputeLPC, sizeof(uint) * 3 + sizeof(uint), (uint)autocorPartCount);
 			cuda.SetParameterSize(task.cudaComputeLPC, (uint)(sizeof(uint) * 3) + sizeof(uint) * 2);
 			cuda.SetFunctionBlockShape(task.cudaComputeLPC, (autocorPartCount + 31) & ~31, 1, 1);
@@ -1087,13 +1094,12 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 0, (uint)task.cudaResidualOutput.Pointer);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 1, (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 2, (uint)task.cudaResidualTasks.Pointer);
-			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 3, (uint)max_order);
-			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 4, (uint)blocksize);
+			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 3, (uint)eparams.max_prediction_order);
+			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 4, (uint)task.frameSize);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 5, (uint)residualPartSize);
 			cuda.SetParameterSize(task.cudaEstimateResidual, sizeof(uint) * 6);
 			cuda.SetFunctionBlockShape(task.cudaEstimateResidual, 32, threads_y, 1);
 
-			int nBestTasks = task.nResidualTasks / task.nResidualTasksPerChannel;
 			cuda.SetParameter(task.cudaChooseBestMethod, 0 * sizeof(uint), (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaChooseBestMethod, 1 * sizeof(uint), (uint)task.cudaResidualOutput.Pointer);
 			cuda.SetParameter(task.cudaChooseBestMethod, 2 * sizeof(uint), (uint)residualPartCount);
@@ -1120,24 +1126,22 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetFunctionBlockShape(task.cudaEncodeResidual, residualPartSize, 1, 1);
 
 			// issue work to the GPU
-			cuda.LaunchAsync(cudaChannelDecorr, (nFrames * blocksize + 255) / 256, channels == 2 ? 1 : channels, task.stream);
-			cuda.LaunchAsync(task.cudaFindWastedBits, (task.nResidualTasks / task.nResidualTasksPerChannel * nFrames) / maxFrames, 1, task.stream);
-			cuda.LaunchAsync(task.cudaComputeAutocor, autocorPartCount, (task.nAutocorTasks * nFrames) / maxFrames, task.stream);
-			cuda.LaunchAsync(task.cudaComputeLPC, 1, (task.nAutocorTasks * nFrames) / maxFrames, task.stream);
-			cuda.LaunchAsync(task.cudaEstimateResidual, residualPartCount, (task.nResidualTasks / threads_y * nFrames) / maxFrames, task.stream);
-			cuda.LaunchAsync(task.cudaChooseBestMethod, 1, (nBestTasks * nFrames) / maxFrames, task.stream);
+			cuda.LaunchAsync(cudaChannelDecorr, (task.frameCount * task.frameSize + 255) / 256, channels == 2 ? 1 : channels, task.stream);
+			if (eparams.do_wasted)
+				cuda.LaunchAsync(task.cudaFindWastedBits, channelsCount * task.frameCount, 1, task.stream);
+			cuda.LaunchAsync(task.cudaComputeAutocor, autocorPartCount, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
+			cuda.LaunchAsync(task.cudaComputeLPC, 1, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
+			cuda.LaunchAsync(task.cudaEstimateResidual, residualPartCount, task.nResidualTasksPerChannel * channelsCount * task.frameCount / threads_y, task.stream);
+			cuda.LaunchAsync(task.cudaChooseBestMethod, 1, channelsCount * task.frameCount, task.stream);
 			if (channels == 2 && channelsCount == 4)
-			{
-				cuda.LaunchAsync(task.cudaCopyBestMethodStereo, 1, (nBestTasks * nFrames) / maxFrames / 4, task.stream);
-				nBestTasks /= 2;
-			}
+				cuda.LaunchAsync(task.cudaCopyBestMethodStereo, 1, task.frameCount, task.stream);
 			else
-				cuda.LaunchAsync(task.cudaCopyBestMethod, 1, (nBestTasks * nFrames) / maxFrames, task.stream);
+				cuda.LaunchAsync(task.cudaCopyBestMethod, 1, channels * task.frameCount, task.stream);
 			if (!encode_on_cpu)
-				cuda.LaunchAsync(task.cudaEncodeResidual, residualPartCount, (nBestTasks * nFrames) / maxFrames, task.stream);
-			cuda.CopyDeviceToHostAsync(task.cudaBestResidualTasks, task.bestResidualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * ((nBestTasks * nFrames) / maxFrames)), task.stream);
+				cuda.LaunchAsync(task.cudaEncodeResidual, residualPartCount, channels * task.frameCount, task.stream);
+			cuda.CopyDeviceToHostAsync(task.cudaBestResidualTasks, task.bestResidualTasksPtr, (uint)(sizeof(encodeResidualTaskStruct) * channels * task.frameCount), task.stream);
 			if (!encode_on_cpu)
-				cuda.CopyDeviceToHostAsync(task.cudaResidual, task.residualBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channels), task.stream);
+				cuda.CopyDeviceToHostAsync(task.cudaResidual, task.residualBufferPtr, (uint)(sizeof(int) * MAX_BLOCKSIZE * channels), task.stream);
 		}
 
 		unsafe int encode_frame(bool doMidside, int channelCount, int iFrame, FlaCudaTask task)
@@ -1145,15 +1149,15 @@ namespace CUETools.Codecs.FlaCuda
 			fixed (int* r = residualBuffer)
 			{
 				FlacFrame frame = task.frame;
-				frame.InitSize(eparams.block_size, eparams.variable_block_size != 0);
+				frame.InitSize(task.frameSize, eparams.variable_block_size != 0);
 				for (int ch = 0; ch < channelCount; ch++)
 				{
-					int* s = ((int*)task.samplesBufferPtr) + ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * eparams.block_size;
+					int* s = ((int*)task.samplesBufferPtr) + ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * task.frameSize;
 					frame.subframes[ch].Init(s, r + ch * FlaCudaWriter.MAX_BLOCKSIZE,
-						bits_per_sample + (doMidside && ch == 3 ? 1U : 0U), 0);// get_wasted_bits(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, frame.blocksize));
+						bits_per_sample + (doMidside && ch == 3 ? 1U : 0U), 0);
 				}
 
-				select_best_methods(frame, channelCount, eparams.max_prediction_order, iFrame, task);
+				select_best_methods(frame, channelCount, iFrame, task);
 
 				encode_residual(frame);
 
@@ -1176,24 +1180,26 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
-		unsafe void send_to_GPU(int nFrames, FlaCudaTask task)
+		unsafe void send_to_GPU(FlaCudaTask task, int nFrames, int blocksize)
 		{
 			bool doMidside = channels == 2 && eparams.do_midside;
-			int channelCount = doMidside ? 2 * channels : channels;
-
-			//cuda.CopyHostToDeviceAsync(task.cudaSamples, task.samplesBufferPtr, (uint)(sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channels), task.stream);
-			cuda.CopyHostToDeviceAsync(task.cudaSamplesBytes, task.samplesBytesPtr, (uint)(sizeof(short) * channels * eparams.block_size * nFrames), task.stream);
+			int channelsCount = doMidside ? 2 * channels : channels;
+			if (blocksize != task.frameSize)
+				task.nResidualTasks = 0;
+			task.frameCount = nFrames;
+			task.frameSize = blocksize;
+			cuda.CopyHostToDeviceAsync(task.cudaSamplesBytes, task.samplesBytesPtr, (uint)(sizeof(short) * channels * blocksize * nFrames), task.stream);
 		}
 
-		unsafe void run_GPU_task(int nFrames, FlaCudaTask task)
+		unsafe void run_GPU_task(FlaCudaTask task)
 		{
 			bool doMidside = channels == 2 && eparams.do_midside;
-			int channelCount = doMidside ? 2 * channels : channels;
+			int channelsCount = doMidside ? 2 * channels : channels;
 
-			if (eparams.block_size != _windowsize && eparams.block_size > 4)
+			if (task.frameSize != _windowsize && task.frameSize > 4)
 				fixed (float* window = windowBuffer)
 				{
-					_windowsize = eparams.block_size;
+					_windowsize = task.frameSize;
 					_windowcount = 0;
 					calculate_window(window, lpc.window_welch, WindowFunction.Welch);
 					calculate_window(window, lpc.window_tukey, WindowFunction.Tukey);
@@ -1204,33 +1210,33 @@ namespace CUETools.Codecs.FlaCuda
 						throw new Exception("invalid windowfunction");
 					cuda.CopyHostToDevice<float>(cudaWindow, windowBuffer);
 				}
-			if (eparams.block_size != task.blocksize)
-				initialize_autocorTasks(eparams.block_size, channelCount, eparams.max_prediction_order, maxFrames, task);
+			if (task.nResidualTasks == 0)
+				initialize_autocorTasks(task.frameSize, channelsCount, max_frames, task);
 
 			if (verify != null)
 			{
 				int* r = (int*)task.samplesBufferPtr;
 				fixed (int* s = task.verifyBuffer)
 					for (int ch = 0; ch < channels; ch++)
-						AudioSamples.MemCpy(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * FlaCudaWriter.MAX_BLOCKSIZE, eparams.block_size * nFrames);
+						AudioSamples.MemCpy(s + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * FlaCudaWriter.MAX_BLOCKSIZE, task.frameSize * task.frameCount);
 			}
 
-			estimate_residual(eparams.block_size, channelCount, eparams.max_prediction_order, nFrames, task);
+			estimate_residual(task, channelsCount);
 		}
 
-		unsafe int process_result(int nFrames, FlaCudaTask task)
+		unsafe int process_result(FlaCudaTask task)
 		{
 			bool doMidside = channels == 2 && eparams.do_midside;
 			int channelCount = doMidside ? 2 * channels : channels;
 
 			int bs = 0;
-			for (int iFrame = 0; iFrame < nFrames; iFrame++)
+			for (int iFrame = 0; iFrame < task.frameCount; iFrame++)
 			{
-				//if (0 != eparams.variable_block_size && 0 == (eparams.block_size & 7) && eparams.block_size >= 128)
+				//if (0 != eparams.variable_block_size && 0 == (task.blocksize & 7) && task.blocksize >= 128)
 				//    fs = encode_frame_vbs();
 				//else
 				int fs = encode_frame(doMidside, channelCount, iFrame, task);
-				bs += eparams.block_size;
+				bs += task.frameSize;
 
 				if (seek_table != null && _IO.CanSeek)
 				{
@@ -1238,43 +1244,35 @@ namespace CUETools.Codecs.FlaCuda
 					{
 						if (seek_table[sp].framesize != 0)
 							continue;
-						if (seek_table[sp].number > (ulong)_position + (ulong)eparams.block_size)
+						if (seek_table[sp].number > (ulong)_position + (ulong)task.frameSize)
 							break;
 						if (seek_table[sp].number >= (ulong)_position)
 						{
 							seek_table[sp].number = (ulong)_position;
 							seek_table[sp].offset = (ulong)(_IO.Position - first_frame_offset);
-							seek_table[sp].framesize = (uint)eparams.block_size;
+							seek_table[sp].framesize = (uint)task.frameSize;
 						}
 					}
 				}
 
-				_position += eparams.block_size;
+				_position += task.frameSize;
 				_IO.Write(frame_buffer, 0, fs);
 				_totalSize += fs;
 
 				if (verify != null)
 				{
 					int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
-					if (decoded != fs || verify.Remaining != (ulong)eparams.block_size)
+					if (decoded != fs || verify.Remaining != (ulong)task.frameSize)
 						throw new Exception("validation failed! frame size mismatch");
 					fixed (int* s = task.verifyBuffer, r = verify.Samples)
 					{
 						for (int ch = 0; ch < channels; ch++)
-							if (AudioSamples.MemCmp(s + iFrame * eparams.block_size + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, eparams.block_size))
+							if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
 								throw new Exception("validation failed!");
 					}
 				}
 			}
 			return bs;
-		}
-
-		unsafe void output_frames(int nFrames)
-		{
-			send_to_GPU(nFrames, task1);
-			run_GPU_task(nFrames, task1);
-			cuda.SynchronizeStream(task1.stream);
-			process_result(nFrames, task1);
 		}
 
 		public unsafe void Write(int[,] buff, int pos, int sampleCount)
@@ -1301,11 +1299,10 @@ namespace CUETools.Codecs.FlaCuda
 					first_frame_offset = _IO.Position;
 				inited = true;
 			}
-			int have_data = 0;
 			int len = sampleCount;
 			while (len > 0)
 			{
-				int block = Math.Min(len, Math.Min(FlaCudaWriter.MAX_BLOCKSIZE, eparams.block_size * maxFrames) - samplesInBuffer);
+				int block = Math.Min(len, eparams.block_size * max_frames - samplesInBuffer);
 
 				copy_samples(buff, pos, block, task1);
 
@@ -1319,43 +1316,47 @@ namespace CUETools.Codecs.FlaCuda
 				pos += block;
 
 				int nFrames = samplesInBuffer / eparams.block_size;
-				if (nFrames > 0)
-				{
-#if DEBUG
-					if (nFrames > maxFrames)
-						throw new Exception("oops");
-#endif
-					send_to_GPU(nFrames, task1);
-					cuda.SynchronizeStream(task2.stream);
-					run_GPU_task(nFrames, task1);
-					if (have_data > 0)
-						process_result(have_data, task2);
-					int bs = eparams.block_size * nFrames;
-					if (bs < samplesInBuffer)
-					{
-						int* s1 = (int*)task1.samplesBufferPtr;
-						int* s2 = (int*)task2.samplesBufferPtr;
-						for (int ch = 0; ch < channelCount; ch++)
-							AudioSamples.MemCpy(s2 + ch * FlaCudaWriter.MAX_BLOCKSIZE, s1 + bs + ch * FlaCudaWriter.MAX_BLOCKSIZE, samplesInBuffer - bs);
-						AudioSamples.MemCpy(((short*)task2.samplesBytesPtr), ((short*)task1.samplesBytesPtr) + bs * channels, (samplesInBuffer - bs) * channels);
-					}
-					samplesInBuffer -= bs;
-					have_data = nFrames;
-					FlaCudaTask tmp = task1;
-					task1 = task2;
-					task2 = tmp;
-				}
+				if (nFrames >= max_frames)
+					do_output_frames(nFrames);
 			}
-			if (have_data > 0)
-			{
+			//if (task2.frameCount > 0)
+			//{
+			//    cuda.SynchronizeStream(task2.stream);
+			//    process_result(task2);
+			//    task2.frameCount = 0;
+			//}
+		}
+
+		public unsafe void do_output_frames(int nFrames)
+		{
+			bool doMidside = channels == 2 && eparams.do_midside;
+			int channelCount = doMidside ? 2 * channels : channels;
+
+			send_to_GPU(task1, nFrames, eparams.block_size);
+			if (task2.frameCount > 0)
 				cuda.SynchronizeStream(task2.stream);
-				process_result(have_data, task2);
+			run_GPU_task(task1);
+			if (task2.frameCount > 0)
+				process_result(task2);
+			int bs = eparams.block_size * nFrames;
+			if (bs < samplesInBuffer)
+			{
+				int* s1 = (int*)task1.samplesBufferPtr;
+				int* s2 = (int*)task2.samplesBufferPtr;
+				for (int ch = 0; ch < channelCount; ch++)
+					AudioSamples.MemCpy(s2 + ch * FlaCudaWriter.MAX_BLOCKSIZE, s1 + bs + ch * FlaCudaWriter.MAX_BLOCKSIZE, samplesInBuffer - bs);
+				AudioSamples.MemCpy(((short*)task2.samplesBytesPtr), ((short*)task1.samplesBytesPtr) + bs * channels, (samplesInBuffer - bs) * channels);
 			}
+			samplesInBuffer -= bs;
+			FlaCudaTask tmp = task1;
+			task1 = task2;
+			task2 = tmp;
+			task1.frameCount = 0;
 		}
 
 		public string Path { get { return _path; } }
 
-		string vendor_string = "FlaCuda#0.4";
+		string vendor_string = "FlaCuda#0.5";
 
 		int select_blocksize(int samplerate, int time_ms)
 		{
@@ -1555,6 +1556,8 @@ namespace CUETools.Codecs.FlaCuda
 			else
 				eparams.block_size = _blocksize;
 
+			max_frames = Math.Min(maxFrames, FlaCudaWriter.MAX_BLOCKSIZE / eparams.block_size);
+
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
 			if (channels == 2)
 				max_frame_size = 16 + ((eparams.block_size * (int)(bits_per_sample + bits_per_sample + 1) + 7) >> 3);
@@ -1644,6 +1647,18 @@ namespace CUETools.Codecs.FlaCuda
 		// valid values are 1 to 32 
 		public int max_prediction_order;
 
+		// minimum fixed prediction order
+		// set by user prior to calling flake_encode_init
+		// if set to less than 0, it is chosen based on compression.
+		// valid values are 0 to 4
+		public int min_fixed_order;
+
+		// maximum fixed prediction order
+		// set by user prior to calling flake_encode_init
+		// if set to less than 0, it is chosen based on compression.
+		// valid values are 0 to 4 
+		public int max_fixed_order;
+
 		// minimum partition order
 		// set by user prior to calling flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
@@ -1669,6 +1684,8 @@ namespace CUETools.Codecs.FlaCuda
 
 		public int lpc_min_precision_search;
 
+		public bool do_wasted;
+
 		public WindowFunction window_function;
 
 		public bool do_md5;
@@ -1688,7 +1705,9 @@ namespace CUETools.Codecs.FlaCuda
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
 			do_midside = true;
 			block_size = 0;
-			block_time_ms = 105;			
+			block_time_ms = 105;
+			min_fixed_order = 0;
+			max_fixed_order = 4;
 			min_prediction_order = 1;
 			max_prediction_order = 12;
 			min_partition_order = 0;
@@ -1698,21 +1717,28 @@ namespace CUETools.Codecs.FlaCuda
 			lpc_max_precision_search = 1;
 			do_md5 = true;
 			do_verify = false;
-			do_seektable = true; 
+			do_seektable = true;
+			do_wasted = true;
 
 			// differences from level 7
 			switch (lvl)
 			{
 				case 0:
+					do_wasted = false;
 					do_midside = false;
 					max_partition_order = 4;
-					max_prediction_order = 4;
+					max_prediction_order = 5;
+					min_fixed_order = 2;
+					max_fixed_order = 2;
 					break;
 				case 1:
+					do_wasted = false;
 					do_midside = false;
 					window_function = WindowFunction.Bartlett;
 					max_partition_order = 4;
-					max_prediction_order = 8;
+					max_prediction_order = 7;
+					min_fixed_order = 3;
+					max_fixed_order = 2;
 					break;
 				case 2:
 					window_function = WindowFunction.Bartlett;
@@ -1734,9 +1760,13 @@ namespace CUETools.Codecs.FlaCuda
 					break;
 				case 6:
 					window_function = WindowFunction.Bartlett;
+					min_fixed_order = 2;
+					max_fixed_order = 2;
 					max_prediction_order = 12;
 					break;
-				case 7:					
+				case 7:
+					//min_fixed_order = 2;
+					//max_fixed_order = 2;
 					max_prediction_order = 10;
 					break;
 				case 8:
@@ -1797,23 +1827,24 @@ namespace CUETools.Codecs.FlaCuda
 		public CUfunction cudaCopyBestMethod;
 		public CUfunction cudaCopyBestMethodStereo;
 		public CUfunction cudaEncodeResidual;
-		public CUdeviceptr cudaSamples;
 		public CUdeviceptr cudaSamplesBytes;
+		public CUdeviceptr cudaSamples;
 		public CUdeviceptr cudaResidual;
 		public CUdeviceptr cudaAutocorTasks;
 		public CUdeviceptr cudaAutocorOutput;
 		public CUdeviceptr cudaResidualTasks;
 		public CUdeviceptr cudaResidualOutput;
 		public CUdeviceptr cudaBestResidualTasks;
-		public IntPtr samplesBufferPtr = IntPtr.Zero;
 		public IntPtr samplesBytesPtr = IntPtr.Zero;
+		public IntPtr samplesBufferPtr = IntPtr.Zero;
 		public IntPtr residualBufferPtr = IntPtr.Zero;
 		public IntPtr autocorTasksPtr = IntPtr.Zero;
 		public IntPtr residualTasksPtr = IntPtr.Zero;
 		public IntPtr bestResidualTasksPtr = IntPtr.Zero;
 		public CUstream stream;
 		public int[] verifyBuffer;
-		public int blocksize = 0;
+		public int frameSize = 0;
+		public int frameCount = 0;
 		public FlacFrame frame;
 		public int autocorTasksLen;
 		public int residualTasksLen;
@@ -1822,13 +1853,14 @@ namespace CUETools.Codecs.FlaCuda
 		public int nResidualTasks = 0;
 		public int nAutocorTasks = 0;
 		public int nResidualTasksPerChannel = 0;
+		public int nAutocorTasksPerChannel = 0;
 
 		unsafe public FlaCudaTask(CUDA _cuda, int channelCount)
 		{
 			cuda = _cuda;
 
 			autocorTasksLen = sizeof(computeAutocorTaskStruct) * channelCount * lpc.MAX_LPC_WINDOWS * FlaCudaWriter.maxFrames;
-			residualTasksLen = sizeof(encodeResidualTaskStruct) * channelCount * lpc.MAX_LPC_ORDER * (lpc.MAX_LPC_WINDOWS + 1) * FlaCudaWriter.maxFrames;
+			residualTasksLen = sizeof(encodeResidualTaskStruct) * channelCount * (lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS + 6) * FlaCudaWriter.maxFrames;
 			bestResidualTasksLen = sizeof(encodeResidualTaskStruct) * channelCount * FlaCudaWriter.maxFrames;
 			samplesBufferLen = sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channelCount;
 
@@ -1836,13 +1868,16 @@ namespace CUETools.Codecs.FlaCuda
 			cudaSamples = cuda.Allocate((uint)samplesBufferLen);
 			cudaResidual = cuda.Allocate((uint)samplesBufferLen);
 			cudaAutocorTasks = cuda.Allocate((uint)autocorTasksLen);
-			cudaAutocorOutput = cuda.Allocate((uint)(sizeof(float) * channelCount * lpc.MAX_LPC_WINDOWS * (lpc.MAX_LPC_ORDER + 1) * FlaCudaWriter.maxAutocorParts));
+			cudaAutocorOutput = cuda.Allocate((uint)(sizeof(float) * channelCount * lpc.MAX_LPC_WINDOWS * (lpc.MAX_LPC_ORDER + 1) * (FlaCudaWriter.maxAutocorParts + FlaCudaWriter.maxFrames)));
 			cudaResidualTasks = cuda.Allocate((uint)residualTasksLen);
 			cudaBestResidualTasks = cuda.Allocate((uint)bestResidualTasksLen);
+			//cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * channelCount * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 6) * (FlaCudaWriter.maxResidualParts + FlaCudaWriter.maxFrames)));
 			cudaResidualOutput = cuda.Allocate((uint)(sizeof(int) * channelCount * (lpc.MAX_LPC_WINDOWS + 1) * lpc.MAX_LPC_ORDER * FlaCudaWriter.maxResidualParts * FlaCudaWriter.maxFrames));
-			CUResult cuErr = CUDADriver.cuMemAllocHost(ref samplesBufferPtr, (uint)samplesBufferLen);
+			CUResult cuErr = CUResult.Success;
 			if (cuErr == CUResult.Success)
-				cuErr = CUDADriver.cuMemAllocHost(ref samplesBytesPtr, (uint)samplesBufferLen / 2);
+				cuErr = CUDADriver.cuMemAllocHost(ref samplesBytesPtr, (uint)samplesBufferLen/2);
+			if (cuErr == CUResult.Success)
+				cuErr = CUDADriver.cuMemAllocHost(ref samplesBufferPtr, (uint)samplesBufferLen);
 			if (cuErr == CUResult.Success)
 				cuErr = CUDADriver.cuMemAllocHost(ref residualBufferPtr, (uint)samplesBufferLen);			
 			if (cuErr == CUResult.Success)
