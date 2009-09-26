@@ -312,7 +312,7 @@ extern "C" __global__ void cudaComputeLPCLattice(
 	((int*)&shared.task)[threadIdx.x] = ((int*)(tasks + taskCount * blockIdx.y))[threadIdx.x];    
     __syncthreads();
 
-    // F = samples; B = samples;
+    // F = samples; B = samples
     shared.F[threadIdx.x] = threadIdx.x < frameSize ? samples[shared.task.samplesOffs + threadIdx.x] >> shared.task.wbits : 0.0f;
     shared.F[threadIdx.x + 256] = threadIdx.x + 256 < frameSize ? samples[shared.task.samplesOffs + threadIdx.x + 256] >> shared.task.wbits : 0.0f;
     shared.B[threadIdx.x] = shared.F[threadIdx.x];
@@ -325,38 +325,33 @@ extern "C" __global__ void cudaComputeLPCLattice(
     SUM256(shared.tmp,threadIdx.x);
     __syncthreads();
     float DEN = shared.tmp[0];
-
-    // PE = [DEN./nn,zeros(lr,max_order)];
-    if (threadIdx.x < 32)
-	shared.PE[threadIdx.x+1] = 0.0f;
     if (threadIdx.x == 0)
 	shared.PE[0] = DEN / frameSize;
     __syncthreads();
 
     for (int order = 1; order <= max_order; order++)
     {
-	// [TMP,nn] = sumskipnan(F(:,order+1:frameSize).*B(:,1:frameSize-order),2);
+	// reff = F(order+1:frameSize) * B(1:frameSize-order)' / DEN
 	shared.tmp[threadIdx.x] = (threadIdx.x + order < frameSize) * shared.F[threadIdx.x + order]*shared.B[threadIdx.x] 
 	    + (threadIdx.x + 256 + order < frameSize) * shared.F[threadIdx.x + 256 + order]*shared.B[threadIdx.x + 256]; 
 	__syncthreads(); 
-	SUM256(shared.tmp, threadIdx.x); 
+	SUM256(shared.tmp, threadIdx.x);
 	__syncthreads();
 	float reff = shared.tmp[0] / DEN;
 	__syncthreads();
 
-	// arp(:,order) = TMP./DEN; %Burg
-	// rc(:,order)  = arp(:,order);
+	// arp(order) = rc(order) = reff
 	if (threadIdx.x == 0)
 	    shared.arp[order - 1] = shared.rc[order - 1] = reff;
 
 	// Levinson-Durbin recursion
-	// arp(:,1:order-1) = arp(:,1:order-1) - arp(:,order*ones(order-1,1)).*arp(:,order-1:-1:1);
+	// arp(1:order-1) = arp(1:order-1) - reff * arp(order-1:-1:1)
 	if (threadIdx.x < 32)
 	    shared.arp[threadIdx.x] -= (threadIdx.x < order - 1) * __fmul_rz(reff, shared.arp[order - 2 - threadIdx.x]);
 
-	// tmp = F(:,order+1:frameSize) - rc(:,order*ones(1,frameSize-order)).*B(:,1:frameSize-order);
-	// B(:,1:frameSize-order) = B(:,1:frameSize-order) - rc(:,order*ones(1,frameSize-order)).*F(:,order+1:frameSize);
-	// F(:,order+1:frameSize) = tmp;
+	// F1 = F(order+1:frameSize) - reff * B(1:frameSize-order)
+	// B(1:frameSize-order) = B(1:frameSize-order) - reff * F(order+1:frameSize)
+	// F(order+1:frameSize) = F1
 	if (threadIdx.x + order < frameSize)
 	{
 	    float f = shared.F[threadIdx.x + order];
@@ -371,25 +366,9 @@ extern "C" __global__ void cudaComputeLPCLattice(
 	    shared.F[threadIdx.x + order + 256] = f - reff * b;
 	    shared.B[threadIdx.x + 256] = b - reff * f;
 	}
-	// [PE(:,order+1),nn] = sumskipnan([F(:,order+1:frameSize).^2,B(:,1:frameSize-order).^2],2);
-	shared.tmp[threadIdx.x] = (threadIdx.x + order < frameSize) * (FSQR(shared.F[threadIdx.x + order]) + FSQR(shared.B[threadIdx.x]))
-	    + (threadIdx.x + 256 + order < frameSize) * (FSQR(shared.F[threadIdx.x + 256 + order]) + FSQR(shared.B[threadIdx.x + 256]));
-	__syncthreads(); 	
-	SUM256(shared.tmp, threadIdx.x);
-	__syncthreads();
-	if (threadIdx.x == 0)
-	    shared.PE[order] = shared.tmp[0];
 	__syncthreads();
 
-	// BURG:
-	// DEN = PE(:,order+1);
-	//DEN = PE[order];
-
-	// GEOL:
-	//[f,nf] = sumskipnan(F(:,order+1:frameSize).^2,2);
-	//[b,nb] = sumskipnan(B(:,1:frameSize-order).^2,2); 
-	//DEN = sqrt(b.*f);
-
+	// f = F(order+1:frameSize) * F(order+1:frameSize)'
 	shared.tmp[threadIdx.x] = (threadIdx.x + order < frameSize) * FSQR(shared.F[threadIdx.x + order])
 	    + (threadIdx.x + 256 + order < frameSize) * FSQR(shared.F[threadIdx.x + 256 + order]);
 	__syncthreads();
@@ -398,6 +377,7 @@ extern "C" __global__ void cudaComputeLPCLattice(
 	float f = shared.tmp[0];
 	__syncthreads();
 
+	// b = B(1:frameSize-order) * B(1:frameSize-order)'
 	shared.tmp[threadIdx.x] = (threadIdx.x + order < frameSize) * FSQR(shared.B[threadIdx.x])
 	    + (threadIdx.x + 256 + order < frameSize) * FSQR(shared.B[threadIdx.x + 256]);
 	__syncthreads();
@@ -406,11 +386,10 @@ extern "C" __global__ void cudaComputeLPCLattice(
 	float b = shared.tmp[0];
 	__syncthreads();
 
-	DEN = sqrtf(f * b);
-
-	// PE(:,order+1) = PE(:,order+1)./nn; 	% estimate of covariance
+	//DEN = f + b; // Burg method
+	DEN = sqrtf(f * b); // Geometric lattice
 	if (threadIdx.x == 0)
-	    shared.PE[order] /= 2 * (frameSize - order);
+	    shared.PE[order] = (f + b) / 2 / (frameSize - order);
 
 	// Quantization
 	if (threadIdx.x < 32)
