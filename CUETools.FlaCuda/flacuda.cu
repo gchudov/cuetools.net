@@ -281,11 +281,10 @@ extern "C" __global__ void cudaComputeLPC(
 }
 
 #define SUM32(buf,tid)      buf[tid] += buf[tid + 16]; buf[tid] += buf[tid + 8]; buf[tid] += buf[tid + 4]; buf[tid] += buf[tid + 2]; buf[tid] += buf[tid + 1];
-
-#define SUM256(buf,tid)     if (tid < 128) buf[tid] += buf[tid + 128]; __syncthreads(); \
-			    if (tid < 64) buf[tid] += buf[tid + 64]; __syncthreads(); \
-			    if (tid < 32) buf[tid] += buf[tid + 32]; __syncthreads(); \
-			    if (tid < 32) SUM32(buf,tid)
+#define SUM64(buf,tid)      if (tid < 32) buf[tid] += buf[tid + 32]; __syncthreads(); if (tid < 32) SUM32(buf,tid)
+#define SUM128(buf,tid)     if (tid < 64) buf[tid] += buf[tid + 64]; __syncthreads(); SUM64(buf,tid)
+#define SUM256(buf,tid)     if (tid < 128) buf[tid] += buf[tid + 128]; __syncthreads(); SUM128(buf,tid)
+#define SUM512(buf,tid)     if (tid < 256) buf[tid] += buf[tid + 256]; __syncthreads(); SUM256(buf,tid)
 
 #define FSQR(s) ((s)*(s))
 
@@ -299,14 +298,14 @@ extern "C" __global__ void cudaComputeLPCLattice(
 {
     __shared__ struct {
 	encodeResidualTaskStruct task;
-	float F[512];
-	float B[512];
+	volatile float F[512];
+	volatile float B[512];
 	volatile float tmp[256];
 	volatile float arp[32];
 	volatile float rc[32];
 	volatile int   bits[32];
 	volatile float PE[33];
-	volatile float DEN;
+	volatile float DEN, reff;
     } shared;
 
     // fetch task data
@@ -325,7 +324,6 @@ extern "C" __global__ void cudaComputeLPCLattice(
     shared.tmp[threadIdx.x] = FSQR(shared.F[threadIdx.x]) + FSQR(shared.F[threadIdx.x + 256]);
     __syncthreads();
     SUM256(shared.tmp,threadIdx.x);
-    __syncthreads();
     if (threadIdx.x == 0)
     {
 	shared.DEN = shared.tmp[0];
@@ -336,52 +334,48 @@ extern "C" __global__ void cudaComputeLPCLattice(
     for (int order = 1; order <= max_order; order++)
     {
 	// reff = F(order+1:frameSize) * B(1:frameSize-order)' / DEN
-	shared.tmp[threadIdx.x] = (threadIdx.x + order < frameSize) * shared.F[threadIdx.x + order]*shared.B[threadIdx.x] 
-	    + (threadIdx.x + 256 + order < frameSize) * shared.F[threadIdx.x + 256 + order]*shared.B[threadIdx.x + 256]; 
+	float f1 = (threadIdx.x + order < frameSize) * shared.F[order + threadIdx.x];
+	float f2 = (threadIdx.x + 256 + order < frameSize) * shared.F[order + threadIdx.x + 256];
+	shared.tmp[threadIdx.x] = f1 * shared.B[threadIdx.x] + f2 * shared.B[threadIdx.x + 256]; 
 	__syncthreads(); 
 	SUM256(shared.tmp, threadIdx.x);
-	__syncthreads();
-	float reff = shared.tmp[0] / shared.DEN;
+	if (threadIdx.x == 0)
+	    shared.reff = shared.tmp[0] / shared.DEN;
 	__syncthreads();
 
 	// arp(order) = rc(order) = reff
 	if (threadIdx.x == 0)
-	    shared.arp[order - 1] = shared.rc[order - 1] = reff;
+	    shared.arp[order - 1] = shared.rc[order - 1] = shared.reff;
 
 	// Levinson-Durbin recursion
 	// arp(1:order-1) = arp(1:order-1) - reff * arp(order-1:-1:1)
 	if (threadIdx.x < 32)
-	    shared.arp[threadIdx.x] -= (threadIdx.x < order - 1) * __fmul_rz(reff, shared.arp[order - 2 - threadIdx.x]);
+	    shared.arp[threadIdx.x] -= (threadIdx.x < order - 1) * __fmul_rz(shared.reff, shared.arp[order - 2 - threadIdx.x]);
 
 	// F1 = F(order+1:frameSize) - reff * B(1:frameSize-order)
 	// B(1:frameSize-order) = B(1:frameSize-order) - reff * F(order+1:frameSize)
 	// F(order+1:frameSize) = F1
-	for (int pos = 0; pos < frameSize - order; pos += 256)
-	    if (threadIdx.x + order + pos < frameSize)
-	    {
-		float f = shared.F[threadIdx.x + order + pos];
-		shared.F[threadIdx.x + order + pos] -= reff * shared.B[threadIdx.x + pos];
-		shared.B[threadIdx.x + pos] -= reff * f;
-	    }
+	if (threadIdx.x < frameSize - order)
+	{
+	    shared.F[order + threadIdx.x] -= shared.reff * shared.B[threadIdx.x];
+	    shared.B[threadIdx.x] -= shared.reff * f1;
+	}
+	if (threadIdx.x + 256 < frameSize - order)
+	{
+	    shared.F[order + threadIdx.x + 256] -= shared.reff * shared.B[threadIdx.x + 256];
+	    shared.B[threadIdx.x + 256] -= shared.reff * f2;
+	}
 	__syncthreads();
 
-	// f = F(order+1:frameSize) * F(order+1:frameSize)'
-	// b = B(1:frameSize-order) * B(1:frameSize-order)'
-	shared.tmp[threadIdx.x] = 0;
-	for (int pos = (threadIdx.x & 127); pos < frameSize - order + (threadIdx.x & 127); pos += 128)
-	    shared.tmp[threadIdx.x] += (pos < frameSize - order) * 
-		(threadIdx.x < 128 ? FSQR(shared.F[pos + order]) : FSQR(shared.B[pos]));
+	// DEN = F(order+1:frameSize) * F(order+1:frameSize)' + B(1:frameSize-order) * B(1:frameSize-order)' (BURG)
+	shared.tmp[threadIdx.x] = (threadIdx.x < frameSize - order) * (FSQR(shared.F[threadIdx.x + order]) + FSQR(shared.B[threadIdx.x]))
+	    + (threadIdx.x + 256 < frameSize - order) * (FSQR(shared.F[threadIdx.x + 256 + order]) + FSQR(shared.B[threadIdx.x + 256]));
 	__syncthreads();
-	if ((threadIdx.x & 64) == 0) shared.tmp[threadIdx.x] += shared.tmp[threadIdx.x + 64]; __syncthreads();
-	if ((threadIdx.x & 96) == 0) shared.tmp[threadIdx.x] += shared.tmp[threadIdx.x + 32]; __syncthreads();
-	if ((threadIdx.x & 96) == 0) SUM32(shared.tmp, threadIdx.x)
-	__syncthreads();
-
+	SUM256(shared.tmp, threadIdx.x);
 	if (threadIdx.x == 0)
 	{
-	    //DEN = f + b; // Burg method
-	    shared.DEN = sqrtf(shared.tmp[0] * shared.tmp[128]); // Geometric lattice: DEN = sqrtf(f*b)
-	    shared.PE[order] = (shared.tmp[0] + shared.tmp[128]) / 2 / (frameSize - order);
+	    shared.DEN = shared.tmp[0] / 2;
+	    shared.PE[order] = shared.tmp[0] / 2 / (frameSize - order);
 	}
 	__syncthreads();
 
@@ -414,6 +408,135 @@ extern "C" __global__ void cudaComputeLPCLattice(
 	    if (threadIdx.x == 0)
 		tasks[taskNo].cbits = cbits;
 	}
+    }
+}
+
+extern "C" __global__ void cudaComputeLPCLattice512(
+    encodeResidualTaskStruct *tasks,
+    const int taskCount, // tasks per block
+    const int *samples,
+    const int frameSize, // <= 512
+    const int max_order // should be <= 32
+)
+{
+    __shared__ struct {
+	encodeResidualTaskStruct task;
+	float F[512];
+	float B[512];
+	float lpc[32][32];
+	volatile float tmp[512];
+	volatile float arp[32];
+	volatile float rc[32];
+	volatile int   bits[512];
+	volatile float f, b;
+    } shared;
+
+    // fetch task data
+    if (threadIdx.x < sizeof(shared.task) / sizeof(int))
+	((int*)&shared.task)[threadIdx.x] = ((int*)(tasks + taskCount * blockIdx.y))[threadIdx.x];    
+    __syncthreads();
+
+    // F = samples; B = samples
+    shared.F[threadIdx.x] = threadIdx.x < frameSize ? samples[shared.task.samplesOffs + threadIdx.x] >> shared.task.wbits : 0.0f;
+    shared.B[threadIdx.x] = shared.F[threadIdx.x];
+    __syncthreads();
+
+    // DEN = F*F'
+    shared.tmp[threadIdx.x] = FSQR(shared.F[threadIdx.x]);
+    __syncthreads();
+    SUM512(shared.tmp,threadIdx.x);
+    __syncthreads();
+    if (threadIdx.x == 0)
+	shared.f = shared.b = shared.tmp[0];
+ //   if (threadIdx.x == 0)
+	//shared.PE[0] = DEN / frameSize;
+    __syncthreads();
+
+    for (int order = 1; order <= max_order; order++)
+    {
+	// reff = F(order+1:frameSize) * B(1:frameSize-order)' / DEN
+	shared.tmp[threadIdx.x] = (threadIdx.x + order < frameSize) * shared.F[threadIdx.x + order] * shared.B[threadIdx.x];
+	__syncthreads(); 
+	SUM512(shared.tmp, threadIdx.x);
+	__syncthreads();
+	
+	//float reff = shared.tmp[0] * rsqrtf(shared.b * shared.f); // Geometric lattice
+	float reff = shared.tmp[0] * 2 / (shared.b + shared.f); // Burg method
+	__syncthreads();
+
+	// Levinson-Durbin recursion
+	// arp(order) = rc(order) = reff
+	// arp(1:order-1) = arp(1:order-1) - reff * arp(order-1:-1:1)
+	if (threadIdx.x == 32)
+	    shared.arp[order - 1] = shared.rc[order - 1] = reff;
+	if (threadIdx.x < 32)
+	    shared.arp[threadIdx.x] -= (threadIdx.x < order - 1) * __fmul_rz(reff, shared.arp[order - 2 - threadIdx.x]);
+
+	// F1 = F(order+1:frameSize) - reff * B(1:frameSize-order)
+	// B(1:frameSize-order) = B(1:frameSize-order) - reff * F(order+1:frameSize)
+	// F(order+1:frameSize) = F1
+	if (threadIdx.x < frameSize - order)
+	{
+	    float f;// = shared.F[threadIdx.x + order];
+	    shared.F[threadIdx.x + order] = (f = shared.F[threadIdx.x + order]) - reff * shared.B[threadIdx.x];
+	    shared.B[threadIdx.x] -= reff * f;
+	}
+	__syncthreads();
+
+	// f = F(order+1:frameSize) * F(order+1:frameSize)'
+	// b = B(1:frameSize-order) * B(1:frameSize-order)'
+	shared.tmp[threadIdx.x] = (threadIdx.x < frameSize - order) * FSQR(shared.F[threadIdx.x + order]);
+	__syncthreads();
+	SUM512(shared.tmp, threadIdx.x);
+	__syncthreads();
+	if (threadIdx.x == 0)
+	    shared.f = shared.tmp[0];
+	__syncthreads();
+
+	shared.tmp[threadIdx.x] = (threadIdx.x < frameSize - order) * FSQR(shared.B[threadIdx.x]);
+	__syncthreads();
+	SUM512(shared.tmp, threadIdx.x);
+	__syncthreads();
+	if (threadIdx.x == 0)
+	    shared.b = shared.tmp[0];
+	__syncthreads();
+
+	if (threadIdx.x < 32)
+	    shared.lpc[order - 1][threadIdx.x] = shared.arp[threadIdx.x];
+
+	//if (threadIdx.x == 0)
+	//    shared.PE[order] = (shared.b + shared.f) / 2 / (frameSize - order);
+	__syncthreads();
+    }
+    for (int order = 1 + (threadIdx.x >> 5); order <= max_order; order += 16)
+    {
+	// Quantization
+	int cn = threadIdx.x & 31;
+	int precision = 10 - (order > 8) - min(2, shared.task.wbits);
+	int taskNo = taskCount * blockIdx.y + order - 1;
+	shared.bits[threadIdx.x] = __mul24((33 - __clz(__float2int_rn(fabs(shared.lpc[order - 1][cn]) * (1 << 15))) - precision), cn < order);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 16]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 8]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 4]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 2]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 1]);
+	int sh = max(0,min(15, 15 - shared.bits[threadIdx.x - cn]));
+            
+	// reverse coefs
+	int coef = max(-(1 << precision),min((1 << precision)-1,__float2int_rn(shared.lpc[order - 1][order - 1 - cn] * (1 << sh))));
+	if (cn < order)
+	    tasks[taskNo].coefs[cn] = coef;
+	if (cn == 0)
+	    tasks[taskNo].shift = sh;
+	shared.bits[threadIdx.x] = 33 - max(__clz(coef),__clz(-1 ^ coef));
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 16]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 8]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 4]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 2]);
+	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 1]);
+	int cbits = shared.bits[threadIdx.x - cn];
+	if (cn == 0)
+	    tasks[taskNo].cbits = cbits;
     }
 }
 
