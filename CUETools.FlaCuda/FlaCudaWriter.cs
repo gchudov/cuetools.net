@@ -221,6 +221,8 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.Free(cudaWindow);
 				task1.Dispose();
 				task2.Dispose();
+				cuda.UnloadModule();
+				cuda.DestroyContext();
 				cuda.Dispose();
 				inited = false;
 			}
@@ -241,6 +243,8 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.Free(cudaWindow);
 				task1.Dispose();
 				task2.Dispose();
+				cuda.UnloadModule();
+				cuda.DestroyContext();
 				cuda.Dispose();
 				inited = false;
 			}
@@ -1009,7 +1013,7 @@ namespace CUETools.Codecs.FlaCuda
 				int index = ch + iFrame * channels;
 				if (task.BestResidualTasks[index].size < 0)
 					throw new Exception("internal error");
-				if (frame.blocksize > 4 && frame.subframes[ch].best.size > task.BestResidualTasks[index].size)
+				if (frame.blocksize > Math.Max(4, eparams.max_prediction_order) && frame.subframes[ch].best.size > task.BestResidualTasks[index].size)
 				{
 					frame.subframes[ch].best.type = (SubframeType)task.BestResidualTasks[index].type;
 					frame.subframes[ch].best.size = (uint)task.BestResidualTasks[index].size;
@@ -1094,6 +1098,14 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameterSize(task.cudaComputeLPC, (uint)(sizeof(uint) * 3) + sizeof(uint) * 2);
 			cuda.SetFunctionBlockShape(task.cudaComputeLPC, (autocorPartCount + 31) & ~31, 1, 1);
 
+			cuda.SetParameter(task.cudaComputeLPCLattice, 0, (uint)task.cudaResidualTasks.Pointer);
+			cuda.SetParameter(task.cudaComputeLPCLattice, 1 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
+			cuda.SetParameter(task.cudaComputeLPCLattice, 2 * sizeof(uint), (uint)task.cudaSamples.Pointer);
+			cuda.SetParameter(task.cudaComputeLPCLattice, 3 * sizeof(uint), (uint)task.frameSize);
+			cuda.SetParameter(task.cudaComputeLPCLattice, 4 * sizeof(uint), (uint)eparams.max_prediction_order);
+			cuda.SetParameterSize(task.cudaComputeLPCLattice, 5U * sizeof(uint));
+			cuda.SetFunctionBlockShape(task.cudaComputeLPCLattice, 256, 1, 1);
+
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 0, (uint)task.cudaResidualOutput.Pointer);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 1, (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(task.cudaEstimateResidual, sizeof(uint) * 2, (uint)task.cudaResidualTasks.Pointer);
@@ -1130,10 +1142,15 @@ namespace CUETools.Codecs.FlaCuda
 
 			// issue work to the GPU
 			cuda.LaunchAsync(cudaChannelDecorr, (task.frameCount * task.frameSize + 255) / 256, channels == 2 ? 1 : channels, task.stream);
-			if (eparams.do_wasted)
-				cuda.LaunchAsync(task.cudaFindWastedBits, channelsCount * task.frameCount, 1, task.stream);
-			cuda.LaunchAsync(task.cudaComputeAutocor, autocorPartCount, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
-			cuda.LaunchAsync(task.cudaComputeLPC, 1, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
+			if (task.frameSize <= 512 && _windowcount == 1)
+			    cuda.LaunchAsync(task.cudaComputeLPCLattice, 1, channelsCount * task.frameCount, task.stream);
+			else
+			{
+				if (eparams.do_wasted)
+					cuda.LaunchAsync(task.cudaFindWastedBits, channelsCount * task.frameCount, 1, task.stream);
+				cuda.LaunchAsync(task.cudaComputeAutocor, autocorPartCount, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
+				cuda.LaunchAsync(task.cudaComputeLPC, 1, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
+			}
 			cuda.LaunchAsync(task.cudaEstimateResidual, residualPartCount, task.nResidualTasksPerChannel * channelsCount * task.frameCount / threads_y, task.stream);
 			cuda.LaunchAsync(task.cudaChooseBestMethod, 1, channelsCount * task.frameCount, task.stream);
 			if (channels == 2 && channelsCount == 4)
@@ -1205,9 +1222,9 @@ namespace CUETools.Codecs.FlaCuda
 					_windowsize = task.frameSize;
 					_windowcount = 0;
 					calculate_window(window, lpc.window_welch, WindowFunction.Welch);
+					calculate_window(window, lpc.window_flattop, WindowFunction.Flattop);
 					calculate_window(window, lpc.window_tukey, WindowFunction.Tukey);
 					calculate_window(window, lpc.window_hann, WindowFunction.Hann);
-					calculate_window(window, lpc.window_flattop, WindowFunction.Flattop);
 					calculate_window(window, lpc.window_bartlett, WindowFunction.Bartlett);
 					if (_windowcount == 0)
 						throw new Exception("invalid windowfunction");
@@ -1827,6 +1844,7 @@ namespace CUETools.Codecs.FlaCuda
 		public CUfunction cudaFindWastedBits;
 		public CUfunction cudaComputeAutocor;
 		public CUfunction cudaComputeLPC;
+		public CUfunction cudaComputeLPCLattice;		
 		public CUfunction cudaEstimateResidual;
 		public CUfunction cudaChooseBestMethod;
 		public CUfunction cudaCopyBestMethod;
@@ -1907,6 +1925,7 @@ namespace CUETools.Codecs.FlaCuda
 			cudaChannelDecorr2 = cuda.GetModuleFunction("cudaChannelDecorr2");
 			cudaFindWastedBits = cuda.GetModuleFunction("cudaFindWastedBits");
 			cudaComputeLPC = cuda.GetModuleFunction("cudaComputeLPC");
+			cudaComputeLPCLattice = cuda.GetModuleFunction("cudaComputeLPCLattice");
 			cudaEstimateResidual = cuda.GetModuleFunction("cudaEstimateResidual");
 			cudaChooseBestMethod = cuda.GetModuleFunction("cudaChooseBestMethod");
 			cudaCopyBestMethod = cuda.GetModuleFunction("cudaCopyBestMethod");

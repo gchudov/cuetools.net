@@ -251,7 +251,7 @@ extern "C" __global__ void cudaComputeLPC(
 	    shared.ldr[tid] += (tid < order) * __fmul_rz(reff, shared.ldr[order - 1 - tid]) + (tid  == order) * reff;
 
 	    // Quantization
-	    int precision = 13 - (order > 8);
+	    int precision = 13 - (order > 8) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576);
 	    int taskNo = shared.task.residualOffs + order;
 	    shared.bits[tid] = __mul24((33 - __clz(__float2int_rn(fabs(shared.ldr[tid]) * (1 << 15))) - precision), tid <= order);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 16]);
@@ -267,7 +267,7 @@ extern "C" __global__ void cudaComputeLPC(
 		output[taskNo].coefs[tid] = coef;
 	    if (tid == 0)
 		output[taskNo].shift = sh;
-	    shared.bits[tid] = 33 - max(__clz(coef),__clz(-1 ^ coef));
+	    shared.bits[tid] = __mul24(33 - max(__clz(coef),__clz(-1 ^ coef)), tid <= order);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 16]);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 8]);
 	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 4]);
@@ -280,11 +280,11 @@ extern "C" __global__ void cudaComputeLPC(
     }
 }
 
-#define SUM32(buf,tid)      buf[tid] += buf[tid + 16]; buf[tid] += buf[tid + 8]; buf[tid] += buf[tid + 4]; buf[tid] += buf[tid + 2]; buf[tid] += buf[tid + 1];
-#define SUM64(buf,tid)      if (tid < 32) buf[tid] += buf[tid + 32]; __syncthreads(); if (tid < 32) SUM32(buf,tid)
-#define SUM128(buf,tid)     if (tid < 64) buf[tid] += buf[tid + 64]; __syncthreads(); SUM64(buf,tid)
-#define SUM256(buf,tid)     if (tid < 128) buf[tid] += buf[tid + 128]; __syncthreads(); SUM128(buf,tid)
-#define SUM512(buf,tid)     if (tid < 256) buf[tid] += buf[tid + 256]; __syncthreads(); SUM256(buf,tid)
+#define SUM32(buf,tid,op)   buf[tid] op buf[tid + 16]; buf[tid] op buf[tid + 8]; buf[tid] op buf[tid + 4]; buf[tid] op buf[tid + 2]; buf[tid] op buf[tid + 1];
+#define SUM64(buf,tid,op)   if (tid < 32) buf[tid] op buf[tid + 32]; __syncthreads(); if (tid < 32) SUM32(buf,tid,op)
+#define SUM128(buf,tid,op)  if (tid < 64) buf[tid] op buf[tid + 64]; __syncthreads(); SUM64(buf,tid,op)
+#define SUM256(buf,tid,op)  if (tid < 128) buf[tid] op buf[tid + 128]; __syncthreads(); SUM128(buf,tid,op)
+#define SUM512(buf,tid,op)  if (tid < 256) buf[tid] op buf[tid + 256]; __syncthreads(); SUM256(buf,tid,op)
 
 #define FSQR(s) ((s)*(s))
 
@@ -298,14 +298,21 @@ extern "C" __global__ void cudaComputeLPCLattice(
 {
     __shared__ struct {
 	encodeResidualTaskStruct task;
-	volatile float F[512];
-	volatile float B[512];
+	union {
+	    volatile float F[512];
+	    volatile int tmpi[512];
+	};
+	union {
+	    volatile float B[512];
+	    volatile int smp[512];
+	};
 	volatile float tmp[256];
 	volatile float arp[32];
 	volatile float rc[32];
-	volatile int   bits[32];
+		 int   bits[32];
 	volatile float PE[33];
 	volatile float DEN, reff;
+	int actual_bits;
     } shared;
 
     // fetch task data
@@ -314,31 +321,48 @@ extern "C" __global__ void cudaComputeLPCLattice(
     __syncthreads();
 
     // F = samples; B = samples
-    shared.F[threadIdx.x] = threadIdx.x < frameSize ? samples[shared.task.samplesOffs + threadIdx.x] >> shared.task.wbits : 0.0f;
-    shared.F[threadIdx.x + 256] = threadIdx.x + 256 < frameSize ? samples[shared.task.samplesOffs + threadIdx.x + 256] >> shared.task.wbits : 0.0f;
+    shared.tmpi[threadIdx.x] = shared.smp[threadIdx.x] = threadIdx.x < frameSize ? samples[shared.task.samplesOffs + threadIdx.x] : 0;
+    shared.tmpi[threadIdx.x + 256] = shared.smp[threadIdx.x + 256] = threadIdx.x + 256 < frameSize ? samples[shared.task.samplesOffs + threadIdx.x + 256] : 0;
+    __syncthreads();
+    SUM512(shared.tmpi,threadIdx.x,|=);
+    if (threadIdx.x == 0)
+	shared.task.wbits = max(0,__ffs(shared.tmpi[0]) - 1);
+    __syncthreads();
+    shared.tmpi[threadIdx.x] = shared.smp[threadIdx.x] ^ (shared.smp[threadIdx.x] >> 31);
+    shared.tmpi[threadIdx.x + 256] = shared.smp[threadIdx.x + 256] ^ (shared.smp[threadIdx.x + 256] >> 31);
+    SUM512(shared.tmpi,threadIdx.x,|=);
+    if (threadIdx.x == 0)
+	shared.actual_bits = 32 - __clz(shared.tmpi[0]) - shared.task.wbits;
+    __syncthreads();
+    shared.F[threadIdx.x] = shared.smp[threadIdx.x] >> shared.task.wbits;
+    shared.F[threadIdx.x + 256] = shared.smp[threadIdx.x + 256] >> shared.task.wbits;
     shared.B[threadIdx.x] = shared.F[threadIdx.x];
     shared.B[threadIdx.x + 256] = shared.F[threadIdx.x + 256];
-    __syncthreads();
-
-    // DEN = F*F'
-    shared.tmp[threadIdx.x] = FSQR(shared.F[threadIdx.x]) + FSQR(shared.F[threadIdx.x + 256]);
-    __syncthreads();
-    SUM256(shared.tmp,threadIdx.x);
-    if (threadIdx.x == 0)
-    {
-	shared.DEN = shared.tmp[0];
-	shared.PE[0] = shared.tmp[0] / frameSize;
-    }
     __syncthreads();
 
     for (int order = 1; order <= max_order; order++)
     {
 	// reff = F(order+1:frameSize) * B(1:frameSize-order)' / DEN
-	float f1 = (threadIdx.x + order < frameSize) * shared.F[order + threadIdx.x];
-	float f2 = (threadIdx.x + 256 + order < frameSize) * shared.F[order + threadIdx.x + 256];
+	float f1 = (threadIdx.x + order < frameSize) * shared.F[threadIdx.x + order];
+	float f2 = (threadIdx.x + 256 + order < frameSize) * shared.F[threadIdx.x + 256 + order];
+
+	// DEN = F(order+1:frameSize) * F(order+1:frameSize)' + B(1:frameSize-order) * B(1:frameSize-order)' (BURG)
+	shared.tmp[threadIdx.x] = FSQR(f1) + FSQR(f2);
+	shared.tmp[threadIdx.x] += (threadIdx.x < frameSize - order) * FSQR(shared.B[threadIdx.x])
+	    + (threadIdx.x + 256 < frameSize - order) * FSQR(shared.B[threadIdx.x + 256]);
+	__syncthreads();
+	SUM256(shared.tmp, threadIdx.x, +=);
+	if (threadIdx.x == 0)
+	{
+	    shared.DEN = shared.tmp[0] / 2;
+	    shared.PE[order-1] = shared.tmp[0] / 2 / (frameSize - order + 1);
+	}
+	__syncthreads();
+
+
 	shared.tmp[threadIdx.x] = f1 * shared.B[threadIdx.x] + f2 * shared.B[threadIdx.x + 256]; 
 	__syncthreads(); 
-	SUM256(shared.tmp, threadIdx.x);
+	SUM256(shared.tmp, threadIdx.x, +=);
 	if (threadIdx.x == 0)
 	    shared.reff = shared.tmp[0] / shared.DEN;
 	__syncthreads();
@@ -349,8 +373,8 @@ extern "C" __global__ void cudaComputeLPCLattice(
 
 	// Levinson-Durbin recursion
 	// arp(1:order-1) = arp(1:order-1) - reff * arp(order-1:-1:1)
-	if (threadIdx.x < 32)
-	    shared.arp[threadIdx.x] -= (threadIdx.x < order - 1) * __fmul_rz(shared.reff, shared.arp[order - 2 - threadIdx.x]);
+	if (threadIdx.x < order - 1)
+	    shared.arp[threadIdx.x] -= shared.reff * shared.arp[order - 2 - threadIdx.x];
 
 	// F1 = F(order+1:frameSize) - reff * B(1:frameSize-order)
 	// B(1:frameSize-order) = B(1:frameSize-order) - reff * F(order+1:frameSize)
@@ -367,48 +391,46 @@ extern "C" __global__ void cudaComputeLPCLattice(
 	}
 	__syncthreads();
 
-	// DEN = F(order+1:frameSize) * F(order+1:frameSize)' + B(1:frameSize-order) * B(1:frameSize-order)' (BURG)
-	shared.tmp[threadIdx.x] = (threadIdx.x < frameSize - order) * (FSQR(shared.F[threadIdx.x + order]) + FSQR(shared.B[threadIdx.x]))
-	    + (threadIdx.x + 256 < frameSize - order) * (FSQR(shared.F[threadIdx.x + 256 + order]) + FSQR(shared.B[threadIdx.x + 256]));
-	__syncthreads();
-	SUM256(shared.tmp, threadIdx.x);
-	if (threadIdx.x == 0)
-	{
-	    shared.DEN = shared.tmp[0] / 2;
-	    shared.PE[order] = shared.tmp[0] / 2 / (frameSize - order);
-	}
-	__syncthreads();
-
 	// Quantization
 	if (threadIdx.x < 32)
 	{
-	    int precision = 10 - (order > 8) - min(2, shared.task.wbits);
+	    // get 15 bits of each coeff
+	    shared.bits[threadIdx.x] = __mul24(__float2int_rn(shared.arp[threadIdx.x] * (1 << 15)), threadIdx.x < order);
+	    // remove sign bits
+	    shared.bits[threadIdx.x] = shared.bits[threadIdx.x] ^ (shared.bits[threadIdx.x] >> 31);
+	    // OR reduction
+	    SUM32(shared.bits,threadIdx.x,|=);
+	    // choose precision
+	    if (threadIdx.x == 0)
+		shared.task.cbits = max(3, min(10, shared.actual_bits)); //  - __float2int_rn(shared.PE[order - 1])
+	    // calculate shift based on precision and number of leading zeroes in coeffs
+	    if (threadIdx.x == 0)
+		shared.task.shift = max(0,min(15, __clz(shared.bits[0]) - 18 + shared.task.cbits));
+	    // quantize coeffs with given shift
+	    shared.task.coefs[threadIdx.x] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, __float2int_rn(shared.arp[threadIdx.x] * (1 << shared.task.shift))));
+	    // error correction
+	    //shared.tmp[threadIdx.x] = (threadIdx.x != 0) * (shared.arp[threadIdx.x - 1]*(1 << shared.task.shift) - shared.task.coefs[threadIdx.x - 1]);
+	    //shared.task.coefs[threadIdx.x] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, __float2int_rn((shared.arp[threadIdx.x]) * (1 << shared.task.shift) + shared.tmp[threadIdx.x])));
+	    // remove sign bits
+	    shared.bits[threadIdx.x] = __mul24(shared.task.coefs[threadIdx.x] ^ (shared.task.coefs[threadIdx.x] >> 31), threadIdx.x < order);
+	    // OR reduction
+	    SUM32(shared.bits,threadIdx.x,|=);
+	    // calculate actual number of bits (+1 for sign)
+	    if (threadIdx.x == 0)
+		shared.task.cbits = 1 + 32 - __clz(shared.bits[0]);
+
+	    // output shift, cbits and output coeffs in reverse order
 	    int taskNo = taskCount * blockIdx.y + order - 1;
-	    shared.bits[threadIdx.x] = __mul24((33 - __clz(__float2int_rn(fabs(shared.arp[threadIdx.x]) * (1 << 15))) - precision), threadIdx.x < order);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 16]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 8]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 4]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 2]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 1]);
-	    int sh = max(0,min(15, 15 - shared.bits[0]));
-            
-	    // reverse coefs
-	    int coef = max(-(1 << precision),min((1 << precision)-1,__float2int_rn(shared.arp[order - 1 - threadIdx.x] * (1 << sh))));
+	    if (threadIdx.x == 0)
+		tasks[taskNo].shift = shared.task.shift;
+	    if (threadIdx.x == 0)
+		tasks[taskNo].cbits = shared.task.cbits;
 	    if (threadIdx.x < order)
-		tasks[taskNo].coefs[threadIdx.x] = coef;
-	    if (threadIdx.x == 0)
-		tasks[taskNo].shift = sh;
-	    shared.bits[threadIdx.x] = 33 - max(__clz(coef),__clz(-1 ^ coef));
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 16]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 8]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 4]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 2]);
-	    shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 1]);
-	    int cbits = shared.bits[0];
-	    if (threadIdx.x == 0)
-		tasks[taskNo].cbits = cbits;
+		tasks[taskNo].coefs[threadIdx.x] = shared.task.coefs[order - 1 - threadIdx.x];
 	}
     }
+    if (threadIdx.x < taskCount)
+	tasks[blockIdx.y * taskCount + threadIdx.x].wbits = shared.task.wbits;
 }
 
 extern "C" __global__ void cudaComputeLPCLattice512(
@@ -444,7 +466,7 @@ extern "C" __global__ void cudaComputeLPCLattice512(
     // DEN = F*F'
     shared.tmp[threadIdx.x] = FSQR(shared.F[threadIdx.x]);
     __syncthreads();
-    SUM512(shared.tmp,threadIdx.x);
+    SUM512(shared.tmp,threadIdx.x,+=);
     __syncthreads();
     if (threadIdx.x == 0)
 	shared.f = shared.b = shared.tmp[0];
@@ -457,7 +479,7 @@ extern "C" __global__ void cudaComputeLPCLattice512(
 	// reff = F(order+1:frameSize) * B(1:frameSize-order)' / DEN
 	shared.tmp[threadIdx.x] = (threadIdx.x + order < frameSize) * shared.F[threadIdx.x + order] * shared.B[threadIdx.x];
 	__syncthreads(); 
-	SUM512(shared.tmp, threadIdx.x);
+	SUM512(shared.tmp, threadIdx.x,+=);
 	__syncthreads();
 	
 	//float reff = shared.tmp[0] * rsqrtf(shared.b * shared.f); // Geometric lattice
@@ -487,7 +509,7 @@ extern "C" __global__ void cudaComputeLPCLattice512(
 	// b = B(1:frameSize-order) * B(1:frameSize-order)'
 	shared.tmp[threadIdx.x] = (threadIdx.x < frameSize - order) * FSQR(shared.F[threadIdx.x + order]);
 	__syncthreads();
-	SUM512(shared.tmp, threadIdx.x);
+	SUM512(shared.tmp, threadIdx.x,+=);
 	__syncthreads();
 	if (threadIdx.x == 0)
 	    shared.f = shared.tmp[0];
@@ -495,7 +517,7 @@ extern "C" __global__ void cudaComputeLPCLattice512(
 
 	shared.tmp[threadIdx.x] = (threadIdx.x < frameSize - order) * FSQR(shared.B[threadIdx.x]);
 	__syncthreads();
-	SUM512(shared.tmp, threadIdx.x);
+	SUM512(shared.tmp, threadIdx.x,+=);
 	__syncthreads();
 	if (threadIdx.x == 0)
 	    shared.b = shared.tmp[0];
@@ -528,7 +550,7 @@ extern "C" __global__ void cudaComputeLPCLattice512(
 	    tasks[taskNo].coefs[cn] = coef;
 	if (cn == 0)
 	    tasks[taskNo].shift = sh;
-	shared.bits[threadIdx.x] = 33 - max(__clz(coef),__clz(-1 ^ coef));
+	shared.bits[threadIdx.x] = __mul24(33 - max(__clz(coef),__clz(-1 ^ coef)), cn < order);
 	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 16]);
 	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 8]);
 	shared.bits[threadIdx.x] = max(shared.bits[threadIdx.x], shared.bits[threadIdx.x + 4]);
