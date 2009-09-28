@@ -69,6 +69,6 @@
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>
-    <PreBuildEvent>nvcc $(ProjectDir)flacuda.cu  -o $(ProjectDir)\flacuda.cubin --machine 32 --maxrregcount 10 --cubin --compiler-bindir "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\bin" --system-include "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\include"</PreBuildEvent>
+    <PreBuildEvent>nvcc $(ProjectDir)flacuda.cu  -o $(ProjectDir)\flacuda.cubin --machine 32 --cubin --compiler-bindir "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\bin" --system-include "C:\Program Files (x86)\Microsoft Visual Studio 8\VC\include"</PreBuildEvent>
   </PropertyGroup>
 </Project>

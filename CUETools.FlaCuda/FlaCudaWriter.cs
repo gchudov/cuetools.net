@@ -853,6 +853,7 @@ namespace CUETools.Codecs.FlaCuda
 							task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.LPC;
 							task.ResidualTasks[task.nResidualTasks].channel = ch;
 							task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
+							task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 							task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOrder = order;
 							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * blocksize;
@@ -866,6 +867,7 @@ namespace CUETools.Codecs.FlaCuda
 						task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.Constant;
 						task.ResidualTasks[task.nResidualTasks].channel = ch;
 						task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
+						task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 						task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
@@ -880,6 +882,7 @@ namespace CUETools.Codecs.FlaCuda
 						task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.Fixed;
 						task.ResidualTasks[task.nResidualTasks].channel = ch;
 						task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
+						task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 						task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOrder = order;
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * blocksize;
@@ -916,6 +919,7 @@ namespace CUETools.Codecs.FlaCuda
 						task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.Verbatim;
 						task.ResidualTasks[task.nResidualTasks].channel = ch;
 						task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
+						task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 						task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOrder = 0;
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * blocksize;
@@ -1101,7 +1105,8 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaComputeLPCLattice, 0, (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaComputeLPCLattice, 1 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
 			cuda.SetParameter(task.cudaComputeLPCLattice, 2 * sizeof(uint), (uint)task.cudaSamples.Pointer);
-			cuda.SetParameter(task.cudaComputeLPCLattice, 3 * sizeof(uint), (uint)task.frameSize);
+			cuda.SetParameter(task.cudaComputeLPCLattice, 3 * sizeof(uint), (uint)_windowcount);
+			//cuda.SetParameter(task.cudaComputeLPCLattice, 3 * sizeof(uint), (uint)task.frameSize);
 			cuda.SetParameter(task.cudaComputeLPCLattice, 4 * sizeof(uint), (uint)eparams.max_prediction_order);
 			cuda.SetParameterSize(task.cudaComputeLPCLattice, 5U * sizeof(uint));
 			cuda.SetFunctionBlockShape(task.cudaComputeLPCLattice, 256, 1, 1);
@@ -1142,7 +1147,7 @@ namespace CUETools.Codecs.FlaCuda
 
 			// issue work to the GPU
 			cuda.LaunchAsync(cudaChannelDecorr, (task.frameCount * task.frameSize + 255) / 256, channels == 2 ? 1 : channels, task.stream);
-			if (task.frameSize <= 512 && _windowcount == 1)
+			if (task.frameSize <= 512 && eparams.max_prediction_order <= 12)
 			    cuda.LaunchAsync(task.cudaComputeLPCLattice, 1, channelsCount * task.frameCount, task.stream);
 			else
 			{
@@ -1831,7 +1836,8 @@ namespace CUETools.Codecs.FlaCuda
 		public int channel;
 		public int residualOffs;
 		public int wbits;
-		public fixed int reserved[4];
+		public int abits;
+		public fixed int reserved[3];
 		public fixed int coefs[32];
 	};
 
