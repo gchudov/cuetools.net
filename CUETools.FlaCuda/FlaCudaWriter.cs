@@ -1065,7 +1065,7 @@ namespace CUETools.Codecs.FlaCuda
 						frame.subframes[ch].best.size = (uint)frame.subframes[ch].best.order * frame.subframes[ch].obits + 6;
 						if (frame.subframes[ch].best.type == SubframeType.LPC)
 							frame.subframes[ch].best.size += 4 + 5 + (uint)frame.subframes[ch].best.order * (uint)frame.subframes[ch].best.cbits;
-						AudioSamples.MemCpy(frame.subframes[ch].best.residual + frame.subframes[ch].best.order, (int*)task.residualBufferPtr + task.BestResidualTasks[index].residualOffs, frame.blocksize - frame.subframes[ch].best.order);
+						AudioSamples.MemCpy(frame.subframes[ch].best.residual, (int*)task.residualBufferPtr + task.BestResidualTasks[index].residualOffs, frame.blocksize);
 						int* riceParams = ((int*)task.riceParamsPtr) + (4 << task.max_porder) * index;
 						int* partLengths = ((int*)task.riceParamsPtr) + (4 << task.max_porder) * index + (2 << task.max_porder);
 						int opt_porder = task.max_porder;
@@ -1191,7 +1191,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaChooseBestMethod, 2 * sizeof(uint), (uint)residualPartCount);
 			cuda.SetParameter(task.cudaChooseBestMethod, 3 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
 			cuda.SetParameterSize(task.cudaChooseBestMethod, sizeof(uint) * 4U);
-			cuda.SetFunctionBlockShape(task.cudaChooseBestMethod, 32, 16, 1);
+			cuda.SetFunctionBlockShape(task.cudaChooseBestMethod, 32, 8, 1);
 
 			cuda.SetParameter(task.cudaCopyBestMethod, 0, (uint)task.cudaBestResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaCopyBestMethod, 1 * sizeof(uint), (uint)task.cudaResidualTasks.Pointer);
@@ -1223,7 +1223,7 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaSumPartition, 0, (uint)task.cudaPartitions.Pointer);
 			cuda.SetParameter(task.cudaSumPartition, 1 * sizeof(uint), (uint)max_porder);
 			cuda.SetParameterSize(task.cudaSumPartition, 2U * sizeof(uint));
-			cuda.SetFunctionBlockShape(task.cudaSumPartition, 256, 1, 1);
+			cuda.SetFunctionBlockShape(task.cudaSumPartition, Math.Max(64, 1 << max_porder), 1, 1);
 
 			cuda.SetParameter(task.cudaFindRiceParameter, 0, (uint)task.cudaRiceParams.Pointer);
 			cuda.SetParameter(task.cudaFindRiceParameter, 1 * sizeof(uint), (uint)task.cudaPartitions.Pointer);
