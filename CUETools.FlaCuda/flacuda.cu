@@ -824,6 +824,7 @@ extern "C" __global__ void cudaEncodeResidual(
 extern "C" __global__ void cudaCalcPartition(
     int* partition_lengths,
     int* residual,
+    int* samples,
     encodeResidualTaskStruct *tasks,
     int max_porder, // <= 8
     int psize, // == (shared.task.blocksize >> max_porder), < 256
@@ -831,8 +832,7 @@ extern "C" __global__ void cudaCalcPartition(
     )
 {
     __shared__ struct {
-	int data[256];
-	int length[256];
+	int data[256+32];
 	encodeResidualTaskStruct task;
     } shared;
     const int tid = threadIdx.x + (threadIdx.y << 4);
@@ -841,33 +841,50 @@ extern "C" __global__ void cudaCalcPartition(
     __syncthreads();
 
     const int parts = min(parts_per_block, (1 << max_porder) - blockIdx.x * parts_per_block);
+    const int offs = blockIdx.x * psize * parts_per_block + tid;
 
-    // fetch residual
-    int offs = blockIdx.x * psize * parts_per_block + tid;
-    int s = (offs >= shared.task.residualOrder && tid < parts * psize) ? residual[shared.task.residualOffs + offs] : 0;
+    // fetch samples
+    if (tid < 32) shared.data[tid] = min(offs, tid + shared.task.residualOrder) >= 32 ? samples[shared.task.samplesOffs + offs - 32] >> shared.task.wbits : 0;
+    shared.data[32 + tid] = tid < parts * psize ? samples[shared.task.samplesOffs + offs] >> shared.task.wbits : 0;
+    __syncthreads();
+
+    // compute residual
+    int s = 0;
+    for (int c = -shared.task.residualOrder; c < 0; c++)
+	s += __mul24(shared.data[32 + tid + c], shared.task.coefs[shared.task.residualOrder + c]);
+    s = shared.data[32 + tid] - (s >> shared.task.shift);
+
+    if (offs >= shared.task.residualOrder && tid < parts * psize)
+	residual[shared.task.residualOffs + offs] = s;
+    else
+	s = 0;
+
+    __syncthreads();
     // convert to unsigned
     shared.data[tid] = min(0xfffff, (s << 1) ^ (s >> 31));
     __syncthreads();
 
-    int sum = 0;
+    s = (psize - shared.task.residualOrder * (threadIdx.y + blockIdx.x == 0)) * (threadIdx.x + 1);
     int dpos = threadIdx.y * psize;
     // calc number of unary bits for each residual part with each rice paramater
 #pragma unroll 0
     for (int i = 0; i < psize; i++)
     // for part (threadIdx.y) with this rice paramater (threadIdx.x)
-	sum += shared.data[dpos + i] >> threadIdx.x;
-    shared.length[tid] = sum + (psize - shared.task.residualOrder * (threadIdx.y + blockIdx.x == 0)) * (threadIdx.x + 1);
+	s += shared.data[dpos + i] >> threadIdx.x;
+    __syncthreads();
+    shared.data[tid] = s;
     __syncthreads();
 
     // output length (transposed: k is now threadIdx.y)
     const int pos = (15 << (max_porder + 1)) * blockIdx.y + (threadIdx.y << (max_porder + 1));
     if (threadIdx.y <= 14 && threadIdx.x < parts)
-	partition_lengths[pos + blockIdx.x * parts_per_block + threadIdx.x] = shared.length[threadIdx.y + (threadIdx.x << 4)];
+	partition_lengths[pos + blockIdx.x * parts_per_block + threadIdx.x] = shared.data[threadIdx.y + (threadIdx.x << 4)];
 }
 
 extern "C" __global__ void cudaCalcPartition1(
     int* partition_lengths,
     int* residual,
+    int* samples,
     encodeResidualTaskStruct *tasks,
     int max_porder, // <= 8
     int psize, // == (shared.task.blocksize >> max_porder), < 256
@@ -916,6 +933,7 @@ extern "C" __global__ void cudaCalcPartition1(
 extern "C" __global__ void cudaCalcLargePartition(
     int* partition_lengths,
     int* residual,
+    int* samples,
     encodeResidualTaskStruct *tasks,
     int max_porder, // <= 8
     int psize, // == >= 128
@@ -1016,16 +1034,18 @@ extern "C" __global__ void cudaFindRiceParameter(
     shared.length[tid] = l1 = min(l1, l2);
 #pragma unroll 2
     for (int sh = 2; sh > 0; sh --)
+	if (threadIdx.x < (1 << sh))
+	{
+	    l2 = shared.length[tid + (1 << sh)];
+	    shared.index[tid] = shared.index[tid + ((l2 < l1) << sh)];
+	    shared.length[tid] = l1 = min(l1, l2);
+	}    
+    if (threadIdx.x == 0 && threadIdx.y < parts)
     {
-	l2 = shared.length[tid + (1 << sh)];
-	shared.index[tid] = shared.index[tid + ((l2 < l1) << sh)];
-	shared.length[tid] = l1 = min(l1, l2);
-    }
-    l2 = shared.length[tid + 1];
-    if (threadIdx.x == 0 && threadIdx.y < parts)
+	l2 = shared.length[tid + 1];
 	shared.outidx[threadIdx.y] = shared.index[tid + (l2 < l1)];
-    if (threadIdx.x == 0 && threadIdx.y < parts)
 	shared.outlen[threadIdx.y] = min(l1, l2);
+    }
     __syncthreads();
     // output rice parameter
     if (tid < parts)
