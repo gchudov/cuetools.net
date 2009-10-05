@@ -859,42 +859,51 @@ extern "C" __global__ void cudaCalcPartition(
     else
 	s = 0;
 
-    __syncthreads();
     // convert to unsigned
-    shared.data[tid] = min(0xfffff, (s << 1) ^ (s >> 31));
+    s = min(0xfffff, (s << 1) ^ (s >> 31));
+
+    //__syncthreads();
+    //shared.data[tid] = s;
+    //__syncthreads();
+
+    //shared.data[tid] = (shared.data[tid] & (0x0000ffff << (tid & 16))) | (((shared.data[tid ^ 16] & (0x0000ffff << (tid & 16))) << (~tid & 16)) >> (tid & 16));
+    //shared.data[tid] = (shared.data[tid] & (0x00ff00ff << (tid & 8))) | (((shared.data[tid ^ 8] & (0x00ff00ff << (tid & 8))) << (~tid & 8)) >> (tid & 8));
+    //shared.data[tid] = (shared.data[tid] & (0x0f0f0f0f << (tid & 4))) | (((shared.data[tid ^ 4] & (0x0f0f0f0f << (tid & 4))) << (~tid & 4)) >> (tid & 4));
+    //shared.data[tid] = (shared.data[tid] & (0x33333333 << (tid & 2))) | (((shared.data[tid ^ 2] & (0x33333333 << (tid & 2))) << (~tid & 2)) >> (tid & 2));
+    //shared.data[tid] = (shared.data[tid] & (0x55555555 << (tid & 1))) | (((shared.data[tid ^ 1] & (0x55555555 << (tid & 1))) << (~tid & 1)) >> (tid & 1));
+    //shared.data[tid] = __popc(shared.data[tid]);
+
+    __syncthreads();
+    shared.data[tid + (tid / psize)] = s;
+    //shared.data[tid] = s;
     __syncthreads();
 
-    s = (psize - shared.task.residualOrder * (threadIdx.y + blockIdx.x == 0)) * (threadIdx.x + 1);
-    int dpos = threadIdx.y * psize;
-    // calc number of unary bits for each residual part with each rice paramater
+    s = (psize - shared.task.residualOrder * (threadIdx.x + blockIdx.x == 0)) * (threadIdx.y + 1);
+    int dpos = __mul24(threadIdx.x, psize + 1);
+    //int dpos = __mul24(threadIdx.x, psize);
+    // calc number of unary bits for part threadIdx.x with rice paramater threadIdx.y
 #pragma unroll 0
     for (int i = 0; i < psize; i++)
-    // for part (threadIdx.y) with this rice paramater (threadIdx.x)
-	s += shared.data[dpos + i] >> threadIdx.x;
-    __syncthreads();
-    shared.data[tid] = s;
-    __syncthreads();
+	s += shared.data[dpos + i] >> threadIdx.y;
 
-    // output length (transposed: k is now threadIdx.y)
+    // output length
     const int pos = (15 << (max_porder + 1)) * blockIdx.y + (threadIdx.y << (max_porder + 1));
     if (threadIdx.y <= 14 && threadIdx.x < parts)
-	partition_lengths[pos + blockIdx.x * parts_per_block + threadIdx.x] = shared.data[threadIdx.y + (threadIdx.x << 4)];
+	partition_lengths[pos + blockIdx.x * parts_per_block + threadIdx.x] = s;
 }
 
-extern "C" __global__ void cudaCalcPartition1(
+extern "C" __global__ void cudaCalcPartition16(
     int* partition_lengths,
     int* residual,
     int* samples,
     encodeResidualTaskStruct *tasks,
     int max_porder, // <= 8
-    int psize, // == (shared.task.blocksize >> max_porder), < 256
-    int parts_per_block // == 256 / psize, > 0, <= 16
+    int psize, // == 16
+    int parts_per_block // == 16
     )
 {
     __shared__ struct {
-	int data[256];
-	int length[256];
-	int plen[256];
+	int data[256+32];
 	encodeResidualTaskStruct task;
     } shared;
     const int tid = threadIdx.x + (threadIdx.y << 4);
@@ -902,32 +911,46 @@ extern "C" __global__ void cudaCalcPartition1(
 	((int*)&shared.task)[tid] = ((int*)(&tasks[blockIdx.y]))[tid];
     __syncthreads();
 
-    const int parts = min(parts_per_block, (1 << max_porder) - blockIdx.x * parts_per_block);
+    const int offs = (blockIdx.x << 8) + tid;
 
-    // fetch residual
-    int offs = blockIdx.x * psize * parts_per_block + tid;
-    int s = (offs >= shared.task.residualOrder && tid < parts * psize) ? residual[shared.task.residualOffs + offs] : 0;
+    // fetch samples
+    if (tid < 32) shared.data[tid] = min(offs, tid + shared.task.residualOrder) >= 32 ? samples[shared.task.samplesOffs + offs - 32] >> shared.task.wbits : 0;
+    shared.data[32 + tid] = samples[shared.task.samplesOffs + offs] >> shared.task.wbits;
+    __syncthreads();
+
+    // compute residual
+    int s = 0;
+    for (int c = -shared.task.residualOrder; c < 0; c++)
+	s += __mul24(shared.data[32 + tid + c], shared.task.coefs[shared.task.residualOrder + c]);
+    s = shared.data[32 + tid] - (s >> shared.task.shift);
+
+    if (offs >= shared.task.residualOrder)
+	residual[shared.task.residualOffs + offs] = s;
+    else
+	s = 0;
+
     // convert to unsigned
-    shared.data[tid] = min(0xfffff, (s << 1) ^ (s >> 31));
+    s = min(0xfffff, (s << 1) ^ (s >> 31));
+    __syncthreads();
+    shared.data[tid + threadIdx.y] = s;
     __syncthreads();
 
-    for (int k = 0; k < 15; k++)
-    {
-	shared.length[tid] = 0;
-	// calc number of unary bits for each residual part with each rice paramater
-	// for part (threadIdx.y) with rice paramater k
-	for (int i = 0; i < psize; i += 16)
-	    shared.length[tid] += shared.data[threadIdx.y * psize + i + threadIdx.x] >> k; // * (i + threadIdx.x < psize)
-	SUM16(shared.length,tid,+=);
-	if (threadIdx.x == 0 && threadIdx.y < parts)
-	    shared.plen[(k << 4) + threadIdx.y] = shared.length[tid];
-    }
-    __syncthreads();
+    // calc number of unary bits for part threadIdx.x with rice paramater threadIdx.y
+    int dpos = __mul24(threadIdx.x, 17);
+    s =
+    (shared.data[dpos + 0] >> threadIdx.y) + (shared.data[dpos + 1] >> threadIdx.y) + 
+    (shared.data[dpos + 2] >> threadIdx.y) + (shared.data[dpos + 3] >> threadIdx.y) + 
+    (shared.data[dpos + 4] >> threadIdx.y) + (shared.data[dpos + 5] >> threadIdx.y) + 
+    (shared.data[dpos + 6] >> threadIdx.y) + (shared.data[dpos + 7] >> threadIdx.y) + 
+    (shared.data[dpos + 8] >> threadIdx.y) + (shared.data[dpos + 9] >> threadIdx.y) + 
+    (shared.data[dpos + 10] >> threadIdx.y) + (shared.data[dpos + 11] >> threadIdx.y) + 
+    (shared.data[dpos + 12] >> threadIdx.y) + (shared.data[dpos + 13] >> threadIdx.y) + 
+    (shared.data[dpos + 14] >> threadIdx.y) + (shared.data[dpos + 15] >> threadIdx.y);
+
     // output length
-    const int pos = blockIdx.x * parts_per_block + threadIdx.x;
-    const int len1 = (psize - shared.task.residualOrder * (pos == 0)) * (threadIdx.y + 1);
-    if (threadIdx.y <= 14 && threadIdx.x < parts)
-	partition_lengths[((threadIdx.y + 15 * blockIdx.y) << (max_porder + 1)) + pos] = shared.plen[tid] + len1;
+    const int pos = ((15 * blockIdx.y + threadIdx.y) << (max_porder + 1)) + (blockIdx.x << 4) + threadIdx.x;
+    if (threadIdx.y <= 14)
+	partition_lengths[pos] = s + (16 - shared.task.residualOrder * (threadIdx.x + blockIdx.x == 0)) * (threadIdx.y + 1);
 }
 
 extern "C" __global__ void cudaCalcLargePartition(
@@ -977,30 +1000,45 @@ extern "C" __global__ void cudaCalcLargePartition(
 }
 
 // Sums partition lengths for a certain k == blockIdx.x
-// Requires 256 threads
+// Requires 128 threads
 extern "C" __global__ void cudaSumPartition(
     int* partition_lengths,
     int max_porder
     )
 {
     __shared__ struct {
-	int data[512]; // max_porder <= 8, data length <= 1 << 9.
+	volatile int data[512+32]; // max_porder <= 8, data length <= 1 << 9.
     } shared;
 
     const int pos = (15 << (max_porder + 1)) * blockIdx.y + (blockIdx.x << (max_porder + 1));
 
     // fetch partition lengths
     shared.data[threadIdx.x] = threadIdx.x < (1 << max_porder) ? partition_lengths[pos + threadIdx.x] : 0;
+    shared.data[blockDim.x + threadIdx.x] = blockDim.x + threadIdx.x < (1 << max_porder) ? partition_lengths[pos + blockDim.x + threadIdx.x] : 0;
     __syncthreads();
-    for (int porder = max_porder - 1; porder >= 0; porder--)
+
+    int in_pos = (threadIdx.x << 1);
+    int out_pos = (1 << max_porder) + threadIdx.x;
+    int bs;
+    for (bs = 1 << (max_porder - 1); bs > 32; bs >>= 1)
     {
-	const int in_pos = (2 << max_porder) - (4 << porder);
-	const int out_pos = (2 << max_porder) - (2 << porder);
-	if (threadIdx.x < (1 << porder)) shared.data[out_pos + threadIdx.x] = shared.data[in_pos + (threadIdx.x << 1)] + shared.data[in_pos + (threadIdx.x << 1) + 1];
+	if (threadIdx.x < bs) shared.data[out_pos] = shared.data[in_pos] + shared.data[in_pos + 1];
+	in_pos += bs << 1;
+	out_pos += bs;
 	__syncthreads();
     }
+    if (threadIdx.x < 32)
+    for (; bs > 0; bs >>= 1)
+    {
+	shared.data[out_pos] = shared.data[in_pos] + shared.data[in_pos + 1];
+	in_pos += bs << 1;
+	out_pos += bs;
+    }
+    __syncthreads();
     if (threadIdx.x < (1 << max_porder))
 	partition_lengths[pos + (1 << max_porder) + threadIdx.x] = shared.data[(1 << max_porder) + threadIdx.x];
+    if (blockDim.x + threadIdx.x < (1 << max_porder))
+	partition_lengths[pos + (1 << max_porder) + blockDim.x + threadIdx.x] = shared.data[(1 << max_porder) + blockDim.x + threadIdx.x];
 }
 
 // Finds optimal rice parameter for up to 16 partitions at a time.
@@ -1014,45 +1052,36 @@ extern "C" __global__ void cudaFindRiceParameter(
     __shared__ struct {
 	volatile int length[256];
 	volatile int index[256];
-	volatile int outlen[32];
-	volatile int outidx[32];
     } shared;
-    const int tid = threadIdx.x + (threadIdx.y << 3);
+    const int tid = threadIdx.x + (threadIdx.y << 5);
     const int parts = min(32, 2 << max_porder);
-    const int pos = (15 << (max_porder + 1)) * blockIdx.y + ((tid >> 5) << (max_porder + 1));
+    const int pos = (15 << (max_porder + 1)) * blockIdx.y + (threadIdx.y << (max_porder + 1));
 
     // read length for 32 partitions
-    shared.index[tid] = ((tid & 31) < parts) ? partition_lengths[pos + blockIdx.x * 32 + (tid & 31)] : 0xffffff;
-    shared.length[tid] = ((tid >> 5) + 8 <= 14 && (tid & 31) < parts) ? partition_lengths[pos + (8 << (max_porder + 1)) + blockIdx.x * 32 + (tid & 31)] : 0xffffff;
-    __syncthreads();
-    // transpose
-    int l1 = shared.index[threadIdx.y + (threadIdx.x << 5)];
-    int l2 = shared.length[threadIdx.y + (threadIdx.x << 5)];
-    __syncthreads();
+    int l1 = (threadIdx.x < parts) ? partition_lengths[pos + blockIdx.x * 32 + threadIdx.x] : 0xffffff;
+    int l2 = (threadIdx.y + 8 <= 14 && threadIdx.x < parts) ? partition_lengths[pos + (8 << (max_porder + 1)) + blockIdx.x * 32 + threadIdx.x] : 0xffffff;
     // find best rice parameter
-    shared.index[tid] = threadIdx.x + ((l2 < l1) << 3);
+    shared.index[tid] = threadIdx.y + ((l2 < l1) << 3);
     shared.length[tid] = l1 = min(l1, l2);
-#pragma unroll 2
-    for (int sh = 2; sh > 0; sh --)
-	if (threadIdx.x < (1 << sh))
+    __syncthreads();
+#pragma unroll 3
+    for (int sh = 7; sh >= 5; sh --)
+    {
+	if (tid < (1 << sh))
 	{
 	    l2 = shared.length[tid + (1 << sh)];
 	    shared.index[tid] = shared.index[tid + ((l2 < l1) << sh)];
 	    shared.length[tid] = l1 = min(l1, l2);
 	}    
-    if (threadIdx.x == 0 && threadIdx.y < parts)
-    {
-	l2 = shared.length[tid + 1];
-	shared.outidx[threadIdx.y] = shared.index[tid + (l2 < l1)];
-	shared.outlen[threadIdx.y] = min(l1, l2);
+	__syncthreads();
     }
-    __syncthreads();
-    // output rice parameter
     if (tid < parts)
-	rice_parameters[(blockIdx.y << (max_porder + 2)) + blockIdx.x * parts + tid] = shared.outidx[tid];
-    // output length
-    if (tid < parts)
-	rice_parameters[(blockIdx.y << (max_porder + 2)) + (1 << (max_porder + 1)) + blockIdx.x * parts + tid] = shared.outlen[tid];
+    {
+	// output rice parameter
+	rice_parameters[(blockIdx.y << (max_porder + 2)) + blockIdx.x * parts + tid] = shared.index[tid];
+	// output length
+	rice_parameters[(blockIdx.y << (max_porder + 2)) + (1 << (max_porder + 1)) + blockIdx.x * parts + tid] = shared.length[tid];
+    }
 }
 
 extern "C" __global__ void cudaFindPartitionOrder(

@@ -1114,7 +1114,7 @@ namespace CUETools.Codecs.FlaCuda
 			int calcPartitionPartCount = (calcPartitionPartSize >= 128) ? 1 : (256 / calcPartitionPartSize);
 
 			CUfunction cudaChannelDecorr = channels == 2 ? (channelsCount == 4 ? task.cudaStereoDecorr : task.cudaChannelDecorr2) : task.cudaChannelDecorr;
-			CUfunction cudaCalcPartition = calcPartitionPartSize >= 128 ? task.cudaCalcLargePartition : task.cudaCalcPartition;
+			CUfunction cudaCalcPartition = calcPartitionPartSize >= 128 ? task.cudaCalcLargePartition : calcPartitionPartSize == 16 && task.frameSize >= 256 ? task.cudaCalcPartition16 : task.cudaCalcPartition;
 
 			cuda.SetParameter(cudaChannelDecorr, 0 * sizeof(uint), (uint)task.cudaSamples.Pointer);
 			cuda.SetParameter(cudaChannelDecorr, 1 * sizeof(uint), (uint)task.cudaSamplesBytes.Pointer);
@@ -1203,20 +1203,20 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaSumPartition, 0, (uint)task.cudaPartitions.Pointer);
 			cuda.SetParameter(task.cudaSumPartition, 1 * sizeof(uint), (uint)max_porder);
 			cuda.SetParameterSize(task.cudaSumPartition, 2U * sizeof(uint));
-			cuda.SetFunctionBlockShape(task.cudaSumPartition, Math.Max(64, 1 << max_porder), 1, 1);
+			cuda.SetFunctionBlockShape(task.cudaSumPartition, Math.Max(32, 1 << (max_porder - 1)), 1, 1);
 
 			cuda.SetParameter(task.cudaFindRiceParameter, 0, (uint)task.cudaRiceParams.Pointer);
 			cuda.SetParameter(task.cudaFindRiceParameter, 1 * sizeof(uint), (uint)task.cudaPartitions.Pointer);
 			cuda.SetParameter(task.cudaFindRiceParameter, 2 * sizeof(uint), (uint)max_porder);
 			cuda.SetParameterSize(task.cudaFindRiceParameter, 3U * sizeof(uint));
-			cuda.SetFunctionBlockShape(task.cudaFindRiceParameter, 8, 32, 1);
+			cuda.SetFunctionBlockShape(task.cudaFindRiceParameter, 32, 8, 1);
 
 			cuda.SetParameter(task.cudaFindPartitionOrder, 0, (uint)task.cudaBestRiceParams.Pointer);
 			cuda.SetParameter(task.cudaFindPartitionOrder, 1 * sizeof(uint), (uint)task.cudaBestResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaFindPartitionOrder, 2 * sizeof(uint), (uint)task.cudaRiceParams.Pointer);
 			cuda.SetParameter(task.cudaFindPartitionOrder, 3 * sizeof(uint), (uint)max_porder);
 			cuda.SetParameterSize(task.cudaFindPartitionOrder, 4U * sizeof(uint));
-			cuda.SetFunctionBlockShape(task.cudaFindPartitionOrder, 256, 1, 1);			
+			cuda.SetFunctionBlockShape(task.cudaFindPartitionOrder, 256, 1, 1);
 
 			// issue work to the GPU
 			cuda.LaunchAsync(cudaChannelDecorr, (task.frameCount * task.frameSize + 255) / 256, channels == 2 ? 1 : channels, task.stream);
@@ -1238,7 +1238,7 @@ namespace CUETools.Codecs.FlaCuda
 			if (!encode_on_cpu)
 			{
 				int bsz = calcPartitionPartCount * calcPartitionPartSize;
-				if (cudaCalcPartition.Pointer != task.cudaCalcPartition.Pointer)
+				if (cudaCalcPartition.Pointer == task.cudaCalcLargePartition.Pointer)
 					cuda.LaunchAsync(task.cudaEncodeResidual, residualPartCount, channels * task.frameCount, task.stream);
 				cuda.LaunchAsync(cudaCalcPartition, (task.frameSize + bsz - 1) / bsz, channels * task.frameCount, task.stream);
 				if (max_porder > 0)
@@ -1936,6 +1936,7 @@ namespace CUETools.Codecs.FlaCuda
 		public CUfunction cudaCopyBestMethodStereo;
 		public CUfunction cudaEncodeResidual;
 		public CUfunction cudaCalcPartition;
+		public CUfunction cudaCalcPartition16;
 		public CUfunction cudaCalcLargePartition;
 		public CUfunction cudaSumPartition;
 		public CUfunction cudaFindRiceParameter;
@@ -2035,6 +2036,7 @@ namespace CUETools.Codecs.FlaCuda
 			cudaCopyBestMethodStereo = cuda.GetModuleFunction("cudaCopyBestMethodStereo");
 			cudaEncodeResidual = cuda.GetModuleFunction("cudaEncodeResidual");
 			cudaCalcPartition = cuda.GetModuleFunction("cudaCalcPartition");
+			cudaCalcPartition16 = cuda.GetModuleFunction("cudaCalcPartition16");
 			cudaCalcLargePartition = cuda.GetModuleFunction("cudaCalcLargePartition");
 			cudaSumPartition = cuda.GetModuleFunction("cudaSumPartition");
 			cudaFindRiceParameter = cuda.GetModuleFunction("cudaFindRiceParameter");
