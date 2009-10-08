@@ -44,8 +44,7 @@ typedef struct
     int wbits;
     int abits;
     int porder;
-    int windowOffs;
-    int reserved[1];
+    int reserved[2];
 } FlaCudaSubframeData;
 
 typedef struct
@@ -161,22 +160,31 @@ extern "C" __global__ void cudaComputeAutocor(
 	volatile float product[256];
 	FlaCudaSubframeData task;
 	volatile float result[33];
+	volatile int dataPos;
+	volatile int dataLen;
+	volatile int windowOffs;
+	volatile int samplesOffs;
+	//volatile int resultOffs;
     } shared;
     const int tid = threadIdx.x + (threadIdx.y * 32);
     // fetch task data
     if (tid < sizeof(shared.task) / sizeof(int))
-	((int*)&shared.task)[tid] = ((int*)(tasks + __mul24(taskCount, blockIdx.y >> windowcount) + __mul24(max_order, blockIdx.y & ((1 << windowcount)-1))))[tid];
+	((int*)&shared.task)[tid] = ((int*)(tasks + __mul24(taskCount, blockIdx.y >> windowcount)))[tid];
+    if (tid == 0) 
+    {
+	shared.dataPos = __mul24(blockIdx.x, 15) * 32;
+	shared.windowOffs = __mul24(blockIdx.y & ((1 << windowcount)-1), shared.task.blocksize) + shared.dataPos;
+	shared.samplesOffs = shared.task.samplesOffs + shared.dataPos;
+	shared.dataLen = min(shared.task.blocksize - shared.dataPos, 15 * 32 + max_order);
+    }
+    //if (tid == 32)
+	//shared.resultOffs = __mul24(blockIdx.x + __mul24(blockIdx.y, gridDim.x), max_order + 1);
     __syncthreads();
 
     // fetch samples
-    {
-	const int pos = __mul24(blockIdx.x, 15) * 32;
-	const int dataLen = min(shared.task.blocksize - pos, 15 * 32 + max_order);
-	const int pos2 = pos + tid;
-
-	shared.data[tid] = tid < dataLen ? samples[shared.task.samplesOffs + pos2] * window[shared.task.windowOffs + pos2]: 0.0f;
-	shared.data[tid + 256] = tid + 256 < dataLen ? samples[shared.task.samplesOffs + pos2 + 256] * window[shared.task.windowOffs + pos2 + 256]: 0.0f;
-    }
+    shared.data[tid] = tid < shared.dataLen ? samples[shared.samplesOffs + tid] * window[shared.windowOffs + tid]: 0.0f;
+    int tid2 = tid + 256;
+    shared.data[tid2] = tid2 < shared.dataLen ? samples[shared.samplesOffs + tid2] * window[shared.windowOffs + tid2]: 0.0f;
     __syncthreads();
 
     const int ptr = __mul24(threadIdx.x, 15);
@@ -208,7 +216,7 @@ extern "C" __global__ void cudaComputeAutocor(
     }
     __syncthreads();
     if (tid <= max_order)
-	output[(blockIdx.x + blockIdx.y * gridDim.x) * (max_order + 1) + tid] = shared.result[tid];
+	output[__mul24(blockIdx.x + __mul24(blockIdx.y, gridDim.x), max_order + 1) + tid] = shared.result[tid];
 }
 
 extern "C" __global__ void cudaComputeLPC(
@@ -216,99 +224,291 @@ extern "C" __global__ void cudaComputeLPC(
     int taskCount, // tasks per block
     float*autoc,
     int max_order, // should be <= 32
+    int taskCount2, // tasks per window function, should be <= max_order
     int partCount // should be <= blockDim?
 )
 {
     __shared__ struct {
 	FlaCudaSubframeData task;
+	union
+	{
+	    volatile float parts[256];
+	    volatile int tmpi[256];
+	};
+	volatile float lpc[33*16];
 	volatile float ldr[32];
-	volatile int   bits[32];
-	volatile float autoc[33];
-	volatile float gen0[32];
 	volatile float gen1[32];
-	volatile float parts[128];
+	volatile float autoc[33];
+	volatile float error[64];
+	volatile float order[64];
 	//volatile float reff[32];
 	//int   cbits;
     } shared;
-    const int tid = threadIdx.x;
+    const int tid = threadIdx.x + threadIdx.y * 32;
     
     // fetch task data
     if (tid < sizeof(shared.task) / sizeof(int))
-	((int*)&shared.task)[tid] = ((int*)(tasks + blockIdx.x * max_order + blockIdx.y * taskCount))[tid];
+	((int*)&shared.task)[tid] = ((int*)(tasks + blockIdx.y * taskCount))[tid];
     __syncthreads();
     
-    // add up parts
-    for (int order = 0; order <= max_order; order++)
+    // add up autocorrelation parts
+    for (int order = threadIdx.y; order <= max_order; order += 8)
     {
-	shared.parts[tid] = tid < partCount ? autoc[((blockIdx.y * gridDim.x + blockIdx.x) * partCount + tid) * (max_order + 1) + order] : 0;
-	__syncthreads();
-	if (tid < 64 && blockDim.x > 64) shared.parts[tid] += shared.parts[tid + 64];
-	__syncthreads();
-	if (tid < 32) 
-	{
-	    if (blockDim.x > 32) shared.parts[tid] += shared.parts[tid + 32];
-	    shared.parts[tid] += shared.parts[tid + 16];
-	    shared.parts[tid] += shared.parts[tid + 8];
-	    shared.parts[tid] += shared.parts[tid + 4];
-	    shared.parts[tid] += shared.parts[tid + 2];
-	    shared.parts[tid] += shared.parts[tid + 1];
-	    if (tid == 0)
-		shared.autoc[order] = shared.parts[0];
-	}
+	shared.parts[tid] = 0.0f;
+	for (int pos = threadIdx.x; pos < partCount; pos += 32)
+	    shared.parts[tid] += autoc[((blockIdx.y * gridDim.x + blockIdx.x) * partCount + pos) * (max_order + 1) + order];
+	shared.parts[tid] = shared.parts[tid] + shared.parts[tid + 8] + shared.parts[tid + 16] + shared.parts[tid + 24];
+	shared.parts[tid] = shared.parts[tid] + shared.parts[tid + 2] + shared.parts[tid + 4] + shared.parts[tid + 6];
+	if (threadIdx.x == 0)
+	    shared.autoc[order] = shared.parts[tid] + shared.parts[tid + 1];
     }
-   
-    if (tid < 32)
-    {
-	shared.gen0[tid] = shared.autoc[tid+1];
-	shared.gen1[tid] = shared.autoc[tid+1];
-	shared.ldr[tid] = 0.0f;
+    __syncthreads();
 
+    // Compute LPC using Schur and Levinson-Durbin recursion
+    if (threadIdx.y == 0)
+    {
+	float gen0 = shared.gen1[tid] = shared.autoc[tid+1];
+	shared.ldr[tid] = 0.0f;
 	float error = shared.autoc[0];
 	for (int order = 0; order < max_order; order++)
 	{
 	    // Schur recursion
 	    float reff = -shared.gen1[0] / error;
 	    //if (tid == 0) shared.reff[order] = reff;
-	    error += __fmul_rz(shared.gen1[0], reff);
+	    error += shared.gen1[0] * reff;
+	    //error *= (1 - reff * reff);
 	    if (tid < max_order - 1 - order)
 	    {
-		float g1 = shared.gen1[tid + 1] + __fmul_rz(reff, shared.gen0[tid]);
-		float g0 = __fmul_rz(shared.gen1[tid + 1], reff) + shared.gen0[tid];
-		shared.gen1[tid] = g1;
-		shared.gen0[tid] = g0;
+		float gen1 = shared.gen1[tid + 1] + reff * gen0;
+		gen0 += shared.gen1[tid + 1] * reff;
+		shared.gen1[tid] = gen1;
+	    }
+	    // Levinson-Durbin recursion
+	    shared.ldr[tid] += (tid < order) * reff * shared.ldr[order - 1 - tid] + (tid  == order) * reff;
+	    shared.lpc[((order * (order + 1)) >> 1) + tid] = -shared.ldr[tid];
+	    shared.error[order] = error;
+	}
+	shared.order[tid] = tid < max_order ? tid : max_order - 1;
+	shared.order[tid + 32] = 0;
+	if (taskCount2 < max_order)
+	{
+	    // Select best orders based on something similar to Schwartz's Criterion
+	    shared.error[tid] = tid < max_order ? __logf(shared.error[tid]) + (tid * 0.01f) : __logf(shared.error[0]) + 1;
+	    shared.error[tid + 32] = __logf(shared.error[0]) + 1;
+	    
+	    for(int size = 2; size < 32; size <<= 1){
+		//Bitonic merge
+		int ddd = (threadIdx.x & (size / 2)) == 0;
+		for(int stride = size / 2; stride > 0; stride >>= 1){
+		    int pos = 2 * threadIdx.x - (threadIdx.x & (stride - 1));
+		    if ((shared.error[pos] >= shared.error[pos + stride]) == ddd)
+		    {
+			float t = shared.error[pos];
+			shared.error[pos] = shared.error[pos + stride];
+			shared.error[pos + stride] = t;
+			int t1 = shared.order[pos];
+			shared.order[pos] = shared.order[pos + stride];
+			shared.order[pos + stride] = t1;
+		    }
+		}
 	    }
 
-	    // Levinson-Durbin recursion
-	    shared.ldr[tid] += (tid < order) * __fmul_rz(reff, shared.ldr[order - 1 - tid]) + (tid  == order) * reff;
+	    //ddd == dir for the last bitonic merge step
+	    {
+		for(int stride = 16; stride > 0; stride >>= 1){
+		    int pos = 2 * threadIdx.x - (threadIdx.x & (stride - 1));
+		    if (shared.error[pos] >= shared.error[pos + stride])
+		    {
+			float t = shared.error[pos];
+			shared.error[pos] = shared.error[pos + stride];
+			shared.error[pos + stride] = t;
+			int t1 = shared.order[pos];
+			shared.order[pos] = shared.order[pos + stride];
+			shared.order[pos + stride] = t1;
+		    }
+		}
+	    }
 
-	    // Quantization
-	    //int precision = 13 - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576);
-	    int precision = max(3, min(min(13 - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), __clz(order) + 1 - shared.task.abits));
-	    int taskNo = blockIdx.x * max_order + blockIdx.y * taskCount + order;
-	    shared.bits[tid] = __mul24((33 - __clz(__float2int_rn(fabs(shared.ldr[tid]) * (1 << 15))) - precision), tid <= order);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 16]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 8]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 4]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 2]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 1]);
-	    int sh = max(0,min(15, 15 - shared.bits[0]));
-	    
-	    // reverse coefs
-	    int coef = max(-(1 << precision),min((1 << precision)-1,__float2int_rn(-shared.ldr[order - tid] * (1 << sh))));
-	    if (tid <= order)
-		tasks[taskNo].coefs[tid] = coef;
-	    if (tid == 0)
-		tasks[taskNo].data.shift = sh;
-	    shared.bits[tid] = __mul24(33 - __clz(coef ^ (coef >> 31)), tid <= order);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 16]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 8]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 4]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 2]);
-	    shared.bits[tid] = max(shared.bits[tid], shared.bits[tid + 1]);
-	    int cbits = shared.bits[0];
-	    if (tid == 0)
-		tasks[taskNo].data.cbits = cbits;
+	 //   float l1 = shared.error[tid];
+  //  #pragma unroll 0
+	 //   for (int sh = 4; sh >= 0; sh --)
+	 //   {
+		//float l2 = shared.error[threadIdx.x + (1 << sh)];
+		//shared.order[threadIdx.x] = shared.order[threadIdx.x + ((l2 < l1) << sh)];
+		//shared.error[threadIdx.x] = l1 = min(l1, l2);
+	 //   }
 	}
+    }
+    __syncthreads();   
+
+    // Quantization
+    for (int i = threadIdx.y; i < taskCount2; i += 8)
+    //for (int precision = 0; precision < 1; precision++)//precisions; precision++)
+    {
+	int order = shared.order[i];
+	float lpc = threadIdx.x <= order ? shared.lpc[((order * (order + 1)) >> 1) + order - threadIdx.x] : 0.0f;
+	// get 15 bits of each coeff
+	int coef = __float2int_rn(lpc * (1 << 15));
+	// remove sign bits
+	shared.tmpi[tid] = coef ^ (coef >> 31);
+	// OR reduction
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 8] | shared.tmpi[tid + 16] | shared.tmpi[tid + 24];
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 2] | shared.tmpi[tid + 4] | shared.tmpi[tid + 6];
+	//SUM32(shared.tmpi,tid,|=);
+	// choose precision	
+	//int cbits = max(3, min(10, 5 + (shared.task.abits >> 1))); //  - __float2int_rn(shared.PE[order - 1])
+	int cbits = max(3, min(min(13 - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), __clz(order) + 1 - shared.task.abits));
+	// calculate shift based on precision and number of leading zeroes in coeffs
+	int shift = max(0,min(15, __clz(shared.tmpi[threadIdx.y * 32] | shared.tmpi[threadIdx.y * 32 + 1]) - 18 + cbits));
+	//if (shared.task.abits + 32 - __clz(order) < shift
+	//int shift = max(0,min(15, (shared.task.abits >> 2) - 14 + __clz(shared.tmpi[threadIdx.x & ~31]) + ((32 - __clz(order))>>1)));
+	// quantize coeffs with given shift
+	coef = max(-(1 << (cbits - 1)), min((1 << (cbits - 1)) -1, __float2int_rn(lpc * (1 << shift))));
+	// error correction
+	//shared.tmp[threadIdx.x] = (threadIdx.x != 0) * (shared.arp[threadIdx.x - 1]*(1 << shared.task.shift) - shared.task.coefs[threadIdx.x - 1]);
+	//shared.task.coefs[threadIdx.x] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, __float2int_rn((shared.arp[threadIdx.x]) * (1 << shared.task.shift) + shared.tmp[threadIdx.x])));
+	// remove sign bits
+	shared.tmpi[tid] = coef ^ (coef >> 31);
+	// OR reduction
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 8] | shared.tmpi[tid + 16] | shared.tmpi[tid + 24];
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 2] | shared.tmpi[tid + 4] | shared.tmpi[tid + 6];
+	//SUM32(shared.tmpi,tid,|=);
+	// calculate actual number of bits (+1 for sign)
+	cbits = 1 + 32 - __clz(shared.tmpi[threadIdx.y * 32] | shared.tmpi[threadIdx.y * 32 + 1]);
+
+	// output shift, cbits and output coeffs
+	int taskNo = blockIdx.y * taskCount + blockIdx.x * taskCount2 + i;
+	if (threadIdx.x == 0)
+	    tasks[taskNo].data.shift = shift;
+	if (threadIdx.x == 0)
+	    tasks[taskNo].data.cbits = cbits;
+	if (threadIdx.x == 0)
+	    tasks[taskNo].data.residualOrder = order + 1;
+	if (threadIdx.x <= order)
+	    tasks[taskNo].coefs[threadIdx.x] = coef;
+    }
+}
+
+extern "C" __global__ void cudaQuantizeLPC(
+    FlaCudaSubframeTask *tasks,
+    int taskCount, // tasks per block
+    int taskCountLPC, // LPC tasks per block
+    int windowCount, // sets of coeffs per block
+    float*lpcs,
+    int max_order // should be <= 32
+)
+{
+    __shared__ struct {
+	FlaCudaSubframeData task;
+	volatile int tmpi[256];
+	volatile int order[256];
+	volatile float error[256];
+    } shared;
+    const int tid = threadIdx.x + threadIdx.y * 32;
+    
+    // fetch task data
+    if (tid < sizeof(shared.task) / sizeof(int))
+	((int*)&shared.task)[tid] = ((int*)(tasks + blockIdx.y * taskCount))[tid];
+    __syncthreads();
+
+    shared.order[tid] = min(max_order - 1, threadIdx.x) + min(threadIdx.y, windowCount - 1) * 32;
+    shared.error[tid] = 10000.0f + shared.order[tid];
+
+    {
+	int lpcs_offs = (threadIdx.y + blockIdx.y * windowCount) * (max_order + 1) * 32;
+	
+	// Select best orders based on Akaike's Criteria
+
+	// Load prediction error estimates
+	if (threadIdx.y < windowCount && threadIdx.x < max_order)
+	    shared.error[tid] = __logf(lpcs[lpcs_offs + max_order * 32 + threadIdx.x]) + (threadIdx.x * 0.01f);
+	__syncthreads();
+
+	// Sort using bitonic sort
+	for(int size = 2; size < 64; size <<= 1){
+	    //Bitonic merge
+	    int ddd = (tid & (size / 2)) == 0;
+	    for(int stride = size / 2; stride > 0; stride >>= 1){
+		__syncthreads();
+		int pos = 2 * tid - (tid & (stride - 1));
+		if ((shared.error[pos] >= shared.error[pos + stride]) == ddd)
+		{
+		    float t = shared.error[pos];
+		    shared.error[pos] = shared.error[pos + stride];
+		    shared.error[pos + stride] = t;
+		    int t1 = shared.order[pos];
+		    shared.order[pos] = shared.order[pos + stride];
+		    shared.order[pos + stride] = t1;
+		}
+	    }
+	}
+
+	//ddd == dir for the last bitonic merge step
+	{
+	    for(int stride = 32; stride > 0; stride >>= 1){
+		__syncthreads();
+		int pos = 2 * tid - (tid & (stride - 1));
+		if (shared.error[pos] >= shared.error[pos + stride])
+		{
+		    float t = shared.error[pos];
+		    shared.error[pos] = shared.error[pos + stride];
+		    shared.error[pos + stride] = t;
+		    int t1 = shared.order[pos];
+		    shared.order[pos] = shared.order[pos + stride];
+		    shared.order[pos + stride] = t1;
+		}
+	    }
+	}
+    }
+
+    __syncthreads();   
+
+    // Quantization
+    for (int i = threadIdx.y; i < taskCountLPC; i += 8)
+    //for (int precision = 0; precision < 1; precision++)//precisions; precision++)
+    {
+	int order = shared.order[i] & 31;
+	int lpcs_offs = ((shared.order[i] >> 5) + blockIdx.y * windowCount) * (max_order + 1) * 32;
+	float lpc = threadIdx.x <= order ? lpcs[lpcs_offs + order * 32 + order - threadIdx.x] : 0.0f;
+	// get 15 bits of each coeff
+	int coef = __float2int_rn(lpc * (1 << 15));
+	// remove sign bits
+	shared.tmpi[tid] = coef ^ (coef >> 31);
+	// OR reduction
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 8] | shared.tmpi[tid + 16] | shared.tmpi[tid + 24];
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 2] | shared.tmpi[tid + 4] | shared.tmpi[tid + 6];
+	//SUM32(shared.tmpi,tid,|=);
+	// choose precision	
+	//int cbits = max(3, min(10, 5 + (shared.task.abits >> 1))); //  - __float2int_rn(shared.PE[order - 1])
+	int cbits = max(3, min(min(13 - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), __clz(order) + 1 - shared.task.abits));
+	// calculate shift based on precision and number of leading zeroes in coeffs
+	int shift = max(0,min(15, __clz(shared.tmpi[threadIdx.y * 32] | shared.tmpi[threadIdx.y * 32 + 1]) - 18 + cbits));
+	//if (shared.task.abits + 32 - __clz(order) < shift
+	//int shift = max(0,min(15, (shared.task.abits >> 2) - 14 + __clz(shared.tmpi[threadIdx.x & ~31]) + ((32 - __clz(order))>>1)));
+	// quantize coeffs with given shift
+	coef = max(-(1 << (cbits - 1)), min((1 << (cbits - 1)) -1, __float2int_rn(lpc * (1 << shift))));
+	// error correction
+	//shared.tmp[threadIdx.x] = (threadIdx.x != 0) * (shared.arp[threadIdx.x - 1]*(1 << shared.task.shift) - shared.task.coefs[threadIdx.x - 1]);
+	//shared.task.coefs[threadIdx.x] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, __float2int_rn((shared.arp[threadIdx.x]) * (1 << shared.task.shift) + shared.tmp[threadIdx.x])));
+	// remove sign bits
+	shared.tmpi[tid] = coef ^ (coef >> 31);
+	// OR reduction
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 8] | shared.tmpi[tid + 16] | shared.tmpi[tid + 24];
+	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 2] | shared.tmpi[tid + 4] | shared.tmpi[tid + 6];
+	//SUM32(shared.tmpi,tid,|=);
+	// calculate actual number of bits (+1 for sign)
+	cbits = 1 + 32 - __clz(shared.tmpi[threadIdx.y * 32] | shared.tmpi[threadIdx.y * 32 + 1]);
+
+	// output shift, cbits and output coeffs
+	int taskNo = blockIdx.y * taskCount + i;
+	if (threadIdx.x == 0)
+	    tasks[taskNo].data.shift = shift;
+	if (threadIdx.x == 0)
+	    tasks[taskNo].data.cbits = cbits;
+	if (threadIdx.x == 0)
+	    tasks[taskNo].data.residualOrder = order + 1;
+	if (threadIdx.x <= order)
+	    tasks[taskNo].coefs[threadIdx.x] = coef;
     }
 }
 
@@ -632,6 +832,8 @@ extern "C" __global__ void cudaEstimateResidual(
 	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = min(min(shared.residual[tid], shared.residual[tid + 1]), min(shared.residual[tid + 2], shared.residual[tid + 3]));
 }
 
+#define FASTMUL(a,b) __mul24(a,b)
+
 extern "C" __global__ void cudaEstimateResidual8(
     int*output,
     int*samples,
@@ -705,14 +907,14 @@ extern "C" __global__ void cudaEstimateResidual12(
     )
 {
     __shared__ struct {
-	int data[32*9];
+	volatile int data[32*9];
 	volatile int residual[32*8];
 	FlaCudaSubframeData task[8];
 	int coefs[8*32];
     } shared;
     const int tid = threadIdx.x + threadIdx.y * 32;
     if (threadIdx.x < sizeof(FlaCudaSubframeData)/sizeof(int))
-	((int*)&shared.task[threadIdx.y])[threadIdx.x] = ((int*)(&tasks[blockIdx.y * blockDim.y + threadIdx.y]))[threadIdx.x];
+	((int*)&shared.task[threadIdx.y])[threadIdx.x] = ((int*)(&tasks[FASTMUL(blockIdx.y, blockDim.y) + threadIdx.y]))[threadIdx.x];
     __syncthreads();
     const int pos = blockIdx.x * partSize;
     const int dataLen = min(frameSize - pos, partSize + max_order);
@@ -723,29 +925,30 @@ extern "C" __global__ void cudaEstimateResidual12(
 
     __syncthreads();
 
-    shared.residual[tid] = 0;
-    shared.coefs[tid] = threadIdx.x < shared.task[threadIdx.y].residualOrder ? tasks[blockIdx.y * blockDim.y + threadIdx.y].coefs[threadIdx.x] : 0;
-
-    const int residualLen = shared.task[threadIdx.y].type == Verbatim ? 0 : max(0,min(frameSize - pos - shared.task[threadIdx.y].residualOrder, partSize));
+    const int ro = shared.task[threadIdx.y].residualOrder;
+    const int residualLen = max(0,min(frameSize - pos - ro, partSize));
     const int ptr2 = threadIdx.y << 5;
+    
+    shared.coefs[tid] = threadIdx.x < ro ? tasks[FASTMUL(blockIdx.y, blockDim.y) + threadIdx.y].coefs[threadIdx.x] : 0;
+
     int s = 0;
-    for (int ptr = threadIdx.x; ptr < residualLen; ptr += 32)
+    for (int ptr = shared.task[threadIdx.y].type == Verbatim ? residualLen : threadIdx.x; ptr < residualLen; ptr += 32)
     {
 	// compute residual
 	int sum =
-    	    __mul24(shared.data[ptr + 0], shared.coefs[ptr2 + 0]) +
-	    __mul24(shared.data[ptr + 1], shared.coefs[ptr2 + 1]) +
-	    __mul24(shared.data[ptr + 2], shared.coefs[ptr2 + 2]) +
-	    __mul24(shared.data[ptr + 3], shared.coefs[ptr2 + 3]) +
-	    __mul24(shared.data[ptr + 4], shared.coefs[ptr2 + 4]) +
-	    __mul24(shared.data[ptr + 5], shared.coefs[ptr2 + 5]) +
-	    __mul24(shared.data[ptr + 6], shared.coefs[ptr2 + 6]) +
-	    __mul24(shared.data[ptr + 7], shared.coefs[ptr2 + 7]) +
-	    __mul24(shared.data[ptr + 8], shared.coefs[ptr2 + 8]) +
-	    __mul24(shared.data[ptr + 9], shared.coefs[ptr2 + 9]) +
-	    __mul24(shared.data[ptr + 10], shared.coefs[ptr2 + 10]) +
-	    __mul24(shared.data[ptr + 11], shared.coefs[ptr2 + 11]);
-	sum = shared.data[ptr + shared.task[threadIdx.y].residualOrder] - (sum >> shared.task[threadIdx.y].shift);
+    	    FASTMUL(shared.data[ptr + 0], shared.coefs[ptr2 + 0]) +
+	    FASTMUL(shared.data[ptr + 1], shared.coefs[ptr2 + 1]) +
+	    FASTMUL(shared.data[ptr + 2], shared.coefs[ptr2 + 2]) +
+	    FASTMUL(shared.data[ptr + 3], shared.coefs[ptr2 + 3]) +
+	    FASTMUL(shared.data[ptr + 4], shared.coefs[ptr2 + 4]) +
+	    FASTMUL(shared.data[ptr + 5], shared.coefs[ptr2 + 5]) +
+	    FASTMUL(shared.data[ptr + 6], shared.coefs[ptr2 + 6]) +
+	    FASTMUL(shared.data[ptr + 7], shared.coefs[ptr2 + 7]) +
+	    FASTMUL(shared.data[ptr + 8], shared.coefs[ptr2 + 8]) +
+	    FASTMUL(shared.data[ptr + 9], shared.coefs[ptr2 + 9]) +
+	    FASTMUL(shared.data[ptr + 10], shared.coefs[ptr2 + 10]) +
+	    FASTMUL(shared.data[ptr + 11], shared.coefs[ptr2 + 11]);
+	sum = shared.data[ptr + ro] - (sum >> shared.task[threadIdx.y].shift);
 	s += min(0x7fffff,(sum << 1) ^ (sum >> 31));
     }
 
@@ -756,7 +959,7 @@ extern "C" __global__ void cudaEstimateResidual12(
 
     // rice parameter search
     shared.residual[tid] = (shared.task[threadIdx.y].type != Constant || shared.residual[threadIdx.y << 5] != 0) *
-	(__mul24(threadIdx.x >= 15, 0x7fffff) + residualLen * (threadIdx.x + 1) + ((shared.residual[threadIdx.y << 5] - (residualLen >> 1)) >> threadIdx.x));
+	(__mul24(threadIdx.x >= 15, 0x7fffff) + FASTMUL(residualLen, threadIdx.x + 1) + ((shared.residual[threadIdx.y << 5] - (residualLen >> 1)) >> threadIdx.x));
     shared.residual[tid] = min(min(shared.residual[tid], shared.residual[tid + 4]), min(shared.residual[tid + 8], shared.residual[tid + 12]));
     if (threadIdx.x == 0)
 	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = min(min(shared.residual[tid], shared.residual[tid + 1]), min(shared.residual[tid + 2], shared.residual[tid + 3]));

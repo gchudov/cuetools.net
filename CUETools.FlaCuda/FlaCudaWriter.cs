@@ -127,7 +127,7 @@ namespace CUETools.Codecs.FlaCuda
 			windowBuffer = new float[FlaCudaWriter.MAX_BLOCKSIZE * lpc.MAX_LPC_WINDOWS];
 			md5_buffer = new byte[FlaCudaWriter.MAX_BLOCKSIZE * channels * bits_per_sample / 8];
 
-			eparams.flake_set_defaults(_compressionLevel);
+			eparams.flake_set_defaults(_compressionLevel, encode_on_cpu);
 			eparams.padding_size = 8192;
 
 			crc8 = new Crc8();
@@ -165,7 +165,7 @@ namespace CUETools.Codecs.FlaCuda
 				if (value < 0 || value > 11)
 					throw new Exception("unsupported compression level");
 				_compressionLevel = value;
-				eparams.flake_set_defaults(_compressionLevel);
+				eparams.flake_set_defaults(_compressionLevel, encode_on_cpu);
 			}
 		}
 
@@ -178,6 +178,7 @@ namespace CUETools.Codecs.FlaCuda
 			set
 			{
 				encode_on_cpu = !value;
+				eparams.flake_set_defaults(_compressionLevel, encode_on_cpu);
 			}
 		}
 
@@ -841,7 +842,7 @@ namespace CUETools.Codecs.FlaCuda
 			if ((eparams.window_function & flag) == 0 || _windowcount == lpc.MAX_LPC_WINDOWS)
 				return;
 
-			func(window + _windowcount * FlaCudaWriter.MAX_BLOCKSIZE, _windowsize);
+			func(window + _windowcount * _windowsize, _windowsize);
 			//int sz = _windowsize;
 			//float* pos = window + _windowcount * FlaCudaWriter.MAX_BLOCKSIZE * 2;
 			//do
@@ -858,7 +859,8 @@ namespace CUETools.Codecs.FlaCuda
 		unsafe void initializeSubframeTasks(int blocksize, int channelsCount, int nFrames, FlaCudaTask task)
 		{
 			task.nResidualTasks = 0;
-			task.nResidualTasksPerChannel = (_windowcount * eparams.max_prediction_order + 1 + (eparams.do_constant ? 1 : 0) + eparams.max_fixed_order - eparams.min_fixed_order + 7) & ~7;
+			task.nTasksPerWindow = Math.Min(eparams.max_prediction_order, eparams.orders_per_window);
+			task.nResidualTasksPerChannel = (_windowcount * task.nTasksPerWindow + 1 + (eparams.do_constant ? 1 : 0) + eparams.max_fixed_order - eparams.min_fixed_order + 7) & ~7;
 			task.nAutocorTasksPerChannel = _windowcount;
 			for (int iFrame = 0; iFrame < nFrames; iFrame++)
 			{
@@ -867,17 +869,16 @@ namespace CUETools.Codecs.FlaCuda
 					for (int iWindow = 0; iWindow < _windowcount; iWindow++)
 					{
 						// LPC tasks
-						for (int order = 1; order <= eparams.max_prediction_order; order++)
+						for (int order = 0; order < task.nTasksPerWindow; order++)
 						{
 							task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.LPC;
 							task.ResidualTasks[task.nResidualTasks].channel = ch;
 							task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
 							task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 							task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
-							task.ResidualTasks[task.nResidualTasks].residualOrder = order;
+							task.ResidualTasks[task.nResidualTasks].residualOrder = order + 1;
 							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
-							task.ResidualTasks[task.nResidualTasks].windowOffs = iWindow * FlaCudaWriter.MAX_BLOCKSIZE;
 							task.nResidualTasks++;
 						}
 					}
@@ -1160,9 +1161,10 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaComputeLPC, 1 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
 			cuda.SetParameter(task.cudaComputeLPC, 2 * sizeof(uint), (uint)task.cudaAutocorOutput.Pointer);
 			cuda.SetParameter(task.cudaComputeLPC, 3 * sizeof(uint), (uint)eparams.max_prediction_order);
-			cuda.SetParameter(task.cudaComputeLPC, 4 * sizeof(uint), (uint)autocorPartCount);
-			cuda.SetParameterSize(task.cudaComputeLPC, 5U * sizeof(uint));
-			cuda.SetFunctionBlockShape(task.cudaComputeLPC, (autocorPartCount + 31) & ~31, 1, 1);
+			cuda.SetParameter(task.cudaComputeLPC, 4 * sizeof(uint), (uint)task.nTasksPerWindow);
+			cuda.SetParameter(task.cudaComputeLPC, 5 * sizeof(uint), (uint)autocorPartCount);
+			cuda.SetParameterSize(task.cudaComputeLPC, 6U * sizeof(uint));
+			cuda.SetFunctionBlockShape(task.cudaComputeLPC, 32, 8, 1);
 
 			cuda.SetParameter(task.cudaComputeLPCLattice, 0, (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaComputeLPCLattice, 1 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
@@ -1766,6 +1768,8 @@ namespace CUETools.Codecs.FlaCuda
 		// valid values are 1 to 32 
 		public int max_prediction_order;
 
+		public int orders_per_window;
+
 		// minimum fixed prediction order
 		// set by user prior to calling flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
@@ -1813,7 +1817,7 @@ namespace CUETools.Codecs.FlaCuda
 		public bool do_verify;
 		public bool do_seektable;
 
-		public int flake_set_defaults(int lvl)
+		public int flake_set_defaults(int lvl, bool encode_on_cpu)
 		{
 			compression = lvl;
 
@@ -1841,67 +1845,90 @@ namespace CUETools.Codecs.FlaCuda
 			do_seektable = true;
 			do_wasted = true;
 			do_constant = true;
+			orders_per_window = 32;
 
 			// differences from level 7
 			switch (lvl)
 			{
 				case 0:
-					do_constant = false;
 					do_wasted = false;
 					do_midside = false;
+					orders_per_window = 1;
 					max_partition_order = 4;
-					max_prediction_order = 4;
-					min_fixed_order = 3;
+					max_prediction_order = 7;
+					min_fixed_order = 2;
 					max_fixed_order = 2;
 					break;
 				case 1:
+					window_function = WindowFunction.Bartlett;
 					do_wasted = false;
 					do_midside = false;
+					orders_per_window = 1;
+					max_prediction_order = 12;
 					max_partition_order = 4;
-					max_prediction_order = 5;
 					break;
 				case 2:
 					window_function = WindowFunction.Bartlett;
-					max_partition_order = 4;
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					max_prediction_order = 6;
+					orders_per_window = 1;
+					max_prediction_order = 7;
+					max_partition_order = 4;
 					break;
 				case 3:
 					window_function = WindowFunction.Bartlett;
-					max_partition_order = 4;
 					min_fixed_order = 2;
-					max_fixed_order = 1;
-					max_prediction_order = 7;
+					max_fixed_order = 2;
+					orders_per_window = 3;
+					max_prediction_order = 8;
+					max_partition_order = 4;
 					break;
 				case 4:
+					min_fixed_order = 2;
+					max_fixed_order = 2;
+					orders_per_window = 3;
 					max_partition_order = 4;
 					max_prediction_order = 8;
 					break;
 				case 5:
-					max_prediction_order = 9;
+					min_fixed_order = 2;
+					max_fixed_order = 2;
+					orders_per_window = 3;
 					break;
 				case 6:
+					min_fixed_order = 2;
 					max_fixed_order = 2;
-					max_prediction_order = 10;
+					orders_per_window = 7;
 					break;
 				case 7:
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					max_prediction_order = 11;
+					orders_per_window = 11;
 					break;
 				case 8:
 					break;
 				case 9:
-					max_prediction_order = 16;
+					min_fixed_order = 2;
+					max_fixed_order = 2;
+					orders_per_window = 3;
+					max_prediction_order = 32;
 					break;
 				case 10:
-					max_prediction_order = 24;
+					min_fixed_order = 2;
+					max_fixed_order = 2;
+					orders_per_window = 7;
+					max_prediction_order = 32;
 					break;
 				case 11:
+					min_fixed_order = 2;
+					max_fixed_order = 2;
+					orders_per_window = 11;
 					max_prediction_order = 32;
 					break;
 			}
+
+			if (!encode_on_cpu)
+				max_partition_order = 8;
 
 			return 0;
 		}
@@ -1923,8 +1950,7 @@ namespace CUETools.Codecs.FlaCuda
 		public int wbits;
 		public int abits;
 		public int porder;
-		public int windowOffs;
-		public fixed int reserved[1];
+		public fixed int reserved[2];
 		public fixed int coefs[32];
 	};
 
@@ -1977,6 +2003,7 @@ namespace CUETools.Codecs.FlaCuda
 		public int samplesBufferLen;
 		public int nResidualTasks = 0;
 		public int nResidualTasksPerChannel = 0;
+		public int nTasksPerWindow = 0;
 		public int nAutocorTasksPerChannel = 0;
 		public int max_porder = 0;
 
