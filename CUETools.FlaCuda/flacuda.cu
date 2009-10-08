@@ -224,175 +224,95 @@ extern "C" __global__ void cudaComputeLPC(
     int taskCount, // tasks per block
     float*autoc,
     int max_order, // should be <= 32
-    int taskCount2, // tasks per window function, should be <= max_order
-    int partCount // should be <= blockDim?
+    float *lpcs,
+    int windowCount,
+    int partCount
 )
 {
     __shared__ struct {
 	FlaCudaSubframeData task;
-	union
-	{
-	    volatile float parts[256];
-	    volatile int tmpi[256];
-	};
-	volatile float lpc[33*16];
+	volatile float parts[32];
 	volatile float ldr[32];
 	volatile float gen1[32];
+	volatile float error[32];
 	volatile float autoc[33];
-	volatile float error[64];
-	volatile float order[64];
-	//volatile float reff[32];
-	//int   cbits;
+	volatile int lpcOffs;
+	volatile int autocOffs;
     } shared;
-    const int tid = threadIdx.x + threadIdx.y * 32;
+    const int tid = threadIdx.x;// + threadIdx.y * 32;
     
     // fetch task data
     if (tid < sizeof(shared.task) / sizeof(int))
 	((int*)&shared.task)[tid] = ((int*)(tasks + blockIdx.y * taskCount))[tid];
-    __syncthreads();
+    if (tid == 0)
+    {
+	shared.lpcOffs = (blockIdx.x + blockIdx.y * windowCount) * (max_order + 1) * 32;
+	shared.autocOffs = (blockIdx.x + blockIdx.y * windowCount) * (max_order + 1) * partCount;
+    }
+    //__syncthreads();
     
     // add up autocorrelation parts
-    for (int order = threadIdx.y; order <= max_order; order += 8)
+
+ //   for (int order = threadIdx.x; order <= max_order; order += 32)
+ //   {
+	//float sum = 0.0f;
+	//for (int pos = 0; pos < partCount; pos++)
+	//    sum += autoc[shared.autocOffs + pos * (max_order + 1) + order];
+	//shared.autoc[order] = sum;
+ //   }
+
+    for (int order = 0; order <= max_order; order ++)
     {
 	shared.parts[tid] = 0.0f;
 	for (int pos = threadIdx.x; pos < partCount; pos += 32)
-	    shared.parts[tid] += autoc[((blockIdx.y * gridDim.x + blockIdx.x) * partCount + pos) * (max_order + 1) + order];
+	    shared.parts[tid] += autoc[shared.autocOffs + pos * (max_order + 1) + order];
 	shared.parts[tid] = shared.parts[tid] + shared.parts[tid + 8] + shared.parts[tid + 16] + shared.parts[tid + 24];
 	shared.parts[tid] = shared.parts[tid] + shared.parts[tid + 2] + shared.parts[tid + 4] + shared.parts[tid + 6];
 	if (threadIdx.x == 0)
 	    shared.autoc[order] = shared.parts[tid] + shared.parts[tid + 1];
     }
-    __syncthreads();
+    //__syncthreads();
 
     // Compute LPC using Schur and Levinson-Durbin recursion
     if (threadIdx.y == 0)
     {
-	float gen0 = shared.gen1[tid] = shared.autoc[tid+1];
-	shared.ldr[tid] = 0.0f;
+	float gen0 = shared.gen1[threadIdx.x] = shared.autoc[threadIdx.x+1];
+	shared.ldr[threadIdx.x] = 0.0f;
 	float error = shared.autoc[0];
 	for (int order = 0; order < max_order; order++)
 	{
 	    // Schur recursion
 	    float reff = -shared.gen1[0] / error;
-	    //if (tid == 0) shared.reff[order] = reff;
-	    error += shared.gen1[0] * reff;
-	    //error *= (1 - reff * reff);
-	    if (tid < max_order - 1 - order)
+	    error += shared.gen1[0] * reff; // Equivalent to error *= (1 - reff * reff);
+    
+	    if (threadIdx.x < max_order - 1 - order)
 	    {
-		float gen1 = shared.gen1[tid + 1] + reff * gen0;
-		gen0 += shared.gen1[tid + 1] * reff;
-		shared.gen1[tid] = gen1;
+		float gen1 = shared.gen1[threadIdx.x + 1] + reff * gen0;
+		gen0 += shared.gen1[threadIdx.x + 1] * reff;
+		shared.gen1[threadIdx.x] = gen1;
 	    }
+
+	    // Store prediction error
+	    if (threadIdx.x == 0)
+		shared.error[order] = error;
+
 	    // Levinson-Durbin recursion
-	    shared.ldr[tid] += (tid < order) * reff * shared.ldr[order - 1 - tid] + (tid  == order) * reff;
-	    shared.lpc[((order * (order + 1)) >> 1) + tid] = -shared.ldr[tid];
-	    shared.error[order] = error;
+	    shared.ldr[threadIdx.x] += (threadIdx.x < order) * reff * shared.ldr[order - 1 - threadIdx.x] + (threadIdx.x  == order) * reff;
+
+	    // Output coeffs
+	    if (threadIdx.x <= order)
+		lpcs[shared.lpcOffs + order * 32 + threadIdx.x] = -shared.ldr[order - threadIdx.x];
 	}
-	shared.order[tid] = tid < max_order ? tid : max_order - 1;
-	shared.order[tid + 32] = 0;
-	if (taskCount2 < max_order)
-	{
-	    // Select best orders based on something similar to Schwartz's Criterion
-	    shared.error[tid] = tid < max_order ? __logf(shared.error[tid]) + (tid * 0.01f) : __logf(shared.error[0]) + 1;
-	    shared.error[tid + 32] = __logf(shared.error[0]) + 1;
-	    
-	    for(int size = 2; size < 32; size <<= 1){
-		//Bitonic merge
-		int ddd = (threadIdx.x & (size / 2)) == 0;
-		for(int stride = size / 2; stride > 0; stride >>= 1){
-		    int pos = 2 * threadIdx.x - (threadIdx.x & (stride - 1));
-		    if ((shared.error[pos] >= shared.error[pos + stride]) == ddd)
-		    {
-			float t = shared.error[pos];
-			shared.error[pos] = shared.error[pos + stride];
-			shared.error[pos + stride] = t;
-			int t1 = shared.order[pos];
-			shared.order[pos] = shared.order[pos + stride];
-			shared.order[pos + stride] = t1;
-		    }
-		}
-	    }
-
-	    //ddd == dir for the last bitonic merge step
-	    {
-		for(int stride = 16; stride > 0; stride >>= 1){
-		    int pos = 2 * threadIdx.x - (threadIdx.x & (stride - 1));
-		    if (shared.error[pos] >= shared.error[pos + stride])
-		    {
-			float t = shared.error[pos];
-			shared.error[pos] = shared.error[pos + stride];
-			shared.error[pos + stride] = t;
-			int t1 = shared.order[pos];
-			shared.order[pos] = shared.order[pos + stride];
-			shared.order[pos + stride] = t1;
-		    }
-		}
-	    }
-
-	 //   float l1 = shared.error[tid];
-  //  #pragma unroll 0
-	 //   for (int sh = 4; sh >= 0; sh --)
-	 //   {
-		//float l2 = shared.error[threadIdx.x + (1 << sh)];
-		//shared.order[threadIdx.x] = shared.order[threadIdx.x + ((l2 < l1) << sh)];
-		//shared.error[threadIdx.x] = l1 = min(l1, l2);
-	 //   }
-	}
-    }
-    __syncthreads();   
-
-    // Quantization
-    for (int i = threadIdx.y; i < taskCount2; i += 8)
-    //for (int precision = 0; precision < 1; precision++)//precisions; precision++)
-    {
-	int order = shared.order[i];
-	float lpc = threadIdx.x <= order ? shared.lpc[((order * (order + 1)) >> 1) + order - threadIdx.x] : 0.0f;
-	// get 15 bits of each coeff
-	int coef = __float2int_rn(lpc * (1 << 15));
-	// remove sign bits
-	shared.tmpi[tid] = coef ^ (coef >> 31);
-	// OR reduction
-	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 8] | shared.tmpi[tid + 16] | shared.tmpi[tid + 24];
-	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 2] | shared.tmpi[tid + 4] | shared.tmpi[tid + 6];
-	//SUM32(shared.tmpi,tid,|=);
-	// choose precision	
-	//int cbits = max(3, min(10, 5 + (shared.task.abits >> 1))); //  - __float2int_rn(shared.PE[order - 1])
-	int cbits = max(3, min(min(13 - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), __clz(order) + 1 - shared.task.abits));
-	// calculate shift based on precision and number of leading zeroes in coeffs
-	int shift = max(0,min(15, __clz(shared.tmpi[threadIdx.y * 32] | shared.tmpi[threadIdx.y * 32 + 1]) - 18 + cbits));
-	//if (shared.task.abits + 32 - __clz(order) < shift
-	//int shift = max(0,min(15, (shared.task.abits >> 2) - 14 + __clz(shared.tmpi[threadIdx.x & ~31]) + ((32 - __clz(order))>>1)));
-	// quantize coeffs with given shift
-	coef = max(-(1 << (cbits - 1)), min((1 << (cbits - 1)) -1, __float2int_rn(lpc * (1 << shift))));
-	// error correction
-	//shared.tmp[threadIdx.x] = (threadIdx.x != 0) * (shared.arp[threadIdx.x - 1]*(1 << shared.task.shift) - shared.task.coefs[threadIdx.x - 1]);
-	//shared.task.coefs[threadIdx.x] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, __float2int_rn((shared.arp[threadIdx.x]) * (1 << shared.task.shift) + shared.tmp[threadIdx.x])));
-	// remove sign bits
-	shared.tmpi[tid] = coef ^ (coef >> 31);
-	// OR reduction
-	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 8] | shared.tmpi[tid + 16] | shared.tmpi[tid + 24];
-	shared.tmpi[tid] = shared.tmpi[tid] | shared.tmpi[tid + 2] | shared.tmpi[tid + 4] | shared.tmpi[tid + 6];
-	//SUM32(shared.tmpi,tid,|=);
-	// calculate actual number of bits (+1 for sign)
-	cbits = 1 + 32 - __clz(shared.tmpi[threadIdx.y * 32] | shared.tmpi[threadIdx.y * 32 + 1]);
-
-	// output shift, cbits and output coeffs
-	int taskNo = blockIdx.y * taskCount + blockIdx.x * taskCount2 + i;
-	if (threadIdx.x == 0)
-	    tasks[taskNo].data.shift = shift;
-	if (threadIdx.x == 0)
-	    tasks[taskNo].data.cbits = cbits;
-	if (threadIdx.x == 0)
-	    tasks[taskNo].data.residualOrder = order + 1;
-	if (threadIdx.x <= order)
-	    tasks[taskNo].coefs[threadIdx.x] = coef;
+	// Output prediction error estimates
+	if (threadIdx.x < max_order)
+	    lpcs[shared.lpcOffs + max_order * 32 + threadIdx.x] = shared.error[threadIdx.x];
     }
 }
 
 extern "C" __global__ void cudaQuantizeLPC(
     FlaCudaSubframeTask *tasks,
     int taskCount, // tasks per block
-    int taskCountLPC, // LPC tasks per block
+    int taskCountLPC, // tasks per set of coeffs
     int windowCount, // sets of coeffs per block
     float*lpcs,
     int max_order // should be <= 32
@@ -401,7 +321,9 @@ extern "C" __global__ void cudaQuantizeLPC(
     __shared__ struct {
 	FlaCudaSubframeData task;
 	volatile int tmpi[256];
-	volatile int order[256];
+	volatile int order[128];
+	volatile int offset[128];
+	volatile int index[256];
 	volatile float error[256];
     } shared;
     const int tid = threadIdx.x + threadIdx.y * 32;
@@ -411,34 +333,34 @@ extern "C" __global__ void cudaQuantizeLPC(
 	((int*)&shared.task)[tid] = ((int*)(tasks + blockIdx.y * taskCount))[tid];
     __syncthreads();
 
-    shared.order[tid] = min(max_order - 1, threadIdx.x) + min(threadIdx.y, windowCount - 1) * 32;
-    shared.error[tid] = 10000.0f + shared.order[tid];
+    shared.index[tid] = min(max_order - 1, threadIdx.x) + min(threadIdx.y >> 1, windowCount - 1) * 32;
+    shared.error[tid] = 10000.0f + shared.index[tid];
 
+    // Select best orders based on Akaike's Criteria
+    if ((threadIdx.y & 1) == 0 && (threadIdx.y >> 1) < windowCount)
     {
-	int lpcs_offs = (threadIdx.y + blockIdx.y * windowCount) * (max_order + 1) * 32;
-	
-	// Select best orders based on Akaike's Criteria
-
 	// Load prediction error estimates
-	if (threadIdx.y < windowCount && threadIdx.x < max_order)
+	if (threadIdx.x < max_order)
+	{
+	    int lpcs_offs = ((threadIdx.y >> 1) + blockIdx.y * windowCount) * (max_order + 1) * 32;
 	    shared.error[tid] = __logf(lpcs[lpcs_offs + max_order * 32 + threadIdx.x]) + (threadIdx.x * 0.01f);
-	__syncthreads();
+	}
 
 	// Sort using bitonic sort
 	for(int size = 2; size < 64; size <<= 1){
 	    //Bitonic merge
 	    int ddd = (tid & (size / 2)) == 0;
 	    for(int stride = size / 2; stride > 0; stride >>= 1){
-		__syncthreads();
-		int pos = 2 * tid - (tid & (stride - 1));
+		//__syncthreads();
+		int pos = threadIdx.y * 32 + 2 * threadIdx.x - (threadIdx.x & (stride - 1));
 		if ((shared.error[pos] >= shared.error[pos + stride]) == ddd)
 		{
 		    float t = shared.error[pos];
 		    shared.error[pos] = shared.error[pos + stride];
 		    shared.error[pos + stride] = t;
-		    int t1 = shared.order[pos];
-		    shared.order[pos] = shared.order[pos + stride];
-		    shared.order[pos + stride] = t1;
+		    int t1 = shared.index[pos];
+		    shared.index[pos] = shared.index[pos + stride];
+		    shared.index[pos + stride] = t1;
 		}
 	    }
 	}
@@ -446,30 +368,34 @@ extern "C" __global__ void cudaQuantizeLPC(
 	//ddd == dir for the last bitonic merge step
 	{
 	    for(int stride = 32; stride > 0; stride >>= 1){
-		__syncthreads();
-		int pos = 2 * tid - (tid & (stride - 1));
+		//__syncthreads();
+		int pos = threadIdx.y * 32 + 2 * threadIdx.x - (threadIdx.x & (stride - 1));
 		if (shared.error[pos] >= shared.error[pos + stride])
 		{
 		    float t = shared.error[pos];
 		    shared.error[pos] = shared.error[pos + stride];
 		    shared.error[pos + stride] = t;
-		    int t1 = shared.order[pos];
-		    shared.order[pos] = shared.order[pos + stride];
-		    shared.order[pos + stride] = t1;
+		    int t1 = shared.index[pos];
+		    shared.index[pos] = shared.index[pos + stride];
+		    shared.index[pos + stride] = t1;
 		}
 	    }
 	}
-    }
 
-    __syncthreads();   
+	if (threadIdx.x < taskCountLPC)
+	{
+	    shared.order[(threadIdx.y >> 1) * taskCountLPC + threadIdx.x] = shared.index[tid] & 31;
+	    shared.offset[(threadIdx.y >> 1) * taskCountLPC + threadIdx.x] = (shared.index[tid] >> 5) + blockIdx.y * windowCount;
+	}
+    }
+    __syncthreads();
 
     // Quantization
-    for (int i = threadIdx.y; i < taskCountLPC; i += 8)
+    for (int i = threadIdx.y; i < taskCountLPC * windowCount; i += 8)
     //for (int precision = 0; precision < 1; precision++)//precisions; precision++)
     {
-	int order = shared.order[i] & 31;
-	int lpcs_offs = ((shared.order[i] >> 5) + blockIdx.y * windowCount) * (max_order + 1) * 32;
-	float lpc = threadIdx.x <= order ? lpcs[lpcs_offs + order * 32 + order - threadIdx.x] : 0.0f;
+	int order = shared.order[i];
+	float lpc = threadIdx.x <= order ? lpcs[(shared.offset[i] * (max_order + 1) + order) * 32 + threadIdx.x] : 0.0f;
 	// get 15 bits of each coeff
 	int coef = __float2int_rn(lpc * (1 << 15));
 	// remove sign bits

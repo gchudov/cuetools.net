@@ -1161,10 +1161,11 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaComputeLPC, 1 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
 			cuda.SetParameter(task.cudaComputeLPC, 2 * sizeof(uint), (uint)task.cudaAutocorOutput.Pointer);
 			cuda.SetParameter(task.cudaComputeLPC, 3 * sizeof(uint), (uint)eparams.max_prediction_order);
-			cuda.SetParameter(task.cudaComputeLPC, 4 * sizeof(uint), (uint)task.nTasksPerWindow);
-			cuda.SetParameter(task.cudaComputeLPC, 5 * sizeof(uint), (uint)autocorPartCount);
-			cuda.SetParameterSize(task.cudaComputeLPC, 6U * sizeof(uint));
-			cuda.SetFunctionBlockShape(task.cudaComputeLPC, 32, 8, 1);
+			cuda.SetParameter(task.cudaComputeLPC, 4 * sizeof(uint), (uint)task.cudaLPCData.Pointer);
+			cuda.SetParameter(task.cudaComputeLPC, 5 * sizeof(uint), (uint)_windowcount);
+			cuda.SetParameter(task.cudaComputeLPC, 6 * sizeof(uint), (uint)autocorPartCount);
+			cuda.SetParameterSize(task.cudaComputeLPC, 7U * sizeof(uint));
+			cuda.SetFunctionBlockShape(task.cudaComputeLPC, 32, 1, 1);
 
 			cuda.SetParameter(task.cudaComputeLPCLattice, 0, (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaComputeLPCLattice, 1 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
@@ -1173,6 +1174,15 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.SetParameter(task.cudaComputeLPCLattice, 4 * sizeof(uint), (uint)eparams.max_prediction_order);
 			cuda.SetParameterSize(task.cudaComputeLPCLattice, 5U * sizeof(uint));
 			cuda.SetFunctionBlockShape(task.cudaComputeLPCLattice, 256, 1, 1);
+
+			cuda.SetParameter(task.cudaQuantizeLPC, 0, (uint)task.cudaResidualTasks.Pointer);
+			cuda.SetParameter(task.cudaQuantizeLPC, 1 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
+			cuda.SetParameter(task.cudaQuantizeLPC, 2 * sizeof(uint), (uint)task.nTasksPerWindow);
+			cuda.SetParameter(task.cudaQuantizeLPC, 3 * sizeof(uint), (uint)_windowcount);
+			cuda.SetParameter(task.cudaQuantizeLPC, 4 * sizeof(uint), (uint)task.cudaLPCData.Pointer);
+			cuda.SetParameter(task.cudaQuantizeLPC, 5 * sizeof(uint), (uint)eparams.max_prediction_order);
+			cuda.SetParameterSize(task.cudaQuantizeLPC, 6U * sizeof(uint));
+			cuda.SetFunctionBlockShape(task.cudaQuantizeLPC, 32, 8, 1);
 
 			cuda.SetParameter(cudaEstimateResidual, sizeof(uint) * 0, (uint)task.cudaResidualOutput.Pointer);
 			cuda.SetParameter(cudaEstimateResidual, sizeof(uint) * 1, (uint)task.cudaSamples.Pointer);
@@ -1246,6 +1256,7 @@ namespace CUETools.Codecs.FlaCuda
 					cuda.LaunchAsync(task.cudaFindWastedBits, channelsCount * task.frameCount, 1, task.stream);
 				cuda.LaunchAsync(task.cudaComputeAutocor, autocorPartCount, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
 				cuda.LaunchAsync(task.cudaComputeLPC, task.nAutocorTasksPerChannel, channelsCount * task.frameCount, task.stream);
+				cuda.LaunchAsync(task.cudaQuantizeLPC, 1, channelsCount * task.frameCount, task.stream);
 			}
 			cuda.LaunchAsync(cudaEstimateResidual, residualPartCount, task.nResidualTasksPerChannel * channelsCount * task.frameCount / threads_y, task.stream);
 			cuda.LaunchAsync(task.cudaChooseBestMethod, 1, channelsCount * task.frameCount, task.stream);
@@ -1963,7 +1974,8 @@ namespace CUETools.Codecs.FlaCuda
 		public CUfunction cudaFindWastedBits;
 		public CUfunction cudaComputeAutocor;
 		public CUfunction cudaComputeLPC;
-		public CUfunction cudaComputeLPCLattice;		
+		public CUfunction cudaComputeLPCLattice;
+		public CUfunction cudaQuantizeLPC;
 		public CUfunction cudaEstimateResidual;
 		public CUfunction cudaEstimateResidual8;
 		public CUfunction cudaEstimateResidual12;
@@ -1979,6 +1991,7 @@ namespace CUETools.Codecs.FlaCuda
 		public CUfunction cudaFindPartitionOrder;
 		public CUdeviceptr cudaSamplesBytes;
 		public CUdeviceptr cudaSamples;
+		public CUdeviceptr cudaLPCData;
 		public CUdeviceptr cudaResidual;
 		public CUdeviceptr cudaPartitions;
 		public CUdeviceptr cudaRiceParams;
@@ -2016,10 +2029,12 @@ namespace CUETools.Codecs.FlaCuda
 			samplesBufferLen = sizeof(int) * FlaCudaWriter.MAX_BLOCKSIZE * channelCount;
 			int partitionsLen = sizeof(int) * (30 << 8) * channelCount * FlaCudaWriter.maxFrames;
 			int riceParamsLen = sizeof(int) * (4 << 8) * channelCount * FlaCudaWriter.maxFrames;
+			int lpcDataLen = sizeof(float) * 32 * 33 * lpc.MAX_LPC_WINDOWS * channelCount * FlaCudaWriter.maxFrames;
 
 			cudaSamplesBytes = cuda.Allocate((uint)samplesBufferLen / 2);
 			cudaSamples = cuda.Allocate((uint)samplesBufferLen);
 			cudaResidual = cuda.Allocate((uint)samplesBufferLen);
+			cudaLPCData = cuda.Allocate((uint)lpcDataLen);
 			cudaPartitions = cuda.Allocate((uint)partitionsLen);
 			cudaRiceParams = cuda.Allocate((uint)riceParamsLen);
 			cudaBestRiceParams = cuda.Allocate((uint)riceParamsLen / 4);
@@ -2057,6 +2072,7 @@ namespace CUETools.Codecs.FlaCuda
 			cudaChannelDecorr2 = cuda.GetModuleFunction("cudaChannelDecorr2");
 			cudaFindWastedBits = cuda.GetModuleFunction("cudaFindWastedBits");
 			cudaComputeLPC = cuda.GetModuleFunction("cudaComputeLPC");
+			cudaQuantizeLPC = cuda.GetModuleFunction("cudaQuantizeLPC");
 			cudaComputeLPCLattice = cuda.GetModuleFunction("cudaComputeLPCLattice");
 			cudaEstimateResidual = cuda.GetModuleFunction("cudaEstimateResidual");
 			cudaEstimateResidual8 = cuda.GetModuleFunction("cudaEstimateResidual8");
@@ -2081,6 +2097,7 @@ namespace CUETools.Codecs.FlaCuda
 		{
 			cuda.Free(cudaSamples);
 			cuda.Free(cudaSamplesBytes);
+			cuda.Free(cudaLPCData);
 			cuda.Free(cudaResidual);
 			cuda.Free(cudaPartitions);
 			cuda.Free(cudaAutocorOutput);
