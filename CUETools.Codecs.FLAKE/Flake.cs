@@ -66,7 +66,7 @@ namespace CUETools.Codecs.FLAKE
 		}
 	}
 
-	unsafe class RiceContext
+	unsafe public class RiceContext
 	{
 		public RiceContext()
 		{
@@ -89,7 +89,7 @@ namespace CUETools.Codecs.FLAKE
 		public int[] esc_bps;
 	};
 
-	unsafe class FlacSubframe
+	unsafe public class FlacSubframe
 	{
 		public FlacSubframe()
 		{
@@ -108,7 +108,7 @@ namespace CUETools.Codecs.FLAKE
 		public int window;
 	};
 
-	unsafe class FlacSubframeInfo
+	unsafe public class FlacSubframeInfo
 	{
 		public FlacSubframeInfo()
 		{
@@ -141,7 +141,7 @@ namespace CUETools.Codecs.FLAKE
 		public LpcContext[] lpc_ctx;
 	};
 
-	unsafe class FlacFrame
+	unsafe public class FlacFrame
 	{
 		public FlacFrame(int subframes_count)
 		{
@@ -153,6 +153,7 @@ namespace CUETools.Codecs.FLAKE
 
 		public void InitSize(int bs, bool vbs)
 		{
+			blocksize = bs;
 			int i = 15;
 			if (!vbs)
 			{
@@ -160,7 +161,6 @@ namespace CUETools.Codecs.FLAKE
 				{
 					if (bs == Flake.flac_blocksizes[i])
 					{
-						blocksize = Flake.flac_blocksizes[i];
 						bs_code0 = i;
 						bs_code1 = -1;
 						break;
@@ -169,7 +169,6 @@ namespace CUETools.Codecs.FLAKE
 			}
 			if (i == 15)
 			{
-				blocksize = bs;
 				if (blocksize <= 256)
 				{
 					bs_code0 = 6;
@@ -229,17 +228,15 @@ namespace CUETools.Codecs.FLAKE
 		public FlacSubframeInfo[] subframes;
 		public uint frame_count;
 		public FlacSubframe current;
-		public double* window_buffer;
+		public float* window_buffer;
 	}
 
 	public enum OrderMethod
 	{
-		Max = 0,
-		Estimate = 1,
-		LogFast = 2,
-		LogSearch = 3,
-		EstSearch2 = 4,
-		Search = 5
+		/// <summary>
+		/// Select orders based on Akaike's criteria
+		/// </summary>
+		Akaike = 0
 	}
 
 	/// <summary>
@@ -296,7 +293,8 @@ namespace CUETools.Codecs.FLAKE
 		Tukey = 2,
 		Hann = 4,
 		Flattop = 8,
-		TukFlat = 10
+		Bartlett = 16,
+		TukeyFlattop = 10
 	}
 
 	public struct SeekPoint

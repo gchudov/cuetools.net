@@ -19,13 +19,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define INTEROP
+
 using System;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
-//using System.Runtime.InteropServices;
+#if INTEROP
+using System.Runtime.InteropServices;
+#endif
 using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
@@ -69,7 +73,9 @@ namespace CUETools.Codecs.FLAKE
 
 		long first_frame_offset = 0;
 
+#if INTEROP
 		TimeSpan _userProcessorTime;
+#endif
 
 		// header bytes
 		// allocated by flake_encode_init and freed by flake_encode_close
@@ -78,7 +84,7 @@ namespace CUETools.Codecs.FLAKE
 		int[] samplesBuffer;
 		int[] verifyBuffer;
 		int[] residualBuffer;
-		double[] windowBuffer;
+		float[] windowBuffer;
 		int samplesInBuffer = 0;
 
 		int _compressionLevel = 7;
@@ -116,7 +122,7 @@ namespace CUETools.Codecs.FLAKE
 
 			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)];
 			residualBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 10 : channels + 1)];
-			windowBuffer = new double[Flake.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
+			windowBuffer = new float[Flake.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
 
 			eparams.flake_set_defaults(_compressionLevel);
 			eparams.padding_size = 8192;
@@ -161,10 +167,12 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		//[DllImport("kernel32.dll")]
-		//static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
-		//[DllImport("kernel32.dll")]
-		//static extern IntPtr GetCurrentThread();
+#if INTEROP
+		[DllImport("kernel32.dll")]
+		static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
+		[DllImport("kernel32.dll")]
+		static extern IntPtr GetCurrentThread();
+#endif
 
 		void DoClose()
 		{
@@ -196,9 +204,11 @@ namespace CUETools.Codecs.FLAKE
 				inited = false;
 			}
 
-			//long fake, KernelStart, UserStart;
-			//GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
-			//_userProcessorTime = new TimeSpan(UserStart);
+#if INTEROP
+			long fake, KernelStart, UserStart;
+			GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
+			_userProcessorTime = new TimeSpan(UserStart);
+#endif
 		}
 
 		public void Close()
@@ -435,7 +445,14 @@ namespace CUETools.Codecs.FLAKE
 
 		public TimeSpan UserProcessorTime
 		{
-			get { return _userProcessorTime; }
+			get 
+			{
+#if INTEROP 
+				return _userProcessorTime; 
+#else
+				return TimeSpan(0);
+#endif
+			}
 		}
 
 		public int BitsPerSample
@@ -491,59 +508,6 @@ namespace CUETools.Codecs.FLAKE
 					}
 			}
 			samplesInBuffer += block;
-		}
-
-		static uint rice_encode_count(uint sum, uint n, uint k)
-		{
-			return n*(k+1) + ((sum-(n>>1))>>(int)k);
-		}
-
-		//static unsafe uint find_optimal_rice_param(uint sum, uint n)
-		//{
-		//    uint* nbits = stackalloc uint[Flake.MAX_RICE_PARAM + 1];
-		//    int k_opt = 0;
-
-		//    nbits[0] = UINT32_MAX;
-		//    for (int k = 0; k <= Flake.MAX_RICE_PARAM; k++)
-		//    {
-		//        nbits[k] = rice_encode_count(sum, n, (uint)k);
-		//        if (nbits[k] < nbits[k_opt])
-		//            k_opt = k;
-		//    }
-		//    return (uint)k_opt;
-		//}
-
-		static unsafe int find_optimal_rice_param(uint sum, uint n, out uint nbits_best)
-		{
-			int k_opt = 0;
-			uint a = n;
-			uint b = sum - (n >> 1);
-			uint nbits = a + b;
-			for (int k = 1; k <= Flake.MAX_RICE_PARAM; k++)
-			{
-				a += n;
-				b >>= 1;
-				uint nbits_k = a + b;
-				if (nbits_k < nbits)
-				{
-					k_opt = k;
-					nbits = nbits_k;
-				}
-			}
-			nbits_best = nbits;
-			return k_opt;
-		}
-
-		unsafe uint calc_decorr_score(FlacFrame frame, int ch)
-		{
-			int* s = frame.subframes[ch].samples;
-			int n = frame.blocksize;
-			ulong sum = 0;
-			for (int i = 2; i < n; i++)
-				sum += (ulong)Math.Abs(s[i] - 2 * s[i - 1] + s[i - 2]);
-			uint nbits;
-			find_optimal_rice_param((uint)(2 * sum), (uint)n, out nbits);
-			return nbits;
 		}
 
 		unsafe static void channel_decorrelation(int* leftS, int* rightS, int *leftM, int *rightM, int blocksize)
@@ -613,59 +577,117 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		static unsafe uint calc_optimal_rice_params(ref RiceContext rc, int porder, uint* sums, uint n, uint pred_order)
+		static unsafe uint calc_optimal_rice_params(int porder, int* parm, uint* sums, uint n, uint pred_order)
 		{
 			uint part = (1U << porder);
-			uint all_bits = 0;			
-			rc.rparams[0] = find_optimal_rice_param(sums[0], (n >> porder) - pred_order, out all_bits);
-			uint cnt = (n >> porder);
+			uint cnt = (n >> porder) - pred_order;
+			int k = cnt > 0 ? Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[0] / cnt)) : 0;
+			uint all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
+			parm[0] = k;
+			cnt = (n >> porder);
 			for (uint i = 1; i < part; i++)
 			{
-				uint nbits;
-				rc.rparams[i] = find_optimal_rice_param(sums[i], cnt, out nbits);
-				all_bits += nbits;
+				k = Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[i] / cnt));
+				all_bits += cnt * ((uint)k + 1U) + (sums[i] >> k);
+				parm[i] = k;
 			}
-			all_bits += (4 * part);
-			rc.porder = porder;
-			return all_bits;
+			return all_bits + (4 * part);
+		}
+
+		static unsafe void calc_lower_sums(int pmin, int pmax, uint* sums)
+		{
+			for (int i = pmax - 1; i >= pmin; i--)
+			{
+				for (int j = 0; j < (1 << i); j++)
+				{
+					sums[i * Flake.MAX_PARTITIONS + j] =
+						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j] +
+						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j + 1];
+				}
+			}
 		}
 
 		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
 		{
-			// sums for highest level
 			int parts = (1 << pmax);
 			uint* res = data + pred_order;
 			uint cnt = (n >> pmax) - pred_order;
 			uint sum = 0;
 			for (uint j = cnt; j > 0; j--)
 				sum += *(res++);
-			sums[pmax * Flake.MAX_PARTITIONS + 0] = sum;
+			sums[0] = sum;
 			cnt = (n >> pmax);
 			for (int i = 1; i < parts; i++)
 			{
 				sum = 0;
 				for (uint j = cnt; j > 0; j--)
 					sum += *(res++);
-				sums[pmax * Flake.MAX_PARTITIONS + i] = sum;
-			}
-			// sums for lower levels
-			for (int i = pmax - 1; i >= pmin; i--)
-			{
-				parts = (1 << i);
-				for (int j = 0; j < parts; j++)
-				{
-					sums[i * Flake.MAX_PARTITIONS + j] = 
-						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j] + 
-						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j + 1];
-				}
+				sums[i] = sum;
 			}
 		}
 
-		static unsafe uint calc_rice_params(ref RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order)
+		/// <summary>
+		/// Special case when (n >> pmax) == 18
+		/// </summary>
+		/// <param name="pmin"></param>
+		/// <param name="pmax"></param>
+		/// <param name="data"></param>
+		/// <param name="n"></param>
+		/// <param name="pred_order"></param>
+		/// <param name="sums"></param>
+		static unsafe void calc_sums18(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
 		{
-			RiceContext tmp_rc = new RiceContext(), tmp_rc2;
+			int parts = (1 << pmax);
+			uint* res = data + pred_order;
+			uint cnt = 18 - pred_order;
+			uint sum = 0;
+			for (uint j = cnt; j > 0; j--)
+				sum += *(res++);
+			sums[0] = sum;
+			for (int i = 1; i < parts; i++)
+			{
+				sums[i] =
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++);
+			}
+		}
+
+		/// <summary>
+		/// Special case when (n >> pmax) == 18
+		/// </summary>
+		/// <param name="pmin"></param>
+		/// <param name="pmax"></param>
+		/// <param name="data"></param>
+		/// <param name="n"></param>
+		/// <param name="pred_order"></param>
+		/// <param name="sums"></param>
+		static unsafe void calc_sums16(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		{
+			int parts = (1 << pmax);
+			uint* res = data + pred_order;
+			uint cnt = 16 - pred_order;
+			uint sum = 0;
+			for (uint j = cnt; j > 0; j--)
+				sum += *(res++);
+			sums[0] = sum;
+			for (int i = 1; i < parts; i++)
+			{
+				sums[i] =
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++);
+			}
+		}
+
+		static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order)
+		{
 			uint* udata = stackalloc uint[(int)n];
 			uint* sums = stackalloc uint[(pmax + 1) * Flake.MAX_PARTITIONS];
+			int* parm = stackalloc int[(pmax + 1) * Flake.MAX_PARTITIONS];
 			//uint* bits = stackalloc uint[Flake.MAX_PARTITION_ORDER];
 
 			//assert(pmin >= 0 && pmin <= Flake.MAX_PARTITION_ORDER);
@@ -673,24 +695,33 @@ namespace CUETools.Codecs.FLAKE
 			//assert(pmin <= pmax);
 
 			for (uint i = 0; i < n; i++)
-				udata[i] = (uint) ((2 * data[i]) ^ (data[i] >> 31));
+				udata[i] = (uint) ((data[i] << 1) ^ (data[i] >> 31));
 
-			calc_sums(pmin, pmax, udata, n, pred_order, sums);
+			// sums for highest level
+			if ((n >> pmax) == 18)
+				calc_sums18(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+			else if ((n >> pmax) == 16)
+				calc_sums16(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+			else
+				calc_sums(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+			// sums for lower levels
+			calc_lower_sums(pmin, pmax, sums);
 
-			int opt_porder = pmin;
 			uint opt_bits = AudioSamples.UINT32_MAX;
+			int opt_porder = pmin;
 			for (int i = pmin; i <= pmax; i++)
 			{
-				uint bits = calc_optimal_rice_params(ref tmp_rc, i, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
+				uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
 				if (bits <= opt_bits)
 				{
-					opt_porder = i;
 					opt_bits = bits;
-					tmp_rc2 = rc;
-					rc = tmp_rc;
-					tmp_rc = tmp_rc2;
+					opt_porder = i;
 				}
 			}
+
+			rc.porder = opt_porder;
+			fixed (int* rparms = rc.rparams)
+				AudioSamples.MemCpy(rparms, parm + opt_porder * Flake.MAX_PARTITIONS, (1 << opt_porder));
 
 			return opt_bits;
 		}
@@ -703,27 +734,7 @@ namespace CUETools.Codecs.FLAKE
 			return porder;
 		}
 
-		static unsafe uint calc_rice_params_fixed(ref RiceContext rc, int pmin, int pmax,
-			int* data, int n, int pred_order, uint bps)
-		{
-			pmin = get_max_p_order(pmin, n, pred_order);
-			pmax = get_max_p_order(pmax, n, pred_order);
-			uint bits = (uint)pred_order * bps + 6;
-			bits += calc_rice_params(ref rc, pmin, pmax, data, (uint)n, (uint)pred_order);
-			return bits;
-		}
-
-		static unsafe uint calc_rice_params_lpc(ref RiceContext rc, int pmin, int pmax,
-			int* data, int n, int pred_order, uint bps, uint precision)
-		{
-			pmin = get_max_p_order(pmin, n, pred_order);
-			pmax = get_max_p_order(pmax, n, pred_order);
-			uint bits = (uint)pred_order * bps + 4 + 5 + (uint)pred_order * precision + 6;
-			bits += calc_rice_params(ref rc, pmin, pmax, data, (uint)n, (uint)pred_order);
-			return bits;
-		}
-
-		unsafe void encode_residual_lpc_sub(FlacFrame frame, double * lpcs, int iWindow, int order, int ch)
+		unsafe void encode_residual_lpc_sub(FlacFrame frame, float* lpcs, int iWindow, int order, int ch)
 		{
 			// select LPC precision based on block size
 			uint lpc_precision;
@@ -767,10 +778,27 @@ namespace CUETools.Codecs.FLAKE
 							lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
 
 					}
-
-					frame.current.size = calc_rice_params_lpc(ref frame.current.rc, eparams.min_partition_order, eparams.max_partition_order,
-						frame.current.residual, frame.blocksize, frame.current.order, frame.subframes[ch].obits, cbits);
-
+					int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
+					int pmin = Math.Min(eparams.min_partition_order, pmax);
+					uint best_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order);
+					// not working
+					//for (int o = 1; o <= frame.current.order; o++)
+					//{
+					//    if (frame.current.coefs[o - 1] > -(1 << frame.current.shift))
+					//    {
+					//        for (int i = o; i < frame.blocksize; i++)
+					//            frame.current.residual[i] += frame.subframes[ch].samples[i - o] >> frame.current.shift;
+					//        frame.current.coefs[o - 1]--;
+					//        uint new_size = calc_rice_params(ref frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order);
+					//        if (new_size > best_size)
+					//        {
+					//            for (int i = o; i < frame.blocksize; i++)
+					//                frame.current.residual[i] -= frame.subframes[ch].samples[i - o] >> frame.current.shift;
+					//            frame.current.coefs[o - 1]++;
+					//        }
+					//    }
+					//}
+					frame.current.size = (uint)frame.current.order * frame.subframes[ch].obits + 4 + 5 + (uint)frame.current.order * cbits + 6 + best_size;
 					frame.ChooseBestSubframe(ch);
 				}
 		}
@@ -785,8 +813,10 @@ namespace CUETools.Codecs.FLAKE
 
 			encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order);
 
-			frame.current.size = calc_rice_params_fixed(ref frame.current.rc, eparams.min_partition_order, eparams.max_partition_order,
-				frame.current.residual, frame.blocksize, frame.current.order, frame.subframes[ch].obits);
+			int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
+			int pmin = Math.Min(eparams.min_partition_order, pmax);
+			frame.current.size = (uint)frame.current.order * frame.subframes[ch].obits + 6
+				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order);
 
 			frame.subframes[ch].done_fixed |= (1U << order);
 
@@ -843,7 +873,7 @@ namespace CUETools.Codecs.FLAKE
 				//(pass == 2 && frame.subframes[ch].best.type == SubframeType.LPC))
 				)
 			{
-				double* lpcs = stackalloc double[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
+				float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
 				int min_order = eparams.min_prediction_order;
 				int max_order = eparams.max_prediction_order;
 
@@ -853,80 +883,71 @@ namespace CUETools.Codecs.FLAKE
 						continue;
 
 					LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
-					
+
 					lpc_ctx.GetReflection(max_order, smp, n, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2);
 					lpc_ctx.ComputeLPC(lpcs);
 
+					//int frameSize = n;
+					//float* F = stackalloc float[frameSize];
+					//float* B = stackalloc float[frameSize];
+					//float* PE = stackalloc float[max_order + 1];
+					//float* arp = stackalloc float[max_order];
+					//float* rc = stackalloc float[max_order];
+
+					//for (int j = 0; j < frameSize; j++)
+					//    F[j] = B[j] = smp[j];
+
+					//for (int K = 1; K <= max_order; K++)
+					//{
+					//    // BURG:
+					//    float denominator = 0.0f;
+					//    //float denominator = F[K - 1] * F[K - 1] + B[frameSize - K] * B[frameSize - K];
+					//    for (int j = 0; j < frameSize - K; j++)
+					//        denominator += F[j + K] * F[j + K] + B[j] * B[j];
+					//    denominator /= 2;
+
+					//    // Estimate error
+					//    PE[K - 1] = denominator / (frameSize - K);
+
+					//    float reflectionCoeff = 0.0f;
+					//    for (int j = 0; j < frameSize - K; j++)
+					//        reflectionCoeff += F[j + K] * B[j];
+					//    reflectionCoeff /= denominator;
+					//    rc[K - 1] = arp[K - 1] = reflectionCoeff;
+
+					//    // Levinson-Durbin
+					//    for (int j = 0; j < (K - 1) >> 1; j++)
+					//    {
+					//        float arptmp = arp[j];
+					//        arp[j] -= reflectionCoeff * arp[K - 2 - j];
+					//        arp[K - 2 - j] -= reflectionCoeff * arptmp;
+					//    }
+					//    if (((K - 1) & 1) != 0)
+					//        arp[(K - 1) >> 1] -= reflectionCoeff * arp[(K - 1) >> 1];
+
+					//    for (int j = 0; j < frameSize - K; j++)
+					//    {
+					//        float f = F[j + K];
+					//        float b = B[j];
+					//        F[j + K] = f - reflectionCoeff * b;
+					//        B[j] = b - reflectionCoeff * f;
+					//    }
+
+					//    for (int j = 0; j < K; j++)
+					//        lpcs[(K - 1) * lpc.MAX_LPC_ORDER + j] = (float)arp[j];
+					//}
+
 					switch (omethod)
 					{
-						case OrderMethod.Max:
-							// always use maximum order
-							encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-							break;
-						case OrderMethod.Estimate:
-							// estimated orders
-							// Search at reflection coeff thresholds (where they cross 0.10)
-							{
-								int found = 0;
-								for (i = max_order; i >= min_order && found < eparams.estimation_depth; i--)
-									if (lpc_ctx.IsInterestingOrder(i))
-									{
-										encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-										found++;
-									}
-								if (0 == found)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, min_order, ch);
-							}
-							break;
-						case OrderMethod.EstSearch2:
-							// Search at reflection coeff thresholds (where they cross 0.10)
-							{
-								int found = 0;
-								for (i = min_order; i <= max_order && found < eparams.estimation_depth; i++)
-									if (lpc_ctx.IsInterestingOrder(i))
-									{
-										encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-										found++;
-									}
-								if (0 == found)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, min_order, ch);
-							}
-							break;
-						case OrderMethod.Search:
-							// brute-force optimal order search
-							for (i = max_order; i >= min_order; i--)
-								encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-							break;
-						case OrderMethod.LogFast:
-							// Try max, est, 32,16,8,4,2,1
-							encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-							for (i = lpc.MAX_LPC_ORDER; i >= min_order; i >>= 1)
-								if (i < max_order)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-							break;
-						case OrderMethod.LogSearch:
-							// do LogFast first
-							encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-							for (i = lpc.MAX_LPC_ORDER; i >= min_order; i >>= 1)
-								if (i < max_order)
-									encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-							// if found a good order, try to search around it
-							if (frame.subframes[ch].best.type == SubframeType.LPC)
-							{
-								// log search (written by Michael Niedermayer for FFmpeg)
-								for (int step = lpc.MAX_LPC_ORDER; step > 0; step >>= 1)
-								{
-									int last = frame.subframes[ch].best.order;
-									if (step <= (last + 1) / 2)
-										for (i = last - step; i <= last + step; i += step)
-											if (i >= min_order && i <= max_order)
-												encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-								}
-							}
+						case OrderMethod.Akaike:
+							lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth);
 							break;
 						default:
-							throw new Exception("unknown ordermethod");
+							throw new Exception("unknown order method");
 					}
+
+					for (i = 0; i < eparams.estimation_depth && i < max_order; i++)
+						encode_residual_lpc_sub(frame, lpcs, iWindow, lpc_ctx.best_orders[i], ch);
 				}
 			}
 		}
@@ -983,13 +1004,14 @@ namespace CUETools.Codecs.FLAKE
 
 			// residual
 			int j = sub.best.order;
+			fixed (byte* fixbuf = &frame_buffer[0])
 			for (int p = 0; p < (1 << porder); p++)
 			{
 				int k = sub.best.rc.rparams[p];
 				bitwriter.writebits(4, k);
 				if (p == 1) res_cnt = psize;
 				int cnt = Math.Min(res_cnt, frame.blocksize - j);
-				bitwriter.write_rice_block_signed(k, sub.best.residual + j, cnt);
+				bitwriter.write_rice_block_signed(fixbuf, k, sub.best.residual + j, cnt);
 				j += cnt;
 			}
 		}
@@ -1085,54 +1107,6 @@ namespace CUETools.Codecs.FLAKE
 			bitwriter.flush();
 		}
 
-		unsafe void window_welch(double* window, int L)
-		{
-			int N = L - 1;
-			double N2 = (double)N / 2.0;
-
-			for (int n = 0; n <= N; n++)
-			{
-			    double k = 1 / N2 - 1.0 - Math.Min(n, N-n);
-				//double k = ((double)n - N2) / N2;
-				window[n] = 1.0 - k * k;
-			}
-		}
-
-		unsafe void window_rectangle(double* window, int L)
-		{
-			for (int n = 0; n < L; n++)
-				window[n] = 1.0;
-		}
-
-		unsafe void window_flattop(double* window, int L)
-		{
-			int N = L - 1;
-			for (int n = 0; n < L; n++)
-				window[n] = 1.0 - 1.93 * Math.Cos(2.0 * Math.PI * n / N) + 1.29 * Math.Cos(4.0 * Math.PI * n / N) - 0.388 * Math.Cos(6.0 * Math.PI * n / N) + 0.0322 * Math.Cos(8.0 * Math.PI * n / N);
-		}
-
-		unsafe void window_tukey(double* window, int L)
-		{
-			window_rectangle(window, L);
-			double p = 0.5;
-			int Np = (int) (p / 2.0 * L) - 1;
-			if (Np > 0)
-			{
-				for (int n = 0; n <= Np; n++)
-				{
-					window[n] = 0.5 - 0.5 * Math.Cos(Math.PI * n / Np);
-					window[L - Np - 1 + n] = 0.5 - 0.5 * Math.Cos(Math.PI * (n + Np) / Np);
-				}
-			}
-		}
-
-		unsafe void window_hann(double* window, int L)
-		{
-			int N = L - 1;
-			for (int n = 0; n < L; n++)
-				window[n] = 0.5 - 0.5 * Math.Cos(2.0 * Math.PI * n / N);
-		}
-
 		unsafe void encode_residual_pass1(FlacFrame frame, int ch)
 		{
 			int max_prediction_order = eparams.max_prediction_order;
@@ -1147,7 +1121,7 @@ namespace CUETools.Codecs.FLAKE
 			eparams.lpc_min_precision_search = eparams.lpc_max_precision_search;
 			eparams.max_prediction_order = 8;
 			eparams.estimation_depth = 1;
-			encode_residual(frame, ch, eparams.prediction_type, OrderMethod.Estimate, 1);
+			encode_residual(frame, ch, eparams.prediction_type, OrderMethod.Akaike, 1);
 			eparams.min_fixed_order = min_fixed_order;
 			eparams.max_fixed_order = max_fixed_order;
 			eparams.max_prediction_order = max_prediction_order;
@@ -1180,7 +1154,12 @@ namespace CUETools.Codecs.FLAKE
 			{
 				case StereoMethod.Estimate:
 					for (int ch = 0; ch < subframes; ch++)
-						frame.subframes[ch].best.size = (uint)frame.blocksize * 32 + calc_decorr_score(frame, ch);
+					{
+						LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[0];
+						lpc_ctx.GetReflection(4, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer);
+						lpc_ctx.SortOrdersAkaike(frame.blocksize, 1);
+						frame.subframes[ch].best.size = Math.Max(0U, (uint)lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0]));
+					}
 					break;
 				case StereoMethod.Evaluate:
 					for (int ch = 0; ch < subframes; ch++)
@@ -1261,14 +1240,14 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		unsafe delegate void window_function(double* window, int size);
+		unsafe delegate void window_function(float* window, int size);
 
-		unsafe void calculate_window(double* window, window_function func, WindowFunction flag)
+		unsafe void calculate_window(float* window, window_function func, WindowFunction flag)
 		{
 			if ((eparams.window_function & flag) == 0 || _windowcount == lpc.MAX_LPC_WINDOWS)
 				return;
 			int sz = _windowsize;
-			double* pos = window + _windowcount * Flake.MAX_BLOCKSIZE * 2;
+			float* pos = window + _windowcount * Flake.MAX_BLOCKSIZE * 2;
 			do
 			{
 				func(pos, sz);
@@ -1283,7 +1262,7 @@ namespace CUETools.Codecs.FLAKE
 		unsafe int encode_frame(out int size)
 		{
 			fixed (int* s = samplesBuffer, r = residualBuffer)
-			fixed (double* window = windowBuffer)
+			fixed (float* window = windowBuffer)
 			{
 				frame.InitSize(eparams.block_size, eparams.variable_block_size != 0);
 
@@ -1291,10 +1270,11 @@ namespace CUETools.Codecs.FLAKE
 				{
 					_windowsize = frame.blocksize;
 					_windowcount = 0;
-					calculate_window(window, window_welch, WindowFunction.Welch);
-					calculate_window(window, window_tukey, WindowFunction.Tukey);
-					calculate_window(window, window_hann, WindowFunction.Hann);
-					calculate_window(window, window_flattop, WindowFunction.Flattop);
+					calculate_window(window, lpc.window_welch, WindowFunction.Welch);
+					calculate_window(window, lpc.window_tukey, WindowFunction.Tukey);
+					calculate_window(window, lpc.window_hann, WindowFunction.Hann);
+					calculate_window(window, lpc.window_flattop, WindowFunction.Flattop);
+					calculate_window(window, lpc.window_bartlett, WindowFunction.Bartlett);
 					if (_windowcount == 0)
 						throw new Exception("invalid windowfunction");
 				}
@@ -1319,6 +1299,11 @@ namespace CUETools.Codecs.FLAKE
 					for (int ch = 0; ch < 4; ch++)
 						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, 
 							bits_per_sample + (ch == 3 ? 1U : 0U), get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
+
+					//for (int ch = 0; ch < 4; ch++)
+					//    for (int iWindow = 0; iWindow < _windowcount; iWindow++)
+					//        frame.subframes[ch].lpc_ctx[iWindow].GetReflection(32, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2);
+
 					estimate_frame(frame, true);
 					uint fs = measure_frame_size(frame, true);
 
@@ -1847,7 +1832,7 @@ namespace CUETools.Codecs.FLAKE
 
 			// default to level 5 params
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
-			order_method = OrderMethod.Estimate;
+			order_method = OrderMethod.Akaike;
 			stereo_method = StereoMethod.Evaluate;
 			block_size = 0;
 			block_time_ms = 105;			
@@ -1858,7 +1843,7 @@ namespace CUETools.Codecs.FLAKE
 			min_fixed_order = 2;
 			max_fixed_order = 2;
 			min_partition_order = 0;
-			max_partition_order = 6;
+			max_partition_order = 8;
 			variable_block_size = 0;
 			lpc_min_precision_search = 1;
 			lpc_max_precision_search = 1;
@@ -1873,31 +1858,31 @@ namespace CUETools.Codecs.FLAKE
 					block_time_ms = 53;
 					prediction_type = PredictionType.Fixed;
 					stereo_method = StereoMethod.Independent;
-					max_partition_order = 4;
+					max_partition_order = 6;
 					break;
 				case 1:
 					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Independent;
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Bartlett;
 					max_prediction_order = 8;
-					max_partition_order = 4;
+					max_partition_order = 6;
 					break;
 				case 2:
 					stereo_method = StereoMethod.Independent;
-					window_function = WindowFunction.Welch;
-					max_partition_order = 4;
+					window_function = WindowFunction.Bartlett;
+					max_partition_order = 6;
 					break;
 				case 3:
 					stereo_method = StereoMethod.Estimate;
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Bartlett;
 					max_prediction_order = 8;
 					break;
 				case 4:
 					stereo_method = StereoMethod.Estimate;
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Bartlett;
 					break;
 				case 5:
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Bartlett;
 					break;
 				case 6:
 					stereo_method = StereoMethod.Estimate;
@@ -1905,13 +1890,12 @@ namespace CUETools.Codecs.FLAKE
 				case 7:
 					break;
 				case 8:
-					estimation_depth = 3;
+					estimation_depth = 2;
 					min_fixed_order = 0;
-					max_fixed_order = 4;
-					lpc_max_precision_search = 2;
+					lpc_min_precision_search = 0;
 					break;
 				case 9:
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Bartlett;
 					max_prediction_order = 32;
 					break;
 				case 10:

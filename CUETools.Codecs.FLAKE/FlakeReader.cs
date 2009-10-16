@@ -40,6 +40,7 @@ namespace CUETools.Codecs.FLAKE
 		Crc8 crc8;
 		Crc16 crc16;
 		FlacFrame frame;
+		BitReader framereader;
 		int channels;
 		uint bits_per_sample;
 		int sample_rate = 44100;
@@ -53,8 +54,22 @@ namespace CUETools.Codecs.FLAKE
 		ulong _sampleCount = 0;
 		ulong _sampleOffset = 0;
 
+		bool do_crc = true;
+
 		string _path;
 		Stream _IO;
+
+		public bool DoCRC
+		{
+			get
+			{
+				return do_crc;
+			}
+			set
+			{
+				do_crc = value;
+			}
+		}
 
 		public int[] Samples
 		{
@@ -76,6 +91,7 @@ namespace CUETools.Codecs.FLAKE
 			decode_metadata();
 
 			frame = new FlacFrame(channels);
+			framereader = new BitReader();
 
 			//max_frame_size = 16 + ((Flake.MAX_BLOCKSIZE * (int)(bits_per_sample * channels + 1) + 7) >> 3);
 			if (((int)max_frame_size * (int)bits_per_sample * channels * 2 >> 3) > _framesBuffer.Length)
@@ -105,6 +121,7 @@ namespace CUETools.Codecs.FLAKE
 			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * channels];
 			residualBuffer = new int[Flake.MAX_BLOCKSIZE * channels];
 			frame = new FlacFrame(channels);
+			framereader = new BitReader();
 		}
 
 		public void Close()
@@ -344,9 +361,9 @@ namespace CUETools.Codecs.FLAKE
 				throw new Exception("invalid channel mode");
 
 			// CRC-8 of frame header
-			byte crc = crc8.ComputeChecksum(bitreader.Buffer, header_start, bitreader.Position - header_start);
+			byte crc = do_crc ? crc8.ComputeChecksum(bitreader.Buffer, header_start, bitreader.Position - header_start) : (byte)0;
 			frame.crc8 = (byte)bitreader.readbits(8);
-			if (frame.crc8 != crc)
+			if (do_crc && frame.crc8 != crc)
 				throw new Exception("header crc mismatch");
 		}
 
@@ -617,16 +634,17 @@ namespace CUETools.Codecs.FLAKE
 		{
 			fixed (byte* buf = buffer)
 			{
-				BitReader bitreader = new BitReader(buf, pos, len);
-				decode_frame_header(bitreader, frame);
-				decode_subframes(bitreader, frame);
-				bitreader.flush();
-				ushort crc = crc16.ComputeChecksum(bitreader.Buffer + pos, bitreader.Position - pos);
-				if (crc != bitreader.readbits(16))
+				framereader.Reset(buf, pos, len);
+				decode_frame_header(framereader, frame);
+				decode_subframes(framereader, frame);
+				framereader.flush();
+				ushort crc_1 = do_crc ? crc16.ComputeChecksum(framereader.Buffer + pos, framereader.Position - pos) : (ushort)0;
+				ushort crc_2 = (ushort)framereader.readbits(16);
+				if (do_crc && crc_1 != crc_2)
 					throw new Exception("frame crc mismatch");
 				restore_samples(frame);
 				_samplesInBuffer = (uint)frame.blocksize;
-				return bitreader.Position - pos;
+				return framereader.Position - pos;
 			}
 		}
 
