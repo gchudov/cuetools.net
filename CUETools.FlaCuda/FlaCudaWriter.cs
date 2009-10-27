@@ -557,130 +557,151 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
-		static uint rice_encode_count(uint sum, uint n, uint k)
-		{
-			return n * (k + 1) + ((sum - (n >> 1)) >> (int)k);
-		}
-
-		//static unsafe uint find_optimal_rice_param(uint sum, uint n)
-		//{
-		//    uint* nbits = stackalloc uint[Flake.MAX_RICE_PARAM + 1];
-		//    int k_opt = 0;
-
-		//    nbits[0] = UINT32_MAX;
-		//    for (int k = 0; k <= Flake.MAX_RICE_PARAM; k++)
-		//    {
-		//        nbits[k] = rice_encode_count(sum, n, (uint)k);
-		//        if (nbits[k] < nbits[k_opt])
-		//            k_opt = k;
-		//    }
-		//    return (uint)k_opt;
-		//}
-
-		static unsafe int find_optimal_rice_param(uint sum, uint n, out uint nbits_best)
-		{
-			int k_opt = 0;
-			uint a = n;
-			uint b = sum - (n >> 1);
-			uint nbits = a + b;
-			for (int k = 1; k <= Flake.MAX_RICE_PARAM; k++)
-			{
-				a += n;
-				b >>= 1;
-				uint nbits_k = a + b;
-				if (nbits_k < nbits)
-				{
-					k_opt = k;
-					nbits = nbits_k;
-				}
-			}
-			nbits_best = nbits;
-			return k_opt;
-		}
-
-		static unsafe uint calc_optimal_rice_params(ref RiceContext rc, int porder, uint* sums, uint n, uint pred_order)
+		static unsafe uint calc_optimal_rice_params(int porder, int* parm, uint* sums, uint n, uint pred_order)
 		{
 			uint part = (1U << porder);
-			uint all_bits = 0;			
-			rc.rparams[0] = find_optimal_rice_param(sums[0], (n >> porder) - pred_order, out all_bits);
-			uint cnt = (n >> porder);
+			uint cnt = (n >> porder) - pred_order;
+			int k = cnt > 0 ? Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[0] / cnt)) : 0;
+			uint all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
+			parm[0] = k;
+			cnt = (n >> porder);
 			for (uint i = 1; i < part; i++)
 			{
-				uint nbits;
-				rc.rparams[i] = find_optimal_rice_param(sums[i], cnt, out nbits);
-				all_bits += nbits;
+				k = Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[i] / cnt));
+				all_bits += cnt * ((uint)k + 1U) + (sums[i] >> k);
+				parm[i] = k;
 			}
-			all_bits += (4 * part);
-			rc.porder = porder;
-			return all_bits;
+			return all_bits + (4 * part);
 		}
 
-		static unsafe void calc_sums(int pmin, int pmax, int* data, uint n, uint pred_order, uint* sums)
+		static unsafe void calc_lower_sums(int pmin, int pmax, uint* sums)
 		{
-			// sums for highest level
-			int parts = (1 << pmax);
-			int* res = data + pred_order;
-			uint cnt = (n >> pmax) - pred_order;
-			uint sum = 0;
-			for (uint j = cnt; j > 0; j--)
-			{
-				int val = *(res++);
-				sum += (uint)((val << 1) ^ (val >> 31));
-			}
-			sums[pmax * Flake.MAX_PARTITIONS + 0] = sum;
-			cnt = (n >> pmax);
-			for (int i = 1; i < parts; i++)
-			{
-				sum = 0;
-				for (uint j = cnt; j > 0; j--)
-				{
-					int val = *(res++);
-					sum += (uint)((val << 1) ^ (val >> 31));
-				}
-				sums[pmax * Flake.MAX_PARTITIONS + i] = sum;
-			}
-			// sums for lower levels
 			for (int i = pmax - 1; i >= pmin; i--)
 			{
-				parts = (1 << i);
-				for (int j = 0; j < parts; j++)
+				for (int j = 0; j < (1 << i); j++)
 				{
-					sums[i * Flake.MAX_PARTITIONS + j] = 
-						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j] + 
+					sums[i * Flake.MAX_PARTITIONS + j] =
+						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j] +
 						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j + 1];
 				}
 			}
 		}
 
-		static unsafe uint calc_rice_params(ref RiceContext rc, ref RiceContext tmp_rc, int pmin, int pmax, int* data, uint n, uint pred_order)
+		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
 		{
-			//uint* udata = stackalloc uint[(int)n];
+			int parts = (1 << pmax);
+			uint* res = data + pred_order;
+			uint cnt = (n >> pmax) - pred_order;
+			uint sum = 0;
+			for (uint j = cnt; j > 0; j--)
+				sum += *(res++);
+			sums[0] = sum;
+			cnt = (n >> pmax);
+			for (int i = 1; i < parts; i++)
+			{
+				sum = 0;
+				for (uint j = cnt; j > 0; j--)
+					sum += *(res++);
+				sums[i] = sum;
+			}
+		}
+
+		/// <summary>
+		/// Special case when (n >> pmax) == 18
+		/// </summary>
+		/// <param name="pmin"></param>
+		/// <param name="pmax"></param>
+		/// <param name="data"></param>
+		/// <param name="n"></param>
+		/// <param name="pred_order"></param>
+		/// <param name="sums"></param>
+		static unsafe void calc_sums18(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		{
+			int parts = (1 << pmax);
+			uint* res = data + pred_order;
+			uint cnt = 18 - pred_order;
+			uint sum = 0;
+			for (uint j = cnt; j > 0; j--)
+				sum += *(res++);
+			sums[0] = sum;
+			for (int i = 1; i < parts; i++)
+			{
+				sums[i] =
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++);
+			}
+		}
+
+		/// <summary>
+		/// Special case when (n >> pmax) == 18
+		/// </summary>
+		/// <param name="pmin"></param>
+		/// <param name="pmax"></param>
+		/// <param name="data"></param>
+		/// <param name="n"></param>
+		/// <param name="pred_order"></param>
+		/// <param name="sums"></param>
+		static unsafe void calc_sums16(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		{
+			int parts = (1 << pmax);
+			uint* res = data + pred_order;
+			uint cnt = 16 - pred_order;
+			uint sum = 0;
+			for (uint j = cnt; j > 0; j--)
+				sum += *(res++);
+			sums[0] = sum;
+			for (int i = 1; i < parts; i++)
+			{
+				sums[i] =
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++) +
+					*(res++) + *(res++) + *(res++) + *(res++);
+			}
+		}
+
+		static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order)
+		{
+			uint* udata = stackalloc uint[(int)n];
 			uint* sums = stackalloc uint[(pmax + 1) * Flake.MAX_PARTITIONS];
+			int* parm = stackalloc int[(pmax + 1) * Flake.MAX_PARTITIONS];
 			//uint* bits = stackalloc uint[Flake.MAX_PARTITION_ORDER];
 
 			//assert(pmin >= 0 && pmin <= Flake.MAX_PARTITION_ORDER);
 			//assert(pmax >= 0 && pmax <= Flake.MAX_PARTITION_ORDER);
 			//assert(pmin <= pmax);
 
-			//for (uint i = 0; i < n; i++)
-			//    udata[i] = (uint) ((2 * data[i]) ^ (data[i] >> 31));
+			for (uint i = 0; i < n; i++)
+				udata[i] = (uint)((data[i] << 1) ^ (data[i] >> 31));
 
-			calc_sums(pmin, pmax, data, n, pred_order, sums);
+			// sums for highest level
+			if ((n >> pmax) == 18)
+				calc_sums18(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+			else if ((n >> pmax) == 16)
+				calc_sums16(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+			else
+				calc_sums(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+			// sums for lower levels
+			calc_lower_sums(pmin, pmax, sums);
 
-			int opt_porder = pmin;
 			uint opt_bits = AudioSamples.UINT32_MAX;
+			int opt_porder = pmin;
 			for (int i = pmin; i <= pmax; i++)
 			{
-				uint bits = calc_optimal_rice_params(ref tmp_rc, i, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
+				uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
 				if (bits <= opt_bits)
 				{
-					opt_porder = i;
 					opt_bits = bits;
-					RiceContext tmp_rc2 = rc;
-					rc = tmp_rc;
-					tmp_rc = tmp_rc2;
+					opt_porder = i;
 				}
 			}
+
+			rc.porder = opt_porder;
+			fixed (int* rparms = rc.rparams)
+				AudioSamples.MemCpy(rparms, parm + opt_porder * Flake.MAX_PARTITIONS, (1 << opt_porder));
 
 			return opt_bits;
 		}
@@ -990,7 +1011,7 @@ namespace CUETools.Codecs.FlaCuda
 							int pmin = get_max_p_order(eparams.min_partition_order, frame.blocksize, frame.subframes[ch].best.order);
 							int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.subframes[ch].best.order);
 							uint bits = (uint)frame.subframes[ch].best.order * frame.subframes[ch].obits + 6;
-							frame.subframes[ch].best.size = bits + calc_rice_params(ref frame.subframes[ch].best.rc, ref frame.current.rc, pmin, pmax, frame.subframes[ch].best.residual, (uint)frame.blocksize, (uint)frame.subframes[ch].best.order);
+							frame.subframes[ch].best.size = bits + calc_rice_params(frame.subframes[ch].best.rc, pmin, pmax, frame.subframes[ch].best.residual, (uint)frame.blocksize, (uint)frame.subframes[ch].best.order);
 						}
 						break;
 					case SubframeType.LPC:
@@ -1009,7 +1030,7 @@ namespace CUETools.Codecs.FlaCuda
 								int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.subframes[ch].best.order);
 								uint bits = (uint)frame.subframes[ch].best.order * frame.subframes[ch].obits + 4 + 5 + (uint)frame.subframes[ch].best.order * (uint)frame.subframes[ch].best.cbits + 6;
 								//uint oldsize = frame.subframes[ch].best.size;
-								frame.subframes[ch].best.size = bits + calc_rice_params(ref frame.subframes[ch].best.rc, ref frame.current.rc, pmin, pmax, frame.subframes[ch].best.residual, (uint)frame.blocksize, (uint)frame.subframes[ch].best.order);
+								frame.subframes[ch].best.size = bits + calc_rice_params(frame.subframes[ch].best.rc, pmin, pmax, frame.subframes[ch].best.residual, (uint)frame.blocksize, (uint)frame.subframes[ch].best.order);
 								//if (frame.subframes[ch].best.size > frame.subframes[ch].obits * (uint)frame.blocksize &&
 								//    oldsize <= frame.subframes[ch].obits * (uint)frame.blocksize)
 								//    throw new Exception("oops");
@@ -1213,9 +1234,10 @@ namespace CUETools.Codecs.FlaCuda
 
 			cuda.SetParameter(task.cudaChooseBestMethod, 0 * sizeof(uint), (uint)task.cudaResidualTasks.Pointer);
 			cuda.SetParameter(task.cudaChooseBestMethod, 1 * sizeof(uint), (uint)task.cudaResidualOutput.Pointer);
-			cuda.SetParameter(task.cudaChooseBestMethod, 2 * sizeof(uint), (uint)residualPartCount);
-			cuda.SetParameter(task.cudaChooseBestMethod, 3 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
-			cuda.SetParameterSize(task.cudaChooseBestMethod, sizeof(uint) * 4U);
+			cuda.SetParameter(task.cudaChooseBestMethod, 2 * sizeof(uint), (uint)residualPartSize);
+			cuda.SetParameter(task.cudaChooseBestMethod, 3 * sizeof(uint), (uint)residualPartCount);
+			cuda.SetParameter(task.cudaChooseBestMethod, 4 * sizeof(uint), (uint)task.nResidualTasksPerChannel);
+			cuda.SetParameterSize(task.cudaChooseBestMethod, 5U * sizeof(uint));
 			cuda.SetFunctionBlockShape(task.cudaChooseBestMethod, 32, 8, 1);
 
 			cuda.SetParameter(task.cudaCopyBestMethod, 0, (uint)task.cudaBestResidualTasks.Pointer);

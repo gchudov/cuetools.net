@@ -61,6 +61,7 @@ typedef struct
 #define SUM512(buf,tid,op)  if (tid < 256) buf[tid] op buf[tid + 256]; __syncthreads(); SUM256(buf,tid,op)
 
 #define FSQR(s) ((s)*(s))
+#define FASTMUL(a,b) __mul24(a,b)
 
 extern "C" __global__ void cudaStereoDecorr(
     int *samples,
@@ -581,14 +582,8 @@ extern "C" __global__ void cudaEstimateResidual(
 
     shared.residual[tid] = shared.residual[tid] + shared.residual[tid + 8] + shared.residual[tid + 16] + shared.residual[tid + 24];
     shared.residual[tid] = shared.residual[tid] + shared.residual[tid + 2] + shared.residual[tid + 4] + shared.residual[tid + 6];
-    shared.residual[tid] += shared.residual[tid + 1];
-
-    // rice parameter search
-    shared.residual[tid] = (shared.task[threadIdx.y].type != Constant || shared.residual[threadIdx.y << 5] != 0) *
-	(__mul24(threadIdx.x >= 15, 0x7fffff) + residualLen * (threadIdx.x + 1) + ((shared.residual[threadIdx.y << 5] - (residualLen >> 1)) >> threadIdx.x));
-    shared.residual[tid] = min(min(shared.residual[tid], shared.residual[tid + 4]), min(shared.residual[tid + 8], shared.residual[tid + 12]));
     if (threadIdx.x == 0)
-	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = min(min(shared.residual[tid], shared.residual[tid + 1]), min(shared.residual[tid + 2], shared.residual[tid + 3]));
+	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = shared.residual[tid] + shared.residual[tid + 1];
 }
 
 extern "C" __global__ void cudaEstimateResidual1(
@@ -612,7 +607,7 @@ extern "C" __global__ void cudaEstimateResidual1(
     if (tid == 0)
     {
 	shared.pos = blockIdx.x * partSize; 
-	shared.dataLen =  min(shared.task.data.blocksize - shared.pos, partSize + max_order);
+	shared.dataLen =  min(shared.task.data.blocksize - shared.pos, partSize + shared.task.data.residualOrder);
     }
     __syncthreads();
 
@@ -631,21 +626,9 @@ extern "C" __global__ void cudaEstimateResidual1(
     shared.residual[tid] = __mul24(ptr < shared.dataLen, min(0x7fffff,(sum << 1) ^ (sum >> 31)));
     __syncthreads();
     SUM256(shared.residual, tid, +=);
-    
-    if (threadIdx.y == 0)
-    {
-	const int residualLen = max(0,min(shared.task.data.blocksize - shared.pos - shared.task.data.residualOrder, partSize));
-
-	// rice parameter search
-	shared.residual[threadIdx.x] = (shared.task.data.type != Constant || shared.residual[0] != 0) *
-	    (__mul24(threadIdx.x >= 15, 0x7fffff) + residualLen * (threadIdx.x + 1) + ((shared.residual[0] - (residualLen >> 1)) >> threadIdx.x));
-	shared.residual[threadIdx.x] = min(min(shared.residual[threadIdx.x], shared.residual[threadIdx.x + 4]), min(shared.residual[threadIdx.x + 8], shared.residual[threadIdx.x + 12]));
-	if (threadIdx.x == 0)
-	    output[blockIdx.y * 64 + blockIdx.x] = min(min(shared.residual[threadIdx.x], shared.residual[threadIdx.x + 1]), min(shared.residual[threadIdx.x + 2], shared.residual[threadIdx.x + 3]));
-    }
+    if (tid == 0)
+	output[blockIdx.y * 64 + blockIdx.x] = shared.residual[0];
 }
-
-#define FASTMUL(a,b) __mul24(a,b)
 
 extern "C" __global__ void cudaEstimateResidual8(
     int*output,
@@ -656,57 +639,61 @@ extern "C" __global__ void cudaEstimateResidual8(
     )
 {
     __shared__ struct {
-	int data[32*9];
+	volatile int data[32*9];
 	volatile int residual[32*8];
 	FlaCudaSubframeData task[8];
 	int coefs[32*8];
+	volatile int pos;
+	volatile int dataLen;
+	volatile int dataOffs;
     } shared;
     const int tid = threadIdx.x + threadIdx.y * 32;
+    const int taskNo = FASTMUL(blockIdx.y, blockDim.y) + threadIdx.y;
     if (threadIdx.x < sizeof(FlaCudaSubframeData)/sizeof(int))
-	((int*)&shared.task[threadIdx.y])[threadIdx.x] = ((int*)(&tasks[blockIdx.y * blockDim.y + threadIdx.y]))[threadIdx.x];
+	((int*)&shared.task[threadIdx.y])[threadIdx.x] = ((int*)(&tasks[taskNo]))[threadIdx.x];
+    const int ro = shared.task[threadIdx.y].residualOrder;
+    shared.coefs[tid] = threadIdx.x < ro ? tasks[taskNo].coefs[threadIdx.x] : 0;
+    if (tid == 0)
+    {
+	shared.pos = FASTMUL(blockIdx.x, partSize);
+	shared.dataLen =  min(shared.task[0].blocksize - shared.pos, partSize + max_order);
+	shared.dataOffs = shared.task[0].samplesOffs + shared.pos;
+    }
     __syncthreads();
-    const int pos = blockIdx.x * partSize;
-    const int dataLen = min(shared.task[0].blocksize - pos, partSize + max_order);
 
     // fetch samples
-    shared.data[tid] = tid < dataLen ? samples[shared.task[0].samplesOffs + pos + tid] >> shared.task[0].wbits : 0;
-    if (tid < 32) shared.data[tid + partSize] = tid + partSize < dataLen ? samples[shared.task[0].samplesOffs + pos + tid + partSize] >> shared.task[0].wbits : 0;
+    if (tid < shared.dataLen)
+	shared.data[tid] = samples[shared.dataOffs + tid] >> shared.task[0].wbits;
+    if (tid + partSize < shared.dataLen)
+	shared.data[tid + partSize] = samples[shared.dataOffs + tid + partSize] >> shared.task[0].wbits;
 
     __syncthreads();
 
-    shared.residual[tid] = 0;
-    shared.coefs[tid] = threadIdx.x < shared.task[threadIdx.y].residualOrder ? tasks[blockIdx.y * blockDim.y + threadIdx.y].coefs[threadIdx.x] : 0;
-
-    const int residualLen = max(0,min(shared.task[0].blocksize - pos - shared.task[threadIdx.y].residualOrder, partSize));
+    const int residualLen = max(0,min(shared.dataLen - ro, partSize));
     const int ptr2 = threadIdx.y << 5;
     int s = 0;
-    for (int ptr = threadIdx.x + blockDim.y * 32 * (shared.task[threadIdx.y].type == Verbatim); ptr < blockDim.y * 32 + threadIdx.x; ptr += 32)
+    for (int ptr = threadIdx.x; ptr < residualLen; ptr += 32)
     {
 	// compute residual
 	int sum = 
 	    __mul24(shared.data[ptr + 0], shared.coefs[ptr2 + 0]) +
 	    __mul24(shared.data[ptr + 1], shared.coefs[ptr2 + 1]) +
 	    __mul24(shared.data[ptr + 2], shared.coefs[ptr2 + 2]) +
-	    __mul24(shared.data[ptr + 3], shared.coefs[ptr2 + 3]) +
+	    __mul24(shared.data[ptr + 3], shared.coefs[ptr2 + 3]);
+	sum +=
 	    __mul24(shared.data[ptr + 4], shared.coefs[ptr2 + 4]) +
 	    __mul24(shared.data[ptr + 5], shared.coefs[ptr2 + 5]) +
 	    __mul24(shared.data[ptr + 6], shared.coefs[ptr2 + 6]) +
 	    __mul24(shared.data[ptr + 7], shared.coefs[ptr2 + 7]);
-	sum = shared.data[ptr + shared.task[threadIdx.y].residualOrder] - (sum >> shared.task[threadIdx.y].shift);
-	s += __mul24(ptr < residualLen, min(0x7fffff,(sum << 1) ^ (sum >> 31)));
+	sum = shared.data[ptr + ro] - (sum >> shared.task[threadIdx.y].shift);
+	s += min(0x7fffff,(sum << 1) ^ (sum >> 31));
     }
 
     shared.residual[tid] = s;
     shared.residual[tid] = shared.residual[tid] + shared.residual[tid + 8] + shared.residual[tid + 16] + shared.residual[tid + 24];
     shared.residual[tid] = shared.residual[tid] + shared.residual[tid + 2] + shared.residual[tid + 4] + shared.residual[tid + 6];
-    shared.residual[tid] += shared.residual[tid + 1];
-
-    // rice parameter search
-    shared.residual[tid] = (shared.task[threadIdx.y].type != Constant || shared.residual[threadIdx.y << 5] != 0) *
-	(__mul24(threadIdx.x >= 15, 0x7fffff) + residualLen * (threadIdx.x + 1) + ((shared.residual[threadIdx.y << 5] - (residualLen >> 1)) >> threadIdx.x));
-    shared.residual[tid] = min(min(shared.residual[tid], shared.residual[tid + 4]), min(shared.residual[tid + 8], shared.residual[tid + 12]));
     if (threadIdx.x == 0)
-	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = min(min(shared.residual[tid], shared.residual[tid + 1]), min(shared.residual[tid + 2], shared.residual[tid + 3]));
+	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = shared.residual[tid] + shared.residual[tid + 1];
 }
 
 extern "C" __global__ void cudaEstimateResidual12(
@@ -727,8 +714,11 @@ extern "C" __global__ void cudaEstimateResidual12(
 	volatile int dataOffs;
     } shared;
     const int tid = threadIdx.x + threadIdx.y * 32;
+    const int taskNo = FASTMUL(blockIdx.y, blockDim.y) + threadIdx.y;
     if (threadIdx.x < sizeof(FlaCudaSubframeData)/sizeof(int))
-	((int*)&shared.task[threadIdx.y])[threadIdx.x] = ((int*)(&tasks[FASTMUL(blockIdx.y, blockDim.y) + threadIdx.y]))[threadIdx.x];
+	((int*)&shared.task[threadIdx.y])[threadIdx.x] = ((int*)(&tasks[taskNo]))[threadIdx.x];
+    const int ro = shared.task[threadIdx.y].residualOrder;
+    shared.coefs[tid] = threadIdx.x < ro ? tasks[taskNo].coefs[threadIdx.x] : 0;
     if (tid == 0)
     {
 	shared.pos = FASTMUL(blockIdx.x, partSize);
@@ -738,30 +728,30 @@ extern "C" __global__ void cudaEstimateResidual12(
     __syncthreads();
 
     // fetch samples
-    shared.data[tid] = tid < shared.dataLen ? samples[shared.dataOffs + tid] >> shared.task[0].wbits : 0;
-    if (tid < 32) shared.data[tid + partSize] = tid + partSize < shared.dataLen ? samples[shared.dataOffs + tid + partSize] >> shared.task[0].wbits : 0;
+    if (tid < shared.dataLen)
+	shared.data[tid] = samples[shared.dataOffs + tid] >> shared.task[0].wbits;
+    if (tid + partSize < shared.dataLen)
+	shared.data[tid + partSize] = samples[shared.dataOffs + tid + partSize] >> shared.task[0].wbits;
 
     __syncthreads();
 
-    const int ro = shared.task[threadIdx.y].residualOrder;
-    const int residualLen = max(0,min(shared.task[0].blocksize - shared.pos - ro, partSize));
+    int residualLen = max(0,min(shared.dataLen - ro, partSize));
     const int ptr2 = threadIdx.y << 5;
-    
-    shared.coefs[tid] = threadIdx.x < ro ? tasks[FASTMUL(blockIdx.y, blockDim.y) + threadIdx.y].coefs[threadIdx.x] : 0;
-
     int s = 0;
-    for (int ptr = shared.task[threadIdx.y].type == Verbatim ? residualLen : threadIdx.x; ptr < residualLen; ptr += 32)
+    for (int ptr = threadIdx.x; ptr < residualLen; ptr += 32)
     {
 	// compute residual
 	int sum =
     	    FASTMUL(shared.data[ptr + 0], shared.coefs[ptr2 + 0]) +
 	    FASTMUL(shared.data[ptr + 1], shared.coefs[ptr2 + 1]) +
 	    FASTMUL(shared.data[ptr + 2], shared.coefs[ptr2 + 2]) +
-	    FASTMUL(shared.data[ptr + 3], shared.coefs[ptr2 + 3]) +
+	    FASTMUL(shared.data[ptr + 3], shared.coefs[ptr2 + 3]);
+	sum += 
 	    FASTMUL(shared.data[ptr + 4], shared.coefs[ptr2 + 4]) +
 	    FASTMUL(shared.data[ptr + 5], shared.coefs[ptr2 + 5]) +
 	    FASTMUL(shared.data[ptr + 6], shared.coefs[ptr2 + 6]) +
-	    FASTMUL(shared.data[ptr + 7], shared.coefs[ptr2 + 7]) +
+	    FASTMUL(shared.data[ptr + 7], shared.coefs[ptr2 + 7]);
+	sum +=
 	    FASTMUL(shared.data[ptr + 8], shared.coefs[ptr2 + 8]) +
 	    FASTMUL(shared.data[ptr + 9], shared.coefs[ptr2 + 9]) +
 	    FASTMUL(shared.data[ptr + 10], shared.coefs[ptr2 + 10]) +
@@ -773,19 +763,14 @@ extern "C" __global__ void cudaEstimateResidual12(
     shared.residual[tid] = s;
     shared.residual[tid] = shared.residual[tid] + shared.residual[tid + 8] + shared.residual[tid + 16] + shared.residual[tid + 24];
     shared.residual[tid] = shared.residual[tid] + shared.residual[tid + 2] + shared.residual[tid + 4] + shared.residual[tid + 6];
-    shared.residual[tid] += shared.residual[tid + 1];
-
-    // rice parameter search
-    shared.residual[tid] = (shared.task[threadIdx.y].type != Constant || shared.residual[threadIdx.y << 5] != 0) *
-	(__mul24(threadIdx.x >= 15, 0x7fffff) + FASTMUL(residualLen, threadIdx.x + 1) + ((shared.residual[threadIdx.y << 5] - (residualLen >> 1)) >> threadIdx.x));
-    shared.residual[tid] = min(min(shared.residual[tid], shared.residual[tid + 4]), min(shared.residual[tid + 8], shared.residual[tid + 12]));
     if (threadIdx.x == 0)
-	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = min(min(shared.residual[tid], shared.residual[tid + 1]), min(shared.residual[tid + 2], shared.residual[tid + 3]));
+	output[(blockIdx.y * blockDim.y + threadIdx.y) * 64 + blockIdx.x] = shared.residual[tid] + shared.residual[tid + 1];
 }
 
 extern "C" __global__ void cudaChooseBestMethod(
     FlaCudaSubframeTask *tasks,
     int *residual,
+    int partSize,
     int partCount, // <= blockDim.y (256)
     int taskCount
     )
@@ -806,8 +791,18 @@ extern "C" __global__ void cudaChooseBestMethod(
 	    ((int*)&shared.task[threadIdx.y])[threadIdx.x] = ((int*)(tasks + task + threadIdx.y + taskCount * blockIdx.y))[threadIdx.x];
 
 	    int sum = 0;
-	    for (int pos = 0; pos < partCount; pos += blockDim.x)
-		sum += (pos + threadIdx.x < partCount ? residual[pos + threadIdx.x + 64 * (task + threadIdx.y + taskCount * blockIdx.y)] : 0);
+	    for (int pos = threadIdx.x; pos < partCount; pos += blockDim.x)
+	    {
+		// fetch part sum
+		int psum = residual[pos + 64 * (task + threadIdx.y + taskCount * blockIdx.y)];
+		// calculate part size
+		int residualLen = max(0,min(shared.task[threadIdx.y].data.blocksize - FASTMUL(pos, partSize) - shared.task[threadIdx.y].data.residualOrder, partSize));
+		residualLen = FASTMUL(residualLen, shared.task[threadIdx.y].data.type != Constant || psum != 0);
+		// calculate rice parameter
+		int k = max(0, min(14, __float2int_rz(__log2f((psum + 0.000001f) / (residualLen + 0.000001f) + 0.5f))));
+		// calculate part bit length
+		sum += FASTMUL(residualLen, k + 1) + (psum >> k);
+	    }
 	    shared.partLen[tid] = sum;
 
 	    // length sum: reduction in shared mem
