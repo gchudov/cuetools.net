@@ -3,6 +3,7 @@ using System.IO;
 using CUETools.Codecs;
 using CUETools.Codecs.ALAC;
 using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.FlaCuda;
 #if !MONO
 using CUETools.Codecs.FLAC;
 using CUETools.Codecs.WavPack;
@@ -98,7 +99,14 @@ namespace CUETools.Processor
 					dest = new FlakeWriter(path, bitsPerSample, channelCount, sampleRate, null);
 					((FlakeWriter)dest).PaddingLength = padding;
 					((FlakeWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
-					dest = new BufferedWriter(dest, 128 * 1024);
+					//dest = new BufferedWriter(dest, 128 * 1024);
+					break;
+				case "FlaCudaWriter":
+					dest = new FlaCudaWriter(path, bitsPerSample, channelCount, sampleRate, null);
+					((FlaCudaWriter)dest).PaddingLength = padding;
+					((FlaCudaWriter)dest).CompressionLevel = encoder.DefaultModeIndex;
+					((FlaCudaWriter)dest).DoVerify = config.flaCudaVerify;
+					((FlaCudaWriter)dest).GPUOnly = config.flaCudaGPUOnly;
 					break;
 				case "ALACWriter":
 					dest = new ALACWriter(path, bitsPerSample, channelCount, sampleRate, null);

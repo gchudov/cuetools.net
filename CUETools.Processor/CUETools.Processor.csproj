@@ -140,6 +140,10 @@
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.FlaCuda\CUETools.Codecs.FlaCuda.csproj">
+      <Project>{DFE50673-906C-4B8F-993B-A24CAD1CA17D}</Project>
+      <Name>CUETools.Codecs.FlaCuda</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>

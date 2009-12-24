@@ -786,6 +786,8 @@ namespace CUETools.Processor
 		public bool noUnverifiedOutput;
 		public bool autoCorrectFilenames;
 		public bool flacVerify;
+		public bool flaCudaVerify;
+		public bool flaCudaGPUOnly;
 		public bool preserveHTOA;
 		public int wvExtraMode;
 		public bool wvStoreMD5;
@@ -859,6 +861,8 @@ namespace CUETools.Processor
 
 			autoCorrectFilenames = true;
 			flacVerify = false;
+			flaCudaVerify = false;
+			flaCudaGPUOnly = false;
 			preserveHTOA = true;
 			wvExtraMode = 0;
 			wvStoreMD5 = false;
@@ -916,7 +920,8 @@ namespace CUETools.Processor
 			encoders.Add(new CUEToolsUDC("ttalib", "tta", true, "", "", "TTAWriter"));
 #endif
 			encoders.Add(new CUEToolsUDC("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", "FlakeWriter"));
-			encoders.Add(new CUEToolsUDC("libALAC", "m4a", true, "0 1 2 3 4 5 6 7 8", "3", "ALACWriter"));
+			encoders.Add(new CUEToolsUDC("FlaCuda", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "8", "FlaCudaWriter"));
+			encoders.Add(new CUEToolsUDC("libALAC", "m4a", true, "0 1 2 3 4 5 6 7 8 9 10", "3", "ALACWriter"));
 			encoders.Add(new CUEToolsUDC("builtin wav", "wav", true, "", "", "WAVWriter"));
 			encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "10", "flake.exe", "-%M - -o %O -p %P"));
 			encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
@@ -1012,6 +1017,8 @@ return processor.Go();
 			sw.Save("PreserveHTOA", preserveHTOA);
 			sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
 			sw.Save("FLACVerify", flacVerify);
+			sw.Save("FlaCudaVerify", flaCudaVerify);
+			sw.Save("FlaCudaGPUOnly", flaCudaGPUOnly);
 			sw.Save("WVExtraMode", wvExtraMode);
 			sw.Save("WVStoreMD5", wvStoreMD5);
 			sw.Save("KeepOriginalFilenames", keepOriginalFilenames);
@@ -1139,6 +1146,8 @@ return processor.Go();
 			preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
 			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
 			flacVerify = sr.LoadBoolean("FLACVerify") ?? false;
+			flaCudaVerify = sr.LoadBoolean("FlaCudaVerify") ?? false;
+			flaCudaGPUOnly = sr.LoadBoolean("FlaCudaGPUOnly") ?? false;
 			wvExtraMode = sr.LoadInt32("WVExtraMode", 0, 6) ?? 0;
 			wvStoreMD5 = sr.LoadBoolean("WVStoreMD5") ?? false;
 			keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? false;
@@ -3970,7 +3979,7 @@ return processor.Go();
 
 		public void WriteAudioFilesPass(string dir, CUEStyle style, int[] destLengths, bool htoaToFile, bool noOutput)
 		{
-			const int buffLen = 16384;
+			const int buffLen = 0x8000;
 			int iTrack, iIndex;
 			int[,] sampleBuffer = new int[buffLen, 2];
 			TrackInfo track;
@@ -4121,7 +4130,7 @@ return processor.Go();
 							if (trackLength > 0 && !_isCD)
 							{
 								double trackPercent = (double)currentOffset / trackLength;
-								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (uint)(100*trackPercent),
+								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (uint)(100 * trackPercent),
 									noOutput ? "Verifying" : "Writing"), trackPercent, (int)diskOffset, (int)diskLength,
 									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
 							}
@@ -4154,9 +4163,11 @@ return processor.Go();
 								}
 							}
 							if (_useAccurateRip)
+							{
 								_arVerify.Write(sampleBuffer, 0, (int)copyCount);
-							if (iTrack > 0 || iIndex > 0)
-								Tracks[iTrack + (iIndex == 0 ? -1 : 0)].MeasurePeakLevel(sampleBuffer, copyCount);
+								if (iTrack > 0 || iIndex > 0)
+									Tracks[iTrack + (iIndex == 0 ? -1 : 0)].MeasurePeakLevel(sampleBuffer, copyCount);
+							}
 
 							currentOffset += copyCount;
 							diskOffset += copyCount;
@@ -5213,12 +5224,17 @@ return processor.Go();
 			_peakLevel = 0;
 		}
 
-		public void MeasurePeakLevel(int[,] samplesBuffer, uint sampleCount)
+		public unsafe void MeasurePeakLevel(int[,] samplesBuffer, uint sampleCount)
 		{
-			for (uint i = 0; i < sampleCount; i++)
-				for (uint j = 0; j < 2; j++)
-					if (_peakLevel < Math.Abs(samplesBuffer[i, j]))
-						_peakLevel = Math.Abs(samplesBuffer[i, j]);
+			fixed (int* s = samplesBuffer)
+			{
+				for (int i = 0; i < sampleCount * 2; i++)
+					_peakLevel = Math.Max(_peakLevel, Math.Abs(s[i]));
+			}
+			//for (uint i = 0; i < sampleCount; i++)
+			//    for (uint j = 0; j < 2; j++)
+			//        if (_peakLevel < Math.Abs(samplesBuffer[i, j]))
+			//            _peakLevel = Math.Abs(samplesBuffer[i, j]);
 		}
 
 		public int PeakLevel
