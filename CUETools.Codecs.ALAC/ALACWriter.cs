@@ -19,12 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define INTEROP
+
 using System;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-//using System.Runtime.InteropServices;
+#if INTEROP
+using System.Runtime.InteropServices;
+#endif
 using CUETools.Codecs;
 
 namespace CUETools.Codecs.ALAC
@@ -56,7 +59,7 @@ namespace CUETools.Codecs.ALAC
 		// this can be used to allocate memory for output
 		int max_frame_size;
 
-		int initial_history, history_mult, k_modifier;
+		int initial_history = 10, history_mult = 40, k_modifier = 14;
 
 		byte[] frame_buffer = null;
 
@@ -64,7 +67,9 @@ namespace CUETools.Codecs.ALAC
 
 		long first_frame_offset = 0;
 
+#if INTEROP
 		TimeSpan _userProcessorTime;
+#endif
 
 		// header bytes
 		byte[] header;
@@ -73,10 +78,10 @@ namespace CUETools.Codecs.ALAC
 		int[] samplesBuffer;
 		int[] verifyBuffer;
 		int[] residualBuffer;
-		double[] windowBuffer;
+		float[] windowBuffer;
 		int samplesInBuffer = 0;
 
-		int _compressionLevel = 4;
+		int _compressionLevel = 5;
 		int _blocksize = 0;
 		int _totalSize = 0;
 		int _windowsize = 0, _windowcount = 0;
@@ -108,7 +113,7 @@ namespace CUETools.Codecs.ALAC
 
 			samplesBuffer = new int[Alac.MAX_BLOCKSIZE * (channels == 2 ? 5 : channels)];
 			residualBuffer = new int[Alac.MAX_BLOCKSIZE * (channels == 2 ? 6 : channels + 1)];
-			windowBuffer = new double[Alac.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
+			windowBuffer = new float[Alac.MAX_BLOCKSIZE * 2 * Alac.MAX_LPC_WINDOWS];
 
 			eparams.set_defaults(_compressionLevel);
 			eparams.padding_size = 8192;
@@ -147,17 +152,19 @@ namespace CUETools.Codecs.ALAC
 			}
 			set
 			{
-				if (value < 0 || value > 11)
+				if (value < 0 || value > 10)
 					throw new Exception("unsupported compression level");
 				_compressionLevel = value;
 				eparams.set_defaults(_compressionLevel);
 			}
 		}
 
-		//[DllImport("kernel32.dll")]
-		//static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
-		//[DllImport("kernel32.dll")]
-		//static extern IntPtr GetCurrentThread();
+#if INTEROP
+		[DllImport("kernel32.dll")]
+		static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
+		[DllImport("kernel32.dll")]
+		static extern IntPtr GetCurrentThread();
+#endif
 
 		void chunk_start(BitWriter bitwriter)
 		{
@@ -201,9 +208,11 @@ namespace CUETools.Codecs.ALAC
 				inited = false;
 			}
 
-			//long fake, KernelStart, UserStart;
-			//GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
-			//_userProcessorTime = new TimeSpan(UserStart);
+#if INTEROP
+			long fake, KernelStart, UserStart;
+			GetThreadTimes(GetCurrentThread(), out fake, out fake, out KernelStart, out UserStart);
+			_userProcessorTime = new TimeSpan(UserStart);
+#endif
 		}
 
 		public void Close()
@@ -254,6 +263,12 @@ namespace CUETools.Codecs.ALAC
 		{
 			get { return eparams.stereo_method; }
 			set { eparams.stereo_method = value; }
+		}
+
+		public WindowMethod WindowMethod
+		{
+			get { return eparams.window_method; }
+			set { eparams.window_method = value; }
 		}
 
 		public WindowFunction WindowFunction
@@ -330,11 +345,39 @@ namespace CUETools.Codecs.ALAC
 			}
 			set
 			{
-				if (value > 100)
+				if (value > 7)
 					throw new Exception("invalid MaxHistoryModifier " + value.ToString());
 				eparams.max_modifier = value;
 				if (eparams.min_modifier > value)
 					eparams.min_modifier = value;
+			}
+		}
+
+		public int HistoryMult
+		{
+			get
+			{
+				return history_mult;
+			}
+			set
+			{
+				if (value < 1 || value > 255)
+					throw new Exception("invalid history_mult");
+				history_mult = value;
+			}
+		}
+
+		public int InitialHistory
+		{
+			get
+			{
+				return initial_history;
+			}
+			set
+			{
+				if (value < 1 || value > 255)
+					throw new Exception("invalid initial_history");
+				initial_history = value;
 			}
 		}
 
@@ -352,9 +395,30 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
+		public int AdaptivePasses
+		{
+			get
+			{
+				return eparams.adaptive_passes;
+			}
+			set
+			{
+				if (value >= lpc.MAX_LPC_PRECISIONS || value < 0)
+					throw new Exception("invalid adaptive_passes " + value.ToString());
+				eparams.adaptive_passes = value;
+			}			
+		}
+
 		public TimeSpan UserProcessorTime
 		{
-			get { return _userProcessorTime; }
+			get
+			{
+#if INTEROP
+				return _userProcessorTime;
+#else
+				return TimeSpan(0);
+#endif
+			}
 		}
 
 		public int BitsPerSample
@@ -385,15 +449,6 @@ namespace CUETools.Codecs.ALAC
 			samplesInBuffer += block;
 		}
 
-		unsafe static void channel_decorrelation(int* leftS, int* rightS, int *leftM, int *rightM, int blocksize)
-		{
-			for (int i = 0; i < blocksize; i++)
-			{
-				leftM[i] = (leftS[i] + rightS[i]) >> 1;
-				rightM[i] = leftS[i] - rightS[i];
-			}
-		}
-
 		unsafe static void channel_decorrelation(int* leftS, int* rightS, int* leftM, int* rightM, int blocksize, int leftweight, int shift)
 		{
 			for (int i = 0; i < blocksize; i++)
@@ -408,9 +463,9 @@ namespace CUETools.Codecs.ALAC
 			return (val << (32 - bits)) >> (32 - bits);
 		}
 
-		private static short sign_only(int val)
+		private static int sign_only(int val)
 		{
-			return (short)((val >> 31) + ((val - 1) >> 31) + 1);
+			return (val >> 31) + ((val - 1) >> 31) + 1;
 		}
 
 		unsafe static void alac_encode_residual_31(int* res, int* smp, int n)
@@ -428,7 +483,7 @@ namespace CUETools.Codecs.ALAC
 		unsafe static void alac_encode_residual(int* res, int* smp, int n, int order, int* coefs, int shift, int bps)
 		{
 			int csum = 0;
-			
+
 			for (int i = order - 1; i >= 0; i--)
 				csum += coefs[i];
 
@@ -444,24 +499,31 @@ namespace CUETools.Codecs.ALAC
 			for (int i = order + 1; i < n; i++)
 			{
 				int sample = *(smp++);
-				int/*long*/ sum = (1 << (shift - 1)) -csum * sample;
-				int sum2 = 0;
-				for (int j = 0; j < order; j+= 2)
-				{
-					sum += smp[j] * coefs[j];
-					sum2 += smp[j+1] * coefs[j+1];
-				}
-				int resval = extend_sign32(smp[order] - (int)((sum + sum2) >> shift) - sample, bps);
+				int/*long*/ sum = (1 << (shift - 1));
+				for (int j = 0; j < order; j++)
+					sum += (smp[j] - sample) * coefs[j];
+				int resval = extend_sign32(smp[order] - sample - (int)(sum >> shift), bps);
 				res[i] = resval;
-				int error_sign = sign_only(resval);
-				for (int j = 0; j < order && resval * error_sign > 0; j++)
+
+				if (resval > 0)
 				{
-					int val = sample - smp[j];
-					int sign = error_sign * sign_only(val);
-					coefs[j] -= sign;
-					csum -= sign;
-					resval -= ((val * sign) >> shift) * (j + 1);
-					//error_sign = (error_sign + sign_only(resval)) / 2;
+					for (int j = 0; j < order && resval > 0; j++)
+					{
+						int val = smp[j] - sample;
+						int sign = sign_only(val);
+						coefs[j] += sign;
+						resval -= (val * sign >> shift) * (j + 1);
+					}
+				}
+				else
+				{
+					for (int j = 0; j < order && resval < 0; j++)
+					{
+						int val = smp[j] - sample;
+						int sign = -sign_only(val);
+						coefs[j] += sign;
+						resval -= (val * sign >> shift) * (j + 1);
+					}
 				}
 			}
 			res[n] = 1; // Stop byte to help alac_entropy_coder;
@@ -507,7 +569,7 @@ namespace CUETools.Codecs.ALAC
 			modifier = eparams.min_modifier;
 			for (int i = eparams.min_modifier; i <= eparams.max_modifier; i++)
 			{
-				int newsize = alac_entropy_coder(res, n, bps, i);
+				int newsize = alac_entropy_estimate(res, n, bps, i);
 				if (size > newsize)
 				{
 					size = newsize;
@@ -523,15 +585,13 @@ namespace CUETools.Codecs.ALAC
 			int sign_modifier = 0;
 			int rice_historymult = modifier * history_mult / 4;
 			int size = 0;
+			int* fin = res + n;
 
-			for (int i = 0; i < n; )
+			while (res < fin)
 			{
 				int k = BitReader.log2i((history >> 9) + 3);
-				int x = -2 * (*res) - 1;
-				x ^= (x >> 31);
-
-				res++;
-				i++;
+				int x = *(res++);
+				x = (x << 1) ^ (x >> 31);
 
 				size += encode_scalar(x - sign_modifier, Math.Min(k, k_modifier), bps);
 
@@ -541,14 +601,13 @@ namespace CUETools.Codecs.ALAC
 				if (x > 0xFFFF)
 					history = 0xFFFF;
 
-				if (history < 128 && i < n)
+				if (history < 128 && res < fin)
 				{
 					k = 7 - BitReader.log2i(history) + ((history + 16) >> 6);
-					int block_size = 0;
-					while (res[block_size] == 0) // we have a stop byte, so need not check if i + blocksize < n
-						block_size++;
-					res += block_size;
-					i += block_size;
+					int* res1 = res;
+					while (*res == 0) // we have a stop byte, so need not check if res < fin
+						res++;
+					int block_size = (int)(res - res1);
 					size += encode_scalar(block_size, Math.Min(k, k_modifier), 16);
 					//sign_modifier = (block_size <= 0xFFFF) ? 1 : 0; //never happens
 					sign_modifier = 1;
@@ -558,20 +617,45 @@ namespace CUETools.Codecs.ALAC
 			return size;
 		}
 
+		/// <summary>
+		/// Crude estimation of entropy length
+		/// </summary>
+		/// <param name="res"></param>
+		/// <param name="n"></param>
+		/// <param name="bps"></param>
+		/// <param name="modifier"></param>
+		/// <returns></returns>
+		unsafe int alac_entropy_estimate(int* res, int n, int bps, int modifier)
+		{
+			int history = initial_history;
+			int rice_historymult = modifier * history_mult / 4;
+			int size = 0;
+			int* fin = res + n;
+
+			while (res < fin)
+			{
+				int x = *(res++);
+				x = (x << 1) ^ (x >> 31);
+				int k = BitReader.log2i((history >> 9) + 3);
+				k = k > k_modifier ? k_modifier : k;
+				size += (x >> k) > 8 ? 9 + bps : (x >> k) + k + 1;
+				history += x * rice_historymult - ((history * rice_historymult) >> 9);
+			}
+			return size;
+		}
+
 		unsafe void alac_entropy_coder(BitWriter bitwriter, int* res, int n, int bps, int modifier)
 		{
 			int history = initial_history;
 			int sign_modifier = 0;
 			int rice_historymult = modifier * history_mult / 4;
+			int* fin = res + n;
 
-			for (int i = 0; i < n; )
+			while (res < fin)
 			{
 				int k = BitReader.log2i((history >> 9) + 3);
-				int x = -2 * (*res) - 1;
-				x ^= (x >> 31);
-
-				res++;
-				i++;
+				int x = *(res++);
+				x = (x << 1) ^ (x >> 31);
 
 				encode_scalar(bitwriter, x - sign_modifier, k, bps);
 
@@ -581,14 +665,13 @@ namespace CUETools.Codecs.ALAC
 				if (x > 0xFFFF)
 					history = 0xFFFF;
 
-				if (history < 128 && i < n)
+				if (history < 128 && res < fin)
 				{
 					k = 7 - BitReader.log2i(history) + ((history + 16) >> 6);
-					int block_size = 0;
-					while (res[block_size] == 0) // we have a stop byte, so need not check if i + blocksize < n
-						block_size++;
-					res += block_size;
-					i += block_size;
+					int* res1 = res;
+					while (*res == 0) // we have a stop byte, so need not check if res < fin
+						res++;
+					int block_size = (int)(res - res1);
 					encode_scalar(bitwriter, block_size, k, 16);
 					sign_modifier = (block_size <= 0xFFFF) ? 1 : 0;
 					history = 0;
@@ -596,35 +679,30 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		unsafe void encode_residual_lpc_sub(ALACFrame frame, double * lpcs, int iWindow, int order, int ch)
+		unsafe void encode_residual_lpc_sub(ALACFrame frame, float* lpcs, int iWindow, int order, int ch)
 		{
-			// select LPC precision based on block size
-			uint lpc_precision = 15;
-			int i_precision = 0;
-			//if (frame.blocksize <= 192) lpc_precision = 7U;
-			//else if (frame.blocksize <= 384) lpc_precision = 8U;
-			//else if (frame.blocksize <= 576) lpc_precision = 9U;
-			//else if (frame.blocksize <= 1152) lpc_precision = 10U;
-			//else if (frame.blocksize <= 2304) lpc_precision = 11U;
-			//else if (frame.blocksize <= 4608) lpc_precision = 12U;
-			//else if (frame.blocksize <= 8192) lpc_precision = 13U;
-			//else if (frame.blocksize <= 16384) lpc_precision = 14U;
+			// check if we already calculated with this order, window and precision
+			if ((frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[eparams.adaptive_passes] & (1U << (order - 1))) == 0)
+			{
+				frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[eparams.adaptive_passes] |= (1U << (order - 1));
 
-			//for (int i_precision = eparams.lpc_min_precision_search; i_precision <= eparams.lpc_max_precision_search && lpc_precision + i_precision < 16; i_precision++)
-				// check if we already calculated with this order, window and precision
-				if ((frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[i_precision] & (1U << (order - 1))) == 0)
+				uint cbits = 15U;
+
+				frame.current.order = order;
+				frame.current.window = iWindow;
+
+				int bps = (int)bits_per_sample + channels - 1;
+
+				int* coefs = stackalloc int[lpc.MAX_LPC_ORDER];
+
+				//if (frame.subframes[ch].best.order == order && frame.subframes[ch].best.window == iWindow)
+				//{
+				//    frame.current.shift = frame.subframes[ch].best.shift;
+				//    for (int i = 0; i < frame.current.order; i++)
+				//        frame.current.coefs[i] = frame.subframes[ch].best.coefs_adapted[i];
+				//}
+				//else
 				{
-					frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[i_precision] |= (1U << (order - 1));
-
-					uint cbits = lpc_precision + (uint)i_precision;
-
-					frame.current.order = order;
-					frame.current.window = iWindow;
-
-					int bps = (int)bits_per_sample + channels - 1;
-
-					int* coefs = stackalloc int[lpc.MAX_LPC_ORDER];
-
 					lpc.quantize_lpc_coefs(lpcs + (frame.current.order - 1) * lpc.MAX_LPC_ORDER,
 						frame.current.order, cbits, coefs, out frame.current.shift, 15, 1);
 
@@ -633,25 +711,41 @@ namespace CUETools.Codecs.ALAC
 
 					for (int i = 0; i < frame.current.order; i++)
 						frame.current.coefs[i] = coefs[i];
+				}
 
+				for (int i = 0; i < frame.current.order; i++)
+					coefs[i] = frame.current.coefs[frame.current.order - 1 - i];
+				for (int i = frame.current.order; i < lpc.MAX_LPC_ORDER;  i++)
+					coefs[i] = 0;
+
+				alac_encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize,
+					frame.current.order, coefs, frame.current.shift, bps);
+
+				for (int i = 0; i < frame.current.order; i++)
+					frame.current.coefs_adapted[i] = coefs[frame.current.order - 1 - i];
+
+				for (int adaptive_pass = 0; adaptive_pass < eparams.adaptive_passes; adaptive_pass++)
+				{
 					for (int i = 0; i < frame.current.order; i++)
-						coefs[i] = frame.current.coefs[frame.current.order - 1 - i];
-					coefs[frame.current.order] = 0;
+						frame.current.coefs[i] = frame.current.coefs_adapted[i];
 
 					alac_encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize,
 						frame.current.order, coefs, frame.current.shift, bps);
 
-					frame.current.size = (uint)(alac_entropy_coder(frame.current.residual, frame.blocksize, bps, out frame.current.ricemodifier) + 16 + 16 * order);
-
-					frame.ChooseBestSubframe(ch);
+					for (int i = 0; i < frame.current.order; i++)
+						frame.current.coefs_adapted[i] = coefs[frame.current.order - 1 - i];
 				}
+
+				frame.current.size = (uint)(alac_entropy_estimate(frame.current.residual, frame.blocksize, bps, eparams.max_modifier) + 16 + 16 * order);
+				
+				frame.ChooseBestSubframe(ch);
+			}
 		}
 
-		unsafe void encode_residual(ALACFrame frame, int ch, OrderMethod omethod, int pass)
+		unsafe void encode_residual(ALACFrame frame, int ch, int pass, int best_window)
 		{
 			int* smp = frame.subframes[ch].samples;
 			int i, n = frame.blocksize;
-			int best_window = frame.subframes[ch].best.window;
 			int bps = (int)bits_per_sample + channels - 1;
 
 			// FIXED
@@ -678,70 +772,22 @@ namespace CUETools.Codecs.ALAC
 			if (n < eparams.max_prediction_order)
 				return;
 
-			double* lpcs = stackalloc double[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
+			float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
 			int min_order = eparams.min_prediction_order;
 			int max_order = eparams.max_prediction_order;
 
 			for (int iWindow = 0; iWindow < _windowcount; iWindow++)
 			{
-				if (pass == 2 && iWindow != best_window)
+				if (best_window != -1 && iWindow != best_window)
 					continue;
 
 				LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
 
 				lpc_ctx.GetReflection(max_order, smp, n, frame.window_buffer + iWindow * Alac.MAX_BLOCKSIZE * 2);
 				lpc_ctx.ComputeLPC(lpcs);
-
-				switch (omethod)
-				{
-					case OrderMethod.Max:
-						// always use maximum order
-						encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-						break;
-					case OrderMethod.Estimate:
-						// estimated orders
-						// Search at reflection coeff thresholds (where they cross 0.10)
-						{
-							int found = 0;
-							for (i = max_order; i >= min_order && found < eparams.estimation_depth; i--)
-								if (lpc_ctx.IsInterestingOrder(i))
-								{
-									encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-									found++;
-								}
-							if (0 == found)
-								encode_residual_lpc_sub(frame, lpcs, iWindow, min_order, ch);
-						}
-						break;
-					case OrderMethod.EstSearch2:
-						// Search at reflection coeff thresholds (where they cross 0.10)
-						{
-							int found = 0;
-							for (i = min_order; i <= max_order && found < eparams.estimation_depth; i++)
-								if (lpc_ctx.IsInterestingOrder(i))
-								{
-									encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-									found++;
-								}
-							if (0 == found)
-								encode_residual_lpc_sub(frame, lpcs, iWindow, min_order, ch);
-						}
-						break;
-					case OrderMethod.Search:
-						// brute-force optimal order search
-						for (i = max_order; i >= min_order; i--)
-							encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-						break;
-					case OrderMethod.LogFast:
-						// Try max, est, 32,16,8,4,2,1
-						encode_residual_lpc_sub(frame, lpcs, iWindow, max_order, ch);
-						for (i = lpc.MAX_LPC_ORDER; i >= min_order; i >>= 1)
-							if (i < max_order)
-								encode_residual_lpc_sub(frame, lpcs, iWindow, i, ch);
-						break;
-					default:
-						throw new Exception("unknown ordermethod");
-				}
+				lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, max_order, 5.0, 1.0/18);
+				for (i = 0; i < eparams.estimation_depth && i < max_order; i++)
+					encode_residual_lpc_sub(frame, lpcs, iWindow, lpc_ctx.best_orders[i], ch);
 			}
 		}
 
@@ -777,82 +823,58 @@ namespace CUETools.Codecs.ALAC
 			bitwriter.flush();
 		}
 
-		unsafe void window_welch(double* window, int L)
-		{
-			int N = L - 1;
-			double N2 = (double)N / 2.0;
-
-			for (int n = 0; n <= N; n++)
-			{
-				double k = 1 / N2 - 1.0 - Math.Min(n, N - n);
-				//double k = ((double)n - N2) / N2;
-				window[n] = 1.0 - k * k;
-			}
-		}
-
-		unsafe void window_rectangle(double* window, int L)
-		{
-			for (int n = 0; n < L; n++)
-				window[n] = 1.0;
-		}
-
-		unsafe void window_flattop(double* window, int L)
-		{
-			int N = L - 1;
-			for (int n = 0; n < L; n++)
-				window[n] = 1.0 - 1.93 * Math.Cos(2.0 * Math.PI * n / N) + 1.29 * Math.Cos(4.0 * Math.PI * n / N) - 0.388 * Math.Cos(6.0 * Math.PI * n / N) + 0.0322 * Math.Cos(8.0 * Math.PI * n / N);
-		}
-
-		unsafe void window_tukey(double* window, int L)
-		{
-			window_rectangle(window, L);
-			double p = 0.5;
-			int Np = (int)(p / 2.0 * L) - 1;
-			if (Np > 0)
-			{
-				for (int n = 0; n <= Np; n++)
-				{
-					window[n] = 0.5 - 0.5 * Math.Cos(Math.PI * n / Np);
-					window[L - Np - 1 + n] = 0.5 - 0.5 * Math.Cos(Math.PI * (n + Np) / Np);
-				}
-			}
-		}
-
-		unsafe void window_hann(double* window, int L)
-		{
-			int N = L - 1;
-			for (int n = 0; n < L; n++)
-				window[n] = 0.5 - 0.5 * Math.Cos(2.0 * Math.PI * n / N);
-		}
-
-		unsafe void encode_residual_pass1(ALACFrame frame, int ch)
+		unsafe void encode_residual_pass1(ALACFrame frame, int ch, int best_window)
 		{
 			int max_prediction_order = eparams.max_prediction_order;
 			int estimation_depth = eparams.estimation_depth;
 			int min_modifier = eparams.min_modifier;
+			int adaptive_passes = eparams.adaptive_passes;
 			eparams.max_prediction_order = Math.Min(8,eparams.max_prediction_order);
 			eparams.estimation_depth = 1;
 			eparams.min_modifier = eparams.max_modifier;
-			encode_residual(frame, ch, OrderMethod.Estimate, 1);
+			eparams.adaptive_passes = 0;
+			encode_residual(frame, ch, 1, best_window);
 			eparams.max_prediction_order = max_prediction_order;
 			eparams.estimation_depth = estimation_depth;
 			eparams.min_modifier = min_modifier;
+			eparams.adaptive_passes = adaptive_passes;
 		}
 
 		unsafe void encode_residual_pass2(ALACFrame frame, int ch)
 		{
-			encode_residual(frame, ch, eparams.order_method, 2);
+			encode_residual(frame, ch, 2, estimate_best_window(frame, ch));
 		}
 
-		unsafe void encode_residual_onepass(ALACFrame frame, int ch)
+		unsafe int estimate_best_window(ALACFrame frame, int ch)
 		{
-			if (_windowcount > 1)
+			if (_windowcount == 1)
+				return 0;
+			switch (eparams.window_method)
 			{
-				encode_residual_pass1(frame, ch);
-				encode_residual_pass2(frame, ch);
+				case WindowMethod.Estimate:
+					{
+						int best_window = -1;
+						double best_error = 0;
+						int order = 2;
+						for (int i = 0; i < _windowcount; i++)
+						{
+							frame.subframes[ch].lpc_ctx[i].GetReflection(order, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer + i * Alac.MAX_BLOCKSIZE * 2);
+							double err = frame.subframes[ch].lpc_ctx[i].prediction_error[order - 1] / frame.subframes[ch].lpc_ctx[i].autocorr_values[0];
+							if (best_window == -1 || best_error > err)
+							{
+								best_window = i;
+								best_error = err;
+							}
+						}
+						return best_window;
+					}
+				case WindowMethod.Evaluate:
+					encode_residual_pass1(frame, ch, -1);
+					return frame.subframes[ch].best.window;
+				case WindowMethod.Search:
+					return -1;
 			}
-			else
-				encode_residual(frame, ch, eparams.order_method, 0);
+			return -1;
 		}
 
 		unsafe void estimate_frame(ALACFrame frame, bool do_midside)
@@ -861,18 +883,24 @@ namespace CUETools.Codecs.ALAC
 
 			switch (eparams.stereo_method)
 			{
-				case StereoMethod.Evaluate:
+				case StereoMethod.Estimate:
 					for (int ch = 0; ch < subframes; ch++)
 					{
-						int windowcount = _windowcount;
-						_windowcount = 1;
-						encode_residual_pass1(frame, ch);
-						_windowcount = windowcount;
+						LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[0];
+						int stereo_order = Math.Min(8, eparams.max_prediction_order);
+						double alpha = 1.5; // 4.5 + eparams.max_prediction_order / 10.0;
+						lpc_ctx.GetReflection(stereo_order, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer);
+						lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, stereo_order, alpha, 0);
+						frame.subframes[ch].best.size = (uint)Math.Max(0, lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], alpha, 0));
 					}
+					break;
+				case StereoMethod.Evaluate:
+					for (int ch = 0; ch < subframes; ch++)
+						encode_residual_pass1(frame, ch, 0);
 					break;
 				case StereoMethod.Search:
 					for (int ch = 0; ch < subframes; ch++)
-						encode_residual_onepass(frame, ch);
+						encode_residual_pass2(frame, ch);
 					break;
 			}
 		}
@@ -920,27 +948,30 @@ namespace CUETools.Codecs.ALAC
 		{
 			switch (eparams.stereo_method)
 			{
-				case StereoMethod.Evaluate:
+				case StereoMethod.Estimate:
 					for (int ch = 0; ch < channels; ch++)
 					{
-						if (_windowcount > 1)
-							encode_residual_pass1(frame, ch);
+						frame.subframes[ch].best.size = AudioSamples.UINT32_MAX;
 						encode_residual_pass2(frame, ch);
 					}
+					break;
+				case StereoMethod.Evaluate:
+					for (int ch = 0; ch < channels; ch++)
+						encode_residual_pass2(frame, ch);
 					break;
 				case StereoMethod.Search:
 					break;
 			}
 		}
 
-		unsafe delegate void window_function(double* window, int size);
+		unsafe delegate void window_function(float* window, int size);
 
-		unsafe void calculate_window(double* window, window_function func, WindowFunction flag)
+		unsafe void calculate_window(float * window, window_function func, WindowFunction flag)
 		{
-			if ((eparams.window_function & flag) == 0 || _windowcount == lpc.MAX_LPC_WINDOWS)
+			if ((eparams.window_function & flag) == 0 || _windowcount == Alac.MAX_LPC_WINDOWS)
 				return;
 			int sz = _windowsize;
-			double* pos = window + _windowcount * Alac.MAX_BLOCKSIZE * 2;
+			float* pos = window + _windowcount * Alac.MAX_BLOCKSIZE * 2;
 			do
 			{
 				func(pos, sz);
@@ -955,7 +986,7 @@ namespace CUETools.Codecs.ALAC
 		unsafe int encode_frame(ref int size)
 		{
 			fixed (int* s = samplesBuffer, r = residualBuffer)
-			fixed (double* window = windowBuffer)
+			fixed (float * window = windowBuffer)
 			{
 				frame.InitSize(size);
 
@@ -963,10 +994,11 @@ namespace CUETools.Codecs.ALAC
 				{
 					_windowsize = frame.blocksize;
 					_windowcount = 0;
-					calculate_window(window, window_welch, WindowFunction.Welch);
-					calculate_window(window, window_tukey, WindowFunction.Tukey);
-					calculate_window(window, window_hann, WindowFunction.Hann);
-					calculate_window(window, window_flattop, WindowFunction.Flattop);
+					calculate_window(window, lpc.window_welch, WindowFunction.Welch);
+					calculate_window(window, lpc.window_bartlett, WindowFunction.Bartlett);
+					calculate_window(window, lpc.window_tukey, WindowFunction.Tukey);
+					calculate_window(window, lpc.window_hann, WindowFunction.Hann);
+					calculate_window(window, lpc.window_flattop, WindowFunction.Flattop);
 					if (_windowcount == 0)
 						throw new Exception("invalid windowfunction");
 				}
@@ -981,93 +1013,7 @@ namespace CUETools.Codecs.ALAC
 						frame.subframes[ch].Init(s + ch * Alac.MAX_BLOCKSIZE, r + ch * Alac.MAX_BLOCKSIZE);
 
 					for (int ch = 0; ch < channels; ch++)
-						encode_residual_onepass(frame, ch);
-				}
-				else if (eparams.stereo_method == StereoMethod.Estimate || eparams.stereo_method == StereoMethod.Estimate2)
-				{
-					int* sl = s;
-					int* sr = s + Alac.MAX_BLOCKSIZE;
-					int n = frame.blocksize;
-					ulong lsum = 0, rsum = 0, dsum = 0, s31 = 0, s1 = 0, s2 = 0, s3 = 0;
-					if (eparams.stereo_method == StereoMethod.Estimate)
-					for (int i = 2; i < n; i++)
-					{
-						int lt = sl[i] - 2 * sl[i - 1] + sl[i - 2];
-						int rt = sr[i] - 2 * sr[i - 1] + sr[i - 2];
-						int df = lt - rt;
-						lsum += (ulong)Math.Abs(lt);
-						rsum += (ulong)Math.Abs(rt);
-						dsum += (ulong)Math.Abs(df);
-						s1 += (ulong)Math.Abs(rt + (df >> 1));
-						s31 += (ulong)Math.Abs(rt + (df >> 31));
-					}
-					else
-					for (int i = 2; i < n; i++)
-					{
-						int lt = sl[i] - 2 * sl[i - 1] + sl[i - 2];
-						int rt = sr[i] - 2 * sr[i - 1] + sr[i - 2];
-						int df = lt - rt;
-						lsum += (ulong)Math.Abs(lt);
-						rsum += (ulong)Math.Abs(rt);
-						dsum += (ulong)Math.Abs(df);
-						s1 += (ulong)Math.Abs(rt + (df >> 1));
-						s2 += (ulong)Math.Abs(rt + (df >> 2));
-						s3 += (ulong)Math.Abs(rt + (df * 3 >> 2));
-						s31 += (ulong)Math.Abs(rt + (df >> 31));
-					}
-					frame.interlacing_leftweight = 0;
-					frame.interlacing_shift = 0;
-					ulong score = lsum + rsum;
-					if (lsum + dsum < score) //leftside
-					{
-						frame.interlacing_leftweight = 1;
-						frame.interlacing_shift = 0;
-						score = lsum + dsum;
-					}
-					if (s1 + dsum < score) // midside
-					{
-						frame.interlacing_leftweight = 1;
-						frame.interlacing_shift = 1;
-						score = s1 + dsum;
-					}
-					if (s31 + dsum < score) // rightside
-					{
-						frame.interlacing_leftweight = 1;
-						frame.interlacing_shift = 31;
-						score = s31 + dsum;
-					}
-					if (eparams.stereo_method == StereoMethod.Estimate2)
-					{
-						if (s2 + dsum < score) // close to rightside
-						{
-							frame.interlacing_leftweight = 1;
-							frame.interlacing_shift = 2;
-							score = s2 + dsum;
-						}
-						if (s3 + dsum < score) // close to leftside
-						{
-							frame.interlacing_leftweight = 3;
-							frame.interlacing_shift = 2;
-							score = s3 + dsum;
-						}
-					}
-					if (frame.interlacing_leftweight == 0)
-					{
-						frame.current.residual = r + channels * Alac.MAX_BLOCKSIZE;
-						for (int ch = 0; ch < channels; ch++)
-							frame.subframes[ch].Init(s + ch * Alac.MAX_BLOCKSIZE, r + ch * Alac.MAX_BLOCKSIZE);
-					}
-					else
-					{
-						frame.current.residual = r + 2 * channels * Alac.MAX_BLOCKSIZE;
-						channel_decorrelation(s, s + Alac.MAX_BLOCKSIZE, s + 2 * Alac.MAX_BLOCKSIZE, s + 3 * Alac.MAX_BLOCKSIZE, frame.blocksize,
-							frame.interlacing_leftweight, frame.interlacing_shift);
-						for (int ch = 0; ch < channels; ch++)
-							frame.subframes[ch].Init(s + (channels + ch) * Alac.MAX_BLOCKSIZE, r + (channels + ch) * Alac.MAX_BLOCKSIZE);
-					}
-
-					for (int ch = 0; ch < channels; ch++)
-						encode_residual_onepass(frame, ch);
+						encode_residual_pass2(frame, ch);
 				}
 				else
 				{
@@ -1081,6 +1027,16 @@ namespace CUETools.Codecs.ALAC
 					frame.ChooseSubframes();
 					encode_estimated_frame(frame);
 				}
+
+				for (int ch = 0; ch < channels; ch++)
+				{
+					if (eparams.min_modifier == eparams.max_modifier)
+						frame.subframes[ch].best.ricemodifier = eparams.max_modifier;
+					else
+						/*frame.subframes[ch].best.size = 16 + 16 * order + */
+						alac_entropy_coder(frame.subframes[ch].best.residual, frame.blocksize, bps, out frame.subframes[ch].best.ricemodifier);
+				}
+
 				uint fs = measure_frame_size(frame, false);
 				frame.type = ((int)fs > frame.blocksize * channels * bps) ? FrameType.Verbatim : FrameType.Compressed;
 				BitWriter bitwriter = new BitWriter(frame_buffer, 0, max_frame_size);
@@ -1563,10 +1519,6 @@ namespace CUETools.Codecs.ALAC
 			frame_buffer = new byte[max_frame_size];
 			_sample_byte_size = new uint[sample_count / eparams.block_size + 1];
 
-			initial_history = 10;
-			history_mult = 40;
-			k_modifier = 14;
-
 			if (eparams.do_verify)
 			{
 				verify = new ALACReader(channels, (int)bits_per_sample, history_mult, initial_history, k_modifier, eparams.block_size);
@@ -1610,6 +1562,8 @@ namespace CUETools.Codecs.ALAC
 		// 1 = mid-side encoding
 		public StereoMethod stereo_method;
 
+		public WindowMethod window_method;
+
 		// block size in samples
 		// set by the user prior to calling encode_init
 		// if set to 0, a block size is chosen based on block_time_ms
@@ -1645,6 +1599,8 @@ namespace CUETools.Codecs.ALAC
 		// valid values are 1 to 32 
 		public int estimation_depth;
 
+		public int adaptive_passes;
+
 		public int min_modifier, max_modifier;
 
 		public WindowFunction window_function;
@@ -1665,6 +1621,7 @@ namespace CUETools.Codecs.ALAC
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
 			order_method = OrderMethod.Estimate;
 			stereo_method = StereoMethod.Evaluate;
+			window_method = WindowMethod.Evaluate;
 			block_size = 0;
 			block_time_ms = 105;
 			min_modifier = 4;
@@ -1672,6 +1629,7 @@ namespace CUETools.Codecs.ALAC
 			min_prediction_order = 1;
 			max_prediction_order = 12;
 			estimation_depth = 1;
+			adaptive_passes = 0;
 			do_verify = false;
 			do_seektable = false;
 
@@ -1679,41 +1637,54 @@ namespace CUETools.Codecs.ALAC
 			switch (lvl)
 			{
 				case 0:
-					block_time_ms = 53;
 					stereo_method = StereoMethod.Independent;
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Hann;
 					max_prediction_order = 6;
 					break;
 				case 1:
 					stereo_method = StereoMethod.Independent;
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Hann;
 					max_prediction_order = 8;
 					break;
 				case 2:
 					stereo_method = StereoMethod.Estimate;
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Hann;
 					max_prediction_order = 6;
 					break;
 				case 3:
 					stereo_method = StereoMethod.Estimate;
-					window_function = WindowFunction.Welch;
+					window_function = WindowFunction.Hann;
 					max_prediction_order = 8;
 					break;
 				case 4:
-					stereo_method = StereoMethod.Estimate2;
-					window_function = WindowFunction.Welch;
+					stereo_method = StereoMethod.Estimate;
+					window_method = WindowMethod.Estimate;
+					max_prediction_order = 8;
 					break;
 				case 5:
-					stereo_method = StereoMethod.Estimate2;
+					stereo_method = StereoMethod.Estimate;
+					window_method = WindowMethod.Estimate;
 					break;
-				case 6:					
+				case 6:
+					stereo_method = StereoMethod.Estimate;
 					break;
 				case 7:
-					estimation_depth = 3;
-					min_modifier = 3;
+					stereo_method = StereoMethod.Estimate;
+					adaptive_passes = 1;
+					min_modifier = 2;
 					break;
 				case 8:
-					estimation_depth = 5;
+					adaptive_passes = 1;
+					min_modifier = 2;
+					break;
+				case 9:
+					adaptive_passes = 1;
+					max_prediction_order = 30;
+					min_modifier = 2;
+					break;
+				case 10:
+					estimation_depth = 2;
+					adaptive_passes = 2;
 					max_prediction_order = 30;
 					min_modifier = 2;
 					break;

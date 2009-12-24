@@ -31,6 +31,7 @@ namespace CUETools.Codecs.ALAC
 		public const int MAX_RICE_PARAM = 14;
 		public const int MAX_PARTITION_ORDER = 8;
 		public const int MAX_PARTITIONS = 1 << MAX_PARTITION_ORDER;
+		public const int MAX_LPC_WINDOWS = 4;
 
 		public const uint UINT32_MAX = 0xffffffff;
 
@@ -49,6 +50,10 @@ namespace CUETools.Codecs.ALAC
 			return (WindowFunction)(Enum.Parse(typeof(WindowFunction), name, true));
 		}
 
+		public static WindowMethod LookupWindowMethod(string name)
+		{
+			return (WindowMethod)(Enum.Parse(typeof(WindowMethod), name, true));
+		}
 	}
 
 	unsafe class RiceContext
@@ -80,6 +85,7 @@ namespace CUETools.Codecs.ALAC
 		{
 			rc = new RiceContext();
 			coefs = new int[lpc.MAX_LPC_ORDER];
+			coefs_adapted = new int[lpc.MAX_LPC_ORDER];
 		}
 		public int order;
 		public int* residual;
@@ -90,6 +96,7 @@ namespace CUETools.Codecs.ALAC
 		public int cbits;
 		public int shift;
 		public int[] coefs;
+		public int[] coefs_adapted;
 		public int window;
 	};
 
@@ -98,8 +105,8 @@ namespace CUETools.Codecs.ALAC
 		public ALACSubframeInfo()
 		{
 			best = new ALACSubframe();
-			lpc_ctx = new LpcContext[lpc.MAX_LPC_WINDOWS];
-			for (int i = 0; i < lpc.MAX_LPC_WINDOWS; i++)
+			lpc_ctx = new LpcContext[Alac.MAX_LPC_WINDOWS];
+			for (int i = 0; i < Alac.MAX_LPC_WINDOWS; i++)
 				lpc_ctx[i] = new LpcContext();
 		}
 
@@ -108,7 +115,8 @@ namespace CUETools.Codecs.ALAC
 			samples = s;
 			best.residual = r;
 			best.size = AudioSamples.UINT32_MAX;
-			for (int iWindow = 0; iWindow < lpc.MAX_LPC_WINDOWS; iWindow++)
+			best.order = 0;
+			for (int iWindow = 0; iWindow < Alac.MAX_LPC_WINDOWS; iWindow++)
 				lpc_ctx[iWindow].Reset();
 			done_fixed = 0;
 		}
@@ -181,26 +189,27 @@ namespace CUETools.Codecs.ALAC
 		public int interlacing_shift, interlacing_leftweight;
 		public ALACSubframeInfo[] subframes;
 		public ALACSubframe current;
-		public double* window_buffer;
+		public float* window_buffer;
 	}
 
 	public enum OrderMethod
 	{
-		Max = 0,
-		Estimate = 1,
-		LogFast = 2,
-		LogSearch = 3,
-		EstSearch2 = 4,
-		Search = 5
+		Estimate = 0
 	}
 
 	public enum StereoMethod
 	{
 		Independent = 0,
 		Estimate = 1,
-		Estimate2 = 2,
-		Evaluate = 3,
-		Search = 4
+		Evaluate = 2,
+		Search = 3,
+	}
+
+	public enum WindowMethod
+	{
+		Estimate = 0,
+		Evaluate = 1,
+		Search = 2
 	}
 
 	public enum FrameType
@@ -224,6 +233,7 @@ namespace CUETools.Codecs.ALAC
 		Tukey = 2,
 		Hann = 4,
 		Flattop = 8,
+		Bartlett = 16,
 		TukFlat = 10
 	}
 }
