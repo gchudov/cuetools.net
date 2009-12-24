@@ -141,13 +141,16 @@ All the other CRC's in this offset range are calculated by consequently adding s
 			fixed (uint* CRCs = &_offsetedCRC[iTrack, 0])
 			{
 				uint baseSum = 0, stepSum = 0;
-				currentOffset += (uint)_arOffsetRange + 1;
-				for (uint si = 0; si < count; si++)
+				int* s = samples, fin = samples + 2 * count;
+				uint mult = 0;
+				while (s < fin)
 				{
-					uint sampleValue = (uint)((samples[2 * si] & 0xffff) + (samples[2 * si + 1] << 16));
+					uint sampleValue = (uint)((*(s++) & 0xffff) + (*(s++) << 16));
 					stepSum += sampleValue;
-					baseSum += sampleValue * (uint)(currentOffset + si);
+					baseSum += sampleValue * (mult++);
 				}
+				currentOffset += (uint)_arOffsetRange + 1;
+				baseSum += stepSum * (uint)currentOffset;
 				for (int i = 2 * _arOffsetRange; i >= 0; i--)
 				{
 					CRCs[i] += baseSum;
