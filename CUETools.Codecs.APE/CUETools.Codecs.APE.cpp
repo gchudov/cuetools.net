@@ -375,13 +375,13 @@ namespace CUETools { namespace Codecs { namespace APE {
 
 		property Int32 CompressionLevel {
 			Int32 get() {
-				return _compressionLevel;
+				return _compressionLevel / 1000 - 1;
 			}
 			void set(Int32 value) {
-				if ((value < 1) || (value > 5)) {
+				if ((value < 0) || (value > 4)) {
 					throw gcnew Exception("Invalid compression mode.");
 				}
-				_compressionLevel = value * 1000;
+				_compressionLevel = (value + 1) * 1000;
 			}
 		}
 
