@@ -45,6 +45,8 @@ namespace JDP {
 			numEncodeWhenPercent.Value = _config.encodeWhenPercent;
 			chkEncodeWhenZeroOffset.Checked = _config.encodeWhenZeroOffset;
 			chkFLACVerify.Checked = _config.flacVerify;
+			checkBoxFlaCudaVerify.Checked = _config.flaCudaVerify;
+			checkBoxFlaCudaGPUOnly.Checked = _config.flaCudaGPUOnly;
 			chkWriteArTagsOnConvert.Checked = _config.writeArTagsOnEncode;
 			chkWriteARTagsOnVerify.Checked = _config.writeArTagsOnVerify;
 			chkWVExtraMode.Checked = (_config.wvExtraMode != 0);
@@ -207,6 +209,8 @@ namespace JDP {
 			_config.encodeWhenConfidence = (uint)numEncodeWhenConfidence.Value;
 			_config.encodeWhenZeroOffset = chkEncodeWhenZeroOffset.Checked;
 			_config.flacVerify = chkFLACVerify.Checked;
+			_config.flaCudaVerify = checkBoxFlaCudaVerify.Checked;
+			_config.flaCudaGPUOnly = checkBoxFlaCudaGPUOnly.Checked;
 			_config.writeArTagsOnEncode = chkWriteArTagsOnConvert.Checked;
 			_config.writeArTagsOnVerify = chkWriteARTagsOnVerify.Checked;
 			if (!chkWVExtraMode.Checked) _config.wvExtraMode = 0;
@@ -489,6 +493,7 @@ namespace JDP {
 			comboBoxEncoderExtension.Visible = encoder != null;
 			comboBoxEncoderExtension.Enabled = encoder != null && encoder.path != null;
 			groupBoxExternalEncoder.Visible = encoder != null && encoder.path != null;
+			groupBoxFlaCudaOptions.Visible = encoder != null && encoder.path == null && encoder.className == "FlaCudaWriter";
 			groupBoxLibFLAC.Visible = encoder != null && encoder.path == null && encoder.className == "FLACWriter";
 			groupBoxLibWavpack.Visible = encoder != null && encoder.path == null && encoder.className == "WavPackWriter";
 			groupBoxLibMAC_SDK.Visible = encoder != null && encoder.path == null && encoder.className == "APEWriter";

@@ -2928,106 +2928,6 @@
   <data name="tabPage10.AutoScroll" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="buttonEncoderDelete.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAnBJREFUOE+lk+1L
-        U1Ecx+tf0RdRgkRPhIRRUJjbdHrX2tzm012m1xmLWJqyO0wzKFmo4YtQS+1Rq73JtGFSahmpPQ4tr5XO
-        dmuj1ua9e0z5tjtomyYSdOB74Rzu53M4v/M7GwFs+K8hCBJjr6hInqfKjR+pUmZWS3Iz2iLuA6lhpkiV
-        0VasSF79/wp4QVdBfKYo9keLGcGRIYTeTSA0Pgr+fg/s+hK8ySfYlxopkSiJCQR4roziF+/2YHn2PcLW
-        ewh3NyHcfgG/brdhacwKZ40eEyox/0KREZNEBfM6XVIEdnA3u7HM2BC+fA6eJhO85moEL5kQaqYRbDyF
-        4INbWDhOYuzIAcdT+b6kaP2ETwSmXXVGLNkmozsGWmi4zxvgr9etCHeaRNByDa+z0zEsS6djgk/UMcZn
-        uY5wbzs8jZX4XiBbM4uVJHhzLZymKjwm0piYgCnT+kMPLQi3mOA5q4+srz2cSgncVD687a0Yyt7ljwlm
-        yAJ/oLcTwQY9/GdK1xW4StTwtrViULotLpguVjPuxloEmmhwJzUQdlozqmx46mpgrzHAKkqNH8FWqKAZ
-        uQj+3i54tHK4S3L/ErAKMdi8XPi6r2BUugMDmVviRXxbIEt6VUQ4FsqL4LvTGS2gSy2NSlhlFlh5BJZL
-        wXd1YKpQJsCOPtHm+DUKxZjMkxDjykP83FE1fDc68bOBhpNU4atGCXe9EfzVDkxrctCfmcJH4JWN9Kc1
-        nysOEs8O72cncvfgW7UB7uaL0XypOoEnku0CzCbCsVtI7O0R2d7kYWmacYjYzTzK2ckNirZyA1mpTL84
-        xdiXsWn9x7T6pf3L/DfyWaHnHqmNrQAAAABJRU5ErkJggg==
-</value>
-  </data>
-  <data name="buttonEncoderDelete.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="buttonEncoderDelete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>37, 232</value>
-  </data>
-  <data name="buttonEncoderDelete.Size" type="System.Drawing.Size, System.Drawing">
-    <value>25, 23</value>
-  </data>
-  <data name="buttonEncoderDelete.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderDelete.Name" xml:space="preserve">
-    <value>buttonEncoderDelete</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderDelete.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderDelete.Parent" xml:space="preserve">
-    <value>tabPage10</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderDelete.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="buttonEncoderAdd.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAoVJREFUOE+lk/tL
-        U2EYx+tfcb8UCEmJWSioKSVYKCubTVHx1lzOrSk629lcOnfzQqZz4qWiNnQbjXQX52V4wUw2Xeki9TiU
-        aKMIgtrw12/nGJ6t/SBBDzyH8/Kez+c97/M+71kAZ/4raEF86uaaWGq3iOh0Csj26fqI9E1dpOV1FSm2
-        VBCCiVJW4vcJsJitmhGFX20OwBteQeC7H5vf1jETtEHubgDPyAnXvLjNjpcwAt0cDQujc/s2HP7ax8IX
-        J4zkCJ7v6mE7MGL16yK0yxKUjxdGuSMFjORYoJ0VJ1FwyLVnxv7PHYzt9OPphhq9vk7oAzoMBrTo3eqA
-        69AGws1HseFGqGggN+m4fvSDgmVDa0p8+rFFrTiIgW0tNO/k1NSfUG5IIF3hQ7bWCMeBFXfH81DwJEvG
-        CDocDaQzaKV+1YRurwJd61JIFgSMoN7KRct8BcSzpRj+oEP/ajuu92aQjEA2xTvyfHZi6KOOgtsYMPFF
-        OFMC2RIP5sAYcnTpR4ygzVZzNB2chNZPQOFrPlVAeOpgCYwiU50aEzRbK0mDTwv9tgZtb/kQLlWhxnKH
-        EdEr0/nQzcWQT4kezyNcUabEtiCcLJPdt7BhD5ohWaqGyFN+vOeToGGBg4MmVynseyZc60tH6uPkWBH5
-        ppKk2pfFIcJdjylygikYDTY66KRhLqZ3jXhgvkfDoRT5+dgx0sWofFbELhu9GW21V8NBSQw+FYj5Wkhn
-        q2HwdsFOwXwzB6mK5CgF/91IJ63JGc5ns/V54cLhbPQtEzC918Pk10PjaUVOTxoNh+Nh5hTie/tWfzYr
-        vy+TyO2+SmZp0iIZqouRy50XyEuKZCJFfu70y5R40/5l/BsV3J5Ng8nYFAAAAABJRU5ErkJggg==
-</value>
-  </data>
-  <data name="buttonEncoderAdd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 232</value>
-  </data>
-  <data name="buttonEncoderAdd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>25, 23</value>
-  </data>
-  <data name="buttonEncoderAdd.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderAdd.Name" xml:space="preserve">
-    <value>buttonEncoderAdd</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderAdd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderAdd.Parent" xml:space="preserve">
-    <value>tabPage10</value>
-  </data>
-  <data name="&gt;&gt;buttonEncoderAdd.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="listBoxEncoders.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 7</value>
-  </data>
-  <data name="listBoxEncoders.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 221</value>
-  </data>
-  <data name="listBoxEncoders.TabIndex" type="System.Int32, mscorlib">
-    <value>27</value>
-  </data>
-  <data name="&gt;&gt;listBoxEncoders.Name" xml:space="preserve">
-    <value>listBoxEncoders</value>
-  </data>
-  <data name="&gt;&gt;listBoxEncoders.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;listBoxEncoders.Parent" xml:space="preserve">
-    <value>tabPage10</value>
-  </data>
-  <data name="&gt;&gt;listBoxEncoders.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
   <data name="groupBoxExternalEncoder.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -3173,6 +3073,106 @@
     <value>tabPage10</value>
   </data>
   <data name="&gt;&gt;groupBoxExternalEncoder.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="buttonEncoderDelete.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAnBJREFUOE+lk+1L
+        U1Ecx+tf0RdRgkRPhIRRUJjbdHrX2tzm012m1xmLWJqyO0wzKFmo4YtQS+1Rq73JtGFSahmpPQ4tr5XO
+        dmuj1ua9e0z5tjtomyYSdOB74Rzu53M4v/M7GwFs+K8hCBJjr6hInqfKjR+pUmZWS3Iz2iLuA6lhpkiV
+        0VasSF79/wp4QVdBfKYo9keLGcGRIYTeTSA0Pgr+fg/s+hK8ySfYlxopkSiJCQR4roziF+/2YHn2PcLW
+        ewh3NyHcfgG/brdhacwKZ40eEyox/0KREZNEBfM6XVIEdnA3u7HM2BC+fA6eJhO85moEL5kQaqYRbDyF
+        4INbWDhOYuzIAcdT+b6kaP2ETwSmXXVGLNkmozsGWmi4zxvgr9etCHeaRNByDa+z0zEsS6djgk/UMcZn
+        uY5wbzs8jZX4XiBbM4uVJHhzLZymKjwm0piYgCnT+kMPLQi3mOA5q4+srz2cSgncVD687a0Yyt7ljwlm
+        yAJ/oLcTwQY9/GdK1xW4StTwtrViULotLpguVjPuxloEmmhwJzUQdlozqmx46mpgrzHAKkqNH8FWqKAZ
+        uQj+3i54tHK4S3L/ErAKMdi8XPi6r2BUugMDmVviRXxbIEt6VUQ4FsqL4LvTGS2gSy2NSlhlFlh5BJZL
+        wXd1YKpQJsCOPtHm+DUKxZjMkxDjykP83FE1fDc68bOBhpNU4atGCXe9EfzVDkxrctCfmcJH4JWN9Kc1
+        nysOEs8O72cncvfgW7UB7uaL0XypOoEnku0CzCbCsVtI7O0R2d7kYWmacYjYzTzK2ckNirZyA1mpTL84
+        xdiXsWn9x7T6pf3L/DfyWaHnHqmNrQAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="buttonEncoderDelete.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="buttonEncoderDelete.Location" type="System.Drawing.Point, System.Drawing">
+    <value>37, 232</value>
+  </data>
+  <data name="buttonEncoderDelete.Size" type="System.Drawing.Size, System.Drawing">
+    <value>25, 23</value>
+  </data>
+  <data name="buttonEncoderDelete.TabIndex" type="System.Int32, mscorlib">
+    <value>29</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderDelete.Name" xml:space="preserve">
+    <value>buttonEncoderDelete</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderDelete.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderDelete.Parent" xml:space="preserve">
+    <value>tabPage10</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderDelete.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="buttonEncoderAdd.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAoVJREFUOE+lk/tL
+        U2EYx+tfcb8UCEmJWSioKSVYKCubTVHx1lzOrSk629lcOnfzQqZz4qWiNnQbjXQX52V4wUw2Xeki9TiU
+        aKMIgtrw12/nGJ6t/SBBDzyH8/Kez+c97/M+71kAZ/4raEF86uaaWGq3iOh0Csj26fqI9E1dpOV1FSm2
+        VBCCiVJW4vcJsJitmhGFX20OwBteQeC7H5vf1jETtEHubgDPyAnXvLjNjpcwAt0cDQujc/s2HP7ax8IX
+        J4zkCJ7v6mE7MGL16yK0yxKUjxdGuSMFjORYoJ0VJ1FwyLVnxv7PHYzt9OPphhq9vk7oAzoMBrTo3eqA
+        69AGws1HseFGqGggN+m4fvSDgmVDa0p8+rFFrTiIgW0tNO/k1NSfUG5IIF3hQ7bWCMeBFXfH81DwJEvG
+        CDocDaQzaKV+1YRurwJd61JIFgSMoN7KRct8BcSzpRj+oEP/ajuu92aQjEA2xTvyfHZi6KOOgtsYMPFF
+        OFMC2RIP5sAYcnTpR4ygzVZzNB2chNZPQOFrPlVAeOpgCYwiU50aEzRbK0mDTwv9tgZtb/kQLlWhxnKH
+        EdEr0/nQzcWQT4kezyNcUabEtiCcLJPdt7BhD5ohWaqGyFN+vOeToGGBg4MmVynseyZc60tH6uPkWBH5
+        ppKk2pfFIcJdjylygikYDTY66KRhLqZ3jXhgvkfDoRT5+dgx0sWofFbELhu9GW21V8NBSQw+FYj5Wkhn
+        q2HwdsFOwXwzB6mK5CgF/91IJ63JGc5ns/V54cLhbPQtEzC918Pk10PjaUVOTxoNh+Nh5hTie/tWfzYr
+        vy+TyO2+SmZp0iIZqouRy50XyEuKZCJFfu70y5R40/5l/BsV3J5Ng8nYFAAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="buttonEncoderAdd.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 232</value>
+  </data>
+  <data name="buttonEncoderAdd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>25, 23</value>
+  </data>
+  <data name="buttonEncoderAdd.TabIndex" type="System.Int32, mscorlib">
+    <value>28</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderAdd.Name" xml:space="preserve">
+    <value>buttonEncoderAdd</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderAdd.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderAdd.Parent" xml:space="preserve">
+    <value>tabPage10</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderAdd.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="listBoxEncoders.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 7</value>
+  </data>
+  <data name="listBoxEncoders.Size" type="System.Drawing.Size, System.Drawing">
+    <value>124, 221</value>
+  </data>
+  <data name="listBoxEncoders.TabIndex" type="System.Int32, mscorlib">
+    <value>27</value>
+  </data>
+  <data name="&gt;&gt;listBoxEncoders.Name" xml:space="preserve">
+    <value>listBoxEncoders</value>
+  </data>
+  <data name="&gt;&gt;listBoxEncoders.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;listBoxEncoders.Parent" xml:space="preserve">
+    <value>tabPage10</value>
+  </data>
+  <data name="&gt;&gt;listBoxEncoders.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
   <data name="comboBoxEncoderExtension.Location" type="System.Drawing.Point, System.Drawing">
@@ -3337,6 +3337,42 @@
   <data name="&gt;&gt;groupBoxLibWavpack.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
+  <data name="labelEncoderExtension.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelEncoderExtension.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="labelEncoderExtension.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelEncoderExtension.Location" type="System.Drawing.Point, System.Drawing">
+    <value>351, 15</value>
+  </data>
+  <data name="labelEncoderExtension.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 16</value>
+  </data>
+  <data name="labelEncoderExtension.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="labelEncoderExtension.Text" xml:space="preserve">
+    <value>Extension</value>
+  </data>
+  <data name="labelEncoderExtension.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderExtension.Name" xml:space="preserve">
+    <value>labelEncoderExtension</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderExtension.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderExtension.Parent" xml:space="preserve">
+    <value>tabPage10</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderExtension.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
   <data name="chkFLACVerify.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3392,43 +3428,94 @@
     <value>tabPage10</value>
   </data>
   <data name="&gt;&gt;groupBoxLibFLAC.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
-  <data name="labelEncoderExtension.AutoSize" type="System.Boolean, mscorlib">
+  <data name="checkBoxFlaCudaGPUOnly.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="labelEncoderExtension.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="labelEncoderExtension.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="checkBoxFlaCudaGPUOnly.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="labelEncoderExtension.Location" type="System.Drawing.Point, System.Drawing">
-    <value>351, 15</value>
+  <data name="checkBoxFlaCudaGPUOnly.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 26</value>
   </data>
-  <data name="labelEncoderExtension.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 16</value>
+  <data name="checkBoxFlaCudaGPUOnly.Size" type="System.Drawing.Size, System.Drawing">
+    <value>69, 17</value>
   </data>
-  <data name="labelEncoderExtension.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+  <data name="checkBoxFlaCudaGPUOnly.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
   </data>
-  <data name="labelEncoderExtension.Text" xml:space="preserve">
-    <value>Extension</value>
+  <data name="checkBoxFlaCudaGPUOnly.Text" xml:space="preserve">
+    <value>GPU only</value>
   </data>
-  <data name="labelEncoderExtension.Visible" type="System.Boolean, mscorlib">
+  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.Name" xml:space="preserve">
+    <value>checkBoxFlaCudaGPUOnly</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.Parent" xml:space="preserve">
+    <value>groupBoxFlaCudaOptions</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="checkBoxFlaCudaVerify.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxFlaCudaVerify.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxFlaCudaVerify.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 46</value>
+  </data>
+  <data name="checkBoxFlaCudaVerify.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 17</value>
+  </data>
+  <data name="checkBoxFlaCudaVerify.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="checkBoxFlaCudaVerify.Text" xml:space="preserve">
+    <value>Verify</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFlaCudaVerify.Name" xml:space="preserve">
+    <value>checkBoxFlaCudaVerify</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFlaCudaVerify.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFlaCudaVerify.Parent" xml:space="preserve">
+    <value>groupBoxFlaCudaOptions</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFlaCudaVerify.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="groupBoxFlaCudaOptions.Location" type="System.Drawing.Point, System.Drawing">
+    <value>136, 39</value>
+  </data>
+  <data name="groupBoxFlaCudaOptions.Size" type="System.Drawing.Size, System.Drawing">
+    <value>390, 74</value>
+  </data>
+  <data name="groupBoxFlaCudaOptions.TabIndex" type="System.Int32, mscorlib">
+    <value>30</value>
+  </data>
+  <data name="groupBoxFlaCudaOptions.Text" xml:space="preserve">
+    <value>FlaCuda options</value>
+  </data>
+  <data name="groupBoxFlaCudaOptions.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
-  <data name="&gt;&gt;labelEncoderExtension.Name" xml:space="preserve">
-    <value>labelEncoderExtension</value>
+  <data name="&gt;&gt;groupBoxFlaCudaOptions.Name" xml:space="preserve">
+    <value>groupBoxFlaCudaOptions</value>
   </data>
-  <data name="&gt;&gt;labelEncoderExtension.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;groupBoxFlaCudaOptions.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;labelEncoderExtension.Parent" xml:space="preserve">
+  <data name="&gt;&gt;groupBoxFlaCudaOptions.Parent" xml:space="preserve">
     <value>tabPage10</value>
   </data>
-  <data name="&gt;&gt;labelEncoderExtension.ZOrder" xml:space="preserve">
-    <value>8</value>
+  <data name="&gt;&gt;groupBoxFlaCudaOptions.ZOrder" xml:space="preserve">
+    <value>9</value>
   </data>
   <data name="tabPage10.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 22</value>
@@ -4092,6 +4179,30 @@
   </data>
   <data name="columnHeader2.Width" type="System.Int32, mscorlib">
     <value>120</value>
+  </data>
+  <data name="checkBox1.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBox1.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 46</value>
+  </data>
+  <data name="checkBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 17</value>
+  </data>
+  <data name="checkBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="checkBox1.Text" xml:space="preserve">
+    <value>Verify</value>
+  </data>
+  <data name="&gt;&gt;checkBox1.Name" xml:space="preserve">
+    <value>checkBox1</value>
+  </data>
+  <data name="&gt;&gt;checkBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>

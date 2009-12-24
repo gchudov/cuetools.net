@@ -126,23 +126,26 @@ namespace JDP {
 			this.listViewFormats = new System.Windows.Forms.ListView();
 			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
 			this.tabPage10 = new System.Windows.Forms.TabPage();
-			this.buttonEncoderDelete = new System.Windows.Forms.Button();
-			this.buttonEncoderAdd = new System.Windows.Forms.Button();
-			this.listBoxEncoders = new System.Windows.Forms.ListBox();
 			this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
 			this.labelEncoderName = new System.Windows.Forms.Label();
 			this.labelEncoderModes = new System.Windows.Forms.Label();
 			this.labelEncoderPath = new System.Windows.Forms.Label();
 			this.labelEncoderParameters = new System.Windows.Forms.Label();
+			this.groupBoxFlaCudaOptions = new System.Windows.Forms.GroupBox();
+			this.checkBoxFlaCudaGPUOnly = new System.Windows.Forms.CheckBox();
+			this.checkBoxFlaCudaVerify = new System.Windows.Forms.CheckBox();
+			this.buttonEncoderDelete = new System.Windows.Forms.Button();
+			this.buttonEncoderAdd = new System.Windows.Forms.Button();
+			this.listBoxEncoders = new System.Windows.Forms.ListBox();
 			this.comboBoxEncoderExtension = new System.Windows.Forms.ComboBox();
 			this.groupBoxLibMAC_SDK = new System.Windows.Forms.GroupBox();
 			this.groupBoxLibWavpack = new System.Windows.Forms.GroupBox();
 			this.chkWVStoreMD5 = new System.Windows.Forms.CheckBox();
 			this.numWVExtraMode = new System.Windows.Forms.NumericUpDown();
 			this.chkWVExtraMode = new System.Windows.Forms.CheckBox();
+			this.labelEncoderExtension = new System.Windows.Forms.Label();
 			this.groupBoxLibFLAC = new System.Windows.Forms.GroupBox();
 			this.chkFLACVerify = new System.Windows.Forms.CheckBox();
-			this.labelEncoderExtension = new System.Windows.Forms.Label();
 			this.tabPage11 = new System.Windows.Forms.TabPage();
 			this.comboBoxDecoderExtension = new System.Windows.Forms.ComboBox();
 			this.groupBoxExternalDecoder = new System.Windows.Forms.GroupBox();
@@ -170,6 +173,7 @@ namespace JDP {
 			this.labelFormatDecoder = new System.Windows.Forms.Label();
 			this.labelFormatEncoder = new System.Windows.Forms.Label();
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
+			this.checkBox1 = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -199,6 +203,7 @@ namespace JDP {
 			this.groupBoxFormat.SuspendLayout();
 			this.tabPage10.SuspendLayout();
 			this.groupBoxExternalEncoder.SuspendLayout();
+			this.groupBoxFlaCudaOptions.SuspendLayout();
 			this.groupBoxLibWavpack.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).BeginInit();
 			this.groupBoxLibFLAC.SuspendLayout();
@@ -1051,42 +1056,17 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.tabPage10, "tabPage10");
 			this.tabPage10.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage10.Controls.Add(this.groupBoxExternalEncoder);
 			this.tabPage10.Controls.Add(this.buttonEncoderDelete);
 			this.tabPage10.Controls.Add(this.buttonEncoderAdd);
 			this.tabPage10.Controls.Add(this.listBoxEncoders);
-			this.tabPage10.Controls.Add(this.groupBoxExternalEncoder);
 			this.tabPage10.Controls.Add(this.comboBoxEncoderExtension);
 			this.tabPage10.Controls.Add(this.groupBoxLibMAC_SDK);
 			this.tabPage10.Controls.Add(this.groupBoxLibWavpack);
-			this.tabPage10.Controls.Add(this.groupBoxLibFLAC);
 			this.tabPage10.Controls.Add(this.labelEncoderExtension);
+			this.tabPage10.Controls.Add(this.groupBoxLibFLAC);
+			this.tabPage10.Controls.Add(this.groupBoxFlaCudaOptions);
 			this.tabPage10.Name = "tabPage10";
-			// 
-			// buttonEncoderDelete
-			// 
-			this.buttonEncoderDelete.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.encodersBindingSource, "CanBeDeleted", true));
-			resources.ApplyResources(this.buttonEncoderDelete, "buttonEncoderDelete");
-			this.buttonEncoderDelete.Name = "buttonEncoderDelete";
-			this.buttonEncoderDelete.UseVisualStyleBackColor = true;
-			this.buttonEncoderDelete.Click += new System.EventHandler(this.buttonEncoderDelete_Click);
-			// 
-			// buttonEncoderAdd
-			// 
-			resources.ApplyResources(this.buttonEncoderAdd, "buttonEncoderAdd");
-			this.buttonEncoderAdd.Name = "buttonEncoderAdd";
-			this.buttonEncoderAdd.UseVisualStyleBackColor = true;
-			this.buttonEncoderAdd.Click += new System.EventHandler(this.buttonEncoderAdd_Click);
-			// 
-			// listBoxEncoders
-			// 
-			this.listBoxEncoders.BackColor = System.Drawing.SystemColors.Control;
-			this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.listBoxEncoders.DataSource = this.encodersBindingSource;
-			this.listBoxEncoders.DisplayMember = "Name";
-			this.listBoxEncoders.FormattingEnabled = true;
-			resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
-			this.listBoxEncoders.Name = "listBoxEncoders";
-			this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);
 			// 
 			// groupBoxExternalEncoder
 			// 
@@ -1122,6 +1102,52 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.labelEncoderParameters, "labelEncoderParameters");
 			this.labelEncoderParameters.Name = "labelEncoderParameters";
+			// 
+			// groupBoxFlaCudaOptions
+			// 
+			this.groupBoxFlaCudaOptions.Controls.Add(this.checkBoxFlaCudaGPUOnly);
+			this.groupBoxFlaCudaOptions.Controls.Add(this.checkBoxFlaCudaVerify);
+			resources.ApplyResources(this.groupBoxFlaCudaOptions, "groupBoxFlaCudaOptions");
+			this.groupBoxFlaCudaOptions.Name = "groupBoxFlaCudaOptions";
+			this.groupBoxFlaCudaOptions.TabStop = false;
+			// 
+			// checkBoxFlaCudaGPUOnly
+			// 
+			resources.ApplyResources(this.checkBoxFlaCudaGPUOnly, "checkBoxFlaCudaGPUOnly");
+			this.checkBoxFlaCudaGPUOnly.Name = "checkBoxFlaCudaGPUOnly";
+			this.checkBoxFlaCudaGPUOnly.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxFlaCudaVerify
+			// 
+			resources.ApplyResources(this.checkBoxFlaCudaVerify, "checkBoxFlaCudaVerify");
+			this.checkBoxFlaCudaVerify.Name = "checkBoxFlaCudaVerify";
+			this.checkBoxFlaCudaVerify.UseVisualStyleBackColor = true;
+			// 
+			// buttonEncoderDelete
+			// 
+			this.buttonEncoderDelete.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.encodersBindingSource, "CanBeDeleted", true));
+			resources.ApplyResources(this.buttonEncoderDelete, "buttonEncoderDelete");
+			this.buttonEncoderDelete.Name = "buttonEncoderDelete";
+			this.buttonEncoderDelete.UseVisualStyleBackColor = true;
+			this.buttonEncoderDelete.Click += new System.EventHandler(this.buttonEncoderDelete_Click);
+			// 
+			// buttonEncoderAdd
+			// 
+			resources.ApplyResources(this.buttonEncoderAdd, "buttonEncoderAdd");
+			this.buttonEncoderAdd.Name = "buttonEncoderAdd";
+			this.buttonEncoderAdd.UseVisualStyleBackColor = true;
+			this.buttonEncoderAdd.Click += new System.EventHandler(this.buttonEncoderAdd_Click);
+			// 
+			// listBoxEncoders
+			// 
+			this.listBoxEncoders.BackColor = System.Drawing.SystemColors.Control;
+			this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listBoxEncoders.DataSource = this.encodersBindingSource;
+			this.listBoxEncoders.DisplayMember = "Name";
+			this.listBoxEncoders.FormattingEnabled = true;
+			resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
+			this.listBoxEncoders.Name = "listBoxEncoders";
+			this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);
 			// 
 			// comboBoxEncoderExtension
 			// 
@@ -1179,6 +1205,13 @@ namespace JDP {
 			this.chkWVExtraMode.Name = "chkWVExtraMode";
 			this.chkWVExtraMode.UseVisualStyleBackColor = true;
 			// 
+			// labelEncoderExtension
+			// 
+			resources.ApplyResources(this.labelEncoderExtension, "labelEncoderExtension");
+			this.labelEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("ImageKey", this.encodersBindingSource, "DotExtension", true, System.Windows.Forms.DataSourceUpdateMode.Never));
+			this.labelEncoderExtension.MinimumSize = new System.Drawing.Size(100, 16);
+			this.labelEncoderExtension.Name = "labelEncoderExtension";
+			// 
 			// groupBoxLibFLAC
 			// 
 			this.groupBoxLibFLAC.Controls.Add(this.chkFLACVerify);
@@ -1191,13 +1224,6 @@ namespace JDP {
 			resources.ApplyResources(this.chkFLACVerify, "chkFLACVerify");
 			this.chkFLACVerify.Name = "chkFLACVerify";
 			this.chkFLACVerify.UseVisualStyleBackColor = true;
-			// 
-			// labelEncoderExtension
-			// 
-			resources.ApplyResources(this.labelEncoderExtension, "labelEncoderExtension");
-			this.labelEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("ImageKey", this.encodersBindingSource, "DotExtension", true, System.Windows.Forms.DataSourceUpdateMode.Never));
-			this.labelEncoderExtension.MinimumSize = new System.Drawing.Size(100, 16);
-			this.labelEncoderExtension.Name = "labelEncoderExtension";
 			// 
 			// tabPage11
 			// 
@@ -1419,6 +1445,12 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.columnHeader2, "columnHeader2");
 			// 
+			// checkBox1
+			// 
+			resources.ApplyResources(this.checkBox1, "checkBox1");
+			this.checkBox1.Name = "checkBox1";
+			this.checkBox1.UseVisualStyleBackColor = true;
+			// 
 			// frmSettings
 			// 
 			this.AcceptButton = this.btnOK;
@@ -1477,6 +1509,8 @@ namespace JDP {
 			this.tabPage10.PerformLayout();
 			this.groupBoxExternalEncoder.ResumeLayout(false);
 			this.groupBoxExternalEncoder.PerformLayout();
+			this.groupBoxFlaCudaOptions.ResumeLayout(false);
+			this.groupBoxFlaCudaOptions.PerformLayout();
 			this.groupBoxLibWavpack.ResumeLayout(false);
 			this.groupBoxLibWavpack.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).EndInit();
@@ -1645,6 +1679,10 @@ namespace JDP {
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
 		private System.Windows.Forms.TextBox textBoxAlArtFilenameFormat;
 		private System.Windows.Forms.Label labelEncoderName;
+		private System.Windows.Forms.GroupBox groupBoxFlaCudaOptions;
+		private System.Windows.Forms.CheckBox checkBoxFlaCudaGPUOnly;
+		private System.Windows.Forms.CheckBox checkBoxFlaCudaVerify;
+		private System.Windows.Forms.CheckBox checkBox1;
 
 	}
 }
