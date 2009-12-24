@@ -55,6 +55,11 @@ namespace CUETools.Codecs.FLAKE
 			return (StereoMethod)(Enum.Parse(typeof(StereoMethod), name, true));
 		}
 
+		public static WindowMethod LookupWindowMethod(string name)
+		{
+			return (WindowMethod)(Enum.Parse(typeof(WindowMethod), name, true));
+		}
+
 		public static OrderMethod LookupOrderMethod(string name)
 		{
 			return (OrderMethod)(Enum.Parse(typeof(OrderMethod), name, true));
@@ -226,9 +231,12 @@ namespace CUETools.Codecs.FLAKE
 		//public int ch_order0, ch_order1;
 		public byte crc8;
 		public FlacSubframeInfo[] subframes;
-		public uint frame_count;
+		public int frame_number;
 		public FlacSubframe current;
 		public float* window_buffer;
+
+		public BitWriter writer = null;
+		public int writer_offset = 0;
 	}
 
 	public enum OrderMethod
@@ -268,6 +276,13 @@ namespace CUETools.Codecs.FLAKE
 		Estimate = 1,
 		Evaluate = 2,
 		Search = 3
+	}
+
+	public enum WindowMethod
+	{
+		Estimate = 0,
+		Evaluate = 1,
+		Search = 2
 	}
 
 	public enum SubframeType

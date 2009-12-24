@@ -325,7 +325,7 @@ namespace CUETools.Codecs.FLAKE
 			uint t1 = bitreader.readbit(); // == 0?????
 			if (t1 != 0)
 				throw new Exception("unsupported frame coding");
-			frame.frame_count = bitreader.read_utf8();
+			frame.frame_number = (int)bitreader.read_utf8();
 
 			// custom block size
 			if (frame.bs_code0 == 6)

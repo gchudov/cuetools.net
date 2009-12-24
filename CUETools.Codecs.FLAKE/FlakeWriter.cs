@@ -85,6 +85,7 @@ namespace CUETools.Codecs.FLAKE
 		int[] verifyBuffer;
 		int[] residualBuffer;
 		float[] windowBuffer;
+		double[] windowScale;
 		int samplesInBuffer = 0;
 
 		int _compressionLevel = 7;
@@ -123,6 +124,7 @@ namespace CUETools.Codecs.FLAKE
 			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)];
 			residualBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 10 : channels + 1)];
 			windowBuffer = new float[Flake.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
+			windowScale = new double[lpc.MAX_LPC_WINDOWS];
 
 			eparams.flake_set_defaults(_compressionLevel);
 			eparams.padding_size = 8192;
@@ -265,6 +267,12 @@ namespace CUETools.Codecs.FLAKE
 		{
 			get { return eparams.stereo_method; }
 			set { eparams.stereo_method = value; }
+		}
+
+		public WindowMethod WindowMethod
+		{
+			get { return eparams.window_method; }
+			set { eparams.window_method = value; }
 		}
 
 		public int MinPrecisionSearch
@@ -823,12 +831,11 @@ namespace CUETools.Codecs.FLAKE
 			frame.ChooseBestSubframe(ch);
 		}
 
-		unsafe void encode_residual(FlacFrame frame, int ch, PredictionType predict, OrderMethod omethod, int pass)
+		unsafe void encode_residual(FlacFrame frame, int ch, PredictionType predict, OrderMethod omethod, int pass, int best_window)
 		{
 			int* smp = frame.subframes[ch].samples;
 			int i, n = frame.blocksize;
 			// save best.window, because we can overwrite it later with fixed frame
-			int best_window = frame.subframes[ch].best.type == SubframeType.LPC ? frame.subframes[ch].best.window : -1;
 
 			// CONSTANT
 			for (i = 1; i < n; i++)
@@ -879,7 +886,7 @@ namespace CUETools.Codecs.FLAKE
 
 				for (int iWindow = 0; iWindow < _windowcount; iWindow++)
 				{
-					if (pass == 2 && iWindow != best_window)
+					if (best_window != -1 && iWindow != best_window)
 						continue;
 
 					LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
@@ -940,7 +947,8 @@ namespace CUETools.Codecs.FLAKE
 					switch (omethod)
 					{
 						case OrderMethod.Akaike:
-							lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth);
+							//lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, max_order, 7.1, 0.0);
+							lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, max_order, 4.5, 0.0);
 							break;
 						default:
 							throw new Exception("unknown order method");
@@ -1107,7 +1115,7 @@ namespace CUETools.Codecs.FLAKE
 			bitwriter.flush();
 		}
 
-		unsafe void encode_residual_pass1(FlacFrame frame, int ch)
+		unsafe void encode_residual_pass1(FlacFrame frame, int ch, int best_window)
 		{
 			int max_prediction_order = eparams.max_prediction_order;
 			int max_fixed_order = eparams.max_fixed_order;
@@ -1121,7 +1129,7 @@ namespace CUETools.Codecs.FLAKE
 			eparams.lpc_min_precision_search = eparams.lpc_max_precision_search;
 			eparams.max_prediction_order = 8;
 			eparams.estimation_depth = 1;
-			encode_residual(frame, ch, eparams.prediction_type, OrderMethod.Akaike, 1);
+			encode_residual(frame, ch, eparams.prediction_type, OrderMethod.Akaike, 1, best_window);
 			eparams.min_fixed_order = min_fixed_order;
 			eparams.max_fixed_order = max_fixed_order;
 			eparams.max_prediction_order = max_prediction_order;
@@ -1133,17 +1141,40 @@ namespace CUETools.Codecs.FLAKE
 
 		unsafe void encode_residual_pass2(FlacFrame frame, int ch)
 		{
-			encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 2);
+			encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 2, estimate_best_window(frame, ch));
 		}
 
-		unsafe void encode_residual_onepass(FlacFrame frame, int ch)
+		unsafe int estimate_best_window(FlacFrame frame, int ch)
 		{
-			if (_windowcount > 1)
+			if (_windowcount == 1) 
+				return 0;
+			switch (eparams.window_method)
 			{
-				encode_residual_pass1(frame, ch);
-				encode_residual_pass2(frame, ch);
-			} else
-				encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 0);
+				case WindowMethod.Estimate:
+					{
+						int best_window = -1;
+						double best_error = 0;
+						int order = 2;
+						for (int i = 0; i < _windowcount; i++)
+						{
+							frame.subframes[ch].lpc_ctx[i].GetReflection(order, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer + i * Flake.MAX_BLOCKSIZE * 2);
+							double err = frame.subframes[ch].lpc_ctx[i].prediction_error[order - 1] / frame.subframes[ch].lpc_ctx[i].autocorr_values[0];
+							//double err = frame.subframes[ch].lpc_ctx[i].autocorr_values[0] / frame.subframes[ch].lpc_ctx[i].autocorr_values[2];
+							if (best_window == -1 || best_error > err)
+							{
+								best_window = i;
+								best_error = err;
+							}
+						}
+						return best_window;
+					}
+				case WindowMethod.Evaluate:
+					encode_residual_pass1(frame, ch, -1);
+					return frame.subframes[ch].best.type == SubframeType.LPC ? frame.subframes[ch].best.window : -1;
+				case WindowMethod.Search:
+					return -1;
+			}
+			return -1;
 		}
 
 		unsafe void estimate_frame(FlacFrame frame, bool do_midside)
@@ -1157,22 +1188,17 @@ namespace CUETools.Codecs.FLAKE
 					{
 						LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[0];
 						lpc_ctx.GetReflection(4, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer);
-						lpc_ctx.SortOrdersAkaike(frame.blocksize, 1);
-						frame.subframes[ch].best.size = Math.Max(0U, (uint)lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0]));
+						lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 4, 4.5, 0.0);
+						frame.subframes[ch].best.size = (uint)Math.Max(0, lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], 4.5, 0.0) + 7.1 * frame.subframes[ch].obits * eparams.max_prediction_order);
 					}
 					break;
 				case StereoMethod.Evaluate:
 					for (int ch = 0; ch < subframes; ch++)
-					{
-						int windowcount = _windowcount;
-						_windowcount = 1;
-						encode_residual_pass1(frame, ch);
-						_windowcount = windowcount;
-					}
+						encode_residual_pass1(frame, ch, 0);
 					break;
 				case StereoMethod.Search:
 					for (int ch = 0; ch < subframes; ch++)
-						encode_residual_onepass(frame, ch);
+					    encode_residual_pass2(frame, ch);
 					break;
 			}
 		}
@@ -1224,16 +1250,12 @@ namespace CUETools.Codecs.FLAKE
 					for (int ch = 0; ch < channels; ch++)
 					{
 						frame.subframes[ch].best.size = AudioSamples.UINT32_MAX;
-						encode_residual_onepass(frame, ch);
+						encode_residual_pass2(frame, ch);
 					}
 					break;
 				case StereoMethod.Evaluate:
 					for (int ch = 0; ch < channels; ch++)
-					{
-						if (_windowcount > 1)
-							encode_residual_pass1(frame, ch);
 						encode_residual_pass2(frame, ch);
-					}
 					break;
 				case StereoMethod.Search:
 					break;
@@ -1247,7 +1269,8 @@ namespace CUETools.Codecs.FLAKE
 			if ((eparams.window_function & flag) == 0 || _windowcount == lpc.MAX_LPC_WINDOWS)
 				return;
 			int sz = _windowsize;
-			float* pos = window + _windowcount * Flake.MAX_BLOCKSIZE * 2;
+			float* pos1 = window + _windowcount * Flake.MAX_BLOCKSIZE * 2;
+			float* pos = pos1;
 			do
 			{
 				func(pos, sz);
@@ -1256,6 +1279,10 @@ namespace CUETools.Codecs.FLAKE
 				pos += sz;
 				sz >>= 1;
 			} while (sz >= 32);
+			double scale = 0.0;
+			for (int i = 0; i < _windowsize; i++)
+				scale += pos1[i] * pos1[i];
+			windowScale[_windowcount] = scale;
 			_windowcount++;
 		}
 
@@ -1272,8 +1299,8 @@ namespace CUETools.Codecs.FLAKE
 					_windowcount = 0;
 					calculate_window(window, lpc.window_welch, WindowFunction.Welch);
 					calculate_window(window, lpc.window_tukey, WindowFunction.Tukey);
-					calculate_window(window, lpc.window_hann, WindowFunction.Hann);
 					calculate_window(window, lpc.window_flattop, WindowFunction.Flattop);
+					calculate_window(window, lpc.window_hann, WindowFunction.Hann);
 					calculate_window(window, lpc.window_bartlett, WindowFunction.Bartlett);
 					if (_windowcount == 0)
 						throw new Exception("invalid windowfunction");
@@ -1289,7 +1316,7 @@ namespace CUETools.Codecs.FLAKE
 							bits_per_sample, get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
 
 					for (int ch = 0; ch < channels; ch++)
-						encode_residual_onepass(frame, ch);
+						encode_residual_pass2(frame, ch);
 				}
 				else
 				{
@@ -1739,6 +1766,8 @@ namespace CUETools.Codecs.FLAKE
 		// 1 = mid-side encoding
 		public StereoMethod stereo_method;
 
+		public WindowMethod window_method;
+
 		// block size in samples
 		// set by the user prior to calling flake_encode_init
 		// if set to 0, a block size is chosen based on block_time_ms
@@ -1834,6 +1863,7 @@ namespace CUETools.Codecs.FLAKE
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
 			order_method = OrderMethod.Akaike;
 			stereo_method = StereoMethod.Evaluate;
+			window_method = WindowMethod.Evaluate;
 			block_size = 0;
 			block_time_ms = 105;			
 			prediction_type = PredictionType.Search;
@@ -1882,7 +1912,8 @@ namespace CUETools.Codecs.FLAKE
 					window_function = WindowFunction.Bartlett;
 					break;
 				case 5:
-					window_function = WindowFunction.Bartlett;
+					stereo_method = StereoMethod.Estimate;
+					window_method = WindowMethod.Estimate;
 					break;
 				case 6:
 					stereo_method = StereoMethod.Estimate;
