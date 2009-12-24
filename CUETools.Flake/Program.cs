@@ -33,10 +33,11 @@ namespace CUETools.FlakeExe
 			Console.WriteLine();
 			Console.WriteLine("LPC options:");
 			Console.WriteLine();
-			Console.WriteLine(" -m <method>          Prediction order search (estimate,estsearch,logfast,search).");
-			Console.WriteLine(" -e #                 Estimation depth (1..32).");
-			Console.WriteLine(" -w <func>[,<func>]   One or more window functions (welch,hann,flattop,tukey).");
+			Console.WriteLine(" -m <method>          Prediction order search (akaike).");
+			Console.WriteLine(" -e #                 Prediction order search depth (1..32).");
+			Console.WriteLine(" -w <func>[,<func>]   One or more window functions (bartlett,welch,hann,flattop,tukey).");
 			Console.WriteLine(" -l #[,#]             Prediction order {max} or {min},{max} (1..32).");
+			Console.WriteLine("    --window-method   Window selection method (estimate,evaluate,search).");
 			Console.WriteLine("    --max-precision   Coefficients precision search (0..1).");
 			Console.WriteLine();
 			Console.WriteLine("Fixed prediction options:");
@@ -54,6 +55,7 @@ namespace CUETools.FlakeExe
 			bool debug = false, quiet = false;
 			string prediction_type = null;
 			string stereo_method = null;
+			string window_method = null;
 			string order_method = null;
 			string window_function = null;
 			string input_file = null;
@@ -65,6 +67,7 @@ namespace CUETools.FlakeExe
 				blocksize = -1, estimation_depth = -1;
 			int level = -1, padding = -1, vbr_mode = -1;
 			bool do_md5 = true, do_seektable = true, do_verify = false;
+			bool buffered = false;
 
 			for (int arg = 0; arg < args.Length; arg++)
 			{
@@ -81,6 +84,8 @@ namespace CUETools.FlakeExe
 					do_seektable = false;
 				else if (args[arg] == "--no-md5")
 					do_md5 = false;
+				else if (args[arg] == "--buffered")
+					buffered = true;
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-t" || args[arg] == "--prediction-type") && ++arg < args.Length)
@@ -91,6 +96,8 @@ namespace CUETools.FlakeExe
 					order_method = args[arg];
 				else if ((args[arg] == "-w" || args[arg] == "--window") && ++arg < args.Length)
 					window_function = args[arg];
+				else if (args[arg] == "--window-method" && ++arg < args.Length)
+					window_method = args[arg];
 				else if ((args[arg] == "-r" || args[arg] == "--partition-order") && ++arg < args.Length)
 				{
 					ok = (args[arg].Split(',').Length == 2 &&
@@ -155,7 +162,7 @@ namespace CUETools.FlakeExe
 
 			IAudioSource audioSource;
 			if (input_file == "-")
-				audioSource = new WAVReader("", Console.OpenStandardInput());
+				audioSource = new WAVReader(Console.OpenStandardInput());
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
 				audioSource = new WAVReader(input_file, null);
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
@@ -172,7 +179,7 @@ namespace CUETools.FlakeExe
 				output_file == "-" ? Console.OpenStandardOutput() :
 				output_file == "nul" ? new NullStream() : null);
 			flake.FinalSampleCount = (long)audioSource.Length;
-			IAudioDest audioDest = new BufferedWriter(flake, 512 * 1024);
+			IAudioDest audioDest = buffered ? (IAudioDest)new BufferedWriter(flake, 512 * 1024) : (IAudioDest)flake;
 			int[,] buff = new int[0x10000, audioSource.ChannelCount];
 
 			try
@@ -183,6 +190,8 @@ namespace CUETools.FlakeExe
 					flake.PredictionType = Flake.LookupPredictionType(prediction_type);
 				if (stereo_method != null)
 					flake.StereoMethod = Flake.LookupStereoMethod(stereo_method);
+				if (window_method != null)
+					flake.WindowMethod = Flake.LookupWindowMethod(window_method);
 				if (order_method != null)
 					flake.OrderMethod = Flake.LookupOrderMethod(order_method);
 				if (window_function != null)
@@ -250,9 +259,10 @@ namespace CUETools.FlakeExe
 				}
 			} while (true);
 
+			audioDest.Close();
+			TimeSpan totalElapsed = DateTime.Now - start;
 			if (!quiet)
 			{
-				TimeSpan totalElapsed = DateTime.Now - start;
 				Console.Error.Write("\r                                                                         \r");
 				Console.WriteLine("Results   : {0:0.00}x; {1}",
 					audioSource.Position / totalElapsed.TotalSeconds / audioSource.SampleRate,
@@ -260,17 +270,16 @@ namespace CUETools.FlakeExe
 					);
 			}
 			audioSource.Close();
-			audioDest.Close();
 
 			if (debug)
 			{
 				Console.SetOut(stdout);
 				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}",
 					flake.TotalSize,
-					flake.UserProcessorTime.TotalSeconds,
+					flake.UserProcessorTime.TotalSeconds > 0 ? flake.UserProcessorTime.TotalSeconds : totalElapsed.TotalSeconds,
 					flake.PredictionType.ToString().PadRight(15),
 					flake.StereoMethod.ToString().PadRight(15),
-					(flake.OrderMethod.ToString() + (flake.OrderMethod == OrderMethod.Estimate ? "(" + flake.EstimationDepth.ToString() + ")" : "")).PadRight(15),
+					(flake.OrderMethod.ToString() + "(" + flake.EstimationDepth.ToString() + ")").PadRight(15),
 					flake.WindowFunction,
 					flake.MinPartitionOrder,
 					flake.MaxPartitionOrder,
