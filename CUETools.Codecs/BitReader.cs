@@ -96,7 +96,21 @@ namespace CUETools.Codecs
 			}
 		}
 
+		public BitReader()
+		{
+			buffer = null;
+			pos = 0;
+			len = 0;
+			_bitaccumulator = 0;
+			cache = 0;
+		}
+
 		public BitReader(byte* _buffer, int _pos, int _len)
+		{
+			Reset(_buffer, _pos, _len);
+		}
+
+		public void Reset(byte* _buffer, int _pos, int _len)
 		{
 			buffer = _buffer;
 			pos = _pos;
@@ -124,6 +138,16 @@ namespace CUETools.Codecs
 			pos += (new_accumulator >> 3);
 			_bitaccumulator = (new_accumulator & 7);
 			cache = peek4();
+		}
+
+		/* skip up to 16 bits */
+		public void skipbits16(int bits)
+		{
+			cache <<= bits;
+			int new_accumulator = (_bitaccumulator + bits);
+			pos += (new_accumulator >> 3);
+			_bitaccumulator = (new_accumulator & 7);
+			cache |= ((((uint)buffer[pos + 2] << 8) + (uint)buffer[pos + 3]) << _bitaccumulator);
 		}
 
 		/* skip up to 8 bits */
@@ -288,6 +312,7 @@ namespace CUETools.Codecs
 		{
 			fixed (byte* unary_table = byte_to_unary_table)
 			{
+				uint mask = (1U << k) - 1;
 				if (k == 0)
 					for (int i = n; i > 0; i--)
 						*(r++) = read_unary_signed();
@@ -303,9 +328,26 @@ namespace CUETools.Codecs
 							bits = unary_table[cache >> 24];
 							msbs += bits;
 						}
-						skipbits8((int)(msbs & 7) + 1);
-						uint uval = (msbs << k) | (cache >> (32 - k));
-						skipbits8(k);
+						int btsk = k + (int)bits + 1;
+						uint uval = (msbs << k) | ((cache >> (32 - btsk)) & mask);
+						skipbits16(btsk);
+						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
+					}
+				else if (k <= 16)
+					for (int i = n; i > 0; i--)
+					{
+						//*(r++) = read_rice_signed((int)k);
+						uint bits = unary_table[cache >> 24];
+						uint msbs = bits;
+						while (bits == 8)
+						{
+							skipbits8(8);
+							bits = unary_table[cache >> 24];
+							msbs += bits;
+						}
+						int btsk = k + (int)bits + 1;
+						uint uval = (msbs << k) | ((cache >> (32 - btsk)) & mask);
+						skipbits(btsk);
 						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
 					}
 				else
@@ -321,7 +363,7 @@ namespace CUETools.Codecs
 							msbs += bits;
 						}
 						skipbits8((int)(msbs & 7) + 1);
-						uint uval = (msbs << k) | (cache >> (32 - k));
+						uint uval = (msbs << k) | ((cache >> (32 - k)));
 						skipbits(k);
 						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
 					}

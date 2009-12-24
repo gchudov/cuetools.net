@@ -26,77 +26,147 @@ namespace CUETools.Codecs
 	public class lpc
 	{
 		public const int MAX_LPC_ORDER = 32;
-		public const int MAX_LPC_WINDOWS = 4;
+		public const int MAX_LPC_WINDOWS = 2;
 		public const int MAX_LPC_PRECISIONS = 4;
 
-		/**
-		 * Apply Welch window function to audio block
-		 */
-		static unsafe void
-			apply_welch_window(/*const*/int* data, uint len, double* w_data)
+		public unsafe static void window_welch(float* window, int L)
 		{
-			double c = (2.0 / (len - 1.0)) - 1.0;
-			for (uint i = 0; i < (len >> 1); i++)
+			int N = L - 1;
+			double N2 = (double)N / 2.0;
+
+			for (int n = 0; n <= N; n++)
 			{
-				double w = 1.0 - ((c - i) * (c - i));
-				w_data[i] = data[i] * w;
-				w_data[len - 1 - i] = data[len - 1 - i] * w;
+				double k = ((double)n - N2) / N2;
+				k = 1.0 - k * k;
+				window[n] = (float)(k);
+			}
+		}
+
+		public unsafe static void window_bartlett(float* window, int L)
+		{
+			int N = L - 1;
+			double N2 = (double)N / 2.0;
+			for (int n = 0; n <= N; n++)
+			{
+				double k = ((double)n - N2) / N2;
+				k = 1.0 - k * k;
+				window[n] = (float)(k * k);
+			}
+		}
+
+		public unsafe static void window_rectangle(float* window, int L)
+		{
+			for (int n = 0; n < L; n++)
+				window[n] = 1.0F;
+		}
+
+		public unsafe static void window_flattop(float* window, int L)
+		{
+			int N = L - 1;
+			for (int n = 0; n < L; n++)
+				window[n] = (float)(1.0 - 1.93 * Math.Cos(2.0 * Math.PI * n / N) + 1.29 * Math.Cos(4.0 * Math.PI * n / N) - 0.388 * Math.Cos(6.0 * Math.PI * n / N) + 0.0322 * Math.Cos(8.0 * Math.PI * n / N));
+		}
+
+		public unsafe static void window_tukey(float* window, int L)
+		{
+			window_rectangle(window, L);
+			double p = 0.5;
+			int Np = (int)(p / 2.0 * L) - 1;
+			if (Np > 0)
+			{
+				for (int n = 0; n <= Np; n++)
+				{
+					window[n] = (float)(0.5 - 0.5 * Math.Cos(Math.PI * n / Np));
+					window[L - Np - 1 + n] = (float)(0.5 - 0.5 * Math.Cos(Math.PI * (n + Np) / Np));
+				}
+			}
+		}
+
+		public unsafe static void window_hann(float* window, int L)
+		{
+			int N = L - 1;
+			for (int n = 0; n < L; n++)
+				window[n] = (float)(0.5 - 0.5 * Math.Cos(2.0 * Math.PI * n / N));
+		}
+
+		private static short sign_only(int val)
+		{
+			return (short)((val >> 31) + ((val - 1) >> 31) + 1);
+		}
+
+		static public unsafe void
+			compute_corr_int(/*const*/ short* data1, short* data2, int len, int min, int lag, int* autoc)
+		{
+			for (int i = min; i <= lag; ++i)
+			{
+				int temp = 0;
+				int temp2 = 0;
+
+				for (int j = 0; j <= lag - i; ++j)
+					temp += data1[j + i] * data2[j];
+
+				for (int j = lag + 1 - i; j < len - i; j += 2)
+				{
+					temp += data1[j + i] * data2[j];
+					temp2 += data1[j + i + 1] * data2[j + 1];
+				}
+				autoc[i] = temp + temp2;
 			}
 		}
 
 		/**
 		 * Calculates autocorrelation data from audio samples
-		 * A Welch window function is applied before calculation.
+		 * A window function is applied before calculation.
 		 */
 		static public unsafe void
-			compute_autocorr(/*const*/ int* data, uint len, uint min, uint lag, double* autoc, double* window)
+			compute_autocorr(/*const*/ int* data, int len, int min, int lag, double* autoc, float* window)
 		{
-			double* data1 = stackalloc double[(int)len + 16];
-			uint i, j;
-			double temp, temp2;
+#if FPAC
+			short* data1 = stackalloc short[len + 1];
+			short* data2 = stackalloc short[len + 1];
+			int* c1 = stackalloc int[lpc.MAX_LPC_ORDER + 1];
+			int* c2 = stackalloc int[lpc.MAX_LPC_ORDER + 1];
+			int* c3 = stackalloc int[lpc.MAX_LPC_ORDER + 1];
+			int* c4 = stackalloc int[lpc.MAX_LPC_ORDER + 1];
 
-			if (window == null)
-				apply_welch_window(data, len, data1);
-			else
+			for (int i = 0; i < len; i++)
 			{
-				for (i = 0; i < len; i++)
-					data1[i] = data[i] * window[i];
+				int val = (int)(data[i] * window[i]);
+				data1[i] = (short)(sign_only(val) * (Math.Abs(val) >> 9));
+				data2[i] = (short)(sign_only(val) * (Math.Abs(val) & 0x1ff));
 			}
+			data1[len] = 0;
+			data2[len] = 0;
+
+			compute_corr_int(data1, data1, len, min, lag, c1);
+			compute_corr_int(data1, data2, len, min, lag, c2);
+			compute_corr_int(data2, data1, len, min, lag, c3);
+			compute_corr_int(data2, data2, len, min, lag, c4);
+			
+			for (int coeff = min; coeff <= lag; coeff++)
+			    autoc[coeff] = (c1[coeff] * (double)(1 << 18) + (c2[coeff] + c3[coeff]) * (double)(1 << 9) + c4[coeff]);
+#else
+			double* data1 = stackalloc double[(int)len + 16];
+			int i;
+
+			for (i = 0; i < len; i++)
+				data1[i] = data[i] * window[i];
 			data1[len] = 0;
 
 			for (i = min; i <= lag; ++i)
 			{
-				temp = 1.0;
-				temp2 = 1.0;
-				for (j = 0; j <= lag - i; ++j)
-					temp += data1[j + i] * data1[j];
-
+				double temp = 1.0;
+				double temp2 = 1.0;
 				double* finish = data1 + len - i;
-				for (double* pdata = data1 + lag + 1 - i; pdata < finish; pdata += 2)
+
+				for (double* pdata = data1; pdata < finish; pdata += 2)
 				{
 					temp += pdata[i] * pdata[0];
 					temp2 += pdata[i + 1] * pdata[1];
 				}
 				autoc[i] = temp + temp2;
 			}
-
-			//int sample, coeff;
-			//for (coeff = 0; coeff <= lag; coeff++)
-			//    autoc[coeff] = 0.0;
-			//int data_len = (int)len;
-			//int limit = data_len - (int)lag - 1;
-			//for (sample = 0; sample <= limit; sample++)
-			//{
-			//    double d = data1[sample];
-			//    for (coeff = 0; coeff <= lag; coeff++)
-			//        autoc[coeff] += d * data1[sample + coeff];
-			//}
-			//for (; sample < data_len; sample++)
-			//{
-			//    double d = data1[sample];
-			//    for (coeff = 0; coeff < data_len - sample; coeff++)
-			//        autoc[coeff] += d * data1[sample + coeff];
-			//}
+#endif
 		}
 
 		/**
@@ -104,64 +174,39 @@ namespace CUETools.Codecs
 		 * Produces LPC coefficients from autocorrelation data.
 		 */
 		public static unsafe void
-		compute_lpc_coefs(/*const*/ double* autoc, uint max_order, double* reff,
-						  double* lpc/*[][MAX_LPC_ORDER]*/)
+		compute_lpc_coefs(uint max_order, double* reff, float* lpc/*[][MAX_LPC_ORDER]*/)
 		{
 			double* lpc_tmp = stackalloc double[MAX_LPC_ORDER];
-
-			int i, j, i2;
-			double r, err, tmp;
 
 			if (max_order > MAX_LPC_ORDER)
 				throw new Exception("wierd");
 
-			for (i = 0; i < max_order; i++)
+			for (int i = 0; i < max_order; i++)
 				lpc_tmp[i] = 0;
 
-			err = 1.0;
-			if (autoc != null)
-				err = autoc[0];
-
-			for (i = 0; i < max_order; i++)
+			for (int i = 0; i < max_order; i++)
 			{
-				if (reff != null)
-				{
-					r = reff[i];
-				}
-				else
-				{
-					r = -autoc[i + 1];
-					for (j = 0; j < i; j++)
-					{
-						r -= lpc_tmp[j] * autoc[i - j];
-					}
-					r /= err;
-					err *= 1.0 - (r * r);
-				}
-
-				i2 = (i >> 1);
+				double r = reff[i];
+				int i2 = (i >> 1);
 				lpc_tmp[i] = r;
-				for (j = 0; j < i2; j++)
+				for (int j = 0; j < i2; j++)
 				{
-					tmp = lpc_tmp[j];
+					double tmp = lpc_tmp[j];
 					lpc_tmp[j] += r * lpc_tmp[i - 1 - j];
 					lpc_tmp[i - 1 - j] += r * tmp;
 				}
-				if (0 != (i & 1))
-				{
-					lpc_tmp[j] += lpc_tmp[j] * r;
-				}
 
-				for (j = 0; j <= i; j++)
-				{
-					lpc[i * MAX_LPC_ORDER + j] = -lpc_tmp[j];
-				}
+				if (0 != (i & 1))
+					lpc_tmp[i2] += lpc_tmp[i2] * r;
+
+				for (int j = 0; j <= i; j++)
+					lpc[i * MAX_LPC_ORDER + j] = (float)-lpc_tmp[j];
 			}
 		}
 
 		public static unsafe void
 		compute_schur_reflection(/*const*/ double* autoc, uint max_order,
-							  double* reff/*[][MAX_LPC_ORDER]*/)
+							  double* reff/*[][MAX_LPC_ORDER]*/, double * err)
 		{
 			double* gen0 = stackalloc double[MAX_LPC_ORDER];
 			double* gen1 = stackalloc double[MAX_LPC_ORDER];
@@ -173,6 +218,7 @@ namespace CUETools.Codecs
 			double error = autoc[0];
 			reff[0] = -gen1[0] / error;
 			error += gen1[0] * reff[0];
+			err[0] = error;
 			for (uint i = 1; i < max_order; i++)
 			{
 				for (uint j = 0; j < max_order - i; j++)
@@ -182,49 +228,19 @@ namespace CUETools.Codecs
 				}
 				reff[i] = -gen1[0] / error;
 				error += gen1[0] * reff[i];
+				err[i] = error;
 			}
-		}
-
-		/**
-		 * Compute LPC coefs for Flake.OrderMethod._EST
-		 * Faster LPC coeff computation by first calculating the reflection coefficients
-		 * using Schur recursion. That allows for estimating the optimal order before
-		 * running Levinson recursion.
-		 */
-		public static unsafe uint
-		compute_lpc_coefs_est(/*const*/ double* autoc, uint max_order,
-							  double* lpc/*[][MAX_LPC_ORDER]*/)
-		{
-			double* reff = stackalloc double[MAX_LPC_ORDER];
-
-			// Schur recursion
-			compute_schur_reflection(autoc, max_order, reff);
-
-			// Estimate optimal order using reflection coefficients
-			uint order_est = 1;
-			for (int i = (int)max_order - 1; i >= 0; i--)
-			{
-				if (Math.Abs(reff[i]) > 0.10)
-				{
-					order_est = (uint)i + 1;
-					break;
-				}
-			}
-
-			// Levinson recursion
-			compute_lpc_coefs(null, order_est, reff, lpc);
-			return order_est;
 		}
 
 		/**
 		 * Quantize LPC coefficients
 		 */
 		public static unsafe void
-		quantize_lpc_coefs(double* lpc_in, int order, uint precision, int* lpc_out,
+		quantize_lpc_coefs(float* lpc_in, int order, uint precision, int* lpc_out,
 						   out int shift, int max_shift, int zero_shift)
 		{
 			int i;
-			double d, cmax, error;
+			float d, cmax, error;
 			int qmax;
 			int sh, q;
 
@@ -232,7 +248,7 @@ namespace CUETools.Codecs
 			qmax = (1 << ((int)precision - 1)) - 1;
 
 			// find maximum coefficient value
-			cmax = 0.0;
+			cmax = 0.0F;
 			for (i = 0; i < order; i++)
 			{
 				d = Math.Abs(lpc_in[i]);
@@ -259,7 +275,7 @@ namespace CUETools.Codecs
 			// coefficients instead
 			if (sh == 0 && cmax > qmax)
 			{
-				double scale = ((double)qmax) / cmax;
+				float scale = ((float)qmax) / cmax;
 				for (i = 0; i < order; i++)
 				{
 					lpc_in[i] *= scale;
@@ -311,9 +327,8 @@ namespace CUETools.Codecs
 				case 3:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int pred = coefs[2] * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
 						s -= 2;
 					}
@@ -321,10 +336,10 @@ namespace CUETools.Codecs
 				case 4:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
 						s -= 3;
 					}
@@ -332,11 +347,11 @@ namespace CUETools.Codecs
 				case 5:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
 						s -= 4;
 					}
@@ -344,12 +359,11 @@ namespace CUETools.Codecs
 				case 6:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[5] * *(s++);
-						pred += coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
 						s -= 5;
 					}
@@ -357,13 +371,12 @@ namespace CUETools.Codecs
 				case 7:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[6] * *(s++);
-						pred += coefs[5] * *(s++);
-						pred += coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
 						s -= 6;
 					}
@@ -371,16 +384,72 @@ namespace CUETools.Codecs
 				case 8:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[7] * *(s++);
-						pred += coefs[6] * *(s++);
-						pred += coefs[5] * *(s++);
-						pred += coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
 						s -= 7;
+					}
+					break;
+				case 9:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + 
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 8;
+					}
+					break;
+				case 10:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 9;
+					}
+					break;
+				case 11:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 10;
+					}
+					break;
+				case 12:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 11;
 					}
 					break;
 				default:
@@ -388,18 +457,17 @@ namespace CUETools.Codecs
 					{
 						s = smp + i - order;
 						int pred = 0;
-						int* co = coefs + order - 1;
-						int* c7 = coefs + 7;
-						while (co > c7)
-							pred += *(co--) * *(s++);
-						pred += coefs[7] * *(s++);
-						pred += coefs[6] * *(s++);
-						pred += coefs[5] * *(s++);
-						pred += coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* c = coefs + order - 1;
+						int* c11 = coefs + 11;
+						while (c > c11)
+							pred += *(c--) * *(s++);
+						pred +=
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*(r++) = *s - (pred >> shift);
 					}
 					break;
@@ -533,6 +601,181 @@ namespace CUETools.Codecs
 		}
 
 		public static unsafe void
+		encode_residual2(int* res, int* smp, int n, int order,
+			int* coefs, int shift)
+		{
+			int* s = smp;
+			int* r = res;
+			int c0 = coefs[0];
+			int c1 = coefs[1];
+			switch (order)
+			{
+				case 1:
+					for (int i = n - order; i > 0; i--)
+					{
+						int pred = c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+					}
+					break;
+				case 2:
+					for (int i = n - order; i > 0; i--)
+					{
+						int pred = c1 * *(s++);
+						pred += c0 * *(s++);
+						*(r++) = *(s--) - (pred >> shift);
+					}
+					break;
+				case 3:
+					for (int i = n - order; i > 0; i--)
+					{
+						int pred = coefs[2] * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 2;
+					}
+					break;
+				case 4:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 3;
+					}
+					break;
+				case 5:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 4;
+					}
+					break;
+				case 6:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 5;
+					}
+					break;
+				case 7:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 6;
+					}
+					break;
+				case 8:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 7;
+					}
+					break;
+				case 9:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 8;
+					}
+					break;
+				case 10:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 9;
+					}
+					break;
+				case 11:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 10;
+					}
+					break;
+				case 12:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* c = coefs + order - 1;
+						int pred =
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+						s -= 11;
+					}
+					break;
+				default:
+					for (int i = order; i < n; i++)
+					{
+						s = smp + i - order;
+						int pred = 0;
+						int* c = coefs + order - 1;
+						int* c11 = coefs + 11;
+						while (c > c11)
+							pred += *(c--) * *(s++);
+						pred +=
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							*(c--) * *(s++) + *(c--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*(r++) = *s - (pred >> shift);
+					}
+					break;
+			}
+		}
+
+		public static unsafe void
 		decode_residual(int* res, int* smp, int n, int order,
 			int* coefs, int shift)
 		{
@@ -555,17 +798,17 @@ namespace CUETools.Codecs
 				case 2:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = c1 * *(s++);
-						pred += c0 * *(s++);
+						int pred = c1 * *(s++) + c0 * *(s++);
 						*(s--) = *(r++) + (pred >> shift);
 					}
 					break;
 				case 3:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*s = *(r++) + (pred >> shift);
 						s -= 2;
 					}
@@ -573,10 +816,10 @@ namespace CUETools.Codecs
 				case 4:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*s = *(r++) + (pred >> shift);
 						s -= 3;
 					}
@@ -584,11 +827,11 @@ namespace CUETools.Codecs
 				case 5:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*s = *(r++) + (pred >> shift);
 						s -= 4;
 					}
@@ -596,12 +839,11 @@ namespace CUETools.Codecs
 				case 6:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[5] * *(s++);
-						pred += coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*s = *(r++) + (pred >> shift);
 						s -= 5;
 					}
@@ -609,13 +851,12 @@ namespace CUETools.Codecs
 				case 7:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[6] * *(s++);
-						pred += coefs[5] * *(s++);
-						pred += coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*s = *(r++) + (pred >> shift);
 						s -= 6;
 					}
@@ -623,16 +864,72 @@ namespace CUETools.Codecs
 				case 8:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = coefs[7] * *(s++);
-						pred += coefs[6] * *(s++);
-						pred += coefs[5] * *(s++);
-						pred += coefs[4] * *(s++);
-						pred += coefs[3] * *(s++);
-						pred += coefs[2] * *(s++);
-						pred += c1 * *(s++);
-						pred += c0 * *(s++);
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
 						*s = *(r++) + (pred >> shift);
 						s -= 7;
+					}
+					break;
+				case 9:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 8;
+					}
+					break;
+				case 10:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 9;
+					}
+					break;
+				case 11:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 10;
+					}
+					break;
+				case 12:
+					for (int i = n - order; i > 0; i--)
+					{
+						int* co = coefs + order - 1;
+						int pred = 
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 11;
 					}
 					break;
 				default:
@@ -791,8 +1088,11 @@ namespace CUETools.Codecs
 	{
 		public LpcContext()
 		{
+			coefs = new int[lpc.MAX_LPC_ORDER];
 			reflection_coeffs = new double[lpc.MAX_LPC_ORDER];
+			prediction_error = new double[lpc.MAX_LPC_ORDER];
 			autocorr_values = new double[lpc.MAX_LPC_ORDER + 1];
+			best_orders = new int[lpc.MAX_LPC_ORDER];
 			done_lpcs = new uint[lpc.MAX_LPC_PRECISIONS];
 		}
 
@@ -815,15 +1115,79 @@ namespace CUETools.Codecs
 		/// <param name="samples">Samples pointer</param>
 		/// <param name="blocksize">Block size</param>
 		/// <param name="window">Window function</param>
-		public void GetReflection(int order, int* samples, int blocksize, double* window)
+		public void GetReflection(int order, int* samples, int blocksize, float* window)
 		{
 			if (autocorr_order > order)
 				return;
-			fixed (double* reff = reflection_coeffs, autoc = autocorr_values)
+			fixed (double* reff = reflection_coeffs, autoc = autocorr_values, err = prediction_error)
 			{
-				lpc.compute_autocorr(samples, (uint)blocksize, (uint)autocorr_order, (uint)order, autoc, window);
-				lpc.compute_schur_reflection(autoc, (uint)order, reff);
+				lpc.compute_autocorr(samples, blocksize, autocorr_order, order, autoc, window);
+				lpc.compute_schur_reflection(autoc, (uint)order, reff, err);
 				autocorr_order = order + 1;
+			}
+		}
+
+		public void GetReflection1(int order, int* samples, int blocksize, float* window)
+		{
+			if (autocorr_order > order)
+				return;
+			fixed (double* reff = reflection_coeffs, autoc = autocorr_values, err = prediction_error)
+			{
+				lpc.compute_autocorr(samples, blocksize, 0, order + 1, autoc, window);
+				for (int i = 1; i <= order; i++)
+					autoc[i] = autoc[i + 1];
+				lpc.compute_schur_reflection(autoc, (uint)order, reff, err);
+				autocorr_order = order + 1;
+			}
+		}
+
+		public void ComputeReflection(int order, float* autocorr)
+		{
+			fixed (double* reff = reflection_coeffs, autoc = autocorr_values, err = prediction_error)
+			{
+				for (int i = 0; i <= order; i++)
+					autoc[i] = autocorr[i];
+				lpc.compute_schur_reflection(autoc, (uint)order, reff, err);
+				autocorr_order = order + 1;
+			}
+		}
+
+		public void ComputeReflection(int order, double* autocorr)
+		{
+			fixed (double* reff = reflection_coeffs, autoc = autocorr_values, err = prediction_error)
+			{
+				for (int i = 0; i <= order; i++)
+					autoc[i] = autocorr[i];
+				lpc.compute_schur_reflection(autoc, (uint)order, reff, err);
+				autocorr_order = order + 1;
+			}
+		}
+
+		public double Akaike(int blocksize, int order, double alpha, double beta)
+		{
+			//return (blocksize - order) * (Math.Log(prediction_error[order - 1]) - Math.Log(1.0)) + Math.Log(blocksize) * order * (alpha + beta * order);
+			return blocksize * Math.Log(prediction_error[order - 1]) + Math.Log(blocksize) * order * (alpha + beta * order);
+		}
+
+		/// <summary>
+		/// Sorts orders based on Akaike's criteria
+		/// </summary>
+		/// <param name="blocksize">Frame size</param>
+		public void SortOrdersAkaike(int blocksize, int count, int max_order, double alpha, double beta)
+		{
+			for (int i = 0; i < max_order; i++)
+				best_orders[i] = i + 1;
+			for (int i = 0; i < max_order && i < count; i++)
+			{
+				for (int j = i + 1; j < max_order; j++)
+				{
+					if (Akaike(blocksize, best_orders[j], alpha, beta) < Akaike(blocksize, best_orders[i], alpha, beta))
+					{
+						int tmp = best_orders[j];
+						best_orders[j] = best_orders[i];
+						best_orders[i] = tmp;
+					}
+				}				
 			}
 		}
 
@@ -831,28 +1195,19 @@ namespace CUETools.Codecs
 		/// Produces LPC coefficients from autocorrelation data.
 		/// </summary>
 		/// <param name="lpcs">LPC coefficients buffer (for all orders)</param>
-		public void ComputeLPC(double* lpcs)
+		public void ComputeLPC(float* lpcs)
 		{
 			fixed (double* reff = reflection_coeffs)
-				lpc.compute_lpc_coefs(null, (uint)autocorr_order - 1, reff, lpcs);
+				lpc.compute_lpc_coefs((uint)autocorr_order - 1, reff, lpcs);
 		}
 
-		/// <summary>
-		/// Checks if an order is 'interesting'.
-		/// Lower orders are likely to be useful if next two reflection coefficients are small,
-		/// Higher orders are likely to be useful if reflection coefficient for that order is greater than 0.1 and the next one is not.
-		/// </summary>
-		/// <param name="order"></param>
-		/// <returns></returns>
-		public bool IsInterestingOrder(int order)
-		{
-			return (order > 4 && Math.Abs(reflection_coeffs[order - 1]) >= 0.10 && (order == autocorr_order - 1 || Math.Abs(reflection_coeffs[order]) < 0.10)) ||
-				(order < 6 && order < autocorr_order - 2 && reflection_coeffs[order + 1] * reflection_coeffs[order + 1] + reflection_coeffs[order] * reflection_coeffs[order] < 0.1);
-		}
-
-		double[] autocorr_values;
+		public double[] autocorr_values;
 		double[] reflection_coeffs;
+		public double[] prediction_error;
+		public int[] best_orders;
+		public int[] coefs;
 		int autocorr_order;
+		public int shift;
 
 		public double[] Reflection
 		{
@@ -864,5 +1219,4 @@ namespace CUETools.Codecs
 
 		public uint[] done_lpcs;
 	}
-
 }

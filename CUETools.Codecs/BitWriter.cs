@@ -42,6 +42,14 @@ namespace CUETools.Codecs
 			eof = false;
 		}
 
+		public void Reset()
+		{
+			buf_ptr = buf_start;
+			bit_left = 32;
+			bit_buf = 0;
+			eof = false;
+		}
+
 		public void writebytes(int bytes, byte c)
 		{
 			for (; bytes > 0; bytes--)
@@ -133,6 +141,13 @@ namespace CUETools.Codecs
 		/// <param name="val"></param>
 		unsafe void writebits_fast(int bits, uint val, ref byte * buf)
 		{
+#if DEBUG
+			if ((buf_ptr + 3) >= buf_end)
+			{
+				eof = true;
+				return;
+			}
+#endif
 			if (bits < bit_left)
 			{
 				bit_buf = (bit_buf << bits) | val;
@@ -209,21 +224,29 @@ namespace CUETools.Codecs
 			writebits(k + q, (v & ((1 << k) - 1)) | (1 << k));
 		}
 
-		public unsafe void write_rice_block_signed(int k, int* residual, int count)
+		public unsafe void write_rice_block_signed(byte * fixedbuf, int k, int* residual, int count)
 		{
-			fixed (byte* fixbuf = &buffer[buf_ptr])
+			byte* buf = &fixedbuf[buf_ptr];
+			//fixed (byte* fixbuf = &buffer[buf_ptr])
 			{
-				byte* buf = fixbuf;
+				//byte* buf = fixbuf;
 				for (int i = count; i > 0; i--)
 				{
-					int v = -2 * *(residual++) - 1;
-					v ^= (v >> 31);
+					int v = *(residual++);
+					v = (v << 1) ^ (v >> 31);
 
 					// write quotient in unary
 					int q = (v >> k) + 1;
 					int bits = k + q;
 					while (bits > 31)
 					{
+#if DEBUG
+						if (buf + 3 >= fixedbuf + buf_end)
+						{
+							eof = true;
+							return;
+						}
+#endif
 						int b = Math.Min(bits - 31, 31);
 						if (b < bit_left)
 						{
@@ -242,6 +265,14 @@ namespace CUETools.Codecs
 						}
 						bits -= b;
 					}
+
+#if DEBUG
+					if (buf + 3 >= fixedbuf + buf_end)
+					{
+						eof = true;
+						return;
+					}
+#endif
 
 					// write remainder in binary using 'k' bits
 					//writebits_fast(k + q, (uint)((v & ((1 << k) - 1)) | (1 << k)), ref buf);
@@ -262,7 +293,7 @@ namespace CUETools.Codecs
 						*(buf++) = (byte)(bb);
 					}
 				}
-				buf_ptr += (int)(buf - fixbuf);
+				buf_ptr = (int)(buf - fixedbuf);
 			}
 		}
 
@@ -284,6 +315,14 @@ namespace CUETools.Codecs
 			}
 			bit_left = 32;
 			bit_buf = 0;
+		}
+
+		public byte[] Buffer
+		{
+			get
+			{
+				return buffer;
+			}
 		}
 
 		public int Length

@@ -223,7 +223,19 @@ namespace CUETools.Codecs
 			return false;
 		}
 
+		unsafe public static void MemCpy(uint* res, uint* smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = *(smp++);
+		}
+
 		unsafe public static void MemCpy(int* res, int* smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = *(smp++);
+		}
+
+		unsafe public static void MemCpy(short* res, short* smp, int n)
 		{
 			for (int i = n; i > 0; i--)
 				*(res++) = *(smp++);
@@ -383,8 +395,8 @@ namespace CUETools.Codecs
 	{
 		Stream _IO;
 		BinaryReader _br;
-		ulong _dataOffset, _dataLen;
-		ulong _samplePos, _sampleLen;
+		ulong _dataOffset, _samplePos, _sampleLen;
+		long _dataLen;
 		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		bool _largeFile;
 		string _path;
@@ -398,7 +410,23 @@ namespace CUETools.Codecs
 
 			ParseHeaders();
 
-			_sampleLen = _dataLen / (uint)_blockAlign;
+			if (_dataLen < 0)
+				//_sampleLen = 0;
+				throw new Exception("WAVE stream length unknown");
+			else
+				_sampleLen = (ulong)(_dataLen / _blockAlign);
+		}
+
+		public WAVReader(Stream IO)
+		{
+			_path = "";
+			_IO = IO;
+			_br = new BinaryReader(_IO);
+			ParseHeaders();
+			if (_dataLen < 0)
+				_sampleLen = 0;
+			else
+				_sampleLen = (ulong)(_dataLen / _blockAlign);
 		}
 
 		public void Close()
@@ -473,14 +501,15 @@ namespace CUETools.Codecs
 					_dataOffset = (ulong)pos;
 					if (!_IO.CanSeek || _IO.Length <= maxFileSize)
 					{
-						if (ckSize == 0x7fffffff)
-							throw new Exception("WAVE stream length unknown");
-						_dataLen = ckSize;
+						if (ckSize >= 0x7fffffff)
+							_dataLen = -1;
+						else
+							_dataLen = (long)ckSize;
 					}
 					else
 					{
 						_largeFile = true;
-						_dataLen = ((ulong)_IO.Length) - _dataOffset;
+						_dataLen = _IO.Length - pos;
 					}
 				}
 
@@ -517,14 +546,10 @@ namespace CUETools.Codecs
 			{
 				ulong seekPos;
 
-				if (value > _sampleLen)
-				{
+				if (_sampleLen != 0 && value > _sampleLen)
 					_samplePos = _sampleLen;
-				}
 				else
-				{
 					_samplePos = value;
-				}
 
 				seekPos = _dataOffset + (_samplePos * (uint)_blockAlign);
 				_IO.Seek((long)seekPos, SeekOrigin.Begin);
@@ -581,7 +606,7 @@ namespace CUETools.Codecs
 
 		public uint Read(int[,] buff, uint sampleCount)
 		{
-			if (sampleCount > Remaining)
+			if (_sampleLen > 0 && sampleCount > Remaining)
 				sampleCount = (uint)Remaining;
 
 			if (sampleCount == 0)
@@ -594,7 +619,13 @@ namespace CUETools.Codecs
 			{
 				int len = _IO.Read(_sampleBuffer, pos, (int)byteCount - pos);
 				if (len <= 0)
-					throw new Exception("Incomplete file read.");
+				{
+					if ((pos % BlockAlign) != 0 || _sampleLen > 0)
+						throw new Exception("Incomplete file read.");
+					sampleCount = (uint)(pos / BlockAlign);
+					_sampleLen = _samplePos + sampleCount;
+					break;
+				}
 				pos += len;
 			} while (pos < byteCount);
 			AudioSamples.BytesToFLACSamples(_sampleBuffer, 0, buff, 0,
@@ -1516,7 +1547,7 @@ namespace CUETools.Codecs
 
 		// public bool ReadSource(IAudioSource input)
 
-		public void Write(int[,] samples, int offset, int count)
+		public unsafe void Write(int[,] samples, int offset, int count)
 		{
 			int pos, chunk;
 			while (count > 0)
@@ -1535,7 +1566,9 @@ namespace CUETools.Codecs
 					chunk = Math.Min(FreeSpace, _size - pos);
 					chunk = Math.Min(chunk, count);
 				}
-				Array.Copy(samples, offset * Channels, _buffer, pos * Channels, chunk * Channels);
+				fixed (int* src = &samples[offset, 0], dst = &_buffer[pos, 0])
+					AudioSamples.MemCpy(dst, src, chunk * Channels);
+				//Array.Copy(samples, offset * Channels, _buffer, pos * Channels, chunk * Channels);
 				lock (this)
 				{
 					_end += chunk;
