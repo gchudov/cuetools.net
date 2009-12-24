@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Text;
 using CUETools.Codecs;
 using CUETools.Codecs.FLAKE;
@@ -57,10 +58,8 @@ namespace CUETools.Codecs.FlaCuda
 		// this can be used to allocate memory for output
 		int max_frame_size;
 
-		byte[] frame_buffer = null;
-		BitWriter frame_writer = null;
-
 		int frame_count = 0;
+		int frame_pos = 0;
 
 		long first_frame_offset = 0;
 
@@ -70,7 +69,6 @@ namespace CUETools.Codecs.FlaCuda
 		// allocated by flake_encode_init and freed by flake_encode_close
 		byte[] header;
 
-		int[] residualBuffer;
 		float[] windowBuffer;
 		byte[] md5_buffer;
 		int samplesInBuffer = 0;
@@ -85,8 +83,6 @@ namespace CUETools.Codecs.FlaCuda
 		Crc16 crc16;
 		MD5 md5;
 
-		FlakeReader verify;
-
 		SeekPoint[] seek_table;
 		int seek_table_offset = -1;
 
@@ -95,10 +91,14 @@ namespace CUETools.Codecs.FlaCuda
 		CUDA cuda;
 		FlaCudaTask task1;
 		FlaCudaTask task2;
+		FlaCudaTask[] cpu_tasks;
+		int oldest_cpu_task = 0;
 
 		CUdeviceptr cudaWindow;
 
 		bool encode_on_cpu = false;
+
+		int cpu_threads = 0;
 
 		bool do_lattice = false;
 
@@ -123,7 +123,6 @@ namespace CUETools.Codecs.FlaCuda
 			_path = path;
 			_IO = IO;
 
-			residualBuffer = new int[FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 10 : channels + 1)];
 			windowBuffer = new float[FlaCudaWriter.MAX_BLOCKSIZE * lpc.MAX_LPC_WINDOWS];
 			md5_buffer = new byte[FlaCudaWriter.MAX_BLOCKSIZE * channels * bits_per_sample / 8];
 
@@ -166,6 +165,20 @@ namespace CUETools.Codecs.FlaCuda
 					throw new Exception("unsupported compression level");
 				_compressionLevel = value;
 				eparams.flake_set_defaults(_compressionLevel, encode_on_cpu);
+			}
+		}
+
+		public int CPUThreads
+		{
+			get
+			{
+				return cpu_threads;
+			}
+			set
+			{
+				if (value < 0 || value > 16)
+					throw new Exception("cpu_threads must be between 0..16");
+				cpu_threads = value;
 			}
 		}
 
@@ -213,8 +226,23 @@ namespace CUETools.Codecs.FlaCuda
 				}
 				if (task2.frameCount > 0)
 				{
+					if (cpu_tasks != null)
+					{
+						for (int i = 0; i < cpu_tasks.Length; i++)
+						{
+							wait_for_cpu_task();
+							FlaCudaTask task = cpu_tasks[oldest_cpu_task];
+							oldest_cpu_task = (oldest_cpu_task + 1) % cpu_tasks.Length;
+							if (task.frameCount > 0)
+							{
+								write_result(task);
+								task.frameCount = 0;
+							}
+						}
+					}
 					cuda.SynchronizeStream(task2.stream);
 					process_result(task2);
+					write_result(task2);
 					task2.frameCount = 0;
 				}
 
@@ -231,7 +259,7 @@ namespace CUETools.Codecs.FlaCuda
 
 					if (md5 != null)
 					{
-						md5.TransformFinalBlock(frame_buffer, 0, 0);
+						md5.TransformFinalBlock(new byte[] { 0 }, 0, 0);
 						_IO.Position = 26;
 						_IO.Write(md5.Hash, 0, md5.Hash.Length);
 					}
@@ -248,6 +276,9 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.Free(cudaWindow);
 				task1.Dispose();
 				task2.Dispose();
+				if (cpu_tasks != null)
+					foreach (FlaCudaTask task in cpu_tasks)
+						task.Dispose();
 				cuda.UnloadModule();
 				cuda.DestroyContext();
 				cuda.Dispose();
@@ -270,6 +301,9 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.Free(cudaWindow);
 				task1.Dispose();
 				task2.Dispose();
+				if (cpu_tasks != null)
+					foreach (FlaCudaTask task in cpu_tasks)
+						task.Dispose();
 				cuda.UnloadModule();
 				cuda.DestroyContext();
 				cuda.Dispose();
@@ -714,114 +748,114 @@ namespace CUETools.Codecs.FlaCuda
 			return porder;
 		}
 
-		unsafe void output_frame_header(FlacFrame frame, BitWriter bitwriter)
+		unsafe void output_frame_header(FlacFrame frame)
 		{
-			bitwriter.writebits(15, 0x7FFC);
-			bitwriter.writebits(1, eparams.variable_block_size > 0 ? 1 : 0);
-			bitwriter.writebits(4, frame.bs_code0);
-			bitwriter.writebits(4, sr_code0);
+			frame.writer.writebits(15, 0x7FFC);
+			frame.writer.writebits(1, eparams.variable_block_size > 0 ? 1 : 0);
+			frame.writer.writebits(4, frame.bs_code0);
+			frame.writer.writebits(4, sr_code0);
 			if (frame.ch_mode == ChannelMode.NotStereo)
-				bitwriter.writebits(4, ch_code);
+				frame.writer.writebits(4, ch_code);
 			else
-				bitwriter.writebits(4, (int) frame.ch_mode);
-			bitwriter.writebits(3, bps_code);
-			bitwriter.writebits(1, 0);
-			bitwriter.write_utf8(frame_count);
+				frame.writer.writebits(4, (int)frame.ch_mode);
+			frame.writer.writebits(3, bps_code);
+			frame.writer.writebits(1, 0);
+			frame.writer.write_utf8(frame.frame_number);
 
 			// custom block size
 			if (frame.bs_code1 >= 0)
 			{
 				if (frame.bs_code1 < 256)
-					bitwriter.writebits(8, frame.bs_code1);
+					frame.writer.writebits(8, frame.bs_code1);
 				else
-					bitwriter.writebits(16, frame.bs_code1);
+					frame.writer.writebits(16, frame.bs_code1);
 			}
 
 			// custom sample rate
 			if (sr_code1 > 0)
 			{
 				if (sr_code1 < 256)
-					bitwriter.writebits(8, sr_code1);
+					frame.writer.writebits(8, sr_code1);
 				else
-					bitwriter.writebits(16, sr_code1);
+					frame.writer.writebits(16, sr_code1);
 			}
 
 			// CRC-8 of frame header
-			bitwriter.flush();
-			byte crc = crc8.ComputeChecksum(frame_buffer, 0, bitwriter.Length);
-			bitwriter.writebits(8, crc);
+			frame.writer.flush();
+			byte crc = crc8.ComputeChecksum(frame.writer.Buffer, frame.writer_offset, frame.writer.Length - frame.writer_offset);
+			frame.writer.writebits(8, crc);
 		}
 
-		unsafe void output_residual(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
+		unsafe void output_residual(FlacFrame frame, FlacSubframeInfo sub)
 		{
 			// rice-encoded block
-			bitwriter.writebits(2, 0);
+			frame.writer.writebits(2, 0);
 
 			// partition order
 			int porder = sub.best.rc.porder;
 			int psize = frame.blocksize >> porder;
 			//assert(porder >= 0);
-			bitwriter.writebits(4, porder);
+			frame.writer.writebits(4, porder);
 			int res_cnt = psize - sub.best.order;
 
 			// residual
 			int j = sub.best.order;
-			fixed (byte* fixbuf = &frame_buffer[0])
+			fixed (byte* fixbuf = frame.writer.Buffer)
 			for (int p = 0; p < (1 << porder); p++)
 			{
 				int k = sub.best.rc.rparams[p];
-				bitwriter.writebits(4, k);
+				frame.writer.writebits(4, k);
 				if (p == 1) res_cnt = psize;
 				int cnt = Math.Min(res_cnt, frame.blocksize - j);
-				bitwriter.write_rice_block_signed(fixbuf, k, sub.best.residual + j, cnt);
+				frame.writer.write_rice_block_signed(fixbuf, k, sub.best.residual + j, cnt);
 				j += cnt;
 			}
 		}
 
 		unsafe void 
-		output_subframe_constant(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
+		output_subframe_constant(FlacFrame frame, FlacSubframeInfo sub)
 		{
-			bitwriter.writebits_signed(sub.obits, sub.samples[0]);
+			frame.writer.writebits_signed(sub.obits, sub.samples[0]);
 		}
 
 		unsafe void
-		output_subframe_verbatim(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
+		output_subframe_verbatim(FlacFrame frame, FlacSubframeInfo sub)
 		{
 			int n = frame.blocksize;
 			for (int i = 0; i < n; i++)
-				bitwriter.writebits_signed(sub.obits, sub.samples[i]);
+				frame.writer.writebits_signed(sub.obits, sub.samples[i]);
 			// Don't use residual here, because we don't copy samples to residual for verbatim frames.
 		}
 
 		unsafe void
-		output_subframe_fixed(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
+		output_subframe_fixed(FlacFrame frame, FlacSubframeInfo sub)
 		{
 			// warm-up samples
 			for (int i = 0; i < sub.best.order; i++)
-				bitwriter.writebits_signed(sub.obits, sub.samples[i]);
+				frame.writer.writebits_signed(sub.obits, sub.samples[i]);
 
 			// residual
-			output_residual(frame, bitwriter, sub);
+			output_residual(frame, sub);
 		}
 
 		unsafe void
-		output_subframe_lpc(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
+		output_subframe_lpc(FlacFrame frame, FlacSubframeInfo sub)
 		{
 			// warm-up samples
 			for (int i = 0; i < sub.best.order; i++)
-				bitwriter.writebits_signed(sub.obits, sub.samples[i]);
+				frame.writer.writebits_signed(sub.obits, sub.samples[i]);
 
 			// LPC coefficients
-			bitwriter.writebits(4, sub.best.cbits - 1);
-			bitwriter.writebits_signed(5, sub.best.shift);
+			frame.writer.writebits(4, sub.best.cbits - 1);
+			frame.writer.writebits_signed(5, sub.best.shift);
 			for (int i = 0; i < sub.best.order; i++)
-				bitwriter.writebits_signed(sub.best.cbits, sub.best.coefs[i]);
+				frame.writer.writebits_signed(sub.best.cbits, sub.best.coefs[i]);
 			
 			// residual
-			output_residual(frame, bitwriter, sub);
+			output_residual(frame, sub);
 		}
 
-		unsafe void output_subframes(FlacFrame frame, BitWriter bitwriter)
+		unsafe void output_subframes(FlacFrame frame)
 		{
 			for (int ch = 0; ch < channels; ch++)
 			{
@@ -832,11 +866,11 @@ namespace CUETools.Codecs.FlaCuda
 					type_code |= sub.best.order;
 				if (sub.best.type == SubframeType.LPC)
 					type_code |= sub.best.order - 1;
-				bitwriter.writebits(1, 0);
-				bitwriter.writebits(6, type_code);
-				bitwriter.writebits(1, sub.wbits != 0 ? 1 : 0);
+				frame.writer.writebits(1, 0);
+				frame.writer.writebits(6, type_code);
+				frame.writer.writebits(1, sub.wbits != 0 ? 1 : 0);
 				if (sub.wbits > 0)
-					bitwriter.writebits((int)sub.wbits, 1);
+					frame.writer.writebits((int)sub.wbits, 1);
 
 				//if (frame_writer.Length >= frame_buffer.Length)
 				//    throw new Exception("buffer overflow");
@@ -845,16 +879,16 @@ namespace CUETools.Codecs.FlaCuda
 				switch (sub.best.type)
 				{
 					case SubframeType.Constant:
-						output_subframe_constant(frame, bitwriter, sub);
+						output_subframe_constant(frame, sub);
 						break;
 					case SubframeType.Verbatim:
-						output_subframe_verbatim(frame, bitwriter, sub);
+						output_subframe_verbatim(frame, sub);
 						break;
 					case SubframeType.Fixed:
-						output_subframe_fixed(frame, bitwriter, sub);
+						output_subframe_fixed(frame, sub);
 						break;
 					case SubframeType.LPC:
-						output_subframe_lpc(frame, bitwriter, sub);
+						output_subframe_lpc(frame, sub);
 						break;
 				}
 				//if (frame_writer.Length >= frame_buffer.Length)
@@ -862,12 +896,12 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
-		void output_frame_footer(BitWriter bitwriter)
+		void output_frame_footer(FlacFrame frame)
 		{
-			bitwriter.flush();
-			ushort crc = crc16.ComputeChecksum(frame_buffer, 0, bitwriter.Length);
-			bitwriter.writebits(16, crc);
-			bitwriter.flush();
+			frame.writer.flush();
+			ushort crc = crc16.ComputeChecksum(frame.writer.Buffer, frame.writer_offset, frame.writer.Length - frame.writer_offset);
+			frame.writer.writebits(16, crc);
+			frame.writer.flush();
 		}
 
 		unsafe delegate void window_function(float* window, int size);
@@ -1004,6 +1038,7 @@ namespace CUETools.Codecs.FlaCuda
 					case SubframeType.Verbatim:
 						break;
 					case SubframeType.Fixed:
+						if (encode_on_cpu)
 						{
 							encode_residual_fixed(frame.subframes[ch].best.residual, frame.subframes[ch].samples,
 								frame.blocksize, frame.subframes[ch].best.order);
@@ -1323,39 +1358,33 @@ namespace CUETools.Codecs.FlaCuda
 			cuda.CopyDeviceToHostAsync(task.cudaBestResidualTasks, task.bestResidualTasksPtr, (uint)(sizeof(FlaCudaSubframeTask) * channels * task.frameCount), task.stream);
 		}
 
-		unsafe int encode_frame(bool doMidside, int channelCount, int iFrame, FlaCudaTask task)
+		unsafe int encode_frame(bool doMidside, int channelCount, int iFrame, FlaCudaTask task, int current_frame_number)
 		{
-			fixed (int* r = residualBuffer)
+			fixed (int* r = task.residualBuffer)
 			{
-				FlacFrame frame = task.frame;
-				frame.InitSize(task.frameSize, eparams.variable_block_size != 0);
+				task.frame.InitSize(task.frameSize, eparams.variable_block_size != 0);
 				for (int ch = 0; ch < channelCount; ch++)
 				{
 					int* s = ((int*)task.samplesBufferPtr) + ch * FlaCudaWriter.MAX_BLOCKSIZE + iFrame * task.frameSize;
-					frame.subframes[ch].Init(s, r + ch * FlaCudaWriter.MAX_BLOCKSIZE,
+					task.frame.subframes[ch].Init(s, r + ch * FlaCudaWriter.MAX_BLOCKSIZE,
 						bits_per_sample + (doMidside && ch == 3 ? 1U : 0U), 0);
 				}
 
-				select_best_methods(frame, channelCount, iFrame, task);
+				select_best_methods(task.frame, channelCount, iFrame, task);
 
-				encode_residual(frame);
+				encode_residual(task.frame);
 
-				frame_writer.Reset();
+				//task.frame.writer.Reset();
+				task.frame.frame_number = current_frame_number;
+				task.frame.writer_offset = task.frame.writer.Length;
 
-				output_frame_header(frame, frame_writer);
-				output_subframes(frame, frame_writer);
-				output_frame_footer(frame_writer);
-				if (frame_writer.Length >= frame_buffer.Length)
+				output_frame_header(task.frame);
+				output_subframes(task.frame);
+				output_frame_footer(task.frame);
+				if (task.frame.writer.Length - task.frame.writer_offset >= max_frame_size)
 					throw new Exception("buffer overflow");
 
-				if (frame_buffer != null)
-				{
-					if (eparams.variable_block_size > 0)
-						frame_count += frame.blocksize;
-					else
-						frame_count++;
-				}
-				return frame_writer.Length;
+				return task.frame.writer.Length - task.frame.writer_offset;
 			}
 		}
 
@@ -1367,8 +1396,12 @@ namespace CUETools.Codecs.FlaCuda
 				task.nResidualTasks = 0;
 			task.frameCount = nFrames;
 			task.frameSize = blocksize;
+			task.frameNumber = eparams.variable_block_size > 0 ? frame_pos : frame_count;
+			task.framePos = frame_pos;
+			frame_count += nFrames;
+			frame_pos += nFrames * blocksize;
 			cuda.CopyHostToDeviceAsync(task.cudaSamplesBytes, task.samplesBytesPtr, (uint)(sizeof(short) * channels * blocksize * nFrames), task.stream);
-			if (verify != null)
+			if (task.verify != null)
 			{
 				int* r = (int*)task.samplesBufferPtr;
 				fixed (int* s = task.verifyBuffer)
@@ -1402,19 +1435,35 @@ namespace CUETools.Codecs.FlaCuda
 			estimate_residual(task, channelsCount);
 		}
 
-		unsafe int process_result(FlaCudaTask task)
+		unsafe void process_result(FlaCudaTask task)
 		{
 			bool doMidside = channels == 2 && eparams.do_midside;
 			int channelCount = doMidside ? 2 * channels : channels;
 
-			int bs = 0;
+			int iSample = 0;
+			int iByte = 0;
+			task.frame.writer.Reset();
+			task.frame.writer_offset = 0;
 			for (int iFrame = 0; iFrame < task.frameCount; iFrame++)
 			{
 				//if (0 != eparams.variable_block_size && 0 == (task.blocksize & 7) && task.blocksize >= 128)
 				//    fs = encode_frame_vbs();
 				//else
-				int fs = encode_frame(doMidside, channelCount, iFrame, task);
-				bs += task.frameSize;
+				int fn = task.frameNumber + (eparams.variable_block_size > 0 ? iSample : iFrame);
+				int fs = encode_frame(doMidside, channelCount, iFrame, task, fn);
+
+				if (task.verify != null)
+				{					
+					int decoded = task.verify.DecodeFrame(task.frame.writer.Buffer, task.frame.writer_offset, fs);
+					if (decoded != fs || task.verify.Remaining != (ulong)task.frameSize)
+						throw new Exception("validation failed! frame size mismatch");
+					fixed (int* s = task.verifyBuffer, r = task.verify.Samples)
+					{
+						for (int ch = 0; ch < channels; ch++)
+							if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
+								throw new Exception("validation failed!");
+					}
+				}
 
 				if (seek_table != null && _IO.CanSeek)
 				{
@@ -1422,35 +1471,42 @@ namespace CUETools.Codecs.FlaCuda
 					{
 						if (seek_table[sp].framesize != 0)
 							continue;
-						if (seek_table[sp].number > (ulong)_position + (ulong)task.frameSize)
+						if (seek_table[sp].number >= (ulong)(task.framePos + iSample + task.frameSize))
 							break;
-						if (seek_table[sp].number >= (ulong)_position)
+						if (seek_table[sp].number >= (ulong)(task.framePos + iSample))
 						{
-							seek_table[sp].number = (ulong)_position;
-							seek_table[sp].offset = (ulong)(_IO.Position - first_frame_offset);
+							seek_table[sp].number = (ulong)(task.framePos + iSample);
+							seek_table[sp].offset = (ulong)iByte;
 							seek_table[sp].framesize = (uint)task.frameSize;
 						}
 					}
 				}
 
-				_position += task.frameSize;
-				_IO.Write(frame_buffer, 0, fs);
-				_totalSize += fs;
+				//Array.Copy(task.frame.buffer, 0, task.outputBuffer, iByte, fs);
 
-				if (verify != null)
-				{
-					int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
-					if (decoded != fs || verify.Remaining != (ulong)task.frameSize)
-						throw new Exception("validation failed! frame size mismatch");
-					fixed (int* s = task.verifyBuffer, r = verify.Samples)
-					{
-						for (int ch = 0; ch < channels; ch++)
-							if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FlaCudaWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
-								throw new Exception("validation failed!");
-					}
-				}
+				iSample += task.frameSize;
+				iByte += fs;
 			}
-			return bs;
+			task.outputSize = iByte;
+			if (iByte != task.frame.writer.Length)
+				throw new Exception("invalid length");
+		}
+
+		unsafe void write_result(FlaCudaTask task)
+		{
+			int iSample = task.frameSize * task.frameCount;
+
+			if (seek_table != null && _IO.CanSeek)
+				for (int sp = 0; sp < seek_table.Length; sp++)
+				{
+					if (seek_table[sp].number >= (ulong)(task.framePos + iSample))
+						break;
+					if (seek_table[sp].number >= (ulong)(task.framePos))
+						seek_table[sp].offset += (ulong)(_IO.Position - first_frame_offset);
+				}
+			_IO.Write(task.outputBuffer, 0, task.outputSize);
+			_position += iSample;
+			_totalSize += task.outputSize;
 		}
 
 		public unsafe void Write(int[,] buff, int pos, int sampleCount)
@@ -1466,15 +1522,23 @@ namespace CUETools.Codecs.FlaCuda
 				using (StreamReader sr = new StreamReader(cubin))
 					cuda.LoadModule(new ASCIIEncoding().GetBytes(sr.ReadToEnd()));
 				//cuda.LoadModule(System.IO.Path.Combine(Environment.CurrentDirectory, "flacuda.cubin"));
-				task1 = new FlaCudaTask(cuda, channelCount);
-				task2 = new FlaCudaTask(cuda, channelCount);
-				cudaWindow = cuda.Allocate((uint)sizeof(float) * FlaCudaWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS);
 				if (_IO == null)
 					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
 				int header_size = flake_encode_init();
 				_IO.Write(header, 0, header_size);
 				if (_IO.CanSeek)
 					first_frame_offset = _IO.Position;
+
+				task1 = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, eparams.do_verify);
+				task2 = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, eparams.do_verify);
+				if (cpu_threads > 0)
+				{
+					cpu_tasks = new FlaCudaTask[cpu_threads];
+					for (int i = 0; i < cpu_tasks.Length; i++)
+						cpu_tasks[i] = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, eparams.do_verify);
+				}
+				cudaWindow = cuda.Allocate((uint)sizeof(float) * FlaCudaWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS);
+				
 				inited = true;
 			}
 			int len = sampleCount;
@@ -1499,6 +1563,58 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
+		public void wait_for_cpu_task()
+		{
+			FlaCudaTask task = cpu_tasks[oldest_cpu_task];
+			if (task.workThread == null)
+				return;
+			lock (task)
+			{
+				while (!task.done)
+					Monitor.Wait(task);
+			}
+		}
+
+		public void cpu_task_thread(object param)
+		{
+			FlaCudaTask task = param as FlaCudaTask;
+			while (true)
+			{
+				lock (task)
+				{
+					while (task.done)
+						Monitor.Wait(task);
+				}
+				process_result(task);
+				lock (task)
+				{
+					task.done = true;
+					Monitor.Pulse(task);
+				}
+			}
+		}
+
+		public void start_cpu_task()
+		{
+			FlaCudaTask task = cpu_tasks[oldest_cpu_task];
+			if (task.workThread == null)
+			{
+				task.done = false;
+				task.workThread = new Thread(cpu_task_thread);
+				task.workThread.IsBackground = true;
+				//task.workThread.Priority = ThreadPriority.BelowNormal;
+				task.workThread.Start(task);
+			}
+			else
+			{
+				lock (task)
+				{
+					task.done = false;
+					Monitor.Pulse(task);
+				}
+			}
+		}
+
 		public unsafe void do_output_frames(int nFrames)
 		{
 			bool doMidside = channels == 2 && eparams.do_midside;
@@ -1509,7 +1625,28 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.SynchronizeStream(task2.stream);
 			run_GPU_task(task1);
 			if (task2.frameCount > 0)
-				process_result(task2);
+			{
+				if (cpu_tasks != null)
+				{
+					wait_for_cpu_task();
+					
+					FlaCudaTask ttmp = cpu_tasks[oldest_cpu_task];
+					cpu_tasks[oldest_cpu_task] = task2;
+					task2 = ttmp;
+
+					start_cpu_task();					
+
+					oldest_cpu_task = (oldest_cpu_task + 1) % cpu_tasks.Length;
+					
+					if (task2.frameCount > 0)
+						write_result(task2);
+				}
+				else
+				{
+					process_result(task2);
+					write_result(task2);
+				}
+			}
 			int bs = eparams.block_size * nFrames;
 			if (bs < samplesInBuffer)
 			{
@@ -1759,15 +1896,6 @@ namespace CUETools.Codecs.FlaCuda
 			if (_IO.CanSeek && eparams.do_md5)
 				md5 = new MD5CryptoServiceProvider();
 
-			if (eparams.do_verify)
-			{
-				verify = new FlakeReader(channels, bits_per_sample);
-				verify.DoCRC = false;
-			}
-
-			frame_buffer = new byte[max_frame_size + 1];
-			frame_writer = new BitWriter(frame_buffer, 0, max_frame_size + 1);
-
 			return header_len;
 		}
 	}
@@ -1939,7 +2067,7 @@ namespace CUETools.Codecs.FlaCuda
 				case 4:
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					orders_per_window = 4;
+					orders_per_window = 3;
 					max_prediction_order = 8;
 					max_partition_order = 4;
 					break;
@@ -2052,9 +2180,14 @@ namespace CUETools.Codecs.FlaCuda
 		public IntPtr residualTasksPtr = IntPtr.Zero;
 		public IntPtr bestResidualTasksPtr = IntPtr.Zero;
 		public CUstream stream;
+		public int[] residualBuffer;
 		public int[] verifyBuffer;
+		public byte[] outputBuffer;
+		public int outputSize = 0;
 		public int frameSize = 0;
 		public int frameCount = 0;
+		public int frameNumber = 0;
+		public int framePos = 0;
 		public FlacFrame frame;
 		public int residualTasksLen;
 		public int bestResidualTasksLen;
@@ -2065,7 +2198,12 @@ namespace CUETools.Codecs.FlaCuda
 		public int nAutocorTasksPerChannel = 0;
 		public int max_porder = 0;
 
-		unsafe public FlaCudaTask(CUDA _cuda, int channelCount)
+		public FlakeReader verify;
+
+		public Thread workThread = null;
+		public bool done = false;
+
+		unsafe public FlaCudaTask(CUDA _cuda, int channelCount, int channels, uint bits_per_sample, int max_frame_size, bool do_verify)
 		{
 			cuda = _cuda;
 
@@ -2136,7 +2274,17 @@ namespace CUETools.Codecs.FlaCuda
 
 			stream = cuda.CreateStream();
 			verifyBuffer = new int[FlaCudaWriter.MAX_BLOCKSIZE * channelCount]; // should be channels, not channelCount. And should null if not doing verify!
+			//residualBuffer = new int[FlaCudaWriter.MAX_BLOCKSIZE * Math.Max(10, channelCount + 1)];
+			residualBuffer = new int[FlaCudaWriter.MAX_BLOCKSIZE * (channels == 2 ? 10 : channels + 1)];
+			outputBuffer = new byte[max_frame_size * FlaCudaWriter.maxFrames + 1];
 			frame = new FlacFrame(channelCount);
+			frame.writer = new BitWriter(outputBuffer, 0, outputBuffer.Length);
+
+			if (do_verify)
+			{
+				verify = new FlakeReader(channels, bits_per_sample);
+				verify.DoCRC = false;
+			}
 		}
 
 		public void Dispose()
