@@ -126,9 +126,6 @@
   <data name="comboLanguage.ToolTip" xml:space="preserve">
     <value>Sprache der CUETools-Oberfläche</value>
   </data>
-  <data name="chkSingleInstance.Text" xml:space="preserve">
-    <value>Auf eine Instanz beschränken</value>
-  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="chkOverwriteTags.Text" xml:space="preserve">
     <value>CUE-Daten überschreiben</value>
@@ -222,15 +219,6 @@
   </data>
   <data name="chkWVExtraMode.Text" xml:space="preserve">
     <value>Extramodus:</value>
-  </data>
-  <data name="rbWVVeryHigh.Text" xml:space="preserve">
-    <value>Sehr hoch</value>
-  </data>
-  <data name="rbWVHigh.Text" xml:space="preserve">
-    <value>Hoch</value>
-  </data>
-  <data name="rbWVFast.Text" xml:space="preserve">
-    <value>Schnell</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
     <value>und Null-Offset</value>
@@ -337,6 +325,9 @@
   <data name="groupBoxGaps.Text" xml:space="preserve">
     <value>Lücken</value>
   </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>CUETools</value>
+  </data>
   <data name="rbGapsPlusHTOA.Text" xml:space="preserve">
     <value>Lücken &amp;angehängt + HTOA</value>
   </data>
@@ -360,18 +351,6 @@
   </data>
   <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
     <value>Lücken werden ausgelassen und durch Stille ersetzt.</value>
-  </data>
-  <data name="rbAPEinsane.Text" xml:space="preserve">
-    <value>Verrückt</value>
-  </data>
-  <data name="rbAPEextrahigh.Text" xml:space="preserve">
-    <value>Sehr hoch</value>
-  </data>
-  <data name="rbAPEhigh.Text" xml:space="preserve">
-    <value>Hoch</value>
-  </data>
-  <data name="rbAPEfast.Text" xml:space="preserve">
-    <value>Schnell</value>
   </data>
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Log</value>
@@ -451,6 +430,15 @@
   <data name="checkBoxEncoderLossless.Text" xml:space="preserve">
     <value>Verlustfrei</value>
   </data>
+  <data name="textBoxEncoderPath.ToolTip" xml:space="preserve">
+    <value>Pfad zu externer ausführbarer Datei des Encoders</value>
+  </data>
+  <data name="textBoxEncoderParameters.ToolTip" xml:space="preserve">
+    <value>Parameter für den Encoder</value>
+  </data>
+  <data name="textBoxEncoderName.ToolTip" xml:space="preserve">
+    <value>Name des Encoders</value>
+  </data>
   <data name="tabPage11.Text" xml:space="preserve">
     <value>Decoder</value>
   </data>
@@ -472,31 +460,16 @@
   <data name="buttonScriptCompile.Text" xml:space="preserve">
     <value>Kompilieren</value>
   </data>
-  <data name="label6.Text" xml:space="preserve">
-    <value>Parameter</value>
-  </data>
-  <data name="label4.Text" xml:space="preserve">
-    <value>Parameter</value>
-  </data>
   <data name="label3.Text" xml:space="preserve">
     <value>% der verif. Tracks &gt;=</value>
   </data>
-  <data name="tabPage9.Text" xml:space="preserve">
-    <value>Benutzerdefiniert</value>
-  </data>
   <data name="grpHDCD.Text" xml:space="preserve">
     <value>HDCD-Optionen</value>
-  </data>
-  <data name="grpHDCD.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="chkHDCDDetect.Text" xml:space="preserve">
     <value>Erkenne HDCD-Kodierung</value>
   </data>
   <data name="chkHDCDDetect.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="tabPage4.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="checkBox1.Text" xml:space="preserve">
@@ -507,8 +480,5 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Erweiterte Einstellungen</value>
-  </data>
-  <data name="$this.ToolTip" xml:space="preserve">
-    <value />
   </data>
 </root>
