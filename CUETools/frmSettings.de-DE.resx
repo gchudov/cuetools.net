@@ -421,6 +421,15 @@
   <data name="groupBoxLibFLAC.Text" xml:space="preserve">
     <value>libFLAC-Optionen</value>
   </data>
+  <data name="checkBoxFlaCudaGPUOnly.Text" xml:space="preserve">
+    <value>nur GPU</value>
+  </data>
+  <data name="checkBoxFlaCudaVerify.Text" xml:space="preserve">
+    <value>Verifizieren</value>
+  </data>
+  <data name="groupBoxFlaCudaOptions.Text" xml:space="preserve">
+    <value>FlaCuda-Optionen</value>
+  </data>
   <data name="groupBoxLibWavpack.Text" xml:space="preserve">
     <value>WavPack-Optionen</value>
   </data>
@@ -489,6 +498,9 @@
   </data>
   <data name="tabPage4.ToolTip" xml:space="preserve">
     <value />
+  </data>
+  <data name="checkBox1.Text" xml:space="preserve">
+    <value>Verifizieren</value>
   </data>
   <data name="tabControl1.ToolTip" xml:space="preserve">
     <value />
