@@ -25,7 +25,6 @@ using System;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Security.Cryptography;
 #if INTEROP
 using System.Runtime.InteropServices;
@@ -34,6 +33,7 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
 {
+	[AudioEncoderClass("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", 2)]
 	public class FlakeWriter : IAudioDest
 	{
 		Stream _IO = null;
@@ -47,18 +47,17 @@ namespace CUETools.Codecs.FLAKE
 
 		// audio sample rate in Hz
 		// set by user prior to calling flake_encode_init
-		int sample_rate, sr_code0, sr_code1;
+		int sr_code0, sr_code1;
 
 		// sample size in bits
 		// set by user prior to calling flake_encode_init
 		// only 16-bit is currently supported
-		uint bits_per_sample;
 		int bps_code;
 
 		// total stream samples
 		// set by user prior to calling flake_encode_init
 		// if 0, stream length is unknown
-		int sample_count;
+		int sample_count = -1;
 
 		FlakeEncodeParams eparams;
 
@@ -104,17 +103,18 @@ namespace CUETools.Codecs.FLAKE
 		int seek_table_offset = -1;
 
 		bool inited = false;
+		AudioPCMConfig _pcm;
 
-		public FlakeWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO)
+		public FlakeWriter(string path, Stream IO, AudioPCMConfig pcm)
 		{
-			if (bitsPerSample != 16)
+			_pcm = pcm;
+
+			if (_pcm.BitsPerSample != 16)
 				throw new Exception("Bits per sample must be 16.");
-			if (channelCount != 2)
+			if (_pcm.ChannelCount != 2)
 				throw new Exception("ChannelCount must be 2.");
 
-			channels = channelCount;
-			sample_rate = sampleRate;
-			bits_per_sample = (uint) bitsPerSample;
+			channels = pcm.ChannelCount;
 
 			// flake_validate_params
 
@@ -132,6 +132,11 @@ namespace CUETools.Codecs.FLAKE
 			crc8 = new Crc8();
 			crc16 = new Crc16();
 			frame = new FlacFrame(channels * 2);
+		}
+
+		public FlakeWriter(string path, AudioPCMConfig pcm)
+			: this(path, null, pcm)
+		{
 		}
 
 		public int TotalSize
@@ -169,6 +174,15 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
+		public string Options
+		{
+			set
+			{
+				if (value == null || value == "") return;
+				throw new Exception("Unsupported options " + value);
+			}
+		}
+
 #if INTEROP
 		[DllImport("kernel32.dll")]
 		static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
@@ -188,6 +202,15 @@ namespace CUETools.Codecs.FLAKE
 
 				if (_IO.CanSeek)
 				{
+					if (sample_count <= 0 && _position != 0)
+					{
+						BitWriter bitwriter = new BitWriter(header, 0, 4);
+						bitwriter.writebits(32, (int)_position);
+						bitwriter.flush();
+						_IO.Position = 22;
+						_IO.Write(header, 0, 4);
+					}
+
 					if (md5 != null)
 					{
 						md5.TransformFinalBlock(frame_buffer, 0, 0);
@@ -216,7 +239,7 @@ namespace CUETools.Codecs.FLAKE
 		public void Close()
 		{
 			DoClose();
-			if (sample_count != 0 && _position != sample_count)
+			if (sample_count > 0 && _position != sample_count)
 				throw new Exception("Samples written differs from the expected sample count.");
 		}
 
@@ -463,12 +486,12 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		public int BitsPerSample
+		public AudioPCMConfig PCM
 		{
-			get { return 16; }
+			get { return _pcm; }
 		}
 
-		unsafe uint get_wasted_bits(int* signal, int samples)
+		unsafe int get_wasted_bits(int* signal, int samples)
 		{
 			int i, shift;
 			int x = 0;
@@ -492,7 +515,7 @@ namespace CUETools.Codecs.FLAKE
 					signal[i] >>= shift;
 			}
 
-			return (uint)shift;
+			return shift;
 		}
 
 		/// <summary>
@@ -506,7 +529,26 @@ namespace CUETools.Codecs.FLAKE
 			fixed (int* fsamples = samplesBuffer, src = &samples[pos, 0])
 			{
 				if (channels == 2)
-					AudioSamples.Deinterlace(fsamples + samplesInBuffer, fsamples + Flake.MAX_BLOCKSIZE + samplesInBuffer, src, block);
+				{
+					if (eparams.stereo_method == StereoMethod.Independent)
+						AudioSamples.Deinterlace(fsamples + samplesInBuffer, fsamples + Flake.MAX_BLOCKSIZE + samplesInBuffer, src, block);
+					else
+					{
+						int* left = fsamples + samplesInBuffer;
+						int* right = left + Flake.MAX_BLOCKSIZE;
+						int* leftM = right + Flake.MAX_BLOCKSIZE;
+						int* rightM = leftM + Flake.MAX_BLOCKSIZE;
+						for (int i = 0; i < block; i++)
+						{
+							int l = src[2 * i];
+							int r = src[2 * i + 1];
+							left[i] = l;
+							right[i] = r;
+							leftM[i] = (l + r) >> 1;
+							rightM[i] = l - r;
+						}
+					}
+				}
 				else
 					for (int ch = 0; ch < channels; ch++)
 					{
@@ -780,7 +822,7 @@ namespace CUETools.Codecs.FLAKE
 						for (int i = frame.current.order; i > 0; i--)
 							csum += (ulong)Math.Abs(coefs[i - 1]);
 
-						if ((csum << (int)frame.subframes[ch].obits) >= 1UL << 32)
+						if ((csum << frame.subframes[ch].obits) >= 1UL << 32)
 							lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
 						else
 							lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
@@ -806,7 +848,7 @@ namespace CUETools.Codecs.FLAKE
 					//        }
 					//    }
 					//}
-					frame.current.size = (uint)frame.current.order * frame.subframes[ch].obits + 4 + 5 + (uint)frame.current.order * cbits + 6 + best_size;
+					frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits + 4 + 5 + frame.current.order * (int)cbits + 6 + (int)best_size);
 					frame.ChooseBestSubframe(ch);
 				}
 		}
@@ -823,7 +865,7 @@ namespace CUETools.Codecs.FLAKE
 
 			int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
 			int pmin = Math.Min(eparams.min_partition_order, pmax);
-			frame.current.size = (uint)frame.current.order * frame.subframes[ch].obits + 6
+			frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits) + 6
 				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order);
 
 			frame.subframes[ch].done_fixed |= (1U << order);
@@ -846,13 +888,13 @@ namespace CUETools.Codecs.FLAKE
 			{
 				frame.subframes[ch].best.type = SubframeType.Constant;
 				frame.subframes[ch].best.residual[0] = smp[0];
-				frame.subframes[ch].best.size = frame.subframes[ch].obits;
+				frame.subframes[ch].best.size = (uint)frame.subframes[ch].obits;
 				return;
 			}
 
 			// VERBATIM
 			frame.current.type = SubframeType.Verbatim;
-			frame.current.size = frame.subframes[ch].obits * (uint)frame.blocksize;
+			frame.current.size = (uint)(frame.subframes[ch].obits * frame.blocksize);
 			frame.ChooseBestSubframe(ch);
 
 			if (n < 5 || predict == PredictionType.None)
@@ -1313,19 +1355,19 @@ namespace CUETools.Codecs.FLAKE
 					frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 					for (int ch = 0; ch < channels; ch++)
 						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
-							bits_per_sample, get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
+							_pcm.BitsPerSample, get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
 
 					for (int ch = 0; ch < channels; ch++)
 						encode_residual_pass2(frame, ch);
 				}
 				else
 				{
-					channel_decorrelation(s, s + Flake.MAX_BLOCKSIZE, s + 2 * Flake.MAX_BLOCKSIZE, s + 3 * Flake.MAX_BLOCKSIZE, frame.blocksize);
+					//channel_decorrelation(s, s + Flake.MAX_BLOCKSIZE, s + 2 * Flake.MAX_BLOCKSIZE, s + 3 * Flake.MAX_BLOCKSIZE, frame.blocksize);
 					frame.window_buffer = window;
 					frame.current.residual = r + 4 * Flake.MAX_BLOCKSIZE;
 					for (int ch = 0; ch < 4; ch++)
-						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, 
-							bits_per_sample + (ch == 3 ? 1U : 0U), get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
+						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
+							_pcm.BitsPerSample + (ch == 3 ? 1 : 0), get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
 
 					//for (int ch = 0; ch < 4; ch++)
 					//    for (int iWindow = 0; iWindow < _windowcount; iWindow++)
@@ -1416,13 +1458,13 @@ namespace CUETools.Codecs.FLAKE
 				{
 					if (seek_table[sp].framesize != 0)
 						continue;
-					if (seek_table[sp].number > (ulong)_position + (ulong)bs)
+					if (seek_table[sp].number > _position + bs)
 						break;
-					if (seek_table[sp].number >= (ulong)_position)
+					if (seek_table[sp].number >= _position)
 					{
-						seek_table[sp].number = (ulong)_position;
-						seek_table[sp].offset = (ulong)(_IO.Position - first_frame_offset);
-						seek_table[sp].framesize = (uint)bs;
+						seek_table[sp].number = _position;
+						seek_table[sp].offset = _IO.Position - first_frame_offset;
+						seek_table[sp].framesize = bs;
 					}
 				}
 			}
@@ -1434,7 +1476,7 @@ namespace CUETools.Codecs.FLAKE
 			if (verify != null)
 			{
 				int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
-				if (decoded != fs || verify.Remaining != (ulong)bs)
+				if (decoded != fs || verify.Remaining != bs)
 					throw new Exception("validation failed!");
 				fixed (int* s = verifyBuffer, r = verify.Samples)
 				{
@@ -1456,7 +1498,7 @@ namespace CUETools.Codecs.FLAKE
 			return bs;
 		}
 
-		public void Write(int[,] buff, int pos, int sampleCount)
+		public void Write(AudioBuffer buff)
 		{
 			if (!inited)
 			{
@@ -1469,25 +1511,23 @@ namespace CUETools.Codecs.FLAKE
 				inited = true;
 			}
 
-			int len = sampleCount;
-			while (len > 0)
+			buff.Prepare(this);
+
+			int pos = 0;
+			while (pos < buff.Length)
 			{
-				int block = Math.Min(len, eparams.block_size - samplesInBuffer);
+				int block = Math.Min(buff.Length - pos, eparams.block_size - samplesInBuffer);
 
-				copy_samples(buff, pos, block);
+				copy_samples(buff.Samples, pos, block);
 
-				if (md5 != null)
-				{
-					AudioSamples.FLACSamplesToBytes(buff, pos, frame_buffer, 0, block, channels, (int)bits_per_sample);
-					md5.TransformBlock(frame_buffer, 0, block * channels * ((int)bits_per_sample >> 3), null, 0);
-				}
-
-				len -= block;
 				pos += block;
 
 				while (samplesInBuffer >= eparams.block_size)
 					output_frame();
 			}
+
+			if (md5 != null)
+				md5.TransformBlock(buff.Bytes, 0, buff.ByteLength, null, 0);
 		}
 
 		public string Path { get { return _path; } }
@@ -1532,9 +1572,9 @@ namespace CUETools.Codecs.FLAKE
 			bitwriter.writebits(16, eparams.block_size);
 			bitwriter.writebits(24, 0);
 			bitwriter.writebits(24, max_frame_size);
-			bitwriter.writebits(20, sample_rate);
+			bitwriter.writebits(20, _pcm.SampleRate);
 			bitwriter.writebits(3, channels - 1);
-			bitwriter.writebits(5, bits_per_sample - 1);
+			bitwriter.writebits(5, _pcm.BitsPerSample - 1);
 
 			// total samples
 			if (sample_count > 0)
@@ -1589,8 +1629,8 @@ namespace CUETools.Codecs.FLAKE
 			bitwriter.writebits(24, 18 * seek_table.Length);
 			for (int i = 0; i < seek_table.Length; i++)
 			{
-				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, seek_table[i].number);
-				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, seek_table[i].offset);
+				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
+				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
 				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN, seek_table[i].framesize);
 			}
 			bitwriter.flush();
@@ -1658,7 +1698,7 @@ namespace CUETools.Codecs.FLAKE
 			// find samplerate in table
 			for (i = 4; i < 12; i++)
 			{
-				if (sample_rate == Flake.flac_samplerates[i])
+				if (_pcm.SampleRate == Flake.flac_samplerates[i])
 				{
 					sr_code0 = i;
 					break;
@@ -1671,7 +1711,7 @@ namespace CUETools.Codecs.FLAKE
 
 			for (i = 1; i < 8; i++)
 			{
-				if (bits_per_sample == Flake.flac_bitdepths[i])
+				if (_pcm.BitsPerSample == Flake.flac_bitdepths[i])
 				{
 					bps_code = i;
 					break;
@@ -1680,13 +1720,13 @@ namespace CUETools.Codecs.FLAKE
 			if (i == 8)
 				throw new Exception("non-standard bps");
 			// FIXME: For now, only 16-bit encoding is supported
-			if (bits_per_sample != 16)
+			if (_pcm.BitsPerSample != 16)
 				throw new Exception("non-standard bps");
 
 			if (_blocksize == 0)
 			{
 				if (eparams.block_size == 0)
-					eparams.block_size = select_blocksize(sample_rate, eparams.block_time_ms);
+					eparams.block_size = select_blocksize(_pcm.SampleRate, eparams.block_time_ms);
 				_blocksize = eparams.block_size;
 			}
 			else
@@ -1694,13 +1734,13 @@ namespace CUETools.Codecs.FLAKE
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
 			if (channels == 2)
-				max_frame_size = 16 + ((eparams.block_size * (int)(bits_per_sample + bits_per_sample + 1) + 7) >> 3);
+				max_frame_size = 16 + ((eparams.block_size * (_pcm.BitsPerSample + _pcm.BitsPerSample + 1) + 7) >> 3);
 			else
-				max_frame_size = 16 + ((eparams.block_size * channels * (int)bits_per_sample + 7) >> 3);
+				max_frame_size = 16 + ((eparams.block_size * channels * _pcm.BitsPerSample + 7) >> 3);
 
-			if (_IO.CanSeek && eparams.do_seektable)
+			if (_IO.CanSeek && eparams.do_seektable && sample_count > 0)
 			{
-				int seek_points_distance = sample_rate * 10;
+				int seek_points_distance = _pcm.SampleRate * 10;
 				int num_seek_points = 1 + sample_count / seek_points_distance; // 1 seek point per 10 seconds
 				if (sample_count % seek_points_distance == 0)
 					num_seek_points--;
@@ -1709,7 +1749,7 @@ namespace CUETools.Codecs.FLAKE
 				{
 					seek_table[sp].framesize = 0;
 					seek_table[sp].offset = 0;
-					seek_table[sp].number = (ulong)(sp * seek_points_distance);
+					seek_table[sp].number = sp * seek_points_distance;
 				}
 			}
 
@@ -1723,7 +1763,7 @@ namespace CUETools.Codecs.FLAKE
 
 			if (eparams.do_verify)
 			{
-				verify = new FlakeReader(channels, bits_per_sample);
+				verify = new FlakeReader(_pcm);
 				verifyBuffer = new int[Flake.MAX_BLOCKSIZE * channels];
 			}
 

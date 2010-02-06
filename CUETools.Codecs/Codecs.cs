@@ -28,31 +28,339 @@ namespace CUETools.Codecs
 {
 	public interface IAudioSource
 	{
-		uint Read(int[,] buff, uint sampleCount);
-		int[,] Read(int[,] buff);
-		ulong Length { get; }
-		ulong Position { get; set; }
-		ulong Remaining { get; }
+		int Read(AudioBuffer buffer, int maxLength);
 		void Close();
-		int BitsPerSample { get; }
-		int ChannelCount { get; }
-		int SampleRate { get; }
+
+		AudioPCMConfig PCM { get; }
 		string Path { get; }
+
+		long Length { get; }
+		long Position { get; set; }
+		long Remaining { get; }
 	}
 
 	public interface IAudioDest
 	{
-		void Write(int[,] buff, int pos, int sampleCount);
+		void Write(AudioBuffer buffer);
 		void Close();
 		void Delete();
-		int BitsPerSample { get; }
+
+		AudioPCMConfig PCM { get; }
+		string Path { get; }
+
+		int CompressionLevel { get; set; }
+		string Options { set; }
 		long FinalSampleCount { set; }
 		long BlockSize { set; }
-		string Path { get; }
 	}
 
-	public class AudioSamples
+	/// <summary>
+	///    This class provides an attribute for marking
+	///    classes that provide <see cref="IAudioDest" />.
+	/// </summary>
+	/// <remarks>
+	///    When plugins with classes that provide <see cref="IAudioDest" /> are
+	///    registered, their <see cref="AudioEncoderClass" /> attributes are read.
+	/// </remarks>
+	/// <example>
+	///    <code lang="C#">using CUETools.Codecs;
+	///
+	///[AudioEncoderClass("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", 1)]
+	///public class MyEncoder : IAudioDest {
+	///	...
+	///}</code>
+	/// </example>
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+	public sealed class AudioEncoderClass : Attribute
 	{
+		private string _encoderName, _extension, _supportedModes, _defaultMode;
+		bool _lossless;
+		int _priority;
+
+		public AudioEncoderClass(string encoderName, string extension, bool lossless, string supportedModes, string defaultMode, int priority)
+		{
+			_encoderName = encoderName;
+			_extension = extension;
+			_supportedModes = supportedModes;
+			_defaultMode = defaultMode;
+			_lossless = lossless;
+			_priority = priority;
+		}
+
+		public string EncoderName
+		{
+			get { return _encoderName; }
+		}
+
+		public string Extension
+		{
+			get { return _extension; }
+		}
+
+		public string SupportedModes
+		{
+			get { return _supportedModes; }
+		}
+
+		public string DefaultMode
+		{
+			get { return _defaultMode; }
+		}
+
+		public bool Lossless
+		{
+			get { return _lossless; }
+		}
+
+		public int Priority
+		{
+			get { return _priority; }
+		}
+	}
+
+	/// <summary>
+	///    This class provides an attribute for marking
+	///    classes that provide <see cref="IAudioSource" />.
+	/// </summary>
+	/// <remarks>
+	///    When plugins with classes that provide <see cref="IAudioSource" /> are
+	///    registered, their <see cref="AudioDecoderClass" /> attributes are read.
+	/// </remarks>
+	/// <example>
+	///    <code lang="C#">using CUETools.Codecs;
+	///
+	///[AudioDecoderClass("libFLAC", "flac")]
+	///public class MyDecoder : IAudioSource {
+	///	...
+	///}</code>
+	/// </example>
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+	public sealed class AudioDecoderClass : Attribute
+	{
+		private string _decoderName, _extension;
+
+		public AudioDecoderClass(string decoderName, string extension)
+		{
+			_decoderName = decoderName;
+			_extension = extension;
+		}
+
+		public string DecoderName
+		{
+			get { return _decoderName; }
+		}
+
+		public string Extension
+		{
+			get { return _extension; }
+		}
+	}
+
+	public class AudioPCMConfig
+	{
+		private int _bitsPerSample;
+		private int _channelCount;
+		private int _sampleRate;
+		
+		public AudioPCMConfig(int bitsPerSample, int channelCount, int sampleRate)
+		{
+			_bitsPerSample = bitsPerSample;
+			_channelCount = channelCount;
+			_sampleRate = sampleRate;
+		}
+
+		public static readonly AudioPCMConfig RedBook = new AudioPCMConfig(16, 2, 44100);
+
+		public int BitsPerSample { get { return _bitsPerSample; } }
+		public int ChannelCount { get { return _channelCount; } }
+		public int SampleRate { get { return _sampleRate; } }
+		public int BlockAlign { get { return _channelCount * ((_bitsPerSample + 7) / 8); } }
+		public bool IsRedBook { get { return _bitsPerSample == 16 && _channelCount == 2 && _sampleRate == 44100; } }
+	}
+
+	public class AudioBuffer
+	{
+		private int[,] samples;
+		private byte[] bytes;
+		private int length;
+		private int size;
+		private AudioPCMConfig pcm;
+		private bool dataInSamples = false;
+		private bool dataInBytes = false;
+
+		public int Length
+		{
+			get
+			{
+				return length;
+			}
+			set
+			{
+				length = value;
+			}
+		}
+
+		public int Size
+		{
+			get
+			{
+				return size;
+			}
+		}
+
+		public AudioPCMConfig PCM { get { return pcm; } }
+
+		public int ByteLength
+		{
+			get
+			{
+				return length * pcm.BlockAlign;
+			}
+		}
+
+		public int[,] Samples
+		{
+			get
+			{
+				if (samples == null || samples.GetLength(0) < length)
+					samples = new int[size, pcm.ChannelCount];
+				if (!dataInSamples && dataInBytes && length != 0)
+					BytesToFLACSamples(bytes, 0, samples, 0, length, pcm.ChannelCount, pcm.BitsPerSample);
+				dataInSamples = true;
+				return samples;
+			}
+		}
+
+		public byte[] Bytes
+		{
+			get
+			{
+				if (bytes == null || bytes.Length < length * pcm.BlockAlign)
+					bytes = new byte[size * pcm.BlockAlign];
+				if (!dataInBytes && dataInSamples && length != 0)
+					FLACSamplesToBytes(samples, 0, bytes, 0, length, pcm.ChannelCount, pcm.BitsPerSample);
+				dataInBytes = true;
+				return bytes;
+			}
+		}
+
+		public AudioBuffer(AudioPCMConfig _pcm, int _size)
+		{
+			pcm = _pcm;
+			size = _size;
+		}
+
+		public AudioBuffer(AudioPCMConfig _pcm, int[,] _samples, int _length)
+		{
+			pcm = _pcm;
+			// assert _samples.GetLength(1) == pcm.ChannelCount
+			Prepare(_samples, _length);
+		}
+
+		public AudioBuffer(AudioPCMConfig _pcm, byte[] _bytes, int _length)
+		{
+			pcm = _pcm;
+			Prepare(_bytes, _length);
+		}
+
+		public AudioBuffer(IAudioSource source, int _size)
+		{
+			pcm = source.PCM;
+			size = _size;
+		}
+
+		public void Prepare(IAudioDest dest)
+		{
+			if (dest.PCM.ChannelCount != pcm.ChannelCount || dest.PCM.BitsPerSample != pcm.BitsPerSample)
+				throw new Exception("AudioBuffer format mismatch");
+		}
+
+		public void Prepare(IAudioSource source, int maxLength)
+		{
+			if (source.PCM.ChannelCount != pcm.ChannelCount || source.PCM.BitsPerSample != pcm.BitsPerSample)
+				throw new Exception("AudioBuffer format mismatch");
+			length = size;
+			if (maxLength >= 0)
+				length = Math.Min(length, maxLength);
+			if (source.Remaining >= 0)
+				length = (int)Math.Min((long)length, source.Remaining);
+			dataInBytes = false;
+			dataInSamples = false;
+		}
+
+		public void Prepare(int[,] _samples, int _length)
+		{
+			length = _length;
+			size = _samples.GetLength(0);
+			samples = _samples;
+			dataInSamples = true;
+			dataInBytes = false;
+		}
+
+		public void Prepare(byte[] _bytes, int _length)
+		{
+			length = _length;
+			size = _bytes.Length / PCM.BlockAlign;
+			bytes = _bytes;
+			dataInSamples = false;
+			dataInBytes = true;
+		}
+
+		public unsafe void Prepare(AudioBuffer _src, int _offset, int _length)
+		{
+			length = Math.Min(size, _src.Length - _offset);
+			if (_length >= 0)
+				length = Math.Min(length, _length);
+			dataInBytes = false;
+			dataInSamples = true;
+			fixed (int* dest = Samples, src = &_src.Samples[_offset, 0])
+				AudioSamples.MemCpy(dest, src, Length * pcm.ChannelCount);
+		}
+
+		public void Swap(AudioBuffer buffer)
+		{
+			if (pcm.BitsPerSample != buffer.PCM.BitsPerSample || pcm.ChannelCount != buffer.PCM.ChannelCount)
+				throw new Exception("AudioBuffer format mismatch");
+
+			int[,] samplesTmp = samples;
+			byte[] bytesTmp = bytes;
+
+			samples = buffer.samples;
+			bytes = buffer.bytes;
+			length = buffer.length;
+			size = buffer.size;
+			dataInSamples = buffer.dataInSamples;
+			dataInBytes = buffer.dataInBytes;
+
+			buffer.samples = samplesTmp;
+			buffer.bytes = bytesTmp;
+			buffer.length = 0;
+			buffer.dataInSamples = false;
+			buffer.dataInBytes = false;
+		}
+
+		//public void Clear()
+		//{
+		//    length = 0;
+		//}
+
+		public static unsafe void FLACSamplesToBytes_16(int[,] inSamples, int inSampleOffset,
+			byte* outSamples, int sampleCount, int channelCount)
+		{
+			int loopCount = sampleCount * channelCount;
+
+			if (inSamples.GetLength(0) - inSampleOffset < sampleCount)
+				throw new IndexOutOfRangeException();
+
+			fixed (int* pInSamplesFixed = &inSamples[inSampleOffset, 0])
+			{
+				int* pInSamples = pInSamplesFixed;
+				short* pOutSamples = (short*)outSamples;
+				for (int i = 0; i < loopCount; i++)
+					pOutSamples[i] = (short)pInSamples[i];
+			}
+		}
+
 		public static unsafe void FLACSamplesToBytes_16(int[,] inSamples, int inSampleOffset,
 			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount)
 		{
@@ -78,7 +386,7 @@ namespace CUETools.Codecs
 				}
 			}
 		}
-		
+
 		public static unsafe void FLACSamplesToBytes_24(int[,] inSamples, int inSampleOffset,
 			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount, int wastedBits)
 		{
@@ -114,17 +422,26 @@ namespace CUETools.Codecs
 			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount, int bitsPerSample)
 		{
 			if (bitsPerSample == 16)
-				AudioSamples.FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
+				FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
 			else if (bitsPerSample > 16 && bitsPerSample <= 24)
-				AudioSamples.FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount, 24 - bitsPerSample);
+				FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount, 24 - bitsPerSample);
+			else
+				throw new Exception("Unsupported bitsPerSample value");
+		}
+
+		public static unsafe void FLACSamplesToBytes(int[,] inSamples, int inSampleOffset,
+			byte* outSamples, int sampleCount, int channelCount, int bitsPerSample)
+		{
+			if (bitsPerSample == 16)
+				FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, sampleCount, channelCount);
 			else
 				throw new Exception("Unsupported bitsPerSample value");
 		}
 
 		public static unsafe void BytesToFLACSamples_16(byte[] inSamples, int inByteOffset,
-			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount)
+			int[,] outSamples, int outSampleOffset, int sampleCount, int channelCount)
 		{
-			uint loopCount = sampleCount * (uint)channelCount;
+			int loopCount = sampleCount * channelCount;
 
 			if ((inSamples.Length - inByteOffset < loopCount * 2) ||
 				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
@@ -148,9 +465,9 @@ namespace CUETools.Codecs
 		}
 
 		public static unsafe void BytesToFLACSamples_24(byte[] inSamples, int inByteOffset,
-			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount, int wastedBits)
+			int[,] outSamples, int outSampleOffset, int sampleCount, int channelCount, int wastedBits)
 		{
-			uint loopCount = sampleCount * (uint)channelCount;
+			int loopCount = sampleCount * channelCount;
 
 			if ((inSamples.Length - inByteOffset < loopCount * 3) ||
 				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
@@ -174,29 +491,19 @@ namespace CUETools.Codecs
 		}
 
 		public static unsafe void BytesToFLACSamples(byte[] inSamples, int inByteOffset,
-			int[,] outSamples, int outSampleOffset, uint sampleCount, int channelCount, int bitsPerSample)
+			int[,] outSamples, int outSampleOffset, int sampleCount, int channelCount, int bitsPerSample)
 		{
 			if (bitsPerSample == 16)
-				AudioSamples.BytesToFLACSamples_16(inSamples, inByteOffset, outSamples, outSampleOffset, sampleCount, channelCount);
+				BytesToFLACSamples_16(inSamples, inByteOffset, outSamples, outSampleOffset, sampleCount, channelCount);
 			else if (bitsPerSample > 16 && bitsPerSample <= 24)
-				AudioSamples.BytesToFLACSamples_24(inSamples, inByteOffset, outSamples, outSampleOffset, sampleCount, channelCount, 24 - bitsPerSample);
+				BytesToFLACSamples_24(inSamples, inByteOffset, outSamples, outSampleOffset, sampleCount, channelCount, 24 - bitsPerSample);
 			else
 				throw new Exception("Unsupported bitsPerSample value");
 		}
+	}
 
-		public static int[,] Read(IAudioSource source, int[,] buff)
-		{
-			if (source.Remaining == 0) return null;
-			uint toRead = Math.Min(65536U, (uint)source.Remaining);
-			if (buff == null || (ulong)buff.GetLength(0) > source.Remaining)
-				buff = new int[toRead, source.ChannelCount];
-			else
-				toRead = (uint)buff.GetLength(0);
-			uint samplesRead = source.Read(buff, toRead);
-			if (samplesRead != toRead) throw new Exception("samples read != requested");
-			return buff;
-		}
-
+	public class AudioSamples
+	{
 		unsafe public static void Interlace(int* res, int* src1, int* src2, int n)
 		{
 			for (int i = n; i > 0; i--)
@@ -243,6 +550,14 @@ namespace CUETools.Codecs
 
 		unsafe public static void MemCpy(byte* res, byte* smp, int n)
 		{
+			if ((((IntPtr)smp).ToInt64() & 4) == 0 && (((IntPtr)res).ToInt64() & 4) == 0 && n > 4)
+			{
+				MemCpy((int*)res, (int*)smp, n >> 2);
+				int n4 = (n >> 2) << 2;
+				n -= n4;
+				smp += n4;
+				res += n4;
+			}
 			for (int i = n; i > 0; i--)
 				*(res++) = *(smp++);
 		}
@@ -258,9 +573,11 @@ namespace CUETools.Codecs
 
 	public class DummyWriter : IAudioDest
 	{
-		public DummyWriter(string path, int bitsPerSample, int channelCount, int sampleRate)
+		AudioPCMConfig _pcm;
+
+		public DummyWriter(string path, AudioPCMConfig pcm)
 		{
-			_bitsPerSample = bitsPerSample;
+			_pcm = pcm;
 		}
 
 		public void Close()
@@ -276,36 +593,51 @@ namespace CUETools.Codecs
 			set	{ }
 		}
 
+		public int CompressionLevel
+		{
+			get { return 0; }
+			set { }
+		}
+
+		public string Options
+		{
+			set
+			{
+				if (value == null || value == "") return;
+				throw new Exception("Unsupported options " + value);
+			}
+		}
+
 		public long BlockSize
 		{
 			set	{ }
 		}
 
-		public int BitsPerSample
+		public AudioPCMConfig PCM
 		{
-			get { return _bitsPerSample;  }
+			get { return _pcm;  }
 		}
 
-		public void Write(int[,] buff, int pos, int sampleCount)
+		public void Write(AudioBuffer buff)
 		{
 		}
 
 		public string Path { get { return null; } }
-
-		int _bitsPerSample;
 	}
 
 	public class SilenceGenerator : IAudioSource
 	{
-		private ulong _sampleOffset, _sampleCount;
+		private long _sampleOffset, _sampleCount;
+		private AudioPCMConfig pcm;
 
-		public SilenceGenerator(uint sampleCount)
+		public SilenceGenerator(long sampleCount)
 		{
 			_sampleOffset = 0;
 			_sampleCount = sampleCount;
+			pcm = AudioPCMConfig.RedBook;
 		}
 
-		public ulong Length
+		public long Length
 		{
 			get
 			{
@@ -313,7 +645,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public ulong Remaining
+		public long Remaining
 		{
 			get
 			{
@@ -321,7 +653,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public ulong Position
+		public long Position
 		{
 			get
 			{
@@ -333,55 +665,19 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public int BitsPerSample
+		public AudioPCMConfig PCM { get { return pcm; } }
+
+		public int Read(AudioBuffer buff, int maxLength)
 		{
-			get
-			{
-				return 16;
-			}
-		}
+			buff.Prepare(this, maxLength);
 
-		public int ChannelCount
-		{
-			get
-			{
-				return 2;
-			}
-		}
+			int[,] samples = buff.Samples;
+			for (int i = 0; i < buff.Length; i++)
+				for (int j = 0; j < PCM.ChannelCount; j++)
+					samples[i, j] = 0;
 
-		public int SampleRate
-		{
-			get
-			{
-				return 44100;
-			}
-		}
-
-		public uint Read(int [,] buff, uint sampleCount)
-		{
-			uint samplesRemaining = (uint)(_sampleCount - _sampleOffset);
-			if (sampleCount > samplesRemaining)
-				sampleCount = samplesRemaining;
-
-			for (uint i = 0; i < sampleCount; i++)
-				for (int j = 0; j < buff.GetLength(1); j++)
-					buff[i,j] = 0;
-
-			_sampleOffset += sampleCount;
-			return sampleCount;
-		}
-
-		public int[,] Read(int[,] buff)
-		{
-			if (buff != null && buff.GetLength(0) <= (int)Remaining)
-			{
-				_sampleOffset += (ulong) buff.GetLength(0);
-				Array.Clear(buff, 0, buff.Length);
-				return buff;
-			}
-			ulong samples = Math.Min(Remaining, (ulong)4096);
-			_sampleCount += samples;
-			return new int[samples, ChannelCount];
+			_sampleOffset += buff.Length;
+			return buff.Length;
 		}
 
 		public void Close()
@@ -391,16 +687,16 @@ namespace CUETools.Codecs
 		public string Path { get { return null; } }
 	}
 
+	[AudioDecoderClass("builtin wav", "wav")]
 	public class WAVReader : IAudioSource
 	{
 		Stream _IO;
 		BinaryReader _br;
-		ulong _dataOffset, _samplePos, _sampleLen;
+		long _dataOffset, _samplePos, _sampleLen;
+		private AudioPCMConfig pcm;
 		long _dataLen;
-		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		bool _largeFile;
 		string _path;
-		private byte[] _sampleBuffer;
 
 		public WAVReader(string path, Stream IO)
 		{
@@ -411,22 +707,41 @@ namespace CUETools.Codecs
 			ParseHeaders();
 
 			if (_dataLen < 0)
-				//_sampleLen = 0;
-				throw new Exception("WAVE stream length unknown");
+				_sampleLen = -1;
 			else
-				_sampleLen = (ulong)(_dataLen / _blockAlign);
+				_sampleLen = _dataLen / pcm.BlockAlign;
 		}
 
-		public WAVReader(Stream IO)
+		public WAVReader(string path, Stream IO, AudioPCMConfig _pcm)
 		{
-			_path = "";
-			_IO = IO;
+			_path = path;
+			_IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
 			_br = new BinaryReader(_IO);
-			ParseHeaders();
+
+			_largeFile = false;
+			_dataOffset = 0;
+			_samplePos = 0;
+			pcm = _pcm;
+			_dataLen = _IO.CanSeek ? _IO.Length : -1;
 			if (_dataLen < 0)
-				_sampleLen = 0;
+				_sampleLen = -1;
 			else
-				_sampleLen = (ulong)(_dataLen / _blockAlign);
+			{
+				_sampleLen = _dataLen / pcm.BlockAlign;
+				if ((_dataLen % pcm.BlockAlign) != 0)
+					throw new Exception("odd file size");
+			}
+		}
+
+		public static AudioBuffer ReadAllSamples(string path, Stream IO)
+		{
+			WAVReader reader = new WAVReader(path, IO);
+			AudioBuffer buff = new AudioBuffer(reader, (int)reader.Length);
+			reader.Read(buff, -1);
+			if (reader.Remaining != 0)
+				throw new Exception("couldn't read the whole file");
+			reader.Close();
+			return buff;
 		}
 
 		public void Close()
@@ -487,18 +802,21 @@ namespace CUETools.Codecs
 					{
 						throw new Exception("WAVE must be PCM format.");
 					}
-					_channelCount = _br.ReadInt16();
-					_sampleRate = _br.ReadInt32();
+					int _channelCount = _br.ReadInt16();
+					int _sampleRate = _br.ReadInt32();
 					_br.ReadInt32();
-					_blockAlign = _br.ReadInt16();
-					_bitsPerSample = _br.ReadInt16();
+					int _blockAlign = _br.ReadInt16();
+					int _bitsPerSample = _br.ReadInt16();
+					pcm = new AudioPCMConfig(_bitsPerSample, _channelCount, _sampleRate);
+					if (pcm.BlockAlign != _blockAlign)
+						throw new Exception("WAVE has strange BlockAlign");
 					pos += 16;
 				}
 				else if (ckID == fccData)
 				{
 					foundData = true;
 
-					_dataOffset = (ulong)pos;
+					_dataOffset = pos;
 					if (!_IO.CanSeek || _IO.Length <= maxFileSize)
 					{
 						if (ckSize >= 0x7fffffff)
@@ -522,21 +840,19 @@ namespace CUETools.Codecs
 				pos = ckEnd;
 			} while (true);
 
-			if ((foundFormat & foundData) == false)
+			if ((foundFormat & foundData) == false || pcm == null)
 				throw new Exception("Format or data chunk not found.");
-			if (_channelCount <= 0)
+			if (pcm.ChannelCount <= 0)
 				throw new Exception("Channel count is invalid.");
-			if (_sampleRate <= 0)
+			if (pcm.SampleRate <= 0)
 				throw new Exception("Sample rate is invalid.");
-			if (_blockAlign != (_channelCount * ((_bitsPerSample + 7) / 8)))
-				throw new Exception("Block align is invalid.");
-			if ((_bitsPerSample <= 0) || (_bitsPerSample > 32))
+			if ((pcm.BitsPerSample <= 0) || (pcm.BitsPerSample > 32))
 				throw new Exception("Bits per sample is invalid.");
-			if (pos != (long)_dataOffset)
+			if (pos != _dataOffset)
 				Position = 0;
 		}
 
-		public ulong Position
+		public long Position
 		{
 			get
 			{
@@ -544,19 +860,19 @@ namespace CUETools.Codecs
 			}
 			set
 			{
-				ulong seekPos;
+				long seekPos;
 
-				if (_sampleLen != 0 && value > _sampleLen)
+				if (_sampleLen >= 0 && value > _sampleLen)
 					_samplePos = _sampleLen;
 				else
 					_samplePos = value;
 
-				seekPos = _dataOffset + (_samplePos * (uint)_blockAlign);
-				_IO.Seek((long)seekPos, SeekOrigin.Begin);
+				seekPos = _dataOffset + _samplePos * PCM.BlockAlign;
+				_IO.Seek(seekPos, SeekOrigin.Begin);
 			}
 		}
 
-		public ulong Length
+		public long Length
 		{
 			get
 			{
@@ -564,7 +880,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public ulong Remaining
+		public long Remaining
 		{
 			get
 			{
@@ -572,100 +888,62 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public int ChannelCount
-		{
-			get
-			{
-				return _channelCount;
-			}
-		}
+		public AudioPCMConfig PCM { get { return pcm; } }
 
-		public int SampleRate
+		public int Read(AudioBuffer buff, int maxLength)
 		{
-			get
-			{
-				return _sampleRate;
-			}
-		}
+			buff.Prepare(this, maxLength);
 
-		public int BitsPerSample
-		{
-			get
-			{
-				return _bitsPerSample;
-			}
-		}
-
-		public int BlockAlign
-		{
-			get
-			{
-				return _blockAlign;
-			}
-		}
-
-		public uint Read(int[,] buff, uint sampleCount)
-		{
-			if (_sampleLen > 0 && sampleCount > Remaining)
-				sampleCount = (uint)Remaining;
-
-			if (sampleCount == 0)
-				return 0;
-			int byteCount = (int) sampleCount * _blockAlign;
-			if (_sampleBuffer == null || _sampleBuffer.Length < byteCount)
-				_sampleBuffer = new byte[byteCount];
+			byte[] bytes = buff.Bytes;
+			int byteCount = (int)buff.ByteLength;
 			int pos = 0;
-			do
+
+			while (pos < byteCount)
 			{
-				int len = _IO.Read(_sampleBuffer, pos, (int)byteCount - pos);
+				int len = _IO.Read(bytes, pos, byteCount - pos);
 				if (len <= 0)
 				{
-					if ((pos % BlockAlign) != 0 || _sampleLen > 0)
+					if ((pos % PCM.BlockAlign) != 0 || _sampleLen >= 0)
 						throw new Exception("Incomplete file read.");
-					sampleCount = (uint)(pos / BlockAlign);
-					_sampleLen = _samplePos + sampleCount;
-					break;
+					buff.Length = pos / PCM.BlockAlign;
+					_samplePos += buff.Length;
+					_sampleLen = _samplePos;
+					return buff.Length;
 				}
 				pos += len;
-			} while (pos < byteCount);
-			AudioSamples.BytesToFLACSamples(_sampleBuffer, 0, buff, 0,
-				sampleCount, _channelCount, _bitsPerSample);
-			_samplePos += sampleCount;
-			return sampleCount;
-		}
-
-		public int[,] Read(int[,] buff)
-		{
-			return AudioSamples.Read(this, buff);
+			}
+			_samplePos += buff.Length;
+			return buff.Length;
 		}
 
 		public string Path { get { return _path; } }
 	}
 
+	[AudioEncoderClass("builtin wav", "wav", true, "", "", 10)]
 	public class WAVWriter : IAudioDest
 	{
 		Stream _IO;
 		BinaryWriter _bw;
-		int _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
+		AudioPCMConfig _pcm;
 		long _sampleLen;
 		string _path;
-		private byte[] _sampleBuffer;
 		long hdrLen = 0;
 		bool _headersWritten = false;
-		long _finalSampleCount;
+		long _finalSampleCount = -1;
 		List<byte[]> _chunks = null;
 		List<uint> _chunkFCCs = null;
 
-		public WAVWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO)
+		public WAVWriter(string path, Stream IO, AudioPCMConfig pcm)
 		{
+			_pcm = pcm;
 			_path = path;
-			_bitsPerSample = bitsPerSample;
-			_channelCount = channelCount;
-			_sampleRate = sampleRate;
-			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
-
 			_IO = IO != null ? IO : new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
 			_bw = new BinaryWriter(_IO);
+		}
+
+		public WAVWriter(string path, AudioPCMConfig pcm)
+			: this(path, null, pcm)
+		{
 		}
 
 		public void WriteChunk(uint fcc, byte[] data)
@@ -689,11 +967,11 @@ namespace CUETools.Codecs
 			const uint fccFormat = 0x20746D66;
 			const uint fccData = 0x61746164;
 
-			bool wavex = _bitsPerSample != 16 && _bitsPerSample != 24;
+			bool wavex = _pcm.BitsPerSample != 16 && _pcm.BitsPerSample != 24;
 
 			hdrLen += 36 + (wavex ? 24 : 0) + 8;
 
-			uint dataLen = (uint) (_finalSampleCount * _blockAlign);
+			uint dataLen = (uint)(_finalSampleCount * _pcm.BlockAlign);
 			uint dataLenPadded = dataLen + (dataLen & 1);
 
 			_bw.Write(fccRIFF);
@@ -710,15 +988,15 @@ namespace CUETools.Codecs
 				_bw.Write((uint)16);
 				_bw.Write((ushort)1); // PCM
 			}
-			_bw.Write((ushort)_channelCount);
-			_bw.Write((uint)_sampleRate);
-			_bw.Write((uint)(_sampleRate * _blockAlign));
-			_bw.Write((ushort)_blockAlign);
-			_bw.Write((ushort)((_bitsPerSample+7)/8*8));
+			_bw.Write((ushort)_pcm.ChannelCount);
+			_bw.Write((uint)_pcm.SampleRate);
+			_bw.Write((uint)(_pcm.SampleRate * _pcm.BlockAlign));
+			_bw.Write((ushort)_pcm.BlockAlign);
+			_bw.Write((ushort)((_pcm.BitsPerSample+7)/8*8));
 			if (wavex)
 			{
 				_bw.Write((ushort)22); // length of WAVEX structure
-				_bw.Write((ushort)_bitsPerSample);
+				_bw.Write((ushort)_pcm.BitsPerSample);
 				_bw.Write((uint)3); // speaker positions (3 == stereo)
 				_bw.Write((ushort)1); // PCM
 				_bw.Write((ushort)0);
@@ -751,14 +1029,14 @@ namespace CUETools.Codecs
 
 		public void Close()
 		{
-			if (_finalSampleCount == 0)
+			if (_finalSampleCount <= 0)
 			{
 				const long maxFileSize = 0x7FFFFFFEL;
-				long dataLen = _sampleLen * _blockAlign;
+				long dataLen = _sampleLen * _pcm.BlockAlign;
 				if ((dataLen & 1) == 1)
 					_bw.Write((byte)0);
 				if (dataLen + hdrLen > maxFileSize)
-					dataLen = ((maxFileSize - hdrLen) / _blockAlign) * _blockAlign;
+					dataLen = ((maxFileSize - hdrLen) / _pcm.BlockAlign) * _pcm.BlockAlign;
 				long dataLenPadded = dataLen + (dataLen & 1);
 
 				_bw.Seek(4, SeekOrigin.Begin);
@@ -773,7 +1051,7 @@ namespace CUETools.Codecs
 			_bw = null;
 			_IO = null;
 
-			if (_finalSampleCount != 0 && _sampleLen != _finalSampleCount)
+			if (_finalSampleCount > 0 && _sampleLen != _finalSampleCount)
 				throw new Exception("Samples written differs from the expected sample count.");
 		}
 
@@ -803,23 +1081,35 @@ namespace CUETools.Codecs
 			set { }
 		}
 
-		public int BitsPerSample
+		public int CompressionLevel
 		{
-			get { return _bitsPerSample; }
+			get { return 0; }
+			set { }
 		}
 
-		public void Write(int[,] buff, int pos, int sampleCount)
+		public string Options
 		{
-			if (sampleCount == 0)
+			set
+			{
+				if (value == null || value == "") return;
+				throw new Exception("Unsupported options " + value);
+			}
+		}
+
+		public AudioPCMConfig PCM
+		{
+			get { return _pcm; }
+		}
+
+		public void Write(AudioBuffer buff)
+		{
+			if (buff.Length == 0)
 				return;
+			buff.Prepare(this);
 			if (!_headersWritten)
 				WriteHeaders();
-			if (_sampleBuffer == null || _sampleBuffer.Length < sampleCount * _blockAlign)
-				_sampleBuffer = new byte[sampleCount * _blockAlign];
-			AudioSamples.FLACSamplesToBytes(buff, pos, _sampleBuffer, 0,
-				sampleCount, _channelCount, _bitsPerSample);
-			_IO.Write(_sampleBuffer, 0, (int)sampleCount * _blockAlign);
-			_sampleLen += sampleCount;
+			_IO.Write(buff.Bytes, 0, buff.ByteLength);
+			_sampleLen += buff.Length;
 		}
 
 		public string Path { get { return _path; } }
@@ -836,6 +1126,7 @@ namespace CUETools.Codecs
 		private int _end = 0; // moved only by Read
 		private bool _eof = false;
 		private Thread _readThread = null, _writeThread = null;
+		private Exception _ex = null;
 
 		public event FlushOutput flushOutput;
 		public event CloseOutput closeOutput;
@@ -941,8 +1232,10 @@ namespace CUETools.Codecs
 			int pos, chunk;
 			lock (this)
 			{
-				while (FreeSpace == 0)
+				while (FreeSpace == 0 && _ex == null)
 					Monitor.Wait(this);
+				if (_ex != null)
+					throw _ex;
 				pos = _end % _size;
 				chunk = Math.Min(FreeSpace, _size - pos);
 			}
@@ -964,8 +1257,10 @@ namespace CUETools.Codecs
 			{
 				lock (this)
 				{
-					while (FreeSpace == 0)
+					while (FreeSpace == 0 && _ex == null)
 						Monitor.Wait(this);
+					if (_ex != null)
+						throw _ex;
 					pos = _end % _size;
 					chunk = Math.Min(FreeSpace, _size - pos);
 					chunk = Math.Min(chunk, count);
@@ -996,7 +1291,19 @@ namespace CUETools.Codecs
 					chunk = Math.Min(DataAvailable, _size - pos);
 				}
 				if (flushOutput != null)
-					flushOutput(_buffer, pos, chunk, to);
+					try
+					{
+						flushOutput(_buffer, pos, chunk, to);
+					}
+					catch (Exception ex)
+					{
+						lock (this)
+						{
+							_ex = ex;
+							Monitor.Pulse(this);
+							return;
+						}
+					}
 				lock (this)
 				{
 					_start += chunk;
@@ -1090,7 +1397,7 @@ namespace CUETools.Codecs
 		WAVWriter wrt;
 		CyclicBuffer outputBuffer = null;
 
-		public UserDefinedWriter(string path, int bitsPerSample, int channelCount, int sampleRate, Stream IO, string encoder, string encoderParams, string encoderMode, int padding)
+		public UserDefinedWriter(string path, Stream IO, AudioPCMConfig pcm, string encoder, string encoderParams, string encoderMode, int padding)
 		{
 			_path = path;
 			_encoder = encoder;
@@ -1125,7 +1432,7 @@ namespace CUETools.Codecs
 				outputBuffer = new CyclicBuffer(2 * 1024 * 1024, _encoderProcess.StandardOutput.BaseStream, outputStream);
 			}
 			Stream inputStream = new CycilcBufferOutputStream(_encoderProcess.StandardInput.BaseStream, 128 * 1024);
-			wrt = new WAVWriter(path, bitsPerSample, channelCount, sampleRate, inputStream);
+			wrt = new WAVWriter(path, inputStream, pcm);
 		}
 
 		public void Close()
@@ -1163,14 +1470,39 @@ namespace CUETools.Codecs
 			set { }
 		}
 
-		public int BitsPerSample
+		public int CompressionLevel
 		{
-			get { return wrt.BitsPerSample; }
+			get { return 0; }
+			set { } // !!!! Must not start the process in constructor, so that we can set CompressionLevel!
 		}
 
-		public void Write(int[,] buff, int pos, int sampleCount)
+		public string Options
 		{
-			wrt.Write(buff, pos, sampleCount);
+			set
+			{
+				if (value == null || value == "") return;
+				throw new Exception("Unsupported options " + value);
+			}
+		}
+
+		public AudioPCMConfig PCM
+		{
+			get { return wrt.PCM; }
+		}
+
+		public void Write(AudioBuffer buff)
+		{
+			try
+			{
+				wrt.Write(buff);
+			}
+			catch (IOException ex)
+			{
+				if (_encoderProcess.HasExited)
+					throw new IOException(string.Format("{0} has exited prematurely with code {1}", _encoder, _encoderProcess.ExitCode), ex);
+				else
+					throw ex;
+			}
 			//_sampleLen += sampleCount;
 		}
 
@@ -1180,6 +1512,7 @@ namespace CUETools.Codecs
 	public class UserDefinedReader : IAudioSource
 	{
 		string _path, _decoder, _decoderParams;
+		private AudioPCMConfig pcm;
 		Process _decoderProcess;
 		WAVReader rdr;
 
@@ -1228,7 +1561,7 @@ namespace CUETools.Codecs
 				catch { }
 		}
 
-		public ulong Position
+		public long Position
 		{
 			get
 			{
@@ -1242,7 +1575,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public ulong Length
+		public long Length
 		{
 			get
 			{
@@ -1251,7 +1584,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public ulong Remaining
+		public long Remaining
 		{
 			get
 			{
@@ -1260,51 +1593,19 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public int ChannelCount
+		public AudioPCMConfig PCM
 		{
 			get
 			{
 				Initialize();
-				return rdr.ChannelCount;
+				return pcm;
 			}
 		}
 
-		public int SampleRate
-		{
-			get
-			{
-				Initialize();
-				return rdr.SampleRate;
-			}
-		}
-
-		public int BitsPerSample
-		{
-			get
-			{
-				Initialize();
-				return rdr.BitsPerSample;
-			}
-		}
-
-		public int BlockAlign
-		{
-			get
-			{
-				Initialize();
-				return rdr.BlockAlign;
-			}
-		}
-
-		public uint Read(int[,] buff, uint sampleCount)
+		public int Read(AudioBuffer buff, int maxLength)
 		{
 			Initialize();
-			return rdr.Read(buff, sampleCount);
-		}
-
-		public int[,] Read(int[,] buff)
-		{
-			return AudioSamples.Read(this, buff);
+			return rdr.Read(buff, maxLength);
 		}
 
 		public string Path { get { return _path; } }
@@ -1312,52 +1613,54 @@ namespace CUETools.Codecs
 
 	public class AudioPipe : IAudioSource//, IDisposable
 	{
-		private readonly Queue<int[,]> _buffer = new Queue<int[,]>();
-		int _bitsPerSample, _channelCount, _sampleRate, _bufferPos;
-		ulong _sampleLen, _samplePos;
+		private AudioBuffer _readBuffer, _writeBuffer;
+		long _sampleLen, _samplePos;
 		private int _maxLength;
 		private Thread _workThread;
 		IAudioSource _source;
 		bool _close = false;
+		bool _haveData = false;
+		int _bufferPos = 0;
 		Exception _ex = null;
 
-		public AudioPipe(IAudioSource source, int maxLength)
+		public AudioPipe(IAudioSource source, int size)
 		{
 			_source = source;
-			_maxLength = maxLength;
-			_bitsPerSample = _source.BitsPerSample;
-			_channelCount = _source.ChannelCount;
-			_sampleRate = _source.SampleRate;
+			_readBuffer = new AudioBuffer(source, size);
+			_writeBuffer = new AudioBuffer(source, size);
+			_maxLength = size;
 			_sampleLen = _source.Length;
-			_samplePos = 0;
-			_bufferPos = 0;
+			_samplePos = _source.Position;
 		}
 
 		private void Decompress(object o)
 		{
-			// catch
 			try
 			{
+				bool done = false;
 				do
 				{
-					//int[,] buff = new int[65536, 2];
-					//uint toRead = Math.Min((uint)buff.GetLength(0), (uint)_source.Remaining);
-					//uint samplesRead = _source.Read(buff, toRead);
-					int[,] buff = _source.Read(null);
-					if (buff == null) break;
-					//uint samplesRead = buff.GetLength(0);
-					//if (samplesRead == 0) break;
-					//if (samplesRead != toRead)
-					//    throw new Exception("samples read != samples requested");
-					Write(buff);
-				} while (true);
+					done = _source.Read(_writeBuffer, -1) == 0;
+					lock (this)
+					{
+						while (_haveData && !_close)
+							Monitor.Wait(this);
+						if (_close)
+							throw new Exception("Decompression aborted");
+						AudioBuffer temp = _writeBuffer;
+						_writeBuffer = _readBuffer;
+						_readBuffer = temp;
+						_haveData = true;
+						Monitor.Pulse(this);
+					}
+				} while (!done);
 			}
 			catch (Exception ex)
 			{
-				lock (_buffer)
+				lock (this)
 				{
 					_ex = ex;
-					Monitor.Pulse(_buffer);
+					Monitor.Pulse(this);
 				}
 			}
 		}
@@ -1378,20 +1681,29 @@ namespace CUETools.Codecs
 
 		public void Close()
 		{
-			lock (_buffer)
+			lock (this)
 			{
 				_close = true;
-				Monitor.Pulse(_buffer);
+				Monitor.Pulse(this);
 			}
 			if (_workThread != null)
 			{
 				_workThread.Join();
 				_workThread = null;
 			}
-			_buffer.Clear();
+			if (_readBuffer != null)
+			{
+				//_readBuffer.Clear();
+				_readBuffer = null;
+			}
+			if (_writeBuffer != null)
+			{
+				//_writeBuffer.Clear();
+				_writeBuffer = null;
+			}
 		}
 
-		public ulong Position
+		public long Position
 		{
 			get
 			{
@@ -1403,7 +1715,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public ulong Length
+		public long Length
 		{
 			get
 			{
@@ -1411,7 +1723,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public ulong Remaining
+		public long Remaining
 		{
 			get
 			{
@@ -1419,275 +1731,58 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public int ChannelCount
+		public AudioPCMConfig PCM
 		{
 			get
 			{
-				return _channelCount;
+				return _source.PCM;
 			}
 		}
 
-		public int SampleRate
-		{
-			get
-			{
-				return _sampleRate;
-			}
-		}
-
-		public int BitsPerSample
-		{
-			get
-			{
-				return _bitsPerSample;
-			}
-		}
-
-
-		public int[,] Read(int[,] buff)
+		public int Read(AudioBuffer buff, int maxLength)
 		{
 			Go();
-			if (Remaining == 0)
-				return null;
+
+			bool needToCopy = false;
 			if (_bufferPos != 0)
-				throw new Exception("Mixed Read usage not yet suppoted");
-			lock (_buffer)
-			{
-				while (_buffer.Count == 0 && _ex == null)
-					Monitor.Wait(_buffer);
-				if (_ex != null)
-					throw _ex;
-				buff = _buffer.Dequeue();
-				Monitor.Pulse(_buffer);
-			}
-			return buff;
-		}
-
-		public uint Read(int[,] buff, uint sampleCount)
-		{
-			Go();
-			if (sampleCount > Remaining)
-				sampleCount = (uint)Remaining;
-			int pos = 0;
-			while (sampleCount > 0)
-			{
-				lock (_buffer)
+				needToCopy = true;
+			else
+				lock (this)
 				{
-					while (_buffer.Count == 0 && _ex == null)
-						Monitor.Wait(_buffer);
+					while (!_haveData && _ex == null)
+						Monitor.Wait(this);
 					if (_ex != null)
 						throw _ex;
-					int[,] chunk = _buffer.Peek();
-					int copyCount = Math.Min((int)sampleCount, chunk.GetLength(0) - _bufferPos);
-					Array.Copy(chunk, _bufferPos * _channelCount, buff, pos * _channelCount, copyCount * _channelCount);
-					pos += copyCount;
-					sampleCount -= (uint) copyCount;
-					_samplePos += (ulong) copyCount;
-					_bufferPos += copyCount;
-					if (_bufferPos == chunk.GetLength(0))
+					if (_bufferPos == 0 && (maxLength < 0 || _readBuffer.Length <= maxLength))
 					{
-						_buffer.Dequeue(); // .Finalize?
-						_bufferPos = 0;
-						Monitor.Pulse(_buffer);
+						buff.Swap(_readBuffer);
+						_haveData = false;
+						Monitor.Pulse(this);
+					}
+					else
+						needToCopy = true;
+				}
+			if (needToCopy)
+			{
+				buff.Prepare(_readBuffer, _bufferPos, maxLength);
+				_bufferPos += buff.Length;
+				if (_bufferPos == _readBuffer.Length)
+				{
+					_bufferPos = 0;
+					lock (this)
+					{
+						_haveData = false;
+						Monitor.Pulse(this);
 					}
 				}
 			}
-			return (uint) pos;
-		}
-
-		public void Write(int[,] buff)
-		{
-			lock (_buffer)
-			{
-				while (_buffer.Count >= _maxLength && !_close)
-					Monitor.Wait(_buffer);
-				if (_close)
-					throw new Exception("Decompression aborted");
-				//_flushed = false;
-				_buffer.Enqueue(buff);
-				Monitor.Pulse(_buffer);
-			}
+			_samplePos += buff.Length;
+			return buff.Length;
 		}
 
 		public string Path { get { return _source.Path; } }
 	}
 
-	public class BufferedWriter: IAudioDest
-	{
-		IAudioDest _writer;
-		Thread _flushThread = null;
-		private int[,] _buffer;
-		private int _size;
-		private int _channels = 2;
-		private int _start = 0; // moved only by Write
-		private int _end = 0; // moved only by Read
-		private bool _eof = false, _delete = false;
-		Exception exceptionOnFlush = null;
-
-		public long FinalSampleCount
-		{
-			//get { return _writer.FinalSampleCount; }
-			set	{ _writer.FinalSampleCount = value; }
-		}
-
-		public long BlockSize
-		{
-			set	{ _writer.BlockSize = value; }
-		}
-
-		public int BitsPerSample
-		{
-			get { return _writer.BitsPerSample;  }
-		}
-
-		public int Channels
-		{
-			get { return _channels; } // !!!! writer.Channels
-		}
-
-		// public bool ReadSource(IAudioSource input)
-
-		public unsafe void Write(int[,] samples, int offset, int count)
-		{
-			int pos, chunk;
-			while (count > 0)
-			{
-				lock (this)
-				{
-					while (FreeSpace == 0 && exceptionOnFlush == null)
-						Monitor.Wait(this);
-					if (exceptionOnFlush != null)
-					{
-						Exception ex = exceptionOnFlush;
-						exceptionOnFlush = null;
-						throw ex;
-					}
-					pos = _end % _size;
-					chunk = Math.Min(FreeSpace, _size - pos);
-					chunk = Math.Min(chunk, count);
-				}
-				fixed (int* src = &samples[offset, 0], dst = &_buffer[pos, 0])
-					AudioSamples.MemCpy(dst, src, chunk * Channels);
-				//Array.Copy(samples, offset * Channels, _buffer, pos * Channels, chunk * Channels);
-				lock (this)
-				{
-					_end += chunk;
-					Monitor.Pulse(this);
-				}
-				count -= chunk;
-				offset += chunk;
-			}
-		}
-
-		public string Path { get { return _writer.Path; } }
-
-		public BufferedWriter(IAudioDest writer, int size)
-		{
-			_writer = writer;
-			_size = size;
-			_buffer = new int[_size, Channels]; 
-			_flushThread = new Thread(Flush);
-			//_writeThread.Priority = ThreadPriority.Normal;
-			_flushThread.IsBackground = true;
-			_flushThread.Start(_writer);
-		}
-
-		int DataAvailable
-		{
-			get
-			{
-				return _end - _start;
-			}
-		}
-
-		int FreeSpace
-		{
-			get
-			{
-				return _size - DataAvailable;
-			}
-		}
-
-		public void Delete()
-		{
-			SetEOF(true);
-			if (_flushThread != null)
-			{
-				_flushThread.Join();
-				_flushThread = null;
-			}
-		}
-
-		public void Close()
-		{
-			SetEOF(false);
-			if (_flushThread != null)
-			{
-				_flushThread.Join();
-				_flushThread = null;
-			}
-			if (exceptionOnFlush != null)
-			{
-				Exception ex = exceptionOnFlush;
-				exceptionOnFlush = null;
-				throw ex;
-			}
-		}
-
-		public void SetEOF(bool delete)
-		{
-			lock (this)
-			{
-				_eof = true;
-				_delete = delete;
-				Monitor.Pulse(this);
-			}
-		}
-		
-		public void Flush(object o)
-		{
-			IAudioDest dest = (IAudioDest)o;
-			try
-			{
-				do
-				{
-					int pos, chunk;
-					lock (this)
-					{
-						while (DataAvailable == 0 && !_eof)
-							Monitor.Wait(this);
-						if (DataAvailable == 0)
-						{
-							if (_delete)
-								dest.Delete();
-							else
-								dest.Close();
-							return;
-						}
-						pos = _start % _size;
-						chunk = Math.Min(DataAvailable, _size - pos);
-					}
-					dest.Write(_buffer, pos, chunk);
-					lock (this)
-					{
-						_start += chunk;
-						Monitor.Pulse(this);
-					}
-				}
-				while (true);
-			}
-			catch (Exception ex)
-			{
-				lock (this)
-				{
-					exceptionOnFlush = ex;
-					Monitor.Pulse(this);
-					dest.Delete();
-				}
-			}
-		}
-	}
-	
 	public class NullStream : Stream
 	{
 		public NullStream()

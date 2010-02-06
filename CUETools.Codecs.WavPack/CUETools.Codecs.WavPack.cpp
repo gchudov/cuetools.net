@@ -58,10 +58,21 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
 	public delegate int DecoderCanSeekDelegate(void *id);
 
+	[AudioDecoderClass("libwavpack", "wv")]
 	public ref class WavPackReader : public IAudioSource 
 	{
 	public:
 		WavPackReader(String^ path, Stream^ IO, Stream^ IO_WVC) 
+		{
+		    Initialize (path, IO, IO_WVC);
+		}
+
+		WavPackReader(String^ path, Stream^ IO)		    
+		{
+		    Initialize (path, IO, nullptr);
+		}
+
+		void Initialize(String^ path, Stream^ IO, Stream^ IO_WVC)
 		{
 			char errorMessage[256];
 
@@ -95,9 +106,10 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 				throw gcnew Exception("Unable to initialize the decoder.");
 			}
 
-			_bitsPerSample = WavpackGetBitsPerSample(_wpc);
-			_channelCount = WavpackGetNumChannels(_wpc);
-			_sampleRate = WavpackGetSampleRate(_wpc);
+			pcm = gcnew AudioPCMConfig(
+			    WavpackGetBitsPerSample(_wpc), 
+			    WavpackGetNumChannels(_wpc), 
+			    (int)WavpackGetSampleRate(_wpc));
 			_sampleCount = WavpackGetNumSamples(_wpc);
 			_sampleOffset = 0;
 		}
@@ -107,35 +119,23 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			delete ioReader;
 		}
 
-		virtual property Int32 BitsPerSample {
-			Int32 get() {
-				return _bitsPerSample;
+		virtual property AudioPCMConfig^ PCM {
+			AudioPCMConfig^ get() {
+				return pcm;
 			}
 		}
 
-		virtual property Int32 ChannelCount {
-			Int32 get() {
-				return _channelCount;
-			}
-		}
-
-		virtual property Int32 SampleRate {
-			Int32 get() {
-				return _sampleRate;
-			}
-		}
-
-		virtual property UInt64 Length {
-			UInt64 get() {
+		virtual property Int64 Length {
+			Int64 get() {
 				return _sampleCount;
 			}
 		}
 
-		virtual property UInt64 Position {
-			UInt64 get() {
+		virtual property Int64 Position {
+			Int64 get() {
 				return _sampleOffset;
 			}
-			void set(UInt64 offset) {
+			void set(Int64 offset) {
 				_sampleOffset = offset;
 				if (!WavpackSeekSample(_wpc, offset)) {
 					throw gcnew Exception("Unable to seek.");
@@ -143,8 +143,8 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
-		virtual property UInt64 Remaining {
-			UInt64 get() {
+		virtual property Int64 Remaining {
+			Int64 get() {
 				return _sampleCount - _sampleOffset;
 			}
 		}
@@ -171,25 +171,22 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
-		virtual array<Int32, 2>^ Read(array<Int32, 2>^ buff)
+		virtual int Read(AudioBuffer^ sampleBuffer, int maxLength)
 		{
-			return AudioSamples::Read(this, buff);
-		}
+			sampleBuffer->Prepare(this, maxLength);
 
-		virtual UInt32 Read(array<Int32, 2>^ sampleBuffer, UInt32 sampleCount) 
-		{
-			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[0, 0];
-			int samplesRead = WavpackUnpackSamples(_wpc, pSampleBuffer, sampleCount);
+			pin_ptr<Int32> pSampleBuffer = &sampleBuffer->Samples[0, 0];
+			int samplesRead = WavpackUnpackSamples(_wpc, pSampleBuffer, sampleBuffer->Length);
 			_sampleOffset += samplesRead;
-			if (samplesRead != sampleCount)
+			if (samplesRead != sampleBuffer->Length)
 				throw gcnew Exception("Decoder returned a different number of samples than requested.");
-			return sampleCount;
+			return sampleBuffer->Length;
 		}
 
 	private:
 		WavpackContext *_wpc;
 		Int32 _sampleCount, _sampleOffset;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		AudioPCMConfig^ pcm;
 		String^ _path;
 		Stream^ _IO;
 		Stream^ _IO_WVC;
@@ -293,16 +290,17 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		}
 	};
 
+	[AudioEncoderClass("libwavpack", "wv", true, "fast normal high high+", "normal", 1)]
 	public ref class WavPackWriter : IAudioDest 
 	{
 	public:
-		WavPackWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		WavPackWriter(String^ path, AudioPCMConfig^ pcm)
 		{
-			IntPtr pathChars;
+			_pcm = pcm;
 
-			if (channelCount != 1 && channelCount != 2)
+			if (_pcm->ChannelCount != 1 && _pcm->ChannelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
-			if (bitsPerSample < 16 || bitsPerSample > 24)
+			if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
 				throw gcnew Exception("Bits per sample must be 16..24.");
 
 			_path = path;
@@ -311,12 +309,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			_extraMode = 0;
 			_blockSize = 0;
 
-			_bitsPerSample = bitsPerSample;
-			_channelCount = channelCount;
-			_sampleRate = sampleRate;
-			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
-
-			pathChars = Marshal::StringToHGlobalUni(path);
+			IntPtr pathChars = Marshal::StringToHGlobalUni(path);
 			_hFile = _wfopen((const wchar_t*)pathChars.ToPointer(), L"w+b");
 			Marshal::FreeHGlobal(pathChars);
 			if (!_hFile) {
@@ -371,42 +364,41 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
-		virtual property int BitsPerSample
+		virtual property AudioPCMConfig^ PCM
 		{
-			int get() { return _bitsPerSample;  }
+			AudioPCMConfig^ get() { return _pcm;  }
 		}
 
-		virtual void Write(array<Int32, 2>^ sampleBuffer, int offset, int sampleCount) 
+		virtual void Write(AudioBuffer^ sampleBuffer) 
 		{
 			if (!_initialized) 
 				Initialize();
 
-			if (MD5Sum)
-			{
-				if (_sampleBuffer == nullptr || _sampleBuffer.Length < sampleCount * _blockAlign)
-					_sampleBuffer = gcnew array<unsigned char>(sampleCount * _blockAlign);
-				AudioSamples::FLACSamplesToBytes(sampleBuffer, offset, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
-				UpdateHash(_sampleBuffer, sampleCount * _blockAlign);
-			}
+			sampleBuffer->Prepare(this);
 
-			if ((_bitsPerSample & 7) != 0)
+			if (MD5Sum)
+				UpdateHash(sampleBuffer->Bytes, sampleBuffer->ByteLength);
+
+			if ((_pcm->BitsPerSample & 7) != 0)
 			{
-				if (_shiftedSampleBuffer == nullptr || _shiftedSampleBuffer.GetLength(0) < sampleCount)
-					_shiftedSampleBuffer = gcnew array<int,2>(sampleCount, _channelCount);
-				for (int i = 0; i < sampleCount; i++)
-					for (int c = 0; c < _channelCount; c++)
-						_shiftedSampleBuffer[i,c] = sampleBuffer[i+offset,c] << 8 - (_bitsPerSample & 7);
+				if (_shiftedSampleBuffer == nullptr || _shiftedSampleBuffer.GetLength(0) < sampleBuffer->Length)
+				    _shiftedSampleBuffer = gcnew array<int,2>(sampleBuffer->Length, _pcm->ChannelCount);
+				int shift = 8 - (_pcm->BitsPerSample & 7);
+				int ch = _pcm->ChannelCount;
+				for (int i = 0; i < sampleBuffer->Length; i++)
+					for (int c = 0; c < ch; c++)
+					    _shiftedSampleBuffer[i,c] = sampleBuffer->Samples[i,c] << shift;
 				pin_ptr<Int32> pSampleBuffer = &_shiftedSampleBuffer[0, 0];
-				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount))
+				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleBuffer->Length))
 					throw gcnew Exception("An error occurred while encoding.");
 			} else
 			{
-				pin_ptr<Int32> pSampleBuffer = &sampleBuffer[offset, 0];
-				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleCount))
+				pin_ptr<Int32> pSampleBuffer = &sampleBuffer->Samples[0, 0];
+				if (!WavpackPackSamples(_wpc, (int32_t*)pSampleBuffer, sampleBuffer->Length))
 					throw gcnew Exception("An error occurred while encoding.");
 			}
 
-			_samplesWritten += sampleCount;
+			_samplesWritten += sampleBuffer->Length;
 		}
 
 		virtual property String^ Path 
@@ -416,15 +408,38 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			} 
 		}
 
-		property Int32 CompressionMode {
-			Int32 get() {
+		virtual property int CompressionLevel {
+			int get() {
 				return _compressionMode;
 			}
-			void set(Int32 value) {
+			void set(int value) {
 				if ((value < 0) || (value > 3)) {
 					throw gcnew Exception("Invalid compression mode.");
 				}
 				_compressionMode = value;
+			}
+		}
+
+		virtual property String^ Options
+		{
+			void set(String^ value)
+			{
+				if (value == nullptr || value == "") return;
+				cli::array<String^>^ args = value->Split();
+				for (int i = 0; i < args->Length; i++)
+				{
+				    if (args[i] == "--extra-mode" && (++i) < args->Length)
+				    {
+					ExtraMode = Int32::Parse(args[i]);
+					continue;
+				    }
+				    if (args[i] == "--md5")
+				    {
+					MD5Sum = true;
+					continue;
+				    }
+				    throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+				}
 			}
 		}
 
@@ -463,13 +478,12 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		bool _initialized;
 		WavpackContext *_wpc;
 		Int32 _finalSampleCount, _samplesWritten;
-		Int32 _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
 		Int32 _compressionMode, _extraMode, _blockSize;
 		String^ _path;
 		bool _md5Sum;
 		MD5^ _md5hasher;
-		array<unsigned char>^ _sampleBuffer;
 		array<int,2>^ _shiftedSampleBuffer;
+		AudioPCMConfig^ _pcm;
 
 		void Initialize() {
 			WavpackConfig config;
@@ -480,11 +494,11 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 
 			memset(&config, 0, sizeof(WavpackConfig));
-			config.bits_per_sample = _bitsPerSample;
-			config.bytes_per_sample = (_bitsPerSample + 7) / 8;
-			config.num_channels = _channelCount;
-			config.channel_mask = 5 - _channelCount;
-			config.sample_rate = _sampleRate;
+			config.bits_per_sample = _pcm->BitsPerSample;
+			config.bytes_per_sample = (_pcm->BitsPerSample + 7) / 8;
+			config.num_channels = _pcm->ChannelCount;
+			config.channel_mask = 5 - _pcm->ChannelCount;
+			config.sample_rate = _pcm->SampleRate;
 			if (_compressionMode == 0) config.flags |= CONFIG_FAST_FLAG;
 			if (_compressionMode == 2) config.flags |= CONFIG_HIGH_FLAG;
 			if (_compressionMode == 3) config.flags |= CONFIG_HIGH_FLAG | CONFIG_VERY_HIGH_FLAG;

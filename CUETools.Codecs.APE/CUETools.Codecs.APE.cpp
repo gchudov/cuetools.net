@@ -101,6 +101,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		GCHandle _gchBuffer;
 	};
 
+	[AudioDecoderClass("MAC_SDK", "ape")]
 	public ref class APEReader : public IAudioSource
 	{
 	public:
@@ -124,9 +125,10 @@ namespace CUETools { namespace Codecs { namespace APE {
 				throw gcnew Exception("Unable to open file.");
 			}
 			
-			_sampleRate = pAPEDecompress->GetInfo (APE_INFO_SAMPLE_RATE, 0, 0);
-			_bitsPerSample = pAPEDecompress->GetInfo (APE_INFO_BITS_PER_SAMPLE, 0, 0);
-			_channelCount = pAPEDecompress->GetInfo (APE_INFO_CHANNELS, 0, 0);
+			pcm = gcnew AudioPCMConfig(
+			    pAPEDecompress->GetInfo (APE_INFO_BITS_PER_SAMPLE, 0, 0),
+			    pAPEDecompress->GetInfo (APE_INFO_CHANNELS, 0, 0),
+			    pAPEDecompress->GetInfo (APE_INFO_SAMPLE_RATE, 0, 0));
 
 			// make a buffer to hold 16384 blocks of audio data
 			nBlockAlign = pAPEDecompress->GetInfo (APE_INFO_BLOCK_ALIGN, 0, 0);
@@ -146,36 +148,24 @@ namespace CUETools { namespace Codecs { namespace APE {
 				_gchReadBuffer.Free();
 		}
 
-		virtual property Int32 BitsPerSample {
-			Int32 get() {
-				return _bitsPerSample;
+		virtual property AudioPCMConfig^ PCM {
+			AudioPCMConfig^ get() {
+				return pcm;
 			}
 		}
 
-		virtual property Int32 ChannelCount {
-			Int32 get() {
-				return _channelCount;
-			}
-		}
-
-		virtual property Int32 SampleRate {
-			Int32 get() {
-				return _sampleRate;
-			}
-		}
-
-		virtual property UInt64 Length {
-			UInt64 get() {
+		virtual property Int64 Length {
+			Int64 get() {
 				return _sampleCount;
 			}
 		}
 
-		virtual property UInt64 Position 
+		virtual property Int64 Position 
 		{
-			UInt64 get() {
+			Int64 get() {
 				return _sampleOffset - SamplesInBuffer;
 			}
-			void set(UInt64 offset) {
+			void set(Int64 offset) {
 				_sampleOffset = offset;
 				_bufferOffset = 0;
 				_bufferLength = 0;
@@ -184,8 +174,8 @@ namespace CUETools { namespace Codecs { namespace APE {
 			}
 		}
 
-		virtual property UInt64 Remaining {
-			UInt64 get() {
+		virtual property Int64 Remaining {
+			Int64 get() {
 				return _sampleCount - _sampleOffset + SamplesInBuffer;
 			}
 		}
@@ -210,15 +200,13 @@ namespace CUETools { namespace Codecs { namespace APE {
 			} 
 		}
 
-		virtual array<Int32, 2>^ Read(array<Int32, 2>^ buff)
+		virtual int Read(AudioBuffer^ buff, int maxLength)
 		{
-			return AudioSamples::Read(this, buff);
-		}
+			buff->Prepare(this, maxLength);
 
-		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
-		{
-			UInt32 buffOffset = 0;
-			UInt32 samplesNeeded = sampleCount;
+			Int32 buffOffset = 0;
+			Int32 samplesNeeded = buff->Length;
+			Int32 _channelCount = pcm->ChannelCount;
 
 			while (samplesNeeded != 0) 
 			{
@@ -232,21 +220,21 @@ namespace CUETools { namespace Codecs { namespace APE {
 					_bufferLength = nBlocksRetrieved;
 					_sampleOffset += nBlocksRetrieved;
 				}
-				UInt32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
-				AudioSamples::BytesToFLACSamples_16(_samplesBuffer, _bufferOffset*nBlockAlign, buff, buffOffset, copyCount, _channelCount);
+				Int32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
+				AudioBuffer::BytesToFLACSamples_16(_samplesBuffer, _bufferOffset*nBlockAlign, buff->Samples, buffOffset, copyCount, _channelCount);
 				samplesNeeded -= copyCount;
 				buffOffset += copyCount;
 				_bufferOffset += copyCount;
 			}
-			return sampleCount;
+			return buff->Length;
 		}
 
 	private:
 		IAPEDecompress * pAPEDecompress;
 
 		Int64 _sampleCount, _sampleOffset;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
-		UInt32 _bufferOffset, _bufferLength;
+		AudioPCMConfig^ pcm;
+		Int32 _bufferOffset, _bufferLength;
 		int nBlockAlign;
 		array<unsigned char>^ _samplesBuffer;
 		String^ _path;
@@ -255,39 +243,37 @@ namespace CUETools { namespace Codecs { namespace APE {
 		CWinFileIO* _winFileIO;
 		GCHandle _gchIO, _gchReadBuffer;
 
-		property UInt32 SamplesInBuffer 
+		property Int32 SamplesInBuffer 
 		{
-			UInt32 get () 
+			Int32 get () 
 			{
-				return (UInt32) (_bufferLength - _bufferOffset);
+				return _bufferLength - _bufferOffset;
 			}
 		}
 	};
 
+	[AudioEncoderClass("MAC_SDK", "ape", true, "fast normal high extra insane", "high", 1)]
 	public ref class APEWriter : IAudioDest
 	{
 	public:
-		APEWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		APEWriter(String^ path, AudioPCMConfig^ pcm)
 		{
-			if (channelCount != 1 && channelCount != 2)
+		    _pcm = pcm;
+
+		    if (_pcm->ChannelCount != 1 && _pcm->ChannelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
-			if (bitsPerSample != 16 && bitsPerSample != 24)
+		    if (_pcm->BitsPerSample != 16 && _pcm->BitsPerSample != 24)
 				throw gcnew Exception("Monkey's Audio doesn't support selected bits per sample value.");
 
-			_path = path;
-			_winFileIO = NULL;
+		    _path = path;
+		    _winFileIO = NULL;
 
-			_compressionLevel = COMPRESSION_LEVEL_NORMAL;
+		    _compressionLevel = COMPRESSION_LEVEL_NORMAL;
 
-			_bitsPerSample = bitsPerSample;
-			_channelCount = channelCount;
-			_sampleRate = sampleRate;
-			_blockAlign = _channelCount * ((_bitsPerSample + 7) / 8);
-
-			int nRetVal;
-			pAPECompress = CreateIAPECompress (&nRetVal);
-			if (!pAPECompress)
-				throw gcnew Exception("Unable to open APE compressor.");
+		    int nRetVal;
+		    pAPECompress = CreateIAPECompress (&nRetVal);
+		    if (!pAPECompress)
+			    throw gcnew Exception("Unable to open APE compressor.");
 		}
 
 		~APEWriter()
@@ -349,21 +335,23 @@ namespace CUETools { namespace Codecs { namespace APE {
 			}
 		}
 
-		virtual property int BitsPerSample
+		virtual property AudioPCMConfig^ PCM 
 		{
-			int get() { return _bitsPerSample;  }
+			AudioPCMConfig^ get() 
+			{
+				return _pcm;
+			}
 		}
 
-		virtual void Write(array<Int32,2>^ buff, int offset, int sampleCount) 
+		virtual void Write(AudioBuffer^ buff)
 		{
-			if (_sampleBuffer == nullptr || _sampleBuffer.Length < sampleCount * _blockAlign)
-				_sampleBuffer = gcnew array<unsigned char>(sampleCount * _blockAlign);
-			AudioSamples::FLACSamplesToBytes(buff, offset, _sampleBuffer, 0, sampleCount, _channelCount, _bitsPerSample);
-			if (!_initialized) Initialize();
-			pin_ptr<unsigned char> pSampleBuffer = &_sampleBuffer[0];
-			if (pAPECompress->AddData (pSampleBuffer, sampleCount * _blockAlign))
+			if (!_initialized) 
+			    Initialize();
+			buff->Prepare(this);
+			pin_ptr<unsigned char> pSampleBuffer = &buff->Bytes[0];
+			if (pAPECompress->AddData (pSampleBuffer, buff->ByteLength))
 				throw gcnew Exception("An error occurred while encoding.");
-			_samplesWritten += sampleCount;
+			_samplesWritten += buff->Length;
 		}
 
 		virtual property String^ Path 
@@ -373,7 +361,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 			} 
 		}
 
-		property Int32 CompressionLevel {
+		virtual property Int32 CompressionLevel {
 			Int32 get() {
 				return _compressionLevel / 1000 - 1;
 			}
@@ -385,11 +373,20 @@ namespace CUETools { namespace Codecs { namespace APE {
 			}
 		}
 
+		virtual property String^ Options
+		{
+			void set(String^ value)
+			{
+				if (value == nullptr || value == "") return;
+				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+			}
+		}
+
 	private:
 		IAPECompress * pAPECompress;
 		bool _initialized;
 		Int32 _finalSampleCount, _samplesWritten;
-		Int32 _bitsPerSample, _channelCount, _sampleRate, _blockAlign;
+		AudioPCMConfig^ _pcm;
 		Int32 _compressionLevel;
 		String^ _path;
 		Stream^ _IO;
@@ -407,11 +404,11 @@ namespace CUETools { namespace Codecs { namespace APE {
 			_winFileIO = new CWinFileIO(_gchIO, _gchBuffer);
 
 			WAVEFORMATEX waveFormat;
-			FillWaveFormatEx (&waveFormat, _sampleRate, _bitsPerSample, _channelCount);
+			FillWaveFormatEx (&waveFormat, _pcm->SampleRate, _pcm->BitsPerSample, _pcm->ChannelCount);
 
 			int res = pAPECompress->StartEx (_winFileIO,
 				&waveFormat, 
-				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * _blockAlign,
+				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * _pcm->BlockAlign,
 				_compressionLevel, 
 				NULL, 
 				CREATE_WAV_HEADER_ON_DECOMPRESSION);

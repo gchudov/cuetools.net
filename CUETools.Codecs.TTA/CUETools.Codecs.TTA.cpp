@@ -27,6 +27,7 @@ namespace TTA {
 		"operation canceled"
 	};
 
+	[AudioDecoderClass("ttalib", "tta")]
 	public ref class TTAReader : public IAudioSource
 	{
 	public:
@@ -70,9 +71,8 @@ namespace TTA {
 			}
 			if (WAVE_FORMAT_PCM != _ttaReader->ttahdr.AudioFormat)
 				throw gcnew Exception("floating point format not supported.");
-			_channelCount = _ttaReader->ttahdr.NumChannels;
-			_bitsPerSample = _ttaReader->ttahdr.BitsPerSample;
-			_sampleRate = _ttaReader->ttahdr.SampleRate;
+
+			pcm = gcnew AudioPCMConfig((int)_ttaReader->ttahdr.BitsPerSample, (int)_ttaReader->ttahdr.NumChannels, (int)_ttaReader->ttahdr.SampleRate);
 			_sampleCount = _ttaReader->ttahdr.DataLength;
 		}
 
@@ -81,36 +81,24 @@ namespace TTA {
 		    Close ();
 		}
 
-		virtual property Int32 BitsPerSample {
-			Int32 get() {
-				return _bitsPerSample;
+		virtual property AudioPCMConfig^ PCM {
+			AudioPCMConfig^ get() {
+				return pcm;
 			}
 		}
 
-		virtual property Int32 ChannelCount {
-			Int32 get() {
-				return _channelCount;
-			}
-		}
-
-		virtual property Int32 SampleRate {
-			Int32 get() {
-				return _sampleRate;
-			}
-		}
-
-		virtual property UInt64 Length {
-			UInt64 get() {
+		virtual property Int64 Length {
+			Int64 get() {
 				return _sampleCount;
 			}
 		}
 
-		virtual property UInt64 Position {
-			UInt64 get() 
+		virtual property Int64 Position {
+			Int64 get() 
 			{
 				return _sampleOffset - SamplesInBuffer;
 			}
-			void set(UInt64 offset) 
+			void set(Int64 offset) 
 			{
 				_sampleOffset = offset;
 				_bufferOffset = 0;
@@ -125,8 +113,8 @@ namespace TTA {
 			} 
 		}
 
-		virtual property UInt64 Remaining {
-			UInt64 get() {
+		virtual property Int64 Remaining {
+			Int64 get() {
 				return _sampleCount - _sampleOffset + SamplesInBuffer;
 			}
 		}
@@ -144,31 +132,28 @@ namespace TTA {
 			}
 		}
 
-		virtual array<Int32, 2>^ Read(array<Int32, 2>^ buff)
-		{
-			return AudioSamples::Read(this, buff);
-		}
-
 		void processBlock (long * buffer, int sampleCount)
 		{
 			if (_bufferLength > 0)
 				throw gcnew Exception("Received unrequested samples.");
 
 			if ((_sampleBuffer == nullptr) || (_sampleBuffer->GetLength(0) < sampleCount))
-				_sampleBuffer = gcnew array<Int32, 2>(sampleCount, _channelCount);
+			    _sampleBuffer = gcnew array<Int32, 2>(sampleCount, pcm->ChannelCount);
 
 			interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, 0];
 			const long *pTTABuffer = buffer;
-			const long *pTTABufferEnd = pTTABuffer + sampleCount * _channelCount;
+			const long *pTTABufferEnd = pTTABuffer + sampleCount * pcm->ChannelCount;
 			while (pTTABuffer < pTTABufferEnd) 
 				*(pMyBuffer++) = *(pTTABuffer++);
 			_bufferLength = sampleCount;
 		}
 
-		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
+		virtual int Read(AudioBuffer^ buff, int maxLength)
 		{
-			UInt32 buffOffset = 0;
-			UInt32 samplesNeeded = sampleCount;
+			buff->Prepare(this, maxLength);
+
+			Int32 buffOffset = 0;
+			Int32 samplesNeeded = buff->Length;
 
 			while (samplesNeeded != 0) 
 			{
@@ -193,51 +178,51 @@ namespace TTA {
 					} while (_bufferLength == 0);
 					_sampleOffset += _bufferLength;
 				}
-				UInt32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
-				Array::Copy(_sampleBuffer, _bufferOffset * _channelCount, buff, buffOffset * _channelCount, copyCount * _channelCount);
+				Int32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
+				Array::Copy(_sampleBuffer, _bufferOffset * pcm->ChannelCount, buff->Samples, buffOffset * pcm->ChannelCount, copyCount * pcm->ChannelCount);
 				samplesNeeded -= copyCount;
 				buffOffset += copyCount;
 				_bufferOffset += copyCount;
 			}
-			return sampleCount;
+			return buff->Length;
 		}
 
 	private:
 		Int64 _sampleCount, _sampleOffset;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		AudioPCMConfig^ pcm;
 		array<Int32, 2>^ _sampleBuffer;
 		array<unsigned char>^ _readBuffer;
 		String^ _path;
 		Stream^ _IO;
-		UInt32 _bufferOffset, _bufferLength;
+		Int32 _bufferOffset, _bufferLength;
 		TTALib::TTAReader * _ttaReader;
 
-		property UInt32 SamplesInBuffer {
-			UInt32 get () 
+		property Int32 SamplesInBuffer {
+			Int32 get () 
 			{
-				return (UInt32) (_bufferLength - _bufferOffset);
+				return _bufferLength - _bufferOffset;
 			}
 		}
 	};
 
-	public ref class TTAWriter : IAudioDest 
+	[AudioEncoderClass("ttalib", "tta", true, "", "", 1)]
+	public ref class TTAWriter : public IAudioDest
 	{
 	public:
-		TTAWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		TTAWriter(String^ path, AudioPCMConfig^ pcm)
 		{
-			if (bitsPerSample < 16 || bitsPerSample > 24)
-				throw gcnew Exception("Bits per sample must be 16..24.");
+		    _pcm = pcm;
 
-			_initialized = false;
-			_sampleBuffer = nullptr;
-			_path = path;
-			_finalSampleCount = 0;
-			_samplesWritten = 0;
-			_bitsPerSample = bitsPerSample;
-			_channelCount = channelCount;
-			_sampleRate = sampleRate;
-			_compressionLevel = 5;
-			_blockSize = 0;
+		    if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
+	    		throw gcnew Exception("Bits per sample must be 16..24.");
+
+		    _initialized = false;
+		    _sampleBuffer = nullptr;
+		    _path = path;
+		    _finalSampleCount = 0;
+		    _samplesWritten = 0;
+		    _compressionLevel = 5;
+		    _blockSize = 0;
 		}
 
 		virtual void Close() {
@@ -295,9 +280,9 @@ namespace TTA {
 			}
 		}
 
-		virtual property int BitsPerSample
+		virtual property AudioPCMConfig^ PCM
 		{
-			int get() { return _bitsPerSample;  }
+			AudioPCMConfig^ get() { return _pcm;  }
 		}
 
 		virtual property String^ Path { 
@@ -306,38 +291,48 @@ namespace TTA {
 			} 
 		}
 
-		virtual void Write(array<Int32, 2>^ sampleBuffer, int offset, int sampleCount) {
+		virtual void Write(AudioBuffer^ sampleBuffer) {
 			if (!_initialized) Initialize();
 
-			if ((_sampleBuffer == nullptr) || (_sampleBuffer->Length < sampleCount * _channelCount))
-				_sampleBuffer = gcnew array<long> (sampleCount * _channelCount);
+			sampleBuffer->Prepare(this);
 
-			interior_ptr<Int32> pSampleBuffer = &sampleBuffer[offset, 0];
+			if ((_sampleBuffer == nullptr) || (_sampleBuffer->Length < sampleBuffer->Length * _pcm->ChannelCount))
+				_sampleBuffer = gcnew array<long> (sampleBuffer->Length * _pcm->ChannelCount);
+
+			interior_ptr<Int32> pSampleBuffer = &sampleBuffer->Samples[0, 0];
 			interior_ptr<long> pTTABuffer = &_sampleBuffer[0];
-			for (int i = 0; i < sampleCount * _channelCount; i++) 
+			for (int i = 0; i < sampleBuffer->Length * _pcm->ChannelCount; i++)
 				pTTABuffer[i] = pSampleBuffer[i];
 
 			pin_ptr<long> buffer = &_sampleBuffer[0];
 			try
 			{
-				_ttaWriter->CompressBlock(buffer, sampleCount);
+				_ttaWriter->CompressBlock(buffer, sampleBuffer->Length);
 			} catch (TTALib::TTAException ex)
 			{
 				throw gcnew Exception(String::Format("TTA encoder: {0}", gcnew String(TTAErrorsStr[ex.GetErrNo()])));
 			}
 
-			_samplesWritten += sampleCount;
+			_samplesWritten += sampleBuffer->Length;
 		}
 
-		property Int32 CompressionLevel {
+		virtual property Int32 CompressionLevel {
 			Int32 get() {
 				return _compressionLevel;
 			}
 			void set(Int32 value) {
-				if ((value < 0) || (value > 8)) {
+				if (value > 0) 
 					throw gcnew Exception("Invalid compression level.");
-				}
 				_compressionLevel = value;
+			}
+		}
+
+		virtual property String^ Options
+		{
+			void set(String^ value)
+			{
+				if (value == nullptr || value == "") return;
+				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
 			}
 		}
 
@@ -348,7 +343,7 @@ namespace TTA {
 		bool _initialized;
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten, _blockSize;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		AudioPCMConfig^ _pcm;
 		Int32 _compressionLevel;
 
 		void Initialize() 
@@ -433,7 +428,7 @@ namespace TTA {
 			_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::Write, FileShare::Read);
 			try 
 			{
-				_ttaWriter = new TTALib::TTAWriter((HANDLE)_IO->Handle, 0, WAVE_FORMAT_PCM, _channelCount, _bitsPerSample, _sampleRate, _finalSampleCount);
+			    _ttaWriter = new TTALib::TTAWriter((HANDLE)_IO->Handle, 0, WAVE_FORMAT_PCM, _pcm->ChannelCount, _pcm->BitsPerSample, _pcm->SampleRate, _finalSampleCount);
 			} catch (TTALib::TTAException ex)
 			{
 				throw gcnew Exception(String::Format("TTA encoder: {0}", gcnew String(TTAErrorsStr[ex.GetErrNo()])));

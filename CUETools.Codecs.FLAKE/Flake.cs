@@ -123,7 +123,7 @@ namespace CUETools.Codecs.FLAKE
 				lpc_ctx[i] = new LpcContext();
 		}
 
-		public void Init(int* s, int* r, uint bps, uint w)
+		public void Init(int* s, int* r, int bps, int w)
 		{
 			if (w > bps)
 				throw new Exception("internal error");
@@ -139,8 +139,8 @@ namespace CUETools.Codecs.FLAKE
 		}
 
 		public FlacSubframe best;
-		public uint obits;
-		public uint wbits;
+		public int obits;
+		public int wbits;
 		public int* samples;
 		public uint done_fixed;
 		public LpcContext[] lpc_ctx;
@@ -314,9 +314,9 @@ namespace CUETools.Codecs.FLAKE
 
 	public struct SeekPoint
 	{
-		public ulong number;
-		public ulong offset;
-		public uint framesize;
+		public long number;
+		public long offset;
+		public int framesize;
 	}
 
 	public enum MetadataType

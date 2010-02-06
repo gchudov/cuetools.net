@@ -1324,3 +1324,17 @@ extern "C" __global__ void cudaFindPartitionOrder(
 }
 
 #endif
+
+#if 0
+    if (threadIdx.x < order)
+    {
+	for (int i = 0; i < order; i++)
+	    if (threadIdx.x >= i)
+		sum[threadIdx.x - i] += coefs[threadIdx.x] * sample[order - i - 1];
+	fot (int i = order; i < blocksize; i++)
+	{
+	    if (!threadIdx.x) sample[order + i] = s = residual[order + i] + (sum[order + i] >> shift);
+	    sum[threadIdx.x + i + 1] += coefs[threadIdx.x] * s;
+	}
+    }
+#endif

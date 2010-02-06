@@ -355,7 +355,7 @@ namespace CUETools.CDImage
 		{
 			if (iIndex < _tracks[iTrack - 1].LastIndex)
 				return _tracks[iTrack - 1][iIndex + 1].Start - _tracks[iTrack - 1][iIndex].Start;
-			if (iTrack < AudioTracks)
+			if (iTrack < TrackCount && _tracks[iTrack].IsAudio)
 				return _tracks[iTrack][0].Start - _tracks[iTrack - 1][iIndex].Start;
 			return _tracks[iTrack - 1].End + 1 - _tracks[iTrack - 1][iIndex].Start;
 		}

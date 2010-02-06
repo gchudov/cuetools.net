@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{04945FB2-8410-4F14-8262-2ED18DCDACD6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>CUETools.TestCodecs</RootNamespace>
+    <AssemblyName>CUETools.TestCodecs</AssemblyName>
+    <WarningLevel>4</WarningLevel>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>.\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>.\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Windows\assembly\GAC_MSIL\Microsoft.VisualStudio.QualityTools.UnitTestFramework\8.0.0.0__b03f5f7f11d50a3a\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccurateRipTest.cs" />
+    <Compile Include="ALACWriterTest.cs" />
+    <Compile Include="CodecsTest.cs" />
+    <Compile Include="FlakeWriterTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
+      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
+      <Name>CUETools.AccurateRip</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
+      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
+      <Name>CUETools.CDImage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Codecs.ALAC\CUETools.Codecs.ALAC.csproj">
+      <Project>{F2EC7193-D5E5-4252-9803-5CEB407E910F}</Project>
+      <Name>CUETools.Codecs.ALAC</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
+      <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
+      <Name>CUETools.Codecs.FLAKE</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
+      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
+      <Name>CUETools.Codecs</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
+</Project>

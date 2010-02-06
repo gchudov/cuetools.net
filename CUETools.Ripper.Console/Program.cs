@@ -175,7 +175,7 @@ namespace CUETools.ConsoleRipper
 				}
 			
 				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
-				int[,] buff = new int[audioSource.BestBlockSize, audioSource.ChannelCount];
+				AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 				string CDDBId = AccurateRipVerify.CalculateCDDBId(audioSource.TOC);
 				string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);
 				Release release;
@@ -207,27 +207,22 @@ namespace CUETools.ConsoleRipper
 				Console.WriteLine("MusicBrainz : {0}", release == null ? "not found" : release.GetArtist() + " - " + release.GetTitle());
 
 				//IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
-				IAudioDest audioDest = new WAVWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, null);
-				audioDest.FinalSampleCount = (long)audioSource.Length;
+				IAudioDest audioDest = new WAVWriter(destFile, null, audioSource.PCM);
+				audioDest.FinalSampleCount = audioSource.Length;
 
 				ProgressMeter meter = new ProgressMeter();
 				audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(meter.ReadProgress);
 
-				do
+				while (audioSource.Read(buff, -1) != 0)
 				{
-					uint toRead = Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining);
-					uint samplesRead = audioSource.Read(buff, toRead);
-					if (samplesRead == 0) break;
-					if (samplesRead != toRead)
-						throw new Exception("samples read != samples requested");
-					arVerify.Write(buff, 0, (int)samplesRead);
-					audioDest.Write(buff, 0, (int)samplesRead);
-				} while (true);
+					arVerify.Write(buff);
+					audioDest.Write(buff);
+				}
 
 				TimeSpan totalElapsed = DateTime.Now - meter.realStart;
 				Console.Write("\r                                                                             \r");
 				Console.WriteLine("Results     : {0:0.00}x; {1:d5} errors; {2:d2}:{3:d2}:{4:d2}",
-					audioSource.Length / totalElapsed.TotalSeconds / audioSource.SampleRate,
+					audioSource.Length / totalElapsed.TotalSeconds / audioSource.PCM.SampleRate,
 					audioSource.ErrorsCount,
 					totalElapsed.Hours, totalElapsed.Minutes, totalElapsed.Seconds
 					);

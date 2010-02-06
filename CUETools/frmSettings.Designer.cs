@@ -126,14 +126,14 @@ namespace JDP {
 			this.listViewFormats = new System.Windows.Forms.ListView();
 			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
 			this.tabPage10 = new System.Windows.Forms.TabPage();
+			this.groupBoxFlaCudaOptions = new System.Windows.Forms.GroupBox();
+			this.checkBoxFlaCudaGPUOnly = new System.Windows.Forms.CheckBox();
+			this.checkBoxFlaCudaVerify = new System.Windows.Forms.CheckBox();
 			this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
 			this.labelEncoderName = new System.Windows.Forms.Label();
 			this.labelEncoderModes = new System.Windows.Forms.Label();
 			this.labelEncoderPath = new System.Windows.Forms.Label();
 			this.labelEncoderParameters = new System.Windows.Forms.Label();
-			this.groupBoxFlaCudaOptions = new System.Windows.Forms.GroupBox();
-			this.checkBoxFlaCudaGPUOnly = new System.Windows.Forms.CheckBox();
-			this.checkBoxFlaCudaVerify = new System.Windows.Forms.CheckBox();
 			this.buttonEncoderDelete = new System.Windows.Forms.Button();
 			this.buttonEncoderAdd = new System.Windows.Forms.Button();
 			this.listBoxEncoders = new System.Windows.Forms.ListBox();
@@ -174,6 +174,7 @@ namespace JDP {
 			this.labelFormatEncoder = new System.Windows.Forms.Label();
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
+			this.checkBoxFlaCudaMultithread = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -202,8 +203,8 @@ namespace JDP {
 			this.tabPage3.SuspendLayout();
 			this.groupBoxFormat.SuspendLayout();
 			this.tabPage10.SuspendLayout();
-			this.groupBoxExternalEncoder.SuspendLayout();
 			this.groupBoxFlaCudaOptions.SuspendLayout();
+			this.groupBoxExternalEncoder.SuspendLayout();
 			this.groupBoxLibWavpack.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).BeginInit();
 			this.groupBoxLibFLAC.SuspendLayout();
@@ -1056,6 +1057,7 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.tabPage10, "tabPage10");
 			this.tabPage10.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage10.Controls.Add(this.groupBoxFlaCudaOptions);
 			this.tabPage10.Controls.Add(this.groupBoxExternalEncoder);
 			this.tabPage10.Controls.Add(this.buttonEncoderDelete);
 			this.tabPage10.Controls.Add(this.buttonEncoderAdd);
@@ -1065,8 +1067,30 @@ namespace JDP {
 			this.tabPage10.Controls.Add(this.groupBoxLibWavpack);
 			this.tabPage10.Controls.Add(this.labelEncoderExtension);
 			this.tabPage10.Controls.Add(this.groupBoxLibFLAC);
-			this.tabPage10.Controls.Add(this.groupBoxFlaCudaOptions);
 			this.tabPage10.Name = "tabPage10";
+			// 
+			// groupBoxFlaCudaOptions
+			// 
+			this.groupBoxFlaCudaOptions.Controls.Add(this.checkBoxFlaCudaMultithread);
+			this.groupBoxFlaCudaOptions.Controls.Add(this.checkBoxFlaCudaGPUOnly);
+			this.groupBoxFlaCudaOptions.Controls.Add(this.checkBoxFlaCudaVerify);
+			resources.ApplyResources(this.groupBoxFlaCudaOptions, "groupBoxFlaCudaOptions");
+			this.groupBoxFlaCudaOptions.Name = "groupBoxFlaCudaOptions";
+			this.groupBoxFlaCudaOptions.TabStop = false;
+			// 
+			// checkBoxFlaCudaGPUOnly
+			// 
+			resources.ApplyResources(this.checkBoxFlaCudaGPUOnly, "checkBoxFlaCudaGPUOnly");
+			this.checkBoxFlaCudaGPUOnly.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.cUEConfigBindingSource, "FlaCudaGPUOnly", true));
+			this.checkBoxFlaCudaGPUOnly.Name = "checkBoxFlaCudaGPUOnly";
+			this.checkBoxFlaCudaGPUOnly.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxFlaCudaVerify
+			// 
+			resources.ApplyResources(this.checkBoxFlaCudaVerify, "checkBoxFlaCudaVerify");
+			this.checkBoxFlaCudaVerify.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.cUEConfigBindingSource, "FlaCudaVerify", true));
+			this.checkBoxFlaCudaVerify.Name = "checkBoxFlaCudaVerify";
+			this.checkBoxFlaCudaVerify.UseVisualStyleBackColor = true;
 			// 
 			// groupBoxExternalEncoder
 			// 
@@ -1102,26 +1126,6 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.labelEncoderParameters, "labelEncoderParameters");
 			this.labelEncoderParameters.Name = "labelEncoderParameters";
-			// 
-			// groupBoxFlaCudaOptions
-			// 
-			this.groupBoxFlaCudaOptions.Controls.Add(this.checkBoxFlaCudaGPUOnly);
-			this.groupBoxFlaCudaOptions.Controls.Add(this.checkBoxFlaCudaVerify);
-			resources.ApplyResources(this.groupBoxFlaCudaOptions, "groupBoxFlaCudaOptions");
-			this.groupBoxFlaCudaOptions.Name = "groupBoxFlaCudaOptions";
-			this.groupBoxFlaCudaOptions.TabStop = false;
-			// 
-			// checkBoxFlaCudaGPUOnly
-			// 
-			resources.ApplyResources(this.checkBoxFlaCudaGPUOnly, "checkBoxFlaCudaGPUOnly");
-			this.checkBoxFlaCudaGPUOnly.Name = "checkBoxFlaCudaGPUOnly";
-			this.checkBoxFlaCudaGPUOnly.UseVisualStyleBackColor = true;
-			// 
-			// checkBoxFlaCudaVerify
-			// 
-			resources.ApplyResources(this.checkBoxFlaCudaVerify, "checkBoxFlaCudaVerify");
-			this.checkBoxFlaCudaVerify.Name = "checkBoxFlaCudaVerify";
-			this.checkBoxFlaCudaVerify.UseVisualStyleBackColor = true;
 			// 
 			// buttonEncoderDelete
 			// 
@@ -1451,6 +1455,13 @@ namespace JDP {
 			this.checkBox1.Name = "checkBox1";
 			this.checkBox1.UseVisualStyleBackColor = true;
 			// 
+			// checkBoxFlaCudaMultithread
+			// 
+			resources.ApplyResources(this.checkBoxFlaCudaMultithread, "checkBoxFlaCudaMultithread");
+			this.checkBoxFlaCudaMultithread.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.cUEConfigBindingSource, "FlaCudaThreads", true));
+			this.checkBoxFlaCudaMultithread.Name = "checkBoxFlaCudaMultithread";
+			this.checkBoxFlaCudaMultithread.UseVisualStyleBackColor = true;
+			// 
 			// frmSettings
 			// 
 			this.AcceptButton = this.btnOK;
@@ -1507,10 +1518,10 @@ namespace JDP {
 			this.groupBoxFormat.PerformLayout();
 			this.tabPage10.ResumeLayout(false);
 			this.tabPage10.PerformLayout();
-			this.groupBoxExternalEncoder.ResumeLayout(false);
-			this.groupBoxExternalEncoder.PerformLayout();
 			this.groupBoxFlaCudaOptions.ResumeLayout(false);
 			this.groupBoxFlaCudaOptions.PerformLayout();
+			this.groupBoxExternalEncoder.ResumeLayout(false);
+			this.groupBoxExternalEncoder.PerformLayout();
 			this.groupBoxLibWavpack.ResumeLayout(false);
 			this.groupBoxLibWavpack.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numWVExtraMode)).EndInit();
@@ -1683,6 +1694,7 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox checkBoxFlaCudaGPUOnly;
 		private System.Windows.Forms.CheckBox checkBoxFlaCudaVerify;
 		private System.Windows.Forms.CheckBox checkBox1;
+		private System.Windows.Forms.CheckBox checkBoxFlaCudaMultithread;
 
 	}
 }

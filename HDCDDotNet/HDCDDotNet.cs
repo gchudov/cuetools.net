@@ -32,6 +32,8 @@ namespace HDCDDotNet
 		{
 			_decoder = IntPtr.Zero;
 #if !MONO
+			if (decode)
+				_audioBuffer = new AudioBuffer(new AudioPCMConfig(output_bps, channels, 44100), 256);
 			_decoder = hdcd_decoder_new();
 			_channelCount = channels;
 			_bitsPerSample = output_bps;
@@ -121,19 +123,19 @@ namespace HDCDDotNet
 			stats = (hdcd_decoder_statistics) Marshal.PtrToStructure(_statsPtr, typeof(hdcd_decoder_statistics));
 		}
 
-		public void Process(int[,] sampleBuffer, uint sampleCount)
+		public void Process(int[,] sampleBuffer, int sampleCount)
 		{
 #if !MONO
-			if (!hdcd_decoder_process_buffer_interleaved(_decoder, sampleBuffer, (int) sampleCount))
+			if (!hdcd_decoder_process_buffer_interleaved(_decoder, sampleBuffer, sampleCount))
 				throw new Exception("HDCD processing error.");
 #endif
 		}
 
-		public void Process(byte[] buff, uint sampleCount)
+		public void Process(byte[] buff, int sampleCount)
 		{
 			if (_inSampleBuffer == null || _inSampleBuffer.GetLength(0) < sampleCount)
 				_inSampleBuffer = new int[sampleCount, _channelCount];
-			AudioSamples.BytesToFLACSamples_16(buff, 0, _inSampleBuffer, 0, sampleCount, _channelCount);
+			AudioBuffer.BytesToFLACSamples_16(buff, 0, _inSampleBuffer, 0, sampleCount, _channelCount);
 			Process(_inSampleBuffer, sampleCount);
 		}
 
@@ -198,6 +200,7 @@ namespace HDCDDotNet
 			/**< Processing failed due to a memory allocation error. */
 		};
 
+		private AudioBuffer _audioBuffer;
 		private IntPtr _decoder;
 		private int[,] _inSampleBuffer;
 		private int[,] _outSampleBuffer;
@@ -234,7 +237,8 @@ namespace HDCDDotNet
 				for (int i = 0; i < loopCount; i++)
 					*(pOutSamples++) = *(pInSamples++);
 			}
-			AudioDest.Write(_outSampleBuffer, 0, samples);
+			_audioBuffer.Prepare(_outSampleBuffer, samples);
+			AudioDest.Write(_audioBuffer);
 			return true;
 		}
 

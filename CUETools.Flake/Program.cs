@@ -162,7 +162,7 @@ namespace CUETools.FlakeExe
 
 			IAudioSource audioSource;
 			if (input_file == "-")
-				audioSource = new WAVReader(Console.OpenStandardInput());
+				audioSource = new WAVReader("", Console.OpenStandardInput());
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
 				audioSource = new WAVReader(input_file, null);
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
@@ -172,15 +172,17 @@ namespace CUETools.FlakeExe
 				Usage();
 				return;
 			}
+			if (buffered)
+				audioSource = new AudioPipe(audioSource, 0x10000);
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "flac");
-			FlakeWriter flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
-				audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate,
+			FlakeWriter flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,				
 				output_file == "-" ? Console.OpenStandardOutput() :
-				output_file == "nul" ? new NullStream() : null);
-			flake.FinalSampleCount = (long)audioSource.Length;
-			IAudioDest audioDest = buffered ? (IAudioDest)new BufferedWriter(flake, 512 * 1024) : (IAudioDest)flake;
-			int[,] buff = new int[0x10000, audioSource.ChannelCount];
+				output_file == "nul" ? new NullStream() : null,
+				audioSource.PCM);
+			flake.FinalSampleCount = audioSource.Length;
+			IAudioDest audioDest = flake;
+			AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
 			try
 			{
@@ -235,14 +237,12 @@ namespace CUETools.FlakeExe
 			if (!quiet)
 			{
 				Console.WriteLine("Filename  : {0}", input_file);
-				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
+				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
 			}
 
-			do
+			while (audioSource.Read(buff, -1) != 0)
 			{
-				uint samplesRead = audioSource.Read(buff, Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining));
-				if (samplesRead == 0) break;
-				audioDest.Write(buff, 0, (int)samplesRead);
+				audioDest.Write(buff);
 				TimeSpan elapsed = DateTime.Now - start;
 				if (!quiet)
 				{
@@ -250,22 +250,22 @@ namespace CUETools.FlakeExe
 					{
 						Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
 							100.0 * audioSource.Position / audioSource.Length,
-							audioSource.Position / elapsed.TotalSeconds / audioSource.SampleRate,
+							audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
 							elapsed,
 							TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
 							);
 						lastPrint = elapsed;
 					}
 				}
-			} while (true);
-
+			}
 			audioDest.Close();
+
 			TimeSpan totalElapsed = DateTime.Now - start;
 			if (!quiet)
 			{
 				Console.Error.Write("\r                                                                         \r");
 				Console.WriteLine("Results   : {0:0.00}x; {1}",
-					audioSource.Position / totalElapsed.TotalSeconds / audioSource.SampleRate,
+					audioSource.Position / totalElapsed.TotalSeconds / audioSource.PCM.SampleRate,
 					totalElapsed
 					);
 			}

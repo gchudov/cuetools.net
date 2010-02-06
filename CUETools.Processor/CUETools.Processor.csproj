@@ -23,7 +23,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\any\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -116,17 +116,9 @@
       <Project>{F2EC7193-D5E5-4252-9803-5CEB407E910F}</Project>
       <Name>CUETools.Codecs.ALAC</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs.APE\CUETools.Codecs.APE.vcproj">
-      <Project>{9AE965C4-301E-4C01-B90F-297AF341ACC6}</Project>
-      <Name>CUETools.Codecs.APE</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
       <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
       <Name>CUETools.Codecs.FLAKE</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs.TTA\CUETools.Codecs.TTA.vcproj">
-      <Project>{1D1E99BC-6D22-41C0-BD94-FF4DD5EC725B}</Project>
-      <Name>CUETools.Codecs.TTA</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
@@ -148,10 +140,6 @@
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs.FLAC\CUETools.Codecs.FLAC.vcproj">
-      <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
-      <Name>CUETools.Codecs.FLAC</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Freedb\Freedb.csproj">
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
@@ -167,10 +155,6 @@
     <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
       <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
       <Name>MusicBrainz</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs.WavPack\CUETools.Codecs.WavPack.vcproj">
-      <Project>{CC2E74B6-534A-43D8-9F16-AC03FE955000}</Project>
-      <Name>CUETools.Codecs.WavPack</Name>
     </ProjectReference>
     <ProjectReference Include="..\UnRarDotNet\UnRarDotNet.csproj">
       <Project>{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}</Project>

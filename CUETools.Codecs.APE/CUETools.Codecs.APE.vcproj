@@ -20,7 +20,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)\plugins"
 			IntermediateDirectory="$(SolutionDir)..\obj\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -96,7 +96,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)\plugins"
 			IntermediateDirectory="$(SolutionDir)..\obj\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -172,7 +172,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)\plugins"
 			IntermediateDirectory="$(SolutionDir)..\obj\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -246,7 +246,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\bin\$(PlatformName)\$(ConfigurationName)\plugins"
 			IntermediateDirectory="$(SolutionDir)..\obj\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -335,6 +335,7 @@
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6458A13A-30EF-45A9-9D58-E5031B17BEE2}"
+			CopyLocal="false"
 			RelativePathToProject="..\CUETools.Codecs\CUETools.Codecs.csproj"
 		/>
 	</References>

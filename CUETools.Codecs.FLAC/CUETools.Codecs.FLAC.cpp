@@ -67,10 +67,11 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
 	public delegate FLAC__bool DecoderEofDelegate (const FLAC__StreamDecoder *decoder, void *client_data);
 
+	[AudioDecoderClass("libFLAC", "flac")]
 	public ref class FLACReader : public IAudioSource
 	{
 	public:
-		FLACReader(String^ path, Stream^ IO, bool disableAsm)
+		FLACReader(String^ path, Stream^ IO)
 		{
 			_writeDel = gcnew DecoderWriteDelegate(this, &FLACReader::WriteCallback);
 			_metadataDel = gcnew DecoderMetadataDelegate(this, &FLACReader::MetadataCallback);
@@ -96,8 +97,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			if (!FLAC__stream_decoder_set_metadata_respond (_decoder, FLAC__METADATA_TYPE_VORBIS_COMMENT))
 				throw gcnew Exception("Unable to setup the decoder.");
 
-			if (!FLAC__stream_decoder_set_disable_asm(_decoder, disableAsm))
-				throw gcnew Exception("Unable to setup the decoder.");
+			//if (!FLAC__stream_decoder_set_disable_asm(_decoder, disableAsm))
+			//	throw gcnew Exception("Unable to setup the decoder.");
 
 			if (FLAC__stream_decoder_init_stream(_decoder, 
 				(FLAC__StreamDecoderReadCallback)Marshal::GetFunctionPointerForDelegate(_readDel).ToPointer(),
@@ -126,36 +127,24 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		    Close ();
 		}
 
-		virtual property Int32 BitsPerSample {
-			Int32 get() {
-				return _bitsPerSample;
+		virtual property AudioPCMConfig^ PCM {
+			AudioPCMConfig^ get() {
+				return pcm;
 			}
 		}
 
-		virtual property Int32 ChannelCount {
-			Int32 get() {
-				return _channelCount;
-			}
-		}
-
-		virtual property Int32 SampleRate {
-			Int32 get() {
-				return _sampleRate;
-			}
-		}
-
-		virtual property UInt64 Length {
-			UInt64 get() {
+		virtual property Int64 Length {
+			Int64 get() {
 				return _sampleCount;
 			}
 		}
 
-		virtual property UInt64 Position {
-			UInt64 get() 
+		virtual property Int64 Position {
+			Int64 get() 
 			{
 				return _sampleOffset - SamplesInBuffer;
 			}
-			void set(UInt64 offset) 
+			void set(Int64 offset) 
 			{
 				_sampleOffset = offset;
 				_bufferOffset = 0;
@@ -236,8 +225,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		//    return 0 != res;
 		//}
 
-		virtual property UInt64 Remaining {
-			UInt64 get() {
+		virtual property Int64 Remaining {
+			Int64 get() {
 				return _sampleCount - _sampleOffset + SamplesInBuffer;
 			}
 		}
@@ -256,15 +245,12 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			}
 		}
 
-		virtual array<Int32, 2>^ Read(array<Int32, 2>^ buff)
+		virtual int Read(AudioBuffer^ buff, int maxLength)
 		{
-			return AudioSamples::Read(this, buff);
-		}
+			buff->Prepare(this, maxLength);
 
-		virtual UInt32 Read([Out] array<Int32, 2>^ buff, UInt32 sampleCount)
-		{
-			UInt32 buffOffset = 0;
-			UInt32 samplesNeeded = sampleCount;
+			Int32 buffOffset = 0;
+			Int32 samplesNeeded = buff->Length;
 
 			while (samplesNeeded != 0) 
 			{
@@ -275,19 +261,19 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 					do
 					{
 						if (FLAC__stream_decoder_get_state(_decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
-							return sampleCount - samplesNeeded;
+						    return buff->Length - samplesNeeded;
 						if (!FLAC__stream_decoder_process_single(_decoder))
 							throw gcnew Exception("An error occurred while decoding.");
 					} while (_bufferLength == 0);
 					_sampleOffset += _bufferLength;
 				}
-				UInt32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
-				Array::Copy(_sampleBuffer, _bufferOffset * _channelCount, buff, buffOffset * _channelCount, copyCount * _channelCount);
+				Int32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
+				Array::Copy(_sampleBuffer, _bufferOffset * pcm->ChannelCount, buff->Samples, buffOffset * pcm->ChannelCount, copyCount * pcm->ChannelCount);
 				samplesNeeded -= copyCount;
 				buffOffset += copyCount;
 				_bufferOffset += copyCount;
 			}
-			return sampleCount;
+			return buff->Length;
 		}
 
 	private:
@@ -301,18 +287,18 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		DecoderEofDelegate^ _eofDel;
 		FLAC__StreamDecoder *_decoder;
 		Int64 _sampleCount, _sampleOffset;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		AudioPCMConfig^ pcm;
 		array<Int32, 2>^ _sampleBuffer;
 		array<unsigned char>^ _readBuffer;
 		String^ _path;
 		bool _decoderActive;
 		Stream^ _IO;
-		UInt32 _bufferOffset, _bufferLength;
+		Int32 _bufferOffset, _bufferLength;
 
-		property UInt32 SamplesInBuffer {
-			UInt32 get () 
+		property Int32 SamplesInBuffer {
+			Int32 get () 
 			{
-				return (UInt32) (_bufferLength - _bufferOffset);
+				return _bufferLength - _bufferOffset;
 			}
 		}
 
@@ -325,17 +311,18 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				throw gcnew Exception("Received unrequested samples.");
 			}
 
-			if ((frame->header.bits_per_sample != _bitsPerSample) ||
-				(frame->header.channels != _channelCount) ||
-				(frame->header.sample_rate != _sampleRate))
+			if ((frame->header.bits_per_sample != pcm->BitsPerSample) ||
+				(frame->header.channels != pcm->ChannelCount) ||
+				(frame->header.sample_rate != pcm->SampleRate))
 			{
 				throw gcnew Exception("Format changes within a file are not allowed.");
 			}
 
 			if ((_sampleBuffer == nullptr) || (_sampleBuffer->GetLength(0) < sampleCount)) {
-				_sampleBuffer = gcnew array<Int32, 2>(sampleCount, _channelCount);
+				_sampleBuffer = gcnew array<Int32, 2>(sampleCount, pcm->ChannelCount);
 			}
 
+			int _channelCount = pcm->ChannelCount;
 			for (Int32 iChan = 0; iChan < _channelCount; iChan++) {
 				interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, iChan];
 				const FLAC__int32 *pFLACBuffer = buffer[iChan];
@@ -357,9 +344,10 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		{
 			if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO) 
 			{
-				_bitsPerSample = metadata->data.stream_info.bits_per_sample;
-				_channelCount = metadata->data.stream_info.channels;
-				_sampleRate = metadata->data.stream_info.sample_rate;
+				pcm = gcnew AudioPCMConfig(
+				    metadata->data.stream_info.bits_per_sample,
+				    metadata->data.stream_info.channels,
+				    metadata->data.stream_info.sample_rate);
 				_sampleCount = metadata->data.stream_info.total_samples;
 			}
 			//if (metadata->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) 
@@ -447,12 +435,15 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		}
 	};
 
+	[AudioEncoderClass("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", 1)]
 	public ref class FLACWriter : IAudioDest 
 	{
 	public:
-		FLACWriter(String^ path, Int32 bitsPerSample, Int32 channelCount, Int32 sampleRate) 
+		FLACWriter(String^ path, AudioPCMConfig^ pcm)
 		{
-			if (bitsPerSample < 16 || bitsPerSample > 24)
+		    _pcm = pcm;
+
+		    if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
 				throw gcnew Exception("Bits per sample must be 16..24.");
 
 			_initialized = false;
@@ -460,9 +451,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			_path = path;
 			_finalSampleCount = 0;
 			_samplesWritten = 0;
-			_bitsPerSample = bitsPerSample;
-			_channelCount = channelCount;
-			_sampleRate = sampleRate;
 			_compressionLevel = 5;
 			_paddingLength = 8192;
 			_verify = false;
@@ -470,9 +458,9 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 
 			_encoder = FLAC__stream_encoder_new();
 
-			FLAC__stream_encoder_set_bits_per_sample(_encoder, bitsPerSample);
-			FLAC__stream_encoder_set_channels(_encoder, channelCount);
-			FLAC__stream_encoder_set_sample_rate(_encoder, sampleRate);
+			FLAC__stream_encoder_set_bits_per_sample(_encoder, _pcm->BitsPerSample);
+			FLAC__stream_encoder_set_channels(_encoder, _pcm->ChannelCount);
+			FLAC__stream_encoder_set_sample_rate(_encoder, _pcm->SampleRate);
 		}
 
 		virtual void Close() {
@@ -520,9 +508,10 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			}
 		}
 
-		virtual property int BitsPerSample
-		{
-			int get() { return _bitsPerSample;  }
+		virtual property AudioPCMConfig^ PCM {
+			AudioPCMConfig^ get() {
+				return _pcm;
+			}
 		}
 
 		virtual property String^ Path { 
@@ -531,13 +520,15 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			} 
 		}
 
-		virtual void Write(array<Int32, 2>^ sampleBuffer, int offset, int sampleCount) {
+		virtual void Write(AudioBuffer^ sampleBuffer) {
 			if (!_initialized) Initialize();
 
-			pin_ptr<Int32> pSampleBuffer = &sampleBuffer[offset, 0];
+			sampleBuffer->Prepare(this);
+
+			pin_ptr<Int32> pSampleBuffer = &sampleBuffer->Samples[0, 0];
 
 			if (!FLAC__stream_encoder_process_interleaved(_encoder,
-				(const FLAC__int32*)pSampleBuffer, sampleCount))
+			    (const FLAC__int32*)pSampleBuffer, sampleBuffer->Length))
 			{
 				String^ state = gcnew String(FLAC__StreamEncoderStateString[FLAC__stream_encoder_get_state(_encoder)]);
 				if (FLAC__stream_encoder_get_state(_encoder) == FLAC__STREAM_ENCODER_VERIFY_MISMATCH_IN_AUDIO_DATA)
@@ -553,10 +544,10 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				throw gcnew Exception("An error occurred while encoding: " + state);
 			}
 
-			_samplesWritten += sampleCount;
+			_samplesWritten += sampleBuffer->Length;
 		}
 
-		property Int32 CompressionLevel {
+		virtual property Int32 CompressionLevel {
 			Int32 get() {
 				return _compressionLevel;
 			}
@@ -565,6 +556,34 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 					throw gcnew Exception("Invalid compression level.");
 				}
 				_compressionLevel = value;
+			}
+		}
+
+		virtual property String^ Options
+		{
+			void set(String^ value)
+			{
+				if (value == nullptr || value == "") return;
+				cli::array<String^>^ args = value->Split();
+				for (int i = 0; i < args->Length; i++)
+				{
+				    if (args[i] == "--padding-length" && (++i) < args->Length)
+				    {
+					PaddingLength = Int32::Parse(args[i]);
+					continue;
+				    }
+				    if (args[i] == "--disable-asm")
+				    {
+					DisableAsm = true;
+					continue;
+				    }
+				    if (args[i] == "--verify")
+				    {
+					Verify = true;
+					continue;
+				    }
+				    throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+				}
 			}
 		}
 
@@ -603,7 +622,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		bool _initialized;
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten, _blockSize;
-		Int32 _bitsPerSample, _channelCount, _sampleRate;
+		AudioPCMConfig^ _pcm;
 		Int32 _compressionLevel;
 		Int32 _paddingLength;
 		Boolean _verify;
@@ -622,7 +641,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			if (_finalSampleCount != 0) {
 				seektable = FLAC__metadata_object_new(FLAC__METADATA_TYPE_SEEKTABLE);
 				FLAC__metadata_object_seektable_template_append_spaced_points_by_samples(
-					seektable, _sampleRate * 10, _finalSampleCount);
+				    seektable, _pcm->SampleRate * 10, _finalSampleCount);
 				FLAC__metadata_object_seektable_template_sort(seektable, true);
 				_metadataList[_metadataCount++] = seektable;
 			}

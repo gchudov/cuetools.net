@@ -92,39 +92,38 @@ namespace LossyWAVSharp
 			{
 				WAVReader audioSource = new WAVReader(sourceFile, (sourceFile == "-" ? Console.OpenStandardInput() : null));
 				if (sourceFile == "-" && stdinName != null) sourceFile = stdinName;
-				WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), outputBPS == 0 ? audioSource.BitsPerSample : outputBPS, audioSource.ChannelCount, audioSource.SampleRate, toStdout ? Console.OpenStandardOutput() : null);
-				WAVWriter lwcdfDest = createCorrection ? new WAVWriter(Path.ChangeExtension(sourceFile, ".lwcdf.wav"), audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, null) : null;
-				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate, quality);
-				int[,] buff = new int[0x1000, audioSource.ChannelCount];
+				AudioPCMConfig pcm = outputBPS == 0 ? audioSource.PCM : new AudioPCMConfig(outputBPS, audioSource.PCM.ChannelCount, audioSource.PCM.SampleRate);
+				WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), toStdout ? Console.OpenStandardOutput() : null, pcm);
+				WAVWriter lwcdfDest = createCorrection ? new WAVWriter(Path.ChangeExtension(sourceFile, ".lwcdf.wav"), null, audioSource.PCM) : null;
+				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, quality, audioSource.PCM);
+				AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
 				Console.WriteLine("Filename  : {0}", sourceFile);
-				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
-				lossyWAV.FinalSampleCount = (long) audioSource.Length;
+				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
+				lossyWAV.FinalSampleCount = audioSource.Length;
 
-				do
+				while (audioSource.Read(buff, -1) != 0)
 				{
-					uint samplesRead = audioSource.Read(buff, Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining));
-					if (samplesRead == 0) break;
-					lossyWAV.Write(buff, 0, (int)samplesRead);
+					lossyWAV.Write(buff);
 					TimeSpan elapsed = DateTime.Now - start;
 					if ((elapsed - lastPrint).TotalMilliseconds > 60)
 					{
 						Console.Error.Write("\rProgress  : {0:00}%; {1:0.0000} bits; {2:0.00}x; {3}/{4}",
 							100.0 * audioSource.Position / audioSource.Length,
-							1.0 * lossyWAV.OverallBitsRemoved / audioSource.ChannelCount / lossyWAV.BlocksProcessed,
-							lossyWAV.SamplesProcessed / elapsed.TotalSeconds / audioSource.SampleRate,
+							1.0 * lossyWAV.OverallBitsRemoved / audioSource.PCM.ChannelCount / lossyWAV.BlocksProcessed,
+							lossyWAV.SamplesProcessed / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
 							elapsed,
 							TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / lossyWAV.SamplesProcessed * audioSource.Length)
 							);
 						lastPrint = elapsed;
 					}
-				} while (true);
+				}
 
 				TimeSpan totalElapsed = DateTime.Now - start;
 				Console.Error.Write("\r                                                                         \r");
 				Console.WriteLine("Results   : {0:0.0000} bits; {1:0.00}x; {2}",
-					(1.0 * lossyWAV.OverallBitsRemoved) / audioSource.ChannelCount / lossyWAV.BlocksProcessed,
-					lossyWAV.SamplesProcessed / totalElapsed.TotalSeconds / audioSource.SampleRate,
+					(1.0 * lossyWAV.OverallBitsRemoved) / audioSource.PCM.ChannelCount / lossyWAV.BlocksProcessed,
+					lossyWAV.SamplesProcessed / totalElapsed.TotalSeconds / audioSource.PCM.SampleRate,
 					totalElapsed
 					);
 				audioSource.Close();

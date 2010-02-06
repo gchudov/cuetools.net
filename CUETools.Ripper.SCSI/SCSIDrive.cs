@@ -960,114 +960,50 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
-		public int[,] Read(int[,] buff)
+		public unsafe int Read(AudioBuffer buff, int maxLength)
 		{
 			if (_toc == null)
 				throw new Exception("Read: invalid TOC");
-			if (_sampleOffset - _driveOffset >= (uint)Length)
-				return null;
-			if (_sampleOffset >= (int)Length)
-				return new int[_driveOffset - (_sampleOffset - (int)Length), ChannelCount];
-			if (_sampleOffset < 0)
-				return new int[-_sampleOffset, ChannelCount];
-			PrefetchSector((int)_sampleOffset / 588);
-			int samplesRead = Math.Min(_currentEnd * 588, (int)Length + _driveOffset) - _sampleOffset;
-			buff = new int[samplesRead, ChannelCount];
-			AudioSamples.BytesToFLACSamples_16(_currentData, (_sampleOffset - _currentStart * 588) * 4, buff, 0, (uint) samplesRead, 2);
-			_sampleOffset = _currentEnd * 588;
-			return buff;
-		}
-
-		public uint Read(int[,] buff, uint sampleCount)
-		{
-			if (_toc == null)
-				throw new Exception("Read: invalid TOC");
-			if (_sampleOffset - _driveOffset >= (uint)Length)
-			    return 0;
-			if (_sampleOffset >= (uint)Length)
+			buff.Prepare(this, maxLength);
+			if (Position >= Length)
+				return 0;
+			if (_sampleOffset >= Length)
 			{
-				int samplesRead = _driveOffset - (_sampleOffset - (int)Length);
-			    for (int i = 0; i < samplesRead; i++)
-			        for (int c = 0; c < ChannelCount; c++)
-			            buff[i, c] = 0;
-			    _sampleOffset += samplesRead;
-			    return (uint) samplesRead;
+				for (int i = 0; i < buff.ByteLength; i++)
+					buff.Bytes[i] = 0;
+				return buff.Length; // == Remaining
 			}
-			if ((uint)(_sampleOffset - _driveOffset + sampleCount) > Length)
-			    sampleCount = (uint)((int)Length + _driveOffset - _sampleOffset);
-			int silenceCount = 0;
-			if ((uint)(_sampleOffset + sampleCount) > Length)
-			{
-			    silenceCount = _sampleOffset + (int)sampleCount - (int)Length;
-			    sampleCount -= (uint) silenceCount;
-			}
-			uint pos = 0;
 			if (_sampleOffset < 0)
 			{
-			    uint nullSamplesRead = Math.Min((uint)-_sampleOffset, sampleCount);
-			    for (int i = 0; i < nullSamplesRead; i++)
-			        for (int c = 0; c < ChannelCount; c++)
-			            buff[i, c] = 0;
-			    pos += nullSamplesRead;
-			    sampleCount -= nullSamplesRead;
-			    _sampleOffset += (int)nullSamplesRead;
-			    if (sampleCount == 0)
-			        return pos;
+				buff.Length = Math.Min(buff.Length, -_sampleOffset);
+				for (int i = 0; i < buff.ByteLength; i++)
+					buff.Bytes[i] = 0;
+				return buff.Length;
 			}
-			int firstSector = (int)_sampleOffset / 588;
-			int lastSector = Math.Min((int)(_sampleOffset + sampleCount + 587)/588, (int)_toc.AudioLength);
-			for (int sector = firstSector; sector < lastSector; sector ++)
-			{
-				PrefetchSector(sector);
-		        uint samplesRead = (uint) (Math.Min((int)sampleCount, 588 - (_sampleOffset % 588)));
-				AudioSamples.BytesToFLACSamples_16(_currentData, (sector - _currentStart) * 4 * 588 + ((int)_sampleOffset % 588) * 4, buff, (int)pos, samplesRead, 2);
-		        pos += samplesRead;
-		        sampleCount -= samplesRead;
-		        _sampleOffset += (int) samplesRead;
-			}
-			if (silenceCount > 0)
-			{
-			    uint nullSamplesRead = (uint)silenceCount;
-			    for (int i = 0; i < nullSamplesRead; i++)
-			        for (int c = 0; c < ChannelCount; c++)
-			            buff[pos + i, c] = 0;
-			    pos += nullSamplesRead;
-			    _sampleOffset += (int)nullSamplesRead;
-			}
-			return pos;
+			PrefetchSector(_sampleOffset / 588);
+			buff.Length = Math.Min(buff.Length, (int)Length - _sampleOffset);
+			buff.Length = Math.Min(buff.Length, _currentEnd * 588 - _sampleOffset);
+			fixed (byte* dest = buff.Bytes, src = &_currentData[(_sampleOffset - _currentStart * 588) * 4])
+				AudioSamples.MemCpy(dest, src, buff.ByteLength);
+			_sampleOffset += buff.Length;
+			return buff.Length;
 		}
 
-		public ulong Length
+		public long Length
 		{
 			get
 			{
 				if (_toc == null)
 					throw new Exception("invalid TOC");
-				return (ulong)588 * _toc.AudioLength;
+				return 588 * (int)_toc.AudioLength;
 			}
 		}
 
-		public int BitsPerSample
+		public AudioPCMConfig PCM
 		{
 			get
 			{
-				return 16;
-			}
-		}
-
-		public int ChannelCount
-		{
-			get
-			{
-				return 2;
-			}
-		}
-
-		public int SampleRate
-		{
-			get
-			{
-				return 44100;
+				return AudioPCMConfig.RedBook;
 			}
 		}
 
@@ -1099,11 +1035,11 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
-		public ulong Position
+		public long Position
 		{
 			get
 			{
-				return (ulong)(_sampleOffset - _driveOffset);
+				return _sampleOffset - _driveOffset;
 			}
 			set
 			{
@@ -1118,7 +1054,7 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
-		public ulong Remaining
+		public long Remaining
 		{
 			get
 			{

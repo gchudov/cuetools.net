@@ -6,18 +6,25 @@ namespace CUETools.Codecs
 {
 	public class Crc32
 	{
-		uint[] table = new uint[256];
+		public uint[] table = new uint[256];
 
 		public uint ComputeChecksum(uint crc, byte val)
 		{
 			return (crc >> 8) ^ table[(crc & 0xff) ^ val];
 		}
 
-		public uint ComputeChecksum(uint crc, byte[] bytes, int pos, int count)
+		public unsafe uint ComputeChecksum(uint crc, byte* bytes, int count)
 		{
-			for (int i = pos; i < pos + count; i++)
-				crc = ComputeChecksum(crc, bytes[i]);
+			fixed (uint *t = table)
+				for (int i = 0; i < count; i++)
+					crc = (crc >> 8) ^ t[(crc ^ bytes[i]) & 0xff];
 			return crc;
+		}
+
+		public unsafe uint ComputeChecksum(uint crc, byte[] bytes, int pos, int count)
+		{
+			fixed (byte* pbytes = &bytes[pos])
+				return ComputeChecksum(crc, pbytes, count);
 		}
 
 		public uint ComputeChecksum(uint crc, uint s)
@@ -26,9 +33,9 @@ namespace CUETools.Codecs
 				crc, (byte)s), (byte)(s >> 8)), (byte)(s >> 16)), (byte)(s >> 24));
 		}
 
-		public unsafe uint ComputeChecksum(uint crc, int * samples, uint count)
+		public unsafe uint ComputeChecksum(uint crc, int * samples, int count)
 		{
-			for (uint i = 0; i < count; i++)
+			for (int i = 0; i < count; i++)
 			{
 				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
 				crc = ComputeChecksum(ComputeChecksum(ComputeChecksum(ComputeChecksum(
@@ -37,9 +44,24 @@ namespace CUETools.Codecs
 			return crc;
 		}
 
-		public unsafe uint ComputeChecksumWONULL(uint crc, int* samples, uint count)
+		public unsafe uint ComputeChecksumWONULL(uint crc, short* samples, int count)
 		{
-			for (uint i = 0; i < count; i++)
+			fixed (uint* t = table)
+				for (int i = 0; i < count; i++)
+				{
+					short s1 = samples[i];
+					if (s1 != 0)
+					{
+						crc = (crc >> 8) ^ t[(crc ^ s1) & 0xff];
+						crc = (crc >> 8) ^ t[(crc ^ (s1 >> 8)) & 0xff];
+					}
+				}
+			return crc;
+		}
+
+		public unsafe uint ComputeChecksumWONULL(uint crc, int* samples, int count)
+		{
+			for (int i = 0; i < count; i++)
 			{
 				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
 				if (s1 != 0)

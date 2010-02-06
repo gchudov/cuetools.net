@@ -45,34 +45,32 @@ namespace CUETools.Converter
 #endif
 			{
 				IAudioSource audioSource = AudioReadWrite.GetAudioSource(sourceFile, null, config);
-				IAudioDest audioDest = AudioReadWrite.GetAudioDest(AudioEncoderType.Lossless, destFile, (long)audioSource.Length, audioSource.BitsPerSample, audioSource.SampleRate, 8192, config);
-				int[,] buff = new int[0x4000, audioSource.ChannelCount];
+				IAudioDest audioDest = AudioReadWrite.GetAudioDest(AudioEncoderType.Lossless, destFile, (long)audioSource.Length, audioSource.PCM.BitsPerSample, audioSource.PCM.SampleRate, 8192, config);
+				AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
 				Console.WriteLine("Filename  : {0}", sourceFile);
-				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.SampleRate, audioSource.ChannelCount, audioSource.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.SampleRate));
+				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
 
-				do
+				while (audioSource.Read(buff, -1) != 0)
 				{
-					uint samplesRead = audioSource.Read(buff, Math.Min((uint)buff.GetLength(0), (uint)audioSource.Remaining));
-					if (samplesRead == 0) break;
-					audioDest.Write(buff, 0, (int)samplesRead);
+					audioDest.Write(buff);
 					TimeSpan elapsed = DateTime.Now - start;
 					if ((elapsed - lastPrint).TotalMilliseconds > 60)
 					{
 						Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
 							100.0 * audioSource.Position / audioSource.Length,
-							audioSource.Position / elapsed.TotalSeconds / audioSource.SampleRate,
+							audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
 							elapsed,
 							TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
 							);
 						lastPrint = elapsed;
 					}
-				} while (true);
+				}
 
 				TimeSpan totalElapsed = DateTime.Now - start;
 				Console.Error.Write("\r                                                                         \r");
 				Console.WriteLine("Results   : {0:0.00}x; {1}",
-					audioSource.Position / totalElapsed.TotalSeconds / audioSource.SampleRate,
+					audioSource.Position / totalElapsed.TotalSeconds / audioSource.PCM.SampleRate,
 					totalElapsed
 					);
 				audioSource.Close();

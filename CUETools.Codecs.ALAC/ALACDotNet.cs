@@ -27,6 +27,7 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.ALAC
 {
+	[AudioDecoderClass("builtin alac", "m4a")]
 	public class ALACReader : IAudioSource
 	{
 		public ALACReader(string path, Stream IO)
@@ -36,19 +37,17 @@ namespace CUETools.Codecs.ALAC
 			_buff = new byte[512];
 			_tags = new NameValueCollection();
 			qtmovie_read();
-			if (!_formatRead || _bitsPerSample != 16 || _channelCount != 2 || _sampleRate != 44100)
+			if (!_formatRead || pcm.BitsPerSample != 16 || pcm.ChannelCount != 2 || pcm.SampleRate != 44100)
 				throw new Exception("Invalid ALAC file.");
 			_saved_mdat_pos = _IO.Position;
 			calculate_length();
 		}
 
-		public ALACReader(int channels, int bps, int rice_historymult, int rice_initialhistory, int rice_kmodifier, int blocksize)
+		public ALACReader(AudioPCMConfig _pcm, int rice_historymult, int rice_initialhistory, int rice_kmodifier, int blocksize)
 		{
-			_channelCount = channels;
-			_bitsPerSample = bps;
-			_sampleRate = 44100;
+			pcm = _pcm;
 
-			setinfo_max_samples_per_frame = (uint)blocksize;
+			setinfo_max_samples_per_frame = blocksize;
 			setinfo_rice_historymult = (byte)rice_historymult;
 			setinfo_rice_initialhistory = (byte)rice_initialhistory;
 			setinfo_rice_kmodifier = (byte)rice_kmodifier;
@@ -60,17 +59,12 @@ namespace CUETools.Codecs.ALAC
 			_framesBuffer = new byte[65536];
 		}
 
-		public int[,] Read(int[,] buff)
-		{
-			return AudioSamples.Read(this, buff);
-		}
-
 		private void InitTables()
 		{
 			if (_predicterror_buffer_a != null)
 				return;
 
-			setinfo_max_samples_per_frame = read_uint32(_codecData, 24);
+			setinfo_max_samples_per_frame = (int)read_uint32(_codecData, 24);
 			byte setinfo_7a = read_uint8(_codecData, 28);
 			byte setinfo_sample_size = read_uint8(_codecData, 29);
 			setinfo_rice_historymult = read_uint8(_codecData, 30);
@@ -91,29 +85,32 @@ namespace CUETools.Codecs.ALAC
 			_framesBuffer = new byte[65536];
 		}
 
-		public uint Read(int[,] buff, uint sampleCount)
+		public int Read(AudioBuffer buff, int maxLength)
 		{
 			InitTables();
 
-			uint offset = 0;
+			buff.Prepare(this, maxLength);
+
+			int offset = 0;
+			int sampleCount = buff.Length;
 
 			while (_samplesInBuffer < sampleCount)
 			{
 				if (_samplesInBuffer > 0)
 				{
-					deinterlace(buff, offset, _samplesInBuffer);
-					sampleCount -= (uint) _samplesInBuffer;
+					deinterlace(buff.Samples, offset, _samplesInBuffer);
+					sampleCount -= _samplesInBuffer;
 					offset += _samplesInBuffer;
 					_samplesInBuffer = 0;
 					_samplesBufferOffset = 0;
 				}
 
-				uint sampleDuration;
-				uint sampleSize;
-				if ((int) _iSample >= _sample_byte_size.Length)
-					return (uint)offset;
+				int sampleDuration;
+				int sampleSize;
+				if (_iSample >= _sample_byte_size.Length)
+					return offset;
 				get_sample_info(_iSample, out sampleDuration, out sampleSize);
-				_IO.Read(_framesBuffer, 0, (int) sampleSize);
+				_IO.Read(_framesBuffer, 0, sampleSize);
 				decodeFrame(sampleSize);
 				if (sampleDuration != _samplesInBuffer)
 					throw new Exception("sample count mismatch");
@@ -122,12 +119,12 @@ namespace CUETools.Codecs.ALAC
 				_iSample++;
 			}
 
-			deinterlace(buff, offset, sampleCount);
+			deinterlace(buff.Samples, offset, sampleCount);
 			_samplesInBuffer -= sampleCount;
 			_samplesBufferOffset += sampleCount;
 			if (_samplesInBuffer == 0)
 				_samplesBufferOffset = 0;
-			return (uint) offset + sampleCount;
+			return offset + sampleCount;
 		}
 
 		public void Close()
@@ -135,7 +132,7 @@ namespace CUETools.Codecs.ALAC
 			_IO.Close();
 		}
 
-		public ulong Length
+		public long Length
 		{
 			get
 			{
@@ -143,7 +140,7 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		public ulong Remaining
+		public long Remaining
 		{
 			get
 			{
@@ -151,7 +148,7 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		public ulong Position
+		public long Position
 		{
 			get
 			{
@@ -164,10 +161,10 @@ namespace CUETools.Codecs.ALAC
 				_samplesBufferOffset = 0;
 				
 				_iSample = 0;
-				ulong durOffs = 0;
-				uint sampleDuration;
+				long durOffs = 0;
+				int sampleDuration;
 				long fileOffs = 0;
-				uint sampleSize;
+				int sampleSize;
 				do
 				{
 					if (durOffs == value)
@@ -183,51 +180,12 @@ namespace CUETools.Codecs.ALAC
 					_iSample++;
 				} while (durOffs <= value);
 				_IO.Position = _saved_mdat_pos + fileOffs - sampleSize;
-				_samplesBufferOffset = (uint) (value + sampleDuration - durOffs);
+				_samplesBufferOffset = (int) (value + sampleDuration - durOffs);
 				_iSample--;
 			}
 		}
 
-		public int BitsPerSample
-		{
-			get
-			{
-				return _bitsPerSample;
-			}
-		}
-
-		public int ChannelCount
-		{
-			get
-			{
-				return _channelCount;
-			}
-		}
-
-		public int SampleRate
-		{
-			get
-			{
-				return _sampleRate;
-			}
-		}
-
-		public NameValueCollection Tags
-		{
-			get
-			{
-				return _tags;
-			}
-			set
-			{
-				_tags = value;
-			}
-		}
-
-		public bool UpdateTags(bool preserveTime)
-		{
-			return false;
-		}
+		public AudioPCMConfig PCM { get { return pcm; } }
 
 		public string Path 
 		{
@@ -237,11 +195,11 @@ namespace CUETools.Codecs.ALAC
 			} 
 		}
 
-		private void get_sample_info(ulong iSample, out uint sampleDuration, out uint sampleSize)
+		private void get_sample_info(long iSample, out int sampleDuration, out int sampleSize)
 		{
 			// if (iSample >= _sample_byte_size.Length)
-			uint duration_index_accum = 0;
-			uint duration_cur_index = 0;
+			int duration_index_accum = 0;
+			int duration_cur_index = 0;
 			while (_time_to_sample_count[duration_cur_index] + duration_index_accum <= iSample)
 			{
 				duration_index_accum += _time_to_sample_count[duration_cur_index];
@@ -262,11 +220,11 @@ namespace CUETools.Codecs.ALAC
 			// try a work around for ffdshow-generated buggy files
 			if (_time_to_sample_count.Length == 1 && _IO.CanSeek)
 			{
-				uint sample_count_0 = _time_to_sample_count[0] - 1;
-				uint sample_duration_0 = _time_to_sample_duration[0];
+				int sample_count_0 = _time_to_sample_count[0] - 1;
+				int sample_duration_0 = _time_to_sample_duration[0];
 				Position = sample_count_0 * sample_duration_0;
-				uint sampleDuration;
-				uint sampleSize;
+				int sampleDuration;
+				int sampleSize;
 				if ((int)_iSample < _sample_byte_size.Length)
 				{
 					get_sample_info(_iSample, out sampleDuration, out sampleSize);
@@ -275,8 +233,8 @@ namespace CUETools.Codecs.ALAC
 					decodeFrame(sampleSize);
 					if (_samplesInBuffer < sampleDuration)
 					{
-						_time_to_sample_duration = new uint[2] { sample_duration_0, _samplesInBuffer };
-						_time_to_sample_count = new uint[2] { sample_count_0, 1 };
+						_time_to_sample_duration = new int[2] { sample_duration_0, _samplesInBuffer };
+						_time_to_sample_count = new int[2] { sample_count_0, 1 };
 						_sampleCount -= sampleDuration - _samplesInBuffer;
 					}
 				}
@@ -485,7 +443,7 @@ namespace CUETools.Codecs.ALAC
 			return x;
 		}
 
-		private unsafe void basterdised_rice_decompress(uint output_size, ref int pos, ref predictor_t predictor_info, ref int[] predicterror_buffer, int readsamplesize)
+		private unsafe void basterdised_rice_decompress(int output_size, ref int pos, ref predictor_t predictor_info, ref int[] predicterror_buffer, int readsamplesize)
 		{
 			fixed (predictor_t* pr = &predictor_info)
 			fixed (int* output_buffer = &predicterror_buffer[0])
@@ -540,7 +498,7 @@ namespace CUETools.Codecs.ALAC
 			return (short)(1 - ((v >> 30) & 2));
 		}
 
-		private unsafe void predictor_decompress_fir_adapt(uint output_size, ref predictor_t predictor_info, ref int[] error_buffer, ref int[] buffer_out, int readsamplesize)
+		private unsafe void predictor_decompress_fir_adapt(int output_size, ref predictor_t predictor_info, ref int[] error_buffer, ref int[] buffer_out, int readsamplesize)
 		{
 			int i;
 
@@ -623,7 +581,7 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		internal unsafe void deinterlace(int[,] samplesBuffer, uint offset, uint sampleCount)
+		internal unsafe void deinterlace(int[,] samplesBuffer, int offset, int sampleCount)
 		{
 			if (sampleCount <= 0 || sampleCount > _samplesInBuffer)
 				return;
@@ -656,18 +614,18 @@ namespace CUETools.Codecs.ALAC
 				}
 
 				/* otherwise basic interlacing took place */
-				AudioSamples.Interlace(buf_s, buf_a, buf_b, (int)sampleCount);
+				AudioSamples.Interlace(buf_s, buf_a, buf_b, sampleCount);
 			}
 		}
 
 		internal int DecodeFrame(byte[] buffer, int pos, int len)
 		{
 			Array.Copy(buffer, pos, _framesBuffer, 0, len);
-			decodeFrame((uint)len);
+			decodeFrame(len);
 			return len; // pos
 		}
 
-		private void decodeFrame(uint sampleSize)
+		private void decodeFrame(int sampleSize)
 		{
 			_bitaccumulator = 0;
 			int pos = 0;
@@ -681,9 +639,9 @@ namespace CUETools.Codecs.ALAC
 			bool hassize = 0 != readbits(_framesBuffer, ref pos, 1); /* the output sample size is stored soon */
 			int wasted_bytes = (int) readbits(_framesBuffer, ref pos, 2); /* unknown ? */
 			bool isnotcompressed = 0 != readbits(_framesBuffer, ref pos, 1); /* whether the frame is compressed */
-			uint outputSamples = hassize ? readbits(_framesBuffer, ref pos, 32) : setinfo_max_samples_per_frame;
+			int outputSamples = hassize ? (int)readbits(_framesBuffer, ref pos, 32) : setinfo_max_samples_per_frame;
 
-			int readsamplesize = _bitsPerSample - (wasted_bytes * 8) + channels;
+			int readsamplesize = pcm.BitsPerSample - (wasted_bytes * 8) + pcm.ChannelCount;
 			if (!isnotcompressed)
 			{
 				/* compressed */
@@ -710,10 +668,11 @@ namespace CUETools.Codecs.ALAC
 			else
 			{
 				/* not compressed, easy case */
+				int bps = pcm.BitsPerSample;
 				for (int i = 0; i < outputSamples; i++)
 				{
-					_outputsamples_buffer_a[i] = extend_sign32((int)readbits(_framesBuffer, ref pos, _bitsPerSample), _bitsPerSample);
-					_outputsamples_buffer_b[i] = extend_sign32((int)readbits(_framesBuffer, ref pos, _bitsPerSample), _bitsPerSample);
+					_outputsamples_buffer_a[i] = extend_sign32((int)readbits(_framesBuffer, ref pos, bps), bps);
+					_outputsamples_buffer_b[i] = extend_sign32((int)readbits(_framesBuffer, ref pos, bps), bps);
 				}
 				/* wasted_bytes = 0; */
 				_interlacing_shift = 0;
@@ -828,9 +787,9 @@ namespace CUETools.Codecs.ALAC
 				stream_read_uint16();
 				entry_remaining -= 2;
 
-				_channelCount = (int)stream_read_uint16();
+				int _channelCount = (int)stream_read_uint16();
 
-				_bitsPerSample = stream_read_uint16();
+				int _bitsPerSample = stream_read_uint16();
 				entry_remaining -= 4;
 
 				/* compression id */
@@ -840,12 +799,14 @@ namespace CUETools.Codecs.ALAC
 				entry_remaining -= 4;
 
 				/* sample rate - 32bit fixed point = 16bit?? */
-				_sampleRate = stream_read_uint16();
+				int _sampleRate = stream_read_uint16();
 				entry_remaining -= 2;
 
 				/* skip 2 */
 				stream_skip(2);
 				entry_remaining -= 2;
+
+				pcm = new AudioPCMConfig(_bitsPerSample, _channelCount, _sampleRate);
 
 				/* remaining is codec data */
 
@@ -904,13 +865,13 @@ namespace CUETools.Codecs.ALAC
 			numentries = stream_read_uint32();
 			size_remaining -= 4;
 
-			_time_to_sample_count = new UInt32[numentries];
-			_time_to_sample_duration = new UInt32[numentries];
+			_time_to_sample_count = new int[numentries];
+			_time_to_sample_duration = new int[numentries];
 
 			for (i = 0; i < numentries; i++)
 			{
-				_time_to_sample_count[i] = stream_read_uint32();
-				_time_to_sample_duration[i] = stream_read_uint32();
+				_time_to_sample_count[i] = (int)stream_read_uint32();
+				_time_to_sample_duration[i] = (int)stream_read_uint32();
 				size_remaining -= 8;
 			}
 
@@ -949,11 +910,11 @@ namespace CUETools.Codecs.ALAC
 			numentries = stream_read_uint32();
 			size_remaining -= 4;
 
-			_sample_byte_size = new uint[numentries];
+			_sample_byte_size = new int[numentries];
 
 			for (i = 0; i < numentries; i++)
 			{
-				_sample_byte_size[i] = stream_read_uint32();
+				_sample_byte_size[i] = (int)stream_read_uint32();
 				size_remaining -= 4;
 			}
 
@@ -1259,11 +1220,11 @@ namespace CUETools.Codecs.ALAC
 		Stream _IO;
 
 		byte[] _codecData;
-		uint[] _time_to_sample_count, _time_to_sample_duration, _sample_byte_size;
+		int[] _time_to_sample_count, _time_to_sample_duration, _sample_byte_size;
 		long _saved_mdat_pos;
 		bool _formatRead;
 		int _bitaccumulator;
-		uint setinfo_max_samples_per_frame;
+		int setinfo_max_samples_per_frame;
 		byte setinfo_rice_initialhistory;
 		byte setinfo_rice_kmodifier;
 		byte setinfo_rice_historymult;
@@ -1276,17 +1237,15 @@ namespace CUETools.Codecs.ALAC
 		predictor_t predictor_info_b;
 
 		NameValueCollection _tags;
-		uint _samplesInBuffer, _samplesBufferOffset;
+		int _samplesInBuffer, _samplesBufferOffset;
 		byte[] _framesBuffer;
 		byte[] _buff;
 		byte _interlacing_shift;
 		byte _interlacing_leftweight;
-		int _sampleRate;
-		int _channelCount;
-		int _bitsPerSample;
-		ulong _sampleCount;
-		ulong _sampleOffset;
-		ulong _iSample;
+		AudioPCMConfig pcm;
+		long _sampleCount;
+		long _sampleOffset;
+		long _iSample;
 
 		Dictionary<string, qtmovie_read_atom> _qtmovie_parsers;
 		Dictionary<string, object> _qtmovie_parser_params;
