@@ -30,7 +30,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArCueDotNet", "..\ArCueDotN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Processor", "..\CUETools.Processor\CUETools.Processor.csproj", "{4911BD82-49EF-4858-8B51-5394F86739A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.HDCD", "..\HDCDDotNet\CUETools.Codecs.HDCD.csproj", "{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.HDCD", "..\CUETools.Codecs.HDCD\CUETools.Codecs.HDCD.csproj", "{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs", "..\CUETools.Codecs\CUETools.Codecs.csproj", "{6458A13A-30EF-45A9-9D58-E5031B17BEE2}"
 EndProject
