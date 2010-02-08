@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="9,00"
 	Name="MACLib"
 	ProjectGUID="{0B9C97D4-61B8-4294-A1DF-BA90752A1779}"
 	RootNamespace="MACLib"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -270,9 +271,14 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\Shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;UNICODE;_CRT_SECURE_NO_WARNINGS;NO_TAG"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="1"
+				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="all.h"
 				AssemblerListingLocation=".\x64\Release/"
