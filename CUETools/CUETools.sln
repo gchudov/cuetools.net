@@ -36,7 +36,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs", "..\CUETo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.ALAC", "..\CUETools.Codecs.ALAC\CUETools.Codecs.ALAC.csproj", "{F2EC7193-D5E5-4252-9803-5CEB407E910F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Compression.Rar", "..\UnRarDotNet\CUETools.Compression.Rar.csproj", "{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Compression.Rar", "..\CUETools.Compression.Rar\CUETools.Compression.Rar.csproj", "{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.LossyWAV", "..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj", "{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}"
 EndProject
