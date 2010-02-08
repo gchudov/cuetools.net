@@ -7,8 +7,8 @@
     <ProjectGuid>{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HDCDDotNet</RootNamespace>
-    <AssemblyName>HDCDDotNet</AssemblyName>
+    <RootNamespace>CUETools.Codecs.HDCD</RootNamespace>
+    <AssemblyName>CUETools.Codecs.HDCD</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +22,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\any\Release\</OutputPath>
+    <OutputPath>..\bin\Release\plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

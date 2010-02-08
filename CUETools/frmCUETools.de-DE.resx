@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+ï»¿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -161,7 +161,7 @@
     <value>Verlustbehaftet</value>
   </data>
   <data name="radioButtonAudioLossy.ToolTip" xml:space="preserve">
-    <value>Codecs, die die Audioqualität senken</value>
+    <value>Codecs, die die AudioqualitÃ¤t senken</value>
   </data>
   <data name="radioButtonAudioHybrid.Text" xml:space="preserve">
     <value>Hybrid</value>
@@ -239,7 +239,7 @@
     <value>Verif. und kodieren</value>
   </data>
   <data name="comboBoxScript.ToolTip" xml:space="preserve">
-    <value>Eigenes Script ausführen</value>
+    <value>Eigenes Script ausfÃ¼hren</value>
   </data>
   <data name="btnConvert.Text" xml:space="preserve">
     <value>&amp;Los</value>
@@ -254,10 +254,10 @@
     <value>Offset in Samples</value>
   </data>
   <data name="txtPreGapLength.ToolTip" xml:space="preserve">
-    <value>Das Pregap ist eine mit Stille oder versteckten Audiodaten gefüllte Zeitspanne vor dem Beginn der ersten Tonspur. Normalerweise ist diese aus dem CUE-Sheet bekannt, aber falls Sie ohne CUE-Sheet arbeiten, können Sie diesen Wert manuell ändern.</value>
+    <value>Das Pregap ist eine mit Stille oder versteckten Audiodaten gefÃ¼llte Zeitspanne vor dem Beginn der ersten Tonspur. Normalerweise ist diese aus dem CUE-Sheet bekannt, aber falls Sie ohne CUE-Sheet arbeiten, kÃ¶nnen Sie diesen Wert manuell Ã¤ndern.</value>
   </data>
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
-    <value>Nicht für normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren können nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die Länge der Datenspur. Sie können sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie müssen hier nichts eingeben.</value>
+    <value>Nicht fÃ¼r normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren kÃ¶nnen nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die LÃ¤nge der Datenspur. Sie kÃ¶nnen sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie mÃ¼ssen hier nichts eingeben.</value>
   </data>
   <data name="labelDataTrack.Text" xml:space="preserve">
     <value>Datenspur</value>
@@ -281,7 +281,7 @@
     <value>Modus</value>
   </data>
   <data name="labelEncoderMode.ToolTip" xml:space="preserve">
-    <value>Für verlustfreie Formate der Grad der Kompression. Für verlustbehaftete Formate die Qualität.</value>
+    <value>FÃ¼r verlustfreie Formate der Grad der Kompression. FÃ¼r verlustbehaftete Formate die QualitÃ¤t.</value>
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>81, 17</value>
@@ -305,7 +305,7 @@
     <value>Einzelda&amp;teien</value>
   </data>
   <data name="rbTracks.ToolTip" xml:space="preserve">
-    <value>Erstelle eine Datei pro Stück. Die Verhalten bei Lücken kann in den erweiterten Einstellungen geändert werden.</value>
+    <value>Erstelle eine Datei pro StÃ¼ck. Die Verhalten bei LÃ¼cken kann in den erweiterten Einstellungen geÃ¤ndert werden.</value>
   </data>
   <data name="grpOutputStyle.Text" xml:space="preserve">
     <value>CUE-Stil</value>
@@ -314,7 +314,7 @@
     <value>&amp;Stopp</value>
   </data>
   <data name="SelectedNodeName.Text" xml:space="preserve">
-    <value>Ausgewählte Datei</value>
+    <value>AusgewÃ¤hlte Datei</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -357,10 +357,10 @@
     <value>CUE-Pfade</value>
   </data>
   <data name="toolStripButtonAbout.Text" xml:space="preserve">
-    <value>Über</value>
+    <value>Ãœber</value>
   </data>
   <data name="toolStripButtonCorrectorOverwrite.Text" xml:space="preserve">
-    <value>Überschreiben</value>
+    <value>Ãœberschreiben</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
     <value />
@@ -372,7 +372,7 @@
     <value>Logdatei</value>
   </data>
   <data name="toolStripSplitButtonInputBrowser.Text" xml:space="preserve">
-    <value>Dateiauswahl öffnen/schließen</value>
+    <value>Dateiauswahl Ã¶ffnen/schlieÃŸen</value>
   </data>
   <data name="toolStripLabelInput.Text" xml:space="preserve">
     <value>E&amp;ingabe:</value>
@@ -390,7 +390,7 @@
     <value>Andere Erweiterung</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
-    <value>Ersetze Erweiterung für Audiodateien mit dieser:</value>
+    <value>Ersetze Erweiterung fÃ¼r Audiodateien mit dieser:</value>
   </data>
   <data name="toolStripMenuItemInputBrowserDrag.Text" xml:space="preserve">
     <value>Drag'n'drop-Modus</value>
@@ -417,16 +417,16 @@
     <value>Vorlage:</value>
   </data>
   <data name="comboBoxOutputFormat.ToolTip" xml:space="preserve">
-    <value>Vorlage für Ausgabedateien (foobar2000-Format)</value>
+    <value>Vorlage fÃ¼r Ausgabedateien (foobar2000-Format)</value>
   </data>
   <data name="toolStripTextBoxAddProfile.ToolTipText" xml:space="preserve">
     <value>Neues Profil erstellen</value>
   </data>
   <data name="toolStripMenuItemDeleteProfile.Text" xml:space="preserve">
-    <value>löschen</value>
+    <value>lÃ¶schen</value>
   </data>
   <data name="toolStripMenuItemDeleteProfile.ToolTipText" xml:space="preserve">
-    <value>Derzeitiges Profil löschen</value>
+    <value>Derzeitiges Profil lÃ¶schen</value>
   </data>
   <data name="defaultToolStripMenuItem.Text" xml:space="preserve">
     <value>Standard</value>
@@ -438,9 +438,9 @@
     <value>Profil</value>
   </data>
   <data name="setAsMyMusicFolderToolStripMenuItem.Text" xml:space="preserve">
-    <value>Für meine Musik verwenden</value>
+    <value>FÃ¼r meine Musik verwenden</value>
   </data>
   <data name="resetToOriginalLocationToolStripMenuItem.Text" xml:space="preserve">
-    <value>Ursprüngliches Verzeichnis nutzen</value>
+    <value>UrsprÃ¼ngliches Verzeichnis nutzen</value>
   </data>
 </root>

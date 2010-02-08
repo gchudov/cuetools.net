@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ArCueDotNet")]
+[assembly: AssemblyTitle("CUETools.ARCUE")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ArCueDotNet")]
+[assembly: AssemblyProduct("CUETools.ARCUE")]
 [assembly: AssemblyCopyright("Copyright © 2008-2010 Gregory S. Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

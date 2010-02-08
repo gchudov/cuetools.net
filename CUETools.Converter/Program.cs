@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.Text;
 using System.IO;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
 using CUETools.Processor;
 
 namespace CUETools.Converter

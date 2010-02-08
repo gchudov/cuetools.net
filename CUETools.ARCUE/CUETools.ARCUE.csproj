@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A574F3B1-E38B-4EE4-9394-49D6E2DF52EA}</ProjectGuid>
+    <ProjectGuid>{A5A8D8FA-9E32-4010-8AAF-AE580C5AF728}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LossyWAVSharp</RootNamespace>
-    <AssemblyName>LossyWAVSharp</AssemblyName>
+    <RootNamespace>ArCueDotNet</RootNamespace>
+    <AssemblyName>ArCueDotNet</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +22,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\any\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -37,13 +37,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj">
-      <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
-      <Name>CUETools.Codecs.LossyWAV</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
-      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>CUETools.Codecs</Name>
+    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
+      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
+      <Name>CUETools.Processor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

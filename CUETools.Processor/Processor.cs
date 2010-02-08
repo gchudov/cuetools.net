@@ -805,18 +805,13 @@ namespace CUETools.Processor
 			arcp_fmt = new List<string>();
 
 			encs.Add(typeof(CUETools.Codecs.WAVWriter));
-			encs.Add(typeof(CUETools.Codecs.FLAKE.FlakeWriter));
-			encs.Add(typeof(CUETools.Codecs.ALAC.ALACWriter));
-
 			decs.Add(typeof(CUETools.Codecs.WAVReader));
-			decs.Add(typeof(CUETools.Codecs.FLAKE.FlakeReader));
-			decs.Add(typeof(CUETools.Codecs.ALAC.ALACReader));
 
 			//ApplicationSecurityInfo asi = new ApplicationSecurityInfo(AppDomain.CurrentDomain.ActivationContext);
 			//string arch = asi.ApplicationId.ProcessorArchitecture;
 			//ActivationContext is null most of the time :(
 
-			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "x86";
+			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "Win32";
 			string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins (" + arch + ")");
 			if (Directory.Exists(plugins_path))
 				AddPluginDirectory(plugins_path);
