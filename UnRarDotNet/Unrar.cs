@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections;
-
+using CUETools.Compression;
 
 /*  Author:  Michael A. McCloskey
  *  Company: Schematrix
@@ -17,7 +17,7 @@ using System.Collections;
  *  some time in building your own products.
  */
 
-namespace UnRarDotNet
+namespace CUETools.Compression.Rar
 {
 	#region Event Delegate Definitions
 
@@ -25,10 +25,6 @@ namespace UnRarDotNet
 	/// Represents the method that will handle data available events
 	/// </summary>
 	public delegate void DataAvailableHandler(object sender, DataAvailableEventArgs e);
-	/// <summary>
-	/// Represents the method that will handle extraction progress events
-	/// </summary>
-	public delegate void ExtractionProgressHandler(object sender, ExtractionProgressEventArgs e);
 	/// <summary>
 	/// Represents the method that will handle missing archive volume events
 	/// </summary>
@@ -41,10 +37,6 @@ namespace UnRarDotNet
 	/// Represents the method that will handle new file notifications
 	/// </summary>
 	public delegate void NewFileHandler(object sender, NewFileEventArgs e);
-	/// <summary>
-	/// Represents the method that will handle password required events
-	/// </summary>
-	public delegate void PasswordRequiredHandler(object sender, PasswordRequiredEventArgs e);
 
 	#endregion
 	
@@ -283,7 +275,7 @@ namespace UnRarDotNet
 		/// <summary>
 		/// Event that is raised to indicate extraction progress
 		/// </summary>
-		public event ExtractionProgressHandler ExtractionProgress;
+		public event EventHandler<CompressionExtractionProgressEventArgs> ExtractionProgress;
 		/// <summary>
 		/// Event that is raised when a required archive volume is missing
 		/// </summary>
@@ -299,7 +291,7 @@ namespace UnRarDotNet
 		/// <summary>
 		/// Event that is raised when a password is required before continuing
 		/// </summary>
-		public event PasswordRequiredHandler PasswordRequired;
+		public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
 
 		#endregion
 
@@ -804,7 +796,7 @@ namespace UnRarDotNet
 			int result=-1;
 			if(this.PasswordRequired!=null)
 			{
-				PasswordRequiredEventArgs e=new PasswordRequiredEventArgs();
+				CompressionPasswordRequiredEventArgs e = new CompressionPasswordRequiredEventArgs();
 				this.PasswordRequired(this, e);
 				if(e.ContinueOperation && e.Password.Length>0)
 				{
@@ -837,7 +829,7 @@ namespace UnRarDotNet
 			}
 			if((this.ExtractionProgress!=null) && (this.currentFile!=null))
 			{
-				ExtractionProgressEventArgs e = new ExtractionProgressEventArgs();
+				CompressionExtractionProgressEventArgs e = new CompressionExtractionProgressEventArgs();
 				e.FileName=this.currentFile.FileName;
 				e.FileSize=this.currentFile.UnpackedSize;
 				e.BytesExtracted=this.currentFile.BytesExtracted;
@@ -913,12 +905,6 @@ namespace UnRarDotNet
 		}
 	}
 
-	public class PasswordRequiredEventArgs
-	{
-		public string Password=string.Empty;
-		public bool ContinueOperation=true;
-	}
-
 	public class NewFileEventArgs
 	{
 		public RARFileInfo fileInfo;
@@ -926,15 +912,6 @@ namespace UnRarDotNet
 		{
 			this.fileInfo=fileInfo;
 		}
-	}
-
-	public class ExtractionProgressEventArgs
-	{
-		public string FileName;
-		public long   FileSize;
-		public long   BytesExtracted;
-		public double PercentComplete;
-		public bool ContinueOperation=true;
 	}
 
 	public class RARFileInfo

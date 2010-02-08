@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
+using CUETools.Compression;
 using CUETools.Processor;
 
 namespace JDP
@@ -84,7 +85,7 @@ namespace JDP
 			});
 		}
 
-		private void PasswordRequired(object sender, ArchivePasswordRequiredEventArgs e)
+		private void PasswordRequired(object sender, CompressionPasswordRequiredEventArgs e)
 		{
 			this.Invoke((MethodInvoker)delegate()
 			{
@@ -226,8 +227,8 @@ namespace JDP
 			try
 			{
 				CUESheet cueSheet = new CUESheet(_profile._config);
-				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
-				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
+				cueSheet.PasswordRequired += new EventHandler<CompressionPasswordRequiredEventArgs>(PasswordRequired);
+				cueSheet.CUEToolsProgress += new EventHandler<CUEToolsProgressEventArgs>(SetStatus);
 
 				_workThread = new Thread(WriteAudioFilesThread);
 				_workClass = cueSheet;

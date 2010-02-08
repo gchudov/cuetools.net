@@ -179,7 +179,21 @@ namespace CUETools.Codecs.FLAKE
 			set
 			{
 				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				string[] args = value.Split();
+				for (int i = 0; i < args.Length; i++)
+				{
+					if (args[i] == "--padding-length" && (++i) < args.Length)
+					{
+						PaddingLength = int.Parse(args[i]);
+						continue;
+					}
+					if (args[i] == "--verify")
+					{
+						DoVerify = true;
+						continue;
+					}
+					throw new Exception("Unsupported options " + value);
+				}
 			}
 		}
 

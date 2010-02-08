@@ -26,7 +26,7 @@ namespace HDCDDotNet
 		/**< True if the transient filter was disabled during decoding. */
 	};
 
-	public class HDCDDotNet
+	public class HDCDDotNet : IAudioDest, IAudioFilter, IFormattable
 	{
 		public HDCDDotNet (int channels, int sample_rate, int output_bps, bool decode)
 		{
@@ -79,6 +79,57 @@ namespace HDCDDotNet
 			}
 		}
 
+		public AudioPCMConfig PCM
+		{
+			get { return AudioPCMConfig.RedBook; }
+		}
+
+		public long FinalSampleCount
+		{
+			set { throw new Exception("unsupported"); }
+		}
+
+		public long BlockSize
+		{
+			set { throw new Exception("unsupported"); }
+		}
+
+		public string Path
+		{
+			get { throw new Exception("unsupported"); }
+		}
+
+		public string Options
+		{
+			set { throw new Exception("unsupported"); }
+		}
+
+		public int CompressionLevel
+		{
+			get { throw new Exception("unsupported"); }
+			set { throw new Exception("unsupported"); }
+		}
+
+		public string ToString(string format, IFormatProvider formatProvider)
+		{
+			if (format == "f")
+			{
+				hdcd_decoder_statistics stats;
+				GetStatistics(out stats);
+				return string.Format(formatProvider, "peak extend: {0}, transient filter: {1}, gain: {2}",
+					(stats.enabled_peak_extend ? (stats.disabled_peak_extend ? "some" : "yes") : "none"),
+					(stats.enabled_transient_filter ? (stats.disabled_transient_filter ? "some" : "yes") : "none"),
+					stats.min_gain_adjustment == stats.max_gain_adjustment ?
+					(stats.min_gain_adjustment == 1.0 ? "none" : String.Format("{0:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20))) :
+					String.Format(formatProvider, "{0:0.0}dB..{1:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20), (Math.Log10(stats.max_gain_adjustment) * 20))
+					);
+			}
+			else
+			{
+				return Detected ? "HDCD detected" : "";
+			}
+		}
+
 		public bool Decoding
 		{
 			get
@@ -123,20 +174,12 @@ namespace HDCDDotNet
 			stats = (hdcd_decoder_statistics) Marshal.PtrToStructure(_statsPtr, typeof(hdcd_decoder_statistics));
 		}
 
-		public void Process(int[,] sampleBuffer, int sampleCount)
+		public void Write(AudioBuffer buff)
 		{
 #if !MONO
-			if (!hdcd_decoder_process_buffer_interleaved(_decoder, sampleBuffer, sampleCount))
+			if (!hdcd_decoder_process_buffer_interleaved(_decoder, buff.Samples, buff.Length))
 				throw new Exception("HDCD processing error.");
 #endif
-		}
-
-		public void Process(byte[] buff, int sampleCount)
-		{
-			if (_inSampleBuffer == null || _inSampleBuffer.GetLength(0) < sampleCount)
-				_inSampleBuffer = new int[sampleCount, _channelCount];
-			AudioBuffer.BytesToFLACSamples_16(buff, 0, _inSampleBuffer, 0, sampleCount, _channelCount);
-			Process(_inSampleBuffer, sampleCount);
 		}
 
 		public void Flush ()
@@ -145,6 +188,22 @@ namespace HDCDDotNet
 			if (!hdcd_decoder_flush_buffer(_decoder))
 #endif
 				throw new Exception("error flushing buffer.");
+		}
+
+		public void Close()
+		{
+#if !MONO
+			if (_decoder != IntPtr.Zero)
+				hdcd_decoder_delete(_decoder);
+			_decoder = IntPtr.Zero;
+			if (_gch.IsAllocated)
+				_gch.Free();
+#endif
+		}
+
+		public void Delete()
+		{
+			Close();
 		}
 
 		public IAudioDest AudioDest
@@ -211,12 +270,7 @@ namespace HDCDDotNet
 
 		~HDCDDotNet()
 		{
-#if !MONO
-			if (_decoder != IntPtr.Zero) 
-				hdcd_decoder_delete(_decoder);
-			if (_gch.IsAllocated) 
-				_gch.Free();
-#endif
+			Close();
 		}
 
 		private delegate bool hdcd_decoder_write_callback(IntPtr decoder, IntPtr buffer, int samples, IntPtr client_data);

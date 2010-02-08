@@ -2,6 +2,7 @@
 // 
 // CUE Tools
 // Copyright (C) 2006-2007  Moitah (moitah@yahoo.com)
+// Copyright (C) 2008-2010  Gregory S. Chudov (gchudov@gmail.com)
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,18 +38,13 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using HDCDDotNet;
 using CUETools.Codecs;
-using CUETools.Codecs.LossyWAV;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
-using CUETools.Ripper.SCSI;
+using CUETools.Ripper;
+using CUETools.Compression;
 using MusicBrainz;
 using Freedb;
-#if !MONO
-using UnRarDotNet;
-#endif
-using ICSharpCode.SharpZipLib.Zip;
 using CSScriptLibrary;
 
 namespace CUETools.Processor
@@ -616,6 +612,7 @@ namespace CUETools.Processor
 			lossless = _lossless;
 			supported_modes = _supported_modes;
 			default_mode = _default_mode;
+			priority = 0;
 			path = _path;
 			parameters = _parameters;
 			type = null;
@@ -632,13 +629,14 @@ namespace CUETools.Processor
 			parameters = null;
 			type = enctype;
 		}
-		public CUEToolsUDC(AudioDecoderClass enc, Type dectype)
+		public CUEToolsUDC(AudioDecoderClass dec, Type dectype)
 		{
-			name = enc.DecoderName;
-			extension = enc.Extension;
+			name = dec.DecoderName;
+			extension = dec.Extension;
 			lossless = true;
 			supported_modes = "";
 			default_mode = "";
+			priority = 1;
 			path = null;
 			parameters = null;
 			type = dectype;
@@ -790,6 +788,86 @@ namespace CUETools.Processor
 		}
 	}
 
+	public static class CUEProcessorPlugins
+	{
+		static public List<Type> encs;
+		static public List<Type> decs;
+		static public List<Type> arcp;
+		static public List<string> arcp_fmt;
+		static public Type hdcd;
+		static public Type ripper;
+
+		static CUEProcessorPlugins()
+		{
+			encs = new List<Type>();
+			decs = new List<Type>();
+			arcp = new List<Type>();
+			arcp_fmt = new List<string>();
+
+			encs.Add(typeof(CUETools.Codecs.WAVWriter));
+			encs.Add(typeof(CUETools.Codecs.FLAKE.FlakeWriter));
+			encs.Add(typeof(CUETools.Codecs.ALAC.ALACWriter));
+
+			decs.Add(typeof(CUETools.Codecs.WAVReader));
+			decs.Add(typeof(CUETools.Codecs.FLAKE.FlakeReader));
+			decs.Add(typeof(CUETools.Codecs.ALAC.ALACReader));
+
+			//ApplicationSecurityInfo asi = new ApplicationSecurityInfo(AppDomain.CurrentDomain.ActivationContext);
+			//string arch = asi.ApplicationId.ProcessorArchitecture;
+			//ActivationContext is null most of the time :(
+
+			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "x86";
+			string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins (" + arch + ")");
+			if (Directory.Exists(plugins_path))
+				AddPluginDirectory(plugins_path);
+			plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins");
+			if (Directory.Exists(plugins_path))
+				AddPluginDirectory(plugins_path);
+		}
+
+		private static void AddPluginDirectory(string plugins_path)
+		{
+			foreach (string plugin_path in Directory.GetFiles(plugins_path, "*.dll", SearchOption.TopDirectoryOnly))
+			{
+				try
+				{
+					AssemblyName name = AssemblyName.GetAssemblyName(plugin_path);
+					Assembly assembly = Assembly.Load(name);
+					foreach (Type type in assembly.GetExportedTypes())
+					{
+						try
+						{
+							if (Attribute.GetCustomAttribute(type, typeof(AudioDecoderClass)) != null)
+								decs.Add(type);
+							//if (type.IsClass && !type.IsAbstract && typeof(IAudioDest).IsAssignableFrom(type))
+							if (Attribute.GetCustomAttribute(type, typeof(AudioEncoderClass)) != null)
+								encs.Add(type);
+							CompressionProviderClass archclass = Attribute.GetCustomAttribute(type, typeof(CompressionProviderClass)) as CompressionProviderClass;
+							if (archclass != null)
+							{
+								arcp.Add(type);
+								if (!arcp_fmt.Contains(archclass.Extension))
+									arcp_fmt.Add(archclass.Extension);
+							}
+							if (type.Name == "HDCDDotNet")
+								hdcd = type;
+							if (type.IsClass && !type.IsAbstract && typeof(ICDRipper).IsAssignableFrom(type))
+								ripper = type;
+						}
+						catch (Exception ex)
+						{
+							System.Diagnostics.Debug.WriteLine(ex.Message);
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine(ex.Message);
+				}
+			}
+		}
+	}
+
 	public class CUEConfig {
 		public uint fixOffsetMinimumConfidence;
 		public uint fixOffsetMinimumTracksPercent;
@@ -935,78 +1013,45 @@ namespace CUETools.Processor
 
 			language = Thread.CurrentThread.CurrentUICulture.Name;
 
-			List<Type> encs = new List<Type>();
-			List<Type> decs = new List<Type>();
-			
-			encs.Add(typeof(CUETools.Codecs.WAVWriter));
-			encs.Add(typeof(CUETools.Codecs.FLAKE.FlakeWriter));
-			encs.Add(typeof(CUETools.Codecs.FlaCuda.FlaCudaWriter));
-			encs.Add(typeof(CUETools.Codecs.ALAC.ALACWriter));
-			
-			decs.Add(typeof(CUETools.Codecs.WAVReader));
-			decs.Add(typeof(CUETools.Codecs.FLAKE.FlakeReader));
-			decs.Add(typeof(CUETools.Codecs.ALAC.ALACReader));
-
-			//ApplicationSecurityInfo asi = new ApplicationSecurityInfo(AppDomain.CurrentDomain.ActivationContext);
-			//string arch = asi.ApplicationId.ProcessorArchitecture;
-			//ActivationContext is null most of the time :(
-
-			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "x86";
-			string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins (" + arch + ")");
-			if (Directory.Exists(plugins_path))
-				foreach (string plugin_path in Directory.GetFiles(plugins_path, "*.dll", SearchOption.TopDirectoryOnly))
-				{
-					AssemblyName name = AssemblyName.GetAssemblyName(plugin_path);
-					Assembly assembly = Assembly.Load(name);
-					foreach (Type type in assembly.GetExportedTypes())
-					{
-						try
-						{
-							if (Attribute.GetCustomAttribute(type, typeof(AudioDecoderClass)) != null)
-								decs.Add(type);
-							//if (type.IsClass && !type.IsAbstract && typeof(IAudioDest).IsAssignableFrom(type))
-							if (Attribute.GetCustomAttribute(type, typeof(AudioEncoderClass)) != null)
-								encs.Add(type);
-						}
-						catch (Exception ex)
-						{
-							System.Diagnostics.Debug.WriteLine(ex.Message);
-						}
-					}
-				}
-
 			encoders = new CUEToolsUDCList();
-			foreach (Type type in encs)
+			foreach (Type type in CUEProcessorPlugins.encs)
 			{
 				AudioEncoderClass enc = Attribute.GetCustomAttribute(type, typeof(AudioEncoderClass)) as AudioEncoderClass;
 				//if (!encoders.TryGetValue(enc.EncoderName))
 				encoders.Add(new CUEToolsUDC(enc, type));
 			}
-			encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "10", "flake.exe", "-%M - -o %O -p %P"));
-			encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
-			encoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
-			encoders.Add(new CUEToolsUDC("lame vbr", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
-			encoders.Add(new CUEToolsUDC("lame cbr", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
-			encoders.Add(new CUEToolsUDC("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
-			encoders.Add(new CUEToolsUDC("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
-
 			decoders = new Dictionary<string, CUEToolsUDC>();
-			foreach (Type type in decs)
+			foreach (Type type in CUEProcessorPlugins.decs)
 			{
 				AudioDecoderClass dec = Attribute.GetCustomAttribute(type, typeof(AudioDecoderClass)) as AudioDecoderClass;
 				decoders.Add(dec.DecoderName, new CUEToolsUDC(dec, type));
 			}
-			decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
-			decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "%I -f wav -"));
+			if (Type.GetType("Mono.Runtime", false) == null)
+			{
+				encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "10", "flake.exe", "-%M - -o %O -p %P"));
+				encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
+				encoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
+				encoders.Add(new CUEToolsUDC("lame vbr", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
+				encoders.Add(new CUEToolsUDC("lame cbr", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
+				encoders.Add(new CUEToolsUDC("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
+				encoders.Add(new CUEToolsUDC("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
+
+				decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
+				decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "%I -f wav -"));
+			}
+			else
+			{
+				// !!!
+			}
 
 			formats = new Dictionary<string, CUEToolsFormat>();
-			formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("flac", true), null, "libFLAC"));
-			formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("wv", true), null, "libwavpack"));
-			formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, false, true, true, encoders.GetDefault("ape", true), null, "MAC_SDK"));
-			formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, false, true, encoders.GetDefault("tta", true), null, "ttalib"));
-			formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, true, false, true, encoders.GetDefault("wav", true), null, "builtin wav"));
+			formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("flac", true), null, GetDefaultDecoder("flac")));
+			formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("wv", true), null, GetDefaultDecoder("wv")));
+			formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, false, true, true, encoders.GetDefault("ape", true), null, GetDefaultDecoder("ape")));
+			formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, false, true, encoders.GetDefault("tta", true), null, GetDefaultDecoder("tta")));
+			formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, true, false, true, encoders.GetDefault("wav", true), null, GetDefaultDecoder("wav")));
+			formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), GetDefaultDecoder("m4a")));
 			formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, true, encoders.GetDefault("tak", true), null, "takc"));
-			formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), "builtin alac"));
 			formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("mp3", false), null));
 			formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("ogg", false), null));
 
@@ -1372,6 +1417,15 @@ return processor.Go();
 				trackFilenameFormat = "%tracknumber%. %title%";
 		}
 
+		public string GetDefaultDecoder(string extension)
+		{
+			CUEToolsUDC result = null;
+			foreach (KeyValuePair<string, CUEToolsUDC> decoder in decoders)
+				if (decoder.Value.Extension == extension && (result == null || result.priority < decoder.Value.priority))
+					result = decoder.Value;
+			return result == null ? null : result.Name;
+		}
+
 		public string CleanseString (string s)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -1464,7 +1518,7 @@ return processor.Go();
 		public string _name;
 	}
 
-	public class CUEToolsProgressEventArgs
+	public class CUEToolsProgressEventArgs : EventArgs
 	{
 		public string status = string.Empty;
 		public double percentTrck = 0;
@@ -1474,10 +1528,10 @@ return processor.Go();
 		public string output = string.Empty;
 	}
 
-	public class ArchivePasswordRequiredEventArgs
+	public class CUEToolsSelectionEventArgs : EventArgs
 	{
-		public string Password = string.Empty;
-		public bool ContinueOperation = true;
+		public object[] choices;
+		public int selection = -1;
 	}
 
 	public class CUEToolsSourceFile
@@ -1493,16 +1547,6 @@ return processor.Go();
 			reader.Close();
 		}
 	}
-
-	public class CUEToolsSelectionEventArgs
-	{
-		public object[] choices;
-		public int selection = -1;
-	}
-
-	public delegate void CUEToolsSelectionHandler(object sender, CUEToolsSelectionEventArgs e);
-	public delegate void CUEToolsProgressHandler(object sender, CUEToolsProgressEventArgs e);
-	public delegate void ArchivePasswordRequiredHandler(object sender, ArchivePasswordRequiredEventArgs e);
 
 	public class CUESheet {
 		private bool _stop, _pause;
@@ -1525,7 +1569,7 @@ return processor.Go();
 		private string[] _destPaths;
 		private TagLib.File _fileInfo;
 		private const int _arOffsetRange = 5 * 588 - 1;
-		private HDCDDotNet.HDCDDotNet hdcdDecoder;
+		private IAudioDest hdcdDecoder;
 		private AudioEncoderType _audioEncoderType = AudioEncoderType.Lossless;
 		private bool _outputLossyWAV = false;
 		private string _outputFormat = "wav";
@@ -1534,11 +1578,11 @@ return processor.Go();
 		private string _cddbDiscIdTag;
 		private bool _isCD;
 		private string _ripperLog;
-		private CDDriveReader _ripper;
+		private ICDRipper _ripper;
 		private bool _isArchive;
 		private List<string> _archiveContents;
 		private string _archiveCUEpath;
-		private string _archivePath;
+		private ICompressionProvider _archive;
 		private string _archivePassword;
 		private CUEToolsProgressEventArgs _progress;
 		private AccurateRipVerify _arVerify;
@@ -1547,9 +1591,9 @@ return processor.Go();
 		private TagLib.IPicture[] _albumArt;
 		private int _padding = 8192;
 
-		public event ArchivePasswordRequiredHandler PasswordRequired;
-		public event CUEToolsProgressHandler CUEToolsProgress;
-		public event CUEToolsSelectionHandler CUEToolsSelection;
+		public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
+		public event EventHandler<CUEToolsProgressEventArgs> CUEToolsProgress;
+		public event EventHandler<CUEToolsSelectionEventArgs> CUEToolsSelection;
 
 		public CUESheet(CUEConfig config)
 		{
@@ -1577,7 +1621,7 @@ return processor.Go();
 			_albumArt = null;
 		}
 
-		public void OpenCD(CDDriveReader ripper)
+		public void OpenCD(ICDRipper ripper)
 		{
 			_ripper = ripper;
 			_toc = (CDImageLayout)_ripper.TOC.Clone();
@@ -1598,6 +1642,9 @@ return processor.Go();
 
 		public void Close()
 		{
+			if (_archive != null)
+				_archive.Close();
+			_archive = null;
 			if (_ripper != null)
 				_ripper.Close();
 			_ripper = null;
@@ -1611,7 +1658,7 @@ return processor.Go();
 			}
 		}
 
-		public CDDriveReader CDRipper
+		public ICDRipper CDRipper
 		{
 			get
 			{
@@ -1900,10 +1947,9 @@ return processor.Go();
 			_inputPath = pathIn;
 			_inputDir = Path.GetDirectoryName(_inputPath) ?? _inputPath;
 			if (_inputDir == "") _inputDir = ".";
-#if !MONO
-			if (_inputDir == pathIn)
+			if (_inputDir == pathIn && CUEProcessorPlugins.ripper != null)
 			{
-				CDDriveReader ripper = new CDDriveReader();
+				ICDRipper ripper = Activator.CreateInstance(CUEProcessorPlugins.ripper) as ICDRipper;
 				try
 				{
 					ripper.Open(pathIn[0]);
@@ -1925,7 +1971,6 @@ return processor.Go();
 					throw;
 				}
 			}
-#endif
 
 			TextReader sr;
 
@@ -1950,43 +1995,26 @@ return processor.Go();
 			//    CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, null, false);
 			//    _eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
 			//} 
-			else if (Path.GetExtension(pathIn).ToLower() == ".zip" || Path.GetExtension(pathIn).ToLower() == ".rar")
+			else if (CUEProcessorPlugins.arcp_fmt.Contains(Path.GetExtension(pathIn).ToLower().Trim('.')))
 			{
-				_archiveContents = new List<string>();
+				_archive = null;
+				foreach (Type type in CUEProcessorPlugins.arcp)
+				{
+					CompressionProviderClass archclass = Attribute.GetCustomAttribute(type, typeof(CompressionProviderClass)) as CompressionProviderClass;
+					if (archclass.Extension == Path.GetExtension(pathIn).ToLower().Trim('.'))
+					{
+						_archive = Activator.CreateInstance(type, pathIn) as ICompressionProvider;
+						break;
+					}
+				}
+				if (_archive == null)
+					throw new Exception("archive type not supported.");
 				_isArchive = true;
-				_archivePath = pathIn;
-
-				if (Path.GetExtension(pathIn).ToLower() == ".rar")
-				{
-#if !MONO
-					using (Unrar _unrar = new Unrar())
-					{
-						_unrar.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
-						_unrar.Open(pathIn, Unrar.OpenMode.List);
-						while (_unrar.ReadHeader())
-						{
-							if (!_unrar.CurrentFile.IsDirectory)
-								_archiveContents.Add(_unrar.CurrentFile.FileName);
-							_unrar.Skip();
-						}
-						_unrar.Close();
-					}
-#else
-					throw new Exception("rar archives not supported on MONO.");
-#endif
-				}
-				if (Path.GetExtension(pathIn).ToLower() == ".zip")
-				{
-					using (ZipFile _unzip = new ZipFile(pathIn))
-					{
-						foreach (ZipEntry e in _unzip)
-						{
-							if (e.IsFile)
-								_archiveContents.Add(e.Name);
-						}
-						_unzip.Close();
-					}
-				}
+				_archiveContents = new List<string>();
+				_archive.PasswordRequired += new EventHandler<CompressionPasswordRequiredEventArgs>(unzip_PasswordRequired);
+				_archive.ExtractionProgress += new EventHandler<CompressionExtractionProgressEventArgs>(unzip_ExtractionProgress);
+				foreach (string f in _archive.Contents)
+					_archiveContents.Add(f);
 
 				List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
 				List<CUEToolsSourceFile> cueFiles = new List<CUEToolsSourceFile>();
@@ -2631,25 +2659,9 @@ return processor.Go();
 
 		internal Stream OpenArchive(string fileName, bool showProgress)
 		{
-#if !MONO
-			if (Path.GetExtension(_archivePath).ToLower() == ".rar")
-			{
-				RarStream rarStream = new RarStream(_archivePath, fileName);
-				rarStream.PasswordRequired += new PasswordRequiredHandler(unrar_PasswordRequired);
-				if (showProgress)
-					rarStream.ExtractionProgress += new ExtractionProgressHandler(unrar_ExtractionProgress);
-				return rarStream;
-			}
-#endif
-			if (Path.GetExtension(_archivePath).ToLower() == ".zip")
-			{
-				SeekableZipStream zipStream = new SeekableZipStream(_archivePath, fileName);
-				zipStream.PasswordRequired += new ZipPasswordRequiredHandler(unzip_PasswordRequired);
-				if (showProgress)
-					zipStream.ExtractionProgress += new ZipExtractionProgressHandler(unzip_ExtractionProgress);
-				return zipStream;
-			}
-			throw new Exception("Unknown archive type.");
+			if (_archive == null)
+				throw new Exception("Unknown archive type.");
+			return _archive.Decompress(fileName);
 		}
 
 		private void ShowProgress(string status, double percentTrack, double percentDisk, string input, string output)
@@ -2678,13 +2690,12 @@ return processor.Go();
 			this.CUEToolsProgress(this, _progress);
 		}
 
-#if !MONO
 		private void CDReadProgress(object sender, ReadProgressArgs e)
 		{
 			CheckStop();
 			if (this.CUEToolsProgress == null)
 				return;
-			CDDriveReader audioSource = (CDDriveReader)sender;
+			ICDRipper audioSource = (ICDRipper)sender;
 			int processed = e.Position - e.PassStart;
 			TimeSpan elapsed = DateTime.Now - e.PassTime;
 			double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
@@ -2708,40 +2719,7 @@ return processor.Go();
 			this.CUEToolsProgress(this, _progress);
 		}
 
-		private void unrar_ExtractionProgress(object sender, ExtractionProgressEventArgs e)
-		{
-			CheckStop();
-			if (this.CUEToolsProgress == null)
-				return;
-			_progress.percentTrck = e.PercentComplete/100;
-			this.CUEToolsProgress(this, _progress);
-		}
-
-		private void unrar_PasswordRequired(object sender, PasswordRequiredEventArgs e)
-		{
-			if (_archivePassword != null)
-			{
-				e.ContinueOperation = true;
-				e.Password = _archivePassword;
-				return;
-			}
-			if (this.PasswordRequired != null)
-			{
-				ArchivePasswordRequiredEventArgs e1 = new ArchivePasswordRequiredEventArgs();
-				this.PasswordRequired(this, e1);
-				if (e1.ContinueOperation && e1.Password != "")
-				{
-					_archivePassword = e1.Password;
-					e.ContinueOperation = true;
-					e.Password = e1.Password;
-					return;
-				} 
-			}
-			throw new IOException("Password is required for extraction.");
-		}
-#endif
-
-		private void unzip_ExtractionProgress(object sender, ZipExtractionProgressEventArgs e)
+		private void unzip_ExtractionProgress(object sender, CompressionExtractionProgressEventArgs e)
 		{
 			CheckStop();
 			if (this.CUEToolsProgress == null)
@@ -2750,7 +2728,7 @@ return processor.Go();
 			this.CUEToolsProgress(this, _progress);
 		}
 
-		private void unzip_PasswordRequired(object sender, ZipPasswordRequiredEventArgs e)
+		private void unzip_PasswordRequired(object sender, CompressionPasswordRequiredEventArgs e)
 		{
 			if (_archivePassword != null)
 			{
@@ -2759,14 +2737,11 @@ return processor.Go();
 				return;
 			}
 			if (this.PasswordRequired != null)
-			{
-				ArchivePasswordRequiredEventArgs e1 = new ArchivePasswordRequiredEventArgs();
-				this.PasswordRequired(this, e1);
-				if (e1.ContinueOperation && e1.Password != "")
+			{				
+				this.PasswordRequired(this, e);
+				if (e.ContinueOperation && e.Password != "")
 				{
-					_archivePassword = e1.Password;
-					e.ContinueOperation = true;
-					e.Password = e1.Password;
+					_archivePassword = e.Password;
 					return;
 				}
 			}
@@ -3088,7 +3063,6 @@ return processor.Go();
 			}
 		}
 
-#if !MONO
 		public void CreateExactAudioCopyLOG()
 		{
 			StringWriter logWriter = new StringWriter(CultureInfo.InvariantCulture);
@@ -3244,20 +3218,18 @@ return processor.Go();
 			logWriter.Close();
 			_ripperLog = logWriter.ToString();
 		}
-#endif
 
 		public void CreateRipperLOG()
 		{
 			if (!_isCD || _ripper == null || _ripperLog != null)
 				return;
-#if !MONO
 			if (_config.createEACLOG)
 			{
 				CreateExactAudioCopyLOG();
 				return;
 			}
 			StringWriter logWriter = new StringWriter();
-			logWriter.WriteLine("{0}", CDDriveReader.RipperVersion());
+			logWriter.WriteLine("{0}", _ripper.RipperVersion);
 			logWriter.WriteLine("Extraction logfile from : {0}", DateTime.Now);
 			logWriter.WriteLine("Used drive              : {0}", _ripper.ARName);
 			logWriter.WriteLine("Read offset correction  : {0}", _ripper.DriveOffset);
@@ -3265,19 +3237,8 @@ return processor.Go();
 			logWriter.WriteLine("Secure mode             : {0}", _ripper.CorrectionQuality);
 			logWriter.WriteLine("Disk length             : {0}", CDImageLayout.TimeToString(_toc.AudioLength));
 			logWriter.WriteLine("AccurateRip             : {0}", _arVerify.ARStatus == null ? "ok" : _arVerify.ARStatus);
-			if (hdcdDecoder != null && hdcdDecoder.Detected)
-			{
-				hdcd_decoder_statistics stats;
-				hdcdDecoder.GetStatistics(out stats);
-				logWriter.WriteLine("HDCD                    : peak extend: {0}, transient filter: {1}, gain: {2}",
-					(stats.enabled_peak_extend ? (stats.disabled_peak_extend ? "some" : "yes") : "none"),
-					(stats.enabled_transient_filter ? (stats.disabled_transient_filter ? "some" : "yes") : "none"),
-					stats.min_gain_adjustment == stats.max_gain_adjustment ?
-					(stats.min_gain_adjustment == 1.0 ? "none" : String.Format("{0:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20))) :
-					String.Format("{0:0.0}dB..{1:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20), (Math.Log10(stats.max_gain_adjustment) * 20))
-					);
-				logWriter.WriteLine();
-			}
+			if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
+				logWriter.WriteLine("HDCD                    : {0:f}", hdcdDecoder);
 			logWriter.WriteLine();
 			logWriter.WriteLine("TOC of the extracted CD");
 			logWriter.WriteLine();
@@ -3333,7 +3294,6 @@ return processor.Go();
 			logWriter.WriteLine("End of status report");
 			logWriter.Close();
 			_ripperLog = logWriter.ToString();
-#endif
 		}
 
 		public string M3UContents(CUEStyle style)
@@ -3455,20 +3415,8 @@ return processor.Go();
 				sw.WriteLine("Truncated 4608 extra samples in some input files.");
 			if (_paddedToFrame)
 				sw.WriteLine("Padded some input files to a frame boundary.");
-
-			if (hdcdDecoder != null && hdcdDecoder.Detected)
-			{
-				hdcd_decoder_statistics stats;
-				hdcdDecoder.GetStatistics(out stats);
-				sw.WriteLine("HDCD: peak extend: {0}, transient filter: {1}, gain: {2}",
-					(stats.enabled_peak_extend ? (stats.disabled_peak_extend ? "some" : "yes") : "none"),
-					(stats.enabled_transient_filter ? (stats.disabled_transient_filter ? "some" : "yes") : "none"),
-					stats.min_gain_adjustment == stats.max_gain_adjustment ? 
-					(stats.min_gain_adjustment == 1.0 ? "none" : String.Format ("{0:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20))) :
-					String.Format ("{0:0.0}dB..{1:0.0}dB", (Math.Log10(stats.min_gain_adjustment) * 20), (Math.Log10(stats.max_gain_adjustment) * 20))
-					);
-			}
-
+			if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
+				sw.WriteLine("HDCD: {0:f}", hdcdDecoder);
 			if (0 != _writeOffset)
 				sw.WriteLine("Offset applied: {0}", _writeOffset);
 			_arVerify.GenerateFullLog(sw, _config.arLogVerbose);
@@ -3477,8 +3425,8 @@ return processor.Go();
 		public string GenerateAccurateRipStatus()
 		{
 			string prefix = "";
-			if (hdcdDecoder != null && hdcdDecoder.Detected)
-				prefix += "hdcd detected, ";
+			if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
+				prefix += string.Format("{0:s}, ", hdcdDecoder);
 			if (_useAccurateRip)
 			{
 				if (_arVerify.ARStatus != null)
@@ -4126,17 +4074,25 @@ return processor.Go();
 				_appliedWriteOffset = true;
 			}
 
-			if (_config.detectHDCD)
+			int destBPS = 16;
+			hdcdDecoder = null;
+			if (_config.detectHDCD && CUEProcessorPlugins.hdcd != null)
 			{
 				// currently broken verifyThenConvert on HDCD detection!!!! need to check for HDCD results higher
-				try { hdcdDecoder = new HDCDDotNet.HDCDDotNet(2, 44100, ((_outputLossyWAV && _config.decodeHDCDtoLW16) || !_config.decodeHDCDto24bit) ? 20 : 24, _config.decodeHDCD); }
+				try
+				{
+					destBPS = ((_outputLossyWAV && _config.decodeHDCDtoLW16) || !_config.decodeHDCDto24bit) ? 20 : 24;
+					hdcdDecoder = Activator.CreateInstance(CUEProcessorPlugins.hdcd, 2, 44100, destBPS, _config.decodeHDCD) as IAudioDest;
+				}
 				catch { }
+				if (hdcdDecoder == null || !_config.decodeHDCD)
+					destBPS = 16;
 			}
 
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 			{
 				iDest++;
-				audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, _padding, noOutput);
+				audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], destBPS, _padding, noOutput);
 			}
 
 			int currentOffset = 0, previousOffset = 0;
@@ -4161,10 +4117,10 @@ return processor.Go();
 					{
 						iDest++;
 						if (hdcdDecoder != null)
-							hdcdDecoder.AudioDest = null;
+							(hdcdDecoder as IAudioFilter).AudioDest = null;
 						if (audioDest != null)
 							audioDest.Close();
-						audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, _padding, noOutput);
+						audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], destBPS, _padding, noOutput);
 					}
 
 					for (iIndex = 0; iIndex <= _toc[_toc.FirstAudio + iTrack].LastIndex; iIndex++)
@@ -4181,11 +4137,11 @@ return processor.Go();
 						if ((style == CUEStyle.GapsAppended) && (iIndex == 1))
 						{
 							if (hdcdDecoder != null)
-								hdcdDecoder.AudioDest = null;
+								(hdcdDecoder as IAudioFilter).AudioDest = null;
 							if (audioDest != null)
 								audioDest.Close();
 							iDest++;
-							audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, _padding, noOutput);
+							audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], destBPS, _padding, noOutput);
 						}
 
 						if ((style == CUEStyle.GapsAppended) && (iIndex == 0) && (iTrack == 0))
@@ -4194,7 +4150,7 @@ return processor.Go();
 							if (htoaToFile)
 							{
 								iDest++;
-								audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], hdcdDecoder != null && hdcdDecoder.Decoding ? hdcdDecoder.BitsPerSample : 16, _padding, noOutput);
+								audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], destBPS, _padding, noOutput);
 							}
 						}
 						else if ((style == CUEStyle.GapsLeftOut) && (iIndex == 0))
@@ -4210,10 +4166,8 @@ return processor.Go();
 						{
 							if (samplesRemSource == 0)
 							{
-//#if !MONO
 //                                if (_isCD && audioSource != null && audioSource is CDDriveReader)
 //                                    updatedTOC = ((CDDriveReader)audioSource).TOC;
-//#endif
 								if (audioSource != null && !_isCD) audioSource.Close();
 								audioSource = GetAudioSource(++iSource);
 								samplesRemSource = (int)_sources[iSource].Length;
@@ -4236,9 +4190,9 @@ return processor.Go();
 									audioDest.Write(sampleBuffer);
 								if (_config.detectHDCD && hdcdDecoder != null)
 								{
-									if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && !hdcdDecoder.Detected)
+									if (_config.wait750FramesForHDCD && diskOffset > 750 * 588 && string.Format("{0:s}", hdcdDecoder) == "")
 									{
-										hdcdDecoder.AudioDest = null;
+										(hdcdDecoder as IAudioFilter).AudioDest = null;
 										hdcdDecoder = null;
 										if (_config.decodeHDCD)
 										{
@@ -4250,8 +4204,8 @@ return processor.Go();
 									else
 									{
 										if (_config.decodeHDCD)
-											hdcdDecoder.AudioDest = (discardOutput || noOutput) ? null : audioDest;
-										hdcdDecoder.Process(sampleBuffer.Samples, copyCount);
+											(hdcdDecoder as IAudioFilter).AudioDest = (discardOutput || noOutput) ? null : audioDest;
+										hdcdDecoder.Write(sampleBuffer);
 									}
 								}
 							}
@@ -4276,7 +4230,7 @@ return processor.Go();
 			catch (Exception ex)
 			{
 				if (hdcdDecoder != null)
-					hdcdDecoder.AudioDest = null;
+					(hdcdDecoder as IAudioFilter).AudioDest = null;
 				hdcdDecoder = null;
 				try { if (audioSource != null && !_isCD) audioSource.Close(); }
 				catch { }
@@ -4288,7 +4242,6 @@ return processor.Go();
 			}
 #endif
 
-#if !MONO
 			//if (_isCD && audioSource != null && audioSource is CDDriveReader)
 			//    updatedTOC = ((CDDriveReader)audioSource).TOC;
 			if (_isCD)
@@ -4304,10 +4257,9 @@ return processor.Go();
 						_tracks[iTrack].Attributes.Add(new CUELine("FLAGS" + (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : "")));
 				}
 			}
-#endif
 
 			if (hdcdDecoder != null)
-				hdcdDecoder.AudioDest = null;
+				(hdcdDecoder as IAudioFilter).AudioDest = null;
 			if (audioSource != null && !_isCD)
 				audioSource.Close();
 			if (audioDest != null)
@@ -4588,14 +4540,12 @@ return processor.Go();
 				audioSource = new SilenceGenerator(sourceInfo.Offset + sourceInfo.Length);
 			}
 			else {
-#if !MONO
 				if (_isCD)
 				{
 					_ripper.Position = 0;
 					//audioSource = _ripper;
 					audioSource = new AudioPipe(_ripper, 0x100000);
 				} else
-#endif
 				if (_isArchive)
 					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path, OpenArchive(sourceInfo.Path, false), _config);
 				else

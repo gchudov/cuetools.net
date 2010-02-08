@@ -54,6 +54,11 @@ namespace CUETools.Codecs
 		long BlockSize { set; }
 	}
 
+	public interface IAudioFilter
+	{
+		IAudioDest AudioDest { set; }
+	}
+
 	/// <summary>
 	///    This class provides an attribute for marking
 	///    classes that provide <see cref="IAudioDest" />.

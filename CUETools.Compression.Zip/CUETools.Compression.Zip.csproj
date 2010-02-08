@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A5A8D8FA-9E32-4010-8AAF-AE580C5AF728}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{EA2CAE21-940C-4F51-A802-E02ABB97A9B5}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ArCueDotNet</RootNamespace>
-    <AssemblyName>ArCueDotNet</AssemblyName>
+    <RootNamespace>CUETools.Compression.Zip</RootNamespace>
+    <AssemblyName>CUETools.Compression.Zip</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,24 +22,30 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\any\Release\</OutputPath>
+    <OutputPath>..\bin\any\Release\plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SeekableZipStream.cs" />
+    <Compile Include="ZipCompressionProvider.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
-      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
-      <Name>CUETools.Processor</Name>
+    <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj">
+      <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
+      <Name>CUETools.Compression</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

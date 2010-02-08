@@ -23,11 +23,11 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using CUETools.Ripper;
 using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
-//using FLACDotNet;
 using MusicBrainz;
 
 namespace CUETools.ConsoleRipper
@@ -87,9 +87,8 @@ namespace CUETools.ConsoleRipper
 
 		static void Main(string[] args)
 		{
-			string programVersion = "CUERipper v1.9.3 Copyright (C) 2008 Gregory S. Chudov";
 			Console.SetOut(Console.Error);
-			Console.WriteLine("{0}", CDDriveReader.RipperVersion());
+			Console.WriteLine("CUERipper v2.0.5 Copyright (C) 2008-10 Gregory S. Chudov");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 
@@ -229,7 +228,7 @@ namespace CUETools.ConsoleRipper
 				audioDest.Close();
 
 				StringWriter logWriter = new StringWriter();
-				logWriter.WriteLine("{0}", programVersion);
+				logWriter.WriteLine("{0}", audioSource.RipperVersion);
 				logWriter.WriteLine("Extraction logfile from {0}", DateTime.Now);
 				logWriter.WriteLine("Used drive  : {0}", audioSource.Path);
 				logWriter.WriteLine("Read offset correction                      : {0}", audioSource.DriveOffset);
@@ -274,7 +273,7 @@ namespace CUETools.ConsoleRipper
 				StringWriter cueWriter = new StringWriter();
 				cueWriter.WriteLine("REM DISCID {0}", CDDBId);
 				cueWriter.WriteLine("REM ACCURATERIPID {0}", ArId);
-				cueWriter.WriteLine("REM COMMENT \"{0}\"", programVersion);
+				cueWriter.WriteLine("REM COMMENT \"{0}\"", audioSource.RipperVersion);
 				if (release != null && release.GetEvents().Count > 0)
 					cueWriter.WriteLine("REM DATE {0}", release.GetEvents()[0].Date.Substring(0,4));
 				if (audioSource.TOC.Catalog != null)

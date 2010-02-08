@@ -13,6 +13,7 @@ using CUETools.AccurateRip;
 using CUETools.CDImage;
 using CUETools.Codecs;
 using CUETools.Processor;
+using CUETools.Ripper;
 using CUETools.Ripper.SCSI;
 using MusicBrainz;
 using Freedb;
@@ -346,7 +347,7 @@ namespace CUERipper
 			General.SetCUELine(r.cueSheet.Attributes, "REM", "GENRE", "", true);
 			General.SetCUELine(r.cueSheet.Attributes, "REM", "DATE", "", false);
 			General.SetCUELine(r.cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
-			General.SetCUELine(r.cueSheet.Attributes, "REM", "COMMENT", _config.createEACLOG ? "ExactAudioCopy v0.99pb4" : CDDriveReader.RipperVersion(), true);
+			General.SetCUELine(r.cueSheet.Attributes, "REM", "COMMENT", _config.createEACLOG ? "ExactAudioCopy v0.99pb4" : audioSource.RipperVersion, true);
 			if (release != null)
 			{
 				r.cueSheet.FillFromMusicBrainz(release);

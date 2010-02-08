@@ -38,6 +38,7 @@ using System.Threading;
 using System.Diagnostics;
 using CUETools.Processor;
 using CUETools.CDImage;
+using CUETools.Compression;
 
 namespace JDP {
 	public partial class frmCUETools : Form {
@@ -356,9 +357,9 @@ namespace JDP {
 				//}
 
 				CUESheet cueSheet = new CUESheet(_profile._config);
-				cueSheet.PasswordRequired += new ArchivePasswordRequiredHandler(PasswordRequired);
-				cueSheet.CUEToolsProgress += new CUEToolsProgressHandler(SetStatus);
-				cueSheet.CUEToolsSelection += new CUEToolsSelectionHandler(MakeSelection);
+				cueSheet.PasswordRequired += new EventHandler<CompressionPasswordRequiredEventArgs>(PasswordRequired);
+				cueSheet.CUEToolsProgress += new EventHandler<CUEToolsProgressEventArgs>(SetStatus);
+				cueSheet.CUEToolsSelection += new EventHandler<CUEToolsSelectionEventArgs>(MakeSelection);
 				cueSheet.WriteOffset = (int)numericWriteOffset.Value;
 
 				object[] p = new object[7];
@@ -399,7 +400,7 @@ namespace JDP {
 			}
 		}
 
-		private void PasswordRequired(object sender, ArchivePasswordRequiredEventArgs e)
+		private void PasswordRequired(object sender, CompressionPasswordRequiredEventArgs e)
 		{
 			this.Invoke((MethodInvoker)delegate()
 			{

@@ -29,6 +29,7 @@ using Bwg.Scsi;
 using Bwg.Logging;
 using CUETools.CDImage;
 using CUETools.Codecs;
+using CUETools.Ripper;
 using System.Threading;
 
 namespace CUETools.Ripper.SCSI
@@ -36,7 +37,7 @@ namespace CUETools.Ripper.SCSI
 	/// <summary>
 	/// 
 	/// </summary>
-	public class CDDriveReader : IAudioSource, IDisposable
+	public class CDDriveReader : ICDRipper
 	{
 		byte[] cdtext = null;
 		private Device m_device;
@@ -1087,10 +1088,13 @@ namespace CUETools.Ripper.SCSI
 			}
 		}		
 
-		public static string RipperVersion()
+		public string RipperVersion
 		{
-			return "CUERipper v1.9.4 Copyright (C) 2008 Gregory S. Chudov";
-			// ripper.GetName().Name + " " + ripper.GetName().Version;
+			get
+			{
+				return "CUERipper v2.0.5 Copyright (C) 2008-10 Gregory S. Chudov";
+				// ripper.GetName().Name + " " + ripper.GetName().Version;
+			}
 		}
 
 		private int fromBCD(byte hex)
@@ -1132,25 +1136,6 @@ namespace CUETools.Ripper.SCSI
 		public SCSIException(string args, Device device, Device.CommandStatus st)
 			: base(args + ": " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(device.GetSenseAsc(), device.GetSenseAscq()) : st.ToString()))
 		{
-		}
-	}
-
-	public sealed class ReadProgressArgs: EventArgs
-	{
-		public int Position;
-		public int Pass;
-		public int PassStart, PassEnd;
-		public int ErrorsCount;
-		public DateTime PassTime;
-
-		public ReadProgressArgs(int position, int pass, int passStart, int passEnd, int errorsCount, DateTime passTime)
-		{
-			Position = position;
-			Pass = pass;
-			PassStart = passStart;
-			PassEnd = passEnd;
-			ErrorsCount = errorsCount;
-			PassTime = passTime;
 		}
 	}
 }

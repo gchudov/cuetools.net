@@ -181,7 +181,31 @@ namespace CUETools.Codecs.FlaCuda
 			set
 			{
 				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				string[] args = value.Split();
+				for (int i = 0; i < args.Length; i++)
+				{
+				    if (args[i] == "--padding-length" && (++i) < args.Length)
+				    {
+						PaddingLength = int.Parse(args[i]);
+						continue;
+				    }
+					if (args[i] == "--verify")
+					{
+						DoVerify = true;
+						continue;
+					}
+					if (args[i] == "--cpu-threads" && (++i) < args.Length)
+				    {
+						CPUThreads = int.Parse(args[i]);
+						continue;
+				    }
+				    if (args[i] == "--gpu-only")
+				    {
+						GPUOnly = true;
+						continue;
+				    }
+					throw new Exception("Unsupported options " + value);
+				}
 			}
 		}
 

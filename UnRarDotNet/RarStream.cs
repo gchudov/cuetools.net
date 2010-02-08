@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Threading;
+using CUETools.Compression;
 
 
 /*  Author:  Gregory S. Chudov
  *  
  */
 
-namespace UnRarDotNet
+namespace CUETools.Compression.Rar
 {
 	public class RarStream : Stream
 	{
@@ -176,8 +177,8 @@ namespace UnRarDotNet
 		{
 			throw new NotSupportedException();
 		}
-		public event PasswordRequiredHandler PasswordRequired;
-		public event ExtractionProgressHandler ExtractionProgress;
+		public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
+		public event EventHandler<CompressionExtractionProgressEventArgs> ExtractionProgress;
 
 		private Unrar _unrar;
 		private string _fileName;

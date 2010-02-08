@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A5A8D8FA-9E32-4010-8AAF-AE580C5AF728}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{D2700165-3E77-4B28-928D-551F5FC11954}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ArCueDotNet</RootNamespace>
-    <AssemblyName>ArCueDotNet</AssemblyName>
+    <RootNamespace>CUETools.Ripper</RootNamespace>
+    <AssemblyName>CUETools.Ripper</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,13 +33,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Ripper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
-      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
-      <Name>CUETools.Processor</Name>
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
+      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
+      <Name>CUETools.CDImage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
+      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
+      <Name>CUETools.Codecs</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

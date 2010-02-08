@@ -2,12 +2,7 @@ using System;
 using System.IO;
 using CUETools.CDImage;
 using CUETools.Codecs;
-using CUETools.Codecs.ALAC;
-using CUETools.Codecs.FLAKE;
-using CUETools.Codecs.FlaCuda;
 using CUETools.Codecs.LossyWAV;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 
 namespace CUETools.Processor
 {
@@ -97,18 +92,19 @@ namespace CUETools.Processor
 			dest.FinalSampleCount = finalSampleCount;
 			switch (encoder.type.FullName)
 			{
+				case "CUETools.Codecs.ALAC.ALACWriter":
+					dest.Options = string.Format("--padding-length {0}", padding);
+					break;
 				case "CUETools.Codecs.FLAKE.FlakeWriter":
-					((FlakeWriter)dest).PaddingLength = padding;
+					dest.Options = string.Format("--padding-length {0}", padding);
 					break;
 				case "CUETools.Codecs.FlaCuda.FlaCudaWriter":
-					((FlaCudaWriter)dest).PaddingLength = padding;
-					((FlaCudaWriter)dest).DoVerify = config.flaCudaVerify;
-					((FlaCudaWriter)dest).GPUOnly = config.flaCudaGPUOnly;
-					((FlaCudaWriter)dest).CPUThreads = config.FlaCudaThreads ? 1 : 0;
+					dest.Options = string.Format("{0}{1}--padding-length {2} --cpu-threads {3}",
+						config.flaCudaVerify ? "--verify " : "",
+						config.flaCudaGPUOnly ? "--gpu-only " : "",
+						padding,
+						config.FlaCudaThreads ? 1 : 0);
 					break;					
-				case "CUETools.Codecs.ALAC.ALACWriter":
-					((ALACWriter)dest).PaddingLength = padding;
-					break;
 				case "CUETools.Codecs.FLAC.FLACWriter":
 					dest.Options = string.Format("{0}{1}--padding-length {2}",
 						config.disableAsm ? "--disable-asm " : "",

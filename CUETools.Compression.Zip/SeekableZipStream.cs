@@ -1,22 +1,11 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using CUETools.Compression;
 using ICSharpCode.SharpZipLib.Zip;
 
-namespace CUETools.Processor
+namespace CUETools.Compression.Zip
 {
-	#region Event Delegate Definitions
-
-	/// <summary>
-	/// Represents the method that will handle extraction progress events
-	/// </summary>
-	public delegate void ZipExtractionProgressHandler(object sender, ZipExtractionProgressEventArgs e);
-	/// <summary>
-	/// Represents the method that will handle password required events
-	/// </summary>
-	public delegate void ZipPasswordRequiredHandler(object sender, ZipPasswordRequiredEventArgs e);
-
-	#endregion
-
 	public class SeekableZipStream : Stream
 	{
 		ZipFile zipFile;
@@ -25,12 +14,10 @@ namespace CUETools.Processor
 		long position;
 		byte[] temp;
 
-		public SeekableZipStream(string path, string fileName)
+		public SeekableZipStream(ZipFile file, ZipEntry entry)
 		{
-			zipFile = new ZipFile(path);
-			zipEntry = zipFile.GetEntry(fileName);
-			if (zipEntry == null)
-				throw new Exception("Archive entry not found.");
+			zipFile = file;
+			zipEntry = entry;
 			zipStream = zipFile.GetInputStream(zipEntry);
 			temp = new byte[65536];
 			position = 0;
@@ -67,9 +54,8 @@ namespace CUETools.Processor
 
 		public override void Close()
 		{
-			zipStream.Close();
 			zipEntry = null;
-			zipFile.Close();
+			zipStream.Close();
 		}
 
 		public override void Flush()
@@ -86,7 +72,7 @@ namespace CUETools.Processor
 		{
 			if (position == 0 && zipEntry.IsCrypted && ((ZipInputStream)zipStream).Password == null && PasswordRequired != null)
 			{
-				ZipPasswordRequiredEventArgs e = new ZipPasswordRequiredEventArgs();
+				CompressionPasswordRequiredEventArgs e = new CompressionPasswordRequiredEventArgs();
 				PasswordRequired(this, e);
 				if (e.ContinueOperation && e.Password.Length > 0)
 					((ZipInputStream)zipStream).Password = e.Password;
@@ -96,7 +82,7 @@ namespace CUETools.Processor
 			position += total;
 			if (ExtractionProgress != null)
 			{
-				ZipExtractionProgressEventArgs e = new ZipExtractionProgressEventArgs();
+				CompressionExtractionProgressEventArgs e = new CompressionExtractionProgressEventArgs();
 				e.BytesExtracted = position;
 				e.FileName = zipEntry.Name;
 				e.FileSize = zipEntry.Size;
@@ -142,26 +128,7 @@ namespace CUETools.Processor
 			throw new NotSupportedException();
 		}
 
-		public event ZipPasswordRequiredHandler PasswordRequired;
-		public event ZipExtractionProgressHandler ExtractionProgress;
+		public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
+		public event EventHandler<CompressionExtractionProgressEventArgs> ExtractionProgress;
 	}
-
-	#region Event Argument Classes
-
-	public class ZipPasswordRequiredEventArgs
-	{
-		public string Password = string.Empty;
-		public bool ContinueOperation = true;
-	}
-
-	public class ZipExtractionProgressEventArgs
-	{
-		public string FileName;
-		public long FileSize;
-		public long BytesExtracted;
-		public double PercentComplete;
-		public bool ContinueOperation = true;
-	}
-
-	#endregion
 }

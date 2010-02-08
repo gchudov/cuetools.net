@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CUEControls")]
+[assembly: AssemblyTitle("CUETools.Compression.Zip")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CUEControls")]
+[assembly: AssemblyProduct("CUETools.Compression.Zip")]
 [assembly: AssemblyCopyright("Copyright © 2008-2010 Gregory S. Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("3c6acc24-0c31-4ad1-8856-218877a987fd")]
+[assembly: Guid("b87d1314-eb07-40b9-91da-2faf262a7b98")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -29,62 +29,10 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\win32\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <CodeAnalysisRuleAssemblies>C:\Program Files (x86)\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>..\bin\win32\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <CodeAnalysisRuleAssemblies>C:\Program Files (x86)\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisRuleAssemblies>C:\Program Files (x86)\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>..\bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisRuleAssemblies>C:\Program Files (x86)\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CSScriptLibrary.v1.1, Version=2.3.2.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\CSScriptLibrary.v1.1.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -102,7 +50,6 @@
     </Compile>
     <Compile Include="Processor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SeekableZipStream.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Tagging.cs" />
     <Compile Include="UserDefined.cs" />
@@ -132,21 +79,17 @@
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CUETools.FlaCuda\CUETools.Codecs.FlaCuda.csproj">
-      <Project>{DFE50673-906C-4B8F-993B-A24CAD1CA17D}</Project>
-      <Name>CUETools.Codecs.FlaCuda</Name>
+    <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj">
+      <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
+      <Name>CUETools.Compression</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
-      <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
-      <Name>CUETools.Ripper.SCSI</Name>
+    <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj">
+      <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
+      <Name>CUETools.Ripper</Name>
     </ProjectReference>
     <ProjectReference Include="..\Freedb\Freedb.csproj">
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\HDCDDotNet\HDCDDotNet.csproj">
-      <Project>{32338A04-5B6B-4C63-8EE7-C6400F73B5D7}</Project>
-      <Name>HDCDDotNet</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj">
       <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
@@ -155,10 +98,6 @@
     <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
       <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
       <Name>MusicBrainz</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UnRarDotNet\UnRarDotNet.csproj">
-      <Project>{8427CAA5-80B8-4952-9A68-5F3DFCFBDF40}</Project>
-      <Name>UnRarDotNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
