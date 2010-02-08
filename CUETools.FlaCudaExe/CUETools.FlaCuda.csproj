@@ -47,7 +47,7 @@
       <Name>CUETools.Codecs</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\CUETools.FlaCuda\CUETools.Codecs.FlaCuda.csproj">
+    <ProjectReference Include="..\CUETools.Codecs.FlaCuda\CUETools.Codecs.FlaCuda.csproj">
       <Project>{DFE50673-906C-4B8F-993B-A24CAD1CA17D}</Project>
       <Name>CUETools.Codecs.FlaCuda</Name>
       <Private>False</Private>

@@ -84,7 +84,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Flake", "..\CUEToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.ALACEnc", "..\CUETools.ALACEnc\CUETools.ALACEnc.csproj", "{8E6E1763-39AE-491D-A10F-44C8844ABA5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.FlaCuda", "..\CUETools.FlaCuda\CUETools.Codecs.FlaCuda.csproj", "{DFE50673-906C-4B8F-993B-A24CAD1CA17D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.FlaCuda", "..\CUETools.Codecs.FlaCuda\CUETools.Codecs.FlaCuda.csproj", "{DFE50673-906C-4B8F-993B-A24CAD1CA17D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.FlaCuda", "..\CUETools.FlaCudaExe\CUETools.FlaCuda.csproj", "{1FCA8834-34E6-47CF-B53F-D8DF49F0819E}"
 EndProject
