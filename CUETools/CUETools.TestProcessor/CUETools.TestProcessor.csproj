@@ -3,12 +3,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{04945FB2-8410-4F14-8262-2ED18DCDACD6}</ProjectGuid>
+    <ProjectGuid>{A430AD28-B76A-4ED0-AF7D-D13B8969297F}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>CUETools.TestCodecs</RootNamespace>
-    <AssemblyName>CUETools.TestCodecs</AssemblyName>
+    <RootNamespace>CUETools.TestProcessor</RootNamespace>
+    <AssemblyName>CUETools.TestProcessor</AssemblyName>
     <WarningLevel>4</WarningLevel>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <FileUpgradeFlags>
@@ -26,22 +26,24 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CSScriptLibrary.v1.1, Version=2.3.2.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\CUETools.Processor\CSScriptLibrary.v1.1.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccurateRipTest.cs" />
-    <Compile Include="ALACWriterTest.cs" />
-    <Compile Include="CodecsTest.cs" />
-    <Compile Include="Crc32Test.cs" />
-    <Compile Include="FlakeWriterTest.cs" />
+    <Compile Include="ProcessorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -53,19 +55,21 @@
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.Codecs.ALAC\CUETools.Codecs.ALAC.csproj">
-      <Project>{F2EC7193-D5E5-4252-9803-5CEB407E910F}</Project>
-      <Name>CUETools.Codecs.ALAC</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
-      <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
-      <Name>CUETools.Codecs.FLAKE</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Processor\CUETools.Processor.csproj">
+      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
+      <Name>CUETools.Processor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Freedb\Freedb.csproj">
+      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
+      <Name>Freedb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MusicBrainz\MusicBrainz.csproj">
+      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
+      <Name>MusicBrainz</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />

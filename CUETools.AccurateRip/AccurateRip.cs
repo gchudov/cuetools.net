@@ -136,19 +136,37 @@ All the other CRC's in this offset range are calculated by consequently adding s
 					}
 
 			uint crc32 = _offsetedCRC32[_currentTrack, 10 * 588 - 1];
+			uint crcwn = _offsetedCRCWN[_currentTrack, 10 * 588 - 1];
+			int crcnulls = _offsetedCRCNulls[_currentTrack, 10 * 588 - 1];
 			fixed (uint* CRCs = &_offsetedCRC[iTrack, 0], t = _crc32.table)
 			{
 				uint baseSum = 0, stepSum = 0;
 				int* s = samples;
 				for (uint mult = 0; mult < count; mult++)
 				{
-					uint sampleValue = (uint)((*(s++) & 0xffff) + (*(s++) << 16));
+					uint lo = (uint)*(s++) & 0xffff;
+					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ lo)];
+					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (lo >> 8))];
+					if (lo != 0)
+					{
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ lo)];
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ (lo >> 8))];
+					}
+					else crcnulls++;
+
+					uint hi = (uint)*(s++) & 0xffff;
+					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ hi)];
+					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (hi >> 8))];
+					if (hi != 0)
+					{
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ hi)];
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ (hi >> 8))];
+					}
+					else crcnulls++;
+
+					uint sampleValue = lo + (hi << 16);
 					stepSum += sampleValue;
 					baseSum += sampleValue * mult;
-					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ sampleValue)];
-					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (sampleValue >> 8))];
-					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (sampleValue >> 16))];
-					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (sampleValue >> 24))];
 				}
 				currentOffset += _arOffsetRange + 1;
 				baseSum += stepSum * (uint)currentOffset;
@@ -159,6 +177,8 @@ All the other CRC's in this offset range are calculated by consequently adding s
 				}
 			}
 			_offsetedCRC32[_currentTrack, 10 * 588 - 1] = crc32;
+			_offsetedCRCWN[_currentTrack, 10 * 588 - 1] = crcwn;
+			_offsetedCRCNulls[_currentTrack, 10 * 588 - 1] = crcnulls;
 		}
 
 		public uint CRC(int iTrack)
@@ -264,7 +284,27 @@ All the other CRC's in this offset range are calculated by consequently adding s
 					for (iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
 					{
 						int trackLength = (int)(iTrack > 0 ? _toc[iTrack + _toc.FirstAudio - 1].Length : _toc[_toc.FirstAudio].Pregap) * 588 * 4;
-						crc = _crc32.Combine(crc, _offsetedCRC32[iTrack, 10 * 588 - 1], trackLength);
+						if (oi < 0 && iTrack == 0)
+							crc = _crc32.Combine(crc, 0, -oi * 4);
+						if (trackLength == 0)
+							continue;
+						if (oi > 0 && (iTrack == 0 || (iTrack == 1 && _toc[_toc.FirstAudio].Pregap == 0)))
+						{
+							// Calculate track CRC skipping first oi samples by 'subtracting' their CRC
+							crc = _crc32.Combine(_offsetedCRC32[iTrack, oi - 1], _offsetedCRC32[iTrack, 10 * 588 - 1], trackLength - oi * 4);
+							// Use 0xffffffff as an initial state
+							crc = _crc32.Combine(0xffffffff, crc, trackLength - oi * 4);
+						}
+						else if (oi < 0 && iTrack == _toc.AudioTracks)
+						{
+							crc = _crc32.Combine(crc, _offsetedCRC32[iTrack, 10 * 588 + oi - 1], trackLength + oi * 4);
+						}
+						else
+						{
+							crc = _crc32.Combine(crc, _offsetedCRC32[iTrack, 10 * 588 - 1], trackLength);
+						}
+						if (oi > 0 && iTrack == _toc.AudioTracks)
+							crc = _crc32.Combine(crc, 0, oi * 4);
 					}
 					iTrack = 0;
 				}
@@ -305,7 +345,69 @@ All the other CRC's in this offset range are calculated by consequently adding s
 
 		public uint CRCWONULL(int iTrack)
 		{
-			return _CRCWONULL[iTrack] ^ 0xffffffff;
+			return CRCWONULL(iTrack, 0); 
+		}
+
+		public uint CRCWONULL(int iTrack, int oi)
+		{
+			if (_offsetedCRCWNRes[iTrack, _arOffsetRange + oi] == 0)
+			{
+				uint crc = 0xffffffff;
+				if (iTrack == 0)
+				{
+					for (iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
+					{
+						int trackLength = (int)(iTrack > 0 ? _toc[iTrack + _toc.FirstAudio - 1].Length : _toc[_toc.FirstAudio].Pregap) * 588 * 4
+							- _offsetedCRCNulls[iTrack, 10 * 588 - 1] * 2;
+						crc = _crc32.Combine(crc, _offsetedCRCWN[iTrack, 10 * 588 - 1], trackLength);
+					}
+					iTrack = 0;
+				}
+				else
+				{
+					int trackLength = (int)(iTrack > 0 ? _toc[iTrack + _toc.FirstAudio - 1].Length : _toc[_toc.FirstAudio].Pregap) * 588 * 4;
+					if (oi > 0)
+					{
+						int nonzeroPrevLength = trackLength - oi * 4 - 
+							(_offsetedCRCNulls[iTrack, 10 * 588 - 1] - _offsetedCRCNulls[iTrack, oi - 1]) * 2;
+						// Calculate track CRC skipping first oi samples by 'subtracting' their CRC
+						crc = _crc32.Combine(
+							_offsetedCRCWN[iTrack, oi - 1], 
+							_offsetedCRCWN[iTrack, 10 * 588 - 1], 
+							nonzeroPrevLength);
+						// Use 0xffffffff as an initial state
+						crc = _crc32.Combine(0xffffffff, crc, nonzeroPrevLength);
+						// Add oi samples from next track CRC
+						if (iTrack < _toc.AudioTracks)
+							crc = _crc32.Combine(crc, 
+								_offsetedCRCWN[iTrack + 1, oi - 1], 
+								oi * 4 - _offsetedCRCNulls[iTrack + 1, oi - 1] * 2);
+					}
+					else if (oi < 0)
+					{
+						int nonzeroPrevLength = -oi * 4 - 
+							(_offsetedCRCNulls[iTrack - 1, 10 * 588 - 1] - _offsetedCRCNulls[iTrack - 1, 10 * 588 + oi - 1]) * 2;
+						// Calculate CRC of previous track's last oi samples by 'subtracting' it's last CRCs
+						crc = _crc32.Combine(
+							_offsetedCRCWN[iTrack - 1, 10 * 588 + oi - 1],
+							_offsetedCRCWN[iTrack - 1, 10 * 588 - 1],
+							nonzeroPrevLength);
+						// Use 0xffffffff as an initial state
+						crc = _crc32.Combine(0xffffffff, crc, nonzeroPrevLength);
+						// Add this track's CRC without last oi samples
+						crc = _crc32.Combine(crc, 
+							_offsetedCRCWN[iTrack, 10 * 588 + oi - 1], 
+							trackLength + oi * 4 - _offsetedCRCNulls[iTrack, 10 * 588 + oi - 1] * 2);
+					}
+					else // oi == 0
+					{
+						// Use 0xffffffff as an initial state
+						crc = _crc32.Combine(0xffffffff, _offsetedCRCWN[iTrack, 10 * 588 - 1], trackLength - _offsetedCRCNulls[iTrack, 10 * 588 - 1] * 2);
+					}
+				}
+				_offsetedCRCWNRes[iTrack, _arOffsetRange + oi] = crc ^ 0xffffffff;
+			}
+			return _offsetedCRCWNRes[iTrack, _arOffsetRange + oi];
 		}
 
 		public uint CRCLOG(int iTrack)
@@ -324,37 +426,11 @@ All the other CRC's in this offset range are calculated by consequently adding s
 			return _offsetedFrame450CRC[iTrack, _arOffsetRange - oi];
 		}
 
-		public unsafe void CalculateCRCs(AudioBuffer buff, int pos, int count)
-		{
-			uint crc2 = _CRCWONULL[0];
-			uint crc3 = _CRCWONULL[_currentTrack];
-
-			fixed (int* pSampleBuff = &buff.Samples[pos, 0])
-			fixed (uint* t = _crc32.table)
-			{
-				for (int i = 0; i < 2 * count; i++)
-				{
-					int s = pSampleBuff[i];
-					if (s != 0)
-					{
-						byte s0 = (byte)s;
-						byte s1 = (byte)(s >> 8);
-						crc2 = (crc2 >> 8) ^ t[((byte)crc2) ^ s0];
-						crc2 = (crc2 >> 8) ^ t[((byte)crc2) ^ s1];
-						crc3 = (crc3 >> 8) ^ t[((byte)crc3) ^ s0];
-						crc3 = (crc3 >> 8) ^ t[((byte)crc3) ^ s1];
-					}
-				}
-			}
-
-			_CRCWONULL[0] = crc2;
-			if (_currentTrack > 0)
-				_CRCWONULL[_currentTrack] = crc3;
-		}
-
 		public unsafe void CalculateCRCs(int* pSampleBuff, int count, int currentOffset)
 		{
 			uint crc = _offsetedCRC32[_currentTrack, 10 * 588 - 1];
+			uint crcwn = _offsetedCRCWN[_currentTrack, 10 * 588 - 1];
+			int crcnulls = _offsetedCRCNulls[_currentTrack, 10 * 588 - 1];
 			fixed (uint* t = _crc32.table)
 			{
 				for (int i = 0; i < count; i++)
@@ -367,22 +443,40 @@ All the other CRC's in this offset range are calculated by consequently adding s
 					s1 = (byte)(s >> 8);
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s0];
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s1];
+					if (s != 0)
+					{
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s0)];
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s1)];
+					}
+					else crcnulls++;
 
 					s = *(pSampleBuff++);
 					s0 = (byte)s;
 					s1 = (byte)(s >> 8);
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s0];
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s1];
+					if (s != 0)
+					{
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s0)];
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s1)];
+					}
+					else crcnulls++;
 
 					_offsetedCRC32[_currentTrack, currentOffset + i] = crc;
+					_offsetedCRCWN[_currentTrack, currentOffset + i] = crcwn;
+					_offsetedCRCNulls[_currentTrack, currentOffset + i] = crcnulls;
 				}
 			}
 			_offsetedCRC32[_currentTrack, 10 * 588 - 1] = crc;
+			_offsetedCRCWN[_currentTrack, 10 * 588 - 1] = crcwn;
+			_offsetedCRCNulls[_currentTrack, 10 * 588 - 1] = crcnulls;
 		}
 
 		public unsafe void CalculateCRCs(int* pSampleBuff, int count)
 		{
 			uint crc = _offsetedCRC32[_currentTrack, 10 * 588 - 1];
+			uint crcwn = _offsetedCRCWN[_currentTrack, 10 * 588 - 1];
+			int crcnulls = _offsetedCRCNulls[_currentTrack, 10 * 588 - 1];
 			fixed (uint* t = _crc32.table)
 			{
 				for (int i = 0; i < count; i++)
@@ -395,15 +489,29 @@ All the other CRC's in this offset range are calculated by consequently adding s
 					s1 = (byte)(s >> 8);
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s0];
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s1];
+					if (s != 0)
+					{
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s0)];
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s1)];
+					}
+					else crcnulls++;
 
 					s = *(pSampleBuff++);
 					s0 = (byte)s;
 					s1 = (byte)(s >> 8);
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s0];
 					crc = (crc >> 8) ^ t[((byte)crc) ^ s1];
+					if (s != 0)
+					{
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s0)];
+						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ s1)];
+					}
+					else crcnulls++;
 				}
 			}
 			_offsetedCRC32[_currentTrack, 10 * 588 - 1] = crc;
+			_offsetedCRCWN[_currentTrack, 10 * 588 - 1] = crcwn;
+			_offsetedCRCNulls[_currentTrack, 10 * 588 - 1] = crcnulls;
 		}
 
 		public void Write(AudioBuffer sampleBuffer)
@@ -419,8 +527,6 @@ All the other CRC's in this offset range are calculated by consequently adding s
 				int currentOffset = (int)_sampleCount - (int)(_currentTrack > 0 ? _toc[_currentTrack + _toc.FirstAudio - 1].Start * 588 : 0);
 				int currentSector = currentOffset / 588;
 				int remaingSectors = (int)(_samplesRemTrack - 1) / 588;
-				
-				CalculateCRCs(sampleBuffer, pos, copyCount);
 				
 				unsafe
 				{
@@ -459,10 +565,10 @@ All the other CRC's in this offset range are calculated by consequently adding s
 			_offsetedCRC = new uint[_toc.AudioTracks, 10 * 588];
 			_offsetedCRC32 = new uint[_toc.AudioTracks + 1, 10 * 588];
 			_offsetedCRC32Res = new uint[_toc.AudioTracks + 1, 10 * 588];
+			_offsetedCRCWN = new uint[_toc.AudioTracks + 1, 10 * 588];
+			_offsetedCRCWNRes = new uint[_toc.AudioTracks + 1, 10 * 588];
+			_offsetedCRCNulls = new int[_toc.AudioTracks + 1, 10 * 588];
 			_offsetedFrame450CRC = new uint[_toc.AudioTracks, 10 * 588];
-			_CRCWONULL = new uint[_toc.AudioTracks + 1];
-			for (int i = 0; i <= _toc.AudioTracks; i++)
-				_CRCWONULL[i] = 0xffffffff;
 			_currentTrack = 0;
 			_sampleCount = _toc[_toc.FirstAudio][0].Start * 588;
 			_samplesRemTrack = _toc[_toc.FirstAudio].Pregap * 588;
@@ -761,8 +867,7 @@ All the other CRC's in this offset range are calculated by consequently adding s
 			{
 				sw.WriteLine("");
 				sw.WriteLine("Track\t[ CRC32  ]\t[W/O NULL]\t{0:10}", _hasLogCRC ? "[  LOG   ]" : "");
-				sw.WriteLine(String.Format(" --\t[{0:X8}]\t[{1:X8}]\t{2:10}", CRC32(0), CRCWONULL(0), CRCLOG(0) == CRC32(0) ? "  CRC32   " : CRCLOG(0) == CRCWONULL(0) ? " W/O NULL " : CRCLOG(0) == 0 ? "" : String.Format("[{0:X8}]", CRCLOG(0))));
-				for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
+				for (int iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
 				{
 					string inLog, extra = "";
 					if (CRCLOG(iTrack) == 0)
@@ -788,16 +893,28 @@ All the other CRC's in this offset range are calculated by consequently adding s
 							}
 						}
 						if (extra == "")
-						{
 							for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 								if (CRCLOG(iTrack) == CRC32(iTrack, oi))
 								{
 									inLog = "  CRC32   ";
 									extra = string.Format(": offset {0}", oi);
+									break;
 								}
-						}
+						if (extra == "")
+							for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+								if (CRCLOG(iTrack) == CRCWONULL(iTrack, oi))
+								{
+									inLog = " W/O NULL ";
+									if (extra == "")
+										extra = string.Format(": offset {0}", oi);
+									else
+									{
+										extra = string.Format(": with offset");
+										break;
+									}
+								}
 					}
-					sw.WriteLine(String.Format(" {0:00}\t[{1:X8}]\t[{2:X8}]\t{3:10}{4}", iTrack, CRC32(iTrack), CRCWONULL(iTrack), inLog, extra));
+					sw.WriteLine(String.Format(" {0}\t[{1:X8}]\t[{2:X8}]\t{3:10}{4}", iTrack == 0 ? "--" : string.Format("{0:00}", iTrack), CRC32(iTrack), CRCWONULL(iTrack), inLog, extra));
 				}
 			}
 		}
@@ -948,10 +1065,13 @@ All the other CRC's in this offset range are calculated by consequently adding s
 		private List<AccDisk> _accDisks;
 		private HttpStatusCode _accResult;
 		private uint[,] _offsetedCRC32;
+		private uint[,] _offsetedCRCWN;
+		private uint[,] _offsetedCRCWNRes;
+		private int[,] _offsetedCRCNulls;
 		private uint[,] _offsetedCRC32Res;
 		private uint[,] _offsetedCRC;
 		private uint[,] _offsetedFrame450CRC;
-		private uint[] _CRCWONULL, _CRCLOG;
+		private uint[] _CRCLOG;
 		private uint[] _backupCRC;
 
 		Crc32 _crc32;

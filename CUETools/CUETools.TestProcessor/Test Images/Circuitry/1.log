@@ -1,0 +1,98 @@
+X Lossless Decoder version 20091114 (113.2)
+
+XLD extraction logfile from 2009-11-14 11:55:20 +0100
+
+Front Line Assembly / Circuitry
+
+Used drive : PIONEER DVD-RW  DVR-107D (revision 1.21)
+
+Use cdparanoia mode     : YES (CDParanoia III 10.2 engine)
+Disable audio cache     : OK for the drive with cache less than 2750KB
+Make use of C2 pointers : NO
+Read offset correction  : 48
+Max retry count         : 100
+
+TOC of the extracted CD
+     Track |   Start  |  Length  | Start sector | End sector 
+    ---------------------------------------------------------
+        1  | 00:00:00 | 08:13:26 |         0    |    37000   
+        2  | 08:13:26 | 07:20:00 |     37001    |    70000   
+        3  | 15:33:26 | 06:37:38 |     70001    |    99813   
+        4  | 22:10:64 | 06:00:05 |     99814    |   126818   
+        5  | 28:10:69 | 07:35:32 |    126819    |   160975   
+
+Track 02
+    Filename : /Volumes/Rips/02 - Circuitry (Predator Mix).flac
+
+    CRC32 hash (test run)  : C5385687
+    CRC32 hash             : C5385687
+    CRC32 hash (skip zero) : F3A4E7D4
+    AccurateRip signature  : FF4A6379
+        ->Track not present in AccurateRip database.
+    Statistics
+        Read error                           : 0
+        Skipped (treated as error)           : 0
+        Edge jitter error (maybe fixed)      : 0
+        Atom jitter error (maybe fixed)      : 0
+        Drift error (maybe fixed)            : 0
+        Dropped bytes error (maybe fixed)    : 0
+        Duplicated bytes error (maybe fixed) : 0
+        Inconsistency in error sectors       : 0
+
+Track 03
+    Filename : /Volumes/Rips/03 - Circuitry (Biosphere Remix).flac
+
+    CRC32 hash (test run)  : 2C3BF4BF
+    CRC32 hash             : 2C3BF4BF
+    CRC32 hash (skip zero) : C6E44ECE
+    AccurateRip signature  : 77C5F53E
+        ->Track not present in AccurateRip database.
+    Statistics
+        Read error                           : 0
+        Skipped (treated as error)           : 0
+        Edge jitter error (maybe fixed)      : 0
+        Atom jitter error (maybe fixed)      : 0
+        Drift error (maybe fixed)            : 0
+        Dropped bytes error (maybe fixed)    : 0
+        Duplicated bytes error (maybe fixed) : 0
+        Inconsistency in error sectors       : 0
+
+Track 04
+    Filename : /Volumes/Rips/04 - Epidemic.flac
+
+    CRC32 hash (test run)  : C0DB0DF0
+    CRC32 hash             : C0DB0DF0
+    CRC32 hash (skip zero) : B7199FE7
+    AccurateRip signature  : 59A983A2
+        ->Track not present in AccurateRip database.
+    Statistics
+        Read error                           : 0
+        Skipped (treated as error)           : 0
+        Edge jitter error (maybe fixed)      : 0
+        Atom jitter error (maybe fixed)      : 0
+        Drift error (maybe fixed)            : 0
+        Dropped bytes error (maybe fixed)    : 0
+        Duplicated bytes error (maybe fixed) : 0
+        Inconsistency in error sectors       : 0
+
+Track 05
+    Filename : /Volumes/Rips/05 - Circuitry (Complexity Remix).flac
+
+    CRC32 hash (test run)  : FCA0EC8C
+    CRC32 hash             : FCA0EC8C
+    CRC32 hash (skip zero) : 6C5446CA
+    AccurateRip signature  : 96CAD6B0
+        ->Track not present in AccurateRip database.
+    Statistics
+        Read error                           : 0
+        Skipped (treated as error)           : 0
+        Edge jitter error (maybe fixed)      : 0
+        Atom jitter error (maybe fixed)      : 0
+        Drift error (maybe fixed)            : 0
+        Dropped bytes error (maybe fixed)    : 0
+        Duplicated bytes error (maybe fixed) : 0
+        Inconsistency in error sectors       : 0
+
+No errors occurred
+
+End of status report

@@ -20,8 +20,6 @@ namespace CUETools.TestCodecs
 
 		private TestContext testContextInstance;
 
-		private int[,] testSamples = new int[,] { { 0, 0 }, { -2, -3 }, { 32767, 32766 }, { -32765, -32764 } };
-
 		/// <summary>
 		///Gets or sets the test context which provides
 		///information about and functionality for the current test run.
@@ -79,23 +77,39 @@ namespace CUETools.TestCodecs
 		public void CalculateCRCsTest()
 		{
 			CDImageLayout toc = new CDImageLayout();
-			toc.AddTrack(new CDTrack(1, 0, 10, true, false));
+			toc.AddTrack(new CDTrack(1, 03, 20, true, false));
+			toc.AddTrack(new CDTrack(2, 23, 20, true, false));
+			toc.AddTrack(new CDTrack(3, 43, 20, true, false));
 			AccurateRipVerify target = new AccurateRipVerify(toc);
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, testSamples, testSamples.GetLength(0));
-			target.CalculateCRCs(buff, 0, testSamples.GetLength(0));
-			Crc32 crc32 = new Crc32();
-			uint crc1 = crc32.ComputeChecksum(0xffffffff, buff.Bytes, 0, buff.ByteLength) ^ 0xffffffff;
-			Assert.AreEqual<uint>(3856971150, crc1, "CRC32 was not set correctly.");
-
-			uint crc2 = crc32.ComputeChecksum(0, buff.Bytes, 0, buff.ByteLength);
-			uint crc3 = crc32.ComputeChecksum(0, buff.Bytes, 0, 7);
-			uint crc4 = crc32.ComputeChecksum(0, buff.Bytes, 7, buff.ByteLength - 7);
-			uint crc5 = crc32.Combine(crc3, crc4, buff.ByteLength - 7);
-			Assert.AreEqual<uint>(crc2, crc5, "CRC32 was not combined correctly.");
-			uint crc6 = crc2 ^ crc32.Combine(crc3, 0, buff.ByteLength - 7);
-			Assert.AreEqual<uint>(crc4, crc6, "CRC32 was not substracted correctly.");
-			Assert.AreEqual<uint>(3856971150, target.CRC32(0), "CRC32 was not set correctly.");
-			Assert.AreEqual<uint>(1921661108, target.CRCWONULL(0), "CRC32WONULL was not set correctly.");
+			for (int sector = 0; sector < toc.AudioLength; sector++)
+			{
+				AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 588);
+				buff.Length = 588;
+				for (int i = 0; i < buff.Length; i++)
+				{
+					buff.Samples[i, 0] = sector * 588 + i;
+					buff.Samples[i, 1] = sector * 588;
+				}
+				target.Write(buff);
+			}
+			Assert.AreEqual<uint>(3762425816, target.CRC(0), "CRC[0] was not set correctly.");
+			Assert.AreEqual<uint>(3103217968, target.CRC(1), "CRC[1] was not set correctly.");
+			Assert.AreEqual<uint>(3206462296, target.CRC(1, 11), "CRC[1][11] was not set correctly.");
+			Assert.AreEqual<uint>(3068174852, target.CRC(2), "CRC[2] was not set correctly.");
+			Assert.AreEqual<uint>(3233779629, target.CRC32(0), "CRC32[0] was not set correctly.");
+			Assert.AreEqual<uint>(3753760724, target.CRC32(0, 13), "CRC32[0][13] was not set correctly.");
+			Assert.AreEqual<uint>(3153592639, target.CRC32(0, -7), "CRC32[0][-7] was not set correctly.");
+			Assert.AreEqual<uint>(0408974480, target.CRC32(1), "CRC32[1] was not set correctly.");
+			Assert.AreEqual<uint>(4123211700, target.CRC32(2), "CRC32[2] was not set correctly.");
+			Assert.AreEqual<uint>(0297562037, target.CRC32(2, 15), "CRC32[2][15] was not set correctly.");
+			Assert.AreEqual<uint>(0398293317, target.CRC32(2, -1), "CRC32[2][-1] was not set correctly.");
+			Assert.AreEqual<uint>(0564210909, target.CRC32(3), "CRC32[3] was not set correctly.");
+			Assert.AreEqual<uint>(2395016718, target.CRCWONULL(0), "CRC32WONULL[0] was not set correctly.");
+			Assert.AreEqual<uint>(0834934371, target.CRCWONULL(1), "CRC32WONULL[1] was not set correctly.");
+			Assert.AreEqual<uint>(4123211700, target.CRCWONULL(2), "CRC32WONULL[2] was not set correctly.");
+			Assert.AreEqual<uint>(0062860870, target.CRCWONULL(2, 19), "CRC32WONULL[2][19] was not set correctly.");
+			Assert.AreEqual<uint>(0950746738, target.CRCWONULL(2, -2), "CRC32WONULL[2][-2] was not set correctly.");
+			Assert.AreEqual<uint>(0564210909, target.CRCWONULL(3), "CRC32WONULL[3] was not set correctly.");
 		}
 
 	}

@@ -44,34 +44,6 @@ namespace CUETools.Codecs
 			return crc;
 		}
 
-		public unsafe uint ComputeChecksumWONULL(uint crc, short* samples, int count)
-		{
-			fixed (uint* t = table)
-				for (int i = 0; i < count; i++)
-				{
-					short s1 = samples[i];
-					if (s1 != 0)
-					{
-						crc = (crc >> 8) ^ t[(crc ^ s1) & 0xff];
-						crc = (crc >> 8) ^ t[(crc ^ (s1 >> 8)) & 0xff];
-					}
-				}
-			return crc;
-		}
-
-		public unsafe uint ComputeChecksumWONULL(uint crc, int* samples, int count)
-		{
-			for (int i = 0; i < count; i++)
-			{
-				int s1 = samples[2 * i], s2 = samples[2 * i + 1];
-				if (s1 != 0)
-					crc = ComputeChecksum(ComputeChecksum(crc, (byte)s1), (byte)(s1 >> 8));
-				if (s2 != 0)
-					crc = ComputeChecksum(ComputeChecksum(crc, (byte)s2), (byte)(s2 >> 8));
-			}
-			return crc;
-		}
-
 		uint Reflect(uint val, int ch)
 		{
 			uint value = 0;
