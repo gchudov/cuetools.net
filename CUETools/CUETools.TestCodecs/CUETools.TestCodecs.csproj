@@ -37,7 +37,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccurateRipTest.cs" />
+    <Compile Include="AccurateRipVerifyTest.cs" />
     <Compile Include="ALACWriterTest.cs" />
     <Compile Include="CodecsTest.cs" />
     <Compile Include="Crc32Test.cs" />
