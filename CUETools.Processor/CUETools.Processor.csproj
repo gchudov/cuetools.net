@@ -67,12 +67,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioReadWrite.cs" />
-    <Compile Include="frmProperties.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmProperties.Designer.cs">
-      <DependentUpon>frmProperties.cs</DependentUpon>
-    </Compile>
     <Compile Include="Processor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
@@ -112,12 +106,6 @@
       <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
       <Name>MusicBrainz</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="frmProperties.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmProperties.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

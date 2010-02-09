@@ -98,5 +98,103 @@ namespace CUETools.Codecs
 				table[i] = Reflect(table[i], 32);
 			}
 		}
+
+		const int GF2_DIM = 32;
+
+		private unsafe uint gf2_matrix_times(uint* mat, uint vec)
+		{
+			return *(mat++) * (vec & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1) ^
+			*(mat++) * ((vec >>= 1) & 1);
+		}
+
+		/* ========================================================================= */
+		private unsafe void gf2_matrix_square(uint *square, uint *mat)
+		{
+			for (int n = 0; n < GF2_DIM; n++)
+				square[n] = gf2_matrix_times(mat, mat[n]);
+		}
+
+
+		public unsafe uint Combine(uint crc1, uint crc2, long len2)
+		{
+			int n;
+			uint row;
+			uint* even = stackalloc uint[GF2_DIM];    /* even-power-of-two zeros operator */
+			uint* odd = stackalloc uint[GF2_DIM];     /* odd-power-of-two zeros operator */
+
+			/* degenerate case */
+			if (len2 == 0)
+				return crc1;
+
+			/* put operator for one zero bit in odd */
+			odd[0] = 0xedb88320;           /* CRC-32 polynomial */
+			row = 1;
+			for (n = 1; n < GF2_DIM; n++) {
+				odd[n] = row;
+				row <<= 1;
+			}
+
+			/* put operator for two zero bits in even */
+			gf2_matrix_square(even, odd);
+
+			/* put operator for four zero bits in odd */
+			gf2_matrix_square(odd, even);
+
+			/* apply len2 zeros to crc1 (first square will put the operator for one
+			   zero byte, eight zero bits, in even) */
+			do {
+				/* apply zeros operator for this bit of len2 */
+				gf2_matrix_square(even, odd);
+				if ((len2 & 1) != 0)
+					crc1 = gf2_matrix_times(even, crc1);
+				len2 >>= 1;
+
+				/* if no more bits set, then done */
+				if (len2 == 0)
+					break;
+
+				/* another iteration of the loop with odd and even swapped */
+				gf2_matrix_square(odd, even);
+				if ((len2 & 1) != 0)
+					crc1 = gf2_matrix_times(odd, crc1);
+				len2 >>= 1;
+
+				/* if no more bits set, then done */
+			} while (len2 != 0);
+
+			/* return combined crc */
+			crc1 ^= crc2;
+			return crc1;
+		}
 	}
 }

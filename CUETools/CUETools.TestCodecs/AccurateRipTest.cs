@@ -86,6 +86,14 @@ namespace CUETools.TestCodecs
 			Crc32 crc32 = new Crc32();
 			uint crc1 = crc32.ComputeChecksum(0xffffffff, buff.Bytes, 0, buff.ByteLength) ^ 0xffffffff;
 			Assert.AreEqual<uint>(3856971150, crc1, "CRC32 was not set correctly.");
+
+			uint crc2 = crc32.ComputeChecksum(0, buff.Bytes, 0, buff.ByteLength);
+			uint crc3 = crc32.ComputeChecksum(0, buff.Bytes, 0, 7);
+			uint crc4 = crc32.ComputeChecksum(0, buff.Bytes, 7, buff.ByteLength - 7);
+			uint crc5 = crc32.Combine(crc3, crc4, buff.ByteLength - 7);
+			Assert.AreEqual<uint>(crc2, crc5, "CRC32 was not combined correctly.");
+			uint crc6 = crc2 ^ crc32.Combine(crc3, 0, buff.ByteLength - 7);
+			Assert.AreEqual<uint>(crc4, crc6, "CRC32 was not substracted correctly.");
 			Assert.AreEqual<uint>(3856971150, target.CRC32(0), "CRC32 was not set correctly.");
 			Assert.AreEqual<uint>(1921661108, target.CRCWONULL(0), "CRC32WONULL was not set correctly.");
 		}
