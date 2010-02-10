@@ -20,7 +20,9 @@ namespace CUETools.TestCodecs
 
 		private TestContext testContextInstance;
 		private CDImageLayout toc;
+		private CDImageLayout toc2;
 		private AccurateRipVerify ar;
+		private AccurateRipVerify ar2;
 
 		/// <summary>
 		///Gets or sets the test context which provides
@@ -66,8 +68,14 @@ namespace CUETools.TestCodecs
 			toc.AddTrack(new CDTrack(3, 99, 37, true, false));
 			toc[1][0].Start = 0;
 			ar = new AccurateRipVerify(toc);
+
+			toc2 = new CDImageLayout();
+			toc2.AddTrack(new CDTrack(1, 0, toc.AudioLength, true, false));
+			toc2.AddTrack(new CDTrack(2, toc.AudioLength, 750, true, false));
+			ar2 = new AccurateRipVerify(toc2);
+
 			Random rnd = new Random(2314);
-			for (int sector = 0; sector < toc.AudioLength; sector++)
+			for (int sector = 0; sector < toc2.AudioLength; sector++)
 			{
 				AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 588);
 				buff.Length = 588;
@@ -76,7 +84,9 @@ namespace CUETools.TestCodecs
 					buff.Samples[i, 0] = rnd.Next(-32768, 32767);
 					buff.Samples[i, 1] = rnd.Next(-32768, 32767);
 				}
-				ar.Write(buff);
+				if (sector < toc.AudioLength)
+					ar.Write(buff);
+				ar2.Write(buff);
 			}
 		}
 		
@@ -100,6 +110,8 @@ namespace CUETools.TestCodecs
 			Assert.AreEqual<uint>(0474131972, ar.CRC32(1), "CRC32[1] was not set correctly.");
 			Assert.AreEqual<uint>(1685633822, ar.CRC32(2), "CRC32[2] was not set correctly.");
 			Assert.AreEqual<uint>(2747309238, ar.CRC32(3), "CRC32[3] was not set correctly.");
+
+			Assert.AreEqual<uint>(2884775698, ar2.CRC32(1), "CRC32[1](2) was not set correctly.");
 		}
 
 		/// <summary>
@@ -116,6 +128,8 @@ namespace CUETools.TestCodecs
 			Assert.AreEqual<uint>(4050516109, ar.CRC32(2, -1), "CRC32[2][-1] was not set correctly.");
 			Assert.AreEqual<uint>(1860362251, ar.CRC32(3, 15), "CRC32[3][15] was not set correctly.");
 			Assert.AreEqual<uint>(0761448415, ar.CRC32(3, -1), "CRC32[3][-1] was not set correctly.");
+
+			Assert.AreEqual<uint>(1987827634, ar2.CRC32(1, -7), "CRC32[1,13](2) was not set correctly.");
 		}
 
 		/// <summary>
@@ -163,6 +177,18 @@ namespace CUETools.TestCodecs
 			Assert.AreEqual<uint>(0474131972, ar.CRCWONULL(1), "CRC32WONULL[1] was not set correctly.");
 			Assert.AreEqual<uint>(1405611463, ar.CRCWONULL(2), "CRC32WONULL[2] was not set correctly.");
 			Assert.AreEqual<uint>(2747309238, ar.CRCWONULL(3), "CRC32WONULL[3] was not set correctly.");
+			Assert.AreEqual<uint>(0509527097, ar2.CRCWONULL(1), "CRC32WONULL[1](2) was not set correctly.");
+		}
+
+		/// <summary>
+		///A test for CRC450
+		///</summary>
+		[TestMethod()]
+		public void CRC450Test()
+		{
+			Assert.AreEqual<uint>(1480802016, ar2.CRC450(1, 00), "CRC450[1,00] was not set correctly.");
+			Assert.AreEqual<uint>(2012115554, ar2.CRC450(1, 55), "CRC450[1,55] was not set correctly.");
+			Assert.AreEqual<uint>(1483829604, ar2.CRC450(1, -3), "CRC450[1,-3] was not set correctly.");
 		}
 	}
 
