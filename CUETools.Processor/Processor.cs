@@ -2757,7 +2757,7 @@ string status = processor.Go();
 			CheckStop();
 			if (this.CUEToolsProgress == null)
 				return;
-			_progress.percentDisk = 1.0;
+			_progress.percentDisk = 0;
 			_progress.percentTrck = e.percent;
 			_progress.offset = 0;
 			_progress.status = e.uri;

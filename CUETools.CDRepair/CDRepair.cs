@@ -437,6 +437,7 @@ namespace CUETools.CDRepair
 				ushort* par2 = (ushort*)par2ptr;
 				int* _sigma = stackalloc int[npar];
 				int* _errpos = stackalloc int[npar];
+				int* syn = stackalloc int[npar];
 				bool foundOffset = false;
 
 				for (int allowed_errors = 0; allowed_errors < npar / 2 && !foundOffset; allowed_errors++)
@@ -452,7 +453,6 @@ namespace CUETools.CDRepair
 					{
 						int err = 0;
 						int part = (part2 + stride - offset * 2) % stride;
-						int* syn = stackalloc int[npar];
 
 						for (int i = 0; i < npar; i++)
 						{
