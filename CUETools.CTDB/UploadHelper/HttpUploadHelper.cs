@@ -15,10 +15,12 @@ namespace Krystalware.UploadHelper
 {
     public class HttpUploadHelper
     {
-        private HttpUploadHelper()
+		public EventHandler<UploadProgressEventArgs> onProgress;
+
+        public HttpUploadHelper()
         { }
 
-        public static string Upload(string url, UploadFile[] files, NameValueCollection form)
+        public string Upload(string url, UploadFile[] files, NameValueCollection form)
         {
             HttpWebResponse resp = Upload((HttpWebRequest)WebRequest.Create(url), files, form);
 
@@ -29,7 +31,7 @@ namespace Krystalware.UploadHelper
             }
         }
 
-        public static HttpWebResponse Upload(HttpWebRequest req, UploadFile[] files, NameValueCollection form)
+        public HttpWebResponse Upload(HttpWebRequest req, UploadFile[] files, NameValueCollection form)
         {
             List<MimePart> mimeParts = new List<MimePart>();
 
@@ -84,16 +86,25 @@ namespace Krystalware.UploadHelper
 
                 using (Stream s = req.GetRequestStream())
                 {
+					long pos = 0;
                     foreach (MimePart part in mimeParts)
                     {
                         s.Write(part.Header, 0, part.Header.Length);
+						pos += part.Header.Length;
 
-                        while ((read = part.Data.Read(buffer, 0, buffer.Length)) > 0)
-                            s.Write(buffer, 0, read);
+						while ((read = part.Data.Read(buffer, 0, buffer.Length)) > 0)
+						{
+							if (onProgress != null) 
+								onProgress(part, 
+									new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos)/contentLength));
+							s.Write(buffer, 0, read);
+							pos += read;
+						}
 
                         part.Data.Dispose();
 
                         s.Write(afterFile, 0, afterFile.Length);
+						pos += afterFile.Length;
                     }
 
                     s.Write(_footer, 0, _footer.Length);
@@ -111,4 +122,16 @@ namespace Krystalware.UploadHelper
             }
         }
     }
+
+	public class UploadProgressEventArgs: EventArgs
+	{
+		public string uri;
+		public double percent;
+
+		public UploadProgressEventArgs(string uri, double percent)
+		{
+			this.uri = uri;
+			this.percent = percent;
+		}
+	}
 }

@@ -126,25 +126,10 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>404, 21</value>
+    <value>381, 21</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
-  </data>
-  <data name="toolStripStatusLabelAR.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8.25pt</value>
-  </data>
-  <data name="toolStripStatusLabelAR.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
-    <value>White</value>
-  </data>
-  <data name="toolStripStatusLabelAR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 21</value>
-  </data>
-  <data name="toolStripStatusLabelAR.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
-    <value>Overlay</value>
-  </data>
-  <data name="toolStripStatusLabelAR.ToolTipText" xml:space="preserve">
-    <value>Album found in AccurateRip database.</value>
   </data>
   <data name="toolStripStatusLabelProcessed.Size" type="System.Drawing.Size, System.Drawing">
     <value>32, 21</value>
@@ -155,6 +140,33 @@
   <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="toolStripStatusLabelProcessed.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
+  </data>
+  <data name="toolStripStatusLabelCTDB.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9pt</value>
+  </data>
+  <data name="toolStripStatusLabelCTDB.Size" type="System.Drawing.Size, System.Drawing">
+    <value>39, 21</value>
+  </data>
+  <data name="toolStripStatusLabelCTDB.Text" xml:space="preserve">
+    <value>77</value>
+  </data>
+  <data name="toolStripStatusLabelCTDB.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="toolStripStatusLabelAR.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9pt</value>
+  </data>
+  <data name="toolStripStatusLabelAR.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>White</value>
+  </data>
+  <data name="toolStripStatusLabelAR.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 21</value>
+  </data>
+  <data name="toolStripStatusLabelAR.Text" xml:space="preserve">
+    <value>55</value>
+  </data>
+  <data name="toolStripStatusLabelAR.ToolTipText" xml:space="preserve">
+    <value>Album found in AccurateRip database.</value>
   </data>
   <data name="toolStripProgressBar1.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 20</value>
@@ -265,7 +277,7 @@
     <value>fileSystemTreeView1</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=1.0.3510.22143, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.0.5.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
     <value>grpInput</value>
@@ -319,13 +331,13 @@
     <value>NoControl</value>
   </data>
   <data name="checkBoxUseAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>95, 80</value>
+    <value>95, 84</value>
   </data>
   <data name="checkBoxUseAccurateRip.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="checkBoxUseAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>49, 30</value>
+    <value>49, 26</value>
   </data>
   <data name="checkBoxUseAccurateRip.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -358,13 +370,13 @@
     <value>NoControl</value>
   </data>
   <data name="checkBoxUseFreeDb.Location" type="System.Drawing.Point, System.Drawing">
-    <value>47, 80</value>
+    <value>47, 84</value>
   </data>
   <data name="checkBoxUseFreeDb.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="checkBoxUseFreeDb.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 30</value>
+    <value>48, 26</value>
   </data>
   <data name="checkBoxUseFreeDb.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -394,13 +406,13 @@
     <value>NoControl</value>
   </data>
   <data name="rbTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 36</value>
+    <value>3, 40</value>
   </data>
   <data name="rbTracks.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 0, 3, 0</value>
   </data>
   <data name="rbTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 18</value>
+    <value>138, 20</value>
   </data>
   <data name="rbTracks.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -439,7 +451,7 @@
     <value>3, 0, 3, 0</value>
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 18</value>
+    <value>138, 20</value>
   </data>
   <data name="rbEmbedCUE.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -472,13 +484,13 @@
     <value>NoControl</value>
   </data>
   <data name="rbSingleFile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 18</value>
+    <value>3, 20</value>
   </data>
   <data name="rbSingleFile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 0, 3, 0</value>
   </data>
   <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 18</value>
+    <value>138, 20</value>
   </data>
   <data name="rbSingleFile.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -507,14 +519,17 @@
   <data name="checkBoxUseMusicBrainz.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
+  <data name="checkBoxUseMusicBrainz.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="checkBoxUseMusicBrainz.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 80</value>
+    <value>0, 84</value>
   </data>
   <data name="checkBoxUseMusicBrainz.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="checkBoxUseMusicBrainz.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 30</value>
+    <value>47, 26</value>
   </data>
   <data name="checkBoxUseMusicBrainz.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -565,7 +580,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanelCUEStyle.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxUseAccurateRip" Row="4" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxUseFreeDb" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="rbTracks" Row="2" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbEmbedCUE" Row="0" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbSingleFile" Row="1" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="checkBoxUseMusicBrainz" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33,33333,Percent,33,33334,Percent,33,33334" /&gt;&lt;Rows Styles="Percent,16,41941,Percent,16,41942,Percent,16,42196,Percent,24,54545,Percent,26,36364" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxUseAccurateRip" Row="4" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxUseFreeDb" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="rbTracks" Row="2" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbEmbedCUE" Row="0" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbSingleFile" Row="1" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="checkBoxUseMusicBrainz" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33,33332,Percent,33,33334,Percent,33,33334" /&gt;&lt;Rows Styles="Percent,18,18229,Percent,18,18229,Percent,18,18229,Percent,22,72658,Percent,22,72658" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <metadata name="toolStripCorrectorFormat.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>3, 17</value>
@@ -644,6 +659,69 @@
   </data>
   <data name="&gt;&gt;toolStripCorrectorFormat.ZOrder" xml:space="preserve">
     <value>1</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.ColumnCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 3</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.Size" type="System.Drawing.Size, System.Drawing">
+    <value>45, 29</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Name" xml:space="preserve">
+    <value>checkBoxVerifyUseCDRepair</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Parent" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 17</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.RowCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>144, 110</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.ToolTip" xml:space="preserve">
+    <value>Use CUETools database</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Name" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Parent" xml:space="preserve">
+    <value>groupBoxMode</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxVerifyUseCDRepair" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,36,11111,Percent,63,88889" /&gt;&lt;Rows Styles="Percent,32,72727,Percent,67,27273" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="groupBoxMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -2729,7 +2807,7 @@
     <value>700, 538</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUETools 2.0.4a</value>
+    <value>CUETools 2.0.5</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>
@@ -2737,16 +2815,22 @@
   <data name="&gt;&gt;toolStripStatusLabel1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripStatusLabelAR.Name" xml:space="preserve">
-    <value>toolStripStatusLabelAR</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabelAR.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;toolStripStatusLabelProcessed.Name" xml:space="preserve">
     <value>toolStripStatusLabelProcessed</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabelProcessed.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelCTDB.Name" xml:space="preserve">
+    <value>toolStripStatusLabelCTDB</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelCTDB.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelAR.Name" xml:space="preserve">
+    <value>toolStripStatusLabelAR</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelAR.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripProgressBar1.Name" xml:space="preserve">

@@ -1,27 +1,28 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</ProjectGuid>
+    <ProjectGuid>{5C8B61C0-BC3D-4316-B8A7-419D55BB5796}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUETools.CTDB</RootNamespace>
-    <AssemblyName>CUETools.CTDB</AssemblyName>
+    <RootNamespace>TestRipper</RootNamespace>
+    <AssemblyName>TestRipper</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,35 +33,48 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Management" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CUEToolsDB.cs" />
+    <Compile Include="CDDriveReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UploadHelper\HttpUploadHelper.cs" />
-    <Compile Include="UploadHelper\MimePart.cs" />
-    <Compile Include="UploadHelper\StreamMimePart.cs" />
-    <Compile Include="UploadHelper\StringMimePart.cs" />
-    <Compile Include="UploadHelper\UploadFile.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
+    <ProjectReference Include="..\..\Bwg.Logging\Bwg.Logging.csproj">
+      <Project>{F2DFEB00-BB35-4665-85EA-CB8C7729A6B7}</Project>
+      <Name>Bwg.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Bwg.Scsi\Bwg.Scsi.csproj">
+      <Project>{A05B6AA6-0EC3-495D-BCC4-ECE1210071A8}</Project>
+      <Name>Bwg.Scsi</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CUETools.CDRepair\CUETools.CDRepair.csproj">
-      <Project>{C4869B37-EBB1-47BB-9406-B1209BEAB84B}</Project>
-      <Name>CUETools.CDRepair</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
+    <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
+      <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
+      <Name>CUETools.Ripper.SCSI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj">
+      <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
+      <Name>CUETools.Ripper</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Test References\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

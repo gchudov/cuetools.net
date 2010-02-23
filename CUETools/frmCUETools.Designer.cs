@@ -28,8 +28,9 @@ namespace JDP {
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabelAR = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabelProcessed = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusLabelCTDB = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusLabelAR = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -51,6 +52,8 @@ namespace JDP {
 			this.toolStripMenuItemCorrectorModeLocateFiles = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemCorrectorModeChangeExtension = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripDropDownButtonCorrectorFormat = new System.Windows.Forms.ToolStripDropDownButton();
+			this.tableLayoutPanelVerifyMode = new System.Windows.Forms.TableLayoutPanel();
+			this.checkBoxVerifyUseCDRepair = new System.Windows.Forms.CheckBox();
 			this.grpAudioOutput = new System.Windows.Forms.GroupBox();
 			this.labelEncoderMaxMode = new System.Windows.Forms.Label();
 			this.labelEncoderMinMode = new System.Windows.Forms.Label();
@@ -130,6 +133,7 @@ namespace JDP {
 			this.groupBoxMode.SuspendLayout();
 			this.tableLayoutPanelCUEStyle.SuspendLayout();
 			this.toolStripCorrectorFormat.SuspendLayout();
+			this.tableLayoutPanelVerifyMode.SuspendLayout();
 			this.grpAudioOutput.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxMotd)).BeginInit();
@@ -177,8 +181,9 @@ namespace JDP {
 			resources.ApplyResources(this.statusStrip1, "statusStrip1");
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
-            this.toolStripStatusLabelAR,
             this.toolStripStatusLabelProcessed,
+            this.toolStripStatusLabelCTDB,
+            this.toolStripStatusLabelAR,
             this.toolStripProgressBar1,
             this.toolStripProgressBar2});
 			this.statusStrip1.Name = "statusStrip1";
@@ -190,13 +195,6 @@ namespace JDP {
 			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
 			this.toolStripStatusLabel1.Spring = true;
 			// 
-			// toolStripStatusLabelAR
-			// 
-			resources.ApplyResources(this.toolStripStatusLabelAR, "toolStripStatusLabelAR");
-			this.toolStripStatusLabelAR.Image = global::JDP.Properties.Resources.AR;
-			this.toolStripStatusLabelAR.Name = "toolStripStatusLabelAR";
-			this.toolStripStatusLabelAR.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
-			// 
 			// toolStripStatusLabelProcessed
 			// 
 			this.toolStripStatusLabelProcessed.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
@@ -205,6 +203,27 @@ namespace JDP {
 			this.toolStripStatusLabelProcessed.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
 			this.toolStripStatusLabelProcessed.Name = "toolStripStatusLabelProcessed";
 			resources.ApplyResources(this.toolStripStatusLabelProcessed, "toolStripStatusLabelProcessed");
+			// 
+			// toolStripStatusLabelCTDB
+			// 
+			this.toolStripStatusLabelCTDB.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+			this.toolStripStatusLabelCTDB.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
+			resources.ApplyResources(this.toolStripStatusLabelCTDB, "toolStripStatusLabelCTDB");
+			this.toolStripStatusLabelCTDB.Image = global::JDP.Properties.Resources.cdrepair1;
+			this.toolStripStatusLabelCTDB.Name = "toolStripStatusLabelCTDB";
+			// 
+			// toolStripStatusLabelAR
+			// 
+			this.toolStripStatusLabelAR.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+			this.toolStripStatusLabelAR.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
+			resources.ApplyResources(this.toolStripStatusLabelAR, "toolStripStatusLabelAR");
+			this.toolStripStatusLabelAR.Image = global::JDP.Properties.Resources.AR;
+			this.toolStripStatusLabelAR.Name = "toolStripStatusLabelAR";
+			this.toolStripStatusLabelAR.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
 			// 
 			// toolStripProgressBar1
 			// 
@@ -287,6 +306,7 @@ namespace JDP {
 			// 
 			this.groupBoxMode.Controls.Add(this.tableLayoutPanelCUEStyle);
 			this.groupBoxMode.Controls.Add(this.toolStripCorrectorFormat);
+			this.groupBoxMode.Controls.Add(this.tableLayoutPanelVerifyMode);
 			resources.ApplyResources(this.groupBoxMode, "groupBoxMode");
 			this.groupBoxMode.Name = "groupBoxMode";
 			this.groupBoxMode.TabStop = false;
@@ -408,6 +428,20 @@ namespace JDP {
 			resources.ApplyResources(this.toolStripDropDownButtonCorrectorFormat, "toolStripDropDownButtonCorrectorFormat");
 			this.toolStripDropDownButtonCorrectorFormat.Name = "toolStripDropDownButtonCorrectorFormat";
 			this.toolStripDropDownButtonCorrectorFormat.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolStripDropDownButtonCorrectorFormat_DropDownItemClicked);
+			// 
+			// tableLayoutPanelVerifyMode
+			// 
+			resources.ApplyResources(this.tableLayoutPanelVerifyMode, "tableLayoutPanelVerifyMode");
+			this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxVerifyUseCDRepair, 0, 0);
+			this.tableLayoutPanelVerifyMode.Name = "tableLayoutPanelVerifyMode";
+			this.toolTip1.SetToolTip(this.tableLayoutPanelVerifyMode, resources.GetString("tableLayoutPanelVerifyMode.ToolTip"));
+			// 
+			// checkBoxVerifyUseCDRepair
+			// 
+			resources.ApplyResources(this.checkBoxVerifyUseCDRepair, "checkBoxVerifyUseCDRepair");
+			this.checkBoxVerifyUseCDRepair.Image = global::JDP.Properties.Resources.cdrepair1;
+			this.checkBoxVerifyUseCDRepair.Name = "checkBoxVerifyUseCDRepair";
+			this.checkBoxVerifyUseCDRepair.UseVisualStyleBackColor = true;
 			// 
 			// grpAudioOutput
 			// 
@@ -997,6 +1031,8 @@ namespace JDP {
 			this.tableLayoutPanelCUEStyle.PerformLayout();
 			this.toolStripCorrectorFormat.ResumeLayout(false);
 			this.toolStripCorrectorFormat.PerformLayout();
+			this.tableLayoutPanelVerifyMode.ResumeLayout(false);
+			this.tableLayoutPanelVerifyMode.PerformLayout();
 			this.grpAudioOutput.ResumeLayout(false);
 			this.grpAudioOutput.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).EndInit();
@@ -1118,6 +1154,9 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox checkBoxUseMusicBrainz;
 		private System.Windows.Forms.CheckBox checkBoxUseAccurateRip;
 		private System.Windows.Forms.CheckBox checkBoxUseFreeDb;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelVerifyMode;
+		private System.Windows.Forms.CheckBox checkBoxVerifyUseCDRepair;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelCTDB;
 	}
 }
 

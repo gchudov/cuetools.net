@@ -126,7 +126,7 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnCancel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>273, 290</value>
+    <value>268, 320</value>
   </data>
   <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
     <value>73, 23</value>
@@ -150,6 +150,66 @@
   <data name="&gt;&gt;btnCancel.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="checkBoxUseSystemProxy.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxUseSystemProxy.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 157</value>
+  </data>
+  <data name="checkBoxUseSystemProxy.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 17</value>
+  </data>
+  <data name="checkBoxUseSystemProxy.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="checkBoxUseSystemProxy.Text" xml:space="preserve">
+    <value>Use system proxy settings</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseSystemProxy.Name" xml:space="preserve">
+    <value>checkBoxUseSystemProxy</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseSystemProxy.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseSystemProxy.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseSystemProxy.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 140</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.Size" type="System.Drawing.Size, System.Drawing">
+    <value>168, 17</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
+    <value>Separate thread for decoding</value>
+  </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="checkBoxSeparateDecodingThread.ToolTip" xml:space="preserve">
+    <value>Improves speed on multicore processors</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSeparateDecodingThread.Name" xml:space="preserve">
+    <value>checkBoxSeparateDecodingThread</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSeparateDecodingThread.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSeparateDecodingThread.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSeparateDecodingThread.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <data name="checkBoxCheckForUpdates.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -168,9 +228,6 @@
   <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
     <value>Check for updates</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="checkBoxCheckForUpdates.ToolTip" xml:space="preserve">
     <value>Check for updates</value>
   </data>
@@ -184,7 +241,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;checkBoxCheckForUpdates.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>2</value>
   </data>
   <data name="chkAllowMultipleInstances.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -217,7 +274,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkAllowMultipleInstances.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="chkReducePriority.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -250,7 +307,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkReducePriority.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="chkTruncateExtra4206Samples.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -283,7 +340,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkTruncateExtra4206Samples.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -316,7 +373,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="chkCreateM3U.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -349,7 +406,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkCreateM3U.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="chkAutoCorrectFilenames.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -382,13 +439,13 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkAutoCorrectFilenames.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>8</value>
   </data>
   <data name="grpGeneral.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 6</value>
   </data>
   <data name="grpGeneral.Size" type="System.Drawing.Size, System.Drawing">
-    <value>252, 144</value>
+    <value>252, 182</value>
   </data>
   <data name="grpGeneral.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -466,7 +523,7 @@
     <value>NoControl</value>
   </data>
   <data name="btnOK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>194, 290</value>
+    <value>189, 320</value>
   </data>
   <data name="btnOK.Size" type="System.Drawing.Size, System.Drawing">
     <value>73, 23</value>
@@ -1612,10 +1669,10 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="groupBoxGaps.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 156</value>
+    <value>6, 193</value>
   </data>
   <data name="groupBoxGaps.Size" type="System.Drawing.Size, System.Drawing">
-    <value>250, 99</value>
+    <value>250, 98</value>
   </data>
   <data name="groupBoxGaps.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
@@ -1642,7 +1699,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1891,7 +1948,7 @@
     <value>242, 3</value>
   </data>
   <data name="groupBoxAlbumArt.Size" type="System.Drawing.Size, System.Drawing">
-    <value>284, 255</value>
+    <value>284, 275</value>
   </data>
   <data name="groupBoxAlbumArt.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -2095,7 +2152,7 @@
     <value>8, 3</value>
   </data>
   <data name="groupBoxTagging.Size" type="System.Drawing.Size, System.Drawing">
-    <value>226, 255</value>
+    <value>226, 275</value>
   </data>
   <data name="groupBoxTagging.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -2116,7 +2173,7 @@
     <value>4, 22</value>
   </data>
   <data name="tabPage6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage6.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -2506,7 +2563,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -2854,7 +2911,7 @@
     <value>136, 6</value>
   </data>
   <data name="groupBoxFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>390, 249</value>
+    <value>390, 269</value>
   </data>
   <data name="groupBoxFormat.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
@@ -2881,7 +2938,7 @@
     <value>6, 6</value>
   </data>
   <data name="listViewFormats.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 249</value>
+    <value>124, 269</value>
   </data>
   <data name="listViewFormats.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -2905,7 +2962,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -3213,7 +3270,7 @@
     <value>NoControl</value>
   </data>
   <data name="buttonEncoderDelete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>37, 232</value>
+    <value>37, 262</value>
   </data>
   <data name="buttonEncoderDelete.Size" type="System.Drawing.Size, System.Drawing">
     <value>25, 23</value>
@@ -3251,7 +3308,7 @@
 </value>
   </data>
   <data name="buttonEncoderAdd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 232</value>
+    <value>6, 262</value>
   </data>
   <data name="buttonEncoderAdd.Size" type="System.Drawing.Size, System.Drawing">
     <value>25, 23</value>
@@ -3275,7 +3332,7 @@
     <value>6, 7</value>
   </data>
   <data name="listBoxEncoders.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 221</value>
+    <value>124, 247</value>
   </data>
   <data name="listBoxEncoders.TabIndex" type="System.Int32, mscorlib">
     <value>27</value>
@@ -3554,7 +3611,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage10.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -3734,7 +3791,7 @@
     <value>3, 6</value>
   </data>
   <data name="listViewDecoders.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 249</value>
+    <value>124, 279</value>
   </data>
   <data name="listViewDecoders.TabIndex" type="System.Int32, mscorlib">
     <value>26</value>
@@ -3794,7 +3851,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage11.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -3953,7 +4010,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage4.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -3980,7 +4037,7 @@
     <value>144, 110</value>
   </data>
   <data name="richTextBoxScript.Size" type="System.Drawing.Size, System.Drawing">
-    <value>382, 145</value>
+    <value>382, 167</value>
   </data>
   <data name="richTextBoxScript.TabIndex" type="System.Int32, mscorlib">
     <value>28</value>
@@ -4094,7 +4151,7 @@
     <value>6, 6</value>
   </data>
   <data name="listViewScripts.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 249</value>
+    <value>124, 271</value>
   </data>
   <data name="listViewScripts.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -4115,7 +4172,7 @@
     <value>4, 22</value>
   </data>
   <data name="tabPage5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 261</value>
+    <value>535, 291</value>
   </data>
   <data name="tabPage5.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -4142,7 +4199,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>543, 287</value>
+    <value>543, 317</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -4241,7 +4298,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>542, 325</value>
+    <value>542, 355</value>
   </data>
   <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
     <value>Tahoma, 8.25pt</value>

@@ -46,7 +46,6 @@ namespace CUETools.Ripper.SCSI
 		int _correctionQuality = 1;
 		int _currentStart = -1, _currentEnd = -1, _currentErrorsCount = 0;
 		const int CB_AUDIO = 4 * 588 + 2 + 294 + 16;
-		const int MAXSCANS = 20;
 		const int NSECTORS = 16;
 		//const int MSECTORS = 5*1024*1024 / (4 * 588);
 		const int MSECTORS = 2400;
@@ -58,11 +57,10 @@ namespace CUETools.Ripper.SCSI
 		int m_max_sectors;
 		int _timeout = 10;
 		Crc16Ccitt _crc;
-		int _currentScan;
-		public byte[,,] UserData;
-		public byte[,,] C2Data;
-		public byte[,,] QData;
-		public long[] Quality;
+		public long[,] UserData;
+		public long[,] C2Data;
+		public byte[,] QData;
+		public long[] byte2long;
 		BitArray _errors;
 		int _errorsCount;
 		int _crcErrorsCount = 0;
@@ -185,10 +183,17 @@ namespace CUETools.Ripper.SCSI
 		{
 			m_logger = new Logger();
 			_crc = new Crc16Ccitt(InitialCrcValue.Zeros);
-			UserData = new byte[MAXSCANS, MSECTORS, 4 * 588];
-			C2Data = new byte[MAXSCANS, MSECTORS, 294];
-			QData = new byte[MAXSCANS, MSECTORS, 16];
-			Quality = new long[MAXSCANS];
+			UserData = new long[MSECTORS, 4 * 588];
+			C2Data = new long[MSECTORS, 588 / 2];
+			QData = new byte[MSECTORS, 16];
+			byte2long = new long[256];
+			for (long i = 0; i < 256; i++)
+			{
+				long bl = 0;
+				for (int b = 0; b < 8; b++)
+					bl += ((i >> b) & 1) << (b << 3);
+				byte2long[i] = bl;
+			}
 		}
 
 		public bool Open(char Drive)
@@ -303,13 +308,13 @@ namespace CUETools.Ripper.SCSI
 			for (int iSector = 0; iSector < Sectors2Read; iSector++)
 			{
 				int q_pos = (sector - _currentStart + iSector);
-				int ctl = QData[_currentScan, q_pos, 0] >> 4;
-				int adr = QData[_currentScan, q_pos,  0] & 7;
+				int ctl = QData[q_pos, 0] >> 4;
+				int adr = QData[q_pos,  0] & 7;
 				bool preemph = (ctl & 1) == 1;
 				bool dcp = (ctl & 2) == 2;
 
 				for (int i = 0; i < 10; i++)
-					_subchannelBuffer[i] = QData[_currentScan, q_pos, i];
+					_subchannelBuffer[i] = QData[ q_pos, i];
 				if (!_qChannelInBCD && adr == 1)
 				{
 					_subchannelBuffer[3] = toBCD(_subchannelBuffer[3]);
@@ -321,8 +326,8 @@ namespace CUETools.Ripper.SCSI
 				}
 				ushort crc = _crc.ComputeChecksum(_subchannelBuffer, 0, 10);
 				crc ^= 0xffff;
-				if ((QData[_currentScan, q_pos, 10] != 0 || QData[_currentScan, q_pos, 11] != 0) &&
-					((byte)(crc & 0xff) != QData[_currentScan, q_pos, 11] || (byte)(crc >> 8) != QData[_currentScan, q_pos, 10])
+				if ((QData[q_pos, 10] != 0 || QData[q_pos, 11] != 0) &&
+					((byte)(crc & 0xff) != QData[q_pos, 11] || (byte)(crc >> 8) != QData[q_pos, 10])
 					)
 				{
 					if (!updateMap)
@@ -332,7 +337,7 @@ namespace CUETools.Ripper.SCSI
 					{
 						StringBuilder st = new StringBuilder();
 						for (int i = 0; i < 12; i++)
-							st.AppendFormat(",0x{0:X2}", QData[_currentScan, q_pos, i]);
+							st.AppendFormat(",0x{0:X2}", QData[q_pos, i]);
 						System.Console.WriteLine("\rCRC error@{0}{1};", CDImageLayout.TimeToString((uint)(sector + iSector)), st.ToString());
 					}
 					continue;
@@ -341,11 +346,11 @@ namespace CUETools.Ripper.SCSI
 				{
 					case 1: // current position
 						{
-							int iTrack = fromBCD(QData[_currentScan, q_pos, 1]);
-							int iIndex = fromBCD(QData[_currentScan, q_pos, 2]);
-							int mm = _qChannelInBCD ? fromBCD(QData[_currentScan, q_pos, 7]) : QData[_currentScan, q_pos, 7];
-							int ss = _qChannelInBCD ? fromBCD(QData[_currentScan, q_pos, 8]) : QData[_currentScan, q_pos, 8];
-							int ff = _qChannelInBCD ? fromBCD(QData[_currentScan, q_pos, 9]) : QData[_currentScan, q_pos, 9];
+							int iTrack = fromBCD(QData[q_pos, 1]);
+							int iIndex = fromBCD(QData[q_pos, 2]);
+							int mm = _qChannelInBCD ? fromBCD(QData[q_pos, 7]) : QData[q_pos, 7];
+							int ss = _qChannelInBCD ? fromBCD(QData[q_pos, 8]) : QData[q_pos, 8];
+							int ff = _qChannelInBCD ? fromBCD(QData[q_pos, 9]) : QData[q_pos, 9];
 							//if (sec != sector + iSector)
 							//    System.Console.WriteLine("\rLost sync: {0} vs {1} ({2:X} vs {3:X})", CDImageLayout.TimeToString((uint)(sector + iSector)), CDImageLayout.TimeToString((uint)sec), sector + iSector, sec);
 							if (iTrack == 110)
@@ -413,7 +418,7 @@ namespace CUETools.Ripper.SCSI
 						{
 							StringBuilder catalog = new StringBuilder();
 							for (int i = 1; i < 8; i++)
-								catalog.AppendFormat("{0:x2}", QData[_currentScan, q_pos, i]);
+								catalog.AppendFormat("{0:x2}", QData[q_pos, i]);
 							_toc.Catalog = catalog.ToString(0, 13);
 						}
 						break;
@@ -421,16 +426,16 @@ namespace CUETools.Ripper.SCSI
 						if (updateMap && _toc[_currentTrack].ISRC == null)
 						{
 							StringBuilder isrc = new StringBuilder();
-							isrc.Append(from6bit(QData[_currentScan, q_pos, 1] >> 2));
-							isrc.Append(from6bit(((QData[_currentScan, q_pos, 1] & 0x3) << 4) + (0x0f & (QData[_currentScan, q_pos, 2] >> 4))));
-							isrc.Append(from6bit(((QData[_currentScan, q_pos, 2] & 0xf) << 2) + (0x03 & (QData[_currentScan, q_pos, 3] >> 6))));
-							isrc.Append(from6bit((QData[_currentScan, q_pos, 3] & 0x3f)));
-							isrc.Append(from6bit(QData[_currentScan, q_pos, 4] >> 2));
-							isrc.Append(from6bit(((QData[_currentScan, q_pos, 4] & 0x3) << 4) + (0x0f & (QData[_currentScan, q_pos, 5] >> 4))));
-							isrc.AppendFormat("{0:x}", QData[_currentScan, q_pos, 5] & 0xf);
-							isrc.AppendFormat("{0:x2}", QData[_currentScan, q_pos, 6]);
-							isrc.AppendFormat("{0:x2}", QData[_currentScan, q_pos, 7]);
-							isrc.AppendFormat("{0:x}", QData[_currentScan, q_pos, 8] >> 4);
+							isrc.Append(from6bit(QData[q_pos, 1] >> 2));
+							isrc.Append(from6bit(((QData[q_pos, 1] & 0x3) << 4) + (0x0f & (QData[q_pos, 2] >> 4))));
+							isrc.Append(from6bit(((QData[q_pos, 2] & 0xf) << 2) + (0x03 & (QData[q_pos, 3] >> 6))));
+							isrc.Append(from6bit((QData[q_pos, 3] & 0x3f)));
+							isrc.Append(from6bit(QData[q_pos, 4] >> 2));
+							isrc.Append(from6bit(((QData[q_pos, 4] & 0x3) << 4) + (0x0f & (QData[q_pos, 5] >> 4))));
+							isrc.AppendFormat("{0:x}", QData[q_pos, 5] & 0xf);
+							isrc.AppendFormat("{0:x2}", QData[q_pos, 6]);
+							isrc.AppendFormat("{0:x2}", QData[q_pos, 7]);
+							isrc.AppendFormat("{0:x}", QData[q_pos, 8] >> 4);
 							if (!isrc.ToString().Contains("#") && isrc.ToString() != "0000000000")
 								_toc[_currentTrack].ISRC = isrc.ToString();
 						}
@@ -449,7 +454,6 @@ namespace CUETools.Ripper.SCSI
 			Device.MainChannelSelection[] mainmode = { Device.MainChannelSelection.UserData, Device.MainChannelSelection.F8h };
 			bool found = false;
 			_currentStart = 0;
-			_currentScan = 0;
 			_currentTrack = -1;
 			_currentIndex = -1;
 			m_max_sectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
@@ -507,27 +511,34 @@ namespace CUETools.Ripper.SCSI
 			return found;
 		}
 
-		private unsafe void  ReorganiseSectors(int sector, int Sectors2Read)
+		private unsafe void ReorganiseSectors(int sector, int Sectors2Read)
 		{
 			int c2Size = _c2ErrorMode == Device.C2ErrorMode.None ? 0 : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? 294 : 296;
-			int oldSize = 4 * 588 +	c2Size + (_subChannelMode == Device.SubChannelMode.None ? 0 : 16);
-			fixed (byte* readBuf = _readBuffer, qBuf = _subchannelBuffer, userData = UserData, c2Data = C2Data, qData = QData)
+			int oldSize = 4 * 588 + c2Size + (_subChannelMode == Device.SubChannelMode.None ? 0 : 16);
+			fixed (byte* readBuf = _readBuffer, qBuf = _subchannelBuffer, qData = QData)
+			fixed (long* userData = UserData, c2Data = C2Data)
 			{
 				for (int iSector = 0; iSector < Sectors2Read; iSector++)
 				{
 					byte* sectorPtr = readBuf + iSector * oldSize;
-					byte* userDataPtr = userData + (_currentScan * MSECTORS + sector - _currentStart + iSector) * 4 * 588;
-					byte* c2DataPtr = c2Data + (_currentScan * MSECTORS + sector - _currentStart + iSector) * 294;
-					byte* qDataPtr = qData + (_currentScan * MSECTORS + sector - _currentStart + iSector) * 16;
+					long* userDataPtr = userData + (sector - _currentStart + iSector) * 4 * 588;
+					long* c2DataPtr = c2Data + (sector - _currentStart + iSector) * 294;
+					byte* qDataPtr = qData + (sector - _currentStart + iSector) * 16;
 
 					for (int sample = 0; sample < 4 * 588; sample++)
-						userDataPtr[sample] = sectorPtr[sample];
+						userDataPtr[sample] += byte2long[sectorPtr[sample]] * 3;
 					if (_c2ErrorMode != Device.C2ErrorMode.None)
+					{
 						for (int c2 = 0; c2 < 294; c2++)
-							c2DataPtr[c2] = sectorPtr[4 * 588 + c2Size - 294 + c2];
-					else
-						for (int c2 = 0; c2 < 294; c2++)
-							c2DataPtr[c2] = 0; // 0xff??
+						{
+							byte c2val = sectorPtr[4 * 588 + c2Size - 294 + c2];
+							c2DataPtr[c2] += byte2long[c2val];
+							if (c2val != 0)
+								for (int b = 0; b < 8; b++)
+									if (((c2val >> b) & 1) != 0)
+										userDataPtr[c2 * 8 + b] += 0x0101010101010101 - byte2long[sectorPtr[c2 * 8 + b]] * 2;
+						}
+					}
 					if (_subChannelMode != Device.SubChannelMode.None)
 						for (int qi = 0; qi < 16; qi++)
 							qDataPtr[qi] = sectorPtr[4 * 588 + c2Size + qi];
@@ -535,6 +546,15 @@ namespace CUETools.Ripper.SCSI
 						for (int qi = 0; qi < 16; qi++)
 							qDataPtr[qi] = qBuf[iSector * 16 + qi];
 				}
+			}
+		}
+
+		private unsafe void ClearSectors(int sector, int Sectors2Read)
+		{
+			fixed (long* userData = &UserData[sector - _currentStart, 0], c2Data = &C2Data[sector - _currentStart, 0])
+			{
+				ZeroMemory((byte*)userData, 8 * 4 * 588 * Sectors2Read);
+				ZeroMemory((byte*)c2Data, 4 * 588 * Sectors2Read);
 			}
 		}
 
@@ -579,11 +599,11 @@ namespace CUETools.Ripper.SCSI
 					{
 						iErrors ++;
 						for (int i = 0; i < 4 * 588; i++)
-							UserData[_currentScan, sector + iSector - _currentStart, i] = 0;
+							UserData[sector + iSector - _currentStart, i] += 0x0101010101010101;
 						for (int i = 0; i < 294; i++)
-							C2Data[_currentScan, sector + iSector - _currentStart, i] = 0xff;
+							C2Data[sector + iSector - _currentStart, i] += 0x0101010101010101;
 						for (int i = 0; i < 16; i++)
-							QData[_currentScan, sector + iSector - _currentStart, i] = 0;
+							QData[ sector + iSector - _currentStart, i] = 0;
 						if (_debugMessages)
 							System.Console.WriteLine("\nSector lost");
 					}
@@ -666,23 +686,24 @@ namespace CUETools.Ripper.SCSI
 
 		private void PrintErrors(int pass, int sector, int Sectors2Read, byte[] realData)
 		{
-			for (int iSector = 0; iSector < Sectors2Read; iSector++)
-			{
-				int pos = sector - _currentStart + iSector;
-				if (_debugMessages)
-				{
-					StringBuilder st = new StringBuilder();
-					for (int i = 0; i < 294; i++)
-						if (C2Data[_currentScan, pos, i] != 0)
-						{
-							for (int j = i; j < i + 23; j++)
-								if (j < 294)
-									st.AppendFormat("{0:X2}", C2Data[_currentScan, pos, j]);
-								else
-									st.Append("  ");
-							System.Console.WriteLine("\rC2 error @{0}[{1:000}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
-							return;
-						}
+			//for (int iSector = 0; iSector < Sectors2Read; iSector++)
+			//{
+			//    int pos = sector - _currentStart + iSector;
+			//    if (_debugMessages)
+			//    {
+			//        StringBuilder st = new StringBuilder();
+			//        for (int i = 0; i < 294; i++)
+			//            if (C2Data[pos, i] != 0)
+			//            {
+			//                for (int j = i; j < i + 23; j++)
+			//                    if (j < 294)
+			//                        st.AppendFormat("{0:X2}", C2Data[_currentScan, pos, j]);
+			//                    else
+			//                        st.Append("  ");
+			//                System.Console.WriteLine("\rC2 error @{0}[{1:000}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
+			//                return;
+			//            }
+
 					//for (int i = 0; i < 4 * 588; i++)
 					//    if (_currentData[pos * 4 * 588 + i] != realData[pos * 4 * 588 + i])
 					//    {
@@ -714,100 +735,50 @@ namespace CUETools.Ripper.SCSI
 					//        //    st.Append(' ');
 					//        //System.Console.WriteLine("\rReal error @{0}[{1:000}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
 					//    }
-				}
-			}
+
+			//    }
+			//}
 		}
 
-		private unsafe void CorrectSectors0(int sector, int Sectors2Read)
+		private unsafe void CorrectSectors(int pass, int sector, int Sectors2Read, bool markErrors)
 		{
 			for (int iSector = 0; iSector < Sectors2Read; iSector++)
 			{
 				int pos = sector - _currentStart + iSector;
+				int avg = (pass + 1) * 3 / 2;
+				int er_limit = 2 + pass / 2; // allow 25% minority
+				// avg - pass + 1
+				// p  a  l  o
+				// 0  1  1  2
+				// 2  4  3  3
+				// 4  7  2  4
+				// 6 10     5
+				//16 25    10
+				bool fError = false;
 				for (int iPar = 0; iPar < 4 * 588; iPar++)
 				{
-					byte bestValue = UserData[0, pos, iPar];
-					_currentErrorsCount += (C2Data[0, pos, iPar >> 3] >> (iPar & 7)) & 1;
-					_currentData[pos * 4 * 588 + iPar] = bestValue;
-				}
-			}
-		}
-
-		private unsafe void CorrectSectors1(int sector, int Sectors2Read)
-		{
-			for (int iSector = 0; iSector < Sectors2Read; iSector++)
-			{
-				int pos = sector - _currentStart + iSector;
-				for (int iPar = 0; iPar < 4 * 588; iPar++)
-				{
-					byte val1 = UserData[0, pos, iPar];
-					byte val2 = UserData[1, pos, iPar];
-					int err1 = (C2Data[0, pos, iPar >> 3] >> (iPar & 7)) & 1;
-					int err2 = (C2Data[1, pos, iPar >> 3] >> (iPar & 7)) & 1;
-					_currentErrorsCount += err1 | err2 | (val1 != val2 ? 1 : 0);
-					_currentData[pos * 4 * 588 + iPar] = err1 != 0 ? val2 : val1;
-					//if (_debugMessages && ((C2Data[_currentScan, pos, iPar >> 3] >> (iPar & 7)) & 1) != 0 && _currentErrorsCount < 10)
-					//    System.Console.WriteLine("\rC2 error @{0}, byte {1:0000}                                    ", CDImageLayout.TimeToString((uint)(sector + iSector)), iPar);
-				}
-			}
-		}
-
-		private unsafe void CorrectSectors(int pass, int sector, int Sectors2Read, bool findWorst, bool markErrors)
-		{
-			if (pass == 0)
-			{
-				CorrectSectors0(sector, Sectors2Read);
-				return;
-			}
-			if (pass == 1)
-			{
-				CorrectSectors1(sector, Sectors2Read);
-				return;
-			}
-			short c2Score = 10;
-			fixed (short* valueScore = _valueScore)
-			{
-				fixed (byte* userData = UserData, c2Data = C2Data, qData = QData)
-				{
-					for (int iSector = 0; iSector < Sectors2Read; iSector++)
+					long val = UserData[pos, iPar];
+					byte c2 = (byte)(C2Data[pos, iPar >> 3] >> ((iPar & 7) * 8));
+					int bestValue = 0;
+					for (int i = 0; i < 8; i++)
 					{
-						int pos = sector - _currentStart + iSector;
-						for (int iPar = 0; iPar < 4 * 588; iPar++)
-						{
-							int c2Bit = 0x80 >> (iPar % 8);
-
-							ZeroMemory(valueScore, 256);
-							byte bestValue = 0;
-							short totalScore = 0;
-							for (int result = 0; result <= pass; result++)
-							{
-								int offs = (result * MSECTORS + pos) * 4 * 588 + iPar;
-								byte value = userData[offs];
-								short score = (short)(1 + (((c2Data[offs >> 3] & c2Bit) == 0) ? c2Score : (short)0));
-								valueScore[value] += score;
-								totalScore += score;
-								if (valueScore[value] > valueScore[bestValue])
-									bestValue = value;
-							}
-//							if (_debugMessages && ((C2Data[_currentScan, pos, iPar >> 3] >> (iPar & 7)) & 1) != 0 && _currentErrorsCount < 10)
-//								System.Console.WriteLine("\rC2 error @{0}, byte {1:0000}                                    ", CDImageLayout.TimeToString((uint)(sector + iSector)), iPar);
-							bool fError = valueScore[bestValue] <= _correctionQuality + c2Score + totalScore / 2;
-							if (fError)
-								_currentErrorsCount++;
-							_currentData[(sector - _currentStart + iSector) * 4 * 588 + iPar] = bestValue;
-							if (findWorst)
-							{
-								for (int result = 0; result <= pass; result++)
-									Quality[result] += Math.Min(0, valueScore[userData[(result * MSECTORS + pos) * 4 * 588 + iPar]] - c2Score - 2);
-							}
-							if (markErrors)
-							{
-								_errors[sector + iSector] |= fError;
-								_errorsCount += fError ? 1 : 0;
-							}
-						}
+						int sum = avg - ((int)(val & 0xff));
+						int sig = sum >> 31; // bit value
+						fError |= (sum ^ sig) < er_limit;
+						bestValue += sig & (1 << i);
+						val >>= 8;
 					}
+					_currentData[pos * 4 * 588 + iPar] = (byte)bestValue;
+				}
+				if (fError)
+					_currentErrorsCount++;
+				if (markErrors)
+				{
+					_errors[sector + iSector] |= fError;
+					_errorsCount += fError ? 1 : 0;
 				}
 			}
+
 		}
 
 		//private unsafe int CorrectSectorsTest(int start, int end, int c2Score, byte[] realData, int worstScan)
@@ -866,8 +837,6 @@ namespace CUETools.Ripper.SCSI
 
 		public unsafe void PrefetchSector(int iSector)
 		{
-			int nExtraPasses = MAXSCANS / 2 + _correctionQuality;
-
 			if (_currentStart == MSECTORS * (iSector / MSECTORS))
 				return;
 
@@ -884,80 +853,44 @@ namespace CUETools.Ripper.SCSI
 			//    throw new Exception("read");
 			//correctFile.Close();
 
-			fixed (byte* userData = UserData, c2Data = C2Data, qData = QData)
+			int max_scans = 64;
+			for (int pass = 0; pass <= max_scans; pass++)
 			{
-				for (int pass = 0; pass < MAXSCANS + nExtraPasses; pass++)
+				DateTime PassTime = DateTime.Now, LastFetch = DateTime.Now;
+				_currentErrorsCount = 0;
+
+				for (int sector = _currentStart; sector < _currentEnd; sector += m_max_sectors)
 				{
-					DateTime PassTime = DateTime.Now, LastFetch = DateTime.Now;
-					if (pass < MAXSCANS)
-						_currentScan = pass;
-					else
-					{
-						_currentScan = 0;
-						for (int result = 1; result < MAXSCANS; result++)
-							if (Quality[result] < Quality[_currentScan])
-								_currentScan = result;
-						//if (worstPass < 0)
-						//    System.Console.WriteLine("bad scan");
-						//else
-						//    System.Console.WriteLine("{0}->{1}, {2}->{3}", _scanResults[worstPass].Quality, _currentScan.Quality, CorrectSectorsTest(_currentStart, _currentEnd, 10, realData, -1), CorrectSectorsTest(_currentStart, _currentEnd, 10, realData, worstPass));
-					}
-					for (int result = 0; result < MAXSCANS; result++)
-						Quality[result] = 0;
-					_currentErrorsCount = 0;
+					int Sectors2Read = Math.Min(m_max_sectors, _currentEnd - sector);
+					int speed = pass == 5 ? 300 : pass == 6 ? 150 : pass == 7 ? 75 : 32500; // sectors per second
+					int msToSleep = 1000 * Sectors2Read / speed - (int)((DateTime.Now - LastFetch).TotalMilliseconds);
 
-					for (int sector = _currentStart; sector < _currentEnd; sector += m_max_sectors)
-					{
-						int Sectors2Read = Math.Min(m_max_sectors, _currentEnd - sector);
-						int speed = pass == 5 ? 300 : pass == 6 ? 150 : pass == 7 ? 75 : 32500; // sectors per second
-						int msToSleep = 1000 * Sectors2Read / speed - (int)((DateTime.Now - LastFetch).TotalMilliseconds);
+					//if (msToSleep > 0) Thread.Sleep(msToSleep);
 
-						//if (msToSleep > 0) Thread.Sleep(msToSleep);
-						LastFetch = DateTime.Now;
-						FetchSectors(sector, Sectors2Read, true, pass == 0);
-						//TimeSpan delay1 = DateTime.Now - LastFetch;
-						if (pass == 0)
-							ProcessSubchannel(sector, Sectors2Read, true);
-						//DateTime LastFetched = DateTime.Now;
-						CorrectSectors(Math.Min(pass, MAXSCANS - 1), sector, Sectors2Read, pass >= MAXSCANS - 1, pass == MAXSCANS - 1 + nExtraPasses);
-						PrintErrors(Math.Min(pass, MAXSCANS - 1), sector, Sectors2Read, /*realData*/null);
-						//TimeSpan delay2 = DateTime.Now - LastFetched;
-						//if (sector == _currentStart)
-							//System.Console.WriteLine("\n{0},{1}", delay1.TotalMilliseconds, delay2.TotalMilliseconds);
-						if (ReadProgress != null)
-							ReadProgress(this, new ReadProgressArgs(sector + Sectors2Read, pass, _currentStart, _currentEnd, _currentErrorsCount, PassTime));
+					LastFetch = DateTime.Now;
+					if (pass == 0) 
+						ClearSectors(sector, Sectors2Read);
+					FetchSectors(sector, Sectors2Read, true, pass == 0);
+					//TimeSpan delay1 = DateTime.Now - LastFetch;
+					if (pass == 0)
+						ProcessSubchannel(sector, Sectors2Read, true);
+					//DateTime LastFetched = DateTime.Now;
+					if ((pass & 1) == 0)
+					{
+						CorrectSectors(pass, sector, Sectors2Read, pass >= max_scans);
+						PrintErrors(pass, sector, Sectors2Read, /*realData*/null);
 					}
-					//System.Console.WriteLine();
-					//if (CorrectSectorsTest(start, _currentEnd, 10, realData) == 0)
-					//    break;
-					//if (pass == MAXSCANS - 1 + nExtraPasses)
-					//    break;
-					if (_currentErrorsCount == 0 && pass >= _correctionQuality)
-						break;
-					//if (_currentErrorsCount == 0 && pass >= _correctionQuality)
-					//{
-					//    bool syncOk = true;
-					//    //if (pass == 0)
-					//    //{
-					//    //    ScanResults saved = _currentScan;
-					//    //    _currentScan = new ScanResults(_currentEnd - _currentStart, CB_AUDIO);
-					//    //    for (int sector = _currentStart; sector < _currentEnd && syncOk; sector += 7)
-					//    //    {
-					//    //        FetchSectors(sector, 2);
-					//    //        for (int i = 0; i < 2 * CB_AUDIO; i++)
-					//    //            if (_currentScan.Data[(sector - _currentStart) * CB_AUDIO + i] != saved.Data[(sector - _currentStart) * CB_AUDIO + i])
-					//    //            {
-					//    //                System.Console.WriteLine("Lost Sync");
-					//    //                syncOk = false;
-					//    //                break;
-					//    //            }
-					//    //    }
-					//    //    _currentScan = saved;
-					//    //}
-					//    if (syncOk)
-					//        break;
-					//}
+					//TimeSpan delay2 = DateTime.Now - LastFetched;
+					//if (sector == _currentStart)
+					//System.Console.WriteLine("\n{0},{1}", delay1.TotalMilliseconds, delay2.TotalMilliseconds);
+					if (ReadProgress != null)
+						ReadProgress(this, new ReadProgressArgs(sector + Sectors2Read, pass, _currentStart, _currentEnd, _currentErrorsCount, PassTime));
 				}
+				//System.Console.WriteLine();
+				//if (CorrectSectorsTest(start, _currentEnd, 10, realData) == 0)
+				//    break;
+				if ((pass & 1) == 0 && pass >= _correctionQuality && _currentErrorsCount == 0)
+					break;
 			}
 		}
 

@@ -27,6 +27,8 @@ namespace CUETools.TestParity
 		static uint crc;
 		static CDRepairEncode decode;
 		static CDRepairEncode decode2;
+		static CDRepairFix fix;
+		static CDRepairFix fix2;
 		const int offset = 48;
 
 		/// <summary>
@@ -60,26 +62,31 @@ namespace CUETools.TestParity
 				wav2[(int)(rnd.NextDouble() * (wav2.Length - 1))] = (byte)(rnd.NextDouble() * 255);
 
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false);
+			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true);
 			buff.Prepare(wav, finalSampleCount);
 			encode.Write(buff);
 			encode.Close();
 			parity = encode.Parity;
 			crc = encode.CRC;
 
-			decode = new CDRepairEncode(finalSampleCount, stride, npar, true);
+			decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
 			buff.Prepare(wav2, finalSampleCount);
 			decode.Write(buff);
 			decode.Close();
-			decode.VerifyParity(parity);
 
-			decode2 = new CDRepairEncode(finalSampleCount, stride, npar, true);
+			int actualOffset;
+			bool hasErrors;
+			decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors);
+			fix = decode.VerifyParity(parity, actualOffset);
+
+			decode2 = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
 			buff.Prepare(new byte[offset * 4], offset);
 			decode2.Write(buff);
 			buff.Prepare(wav2, finalSampleCount - offset);
 			decode2.Write(buff);
 			decode2.Close();
-			decode2.VerifyParity(parity);
+			decode2.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors);
+			fix2 = decode2.VerifyParity(parity, actualOffset);
 		}
 
 		//Use ClassCleanup to run code after all tests in a class have run
@@ -108,12 +115,11 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairFixTest()
 		{
-			Assert.IsTrue(decode.HasErrors);
-			Assert.IsTrue(decode.CanRecover);
-			Assert.AreEqual(0, decode.ActualOffset, "wrong offset");
+			Assert.IsTrue(fix.HasErrors);
+			Assert.IsTrue(fix.CanRecover);
+			Assert.AreEqual(0, fix.ActualOffset, "wrong offset");
 
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairFix fix = new CDRepairFix(decode);
 			buff.Prepare(wav2, finalSampleCount);
 			fix.Write(buff);
 			fix.Close();
@@ -127,19 +133,18 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairFixWithOffsetTest()
 		{
-			Assert.IsTrue(decode2.HasErrors);
-			Assert.IsTrue(decode2.CanRecover);
-			Assert.AreEqual(-offset, decode2.ActualOffset, "wrong offset");
+			Assert.IsTrue(fix2.HasErrors);
+			Assert.IsTrue(fix2.CanRecover);
+			Assert.AreEqual(-offset, fix2.ActualOffset, "wrong offset");
 
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairFix fix = new CDRepairFix(decode2);
 			buff.Prepare(new byte[offset * 4], offset);
-			fix.Write(buff);
+			fix2.Write(buff);
 			buff.Prepare(wav2, finalSampleCount - offset);
-			fix.Write(buff);
-			fix.Close();
+			fix2.Write(buff);
+			fix2.Close();
 
-			Assert.AreEqual<uint>(crc, fix.CRC);
+			Assert.AreEqual<uint>(crc, fix2.CRC);
 		}
 	}
 }

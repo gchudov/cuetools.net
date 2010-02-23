@@ -211,17 +211,17 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		unsafe void interlace(int [,] buff, int offset, int count)
+		unsafe void interlace(AudioBuffer buff, int offset, int count)
 		{
 			if (PCM.ChannelCount == 2)
 			{
-				fixed (int* res = &buff[offset, 0], src = &samplesBuffer[_samplesBufferOffset])
-					AudioSamples.Interlace(res, src, src + Flake.MAX_BLOCKSIZE, count);
+				fixed (int* src = &samplesBuffer[_samplesBufferOffset])
+					buff.Interlace(offset, src, src + Flake.MAX_BLOCKSIZE, count);
 			}
 			else
 			{
 				for (int ch = 0; ch < PCM.ChannelCount; ch++)
-					fixed (int* res = &buff[offset, ch], src = &samplesBuffer[_samplesBufferOffset + ch * Flake.MAX_BLOCKSIZE])
+					fixed (int* res = &buff.Samples[offset, ch], src = &samplesBuffer[_samplesBufferOffset + ch * Flake.MAX_BLOCKSIZE])
 					{
 						int* psrc = src;
 						for (int i = 0; i < count; i++)
@@ -241,7 +241,7 @@ namespace CUETools.Codecs.FLAKE
 			{
 				if (_samplesInBuffer > 0)
 				{
-					interlace(buff.Samples, offset, _samplesInBuffer);
+					interlace(buff, offset, _samplesInBuffer);
 					sampleCount -= _samplesInBuffer;
 					offset += _samplesInBuffer;
 					_samplesInBuffer = 0;
@@ -261,7 +261,7 @@ namespace CUETools.Codecs.FLAKE
 				_sampleOffset += _samplesInBuffer;
 			}
 
-			interlace(buff.Samples, offset, sampleCount);
+			interlace(buff, offset, sampleCount);
 			_samplesInBuffer -= sampleCount;
 			_samplesBufferOffset += sampleCount;
 			if (_samplesInBuffer == 0)

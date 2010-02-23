@@ -34,7 +34,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\win32\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -74,6 +74,10 @@
     <Compile Include="UserDefined.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUETools.CDRepair\CUETools.CDRepair.csproj">
+      <Project>{C4869B37-EBB1-47BB-9406-B1209BEAB84B}</Project>
+      <Name>CUETools.CDRepair</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
@@ -89,6 +93,10 @@
     <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj">
       <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
       <Name>CUETools.Compression</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
+      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
+      <Name>CUETools.CTDB</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj">
       <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>

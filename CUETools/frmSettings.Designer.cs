@@ -27,6 +27,7 @@ namespace JDP {
 			System.Windows.Forms.Button btnCancel;
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSettings));
 			this.grpGeneral = new System.Windows.Forms.GroupBox();
+			this.checkBoxSeparateDecodingThread = new System.Windows.Forms.CheckBox();
 			this.checkBoxCheckForUpdates = new System.Windows.Forms.CheckBox();
 			this.chkAllowMultipleInstances = new System.Windows.Forms.CheckBox();
 			this.chkReducePriority = new System.Windows.Forms.CheckBox();
@@ -127,6 +128,7 @@ namespace JDP {
 			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
 			this.tabPage10 = new System.Windows.Forms.TabPage();
 			this.groupBoxFlaCudaOptions = new System.Windows.Forms.GroupBox();
+			this.checkBoxFlaCudaMultithread = new System.Windows.Forms.CheckBox();
 			this.checkBoxFlaCudaGPUOnly = new System.Windows.Forms.CheckBox();
 			this.checkBoxFlaCudaVerify = new System.Windows.Forms.CheckBox();
 			this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
@@ -174,7 +176,7 @@ namespace JDP {
 			this.labelFormatEncoder = new System.Windows.Forms.Label();
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
-			this.checkBoxFlaCudaMultithread = new System.Windows.Forms.CheckBox();
+			this.checkBoxUseSystemProxy = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -227,6 +229,8 @@ namespace JDP {
 			// 
 			// grpGeneral
 			// 
+			this.grpGeneral.Controls.Add(this.checkBoxUseSystemProxy);
+			this.grpGeneral.Controls.Add(this.checkBoxSeparateDecodingThread);
 			this.grpGeneral.Controls.Add(this.checkBoxCheckForUpdates);
 			this.grpGeneral.Controls.Add(this.chkAllowMultipleInstances);
 			this.grpGeneral.Controls.Add(this.chkReducePriority);
@@ -237,6 +241,13 @@ namespace JDP {
 			resources.ApplyResources(this.grpGeneral, "grpGeneral");
 			this.grpGeneral.Name = "grpGeneral";
 			this.grpGeneral.TabStop = false;
+			// 
+			// checkBoxSeparateDecodingThread
+			// 
+			resources.ApplyResources(this.checkBoxSeparateDecodingThread, "checkBoxSeparateDecodingThread");
+			this.checkBoxSeparateDecodingThread.Name = "checkBoxSeparateDecodingThread";
+			this.toolTip1.SetToolTip(this.checkBoxSeparateDecodingThread, resources.GetString("checkBoxSeparateDecodingThread.ToolTip"));
+			this.checkBoxSeparateDecodingThread.UseVisualStyleBackColor = true;
 			// 
 			// checkBoxCheckForUpdates
 			// 
@@ -1078,6 +1089,13 @@ namespace JDP {
 			this.groupBoxFlaCudaOptions.Name = "groupBoxFlaCudaOptions";
 			this.groupBoxFlaCudaOptions.TabStop = false;
 			// 
+			// checkBoxFlaCudaMultithread
+			// 
+			resources.ApplyResources(this.checkBoxFlaCudaMultithread, "checkBoxFlaCudaMultithread");
+			this.checkBoxFlaCudaMultithread.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.cUEConfigBindingSource, "FlaCudaThreads", true));
+			this.checkBoxFlaCudaMultithread.Name = "checkBoxFlaCudaMultithread";
+			this.checkBoxFlaCudaMultithread.UseVisualStyleBackColor = true;
+			// 
 			// checkBoxFlaCudaGPUOnly
 			// 
 			resources.ApplyResources(this.checkBoxFlaCudaGPUOnly, "checkBoxFlaCudaGPUOnly");
@@ -1455,12 +1473,11 @@ namespace JDP {
 			this.checkBox1.Name = "checkBox1";
 			this.checkBox1.UseVisualStyleBackColor = true;
 			// 
-			// checkBoxFlaCudaMultithread
+			// checkBoxUseSystemProxy
 			// 
-			resources.ApplyResources(this.checkBoxFlaCudaMultithread, "checkBoxFlaCudaMultithread");
-			this.checkBoxFlaCudaMultithread.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.cUEConfigBindingSource, "FlaCudaThreads", true));
-			this.checkBoxFlaCudaMultithread.Name = "checkBoxFlaCudaMultithread";
-			this.checkBoxFlaCudaMultithread.UseVisualStyleBackColor = true;
+			resources.ApplyResources(this.checkBoxUseSystemProxy, "checkBoxUseSystemProxy");
+			this.checkBoxUseSystemProxy.Name = "checkBoxUseSystemProxy";
+			this.checkBoxUseSystemProxy.UseVisualStyleBackColor = true;
 			// 
 			// frmSettings
 			// 
@@ -1695,6 +1712,8 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox checkBoxFlaCudaVerify;
 		private System.Windows.Forms.CheckBox checkBox1;
 		private System.Windows.Forms.CheckBox checkBoxFlaCudaMultithread;
+		private System.Windows.Forms.CheckBox checkBoxSeparateDecodingThread;
+		private System.Windows.Forms.CheckBox checkBoxUseSystemProxy;
 
 	}
 }

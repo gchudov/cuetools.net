@@ -67,12 +67,12 @@ namespace CUETools.TestCodecs
 			toc.AddTrack(new CDTrack(2, 68, 31, true, false));
 			toc.AddTrack(new CDTrack(3, 99, 37, true, false));
 			toc[1][0].Start = 0;
-			ar = new AccurateRipVerify(toc);
+			ar = new AccurateRipVerify(toc, null);
 
 			toc2 = new CDImageLayout();
 			toc2.AddTrack(new CDTrack(1, 0, toc.AudioLength, true, false));
 			toc2.AddTrack(new CDTrack(2, toc.AudioLength, 750, true, false));
-			ar2 = new AccurateRipVerify(toc2);
+			ar2 = new AccurateRipVerify(toc2, null);
 
 			Random rnd = new Random(2314);
 			for (int sector = 0; sector < toc2.AudioLength; sector++)

@@ -84,6 +84,8 @@ namespace JDP {
 			checkBoxFixToNearest.Checked = _config.fixOffsetToNearest;
 			//textBoxARLogExtension.Text = _config.arLogFilenameFormat;
 			numericUpDownMaxResolution.Value = _config.maxAlbumArtSize;
+			checkBoxSeparateDecodingThread.Checked = _config.separateDecodingThread;
+			checkBoxUseSystemProxy.Checked = _config.useSystemProxySettings;
 
 			switch (_config.gapsHandling)
 			{
@@ -246,6 +248,8 @@ namespace JDP {
 			_config.fixOffsetToNearest = checkBoxFixToNearest.Checked;
 			//_config.arLogFilenameFormat = textBoxARLogExtension.Text;
 			_config.maxAlbumArtSize = (int) numericUpDownMaxResolution.Value;
+			_config.separateDecodingThread = checkBoxSeparateDecodingThread.Checked;
+			_config.useSystemProxySettings = checkBoxUseSystemProxy.Checked;
 
 			_config.language = ((CultureInfo)comboLanguage.SelectedItem).Name;
 		}

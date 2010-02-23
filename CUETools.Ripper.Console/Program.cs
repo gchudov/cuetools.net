@@ -21,6 +21,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Collections.Generic;
 using CUETools.Ripper;
@@ -172,8 +173,8 @@ namespace CUETools.ConsoleRipper
 					Console.Write(readCmd);
 					return;
 				}
-			
-				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC);
+
+				AccurateRipVerify arVerify = new AccurateRipVerify(audioSource.TOC, WebRequest.GetSystemWebProxy());
 				AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 				string CDDBId = AccurateRipVerify.CalculateCDDBId(audioSource.TOC);
 				string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);

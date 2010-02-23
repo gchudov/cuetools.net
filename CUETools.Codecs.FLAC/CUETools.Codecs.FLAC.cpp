@@ -268,7 +268,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 					_sampleOffset += _bufferLength;
 				}
 				Int32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
-				Array::Copy(_sampleBuffer, _bufferOffset * pcm->ChannelCount, buff->Samples, buffOffset * pcm->ChannelCount, copyCount * pcm->ChannelCount);
+				Array::Copy(_sampleBuffer->Bytes, _bufferOffset * pcm->BlockAlign, buff->Bytes, buffOffset * pcm->BlockAlign, copyCount * pcm->BlockAlign);
 				samplesNeeded -= copyCount;
 				buffOffset += copyCount;
 				_bufferOffset += copyCount;
@@ -288,7 +288,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		FLAC__StreamDecoder *_decoder;
 		Int64 _sampleCount, _sampleOffset;
 		AudioPCMConfig^ pcm;
-		array<Int32, 2>^ _sampleBuffer;
+		AudioBuffer^ _sampleBuffer;
 		array<unsigned char>^ _readBuffer;
 		String^ _path;
 		bool _decoderActive;
@@ -318,23 +318,31 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				throw gcnew Exception("Format changes within a file are not allowed.");
 			}
 
-			if ((_sampleBuffer == nullptr) || (_sampleBuffer->GetLength(0) < sampleCount)) {
-				_sampleBuffer = gcnew array<Int32, 2>(sampleCount, pcm->ChannelCount);
+			if (_bufferOffset != 0)
+			    throw gcnew Exception("Internal buffer error.");
+
+			if (_sampleBuffer == nullptr || _sampleBuffer->Size < sampleCount)
+			    _sampleBuffer = gcnew AudioBuffer(pcm, sampleCount);
+			_sampleBuffer->Length =  sampleCount;
+
+			if (pcm->ChannelCount == 2)
+			    _sampleBuffer->Interlace(0, (int*)buffer[0], (int*)buffer[1], sampleCount);
+			else
+			{
+			    int _channelCount = pcm->ChannelCount;
+			    for (Int32 iChan = 0; iChan < _channelCount; iChan++) 
+			    {
+				    interior_ptr<Int32> pMyBuffer = &_sampleBuffer->Samples[0, iChan];
+				    const FLAC__int32 *pFLACBuffer = buffer[iChan];
+				    const FLAC__int32 *pFLACBufferEnd = pFLACBuffer + sampleCount;
+
+				    while (pFLACBuffer < pFLACBufferEnd) {
+					    *pMyBuffer = *pFLACBuffer;
+					    pMyBuffer += _channelCount;
+					    pFLACBuffer++;
+				    }
+			    }
 			}
-
-			int _channelCount = pcm->ChannelCount;
-			for (Int32 iChan = 0; iChan < _channelCount; iChan++) {
-				interior_ptr<Int32> pMyBuffer = &_sampleBuffer[0, iChan];
-				const FLAC__int32 *pFLACBuffer = buffer[iChan];
-				const FLAC__int32 *pFLACBufferEnd = pFLACBuffer + sampleCount;
-
-				while (pFLACBuffer < pFLACBufferEnd) {
-					*pMyBuffer = *pFLACBuffer;
-					pMyBuffer += _channelCount;
-					pFLACBuffer++;
-				}
-			}
-
 			_bufferLength = sampleCount;
 			return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 		}

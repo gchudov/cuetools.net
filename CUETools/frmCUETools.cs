@@ -479,6 +479,7 @@ namespace JDP {
 			string status = null;
 			bool outputAudio = action == CUEAction.Encode && audioEncoderType != AudioEncoderType.NoAudio;
 			bool useAR = action == CUEAction.Verify || (outputAudio && checkBoxUseAccurateRip.Checked);
+			bool useCUEToolsDB = action == CUEAction.Verify && checkBoxVerifyUseCDRepair.Checked;
 
 			try
 			{
@@ -704,7 +705,7 @@ namespace JDP {
 				}
 				else
 				{
-					if (Directory.Exists(pathIn))
+					if (Directory.Exists(pathIn) && !IsCDROM(pathIn))
 					{
 						if (_batchPaths.Count == 0)
 							throw new Exception("is a directory");
@@ -742,6 +743,10 @@ namespace JDP {
 							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
 							cueSheet.UseAccurateRip();
 						}
+						if (useCUEToolsDB)
+						{
+							cueSheet.UseCUEToolsDB();
+						}
 
 						if (_batchPaths.Count == 0 && action == CUEAction.Encode)
 						{
@@ -751,9 +756,16 @@ namespace JDP {
 
 						this.Invoke((MethodInvoker)delegate()
 						{
-							toolStripStatusLabelAR.Visible = useAR;// && cueSheet.ArVerify.ARStatus == null;
-							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.WorstTotal().ToString() : "?";
+							toolStripStatusLabelAR.Enabled = cueSheet.ArVerify.ARStatus == null;
+							toolStripStatusLabelAR.Visible = useAR;
+							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.WorstTotal().ToString() : "";
 							toolStripStatusLabelAR.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
+
+							toolStripStatusLabelCTDB.Enabled = cueSheet.CTDB.DBStatus == null;
+							toolStripStatusLabelCTDB.Visible = useCUEToolsDB;
+							toolStripStatusLabelCTDB.Text = cueSheet.CTDB.DBStatus == null ? cueSheet.CTDB.Total.ToString() : "";
+							toolStripStatusLabelCTDB.ToolTipText = "CUETools DB: " + (cueSheet.CTDB.DBStatus ?? "found") + ".";
+
 							if (releases != null)
 							{
 								frmChoice dlg = new frmChoice();
@@ -808,7 +820,34 @@ namespace JDP {
 							else
 								status = cueSheet.ExecuteScript(script);
 
-							//if (_batchPaths.Count > 0)
+							//if (useCUEToolsDB)
+							//{
+							//    if (cueSheet.CTDB.AccResult == HttpStatusCode.NotFound && 
+							//        cueSheet.ArVerify.ARStatus == null &&
+							//        cueSheet.ArVerify.WorstConfidence() > 2
+							//        )
+							//    {
+							//        this.Invoke((MethodInvoker)delegate()
+							//        {
+							//            dlgRes = MessageBox.Show(this, "Disc is not present in CUETools Database, " +
+							//                "do you want to submit it?", "Overwrite?", (_batchPaths.Count == 0) ?
+							//                MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+							//            if (dlgRes == DialogResult.Cancel)
+							//                SetupControls(false);
+							//        });
+							//        if (dlgRes == DialogResult.Cancel)
+							//        {
+							//            cueSheet.Close();
+							//            return;
+							//        }
+							//        if (dlgRes == DialogResult.Yes)
+							//        {
+							//            cueSheet.CTDB.Submit((int)cueSheet.ArVerify.WorstConfidence(), (int)cueSheet.ArVerify.WorstTotal());
+							//        }
+							//    }
+							//}
+
+							if (_batchPaths.Count > 0)
 							{
 								_batchProcessed++;
 								BatchLog("{0}.", pathIn, status);
@@ -836,7 +875,7 @@ namespace JDP {
 							//reportForm.Message = _batchReport.ToString();
 							//reportForm.ShowDialog(this);
 						}
-						else if (useAR)
+						else if (useAR && cueSheet.Processed)
 						{
 							using (StringWriter sw = new StringWriter())
 							{
@@ -856,7 +895,7 @@ namespace JDP {
 							//reportForm.ShowDialog(this);
 						}
 						else
-							ShowFinishedMessage(cueSheet.PaddedToFrame);
+							ShowFinishedMessage(cueSheet.PaddedToFrame, status);
 						SetupControls(false);
 					}
 				});
@@ -963,6 +1002,7 @@ namespace JDP {
 			groupBoxMode.Enabled = !running;
 			toolStripCorrectorFormat.Visible = SelectedAction == CUEAction.CorrectFilenames;
 			tableLayoutPanelCUEStyle.Visible = converting;
+			tableLayoutPanelVerifyMode.Visible = SelectedAction == CUEAction.Verify;
 			grpOutputPathGeneration.Enabled = !running;
 			grpAudioOutput.Enabled = !running && converting;
 			grpAction.Enabled = !running;
@@ -980,6 +1020,7 @@ namespace JDP {
 			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
 			toolStripStatusLabelAR.Visible = false;
+			toolStripStatusLabelCTDB.Visible = false;
 			if (ReportState)
 			{
 				if (_batchReport != null)
@@ -1018,7 +1059,7 @@ namespace JDP {
 			return (dlgRes == DialogResult.OK);
 		}
 
-		private void ShowFinishedMessage(bool warnAboutPadding) {
+		private void ShowFinishedMessage(bool warnAboutPadding, string status) {
 			if (_batchPaths.Count != 0) {
 				return;
 			}
@@ -1028,7 +1069,7 @@ namespace JDP {
 					"files are from a CD source, this may indicate a problem with your files.",
 					"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 			}
-			MessageBox.Show(this, "Conversion was successful!", "Done", MessageBoxButtons.OK,
+			MessageBox.Show(this, status, "Done", MessageBoxButtons.OK,
 				MessageBoxIcon.Information);
 		}
 
@@ -1063,6 +1104,7 @@ namespace JDP {
 			checkBoxUseFreeDb.Checked = _profile._useFreeDb;
 			checkBoxUseMusicBrainz.Checked = _profile._useMusicBrainz;
 			checkBoxUseAccurateRip.Checked = _profile._useAccurateRip;
+			checkBoxVerifyUseCDRepair.Checked = _profile._useCUEToolsDB;
 		}
 
 		private void ActivateProfile(string profileName)
@@ -1106,6 +1148,7 @@ namespace JDP {
 			_profile._useFreeDb = checkBoxUseFreeDb.Checked;
 			_profile._useMusicBrainz = checkBoxUseMusicBrainz.Checked;
 			_profile._useAccurateRip = checkBoxUseAccurateRip.Checked;
+			_profile._useCUEToolsDB = checkBoxVerifyUseCDRepair.Checked;
 			
 			if (_profile != _defaultProfile)
 			{

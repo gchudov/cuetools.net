@@ -88,6 +88,20 @@ namespace JDP.Properties {
             }
         }
         
+        internal static System.Drawing.Icon cdrepair {
+            get {
+                object obj = ResourceManager.GetObject("cdrepair", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap cdrepair1 {
+            get {
+                object obj = ResourceManager.GetObject("cdrepair1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap cog {
             get {
                 object obj = ResourceManager.GetObject("cog", resourceCulture);

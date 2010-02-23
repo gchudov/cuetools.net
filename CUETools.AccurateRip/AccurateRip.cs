@@ -11,8 +11,9 @@ namespace CUETools.AccurateRip
 {
 	public class AccurateRipVerify : IAudioDest
 	{
-		public AccurateRipVerify(CDImageLayout toc)
+		public AccurateRipVerify(CDImageLayout toc, IWebProxy proxy)
 		{
+			this.proxy = proxy;
 			_toc = toc;
 			_accDisks = new List<AccDisk>();
 			_crc32 = new Crc32();
@@ -302,7 +303,7 @@ namespace CUETools.AccurateRip
 		/// <param name="count"></param>
 		/// <param name="currentOffset"></param>
 		/// <param name="offs"></param>
-		public unsafe void CalculateCRCs(int* pSampleBuff, int count, int currentOffset, int offs)
+		public unsafe void CalculateCRCs(uint* pSampleBuff, int count, int currentOffset, int offs)
 		{
 			uint crcar = _CRCAR[_currentTrack, 0];
 			uint crcsm = _CRCSM[_currentTrack, 0];
@@ -322,7 +323,11 @@ namespace CUETools.AccurateRip
 						_CRCNL[_currentTrack, offs + i] = crcnl;
 					}
 
-					uint lo = (uint)*(pSampleBuff++);
+					uint sample = *(pSampleBuff++);
+					crcsm += sample;
+					crcar += sample * (uint)(currentOffset + i + 1);
+
+					uint lo = sample & 0xffff;
 					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ lo)];
 					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (lo >> 8))];
 					if (lo != 0)
@@ -332,7 +337,7 @@ namespace CUETools.AccurateRip
 					}
 					else crcnl++;
 
-					uint hi = (uint)*(pSampleBuff++);
+					uint hi = sample >> 16;
 					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ hi)];
 					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (hi >> 8))];
 					if (hi != 0)
@@ -341,10 +346,6 @@ namespace CUETools.AccurateRip
 						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ (hi >> 8))];
 					}
 					else crcnl++;
-
-					uint sampleValue = (lo & 0xffff) + (hi << 16);
-					crcsm += sampleValue;
-					crcar += sampleValue * (uint)(currentOffset + i + 1);
 				}
 			}
 
@@ -371,17 +372,17 @@ namespace CUETools.AccurateRip
 
 				unsafe
 				{
-					fixed (int* pSampleBuff = &sampleBuffer.Samples[pos, 0])
-					//fixed (byte* pByteBuff = &sampleBuffer.Bytes[pos * sampleBuffer.BlockAlign])
+					fixed (byte* pSampleBuff = &sampleBuffer.Bytes[pos * 4])
 					{
+						uint* samples = (uint*)pSampleBuff;
 						if (currentSector < 10)
-							CalculateCRCs(pSampleBuff, copyCount, currentOffset, currentOffset);
+							CalculateCRCs(samples, copyCount, currentOffset, currentOffset);
 						else if (remaingSectors < 10)
-							CalculateCRCs(pSampleBuff, copyCount, currentOffset, 20 * 588 - (int)_samplesRemTrack);
+							CalculateCRCs(samples, copyCount, currentOffset, 20 * 588 - (int)_samplesRemTrack);
 						else if (currentSector >= 445 && currentSector <= 455)
-							CalculateCRCs(pSampleBuff, copyCount, currentOffset, 20 * 588 + currentOffset - 445 * 588);
+							CalculateCRCs(samples, copyCount, currentOffset, 20 * 588 + currentOffset - 445 * 588);
 						else
-							CalculateCRCs(pSampleBuff, copyCount, currentOffset, -1);
+							CalculateCRCs(samples, copyCount, currentOffset, -1);
 					}
 				}
 				pos += copyCount;
@@ -442,6 +443,7 @@ namespace CUETools.AccurateRip
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
 			req.Method = "GET";
+			req.Proxy = proxy;
 
 			try
 			{
@@ -896,6 +898,7 @@ namespace CUETools.AccurateRip
 		private uint[,] _CacheCRCWN;
 		private uint[,] _CacheCRC32;
 		private uint[] _CRCLOG;
+		private IWebProxy proxy;
 
 		Crc32 _crc32;
 

@@ -61,7 +61,7 @@ namespace CUETools.Processor
 			return new LossyWAVReader(lossySource, lwcdfSource);
 		}
 
-		public static IAudioDest GetAudioDest(AudioEncoderType audioEncoderType, string path, AudioPCMConfig pcm, long finalSampleCount, int padding, string extension, CUEConfig config) 
+		public static IAudioDest GetAudioDest(AudioEncoderType audioEncoderType, string path, AudioPCMConfig pcm, long finalSampleCount, int padding, string extension, CUEConfig config)
 		{
 			IAudioDest dest;
 			if (audioEncoderType == AudioEncoderType.NoAudio || extension == ".dummy")
@@ -73,7 +73,7 @@ namespace CUETools.Processor
 			CUEToolsFormat fmt;
 			if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
 				throw new Exception("Unsupported audio type: " + path);
-			CUEToolsUDC encoder = audioEncoderType == AudioEncoderType.Lossless ? fmt.encoderLossless : 
+			CUEToolsUDC encoder = audioEncoderType == AudioEncoderType.Lossless ? fmt.encoderLossless :
 				audioEncoderType == AudioEncoderType.Lossy ? fmt.encoderLossy :
 				null;
 			if (encoder == null)
@@ -86,37 +86,39 @@ namespace CUETools.Processor
 				if (o == null || !(o is IAudioDest))
 					throw new Exception("Unsupported audio type: " + path + ": " + encoder.type.FullName);
 				dest = o as IAudioDest;
-			} else
+			}
+			else
 				throw new Exception("Unsupported audio type: " + path);
 			dest.CompressionLevel = encoder.DefaultModeIndex;
 			dest.FinalSampleCount = finalSampleCount;
-			switch (encoder.type.FullName)
-			{
-				case "CUETools.Codecs.ALAC.ALACWriter":
-					dest.Options = string.Format("--padding-length {0}", padding);
-					break;
-				case "CUETools.Codecs.FLAKE.FlakeWriter":
-					dest.Options = string.Format("--padding-length {0}", padding);
-					break;
-				case "CUETools.Codecs.FlaCuda.FlaCudaWriter":
-					dest.Options = string.Format("{0}{1}--padding-length {2} --cpu-threads {3}",
-						config.flaCudaVerify ? "--verify " : "",
-						config.flaCudaGPUOnly ? "--gpu-only " : "",
-						padding,
-						config.FlaCudaThreads ? 1 : 0);
-					break;					
-				case "CUETools.Codecs.FLAC.FLACWriter":
-					dest.Options = string.Format("{0}{1}--padding-length {2}",
-						config.disableAsm ? "--disable-asm " : "",
-						config.flacVerify ? "--verify " : "",
-						padding);
-					break;
-				case "CUETools.Codecs.WavPack.WavPackWriter":
-					dest.Options = string.Format("{0}--extra-mode {1}",
-						config.wvStoreMD5 ? "--md5 " : "",
-						config.wvExtraMode);
-					break;
-			}
+			if (encoder.type != null)
+				switch (encoder.type.FullName)
+				{
+					case "CUETools.Codecs.ALAC.ALACWriter":
+						dest.Options = string.Format("--padding-length {0}", padding);
+						break;
+					case "CUETools.Codecs.FLAKE.FlakeWriter":
+						dest.Options = string.Format("--padding-length {0}", padding);
+						break;
+					case "CUETools.Codecs.FlaCuda.FlaCudaWriter":
+						dest.Options = string.Format("{0}{1}--padding-length {2} --cpu-threads {3}",
+							config.flaCudaVerify ? "--verify " : "",
+							config.flaCudaGPUOnly ? "--gpu-only " : "",
+							padding,
+							config.FlaCudaThreads ? 1 : 0);
+						break;
+					case "CUETools.Codecs.FLAC.FLACWriter":
+						dest.Options = string.Format("{0}{1}--padding-length {2}",
+							config.disableAsm ? "--disable-asm " : "",
+							config.flacVerify ? "--verify " : "",
+							padding);
+						break;
+					case "CUETools.Codecs.WavPack.WavPackWriter":
+						dest.Options = string.Format("{0}--extra-mode {1}",
+							config.wvStoreMD5 ? "--md5 " : "",
+							config.wvExtraMode);
+						break;
+				}
 			return dest;
 		}
 

@@ -300,6 +300,8 @@ namespace CUETools.Codecs
 			samples = _samples;
 			dataInSamples = true;
 			dataInBytes = false;
+			if (length > size)
+				throw new Exception("Invalid length");
 		}
 
 		public void Prepare(byte[] _bytes, int _length)
@@ -309,6 +311,8 @@ namespace CUETools.Codecs
 			bytes = _bytes;
 			dataInSamples = false;
 			dataInBytes = true;
+			if (length > size)
+				throw new Exception("Invalid length");
 		}
 
 		public unsafe void Prepare(AudioBuffer _src, int _offset, int _length)
@@ -342,6 +346,18 @@ namespace CUETools.Codecs
 			buffer.length = 0;
 			buffer.dataInSamples = false;
 			buffer.dataInBytes = false;
+		}
+
+		unsafe public void Interlace(int pos, int* src1, int* src2, int n)
+		{
+			if (PCM.ChannelCount != 2 || PCM.BitsPerSample != 16)
+				throw new Exception("");
+			fixed (byte* bs = Bytes)
+			{
+				int* res = ((int*)bs) + pos;
+				for (int i = n; i > 0; i--)
+					*(res++) = (*(src1++) & 0xffff) ^ (*(src2++) << 16);
+			}
 		}
 
 		//public void Clear()
@@ -1517,7 +1533,6 @@ namespace CUETools.Codecs
 	public class UserDefinedReader : IAudioSource
 	{
 		string _path, _decoder, _decoderParams;
-		private AudioPCMConfig pcm;
 		Process _decoderProcess;
 		WAVReader rdr;
 
@@ -1603,7 +1618,7 @@ namespace CUETools.Codecs
 			get
 			{
 				Initialize();
-				return pcm;
+				return rdr.PCM;
 			}
 		}
 
@@ -1651,7 +1666,7 @@ namespace CUETools.Codecs
 						while (_haveData && !_close)
 							Monitor.Wait(this);
 						if (_close)
-							throw new Exception("Decompression aborted");
+							break;
 						AudioBuffer temp = _writeBuffer;
 						_writeBuffer = _readBuffer;
 						_readBuffer = temp;
@@ -1659,6 +1674,7 @@ namespace CUETools.Codecs
 						Monitor.Pulse(this);
 					}
 				} while (!done);
+				_source.Close();
 			}
 			catch (Exception ex)
 			{
