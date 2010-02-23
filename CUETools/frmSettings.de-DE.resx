@@ -120,6 +120,15 @@
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
+  <data name="checkBoxUseSystemProxy.Text" xml:space="preserve">
+    <value>Proxyeinstellungen von System übernehmen</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
+    <value>In eigenem Thread dekodieren</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.ToolTip" xml:space="preserve">
+    <value>Verbessert die Geschwindigkeit auf Mehrkernprozessoren</value>
+  </data>
   <data name="labelLanguage.Text" xml:space="preserve">
     <value>Sprache</value>
   </data>

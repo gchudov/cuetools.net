@@ -118,11 +118,14 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="toolStripStatusLabelAR.ToolTipText" xml:space="preserve">
-    <value>Album in AccurateRip-Datenbank gefunden.</value>
+  <data name="toolStripStatusLabelProcessed.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 21</value>
   </data>
   <data name="toolStripStatusLabelProcessed.Text" xml:space="preserve">
     <value>Restzeit</value>
+  </data>
+  <data name="toolStripStatusLabelAR.ToolTipText" xml:space="preserve">
+    <value>Album in AccurateRip-Datenbank gefunden.</value>
   </data>
   <data name="toolStripProgressBar1.ToolTipText" xml:space="preserve">
     <value>Trackfortschritt</value>
@@ -276,6 +279,9 @@
   </data>
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Fortsetzen</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.ToolTip" xml:space="preserve">
+    <value>Verwende CUETools-Datenbank</value>
   </data>
   <data name="groupBoxMode.Text" xml:space="preserve">
     <value>Modus</value>
