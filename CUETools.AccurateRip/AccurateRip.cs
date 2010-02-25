@@ -581,9 +581,9 @@ namespace CUETools.AccurateRip
 				if (conf > 0)
 					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Accurately ripped", iTrack + 1, CRC(iTrack, oi), count, conf));
 				else if (partials > 0)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Partial match", iTrack + 1, CRC(iTrack, oi), count, partials));
+					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) No match but offset", iTrack + 1, CRC(iTrack, oi), count, partials));
 				else
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] (00/{2:00}) No matches", iTrack + 1, CRC(iTrack, oi), count));
+					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] (00/{2:00}) No match", iTrack + 1, CRC(iTrack, oi), count));
 			}
 		}
 

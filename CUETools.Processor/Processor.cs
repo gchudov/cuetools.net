@@ -3544,7 +3544,26 @@ string status = processor.Go();
 			if (_useCUEToolsDBFix)// && _CUEToolsDB.SelectedEntry != null)
 				sw.WriteLine("CUETools DB: corrected {0} errors.", _CUEToolsDB.SelectedEntry.repair.CorrectableErrors);
 			else if (_useCUEToolsDB)
-				sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.Status);
+			{
+				if (_CUEToolsDB.DBStatus != null)
+					sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.DBStatus);
+				if (_CUEToolsDB.SubStatus != null)
+					sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.SubStatus);
+				if (_CUEToolsDB.DBStatus == null)
+					sw.WriteLine("        [ CTDBID ] Status");
+				foreach (DBEntry entry in _CUEToolsDB.Entries)
+				{
+					string confFormat = (_CUEToolsDB.Total < 10) ? "{0:0}/{1:0}" : 
+						(_CUEToolsDB.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
+					string conf = string.Format(confFormat, entry.conf, _CUEToolsDB.Total);
+					string status = 
+						(!entry.hasErrors) ? "Accurately ripped" : 
+						entry.canRecover ? string.Format("Contains {0} correctable errors", entry.repair.CorrectableErrors) :
+						(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
+						entry.httpStatus.ToString();
+					sw.WriteLine("        [{0:x8}] ({1}) {2}", entry.crc, conf, status);
+				}
+			}
 			_arVerify.GenerateFullLog(sw, _config.arLogVerbose);
 		}
 
@@ -3681,10 +3700,10 @@ string status = processor.Go();
 			if (_audioEncoderType != AudioEncoderType.NoAudio || _action == CUEAction.Verify)
 				WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
 
-			if (_useCUEToolsDB && CTDB.AccResult == HttpStatusCode.OK)
+			if (_useCUEToolsDB && _CUEToolsDB.AccResult == HttpStatusCode.OK)
 			{
 				if (!_useCUEToolsDBFix)
-					CTDB.DoVerify();
+					_CUEToolsDB.DoVerify();
 			}
 
 			_processed = true;
@@ -5217,7 +5236,7 @@ string status = processor.Go();
 									return "CUEToolsDB: " + CTDB.Status;
 						if (ArVerify.WorstConfidence() < 3)
 							return status + ": confidence too low";
-						return CTDB.Submit((int)ArVerify.WorstConfidence(), (int)ArVerify.WorstTotal());
+						return CTDB.Submit((int)ArVerify.WorstConfidence(), (int)ArVerify.WorstTotal(), Artist, Title);
 					}
 				case "repair":
 					{

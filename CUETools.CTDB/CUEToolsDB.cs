@@ -15,6 +15,7 @@ namespace CUETools.CTDB
 	public class CUEToolsDB
 	{
 		const string urlbase = "http://db.cuetools.net";
+		const string userAgent = "CUETools 205";
 
 		private CDRepairEncode verify;
 		private CDImageLayout toc;
@@ -66,6 +67,7 @@ namespace CUETools.CTDB
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
 			req.Method = "GET";
 			req.Proxy = proxy;
+			req.UserAgent = userAgent;
 			contents = null;
 			total = 0;
 
@@ -124,7 +126,7 @@ namespace CUETools.CTDB
 			return cpuInfo ?? "unknown";
 		}
 
-		public string Submit(int confidence, int total)
+		public string Submit(int confidence, int total, string artist, string title)
 		{
 			if (fullid == null)
 				throw new Exception("no id");
@@ -157,8 +159,11 @@ namespace CUETools.CTDB
 								TRAK.Write(toc[i].Length);
 							}
 					}
+					if (artist != null && artist != "") using (DBHDR TAG = DISC.HDR("ART ")) TAG.Write(artist);
+					if (title != null && title != "") using (DBHDR TAG = DISC.HDR("nam ")) TAG.Write(title);
 					using (DBHDR USER = DISC.HDR("USER")) USER.Write(GetCPUID());
 					using (DBHDR TOOL = DISC.HDR("TOOL")) TOOL.Write("CUETools 205");
+					using (DBHDR TOOL = DISC.HDR("MBID")) TOOL.Write(toc.MusicBrainzId);
 					using (DBHDR DATE = DISC.HDR("DATE")) DATE.Write(DateTime.Now);
 					using (DBHDR CONF = DISC.HDR("CONF")) CONF.Write(confidence);
 					using (DBHDR NPAR = DISC.HDR("NPAR")) NPAR.Write(verify.NPAR);
@@ -168,9 +173,9 @@ namespace CUETools.CTDB
 			}
 			newcontents.Position = 0;
 			files[0] = new UploadFile(newcontents, "uploadedfile", "data.bin", "image/binary");
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/uploader2.php");
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/submit.php");
 			req.Proxy = proxy;
-			req.UserAgent = "CUETools 205";
+			req.UserAgent = userAgent;
 			NameValueCollection form = new NameValueCollection();
 			form.Add("id", fullid);
 			HttpWebResponse resp = uploadHelper.Upload(req, files, form);
@@ -204,7 +209,7 @@ namespace CUETools.CTDB
 					total = rdr.ReadInt();
 				rdr.pos = end;
 			}
-			rdr.pos = end;
+			rdr.pos = endHead;
 			while (rdr.pos < contents.Length)
 			{
 				hdr = rdr.ReadHDR(out end);
@@ -290,6 +295,14 @@ namespace CUETools.CTDB
 			get
 			{
 				return verify;
+			}
+		}
+
+		public string SubStatus
+		{
+			get
+			{
+				return subResult;
 			}
 		}
 
