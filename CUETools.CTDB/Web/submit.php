@@ -75,15 +75,9 @@ if ($size == 0) {
 }
 
 $id = $_POST['id'];
-$err = sscanf($id, "%03d-%04x%04x-%04x%04x-%04x%04x", $tracks, $id1a, $id1b, $id2a, $id2b, $cddbida, $cddbidb);
-$parsedid = sprintf("%03d-%04x%04x-%04x%04x-%04x%04x", $tracks, $id1a, $id1b, $id2a, $id2b, $cddbida, $cddbidb);
-if ($id != $parsedid)
-  die("bad id ". $id);
-
-$target_path = sprintf("parity/%x/%x/%x/%s", $id1b & 15, ($id1b >> 4) & 15, ($id1b >> 8) & 15, $parsedid);
-$target_file = sprintf("%s/ctdb.bin", $target_path, $parsedid);
-
+$target_path = phpCTDB::discid2path($id);
 @mkdir($target_path, 0777, true);
+$target_file = sprintf("%s/ctdb.bin", $target_path);
 
 $ctdb = new phpCTDB($tmpname);
 $ctdb1 = @file_exists($target_file) ? new phpCTDB($target_file) : false;
@@ -162,7 +156,7 @@ fwrite($listfp, "\n");
 fclose($listfp);
 
 if ($merging)
-  printf("%s has been updated", $parsedid);
+  printf("%s has been updated", $id);
 else
-  printf("%s has been uploaded", $parsedid);
+  printf("%s has been uploaded", $id);
 ?>

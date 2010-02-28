@@ -81,6 +81,13 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap cdrepair {
+            get {
+                object obj = ResourceManager.GetObject("cdrepair", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap freedb {
             get {
                 object obj = ResourceManager.GetObject("freedb", resourceCulture);

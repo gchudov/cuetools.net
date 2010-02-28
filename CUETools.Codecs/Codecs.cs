@@ -1642,9 +1642,11 @@ namespace CUETools.Codecs
 		bool _haveData = false;
 		int _bufferPos = 0;
 		Exception _ex = null;
+		bool own;
 
-		public AudioPipe(IAudioSource source, int size)
+		public AudioPipe(IAudioSource source, int size, bool own)
 		{
+			this.own = own;
 			_source = source;
 			_readBuffer = new AudioBuffer(source, size);
 			_writeBuffer = new AudioBuffer(source, size);
@@ -1655,7 +1657,9 @@ namespace CUETools.Codecs
 
 		private void Decompress(object o)
 		{
+#if !DEBUG
 			try
+#endif
 			{
 				bool done = false;
 				do
@@ -1674,8 +1678,8 @@ namespace CUETools.Codecs
 						Monitor.Pulse(this);
 					}
 				} while (!done);
-				_source.Close();
 			}
+#if !DEBUG
 			catch (Exception ex)
 			{
 				lock (this)
@@ -1684,6 +1688,7 @@ namespace CUETools.Codecs
 					Monitor.Pulse(this);
 				}
 			}
+#endif
 		}
 
 		private void Go()
@@ -1711,6 +1716,11 @@ namespace CUETools.Codecs
 			{
 				_workThread.Join();
 				_workThread = null;
+			}
+			if (_source != null)
+			{
+				if (own) _source.Close();
+				_source = null;
 			}
 			if (_readBuffer != null)
 			{

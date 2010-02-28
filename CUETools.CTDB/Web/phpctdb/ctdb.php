@@ -6,6 +6,8 @@ class phpCTDB{
   private $fpstats;
   private $atoms;
   public $db;
+  public $fulltoc;
+  public $mbid;
 
 	function __construct($target_file) {
 	  $this->fp = fopen($target_file, 'rb');
@@ -18,6 +20,32 @@ class phpCTDB{
   function __destruct() {
 		fclose($this->fp);
   }
+
+	function ParseTOC()
+	{
+		$disc = $this->db['discs'][0];
+		$this->fulltoc = '';
+		$mbtoc = '';
+		foreach ($disc['TOC ']['subatoms'] as $track)
+		{
+			if ($track['name']=='INFO') {
+		    $trackcount = phpCTDB::BigEndian2Int(substr($track['value'],0,4));
+		    $pregap = phpCTDB::BigEndian2Int(substr($track['value'],4,4));
+		    $pos = $pregap + 150;
+		  }
+		  if ($track['name']=='TRAK') {
+		    $isaudio = phpCTDB::BigEndian2Int(substr($track['value'],0,4));
+		    $length = phpCTDB::BigEndian2Int(substr($track['value'],4,4));
+		    $this->fulltoc = sprintf('%s %d', $this->fulltoc, $pos);
+		    $mbtoc = sprintf('%s%08X', $mbtoc, $pos);
+		    $pos += $length;
+		  }
+		}
+		$this->fulltoc = sprintf('1 %d %d%s', $trackcount, $pos, $this->fulltoc);
+		$mbtoc = sprintf('01%02X%08X%s', $trackcount, $pos, $mbtoc);
+		$mbtoc = str_pad($mbtoc,804,'0');
+		$this->mbid = str_replace('+', '.', str_replace('/', '_', str_replace('=', '-', base64_encode(pack("H*" , sha1($mbtoc))))));
+	}
 
 	static function BigEndian2Int($byte_word, $signed = false) {
 
@@ -54,6 +82,25 @@ class phpCTDB{
 
 	static function BigEndian2String($number, $minbytes=1, $synchsafe=false) {
 	  return strrev(phpCTDB::LittleEndian2String($number, $minbytes, $synchsafe));
+	}
+
+  static function discid2path($id)
+	{
+		$err = sscanf($id, "%03d-%04x%04x-%04x%04x-%04x%04x", $tracks, $id1a, $id1b, $id2a, $id2b, $cddbida, $cddbidb);
+		$parsedid = sprintf("%03d-%04x%04x-%04x%04x-%04x%04x", $tracks, $id1a, $id1b, $id2a, $id2b, $cddbida, $cddbidb);
+		if ($id != $parsedid)
+			die("bad id ". $id);
+		return sprintf("parity/%x/%x/%x/%s", $id1b & 15, ($id1b >> 4) & 15, ($id1b >> 8) & 15, $parsedid);
+	}
+
+	static function ctdbid2path($discid, $ctdbid)
+	{
+		$path = phpCTDB::discid2path($discid);
+		sscanf($ctdbid, "%04x%04x", $ctdbida, $ctdbidb);
+		$parsedctdbid = sprintf("%04x%04x", $ctdbida, $ctdbidb);
+		if ($ctdbid != $parsedctdbid)
+			die("bad id ". $ctdbid);
+		return sprintf("%s/%s.bin", $path, $ctdbid);
 	}
 
 	static function unparse_atom($fp, $atom)
@@ -105,6 +152,7 @@ class phpCTDB{
 	      foreach ($atom['subatoms'] as $param)
 	        switch ($param['name']) {
 	          case 'HEAD':
+	          case 'TOC ':
 	          case 'CRC ':
 					  case 'MBID':
 					  case 'ART ':

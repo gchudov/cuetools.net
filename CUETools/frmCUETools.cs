@@ -745,7 +745,7 @@ namespace JDP {
 						}
 						if (useCUEToolsDB)
 						{
-							cueSheet.UseCUEToolsDB();
+							cueSheet.UseCUEToolsDB(false, "CUETools 205");
 						}
 
 						if (_batchPaths.Count == 0 && action == CUEAction.Encode)

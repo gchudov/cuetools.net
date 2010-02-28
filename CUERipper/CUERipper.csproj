@@ -14,15 +14,17 @@
     <OldToolsVersion>2.0</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
+    <ApplicationIcon>cue2.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -103,14 +105,13 @@
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
+      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
+      <Name>CUETools.CTDB</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
-      <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
-      <Name>CUETools.Ripper.SCSI</Name>
-      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj">
       <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
@@ -124,6 +125,10 @@
       <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
       <Name>MusicBrainz</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProgressODoom\ProgressODoom.csproj">
+      <Project>{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}</Project>
+      <Name>ProgressODoom</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="musicbrainz.ico" />
@@ -136,6 +141,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="arok.ico" />
+    <Content Include="cue2.ico" />
+    <None Include="Resources\cdrepair.png" />
     <None Include="Resources\accuraterip_16.bmp" />
     <None Include="Resources\accuraterip.bmp" />
   </ItemGroup>

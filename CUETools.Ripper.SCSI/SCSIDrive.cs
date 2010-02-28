@@ -57,14 +57,14 @@ namespace CUETools.Ripper.SCSI
 		int m_max_sectors;
 		int _timeout = 10;
 		Crc16Ccitt _crc;
-		public long[,] UserData;
-		public long[,] C2Data;
+		public long[,,] UserData;
+		public byte[,] C2Count;
 		public byte[,] QData;
 		public long[] byte2long;
 		BitArray _errors;
 		int _errorsCount;
 		int _crcErrorsCount = 0;
-		byte[] _currentData = new byte[MSECTORS * 4 * 588];
+		AudioBuffer currentData = new AudioBuffer(AudioPCMConfig.RedBook, MSECTORS * 588);
 		short[] _valueScore = new short[256];
 		bool _debugMessages = false;
 		ReadCDCommand _readCDCommand = ReadCDCommand.Unknown;
@@ -183,8 +183,8 @@ namespace CUETools.Ripper.SCSI
 		{
 			m_logger = new Logger();
 			_crc = new Crc16Ccitt(InitialCrcValue.Zeros);
-			UserData = new long[MSECTORS, 4 * 588];
-			C2Data = new long[MSECTORS, 588 / 2];
+			UserData = new long[MSECTORS, 2, 4 * 588];
+			C2Count = new byte[MSECTORS, 294];
 			QData = new byte[MSECTORS, 16];
 			byte2long = new long[256];
 			for (long i = 0; i < 256; i++)
@@ -287,6 +287,8 @@ namespace CUETools.Ripper.SCSI
 				m_device.Close();
 			m_device = null;
 			_toc = null;
+			_currentStart = -1;
+			_currentEnd = -1;
 		}
 
 		public void Dispose()
@@ -511,33 +513,73 @@ namespace CUETools.Ripper.SCSI
 			return found;
 		}
 
+		//int dbg_pass;
+		//FileStream fs_d, fs_c;
+
 		private unsafe void ReorganiseSectors(int sector, int Sectors2Read)
 		{
 			int c2Size = _c2ErrorMode == Device.C2ErrorMode.None ? 0 : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? 294 : 296;
 			int oldSize = 4 * 588 + c2Size + (_subChannelMode == Device.SubChannelMode.None ? 0 : 16);
-			fixed (byte* readBuf = _readBuffer, qBuf = _subchannelBuffer, qData = QData)
-			fixed (long* userData = UserData, c2Data = C2Data)
+			fixed (byte* readBuf = _readBuffer, qBuf = _subchannelBuffer, qData = QData, c2Count = C2Count)
+			fixed (long* userData = UserData)
 			{
 				for (int iSector = 0; iSector < Sectors2Read; iSector++)
 				{
 					byte* sectorPtr = readBuf + iSector * oldSize;
-					long* userDataPtr = userData + (sector - _currentStart + iSector) * 4 * 588;
-					long* c2DataPtr = c2Data + (sector - _currentStart + iSector) * 294;
+					long* userDataPtr = userData + (sector - _currentStart + iSector) * 8 * 588;
+					byte* c2CountPtr = c2Count + (sector - _currentStart + iSector) * 294;
 					byte* qDataPtr = qData + (sector - _currentStart + iSector) * 16;
 
-					for (int sample = 0; sample < 4 * 588; sample++)
-						userDataPtr[sample] += byte2long[sectorPtr[sample]] * 3;
+					//if (_currentStart > 0)
+					//{
+					//    string nm_d = string.Format("Y:\\Temp\\dbg\\{0:x}-{1:00}.bin", _currentStart, dbg_pass);
+					//    string nm_c = string.Format("Y:\\Temp\\dbg\\{0:x}-{1:00}.c2", _currentStart, dbg_pass);
+					//    if (fs_d != null && fs_d.Name != nm_d) { fs_d.Close(); fs_d = null; }
+					//    if (fs_c != null && fs_c.Name != nm_c) { fs_c.Close(); fs_c = null; }
+					//    if (fs_d == null) fs_d = new FileStream(nm_d, FileMode.Create);
+					//    if (fs_c == null) fs_c = new FileStream(nm_c, FileMode.Create);
+					//    fs_d.Seek((sector - _currentStart + iSector) * 4 * 588, SeekOrigin.Begin);
+					//    fs_d.Write(_readBuffer, iSector * oldSize, 4 * 588);
+					//    fs_c.Seek((sector - _currentStart + iSector) * 296, SeekOrigin.Begin);
+					//    fs_c.Write(_readBuffer, iSector * oldSize + 4 * 588, 296);
+					//}
+
 					if (_c2ErrorMode != Device.C2ErrorMode.None)
 					{
-						for (int c2 = 0; c2 < 294; c2++)
+						int offs = 0;
+						if (c2Size == 296)
 						{
-							byte c2val = sectorPtr[4 * 588 + c2Size - 294 + c2];
-							c2DataPtr[c2] += byte2long[c2val];
-							if (c2val != 0)
-								for (int b = 0; b < 8; b++)
-									if (((c2val >> b) & 1) != 0)
-										userDataPtr[c2 * 8 + b] += 0x0101010101010101 - byte2long[sectorPtr[c2 * 8 + b]] * 2;
+							// sometimes sector C2 byte is placed after C2 info, not before!!
+							int c2 = 0;
+							for (int pos = 2; pos < 294; pos++)
+								c2 |= sectorPtr[4 * 588 + pos];
+							if (sectorPtr[4 * 588 + 294] == (c2 | sectorPtr[4 * 588 + 0] | sectorPtr[4 * 588 + 1]))
+								offs = 0;
+							else if (sectorPtr[4 * 588] == (c2 | sectorPtr[4 * 588 + 294] | sectorPtr[4 * 588 + 295]))
+								offs = 2;
+							else 
+								throw new Exception("invalid C2 pointers");
 						}
+						for (int pos = 0; pos < 294; pos++)
+						{
+							int c2d = sectorPtr[4 * 588 + pos + offs]; 
+							int c2 = ((-c2d) >> 31) & 1;
+							c2CountPtr[pos] += (byte)c2;
+							int sample = pos << 3;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]]; sample++;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]]; sample++;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]]; sample++;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]]; sample++;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]]; sample++;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]]; sample++;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]]; sample++;
+							userDataPtr[sample + c2 * 4 * 588] += byte2long[sectorPtr[sample]];
+						}
+					}
+					else
+					{
+						for (int sample = 0; sample < 4 * 588; sample++)
+							userDataPtr[sample] += byte2long[sectorPtr[sample]] * 3;
 					}
 					if (_subChannelMode != Device.SubChannelMode.None)
 						for (int qi = 0; qi < 16; qi++)
@@ -551,10 +593,11 @@ namespace CUETools.Ripper.SCSI
 
 		private unsafe void ClearSectors(int sector, int Sectors2Read)
 		{
-			fixed (long* userData = &UserData[sector - _currentStart, 0], c2Data = &C2Data[sector - _currentStart, 0])
+			fixed (long* userData = &UserData[sector - _currentStart, 0, 0])
+			fixed (byte* c2Count = &C2Count[sector - _currentStart, 0])
 			{
-				ZeroMemory((byte*)userData, 8 * 4 * 588 * Sectors2Read);
-				ZeroMemory((byte*)c2Data, 4 * 588 * Sectors2Read);
+				ZeroMemory((byte*)userData, 8 * 2 * 4 * 588 * Sectors2Read);
+				ZeroMemory(c2Count, 294 * Sectors2Read);
 			}
 		}
 
@@ -598,10 +641,8 @@ namespace CUETools.Ripper.SCSI
 					if (FetchSectors(sector + iSector, 1, false, subchannel) != Device.CommandStatus.Success)
 					{
 						iErrors ++;
-						for (int i = 0; i < 4 * 588; i++)
-							UserData[sector + iSector - _currentStart, i] += 0x0101010101010101;
 						for (int i = 0; i < 294; i++)
-							C2Data[sector + iSector - _currentStart, i] += 0x0101010101010101;
+							C2Count[sector + iSector - _currentStart, i] ++;
 						for (int i = 0; i < 16; i++)
 							QData[ sector + iSector - _currentStart, i] = 0;
 						if (_debugMessages)
@@ -745,8 +786,6 @@ namespace CUETools.Ripper.SCSI
 			for (int iSector = 0; iSector < Sectors2Read; iSector++)
 			{
 				int pos = sector - _currentStart + iSector;
-				int avg = (pass + 1) * 3 / 2;
-				int er_limit = 2 + pass / 2; // allow 25% minority
 				// avg - pass + 1
 				// p  a  l  o
 				// 0  1  1  2
@@ -755,23 +794,30 @@ namespace CUETools.Ripper.SCSI
 				// 6 10     5
 				//16 25    10
 				bool fError = false;
+				const byte c2div = 128;
+				int er_limit = c2div * (1 + _correctionQuality) - 1;
+				// need at least 1 + _correctionQuality good passes
 				for (int iPar = 0; iPar < 4 * 588; iPar++)
 				{
-					long val = UserData[pos, iPar];
-					byte c2 = (byte)(C2Data[pos, iPar >> 3] >> ((iPar & 7) * 8));
+					long val = UserData[pos, 0, iPar];
+					long val1 = UserData[pos, 1, iPar];
+					byte c2 = C2Count[pos, iPar >> 3];
+					int ave = (pass + 1 - c2) * c2div + c2;
 					int bestValue = 0;
 					for (int i = 0; i < 8; i++)
 					{
-						int sum = avg - ((int)(val & 0xff));
+						int sum = ave - 2 * (int)((val & 0xff) * c2div + (val1 & 0xff));
 						int sig = sum >> 31; // bit value
 						fError |= (sum ^ sig) < er_limit;
 						bestValue += sig & (1 << i);
 						val >>= 8;
 					}
-					_currentData[pos * 4 * 588 + iPar] = (byte)bestValue;
+					currentData.Bytes[pos * 4 * 588 + iPar] = (byte)bestValue;
 				}
-				if (fError)
-					_currentErrorsCount++;
+				int newerr = (fError ? 1 : 0);
+				//_currentErrorsCount += newerr;
+				_currentErrorsCount += newerr - errtmp[pos];
+				errtmp[pos] = newerr;
 				if (markErrors)
 				{
 					_errors[sector + iSector] |= fError;
@@ -780,6 +826,8 @@ namespace CUETools.Ripper.SCSI
 			}
 
 		}
+
+		int[] errtmp = new int[MSECTORS];
 
 		//private unsafe int CorrectSectorsTest(int start, int end, int c2Score, byte[] realData, int worstScan)
 		//{
@@ -837,14 +885,24 @@ namespace CUETools.Ripper.SCSI
 
 		public unsafe void PrefetchSector(int iSector)
 		{
-			if (_currentStart == MSECTORS * (iSector / MSECTORS))
+			if (iSector >= _currentStart && iSector < _currentEnd)
 				return;
 
 			if (_readCDCommand == ReadCDCommand.Unknown && !TestReadCommand())
 				throw new Exception("failed to autodetect read command: " + _autodetectResult);
 
 			_currentStart = MSECTORS * (iSector / MSECTORS);
-			_currentEnd = Math.Min(_currentStart + MSECTORS, (int)_toc.AudioLength);
+			_currentEnd = _currentStart + MSECTORS;
+			if (_currentEnd > (int)_toc.AudioLength)
+			{
+				_currentEnd = (int)_toc.AudioLength;
+				_currentStart = Math.Max(0, _currentEnd - MSECTORS);
+			}
+
+			int neededSize = (_currentEnd - _currentStart) * 588;
+			if (currentData.Size < neededSize)
+				currentData.Prepare(new byte[neededSize * 4], neededSize);
+			currentData.Length = neededSize;
 
 			//FileStream correctFile = new FileStream("correct.wav", FileMode.Open);
 			//byte[] realData = new byte[MSECTORS * 4 * 588];
@@ -853,11 +911,15 @@ namespace CUETools.Ripper.SCSI
 			//    throw new Exception("read");
 			//correctFile.Close();
 
-			int max_scans = 64;
-			for (int pass = 0; pass <= max_scans; pass++)
+			_currentErrorsCount = 0;
+			for (int i = 0; i < MSECTORS; i++)
+				errtmp[i] = 0;
+
+			int max_scans = 16 << _correctionQuality;
+			for (int pass = 0; pass < max_scans; pass++)
 			{
+//				dbg_pass = pass;
 				DateTime PassTime = DateTime.Now, LastFetch = DateTime.Now;
-				_currentErrorsCount = 0;
 
 				for (int sector = _currentStart; sector < _currentEnd; sector += m_max_sectors)
 				{
@@ -875,9 +937,9 @@ namespace CUETools.Ripper.SCSI
 					if (pass == 0)
 						ProcessSubchannel(sector, Sectors2Read, true);
 					//DateTime LastFetched = DateTime.Now;
-					if ((pass & 1) == 0)
+					if (pass >= _correctionQuality)
 					{
-						CorrectSectors(pass, sector, Sectors2Read, pass >= max_scans);
+						CorrectSectors(pass, sector, Sectors2Read, pass == max_scans - 1);
 						PrintErrors(pass, sector, Sectors2Read, /*realData*/null);
 					}
 					//TimeSpan delay2 = DateTime.Now - LastFetched;
@@ -889,7 +951,7 @@ namespace CUETools.Ripper.SCSI
 				//System.Console.WriteLine();
 				//if (CorrectSectorsTest(start, _currentEnd, 10, realData) == 0)
 				//    break;
-				if ((pass & 1) == 0 && pass >= _correctionQuality && _currentErrorsCount == 0)
+				if (pass >= _correctionQuality && _currentErrorsCount == 0)
 					break;
 			}
 		}
@@ -917,8 +979,15 @@ namespace CUETools.Ripper.SCSI
 			PrefetchSector(_sampleOffset / 588);
 			buff.Length = Math.Min(buff.Length, (int)Length - _sampleOffset);
 			buff.Length = Math.Min(buff.Length, _currentEnd * 588 - _sampleOffset);
-			fixed (byte* dest = buff.Bytes, src = &_currentData[(_sampleOffset - _currentStart * 588) * 4])
-				AudioSamples.MemCpy(dest, src, buff.ByteLength);
+			if ((_sampleOffset - _currentStart * 588) == 0 && (maxLength < 0 || (_currentEnd - _currentStart) * 588 <= buff.Length))
+			{
+				buff.Swap(currentData);
+				_currentStart = -1;
+				_currentEnd = -1;
+			} 
+			else
+				fixed (byte* dest = buff.Bytes, src = &currentData.Bytes[(_sampleOffset - _currentStart * 588) * 4])
+					AudioSamples.MemCpy(dest, src, buff.ByteLength);
 			_sampleOffset += buff.Length;
 			return buff.Length;
 		}
@@ -982,7 +1051,9 @@ namespace CUETools.Ripper.SCSI
 				_currentTrack = -1;
 				_currentIndex = -1;
 				_crcErrorsCount = 0;
-				_errorsCount = 0;				
+				_errorsCount = 0;
+				_currentStart = -1;
+				_currentEnd = -1;
 				_errors = new BitArray((int)_toc.AudioLength); // !!!
 				_sampleOffset = (int)value + _driveOffset;
 			}
@@ -1017,6 +1088,8 @@ namespace CUETools.Ripper.SCSI
 			}
 			set
 			{
+				if (value < 0 || value > 3)
+					throw new Exception("invalid CorrectionQuality");
 				_correctionQuality = value;
 			}
 		}		
@@ -1045,15 +1118,6 @@ namespace CUETools.Ripper.SCSI
 			char[] ISRC6 = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '#', '#', '#', '#', '#', '#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 			bcd &= 0x3f;
 			return bcd >= ISRC6.Length ? '#' : ISRC6[bcd];
-		}
-
-		public static char[] DrivesAvailable()
-		{
-			List<char> result = new List<char>();
-			foreach (DriveInfo info in DriveInfo.GetDrives())
-				if (info.DriveType == DriveType.CDRom)
-					result.Add(info.Name[0]);
-			return result.ToArray();
 		}
 	}
 

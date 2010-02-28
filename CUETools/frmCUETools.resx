@@ -669,6 +669,9 @@
   <data name="checkBoxVerifyUseCDRepair.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
+  <data name="checkBoxVerifyUseCDRepair.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="checkBoxVerifyUseCDRepair.Location" type="System.Drawing.Point, System.Drawing">
     <value>3, 3</value>
   </data>

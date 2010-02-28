@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using CUETools.CDImage;
@@ -20,6 +21,18 @@ namespace CUETools.Ripper
 		BitArray Errors { get; }
 
 		event EventHandler<ReadProgressArgs> ReadProgress;
+	}
+
+	public class CDDrivesList
+	{
+		public static char[] DrivesAvailable()
+		{
+			List<char> result = new List<char>();
+			foreach (DriveInfo info in DriveInfo.GetDrives())
+				if (info.DriveType == DriveType.CDRom)
+					result.Add(info.Name[0]);
+			return result.ToArray();
+		}
 	}
 
 	public sealed class ReadProgressArgs : EventArgs

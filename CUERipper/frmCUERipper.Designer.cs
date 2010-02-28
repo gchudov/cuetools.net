@@ -33,9 +33,9 @@ namespace CUERipper
 			this.comboDrives = new System.Windows.Forms.ComboBox();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusCTDB = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusAr = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
-			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.listTracks = new System.Windows.Forms.ListView();
 			this.Title = new System.Windows.Forms.ColumnHeader();
@@ -50,8 +50,6 @@ namespace CUERipper
 			this.comboRelease = new System.Windows.Forms.ComboBox();
 			this.contextMenuStripRelease = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-			this.releaseBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
 			this.lblWriteOffset = new System.Windows.Forms.Label();
 			this.comboBoxEncoder = new System.Windows.Forms.ComboBox();
@@ -60,11 +58,28 @@ namespace CUERipper
 			this.radioButtonAudioLossless = new System.Windows.Forms.RadioButton();
 			this.checkBoxEACMode = new System.Windows.Forms.CheckBox();
 			this.groupBoxSettings = new System.Windows.Forms.GroupBox();
+			this.labelSecureMode = new System.Windows.Forms.Label();
+			this.labelEncoderMinMode = new System.Windows.Forms.Label();
+			this.labelEncoderMaxMode = new System.Windows.Forms.Label();
+			this.labelEncoderMode = new System.Windows.Forms.Label();
+			this.trackBarEncoderMode = new System.Windows.Forms.TrackBar();
+			this.trackBarSecureMode = new System.Windows.Forms.TrackBar();
+			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.releaseBindingSource = new System.Windows.Forms.BindingSource(this.components);
+			this.progressBarErrors = new ProgressODoom.ProgressBarEx();
+			this.plainBackgroundPainter1 = new ProgressODoom.PlainBackgroundPainter();
+			this.styledBorderPainter1 = new ProgressODoom.StyledBorderPainter();
+			this.plainProgressPainter1 = new ProgressODoom.PlainProgressPainter();
+			this.gradientGlossPainter1 = new ProgressODoom.GradientGlossPainter();
+			this.progressBarCD = new ProgressODoom.ProgressBarEx();
+			this.plainProgressPainter2 = new ProgressODoom.PlainProgressPainter();
 			this.statusStrip1.SuspendLayout();
 			this.contextMenuStripRelease.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
 			this.groupBoxSettings.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarSecureMode)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// comboDrives
@@ -81,9 +96,9 @@ namespace CUERipper
 			// 
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
+            this.toolStripStatusCTDB,
             this.toolStripStatusAr,
             this.toolStripProgressBar1,
-            this.toolStripProgressBar2,
             this.toolStripStatusLabel2});
 			resources.ApplyResources(this.statusStrip1, "statusStrip1");
 			this.statusStrip1.Name = "statusStrip1";
@@ -96,8 +111,22 @@ namespace CUERipper
 			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
 			this.toolStripStatusLabel1.Spring = true;
 			// 
+			// toolStripStatusCTDB
+			// 
+			this.toolStripStatusCTDB.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+			this.toolStripStatusCTDB.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
+			this.toolStripStatusCTDB.Image = global::CUERipper.Properties.Resources.cdrepair;
+			this.toolStripStatusCTDB.Name = "toolStripStatusCTDB";
+			resources.ApplyResources(this.toolStripStatusCTDB, "toolStripStatusCTDB");
+			// 
 			// toolStripStatusAr
 			// 
+			this.toolStripStatusAr.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+			this.toolStripStatusAr.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
 			resources.ApplyResources(this.toolStripStatusAr, "toolStripStatusAr");
 			this.toolStripStatusAr.Name = "toolStripStatusAr";
 			// 
@@ -108,13 +137,6 @@ namespace CUERipper
 			this.toolStripProgressBar1.Name = "toolStripProgressBar1";
 			resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
 			this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-			// 
-			// toolStripProgressBar2
-			// 
-			this.toolStripProgressBar2.AutoToolTip = true;
-			this.toolStripProgressBar2.Name = "toolStripProgressBar2";
-			resources.ApplyResources(this.toolStripProgressBar2, "toolStripProgressBar2");
-			this.toolStripProgressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
 			// 
 			// toolStripStatusLabel2
 			// 
@@ -229,16 +251,6 @@ namespace CUERipper
 			resources.ApplyResources(this.editToolStripMenuItem, "editToolStripMenuItem");
 			this.editToolStripMenuItem.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
 			// 
-			// toolStripMenuItem1
-			// 
-			this.toolStripMenuItem1.Image = global::CUERipper.Properties.Resources.cddb;
-			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
-			// 
-			// releaseBindingSource
-			// 
-			this.releaseBindingSource.DataSource = typeof(MusicBrainz.Release);
-			// 
 			// numericWriteOffset
 			// 
 			resources.ApplyResources(this.numericWriteOffset, "numericWriteOffset");
@@ -300,31 +312,151 @@ namespace CUERipper
 			// 
 			// groupBoxSettings
 			// 
+			this.groupBoxSettings.Controls.Add(this.labelSecureMode);
+			this.groupBoxSettings.Controls.Add(this.labelEncoderMinMode);
+			this.groupBoxSettings.Controls.Add(this.labelEncoderMaxMode);
+			this.groupBoxSettings.Controls.Add(this.labelEncoderMode);
+			this.groupBoxSettings.Controls.Add(this.trackBarEncoderMode);
+			this.groupBoxSettings.Controls.Add(this.trackBarSecureMode);
 			this.groupBoxSettings.Controls.Add(this.radioButtonAudioLossless);
 			this.groupBoxSettings.Controls.Add(this.comboBoxAudioFormat);
-			this.groupBoxSettings.Controls.Add(this.checkBoxEACMode);
 			this.groupBoxSettings.Controls.Add(this.lblWriteOffset);
-			this.groupBoxSettings.Controls.Add(this.numericWriteOffset);
+			this.groupBoxSettings.Controls.Add(this.checkBoxEACMode);
 			this.groupBoxSettings.Controls.Add(this.comboImage);
 			this.groupBoxSettings.Controls.Add(this.radioButtonAudioLossy);
 			this.groupBoxSettings.Controls.Add(this.comboBoxEncoder);
 			this.groupBoxSettings.Controls.Add(this.radioButtonAudioHybrid);
+			this.groupBoxSettings.Controls.Add(this.numericWriteOffset);
 			resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
 			this.groupBoxSettings.Name = "groupBoxSettings";
 			this.groupBoxSettings.TabStop = false;
+			// 
+			// labelSecureMode
+			// 
+			resources.ApplyResources(this.labelSecureMode, "labelSecureMode");
+			this.labelSecureMode.Name = "labelSecureMode";
+			// 
+			// labelEncoderMinMode
+			// 
+			resources.ApplyResources(this.labelEncoderMinMode, "labelEncoderMinMode");
+			this.labelEncoderMinMode.Name = "labelEncoderMinMode";
+			// 
+			// labelEncoderMaxMode
+			// 
+			resources.ApplyResources(this.labelEncoderMaxMode, "labelEncoderMaxMode");
+			this.labelEncoderMaxMode.Name = "labelEncoderMaxMode";
+			// 
+			// labelEncoderMode
+			// 
+			resources.ApplyResources(this.labelEncoderMode, "labelEncoderMode");
+			this.labelEncoderMode.Name = "labelEncoderMode";
+			// 
+			// trackBarEncoderMode
+			// 
+			resources.ApplyResources(this.trackBarEncoderMode, "trackBarEncoderMode");
+			this.trackBarEncoderMode.LargeChange = 1;
+			this.trackBarEncoderMode.Name = "trackBarEncoderMode";
+			this.trackBarEncoderMode.Scroll += new System.EventHandler(this.trackBarEncoderMode_Scroll);
+			// 
+			// trackBarSecureMode
+			// 
+			this.trackBarSecureMode.LargeChange = 3;
+			resources.ApplyResources(this.trackBarSecureMode, "trackBarSecureMode");
+			this.trackBarSecureMode.Maximum = 2;
+			this.trackBarSecureMode.Name = "trackBarSecureMode";
+			this.trackBarSecureMode.Scroll += new System.EventHandler(this.trackBarSecureMode_Scroll);
+			// 
+			// toolStripMenuItem1
+			// 
+			this.toolStripMenuItem1.Image = global::CUERipper.Properties.Resources.cddb;
+			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+			resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
+			// 
+			// releaseBindingSource
+			// 
+			this.releaseBindingSource.DataSource = typeof(MusicBrainz.Release);
+			// 
+			// progressBarErrors
+			// 
+			this.progressBarErrors.BackgroundPainter = this.plainBackgroundPainter1;
+			this.progressBarErrors.BorderPainter = this.styledBorderPainter1;
+			resources.ApplyResources(this.progressBarErrors, "progressBarErrors");
+			this.progressBarErrors.MarqueePercentage = 25;
+			this.progressBarErrors.MarqueeSpeed = 30;
+			this.progressBarErrors.MarqueeStep = 1;
+			this.progressBarErrors.Maximum = 100;
+			this.progressBarErrors.Minimum = 0;
+			this.progressBarErrors.Name = "progressBarErrors";
+			this.progressBarErrors.ProgressPadding = 0;
+			this.progressBarErrors.ProgressPainter = this.plainProgressPainter1;
+			this.progressBarErrors.ProgressType = ProgressODoom.ProgressType.Smooth;
+			this.progressBarErrors.ShowPercentage = false;
+			this.progressBarErrors.Value = 10;
+			// 
+			// plainBackgroundPainter1
+			// 
+			this.plainBackgroundPainter1.Color = System.Drawing.SystemColors.Control;
+			this.plainBackgroundPainter1.GlossPainter = null;
+			// 
+			// styledBorderPainter1
+			// 
+			this.styledBorderPainter1.Border3D = System.Windows.Forms.Border3DStyle.Etched;
+			// 
+			// plainProgressPainter1
+			// 
+			this.plainProgressPainter1.Color = System.Drawing.Color.Red;
+			this.plainProgressPainter1.GlossPainter = this.gradientGlossPainter1;
+			this.plainProgressPainter1.LeadingEdge = System.Drawing.Color.Transparent;
+			this.plainProgressPainter1.ProgressBorderPainter = null;
+			// 
+			// gradientGlossPainter1
+			// 
+			this.gradientGlossPainter1.AlphaHigh = 235;
+			this.gradientGlossPainter1.AlphaLow = 0;
+			this.gradientGlossPainter1.Angle = 90F;
+			this.gradientGlossPainter1.Color = System.Drawing.SystemColors.Control;
+			this.gradientGlossPainter1.PercentageCovered = 100;
+			this.gradientGlossPainter1.Style = ProgressODoom.GlossStyle.Top;
+			this.gradientGlossPainter1.Successor = null;
+			// 
+			// progressBarCD
+			// 
+			this.progressBarCD.BackgroundPainter = this.plainBackgroundPainter1;
+			this.progressBarCD.BorderPainter = this.styledBorderPainter1;
+			resources.ApplyResources(this.progressBarCD, "progressBarCD");
+			this.progressBarCD.MarqueePercentage = 25;
+			this.progressBarCD.MarqueeSpeed = 30;
+			this.progressBarCD.MarqueeStep = 1;
+			this.progressBarCD.Maximum = 100;
+			this.progressBarCD.Minimum = 0;
+			this.progressBarCD.Name = "progressBarCD";
+			this.progressBarCD.ProgressPadding = 0;
+			this.progressBarCD.ProgressPainter = this.plainProgressPainter2;
+			this.progressBarCD.ProgressType = ProgressODoom.ProgressType.Smooth;
+			this.progressBarCD.ShowPercentage = true;
+			this.progressBarCD.Value = 10;
+			// 
+			// plainProgressPainter2
+			// 
+			this.plainProgressPainter2.Color = System.Drawing.Color.Lime;
+			this.plainProgressPainter2.GlossPainter = this.gradientGlossPainter1;
+			this.plainProgressPainter2.LeadingEdge = System.Drawing.Color.Transparent;
+			this.plainProgressPainter2.ProgressBorderPainter = null;
 			// 
 			// frmCUERipper
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.progressBarErrors);
+			this.Controls.Add(this.progressBarCD);
 			this.Controls.Add(this.groupBoxSettings);
 			this.Controls.Add(this.comboRelease);
-			this.Controls.Add(this.buttonPause);
 			this.Controls.Add(this.listTracks);
-			this.Controls.Add(this.buttonAbort);
 			this.Controls.Add(this.buttonGo);
 			this.Controls.Add(this.statusStrip1);
+			this.Controls.Add(this.buttonAbort);
 			this.Controls.Add(this.comboDrives);
+			this.Controls.Add(this.buttonPause);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.Name = "frmCUERipper";
@@ -334,10 +466,12 @@ namespace CUERipper
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
 			this.contextMenuStripRelease.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).EndInit();
 			this.groupBoxSettings.ResumeLayout(false);
 			this.groupBoxSettings.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarSecureMode)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.releaseBindingSource)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -349,7 +483,6 @@ namespace CUERipper
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
 		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar2;
 		private System.Windows.Forms.ListView listTracks;
 		private System.Windows.Forms.ColumnHeader TrackNo;
 		private System.Windows.Forms.ColumnHeader Title;
@@ -375,6 +508,20 @@ namespace CUERipper
 		private System.Windows.Forms.RadioButton radioButtonAudioLossless;
 		private System.Windows.Forms.CheckBox checkBoxEACMode;
 		private System.Windows.Forms.GroupBox groupBoxSettings;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusCTDB;
+		private System.Windows.Forms.TrackBar trackBarEncoderMode;
+		private System.Windows.Forms.Label labelEncoderMode;
+		private System.Windows.Forms.Label labelEncoderMaxMode;
+		private System.Windows.Forms.Label labelEncoderMinMode;
+		private System.Windows.Forms.TrackBar trackBarSecureMode;
+		private System.Windows.Forms.Label labelSecureMode;
+		private ProgressODoom.ProgressBarEx progressBarErrors;
+		private ProgressODoom.StyledBorderPainter styledBorderPainter1;
+		private ProgressODoom.PlainProgressPainter plainProgressPainter1;
+		private ProgressODoom.PlainBackgroundPainter plainBackgroundPainter1;
+		private ProgressODoom.GradientGlossPainter gradientGlossPainter1;
+		private ProgressODoom.ProgressBarEx progressBarCD;
+		private ProgressODoom.PlainProgressPainter plainProgressPainter2;
 	}
 }
 

@@ -978,7 +978,7 @@ namespace CUETools.Processor
 			overwriteCUEData = false;
 			filenamesANSISafe = true;
 			bruteForceDTL = false;
-			createEACLOG = false;
+			createEACLOG = true;
 			detectHDCD = true;
 			wait750FramesForHDCD = true;
 			decodeHDCD = false;
@@ -1030,7 +1030,7 @@ namespace CUETools.Processor
 			}
 			if (Type.GetType("Mono.Runtime", false) == null)
 			{
-				encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "10", "flake.exe", "-%M - -o %O -p %P"));
+				encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
 				encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
 				encoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
 				encoders.Add(new CUEToolsUDC("lame vbr", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
@@ -1159,7 +1159,7 @@ string status = processor.Go();
 			sw.Save("OverwriteCUEData", overwriteCUEData);			
 			sw.Save("FilenamesANSISafe", filenamesANSISafe);
 			if (bruteForceDTL) sw.Save("BruteForceDTL", bruteForceDTL);
-			if (createEACLOG) sw.Save("CreateEACLOG", createEACLOG);
+			sw.Save("CreateEACLOG", createEACLOG);
 			sw.Save("DetectHDCD", detectHDCD);
 			sw.Save("Wait750FramesForHDCD", wait750FramesForHDCD);
 			sw.Save("DecodeHDCD", decodeHDCD);
@@ -1292,7 +1292,7 @@ string status = processor.Go();
 			overwriteCUEData = sr.LoadBoolean("OverwriteCUEData") ?? false;
 			filenamesANSISafe = sr.LoadBoolean("FilenamesANSISafe") ?? true;
 			bruteForceDTL = sr.LoadBoolean("BruteForceDTL") ?? false;
-			createEACLOG = sr.LoadBoolean("createEACLOG") ?? false;
+			createEACLOG = sr.LoadBoolean("CreateEACLOG") ?? createEACLOG;
 			detectHDCD = sr.LoadBoolean("DetectHDCD") ?? true;
 			wait750FramesForHDCD = sr.LoadBoolean("Wait750FramesForHDCD") ?? true;
 			decodeHDCD = sr.LoadBoolean("DecodeHDCD") ?? false;
@@ -2635,14 +2635,15 @@ string status = processor.Go();
 				_padding += _eacLog.Length;
 		}
 
-		public void UseCUEToolsDB()
+		public void UseCUEToolsDB(bool submit, string userAgent)
 		{
 			ShowProgress((string)"Contacting CUETools database...", 0, 0, null, null);
 
-			_CUEToolsDB.ContactDB(_accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
+			_CUEToolsDB.ContactDB(_accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc), userAgent);
 
 			ShowProgress("", 0.0, 0.0, null, null);
 			_useCUEToolsDB = true;
+			_useCUEToolsDBSibmit = submit;
 		}
 
 		public void UseAccurateRip()
@@ -3141,6 +3142,50 @@ string status = processor.Go();
 			}
 		}
 
+		public bool PrintErrors(StringWriter logWriter, uint tr_start, uint len)
+		{
+			uint tr_end = (len + 74) / 75;
+			int errCount = 0;
+			for (uint iSecond = 0; iSecond < tr_end; iSecond++)
+			{
+				uint sec_start = tr_start + iSecond * 75;
+				uint sec_end = Math.Min(sec_start + 74, tr_start + len - 1);
+				bool fError = false;
+				for (uint iSector = sec_start; iSector <= sec_end; iSector++)
+					if (_ripper.Errors[(int)iSector])
+						fError = true;
+				if (fError)
+				{
+					uint end = iSecond;
+					for (uint jSecond = iSecond + 1; jSecond < tr_end; jSecond++)
+					{
+						uint jsec_start = tr_start + jSecond * 75;
+						uint jsec_end = Math.Min(jsec_start + 74, tr_start + len - 1);
+						bool jfError = false;
+						for (uint jSector = jsec_start; jSector <= jsec_end; jSector++)
+							if (_ripper.Errors[(int)jSector])
+								jfError = true;
+						if (jfError)
+							end = jSecond;
+					}
+					if (errCount == 0)
+						logWriter.WriteLine();
+					if (errCount++ > 20)
+						break;
+					//"Suspicious position 0:02:20"
+					//"   Suspicious position 0:02:23 - 0:02:24"
+					string s1 = CDImageLayout.TimeToString("0:{0:00}:{1:00}", iSecond * 75);
+					string s2 = CDImageLayout.TimeToString("0:{0:00}:{1:00}", end * 75);
+					if (iSecond == end)
+						logWriter.WriteLine("     Suspicious position {0}", s1);
+					else
+						logWriter.WriteLine("     Suspicious position {0} - {1}", s1, s2);
+					iSecond = end;
+				}
+			}
+			return errCount > 0;
+		}
+
 		public void CreateExactAudioCopyLOG()
 		{
 			StringWriter logWriter = new StringWriter(CultureInfo.InvariantCulture);
@@ -3163,7 +3208,7 @@ string status = processor.Go();
 				"Delete leading and trailing silent blocks   : No\r\n" +
 				"Null samples used in CRC calculations       : Yes\r\n" +
 				"Used interface                              : Native Win32 interface for Win NT & 2000\r\n" +
-				"Gap handling                                : Appended to previous track\r\n" +
+				"{6}" +
 				"\r\n" +
 				"Used output format : Internal WAV Routines\r\n" +
 				"Sample format      : 44.100 Hz; 16 Bit; Stereo\r\n";
@@ -3173,7 +3218,8 @@ string status = processor.Go();
 				Artist, Title, 
 				_ripper.EACName, 
 				_ripper.CorrectionQuality > 0 ? "Secure" : "Burst", 
-				_ripper.DriveOffset);
+				_ripper.DriveOffset,
+				(OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE) ? "Gap handling                                : Appended to previous track\r\n" : "" );
 
 			logWriter.WriteLine();
 			logWriter.WriteLine("TOC of the extracted CD");
@@ -3192,6 +3238,7 @@ string status = processor.Go();
 			bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
 				(_toc.Pregap != 0));
 			int accurateTracks = 0, knownTracks = 0;
+			bool wereErrors = false;
 			if (OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE)
 			{
 				logWriter.WriteLine();
@@ -3206,46 +3253,7 @@ string status = processor.Go();
 						logWriter.WriteLine("     Pre-gap length  0:{0}.{1:00}", CDImageLayout.TimeToString("{0:00}:{1:00}", _toc[track + _toc.FirstAudio].Pregap + (track + _toc.FirstAudio == 1 ? 150U : 0U)), (_toc[track + _toc.FirstAudio].Pregap % 75) * 100 / 75);
 					}
 
-					int errCount = 0;
-					uint tr_start = _toc[track + _toc.FirstAudio].Start;
-					uint tr_end = (_toc[track + _toc.FirstAudio].Length + 74) / 75;
-					for (uint iSecond = 0; iSecond < tr_end; iSecond ++)
-					{
-						uint sec_start = tr_start + iSecond * 75;
-						uint sec_end = Math.Min(sec_start + 74, _toc[track + _toc.FirstAudio].End);
-						bool fError = false;
-						for (uint iSector = sec_start; iSector <= sec_end; iSector++)
-							if (_ripper.Errors[(int)iSector])
-								fError = true;
-						if (fError)
-						{
-							uint end = iSecond;
-							for (uint jSecond = iSecond + 1; jSecond < tr_end; jSecond++)
-							{
-								uint jsec_start = tr_start + jSecond * 75;
-								uint jsec_end = Math.Min(jsec_start + 74, _toc[track + _toc.FirstAudio].End);
-								bool jfError = false;
-								for (uint jSector = jsec_start; jSector <= jsec_end; jSector++)
-									if (_ripper.Errors[(int)jSector])
-										jfError = true;
-								if (jfError)
-									end = jSecond;
-							}
-							if (errCount == 0)
-								logWriter.WriteLine();
-							if (errCount++ > 20)
-								break;
-							//"Suspicious position 0:02:20"
-							//"   Suspicious position 0:02:23 - 0:02:24"
-							string s1 = CDImageLayout.TimeToString("0:{0:00}:{1:00}", iSecond * 75);
-							string s2 = CDImageLayout.TimeToString("0:{0:00}:{1:00}", end * 75);
-							if (iSecond == end)
-								logWriter.WriteLine("     Suspicious position {0}", s1);
-							else
-								logWriter.WriteLine("     Suspicious position {0} - {1}", s1, s2);
-							iSecond = end;
-						}
-					}
+					wereErrors |= PrintErrors(logWriter, _toc[track + _toc.FirstAudio].Start, _toc[track + _toc.FirstAudio].Length);
 
 					logWriter.WriteLine();
 					logWriter.WriteLine("     Peak level {0:F1} %", (Tracks[track].PeakLevel * 1000 / 32768) * 0.1);
@@ -3277,6 +3285,7 @@ string status = processor.Go();
 				logWriter.WriteLine("Selected range");
 				logWriter.WriteLine();
 				logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(_destPaths[0]), ".wav"));
+				wereErrors = PrintErrors(logWriter, _toc[_toc.FirstAudio][0].Start, _toc.AudioLength);
 				logWriter.WriteLine();
 				int PeakLevel = 0;
 				for (int track = 0; track < TrackCount; track++)
@@ -3288,7 +3297,10 @@ string status = processor.Go();
 				logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(0));
 				logWriter.WriteLine("     Copy OK");
 				logWriter.WriteLine();
-				logWriter.WriteLine("No errors occurred");
+				if (wereErrors)
+					logWriter.WriteLine("There were errors");
+				else
+					logWriter.WriteLine("No errors occurred");
 				logWriter.WriteLine();
 				logWriter.WriteLine();
 				logWriter.WriteLine("AccurateRip summary");
@@ -3331,7 +3343,10 @@ string status = processor.Go();
 			logWriter.WriteLine();
 			if (OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE)
 			{
-				logWriter.WriteLine("No errors occurred");
+				if (wereErrors)
+					logWriter.WriteLine("There were errors");
+				else
+					logWriter.WriteLine("No errors occurred");
 				logWriter.WriteLine();
 			}
 			logWriter.WriteLine("End of status report");
@@ -3383,24 +3398,19 @@ string status = processor.Go();
 			logWriter.WriteLine("Destination files");
 			foreach (string path in _destPaths)
 				logWriter.WriteLine("    {0}", path);
-			bool wereErrors = false;
-			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+			bool wereErrors = PrintErrors(logWriter, _toc[_toc.FirstAudio][0].Start, _toc.AudioLength);
+			if (wereErrors)
 			{
-				int cdErrors = 0;
-				for (uint iSector = _toc[iTrack + 1].Start; iSector <= _toc[iTrack + 1].End; iSector++)
-					if (_ripper.Errors[(int)iSector])
-						cdErrors++;
-				if (cdErrors != 0)
-				{
-					if (!wereErrors)
-					{
-						logWriter.WriteLine();
-						logWriter.WriteLine("Errors detected");
-						logWriter.WriteLine();
-					}
-					wereErrors = true;
-					logWriter.WriteLine("Track {0} contains {1} errors", iTrack + 1, cdErrors);
-				}
+				logWriter.WriteLine();
+				if (wereErrors)
+					logWriter.WriteLine("There were errors");
+				else
+					logWriter.WriteLine("No errors occurred");
+			}
+			if (_useCUEToolsDB)
+			{
+				logWriter.WriteLine();
+				GenerateCTDBLog(logWriter);
 			}
 			if (_useAccurateRip)
 			{
@@ -3408,7 +3418,6 @@ string status = processor.Go();
 				logWriter.WriteLine("AccurateRip summary");
 				logWriter.WriteLine();
 				_arVerify.GenerateFullLog(logWriter, true);
-				logWriter.WriteLine();
 			}
 			logWriter.WriteLine();
 			logWriter.WriteLine("End of status report");
@@ -3514,6 +3523,28 @@ string status = processor.Go();
 			return sw.ToString();
 		}
 
+		public void GenerateCTDBLog(TextWriter sw)
+		{
+			if (_CUEToolsDB.DBStatus != null)
+				sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.DBStatus);
+			if (_CUEToolsDB.SubStatus != null)
+				sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.SubStatus);
+			if (_CUEToolsDB.DBStatus == null)
+				sw.WriteLine("        [ CTDBID ] Status");
+			foreach (DBEntry entry in _CUEToolsDB.Entries)
+			{
+				string confFormat = (_CUEToolsDB.Total < 10) ? "{0:0}/{1:0}" :
+					(_CUEToolsDB.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
+				string conf = string.Format(confFormat, entry.conf, _CUEToolsDB.Total);
+				string status =
+					(!entry.hasErrors) ? "Accurately ripped" :
+					entry.canRecover ? string.Format("Contains {0} correctable errors", entry.repair.CorrectableErrors) :
+					(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
+					entry.httpStatus.ToString();
+				sw.WriteLine("        [{0:x8}] ({1}) {2}", entry.crc, conf, status);
+			}
+		}
+
 		public void GenerateAccurateRipLog(TextWriter sw)
 		{
 			if (!_processed)
@@ -3544,26 +3575,7 @@ string status = processor.Go();
 			if (_useCUEToolsDBFix)// && _CUEToolsDB.SelectedEntry != null)
 				sw.WriteLine("CUETools DB: corrected {0} errors.", _CUEToolsDB.SelectedEntry.repair.CorrectableErrors);
 			else if (_useCUEToolsDB)
-			{
-				if (_CUEToolsDB.DBStatus != null)
-					sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.DBStatus);
-				if (_CUEToolsDB.SubStatus != null)
-					sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.SubStatus);
-				if (_CUEToolsDB.DBStatus == null)
-					sw.WriteLine("        [ CTDBID ] Status");
-				foreach (DBEntry entry in _CUEToolsDB.Entries)
-				{
-					string confFormat = (_CUEToolsDB.Total < 10) ? "{0:0}/{1:0}" : 
-						(_CUEToolsDB.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
-					string conf = string.Format(confFormat, entry.conf, _CUEToolsDB.Total);
-					string status = 
-						(!entry.hasErrors) ? "Accurately ripped" : 
-						entry.canRecover ? string.Format("Contains {0} correctable errors", entry.repair.CorrectableErrors) :
-						(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
-						entry.httpStatus.ToString();
-					sw.WriteLine("        [{0:x8}] ({1}) {2}", entry.crc, conf, status);
-				}
-			}
+				GenerateCTDBLog(sw);
 			_arVerify.GenerateFullLog(sw, _config.arLogVerbose);
 		}
 
@@ -4706,7 +4718,7 @@ string status = processor.Go();
 				{
 					_ripper.Position = 0;
 					//audioSource = _ripper;
-					audioSource = new AudioPipe(_ripper, 0x100000);
+					audioSource = new AudioPipe(_ripper, 0x100000, false);
 				} else
 				if (_isArchive)
 					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path, OpenArchive(sourceInfo.Path, false), _config);
@@ -4719,7 +4731,7 @@ string status = processor.Go();
 
 			//if (!(audioSource is AudioPipe) && !(audioSource is UserDefinedReader) && _config.separateDecodingThread)
 			if (!(audioSource is AudioPipe) && _config.separateDecodingThread)
-				audioSource = new AudioPipe(audioSource, 0x10000);
+				audioSource = new AudioPipe(audioSource, 0x10000, true);
 
 			return audioSource;
 		}
@@ -5226,7 +5238,7 @@ string status = processor.Go();
 							return "AccurateRip: confidence too low";
 						//if (CTDB.AccResult == HttpStatusCode.OK)
 							//return "CUEToolsDB: disc already present in database";
-						if (CTDB.AccResult != HttpStatusCode.NotFound && CTDB.AccResult != HttpStatusCode.OK)
+						if (CTDB.AccResult != HttpStatusCode.NotFound && CTDB.AccResult != HttpStatusCode.OK)// && CTDB.AccResult != HttpStatusCode.NoContent)
 							return "CUEToolsDB: " + CTDB.DBStatus;
 						_useCUEToolsDBSibmit = true;
 						string status = Go();
@@ -5240,7 +5252,7 @@ string status = processor.Go();
 					}
 				case "repair":
 					{
-						UseCUEToolsDB();
+						UseCUEToolsDB(false, "CUETools 205");
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;

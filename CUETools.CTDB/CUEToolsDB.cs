@@ -15,7 +15,7 @@ namespace CUETools.CTDB
 	public class CUEToolsDB
 	{
 		const string urlbase = "http://db.cuetools.net";
-		const string userAgent = "CUETools 205";
+		string userAgent;
 
 		private CDRepairEncode verify;
 		private CDImageLayout toc;
@@ -40,8 +40,9 @@ namespace CUETools.CTDB
 			this.uploadHelper = new HttpUploadHelper();
 		}
 
-		public void ContactDB(string id)
+		public void ContactDB(string id, string userAgent)
 		{
+			this.userAgent = userAgent;
 			this.id = id;
 
 			// Calculate the three disc ids used by AR
@@ -126,6 +127,23 @@ namespace CUETools.CTDB
 			return cpuInfo ?? "unknown";
 		}
 
+		public string Confirm(DBEntry entry)
+		{
+			if (fullid == null)
+				throw new Exception("no id");
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/confirm.php");
+			req.Proxy = proxy;
+			req.UserAgent = userAgent;
+			NameValueCollection form = new NameValueCollection();
+			form.Add("id", fullid);
+			form.Add("ctdbid", string.Format("{0:x8}", entry.crc));
+			HttpWebResponse resp = uploadHelper.Upload(req, new UploadFile[0], form);
+			using (Stream s = resp.GetResponseStream())
+			using (StreamReader sr = new StreamReader(s))
+				subResult = sr.ReadToEnd();
+			return subResult;
+		}
+
 		public string Submit(int confidence, int total, string artist, string title)
 		{
 			if (fullid == null)
@@ -162,7 +180,7 @@ namespace CUETools.CTDB
 					if (artist != null && artist != "") using (DBHDR TAG = DISC.HDR("ART ")) TAG.Write(artist);
 					if (title != null && title != "") using (DBHDR TAG = DISC.HDR("nam ")) TAG.Write(title);
 					using (DBHDR USER = DISC.HDR("USER")) USER.Write(GetCPUID());
-					using (DBHDR TOOL = DISC.HDR("TOOL")) TOOL.Write("CUETools 205");
+					using (DBHDR TOOL = DISC.HDR("TOOL")) TOOL.Write(userAgent);
 					using (DBHDR TOOL = DISC.HDR("MBID")) TOOL.Write(toc.MusicBrainzId);
 					using (DBHDR DATE = DISC.HDR("DATE")) DATE.Write(DateTime.Now);
 					using (DBHDR CONF = DISC.HDR("CONF")) CONF.Write(confidence);
