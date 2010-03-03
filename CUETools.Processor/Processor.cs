@@ -1680,6 +1680,8 @@ string status = processor.Go();
 			cdInfo.Length = _toc.AudioLength * 588;
 			_sources.Add(cdInfo);
 			_ripper.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
+			_padding += TrackCount * 200;
+			_padding += _config.embedLog ? 500 + TrackCount * 200 : 0;
 		}
 
 		public void Close()
@@ -2281,14 +2283,12 @@ string status = processor.Go();
 							{
 								if (fileIsBinary)
 								{
-									// THIS CODE NEVER EXECUTES!!!
-
 									fileTimeLengthFrames = timeRelativeToFileStart + 150;
 									sourceInfo.Path = null;
 									sourceInfo.Offset = 0;
 									sourceInfo.Length = 150 * 588;
 									_sources.Add(sourceInfo);
-									throw new Exception("unexpected BINARY directive");
+									//throw new Exception("unexpected BINARY directive");
 								}
 								else
 								{
@@ -4257,6 +4257,8 @@ string status = processor.Go();
 			if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
 			{
 				iDest++;
+				if (_isCD && style == CUEStyle.SingleFileWithCUE)
+					_padding += Encoding.UTF8.GetByteCount(CUESheetContents(style));
 				audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], destBPS, _padding, noOutput);
 			}
 
@@ -4558,6 +4560,26 @@ string status = processor.Go();
 						break;
 					}
 				}
+
+			if (!foundAll && files == null)
+			{
+				List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, dir == "" ? "." : dir);
+				foreach (FileGroupInfo fileGroup in fileGroups)
+				{
+					if (fileGroup.type == FileGroupInfoType.TrackFiles && fileGroup.files.Count == filePos.Count)
+					{
+						if (foundAll)
+						{
+							foundAll = false;
+							break;
+						}
+						audioFiles = fileGroup.files.ConvertAll<string>(delegate(FileSystemInfo info) { return info.FullName; }).ToArray();
+						Array.Sort(audioFiles);
+						extension = fileGroup.main.Extension.ToLower().TrimStart('.');
+						foundAll = true;
+					}
+				}
+			}
 
 			if (!foundAll)
 				throw new Exception("unable to locate the audio files");
@@ -5162,6 +5184,7 @@ string status = processor.Go();
 				if (ext.StartsWith(".") && _config.formats.TryGetValue(ext.Substring(1), out fmt) && fmt.allowLossless)
 				{
 					uint disc = 0;
+					string album = null;
 					bool cueFound = false;
 					TagLib.UserDefined.AdditionalFileTypes.Config = _config;
 					TagLib.File.IFileAbstraction fileAbsraction = new TagLib.File.LocalFileAbstraction(file.FullName);
@@ -5169,6 +5192,7 @@ string status = processor.Go();
 					{
 						TagLib.File fileInfo = TagLib.File.Create(fileAbsraction);
 						disc = fileInfo.Tag.Disc;
+						album = fileInfo.Tag.Album;
 						cueFound = fmt.allowEmbed && Tagging.Analyze(fileInfo).Get("CUESHEET") != null;
 					}
 					catch { }
@@ -5181,7 +5205,10 @@ string status = processor.Go();
 					FileGroupInfo groupFound = null;
 					foreach (FileGroupInfo fileGroup in fileGroups)
 					{
-						if (fileGroup.type == FileGroupInfoType.TrackFiles && fileGroup.discNo == disc && fileGroup.main.Extension.ToLower() == ext)
+						if (fileGroup.type == FileGroupInfoType.TrackFiles 
+							&& fileGroup.discNo == disc 
+							&& fileGroup.album == album
+							&& fileGroup.main.Extension.ToLower() == ext)
 						{
 							groupFound = fileGroup;
 							break;
@@ -5195,6 +5222,7 @@ string status = processor.Go();
 					{
 						groupFound = new FileGroupInfo(file, FileGroupInfoType.TrackFiles);
 						groupFound.discNo = disc;
+						groupFound.album = album;
 						groupFound.files.Add(file);
 						fileGroups.Add(groupFound);
 						// TODO: tracks must be sorted according to tracknumer (or filename if missing)
@@ -5362,6 +5390,7 @@ string status = processor.Go();
 		public FileSystemInfo main;
 		public FileGroupInfoType type;
 		public uint discNo;
+		public string album;
 
 		public FileGroupInfo(FileSystemInfo _main, FileGroupInfoType _type)
 		{

@@ -389,6 +389,25 @@ namespace CUERipper
 			});
 		}
 
+		private ReleaseInfo ConvertEncoding(ICDRipper audioSource, CDEntry cdEntryOrig)
+		{
+			Encoding iso = Encoding.GetEncoding("iso-8859-1");
+			CDEntry cdEntry = cdEntryOrig.Clone() as CDEntry;
+			bool different = false;
+			cdEntry.Artist = Encoding.Default.GetString(iso.GetBytes(cdEntryOrig.Artist));
+			different |= cdEntry.Artist != cdEntryOrig.Artist;
+			cdEntry.Title = Encoding.Default.GetString(iso.GetBytes(cdEntryOrig.Title));
+			different |= cdEntry.Title != cdEntryOrig.Title;
+			for (int i = 0; i < cdEntry.Tracks.Count; i++)
+			{
+				cdEntry.Tracks[i].Title = Encoding.Default.GetString(iso.GetBytes(cdEntryOrig.Tracks[i].Title));
+				different |= cdEntry.Tracks[i].Title != cdEntryOrig.Tracks[i].Title;
+			}
+			if (!different)
+				return null;
+			return CreateCUESheet(audioSource, null, cdEntry);
+		}
+
 		private ReleaseInfo CreateCUESheet(ICDRipper audioSource, Release release, CDEntry cdEntry)
 		{
 			ReleaseInfo r = new ReleaseInfo(cueSheet);
@@ -479,24 +498,13 @@ namespace CUERipper
 					code = m_freedb.Read(queryResult, out cdEntry);
 					if (code == FreedbHelper.ResponseCodes.CODE_210)
 					{
-						Encoding iso = Encoding.GetEncoding("iso-8859-1");
 						ReleaseInfo r = CreateCUESheet(audioSource, null, cdEntry);
+						ReleaseInfo r2 = ConvertEncoding(audioSource, cdEntry);
 						this.BeginInvoke((MethodInvoker)delegate()
 						{
 							comboRelease.Items.Add(r);
+							if (r2 != null) comboRelease.Items.Add(r2);
 						});
-						if (Encoding.Default.GetString(iso.GetBytes(cdEntry.Title)) != cdEntry.Title)
-						{
-							cdEntry.Artist = Encoding.Default.GetString(iso.GetBytes(cdEntry.Artist));
-							cdEntry.Title = Encoding.Default.GetString(iso.GetBytes(cdEntry.Title));
-							for (int i = 0; i < cdEntry.Tracks.Count; i++)
-								cdEntry.Tracks[i].Title = Encoding.Default.GetString(iso.GetBytes(cdEntry.Tracks[i].Title));
-							r = CreateCUESheet(audioSource, null, cdEntry);
-							this.BeginInvoke((MethodInvoker)delegate()
-							{
-								comboRelease.Items.Add(r);
-							});
-						}
 					}
 				}
 				else
@@ -511,9 +519,11 @@ namespace CUERipper
 						if (code == FreedbHelper.ResponseCodes.CODE_210)
 						{
 							ReleaseInfo r = CreateCUESheet(audioSource, null, cdEntry);
+							ReleaseInfo r2 = ConvertEncoding(audioSource, cdEntry);
 							this.BeginInvoke((MethodInvoker)delegate()
 							{
 								comboRelease.Items.Add(r);
+								if (r2 != null) comboRelease.Items.Add(r2);
 							});
 						}
 					}

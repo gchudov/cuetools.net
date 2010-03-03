@@ -191,7 +191,7 @@ namespace CUETools.FlaCudaExe
 				return 2;
 			}
 			if (buffered)
-				audioSource = new AudioPipe(audioSource, FlaCudaWriter.MAX_BLOCKSIZE);
+				audioSource = new AudioPipe(audioSource, FlaCudaWriter.MAX_BLOCKSIZE, true);
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "flac");
 			FlaCudaWriter encoder = new FlaCudaWriter((output_file == "-" || output_file == "nul") ? "" : output_file,

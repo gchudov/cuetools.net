@@ -1,0 +1,36 @@
+REM DISCID 62104A06
+FILE "<Filename>.iso" BINARY
+  TRACK 01 MODEx/2xxx
+    TITLE "Computer Data"
+    PERFORMER "Brian Eno"
+    INDEX 01 00:00:00
+  TRACK 02 AUDIO
+    TITLE "Castro Haze"
+    PERFORMER "Brian Eno"
+    INDEX 00 31:29:42
+FILE "01.dummy" WAVE
+    INDEX 01 00:00:00
+  TRACK 03 AUDIO
+    TITLE "Manila Envelope"
+    PERFORMER "Brian Eno"
+    INDEX 00 05:53:14
+FILE "02.dummy" WAVE
+    INDEX 01 00:00:00
+  TRACK 04 AUDIO
+    TITLE "Spunk Worship"
+    PERFORMER "Brian Eno"
+    INDEX 00 12:12:14
+FILE "03.dummy" WAVE
+    INDEX 01 00:00:00
+  TRACK 05 AUDIO
+    TITLE "Beast"
+    PERFORMER "Brian Eno"
+    INDEX 00 05:32:04
+FILE "04.dummy" WAVE
+    INDEX 01 00:00:00
+  TRACK 06 AUDIO
+    TITLE "Alloy Balcony & Jets Overhead"
+    PERFORMER "Brian Eno"
+    INDEX 00 06:49:51
+FILE "05.dummy" WAVE
+    INDEX 01 00:00:00

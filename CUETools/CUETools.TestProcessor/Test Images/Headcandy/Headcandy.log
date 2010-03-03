@@ -1,0 +1,116 @@
+Exact Audio Copy V0.99 prebeta 4 from 23. January 2008
+
+EAC extraction logfile from 2. January 2010, 21:12
+
+Brian Eno / Headcandy
+
+Used drive  : HL-DT-STRW/DVD GCC-4244N   Adapter: 1  ID: 0
+
+Read mode               : Secure
+Utilize accurate stream : Yes
+Defeat audio cache      : No
+Make use of C2 pointers : No
+
+Read offset correction                      : 102
+Overread into Lead-In and Lead-Out          : No
+Fill up missing offset samples with silence : Yes
+Delete leading and trailing silent blocks   : No
+Null samples used in CRC calculations       : Yes
+Used interface                              : Native Win32 interface for Win NT & 2000
+Gap handling                                : Appended to previous track
+
+Used output format              : User Defined Encoder
+Selected bitrate                : 128 kBit/s
+Quality                         : High
+Add ID3 tag                     : No
+Command line compressor         : C:\Program Files\Exact Audio Copy\flac.exe
+Additional command line options : -V -8 -T "artist=%a" -T "title=%t" -T "album=%g" -T "date=%y" -T "tracknumber=%n" -T "genre=%m" %s
+
+
+TOC of the extracted CD
+
+     Track |   Start  |  Length  | Start sector | End sector 
+    ---------------------------------------------------------
+        1  |  0:00.00 | 31:32.42 |         0    |   141941   
+        2  | 31:32.42 |  5:55.14 |    141942    |   168580   
+        3  | 37:27.56 | 12:14.14 |    168581    |   223644   
+        4  | 49:41.70 |  5:34.04 |    223645    |   248698   
+        5  | 55:15.74 |  6:51.51 |    248699    |   279574   
+        6  | 62:07.50 |  7:23.24 |    279575    |   312823   
+
+
+Track  2
+
+     Filename C:\MUSICS\Brian Eno -  - Headcandy\02 - Castro Haze.wav
+
+     Pre-gap length  0:00:03.00
+
+     Peak level 72.3 %
+     Track quality 100.0 %
+     Test CRC F1AC5604
+     Copy CRC F1AC5604
+     Cannot be verified as accurate (confidence 1)  [EBD1B9B4], AccurateRip returned [6150B79A]
+     Copy OK
+
+Track  3
+
+     Filename C:\MUSICS\Brian Eno -  - Headcandy\03 - Manila Envelope.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 35.3 %
+     Track quality 99.9 %
+     Test CRC 9462FF86
+     Copy CRC 9462FF86
+     Accurately ripped (confidence 1)  [F3A67506]
+     Copy OK
+
+Track  4
+
+     Filename C:\MUSICS\Brian Eno -  - Headcandy\04 - Spunk Worship.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 66.9 %
+     Track quality 99.9 %
+     Test CRC 7120F46D
+     Copy CRC 7120F46D
+     Accurately ripped (confidence 1)  [493F0AEB]
+     Copy OK
+
+Track  5
+
+     Filename C:\MUSICS\Brian Eno -  - Headcandy\05 - Beast.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 100.0 %
+     Track quality 100.0 %
+     Test CRC EAF2BDBD
+     Copy CRC EAF2BDBD
+     Accurately ripped (confidence 1)  [B8D7FDC4]
+     Copy OK
+
+Track  6
+
+     Filename C:\MUSICS\Brian Eno -  - Headcandy\06 - Alloy Balcony & Jets Overhead.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 100.0 %
+     Track quality 99.9 %
+     Test CRC 9B7916AC
+     Copy CRC 9B7916AC
+     Track not present in AccurateRip database
+     Copy OK
+
+
+ 3 track(s) accurately ripped
+ 1 track(s) could not be verified as accurate
+ 1 track(s) not present in the AccurateRip database
+
+Some tracks could not be verified as accurate
+
+No errors occurred
+
+End of status report

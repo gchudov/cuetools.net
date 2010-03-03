@@ -84,6 +84,11 @@ namespace CUETools.TestProcessor
 			target.Open("Circuitry\\1.cue");
 			Assert.AreEqual<string>("00078c13-001b4ab9-40086205", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
 
+			// test playstation-type CD-Extra with nonstandard pregap
+			target = new CUESheet(config);
+			target.Open("Headcandy\\Headcandy.cue");
+			Assert.AreEqual<string>("0014fc22-0052b286-62104a06", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
+
 			// test Enhanced-CD
 			target = new CUESheet(config);
 			target.Open("No Man's Land\\1.cue");
@@ -92,7 +97,7 @@ namespace CUETools.TestProcessor
 			// test one-track CD
 			target = new CUESheet(config);
 			target.Open("Amarok\\Amarok.cue");
-			Assert.AreEqual<string>("00041f6d-00083ece-020e1201", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
+			Assert.AreEqual<string>("00041f6d-00083ece-020e1201", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");			
 		}
 
 	}

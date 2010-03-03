@@ -173,7 +173,7 @@ namespace CUETools.FlakeExe
 				return;
 			}
 			if (buffered)
-				audioSource = new AudioPipe(audioSource, 0x10000);
+				audioSource = new AudioPipe(audioSource, 0x10000, true);
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "flac");
 			FlakeWriter flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,				

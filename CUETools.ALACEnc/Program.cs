@@ -162,7 +162,7 @@ namespace CUETools.ALACEnc
 				return 2;
 			}
 			if (buffered)
-				audioSource = new AudioPipe(audioSource, 0x10000);
+				audioSource = new AudioPipe(audioSource, 0x10000, true);
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "m4a");
 			ALACWriter alac = new ALACWriter((output_file == "-" || output_file == "nul") ? "" : output_file,

@@ -402,8 +402,11 @@ namespace CUETools.Ripper.SCSI
 								_currentIndex = iIndex;
 								if (_currentIndex == 1)
 								{
-									uint pregap = (uint)(sec - _currentTrackActualStart);
-									_toc[iTrack][0].Start = _toc[iTrack].Start - pregap;
+									if (iTrack != 1)
+									{
+										uint pregap = (uint)(sec - _currentTrackActualStart);
+										_toc[iTrack][0].Start = _toc[iTrack].Start - pregap;
+									}
 									_currentTrackActualStart = sec;
 								} else
 									_toc[iTrack].AddIndex(new CDTrackIndex((uint)iIndex, (uint)(_toc[iTrack].Start + sec - _currentTrackActualStart)));
