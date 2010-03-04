@@ -10,6 +10,7 @@ $count = 20;
 $query = 'SELECT * FROM submissions';
 $term = ' WHERE ';
 $url = '';
+
 $where_discid=@$_GET['discid'];
 if ($where_discid != '')
 {
@@ -20,18 +21,16 @@ if ($where_discid != '')
 $where_artist=@$_GET['artist'];
 if ($where_artist != '')
 {
-  $query = $query . $term . "artist ilike '%" . pg_escape_string($where_artist) . "%'";
+  $query = $query . $term . "artist ilike '" . pg_escape_string($where_artist) . "'";
   $term = ' AND ';
   $url = $url . '&artist=' . urlencode($where_artist);
 }
-$where_uid=@$_GET['uid'];
-if ($where_uid != '')
+if ($term == ' WHERE ')
 {
-  $query = $query . $term . "userid='" . pg_escape_string($where_uid) . "'";
-  $term = ' AND ';
-  $url = $url . '&uid=' . urlencode($where_uid);
+	$query = $query . $term . "confidence>=100";
+	$term = ' AND ';
 }
-$query = $query . " ORDER BY id";
+$query = $query . " ORDER BY confidence";
 $result = pg_query($query) or die('Query failed: ' . pg_last_error());
 $start = @$_GET['start'];
 if (pg_num_rows($result) == 0)
@@ -40,7 +39,7 @@ if ($count > pg_num_rows($result))
 	$count = pg_num_rows($result);
 if ($start == '') $start = pg_num_rows($result) - $count;
 
-printf("<center><h3>Recent additions:</h3>");
+printf("<center><h3>Popular discs:</h3>");
 include 'list.php';
 pg_free_result($result);
 printf("</center>");

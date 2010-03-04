@@ -74,86 +74,27 @@ if ($size == 0) {
   return;
 }
 
+$dbconn = pg_connect("dbname=ctdb user=ctdb_user")
+    or die('Could not connect: ' . pg_last_error());
+
 $id = $_POST['id'];
 $target_path = phpCTDB::discid2path($id);
 @mkdir($target_path, 0777, true);
 $target_file = sprintf("%s/ctdb.bin", $target_path);
 
 $ctdb = new phpCTDB($tmpname);
-$ctdb1 = @file_exists($target_file) ? new phpCTDB($target_file) : false;
-$merging = $ctdb1 ? true : false;
-
-$ftyp['name'] = 'ftyp';
-$ftyp['value'] = 'CTDB';
-
-$newctdb['name'] = 'CTDB';
-  $newhead['name'] = 'HEAD';
-    $newtotal['name'] = 'TOTL';
-    $newtotal['value'] = $ctdb1 ? phpCTDB::BigEndian2String($ctdb1->db['HEAD']['TOTL']['int'] + 1,4) : $ctdb->db['HEAD']['TOTL']['value'];
-  $newhead['subatoms'][] = $newtotal;
-$newctdb['subatoms'][] = $newhead;
-
-if ($ctdb1)
-foreach ($ctdb1->db['subatoms'] as $disc)
-  if ($disc['name'] == 'DISC') 
-  {
-    if ($crc == $disc['CRC ']['value'])
-      die("duplicate entry");
-
-      $newdisc = false;
-      $newdisc['name'] = 'DISC';
-      $newdisc['subatoms'][] = $disc['CRC '];
-      $newdisc['subatoms'][] = $disc['NPAR'];
-      $newdisc['subatoms'][] = $disc['CONF'];
-        $newpar['name'] = 'PAR ';
-        $newpar['value'] = $ctdb1->read($disc['PAR ']['offset'], 16);
-      $newdisc['subatoms'][] = $newpar;
-    $newctdb['subatoms'][] = $newdisc;
-  }
-
-$discs = 0;
-foreach ($ctdb->db['subatoms'] as $disc)
-  if ($disc['name'] == 'DISC') 
-  {
-    $crc = $disc['CRC ']['value'];
-
-      $newdisc = false;
-      $newdisc['name'] = 'DISC';
-      $newdisc['subatoms'][] = $disc['CRC '];
-      $newdisc['subatoms'][] = $disc['NPAR'];
-      $newdisc['subatoms'][] = $disc['CONF'];
-        $newpar['name'] = 'PAR ';
-        $newpar['value'] = $ctdb->read($disc['PAR ']['offset'], 16);
-      $newdisc['subatoms'][] = $newpar;
-    $newctdb['subatoms'][] = $newdisc;
-    $discs++;
-  }
-if ($discs > 1)
-  die('One disc at a time, please');
-if ($discs < 1)
-  die('No disc records found');
-
-$tname = sprintf("%s/ctdb.tmp", $target_path);
-$tfp = fopen($tname, 'wb');
-phpCTDB::unparse_atom($tfp,$ftyp);
-phpCTDB::unparse_atom($tfp,$newctdb);
-fclose($tfp);
+$merging = @file_exists($target_file);
+$ctdb->ParseTOC();
+$record = $ctdb->ctdb2pg($id);
 unset($ctdb);
-unset($ctdb1);
 
-$crca = phpCTDB::BigEndian2Int(substr($crc,0,2));
-$crcb = phpCTDB::BigEndian2Int(substr($crc,2,2));
-$destname = sprintf("%s/%04x%04x.bin", $target_path, $crca, $crcb);
+$destname = sprintf("%s/%08x.bin", $target_path, $record['ctdbid']);
 if(!move_uploaded_file($tmpname, $destname))
   die('error uploading file ' . $tmpname . ' to ' . $destname);
 
-if(!rename($tname,sprintf("%s/ctdb.bin", $target_path)))
-  die('error uploading file ' . $target_path);
+$subres = pg_insert($dbconn, 'submissions', $record);
 
-$listfp = fopen("parity/list.txt", 'a');
-fwrite($listfp, $destname);
-fwrite($listfp, "\n");
-fclose($listfp);
+phpCTDB::pg2ctdb($dbconn, $id);
 
 if ($merging)
   printf("%s has been updated", $id);

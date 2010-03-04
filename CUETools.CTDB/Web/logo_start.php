@@ -34,6 +34,11 @@
   padding: 1px 5px;
 	font-family: Courier;
 }
+.td_ar {
+  padding: 1px 5px;
+  text-align: right;
+	font-family: Courier;
+}
 .classy_table {
   border-style:none;
 #  border-color-right: #D0D0D0
@@ -43,20 +48,34 @@
 </head>
 <body>
 <table border=0 cellspacing=0 cellpadding=3 align=center>
-<tr>
-<td rowspan=3><img src=ctdb.png></td>
-<td colspan=2 class=td_status>
+	<tr>
+		<td rowspan=3><img width=128 height=128 border=0 alt="" src=ctdb.png></td>
+		<td class=td_status>
 <?php
-printf("%d unique discs", filesize("parity/list.txt")/57);
+$dbconn = pg_connect("dbname=ctdb user=ctdb_user")
+    or die('Could not connect: ' . pg_last_error());
+$dbresult = pg_query('SELECT * FROM submissions'); 
+printf("%d unique discs", pg_num_rows($dbresult));
+pg_free_result($dbresult);
 ?>
-</td>
-</tr>
-<tr>
-<td class=style_logo colspan=2>CUETools Database</td>
-</tr>
-<tr align=center>
-<td>About</td>
-<td><a href=http://www.cuetools.net>CUETools</a></td>
-</tr>
+		</td>
+	</tr>
+	<tr align=center height=34%>
+		<td class=style_logo>CUETools Database</td>
+	</tr>
+	<tr align=center height=33%>
+		<td>
+			<?php include 'table_start.php'; ?>
+			<table width=300 border=0 cellspacing=8 cellpadding=0 align=center>
+				<tr align=center>
+					<td><a href=/>Home</a></td>
+					<td><a href=/top.php>Popular</a></td>
+					<td><a href=/about.php>About</a></td>
+					<td><a href=http://www.cuetools.net>CUETools</a></td>
+				</tr>
+			</table>
+			<?php include 'table_end.php'; ?>
+		</td>
+	</tr>
 </table>
 <br clear=all>
