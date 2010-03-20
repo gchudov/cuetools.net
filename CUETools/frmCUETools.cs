@@ -738,15 +738,12 @@ namespace JDP {
 						cueSheet.OutputStyle = cueStyle;
 						cueSheet.Open(pathIn);
 						cueSheet.PreGapLengthMSF = txtPreGapLength.Text;
-						if (useAR)
-						{
+						if (useAR || useCUEToolsDB)
 							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
-							cueSheet.UseAccurateRip();
-						}
 						if (useCUEToolsDB)
-						{
-							cueSheet.UseCUEToolsDB(false, "CUETools 205");
-						}
+							cueSheet.UseCUEToolsDB(false, "CUETools 2.0.6");
+						if (useAR)
+							cueSheet.UseAccurateRip();
 
 						if (_batchPaths.Count == 0 && action == CUEAction.Encode)
 						{
@@ -761,10 +758,15 @@ namespace JDP {
 							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.WorstTotal().ToString() : "";
 							toolStripStatusLabelAR.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
 
-							toolStripStatusLabelCTDB.Enabled = cueSheet.CTDB.DBStatus == null;
-							toolStripStatusLabelCTDB.Visible = useCUEToolsDB;
-							toolStripStatusLabelCTDB.Text = cueSheet.CTDB.DBStatus == null ? cueSheet.CTDB.Total.ToString() : "";
-							toolStripStatusLabelCTDB.ToolTipText = "CUETools DB: " + (cueSheet.CTDB.DBStatus ?? "found") + ".";
+							if (!useCUEToolsDB)
+								toolStripStatusLabelCTDB.Visible = false;
+							else
+							{
+								toolStripStatusLabelCTDB.Visible = true;
+								toolStripStatusLabelCTDB.Enabled = cueSheet.CTDB.DBStatus == null;
+								toolStripStatusLabelCTDB.Text = cueSheet.CTDB.DBStatus == null ? cueSheet.CTDB.Total.ToString() : "";
+								toolStripStatusLabelCTDB.ToolTipText = "CUETools DB: " + (cueSheet.CTDB.DBStatus ?? "found") + ".";
+							}
 
 							if (releases != null)
 							{
@@ -917,7 +919,11 @@ namespace JDP {
 				else
 				{
 					_batchProcessed++;
-					BatchLog("{0}.", pathIn, ex.Message);
+					String msg = "";
+					for (Exception e = ex; e != null; e = e.InnerException)
+						msg += ": " + e.Message;
+					BatchLog("{0}.", pathIn, msg.Substring(2));
+
 				}
 			}
 #endif
@@ -1592,13 +1598,20 @@ namespace JDP {
 
 		private void fileSystemTreeView1_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.KeyCode != Keys.F5) return;
-			if (fileSystemTreeView1.Nodes.Count == 0) return;
-			string was = fileSystemTreeView1.SelectedPath;
-			fileSystemTreeView1.Nodes[0].Collapse();
-			fileSystemTreeView1.Nodes[0].Expand();
-			if (was != null)
-				fileSystemTreeView1.SelectedPath = was;
+			switch (e.KeyCode)
+			{
+				case Keys.F5:
+					string was = fileSystemTreeView1.SelectedPath;
+					foreach (TreeNode node in fileSystemTreeView1.Nodes)
+						node.Collapse();
+					if (was != null)
+						fileSystemTreeView1.SelectedPath = was;
+					break;
+				case Keys.Delete:
+					if (FileBrowserState == FileBrowserStateEnum.DragDrop && fileSystemTreeView1.SelectedNode != null)
+						fileSystemTreeView1.Nodes.Remove(fileSystemTreeView1.SelectedNode);
+					break;
+			}
 		}
 
 		private void fileSystemTreeView1_NodeExpand(object sender, CUEControls.FileSystemTreeViewNodeExpandEventArgs e)
@@ -1680,11 +1693,14 @@ namespace JDP {
 					node.Checked = e.Node.Checked;
 		}
 
-		private void fileSystemTreeView1_DragEnter(object sender, DragEventArgs e)
+		private void fileSystemTreeView1_DragOver(object sender, DragEventArgs e)
 		{
 			if (e.Data.GetDataPresent(DataFormats.FileDrop))
 			{
-				e.Effect = DragDropEffects.Copy;
+				if (((e.KeyState & 8) != 0 && FileBrowserState == FileBrowserStateEnum.DragDrop) || FileBrowserState == FileBrowserStateEnum.Checkboxes)
+					e.Effect = DragDropEffects.Copy;
+				else
+					e.Effect = DragDropEffects.Move;
 			}
 		}
 
@@ -1716,7 +1732,8 @@ namespace JDP {
 							}
 							break;
 						case FileBrowserStateEnum.DragDrop:
-							fileSystemTreeView1.Nodes.Clear();
+							if (e.Effect == DragDropEffects.Move)
+								fileSystemTreeView1.Nodes.Clear();
 							foreach (string folder in folders)
 							{
 								TreeNode node = Directory.Exists(folder)

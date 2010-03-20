@@ -142,16 +142,19 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboDrives.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>11</value>
   </data>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>376, 17</value>
+    <value>0, 456</value>
   </metadata>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>414, 20</value>
+    <value>394, 20</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
+  </data>
+  <data name="toolStripStatusLabelMusicBrainz.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
   </data>
   <data name="toolStripStatusCTDB.Size" type="System.Drawing.Size, System.Drawing">
     <value>20, 20</value>
@@ -219,7 +222,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>9</value>
   </data>
   <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -255,13 +258,19 @@
     <value>70</value>
   </data>
   <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 60</value>
+    <value>6, 87</value>
   </data>
   <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>553, 272</value>
+    <value>553, 245</value>
   </data>
   <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
+  </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>376, 17</value>
+  </metadata>
+  <data name="listTracks.ToolTip" xml:space="preserve">
+    <value>Double-click to edit track names</value>
   </data>
   <data name="&gt;&gt;listTracks.Name" xml:space="preserve">
     <value>listTracks</value>
@@ -273,7 +282,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -303,7 +312,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonGo.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>8</value>
   </data>
   <data name="comboBoxAudioFormat.Items" xml:space="preserve">
     <value>flac</value>
@@ -399,7 +408,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonAbort.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>10</value>
   </data>
   <data name="buttonPause.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -432,7 +441,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonPause.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>12</value>
   </data>
   <data name="comboRelease.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -464,6 +473,9 @@
   <data name="comboRelease.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
+  <data name="comboRelease.ToolTip" xml:space="preserve">
+    <value>Right-Click to edit artist/title</value>
+  </data>
   <data name="&gt;&gt;comboRelease.Name" xml:space="preserve">
     <value>comboRelease</value>
   </data>
@@ -474,7 +486,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboRelease.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>310, 15</value>
@@ -644,23 +656,20 @@
   <data name="checkBoxEACMode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="checkBoxEACMode.CheckAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
   <data name="checkBoxEACMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="checkBoxEACMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>288, 44</value>
+    <value>245, 44</value>
   </data>
   <data name="checkBoxEACMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>76, 17</value>
+    <value>64, 17</value>
   </data>
   <data name="checkBoxEACMode.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
   <data name="checkBoxEACMode.Text" xml:space="preserve">
-    <value>EAC mode</value>
+    <value>EAC log</value>
   </data>
   <data name="&gt;&gt;checkBoxEACMode.Name" xml:space="preserve">
     <value>checkBoxEACMode</value>
@@ -879,7 +888,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>181, 22</value>
@@ -891,19 +900,19 @@
     <value>207, 17</value>
   </metadata>
   <metadata name="plainBackgroundPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>998, 17</value>
+    <value>979, 17</value>
   </metadata>
   <metadata name="styledBorderPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>662, 17</value>
+    <value>643, 17</value>
   </metadata>
   <data name="progressBarErrors.Location" type="System.Drawing.Point, System.Drawing">
     <value>382, 421</value>
   </data>
   <metadata name="plainProgressPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>492, 17</value>
+    <value>473, 17</value>
   </metadata>
   <metadata name="gradientGlossPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>827, 17</value>
+    <value>808, 17</value>
   </metadata>
   <data name="progressBarErrors.Size" type="System.Drawing.Size, System.Drawing">
     <value>177, 23</value>
@@ -915,13 +924,13 @@
     <value>progressBarErrors</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3711.31206, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="progressBarCD.Location" type="System.Drawing.Point, System.Drawing">
     <value>382, 392</value>
@@ -942,13 +951,64 @@
     <value>progressBarCD</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3711.31206, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;progressBarCD.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="comboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 60</value>
+  </data>
+  <data name="comboBoxOutputFormat.MaxDropDownItems" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="comboBoxOutputFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>553, 21</value>
+  </data>
+  <data name="comboBoxOutputFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>32</value>
+  </data>
+  <data name="comboBoxOutputFormat.ToolTip" xml:space="preserve">
+    <value>Template for output files (foobar2000 format)</value>
+  </data>
+  <data name="&gt;&gt;comboBoxOutputFormat.Name" xml:space="preserve">
+    <value>comboBoxOutputFormat</value>
+  </data>
+  <data name="&gt;&gt;comboBoxOutputFormat.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBoxOutputFormat.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;comboBoxOutputFormat.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 61</value>
+  </data>
+  <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
+    <value>552, 20</value>
+  </data>
+  <data name="txtOutputPath.TabIndex" type="System.Int32, mscorlib">
+    <value>33</value>
+  </data>
+  <data name="txtOutputPath.ToolTip" xml:space="preserve">
+    <value>Click to edit output path template</value>
+  </data>
+  <data name="&gt;&gt;txtOutputPath.Name" xml:space="preserve">
+    <value>txtOutputPath</value>
+  </data>
+  <data name="&gt;&gt;txtOutputPath.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;txtOutputPath.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;txtOutputPath.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -1363,12 +1423,18 @@
     <value>CenterScreen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.0.5</value>
+    <value>CUERipper 2.0.6</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelMusicBrainz.Name" xml:space="preserve">
+    <value>toolStripStatusLabelMusicBrainz</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelMusicBrainz.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripStatusCTDB.Name" xml:space="preserve">
@@ -1441,31 +1507,37 @@
     <value>plainBackgroundPainter1</value>
   </data>
   <data name="&gt;&gt;plainBackgroundPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.3711.31206, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Name" xml:space="preserve">
     <value>styledBorderPainter1</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.3711.31206, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Name" xml:space="preserve">
     <value>plainProgressPainter1</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3711.31206, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Name" xml:space="preserve">
     <value>gradientGlossPainter1</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.3711.31206, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Name" xml:space="preserve">
     <value>plainProgressPainter2</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3711.31206, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
+    <value>toolTip1</value>
+  </data>
+  <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmCUERipper</value>

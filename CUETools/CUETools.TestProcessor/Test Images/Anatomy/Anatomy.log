@@ -1,0 +1,85 @@
+Exact Audio Copy V0.99 prebeta 4 from 23. January 2008
+
+EAC extraction logfile from 4. March 2010, 23:08
+
+Îכüדא Àנופüוגא / Àםאעמלטÿ (CD1)
+
+Used drive  : PIONEER DVD-RW  DVR-215D   Adapter: 1  ID: 0
+
+Read mode               : Secure
+Utilize accurate stream : Yes
+Defeat audio cache      : Yes
+Make use of C2 pointers : No
+
+Read offset correction                      : 48
+Overread into Lead-In and Lead-Out          : No
+Fill up missing offset samples with silence : Yes
+Delete leading and trailing silent blocks   : No
+Null samples used in CRC calculations       : Yes
+Used interface                              : Native Win32 interface for Win NT & 2000
+
+Used output format : Internal WAV Routines
+Sample format      : 44.100 Hz; 16 Bit; Stereo
+
+
+TOC of the extracted CD
+
+     Track |   Start  |  Length  | Start sector | End sector 
+    ---------------------------------------------------------
+        1  |  0:00.00 |  4:22.37 |         0    |    19686   
+        2  |  4:22.37 |  2:59.32 |     19687    |    33143   
+        3  |  7:21.69 |  3:53.61 |     33144    |    50679   
+        4  | 11:15.55 |  4:15.67 |     50680    |    69871   
+        5  | 15:31.47 |  4:26.00 |     69872    |    89821   
+        6  | 19:57.47 |  4:03.37 |     89822    |   108083   
+        7  | 24:01.09 |  5:20.14 |    108084    |   132097   
+        8  | 29:21.23 |  4:07.02 |    132098    |   150624   
+        9  | 33:28.25 |  3:28.46 |    150625    |   166270   
+       10  | 36:56.71 |  6:21.36 |    166271    |   194881   
+       11  | 43:18.32 |  1:10.40 |    194882    |   200171   
+       12  | 44:28.72 |  3:29.37 |    200172    |   215883   
+       13  | 47:58.34 |  4:28.62 |    215884    |   236045   
+       14  | 52:27.21 |  1:30.19 |    236046    |   242814   
+       15  | 53:57.40 |  5:56.03 |    242815    |   269517   
+       16  | 59:53.43 |  2:46.50 |    269518    |   282017   
+       17  | 62:40.18 |  2:31.73 |    282018    |   293415   
+
+
+Range status and errors
+
+Selected range
+
+     Filename Z:\Music\New\Îכüדא Àנופüוגא - 2001 - Àםאעמלטÿ (CD1) (2)\Îכüדא Àנופüוגא - Àםאעמלטÿ (CD1).wav
+
+     Peak level 96.8 %
+     Range quality 100.0 %
+     Test_CRC 900B46C9
+     Copy_CRC 900B46C9
+     Copy OK
+
+No errors occurred
+
+
+AccurateRip summary
+
+Track  1  not present in database
+Track  2  not present in database
+Track  3  cannot be verified as accurate (confidence 2)  [ABFDCBE5], AccurateRip returned [CE139C13]
+Track  4  cannot be verified as accurate (confidence 2)  [FD73C536], AccurateRip returned [ABFDCBE5]
+Track  5  cannot be verified as accurate (confidence 2)  [041E67B6], AccurateRip returned [FD73C536]
+Track  6  cannot be verified as accurate (confidence 2)  [7F3ACA35], AccurateRip returned [041E67B6]
+Track  7  cannot be verified as accurate (confidence 2)  [40F2BE73], AccurateRip returned [7F3ACA35]
+Track  8  cannot be verified as accurate (confidence 2)  [19AAED4C], AccurateRip returned [40F2BE73]
+Track  9  cannot be verified as accurate (confidence 2)  [7C0E0656], AccurateRip returned [19AAED4C]
+Track 10  cannot be verified as accurate (confidence 2)  [ADD905EF], AccurateRip returned [7C0E0656]
+Track 11  cannot be verified as accurate (confidence 2)  [A18D8581], AccurateRip returned [ADD905EF]
+Track 12  cannot be verified as accurate (confidence 2)  [B4E21ED5], AccurateRip returned [A18D8581]
+Track 13  cannot be verified as accurate (confidence 2)  [7D5BC78C], AccurateRip returned [B4E21ED5]
+Track 14  cannot be verified as accurate (confidence 2)  [40D2728E], AccurateRip returned [7D5BC78C]
+Track 15  cannot be verified as accurate (confidence 2)  [990F316E], AccurateRip returned [40D2728E]
+Track 16  cannot be verified as accurate (confidence 2)  [FC5F3E48], AccurateRip returned [990F316E]
+
+No tracks could be verified as accurate
+You may have a different pressing from the one(s) in the database
+
+End of status report

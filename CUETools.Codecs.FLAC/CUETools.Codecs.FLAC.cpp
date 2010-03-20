@@ -95,12 +95,12 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			_decoder = FLAC__stream_decoder_new();
 
 			if (!FLAC__stream_decoder_set_metadata_respond (_decoder, FLAC__METADATA_TYPE_VORBIS_COMMENT))
-				throw gcnew Exception("Unable to setup the decoder.");
+				throw gcnew Exception("unable to setup the decoder");
 
 			//if (!FLAC__stream_decoder_set_disable_asm(_decoder, disableAsm))
-			//	throw gcnew Exception("Unable to setup the decoder.");
+			//	throw gcnew Exception("unable to setup the decoder");
 
-			if (FLAC__stream_decoder_init_stream(_decoder, 
+			FLAC__StreamDecoderInitStatus st = FLAC__stream_decoder_init_stream(_decoder,
 				(FLAC__StreamDecoderReadCallback)Marshal::GetFunctionPointerForDelegate(_readDel).ToPointer(),
 				_IO->CanSeek?(FLAC__StreamDecoderSeekCallback)Marshal::GetFunctionPointerForDelegate(_seekDel).ToPointer():NULL,
 				_IO->CanSeek?(FLAC__StreamDecoderTellCallback)Marshal::GetFunctionPointerForDelegate(_tellDel).ToPointer():NULL,
@@ -109,17 +109,15 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				(FLAC__StreamDecoderWriteCallback)Marshal::GetFunctionPointerForDelegate(_writeDel).ToPointer(),
 				(FLAC__StreamDecoderMetadataCallback)Marshal::GetFunctionPointerForDelegate(_metadataDel).ToPointer(),
 				(FLAC__StreamDecoderErrorCallback)Marshal::GetFunctionPointerForDelegate(_errorDel).ToPointer(),
-				NULL) != FLAC__STREAM_DECODER_INIT_STATUS_OK)
-			{
-				throw gcnew Exception("Unable to initialize the decoder.");
-			}
+				NULL);
+
+			if (st != FLAC__STREAM_DECODER_INIT_STATUS_OK)
+				throw gcnew Exception(String::Format("unable to initialize the decoder: {0}", gcnew String(FLAC__StreamDecoderInitStatusString[st])));
 
 			_decoderActive = true;
 
-			if (!FLAC__stream_decoder_process_until_end_of_metadata(_decoder)) {
-				throw gcnew Exception("Unable to retrieve metadata.");
-			}
-
+			if (!FLAC__stream_decoder_process_until_end_of_metadata(_decoder))
+				throw gcnew Exception("unable to retrieve metadata");
 		}
 
 		~FLACReader ()
@@ -149,9 +147,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				_sampleOffset = offset;
 				_bufferOffset = 0;
 				_bufferLength = 0;
-				if (!FLAC__stream_decoder_seek_absolute(_decoder, offset)) {
-					throw gcnew Exception("Unable to seek.");
-				}
+				if (!FLAC__stream_decoder_seek_absolute(_decoder, offset))
+					throw gcnew Exception("unable to seek");
 			}
 		}
 
@@ -263,7 +260,10 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 						if (FLAC__stream_decoder_get_state(_decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
 						    return buff->Length - samplesNeeded;
 						if (!FLAC__stream_decoder_process_single(_decoder))
-							throw gcnew Exception("An error occurred while decoding.");
+						{
+						    String^ state = gcnew String(FLAC__StreamDecoderStateString[FLAC__stream_decoder_get_state(_decoder)]);
+						    throw gcnew Exception(String::Format("an error occurred while decoding: {0}", state));
+						}
 					} while (_bufferLength == 0);
 					_sampleOffset += _bufferLength;
 				}
@@ -307,19 +307,16 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		{
 			Int32 sampleCount = frame->header.blocksize;
 
-			if (_bufferLength > 0) {
-				throw gcnew Exception("Received unrequested samples.");
-			}
+			if (_bufferLength > 0)
+				throw gcnew Exception("received unrequested samples");
 
 			if ((frame->header.bits_per_sample != pcm->BitsPerSample) ||
 				(frame->header.channels != pcm->ChannelCount) ||
 				(frame->header.sample_rate != pcm->SampleRate))
-			{
-				throw gcnew Exception("Format changes within a file are not allowed.");
-			}
+				throw gcnew Exception("format changes within a file are not allowed");
 
 			if (_bufferOffset != 0)
-			    throw gcnew Exception("Internal buffer error.");
+			    throw gcnew Exception("internal buffer error");
 
 			if (_sampleBuffer == nullptr || _sampleBuffer->Size < sampleCount)
 			    _sampleBuffer = gcnew AudioBuffer(pcm, sampleCount);
@@ -382,13 +379,13 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		{
 			switch (status) {
 				case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
-					throw gcnew Exception("Synchronization was lost.");
+					throw gcnew Exception("synchronization was lost");
 				case FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER:
-					throw gcnew Exception("Encountered a corrupted frame header.");
+					throw gcnew Exception("encountered a corrupted frame header");
 				case FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
-					throw gcnew Exception("Frame CRC mismatch.");
+					throw gcnew Exception("frame CRC mismatch");
 				default:
-					throw gcnew Exception("An unknown error has occurred.");
+					throw gcnew Exception("an unknown error has occurred");
 			}
 		}
 
@@ -452,7 +449,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		    _pcm = pcm;
 
 		    if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
-				throw gcnew Exception("Bits per sample must be 16..24.");
+				throw gcnew Exception("bits per sample must be 16..24");
 
 			_initialized = false;
 			_disableAsm = false;
@@ -484,7 +481,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			FLAC__stream_encoder_delete(_encoder);
 
 			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount))
-				throw gcnew Exception("Samples written differs from the expected sample count.");
+				throw gcnew Exception("samples written differs from the expected sample count");
 		}
 
 		virtual void Delete()
@@ -498,12 +495,10 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				return _finalSampleCount;
 			}
 			void set(Int64 value) {
-				if (value < 0) {
-					throw gcnew Exception("Invalid final sample count.");
-				}
-				if (_initialized) {
-					throw gcnew Exception("Final sample count cannot be changed after encoding begins.");
-				}
+				if (value < 0)
+					throw gcnew Exception("invalid final sample count");
+				if (_initialized)
+					throw gcnew Exception("final sample count cannot be changed after encoding begins");
 				_finalSampleCount = value;
 			}
 		}
@@ -549,7 +544,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 					FLAC__stream_encoder_get_verify_decoder_error_stats(_encoder, &absolute_sample, &frame_number, &channel, &sample, &expected, &got);
 					state = state + String::Format("({0:x} instead of {1:x} @{2:x})", got, expected, absolute_sample);
 				}
-				throw gcnew Exception("An error occurred while encoding: " + state);
+				throw gcnew Exception("an error occurred while encoding: " + state);
 			}
 
 			_samplesWritten += sampleBuffer->Length;
@@ -560,9 +555,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				return _compressionLevel;
 			}
 			void set(Int32 value) {
-				if ((value < 0) || (value > 8)) {
-					throw gcnew Exception("Invalid compression level.");
-				}
+				if ((value < 0) || (value > 8))
+					throw gcnew Exception("invalid compression level");
 				_compressionLevel = value;
 			}
 		}
@@ -590,7 +584,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 					Verify = true;
 					continue;
 				    }
-				    throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+				    throw gcnew Exception(String::Format("unsupported options: {0}", value));
 				}
 			}
 		}
@@ -618,9 +612,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				return _paddingLength;
 			}
 			void set(Int32 value) {
-				if (value < 0) {
-					throw gcnew Exception("Invalid padding length.");
-				}
+				if (value < 0)
+					throw gcnew Exception("invalid padding length");
 				_paddingLength = value;
 			}
 		}
@@ -711,14 +704,18 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				FLAC__stream_encoder_set_blocksize(_encoder, (unsigned)_blockSize);
 
 			pathChars = Marshal::StringToHGlobalUni(_path);
-			hFile = _wfopen((const wchar_t*)pathChars.ToPointer(), L"w+b");
+			errno_t err = _wfopen_s(&hFile, (const wchar_t*)pathChars.ToPointer(), L"w+b");
 			Marshal::FreeHGlobal(pathChars);
-
-			if (FLAC__stream_encoder_init_FILE(_encoder, hFile, NULL, NULL) !=
-				FLAC__STREAM_ENCODER_INIT_STATUS_OK)
+			if (err)
 			{
-				throw gcnew Exception("Unable to initialize the encoder.");
+			    wchar_t buffer[256];
+			    _wcserror_s(buffer, err);
+			    throw gcnew Exception(String::Format("unable to open output file {0}: {1}", _path, gcnew String(buffer)));
 			}
+
+			FLAC__StreamEncoderInitStatus st = FLAC__stream_encoder_init_FILE(_encoder, hFile, NULL, NULL);
+			if (st != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
+				throw gcnew Exception(String::Format("unable to initialize the encoder: {0}", gcnew String(FLAC__StreamEncoderInitStatusString[st])));
 
 			_initialized = true;
 		}

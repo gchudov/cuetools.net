@@ -814,10 +814,10 @@ namespace CUETools.Processor
 			//ActivationContext is null most of the time :(
 
 			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "Win32";
-			string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins (" + arch + ")");
+			string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins (" + arch + ")");
 			if (Directory.Exists(plugins_path))
 				AddPluginDirectory(plugins_path);
-			plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins");
+			plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins");
 			if (Directory.Exists(plugins_path))
 				AddPluginDirectory(plugins_path);
 		}
@@ -1671,15 +1671,14 @@ string status = processor.Go();
 				_tracks.Add(new TrackInfo());
 			}
 			_arVerify = new AccurateRipVerify(_toc, proxy);
-			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
-			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			_isCD = true;
 			SourceInfo cdInfo;
 			cdInfo.Path = _ripper.ARName;
 			cdInfo.Offset = 0;
 			cdInfo.Length = _toc.AudioLength * 588;
 			_sources.Add(cdInfo);
-			_ripper.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
+			// Causes memory leak, so had to disable!
+			//_ripper.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
 			_padding += TrackCount * 200;
 			_padding += _config.embedLog ? 500 + TrackCount * 200 : 0;
 		}
@@ -1690,7 +1689,10 @@ string status = processor.Go();
 				_archive.Close();
 			_archive = null;
 			if (_ripper != null)
+			{
+				//_ripper.ReadProgress -= new EventHandler<ReadProgressArgs>(CDReadProgress);
 				_ripper.Close();
+			}
 			_ripper = null;
 		}
 
@@ -1739,7 +1741,8 @@ string status = processor.Go();
 
 		public void FillFromMusicBrainz(MusicBrainz.Release release)
 		{
-			Year = release.GetEvents().Count > 0 ? release.GetEvents()[0].Date.Substring(0, 4) : "";
+			string date = release.GetEvents().Count > 0 ? release.GetEvents()[0].Date : null;
+			Year = date == null ? "" : date.Substring(0, 4);
 			Artist = release.GetArtist();
 			Title = release.GetTitle();
 			// How to get Genre: http://mm.musicbrainz.org/ws/1/release/6fe1e218-2aee-49ac-94f0-7910ba2151df.html?type=xml&inc=tags
@@ -1760,7 +1763,7 @@ string status = processor.Go();
 			Title = cdEntry.Title;
 			for (int i = 0; i < _toc.AudioTracks; i++)
 			{
-				Tracks[i].Title = cdEntry.Tracks[i].Title;
+				Tracks[i].Title = cdEntry.Tracks[i + _toc.FirstAudio - 1].Title;
 				Tracks[i].Artist = cdEntry.Artist;
 			}
 		}
@@ -1778,7 +1781,7 @@ string status = processor.Go();
 				m_freedb.UserName = "gchudov";
 				m_freedb.Hostname = "gmail.com";
 				m_freedb.ClientName = "CUETools";
-				m_freedb.Version = "1.9.5";
+				m_freedb.Version = "2.0.6";
 				m_freedb.SetDefaultSiteAddress("freedb.org");
 
 				QueryResult queryResult;
@@ -1790,6 +1793,7 @@ string status = processor.Go();
 					code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(_toc), out queryResult, out coll);
 					if (code == FreedbHelper.ResponseCodes.CODE_200)
 					{
+						ShowProgress("Looking up album via Freedb... " + queryResult.Discid, 0.5, 0.0, null, null);
 						code = m_freedb.Read(queryResult, out cdEntry);
 						if (code == FreedbHelper.ResponseCodes.CODE_210)
 							Releases.Add(cdEntry);
@@ -1801,7 +1805,7 @@ string status = processor.Go();
 							int i = 0;
 							foreach (QueryResult qr in coll)
 							{
-								ShowProgress("Looking up album via freedb...", 0.0, (++i + 0.0) / coll.Count, null, null);
+								ShowProgress("Looking up album via freedb... " + qr.Discid, 0.0, (++i + 0.0) / coll.Count, null, null);
 								CheckStop();
 								code = m_freedb.Read(qr, out cdEntry);
 								if (code == FreedbHelper.ResponseCodes.CODE_210)
@@ -2575,6 +2579,23 @@ string status = processor.Go();
 					DataTrackLength = tocFromLog[1].Length;
 			}
 
+			// use data track length from log
+			if (tocFromLog != null 
+				&& _toc.TrackCount == _toc.AudioTracks
+				&& tocFromLog.TrackCount == tocFromLog.AudioTracks 
+				&& tocFromLog.TrackCount == _toc.TrackCount + 1)
+			{
+				bool matches = true;
+				for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
+					if (tocFromLog[iTrack + 1].Length != _toc[iTrack].Length)
+						matches = false;
+				if (matches)
+				{
+					_toc.InsertTrack(new CDTrack(1, 0, 0, false, false));
+					DataTrackLength = tocFromLog[1].Length;
+				}
+			}
+
 			// use data track length range from cddbId
 			if (DataTrackLength == 0 && _cddbDiscIdTag != null)
 			{
@@ -2589,8 +2610,6 @@ string status = processor.Go();
 			}
 
 			_arVerify = new AccurateRipVerify(_toc, proxy);
-			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
-			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 
 			if (_eacLog != null)
 			{
@@ -2639,7 +2658,9 @@ string status = processor.Go();
 		{
 			ShowProgress((string)"Contacting CUETools database...", 0, 0, null, null);
 
-			_CUEToolsDB.ContactDB(_accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc), userAgent);
+			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
+			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
+			_CUEToolsDB.ContactDB(userAgent);
 
 			ShowProgress("", 0.0, 0.0, null, null);
 			_useCUEToolsDB = true;
@@ -3152,21 +3173,24 @@ string status = processor.Go();
 				uint sec_end = Math.Min(sec_start + 74, tr_start + len - 1);
 				bool fError = false;
 				for (uint iSector = sec_start; iSector <= sec_end; iSector++)
-					if (_ripper.Errors[(int)iSector])
+					if (_ripper.Errors[(int)iSector - (int)_toc[_toc.FirstAudio][0].Start])
 						fError = true;
 				if (fError)
 				{
-					uint end = iSecond;
+					uint end = tr_end - 1;
 					for (uint jSecond = iSecond + 1; jSecond < tr_end; jSecond++)
 					{
 						uint jsec_start = tr_start + jSecond * 75;
 						uint jsec_end = Math.Min(jsec_start + 74, tr_start + len - 1);
 						bool jfError = false;
 						for (uint jSector = jsec_start; jSector <= jsec_end; jSector++)
-							if (_ripper.Errors[(int)jSector])
+							if (_ripper.Errors[(int)jSector - (int)_toc[_toc.FirstAudio][0].Start])
 								jfError = true;
-						if (jfError)
-							end = jSecond;
+						if (!jfError)
+						{
+							end = jSecond - 1;
+							break;
+						}
 					}
 					if (errCount == 0)
 						logWriter.WriteLine();
@@ -3180,7 +3204,7 @@ string status = processor.Go();
 						logWriter.WriteLine("     Suspicious position {0}", s1);
 					else
 						logWriter.WriteLine("     Suspicious position {0} - {1}", s1, s2);
-					iSecond = end;
+					iSecond = end + 1;
 				}
 			}
 			return errCount > 0;
@@ -3219,7 +3243,9 @@ string status = processor.Go();
 				_ripper.EACName, 
 				_ripper.CorrectionQuality > 0 ? "Secure" : "Burst", 
 				_ripper.DriveOffset,
-				(OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE) ? "Gap handling                                : Appended to previous track\r\n" : "" );
+				(OutputStyle == CUEStyle.SingleFile || OutputStyle == CUEStyle.SingleFileWithCUE) ? "" :
+					"Gap handling                                : " +
+					(_ripper.GapsDetected ? "Appended to previous track\r\n" : "Not detected, thus appended to previous track\r\n"));
 
 			logWriter.WriteLine();
 			logWriter.WriteLine("TOC of the extracted CD");
@@ -3256,7 +3282,7 @@ string status = processor.Go();
 					wereErrors |= PrintErrors(logWriter, _toc[track + _toc.FirstAudio].Start, _toc[track + _toc.FirstAudio].Length);
 
 					logWriter.WriteLine();
-					logWriter.WriteLine("     Peak level {0:F1} %", (Tracks[track].PeakLevel * 1000 / 32768) * 0.1);
+					logWriter.WriteLine("     Peak level {0:F1} %", (_arVerify.PeakLevel(track + 1) * 1000 / 65535) * 0.1);
 					logWriter.WriteLine("     Track quality 100.0 %");
 					logWriter.WriteLine("     Test CRC {0:X8}", _arVerify.CRC32(track + 1));
 					logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(track + 1));
@@ -3287,11 +3313,7 @@ string status = processor.Go();
 				logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(_destPaths[0]), ".wav"));
 				wereErrors = PrintErrors(logWriter, _toc[_toc.FirstAudio][0].Start, _toc.AudioLength);
 				logWriter.WriteLine();
-				int PeakLevel = 0;
-				for (int track = 0; track < TrackCount; track++)
-					if (PeakLevel < Tracks[track].PeakLevel)
-						PeakLevel = Tracks[track].PeakLevel;
-				logWriter.WriteLine("     Peak level {0:F1} %", (PeakLevel * 1000 / 32768) * 0.1);
+				logWriter.WriteLine("     Peak level {0:F1} %", (_arVerify.PeakLevel() * 1000 / 65535) * 0.1);
 				logWriter.WriteLine("     Range quality 100.0 %");
 				logWriter.WriteLine("     Test CRC {0:X8}", _arVerify.CRC32(0));
 				logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(0));
@@ -3363,7 +3385,7 @@ string status = processor.Go();
 				CreateExactAudioCopyLOG();
 				return;
 			}
-			StringWriter logWriter = new StringWriter();
+			StringWriter logWriter = new StringWriter(CultureInfo.InvariantCulture);
 			logWriter.WriteLine("{0}", _ripper.RipperVersion);
 			logWriter.WriteLine("Extraction logfile from : {0}", DateTime.Now);
 			logWriter.WriteLine("Used drive              : {0}", _ripper.ARName);
@@ -3525,8 +3547,9 @@ string status = processor.Go();
 
 		public void GenerateCTDBLog(TextWriter sw)
 		{
-			if (_CUEToolsDB.DBStatus != null)
-				sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.DBStatus);
+			sw.WriteLine("[CTDB TOCID: {0}] {1}.", _toc.TOCID, _CUEToolsDB.DBStatus ?? "found");
+			if (!_processed)
+				return;
 			if (_CUEToolsDB.SubStatus != null)
 				sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.SubStatus);
 			if (_CUEToolsDB.DBStatus == null)
@@ -3536,21 +3559,24 @@ string status = processor.Go();
 				string confFormat = (_CUEToolsDB.Total < 10) ? "{0:0}/{1:0}" :
 					(_CUEToolsDB.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
 				string conf = string.Format(confFormat, entry.conf, _CUEToolsDB.Total);
+				string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio ? string.Format("Is an Enhanced CD, data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
+						!entry.toc[1].IsAudio ? string.Format("Playstation type data track length {0}", entry.toc[1].LengthMSF) : "";
 				string status =
-					(!entry.hasErrors) ? "Accurately ripped" :
-					entry.canRecover ? string.Format("Contains {0} correctable errors", entry.repair.CorrectableErrors) :
-					(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
-					entry.httpStatus.ToString();
+					entry.toc.Pregap != _toc.Pregap ? string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap)) :
+					entry.toc.AudioLength != _toc.AudioLength ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
+					((entry.toc.TrackOffsets != _toc.TrackOffsets) ? dataTrackInfo + ", " : "") + 
+						((!entry.hasErrors) ? "Accurately ripped" :
+						entry.canRecover ? string.Format("Differs in {0} samples", entry.repair.CorrectableErrors) :
+						(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
+						entry.httpStatus.ToString());
 				sw.WriteLine("        [{0:x8}] ({1}) {2}", entry.crc, conf, status);
 			}
 		}
 
 		public void GenerateAccurateRipLog(TextWriter sw)
 		{
-			if (!_processed)
-				throw new Exception("not processed");
 			sw.WriteLine("[Verification date: {0}]", DateTime.Now);
-			sw.WriteLine("[Disc ID: {0}]", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
+			sw.WriteLine("[AccurateRip ID: {0}] {1}.", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc), _arVerify.ARStatus ?? "found");
 			if (PreGapLength != 0)
 				sw.WriteLine("Pregap length {0}.", PreGapLengthMSF);
 			if (!_toc[1].IsAudio)
@@ -3568,6 +3594,13 @@ string status = processor.Go();
 				sw.WriteLine("Truncated 4608 extra samples in some input files.");
 			if (_paddedToFrame)
 				sw.WriteLine("Padded some input files to a frame boundary.");
+
+			if (!_processed)
+			{
+				if (_useCUEToolsDB) GenerateCTDBLog(sw);
+				return;
+			}
+
 			if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
 				sw.WriteLine("HDCD: {0:f}", hdcdDecoder);
 			if (0 != _writeOffset)
@@ -3685,9 +3718,9 @@ string status = processor.Go();
 			bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
 				(_toc.Pregap != 0));
 
-			if (_isCD && (OutputStyle == CUEStyle.GapsLeftOut || OutputStyle == CUEStyle.GapsPrepended))
-				throw new Exception("Gaps Left Out/Gaps prepended modes cannot be used when ripping a CD");
-
+			if (_isCD)
+				DetectGaps();
+			
 			if (_usePregapForFirstTrackInSingleFile)
 				throw new Exception("UsePregapForFirstTrackInSingleFile is not supported for writing audio files.");
 
@@ -3699,8 +3732,6 @@ string status = processor.Go();
 
 			destLengths = CalculateAudioFileLengths(OutputStyle);
 
-			// TODO: if (_isCD) might need to recalc, might have changed after scanning the CD
-
 			// Lookup();
 			
 			if (_action != CUEAction.Verify)
@@ -3708,7 +3739,18 @@ string status = processor.Go();
 				if (!Directory.Exists(OutputDir))
 					Directory.CreateDirectory(OutputDir);
 			}
-			
+
+			if (_action == CUEAction.Encode)
+			{
+				string cueContents = CUESheetContents(OutputStyle);
+				if (_config.createEACLOG)
+					cueContents = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueContents));
+				if (OutputStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded)
+					WriteText(Path.ChangeExtension(_outputPath, ".cue"), cueContents);
+				else
+					WriteText(_outputPath, cueContents);
+			}
+
 			if (_audioEncoderType != AudioEncoderType.NoAudio || _action == CUEAction.Verify)
 				WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
 
@@ -3724,7 +3766,6 @@ string status = processor.Go();
 
 			if (_action == CUEAction.Encode)
 			{
-				string cueContents = CUESheetContents(OutputStyle);
 				uint tracksMatch = 0;
 				int bestOffset = 0;
 
@@ -3733,12 +3774,8 @@ string status = processor.Go();
 					_arVerify.AccResult == HttpStatusCode.OK)
 					FindBestOffset(1, true, out tracksMatch, out bestOffset);
 
-				if (_config.createEACLOG)
-				{
-					if (_ripperLog != null)
-						_ripperLog = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(_ripperLog));
-					cueContents = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueContents));
-				}
+				if (_config.createEACLOG && _ripperLog != null)
+					_ripperLog = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(_ripperLog));
 
 				if (_ripperLog != null)
 					WriteText(Path.ChangeExtension(_outputPath, ".log"), _ripperLog);
@@ -3751,10 +3788,6 @@ string status = processor.Go();
 
 				if (OutputStyle == CUEStyle.SingleFileWithCUE || OutputStyle == CUEStyle.SingleFile)
 				{
-					if (OutputStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded)
-						WriteText(Path.ChangeExtension(_outputPath, ".cue"), cueContents);
-					if (OutputStyle == CUEStyle.SingleFile)
-						WriteText(_outputPath, cueContents);
 					if (_audioEncoderType != AudioEncoderType.NoAudio)
 					{
 						NameValueCollection tags = GenerateAlbumTags(bestOffset, OutputStyle == CUEStyle.SingleFileWithCUE, _ripperLog ?? _eacLog);
@@ -3813,7 +3846,6 @@ string status = processor.Go();
 				}
 				else
 				{
-					WriteText(_outputPath, cueContents);
 					if (_config.createM3U)
 						WriteText(Path.ChangeExtension(_outputPath, ".m3u"), M3UContents(OutputStyle));
 					bool fNeedAlbumArtist = false;
@@ -4337,7 +4369,7 @@ string status = processor.Go();
 							{
 //                                if (_isCD && audioSource != null && audioSource is CDDriveReader)
 //                                    updatedTOC = ((CDDriveReader)audioSource).TOC;
-								if (audioSource != null && !_isCD) audioSource.Close();
+								if (audioSource != null) audioSource.Close();
 								audioSource = GetAudioSource(++iSource);
 								samplesRemSource = (int)_sources[iSource].Length;
 							}
@@ -4360,6 +4392,9 @@ string status = processor.Go();
 								else
 									_CUEToolsDB.Verify.Write(sampleBuffer);
 							}
+							// we use AR after CTDB, so that we can verify what we fixed
+							if (_useAccurateRip)
+								_arVerify.Write(sampleBuffer);
 							if (!discardOutput)
 							{
 								if (!_config.detectHDCD || !_config.decodeHDCD)
@@ -4372,7 +4407,7 @@ string status = processor.Go();
 										hdcdDecoder = null;
 										if (_config.decodeHDCD)
 										{
-											if (!_isCD) audioSource.Close();
+											audioSource.Close();
 											audioDest.Delete();
 											throw new Exception("HDCD not detected.");
 										}
@@ -4384,12 +4419,6 @@ string status = processor.Go();
 										hdcdDecoder.Write(sampleBuffer);
 									}
 								}
-							}
-							if (_useAccurateRip)
-							{
-								_arVerify.Write(sampleBuffer);
-								if (iTrack > 0 || iIndex > 0)
-									Tracks[iTrack + (iIndex == 0 ? -1 : 0)].MeasurePeakLevel(sampleBuffer, copyCount);
 							}
 
 							currentOffset += copyCount;
@@ -4408,38 +4437,49 @@ string status = processor.Go();
 				if (hdcdDecoder != null)
 					(hdcdDecoder as IAudioFilter).AudioDest = null;
 				hdcdDecoder = null;
-				try { if (audioSource != null && !_isCD) audioSource.Close(); }
-				catch { }
+				if (audioSource != null)
+					try { audioSource.Close(); } catch { }
 				audioSource = null;
-				try { if (audioDest != null) audioDest.Delete(); } 
-				catch { }
+				if (audioDest != null)
+					try { audioDest.Delete(); } catch { }
 				audioDest = null;
 				throw ex;
 			}
 #endif
 
-			//if (_isCD && audioSource != null && audioSource is CDDriveReader)
-			//    updatedTOC = ((CDDriveReader)audioSource).TOC;
-			if (_isCD)
-			{
-				_toc = (CDImageLayout)_ripper.TOC.Clone();
-				if (_toc.Catalog != null)
-					Catalog = _toc.Catalog;
-				for (iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
-				{
-					if (_toc[_toc.FirstAudio + iTrack].ISRC != null)
-						General.SetCUELine(_tracks[iTrack].Attributes, "ISRC", _toc[_toc.FirstAudio + iTrack].ISRC, false);
-					if (_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis)
-						_tracks[iTrack].Attributes.Add(new CUELine("FLAGS" + (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : "")));
-				}
-			}
-
 			if (hdcdDecoder != null)
 				(hdcdDecoder as IAudioFilter).AudioDest = null;
-			if (audioSource != null && !_isCD)
+			if (audioSource != null)
 				audioSource.Close();
 			if (audioDest != null)
 				audioDest.Close();
+		}
+
+		private void DetectGaps()
+		{
+			if (!_isCD)
+				throw new Exception("not a CD");
+
+			try { _ripper.DetectGaps(); }
+			catch (Exception ex)
+			{
+				if (ex is StopException)
+					throw ex;
+			}
+
+			if (!_ripper.GapsDetected)
+				return;
+
+			_toc = (CDImageLayout)_ripper.TOC.Clone();
+			if (_toc.Catalog != null)
+				Catalog = _toc.Catalog;
+			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+			{
+				if (_toc[_toc.FirstAudio + iTrack].ISRC != null)
+					General.SetCUELine(_tracks[iTrack].Attributes, "ISRC", _toc[_toc.FirstAudio + iTrack].ISRC, false);
+				if (_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis)
+					_tracks[iTrack].Attributes.Add(new CUELine("FLAGS" + (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : "")));
+			}
 		}
 
 		public static string CreateDummyCUESheet(CUEConfig _config, string pathIn)
@@ -4740,7 +4780,7 @@ string status = processor.Go();
 				{
 					_ripper.Position = 0;
 					//audioSource = _ripper;
-					audioSource = new AudioPipe(_ripper, 0x100000, false);
+					audioSource = new AudioPipe(_ripper, 0x100000, false, ThreadPriority.Highest);
 				} else
 				if (_isArchive)
 					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path, OpenArchive(sourceInfo.Path, false), _config);
@@ -4753,7 +4793,7 @@ string status = processor.Go();
 
 			//if (!(audioSource is AudioPipe) && !(audioSource is UserDefinedReader) && _config.separateDecodingThread)
 			if (!(audioSource is AudioPipe) && _config.separateDecodingThread)
-				audioSource = new AudioPipe(audioSource, 0x10000, true);
+				audioSource = new AudioPipe(audioSource, 0x10000);
 
 			return audioSource;
 		}
@@ -5272,7 +5312,7 @@ string status = processor.Go();
 						string status = Go();
 						if (CTDB.AccResult == HttpStatusCode.OK)
 							foreach (DBEntry entry in CTDB.Entries)
-								if (!entry.hasErrors)
+								if (entry.toc.TrackOffsets == _toc.TrackOffsets && !entry.hasErrors)
 									return "CUEToolsDB: " + CTDB.Status;
 						if (ArVerify.WorstConfidence() < 3)
 							return status + ": confidence too low";
@@ -5280,7 +5320,7 @@ string status = processor.Go();
 					}
 				case "repair":
 					{
-						UseCUEToolsDB(false, "CUETools 205");
+						UseCUEToolsDB(false, "CUETools 2.0.6");
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;
@@ -5535,37 +5575,11 @@ string status = processor.Go();
 
 	public class TrackInfo {
 		private List<CUELine> _attributes;
-		private int _peakLevel;
 		public TagLib.File _fileInfo;
 
 		public TrackInfo() {
 			_attributes = new List<CUELine>();
 			_fileInfo = null;
-			_peakLevel = 0;
-		}
-
-		public unsafe void MeasurePeakLevel(AudioBuffer buff, int sampleCount)
-		{
-			if (!buff.PCM.IsRedBook)
-				throw new Exception();
-			fixed (byte* bb = buff.Bytes)
-			{
-				short* ss = (short*)bb;
-				for (int i = 0; i < sampleCount * 2; i++)
-					_peakLevel = Math.Max(_peakLevel, Math.Abs((int)ss[i]));
-			}
-			//for (uint i = 0; i < sampleCount; i++)
-			//    for (uint j = 0; j < 2; j++)
-			//        if (_peakLevel < Math.Abs(samplesBuffer[i, j]))
-			//            _peakLevel = Math.Abs(samplesBuffer[i, j]);
-		}
-
-		public int PeakLevel
-		{
-			get
-			{
-				return _peakLevel;
-			}
 		}
 
 		public List<CUELine> Attributes {

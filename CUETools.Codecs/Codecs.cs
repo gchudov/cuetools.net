@@ -320,10 +320,20 @@ namespace CUETools.Codecs
 			length = Math.Min(size, _src.Length - _offset);
 			if (_length >= 0)
 				length = Math.Min(length, _length);
-			dataInBytes = false;
-			dataInSamples = true;
-			fixed (int* dest = Samples, src = &_src.Samples[_offset, 0])
-				AudioSamples.MemCpy(dest, src, Length * pcm.ChannelCount);
+			if (_src.dataInSamples)
+			{
+				dataInBytes = false;
+				dataInSamples = true;
+				fixed (int* dest = Samples, src = &_src.Samples[_offset, 0])
+					AudioSamples.MemCpy(dest, src, Length * pcm.ChannelCount);
+			}
+			else
+			{
+				dataInSamples = false;
+				dataInBytes = true;
+				fixed (byte* dest = Bytes, src = &_src.Bytes[_offset * pcm.BlockAlign])
+					AudioSamples.MemCpy(dest, src, length * pcm.BlockAlign);
+			}
 		}
 
 		public void Swap(AudioBuffer buffer)
@@ -1643,16 +1653,23 @@ namespace CUETools.Codecs
 		int _bufferPos = 0;
 		Exception _ex = null;
 		bool own;
+		ThreadPriority priority;
 
-		public AudioPipe(IAudioSource source, int size, bool own)
+		public AudioPipe(IAudioSource source, int size, bool own, ThreadPriority priority)
 		{
 			this.own = own;
+			this.priority = priority;
 			_source = source;
 			_readBuffer = new AudioBuffer(source, size);
 			_writeBuffer = new AudioBuffer(source, size);
 			_maxLength = size;
 			_sampleLen = _source.Length;
 			_samplePos = _source.Position;
+		}
+
+		public AudioPipe(IAudioSource source, int size)
+			: this(source, size, true, ThreadPriority.BelowNormal)
+		{
 		}
 
 		private void Decompress(object o)
@@ -1695,7 +1712,7 @@ namespace CUETools.Codecs
 		{
 			if (_workThread != null || _ex != null) return;
 			_workThread = new Thread(Decompress);
-			_workThread.Priority = ThreadPriority.BelowNormal;
+			_workThread.Priority = priority;
 			_workThread.IsBackground = true;
 			_workThread.Start(null);
 		}

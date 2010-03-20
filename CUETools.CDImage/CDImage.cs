@@ -253,6 +253,26 @@ namespace CUETools.CDImage
 				_tracks.Add(new CDTrack(src._tracks[i]));
 		}
 
+		public CDImageLayout(int trackcount, int audiotracks, int firstaudio, string trackoffsets)
+		{
+			_audioTracks = audiotracks;
+			_firstAudio = firstaudio - 1;
+			_tracks = new List<CDTrack>();
+			string[] n = trackoffsets.Split(' ');
+			if (n.Length != trackcount + 1)
+				throw new Exception("Invalid trackoffsets.");
+			for (int i = 0; i < trackcount; i++)
+			{
+				uint len = uint.Parse(n[i + 1]) - uint.Parse(n[i]) -
+					((i + 1 < _firstAudio + _audioTracks || i + 1 == trackcount) ? 0U : 152U * 75U);
+				bool isaudio = i >= _firstAudio && i < _firstAudio + _audioTracks;
+				_tracks.Add(new CDTrack((uint)i + 1, uint.Parse(n[i]), len, isaudio, false));
+			}
+			_tracks[0][0].Start = 0;
+			if (TrackOffsets != trackoffsets)
+				throw new Exception("TrackOffsets != trackoffsets");
+		}
+
 		public object Clone()
 		{
 			return new CDImageLayout(this);
@@ -306,6 +326,14 @@ namespace CUETools.CDImage
 			}
 		}
 
+		public uint Leadout
+		{
+			get
+			{
+				return _tracks[_firstAudio][0].Start + AudioLength;
+			}
+		}
+
 		public uint AudioLength
 		{
 			get
@@ -326,18 +354,67 @@ namespace CUETools.CDImage
 			}
 		}
 
+		public string MusicBrainzTOC
+		{
+			get
+			{
+				StringBuilder mbSB = new StringBuilder();
+				mbSB.AppendFormat("{0} {1}", 1 + _firstAudio, AudioTracks + _firstAudio);
+				mbSB.AppendFormat(" {0}", _tracks[_firstAudio + (int)AudioTracks - 1].End + 1 + 150);
+				for (int iTrack = 0; iTrack < AudioTracks; iTrack++)
+					mbSB.AppendFormat(" {0}", _tracks[_firstAudio + iTrack].Start + 150);
+				return mbSB.ToString();
+			}
+		}
+
 		public string MusicBrainzId
 		{
 			get
 			{
 				StringBuilder mbSB = new StringBuilder();
-				mbSB.AppendFormat("{0:X2}{1:X2}{2:X8}", 1, AudioTracks, _tracks[(int)AudioTracks-1].End + 1 + 150);
+				mbSB.AppendFormat("{0:X2}{1:X2}", 1 + _firstAudio, AudioTracks + _firstAudio);
+				mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + (int)AudioTracks - 1].End + 1 + 150);
 				for (int iTrack = 0; iTrack < AudioTracks; iTrack++)
-					mbSB.AppendFormat("{0:X8}", _tracks[iTrack].Start + 150);
+					mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + iTrack].Start + 150);
 				mbSB.Append(new string('0', (99 - (int)AudioTracks) * 8));
 				byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(mbSB.ToString()));
 				return Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
 			}
+		}
+
+		public string TrackOffsets
+		{
+			get
+			{
+				StringBuilder mbSB = new StringBuilder();
+				for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+					mbSB.AppendFormat("{0} ", _tracks[iTrack].Start);
+				mbSB.AppendFormat("{0}", Length);
+				return mbSB.ToString();
+			}
+		}
+
+		public string TOCID
+		{
+			get
+			{
+				StringBuilder mbSB = new StringBuilder();
+				for (int iTrack = 1; iTrack < AudioTracks; iTrack++)
+					mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + iTrack].Start - _tracks[_firstAudio].Start);
+				mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + (int)AudioTracks - 1].End + 1 - _tracks[_firstAudio].Start);
+				mbSB.Append(new string('0', (100 - (int)AudioTracks) * 8));
+				byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(mbSB.ToString()));
+				return Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
+			}
+		}
+
+		public void InsertTrack(CDTrack track)
+		{
+			_tracks.Insert((int)track.Number - 1, track);
+			if (track.IsAudio)
+				_audioTracks++;
+			if (!track.IsAudio && track.Number <= FirstAudio)
+				_firstAudio++;
 		}
 
 		public void AddTrack(CDTrack track)

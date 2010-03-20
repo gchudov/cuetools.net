@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Management;
 using System.Net;
+using System.Xml;
 using System.Text;
 using CUETools.CDImage;
 using CUETools.CDRepair;
@@ -20,11 +21,7 @@ namespace CUETools.CTDB
 		private CDRepairEncode verify;
 		private CDImageLayout toc;
 		private HttpStatusCode accResult;
-		private string id;
-		private string urlfolder;
-		private string fullid;
 		private string subResult;
-		private byte[] contents;
 		private int length;
 		private int total;
 		List<DBEntry> entries = new List<DBEntry>();
@@ -40,27 +37,86 @@ namespace CUETools.CTDB
 			this.uploadHelper = new HttpUploadHelper();
 		}
 
-		public void ContactDB(string id, string userAgent)
+		public void ContactDB(string userAgent)
 		{
 			this.userAgent = userAgent;
-			this.id = id;
+			this.total = 0;
 
-			// Calculate the three disc ids used by AR
-			uint discId1 = 0;
-			uint discId2 = 0;
-			uint cddbDiscId = 0;
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/lookup.php?tocid=" + toc.TOCID);
+			req.Method = "GET";
+			req.Proxy = proxy;
+			req.UserAgent = userAgent;
 
-			string[] n = id.Split('-');
-			if (n.Length != 3)
-				throw new Exception("Invalid accurateRipId.");
-			discId1 = UInt32.Parse(n[0], NumberStyles.HexNumber);
-			discId2 = UInt32.Parse(n[1], NumberStyles.HexNumber);
-			cddbDiscId = UInt32.Parse(n[2], NumberStyles.HexNumber);
+			if (uploadHelper.onProgress != null)
+				uploadHelper.onProgress(this, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0));
 
-			fullid = string.Format("{0:d3}-{1:x8}-{2:x8}-{3:x8}", toc.AudioTracks, discId1, discId2, cddbDiscId);
-			urlfolder = string.Format("{0}/parity/{1:x}/{2:x}/{3:x}/{4}", urlbase, discId1 & 0xF, discId1 >> 4 & 0xF, discId1 >> 8 & 0xF, fullid);
-			
-			FetchDB(string.Format("{0}/ctdb.bin", urlfolder), out accResult, out contents, out total, entries);
+			try
+			{
+				HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+				accResult = resp.StatusCode;
+
+				if (accResult == HttpStatusCode.OK)
+				{
+					total = 0;
+					using (Stream responseStream = resp.GetResponseStream())
+					{
+						using (XmlTextReader reader = new XmlTextReader(responseStream))
+						{
+							reader.ReadToFollowing("ctdb");
+							if (reader.ReadToDescendant("entry"))
+								do
+								{
+									XmlReader entry = reader.ReadSubtree();
+									string crc32 = reader["crc32"];
+									string confidence = reader["confidence"];
+									string npar = reader["npar"];
+									string stride = reader["stride"];
+									string id = reader["id"];
+									byte[] parity = null;
+									CDImageLayout entry_toc = null;
+
+									entry.Read();
+									while (entry.Read() && entry.NodeType != XmlNodeType.EndElement)
+									{
+										if (entry.Name == "parity")
+										{
+											entry.Read(); // entry.NodeType == XmlNodeType.Text
+											parity = Convert.FromBase64String(entry.Value);
+											entry.Read();
+										}
+										else if (entry.Name == "toc")
+										{
+											string trackcount = entry["trackcount"];
+											string audiotracks = entry["audiotracks"];
+											string firstaudio = entry["firstaudio"];
+											entry.Read();
+											string trackoffsets = entry.Value;
+											entry.Read();
+											entry_toc = new CDImageLayout(int.Parse(trackcount), int.Parse(audiotracks), int.Parse(firstaudio), trackoffsets);
+										}
+										else
+										{
+											reader.Skip();
+										}
+									}
+									entry.Close();
+									total += int.Parse(confidence);
+									entries.Add(new DBEntry(parity, 0, parity.Length, int.Parse(confidence), int.Parse(npar), uint.Parse(crc32, NumberStyles.HexNumber), id, entry_toc));
+								} while (reader.ReadToNextSibling("entry"));
+							reader.Close();
+						}
+					}
+					if (entries.Count == 0)
+						accResult = HttpStatusCode.NotFound;
+				}
+			}
+			catch (WebException ex)
+			{
+				if (ex.Status == WebExceptionStatus.ProtocolError)
+					accResult = ((HttpWebResponse)ex.Response).StatusCode;
+				else
+					accResult = HttpStatusCode.BadRequest;
+			}
 		}
 
 		public void FetchDB(string url, out HttpStatusCode accResult, out byte[] contents, out int total, List<DBEntry> entries)
@@ -110,45 +166,52 @@ namespace CUETools.CTDB
 			}
 		}
 
-		static string cpuInfo = null;
+		static string uuidInfo = null;
 
-		public static string GetCPUID()
+		public static string GetUUID()
 		{
-			if (cpuInfo == null)
+			if (uuidInfo == null)
 			{
-				ManagementClass mc = new ManagementClass("win32_processor");
+				ManagementClass mc = new ManagementClass("Win32_ComputerSystemProduct");
 				foreach (ManagementObject mo in mc.GetInstances())
 				{
-					//Get only the first CPU's ID
-					cpuInfo = mo.Properties["processorID"].Value.ToString();
+					uuidInfo = mo.Properties["UUID"].Value.ToString();
 					break;
 				}
 			}
-			return cpuInfo ?? "unknown";
+			return uuidInfo ?? "unknown";
 		}
 
 		public string Confirm(DBEntry entry)
 		{
-			if (fullid == null)
-				throw new Exception("no id");
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/confirm.php");
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/confirm.php?tocid=" + toc.TOCID + "&id=" + entry.id);
+			req.Method = "GET";
 			req.Proxy = proxy;
 			req.UserAgent = userAgent;
-			NameValueCollection form = new NameValueCollection();
-			form.Add("id", fullid);
-			form.Add("ctdbid", string.Format("{0:x8}", entry.crc));
-			HttpWebResponse resp = uploadHelper.Upload(req, new UploadFile[0], form);
-			using (Stream s = resp.GetResponseStream())
-			using (StreamReader sr = new StreamReader(s))
-				subResult = sr.ReadToEnd();
+			try
+			{
+				HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+				if (resp.StatusCode != HttpStatusCode.OK)
+					subResult = resp.StatusCode.ToString();
+				else
+				{
+					using (Stream s = resp.GetResponseStream())
+					using (StreamReader sr = new StreamReader(s))
+						subResult = sr.ReadToEnd();
+				}
+			}
+			catch (WebException ex)
+			{
+				if (ex.Status == WebExceptionStatus.ProtocolError)
+					subResult = ((HttpWebResponse)ex.Response).StatusCode.ToString();
+				else
+					subResult = "unknown error";
+			}
 			return subResult;
 		}
 
 		public string Submit(int confidence, int total, string artist, string title)
 		{
-			if (fullid == null)
-				throw new Exception("no id");
-			
 			UploadFile[] files = new UploadFile[1];
 			MemoryStream newcontents = new MemoryStream();
 			using (DBHDR FTYP = new DBHDR(newcontents, "ftyp"))
@@ -179,7 +242,7 @@ namespace CUETools.CTDB
 					}
 					if (artist != null && artist != "") using (DBHDR TAG = DISC.HDR("ART ")) TAG.Write(artist);
 					if (title != null && title != "") using (DBHDR TAG = DISC.HDR("nam ")) TAG.Write(title);
-					using (DBHDR USER = DISC.HDR("USER")) USER.Write(GetCPUID());
+					using (DBHDR USER = DISC.HDR("USER")) USER.Write(GetUUID());
 					using (DBHDR TOOL = DISC.HDR("TOOL")) TOOL.Write(userAgent);
 					using (DBHDR TOOL = DISC.HDR("MBID")) TOOL.Write(toc.MusicBrainzId);
 					using (DBHDR DATE = DISC.HDR("DATE")) DATE.Write(DateTime.Now);
@@ -195,7 +258,18 @@ namespace CUETools.CTDB
 			req.Proxy = proxy;
 			req.UserAgent = userAgent;
 			NameValueCollection form = new NameValueCollection();
-			form.Add("id", fullid);
+			form.Add("tocid", toc.TOCID);
+			form.Add("crc32", string.Format("%08X", verify.CRC));
+			form.Add("parity", Convert.ToBase64String(verify.Parity, 0, 16));
+			form.Add("confidence", confidence.ToString());
+			form.Add("trackcount", toc.TrackCount.ToString());
+			form.Add("firstaudio", toc.FirstAudio.ToString());
+			form.Add("audiotracks", toc.AudioTracks.ToString());
+			form.Add("trackoffsets", toc.TrackOffsets);
+			form.Add("userid", GetUUID());
+			form.Add("agent", userAgent);
+			if (artist != null && artist != "") form.Add("artist", artist);
+			if (title != null && title != "") form.Add("title", title);
 			HttpWebResponse resp = uploadHelper.Upload(req, files, form);
 			using (Stream s = resp.GetResponseStream())
 			using (StreamReader sr = new StreamReader(s))
@@ -257,7 +331,7 @@ namespace CUETools.CTDB
 				}
 				if (parPos != 0 && npar >= 2 && npar <= 16 && conf >= 0)
 				//if (parPos != 0 && npar >= 2 && npar <= 16 && conf != 0)
-					entries.Add(new DBEntry(parPos, parLen, conf, npar, crc));
+					entries.Add(new DBEntry(contents, parPos, parLen, conf, npar, crc, null, null));
 			}
 		}
 
@@ -265,14 +339,20 @@ namespace CUETools.CTDB
 		{
 			foreach (DBEntry entry in entries)
 			{
-				if (!verify.FindOffset(entry.npar, contents, entry.pos, entry.crc, out entry.offset, out entry.hasErrors))
+				if (entry.toc.Pregap != toc.Pregap || entry.toc.AudioLength != toc.AudioLength)
+				{
+					entry.hasErrors = false;
+					entry.canRecover = false;
+					continue;
+				}
+				if (!verify.FindOffset(entry.npar, entry.parity, entry.pos, entry.crc, out entry.offset, out entry.hasErrors))
 					entry.canRecover = false;
 				else if (entry.hasErrors)
 				{
 					byte[] contents2;
 					int total2;
 					List<DBEntry> entries2 = new List<DBEntry>();
-					FetchDB(string.Format("{0}/{1:x8}.bin", urlfolder, entry.crc), out entry.httpStatus, out contents2, out total2, entries2);
+					FetchDB(string.Format("{0}/repair.php?tocid={1}&id={2}", urlbase, toc.TOCID, entry.id), out entry.httpStatus, out contents2, out total2, entries2);
 					if (entry.httpStatus != HttpStatusCode.OK)
 						entry.canRecover = false;
 					else
@@ -358,13 +438,13 @@ namespace CUETools.CTDB
 				{
 					DBEntry popular = null;
 					foreach (DBEntry entry in entries)
-						if (!entry.hasErrors || entry.canRecover)
+						if (entry.toc.Pregap == toc.Pregap && (!entry.hasErrors || entry.canRecover))
 							if (popular == null || entry.conf > popular.conf)
 								popular = entry;
 					if (popular != null)
 						res = popular.Status;
 					foreach (DBEntry entry in entries)
-						if (entry != popular && (!entry.hasErrors || entry.canRecover))
+						if (entry != popular && entry.toc.Pregap == toc.Pregap && (!entry.hasErrors || entry.canRecover))
 							res += ", or " + entry.Status;
 					if (res == null)
 						res = "could not be verified";
@@ -394,6 +474,7 @@ namespace CUETools.CTDB
 
 	public class DBEntry
 	{
+		public byte[] parity;
 		public int pos;
 		public int len;
 		public int conf;
@@ -404,14 +485,19 @@ namespace CUETools.CTDB
 		public bool canRecover;
 		public CDRepairFix repair;
 		public HttpStatusCode httpStatus;
+		public string id;
+		public CDImageLayout toc;
 
-		public DBEntry(int pos, int len, int conf, int npar, uint crc)
+		public DBEntry(byte[] parity, int pos, int len, int conf, int npar, uint crc, string id, CDImageLayout toc)
 		{
+			this.parity = parity;
+			this.id = id;
 			this.pos = pos;
 			this.len = len;
 			this.conf = conf;
 			this.crc = crc;
 			this.npar = npar;
+			this.toc = toc;
 		}
 
 		public string Status

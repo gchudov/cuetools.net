@@ -325,10 +325,13 @@ namespace CUETools.CDRepair
 
 		new public unsafe void Write(AudioBuffer sampleBuffer)
 		{
+			if (!verify && !encode)
+				return;
+
 			sampleBuffer.Prepare(this);
 
-			if ((sampleBuffer.ByteLength & 1) != 0)
-				throw new Exception("never happens");
+			if ((sampleBuffer.ByteLength & 1) != 0 || sampleCount + sampleBuffer.Length > finalSampleCount)
+				throw new Exception("sampleCount > finalSampleCount");
 
 			fixed (byte* bytes = sampleBuffer.Bytes)
 			{

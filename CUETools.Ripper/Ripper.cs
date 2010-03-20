@@ -11,6 +11,8 @@ namespace CUETools.Ripper
 	public interface ICDRipper : IAudioSource, IDisposable
 	{
 		bool Open(char Drive);
+		bool DetectGaps();
+		bool GapsDetected { get; }
 		CDImageLayout TOC { get; }
 		string ARName { get; }
 		string EACName { get; }
@@ -37,11 +39,16 @@ namespace CUETools.Ripper
 
 	public sealed class ReadProgressArgs : EventArgs
 	{
+		public string Action;
 		public int Position;
 		public int Pass;
 		public int PassStart, PassEnd;
 		public int ErrorsCount;
 		public DateTime PassTime;
+
+		public ReadProgressArgs()
+		{
+		}
 
 		public ReadProgressArgs(int position, int pass, int passStart, int passEnd, int errorsCount, DateTime passTime)
 		{

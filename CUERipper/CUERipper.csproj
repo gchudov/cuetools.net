@@ -15,6 +15,35 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <ApplicationIcon>cue2.ico</ApplicationIcon>
+    <ManifestCertificateThumbprint>F89503BB83CA42A647C506D67956D6F32C1C6E7E</ManifestCertificateThumbprint>
+    <ManifestKeyFile>CUERipper_TemporaryKey.pfx</ManifestKeyFile>
+    <GenerateManifests>true</GenerateManifests>
+    <SignManifests>true</SignManifests>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Background</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://www.cuetools.net/install/cueripper/</InstallUrl>
+    <SupportUrl>http://www.cuetools.net/</SupportUrl>
+    <ProductName>CUERipper</ProductName>
+    <PublisherName>Gregory S. Chudov</PublisherName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>index.html</WebPage>
+    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationVersion>2.0.7.2</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -131,20 +160,184 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="musicbrainz.ico" />
+    <None Include="Resources\musicbrainz.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cddb.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="freedb.gif" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="arok.ico" />
-    <Content Include="cue2.ico" />
     <None Include="Resources\cdrepair.png" />
     <None Include="Resources\accuraterip_16.bmp" />
     <None Include="Resources\accuraterip.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Visual.C++.9.0.x64">
+      <Visible>False</Visible>
+      <ProductName>Visual C++ Runtime Libraries %28x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Visual.C++.9.0.x86">
+      <Visible>False</Visible>
+      <ProductName>Visual C++ Runtime Libraries %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="cue2.ico" />
+    <Content Include="Plugins %28win32%29\CUETools.Codecs.APE.dll" />
+    <Content Include="Plugins %28win32%29\CUETools.Codecs.FLAC.dll" />
+    <Content Include="Plugins %28win32%29\CUETools.Codecs.HDCD.dll" />
+    <Content Include="Plugins %28win32%29\CUETools.Codecs.TTA.dll" />
+    <Content Include="Plugins %28win32%29\CUETools.Codecs.WavPack.dll" />
+    <Content Include="Plugins %28win32%29\hdcd.dll" />
+    <Content Include="Plugins %28x64%29\CUETools.Codecs.APE.dll" />
+    <Content Include="Plugins %28x64%29\CUETools.Codecs.FLAC.dll" />
+    <Content Include="Plugins %28x64%29\CUETools.Codecs.HDCD.dll" />
+    <Content Include="Plugins %28x64%29\CUETools.Codecs.TTA.dll" />
+    <Content Include="Plugins %28x64%29\CUETools.Codecs.WavPack.dll" />
+    <Content Include="Plugins %28x64%29\hdcd.dll" />
+    <Content Include="Plugins\Bwg.Hardware.dll" />
+    <Content Include="Plugins\Bwg.Logging.dll" />
+    <Content Include="Plugins\Bwg.Scsi.dll" />
+    <Content Include="Plugins\CUDA.NET.dll" />
+    <Content Include="Plugins\CUETools.Codecs.ALAC.dll" />
+    <Content Include="Plugins\CUETools.Codecs.FlaCuda.dll" />
+    <Content Include="Plugins\CUETools.Codecs.FLAKE.dll" />
+    <Content Include="Plugins\CUETools.Ripper.SCSI.dll" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <PublishFile Include="Plugins %28win32%29\CUETools.Codecs.APE.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28win32%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28win32%29\CUETools.Codecs.FLAC.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28win32%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28win32%29\CUETools.Codecs.HDCD.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28win32%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28win32%29\CUETools.Codecs.TTA.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28win32%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28win32%29\CUETools.Codecs.WavPack.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28win32%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28win32%29\hdcd.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28win32%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28x64%29\CUETools.Codecs.APE.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28x64%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28x64%29\CUETools.Codecs.FLAC.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28x64%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28x64%29\CUETools.Codecs.HDCD.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28x64%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28x64%29\CUETools.Codecs.TTA.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28x64%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28x64%29\CUETools.Codecs.WavPack.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28x64%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Plugins %28x64%29\hdcd.dll">
+      <Visible>False</Visible>
+      <Group>Plugins %28x64%29</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -33,6 +33,7 @@ namespace CUERipper
 			this.comboDrives = new System.Windows.Forms.ComboBox();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusLabelMusicBrainz = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusCTDB = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusAr = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
@@ -73,6 +74,9 @@ namespace CUERipper
 			this.gradientGlossPainter1 = new ProgressODoom.GradientGlossPainter();
 			this.progressBarCD = new ProgressODoom.ProgressBarEx();
 			this.plainProgressPainter2 = new ProgressODoom.PlainProgressPainter();
+			this.comboBoxOutputFormat = new System.Windows.Forms.ComboBox();
+			this.txtOutputPath = new System.Windows.Forms.TextBox();
+			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.statusStrip1.SuspendLayout();
 			this.contextMenuStripRelease.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
@@ -96,6 +100,7 @@ namespace CUERipper
 			// 
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
+            this.toolStripStatusLabelMusicBrainz,
             this.toolStripStatusCTDB,
             this.toolStripStatusAr,
             this.toolStripProgressBar1,
@@ -110,6 +115,17 @@ namespace CUERipper
 			this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
 			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
 			this.toolStripStatusLabel1.Spring = true;
+			// 
+			// toolStripStatusLabelMusicBrainz
+			// 
+			this.toolStripStatusLabelMusicBrainz.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
+						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+			this.toolStripStatusLabelMusicBrainz.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
+			this.toolStripStatusLabelMusicBrainz.Image = global::CUERipper.Properties.Resources.musicbrainz;
+			this.toolStripStatusLabelMusicBrainz.Name = "toolStripStatusLabelMusicBrainz";
+			resources.ApplyResources(this.toolStripStatusLabelMusicBrainz, "toolStripStatusLabelMusicBrainz");
+			this.toolStripStatusLabelMusicBrainz.Click += new System.EventHandler(this.toolStripStatusLabelMusicBrainz_Click);
 			// 
 			// toolStripStatusCTDB
 			// 
@@ -156,6 +172,7 @@ namespace CUERipper
 			this.listTracks.GridLines = true;
 			this.listTracks.LabelEdit = true;
 			this.listTracks.Name = "listTracks";
+			this.toolTip1.SetToolTip(this.listTracks, resources.GetString("listTracks.ToolTip"));
 			this.listTracks.UseCompatibleStateImageBehavior = false;
 			this.listTracks.View = System.Windows.Forms.View.Details;
 			this.listTracks.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_AfterLabelEdit);
@@ -234,6 +251,7 @@ namespace CUERipper
 			this.comboRelease.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.comboRelease.FormattingEnabled = true;
 			this.comboRelease.Name = "comboRelease";
+			this.toolTip1.SetToolTip(this.comboRelease, resources.GetString("comboRelease.ToolTip"));
 			this.comboRelease.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboRelease_DrawItem);
 			this.comboRelease.SelectedIndexChanged += new System.EventHandler(this.comboRelease_SelectedIndexChanged);
 			this.comboRelease.Format += new System.Windows.Forms.ListControlConvertEventHandler(this.comboRelease_Format);
@@ -443,10 +461,34 @@ namespace CUERipper
 			this.plainProgressPainter2.LeadingEdge = System.Drawing.Color.Transparent;
 			this.plainProgressPainter2.ProgressBorderPainter = null;
 			// 
+			// comboBoxOutputFormat
+			// 
+			this.comboBoxOutputFormat.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.comboBoxOutputFormat.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+			this.comboBoxOutputFormat.FormattingEnabled = true;
+			resources.ApplyResources(this.comboBoxOutputFormat, "comboBoxOutputFormat");
+			this.comboBoxOutputFormat.Name = "comboBoxOutputFormat";
+			this.toolTip1.SetToolTip(this.comboBoxOutputFormat, resources.GetString("comboBoxOutputFormat.ToolTip"));
+			this.comboBoxOutputFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxOutputFormat_SelectedIndexChanged);
+			this.comboBoxOutputFormat.MouseLeave += new System.EventHandler(this.comboBoxOutputFormat_MouseLeave);
+			this.comboBoxOutputFormat.TextUpdate += new System.EventHandler(this.comboBoxOutputFormat_TextUpdate);
+			// 
+			// txtOutputPath
+			// 
+			this.txtOutputPath.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.txtOutputPath.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystem;
+			resources.ApplyResources(this.txtOutputPath, "txtOutputPath");
+			this.txtOutputPath.Name = "txtOutputPath";
+			this.txtOutputPath.ReadOnly = true;
+			this.toolTip1.SetToolTip(this.txtOutputPath, resources.GetString("txtOutputPath.ToolTip"));
+			this.txtOutputPath.Enter += new System.EventHandler(this.txtOutputPath_Enter);
+			// 
 			// frmCUERipper
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.txtOutputPath);
+			this.Controls.Add(this.comboBoxOutputFormat);
 			this.Controls.Add(this.progressBarErrors);
 			this.Controls.Add(this.progressBarCD);
 			this.Controls.Add(this.groupBoxSettings);
@@ -463,6 +505,7 @@ namespace CUERipper
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.Load += new System.EventHandler(this.frmCUERipper_Load);
 			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmCUERipper_FormClosed);
+			this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmCUERipper_KeyDown);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
 			this.contextMenuStripRelease.ResumeLayout(false);
@@ -522,6 +565,10 @@ namespace CUERipper
 		private ProgressODoom.GradientGlossPainter gradientGlossPainter1;
 		private ProgressODoom.ProgressBarEx progressBarCD;
 		private ProgressODoom.PlainProgressPainter plainProgressPainter2;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelMusicBrainz;
+		private System.Windows.Forms.ComboBox comboBoxOutputFormat;
+		private System.Windows.Forms.TextBox txtOutputPath;
+		private System.Windows.Forms.ToolTip toolTip1;
 	}
 }
 

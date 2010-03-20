@@ -30,8 +30,9 @@ namespace CUETools.AccurateRip
 				return 0U;
 			uint conf = 0;
 			for (int di = 0; di < (int)AccDisks.Count; di++)
-				if (CRC(iTrack) == AccDisks[di].tracks[iTrack].CRC)
-					conf += AccDisks[di].tracks[iTrack].count;
+				if (iTrack + _toc.FirstAudio - 1 < AccDisks[di].tracks.Count 
+					&& CRC(iTrack) == AccDisks[di].tracks[iTrack + _toc.FirstAudio - 1].CRC)
+					conf += AccDisks[di].tracks[iTrack + _toc.FirstAudio - 1].count;
 			return conf;
 		}
 
@@ -66,8 +67,9 @@ namespace CUETools.AccurateRip
 			uint conf = 0;
 			for (int iDisk = 0; iDisk < AccDisks.Count; iDisk++)
 				for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
-					if (CRC(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].CRC)
-						conf += AccDisks[iDisk].tracks[iTrack].count;
+					if (iTrack + _toc.FirstAudio - 1 < AccDisks[iDisk].tracks.Count
+						&& CRC(iTrack, oi) == AccDisks[iDisk].tracks[iTrack + _toc.FirstAudio - 1].CRC)
+						conf += AccDisks[iDisk].tracks[iTrack + _toc.FirstAudio - 1].count;
 			return conf;
 		}
 
@@ -77,8 +79,9 @@ namespace CUETools.AccurateRip
 				return 0U;
 			uint conf = 0;
 			for (int di = 0; di < (int)AccDisks.Count; di++)
-				if (CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC)
-					conf += AccDisks[di].tracks[iTrack].count;
+				if (iTrack +_toc.FirstAudio - 1 < AccDisks[di].tracks.Count
+					&& CRC(iTrack, oi) == AccDisks[di].tracks[iTrack + _toc.FirstAudio - 1].CRC)
+					conf += AccDisks[di].tracks[iTrack + _toc.FirstAudio - 1].count;
 			return conf;
 		}
 
@@ -88,13 +91,15 @@ namespace CUETools.AccurateRip
 				return 0U;
 			uint total = 0;
 			for (int di = 0; di < (int)AccDisks.Count; di++)
-				total += AccDisks[di].tracks[iTrack].count;
+				if (iTrack + _toc.FirstAudio - 1 < AccDisks[di].tracks.Count)
+					total += AccDisks[di].tracks[iTrack + _toc.FirstAudio - 1].count;
 			return total;
 		}
 
 		public uint DBCRC(int iTrack)
 		{
-			return ARStatus == null ? AccDisks[0].tracks[iTrack].CRC : 0U;
+			return ARStatus == null && iTrack +_toc.FirstAudio - 1 < AccDisks[0].tracks.Count 
+				? AccDisks[0].tracks[iTrack + _toc.FirstAudio - 1].CRC : 0U;
 		}
 
 		public uint CRC(int iTrack)
@@ -134,6 +139,20 @@ namespace CUETools.AccurateRip
 			uint sumb = _CRCSM[iTrack + 1, 20 * 588 + 6 * 588 + oi];
 			uint offs = 450 * 588 + (uint)oi;
 			return crcb - crca - offs * (sumb - suma);
+		}
+
+		public int PeakLevel()
+		{
+			int peak = 0;
+			for (int track = 0; track <= _toc.AudioTracks; track++)
+				if (peak < _Peak[track])
+					peak = _Peak[track];
+			return peak;
+		}
+
+		public int PeakLevel(int iTrack)
+		{
+			return _Peak[iTrack];
 		}
 
 		public uint CRC32(int iTrack)
@@ -310,6 +329,7 @@ namespace CUETools.AccurateRip
 			uint crc32 = _CRC32[_currentTrack, 0];
 			uint crcwn = _CRCWN[_currentTrack, 0];
 			int crcnl = _CRCNL[_currentTrack, 0];
+			int peak = _Peak[_currentTrack];
 			fixed (uint* t = _crc32.table)
 			{
 				for (int i = 0; i < count; i++)
@@ -337,6 +357,9 @@ namespace CUETools.AccurateRip
 					}
 					else crcnl++;
 
+					int pk = ((int)(lo << 16)) >> 16;
+					peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));
+
 					uint hi = sample >> 16;
 					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ hi)];
 					crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (hi >> 8))];
@@ -346,6 +369,9 @@ namespace CUETools.AccurateRip
 						crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ (hi >> 8))];
 					}
 					else crcnl++;
+
+					pk = ((int)(hi << 16)) >> 16;
+					peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));
 				}
 			}
 
@@ -354,6 +380,7 @@ namespace CUETools.AccurateRip
 			_CRC32[_currentTrack, 0] = crc32;
 			_CRCWN[_currentTrack, 0] = crcwn;
 			_CRCNL[_currentTrack, 0] = crcnl;
+			_Peak[_currentTrack] = peak;
 		}
 
 		public void Write(AudioBuffer sampleBuffer)
@@ -401,6 +428,7 @@ namespace CUETools.AccurateRip
 			_CRCWN = new uint[_toc.AudioTracks + 1, 31 * 588];
 			_CacheCRCWN = new uint[_toc.AudioTracks + 1, 31 * 588];
 			_CRCNL = new int[_toc.AudioTracks + 1, 31 * 588];
+			_Peak = new int[_toc.AudioTracks + 1];
 			_currentTrack = 0;
 			_sampleCount = _toc[_toc.FirstAudio][0].Start * 588;
 			_samplesRemTrack = _toc[_toc.FirstAudio].Pregap * 588;
@@ -572,11 +600,16 @@ namespace CUETools.AccurateRip
 				uint conf = 0;
 				for (int di = 0; di < (int)AccDisks.Count; di++)
 				{
-					count += AccDisks[di].tracks[iTrack].count;
-					if (CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC)
-						conf += AccDisks[di].tracks[iTrack].count;
-					if (CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC)
-						partials += AccDisks[di].tracks[iTrack].count;
+					int trno = iTrack + _toc.FirstAudio - 1;
+					if (trno >= AccDisks[di].tracks.Count)
+						continue;
+					count += AccDisks[di].tracks[trno].count;
+					if (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC
+						&& 0 != AccDisks[di].tracks[trno].CRC)
+						conf += AccDisks[di].tracks[trno].count;
+					if (CRC450(iTrack, oi) == AccDisks[di].tracks[trno].Frame450CRC
+						&& 0 != AccDisks[di].tracks[trno].Frame450CRC)
+						partials += AccDisks[di].tracks[trno].count;
 				}
 				if (conf > 0)
 					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Accurately ripped", iTrack + 1, CRC(iTrack, oi), count, conf));
@@ -612,12 +645,17 @@ namespace CUETools.AccurateRip
 					{
 						uint matches = 0;
 						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+						{
+							int trno = iTrack + _toc.FirstAudio - 1;
 							for (int di = 0; di < (int)AccDisks.Count; di++)
-								if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0))
+								if (trno < AccDisks[di].tracks.Count 
+									&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC 
+									&& AccDisks[di].tracks[trno].CRC != 0))
 								{
 									matches++;
 									break;
 								}
+						}
 						if (matches == _toc.AudioTracks && oi != 0)
 						{
 							if (offsets_match++ > 16)
@@ -636,12 +674,17 @@ namespace CUETools.AccurateRip
 						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 							for (int di = 0; di < (int)AccDisks.Count; di++)
 							{
-								if ((CRC(iTrack, oi) == AccDisks[di].tracks[iTrack].CRC && AccDisks[di].tracks[iTrack].CRC != 0))
+								int trno = iTrack + _toc.FirstAudio - 1;
+								if (trno < AccDisks[di].tracks.Count
+									&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC 
+									&& AccDisks[di].tracks[trno].CRC != 0))
 								{
 									matches++;
 									break;
 								}
-								if ((CRC450(iTrack, oi) == AccDisks[di].tracks[iTrack].Frame450CRC && AccDisks[di].tracks[iTrack].Frame450CRC != 0))
+								if (trno < AccDisks[di].tracks.Count
+									&& (CRC450(iTrack, oi) == AccDisks[di].tracks[trno].Frame450CRC 
+									&& AccDisks[di].tracks[trno].Frame450CRC != 0))
 									partials++;
 							}
 						if (matches != _toc.AudioTracks && oi != 0 && matches + partials != 0)
@@ -668,12 +711,15 @@ namespace CUETools.AccurateRip
 						for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 							for (int iDisk = 0; iDisk < AccDisks.Count; iDisk++)
 							{
-								if (CRC(iTrack, oi) == AccDisks[iDisk].tracks[iTrack].CRC && (AccDisks[iDisk].tracks[iTrack].CRC != 0 || oi == 0))
+								int trno = iTrack + _toc.FirstAudio - 1;
+								if (trno < AccDisks[iDisk].tracks.Count
+									&& CRC(iTrack, oi) == AccDisks[iDisk].tracks[trno].CRC 
+									&& (AccDisks[iDisk].tracks[trno].CRC != 0 || oi == 0))
 								{
-									conf += AccDisks[iDisk].tracks[iTrack].count;
+									conf += AccDisks[iDisk].tracks[trno].count;
 									if (oi == 0)
 										zeroOffset = true;
-									pressings.AppendFormat("{0}{1}({2})", pressings.Length > 0 ? "," : "", oi, AccDisks[iDisk].tracks[iTrack].count);
+									pressings.AppendFormat("{0}{1}({2})", pressings.Length > 0 ? "," : "", oi, AccDisks[iDisk].tracks[trno].count);
 								}
 							}
 						if (conf > 0 && zeroOffset && pressings.Length == 0)
@@ -692,7 +738,7 @@ namespace CUETools.AccurateRip
 			if (CRC32(0) != 0 && (_hasLogCRC || verbose))
 			{
 				sw.WriteLine("");
-				sw.WriteLine("Track\t[ CRC32  ]\t[W/O NULL]\t{0:10}", _hasLogCRC ? "[  LOG   ]" : "");
+				sw.WriteLine("Track Peak [ CRC32  ] [W/O NULL] {0:10}", _hasLogCRC ? "[  LOG   ]" : "");
 				for (int iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
 				{
 					string inLog, extra = "";
@@ -740,7 +786,13 @@ namespace CUETools.AccurateRip
 									}
 								}
 					}
-					sw.WriteLine(String.Format(" {0}\t[{1:X8}]\t[{2:X8}]\t{3:10}{4}", iTrack == 0 ? "--" : string.Format("{0:00}", iTrack), CRC32(iTrack), CRCWONULL(iTrack), inLog, extra));
+					sw.WriteLine(" {0}  {5,5:F1} [{1:X8}] [{2:X8}] {3,10}{4}",
+						iTrack == 0 ? "--" : string.Format("{0:00}", iTrack),
+						CRC32(iTrack),
+						CRCWONULL(iTrack),
+						inLog,
+						extra,
+						((iTrack == 0 ? PeakLevel() : PeakLevel(iTrack)) * 1000 / 65535) * 0.1);
 				}
 			}
 		}
@@ -897,6 +949,7 @@ namespace CUETools.AccurateRip
 		private int[,] _CRCNL;
 		private uint[,] _CacheCRCWN;
 		private uint[,] _CacheCRC32;
+		private int[] _Peak;
 		private uint[] _CRCLOG;
 		private IWebProxy proxy;
 

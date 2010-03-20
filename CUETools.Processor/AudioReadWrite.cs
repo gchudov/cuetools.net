@@ -31,11 +31,20 @@ namespace CUETools.Processor
 				return new UserDefinedReader(path, IO, decoder.path, decoder.parameters);
 			if (decoder.type == null)
 				throw new Exception("Unsupported audio type: " + path);
-			
-			object src = Activator.CreateInstance(decoder.type, path, IO);
-			if (src == null || !(src is IAudioSource))
-				throw new Exception("Unsupported audio type: " + path + ": " + decoder.type.FullName);
-			return src as IAudioSource;
+
+			try
+			{
+				object src = Activator.CreateInstance(decoder.type, path, IO);
+				if (src == null || !(src is IAudioSource))
+					throw new Exception("Unsupported audio type: " + path + ": " + decoder.type.FullName);
+				return src as IAudioSource;
+			}
+			catch (System.Reflection.TargetInvocationException ex)
+			{
+				if (ex.InnerException == null)
+					throw ex;
+				throw ex.InnerException;
+			}
 		}
 
 		public static IAudioSource GetAudioSource(string path, Stream IO, CUEConfig config)

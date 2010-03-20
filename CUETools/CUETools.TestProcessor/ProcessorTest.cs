@@ -71,36 +71,49 @@ namespace CUETools.TestProcessor
 
 
 		/// <summary>
-		///A test for Open (string)
+		///A test for CD-Extra
 		///</summary>
 		[TestMethod()]
-		public void OpenTest()
+		public void OpenCDExtra()
 		{
-			CUEConfig config = new CUEConfig();
-			CUESheet target = null;
-
 			// test playstation-type CD-Extra
-			target = new CUESheet(config);
+			CUESheet target = new CUESheet(new CUEConfig());
 			target.Open("Circuitry\\1.cue");
 			Assert.AreEqual<string>("00078c13-001b4ab9-40086205", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
 
 			// test playstation-type CD-Extra with nonstandard pregap
-			target = new CUESheet(config);
+			target = new CUESheet(new CUEConfig());
 			target.Open("Headcandy\\Headcandy.cue");
 			Assert.AreEqual<string>("0014fc22-0052b286-62104a06", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
 
-			// test Enhanced-CD
-			target = new CUESheet(config);
-			target.Open("No Man's Land\\1.cue");
-			Assert.AreEqual<string>("0015c42c-00d1e13f-ba0fe50d", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
-
-			// test one-track CD
-			target = new CUESheet(config);
-			target.Open("Amarok\\Amarok.cue");
-			Assert.AreEqual<string>("00041f6d-00083ece-020e1201", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");			
+			// test playstation-type CD-Extra with no info in cuesheet
+			target = new CUESheet(new CUEConfig());
+			target.Open("Anatomy\\Anatomy.cue");
+			Assert.AreEqual<string>("002a09da-01e82f64-f00f4811", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
 		}
 
+		/// <summary>
+		///A test for Enhanced-CD
+		///</summary>
+		[TestMethod()]
+		public void OpenEnhancedCD()
+		{
+			// test Enhanced-CD
+			CUESheet target = new CUESheet(new CUEConfig());
+			target.Open("No Man's Land\\1.cue");
+			Assert.AreEqual<string>("0015c42c-00d1e13f-ba0fe50d", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
+		}
+
+		/// <summary>
+		///A test for one-track CD
+		///</summary>
+		[TestMethod()]
+		public void OpenOneTrackCD()
+		{
+			// test one-track CD
+			CUESheet target = new CUESheet(new CUEConfig());
+			target.Open("Amarok\\Amarok.cue");
+			Assert.AreEqual<string>("00041f6d-00083ece-020e1201", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
+		}
 	}
-
-
 }

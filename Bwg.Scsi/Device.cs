@@ -2369,6 +2369,47 @@ namespace Bwg.Scsi
             return CommandStatus.Success ;
         }
 
+		/// <summary>
+		/// Read the subchannel data from a series of sectors
+		/// </summary>
+		/// <param name="mode">subchannel mode</param>
+		/// <param name="track">track number</param>
+		/// <param name="data">output buffer</param>
+		/// <param name="offs">output buffer offset</param>
+		/// <param name="timeout">timeout (in seconds)</param>
+		/// <returns></returns>
+		public CommandStatus ReadSubChannel42(byte mode, int track, ref byte[] data, int offs, int timeout)
+		{
+			if (m_logger != null)
+			{
+				m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, 8, "Bwg.Scsi.Device.ReadSubChannel42()"));
+			}
+
+			if (mode != 1 && mode != 2 && mode != 3)
+				throw new Exception("invalid read mode for ReadSubchannel42() call");
+
+			int size = mode == 1 ? 16 : 24;
+			if (offs + data.GetLength(0) < size)
+				throw new Exception("data buffer is not large enough to hold the data requested");
+
+			using (Command cmd = new Command(ScsiCommandCode.ReadSubChannel, 10, size, Command.CmdDirection.In, timeout))
+			{
+				// 42 00 40 01  00 00 00 00 10 00
+				//cmd.SetCDB8(1, 2); // MSF
+				cmd.SetCDB8(2, 64); // SUBQ
+				cmd.SetCDB8(3, mode);
+				cmd.SetCDB8(6, (byte)track);
+				cmd.SetCDB16(7, (ushort)size);
+
+				CommandStatus st = SendCommand(cmd);
+				if (st != CommandStatus.Success)
+					return st;
+
+				Marshal.Copy(cmd.GetBuffer(), data, offs, size);
+			}
+			return CommandStatus.Success;
+		}
+
         /// <summary>
         /// Read the CD text information from the leadin using the ReadTocPmaAtip command form
         /// </summary>
@@ -3069,10 +3110,11 @@ namespace Bwg.Scsi
 				string args = "info";
 				m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, 8, "Bwg.Scsi.Device.ReadFullToc(" + args + ")"));
 			}
-			using (Command cmd = new Command(ScsiCommandCode.ReadTocPmaAtip, 10, 32, Command.CmdDirection.In, 5 * 60))
+			using (Command cmd = new Command(ScsiCommandCode.ReadTocPmaAtip, 10, 320, Command.CmdDirection.In, 5 * 60))
 			{
+				cmd.SetCDB8(1, 2);
 				cmd.SetCDB8(2, 3);
-				cmd.SetCDB16(7, 32);
+				cmd.SetCDB16(7, 320);
 
 				CommandStatus st = SendCommand(cmd);
 				if (st != CommandStatus.Success)
@@ -3081,7 +3123,7 @@ namespace Bwg.Scsi
 				len = cmd.GetBuffer16(0);
 				len += 2;
 
-				if (len <= 32)
+				if (len <= 320)
 				{
 					data = new byte[len];
 					Marshal.Copy(cmd.GetBuffer(), data, 0, len);
@@ -3380,7 +3422,7 @@ namespace Bwg.Scsi
                 string args = ctrl.ToString() + ", " + read.ToString() + ", " + write.ToString();
                 m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, 8, "Bwg.Scsi.Device.SetCdSpeed(" + args + ")"));
             }
-            using (Command cmd = new Command(ScsiCommandCode.SetCdSpeed, 12, 0, Command.CmdDirection.None, 2))
+            using (Command cmd = new Command(ScsiCommandCode.SetCdSpeed, 12, 0, Command.CmdDirection.Out, 30))
             {
                 cmd.SetCDB8(1, (byte)ctrl);
                 cmd.SetCDB16(2, read);
@@ -3392,6 +3434,30 @@ namespace Bwg.Scsi
             }
             return CommandStatus.Success;
         }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		public CommandStatus SetCdSpeedDA(RotationalControl ctrl, ushort read, ushort write)
+		{
+			if (m_logger != null)
+			{
+				string args = ctrl.ToString() + ", " + read.ToString() + ", " + write.ToString();
+				m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, 8, "Bwg.Scsi.Device.SetCdSpeed(" + args + ")"));
+			}
+			using (Command cmd = new Command((ScsiCommandCode)0xDA, 12, 0, Command.CmdDirection.None, 2))
+			{
+				cmd.SetCDB8(1, (byte)ctrl);
+				cmd.SetCDB16(2, read);
+				cmd.SetCDB16(4, write);
+
+				CommandStatus st = SendCommand(cmd);
+				if (st != CommandStatus.Success)
+					return st;
+			}
+			return CommandStatus.Success;
+		}
 
         /// <summary>
         ///
