@@ -583,6 +583,13 @@ namespace CUETools.Processor
 			encoderLossy = _encoderLossy;
 			decoder = _decoder;
 		}
+		public string DotExtension
+		{
+			get
+			{
+				return "." + extension;
+			}
+		}
 		public override string ToString()
 		{
 			return extension;
