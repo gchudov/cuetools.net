@@ -154,7 +154,7 @@ namespace CUEControls
 			if (open)
 				flags |= GetInfoFlags.SHGFI_OPENICON;
 			SHFILEINFO info = new SHFILEINFO();
-			SHGetFileInfo(filename.FullName, (uint)filename.Attributes, ref info, (uint)Marshal.SizeOf(info), (uint)flags);
+			SHGetFileInfo(filename.FullName, filename.Exists ? (uint)filename.Attributes : 0, ref info, (uint)Marshal.SizeOf(info), (uint)flags);
 			iIcon = MapIcon(info.hIcon, info.iIcon);
 			DestroyIcon(info.hIcon);
 			return iIcon;

@@ -25,7 +25,7 @@ namespace BBBNOVA
         private int _dropDownWidth = 0;
         private int _maxDropDownItems = 8;
         
-        private int _selectedIndex = -1;
+        //private int _selectedIndex = -1;
 
         private bool _isDroppedDown = false;
 
@@ -50,6 +50,9 @@ namespace BBBNOVA
 
         [Category("Behavior"), Description("Occurs when the SelectedIndex property changes.")]
         public event EventHandler SelectedIndexChanged;
+
+		//[Category("Behavior"), Description("Occurs when the SelectedValue property changes.")]
+		//public event EventHandler SelectedValueChanged;
 
         [Category("Behavior"), Description("Occurs whenever a particular item/area needs to be painted.")]
 		public event EventHandler<DrawItemEventArgs> DrawItem;
@@ -189,55 +192,16 @@ namespace BBBNOVA
                     }
                 }
 
-				if (!value && _isDroppedDown) _dropDownClosedAt = DateTime.Now;
                 _isDroppedDown = value;
 
                 if (_isDroppedDown)
                 {
-                    _controlHost.Control.Width = _dropDownWidth;
-
-                    _listBox.Refresh();
-
-					int borderHeight = _listBox.BorderStyle == BorderStyle.Fixed3D ? 10 : 3;
-
-                    if (_listBox.Items.Count > 0) 
-                    {
-                        int h = 0;
-                        int i = 0;
-                        int maxItemHeight = 0;
-                        int highestItemHeight = 0;
-                        foreach(object item in _listBox.Items)
-                        {
-                            int itHeight = _listBox.GetItemHeight(i);
-                            if (highestItemHeight < itHeight) 
-                            {
-                                highestItemHeight = itHeight;
-                            }
-                            h = h + itHeight;
-                            if (i <= (_maxDropDownItems - 1)) 
-                            {
-                                maxItemHeight = h;
-                            }
-                            i = i + 1;
-                        }
-
-                        if (maxItemHeight > _dropDownHeight)
-							_listBox.Height = _dropDownHeight + borderHeight;
-                        else
-                        {
-                            if (maxItemHeight > highestItemHeight )
-								_listBox.Height = maxItemHeight + borderHeight;
-                            else
-								_listBox.Height = highestItemHeight + borderHeight;
-                        }
-                    }
-                    else
-                    {
-						_listBox.Height = 15 + borderHeight;
-                    }
-
+					_listBox.Width = _dropDownWidth;
+					_listBox.Height = CalculateListHeight();
                     _popupControl.Show(this, CalculateDropPosition(), ToolStripDropDownDirection.BelowRight);
-                }
+					Capture = false;
+					_listBox.Capture = true;
+				}
 
                 Invalidate();
                 if (_isDroppedDown)
@@ -245,9 +209,11 @@ namespace BBBNOVA
             }
         }
 
+		[Category("Appearance"), Description("Selects the radius of combobox edges.")]
         public BNRadius Radius
         {
             get { return _radius; }
+			set { _radius = value; }
         }
 
 		[Category("Appearance"), Description("Selects the type of border around drop down list."), DefaultValue(BorderStyle.None)]
@@ -370,23 +336,27 @@ namespace BBBNOVA
             _popupControl.Padding = new Padding(0);
             _popupControl.Margin = new Padding(0);
             _popupControl.AutoSize = true;
+			_popupControl.AutoClose = false;
             _popupControl.DropShadowEnabled = true;
             _popupControl.Items.Add(_controlHost);
 
             _dropDownWidth = this.Width;
 
+			_listBox.SelectedValueChanged += new EventHandler(_listBox_SelectedValueChanged);
+			_listBox.SelectedIndexChanged += new EventHandler(_listBox_SelectedIndexChanged);
             _listBox.MeasureItem += new MeasureItemEventHandler(_listBox_MeasureItem);
             _listBox.DrawItem += new DrawItemEventHandler(_listBox_DrawItem);
             _listBox.MouseClick += new MouseEventHandler(_listBox_MouseClick);
+			_listBox.MouseUp += new MouseEventHandler(_listBox_MouseUp);
+			_listBox.MouseDown += new MouseEventHandler(_listBox_MouseDown);
             _listBox.MouseMove += new MouseEventHandler(_listBox_MouseMove);
+			//(_listBox.DataManager as CurrencyManager).ListChanged += new ListChangedEventHandler(BNComboBox_ListChanged);
 
             _popupControl.Closed += new ToolStripDropDownClosedEventHandler(_popupControl_Closed);
 
             _textBox.Resize += new EventHandler(_textBox_Resize);
             _textBox.TextChanged += new EventHandler(_textBox_TextChanged);
-        }
-
-        
+		}
 
         #endregion
 
@@ -395,16 +365,24 @@ namespace BBBNOVA
 
         #region Overrides
 
+		protected override void OnCreateControl()
+		{
+			base.OnCreateControl();
+			_listBox.CreateControl();
+			_listBox.SelectedIndex = -1;
+		}
+
         protected override void OnDataSourceChanged(EventArgs e)
         {
-            this.SelectedIndex = 0;
+			_listBox.SelectedIndex = -1;
             base.OnDataSourceChanged(e);
-        }
+		}
 
         protected override void OnDisplayMemberChanged(EventArgs e)
         {
             _listBox.DisplayMember = this.DisplayMember;
-            this.SelectedIndex = this.SelectedIndex;
+			_listBox.SelectedIndex = _listBox.SelectedIndex;
+            //this.SelectedIndex = this.SelectedIndex;
             base.OnDisplayMemberChanged(e);
         }
 
@@ -482,14 +460,15 @@ namespace BBBNOVA
             base.OnMouseLeave(e);
         }
 
-		private DateTime _dropDownClosedAt = DateTime.MinValue;
-
         protected override void OnMouseDown(MouseEventArgs e)
         {
+			//System.Diagnostics.Trace.WriteLine(string.Format("OnMouseDown({0})", SelectedIndex)); 
 			_textBox.Focus();
-			if (DateTime.Now - _dropDownClosedAt >= TimeSpan.FromSeconds(0.1))
+			if (e.Button == MouseButtons.Left)
 				if ((this.RectangleToScreen(rectBtn).Contains(MousePosition) || (DropDownStyle == ComboBoxStyle.DropDownList)))
+				{
 					this.IsDroppedDown = !this.IsDroppedDown;
+				}
 			base.OnMouseDown(e);
         }
 
@@ -501,13 +480,10 @@ namespace BBBNOVA
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            if (e.Delta < 0)
-                this.SelectedIndex = this.SelectedIndex + 1;
-            else if (e.Delta > 0)
-            {
-                if (this.SelectedIndex > 0)
-                    this.SelectedIndex = this.SelectedIndex - 1;
-            }
+			if (e.Delta < 0 && _listBox.SelectedIndex < _listBox.Items.Count - 1)
+				_listBox.SelectedIndex = _listBox.SelectedIndex + 1;
+            else if (e.Delta > 0 && _listBox.SelectedIndex > 0)
+				_listBox.SelectedIndex = _listBox.SelectedIndex - 1;
 
             base.OnMouseWheel(e);
         }
@@ -518,18 +494,39 @@ namespace BBBNOVA
             base.OnGotFocus(e);
         }
 
-        protected override void OnLostFocus(EventArgs e)
-        {
-            if (!this.ContainsFocus)
-            {
-                Invalidate();
-            }
+		protected override void OnLostFocus(EventArgs e)
+		{
+			if (this.IsDroppedDown && !_popupControl.ContainsFocus && !this.ContainsFocus)
+				this.IsDroppedDown = false;
 
-            base.OnLostFocus(e);
-        }
+			base.OnLostFocus(e);
+		}
+
+		private int _selectedIndex = -2;
+
+		protected override void OnSelectedValueChanged(EventArgs e)
+		{
+			//System.Diagnostics.Trace.WriteLine(string.Format("OnSelectedValueChanged({0}=>{1})", Text, _listBox.Text));
+
+			OnSelectedIndexChanged(e);
+
+			//this.SelectedIndex = _listBox.SelectedIndex;
+			//this.Invalidate(true);
+			Text = _listBox.SelectedValue != null ?
+				_listBox.GetItemText(_listBox.SelectedValue) :
+				"";
+
+			base.OnSelectedValueChanged(e);
+		}
 
         protected override void OnSelectedIndexChanged(EventArgs e)
         {
+			//System.Diagnostics.Trace.WriteLine(string.Format("OnSelectedIndexChanged({0}=>{1})", _selectedIndex, _listBox.SelectedIndex));
+			if (_selectedIndex == _listBox.SelectedIndex)
+				return;
+			
+			_selectedIndex = _listBox.SelectedIndex;
+
             if(SelectedIndexChanged!=null)
                 SelectedIndexChanged(this, e);
 
@@ -539,7 +536,7 @@ namespace BBBNOVA
         protected override void OnValueMemberChanged(EventArgs e)
         {
             _listBox.ValueMember = this.ValueMember;
-            this.SelectedIndex = this.SelectedIndex;
+			//_listBox.SelectedIndex = _listBox.SelectedIndex;
             base.OnValueMemberChanged(e);
         }
 
@@ -570,7 +567,7 @@ namespace BBBNOVA
             {
                 _textBox.Text = value;
                 base.Text = _textBox.Text;
-				Invalidate();
+				Invalidate(true);
                 OnTextChanged(EventArgs.Empty);
             }
         }
@@ -698,7 +695,7 @@ namespace BBBNOVA
                 }
                 else
                 {
-                    ControlPaint.DrawStringDisabled(e.Graphics, _textBox.Text, Font, BackColor, rectText, sf);
+                    ControlPaint.DrawStringDisabled(e.Graphics, _textBox.Text, Font, Color1, rectText, sf);
                 }
             }
             /*
@@ -736,22 +733,14 @@ namespace BBBNOVA
 
         public override int SelectedIndex
         {
-            get { return _selectedIndex; }
+            get { return _listBox.SelectedIndex; }
 			set
 			{
-				if (_listBox == null ||
-					_listBox.Items.Count == 0 ||
-					_ignoreSelect ||
-					(this.DataSource != null && value < 0) ||
-					value < -1 ||
-					value > _listBox.Items.Count - 1
-					)
-					return;
-
 				_listBox.SelectedIndex = value;
-				_selectedIndex = value;
-				Text = _listBox.GetItemText(_listBox.SelectedItem);
-				OnSelectedIndexChanged(EventArgs.Empty);
+
+				//_selectedIndex = value;
+				//if (this.DataSource == null || value >= 0)
+					//OnSelectedIndexChanged(EventArgs.Empty);
 			}
 		}
 
@@ -761,17 +750,17 @@ namespace BBBNOVA
             set 
             { 
                 _listBox.SelectedItem = value;
-                this.SelectedIndex = _listBox.SelectedIndex;
+				//this.SelectedIndex = _listBox.SelectedIndex;
             }
         }
 
         public new object SelectedValue
         {
-            get { return base.SelectedValue; }
+            get { return _listBox.SelectedValue; }
             set
             {
-                base.SelectedValue = value;
-            }
+                _listBox.SelectedValue = value;
+			}
         }
 
         protected override void RefreshItem(int index)
@@ -827,66 +816,74 @@ namespace BBBNOVA
         }
 
 
-		bool _ignoreSelect = false;
+		private int _hoverItem = -1;
 
         void _listBox_MouseMove(object sender, MouseEventArgs e)
         {
-            int i;
-            for (i = 0; i < (_listBox.Items.Count); i++)
-            {
-                if (_listBox.GetItemRectangle(i).Contains(_listBox.PointToClient(MousePosition)))
-                {
-					_ignoreSelect = true;
-                    _listBox.SelectedIndex = i;
-					_ignoreSelect = false;
-                    return;
-                }
-            }
+			int i = _listBox.IndexFromPoint(e.Location);
+			if (_hoverItem != i)
+			{
+				_hoverItem = i;
+				_listBox.Invalidate();
+			}
         }
 
-        void _listBox_MouseClick(object sender, MouseEventArgs e)
+		void _listBox_MouseDown(object sender, MouseEventArgs e)
+		{
+			int i = _listBox.IndexFromPoint(e.Location);
+			//System.Diagnostics.Trace.WriteLine(string.Format("_listBox_MouseDown({0})", i));
+			if (i >= 0)
+				_listBox.SelectedIndex = i;
+			IsDroppedDown = false;
+		}
+
+		void _listBox_MouseUp(object sender, MouseEventArgs e)
+		{
+			int i = _listBox.IndexFromPoint(e.Location);
+			//System.Diagnostics.Trace.WriteLine(string.Format("_listBox_MouseUp({0})", i));
+			if (i >= 0)
+			{
+				_listBox.SelectedIndex = i;
+				IsDroppedDown = false;
+			}
+		}
+
+		void _listBox_MouseClick(object sender, MouseEventArgs e)
         {
-            if (_listBox.Items.Count == 0)
-            {
-                return;
-            }
-
-            if (_listBox.SelectedItems.Count != 1)
-            {
-                return;
-            }
-
-            this.SelectedIndex = _listBox.SelectedIndex;
-
-            if (DropDownStyle == ComboBoxStyle.DropDownList)
-            {
-                this.Invalidate(true);
-            }
-
-            IsDroppedDown = false;
+			int i = _listBox.IndexFromPoint(e.Location);
+			if (i >= 0)
+			{
+				_listBox.SelectedIndex = i;
+				IsDroppedDown = false;
+			}
         }
 
 		private int GetImageKey(int index)
 		{
-			if (this.ImageList == null)
+			if (this.ImageList == null || index < 0)
 				return -1;
-			try
-			{
-				object item = _listBox.Items[index];
-				string key = (ImageKeyMember == null ? item : BindingContext[item, ImageKeyMember].Current) as string;
-				if (key == null)
-					return -1;
-				return this.ImageList.Images.IndexOfKey(key);
-			}
-			catch { }
+			object key = FilterItemOnProperty(_listBox.Items[index], ImageKeyMember ?? DisplayMember);
+			if (key == null)
+				return -1;
+			if (key is int)
+				return (int)key;
+			if (key is string)
+				return this.ImageList.Images.IndexOfKey(key as string);
 			return -1;
 		}
+
+		//void BNComboBox_ListChanged(object sender, ListChangedEventArgs e)
+		//{
+		//    _listBox.Height = CalculateListHeight();
+		//}
 
         void _listBox_DrawItem(object sender, DrawItemEventArgs e)
         {
 			if (DrawMode == DrawMode.Normal)
 			{
-				e.DrawBackground();
+				Color fg = _hoverItem != -1 && _hoverItem == e.Index ? Color1 : Color4;
+				Color bg = _hoverItem != -1 && _hoverItem == e.Index ? Color4 : Color1;
+				e.Graphics.FillRectangle(new SolidBrush(bg), e.Bounds);
 
 				if (e.Index >= 0)
 				{
@@ -909,7 +906,7 @@ namespace BBBNOVA
 					StringFormat sf = new StringFormat(StringFormatFlags.NoWrap);
 					sf.Alignment = StringAlignment.Near;
 					textBounds.Offset(-3, 0);
-					e.Graphics.DrawString(_listBox.GetItemText(Items[e.Index]), e.Font, new SolidBrush(e.ForeColor), textBounds);					
+					e.Graphics.DrawString(_listBox.GetItemText(Items[e.Index]), e.Font, new SolidBrush(fg), textBounds);
 				}
 				return;
 			}
@@ -922,6 +919,16 @@ namespace BBBNOVA
             }
         }
 
+		void _listBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			OnSelectedIndexChanged(e);
+		}
+
+		void _listBox_SelectedValueChanged(object sender, EventArgs e)
+		{
+			OnSelectedValueChanged(e);
+		}
+
         void _listBox_MeasureItem(object sender, MeasureItemEventArgs e)
         {
             if (MeasureItem != null)
@@ -933,12 +940,12 @@ namespace BBBNOVA
 
         void _popupControl_Closed(object sender, ToolStripDropDownClosedEventArgs e)
         {
-			if (_isDroppedDown) _dropDownClosedAt = DateTime.Now;
 			_isDroppedDown = false;
             if (!this.RectangleToScreen(this.ClientRectangle).Contains(MousePosition))
             {
                 hovered = false;
             }
+			_hoverItem = -1;
             Invalidate(true);
         }
 
@@ -999,6 +1006,39 @@ namespace BBBNOVA
 
             Invalidate(true);
         }
+
+		private int CalculateListHeight()
+		{
+			int borderHeight = _listBox.BorderStyle == BorderStyle.None ? 3 : SystemInformation.BorderSize.Height * 4 + 3;
+
+			if (_listBox.Items.Count <= 0)
+				return 15 + borderHeight;
+
+			int h = 0;
+			int i = 0;
+			int maxItemHeight = 0;
+			int highestItemHeight = 0;
+			foreach (object item in _listBox.Items)
+			{
+				int itHeight = _listBox.GetItemHeight(i);
+				if (highestItemHeight < itHeight)
+				{
+					highestItemHeight = itHeight;
+				}
+				h = h + itHeight;
+				if (i <= (_maxDropDownItems - 1))
+				{
+					maxItemHeight = h;
+				}
+				i = i + 1;
+			}
+
+			if (maxItemHeight > _dropDownHeight)
+				return _dropDownHeight + borderHeight;
+			if (maxItemHeight > highestItemHeight)
+				return maxItemHeight + borderHeight;
+			return highestItemHeight + borderHeight;
+		}
 
         private Point CalculateDropPosition()
         {
@@ -1076,10 +1116,12 @@ namespace BBBNOVA
         #endregion
     }
 
-
+	[Serializable]
     public class BNRadius
     {
         private int _topLeft = 0;
+
+		public static readonly BNRadius Default = new BNRadius();
 
         public int TopLeft
         {
