@@ -67,6 +67,13 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon ape {
+            get {
+                object obj = ResourceManager.GetObject("ape", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap arok {
             get {
                 object obj = ResourceManager.GetObject("arok", resourceCulture);
@@ -88,6 +95,13 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon flac {
+            get {
+                object obj = ResourceManager.GetObject("flac", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap freedb {
             get {
                 object obj = ResourceManager.GetObject("freedb", resourceCulture);
@@ -95,10 +109,52 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon ipod_sound {
+            get {
+                object obj = ResourceManager.GetObject("ipod_sound", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon mp3 {
+            get {
+                object obj = ResourceManager.GetObject("mp3", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap musicbrainz {
             get {
                 object obj = ResourceManager.GetObject("musicbrainz", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon ogg {
+            get {
+                object obj = ResourceManager.GetObject("ogg", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon tta {
+            get {
+                object obj = ResourceManager.GetObject("tta", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon wave {
+            get {
+                object obj = ResourceManager.GetObject("wave", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon wv {
+            get {
+                object obj = ResourceManager.GetObject("wv", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
     }

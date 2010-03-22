@@ -117,36 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="comboDrives.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="comboDrives.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 6</value>
-  </data>
-  <data name="comboDrives.Size" type="System.Drawing.Size, System.Drawing">
-    <value>553, 21</value>
-  </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="comboDrives.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;comboDrives.Name" xml:space="preserve">
-    <value>comboDrives</value>
-  </data>
-  <data name="&gt;&gt;comboDrives.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboDrives.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;comboDrives.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>0, 456</value>
   </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
     <value>394, 20</value>
   </data>
@@ -206,6 +180,7 @@
   <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
     <value>571, 25</value>
   </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
   </data>
@@ -222,8 +197,9 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
@@ -282,7 +258,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -312,70 +288,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonGo.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="comboBoxAudioFormat.Items" xml:space="preserve">
-    <value>flac</value>
-  </data>
-  <data name="comboBoxAudioFormat.Items1" xml:space="preserve">
-    <value>wv</value>
-  </data>
-  <data name="comboBoxAudioFormat.Items2" xml:space="preserve">
-    <value>wav</value>
-  </data>
-  <data name="comboBoxAudioFormat.Items3" xml:space="preserve">
-    <value>ape</value>
-  </data>
-  <data name="comboBoxAudioFormat.Items4" xml:space="preserve">
-    <value>tta</value>
-  </data>
-  <data name="comboBoxAudioFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>113, 15</value>
-  </data>
-  <data name="comboBoxAudioFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 21</value>
-  </data>
-  <data name="comboBoxAudioFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;comboBoxAudioFormat.Name" xml:space="preserve">
-    <value>comboBoxAudioFormat</value>
-  </data>
-  <data name="&gt;&gt;comboBoxAudioFormat.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBoxAudioFormat.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;comboBoxAudioFormat.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="comboImage.Items" xml:space="preserve">
-    <value>image</value>
-  </data>
-  <data name="comboImage.Items1" xml:space="preserve">
-    <value>tracks</value>
-  </data>
-  <data name="comboImage.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 78</value>
-  </data>
-  <data name="comboImage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 21</value>
-  </data>
-  <data name="comboImage.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;comboImage.Name" xml:space="preserve">
-    <value>comboImage</value>
-  </data>
-  <data name="&gt;&gt;comboImage.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboImage.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;comboImage.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>9</value>
   </data>
   <data name="buttonAbort.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -408,7 +321,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonAbort.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
   </data>
   <data name="buttonPause.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -443,9 +356,6 @@
   <data name="&gt;&gt;buttonPause.ZOrder" xml:space="preserve">
     <value>12</value>
   </data>
-  <data name="comboRelease.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
   <metadata name="contextMenuStripRelease.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
@@ -463,30 +373,6 @@
   </data>
   <data name="&gt;&gt;contextMenuStripRelease.Type" xml:space="preserve">
     <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="comboRelease.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 33</value>
-  </data>
-  <data name="comboRelease.Size" type="System.Drawing.Size, System.Drawing">
-    <value>553, 21</value>
-  </data>
-  <data name="comboRelease.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="comboRelease.ToolTip" xml:space="preserve">
-    <value>Right-Click to edit artist/title</value>
-  </data>
-  <data name="&gt;&gt;comboRelease.Name" xml:space="preserve">
-    <value>comboRelease</value>
-  </data>
-  <data name="&gt;&gt;comboRelease.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboRelease.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;comboRelease.ZOrder" xml:space="preserve">
-    <value>6</value>
   </data>
   <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>310, 15</value>
@@ -540,28 +426,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;lblWriteOffset.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="comboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
-    <value>113, 42</value>
-  </data>
-  <data name="comboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 21</value>
-  </data>
-  <data name="comboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;comboBoxEncoder.Name" xml:space="preserve">
-    <value>comboBoxEncoder</value>
-  </data>
-  <data name="&gt;&gt;comboBoxEncoder.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBoxEncoder.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;comboBoxEncoder.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>10</value>
   </data>
   <data name="radioButtonAudioLossy.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -591,7 +456,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;radioButtonAudioLossy.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="radioButtonAudioHybrid.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -651,7 +516,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;radioButtonAudioLossless.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>9</value>
   </data>
   <data name="checkBoxEACMode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -681,7 +546,45 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;checkBoxEACMode.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>11</value>
+  </data>
+  <metadata name="encodersBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>451, 456</value>
+  </metadata>
+  <metadata name="bindingSourceCR.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>210, 56</value>
+  </metadata>
+  <data name="bnComboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
+    <value>113, 46</value>
+  </data>
+  <data name="bnComboBoxEncoder.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
+        TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
+        AAAAAgAAAAs=
+</value>
+  </data>
+  <data name="bnComboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 21</value>
+  </data>
+  <data name="bnComboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
+    <value>38</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.Name" xml:space="preserve">
+    <value>bnComboBoxEncoder</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.Type" xml:space="preserve">
+    <value>BBBNOVA.BNComboBox, CUEControls, Version=2.0.6.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="labelSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="labelSecureMode.Location" type="System.Drawing.Point, System.Drawing">
     <value>248, 98</value>
@@ -705,7 +608,39 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelSecureMode.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
+  </data>
+  <metadata name="formatsBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>279, 456</value>
+  </metadata>
+  <data name="bnComboBoxFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>113, 19</value>
+  </data>
+  <data name="bnComboBoxFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
+        TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
+        AAAAAgAAAAs=
+</value>
+  </data>
+  <data name="bnComboBoxFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 21</value>
+  </data>
+  <data name="bnComboBoxFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>37</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.Name" xml:space="preserve">
+    <value>bnComboBoxFormat</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.Type" xml:space="preserve">
+    <value>BBBNOVA.BNComboBox, CUEControls, Version=2.0.6.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="labelEncoderMinMode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -744,7 +679,39 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelEncoderMinMode.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
+  </data>
+  <metadata name="cUEStylesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>642, 56</value>
+  </metadata>
+  <data name="bnComboBoxImage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 89</value>
+  </data>
+  <data name="bnComboBoxImage.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
+        TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
+        AAAAAgAAAAs=
+</value>
+  </data>
+  <data name="bnComboBoxImage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>93, 21</value>
+  </data>
+  <data name="bnComboBoxImage.TabIndex" type="System.Int32, mscorlib">
+    <value>34</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.Name" xml:space="preserve">
+    <value>bnComboBoxImage</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.Type" xml:space="preserve">
+    <value>BBBNOVA.BNComboBox, CUEControls, Version=2.0.6.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="labelEncoderMaxMode.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -783,7 +750,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelEncoderMaxMode.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>5</value>
   </data>
   <data name="labelEncoderMode.Font" type="System.Drawing.Font, System.Drawing">
     <value>Tahoma, 8.25pt</value>
@@ -819,7 +786,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelEncoderMode.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>6</value>
   </data>
   <data name="trackBarEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -846,7 +813,10 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;trackBarEncoderMode.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>7</value>
+  </data>
+  <data name="trackBarSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="trackBarSecureMode.Location" type="System.Drawing.Point, System.Drawing">
     <value>237, 71</value>
@@ -867,7 +837,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;trackBarSecureMode.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>8</value>
   </data>
   <data name="groupBoxSettings.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 332</value>
@@ -888,7 +858,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>181, 22</value>
@@ -896,9 +866,6 @@
   <data name="toolStripMenuItem1.Text" xml:space="preserve">
     <value>toolStripMenuItem1</value>
   </data>
-  <metadata name="releaseBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>207, 17</value>
-  </metadata>
   <metadata name="plainBackgroundPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>979, 17</value>
   </metadata>
@@ -924,19 +891,19 @@
     <value>progressBarErrors</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3732.11482, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="progressBarCD.Location" type="System.Drawing.Point, System.Drawing">
     <value>382, 392</value>
   </data>
   <metadata name="plainProgressPainter2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 56</value>
+    <value>356, 56</value>
   </metadata>
   <data name="progressBarCD.Size" type="System.Drawing.Size, System.Drawing">
     <value>176, 23</value>
@@ -951,13 +918,13 @@
     <value>progressBarCD</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3732.11482, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;progressBarCD.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="comboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 60</value>
@@ -984,7 +951,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboBoxOutputFormat.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 61</value>
@@ -1008,7 +975,123 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;txtOutputPath.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <metadata name="releasesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>824, 56</value>
+  </metadata>
+  <metadata name="imageListMetadataSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 56</value>
+  </metadata>
+  <data name="imageListMetadataSource.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
+        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAa
+        CQAAAk1TRnQBSQFMAgEBAgEAAQQBAAEEAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        AwABQAMAARADAAEBAQABCAYAAQQYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
+        AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
+        AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
+        AWYDAAGZAwABzAIAATMDAAIzAgABMwFmAgABMwGZAgABMwHMAgABMwH/AgABZgMAAWYBMwIAAmYCAAFm
+        AZkCAAFmAcwCAAFmAf8CAAGZAwABmQEzAgABmQFmAgACmQIAAZkBzAIAAZkB/wIAAcwDAAHMATMCAAHM
+        AWYCAAHMAZkCAALMAgABzAH/AgAB/wFmAgAB/wGZAgAB/wHMAQABMwH/AgAB/wEAATMBAAEzAQABZgEA
+        ATMBAAGZAQABMwEAAcwBAAEzAQAB/wEAAf8BMwIAAzMBAAIzAWYBAAIzAZkBAAIzAcwBAAIzAf8BAAEz
+        AWYCAAEzAWYBMwEAATMCZgEAATMBZgGZAQABMwFmAcwBAAEzAWYB/wEAATMBmQIAATMBmQEzAQABMwGZ
+        AWYBAAEzApkBAAEzAZkBzAEAATMBmQH/AQABMwHMAgABMwHMATMBAAEzAcwBZgEAATMBzAGZAQABMwLM
+        AQABMwHMAf8BAAEzAf8BMwEAATMB/wFmAQABMwH/AZkBAAEzAf8BzAEAATMC/wEAAWYDAAFmAQABMwEA
+        AWYBAAFmAQABZgEAAZkBAAFmAQABzAEAAWYBAAH/AQABZgEzAgABZgIzAQABZgEzAWYBAAFmATMBmQEA
+        AWYBMwHMAQABZgEzAf8BAAJmAgACZgEzAQADZgEAAmYBmQEAAmYBzAEAAWYBmQIAAWYBmQEzAQABZgGZ
+        AWYBAAFmApkBAAFmAZkBzAEAAWYBmQH/AQABZgHMAgABZgHMATMBAAFmAcwBmQEAAWYCzAEAAWYBzAH/
+        AQABZgH/AgABZgH/ATMBAAFmAf8BmQEAAWYB/wHMAQABzAEAAf8BAAH/AQABzAEAApkCAAGZATMBmQEA
+        AZkBAAGZAQABmQEAAcwBAAGZAwABmQIzAQABmQEAAWYBAAGZATMBzAEAAZkBAAH/AQABmQFmAgABmQFm
+        ATMBAAGZATMBZgEAAZkBZgGZAQABmQFmAcwBAAGZATMB/wEAApkBMwEAApkBZgEAA5kBAAKZAcwBAAKZ
+        Af8BAAGZAcwCAAGZAcwBMwEAAWYBzAFmAQABmQHMAZkBAAGZAswBAAGZAcwB/wEAAZkB/wIAAZkB/wEz
+        AQABmQHMAWYBAAGZAf8BmQEAAZkB/wHMAQABmQL/AQABzAMAAZkBAAEzAQABzAEAAWYBAAHMAQABmQEA
+        AcwBAAHMAQABmQEzAgABzAIzAQABzAEzAWYBAAHMATMBmQEAAcwBMwHMAQABzAEzAf8BAAHMAWYCAAHM
+        AWYBMwEAAZkCZgEAAcwBZgGZAQABzAFmAcwBAAGZAWYB/wEAAcwBmQIAAcwBmQEzAQABzAGZAWYBAAHM
+        ApkBAAHMAZkBzAEAAcwBmQH/AQACzAIAAswBMwEAAswBZgEAAswBmQEAA8wBAALMAf8BAAHMAf8CAAHM
+        Af8BMwEAAZkB/wFmAQABzAH/AZkBAAHMAf8BzAEAAcwC/wEAAcwBAAEzAQAB/wEAAWYBAAH/AQABmQEA
+        AcwBMwIAAf8CMwEAAf8BMwFmAQAB/wEzAZkBAAH/ATMBzAEAAf8BMwH/AQAB/wFmAgAB/wFmATMBAAHM
+        AmYBAAH/AWYBmQEAAf8BZgHMAQABzAFmAf8BAAH/AZkCAAH/AZkBMwEAAf8BmQFmAQAB/wKZAQAB/wGZ
+        AcwBAAH/AZkB/wEAAf8BzAIAAf8BzAEzAQAB/wHMAWYBAAH/AcwBmQEAAf8CzAEAAf8BzAH/AQAC/wEz
+        AQABzAH/AWYBAAL/AZkBAAL/AcwBAAJmAf8BAAFmAf8BZgEAAWYC/wEAAf8CZgEAAf8BZgH/AQAC/wFm
+        AQABIQEAAaUBAANfAQADdwEAA4YBAAOWAQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHw
+        AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD/wIAAXoCUQt6AQAB7Q8K
+        IAABUQEAAREBEwEAAQ8KegG1BAQD8wEEA/MCBAFfAQohAAG8A/8BEwEPCXoBtQMEAfQCBAH0AQQB9AIE
+        AfQCBAEKIQABvAT/AQAJegG1AaICBAH/AgQB/wEEAf8CBAH/AgQBCiAAAVEBDwHrAgcBvAEAAREEAAER
+        A3oBtQGiAwQD/wEEA/8DBAEKIAABegFRAQ8CAAH/AQABDwH3Av8BkgIRAnoBtQGiBQQB/wEEAf8FBAEK
+        IAAEegEAAf8BAAERBP8BvAEAAnoBtQGiBQQB/wEEAf8FBAEKIAAErgEAAf8CAAETAbwD/wEAAq4BtQGi
+        DQQBCiAABK4BAAH/AQABEgEPAwAB/wEAAq4N/wH0AfMB7CAABK4BAAH/AQ8BAAERAhIBAAH/AQACrgH/
+        AaIC/wEEA/8CBAP/AgQB7CAABK4BAAL/AZIBEQEAAQ8BAAH/AQACrgH/AaIC/wEEAv8BBAT/AQQB9AHz
+        AewgAASuAQABBwP/AbwB6gEAAf8BAAKuAf8BogL/AQQC/wQEAf8DBAEKIAAErgERARMBBwb/AQACrgH/
+        AaIBBAH/AQQC/wEEAv8BBAH/AQQB9AHzAQogAAWuAREBAAERAZIE/wEAAq4B/wGGAv8CBAL/AgQD/wIE
+        AewgAAeuAREBAAEPAesBvAH/AQACrgH/AYYL/wH0AfMB7CEACa4BDwEAARMBEQGuAQAC/wG1C/8B9AEH
+        IAABQgFNAT4HAAE+AwABKAMAAUADAAEQAwABAQEAAQEFAAGAFwAD/wEAAYABAXYAAYABAQYACw==
+</value>
+  </data>
+  <data name="bnComboBoxRelease.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 33</value>
+  </data>
+  <data name="bnComboBoxRelease.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
+        TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
+        AAAAAgAAAAs=
+</value>
+  </data>
+  <data name="bnComboBoxRelease.Size" type="System.Drawing.Size, System.Drawing">
+    <value>552, 21</value>
+  </data>
+  <data name="bnComboBoxRelease.TabIndex" type="System.Int32, mscorlib">
+    <value>35</value>
+  </data>
+  <data name="bnComboBoxRelease.ToolTip" xml:space="preserve">
+    <value>Right-lick to edit release info</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxRelease.Name" xml:space="preserve">
+    <value>bnComboBoxRelease</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxRelease.Type" xml:space="preserve">
+    <value>BBBNOVA.BNComboBox, CUEControls, Version=2.0.6.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxRelease.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxRelease.ZOrder" xml:space="preserve">
     <value>1</value>
+  </data>
+  <metadata name="drivesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>116, 456</value>
+  </metadata>
+  <data name="bnComboBoxDrives.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 6</value>
+  </data>
+  <data name="bnComboBoxDrives.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
+        TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
+        AAAAAgAAAAs=
+</value>
+  </data>
+  <data name="bnComboBoxDrives.Size" type="System.Drawing.Size, System.Drawing">
+    <value>552, 21</value>
+  </data>
+  <data name="bnComboBoxDrives.TabIndex" type="System.Int32, mscorlib">
+    <value>36</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.Name" xml:space="preserve">
+    <value>bnComboBoxDrives</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.Type" xml:space="preserve">
+    <value>BBBNOVA.BNComboBox, CUEControls, Version=2.0.6.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -1491,53 +1574,89 @@
   <data name="&gt;&gt;editToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;encodersBindingSource.Name" xml:space="preserve">
+    <value>encodersBindingSource</value>
+  </data>
+  <data name="&gt;&gt;encodersBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;bindingSourceCR.Name" xml:space="preserve">
+    <value>bindingSourceCR</value>
+  </data>
+  <data name="&gt;&gt;bindingSourceCR.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;formatsBindingSource.Name" xml:space="preserve">
+    <value>formatsBindingSource</value>
+  </data>
+  <data name="&gt;&gt;formatsBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cUEStylesBindingSource.Name" xml:space="preserve">
+    <value>cUEStylesBindingSource</value>
+  </data>
+  <data name="&gt;&gt;cUEStylesBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;toolStripMenuItem1.Name" xml:space="preserve">
     <value>toolStripMenuItem1</value>
   </data>
   <data name="&gt;&gt;toolStripMenuItem1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;releaseBindingSource.Name" xml:space="preserve">
-    <value>releaseBindingSource</value>
-  </data>
-  <data name="&gt;&gt;releaseBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;plainBackgroundPainter1.Name" xml:space="preserve">
     <value>plainBackgroundPainter1</value>
   </data>
   <data name="&gt;&gt;plainBackgroundPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.3732.11482, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Name" xml:space="preserve">
     <value>styledBorderPainter1</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.3732.11482, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Name" xml:space="preserve">
     <value>plainProgressPainter1</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3732.11482, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Name" xml:space="preserve">
     <value>gradientGlossPainter1</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.3732.11482, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Name" xml:space="preserve">
     <value>plainProgressPainter2</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3730.37805, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3732.11482, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
     <value>toolTip1</value>
   </data>
   <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;releasesBindingSource.Name" xml:space="preserve">
+    <value>releasesBindingSource</value>
+  </data>
+  <data name="&gt;&gt;releasesBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;imageListMetadataSource.Name" xml:space="preserve">
+    <value>imageListMetadataSource</value>
+  </data>
+  <data name="&gt;&gt;imageListMetadataSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;drivesBindingSource.Name" xml:space="preserve">
+    <value>drivesBindingSource</value>
+  </data>
+  <data name="&gt;&gt;drivesBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmCUERipper</value>

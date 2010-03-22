@@ -20,6 +20,9 @@
     <GenerateManifests>true</GenerateManifests>
     <SignManifests>true</SignManifests>
     <IsWebBootstrapper>true</IsWebBootstrapper>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
@@ -41,9 +44,6 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -163,6 +163,7 @@
     <None Include="Resources\musicbrainz.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\DataSources\frmCUERipper.datasource" />
     <None Include="Resources\cdrepair.png" />
     <None Include="Resources\accuraterip_16.bmp" />
     <None Include="Resources\accuraterip.bmp" />
@@ -226,6 +227,14 @@
     <Content Include="Plugins\CUETools.Codecs.FlaCuda.dll" />
     <Content Include="Plugins\CUETools.Codecs.FLAKE.dll" />
     <Content Include="Plugins\CUETools.Ripper.SCSI.dll" />
+    <None Include="Resources\ape.ico" />
+    <None Include="Resources\ipod_sound.ico" />
+    <None Include="Resources\mp3.ico" />
+    <None Include="Resources\ogg.ico" />
+    <None Include="Resources\tta.ico" />
+    <None Include="Resources\wave.ico" />
+    <None Include="Resources\wv.ico" />
+    <None Include="Resources\flac.ico" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
