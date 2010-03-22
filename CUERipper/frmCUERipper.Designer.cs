@@ -49,14 +49,13 @@ namespace CUERipper
 			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
 			this.lblWriteOffset = new System.Windows.Forms.Label();
-			this.radioButtonAudioLossy = new System.Windows.Forms.RadioButton();
-			this.radioButtonAudioHybrid = new System.Windows.Forms.RadioButton();
-			this.radioButtonAudioLossless = new System.Windows.Forms.RadioButton();
 			this.checkBoxEACMode = new System.Windows.Forms.CheckBox();
 			this.groupBoxSettings = new System.Windows.Forms.GroupBox();
+			this.bnComboBoxLosslessOrNot = new BBBNOVA.BNComboBox();
+			this.losslessOrNotBindingSource = new System.Windows.Forms.BindingSource(this.components);
+			this.bindingSourceCR = new System.Windows.Forms.BindingSource(this.components);
 			this.bnComboBoxEncoder = new BBBNOVA.BNComboBox();
 			this.encodersBindingSource = new System.Windows.Forms.BindingSource(this.components);
-			this.bindingSourceCR = new System.Windows.Forms.BindingSource(this.components);
 			this.labelSecureMode = new System.Windows.Forms.Label();
 			this.bnComboBoxFormat = new BBBNOVA.BNComboBox();
 			this.formatsBindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -87,8 +86,9 @@ namespace CUERipper
 			this.contextMenuStripRelease.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
 			this.groupBoxSettings.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.losslessOrNotBindingSource)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.bindingSourceCR)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.formatsBindingSource)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.cUEStylesBindingSource)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).BeginInit();
@@ -252,30 +252,6 @@ namespace CUERipper
 			resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
 			this.lblWriteOffset.Name = "lblWriteOffset";
 			// 
-			// radioButtonAudioLossy
-			// 
-			resources.ApplyResources(this.radioButtonAudioLossy, "radioButtonAudioLossy");
-			this.radioButtonAudioLossy.Name = "radioButtonAudioLossy";
-			this.radioButtonAudioLossy.TabStop = true;
-			this.radioButtonAudioLossy.UseVisualStyleBackColor = true;
-			this.radioButtonAudioLossy.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-			// 
-			// radioButtonAudioHybrid
-			// 
-			resources.ApplyResources(this.radioButtonAudioHybrid, "radioButtonAudioHybrid");
-			this.radioButtonAudioHybrid.Name = "radioButtonAudioHybrid";
-			this.radioButtonAudioHybrid.TabStop = true;
-			this.radioButtonAudioHybrid.UseVisualStyleBackColor = true;
-			this.radioButtonAudioHybrid.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-			// 
-			// radioButtonAudioLossless
-			// 
-			resources.ApplyResources(this.radioButtonAudioLossless, "radioButtonAudioLossless");
-			this.radioButtonAudioLossless.Name = "radioButtonAudioLossless";
-			this.radioButtonAudioLossless.TabStop = true;
-			this.radioButtonAudioLossless.UseVisualStyleBackColor = true;
-			this.radioButtonAudioLossless.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-			// 
 			// checkBoxEACMode
 			// 
 			resources.ApplyResources(this.checkBoxEACMode, "checkBoxEACMode");
@@ -285,6 +261,7 @@ namespace CUERipper
 			// 
 			// groupBoxSettings
 			// 
+			this.groupBoxSettings.Controls.Add(this.bnComboBoxLosslessOrNot);
 			this.groupBoxSettings.Controls.Add(this.bnComboBoxEncoder);
 			this.groupBoxSettings.Controls.Add(this.labelSecureMode);
 			this.groupBoxSettings.Controls.Add(this.bnComboBoxFormat);
@@ -294,15 +271,46 @@ namespace CUERipper
 			this.groupBoxSettings.Controls.Add(this.labelEncoderMode);
 			this.groupBoxSettings.Controls.Add(this.trackBarEncoderMode);
 			this.groupBoxSettings.Controls.Add(this.trackBarSecureMode);
-			this.groupBoxSettings.Controls.Add(this.radioButtonAudioLossless);
 			this.groupBoxSettings.Controls.Add(this.lblWriteOffset);
 			this.groupBoxSettings.Controls.Add(this.checkBoxEACMode);
-			this.groupBoxSettings.Controls.Add(this.radioButtonAudioLossy);
-			this.groupBoxSettings.Controls.Add(this.radioButtonAudioHybrid);
 			this.groupBoxSettings.Controls.Add(this.numericWriteOffset);
 			resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
 			this.groupBoxSettings.Name = "groupBoxSettings";
 			this.groupBoxSettings.TabStop = false;
+			// 
+			// bnComboBoxLosslessOrNot
+			// 
+			this.bnComboBoxLosslessOrNot.BackColor = System.Drawing.SystemColors.ControlDark;
+			this.bnComboBoxLosslessOrNot.Border = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.bnComboBoxLosslessOrNot.Color1 = System.Drawing.SystemColors.Control;
+			this.bnComboBoxLosslessOrNot.Color2 = System.Drawing.SystemColors.ControlDark;
+			this.bnComboBoxLosslessOrNot.Color3 = System.Drawing.Color.Maroon;
+			this.bnComboBoxLosslessOrNot.Color4 = System.Drawing.SystemColors.ControlDarkDark;
+			this.bnComboBoxLosslessOrNot.DataSource = this.losslessOrNotBindingSource;
+			this.bnComboBoxLosslessOrNot.DropDownHeight = 200;
+			this.bnComboBoxLosslessOrNot.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.bnComboBoxLosslessOrNot.DropDownWidth = 80;
+			this.bnComboBoxLosslessOrNot.ForeColor = System.Drawing.SystemColors.ControlText;
+			this.bnComboBoxLosslessOrNot.ImageList = null;
+			this.bnComboBoxLosslessOrNot.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxLosslessOrNot, "bnComboBoxLosslessOrNot");
+			this.bnComboBoxLosslessOrNot.MaxDropDownItems = 8;
+			this.bnComboBoxLosslessOrNot.MinimumSize = new System.Drawing.Size(40, 21);
+			this.bnComboBoxLosslessOrNot.Name = "bnComboBoxLosslessOrNot";
+			this.bnComboBoxLosslessOrNot.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxLosslessOrNot.Radius")));
+			this.bnComboBoxLosslessOrNot.SelectedIndex = -1;
+			this.bnComboBoxLosslessOrNot.SelectedItem = null;
+			this.bnComboBoxLosslessOrNot.Sorted = false;
+			this.bnComboBoxLosslessOrNot.SelectedIndexChanged += new System.EventHandler(this.bnComboBoxLosslessOrNot_SelectedIndexChanged);
+			// 
+			// losslessOrNotBindingSource
+			// 
+			this.losslessOrNotBindingSource.DataMember = "LosslessOrNot";
+			this.losslessOrNotBindingSource.DataSource = this.bindingSourceCR;
+			// 
+			// bindingSourceCR
+			// 
+			this.bindingSourceCR.DataSource = typeof(CUERipper.frmCUERipper);
 			// 
 			// bnComboBoxEncoder
 			// 
@@ -315,7 +323,7 @@ namespace CUERipper
 			this.bnComboBoxEncoder.DataSource = this.encodersBindingSource;
 			this.bnComboBoxEncoder.DropDownHeight = 200;
 			this.bnComboBoxEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.bnComboBoxEncoder.DropDownWidth = 114;
+			this.bnComboBoxEncoder.DropDownWidth = 80;
 			this.bnComboBoxEncoder.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxEncoder.ImageList = null;
 			this.bnComboBoxEncoder.IsDroppedDown = false;
@@ -334,10 +342,6 @@ namespace CUERipper
 			this.encodersBindingSource.DataMember = "Encoders";
 			this.encodersBindingSource.DataSource = this.bindingSourceCR;
 			// 
-			// bindingSourceCR
-			// 
-			this.bindingSourceCR.DataSource = typeof(CUERipper.frmCUERipper);
-			// 
 			// labelSecureMode
 			// 
 			resources.ApplyResources(this.labelSecureMode, "labelSecureMode");
@@ -354,7 +358,7 @@ namespace CUERipper
 			this.bnComboBoxFormat.DataSource = this.formatsBindingSource;
 			this.bnComboBoxFormat.DropDownHeight = 200;
 			this.bnComboBoxFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.bnComboBoxFormat.DropDownWidth = 114;
+			this.bnComboBoxFormat.DropDownWidth = 80;
 			this.bnComboBoxFormat.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxFormat.ImageKeyMember = "DotExtension";
 			this.bnComboBoxFormat.ImageList = null;
@@ -390,7 +394,7 @@ namespace CUERipper
 			this.bnComboBoxImage.DataSource = this.cUEStylesBindingSource;
 			this.bnComboBoxImage.DropDownHeight = 200;
 			this.bnComboBoxImage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.bnComboBoxImage.DropDownWidth = 93;
+			this.bnComboBoxImage.DropDownWidth = 80;
 			this.bnComboBoxImage.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxImage.ImageList = null;
 			this.bnComboBoxImage.IsDroppedDown = false;
@@ -629,8 +633,9 @@ namespace CUERipper
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).EndInit();
 			this.groupBoxSettings.ResumeLayout(false);
 			this.groupBoxSettings.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.losslessOrNotBindingSource)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.bindingSourceCR)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.formatsBindingSource)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.cUEStylesBindingSource)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).EndInit();
@@ -662,9 +667,6 @@ namespace CUERipper
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusAr;
 		private System.Windows.Forms.NumericUpDown numericWriteOffset;
 		private System.Windows.Forms.Label lblWriteOffset;
-		private System.Windows.Forms.RadioButton radioButtonAudioLossy;
-		private System.Windows.Forms.RadioButton radioButtonAudioHybrid;
-		private System.Windows.Forms.RadioButton radioButtonAudioLossless;
 		private System.Windows.Forms.CheckBox checkBoxEACMode;
 		private System.Windows.Forms.GroupBox groupBoxSettings;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusCTDB;
@@ -697,6 +699,8 @@ namespace CUERipper
 		private System.Windows.Forms.BindingSource formatsBindingSource;
 		private BBBNOVA.BNComboBox bnComboBoxEncoder;
 		private System.Windows.Forms.BindingSource encodersBindingSource;
+		private BBBNOVA.BNComboBox bnComboBoxLosslessOrNot;
+		private System.Windows.Forms.BindingSource losslessOrNotBindingSource;
 	}
 }
 

@@ -62,6 +62,7 @@ namespace CUERipper
 		};
 
 		private BindingList<string> cueStyles = new BindingList<string> { "image", "tracks" };
+		private BindingList<string> losslessOrNot = new BindingList<string> { "lossless", "lossy" };
 		private BindingList<ReleaseInfo> releases = new BindingList<ReleaseInfo>();
 		private BindingList<DriveInfo> drives = new BindingList<DriveInfo>();
 		private BindingList<FormatInfo> formats = new BindingList<FormatInfo>();
@@ -72,6 +73,14 @@ namespace CUERipper
 			get
 			{
 				return cueStyles;
+			}
+		}
+
+		public BindingList<string> LosslessOrNot
+		{
+			get
+			{
+				return losslessOrNot;
 			}
 		}
 
@@ -781,23 +790,22 @@ namespace CUERipper
 		{
 			get
 			{
-				return
-					radioButtonAudioHybrid.Checked ? AudioEncoderType.Hybrid :
-					radioButtonAudioLossy.Checked ? AudioEncoderType.Lossy :
-					AudioEncoderType.Lossless;
+				return bnComboBoxLosslessOrNot.Text == "lossy" ? AudioEncoderType.Lossy
+					: bnComboBoxLosslessOrNot.Text == "hybrid" ? AudioEncoderType.Hybrid
+					: AudioEncoderType.Lossless;
 			}
 			set
 			{
 				switch (value)
 				{
 					case AudioEncoderType.Hybrid:
-						radioButtonAudioHybrid.Checked = true;
+						bnComboBoxLosslessOrNot.SelectedItem = "hybrid";
 						break;
 					case AudioEncoderType.Lossy:
-						radioButtonAudioLossy.Checked = true;
+						bnComboBoxLosslessOrNot.SelectedItem = "lossy";
 						break;
 					default:
-						radioButtonAudioLossless.Checked = true;
+						bnComboBoxLosslessOrNot.SelectedItem = "lossless";
 						break;
 				}
 			}
@@ -806,50 +814,6 @@ namespace CUERipper
 		private void checkBoxEACMode_CheckedChanged(object sender, EventArgs e)
 		{
 			_config.createEACLOG = checkBoxEACMode.Checked;
-		}
-
-		private void radioButtonAudioLossless_CheckedChanged(object sender, EventArgs e)
-		{
-			if (sender is RadioButton && !((RadioButton)sender).Checked)
-				return;
-			formats.Clear();
-			formats.RaiseListChangedEvents = false;
-			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
-			{
-				if (SelectedOutputAudioType == AudioEncoderType.Lossless && !format.Value.allowLossless)
-					continue;
-				if (SelectedOutputAudioType == AudioEncoderType.Hybrid) // && format.Key != "wv") TODO!!!!!
-					continue;
-				if (SelectedOutputAudioType == AudioEncoderType.Lossy && !format.Value.allowLossy)
-					continue;
-				formats.Add(new FormatInfo(format.Value, false));
-			}
-			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
-			{
-				if (!format.Value.allowLossyWAV)
-					continue;
-				if (SelectedOutputAudioType == AudioEncoderType.Lossless)
-					continue;
-				if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
-					continue;
-				formats.Add(new FormatInfo(format.Value, true));
-			}
-			string select = null;
-			switch (SelectedOutputAudioType)
-			{
-				case AudioEncoderType.Lossless:
-					select = _defaultLosslessFormat;
-					break;
-				case AudioEncoderType.Lossy:
-					select = _defaultLossyFormat;
-					break;
-				case AudioEncoderType.Hybrid:
-					select = _defaultHybridFormat;
-					break;
-			}
-			formats.RaiseListChangedEvents = true;
-			formats.ResetBindings();
-			SelectedOutputAudioFormat = select;
 		}
 
 		private void comboBoxEncoder_SelectedIndexChanged(object sender, EventArgs e)
@@ -1006,6 +970,49 @@ namespace CUERipper
 			bnComboBoxEncoder.SelectedItem = select;
 
 			comboBoxOutputFormat_TextUpdate(sender, e);
+		}
+
+		private void bnComboBoxLosslessOrNot_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (bnComboBoxLosslessOrNot.SelectedItem == null) return;
+			formats.Clear();
+			formats.RaiseListChangedEvents = false;
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			{
+				if (SelectedOutputAudioType == AudioEncoderType.Lossless && !format.Value.allowLossless)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Hybrid) // && format.Key != "wv") TODO!!!!!
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Lossy && !format.Value.allowLossy)
+					continue;
+				formats.Add(new FormatInfo(format.Value, false));
+			}
+			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+			{
+				if (!format.Value.allowLossyWAV)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+					continue;
+				if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
+					continue;
+				formats.Add(new FormatInfo(format.Value, true));
+			}
+			string select = null;
+			switch (SelectedOutputAudioType)
+			{
+				case AudioEncoderType.Lossless:
+					select = _defaultLosslessFormat;
+					break;
+				case AudioEncoderType.Lossy:
+					select = _defaultLossyFormat;
+					break;
+				case AudioEncoderType.Hybrid:
+					select = _defaultHybridFormat;
+					break;
+			}
+			formats.RaiseListChangedEvents = true;
+			formats.ResetBindings();
+			SelectedOutputAudioFormat = select;
 		}
 	}
 

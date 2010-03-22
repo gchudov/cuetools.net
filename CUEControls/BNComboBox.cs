@@ -508,13 +508,13 @@ namespace BBBNOVA
 		{
 			//System.Diagnostics.Trace.WriteLine(string.Format("OnSelectedValueChanged({0}=>{1})", Text, _listBox.Text));
 
-			OnSelectedIndexChanged(e);
-
 			//this.SelectedIndex = _listBox.SelectedIndex;
 			//this.Invalidate(true);
 			Text = _listBox.SelectedValue != null ?
 				_listBox.GetItemText(_listBox.SelectedValue) :
 				"";
+
+			OnSelectedIndexChanged(e);
 
 			base.OnSelectedValueChanged(e);
 		}
