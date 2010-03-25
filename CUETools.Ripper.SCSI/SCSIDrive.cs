@@ -596,7 +596,7 @@ namespace CUETools.Ripper.SCSI
 			{
 				if (ReadProgress != null)
 				{
-					progressArgs.Action = "Detecting gaps";
+					progressArgs.Action = Resource1.StatusDetectingGaps;
 					progressArgs.Pass = -1;
 					progressArgs.Position = (iTrack - _toc2.FirstAudio) * 3;
 					progressArgs.PassStart = 0;
@@ -717,6 +717,9 @@ namespace CUETools.Ripper.SCSI
 			m_max_sectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
 			int sector = 3;
 			int pass = 0;
+
+			_timeout = 10;
+
 			for (int c = 0; c <= 2 && !found; c++)
 				for (int r = 0; r <= 1 && !found; r++)
 					for (int m = 0; m <= 1 && !found; m++)
@@ -732,7 +735,7 @@ namespace CUETools.Ripper.SCSI
 						DateTime tm = DateTime.Now;
 						if (ReadProgress != null)
 						{
-							progressArgs.Action = "Detecting drive features";
+							progressArgs.Action = Resource1.StatusDetectingDriveFeatures;
 							progressArgs.Pass = -1;
 							progressArgs.Position = pass++;
 							progressArgs.PassStart = 0;
@@ -741,10 +744,13 @@ namespace CUETools.Ripper.SCSI
 							progressArgs.PassTime = tm;
 							ReadProgress(this, progressArgs);
 						}
+						System.Diagnostics.Trace.WriteLine("Trying " + CurrentReadCommand);
 						Device.CommandStatus st = FetchSectors(sector, m_max_sectors, false);
 						TimeSpan delay = DateTime.Now - tm;
 						_autodetectResult += string.Format("{0}: {1} ({2}ms)\n", CurrentReadCommand, (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()), delay.TotalMilliseconds);
 						found = st == Device.CommandStatus.Success;
+						
+						_timeout = 1;
 
 						//sector += m_max_sectors;
 					}
@@ -766,6 +772,7 @@ namespace CUETools.Ripper.SCSI
 			else
 				_readCDCommand = ReadCDCommand.Unknown;
 
+			_timeout = 10;
 			_currentStart = -1;
 			_currentEnd = -1;
 			readCommandFound = found;
@@ -977,62 +984,6 @@ namespace CUETools.Ripper.SCSI
 				throw new Exception("wierd IntPtr.Size");
 		}
 
-		private void PrintErrors(int pass, int sector, int Sectors2Read, byte[] realData)
-		{
-			//for (int iSector = 0; iSector < Sectors2Read; iSector++)
-			//{
-			//    int pos = sector - _currentStart + iSector;
-			//    if (_debugMessages)
-			//    {
-			//        StringBuilder st = new StringBuilder();
-			//        for (int i = 0; i < 294; i++)
-			//            if (C2Data[pos, i] != 0)
-			//            {
-			//                for (int j = i; j < i + 23; j++)
-			//                    if (j < 294)
-			//                        st.AppendFormat("{0:X2}", C2Data[_currentScan, pos, j]);
-			//                    else
-			//                        st.Append("  ");
-			//                System.Console.WriteLine("\rC2 error @{0}[{1:000}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
-			//                return;
-			//            }
-
-					//for (int i = 0; i < 4 * 588; i++)
-					//    if (_currentData[pos * 4 * 588 + i] != realData[pos * 4 * 588 + i])
-					//    {
-					//        StringBuilder st = new StringBuilder();
-					//        for (int j = i; j < i + 25; j++)
-					//            if (j < 4 * 588)
-					//                st.AppendFormat("{0:X2}", realData[pos * 4 * 588 + j]);
-					//            else
-					//                st.Append("  ");
-					//        System.Console.WriteLine("\r{0}[--][{1:X3}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
-					//        st.Length = 0;
-					//        for (int result = 0; result <= pass; result++)
-					//        {
-					//            for (int j = i; j < i + 25; j++)
-					//                if (j < 4 * 588)
-					//                    st.AppendFormat("{0:X2}", UserData[result, pos, j]);
-					//                else
-					//                    st.Append("  ");
-					//            System.Console.WriteLine("\r{0}[{3:X2}][{1:X3}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString(), result);
-					//            st.Length = 0;
-					//            //int c2Bit = 0x80 >> (i % 8);
-					//            //byte value = UserData[result, pos, i];
-					//            //short score = (short)(1 + (((C2Data[result, pos, i >> 3] & c2Bit) == 0) ? (short) 10 : (short)0));
-					//            //st.AppendFormat("{0:X2}[{1:X2}]", value, score);
-					//        }
-					//        i += 25;
-					//        //return;
-					//        //while (st.Length < 46)
-					//        //    st.Append(' ');
-					//        //System.Console.WriteLine("\rReal error @{0}[{1:000}]{2};", CDImageLayout.TimeToString((uint)(sector + iSector)), i, st.ToString());
-					//    }
-
-			//    }
-			//}
-		}
-
 		private unsafe void CorrectSectors(int pass, int sector, int Sectors2Read, bool markErrors)
 		{
 			for (int iSector = 0; iSector < Sectors2Read; iSector++)
@@ -1081,60 +1032,6 @@ namespace CUETools.Ripper.SCSI
 		}
 
 		int[] errtmp = new int[MSECTORS];
-
-		//private unsafe int CorrectSectorsTest(int start, int end, int c2Score, byte[] realData, int worstScan)
-		//{
-		//    int[] valueScore = new int[256];
-		//    int[] scoreErrors = new int[256];
-		//    int realErrors = 0;
-		//    int bestScore = 0;
-		//    int _errorsCaught = 0;
-		//    int _falsePositives = 0;
-		//    for (int iSector = 0; iSector < end - start; iSector++)
-		//    {
-		//        for (int iPar = 0; iPar < 4 * 588; iPar++)
-		//        {
-		//            int dataPos = iSector * CB_AUDIO + iPar;
-		//            int c2Pos = iSector * CB_AUDIO + 2 + 4 * 588 + iPar / 8;
-		//            int c2Bit = 0x80 >> (iPar % 8);
-
-		//            Array.Clear(valueScore, 0, 256);
-
-		//            byte bestValue = _currentScan.Data[dataPos];
-		//            valueScore[bestValue] += 1 + (((_currentScan.Data[c2Pos] & c2Bit) == 0) ? c2Score : 0);
-		//            int totalScore = valueScore[bestValue];
-		//            for (int result = 0; result < _scanResults.Count; result++)
-		//            {
-		//                if (result == worstScan)
-		//                    continue;
-		//                byte value = _scanResults[result].Data[dataPos];
-		//                valueScore[value] += 1 + (((_scanResults[result].Data[c2Pos] & c2Bit) == 0) ? c2Score : 0);
-		//                totalScore += 1 + (((_scanResults[result].Data[c2Pos] & c2Bit) == 0) ? c2Score : 0);
-		//                if (valueScore[value] > valueScore[bestValue])
-		//                    bestValue = value;
-		//            }
-		//            if (valueScore[bestValue] < (1 + c2Score + totalScore) / 2)
-		//                _currentErrorsCount++;
-		//            //_currentData[iSector * 4 * 588 + iPar] = bestValue;
-		//            if (realData[iSector * 4 * 588 + iPar] != bestValue)
-		//            {
-		//                if (valueScore[bestValue] > bestScore)
-		//                    scoreErrors[valueScore[bestValue]]++;
-		//                realErrors++;
-		//                if (valueScore[bestValue] * 2 <= c2Score + totalScore)
-		//                    _errorsCaught++;
-		//            } else
-		//                if (valueScore[bestValue] * 2 <= c2Score + totalScore)
-		//                    _falsePositives++;
-		//        }
-		//    }
-		//    //string s = "";
-		//    //for (int i = 0; i < 256; i++)
-		//    //    if (scoreErrors[i] > 0)
-		//    //        s += string.Format("[{0}]={1};", i, scoreErrors[i]);
-		//    //System.Console.WriteLine("RE{0:000} EC{1} FP{2}", realErrors, _errorsCaught, _falsePositives);
-		//    return realErrors;
-		//}
 
 		public unsafe void PrefetchSector(int iSector)
 		{
@@ -1195,16 +1092,13 @@ namespace CUETools.Ripper.SCSI
 					//TimeSpan delay1 = DateTime.Now - LastFetch;
 					//DateTime LastFetched = DateTime.Now;
 					if (pass >= _correctionQuality)
-					{
 						CorrectSectors(pass, sector, Sectors2Read, pass == max_scans - 1);
-						PrintErrors(pass, sector, Sectors2Read, /*realData*/null);
-					}
 					//TimeSpan delay2 = DateTime.Now - LastFetched;
 					//if (sector == _currentStart)
 					//System.Console.WriteLine("\n{0},{1}", delay1.TotalMilliseconds, delay2.TotalMilliseconds);
 					if (ReadProgress != null)
 					{
-						progressArgs.Action = "Ripping";
+						progressArgs.Action = Resource1.StatusRipping;
 						progressArgs.Position = sector + Sectors2Read;
 						progressArgs.Pass = pass;
 						progressArgs.PassStart = _currentStart;
@@ -1214,9 +1108,6 @@ namespace CUETools.Ripper.SCSI
 						ReadProgress(this, progressArgs);
 					}
 				}
-				//System.Console.WriteLine();
-				//if (CorrectSectorsTest(start, _currentEnd, 10, realData) == 0)
-				//    break;
 				if (pass >= _correctionQuality && _currentErrorsCount == 0)
 					break;
 			}
@@ -1314,7 +1205,7 @@ namespace CUETools.Ripper.SCSI
 			}
 			set
 			{
-				if (_toc.AudioLength <= 0)
+				if (_toc == null || _toc.AudioLength <= 0)
 					throw new Exception(Resource1.NoAudio);
 				_crcErrorsCount = 0;
 				_errorsCount = 0;

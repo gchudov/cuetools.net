@@ -138,4 +138,13 @@
   <data name="ReadTOCError" xml:space="preserve">
     <value>Ошибка при обращении к диску</value>
   </data>
+  <data name="StatusDetectingDriveFeatures" xml:space="preserve">
+    <value>Диагностика устройства</value>
+  </data>
+  <data name="StatusDetectingGaps" xml:space="preserve">
+    <value>Определение зазоров</value>
+  </data>
+  <data name="StatusRipping" xml:space="preserve">
+    <value>Извлечение аудио</value>
+  </data>
 </root>

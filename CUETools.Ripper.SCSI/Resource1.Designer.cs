@@ -122,5 +122,32 @@ namespace CUETools.Ripper.SCSI {
                 return ResourceManager.GetString("ReadTOCError", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Detecting drive features.
+        /// </summary>
+        internal static string StatusDetectingDriveFeatures {
+            get {
+                return ResourceManager.GetString("StatusDetectingDriveFeatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Detecting gaps.
+        /// </summary>
+        internal static string StatusDetectingGaps {
+            get {
+                return ResourceManager.GetString("StatusDetectingGaps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ripping.
+        /// </summary>
+        internal static string StatusRipping {
+            get {
+                return ResourceManager.GetString("StatusRipping", resourceCulture);
+            }
+        }
     }
 }

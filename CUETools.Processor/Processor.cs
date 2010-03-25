@@ -836,7 +836,8 @@ namespace CUETools.Processor
 				try
 				{
 					AssemblyName name = AssemblyName.GetAssemblyName(plugin_path);
-					Assembly assembly = Assembly.Load(name);
+					Assembly assembly = Assembly.Load(name, Assembly.GetEntryAssembly().Evidence);
+					System.Diagnostics.Trace.WriteLine("Loaded " + assembly.FullName);
 					foreach (Type type in assembly.GetExportedTypes())
 					{
 						try
@@ -860,13 +861,13 @@ namespace CUETools.Processor
 						}
 						catch (Exception ex)
 						{
-							System.Diagnostics.Debug.WriteLine(ex.Message);
+							System.Diagnostics.Trace.WriteLine(ex.Message);
 						}
 					}
 				}
 				catch (Exception ex)
 				{
-					System.Diagnostics.Debug.WriteLine(ex.Message);
+					System.Diagnostics.Trace.WriteLine(ex.Message);
 				}
 			}
 		}

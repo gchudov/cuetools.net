@@ -138,4 +138,13 @@
   <data name="ReadTOCError" xml:space="preserve">
     <value>Cannot open CD</value>
   </data>
+  <data name="StatusDetectingDriveFeatures" xml:space="preserve">
+    <value>Detecting drive features</value>
+  </data>
+  <data name="StatusDetectingGaps" xml:space="preserve">
+    <value>Detecting gaps</value>
+  </data>
+  <data name="StatusRipping" xml:space="preserve">
+    <value>Ripping</value>
+  </data>
 </root>

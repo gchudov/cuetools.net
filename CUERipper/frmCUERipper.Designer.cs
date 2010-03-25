@@ -282,7 +282,6 @@ namespace CUERipper
 			// bnComboBoxLosslessOrNot
 			// 
 			this.bnComboBoxLosslessOrNot.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxLosslessOrNot.Border = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.bnComboBoxLosslessOrNot.DataSource = this.losslessOrNotBindingSource;
 			this.bnComboBoxLosslessOrNot.DropDownHeight = 200;
 			this.bnComboBoxLosslessOrNot.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -312,7 +311,6 @@ namespace CUERipper
 			// bnComboBoxEncoder
 			// 
 			this.bnComboBoxEncoder.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxEncoder.Border = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.bnComboBoxEncoder.DataSource = this.encodersBindingSource;
 			this.bnComboBoxEncoder.DropDownHeight = 200;
 			this.bnComboBoxEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -343,7 +341,6 @@ namespace CUERipper
 			// bnComboBoxFormat
 			// 
 			this.bnComboBoxFormat.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxFormat.Border = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.bnComboBoxFormat.DataSource = this.formatsBindingSource;
 			this.bnComboBoxFormat.DropDownHeight = 200;
 			this.bnComboBoxFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -375,7 +372,6 @@ namespace CUERipper
 			// bnComboBoxImage
 			// 
 			this.bnComboBoxImage.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxImage.Border = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.bnComboBoxImage.DataSource = this.cUEStylesBindingSource;
 			this.bnComboBoxImage.DropDownHeight = 200;
 			this.bnComboBoxImage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -520,7 +516,6 @@ namespace CUERipper
 			// bnComboBoxRelease
 			// 
 			this.bnComboBoxRelease.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this.bnComboBoxRelease.Border = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.bnComboBoxRelease.ContextMenuStrip = this.contextMenuStripRelease;
 			this.bnComboBoxRelease.DataSource = this.releasesBindingSource;
 			this.bnComboBoxRelease.DropDownHeight = 200;
@@ -556,7 +551,6 @@ namespace CUERipper
 			// bnComboBoxDrives
 			// 
 			this.bnComboBoxDrives.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this.bnComboBoxDrives.Border = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.bnComboBoxDrives.DataSource = this.drivesBindingSource;
 			this.bnComboBoxDrives.DropDownHeight = 200;
 			this.bnComboBoxDrives.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -583,7 +577,6 @@ namespace CUERipper
 			// bnComboBoxOutputFormat
 			// 
 			this.bnComboBoxOutputFormat.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this.bnComboBoxOutputFormat.Border = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.bnComboBoxOutputFormat.DropDownHeight = 200;
 			this.bnComboBoxOutputFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDown;
 			this.bnComboBoxOutputFormat.DropDownWidth = 552;

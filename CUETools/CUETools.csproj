@@ -12,7 +12,7 @@
     <ApplicationIcon>cue2.ico</ApplicationIcon>
     <ManifestCertificateThumbprint>611F49E043614FEDCFF1B128868CC8DC0B6656C5</ManifestCertificateThumbprint>
     <ManifestKeyFile>CUETools_TemporaryKey.pfx</ManifestKeyFile>
-    <GenerateManifests>false</GenerateManifests>
+    <GenerateManifests>true</GenerateManifests>
     <SignManifests>true</SignManifests>
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <TargetZone>LocalIntranet</TargetZone>

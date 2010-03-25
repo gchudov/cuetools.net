@@ -285,7 +285,7 @@ namespace BBBNOVA
 
             _listBox = new ListBox();
             _listBox.IntegralHeight = true;
-            _listBox.BorderStyle = BorderStyle.FixedSingle;
+            _listBox.BorderStyle = BorderStyle.None;
             _listBox.SelectionMode = SelectionMode.One;
 			_listBox.DrawMode = DrawMode.OwnerDrawFixed;
 			_listBox.Font = base.Font;

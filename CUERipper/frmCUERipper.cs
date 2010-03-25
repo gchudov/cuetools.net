@@ -319,7 +319,7 @@ namespace CUERipper
 
 				bool submit = cueSheet.CTDB.AccResult == HttpStatusCode.NotFound ||
 					cueSheet.CTDB.AccResult == HttpStatusCode.OK;
-					//_cueSheet.CTDB.AccResult == HttpStatusCode.NoContent;
+				//_cueSheet.CTDB.AccResult == HttpStatusCode.NoContent;
 				DBEntry confirm = null;
 
 				submit &= audioSource.CorrectionQuality > 0;
@@ -343,7 +343,6 @@ namespace CUERipper
 							cueSheet.Artist,
 							cueSheet.Title);
 				}
-
 				//CUESheet.WriteText(_pathOut, _cueSheet.CUESheetContents(_style));
 				//CUESheet.WriteText(Path.ChangeExtension(_pathOut, ".log"), _cueSheet.LOGContents());
 			}
@@ -362,9 +361,23 @@ namespace CUERipper
 				});
 			}
 #endif
+
 			audioSource.ReadProgress -= new EventHandler<ReadProgressArgs>(CDReadProgress);
-			audioSource.Close();
-			audioSource.Open(audioSource.Path[0]);
+			try
+			{
+				audioSource.Close();
+				audioSource.Open(audioSource.Path[0]);
+			}
+			catch (Exception ex)
+			{
+				this.BeginInvoke((MethodInvoker)delegate()
+				{
+					releases.Clear();
+					selectedRelease = null;
+					bnComboBoxRelease.Text = ex.Message;
+				});
+			}
+
 			_workThread = null;
 			this.BeginInvoke((MethodInvoker)delegate()
 			{

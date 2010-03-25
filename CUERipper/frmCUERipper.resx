@@ -469,7 +469,7 @@
   </data>
   <data name="bnComboBoxLosslessOrNot.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNy4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
         TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
         AAAAAgAAAAs=
@@ -501,7 +501,7 @@
   </data>
   <data name="bnComboBoxEncoder.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNy4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
         TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
         AAAAAgAAAAs=
@@ -560,7 +560,7 @@
   </data>
   <data name="bnComboBoxFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNy4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
         TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
         AAAAAgAAAAs=
@@ -631,7 +631,7 @@
   </data>
   <data name="bnComboBoxImage.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNy4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
         TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
         AAAAAgAAAAs=
@@ -976,7 +976,7 @@
   </data>
   <data name="bnComboBoxRelease.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNy4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
         TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
         AAAAAgAAAAs=
@@ -1011,7 +1011,7 @@
   </data>
   <data name="bnComboBoxDrives.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNy4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
         TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
         AAAAAgAAAAs=
@@ -1040,7 +1040,7 @@
   </data>
   <data name="bnComboBoxOutputFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNi4wLCBDdWx0dXJl
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuNy4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABBCQkJOT1ZBLkJOUmFkaXVzBAAAAAhfdG9w
         TGVmdAlfdG9wUmlnaHQLX2JvdHRvbUxlZnQMX2JvdHRvbVJpZ2h0AAAAAAgICAgCAAAAAgAAAAYAAAAC
         AAAAAgAAAAs=
