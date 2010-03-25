@@ -109,7 +109,6 @@ namespace Bwg.Scsi
         private byte m_scsi_status;
         private Logger m_logger;
         private int m_MaximumTransferLength;
-        static private IDictionary<ushort, string> m_asc_map;
         #endregion
 
         #region private static data structures
@@ -699,11 +698,11 @@ namespace Bwg.Scsi
         /// <returns>a string representing the error codes given by ASC and ASCQ</returns>
         public static string LookupSenseError(byte asc, byte ascq)
         {
-            ushort data = Mix(asc, ascq) ;
-            if (m_asc_map.ContainsKey(data))
-                return m_asc_map[data];
-
-            return "NO SENSE STRING FOR ASC=" + asc.ToString("X") + ", ASCQ=" + ascq.ToString("X");
+			string res = messages.GetString(string.Format("SCSIErrorMessage_{0:X2}{1:X2}", asc, ascq));
+			if (res != null)
+				return res;
+			string msg = messages.GetString("UnknownSCSIError") ?? "Unknown SCSI Error";
+            return msg + " ASC=" + asc.ToString("X2") + ", ASCQ=" + ascq.ToString("X2");
         }
 
         /// <summary>
@@ -768,176 +767,6 @@ namespace Bwg.Scsi
                 }
             }
         }
-
-        private static ushort Mix(byte asc, byte ascq)
-        {
-            return (ushort)((asc << 8) | ascq);
-        }
-
-        #region Initialize ASC/ASCQ Error table
-        private static void InitAscTable()
-        {
-            m_asc_map = new Dictionary<ushort, string>();
-
-            m_asc_map[Mix(0x00, 0x00)] = "NO ADDITIONAL SENSE INFORMATION";
-            m_asc_map[Mix(0x00, 0x06)] = "I/O PROCESS TERMINATED";
-
-            m_asc_map[Mix(0x01, 0x00)] = "NO INDEX/SECTOR SIGNAL";
-            m_asc_map[Mix(0x01, 0x02)] = "NO SEEK COMPLETE";
-            m_asc_map[Mix(0x01, 0x03)] = "PERIPHERAL DEVICE WRITE FAULT";
-
-            m_asc_map[Mix(0x04, 0x00)] = "LOGICAL UNIT NOT READY, CAUSE NOT REPORTABLE";
-            m_asc_map[Mix(0x04, 0x01)] = "LOGICAL UNIT IS IN PROCESS OF BECOMING READY";
-            m_asc_map[Mix(0x04, 0x02)] = "LOGICAL UNIT NOT READY, INITIALIZING COMMAND REQUIRED";
-            m_asc_map[Mix(0x04, 0x03)] = "LOGICAL UNIT NOT READY, MANUAL INTERVENTION REQUIRED";
-            m_asc_map[Mix(0x04, 0x04)] = "LOGICAL UNIT NOT READY, FORMAT IN PROGRESS";
-            m_asc_map[Mix(0x04, 0x07)] = "LOGICAL UNIT NOT READY, OPERATION IN PROGRESS";
-            m_asc_map[Mix(0x04, 0x08)] = "LOGICAL UNIT NOT READY, LONG WRITE IN PROGRESS";
-
-            m_asc_map[Mix(0x05, 0x00)] = "LOGICAL UNIT DOES NOT RESPOND TO SELECTION";
-
-            m_asc_map[Mix(0x08, 0x00)] = "LOGICAL UNIT COMMUNICATION FAILURE";
-            m_asc_map[Mix(0x08, 0x01)] = "LOGICAL UNIT COMMUNICATION TIME-OUT";
-            m_asc_map[Mix(0x08, 0x02)] = "LOGICAL UNIT COMMUNICATION PARITY ERROR";
-            m_asc_map[Mix(0x08, 0x03)] = "LOGICAL UNIT COMMUNICATION CRC ERROR (ULTRA-DMA/32)";
-            m_asc_map[Mix(0x08, 0x04)] = "UNREACHABLE COPY TARGET";
-
-            m_asc_map[Mix(0x0c, 0x00)] = "WRITE ERROR";
-
-            m_asc_map[Mix(0x10, 0x00)] = "ID CRC OR ECC ERROR";
-
-            m_asc_map[Mix(0x11, 0x00)] = "UNRECOVERED READ ERROR";
-            m_asc_map[Mix(0x11, 0x01)] = "READ RETRIES EXHAUSTED";
-            m_asc_map[Mix(0x11, 0x02)] = "ERROR TOO LONG TO CORRECT";
-            m_asc_map[Mix(0x11, 0x05)] = "L-EC UNCORRECTABLE ERROR";
-            m_asc_map[Mix(0x11, 0x06)] = "CIRC UNRECOVERED ERROR";
-            m_asc_map[Mix(0x11, 0x0F)] = "ERROR READING UPC/EAN NUMBER";
-            m_asc_map[Mix(0x11, 0x10)] = "ERROR READING ISRC NUMBER";
-            m_asc_map[Mix(0x11, 0x11)] = "READ ERROR – LOSS OF STREAMING";
-
-            m_asc_map[Mix(0x20, 0x00)] = "INVALID COMMAND OPERATION CODE";
-
-            m_asc_map[Mix(0x21, 0x00)] = "LOGICAL BLOCK ADDRESS OUT OF RANGE";
-            m_asc_map[Mix(0x21, 0x01)] = "INVALID ELEMENT ADDRESS";
-            m_asc_map[Mix(0x21, 0x02)] = "INVALID ADDRESS FOR WRITE";
-
-            m_asc_map[Mix(0x24, 0x00)] = "INVALID FIELD IN CDB";
-
-            m_asc_map[Mix(0x26, 0x00)] = "INVALID FIELD IN PARAMETER LIST";
-            m_asc_map[Mix(0x26, 0x01)] = "PARAMETER NOT SUPPORTED";
-            m_asc_map[Mix(0x26, 0x02)] = "PARAMETER VALUE INVALID";
-            m_asc_map[Mix(0x26, 0x03)] = "THRESHOLD PARAMETERS NOT SUPPORTED";
-
-            m_asc_map[Mix(0x27, 0x00)] = "WRITE PROTECTED";
-
-            m_asc_map[Mix(0x28, 0x00)] = "NOT READY TO READY CHANGE, MEDIUM MAY HAVE CHANGED";
-            m_asc_map[Mix(0x28, 0x01)] = "IMPORT OR EXPORT ELEMENT ACCESSED";
-
-            m_asc_map[Mix(0x29, 0x00)] = "POWER ON, RESET, OR BUS DEVICE RESET OCCURRED";
-            m_asc_map[Mix(0x29, 0x01)] = "POWER ON OCCURRED";
-            m_asc_map[Mix(0x29, 0x02)] = "BUS RESET OCCURRED";
-            m_asc_map[Mix(0x29, 0x03)] = "BUS DEVICE RESET FUNCTION OCCURRED";
-            m_asc_map[Mix(0x29, 0x04)] = "DEVICE INTERNAL RESET";
-
-            m_asc_map[Mix(0x2A, 0x00)] = "PARAMETERS CHANGED";
-            m_asc_map[Mix(0x2A, 0x01)] = "MODE PARAMETERS CHANGED";
-            m_asc_map[Mix(0x2A, 0x02)] = "LOG PARAMETERS CHANGED";
-
-            m_asc_map[Mix(0x2C, 0x00)] = "COMMMAND SEQUENCE ERROR";
-            m_asc_map[Mix(0x2C, 0x03)] = "CURRENT PROGRAM AREA IS NOT EMPTY";
-            m_asc_map[Mix(0x2C, 0x04)] = "CURRENT PROGRAM AREA IS EMPTY";
-
-            m_asc_map[Mix(0x2E, 0x00)] = "INSUFFICIENT TIME FOR OPERATION";
-
-            m_asc_map[Mix(0x30, 0x00)] = "INCOMPATIBLE MEDIUM INSTALLED";
-            m_asc_map[Mix(0x30, 0x01)] = "CANNOT READ MEDIUM - UNKNOWN FORMAT";
-            m_asc_map[Mix(0x30, 0x02)] = "CANNOT READ MEDIUM - INCOMPATIBLE FORMAT";
-            m_asc_map[Mix(0x30, 0x03)] = "CLEANING CARTRIDGE INSTALLED";
-            m_asc_map[Mix(0x30, 0x04)] = "CANNOT WRITE MEDIUM - UNKONWN FORMAT";
-            m_asc_map[Mix(0x30, 0x05)] = "CANNOT WRITE MEDIUM - INCOMPATIBLE FORMAT";
-            m_asc_map[Mix(0x30, 0x06)] = "CANNOT FORMAT MEDIUM - INCOMPATIBLE FORMAT";
-            m_asc_map[Mix(0x30, 0x07)] = "CLEANING FAILURE";
-            m_asc_map[Mix(0x30, 0x08)] = "CANNOT WRITE - APPLICATION CODE MISMATCH";
-            m_asc_map[Mix(0x30, 0x09)] = "CURRENT SESSION NOT FIXATED FOR APPEND";
-            m_asc_map[Mix(0x30, 0x10)] = "MEDIUM NOT FORMATTED";
-            m_asc_map[Mix(0x30, 0x11)] = "CANNOT WRITE MEDIUM - UNSUPPORTED MEDIUM VERSION";
-
-            m_asc_map[Mix(0x3A, 0x00)] = "MEDIUM NOT PRESENT";
-            m_asc_map[Mix(0x3A, 0x01)] = "MEDIUM NOT PRESENT - TRAY CLOSED";
-            m_asc_map[Mix(0x3A, 0x02)] = "MEDIUM NOT PRESENT - TRAY OPEN";
-
-            m_asc_map[Mix(0x3B, 0x0D)] = "MEDIUM DESTINATION ELEMENT FULL";
-            m_asc_map[Mix(0x3B, 0x0E)] = "MEDIUM SOURCE ELEMENT EMPTY";
-            m_asc_map[Mix(0x3B, 0x0F)] = "END OF MEDIUM REACHED";
-            m_asc_map[Mix(0x3B, 0x11)] = "MEDIUM MAGAZINE NOT ACCESSIBLE";
-            m_asc_map[Mix(0x3B, 0x12)] = "MEDIUM MAGAZINE REMOVED";
-            m_asc_map[Mix(0x3B, 0x13)] = "MEDIUM MAGAZINE INSERTED";
-            m_asc_map[Mix(0x3B, 0x14)] = "MEDIUM MAGAZINE LOCKED";
-            m_asc_map[Mix(0x3B, 0x15)] = "MEDIUM MAGAZINE UNLOCKED";
-
-            m_asc_map[Mix(0x3E, 0x00)] = "LOGICAL UNIT HAS NOT SELF-CONFIGURED YET";
-            m_asc_map[Mix(0x3E, 0x01)] = "LOGICAL UNIT FAILURE";
-            m_asc_map[Mix(0x3E, 0x02)] = "TIMEOUT ON LOGICAL UNIT";
-
-            m_asc_map[Mix(0x3F, 0x00)] = "TARGET OPERATING CONDITIONS HAVE CHANGED";
-            m_asc_map[Mix(0x3F, 0x01)] = "MICROCODE HAS BEEN CHANGED";
-            m_asc_map[Mix(0x3F, 0x02)] = "CHANGED OPERATING DEFINITION";
-            m_asc_map[Mix(0x3F, 0x03)] = "INQUIRY DATA HAS CHANGED";
-
-            m_asc_map[Mix(0x53, 0x00)] = "MEDIA LOAD OR EJECT FAILED";
-            m_asc_map[Mix(0x53, 0x02)] = "MEDIUM REMOVAL PREVENTED";
-
-            m_asc_map[Mix(0x57, 0x00)] = "UNABLE TO RECOVER TABLE OF CONTENTS";
-
-            m_asc_map[Mix(0x5A, 0x00)] = "OPERATOR REQUEST OR STATE CHANGE INPUT";
-            m_asc_map[Mix(0x5A, 0x01)] = "OPERATOR MEDIUM REMOVAL REQUEST";
-            m_asc_map[Mix(0x5A, 0x02)] = "OPERATOR SELECTED WRITE PROTECT";
-            m_asc_map[Mix(0x5A, 0x03)] = "OPERATOR SELECTED WRITE PERMIT";
-
-            m_asc_map[Mix(0x5B, 0x00)] = "LOG EXCEPTION";
-            m_asc_map[Mix(0x5B, 0x01)] = "THRESHOLD CONDITION MET";
-            m_asc_map[Mix(0x5B, 0x02)] = "LOG COUNTER AT MAXIMUM";
-            m_asc_map[Mix(0x5B, 0x03)] = "LOG LIST CODES EXHAUSTED";
-
-            m_asc_map[Mix(0x5E, 0x00)] = "LOW POWER CONDITION ON";
-            m_asc_map[Mix(0x5E, 0x01)] = "IDLE CONDITION ACTIVATED BY TIMER";
-            m_asc_map[Mix(0x5E, 0x02)] = "STANDBY CONDITION ACTIVATED BY TIMER";
-            m_asc_map[Mix(0x5E, 0x03)] = "IDLE CONDITION ACTIVATED BY COMMAND";
-            m_asc_map[Mix(0x5E, 0x04)] = "STANDBY CONDITION ACTIVATED BY COMMAND";
-
-            m_asc_map[Mix(0x63, 0x00)] = "END OF USER AREA ENCOUNTERED ON THIS TRACK";
-            m_asc_map[Mix(0x63, 0x01)] = "PACKET DOES NOT FIT IN AVAILABLE SPACE";
-
-            m_asc_map[Mix(0x64, 0x00)] = "ILLEGAL MODE FOR THIS TRACK";
-            m_asc_map[Mix(0x64, 0x01)] = "INVALID PACKET SIZE";
-
-            m_asc_map[Mix(0x65, 0x00)] = "VOLTAGE FAULT";
-
-            m_asc_map[Mix(0x6F, 0x00)] = "COPY PROTECTION KEY EXCHANGE FAILURE - AUTHENTICATION FAILURE";
-            m_asc_map[Mix(0x6F, 0x01)] = "COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT PRESENT";
-            m_asc_map[Mix(0x6F, 0x02)] = "COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT ESTABLISHED";
-            m_asc_map[Mix(0x6F, 0x03)] = "READ OF SCRAMBLED SECTOR WITHOUT AUTHENTICATION";
-            m_asc_map[Mix(0x6F, 0x04)] = "MEDIA REGION CODE IS MISMATCHED TO LOGICAL UNIT REGION";
-            m_asc_map[Mix(0x6F, 0x05)] = "LOGICAL UNIT REGION MUST BE PERMANENT/REGION RESET COUNT ERROR";
-
-            m_asc_map[Mix(0x72, 0x00)] = "SESSION FIXATION ERROR";
-            m_asc_map[Mix(0x72, 0x01)] = "SESSION FIXATION ERROR WRITING LEAD-IN";
-            m_asc_map[Mix(0x72, 0x02)] = "SESSION FIXATION ERROR WRITING LEAD-OUT";
-            m_asc_map[Mix(0x72, 0x03)] = "SESSION FIXATION ERROR - INCOMPLETE TRACK IN SESSION";
-            m_asc_map[Mix(0x72, 0x04)] = "EMPTY OR PARTIALLY WRITTEN RESERVED TRACK";
-            m_asc_map[Mix(0x72, 0x05)] = "NO MORE TRACK RESERVATIONS ALLOWED";
-            m_asc_map[Mix(0x72, 0x06)] = "RMZ EXTENSION IS NOT ALLOWED";
-            m_asc_map[Mix(0x72, 0x07)] = "NO MORE TEST ZONE EXTENSIONS ARE ALLOWED";
-
-            m_asc_map[Mix(0x73, 0x00)] = "CD CONTROL ERROR";
-            m_asc_map[Mix(0x73, 0x01)] = "POWER CALIBRATION AREA ALMOST";
-            m_asc_map[Mix(0x73, 0x02)] = "POWER CALIBRATION AREA IS FULL";
-            m_asc_map[Mix(0x73, 0x03)] = "POWER CALIBRATION AREA ERROR";
-            m_asc_map[Mix(0x73, 0x04)] = "PROGRAM MEMORY AREA UPDATE FAILURE";
-            m_asc_map[Mix(0x73, 0x05)] = "PROGRAM MEMORY AREA IS FULL";
-            m_asc_map[Mix(0x73, 0x06)] = "RMA/PMA IS ALMOST FULL";
-        }
-        #endregion
 
         private CommandStatus SendCommand(Command cmd)
         {
@@ -1077,6 +906,8 @@ namespace Bwg.Scsi
 
         #endregion
 
+		static global::System.Resources.ResourceManager messages;
+
         #region constructor
         /// <summary>
         /// 
@@ -1085,7 +916,6 @@ namespace Bwg.Scsi
         {
             m_logger = l;
             LogSenseState = true;
-            InitAscTable();
 
             IntPtr p = new IntPtr();
             if (Marshal.SizeOf(p) == 4)
@@ -1098,7 +928,7 @@ namespace Bwg.Scsi
 
         static Device()
         {
-            InitAscTable();
+			messages = new global::System.Resources.ResourceManager("Bwg.Scsi.Messages", typeof(Device).Assembly);
         }
 
         #endregion

@@ -1788,7 +1788,7 @@ string status = processor.Go();
 				m_freedb.UserName = "gchudov";
 				m_freedb.Hostname = "gmail.com";
 				m_freedb.ClientName = "CUETools";
-				m_freedb.Version = "2.0.6";
+				m_freedb.Version = "2.0.7";
 				m_freedb.SetDefaultSiteAddress("freedb.org");
 
 				QueryResult queryResult;
@@ -5327,7 +5327,7 @@ string status = processor.Go();
 					}
 				case "repair":
 					{
-						UseCUEToolsDB(false, "CUETools 2.0.6");
+						UseCUEToolsDB(false, "CUETools 2.0.7");
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;

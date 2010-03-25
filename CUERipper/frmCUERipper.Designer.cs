@@ -82,6 +82,7 @@ namespace CUERipper
 			this.imageListMetadataSource = new System.Windows.Forms.ImageList(this.components);
 			this.bnComboBoxDrives = new BBBNOVA.BNComboBox();
 			this.drivesBindingSource = new System.Windows.Forms.BindingSource(this.components);
+			this.bnComboBoxOutputFormat = new BBBNOVA.BNComboBox();
 			this.statusStrip1.SuspendLayout();
 			this.contextMenuStripRelease.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
@@ -280,12 +281,8 @@ namespace CUERipper
 			// 
 			// bnComboBoxLosslessOrNot
 			// 
-			this.bnComboBoxLosslessOrNot.BackColor = System.Drawing.SystemColors.ControlDark;
+			this.bnComboBoxLosslessOrNot.BackColor = System.Drawing.Color.White;
 			this.bnComboBoxLosslessOrNot.Border = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.bnComboBoxLosslessOrNot.Color1 = System.Drawing.SystemColors.Control;
-			this.bnComboBoxLosslessOrNot.Color2 = System.Drawing.SystemColors.ControlDark;
-			this.bnComboBoxLosslessOrNot.Color3 = System.Drawing.Color.Maroon;
-			this.bnComboBoxLosslessOrNot.Color4 = System.Drawing.SystemColors.ControlDarkDark;
 			this.bnComboBoxLosslessOrNot.DataSource = this.losslessOrNotBindingSource;
 			this.bnComboBoxLosslessOrNot.DropDownHeight = 200;
 			this.bnComboBoxLosslessOrNot.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -314,12 +311,8 @@ namespace CUERipper
 			// 
 			// bnComboBoxEncoder
 			// 
-			this.bnComboBoxEncoder.BackColor = System.Drawing.SystemColors.ControlDark;
+			this.bnComboBoxEncoder.BackColor = System.Drawing.Color.White;
 			this.bnComboBoxEncoder.Border = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.bnComboBoxEncoder.Color1 = System.Drawing.SystemColors.Control;
-			this.bnComboBoxEncoder.Color2 = System.Drawing.SystemColors.ControlDark;
-			this.bnComboBoxEncoder.Color3 = System.Drawing.Color.Maroon;
-			this.bnComboBoxEncoder.Color4 = System.Drawing.SystemColors.ControlDarkDark;
 			this.bnComboBoxEncoder.DataSource = this.encodersBindingSource;
 			this.bnComboBoxEncoder.DropDownHeight = 200;
 			this.bnComboBoxEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -349,12 +342,8 @@ namespace CUERipper
 			// 
 			// bnComboBoxFormat
 			// 
-			this.bnComboBoxFormat.BackColor = System.Drawing.SystemColors.ControlDark;
+			this.bnComboBoxFormat.BackColor = System.Drawing.Color.White;
 			this.bnComboBoxFormat.Border = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.bnComboBoxFormat.Color1 = System.Drawing.SystemColors.Control;
-			this.bnComboBoxFormat.Color2 = System.Drawing.SystemColors.ControlDark;
-			this.bnComboBoxFormat.Color3 = System.Drawing.Color.Maroon;
-			this.bnComboBoxFormat.Color4 = System.Drawing.SystemColors.ControlDarkDark;
 			this.bnComboBoxFormat.DataSource = this.formatsBindingSource;
 			this.bnComboBoxFormat.DropDownHeight = 200;
 			this.bnComboBoxFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -385,12 +374,8 @@ namespace CUERipper
 			// 
 			// bnComboBoxImage
 			// 
-			this.bnComboBoxImage.BackColor = System.Drawing.SystemColors.ControlDark;
+			this.bnComboBoxImage.BackColor = System.Drawing.Color.White;
 			this.bnComboBoxImage.Border = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.bnComboBoxImage.Color1 = System.Drawing.SystemColors.Control;
-			this.bnComboBoxImage.Color2 = System.Drawing.SystemColors.ControlDark;
-			this.bnComboBoxImage.Color3 = System.Drawing.Color.Maroon;
-			this.bnComboBoxImage.Color4 = System.Drawing.SystemColors.ControlDarkDark;
 			this.bnComboBoxImage.DataSource = this.cUEStylesBindingSource;
 			this.bnComboBoxImage.DropDownHeight = 200;
 			this.bnComboBoxImage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -534,12 +519,8 @@ namespace CUERipper
 			// 
 			// bnComboBoxRelease
 			// 
-			this.bnComboBoxRelease.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+			this.bnComboBoxRelease.BackColor = System.Drawing.SystemColors.ControlLightLight;
 			this.bnComboBoxRelease.Border = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.bnComboBoxRelease.Color1 = System.Drawing.SystemColors.Control;
-			this.bnComboBoxRelease.Color2 = System.Drawing.SystemColors.ControlDark;
-			this.bnComboBoxRelease.Color3 = System.Drawing.Color.Maroon;
-			this.bnComboBoxRelease.Color4 = System.Drawing.SystemColors.ControlDarkDark;
 			this.bnComboBoxRelease.ContextMenuStrip = this.contextMenuStripRelease;
 			this.bnComboBoxRelease.DataSource = this.releasesBindingSource;
 			this.bnComboBoxRelease.DropDownHeight = 200;
@@ -574,12 +555,8 @@ namespace CUERipper
 			// 
 			// bnComboBoxDrives
 			// 
-			this.bnComboBoxDrives.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+			this.bnComboBoxDrives.BackColor = System.Drawing.SystemColors.ControlLightLight;
 			this.bnComboBoxDrives.Border = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.bnComboBoxDrives.Color1 = System.Drawing.SystemColors.Control;
-			this.bnComboBoxDrives.Color2 = System.Drawing.SystemColors.ControlDark;
-			this.bnComboBoxDrives.Color3 = System.Drawing.Color.Maroon;
-			this.bnComboBoxDrives.Color4 = System.Drawing.SystemColors.ControlDarkDark;
 			this.bnComboBoxDrives.DataSource = this.drivesBindingSource;
 			this.bnComboBoxDrives.DropDownHeight = 200;
 			this.bnComboBoxDrives.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -603,13 +580,36 @@ namespace CUERipper
 			this.drivesBindingSource.DataMember = "Drives";
 			this.drivesBindingSource.DataSource = this.bindingSourceCR;
 			// 
+			// bnComboBoxOutputFormat
+			// 
+			this.bnComboBoxOutputFormat.BackColor = System.Drawing.SystemColors.ControlLightLight;
+			this.bnComboBoxOutputFormat.Border = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.bnComboBoxOutputFormat.DropDownHeight = 200;
+			this.bnComboBoxOutputFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDown;
+			this.bnComboBoxOutputFormat.DropDownWidth = 552;
+			this.bnComboBoxOutputFormat.ForeColor = System.Drawing.SystemColors.ControlText;
+			this.bnComboBoxOutputFormat.ImageList = null;
+			this.bnComboBoxOutputFormat.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
+			this.bnComboBoxOutputFormat.MaxDropDownItems = 8;
+			this.bnComboBoxOutputFormat.MinimumSize = new System.Drawing.Size(40, 21);
+			this.bnComboBoxOutputFormat.Name = "bnComboBoxOutputFormat";
+			this.bnComboBoxOutputFormat.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxOutputFormat.Radius")));
+			this.bnComboBoxOutputFormat.SelectedIndex = -1;
+			this.bnComboBoxOutputFormat.SelectedItem = null;
+			this.bnComboBoxOutputFormat.Sorted = false;
+			this.bnComboBoxOutputFormat.DroppedDown += new System.EventHandler(this.bnComboBoxOutputFormat_DroppedDown);
+			this.bnComboBoxOutputFormat.MouseLeave += new System.EventHandler(this.bnComboBoxOutputFormat_MouseLeave);
+			this.bnComboBoxOutputFormat.TextChanged += new System.EventHandler(this.bnComboBoxOutputFormat_TextChanged);
+			// 
 			// frmCUERipper
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.txtOutputPath);
 			this.Controls.Add(this.bnComboBoxRelease);
 			this.Controls.Add(this.bnComboBoxDrives);
-			this.Controls.Add(this.txtOutputPath);
+			this.Controls.Add(this.bnComboBoxOutputFormat);
 			this.Controls.Add(this.comboBoxOutputFormat);
 			this.Controls.Add(this.progressBarErrors);
 			this.Controls.Add(this.progressBarCD);
@@ -701,6 +701,7 @@ namespace CUERipper
 		private System.Windows.Forms.BindingSource encodersBindingSource;
 		private BBBNOVA.BNComboBox bnComboBoxLosslessOrNot;
 		private System.Windows.Forms.BindingSource losslessOrNotBindingSource;
+		private BBBNOVA.BNComboBox bnComboBoxOutputFormat;
 	}
 }
 

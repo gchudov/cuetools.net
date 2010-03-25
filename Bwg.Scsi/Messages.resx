@@ -1,0 +1,495 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SCSIErrorMessage_0000" xml:space="preserve">
+    <value>NO ADDITIONAL SENSE INFORMATION</value>
+  </data>
+  <data name="SCSIErrorMessage_0006" xml:space="preserve">
+    <value>I/O PROCESS TERMINATED</value>
+  </data>
+  <data name="SCSIErrorMessage_0100" xml:space="preserve">
+    <value>NO INDEX/SECTOR SIGNAL</value>
+  </data>
+  <data name="SCSIErrorMessage_0102" xml:space="preserve">
+    <value>NO SEEK COMPLETE</value>
+  </data>
+  <data name="SCSIErrorMessage_0103" xml:space="preserve">
+    <value>PERIPHERAL DEVICE WRITE FAULT</value>
+  </data>
+  <data name="SCSIErrorMessage_0400" xml:space="preserve">
+    <value>LOGICAL UNIT NOT READY, CAUSE NOT REPORTABLE</value>
+  </data>
+  <data name="SCSIErrorMessage_0401" xml:space="preserve">
+    <value>LOGICAL UNIT IS IN PROCESS OF BECOMING READY</value>
+  </data>
+  <data name="SCSIErrorMessage_0402" xml:space="preserve">
+    <value>LOGICAL UNIT NOT READY, INITIALIZING COMMAND REQUIRED</value>
+  </data>
+  <data name="SCSIErrorMessage_0403" xml:space="preserve">
+    <value>LOGICAL UNIT NOT READY, MANUAL INTERVENTION REQUIRED</value>
+  </data>
+  <data name="SCSIErrorMessage_0404" xml:space="preserve">
+    <value>LOGICAL UNIT NOT READY, FORMAT IN PROGRESS</value>
+  </data>
+  <data name="SCSIErrorMessage_0407" xml:space="preserve">
+    <value>LOGICAL UNIT NOT READY, OPERATION IN PROGRESS</value>
+  </data>
+  <data name="SCSIErrorMessage_0408" xml:space="preserve">
+    <value>LOGICAL UNIT NOT READY, LONG WRITE IN PROGRESS</value>
+  </data>
+  <data name="SCSIErrorMessage_0500" xml:space="preserve">
+    <value>LOGICAL UNIT DOES NOT RESPOND TO SELECTION</value>
+  </data>
+  <data name="SCSIErrorMessage_0800" xml:space="preserve">
+    <value>LOGICAL UNIT COMMUNICATION FAILURE</value>
+  </data>
+  <data name="SCSIErrorMessage_0801" xml:space="preserve">
+    <value>LOGICAL UNIT COMMUNICATION TIME-OUT</value>
+  </data>
+  <data name="SCSIErrorMessage_0802" xml:space="preserve">
+    <value>LOGICAL UNIT COMMUNICATION PARITY ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_0803" xml:space="preserve">
+    <value>LOGICAL UNIT COMMUNICATION CRC ERROR (ULTRA-DMA/32)</value>
+  </data>
+  <data name="SCSIErrorMessage_0804" xml:space="preserve">
+    <value>UNREACHABLE COPY TARGET</value>
+  </data>
+  <data name="SCSIErrorMessage_0c00" xml:space="preserve">
+    <value>WRITE ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_1000" xml:space="preserve">
+    <value>ID CRC OR ECC ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_1100" xml:space="preserve">
+    <value>UNRECOVERED READ ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_1101" xml:space="preserve">
+    <value>READ RETRIES EXHAUSTED</value>
+  </data>
+  <data name="SCSIErrorMessage_1102" xml:space="preserve">
+    <value>ERROR TOO LONG TO CORRECT</value>
+  </data>
+  <data name="SCSIErrorMessage_1105" xml:space="preserve">
+    <value>L-EC UNCORRECTABLE ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_1106" xml:space="preserve">
+    <value>CIRC UNRECOVERED ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_110F" xml:space="preserve">
+    <value>ERROR READING UPC/EAN NUMBER</value>
+  </data>
+  <data name="SCSIErrorMessage_1110" xml:space="preserve">
+    <value>ERROR READING ISRC NUMBER</value>
+  </data>
+  <data name="SCSIErrorMessage_1111" xml:space="preserve">
+    <value>READ ERROR – LOSS OF STREAMING</value>
+  </data>
+  <data name="SCSIErrorMessage_2000" xml:space="preserve">
+    <value>INVALID COMMAND OPERATION CODE</value>
+  </data>
+  <data name="SCSIErrorMessage_2100" xml:space="preserve">
+    <value>LOGICAL BLOCK ADDRESS OUT OF RANGE</value>
+  </data>
+  <data name="SCSIErrorMessage_2101" xml:space="preserve">
+    <value>INVALID ELEMENT ADDRESS</value>
+  </data>
+  <data name="SCSIErrorMessage_2102" xml:space="preserve">
+    <value>INVALID ADDRESS FOR WRITE</value>
+  </data>
+  <data name="SCSIErrorMessage_2400" xml:space="preserve">
+    <value>INVALID FIELD IN CDB</value>
+  </data>
+  <data name="SCSIErrorMessage_2600" xml:space="preserve">
+    <value>INVALID FIELD IN PARAMETER LIST</value>
+  </data>
+  <data name="SCSIErrorMessage_2601" xml:space="preserve">
+    <value>PARAMETER NOT SUPPORTED</value>
+  </data>
+  <data name="SCSIErrorMessage_2602" xml:space="preserve">
+    <value>PARAMETER VALUE INVALID</value>
+  </data>
+  <data name="SCSIErrorMessage_2603" xml:space="preserve">
+    <value>THRESHOLD PARAMETERS NOT SUPPORTED</value>
+  </data>
+  <data name="SCSIErrorMessage_2700" xml:space="preserve">
+    <value>WRITE PROTECTED</value>
+  </data>
+  <data name="SCSIErrorMessage_2800" xml:space="preserve">
+    <value>NOT READY TO READY CHANGE, MEDIUM MAY HAVE CHANGED</value>
+  </data>
+  <data name="SCSIErrorMessage_2801" xml:space="preserve">
+    <value>IMPORT OR EXPORT ELEMENT ACCESSED</value>
+  </data>
+  <data name="SCSIErrorMessage_2900" xml:space="preserve">
+    <value>POWER ON, RESET, OR BUS DEVICE RESET OCCURRED</value>
+  </data>
+  <data name="SCSIErrorMessage_2901" xml:space="preserve">
+    <value>POWER ON OCCURRED</value>
+  </data>
+  <data name="SCSIErrorMessage_2902" xml:space="preserve">
+    <value>BUS RESET OCCURRED</value>
+  </data>
+  <data name="SCSIErrorMessage_2903" xml:space="preserve">
+    <value>BUS DEVICE RESET FUNCTION OCCURRED</value>
+  </data>
+  <data name="SCSIErrorMessage_2904" xml:space="preserve">
+    <value>DEVICE INTERNAL RESET</value>
+  </data>
+  <data name="SCSIErrorMessage_2A00" xml:space="preserve">
+    <value>PARAMETERS CHANGED</value>
+  </data>
+  <data name="SCSIErrorMessage_2A01" xml:space="preserve">
+    <value>MODE PARAMETERS CHANGED</value>
+  </data>
+  <data name="SCSIErrorMessage_2A02" xml:space="preserve">
+    <value>LOG PARAMETERS CHANGED</value>
+  </data>
+  <data name="SCSIErrorMessage_2C00" xml:space="preserve">
+    <value>COMMMAND SEQUENCE ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_2C03" xml:space="preserve">
+    <value>CURRENT PROGRAM AREA IS NOT EMPTY</value>
+  </data>
+  <data name="SCSIErrorMessage_2C04" xml:space="preserve">
+    <value>CURRENT PROGRAM AREA IS EMPTY</value>
+  </data>
+  <data name="SCSIErrorMessage_2E00" xml:space="preserve">
+    <value>INSUFFICIENT TIME FOR OPERATION</value>
+  </data>
+  <data name="SCSIErrorMessage_3000" xml:space="preserve">
+    <value>INCOMPATIBLE MEDIUM INSTALLED</value>
+  </data>
+  <data name="SCSIErrorMessage_3001" xml:space="preserve">
+    <value>CANNOT READ MEDIUM - UNKNOWN FORMAT</value>
+  </data>
+  <data name="SCSIErrorMessage_3002" xml:space="preserve">
+    <value>CANNOT READ MEDIUM - INCOMPATIBLE FORMAT</value>
+  </data>
+  <data name="SCSIErrorMessage_3003" xml:space="preserve">
+    <value>CLEANING CARTRIDGE INSTALLED</value>
+  </data>
+  <data name="SCSIErrorMessage_3004" xml:space="preserve">
+    <value>CANNOT WRITE MEDIUM - UNKONWN FORMAT</value>
+  </data>
+  <data name="SCSIErrorMessage_3005" xml:space="preserve">
+    <value>CANNOT WRITE MEDIUM - INCOMPATIBLE FORMAT</value>
+  </data>
+  <data name="SCSIErrorMessage_3006" xml:space="preserve">
+    <value>CANNOT FORMAT MEDIUM - INCOMPATIBLE FORMAT</value>
+  </data>
+  <data name="SCSIErrorMessage_3007" xml:space="preserve">
+    <value>CLEANING FAILURE</value>
+  </data>
+  <data name="SCSIErrorMessage_3008" xml:space="preserve">
+    <value>CANNOT WRITE - APPLICATION CODE MISMATCH</value>
+  </data>
+  <data name="SCSIErrorMessage_3009" xml:space="preserve">
+    <value>CURRENT SESSION NOT FIXATED FOR APPEND</value>
+  </data>
+  <data name="SCSIErrorMessage_3010" xml:space="preserve">
+    <value>MEDIUM NOT FORMATTED</value>
+  </data>
+  <data name="SCSIErrorMessage_3011" xml:space="preserve">
+    <value>CANNOT WRITE MEDIUM - UNSUPPORTED MEDIUM VERSION</value>
+  </data>
+  <data name="SCSIErrorMessage_3A00" xml:space="preserve">
+    <value>MEDIUM NOT PRESENT</value>
+  </data>
+  <data name="SCSIErrorMessage_3A01" xml:space="preserve">
+    <value>MEDIUM NOT PRESENT - TRAY CLOSED</value>
+  </data>
+  <data name="SCSIErrorMessage_3A02" xml:space="preserve">
+    <value>MEDIUM NOT PRESENT - TRAY OPEN</value>
+  </data>
+  <data name="SCSIErrorMessage_3B0D" xml:space="preserve">
+    <value>MEDIUM DESTINATION ELEMENT FULL</value>
+  </data>
+  <data name="SCSIErrorMessage_3B0E" xml:space="preserve">
+    <value>MEDIUM SOURCE ELEMENT EMPTY</value>
+  </data>
+  <data name="SCSIErrorMessage_3B0F" xml:space="preserve">
+    <value>END OF MEDIUM REACHED</value>
+  </data>
+  <data name="SCSIErrorMessage_3B11" xml:space="preserve">
+    <value>MEDIUM MAGAZINE NOT ACCESSIBLE</value>
+  </data>
+  <data name="SCSIErrorMessage_3B12" xml:space="preserve">
+    <value>MEDIUM MAGAZINE REMOVED</value>
+  </data>
+  <data name="SCSIErrorMessage_3B13" xml:space="preserve">
+    <value>MEDIUM MAGAZINE INSERTED</value>
+  </data>
+  <data name="SCSIErrorMessage_3B14" xml:space="preserve">
+    <value>MEDIUM MAGAZINE LOCKED</value>
+  </data>
+  <data name="SCSIErrorMessage_3B15" xml:space="preserve">
+    <value>MEDIUM MAGAZINE UNLOCKED</value>
+  </data>
+  <data name="SCSIErrorMessage_3E00" xml:space="preserve">
+    <value>LOGICAL UNIT HAS NOT SELF-CONFIGURED YET</value>
+  </data>
+  <data name="SCSIErrorMessage_3E01" xml:space="preserve">
+    <value>LOGICAL UNIT FAILURE</value>
+  </data>
+  <data name="SCSIErrorMessage_3E02" xml:space="preserve">
+    <value>TIMEOUT ON LOGICAL UNIT</value>
+  </data>
+  <data name="SCSIErrorMessage_3F00" xml:space="preserve">
+    <value>TARGET OPERATING CONDITIONS HAVE CHANGED</value>
+  </data>
+  <data name="SCSIErrorMessage_3F01" xml:space="preserve">
+    <value>MICROCODE HAS BEEN CHANGED</value>
+  </data>
+  <data name="SCSIErrorMessage_3F02" xml:space="preserve">
+    <value>CHANGED OPERATING DEFINITION</value>
+  </data>
+  <data name="SCSIErrorMessage_3F03" xml:space="preserve">
+    <value>INQUIRY DATA HAS CHANGED</value>
+  </data>
+  <data name="SCSIErrorMessage_5300" xml:space="preserve">
+    <value>MEDIA LOAD OR EJECT FAILED</value>
+  </data>
+  <data name="SCSIErrorMessage_5302" xml:space="preserve">
+    <value>MEDIUM REMOVAL PREVENTED</value>
+  </data>
+  <data name="SCSIErrorMessage_5700" xml:space="preserve">
+    <value>UNABLE TO RECOVER TABLE OF CONTENTS</value>
+  </data>
+  <data name="SCSIErrorMessage_5A00" xml:space="preserve">
+    <value>OPERATOR REQUEST OR STATE CHANGE INPUT</value>
+  </data>
+  <data name="SCSIErrorMessage_5A01" xml:space="preserve">
+    <value>OPERATOR MEDIUM REMOVAL REQUEST</value>
+  </data>
+  <data name="SCSIErrorMessage_5A02" xml:space="preserve">
+    <value>OPERATOR SELECTED WRITE PROTECT</value>
+  </data>
+  <data name="SCSIErrorMessage_5A03" xml:space="preserve">
+    <value>OPERATOR SELECTED WRITE PERMIT</value>
+  </data>
+  <data name="SCSIErrorMessage_5B00" xml:space="preserve">
+    <value>LOG EXCEPTION</value>
+  </data>
+  <data name="SCSIErrorMessage_5B01" xml:space="preserve">
+    <value>THRESHOLD CONDITION MET</value>
+  </data>
+  <data name="SCSIErrorMessage_5B02" xml:space="preserve">
+    <value>LOG COUNTER AT MAXIMUM</value>
+  </data>
+  <data name="SCSIErrorMessage_5B03" xml:space="preserve">
+    <value>LOG LIST CODES EXHAUSTED</value>
+  </data>
+  <data name="SCSIErrorMessage_5E00" xml:space="preserve">
+    <value>LOW POWER CONDITION ON</value>
+  </data>
+  <data name="SCSIErrorMessage_5E01" xml:space="preserve">
+    <value>IDLE CONDITION ACTIVATED BY TIMER</value>
+  </data>
+  <data name="SCSIErrorMessage_5E02" xml:space="preserve">
+    <value>STANDBY CONDITION ACTIVATED BY TIMER</value>
+  </data>
+  <data name="SCSIErrorMessage_5E03" xml:space="preserve">
+    <value>IDLE CONDITION ACTIVATED BY COMMAND</value>
+  </data>
+  <data name="SCSIErrorMessage_5E04" xml:space="preserve">
+    <value>STANDBY CONDITION ACTIVATED BY COMMAND</value>
+  </data>
+  <data name="SCSIErrorMessage_6300" xml:space="preserve">
+    <value>END OF USER AREA ENCOUNTERED ON THIS TRACK</value>
+  </data>
+  <data name="SCSIErrorMessage_6301" xml:space="preserve">
+    <value>PACKET DOES NOT FIT IN AVAILABLE SPACE</value>
+  </data>
+  <data name="SCSIErrorMessage_6400" xml:space="preserve">
+    <value>ILLEGAL MODE FOR THIS TRACK</value>
+  </data>
+  <data name="SCSIErrorMessage_6401" xml:space="preserve">
+    <value>INVALID PACKET SIZE</value>
+  </data>
+  <data name="SCSIErrorMessage_6500" xml:space="preserve">
+    <value>VOLTAGE FAULT</value>
+  </data>
+  <data name="SCSIErrorMessage_6F00" xml:space="preserve">
+    <value>COPY PROTECTION KEY EXCHANGE FAILURE - AUTHENTICATION FAILURE</value>
+  </data>
+  <data name="SCSIErrorMessage_6F01" xml:space="preserve">
+    <value>COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT PRESENT</value>
+  </data>
+  <data name="SCSIErrorMessage_6F02" xml:space="preserve">
+    <value>COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT ESTABLISHED</value>
+  </data>
+  <data name="SCSIErrorMessage_6F03" xml:space="preserve">
+    <value>READ OF SCRAMBLED SECTOR WITHOUT AUTHENTICATION</value>
+  </data>
+  <data name="SCSIErrorMessage_6F04" xml:space="preserve">
+    <value>MEDIA REGION CODE IS MISMATCHED TO LOGICAL UNIT REGION</value>
+  </data>
+  <data name="SCSIErrorMessage_6F05" xml:space="preserve">
+    <value>LOGICAL UNIT REGION MUST BE PERMANENT/REGION RESET COUNT ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_7200" xml:space="preserve">
+    <value>SESSION FIXATION ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_7201" xml:space="preserve">
+    <value>SESSION FIXATION ERROR WRITING LEAD-IN</value>
+  </data>
+  <data name="SCSIErrorMessage_7202" xml:space="preserve">
+    <value>SESSION FIXATION ERROR WRITING LEAD-OUT</value>
+  </data>
+  <data name="SCSIErrorMessage_7203" xml:space="preserve">
+    <value>SESSION FIXATION ERROR - INCOMPLETE TRACK IN SESSION</value>
+  </data>
+  <data name="SCSIErrorMessage_7204" xml:space="preserve">
+    <value>EMPTY OR PARTIALLY WRITTEN RESERVED TRACK</value>
+  </data>
+  <data name="SCSIErrorMessage_7205" xml:space="preserve">
+    <value>NO MORE TRACK RESERVATIONS ALLOWED</value>
+  </data>
+  <data name="SCSIErrorMessage_7206" xml:space="preserve">
+    <value>RMZ EXTENSION IS NOT ALLOWED</value>
+  </data>
+  <data name="SCSIErrorMessage_7207" xml:space="preserve">
+    <value>NO MORE TEST ZONE EXTENSIONS ARE ALLOWED</value>
+  </data>
+  <data name="SCSIErrorMessage_7300" xml:space="preserve">
+    <value>CD CONTROL ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_7301" xml:space="preserve">
+    <value>POWER CALIBRATION AREA ALMOST</value>
+  </data>
+  <data name="SCSIErrorMessage_7302" xml:space="preserve">
+    <value>POWER CALIBRATION AREA IS FULL</value>
+  </data>
+  <data name="SCSIErrorMessage_7303" xml:space="preserve">
+    <value>POWER CALIBRATION AREA ERROR</value>
+  </data>
+  <data name="SCSIErrorMessage_7304" xml:space="preserve">
+    <value>PROGRAM MEMORY AREA UPDATE FAILURE</value>
+  </data>
+  <data name="SCSIErrorMessage_7305" xml:space="preserve">
+    <value>PROGRAM MEMORY AREA IS FULL</value>
+  </data>
+  <data name="SCSIErrorMessage_7306" xml:space="preserve">
+    <value>RMA/PMA IS ALMOST FULL</value>
+  </data>
+  <data name="UnknownSCSIError" xml:space="preserve">
+    <value>NO SENSE STRING FOR</value>
+  </data>
+</root>

@@ -49,7 +49,6 @@ namespace CUETools.Ripper.SCSI
 		const int NSECTORS = 16;
 		//const int MSECTORS = 5*1024*1024 / (4 * 588);
 		const int MSECTORS = 2400;
-		int _currentTrack = -1, _currentIndex = -1, _currentTrackActualStart = -1;
 		Logger m_logger;
 		CDImageLayout _toc;
 		CDImageLayout _toc2;
@@ -201,14 +200,14 @@ namespace CUETools.Ripper.SCSI
 
 			m_device = new Device(m_logger);
 			if (!m_device.Open(m_device_letter))
-				throw new Exception("Open failed: " + WinDev.Win32ErrorToString(m_device.LastError));
+				throw new Exception(Resource1.DeviceOpenError + ": " + WinDev.Win32ErrorToString(m_device.LastError));
 
 			// Get device info
 			st = m_device.Inquiry(out m_inqury_result);
 			if (st != Device.CommandStatus.Success || !m_inqury_result.Valid)
-				throw new SCSIException("Inquiry", m_device, st);
+				throw new SCSIException(Resource1.DeviceInquiryError, m_device, st);
 			if (m_inqury_result.PeripheralQualifier != 0 || m_inqury_result.PeripheralDeviceType != Device.MMCDeviceType)
-				throw new Exception(Path + " is not an MMC device");
+				throw new Exception(Path + ": " + Resource1.DeviceNotMMC);
 
 			m_max_sectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
 			//// Open/Initialize the driver
@@ -252,7 +251,7 @@ namespace CUETools.Ripper.SCSI
 			IList<TocEntry> toc;
 			st = m_device.ReadToc((byte)0, false, out toc);
 			if (st != Device.CommandStatus.Success)
-				throw new SCSIException("ReadTOC", m_device, st);
+				throw new SCSIException(Resource1.ReadTOCError, m_device, st);
 				//throw new Exception("ReadTOC: " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
 
 			//byte[] qdata = null;
@@ -566,7 +565,7 @@ namespace CUETools.Ripper.SCSI
 		public unsafe bool DetectGaps()
 		{
 			if (!TestReadCommand())
-				throw new Exception("failed to autodetect read command:\n" + _autodetectResult);
+				throw new Exception(Resource1.AutodetectReadCommandFailed+ ":\n" + _autodetectResult);
 
 			if (_gapDetection == GapDetectionMethod.None)
 			{
@@ -715,8 +714,6 @@ namespace CUETools.Ripper.SCSI
 			bool found = false;
 			_autodetectResult = "";
 			_currentStart = 0;
-			_currentTrack = -1;
-			_currentIndex = -1;
 			m_max_sectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
 			int sector = 3;
 			int pass = 0;
@@ -810,16 +807,22 @@ namespace CUETools.Ripper.SCSI
 						int offs = 0;
 						if (c2Size == 296)
 						{
-							// TODO: sometimes sector C2 byte is placed after C2 info, not before!!
+							// TODO: sometimes (e.g on PIONEER 215D) sector C2 byte is placed after C2 info,
+							// not before, like it says in mmc6r02g.pdf !!
 							int c2 = 0;
 							for (int pos = 2; pos < 294; pos++)
 								c2 |= sectorPtr[4 * 588 + pos];
 							if (sectorPtr[4 * 588 + 294] == (c2 | sectorPtr[4 * 588 + 0] | sectorPtr[4 * 588 + 1]))
 								offs = 0;
-							else if (sectorPtr[4 * 588] == (c2 | sectorPtr[4 * 588 + 294] | sectorPtr[4 * 588 + 295]))
+							else
 								offs = 2;
-							else 
-								throw new Exception("invalid C2 pointers");
+							// TSSTcorp CDDVDW SH-S203B SB03
+							// TSSTcorpCD/DVDW SH-W162C TS12
+							//	Both produced Exception("invalid C2 pointers");
+							//else if (sectorPtr[4 * 588] == (c2 | sectorPtr[4 * 588 + 294] | sectorPtr[4 * 588 + 295]))
+							//    offs = 2;
+							//else 
+							//    throw new Exception("invalid C2 pointers");
 						}
 						for (int pos = 0; pos < 294; pos++)
 						{
@@ -881,7 +884,7 @@ namespace CUETools.Ripper.SCSI
 
 			if (!abort)
 				return st;
-			SCSIException ex = new SCSIException("ReadCD", m_device, st);
+			SCSIException ex = new SCSIException(Resource1.ReadCDError, m_device, st);
 			if (sector != 0 && Sectors2Read > 1 && st == Device.CommandStatus.DeviceFailed && m_device.GetSenseAsc() == 0x64 && m_device.GetSenseAscq() == 0x00)
 			{
 				if (_debugMessages)
@@ -1139,7 +1142,7 @@ namespace CUETools.Ripper.SCSI
 				return;
 
 			if (!TestReadCommand())
-				throw new Exception("failed to autodetect read command:\n" + _autodetectResult);
+				throw new Exception(Resource1.AutodetectReadCommandFailed + "\n" + _autodetectResult);
 
 			_currentStart = iSector;
 			_currentEnd = _currentStart + MSECTORS;
@@ -1312,9 +1315,7 @@ namespace CUETools.Ripper.SCSI
 			set
 			{
 				if (_toc.AudioLength <= 0)
-					throw new Exception("no audio");
-				_currentTrack = -1;
-				_currentIndex = -1;
+					throw new Exception(Resource1.NoAudio);
 				_crcErrorsCount = 0;
 				_errorsCount = 0;
 				_currentStart = -1;
@@ -1363,7 +1364,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return "CUERipper v2.0.6 Copyright (C) 2008-10 Gregory S. Chudov";
+				return "CUERipper v2.0.7 Copyright (C) 2008-10 Gregory S. Chudov";
 				// ripper.GetName().Name + " " + ripper.GetName().Version;
 			}
 		}
