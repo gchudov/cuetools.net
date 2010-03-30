@@ -160,4 +160,34 @@
   <data name="wv" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\wv.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DoneRipping" xml:space="preserve">
+    <value>Done ripping</value>
+  </data>
+  <data name="DoneRippingErrors" xml:space="preserve">
+    <value>Rip probably contains errors</value>
+  </data>
+  <data name="DoneRippingRepair" xml:space="preserve">
+    <value>You can try to repair it using CUETools</value>
+  </data>
+  <data name="ExceptionMessage" xml:space="preserve">
+    <value>Exception</value>
+  </data>
+  <data name="FailedToLoadRipperModule" xml:space="preserve">
+    <value>Failed to load ripper module</value>
+  </data>
+  <data name="LookingUpVia" xml:space="preserve">
+    <value>Looking up album via</value>
+  </data>
+  <data name="NoDrives" xml:space="preserve">
+    <value>No CD drives found</value>
+  </data>
+  <data name="PausedMessage" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>retry</value>
+  </data>
+  <data name="DetectingDrives" xml:space="preserve">
+    <value>Detecting drives</value>
+  </data>
 </root>

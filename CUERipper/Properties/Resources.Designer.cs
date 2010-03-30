@@ -95,6 +95,60 @@ namespace CUERipper.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Detecting drives.
+        /// </summary>
+        internal static string DetectingDrives {
+            get {
+                return ResourceManager.GetString("DetectingDrives", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Done ripping.
+        /// </summary>
+        internal static string DoneRipping {
+            get {
+                return ResourceManager.GetString("DoneRipping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rip probably contains errors.
+        /// </summary>
+        internal static string DoneRippingErrors {
+            get {
+                return ResourceManager.GetString("DoneRippingErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can try to repair it using CUETools.
+        /// </summary>
+        internal static string DoneRippingRepair {
+            get {
+                return ResourceManager.GetString("DoneRippingRepair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exception.
+        /// </summary>
+        internal static string ExceptionMessage {
+            get {
+                return ResourceManager.GetString("ExceptionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load ripper module.
+        /// </summary>
+        internal static string FailedToLoadRipperModule {
+            get {
+                return ResourceManager.GetString("FailedToLoadRipperModule", resourceCulture);
+            }
+        }
+        
         internal static System.Drawing.Icon flac {
             get {
                 object obj = ResourceManager.GetObject("flac", resourceCulture);
@@ -116,6 +170,15 @@ namespace CUERipper.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Looking up album via.
+        /// </summary>
+        internal static string LookingUpVia {
+            get {
+                return ResourceManager.GetString("LookingUpVia", resourceCulture);
+            }
+        }
+        
         internal static System.Drawing.Icon mp3 {
             get {
                 object obj = ResourceManager.GetObject("mp3", resourceCulture);
@@ -130,10 +193,37 @@ namespace CUERipper.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to No CD drives found.
+        /// </summary>
+        internal static string NoDrives {
+            get {
+                return ResourceManager.GetString("NoDrives", resourceCulture);
+            }
+        }
+        
         internal static System.Drawing.Icon ogg {
             get {
                 object obj = ResourceManager.GetObject("ogg", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paused.
+        /// </summary>
+        internal static string PausedMessage {
+            get {
+                return ResourceManager.GetString("PausedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to retry.
+        /// </summary>
+        internal static string Retry {
+            get {
+                return ResourceManager.GetString("Retry", resourceCulture);
             }
         }
         

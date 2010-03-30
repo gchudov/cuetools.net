@@ -2245,7 +2245,7 @@ namespace Bwg.Scsi
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public CommandStatus ReadCDText(out byte [] data)
+        public CommandStatus ReadCDText(out byte [] data, int _timeout)
         {
             ushort len;
 
@@ -2256,7 +2256,7 @@ namespace Bwg.Scsi
             }
 
             data = null;
-            using (Command cmd = new Command(ScsiCommandCode.ReadTocPmaAtip, 10, 4, Command.CmdDirection.In, 5 * 60))
+			using (Command cmd = new Command(ScsiCommandCode.ReadTocPmaAtip, 10, 4, Command.CmdDirection.In, _timeout))
             {
                 cmd.SetCDB8(2, 5);                  // CDText info in leadin
                 cmd.SetCDB16(7, 4);
@@ -2276,7 +2276,7 @@ namespace Bwg.Scsi
                 }
             }
 
-            using (Command cmd = new Command(ScsiCommandCode.ReadTocPmaAtip, 10, len, Command.CmdDirection.In, 5 * 60))
+			using (Command cmd = new Command(ScsiCommandCode.ReadTocPmaAtip, 10, len, Command.CmdDirection.In, _timeout))
             {
                 cmd.SetCDB8(2, 5);                 // CDText info in leadin
                 cmd.SetCDB16(7, len);

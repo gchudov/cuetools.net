@@ -822,7 +822,7 @@ namespace CUETools.AccurateRip
 		public static bool FindDriveReadOffset(string driveName, out int driveReadOffset)
 		{
 			string fileName = System.IO.Path.Combine(CachePath, "DriveOffsets.bin");
-			if (!File.Exists(fileName))
+			if (!File.Exists(fileName) || (DateTime.Now - File.GetLastWriteTime(fileName) > TimeSpan.FromDays(1)) )
 			{
 				HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://www.accuraterip.com/accuraterip/DriveOffsets.bin");
 				req.Method = "GET";
@@ -835,7 +835,7 @@ namespace CUETools.AccurateRip
 						return false;
 					}
 					Stream respStream = resp.GetResponseStream();
-					FileStream myOffsetsSaved = new FileStream(fileName, FileMode.CreateNew, FileAccess.Write);
+					FileStream myOffsetsSaved = new FileStream(fileName, FileMode.Create, FileAccess.Write);
 					byte[] buff = new byte[0x8000];
 					do
 					{

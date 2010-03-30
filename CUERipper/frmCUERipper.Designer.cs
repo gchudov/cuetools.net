@@ -51,21 +51,22 @@ namespace CUERipper
 			this.lblWriteOffset = new System.Windows.Forms.Label();
 			this.checkBoxEACMode = new System.Windows.Forms.CheckBox();
 			this.groupBoxSettings = new System.Windows.Forms.GroupBox();
-			this.bnComboBoxLosslessOrNot = new BBBNOVA.BNComboBox();
+			this.bnComboBoxLosslessOrNot = new CUEControls.BNComboBox();
 			this.losslessOrNotBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.bindingSourceCR = new System.Windows.Forms.BindingSource(this.components);
-			this.bnComboBoxEncoder = new BBBNOVA.BNComboBox();
+			this.bnComboBoxEncoder = new CUEControls.BNComboBox();
 			this.encodersBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.labelSecureMode = new System.Windows.Forms.Label();
-			this.bnComboBoxFormat = new BBBNOVA.BNComboBox();
+			this.bnComboBoxFormat = new CUEControls.BNComboBox();
 			this.formatsBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.labelEncoderMinMode = new System.Windows.Forms.Label();
-			this.bnComboBoxImage = new BBBNOVA.BNComboBox();
+			this.bnComboBoxImage = new CUEControls.BNComboBox();
 			this.cUEStylesBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.labelEncoderMaxMode = new System.Windows.Forms.Label();
 			this.labelEncoderMode = new System.Windows.Forms.Label();
 			this.trackBarEncoderMode = new System.Windows.Forms.TrackBar();
 			this.trackBarSecureMode = new System.Windows.Forms.TrackBar();
+			this.imageListChecked = new System.Windows.Forms.ImageList(this.components);
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.progressBarErrors = new ProgressODoom.ProgressBarEx();
 			this.plainBackgroundPainter1 = new ProgressODoom.PlainBackgroundPainter();
@@ -74,15 +75,14 @@ namespace CUERipper
 			this.gradientGlossPainter1 = new ProgressODoom.GradientGlossPainter();
 			this.progressBarCD = new ProgressODoom.ProgressBarEx();
 			this.plainProgressPainter2 = new ProgressODoom.PlainProgressPainter();
-			this.comboBoxOutputFormat = new System.Windows.Forms.ComboBox();
 			this.txtOutputPath = new System.Windows.Forms.TextBox();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.bnComboBoxRelease = new BBBNOVA.BNComboBox();
+			this.bnComboBoxRelease = new CUEControls.BNComboBox();
 			this.releasesBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.imageListMetadataSource = new System.Windows.Forms.ImageList(this.components);
-			this.bnComboBoxDrives = new BBBNOVA.BNComboBox();
+			this.bnComboBoxDrives = new CUEControls.BNComboBox();
 			this.drivesBindingSource = new System.Windows.Forms.BindingSource(this.components);
-			this.bnComboBoxOutputFormat = new BBBNOVA.BNComboBox();
+			this.bnComboBoxOutputFormat = new CUEControls.BNComboBox();
 			this.statusStrip1.SuspendLayout();
 			this.contextMenuStripRelease.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
@@ -202,8 +202,9 @@ namespace CUERipper
 			// buttonGo
 			// 
 			resources.ApplyResources(this.buttonGo, "buttonGo");
+			this.buttonGo.BackColor = System.Drawing.Color.Transparent;
 			this.buttonGo.Name = "buttonGo";
-			this.buttonGo.UseVisualStyleBackColor = true;
+			this.buttonGo.UseVisualStyleBackColor = false;
 			this.buttonGo.Click += new System.EventHandler(this.buttonGo_Click);
 			// 
 			// buttonAbort
@@ -287,13 +288,14 @@ namespace CUERipper
 			this.bnComboBoxLosslessOrNot.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxLosslessOrNot.DropDownWidth = 80;
 			this.bnComboBoxLosslessOrNot.ForeColor = System.Drawing.SystemColors.ControlText;
+			this.bnComboBoxLosslessOrNot.ImageKeyMember = "ImageKey";
 			this.bnComboBoxLosslessOrNot.ImageList = null;
 			this.bnComboBoxLosslessOrNot.IsDroppedDown = false;
 			resources.ApplyResources(this.bnComboBoxLosslessOrNot, "bnComboBoxLosslessOrNot");
 			this.bnComboBoxLosslessOrNot.MaxDropDownItems = 8;
 			this.bnComboBoxLosslessOrNot.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxLosslessOrNot.Name = "bnComboBoxLosslessOrNot";
-			this.bnComboBoxLosslessOrNot.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxLosslessOrNot.Radius")));
+			this.bnComboBoxLosslessOrNot.Radius = ((CUEControls.BNRadius)(resources.GetObject("bnComboBoxLosslessOrNot.Radius")));
 			this.bnComboBoxLosslessOrNot.SelectedIndex = -1;
 			this.bnComboBoxLosslessOrNot.SelectedItem = null;
 			this.bnComboBoxLosslessOrNot.Sorted = false;
@@ -322,7 +324,7 @@ namespace CUERipper
 			this.bnComboBoxEncoder.MaxDropDownItems = 8;
 			this.bnComboBoxEncoder.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxEncoder.Name = "bnComboBoxEncoder";
-			this.bnComboBoxEncoder.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxEncoder.Radius")));
+			this.bnComboBoxEncoder.Radius = ((CUEControls.BNRadius)(resources.GetObject("bnComboBoxEncoder.Radius")));
 			this.bnComboBoxEncoder.SelectedIndex = -1;
 			this.bnComboBoxEncoder.SelectedItem = null;
 			this.bnComboBoxEncoder.Sorted = false;
@@ -353,7 +355,7 @@ namespace CUERipper
 			this.bnComboBoxFormat.MaxDropDownItems = 8;
 			this.bnComboBoxFormat.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxFormat.Name = "bnComboBoxFormat";
-			this.bnComboBoxFormat.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxFormat.Radius")));
+			this.bnComboBoxFormat.Radius = ((CUEControls.BNRadius)(resources.GetObject("bnComboBoxFormat.Radius")));
 			this.bnComboBoxFormat.SelectedIndex = -1;
 			this.bnComboBoxFormat.SelectedItem = null;
 			this.bnComboBoxFormat.Sorted = false;
@@ -383,7 +385,7 @@ namespace CUERipper
 			this.bnComboBoxImage.MaxDropDownItems = 8;
 			this.bnComboBoxImage.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxImage.Name = "bnComboBoxImage";
-			this.bnComboBoxImage.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxImage.Radius")));
+			this.bnComboBoxImage.Radius = ((CUEControls.BNRadius)(resources.GetObject("bnComboBoxImage.Radius")));
 			this.bnComboBoxImage.SelectedIndex = -1;
 			this.bnComboBoxImage.SelectedItem = null;
 			this.bnComboBoxImage.Sorted = false;
@@ -417,6 +419,15 @@ namespace CUERipper
 			this.trackBarSecureMode.Maximum = 2;
 			this.trackBarSecureMode.Name = "trackBarSecureMode";
 			this.trackBarSecureMode.Scroll += new System.EventHandler(this.trackBarSecureMode_Scroll);
+			// 
+			// imageListChecked
+			// 
+			this.imageListChecked.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageListChecked.ImageStream")));
+			this.imageListChecked.TransparentColor = System.Drawing.Color.Transparent;
+			this.imageListChecked.Images.SetKeyName(0, "checked");
+			this.imageListChecked.Images.SetKeyName(1, "unchecked");
+			this.imageListChecked.Images.SetKeyName(2, "disabled");
+			this.imageListChecked.Images.SetKeyName(3, "mix");
 			// 
 			// toolStripMenuItem1
 			// 
@@ -491,22 +502,8 @@ namespace CUERipper
 			this.plainProgressPainter2.LeadingEdge = System.Drawing.Color.Transparent;
 			this.plainProgressPainter2.ProgressBorderPainter = null;
 			// 
-			// comboBoxOutputFormat
-			// 
-			this.comboBoxOutputFormat.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-			this.comboBoxOutputFormat.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-			this.comboBoxOutputFormat.FormattingEnabled = true;
-			resources.ApplyResources(this.comboBoxOutputFormat, "comboBoxOutputFormat");
-			this.comboBoxOutputFormat.Name = "comboBoxOutputFormat";
-			this.toolTip1.SetToolTip(this.comboBoxOutputFormat, resources.GetString("comboBoxOutputFormat.ToolTip"));
-			this.comboBoxOutputFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxOutputFormat_SelectedIndexChanged);
-			this.comboBoxOutputFormat.MouseLeave += new System.EventHandler(this.comboBoxOutputFormat_MouseLeave);
-			this.comboBoxOutputFormat.TextUpdate += new System.EventHandler(this.comboBoxOutputFormat_TextUpdate);
-			// 
 			// txtOutputPath
 			// 
-			this.txtOutputPath.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-			this.txtOutputPath.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystem;
 			resources.ApplyResources(this.txtOutputPath, "txtOutputPath");
 			this.txtOutputPath.Name = "txtOutputPath";
 			this.txtOutputPath.ReadOnly = true;
@@ -529,7 +526,7 @@ namespace CUERipper
 			this.bnComboBoxRelease.MaxDropDownItems = 8;
 			this.bnComboBoxRelease.MinimumSize = new System.Drawing.Size(61, 21);
 			this.bnComboBoxRelease.Name = "bnComboBoxRelease";
-			this.bnComboBoxRelease.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxRelease.Radius")));
+			this.bnComboBoxRelease.Radius = ((CUEControls.BNRadius)(resources.GetObject("bnComboBoxRelease.Radius")));
 			this.bnComboBoxRelease.SelectedIndex = -1;
 			this.bnComboBoxRelease.SelectedItem = null;
 			this.bnComboBoxRelease.Sorted = false;
@@ -545,8 +542,8 @@ namespace CUERipper
 			// 
 			this.imageListMetadataSource.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageListMetadataSource.ImageStream")));
 			this.imageListMetadataSource.TransparentColor = System.Drawing.Color.Transparent;
-			this.imageListMetadataSource.Images.SetKeyName(0, "musicbrainz.ico");
-			this.imageListMetadataSource.Images.SetKeyName(1, "freedb16.png");
+			this.imageListMetadataSource.Images.SetKeyName(0, "musicbrainz");
+			this.imageListMetadataSource.Images.SetKeyName(1, "freedb");
 			// 
 			// bnComboBoxDrives
 			// 
@@ -563,7 +560,7 @@ namespace CUERipper
 			this.bnComboBoxDrives.MaxDropDownItems = 8;
 			this.bnComboBoxDrives.MinimumSize = new System.Drawing.Size(61, 21);
 			this.bnComboBoxDrives.Name = "bnComboBoxDrives";
-			this.bnComboBoxDrives.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxDrives.Radius")));
+			this.bnComboBoxDrives.Radius = ((CUEControls.BNRadius)(resources.GetObject("bnComboBoxDrives.Radius")));
 			this.bnComboBoxDrives.SelectedIndex = -1;
 			this.bnComboBoxDrives.SelectedItem = null;
 			this.bnComboBoxDrives.Sorted = false;
@@ -587,11 +584,12 @@ namespace CUERipper
 			this.bnComboBoxOutputFormat.MaxDropDownItems = 8;
 			this.bnComboBoxOutputFormat.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxOutputFormat.Name = "bnComboBoxOutputFormat";
-			this.bnComboBoxOutputFormat.Radius = ((BBBNOVA.BNRadius)(resources.GetObject("bnComboBoxOutputFormat.Radius")));
+			this.bnComboBoxOutputFormat.Radius = ((CUEControls.BNRadius)(resources.GetObject("bnComboBoxOutputFormat.Radius")));
 			this.bnComboBoxOutputFormat.SelectedIndex = -1;
 			this.bnComboBoxOutputFormat.SelectedItem = null;
 			this.bnComboBoxOutputFormat.Sorted = false;
 			this.bnComboBoxOutputFormat.DroppedDown += new System.EventHandler(this.bnComboBoxOutputFormat_DroppedDown);
+			this.bnComboBoxOutputFormat.Leave += new System.EventHandler(this.bnComboBoxOutputFormat_Leave);
 			this.bnComboBoxOutputFormat.MouseLeave += new System.EventHandler(this.bnComboBoxOutputFormat_MouseLeave);
 			this.bnComboBoxOutputFormat.TextChanged += new System.EventHandler(this.bnComboBoxOutputFormat_TextChanged);
 			// 
@@ -603,7 +601,6 @@ namespace CUERipper
 			this.Controls.Add(this.bnComboBoxRelease);
 			this.Controls.Add(this.bnComboBoxDrives);
 			this.Controls.Add(this.bnComboBoxOutputFormat);
-			this.Controls.Add(this.comboBoxOutputFormat);
 			this.Controls.Add(this.progressBarErrors);
 			this.Controls.Add(this.progressBarCD);
 			this.Controls.Add(this.groupBoxSettings);
@@ -677,24 +674,24 @@ namespace CUERipper
 		private ProgressODoom.ProgressBarEx progressBarCD;
 		private ProgressODoom.PlainProgressPainter plainProgressPainter2;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelMusicBrainz;
-		private System.Windows.Forms.ComboBox comboBoxOutputFormat;
 		private System.Windows.Forms.TextBox txtOutputPath;
 		private System.Windows.Forms.ToolTip toolTip1;
-		private BBBNOVA.BNComboBox bnComboBoxImage;
+		private CUEControls.BNComboBox bnComboBoxImage;
 		private System.Windows.Forms.BindingSource bindingSourceCR;
 		private System.Windows.Forms.ImageList imageListMetadataSource;
 		private System.Windows.Forms.BindingSource cUEStylesBindingSource;
-		private BBBNOVA.BNComboBox bnComboBoxRelease;
+		private CUEControls.BNComboBox bnComboBoxRelease;
 		private System.Windows.Forms.BindingSource releasesBindingSource;
-		private BBBNOVA.BNComboBox bnComboBoxDrives;
+		private CUEControls.BNComboBox bnComboBoxDrives;
 		private System.Windows.Forms.BindingSource drivesBindingSource;
-		private BBBNOVA.BNComboBox bnComboBoxFormat;
+		private CUEControls.BNComboBox bnComboBoxFormat;
 		private System.Windows.Forms.BindingSource formatsBindingSource;
-		private BBBNOVA.BNComboBox bnComboBoxEncoder;
+		private CUEControls.BNComboBox bnComboBoxEncoder;
 		private System.Windows.Forms.BindingSource encodersBindingSource;
-		private BBBNOVA.BNComboBox bnComboBoxLosslessOrNot;
+		private CUEControls.BNComboBox bnComboBoxLosslessOrNot;
 		private System.Windows.Forms.BindingSource losslessOrNotBindingSource;
-		private BBBNOVA.BNComboBox bnComboBoxOutputFormat;
+		private CUEControls.BNComboBox bnComboBoxOutputFormat;
+		private System.Windows.Forms.ImageList imageListChecked;
 	}
 }
 

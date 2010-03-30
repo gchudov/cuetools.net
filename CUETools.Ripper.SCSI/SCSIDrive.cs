@@ -259,7 +259,7 @@ namespace CUETools.Ripper.SCSI
 			//if (st != Device.CommandStatus.Success)
 			//    throw new SCSIException("ReadPMA", m_device, st);
 
-			st = m_device.ReadCDText(out cdtext);
+			//st = m_device.ReadCDText(out cdtext, _timeout);
 			// new CDTextEncoderDecoder
 
 			_toc2 = null;
@@ -718,8 +718,6 @@ namespace CUETools.Ripper.SCSI
 			int sector = 3;
 			int pass = 0;
 
-			_timeout = 10;
-
 			for (int c = 0; c <= 2 && !found; c++)
 				for (int r = 0; r <= 1 && !found; r++)
 					for (int m = 0; m <= 1 && !found; m++)
@@ -750,8 +748,6 @@ namespace CUETools.Ripper.SCSI
 						_autodetectResult += string.Format("{0}: {1} ({2}ms)\n", CurrentReadCommand, (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()), delay.TotalMilliseconds);
 						found = st == Device.CommandStatus.Success;
 						
-						_timeout = 1;
-
 						//sector += m_max_sectors;
 					}
 			//if (found)
@@ -772,7 +768,6 @@ namespace CUETools.Ripper.SCSI
 			else
 				_readCDCommand = ReadCDCommand.Unknown;
 
-			_timeout = 10;
 			_currentStart = -1;
 			_currentEnd = -1;
 			readCommandFound = found;
@@ -861,8 +856,8 @@ namespace CUETools.Ripper.SCSI
 			fixed (long* userData = &UserData[sector - _currentStart, 0, 0])
 			fixed (byte* c2Count = &C2Count[sector - _currentStart, 0])
 			{
-				ZeroMemory((byte*)userData, 8 * 2 * 4 * 588 * Sectors2Read);
-				ZeroMemory(c2Count, 294 * Sectors2Read);
+				AudioSamples.MemSet((byte*)userData, 0, 8 * 2 * 4 * 588 * Sectors2Read);
+				AudioSamples.MemSet(c2Count, 0, 294 * Sectors2Read);
 			}
 		}
 
@@ -875,7 +870,7 @@ namespace CUETools.Ripper.SCSI
 				{
 					int size = (4 * 588 + (_c2ErrorMode == Device.C2ErrorMode.Mode294 ? 294 : _c2ErrorMode == Device.C2ErrorMode.Mode296 ? 296 : 0)) 
 						* (int)Sectors2Read;
-					MemSet(data, size, 0xff);
+					AudioSamples.MemSet(data, 0xff, size);
 				}
 				if (_readCDCommand == ReadCDCommand.ReadCdBEh)
 					st = m_device.ReadCDAndSubChannel(_mainChannelMode, Device.SubChannelMode.None, _c2ErrorMode, 1, false, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)Sectors2Read, (IntPtr)((void*)data), _timeout);
@@ -912,76 +907,6 @@ namespace CUETools.Ripper.SCSI
 					return Device.CommandStatus.Success;
 			}
 			throw ex;
-		}
-
-		private unsafe void ZeroMemory(short *buf, int count)
-		{
-			if (IntPtr.Size == 4)
-			{
-				Int32* start = (Int32*)buf;
-				Int32* end = (Int32*)(buf + count);
-				while (start < end)
-					*(start++) = 0;
-			}
-			else if (IntPtr.Size == 8)
-			{
-				Int64* start = (Int64*)buf;
-				Int64* end = (Int64*)(buf + count);
-				while (start < end)
-					*(start++) = 0;
-			}
-			else 
-				throw new Exception("wierd IntPtr.Size");
-		}
-
-		private unsafe void ZeroMemory(byte* buf, int count)
-		{
-			if (IntPtr.Size == 4)
-			{
-				Int32* start = (Int32*)buf;
-				Int32* end = (Int32*)(buf + count);
-				while (start < end)
-					*(start++) = 0;
-				for (int i = 0; i < (count & 3); i++)
-					buf[count - i - 1] = 0;
-			}
-			else if (IntPtr.Size == 8)
-			{
-				Int64* start = (Int64*)buf;
-				Int64* end = (Int64*)(buf + count);
-				while (start < end)
-					*(start++) = 0;
-				for (int i = 0; i < (count & 7); i++)
-					buf[count - i - 1] = 0;
-			}
-			else
-				throw new Exception("wierd IntPtr.Size");
-		}
-
-		private unsafe void MemSet(byte* buf, int count, byte val)
-		{
-			Int32 intVal = (((((val << 8) + val) << 8) + val) << 8) + val;
-			if (IntPtr.Size == 4)
-			{
-				Int32* start = (Int32*)buf;
-				Int32* end = (Int32*)(buf + count);
-				while (start < end)
-					*(start++) = intVal;
-				for (int i = 0; i < (count & 3); i++)
-					buf[count - i - 1] = val;
-			}
-			else if (IntPtr.Size == 8)
-			{
-				Int64 int64Val = ((Int64)intVal << 32) + intVal;
-				Int64* start = (Int64*)buf;
-				Int64* end = (Int64*)(buf + count);
-				while (start < end)
-					*(start++) = int64Val;
-				for (int i = 0; i < (count & 7); i++)
-					buf[count - i - 1] = val;
-			}
-			else
-				throw new Exception("wierd IntPtr.Size");
 		}
 
 		private unsafe void CorrectSectors(int pass, int sector, int Sectors2Read, bool markErrors)

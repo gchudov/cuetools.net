@@ -20,6 +20,7 @@ namespace CUETools.Ripper
 		string RipperVersion { get; }
 		string CurrentReadCommand { get; }
 		int CorrectionQuality { get; set; }
+		int ErrorsCount { get; }
 		BitArray Errors { get; }
 
 		event EventHandler<ReadProgressArgs> ReadProgress;

@@ -1593,7 +1593,7 @@ string status = processor.Go();
 		private bool _stop, _pause;
 		private List<CUELine> _attributes;
 		private List<TrackInfo> _tracks;
-		private List<SourceInfo> _sources;
+		internal List<SourceInfo> _sources;
 		private List<string> _sourcePaths, _trackFilenames;
 		private string _htoaFilename, _singleFilename;
 		private bool _hasHTOAFilename = false, _hasTrackFilenames = false, _hasSingleFilename = false, _appliedWriteOffset;
@@ -1702,6 +1702,14 @@ string status = processor.Go();
 				_ripper.Close();
 			}
 			_ripper = null;
+		}
+
+		public string InputPath
+		{
+			get
+			{
+				return _inputPath;
+			}
 		}
 
 		public AccurateRipVerify ArVerify
@@ -3624,9 +3632,11 @@ string status = processor.Go();
 		{
 			string prefix = "";
 			if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
-				prefix += string.Format("{0:s}, ", hdcdDecoder);
+				prefix += string.Format("{0:s}", hdcdDecoder);
 			if (_useAccurateRip)
 			{
+				if (prefix != "") prefix += ", ";
+				prefix += "AR: ";
 				if (_arVerify.ARStatus != null)
 					prefix += _arVerify.ARStatus;
 				else
@@ -3641,7 +3651,18 @@ string status = processor.Go();
 					else
 						prefix += "rip not accurate";
 				}
-			} else
+			} 
+			if (!_useCUEToolsDBFix && _useCUEToolsDB)
+			{
+				if (prefix != "") prefix += ", ";
+				prefix += "CTDB: " + CTDB.Status;
+			}
+			if (_isCD && _ripper.ErrorsCount > 0)
+			{
+				if (prefix != "") prefix += ", ";
+				prefix += "ripper found " + _ripper.ErrorsCount + " suspicious sectors";
+			}
+			if (prefix == "")
 				prefix += "done";
 			return prefix;
 		}
@@ -4225,6 +4246,22 @@ string status = processor.Go();
 			return destTags;
 		}
 
+		//public IAudioSource OpenSource(long position)
+		//{
+		//    int pos = 0;
+		//    for (int iSource = 0; iSource < _sources.Count; iSource++)
+		//    {
+		//        if (position >= pos && position < pos + (int)_sources[iSource].Length)
+		//        {
+		//            IAudioSource audioSource = GetAudioSource(iSource);
+		//            audioSource.Position = position - pos;
+		//            return audioSource;
+		//        }
+		//        pos += (int)_sources[iSource].Length;
+		//    }
+		//    return null;
+		//}
+
 		public void WriteAudioFilesPass(string dir, CUEStyle style, int[] destLengths, bool htoaToFile, bool noOutput)
 		{
 			int iTrack, iIndex;
@@ -4776,7 +4813,7 @@ string status = processor.Go();
 			return AudioReadWrite.GetAudioDest(_audioEncoderType, path, finalSampleCount, bps, 44100, padding, _config);
 		}
 
-		private IAudioSource GetAudioSource(int sourceIndex) {
+		internal IAudioSource GetAudioSource(int sourceIndex) {
 			SourceInfo sourceInfo = _sources[sourceIndex];
 			IAudioSource audioSource;
 
@@ -5633,6 +5670,115 @@ string status = processor.Go();
 
 	public class StopException : Exception {
 		public StopException() : base() {
+		}
+	}
+
+	public class CUESheetAudio : IAudioSource
+	{
+		CUESheet cueSheet;
+		IAudioSource currentAudio;
+		int currentSource;
+		long _samplePos, _sampleLen;
+
+		public CUESheetAudio(CUESheet cueSheet)
+		{
+			this.cueSheet = cueSheet;
+			this.currentAudio = null;
+			this._samplePos = 0;
+			this._sampleLen = 0;
+			this.currentSource = 0;
+			for (int iSource = 0; iSource < cueSheet._sources.Count; iSource++)
+				this._sampleLen += cueSheet._sources[iSource].Length;
+			this.currentAudio = cueSheet.GetAudioSource(0);
+		}
+
+		public void Close()
+		{
+			if (currentAudio != null)
+			{
+				currentAudio.Close();
+				currentAudio = null;
+			}
+		}
+
+		public long Position
+		{
+			get
+			{
+				return _samplePos;
+			}
+			set
+			{
+				long sourceStart = 0;
+				for (int iSource = 0; iSource < cueSheet._sources.Count; iSource++)
+				{
+					if (value >= sourceStart && value < sourceStart + cueSheet._sources[iSource].Length)
+					{
+						if (iSource != currentSource)
+						{
+							currentAudio.Close();
+							currentSource = iSource;
+							currentAudio = cueSheet.GetAudioSource(currentSource);
+						}
+						currentAudio.Position = value - sourceStart;
+						_samplePos = value;
+						return;
+					}
+					sourceStart += cueSheet._sources[iSource].Length;
+				}
+				throw new Exception("Invalid position");
+			}
+		}
+
+		public long Length
+		{
+			get
+			{
+				return _sampleLen;
+			}
+		}
+
+		public long Remaining
+		{
+			get
+			{
+				return _sampleLen - _samplePos;
+			}
+		}
+
+		public AudioPCMConfig PCM
+		{
+			get
+			{
+				return AudioPCMConfig.RedBook;
+			}
+		}
+
+		public string Path
+		{
+			get
+			{
+				return cueSheet.InputPath;
+			}
+		}
+
+		public int Read(AudioBuffer buff, int maxLength)
+		{
+			buff.Prepare(this, maxLength);
+
+			if (currentAudio.Remaining == 0)
+			{
+				currentSource++;
+				if (currentSource >= cueSheet._sources.Count)
+				{
+					buff.Length = 0;
+					return 0;
+				}
+				currentAudio.Close();
+				currentAudio = cueSheet.GetAudioSource(currentSource);
+			}
+
+			return currentAudio.Read(buff, maxLength);
 		}
 	}
 }

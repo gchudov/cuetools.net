@@ -155,6 +155,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.CTDB", "..\CUETool
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgressODoom", "..\ProgressODoom\ProgressODoom.csproj", "{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUEPlayer", "..\CUEPlayer\CUEPlayer.csproj", "{04E59836-0C5A-4B9B-8899-848D56911758}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.CoreAudio", "..\CUETools.Codecs.CoreAudio\CUETools.Codecs.CoreAudio.csproj", "{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CUETools1.vsmdi
@@ -570,6 +574,22 @@ Global
 		{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}.Release|Win32.ActiveCfg = Release|Any CPU
 		{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}.Release|x64.ActiveCfg = Release|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Release|Win32.ActiveCfg = Release|Any CPU
+		{04E59836-0C5A-4B9B-8899-848D56911758}.Release|x64.ActiveCfg = Release|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Release|Win32.ActiveCfg = Release|Any CPU
+		{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

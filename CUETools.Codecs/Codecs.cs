@@ -253,6 +253,7 @@ namespace CUETools.Codecs
 		{
 			pcm = _pcm;
 			size = _size;
+			length = 0;
 		}
 
 		public AudioBuffer(AudioPCMConfig _pcm, int[,] _samples, int _length)
@@ -581,7 +582,7 @@ namespace CUETools.Codecs
 
 		unsafe public static void MemCpy(byte* res, byte* smp, int n)
 		{
-			if ((((IntPtr)smp).ToInt64() & 4) == 0 && (((IntPtr)res).ToInt64() & 4) == 0 && n > 4)
+			if ((((IntPtr)smp).ToInt64() & 3) == 0 && (((IntPtr)res).ToInt64() & 3) == 0 && n > 4)
 			{
 				MemCpy((int*)res, (int*)smp, n >> 2);
 				int n4 = (n >> 2) << 2;
@@ -597,6 +598,50 @@ namespace CUETools.Codecs
 		{
 			for (int i = n; i > 0; i--)
 				*(res++) = smp;
+		}
+
+		unsafe public static void MemSet(long* res, long smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = smp;
+		}
+
+		unsafe public static void MemSet(byte* res, byte smp, int n)
+		{
+			if (IntPtr.Size == 8 && (((IntPtr)res).ToInt64() & 7) == 0 && smp == 0 && n > 8)
+			{
+				MemSet((long*)res, 0, n >> 3);
+				int n8 = (n >> 3) << 3;
+				n -= n8;
+				res += n8;
+			}
+			if ((((IntPtr)res).ToInt64() & 3) == 0 && smp == 0 && n > 4)
+			{
+				MemSet((int*)res, 0, n >> 2);
+				int n4 = (n >> 2) << 2;
+				n -= n4;
+				res += n4;
+			}
+			for (int i = n; i > 0; i--)
+				*(res++) = smp;
+		}
+
+		unsafe public static void MemSet(byte[] res, byte smp, int offs, int n)
+		{
+			fixed (byte* pres = &res[offs])
+				MemSet(pres, smp, n);
+		}
+
+		unsafe public static void MemSet(int[] res, int smp, int offs, int n)
+		{
+			fixed (int* pres = &res[offs])
+				MemSet(pres, smp, n);
+		}
+
+		unsafe public static void MemSet(long[] res, long smp, int offs, int n)
+		{
+			fixed (long* pres = &res[offs])
+				MemSet(pres, smp, n);
 		}
 
 		public const uint UINT32_MAX = 0xffffffff;

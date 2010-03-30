@@ -507,7 +507,7 @@ namespace CUETools.CTDB
 				if (!hasErrors)
 					return string.Format("verified OK, confidence {0}", conf);
 				if (canRecover)
-					return string.Format("contains {1} correctable errors, confidence {0}", conf, repair.CorrectableErrors);
+					return string.Format("differs in {1} samples, confidence {0}", conf, repair.CorrectableErrors);
 				if (httpStatus == HttpStatusCode.OK)
 					return "could not be verified";
 				return "could not be verified: " + httpStatus.ToString();

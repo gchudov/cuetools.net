@@ -91,6 +91,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>frmCUERipper.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmCUERipper.ru-RU.resx">
+      <DependentUpon>frmCUERipper.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmProperties.resx">
       <DependentUpon>frmProperties.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -100,6 +103,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.ru-RU.resx" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
