@@ -66,5 +66,12 @@ namespace CUEControls.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        internal static System.Drawing.Bitmap pmicon {
+            get {
+                object obj = ResourceManager.GetObject("pmicon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
