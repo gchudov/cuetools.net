@@ -186,12 +186,14 @@ namespace CUETools.Codecs
 	public class AudioBuffer
 	{
 		private int[,] samples;
+		private float[,] fsamples;
 		private byte[] bytes;
 		private int length;
 		private int size;
 		private AudioPCMConfig pcm;
 		private bool dataInSamples = false;
 		private bool dataInBytes = false;
+		private bool dataInFloat = false;
 
 		public int Length
 		{
@@ -236,14 +238,39 @@ namespace CUETools.Codecs
 			}
 		}
 
+		public float[,] Float
+		{
+			get
+			{
+				if (fsamples == null || fsamples.GetLength(0) < length)
+					fsamples = new float[size, pcm.ChannelCount];
+				if (!dataInFloat && dataInBytes && length != 0)
+				{
+					if (pcm.BitsPerSample == 16)
+						Bytes16ToFloat(bytes, 0, fsamples, 0, length, pcm.ChannelCount);
+					//else if (pcm.BitsPerSample > 16 && PCM.BitsPerSample <= 24)
+					//    BytesToFLACSamples_24(bytes, 0, fsamples, 0, length, pcm.ChannelCount, 24 - pcm.BitsPerSample);
+					else
+						throw new Exception("Unsupported bitsPerSample value");
+				}
+				dataInFloat = true;
+				return fsamples;
+			}
+		}
+
 		public byte[] Bytes
 		{
 			get
 			{
 				if (bytes == null || bytes.Length < length * pcm.BlockAlign)
 					bytes = new byte[size * pcm.BlockAlign];
-				if (!dataInBytes && dataInSamples && length != 0)
-					FLACSamplesToBytes(samples, 0, bytes, 0, length, pcm.ChannelCount, pcm.BitsPerSample);
+				if (!dataInBytes && length != 0)
+				{
+					if (dataInSamples)
+						FLACSamplesToBytes(samples, 0, bytes, 0, length, pcm.ChannelCount, pcm.BitsPerSample);
+					else if (dataInFloat)
+						FloatToBytes(fsamples, 0, bytes, 0, length, pcm.ChannelCount, pcm.BitsPerSample);
+				}
 				dataInBytes = true;
 				return bytes;
 			}
@@ -292,6 +319,17 @@ namespace CUETools.Codecs
 				length = (int)Math.Min((long)length, source.Remaining);
 			dataInBytes = false;
 			dataInSamples = false;
+			dataInFloat = false;
+		}
+
+		public void Prepare(int maxLength)
+		{
+			length = size;
+			if (maxLength >= 0)
+				length = Math.Min(length, maxLength);
+			dataInBytes = false;
+			dataInSamples = false;
+			dataInFloat = false;
 		}
 
 		public void Prepare(int[,] _samples, int _length)
@@ -301,6 +339,7 @@ namespace CUETools.Codecs
 			samples = _samples;
 			dataInSamples = true;
 			dataInBytes = false;
+			dataInFloat = false;
 			if (length > size)
 				throw new Exception("Invalid length");
 		}
@@ -312,6 +351,7 @@ namespace CUETools.Codecs
 			bytes = _bytes;
 			dataInSamples = false;
 			dataInBytes = true;
+			dataInFloat = false;
 			if (length > size)
 				throw new Exception("Invalid length");
 		}
@@ -321,20 +361,23 @@ namespace CUETools.Codecs
 			length = Math.Min(size, _src.Length - _offset);
 			if (_length >= 0)
 				length = Math.Min(length, _length);
-			if (_src.dataInSamples)
+			dataInBytes = false;
+			dataInFloat = false;
+			dataInSamples = false;
+			if (_src.dataInBytes)
 			{
-				dataInBytes = false;
-				dataInSamples = true;
-				fixed (int* dest = Samples, src = &_src.Samples[_offset, 0])
-					AudioSamples.MemCpy(dest, src, Length * pcm.ChannelCount);
-			}
-			else
-			{
-				dataInSamples = false;
 				dataInBytes = true;
 				fixed (byte* dest = Bytes, src = &_src.Bytes[_offset * pcm.BlockAlign])
 					AudioSamples.MemCpy(dest, src, length * pcm.BlockAlign);
 			}
+			else if (_src.dataInSamples)
+			{
+				dataInSamples = true;
+				fixed (int* dest = Samples, src = &_src.Samples[_offset, 0])
+					AudioSamples.MemCpy(dest, src, Length * pcm.ChannelCount);
+			}
+			else if (_src.dataInFloat) 
+				throw new NotImplementedException();
 		}
 
 		public void Swap(AudioBuffer buffer)
@@ -343,20 +386,25 @@ namespace CUETools.Codecs
 				throw new Exception("AudioBuffer format mismatch");
 
 			int[,] samplesTmp = samples;
+			float[,] floatsTmp = fsamples;
 			byte[] bytesTmp = bytes;
 
+			fsamples = buffer.fsamples;
 			samples = buffer.samples;
 			bytes = buffer.bytes;
 			length = buffer.length;
 			size = buffer.size;
 			dataInSamples = buffer.dataInSamples;
 			dataInBytes = buffer.dataInBytes;
+			dataInFloat = buffer.dataInFloat;
 
 			buffer.samples = samplesTmp;
 			buffer.bytes = bytesTmp;
+			buffer.fsamples = floatsTmp;
 			buffer.length = 0;
 			buffer.dataInSamples = false;
 			buffer.dataInBytes = false;
+			buffer.dataInFloat = false;
 		}
 
 		unsafe public void Interlace(int pos, int* src1, int* src2, int n)
@@ -450,6 +498,43 @@ namespace CUETools.Codecs
 			}
 		}
 
+		public static unsafe void FloatToBytes_16(float[,] inSamples, int inSampleOffset,
+			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount)
+		{
+			int loopCount = sampleCount * channelCount;
+
+			if ((inSamples.GetLength(0) - inSampleOffset < sampleCount) ||
+				(outSamples.Length - outByteOffset < loopCount * 2))
+			{
+				throw new IndexOutOfRangeException();
+			}
+
+			fixed (float* pInSamplesFixed = &inSamples[inSampleOffset, 0])
+			{
+				fixed (byte* pOutSamplesFixed = &outSamples[outByteOffset])
+				{
+					float* pInSamples = pInSamplesFixed;
+					short* pOutSamples = (short*)pOutSamplesFixed;
+
+					for (int i = 0; i < loopCount; i++)
+					{
+						*(pOutSamples++) = (short)(32758*(*(pInSamples++)));
+					}
+				}
+			}
+		}
+
+		public static unsafe void FloatToBytes(float[,] inSamples, int inSampleOffset,
+			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount, int bitsPerSample)
+		{
+			if (bitsPerSample == 16)
+				FloatToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
+			//else if (bitsPerSample > 16 && bitsPerSample <= 24)
+			//    FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount, 24 - bitsPerSample);
+			else
+				throw new Exception("Unsupported bitsPerSample value");
+		}
+
 		public static unsafe void FLACSamplesToBytes(int[,] inSamples, int inSampleOffset,
 			byte[] outSamples, int outByteOffset, int sampleCount, int channelCount, int bitsPerSample)
 		{
@@ -468,6 +553,27 @@ namespace CUETools.Codecs
 				FLACSamplesToBytes_16(inSamples, inSampleOffset, outSamples, sampleCount, channelCount);
 			else
 				throw new Exception("Unsupported bitsPerSample value");
+		}
+
+		public static unsafe void Bytes16ToFloat(byte[] inSamples, int inByteOffset,
+			float[,] outSamples, int outSampleOffset, int sampleCount, int channelCount)
+		{
+			int loopCount = sampleCount * channelCount;
+
+			if ((inSamples.Length - inByteOffset < loopCount * 2) ||
+				(outSamples.GetLength(0) - outSampleOffset < sampleCount))
+				throw new IndexOutOfRangeException();
+
+			fixed (byte* pInSamplesFixed = &inSamples[inByteOffset])
+			{
+				fixed (float* pOutSamplesFixed = &outSamples[outSampleOffset, 0])
+				{
+					short* pInSamples = (short*)pInSamplesFixed;
+					float* pOutSamples = pOutSamplesFixed;
+					for (int i = 0; i < loopCount; i++)
+						*(pOutSamples++) = *(pInSamples++) / 32768.0f;
+				}
+			}
 		}
 
 		public static unsafe void BytesToFLACSamples_16(byte[] inSamples, int inByteOffset,
@@ -645,6 +751,62 @@ namespace CUETools.Codecs
 		}
 
 		public const uint UINT32_MAX = 0xffffffff;
+	}
+
+	/// <summary>
+	/// Represents the interface to a device that can play a WaveFile
+	/// </summary>
+	public interface IWavePlayer : IDisposable, IAudioDest
+	{
+		/// <summary>
+		/// Begin playback
+		/// </summary>
+		void Play();
+
+		/// <summary>
+		/// Stop playback
+		/// </summary>
+		void Stop();
+
+		/// <summary>
+		/// Pause Playback
+		/// </summary>        
+		void Pause();
+
+		/// <summary>
+		/// Current playback state
+		/// </summary>
+		PlaybackState PlaybackState { get; }
+
+		/// <summary>
+		/// The volume 1.0 is full scale
+		/// </summary>
+		float Volume { get; set; }
+
+		/// <summary>
+		/// Indicates that playback has gone into a stopped state due to 
+		/// reaching the end of the input stream
+		/// </summary>
+		event EventHandler PlaybackStopped;
+	}
+
+	/// <summary>
+	/// Playback State
+	/// </summary>
+	public enum PlaybackState
+	{
+		/// <summary>
+		/// Stopped
+		/// </summary>
+		Stopped,
+		/// <summary>
+		/// Playing
+		/// </summary>
+		Playing,
+		/// <summary>
+		/// Paused
+		/// </summary>
+		Paused
 	}
 
 	public class DummyWriter : IAudioDest
@@ -1352,6 +1514,31 @@ namespace CUETools.Codecs
 			}
 		}
 
+		public void Write(byte[] buff, int offs, int count)
+		{
+			while (count > 0)
+			{
+				int pos, chunk;
+				lock (this)
+				{
+					while (DataAvailable == 0 && !_eof)
+						Monitor.Wait(this);
+					if (DataAvailable == 0)
+						break;
+					pos = _start % _size;
+					chunk = Math.Min(DataAvailable, _size - pos);
+				}
+				if (flushOutput != null)
+					Array.Copy(_buffer, pos, buff, offs, chunk);
+				offs += chunk;
+				lock (this)
+				{
+					_start += chunk;
+					Monitor.Pulse(this);
+				}
+			}
+		}
+
 		private void FlushThread(object to)
 		{
 			while (true)
@@ -1463,6 +1650,76 @@ namespace CUETools.Codecs
 		public override void Write(byte[] array, int offset, int count)
 		{
 			_buffer.Read(array, offset, count);
+		}
+	}
+
+	public class CycilcBufferInputStream : Stream
+	{
+		CyclicBuffer _buffer;
+
+		public CycilcBufferInputStream(CyclicBuffer buffer)
+		{
+			_buffer = buffer;
+		}
+
+		public override bool CanRead
+		{
+			get { return true; }
+		}
+
+		public override bool CanSeek
+		{
+			get { return false; }
+		}
+
+		public override bool CanWrite
+		{
+			get { return false; }
+		}
+
+		public override long Length
+		{
+			get
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		public override long Position
+		{
+			get { throw new NotSupportedException(); }
+			set { throw new NotSupportedException(); }
+		}
+
+		public override void Close()
+		{
+			_buffer.Close();
+		}
+
+		public override void Flush()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void SetLength(long value)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override int Read(byte[] array, int offset, int count)
+		{
+			_buffer.Write(array, offset, count);
+			return count;
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Write(byte[] array, int offset, int count)
+		{
+			throw new NotSupportedException();
 		}
 	}
 
@@ -1804,7 +2061,26 @@ namespace CUETools.Codecs
 			}
 			set
 			{
-				throw new Exception("not supported");
+				if (value == _samplePos)
+					return;
+
+				lock (this)
+				{
+					_close = true;
+					Monitor.Pulse(this);
+				}
+				if (_workThread != null)
+				{
+					_workThread.Join();
+					_workThread = null;
+				}
+				_source.Position = value;
+				_samplePos = value;
+				_bufferPos = 0;
+				_haveData = false;
+				_close = false;
+				Go();
+				//throw new Exception("not supported");
 			}
 		}
 
