@@ -82,8 +82,6 @@
     <Compile Include="CoreAudioApi\PropertyStoreProperty.cs" />
     <Compile Include="CoreAudioApi\PropVariant.cs" />
     <Compile Include="CoreAudioApi\Role.cs" />
-    <Compile Include="IWavePlayer.cs" />
-    <Compile Include="PlaybackState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WasapiOut.cs" />
     <Compile Include="WaveFormats\AdpcmWaveFormat.cs" />
