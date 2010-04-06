@@ -531,6 +531,8 @@ namespace CUETools.Codecs
 				FloatToBytes_16(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount);
 			//else if (bitsPerSample > 16 && bitsPerSample <= 24)
 			//    FLACSamplesToBytes_24(inSamples, inSampleOffset, outSamples, outByteOffset, sampleCount, channelCount, 24 - bitsPerSample);
+			else if (bitsPerSample == 32)
+				Buffer.BlockCopy(inSamples, inSampleOffset * 4 * channelCount, outSamples, outByteOffset, sampleCount * 4 * channelCount);
 			else
 				throw new Exception("Unsupported bitsPerSample value");
 		}
@@ -2016,6 +2018,7 @@ namespace CUETools.Codecs
 			_workThread = new Thread(Decompress);
 			_workThread.Priority = priority;
 			_workThread.IsBackground = true;
+			_workThread.Name = "AudioPipe";
 			_workThread.Start(null);
 		}
 

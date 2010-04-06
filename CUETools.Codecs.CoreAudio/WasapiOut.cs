@@ -17,7 +17,8 @@ namespace CUETools.Codecs.CoreAudio
         AudioClient audioClient;
         AudioClientShareMode shareMode;
         AudioRenderClient renderClient;
-        int latencyMilliseconds;
+		bool audioClient_started = false;
+		int latencyMilliseconds;
         int bufferFrameCount;
         bool isUsingEventSync;
         EventWaitHandle frameEventWaitHandle;
@@ -26,7 +27,8 @@ namespace CUETools.Codecs.CoreAudio
         Thread playThread;
 		private long _sampleOffset;
 		private AudioPCMConfig pcm;
-		private NAudio.Wave.WaveFormat outputFormat;
+		private NAudio.Wave.WaveFormatExtensible outputFormat;
+		WaitHandle[] waitHandles;
         
         /// <summary>
         /// Playback Stopped
@@ -70,7 +72,7 @@ namespace CUETools.Codecs.CoreAudio
             this.isUsingEventSync = useEventSync;
             this.latencyMilliseconds = latency;
 			this.pcm = pcm;
-			this.outputFormat = new NAudio.Wave.WaveFormat(pcm.SampleRate, pcm.BitsPerSample, pcm.ChannelCount);
+			this.outputFormat = new NAudio.Wave.WaveFormatExtensible(pcm.SampleRate, pcm.BitsPerSample, pcm.ChannelCount);
 			NAudio.Wave.WaveFormatExtensible closestSampleRateFormat;
             if (!audioClient.IsFormatSupported(shareMode, outputFormat, out closestSampleRateFormat))
 				throw new NotSupportedException("PCM format mismatch");
@@ -142,7 +144,6 @@ namespace CUETools.Codecs.CoreAudio
 				ReleaseBuffer(buff, false, 0);
 
 				// Create WaitHandle for sync
-				WaitHandle[] waitHandles = new WaitHandle[] { frameEventWaitHandle };
 				if (frameEventWaitHandle != null)
 					frameEventWaitHandle.Reset();
 				audioClient.Start();
@@ -263,11 +264,14 @@ namespace CUETools.Codecs.CoreAudio
 					return;
 				case PlaybackState.Stopped:
 					playbackState = PlaybackState.Playing;
-					playThread = new Thread(new ThreadStart(PlayThread));
-					playThread.Priority = ThreadPriority.Highest;
-					playThread.IsBackground = true;
-					playThread.Name = "Pro Audio";
-					playThread.Start();
+					if (shareMode == AudioClientShareMode.Exclusive)
+					{
+						playThread = new Thread(new ThreadStart(PlayThread));
+						playThread.Priority = ThreadPriority.Highest;
+						playThread.IsBackground = true;
+						playThread.Name = "Pro Audio";
+						playThread.Start();
+					}
 					return;
             }
         }
@@ -282,8 +286,16 @@ namespace CUETools.Codecs.CoreAudio
                 playbackState = PlaybackState.Stopped;
 				if (frameEventWaitHandle != null)
 					frameEventWaitHandle.Set();
-				playThread.Join();
-                playThread = null;
+				if (audioClient_started)
+				{
+					audioClient.Stop();
+					audioClient_started = false;
+				}
+				if (playThread != null)
+				{
+					playThread.Join();
+					playThread = null;
+				}
 				ReleaseBuffer(readBuffers[0], false, 0);
 				ReleaseBuffer(readBuffers[1], false, 0);
 				active = null;
@@ -325,11 +337,12 @@ namespace CUETools.Codecs.CoreAudio
                 if (shareMode == AudioClientShareMode.Shared)
                 {
                     // With EventCallBack and Shared, both latencies must be set to 0
-                    audioClient.Initialize(shareMode, AudioClientStreamFlags.EventCallback, 0, 0,
+					audioClient.Initialize(shareMode, AudioClientStreamFlags.EventCallback, latencyRefTimes, 0,
                         outputFormat, Guid.Empty);
 
                     // Get back the effective latency from AudioClient
-                    latencyMilliseconds = (int)(audioClient.StreamLatency / 10000);
+					// This is all wrong! it should be treated differently
+					// latencyMilliseconds = (int)(audioClient.StreamLatency / 10000);
                 }
                 else
                 {
@@ -348,6 +361,8 @@ namespace CUETools.Codecs.CoreAudio
                 audioClient.Initialize(shareMode, AudioClientStreamFlags.None, latencyRefTimes, 0,
                                     outputFormat, Guid.Empty);
             }
+
+			waitHandles = new WaitHandle[] { frameEventWaitHandle };
 
             // Get the RenderClient
             renderClient = audioClient.AudioRenderClient;
@@ -402,25 +417,59 @@ namespace CUETools.Codecs.CoreAudio
 				Stop();
 				return;
 			}
-			int src_offs = 0;
-			do
+			if (src.PCM.BitsPerSample != pcm.BitsPerSample || src.PCM.ChannelCount != pcm.ChannelCount)
+				throw new NotSupportedException();
+			if (playThread != null)
 			{
-				if (active == null)
-					active = GetBuffer(true);
-				if (active == null)
-					throw new Exception("done");
-				int toCopy = Math.Min(active.Size - active_offset, src.Length - src_offs);
-				Array.Copy(src.Bytes, src_offs * pcm.BlockAlign, active.Bytes, active_offset * pcm.BlockAlign, toCopy * pcm.BlockAlign);
-				src_offs += toCopy;
-				active_offset += toCopy;
-				if (active_offset == active.Size)
+				int src_offs = 0;
+				do
 				{
-					ReleaseBuffer(active, true, active.Size);
-					active = null;
-					active_offset = 0;
+					if (active == null)
+						active = GetBuffer(true);
+					if (active == null)
+						throw new Exception("done");
+					int toCopy = Math.Min(active.Size - active_offset, src.Length - src_offs);
+					Buffer.BlockCopy(src.Bytes, src_offs * pcm.BlockAlign, active.Bytes, active_offset * pcm.BlockAlign, toCopy * pcm.BlockAlign);
+					src_offs += toCopy;
+					active_offset += toCopy;
+					if (active_offset == active.Size)
+					{
+						ReleaseBuffer(active, true, active.Size);
+						active = null;
+						active_offset = 0;
+					}
 				}
+				while (src_offs < src.Length);
 			}
-			while (src_offs < src.Length);
+			else
+			{
+				int src_offs = 0;
+				byte[] b = src.Bytes;
+				if (!audioClient_started)
+				{
+					audioClient.Reset();
+					if (frameEventWaitHandle != null)
+						frameEventWaitHandle.Set();
+					audioClient.Start();
+					audioClient_started = true;
+				}
+				do
+				{
+					// If using Event Sync, Wait for notification from AudioClient or Sleep half latency
+					int indexHandle = WaitHandle.WaitAny(waitHandles, latencyMilliseconds / 2, false);
+
+					// See how much buffer space is available.
+					int numFramesAvailable = Math.Min(bufferFrameCount - audioClient.CurrentPadding, src.Length - src_offs);
+					if (numFramesAvailable > 0)
+					{
+						//Trace.WriteLine(string.Format("Write {0}", numFramesAvailable));
+						IntPtr buffer = renderClient.GetBuffer(numFramesAvailable);
+						Marshal.Copy(b, src_offs * pcm.BlockAlign, buffer, numFramesAvailable * pcm.BlockAlign);
+						renderClient.ReleaseBuffer(numFramesAvailable, AudioClientBufferFlags.None);
+						src_offs += numFramesAvailable;
+					}
+				} while (src_offs < src.Length);
+			}
 		}
 
         #endregion

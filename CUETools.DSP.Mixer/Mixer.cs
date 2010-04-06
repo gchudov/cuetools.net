@@ -10,8 +10,7 @@ namespace CUETools.DSP.Mixer
 	public class MixingSource : IAudioSource
 	{
 		AudioPCMConfig pcm;
-		MixingBuffer buf0;
-		MixingBuffer buf1;
+		MixingBuffer[] buf;
 		bool[] playing;
 		float[] volume;
 		long samplePos;
@@ -21,8 +20,9 @@ namespace CUETools.DSP.Mixer
 		{
 			this.pcm = pcm;
 			this.size = delay * pcm.SampleRate / 1000;
-			this.buf0 = new MixingBuffer(pcm, size, sources);
-			this.buf1 = new MixingBuffer(pcm, size, sources);
+			this.buf = new MixingBuffer[2];
+			this.buf[0] = new MixingBuffer(pcm, size, sources);
+			this.buf[1] = new MixingBuffer(pcm, size, sources);
 			this.playing = new bool[sources];
 			this.volume = new float[sources];
 			this.samplePos = 0;
@@ -83,10 +83,10 @@ namespace CUETools.DSP.Mixer
 
 			float sumVolume = 0.0f;
 			for (int iSource = 0; iSource < mixbuff.source.Length; iSource++)
-				if (playing[iSource])
+				if (mixbuff.filled[iSource])
 					sumVolume += mixbuff.volume[iSource];
 			for (int iSource = 0; iSource < mixbuff.source.Length; iSource++)
-				volume[iSource] = playing[iSource] ? mixbuff.volume[iSource] / Math.Max(1.0f, sumVolume) : 0.0f;
+				volume[iSource] = mixbuff.filled[iSource] ? mixbuff.volume[iSource] / Math.Max(1.0f, sumVolume) : 0.0f;
 			for (int iSmp = 0; iSmp < result.Length; iSmp++)
 			{
 				for (int iChan = 0; iChan < result.PCM.ChannelCount; iChan++)
@@ -114,7 +114,7 @@ namespace CUETools.DSP.Mixer
 		{
 			get
 			{
-				return buf0.source[0].Size;
+				return buf[0].source[0].Size;
 			}
 		}
 
@@ -126,6 +126,8 @@ namespace CUETools.DSP.Mixer
 			return res;
 		}
 
+		int current = 0;
+
 		internal MixingBuffer LockFilledBuffer()
 		{
 			lock (this)
@@ -133,9 +135,11 @@ namespace CUETools.DSP.Mixer
 				//Trace.WriteLine(string.Format("LockFilledBuffer: 0.0: {0} {1}; 0.1: {2} {3}; 1.0: {4} {5}; 1.1: {6} {7};",
 				//    buf0.playing[0], buf0.filled[0], buf0.playing[1], buf0.filled[1],
 				//    buf0.playing[0], buf0.filled[0], buf0.playing[1], buf0.filled[1]));
-				while (!IsFilled(buf0) && !IsFilled(buf1))
+				int no = current;
+				while (!IsFilled(buf[no]))
 					Monitor.Wait(this);
-				return IsFilled(buf0) ? buf0 : buf1;
+				current = 1 - no;
+				return buf[no];
 			}
 		}
 
@@ -179,10 +183,10 @@ namespace CUETools.DSP.Mixer
 				//    buf0.playing[0], buf0.filled[0], buf0.playing[1], buf0.filled[1],
 				//    buf0.playing[0], buf0.filled[0], buf0.playing[1], buf0.filled[1], iSource));
 
-				while (!playing[iSource] || (buf0.filled[iSource] && buf1.filled[iSource]))
+				while (!playing[iSource] || buf[current].filled[iSource])
 					Monitor.Wait(this);
 				
-				return !buf0.filled[iSource]  ? buf0 : buf1;
+				return buf[current];
 			}
 		}
 
@@ -299,6 +303,17 @@ namespace CUETools.DSP.Mixer
 		public void Pause()
 		{
 			mixer.LockEmptyBuffer(iSource);
+		}
+
+		public void Flush()
+		{
+			if (mixbuff != null)
+			{
+				if (mixbuff.source[iSource].Length < mixbuff.source[iSource].Size)
+					AudioSamples.MemSet(mixbuff.source[iSource].Bytes, 0, mixbuff.source[iSource].Length * PCM.BlockAlign, (mixbuff.source[iSource].Size - mixbuff.source[iSource].Length) * PCM.BlockAlign);
+				mixer.UnlockEmptyBuffer(mixbuff, iSource, volume);
+				mixbuff = null;
+			}
 		}
 
 		public void Write(AudioBuffer buff)
