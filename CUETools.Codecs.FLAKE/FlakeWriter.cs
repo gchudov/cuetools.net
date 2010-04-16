@@ -1502,9 +1502,11 @@ namespace CUETools.Codecs.FLAKE
 
 			if (bs < eparams.block_size)
 			{
-				fixed (int* s = samplesBuffer)
-					for (int ch = 0; ch < channels; ch++)
-						AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, s + bs + ch * Flake.MAX_BLOCKSIZE, eparams.block_size - bs);
+				for (int ch = 0; ch < (channels == 2 ? 4 : channels); ch++)
+					Buffer.BlockCopy(samplesBuffer, (bs + ch * Flake.MAX_BLOCKSIZE) * sizeof(int), samplesBuffer, ch * Flake.MAX_BLOCKSIZE * sizeof(int), (eparams.block_size - bs) * sizeof(int));
+				//fixed (int* s = samplesBuffer)
+				//    for (int ch = 0; ch < channels; ch++)
+				//        AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, s + bs + ch * Flake.MAX_BLOCKSIZE, eparams.block_size - bs);
 			}
 
 			samplesInBuffer -= bs;

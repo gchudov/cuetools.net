@@ -15,9 +15,14 @@ namespace CUETools.DSP.Mixer
 		float[] volume;
 		long samplePos;
 		int size;
+		AudioReadEventArgs audioReadArgs = new AudioReadEventArgs();
+
+		public event EventHandler<AudioReadEventArgs> AudioRead;
 
 		public MixingSource(AudioPCMConfig pcm, int delay, int sources)
 		{
+			if (pcm.BitsPerSample != 32)
+				throw new NotSupportedException("please use 32 bits per sample (float)");
 			this.pcm = pcm;
 			this.size = delay * pcm.SampleRate / 1000;
 			this.buf = new MixingBuffer[2];
@@ -105,6 +110,14 @@ namespace CUETools.DSP.Mixer
 				mixoffs = 0;
 			}
 			samplePos += result.Length;
+
+			if (AudioRead != null)
+			{
+				audioReadArgs.source = this;
+				audioReadArgs.buffer = result;
+				AudioRead(this, audioReadArgs);
+			}
+
 			return result.Length;
 		}
 
@@ -331,7 +344,7 @@ namespace CUETools.DSP.Mixer
 				}
 
 				int chunk = Math.Min(buff.Length - buff_offs, mixbuff.source[iSource].Size - mixbuff.source[iSource].Length);
-				Buffer.BlockCopy(buff.Bytes, buff_offs * bs, mixbuff.source[iSource].Bytes, mixbuff.source[iSource].Length * bs, chunk * bs);
+				Buffer.BlockCopy(buff.Float, buff_offs * bs, mixbuff.source[iSource].Float, mixbuff.source[iSource].Length * bs, chunk * bs);
 				mixbuff.source[iSource].Length += chunk;
 				buff_offs += chunk;
 
@@ -346,5 +359,11 @@ namespace CUETools.DSP.Mixer
 		}
 
 		public string Path { get { return ""; } }
+	}
+
+	public class AudioReadEventArgs: EventArgs
+	{
+		public IAudioSource source;
+		public AudioBuffer buffer;
 	}
 }

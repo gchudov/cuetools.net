@@ -33,7 +33,16 @@ namespace CUEPlayer
 			_icon_mgr = parent.IconMgr;
 			listViewTracks.SmallImageList = _icon_mgr.ImageList;
 			foreach (DataSet1.PlaylistRow row in dataSet.Playlist)
-				listViewTracks.Items.Add(ToItem(row));
+			{
+				try
+				{
+					listViewTracks.Items.Add(ToItem(row));
+				}
+				catch (Exception ex)
+				{
+					Trace.WriteLine(ex.Message);
+				}
+			}
 		}
 
 		public ListView List
@@ -160,6 +169,11 @@ namespace CUEPlayer
 				DragDropEffects effects = DoDragDrop(dobj, DragDropEffects.All);
 				return;
 			}
+		}
+
+		private void Playlist_Load(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

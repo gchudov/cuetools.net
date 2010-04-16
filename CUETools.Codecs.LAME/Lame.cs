@@ -139,9 +139,6 @@ namespace CUETools.Codecs.LAME
 
 		public LHV1(AudioPCMConfig format, uint MpeBitRate)
 		{
-			if ( format.BitsPerSample != 16)
-				throw new ArgumentOutOfRangeException("format", "Only 16 bits samples supported");
-
 			dwStructVersion	= 1;
 			dwStructSize = (uint)Marshal.SizeOf(typeof(BE_CONFIG));
 			switch (format.SampleRate)

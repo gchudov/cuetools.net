@@ -104,6 +104,7 @@
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
 			this.Name = "Playlist";
 			this.Text = "Playlist";
+			this.Load += new System.EventHandler(this.Playlist_Load);
 			this.contextMenuStripPlaylist.ResumeLayout(false);
 			this.ResumeLayout(false);
 

@@ -458,10 +458,10 @@ namespace CUEPlayer {
                 this.columnid.ReadOnly = true;
                 this.columnid.Unique = true;
                 this.columnpath.AllowDBNull = false;
-                this.columnpath.MaxLength = 100;
-                this.columnartist.MaxLength = 100;
-                this.columntitle.MaxLength = 100;
-                this.columnalbum.MaxLength = 100;
+                this.columnpath.MaxLength = 255;
+                this.columnartist.MaxLength = 255;
+                this.columntitle.MaxLength = 255;
+                this.columnalbum.MaxLength = 255;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -616,11 +616,11 @@ namespace CUEPlayer {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             public string artist {
                 get {
-                    try {
-                        return ((string)(this[this.tablePlaylist.artistColumn]));
+                    if (this.IsartistNull()) {
+                        return string.Empty;
                     }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'artist\' in table \'Playlist\' is DBNull.", e);
+                    else {
+                        return ((string)(this[this.tablePlaylist.artistColumn]));
                     }
                 }
                 set {
@@ -631,11 +631,11 @@ namespace CUEPlayer {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             public string title {
                 get {
-                    try {
-                        return ((string)(this[this.tablePlaylist.titleColumn]));
+                    if (this.IstitleNull()) {
+                        return string.Empty;
                     }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'title\' in table \'Playlist\' is DBNull.", e);
+                    else {
+                        return ((string)(this[this.tablePlaylist.titleColumn]));
                     }
                 }
                 set {
@@ -646,11 +646,11 @@ namespace CUEPlayer {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             public string album {
                 get {
-                    try {
-                        return ((string)(this[this.tablePlaylist.albumColumn]));
+                    if (this.IsalbumNull()) {
+                        return string.Empty;
                     }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'album\' in table \'Playlist\' is DBNull.", e);
+                    else {
+                        return ((string)(this[this.tablePlaylist.albumColumn]));
                     }
                 }
                 set {

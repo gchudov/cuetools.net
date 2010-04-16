@@ -45,7 +45,7 @@ namespace CUETools.FlakeExe
 			Console.WriteLine(" -f #[,#]             Prediction order {max} or {min},{max} (0..4).");
 		}
 
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
 			TextWriter stdout = Console.Out;
 			Console.SetOut(Console.Error);
@@ -143,13 +143,13 @@ namespace CUETools.FlakeExe
 				if (!ok)
 				{
 					Usage();
-					return;
+					return 1;
 				}
 			}
 			if (input_file == null || ((input_file == "-" || Path.GetExtension(input_file) == ".flac") && output_file == null))
 			{
 				Usage();
-				return;
+				return 2;
 			}
 
 			if (!quiet)
@@ -170,7 +170,7 @@ namespace CUETools.FlakeExe
 			else
 			{
 				Usage();
-				return;
+				return 3;
 			}
 			if (buffered)
 				audioSource = new AudioPipe(audioSource, 0x10000);
@@ -231,7 +231,7 @@ namespace CUETools.FlakeExe
 				Usage();
 				Console.WriteLine("");
 				Console.WriteLine("Error: {0}.", ex.Message);
-				return;
+				return 4;
 			}
 
 			if (!quiet)
@@ -240,25 +240,40 @@ namespace CUETools.FlakeExe
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
 			}
 
-			while (audioSource.Read(buff, -1) != 0)
+#if !DEBUG
+			try
+#endif
 			{
-				audioDest.Write(buff);
-				TimeSpan elapsed = DateTime.Now - start;
-				if (!quiet)
+				while (audioSource.Read(buff, -1) != 0)
 				{
-					if ((elapsed - lastPrint).TotalMilliseconds > 60)
+					audioDest.Write(buff);
+					TimeSpan elapsed = DateTime.Now - start;
+					if (!quiet)
 					{
-						Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
-							100.0 * audioSource.Position / audioSource.Length,
-							audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
-							elapsed,
-							TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
-							);
-						lastPrint = elapsed;
+						if ((elapsed - lastPrint).TotalMilliseconds > 60)
+						{
+							Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
+								100.0 * audioSource.Position / audioSource.Length,
+								audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
+								elapsed,
+								TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
+								);
+							lastPrint = elapsed;
+						}
 					}
 				}
+				audioDest.Close();
 			}
-			audioDest.Close();
+#if !DEBUG
+			catch (Exception ex)
+			{
+				Console.Error.Write("\r                                                                         \r");
+				Console.WriteLine("Error     : {0}", ex.Message);
+				audioDest.Delete();
+				audioSource.Close();
+				return 5;
+			}
+#endif
 
 			TimeSpan totalElapsed = DateTime.Now - start;
 			if (!quiet)
@@ -293,6 +308,7 @@ namespace CUETools.FlakeExe
 					flake.VBRMode
 					);
 			}
+			return 0;
 		}
 	}
 }

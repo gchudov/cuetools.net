@@ -250,6 +250,8 @@ namespace CUETools.Codecs
 						Bytes16ToFloat(bytes, 0, fsamples, 0, length, pcm.ChannelCount);
 					//else if (pcm.BitsPerSample > 16 && PCM.BitsPerSample <= 24)
 					//    BytesToFLACSamples_24(bytes, 0, fsamples, 0, length, pcm.ChannelCount, 24 - pcm.BitsPerSample);
+					else if (pcm.BitsPerSample == 32)
+						Buffer.BlockCopy(bytes, 0, fsamples, 0, length * 4 * pcm.ChannelCount);
 					else
 						throw new Exception("Unsupported bitsPerSample value");
 				}
@@ -356,6 +358,16 @@ namespace CUETools.Codecs
 				throw new Exception("Invalid length");
 		}
 
+		internal unsafe void Load(int dstOffset, AudioBuffer src, int srcOffset, int copyLength)
+		{
+			if (dataInBytes)
+				Buffer.BlockCopy(src.Bytes, srcOffset * pcm.BlockAlign, Bytes, dstOffset * pcm.BlockAlign, copyLength * pcm.BlockAlign);
+			if (dataInSamples)
+				Buffer.BlockCopy(src.Samples, srcOffset * pcm.ChannelCount * 4, Samples, dstOffset * pcm.ChannelCount * 4, copyLength * pcm.ChannelCount * 4);
+			if (dataInFloat)
+				Buffer.BlockCopy(src.Float, srcOffset * pcm.ChannelCount * 4, Float, dstOffset * pcm.ChannelCount * 4, copyLength * pcm.ChannelCount * 4);
+		}
+
 		public unsafe void Prepare(AudioBuffer _src, int _offset, int _length)
 		{
 			length = Math.Min(size, _src.Length - _offset);
@@ -365,19 +377,12 @@ namespace CUETools.Codecs
 			dataInFloat = false;
 			dataInSamples = false;
 			if (_src.dataInBytes)
-			{
 				dataInBytes = true;
-				fixed (byte* dest = Bytes, src = &_src.Bytes[_offset * pcm.BlockAlign])
-					AudioSamples.MemCpy(dest, src, length * pcm.BlockAlign);
-			}
 			else if (_src.dataInSamples)
-			{
 				dataInSamples = true;
-				fixed (int* dest = Samples, src = &_src.Samples[_offset, 0])
-					AudioSamples.MemCpy(dest, src, Length * pcm.ChannelCount);
-			}
-			else if (_src.dataInFloat) 
-				throw new NotImplementedException();
+			else if (_src.dataInFloat)
+				dataInFloat = true;
+			Load(0, _src, _offset, length);
 		}
 
 		public void Swap(AudioBuffer buffer)
@@ -1731,6 +1736,10 @@ namespace CUETools.Codecs
 		Process _encoderProcess;
 		WAVWriter wrt;
 		CyclicBuffer outputBuffer = null;
+		bool useTempFile = false;
+		string tempFile = null;
+		long _finalSampleCount = -1;
+		bool closed = false;
 
 		public UserDefinedWriter(string path, Stream IO, AudioPCMConfig pcm, string encoder, string encoderParams, string encoderMode, int padding)
 		{
@@ -1738,15 +1747,23 @@ namespace CUETools.Codecs
 			_encoder = encoder;
 			_encoderParams = encoderParams;
 			_encoderMode = encoderMode;
+			useTempFile = _encoderParams.Contains("%I");
+			tempFile = path + ".tmp.wav";
 
 			_encoderProcess = new Process();
 			_encoderProcess.StartInfo.FileName = _encoder;
-			_encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"").Replace("%M", encoderMode).Replace("%P", padding.ToString());
+			_encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"").Replace("%M", encoderMode).Replace("%P", padding.ToString()).Replace("%I", "\"" + tempFile + "\"");
 			_encoderProcess.StartInfo.CreateNoWindow = true;
-			_encoderProcess.StartInfo.RedirectStandardInput = true;
+			if (!useTempFile)
+				_encoderProcess.StartInfo.RedirectStandardInput = true;
 			_encoderProcess.StartInfo.UseShellExecute = false;
 			if (!_encoderParams.Contains("%O"))
 				_encoderProcess.StartInfo.RedirectStandardOutput = true;
+			if (useTempFile)
+			{
+				wrt = new WAVWriter(tempFile, null, pcm);
+				return;
+			}
 			bool started = false;
 			Exception ex = null;
 			try
@@ -1772,9 +1789,32 @@ namespace CUETools.Codecs
 
 		public void Close()
 		{
+			if (closed)
+				return;
+			closed = true;
 			wrt.Close();
+			if (useTempFile && (_finalSampleCount < 0 || wrt.Position == _finalSampleCount))
+			{
+					bool started = false;
+					Exception ex = null;
+					try
+					{
+						started = _encoderProcess.Start();
+						if (started)
+							_encoderProcess.PriorityClass = Process.GetCurrentProcess().PriorityClass;
+					}
+					catch (Exception _ex)
+					{
+						ex = _ex;
+					}
+					if (!started)
+						throw new Exception(_encoder + ": " + (ex == null ? "please check the path" : ex.Message));
+			}
+			wrt = null;
 			if (!_encoderProcess.HasExited)
 				_encoderProcess.WaitForExit();
+			if (useTempFile)
+				File.Delete(tempFile);
 			if (outputBuffer != null)
 				outputBuffer.Close();
 			if (_encoderProcess.ExitCode != 0)
@@ -1797,7 +1837,7 @@ namespace CUETools.Codecs
 
 		public long FinalSampleCount
 		{
-			set { wrt.FinalSampleCount = value; }
+			set { _finalSampleCount = wrt.FinalSampleCount = value; }
 		}
 
 		public long BlockSize
@@ -1948,6 +1988,7 @@ namespace CUETools.Codecs
 	public class AudioPipe : IAudioSource//, IDisposable
 	{
 		private AudioBuffer _readBuffer, _writeBuffer;
+		private AudioPCMConfig pcm;
 		long _sampleLen, _samplePos;
 		private int _maxLength;
 		private Thread _workThread;
@@ -1959,14 +2000,22 @@ namespace CUETools.Codecs
 		bool own;
 		ThreadPriority priority;
 
+		public AudioPipe(AudioPCMConfig pcm, int size)
+		{
+			this.pcm = pcm;
+			_readBuffer = new AudioBuffer(pcm, size);
+			_writeBuffer = new AudioBuffer(pcm, size);
+			_maxLength = size;
+			_sampleLen = -1;
+			_samplePos = 0;
+		}
+
 		public AudioPipe(IAudioSource source, int size, bool own, ThreadPriority priority)
+			: this(source.PCM, size)
 		{
 			this.own = own;
 			this.priority = priority;
 			_source = source;
-			_readBuffer = new AudioBuffer(source, size);
-			_writeBuffer = new AudioBuffer(source, size);
-			_maxLength = size;
 			_sampleLen = _source.Length;
 			_samplePos = _source.Position;
 		}
@@ -2014,7 +2063,7 @@ namespace CUETools.Codecs
 
 		private void Go()
 		{
-			if (_workThread != null || _ex != null) return;
+			if (_workThread != null || _ex != null || _source == null) return;
 			_workThread = new Thread(Decompress);
 			_workThread.Priority = priority;
 			_workThread.IsBackground = true;
@@ -2067,6 +2116,9 @@ namespace CUETools.Codecs
 				if (value == _samplePos)
 					return;
 
+				if (_source == null)
+					throw new NotSupportedException();
+
 				lock (this)
 				{
 					_close = true;
@@ -2107,8 +2159,38 @@ namespace CUETools.Codecs
 		{
 			get
 			{
-				return _source.PCM;
+				return pcm;
 			}
+		}
+
+		public int Write(AudioBuffer buff)
+		{
+			if (_writeBuffer.Size < _writeBuffer.Length + buff.Length)
+			{
+				AudioBuffer realloced = new AudioBuffer(pcm, _writeBuffer.Size + buff.Size);
+				realloced.Prepare(_writeBuffer, 0, _writeBuffer.Length);
+				_writeBuffer = realloced;
+			}
+			if (_writeBuffer.Length == 0)
+				_writeBuffer.Prepare(buff, 0, buff.Length);
+			else
+			{
+				_writeBuffer.Load(_writeBuffer.Length, buff, 0, buff.Length);
+				_writeBuffer.Length += buff.Length;
+			}
+			lock (this)
+			{
+				if (!_haveData)
+				{
+					AudioBuffer temp = _writeBuffer;
+					_writeBuffer = _readBuffer;
+					_writeBuffer.Length = 0;
+					_readBuffer = temp;
+					_haveData = true;
+					Monitor.Pulse(this);
+				}
+			}
+			return _writeBuffer.Length;
 		}
 
 		public int Read(AudioBuffer buff, int maxLength)
@@ -2152,7 +2234,15 @@ namespace CUETools.Codecs
 			return buff.Length;
 		}
 
-		public string Path { get { return _source.Path; } }
+		public string Path
+		{
+			get
+			{
+				if (_source == null)
+					return "";
+				return _source.Path;
+			}
+		}
 	}
 
 	public class NullStream : Stream

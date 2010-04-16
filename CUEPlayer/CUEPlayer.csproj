@@ -84,6 +84,18 @@
     <Compile Include="frmCUEPlayer.Designer.cs">
       <DependentUpon>frmCUEPlayer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Icecast.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Icecast.Designer.cs">
+      <DependentUpon>Icecast.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IcecastSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="IcecastSettings.Designer.cs">
+      <DependentUpon>IcecastSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Output.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +118,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmCUEPlayer.resx">
       <DependentUpon>frmCUEPlayer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Icecast.resx">
+      <DependentUpon>Icecast.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IcecastSettings.resx">
+      <DependentUpon>IcecastSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Output.resx">
       <DependentUpon>Output.cs</DependentUpon>
@@ -132,6 +150,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CUEControls\CUEControls.csproj">
@@ -145,6 +164,10 @@
     <ProjectReference Include="..\CUETools.Codecs.CoreAudio\CUETools.Codecs.CoreAudio.csproj">
       <Project>{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}</Project>
       <Name>CUETools.Codecs.CoreAudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.Codecs.Icecast\CUETools.Codecs.Icecast.csproj">
+      <Project>{8FC5DA7C-F6AC-4D04-85BC-1233DDF569E7}</Project>
+      <Name>CUETools.Codecs.Icecast</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
@@ -248,6 +271,13 @@
   <ItemGroup>
     <Content Include="CUEPlayer.sdf">
     </Content>
+    <None Include="Properties\DataSources\CUETools.Codecs.Icecast.IcecastSettingsData.datasource" />
+    <None Include="Resources\transmit.ico" />
+    <None Include="Resources\cog.png" />
+    <None Include="Properties\DataSources\Output.datasource" />
+    <None Include="Resources\sound_mute.png" />
+    <None Include="Resources\sound.png" />
+    <None Include="Resources\transmit_blue.png" />
     <None Include="Resources\ctdb.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

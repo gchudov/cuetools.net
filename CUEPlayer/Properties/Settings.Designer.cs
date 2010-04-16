@@ -32,5 +32,27 @@ namespace CUEPlayer.Properties {
                 return ((string)(this["CUEPlayerConnectionString"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::CUETools.Codecs.Icecast.IcecastSettingsData IcecastSettings {
+            get {
+                return ((global::CUETools.Codecs.Icecast.IcecastSettingsData)(this["IcecastSettings"]));
+            }
+            set {
+                this["IcecastSettings"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::CUEPlayer.CUEPlayerSettings AppSettings {
+            get {
+                return ((global::CUEPlayer.CUEPlayerSettings)(this["AppSettings"]));
+            }
+            set {
+                this["AppSettings"] = value;
+            }
+        }
     }
 }

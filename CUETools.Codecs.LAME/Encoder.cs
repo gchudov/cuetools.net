@@ -20,9 +20,12 @@ namespace CUETools.Codecs.LAME
 		private string _path;
 		private Stream _IO;
 		private long position = 0, sample_count = -1;
+		private long bytesWritten = 0;
 
 		public LAMEEncoder(string path, Stream IO, AudioPCMConfig pcm)
 		{
+			if (pcm.BitsPerSample != 16)// && pcm.BitsPerSample != 32)
+				throw new ArgumentOutOfRangeException("format", "Only 16 & 32 bits samples supported");
 			_pcm = pcm;
 			_path = path;
 			_IO = IO;
@@ -33,30 +36,35 @@ namespace CUETools.Codecs.LAME
 		{
 		}
 
-		public void DeInit()
+		public void DeInit(bool flush)
 		{
 			if (!inited || closed)
 				return;
 
 			try
 			{
-				uint EncodedSize = 0;
-				if (m_InBufferPos > 0)
+				if (flush)
 				{
-					if (Lame_encDll.EncodeChunk(m_hLameStream, m_InBuffer, 0, (uint)m_InBufferPos, m_OutBuffer, ref EncodedSize) == Lame_encDll.BE_ERR_SUCCESSFUL)
+					uint EncodedSize = 0;
+					if (m_InBufferPos > 0)
+					{
+						if (Lame_encDll.EncodeChunk(m_hLameStream, m_InBuffer, 0, (uint)m_InBufferPos, m_OutBuffer, ref EncodedSize) == Lame_encDll.BE_ERR_SUCCESSFUL)
+						{
+							if (EncodedSize > 0)
+							{
+								_IO.Write(m_OutBuffer, 0, (int)EncodedSize);
+								bytesWritten += EncodedSize;
+							}
+						}
+					}
+					EncodedSize = 0;
+					if (Lame_encDll.beDeinitStream(m_hLameStream, m_OutBuffer, ref EncodedSize) == Lame_encDll.BE_ERR_SUCCESSFUL)
 					{
 						if (EncodedSize > 0)
 						{
 							_IO.Write(m_OutBuffer, 0, (int)EncodedSize);
+							bytesWritten += EncodedSize;
 						}
-					}
-				}
-				EncodedSize = 0;
-				if (Lame_encDll.beDeinitStream(m_hLameStream, m_OutBuffer, ref EncodedSize) == Lame_encDll.BE_ERR_SUCCESSFUL)
-				{
-					if (EncodedSize > 0)
-					{
-						_IO.Write(m_OutBuffer, 0, (int)EncodedSize);
 					}
 				}
 			}
@@ -64,14 +72,14 @@ namespace CUETools.Codecs.LAME
 			{
 				Lame_encDll.beCloseStream(m_hLameStream);
 				_IO.Close();
-			}
-			closed = true;
+				closed = true;
+			}		
 		}
 
 		public void Close()
 		{
 			bool needTag = !closed && _path != null && _path != "";
-			DeInit();
+			DeInit(true);
 			if (needTag)
 			{
 				try
@@ -88,7 +96,7 @@ namespace CUETools.Codecs.LAME
 		{
 			if (!closed)
 			{
-				DeInit();
+				DeInit(false);
 				if (_path != "")
 					File.Delete(_path);
 			}
@@ -150,6 +158,7 @@ namespace CUETools.Codecs.LAME
 							if (EncodedSize > 0)
 							{
 								_IO.Write(m_OutBuffer, 0, (int)EncodedSize);
+								bytesWritten += EncodedSize;
 							}
 						}
 						else
@@ -167,6 +176,7 @@ namespace CUETools.Codecs.LAME
 							if (EncodedSize > 0)
 							{
 								_IO.Write(m_OutBuffer, 0, (int)EncodedSize);
+								bytesWritten += EncodedSize;
 							}
 						}
 						else
@@ -234,6 +244,14 @@ namespace CUETools.Codecs.LAME
 		}
 
 		public string Path { get { return _path; } }
+
+		public long BytesWritten
+		{
+			get
+			{
+				return bytesWritten;
+			}
+		}
 	}
 
 
@@ -304,8 +322,9 @@ namespace CUETools.Codecs.LAME
 	[AudioEncoderClass("lame CBR", "mp3", false, "96 128 192 256 320", "256", 2)]
 	public class LAMEEncoderCBR : LAMEEncoder
 	{
-		private int bps_index;
+		private uint bps;
 		private static readonly uint[] bps_table = new uint[] {96, 128, 192, 256, 320};
+		private MpegMode stereo = MpegMode.STEREO;
 
 		public LAMEEncoderCBR(string path, Stream IO, AudioPCMConfig pcm)
 			: base(path, IO, pcm)
@@ -321,20 +340,55 @@ namespace CUETools.Codecs.LAME
 		{
 			get
 			{
-				return bps_index;
+				for (int i = 0; i < bps_table.Length; i++)
+					if (bps == bps_table[i])
+						return i;
+				return -1;
 			}
 			set
 			{
 				if (value < 0 || value > bps_table.Length)
 					throw new Exception("unsupported compression level");
-				bps_index = value;
+				bps = bps_table[value];
+			}
+		}
+
+		public override string Options
+		{
+			set
+			{
+				if (value == null || value == "") return;
+				string[] args = value.Split();
+				for (int i = 0; i < args.Length; i++)
+				{
+					if (args[i] == "-b" && (++i) < args.Length)
+					{
+					    bps = uint.Parse(args[i]);
+					    continue;
+					}
+					if (args[i] == "-m" && (++i) < args.Length)
+					{
+						switch (args[i])
+						{
+							case "s": stereo = MpegMode.STEREO; break;
+							case "j": stereo = MpegMode.JOINT_STEREO; break;
+							case "d": stereo = MpegMode.DUAL_CHANNEL; break;
+							case "m": stereo = MpegMode.MONO; break;
+							default:
+								throw new Exception("Unsupported options " + value);
+						}
+					    continue;
+					}
+					throw new Exception("Unsupported options " + value);
+				}
 			}
 		}
 
 		protected override BE_CONFIG MakeConfig()
 		{
-			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, bps_table[bps_index]);
+			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, bps);
 			Mp3Config.format.lhv1.bWriteVBRHeader = 1;
+			Mp3Config.format.lhv1.nMode = stereo;
 			//Mp3Config.format.lhv1.nVbrMethod = VBRMETHOD.VBR_METHOD_NONE; // --cbr
 			//Mp3Config.format.lhv1.nPreset = LAME_QUALITY_PRESET.LQP_NORMAL_QUALITY;
 			return Mp3Config;

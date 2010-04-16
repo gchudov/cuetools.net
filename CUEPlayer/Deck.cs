@@ -21,6 +21,7 @@ namespace CUEPlayer
 		long playingFinish = 0;
 		Thread playThread;
 		int iSource;
+		AudioBuffer buff;
 		MixingSource mixer;
 		MixingWriter writer;
 		Deck nextDeck;
@@ -72,12 +73,15 @@ namespace CUEPlayer
 				textBoxAlbum.Text = playingRow < 0 ? "" : dataSet.Playlist[playingRow].album;
 				textBoxTitle.Text = playingRow < 0 ? "" : dataSet.Playlist[playingRow].title;
 				textBoxDuration.Text = "";
-				pictureBox.Image = playingCue != null ? playingCue.Cover : pictureBox.InitialImage;
+				pictureBox.Image = playingCue != null && playingCue.Cover != null ? playingCue.Cover : pictureBox.InitialImage;
 
 				if (nextDeck != null && nextDeck.playingSource == null && playingRow >= 0 && playingRow < dataSet.Playlist.Rows.Count - 1)
 				{
 					nextDeck.LoadDeck(playingRow + 1);
 				}
+
+				if (playThread != null)
+					(MdiParent as frmCUEPlayer).UpdateMetadata(textBoxArtist.Text, textBoxTitle.Text);
 			}
 			mediaSlider.Enabled = playingSource != null;
 			if (playingSource != null)
@@ -101,8 +105,6 @@ namespace CUEPlayer
 
 		private void PlayThread()
 		{
-			AudioBuffer buff = new AudioBuffer(playingSource.PCM, 0x2000);
-
 			try
 			{
 				do
@@ -151,6 +153,8 @@ namespace CUEPlayer
 							nextDeck.playingRow = -1;
 							nextDeck.needUpdate = true;
 						}
+						if (buff == null || buff.PCM.SampleRate != playingSource.PCM.SampleRate || buff.PCM.ChannelCount != playingSource.PCM.ChannelCount || buff.PCM.BitsPerSample != playingSource.PCM.BitsPerSample)
+							buff = new AudioBuffer(playingSource.PCM, 0x2000);
 						playingSource.Read(buff, Math.Min(buff.Size, (int)(playingFinish - playingSource.Position)));
 						writer.Write(buff);
 					}
@@ -205,12 +209,6 @@ namespace CUEPlayer
 
 		private void buttonPlay_Click(object sender, EventArgs e)
 		{
-			if (playingSource == null)
-			{
-				Playlist playlist = (MdiParent as frmCUEPlayer).wndPlaylist;
-				LoadDeck(playlist.List.SelectedIndices[0]);
-			}
-			mixer.BufferPlaying(iSource, true);
 			if (playThread == null)
 			{
 				playThread = new Thread(PlayThread);
@@ -219,6 +217,12 @@ namespace CUEPlayer
 				playThread.Name = Text;
 				playThread.Start();
 			}
+			if (playingSource == null)
+			{
+				Playlist playlist = (MdiParent as frmCUEPlayer).wndPlaylist;
+				LoadDeck(playlist.List.SelectedIndices[0]);
+			}
+			mixer.BufferPlaying(iSource, true);
 		}
 
 		private void buttonStop_Click(object sender, EventArgs e)
@@ -312,6 +316,11 @@ namespace CUEPlayer
 			{
 				playingSource.Position = playingStart;
 			}
+		}
+
+		private void Deck_Load(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

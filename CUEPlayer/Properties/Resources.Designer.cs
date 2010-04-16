@@ -60,6 +60,13 @@ namespace CUEPlayer.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap cog {
+            get {
+                object obj = ResourceManager.GetObject("cog", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap control_eject {
             get {
                 object obj = ResourceManager.GetObject("control_eject", resourceCulture);
@@ -140,6 +147,27 @@ namespace CUEPlayer.Properties {
         internal static System.Drawing.Bitmap ctdb {
             get {
                 object obj = ResourceManager.GetObject("ctdb", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap sound {
+            get {
+                object obj = ResourceManager.GetObject("sound", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap sound_mute {
+            get {
+                object obj = ResourceManager.GetObject("sound_mute", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap transmit_blue {
+            get {
+                object obj = ResourceManager.GetObject("transmit_blue", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

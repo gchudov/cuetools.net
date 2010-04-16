@@ -134,7 +134,7 @@
 			this.mediaSlider.ButtonStyle = MediaSlider.MediaSlider.ButtonType.GlassOverlap;
 			this.mediaSlider.ContextMenuStrip = null;
 			this.mediaSlider.LargeChange = 2;
-			this.mediaSlider.Location = new System.Drawing.Point(0, 115);
+			this.mediaSlider.Location = new System.Drawing.Point(0, 112);
 			this.mediaSlider.Margin = new System.Windows.Forms.Padding(0);
 			this.mediaSlider.Maximum = 1;
 			this.mediaSlider.Minimum = 0;
@@ -242,7 +242,7 @@
 			this.AllowDrop = true;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(361, 145);
+			this.ClientSize = new System.Drawing.Size(361, 136);
 			this.ControlBox = false;
 			this.Controls.Add(this.buttonNext);
 			this.Controls.Add(this.buttonRewind);
@@ -262,6 +262,7 @@
 			this.Name = "Deck";
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.Text = "Deck";
+			this.Load += new System.EventHandler(this.Deck_Load);
 			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Deck_DragDrop);
 			this.DragOver += new System.Windows.Forms.DragEventHandler(this.Deck_DragOver);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();

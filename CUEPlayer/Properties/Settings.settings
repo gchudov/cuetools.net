@@ -10,5 +10,11 @@
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
       <Value Profile="(Default)">Data Source=|DataDirectory|\CUEPlayer.sdf</Value>
     </Setting>
+    <Setting Name="IcecastSettings" Type="CUETools.Codecs.Icecast.IcecastSettingsData" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="AppSettings" Type="CUEPlayer.CUEPlayerSettings" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>
