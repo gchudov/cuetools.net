@@ -604,8 +604,8 @@ namespace CUETools.Codecs.ALAC
 						buf_s[i * 2 + 1] = midright;
 
 #if DEBUG
-						if (buf_s[i * 2] >= (1 << _bitsPerSample) || buf_s[i * 2] < -(1 << _bitsPerSample) ||
-							buf_s[i * 2 + 1] >= (1 << _bitsPerSample) || buf_s[i * 2 + 1] < -(1 << _bitsPerSample)
+						if (buf_s[i * 2] >= (1 << pcm.BitsPerSample) || buf_s[i * 2] < -(1 << pcm.BitsPerSample) ||
+							buf_s[i * 2 + 1] >= (1 << pcm.BitsPerSample) || buf_s[i * 2 + 1] < -(1 << pcm.BitsPerSample)
 							)
 							throw new Exception("overflow in ALAC decoder");
 #endif
@@ -641,7 +641,7 @@ namespace CUETools.Codecs.ALAC
 			bool isnotcompressed = 0 != readbits(_framesBuffer, ref pos, 1); /* whether the frame is compressed */
 			int outputSamples = hassize ? (int)readbits(_framesBuffer, ref pos, 32) : setinfo_max_samples_per_frame;
 
-			int readsamplesize = pcm.BitsPerSample - (wasted_bytes * 8) + pcm.ChannelCount;
+			int readsamplesize = pcm.BitsPerSample - (wasted_bytes * 8) + pcm.ChannelCount - 1;
 			if (!isnotcompressed)
 			{
 				/* compressed */

@@ -24,7 +24,8 @@ namespace CUETools.ALACEnc
 			Console.WriteLine();
 			Console.WriteLine("Advanced Options:");
 			Console.WriteLine();
-			Console.WriteLine(" -b #                 Block size.");
+			Console.WriteLine(" -b #                 Block size (samples).");
+			Console.WriteLine(" -p #                 Padding (bytes).");
 			Console.WriteLine(" -s <method>          Stereo decorrelation (independent,estimate,evaluate,search).");
 			Console.WriteLine(" --history-modifier # Rice history modifier {max} or {min},{max}, default 4,4.");
 			Console.WriteLine();
@@ -169,7 +170,7 @@ namespace CUETools.ALACEnc
 				output_file == "-" ? Console.OpenStandardOutput() :
 				output_file == "nul" ? new NullStream() : null,
 				audioSource.PCM);
-			alac.FinalSampleCount = (long)audioSource.Length;
+			alac.FinalSampleCount = audioSource.Length;
 			IAudioDest audioDest = alac;
 			AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 

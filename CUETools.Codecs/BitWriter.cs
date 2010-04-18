@@ -83,6 +83,12 @@ namespace CUETools.Codecs
 			writebits(bits, (uint)val);
 		}
 
+		public void writebits(DateTime val)
+		{
+			TimeSpan span = val.ToUniversalTime() - new DateTime(1904, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+			writebits(32, (uint)span.TotalSeconds);
+		}
+
 		public void writebits64(int bits, ulong val)
 		{
 			if (bits > 32)

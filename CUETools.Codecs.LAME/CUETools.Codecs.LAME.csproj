@@ -44,6 +44,7 @@
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

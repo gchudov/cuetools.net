@@ -36,8 +36,11 @@ namespace CUETools.Codecs.ALAC
 	public class ALACWriter : IAudioDest
 	{
 		Stream _IO = null;
+		bool _pathGiven = false;
 		string _path;
 		long _position;
+
+		const int max_header_len = 709 + 38; // minimum 38 bytes in padding
 
 		// total stream samples
 		// if < 0, stream length is unknown
@@ -55,14 +58,11 @@ namespace CUETools.Codecs.ALAC
 
 		int frame_count = 0;
 
-		long first_frame_offset = 0;
+		int first_frame_offset = 0;
 
 #if INTEROP
 		TimeSpan _userProcessorTime;
 #endif
-
-		// header bytes
-		byte[] header;
 
 		uint[] _sample_byte_size;
 		int[] samplesBuffer;
@@ -81,8 +81,6 @@ namespace CUETools.Codecs.ALAC
 		ALACFrame frame;
 		ALACReader verify;
 
-		int mdat_pos;
-
 		bool inited = false;
 
 		List<int> chunk_pos;
@@ -100,13 +98,16 @@ namespace CUETools.Codecs.ALAC
 
 			_path = path;
 			_IO = IO;
+			_pathGiven = _IO == null;
+			if (_IO != null && !_IO.CanSeek)
+				throw new NotSupportedException("stream doesn't support seeking");
 
 			samplesBuffer = new int[Alac.MAX_BLOCKSIZE * (_pcm.ChannelCount == 2 ? 5 : _pcm.ChannelCount)];
 			residualBuffer = new int[Alac.MAX_BLOCKSIZE * (_pcm.ChannelCount == 2 ? 6 : _pcm.ChannelCount + 1)];
 			windowBuffer = new float[Alac.MAX_BLOCKSIZE * 2 * Alac.MAX_LPC_WINDOWS];
 
 			eparams.set_defaults(_compressionLevel);
-			eparams.padding_size = 8192;
+			eparams.padding_size = 4096;
 
 			crc8 = new Crc8();
 			crc16 = new Crc16();
@@ -209,23 +210,57 @@ namespace CUETools.Codecs.ALAC
 				while (samplesInBuffer > 0)
 					output_frame(samplesInBuffer);
 
-				if (_IO.CanSeek)
+				int mdat_len = (int)_IO.Position - first_frame_offset;
+				int header_len = first_frame_offset;
+
+				if (sample_count <= 0 && _position != 0) 
 				{
-					int mdat_len = (int)_IO.Position - mdat_pos;
-					_IO.Position = mdat_pos;
-					BitWriter bitwriter = new BitWriter(header, 0, 4);
-					bitwriter.writebits(32, mdat_len);
-					bitwriter.flush();
-					_IO.Write(header, 0, 4);
-
-					if (sample_count <= 0 && _position != 0)
-						sample_count = (int)_position;
-
-					_IO.Position = _IO.Length;
-					int trailer_len = write_trailers();
-					_IO.Write(header, 0, trailer_len);
+					sample_count = (int)_position;
+					header_len = max_header_len
+						+ eparams.padding_size
+						+ frame_count * 4 // stsz
+						+ frame_count * 4 / eparams.chunk_size; // stco
+					//if (header_len % 0x400 != 0)
+					//    header_len += 0x400 - (header_len % 0x400);
 				}
-				_IO.Close();
+
+				if (!_creationTime.HasValue)
+					_creationTime = DateTime.Now;
+
+				if (header_len > first_frame_offset)
+				{
+					// if frame_count is high, need to rewrite 
+					// the whole file to increase first_frame_offset
+
+					//System.Diagnostics.Trace.WriteLine(String.Format("Rewriting whole file: {0}/{1} + {2}", header_len, first_frame_offset, mdat_len));
+
+					// assert(_pathGiven);					
+					string tmpPath = _path + ".tmp"; // TODO: make sure tmpPath is unique?
+					FileStream IO2 = new FileStream(tmpPath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+					byte[] header = write_headers(header_len, mdat_len);
+					IO2.Write(header, 0, header_len);
+					_IO.Position = first_frame_offset;
+					int bufSize = Math.Min(mdat_len, 0x2000);
+					byte[] buffer = new byte[bufSize];
+					int n;
+					do
+					{
+						n = _IO.Read(buffer, 0, buffer.Length);
+						IO2.Write(buffer, 0, n);
+					} while (n != 0);
+					IO2.Close();
+					_IO.Close();
+					File.Delete(_path);
+					File.Move(tmpPath, _path);
+				}
+				else
+				{
+					//System.Diagnostics.Trace.WriteLine(String.Format("{0}/{1}", header_len, first_frame_offset));
+					byte[] header = write_headers(first_frame_offset, mdat_len);
+					_IO.Position = 0;
+					_IO.Write(header, 0, first_frame_offset);
+					_IO.Close();
+				}
 				inited = false;
 			}
 
@@ -1143,12 +1178,13 @@ namespace CUETools.Codecs.ALAC
 		{
 			if (!inited)
 			{
+				if (!_pathGiven && sample_count <= 0)
+					throw new NotSupportedException("input and output are both pipes");
 				if (_IO == null)
-					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
-				int header_size = encode_init();
-				_IO.Write(header, 0, header_size);
-				if (_IO.CanSeek)
-					first_frame_offset = _IO.Position;
+					_IO = new FileStream(_path, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+				if (_IO != null && !_IO.CanSeek)
+					throw new NotSupportedException("stream doesn't support seeking");
+				encode_init();
 				inited = true;
 			}
 
@@ -1205,15 +1241,15 @@ namespace CUETools.Codecs.ALAC
 			return blocksize >> 1;
 		}
 
-		void write_chunk_mvhd(BitWriter bitwriter, TimeSpan UnixTime)
+		void write_chunk_mvhd(BitWriter bitwriter)
 		{
 			chunk_start(bitwriter);
 			{
 				bitwriter.write('m', 'v', 'h', 'd');
 				bitwriter.writebits(32, 0);
-				bitwriter.writebits(32, (int)UnixTime.TotalSeconds);
-				bitwriter.writebits(32, (int)UnixTime.TotalSeconds);
-				bitwriter.writebits(32, 1000);
+				bitwriter.writebits(_creationTime.Value);
+				bitwriter.writebits(_creationTime.Value);
+				bitwriter.writebits(32, _pcm.SampleRate);
 				bitwriter.writebits(32, sample_count);
 				bitwriter.writebits(32, 0x00010000); // reserved (preferred rate) 1.0 = normal
 				bitwriter.writebits(16, 0x0100); // reserved (preferred volume) 1.0 = normal
@@ -1238,7 +1274,7 @@ namespace CUETools.Codecs.ALAC
 			chunk_end(bitwriter);
 		}
 
-		void write_chunk_minf(BitWriter bitwriter)
+		void write_chunk_minf(BitWriter bitwriter, int header_len)
 		{
 			chunk_start(bitwriter);
 			{
@@ -1294,6 +1330,13 @@ namespace CUETools.Codecs.ALAC
 							bitwriter.writebits(16, 0); // reserved
 							chunk_start(bitwriter);
 							{
+								int max_fs = 0;
+								long sum_fs = 0;
+								for (int i = 0; i < frame_count; i++)
+								{
+									max_fs = Math.Max(max_fs, (int)_sample_byte_size[i]);
+									sum_fs += (int)_sample_byte_size[i];
+								}
 								bitwriter.write('a', 'l', 'a', 'c');
 								bitwriter.writebits(32, 0); // reserved
 								bitwriter.writebits(32, eparams.block_size); // max frame size
@@ -1303,9 +1346,9 @@ namespace CUETools.Codecs.ALAC
 								bitwriter.writebits(8, initial_history);
 								bitwriter.writebits(8, k_modifier);
 								bitwriter.writebits(8, _pcm.ChannelCount); // channels
-								bitwriter.writebits(16, 0); // reserved
-								bitwriter.writebits(32, max_frame_size);
-								bitwriter.writebits(32, _pcm.SampleRate * _pcm.ChannelCount * _pcm.BitsPerSample); // average bitrate
+								bitwriter.writebits(16, 0); // reserved or 0x00 0xff????
+								bitwriter.writebits(32, max_fs);
+								bitwriter.writebits(32, (int)(8 * sum_fs * _pcm.SampleRate / sample_count)); // average bitrate
 								bitwriter.writebits(32, _pcm.SampleRate);
 							}
 							chunk_end(bitwriter);
@@ -1337,15 +1380,28 @@ namespace CUETools.Codecs.ALAC
 					{
 						bitwriter.write('s', 't', 's', 'c');
 						bitwriter.writebits(32, 0); // version & flags
-						bitwriter.writebits(32, 1); // entry count
-						bitwriter.writebits(32, 1); // first chunk
-						bitwriter.writebits(32, 1); // samples in chunk
-						bitwriter.writebits(32, 1); // sample description index
+						if (frame_count % eparams.chunk_size == 0)
+						{
+							bitwriter.writebits(32, 1); // entries
+							bitwriter.writebits(32, 1); // first chunk
+							bitwriter.writebits(32, eparams.chunk_size); // samples in chunk
+							bitwriter.writebits(32, 1); // sample description index
+						}
+						else
+						{
+							bitwriter.writebits(32, 2); // entries
+							bitwriter.writebits(32, 1); // first chunk
+							bitwriter.writebits(32, eparams.chunk_size); // samples in chunk
+							bitwriter.writebits(32, 1); // sample description index
+							bitwriter.writebits(32, 1 + frame_count / eparams.chunk_size); // first chunk
+							bitwriter.writebits(32, frame_count % eparams.chunk_size); // samples in chunk
+							bitwriter.writebits(32, 1); // sample description index
+						}
 					}
 					chunk_end(bitwriter);
 					chunk_start(bitwriter);
 					{
-						bitwriter.write('s', 't', 's', 'z');
+						bitwriter.write('s', 't', 's', 'z'); // stsz
 						bitwriter.writebits(32, 0); // version & flags
 						bitwriter.writebits(32, 0); // sample size (0 == variable)
 						bitwriter.writebits(32, frame_count); // entry count
@@ -1355,14 +1411,14 @@ namespace CUETools.Codecs.ALAC
 					chunk_end(bitwriter);
 					chunk_start(bitwriter);
 					{
-						bitwriter.write('s', 't', 'c', 'o');
+						bitwriter.write('s', 't', 'c', 'o'); // stco
 						bitwriter.writebits(32, 0); // version & flags
-						bitwriter.writebits(32, frame_count); // entry count
-						uint pos = (uint)mdat_pos + 8;
+						bitwriter.writebits(32, (frame_count + eparams.chunk_size - 1) / eparams.chunk_size); // entry count
+						int pos = header_len;
 						for (int i = 0; i < frame_count; i++)
 						{
-							bitwriter.writebits(32, pos);
-							pos += _sample_byte_size[i];
+							if (i % eparams.chunk_size == 0) bitwriter.writebits(32, pos);
+							pos += (int)_sample_byte_size[i];
 						}
 					}
 					chunk_end(bitwriter);
@@ -1372,7 +1428,7 @@ namespace CUETools.Codecs.ALAC
 			chunk_end(bitwriter);
 		}
 
-		void write_chunk_mdia(BitWriter bitwriter, TimeSpan UnixTime)
+		void write_chunk_mdia(BitWriter bitwriter, int header_len)
 		{
 			chunk_start(bitwriter);
 			{
@@ -1381,8 +1437,8 @@ namespace CUETools.Codecs.ALAC
 				{
 					bitwriter.write('m', 'd', 'h', 'd');
 					bitwriter.writebits(32, 0); // version & flags
-					bitwriter.writebits(32, (int)UnixTime.TotalSeconds);
-					bitwriter.writebits(32, (int)UnixTime.TotalSeconds);
+					bitwriter.writebits(_creationTime.Value);
+					bitwriter.writebits(_creationTime.Value);
 					bitwriter.writebits(32, _pcm.SampleRate);
 					bitwriter.writebits(32, sample_count);
 					bitwriter.writebits(16, 0x55c4); // language
@@ -1398,16 +1454,16 @@ namespace CUETools.Codecs.ALAC
 					bitwriter.writebits(32, 0); // reserved
 					bitwriter.writebits(32, 0); // reserved
 					bitwriter.writebits(32, 0); // reserved
-					bitwriter.writebits(8, "SoundHandler".Length);
-					bitwriter.write("SoundHandler");
+					bitwriter.writebits(8, 0); //bitwriter.writebits(8, "SoundHandler".Length);
+					bitwriter.writebits(8, 0); //bitwriter.write("SoundHandler");
 				}
 				chunk_end(bitwriter);
-				write_chunk_minf(bitwriter);
+				write_chunk_minf(bitwriter, header_len);
 			}
 			chunk_end(bitwriter);
 		}
 
-		void write_chunk_trak(BitWriter bitwriter, TimeSpan UnixTime)
+		void write_chunk_trak(BitWriter bitwriter, int header_len)
 		{
 			chunk_start(bitwriter);
 			{
@@ -1415,12 +1471,12 @@ namespace CUETools.Codecs.ALAC
 				chunk_start(bitwriter);
 				{
 					bitwriter.write('t', 'k', 'h', 'd');
-					bitwriter.writebits(32, 15); // version
-					bitwriter.writebits(32, (int)UnixTime.TotalSeconds);
-					bitwriter.writebits(32, (int)UnixTime.TotalSeconds);
+					bitwriter.writebits(32, 7); // version
+					bitwriter.writebits(_creationTime.Value);
+					bitwriter.writebits(_creationTime.Value);
 					bitwriter.writebits(32, 1); // track ID
 					bitwriter.writebits(32, 0); // reserved
-					bitwriter.writebits(32, sample_count / _pcm.SampleRate);
+					bitwriter.writebits(32, sample_count);
 					bitwriter.writebits(32, 0); // reserved
 					bitwriter.writebits(32, 0); // reserved
 					bitwriter.writebits(32, 0); // reserved (layer & alternate group)
@@ -1439,7 +1495,7 @@ namespace CUETools.Codecs.ALAC
 					bitwriter.writebits(32, 0); // reserved (height)
 				}
 				chunk_end(bitwriter);
-				write_chunk_mdia(bitwriter, UnixTime);
+				write_chunk_mdia(bitwriter, header_len);
 			}
 			chunk_end(bitwriter);
 		}
@@ -1483,72 +1539,64 @@ namespace CUETools.Codecs.ALAC
 						chunk_end(bitwriter);
 					}
 					chunk_end(bitwriter);
+
+					chunk_start(bitwriter); // padding
+					{
+						bitwriter.write('f', 'r', 'e', 'e');
+						bitwriter.writebytes(eparams.padding_size, 0);
+					}
+					chunk_end(bitwriter);					
 				}
 				chunk_end(bitwriter);
 			}
 			chunk_end(bitwriter);
 		}
 
-		int write_trailers()
+		byte[] write_headers(int header_len, int mdat_len)
 		{
-			TimeSpan UnixTime = (_creationTime ?? DateTime.Now) - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
-			header = new byte[0x1000 + frame_count * 8 + eparams.padding_size]; // FIXME!!! Possible buffer overrun
+			byte[] header = new byte[header_len];
 			BitWriter bitwriter = new BitWriter(header, 0, header.Length);
+
+			chunk_start(bitwriter);
+			{
+				bitwriter.write('f', 't', 'y', 'p');
+				bitwriter.write('M', '4', 'A', ' ');
+				bitwriter.writebits(32, 0x200); // minor version
+				bitwriter.write('M', '4', 'A', ' ');
+				bitwriter.write('m', 'p', '4', '2');
+				bitwriter.write('i', 's', 'o', 'm');
+				bitwriter.writebits(32, 0);
+			}
+			chunk_end(bitwriter);
+
 			chunk_start(bitwriter);
 			{
 				bitwriter.write('m', 'o', 'o', 'v');
-				write_chunk_mvhd(bitwriter, UnixTime);
-				write_chunk_trak(bitwriter, UnixTime);
+				write_chunk_mvhd(bitwriter);
+				write_chunk_trak(bitwriter, header_len);
 				write_chunk_udta(bitwriter);
 			}
 			chunk_end(bitwriter);
-			chunk_start(bitwriter); // padding
-			{
-				bitwriter.write('f', 'r', 'e', 'e');
-				bitwriter.writebytes(eparams.padding_size, 0);
-			}
-			chunk_end(bitwriter);
-			return bitwriter.Length;
-		}
-
-		int write_headers()
-		{
-			BitWriter bitwriter = new BitWriter(header, 0, header.Length);
-
-			chunk_start(bitwriter);
-			bitwriter.write('f', 't', 'y', 'p');
-			bitwriter.write('M', '4', 'A', ' ');
-			bitwriter.writebits(32, 0x200); // minor version
-			bitwriter.write('M', '4', 'A', ' ');
-			bitwriter.write('m', 'p', '4', '2');
-			bitwriter.write('i', 's', 'o', 'm');
-			bitwriter.writebits(32, 0);
-			chunk_end(bitwriter);
 
 			chunk_start(bitwriter); // padding
 			{
 				bitwriter.write('f', 'r', 'e', 'e');
-				bitwriter.writebytes(eparams.padding_size, 0);
+				int padding_len = header_len - bitwriter.Length - 8;
+				if (padding_len < 0)
+					throw new Exception("padding length too small");
+				bitwriter.writebytes(padding_len, 0);
 			}
 			chunk_end(bitwriter);
 
-			chunk_start(bitwriter); // padding in case we need extended mdat len
-			bitwriter.write('f', 'r', 'e', 'e');
-			chunk_end(bitwriter);
-
-			mdat_pos = bitwriter.Length;
-
-			chunk_start(bitwriter); // mdat len placeholder
+			bitwriter.writebits(32, mdat_len + 8);
 			bitwriter.write('m', 'd', 'a', 't');
-			chunk_end(bitwriter);
+			bitwriter.flush();
 
-			return bitwriter.Length;
+			return header;
 		}
 
-		int encode_init()
+		void encode_init()
 		{
-			int i, header_len;
-
 			//if(flake_validate_params(s) < 0)
 
 			// FIXME: For now, only 44100 samplerate is supported
@@ -1574,14 +1622,6 @@ namespace CUETools.Codecs.ALAC
 			else
 				max_frame_size = 16 + ((eparams.block_size * _pcm.ChannelCount * _pcm.BitsPerSample + 7) >> 3);
 
-			//if (_IO.CanSeek && eparams.do_seektable)
-			//{
-			//}
-
-			// output header bytes
-			header = new byte[eparams.padding_size + 0x1000];
-			header_len = write_headers();
-
 			frame_buffer = new byte[max_frame_size];
 			_sample_byte_size = new uint[Math.Max(0x100, sample_count / eparams.block_size + 1)];
 
@@ -1591,7 +1631,15 @@ namespace CUETools.Codecs.ALAC
 				verifyBuffer = new int[Alac.MAX_BLOCKSIZE * _pcm.ChannelCount];
 			}
 
-			return header_len;
+			int frames = sample_count / eparams.block_size;
+			int header_len = max_header_len
+				+ eparams.padding_size
+				+ frames * 4 // stsz
+				+ frames * 4 / eparams.chunk_size; // stco
+			//if (header_len % 0x400 != 0)
+			//    header_len += 0x400 - (header_len % 0x400);
+			first_frame_offset = header_len;
+			_IO.Write(new byte[first_frame_offset], 0, first_frame_offset);
 		}
 	}
 
@@ -1635,6 +1683,8 @@ namespace CUETools.Codecs.ALAC
 		// if set to 0, a block size is chosen based on block_time_ms
 		// can also be changed by user before encoding a frame
 		public int block_size;
+
+		public int chunk_size;
 
 		// block time in milliseconds
 		// set by the user prior to calling encode_init
@@ -1698,6 +1748,7 @@ namespace CUETools.Codecs.ALAC
 			adaptive_passes = 0;
 			do_verify = false;
 			do_seektable = false;
+			chunk_size = 5;
 
 			// differences from level 6
 			switch (lvl)
