@@ -792,7 +792,7 @@ namespace CUETools.AccurateRip
 						CRCWONULL(iTrack),
 						inLog,
 						extra,
-						((iTrack == 0 ? PeakLevel() : PeakLevel(iTrack)) * 1000 / 65535) * 0.1);
+						((iTrack == 0 ? PeakLevel() : PeakLevel(iTrack)) * 1000 / 65534) * 0.1);
 				}
 			}
 		}

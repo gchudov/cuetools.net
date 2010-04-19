@@ -3298,7 +3298,7 @@ string status = processor.Go();
 					wereErrors |= PrintErrors(logWriter, _toc[track + _toc.FirstAudio].Start, _toc[track + _toc.FirstAudio].Length);
 
 					logWriter.WriteLine();
-					logWriter.WriteLine("     Peak level {0:F1} %", (_arVerify.PeakLevel(track + 1) * 1000 / 65535) * 0.1);
+					logWriter.WriteLine("     Peak level {0:F1} %", (_arVerify.PeakLevel(track + 1) * 1000 / 65534) * 0.1);
 					logWriter.WriteLine("     Track quality 100.0 %");
 					logWriter.WriteLine("     Test CRC {0:X8}", _arVerify.CRC32(track + 1));
 					logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(track + 1));
@@ -3780,7 +3780,10 @@ string status = processor.Go();
 					WriteText(_outputPath, cueContents);
 			}
 
-			if (_audioEncoderType != AudioEncoderType.NoAudio || _action == CUEAction.Verify)
+			if (_action == CUEAction.Verify)
+				VerifyAudio();
+//				WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
+			else if (_audioEncoderType != AudioEncoderType.NoAudio)
 				WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
 
 			if (_useCUEToolsDB && _CUEToolsDB.AccResult == HttpStatusCode.OK)
@@ -4262,6 +4265,50 @@ string status = processor.Go();
 		//    return null;
 		//}
 
+		internal void ApplyWriteOffset()
+		{
+			if (_writeOffset == 0)
+				return;
+
+			int absOffset = Math.Abs(_writeOffset);
+			SourceInfo sourceInfo;
+
+			sourceInfo.Path = null;
+			sourceInfo.Offset = 0;
+			sourceInfo.Length = (uint)absOffset;
+
+			if (_writeOffset < 0)
+			{
+				_sources.Insert(0, sourceInfo);
+
+				int last = _sources.Count - 1;
+				while (absOffset >= _sources[last].Length)
+				{
+					absOffset -= (int)_sources[last].Length;
+					_sources.RemoveAt(last--);
+				}
+				sourceInfo = _sources[last];
+				sourceInfo.Length -= (uint)absOffset;
+				_sources[last] = sourceInfo;
+			}
+			else
+			{
+				_sources.Add(sourceInfo);
+
+				while (absOffset >= _sources[0].Length)
+				{
+					absOffset -= (int)_sources[0].Length;
+					_sources.RemoveAt(0);
+				}
+				sourceInfo = _sources[0];
+				sourceInfo.Offset += (uint)absOffset;
+				sourceInfo.Length -= (uint)absOffset;
+				_sources[0] = sourceInfo;
+			}
+
+			_appliedWriteOffset = true;
+		}
+
 		public void WriteAudioFilesPass(string dir, CUEStyle style, int[] destLengths, bool htoaToFile, bool noOutput)
 		{
 			int iTrack, iIndex;
@@ -4273,48 +4320,8 @@ string status = processor.Go();
 			int iSource = -1;
 			int iDest = -1;
 			int samplesRemSource = 0;
-			//CDImageLayout updatedTOC = null;
 
-			if (_writeOffset != 0)
-			{
-				int absOffset = Math.Abs(_writeOffset);
-				SourceInfo sourceInfo;
-
-				sourceInfo.Path = null;
-				sourceInfo.Offset = 0;
-				sourceInfo.Length = (uint)absOffset;
-
-				if (_writeOffset < 0)
-				{
-					_sources.Insert(0, sourceInfo);
-
-					int last = _sources.Count - 1;
-					while (absOffset >= _sources[last].Length)
-					{
-						absOffset -= (int)_sources[last].Length;
-						_sources.RemoveAt(last--);
-					}
-					sourceInfo = _sources[last];
-					sourceInfo.Length -= (uint)absOffset;
-					_sources[last] = sourceInfo;
-				}
-				else
-				{
-					_sources.Add(sourceInfo);
-
-					while (absOffset >= _sources[0].Length)
-					{
-						absOffset -= (int)_sources[0].Length;
-						_sources.RemoveAt(0);
-					}
-					sourceInfo = _sources[0];
-					sourceInfo.Offset += (uint)absOffset;
-					sourceInfo.Length -= (uint)absOffset;
-					_sources[0] = sourceInfo;
-				}
-
-				_appliedWriteOffset = true;
-			}
+			ApplyWriteOffset();
 
 			int destBPS = 16;
 			hdcdDecoder = null;
@@ -4415,7 +4422,7 @@ string status = processor.Go();
 //                                if (_isCD && audioSource != null && audioSource is CDDriveReader)
 //                                    updatedTOC = ((CDDriveReader)audioSource).TOC;
 								if (audioSource != null) audioSource.Close();
-								audioSource = GetAudioSource(++iSource);
+								audioSource = GetAudioSource(++iSource, _config.separateDecodingThread || _isCD);
 								samplesRemSource = (int)_sources[iSource].Length;
 							}
 
@@ -4498,6 +4505,100 @@ string status = processor.Go();
 				audioSource.Close();
 			if (audioDest != null)
 				audioDest.Close();
+		}
+
+		public void VerifyAudio()
+		{
+			ApplyWriteOffset();
+
+			hdcdDecoder = null;
+			if (_config.detectHDCD && CUEProcessorPlugins.hdcd != null)
+			{
+				try { hdcdDecoder = Activator.CreateInstance(CUEProcessorPlugins.hdcd, 2, 44100, 20, false) as IAudioDest; }
+				catch { }
+			}
+			if (_useAccurateRip)
+				_arVerify.Init();
+			if (_useCUEToolsDB && !_useCUEToolsDBFix)
+				_CUEToolsDB.Init(_useCUEToolsDBSibmit);
+
+			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, "Verifying"), 0, 0.0, null, null);
+
+			AudioBuffer sampleBuffer = new AudioBuffer(AudioPCMConfig.RedBook, 0x10000);
+			IAudioSource audioSource = new CUESheetAudio(this);
+			if (_isCD || _config.separateDecodingThread)
+				audioSource = new AudioPipe(audioSource, 0x10000);
+
+#if !DEBUG
+			try
+#endif
+			{
+				int lastProgress = -588 * 75;
+				do
+				{
+					if (audioSource.Position - lastProgress >= 588 * 75)
+					{
+						lastProgress = (int)audioSource.Position;
+						int pos = 0;
+						int trackStart = 0;
+						int trackLength = (int)_toc.Pregap * 588;
+						for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+							for (int iIndex = 0; iIndex <= _toc[_toc.FirstAudio + iTrack].LastIndex; iIndex++)
+							{
+								int indexLen = (int)_toc.IndexLength(_toc.FirstAudio + iTrack, iIndex) * 588;
+								if (iIndex == 1)
+								{
+									trackStart = pos;
+									trackLength = (int)_toc[_toc.FirstAudio + iTrack].Length * 588;
+								}
+								if (audioSource.Position < pos + indexLen)
+								{
+									if (trackLength > 0 && !_isCD)
+									{
+										double trackPercent = (double)(audioSource.Position - trackStart) / trackLength;
+										int diskLength = 588 * (int)_toc.AudioLength;
+										int diskOffset = (int)audioSource.Position;
+										ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (uint)(100 * trackPercent),
+											"Verifying"), trackPercent, diskOffset, diskLength, audioSource.Path, null);
+									}
+									iTrack = TrackCount;
+									break;
+								}
+								pos += indexLen;
+							}
+					}
+
+					int copyCount = audioSource.Read(sampleBuffer, -1);
+					if (copyCount == 0)
+						break;
+
+					if (_useCUEToolsDB) // !_useCUEToolsDBFix
+						_CUEToolsDB.Verify.Write(sampleBuffer);
+					if (_useAccurateRip)
+						_arVerify.Write(sampleBuffer);
+					if (hdcdDecoder != null)
+					{
+						hdcdDecoder.Write(sampleBuffer);
+						if (_config.wait750FramesForHDCD && audioSource.Position > 750 * 588 && string.Format("{0:s}", hdcdDecoder) == "")
+							hdcdDecoder = null;
+					}
+
+					CheckStop();
+				} while (true);
+			}
+#if !DEBUG
+			catch (Exception ex)
+			{
+				hdcdDecoder = null;
+				if (audioSource != null)
+					try { audioSource.Close(); }
+					catch { }
+				audioSource = null;
+				throw ex;
+			}
+#endif
+			if (audioSource != null)
+				audioSource.Close();
 		}
 
 		private void DetectGaps()
@@ -4813,7 +4914,7 @@ string status = processor.Go();
 			return AudioReadWrite.GetAudioDest(_audioEncoderType, path, finalSampleCount, bps, 44100, padding, _config);
 		}
 
-		internal IAudioSource GetAudioSource(int sourceIndex) {
+		internal IAudioSource GetAudioSource(int sourceIndex, bool pipe) {
 			SourceInfo sourceInfo = _sources[sourceIndex];
 			IAudioSource audioSource;
 
@@ -4825,7 +4926,10 @@ string status = processor.Go();
 				{
 					_ripper.Position = 0;
 					//audioSource = _ripper;
-					audioSource = new AudioPipe(_ripper, 0x100000, false, ThreadPriority.Highest);
+					if (pipe)
+						audioSource = new AudioPipe(_ripper, 0x100000, false, ThreadPriority.Highest);
+					else
+						audioSource = _ripper;
 				} else
 				if (_isArchive)
 					audioSource = AudioReadWrite.GetAudioSource(sourceInfo.Path, OpenArchive(sourceInfo.Path, false), _config);
@@ -4837,7 +4941,7 @@ string status = processor.Go();
 				audioSource.Position = sourceInfo.Offset;
 
 			//if (!(audioSource is AudioPipe) && !(audioSource is UserDefinedReader) && _config.separateDecodingThread)
-			if (!(audioSource is AudioPipe) && _config.separateDecodingThread)
+			if (!(audioSource is AudioPipe) && pipe)
 				audioSource = new AudioPipe(audioSource, 0x10000);
 
 			return audioSource;
@@ -5689,7 +5793,7 @@ string status = processor.Go();
 			this.currentSource = 0;
 			for (int iSource = 0; iSource < cueSheet._sources.Count; iSource++)
 				this._sampleLen += cueSheet._sources[iSource].Length;
-			this.currentAudio = cueSheet.GetAudioSource(0);
+			this.currentAudio = cueSheet.GetAudioSource(0, false);
 		}
 
 		public void Close()
@@ -5718,7 +5822,7 @@ string status = processor.Go();
 						{
 							currentAudio.Close();
 							currentSource = iSource;
-							currentAudio = cueSheet.GetAudioSource(currentSource);
+							currentAudio = cueSheet.GetAudioSource(currentSource, false);
 						}
 						currentAudio.Position = value - sourceStart;
 						_samplePos = value;
@@ -5775,10 +5879,12 @@ string status = processor.Go();
 					return 0;
 				}
 				currentAudio.Close();
-				currentAudio = cueSheet.GetAudioSource(currentSource);
+				currentAudio = cueSheet.GetAudioSource(currentSource, false);
 			}
 
-			return currentAudio.Read(buff, maxLength);
+			int res = currentAudio.Read(buff, maxLength);
+			_samplePos += res;
+			return res;
 		}
 	}
 }
