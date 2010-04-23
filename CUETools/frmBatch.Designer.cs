@@ -33,13 +33,12 @@ namespace JDP
 			this.txtInputFile = new System.Windows.Forms.TextBox();
 			this.txtOutputFile = new System.Windows.Forms.TextBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-			this.progressBar1 = new System.Windows.Forms.ProgressBar();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// progressBar2
 			// 
-			this.progressBar2.Location = new System.Drawing.Point(3, 29);
+			this.progressBar2.Location = new System.Drawing.Point(3, 3);
 			this.progressBar2.MinimumSize = new System.Drawing.Size(440, 20);
 			this.progressBar2.Name = "progressBar2";
 			this.progressBar2.Size = new System.Drawing.Size(609, 20);
@@ -49,7 +48,7 @@ namespace JDP
 			// 
 			this.textBox1.BackColor = System.Drawing.SystemColors.Control;
 			this.textBox1.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			this.textBox1.Location = new System.Drawing.Point(3, 115);
+			this.textBox1.Location = new System.Drawing.Point(3, 75);
 			this.textBox1.MaxLength = 0;
 			this.textBox1.MinimumSize = new System.Drawing.Size(600, 200);
 			this.textBox1.Multiline = true;
@@ -63,7 +62,7 @@ namespace JDP
 			// txtInputFile
 			// 
 			this.txtInputFile.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.txtInputFile.Location = new System.Drawing.Point(5, 57);
+			this.txtInputFile.Location = new System.Drawing.Point(5, 31);
 			this.txtInputFile.Margin = new System.Windows.Forms.Padding(5);
 			this.txtInputFile.Name = "txtInputFile";
 			this.txtInputFile.ReadOnly = true;
@@ -74,7 +73,7 @@ namespace JDP
 			// txtOutputFile
 			// 
 			this.txtOutputFile.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.txtOutputFile.Location = new System.Drawing.Point(5, 87);
+			this.txtOutputFile.Location = new System.Drawing.Point(5, 54);
 			this.txtOutputFile.Margin = new System.Windows.Forms.Padding(5);
 			this.txtOutputFile.Name = "txtOutputFile";
 			this.txtOutputFile.ReadOnly = true;
@@ -91,29 +90,19 @@ namespace JDP
 			this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-			this.tableLayoutPanel1.Controls.Add(this.textBox1, 0, 4);
-			this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 0);
-			this.tableLayoutPanel1.Controls.Add(this.progressBar2, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this.txtOutputFile, 0, 3);
-			this.tableLayoutPanel1.Controls.Add(this.txtInputFile, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this.textBox1, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this.progressBar2, 0, 0);
+			this.tableLayoutPanel1.Controls.Add(this.txtOutputFile, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this.txtInputFile, 0, 1);
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(13, 13);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 5;
+			this.tableLayoutPanel1.RowCount = 4;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(619, 333);
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(619, 293);
 			this.tableLayoutPanel1.TabIndex = 7;
-			// 
-			// progressBar1
-			// 
-			this.progressBar1.Location = new System.Drawing.Point(3, 3);
-			this.progressBar1.MinimumSize = new System.Drawing.Size(440, 20);
-			this.progressBar1.Name = "progressBar1";
-			this.progressBar1.Size = new System.Drawing.Size(609, 20);
-			this.progressBar1.TabIndex = 0;
 			// 
 			// frmBatch
 			// 
@@ -146,6 +135,5 @@ namespace JDP
 		private System.Windows.Forms.TextBox txtInputFile;
 		private System.Windows.Forms.TextBox txtOutputFile;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-		private System.Windows.Forms.ProgressBar progressBar1;
 	}
 }

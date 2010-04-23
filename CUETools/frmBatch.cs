@@ -59,20 +59,20 @@ namespace JDP
 		{
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
-				if (e.percentDisk == 0)
+				if (e.percent == 0)
 				{
 					_startedAt = DateTime.Now;
 					Text = e.status;
 				}
-				else if (e.percentDisk > 0.02)
+				else if (e.percent > 0.02)
 				{
 					TimeSpan span = DateTime.Now - _startedAt;
-					TimeSpan eta = new TimeSpan ((long) (span.Ticks/e.percentDisk));
+					TimeSpan eta = new TimeSpan ((long) (span.Ticks/e.percent));
 					Text = String.Format("{0}, ETA {1}:{2:00}.", e.status, (int)eta.TotalMinutes, eta.Seconds);
 				} else
 					Text = e.status;
-				progressBar1.Value = Math.Max(0,Math.Min(100,(int)(e.percentTrck*100)));
-				progressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percentDisk*100)));
+				//progressBar1.Value = Math.Max(0,Math.Min(100,(int)(e.percentTrck*100)));
+				progressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percent*100)));
 				string inputSuffix = e.output != null ? "=>" : "";
 				if (e.input == null)
 					txtInputFile.Text = inputSuffix;
@@ -159,7 +159,6 @@ namespace JDP
 						Text = "Done.";
 
 					//TimeSpan span = DateTime.Now - _startedAt;
-					progressBar1.Value = 0;
 					progressBar2.Value = 0;
 					if (cueSheet.IsCD)
 					{
@@ -185,7 +184,6 @@ namespace JDP
 				{
 					Text = "Aborted.";
 					textBox1.Text += "Aborted.";
-					progressBar1.Value = 0;
 					progressBar2.Value = 0;
 				});
 			}

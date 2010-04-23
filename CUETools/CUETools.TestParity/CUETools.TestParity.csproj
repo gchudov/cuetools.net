@@ -50,9 +50,14 @@
     <Compile Include="RsEncode8Test.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AuthoringTests.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
+      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
+      <Name>CUETools.AccurateRip</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
+      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
+      <Name>CUETools.CDImage</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.CDRepair\CUETools.CDRepair.csproj">
       <Project>{C4869B37-EBB1-47BB-9406-B1209BEAB84B}</Project>
       <Name>CUETools.CDRepair</Name>

@@ -742,7 +742,7 @@ namespace CUETools.Processor
 		{
 			return name;
 		}
-		public string name;
+		public string name { get; set; }
 		public bool builtin;
 		public List<CUEAction> conditions;
 		public string code;
@@ -1562,8 +1562,7 @@ string status = processor.Go();
 	public class CUEToolsProgressEventArgs : EventArgs
 	{
 		public string status = string.Empty;
-		public double percentTrck = 0;
-		public double percentDisk = 0.0;
+		public double percent = 0.0;
 		public int offset = 0;
 		public string input = string.Empty;
 		public string output = string.Empty;
@@ -1601,8 +1600,8 @@ string status = processor.Go();
 		private bool _paddedToFrame, _truncated4608, _usePregapForFirstTrackInSingleFile;
 		private int _writeOffset;
 		private CUEAction _action;
-		private bool _useAccurateRip = false;
-		private bool _useCUEToolsDB = false;
+		internal bool _useAccurateRip = false;
+		internal bool _useCUEToolsDB = false;
 		private bool _useCUEToolsDBFix = false;
 		private bool _useCUEToolsDBSibmit = false;
 		private bool _processed = false;
@@ -1790,7 +1789,7 @@ string status = processor.Go();
 
 			if (useFreedb)
 			{
-				ShowProgress("Looking up album via Freedb...", 0.0, 0.0, null, null);
+				ShowProgress("Looking up album via Freedb...", 0.0, null, null);
 
 				FreedbHelper m_freedb = new FreedbHelper();
 
@@ -1809,7 +1808,7 @@ string status = processor.Go();
 					code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(_toc), out queryResult, out coll);
 					if (code == FreedbHelper.ResponseCodes.CODE_200)
 					{
-						ShowProgress("Looking up album via Freedb... " + queryResult.Discid, 0.5, 0.0, null, null);
+						ShowProgress("Looking up album via Freedb... " + queryResult.Discid, 0.5, null, null);
 						code = m_freedb.Read(queryResult, out cdEntry);
 						if (code == FreedbHelper.ResponseCodes.CODE_210)
 							Releases.Add(cdEntry);
@@ -1821,7 +1820,7 @@ string status = processor.Go();
 							int i = 0;
 							foreach (QueryResult qr in coll)
 							{
-								ShowProgress("Looking up album via freedb... " + qr.Discid, 0.0, (++i + 0.0) / coll.Count, null, null);
+								ShowProgress("Looking up album via freedb... " + qr.Discid, (++i + 0.0) / coll.Count, null, null);
 								CheckStop();
 								code = m_freedb.Read(qr, out cdEntry);
 								if (code == FreedbHelper.ResponseCodes.CODE_210)
@@ -1838,7 +1837,7 @@ string status = processor.Go();
 
 			if (useMusicBrainz)
 			{
-				ShowProgress("Looking up album via MusicBrainz...", 0.0, 0.0, null, null);
+				ShowProgress("Looking up album via MusicBrainz...", 0.0, null, null);
 
 				StringCollection DiscIds = new StringCollection();
 				DiscIds.Add(_toc.MusicBrainzId);
@@ -2672,20 +2671,20 @@ string status = processor.Go();
 
 		public void UseCUEToolsDB(bool submit, string userAgent)
 		{
-			ShowProgress((string)"Contacting CUETools database...", 0, 0, null, null);
+			ShowProgress((string)"Contacting CUETools database...", 0, null, null);
 
 			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
 			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			_CUEToolsDB.ContactDB(userAgent);
 
-			ShowProgress("", 0.0, 0.0, null, null);
+			ShowProgress("", 0.0, null, null);
 			_useCUEToolsDB = true;
 			_useCUEToolsDBSibmit = submit;
 		}
 
 		public void UseAccurateRip()
 		{
-			ShowProgress((string)"Contacting AccurateRip database...", 0, 0, null, null);
+			ShowProgress((string)"Contacting AccurateRip database...", 0, null, null);
 			if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0 && _minDataTrackLength.HasValue && _accurateRipId == null && _config.bruteForceDTL)
 			{
 				uint minDTL = _minDataTrackLength.Value;
@@ -2699,7 +2698,7 @@ string status = processor.Go();
 						DataTrackLength = dtl;
 						break;
 					}
-					ShowProgress((string)"Contacting AccurateRip database...", 0, (dtl - minDTL) / 75.0, null, null);
+					ShowProgress((string)"Contacting AccurateRip database...", (dtl - minDTL) / 75.0, null, null);
 					CheckStop();
 					lock (this)
 					{
@@ -2764,26 +2763,24 @@ string status = processor.Go();
 			return _archive.Decompress(fileName);
 		}
 
-		private void ShowProgress(string status, double percentTrack, double percentDisk, string input, string output)
+		private void ShowProgress(string status, double percent, string input, string output)
 		{
 			if (this.CUEToolsProgress == null)
 				return;
 			_progress.status = status;
-			_progress.percentTrck = percentTrack;
-			_progress.percentDisk = percentDisk;
+			_progress.percent = percent;
 			_progress.offset = 0;
 			_progress.input = input;
 			_progress.output = output;
 			this.CUEToolsProgress(this, _progress);
 		}
 
-		private void ShowProgress(string status, double percentTrack, int diskOffset, int diskLength, string input, string output)
+		private void ShowProgress(string status, int diskOffset, int diskLength, string input, string output)
 		{
 			if (this.CUEToolsProgress == null)
 				return;
 			_progress.status = status;
-			_progress.percentTrck = percentTrack;
-			_progress.percentDisk = (double)diskOffset / diskLength;
+			_progress.percent = (double)diskOffset / diskLength;
 			_progress.offset = diskOffset;
 			_progress.input = input;
 			_progress.output = output;
@@ -2795,35 +2792,33 @@ string status = processor.Go();
 			CheckStop();
 			if (this.CUEToolsProgress == null)
 				return;
-			_progress.percentDisk = 0;
-			_progress.percentTrck = e.percent;
+			_progress.percent = e.percent;
 			_progress.offset = 0;
 			_progress.status = e.uri;
 			this.CUEToolsProgress(this, _progress);
 		}
 
-		private void CDReadProgress(object sender, ReadProgressArgs e)
-		{
-			CheckStop();
-			if (this.CUEToolsProgress == null)
-				return;
-			ICDRipper audioSource = (ICDRipper)sender;
-			int processed = e.Position - e.PassStart;
-			TimeSpan elapsed = DateTime.Now - e.PassTime;
-			double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
-			_progress.percentDisk = (double)(e.PassStart + (processed + e.Pass * (e.PassEnd - e.PassStart)) / (audioSource.CorrectionQuality + 1)) / audioSource.TOC.AudioLength;
-			_progress.percentTrck = (double) (e.Position - e.PassStart) / (e.PassEnd - e.PassStart);
-			_progress.offset = 0;
-			_progress.status = string.Format("Ripping @{0:00.00}x {1}", speed, e.Pass > 0 ? " (Retry " + e.Pass.ToString() + ")" : "");
-			this.CUEToolsProgress(this, _progress);
-		}
+		//private void CDReadProgress(object sender, ReadProgressArgs e)
+		//{
+		//    CheckStop();
+		//    if (this.CUEToolsProgress == null)
+		//        return;
+		//    ICDRipper audioSource = (ICDRipper)sender;
+		//    int processed = e.Position - e.PassStart;
+		//    TimeSpan elapsed = DateTime.Now - e.PassTime;
+		//    double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
+		//    _progress.percentDisk = (double)(e.PassStart + (processed + e.Pass * (e.PassEnd - e.PassStart)) / (audioSource.CorrectionQuality + 1)) / audioSource.TOC.AudioLength;
+		//    _progress.percentTrck = (double) (e.Position - e.PassStart) / (e.PassEnd - e.PassStart);
+		//    _progress.offset = 0;
+		//    _progress.status = string.Format("Ripping @{0:00.00}x {1}", speed, e.Pass > 0 ? " (Retry " + e.Pass.ToString() + ")" : "");
+		//    this.CUEToolsProgress(this, _progress);
+		//}
 
 		private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
 		{
 			if (this.CUEToolsProgress == null)
 				return;
-			_progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
-			_progress.percentTrck = 0;
+			_progress.percent = (1.0 + _progress.percent) / 2;
 			_progress.offset = 0;
 			_progress.input = e.Uri.ToString();
 			_progress.output = null;
@@ -2836,7 +2831,7 @@ string status = processor.Go();
 			CheckStop();
 			if (this.CUEToolsProgress == null)
 				return;
-			_progress.percentTrck = e.PercentComplete / 100;
+			_progress.percent = e.PercentComplete / 100;
 			this.CUEToolsProgress(this, _progress);
 		}
 
@@ -3128,7 +3123,7 @@ string status = processor.Go();
 
 		private int GetSampleLength(string path, out TagLib.File fileInfo)
 		{
-			ShowProgress("Analyzing input file...", 0.0, 0.0, path, null);
+			ShowProgress("Analyzing input file...", 0.0, path, null);
 
 			if (Path.GetExtension(path) == ".dummy" || Path.GetExtension(path) == ".bin")
 			{
@@ -3581,8 +3576,9 @@ string status = processor.Go();
 					entry.toc.Pregap != _toc.Pregap ? string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap)) :
 					entry.toc.AudioLength != _toc.AudioLength ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
 					((entry.toc.TrackOffsets != _toc.TrackOffsets) ? dataTrackInfo + ", " : "") + 
-						((!entry.hasErrors) ? "Accurately ripped" :
-						entry.canRecover ? string.Format("Differs in {0} samples", entry.repair.CorrectableErrors) :
+						//((!entry.hasErrors) ? "Accurately ripped" :
+						((!entry.hasErrors) ? string.Format("Accurately ripped, offset {0}", -entry.offset) :
+						entry.canRecover ? string.Format("Differs in {0} samples @{1}", entry.repair.CorrectableErrors, entry.repair.AffectedSectors) :
 						(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
 						entry.httpStatus.ToString());
 				sw.WriteLine("        [{0:x8}] ({1}) {2}", entry.crc, conf, status);
@@ -4067,7 +4063,7 @@ string status = processor.Go();
 		{
 			if (_useAccurateRip)
 			{
-				ShowProgress((string)"Generating AccurateRip report...", 0, 0, null, null);
+				ShowProgress((string)"Generating AccurateRip report...", 0, null, null);
 				if (_action == CUEAction.Verify && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
 				{
 					uint tracksMatch;
@@ -4354,9 +4350,9 @@ string status = processor.Go();
 			if (_useAccurateRip)
 				_arVerify.Init();
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
-				_CUEToolsDB.Init(_useCUEToolsDBSibmit);
+				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
 
-			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0, 0.0, null, null);
+			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0.0, null, null);
 
 #if !DEBUG
 			try
@@ -4431,8 +4427,8 @@ string status = processor.Go();
 							if (trackLength > 0 && !_isCD)
 							{
 								double trackPercent = (double)currentOffset / trackLength;
-								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (uint)(100 * trackPercent),
-									noOutput ? "Verifying" : "Writing"), trackPercent, (int)diskOffset, (int)diskLength,
+								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (int)(100*trackPercent),
+									noOutput ? "Verifying" : "Writing"), (int)diskOffset, (int)diskLength,
 									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
 							}
 
@@ -4512,93 +4508,98 @@ string status = processor.Go();
 			ApplyWriteOffset();
 
 			hdcdDecoder = null;
-			if (_config.detectHDCD && CUEProcessorPlugins.hdcd != null)
-			{
-				try { hdcdDecoder = Activator.CreateInstance(CUEProcessorPlugins.hdcd, 2, 44100, 20, false) as IAudioDest; }
-				catch { }
-			}
 			if (_useAccurateRip)
 				_arVerify.Init();
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
-				_CUEToolsDB.Init(_useCUEToolsDBSibmit);
+				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
 
-			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, "Verifying"), 0, 0.0, null, null);
+			ShowProgress(String.Format("Verifying ({0:00}%)...", 0), 0.0, null, null);
 
 			AudioBuffer sampleBuffer = new AudioBuffer(AudioPCMConfig.RedBook, 0x10000);
-			IAudioSource audioSource = new CUESheetAudio(this);
-			if (_isCD || _config.separateDecodingThread)
-				audioSource = new AudioPipe(audioSource, 0x10000);
+
+			List<CUEToolsVerifyTask> tasks = new List<CUEToolsVerifyTask>();
+			// also make sure all sources are seekable!!!
+			// use overlapped io with large buffers?
+			// ar.verify in each thread?
+			int nThreads = 1;// _isCD || !_config.separateDecodingThread || _useCUEToolsDB || _config.detectHDCD ? 1 : Environment.ProcessorCount;
+
+			int diskLength = 588 * (int)_toc.AudioLength;
+			tasks.Add(new CUEToolsVerifyTask(this, 0, diskLength / nThreads, _arVerify, _CUEToolsDB));
+			for (int iThread = 1; iThread < nThreads; iThread++)
+				tasks.Add(new CUEToolsVerifyTask(this, iThread * diskLength / nThreads, (iThread + 1) * diskLength / nThreads));
 
 #if !DEBUG
 			try
 #endif
 			{
 				int lastProgress = -588 * 75;
+				int diskOffset = 0;
+				int sourcesActive;
 				do
 				{
-					if (audioSource.Position - lastProgress >= 588 * 75)
+					sourcesActive = 0;
+					for (int iSource = 0; iSource < tasks.Count; iSource++)
 					{
-						lastProgress = (int)audioSource.Position;
-						int pos = 0;
-						int trackStart = 0;
-						int trackLength = (int)_toc.Pregap * 588;
-						for (int iTrack = 0; iTrack < TrackCount; iTrack++)
-							for (int iIndex = 0; iIndex <= _toc[_toc.FirstAudio + iTrack].LastIndex; iIndex++)
-							{
-								int indexLen = (int)_toc.IndexLength(_toc.FirstAudio + iTrack, iIndex) * 588;
-								if (iIndex == 1)
+						CUEToolsVerifyTask task = tasks[iSource];
+						if (task.Remaining == 0)
+							continue;
+						sourcesActive++;
+						if (tasks.Count == 1 && task.source.Position - lastProgress >= 588 * 75)
+						{
+							lastProgress = (int)task.source.Position;
+							int pos = 0;
+							int trackStart = 0;
+							int trackLength = (int)_toc.Pregap * 588;
+							for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+								for (int iIndex = 0; iIndex <= _toc[_toc.FirstAudio + iTrack].LastIndex; iIndex++)
 								{
-									trackStart = pos;
-									trackLength = (int)_toc[_toc.FirstAudio + iTrack].Length * 588;
-								}
-								if (audioSource.Position < pos + indexLen)
-								{
-									if (trackLength > 0 && !_isCD)
+									int indexLen = (int)_toc.IndexLength(_toc.FirstAudio + iTrack, iIndex) * 588;
+									if (iIndex == 1)
 									{
-										double trackPercent = (double)(audioSource.Position - trackStart) / trackLength;
-										int diskLength = 588 * (int)_toc.AudioLength;
-										int diskOffset = (int)audioSource.Position;
-										ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (uint)(100 * trackPercent),
-											"Verifying"), trackPercent, diskOffset, diskLength, audioSource.Path, null);
+										trackStart = pos;
+										trackLength = (int)_toc[_toc.FirstAudio + iTrack].Length * 588;
 									}
-									iTrack = TrackCount;
-									break;
+									if (task.source.Position < pos + indexLen)
+									{
+										if (trackLength > 0 && !_isCD)
+										{
+											double trackPercent = (double)(task.source.Position - trackStart) / trackLength;
+											ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (int)(100*trackPercent),
+												"Verifying"), diskOffset, diskLength, task.source.Path, null);
+										}
+										iTrack = TrackCount;
+										break;
+									}
+									pos += indexLen;
 								}
-								pos += indexLen;
-							}
+						}
+						else if (tasks.Count > 1)
+						{
+							ShowProgress(String.Format("Verifying ({0:00}%)...", (uint)(100.0 * diskOffset / diskLength)),
+								diskOffset, diskLength, InputPath, null);
+						}
+
+						int copyCount = task.Step(sampleBuffer);
+
+						diskOffset += copyCount;
+
+						CheckStop();
 					}
-
-					int copyCount = audioSource.Read(sampleBuffer, -1);
-					if (copyCount == 0)
-						break;
-
-					if (_useCUEToolsDB) // !_useCUEToolsDBFix
-						_CUEToolsDB.Verify.Write(sampleBuffer);
-					if (_useAccurateRip)
-						_arVerify.Write(sampleBuffer);
-					if (hdcdDecoder != null)
-					{
-						hdcdDecoder.Write(sampleBuffer);
-						if (_config.wait750FramesForHDCD && audioSource.Position > 750 * 588 && string.Format("{0:s}", hdcdDecoder) == "")
-							hdcdDecoder = null;
-					}
-
-					CheckStop();
-				} while (true);
+				} while (sourcesActive > 0);
 			}
 #if !DEBUG
 			catch (Exception ex)
 			{
-				hdcdDecoder = null;
-				if (audioSource != null)
-					try { audioSource.Close(); }
-					catch { }
-				audioSource = null;
+				tasks.ForEach(t => t.TryClose());
+				tasks.Clear();
 				throw ex;
 			}
 #endif
-			if (audioSource != null)
-				audioSource.Close();
+			hdcdDecoder = tasks[0].hdcd;
+			for (int iThread = 1; iThread < nThreads; iThread++)
+				tasks[0].Combine(tasks[iThread]);
+			tasks.ForEach(t => t.Close());
+			tasks.Clear();
 		}
 
 		private void DetectGaps()
@@ -4632,8 +4633,8 @@ string status = processor.Go();
 		{
 			pathIn = Path.GetFullPath(pathIn);
 			List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, Path.GetDirectoryName(pathIn));
-			FileGroupInfo fileGroup = FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.TrackFiles)
-				?? FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.FileWithCUE);
+			FileGroupInfo fileGroup = fileGroups.Find(f => f.type == FileGroupInfoType.TrackFiles && f.Contains(pathIn)) ??
+				fileGroups.Find(f => f.type == FileGroupInfoType.FileWithCUE && f.Contains(pathIn));
 			return fileGroup == null ? null : CreateDummyCUESheet(_config, fileGroup);
 		}
 
@@ -4832,7 +4833,7 @@ string status = processor.Go();
 					throw new StopException();
 				if (_pause)
 				{
-					ShowProgress("Paused...", 0, 0, null, null);
+					ShowProgress("Paused...", 0, null, null);
 					Monitor.Wait(this);
 				}
 			}
@@ -5474,14 +5475,22 @@ string status = processor.Go();
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;
 						bool useAR = _useAccurateRip;
-						_useAccurateRip = false;
+						_useAccurateRip = true;
 						Go();
 						_useAccurateRip = useAR;
 						List<CUEToolsSourceFile> choices = new List<CUEToolsSourceFile>();
 						foreach (DBEntry entry in CTDB.Entries)
 							if (!entry.hasErrors || entry.canRecover)
 							{
-								CUEToolsSourceFile choice = new CUEToolsSourceFile(entry.Status, new StringReader(""));
+								StringBuilder sb = new StringBuilder();
+								if (entry.hasErrors)
+								{
+									sb.AppendFormat("Affected positions:\n");
+									for (int sec = 0; sec < entry.repair.AffectedSectorArray.Length; sec++)
+										if (entry.repair.AffectedSectorArray[sec])
+											sb.AppendFormat("{0}\n", CDImageLayout.TimeToString((uint)sec));
+								}
+								CUEToolsSourceFile choice = new CUEToolsSourceFile(entry.Status, new StringReader(sb.ToString()));
 								choice.data = entry;
 								choices.Add(choice);
 							}
@@ -5597,21 +5606,7 @@ string status = processor.Go();
 		{
 			if (type != FileGroupInfoType.TrackFiles)
 				return main.FullName.ToLower() == pathIn.ToLower();
-			bool found = false;
-			foreach (FileSystemInfo file in files)
-				if (file.FullName.ToLower() == pathIn.ToLower())
-					found = true;
-			return found;
-		}
-
-		public static FileGroupInfo WhichContains(IEnumerable<FileGroupInfo> fileGroups, string pathIn, FileGroupInfoType type)
-		{
-			foreach (FileGroupInfo fileGroup in fileGroups)
-			{
-				if (fileGroup.type == type && fileGroup.Contains(pathIn))
-					return fileGroup;
-			}
-			return null;
+			return null != files.Find(file => file.FullName.ToLower() == pathIn.ToLower());
 		}
 	}
 
@@ -5782,6 +5777,7 @@ string status = processor.Go();
 		CUESheet cueSheet;
 		IAudioSource currentAudio;
 		int currentSource;
+		long nextPos;
 		long _samplePos, _sampleLen;
 
 		public CUESheetAudio(CUESheet cueSheet)
@@ -5790,10 +5786,9 @@ string status = processor.Go();
 			this.currentAudio = null;
 			this._samplePos = 0;
 			this._sampleLen = 0;
-			this.currentSource = 0;
-			for (int iSource = 0; iSource < cueSheet._sources.Count; iSource++)
-				this._sampleLen += cueSheet._sources[iSource].Length;
-			this.currentAudio = cueSheet.GetAudioSource(0, false);
+			this.currentSource = -1;
+			this.nextPos = 0;
+			cueSheet._sources.ForEach(s => this._sampleLen += s.Length);
 		}
 
 		public void Close()
@@ -5813,6 +5808,8 @@ string status = processor.Go();
 			}
 			set
 			{
+				if (value == _samplePos)
+					return;
 				long sourceStart = 0;
 				for (int iSource = 0; iSource < cueSheet._sources.Count; iSource++)
 				{
@@ -5820,11 +5817,12 @@ string status = processor.Go();
 					{
 						if (iSource != currentSource)
 						{
-							currentAudio.Close();
+							if (currentAudio != null) currentAudio.Close();
 							currentSource = iSource;
 							currentAudio = cueSheet.GetAudioSource(currentSource, false);
+							nextPos = sourceStart + cueSheet._sources[currentSource].Length;
 						}
-						currentAudio.Position = value - sourceStart;
+						currentAudio.Position = value - sourceStart + cueSheet._sources[currentSource].Offset;
 						_samplePos = value;
 						return;
 					}
@@ -5869,8 +5867,7 @@ string status = processor.Go();
 		public int Read(AudioBuffer buff, int maxLength)
 		{
 			buff.Prepare(this, maxLength);
-
-			if (currentAudio.Remaining == 0)
+			while (_samplePos >= nextPos)
 			{
 				currentSource++;
 				if (currentSource >= cueSheet._sources.Count)
@@ -5878,13 +5875,112 @@ string status = processor.Go();
 					buff.Length = 0;
 					return 0;
 				}
-				currentAudio.Close();
+				if (currentAudio != null)
+					currentAudio.Close();
 				currentAudio = cueSheet.GetAudioSource(currentSource, false);
+				int offset = (int)(_samplePos - nextPos);
+				if (offset != 0)
+					currentAudio.Position += offset;
+				nextPos += cueSheet._sources[currentSource].Length;
 			}
-
-			int res = currentAudio.Read(buff, maxLength);
-			_samplePos += res;
-			return res;
+			int count = (int)(nextPos - _samplePos);
+			if (maxLength >= 0)
+				count = Math.Min(count, maxLength);
+			count = currentAudio.Read(buff, count);
+			_samplePos += count;
+			return count;
 		}
+	}
+
+	internal class CUEToolsVerifyTask
+	{
+		private CUESheet cueSheet;
+		public IAudioSource source { get; private set; }
+		public int start { get; private set; }
+		public int end { get; private set; }
+		public AccurateRipVerify ar { get; private set; }
+		public CUEToolsDB ctdb { get; private set; }
+		public IAudioDest hdcd { get; private set; }
+
+		public CUEToolsVerifyTask(CUESheet cueSheet, int start, int end)
+			: this(cueSheet, start, end, cueSheet._useAccurateRip ? new AccurateRipVerify(cueSheet.TOC, null) : null, null, null)
+		{
+		}
+
+		public CUEToolsVerifyTask(CUESheet cueSheet, int start, int end, AccurateRipVerify ar, CUEToolsDB ctdb)
+			: this(cueSheet, start, end, ar, ctdb, null)
+		{
+			if (cueSheet.Config.detectHDCD && CUEProcessorPlugins.hdcd != null)
+			{
+				try { this.hdcd = Activator.CreateInstance(CUEProcessorPlugins.hdcd, 2, 44100, 20, false) as IAudioDest; }
+				catch { this.hdcd = null; }
+			}
+		}
+
+		private CUEToolsVerifyTask(CUESheet cueSheet, int start, int end, AccurateRipVerify ar, CUEToolsDB ctdb, IAudioDest hdcd)
+		{
+			this.cueSheet = cueSheet;
+			this.start = start;
+			this.end = end;
+			this.source = new CUESheetAudio(cueSheet);
+			if (cueSheet.IsCD || cueSheet.Config.separateDecodingThread)
+				this.source = new AudioPipe(this.source, 0x10000);
+			this.source.Position = start;
+			this.ar = cueSheet._useAccurateRip ? ar : null;
+			this.ctdb = cueSheet._useCUEToolsDB ? ctdb : null;
+			this.hdcd = hdcd;
+			if (this.ar != null)
+				this.ar.Position = start;
+		}
+
+		public bool TryClose()
+		{
+			try { Close(); }
+			catch { return false; }
+			return true;
+		}
+
+		public void Close()
+		{
+			if (this.source != null)
+			{
+				this.source.Close();
+				this.source = null;
+			}
+			if (this.ar != null)
+			{
+				//this.ar.Close(); can't! throws
+				this.ar = null;
+			}
+		}
+
+		public int Step(AudioBuffer sampleBuffer)
+		{
+			if (Remaining == 0)
+				return 0;
+			int copyCount = source.Read(sampleBuffer, Remaining);
+			if (copyCount == 0)
+				return 0;
+
+			if (ctdb != null) // !_useCUEToolsDBFix
+				ctdb.Verify.Write(sampleBuffer);
+			if (ar != null)
+				ar.Write( sampleBuffer);
+			if (hdcd != null)
+			{
+				hdcd.Write(sampleBuffer);
+				if (cueSheet.Config.wait750FramesForHDCD && source.Position > start + 750 * 588 && string.Format("{0:s}", hdcd) == "")
+					hdcd = null;
+			}
+			return copyCount;
+		}
+
+		public void Combine(CUEToolsVerifyTask task)
+		{
+			if (ar != null)
+				ar.Combine(task.ar, task.start, task.end);
+		}
+
+		public int Remaining { get { return end - (int)source.Position; } }
 	}
 }

@@ -69,15 +69,15 @@ namespace CUETools.TestCodecs
 		[TestMethod()]
 		public void CombineTest()
 		{
-			Crc32 crc32 = new Crc32();
 			int lenAB = testBytes.Length;
 			int lenA = 7;
 			int lenB = lenAB - lenA;
-			uint crcAB = crc32.ComputeChecksum(0, testBytes, 0, lenAB);
-			uint crcA = crc32.ComputeChecksum(0, testBytes, 0, lenA);
-			uint crcB = crc32.ComputeChecksum(0, testBytes, lenA, lenB);
-			Assert.AreEqual<uint>(crcAB, crc32.Combine(crcA, crcB, lenB), "CRC32 was not combined correctly.");
-			Assert.AreEqual<uint>(crcB, crc32.Combine(crcA, crcAB, lenB), "CRC32 was not substracted correctly.");
+			uint crcAB = Crc32.ComputeChecksum(0, testBytes, 0, lenAB);
+			uint crcA = Crc32.ComputeChecksum(0, testBytes, 0, lenA);
+			uint crcB = Crc32.ComputeChecksum(0, testBytes, lenA, lenB);
+			Assert.AreEqual<uint>(crcAB, Crc32.Combine(crcA, crcB, lenB), "CRC32 was not combined correctly.");
+			Assert.AreEqual<uint>(crcB, Crc32.Combine(crcA, crcAB, lenB), "CRC32 was not substracted correctly.");
+			Assert.AreEqual<uint>(crcA, Crc32.Substract(crcAB, crcB, lenB), "CRC32 was not substracted correctly.");
 		}
 
 		/// <summary>
@@ -86,8 +86,7 @@ namespace CUETools.TestCodecs
 		[TestMethod()]
 		public void ComputeChecksumTest()
 		{
-			Crc32 crc32 = new Crc32();
-			uint actual = crc32.ComputeChecksum(0xffffffff, testBytes, 0, testBytes.Length) ^ 0xffffffff;
+			uint actual = Crc32.ComputeChecksum(0xffffffff, testBytes, 0, testBytes.Length) ^ 0xffffffff;
 			Assert.AreEqual<uint>(2028688632, actual, "CRC32 was not combined correctly.");
 		}
 	}

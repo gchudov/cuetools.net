@@ -1,6 +1,8 @@
 ﻿using System;
 using CUETools.CDRepair;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using CUETools.AccurateRip;
+using CUETools.CDImage;
 using CUETools.Codecs;
 
 namespace CUETools.TestParity
@@ -32,6 +34,8 @@ namespace CUETools.TestParity
 
 		const int npar = 8;
 		static byte[] wav = new byte[finalSampleCount * 4];
+		static AccurateRipVerify ar;
+		static CDImageLayout toc;
 
 		private TestContext testContextInstance;
 
@@ -59,6 +63,8 @@ namespace CUETools.TestParity
 		[ClassInitialize()]
 		public static void MyClassInitialize(TestContext testContext)
 		{
+			toc = new CDImageLayout(1, 1, 1, string.Format("0 {0}", (finalSampleCount / 588).ToString()));
+			ar = new AccurateRipVerify(toc, null);
 			new Random(2423).NextBytes(wav);
 		}
 
@@ -90,8 +96,10 @@ namespace CUETools.TestParity
 		public void CDRepairEncodeWriteTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true);
+			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true, ar);
 			buff.Prepare(wav, finalSampleCount);
+			ar.Init();
+			ar.Write(buff);
 			encode.Write(buff);
 			encode.Close();
 			Assert.AreEqual<byte>(8, encode.Parity[0]);

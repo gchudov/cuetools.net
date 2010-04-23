@@ -8,6 +8,7 @@ using System.Net;
 using System.Xml;
 using System.Text;
 using CUETools.CDImage;
+using CUETools.AccurateRip;
 using CUETools.CDRepair;
 using Krystalware.UploadHelper;
 
@@ -364,12 +365,12 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public void Init(bool encode)
+		public void Init(bool encode, AccurateRipVerify ar)
 		{
 			int npar = 8;
 			foreach (DBEntry entry in entries)
 				npar = Math.Max(npar, entry.npar);
-			verify = new CDRepairEncode(length, 10 * 588 * 2, npar, entries.Count > 0, encode);
+			verify = new CDRepairEncode(length, 10 * 588 * 2, npar, entries.Count > 0, encode, ar);
 		}
 
 		public int Total

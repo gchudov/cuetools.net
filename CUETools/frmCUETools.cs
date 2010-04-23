@@ -485,10 +485,7 @@ namespace JDP {
 			{
 				if (_profile._config.checkForUpdates && DateTime.UtcNow - lastMOTD > TimeSpan.FromDays(1) && _batchReport.Length == 0)
 				{
-					this.Invoke((MethodInvoker)delegate()
-					{
-						toolStripStatusLabel1.Text = "Checking for updates...";
-					});
+					this.Invoke((MethodInvoker)(() => toolStripStatusLabel1.Text = "Checking for updates..."));
 					HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://cuetools.net/motd/motd.jpg");
 					req.Method = "GET";
 					try
@@ -595,8 +592,8 @@ namespace JDP {
 					{
 						pathIn = Path.GetFullPath(pathIn);
 						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_profile._config, Path.GetDirectoryName(pathIn));
-						FileGroupInfo fileGroup = FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.TrackFiles)
-							?? FileGroupInfo.WhichContains(fileGroups, pathIn, FileGroupInfoType.FileWithCUE);
+						FileGroupInfo fileGroup = fileGroups.Find(f => f.type == FileGroupInfoType.TrackFiles && f.Contains(pathIn)) ??
+							fileGroups.Find(f => f.type == FileGroupInfoType.FileWithCUE && f.Contains(pathIn));
 						if (fileGroup == null)
 							throw new Exception("doesn't seem to be part of an album");
 						string cueSheetContents;
@@ -964,33 +961,28 @@ namespace JDP {
 		public void SetStatus(object sender, CUEToolsProgressEventArgs e)
 		{
 			this.BeginInvoke((MethodInvoker)delegate() {
-				if (e.percentDisk == 0)
+				if (e.percent == 0)
 				{
 					_startedAt = DateTime.Now;
 					toolStripStatusLabelProcessed.Visible = false;
-					toolStripProgressBar1.ToolTipText = "";
 					toolStripProgressBar2.ToolTipText = "";
 				}
-				else if (e.percentDisk > 0.02)
+				else if (e.percent > 0.02)
 				{
 					TimeSpan span = DateTime.Now - _startedAt;
-					TimeSpan eta = new TimeSpan((long)(span.Ticks / e.percentDisk));
+					TimeSpan eta = new TimeSpan((long)(span.Ticks / e.percent));
+					string speedStr = "";
 					if (span.TotalSeconds > 0 && e.offset > 0)
 					{
 						double speed = e.offset / span.TotalSeconds / 44100;
-						toolStripProgressBar1.ToolTipText = String.Format("{0:00.00}x", speed);
-					} else
-						toolStripProgressBar1.ToolTipText = "";
+						speedStr = String.Format("{0:00.00}x", speed);
+					} 
 					toolStripProgressBar2.ToolTipText = String.Format("{0}:{1:00}/{2}:{3:00}", (int)span.TotalMinutes, span.Seconds, (int)eta.TotalMinutes, eta.Seconds);
-					if (FileBrowserState != FileBrowserStateEnum.Hidden)
-					{
-						toolStripStatusLabelProcessed.Text = String.Format("{0}@{1}", toolStripProgressBar2.ToolTipText, toolStripProgressBar1.ToolTipText);
-						toolStripStatusLabelProcessed.Visible = true;
-					}
+					toolStripStatusLabelProcessed.Text = String.Format("{0}@{1}", toolStripProgressBar2.ToolTipText, speedStr);
+					toolStripStatusLabelProcessed.Visible = true;
 				}
 				toolStripStatusLabel1.Text = e.status;
-				toolStripProgressBar1.Value = Math.Max(0,Math.Min(100,(int)(e.percentTrck*100)));
-				toolStripProgressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percentDisk*100)));
+				toolStripProgressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percent*100)));
 			});
 		}
 
@@ -1023,7 +1015,6 @@ namespace JDP {
 			btnStop.Visible = btnPause.Visible = running;
 			btnResume.Visible = false;
 			toolStripStatusLabel1.Text = String.Empty;
-			toolStripProgressBar1.Value = 0;
 			toolStripProgressBar2.Value = 0;
 			toolStripStatusLabelAR.Visible = false;
 			toolStripStatusLabelCTDB.Visible = false;

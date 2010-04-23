@@ -31,7 +31,6 @@ namespace JDP {
 			this.toolStripStatusLabelProcessed = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabelCTDB = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabelAR = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
 			this.toolStripProgressBar2 = new System.Windows.Forms.ToolStripProgressBar();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.textBatchReport = new System.Windows.Forms.TextBox();
@@ -184,7 +183,6 @@ namespace JDP {
             this.toolStripStatusLabelProcessed,
             this.toolStripStatusLabelCTDB,
             this.toolStripStatusLabelAR,
-            this.toolStripProgressBar1,
             this.toolStripProgressBar2});
 			this.statusStrip1.Name = "statusStrip1";
 			this.statusStrip1.ShowItemToolTips = true;
@@ -224,13 +222,6 @@ namespace JDP {
 			this.toolStripStatusLabelAR.Image = global::JDP.Properties.Resources.AR;
 			this.toolStripStatusLabelAR.Name = "toolStripStatusLabelAR";
 			this.toolStripStatusLabelAR.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
-			// 
-			// toolStripProgressBar1
-			// 
-			this.toolStripProgressBar1.AutoToolTip = true;
-			this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-			resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
-			this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
 			// 
 			// toolStripProgressBar2
 			// 
@@ -1117,7 +1108,6 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelProcessed;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelAR;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
 		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar2;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
 		private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonProfile;

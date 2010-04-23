@@ -2,6 +2,8 @@
 using CUETools.CDRepair;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CUETools.Codecs;
+using CUETools.CDImage;
+using CUETools.AccurateRip;
 
 namespace CUETools.TestParity
 {
@@ -15,7 +17,7 @@ namespace CUETools.TestParity
 	public class CDRepairDecodeTest
 	{
 
-		const int finalSampleCount = 44100 * 60 * 10 + 20; // 10 minutes long
+		const int finalSampleCount = 44100 * 60 * 10; // 10 minutes long
 		//const int stride = finalSampleCount * 2 / 32768;
 		const int stride = 10 * 588 * 2;
 		const int npar = 8;
@@ -25,6 +27,8 @@ namespace CUETools.TestParity
 		static byte[] parity;
 		static uint crc;
 		const int offset = 48;
+		static AccurateRipVerify ar;
+		static CDImageLayout toc;
 		//const int offset = 5 * 588 - 5;
 		//const int offset = 2000;
 
@@ -54,6 +58,9 @@ namespace CUETools.TestParity
 		[ClassInitialize()]
 		public static void MyClassInitialize(TestContext testContext)
 		{
+			toc = new CDImageLayout(1, 1, 1, string.Format("0 {0}", (finalSampleCount / 588).ToString()));
+			ar = new AccurateRipVerify(toc, null);
+
 			new Random(2423).NextBytes(wav);
 			new Random(2423).NextBytes(wav2);
 			Random rnd = new Random(987);
@@ -61,10 +68,12 @@ namespace CUETools.TestParity
 				wav2[(int)(rnd.NextDouble() * (wav2.Length - 1))] = (byte)(rnd.NextDouble() * 255);
 
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true);
+			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true, ar);
 			buff.Prepare(wav, finalSampleCount);
 			encode.Write(buff);
 			encode.Close();
+			ar.Init();
+			ar.Write(buff);
 			parity = encode.Parity;
 			crc = encode.CRC;
 		}
@@ -97,10 +106,12 @@ namespace CUETools.TestParity
 		public void CDRepairDecodeOriginalTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar);
 			buff.Prepare(wav, finalSampleCount);
 			decode.Write(buff);
 			decode.Close();
+			ar.Init();
+			ar.Write(buff);
 			int actualOffset;
 			bool hasErrors;
 			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
@@ -115,10 +126,12 @@ namespace CUETools.TestParity
 		public void CDRepairDecodeModifiedTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar);
 			buff.Prepare(wav2, finalSampleCount);
 			decode.Write(buff);
 			decode.Close();
+			ar.Init();
+			ar.Write(buff);
 			int actualOffset;
 			bool hasErrors;
 			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
@@ -136,9 +149,11 @@ namespace CUETools.TestParity
 		public void CDRepairDecodePositiveOffsetTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar);
 			Array.Copy(wav, offset * 4, wav3, 0, (finalSampleCount - offset) * 4);
 			buff.Prepare(wav3, finalSampleCount);
+			ar.Init();
+			ar.Write(buff);
 			decode.Write(buff);
 			decode.Close();
 			int actualOffset;
@@ -155,10 +170,13 @@ namespace CUETools.TestParity
 		public void CDRepairDecodeNegativeOffsetTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar);
+			ar.Init();
 			buff.Prepare(new byte[offset * 4], offset);
+			ar.Write(buff);
 			decode.Write(buff);
 			buff.Prepare(wav, finalSampleCount - offset);
+			ar.Write(buff);
 			decode.Write(buff);
 			decode.Close();
 			int actualOffset;
@@ -175,9 +193,11 @@ namespace CUETools.TestParity
 		public void CDRepairDecodePositiveOffsetErrorsTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar);
 			Array.Copy(wav2, offset * 4, wav3, 0, (finalSampleCount - offset) * 4);
 			buff.Prepare(wav3, finalSampleCount);
+			ar.Init();
+			ar.Write(buff);
 			decode.Write(buff);
 			decode.Close();
 			int actualOffset;
@@ -197,10 +217,13 @@ namespace CUETools.TestParity
 		public void CDRepairDecodeNegativeOffsetErrorsTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			CDRepairEncode decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar);
 			buff.Prepare(new byte[offset * 4], offset);
+			ar.Init();
+			ar.Write(buff);
 			decode.Write(buff);
 			buff.Prepare(wav2, finalSampleCount - offset);
+			ar.Write(buff);
 			decode.Write(buff);
 			decode.Close();
 			int actualOffset;

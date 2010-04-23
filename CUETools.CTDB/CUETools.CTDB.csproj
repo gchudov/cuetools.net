@@ -47,6 +47,10 @@
     <Compile Include="UploadHelper\UploadFile.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
+      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
+      <Name>CUETools.AccurateRip</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>

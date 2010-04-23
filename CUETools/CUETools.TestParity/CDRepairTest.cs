@@ -1,6 +1,8 @@
 ﻿using System;
 using CUETools.Codecs;
 using CUETools.CDRepair;
+using CUETools.AccurateRip;
+using CUETools.CDImage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace CUETools.TestParity
 {
@@ -30,6 +32,8 @@ namespace CUETools.TestParity
 		static CDRepairFix fix;
 		static CDRepairFix fix2;
 		const int offset = 48;
+		static AccurateRipVerify ar, ar2;
+		static CDImageLayout toc;
 
 		/// <summary>
 		///Gets or sets the test context which provides
@@ -55,6 +59,10 @@ namespace CUETools.TestParity
 		[ClassInitialize()]
 		public static void MyClassInitialize(TestContext testContext)
 		{
+			toc = new CDImageLayout(1, 1, 1, string.Format("0 {0}", (finalSampleCount / 588).ToString()));
+			ar = new AccurateRipVerify(toc, null);
+			ar2 = new AccurateRipVerify(toc, null);
+
 			new Random(2423).NextBytes(wav);
 			new Random(2423).NextBytes(wav2);
 			Random rnd = new Random(987);
@@ -62,14 +70,16 @@ namespace CUETools.TestParity
 				wav2[(int)(rnd.NextDouble() * (wav2.Length - 1))] = (byte)(rnd.NextDouble() * 255);
 
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true);
+			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true, ar);
 			buff.Prepare(wav, finalSampleCount);
+			ar.Init();
+			ar.Write(buff);
 			encode.Write(buff);
 			encode.Close();
 			parity = encode.Parity;
 			crc = encode.CRC;
 
-			decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			decode = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar);
 			buff.Prepare(wav2, finalSampleCount);
 			decode.Write(buff);
 			decode.Close();
@@ -79,10 +89,13 @@ namespace CUETools.TestParity
 			decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors);
 			fix = decode.VerifyParity(parity, actualOffset);
 
-			decode2 = new CDRepairEncode(finalSampleCount, stride, npar, true, false);
+			decode2 = new CDRepairEncode(finalSampleCount, stride, npar, true, false, ar2);
 			buff.Prepare(new byte[offset * 4], offset);
+			ar2.Init();
+			ar2.Write(buff);
 			decode2.Write(buff);
 			buff.Prepare(wav2, finalSampleCount - offset);
+			ar2.Write(buff);
 			decode2.Write(buff);
 			decode2.Close();
 			decode2.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors);

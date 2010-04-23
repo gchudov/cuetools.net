@@ -2134,7 +2134,7 @@ namespace CUETools.Codecs
 				_bufferPos = 0;
 				_haveData = false;
 				_close = false;
-				Go();
+				//Go();
 				//throw new Exception("not supported");
 			}
 		}
