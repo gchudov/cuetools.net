@@ -542,7 +542,7 @@ namespace CUERipper
 			cueSheet.Action = CUEAction.Encode;
 
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-			cueSheet.UseCUEToolsDB(true, "CUERipper 2.0.7: " + selectedDriveInfo.drive.ARName);
+			cueSheet.UseCUEToolsDB(true, "CUERipper 2.0.8: " + selectedDriveInfo.drive.ARName);
 			cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
 			cueSheet.UseAccurateRip();
@@ -575,7 +575,7 @@ namespace CUERipper
 			m_freedb.UserName = "gchudov";
 			m_freedb.Hostname = "gmail.com";
 			m_freedb.ClientName = "CUERipper";
-			m_freedb.Version = "2.0.7";
+			m_freedb.Version = "2.0.8";
 			m_freedb.SetDefaultSiteAddress(Properties.Settings.Default.MAIN_FREEDB_SITEADDRESS);
 			
 			QueryResult queryResult;
@@ -626,6 +626,9 @@ namespace CUERipper
 				releases.Add(CreateCUESheet(audioSource, null, null));
 			}
 			_workThread = null;
+			// have to cache results.Count, because it sometimes hangs in it,
+			// and we don't want UI thread to hang.
+			int mbresults_count = results.Count;
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				SetupControls();
@@ -639,9 +642,9 @@ namespace CUERipper
 				toolStripStatusCTDB.Text = cueSheet.CTDB.DBStatus == null ? cueSheet.CTDB.Total.ToString() : "";
 				toolStripStatusCTDB.ToolTipText = "CUETools DB: " + (cueSheet.CTDB.DBStatus ?? "found") + ".";
 				toolStripStatusLabelMusicBrainz.Enabled = true;
-				toolStripStatusLabelMusicBrainz.BorderStyle = results.Count > 0 ? Border3DStyle.SunkenInner : Border3DStyle.RaisedInner;
-				toolStripStatusLabelMusicBrainz.Text = results.Count > 0 ? results.Count.ToString() : "";
-				toolStripStatusLabelMusicBrainz.ToolTipText = "Musicbrainz: " + (results.Count > 0 ? results.Count.ToString() + " entries found." : "click to submit.");
+				toolStripStatusLabelMusicBrainz.BorderStyle = mbresults_count > 0 ? Border3DStyle.SunkenInner : Border3DStyle.RaisedInner;
+				toolStripStatusLabelMusicBrainz.Text = mbresults_count > 0 ? mbresults_count.ToString() : "";
+				toolStripStatusLabelMusicBrainz.ToolTipText = "Musicbrainz: " + (mbresults_count > 0 ? mbresults_count.ToString() + " entries found." : "click to submit.");
 			});
 		}
 

@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Deployment.Application;
+using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
+using CUETools.Processor;
 
 namespace CUERipper
 {
@@ -19,6 +22,11 @@ namespace CUERipper
 
 			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "Win32";
 			GetSatelliteAssemblies("Plugins (" + arch + ")");
+
+			CUEConfig config = new CUEConfig();
+			config.Load(new SettingsReader("CUERipper", "settings.txt", Application.ExecutablePath));
+			try { Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(config.language); }
+			catch { }
 
 			Application.Run(new frmCUERipper());
 		}

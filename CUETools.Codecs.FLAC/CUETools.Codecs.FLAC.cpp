@@ -97,8 +97,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			if (!FLAC__stream_decoder_set_metadata_respond (_decoder, FLAC__METADATA_TYPE_VORBIS_COMMENT))
 				throw gcnew Exception("unable to setup the decoder");
 
-			//if (!FLAC__stream_decoder_set_disable_asm(_decoder, disableAsm))
-			//	throw gcnew Exception("unable to setup the decoder");
+			if (!FLAC__stream_decoder_set_disable_asm(_decoder, true))//disableAsm))
+				throw gcnew Exception("unable to setup the decoder");
 
 			FLAC__StreamDecoderInitStatus st = FLAC__stream_decoder_init_stream(_decoder,
 				(FLAC__StreamDecoderReadCallback)Marshal::GetFunctionPointerForDelegate(_readDel).ToPointer(),

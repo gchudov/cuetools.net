@@ -76,10 +76,6 @@
     <Compile Include="UserDefined.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.CDRepair\CUETools.CDRepair.csproj">
-      <Project>{C4869B37-EBB1-47BB-9406-B1209BEAB84B}</Project>
-      <Name>CUETools.CDRepair</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>

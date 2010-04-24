@@ -118,9 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="listTracks.ToolTip" xml:space="preserve">
-    <value>Редактирование названий треков начинается двойным кликом мыши</value>
-  </data>
   <data name="Title.Text" xml:space="preserve">
     <value>Название</value>
   </data>
@@ -129,6 +126,9 @@
   </data>
   <data name="Length.Text" xml:space="preserve">
     <value>Длина</value>
+  </data>
+  <data name="listTracks.ToolTip" xml:space="preserve">
+    <value>Редактирование названий треков начинается двойным кликом мыши</value>
   </data>
   <data name="buttonGo.Text" xml:space="preserve">
     <value>Поехали</value>

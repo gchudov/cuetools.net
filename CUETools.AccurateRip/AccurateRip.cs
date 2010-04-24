@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using CUETools.Parity;
 using CUETools.CDImage;
 using CUETools.Codecs;
 
@@ -18,9 +19,10 @@ namespace CUETools.AccurateRip
 			_accDisks = new List<AccDisk>();
 			//_crc32 = new Crc32();
 			_hasLogCRC = false;
+			_finalSampleCount = _toc.AudioLength * 588;
 			_CRCLOG = new uint[_toc.AudioTracks + 1];
 			_CRCMASK = new uint[_toc.AudioTracks + 1];
-			_CRCMASK[0] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_toc.AudioLength * 588 * 4);
+			_CRCMASK[0] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_finalSampleCount * 4);
 			for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
 				_CRCMASK[iTrack] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_toc[iTrack + _toc.FirstAudio - 1].Length * 588 * 4);
 			Init();
@@ -316,30 +318,53 @@ namespace CUETools.AccurateRip
 			_CRCLOG[iTrack] = value;
 		}
 
-		private ushort[,] syndrome = new ushort[1,1];
-		private byte[] parity = new byte[1];
-		private ushort[] expTbl = new ushort[1];
-		private ushort[] logTbl = new ushort[1];
-		private int stride = 1, stridecount, npar;
+		internal ushort[,] syndrome;
+		internal byte[] parity;
+		internal ushort[] leadin;
+		internal ushort[] leadout;
+		private int stride = 1, laststride = 1, stridecount = 1, npar = 1;
 		private bool calcSyn = false;
 		private bool calcParity = false;
 
-		public void CalcSyndrome(ushort[] expTbl, ushort[] logTbl, ushort[,] syndrome, byte[] parity, int stride, int stridecount, int npar, bool calcParity, bool calcSyn)
+		internal void InitCDRepair(int stride, int laststride, int stridecount, int npar, bool calcSyn, bool calcParity)
 		{
 			if (npar != 8)
-				throw new NotSupportedException();
-			this.syndrome = syndrome;
-			this.parity = parity;
-			this.logTbl = logTbl;
-			this.expTbl = expTbl;
+				throw new NotSupportedException("npar != 8");
 			this.stride = stride;
+			this.laststride = laststride;
 			this.stridecount = stridecount;
 			this.npar = npar;
 			this.calcSyn = calcSyn;
 			this.calcParity = calcParity;
+			Init();
 		}
 
-		private unsafe static void CalcSyn8(ushort* exp, ushort* log, ushort* syn, uint lo, uint n)
+		internal unsafe uint CTDBCRC(int actualOffset)
+		{
+			fixed (uint* crct = Crc32.table)
+			{
+				// calculate leadin CRC
+				uint crc0 = 0;
+				for (int off = 0; off < stride - 2 * actualOffset; off++)
+				{
+					ushort dd = leadin[off];
+					crc0 = (crc0 >> 8) ^ crct[(byte)(crc0 ^ dd)];
+					crc0 = (crc0 >> 8) ^ crct[(byte)(crc0 ^ (dd >> 8))];
+				}
+				// calculate leadout CRC
+				uint crc2 = 0;
+				for (int off = laststride + 2 * actualOffset - 1; off >= 0; off--)
+				{
+					ushort dd = leadout[off];
+					crc2 = (crc2 >> 8) ^ crct[(byte)(crc2 ^ dd)];
+					crc2 = (crc2 >> 8) ^ crct[(byte)(crc2 ^ (dd >> 8))];
+				}
+
+				return GetCRC32(crc0, (stride - 2 * actualOffset) * 2, crc2, (laststride + 2 * actualOffset) * 2);
+			}
+		}
+
+		private unsafe static void CalcSyn8(ushort* exp, ushort* log, ushort* syn, uint lo, uint n, int npar)
 		{
 			syn[0] ^= (ushort)lo;
 			uint idx = log[lo] + n; syn[1] ^= exp[(idx & 0xffff) + (idx >> 16)];
@@ -349,6 +374,17 @@ namespace CUETools.AccurateRip
 			idx += n; syn[5] ^= exp[(idx & 0xffff) + (idx >> 16)];
 			idx += n; syn[6] ^= exp[(idx & 0xffff) + (idx >> 16)];
 			idx += n; syn[7] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//for (int i = 8; i < npar; i += 8)
+			//{
+			//    idx += n; syn[i] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//    idx += n; syn[i + 1] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//    idx += n; syn[i + 2] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//    idx += n; syn[i + 3] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//    idx += n; syn[i + 4] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//    idx += n; syn[i + 5] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//    idx += n; syn[i + 6] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//    idx += n; syn[i + 7] ^= exp[(idx & 0xffff) + (idx >> 16)];
+			//}
 		}
 
 #if alternateSynCalc
@@ -452,7 +488,7 @@ namespace CUETools.AccurateRip
 				int pk = ((int)(lo << 16)) >> 16;
 				peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));
 
-				if (doSyn && lo != 0) CalcSyn8(exp, log, syn + i * 16, lo, n);
+				if (doSyn && lo != 0) CalcSyn8(exp, log, syn + i * 16, lo, n, npar);
 				if (doPar) CalcPar8(exp, log, wr + i * 16, lo);
 
 				uint hi = sample >> 16;
@@ -468,7 +504,7 @@ namespace CUETools.AccurateRip
 				pk = ((int)(hi << 16)) >> 16;
 				peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));
 
-				if (doSyn && hi != 0) CalcSyn8(exp, log, syn + i * 16 + 8, hi, n);
+				if (doSyn && hi != 0) CalcSyn8(exp, log, syn + i * 16 + 8, hi, n, npar);
 				if (doPar) CalcPar8(exp, log, wr + i * 16 + 8, hi);
 			}
 
@@ -513,7 +549,7 @@ namespace CUETools.AccurateRip
 
 			int pos = 0;
 			fixed (uint* t = Crc32.table)
-			fixed (ushort* exp = expTbl, log = logTbl, synptr1 = syndrome)
+			fixed (ushort* exp = Galois16.instance.ExpTbl, log = Galois16.instance.LogTbl, synptr1 = syndrome)
 			fixed (byte* pSampleBuff = &sampleBuffer.Bytes[0], bpar = parity)
 				while (pos < sampleBuffer.Length)
 				{
@@ -527,6 +563,19 @@ namespace CUETools.AccurateRip
 					int currentPart = ((int)_sampleCount * 2) % stride;
 					ushort* synptr = synptr1 + npar * currentPart;
 					ushort* wr = ((ushort*)bpar) + npar * currentPart;
+					int currentStride = ((int)_sampleCount * 2) / stride;
+
+					if (currentStride < 2 && leadin != null)
+						for (int i = 0; i < copyCount * 2; i++)
+							leadin[_sampleCount * 2 + i] = ((ushort*)samples)[i];
+
+					if (currentStride >= stridecount && leadout != null)
+						for (int i = 0; i < copyCount * 2; i++)
+						{
+							int remaining = (int)(_finalSampleCount - _sampleCount) * 2 - i - 1;
+							if (remaining < stride + laststride)
+								leadout[remaining] = ((ushort*)samples)[i];
+						}
 
 					if (currentSector < 10)
 						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, currentOffset, currentOffset);
@@ -609,6 +658,18 @@ namespace CUETools.AccurateRip
 			_CacheCRCWN = new uint[_toc.AudioTracks + 1, 31 * 588];
 			_CRCNL = new int[_toc.AudioTracks + 1, 31 * 588];
 			_Peak = new int[_toc.AudioTracks + 1];
+			syndrome = new ushort[calcSyn ? stride : 1, npar];
+			parity = new byte[stride * npar * 2];
+			if (calcSyn || calcParity)
+			{
+				leadin = new ushort[stride * 2];
+				leadout = new ushort[stride + laststride];
+			}
+			else
+			{
+				leadin = null;
+				leadout = null;
+			}
 			_currentTrack = 0;
 			Position = _toc[_toc.FirstAudio][0].Start * 588;
 		}
@@ -741,11 +802,14 @@ namespace CUETools.AccurateRip
 
 		public long FinalSampleCount
 		{
+			get
+			{
+				return _finalSampleCount;
+			}
 			set
 			{
-				if (value < 0) // != _toc.Length?
+				if (value != _finalSampleCount) 
 					throw new Exception("invalid FinalSampleCount");
-				_finalSampleCount = value;
 			}
 		}
 

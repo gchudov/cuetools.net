@@ -1608,6 +1608,8 @@ string status = processor.Go();
 		private uint? _minDataTrackLength;
 		private string _accurateRipId;
 		private string _eacLog;
+		private string _defaultLog;
+		private List<CUEToolsSourceFile> _logFiles;
 		private string _inputPath, _inputDir;
 		private string _outputPath;
 		private string[] _destPaths;
@@ -1796,7 +1798,7 @@ string status = processor.Go();
 				m_freedb.UserName = "gchudov";
 				m_freedb.Hostname = "gmail.com";
 				m_freedb.ClientName = "CUETools";
-				m_freedb.Version = "2.0.7";
+				m_freedb.Version = "2.0.8";
 				m_freedb.SetDefaultSiteAddress("freedb.org");
 
 				QueryResult queryResult;
@@ -2087,7 +2089,7 @@ string status = processor.Go();
 				foreach (string f in _archive.Contents)
 					_archiveContents.Add(f);
 
-				List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+				_logFiles = new List<CUEToolsSourceFile>();
 				List<CUEToolsSourceFile> cueFiles = new List<CUEToolsSourceFile>();
 				foreach (string s in _archiveContents)
 				{
@@ -2099,14 +2101,13 @@ string status = processor.Go();
 						if (Path.GetExtension(s).ToLower() == ".cue")
 							cueFiles.Add(sourceFile);
 						else
-							logFiles.Add(sourceFile);
+							_logFiles.Add(sourceFile);
 					}
 				}
 				CUEToolsSourceFile selectedCUEFile = ChooseFile(cueFiles, null, true);
 				if (selectedCUEFile == null || selectedCUEFile.contents == "")
 					throw new Exception("Input archive doesn't contain a usable cue sheet.");
-				CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, Path.GetFileNameWithoutExtension(selectedCUEFile.path), true);
-				_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
+				_defaultLog = Path.GetFileNameWithoutExtension(selectedCUEFile.path);
 				_archiveCUEpath = Path.GetDirectoryName(selectedCUEFile.path);
 				string cueText = selectedCUEFile.contents;
 				if (_config.autoCorrectFilenames)
@@ -2115,6 +2116,8 @@ string status = processor.Go();
 					cueText = CorrectAudioFilenames(_config, _archiveCUEpath, cueText, false, _archiveContents, out extension);
 				}
 				sr = new StringReader(cueText);
+				if (_logFiles.Count == 1)
+					_eacLog = _logFiles[0].contents;
 			}
 			else if (Path.GetExtension(pathIn).ToLower() == ".cue")
 			{
@@ -2123,12 +2126,11 @@ string status = processor.Go();
 				else
 					sr = new StreamReader(pathIn, CUESheet.Encoding);
 
-				List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+				_logFiles = new List<CUEToolsSourceFile>();
+				_defaultLog = Path.GetFileNameWithoutExtension(pathIn);
 				foreach (string logPath in Directory.GetFiles(_inputDir, "*.log"))
-					try { logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding))); }
+					try { _logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding))); }
 					catch { }
-				CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, Path.GetFileNameWithoutExtension(pathIn), false);
-				_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
 			}
 			else
 			{
@@ -2160,12 +2162,10 @@ string status = processor.Go();
 					if (cueSheet == null)
 						throw new Exception("Input file doesn't seem to contain a cue sheet or be part of an album.");
 					sr = new StringReader(cueSheet);
-					List<CUEToolsSourceFile> logFiles = new List<CUEToolsSourceFile>();
+					_logFiles = new List<CUEToolsSourceFile>();
 					foreach (string logPath in Directory.GetFiles(_inputDir, "*.log"))
-						try { logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding))); }
+						try { _logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding))); }
 						catch { }
-					CUEToolsSourceFile selectedLogFile = ChooseFile(logFiles, null, false);
-					_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
 				}
 			}
 
@@ -2526,6 +2526,19 @@ string status = processor.Go();
 
 			if (_accurateRipId == null)
 				_accurateRipId = GetCommonMiscTag("ACCURATERIPID");
+
+			if (_eacLog == null && _logFiles != null && _logFiles.Count == 1)
+			{
+				CDImageLayout tocFromLog1 = TocFromLog(_logFiles[0].contents);
+				if (tocFromLog1 != null && tocFromLog1.TOCID == _toc.TOCID)
+					_eacLog = _logFiles[0].contents;
+			}
+
+			if (_eacLog == null && _logFiles != null)
+			{
+				CUEToolsSourceFile selectedLogFile = ChooseFile(_logFiles, _defaultLog, false);
+				_eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
+			}
 
 			CDImageLayout tocFromLog = _eacLog == null ? null : TocFromLog(_eacLog);
 
@@ -3576,8 +3589,8 @@ string status = processor.Go();
 					entry.toc.Pregap != _toc.Pregap ? string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap)) :
 					entry.toc.AudioLength != _toc.AudioLength ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
 					((entry.toc.TrackOffsets != _toc.TrackOffsets) ? dataTrackInfo + ", " : "") + 
-						//((!entry.hasErrors) ? "Accurately ripped" :
-						((!entry.hasErrors) ? string.Format("Accurately ripped, offset {0}", -entry.offset) :
+						((!entry.hasErrors) ? "Accurately ripped" :
+						//((!entry.hasErrors) ? string.Format("Accurately ripped, offset {0}", -entry.offset) :
 						entry.canRecover ? string.Format("Differs in {0} samples @{1}", entry.repair.CorrectableErrors, entry.repair.AffectedSectors) :
 						(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
 						entry.httpStatus.ToString());
@@ -4347,10 +4360,11 @@ string status = processor.Go();
 			int diskLength = 588 * (int)_toc.AudioLength;
 			int diskOffset = 0;
 
-			if (_useAccurateRip)
-				_arVerify.Init();
+			// we init CTDB before AR so that AR gets inited with correct CTDB settings
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
 				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
+			if (_useAccurateRip)
+				_arVerify.Init();
 
 			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0.0, null, null);
 
@@ -4433,15 +4447,10 @@ string status = processor.Go();
 							}
 
 							copyCount = audioSource.Read(sampleBuffer, copyCount);
-							if (_useCUEToolsDB)
-							{
-								if (_useCUEToolsDBFix)
-									_CUEToolsDB.SelectedEntry.repair.Write(sampleBuffer);
-								else
-									_CUEToolsDB.Verify.Write(sampleBuffer);
-							}
-							// we use AR after CTDB, so that we can verify what we fixed
-							if (_useAccurateRip)
+							if (_useCUEToolsDB && _useCUEToolsDBFix)
+								_CUEToolsDB.SelectedEntry.repair.Write(sampleBuffer);
+							// we use AR after CTDB fix, so that we can verify what we fixed
+							if (_useAccurateRip || _useCUEToolsDB)
 								_arVerify.Write(sampleBuffer);
 							if (!discardOutput)
 							{
@@ -4508,10 +4517,12 @@ string status = processor.Go();
 			ApplyWriteOffset();
 
 			hdcdDecoder = null;
-			if (_useAccurateRip)
-				_arVerify.Init();
+			
+			// we init CTDB before AR so that AR gets inited with correct CTDB settings
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
 				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
+			if (_useAccurateRip)
+				_arVerify.Init();
 
 			ShowProgress(String.Format("Verifying ({0:00}%)...", 0), 0.0, null, null);
 
@@ -4524,7 +4535,7 @@ string status = processor.Go();
 			int nThreads = 1;// _isCD || !_config.separateDecodingThread || _useCUEToolsDB || _config.detectHDCD ? 1 : Environment.ProcessorCount;
 
 			int diskLength = 588 * (int)_toc.AudioLength;
-			tasks.Add(new CUEToolsVerifyTask(this, 0, diskLength / nThreads, _arVerify, _CUEToolsDB));
+			tasks.Add(new CUEToolsVerifyTask(this, 0, diskLength / nThreads, _arVerify));
 			for (int iThread = 1; iThread < nThreads; iThread++)
 				tasks.Add(new CUEToolsVerifyTask(this, iThread * diskLength / nThreads, (iThread + 1) * diskLength / nThreads));
 
@@ -5470,7 +5481,7 @@ string status = processor.Go();
 					}
 				case "repair":
 					{
-						UseCUEToolsDB(false, "CUETools 2.0.7");
+						UseCUEToolsDB(false, "CUETools 2.0.8");
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;
@@ -5899,16 +5910,15 @@ string status = processor.Go();
 		public int start { get; private set; }
 		public int end { get; private set; }
 		public AccurateRipVerify ar { get; private set; }
-		public CUEToolsDB ctdb { get; private set; }
 		public IAudioDest hdcd { get; private set; }
 
 		public CUEToolsVerifyTask(CUESheet cueSheet, int start, int end)
-			: this(cueSheet, start, end, cueSheet._useAccurateRip ? new AccurateRipVerify(cueSheet.TOC, null) : null, null, null)
+			: this(cueSheet, start, end, cueSheet._useAccurateRip || cueSheet._useCUEToolsDB ? new AccurateRipVerify(cueSheet.TOC, null) : null, null)
 		{
 		}
 
-		public CUEToolsVerifyTask(CUESheet cueSheet, int start, int end, AccurateRipVerify ar, CUEToolsDB ctdb)
-			: this(cueSheet, start, end, ar, ctdb, null)
+		public CUEToolsVerifyTask(CUESheet cueSheet, int start, int end, AccurateRipVerify ar)
+			: this(cueSheet, start, end, ar, null)
 		{
 			if (cueSheet.Config.detectHDCD && CUEProcessorPlugins.hdcd != null)
 			{
@@ -5917,7 +5927,7 @@ string status = processor.Go();
 			}
 		}
 
-		private CUEToolsVerifyTask(CUESheet cueSheet, int start, int end, AccurateRipVerify ar, CUEToolsDB ctdb, IAudioDest hdcd)
+		private CUEToolsVerifyTask(CUESheet cueSheet, int start, int end, AccurateRipVerify ar, IAudioDest hdcd)
 		{
 			this.cueSheet = cueSheet;
 			this.start = start;
@@ -5927,7 +5937,6 @@ string status = processor.Go();
 				this.source = new AudioPipe(this.source, 0x10000);
 			this.source.Position = start;
 			this.ar = cueSheet._useAccurateRip ? ar : null;
-			this.ctdb = cueSheet._useCUEToolsDB ? ctdb : null;
 			this.hdcd = hdcd;
 			if (this.ar != null)
 				this.ar.Position = start;
@@ -5961,9 +5970,6 @@ string status = processor.Go();
 			int copyCount = source.Read(sampleBuffer, Remaining);
 			if (copyCount == 0)
 				return 0;
-
-			if (ctdb != null) // !_useCUEToolsDBFix
-				ctdb.Verify.Write(sampleBuffer);
 			if (ar != null)
 				ar.Write( sampleBuffer);
 			if (hdcd != null)

@@ -89,7 +89,7 @@ namespace CUETools.ConsoleRipper
 		static void Main(string[] args)
 		{
 			Console.SetOut(Console.Error);
-			Console.WriteLine("CUERipper v2.0.7 Copyright (C) 2008-10 Gregory S. Chudov");
+			Console.WriteLine("CUERipper v2.0.8 Copyright (C) 2008-10 Gregory S. Chudov");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 

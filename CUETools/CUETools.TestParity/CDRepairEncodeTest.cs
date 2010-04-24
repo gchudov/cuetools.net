@@ -1,5 +1,4 @@
 ﻿using System;
-using CUETools.CDRepair;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
@@ -96,12 +95,11 @@ namespace CUETools.TestParity
 		public void CDRepairEncodeWriteTest()
 		{
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode encode = new CDRepairEncode(finalSampleCount, stride, npar, false, true, ar);
+			CDRepairEncode encode = new CDRepairEncode(ar, stride, npar, false, true);
 			buff.Prepare(wav, finalSampleCount);
 			ar.Init();
 			ar.Write(buff);
-			encode.Write(buff);
-			encode.Close();
+			ar.Close();
 			Assert.AreEqual<byte>(8, encode.Parity[0]);
 			Assert.AreEqual<uint>(2278257733, encode.CRC);
 		}

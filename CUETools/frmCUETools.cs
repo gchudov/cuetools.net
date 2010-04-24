@@ -738,7 +738,7 @@ namespace JDP {
 						if (useAR || useCUEToolsDB)
 							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
 						if (useCUEToolsDB)
-							cueSheet.UseCUEToolsDB(false, "CUETools 2.0.7");
+							cueSheet.UseCUEToolsDB(false, "CUETools 2.0.8");
 						if (useAR)
 							cueSheet.UseAccurateRip();
 
