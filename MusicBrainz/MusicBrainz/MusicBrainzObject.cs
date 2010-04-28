@@ -408,32 +408,47 @@ namespace MusicBrainz
             
             if (response == null) throw new MusicBrainzNotFoundException ();
 
-            switch (response.StatusCode) {
-            case HttpStatusCode.BadRequest:
-                Monitor.Exit (server_mutex);
-                throw new MusicBrainzInvalidParameterException ();
-            case HttpStatusCode.Unauthorized:
-                Monitor.Exit (server_mutex);
-                throw new MusicBrainzUnauthorizedException ();
-            case HttpStatusCode.NotFound:
-                Monitor.Exit (server_mutex);
-                throw new MusicBrainzNotFoundException ();
-            }
+			switch (response.StatusCode)
+			{
+				case HttpStatusCode.BadRequest:
+					Monitor.Exit(server_mutex);
+					throw new MusicBrainzInvalidParameterException();
+				case HttpStatusCode.Unauthorized:
+					Monitor.Exit(server_mutex);
+					throw new MusicBrainzUnauthorizedException();
+				case HttpStatusCode.NotFound:
+					Monitor.Exit(server_mutex);
+					throw new MusicBrainzNotFoundException();
+				case HttpStatusCode.ServiceUnavailable:
+					Monitor.Exit(server_mutex);
+					throw new MusicBrainzUnavailableException(response.StatusDescription);
+				case HttpStatusCode.OK:
+					break;
+				default:
+					Monitor.Exit(server_mutex);
+					throw new MusicBrainzUnavailableException(response.StatusDescription);
+			}
 
             bool from_cache = cache_implemented && response.IsFromCache;
 
             if (from_cache) Monitor.Exit (server_mutex);
 
-            MusicBrainzService.OnXmlRequest (url, from_cache);
+			try
+			{
+				MusicBrainzService.OnXmlRequest(url, from_cache);
 
-            // Should we read the stream into a memory stream and run the XmlReader off of that?
-            code (new XmlTextReader (response.GetResponseStream ()));
-            response.Close ();
-
-            if (!from_cache) {
-                last_accessed = DateTime.Now;
-                Monitor.Exit (server_mutex);
-            }
+				// Should we read the stream into a memory stream and run the XmlReader off of that?
+				code(new XmlTextReader(response.GetResponseStream()));
+			}
+			finally
+			{
+				response.Close();
+				if (!from_cache)
+				{
+					last_accessed = DateTime.Now;
+					Monitor.Exit(server_mutex);
+				}
+			}
         }
 
         #endregion

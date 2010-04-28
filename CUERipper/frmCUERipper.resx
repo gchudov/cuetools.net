@@ -117,60 +117,712 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>0, 456</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="trackBarSecureMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>237, 71</value>
+  <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>394, 20</value>
   </data>
-  <data name="labelEncoderMaxMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopRight</value>
+  <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="numericWriteOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+  <data name="toolStripStatusLabelMusicBrainz.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
   </data>
-  <data name="&gt;&gt;imageListMetadataSource.Name" xml:space="preserve">
-    <value>imageListMetadataSource</value>
+  <data name="toolStripStatusCTDB.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="labelEncoderMaxMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
+  <data name="toolStripStatusAr.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAyNJREFUOE9tkm1P
+        mmcYhh+zbsm+Ntlf2Jd92n/Yx21p1nTZlplZ0mJD2+mYG119AakITi2tmoK0a33p1BL7MtcpXRCrKNbK
+        EEOd1qLYCigSERB5e4BjxGVZSLyTM3dyJcdx3cl9lglHHKcTHO43wk76XSH/Tl44/t4x4cP3jwsfffBW
+        mUiOt8uOlR3FCaN9KWplSaq+F5FehnItVN4ooOgroLpfoHM0i9WVoATOkz0cPP8DVBUxaiRFqAq+VqSR
+        NoPcAOqBAi0PChif5Lg3LeLeyJRKujQrKC9uFeEEZ8rTVFQWOCsv8OMVaOwW6TCDaQyGpvJYnDEW18J4
+        Vjf+lyh++JsL8g0qZLuclojITmdRSEGnBP3tPHeKr7tvh8kXB2zuwU40SjwRIp2KI1y7NcUFtQtJ4yLl
+        dUFkNVHqzqeplwRwTsKzheLWmQzLfgjs5wgn4wR3XrIbWSAVW0D4rvURZ7SzSLQuzuq8KDTb6BpizD/N
+        4VsPsvxqle2oSHBfJJTe5/XeCpGEm+TBHLmkFUF6/S6SjlFknRMoutzo9D6M19cJBGL8aRs/vCOJOP5M
+        Ar+4TlR0I+bsFMTHxZgRKnXdVGsHUGofoGmyYaybpafGw4zZR+YgSTy6j3fJy5u1ZWKBv8juPoHoCLno
+        EOz1Igyaf6OpsQtDm5mJu4sMVlmY7VwibAsRdAcITqwSsT4jNW0ns/wYvEMUXv8CwQ5S4YcIfr+f2+0G
+        luweVu2+oqCHTdsa4flNkk4/3t4xEiOjYC3C8wPklwzkvXrwtUHK8+9XGi/V011ZzYbVwda4h9BTF5HZ
+        l2z3PiRuNJIe7EIc0ZO36SjMFtvl+Yn4ytXSMjlu9WD56hzZkXESjjkyUzOE1LWk26pJ3ZRz8Gsxjy6S
+        GJcQc5tK4f+6/fxeH2MVnzMnPcmr8yfZrvmErYZPCbR+zGbHCXx3vsAx3HI0PDw8jMlkor9Zze9VUqbP
+        fckL+Slc9Z/hVJ9iUvsNN9Xf8vPVdgyG7lKJxWKhv78fvV5Pi6YZtVqFUnUZTcMltLW1qBqU1Deqi2lC
+        c6WZ9vZWbhgNh5J/AJcIo/TEh255AAAAAElFTkSuQmCC
+</value>
   </data>
-  <data name="&gt;&gt;statusStrip1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="toolStripStatusAr.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>White</value>
   </data>
-  <data name="buttonAbort.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
+  <data name="toolStripStatusAr.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
   </data>
-  <data name="&gt;&gt;bnComboBoxEncoder.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="toolStripStatusAr.ToolTipText" xml:space="preserve">
+    <value>Album found in AccurateRip database.</value>
   </data>
-  <data name="trackBarEncoderMode.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+  <data name="toolStripProgressBar1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 19</value>
   </data>
-  <data name="&gt;&gt;bnComboBoxLosslessOrNot.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;labelSecureMode.Name" xml:space="preserve">
-    <value>labelSecureMode</value>
-  </data>
-  <data name="bnComboBoxLosslessOrNot.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 13</value>
-  </data>
-  <data name="&gt;&gt;bindingSourceCR.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="toolStripProgressBar1.ToolTipText" xml:space="preserve">
+    <value>Read progress</value>
   </data>
   <data name="toolStripStatusLabel2.Size" type="System.Drawing.Size, System.Drawing">
     <value>0, 20</value>
   </data>
+  <data name="toolStripStatusLabel2.Text" xml:space="preserve">
+    <value>toolStripStatusAr</value>
+  </data>
+  <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 456</value>
+  </data>
+  <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>571, 25</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="statusStrip1.Text" xml:space="preserve">
+    <value>statusStrip1</value>
+  </data>
+  <data name="&gt;&gt;statusStrip1.Name" xml:space="preserve">
+    <value>statusStrip1</value>
+  </data>
+  <data name="&gt;&gt;statusStrip1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;statusStrip1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="Title.DisplayIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="Title.Text" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Title.Width" type="System.Int32, mscorlib">
+    <value>355</value>
+  </data>
+  <data name="TrackNo.DisplayIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="TrackNo.Text" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="TrackNo.Width" type="System.Int32, mscorlib">
+    <value>30</value>
+  </data>
+  <data name="Start.Text" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Start.Width" type="System.Int32, mscorlib">
+    <value>70</value>
+  </data>
+  <data name="Length.Text" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="Length.Width" type="System.Int32, mscorlib">
+    <value>70</value>
+  </data>
+  <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 87</value>
+  </data>
+  <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
+    <value>553, 245</value>
+  </data>
+  <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>357, 17</value>
+  </metadata>
+  <data name="listTracks.ToolTip" xml:space="preserve">
+    <value>Double-click to edit track names</value>
+  </data>
+  <data name="&gt;&gt;listTracks.Name" xml:space="preserve">
+    <value>listTracks</value>
+  </data>
+  <data name="&gt;&gt;listTracks.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;listTracks.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="buttonGo.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="buttonGo.Location" type="System.Drawing.Point, System.Drawing">
+    <value>382, 343</value>
+  </data>
+  <data name="buttonGo.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 33</value>
+  </data>
+  <data name="buttonGo.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="buttonGo.Text" xml:space="preserve">
+    <value>Go</value>
+  </data>
+  <data name="&gt;&gt;buttonGo.Name" xml:space="preserve">
+    <value>buttonGo</value>
+  </data>
+  <data name="&gt;&gt;buttonGo.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonGo.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;buttonGo.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="buttonAbort.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="buttonAbort.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="buttonAbort.Location" type="System.Drawing.Point, System.Drawing">
+    <value>474, 343</value>
+  </data>
+  <data name="buttonAbort.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 33</value>
+  </data>
+  <data name="buttonAbort.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="buttonAbort.Text" xml:space="preserve">
+    <value>Abort</value>
+  </data>
+  <data name="buttonAbort.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;buttonAbort.Name" xml:space="preserve">
+    <value>buttonAbort</value>
+  </data>
+  <data name="&gt;&gt;buttonAbort.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonAbort.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;buttonAbort.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="buttonPause.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="buttonPause.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="buttonPause.Location" type="System.Drawing.Point, System.Drawing">
+    <value>383, 343</value>
+  </data>
+  <data name="buttonPause.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 33</value>
+  </data>
+  <data name="buttonPause.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="buttonPause.Text" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="buttonPause.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;buttonPause.Name" xml:space="preserve">
+    <value>buttonPause</value>
+  </data>
+  <data name="&gt;&gt;buttonPause.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonPause.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;buttonPause.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <metadata name="contextMenuStripRelease.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 22</value>
+  </data>
+  <data name="editToolStripMenuItem.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="variousToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 22</value>
+  </data>
+  <data name="variousToolStripMenuItem.Text" xml:space="preserve">
+    <value>Various Artists</value>
+  </data>
+  <data name="fixEncodingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 22</value>
+  </data>
+  <data name="fixEncodingToolStripMenuItem.Text" xml:space="preserve">
+    <value>Fix Encoding</value>
+  </data>
+  <data name="contextMenuStripRelease.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 92</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStripRelease.Name" xml:space="preserve">
+    <value>contextMenuStripRelease</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStripRelease.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
+    <value>310, 15</value>
+  </data>
+  <data name="numericWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 20</value>
+  </data>
+  <data name="numericWriteOffset.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="numericWriteOffset.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
+    <value>Right</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.Name" xml:space="preserve">
+    <value>numericWriteOffset</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;numericWriteOffset.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="lblWriteOffset.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="lblWriteOffset.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="lblWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
+    <value>242, 19</value>
+  </data>
+  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>62, 13</value>
+  </data>
+  <data name="lblWriteOffset.TabIndex" type="System.Int32, mscorlib">
+    <value>23</value>
+  </data>
+  <data name="lblWriteOffset.Text" xml:space="preserve">
+    <value>Read offset</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.Name" xml:space="preserve">
+    <value>lblWriteOffset</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;lblWriteOffset.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="checkBoxEACMode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxEACMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxEACMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>245, 44</value>
+  </data>
+  <data name="checkBoxEACMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>64, 17</value>
+  </data>
+  <data name="checkBoxEACMode.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="checkBoxEACMode.Text" xml:space="preserve">
+    <value>EAC log</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.Name" xml:space="preserve">
+    <value>checkBoxEACMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEACMode.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <metadata name="losslessOrNotBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>369, 95</value>
+  </metadata>
+  <metadata name="bindingSourceCR.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>210, 56</value>
+  </metadata>
+  <data name="bnComboBoxLosslessOrNot.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 19</value>
+  </data>
+  <data name="bnComboBoxLosslessOrNot.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
+        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
+        AAAAAgAAAAIAAAAL
+</value>
+  </data>
+  <data name="bnComboBoxLosslessOrNot.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 21</value>
+  </data>
+  <data name="bnComboBoxLosslessOrNot.TabIndex" type="System.Int32, mscorlib">
+    <value>39</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxLosslessOrNot.Name" xml:space="preserve">
+    <value>bnComboBoxLosslessOrNot</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxLosslessOrNot.Type" xml:space="preserve">
+    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxLosslessOrNot.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxLosslessOrNot.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="encodersBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>189, 95</value>
+  </metadata>
+  <data name="bnComboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 46</value>
+  </data>
+  <data name="bnComboBoxEncoder.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
+        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
+        AAAAAgAAAAIAAAAL
+</value>
+  </data>
+  <data name="bnComboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 21</value>
+  </data>
+  <data name="bnComboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
+    <value>38</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.Name" xml:space="preserve">
+    <value>bnComboBoxEncoder</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.Type" xml:space="preserve">
+    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxEncoder.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="labelSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelSecureMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>248, 98</value>
+  </data>
+  <data name="labelSecureMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 18</value>
+  </data>
+  <data name="labelSecureMode.TabIndex" type="System.Int32, mscorlib">
+    <value>33</value>
+  </data>
+  <data name="labelSecureMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;labelSecureMode.Name" xml:space="preserve">
+    <value>labelSecureMode</value>
+  </data>
+  <data name="&gt;&gt;labelSecureMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSecureMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;labelSecureMode.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <metadata name="formatsBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 95</value>
+  </metadata>
+  <data name="bnComboBoxFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 19</value>
+  </data>
+  <data name="bnComboBoxFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
+        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
+        AAAAAgAAAAIAAAAL
+</value>
+  </data>
+  <data name="bnComboBoxFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 21</value>
+  </data>
+  <data name="bnComboBoxFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>37</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.Name" xml:space="preserve">
+    <value>bnComboBoxFormat</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.Type" xml:space="preserve">
+    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxFormat.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelEncoderMinMode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelEncoderMinMode.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="labelEncoderMinMode.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 8.25pt</value>
+  </data>
+  <data name="labelEncoderMinMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelEncoderMinMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 106</value>
+  </data>
+  <data name="labelEncoderMinMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="labelEncoderMinMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>25, 13</value>
+  </data>
+  <data name="labelEncoderMinMode.TabIndex" type="System.Int32, mscorlib">
+    <value>30</value>
+  </data>
+  <data name="labelEncoderMinMode.Text" xml:space="preserve">
+    <value>128</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.Name" xml:space="preserve">
+    <value>labelEncoderMinMode</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <metadata name="cUEStylesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>526, 56</value>
+  </metadata>
+  <data name="bnComboBoxImage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 46</value>
+  </data>
+  <data name="bnComboBoxImage.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
+        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
+        AAAAAgAAAAIAAAAL
+</value>
+  </data>
+  <data name="bnComboBoxImage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 21</value>
+  </data>
+  <data name="bnComboBoxImage.TabIndex" type="System.Int32, mscorlib">
+    <value>34</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.Name" xml:space="preserve">
+    <value>bnComboBoxImage</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.Type" xml:space="preserve">
+    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxImage.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="labelEncoderMaxMode.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="labelEncoderMaxMode.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 8.25pt</value>
+  </data>
+  <data name="labelEncoderMaxMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelEncoderMaxMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>143, 106</value>
+  </data>
+  <data name="labelEncoderMaxMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="labelEncoderMaxMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>29, 13</value>
+  </data>
+  <data name="labelEncoderMaxMode.TabIndex" type="System.Int32, mscorlib">
+    <value>32</value>
+  </data>
+  <data name="labelEncoderMaxMode.Text" xml:space="preserve">
+    <value>320</value>
+  </data>
+  <data name="labelEncoderMaxMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopRight</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.Name" xml:space="preserve">
+    <value>labelEncoderMaxMode</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="labelEncoderMode.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 8.25pt</value>
+  </data>
+  <data name="labelEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 106</value>
+  </data>
+  <data name="labelEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="labelEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>167, 15</value>
+  </data>
+  <data name="labelEncoderMode.TabIndex" type="System.Int32, mscorlib">
+    <value>31</value>
+  </data>
+  <data name="labelEncoderMode.Text" xml:space="preserve">
+    <value>256</value>
+  </data>
+  <data name="labelEncoderMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.Name" xml:space="preserve">
+    <value>labelEncoderMode</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="trackBarEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="trackBarEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 76</value>
+  </data>
+  <data name="trackBarEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="trackBarEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>166, 45</value>
+  </data>
+  <data name="trackBarEncoderMode.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.Name" xml:space="preserve">
+    <value>trackBarEncoderMode</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TrackBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="trackBarSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="trackBarSecureMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>237, 71</value>
+  </data>
+  <data name="trackBarSecureMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>127, 45</value>
+  </data>
+  <data name="trackBarSecureMode.TabIndex" type="System.Int32, mscorlib">
+    <value>30</value>
+  </data>
+  <data name="&gt;&gt;trackBarSecureMode.Name" xml:space="preserve">
+    <value>trackBarSecureMode</value>
+  </data>
+  <data name="&gt;&gt;trackBarSecureMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TrackBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;trackBarSecureMode.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;trackBarSecureMode.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="groupBoxSettings.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 332</value>
+  </data>
+  <data name="groupBoxSettings.Size" type="System.Drawing.Size, System.Drawing">
+    <value>370, 121</value>
+  </data>
+  <data name="groupBoxSettings.TabIndex" type="System.Int32, mscorlib">
+    <value>29</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.Name" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <metadata name="imageListChecked.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>207, 17</value>
+  </metadata>
   <data name="imageListChecked.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAACM
-        CQAAAk1TRnQBSQFMAgEBBAEAAQwBAAEEAQABEAEAARABAAT/AQkBEAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAACK
+        CQAAAk1TRnQBSQFMAgEBBAEAAQwBAAEEAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -210,83 +862,111 @@
         AfMG8gHzAf8GAAH/AfMG8gHzAf/DAAFCAU0BPgcAAT4DAAEoAwABQAMAASADAAEBAQABAQYAAQEWAAP/
         gQAY/wHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEH
         AeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEH
-        AeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcY/xYACw==
+        AeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcB4AEHAeABBwHgAQcY/ws=
 </value>
   </data>
-  <data name="&gt;&gt;bnComboBoxEncoder.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+  <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>181, 22</value>
   </data>
-  <data name="checkBoxEACMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
+  <data name="toolStripMenuItem1.Text" xml:space="preserve">
+    <value>toolStripMenuItem1</value>
   </data>
-  <data name="&gt;&gt;buttonGo.Parent" xml:space="preserve">
+  <metadata name="plainBackgroundPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>960, 17</value>
+  </metadata>
+  <metadata name="styledBorderPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>624, 17</value>
+  </metadata>
+  <data name="progressBarErrors.Location" type="System.Drawing.Point, System.Drawing">
+    <value>382, 421</value>
+  </data>
+  <metadata name="plainProgressPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>454, 17</value>
+  </metadata>
+  <metadata name="gradientGlossPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>789, 17</value>
+  </metadata>
+  <data name="progressBarErrors.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 23</value>
+  </data>
+  <data name="progressBarErrors.TabIndex" type="System.Int32, mscorlib">
+    <value>30</value>
+  </data>
+  <data name="&gt;&gt;progressBarErrors.Name" xml:space="preserve">
+    <value>progressBarErrors</value>
+  </data>
+  <data name="&gt;&gt;progressBarErrors.Type" xml:space="preserve">
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3766.36643, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;progressBarErrors.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="bnComboBoxFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
+  <data name="&gt;&gt;progressBarErrors.ZOrder" xml:space="preserve">
+    <value>5</value>
   </data>
-  <data name="labelEncoderMaxMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
+  <data name="progressBarCD.Location" type="System.Drawing.Point, System.Drawing">
+    <value>382, 392</value>
   </data>
-  <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 13</value>
+  <metadata name="plainProgressPainter2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>356, 56</value>
+  </metadata>
+  <data name="progressBarCD.Size" type="System.Drawing.Size, System.Drawing">
+    <value>176, 23</value>
   </data>
-  <data name="lblWriteOffset.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
+  <data name="progressBarCD.TabIndex" type="System.Int32, mscorlib">
+    <value>31</value>
   </data>
-  <data name="labelEncoderMinMode.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
+  <data name="progressBarCD.Text" xml:space="preserve">
+    <value>10%</value>
   </data>
-  <data name="numericWriteOffset.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
-    <value>Right</value>
+  <data name="&gt;&gt;progressBarCD.Name" xml:space="preserve">
+    <value>progressBarCD</value>
   </data>
-  <data name="listTracks.ToolTip" xml:space="preserve">
-    <value>Double-click to edit track names</value>
+  <data name="&gt;&gt;progressBarCD.Type" xml:space="preserve">
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3766.36643, Culture=neutral, PublicKeyToken=null</value>
   </data>
-  <data name="buttonPause.TabIndex" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
-  <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>94, 22</value>
-  </data>
-  <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>571, 25</value>
-  </data>
-  <data name="&gt;&gt;buttonAbort.Parent" xml:space="preserve">
+  <data name="&gt;&gt;progressBarCD.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="trackBarEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
+  <data name="&gt;&gt;progressBarCD.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
-  <data name="&gt;&gt;bnComboBoxFormat.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 61</value>
   </data>
-  <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
+    <value>552, 20</value>
   </data>
-  <data name="&gt;&gt;bnComboBoxDrives.Parent" xml:space="preserve">
+  <data name="txtOutputPath.TabIndex" type="System.Int32, mscorlib">
+    <value>33</value>
+  </data>
+  <data name="txtOutputPath.ToolTip" xml:space="preserve">
+    <value>Click to edit output path template</value>
+  </data>
+  <data name="&gt;&gt;txtOutputPath.Name" xml:space="preserve">
+    <value>txtOutputPath</value>
+  </data>
+  <data name="&gt;&gt;txtOutputPath.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;txtOutputPath.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
+  <data name="&gt;&gt;txtOutputPath.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
-  <data name="bnComboBoxOutputFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
-  <data name="&gt;&gt;buttonGo.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
+  <metadata name="releasesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>708, 56</value>
+  </metadata>
+  <metadata name="imageListMetadataSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 56</value>
+  </metadata>
   <data name="imageListMetadataSource.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAa
-        CQAAAk1TRnQBSQFMAgEBAgEAAQQBAAEEAQABEAEAARABAAT/AQkBEAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CQAAAk1TRnQBSQFMAgEBAgEAAQQBAAEEAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAARADAAEBAQABCAYAAQQYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -324,278 +1004,113 @@
         AewgAASuAQABBwP/AbwB6gEAAf8BAAKuAf8BogL/AQQC/wQEAf8DBAEKIAAErgERARMBBwb/AQACrgH/
         AaIBBAH/AQQC/wEEAv8BBAH/AQQB9AHzAQogAAWuAREBAAERAZIE/wEAAq4B/wGGAv8CBAL/AgQD/wIE
         AewgAAeuAREBAAEPAesBvAH/AQACrgH/AYYL/wH0AfMB7CEACa4BDwEAARMBEQGuAQAC/wG1C/8B9AEH
-        IAABQgFNAT4HAAE+AwABKAMAAUADAAEQAwABAQEAAQEFAAGAFwAD/wEAAYABAXYAAYABARwACw==
+        IAABQgFNAT4HAAE+AwABKAMAAUADAAEQAwABAQEAAQEFAAGAFwAD/wEAAYABAXYAAYABAQYACw==
 </value>
   </data>
-  <data name="labelEncoderMinMode.Text" xml:space="preserve">
-    <value>128</value>
+  <data name="bnComboBoxRelease.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 33</value>
   </data>
-  <data name="&gt;&gt;groupBoxSettings.Name" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="labelSecureMode.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;toolStripStatusAr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;buttonPause.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 456</value>
-  </data>
-  <data name="buttonAbort.Location" type="System.Drawing.Point, System.Drawing">
-    <value>474, 343</value>
-  </data>
-  <data name="trackBarEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>166, 45</value>
-  </data>
-  <data name="&gt;&gt;cUEStylesBindingSource.Name" xml:space="preserve">
-    <value>cUEStylesBindingSource</value>
-  </data>
-  <data name="&gt;&gt;editToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="lblWriteOffset.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelSecureMode.TabIndex" type="System.Int32, mscorlib">
-    <value>33</value>
-  </data>
-  <data name="bnComboBoxRelease.TabIndex" type="System.Int32, mscorlib">
-    <value>35</value>
-  </data>
-  <data name="labelEncoderMinMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxOutputFormat.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="trackBarEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 76</value>
-  </data>
-  <data name="&gt;&gt;encodersBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 61</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxDrives.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxImage.Name" xml:space="preserve">
-    <value>bnComboBoxImage</value>
-  </data>
-  <data name="Title.DisplayIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="bnComboBoxImage.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+  <data name="bnComboBoxRelease.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
         PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
         X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
         AAAAAgAAAAIAAAAL
 </value>
-  </data>
-  <data name="labelSecureMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>109, 18</value>
-  </data>
-  <data name="labelEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 106</value>
-  </data>
-  <data name="progressBarErrors.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 23</value>
-  </data>
-  <data name="bnComboBoxEncoder.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
-  <data name="&gt;&gt;releasesBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusAr.Name" xml:space="preserve">
-    <value>toolStripStatusAr</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxLosslessOrNot.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;losslessOrNotBindingSource.Name" xml:space="preserve">
-    <value>losslessOrNotBindingSource</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxRelease.Name" xml:space="preserve">
-    <value>bnComboBoxRelease</value>
-  </data>
-  <data name="&gt;&gt;editToolStripMenuItem.Name" xml:space="preserve">
-    <value>editToolStripMenuItem</value>
-  </data>
-  <data name="labelEncoderMaxMode.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
-  </data>
-  <data name="&gt;&gt;styledBorderPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.3766.36510, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMaxMode.Name" xml:space="preserve">
-    <value>labelEncoderMaxMode</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabelMusicBrainz.Name" xml:space="preserve">
-    <value>toolStripStatusLabelMusicBrainz</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxRelease.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="contextMenuStripRelease.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 26</value>
-  </data>
-  <data name="progressBarErrors.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;bnComboBoxDrives.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="toolStripStatusAr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
-  </data>
-  <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="TrackNo.DisplayIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;losslessOrNotBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="bnComboBoxFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>37</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabel2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="progressBarCD.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 23</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.0.8</value>
-  </data>
-  <data name="bnComboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
-    <value>38</value>
-  </data>
-  <data name="buttonPause.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 33</value>
-  </data>
-  <data name="bnComboBoxOutputFormat.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;labelEncoderMinMode.Name" xml:space="preserve">
-    <value>labelEncoderMinMode</value>
-  </data>
-  <data name="&gt;&gt;labelSecureMode.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="Title.Width" type="System.Int32, mscorlib">
-    <value>355</value>
-  </data>
-  <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 87</value>
-  </data>
-  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;TrackNo.Name" xml:space="preserve">
-    <value>TrackNo</value>
-  </data>
-  <data name="progressBarCD.Location" type="System.Drawing.Point, System.Drawing">
-    <value>382, 392</value>
-  </data>
-  <data name="buttonAbort.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 33</value>
-  </data>
-  <data name="buttonAbort.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
-    <value>toolStripStatusLabel1</value>
-  </data>
-  <data name="&gt;&gt;toolStripProgressBar1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripProgressBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="bnComboBoxRelease.Size" type="System.Drawing.Size, System.Drawing">
     <value>552, 21</value>
   </data>
-  <data name="&gt;&gt;imageListChecked.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="bnComboBoxRelease.TabIndex" type="System.Int32, mscorlib">
+    <value>35</value>
   </data>
-  <data name="bnComboBoxEncoder.ToolTip" xml:space="preserve">
-    <value />
+  <data name="bnComboBoxRelease.ToolTip" xml:space="preserve">
+    <value>Right-lick to edit release info</value>
   </data>
-  <data name="TrackNo.Width" type="System.Int32, mscorlib">
-    <value>30</value>
+  <data name="&gt;&gt;bnComboBoxRelease.Name" xml:space="preserve">
+    <value>bnComboBoxRelease</value>
   </data>
-  <data name="lblWriteOffset.Text" xml:space="preserve">
-    <value>Read offset</value>
-  </data>
-  <data name="labelSecureMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopCenter</value>
-  </data>
-  <data name="toolStripStatusAr.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAyNJREFUOE9tkm1P
-        mmcYhh+zbsm+Ntlf2Jd92n/Yx21p1nTZlplZ0mJD2+mYG119AakITi2tmoK0a33p1BL7MtcpXRCrKNbK
-        EEOd1qLYCigSERB5e4BjxGVZSLyTM3dyJcdx3cl9lglHHKcTHO43wk76XSH/Tl44/t4x4cP3jwsfffBW
-        mUiOt8uOlR3FCaN9KWplSaq+F5FehnItVN4ooOgroLpfoHM0i9WVoATOkz0cPP8DVBUxaiRFqAq+VqSR
-        NoPcAOqBAi0PChif5Lg3LeLeyJRKujQrKC9uFeEEZ8rTVFQWOCsv8OMVaOwW6TCDaQyGpvJYnDEW18J4
-        Vjf+lyh++JsL8g0qZLuclojITmdRSEGnBP3tPHeKr7tvh8kXB2zuwU40SjwRIp2KI1y7NcUFtQtJ4yLl
-        dUFkNVHqzqeplwRwTsKzheLWmQzLfgjs5wgn4wR3XrIbWSAVW0D4rvURZ7SzSLQuzuq8KDTb6BpizD/N
-        4VsPsvxqle2oSHBfJJTe5/XeCpGEm+TBHLmkFUF6/S6SjlFknRMoutzo9D6M19cJBGL8aRs/vCOJOP5M
-        Ar+4TlR0I+bsFMTHxZgRKnXdVGsHUGofoGmyYaybpafGw4zZR+YgSTy6j3fJy5u1ZWKBv8juPoHoCLno
-        EOz1Igyaf6OpsQtDm5mJu4sMVlmY7VwibAsRdAcITqwSsT4jNW0ns/wYvEMUXv8CwQ5S4YcIfr+f2+0G
-        luweVu2+oqCHTdsa4flNkk4/3t4xEiOjYC3C8wPklwzkvXrwtUHK8+9XGi/V011ZzYbVwda4h9BTF5HZ
-        l2z3PiRuNJIe7EIc0ZO36SjMFtvl+Yn4ytXSMjlu9WD56hzZkXESjjkyUzOE1LWk26pJ3ZRz8Gsxjy6S
-        GJcQc5tK4f+6/fxeH2MVnzMnPcmr8yfZrvmErYZPCbR+zGbHCXx3vsAx3HI0PDw8jMlkor9Zze9VUqbP
-        fckL+Slc9Z/hVJ9iUvsNN9Xf8vPVdgyG7lKJxWKhv78fvV5Pi6YZtVqFUnUZTcMltLW1qBqU1Deqi2lC
-        c6WZ9vZWbhgNh5J/AJcIo/TEh255AAAAAElFTkSuQmCC
-</value>
-  </data>
-  <data name="groupBoxSettings.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
-  </data>
-  <data name="trackBarEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="&gt;&gt;progressBarErrors.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="toolStripStatusLabel2.Text" xml:space="preserve">
-    <value>toolStripStatusAr</value>
-  </data>
-  <data name="labelEncoderMode.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="buttonPause.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Length.Width" type="System.Int32, mscorlib">
-    <value>70</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxImage.Type" xml:space="preserve">
+  <data name="&gt;&gt;bnComboBoxRelease.Type" xml:space="preserve">
     <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
-  <data name="&gt;&gt;numericWriteOffset.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 22</value>
-  </data>
-  <data name="groupBoxSettings.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;progressBarCD.Parent" xml:space="preserve">
+  <data name="&gt;&gt;bnComboBoxRelease.Parent" xml:space="preserve">
     <value>$this</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxRelease.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <metadata name="drivesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>998, 56</value>
+  </metadata>
+  <data name="bnComboBoxDrives.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 6</value>
+  </data>
+  <data name="bnComboBoxDrives.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
+        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
+        AAAAAgAAAAIAAAAL
+</value>
+  </data>
+  <data name="bnComboBoxDrives.Size" type="System.Drawing.Size, System.Drawing">
+    <value>552, 21</value>
+  </data>
+  <data name="bnComboBoxDrives.TabIndex" type="System.Int32, mscorlib">
+    <value>36</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.Name" xml:space="preserve">
+    <value>bnComboBoxDrives</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.Type" xml:space="preserve">
+    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxDrives.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="bnComboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 60</value>
+  </data>
+  <data name="bnComboBoxOutputFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
+        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
+        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
+        AAAAAgAAAAIAAAAL
+</value>
+  </data>
+  <data name="bnComboBoxOutputFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>552, 21</value>
+  </data>
+  <data name="bnComboBoxOutputFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>37</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxOutputFormat.Name" xml:space="preserve">
+    <value>bnComboBoxOutputFormat</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxOutputFormat.Type" xml:space="preserve">
+    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxOutputFormat.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;bnComboBoxOutputFormat.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>50</value>
+  </metadata>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>6, 13</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>571, 481</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -994,753 +1509,190 @@
         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAQAAwAMAAPAPAAA=
 </value>
   </data>
-  <data name="toolStripProgressBar1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 19</value>
-  </data>
-  <data name="&gt;&gt;buttonPause.Name" xml:space="preserve">
-    <value>buttonPause</value>
-  </data>
-  <data name="&gt;&gt;buttonAbort.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="labelEncoderMinMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>25, 13</value>
-  </data>
-  <data name="buttonPause.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="&gt;&gt;toolStripProgressBar1.Name" xml:space="preserve">
-    <value>toolStripProgressBar1</value>
-  </data>
-  <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="labelEncoderMaxMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>29, 13</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxOutputFormat.Name" xml:space="preserve">
-    <value>bnComboBoxOutputFormat</value>
-  </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterScreen</value>
   </data>
-  <data name="progressBarErrors.Location" type="System.Drawing.Point, System.Drawing">
-    <value>382, 421</value>
-  </data>
-  <data name="&gt;&gt;cUEStylesBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabelMusicBrainz.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;progressBarCD.Name" xml:space="preserve">
-    <value>progressBarCD</value>
-  </data>
-  <data name="bnComboBoxImage.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 46</value>
-  </data>
-  <data name="txtOutputPath.ToolTip" xml:space="preserve">
-    <value>Click to edit output path template</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxFormat.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="bnComboBoxRelease.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
-  <data name="buttonGo.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;lblWriteOffset.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;plainProgressPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3766.36510, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;listTracks.Name" xml:space="preserve">
-    <value>listTracks</value>
-  </data>
-  <data name="bnComboBoxLosslessOrNot.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 19</value>
-  </data>
-  <data name="&gt;&gt;lblWriteOffset.Name" xml:space="preserve">
-    <value>lblWriteOffset</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMaxMode.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="labelSecureMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>248, 98</value>
-  </data>
-  <data name="labelSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="statusStrip1.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="lblWriteOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>23</value>
-  </data>
-  <data name="&gt;&gt;formatsBindingSource.Name" xml:space="preserve">
-    <value>formatsBindingSource</value>
-  </data>
-  <data name="bnComboBoxLosslessOrNot.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
-  </data>
-  <data name="buttonPause.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="&gt;&gt;checkBoxEACMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="bnComboBoxFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
-  <data name="labelEncoderMinMode.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
-  </data>
-  <data name="&gt;&gt;labelSecureMode.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;checkBoxEACMode.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;checkBoxEACMode.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;drivesBindingSource.Name" xml:space="preserve">
-    <value>drivesBindingSource</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusCTDB.Name" xml:space="preserve">
-    <value>toolStripStatusCTDB</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxImage.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="labelEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="labelEncoderMinMode.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="&gt;&gt;buttonPause.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="editToolStripMenuItem.Text" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-  <data name="bnComboBoxImage.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="bnComboBoxDrives.Size" type="System.Drawing.Size, System.Drawing">
-    <value>552, 21</value>
-  </data>
-  <data name="&gt;&gt;statusStrip1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;trackBarEncoderMode.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="labelEncoderMaxMode.Text" xml:space="preserve">
-    <value>320</value>
-  </data>
-  <data name="bnComboBoxImage.TabIndex" type="System.Int32, mscorlib">
-    <value>34</value>
-  </data>
-  <data name="&gt;&gt;Title.Name" xml:space="preserve">
-    <value>Title</value>
-  </data>
-  <data name="&gt;&gt;plainBackgroundPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.3766.36510, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="labelEncoderMode.Text" xml:space="preserve">
-    <value>256</value>
-  </data>
-  <data name="&gt;&gt;bindingSourceCR.Name" xml:space="preserve">
-    <value>bindingSourceCR</value>
-  </data>
-  <data name="buttonGo.Location" type="System.Drawing.Point, System.Drawing">
-    <value>382, 343</value>
-  </data>
-  <data name="labelEncoderMinMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="bnComboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMode.Name" xml:space="preserve">
-    <value>labelEncoderMode</value>
-  </data>
-  <data name="&gt;&gt;lblWriteOffset.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;listTracks.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;Length.Name" xml:space="preserve">
-    <value>Length</value>
-  </data>
-  <data name="&gt;&gt;imageListMetadataSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxDrives.Name" xml:space="preserve">
-    <value>bnComboBoxDrives</value>
-  </data>
-  <data name="Title.Text" xml:space="preserve">
-    <value>Title</value>
-  </data>
-  <data name="toolStripStatusAr.ToolTipText" xml:space="preserve">
-    <value>Album found in AccurateRip database.</value>
-  </data>
-  <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxLosslessOrNot.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>310, 15</value>
-  </data>
-  <data name="buttonAbort.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="bnComboBoxFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 19</value>
-  </data>
-  <data name="checkBoxEACMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>245, 44</value>
-  </data>
-  <data name="&gt;&gt;txtOutputPath.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;contextMenuStripRelease.Name" xml:space="preserve">
-    <value>contextMenuStripRelease</value>
-  </data>
-  <data name="numericWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>54, 20</value>
-  </data>
-  <data name="&gt;&gt;lblWriteOffset.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;formatsBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Length.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="buttonGo.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="&gt;&gt;plainProgressPainter1.Name" xml:space="preserve">
-    <value>plainProgressPainter1</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMinMode.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>frmCUERipper</value>
-  </data>
-  <data name="&gt;&gt;buttonGo.Name" xml:space="preserve">
-    <value>buttonGo</value>
-  </data>
-  <data name="checkBoxEACMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>64, 17</value>
-  </data>
-  <data name="bnComboBoxLosslessOrNot.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
-  <data name="&gt;&gt;trackBarEncoderMode.Name" xml:space="preserve">
-    <value>trackBarEncoderMode</value>
-  </data>
-  <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>553, 245</value>
-  </data>
-  <data name="Start.Width" type="System.Int32, mscorlib">
-    <value>70</value>
-  </data>
-  <data name="&gt;&gt;gradientGlossPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.3766.36510, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="progressBarErrors.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
-  </data>
-  <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="&gt;&gt;styledBorderPainter1.Name" xml:space="preserve">
-    <value>styledBorderPainter1</value>
-  </data>
-  <data name="buttonPause.Text" xml:space="preserve">
-    <value>Pause</value>
-  </data>
-  <data name="&gt;&gt;contextMenuStripRelease.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabel2.Name" xml:space="preserve">
-    <value>toolStripStatusLabel2</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxFormat.Name" xml:space="preserve">
-    <value>bnComboBoxFormat</value>
-  </data>
-  <data name="bnComboBoxLosslessOrNot.TabIndex" type="System.Int32, mscorlib">
-    <value>39</value>
-  </data>
-  <data name="trackBarEncoderMode.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;labelEncoderMaxMode.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMode.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusCTDB.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="labelEncoderMinMode.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
-  </data>
-  <data name="groupBoxSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 332</value>
-  </data>
-  <data name="&gt;&gt;trackBarSecureMode.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;groupBoxSettings.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;buttonGo.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="txtOutputPath.TabIndex" type="System.Int32, mscorlib">
-    <value>33</value>
-  </data>
-  <data name="buttonAbort.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMinMode.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="checkBoxEACMode.Text" xml:space="preserve">
-    <value>EAC log</value>
-  </data>
-  <data name="&gt;&gt;numericWriteOffset.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="&gt;&gt;txtOutputPath.Name" xml:space="preserve">
-    <value>txtOutputPath</value>
-  </data>
-  <data name="&gt;&gt;numericWriteOffset.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxImage.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;progressBarErrors.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="checkBoxEACMode.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;labelSecureMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="labelEncoderMaxMode.TabIndex" type="System.Int32, mscorlib">
-    <value>32</value>
-  </data>
-  <data name="TrackNo.Text" xml:space="preserve">
-    <value>#</value>
-  </data>
-  <data name="&gt;&gt;encodersBindingSource.Name" xml:space="preserve">
-    <value>encodersBindingSource</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem1.Name" xml:space="preserve">
-    <value>toolStripMenuItem1</value>
-  </data>
-  <data name="toolStripStatusLabelMusicBrainz.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
-  </data>
-  <data name="toolStripProgressBar1.ToolTipText" xml:space="preserve">
-    <value>Read progress</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxLosslessOrNot.Name" xml:space="preserve">
-    <value>bnComboBoxLosslessOrNot</value>
-  </data>
-  <data name="labelEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>167, 15</value>
-  </data>
-  <data name="trackBarSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="&gt;&gt;TrackNo.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;trackBarEncoderMode.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="bnComboBoxOutputFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>37</value>
-  </data>
-  <data name="progressBarCD.TabIndex" type="System.Int32, mscorlib">
-    <value>31</value>
-  </data>
-  <data name="&gt;&gt;trackBarEncoderMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TrackBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="bnComboBoxRelease.ToolTip" xml:space="preserve">
-    <value>Right-lick to edit release info</value>
-  </data>
-  <data name="&gt;&gt;trackBarSecureMode.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;plainProgressPainter2.Name" xml:space="preserve">
-    <value>plainProgressPainter2</value>
-  </data>
-  <data name="buttonGo.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="toolStripMenuItem1.Text" xml:space="preserve">
-    <value>toolStripMenuItem1</value>
-  </data>
-  <data name="&gt;&gt;imageListChecked.Name" xml:space="preserve">
-    <value>imageListChecked</value>
-  </data>
-  <data name="toolStripStatusAr.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
-    <value>White</value>
-  </data>
-  <data name="buttonAbort.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="progressBarCD.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="checkBoxEACMode.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="labelEncoderMaxMode.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="labelEncoderMode.TabIndex" type="System.Int32, mscorlib">
-    <value>31</value>
-  </data>
-  <data name="progressBarCD.Text" xml:space="preserve">
-    <value>10%</value>
-  </data>
-  <data name="&gt;&gt;statusStrip1.Name" xml:space="preserve">
-    <value>statusStrip1</value>
-  </data>
-  <data name="&gt;&gt;progressBarErrors.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3766.36510, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;numericWriteOffset.Name" xml:space="preserve">
-    <value>numericWriteOffset</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxRelease.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="buttonAbort.Text" xml:space="preserve">
-    <value>Abort</value>
-  </data>
-  <data name="&gt;&gt;txtOutputPath.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="bnComboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 60</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxFormat.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
-  </data>
-  <data name="Start.Text" xml:space="preserve">
-    <value>Start</value>
-  </data>
-  <data name="$this.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;bnComboBoxRelease.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMaxMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;progressBarCD.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="trackBarSecureMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>127, 45</value>
-  </data>
-  <data name="&gt;&gt;plainBackgroundPainter1.Name" xml:space="preserve">
-    <value>plainBackgroundPainter1</value>
-  </data>
-  <data name="&gt;&gt;progressBarErrors.Name" xml:space="preserve">
-    <value>progressBarErrors</value>
-  </data>
-  <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="contextMenuStripRelease.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="buttonGo.Text" xml:space="preserve">
-    <value>Go</value>
-  </data>
-  <data name="lblWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>242, 19</value>
-  </data>
-  <data name="&gt;&gt;listTracks.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Length.Text" xml:space="preserve">
-    <value>Length</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxOutputFormat.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;progressBarCD.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.3766.36510, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="trackBarSecureMode.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>552, 20</value>
-  </data>
-  <data name="labelEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="labelEncoderMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopCenter</value>
-  </data>
-  <data name="&gt;&gt;checkBoxEACMode.Name" xml:space="preserve">
-    <value>checkBoxEACMode</value>
-  </data>
-  <data name="checkBoxEACMode.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="&gt;&gt;buttonAbort.Name" xml:space="preserve">
-    <value>buttonAbort</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxOutputFormat.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;trackBarSecureMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TrackBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;drivesBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="bnComboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 46</value>
-  </data>
-  <data name="&gt;&gt;releasesBindingSource.Name" xml:space="preserve">
-    <value>releasesBindingSource</value>
-  </data>
-  <data name="buttonPause.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;Start.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;trackBarSecureMode.Name" xml:space="preserve">
-    <value>trackBarSecureMode</value>
-  </data>
-  <data name="bnComboBoxFormat.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="&gt;&gt;Title.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>571, 481</value>
-  </data>
-  <data name="bnComboBoxDrives.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="statusStrip1.Text" xml:space="preserve">
-    <value>statusStrip1</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBoxSettings.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="labelEncoderMaxMode.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="bnComboBoxDrives.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
-  <data name="&gt;&gt;Start.Name" xml:space="preserve">
-    <value>Start</value>
-  </data>
-  <data name="&gt;&gt;labelEncoderMinMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="labelEncoderMaxMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>143, 106</value>
-  </data>
-  <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
-    <value>toolTip1</value>
-  </data>
-  <data name="groupBoxSettings.Size" type="System.Drawing.Size, System.Drawing">
-    <value>370, 121</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxEncoder.Parent" xml:space="preserve">
-    <value>groupBoxSettings</value>
-  </data>
-  <data name="labelEncoderMinMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 106</value>
-  </data>
-  <data name="&gt;&gt;txtOutputPath.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;buttonAbort.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="toolStripStatusCTDB.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
-  </data>
-  <data name="&gt;&gt;buttonPause.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="lblWriteOffset.ToolTip" xml:space="preserve">
-    <value />
-  </data>
-  <data name="bnComboBoxOutputFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>552, 21</value>
-  </data>
-  <data name="bnComboBoxDrives.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 6</value>
-  </data>
-  <data name="&gt;&gt;plainProgressPainter2.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3766.36510, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;gradientGlossPainter1.Name" xml:space="preserve">
-    <value>gradientGlossPainter1</value>
-  </data>
-  <data name="buttonPause.Location" type="System.Drawing.Point, System.Drawing">
-    <value>383, 343</value>
-  </data>
-  <data name="&gt;&gt;bnComboBoxEncoder.Name" xml:space="preserve">
-    <value>bnComboBoxEncoder</value>
-  </data>
-  <data name="bnComboBoxDrives.TabIndex" type="System.Int32, mscorlib">
-    <value>36</value>
-  </data>
-  <data name="trackBarSecureMode.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>CUERipper 2.0.8</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
+    <value>toolStripStatusLabel1</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>394, 20</value>
+  <data name="&gt;&gt;toolStripStatusLabelMusicBrainz.Name" xml:space="preserve">
+    <value>toolStripStatusLabelMusicBrainz</value>
   </data>
-  <data name="labelEncoderMode.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
+  <data name="&gt;&gt;toolStripStatusLabelMusicBrainz.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="buttonGo.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 33</value>
+  <data name="&gt;&gt;toolStripStatusCTDB.Name" xml:space="preserve">
+    <value>toolStripStatusCTDB</value>
   </data>
-  <data name="bnComboBoxRelease.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 33</value>
+  <data name="&gt;&gt;toolStripStatusCTDB.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="bnComboBoxImage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
+  <data name="&gt;&gt;toolStripStatusAr.Name" xml:space="preserve">
+    <value>toolStripStatusAr</value>
   </data>
-  <data name="&gt;&gt;labelEncoderMode.ZOrder" xml:space="preserve">
-    <value>7</value>
+  <data name="&gt;&gt;toolStripStatusAr.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="labelEncoderMinMode.ToolTip" xml:space="preserve">
-    <value />
+  <data name="&gt;&gt;toolStripProgressBar1.Name" xml:space="preserve">
+    <value>toolStripProgressBar1</value>
   </data>
-  <metadata name="cUEStylesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>526, 56</value>
-  </metadata>
-  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="releasesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>708, 56</value>
-  </metadata>
-  <metadata name="contextMenuStripRelease.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
-  <metadata name="plainProgressPainter2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>356, 56</value>
-  </metadata>
-  <metadata name="bindingSourceCR.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>210, 56</value>
-  </metadata>
-  <metadata name="plainBackgroundPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>960, 17</value>
-  </metadata>
-  <metadata name="losslessOrNotBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>369, 95</value>
-  </metadata>
-  <metadata name="imageListMetadataSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 56</value>
-  </metadata>
-  <metadata name="encodersBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>189, 95</value>
-  </metadata>
-  <metadata name="gradientGlossPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>789, 17</value>
-  </metadata>
-  <metadata name="formatsBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 95</value>
-  </metadata>
-  <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>0, 456</value>
-  </metadata>
-  <metadata name="styledBorderPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>624, 17</value>
-  </metadata>
-  <metadata name="drivesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>998, 56</value>
-  </metadata>
-  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>50</value>
-  </metadata>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>357, 17</value>
-  </metadata>
-  <metadata name="plainProgressPainter1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>454, 17</value>
-  </metadata>
-  <metadata name="imageListChecked.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>207, 17</value>
-  </metadata>
+  <data name="&gt;&gt;toolStripProgressBar1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripProgressBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabel2.Name" xml:space="preserve">
+    <value>toolStripStatusLabel2</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Title.Name" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="&gt;&gt;Title.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TrackNo.Name" xml:space="preserve">
+    <value>TrackNo</value>
+  </data>
+  <data name="&gt;&gt;TrackNo.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Start.Name" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="&gt;&gt;Start.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Length.Name" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="&gt;&gt;Length.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;editToolStripMenuItem.Name" xml:space="preserve">
+    <value>editToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;editToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;variousToolStripMenuItem.Name" xml:space="preserve">
+    <value>variousToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;variousToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;fixEncodingToolStripMenuItem.Name" xml:space="preserve">
+    <value>fixEncodingToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;fixEncodingToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;losslessOrNotBindingSource.Name" xml:space="preserve">
+    <value>losslessOrNotBindingSource</value>
+  </data>
+  <data name="&gt;&gt;losslessOrNotBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;bindingSourceCR.Name" xml:space="preserve">
+    <value>bindingSourceCR</value>
+  </data>
+  <data name="&gt;&gt;bindingSourceCR.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;encodersBindingSource.Name" xml:space="preserve">
+    <value>encodersBindingSource</value>
+  </data>
+  <data name="&gt;&gt;encodersBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;formatsBindingSource.Name" xml:space="preserve">
+    <value>formatsBindingSource</value>
+  </data>
+  <data name="&gt;&gt;formatsBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cUEStylesBindingSource.Name" xml:space="preserve">
+    <value>cUEStylesBindingSource</value>
+  </data>
+  <data name="&gt;&gt;cUEStylesBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;imageListChecked.Name" xml:space="preserve">
+    <value>imageListChecked</value>
+  </data>
+  <data name="&gt;&gt;imageListChecked.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem1.Name" xml:space="preserve">
+    <value>toolStripMenuItem1</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;plainBackgroundPainter1.Name" xml:space="preserve">
+    <value>plainBackgroundPainter1</value>
+  </data>
+  <data name="&gt;&gt;plainBackgroundPainter1.Type" xml:space="preserve">
+    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.3766.36643, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;styledBorderPainter1.Name" xml:space="preserve">
+    <value>styledBorderPainter1</value>
+  </data>
+  <data name="&gt;&gt;styledBorderPainter1.Type" xml:space="preserve">
+    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.3766.36643, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;plainProgressPainter1.Name" xml:space="preserve">
+    <value>plainProgressPainter1</value>
+  </data>
+  <data name="&gt;&gt;plainProgressPainter1.Type" xml:space="preserve">
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3766.36643, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;gradientGlossPainter1.Name" xml:space="preserve">
+    <value>gradientGlossPainter1</value>
+  </data>
+  <data name="&gt;&gt;gradientGlossPainter1.Type" xml:space="preserve">
+    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.3766.36643, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;plainProgressPainter2.Name" xml:space="preserve">
+    <value>plainProgressPainter2</value>
+  </data>
+  <data name="&gt;&gt;plainProgressPainter2.Type" xml:space="preserve">
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.3766.36643, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
+    <value>toolTip1</value>
+  </data>
+  <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;releasesBindingSource.Name" xml:space="preserve">
+    <value>releasesBindingSource</value>
+  </data>
+  <data name="&gt;&gt;releasesBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;imageListMetadataSource.Name" xml:space="preserve">
+    <value>imageListMetadataSource</value>
+  </data>
+  <data name="&gt;&gt;imageListMetadataSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;drivesBindingSource.Name" xml:space="preserve">
+    <value>drivesBindingSource</value>
+  </data>
+  <data name="&gt;&gt;drivesBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>frmCUERipper</value>
+  </data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

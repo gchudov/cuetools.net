@@ -1635,7 +1635,7 @@ string status = processor.Go();
 		private CUEToolsDB _CUEToolsDB;
 		private CDImageLayout _toc;
 		private string _arLogFileName, _alArtFileName;
-		private TagLib.IPicture[] _albumArt;
+		private List<TagLib.IPicture> _albumArt = new List<TagLib.IPicture>();
 		private int _padding = 8192;
 		private IWebProxy proxy;
 
@@ -1666,7 +1666,6 @@ string status = processor.Go();
 			_hasEmbeddedCUESheet = false;
 			_isArchive = false;
 			_isCD = false;
-			_albumArt = null;
 			proxy = _config.useSystemProxySettings ? WebRequest.GetSystemWebProxy() : null;
 		}
 
@@ -1769,6 +1768,40 @@ string status = processor.Go();
 				MusicBrainz.Track track = release.GetTracks()[(int)_toc[i].Number - 1]; // !!!!!! - _toc.FirstAudio
 				Tracks[i - 1].Title = track.GetTitle();
 				Tracks[i - 1].Artist = track.GetArtist();
+			}
+		}
+
+		public bool FreedbToEncoding()
+		{
+			Encoding iso = Encoding.GetEncoding("iso-8859-1");
+			bool different = false;
+			string tmp;
+			tmp = Encoding.Default.GetString(iso.GetBytes(Artist)); different |= Artist != tmp; Artist = tmp;
+			tmp = Encoding.Default.GetString(iso.GetBytes(Title)); different |= Title != tmp; Title = tmp;
+			for (int i = 0; i < _toc.AudioTracks; i++)
+			{
+				tmp = Encoding.Default.GetString(iso.GetBytes(Tracks[i].Artist)); different |= Tracks[i].Artist != tmp; Tracks[i].Artist = tmp;
+				tmp = Encoding.Default.GetString(iso.GetBytes(Tracks[i].Title)); different |= Tracks[i].Title != tmp; Tracks[i].Title = tmp;
+			}
+			return different;
+		}
+
+		public void FreedbToVarious()
+		{
+			for (int i = 0; i < _toc.AudioTracks; i++)
+			{
+				string title = Tracks[i].Title;
+				int idx = title.IndexOf(" / ");
+				if (idx < 0) idx = title.IndexOf(" - ");
+				if (idx >= 0)
+				{
+					Tracks[i].Title = title.Substring(idx + 3);
+					Tracks[i].Artist = title.Substring(0, idx);
+				}
+				else
+				{
+					Tracks[i].Artist = title;
+				}
 			}
 		}
 
@@ -1879,7 +1912,10 @@ string status = processor.Go();
 							Releases.Add(release);
 						}
 					}
-					catch { }
+					catch (Exception ex)
+					{
+						System.Diagnostics.Trace.WriteLine(ex.Message);
+					}
 				}
 				MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 				//if (release != null)
@@ -2676,8 +2712,8 @@ string status = processor.Go();
 
 			LoadAlbumArt(_tracks[0]._fileInfo ?? _fileInfo);
 			ResizeAlbumArt();
-			if ((_config.embedAlbumArt || _config.copyAlbumArt) && _albumArt != null && _albumArt.Length > 0)
-				_padding += _albumArt[0].Data.Count;
+			if (_config.embedAlbumArt || _config.copyAlbumArt)
+				_albumArt.ForEach(t => _padding += _albumArt[0].Data.Count);
 			if (_config.embedLog && _eacLog != null)
 				_padding += _eacLog.Length;
 		}
@@ -3119,7 +3155,7 @@ string status = processor.Go();
 				outputExists |= File.Exists(Path.Combine(OutputDir, ArLogFileName));
 			if (outputAudio)
 			{
-				if (_config.extractAlbumArt && AlbumArt != null && AlbumArt.Length != 0)
+				if (_config.extractAlbumArt && AlbumArt != null && AlbumArt.Count != 0)
 					outputExists |= File.Exists(Path.Combine(OutputDir, AlArtFileName));
 				if (OutputStyle == CUEStyle.SingleFile || OutputStyle == CUEStyle.SingleFileWithCUE)
 					outputExists |= File.Exists(Path.Combine(OutputDir, SingleFilename));
@@ -3827,6 +3863,11 @@ string status = processor.Go();
 				if (_audioEncoderType != AudioEncoderType.NoAudio && _config.extractAlbumArt)
 					ExtractAlbumArt();
 
+				bool fNeedAlbumArtist = false;
+				for (int iTrack = 1; iTrack < TrackCount; iTrack++)
+					if (_tracks[iTrack].Artist != _tracks[0].Artist)
+						fNeedAlbumArtist = true;
+
 				if (OutputStyle == CUEStyle.SingleFileWithCUE || OutputStyle == CUEStyle.SingleFile)
 				{
 					if (_audioEncoderType != AudioEncoderType.NoAudio)
@@ -3844,10 +3885,10 @@ string status = processor.Go();
 								uint temp;
 								if (fileInfo.Tag.Album == null && Title != "") 
 									fileInfo.Tag.Album = Title;
-								if (fileInfo.Tag.Performers.Length == 0 && Artist != "")
+								if (fNeedAlbumArtist && fileInfo.Tag.AlbumArtists.Length == 0 && Artist != "")
+									fileInfo.Tag.AlbumArtists = new string[] { Artist };
+								if (!fNeedAlbumArtist && fileInfo.Tag.Performers.Length == 0 && Artist != "")
 									fileInfo.Tag.Performers = new string[] { Artist };
-								//if (fileInfo.Tag.AlbumArtists.Length == 0 && Artist != "")
-								//    fileInfo.Tag.AlbumArtists = new string[] { Artist };
 								if (fileInfo.Tag.Genres.Length == 0 && Genre != "") 
 									fileInfo.Tag.Genres = new string[] { Genre };
 								if (fileInfo.Tag.DiscCount == 0 && TotalDiscs != "" && uint.TryParse(TotalDiscs, out temp))
@@ -3878,8 +3919,8 @@ string status = processor.Go();
 									fileInfo.Tag.Year = sourceFileInfo.Tag.Year;
 							}
 
-							if ((_config.embedAlbumArt || _config.copyAlbumArt) && _albumArt != null && _albumArt.Length > 0)
-								fileInfo.Tag.Pictures = _albumArt;
+							if ((_config.embedAlbumArt || _config.copyAlbumArt) && _albumArt.Count > 0)
+								fileInfo.Tag.Pictures = _albumArt.ToArray();
 
 							fileInfo.Save();
 						}
@@ -3889,10 +3930,6 @@ string status = processor.Go();
 				{
 					if (_config.createM3U)
 						WriteText(Path.ChangeExtension(_outputPath, ".m3u"), M3UContents(OutputStyle));
-					bool fNeedAlbumArtist = false;
-					for (int iTrack = 1; iTrack < TrackCount; iTrack++)
-						if (_tracks[iTrack].Artist != _tracks[0].Artist)
-							fNeedAlbumArtist = true;
 					if (_audioEncoderType != AudioEncoderType.NoAudio)
 						for (int iTrack = 0; iTrack < TrackCount; iTrack++)
 						{
@@ -3949,8 +3986,8 @@ string status = processor.Go();
 										fileInfo.Tag.Genres = sourceFileInfo.Tag.Genres;
 								}
 
-								if ((_config.embedAlbumArt || _config.copyAlbumArt) && _albumArt != null && _albumArt.Length > 0)
-									fileInfo.Tag.Pictures = _albumArt;
+								if ((_config.embedAlbumArt || _config.copyAlbumArt) && _albumArt.Count > 0)
+									fileInfo.Tag.Pictures = _albumArt.ToArray();
 
 								fileInfo.Save();
 							}
@@ -3993,7 +4030,7 @@ string status = processor.Go();
 
 		public void ExtractAlbumArt()
 		{
-			if (!_config.extractAlbumArt || _albumArt == null || _albumArt.Length == 0)
+			if (!_config.extractAlbumArt || _albumArt.Count == 0)
 				return;
 
 			string imgPath = Path.Combine(OutputDir, AlArtFileName);
@@ -4015,18 +4052,46 @@ string status = processor.Go();
 					if (picture.Type == TagLib.PictureType.FrontCover)
 						if (picture.MimeType == "image/jpeg")
 						{
-							_albumArt = new TagLib.IPicture[] { picture };
+							_albumArt.Add(picture);
 							return;
 						}
 			if ((_config.extractAlbumArt || _config.embedAlbumArt) && _inputDir != null)
 			{
-				string imgPath = Path.Combine(_inputDir, "folder.jpg");
-				if (!File.Exists(imgPath))
-					imgPath = Path.Combine(_inputDir, "cover.jpg");
-				if (!File.Exists(imgPath))
-					return;
-				_albumArt = new TagLib.IPicture[] { new TagLib.Picture(imgPath) };
-			}				
+				List<string> names = new List<string>();
+				names.Add("folder.jpg");
+				names.Add("cover.jpg");
+				names.Add("albumart.jpg");
+				names.Add("albumartlarge.jpg");
+				foreach (string name in names)
+				{
+					string imgPath = Path.Combine(_inputDir, name);
+					if (File.Exists(imgPath))
+					{
+						TagLib.Picture pic = new TagLib.Picture(imgPath);
+						pic.Description = name;
+						_albumArt.Add(pic);
+						return;
+					}
+				}
+
+				foreach (string imgPath in Directory.GetFiles(_inputDir, "*.jpg"))
+				{
+					TagLib.Picture pic = new TagLib.Picture(imgPath);
+					pic.Description = Path.GetFileName(imgPath);
+					_albumArt.Add(pic);
+					if (Action != CUEAction.Encode)
+						return;
+				}
+
+				if (_albumArt.Count != 0)
+				{
+					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+					e.choices = _albumArt.ToArray();
+					CUEToolsSelection(this, e);
+					TagLib.IPicture selected = e.selection == -1 ? null : _albumArt[e.selection];
+					_albumArt.RemoveAll(t => t != selected);
+				}
+			}
 		}
 
 		public void ResizeAlbumArt()
@@ -4050,7 +4115,7 @@ string status = processor.Go();
 					}
 		}
 
-		public TagLib.IPicture[] AlbumArt
+		public List<TagLib.IPicture> AlbumArt
 		{
 			get
 			{
@@ -4062,7 +4127,7 @@ string status = processor.Go();
 		{
 			get
 			{
-				if (AlbumArt == null || AlbumArt.Length == 0)
+				if (AlbumArt == null || AlbumArt.Count == 0)
 					return null;
 				TagLib.IPicture picture = AlbumArt[0];
 				using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))

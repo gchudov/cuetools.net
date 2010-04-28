@@ -45,8 +45,10 @@ namespace JDP
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
 			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+			this.pictureBox1 = new System.Windows.Forms.PictureBox();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// buttonOk
@@ -131,11 +133,12 @@ namespace JDP
 			// tableLayoutPanel1
 			// 
 			resources.ApplyResources(this.tableLayoutPanel1, "tableLayoutPanel1");
-			this.tableLayoutPanel1.Controls.Add(this.listMetadata, 0, 2);
-			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 4);
+			this.tableLayoutPanel1.Controls.Add(this.listMetadata, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 5);
 			this.tableLayoutPanel1.Controls.Add(this.textBox1, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this.listTracks, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this.listTracks, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this.listChoices, 0, 0);
+			this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 2);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
 			// 
 			// listMetadata
@@ -169,6 +172,13 @@ namespace JDP
 			this.tableLayoutPanel2.Controls.Add(this.buttonOk, 3, 0);
 			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
 			// 
+			// pictureBox1
+			// 
+			resources.ApplyResources(this.pictureBox1, "pictureBox1");
+			this.pictureBox1.Name = "pictureBox1";
+			this.pictureBox1.TabStop = false;
+			this.pictureBox1.DoubleClick += new System.EventHandler(this.pictureBox1_DoubleClick);
+			// 
 			// frmChoice
 			// 
 			this.AcceptButton = this.buttonOk;
@@ -184,6 +194,7 @@ namespace JDP
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
 			this.tableLayoutPanel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -205,5 +216,6 @@ namespace JDP
 		private System.Windows.Forms.ListView listMetadata;
 		private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ColumnHeader columnHeader3;
+		private System.Windows.Forms.PictureBox pictureBox1;
 	}
 }

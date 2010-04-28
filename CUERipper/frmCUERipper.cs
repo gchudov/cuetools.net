@@ -485,25 +485,6 @@ namespace CUERipper
 			});
 		}
 
-		private ReleaseInfo ConvertEncoding(ICDRipper audioSource, CDEntry cdEntryOrig)
-		{
-			Encoding iso = Encoding.GetEncoding("iso-8859-1");
-			CDEntry cdEntry = cdEntryOrig.Clone() as CDEntry;
-			bool different = false;
-			cdEntry.Artist = Encoding.Default.GetString(iso.GetBytes(cdEntryOrig.Artist));
-			different |= cdEntry.Artist != cdEntryOrig.Artist;
-			cdEntry.Title = Encoding.Default.GetString(iso.GetBytes(cdEntryOrig.Title));
-			different |= cdEntry.Title != cdEntryOrig.Title;
-			for (int i = 0; i < cdEntry.Tracks.Count; i++)
-			{
-				cdEntry.Tracks[i].Title = Encoding.Default.GetString(iso.GetBytes(cdEntryOrig.Tracks[i].Title));
-				different |= cdEntry.Tracks[i].Title != cdEntryOrig.Tracks[i].Title;
-			}
-			if (!different)
-				return null;
-			return CreateCUESheet(audioSource, null, cdEntry);
-		}
-
 		private ReleaseInfo CreateCUESheet(ICDRipper audioSource, Release release, CDEntry cdEntry)
 		{
 			ReleaseInfo r = new ReleaseInfo(_config, audioSource.TOC);
@@ -524,7 +505,10 @@ namespace CUERipper
 				r.metadata.Artist = "Unknown Artist";
 				r.metadata.Title = "Unknown Title";
 				for (int i = 0; i < audioSource.TOC.AudioTracks; i++)
+				{
 					r.metadata.Tracks[i].Title = string.Format("Track {0:00}", i + 1);
+					r.metadata.Tracks[i].Artist = r.metadata.Artist;
+				}
 			}
 			if (r.metadata.Genre == "") r.metadata.Genre = "";
 			if (r.metadata.Year == "") r.metadata.Year = "";
@@ -534,6 +518,8 @@ namespace CUERipper
 		private void Lookup(object o)
 		{
 			ICDRipper audioSource = o as ICDRipper;
+			int mbresults_count = 0; // have to cache results.Count, because it sometimes hangs in it, and we don't want UI thread to hang.
+			string musicbrainzError = "";
 
 			releases.RaiseListChangedEvents = false;
 
@@ -555,6 +541,7 @@ namespace CUERipper
 			p.DiscId = audioSource.TOC.MusicBrainzId;
 			Query<Release> results = Release.Query(p);
 			MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+
 			try
 			{
 				foreach (Release release in results)
@@ -563,9 +550,13 @@ namespace CUERipper
 					release.GetTracks();
 					releases.Add(CreateCUESheet(audioSource, release, null));
 				}
+				mbresults_count = results.Count;
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				System.Diagnostics.Trace.WriteLine(ex.Message);
+				if (!(ex is MusicBrainzNotFoundException))
+					musicbrainzError = ex.Message;
 			}
 			MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 
@@ -593,9 +584,7 @@ namespace CUERipper
 					if (code == FreedbHelper.ResponseCodes.CODE_210)
 					{
 						ReleaseInfo r = CreateCUESheet(audioSource, null, cdEntry);
-						ReleaseInfo r2 = ConvertEncoding(audioSource, cdEntry);
 						releases.Add(r);
-						if (r2 != null) releases.Add(r2);
 					}
 				}
 				else
@@ -610,15 +599,14 @@ namespace CUERipper
 						if (code == FreedbHelper.ResponseCodes.CODE_210)
 						{
 							ReleaseInfo r = CreateCUESheet(audioSource, null, cdEntry);
-							ReleaseInfo r2 = ConvertEncoding(audioSource, cdEntry);
 							releases.Add(r);
-							if (r2 != null) releases.Add(r2);
 						}
 					}
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				System.Diagnostics.Trace.WriteLine(ex.Message);
 			}
 
 			if (releases.Count == 0)
@@ -626,9 +614,8 @@ namespace CUERipper
 				releases.Add(CreateCUESheet(audioSource, null, null));
 			}
 			_workThread = null;
-			// have to cache results.Count, because it sometimes hangs in it,
-			// and we don't want UI thread to hang.
-			int mbresults_count = results.Count;
+			if (musicbrainzError != "")
+				musicbrainzError = musicbrainzError + ": ";
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				SetupControls();
@@ -644,7 +631,7 @@ namespace CUERipper
 				toolStripStatusLabelMusicBrainz.Enabled = true;
 				toolStripStatusLabelMusicBrainz.BorderStyle = mbresults_count > 0 ? Border3DStyle.SunkenInner : Border3DStyle.RaisedInner;
 				toolStripStatusLabelMusicBrainz.Text = mbresults_count > 0 ? mbresults_count.ToString() : "";
-				toolStripStatusLabelMusicBrainz.ToolTipText = "Musicbrainz: " + (mbresults_count > 0 ? mbresults_count.ToString() + " entries found." : "click to submit.");
+				toolStripStatusLabelMusicBrainz.ToolTipText = "Musicbrainz: " + (mbresults_count > 0 ? mbresults_count.ToString() + " entries found." : (musicbrainzError + "click to submit."));
 			});
 		}
 
@@ -741,12 +728,42 @@ namespace CUERipper
 				e.CancelEdit = true;
 		}
 
+		private void contextMenuStripRelease_Opening(object sender, CancelEventArgs e)
+		{
+			if (selectedRelease == null) return;
+			bool isVarious = false;
+			for (int i = 0; i < selectedRelease.metadata.TOC.AudioTracks; i++)
+				if (selectedRelease.metadata.Tracks[i].Artist != selectedRelease.metadata.Artist)
+					isVarious = true;
+			variousToolStripMenuItem.Enabled = selectedRelease.ImageKey == "freedb" && !isVarious;
+			ReleaseInfo r = new ReleaseInfo(_config, selectedRelease.metadata.TOC);
+			r.metadata.CopyMetadata(selectedRelease.metadata);
+			fixEncodingToolStripMenuItem.Enabled = selectedRelease.ImageKey == "freedb" && r.metadata.FreedbToEncoding();
+		}
+
 		private void editToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (selectedRelease == null) return;
 			frmProperties frm = new frmProperties();
 			frm.CUE = selectedRelease.metadata;
 			frm.ShowDialog();
+			releases.ResetItem(bnComboBoxRelease.SelectedIndex);
+			comboBoxOutputFormat_TextUpdate(sender, e);
+		}
+
+		private void variousToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (selectedRelease == null) return;
+			selectedRelease.metadata.FreedbToVarious();
+			UpdateRelease();
+			releases.ResetItem(bnComboBoxRelease.SelectedIndex);
+		}
+
+		private void fixEncodingToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (selectedRelease == null) return;
+			selectedRelease.metadata.FreedbToEncoding();
+			UpdateRelease();
 			releases.ResetItem(bnComboBoxRelease.SelectedIndex);
 			comboBoxOutputFormat_TextUpdate(sender, e);
 		}

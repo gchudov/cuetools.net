@@ -123,10 +123,10 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="buttonOk.Location" type="System.Drawing.Point, System.Drawing">
-    <value>437, 3</value>
+    <value>456, 3</value>
   </data>
   <data name="buttonOk.Size" type="System.Drawing.Size, System.Drawing">
-    <value>105, 23</value>
+    <value>110, 32</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="buttonOk.TabIndex" type="System.Int32, mscorlib">
@@ -157,7 +157,7 @@
     <value>3, 3</value>
   </data>
   <data name="listChoices.Size" type="System.Drawing.Size, System.Drawing">
-    <value>545, 77</value>
+    <value>569, 85</value>
   </data>
   <metadata name="imageList1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
@@ -169,77 +169,77 @@
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAACg
         EQAAAk1TRnQBSQFMAgEBBAEAAQwBAAEEAQABEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABIAMAAQEBAAEgBgABIP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8ALgADAgEDAxQBHAMw
-        AUwDRAF5A1ABmgNQAaQDUAGaA0QBeQMwAUwDFAEcAwMBBAgAA5YB/wEkAgAB/wEkAgAB/wEkAgAB/wEk
-        AgAB/wEkAgAB/wEkAgAB/wEkAgAB/wEkAgAB/wEkAgAB/wEkAgAB/wEkAgAB/wEkAgAB/wEkAgAB/wEk
-        AgAB/wEkAgAB/wQAAVcBzAL/ASQCmQH/ASQCmQH/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/
-        AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/EAADAgEDAxQBHAMwAUwDRAF5A1ABmgNQ
-        AaQDUAGaA0QBeQMwAUwDFAEcAwMBBBAAAwQBBgMkATYDUwGwAWMCXgHlAYMCcwH7AbMCqQH/AYMCfAH7
+        AUwDRAF5A1ABmgNQAaQDUAGaA0QBeQMwAUwDFAEcAwMBBAgAA5YB/wEfAgAB/wEfAgAB/wEfAgAB/wEf
+        AgAB/wEfAgAB/wEfAgAB/wEfAgAB/wEfAgAB/wEfAgAB/wEfAgAB/wEfAgAB/wEfAgAB/wEfAgAB/wEf
+        AgAB/wEfAgAB/wQAAVIBzAL/AR8CmQH/AR8CmQH/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/
+        AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/EAADAgEDAxQBHAMwAUwDRAF5A1ABmgNQ
+        AaQDUAGaA0QBeQMwAUwDFAEcAwMBBBAAAwQBBgMkATYDUwGwAWMCXgHlAXwCZAH7AbMCqQH/AXwCbQH7
         A2AB6wNaAdMDUwGsA0cBggMoATwDBwEJBAABzAKZAf8BgAIAAf8BgAIAAf8BgAIAAf8BgAIAAf8D6gH/
-        A+oB/wPqAf8BgAIAAf8D6gH/A+oB/wPqAf8BgAIAAf8BgAIAAf8BVwIAAf8BJAIAAf8BJAKZAf8DAAH/
-        AxoB/wM+Af8DAAH/Aw0B/wFXAcwC/wFXAcwC/wFXAcwC/wFXAcwC/wFXAcwC/wFXAcwC/wFXAcwC/wFX
-        AcwC/wFXAcwC/wFXAcwC/wgAAwQBBgMkATYDUwGwAWMCXgHlAYMCcwH7AbMCqQH/AYMCfAH7A2AB6wNa
+        A+oB/wPqAf8BgAIAAf8D6gH/A+oB/wPqAf8BgAIAAf8BgAIAAf8BUgIAAf8BHwIAAf8BHwKZAf8DAAH/
+        AxUB/wM5Af8DAAH/AwgB/wFSAcwC/wFSAcwC/wFSAcwC/wFSAcwC/wFSAcwC/wFSAcwC/wFSAcwC/wFS
+        AcwC/wFSAcwC/wFSAcwC/wgAAwQBBgMkATYDUwGwAWMCXgHlAXwCZAH7AbMCqQH/AXwCbQH7A2AB6wNa
         AdMDUwGsA0cBggMoATwDBwEJCAADAgEDAzEBTwNcAeoBzwK0Av8C3QL/AuIC/wLoAv8C7gL/AvMB/wPP
         Af8DXwHzA1gBxgNMAZIDKAE8AwMBBAHMApkB/wGAAgAB/wGAAgAB/wGAAgAB/wPxAf8BgAIAAf8BgAIA
-        Af8D8QH/AYACAAH/A/EB/wGAAgAB/wGAAgAB/wPxAf8BgAIAAf8BgAIAAf8BJAIAAf8DAAH/A8wN/wM+
-        Af8DDQH/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/
+        Af8D8QH/AYACAAH/A/EB/wGAAgAB/wGAAgAB/wPxAf8BgAIAAf8BgAIAAf8BHwIAAf8DAAH/A8wN/wM5
+        Af8DCAH/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/
         BAADAgEDAzEBTwNcAeoBzwK0Av8C3QL/AuIC/wLoAv8C7gL/AvMB/wPPAf8DXwHzA1gBxgNMAZIDKAE8
-        AwMBBAQAAyYBOANtAfcB9QLHAv8C0gL/AtgC/wLdAv8C4gL/AugC/wL0Bf8D9QH/A4oB+wNYAcYDRwGC
-        AxQBHAHMApkB/wGZAQABJAH/AYACAAH/AYACAAX/AYACAAH/AYACAAX/AYACAAX/AYACAAH/AYACAAX/
-        AYACAAH/AYACAAH/ASQCAAH/AwAB/wPMEf8DAAH/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/
-        AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/BAADJgE4A20B9wH1AscC/wLSAv8C2AL/At0C/wLiAv8C6AL/
-        AvQF/wP1Af8DigH7A1gBxgNHAYIDFAEcAwcBCQNeAd0B9QLNAv8CzwL/As0C/wLSAv8C2AL/At0C/wLi
-        Av8C+gn/A/UB/wNfAfMDUwGsAzABTAHMApkB/wGZAQABJAH/AYACAAH/AYACAAH/AYACAA3/AYACAA3/
-        AYACAAH/AYACAAH/AYACAAH/ASQCAAH/ASQCmQH/Aw0B/wNoAf8DwAH/A8AB/wPMAf8DAAH/AxoB/wMA
-        Af8DAAH/AwAB/wMAAf8DGgH/AVcBzAL/AVcBzAL/AVcBzAL/AwcBCQNeAd0B9QLNAv8CzwL/As0C/wLS
+        AwMBBAQAAyYBOANtAfcB9QLHAv8C0gL/AtgC/wLdAv8C4gL/AugC/wL0Bf8D9QH/A4UB+wNYAcYDRwGC
+        AxQBHAHMApkB/wGZAQABHwH/AYACAAH/AYACAAX/AYACAAH/AYACAAX/AYACAAX/AYACAAH/AYACAAX/
+        AYACAAH/AYACAAH/AR8CAAH/AwAB/wPMEf8DAAH/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/
+        AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/BAADJgE4A20B9wH1AscC/wLSAv8C2AL/At0C/wLiAv8C6AL/
+        AvQF/wP1Af8DhQH7A1gBxgNHAYIDFAEcAwcBCQNeAd0B9QLNAv8CzwL/As0C/wLSAv8C2AL/At0C/wLi
+        Av8C+gn/A/UB/wNfAfMDUwGsAzABTAHMApkB/wGZAQABHwH/AYACAAH/AYACAAH/AYACAA3/AYACAA3/
+        AYACAAH/AYACAAH/AYACAAH/AR8CAAH/AR8CmQH/AwgB/wNjAf8DwAH/A8AB/wPMAf8DAAH/AxUB/wMA
+        Af8DAAH/AwAB/wMAAf8DFQH/AVIBzAL/AVIBzAL/AVIBzAL/AwcBCQNeAd0B9QLNAv8CzwL/As0C/wLS
         Av8C2AL/At0C/wLiAv8C+gn/A/UB/wNfAfMDUwGsAzABTAM+AWoBxgKxAv8C2QL/AtQC/wLPAv8CzQL/
-        AdQB2wL/AdcB4gL/AeQB6hH/AdICzAH/A1oB0wNDAXcBzAKZAf8BmQEAASQB/wGAAgAB/wGAAgAB/wGA
-        AgAB/wGAAgAB/wGAAgAF/wGAAgAF/wGAAgAB/wGAAgAB/wGAAgAB/wGAAgAB/wGAAgAB/wEkAgAB/wFX
-        AcwC/wEkApkB/wMNAf8DAAH/AwAF/wMAAf8DDQH/AaQCoAn/A5kB/wMaAf8DGgH/AVcBzAL/AVcBzAL/
+        AdQB2wL/AdcB4gL/AeQB6hH/AdICzAH/A1oB0wNDAXcBzAKZAf8BmQEAAR8B/wGAAgAB/wGAAgAB/wGA
+        AgAB/wGAAgAB/wGAAgAF/wGAAgAF/wGAAgAB/wGAAgAB/wGAAgAB/wGAAgAB/wGAAgAB/wEfAgAB/wFS
+        AcwC/wEfApkB/wMIAf8DAAH/AwAF/wMAAf8DCAH/AaQCoAn/A5kB/wMVAf8DFQH/AVIBzAL/AVIBzAL/
         Az4BagHGArEC/wLZAv8C1AL/As8C/wLNAv8B1AHbAv8B1wHiAv8B5AHqEf8B0gLMAf8DWgHTA0MBdwNW
-        AbYB/wLjAf8BAAEfASAB/wEAAR8BIAH/AQABHwEgAv8B3gHnAf8BAAEfASAC/wHRAfMB/wEAAR8BIAL/
-        AfgC/wFfAmUB/wEAAR8BIAH/AV8CZQH/AcwCmQH/AVwCVQHqA04BlAHMApkB/wGZAQABJAH/AYACAAH/
+        AbYB/wLjAf8BAAEaARsB/wEAARoBGwH/AQABGgEbAv8B3gHnAf8BAAEaARsC/wHRAfMB/wEAARoBGwL/
+        AfgC/wFaAmAB/wEAARoBGwH/AVoCYAH/AcwCmQH/AVwCVQHqA04BlAHMApkB/wGZAQABHwH/AYACAAH/
         AYACAAH/AYACAAH/AYACAAH/AYACAAX/AYACAAX/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/
-        ASQCAAH/AVcBzAL/AVcBzAL/AVcBzAL/AVcBzAL/AwAF/wMAAf8DGhH/A8wB/wMAAf8BVwHMAv8BVwHM
-        Av8DVgG2Af8C4wH/AV8CZQH/AQABHwEgAf8BXwJlAv8B3gHnAf8BXwJlAf8BAAEfASAB/wFfAmUC/wH4
-        Av8BAAEfASAB/wEAAR8BIAH/AQABHwEgAf8BzAKZAf8BXAJVAeoDTgGUA2EB4gH/AucB/wEAAR8BIAL/
-        At4C/wLgAv8B7wH8Af8BAAEfASAC/wHiAfwB/wEAAR8BIAH/AfwB8AH5Af8BAAEfASAB/wHMApkB/wEA
-        AR8BIAH/AcwCmQH/AW0CbAH3A1EBoQHMApkB/wGZAQABJAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/
-        AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/ASQCAAH/
-        AZkCVwH/AZkCVwH/AZkCVwH/AZkCVwH/AwAF/wMAAf8DAAH/Az4B/wPMDf8DAAH/AZkCVwH/AZkCVwH/
-        A2EB4gH/AucB/wEAAR8BIAL/At4B/wEAAR8BIAL/Ae8B/AH/AQABHwEgAv8B4gH8Af8BAAEfASAB/wH8
-        AfAB+QH/AQABHwEgAf8BzAKZAf8BzAKZAf8BzAKZAf8BbQJsAfcDUQGhAZ4CjAH/AekCvgH/AQABHwEg
-        Af8BAAEfASAB/wH5AtYC/wHpAfMB/wEAAR8BIAH/AQABHwEgAf8BAAEfASAB/wH5AegB7AH/AQABHwEg
-        Af8B5gK6Af8B5gK9Af8B5gLAAf8BpgKUAf8DTgGUNP8D8QH/A+oB/wOAAf8BmQJXAf8BmQJXAf8BmQJX
-        Af8BmQJXAf8DAAX/AwAB/wNGAf8DDQH/AwAB/wMAAf8DAAX/AwAB/wGZAlcB/wGZAlcB/wGeAowB/wHp
-        Ar4B/wEAAR8BIAH/AfMCxQH/AfkC1gL/AekB8wH/AQABHwEgAv8B6QHzAf8BAAEfASAB/wH5AegB7AH/
-        AQABHwEgAf8BAAEfASAB/wHmAr0B/wHmAsAB/wGmApQB/wNOAZQDXQHSAdsCqAH/AQABHwEgAf8B6gK3
-        Af8B8wLNAv8B7gH8Af8BAAEfASAC/wHSAfUB/wEAAR8BIAL/AfQB/AH/AQABHwEgAv8C2AH/AQABHwEg
-        Av8C4gH/A2IB9gNDAXcE/wGZAQABJAn/AYACAA3/AYACAAH/AYACAA3/AYACAAH/AYACAAH/A4AB/wGZ
-        AlcB/wGZAlcB/wGZAlcB/wGZAlcB/wMABf8DDQH/AwAB/wMaAf8DRgH/A0YB/wMABf8DAAH/AZkCVwH/
-        AZkCVwH/A10B0gHbAqgB/wEAAR8BIAH/AeoCtwH/AQABHwEgAv8B7gH8Af8BAAEfASAC/wHSAfUB/wEA
-        AR8BIAL/AfQB/AH/AQABHwEgAv8C2AL/At0C/wLiAf8DYgH2A0MBdwNWAbEB1QKiAf8BAAEfASAB/wEA
-        AR8BIAH/AQABHwEgAv8B9gL/AV8CZQH/AQABHwEgAf8BXwJlAv8B4AHnAf8BXwJlAf8BAAEfASAB/wFf
-        AmUC/wLdAf8DWgHkAzABTAT/AZkBAAEkCf8BgAIACf8BgAIAEf8BgAIAAf8D8QH/A+oB/wOAAf8BmQJX
-        Af8BmQJXAf8BmQJXAf8BmQJXAf8DAAn/A5kB/wMaAf8DAAH/Aw0B/wMABf8DAAH/AZkCVwH/AZkCVwH/
-        A1YBsQHVAqIB/wFfAmUB/wEAAR8BIAH/AV8CZQL/AfYC/wEAAR8BIAL/AdIB9QH/AQABHwEgAv8B4AHn
-        Af8BAAEfASAB/wEAAR8BIAH/AQABHwEgAv8C3QH/A1oB5AMwAUwDMgFQAcMCvxL/AewB8QL/AdsB5wL/
-        AdkB3gL/AtQC/wLPAv8CzQL/AtIB/wHGAq0B/wNTAawDFAEbBP8BmQEAASQJ/wGAAgAJ/wGAAgAB/wGA
-        AgAB/wGAAgAB/wGAAgAF/wGAAgAB/wGAAgAB/wGAAgAB/wEkAgAB/wGZAlcB/wGZAlcB/wGZAlcB/wGZ
-        AlcB/wMAAf8DwA3/A8wB/wNQAf8DAAX/AwAB/wGZAlcB/wGZAlcB/wMyAVABwwK/Ev8B7AHxAv8B2wHn
+        AR8CAAH/AVIBzAL/AVIBzAL/AVIBzAL/AVIBzAL/AwAF/wMAAf8DFRH/A8wB/wMAAf8BUgHMAv8BUgHM
+        Av8DVgG2Af8C4wH/AVoCYAH/AQABGgEbAf8BWgJgAv8B3gHnAf8BWgJgAf8BAAEaARsB/wFaAmAC/wH4
+        Av8BAAEaARsB/wEAARoBGwH/AQABGgEbAf8BzAKZAf8BXAJVAeoDTgGUA2EB4gH/AucB/wEAARoBGwL/
+        At4C/wLgAv8B7wH8Af8BAAEaARsC/wHiAfwB/wEAARoBGwH/AfwB8AH5Af8BAAEaARsB/wHMApkB/wEA
+        ARoBGwH/AcwCmQH/AW0CbAH3A1EBoQHMApkB/wGZAQABHwH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/
+        AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AYACAAH/AR8CAAH/
+        AZkCUgH/AZkCUgH/AZkCUgH/AZkCUgH/AwAF/wMAAf8DAAH/AzkB/wPMDf8DAAH/AZkCUgH/AZkCUgH/
+        A2EB4gH/AucB/wEAARoBGwL/At4B/wEAARoBGwL/Ae8B/AH/AQABGgEbAv8B4gH8Af8BAAEaARsB/wH8
+        AfAB+QH/AQABGgEbAf8BzAKZAf8BzAKZAf8BzAKZAf8BbQJsAfcDUQGhAZ4CjAH/AekCvgH/AQABGgEb
+        Af8BAAEaARsB/wH5AtYC/wHpAfMB/wEAARoBGwH/AQABGgEbAf8BAAEaARsB/wH5AegB7AH/AQABGgEb
+        Af8B5gK6Af8B5gK9Af8B5gLAAf8BpgKUAf8DTgGUNP8D8QH/A+oB/wOAAf8BmQJSAf8BmQJSAf8BmQJS
+        Af8BmQJSAf8DAAX/AwAB/wNBAf8DCAH/AwAB/wMAAf8DAAX/AwAB/wGZAlIB/wGZAlIB/wGeAowB/wHp
+        Ar4B/wEAARoBGwH/AfMCxQH/AfkC1gL/AekB8wH/AQABGgEbAv8B6QHzAf8BAAEaARsB/wH5AegB7AH/
+        AQABGgEbAf8BAAEaARsB/wHmAr0B/wHmAsAB/wGmApQB/wNOAZQDXQHSAdsCqAH/AQABGgEbAf8B6gK3
+        Af8B8wLNAv8B7gH8Af8BAAEaARsC/wHSAfUB/wEAARoBGwL/AfQB/AH/AQABGgEbAv8C2AH/AQABGgEb
+        Av8C4gH/A2IB9gNDAXcE/wGZAQABHwn/AYACAA3/AYACAAH/AYACAA3/AYACAAH/AYACAAH/A4AB/wGZ
+        AlIB/wGZAlIB/wGZAlIB/wGZAlIB/wMABf8DCAH/AwAB/wMVAf8DQQH/A0EB/wMABf8DAAH/AZkCUgH/
+        AZkCUgH/A10B0gHbAqgB/wEAARoBGwH/AeoCtwH/AQABGgEbAv8B7gH8Af8BAAEaARsC/wHSAfUB/wEA
+        ARoBGwL/AfQB/AH/AQABGgEbAv8C2AL/At0C/wLiAf8DYgH2A0MBdwNWAbEB1QKiAf8BAAEaARsB/wEA
+        ARoBGwH/AQABGgEbAv8B9gL/AVoCYAH/AQABGgEbAf8BWgJgAv8B4AHnAf8BWgJgAf8BAAEaARsB/wFa
+        AmAC/wLdAf8DWgHkAzABTAT/AZkBAAEfCf8BgAIACf8BgAIAEf8BgAIAAf8D8QH/A+oB/wOAAf8BmQJS
+        Af8BmQJSAf8BmQJSAf8BmQJSAf8DAAn/A5kB/wMVAf8DAAH/AwgB/wMABf8DAAH/AZkCUgH/AZkCUgH/
+        A1YBsQHVAqIB/wFaAmAB/wEAARoBGwH/AVoCYAL/AfYC/wEAARoBGwL/AdIB9QH/AQABGgEbAv8B4AHn
+        Af8BAAEaARsB/wEAARoBGwH/AQABGgEbAv8C3QH/A1oB5AMwAUwDMgFQAcMCvxL/AewB8QL/AdsB5wL/
+        AdkB3gL/AtQC/wLPAv8CzQL/AtIB/wHGAq0B/wNTAawDFAEbBP8BmQEAAR8J/wGAAgAJ/wGAAgAB/wGA
+        AgAB/wGAAgAB/wGAAgAF/wGAAgAB/wGAAgAB/wGAAgAB/wEfAgAB/wGZAlIB/wGZAlIB/wGZAlIB/wGZ
+        AlIB/wMAAf8DwA3/A8wB/wNLAf8DAAX/AwAB/wGZAlIB/wGZAlIB/wMyAVABwwK/Ev8B7AHxAv8B2wHn
         Av8B2QHeAv8C1AL/As8C/wLNAv8C0gH/AcYCrQH/A1MBrAMUARsEAANaAcAD9Qr/Av4C/wLnAv8C4wL/
-        At4C/wLZAv8C1AL/As8B/wH1AscB/wNfAeMDIwE0AwIBAwT/AZkBAAEkAf8BgAIABf8BgAIACf8BgAIA
-        Cf8BgAIABf8BgAIAAf8D8QH/A+oB/wEkAgAB/wGZAlcB/wGZAlcB/wGZAlcB/wGZAlcB/wMaAf8DPgH/
-        A8AZ/wMAAf8BmQJXAf8BmQJXAf8EAANaAcAD9Qr/Av4C/wLnAv8C4wL/At4C/wLZAv8C1AL/As8B/wH1
+        At4C/wLZAv8C1AL/As8B/wH1AscB/wNfAeMDIwE0AwIBAwT/AZkBAAEfAf8BgAIABf8BgAIACf8BgAIA
+        Cf8BgAIABf8BgAIAAf8D8QH/A+oB/wEfAgAB/wGZAlIB/wGZAlIB/wGZAlIB/wGZAlIB/wMVAf8DOQH/
+        A8AZ/wMAAf8BmQJSAf8BmQJSAf8EAANaAcAD9Qr/Av4C/wLnAv8C4wL/At4C/wLZAv8C1AL/As8B/wH1
         AscB/wNfAeMDIwE0AwIBAwQAAxcBIANiAe8D9Qb/AvgC/wLsAv8C5wL/AuMC/wLeAv8C2QH/AfUCzQH/
-        A20B9wMwAU0DBAEGBAAE/wGZAiQJ/wGAAgAB/wGAAgAJ/wGAAgAB/wGAAgAN/wGAAgAB/wGAAgAB/wOG
-        Af8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8DGgH/AwAB/wMaAf8DmRH/AwAB/wGZAlcB/wGZ
-        AlcB/wQAAxcBIANiAe8D9Qb/AvgC/wLsAv8C5wL/AuMC/wLeAv8C2QH/AfUCzQH/A20B9wMwAU0DBAEG
-        DAADFwEgA1oBwAPGAv8C9wL/AvIC/wLsAv8C5wL/AuMB/wHGArEB/wNeAdADJAE2AwIBAwgABP8BmQIk
-        Lf8D8QH/A+oB/wOGAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8DGgH/
-        AwAB/wMNAf8DaAH/A8wF/wMAAf8BmQJXAf8BmQJXAf8IAAMXASADWgHAA8YC/wL3Av8C8gL/AuwC/wLn
+        A20B9wMwAU0DBAEGBAAE/wGZAh8J/wGAAgAB/wGAAgAJ/wGAAgAB/wGAAgAN/wGAAgAB/wGAAgAB/wOG
+        Af8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8DFQH/AwAB/wMVAf8DmRH/AwAB/wGZAlIB/wGZ
+        AlIB/wQAAxcBIANiAe8D9Qb/AvgC/wLsAv8C5wL/AuMC/wLeAv8C2QH/AfUCzQH/A20B9wMwAU0DBAEG
+        DAADFwEgA1oBwAPGAv8C9wL/AvIC/wLsAv8C5wL/AuMB/wHGArEB/wNeAdADJAE2AwIBAwgABP8BmQIf
+        Lf8D8QH/A+oB/wOGAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8DFQH/
+        AwAB/wMIAf8DYwH/A8wF/wMAAf8BmQJSAf8BmQJSAf8IAAMXASADWgHAA8YC/wL3Av8C8gL/AuwC/wLn
         Av8C4wH/AcYCsQH/A14B0AMkATYDAgEDGAADMgFQA1EBogNdAdIBjAKJAf8DYAHUA1QBpgM3AVoDBQEH
-        EAAI/wHMApkt/wPxAf8DwAH/BAABmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJXAf8BmQJX
-        Af8BmQJXAf8BmQJXAf8DDQH/AwAB/wM+Af8DGgH/AZkCVwH/FAADMgFQA1EBogNdAdIBjAKJAf8DYAHU
+        EAAI/wHMApkt/wPxAf8DwAH/BAABmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJSAf8BmQJS
+        Af8BmQJSAf8BmQJSAf8DCAH/AwAB/wM5Af8DFQH/AZkCUgH/FAADMgFQA1EBogNdAdIBjAKJAf8DYAHU
         A1QBpgM3AVoDBQEHEAABQgFNAT4HAAE+AwABKAMAAUADAAEgAwABAQEAAQEGAAEBFgAD/4EAAeABAwIA
         AYABAQHgAQMBwAEBBAABwAEBAYAFAAGAAQABgAUAAYBBAAGABQABgAEAAYABAQQAAYABAQHAAQMEAAHA
         AQMB8AEPAgABgAEBAfABDws=
@@ -267,7 +267,7 @@
     <value>Courier New, 8pt</value>
   </data>
   <data name="textBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 86</value>
+    <value>3, 94</value>
   </data>
   <data name="textBox1.Multiline" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -276,7 +276,7 @@
     <value>Vertical</value>
   </data>
   <data name="textBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>545, 35</value>
+    <value>569, 5</value>
   </data>
   <data name="textBox1.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -327,10 +327,10 @@
     <value>Fill</value>
   </data>
   <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 243</value>
+    <value>3, 250</value>
   </data>
   <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>545, 137</value>
+    <value>569, 163</value>
   </data>
   <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -375,10 +375,10 @@
     <value>Fill</value>
   </data>
   <data name="listMetadata.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 127</value>
+    <value>3, 122</value>
   </data>
   <data name="listMetadata.Size" type="System.Drawing.Size, System.Drawing">
-    <value>545, 110</value>
+    <value>569, 122</value>
   </data>
   <data name="listMetadata.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -405,13 +405,13 @@
     <value>Fill</value>
   </data>
   <data name="tableLayoutPanel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 386</value>
+    <value>3, 419</value>
   </data>
   <data name="tableLayoutPanel2.RowCount" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
   <data name="tableLayoutPanel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>545, 29</value>
+    <value>569, 38</value>
   </data>
   <data name="tableLayoutPanel2.TabIndex" type="System.Int32, mscorlib">
     <value>30</value>
@@ -431,14 +431,44 @@
   <data name="tableLayoutPanel2.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="buttonOk" Row="0" RowSpan="1" Column="3" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,37,59399,Percent,22,93233,Percent,19,17293,Percent,20,11278" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
-  <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 12</value>
+  <data name="pictureBox1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
   </data>
-  <data name="tableLayoutPanel1.RowCount" type="System.Int32, mscorlib">
+  <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 105</value>
+  </data>
+  <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 11</value>
+  </data>
+  <data name="pictureBox1.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
+    <value>Zoom</value>
+  </data>
+  <data name="pictureBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>31</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Name" xml:space="preserve">
+    <value>pictureBox1</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Parent" xml:space="preserve">
+    <value>tableLayoutPanel1</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
+  <data name="tableLayoutPanel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="tableLayoutPanel1.RowCount" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
   <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>551, 418</value>
+    <value>575, 460</value>
   </data>
   <data name="tableLayoutPanel1.TabIndex" type="System.Int32, mscorlib">
     <value>29</value>
@@ -456,7 +486,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="listMetadata" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanel2" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="textBox1" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="listTracks" Row="3" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="listChoices" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,100" /&gt;&lt;Rows Styles="Percent,19,79167,Percent,9,895833,Percent,27,86458,Percent,34,11458,Percent,8,000021,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="listMetadata" Row="3" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanel2" Row="5" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="textBox1" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="listTracks" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="listChoices" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="pictureBox1" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,100" /&gt;&lt;Rows Styles="Percent,19,85646,Percent,2,392344,Percent,3,827751,Percent,27,7512,Percent,36,60287,Percent,9,035593" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -468,7 +498,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>575, 442</value>
+    <value>575, 460</value>
   </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterParent</value>

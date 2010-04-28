@@ -47,6 +47,8 @@ namespace CUERipper
 			this.buttonPause = new System.Windows.Forms.Button();
 			this.contextMenuStripRelease = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.variousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.fixEncodingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
 			this.lblWriteOffset = new System.Windows.Forms.Label();
 			this.checkBoxEACMode = new System.Windows.Forms.CheckBox();
@@ -100,11 +102,6 @@ namespace CUERipper
 			// 
 			// statusStrip1
 			// 
-			this.statusStrip1.AccessibleDescription = null;
-			this.statusStrip1.AccessibleName = null;
-			resources.ApplyResources(this.statusStrip1, "statusStrip1");
-			this.statusStrip1.BackgroundImage = null;
-			this.statusStrip1.Font = null;
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabelMusicBrainz,
@@ -112,90 +109,69 @@ namespace CUERipper
             this.toolStripStatusAr,
             this.toolStripProgressBar1,
             this.toolStripStatusLabel2});
+			resources.ApplyResources(this.statusStrip1, "statusStrip1");
 			this.statusStrip1.Name = "statusStrip1";
 			this.statusStrip1.ShowItemToolTips = true;
 			this.statusStrip1.SizingGrip = false;
-			this.toolTip1.SetToolTip(this.statusStrip1, resources.GetString("statusStrip1.ToolTip"));
 			// 
 			// toolStripStatusLabel1
 			// 
-			this.toolStripStatusLabel1.AccessibleDescription = null;
-			this.toolStripStatusLabel1.AccessibleName = null;
-			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
-			this.toolStripStatusLabel1.BackgroundImage = null;
 			this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+			resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
 			this.toolStripStatusLabel1.Spring = true;
 			// 
 			// toolStripStatusLabelMusicBrainz
 			// 
-			this.toolStripStatusLabelMusicBrainz.AccessibleDescription = null;
-			this.toolStripStatusLabelMusicBrainz.AccessibleName = null;
-			resources.ApplyResources(this.toolStripStatusLabelMusicBrainz, "toolStripStatusLabelMusicBrainz");
-			this.toolStripStatusLabelMusicBrainz.BackgroundImage = null;
 			this.toolStripStatusLabelMusicBrainz.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
 						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
 						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
 			this.toolStripStatusLabelMusicBrainz.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
 			this.toolStripStatusLabelMusicBrainz.Image = global::CUERipper.Properties.Resources.musicbrainz;
 			this.toolStripStatusLabelMusicBrainz.Name = "toolStripStatusLabelMusicBrainz";
+			resources.ApplyResources(this.toolStripStatusLabelMusicBrainz, "toolStripStatusLabelMusicBrainz");
 			this.toolStripStatusLabelMusicBrainz.Click += new System.EventHandler(this.toolStripStatusLabelMusicBrainz_Click);
 			// 
 			// toolStripStatusCTDB
 			// 
-			this.toolStripStatusCTDB.AccessibleDescription = null;
-			this.toolStripStatusCTDB.AccessibleName = null;
-			resources.ApplyResources(this.toolStripStatusCTDB, "toolStripStatusCTDB");
-			this.toolStripStatusCTDB.BackgroundImage = null;
 			this.toolStripStatusCTDB.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
 						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
 						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
 			this.toolStripStatusCTDB.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
 			this.toolStripStatusCTDB.Image = global::CUERipper.Properties.Resources.cdrepair;
 			this.toolStripStatusCTDB.Name = "toolStripStatusCTDB";
+			resources.ApplyResources(this.toolStripStatusCTDB, "toolStripStatusCTDB");
 			// 
 			// toolStripStatusAr
 			// 
-			this.toolStripStatusAr.AccessibleDescription = null;
-			this.toolStripStatusAr.AccessibleName = null;
-			resources.ApplyResources(this.toolStripStatusAr, "toolStripStatusAr");
-			this.toolStripStatusAr.BackgroundImage = null;
 			this.toolStripStatusAr.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
 						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
 						| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
 			this.toolStripStatusAr.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
+			resources.ApplyResources(this.toolStripStatusAr, "toolStripStatusAr");
 			this.toolStripStatusAr.Name = "toolStripStatusAr";
 			// 
 			// toolStripProgressBar1
 			// 
-			this.toolStripProgressBar1.AccessibleDescription = null;
-			this.toolStripProgressBar1.AccessibleName = null;
-			resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
 			this.toolStripProgressBar1.AutoToolTip = true;
 			this.toolStripProgressBar1.MarqueeAnimationSpeed = 500;
 			this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+			resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
 			this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
 			// 
 			// toolStripStatusLabel2
 			// 
-			this.toolStripStatusLabel2.AccessibleDescription = null;
-			this.toolStripStatusLabel2.AccessibleName = null;
-			resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
-			this.toolStripStatusLabel2.BackgroundImage = null;
 			this.toolStripStatusLabel2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+			resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
 			// 
 			// listTracks
 			// 
-			this.listTracks.AccessibleDescription = null;
-			this.listTracks.AccessibleName = null;
 			resources.ApplyResources(this.listTracks, "listTracks");
-			this.listTracks.BackgroundImage = null;
 			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Title,
             this.TrackNo,
             this.Start,
             this.Length});
-			this.listTracks.Font = null;
 			this.listTracks.FullRowSelect = true;
 			this.listTracks.GridLines = true;
 			this.listTracks.LabelEdit = true;
@@ -227,69 +203,57 @@ namespace CUERipper
 			// 
 			// buttonGo
 			// 
-			this.buttonGo.AccessibleDescription = null;
-			this.buttonGo.AccessibleName = null;
 			resources.ApplyResources(this.buttonGo, "buttonGo");
 			this.buttonGo.BackColor = System.Drawing.Color.Transparent;
-			this.buttonGo.BackgroundImage = null;
-			this.buttonGo.Font = null;
 			this.buttonGo.Name = "buttonGo";
-			this.toolTip1.SetToolTip(this.buttonGo, resources.GetString("buttonGo.ToolTip"));
 			this.buttonGo.UseVisualStyleBackColor = false;
 			this.buttonGo.Click += new System.EventHandler(this.buttonGo_Click);
 			// 
 			// buttonAbort
 			// 
-			this.buttonAbort.AccessibleDescription = null;
-			this.buttonAbort.AccessibleName = null;
 			resources.ApplyResources(this.buttonAbort, "buttonAbort");
-			this.buttonAbort.BackgroundImage = null;
-			this.buttonAbort.Font = null;
 			this.buttonAbort.Name = "buttonAbort";
-			this.toolTip1.SetToolTip(this.buttonAbort, resources.GetString("buttonAbort.ToolTip"));
 			this.buttonAbort.UseVisualStyleBackColor = true;
 			this.buttonAbort.Click += new System.EventHandler(this.buttonAbort_Click);
 			// 
 			// buttonPause
 			// 
-			this.buttonPause.AccessibleDescription = null;
-			this.buttonPause.AccessibleName = null;
 			resources.ApplyResources(this.buttonPause, "buttonPause");
-			this.buttonPause.BackgroundImage = null;
-			this.buttonPause.Font = null;
 			this.buttonPause.Name = "buttonPause";
-			this.toolTip1.SetToolTip(this.buttonPause, resources.GetString("buttonPause.ToolTip"));
 			this.buttonPause.UseVisualStyleBackColor = true;
 			this.buttonPause.Click += new System.EventHandler(this.buttonPause_Click);
 			// 
 			// contextMenuStripRelease
 			// 
-			this.contextMenuStripRelease.AccessibleDescription = null;
-			this.contextMenuStripRelease.AccessibleName = null;
-			resources.ApplyResources(this.contextMenuStripRelease, "contextMenuStripRelease");
-			this.contextMenuStripRelease.BackgroundImage = null;
-			this.contextMenuStripRelease.Font = null;
 			this.contextMenuStripRelease.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editToolStripMenuItem});
+            this.editToolStripMenuItem,
+            this.variousToolStripMenuItem,
+            this.fixEncodingToolStripMenuItem});
 			this.contextMenuStripRelease.Name = "contextMenuStripRelease";
-			this.toolTip1.SetToolTip(this.contextMenuStripRelease, resources.GetString("contextMenuStripRelease.ToolTip"));
+			resources.ApplyResources(this.contextMenuStripRelease, "contextMenuStripRelease");
+			this.contextMenuStripRelease.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStripRelease_Opening);
 			// 
 			// editToolStripMenuItem
 			// 
-			this.editToolStripMenuItem.AccessibleDescription = null;
-			this.editToolStripMenuItem.AccessibleName = null;
-			resources.ApplyResources(this.editToolStripMenuItem, "editToolStripMenuItem");
-			this.editToolStripMenuItem.BackgroundImage = null;
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-			this.editToolStripMenuItem.ShortcutKeyDisplayString = null;
+			resources.ApplyResources(this.editToolStripMenuItem, "editToolStripMenuItem");
 			this.editToolStripMenuItem.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
+			// 
+			// variousToolStripMenuItem
+			// 
+			this.variousToolStripMenuItem.Name = "variousToolStripMenuItem";
+			resources.ApplyResources(this.variousToolStripMenuItem, "variousToolStripMenuItem");
+			this.variousToolStripMenuItem.Click += new System.EventHandler(this.variousToolStripMenuItem_Click);
+			// 
+			// fixEncodingToolStripMenuItem
+			// 
+			this.fixEncodingToolStripMenuItem.Name = "fixEncodingToolStripMenuItem";
+			resources.ApplyResources(this.fixEncodingToolStripMenuItem, "fixEncodingToolStripMenuItem");
+			this.fixEncodingToolStripMenuItem.Click += new System.EventHandler(this.fixEncodingToolStripMenuItem_Click);
 			// 
 			// numericWriteOffset
 			// 
-			this.numericWriteOffset.AccessibleDescription = null;
-			this.numericWriteOffset.AccessibleName = null;
 			resources.ApplyResources(this.numericWriteOffset, "numericWriteOffset");
-			this.numericWriteOffset.Font = null;
 			this.numericWriteOffset.Maximum = new decimal(new int[] {
             99999,
             0,
@@ -301,35 +265,21 @@ namespace CUERipper
             0,
             -2147483648});
 			this.numericWriteOffset.Name = "numericWriteOffset";
-			this.toolTip1.SetToolTip(this.numericWriteOffset, resources.GetString("numericWriteOffset.ToolTip"));
 			// 
 			// lblWriteOffset
 			// 
-			this.lblWriteOffset.AccessibleDescription = null;
-			this.lblWriteOffset.AccessibleName = null;
 			resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
-			this.lblWriteOffset.Font = null;
 			this.lblWriteOffset.Name = "lblWriteOffset";
-			this.toolTip1.SetToolTip(this.lblWriteOffset, resources.GetString("lblWriteOffset.ToolTip"));
 			// 
 			// checkBoxEACMode
 			// 
-			this.checkBoxEACMode.AccessibleDescription = null;
-			this.checkBoxEACMode.AccessibleName = null;
 			resources.ApplyResources(this.checkBoxEACMode, "checkBoxEACMode");
-			this.checkBoxEACMode.BackgroundImage = null;
-			this.checkBoxEACMode.Font = null;
 			this.checkBoxEACMode.Name = "checkBoxEACMode";
-			this.toolTip1.SetToolTip(this.checkBoxEACMode, resources.GetString("checkBoxEACMode.ToolTip"));
 			this.checkBoxEACMode.UseVisualStyleBackColor = true;
 			this.checkBoxEACMode.CheckedChanged += new System.EventHandler(this.checkBoxEACMode_CheckedChanged);
 			// 
 			// groupBoxSettings
 			// 
-			this.groupBoxSettings.AccessibleDescription = null;
-			this.groupBoxSettings.AccessibleName = null;
-			resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
-			this.groupBoxSettings.BackgroundImage = null;
 			this.groupBoxSettings.Controls.Add(this.bnComboBoxLosslessOrNot);
 			this.groupBoxSettings.Controls.Add(this.bnComboBoxEncoder);
 			this.groupBoxSettings.Controls.Add(this.labelSecureMode);
@@ -343,27 +293,22 @@ namespace CUERipper
 			this.groupBoxSettings.Controls.Add(this.lblWriteOffset);
 			this.groupBoxSettings.Controls.Add(this.checkBoxEACMode);
 			this.groupBoxSettings.Controls.Add(this.numericWriteOffset);
-			this.groupBoxSettings.Font = null;
+			resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
 			this.groupBoxSettings.Name = "groupBoxSettings";
 			this.groupBoxSettings.TabStop = false;
-			this.toolTip1.SetToolTip(this.groupBoxSettings, resources.GetString("groupBoxSettings.ToolTip"));
 			// 
 			// bnComboBoxLosslessOrNot
 			// 
-			this.bnComboBoxLosslessOrNot.AccessibleDescription = null;
-			this.bnComboBoxLosslessOrNot.AccessibleName = null;
-			resources.ApplyResources(this.bnComboBoxLosslessOrNot, "bnComboBoxLosslessOrNot");
 			this.bnComboBoxLosslessOrNot.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxLosslessOrNot.BackgroundImage = null;
 			this.bnComboBoxLosslessOrNot.DataSource = this.losslessOrNotBindingSource;
 			this.bnComboBoxLosslessOrNot.DropDownHeight = 200;
 			this.bnComboBoxLosslessOrNot.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxLosslessOrNot.DropDownWidth = 80;
-			this.bnComboBoxLosslessOrNot.Font = null;
 			this.bnComboBoxLosslessOrNot.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxLosslessOrNot.ImageKeyMember = "ImageKey";
 			this.bnComboBoxLosslessOrNot.ImageList = null;
 			this.bnComboBoxLosslessOrNot.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxLosslessOrNot, "bnComboBoxLosslessOrNot");
 			this.bnComboBoxLosslessOrNot.MaxDropDownItems = 8;
 			this.bnComboBoxLosslessOrNot.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxLosslessOrNot.Name = "bnComboBoxLosslessOrNot";
@@ -371,7 +316,6 @@ namespace CUERipper
 			this.bnComboBoxLosslessOrNot.SelectedIndex = -1;
 			this.bnComboBoxLosslessOrNot.SelectedItem = null;
 			this.bnComboBoxLosslessOrNot.Sorted = false;
-			this.toolTip1.SetToolTip(this.bnComboBoxLosslessOrNot, resources.GetString("bnComboBoxLosslessOrNot.ToolTip"));
 			this.bnComboBoxLosslessOrNot.SelectedIndexChanged += new System.EventHandler(this.bnComboBoxLosslessOrNot_SelectedIndexChanged);
 			// 
 			// losslessOrNotBindingSource
@@ -385,19 +329,15 @@ namespace CUERipper
 			// 
 			// bnComboBoxEncoder
 			// 
-			this.bnComboBoxEncoder.AccessibleDescription = null;
-			this.bnComboBoxEncoder.AccessibleName = null;
-			resources.ApplyResources(this.bnComboBoxEncoder, "bnComboBoxEncoder");
 			this.bnComboBoxEncoder.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxEncoder.BackgroundImage = null;
 			this.bnComboBoxEncoder.DataSource = this.encodersBindingSource;
 			this.bnComboBoxEncoder.DropDownHeight = 200;
 			this.bnComboBoxEncoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxEncoder.DropDownWidth = 80;
-			this.bnComboBoxEncoder.Font = null;
 			this.bnComboBoxEncoder.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxEncoder.ImageList = null;
 			this.bnComboBoxEncoder.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxEncoder, "bnComboBoxEncoder");
 			this.bnComboBoxEncoder.MaxDropDownItems = 8;
 			this.bnComboBoxEncoder.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxEncoder.Name = "bnComboBoxEncoder";
@@ -405,7 +345,6 @@ namespace CUERipper
 			this.bnComboBoxEncoder.SelectedIndex = -1;
 			this.bnComboBoxEncoder.SelectedItem = null;
 			this.bnComboBoxEncoder.Sorted = false;
-			this.toolTip1.SetToolTip(this.bnComboBoxEncoder, resources.GetString("bnComboBoxEncoder.ToolTip"));
 			this.bnComboBoxEncoder.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoder_SelectedIndexChanged);
 			// 
 			// encodersBindingSource
@@ -415,29 +354,21 @@ namespace CUERipper
 			// 
 			// labelSecureMode
 			// 
-			this.labelSecureMode.AccessibleDescription = null;
-			this.labelSecureMode.AccessibleName = null;
 			resources.ApplyResources(this.labelSecureMode, "labelSecureMode");
-			this.labelSecureMode.Font = null;
 			this.labelSecureMode.Name = "labelSecureMode";
-			this.toolTip1.SetToolTip(this.labelSecureMode, resources.GetString("labelSecureMode.ToolTip"));
 			// 
 			// bnComboBoxFormat
 			// 
-			this.bnComboBoxFormat.AccessibleDescription = null;
-			this.bnComboBoxFormat.AccessibleName = null;
-			resources.ApplyResources(this.bnComboBoxFormat, "bnComboBoxFormat");
 			this.bnComboBoxFormat.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxFormat.BackgroundImage = null;
 			this.bnComboBoxFormat.DataSource = this.formatsBindingSource;
 			this.bnComboBoxFormat.DropDownHeight = 200;
 			this.bnComboBoxFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxFormat.DropDownWidth = 80;
-			this.bnComboBoxFormat.Font = null;
 			this.bnComboBoxFormat.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxFormat.ImageKeyMember = "DotExtension";
 			this.bnComboBoxFormat.ImageList = null;
 			this.bnComboBoxFormat.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxFormat, "bnComboBoxFormat");
 			this.bnComboBoxFormat.MaxDropDownItems = 8;
 			this.bnComboBoxFormat.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxFormat.Name = "bnComboBoxFormat";
@@ -445,7 +376,6 @@ namespace CUERipper
 			this.bnComboBoxFormat.SelectedIndex = -1;
 			this.bnComboBoxFormat.SelectedItem = null;
 			this.bnComboBoxFormat.Sorted = false;
-			this.toolTip1.SetToolTip(this.bnComboBoxFormat, resources.GetString("bnComboBoxFormat.ToolTip"));
 			this.bnComboBoxFormat.SelectedIndexChanged += new System.EventHandler(this.bnComboBoxFormat_SelectedIndexChanged);
 			// 
 			// formatsBindingSource
@@ -455,27 +385,20 @@ namespace CUERipper
 			// 
 			// labelEncoderMinMode
 			// 
-			this.labelEncoderMinMode.AccessibleDescription = null;
-			this.labelEncoderMinMode.AccessibleName = null;
 			resources.ApplyResources(this.labelEncoderMinMode, "labelEncoderMinMode");
 			this.labelEncoderMinMode.Name = "labelEncoderMinMode";
-			this.toolTip1.SetToolTip(this.labelEncoderMinMode, resources.GetString("labelEncoderMinMode.ToolTip"));
 			// 
 			// bnComboBoxImage
 			// 
-			this.bnComboBoxImage.AccessibleDescription = null;
-			this.bnComboBoxImage.AccessibleName = null;
-			resources.ApplyResources(this.bnComboBoxImage, "bnComboBoxImage");
 			this.bnComboBoxImage.BackColor = System.Drawing.Color.White;
-			this.bnComboBoxImage.BackgroundImage = null;
 			this.bnComboBoxImage.DataSource = this.cUEStylesBindingSource;
 			this.bnComboBoxImage.DropDownHeight = 200;
 			this.bnComboBoxImage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxImage.DropDownWidth = 80;
-			this.bnComboBoxImage.Font = null;
 			this.bnComboBoxImage.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxImage.ImageList = null;
 			this.bnComboBoxImage.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxImage, "bnComboBoxImage");
 			this.bnComboBoxImage.MaxDropDownItems = 8;
 			this.bnComboBoxImage.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxImage.Name = "bnComboBoxImage";
@@ -483,7 +406,6 @@ namespace CUERipper
 			this.bnComboBoxImage.SelectedIndex = -1;
 			this.bnComboBoxImage.SelectedItem = null;
 			this.bnComboBoxImage.Sorted = false;
-			this.toolTip1.SetToolTip(this.bnComboBoxImage, resources.GetString("bnComboBoxImage.ToolTip"));
 			// 
 			// cUEStylesBindingSource
 			// 
@@ -492,43 +414,27 @@ namespace CUERipper
 			// 
 			// labelEncoderMaxMode
 			// 
-			this.labelEncoderMaxMode.AccessibleDescription = null;
-			this.labelEncoderMaxMode.AccessibleName = null;
 			resources.ApplyResources(this.labelEncoderMaxMode, "labelEncoderMaxMode");
 			this.labelEncoderMaxMode.Name = "labelEncoderMaxMode";
-			this.toolTip1.SetToolTip(this.labelEncoderMaxMode, resources.GetString("labelEncoderMaxMode.ToolTip"));
 			// 
 			// labelEncoderMode
 			// 
-			this.labelEncoderMode.AccessibleDescription = null;
-			this.labelEncoderMode.AccessibleName = null;
 			resources.ApplyResources(this.labelEncoderMode, "labelEncoderMode");
 			this.labelEncoderMode.Name = "labelEncoderMode";
-			this.toolTip1.SetToolTip(this.labelEncoderMode, resources.GetString("labelEncoderMode.ToolTip"));
 			// 
 			// trackBarEncoderMode
 			// 
-			this.trackBarEncoderMode.AccessibleDescription = null;
-			this.trackBarEncoderMode.AccessibleName = null;
 			resources.ApplyResources(this.trackBarEncoderMode, "trackBarEncoderMode");
-			this.trackBarEncoderMode.BackgroundImage = null;
-			this.trackBarEncoderMode.Font = null;
 			this.trackBarEncoderMode.LargeChange = 1;
 			this.trackBarEncoderMode.Name = "trackBarEncoderMode";
-			this.toolTip1.SetToolTip(this.trackBarEncoderMode, resources.GetString("trackBarEncoderMode.ToolTip"));
 			this.trackBarEncoderMode.Scroll += new System.EventHandler(this.trackBarEncoderMode_Scroll);
 			// 
 			// trackBarSecureMode
 			// 
-			this.trackBarSecureMode.AccessibleDescription = null;
-			this.trackBarSecureMode.AccessibleName = null;
 			resources.ApplyResources(this.trackBarSecureMode, "trackBarSecureMode");
-			this.trackBarSecureMode.BackgroundImage = null;
-			this.trackBarSecureMode.Font = null;
 			this.trackBarSecureMode.LargeChange = 3;
 			this.trackBarSecureMode.Maximum = 2;
 			this.trackBarSecureMode.Name = "trackBarSecureMode";
-			this.toolTip1.SetToolTip(this.trackBarSecureMode, resources.GetString("trackBarSecureMode.ToolTip"));
 			this.trackBarSecureMode.Scroll += new System.EventHandler(this.trackBarSecureMode_Scroll);
 			// 
 			// imageListChecked
@@ -542,23 +448,15 @@ namespace CUERipper
 			// 
 			// toolStripMenuItem1
 			// 
-			this.toolStripMenuItem1.AccessibleDescription = null;
-			this.toolStripMenuItem1.AccessibleName = null;
-			resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
-			this.toolStripMenuItem1.BackgroundImage = null;
 			this.toolStripMenuItem1.Image = global::CUERipper.Properties.Resources.cddb;
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.ShortcutKeyDisplayString = null;
+			resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
 			// 
 			// progressBarErrors
 			// 
-			this.progressBarErrors.AccessibleDescription = null;
-			this.progressBarErrors.AccessibleName = null;
-			resources.ApplyResources(this.progressBarErrors, "progressBarErrors");
-			this.progressBarErrors.BackgroundImage = null;
 			this.progressBarErrors.BackgroundPainter = this.plainBackgroundPainter1;
 			this.progressBarErrors.BorderPainter = this.styledBorderPainter1;
-			this.progressBarErrors.Font = null;
+			resources.ApplyResources(this.progressBarErrors, "progressBarErrors");
 			this.progressBarErrors.MarqueePercentage = 25;
 			this.progressBarErrors.MarqueeSpeed = 30;
 			this.progressBarErrors.MarqueeStep = 1;
@@ -569,7 +467,6 @@ namespace CUERipper
 			this.progressBarErrors.ProgressPainter = this.plainProgressPainter1;
 			this.progressBarErrors.ProgressType = ProgressODoom.ProgressType.Smooth;
 			this.progressBarErrors.ShowPercentage = false;
-			this.toolTip1.SetToolTip(this.progressBarErrors, resources.GetString("progressBarErrors.ToolTip"));
 			this.progressBarErrors.Value = 10;
 			// 
 			// plainBackgroundPainter1
@@ -600,13 +497,9 @@ namespace CUERipper
 			// 
 			// progressBarCD
 			// 
-			this.progressBarCD.AccessibleDescription = null;
-			this.progressBarCD.AccessibleName = null;
-			resources.ApplyResources(this.progressBarCD, "progressBarCD");
-			this.progressBarCD.BackgroundImage = null;
 			this.progressBarCD.BackgroundPainter = this.plainBackgroundPainter1;
 			this.progressBarCD.BorderPainter = this.styledBorderPainter1;
-			this.progressBarCD.Font = null;
+			resources.ApplyResources(this.progressBarCD, "progressBarCD");
 			this.progressBarCD.MarqueePercentage = 25;
 			this.progressBarCD.MarqueeSpeed = 30;
 			this.progressBarCD.MarqueeStep = 1;
@@ -617,7 +510,6 @@ namespace CUERipper
 			this.progressBarCD.ProgressPainter = this.plainProgressPainter2;
 			this.progressBarCD.ProgressType = ProgressODoom.ProgressType.Smooth;
 			this.progressBarCD.ShowPercentage = true;
-			this.toolTip1.SetToolTip(this.progressBarCD, resources.GetString("progressBarCD.ToolTip"));
 			this.progressBarCD.Value = 10;
 			// 
 			// plainProgressPainter2
@@ -629,11 +521,7 @@ namespace CUERipper
 			// 
 			// txtOutputPath
 			// 
-			this.txtOutputPath.AccessibleDescription = null;
-			this.txtOutputPath.AccessibleName = null;
 			resources.ApplyResources(this.txtOutputPath, "txtOutputPath");
-			this.txtOutputPath.BackgroundImage = null;
-			this.txtOutputPath.Font = null;
 			this.txtOutputPath.Name = "txtOutputPath";
 			this.txtOutputPath.ReadOnly = true;
 			this.toolTip1.SetToolTip(this.txtOutputPath, resources.GetString("txtOutputPath.ToolTip"));
@@ -641,21 +529,17 @@ namespace CUERipper
 			// 
 			// bnComboBoxRelease
 			// 
-			this.bnComboBoxRelease.AccessibleDescription = null;
-			this.bnComboBoxRelease.AccessibleName = null;
-			resources.ApplyResources(this.bnComboBoxRelease, "bnComboBoxRelease");
 			this.bnComboBoxRelease.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this.bnComboBoxRelease.BackgroundImage = null;
 			this.bnComboBoxRelease.ContextMenuStrip = this.contextMenuStripRelease;
 			this.bnComboBoxRelease.DataSource = this.releasesBindingSource;
 			this.bnComboBoxRelease.DropDownHeight = 200;
 			this.bnComboBoxRelease.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxRelease.DropDownWidth = 552;
-			this.bnComboBoxRelease.Font = null;
 			this.bnComboBoxRelease.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxRelease.ImageKeyMember = "ImageKey";
 			this.bnComboBoxRelease.ImageList = this.imageListMetadataSource;
 			this.bnComboBoxRelease.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxRelease, "bnComboBoxRelease");
 			this.bnComboBoxRelease.MaxDropDownItems = 8;
 			this.bnComboBoxRelease.MinimumSize = new System.Drawing.Size(61, 21);
 			this.bnComboBoxRelease.Name = "bnComboBoxRelease";
@@ -680,20 +564,16 @@ namespace CUERipper
 			// 
 			// bnComboBoxDrives
 			// 
-			this.bnComboBoxDrives.AccessibleDescription = null;
-			this.bnComboBoxDrives.AccessibleName = null;
-			resources.ApplyResources(this.bnComboBoxDrives, "bnComboBoxDrives");
 			this.bnComboBoxDrives.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this.bnComboBoxDrives.BackgroundImage = null;
 			this.bnComboBoxDrives.DataSource = this.drivesBindingSource;
 			this.bnComboBoxDrives.DropDownHeight = 200;
 			this.bnComboBoxDrives.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxDrives.DropDownWidth = 552;
-			this.bnComboBoxDrives.Font = null;
 			this.bnComboBoxDrives.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxDrives.ImageKeyMember = "ImageKey";
 			this.bnComboBoxDrives.ImageList = this.imageListMetadataSource;
 			this.bnComboBoxDrives.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxDrives, "bnComboBoxDrives");
 			this.bnComboBoxDrives.MaxDropDownItems = 8;
 			this.bnComboBoxDrives.MinimumSize = new System.Drawing.Size(61, 21);
 			this.bnComboBoxDrives.Name = "bnComboBoxDrives";
@@ -701,7 +581,6 @@ namespace CUERipper
 			this.bnComboBoxDrives.SelectedIndex = -1;
 			this.bnComboBoxDrives.SelectedItem = null;
 			this.bnComboBoxDrives.Sorted = false;
-			this.toolTip1.SetToolTip(this.bnComboBoxDrives, resources.GetString("bnComboBoxDrives.ToolTip"));
 			this.bnComboBoxDrives.SelectedIndexChanged += new System.EventHandler(this.bnComboBoxDrives_SelectedIndexChanged);
 			// 
 			// drivesBindingSource
@@ -711,18 +590,14 @@ namespace CUERipper
 			// 
 			// bnComboBoxOutputFormat
 			// 
-			this.bnComboBoxOutputFormat.AccessibleDescription = null;
-			this.bnComboBoxOutputFormat.AccessibleName = null;
-			resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
 			this.bnComboBoxOutputFormat.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this.bnComboBoxOutputFormat.BackgroundImage = null;
 			this.bnComboBoxOutputFormat.DropDownHeight = 200;
 			this.bnComboBoxOutputFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDown;
 			this.bnComboBoxOutputFormat.DropDownWidth = 552;
-			this.bnComboBoxOutputFormat.Font = null;
 			this.bnComboBoxOutputFormat.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxOutputFormat.ImageList = null;
 			this.bnComboBoxOutputFormat.IsDroppedDown = false;
+			resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
 			this.bnComboBoxOutputFormat.MaxDropDownItems = 8;
 			this.bnComboBoxOutputFormat.MinimumSize = new System.Drawing.Size(40, 21);
 			this.bnComboBoxOutputFormat.Name = "bnComboBoxOutputFormat";
@@ -730,7 +605,6 @@ namespace CUERipper
 			this.bnComboBoxOutputFormat.SelectedIndex = -1;
 			this.bnComboBoxOutputFormat.SelectedItem = null;
 			this.bnComboBoxOutputFormat.Sorted = false;
-			this.toolTip1.SetToolTip(this.bnComboBoxOutputFormat, resources.GetString("bnComboBoxOutputFormat.ToolTip"));
 			this.bnComboBoxOutputFormat.DroppedDown += new System.EventHandler(this.bnComboBoxOutputFormat_DroppedDown);
 			this.bnComboBoxOutputFormat.Leave += new System.EventHandler(this.bnComboBoxOutputFormat_Leave);
 			this.bnComboBoxOutputFormat.MouseLeave += new System.EventHandler(this.bnComboBoxOutputFormat_MouseLeave);
@@ -738,11 +612,8 @@ namespace CUERipper
 			// 
 			// frmCUERipper
 			// 
-			this.AccessibleDescription = null;
-			this.AccessibleName = null;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackgroundImage = null;
 			this.Controls.Add(this.txtOutputPath);
 			this.Controls.Add(this.bnComboBoxRelease);
 			this.Controls.Add(this.bnComboBoxDrives);
@@ -755,13 +626,11 @@ namespace CUERipper
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.buttonAbort);
 			this.Controls.Add(this.buttonPause);
-			this.Font = null;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.KeyPreview = true;
 			this.MaximizeBox = false;
 			this.Name = "frmCUERipper";
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-			this.toolTip1.SetToolTip(this, resources.GetString("$this.ToolTip"));
 			this.Load += new System.EventHandler(this.frmCUERipper_Load);
 			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmCUERipper_FormClosed);
 			this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmCUERipper_KeyDown);
@@ -840,6 +709,8 @@ namespace CUERipper
 		private System.Windows.Forms.BindingSource losslessOrNotBindingSource;
 		private CUEControls.BNComboBox bnComboBoxOutputFormat;
 		private System.Windows.Forms.ImageList imageListChecked;
+		private System.Windows.Forms.ToolStripMenuItem variousToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem fixEncodingToolStripMenuItem;
 	}
 }
 

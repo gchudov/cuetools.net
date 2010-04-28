@@ -955,10 +955,13 @@ namespace CUETools.Codecs.ALAC
 			size_remaining -= 8;
 
 			/* name */
-			UInt32 strlen = stream_read_uint8();
-			byte[] str = new byte[strlen];
-			_IO.Read(str, 0, (int)strlen);
-			size_remaining -= 1 + strlen;
+
+			// Had do disable: some files have 'SoundHandler' here without preceding length;
+
+			//UInt32 strlen = stream_read_uint8();
+			//byte[] str = new byte[strlen];
+			//_IO.Read(str, 0, (int)strlen);
+			//size_remaining -= 1 + strlen;
 
 			if (size_remaining > 0)
 				stream_skip(size_remaining);

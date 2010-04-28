@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
+using System.IO;
 using System.Windows.Forms;
 using CUETools.CDImage;
 using CUETools.Processor;
@@ -33,6 +34,13 @@ namespace JDP
 				CUEToolsSourceFile sf = i as CUEToolsSourceFile;
 				ListViewItem item = new ListViewItem(sf.path, 0);
 				item.Tag = sf;
+				listChoices.Items.Add(item);
+			}
+			else if (i is TagLib.IPicture)
+			{
+				TagLib.IPicture pic = i as TagLib.IPicture;
+				ListViewItem item = new ListViewItem(pic.Description, -1);
+				item.Tag = pic;
 				listChoices.Items.Add(item);
 			}
 			else if (i is MusicBrainz.Release)
@@ -87,15 +95,19 @@ namespace JDP
 				if (CUE != null)
 				{
 					textBox1.Hide();
+					pictureBox1.Hide();
 					listTracks.Show();
 					listMetadata.Show();
-					tableLayoutPanel1.SetRowSpan(listChoices, 2);
+					tableLayoutPanel1.SetRowSpan(listChoices, 3);
 					tableLayoutPanel1.PerformLayout();
 				}
 				else
 				{
+					textBox1.Show();
+					pictureBox1.Hide();
 					listTracks.Hide();
-					tableLayoutPanel1.SetRowSpan(textBox1, 3);
+					listMetadata.Hide();
+					tableLayoutPanel1.SetRowSpan(textBox1, 4);
 					//tableLayoutPanel1.RowStyles[2].Height = 0;
 					//tableLayoutPanel1.RowStyles[3].Height = 0;
 					tableLayoutPanel1.PerformLayout();
@@ -159,7 +171,17 @@ namespace JDP
 		private void listChoices_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			object item = ChosenObject;
-			if (item != null && item is CUEToolsSourceFile)
+			if (item != null && item is TagLib.IPicture)
+			{
+				TagLib.IPicture picture = item as TagLib.IPicture;
+				using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
+					try { pictureBox1.Image = Image.FromStream(imageStream); }
+					catch { }				
+				textBox1.Hide();
+				pictureBox1.Show();
+				tableLayoutPanel1.SetRowSpan(pictureBox1, 4);
+			}
+			else if (item != null && item is CUEToolsSourceFile)
 			{
 				textBox1.Text = (item as CUEToolsSourceFile).contents.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
 			}
@@ -267,6 +289,12 @@ namespace JDP
 				}
 				item.Text = r.Text;
 			}
+		}
+
+		private void pictureBox1_DoubleClick(object sender, EventArgs e)
+		{
+			pictureBox1.SizeMode = pictureBox1.SizeMode == PictureBoxSizeMode.Zoom ?
+				PictureBoxSizeMode.CenterImage : PictureBoxSizeMode.Zoom;
 		}
 	}
 

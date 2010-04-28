@@ -40,6 +40,14 @@ namespace MusicBrainz
         }
     }
 
+	public sealed class MusicBrainzUnavailableException : Exception
+	{
+		public MusicBrainzUnavailableException(string message)
+			: base(message ?? "Service is unavailable.")
+		{
+		}
+	}
+
     public sealed class MusicBrainzUnauthorizedException : Exception
     {
         public MusicBrainzUnauthorizedException ()

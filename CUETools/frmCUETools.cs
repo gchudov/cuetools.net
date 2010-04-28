@@ -779,7 +779,7 @@ namespace JDP {
 							}
 							UpdateOutputPath(pathIn, cueSheet);
 							pathOut = txtOutputPath.Text;
-							if (dlgRes != DialogResult.Cancel && cueSheet.AlbumArt != null && cueSheet.AlbumArt.Length != 0)
+							if (dlgRes != DialogResult.Cancel && cueSheet.AlbumArt.Count != 0)
 								pictureBoxMotd.Image = cueSheet.Cover;
 							else
 								pictureBoxMotd.Image = motdImage;

@@ -28,7 +28,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
@@ -37,6 +37,7 @@
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <TargetFrameworkVersion>v1.1</TargetFrameworkVersion>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Xml" />
