@@ -18,41 +18,27 @@ namespace CUETools.Processor
 
 		private void frmProperties_Load(object sender, EventArgs e)
 		{
-			textArtist.Text = _cueSheet.Artist;
-			textTitle.Text = _cueSheet.Title;
-			textYear.Text = _cueSheet.Year;
-			textGenre.Text = _cueSheet.Genre;
-			textCatalog.Text = _cueSheet.Catalog;
-			textBoxDiscNumber.Text = _cueSheet.DiscNumber;
-			textBoxTotalDiscs.Text = _cueSheet.TotalDiscs;
+			textArtist.Text = Metadata.Artist;
+			textTitle.Text = Metadata.Title;
+			textYear.Text = Metadata.Year;
+			textGenre.Text = Metadata.Genre;
+			textCatalog.Text = Metadata.Catalog;
+			textBoxDiscNumber.Text = Metadata.DiscNumber;
+			textBoxTotalDiscs.Text = Metadata.TotalDiscs;
 		}
 
-		public CUESheet CUE
-		{
-			get
-			{
-				return _cueSheet;
-			}
-			set
-			{
-				_cueSheet = value;
-			}
-		}
-
-		CUESheet _cueSheet;
+		public CUEMetadata Metadata { get; set; }
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			foreach (TrackInfo track in _cueSheet.Tracks)
-				if (track.Artist == _cueSheet.Artist)
-					track.Artist = textArtist.Text;
-			_cueSheet.Artist = textArtist.Text;
-			_cueSheet.Title = textTitle.Text;
-			_cueSheet.Year = textYear.Text;
-			_cueSheet.Genre = textGenre.Text;
-			_cueSheet.Catalog = textCatalog.Text;
-			_cueSheet.DiscNumber = textBoxDiscNumber.Text;
-			_cueSheet.TotalDiscs = textBoxTotalDiscs.Text;
+			Metadata.Tracks.ForEach(track => track.Artist = track.Artist == Metadata.Artist ? textArtist.Text : track.Artist);
+			Metadata.Artist = textArtist.Text;
+			Metadata.Title = textTitle.Text;
+			Metadata.Year = textYear.Text;
+			Metadata.Genre = textGenre.Text;
+			Metadata.Catalog = textCatalog.Text;
+			Metadata.DiscNumber = textBoxDiscNumber.Text;
+			Metadata.TotalDiscs = textBoxTotalDiscs.Text;
 		}
 	}
 }

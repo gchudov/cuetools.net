@@ -42,9 +42,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BNComboBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="FileSystemTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -52,6 +49,9 @@
       <DependentUpon>FileSystemTreeView.cs</DependentUpon>
     </Compile>
     <Compile Include="IIconManager.cs" />
+    <Compile Include="ImgComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="MediaSlider.cs">
       <SubType>UserControl</SubType>
     </Compile>

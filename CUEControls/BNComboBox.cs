@@ -30,9 +30,9 @@ namespace CUEControls
         private Rectangle rectBtn = new Rectangle(0, 0, 1, 1);
         private Rectangle rectContent = new Rectangle(0, 0, 1, 1);
 
-        private ToolStripControlHost _controlHost;
+        //private ToolStripControlHost _controlHost;
         private ListBox _listBox;
-        private ToolStripDropDown _popupControl;
+        //private ToolStripDropDown _popupControl;
         private TextBox _textBox;
 
 		private DrawMode _drawMode = DrawMode.Normal;
@@ -153,9 +153,9 @@ namespace CUEControls
 
 				_isDroppedDown = value;
 
-				if (!_isDroppedDown && _popupControl.IsDropDown)
+				if (!_isDroppedDown && _listBox.Visible)
 				{
-					_popupControl.Close();
+					_listBox.Visible = false;
 					hovered = this.RectangleToScreen(this.ClientRectangle).Contains(MousePosition);
 				}
 
@@ -163,7 +163,9 @@ namespace CUEControls
 				{
 					_listBox.Width = _dropDownWidth;
 					_listBox.Height = CalculateListHeight();
-					_popupControl.Show(this, CalculateDropPosition(), ToolStripDropDownDirection.BelowRight);
+					_listBox.Location = CalculateDropPosition();
+					_listBox.Show();
+					//_popupControl.Show(this, CalculateDropPosition(), ToolStripDropDownDirection.BelowRight);
 					Capture = false;
 					_listBox.Capture = true;
 				}
@@ -199,11 +201,12 @@ namespace CUEControls
 		{
 			get
 			{
-				return _popupControl.DropShadowEnabled;
+				return true; // _popupControl.DropShadowEnabled;
 			}
 			set
 			{
-				_popupControl.DropShadowEnabled = value;
+				// TODO
+				//_popupControl.DropShadowEnabled = value;
 			}
 		}
 
@@ -265,7 +268,7 @@ namespace CUEControls
             _radius.TopRight = 6;
 
             this.Height = 21;
-            this.Width = 95;
+            this.Width = 95 + 100;
 
             this.SuspendLayout();
             _textBox = new TextBox();
@@ -278,32 +281,36 @@ namespace CUEControls
             _textBox.Padding = new Padding(0);
             _textBox.TextAlign = HorizontalAlignment.Left;
 			_textBox.Font = base.Font;
-            this.Controls.Add(_textBox);
+
+			_listBox = new ListBox();
+			_listBox.IntegralHeight = true;
+			_listBox.BorderStyle = BorderStyle.None;
+			_listBox.SelectionMode = SelectionMode.One;
+			_listBox.DrawMode = DrawMode.OwnerDrawFixed;
+			_listBox.Font = base.Font;
+			//_listBox.DrawMode = DrawMode.Normal;
+			_listBox.BindingContext = new BindingContext();
+			_listBox.Visible = false;
+			_listBox.Parent = this;
+
+			this.Controls.Add(_textBox);
+			this.Controls.Add(_listBox);
             this.ResumeLayout(false);
 
             AdjustControls();
 
-            _listBox = new ListBox();
-            _listBox.IntegralHeight = true;
-            _listBox.BorderStyle = BorderStyle.None;
-            _listBox.SelectionMode = SelectionMode.One;
-			_listBox.DrawMode = DrawMode.OwnerDrawFixed;
-			_listBox.Font = base.Font;
-			//_listBox.DrawMode = DrawMode.Normal;
-            _listBox.BindingContext = new BindingContext();
+			//_controlHost = new ToolStripControlHost(_listBox);
+			//_controlHost.Padding = new Padding(0);
+			//_controlHost.Margin = new Padding(0);
+			//_controlHost.AutoSize = false;
 
-            _controlHost = new ToolStripControlHost(_listBox);
-            _controlHost.Padding = new Padding(0);
-            _controlHost.Margin = new Padding(0);
-            _controlHost.AutoSize = false;
-
-            _popupControl = new ToolStripDropDown();
-            _popupControl.Padding = new Padding(0);
-            _popupControl.Margin = new Padding(0);
-            _popupControl.AutoSize = true;
-			_popupControl.AutoClose = true;
-            _popupControl.DropShadowEnabled = true;
-            _popupControl.Items.Add(_controlHost);
+			//_popupControl = new ToolStripDropDown();
+			//_popupControl.Padding = new Padding(0);
+			//_popupControl.Margin = new Padding(0);
+			//_popupControl.AutoSize = true;
+			//_popupControl.AutoClose = true;
+			//_popupControl.DropShadowEnabled = true;
+			//_popupControl.Items.Add(_controlHost);
 
             _dropDownWidth = this.Width;
 
@@ -317,8 +324,8 @@ namespace CUEControls
             _listBox.MouseMove += new MouseEventHandler(_listBox_MouseMove);
 			//(_listBox.DataManager as CurrencyManager).ListChanged += new ListChangedEventHandler(BNComboBox_ListChanged);
 
-			_popupControl.Closing += new ToolStripDropDownClosingEventHandler(_popupControl_Closing);
-            _popupControl.Closed += new ToolStripDropDownClosedEventHandler(_popupControl_Closed);
+			//_popupControl.Closing += new ToolStripDropDownClosingEventHandler(_popupControl_Closing);
+			//_popupControl.Closed += new ToolStripDropDownClosedEventHandler(_popupControl_Closed);
 
             _textBox.Resize += new EventHandler(_textBox_Resize);
             _textBox.TextChanged += new EventHandler(_textBox_TextChanged);
@@ -330,6 +337,17 @@ namespace CUEControls
 
 
         #region Overrides
+
+		protected override CreateParams CreateParams
+		{
+			//[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+			get
+			{
+				CreateParams cp = base.CreateParams;
+				cp.Style &= ~0x06000000;
+				return cp;
+			}
+		} 
 
 		protected override void OnCreateControl()
 		{
@@ -423,7 +441,7 @@ namespace CUEControls
                 Invalidate(true);
             }
 			if (!this.RectangleToScreen(this.ClientRectangle).Contains(MousePosition) &&
-				(!IsDroppedDown || !_popupControl.RectangleToScreen(_popupControl.ClientRectangle).Contains(MousePosition)))
+				(!IsDroppedDown || !_listBox.RectangleToScreen(_listBox.ClientRectangle).Contains(MousePosition)))
 				base.OnMouseLeave(e);
         }
 
@@ -460,7 +478,7 @@ namespace CUEControls
 			get
 			{
 				if (base.ContainsFocus) return true;
-				if (this.IsDroppedDown && _popupControl.ContainsFocus) return true;
+				if (this.IsDroppedDown && _listBox.ContainsFocus) return true;
 				//if (this.IsDroppedDown && _listBox.ContainsFocus) return true;
 				if (this._dropDownStyle != ComboBoxStyle.DropDownList && _textBox.ContainsFocus) return true;
 				return false;
@@ -1037,9 +1055,9 @@ namespace CUEControls
         private Point CalculateDropPosition()
         {
             Point point = new Point(0, this.Height);
-            if ((this.PointToScreen(new Point(0, 0)).Y + this.Height + _controlHost.Height) > Screen.PrimaryScreen.WorkingArea.Height)
+			if ((this.PointToScreen(new Point(0, 0)).Y + this.Height + _listBox.Height) > Screen.PrimaryScreen.WorkingArea.Height)
             {
-                point.Y = -this._controlHost.Height - 7;
+				point.Y = -this._listBox.Height - 7;
             }
             return point;
         }

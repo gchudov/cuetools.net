@@ -8,8 +8,6 @@ using System.IO;
 using System.Windows.Forms;
 using CUETools.CDImage;
 using CUETools.Processor;
-using MusicBrainz;
-using Freedb;
 
 namespace JDP
 {
@@ -43,38 +41,26 @@ namespace JDP
 				item.Tag = pic;
 				listChoices.Items.Add(item);
 			}
-			else if (i is MusicBrainz.Release)
+			else if (i is CUEMetadataEntry)
 			{
-				ReleaseInfo r = new ReleaseInfo(CUE, i as MusicBrainz.Release);
-				ListViewItem item = new ListViewItem(r.Text, 2);
-				item.Tag = r;
-				listChoices.Items.Add(item);
-			}
-			else if (i is Freedb.CDEntry)
-			{
-				ReleaseInfo r = new ReleaseInfo(CUE, i as Freedb.CDEntry);
-				ListViewItem item = new ListViewItem(r.Text, 1);
-				item.Tag = r;
+				CUEMetadataEntry entry = i as CUEMetadataEntry;
+				ListViewItem item = new ListViewItem(entry.ToString(), entry.ImageKey);
+				item.Tag = entry;
 				listChoices.Items.Add(item);
 
-				// check if the entry contains non-iso characters,
-				// and add a second one if it does
-				ReleaseInfo r2 = new ReleaseInfo(CUE, i as Freedb.CDEntry);
-				r2.FixEncoding();
-				if (!r.Equals(r2))
+				if (entry.ImageKey == "freedb")
 				{
-					item = new ListViewItem(r2.Text, 1);
-					item.Tag = r2;
-					listChoices.Items.Add(item);
+					// check if the entry contains non-iso characters,
+					// and add a second one if it does
+					CUEMetadata copy = new CUEMetadata(entry.metadata);
+					if (copy.FreedbToEncoding())
+					{
+						entry = new CUEMetadataEntry(copy, entry.TOC, entry.ImageKey);
+						item = new ListViewItem(entry.ToString(), entry.ImageKey);
+						item.Tag = entry;
+						listChoices.Items.Add(item);
+					}
 				}
-				return;
-			}
-			else if (i is CUESheet)
-			{
-				ReleaseInfo r = new ReleaseInfo(CUE);
-				ListViewItem item = new ListViewItem(r.Text, 3);
-				item.Tag = r;
-				listChoices.Items.Add(item);
 			}
 			else
 			{
@@ -88,8 +74,6 @@ namespace JDP
 		{
 			set
 			{
-				if (CUE != null)
-					AddItem(CUE);
 				foreach (object i in value)
 					AddItem(i);
 				if (CUE != null)
@@ -133,12 +117,12 @@ namespace JDP
 			}
 		}
 
-		private ReleaseInfo ChosenRelease
+		private CUEMetadataEntry ChosenRelease
 		{
 			get
 			{
 				object o = ChosenObject;
-				return o != null && o is ReleaseInfo ? o as ReleaseInfo : null;
+				return o != null && o is CUEMetadataEntry ? o as CUEMetadataEntry : null;
 			}
 		}
 
@@ -152,10 +136,11 @@ namespace JDP
 
 		private void frmChoice_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			ReleaseInfo ri = ChosenRelease;
+			CUEMetadataEntry ri = ChosenRelease;
 			if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK || ri == null || CUE == null)
 				return;
 			CUE.CopyMetadata(ri.metadata);
+			ri.metadata.Save();
 		}
 
 		private void AutoResizeTracks()
@@ -176,7 +161,7 @@ namespace JDP
 				TagLib.IPicture picture = item as TagLib.IPicture;
 				using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
 					try { pictureBox1.Image = Image.FromStream(imageStream); }
-					catch { }				
+					catch { }
 				textBox1.Hide();
 				pictureBox1.Show();
 				tableLayoutPanel1.SetRowSpan(pictureBox1, 4);
@@ -185,17 +170,17 @@ namespace JDP
 			{
 				textBox1.Text = (item as CUEToolsSourceFile).contents.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
 			}
-			else if (item != null && item is ReleaseInfo)
+			else if (item != null && item is CUEMetadataEntry)
 			{
-				ReleaseInfo r = (item as ReleaseInfo);
+				CUEMetadataEntry r = (item as CUEMetadataEntry);
 				listTracks.Items.Clear();
-				foreach (TrackInfo track in r.metadata.Tracks)
+				foreach (CUETrackMetadata track in r.metadata.Tracks)
 				{
 					listTracks.Items.Add(new ListViewItem(new string[] { 
 						track.Title,
 						(listTracks.Items.Count + 1).ToString(),
-						r.metadata.TOC[listTracks.Items.Count + r.metadata.TOC.FirstAudio].StartMSF,
-						r.metadata.TOC[listTracks.Items.Count + r.metadata.TOC.FirstAudio].LengthMSF
+						r.TOC[listTracks.Items.Count + r.TOC.FirstAudio].StartMSF,
+						r.TOC[listTracks.Items.Count + r.TOC.FirstAudio].LengthMSF
 					}));
 				}
 				AutoResizeTracks();
@@ -237,7 +222,7 @@ namespace JDP
 
 		private void listTracks_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
-			ReleaseInfo ri = ChosenRelease;
+			CUEMetadataEntry ri = ChosenRelease;
 			if (ri != null && e.Label != null)
 				ri.metadata.Tracks[e.Item].Title = e.Label;
 		}
@@ -246,13 +231,13 @@ namespace JDP
 		{
 			if (e.KeyCode == Keys.Enter)
 			{
-			    if (listTracks.FocusedItem.Index + 1 < listTracks.Items.Count) // && e.editing
-			    {
-			        listTracks.FocusedItem.Selected = false;
-			        listTracks.FocusedItem = listTracks.Items[listTracks.FocusedItem.Index + 1];
-			        listTracks.FocusedItem.Selected = true;
-			        listTracks.FocusedItem.BeginEdit();
-			    }
+				if (listTracks.FocusedItem.Index + 1 < listTracks.Items.Count) // && e.editing
+				{
+					listTracks.FocusedItem.Selected = false;
+					listTracks.FocusedItem = listTracks.Items[listTracks.FocusedItem.Index + 1];
+					listTracks.FocusedItem.Selected = true;
+					listTracks.FocusedItem.BeginEdit();
+				}
 			}
 		}
 
@@ -270,13 +255,13 @@ namespace JDP
 		private void listMetadata_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
 			ListViewItem item = ChosenItem;
-			ReleaseInfo r = ChosenRelease;
+			CUEMetadataEntry r = ChosenRelease;
 			if (e.Label != null && item != null && r != null)
 			{
 				switch (e.Item)
 				{
 					case 0:
-						foreach (TrackInfo track in r.metadata.Tracks)
+						foreach (CUETrackMetadata track in r.metadata.Tracks)
 							if (track.Artist == r.metadata.Artist)
 								track.Artist = e.Label;
 						r.metadata.Artist = e.Label;
@@ -287,7 +272,7 @@ namespace JDP
 					case 4: r.metadata.DiscNumber = e.Label; break;
 					case 5: r.metadata.TotalDiscs = e.Label; break;
 				}
-				item.Text = r.Text;
+				item.Text = r.ToString();
 			}
 		}
 
@@ -295,69 +280,6 @@ namespace JDP
 		{
 			pictureBox1.SizeMode = pictureBox1.SizeMode == PictureBoxSizeMode.Zoom ?
 				PictureBoxSizeMode.CenterImage : PictureBoxSizeMode.Zoom;
-		}
-	}
-
-	sealed class ReleaseInfo
-	{
-		public CUESheet metadata;
-
-		public ReleaseInfo(CUESheet cue)
-		{
-			metadata = new CUESheet(cue.Config);
-			metadata.TOC = cue.TOC;
-			metadata.CopyMetadata(cue);
-		}
-
-		public ReleaseInfo(CUESheet cue, Freedb.CDEntry release)
-		{
-			metadata = new CUESheet(cue.Config);
-			metadata.TOC = cue.TocFromCDEntry(release);
-			metadata.FillFromFreedb(release);
-		}
-
-		public ReleaseInfo(CUESheet cue, MusicBrainz.Release release)
-		{
-			metadata = new CUESheet(cue.Config);
-			metadata.TOC = cue.TOC;
-			metadata.FillFromMusicBrainz(release);
-		}
-
-		private string FixEncoding(string src)
-		{
-			Encoding iso = Encoding.GetEncoding("iso-8859-1");
-			return Encoding.Default.GetString(iso.GetBytes(src));
-		}
-
-		public string Text
-		{
-			get
-			{
-				return string.Format("{0}: {1} - {2}",
-					metadata.Year == "" ? "YYYY" : metadata.Year,
-					metadata.Artist == "" ? "Unknown Artist" : metadata.Artist,
-					metadata.Title == "" ? "Unknown Title" : metadata.Title);
-			}
-		}
-
-		public void FixEncoding()
-		{
-			metadata.Artist = FixEncoding(metadata.Artist);
-			metadata.Title = FixEncoding(metadata.Title);
-			foreach (TrackInfo track in metadata.Tracks)
-			{
-				track.Title = FixEncoding(track.Title);
-				track.Artist = FixEncoding(track.Artist);
-			}
-		}
-
-		public bool Equals(ReleaseInfo r)
-		{
-			bool equal = metadata.Title == r.metadata.Title && metadata.Artist == r.metadata.Artist;
-			for (int t = 0; t < metadata.TrackCount; t++)
-				if (r.metadata.Tracks[t].Title != metadata.Tracks[t].Title || r.metadata.Tracks[t].Artist != metadata.Tracks[t].Artist)
-					equal = false;
-			return equal;
 		}
 	}
 }

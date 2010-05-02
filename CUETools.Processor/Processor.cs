@@ -1045,6 +1045,7 @@ namespace CUETools.Processor
 				encoders.Add(new CUEToolsUDC("lame cbr", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
 				encoders.Add(new CUEToolsUDC("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
 				encoders.Add(new CUEToolsUDC("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
+				encoders.Add(new CUEToolsUDC("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
 				decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
 				decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "%I -f wav -"));
@@ -1638,6 +1639,7 @@ string status = processor.Go();
 		private List<TagLib.IPicture> _albumArt = new List<TagLib.IPicture>();
 		private int _padding = 8192;
 		private IWebProxy proxy;
+		private CUEMetadata taglibMetadata;
 
 		public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
 		public event EventHandler<CUEToolsProgressEventArgs> CUEToolsProgress;
@@ -1748,10 +1750,50 @@ string status = processor.Go();
 			Genre = metadata.Genre;
 			Artist = metadata.Artist;
 			Title = metadata.Title;
+			Catalog = metadata.Catalog;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Title = metadata.Tracks[i].Title;
 				Tracks[i].Artist = metadata.Tracks[i].Artist;
+			}
+		}
+
+		public void CopyMetadata(CUEMetadata metadata)
+		{
+			TotalDiscs = metadata.TotalDiscs;
+			DiscNumber = metadata.DiscNumber;
+			Year = metadata.Year;
+			Genre = metadata.Genre;
+			Artist = metadata.Artist;
+			Title = metadata.Title;
+			Catalog = metadata.Catalog;
+			for (int i = 0; i < Tracks.Count; i++)
+			{
+				Tracks[i].Title = metadata.Tracks[i].Title;
+				Tracks[i].Artist = metadata.Tracks[i].Artist;
+				// ISRC?
+			}
+		}
+
+		public CUEMetadata Metadata
+		{
+			get
+			{
+				CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
+				metadata.TotalDiscs = TotalDiscs;
+				metadata.DiscNumber = DiscNumber;
+				metadata.Year = Year;
+				metadata.Genre = Genre;
+				metadata.Artist = Artist;
+				metadata.Title = Title;
+				metadata.Catalog = Catalog;
+				for (int i = 0; i < Tracks.Count; i++)
+				{
+					metadata.Tracks[i].Title = Tracks[i].Title;
+					metadata.Tracks[i].Artist = Tracks[i].Artist;
+					// ISRC?
+				}
+				return metadata;
 			}
 		}
 
@@ -1818,9 +1860,28 @@ string status = processor.Go();
 			}
 		}
 
-		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz)
+		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz, bool useCache)
 		{
 			List<object> Releases = new List<object>();
+			StringCollection DiscIds = new StringCollection();
+			DiscIds.Add(_toc.MusicBrainzId);
+
+			if (useCache)
+			{
+				try
+				{
+					CUEMetadata cache = CUEMetadata.Load(TOC.TOCID);
+					if (cache != null)
+						Releases.Add(new CUEMetadataEntry(cache, TOC, "local"));
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Trace.WriteLine(ex.Message);
+				}
+			}
+
+			Releases.Add(new CUEMetadataEntry(Metadata, TOC, "cue"));
+			Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags"));
 
 			if (useFreedb)
 			{
@@ -1846,7 +1907,14 @@ string status = processor.Go();
 						ShowProgress("Looking up album via Freedb... " + queryResult.Discid, 0.5, null, null);
 						code = m_freedb.Read(queryResult, out cdEntry);
 						if (code == FreedbHelper.ResponseCodes.CODE_210)
-							Releases.Add(cdEntry);
+						{
+							CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
+							metadata.FillFromFreedb(cdEntry, TOC.FirstAudio - 1);
+							CDImageLayout toc = TocFromCDEntry(cdEntry);
+							if (!DiscIds.Contains(toc.MusicBrainzId))
+								DiscIds.Add(toc.MusicBrainzId);
+							Releases.Add(new CUEMetadataEntry(metadata, toc, "freedb"));						
+						}
 					}
 					else
 						if (code == FreedbHelper.ResponseCodes.CODE_210 ||
@@ -1859,7 +1927,14 @@ string status = processor.Go();
 								CheckStop();
 								code = m_freedb.Read(qr, out cdEntry);
 								if (code == FreedbHelper.ResponseCodes.CODE_210)
-									Releases.Add(cdEntry);
+								{
+									CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
+									metadata.FillFromFreedb(cdEntry, TOC.FirstAudio - 1);
+									CDImageLayout toc = TocFromCDEntry(cdEntry);
+									if (!DiscIds.Contains(toc.MusicBrainzId))
+										DiscIds.Add(toc.MusicBrainzId);
+									Releases.Add(new CUEMetadataEntry(metadata, toc,"freedb"));									
+								}
 							}
 						}
 				}
@@ -1874,16 +1949,8 @@ string status = processor.Go();
 			{
 				ShowProgress("Looking up album via MusicBrainz...", 0.0, null, null);
 
-				StringCollection DiscIds = new StringCollection();
-				DiscIds.Add(_toc.MusicBrainzId);
 				//if (_tocFromLog != null && !DiscIds.Contains(_tocFromLog.MusicBrainzId))
 				//	DiscIds.Add(_tocFromLog.MusicBrainzId);
-				foreach (CDEntry cdEntry in Releases)
-				{
-					CDImageLayout toc = TocFromCDEntry(cdEntry);
-					if (!DiscIds.Contains(toc.MusicBrainzId))
-						DiscIds.Add(toc.MusicBrainzId);
-				}
 
 				MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 				foreach (string DiscId in DiscIds)
@@ -1909,7 +1976,9 @@ string status = processor.Go();
 									;
 							}
 							catch { }
-							Releases.Add(release);
+							CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
+							metadata.FillFromMusicBrainz(release, TOC.FirstAudio - 1);
+							Releases.Add(new CUEMetadataEntry(metadata, TOC, "musicbrainz"));
 						}
 					}
 					catch (Exception ex)
@@ -2499,59 +2568,44 @@ string status = processor.Go();
 				_fileInfo = _tracks[0]._fileInfo;
 				_tracks[0]._fileInfo = null;
 			}
+			taglibMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
+			taglibMetadata.Artist = GetCommonTag(file => file.Tag.JoinedAlbumArtists) ?? GetCommonTag(file => file.Tag.JoinedPerformers) ?? "";
+			taglibMetadata.Title = GetCommonTag(file => file.Tag.Album) ?? "";
+			taglibMetadata.Year = GetCommonTag(file => file.Tag.Year != 0 ? file.Tag.Year.ToString() : null) ?? "";
+			taglibMetadata.Genre = GetCommonTag(file => file.Tag.JoinedGenres) ?? "";
+			taglibMetadata.TotalDiscs = GetCommonTag(file => file.Tag.DiscCount != 0 ? file.Tag.DiscCount.ToString() : null) ?? "";
+			taglibMetadata.DiscNumber = GetCommonTag(file => file.Tag.Disc != 0 ? file.Tag.Disc.ToString() : null) ?? "";
+			for (i = 0; i < TrackCount; i++)
+			{
+				TrackInfo track = _tracks[i];
+				taglibMetadata.Tracks[i].Artist = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.JoinedPerformers :
+					_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_ARTIST", i + 1))) :
+					null) ?? "";
+				taglibMetadata.Tracks[i].Title = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
+					_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_TITLE", i + 1))) :
+					null) ?? "";
+			}
+			
 			if (_config.fillUpCUE)
 			{
-				if (_config.overwriteCUEData || General.FindCUELine(_attributes, "PERFORMER") == null)
-				{
-					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.JoinedAlbumArtists; });
-					if (value == null)
-						value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.JoinedPerformers; });
-					if (value != null && value != "")
-						General.SetCUELine(_attributes, "PERFORMER", value, true);
-				}
-				if (_config.overwriteCUEData || General.FindCUELine(_attributes, "TITLE") == null)
-				{
-					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.Album; });
-					if (value != null)
-						General.SetCUELine(_attributes, "TITLE", value, true);
-				}
-				if (_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "DATE") == null)
-				{
-					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.Year != 0 ? file.Tag.Year.ToString() : null; });
-					if (value != null)
-						General.SetCUELine(_attributes, "REM", "DATE", value, false);
-				}
-				if (_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "GENRE") == null)
-				{
-					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.JoinedGenres; });
-					if (value != null)
-						General.SetCUELine(_attributes, "REM", "GENRE", value, true);
-				}
-				if (_config.overwriteCUEData || TotalDiscs == "")
-				{
-					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.DiscCount != 0 ? file.Tag.DiscCount.ToString() : null; });
-					if (value != null)
-						TotalDiscs = value;
-				}
-				if (_config.overwriteCUEData || DiscNumber == "")
-				{
-					string value = GetCommonTag(delegate(TagLib.File file) { return file.Tag.Disc != 0 ? file.Tag.Disc.ToString() : null; });
-					if (value != null)
-						DiscNumber = value;
-				}
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "PERFORMER") == null) && taglibMetadata.Artist != "")
+					General.SetCUELine(_attributes, "PERFORMER", taglibMetadata.Artist, true);
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "TITLE") == null) && taglibMetadata.Title != "")
+					General.SetCUELine(_attributes, "TITLE", taglibMetadata.Title, true);
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "DATE") == null) && taglibMetadata.Year != "")
+					General.SetCUELine(_attributes, "REM", "DATE", taglibMetadata.Year, false);
+				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "GENRE") == null) && taglibMetadata.Genre != "")
+					General.SetCUELine(_attributes, "REM", "GENRE", taglibMetadata.Genre, true);
+				if ((_config.overwriteCUEData || TotalDiscs == "") && taglibMetadata.TotalDiscs != "")
+					TotalDiscs = taglibMetadata.TotalDiscs;
+				if ((_config.overwriteCUEData || DiscNumber == "") && taglibMetadata.DiscNumber != "")
+					DiscNumber = taglibMetadata.DiscNumber;
 				for (i = 0; i < TrackCount; i++)
 				{
-					TrackInfo track = _tracks[i];
-					string artist = _hasTrackFilenames && track._fileInfo  != null ? track._fileInfo.Tag.JoinedPerformers :
-						_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_ARTIST", i + 1))) :
-						null;
-					string title = _hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
-						_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_TITLE", i + 1))) :
-						null;
-					if ((_config.overwriteCUEData || track.Artist == "") && artist != null && artist != "")
-						track.Artist = artist;
-					if ((_config.overwriteCUEData || track.Title == "") && title != null)
-						track.Title = title;
+					if ((_config.overwriteCUEData || _tracks[i].Artist == "") && taglibMetadata.Tracks[i].Artist != "")
+						_tracks[i].Artist = taglibMetadata.Tracks[i].Artist;
+					if ((_config.overwriteCUEData || _tracks[i].Title == "") && taglibMetadata.Tracks[i].Title != "")
+						_tracks[i].Title = taglibMetadata.Tracks[i].Title;
 				}
 			}
 
@@ -4055,32 +4109,46 @@ string status = processor.Go();
 							_albumArt.Add(picture);
 							return;
 						}
-			if ((_config.extractAlbumArt || _config.embedAlbumArt) && _inputDir != null)
+			if ((_config.extractAlbumArt || _config.embedAlbumArt) && !_isCD)
 			{
 				List<string> names = new List<string>();
 				names.Add("folder.jpg");
 				names.Add("cover.jpg");
 				names.Add("albumart.jpg");
+				names.Add("thumbnail.jpg");
 				names.Add("albumartlarge.jpg");
+				names.Add("front.jpg");
+
 				foreach (string name in names)
 				{
-					string imgPath = Path.Combine(_inputDir, name);
-					if (File.Exists(imgPath))
+					string imgPath = Path.Combine(_isArchive ? _archiveCUEpath : _inputDir, name);
+					bool exists = _isArchive ? _archiveContents.Contains(imgPath) : File.Exists(imgPath);
+					if (exists)
 					{
-						TagLib.Picture pic = new TagLib.Picture(imgPath);
+						TagLib.File.IFileAbstraction file = _isArchive
+							? (TagLib.File.IFileAbstraction)new ArchiveFileAbstraction(this, imgPath)
+							: (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(imgPath);
+						TagLib.Picture pic = new TagLib.Picture(file);
 						pic.Description = name;
 						_albumArt.Add(pic);
 						return;
 					}
 				}
 
-				foreach (string imgPath in Directory.GetFiles(_inputDir, "*.jpg"))
+				if (!_isArchive)
 				{
-					TagLib.Picture pic = new TagLib.Picture(imgPath);
-					pic.Description = Path.GetFileName(imgPath);
-					_albumArt.Add(pic);
-					if (Action != CUEAction.Encode)
-						return;
+					// TODO: archive case
+					foreach (string imgPath in Directory.GetFiles(_inputDir, "*.jpg", SearchOption.AllDirectories))
+					{
+						TagLib.Picture pic = new TagLib.Picture(imgPath);
+						if (imgPath.StartsWith(_inputDir))
+							pic.Description = imgPath.Substring(_inputDir.Length).Trim(Path.DirectorySeparatorChar);
+						else
+							pic.Description = Path.GetFileName(imgPath);
+						_albumArt.Add(pic);
+						if (Action != CUEAction.Encode)
+							return;
+					}
 				}
 
 				if (_albumArt.Count != 0)
@@ -4809,12 +4877,7 @@ string status = processor.Go();
 					if (files == null)
 						audioFiles = Directory.GetFiles(dir == "" ? "." : dir, "*." + format.Key);
 					else
-					{
-						audioFiles = files.FindAll(delegate(string s)
-						{
-							return Path.GetDirectoryName(s) == dir && Path.GetExtension(s).ToLower() == "." + format.Key;
-						}).ToArray();
-					}
+						audioFiles = files.FindAll(s => Path.GetDirectoryName(s) == dir && Path.GetExtension(s).ToLower() == "." + format.Key).ToArray();
 					if (audioFiles.Length == filePos.Count)
 					{
 						Array.Sort(audioFiles);
@@ -4836,12 +4899,13 @@ string status = processor.Go();
 							foundAll = false;
 							break;
 						}
-						audioFiles = fileGroup.files.ConvertAll<string>(delegate(FileSystemInfo info) { return info.FullName; }).ToArray();
+						audioFiles = fileGroup.files.ConvertAll<string>(info => info.FullName).ToArray();
 						Array.Sort(audioFiles);
 						extension = fileGroup.main.Extension.ToLower().TrimStart('.');
 						foundAll = true;
 					}
 				}
+				// Choose filegroup by DISCID?
 			}
 
 			if (!foundAll)

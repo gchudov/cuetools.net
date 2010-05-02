@@ -21,6 +21,7 @@ namespace CUETools.Processor
 			if (fileInfo is TagLib.Mpeg4.File)
 			{
 				// remove fb2k/nero nasty tags mess
+				//if (((TagLib.Mpeg4.File)fileInfo).UserData.
 				((TagLib.Mpeg4.File)fileInfo).UserData.RemoveChild("tags");
 				TagLib.Mpeg4.AppleTag mpeg4 = (TagLib.Mpeg4.AppleTag)fileInfo.GetTag(TagLib.TagTypes.Apple, true);
 				return true;

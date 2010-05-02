@@ -360,25 +360,31 @@
     <value>17, 17</value>
   </metadata>
   <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>152, 22</value>
+    <value>149, 22</value>
   </data>
   <data name="editToolStripMenuItem.Text" xml:space="preserve">
     <value>Edit</value>
   </data>
   <data name="variousToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>152, 22</value>
+    <value>149, 22</value>
   </data>
   <data name="variousToolStripMenuItem.Text" xml:space="preserve">
     <value>Various Artists</value>
   </data>
   <data name="fixEncodingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>152, 22</value>
+    <value>149, 22</value>
   </data>
   <data name="fixEncodingToolStripMenuItem.Text" xml:space="preserve">
     <value>Fix Encoding</value>
   </data>
+  <data name="reloadToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>149, 22</value>
+  </data>
+  <data name="reloadToolStripMenuItem.Text" xml:space="preserve">
+    <value>Reload</value>
+  </data>
   <data name="contextMenuStripRelease.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 92</value>
+    <value>150, 92</value>
   </data>
   <data name="&gt;&gt;contextMenuStripRelease.Name" xml:space="preserve">
     <value>contextMenuStripRelease</value>
@@ -479,25 +485,20 @@
   <data name="bnComboBoxLosslessOrNot.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 19</value>
   </data>
-  <data name="bnComboBoxLosslessOrNot.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
   <data name="bnComboBoxLosslessOrNot.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 21</value>
   </data>
   <data name="bnComboBoxLosslessOrNot.TabIndex" type="System.Int32, mscorlib">
     <value>39</value>
   </data>
+  <data name="bnComboBoxLosslessOrNot.Text" xml:space="preserve">
+    <value>lossless</value>
+  </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.Name" xml:space="preserve">
     <value>bnComboBoxLosslessOrNot</value>
   </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -511,25 +512,20 @@
   <data name="bnComboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
     <value>92, 46</value>
   </data>
-  <data name="bnComboBoxEncoder.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
   <data name="bnComboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 21</value>
   </data>
   <data name="bnComboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
     <value>38</value>
   </data>
+  <data name="bnComboBoxEncoder.Text" xml:space="preserve">
+    <value>libFlac</value>
+  </data>
   <data name="&gt;&gt;bnComboBoxEncoder.Name" xml:space="preserve">
     <value>bnComboBoxEncoder</value>
   </data>
   <data name="&gt;&gt;bnComboBoxEncoder.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxEncoder.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -570,25 +566,20 @@
   <data name="bnComboBoxFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>92, 19</value>
   </data>
-  <data name="bnComboBoxFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
   <data name="bnComboBoxFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 21</value>
   </data>
   <data name="bnComboBoxFormat.TabIndex" type="System.Int32, mscorlib">
     <value>37</value>
   </data>
+  <data name="bnComboBoxFormat.Text" xml:space="preserve">
+    <value>flac</value>
+  </data>
   <data name="&gt;&gt;bnComboBoxFormat.Name" xml:space="preserve">
     <value>bnComboBoxFormat</value>
   </data>
   <data name="&gt;&gt;bnComboBoxFormat.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxFormat.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -641,25 +632,20 @@
   <data name="bnComboBoxImage.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 46</value>
   </data>
-  <data name="bnComboBoxImage.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
-  </data>
   <data name="bnComboBoxImage.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 21</value>
   </data>
   <data name="bnComboBoxImage.TabIndex" type="System.Int32, mscorlib">
     <value>34</value>
   </data>
+  <data name="bnComboBoxImage.Text" xml:space="preserve">
+    <value>image</value>
+  </data>
   <data name="&gt;&gt;bnComboBoxImage.Name" xml:space="preserve">
     <value>bnComboBoxImage</value>
   </data>
   <data name="&gt;&gt;bnComboBoxImage.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxImage.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -814,6 +800,9 @@
   <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
+  <metadata name="drivesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>998, 56</value>
+  </metadata>
   <metadata name="imageListChecked.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>207, 17</value>
   </metadata>
@@ -965,8 +954,8 @@
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAa
-        CQAAAk1TRnQBSQFMAgEBAgEAAQQBAAEEAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAS
+        CgAAAk1TRnQBSQFMAgEBAwEAAQQBAAEEAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAARADAAEBAQABCAYAAQQYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -996,33 +985,33 @@
         AQABIQEAAaUBAANfAQADdwEAA4YBAAOWAQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHw
         AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD/wIAAXoCUQt6AQAB7Q8K
         IAABUQEAAREBEwEAAQ8KegG1BAQD8wEEA/MCBAFfAQohAAG8A/8BEwEPCXoBtQMEAfQCBAH0AQQB9AIE
-        AfQCBAEKIQABvAT/AQAJegG1AaICBAH/AgQB/wEEAf8CBAH/AgQBCiAAAVEBDwHrAgcBvAEAAREEAAER
-        A3oBtQGiAwQD/wEEA/8DBAEKIAABegFRAQ8CAAH/AQABDwH3Av8BkgIRAnoBtQGiBQQB/wEEAf8FBAEK
-        IAAEegEAAf8BAAERBP8BvAEAAnoBtQGiBQQB/wEEAf8FBAEKIAAErgEAAf8CAAETAbwD/wEAAq4BtQGi
-        DQQBCiAABK4BAAH/AQABEgEPAwAB/wEAAq4N/wH0AfMB7CAABK4BAAH/AQ8BAAERAhIBAAH/AQACrgH/
-        AaIC/wEEA/8CBAP/AgQB7CAABK4BAAL/AZIBEQEAAQ8BAAH/AQACrgH/AaIC/wEEAv8BBAT/AQQB9AHz
-        AewgAASuAQABBwP/AbwB6gEAAf8BAAKuAf8BogL/AQQC/wQEAf8DBAEKIAAErgERARMBBwb/AQACrgH/
-        AaIBBAH/AQQC/wEEAv8BBAH/AQQB9AHzAQogAAWuAREBAAERAZIE/wEAAq4B/wGGAv8CBAL/AgQD/wIE
-        AewgAAeuAREBAAEPAesBvAH/AQACrgH/AYYL/wH0AfMB7CEACa4BDwEAARMBEQGuAQAC/wG1C/8B9AEH
-        IAABQgFNAT4HAAE+AwABKAMAAUADAAEQAwABAQEAAQEFAAGAFwAD/wEAAYABAXYAAYABAQYACw==
+        AfQCBAEKAfEC7gHyAQAB8gTuAfIBAAHyAu4B8REAAbwE/wEACXoBtQGiAgQB/wIEAf8BBAH/AgQB/wIE
+        AQoBvAH1AfQDBwT0AwcB9AH1AbwQAAFRAQ8B6wIHAbwBAAERBAABEQN6AbUBogMEA/8BBAP/AwQBCgHw
+        AfQC8wH0BvMB9ALzAfQB8BAAAXoBUQEPAgAB/wEAAQ8B9wL/AZICEQJ6AbUBogUEAf8BBAH/BQQBCgHw
+        AfQM8wH0AfAQAAR6AQAB/wEAAREE/wG8AQACegG1AaIFBAH/AQQB/wUEAQoB8AH0DPMB9AHwEAAErgEA
+        Af8CAAETAbwD/wEAAq4BtQGiDQQBCgHxAfUF9AEAAXMB7gT0AfUB8RAABK4BAAH/AQABEgEPAwAB/wEA
+        Aq4N/wH0AfMB7AHyAfUF9AEcAcMBUQEIA/QB9QHyEAAErgEAAf8BDwEAARECEgEAAf8BAAKuAf8BogL/
+        AQQD/wIEA/8CBAHsAfIG9QEbAVgBegFRAQgD9QHyEAAErgEAAv8BkgERAQABDwEAAf8BAAKuAf8BogL/
+        AQQC/wEEBP8BBAH0AfMB7AHyAf8G9QEaAVgBegFRARoB9QH/AfIQAASuAQABBwP/AbwB6gEAAf8BAAKu
+        Af8BogL/AQQC/wQEAf8DBAEKAfII/wEaAVgBegFRARoB/wHyEAAErgERARMBBwb/AQACrgH/AaIBBAH/
+        AQQC/wEEAv8BBAH/AQQB9AHzAQoB8gn/ARsBWAF6Ae0B8AHyEAAFrgERAQABEQGSBP8BAAKuAf8BhgL/
+        AgQC/wIEA/8CBAHsAfMK8gHwAe8B9AHtAbwQAAeuAREBAAEPAesBvAH/AQACrgH/AYYL/wH0AfMB7AwA
+        AfQB7gEWAW8RAAmuAQ8BAAETAREBrgEAAv8BtQv/AfQBBw0AAfQBFgHzEAABQgFNAT4HAAE+AwABKAMA
+        AUADAAEQAwABAQEAAQEFAAGAFwAD/wEAAYABAQIAAv8GAAL/BgABCAEQXgAB/wHwAgABgAEBAgAB/wH4
+        AgAL
 </value>
   </data>
   <data name="bnComboBoxRelease.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 33</value>
-  </data>
-  <data name="bnComboBoxRelease.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
   </data>
   <data name="bnComboBoxRelease.Size" type="System.Drawing.Size, System.Drawing">
     <value>552, 21</value>
   </data>
   <data name="bnComboBoxRelease.TabIndex" type="System.Int32, mscorlib">
     <value>35</value>
+  </data>
+  <data name="bnComboBoxRelease.Text" xml:space="preserve">
+    <value>Releases</value>
   </data>
   <data name="bnComboBoxRelease.ToolTip" xml:space="preserve">
     <value>Right-lick to edit release info</value>
@@ -1031,7 +1020,7 @@
     <value>bnComboBoxRelease</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1039,19 +1028,8 @@
   <data name="&gt;&gt;bnComboBoxRelease.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <metadata name="drivesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>998, 56</value>
-  </metadata>
   <data name="bnComboBoxDrives.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 6</value>
-  </data>
-  <data name="bnComboBoxDrives.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
   </data>
   <data name="bnComboBoxDrives.Size" type="System.Drawing.Size, System.Drawing">
     <value>552, 21</value>
@@ -1059,11 +1037,14 @@
   <data name="bnComboBoxDrives.TabIndex" type="System.Int32, mscorlib">
     <value>36</value>
   </data>
+  <data name="bnComboBoxDrives.Text" xml:space="preserve">
+    <value>Drives</value>
+  </data>
   <data name="&gt;&gt;bnComboBoxDrives.Name" xml:space="preserve">
     <value>bnComboBoxDrives</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1073,14 +1054,6 @@
   </data>
   <data name="bnComboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 60</value>
-  </data>
-  <data name="bnComboBoxOutputFormat.Radius" mimetype="application/x-microsoft.net.object.binary.base64">
-    <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAEJDVUVDb250cm9scywgVmVyc2lvbj0yLjAuOC4wLCBDdWx0dXJl
-        PW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABRDVUVDb250cm9scy5CTlJhZGl1cwQAAAAI
-        X3RvcExlZnQJX3RvcFJpZ2h0C19ib3R0b21MZWZ0DF9ib3R0b21SaWdodAAAAAAICAgIAgAAAAIAAAAG
-        AAAAAgAAAAIAAAAL
-</value>
   </data>
   <data name="bnComboBoxOutputFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>552, 21</value>
@@ -1092,7 +1065,7 @@
     <value>bnComboBoxOutputFormat</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Type" xml:space="preserve">
-    <value>CUEControls.BNComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1593,6 +1566,12 @@
   <data name="&gt;&gt;fixEncodingToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;reloadToolStripMenuItem.Name" xml:space="preserve">
+    <value>reloadToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;reloadToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;losslessOrNotBindingSource.Name" xml:space="preserve">
     <value>losslessOrNotBindingSource</value>
   </data>
@@ -1621,6 +1600,12 @@
     <value>cUEStylesBindingSource</value>
   </data>
   <data name="&gt;&gt;cUEStylesBindingSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;drivesBindingSource.Name" xml:space="preserve">
+    <value>drivesBindingSource</value>
+  </data>
+  <data name="&gt;&gt;drivesBindingSource.Type" xml:space="preserve">
     <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;imageListChecked.Name" xml:space="preserve">
@@ -1682,12 +1667,6 @@
   </data>
   <data name="&gt;&gt;imageListMetadataSource.Type" xml:space="preserve">
     <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;drivesBindingSource.Name" xml:space="preserve">
-    <value>drivesBindingSource</value>
-  </data>
-  <data name="&gt;&gt;drivesBindingSource.Type" xml:space="preserve">
-    <value>System.Windows.Forms.BindingSource, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmCUERipper</value>

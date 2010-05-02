@@ -1054,7 +1054,7 @@ namespace CUETools.AccurateRip
 		public static bool FindDriveReadOffset(string driveName, out int driveReadOffset)
 		{
 			string fileName = System.IO.Path.Combine(CachePath, "DriveOffsets.bin");
-			if (!File.Exists(fileName) || (DateTime.Now - File.GetLastWriteTime(fileName) > TimeSpan.FromDays(1)) )
+			if (!File.Exists(fileName) || (DateTime.Now - File.GetLastWriteTime(fileName) > TimeSpan.FromDays(10)) )
 			{
 				HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://www.accuraterip.com/accuraterip/DriveOffsets.bin");
 				req.Method = "GET";

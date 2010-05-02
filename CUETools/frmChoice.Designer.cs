@@ -82,10 +82,12 @@ namespace JDP
 			// 
 			this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
 			this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-			this.imageList1.Images.SetKeyName(0, "eac3.ico");
-			this.imageList1.Images.SetKeyName(1, "freedb.ico");
-			this.imageList1.Images.SetKeyName(2, "musicbrainz.ico");
-			this.imageList1.Images.SetKeyName(3, "cue3.ico");
+			this.imageList1.Images.SetKeyName(0, "eac");
+			this.imageList1.Images.SetKeyName(1, "freedb");
+			this.imageList1.Images.SetKeyName(2, "musicbrainz");
+			this.imageList1.Images.SetKeyName(3, "cue");
+			this.imageList1.Images.SetKeyName(4, "tags");
+			this.imageList1.Images.SetKeyName(5, "local");
 			// 
 			// textBox1
 			// 
