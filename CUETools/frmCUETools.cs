@@ -585,7 +585,7 @@ namespace JDP {
 							if (fileGroup.type == FileGroupInfoType.CUESheetFile)
 								throw new Exception("already contains a cue sheet");
 						foreach (FileGroupInfo fileGroup in fileGroups)
-							if (fileGroup.type == FileGroupInfoType.TrackFiles || fileGroup.type == FileGroupInfoType.FileWithCUE)
+							if (fileGroup.type == FileGroupInfoType.TrackFiles || fileGroup.type == FileGroupInfoType.FileWithCUE || fileGroup.type == FileGroupInfoType.M3UFile)
 								_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
 					}
 					else if (File.Exists(pathIn))
@@ -593,7 +593,8 @@ namespace JDP {
 						pathIn = Path.GetFullPath(pathIn);
 						List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_profile._config, Path.GetDirectoryName(pathIn));
 						FileGroupInfo fileGroup = fileGroups.Find(f => f.type == FileGroupInfoType.TrackFiles && f.Contains(pathIn)) ??
-							fileGroups.Find(f => f.type == FileGroupInfoType.FileWithCUE && f.Contains(pathIn));
+							fileGroups.Find(f => f.type == FileGroupInfoType.FileWithCUE && f.Contains(pathIn)) ??
+							fileGroups.Find(f => f.type == FileGroupInfoType.M3UFile && f.Contains(pathIn));
 						if (fileGroup == null)
 							throw new Exception("doesn't seem to be part of an album");
 						string cueSheetContents;

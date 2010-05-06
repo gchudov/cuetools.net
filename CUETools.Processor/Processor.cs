@@ -2237,6 +2237,16 @@ string status = processor.Go();
 					try { _logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding))); }
 					catch { }
 			}
+			else if (Path.GetExtension(pathIn).ToLower() == ".m3u")
+			{
+				string cueSheet = CUESheet.CreateDummyCUESheet(_config, pathIn);
+				sr = new StringReader(cueSheet);
+				_logFiles = new List<CUEToolsSourceFile>();
+				_defaultLog = Path.GetFileNameWithoutExtension(pathIn);
+				foreach (string logPath in Directory.GetFiles(_inputDir, "*.log"))
+					try { _logFiles.Add(new CUEToolsSourceFile(logPath, new StreamReader(logPath, CUESheet.Encoding))); }
+					catch { }
+			}
 			else
 			{
 				string extension = Path.GetExtension(pathIn).ToLower();
@@ -2606,6 +2616,8 @@ string status = processor.Go();
 						_tracks[i].Artist = taglibMetadata.Tracks[i].Artist;
 					if ((_config.overwriteCUEData || _tracks[i].Title == "") && taglibMetadata.Tracks[i].Title != "")
 						_tracks[i].Title = taglibMetadata.Tracks[i].Title;
+					if (_tracks[i].Title == "" && _hasTrackFilenames)
+						_tracks[i].Title = Path.GetFileNameWithoutExtension(_trackFilenames[i]).TrimStart(" .-_0123456789".ToCharArray());
 				}
 			}
 
@@ -4778,7 +4790,8 @@ string status = processor.Go();
 			pathIn = Path.GetFullPath(pathIn);
 			List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, Path.GetDirectoryName(pathIn));
 			FileGroupInfo fileGroup = fileGroups.Find(f => f.type == FileGroupInfoType.TrackFiles && f.Contains(pathIn)) ??
-				fileGroups.Find(f => f.type == FileGroupInfoType.FileWithCUE && f.Contains(pathIn));
+				fileGroups.Find(f => f.type == FileGroupInfoType.FileWithCUE && f.Contains(pathIn)) ??
+				fileGroups.Find(f => f.type == FileGroupInfoType.M3UFile && f.Contains(pathIn));
 			return fileGroup == null ? null : CreateDummyCUESheet(_config, fileGroup);
 		}
 
@@ -5481,6 +5494,30 @@ string status = processor.Go();
 					fileGroups.Add(new FileGroupInfo(file, FileGroupInfoType.CUESheetFile));
 					continue;
 				}
+				if (ext == ".m3u")
+				{
+					FileGroupInfo m3uGroup = new FileGroupInfo(file, FileGroupInfoType.M3UFile);
+					using (StreamReader m3u = new StreamReader(file.FullName))
+					{
+						do
+						{
+							string line = m3u.ReadLine();
+							if (line == null) break;
+							if (line[0] == '#') continue;
+							line = Path.Combine(Path.GetDirectoryName(file.FullName), line);
+							if (File.Exists(line))
+								m3uGroup.files.Add(new FileInfo(line));
+							else
+							{
+								m3uGroup = null;
+								break;
+							}
+						} while (true);
+					};
+					if (m3uGroup != null)
+						fileGroups.Add(m3uGroup);
+					continue;
+				}
 				if (ext == ".zip")
 				{
 					fileGroups.Add(new FileGroupInfo(file, FileGroupInfoType.Archive));
@@ -5514,6 +5551,7 @@ string status = processor.Go();
 				if (ext.StartsWith(".") && _config.formats.TryGetValue(ext.Substring(1), out fmt) && fmt.allowLossless)
 				{
 					uint disc = 0;
+					uint number = 0;
 					string album = null;
 					bool cueFound = false;
 					TagLib.UserDefined.AdditionalFileTypes.Config = _config;
@@ -5523,6 +5561,7 @@ string status = processor.Go();
 						TagLib.File fileInfo = TagLib.File.Create(fileAbsraction);
 						disc = fileInfo.Tag.Disc;
 						album = fileInfo.Tag.Album;
+						number = fileInfo.Tag.Track;
 						cueFound = fmt.allowEmbed && Tagging.Analyze(fileInfo).Get("CUESHEET") != null;
 					}
 					catch { }
@@ -5547,6 +5586,7 @@ string status = processor.Go();
 					if (groupFound != null)
 					{
 						groupFound.files.Add(file);
+						if (number > 0) groupFound.numbers.Add(file, number);
 					}
 					else
 					{
@@ -5555,11 +5595,18 @@ string status = processor.Go();
 						groupFound.album = album;
 						groupFound.files.Add(file);
 						fileGroups.Add(groupFound);
-						// TODO: tracks must be sorted according to tracknumer (or filename if missing)
+						if (number > 0) groupFound.numbers.Add(file, number);
 					}
 				}
 			}
-			fileGroups.RemoveAll(new Predicate<FileGroupInfo>(FileGroupInfo.IsExcessive));
+			fileGroups.RemoveAll(group => group.type == FileGroupInfoType.TrackFiles && group.files.Count < 2);
+			// tracks must be sorted according to tracknumer (or filename if missing)
+			foreach (FileGroupInfo group in fileGroups)
+				if (group.type == FileGroupInfoType.TrackFiles)
+				{
+					group.files.Sort(group.CompareNumbers);
+					group.numbers = null;
+				}
 			return fileGroups;
 		}
 
@@ -5718,6 +5765,7 @@ string status = processor.Go();
 		Folder,
 		Archive,
 		CUESheetFile,
+		M3UFile,
 		FileWithCUE,
 		TrackFiles
 	}
@@ -5725,6 +5773,7 @@ string status = processor.Go();
 	public class FileGroupInfo
 	{
 		public List<FileSystemInfo> files;
+		public Dictionary<FileSystemInfo, uint> numbers;
 		public FileSystemInfo main;
 		public FileGroupInfoType type;
 		public uint discNo;
@@ -5735,11 +5784,16 @@ string status = processor.Go();
 			main = _main;
 			type = _type;
 			files = new List<FileSystemInfo>();
+			numbers = new Dictionary<FileSystemInfo, uint>();
 		}
 
-		public static bool IsExcessive(FileGroupInfo group)
+		public int CompareNumbers(FileSystemInfo a, FileSystemInfo b)
 		{
-			return group.type == FileGroupInfoType.TrackFiles && group.files.Count < 2;
+			if (numbers.ContainsKey(a) && numbers.ContainsKey(b))
+				return Comparer<uint>.Default.Compare(numbers[a], numbers[b]);
+			if (!numbers.ContainsKey(a) && !numbers.ContainsKey(b))
+				return Comparer<string>.Default.Compare(a.FullName, b.FullName);
+			return Comparer<bool>.Default.Compare(numbers.ContainsKey(a), numbers.ContainsKey(b));			
 		}
 
 		public bool Contains(string pathIn)

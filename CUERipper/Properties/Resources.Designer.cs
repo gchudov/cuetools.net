@@ -81,6 +81,13 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap arrow_circle_double {
+            get {
+                object obj = ResourceManager.GetObject("arrow-circle-double", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap cddb {
             get {
                 object obj = ResourceManager.GetObject("cddb", resourceCulture);
@@ -128,6 +135,13 @@ namespace CUERipper.Properties {
         internal static string DoneRippingRepair {
             get {
                 return ResourceManager.GetString("DoneRippingRepair", resourceCulture);
+            }
+        }
+        
+        internal static System.Drawing.Bitmap edit_list_order {
+            get {
+                object obj = ResourceManager.GetObject("edit-list-order", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -227,10 +241,31 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap spellcheck {
+            get {
+                object obj = ResourceManager.GetObject("spellcheck", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap tag_label {
+            get {
+                object obj = ResourceManager.GetObject("tag-label", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon tta {
             get {
                 object obj = ResourceManager.GetObject("tta", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap users__arrow {
+            get {
+                object obj = ResourceManager.GetObject("users--arrow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Configuration;
+using System.Drawing.Drawing2D;
 using CUETools.AccurateRip;
 using CUETools.CTDB;
 using CUETools.CDImage;
@@ -28,7 +29,6 @@ namespace CUERipper
 		private StartStop _startStop;
 		private CUEConfig _config;
 		private CUESheet cueSheet;
-		private CUEMetadataEntry selectedRelease;
 		private DriveInfo selectedDriveInfo;
 		private string _pathOut;
 		string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat;
@@ -57,8 +57,92 @@ namespace CUERipper
 			"%music%\\%artist%\\[%year% - ]%album%[ - %edition%]$ifgreater($max(%discnumber%,%totaldiscs%),1, - cd %discnumber%,)[' ('%unique%')']\\%artist% - %album%[ - %edition%].cue"
 		};
 
+		//// Calculate the graphics path that representing the figure in the bitmap 
+		//// excluding the transparent color which is the top left pixel.
+		//private static GraphicsPath CalculateControlGraphicsPath(Bitmap bitmap, Color colorTransparent)
+		//{
+		//    // Create GraphicsPath for our bitmap calculation
+		//    GraphicsPath graphicsPath = new GraphicsPath();
+
+		//    // Use the top left pixel as our transparent color
+		//    colorTransparent = bitmap.GetPixel(0, 0); 
+
+		//    // This is to store the column value where an opaque pixel is first found.
+		//    // This value will determine where we start scanning for trailing 
+		//    // opaque pixels.
+		//    int colOpaquePixel = 0;
+
+		//    // Go through all rows (Y axis)
+		//    for (int row = 0; row < bitmap.Height; row++)
+		//    {
+		//        // Reset value
+		//        colOpaquePixel = 0;
+
+		//        // Go through all columns (X axis)
+		//        for (int col = 0; col < bitmap.Width; col++)
+		//        {
+		//            // If this is an opaque pixel, mark it and search 
+		//            // for anymore trailing behind
+		//            if (bitmap.GetPixel(col, row) != colorTransparent)
+		//            {
+		//                // Opaque pixel found, mark current position
+		//                colOpaquePixel = col;
+		//                // Create another variable to set the current pixel position
+		//                int colNext = col;
+		//                // Starting from current found opaque pixel, search for 
+		//                // anymore opaque pixels trailing behind, until a transparent
+		//                // pixel is found or minimum width is reached
+		//                for (colNext = colOpaquePixel; colNext < bitmap.Width; colNext++)
+		//                    if (bitmap.GetPixel(colNext, row) == colorTransparent)
+		//                        break;
+		//                // Form a rectangle for line of opaque pixels found and 
+		//                // add it to our graphics path
+		//                graphicsPath.AddRectangle(new Rectangle(colOpaquePixel,
+		//                                           row, colNext - colOpaquePixel, 1));
+		//                // No need to scan the line of opaque pixels just found
+		//                col = colNext;
+		//            }
+		//        }
+		//    }
+
+		//    // Return calculated graphics path
+		//    return graphicsPath;
+		//}
+
+		//private static void CreateControlRegion(Button button, Bitmap bitmap, Color colorTransparent)
+		//{
+		//    // Return if control and bitmap are null
+		//    if (button == null || bitmap == null)
+		//        return;
+
+		//    // Set our control's size to be the same as the bitmap
+		//    button.Width = bitmap.Width;
+		//    button.Height = bitmap.Height;
+
+		//    // Do not show button text
+		//    button.Text = "";
+
+		//    // Change cursor to hand when over button
+		//    button.Cursor = Cursors.Hand;
+
+		//    // Set background image of button
+		//    button.BackgroundImage = bitmap;
+
+		//    // Calculate the graphics path based on the bitmap supplied
+		//    GraphicsPath graphicsPath = CalculateControlGraphicsPath(bitmap, colorTransparent);
+
+		//    // Apply new region
+
+		//    button.Region = new Region(graphicsPath);
+		//}
+
 		private void frmCUERipper_Load(object sender, EventArgs e)
 		{
+			//buttonTrackMetadata.Parent = listTracks;
+			//buttonTrackMetadata.ImageList = null;
+			//CreateControlRegion(buttonTrackMetadata, new Bitmap(imageListChecked.Images[0]), imageListChecked.TransparentColor);
+			//CreateControlRegion(buttonTrackMetadata, Properties.Resources.cdrepair, Color.White);
+
 			SettingsReader sr = new SettingsReader("CUERipper", "settings.txt", Application.ExecutablePath);
 			_config.Load(sr);
 			_defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
@@ -148,6 +232,7 @@ namespace CUERipper
 					try
 					{
 						arName = reader.ARName;
+						reader.Close();
 					}
 					catch
 					{
@@ -185,7 +270,7 @@ namespace CUERipper
 			data.Drives.Clear();
 			listTracks.Items.Clear();
 			data.Releases.Clear();
-			selectedRelease = null;
+			data.selectedRelease = null;
 			selectedDriveInfo = null;
 			bnComboBoxRelease.Text = "";
 
@@ -204,7 +289,7 @@ namespace CUERipper
 
 		bool outputFormatVisible = false;
 
-		private void SetupControls ()
+		private void SetupControls()
 		{
 			bool running = _workThread != null;
 
@@ -213,15 +298,25 @@ namespace CUERipper
 			txtOutputPath.Enabled = !running && !outputFormatVisible;
 			bnComboBoxRelease.Enabled = !running && data.Releases.Count > 0;
 			bnComboBoxDrives.Enabled = !running && data.Drives.Count > 0;
-			bnComboBoxOutputFormat.Enabled =
+			bnComboBoxOutputFormat.Enabled =			
 			listTracks.Enabled =
+			listMetadata.Enabled =
 			groupBoxSettings.Enabled = !running;
+			buttonGo.Enabled = !running && data.selectedRelease != null;
 			buttonPause.Visible = buttonPause.Enabled = buttonAbort.Visible = buttonAbort.Enabled = running;
-			buttonGo.Visible = buttonGo.Enabled = !running;
+			buttonGo.Visible = !running;
 			toolStripStatusLabel1.Text = String.Empty;
 			toolStripProgressBar1.Value = 0;
 			progressBarErrors.Value = 0;
 			progressBarCD.Value = 0;
+
+			buttonTracks.Enabled = data.selectedRelease != null && !running;
+			buttonMetadata.Enabled = data.selectedRelease != null && !running;
+			buttonVA.Enabled = data.selectedRelease != null && !running &&
+				data.selectedRelease.ImageKey == "freedb" && !data.selectedRelease.metadata.IsVarious();
+			buttonEncoding.Enabled = data.selectedRelease != null && !running &&
+				data.selectedRelease.ImageKey == "freedb" && (new CUEMetadata(data.selectedRelease.metadata)).FreedbToEncoding();
+			buttonReload.Enabled = data.selectedRelease != null && !running;
 		}
 
 		private void CheckStop()
@@ -352,7 +447,7 @@ namespace CUERipper
 				this.BeginInvoke((MethodInvoker)delegate()
 				{
 					data.Releases.Clear();
-					selectedRelease = null;
+					data.selectedRelease = null;
 					bnComboBoxRelease.Text = ex.Message;
 				});
 			}
@@ -376,9 +471,9 @@ namespace CUERipper
 					bnComboBoxOutputFormat.Items.RemoveAt(OutputPathUseTemplates.Length + 10);
 			}
 
-			selectedRelease.metadata.Save();
+			data.selectedRelease.metadata.Save();
 
-			cueSheet.CopyMetadata(selectedRelease.metadata);
+			cueSheet.CopyMetadata(data.selectedRelease.metadata);
 			cueSheet.OutputStyle = bnComboBoxImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
 				CUEStyle.GapsAppended;
 			_pathOut = cueSheet.GenerateUniqueOutputPath(bnComboBoxOutputFormat.Text,
@@ -411,20 +506,61 @@ namespace CUERipper
 
 		private void UpdateRelease()
 		{
-			listTracks.Items.Clear();
-			selectedRelease = bnComboBoxRelease.SelectedItem as CUEMetadataEntry;
+			data.selectedRelease = bnComboBoxRelease.SelectedItem as CUEMetadataEntry;
 			comboBoxOutputFormat_TextUpdate(this, new EventArgs());
-			if (selectedRelease == null)
-				return;
-
-			for (int i = 1; i <= selectedDriveInfo.drive.TOC.TrackCount; i++)
+			listTracks.BeginUpdate();
+			listMetadata.BeginUpdate();
+			listTracks.Items.Clear();
+			listMetadata.Items.Clear();
+			if (!data.metadataMode)
 			{
-				listTracks.Items.Add(new ListViewItem(new string[] { 
-					selectedDriveInfo.drive.TOC[i].IsAudio ? selectedRelease.metadata.Tracks[i - selectedDriveInfo.drive.TOC.FirstAudio].Title : "Data track",
-					selectedDriveInfo.drive.TOC[i].Number.ToString(), 
-					selectedDriveInfo.drive.TOC[i].StartMSF, 
-					selectedDriveInfo.drive.TOC[i].LengthMSF }));
+				listTracks.Visible = true;
+				listMetadata.Visible = false;
+				if (data.selectedRelease != null)
+					for (int i = 1; i <= selectedDriveInfo.drive.TOC.TrackCount; i++)
+					{
+						string title;
+						if (!selectedDriveInfo.drive.TOC[i].IsAudio)
+							title = "Data track";
+						else
+							title = data.selectedRelease.metadata.Tracks[i - selectedDriveInfo.drive.TOC.FirstAudio].Title;
+						listTracks.Items.Add(new ListViewItem(new string[] { 
+						title,
+						selectedDriveInfo.drive.TOC[i].Number.ToString(), 
+						selectedDriveInfo.drive.TOC[i].StartMSF, 
+						selectedDriveInfo.drive.TOC[i].LengthMSF }));
+					}
 			}
+			else //if (data.selectedTrack.no == 0)
+			{
+				listTracks.Visible = false;
+				listMetadata.Visible = true;
+				if (data.selectedRelease != null)
+				{
+					PropertyDescriptorCollection props = TypeDescriptor.GetProperties(data.selectedRelease.metadata);
+					PropertyDescriptorCollection sortedprops = props.Sort(new string[] { "Artist", "Title", "Genre", "Year", "DiscNumber", "TotalDiscs" });
+					foreach (PropertyDescriptor p in sortedprops)
+						if (p.Name != "Tracks" && p.Name != "Id" && p.Name != "Catalog")
+							listMetadata.Items.Add(new ListViewItem(new string[] { p.GetValue(data.selectedRelease.metadata).ToString(), p.Name }));
+				}
+			}
+			//else
+			//{
+			//    listTracks.Visible = false;
+			//    listMetadata.Visible = true;
+			//    if (data.selectedRelease != null)
+			//    {
+			//        CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.selectedTrack.no - 1];
+			//        PropertyDescriptorCollection props = TypeDescriptor.GetProperties(track);
+			//        //props = props.Sort(new string[] { "TopLeft", "TopRight", "BottomLeft", "BottomRight" });
+			//        foreach (PropertyDescriptor p in props)
+			//            if (p.Name != "ISRC")
+			//                listMetadata.Items.Add(new ListViewItem(new string[] { p.GetValue(track).ToString(), p.Name }));
+			//    }
+			//}
+			listTracks.EndUpdate();
+			listMetadata.EndUpdate();
+			SetupControls();
 		}
 
 		private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
@@ -622,15 +758,15 @@ namespace CUERipper
 			toolStripStatusLabelMusicBrainz.Enabled = false;
 			toolStripStatusLabelMusicBrainz.Text = "";
 			toolStripStatusLabelMusicBrainz.ToolTipText = "";
-			buttonGo.Enabled = false;
 			listTracks.Items.Clear();
 			data.Releases.Clear();
-			selectedRelease = null;
+			data.selectedRelease = null;
 			bnComboBoxRelease.Enabled = false;
 			bnComboBoxRelease.Text = "";
 			if (selectedDriveInfo == null || selectedDriveInfo.drive == null)
 			{
 				selectedDriveInfo = null;
+				SetupControls();
 				return;
 			}
 			if (cueSheet != null)
@@ -650,11 +786,13 @@ namespace CUERipper
 				//selectedDriveInfo.drive.Close();
 				bnComboBoxRelease.Text = ex.Message;
 				//bnComboBoxRelease.Enabled = false;
+				SetupControls(); 
 				return;
 			}
 			if (selectedDriveInfo.drive.TOC.AudioTracks == 0)
 			{
 				bnComboBoxRelease.Text = "No audio tracks";
+				SetupControls(); 
 				return;
 			}
 			UpdateRelease();
@@ -694,63 +832,11 @@ namespace CUERipper
 
 		private void listTracks_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
-			if (selectedRelease == null) return;
+			if (data.selectedRelease == null) return;
 			if (e.Label != null && selectedDriveInfo.drive.TOC[e.Item + 1].IsAudio)
-				selectedRelease.metadata.Tracks[e.Item].Title = e.Label;
+				data.selectedRelease.metadata.Tracks[e.Item].Title = e.Label;
 			else
 				e.CancelEdit = true;
-		}
-
-		private void contextMenuStripRelease_Opening(object sender, CancelEventArgs e)
-		{
-			if (selectedRelease == null) return;
-			bool isVarious = false;
-			for (int i = 0; i < selectedRelease.metadata.Tracks.Count; i++)
-				if (selectedRelease.metadata.Tracks[i].Artist != selectedRelease.metadata.Artist)
-					isVarious = true;
-			variousToolStripMenuItem.Enabled = selectedRelease.ImageKey == "freedb" && !isVarious;
-			CUEMetadata copy = new CUEMetadata(selectedRelease.metadata);
-			fixEncodingToolStripMenuItem.Enabled = selectedRelease.ImageKey == "freedb" && copy.FreedbToEncoding();
-		}
-
-		private void editToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if (selectedRelease == null) return;
-			frmProperties frm = new frmProperties();
-			frm.Metadata = selectedRelease.metadata;
-			frm.ShowDialog();
-			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			comboBoxOutputFormat_TextUpdate(sender, e);
-		}
-
-		private void variousToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if (selectedRelease == null) return;
-			selectedRelease.metadata.FreedbToVarious();
-			UpdateRelease();
-			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-		}
-
-		private void fixEncodingToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if (selectedRelease == null) return;
-			selectedRelease.metadata.FreedbToEncoding();
-			UpdateRelease();
-			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			comboBoxOutputFormat_TextUpdate(sender, e);
-		}
-
-		private void reloadToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			loadAllMetadata = true;
-			data.Releases.Clear();
-			selectedRelease = null;
-			UpdateRelease();
-			_workThread = new Thread(Lookup);
-			_workThread.Priority = ThreadPriority.BelowNormal;
-			_workThread.IsBackground = true;
-			SetupControls();
-			_workThread.Start(selectedDriveInfo.drive);
 		}
 
 		private void frmCUERipper_FormClosed(object sender, FormClosedEventArgs e)
@@ -903,7 +989,7 @@ namespace CUERipper
 		private void comboBoxOutputFormat_TextUpdate(object sender, EventArgs e)
 		{
 			if (selectedFormat == null) return;
-			if (selectedRelease == null)
+			if (data.selectedRelease == null)
 			{
 				txtOutputPath.Text = "";
 				return;
@@ -911,7 +997,7 @@ namespace CUERipper
 			CUEStyle style = bnComboBoxImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE : CUEStyle.GapsAppended;
 			CUESheet sheet = new CUESheet(_config);
 			sheet.TOC = selectedDriveInfo.drive.TOC;
-			sheet.CopyMetadata(selectedRelease.metadata);
+			sheet.CopyMetadata(data.selectedRelease.metadata);
 			txtOutputPath.Text = sheet.GenerateUniqueOutputPath(bnComboBoxOutputFormat.Text,
 					style == CUEStyle.SingleFileWithCUE ? "." + selectedFormat.ToString() : ".cue", CUEAction.Encode, null);
 		}
@@ -1055,6 +1141,86 @@ namespace CUERipper
 		{
 			bnComboBoxOutputFormat_DroppedDown(sender, e);
 		}
+
+		private void listMetadata_Click(object sender, EventArgs e)
+		{
+			listMetadata.FocusedItem.BeginEdit();
+		}
+
+		private void listMetadata_AfterLabelEdit(object sender, LabelEditEventArgs e)
+		{
+			if (data.selectedRelease == null || e.Label == null || !data.metadataMode)
+			{
+				e.CancelEdit = true;
+			}
+			else
+			{
+				PropertyDescriptorCollection props = TypeDescriptor.GetProperties(data.selectedRelease.metadata);
+				PropertyDescriptor prop = props[listMetadata.Items[e.Item].SubItems[1].Text];
+				if (prop.Name == "Artist")
+					data.selectedRelease.metadata.UpdateArtist(e.Label);
+				else
+					prop.SetValue(data.selectedRelease.metadata, e.Label);
+				data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
+			}
+			//else
+			//{
+			//    CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.selectedTrack.no - 1];
+			//    PropertyDescriptorCollection props = TypeDescriptor.GetProperties(track);
+			//    props[listMetadata.Items[e.Item].SubItems[1].Text].SetValue(track, e.Label);
+			//    data.Tracks.ResetItem(data.selectedTrack.no + 1);
+			//}
+		}
+
+		private void buttonMetadata_Click(object sender, EventArgs e)
+		{
+			buttonTracks.Visible = true;
+			buttonTracks.Focus();
+			buttonMetadata.Visible = false;
+			data.metadataMode = true;
+			UpdateRelease();
+		}
+
+		private void buttonTracks_Click(object sender, EventArgs e)
+		{
+			buttonMetadata.Visible = true;
+			buttonMetadata.Focus();
+			buttonTracks.Visible = false;
+			data.metadataMode = false;
+			UpdateRelease();
+		}
+
+		private void buttonReload_Click(object sender, EventArgs e)
+		{
+			loadAllMetadata = true;
+			data.Releases.Clear();
+			data.selectedRelease = null;
+			UpdateRelease();
+			_workThread = new Thread(Lookup);
+			_workThread.Priority = ThreadPriority.BelowNormal;
+			_workThread.IsBackground = true;
+			SetupControls();
+			_workThread.Start(selectedDriveInfo.drive);
+		}
+
+		private void buttonVA_Click(object sender, EventArgs e)
+		{
+			if (data.selectedRelease == null) return;
+			data.selectedRelease.metadata.FreedbToVarious();
+			UpdateRelease();
+			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
+			SetupControls();
+		}
+
+		private void buttonEncoding_Click(object sender, EventArgs e)
+		{
+			if (data.selectedRelease == null) return;
+			data.selectedRelease.metadata.FreedbToEncoding();
+			UpdateRelease();
+			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
+			comboBoxOutputFormat_TextUpdate(sender, e);
+			SetupControls();
+		}
 	}
 
 	public class StartStop
@@ -1166,6 +1332,9 @@ namespace CUERipper
 
 	internal class CUERipperData
 	{
+		public CUERipperData()
+		{
+		}
 		private BindingList<string> cueStyles = new BindingList<string> { "image", "tracks" };
 		//private BindingList<string> losslessOrNot = new BindingList<string> { "lossless", "lossy" };
 		private BindingList<ImgComboBoxItem<AudioEncoderType>> losslessOrNot = new BindingList<ImgComboBoxItem<AudioEncoderType>> { 
@@ -1176,6 +1345,9 @@ namespace CUERipper
 		private BindingList<DriveInfo> drives = new BindingList<DriveInfo>();
 		private BindingList<FormatInfo> formats = new BindingList<FormatInfo>();
 		private BindingList<CUEToolsUDC> encoders = new BindingList<CUEToolsUDC>();
+
+		public CUEMetadataEntry selectedRelease { get; set; }
+		public bool metadataMode { get; set; }
 
 		public BindingList<string> CUEStyles
 		{

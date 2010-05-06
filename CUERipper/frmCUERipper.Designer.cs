@@ -52,11 +52,6 @@ namespace CUERipper
 			this.buttonGo = new System.Windows.Forms.Button();
 			this.buttonAbort = new System.Windows.Forms.Button();
 			this.buttonPause = new System.Windows.Forms.Button();
-			this.contextMenuStripRelease = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.variousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.fixEncodingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.reloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
 			this.lblWriteOffset = new System.Windows.Forms.Label();
 			this.checkBoxEACMode = new System.Windows.Forms.CheckBox();
@@ -93,8 +88,16 @@ namespace CUERipper
 			this.imageListMetadataSource = new System.Windows.Forms.ImageList(this.components);
 			this.bnComboBoxDrives = new CUEControls.ImgComboBox();
 			this.bnComboBoxOutputFormat = new CUEControls.ImgComboBox();
+			this.listMetadata = new System.Windows.Forms.ListView();
+			this.columnHeaderValue = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
+			this.buttonTrackMetadata = new System.Windows.Forms.Button();
+			this.buttonMetadata = new System.Windows.Forms.Button();
+			this.buttonVA = new System.Windows.Forms.Button();
+			this.buttonReload = new System.Windows.Forms.Button();
+			this.buttonEncoding = new System.Windows.Forms.Button();
+			this.buttonTracks = new System.Windows.Forms.Button();
 			this.statusStrip1.SuspendLayout();
-			this.contextMenuStripRelease.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
 			this.groupBoxSettings.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.losslessOrNotBindingSource)).BeginInit();
@@ -232,41 +235,6 @@ namespace CUERipper
 			this.buttonPause.Name = "buttonPause";
 			this.buttonPause.UseVisualStyleBackColor = true;
 			this.buttonPause.Click += new System.EventHandler(this.buttonPause_Click);
-			// 
-			// contextMenuStripRelease
-			// 
-			this.contextMenuStripRelease.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editToolStripMenuItem,
-            this.variousToolStripMenuItem,
-            this.fixEncodingToolStripMenuItem,
-            this.reloadToolStripMenuItem});
-			this.contextMenuStripRelease.Name = "contextMenuStripRelease";
-			resources.ApplyResources(this.contextMenuStripRelease, "contextMenuStripRelease");
-			this.contextMenuStripRelease.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStripRelease_Opening);
-			// 
-			// editToolStripMenuItem
-			// 
-			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-			resources.ApplyResources(this.editToolStripMenuItem, "editToolStripMenuItem");
-			this.editToolStripMenuItem.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
-			// 
-			// variousToolStripMenuItem
-			// 
-			this.variousToolStripMenuItem.Name = "variousToolStripMenuItem";
-			resources.ApplyResources(this.variousToolStripMenuItem, "variousToolStripMenuItem");
-			this.variousToolStripMenuItem.Click += new System.EventHandler(this.variousToolStripMenuItem_Click);
-			// 
-			// fixEncodingToolStripMenuItem
-			// 
-			this.fixEncodingToolStripMenuItem.Name = "fixEncodingToolStripMenuItem";
-			resources.ApplyResources(this.fixEncodingToolStripMenuItem, "fixEncodingToolStripMenuItem");
-			this.fixEncodingToolStripMenuItem.Click += new System.EventHandler(this.fixEncodingToolStripMenuItem_Click);
-			// 
-			// reloadToolStripMenuItem
-			// 
-			this.reloadToolStripMenuItem.Name = "reloadToolStripMenuItem";
-			resources.ApplyResources(this.reloadToolStripMenuItem, "reloadToolStripMenuItem");
-			this.reloadToolStripMenuItem.Click += new System.EventHandler(this.reloadToolStripMenuItem_Click);
 			// 
 			// numericWriteOffset
 			// 
@@ -539,7 +507,6 @@ namespace CUERipper
 			// bnComboBoxRelease
 			// 
 			this.bnComboBoxRelease.BackColor = System.Drawing.Color.Transparent;
-			this.bnComboBoxRelease.ContextMenuStrip = this.contextMenuStripRelease;
 			this.bnComboBoxRelease.DataSource = this.releasesBindingSource;
 			this.bnComboBoxRelease.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.bnComboBoxRelease.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -553,7 +520,6 @@ namespace CUERipper
 			rectRadius5.TopLeft = 2;
 			rectRadius5.TopRight = 6;
 			this.bnComboBoxRelease.Radius = rectRadius5;
-			this.toolTip1.SetToolTip(this.bnComboBoxRelease, resources.GetString("bnComboBoxRelease.ToolTip"));
 			this.bnComboBoxRelease.SelectedValueChanged += new System.EventHandler(this.bnComboBoxRelease_SelectedValueChanged);
 			// 
 			// releasesBindingSource
@@ -568,6 +534,11 @@ namespace CUERipper
 			this.imageListMetadataSource.Images.SetKeyName(0, "musicbrainz");
 			this.imageListMetadataSource.Images.SetKeyName(1, "freedb");
 			this.imageListMetadataSource.Images.SetKeyName(2, "local");
+			this.imageListMetadataSource.Images.SetKeyName(3, "localshadow");
+			this.imageListMetadataSource.Images.SetKeyName(4, "tracks");
+			this.imageListMetadataSource.Images.SetKeyName(5, "tracks1");
+			this.imageListMetadataSource.Images.SetKeyName(6, "album");
+			this.imageListMetadataSource.Images.SetKeyName(7, "track");
 			// 
 			// bnComboBoxDrives
 			// 
@@ -605,15 +576,97 @@ namespace CUERipper
 			this.bnComboBoxOutputFormat.DropDown += new System.EventHandler(this.bnComboBoxOutputFormat_DroppedDown);
 			this.bnComboBoxOutputFormat.TextChanged += new System.EventHandler(this.bnComboBoxOutputFormat_TextChanged);
 			// 
+			// listMetadata
+			// 
+			this.listMetadata.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderValue,
+            this.columnHeaderName});
+			this.listMetadata.FullRowSelect = true;
+			this.listMetadata.GridLines = true;
+			this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this.listMetadata.LabelEdit = true;
+			resources.ApplyResources(this.listMetadata, "listMetadata");
+			this.listMetadata.Name = "listMetadata";
+			this.listMetadata.UseCompatibleStateImageBehavior = false;
+			this.listMetadata.View = System.Windows.Forms.View.Details;
+			this.listMetadata.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_AfterLabelEdit);
+			this.listMetadata.Click += new System.EventHandler(this.listMetadata_Click);
+			// 
+			// columnHeaderValue
+			// 
+			resources.ApplyResources(this.columnHeaderValue, "columnHeaderValue");
+			// 
+			// columnHeaderName
+			// 
+			resources.ApplyResources(this.columnHeaderName, "columnHeaderName");
+			// 
+			// buttonTrackMetadata
+			// 
+			this.buttonTrackMetadata.BackColor = System.Drawing.Color.Transparent;
+			this.buttonTrackMetadata.FlatAppearance.BorderSize = 0;
+			this.buttonTrackMetadata.FlatAppearance.MouseDownBackColor = System.Drawing.SystemColors.Control;
+			this.buttonTrackMetadata.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+			resources.ApplyResources(this.buttonTrackMetadata, "buttonTrackMetadata");
+			this.buttonTrackMetadata.ForeColor = System.Drawing.SystemColors.ControlText;
+			this.buttonTrackMetadata.ImageList = this.imageListChecked;
+			this.buttonTrackMetadata.Name = "buttonTrackMetadata";
+			this.buttonTrackMetadata.UseVisualStyleBackColor = false;
+			// 
+			// buttonMetadata
+			// 
+			this.buttonMetadata.Image = global::CUERipper.Properties.Resources.tag_label;
+			resources.ApplyResources(this.buttonMetadata, "buttonMetadata");
+			this.buttonMetadata.Name = "buttonMetadata";
+			this.buttonMetadata.UseVisualStyleBackColor = true;
+			this.buttonMetadata.Click += new System.EventHandler(this.buttonMetadata_Click);
+			// 
+			// buttonVA
+			// 
+			this.buttonVA.Image = global::CUERipper.Properties.Resources.users__arrow;
+			resources.ApplyResources(this.buttonVA, "buttonVA");
+			this.buttonVA.Name = "buttonVA";
+			this.buttonVA.UseVisualStyleBackColor = true;
+			this.buttonVA.Click += new System.EventHandler(this.buttonVA_Click);
+			// 
+			// buttonReload
+			// 
+			this.buttonReload.Image = global::CUERipper.Properties.Resources.arrow_circle_double;
+			resources.ApplyResources(this.buttonReload, "buttonReload");
+			this.buttonReload.Name = "buttonReload";
+			this.buttonReload.UseVisualStyleBackColor = true;
+			this.buttonReload.Click += new System.EventHandler(this.buttonReload_Click);
+			// 
+			// buttonEncoding
+			// 
+			this.buttonEncoding.Image = global::CUERipper.Properties.Resources.spellcheck;
+			resources.ApplyResources(this.buttonEncoding, "buttonEncoding");
+			this.buttonEncoding.Name = "buttonEncoding";
+			this.buttonEncoding.UseVisualStyleBackColor = true;
+			this.buttonEncoding.Click += new System.EventHandler(this.buttonEncoding_Click);
+			// 
+			// buttonTracks
+			// 
+			this.buttonTracks.Image = global::CUERipper.Properties.Resources.edit_list_order;
+			resources.ApplyResources(this.buttonTracks, "buttonTracks");
+			this.buttonTracks.Name = "buttonTracks";
+			this.buttonTracks.UseVisualStyleBackColor = true;
+			this.buttonTracks.Click += new System.EventHandler(this.buttonTracks_Click);
+			// 
 			// frmCUERipper
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.txtOutputPath);
+			this.Controls.Add(this.buttonTracks);
+			this.Controls.Add(this.buttonEncoding);
+			this.Controls.Add(this.buttonMetadata);
+			this.Controls.Add(this.buttonReload);
+			this.Controls.Add(this.buttonTrackMetadata);
+			this.Controls.Add(this.buttonVA);
 			this.Controls.Add(this.bnComboBoxRelease);
+			this.Controls.Add(this.txtOutputPath);
 			this.Controls.Add(this.bnComboBoxDrives);
-			this.Controls.Add(this.bnComboBoxOutputFormat);
 			this.Controls.Add(this.progressBarErrors);
+			this.Controls.Add(this.bnComboBoxOutputFormat);
 			this.Controls.Add(this.progressBarCD);
 			this.Controls.Add(this.groupBoxSettings);
 			this.Controls.Add(this.listTracks);
@@ -621,6 +674,7 @@ namespace CUERipper
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.buttonAbort);
 			this.Controls.Add(this.buttonPause);
+			this.Controls.Add(this.listMetadata);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.KeyPreview = true;
 			this.MaximizeBox = false;
@@ -631,7 +685,6 @@ namespace CUERipper
 			this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmCUERipper_KeyDown);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
-			this.contextMenuStripRelease.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).EndInit();
 			this.groupBoxSettings.ResumeLayout(false);
 			this.groupBoxSettings.PerformLayout();
@@ -662,8 +715,6 @@ namespace CUERipper
 		private System.Windows.Forms.Button buttonGo;
 		private System.Windows.Forms.Button buttonAbort;
 		private System.Windows.Forms.Button buttonPause;
-		private System.Windows.Forms.ContextMenuStrip contextMenuStripRelease;
-		private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusAr;
@@ -704,9 +755,15 @@ namespace CUERipper
 		private System.Windows.Forms.BindingSource losslessOrNotBindingSource;
 		private CUEControls.ImgComboBox bnComboBoxOutputFormat;
 		private System.Windows.Forms.ImageList imageListChecked;
-		private System.Windows.Forms.ToolStripMenuItem variousToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem fixEncodingToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem reloadToolStripMenuItem;
+		private System.Windows.Forms.ListView listMetadata;
+		private System.Windows.Forms.ColumnHeader columnHeaderName;
+		private System.Windows.Forms.ColumnHeader columnHeaderValue;
+		private System.Windows.Forms.Button buttonTrackMetadata;
+		private System.Windows.Forms.Button buttonMetadata;
+		private System.Windows.Forms.Button buttonVA;
+		private System.Windows.Forms.Button buttonReload;
+		private System.Windows.Forms.Button buttonEncoding;
+		private System.Windows.Forms.Button buttonTracks;
 	}
 }
 
