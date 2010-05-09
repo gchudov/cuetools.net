@@ -135,6 +135,9 @@
   <data name="TrackNo.Text" xml:space="preserve">
     <value>#</value>
   </data>
+  <data name="columnHeaderArtist.Text" xml:space="preserve">
+    <value>Interpret</value>
+  </data>
   <data name="Start.Text" xml:space="preserve">
     <value>Start</value>
   </data>
@@ -152,9 +155,6 @@
   </data>
   <data name="buttonPause.Text" xml:space="preserve">
     <value>Pause</value>
-  </data>
-  <data name="editToolStripMenuItem.Text" xml:space="preserve">
-    <value>Ändern</value>
   </data>
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Offset lesen</value>
@@ -183,8 +183,29 @@
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value>Klicken, um die Vorlage zu ändern</value>
   </data>
-  <data name="bnComboBoxRelease.ToolTip" xml:space="preserve">
-    <value>Rechtsklick zum Ändern der CD-Informationen</value>
+  <data name="columnHeaderValue.Text" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="columnHeaderName.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="buttonMetadata.Text" xml:space="preserve">
+    <value>Meta</value>
+  </data>
+  <data name="buttonVA.Text" xml:space="preserve">
+    <value>div.</value>
+  </data>
+  <data name="buttonReload.Text" xml:space="preserve">
+    <value>Neu laden</value>
+  </data>
+  <data name="buttonEncoding.Text" xml:space="preserve">
+    <value>Codepage</value>
+  </data>
+  <data name="buttonTracks.Text" xml:space="preserve">
+    <value>Tracks</value>
+  </data>
+  <data name="buttonFreedbSubmit.Text" xml:space="preserve">
+    <value>Senden</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>CUERipper 2.0.8</value>
