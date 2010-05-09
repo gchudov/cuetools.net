@@ -140,7 +140,8 @@ namespace JDP
 			if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK || ri == null || CUE == null)
 				return;
 			CUE.CopyMetadata(ri.metadata);
-			ri.metadata.Save();
+			if (CUE.Config.advanced.CacheMetadata)
+				ri.metadata.Save();
 		}
 
 		private void AutoResizeTracks()

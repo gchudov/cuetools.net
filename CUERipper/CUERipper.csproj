@@ -79,6 +79,12 @@
     <Compile Include="frmCUERipper.Designer.cs">
       <DependentUpon>frmCUERipper.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmFreedbSubmit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmFreedbSubmit.Designer.cs">
+      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="frmCUERipper.de-DE.resx">
@@ -90,6 +96,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmCUERipper.ru-RU.resx">
       <DependentUpon>frmCUERipper.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmFreedbSubmit.resx">
+      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -224,6 +233,8 @@
     <Content Include="Plugins\CUETools.Codecs.FlaCuda.dll" />
     <Content Include="Plugins\CUETools.Codecs.FLAKE.dll" />
     <Content Include="Plugins\CUETools.Ripper.SCSI.dll" />
+    <None Include="Properties\DataSources\frmFreedbSubmitData.datasource" />
+    <None Include="Resources\freedb16.png" />
     <None Include="Resources\edit-list-order.png" />
     <None Include="Resources\spellcheck.png" />
     <None Include="Resources\users--arrow.png" />

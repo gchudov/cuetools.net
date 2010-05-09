@@ -380,73 +380,73 @@ namespace MusicBrainz
 
         static void XmlProcessingClosure (string url, XmlProcessingDelegate code)
         {
-            Monitor.Enter (server_mutex);
-
-            // Don't access the MB server twice within a second
-			if (last_accessed != null)
+			lock (server_mutex)
 			{
-				TimeSpan time = DateTime.Now - last_accessed;
-				if (min_interval > time)
-					Thread.Sleep((min_interval - time).Milliseconds);
-			}
-
-            WebRequest request = WebRequest.Create (url);
-            bool cache_implemented = false;
-            
-            try {
-                request.CachePolicy = MusicBrainzService.CachePolicy;
-                cache_implemented = true;
-            } catch (NotImplementedException) {}
-            
-            HttpWebResponse response = null;
-            
-            try {
-                response = (HttpWebResponse)request.GetResponse ();
-            } catch (WebException e) {
-                response = (HttpWebResponse)e.Response;
-            }
-            
-            if (response == null) throw new MusicBrainzNotFoundException ();
-
-			switch (response.StatusCode)
-			{
-				case HttpStatusCode.BadRequest:
-					Monitor.Exit(server_mutex);
-					throw new MusicBrainzInvalidParameterException();
-				case HttpStatusCode.Unauthorized:
-					Monitor.Exit(server_mutex);
-					throw new MusicBrainzUnauthorizedException();
-				case HttpStatusCode.NotFound:
-					Monitor.Exit(server_mutex);
-					throw new MusicBrainzNotFoundException();
-				case HttpStatusCode.ServiceUnavailable:
-					Monitor.Exit(server_mutex);
-					throw new MusicBrainzUnavailableException(response.StatusDescription);
-				case HttpStatusCode.OK:
-					break;
-				default:
-					Monitor.Exit(server_mutex);
-					throw new MusicBrainzUnavailableException(response.StatusDescription);
-			}
-
-            bool from_cache = cache_implemented && response.IsFromCache;
-
-            if (from_cache) Monitor.Exit (server_mutex);
-
-			try
-			{
-				MusicBrainzService.OnXmlRequest(url, from_cache);
-
-				// Should we read the stream into a memory stream and run the XmlReader off of that?
-				code(new XmlTextReader(response.GetResponseStream()));
-			}
-			finally
-			{
-				response.Close();
-				if (!from_cache)
+				// Don't access the MB server twice within a second
+				if (last_accessed != null)
 				{
-					last_accessed = DateTime.Now;
-					Monitor.Exit(server_mutex);
+					TimeSpan time = DateTime.Now - last_accessed;
+					if (min_interval > time)
+						Thread.Sleep((min_interval - time).Milliseconds);
+				}
+
+				WebRequest request = WebRequest.Create(url);
+				bool cache_implemented = false;
+
+				request.Proxy = MusicBrainzService.Proxy;
+
+				try
+				{
+					request.CachePolicy = MusicBrainzService.CachePolicy;
+					cache_implemented = true;
+				}
+				catch (NotImplementedException) { }
+
+				HttpWebResponse response = null;
+
+				try
+				{
+					response = (HttpWebResponse)request.GetResponse();
+				}
+				catch (WebException e)
+				{
+					if (e.Response == null)
+						throw e;
+					response = (HttpWebResponse)e.Response;
+				}
+
+				switch (response.StatusCode)
+				{
+					case HttpStatusCode.BadRequest:
+						throw new MusicBrainzInvalidParameterException();
+					case HttpStatusCode.Unauthorized:
+						throw new MusicBrainzUnauthorizedException();
+					case HttpStatusCode.NotFound:
+						throw new MusicBrainzNotFoundException();
+					case HttpStatusCode.ServiceUnavailable:
+						throw new MusicBrainzUnavailableException(response.StatusDescription);
+					case HttpStatusCode.OK:
+						break;
+					default:
+						throw new MusicBrainzUnavailableException(response.StatusDescription);
+				}
+
+				bool from_cache = cache_implemented && response.IsFromCache;
+
+				try
+				{
+					MusicBrainzService.OnXmlRequest(url, from_cache);
+
+					// Should we read the stream into a memory stream and run the XmlReader off of that?
+					code(new XmlTextReader(response.GetResponseStream()));
+				}
+				finally
+				{
+					response.Close();
+					if (!from_cache)
+					{
+						last_accessed = DateTime.Now;
+					}
 				}
 			}
         }

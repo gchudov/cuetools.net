@@ -15,17 +15,10 @@ namespace CUETools.AccurateRip
 		public AccurateRipVerify(CDImageLayout toc, IWebProxy proxy)
 		{
 			this.proxy = proxy;
-			_toc = toc;
 			_accDisks = new List<AccDisk>();
-			//_crc32 = new Crc32();
 			_hasLogCRC = false;
-			_finalSampleCount = _toc.AudioLength * 588;
-			_CRCLOG = new uint[_toc.AudioTracks + 1];
-			_CRCMASK = new uint[_toc.AudioTracks + 1];
-			_CRCMASK[0] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_finalSampleCount * 4);
-			for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
-				_CRCMASK[iTrack] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_toc[iTrack + _toc.FirstAudio - 1].Length * 588 * 4);
-			Init();
+			_CRCLOG = new uint[toc.AudioTracks + 1];
+			Init(toc);
 		}
 
 		public uint Confidence(int iTrack)
@@ -336,7 +329,7 @@ namespace CUETools.AccurateRip
 			this.npar = npar;
 			this.calcSyn = calcSyn;
 			this.calcParity = calcParity;
-			Init();
+			Init(_toc);
 		}
 
 		internal unsafe uint CTDBCRC(int actualOffset)
@@ -648,8 +641,14 @@ namespace CUETools.AccurateRip
 			}
 		}
 
-		public void Init()
+		public void Init(CDImageLayout toc)
 		{
+			_toc = toc;
+			_finalSampleCount = _toc.AudioLength * 588;
+			_CRCMASK = new uint[_toc.AudioTracks + 1];
+			_CRCMASK[0] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_finalSampleCount * 4);
+			for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
+				_CRCMASK[iTrack] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_toc[iTrack + _toc.FirstAudio - 1].Length * 588 * 4);
 			_CRCAR = new uint[_toc.AudioTracks + 1, 31 * 588];
 			_CRCSM = new uint[_toc.AudioTracks + 1, 31 * 588];
 			_CRC32 = new uint[_toc.AudioTracks + 1, 31 * 588];

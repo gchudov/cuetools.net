@@ -47,6 +47,7 @@ namespace CUERipper
 			this.listTracks = new System.Windows.Forms.ListView();
 			this.Title = new System.Windows.Forms.ColumnHeader();
 			this.TrackNo = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderArtist = new System.Windows.Forms.ColumnHeader();
 			this.Start = new System.Windows.Forms.ColumnHeader();
 			this.Length = new System.Windows.Forms.ColumnHeader();
 			this.buttonGo = new System.Windows.Forms.Button();
@@ -97,6 +98,7 @@ namespace CUERipper
 			this.buttonReload = new System.Windows.Forms.Button();
 			this.buttonEncoding = new System.Windows.Forms.Button();
 			this.buttonTracks = new System.Windows.Forms.Button();
+			this.buttonFreedbSubmit = new System.Windows.Forms.Button();
 			this.statusStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
 			this.groupBoxSettings.SuspendLayout();
@@ -183,6 +185,7 @@ namespace CUERipper
 			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Title,
             this.TrackNo,
+            this.columnHeaderArtist,
             this.Start,
             this.Length});
 			this.listTracks.FullRowSelect = true;
@@ -193,10 +196,10 @@ namespace CUERipper
 			this.listTracks.UseCompatibleStateImageBehavior = false;
 			this.listTracks.View = System.Windows.Forms.View.Details;
 			this.listTracks.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_AfterLabelEdit);
-			this.listTracks.DoubleClick += new System.EventHandler(this.listTracks_DoubleClick);
 			this.listTracks.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.listTracks_PreviewKeyDown);
 			this.listTracks.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_BeforeLabelEdit);
 			this.listTracks.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listTracks_KeyDown);
+			this.listTracks.Click += new System.EventHandler(this.listTracks_Click);
 			// 
 			// Title
 			// 
@@ -205,6 +208,10 @@ namespace CUERipper
 			// TrackNo
 			// 
 			resources.ApplyResources(this.TrackNo, "TrackNo");
+			// 
+			// columnHeaderArtist
+			// 
+			resources.ApplyResources(this.columnHeaderArtist, "columnHeaderArtist");
 			// 
 			// Start
 			// 
@@ -444,6 +451,7 @@ namespace CUERipper
 			this.progressBarErrors.ProgressPainter = this.plainProgressPainter1;
 			this.progressBarErrors.ProgressType = ProgressODoom.ProgressType.Smooth;
 			this.progressBarErrors.ShowPercentage = false;
+			this.progressBarErrors.TabStop = false;
 			this.progressBarErrors.Value = 10;
 			// 
 			// plainBackgroundPainter1
@@ -487,6 +495,7 @@ namespace CUERipper
 			this.progressBarCD.ProgressPainter = this.plainProgressPainter2;
 			this.progressBarCD.ProgressType = ProgressODoom.ProgressType.Smooth;
 			this.progressBarCD.ShowPercentage = true;
+			this.progressBarCD.TabStop = false;
 			this.progressBarCD.Value = 10;
 			// 
 			// plainProgressPainter2
@@ -560,7 +569,7 @@ namespace CUERipper
 			// 
 			// bnComboBoxOutputFormat
 			// 
-			this.bnComboBoxOutputFormat.BackColor = System.Drawing.Color.Transparent;
+			this.bnComboBoxOutputFormat.BackColor = System.Drawing.SystemColors.Window;
 			this.bnComboBoxOutputFormat.ForeColor = System.Drawing.SystemColors.ControlText;
 			this.bnComboBoxOutputFormat.ImageList = null;
 			resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
@@ -571,6 +580,7 @@ namespace CUERipper
 			rectRadius7.TopLeft = 2;
 			rectRadius7.TopRight = 6;
 			this.bnComboBoxOutputFormat.Radius = rectRadius7;
+			this.bnComboBoxOutputFormat.TabStop = false;
 			this.bnComboBoxOutputFormat.Leave += new System.EventHandler(this.bnComboBoxOutputFormat_Leave);
 			this.bnComboBoxOutputFormat.MouseLeave += new System.EventHandler(this.bnComboBoxOutputFormat_MouseLeave);
 			this.bnComboBoxOutputFormat.DropDown += new System.EventHandler(this.bnComboBoxOutputFormat_DroppedDown);
@@ -590,6 +600,7 @@ namespace CUERipper
 			this.listMetadata.UseCompatibleStateImageBehavior = false;
 			this.listMetadata.View = System.Windows.Forms.View.Details;
 			this.listMetadata.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_AfterLabelEdit);
+			this.listMetadata.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_BeforeLabelEdit);
 			this.listMetadata.Click += new System.EventHandler(this.listMetadata_Click);
 			// 
 			// columnHeaderValue
@@ -652,10 +663,19 @@ namespace CUERipper
 			this.buttonTracks.UseVisualStyleBackColor = true;
 			this.buttonTracks.Click += new System.EventHandler(this.buttonTracks_Click);
 			// 
+			// buttonFreedbSubmit
+			// 
+			this.buttonFreedbSubmit.Image = global::CUERipper.Properties.Resources.freedb16;
+			resources.ApplyResources(this.buttonFreedbSubmit, "buttonFreedbSubmit");
+			this.buttonFreedbSubmit.Name = "buttonFreedbSubmit";
+			this.buttonFreedbSubmit.UseVisualStyleBackColor = true;
+			this.buttonFreedbSubmit.Click += new System.EventHandler(this.buttonFreedbSubmit_Click);
+			// 
 			// frmCUERipper
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.buttonFreedbSubmit);
 			this.Controls.Add(this.buttonTracks);
 			this.Controls.Add(this.buttonEncoding);
 			this.Controls.Add(this.buttonMetadata);
@@ -764,6 +784,8 @@ namespace CUERipper
 		private System.Windows.Forms.Button buttonReload;
 		private System.Windows.Forms.Button buttonEncoding;
 		private System.Windows.Forms.Button buttonTracks;
+		private System.Windows.Forms.ColumnHeader columnHeaderArtist;
+		private System.Windows.Forms.Button buttonFreedbSubmit;
 	}
 }
 

@@ -156,6 +156,12 @@ namespace CUEControls
 			AdjustControls();
 		}
 
+		protected override void OnGotFocus(EventArgs e)
+		{
+			base.OnGotFocus(e);
+			Invalidate(true);
+		}
+
 		protected override void OnDrawItem(DrawItemEventArgs e)
 		{
 			if (_drawMode != DrawMode.Normal)
@@ -250,7 +256,7 @@ namespace CUEControls
 				LinearGradientMode.Vertical);
 			Brush brBackground;
 			if (this.DropDownStyle == ComboBoxStyle.DropDownList)
-				brBackground = new LinearGradientBrush(pathInnerBorder.GetBounds(), BackColor, hovered ? Color.FromArgb(100, SystemColors.HotTrack) : foreColor, LinearGradientMode.Vertical);
+				brBackground = new LinearGradientBrush(pathInnerBorder.GetBounds(), BackColor, (hovered || Focused)? Color.FromArgb(100, SystemColors.HotTrack) : foreColor, LinearGradientMode.Vertical);
 			else
 				brBackground = new SolidBrush(BackColor);
 			Pen penInnerBorder = new Pen(brInnerBrush, 0);

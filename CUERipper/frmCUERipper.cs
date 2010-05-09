@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
@@ -312,8 +313,9 @@ namespace CUERipper
 
 			buttonTracks.Enabled = data.selectedRelease != null && !running;
 			buttonMetadata.Enabled = data.selectedRelease != null && !running;
+			buttonFreedbSubmit.Enabled = data.selectedRelease != null && !running;
 			buttonVA.Enabled = data.selectedRelease != null && !running &&
-				data.selectedRelease.ImageKey == "freedb" && !data.selectedRelease.metadata.IsVarious();
+				data.selectedRelease.ImageKey == "freedb" && !data.selectedRelease.metadata.IsVarious() && (new CUEMetadata(data.selectedRelease.metadata)).FreedbToVarious();
 			buttonEncoding.Enabled = data.selectedRelease != null && !running &&
 				data.selectedRelease.ImageKey == "freedb" && (new CUEMetadata(data.selectedRelease.metadata)).FreedbToEncoding();
 			buttonReload.Enabled = data.selectedRelease != null && !running;
@@ -517,21 +519,37 @@ namespace CUERipper
 				listTracks.Visible = true;
 				listMetadata.Visible = false;
 				if (data.selectedRelease != null)
+				{
+					bool various = data.selectedRelease.metadata.IsVarious();
+					if (various)
+					{
+						Title.Width = 235;
+						columnHeaderArtist.Width = 120;
+					}
+					else
+					{
+						Title.Width = 235 + 120;
+						columnHeaderArtist.Width = 0;
+					}
 					for (int i = 1; i <= selectedDriveInfo.drive.TOC.TrackCount; i++)
 					{
-						string title;
-						if (!selectedDriveInfo.drive.TOC[i].IsAudio)
-							title = "Data track";
-						else
+						string title = "Data track";
+						string artist = "";
+						if (selectedDriveInfo.drive.TOC[i].IsAudio)
+						{
 							title = data.selectedRelease.metadata.Tracks[i - selectedDriveInfo.drive.TOC.FirstAudio].Title;
+							artist = data.selectedRelease.metadata.Tracks[i - selectedDriveInfo.drive.TOC.FirstAudio].Artist;
+						}
 						listTracks.Items.Add(new ListViewItem(new string[] { 
-						title,
-						selectedDriveInfo.drive.TOC[i].Number.ToString(), 
-						selectedDriveInfo.drive.TOC[i].StartMSF, 
-						selectedDriveInfo.drive.TOC[i].LengthMSF }));
+							title,
+							selectedDriveInfo.drive.TOC[i].Number.ToString(), 
+							artist,
+							selectedDriveInfo.drive.TOC[i].StartMSF, 
+							selectedDriveInfo.drive.TOC[i].LengthMSF }));
 					}
+				}
 			}
-			else //if (data.selectedTrack.no == 0)
+			else if (data.metadataTrack < 0)
 			{
 				listTracks.Visible = false;
 				listMetadata.Visible = true;
@@ -544,20 +562,27 @@ namespace CUERipper
 							listMetadata.Items.Add(new ListViewItem(new string[] { p.GetValue(data.selectedRelease.metadata).ToString(), p.Name }));
 				}
 			}
-			//else
-			//{
-			//    listTracks.Visible = false;
-			//    listMetadata.Visible = true;
-			//    if (data.selectedRelease != null)
-			//    {
-			//        CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.selectedTrack.no - 1];
-			//        PropertyDescriptorCollection props = TypeDescriptor.GetProperties(track);
-			//        //props = props.Sort(new string[] { "TopLeft", "TopRight", "BottomLeft", "BottomRight" });
-			//        foreach (PropertyDescriptor p in props)
-			//            if (p.Name != "ISRC")
-			//                listMetadata.Items.Add(new ListViewItem(new string[] { p.GetValue(track).ToString(), p.Name }));
-			//    }
-			//}
+			else
+			{
+				listTracks.Visible = false;
+				listMetadata.Visible = true;
+				if (data.selectedRelease != null)
+				{
+					CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.metadataTrack];
+					PropertyDescriptorCollection props = TypeDescriptor.GetProperties(track);
+					props = props.Sort(new string[] { "ISRC", "Title", "Artist" });
+					ListViewItem lvItem = new ListViewItem(new string[] { (data.metadataTrack + 1).ToString(), "Number" });
+					lvItem.ForeColor = SystemColors.GrayText;
+					listMetadata.Items.Add(lvItem);
+					foreach (PropertyDescriptor p in props)
+					{
+						lvItem = new ListViewItem(new string[] { p.GetValue(track).ToString(), p.Name });
+						if (p.Name == "ISRC")
+							lvItem.ForeColor = SystemColors.GrayText;
+						listMetadata.Items.Add(lvItem);
+					}
+				}
+			}
 			listTracks.EndUpdate();
 			listMetadata.EndUpdate();
 			SetupControls();
@@ -645,6 +670,7 @@ namespace CUERipper
 				ReleaseQueryParameters p = new ReleaseQueryParameters();
 				p.DiscId = audioSource.TOC.MusicBrainzId;
 				Query<Release> results = Release.Query(p);
+				MusicBrainzService.Proxy = _config.GetProxy();
 				MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 
 				try
@@ -663,13 +689,14 @@ namespace CUERipper
 					if (!(ex is MusicBrainzNotFoundException))
 						musicbrainzError = ex.Message;
 				}
+				MusicBrainzService.Proxy = null;
 				MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 
 
 				FreedbHelper m_freedb = new FreedbHelper();
-
-				m_freedb.UserName = "gchudov";
-				m_freedb.Hostname = "gmail.com";
+				m_freedb.Proxy = _config.GetProxy(); 
+				m_freedb.UserName = _config.advanced.FreedbUser;
+				m_freedb.Hostname = _config.advanced.FreedbDomain;
 				m_freedb.ClientName = "CUERipper";
 				m_freedb.Version = "2.0.8";
 				m_freedb.SetDefaultSiteAddress(Properties.Settings.Default.MAIN_FREEDB_SITEADDRESS);
@@ -801,11 +828,6 @@ namespace CUERipper
 			_workThread.IsBackground = true;
 			SetupControls();
 			_workThread.Start(selectedDriveInfo.drive);
-		}
-
-		private void listTracks_DoubleClick(object sender, EventArgs e)
-		{
-			listTracks.FocusedItem.BeginEdit();
 		}
 
 		private void listTracks_KeyDown(object sender, KeyEventArgs e)
@@ -1110,11 +1132,11 @@ namespace CUERipper
 		{
 			if (outputFormatVisible)
 				return;
+			txtOutputPath.Enabled = false;
+			txtOutputPath.Visible = false;
 			outputFormatVisible = true;
 			bnComboBoxOutputFormat.Visible = true;
 			bnComboBoxOutputFormat.Focus();
-			txtOutputPath.Enabled = false;
-			txtOutputPath.Visible = false;
 		}
 
 		private void bnComboBoxOutputFormat_MouseLeave(object sender, EventArgs e)
@@ -1129,7 +1151,7 @@ namespace CUERipper
 
 		private void bnComboBoxOutputFormat_DroppedDown(object sender, EventArgs e)
 		{
-			if (!outputFormatVisible || bnComboBoxOutputFormat.DroppedDown || bnComboBoxOutputFormat.Focused)
+			if (!outputFormatVisible || bnComboBoxOutputFormat.DroppedDown || ActiveControl == bnComboBoxOutputFormat)
 				return;
 			outputFormatVisible = false;
 			bnComboBoxOutputFormat.Visible = false;
@@ -1147,13 +1169,32 @@ namespace CUERipper
 			listMetadata.FocusedItem.BeginEdit();
 		}
 
+		private void listMetadata_BeforeLabelEdit(object sender, LabelEditEventArgs e)
+		{
+			if (data.selectedRelease == null || !data.metadataMode)
+			{
+				e.CancelEdit = true;
+			}
+			else if (data.metadataTrack < 0)
+			{
+			}
+			else
+			{
+				if (listMetadata.Items[e.Item].SubItems[1].Text == "ISRC" ||
+					listMetadata.Items[e.Item].SubItems[1].Text == "Number")
+				{
+					e.CancelEdit = true;
+				}
+			}
+		}
+
 		private void listMetadata_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
 			if (data.selectedRelease == null || e.Label == null || !data.metadataMode)
 			{
 				e.CancelEdit = true;
 			}
-			else
+			else if (data.metadataTrack < 0)
 			{
 				PropertyDescriptorCollection props = TypeDescriptor.GetProperties(data.selectedRelease.metadata);
 				PropertyDescriptor prop = props[listMetadata.Items[e.Item].SubItems[1].Text];
@@ -1163,13 +1204,13 @@ namespace CUERipper
 					prop.SetValue(data.selectedRelease.metadata, e.Label);
 				data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
 			}
-			//else
-			//{
-			//    CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.selectedTrack.no - 1];
-			//    PropertyDescriptorCollection props = TypeDescriptor.GetProperties(track);
-			//    props[listMetadata.Items[e.Item].SubItems[1].Text].SetValue(track, e.Label);
-			//    data.Tracks.ResetItem(data.selectedTrack.no + 1);
-			//}
+			else
+			{
+				CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.metadataTrack];
+				PropertyDescriptorCollection props = TypeDescriptor.GetProperties(track);
+				props[listMetadata.Items[e.Item].SubItems[1].Text].SetValue(track, e.Label);
+				//data.Tracks.ResetItem(data.metadataTrack);
+			}
 		}
 
 		private void buttonMetadata_Click(object sender, EventArgs e)
@@ -1177,6 +1218,7 @@ namespace CUERipper
 			buttonTracks.Visible = true;
 			buttonTracks.Focus();
 			buttonMetadata.Visible = false;
+			data.metadataTrack = -1;
 			data.metadataMode = true;
 			UpdateRelease();
 		}
@@ -1220,6 +1262,118 @@ namespace CUERipper
 			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
 			comboBoxOutputFormat_TextUpdate(sender, e);
 			SetupControls();
+		}
+
+		private void listTracks_Click(object sender, EventArgs e)
+		{
+			Point p = listTracks.PointToClient(MousePosition);
+			ListViewItem lvItem = listTracks.GetItemAt(p.X, p.Y);
+			if (lvItem != null)
+			{
+				ListViewItem.ListViewSubItem a = lvItem.GetSubItemAt(p.X, p.Y);
+				if (a != null)
+				{
+					int track = lvItem.Index + 1 - selectedDriveInfo.drive.TOC.FirstAudio;
+					if (a == lvItem.SubItems[0])
+						lvItem.BeginEdit();
+					else if (/*a == lvItem.SubItems[2] &&*/ track >= 0)
+					{
+						buttonTracks.Visible = true;
+						buttonTracks.Focus();
+						buttonMetadata.Visible = false;
+						data.metadataTrack = track;
+						data.metadataMode = true;
+						UpdateRelease();
+					}
+				}
+			}
+		}
+
+		private void FreedbSubmit(object o)
+		{
+			StringCollection tmp = new StringCollection();
+			tmp.Add("DTITLE=");
+			CDEntry entry = new CDEntry(tmp);
+			entry.Artist = data.selectedRelease.metadata.Artist;
+			entry.Title = data.selectedRelease.metadata.Title;
+			entry.Year = data.selectedRelease.metadata.Year;
+			entry.Genre = data.selectedRelease.metadata.Genre;
+			int i = 1;
+			foreach (CUETrackMetadata t in data.selectedRelease.metadata.Tracks)
+			{
+				Freedb.Track tt = new Freedb.Track();
+				if (t.Artist != "" && t.Artist != entry.Artist)
+					tt.Title = t.Artist + " / " + t.Title;
+				else
+					tt.Title = t.Title;
+				tt.FrameOffset = 150 + (int)selectedDriveInfo.drive.TOC[i++].Start;
+				entry.Tracks.Add(tt);
+			}
+
+			FreedbHelper m_freedb = new FreedbHelper();
+
+			frmFreedbSubmit frm = new frmFreedbSubmit();
+			foreach (string c in m_freedb.ValidCategories)
+				frm.Data.Categories.Add(c);
+			frm.Data.User = _config.advanced.FreedbUser;
+			frm.Data.Domain = _config.advanced.FreedbDomain;
+			frm.Data.Category = "misc";
+
+			DialogResult dlgRes = DialogResult.Cancel;
+			this.Invoke((MethodInvoker)delegate() { dlgRes = frm.ShowDialog(); });
+			if (dlgRes == DialogResult.Cancel)
+			{
+				_workThread = null;
+				this.BeginInvoke((MethodInvoker)delegate() { SetupControls(); });
+				return;
+			}
+
+			data.selectedRelease.metadata.Save();
+
+			_config.advanced.FreedbUser = frm.Data.User;
+			_config.advanced.FreedbDomain = frm.Data.Domain;
+
+			m_freedb.Proxy = _config.GetProxy();
+			m_freedb.UserName = _config.advanced.FreedbUser;
+			m_freedb.Hostname = _config.advanced.FreedbDomain;
+			m_freedb.ClientName = "CUERipper";
+			m_freedb.Version = "2.0.8";
+			//try
+			//{
+			//    string code = m_freedb.GetCategories(out tmp);
+			//    if (code == FreedbHelper.ResponseCodes.CODE_210)
+			//        m_freedb.ValidCategories = tmp;
+			//}
+			//catch
+			//{
+			//}
+			uint length = selectedDriveInfo.drive.TOC.Length / 75 - selectedDriveInfo.drive.TOC[1].Start / 75 + 2;
+			try
+			{
+				string res = m_freedb.Submit(entry, (int)length, AccurateRipVerify.CalculateCDDBId(selectedDriveInfo.drive.TOC), frm.Data.Category, false);
+				this.BeginInvoke((MethodInvoker)delegate()
+				{
+					dlgRes = MessageBox.Show(this, res, "Submit result", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				});
+			}
+			catch (Exception ex)
+			{
+				this.BeginInvoke((MethodInvoker)delegate()
+				{
+					dlgRes = MessageBox.Show(this, ex.Message, "Submit result", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				});
+			}
+			_workThread = null;
+			this.BeginInvoke((MethodInvoker)delegate() { SetupControls(); });
+		}
+
+		private void buttonFreedbSubmit_Click(object sender, EventArgs e)
+		{
+			_workThread = new Thread(FreedbSubmit);
+			_workThread.Priority = ThreadPriority.BelowNormal;
+			_workThread.IsBackground = true;
+			SetupControls();
+			_workThread.Start();
 		}
 	}
 
@@ -1348,6 +1502,7 @@ namespace CUERipper
 
 		public CUEMetadataEntry selectedRelease { get; set; }
 		public bool metadataMode { get; set; }
+		public int metadataTrack { get; set; }
 
 		public BindingList<string> CUEStyles
 		{

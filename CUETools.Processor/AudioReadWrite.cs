@@ -111,8 +111,8 @@ namespace CUETools.Processor
 						break;
 					case "CUETools.Codecs.FlaCuda.FlaCudaWriter":
 						dest.Options = string.Format("{0}{1}--padding-length {2} --cpu-threads {3}",
-							config.flaCudaVerify ? "--verify " : "",
-							config.flaCudaGPUOnly ? "--gpu-only " : "",
+							config.FlaCudaVerify ? "--verify " : "",
+							config.FlaCudaGPUOnly ? "--gpu-only " : "",
 							padding,
 							config.FlaCudaThreads ? 1 : 0);
 						break;

@@ -746,9 +746,9 @@ namespace JDP {
 						if (_batchPaths.Count == 0 && action == CUEAction.Encode)
 						{
 							if (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked)
-								releases = cueSheet.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, true);
+								releases = cueSheet.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata);
 						}
-						else // if checkBoxUseMetadataCache.Checked
+						else if (_profile._config.advanced.CacheMetadata)
 						{
 							try
 							{

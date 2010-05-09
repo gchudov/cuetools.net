@@ -32,6 +32,7 @@ namespace Freedb
 	{
 		public const string MAIN_FREEDB_ADDRESS = "freedb.freedb.org";
 		public const string DEFAULT_ADDITIONAL_URL_INFO = "/~cddb/cddb.cgi";
+		public const string SUBMIT_ADDITIONAL_URL_INFO = "/~cddb/submit.cgi";
 		private Site m_mainSite = new Site(MAIN_FREEDB_ADDRESS,"http",DEFAULT_ADDITIONAL_URL_INFO);
 		private string m_UserName;
 		private string m_Hostname;
@@ -77,6 +78,13 @@ namespace Freedb
 
 		
 		#region Public Properties
+
+		/// <summary>
+		/// Proxy server to use
+		/// </summary>
+		public IWebProxy Proxy { get; set; }
+
+
 		/// <summary>
 		/// Property Version (string)
 		/// </summary>
@@ -189,6 +197,7 @@ namespace Freedb
 		public FreedbHelper()
 		{
 			m_ProtocolLevel = "6"; // default it
+			ValidCategories.AddRange(new string[]{"blues", "classical", "country", "data", "folk", "jazz", "misc", "newage", "reggae", "rock", "soundtrack"});
 		}
 
 
@@ -452,6 +461,94 @@ namespace Freedb
 
 		}
 
+		public StringCollection ValidCategories = new StringCollection();
+
+		public string Submit(CDEntry entry, int length, string discid, string category, bool test)
+		{
+			StreamReader reader = null;
+			HttpWebResponse response = null;
+			string url = "http://" + MAIN_FREEDB_ADDRESS + SUBMIT_ADDITIONAL_URL_INFO;
+			string command = "";
+			string result = "";
+
+			if ((entry.Artist ?? "") == "")
+				throw new Exception("Artist not set");
+			if ((entry.Title ?? "") == "")
+				throw new Exception("Title not set");
+			if (!ValidCategories.Contains(category))
+				throw new Exception("Category not valid");
+			foreach (Track t in entry.Tracks)
+				if ((t.Title ?? "") == "")
+					throw new Exception("Track titles not set");
+			foreach (Track t in entry.Tracks)
+				if (t.FrameOffset < 150)
+					throw new Exception("Track frame offsets not set");
+
+			command += "# xmcd CD database file\n";
+			command += "#\n";
+			command += "# Track frame offsets:\n";
+			foreach(Track t in entry.Tracks)
+				command += "#        " + t.FrameOffset + "\n";
+			command += "#\n";
+			command += "# Disc length: " + length.ToString() + " seconds\n";
+			command += "#\n";
+			command += "# Revision: 0\n";
+			command += "# Submitted via: " + ClientName + " " + Version + "\n";
+			command += "#\n";
+			command += "DISCID=" + discid.ToLower() + "\n";
+			command += "DTITLE=" + entry.Artist.Replace(" / ", "/") + " / " + entry.Title.Replace(" / ", "/") + "\n";
+			command += "DYEAR=" + entry.Year + "\n"; // DYEAR=#{@year.to_i == 0 ? "" : "%04d" % @year}
+			command += "DGENRE=" + entry.Genre + "\n"; // DGENRE=#{(@genre || "").split(" ").collect do |w| w.capitalize end.join(" ")}
+			int i = 0;
+			foreach (Track t in entry.Tracks)
+				command += "TTITLE" + (i++).ToString() + "=" + t.Title + "\n"; // escape
+			i = 0;
+			command += "EXTD=" + entry.ExtendedData + "\n";
+			foreach (Track t in entry.Tracks)
+				command += "EXTT" + (i++).ToString() + "=" + t.ExtendedData + "\n"; // escape
+			command += "PLAYORDER=\n";
+
+			try
+			{
+				//create our HttpWebRequest which we use to call the freedb server
+				HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+				req.Proxy = Proxy;
+				req.ContentType = "text/plain";
+				req.Method = "POST";
+				req.Headers.Add("Category", category);
+				req.Headers.Add("Discid", discid.ToLower());
+				req.Headers.Add("User-Email", UserName + '@' + Hostname);
+				req.Headers.Add("Submit-Mode", test ? "test" : "submit");
+				req.Headers.Add("X-Cddbd-Note", "Sent by " + ClientName + " " + Version);
+				req.Headers.Add("Charset", "utf-8");
+				//using Unicode
+				byte[] byteArray = Encoding.UTF8.GetBytes(command);
+				//get our request stream
+				Stream newStream = req.GetRequestStream();
+				//write our command data to it
+				newStream.Write(byteArray, 0, byteArray.Length);
+				newStream.Close();
+				//Make the call. Note this is a synchronous call
+				response = (HttpWebResponse)req.GetResponse();
+				//put the results into a StreamReader
+				reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.UTF8);
+				result = reader.ReadToEnd();
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+			finally
+			{
+				if (response != null)
+					response.Close();
+				if (reader != null)
+					reader.Close();
+			}
+
+			return result;
+		}
+
 
 		/// <summary>
 		/// Retrieve the categories
@@ -549,6 +646,7 @@ namespace Freedb
 			{
 				//create our HttpWebRequest which we use to call the freedb server
 				HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+				req.Proxy = Proxy;
 				req.ContentType = "text/plain";
 				// we are using th POST method of calling the http server. We could have also used the GET method
 				req.Method="POST";

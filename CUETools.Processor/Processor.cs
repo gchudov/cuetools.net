@@ -38,6 +38,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Xml.Serialization;
 using CUETools.Codecs;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
@@ -873,6 +874,65 @@ namespace CUETools.Processor
 		}
 	}
 
+	//class LocalizedDisplayNameAttribute : DisplayNameAttribute
+	//{
+	//    private readonly string resourceName;
+	//    public LocalizedDisplayNameAttribute(string resourceName)
+	//        : base()
+	//    {
+	//        this.resourceName = resourceName;
+	//    }
+
+	//    public override string DisplayName
+	//    {
+	//        get
+	//        {
+	//            return Resources.ResourceManager.GetString(this.resourceName);
+	//        }
+	//    }
+	//}
+
+	[Serializable]
+	public class CUEConfigAdvanced
+	{
+		public CUEConfigAdvanced()
+		{
+			// Iterate through each property and call ResetValue()
+			foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+				property.ResetValue(this);
+		}
+		internal static XmlSerializer serializer = new XmlSerializer(typeof(CUEConfigAdvanced));
+		[DefaultValue("i"),Category("Freedb"),DisplayName("Email user")]
+		public string FreedbUser { get; set; }
+		[DefaultValue("wont.tell"), Category("Freedb"), DisplayName("Email domain")]
+		public string FreedbDomain { get; set; }
+		[DefaultValue(ProxyMode.System), Category("Proxy"), DisplayName("Proxy mode")]
+		public ProxyMode UseProxyMode { get; set; }
+		[DefaultValue("127.0.0.1"), Category("Proxy"), DisplayName("Proxy server host")]
+		public string ProxyServer { get; set; }
+		[DefaultValue(8080), Category("Proxy"), DisplayName("Proxy server port")]
+		public int ProxyPort { get; set; }
+		[DefaultValue(""), Category("Proxy"), DisplayName("Proxy auth user")]
+		public string ProxyUser { get; set; }
+		[DefaultValue(""), Category("Proxy"), DisplayName("Proxy auth password")]
+		public string ProxyPassword { get; set; }
+		[DefaultValue(true), Category("Cache"), DisplayName("Cache metadata")]
+		public bool CacheMetadata { get; set; }
+		[DefaultValue(new string[]{"folder.jpg", "cover.jpg", "albumart.jpg", "thumbnail.jpg", "albumartlarge.jpg", "front.jpg"})]
+		[Category("Cover Art"), DisplayName("Cover Art Files")]
+		public string[] CoverArtFiles { get; set; }
+		[DefaultValue(true)]
+		[Category("Cover Art"), DisplayName("Cover Art Extended Search")]
+		public bool CoverArtSearchSubdirs { get; set; }
+
+		public enum ProxyMode
+		{
+			None,
+			System,
+			Custom
+		}
+	}
+
 	public class CUEConfig {
 		public uint fixOffsetMinimumConfidence;
 		public uint fixOffsetMinimumTracksPercent;
@@ -887,9 +947,6 @@ namespace CUETools.Processor
 		public bool noUnverifiedOutput;
 		public bool autoCorrectFilenames;
 		public bool flacVerify;
-		public bool flaCudaVerify;
-		public bool flaCudaGPUOnly;
-		public bool flaCudaThreads;
 		public bool preserveHTOA;
 		public int wvExtraMode;
 		public bool wvStoreMD5;
@@ -929,24 +986,22 @@ namespace CUETools.Processor
 		public bool writeBasicTagsFromCUEData;
 		public bool copyBasicTags;
 		public bool copyUnknownTags;
-		public bool copyAlbumArt;
 		public bool embedAlbumArt;
 		public bool extractAlbumArt;
 		public bool arLogToSourceFolder;
 		public bool arLogVerbose;
 		public bool fixOffsetToNearest;
 		public int maxAlbumArtSize;
-		public string arLogFilenameFormat, alArtFilenameFormat;
 		public CUEStyle gapsHandling;
 		public bool separateDecodingThread;
-		public bool useSystemProxySettings;
 
-		public bool CopyAlbumArt { get { return copyAlbumArt; } set { copyAlbumArt = value; } }
-		public bool FlaCudaThreads { get { return flaCudaThreads; } set { flaCudaThreads = value; } }
-		public bool FlaCudaGPUOnly { get { return flaCudaGPUOnly; } set { flaCudaGPUOnly = value; } }
-		public bool FlaCudaVerify { get { return flaCudaVerify; } set { flaCudaVerify = value; } }		
-		public string ArLogFilenameFormat { get { return arLogFilenameFormat; } set { arLogFilenameFormat = value; }  }
-		public string AlArtFilenameFormat { get { return alArtFilenameFormat; } set { alArtFilenameFormat = value; }  }
+		public CUEConfigAdvanced advanced { get; private set;  }
+		public bool CopyAlbumArt { get; set; }
+		public bool FlaCudaThreads { get; set; }
+		public bool FlaCudaGPUOnly { get; set; }
+		public bool FlaCudaVerify { get; set; }
+		public string ArLogFilenameFormat { get; set; }
+		public string AlArtFilenameFormat { get; set; }
 		public CUEToolsUDCList Encoders
 		{
 			get { return encoders; }
@@ -968,9 +1023,9 @@ namespace CUETools.Processor
 
 			autoCorrectFilenames = true;
 			flacVerify = false;
-			flaCudaVerify = false;
-			flaCudaGPUOnly = false;
-			flaCudaThreads = true;
+			FlaCudaVerify = false;
+			FlaCudaGPUOnly = false;
+			FlaCudaThreads = true;
 			preserveHTOA = true;
 			wvExtraMode = 0;
 			wvStoreMD5 = false;
@@ -1005,7 +1060,7 @@ namespace CUETools.Processor
 			writeBasicTagsFromCUEData = true;
 			copyBasicTags = true;
 			copyUnknownTags = true;
-			copyAlbumArt = true;
+			CopyAlbumArt = true;
 			embedAlbumArt = true;
 			extractAlbumArt = true;
 			maxAlbumArtSize = 300;
@@ -1013,13 +1068,14 @@ namespace CUETools.Processor
 			arLogToSourceFolder = false;
 			arLogVerbose = true;
 			fixOffsetToNearest = true;
-			arLogFilenameFormat = "%filename%.accurip";
-			alArtFilenameFormat = "folder.jpg";
+			ArLogFilenameFormat = "%filename%.accurip";
+			AlArtFilenameFormat = "folder.jpg";
 
 			separateDecodingThread = true;
-			useSystemProxySettings = true;
 
 			gapsHandling = CUEStyle.GapsAppended;
+
+			advanced = new CUEConfigAdvanced();
 
 			language = Thread.CurrentThread.CurrentUICulture.Name;
 
@@ -1151,9 +1207,9 @@ string status = processor.Go();
 			sw.Save("PreserveHTOA", preserveHTOA);
 			sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
 			sw.Save("FLACVerify", flacVerify);
-			sw.Save("FlaCudaVerify", flaCudaVerify);
-			sw.Save("FlaCudaGPUOnly", flaCudaGPUOnly);
-			sw.Save("FlaCudaThreads", flaCudaThreads);
+			sw.Save("FlaCudaVerify", FlaCudaVerify);
+			sw.Save("FlaCudaGPUOnly", FlaCudaGPUOnly);
+			sw.Save("FlaCudaThreads", FlaCudaThreads);
 			sw.Save("WVExtraMode", wvExtraMode);
 			sw.Save("WVStoreMD5", wvStoreMD5);
 			sw.Save("KeepOriginalFilenames", keepOriginalFilenames);
@@ -1165,7 +1221,7 @@ string status = processor.Go();
 			sw.Save("EmbedLog", embedLog);
 			sw.Save("ExtractLog", extractLog);
 			sw.Save("FillUpCUE", fillUpCUE);
-			sw.Save("OverwriteCUEData", overwriteCUEData);			
+			sw.Save("OverwriteCUEData", overwriteCUEData);
 			sw.Save("FilenamesANSISafe", filenamesANSISafe);
 			if (bruteForceDTL) sw.Save("BruteForceDTL", bruteForceDTL);
 			sw.Save("CreateEACLOG", createEACLOG);
@@ -1185,12 +1241,11 @@ string status = processor.Go();
 			sw.Save("Language", language);
 
 			sw.Save("SeparateDecodingThread", separateDecodingThread);
-			sw.Save("UseSystemProxySettings", useSystemProxySettings);
-			
+
 			sw.Save("WriteBasicTagsFromCUEData", writeBasicTagsFromCUEData);
 			sw.Save("CopyBasicTags", copyBasicTags);
 			sw.Save("CopyUnknownTags", copyUnknownTags);
-			sw.Save("CopyAlbumArt", copyAlbumArt);
+			sw.Save("CopyAlbumArt", CopyAlbumArt);
 			sw.Save("EmbedAlbumArt", embedAlbumArt);
 			sw.Save("ExtractAlbumArt", extractAlbumArt);
 			sw.Save("MaxAlbumArtSize", maxAlbumArtSize);
@@ -1199,8 +1254,14 @@ string status = processor.Go();
 			sw.Save("ArLogVerbose", arLogVerbose);
 			sw.Save("FixOffsetToNearest", fixOffsetToNearest);
 
-			sw.Save("ArLogFilenameFormat", arLogFilenameFormat);
-			sw.Save("AlArtFilenameFormat", alArtFilenameFormat);
+			sw.Save("ArLogFilenameFormat", ArLogFilenameFormat);
+			sw.Save("AlArtFilenameFormat", AlArtFilenameFormat);
+
+			using (TextWriter writer = new StringWriter())
+			{
+				CUEConfigAdvanced.serializer.Serialize(writer, advanced); //writer.Close();
+				sw.SaveText("Advanced", writer.ToString());
+			}				
 
 			int nEncoders = 0;
 			foreach (CUEToolsUDC encoder in encoders)
@@ -1284,9 +1345,9 @@ string status = processor.Go();
 			preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
 			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
 			flacVerify = sr.LoadBoolean("FLACVerify") ?? false;
-			flaCudaVerify = sr.LoadBoolean("FlaCudaVerify") ?? false;
-			flaCudaGPUOnly = sr.LoadBoolean("FlaCudaGPUOnly") ?? false;
-			flaCudaThreads = sr.LoadBoolean("FlaCudaThreads") ?? true;
+			FlaCudaVerify = sr.LoadBoolean("FlaCudaVerify") ?? false;
+			FlaCudaGPUOnly = sr.LoadBoolean("FlaCudaGPUOnly") ?? false;
+			FlaCudaThreads = sr.LoadBoolean("FlaCudaThreads") ?? true;
 			wvExtraMode = sr.LoadInt32("WVExtraMode", 0, 6) ?? 0;
 			wvStoreMD5 = sr.LoadBoolean("WVStoreMD5") ?? false;
 			keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? false;
@@ -1320,7 +1381,7 @@ string status = processor.Go();
 			writeBasicTagsFromCUEData = sr.LoadBoolean("WriteBasicTagsFromCUEData") ?? true;
 			copyBasicTags = sr.LoadBoolean("CopyBasicTags") ?? true;
 			copyUnknownTags = sr.LoadBoolean("CopyUnknownTags") ?? true;
-			copyAlbumArt = sr.LoadBoolean("CopyAlbumArt") ?? true;
+			CopyAlbumArt = sr.LoadBoolean("CopyAlbumArt") ?? true;
 			embedAlbumArt = sr.LoadBoolean("EmbedAlbumArt") ?? true;
 			extractAlbumArt = sr.LoadBoolean("ExtractAlbumArt") ?? true;
 			maxAlbumArtSize = sr.LoadInt32("MaxAlbumArtSize", 100, 10000) ?? maxAlbumArtSize;
@@ -1328,11 +1389,20 @@ string status = processor.Go();
 			arLogToSourceFolder = sr.LoadBoolean("ArLogToSourceFolder") ?? arLogToSourceFolder;
 			arLogVerbose = sr.LoadBoolean("ArLogVerbose") ?? arLogVerbose;
 			fixOffsetToNearest = sr.LoadBoolean("FixOffsetToNearest") ?? fixOffsetToNearest;
-			arLogFilenameFormat = sr.Load("ArLogFilenameFormat") ?? arLogFilenameFormat;
-			alArtFilenameFormat = sr.Load("AlArtFilenameFormat") ?? alArtFilenameFormat;
+			ArLogFilenameFormat = sr.Load("ArLogFilenameFormat") ?? ArLogFilenameFormat;
+			AlArtFilenameFormat = sr.Load("AlArtFilenameFormat") ?? AlArtFilenameFormat;
 
 			separateDecodingThread = sr.LoadBoolean("SeparateDecodingThread") ?? separateDecodingThread;
-			useSystemProxySettings = sr.LoadBoolean("UseSystemProxySettings") ?? useSystemProxySettings;
+
+			try
+			{
+				using (TextReader reader = new StringReader(sr.Load("Advanced")))
+					advanced = CUEConfigAdvanced.serializer.Deserialize(reader) as CUEConfigAdvanced;
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Trace.WriteLine(ex.Message);
+			}
 
 			int totalEncoders = sr.LoadInt32("ExternalEncoders", 0, null) ?? 0;
 			for (int nEncoders = 0; nEncoders < totalEncoders; nEncoders++)
@@ -1449,8 +1519,8 @@ string status = processor.Go();
 
 			language = sr.Load("Language") ?? Thread.CurrentThread.CurrentUICulture.Name;
 
-			if (arLogFilenameFormat.Contains("%F"))
-				arLogFilenameFormat = "%filename%.accurip";
+			if (ArLogFilenameFormat.Contains("%F"))
+				ArLogFilenameFormat = "%filename%.accurip";
 			if (singleFilenameFormat.Contains("%F"))
 				singleFilenameFormat = "%filename%";
 			if (trackFilenameFormat.Contains("%N"))
@@ -1464,6 +1534,23 @@ string status = processor.Go();
 				if (decoder.Value.Extension == extension && (result == null || result.priority < decoder.Value.priority))
 					result = decoder.Value;
 			return result == null ? null : result.Name;
+		}
+
+		public IWebProxy GetProxy()
+		{
+			IWebProxy proxy = null;
+			switch (advanced.UseProxyMode)
+			{
+				case CUEConfigAdvanced.ProxyMode.System:
+					proxy = WebRequest.GetSystemWebProxy();
+					break;
+				case CUEConfigAdvanced.ProxyMode.Custom:
+					proxy = new WebProxy(advanced.ProxyServer, advanced.ProxyPort);
+					if (advanced.ProxyUser != "")
+						proxy.Credentials = new NetworkCredential(advanced.ProxyUser, advanced.ProxyPassword);
+					break;
+			}
+			return proxy;
 		}
 
 		public string CleanseString (string s)
@@ -1668,7 +1755,7 @@ string status = processor.Go();
 			_hasEmbeddedCUESheet = false;
 			_isArchive = false;
 			_isCD = false;
-			proxy = _config.useSystemProxySettings ? WebRequest.GetSystemWebProxy() : null;
+			proxy = _config.GetProxy();
 		}
 
 		public void OpenCD(ICDRipper ripper)
@@ -1797,69 +1884,6 @@ string status = processor.Go();
 			}
 		}
 
-		public void FillFromMusicBrainz(MusicBrainz.Release release)
-		{
-			string date = release.GetEvents().Count > 0 ? release.GetEvents()[0].Date : null;
-			Year = date == null ? "" : date.Substring(0, 4);
-			Artist = release.GetArtist();
-			Title = release.GetTitle();
-			// How to get Genre: http://mm.musicbrainz.org/ws/1/release/6fe1e218-2aee-49ac-94f0-7910ba2151df.html?type=xml&inc=tags
-			//Catalog = release.GetEvents().Count > 0 ? release.GetEvents()[0].Barcode : "";
-			for (int i = 1; i <= _toc.AudioTracks; i++)
-			{
-				MusicBrainz.Track track = release.GetTracks()[(int)_toc[i].Number - 1]; // !!!!!! - _toc.FirstAudio
-				Tracks[i - 1].Title = track.GetTitle();
-				Tracks[i - 1].Artist = track.GetArtist();
-			}
-		}
-
-		public bool FreedbToEncoding()
-		{
-			Encoding iso = Encoding.GetEncoding("iso-8859-1");
-			bool different = false;
-			string tmp;
-			tmp = Encoding.Default.GetString(iso.GetBytes(Artist)); different |= Artist != tmp; Artist = tmp;
-			tmp = Encoding.Default.GetString(iso.GetBytes(Title)); different |= Title != tmp; Title = tmp;
-			for (int i = 0; i < _toc.AudioTracks; i++)
-			{
-				tmp = Encoding.Default.GetString(iso.GetBytes(Tracks[i].Artist)); different |= Tracks[i].Artist != tmp; Tracks[i].Artist = tmp;
-				tmp = Encoding.Default.GetString(iso.GetBytes(Tracks[i].Title)); different |= Tracks[i].Title != tmp; Tracks[i].Title = tmp;
-			}
-			return different;
-		}
-
-		public void FreedbToVarious()
-		{
-			for (int i = 0; i < _toc.AudioTracks; i++)
-			{
-				string title = Tracks[i].Title;
-				int idx = title.IndexOf(" / ");
-				if (idx < 0) idx = title.IndexOf(" - ");
-				if (idx >= 0)
-				{
-					Tracks[i].Title = title.Substring(idx + 3);
-					Tracks[i].Artist = title.Substring(0, idx);
-				}
-				else
-				{
-					Tracks[i].Artist = title;
-				}
-			}
-		}
-
-		public void FillFromFreedb(Freedb.CDEntry cdEntry)
-		{
-			Year = cdEntry.Year;
-			Genre = cdEntry.Genre;
-			Artist = cdEntry.Artist;
-			Title = cdEntry.Title;
-			for (int i = 0; i < _toc.AudioTracks; i++)
-			{
-				Tracks[i].Title = cdEntry.Tracks[i + _toc.FirstAudio - 1].Title;
-				Tracks[i].Artist = cdEntry.Artist;
-			}
-		}
-
 		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz, bool useCache)
 		{
 			List<object> Releases = new List<object>();
@@ -1880,17 +1904,20 @@ string status = processor.Go();
 				}
 			}
 
-			Releases.Add(new CUEMetadataEntry(Metadata, TOC, "cue"));
-			Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags"));
+			CUEMetadata meta = Metadata;
+			if (meta.Contains(taglibMetadata) || !taglibMetadata.Contains(meta))
+				Releases.Add(new CUEMetadataEntry(meta, TOC, "cue"));
+			if (!meta.Contains(taglibMetadata))
+				Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags"));
 
 			if (useFreedb)
 			{
 				ShowProgress("Looking up album via Freedb...", 0.0, null, null);
 
 				FreedbHelper m_freedb = new FreedbHelper();
-
-				m_freedb.UserName = "gchudov";
-				m_freedb.Hostname = "gmail.com";
+				m_freedb.Proxy = proxy;
+				m_freedb.UserName = _config.advanced.FreedbUser;
+				m_freedb.Hostname = _config.advanced.FreedbDomain;
 				m_freedb.ClientName = "CUETools";
 				m_freedb.Version = "2.0.8";
 				m_freedb.SetDefaultSiteAddress("freedb.org");
@@ -1953,6 +1980,7 @@ string status = processor.Go();
 				//	DiscIds.Add(_tocFromLog.MusicBrainzId);
 
 				MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+				MusicBrainzService.Proxy = proxy;
 				foreach (string DiscId in DiscIds)
 				{
 					ReleaseQueryParameters p = new ReleaseQueryParameters();
@@ -1986,6 +2014,7 @@ string status = processor.Go();
 						System.Diagnostics.Trace.WriteLine(ex.Message);
 					}
 				}
+				MusicBrainzService.Proxy = null;
 				MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 				//if (release != null)
 				//{
@@ -2598,24 +2627,11 @@ string status = processor.Go();
 			
 			if (_config.fillUpCUE)
 			{
-				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "PERFORMER") == null) && taglibMetadata.Artist != "")
-					General.SetCUELine(_attributes, "PERFORMER", taglibMetadata.Artist, true);
-				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "TITLE") == null) && taglibMetadata.Title != "")
-					General.SetCUELine(_attributes, "TITLE", taglibMetadata.Title, true);
-				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "DATE") == null) && taglibMetadata.Year != "")
-					General.SetCUELine(_attributes, "REM", "DATE", taglibMetadata.Year, false);
-				if ((_config.overwriteCUEData || General.FindCUELine(_attributes, "REM", "GENRE") == null) && taglibMetadata.Genre != "")
-					General.SetCUELine(_attributes, "REM", "GENRE", taglibMetadata.Genre, true);
-				if ((_config.overwriteCUEData || TotalDiscs == "") && taglibMetadata.TotalDiscs != "")
-					TotalDiscs = taglibMetadata.TotalDiscs;
-				if ((_config.overwriteCUEData || DiscNumber == "") && taglibMetadata.DiscNumber != "")
-					DiscNumber = taglibMetadata.DiscNumber;
+				CUEMetadata meta = Metadata; // new CUEMetadata(Metadata);
+				meta.Merge(taglibMetadata, _config.overwriteCUEData);
+				CopyMetadata(meta);
 				for (i = 0; i < TrackCount; i++)
 				{
-					if ((_config.overwriteCUEData || _tracks[i].Artist == "") && taglibMetadata.Tracks[i].Artist != "")
-						_tracks[i].Artist = taglibMetadata.Tracks[i].Artist;
-					if ((_config.overwriteCUEData || _tracks[i].Title == "") && taglibMetadata.Tracks[i].Title != "")
-						_tracks[i].Title = taglibMetadata.Tracks[i].Title;
 					if (_tracks[i].Title == "" && _hasTrackFilenames)
 						_tracks[i].Title = Path.GetFileNameWithoutExtension(_trackFilenames[i]).TrimStart(" .-_0123456789".ToCharArray());
 				}
@@ -2778,7 +2794,7 @@ string status = processor.Go();
 
 			LoadAlbumArt(_tracks[0]._fileInfo ?? _fileInfo);
 			ResizeAlbumArt();
-			if (_config.embedAlbumArt || _config.copyAlbumArt)
+			if (_config.embedAlbumArt || _config.CopyAlbumArt)
 				_albumArt.ForEach(t => _padding += _albumArt[0].Data.Count);
 			if (_config.embedLog && _eacLog != null)
 				_padding += _eacLog.Length;
@@ -3147,9 +3163,9 @@ string status = processor.Go();
 					extension = ".20bit" + extension;
 			}
 
-			ArLogFileName = General.ReplaceMultiple(_config.arLogFilenameFormat, vars, "unique", CheckIfFileExists) 
+			ArLogFileName = General.ReplaceMultiple(_config.ArLogFilenameFormat, vars, "unique", CheckIfFileExists) 
 				?? vars["%filename%"] + ".accurip";
-			AlArtFileName = General.ReplaceMultiple(_config.alArtFilenameFormat, vars, "unique", CheckIfFileExists) 
+			AlArtFileName = General.ReplaceMultiple(_config.AlArtFilenameFormat, vars, "unique", CheckIfFileExists) 
 				?? "folder.jpg";
 
 			if (OutputStyle == CUEStyle.SingleFileWithCUE)
@@ -3883,7 +3899,7 @@ string status = processor.Go();
 			if (_action == CUEAction.Encode)
 			{
 				string cueContents = CUESheetContents(OutputStyle);
-				if (_config.createEACLOG)
+				if (_config.createEACLOG && _isCD)
 					cueContents = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueContents));
 				if (OutputStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded)
 					WriteText(Path.ChangeExtension(_outputPath, ".cue"), cueContents);
@@ -3985,7 +4001,7 @@ string status = processor.Go();
 									fileInfo.Tag.Year = sourceFileInfo.Tag.Year;
 							}
 
-							if ((_config.embedAlbumArt || _config.copyAlbumArt) && _albumArt.Count > 0)
+							if ((_config.embedAlbumArt || _config.CopyAlbumArt) && _albumArt.Count > 0)
 								fileInfo.Tag.Pictures = _albumArt.ToArray();
 
 							fileInfo.Save();
@@ -4052,7 +4068,7 @@ string status = processor.Go();
 										fileInfo.Tag.Genres = sourceFileInfo.Tag.Genres;
 								}
 
-								if ((_config.embedAlbumArt || _config.copyAlbumArt) && _albumArt.Count > 0)
+								if ((_config.embedAlbumArt || _config.CopyAlbumArt) && _albumArt.Count > 0)
 									fileInfo.Tag.Pictures = _albumArt.ToArray();
 
 								fileInfo.Save();
@@ -4113,7 +4129,7 @@ string status = processor.Go();
 
 		public void LoadAlbumArt(TagLib.File fileInfo)
 		{
-			if ((_config.extractAlbumArt || _config.copyAlbumArt) && fileInfo != null)
+			if ((_config.extractAlbumArt || _config.CopyAlbumArt) && fileInfo != null)
 				foreach (TagLib.IPicture picture in fileInfo.Tag.Pictures)
 					if (picture.Type == TagLib.PictureType.FrontCover)
 						if (picture.MimeType == "image/jpeg")
@@ -4123,15 +4139,7 @@ string status = processor.Go();
 						}
 			if ((_config.extractAlbumArt || _config.embedAlbumArt) && !_isCD)
 			{
-				List<string> names = new List<string>();
-				names.Add("folder.jpg");
-				names.Add("cover.jpg");
-				names.Add("albumart.jpg");
-				names.Add("thumbnail.jpg");
-				names.Add("albumartlarge.jpg");
-				names.Add("front.jpg");
-
-				foreach (string name in names)
+				foreach (string name in _config.advanced.CoverArtFiles)
 				{
 					string imgPath = Path.Combine(_isArchive ? _archiveCUEpath : _inputDir, name);
 					bool exists = _isArchive ? _archiveContents.Contains(imgPath) : File.Exists(imgPath);
@@ -4147,9 +4155,28 @@ string status = processor.Go();
 					}
 				}
 
-				if (!_isArchive)
+				if (!_isArchive && _config.advanced.CoverArtSearchSubdirs)
 				{
 					// TODO: archive case
+					foreach (string name in _config.advanced.CoverArtFiles)
+					{
+						foreach (string imgPath in Directory.GetFiles(_inputDir, name, SearchOption.AllDirectories))
+						{
+							TagLib.File.IFileAbstraction file = _isArchive
+								? (TagLib.File.IFileAbstraction)new ArchiveFileAbstraction(this, imgPath)
+								: (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(imgPath);
+							TagLib.Picture pic = new TagLib.Picture(file);
+							pic.Description = name;
+							_albumArt.Add(pic);
+						}
+						if (_albumArt.Count == 1)
+							return;
+						if (_albumArt.Count > 1)
+						{
+							_albumArt.Clear();
+							break;
+						}
+					}
 					foreach (string imgPath in Directory.GetFiles(_inputDir, "*.jpg", SearchOption.AllDirectories))
 					{
 						TagLib.Picture pic = new TagLib.Picture(imgPath);
@@ -4158,9 +4185,13 @@ string status = processor.Go();
 						else
 							pic.Description = Path.GetFileName(imgPath);
 						_albumArt.Add(pic);
-						if (Action != CUEAction.Encode)
-							return;
 					}
+				}
+
+				if (Action != CUEAction.Encode && _albumArt.Count > 1)
+				{
+					_albumArt.Clear();
+					return;
 				}
 
 				if (_albumArt.Count != 0)
@@ -4505,11 +4536,11 @@ string status = processor.Go();
 			int diskLength = 588 * (int)_toc.AudioLength;
 			int diskOffset = 0;
 
-			// we init CTDB before AR so that AR gets inited with correct CTDB settings
+			// we init AR before CTDB so that CTDB gets inited with correct TOC
+			if (_useAccurateRip || _useCUEToolsDB)
+				_arVerify.Init(_toc);
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
 				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
-			if (_useAccurateRip)
-				_arVerify.Init();
 
 			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0.0, null, null);
 
@@ -4662,12 +4693,12 @@ string status = processor.Go();
 			ApplyWriteOffset();
 
 			hdcdDecoder = null;
-			
-			// we init CTDB before AR so that AR gets inited with correct CTDB settings
+
+			// we init AR before CTDB so that CTDB gets inited with correct TOC
+			if (_useAccurateRip || _useCUEToolsDB)
+				_arVerify.Init(_toc);
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
 				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
-			if (_useAccurateRip)
-				_arVerify.Init();
 
 			ShowProgress(String.Format("Verifying ({0:00}%)...", 0), 0.0, null, null);
 

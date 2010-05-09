@@ -82,6 +82,53 @@ namespace CUETools.Processor
 				return serializer.Deserialize(fs) as CUEMetadata;
 		}
 
+		public void Merge(CUEMetadata metadata, bool overwrite)
+		{
+			if ((overwrite || TotalDiscs == "") && metadata.TotalDiscs != "") TotalDiscs = metadata.TotalDiscs;
+			if ((overwrite || DiscNumber == "") && metadata.DiscNumber != "") DiscNumber = metadata.DiscNumber;
+			if ((overwrite || Year == "") && metadata.Year != "") Year = metadata.Year;
+			if ((overwrite || Genre == "") && metadata.Genre != "") Genre = metadata.Genre;
+			if ((overwrite || Artist == "") && metadata.Artist != "") Artist = metadata.Artist;
+			if ((overwrite || Title == "") && metadata.Title != "") Title = metadata.Title;
+			if ((overwrite || Catalog == "") && metadata.Catalog != "") Catalog = metadata.Catalog;
+			for (int i = 0; i < Tracks.Count; i++)
+			{
+				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
+				if ((overwrite || Tracks[i].Artist == "") && metadata.Tracks[i].Artist != "") Tracks[i].Artist = metadata.Tracks[i].Artist;
+				if ((overwrite || Tracks[i].ISRC == "") && metadata.Tracks[i].ISRC != "") Tracks[i].ISRC = metadata.Tracks[i].ISRC;
+			}
+		}
+
+		public override bool Equals(object obj)
+		{
+			CUEMetadata metadata = obj as CUEMetadata;
+			if (metadata == null)
+				return false;
+			if (TotalDiscs != metadata.TotalDiscs ||
+				DiscNumber != metadata.DiscNumber ||
+				Year != metadata.Year ||
+				Genre != metadata.Genre ||
+				Artist != metadata.Artist ||
+				Title != metadata.Title ||
+				Catalog != metadata.Catalog ||
+				Tracks.Count != metadata.Tracks.Count
+				)
+				return false;
+			for (int i = 0; i < Tracks.Count; i++)
+				if (Tracks[i].Title != metadata.Tracks[i].Title ||
+					Tracks[i].Artist != metadata.Tracks[i].Artist ||
+					Tracks[i].ISRC != metadata.Tracks[i].ISRC)
+					return false;
+			return true;
+		}
+
+		public bool Contains(CUEMetadata metadata)
+		{
+			CUEMetadata sum = new CUEMetadata(metadata);
+			sum.Merge(this, false);
+			return sum.Equals(this);
+		}
+
 		public void CopyMetadata(CUEMetadata metadata)
 		{
 			// if (metadata.Tracks.Count != Tracks.Count) throw;
@@ -161,8 +208,9 @@ namespace CUETools.Processor
 			return different && !error;
 		}
 
-		public void FreedbToVarious()
+		public bool FreedbToVarious()
 		{
+			bool found = false;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				string title = Tracks[i].Title;
@@ -172,12 +220,14 @@ namespace CUETools.Processor
 				{
 					Tracks[i].Title = title.Substring(idx + 3);
 					Tracks[i].Artist = title.Substring(0, idx);
+					found = true;
 				}
 				else
 				{
 					Tracks[i].Artist = title;
 				}
 			}
+			return found;
 		}
 
 		public void UpdateArtist(string artist)

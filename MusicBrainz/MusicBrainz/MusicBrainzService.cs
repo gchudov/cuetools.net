@@ -41,7 +41,9 @@ namespace MusicBrainz
             get { return cache_policy; }
             set { cache_policy = value; }
         }
-        
+
+		public static System.Net.IWebProxy Proxy { get; set; }
+
         public static event EventHandler<XmlRequestEventArgs> XmlRequest;
         
         internal static void OnXmlRequest (string url, bool fromCache)

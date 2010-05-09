@@ -35,6 +35,7 @@ namespace JDP {
 		private void frmSettings_Load(object sender, EventArgs e) 
 		{
 			cUEConfigBindingSource.DataSource = _config;
+			propertyGrid1.SelectedObject = _config.advanced;
 			
 			chkReducePriority.Checked = _reducePriority;
 			checkBoxCheckForUpdates.Checked = _config.checkForUpdates;
@@ -85,7 +86,6 @@ namespace JDP {
 			//textBoxARLogExtension.Text = _config.arLogFilenameFormat;
 			numericUpDownMaxResolution.Value = _config.maxAlbumArtSize;
 			checkBoxSeparateDecodingThread.Checked = _config.separateDecodingThread;
-			checkBoxUseSystemProxy.Checked = _config.useSystemProxySettings;
 
 			switch (_config.gapsHandling)
 			{
@@ -249,7 +249,6 @@ namespace JDP {
 			//_config.arLogFilenameFormat = textBoxARLogExtension.Text;
 			_config.maxAlbumArtSize = (int) numericUpDownMaxResolution.Value;
 			_config.separateDecodingThread = checkBoxSeparateDecodingThread.Checked;
-			_config.useSystemProxySettings = checkBoxUseSystemProxy.Checked;
 
 			_config.language = ((CultureInfo)comboLanguage.SelectedItem).Name;
 		}

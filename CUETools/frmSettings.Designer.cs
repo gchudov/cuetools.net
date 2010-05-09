@@ -172,11 +172,12 @@ namespace JDP {
 			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
 			this.listViewScripts = new System.Windows.Forms.ListView();
 			this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+			this.tabPage7 = new System.Windows.Forms.TabPage();
+			this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
 			this.labelFormatDecoder = new System.Windows.Forms.Label();
 			this.labelFormatEncoder = new System.Windows.Forms.Label();
 			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
-			this.checkBoxUseSystemProxy = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -218,6 +219,7 @@ namespace JDP {
 			this.grpHDCD.SuspendLayout();
 			this.tabPage5.SuspendLayout();
 			this.groupBoxScriptConditions.SuspendLayout();
+			this.tabPage7.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnCancel
@@ -229,7 +231,6 @@ namespace JDP {
 			// 
 			// grpGeneral
 			// 
-			this.grpGeneral.Controls.Add(this.checkBoxUseSystemProxy);
 			this.grpGeneral.Controls.Add(this.checkBoxSeparateDecodingThread);
 			this.grpGeneral.Controls.Add(this.checkBoxCheckForUpdates);
 			this.grpGeneral.Controls.Add(this.chkAllowMultipleInstances);
@@ -654,6 +655,7 @@ namespace JDP {
 			this.tabControl1.Controls.Add(this.tabPage11);
 			this.tabControl1.Controls.Add(this.tabPage4);
 			this.tabControl1.Controls.Add(this.tabPage5);
+			this.tabControl1.Controls.Add(this.tabPage7);
 			this.tabControl1.HotTrack = true;
 			this.tabControl1.Multiline = true;
 			this.tabControl1.Name = "tabControl1";
@@ -1453,6 +1455,20 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.columnHeader5, "columnHeader5");
 			// 
+			// tabPage7
+			// 
+			this.tabPage7.BackColor = System.Drawing.SystemColors.Control;
+			this.tabPage7.Controls.Add(this.propertyGrid1);
+			resources.ApplyResources(this.tabPage7, "tabPage7");
+			this.tabPage7.Name = "tabPage7";
+			// 
+			// propertyGrid1
+			// 
+			resources.ApplyResources(this.propertyGrid1, "propertyGrid1");
+			this.propertyGrid1.Name = "propertyGrid1";
+			this.propertyGrid1.PropertySort = System.Windows.Forms.PropertySort.Categorized;
+			this.propertyGrid1.ToolbarVisible = false;
+			// 
 			// labelFormatDecoder
 			// 
 			resources.ApplyResources(this.labelFormatDecoder, "labelFormatDecoder");
@@ -1472,12 +1488,6 @@ namespace JDP {
 			resources.ApplyResources(this.checkBox1, "checkBox1");
 			this.checkBox1.Name = "checkBox1";
 			this.checkBox1.UseVisualStyleBackColor = true;
-			// 
-			// checkBoxUseSystemProxy
-			// 
-			resources.ApplyResources(this.checkBoxUseSystemProxy, "checkBoxUseSystemProxy");
-			this.checkBoxUseSystemProxy.Name = "checkBoxUseSystemProxy";
-			this.checkBoxUseSystemProxy.UseVisualStyleBackColor = true;
 			// 
 			// frmSettings
 			// 
@@ -1557,6 +1567,7 @@ namespace JDP {
 			this.grpHDCD.PerformLayout();
 			this.tabPage5.ResumeLayout(false);
 			this.groupBoxScriptConditions.ResumeLayout(false);
+			this.tabPage7.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -1713,7 +1724,8 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox checkBox1;
 		private System.Windows.Forms.CheckBox checkBoxFlaCudaMultithread;
 		private System.Windows.Forms.CheckBox checkBoxSeparateDecodingThread;
-		private System.Windows.Forms.CheckBox checkBoxUseSystemProxy;
+		private System.Windows.Forms.TabPage tabPage7;
+		private System.Windows.Forms.PropertyGrid propertyGrid1;
 
 	}
 }

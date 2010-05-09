@@ -177,6 +177,13 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap freedb16 {
+            get {
+                object obj = ResourceManager.GetObject("freedb16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon ipod_sound {
             get {
                 object obj = ResourceManager.GetObject("ipod_sound", resourceCulture);
