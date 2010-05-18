@@ -80,7 +80,7 @@ namespace CUETools.TestCodecs
 			FlakeWriter target;
 
 			target = new FlakeWriter("flakewriter0.flac", null, buff.PCM);
-			target.PaddingLength = 1;
+			target.Padding = 1;
 			target.DoSeekTable = false;
 			//target.Vendor = "CUETools";
 			//target.CreationTime = DateTime.Parse("15 Aug 1976");
@@ -90,7 +90,7 @@ namespace CUETools.TestCodecs
 			CollectionAssert.AreEqual(File.ReadAllBytes("flake.flac"), File.ReadAllBytes("flakewriter0.flac"), "flakewriter0.flac doesn't match.");
 
 			target = new FlakeWriter("flakewriter1.flac", null, buff.PCM);
-			target.PaddingLength = 1;
+			target.Padding = 1;
 			target.DoSeekTable = false;
 			//target.Vendor = "CUETools";
 			//target.CreationTime = DateTime.Parse("15 Aug 1976");

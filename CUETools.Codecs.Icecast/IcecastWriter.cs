@@ -81,7 +81,9 @@ namespace CUETools.Codecs.Icecast
 				if (resp.StatusCode == HttpStatusCode.OK)
 				{
 					encoder = new CUETools.Codecs.LAME.LAMEEncoderCBR("", reqStream, AudioPCMConfig.RedBook);
-					encoder.Options = settings.MP3Options;
+					(encoder.Settings as CUETools.Codecs.LAME.LAMEEncoderCBRSettings).StereoMode = settings.JointStereo ? 
+						CUETools.Codecs.LAME.MpegMode.JOINT_STEREO : CUETools.Codecs.LAME.MpegMode.STEREO;
+					(encoder.Settings as CUETools.Codecs.LAME.LAMEEncoderCBRSettings).CustomBitrate = settings.Bitrate;
 				}
 			}
 			catch (WebException ex)
@@ -214,14 +216,24 @@ namespace CUETools.Codecs.Icecast
 			set { }
 		}
 
-		public string Options
+		public object Settings
 		{
+			get
+			{
+				return null;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				if (value != null && value.GetType() != typeof(object))
+					throw new Exception("Unsupported options " + value);
 			}
 		}
+
+		public long Padding
+		{
+			set { }
+		}
+
 		public AudioPCMConfig PCM
 		{
 			get { return pcm; }
@@ -241,24 +253,30 @@ namespace CUETools.Codecs.Icecast
 
 	public class IcecastSettingsData
 	{
+		public IcecastSettingsData()
+		{
+			Port = "8000";
+			Bitrate = 192;
+			JointStereo = true;
+		}
+
 		private string server;
-		private string port = "8000";
 		private string password;
 		private string mount;
 		private string name;
 		private string description;
 		private string url;
 		private string genre;
-		private string mp3Options = "-m j -b 192";
 
 		public string Server { get { return server; } set { server = value; } }
-		public string Port { get { return port; } set { port = value; } }
+		public string Port { get; set; }
 		public string Password { get { return password; } set { password = value; } }
 		public string Mount { get { return mount; } set { mount = value; } }
 		public string Name { get { return name; } set { name = value; } }
 		public string Desctiption { get { return description; } set { description = value; } }
 		public string Url { get { return url; } set { url = value; } }
 		public string Genre { get { return genre; } set { genre = value; } }
-		public string MP3Options { get { return mp3Options; } set { mp3Options = value; } }
+		public int    Bitrate { get; set; }
+		public bool   JointStereo { get; set; }
 	}
 }

@@ -3,6 +3,7 @@ using System.IO;
 using CUETools.CDImage;
 using CUETools.Codecs;
 using CUETools.Codecs.LossyWAV;
+using System.Xml.Serialization;
 
 namespace CUETools.Processor
 {
@@ -100,34 +101,8 @@ namespace CUETools.Processor
 				throw new Exception("Unsupported audio type: " + path);
 			dest.CompressionLevel = encoder.DefaultModeIndex;
 			dest.FinalSampleCount = finalSampleCount;
-			if (encoder.type != null)
-				switch (encoder.type.FullName)
-				{
-					case "CUETools.Codecs.ALAC.ALACWriter":
-						dest.Options = string.Format("--padding-length {0}", padding);
-						break;
-					case "CUETools.Codecs.FLAKE.FlakeWriter":
-						dest.Options = string.Format("--padding-length {0}", padding);
-						break;
-					case "CUETools.Codecs.FlaCuda.FlaCudaWriter":
-						dest.Options = string.Format("{0}{1}--padding-length {2} --cpu-threads {3}",
-							config.FlaCudaVerify ? "--verify " : "",
-							config.FlaCudaGPUOnly ? "--gpu-only " : "",
-							padding,
-							config.FlaCudaThreads ? 1 : 0);
-						break;
-					case "CUETools.Codecs.FLAC.FLACWriter":
-						dest.Options = string.Format("{0}{1}--padding-length {2}",
-							config.disableAsm ? "--disable-asm " : "",
-							config.flacVerify ? "--verify " : "",
-							padding);
-						break;
-					case "CUETools.Codecs.WavPack.WavPackWriter":
-						dest.Options = string.Format("{0}--extra-mode {1}",
-							config.wvStoreMD5 ? "--md5 " : "",
-							config.wvExtraMode);
-						break;
-				}
+			dest.Padding = padding;
+			dest.Settings = encoder.settings;
 			return dest;
 		}
 

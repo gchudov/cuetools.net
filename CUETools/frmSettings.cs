@@ -45,12 +45,8 @@ namespace JDP {
 			numEncodeWhenConfidence.Value = _config.encodeWhenConfidence;
 			numEncodeWhenPercent.Value = _config.encodeWhenPercent;
 			chkEncodeWhenZeroOffset.Checked = _config.encodeWhenZeroOffset;
-			chkFLACVerify.Checked = _config.flacVerify;
 			chkWriteArTagsOnConvert.Checked = _config.writeArTagsOnEncode;
 			chkWriteARTagsOnVerify.Checked = _config.writeArTagsOnVerify;
-			chkWVExtraMode.Checked = (_config.wvExtraMode != 0);
-			if (_config.wvExtraMode != 0) numWVExtraMode.Value = _config.wvExtraMode;
-			chkWVStoreMD5.Checked = _config.wvStoreMD5;
 			chkKeepOriginalFilenames.Checked = _config.keepOriginalFilenames;
 			txtSingleFilenameFormat.Text = _config.singleFilenameFormat;
 			txtTrackFilenameFormat.Text = _config.trackFilenameFormat;
@@ -208,12 +204,8 @@ namespace JDP {
 			_config.encodeWhenPercent = (uint)numEncodeWhenPercent.Value;
 			_config.encodeWhenConfidence = (uint)numEncodeWhenConfidence.Value;
 			_config.encodeWhenZeroOffset = chkEncodeWhenZeroOffset.Checked;
-			_config.flacVerify = chkFLACVerify.Checked;
 			_config.writeArTagsOnEncode = chkWriteArTagsOnConvert.Checked;
 			_config.writeArTagsOnVerify = chkWriteARTagsOnVerify.Checked;
-			if (!chkWVExtraMode.Checked) _config.wvExtraMode = 0;
-			else _config.wvExtraMode = (int) numWVExtraMode.Value;
-			_config.wvStoreMD5 = chkWVStoreMD5.Checked;
 			_config.keepOriginalFilenames = chkKeepOriginalFilenames.Checked;
 			_config.singleFilenameFormat = txtSingleFilenameFormat.Text;
 			_config.trackFilenameFormat = txtTrackFilenameFormat.Text;
@@ -263,8 +255,6 @@ namespace JDP {
 			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked && chkFilenamesANSISafe.Checked;
 
 			txtSpecialExceptions.Enabled = chkRemoveSpecial.Checked;
-
-			numWVExtraMode.Enabled = chkWVExtraMode.Checked;
 
 			chkOverwriteTags.Enabled = chkFillUpCUE.Checked;
 		}
@@ -492,13 +482,19 @@ namespace JDP {
 			comboBoxEncoderExtension.Visible = encoder != null;
 			comboBoxEncoderExtension.Enabled = encoder != null && encoder.path != null;
 			groupBoxExternalEncoder.Visible = encoder != null && encoder.path != null;
-			groupBoxFlaCudaOptions.Visible = encoder != null && encoder.path == null && encoder.type.Name == "FlaCudaWriter";
-			groupBoxLibFLAC.Visible = encoder != null && encoder.path == null && encoder.type.Name == "FLACWriter";
-			groupBoxLibWavpack.Visible = encoder != null && encoder.path == null && encoder.type.Name == "WavPackWriter";
-			groupBoxLibMAC_SDK.Visible = encoder != null && encoder.path == null && encoder.type.Name == "APEWriter";
 			checkBoxEncoderLossless.Enabled = encoder != null && format != null && format.allowLossless && format.allowLossy;
 			if (!checkBoxEncoderLossless.Enabled && encoder != null && format != null && encoder.Lossless != format.allowLossless)
 				encoder.Lossless = format.allowLossless;
+
+			if (encoder != null && encoder.settingsSerializer != null)
+			{
+				propertyGridEncoderSettings.Visible = encoder != null && encoder.settingsSerializer != null;
+				propertyGridEncoderSettings.SelectedObject = encoder.settings;
+			} else
+			{
+				propertyGridEncoderSettings.Visible = false;
+				propertyGridEncoderSettings.SelectedObject = null;
+			}
 
 			foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)
 			{

@@ -252,7 +252,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}
 	};
 
-	[AudioEncoderClass("MAC_SDK", "ape", true, "fast normal high extra insane", "high", 1)]
+	[AudioEncoderClass("MAC_SDK", "ape", true, "fast normal high extra insane", "high", 1, Object::typeid)]
 	public ref class APEWriter : IAudioDest
 	{
 	public:
@@ -366,18 +366,28 @@ namespace CUETools { namespace Codecs { namespace APE {
 				return _compressionLevel / 1000 - 1;
 			}
 			void set(Int32 value) {
-				if ((value < 0) || (value > 4)) {
+				if (value < 0 || value > 4)
 					throw gcnew Exception("Invalid compression mode.");
-				}
 				_compressionLevel = (value + 1) * 1000;
 			}
 		}
 
-		virtual property String^ Options
+		virtual property __int64 Padding
 		{
-			void set(String^ value)
+			void set(__int64 value) {
+			}
+		}
+
+		virtual property Object^ Settings
+		{
+			Object^ get()
 			{
-				if (value == nullptr || value == "") return;
+			    return nullptr;
+			}
+			
+			void set(Object^ value)
+			{
+			    if (value != nullptr && value->GetType() != Object::typeid)
 				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
 			}
 		}

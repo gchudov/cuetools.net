@@ -49,9 +49,10 @@ namespace CUETools.Codecs
 		string Path { get; }
 
 		int CompressionLevel { get; set; }
-		string Options { set; }
+		object Settings { get;  set; }
 		long FinalSampleCount { set; }
 		long BlockSize { set; }
+		long Padding { set; }
 	}
 
 	public interface IAudioFilter
@@ -75,14 +76,15 @@ namespace CUETools.Codecs
 	///	...
 	///}</code>
 	/// </example>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public sealed class AudioEncoderClass : Attribute
 	{
 		private string _encoderName, _extension, _supportedModes, _defaultMode;
 		bool _lossless;
 		int _priority;
+		Type _settings;
 
-		public AudioEncoderClass(string encoderName, string extension, bool lossless, string supportedModes, string defaultMode, int priority)
+		public AudioEncoderClass(string encoderName, string extension, bool lossless, string supportedModes, string defaultMode, int priority, Type settings)
 		{
 			_encoderName = encoderName;
 			_extension = extension;
@@ -90,6 +92,7 @@ namespace CUETools.Codecs
 			_defaultMode = defaultMode;
 			_lossless = lossless;
 			_priority = priority;
+			_settings = settings;
 		}
 
 		public string EncoderName
@@ -120,6 +123,11 @@ namespace CUETools.Codecs
 		public int Priority
 		{
 			get { return _priority; }
+		}
+
+		public Type Settings
+		{
+			get { return _settings; }
 		}
 	}
 
@@ -844,13 +852,22 @@ namespace CUETools.Codecs
 			set { }
 		}
 
-		public string Options
+		public object Settings 
 		{
+			get
+			{
+				return null;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				if (value != null && value.GetType() != typeof(object))
+					throw new Exception("Unsupported options " + value);
 			}
+		}
+
+		public long Padding
+		{
+			set { }
 		}
 
 		public long BlockSize
@@ -1164,7 +1181,7 @@ namespace CUETools.Codecs
 		public string Path { get { return _path; } }
 	}
 
-	[AudioEncoderClass("builtin wav", "wav", true, "", "", 10)]
+	[AudioEncoderClass("builtin wav", "wav", true, "", "", 10, typeof(object))]
 	public class WAVWriter : IAudioDest
 	{
 		Stream _IO;
@@ -1332,13 +1349,22 @@ namespace CUETools.Codecs
 			set { }
 		}
 
-		public string Options
+		public object Settings
 		{
+			get
+			{
+				return null;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				if (value != null && value.GetType() != typeof(object))
+					throw new Exception("Unsupported options " + value);
 			}
+		}
+
+		public long Padding
+		{
+			set { }
 		}
 
 		public AudioPCMConfig PCM
@@ -1851,13 +1877,22 @@ namespace CUETools.Codecs
 			set { } // !!!! Must not start the process in constructor, so that we can set CompressionLevel!
 		}
 
-		public string Options
+		public object Settings
 		{
+			get
+			{
+				return null;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				if (value != null && value.GetType() != typeof(object))
+					throw new Exception("Unsupported options " + value);
 			}
+		}
+
+		public long Padding
+		{
+			set { }
 		}
 
 		public AudioPCMConfig PCM

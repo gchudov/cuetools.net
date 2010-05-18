@@ -30,6 +30,7 @@
 // ****************************************************************************
 
 using namespace System;
+using namespace System::ComponentModel;
 using namespace System::Runtime::InteropServices;
 using namespace System::Security::Cryptography;
 using namespace System::IO;
@@ -290,7 +291,47 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		}
 	};
 
-	[AudioEncoderClass("libwavpack", "wv", true, "fast normal high high+", "normal", 1)]
+	public ref class WavPackWriterSettings
+	{
+	    public:
+		WavPackWriterSettings() 
+		{ 
+		    _md5Sum = false;
+		    _extraMode = 0;
+		}
+
+		[DefaultValue(0)]
+		[DisplayName("ExtraMode")]
+		property Int32 ExtraMode {
+			Int32 get() {
+				return _extraMode;
+			}
+			void set(Int32 value) {
+				if ((value < 0) || (value > 6)) {
+					throw gcnew Exception("Invalid extra mode.");
+				}
+				_extraMode = value;
+			}
+		}
+
+		[DefaultValue(false)]
+		[DisplayName("MD5")]
+		[Description("Calculate MD5 hash for audio stream")]
+		property bool MD5Sum {
+			bool get() {
+				return _md5Sum;
+			}
+			void set(bool value) {
+				_md5Sum = value;
+			}
+		}
+
+	    private:
+		bool _md5Sum;
+		Int32 _extraMode;
+	};
+
+	[AudioEncoderClass("libwavpack", "wv", true, "fast normal high high+", "normal", 1, WavPackWriterSettings::typeid)]
 	public ref class WavPackWriter : IAudioDest 
 	{
 	public:
@@ -306,7 +347,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			_path = path;
 
 			_compressionMode = 1;
-			_extraMode = 0;
 			_blockSize = 0;
 
 			IntPtr pathChars = Marshal::StringToHGlobalUni(path);
@@ -319,19 +359,19 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 
 		virtual void Close() 
 		{
-			if (_md5Sum)
-			{
-				_md5hasher->TransformFinalBlock (gcnew array<unsigned char>(1), 0, 0);
-				pin_ptr<unsigned char> md5_digest = &_md5hasher->Hash[0];
-				WavpackStoreMD5Sum (_wpc, md5_digest);
-			}
+		    if (_settings->MD5Sum)
+		    {
+			_md5hasher->TransformFinalBlock (gcnew array<unsigned char>(1), 0, 0);
+			pin_ptr<unsigned char> md5_digest = &_md5hasher->Hash[0];
+			WavpackStoreMD5Sum (_wpc, md5_digest);
+		    }
 
-			WavpackFlushSamples(_wpc);
-			_wpc = WavpackCloseFile(_wpc);
-			fclose(_hFile);
+		    WavpackFlushSamples(_wpc);
+		    _wpc = WavpackCloseFile(_wpc);
+		    fclose(_hFile);
 
-			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount))
-				throw gcnew Exception("Samples written differs from the expected sample count.");
+		    if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount))
+			    throw gcnew Exception("Samples written differs from the expected sample count.");
 		}
 
 		virtual void Delete()
@@ -376,7 +416,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 
 			sampleBuffer->Prepare(this);
 
-			if (MD5Sum)
+			if (_settings->MD5Sum)
 				UpdateHash(sampleBuffer->Bytes, sampleBuffer->ByteLength);
 
 			if ((_pcm->BitsPerSample & 7) != 0)
@@ -408,7 +448,8 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			} 
 		}
 
-		virtual property int CompressionLevel {
+		virtual property int CompressionLevel
+		{
 			int get() {
 				return _compressionMode;
 			}
@@ -420,47 +461,24 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
-		virtual property String^ Options
+		virtual property __int64 Padding
 		{
-			void set(String^ value)
+			void set(__int64 value) {
+			}
+		}
+
+		virtual property Object^ Settings
+		{
+			Object^ get()
 			{
-				if (value == nullptr || value == "") return;
-				cli::array<String^>^ args = value->Split();
-				for (int i = 0; i < args->Length; i++)
-				{
-				    if (args[i] == "--extra-mode" && (++i) < args->Length)
-				    {
-					ExtraMode = Int32::Parse(args[i]);
-					continue;
-				    }
-				    if (args[i] == "--md5")
-				    {
-					MD5Sum = true;
-					continue;
-				    }
-				    throw gcnew Exception(String::Format("Unsupported options: {0}", value));
-				}
+			    return _settings;
 			}
-		}
-
-		property Int32 ExtraMode {
-			Int32 get() {
-				return _extraMode;
-			}
-			void set(Int32 value) {
-				if ((value < 0) || (value > 6)) {
-					throw gcnew Exception("Invalid extra mode.");
-				}
-				_extraMode = value;
-			}
-		}
-
-		property bool MD5Sum {
-			bool get() {
-				return _md5Sum;
-			}
-			void set(bool value) {
-				_md5Sum = value;
+			
+			void set(Object^ value)
+			{
+			    if (value == nullptr || value->GetType() != WavPackWriterSettings::typeid)
+				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+			    _settings = (WavPackWriterSettings^)value;
 			}
 		}
 
@@ -468,7 +486,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		{
 			if (!_initialized) Initialize();
 
-			if (!_md5Sum || !_md5hasher)
+			if (!_settings->MD5Sum || !_md5hasher)
 				throw gcnew Exception("MD5 not enabled.");
 			_md5hasher->TransformBlock (buff, 0, len,  buff, 0);
 		}
@@ -478,14 +496,16 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		bool _initialized;
 		WavpackContext *_wpc;
 		Int32 _finalSampleCount, _samplesWritten;
-		Int32 _compressionMode, _extraMode, _blockSize;
+		Int32 _compressionMode, _blockSize;
 		String^ _path;
-		bool _md5Sum;
 		MD5^ _md5hasher;
 		array<int,2>^ _shiftedSampleBuffer;
 		AudioPCMConfig^ _pcm;
+		WavPackWriterSettings^ _settings;
 
 		void Initialize() {
+			_settings = gcnew WavPackWriterSettings();
+
 			WavpackConfig config;
 
 			_wpc = WavpackOpenFileOutput(write_block, _hFile, NULL);
@@ -502,14 +522,15 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			if (_compressionMode == 0) config.flags |= CONFIG_FAST_FLAG;
 			if (_compressionMode == 2) config.flags |= CONFIG_HIGH_FLAG;
 			if (_compressionMode == 3) config.flags |= CONFIG_HIGH_FLAG | CONFIG_VERY_HIGH_FLAG;
-			if (_extraMode != 0) {
-				config.flags |= CONFIG_EXTRA_MODE;
-				config.xmode = _extraMode;
-			}
-			if (_md5Sum)
+			if (_settings->ExtraMode != 0) 
 			{
-				_md5hasher = gcnew MD5CryptoServiceProvider ();
-				config.flags |= CONFIG_MD5_CHECKSUM;
+			    config.flags |= CONFIG_EXTRA_MODE;
+			    config.xmode = _settings->ExtraMode;
+			}
+			if (_settings->MD5Sum)
+			{
+			    _md5hasher = gcnew MD5CryptoServiceProvider ();
+			    config.flags |= CONFIG_MD5_CHECKSUM;
 			}
 			config.block_samples = (int)_blockSize;
 			if (_blockSize > 0 && _blockSize < 2048)

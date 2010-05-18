@@ -204,8 +204,10 @@ namespace CUETools.FlaCudaExe
 
 			try
 			{
-				encoder.GPUOnly = gpu_only;
-				encoder.CPUThreads = cpu_threads;
+				(encoder.Settings as FlaCudaWriterSettings).GPUOnly = gpu_only;
+				(encoder.Settings as FlaCudaWriterSettings).CPUThreads = cpu_threads;
+				(encoder.Settings as FlaCudaWriterSettings).DoVerify = do_verify;
+				(encoder.Settings as FlaCudaWriterSettings).DoMD5 = do_md5;
 				if (level >= 0)
 					encoder.CompressionLevel = level;
 				if (stereo_method != null)
@@ -231,15 +233,13 @@ namespace CUETools.FlaCudaExe
 				if (blocksize >= 0)
 					encoder.BlockSize = blocksize;
 				if (padding >= 0)
-					encoder.PaddingLength = padding;
+					encoder.Padding = padding;
 				if (vbr_mode >= 0)
 					encoder.VBRMode = vbr_mode;
 				if (orders_per_window >= 0)
 					encoder.OrdersPerWindow = orders_per_window;
 				encoder.UseLattice = use_lattice;
-				encoder.DoMD5 = do_md5;
 				encoder.DoSeekTable = do_seektable;
-				encoder.DoVerify = do_verify;
 			}
 			catch (Exception ex)
 			{

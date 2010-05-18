@@ -97,7 +97,7 @@ namespace CUETools.TestParity
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
 			CDRepairEncode encode = new CDRepairEncode(ar, stride, npar, false, true);
 			buff.Prepare(wav, finalSampleCount);
-			ar.Init();
+			ar.Init(toc);
 			ar.Write(buff);
 			ar.Close();
 			Assert.AreEqual<byte>(8, encode.Parity[0]);

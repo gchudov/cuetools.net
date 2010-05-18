@@ -203,11 +203,11 @@ namespace CUETools.ALACEnc
 				if (estimation_depth >= 0)
 					alac.EstimationDepth = estimation_depth;
 				if (padding >= 0)
-					alac.PaddingLength = padding;
+					alac.Padding = padding;
 				if (adaptive_passes >= 0)
 					alac.AdaptivePasses = adaptive_passes;
 				alac.DoSeekTable = do_seektable;
-				alac.DoVerify = do_verify;
+				(alac.Settings as ALACWriterSettings).DoVerify = do_verify;
 			}
 			catch (Exception ex)
 			{

@@ -72,7 +72,7 @@ namespace CUETools.TestParity
 			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
 			CDRepairEncode encode = new CDRepairEncode(ar, stride, npar, false, true);
 			buff.Prepare(wav, finalSampleCount);
-			ar.Init();
+			ar.Init(toc);
 			ar.Write(buff);
 			ar.Close(); 
 			parity = encode.Parity;
@@ -80,7 +80,7 @@ namespace CUETools.TestParity
 
 			decode = new CDRepairEncode(ar2, stride, npar, true, false);
 			buff.Prepare(wav2, finalSampleCount);
-			ar2.Init();
+			ar2.Init(toc);
 			ar2.Write(buff);
 			ar2.Close(); 
 
@@ -90,7 +90,7 @@ namespace CUETools.TestParity
 			fix = decode.VerifyParity(parity, actualOffset);
 
 			decode2 = new CDRepairEncode(ar3, stride, npar, true, false);
-			ar3.Init();
+			ar3.Init(toc);
 			buff.Prepare(new byte[offset * 4], offset);
 			ar3.Write(buff);
 			buff.Prepare(wav2, finalSampleCount - offset);

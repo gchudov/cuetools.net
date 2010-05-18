@@ -197,7 +197,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>16</value>
+    <value>15</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
@@ -264,7 +264,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>13</value>
   </data>
   <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -294,7 +294,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonGo.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>14</value>
   </data>
   <data name="buttonAbort.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -327,7 +327,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonAbort.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>16</value>
   </data>
   <data name="buttonPause.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -360,7 +360,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;buttonPause.ZOrder" xml:space="preserve">
-    <value>18</value>
+    <value>17</value>
   </data>
   <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>310, 15</value>
@@ -468,7 +468,7 @@
     <value>bnComboBoxLosslessOrNot</value>
   </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -495,7 +495,7 @@
     <value>bnComboBoxEncoder</value>
   </data>
   <data name="&gt;&gt;bnComboBoxEncoder.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxEncoder.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -549,7 +549,7 @@
     <value>bnComboBoxFormat</value>
   </data>
   <data name="&gt;&gt;bnComboBoxFormat.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxFormat.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -615,7 +615,7 @@
     <value>bnComboBoxImage</value>
   </data>
   <data name="&gt;&gt;bnComboBoxImage.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxImage.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -768,7 +768,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>12</value>
   </data>
   <metadata name="drivesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>998, 56</value>
@@ -861,7 +861,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>9</value>
   </data>
   <data name="progressBarCD.Location" type="System.Drawing.Point, System.Drawing">
     <value>382, 392</value>
@@ -888,10 +888,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;progressBarCD.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>11</value>
   </data>
   <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 314</value>
+    <value>5, 312</value>
   </data>
   <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
     <value>552, 20</value>
@@ -912,7 +912,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;txtOutputPath.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>19</value>
   </data>
   <metadata name="releasesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>708, 56</value>
@@ -1005,7 +1005,7 @@
     <value>bnComboBoxRelease</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1029,16 +1029,16 @@
     <value>bnComboBoxDrives</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>8</value>
   </data>
   <data name="bnComboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 313</value>
+    <value>5, 312</value>
   </data>
   <data name="bnComboBoxOutputFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>552, 21</value>
@@ -1046,17 +1046,20 @@
   <data name="bnComboBoxOutputFormat.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
   </data>
+  <data name="bnComboBoxOutputFormat.Text" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Name" xml:space="preserve">
     <value>bnComboBoxOutputFormat</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.8.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>10</value>
   </data>
   <data name="columnHeaderValue.DisplayIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1098,7 +1101,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listMetadata.ZOrder" xml:space="preserve">
-    <value>19</value>
+    <value>18</value>
   </data>
   <data name="buttonTrackMetadata.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -1726,7 +1729,7 @@
     <value>CenterScreen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.0.8</value>
+    <value>CUERipper 2.0.9</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>

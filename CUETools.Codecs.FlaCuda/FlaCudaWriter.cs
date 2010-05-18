@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -30,7 +31,44 @@ using GASS.CUDA.Types;
 
 namespace CUETools.Codecs.FlaCuda
 {
-	[AudioEncoderClass("FlaCuda", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "8", 1)]
+	public class FlaCudaWriterSettings
+	{
+		public FlaCudaWriterSettings() { DoVerify = false; GPUOnly = true; DoMD5 = true; }
+
+		[DefaultValue(false)]
+		[DisplayName("Verify")]
+		[SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
+		public bool DoVerify { get; set; }
+
+		[DefaultValue(true)]
+		[DisplayName("MD5")]
+		[SRDescription(typeof(Properties.Resources), "DoMD5Description")]
+		public bool DoMD5 { get; set; }
+
+		[DefaultValue(true)]
+		[SRDescription(typeof(Properties.Resources), "DescriptionGPUOnly")]
+		public bool GPUOnly { get; set; }
+
+		int cpu_threads = 1;
+		[DefaultValue(1)]
+		[SRDescription(typeof(Properties.Resources), "DescriptionCPUThreads")]
+		public int CPUThreads
+		{
+			get
+			{
+				return cpu_threads;
+			}
+			set
+			{
+				if (value < 0 || value > 16)
+					throw new Exception("CPUThreads must be between 0..16");
+				cpu_threads = value;
+			}
+		}
+	}
+
+	[AudioEncoderClass("FlaCuda", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "8", 2, typeof(FlaCudaWriterSettings))]
+	//[AudioEncoderClass("FlaCuda nonsub", "flac", true, "9 10 11", "9", 1, typeof(FlaCudaWriterSettings))]
 	public class FlaCudaWriter : IAudioDest
 	{
 		Stream _IO = null;
@@ -96,10 +134,6 @@ namespace CUETools.Codecs.FlaCuda
 
 		CUdeviceptr cudaWindow;
 
-		bool encode_on_cpu = false;
-
-		int cpu_threads = 0;
-
 		bool do_lattice = false;
 
 		AudioPCMConfig _pcm;
@@ -129,7 +163,7 @@ namespace CUETools.Codecs.FlaCuda
 
 			windowBuffer = new float[FlaCudaWriter.MAX_BLOCKSIZE * lpc.MAX_LPC_WINDOWS];
 
-			eparams.flake_set_defaults(_compressionLevel, encode_on_cpu);
+			eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			eparams.padding_size = 8192;
 
 			crc8 = new Crc8();
@@ -149,7 +183,7 @@ namespace CUETools.Codecs.FlaCuda
 			}
 		}
 
-		public int PaddingLength
+		public long Padding
 		{
 			get
 			{
@@ -172,67 +206,24 @@ namespace CUETools.Codecs.FlaCuda
 				if (value < 0 || value > 11)
 					throw new Exception("unsupported compression level");
 				_compressionLevel = value;
-				eparams.flake_set_defaults(_compressionLevel, encode_on_cpu);
+				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			}
 		}
 
-		public string Options
+		FlaCudaWriterSettings _settings = new FlaCudaWriterSettings();
+
+		public object Settings
 		{
+			get
+			{
+				return _settings;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				string[] args = value.Split();
-				for (int i = 0; i < args.Length; i++)
-				{
-				    if (args[i] == "--padding-length" && (++i) < args.Length)
-				    {
-						PaddingLength = int.Parse(args[i]);
-						continue;
-				    }
-					if (args[i] == "--verify")
-					{
-						DoVerify = true;
-						continue;
-					}
-					if (args[i] == "--cpu-threads" && (++i) < args.Length)
-				    {
-						CPUThreads = int.Parse(args[i]);
-						continue;
-				    }
-				    if (args[i] == "--gpu-only")
-				    {
-						GPUOnly = true;
-						continue;
-				    }
+				if (value as FlaCudaWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
-				}
-			}
-		}
-
-		public int CPUThreads
-		{
-			get
-			{
-				return cpu_threads;
-			}
-			set
-			{
-				if (value < 0 || value > 16)
-					throw new Exception("cpu_threads must be between 0..16");
-				cpu_threads = value;
-			}
-		}
-
-		public bool GPUOnly
-		{
-			get
-			{
-				return !encode_on_cpu;
-			}
-			set
-			{
-				encode_on_cpu = !value;
-				eparams.flake_set_defaults(_compressionLevel, encode_on_cpu);
+				_settings = value as FlaCudaWriterSettings;
+				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			}
 		}
 
@@ -410,18 +401,6 @@ namespace CUETools.Codecs.FlaCuda
 		{
 			get { return eparams.window_function; }
 			set { eparams.window_function = value; }
-		}
-
-		public bool DoMD5
-		{
-			get { return eparams.do_md5; }
-			set { eparams.do_md5 = value; }
-		}
-
-		public bool DoVerify
-		{
-			get { return eparams.do_verify; }
-			set { eparams.do_verify = value; }
 		}
 
 		public bool DoSeekTable
@@ -1041,7 +1020,7 @@ namespace CUETools.Codecs.FlaCuda
 						if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 						break;
 					case SubframeType.Fixed:
-						if (encode_on_cpu)
+						if (!_settings.GPUOnly)
 						{
 							if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 							encode_residual_fixed(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples,
@@ -1059,7 +1038,7 @@ namespace CUETools.Codecs.FlaCuda
 							ulong csum = 0;
 							for (int i = task.frame.subframes[ch].best.order; i > 0; i--)
 								csum += (ulong)Math.Abs(coefs[i - 1]);
-							if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || encode_on_cpu)
+							if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || !_settings.GPUOnly)
 							{
 								if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 								if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32)
@@ -1132,7 +1111,7 @@ namespace CUETools.Codecs.FlaCuda
 					frame.subframes[ch].best.rc.porder = task.BestResidualTasks[index].porder;
 					for (int i = 0; i < task.BestResidualTasks[index].residualOrder; i++)
 						frame.subframes[ch].best.coefs[i] = task.BestResidualTasks[index].coefs[task.BestResidualTasks[index].residualOrder - 1 - i];
-					if (!encode_on_cpu && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
+					if (_settings.GPUOnly && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
 					{
 						int* riceParams = ((int*)task.bestRiceParamsPtr) + (index << task.max_porder);
 						fixed (int* dstParams = frame.subframes[ch].best.rc.rparams)
@@ -1323,7 +1302,7 @@ namespace CUETools.Codecs.FlaCuda
 				cuda.LaunchAsync(task.cudaCopyBestMethodStereo, 1, task.frameCount, task.stream);
 			else
 				cuda.LaunchAsync(task.cudaCopyBestMethod, 1, channels * task.frameCount, task.stream);
-			if (!encode_on_cpu)
+			if (_settings.GPUOnly)
 			{
 				int bsz = calcPartitionPartCount * calcPartitionPartSize;
 				if (cudaCalcPartition.Pointer == task.cudaCalcLargePartition.Pointer)
@@ -1600,13 +1579,13 @@ namespace CUETools.Codecs.FlaCuda
 				if (_IO.CanSeek)
 					first_frame_offset = _IO.Position;
 
-				task1 = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, eparams.do_verify);
-				task2 = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, eparams.do_verify);
-				if (cpu_threads > 0)
+				task1 = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify);
+				task2 = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify);
+				if (_settings.CPUThreads > 0)
 				{
-					cpu_tasks = new FlaCudaTask[cpu_threads];
+					cpu_tasks = new FlaCudaTask[_settings.CPUThreads];
 					for (int i = 0; i < cpu_tasks.Length; i++)
-						cpu_tasks[i] = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, eparams.do_verify);
+						cpu_tasks[i] = new FlaCudaTask(cuda, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify);
 				}
 				cudaWindow = cuda.Allocate((uint)sizeof(float) * FlaCudaWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS);
 
@@ -1855,16 +1834,16 @@ namespace CUETools.Codecs.FlaCuda
 		 * Write padding metadata block to byte array.
 		 */
 		int
-		write_padding(byte[] padding, int pos, int last, int padlen)
+		write_padding(byte[] padding, int pos, int last, long padlen)
 		{
 			BitWriter bitwriter = new BitWriter(padding, pos, 4);
 
 			// metadata header
 			bitwriter.writebits(1, last);
 			bitwriter.writebits(7, (int)MetadataType.Padding);
-			bitwriter.writebits(24, padlen);
+			bitwriter.writebits(24, (int)padlen);
 
-			return padlen + 4;
+			return (int)padlen + 4;
 		}
 
 		int write_headers()
@@ -1974,7 +1953,7 @@ namespace CUETools.Codecs.FlaCuda
 			header_len = write_headers();
 
 			// initialize CRC & MD5
-			if (eparams.do_md5)
+			if (_IO.CanSeek && _settings.DoMD5)
 				md5 = new MD5CryptoServiceProvider();
 
 			return header_len;
@@ -2015,7 +1994,7 @@ namespace CUETools.Codecs.FlaCuda
 		// padding size in bytes
 		// set by the user prior to calling flake_encode_init
 		// if set to less than 0, defaults to 4096
-		public int padding_size;
+		public long padding_size;
 
 		// minimum LPC order
 		// set by user prior to calling flake_encode_init
@@ -2074,8 +2053,6 @@ namespace CUETools.Codecs.FlaCuda
 
 		public WindowFunction window_function;
 
-		public bool do_md5;
-		public bool do_verify;
 		public bool do_seektable;
 
 		public int flake_set_defaults(int lvl, bool encode_on_cpu)
@@ -2101,8 +2078,6 @@ namespace CUETools.Codecs.FlaCuda
 			variable_block_size = 0;
 			lpc_min_precision_search = 0;
 			lpc_max_precision_search = 0;
-			do_md5 = true;
-			do_verify = false;
 			do_seektable = true;
 			do_wasted = true;
 			do_constant = true;

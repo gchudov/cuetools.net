@@ -205,7 +205,7 @@ namespace TTA {
 		}
 	};
 
-	[AudioEncoderClass("ttalib", "tta", true, "", "", 1)]
+	[AudioEncoderClass("ttalib", "tta", true, "", "", 1, Object::typeid)]
 	public ref class TTAWriter : public IAudioDest
 	{
 	public:
@@ -327,11 +327,22 @@ namespace TTA {
 			}
 		}
 
-		virtual property String^ Options
+		virtual property __int64 Padding
 		{
-			void set(String^ value)
+			void set(__int64 value) {
+			}
+		}
+
+		virtual property Object^ Settings
+		{
+			Object^ get()
 			{
-				if (value == nullptr || value == "") return;
+			    return nullptr;
+			}
+			
+			void set(Object^ value)
+			{
+			    if (value != nullptr && value->GetType() != Object::typeid)
 				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
 			}
 		}

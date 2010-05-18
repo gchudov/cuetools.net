@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -210,13 +211,22 @@ namespace CUETools.Codecs.LAME
 			}
 		}
 
-		public virtual string Options
+		public object Settings
 		{
+			get
+			{
+				return null;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				if (value != null && value.GetType() != typeof(object))
+					throw new Exception("Unsupported options " + value);
 			}
+		}
+
+		public long Padding
+		{
+			set { }
 		}
 
 		public long Position
@@ -255,7 +265,12 @@ namespace CUETools.Codecs.LAME
 	}
 
 
-	[AudioEncoderClass("lame VBR", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", 2)]
+	public class LAMEEncoderVBRSettings
+	{
+		public LAMEEncoderVBRSettings() { }
+	}
+
+	[AudioEncoderClass("lame VBR", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", 2, typeof(LAMEEncoderVBRSettings))]
 	public class LAMEEncoderVBR : LAMEEncoder
 	{
 		private int quality = 0;
@@ -295,36 +310,41 @@ namespace CUETools.Codecs.LAME
 			}
 		}
 
-		public override string Options
+		LAMEEncoderVBRSettings _settings = new LAMEEncoderVBRSettings();
+
+		public object Settings
 		{
+			get
+			{
+				return _settings;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				string[] args = value.Split();
-				for (int i = 0; i < args.Length; i++)
-				{
-					//if (args[i] == "--padding-length" && (++i) < args.Length)
-					//{
-					//    PaddingLength = int.Parse(args[i]);
-					//    continue;
-					//}
-					//if (args[i] == "--verify")
-					//{
-					//    DoVerify = true;
-					//    continue;
-					//}
+				if (value as LAMEEncoderVBRSettings == null)
 					throw new Exception("Unsupported options " + value);
-				}
+				_settings = value as LAMEEncoderVBRSettings;
 			}
 		}
 	}
 
-	[AudioEncoderClass("lame CBR", "mp3", false, "96 128 192 256 320", "256", 2)]
+	public class LAMEEncoderCBRSettings
+	{
+		public LAMEEncoderCBRSettings() {
+			// Iterate through each property and call ResetValue()
+			foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+				property.ResetValue(this);
+		}
+		[DefaultValue(0)]
+		public int CustomBitrate { get; set; }
+		[DefaultValue(MpegMode.STEREO)]
+		public MpegMode StereoMode { get; set; }
+	}
+
+	[AudioEncoderClass("lame CBR", "mp3", false, "96 128 192 256 320", "256", 2, typeof(LAMEEncoderCBRSettings))]
 	public class LAMEEncoderCBR : LAMEEncoder
 	{
 		private uint bps;
 		private static readonly uint[] bps_table = new uint[] {96, 128, 192, 256, 320};
-		private MpegMode stereo = MpegMode.STEREO;
 
 		public LAMEEncoderCBR(string path, Stream IO, AudioPCMConfig pcm)
 			: base(path, IO, pcm)
@@ -353,42 +373,27 @@ namespace CUETools.Codecs.LAME
 			}
 		}
 
-		public override string Options
+		LAMEEncoderCBRSettings _settings = new LAMEEncoderCBRSettings();
+
+		public object Settings
 		{
+			get
+			{
+				return _settings;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				string[] args = value.Split();
-				for (int i = 0; i < args.Length; i++)
-				{
-					if (args[i] == "-b" && (++i) < args.Length)
-					{
-					    bps = uint.Parse(args[i]);
-					    continue;
-					}
-					if (args[i] == "-m" && (++i) < args.Length)
-					{
-						switch (args[i])
-						{
-							case "s": stereo = MpegMode.STEREO; break;
-							case "j": stereo = MpegMode.JOINT_STEREO; break;
-							case "d": stereo = MpegMode.DUAL_CHANNEL; break;
-							case "m": stereo = MpegMode.MONO; break;
-							default:
-								throw new Exception("Unsupported options " + value);
-						}
-					    continue;
-					}
+				if (value as LAMEEncoderCBRSettings == null)
 					throw new Exception("Unsupported options " + value);
-				}
+				_settings = value as LAMEEncoderCBRSettings;
 			}
 		}
 
 		protected override BE_CONFIG MakeConfig()
 		{
-			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, bps);
+			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, _settings.CustomBitrate > 0 ? (uint)_settings.CustomBitrate : bps);
 			Mp3Config.format.lhv1.bWriteVBRHeader = 1;
-			Mp3Config.format.lhv1.nMode = stereo;
+			Mp3Config.format.lhv1.nMode = _settings.StereoMode;
 			//Mp3Config.format.lhv1.nVbrMethod = VBRMETHOD.VBR_METHOD_NONE; // --cbr
 			//Mp3Config.format.lhv1.nPreset = LAME_QUALITY_PRESET.LQP_NORMAL_QUALITY;
 			return Mp3Config;

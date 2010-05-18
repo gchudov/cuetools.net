@@ -32,10 +32,20 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CSScriptLibrary.v1.1, Version=2.3.2.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ThirdParty\CSScriptLibrary.v1.1.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="taglib-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ThirdParty\taglib-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccurateRipVerifyTest.cs" />
@@ -65,13 +75,33 @@
       <Name>CUETools.Codecs.FLAKE</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj">
+      <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
+      <Name>CUETools.Codecs.LossyWAV</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Compression\CUETools.Compression.csproj">
+      <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
+      <Name>CUETools.Compression</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.DSP.Resampler\CUETools.DSP.Resampler.csproj">
       <Project>{A6303861-CA06-4C2C-A104-BA9291538F6F}</Project>
       <Name>CUETools.DSP.Resampler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj">
+      <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
+      <Name>CUETools.Ripper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Freedb\Freedb.csproj">
+      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
+      <Name>Freedb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MusicBrainz\MusicBrainz.csproj">
+      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
+      <Name>MusicBrainz</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />

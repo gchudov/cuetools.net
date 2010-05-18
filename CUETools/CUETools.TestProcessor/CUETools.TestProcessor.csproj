@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{A430AD28-B76A-4ED0-AF7D-D13B8969297F}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -41,8 +41,13 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="taglib-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ThirdParty\taglib-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileGroupInfoTest.cs" />
     <Compile Include="ProcessorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -55,13 +60,29 @@
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj">
+      <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
+      <Name>CUETools.Codecs.LossyWAV</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Compression\CUETools.Compression.csproj">
+      <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
+      <Name>CUETools.Compression</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.CTDB\CUETools.CTDB.csproj">
+      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
+      <Name>CUETools.CTDB</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj">
+      <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
+      <Name>CUETools.Ripper</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Freedb\Freedb.csproj">
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>

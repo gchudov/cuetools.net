@@ -35,23 +35,23 @@ namespace CUETools.AccurateRip
 
 		public uint WorstTotal()
 		{
-			uint worstTotal = 0;
+			uint worstTotal = 0xffff;
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
 				uint sumTotal = Total(iTrack);
-				if (iTrack == 0 || worstTotal > sumTotal)
+				if (worstTotal > sumTotal && sumTotal != 0)
 					worstTotal = sumTotal;
 			}
-			return worstTotal;
+			return worstTotal == 0xffff ? 0 : worstTotal;
 		}
 
 		public uint WorstConfidence()
 		{
-			uint worstConfidence = 0;
+			uint worstConfidence = 0xffff;
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
 				uint sumConfidence = SumConfidence(iTrack);
-				if (iTrack == 0 || worstConfidence > sumConfidence)
+				if (worstConfidence > sumConfidence && (Total(iTrack) != 0 || CRC(iTrack) != 0))
 					worstConfidence = sumConfidence;
 			}
 			return worstConfidence;
@@ -688,6 +688,7 @@ namespace CUETools.AccurateRip
 			string[] n = accurateRipId.Split('-');
 			if (n.Length != 3)
 			{
+				ExceptionStatus = WebExceptionStatus.RequestCanceled;
 				throw new Exception("Invalid accurateRipId.");
 			}
 			discId1 = UInt32.Parse(n[0], NumberStyles.HexNumber);
@@ -703,13 +704,15 @@ namespace CUETools.AccurateRip
 
 			try
 			{
-				HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-				_accResult = resp.StatusCode;
-
-				if (_accResult == HttpStatusCode.OK)
+				HttpWebResponse response = (HttpWebResponse)req.GetResponse();
+				ExceptionStatus = WebExceptionStatus.ProtocolError;
+				ResponseStatus = response.StatusCode;
+				if (ResponseStatus == HttpStatusCode.OK)
 				{
+					ExceptionStatus = WebExceptionStatus.Success;
+
 					// Retrieve response stream and wrap in StreamReader
-					Stream respStream = resp.GetResponseStream();
+					Stream respStream = response.GetResponseStream();
 
 					// Allocate byte buffer to hold stream contents
 					byte[] urlData = new byte[13];
@@ -728,7 +731,7 @@ namespace CUETools.AccurateRip
 							break;
 						if (urlDataLen < 13)
 						{
-							_accResult = HttpStatusCode.PartialContent;
+							ExceptionStatus = WebExceptionStatus.ReceiveFailure;
 							return;
 						}
 						AccDisk dsk = new AccDisk();
@@ -744,7 +747,7 @@ namespace CUETools.AccurateRip
 								bytesRead = respStream.Read(urlData, urlDataLen, 9 - urlDataLen);
 								if (0 == bytesRead)
 								{
-									_accResult = HttpStatusCode.PartialContent;
+									ExceptionStatus = WebExceptionStatus.ReceiveFailure;
 									return;
 								}
 							}
@@ -761,10 +764,10 @@ namespace CUETools.AccurateRip
 			}
 			catch (WebException ex)
 			{
-				if (ex.Status == WebExceptionStatus.ProtocolError)
-					_accResult = ((HttpWebResponse)ex.Response).StatusCode;
-				else
-					_accResult = HttpStatusCode.BadRequest;
+				ExceptionStatus = ex.Status;
+				ExceptionMessage = ex.Message;
+				if (ExceptionStatus == WebExceptionStatus.ProtocolError)
+					ResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
 			}
 		}
 
@@ -785,13 +788,22 @@ namespace CUETools.AccurateRip
 			set { }
 		}
 
-		public string Options
+		public object Settings
 		{
+			get
+			{
+				return null;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				throw new Exception("Unsupported options " + value);
+				if (value != null && value.GetType() != typeof(object))
+					throw new Exception("Unsupported options " + value);
 			}
+		}
+
+		public long Padding
+		{
+			set { }
 		}
 
 		public AudioPCMConfig PCM
@@ -824,6 +836,11 @@ namespace CUETools.AccurateRip
 
 		public void GenerateLog(TextWriter sw, int oi)
 		{
+			uint maxTotal = 0;
+			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+				maxTotal = Math.Max(maxTotal, Total(iTrack));
+			string ifmt = maxTotal < 10 ? ":0" : maxTotal < 100 ? ":00" : ":000";
+			//string ifmt = maxTotal < 10 ? ",1" : maxTotal < 100 ? ",2" : ",3";
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
 				uint count = 0;
@@ -842,34 +859,23 @@ namespace CUETools.AccurateRip
 						&& 0 != AccDisks[di].tracks[trno].Frame450CRC)
 						partials += AccDisks[di].tracks[trno].count;
 				}
-				if (conf > 0)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) Accurately ripped", iTrack + 1, CRC(iTrack, oi), count, conf));
+				if (conf > 0 || (count == 0 && CRC(iTrack, oi) == 0))
+					sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) Accurately ripped", iTrack + 1, CRC(iTrack, oi), count, conf));
 				else if (partials > 0)
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] ({3:00}/{2:00}) No match but offset", iTrack + 1, CRC(iTrack, oi), count, partials));
+					sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) No match but offset", iTrack + 1, CRC(iTrack, oi), count, partials));
 				else
-					sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] (00/{2:00}) No match", iTrack + 1, CRC(iTrack, oi), count));
+					sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) No match", iTrack + 1, CRC(iTrack, oi), count, 0));
 			}
 		}
 
-		public void GenerateFullLog(TextWriter sw, bool verbose)
+		public void GenerateFullLog(TextWriter sw, bool verbose, string id)
 		{
-			if (AccResult == HttpStatusCode.NotFound)
-			{
-				sw.WriteLine("Disk not present in database.");
-				//for (iTrack = 0; iTrack < TrackCount; iTrack++)
-				//    sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Disk not present in database", iTrack + 1, _tracks[iTrack].CRC));
-			}
-			else if (AccResult != HttpStatusCode.OK)
-			{
-				sw.WriteLine("Database access error: " + AccResult.ToString());
-				//for (iTrack = 0; iTrack < TrackCount; iTrack++)
-				//    sw.WriteLine(String.Format(" {0:00}\t[{1:x8}] Database access error {2}", iTrack + 1, _tracks[iTrack].CRC, accResult.ToString()));
-			}
-			else
+			sw.WriteLine("[AccurateRip ID: {0}] {1}.", id, ARStatus ?? "found");
+			if (ExceptionStatus == WebExceptionStatus.Success)
 			{
 				if (verbose)
 				{
-					sw.WriteLine("Track\t[ CRC    ] Status");
+					sw.WriteLine("Track   [ CRC    ] Status");
 					GenerateLog(sw, 0);
 					uint offsets_match = 0;
 					for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
@@ -879,8 +885,8 @@ namespace CUETools.AccurateRip
 						{
 							int trno = iTrack + _toc.FirstAudio - 1;
 							for (int di = 0; di < (int)AccDisks.Count; di++)
-								if (trno < AccDisks[di].tracks.Count 
-									&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC 
+								if (trno < AccDisks[di].tracks.Count
+									&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC
 									&& AccDisks[di].tracks[trno].CRC != 0))
 								{
 									matches++;
@@ -907,14 +913,14 @@ namespace CUETools.AccurateRip
 							{
 								int trno = iTrack + _toc.FirstAudio - 1;
 								if (trno < AccDisks[di].tracks.Count
-									&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC 
+									&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC
 									&& AccDisks[di].tracks[trno].CRC != 0))
 								{
 									matches++;
 									break;
 								}
 								if (trno < AccDisks[di].tracks.Count
-									&& (CRC450(iTrack, oi) == AccDisks[di].tracks[trno].Frame450CRC 
+									&& (CRC450(iTrack, oi) == AccDisks[di].tracks[trno].Frame450CRC
 									&& AccDisks[di].tracks[trno].Frame450CRC != 0))
 									partials++;
 							}
@@ -932,7 +938,7 @@ namespace CUETools.AccurateRip
 				}
 				else
 				{
-					sw.WriteLine("Track\t Status");
+					sw.WriteLine("Track    Status");
 					for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 					{
 						uint total = Total(iTrack);
@@ -944,7 +950,7 @@ namespace CUETools.AccurateRip
 							{
 								int trno = iTrack + _toc.FirstAudio - 1;
 								if (trno < AccDisks[iDisk].tracks.Count
-									&& CRC(iTrack, oi) == AccDisks[iDisk].tracks[trno].CRC 
+									&& CRC(iTrack, oi) == AccDisks[iDisk].tracks[trno].CRC
 									&& (AccDisks[iDisk].tracks[trno].CRC != 0 || oi == 0))
 								{
 									conf += AccDisks[iDisk].tracks[trno].count;
@@ -954,15 +960,15 @@ namespace CUETools.AccurateRip
 								}
 							}
 						if (conf > 0 && zeroOffset && pressings.Length == 0)
-							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped", iTrack + 1, total, conf));
+							sw.WriteLine(String.Format(" {0:00}      ({2:00}/{1:00}) Accurately ripped", iTrack + 1, total, conf));
 						else if (conf > 0 && zeroOffset)
-							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped, all offset(s) {3}", iTrack + 1, total, conf, pressings));
+							sw.WriteLine(String.Format(" {0:00}      ({2:00}/{1:00}) Accurately ripped, all offset(s) {3}", iTrack + 1, total, conf, pressings));
 						else if (conf > 0)
-							sw.WriteLine(String.Format(" {0:00}\t ({2:00}/{1:00}) Accurately ripped with offset(s) {3}", iTrack + 1, total, conf, pressings));
+							sw.WriteLine(String.Format(" {0:00}      ({2:00}/{1:00}) Accurately ripped with offset(s) {3}", iTrack + 1, total, conf, pressings));
 						else if (total > 0)
-							sw.WriteLine(String.Format(" {0:00}\t (00/{1:00}) NOT ACCURATE", iTrack + 1, total));
+							sw.WriteLine(String.Format(" {0:00}      (00/{1:00}) NOT ACCURATE", iTrack + 1, total));
 						else
-							sw.WriteLine(String.Format(" {0:00}\t (00/00) Track not present in database", iTrack + 1));
+							sw.WriteLine(String.Format(" {0:00}      (00/00) Track not present in database", iTrack + 1));
 					}
 				}
 			}
@@ -1150,21 +1156,17 @@ namespace CUETools.AccurateRip
 			}
 		}
 
-		public HttpStatusCode AccResult
-		{
-			get
-			{
-				return _accResult;
-			}
-		}
-
+		private string ExceptionMessage;
+		public HttpStatusCode ResponseStatus { get; set; }
+		public WebExceptionStatus ExceptionStatus { get; set; }
 		public string ARStatus
 		{
 			get
 			{
-				return _accResult == HttpStatusCode.NotFound ? "disk not present in database" :
-					_accResult == HttpStatusCode.OK ? null
-					: _accResult.ToString();
+				return ExceptionStatus == WebExceptionStatus.Success ? null :
+					ExceptionStatus != WebExceptionStatus.ProtocolError ? ("database access error: " + (ExceptionMessage ?? ExceptionStatus.ToString())) :
+					ResponseStatus != HttpStatusCode.NotFound ? "database access error: " + ResponseStatus.ToString() :
+					"disk not present in database";
 			}
 		}
 
@@ -1172,7 +1174,6 @@ namespace CUETools.AccurateRip
 		long _sampleCount, _finalSampleCount;
 		int _currentTrack;
 		private List<AccDisk> _accDisks;
-		private HttpStatusCode _accResult;
 		internal uint[,] _CRCAR;
 		internal uint[,] _CRCSM;
 		internal uint[,] _CRC32;

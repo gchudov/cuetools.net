@@ -19,9 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define INTEROP
+#define NOINTEROP
 
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
@@ -33,7 +34,22 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
 {
-	[AudioEncoderClass("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", 2)]
+	public class FlakeWriterSettings
+	{
+		public FlakeWriterSettings() { DoVerify = false; DoMD5 = true; }
+		[DefaultValue(false)]
+		[DisplayName("Verify")]
+		[SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
+		public bool DoVerify { get; set; }
+
+		[DefaultValue(true)]
+		[DisplayName("MD5")]
+		[SRDescription(typeof(Properties.Resources), "DoMD5Description")]
+		public bool DoMD5 { get; set; }
+	}
+
+	[AudioEncoderClass("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", 4, typeof(FlakeWriterSettings))]
+	//[AudioEncoderClass("libFlake nonsub", "flac", true, "9 10 11", "9", 3, typeof(FlakeWriterSettings))]
 	public class FlakeWriter : IAudioDest
 	{
 		Stream _IO = null;
@@ -147,18 +163,6 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		public int PaddingLength
-		{
-			get
-			{
-				return eparams.padding_size;
-			}
-			set
-			{
-				eparams.padding_size = value;
-			}
-		}
-
 		public int CompressionLevel
 		{
 			get
@@ -174,26 +178,31 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		public string Options
+		FlakeWriterSettings _settings = new FlakeWriterSettings();
+
+		public object Settings
 		{
+			get
+			{
+				return _settings;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				string[] args = value.Split();
-				for (int i = 0; i < args.Length; i++)
-				{
-					if (args[i] == "--padding-length" && (++i) < args.Length)
-					{
-						PaddingLength = int.Parse(args[i]);
-						continue;
-					}
-					if (args[i] == "--verify")
-					{
-						DoVerify = true;
-						continue;
-					}
+				if (value as FlakeWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
-				}
+				_settings = value as FlakeWriterSettings;
+			}
+		}
+
+		public long Padding
+		{
+			get
+			{
+				return eparams.padding_size;
+			}
+			set
+			{
+				eparams.padding_size = (int)value;
 			}
 		}
 
@@ -254,7 +263,7 @@ namespace CUETools.Codecs.FLAKE
 		{
 			DoClose();
 			if (sample_count > 0 && _position != sample_count)
-				throw new Exception("Samples written differs from the expected sample count.");
+				throw new Exception(Properties.Resources.ExceptionSampleCount);
 		}
 
 		public void Delete()
@@ -338,18 +347,6 @@ namespace CUETools.Codecs.FLAKE
 		{
 			get { return eparams.window_function; }
 			set { eparams.window_function = value; }
-		}
-
-		public bool DoMD5
-		{
-			get { return eparams.do_md5; }
-			set { eparams.do_md5 = value; }
-		}
-
-		public bool DoVerify
-		{
-			get { return eparams.do_verify; }
-			set { eparams.do_verify = value; }
 		}
 
 		public bool DoSeekTable
@@ -495,7 +492,7 @@ namespace CUETools.Codecs.FLAKE
 #if INTEROP 
 				return _userProcessorTime; 
 #else
-				return TimeSpan(0);
+				return new TimeSpan(0);
 #endif
 			}
 		}
@@ -1491,12 +1488,12 @@ namespace CUETools.Codecs.FLAKE
 			{
 				int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
 				if (decoded != fs || verify.Remaining != bs)
-					throw new Exception("validation failed!");
+					throw new Exception(Properties.Resources.ExceptionValidationFailed);
 				fixed (int* s = verifyBuffer, r = verify.Samples)
 				{
 					for (int ch = 0; ch < channels; ch++)
 						if (AudioSamples.MemCmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
-							throw new Exception("validation failed!");
+							throw new Exception(Properties.Resources.ExceptionValidationFailed);
 				}
 			}
 
@@ -1774,10 +1771,10 @@ namespace CUETools.Codecs.FLAKE
 			header_len = write_headers();
 
 			// initialize CRC & MD5
-			if (_IO.CanSeek && eparams.do_md5)
+			if (_IO.CanSeek && _settings.DoMD5)
 				md5 = new MD5CryptoServiceProvider();
 
-			if (eparams.do_verify)
+			if (_settings.DoVerify)
 			{
 				verify = new FlakeReader(_pcm);
 				verifyBuffer = new int[Flake.MAX_BLOCKSIZE * channels];
@@ -1902,8 +1899,6 @@ namespace CUETools.Codecs.FLAKE
 
 		public WindowFunction window_function;
 
-		public bool do_md5;
-		public bool do_verify;
 		public bool do_seektable;
 
 		public int flake_set_defaults(int lvl)
@@ -1933,8 +1928,6 @@ namespace CUETools.Codecs.FLAKE
 			variable_block_size = 0;
 			lpc_min_precision_search = 1;
 			lpc_max_precision_search = 1;
-			do_md5 = true;
-			do_verify = false;
 			do_seektable = true; 
 
 			// differences from level 7

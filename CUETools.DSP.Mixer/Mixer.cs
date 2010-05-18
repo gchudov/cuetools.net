@@ -287,13 +287,22 @@ namespace CUETools.DSP.Mixer
 			set { throw new NotSupportedException(); }
 		}
 
-		public string Options
+		public object Settings
 		{
+			get
+			{
+				return null;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				throw new NotSupportedException("Unsupported options " + value);
+				if (value != null && value.GetType() != typeof(object))
+					throw new Exception("Unsupported options " + value);
 			}
+		}
+
+		public long Padding
+		{
+			set { }
 		}
 
 		public AudioPCMConfig PCM

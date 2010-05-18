@@ -50,6 +50,7 @@
     <Compile Include="CRCs\CRC16CCITT.cs" />
     <Compile Include="CRCs\CRC32.cs" />
     <Compile Include="CRCs\CRC8.cs" />
+    <Compile Include="Local.cs" />
     <Compile Include="LPC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

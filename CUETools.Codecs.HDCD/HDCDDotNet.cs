@@ -99,8 +99,14 @@ namespace HDCDDotNet
 			get { throw new Exception("unsupported"); }
 		}
 
-		public string Options
+		public long Padding
 		{
+			set { throw new Exception("unsupported"); }
+		}
+
+		public object Settings
+		{
+			get { throw new Exception("unsupported"); }
 			set { throw new Exception("unsupported"); }
 		}
 

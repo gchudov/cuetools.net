@@ -642,7 +642,7 @@ namespace CUERipper
 			cueSheet.Action = CUEAction.Encode;
 
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-			cueSheet.UseCUEToolsDB(true, "CUERipper 2.0.8: " + selectedDriveInfo.drive.ARName);
+			cueSheet.UseCUEToolsDB(true, "CUERipper " + CUESheet.CUEToolsVersion + ": " + selectedDriveInfo.drive.ARName);
 			cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
 			cueSheet.UseAccurateRip();
@@ -698,7 +698,7 @@ namespace CUERipper
 				m_freedb.UserName = _config.advanced.FreedbUser;
 				m_freedb.Hostname = _config.advanced.FreedbDomain;
 				m_freedb.ClientName = "CUERipper";
-				m_freedb.Version = "2.0.8";
+				m_freedb.Version = CUESheet.CUEToolsVersion;
 				m_freedb.SetDefaultSiteAddress(Properties.Settings.Default.MAIN_FREEDB_SITEADDRESS);
 
 				QueryResult queryResult;
@@ -1337,7 +1337,7 @@ namespace CUERipper
 			m_freedb.UserName = _config.advanced.FreedbUser;
 			m_freedb.Hostname = _config.advanced.FreedbDomain;
 			m_freedb.ClientName = "CUERipper";
-			m_freedb.Version = "2.0.8";
+			m_freedb.Version = CUESheet.CUEToolsVersion;
 			//try
 			//{
 			//    string code = m_freedb.GetCategories(out tmp);

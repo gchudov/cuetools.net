@@ -30,6 +30,7 @@
 // ****************************************************************************
 
 using namespace System;
+using namespace System::ComponentModel;
 using namespace System::Text;
 using namespace System::IO;
 using namespace System::Collections::Generic;
@@ -48,6 +49,10 @@ struct FLAC__Metadata_Chain
 {
 	int dummy;
 };
+
+extern "C" {
+    FLAC_API FLAC__bool FLAC__stream_encoder_set_do_md5(FLAC__StreamEncoder *encoder, FLAC__bool value);
+}
 
 namespace CUETools { namespace Codecs { namespace FLAC {
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
@@ -440,7 +445,57 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		}
 	};
 
-	[AudioEncoderClass("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", 1)]
+	public ref class FLACWriterSettings
+	{
+	    public:
+		FLACWriterSettings() 
+		{ 
+		    _md5Sum = true;
+		    _verify = false;
+		    _disableAsm = false;
+		}
+
+		[DefaultValue(false)]
+		[DisplayName("Verify")]
+		[Description("Decode each frame and compare with original")]
+		property bool Verify {
+			bool get() {
+				return _verify;
+			}
+			void set(bool value) {
+				_verify = value;
+			}
+		}
+
+		[DefaultValue(true)]
+		[DisplayName("MD5")]
+		[Description("Calculate MD5 hash for audio stream")]
+		property bool MD5Sum {
+			bool get() {
+				return _md5Sum;
+			}
+			void set(bool value) {
+				_md5Sum = value;
+			}
+		}
+
+		[DefaultValue(false)]
+		[DisplayName("Disable ASM")]
+		[Description("Disable MMX/SSE optimizations")]
+		property bool DisableAsm {
+			bool get() {
+				return _disableAsm;
+			}
+			void set(bool value) {
+				_disableAsm = value;
+			}
+		}
+
+	    private:
+		bool _md5Sum, _verify, _disableAsm;
+	};
+	
+	[AudioEncoderClass("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", 2, FLACWriterSettings::typeid)]
 	public ref class FLACWriter : IAudioDest 
 	{
 	public:
@@ -448,17 +503,17 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		{
 		    _pcm = pcm;
 
+		    _settings = gcnew FLACWriterSettings();
+
 		    if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
 				throw gcnew Exception("bits per sample must be 16..24");
 
 			_initialized = false;
-			_disableAsm = false;
 			_path = path;
 			_finalSampleCount = 0;
 			_samplesWritten = 0;
 			_compressionLevel = 5;
 			_paddingLength = 8192;
-			_verify = false;
 			_blockSize = 0;
 
 			_encoder = FLAC__stream_encoder_new();
@@ -561,57 +616,26 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			}
 		}
 
-		virtual property String^ Options
+		virtual property Object^ Settings
 		{
-			void set(String^ value)
+			Object^ get()
 			{
-				if (value == nullptr || value == "") return;
-				cli::array<String^>^ args = value->Split();
-				for (int i = 0; i < args->Length; i++)
-				{
-				    if (args[i] == "--padding-length" && (++i) < args->Length)
-				    {
-					PaddingLength = Int32::Parse(args[i]);
-					continue;
-				    }
-				    if (args[i] == "--disable-asm")
-				    {
-					DisableAsm = true;
-					continue;
-				    }
-				    if (args[i] == "--verify")
-				    {
-					Verify = true;
-					continue;
-				    }
-				    throw gcnew Exception(String::Format("unsupported options: {0}", value));
-				}
+			    return _settings;
+			}
+			
+			void set(Object^ value)
+			{
+			    if (value == nullptr || value->GetType() != FLACWriterSettings::typeid)
+				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+			    _settings = (FLACWriterSettings^)value;
 			}
 		}
 
-		property Boolean Verify {
-			Boolean get() {
-				return _verify;
-			}
-			void set(Boolean value) {
-				_verify = value;
-			}
-		}
-
-		property Boolean DisableAsm {
-			Boolean get() {
-				return _disableAsm;
-			}
-			void set(Boolean value) {
-				_disableAsm = value;
-			}
-		}
-
-		property Int32 PaddingLength {
-			Int32 get() {
+		virtual property __int64 Padding {
+			__int64 get() {
 				return _paddingLength;
 			}
-			void set(Int32 value) {
+			void set(__int64 value) {
 				if (value < 0)
 					throw gcnew Exception("invalid padding length");
 				_paddingLength = value;
@@ -619,17 +643,16 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		}
 
 	private:
+		FLACWriterSettings^ _settings;
 		FLAC__StreamEncoder *_encoder;
 		bool _initialized;
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten, _blockSize;
 		AudioPCMConfig^ _pcm;
 		Int32 _compressionLevel;
-		Int32 _paddingLength;
-		Boolean _verify;
+		__int64 _paddingLength;
 		FLAC__StreamMetadata **_metadataList;
 		int _metadataCount;
-		bool _disableAsm;
 
 		void Initialize() {
 			FLAC__StreamMetadata *padding, *seektable, *vorbiscomment;
@@ -684,15 +707,17 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 	 
 			if (_paddingLength != 0) {
 				padding = FLAC__metadata_object_new(FLAC__METADATA_TYPE_PADDING);
-				padding->length = _paddingLength;
+				padding->length = (int)_paddingLength;
 				_metadataList[_metadataCount++] = padding;
 			}
 
 			FLAC__stream_encoder_set_metadata(_encoder, _metadataList, _metadataCount);
 
-			FLAC__stream_encoder_set_verify(_encoder, _verify);
+			FLAC__stream_encoder_set_verify(_encoder, _settings->Verify);
 
-			FLAC__stream_encoder_set_disable_asm(_encoder, _disableAsm);
+			FLAC__stream_encoder_set_do_md5(_encoder, _settings->MD5Sum);
+
+			FLAC__stream_encoder_set_disable_asm(_encoder, _settings->DisableAsm);
 
 			if (_finalSampleCount != 0) {
 				FLAC__stream_encoder_set_total_samples_estimate(_encoder, _finalSampleCount);

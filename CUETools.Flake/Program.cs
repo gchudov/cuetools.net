@@ -219,12 +219,12 @@ namespace CUETools.FlakeExe
 				if (estimation_depth >= 0)
 					flake.EstimationDepth = estimation_depth;
 				if (padding >= 0)
-					flake.PaddingLength = padding;
+					flake.Padding = padding;
 				if (vbr_mode >= 0)
 					flake.VBRMode = vbr_mode;
-				flake.DoMD5 = do_md5;
 				flake.DoSeekTable = do_seektable;
-				flake.DoVerify = do_verify;
+				(flake.Settings as FlakeWriterSettings).DoVerify = do_verify;
+				(flake.Settings as FlakeWriterSettings).DoMD5 = do_md5;
 			}
 			catch (Exception ex)
 			{

@@ -22,6 +22,7 @@
 #define INTEROP
 
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
@@ -32,7 +33,16 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.ALAC
 {
-	[AudioEncoderClass("libALAC", "m4a", true, "0 1 2 3 4 5 6 7 8 9 10", "3", 1)]
+	public class ALACWriterSettings
+	{
+		public ALACWriterSettings() { DoVerify = false; }
+		[DefaultValue(false)]
+		[DisplayName("Verify")]
+		[Description("Decode each frame and compare with original")]
+		public bool DoVerify { get; set; }
+	}
+
+	[AudioEncoderClass("libALAC", "m4a", true, "0 1 2 3 4 5 6 7 8 9 10", "3", 1, typeof(ALACWriterSettings))]
 	public class ALACWriter : IAudioDest
 	{
 		Stream _IO = null;
@@ -128,18 +138,6 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		public int PaddingLength
-		{
-			get
-			{
-				return eparams.padding_size;
-			}
-			set
-			{
-				eparams.padding_size = value;
-			}
-		}
-
 		public int CompressionLevel
 		{
 			get
@@ -155,26 +153,31 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		public string Options
+		ALACWriterSettings _settings = new ALACWriterSettings();
+
+		public object Settings
 		{
+			get
+			{
+				return _settings;
+			}
 			set
 			{
-				if (value == null || value == "") return;
-				string[] args = value.Split();
-				for (int i = 0; i < args.Length; i++)
-				{
-					if (args[i] == "--padding-length" && (++i) < args.Length)
-					{
-						PaddingLength = int.Parse(args[i]);
-						continue;
-					}
-					if (args[i] == "--verify")
-					{
-						DoVerify = true;
-						continue;
-					}
+				if (value as ALACWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
-				}
+				_settings = value as ALACWriterSettings;
+			}
+		}
+
+		public long Padding
+		{
+			get
+			{
+				return eparams.padding_size;
+			}
+			set
+			{
+				eparams.padding_size = (int)value;
 			}
 		}
 
@@ -331,12 +334,6 @@ namespace CUETools.Codecs.ALAC
 		{
 			get { return eparams.window_function; }
 			set { eparams.window_function = value; }
-		}
-
-		public bool DoVerify
-		{
-			get { return eparams.do_verify; }
-			set { eparams.do_verify = value; }
 		}
 
 		public bool DoSeekTable
@@ -1625,7 +1622,7 @@ namespace CUETools.Codecs.ALAC
 			frame_buffer = new byte[max_frame_size];
 			_sample_byte_size = new uint[Math.Max(0x100, sample_count / eparams.block_size + 1)];
 
-			if (eparams.do_verify)
+			if (_settings.DoVerify)
 			{
 				verify = new ALACReader(_pcm, history_mult, initial_history, k_modifier, eparams.block_size);
 				verifyBuffer = new int[Alac.MAX_BLOCKSIZE * _pcm.ChannelCount];
@@ -1721,7 +1718,6 @@ namespace CUETools.Codecs.ALAC
 
 		public WindowFunction window_function;
 
-		public bool do_verify;
 		public bool do_seektable;
 
 		public int set_defaults(int lvl)
@@ -1746,7 +1742,6 @@ namespace CUETools.Codecs.ALAC
 			max_prediction_order = 12;
 			estimation_depth = 1;
 			adaptive_passes = 0;
-			do_verify = false;
 			do_seektable = false;
 			chunk_size = 5;
 

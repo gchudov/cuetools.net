@@ -372,6 +372,18 @@ namespace CUETools.CTDB
 			verify = new CDRepairEncode(ar, 10 * 588 * 2, npar, entries.Count > 0, encode);
 		}
 
+		public CDImageLayout TOC
+		{
+			get
+			{
+				return toc;
+			}
+			set
+			{
+				toc = value;
+			}
+		}
+
 		public int Total
 		{
 			get
@@ -401,6 +413,10 @@ namespace CUETools.CTDB
 			get
 			{
 				return subResult;
+			}
+			set
+			{
+				subResult = value;
 			}
 		}
 

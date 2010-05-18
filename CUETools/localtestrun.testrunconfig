@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRunConfiguration id="cad9b348-419f-496e-92ed-2dfc5d74da06" name="Local Test Run" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+  <Description>This is a default test run configuration for a local test run.</Description>
+  <Timeouts runTimeout="0" testTimeout="300000" agentNotRespondingTimeout="300000" deploymentTimeout="300000" />
+  <Deployment>
+    <DeploymentItem filename="CUETools.TestProcessor\Test Images\" />
+    <DeploymentItem filename="CUETools.TestCodecs\flake.flac" />
+    <DeploymentItem filename="CUETools.TestCodecs\alac.m4a" />
+    <DeploymentItem filename="CUETools.TestCodecs\pipe.wav" />
+    <DeploymentItem filename="CUETools.TestCodecs\test.wav" />
+  </Deployment>
+  <NamingScheme />
+  <Hosts />
+</TestRunConfiguration>

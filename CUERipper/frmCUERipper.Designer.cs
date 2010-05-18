@@ -569,8 +569,9 @@ namespace CUERipper
 			// 
 			// bnComboBoxOutputFormat
 			// 
-			this.bnComboBoxOutputFormat.BackColor = System.Drawing.SystemColors.Window;
-			this.bnComboBoxOutputFormat.ForeColor = System.Drawing.SystemColors.ControlText;
+			this.bnComboBoxOutputFormat.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.bnComboBoxOutputFormat.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+			this.bnComboBoxOutputFormat.BackColor = System.Drawing.Color.Transparent;
 			this.bnComboBoxOutputFormat.ImageList = null;
 			resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
 			this.bnComboBoxOutputFormat.MinimumSize = new System.Drawing.Size(40, 0);
@@ -683,7 +684,6 @@ namespace CUERipper
 			this.Controls.Add(this.buttonTrackMetadata);
 			this.Controls.Add(this.buttonVA);
 			this.Controls.Add(this.bnComboBoxRelease);
-			this.Controls.Add(this.txtOutputPath);
 			this.Controls.Add(this.bnComboBoxDrives);
 			this.Controls.Add(this.progressBarErrors);
 			this.Controls.Add(this.bnComboBoxOutputFormat);
@@ -695,6 +695,7 @@ namespace CUERipper
 			this.Controls.Add(this.buttonAbort);
 			this.Controls.Add(this.buttonPause);
 			this.Controls.Add(this.listMetadata);
+			this.Controls.Add(this.txtOutputPath);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.KeyPreview = true;
 			this.MaximizeBox = false;

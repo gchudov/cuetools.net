@@ -124,9 +124,9 @@ namespace CUEControls
 			rectTextBounds.Height = ClientRectangle.Height - 8;
 
 			rectBtn.X = ClientRectangle.Width - 18;
-			rectBtn.Y = ClientRectangle.Top + 4;
+			rectBtn.Y = ClientRectangle.Top;
 			rectBtn.Width = 18;
-			rectBtn.Height = ClientRectangle.Height - 8;
+			rectBtn.Height = ClientRectangle.Height;
 
 			rectContent.X = ClientRectangle.Left;
 			rectContent.Y = ClientRectangle.Top;

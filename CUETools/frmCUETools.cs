@@ -461,7 +461,7 @@ namespace JDP {
 		{
 			get
 			{
-				return "CUETools 2.0.4";
+				return "CUETools 2.0.9";
 			}
 		}
 
@@ -486,7 +486,9 @@ namespace JDP {
 				if (_profile._config.checkForUpdates && DateTime.UtcNow - lastMOTD > TimeSpan.FromDays(1) && _batchReport.Length == 0)
 				{
 					this.Invoke((MethodInvoker)(() => toolStripStatusLabel1.Text = "Checking for updates..."));
+					IWebProxy proxy = _profile._config.GetProxy();
 					HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://cuetools.net/motd/motd.jpg");
+					req.Proxy = proxy;
 					req.Method = "GET";
 					try
 					{
@@ -531,6 +533,7 @@ namespace JDP {
 							catch { }
 
 					req = (HttpWebRequest)WebRequest.Create("http://cuetools.net/motd/motd.txt");
+					req.Proxy = proxy;
 					req.Method = "GET";
 					try
 					{
@@ -713,12 +716,27 @@ namespace JDP {
 							if (fileGroup.type == FileGroupInfoType.Folder)
 								_batchPaths.Insert(++directoriesFound, fileGroup.main.FullName);
 						foreach (FileGroupInfo fileGroup in fileGroups)
-							if (fileGroup.type == FileGroupInfoType.CUESheetFile)
+							if (fileGroup.type == FileGroupInfoType.FileWithCUE)
 								_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
-						if (cueSheetsFound == 0)
-							foreach (FileGroupInfo fileGroup in fileGroups)
-								if (fileGroup.type == FileGroupInfoType.FileWithCUE)
+						foreach (FileGroupInfo fileGroup in fileGroups)
+							if (fileGroup.type == FileGroupInfoType.CUESheetFile)
+							{
+								string cue;
+								using (TextReader tr = new StreamReader(fileGroup.main.FullName))
+									cue = tr.ReadToEnd();
+								foreach (FileGroupInfo fileGroup2 in fileGroups)
+									if (fileGroup2.type == FileGroupInfoType.FileWithCUE && fileGroup2.TOC != null)
+									{
+										CDImageLayout toc = CUESheet.CUE2TOC(cue, (int)fileGroup2.TOC.AudioLength);
+										if (toc != null && toc.TrackOffsets == fileGroup2.TOC.TrackOffsets)
+										{
+											cue = null;
+											break;
+										}
+									}
+								if (cue != null)
 									_batchPaths.Insert(directoriesFound + (++cueSheetsFound), fileGroup.main.FullName);
+							}
 						if (cueSheetsFound == 0)
 							foreach (FileGroupInfo fileGroup in fileGroups)
 								if (fileGroup.type == FileGroupInfoType.TrackFiles)
@@ -739,15 +757,12 @@ namespace JDP {
 						if (useAR || useCUEToolsDB)
 							cueSheet.DataTrackLengthMSF = txtDataTrackLength.Text;
 						if (useCUEToolsDB)
-							cueSheet.UseCUEToolsDB(false, "CUETools 2.0.8");
+							cueSheet.UseCUEToolsDB(false, "CUETools " + CUESheet.CUEToolsVersion);
 						if (useAR)
 							cueSheet.UseAccurateRip();
 
-						if (_batchPaths.Count == 0 && action == CUEAction.Encode)
-						{
-							if (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked)
-								releases = cueSheet.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata);
-						}
+						if (_batchPaths.Count == 0 && action == CUEAction.Encode && (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked))
+							releases = cueSheet.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata);
 						else if (_profile._config.advanced.CacheMetadata)
 						{
 							try
@@ -1033,12 +1048,12 @@ namespace JDP {
 			toolStripStatusLabelCTDB.Visible = false;
 			if (ReportState)
 			{
-				if (_batchReport != null)
-					textBatchReport.Text = _batchReport.ToString();
+				string newText = _batchReport != null ? _batchReport.ToString() : "";
+				string oldText = textBatchReport.Text;
+				if (oldText != "" && newText.StartsWith(oldText))
+					textBatchReport.AppendText(newText.Substring(oldText.Length));
 				else
-					textBatchReport.Text = "";
-				//textBatchReport.SelectAll();
-				//textBatchReport.ScrollToCaret();
+					textBatchReport.Text = newText;
 			}
 
 			if (!running)
@@ -1624,8 +1639,7 @@ namespace JDP {
 			foreach (FileGroupInfo fileGroup in fileGroups)
 			{
 				TreeNode node = fileSystemTreeView1.NewNode(fileGroup.main, fileGroup.type == FileGroupInfoType.Folder);
-				if (fileGroup.type == FileGroupInfoType.TrackFiles)
-					node.Text = node.Text + ": " + fileGroup.files.Count.ToString() + " files";
+				node.Text = fileGroup.ToString();
 				e.node.Nodes.Add(node);
 			}
 			//toolTip1.Show
@@ -1651,7 +1665,7 @@ namespace JDP {
 					 || Directory.Exists(pathIn));
 				rbActionCreateCUESheet.Enabled = pathIn.Length != 0
 					&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_profile._config, pathIn) != null)
-					 || Directory.Exists(pathIn));
+					|| Directory.Exists(pathIn));
 				rbActionVerify.Enabled =
 					rbActionEncode.Enabled = pathIn.Length != 0 
 					    && (File.Exists(pathIn) || Directory.Exists(pathIn) || IsCDROM(pathIn));

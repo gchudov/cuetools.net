@@ -606,41 +606,26 @@
   <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="tableLayoutPanel2.ColumnCount" type="System.Int32, mscorlib">
-    <value>2</value>
+  <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 49</value>
   </data>
-  <data name="label2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
+  <data name="chkEncodeWhenZeroOffset.Size" type="System.Drawing.Size, System.Drawing">
+    <value>104, 19</value>
   </data>
-  <data name="label2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
+  <data name="chkEncodeWhenZeroOffset.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
   </data>
-  <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 0</value>
+  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Name" xml:space="preserve">
+    <value>chkEncodeWhenZeroOffset</value>
   </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>185, 23</value>
+  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label2.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>% of verified tracks &gt;=</value>
-  </data>
-  <data name="label2.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="&gt;&gt;label2.Name" xml:space="preserve">
-    <value>label2</value>
-  </data>
-  <data name="&gt;&gt;label2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label2.Parent" xml:space="preserve">
+  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Parent" xml:space="preserve">
     <value>tableLayoutPanel2</value>
   </data>
-  <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;chkEncodeWhenZeroOffset.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="numEncodeWhenPercent.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -722,66 +707,6 @@
   </data>
   <data name="&gt;&gt;numEncodeWhenConfidence.ZOrder" xml:space="preserve">
     <value>4</value>
-  </data>
-  <data name="tableLayoutPanel2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="tableLayoutPanel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 17</value>
-  </data>
-  <data name="tableLayoutPanel2.RowCount" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="tableLayoutPanel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 71</value>
-  </data>
-  <data name="tableLayoutPanel2.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanel2.Name" xml:space="preserve">
-    <value>tableLayoutPanel2</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanel2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanel2.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanel2.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="tableLayoutPanel2.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="label2" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="chkEncodeWhenZeroOffset" Row="2" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;Control Name="numEncodeWhenPercent" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="labelEncodeWhenConfidence" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="numEncodeWhenConfidence" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,79,33884,Percent,20,66116" /&gt;&lt;Rows Styles="Percent,33,33333,Percent,33,33333,Percent,33,33333" /&gt;&lt;/TableLayoutSettings&gt;</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 49</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.RightToLeft" type="System.Windows.Forms.RightToLeft, System.Windows.Forms">
-    <value>Yes</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Size" type="System.Drawing.Size, System.Drawing">
-    <value>236, 19</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
-    <value>and zero offset</value>
-  </data>
-  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Name" xml:space="preserve">
-    <value>chkEncodeWhenZeroOffset</value>
-  </data>
-  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkEncodeWhenZeroOffset.Parent" xml:space="preserve">
-    <value>tableLayoutPanel2</value>
-  </data>
-  <data name="&gt;&gt;chkEncodeWhenZeroOffset.ZOrder" xml:space="preserve">
-    <value>1</value>
   </data>
   <data name="labelFixWhenConfidence.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -2295,6 +2220,72 @@
   <data name="&gt;&gt;groupBoxARLog.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="tableLayoutPanel2.ColumnCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="label2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="label2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 0</value>
+  </data>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>185, 23</value>
+  </data>
+  <data name="label2.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>% of verified tracks &gt;=</value>
+  </data>
+  <data name="label2.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label2.Name" xml:space="preserve">
+    <value>label2</value>
+  </data>
+  <data name="&gt;&gt;label2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2.Parent" xml:space="preserve">
+    <value>tableLayoutPanel2</value>
+  </data>
+  <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tableLayoutPanel2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tableLayoutPanel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 17</value>
+  </data>
+  <data name="tableLayoutPanel2.RowCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="tableLayoutPanel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 71</value>
+  </data>
+  <data name="tableLayoutPanel2.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel2.Name" xml:space="preserve">
+    <value>tableLayoutPanel2</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel2.Parent" xml:space="preserve">
+    <value>groupBox5</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanel2.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tableLayoutPanel2.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="label2" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="chkEncodeWhenZeroOffset" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="numEncodeWhenPercent" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="labelEncodeWhenConfidence" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="numEncodeWhenConfidence" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,79,33884,Percent,20,66116" /&gt;&lt;Rows Styles="Percent,33,33333,Percent,33,33333,Percent,33,33333" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
   <data name="groupBox5.Location" type="System.Drawing.Point, System.Drawing">
     <value>278, 6</value>
   </data>
@@ -2958,121 +2949,25 @@
   <data name="tabPage10.AutoScroll" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="checkBoxFlaCudaMultithread.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="checkBoxFlaCudaMultithread.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="checkBoxFlaCudaMultithread.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 68</value>
-  </data>
-  <data name="checkBoxFlaCudaMultithread.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 17</value>
-  </data>
-  <data name="checkBoxFlaCudaMultithread.TabIndex" type="System.Int32, mscorlib">
-    <value>22</value>
-  </data>
-  <data name="checkBoxFlaCudaMultithread.Text" xml:space="preserve">
-    <value>Multithread</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaMultithread.Name" xml:space="preserve">
-    <value>checkBoxFlaCudaMultithread</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaMultithread.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaMultithread.Parent" xml:space="preserve">
-    <value>groupBoxFlaCudaOptions</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaMultithread.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="checkBoxFlaCudaGPUOnly.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="checkBoxFlaCudaGPUOnly.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="checkBoxFlaCudaGPUOnly.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 26</value>
-  </data>
-  <data name="checkBoxFlaCudaGPUOnly.Size" type="System.Drawing.Size, System.Drawing">
-    <value>69, 17</value>
-  </data>
-  <data name="checkBoxFlaCudaGPUOnly.TabIndex" type="System.Int32, mscorlib">
-    <value>21</value>
-  </data>
-  <data name="checkBoxFlaCudaGPUOnly.Text" xml:space="preserve">
-    <value>GPU only</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.Name" xml:space="preserve">
-    <value>checkBoxFlaCudaGPUOnly</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.Parent" xml:space="preserve">
-    <value>groupBoxFlaCudaOptions</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaGPUOnly.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="checkBoxFlaCudaVerify.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="checkBoxFlaCudaVerify.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="checkBoxFlaCudaVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 46</value>
-  </data>
-  <data name="checkBoxFlaCudaVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>54, 17</value>
-  </data>
-  <data name="checkBoxFlaCudaVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
-  <data name="checkBoxFlaCudaVerify.Text" xml:space="preserve">
-    <value>Verify</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaVerify.Name" xml:space="preserve">
-    <value>checkBoxFlaCudaVerify</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaVerify.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaVerify.Parent" xml:space="preserve">
-    <value>groupBoxFlaCudaOptions</value>
-  </data>
-  <data name="&gt;&gt;checkBoxFlaCudaVerify.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="groupBoxFlaCudaOptions.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="propertyGridEncoderSettings.Location" type="System.Drawing.Point, System.Drawing">
     <value>136, 39</value>
   </data>
-  <data name="groupBoxFlaCudaOptions.Size" type="System.Drawing.Size, System.Drawing">
-    <value>390, 100</value>
+  <data name="propertyGridEncoderSettings.Size" type="System.Drawing.Size, System.Drawing">
+    <value>390, 246</value>
   </data>
-  <data name="groupBoxFlaCudaOptions.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
+  <data name="propertyGridEncoderSettings.TabIndex" type="System.Int32, mscorlib">
+    <value>31</value>
   </data>
-  <data name="groupBoxFlaCudaOptions.Text" xml:space="preserve">
-    <value>FlaCuda options</value>
+  <data name="&gt;&gt;propertyGridEncoderSettings.Name" xml:space="preserve">
+    <value>propertyGridEncoderSettings</value>
   </data>
-  <data name="groupBoxFlaCudaOptions.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
+  <data name="&gt;&gt;propertyGridEncoderSettings.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PropertyGrid, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;groupBoxFlaCudaOptions.Name" xml:space="preserve">
-    <value>groupBoxFlaCudaOptions</value>
-  </data>
-  <data name="&gt;&gt;groupBoxFlaCudaOptions.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBoxFlaCudaOptions.Parent" xml:space="preserve">
+  <data name="&gt;&gt;propertyGridEncoderSettings.Parent" xml:space="preserve">
     <value>tabPage10</value>
   </data>
-  <data name="&gt;&gt;groupBoxFlaCudaOptions.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;propertyGridEncoderSettings.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="groupBoxExternalEncoder.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
@@ -3346,144 +3241,6 @@
   <data name="&gt;&gt;comboBoxEncoderExtension.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="groupBoxLibMAC_SDK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>136, 39</value>
-  </data>
-  <data name="groupBoxLibMAC_SDK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>390, 119</value>
-  </data>
-  <data name="groupBoxLibMAC_SDK.TabIndex" type="System.Int32, mscorlib">
-    <value>24</value>
-  </data>
-  <data name="groupBoxLibMAC_SDK.Text" xml:space="preserve">
-    <value>MAC SDK options</value>
-  </data>
-  <data name="groupBoxLibMAC_SDK.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibMAC_SDK.Name" xml:space="preserve">
-    <value>groupBoxLibMAC_SDK</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibMAC_SDK.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibMAC_SDK.Parent" xml:space="preserve">
-    <value>tabPage10</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibMAC_SDK.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="chkWVStoreMD5.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="chkWVStoreMD5.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="chkWVStoreMD5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>226, 42</value>
-  </data>
-  <data name="chkWVStoreMD5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 17</value>
-  </data>
-  <data name="chkWVStoreMD5.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
-  </data>
-  <data name="chkWVStoreMD5.Text" xml:space="preserve">
-    <value>Store MD5 checksum</value>
-  </data>
-  <data name="&gt;&gt;chkWVStoreMD5.Name" xml:space="preserve">
-    <value>chkWVStoreMD5</value>
-  </data>
-  <data name="&gt;&gt;chkWVStoreMD5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkWVStoreMD5.Parent" xml:space="preserve">
-    <value>groupBoxLibWavpack</value>
-  </data>
-  <data name="&gt;&gt;chkWVStoreMD5.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="numWVExtraMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>317, 19</value>
-  </data>
-  <data name="numWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>36, 21</value>
-  </data>
-  <data name="numWVExtraMode.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
-  </data>
-  <data name="numWVExtraMode.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
-    <value>Right</value>
-  </data>
-  <data name="&gt;&gt;numWVExtraMode.Name" xml:space="preserve">
-    <value>numWVExtraMode</value>
-  </data>
-  <data name="&gt;&gt;numWVExtraMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;numWVExtraMode.Parent" xml:space="preserve">
-    <value>groupBoxLibWavpack</value>
-  </data>
-  <data name="&gt;&gt;numWVExtraMode.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="chkWVExtraMode.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="chkWVExtraMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="chkWVExtraMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>226, 20</value>
-  </data>
-  <data name="chkWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 17</value>
-  </data>
-  <data name="chkWVExtraMode.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
-  </data>
-  <data name="chkWVExtraMode.Text" xml:space="preserve">
-    <value>Extra mode:</value>
-  </data>
-  <data name="&gt;&gt;chkWVExtraMode.Name" xml:space="preserve">
-    <value>chkWVExtraMode</value>
-  </data>
-  <data name="&gt;&gt;chkWVExtraMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkWVExtraMode.Parent" xml:space="preserve">
-    <value>groupBoxLibWavpack</value>
-  </data>
-  <data name="&gt;&gt;chkWVExtraMode.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="groupBoxLibWavpack.Location" type="System.Drawing.Point, System.Drawing">
-    <value>136, 39</value>
-  </data>
-  <data name="groupBoxLibWavpack.Size" type="System.Drawing.Size, System.Drawing">
-    <value>390, 100</value>
-  </data>
-  <data name="groupBoxLibWavpack.TabIndex" type="System.Int32, mscorlib">
-    <value>23</value>
-  </data>
-  <data name="groupBoxLibWavpack.Text" xml:space="preserve">
-    <value>wavpack options</value>
-  </data>
-  <data name="groupBoxLibWavpack.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibWavpack.Name" xml:space="preserve">
-    <value>groupBoxLibWavpack</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibWavpack.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibWavpack.Parent" xml:space="preserve">
-    <value>tabPage10</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibWavpack.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
   <data name="labelEncoderExtension.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3518,64 +3275,7 @@
     <value>tabPage10</value>
   </data>
   <data name="&gt;&gt;labelEncoderExtension.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="chkFLACVerify.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="chkFLACVerify.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="chkFLACVerify.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 46</value>
-  </data>
-  <data name="chkFLACVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>54, 17</value>
-  </data>
-  <data name="chkFLACVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
-  <data name="chkFLACVerify.Text" xml:space="preserve">
-    <value>Verify</value>
-  </data>
-  <data name="&gt;&gt;chkFLACVerify.Name" xml:space="preserve">
-    <value>chkFLACVerify</value>
-  </data>
-  <data name="&gt;&gt;chkFLACVerify.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;chkFLACVerify.Parent" xml:space="preserve">
-    <value>groupBoxLibFLAC</value>
-  </data>
-  <data name="&gt;&gt;chkFLACVerify.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="groupBoxLibFLAC.Location" type="System.Drawing.Point, System.Drawing">
-    <value>136, 39</value>
-  </data>
-  <data name="groupBoxLibFLAC.Size" type="System.Drawing.Size, System.Drawing">
-    <value>390, 74</value>
-  </data>
-  <data name="groupBoxLibFLAC.TabIndex" type="System.Int32, mscorlib">
-    <value>21</value>
-  </data>
-  <data name="groupBoxLibFLAC.Text" xml:space="preserve">
-    <value>libFLAC options</value>
-  </data>
-  <data name="groupBoxLibFLAC.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibFLAC.Name" xml:space="preserve">
-    <value>groupBoxLibFLAC</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibFLAC.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibFLAC.Parent" xml:space="preserve">
-    <value>tabPage10</value>
-  </data>
-  <data name="&gt;&gt;groupBoxLibFLAC.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>6</value>
   </data>
   <data name="tabPage10.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 22</value>
