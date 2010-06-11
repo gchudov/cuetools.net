@@ -124,13 +124,13 @@
     <value>Error querying drive</value>
   </data>
   <data name="DeviceNotMMC" xml:space="preserve">
-    <value>not an MMC device</value>
+    <value>Not an MMC device</value>
   </data>
   <data name="DeviceOpenError" xml:space="preserve">
     <value>Open failed</value>
   </data>
   <data name="NoAudio" xml:space="preserve">
-    <value>no audio</value>
+    <value>No audio tracks</value>
   </data>
   <data name="ReadCDError" xml:space="preserve">
     <value>Error reading CD</value>

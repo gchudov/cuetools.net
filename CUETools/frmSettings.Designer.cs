@@ -527,7 +527,7 @@ namespace JDP {
 			// checkBoxEncoderLossless
 			// 
 			resources.ApplyResources(this.checkBoxEncoderLossless, "checkBoxEncoderLossless");
-			this.checkBoxEncoderLossless.DataBindings.Add(new System.Windows.Forms.Binding("CheckState", this.encodersBindingSource, "Lossless", true));
+			this.checkBoxEncoderLossless.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.encodersBindingSource, "Lossless", true));
 			this.checkBoxEncoderLossless.Name = "checkBoxEncoderLossless";
 			this.toolTip1.SetToolTip(this.checkBoxEncoderLossless, resources.GetString("checkBoxEncoderLossless.ToolTip"));
 			this.checkBoxEncoderLossless.UseVisualStyleBackColor = true;
@@ -697,7 +697,7 @@ namespace JDP {
 			// checkBoxCopyAlbumArt
 			// 
 			resources.ApplyResources(this.checkBoxCopyAlbumArt, "checkBoxCopyAlbumArt");
-			this.checkBoxCopyAlbumArt.DataBindings.Add(new System.Windows.Forms.Binding("CheckState", this.cUEConfigBindingSource, "CopyAlbumArt", true));
+			this.checkBoxCopyAlbumArt.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.cUEConfigBindingSource, "CopyAlbumArt", true));
 			this.checkBoxCopyAlbumArt.Name = "checkBoxCopyAlbumArt";
 			this.checkBoxCopyAlbumArt.UseVisualStyleBackColor = true;
 			// 
@@ -1127,7 +1127,6 @@ namespace JDP {
 			this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.listBoxEncoders.DataSource = this.encodersBindingSource;
 			this.listBoxEncoders.DisplayMember = "Name";
-			this.listBoxEncoders.FormattingEnabled = true;
 			resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
 			this.listBoxEncoders.Name = "listBoxEncoders";
 			this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);

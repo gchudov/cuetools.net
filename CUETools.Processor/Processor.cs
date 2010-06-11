@@ -836,7 +836,7 @@ namespace CUETools.Processor
 			//string arch = asi.ApplicationId.ProcessorArchitecture;
 			//ActivationContext is null most of the time :(
 
-			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "Win32";
+			string arch = Type.GetType("Mono.Runtime", false) != null ? "mono" : Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "Win32";
 			string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins (" + arch + ")");
 			if (Directory.Exists(plugins_path))
 				AddPluginDirectory(plugins_path);
@@ -1665,6 +1665,7 @@ string status = processor.Go();
 		public int offset = 0;
 		public string input = string.Empty;
 		public string output = string.Empty;
+		public CUESheet cueSheet;
 	}
 
 	public class CUEToolsSelectionEventArgs : EventArgs
@@ -1747,6 +1748,7 @@ string status = processor.Go();
 		{
 			_config = config;
 			_progress = new CUEToolsProgressEventArgs();
+			_progress.cueSheet = this;
 			_attributes = new List<CUELine>();
 			_tracks = new List<TrackInfo>();
 			_trackFilenames = new List<string>();
@@ -1793,6 +1795,11 @@ string status = processor.Go();
 
 		public void Close()
 		{
+			if (_progress != null)
+			{
+				_progress.cueSheet = null;
+				_progress = null;
+			}
 			if (_archive != null)
 				_archive.Close();
 			_archive = null;
@@ -3142,7 +3149,7 @@ string status = processor.Go();
 			{
 				vars.Add("year", General.EmptyStringToNull(cueSheet.Year));
 				vars.Add("catalog", General.EmptyStringToNull(cueSheet.Catalog));
-				vars.Add("discnumber", General.EmptyStringToNull(cueSheet.DiscNumber));
+				vars.Add("discnumber", General.EmptyStringToNull(cueSheet.DiscNumber01));
 				vars.Add("totaldiscs", General.EmptyStringToNull(cueSheet.TotalDiscs));
 				NameValueCollection tags = cueSheet.Tags;
 				if (tags != null)
@@ -3194,7 +3201,7 @@ string status = processor.Go();
 			vars.Add("album", General.EmptyStringToNull(_config.CleanseString(Title)));
 			vars.Add("year", General.EmptyStringToNull(_config.CleanseString(Year)));
 			vars.Add("catalog", General.EmptyStringToNull(_config.CleanseString(Catalog)));
-			vars.Add("discnumber", General.EmptyStringToNull(_config.CleanseString(DiscNumber)));
+			vars.Add("discnumber", General.EmptyStringToNull(_config.CleanseString(DiscNumber01)));
 			vars.Add("totaldiscs", General.EmptyStringToNull(_config.CleanseString(TotalDiscs)));
 			vars.Add("filename", Path.GetFileNameWithoutExtension(outputPath));
 			vars.Add("tracknumber", null);
@@ -3243,7 +3250,20 @@ string status = processor.Go();
 					vars["artist"] = General.EmptyStringToNull(_config.CleanseString(artist)) ?? vars["album artist"];
 					vars["title"] = General.EmptyStringToNull(_config.CleanseString(title));
 
-					filename = (General.ReplaceMultiple(_config.trackFilenameFormat, vars, -1) ?? vars["tracknumber"]) + extension;
+					filename = "";
+					for (int maxLen = 260; maxLen >= 16; maxLen--)
+					{
+						filename = General.ReplaceMultiple(_config.trackFilenameFormat, vars, maxLen);
+						if (filename == "" || filename == null)
+						{
+							filename = vars["tracknumber"];
+							break;
+						}
+						if (OutputDir.Length + filename.Length < 255)
+							break;
+					}
+
+					filename = filename + extension;
 
 					if (htoa)
 						HTOAFilename = filename;
@@ -3269,31 +3289,32 @@ string status = processor.Go();
 			}
 		}
 
-		public bool OutputExists()
+		public List<string> OutputExists()
 		{
-			bool outputExists = false;
+			List<string> outputExists = new List<string>();
 			bool outputCUE = Action == CUEAction.Encode && (OutputStyle != CUEStyle.SingleFileWithCUE || _config.createCUEFileWhenEmbedded);
 			bool outputAudio = Action == CUEAction.Encode && _audioEncoderType != AudioEncoderType.NoAudio;
 			if (outputCUE)
-				outputExists = File.Exists(_outputPath);
+				outputExists.Add(_outputPath);
 			if (_useAccurateRip && (
 				(Action == CUEAction.Encode && _config.writeArLogOnConvert) ||
 				(Action == CUEAction.Verify && _config.writeArLogOnVerify)))
-				outputExists |= File.Exists(Path.Combine(OutputDir, ArLogFileName));
+				outputExists.Add(Path.Combine(OutputDir, ArLogFileName));
 			if (outputAudio)
 			{
 				if (_config.extractAlbumArt && AlbumArt != null && AlbumArt.Count != 0)
-					outputExists |= File.Exists(Path.Combine(OutputDir, AlArtFileName));
+					outputExists.Add(Path.Combine(OutputDir, AlArtFileName));
 				if (OutputStyle == CUEStyle.SingleFile || OutputStyle == CUEStyle.SingleFileWithCUE)
-					outputExists |= File.Exists(Path.Combine(OutputDir, SingleFilename));
+					outputExists.Add(Path.Combine(OutputDir, SingleFilename));
 				else
 				{
 					if (OutputStyle == CUEStyle.GapsAppended && _config.preserveHTOA)
-						outputExists |= File.Exists(Path.Combine(OutputDir, HTOAFilename));
+						outputExists.Add(Path.Combine(OutputDir, HTOAFilename));
 					for (int i = 0; i < TrackCount; i++)
-						outputExists |= File.Exists(Path.Combine(OutputDir, TrackFilenames[i]));
+						outputExists.Add(Path.Combine(OutputDir, TrackFilenames[i]));
 				}
 			}
+			outputExists.RemoveAll(path => !File.Exists(path));
 			return outputExists;
 		}
 
@@ -4154,11 +4175,8 @@ string status = processor.Go();
 				return;
 
 			string imgPath = Path.Combine(OutputDir, AlArtFileName);
-			if (File.Exists(imgPath))
-				return;
-
 			foreach (TagLib.IPicture picture in _albumArt)
-				using (FileStream file = new FileStream(imgPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read))
+				using (FileStream file = new FileStream(imgPath, FileMode.Create, FileAccess.Write, FileShare.Read))
 				{
 					file.Write(picture.Data.Data, 0, picture.Data.Count);
 					return;
@@ -4249,18 +4267,24 @@ string status = processor.Go();
 				return;
 			foreach (TagLib.IPicture picture in _albumArt)
 				using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
-				using (Image img = Image.FromStream(imageStream))
-					if (img.Width > _config.maxAlbumArtSize || img.Height > _config.maxAlbumArtSize)
+					try
 					{
-						using (Bitmap small = resizeImage(img, new Size(_config.maxAlbumArtSize, _config.maxAlbumArtSize)))
-						using (MemoryStream encoded = new MemoryStream())
-						{
-							//System.Drawing.Imaging.EncoderParameters encoderParams = new EncoderParameters(1);
-							//encoderParams.Param[0] = new System.Drawing.Imaging.EncoderParameter(Encoder.Quality, quality);
-							small.Save(encoded, System.Drawing.Imaging.ImageFormat.Jpeg);
-							picture.Data = new TagLib.ByteVector(encoded.ToArray());
-							picture.MimeType = "image/jpeg";
-						}
+						using (Image img = Image.FromStream(imageStream))
+							if (img.Width > _config.maxAlbumArtSize || img.Height > _config.maxAlbumArtSize)
+							{
+								using (Bitmap small = resizeImage(img, new Size(_config.maxAlbumArtSize, _config.maxAlbumArtSize)))
+								using (MemoryStream encoded = new MemoryStream())
+								{
+									//System.Drawing.Imaging.EncoderParameters encoderParams = new EncoderParameters(1);
+									//encoderParams.Param[0] = new System.Drawing.Imaging.EncoderParameter(Encoder.Quality, quality);
+									small.Save(encoded, System.Drawing.Imaging.ImageFormat.Jpeg);
+									picture.Data = new TagLib.ByteVector(encoded.ToArray());
+									picture.MimeType = "image/jpeg";
+								}
+							}
+					}
+					catch
+					{
 					}
 		}
 
@@ -4971,27 +4995,6 @@ string status = processor.Go();
 				}
 			}
 
-			// Use old-fashioned way if dealing with archive (files != null)
-			// or with single file (filePos.Count == 1).
-			// In other cases we use CUESheet.ScanFolder, which
-			// is better at sorting and separating albums,
-			// but doesn't support archives and single files yet.
-			if (!foundAll && (files != null || filePos.Count == 1))
-				foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
-				{
-					if (files == null)
-						audioFiles = Directory.GetFiles(dir == "" ? "." : dir, "*." + format.Key);
-					else
-						audioFiles = files.FindAll(s => Path.GetDirectoryName(s) == dir && Path.GetExtension(s).ToLower() == "." + format.Key).ToArray();
-					if (audioFiles.Length == filePos.Count)
-					{
-						Array.Sort(audioFiles);
-						extension = format.Key;
-						foundAll = true;
-						break;
-					}
-				}
-
 			if (!foundAll && files == null)
 			{
 				List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, dir == "" ? "." : dir);
@@ -5049,6 +5052,27 @@ string status = processor.Go();
 						}
 					}
 			}
+
+			// Use old-fashioned way if dealing with archive (files != null)
+			// or with single file (filePos.Count == 1).
+			// In other cases we use CUESheet.ScanFolder, which
+			// is better at sorting and separating albums,
+			// but doesn't support archives and single files yet.
+			if (!foundAll)// && (files != null || filePos.Count == 1))
+				foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
+				{
+					if (files == null)
+						audioFiles = Directory.GetFiles(dir == "" ? "." : dir, "*." + format.Key);
+					else
+						audioFiles = files.FindAll(s => Path.GetDirectoryName(s) == dir && Path.GetExtension(s).ToLower() == "." + format.Key).ToArray();
+					if (audioFiles.Length == filePos.Count)
+					{
+						Array.Sort(audioFiles);
+						extension = format.Key;
+						foundAll = true;
+						break;
+					}
+				}
 
 			if (!foundAll)
 				throw new Exception("unable to locate the audio files");
@@ -5349,6 +5373,17 @@ string status = processor.Go();
 					General.SetCUELine(_attributes, "REM", "DATE", value, false);
 				else
 					General.DelCUELine(_attributes, "REM", "DATE");
+			}
+		}
+
+		public string DiscNumber01
+		{
+			get
+			{
+				uint td = 0, dn = 0;
+				if (uint.TryParse(TotalDiscs, out td) && uint.TryParse(DiscNumber, out dn) && td > 9 && dn > 0)
+					return string.Format("{0:00}", dn);
+				return DiscNumber;
 			}
 		}
 
@@ -5668,6 +5703,8 @@ string status = processor.Go();
 			List<FileGroupInfo> fileGroups = new List<FileGroupInfo>();
 			foreach (FileSystemInfo file in files)
 			{
+				// file.Refresh();
+				// file.Attributes returns -1 for long paths!!!
 				if ((file.Attributes & FileAttributes.Hidden) != 0)
 					continue;
 				if ((file.Attributes & FileAttributes.Directory) != 0)
@@ -5704,7 +5741,11 @@ string status = processor.Go();
 								line = Path.Combine(Path.GetDirectoryName(file.FullName), line);
 								if (File.Exists(line))
 								{
-									m3uGroup.files.Add(new FileInfo(line));
+									FileInfo f = new FileInfo(line);
+									CUEToolsFormat fmt1;
+									if (!f.Extension.StartsWith(".") || !_config.formats.TryGetValue(f.Extension.ToLower().Substring(1), out fmt1) || !fmt1.allowLossless)
+										throw new Exception("not lossless");
+									m3uGroup.files.Add(f);
 									continue;
 								}
 							}
@@ -5805,7 +5846,7 @@ string status = processor.Go();
 			foreach (FileGroupInfo group in fileGroups)
 				if (group.type == FileGroupInfoType.TrackFiles)
 				{
-					group.files.Sort(group.CompareNumbers);
+					group.files.Sort(group.Compare());
 					group.numbers = null;
 					group.TOC = new CDImageLayout();
 					foreach(FileSystemInfo f in group.files)
@@ -5819,6 +5860,7 @@ string status = processor.Go();
 						group.TOC.AddTrack(new CDTrack((uint)group.TOC.TrackCount + 1, group.TOC.Length, len, true, false));
 					}
 				}
+			fileGroups.Sort(FileGroupInfo.Compare);
 			return fileGroups;
 		}
 
@@ -6034,6 +6076,25 @@ string status = processor.Go();
 			return na;
 		}
 
+		public static int Compare(FileGroupInfo a, FileGroupInfo b)
+		{
+			if (a.type == b.type)
+				return CompareTrackNames(a.main.FullName, b.main.FullName);
+			return Comparer<FileGroupInfoType>.Default.Compare(a.type, b.type);
+		}
+
+		public Comparison<FileSystemInfo> Compare()
+		{
+			if (files.Find(f => !numbers.ContainsKey(f)) == null)
+				return (a, b) => Comparer<uint>.Default.Compare(numbers[a], numbers[b]);
+			return CompareTrackNames;
+		}
+
+		public static int CompareTrackNames(FileSystemInfo a, FileSystemInfo b)
+		{
+			return CompareTrackNames(a.FullName, b.FullName);
+		}
+
 		public static int CompareTrackNames(string a, string b)
 		{
 			while (a.Length > 0 && b.Length > 0 && a[0] == b[0])
@@ -6048,15 +6109,6 @@ string status = processor.Go();
 			if (na < 0)
 				return Comparer<string>.Default.Compare(a, b);
 			return CompareTrackNames(a, b);
-		}
-
-		public int CompareNumbers(FileSystemInfo a, FileSystemInfo b)
-		{
-			if (numbers.ContainsKey(a) && numbers.ContainsKey(b))
-				return Comparer<uint>.Default.Compare(numbers[a], numbers[b]);
-			if (!numbers.ContainsKey(a) && !numbers.ContainsKey(b))
-				return CompareTrackNames(a.FullName, b.FullName);
-			return Comparer<bool>.Default.Compare(numbers.ContainsKey(a), numbers.ContainsKey(b));			
 		}
 
 		public bool Contains(string pathIn)

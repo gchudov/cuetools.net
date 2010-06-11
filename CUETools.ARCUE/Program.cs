@@ -25,6 +25,8 @@ namespace ArCueDotNet
 			config.writeArLogOnVerify = false;
 			config.writeArTagsOnVerify = false;
 			config.autoCorrectFilenames = true;
+			config.extractAlbumArt = false;
+			config.embedAlbumArt = false;
 			StringWriter sw = new StringWriter();
 			try
 			{

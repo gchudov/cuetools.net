@@ -296,7 +296,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 	    public:
 		WavPackWriterSettings() 
 		{ 
-		    _md5Sum = false;
+		    _md5Sum = true;
 		    _extraMode = 0;
 		}
 
@@ -314,7 +314,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
-		[DefaultValue(false)]
+		[DefaultValue(true)]
 		[DisplayName("MD5")]
 		[Description("Calculate MD5 hash for audio stream")]
 		property bool MD5Sum {
@@ -337,6 +337,8 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 	public:
 		WavPackWriter(String^ path, AudioPCMConfig^ pcm)
 		{
+			_settings = gcnew WavPackWriterSettings();
+
 			_pcm = pcm;
 
 			if (_pcm->ChannelCount != 1 && _pcm->ChannelCount != 2)
@@ -504,8 +506,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		WavPackWriterSettings^ _settings;
 
 		void Initialize() {
-			_settings = gcnew WavPackWriterSettings();
-
 			WavpackConfig config;
 
 			_wpc = WavpackOpenFileOutput(write_block, _hFile, NULL);

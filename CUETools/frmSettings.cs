@@ -35,6 +35,7 @@ namespace JDP {
 		private void frmSettings_Load(object sender, EventArgs e) 
 		{
 			cUEConfigBindingSource.DataSource = _config;
+			encodersBindingSource.DataMember = "Encoders"; // for MONO bug (setting BindingSource.DataSource clears DataMember:(
 			propertyGrid1.SelectedObject = _config.advanced;
 			
 			chkReducePriority.Checked = _reducePriority;
@@ -476,33 +477,44 @@ namespace JDP {
 		private void encodersBindingSource_CurrentItemChanged(object sender, EventArgs e)
 		{
 			CUEToolsUDC encoder = encodersBindingSource.Current as CUEToolsUDC;
-			CUEToolsFormat format = _config.formats[encoder.extension]; // _config.formats.TryGetValue(encoder.extension, out format)
-
-			labelEncoderExtension.Visible = encoder != null;
-			comboBoxEncoderExtension.Visible = encoder != null;
-			comboBoxEncoderExtension.Enabled = encoder != null && encoder.path != null;
-			groupBoxExternalEncoder.Visible = encoder != null && encoder.path != null;
-			checkBoxEncoderLossless.Enabled = encoder != null && format != null && format.allowLossless && format.allowLossy;
-			if (!checkBoxEncoderLossless.Enabled && encoder != null && format != null && encoder.Lossless != format.allowLossless)
-				encoder.Lossless = format.allowLossless;
-
-			if (encoder != null && encoder.settingsSerializer != null)
+			if (encoder == null)
 			{
-				propertyGridEncoderSettings.Visible = encoder != null && encoder.settingsSerializer != null;
-				propertyGridEncoderSettings.SelectedObject = encoder.settings;
-			} else
-			{
+				labelEncoderExtension.Visible =
+				comboBoxEncoderExtension.Visible =
+				comboBoxEncoderExtension.Enabled =
+				groupBoxExternalEncoder.Visible =
+				checkBoxEncoderLossless.Enabled =
 				propertyGridEncoderSettings.Visible = false;
 				propertyGridEncoderSettings.SelectedObject = null;
 			}
-
-			foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)
+			else
 			{
-				CUEToolsFormat fmt = fmtEntry.Value;
-				if (fmt.encoderLossless == encoder && (fmt.extension != encoder.extension || !encoder.Lossless))
-					fmt.encoderLossless = null;
-				if (fmt.encoderLossy == encoder && (fmt.extension != encoder.extension || encoder.Lossless))
-					fmt.encoderLossy = null;
+				CUEToolsFormat format = _config.formats[encoder.extension]; // _config.formats.TryGetValue(encoder.extension, out format)
+				labelEncoderExtension.Visible = true;
+				comboBoxEncoderExtension.Visible = true;
+				comboBoxEncoderExtension.Enabled = encoder.path != null;
+				groupBoxExternalEncoder.Visible = encoder.path != null;
+				checkBoxEncoderLossless.Enabled = format != null && format.allowLossless && format.allowLossy;
+				if (!checkBoxEncoderLossless.Enabled && format != null && encoder.Lossless != format.allowLossless)
+					encoder.Lossless = format.allowLossless;
+				if (encoder.settingsSerializer != null)
+				{
+					propertyGridEncoderSettings.Visible = encoder != null && encoder.settingsSerializer != null;
+					propertyGridEncoderSettings.SelectedObject = encoder.settings;
+				}
+				else
+				{
+					propertyGridEncoderSettings.Visible = false;
+					propertyGridEncoderSettings.SelectedObject = null;
+				}
+				foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)
+				{
+					CUEToolsFormat fmt = fmtEntry.Value;
+					if (fmt.encoderLossless == encoder && (fmt.extension != encoder.extension || !encoder.Lossless))
+						fmt.encoderLossless = null;
+					if (fmt.encoderLossy == encoder && (fmt.extension != encoder.extension || encoder.Lossless))
+						fmt.encoderLossy = null;
+				}
 			}
 		}
 

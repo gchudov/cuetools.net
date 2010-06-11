@@ -565,7 +565,7 @@ namespace CUERipper
 			rectRadius6.TopLeft = 2;
 			rectRadius6.TopRight = 6;
 			this.bnComboBoxDrives.Radius = rectRadius6;
-			this.bnComboBoxDrives.SelectedValueChanged += new System.EventHandler(this.bnComboBoxDrives_SelectedValueChanged);
+			this.bnComboBoxDrives.SelectedIndexChanged += new System.EventHandler(this.bnComboBoxDrives_SelectedIndexChanged);
 			// 
 			// bnComboBoxOutputFormat
 			// 

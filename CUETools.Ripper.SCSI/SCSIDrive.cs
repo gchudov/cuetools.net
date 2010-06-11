@@ -193,6 +193,8 @@ namespace CUETools.Ripper.SCSI
 		{
 			Device.CommandStatus st;
 
+			m_inqury_result = null;
+
 			// Open the base device
 			m_device_letter = Drive;
 			if (m_device != null)
@@ -200,14 +202,15 @@ namespace CUETools.Ripper.SCSI
 
 			m_device = new Device(m_logger);
 			if (!m_device.Open(m_device_letter))
-				throw new Exception(Resource1.DeviceOpenError + ": " + WinDev.Win32ErrorToString(m_device.LastError));
+				throw new ReadCDException(Resource1.DeviceOpenError, Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()));
+			//throw new ReadCDException(Resource1.DeviceOpenError + ": " + WinDev.Win32ErrorToString(m_device.LastError));
 
 			// Get device info
 			st = m_device.Inquiry(out m_inqury_result);
-			if (st != Device.CommandStatus.Success || !m_inqury_result.Valid)
+			if (st != Device.CommandStatus.Success)
 				throw new SCSIException(Resource1.DeviceInquiryError, m_device, st);
-			if (m_inqury_result.PeripheralQualifier != 0 || m_inqury_result.PeripheralDeviceType != Device.MMCDeviceType)
-				throw new Exception(Path + ": " + Resource1.DeviceNotMMC);
+			if (!m_inqury_result.Valid || m_inqury_result.PeripheralQualifier != 0 || m_inqury_result.PeripheralDeviceType != Device.MMCDeviceType)
+				throw new ReadCDException(Resource1.DeviceNotMMC);
 
 			m_max_sectors = Math.Min(NSECTORS, m_device.MaximumTransferLength / CB_AUDIO - 1);
 			//// Open/Initialize the driver
@@ -276,7 +279,8 @@ namespace CUETools.Ripper.SCSI
 				if (_toc[1].IsAudio)
 					_toc[1][0].Start = 0;
 				Position = 0;
-			}
+			} else
+				throw new ReadCDException(Resource1.NoAudio);
 
 			UserData = new long[MSECTORS, 2, 4 * 588];
 			C2Count = new byte[MSECTORS, 294];
@@ -565,7 +569,7 @@ namespace CUETools.Ripper.SCSI
 		public unsafe bool DetectGaps()
 		{
 			if (!TestReadCommand())
-				throw new Exception(Resource1.AutodetectReadCommandFailed+ ":\n" + _autodetectResult);
+				throw new ReadCDException(Resource1.AutodetectReadCommandFailed + ":\n" + _autodetectResult);
 
 			if (_gapDetection == GapDetectionMethod.None)
 			{
@@ -964,7 +968,7 @@ namespace CUETools.Ripper.SCSI
 				return;
 
 			if (!TestReadCommand())
-				throw new Exception(Resource1.AutodetectReadCommandFailed + "\n" + _autodetectResult);
+				throw new ReadCDException(Resource1.AutodetectReadCommandFailed + "\n" + _autodetectResult);
 
 			_currentStart = iSector;
 			_currentEnd = _currentStart + MSECTORS;
@@ -1041,7 +1045,7 @@ namespace CUETools.Ripper.SCSI
 		public unsafe int Read(AudioBuffer buff, int maxLength)
 		{
 			if (_toc == null)
-				throw new Exception("Read: invalid TOC");
+				throw new ReadCDException("Read: invalid TOC");
 			buff.Prepare(this, maxLength);
 			if (Position >= Length)
 				return 0;
@@ -1081,7 +1085,7 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				if (_toc == null)
-					throw new Exception("invalid TOC");
+					throw new ReadCDException("invalid TOC");
 				return 588 * (int)_toc.AudioLength;
 			}
 		}
@@ -1099,9 +1103,10 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				string result = m_device_letter + ": ";
-				result += "[" + m_inqury_result.VendorIdentification + " " +
-					m_inqury_result.ProductIdentification + " " +
-					m_inqury_result.FirmwareVersion + "]";
+				if (m_inqury_result != null && m_inqury_result.Valid)
+					result += "[" + m_inqury_result.VendorIdentification + " " +
+						m_inqury_result.ProductIdentification + " " +
+						m_inqury_result.FirmwareVersion + "]";
 				return result;
 			}
 		}
@@ -1110,7 +1115,9 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return m_inqury_result.VendorIdentification.TrimEnd(' ', '\0').PadRight(8, ' ') + " - " + m_inqury_result.ProductIdentification.TrimEnd(' ', '\0');
+				return m_inqury_result == null || !m_inqury_result.Valid ? null :
+					m_inqury_result.VendorIdentification.TrimEnd(' ', '\0').PadRight(8, ' ') + " - " + 
+					m_inqury_result.ProductIdentification.TrimEnd(' ', '\0');
 			}
 		}
 
@@ -1131,7 +1138,7 @@ namespace CUETools.Ripper.SCSI
 			set
 			{
 				if (_toc == null || _toc.AudioLength <= 0)
-					throw new Exception(Resource1.NoAudio);
+					throw new ReadCDException(Resource1.NoAudio);
 				_crcErrorsCount = 0;
 				_errorsCount = 0;
 				_currentStart = -1;
@@ -1216,5 +1223,13 @@ namespace CUETools.Ripper.SCSI
 			: base(args + ": " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(device.GetSenseAsc(), device.GetSenseAscq()) : st.ToString()))
 		{
 		}
+	}
+
+	public sealed class ReadCDException : Exception
+	{
+		public ReadCDException(string args, Exception inner)
+			: base(args + ": " + inner.Message, inner) { }
+		public ReadCDException(string args)
+			: base(args) { }
 	}
 }

@@ -79,7 +79,7 @@ namespace CUETools.Ripper.SCSI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to not an MMC device.
+        ///   Looks up a localized string similar to Not an MMC device.
         /// </summary>
         internal static string DeviceNotMMC {
             get {
@@ -97,7 +97,7 @@ namespace CUETools.Ripper.SCSI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to no audio.
+        ///   Looks up a localized string similar to No audio tracks.
         /// </summary>
         internal static string NoAudio {
             get {

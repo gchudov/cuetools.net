@@ -35,6 +35,7 @@ namespace JDP {
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.textBatchReport = new System.Windows.Forms.TextBox();
 			this.grpInput = new System.Windows.Forms.GroupBox();
+			this.fileSystemTreeView1 = new CUEControls.FileSystemTreeView();
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.groupBoxMode = new System.Windows.Forms.GroupBox();
 			this.tableLayoutPanelCUEStyle = new System.Windows.Forms.TableLayoutPanel();
@@ -120,7 +121,6 @@ namespace JDP {
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.setAsMyMusicFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.resetToOriginalLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.fileSystemTreeView1 = new CUEControls.FileSystemTreeView();
 			this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.ContentPanel.SuspendLayout();
 			this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -253,6 +253,33 @@ namespace JDP {
 			resources.ApplyResources(this.grpInput, "grpInput");
 			this.grpInput.Name = "grpInput";
 			this.grpInput.TabStop = false;
+			// 
+			// fileSystemTreeView1
+			// 
+			this.fileSystemTreeView1.AllowDrop = true;
+			resources.ApplyResources(this.fileSystemTreeView1, "fileSystemTreeView1");
+			this.fileSystemTreeView1.BackColor = System.Drawing.SystemColors.Control;
+			this.fileSystemTreeView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.fileSystemTreeView1.CheckBoxes = true;
+			this.fileSystemTreeView1.FullRowSelect = true;
+			this.fileSystemTreeView1.HideSelection = false;
+			this.fileSystemTreeView1.ItemHeight = 16;
+			this.fileSystemTreeView1.Name = "fileSystemTreeView1";
+			this.fileSystemTreeView1.ShowLines = false;
+			this.fileSystemTreeView1.ShowRootLines = false;
+			this.fileSystemTreeView1.SpecialFolders = new CUEControls.ExtraSpecialFolder[] {
+        CUEControls.ExtraSpecialFolder.MyComputer,
+        CUEControls.ExtraSpecialFolder.Profile,
+        CUEControls.ExtraSpecialFolder.MyMusic,
+        CUEControls.ExtraSpecialFolder.CommonMusic};
+			this.fileSystemTreeView1.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterCheck);
+			this.fileSystemTreeView1.NodeExpand += new CUEControls.FileSystemTreeViewNodeExpandHandler(this.fileSystemTreeView1_NodeExpand);
+			this.fileSystemTreeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.fileSystemTreeView1_DragDrop);
+			this.fileSystemTreeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterSelect);
+			this.fileSystemTreeView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fileSystemTreeView1_MouseDown);
+			this.fileSystemTreeView1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.fileSystemTreeView1_KeyDown);
+			this.fileSystemTreeView1.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterExpand);
+			this.fileSystemTreeView1.DragOver += new System.Windows.Forms.DragEventHandler(this.fileSystemTreeView1_DragOver);
 			// 
 			// tableLayoutPanel2
 			// 
@@ -968,33 +995,6 @@ namespace JDP {
 			this.resetToOriginalLocationToolStripMenuItem.Name = "resetToOriginalLocationToolStripMenuItem";
 			resources.ApplyResources(this.resetToOriginalLocationToolStripMenuItem, "resetToOriginalLocationToolStripMenuItem");
 			this.resetToOriginalLocationToolStripMenuItem.Click += new System.EventHandler(this.resetToOriginalLocationToolStripMenuItem_Click);
-			// 
-			// fileSystemTreeView1
-			// 
-			this.fileSystemTreeView1.AllowDrop = true;
-			resources.ApplyResources(this.fileSystemTreeView1, "fileSystemTreeView1");
-			this.fileSystemTreeView1.BackColor = System.Drawing.SystemColors.Control;
-			this.fileSystemTreeView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.fileSystemTreeView1.CheckBoxes = true;
-			this.fileSystemTreeView1.FullRowSelect = true;
-			this.fileSystemTreeView1.HideSelection = false;
-			this.fileSystemTreeView1.ItemHeight = 16;
-			this.fileSystemTreeView1.Name = "fileSystemTreeView1";
-			this.fileSystemTreeView1.ShowLines = false;
-			this.fileSystemTreeView1.ShowRootLines = false;
-			this.fileSystemTreeView1.SpecialFolders = new CUEControls.ExtraSpecialFolder[] {
-        CUEControls.ExtraSpecialFolder.MyComputer,
-        CUEControls.ExtraSpecialFolder.Profile,
-        CUEControls.ExtraSpecialFolder.MyMusic,
-        CUEControls.ExtraSpecialFolder.CommonMusic};
-			this.fileSystemTreeView1.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterCheck);
-			this.fileSystemTreeView1.NodeExpand += new CUEControls.FileSystemTreeViewNodeExpandHandler(this.fileSystemTreeView1_NodeExpand);
-			this.fileSystemTreeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.fileSystemTreeView1_DragDrop);
-			this.fileSystemTreeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterSelect);
-			this.fileSystemTreeView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fileSystemTreeView1_MouseDown);
-			this.fileSystemTreeView1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.fileSystemTreeView1_KeyDown);
-			this.fileSystemTreeView1.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.fileSystemTreeView1_AfterExpand);
-			this.fileSystemTreeView1.DragOver += new System.Windows.Forms.DragEventHandler(this.fileSystemTreeView1_DragOver);
 			// 
 			// frmCUETools
 			// 

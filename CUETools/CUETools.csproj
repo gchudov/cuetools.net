@@ -96,6 +96,12 @@
     <Compile Include="frmChoice.Designer.cs">
       <DependentUpon>frmChoice.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmOverwrite.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmOverwrite.Designer.cs">
+      <DependentUpon>frmOverwrite.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmPassword.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -157,6 +163,9 @@
     <EmbeddedResource Include="frmCUETools.ru-RU.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmCUETools.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmOverwrite.resx">
+      <DependentUpon>frmOverwrite.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmPassword.de-DE.resx">
       <DependentUpon>frmPassword.cs</DependentUpon>

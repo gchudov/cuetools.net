@@ -214,36 +214,26 @@ namespace CUERipper
 			data.Drives.RaiseListChangedEvents = false;
 			foreach (char drive in CDDrivesList.DrivesAvailable())
 			{
-				ICDRipper reader = null;
-				string arName = null;
-				int driveOffset;
+				this.BeginInvoke((MethodInvoker)(() =>
+					toolStripStatusLabel1.Text = Properties.Resources.DetectingDrives + ": " + drive + ":\\..."));
+				ICDRipper reader = Activator.CreateInstance(CUEProcessorPlugins.ripper) as ICDRipper;
 				try
 				{
-					this.BeginInvoke((MethodInvoker)delegate()
-					{
-						toolStripStatusLabel1.Text = Properties.Resources.DetectingDrives + ": " + drive + ":\\...";
-					});
-					reader = Activator.CreateInstance(CUEProcessorPlugins.ripper) as ICDRipper;
 					reader.Open(drive);
-					arName = reader.ARName;
-					reader.Close();
 				}
 				catch (Exception ex)
 				{
-					try
-					{
-						arName = reader.ARName;
-						reader.Close();
-					}
-					catch
-					{
-						data.Drives.Add(new DriveInfo(m_icon_mgr, drive + ":\\", ex.Message));
-						continue;
-					}
+					System.Diagnostics.Trace.WriteLine(ex.Message);
 				}
-				if (!AccurateRipVerify.FindDriveReadOffset(arName, out driveOffset))
-					; //throw new Exception("Failed to find drive read offset for drive" + _ripper.ARName);
-				reader.DriveOffset = driveOffset;
+				reader.Close();
+				if (reader.ARName != null)
+				{
+					int driveOffset;
+					if (AccurateRipVerify.FindDriveReadOffset(reader.ARName, out driveOffset))
+						reader.DriveOffset = driveOffset;
+					else
+						reader.DriveOffset = 0;
+				}
 				data.Drives.Add(new DriveInfo(m_icon_mgr, drive + ":\\", reader));
 			}
 			this.BeginInvoke((MethodInvoker)delegate()
@@ -333,10 +323,7 @@ namespace CUERipper
 				}
 				if (_startStop._pause)
 				{
-					this.BeginInvoke((MethodInvoker)delegate()
-					{
-						toolStripStatusLabel1.Text = Properties.Resources.PausedMessage +  "...";
-					});
+					this.BeginInvoke((MethodInvoker)(()=> toolStripStatusLabel1.Text = Properties.Resources.PausedMessage +  "..."));
 					Monitor.Wait(_startStop);
 				}
 			}
@@ -773,6 +760,9 @@ namespace CUERipper
 			if (bnComboBoxDrives.SelectedItem as DriveInfo == null)
 				return;
 
+			if (selectedDriveInfo != null)
+				selectedDriveInfo.drive.Close();
+
 			selectedDriveInfo = bnComboBoxDrives.SelectedItem as DriveInfo;
 			defaultDrive = selectedDriveInfo.Path;
 
@@ -790,9 +780,8 @@ namespace CUERipper
 			data.selectedRelease = null;
 			bnComboBoxRelease.Enabled = false;
 			bnComboBoxRelease.Text = "";
-			if (selectedDriveInfo == null || selectedDriveInfo.drive == null)
+			if (selectedDriveInfo == null)
 			{
-				selectedDriveInfo = null;
 				SetupControls();
 				return;
 			}
@@ -801,27 +790,19 @@ namespace CUERipper
 				cueSheet.Close();
 				cueSheet = null;
 			}
+			numericWriteOffset.Value = selectedDriveInfo.drive.DriveOffset;
 			try
 			{
-				selectedDriveInfo.drive.Close();
 				selectedDriveInfo.drive.Open(selectedDriveInfo.drive.Path[0]);
-				numericWriteOffset.Value = selectedDriveInfo.drive.DriveOffset;
 			}
 			catch (Exception ex)
 			{
-				numericWriteOffset.Value = selectedDriveInfo.drive.DriveOffset;
-				//selectedDriveInfo.drive.Close();
+				selectedDriveInfo.drive.Close();
 				bnComboBoxRelease.Text = ex.Message;
-				//bnComboBoxRelease.Enabled = false;
-				SetupControls(); 
+				SetupControls();
 				return;
 			}
-			if (selectedDriveInfo.drive.TOC.AudioTracks == 0)
-			{
-				bnComboBoxRelease.Text = "No audio tracks";
-				SetupControls(); 
-				return;
-			}
+			// cannot use data.Drives.ResetItem(bnComboBoxDrives.SelectedIndex); - causes recursion
 			UpdateRelease();
 			_workThread = new Thread(Lookup);
 			_workThread.Priority = ThreadPriority.BelowNormal;
@@ -1029,7 +1010,7 @@ namespace CUERipper
 			UpdateRelease();
 		}
 
-		private void bnComboBoxDrives_SelectedValueChanged(object sender, EventArgs e)
+		private void bnComboBoxDrives_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (_workThread == null)
 				UpdateDrive();
@@ -1444,7 +1425,6 @@ namespace CUERipper
 	public class DriveInfo
 	{
 		public ICDRipper drive;
-		public string error;
 		DirectoryInfo di;
 		CUEControls.IIconManager iconMgr;
 
@@ -1471,16 +1451,9 @@ namespace CUERipper
 			this.drive = drive;
 		}
 
-		public DriveInfo(CUEControls.IIconManager iconMgr, string path, string error)
-		{
-			this.iconMgr = iconMgr;
-			this.di = new DirectoryInfo(path);
-			this.error = error;
-		}
-
 		public override string ToString()
 		{
-			return drive != null ? drive.Path : this.di.FullName + ": " + error;
+			return drive.Path;
 		}
 	}
 

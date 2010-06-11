@@ -83,6 +83,8 @@ namespace JDP {
 			}
 		}
 
+		DialogResult overwriteResult = DialogResult.None;
+
 		private void btnConvert_Click(object sender, EventArgs e) {
 			if ((_workThread != null) && (_workThread.IsAlive))
 				return;
@@ -98,6 +100,7 @@ namespace JDP {
 			_batchReport = new StringBuilder();
 			_batchRoot = null;
 			_batchProcessed = 0;
+			overwriteResult = DialogResult.None;
 
 			// TODO!!!
 			//if (SelectedOutputAudioFmt != null)
@@ -778,20 +781,8 @@ namespace JDP {
 
 						this.Invoke((MethodInvoker)delegate()
 						{
-							toolStripStatusLabelAR.Enabled = cueSheet.ArVerify.ARStatus == null;
 							toolStripStatusLabelAR.Visible = useAR;
-							toolStripStatusLabelAR.Text = cueSheet.ArVerify.ARStatus == null ? cueSheet.ArVerify.WorstTotal().ToString() : "";
-							toolStripStatusLabelAR.ToolTipText = "AccurateRip: " + (cueSheet.ArVerify.ARStatus ?? "found") + ".";
-
-							if (!useCUEToolsDB)
-								toolStripStatusLabelCTDB.Visible = false;
-							else
-							{
-								toolStripStatusLabelCTDB.Visible = true;
-								toolStripStatusLabelCTDB.Enabled = cueSheet.CTDB.DBStatus == null;
-								toolStripStatusLabelCTDB.Text = cueSheet.CTDB.DBStatus == null ? cueSheet.CTDB.Total.ToString() : "";
-								toolStripStatusLabelCTDB.ToolTipText = "CUETools DB: " + (cueSheet.CTDB.DBStatus ?? "found") + ".";
-							}
+							toolStripStatusLabelCTDB.Visible = useCUEToolsDB;
 
 							if (releases != null)
 							{
@@ -818,28 +809,37 @@ namespace JDP {
 
 						cueSheet.GenerateFilenames(audioEncoderType, outputFormat, pathOut);
 
-						bool outputExists = cueSheet.OutputExists();
+						List<string> outputExists = cueSheet.OutputExists();
 
 						dlgRes = DialogResult.Cancel;
-						if (outputExists)
+						if (outputExists.Count > 0)
 						{
 							this.Invoke((MethodInvoker)delegate()
 							{
-								dlgRes = MessageBox.Show(this, "One or more output file already exists, " +
-									"do you want to overwrite?", "Overwrite?", (_batchPaths.Count == 0) ?
-									MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+								if (overwriteResult == DialogResult.None)
+								{
+									using (frmOverwrite frm = new frmOverwrite())
+									{
+										outputExists.ForEach(path => frm.textFiles.AppendText(path + "\n"));
+										dlgRes = frm.ShowDialog(this);
+										if (frm.checkBoxRemember.Checked)
+											overwriteResult = dlgRes;
+									}
+								}
+								else
+									dlgRes = overwriteResult;
 								if (dlgRes == DialogResult.Yes)
-									outputExists = false;
+									outputExists.Clear();
 								else if (_batchPaths.Count == 0)
 									SetupControls(false);
 							});
-							if (outputExists && _batchPaths.Count == 0)
+							if (outputExists.Count > 0 && _batchPaths.Count == 0)
 							{
 								cueSheet.Close();
 								return;
 							}
 						}
-						if (!outputExists)
+						if (outputExists.Count == 0)
 						{
 							cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
 							if (script == null)
@@ -988,7 +988,8 @@ namespace JDP {
 
 		public void SetStatus(object sender, CUEToolsProgressEventArgs e)
 		{
-			this.BeginInvoke((MethodInvoker)delegate() {
+			this.BeginInvoke((MethodInvoker)delegate()
+			{
 				if (e.percent == 0)
 				{
 					_startedAt = DateTime.Now;
@@ -1004,13 +1005,20 @@ namespace JDP {
 					{
 						double speed = e.offset / span.TotalSeconds / 44100;
 						speedStr = String.Format("{0:00.00}x", speed);
-					} 
+					}
 					toolStripProgressBar2.ToolTipText = String.Format("{0}:{1:00}/{2}:{3:00}", (int)span.TotalMinutes, span.Seconds, (int)eta.TotalMinutes, eta.Seconds);
 					toolStripStatusLabelProcessed.Text = String.Format("{0}@{1}", toolStripProgressBar2.ToolTipText, speedStr);
 					toolStripStatusLabelProcessed.Visible = true;
 				}
 				toolStripStatusLabel1.Text = e.status;
-				toolStripProgressBar2.Value = Math.Max(0,Math.Min(100,(int)(e.percent*100)));
+				toolStripProgressBar2.Value = Math.Max(0, Math.Min(100, (int)(e.percent * 100)));
+
+				toolStripStatusLabelAR.Enabled = e.cueSheet != null && e.cueSheet.ArVerify != null && e.cueSheet.ArVerify.ARStatus == null;
+				toolStripStatusLabelAR.Text = e.cueSheet != null && e.cueSheet.ArVerify != null && e.cueSheet.ArVerify.ExceptionStatus == WebExceptionStatus.Success ? e.cueSheet.ArVerify.WorstTotal().ToString() : "";
+				toolStripStatusLabelAR.ToolTipText = e.cueSheet != null && e.cueSheet.ArVerify != null ? "AccurateRip: " + (e.cueSheet.ArVerify.ARStatus ?? "found") + "." : "";
+				toolStripStatusLabelCTDB.Enabled = e.cueSheet != null && e.cueSheet.CTDB != null && e.cueSheet.CTDB.DBStatus == null;
+				toolStripStatusLabelCTDB.Text = e.cueSheet != null && e.cueSheet.CTDB != null && e.cueSheet.CTDB.DBStatus == null ? e.cueSheet.CTDB.Total.ToString() : "";
+				toolStripStatusLabelCTDB.ToolTipText = e.cueSheet != null && e.cueSheet.CTDB != null ? "CUETools DB: " + (e.cueSheet.CTDB.DBStatus ?? "found") + "." : "";
 			});
 		}
 
@@ -1664,7 +1672,8 @@ namespace JDP {
 					&& ((File.Exists(pathIn) && Path.GetExtension(pathIn).ToLower() == ".cue")
 					 || Directory.Exists(pathIn));
 				rbActionCreateCUESheet.Enabled = pathIn.Length != 0
-					&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_profile._config, pathIn) != null)
+					&& ((File.Exists(pathIn) && Path.GetExtension(pathIn).ToLower() != ".cue")
+					//&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_profile._config, pathIn) != null) -- too slow
 					|| Directory.Exists(pathIn));
 				rbActionVerify.Enabled =
 					rbActionEncode.Enabled = pathIn.Length != 0 

@@ -7,6 +7,7 @@ using System.Management;
 using System.Net;
 using System.Xml;
 using System.Text;
+using System.Security.Cryptography;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
 using Krystalware.UploadHelper;
@@ -172,19 +173,22 @@ namespace CUETools.CTDB
 		{
 			if (uuidInfo == null)
 			{
-				ManagementClass mc = new ManagementClass("Win32_ComputerSystemProduct");
-				foreach (ManagementObject mo in mc.GetInstances())
-				{
-					uuidInfo = mo.Properties["UUID"].Value.ToString();
-					break;
-				}
+				string id = "CTDB userid";
+				using (ManagementClass mc = new ManagementClass("Win32_ComputerSystemProduct"))
+					foreach (ManagementObject mo in mc.GetInstances())
+					{
+						id = id + mo.Properties["UUID"].Value.ToString();
+						break;
+					}
+				byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(id));
+				uuidInfo = Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
 			}
-			return uuidInfo ?? "unknown";
+			return uuidInfo;
 		}
 
 		public string Confirm(DBEntry entry)
 		{
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/confirm.php?tocid=" + toc.TOCID + "&id=" + entry.id);
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/confirm.php?tocid=" + toc.TOCID + "&id=" + entry.id + "&userid=" + GetUUID());
 			req.Method = "GET";
 			req.Proxy = proxy;
 			req.UserAgent = userAgent;

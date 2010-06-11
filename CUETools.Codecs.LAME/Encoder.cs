@@ -211,7 +211,7 @@ namespace CUETools.Codecs.LAME
 			}
 		}
 
-		public object Settings
+		public virtual object Settings
 		{
 			get
 			{
@@ -312,7 +312,7 @@ namespace CUETools.Codecs.LAME
 
 		LAMEEncoderVBRSettings _settings = new LAMEEncoderVBRSettings();
 
-		public object Settings
+		public override object Settings
 		{
 			get
 			{
@@ -375,7 +375,7 @@ namespace CUETools.Codecs.LAME
 
 		LAMEEncoderCBRSettings _settings = new LAMEEncoderCBRSettings();
 
-		public object Settings
+		public override object Settings
 		{
 			get
 			{

@@ -18,6 +18,7 @@ namespace CUETools.AccurateRip
 			_accDisks = new List<AccDisk>();
 			_hasLogCRC = false;
 			_CRCLOG = new uint[toc.AudioTracks + 1];
+			ExceptionStatus = WebExceptionStatus.Pending;
 			Init(toc);
 		}
 
@@ -846,25 +847,31 @@ namespace CUETools.AccurateRip
 				uint count = 0;
 				uint partials = 0;
 				uint conf = 0;
+				uint crcOI = CRC(iTrack, oi);
+				uint crc450OI = CRC450(iTrack, oi);
 				for (int di = 0; di < (int)AccDisks.Count; di++)
 				{
 					int trno = iTrack + _toc.FirstAudio - 1;
 					if (trno >= AccDisks[di].tracks.Count)
 						continue;
 					count += AccDisks[di].tracks[trno].count;
-					if (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC
+					if (crcOI == AccDisks[di].tracks[trno].CRC
 						&& 0 != AccDisks[di].tracks[trno].CRC)
 						conf += AccDisks[di].tracks[trno].count;
-					if (CRC450(iTrack, oi) == AccDisks[di].tracks[trno].Frame450CRC
+					if (crc450OI == AccDisks[di].tracks[trno].Frame450CRC
 						&& 0 != AccDisks[di].tracks[trno].Frame450CRC)
-						partials += AccDisks[di].tracks[trno].count;
+						partials ++;
 				}
-				if (conf > 0 || (count == 0 && CRC(iTrack, oi) == 0))
-					sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) Accurately ripped", iTrack + 1, CRC(iTrack, oi), count, conf));
+				string status;
+				if (conf > 0)
+					status = "Accurately ripped";
+				else if (count == 0 && CRC(iTrack, oi) == 0)
+					status = "Silent track";
 				else if (partials > 0)
-					sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) No match but offset", iTrack + 1, CRC(iTrack, oi), count, partials));
+					status = "No match but offset";
 				else
-					sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) No match", iTrack + 1, CRC(iTrack, oi), count, 0));
+					status = "No match";
+				sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) {4}", iTrack + 1, CRC(iTrack, oi), count, conf, status));
 			}
 		}
 
@@ -909,21 +916,25 @@ namespace CUETools.AccurateRip
 					{
 						uint matches = 0, partials = 0;
 						for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+						{
+							uint crcOI = CRC(iTrack, oi);
+							uint crc450OI = CRC450(iTrack, oi);
 							for (int di = 0; di < (int)AccDisks.Count; di++)
 							{
 								int trno = iTrack + _toc.FirstAudio - 1;
-								if (trno < AccDisks[di].tracks.Count
-									&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC
-									&& AccDisks[di].tracks[trno].CRC != 0))
+								if (trno >= AccDisks[di].tracks.Count)
+									continue;
+								if (crcOI == AccDisks[di].tracks[trno].CRC
+									&& AccDisks[di].tracks[trno].CRC != 0)
 								{
 									matches++;
 									break;
 								}
-								if (trno < AccDisks[di].tracks.Count
-									&& (CRC450(iTrack, oi) == AccDisks[di].tracks[trno].Frame450CRC
-									&& AccDisks[di].tracks[trno].Frame450CRC != 0))
+								if (crc450OI == AccDisks[di].tracks[trno].Frame450CRC
+									&& AccDisks[di].tracks[trno].Frame450CRC != 0)
 									partials++;
 							}
+						}
 						if (matches != _toc.AudioTracks && oi != 0 && matches + partials != 0)
 						{
 							if (offsets_match++ > 16)
