@@ -141,7 +141,6 @@ namespace CUETools.Codecs.FLACCL
 
 		public const int MAX_BLOCKSIZE = 4096 * 16;
 		internal const int maxFrames = 128;
-		internal const int maxAutocorParts = (MAX_BLOCKSIZE + 255) / 256;
 
 		public FLACCLWriter(string path, Stream IO, AudioPCMConfig pcm)
 		{
@@ -1116,12 +1115,6 @@ namespace CUETools.Codecs.FLACCL
 			if (task.frameSize <= 4)
 				return;
 
-			//int autocorPartSize = (2 * 256 - eparams.max_prediction_order) & ~15;
-			int autocorPartSize = 32 * 7;
-			int autocorPartCount = (task.frameSize + autocorPartSize - 1) / autocorPartSize;
-			if (autocorPartCount > maxAutocorParts)
-				throw new Exception("internal error");
-
 			int max_porder = get_max_p_order(eparams.max_partition_order, task.frameSize, eparams.max_prediction_order);
 			int calcPartitionPartSize = task.frameSize >> max_porder;
 			while (calcPartitionPartSize < 16 && max_porder > 0)
@@ -1140,12 +1133,10 @@ namespace CUETools.Codecs.FLACCL
 			cudaChannelDecorr.SetArg(2, (uint)MAX_BLOCKSIZE);
 
 			task.cudaComputeLPC.SetArg(0, task.cudaResidualTasks);
-			task.cudaComputeLPC.SetArg(1, (uint)task.nResidualTasksPerChannel);
-			task.cudaComputeLPC.SetArg(2, task.cudaAutocorOutput);
-			task.cudaComputeLPC.SetArg(3, (uint)eparams.max_prediction_order);
-			task.cudaComputeLPC.SetArg(4, task.cudaLPCData);
-			task.cudaComputeLPC.SetArg(5, (uint)_windowcount);
-			task.cudaComputeLPC.SetArg(6, (uint)autocorPartCount);
+			task.cudaComputeLPC.SetArg(1, task.cudaAutocorOutput);
+			task.cudaComputeLPC.SetArg(2, task.cudaLPCData);
+			task.cudaComputeLPC.SetArg(3, (uint)task.nResidualTasksPerChannel);
+			task.cudaComputeLPC.SetArg(4, (uint)_windowcount);
 
 			//task.cudaComputeLPCLattice.SetArg(0, task.cudaResidualTasks);
 			//task.cudaComputeLPCLattice.SetArg(1, (uint)task.nResidualTasksPerChannel);
@@ -1156,12 +1147,11 @@ namespace CUETools.Codecs.FLACCL
 			//cuda.SetFunctionBlockShape(task.cudaComputeLPCLattice, 256, 1, 1);
 
 			task.cudaQuantizeLPC.SetArg(0, task.cudaResidualTasks);
-			task.cudaQuantizeLPC.SetArg(1, (uint)task.nResidualTasksPerChannel);
-			task.cudaQuantizeLPC.SetArg(2, (uint)task.nTasksPerWindow);
-			task.cudaQuantizeLPC.SetArg(3, task.cudaLPCData);
-			task.cudaQuantizeLPC.SetArg(4, (uint)eparams.max_prediction_order);
-			task.cudaQuantizeLPC.SetArg(5, (uint)eparams.lpc_min_precision_search);
-			task.cudaQuantizeLPC.SetArg(6, (uint)(eparams.lpc_max_precision_search - eparams.lpc_min_precision_search));
+			task.cudaQuantizeLPC.SetArg(1, task.cudaLPCData);
+			task.cudaQuantizeLPC.SetArg(2, (uint)task.nResidualTasksPerChannel);
+			task.cudaQuantizeLPC.SetArg(3, (uint)task.nTasksPerWindow);
+			task.cudaQuantizeLPC.SetArg(4, (uint)eparams.lpc_min_precision_search);
+			task.cudaQuantizeLPC.SetArg(5, (uint)(eparams.lpc_max_precision_search - eparams.lpc_min_precision_search));
 
 			task.cudaCopyBestMethod.SetArg(0, task.cudaBestResidualTasks);
 			task.cudaCopyBestMethod.SetArg(1, task.cudaResidualTasks);
@@ -1216,7 +1206,7 @@ namespace CUETools.Codecs.FLACCL
 
 			// geometry???
 			task.openCLCQ.EnqueueBarrier();
-			task.EnqueueComputeAutocor(autocorPartCount, channelsCount, cudaWindow, eparams.max_prediction_order);
+			task.EnqueueComputeAutocor(channelsCount, cudaWindow, eparams.max_prediction_order);
 
 			//float* autoc = stackalloc float[1024];
 			//task.openCLCQ.EnqueueBarrier();
@@ -1524,6 +1514,7 @@ namespace CUETools.Codecs.FLACCL
 				if (OpenCL.NumberOfPlatforms < 1)
 					throw new Exception("no opencl platforms found");
 
+				int groupSize = 64;
 				OCLMan = new OpenCLManager();
 				// Attempt to save binaries after compilation, as well as load precompiled binaries
 				// to avoid compilation. Usually you'll want this to be true. 
@@ -1543,7 +1534,9 @@ namespace CUETools.Codecs.FLACCL
 				OCLMan.RequireImageSupport = false;
 				// The Defines string gets prepended to any and all sources that are compiled
 				// and serve as a convenient way to pass configuration information to the compilation process
-				OCLMan.Defines = "#define MAX_ORDER " + eparams.max_prediction_order.ToString();
+				OCLMan.Defines =
+					"#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
+					"#define GROUP_SIZE " + groupSize.ToString() + "\n";
 				// The BuildOptions string is passed directly to clBuild and can be used to do debug builds etc
 				OCLMan.BuildOptions = "";
 
@@ -1596,13 +1589,13 @@ namespace CUETools.Codecs.FLACCL
 				if (_IO.CanSeek)
 					first_frame_offset = _IO.Position;
 
-				task1 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify);
-				task2 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify);
+				task1 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify, groupSize);
+				task2 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify, groupSize);
 				if (_settings.CPUThreads > 0)
 				{
 					cpu_tasks = new FLACCLTask[_settings.CPUThreads];
 					for (int i = 0; i < cpu_tasks.Length; i++)
-						cpu_tasks[i] = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify);
+						cpu_tasks[i] = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, _settings.DoVerify, groupSize);
 				}
 				cudaWindow = openCLProgram.Context.CreateBuffer(MemFlags.READ_ONLY, sizeof(float) * FLACCLWriter.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS);
 
@@ -2276,8 +2269,11 @@ namespace CUETools.Codecs.FLACCL
 		public bool done = false;
 		public bool exit = false;
 
-		unsafe public FLACCLTask(Program _openCLProgram, int channelCount, int channels, uint bits_per_sample, int max_frame_size, bool do_verify)
+		public int groupSize = 128;
+
+		unsafe public FLACCLTask(Program _openCLProgram, int channelCount, int channels, uint bits_per_sample, int max_frame_size, bool do_verify, int groupSize)
 		{
+			this.groupSize = groupSize;
 			openCLProgram = _openCLProgram;
 			Device[] openCLDevices = openCLProgram.Context.Platform.QueryDevices(DeviceType.GPU);
 			openCLCQ = openCLProgram.Context.CreateCommandQueue(openCLDevices[0], CommandQueueProperties.PROFILING_ENABLE);
@@ -2296,7 +2292,7 @@ namespace CUETools.Codecs.FLACCL
 			cudaPartitions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, partitionsLen);
 			cudaRiceParams = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, riceParamsLen);
 			cudaBestRiceParams = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceParamsLen / 4);
-			cudaAutocorOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, sizeof(float) * channelCount * lpc.MAX_LPC_WINDOWS * (lpc.MAX_LPC_ORDER + 1) * (FLACCLWriter.maxAutocorParts + FLACCLWriter.maxFrames));
+			cudaAutocorOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, sizeof(float) * channelCount * lpc.MAX_LPC_WINDOWS * (lpc.MAX_LPC_ORDER + 1) * FLACCLWriter.maxFrames);
 			cudaResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
 			cudaBestResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, bestResidualTasksLen);
 			cudaResidualOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, sizeof(int) * channelCount * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * 64 /*FLACCLWriter.maxResidualParts*/ * FLACCLWriter.maxFrames);
@@ -2397,36 +2393,22 @@ namespace CUETools.Codecs.FLACCL
 			cudaFindWastedBits.SetArg(1, cudaSamples);
 			cudaFindWastedBits.SetArg(2, nResidualTasksPerChannel);
 
-			int workX = 128; // 256
 			int grpX = frameCount * channelsCount;
-			//openCLCQ.EnqueueNDRangeKernel(cudaFindWastedBits, 1, null, new int[] { 128 }, new int[] { 128 });
-			//openCLCQ.EnqueueNDRangeKernel(cudaFindWastedBits, 1, null, new int[] { 128 }, null);
-			openCLCQ.EnqueueNDRangeKernel(cudaFindWastedBits, 1, null, new int[] { grpX * workX }, new int[] { workX });
-
-			//openCLCQ.EnqueueNDRangeKernel(cudaFindWastedBits, 1, null, new int[] { 256 * 128 }, new int[] { 128 });
-			//openCLCQ.EnqueueNDRangeKernel(cudaFindWastedBits, 1, null, new int[] { grpX * workX }, null);
-			//cuda.SetFunctionBlockShape(task.cudaFindWastedBits, 256, 1, 1);
-			//cuda.LaunchAsync(task.cudaFindWastedBits, channelsCount * task.frameCount, 1, task.stream);
+			openCLCQ.EnqueueNDRangeKernel(cudaFindWastedBits, 1, null, new int[] { grpX * groupSize }, new int[] { groupSize });
 		}
 
-		public void EnqueueComputeAutocor(int autocorPartCount, int channelsCount, Mem cudaWindow, int max_prediction_order)
+		public void EnqueueComputeAutocor(int channelsCount, Mem cudaWindow, int max_prediction_order)
 		{
 			cudaComputeAutocor.SetArg(0, cudaAutocorOutput);
 			cudaComputeAutocor.SetArg(1, cudaSamples);
 			cudaComputeAutocor.SetArg(2, cudaWindow);
 			cudaComputeAutocor.SetArg(3, cudaResidualTasks);
-			cudaComputeAutocor.SetArg(4, max_prediction_order);
-			cudaComputeAutocor.SetArg(5, (uint)nAutocorTasksPerChannel - 1);
-			cudaComputeAutocor.SetArg(6, (uint)nResidualTasksPerChannel);
-			int workX = autocorPartCount;
+			cudaComputeAutocor.SetArg(4, (uint)nAutocorTasksPerChannel - 1);
+			cudaComputeAutocor.SetArg(5, (uint)nResidualTasksPerChannel);
+
+			int workX = max_prediction_order / 4 + 1;
 			int workY = nAutocorTasksPerChannel * channelsCount * frameCount;
-			int ws = 32;
-			int wy = 4;
-			openCLCQ.EnqueueNDRangeKernel(cudaComputeAutocor, 2, null, new int[] { workX * ws, workY * wy }, new int[] { ws, wy });
-			//openCLCQ.EnqueueNDRangeKernel(cudaComputeAutocor, 3, null, new int[] { workX * ws, workY, max_prediction_order + 1 }, new int[] { ws, 1, 1 });
-			
-			//cuda.SetFunctionBlockShape(task.cudaComputeAutocor, 32, 8, 1);
-			//cuda.LaunchAsync(task.cudaComputeAutocor, autocorPartCount, task.nAutocorTasksPerChannel * channelsCount * task.frameCount, task.stream);
+			openCLCQ.EnqueueNDRangeKernel(cudaComputeAutocor, 2, null, new int[] { workX * groupSize, workY }, new int[] { groupSize, 1 });
 		}
 
 		public void EnqueueEstimateResidual(int channelsCount, int max_prediction_order)
@@ -2435,11 +2417,8 @@ namespace CUETools.Codecs.FLACCL
 			cudaEstimateResidual.SetArg(1, cudaSamples);
 			cudaEstimateResidual.SetArg(2, cudaResidualTasks);
 
-			int threads_x = 128;
-			int workX = threads_x;
-			int workY = nResidualTasksPerChannel * channelsCount * frameCount;
-
-			openCLCQ.EnqueueNDRangeKernel(cudaEstimateResidual, 2, null, new int[] { workX, workY }, new int[] { threads_x, 1 });
+			int work = nResidualTasksPerChannel * channelsCount * frameCount;
+			openCLCQ.EnqueueNDRangeKernel(cudaEstimateResidual, 1, null, new int[] { groupSize * work }, new int[] { groupSize });
 		}
 
 		public void EnqueueChooseBestMethod(int channelsCount)

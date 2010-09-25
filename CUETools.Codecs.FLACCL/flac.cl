@@ -50,11 +50,7 @@ typedef struct
 typedef struct
 {
     FLACCLSubframeData data;
-    union 
-    {
-	int coefs[32]; // fixme: should be short?
-	int4 coefs4[8];
-    };
+    int coefs[32]; // fixme: should be short?
 } FLACCLSubframeTask;
 
 __kernel void cudaStereoDecorr(
@@ -103,15 +99,15 @@ __kernel void cudaChannelDecorr2(
 #define __ffs(a) (32 - clz(a & (-a)))
 //#define __ffs(a) (33 - clz(~a & (a - 1)))
 
-__kernel __attribute__((reqd_work_group_size(128, 1, 1)))
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaFindWastedBits(
     __global FLACCLSubframeTask *tasks,
     __global int *samples,
     int tasksPerChannel
 )
 {
-    __local volatile int wbits[128];
-    __local volatile int abits[128];
+    __local int abits[GROUP_SIZE];
+    __local int wbits[GROUP_SIZE];
     __local FLACCLSubframeData task;
 
     int tid = get_local_id(0);
@@ -129,12 +125,6 @@ void cudaFindWastedBits(
     wbits[tid] = w;
     abits[tid] = a;
     barrier(CLK_LOCAL_MEM_FENCE);
-    //atom_or(shared.wbits, shared.wbits[tid]);
-    //atom_or(shared.abits, shared.abits[tid]);
-    //SUM256(shared.wbits, tid, |=);
-    //SUM256(shared.abits, tid, |=);
-    //SUM128(wbits, tid, |=);
-    //SUM128(abits, tid, |=);
 
     for (int s = get_local_size(0) / 2; s > 0; s >>= 1)
     {
@@ -146,160 +136,81 @@ void cudaFindWastedBits(
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     
-    if (tid == 0)
-	task.wbits = max(0,__ffs(wbits[0]) - 1);
-    if (tid == 0)
-	task.abits = 32 - clz(abits[0]) - task.wbits;
- //   if (tid == 0)
-	//task.wbits = get_num_groups(0);
- //   if (tid == 0)
-	//task.abits = get_local_size(0);
-    
-    barrier(CLK_LOCAL_MEM_FENCE);
-
+    w = max(0,__ffs(wbits[0]) - 1);
+    a = 32 - clz(abits[0]) - w;
     if (tid < tasksPerChannel)
-	tasks[get_group_id(0) * tasksPerChannel + tid].data.wbits = task.wbits;
+	tasks[get_group_id(0) * tasksPerChannel + tid].data.wbits = w;
     if (tid < tasksPerChannel)
-	tasks[get_group_id(0) * tasksPerChannel + tid].data.abits = task.abits;
+	tasks[get_group_id(0) * tasksPerChannel + tid].data.abits = a;
 }
 
-//__kernel __attribute__((reqd_work_group_size(32, 4, 1)))
-//void cudaComputeAutocor(
-//    __global float *output,
-//    __global const int *samples,
-//    __global const float *window,
-//    __global FLACCLSubframeTask *tasks,
-//    const int max_order, // should be <= 32
-//    const int windowCount, // windows (log2: 0,1)
-//    const int taskCount // tasks per block
-//)
-//{
-//    __local struct {
-//	float data[256];
-//	volatile float product[128];
-//	FLACCLSubframeData task;
-//	volatile int dataPos;
-//	volatile int dataLen;
-//    } shared;
-//    const int tid = get_local_id(0) + get_local_id(1) * 32;
-//    // fetch task data
-//    if (tid < sizeof(shared.task) / sizeof(int))
-//	((__local int*)&shared.task)[tid] = ((__global int*)(tasks + taskCount * (get_group_id(1) >> windowCount)))[tid];
-//    if (tid == 0) 
-//    {
-//	shared.dataPos = get_group_id(0) * 7 * 32;
-//	shared.dataLen = min(shared.task.blocksize - shared.dataPos, 7 * 32 + max_order);
-//    }
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//
-//    // fetch samples
-//    shared.data[tid] = tid < shared.dataLen ? samples[tid] * window[tid]: 0.0f;
-//    int tid2 = tid + 128;
-//    shared.data[tid2] = tid2 < shared.dataLen ? samples[tid2] * window[tid2]: 0.0f;
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//
-//    for (int lag = 0; lag <= max_order; lag ++)
-//    {
-//	if (lag <= 12)
-//	    shared.product[tid] = 0.0f;
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//    }
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//    if (tid <= max_order)
-//	output[(get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (max_order + 1) + tid] = shared.product[tid];
-//}
-
-__kernel __attribute__((reqd_work_group_size(32, 4, 1)))
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaComputeAutocor(
     __global float *output,
     __global const int *samples,
     __global const float *window,
     __global FLACCLSubframeTask *tasks,
-    const int max_order, // should be <= 32
     const int windowCount, // windows (log2: 0,1)
     const int taskCount // tasks per block
 )
 {
-    __local struct {
-	float data[256];
-	volatile float product[128];
-	FLACCLSubframeData task;
-	volatile float result[33];
-	volatile int dataPos;
-	volatile int dataLen;
-	volatile int windowOffs;
-	volatile int samplesOffs;
-	//volatile int resultOffs;
-    } shared;
-    const int tid = get_local_id(0) + get_local_id(1) * 32;
+    __local float data[GROUP_SIZE * 2];
+    __local float product[GROUP_SIZE];
+    __local FLACCLSubframeData task;
+    const int tid = get_local_id(0);
     // fetch task data
-    if (tid < sizeof(shared.task) / sizeof(int))
-	((__local int*)&shared.task)[tid] = ((__global int*)(tasks + taskCount * (get_group_id(1) >> windowCount)))[tid];
-    if (tid == 0) 
-    {
-	shared.dataPos = get_group_id(0) * 7 * 32;
-	shared.windowOffs = (get_group_id(1) & ((1 << windowCount)-1)) * shared.task.blocksize + shared.dataPos;
-	shared.samplesOffs = shared.task.samplesOffs + shared.dataPos;
-	shared.dataLen = min(shared.task.blocksize - shared.dataPos, 7 * 32 + max_order);
-    }
-    //if (tid == 32)
-	//shared.resultOffs = __mul24(get_group_id(0) + __mul24(get_group_id(1), get_num_groups(0)), max_order + 1);
+    if (tid < sizeof(task) / sizeof(int))
+	((__local int*)&task)[tid] = ((__global int*)(tasks + taskCount * (get_group_id(1) >> windowCount)))[tid];
     barrier(CLK_LOCAL_MEM_FENCE);
+    
+    int bs = task.blocksize;
+    int windowOffs = (get_group_id(1) & ((1 << windowCount)-1)) * bs;
 
-    // fetch samples
-    shared.data[tid] = tid < shared.dataLen ? samples[shared.samplesOffs + tid] * window[shared.windowOffs + tid]: 0.0f;
-    int tid2 = tid + 128;
-    shared.data[tid2] = tid2 < shared.dataLen ? samples[shared.samplesOffs + tid2] * window[shared.windowOffs + tid2]: 0.0f;
-    barrier(CLK_LOCAL_MEM_FENCE);
+    data[tid] = tid < bs ? samples[task.samplesOffs + tid] * window[windowOffs + tid] : 0.0f;
 
-    const int ptr = get_local_id(0) * 7;
-    //if (get_local_id(1) == 0) for (int lag = 0; lag <= max_order; lag ++)
-    //for (int lag = get_local_id(1); lag <= max_order; lag += get_local_size(1))
-    for (int lag0 = 0; lag0 <= max_order; lag0 += get_local_size(1))
+    int tid0 = tid % (GROUP_SIZE >> 2);
+    int tid1 = tid / (GROUP_SIZE >> 2);
+    int lag0 = get_group_id(0) * 4;
+    __local float4 * dptr = ((__local float4 *)&data[0]) + tid0;
+    __local float4 * dptr1 = ((__local float4 *)&data[lag0 + tid1]) + tid0;
+    
+    float prod = 0.0f;
+    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
-	////const int productLen = min(shared.task.blocksize - get_group_id(0) * partSize - lag, partSize);
-	const int lag = lag0 + get_local_id(1);
-	const int ptr2 = ptr + lag;
-	shared.product[tid] =
-	    shared.data[ptr + 0] * shared.data[ptr2 + 0] +
-	    shared.data[ptr + 1] * shared.data[ptr2 + 1] +
-	    shared.data[ptr + 2] * shared.data[ptr2 + 2] +
-	    shared.data[ptr + 3] * shared.data[ptr2 + 3] +
-	    shared.data[ptr + 4] * shared.data[ptr2 + 4] +
-	    shared.data[ptr + 5] * shared.data[ptr2 + 5] +
-	    shared.data[ptr + 6] * shared.data[ptr2 + 6];
+	// fetch samples
+	float nextData = pos + tid + GROUP_SIZE < bs ? samples[task.samplesOffs + pos + tid + GROUP_SIZE] * window[windowOffs + pos + tid + GROUP_SIZE] : 0.0f;
+	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
-	for (int l = 16; l > 1; l >>= 1)
-	{
-	    if (get_local_id(0) < l)
-		shared.product[tid] = shared.product[tid] + shared.product[tid + l];
-	    barrier(CLK_LOCAL_MEM_FENCE);
-	}
-	// return results
-	if (get_local_id(0) == 0 && lag <= max_order)
-	    shared.result[lag] = shared.product[tid] + shared.product[tid + 1];
+
+	prod += dot(*dptr, *dptr1);
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	data[tid] = nextData;
+    }
+    product[tid] = prod;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int l = (GROUP_SIZE >> 3); l > 0; l >>= 1)
+    {
+	if (tid0 < l)
+	    product[tid] = product[tid] + product[tid + l];
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
-    if (tid <= max_order)
-	output[(get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (max_order + 1) + tid] = shared.result[tid];
-    //output[(get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (max_order + 1) + tid] = shared.product[tid];
-    //output[(get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (max_order + 1) + tid] = shared.windowOffs;
+    if (tid < 4 && tid + lag0 <= MAX_ORDER)
+	output[get_group_id(1) * (MAX_ORDER + 1) + tid + lag0] = product[tid * (GROUP_SIZE >> 2)];
 }
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
 void cudaComputeLPC(
     __global FLACCLSubframeTask *tasks,
-    int taskCount, // tasks per block
-    __global float*autoc,
-    int max_order, // should be <= 32
+    __global float *autoc,
     __global float *lpcs,
-    int windowCount,
-    int partCount
+    int taskCount, // tasks per block
+    int windowCount
 )
 {
     __local struct {
 	FLACCLSubframeData task;
-	volatile float parts[32];
 	volatile float ldr[32];
 	volatile float gen1[32];
 	volatile float error[32];
@@ -311,40 +222,19 @@ void cudaComputeLPC(
     
     // fetch task data
     if (tid < sizeof(shared.task) / sizeof(int))
-	((__local int*)&shared.task)[tid] = ((__global int*)(tasks + get_group_id(1) * taskCount))[tid];
+	((__local int*)&shared.task)[tid] = ((__global int*)(tasks + get_group_id(1)))[tid];
     if (tid == 0)
     {
-	shared.lpcOffs = (get_group_id(0) + get_group_id(1) * windowCount) * (max_order + 1) * 32;
-	shared.autocOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (max_order + 1) * partCount;
+	shared.lpcOffs = (get_group_id(0) + get_group_id(1) * windowCount) * (MAX_ORDER + 1) * 32;
+	shared.autocOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
     
-    // add up autocorrelation parts
+    if (get_local_id(0) <= MAX_ORDER)
+	shared.autoc[get_local_id(0)] = autoc[shared.autocOffs + get_local_id(0)];
+    if (get_local_id(0) + get_local_size(0) <= MAX_ORDER)
+	shared.autoc[get_local_id(0) + get_local_size(0)] = autoc[shared.autocOffs + get_local_id(0) + get_local_size(0)];
 
- //   for (int order = get_local_id(0); order <= max_order; order += 32)
- //   {
-	//float sum = 0.0f;
-	//for (int pos = 0; pos < partCount; pos++)
-	//    sum += autoc[shared.autocOffs + pos * (max_order + 1) + order];
-	//shared.autoc[order] = sum;
- //   }
-
-    for (int order = 0; order <= max_order; order ++)
-    {
-	float part = 0.0f;
-	for (int pos = get_local_id(0); pos < partCount; pos += get_local_size(0))
-	    part += autoc[shared.autocOffs + pos * (max_order + 1) + order];
-	shared.parts[tid] = part;
-	barrier(CLK_LOCAL_MEM_FENCE);
-	for (int l = get_local_size(0) / 2; l > 1; l >>= 1)
-	{
-	    if (get_local_id(0) < l)
-		shared.parts[tid] += shared.parts[tid + l];
-	    barrier(CLK_LOCAL_MEM_FENCE);
-	}
-	if (get_local_id(0) == 0)
-	    shared.autoc[order] = shared.parts[tid] + shared.parts[tid + 1];
-    }
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Compute LPC using Schur and Levinson-Durbin recursion
@@ -352,19 +242,19 @@ void cudaComputeLPC(
     shared.ldr[get_local_id(0)] = 0.0f;
     float error = shared.autoc[0];
     barrier(CLK_LOCAL_MEM_FENCE);
-    for (int order = 0; order < max_order; order++)
+    for (int order = 0; order < MAX_ORDER; order++)
     {
 	// Schur recursion
 	float reff = -shared.gen1[0] / error;
 	error += shared.gen1[0] * reff; // Equivalent to error *= (1 - reff * reff);
 	float gen1;
-	if (get_local_id(0) < max_order - 1 - order)
+	if (get_local_id(0) < MAX_ORDER - 1 - order)
 	{
 	    gen1 = shared.gen1[get_local_id(0) + 1] + reff * gen0;
 	    gen0 += shared.gen1[get_local_id(0) + 1] * reff;
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
-	if (get_local_id(0) < max_order - 1 - order)
+	if (get_local_id(0) < MAX_ORDER - 1 - order)
 	    shared.gen1[get_local_id(0)] = gen1;
 
 	// Store prediction error
@@ -385,118 +275,16 @@ void cudaComputeLPC(
     }
     barrier(CLK_LOCAL_MEM_FENCE);
     // Output prediction error estimates
-    if (get_local_id(0) < max_order)
-	lpcs[shared.lpcOffs + max_order * 32 + get_local_id(0)] = shared.error[get_local_id(0)];
+    if (get_local_id(0) < MAX_ORDER)
+	lpcs[shared.lpcOffs + MAX_ORDER * 32 + get_local_id(0)] = shared.error[get_local_id(0)];
 }
-
-//__kernel void cudaComputeLPCLattice(
-//    FLACCLSubframeTask *tasks,
-//    const int taskCount, // tasks per block
-//    const int *samples,
-//    const int windowCount,
-//    const int max_order, // should be <= 12
-//    float*lpcs
-//)
-//{
-//    __local struct {
-//	volatile FLACCLSubframeData task;
-//	volatile float F[512];
-//	volatile float arp[32];
-//	volatile float tmp[256];
-//	volatile float error[32];
-//	volatile int lpcOffs;
-//    } shared;
-//
-//    // fetch task data
-//    if (get_local_id(0) < sizeof(shared.task) / sizeof(int))
-//	((int*)&shared.task)[get_local_id(0)] = ((int*)(tasks + taskCount * get_group_id(1)))[get_local_id(0)];
-//    if (get_local_id(0) == 0)
-//	shared.lpcOffs = __mul24(__mul24(get_group_id(1) + 1, windowCount) - 1, max_order + 1) * 32;
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//
-//    // F = samples; B = samples
-//    float s1 = get_local_id(0) < shared.task.blocksize ? (samples[shared.task.samplesOffs + get_local_id(0)]) / 32768.0f : 0.0f;
-//    float s2 = get_local_id(0) + 256 < shared.task.blocksize ? (samples[shared.task.samplesOffs + get_local_id(0) + 256]) / 32768.0f : 0.0f;
-//    shared.F[get_local_id(0)] = s1;
-//    shared.F[get_local_id(0) + 256] = s2;
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//
-//    shared.tmp[get_local_id(0)] = FSQR(s1) + FSQR(s2);
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//    SUM256(shared.tmp, get_local_id(0), +=);
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//    float DEN = shared.tmp[0];
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//
-//    for (int order = 0; order < max_order; order++)
-//    {
-//	// reff = F(order+1:frameSize) * B(1:frameSize-order)' / DEN
-//	int idxF = get_local_id(0) + order + 1;
-//	int idxF2 = idxF + 256;
-//
-//	shared.tmp[get_local_id(0)] = idxF < shared.task.blocksize ? shared.F[idxF] * s1 : 0.0f;
-//	shared.tmp[get_local_id(0)] += idxF2 < shared.task.blocksize ? shared.F[idxF2] * s2 : 0.0f;
-//	barrier(CLK_LOCAL_MEM_FENCE); 
-//	SUM256(shared.tmp, get_local_id(0), +=);
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//	float reff = shared.tmp[0] / DEN;
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//
-//	// arp(order) = rc(order) = reff
-//	if (get_local_id(0) == 0)
-//	    shared.arp[order] = reff;
-//	    //shared.rc[order - 1] = shared.lpc[order - 1][order - 1] = reff;
-//
-//	// Levinson-Durbin recursion
-//	// arp(1:order-1) = arp(1:order-1) - reff * arp(order-1:-1:1)
-//	if (get_local_id(0) < order)
-//	    shared.arp[get_local_id(0)] = shared.arp[get_local_id(0)] - reff * shared.arp[order - 1 - get_local_id(0)];
-//	
-//	// Output coeffs
-//	if (get_local_id(0) <= order)
-//	    lpcs[shared.lpcOffs + order * 32 + get_local_id(0)] = shared.arp[order - get_local_id(0)];
-//
-//	// F1 = F(order+1:frameSize) - reff * B(1:frameSize-order)
-//	// B(1:frameSize-order) = B(1:frameSize-order) - reff * F(order+1:frameSize)
-//	// F(order+1:frameSize) = F1
-//	if (idxF < shared.task.blocksize)
-//	{
-//	    float f1 = shared.F[idxF];
-//	    shared.F[idxF] -= reff * s1;
-//	    s1 -= reff * f1;
-//	}
-//	if (idxF2 < shared.task.blocksize)
-//	{
-//	    float f2 = shared.F[idxF2];
-//	    shared.F[idxF2] -= reff * s2;
-//	    s2 -= reff * f2;
-//	}
-//
-//	// DEN = F(order+1:frameSize) * F(order+1:frameSize)' + B(1:frameSize-order) * B(1:frameSize-order)' (BURG)
-//	shared.tmp[get_local_id(0)] = (idxF + 1 < shared.task.blocksize ? FSQR(shared.F[idxF]) + FSQR(s1) : 0);
-//	shared.tmp[get_local_id(0)] += (idxF2 + 1 < shared.task.blocksize ? FSQR(shared.F[idxF2]) + FSQR(s2) : 0);
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//	SUM256(shared.tmp, get_local_id(0), +=);
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//	DEN = shared.tmp[0] / 2;
-//	// shared.PE[order-1] = shared.tmp[0] / 2 / (frameSize - order + 1);
-//	if (get_local_id(0) == 0)
-//	    shared.error[order] = DEN / (shared.task.blocksize - order);
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//    }
-//
-//    // Output prediction error estimates
-//    if (get_local_id(0) < max_order)
-//	lpcs[shared.lpcOffs + max_order * 32 + get_local_id(0)] = shared.error[get_local_id(0)];
-//}
 
 __kernel __attribute__((reqd_work_group_size(32, 4, 1)))
 void cudaQuantizeLPC(
     __global FLACCLSubframeTask *tasks,
+    __global float*lpcs,
     int taskCount, // tasks per block
     int taskCountLPC, // tasks per set of coeffs (<= 32)
-    __global float*lpcs,
-    int max_order, // should be <= 32
     int minprecision,
     int precisions
 )
@@ -515,32 +303,30 @@ void cudaQuantizeLPC(
     if (tid < sizeof(shared.task) / sizeof(int))
 	((__local int*)&shared.task)[tid] = ((__global int*)(tasks + get_group_id(1) * taskCount))[tid];
     if (tid == 0)
-	shared.lpcOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (max_order + 1) * 32;
+	shared.lpcOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1) * 32;
     barrier(CLK_LOCAL_MEM_FENCE);
 
+    // Select best orders based on Akaike's Criteria
     if (get_local_id(1) == 0)
     {
-	shared.index[get_local_id(0)] = min(max_order - 1, get_local_id(0));
-	shared.error[get_local_id(0)] = shared.task.blocksize * 64 + get_local_id(0);
-	shared.index[32 + get_local_id(0)] = min(max_order - 1, get_local_id(0));
-	shared.error[32 + get_local_id(0)] = shared.task.blocksize * 64 + get_local_id(0);
-
-        // Select best orders based on Akaike's Criteria
+	shared.index[tid] = min(MAX_ORDER - 1, tid);
+	shared.error[tid] = shared.task.blocksize * 64 + tid;
+	shared.index[32 + tid] = min(MAX_ORDER - 1, tid);
+	shared.error[32 + tid] = shared.task.blocksize * 64 + tid;
 
 	// Load prediction error estimates
-	if (get_local_id(0) < max_order)
-	    shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[shared.lpcOffs + max_order * 32 + get_local_id(0)]) + get_local_id(0) * 5.12f * log(shared.task.blocksize);
-	    //shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[shared.lpcOffs + max_order * 32 + get_local_id(0)]) + get_local_id(0) * 0.30f * (shared.task.abits + 1) * log(shared.task.blocksize);
+	if (tid < MAX_ORDER)
+	    shared.error[tid] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + tid]) + tid * 5.12f * log(shared.task.blocksize);
+	    //shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + get_local_id(0)]) + get_local_id(0) * 0.30f * (shared.task.abits + 1) * log(shared.task.blocksize);
     }
-
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Sort using bitonic sort
     for(int size = 2; size < 64; size <<= 1){
 	//Bitonic merge
-	int ddd = (get_local_id(0) & (size / 2)) == 0;
+	int ddd = (tid & (size / 2)) == 0;
 	for(int stride = size / 2; stride > 0; stride >>= 1){
-	    int pos = 2 * get_local_id(0) - (get_local_id(0) & (stride - 1));
+	    int pos = 2 * tid - (tid & (stride - 1));
 	    float e0, e1;
 	    int i0, i1;
 	    if (get_local_id(1) == 0)
@@ -551,7 +337,7 @@ void cudaQuantizeLPC(
 		i1 = shared.index[pos + stride];
 	    }
 	    barrier(CLK_LOCAL_MEM_FENCE);
-	    if ((e0 >= e1) == ddd && get_local_id(1) == 0)
+	    if (get_local_id(1) == 0 && (e0 >= e1) == ddd)
 	    {
 		shared.error[pos] = e1;
 		shared.error[pos + stride] = e0;
@@ -566,7 +352,7 @@ void cudaQuantizeLPC(
     {
 	for(int stride = 32; stride > 0; stride >>= 1){
 	    //barrier(CLK_LOCAL_MEM_FENCE);
-	    int pos = 2 * get_local_id(0) - (get_local_id(0) & (stride - 1));
+	    int pos = 2 * tid - (tid & (stride - 1));
 	    float e0, e1;
 	    int i0, i1;
 	    if (get_local_id(1) == 0)
@@ -577,7 +363,7 @@ void cudaQuantizeLPC(
 		i1 = shared.index[pos + stride];
 	    }
 	    barrier(CLK_LOCAL_MEM_FENCE);
-	    if (e0 >= e1 && get_local_id(1) == 0)
+	    if (get_local_id(1) == 0 && e0 >= e1)
 	    {
 		shared.error[pos] = e1;
 		shared.error[pos + stride] = e0;
@@ -653,21 +439,21 @@ void cudaQuantizeLPC(
     }
 }
 
-__kernel __attribute__(( vec_type_hint (int4)))
+__kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaEstimateResidual(
     __global int*output,
     __global int*samples,
     __global FLACCLSubframeTask *tasks
     )
 {
-    __local float data[128 * 2];
-    __local int residual[128];
+    __local float data[GROUP_SIZE * 2];
+    __local int residual[GROUP_SIZE];
     __local FLACCLSubframeTask task;
     __local float4 coefsf4[8];
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task)/sizeof(int))
-	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(1)]))[tid];
+	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     int ro = task.data.residualOrder;
@@ -677,11 +463,11 @@ void cudaEstimateResidual(
     if (tid < 32)
 	((__local float *)&coefsf4[0])[tid] = select(0.0f, ((float)task.coefs[tid]) / (1 << task.data.shift), tid < ro);
     data[tid] = tid < bs ? (float)(samples[task.data.samplesOffs + tid] >> task.data.wbits) : 0.0f;
-    for (int pos = 0; pos < bs; pos += get_local_size(0))
+    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
-	float nextData = pos + tid + get_local_size(0) < bs ? (float)(samples[task.data.samplesOffs + pos + tid + get_local_size(0)] >> task.data.wbits) : 0.0f;
-	data[tid + get_local_size(0)] = nextData;
+	float nextData = pos + tid + GROUP_SIZE < bs ? (float)(samples[task.data.samplesOffs + pos + tid + GROUP_SIZE] >> task.data.wbits) : 0.0f;
+	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// compute residual
@@ -718,19 +504,19 @@ void cudaEstimateResidual(
 	data[tid] = nextData;
     }
 
-    int residualLen = (bs - ro) / get_local_size(0) + select(0, 1, tid < (bs - ro) % get_local_size(0));
+    int residualLen = (bs - ro) / GROUP_SIZE + select(0, 1, tid < (bs - ro) % GROUP_SIZE);
     int k = clamp(convert_int_rtn(log2((res + 0.000001f) / (residualLen + 0.000001f))), 0, 14);
     residual[tid] = residualLen * (k + 1) + (convert_int_rtz(res) >> k);
 
     barrier(CLK_LOCAL_MEM_FENCE);
-    for (int l = get_local_size(0) / 2; l > 0; l >>= 1)
+    for (int l = GROUP_SIZE / 2; l > 0; l >>= 1)
     {
 	if (tid < l)
 	    residual[tid] += residual[tid + l];
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     if (tid == 0)
-	output[get_group_id(1)] = residual[0];
+	output[get_group_id(0)] = residual[0];
 }
 
 __kernel void cudaChooseBestMethod(
