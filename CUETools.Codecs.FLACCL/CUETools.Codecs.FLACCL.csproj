@@ -35,10 +35,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenCLNet.dll, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>OpenCLNet.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -53,6 +49,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ATI Stream\OpenCL.Net 0.6\source\OpenCLNet\OpenCLNet.csproj">
+      <Project>{758285C6-1ACA-458A-9906-EE6701D5AF87}</Project>
+      <Name>OpenCLNet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
       <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
       <Name>CUETools.Codecs.FLAKE</Name>
@@ -67,8 +67,9 @@
   <ItemGroup>
     <None Include="flac.cu">
     </None>
-    <EmbeddedResource Include="flac.cl">
-    </EmbeddedResource>
+    <Content Include="flac.cl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -86,6 +87,7 @@
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>
-    <PreBuildEvent></PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

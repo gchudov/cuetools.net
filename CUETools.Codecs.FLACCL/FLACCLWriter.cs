@@ -1221,7 +1221,7 @@ namespace CUETools.Codecs.FLACCL
 			//task.openCLCQ.EnqueueReadBuffer(task.cudaLPCData, true, 0, sizeof(float) * 1024, (IntPtr)lpcs);
 
 			task.openCLCQ.EnqueueBarrier();
-			task.openCLCQ.EnqueueNDRangeKernel(task.cudaQuantizeLPC, 2, null, new int[] { task.nAutocorTasksPerChannel * 32, channelsCount * task.frameCount * 4 }, new int[] { 32, 4 });
+			task.openCLCQ.EnqueueNDRangeKernel(task.cudaQuantizeLPC, 2, null, new int[] { task.nAutocorTasksPerChannel * 32, channelsCount * task.frameCount }, new int[] { 32, 1 });
 			//cuda.SetFunctionBlockShape(task.cudaQuantizeLPC, 32, 4, 1);
 
 			task.openCLCQ.EnqueueBarrier();
@@ -1518,7 +1518,7 @@ namespace CUETools.Codecs.FLACCL
 				OCLMan = new OpenCLManager();
 				// Attempt to save binaries after compilation, as well as load precompiled binaries
 				// to avoid compilation. Usually you'll want this to be true. 
-				OCLMan.AttemptUseBinaries = false; // true;
+				OCLMan.AttemptUseBinaries = true; // true;
 				// Attempt to compile sources. This should probably be true for almost all projects.
 				// Setting it to false means that when you attempt to compile "mysource.cl", it will
 				// only scan the precompiled binary directory for a binary corresponding to a source
@@ -1539,32 +1539,33 @@ namespace CUETools.Codecs.FLACCL
 					"#define GROUP_SIZE " + groupSize.ToString() + "\n";
 				// The BuildOptions string is passed directly to clBuild and can be used to do debug builds etc
 				OCLMan.BuildOptions = "";
-
+				OCLMan.SourcePath = System.IO.Path.GetDirectoryName(GetType().Assembly.Location);
+				//OCLMan.BinaryPath = ;
 				OCLMan.CreateDefaultContext(0, DeviceType.GPU);
 
 				openCLContext = OCLMan.Context;
-				//try
-				//{
-				//    openCLProgram = OCLMan.CompileFile("flac.cl");
-				//}
-				//catch (OpenCLBuildException ex)
-				//{
-				//    string buildLog = ex.BuildLogs[0];
-				//    throw ex;
-				//}
-				using (Stream kernel = GetType().Assembly.GetManifestResourceStream(GetType(), "flac.cl"))
-				using (StreamReader sr = new StreamReader(kernel))
+				try
 				{
-					try
-					{
-						openCLProgram = OCLMan.CompileSource(sr.ReadToEnd()); ;
-					}
-					catch (OpenCLBuildException ex)
-					{
-						string buildLog = ex.BuildLogs[0];
-						throw ex;
-					}
+					openCLProgram = OCLMan.CompileFile("flac.cl");
 				}
+				catch (OpenCLBuildException ex)
+				{
+					string buildLog = ex.BuildLogs[0];
+					throw ex;
+				}
+				//using (Stream kernel = GetType().Assembly.GetManifestResourceStream(GetType(), "flac.cl"))
+				//using (StreamReader sr = new StreamReader(kernel))
+				//{
+				//    try
+				//    {
+				//        openCLProgram = OCLMan.CompileSource(sr.ReadToEnd()); ;
+				//    }
+				//    catch (OpenCLBuildException ex)
+				//    {
+				//        string buildLog = ex.BuildLogs[0];
+				//        throw ex;
+				//    }
+				//}
 #if TTTTKJHSKJH
 				var openCLPlatform = OpenCL.GetPlatform(0);
 				openCLContext = openCLPlatform.CreateDefaultContext();
@@ -2427,9 +2428,7 @@ namespace CUETools.Codecs.FLACCL
 			cudaChooseBestMethod.SetArg(1, cudaResidualOutput);
 			cudaChooseBestMethod.SetArg(2, (uint)nResidualTasksPerChannel);
 
-			int threadsY = 4;
-
-			openCLCQ.EnqueueNDRangeKernel(cudaChooseBestMethod, 2, null, new int[] { 32, channelsCount * frameCount * threadsY }, new int[] { 32, threadsY });
+			openCLCQ.EnqueueNDRangeKernel(cudaChooseBestMethod, 2, null, new int[] { 32, channelsCount * frameCount }, new int[] { 32, 1 });
 			//cuda.SetFunctionBlockShape(task.cudaChooseBestMethod, 32, 8, 1);
 		}
 
