@@ -20,6 +20,8 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
+//#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+
 typedef enum
 {
     Constant = 0,
@@ -116,7 +118,7 @@ void cudaFindWastedBits(
     barrier(CLK_LOCAL_MEM_FENCE);
     
     int w = 0, a = 0;
-    for (int pos = 0; pos < task.blocksize; pos += get_local_size(0))
+    for (int pos = 0; pos < task.blocksize; pos += GROUP_SIZE)
     {
 	int smp = pos + tid < task.blocksize ? samples[task.samplesOffs + pos + tid] : 0;
 	w |= smp;
@@ -126,7 +128,7 @@ void cudaFindWastedBits(
     abits[tid] = a;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    for (int s = get_local_size(0) / 2; s > 0; s >>= 1)
+    for (int s = GROUP_SIZE / 2; s > 0; s >>= 1)
     {
 	if (tid < s)
 	{
@@ -200,6 +202,12 @@ void cudaComputeAutocor(
 	output[get_group_id(1) * (MAX_ORDER + 1) + tid + lag0] = product[tid * (GROUP_SIZE >> 2)];
 }
 
+//#define DEBUGPRINT
+
+#ifdef DEBUGPRINT
+#pragma OPENCL EXTENSION cl_amd_printf : enable
+#endif
+
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
 void cudaComputeLPC(
     __global FLACCLSubframeTask *tasks,
@@ -241,12 +249,20 @@ void cudaComputeLPC(
     float gen0 = shared.gen1[get_local_id(0)] = shared.autoc[get_local_id(0)+1];
     shared.ldr[get_local_id(0)] = 0.0f;
     float error = shared.autoc[0];
+    
+#ifdef DEBUGPRINT
+    int magic = shared.autoc[0] == 177286873088.0f;
+    if (magic && get_local_id(0) <= MAX_ORDER)
+        printf("autoc[%d] == %f\n", get_local_id(0), shared.autoc[get_local_id(0)]);
+#endif
+
     barrier(CLK_LOCAL_MEM_FENCE);
     for (int order = 0; order < MAX_ORDER; order++)
     {
 	// Schur recursion
 	float reff = -shared.gen1[0] / error;
 	error += shared.gen1[0] * reff; // Equivalent to error *= (1 - reff * reff);
+	//error *= (1 - reff * reff);
 	float gen1;
 	if (get_local_id(0) < MAX_ORDER - 1 - order)
 	{
@@ -256,6 +272,12 @@ void cudaComputeLPC(
 	barrier(CLK_LOCAL_MEM_FENCE);
 	if (get_local_id(0) < MAX_ORDER - 1 - order)
 	    shared.gen1[get_local_id(0)] = gen1;
+#ifdef DEBUGPRINT
+	if (magic && get_local_id(0) == 0)
+	    printf("order == %d, reff == %f, error = %f\n", order, reff, error);
+	if (magic && get_local_id(0) <= MAX_ORDER)
+	    printf("gen[%d] == %f, %f\n", get_local_id(0), gen0, gen1);
+#endif
 
 	// Store prediction error
 	if (get_local_id(0) == 0)
@@ -272,6 +294,8 @@ void cudaComputeLPC(
 	// Output coeffs
 	if (get_local_id(0) <= order)
 	    lpcs[shared.lpcOffs + order * 32 + get_local_id(0)] = -shared.ldr[order - get_local_id(0)];
+	//if (get_local_id(0) <= order + 1 && fabs(-shared.ldr[0]) > 3000)
+	//    printf("coef[%d] == %f, autoc == %f, error == %f\n", get_local_id(0), -shared.ldr[order - get_local_id(0)], shared.autoc[get_local_id(0)], shared.error[get_local_id(0)]);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
     // Output prediction error estimates
@@ -309,12 +333,12 @@ void cudaQuantizeLPC(
     // Select best orders based on Akaike's Criteria
     shared.index[tid] = min(MAX_ORDER - 1, tid);
     shared.error[tid] = shared.task.blocksize * 64 + tid;
-    shared.index[32 + tid] = min(MAX_ORDER - 1, tid);
-    shared.error[32 + tid] = shared.task.blocksize * 64 + tid;
+    shared.index[32 + tid] = MAX_ORDER - 1;
+    shared.error[32 + tid] = shared.task.blocksize * 64 + tid + 32;
 
     // Load prediction error estimates
     if (tid < MAX_ORDER)
-	shared.error[tid] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + tid]) + tid * 5.12f * log(shared.task.blocksize);
+	shared.error[tid] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log(shared.task.blocksize);
 	//shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + get_local_id(0)]) + get_local_id(0) * 0.30f * (shared.task.abits + 1) * log(shared.task.blocksize);
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -360,6 +384,9 @@ void cudaQuantizeLPC(
 	    barrier(CLK_LOCAL_MEM_FENCE);
 	}
     }
+
+    //shared.index[tid] = MAX_ORDER - 1;
+    //barrier(CLK_LOCAL_MEM_FENCE);
 
     // Quantization
     for (int i = 0; i < taskCountLPC; i ++)
@@ -410,20 +437,19 @@ void cudaQuantizeLPC(
 	cbits = 1 + 32 - clz(shared.tmpi[0] | shared.tmpi[1]);
 
 	// output shift, cbits and output coeffs
-	if (i < taskCountLPC)
-	{
-	    int taskNo = get_group_id(1) * taskCount + get_group_id(0) * taskCountLPC + i;
-	    if (tid == 0)
-		tasks[taskNo].data.shift = shift;
-	    if (tid == 0)
-		tasks[taskNo].data.cbits = cbits;
-	    if (tid == 0)
-		tasks[taskNo].data.residualOrder = order + 1;
-	    if (tid <= order)
-		tasks[taskNo].coefs[tid] = coef;
-	}
+	int taskNo = get_group_id(1) * taskCount + get_group_id(0) * taskCountLPC + i;
+	if (tid == 0)
+	    tasks[taskNo].data.shift = shift;
+	if (tid == 0)
+	    tasks[taskNo].data.cbits = cbits;
+	if (tid == 0)
+	    tasks[taskNo].data.residualOrder = order + 1;
+	if (tid <= order)
+	    tasks[taskNo].coefs[tid] = coef;
     }
 }
+
+#define DONT_BEACCURATE
 
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaEstimateResidual(
@@ -432,10 +458,14 @@ void cudaEstimateResidual(
     __global FLACCLSubframeTask *tasks
     )
 {
-    __local float data[GROUP_SIZE * 2];
-    __local int residual[GROUP_SIZE];
+    __local int data[GROUP_SIZE * 2];
     __local FLACCLSubframeTask task;
-    __local float4 coefsf4[8];
+#ifdef BEACCURATE
+    __local int residual[GROUP_SIZE];
+    __local int len[GROUP_SIZE / 16];
+#else
+    __local float residual[GROUP_SIZE];
+#endif
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task)/sizeof(int))
@@ -444,56 +474,79 @@ void cudaEstimateResidual(
 
     int ro = task.data.residualOrder;
     int bs = task.data.blocksize;
-    float res = 0;
 
-    if (tid < 32)
-	((__local float *)&coefsf4[0])[tid] = select(0.0f, ((float)task.coefs[tid]) / (1 << task.data.shift), tid < ro);
-    data[tid] = tid < bs ? (float)(samples[task.data.samplesOffs + tid] >> task.data.wbits) : 0.0f;
+    if (tid < 32 && tid >= ro)
+	task.coefs[tid] = 0;
+#ifdef BEACCURATE
+    if (tid < GROUP_SIZE / 16)
+	len[tid] = 0;
+#else
+    float res = 0.0f;
+#endif
+    data[tid] = tid < bs ? samples[task.data.samplesOffs + tid] >> task.data.wbits : 0;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
-	float nextData = pos + tid + GROUP_SIZE < bs ? (float)(samples[task.data.samplesOffs + pos + tid + GROUP_SIZE] >> task.data.wbits) : 0.0f;
+	int nextData = pos + tid + GROUP_SIZE < bs ? samples[task.data.samplesOffs + pos + tid + GROUP_SIZE] >> task.data.wbits : 0;
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// compute residual
-	__local float4 * dptr = (__local float4 *)&data[tid];
-	float sumf = data[tid + ro] - 
-	    ( dot(dptr[0], coefsf4[0])
-	    + dot(dptr[1], coefsf4[1])
+	__local int4 * dptr = (__local int4 *)&data[tid];
+	__local int4 * cptr = (__local int4 *)&task.coefs[0];
+	int4 sum = dptr[0] * cptr[0]
+#if MAX_ORDER > 4
+	    + dptr[1] * cptr[1]
 #if MAX_ORDER > 8
-	    + dot(dptr[2], coefsf4[2])
+	    + dptr[2] * cptr[2]
 #if MAX_ORDER > 12
-	    + dot(dptr[3], coefsf4[3])
+	    + dptr[3] * cptr[3]
 #if MAX_ORDER > 16
-	    + dot(dptr[4], coefsf4[4])
-	    + dot(dptr[5], coefsf4[5])
-	    + dot(dptr[6], coefsf4[6])
-	    + dot(dptr[7], coefsf4[7])
+	    + dptr[4] * cptr[4]
+	    + dptr[5] * cptr[5]
+	    + dptr[6] * cptr[6]
+	    + dptr[7] * cptr[7]
 #endif
 #endif
 #endif
-	);
-	//residual[tid] = sum;
+#endif
+	    ;
 	
-	res += select(0.0f, min(fabs(sumf), (float)0x7fffff), pos + tid + ro < bs);
+	int t = select(0, data[tid + ro] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift), pos + tid + ro < bs);
+#ifdef BEACCURATE
+	residual[tid] = min((t << 1) ^ (t >> 31), 0x7fffff);
+#else
+	res += fabs(t);
+#endif
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	//int k = min(33 - clz(sum), 14);
-	//res += select(0, 1 + k, pos + tid + ro < bs);
-	
-	//sum = residual[tid] + residual[tid + 1] + residual[tid + 2] + residual[tid + 3]
-	//    + residual[tid + 4] + residual[tid + 5] + residual[tid + 6] + residual[tid + 7];
-	//int k = clamp(29 - clz(sum), 0, 14);
-	//res += select(0, 8 * (k + 1) + (sum >> k), pos + tid + ro < bs && !(tid & 7));
-	
+#ifdef BEACCURATE
+	if (tid < GROUP_SIZE / 16)
+	{
+	    __local int4 * chunk = ((__local int4 *)residual) + tid * 4;
+	    int4 sum = chunk[0] + chunk[1] + chunk[2] + chunk[3];
+	    int res = sum.x + sum.y + sum.z + sum.w;
+	    int k = clamp(clz(16) - clz(res), 0, 14);
+	    len[tid] += 16 * k + (res >> k);
+	    k = clamp(clz(16) - clz(res), 0, 14);
+	}
+#endif
+
 	data[tid] = nextData;
     }
 
-    int residualLen = (bs - ro) / GROUP_SIZE + select(0, 1, tid < (bs - ro) % GROUP_SIZE);
-    int k = clamp(convert_int_rtn(log2((res + 0.000001f) / (residualLen + 0.000001f))), 0, 14);
-    residual[tid] = residualLen * (k + 1) + (convert_int_rtz(res) >> k);
-
+#ifdef BEACCURATE
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int l = GROUP_SIZE / 32; l > 0; l >>= 1)
+    {
+	if (tid < l)
+	    len[tid] += len[tid + l];
+	barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    if (tid == 0)
+	output[get_group_id(0)] = len[0] + (bs - ro);
+#else
+    residual[tid] = res;
     barrier(CLK_LOCAL_MEM_FENCE);
     for (int l = GROUP_SIZE / 2; l > 0; l >>= 1)
     {
@@ -502,7 +555,16 @@ void cudaEstimateResidual(
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     if (tid == 0)
-	output[get_group_id(0)] = residual[0];
+    {
+	int residualLen = (bs - ro);
+	float sum = residual[0] * 2;// + residualLen / 2;
+	//int k = clamp(convert_int_rtn(log2((sum + 0.000001f) / (residualLen + 0.000001f))), 0, 14);
+	int k;
+	frexp((sum + 0.000001f) / residualLen, &k);
+	k = clamp(k - 1, 0, 14);
+	output[get_group_id(0)] = residualLen * (k + 1) + convert_int_rtn(min((float)0xffffff, sum / (1 << k)));
+    }
+#endif
 }
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
@@ -641,6 +703,7 @@ void cudaCopyBestMethodStereo(
 	tasks_out[2 * get_group_id(1) + 1].data.residualOffs = tasks[shared.best_index[1]].data.residualOffs;
 }
 
+// get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaEncodeResidual(
     __global int *output,
@@ -652,7 +715,7 @@ void cudaEncodeResidual(
     __local int data[GROUP_SIZE * 2];
     const int tid = get_local_id(0);
     if (get_local_id(0) < sizeof(task) / sizeof(int))
-	((__local int*)&task)[get_local_id(0)] = ((__global int*)(&tasks[get_group_id(1)]))[get_local_id(0)];
+	((__local int*)&task)[get_local_id(0)] = ((__global int*)(&tasks[get_group_id(0)]))[get_local_id(0)];
     barrier(CLK_LOCAL_MEM_FENCE);
 
     int bs = task.data.blocksize;
@@ -679,6 +742,8 @@ void cudaEncodeResidual(
     }
 }
 
+// get_group_id(0) == partition index
+// get_group_id(1) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaCalcPartition(
     __global int *partition_lengths,
@@ -697,8 +762,8 @@ void cudaCalcPartition(
 	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(1)]))[tid];
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    int k = tid % (GROUP_SIZE / 16);
-    int x = tid / (GROUP_SIZE / 16);
+    int k = tid % 16;
+    int x = tid / 16;
 
     int sum = 0;
     for (int pos0 = 0; pos0 < psize; pos0 += GROUP_SIZE)
@@ -707,7 +772,7 @@ void cudaCalcPartition(
 	// fetch residual
 	int s = (offs >= task.residualOrder && pos0 + tid < psize) ? residual[task.residualOffs + offs] : 0;
 	// convert to unsigned
-	data[tid] = min(0xfffff, (s << 1) ^ (s >> 31));
+	data[tid] = min(0x7fffff, (s << 1) ^ (s >> 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// calc number of unary bits for each residual sample with each rice paramater
@@ -716,7 +781,7 @@ void cudaCalcPartition(
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     
-    length[x][k] = min(0xfffff, sum);
+    length[x][k] = min(0x7fffff, sum);
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (x == 0)
@@ -726,174 +791,180 @@ void cudaCalcPartition(
 	// output length
 	const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (k << (max_porder + 1));
 	if (k <= 14)
-	    partition_lengths[pos + get_group_id(0)] = min(0xfffff,length[0][k]) + (psize - task.residualOrder * (get_group_id(0) == 0)) * (k + 1);
+	    partition_lengths[pos + get_group_id(0)] = min(0x7fffff,length[0][k]) + (psize - task.residualOrder * (get_group_id(0) == 0)) * (k + 1);
     }
 }
 
-//// Sums partition lengths for a certain k == get_group_id(0)
-//// Requires 128 threads
-//__kernel void cudaSumPartition(
-//    int* partition_lengths,
-//    int max_porder
-//    )
-//{
-//    __local struct {
-//	volatile int data[512+32]; // max_porder <= 8, data length <= 1 << 9.
-//    } shared;
-//
-//    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (get_group_id(0) << (max_porder + 1));
-//
-//    // fetch partition lengths
-//    shared.data[get_local_id(0)] = get_local_id(0) < (1 << max_porder) ? partition_lengths[pos + get_local_id(0)] : 0;
-//    shared.data[get_local_size(0) + get_local_id(0)] = get_local_size(0) + get_local_id(0) < (1 << max_porder) ? partition_lengths[pos + get_local_size(0) + get_local_id(0)] : 0;
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//
-//    int in_pos = (get_local_id(0) << 1);
-//    int out_pos = (1 << max_porder) + get_local_id(0);
-//    int bs;
-//    for (bs = 1 << (max_porder - 1); bs > 32; bs >>= 1)
-//    {
-//	if (get_local_id(0) < bs) shared.data[out_pos] = shared.data[in_pos] + shared.data[in_pos + 1];
-//	in_pos += bs << 1;
-//	out_pos += bs;
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//    }
-//    if (get_local_id(0) < 32)
-//    for (; bs > 0; bs >>= 1)
-//    {
-//	shared.data[out_pos] = shared.data[in_pos] + shared.data[in_pos + 1];
-//	in_pos += bs << 1;
-//	out_pos += bs;
-//    }
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//    if (get_local_id(0) < (1 << max_porder))
-//	partition_lengths[pos + (1 << max_porder) + get_local_id(0)] = shared.data[(1 << max_porder) + get_local_id(0)];
-//    if (get_local_size(0) + get_local_id(0) < (1 << max_porder))
-//	partition_lengths[pos + (1 << max_porder) + get_local_size(0) + get_local_id(0)] = shared.data[(1 << max_porder) + get_local_size(0) + get_local_id(0)];
-//}
-//
-//// Finds optimal rice parameter for up to 16 partitions at a time.
-//// Requires 16x16 threads
-//__kernel void cudaFindRiceParameter(
-//    int* rice_parameters,
-//    int* partition_lengths,
-//    int max_porder
-//    )
-//{
-//    __local struct {
-//	volatile int length[256];
-//	volatile int index[256];
-//    } shared;
-//    const int tid = get_local_id(0) + (get_local_id(1) << 5);
-//    const int parts = min(32, 2 << max_porder);
-//    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (get_local_id(1) << (max_porder + 1));
-//
-//    // read length for 32 partitions
-//    int l1 = (get_local_id(0) < parts) ? partition_lengths[pos + get_group_id(0) * 32 + get_local_id(0)] : 0xffffff;
-//    int l2 = (get_local_id(1) + 8 <= 14 && get_local_id(0) < parts) ? partition_lengths[pos + (8 << (max_porder + 1)) + get_group_id(0) * 32 + get_local_id(0)] : 0xffffff;
-//    // find best rice parameter
-//    shared.index[tid] = get_local_id(1) + ((l2 < l1) << 3);
-//    shared.length[tid] = l1 = min(l1, l2);
-//    barrier(CLK_LOCAL_MEM_FENCE);
+// Sums partition lengths for a certain k == get_group_id(0)
+// Requires 128 threads
+// get_group_id(0) == k
+// get_group_id(1) == task index
+__kernel __attribute__((reqd_work_group_size(128, 1, 1)))
+void cudaSumPartition(
+    __global int* partition_lengths,
+    int max_porder
+    )
+{
+    __local int data[512]; // max_porder <= 8, data length <= 1 << 9.
+    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (get_group_id(0) << (max_porder + 1));
+
+    // fetch partition lengths
+    data[get_local_id(0)] = get_local_id(0) < (1 << max_porder) ? partition_lengths[pos + get_local_id(0)] : 0;
+    data[get_local_size(0) + get_local_id(0)] = get_local_size(0) + get_local_id(0) < (1 << max_porder) ? partition_lengths[pos + get_local_size(0) + get_local_id(0)] : 0;
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    int in_pos = (get_local_id(0) << 1);
+    int out_pos = (1 << max_porder) + get_local_id(0);
+    for (int bs = 1 << (max_porder - 1); bs > 0; bs >>= 1)
+    {
+	if (get_local_id(0) < bs) data[out_pos] = data[in_pos] + data[in_pos + 1];
+	in_pos += bs << 1;
+	out_pos += bs;
+	barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    if (get_local_id(0) < (1 << max_porder))
+	partition_lengths[pos + (1 << max_porder) + get_local_id(0)] = data[(1 << max_porder) + get_local_id(0)];
+    if (get_local_size(0) + get_local_id(0) < (1 << max_porder))
+	partition_lengths[pos + (1 << max_porder) + get_local_size(0) + get_local_id(0)] = data[(1 << max_porder) + get_local_size(0) + get_local_id(0)];
+}
+
+// Finds optimal rice parameter for several partitions at a time.
+// get_group_id(0) == chunk index (chunk size is GROUP_SIZE / 8, so total task size is 8 * (2 << max_porder))
+// get_group_id(1) == task index
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void cudaFindRiceParameter(
+    __global int* rice_parameters,
+    __global int* partition_lengths,
+    int max_porder
+    )
+{
+    __local struct {
+	volatile int length[GROUP_SIZE];
+	volatile int index[GROUP_SIZE];
+    } shared;
+    const int tid = get_local_id(0);
+    const int ws = GROUP_SIZE / 8;
+    const int parts = min(ws, 2 << max_porder);
+    const int p = tid % ws;
+    const int k = tid / ws; // 0..7
+    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (k << (max_porder + 1));
+
+    // read length for 32 partitions
+    int l1 = (p < parts) ? partition_lengths[pos + get_group_id(0) * ws + p] : 0xffffff;
+    int l2 = (k + 8 <= 14 && p < parts) ? partition_lengths[pos + (8 << (max_porder + 1)) + get_group_id(0) * ws + p] : 0xffffff;
+    // find best rice parameter
+    shared.index[tid] = k + ((l2 < l1) << 3);
+    shared.length[tid] = l1 = min(l1, l2);
+    barrier(CLK_LOCAL_MEM_FENCE);
 //#pragma unroll 3
-//    for (int sh = 7; sh >= 5; sh --)
-//    {
-//	if (tid < (1 << sh))
-//	{
-//	    l2 = shared.length[tid + (1 << sh)];
-//	    shared.index[tid] = shared.index[tid + ((l2 < l1) << sh)];
-//	    shared.length[tid] = l1 = min(l1, l2);
-//	}    
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//    }
-//    if (tid < parts)
-//    {
-//	// output rice parameter
-//	rice_parameters[(get_group_id(1) << (max_porder + 2)) + get_group_id(0) * parts + tid] = shared.index[tid];
-//	// output length
-//	rice_parameters[(get_group_id(1) << (max_porder + 2)) + (1 << (max_porder + 1)) + get_group_id(0) * parts + tid] = shared.length[tid];
-//    }
-//}
-//
-//__kernel void cudaFindPartitionOrder(
-//    int* best_rice_parameters,
-//    FLACCLSubframeTask *tasks,
-//    int* rice_parameters,
-//    int max_porder
-//    )
-//{
-//    __local struct {
-//	int data[512];
-//	volatile int tmp[256];
-//	int length[32];
-//	int index[32];
-//	//char4 ch[64];
-//	FLACCLSubframeTask task;
-//    } shared;
-//    const int pos = (get_group_id(1) << (max_porder + 2)) + (2 << max_porder);
-//    if (get_local_id(0) < sizeof(shared.task) / sizeof(int))
-//	((int*)&shared.task)[get_local_id(0)] = ((int*)(&tasks[get_group_id(1)]))[get_local_id(0)];
-//    // fetch partition lengths
-//    shared.data[get_local_id(0)] = get_local_id(0) < (2 << max_porder) ? rice_parameters[pos + get_local_id(0)] : 0;
-//    shared.data[get_local_id(0) + 256] = get_local_id(0) + 256 < (2 << max_porder) ? rice_parameters[pos + 256 + get_local_id(0)] : 0;
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//
-//    for (int porder = max_porder; porder >= 0; porder--)
-//    {
-//	shared.tmp[get_local_id(0)] = (get_local_id(0) < (1 << porder)) * shared.data[(2 << max_porder) - (2 << porder) + get_local_id(0)];
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//	SUM256(shared.tmp, get_local_id(0), +=);
-//	if (get_local_id(0) == 0)
-//	    shared.length[porder] = shared.tmp[0] + (4 << porder);
-//	barrier(CLK_LOCAL_MEM_FENCE);
-//    }
-//
-//    if (get_local_id(0) < 32)
-//    {
-//	shared.index[get_local_id(0)] = get_local_id(0);
-//	if (get_local_id(0) > max_porder)
-//	    shared.length[get_local_id(0)] = 0xfffffff;
-//	int l1 = shared.length[get_local_id(0)];
-//    #pragma unroll 4
-//	for (int sh = 3; sh >= 0; sh --)
-//	{
-//	    int l2 = shared.length[get_local_id(0) + (1 << sh)];
-//	    shared.index[get_local_id(0)] = shared.index[get_local_id(0) + ((l2 < l1) << sh)];
-//	    shared.length[get_local_id(0)] = l1 = min(l1, l2);
-//	}
-//	if (get_local_id(0) == 0)
-//	    tasks[get_group_id(1)].data.porder = shared.index[0];
-//	if (get_local_id(0) == 0)
-//	{
-//	    int obits = shared.task.data.obits - shared.task.data.wbits;	    
-//	    tasks[get_group_id(1)].data.size =
-//		shared.task.data.type == Fixed ? shared.task.data.residualOrder * obits + 6 + l1 :
-//		shared.task.data.type == LPC ? shared.task.data.residualOrder * obits + 6 + l1 + 4 + 5 + shared.task.data.residualOrder * shared.task.data.cbits :
-//		shared.task.data.type == Constant ? obits : obits * shared.task.data.blocksize;
-//	}
-//    }
-//    barrier(CLK_LOCAL_MEM_FENCE);
-//    int porder = shared.index[0];
-//    if (get_local_id(0) < (1 << porder))
-//	best_rice_parameters[(get_group_id(1) << max_porder) + get_local_id(0)] = rice_parameters[pos - (2 << porder) + get_local_id(0)];
-//    // FIXME: should be bytes?
-// //   if (get_local_id(0) < (1 << porder))
-//	//shared.tmp[get_local_id(0)] = rice_parameters[pos - (2 << porder) + get_local_id(0)];
-// //   barrier(CLK_LOCAL_MEM_FENCE);
-// //   if (get_local_id(0) < max(1, (1 << porder) >> 2))
-// //   {
-//	//char4 ch;
-//	//ch.x = shared.tmp[(get_local_id(0) << 2)];
-//	//ch.y = shared.tmp[(get_local_id(0) << 2) + 1];
-//	//ch.z = shared.tmp[(get_local_id(0) << 2) + 2];
-//	//ch.w = shared.tmp[(get_local_id(0) << 2) + 3];
-//	//shared.ch[get_local_id(0)] = ch
-// //   }	
-// //   barrier(CLK_LOCAL_MEM_FENCE);
-// //   if (get_local_id(0) < max(1, (1 << porder) >> 2))
-//	//best_rice_parameters[(get_group_id(1) << max_porder) + get_local_id(0)] = shared.ch[get_local_id(0)];
-//}
-//
+    for (int lsh = GROUP_SIZE / 2; lsh >= ws; lsh >>= 1)
+    {
+	if (tid < lsh)
+	{
+	    l2 = shared.length[tid + lsh];
+	    shared.index[tid] = shared.index[tid + (l2 < l1) * lsh];
+	    shared.length[tid] = l1 = min(l1, l2);
+	}    
+	barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    if (tid < parts)
+    {
+	// output rice parameter
+	rice_parameters[(get_group_id(1) << (max_porder + 2)) + get_group_id(0) * parts + tid] = shared.index[tid];
+	// output length
+	rice_parameters[(get_group_id(1) << (max_porder + 2)) + (1 << (max_porder + 1)) + get_group_id(0) * parts + tid] = shared.length[tid];
+    }
+}
+
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void cudaFindPartitionOrder(
+    __global int* best_rice_parameters,
+    __global FLACCLSubframeTask *tasks,
+    __global int* rice_parameters,
+    int max_porder
+    )
+{
+    __local struct {
+	int length[32];
+	int index[32];
+    } shared;
+    __local int partlen[GROUP_SIZE];
+    __local FLACCLSubframeData task;
+
+    const int pos = (get_group_id(0) << (max_porder + 2)) + (2 << max_porder);
+    if (get_local_id(0) < sizeof(task) / sizeof(int))
+	((__local int*)&task)[get_local_id(0)] = ((__global int*)(&tasks[get_group_id(0)]))[get_local_id(0)];
+    // fetch partition lengths
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    for (int porder = max_porder; porder >= 0; porder--)
+    {
+	int len = 0;
+	for (int offs = 0; offs < (1 << porder); offs += GROUP_SIZE)
+	    len += offs + get_local_id(0) < (1 << porder) ? rice_parameters[pos + (2 << max_porder) - (2 << porder) + offs + get_local_id(0)] : 0;
+	partlen[get_local_id(0)] = len;
+	barrier(CLK_LOCAL_MEM_FENCE);
+	for (int l = min(GROUP_SIZE, 1 << porder) / 2; l > 0; l >>= 1)
+	{
+	    if (get_local_id(0) < l)
+		partlen[get_local_id(0)] += partlen[get_local_id(0) + l];
+	    barrier(CLK_LOCAL_MEM_FENCE);
+	}
+	if (get_local_id(0) == 0)
+	    shared.length[porder] = partlen[0] + (4 << porder);
+	barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
+    if (get_local_id(0) < 32 && get_local_id(0) > max_porder)
+	shared.length[get_local_id(0)] = 0xfffffff;
+    if (get_local_id(0) < 32)
+	shared.index[get_local_id(0)] = get_local_id(0);
+    barrier(CLK_LOCAL_MEM_FENCE);
+    int l1 = get_local_id(0) <= max_porder ? shared.length[get_local_id(0)] : 0xfffffff;
+    for (int sh = 3; sh >= 0; sh --)
+    {
+	if (get_local_id(0) < (1 << sh))
+	{
+	    int l2 = shared.length[get_local_id(0) + (1 << sh)];
+	    shared.index[get_local_id(0)] = shared.index[get_local_id(0) + ((l2 < l1) << sh)];
+	    shared.length[get_local_id(0)] = l1 = min(l1, l2);
+	}
+	barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    if (get_local_id(0) == 0)
+	tasks[get_group_id(0)].data.porder = shared.index[0];
+    if (get_local_id(0) == 0)
+    {
+	int obits = task.obits - task.wbits;
+	tasks[get_group_id(0)].data.size =
+	    task.type == Fixed ? task.residualOrder * obits + 6 + l1 :
+	    task.type == LPC ? task.residualOrder * obits + 6 + l1 + 4 + 5 + task.residualOrder * task.cbits :
+	    task.type == Constant ? obits : obits * task.blocksize;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    int porder = shared.index[0];
+    for (int offs = 0; offs < (1 << porder); offs += GROUP_SIZE)
+	if (offs + get_local_id(0) < (1 << porder))
+	    best_rice_parameters[(get_group_id(0) << max_porder) + offs + get_local_id(0)] = rice_parameters[pos - (2 << porder) + offs + get_local_id(0)];
+    // FIXME: should be bytes?
+ //   if (get_local_id(0) < (1 << porder))
+	//shared.tmp[get_local_id(0)] = rice_parameters[pos - (2 << porder) + get_local_id(0)];
+ //   barrier(CLK_LOCAL_MEM_FENCE);
+ //   if (get_local_id(0) < max(1, (1 << porder) >> 2))
+ //   {
+	//char4 ch;
+	//ch.x = shared.tmp[(get_local_id(0) << 2)];
+	//ch.y = shared.tmp[(get_local_id(0) << 2) + 1];
+	//ch.z = shared.tmp[(get_local_id(0) << 2) + 2];
+	//ch.w = shared.tmp[(get_local_id(0) << 2) + 3];
+	//shared.ch[get_local_id(0)] = ch
+ //   }	
+ //   barrier(CLK_LOCAL_MEM_FENCE);
+ //   if (get_local_id(0) < max(1, (1 << porder) >> 2))
+	//best_rice_parameters[(get_group_id(1) << max_porder) + get_local_id(0)] = shared.ch[get_local_id(0)];
+}
+
 //#endif
 //
 //#if 0

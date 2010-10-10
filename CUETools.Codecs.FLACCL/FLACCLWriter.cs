@@ -33,7 +33,7 @@ namespace CUETools.Codecs.FLACCL
 {
 	public class FLACCLWriterSettings
 	{
-		public FLACCLWriterSettings() { DoVerify = false; GPUOnly = false; DoMD5 = true; }
+		public FLACCLWriterSettings() { DoVerify = false; GPUOnly = true; DoMD5 = true; GroupSize = 64; }
 
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
@@ -48,6 +48,10 @@ namespace CUETools.Codecs.FLACCL
 		[DefaultValue(true)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionGPUOnly")]
 		public bool GPUOnly { get; set; }
+
+		[DefaultValue(64)]
+		[SRDescription(typeof(Properties.Resources), "DescriptionGroupSize")]
+		public int GroupSize { get; set; }
 
 		int cpu_threads = 1;
 		[DefaultValue(1)]
@@ -1007,7 +1011,7 @@ namespace CUETools.Codecs.FLACCL
 						if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 						break;
 					case SubframeType.Fixed:
-						// if (!_settings.GPUOnly)
+						if (!_settings.GPUOnly)
 						{
 							if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 							encode_residual_fixed(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples,
@@ -1025,7 +1029,7 @@ namespace CUETools.Codecs.FLACCL
 							ulong csum = 0;
 							for (int i = task.frame.subframes[ch].best.order; i > 0; i--)
 								csum += (ulong)Math.Abs(coefs[i - 1]);
-							// if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || !_settings.GPUOnly)
+							if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || !_settings.GPUOnly)
 							{
 								if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 								if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32)
@@ -1098,14 +1102,14 @@ namespace CUETools.Codecs.FLACCL
 					frame.subframes[ch].best.rc.porder = task.BestResidualTasks[index].porder;
 					for (int i = 0; i < task.BestResidualTasks[index].residualOrder; i++)
 						frame.subframes[ch].best.coefs[i] = task.BestResidualTasks[index].coefs[task.BestResidualTasks[index].residualOrder - 1 - i];
-					//if (_settings.GPUOnly && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
-					//{
-					//    int* riceParams = ((int*)task.bestRiceParamsPtr.AddrOfPinnedObject()) + (index << task.max_porder);
-					//    fixed (int* dstParams = frame.subframes[ch].best.rc.rparams)
-					//        AudioSamples.MemCpy(dstParams, riceParams, (1 << frame.subframes[ch].best.rc.porder));
-					//    //for (int i = 0; i < (1 << frame.subframes[ch].best.rc.porder); i++)
-					//    //    frame.subframes[ch].best.rc.rparams[i] = riceParams[i];
-					//}
+					if (_settings.GPUOnly && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
+					{
+						int* riceParams = ((int*)task.bestRiceParamsPtr.AddrOfPinnedObject()) + (index << task.max_porder);
+						fixed (int* dstParams = frame.subframes[ch].best.rc.rparams)
+							AudioSamples.MemCpy(dstParams, riceParams, (1 << frame.subframes[ch].best.rc.porder));
+						//for (int i = 0; i < (1 << frame.subframes[ch].best.rc.porder); i++)
+						//    frame.subframes[ch].best.rc.rparams[i] = riceParams[i];
+					}
 				}
 			}
 		}
@@ -1122,11 +1126,9 @@ namespace CUETools.Codecs.FLACCL
 				calcPartitionPartSize <<= 1;
 				max_porder--;
 			}
-			int calcPartitionPartCount = (calcPartitionPartSize >= 128) ? 1 : (256 / calcPartitionPartSize);
 
 			if (channels != 2) throw new Exception("channels != 2"); // need to Enqueue cudaChannelDecorr for each channel
 			Kernel cudaChannelDecorr = channels == 2 ? (channelsCount == 4 ? task.cudaStereoDecorr : task.cudaChannelDecorr2) : null;// task.cudaChannelDecorr;
-			//Kernel cudaCalcPartition = calcPartitionPartSize >= 128 ? task.cudaCalcLargePartition : calcPartitionPartSize == 16 && task.frameSize >= 256 ? task.cudaCalcPartition16 : task.cudaCalcPartition;
 
 			cudaChannelDecorr.SetArg(0, task.cudaSamples);
 			cudaChannelDecorr.SetArg(1, task.cudaSamplesBytes);
@@ -1137,14 +1139,6 @@ namespace CUETools.Codecs.FLACCL
 			task.cudaComputeLPC.SetArg(2, task.cudaLPCData);
 			task.cudaComputeLPC.SetArg(3, (uint)task.nResidualTasksPerChannel);
 			task.cudaComputeLPC.SetArg(4, (uint)_windowcount);
-
-			//task.cudaComputeLPCLattice.SetArg(0, task.cudaResidualTasks);
-			//task.cudaComputeLPCLattice.SetArg(1, (uint)task.nResidualTasksPerChannel);
-			//task.cudaComputeLPCLattice.SetArg(2, task.cudaSamples);
-			//task.cudaComputeLPCLattice.SetArg(3, (uint)_windowcount);
-			//task.cudaComputeLPCLattice.SetArg(4, (uint)eparams.max_prediction_order);
-			//task.cudaComputeLPCLattice.SetArg(5, task.cudaLPCData);
-			//cuda.SetFunctionBlockShape(task.cudaComputeLPCLattice, 256, 1, 1);
 
 			task.cudaQuantizeLPC.SetArg(0, task.cudaResidualTasks);
 			task.cudaQuantizeLPC.SetArg(1, task.cudaLPCData);
@@ -1159,44 +1153,34 @@ namespace CUETools.Codecs.FLACCL
 
 			task.cudaCopyBestMethodStereo.SetArg(0, task.cudaBestResidualTasks);
 			task.cudaCopyBestMethodStereo.SetArg(1, task.cudaResidualTasks);
-			task.cudaCopyBestMethodStereo.SetArg(2, (uint)task.nResidualTasksPerChannel);
+			task.cudaCopyBestMethodStereo.SetArg(2, task.nResidualTasksPerChannel);
 
-			//task.cudaEncodeResidual.SetArg(0, task.cudaResidual);
-			//task.cudaEncodeResidual.SetArg(1, task.cudaSamples);
-			//task.cudaEncodeResidual.SetArg(2, task.cudaBestResidualTasks);
-			//cuda.SetFunctionBlockShape(task.cudaEncodeResidual, residualPartSize, 1, 1);
+			task.cudaEncodeResidual.SetArg(0, task.cudaResidual);
+			task.cudaEncodeResidual.SetArg(1, task.cudaSamples);
+			task.cudaEncodeResidual.SetArg(2, task.cudaBestResidualTasks);
 
-			//cudaCalcPartition.SetArg(0, task.cudaPartitions);
-			//cudaCalcPartition.SetArg(1, task.cudaResidual);
-			//cudaCalcPartition.SetArg(2, task.cudaSamples);
-			//cudaCalcPartition.SetArg(3, task.cudaBestResidualTasks);
-			//cudaCalcPartition.SetArg(4, (uint)max_porder);
-			//cudaCalcPartition.SetArg(5, (uint)calcPartitionPartSize);
-			//cudaCalcPartition.SetArg(6, (uint)calcPartitionPartCount);
-			//cuda.SetFunctionBlockShape(cudaCalcPartition, 16, 16, 1);
+			task.cudaCalcPartition.SetArg(0, task.cudaPartitions);
+			task.cudaCalcPartition.SetArg(1, task.cudaResidual);
+			task.cudaCalcPartition.SetArg(2, task.cudaBestResidualTasks);
+			task.cudaCalcPartition.SetArg(3, max_porder);
+			task.cudaCalcPartition.SetArg(4, calcPartitionPartSize);
 
-			//task.cudaSumPartition.SetArg(0, task.cudaPartitions);
-			//task.cudaSumPartition.SetArg(1, (uint)max_porder);
-			//cuda.SetFunctionBlockShape(task.cudaSumPartition, Math.Max(32, 1 << (max_porder - 1)), 1, 1);
+			task.cudaSumPartition.SetArg(0, task.cudaPartitions);
+			task.cudaSumPartition.SetArg(1, max_porder);
 
-			//task.cudaFindRiceParameter.SetArg(0, task.cudaRiceParams);
-			//task.cudaFindRiceParameter.SetArg(1, task.cudaPartitions);
-			//task.cudaFindRiceParameter.SetArg(2, (uint)max_porder);
-			//cuda.SetFunctionBlockShape(task.cudaFindRiceParameter, 32, 8, 1);
+			task.cudaFindRiceParameter.SetArg(0, task.cudaRiceParams);
+			task.cudaFindRiceParameter.SetArg(1, task.cudaPartitions);
+			task.cudaFindRiceParameter.SetArg(2, max_porder);
 
-			//task.cudaFindPartitionOrder.SetArg(0, task.cudaBestRiceParams);
-			//task.cudaFindPartitionOrder.SetArg(1, task.cudaBestResidualTasks);
-			//task.cudaFindPartitionOrder.SetArg(2, task.cudaRiceParams);
-			//task.cudaFindPartitionOrder.SetArg(3, (uint)max_porder);
-			//cuda.SetFunctionBlockShape(task.cudaFindPartitionOrder, 256, 1, 1);
-
+			task.cudaFindPartitionOrder.SetArg(0, task.cudaBestRiceParams);
+			task.cudaFindPartitionOrder.SetArg(1, task.cudaBestResidualTasks);
+			task.cudaFindPartitionOrder.SetArg(2, task.cudaRiceParams);
+			task.cudaFindPartitionOrder.SetArg(3, max_porder);
 
 			// issue work to the GPU
 			task.openCLCQ.EnqueueBarrier();
 			task.openCLCQ.EnqueueNDRangeKernel(cudaChannelDecorr, 1, null, new int[] { task.frameCount * task.frameSize }, null );
 			//task.openCLCQ.EnqueueNDRangeKernel(cudaChannelDecorr, 1, null, new int[] { 64 * 128 }, new int[] { 128 });
-			//cuda.SetFunctionBlockShape(cudaChannelDecorr, 256, 1, 1);
-			//cuda.LaunchAsync(cudaChannelDecorr, (task.frameCount * task.frameSize + 255) / 256, channels == 2 ? 1 : channels, task.stream);
 
 			if (eparams.do_wasted)
 			{
@@ -1214,7 +1198,6 @@ namespace CUETools.Codecs.FLACCL
 
 			task.openCLCQ.EnqueueBarrier();
 			task.openCLCQ.EnqueueNDRangeKernel(task.cudaComputeLPC, 2, null, new int[] { task.nAutocorTasksPerChannel * 32, channelsCount * task.frameCount }, new int[] { 32, 1 });
-			//cuda.SetFunctionBlockShape(task.cudaComputeLPC, 32, 1, 1);
 
 			//float* lpcs = stackalloc float[1024];
 			//task.openCLCQ.EnqueueBarrier();
@@ -1222,10 +1205,9 @@ namespace CUETools.Codecs.FLACCL
 
 			task.openCLCQ.EnqueueBarrier();
 			task.openCLCQ.EnqueueNDRangeKernel(task.cudaQuantizeLPC, 2, null, new int[] { task.nAutocorTasksPerChannel * 32, channelsCount * task.frameCount }, new int[] { 32, 1 });
-			//cuda.SetFunctionBlockShape(task.cudaQuantizeLPC, 32, 4, 1);
 
 			task.openCLCQ.EnqueueBarrier();
-			task.EnqueueEstimateResidual(channelsCount, eparams.max_prediction_order);
+			task.EnqueueEstimateResidual(channelsCount);
 
 			//int* rr = stackalloc int[1024];
 			//task.openCLCQ.EnqueueBarrier();
@@ -1237,25 +1219,29 @@ namespace CUETools.Codecs.FLACCL
 			task.openCLCQ.EnqueueBarrier();
 			if (channels == 2 && channelsCount == 4)
 				task.openCLCQ.EnqueueNDRangeKernel(task.cudaCopyBestMethodStereo, 2, null, new int[] { 64, task.frameCount }, new int[] { 64, 1 });
-				//cuda.SetFunctionBlockShape(task.cudaCopyBestMethodStereo, 64, 1, 1);
 			else
 				task.openCLCQ.EnqueueNDRangeKernel(task.cudaCopyBestMethod, 2, null, new int[] { 64, channels * task.frameCount }, new int[] { 64, 1 });
-				//cuda.SetFunctionBlockShape(task.cudaCopyBestMethod, 64, 1, 1);
-			//if (_settings.GPUOnly)
-			//{
-			//    int bsz = calcPartitionPartCount * calcPartitionPartSize;
-			//    if (cudaCalcPartition.Pointer == task.cudaCalcLargePartition.Pointer)
-			//        cuda.LaunchAsync(task.cudaEncodeResidual, residualPartCount, channels * task.frameCount, task.stream);
-			//    cuda.LaunchAsync(cudaCalcPartition, (task.frameSize + bsz - 1) / bsz, channels * task.frameCount, task.stream);
-			//    if (max_porder > 0)
-			//        cuda.LaunchAsync(task.cudaSumPartition, Flake.MAX_RICE_PARAM + 1, channels * task.frameCount, task.stream);
-			//    cuda.LaunchAsync(task.cudaFindRiceParameter, ((2 << max_porder) + 31) / 32, channels * task.frameCount, task.stream);
-			//    //if (max_porder > 0) // need to run even if max_porder==0 just to calculate the final frame size
-			//    cuda.LaunchAsync(task.cudaFindPartitionOrder, 1, channels * task.frameCount, task.stream);
-			//    cuda.CopyDeviceToHostAsync(task.cudaResidual, task.residualBufferPtr, (uint)(sizeof(int) * MAX_BLOCKSIZE * channels), task.stream);
-			//    cuda.CopyDeviceToHostAsync(task.cudaBestRiceParams, task.bestRiceParamsPtr, (uint)(sizeof(int) * (1 << max_porder) * channels * task.frameCount), task.stream);
-			//    task.max_porder = max_porder;
-			//}
+			if (_settings.GPUOnly)
+			{
+				task.openCLCQ.EnqueueBarrier();
+				task.openCLCQ.EnqueueNDRangeKernel(task.cudaEncodeResidual, 1, null, new int[] { task.groupSize * channels * task.frameCount }, new int[] { task.groupSize });
+				task.openCLCQ.EnqueueBarrier();
+				task.openCLCQ.EnqueueNDRangeKernel(task.cudaCalcPartition, 2, null, new int[] { task.groupSize * (1 << max_porder), channels * task.frameCount }, new int[] { task.groupSize, 1 });
+				if (max_porder > 0)
+				{
+					task.openCLCQ.EnqueueBarrier();
+					task.openCLCQ.EnqueueNDRangeKernel(task.cudaSumPartition, 2, null, new int[] { 128 * (Flake.MAX_RICE_PARAM + 1), channels * task.frameCount }, new int[] { 128, 1 });
+				}
+				task.openCLCQ.EnqueueBarrier();
+				task.openCLCQ.EnqueueNDRangeKernel(task.cudaFindRiceParameter, 2, null, new int[] { Math.Max(task.groupSize, 8 * (2 << max_porder)), channels * task.frameCount }, new int[] { task.groupSize, 1 });
+			    //if (max_porder > 0) // need to run even if max_porder==0 just to calculate the final frame size
+				task.openCLCQ.EnqueueBarrier();
+				task.openCLCQ.EnqueueNDRangeKernel(task.cudaFindPartitionOrder, 1, null, new int[] { task.groupSize * channels * task.frameCount }, new int[] { task.groupSize });
+				task.openCLCQ.EnqueueBarrier();
+				task.openCLCQ.EnqueueReadBuffer(task.cudaResidual, false, 0, sizeof(int) * MAX_BLOCKSIZE * channels, task.residualBufferPtr.AddrOfPinnedObject());
+				task.openCLCQ.EnqueueReadBuffer(task.cudaBestRiceParams, false, 0, sizeof(int) * (1 << max_porder) * channels * task.frameCount, task.bestRiceParamsPtr.AddrOfPinnedObject());
+			    task.max_porder = max_porder;
+			}
 			task.openCLCQ.EnqueueBarrier();
 			task.openCLCQ.EnqueueReadBuffer(task.cudaBestResidualTasks, false, 0, sizeof(FLACCLSubframeTask) * channels * task.frameCount, task.bestResidualTasksPtr.AddrOfPinnedObject());
 			//task.openCLCQ.EnqueueBarrier();
@@ -1514,7 +1500,7 @@ namespace CUETools.Codecs.FLACCL
 				if (OpenCL.NumberOfPlatforms < 1)
 					throw new Exception("no opencl platforms found");
 
-				int groupSize = 64;
+				int groupSize = _settings.GroupSize;
 				OCLMan = new OpenCLManager();
 				// Attempt to save binaries after compilation, as well as load precompiled binaries
 				// to avoid compilation. Usually you'll want this to be true. 
@@ -2223,13 +2209,11 @@ namespace CUETools.Codecs.FLACCL
 		public Kernel cudaChooseBestMethod;
 		public Kernel cudaCopyBestMethod;
 		public Kernel cudaCopyBestMethodStereo;
-		//public Kernel cudaEncodeResidual;
-		//public Kernel cudaCalcPartition;
-		//public Kernel cudaCalcPartition16;
-		//public Kernel cudaCalcLargePartition;
-		//public Kernel cudaSumPartition;
-		//public Kernel cudaFindRiceParameter;
-		//public Kernel cudaFindPartitionOrder;
+		public Kernel cudaEncodeResidual;
+		public Kernel cudaCalcPartition;
+		public Kernel cudaSumPartition;
+		public Kernel cudaFindRiceParameter;
+		public Kernel cudaFindPartitionOrder;
 		public Mem cudaSamplesBytes;
 		public Mem cudaSamples;
 		public Mem cudaLPCData;
@@ -2261,7 +2245,7 @@ namespace CUETools.Codecs.FLACCL
 		public int nResidualTasksPerChannel = 0;
 		public int nTasksPerWindow = 0;
 		public int nAutocorTasksPerChannel = 0;
-		//public int max_porder = 0;
+		public int max_porder = 0;
 
 		public FlakeReader verify;
 
@@ -2316,13 +2300,11 @@ namespace CUETools.Codecs.FLACCL
 			cudaChooseBestMethod = openCLProgram.CreateKernel("cudaChooseBestMethod");
 			cudaCopyBestMethod = openCLProgram.CreateKernel("cudaCopyBestMethod");
 			cudaCopyBestMethodStereo = openCLProgram.CreateKernel("cudaCopyBestMethodStereo");
-			//cudaEncodeResidual = openCLProgram.CreateKernel("cudaEncodeResidual");
-			//cudaCalcPartition = openCLProgram.CreateKernel("cudaCalcPartition");
-			//cudaCalcPartition16 = openCLProgram.CreateKernel("cudaCalcPartition16");
-			//cudaCalcLargePartition = openCLProgram.CreateKernel("cudaCalcLargePartition");
-			//cudaSumPartition = openCLProgram.CreateKernel("cudaSumPartition");
-			//cudaFindRiceParameter = openCLProgram.CreateKernel("cudaFindRiceParameter");
-			//cudaFindPartitionOrder = openCLProgram.CreateKernel("cudaFindPartitionOrder");
+			cudaEncodeResidual = openCLProgram.CreateKernel("cudaEncodeResidual");
+			cudaCalcPartition = openCLProgram.CreateKernel("cudaCalcPartition");
+			cudaSumPartition = openCLProgram.CreateKernel("cudaSumPartition");
+			cudaFindRiceParameter = openCLProgram.CreateKernel("cudaFindRiceParameter");
+			cudaFindPartitionOrder = openCLProgram.CreateKernel("cudaFindPartitionOrder");
 
 			samplesBuffer = new int[FLACCLWriter.MAX_BLOCKSIZE * channelCount];
 			outputBuffer = new byte[max_frame_size * FLACCLWriter.maxFrames + 1];
@@ -2361,13 +2343,11 @@ namespace CUETools.Codecs.FLACCL
 			cudaChooseBestMethod.Dispose();
 			cudaCopyBestMethod.Dispose();
 			cudaCopyBestMethodStereo.Dispose();
-			//cudaEncodeResidual.Dispose();
-			//cudaCalcPartition.Dispose();
-			//cudaCalcPartition16.Dispose();
-			//cudaCalcLargePartition.Dispose();
-			//cudaSumPartition.Dispose();
-			//cudaFindRiceParameter.Dispose();
-			//cudaFindPartitionOrder.Dispose();
+			cudaEncodeResidual.Dispose();
+			cudaCalcPartition.Dispose();
+			cudaSumPartition.Dispose();
+			cudaFindRiceParameter.Dispose();
+			cudaFindPartitionOrder.Dispose();
 
 			cudaSamples.Dispose();
 			cudaSamplesBytes.Dispose();
@@ -2412,7 +2392,7 @@ namespace CUETools.Codecs.FLACCL
 			openCLCQ.EnqueueNDRangeKernel(cudaComputeAutocor, 2, null, new int[] { workX * groupSize, workY }, new int[] { groupSize, 1 });
 		}
 
-		public void EnqueueEstimateResidual(int channelsCount, int max_prediction_order)
+		public void EnqueueEstimateResidual(int channelsCount)
 		{
 			cudaEstimateResidual.SetArg(0, cudaResidualOutput);
 			cudaEstimateResidual.SetArg(1, cudaSamples);
@@ -2429,7 +2409,6 @@ namespace CUETools.Codecs.FLACCL
 			cudaChooseBestMethod.SetArg(2, (uint)nResidualTasksPerChannel);
 
 			openCLCQ.EnqueueNDRangeKernel(cudaChooseBestMethod, 2, null, new int[] { 32, channelsCount * frameCount }, new int[] { 32, 1 });
-			//cuda.SetFunctionBlockShape(task.cudaChooseBestMethod, 32, 8, 1);
 		}
 
 		public unsafe FLACCLSubframeTask* ResidualTasks
