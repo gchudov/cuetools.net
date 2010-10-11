@@ -621,18 +621,18 @@ void cudaChooseBestMethod(
 	tasks[tid + taskCount * get_group_id(1)].data.size = shared.length[tid];
 
     int l1 = shared.length[tid];
-    for (int sh = 4; sh > 0; sh --)
+    for (int l = 16; l > 0; l >>= 1)
     {
-	if (tid < (1 << sh))
+	if (tid < l)
 	{
-	    int l2 = shared.length[tid + (1 << sh)];
-	    shared.index[tid] = shared.index[tid + ((l2 < l1) << sh)];
+	    int l2 = shared.length[tid + l];
+	    shared.index[tid] = shared.index[tid + select(0, l, l2 < l1)];
 	    shared.length[tid] = l1 = min(l1, l2);
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     if (tid == 0)
-	tasks[taskCount * get_group_id(1)].data.best_index = taskCount * get_group_id(1) + shared.index[shared.length[1] < shared.length[0]];
+	tasks[taskCount * get_group_id(1)].data.best_index = taskCount * get_group_id(1) + shared.index[0];
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
@@ -921,13 +921,14 @@ void cudaFindPartitionOrder(
     if (get_local_id(0) < 32)
 	shared.index[get_local_id(0)] = get_local_id(0);
     barrier(CLK_LOCAL_MEM_FENCE);
+    //atom_min(shared.index[get_local_id(0)],);
     int l1 = get_local_id(0) <= max_porder ? shared.length[get_local_id(0)] : 0xfffffff;
-    for (int sh = 3; sh >= 0; sh --)
+    for (int l = 8; l > 0; l >>= 1)
     {
-	if (get_local_id(0) < (1 << sh))
+	if (get_local_id(0) < l)
 	{
-	    int l2 = shared.length[get_local_id(0) + (1 << sh)];
-	    shared.index[get_local_id(0)] = shared.index[get_local_id(0) + ((l2 < l1) << sh)];
+	    int l2 = shared.length[get_local_id(0) + l];
+	    shared.index[get_local_id(0)] = shared.index[get_local_id(0) + select(0, l, l2 < l1)];
 	    shared.length[get_local_id(0)] = l1 = min(l1, l2);
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);

@@ -754,6 +754,32 @@ namespace CUETools.Codecs.FLACCL
 			frame.writer.writebits(8, crc);
 		}
 
+		unsafe int measure_residual(FlacFrame frame, FlacSubframeInfo sub, int pos, int cnt, int k)
+		{
+			int q = 0;
+			for (int i = pos; i < pos + cnt; i++)
+			{
+				int v = sub.best.residual[i];
+				v = (v << 1) ^ (v >> 31);
+				q += (v >> k);
+			}
+			return (k + 1) * cnt + q;
+		}
+
+		unsafe int measure_residual(FlacFrame frame, FlacSubframeInfo sub)
+		{
+			// partition order
+			int porder = sub.best.rc.porder;
+			int psize = frame.blocksize >> porder;
+			//assert(porder >= 0);
+			int size = 6 + (4 << porder);
+			size += measure_residual(frame, sub, sub.best.order, psize - sub.best.order, sub.best.rc.rparams[0]);
+			// residual
+			for (int p = 1; p < (1 << porder); p++)
+				size += measure_residual(frame, sub, p * psize, psize, sub.best.rc.rparams[p]);
+			return size;
+		}
+
 		unsafe void output_residual(FlacFrame frame, FlacSubframeInfo sub)
 		{
 			// rice-encoded block
@@ -804,6 +830,12 @@ namespace CUETools.Codecs.FLACCL
 
 			// residual
 			output_residual(frame, sub);
+		}
+
+		unsafe uint
+		measure_subframe_lpc(FlacFrame frame, FlacSubframeInfo sub)
+		{
+			return (uint)(sub.best.order * sub.obits + 9 + sub.best.order * sub.best.cbits + measure_residual(frame, sub));
 		}
 
 		unsafe void
@@ -898,8 +930,8 @@ namespace CUETools.Codecs.FLACCL
 			task.nResidualTasks = 0;
 			task.nTasksPerWindow = Math.Min(32, eparams.orders_per_window);
 			task.nResidualTasksPerChannel = _windowcount * task.nTasksPerWindow + 1 + (eparams.do_constant ? 1 : 0) + eparams.max_fixed_order - eparams.min_fixed_order;
-			if (task.nResidualTasksPerChannel >= 4)
-				task.nResidualTasksPerChannel = (task.nResidualTasksPerChannel + 7) & ~7;
+			//if (task.nResidualTasksPerChannel >= 4)
+			//    task.nResidualTasksPerChannel = (task.nResidualTasksPerChannel + 7) & ~7;
 			task.nAutocorTasksPerChannel = _windowcount;
 			for (int iFrame = 0; iFrame < nFrames; iFrame++)
 			{
@@ -973,20 +1005,20 @@ namespace CUETools.Codecs.FLACCL
 						}
 						task.nResidualTasks++;
 					}
-					// Filler
-					while ((task.nResidualTasks % task.nResidualTasksPerChannel) != 0)
-					{
-						task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.Verbatim;
-						task.ResidualTasks[task.nResidualTasks].channel = ch;
-						task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
-						task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
-						task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
-						task.ResidualTasks[task.nResidualTasks].residualOrder = 0;
-						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
-						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
-						task.ResidualTasks[task.nResidualTasks].shift = 0;
-						task.nResidualTasks++;
-					}
+					//// Filler
+					//while ((task.nResidualTasks % task.nResidualTasksPerChannel) != 0)
+					//{
+					//    task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.Verbatim;
+					//    task.ResidualTasks[task.nResidualTasks].channel = ch;
+					//    task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
+					//    task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
+					//    task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
+					//    task.ResidualTasks[task.nResidualTasks].residualOrder = 0;
+					//    task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
+					//    task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
+					//    task.ResidualTasks[task.nResidualTasks].shift = 0;
+					//    task.nResidualTasks++;
+					//}
 				}
 			}
 			if (sizeof(FLACCLSubframeTask) * task.nResidualTasks > task.residualTasksLen)
@@ -1029,6 +1061,17 @@ namespace CUETools.Codecs.FLACCL
 							ulong csum = 0;
 							for (int i = task.frame.subframes[ch].best.order; i > 0; i--)
 								csum += (ulong)Math.Abs(coefs[i - 1]);
+
+#if DEBUG
+							// check size
+							if (_settings.GPUOnly)
+							{
+								uint real_size = measure_subframe_lpc(task.frame, task.frame.subframes[ch]);
+								if (real_size != task.frame.subframes[ch].best.size)
+									throw new Exception("size reported incorrectly");
+							}
+#endif
+
 							if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || !_settings.GPUOnly)
 							{
 								if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
@@ -1039,8 +1082,18 @@ namespace CUETools.Codecs.FLACCL
 								int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
 								int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
 								uint bits = (uint)(task.frame.subframes[ch].best.order * task.frame.subframes[ch].obits) + 4 + 5 + (uint)task.frame.subframes[ch].best.order * (uint)task.frame.subframes[ch].best.cbits + 6;
-								//uint oldsize = task.frame.subframes[ch].best.size;
-								task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order);
+#if KLJLKJLKJL
+								uint oldsize = task.frame.subframes[ch].best.size;
+								RiceContext rc1 = task.frame.subframes[ch].best.rc;
+								task.frame.subframes[ch].best.rc = new RiceContext();
+#endif
+								task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order);								
+								task.frame.subframes[ch].best.size = measure_subframe_lpc(task.frame, task.frame.subframes[ch]);
+#if KJHKJH
+								// check size
+								if (_settings.GPUOnly && oldsize > task.frame.subframes[ch].best.size)
+									throw new Exception("unoptimal size reported");
+#endif
 								//if (task.frame.subframes[ch].best.size > task.frame.subframes[ch].obits * (uint)task.frame.blocksize &&
 								//    oldsize <= task.frame.subframes[ch].obits * (uint)task.frame.blocksize)
 								//    throw new Exception("oops");
@@ -1137,19 +1190,19 @@ namespace CUETools.Codecs.FLACCL
 			task.cudaComputeLPC.SetArg(0, task.cudaResidualTasks);
 			task.cudaComputeLPC.SetArg(1, task.cudaAutocorOutput);
 			task.cudaComputeLPC.SetArg(2, task.cudaLPCData);
-			task.cudaComputeLPC.SetArg(3, (uint)task.nResidualTasksPerChannel);
+			task.cudaComputeLPC.SetArg(3, task.nResidualTasksPerChannel);
 			task.cudaComputeLPC.SetArg(4, (uint)_windowcount);
 
 			task.cudaQuantizeLPC.SetArg(0, task.cudaResidualTasks);
 			task.cudaQuantizeLPC.SetArg(1, task.cudaLPCData);
-			task.cudaQuantizeLPC.SetArg(2, (uint)task.nResidualTasksPerChannel);
+			task.cudaQuantizeLPC.SetArg(2, task.nResidualTasksPerChannel);
 			task.cudaQuantizeLPC.SetArg(3, (uint)task.nTasksPerWindow);
 			task.cudaQuantizeLPC.SetArg(4, (uint)eparams.lpc_min_precision_search);
 			task.cudaQuantizeLPC.SetArg(5, (uint)(eparams.lpc_max_precision_search - eparams.lpc_min_precision_search));
 
 			task.cudaCopyBestMethod.SetArg(0, task.cudaBestResidualTasks);
 			task.cudaCopyBestMethod.SetArg(1, task.cudaResidualTasks);
-			task.cudaCopyBestMethod.SetArg(2, (uint)task.nResidualTasksPerChannel);
+			task.cudaCopyBestMethod.SetArg(2, task.nResidualTasksPerChannel);
 
 			task.cudaCopyBestMethodStereo.SetArg(0, task.cudaBestResidualTasks);
 			task.cudaCopyBestMethodStereo.SetArg(1, task.cudaResidualTasks);
@@ -2384,8 +2437,8 @@ namespace CUETools.Codecs.FLACCL
 			cudaComputeAutocor.SetArg(1, cudaSamples);
 			cudaComputeAutocor.SetArg(2, cudaWindow);
 			cudaComputeAutocor.SetArg(3, cudaResidualTasks);
-			cudaComputeAutocor.SetArg(4, (uint)nAutocorTasksPerChannel - 1);
-			cudaComputeAutocor.SetArg(5, (uint)nResidualTasksPerChannel);
+			cudaComputeAutocor.SetArg(4, nAutocorTasksPerChannel - 1);
+			cudaComputeAutocor.SetArg(5, nResidualTasksPerChannel);
 
 			int workX = max_prediction_order / 4 + 1;
 			int workY = nAutocorTasksPerChannel * channelsCount * frameCount;
@@ -2406,7 +2459,7 @@ namespace CUETools.Codecs.FLACCL
 		{
 			cudaChooseBestMethod.SetArg(0, cudaResidualTasks);
 			cudaChooseBestMethod.SetArg(1, cudaResidualOutput);
-			cudaChooseBestMethod.SetArg(2, (uint)nResidualTasksPerChannel);
+			cudaChooseBestMethod.SetArg(2, nResidualTasksPerChannel);
 
 			openCLCQ.EnqueueNDRangeKernel(cudaChooseBestMethod, 2, null, new int[] { 32, channelsCount * frameCount }, new int[] { 32, 1 });
 		}

@@ -65,6 +65,7 @@ namespace CUETools.FLACCL.cmd
 			TextWriter stdout = Console.Out;
 			Console.SetOut(Console.Error);
 
+			var settings = new FLACCLWriterSettings();
 			DateTime start = DateTime.Now;
 			TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
 			bool debug = false, quiet = false;
@@ -79,9 +80,8 @@ namespace CUETools.FLACCL.cmd
 				orders_per_window = -1,
 				blocksize = -1;
 			int level = -1, padding = -1, vbr_mode = -1;
-			bool do_md5 = true, do_seektable = true, do_verify = false, gpu_only = true;
+			bool do_seektable = true;
 			bool buffered = false;
-			int cpu_threads = 0;
 			bool ok = true;
 
 			for (int arg = 0; arg < args.Length; arg++)
@@ -93,17 +93,27 @@ namespace CUETools.FLACCL.cmd
 				else if ((args[arg] == "-q" || args[arg] == "--quiet"))
 					quiet = true;
 				else if (args[arg] == "--verify")
-					do_verify = true;
+					settings.DoVerify = true;
 				else if (args[arg] == "--no-seektable")
 					do_seektable = false;
 				else if (args[arg] == "--slow-gpu")
-					gpu_only = false;
+					settings.GPUOnly = false;
 				else if (args[arg] == "--no-md5")
-					do_md5 = false;
+					settings.DoMD5 = false;
 				else if (args[arg] == "--buffered")
 					buffered = true;
 				else if (args[arg] == "--cpu-threads")
-					ok = (++arg < args.Length) && int.TryParse(args[arg], out cpu_threads);
+				{
+					int val = settings.CPUThreads;
+					ok = (++arg < args.Length) && int.TryParse(args[arg], out val);
+					settings.CPUThreads = val;
+				}
+				else if (args[arg] == "--group-size")
+				{
+					int val = settings.GroupSize;
+					ok = (++arg < args.Length) && int.TryParse(args[arg], out val);
+					settings.GroupSize = val;
+				}
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
@@ -141,7 +151,7 @@ namespace CUETools.FLACCL.cmd
 				else if ((args[arg] == "-v" || args[arg] == "--vbr"))
 					ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
 				else if (args[arg] == "--orders-per-window")
-					ok = (++arg < args.Length) && int.TryParse(args[arg], out orders_per_window);					
+					ok = (++arg < args.Length) && int.TryParse(args[arg], out orders_per_window);
 				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
 					ok = int.TryParse(args[arg], out blocksize);
 				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
@@ -202,10 +212,7 @@ namespace CUETools.FLACCL.cmd
 
 			try
 			{
-				(encoder.Settings as FLACCLWriterSettings).GPUOnly = gpu_only;
-				(encoder.Settings as FLACCLWriterSettings).CPUThreads = cpu_threads;
-				(encoder.Settings as FLACCLWriterSettings).DoVerify = do_verify;
-				(encoder.Settings as FLACCLWriterSettings).DoMD5 = do_md5;
+				encoder.Settings = settings;
 				if (level >= 0)
 					encoder.CompressionLevel = level;
 				if (stereo_method != null)
@@ -310,15 +317,15 @@ namespace CUETools.FLACCL.cmd
 			if (debug)
 			{
 				Console.SetOut(stdout);
-				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}..{5}\t{6}..{7}\t{8}..{9}\t{10}\t{11}",
+				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4} ({5})\t{6} ({7})\t{8}..{9}\t{10}\t{11}",
 					encoder.TotalSize,
 					encoder.UserProcessorTime.TotalSeconds > 0 ? encoder.UserProcessorTime.TotalSeconds : totalElapsed.TotalSeconds,
 					encoder.StereoMethod.ToString().PadRight(15),
 					encoder.WindowFunction.ToString().PadRight(15),
-					encoder.MinPartitionOrder,
 					encoder.MaxPartitionOrder,
-					encoder.MinLPCOrder,
+					settings.GPUOnly ? "GPU" : "CPU",
 					encoder.MaxLPCOrder,
+					encoder.OrdersPerWindow,
 					encoder.MinPrecisionSearch,
 					encoder.MaxPrecisionSearch,
 					encoder.BlockSize,
