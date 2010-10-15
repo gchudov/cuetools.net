@@ -449,7 +449,7 @@ void cudaQuantizeLPC(
     }
 }
 
-#define DONT_BEACCURATE
+#define BEACCURATE
 
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaEstimateResidual(
@@ -481,24 +481,35 @@ void cudaEstimateResidual(
     if (tid < GROUP_SIZE / 16)
 	len[tid] = 0;
 #else
-    float res = 0.0f;
+    long res = 0;
 #endif
-    data[tid] = tid < bs ? samples[task.data.samplesOffs + tid] >> task.data.wbits : 0;
+    data[tid] = 0;
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    __local int4 * cptr = (__local int4 *)&task.coefs[0];
+    int4 cptr0 = cptr[0];
+#if MAX_ORDER > 4
+    int4 cptr1 = cptr[1];
+#if MAX_ORDER > 8
+    int4 cptr2 = cptr[2];
+#endif
+#endif
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
-	int nextData = pos + tid + GROUP_SIZE < bs ? samples[task.data.samplesOffs + pos + tid + GROUP_SIZE] >> task.data.wbits : 0;
+	int offs = pos + tid;
+	int nextData = offs < bs ? samples[task.data.samplesOffs + offs] >> task.data.wbits : 0;
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// compute residual
-	__local int4 * dptr = (__local int4 *)&data[tid];
-	__local int4 * cptr = (__local int4 *)&task.coefs[0];
-	int4 sum = dptr[0] * cptr[0]
+	__local int4 * dptr = (__local int4 *)&data[tid + GROUP_SIZE - ro];
+	int4 sum = dptr[0] * cptr0
 #if MAX_ORDER > 4
-	    + dptr[1] * cptr[1]
+	    + dptr[1] * cptr1
 #if MAX_ORDER > 8
-	    + dptr[2] * cptr[2]
+	    + dptr[2] * cptr2
 #if MAX_ORDER > 12
 	    + dptr[3] * cptr[3]
 #if MAX_ORDER > 16
@@ -512,23 +523,23 @@ void cudaEstimateResidual(
 #endif
 	    ;
 	
-	int t = select(0, data[tid + ro] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift), pos + tid + ro < bs);
+	int t = select(0, data[tid + GROUP_SIZE] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift), offs >= ro && offs < bs);
 #ifdef BEACCURATE
-	residual[tid] = min((t << 1) ^ (t >> 31), 0x7fffff);
+	t = clamp(t, -0x7fffff, 0x7fffff);
+	residual[tid] = (t << 1) ^ (t >> 31);
 #else
-	res += fabs(t);
+	res += (t << 1) ^ (t >> 31);
 #endif
-	barrier(CLK_LOCAL_MEM_FENCE);
+	barrier(CLK_GLOBAL_MEM_FENCE);
 
 #ifdef BEACCURATE
 	if (tid < GROUP_SIZE / 16)
 	{
-	    __local int4 * chunk = ((__local int4 *)residual) + tid * 4;
+	    __local int4 * chunk = ((__local int4 *)residual) + (tid << 2);
 	    int4 sum = chunk[0] + chunk[1] + chunk[2] + chunk[3];
 	    int res = sum.x + sum.y + sum.z + sum.w;
-	    int k = clamp(clz(16) - clz(res), 0, 14);
-	    len[tid] += 16 * k + (res >> k);
-	    k = clamp(clz(16) - clz(res), 0, 14);
+	    int k = clamp(27 - clz(res), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
+	    len[tid] += (k << 4) + (res >> k);
 	}
 #endif
 
@@ -557,7 +568,7 @@ void cudaEstimateResidual(
     if (tid == 0)
     {
 	int residualLen = (bs - ro);
-	float sum = residual[0] * 2;// + residualLen / 2;
+	float sum = residual[0];// + residualLen / 2;
 	//int k = clamp(convert_int_rtn(log2((sum + 0.000001f) / (residualLen + 0.000001f))), 0, 14);
 	int k;
 	frexp((sum + 0.000001f) / residualLen, &k);
@@ -608,7 +619,7 @@ void cudaChooseBestMethod(
 		min(obits * task.blocksize,
 		    task.type == Fixed ? task.residualOrder * obits + 6 + (4 * 1/2) + partLen :
 		    task.type == LPC ? task.residualOrder * obits + 4 + 5 + task.residualOrder * task.cbits + 6 + (4 * 1/2)/* << porder */ + partLen :
-		    task.type == Constant ? obits * (1 + task.blocksize * (partLen != 0)) : 
+		    task.type == Constant ? obits * select(1, task.blocksize, partLen != task.blocksize - task.residualOrder) : 
 		    obits * task.blocksize);
 	}
 
@@ -721,21 +732,50 @@ void cudaEncodeResidual(
     int bs = task.data.blocksize;
     int ro = task.data.residualOrder;
 
-    data[tid] = tid < bs ? samples[task.data.samplesOffs + tid] >> task.data.wbits : 0;
+    if (tid < 32 && tid >= ro)
+	task.coefs[tid] = 0;
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    __local int4 * cptr = (__local int4 *)&task.coefs[0];
+    int4 cptr0 = cptr[0];
+#if MAX_ORDER > 4
+    int4 cptr1 = cptr[1];
+#if MAX_ORDER > 8
+    int4 cptr2 = cptr[2];
+#endif
+#endif
+
+    data[tid] = 0;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
-	float nextData = pos + tid + GROUP_SIZE < bs ? samples[task.data.samplesOffs + pos + tid + GROUP_SIZE] >> task.data.wbits : 0;
+	int off = pos + tid;
+	int nextData = off < bs ? samples[task.data.samplesOffs + off] >> task.data.wbits : 0;
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// compute residual
-	int sum = 0;
-	for (int c = 0; c < ro; c++)
-	    sum += data[tid + c] * task.coefs[c];
-	sum = data[tid + ro] - (sum >> task.data.shift);
-	if (pos + tid + ro < bs)
-	    output[task.data.residualOffs + pos + tid + ro] = sum;
+	__local int4 * dptr = (__local int4 *)&data[tid + GROUP_SIZE - ro];
+	int4 sum = dptr[0] * cptr0
+#if MAX_ORDER > 4
+	    + dptr[1] * cptr1
+#if MAX_ORDER > 8
+	    + dptr[2] * cptr2
+#if MAX_ORDER > 12
+	    + dptr[3] * cptr[3]
+#if MAX_ORDER > 16
+	    + dptr[4] * cptr[4]
+	    + dptr[5] * cptr[5]
+	    + dptr[6] * cptr[6]
+	    + dptr[7] * cptr[7]
+#endif
+#endif
+#endif
+#endif
+	    ;
+	if (off >= ro && off < bs)
+	    output[task.data.residualOffs + off] = data[tid + GROUP_SIZE] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift);
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
@@ -793,6 +833,98 @@ void cudaCalcPartition(
 	if (k <= 14)
 	    partition_lengths[pos + get_group_id(0)] = min(0x7fffff,length[0][k]) + (psize - task.residualOrder * (get_group_id(0) == 0)) * (k + 1);
     }
+}
+
+// get_group_id(1) == task index
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void cudaCalcPartition16(
+    __global int *partition_lengths,
+    __global int *residual,
+    __global int *samples,
+    __global FLACCLSubframeTask *tasks,
+    int max_porder // <= 8
+    )
+{
+    __local FLACCLSubframeTask task;
+    __local int data[GROUP_SIZE * 2];
+    __local int res[GROUP_SIZE];
+
+    const int tid = get_local_id(0);
+    if (tid < sizeof(task) / sizeof(int))
+	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(1)]))[tid];
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    int bs = task.data.blocksize;
+    int ro = task.data.residualOrder;
+
+    if (tid >= ro && tid < 32)
+	task.coefs[tid] = 0;
+
+    int k = tid % 16;
+    int x = tid / 16;
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    __local int4 * cptr = (__local int4 *)&task.coefs[0];
+    int4 cptr0 = cptr[0];
+#if MAX_ORDER > 4
+    int4 cptr1 = cptr[1];
+#if MAX_ORDER > 8
+    int4 cptr2 = cptr[2];
+#endif
+#endif
+
+    data[tid] = 0;
+    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
+    {
+	int offs = pos + tid;
+	// fetch samples
+	int nextData = offs < bs ? samples[task.data.samplesOffs + offs] >> task.data.wbits : 0;
+	data[tid + GROUP_SIZE] = nextData;
+	barrier(CLK_LOCAL_MEM_FENCE);
+	
+	// compute residual
+	__local int4 * dptr = (__local int4 *)&data[tid + GROUP_SIZE - ro];
+	int4 sum = dptr[0] * cptr0
+#if MAX_ORDER > 4
+	    + dptr[1] * cptr1
+#if MAX_ORDER > 8
+	    + dptr[2] * cptr2
+#if MAX_ORDER > 12
+	    + dptr[3] * cptr[3]
+#if MAX_ORDER > 16
+	    + dptr[4] * cptr[4]
+	    + dptr[5] * cptr[5]
+	    + dptr[6] * cptr[6]
+	    + dptr[7] * cptr[7]
+#endif
+#endif
+#endif
+#endif
+	    ;
+	int s = select(0, nextData - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift), offs >= ro && offs < bs);
+
+	// output residual
+	if (offs < bs)
+	    residual[task.data.residualOffs + offs] = s;
+
+	//int s = select(0, residual[task.data.residualOffs + offs], offs >= ro && offs < bs);
+	
+	s = clamp(s, -0x7fffff, 0x7fffff);
+	// convert to unsigned
+	res[tid] = (s << 1) ^ (s >> 31);
+	barrier(CLK_LOCAL_MEM_FENCE);
+	data[tid] = nextData;
+
+	// calc number of unary bits for each residual sample with each rice paramater
+	__local int4 * chunk = (__local int4 *)&res[x << 4];
+	sum = (chunk[0] >> k) + (chunk[1] >> k) + (chunk[2] >> k) + (chunk[3] >> k);
+	s = sum.x + sum.y + sum.z + sum.w;
+
+	const int lpos = (15 << (max_porder + 1)) * get_group_id(1) + (k << (max_porder + 1)) + offs / 16;
+	if (k <= 14)
+	    partition_lengths[lpos] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
+    }    
 }
 
 // Sums partition lengths for a certain k == get_group_id(0)
@@ -949,36 +1081,5 @@ void cudaFindPartitionOrder(
 	if (offs + get_local_id(0) < (1 << porder))
 	    best_rice_parameters[(get_group_id(0) << max_porder) + offs + get_local_id(0)] = rice_parameters[pos - (2 << porder) + offs + get_local_id(0)];
     // FIXME: should be bytes?
- //   if (get_local_id(0) < (1 << porder))
-	//shared.tmp[get_local_id(0)] = rice_parameters[pos - (2 << porder) + get_local_id(0)];
- //   barrier(CLK_LOCAL_MEM_FENCE);
- //   if (get_local_id(0) < max(1, (1 << porder) >> 2))
- //   {
-	//char4 ch;
-	//ch.x = shared.tmp[(get_local_id(0) << 2)];
-	//ch.y = shared.tmp[(get_local_id(0) << 2) + 1];
-	//ch.z = shared.tmp[(get_local_id(0) << 2) + 2];
-	//ch.w = shared.tmp[(get_local_id(0) << 2) + 3];
-	//shared.ch[get_local_id(0)] = ch
- //   }	
- //   barrier(CLK_LOCAL_MEM_FENCE);
- //   if (get_local_id(0) < max(1, (1 << porder) >> 2))
-	//best_rice_parameters[(get_group_id(1) << max_porder) + get_local_id(0)] = shared.ch[get_local_id(0)];
 }
-
-//#endif
-//
-//#if 0
-//    if (get_local_id(0) < order)
-//    {
-//	for (int i = 0; i < order; i++)
-//	    if (get_local_id(0) >= i)
-//		sum[get_local_id(0) - i] += coefs[get_local_id(0)] * sample[order - i - 1];
-//	fot (int i = order; i < blocksize; i++)
-//	{
-//	    if (!get_local_id(0)) sample[order + i] = s = residual[order + i] + (sum[order + i] >> shift);
-//	    sum[get_local_id(0) + i + 1] += coefs[get_local_id(0)] * s;
-//	}
-//    }
-//#endif
 #endif

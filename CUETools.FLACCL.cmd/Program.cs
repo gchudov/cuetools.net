@@ -83,6 +83,7 @@ namespace CUETools.FLACCL.cmd
 			bool do_seektable = true;
 			bool buffered = false;
 			bool ok = true;
+			int intarg;
 
 			for (int arg = 0; arg < args.Length; arg++)
 			{
@@ -108,12 +109,10 @@ namespace CUETools.FLACCL.cmd
 					ok = (++arg < args.Length) && int.TryParse(args[arg], out val);
 					settings.CPUThreads = val;
 				}
-				else if (args[arg] == "--group-size")
-				{
-					int val = settings.GroupSize;
-					ok = (++arg < args.Length) && int.TryParse(args[arg], out val);
-					settings.GroupSize = val;
-				}
+				else if (args[arg] == "--group-size" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					settings.GroupSize = intarg;
+				else if (args[arg] == "--define" && arg + 2 < args.Length)
+					settings.Defines += "#define " + args[++arg] + " " + args[++arg] + "\n";
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
@@ -167,7 +166,7 @@ namespace CUETools.FLACCL.cmd
 			}
 			if (!quiet)
 			{
-				Console.WriteLine("{0}, Copyright (C) 2009 Gregory S. Chudov.", FLACCLWriter.vendor_string);
+				Console.WriteLine("{0}, Copyright (C) 2010 Gregory S. Chudov.", FLACCLWriter.vendor_string);
 				Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 				Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 			}
@@ -317,19 +316,21 @@ namespace CUETools.FLACCL.cmd
 			if (debug)
 			{
 				Console.SetOut(stdout);
-				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4} ({5})\t{6} ({7})\t{8}..{9}\t{10}\t{11}",
+				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4} ({5})\t{6}/{7}+{12}{13}\t{8}..{9}\t{10}\t{11}",
 					encoder.TotalSize,
 					encoder.UserProcessorTime.TotalSeconds > 0 ? encoder.UserProcessorTime.TotalSeconds : totalElapsed.TotalSeconds,
 					encoder.StereoMethod.ToString().PadRight(15),
 					encoder.WindowFunction.ToString().PadRight(15),
 					encoder.MaxPartitionOrder,
 					settings.GPUOnly ? "GPU" : "CPU",
-					encoder.MaxLPCOrder,
 					encoder.OrdersPerWindow,
+					encoder.MaxLPCOrder,
 					encoder.MinPrecisionSearch,
 					encoder.MaxPrecisionSearch,
 					encoder.BlockSize,
-					encoder.VBRMode
+					encoder.VBRMode,
+					encoder.MaxFixedOrder - encoder.MinFixedOrder + 1,
+					encoder.DoConstant ? "c" : ""
 					);
 			}
 			return 0;
