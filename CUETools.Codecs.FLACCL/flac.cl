@@ -449,8 +449,6 @@ void cudaQuantizeLPC(
     }
 }
 
-#define BEACCURATE
-
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaEstimateResidual(
     __global int*output,
@@ -460,12 +458,8 @@ void cudaEstimateResidual(
 {
     __local int data[GROUP_SIZE * 2];
     __local FLACCLSubframeTask task;
-#ifdef BEACCURATE
     __local int residual[GROUP_SIZE];
     __local int len[GROUP_SIZE / 16];
-#else
-    __local float residual[GROUP_SIZE];
-#endif
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task)/sizeof(int))
@@ -477,12 +471,8 @@ void cudaEstimateResidual(
 
     if (tid < 32 && tid >= ro)
 	task.coefs[tid] = 0;
-#ifdef BEACCURATE
     if (tid < GROUP_SIZE / 16)
 	len[tid] = 0;
-#else
-    long res = 0;
-#endif
     data[tid] = 0;
 
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -495,6 +485,7 @@ void cudaEstimateResidual(
     int4 cptr2 = cptr[2];
 #endif
 #endif
+
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
@@ -522,31 +513,34 @@ void cudaEstimateResidual(
 #endif
 #endif
 	    ;
-	
-	int t = select(0, data[tid + GROUP_SIZE] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift), offs >= ro && offs < bs);
-#ifdef BEACCURATE
+    	
+	int t = data[tid + GROUP_SIZE] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift);
+	// ensure we're within frame bounds
+	t = select(0, t, offs >= ro && offs < bs);
+	// overflow protection
 	t = clamp(t, -0x7fffff, 0x7fffff);
+	// convert to unsigned
 	residual[tid] = (t << 1) ^ (t >> 31);
-#else
-	res += (t << 1) ^ (t >> 31);
-#endif
 	barrier(CLK_GLOBAL_MEM_FENCE);
 
-#ifdef BEACCURATE
+	// calculate rice partition bit length for every 16 samples
 	if (tid < GROUP_SIZE / 16)
 	{
 	    __local int4 * chunk = ((__local int4 *)residual) + (tid << 2);
 	    int4 sum = chunk[0] + chunk[1] + chunk[2] + chunk[3];
 	    int res = sum.x + sum.y + sum.z + sum.w;
 	    int k = clamp(27 - clz(res), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
+#ifdef EXTRAMODE
+	    sum = (chunk[0] >> k) + (chunk[1] >> k) + (chunk[2] >> k) + (chunk[3] >> k);
+	    len[tid] += (k << 4) + sum.x + sum.y + sum.z + sum.w;
+#else
 	    len[tid] += (k << 4) + (res >> k);
-	}
 #endif
+	}
 
 	data[tid] = nextData;
     }
 
-#ifdef BEACCURATE
     barrier(CLK_LOCAL_MEM_FENCE);
     for (int l = GROUP_SIZE / 32; l > 0; l >>= 1)
     {
@@ -556,26 +550,6 @@ void cudaEstimateResidual(
     }
     if (tid == 0)
 	output[get_group_id(0)] = len[0] + (bs - ro);
-#else
-    residual[tid] = res;
-    barrier(CLK_LOCAL_MEM_FENCE);
-    for (int l = GROUP_SIZE / 2; l > 0; l >>= 1)
-    {
-	if (tid < l)
-	    residual[tid] += residual[tid + l];
-	barrier(CLK_LOCAL_MEM_FENCE);
-    }
-    if (tid == 0)
-    {
-	int residualLen = (bs - ro);
-	float sum = residual[0];// + residualLen / 2;
-	//int k = clamp(convert_int_rtn(log2((sum + 0.000001f) / (residualLen + 0.000001f))), 0, 14);
-	int k;
-	frexp((sum + 0.000001f) / residualLen, &k);
-	k = clamp(k - 1, 0, 14);
-	output[get_group_id(0)] = residualLen * (k + 1) + convert_int_rtn(min((float)0xffffff, sum / (1 << k)));
-    }
-#endif
 }
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
@@ -598,14 +572,14 @@ void cudaChooseBestMethod(
     {
 	// fetch task data
 	if (tid < sizeof(task) / sizeof(int))
-	    ((__local int*)&task)[tid] = ((__global int*)(&tasks[taskNo + taskCount * get_group_id(1)].data))[tid];
+	    ((__local int*)&task)[tid] = ((__global int*)(&tasks[taskNo + taskCount * get_group_id(0)].data))[tid];
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	if (tid == 0)
 	{
 	    // fetch part sum
-	    int partLen = residual[taskNo + taskCount * get_group_id(1)];
+	    int partLen = residual[taskNo + taskCount * get_group_id(0)];
 	    //// calculate part size
 	    //int residualLen = task[get_local_id(1)].data.blocksize - task[get_local_id(1)].data.residualOrder;
 	    //residualLen = residualLen * (task[get_local_id(1)].data.type != Constant || psum != 0);
@@ -626,10 +600,10 @@ void cudaChooseBestMethod(
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     //shared.index[get_local_id(0)] = get_local_id(0);
-    //shared.length[get_local_id(0)] = (get_local_id(0) < taskCount) ? tasks[get_local_id(0) + taskCount * get_group_id(1)].size : 0x7fffffff;
+    //shared.length[get_local_id(0)] = (get_local_id(0) < taskCount) ? tasks[get_local_id(0) + taskCount * get_group_id(0)].size : 0x7fffffff;
 
     if (tid < taskCount)
-	tasks[tid + taskCount * get_group_id(1)].data.size = shared.length[tid];
+	tasks[tid + taskCount * get_group_id(0)].data.size = shared.length[tid];
 
     int l1 = shared.length[tid];
     for (int l = 16; l > 0; l >>= 1)
@@ -643,7 +617,7 @@ void cudaChooseBestMethod(
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     if (tid == 0)
-	tasks[taskCount * get_group_id(1)].data.best_index = taskCount * get_group_id(1) + shared.index[0];
+	tasks[taskCount * get_group_id(0)].data.best_index = taskCount * get_group_id(0) + shared.index[0];
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
@@ -655,10 +629,10 @@ void cudaCopyBestMethod(
 {
     __local int best_index;
     if (get_local_id(0) == 0)
-	best_index = tasks[count * get_group_id(1)].data.best_index;
+	best_index = tasks[count * get_group_id(0)].data.best_index;
     barrier(CLK_LOCAL_MEM_FENCE);
     if (get_local_id(0) < sizeof(FLACCLSubframeTask)/sizeof(int))
-	((__global int*)(tasks_out + get_group_id(1)))[get_local_id(0)] = ((__global int*)(tasks + best_index))[get_local_id(0)];
+	((__global int*)(tasks_out + get_group_id(0)))[get_local_id(0)] = ((__global int*)(tasks + best_index))[get_local_id(0)];
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
@@ -674,7 +648,7 @@ void cudaCopyBestMethodStereo(
 	int lr_index[2];
     } shared;
     if (get_local_id(0) < 4)
-	shared.best_index[get_local_id(0)] = tasks[count * (get_group_id(1) * 4 + get_local_id(0))].data.best_index;
+	shared.best_index[get_local_id(0)] = tasks[count * (get_group_id(0) * 4 + get_local_id(0))].data.best_index;
     barrier(CLK_LOCAL_MEM_FENCE);
     if (get_local_id(0) < 4)
 	shared.best_size[get_local_id(0)] = tasks[shared.best_index[get_local_id(0)]].data.size;
@@ -705,13 +679,13 @@ void cudaCopyBestMethodStereo(
     }
     barrier(CLK_LOCAL_MEM_FENCE);
     if (get_local_id(0) < sizeof(FLACCLSubframeTask)/sizeof(int))
-	((__global int*)(tasks_out + 2 * get_group_id(1)))[get_local_id(0)] = ((__global int*)(tasks + shared.lr_index[0]))[get_local_id(0)];
+	((__global int*)(tasks_out + 2 * get_group_id(0)))[get_local_id(0)] = ((__global int*)(tasks + shared.lr_index[0]))[get_local_id(0)];
     if (get_local_id(0) == 0)
-	tasks_out[2 * get_group_id(1)].data.residualOffs = tasks[shared.best_index[0]].data.residualOffs;
+	tasks_out[2 * get_group_id(0)].data.residualOffs = tasks[shared.best_index[0]].data.residualOffs;
     if (get_local_id(0) < sizeof(FLACCLSubframeTask)/sizeof(int))
-	((__global int*)(tasks_out + 2 * get_group_id(1) + 1))[get_local_id(0)] = ((__global int*)(tasks + shared.lr_index[1]))[get_local_id(0)];
+	((__global int*)(tasks_out + 2 * get_group_id(0) + 1))[get_local_id(0)] = ((__global int*)(tasks + shared.lr_index[1]))[get_local_id(0)];
     if (get_local_id(0) == 0)
-	tasks_out[2 * get_group_id(1) + 1].data.residualOffs = tasks[shared.best_index[1]].data.residualOffs;
+	tasks_out[2 * get_group_id(0) + 1].data.residualOffs = tasks[shared.best_index[1]].data.residualOffs;
 }
 
 // get_group_id(0) == task index
@@ -835,7 +809,7 @@ void cudaCalcPartition(
     }
 }
 
-// get_group_id(1) == task index
+// get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void cudaCalcPartition16(
     __global int *partition_lengths,
@@ -851,7 +825,7 @@ void cudaCalcPartition16(
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task) / sizeof(int))
-	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(1)]))[tid];
+	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
     barrier(CLK_LOCAL_MEM_FENCE);
 
     int bs = task.data.blocksize;
@@ -921,7 +895,7 @@ void cudaCalcPartition16(
 	sum = (chunk[0] >> k) + (chunk[1] >> k) + (chunk[2] >> k) + (chunk[3] >> k);
 	s = sum.x + sum.y + sum.z + sum.w;
 
-	const int lpos = (15 << (max_porder + 1)) * get_group_id(1) + (k << (max_porder + 1)) + offs / 16;
+	const int lpos = (15 << (max_porder + 1)) * get_group_id(0) + (k << (max_porder + 1)) + offs / 16;
 	if (k <= 14)
 	    partition_lengths[lpos] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
     }    
