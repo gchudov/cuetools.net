@@ -72,6 +72,7 @@ namespace CUETools.FLACCL.cmd
 			string window_function = null;
 			string input_file = null;
 			string output_file = null;
+			string device_type = null;
 			int min_partition_order = -1, max_partition_order = -1,
 				min_lpc_order = -1, max_lpc_order = -1,
 				min_fixed_order = -1, max_fixed_order = -1,
@@ -112,6 +113,10 @@ namespace CUETools.FLACCL.cmd
 					settings.GroupSize = intarg;
 				else if (args[arg] == "--define" && arg + 2 < args.Length)
 					settings.Defines += "#define " + args[++arg] + " " + args[++arg] + "\n";
+				else if (args[arg] == "--opencl-platform" && ++arg < args.Length)
+					settings.Platform = args[arg];
+				else if (args[arg] == "--opencl-type" && ++arg < args.Length)
+					device_type = args[arg];
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
@@ -210,6 +215,8 @@ namespace CUETools.FLACCL.cmd
 
 			try
 			{
+				if (device_type != null)
+					settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
 				encoder.Settings = settings;
 				if (level >= 0)
 					encoder.CompressionLevel = level;

@@ -65,6 +65,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="flaccpu.cl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="flac.cu">
     </None>
     <Content Include="flac.cl">

@@ -33,7 +33,14 @@ namespace CUETools.Codecs.FLACCL
 {
 	public class FLACCLWriterSettings
 	{
-		public FLACCLWriterSettings() { DoVerify = false; GPUOnly = true; DoMD5 = true; GroupSize = 64; }
+		public FLACCLWriterSettings() 
+		{ 
+			this.DoVerify = false; 
+			this.GPUOnly = true; 
+			this.DoMD5 = true; 
+			this.GroupSize = 64;
+			this.DeviceType = OpenCLDeviceType.GPU;
+		}
 
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
@@ -56,6 +63,13 @@ namespace CUETools.Codecs.FLACCL
 		[SRDescription(typeof(Properties.Resources), "DescriptionDefines")]
 		public string Defines { get; set; }
 
+		[SRDescription(typeof(Properties.Resources), "DescriptionPlatform")]
+		public string Platform { get; set; }
+
+		[DefaultValue(OpenCLDeviceType.GPU)]
+		[SRDescription(typeof(Properties.Resources), "DescriptionDeviceType")]
+		public OpenCLDeviceType DeviceType { get; set; }
+
 		int cpu_threads = 1;
 		[DefaultValue(1)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionCPUThreads")]
@@ -72,6 +86,12 @@ namespace CUETools.Codecs.FLACCL
 				cpu_threads = value;
 			}
 		}
+	}
+
+	public enum OpenCLDeviceType : ulong
+	{
+		CPU = DeviceType.CPU,
+		GPU = DeviceType.GPU
 	}
 
 	[AudioEncoderClass("FLACCL", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "8", 2, typeof(FLACCLWriterSettings))]
@@ -223,6 +243,11 @@ namespace CUETools.Codecs.FLACCL
 				if (value as FLACCLWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
 				_settings = value as FLACCLWriterSettings;
+				if (_settings.DeviceType == OpenCLDeviceType.CPU)
+				{
+					_settings.GroupSize = 1;
+					_settings.GPUOnly = false;
+				}
 				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			}
 		}
@@ -449,7 +474,7 @@ namespace CUETools.Codecs.FLACCL
 			}
 			set
 			{
-				if (value < 0 || value > eparams.max_fixed_order)
+				if (value < 0 || value > 4)
 					throw new Exception("invalid MinFixedOrder " + value.ToString());
 				eparams.min_fixed_order = value;
 			}
@@ -463,7 +488,7 @@ namespace CUETools.Codecs.FLACCL
 			}
 			set
 			{
-				if (value > 4 || value < eparams.min_fixed_order)
+				if (value > 4 || value < 0)
 					throw new Exception("invalid MaxFixedOrder " + value.ToString());
 				eparams.max_fixed_order = value;
 			}
@@ -963,7 +988,7 @@ namespace CUETools.Codecs.FLACCL
 
 			task.nResidualTasks = 0;
 			task.nTasksPerWindow = Math.Min(32, eparams.orders_per_window);
-			task.nResidualTasksPerChannel = task.nWindowFunctions * task.nTasksPerWindow + 1 + (eparams.do_constant ? 1 : 0) + eparams.max_fixed_order - eparams.min_fixed_order;
+			task.nResidualTasksPerChannel = task.nWindowFunctions * task.nTasksPerWindow + (eparams.do_constant ? 1 : 0) + Math.Max(0, 1 + eparams.max_fixed_order - eparams.min_fixed_order);
 			//if (task.nResidualTasksPerChannel >= 4)
 			//    task.nResidualTasksPerChannel = (task.nResidualTasksPerChannel + 7) & ~7;
 			for (int iFrame = 0; iFrame < nFrames; iFrame++)
@@ -1444,7 +1469,7 @@ namespace CUETools.Codecs.FLACCL
 				if (OpenCL.NumberOfPlatforms < 1)
 					throw new Exception("no opencl platforms found");
 
-				int groupSize = _settings.GroupSize;
+				int groupSize = _settings.DeviceType == OpenCLDeviceType.CPU ? 1 : _settings.GroupSize;
 				OCLMan = new OpenCLManager();
 				// Attempt to save binaries after compilation, as well as load precompiled binaries
 				// to avoid compilation. Usually you'll want this to be true. 
@@ -1475,12 +1500,30 @@ namespace CUETools.Codecs.FLACCL
 				OCLMan.BuildOptions = "";
 				OCLMan.SourcePath = System.IO.Path.GetDirectoryName(GetType().Assembly.Location);
 				OCLMan.BinaryPath = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CUE Tools"), "OpenCL");
-				OCLMan.CreateDefaultContext(0, DeviceType.GPU);
+				int platformId = 0;
+				if (_settings.Platform != null)
+				{
+					platformId = -1;
+					string platforms = "";
+					for (int i = 0; i < OpenCL.NumberOfPlatforms; i++)
+					{
+						var platform = OpenCL.GetPlatform(i);
+						platforms += " \"" + platform.Name + "\"";
+						if (platform.Name.Equals(_settings.Platform, StringComparison.InvariantCultureIgnoreCase))
+						{
+							platformId = i;
+							break;
+						}
+					}
+					if (platformId < 0)
+						throw new Exception("unknown platform \"" + _settings.Platform + "\". Platforms available:" + platforms);
+				}
+				OCLMan.CreateDefaultContext(platformId, (DeviceType)_settings.DeviceType);
 
 				openCLContext = OCLMan.Context;
 				try
 				{
-					openCLProgram = OCLMan.CompileFile("flac.cl");
+					openCLProgram = OCLMan.CompileFile(_settings.DeviceType == OpenCLDeviceType.CPU ? "flaccpu.cl" : "flac.cl");
 				}
 				catch (OpenCLBuildException ex)
 				{
@@ -2218,13 +2261,12 @@ namespace CUETools.Codecs.FLACCL
 			this.channelsCount = channelsCount;
 			this.writer = writer;
 			openCLProgram = _openCLProgram;
-			Device[] openCLDevices = openCLProgram.Context.Platform.QueryDevices(DeviceType.GPU);
 #if DEBUG
 			var prop = CommandQueueProperties.PROFILING_ENABLE;
 #else
 			var prop = CommandQueueProperties.NONE;
 #endif
-			openCLCQ = openCLProgram.Context.CreateCommandQueue(openCLDevices[0], prop);
+			openCLCQ = openCLProgram.Context.CreateCommandQueue(openCLProgram.Context.Devices[0], prop);
 
 			residualTasksLen = sizeof(FLACCLSubframeTask) * channelsCount * (lpc.MAX_LPC_ORDER * lpc.MAX_LPC_WINDOWS + 8) * FLACCLWriter.maxFrames;
 			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * FLACCLWriter.maxFrames;
@@ -2260,12 +2302,15 @@ namespace CUETools.Codecs.FLACCL
 			clChooseBestMethod = openCLProgram.CreateKernel("clChooseBestMethod");
 			clCopyBestMethod = openCLProgram.CreateKernel("clCopyBestMethod");
 			clCopyBestMethodStereo = openCLProgram.CreateKernel("clCopyBestMethodStereo");
-			clEncodeResidual = openCLProgram.CreateKernel("clEncodeResidual");
-			clCalcPartition = openCLProgram.CreateKernel("clCalcPartition");
-			clCalcPartition16 = openCLProgram.CreateKernel("clCalcPartition16");
-			clSumPartition = openCLProgram.CreateKernel("clSumPartition");
-			clFindRiceParameter = openCLProgram.CreateKernel("clFindRiceParameter");
-			clFindPartitionOrder = openCLProgram.CreateKernel("clFindPartitionOrder");
+			if (writer._settings.GPUOnly)
+			{
+				clEncodeResidual = openCLProgram.CreateKernel("clEncodeResidual");
+				clCalcPartition = openCLProgram.CreateKernel("clCalcPartition");
+				clCalcPartition16 = openCLProgram.CreateKernel("clCalcPartition16");
+				clSumPartition = openCLProgram.CreateKernel("clSumPartition");
+				clFindRiceParameter = openCLProgram.CreateKernel("clFindRiceParameter");
+				clFindPartitionOrder = openCLProgram.CreateKernel("clFindPartitionOrder");
+			}
 
 			samplesBuffer = new int[FLACCLWriter.MAX_BLOCKSIZE * channelsCount];
 			outputBuffer = new byte[max_frame_size * FLACCLWriter.maxFrames + 1];
@@ -2304,12 +2349,15 @@ namespace CUETools.Codecs.FLACCL
 			clChooseBestMethod.Dispose();
 			clCopyBestMethod.Dispose();
 			clCopyBestMethodStereo.Dispose();
-			clEncodeResidual.Dispose();
-			clCalcPartition.Dispose();
-			clCalcPartition16.Dispose();
-			clSumPartition.Dispose();
-			clFindRiceParameter.Dispose();
-			clFindPartitionOrder.Dispose();
+			if (writer._settings.GPUOnly)
+			{
+				clEncodeResidual.Dispose();
+				clCalcPartition.Dispose();
+				clCalcPartition16.Dispose();
+				clSumPartition.Dispose();
+				clFindRiceParameter.Dispose();
+				clFindPartitionOrder.Dispose();
+			}
 
 			clSamples.Dispose();
 			clSamplesBytes.Dispose();
@@ -2390,15 +2438,13 @@ namespace CUETools.Codecs.FLACCL
 				nWindowFunctions);
 
 			clComputeLPC.SetArgs(
-				clResidualTasks,
 				clAutocorOutput,
 				clLPCData,
-				nResidualTasksPerChannel,
 				nWindowFunctions);
 
 			openCLCQ.EnqueueNDRangeKernel(
 				clComputeLPC,
-				32, 1,
+				Math.Min(groupSize, 32), 1,
 				nWindowFunctions,
 				channelsCount * frameCount);
 
@@ -2412,7 +2458,7 @@ namespace CUETools.Codecs.FLACCL
 
 			openCLCQ.EnqueueNDRangeKernel(
 				clQuantizeLPC,
-				32, 1,
+				Math.Min(groupSize, 32), 1,
 				nWindowFunctions,
 				channelsCount * frameCount);
 
@@ -2433,7 +2479,7 @@ namespace CUETools.Codecs.FLACCL
 
 			openCLCQ.EnqueueNDRangeKernel(
 				clChooseBestMethod,
-				32, channelsCount * frameCount);
+				Math.Min(groupSize, 32), channelsCount * frameCount);
 
 			if (channels == 2 && channelsCount == 4)
 			{
@@ -2444,7 +2490,7 @@ namespace CUETools.Codecs.FLACCL
 
 				openCLCQ.EnqueueNDRangeKernel(
 					clCopyBestMethodStereo,
-					64, frameCount);
+					Math.Min(groupSize, 64), frameCount);
 			}
 			else
 			{
@@ -2455,7 +2501,7 @@ namespace CUETools.Codecs.FLACCL
 
 				openCLCQ.EnqueueNDRangeKernel(
 					clCopyBestMethod,
-					64, channels * frameCount);
+					Math.Min(groupSize, 64), channels * frameCount);
 			}
 
 			if (writer._settings.GPUOnly)

@@ -1,6 +1,6 @@
 /**
  * CUETools.FLACCL: FLAC audio encoder using OpenCL
- * Copyright (c) 2009 Gregory S. Chudov
+ * Copyright (c) 2010 Gregory S. Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,6 @@
 #ifdef DEBUG
 #pragma OPENCL EXTENSION cl_amd_printf : enable
 #endif
-
-#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
 
 //#pragma OPENCL EXTENSION cl_amd_fp64 : enable
 
@@ -125,7 +123,7 @@ void clFindWastedBits(
     barrier(CLK_LOCAL_MEM_FENCE);
 
     int w = 0, a = 0;
-    for (int pos = tid; pos + tid < task.blocksize; pos += GROUP_SIZE)
+    for (int pos = tid; pos < task.blocksize; pos += GROUP_SIZE)
     {
 	int smp = samples[task.samplesOffs + pos];
 	w |= smp;
@@ -213,38 +211,25 @@ void clComputeAutocor(
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
 void clComputeLPC(
-    __global FLACCLSubframeTask *tasks,
     __global float *autoc,
     __global float *lpcs,
-    int taskCount, // tasks per block
     int windowCount
 )
 {
     __local struct {
-	FLACCLSubframeData task;
 	volatile float ldr[32];
 	volatile float gen1[32];
 	volatile float error[32];
 	volatile float autoc[33];
-	volatile int lpcOffs;
-	volatile int autocOffs;
     } shared;
-    const int tid = get_local_id(0);// + get_local_id(1) * 32;
-    
-    // fetch task data
-    if (tid < sizeof(shared.task) / sizeof(int))
-	((__local int*)&shared.task)[tid] = ((__global int*)(tasks + get_group_id(1)))[tid];
-    if (tid == 0)
-    {
-	shared.lpcOffs = (get_group_id(0) + get_group_id(1) * windowCount) * (MAX_ORDER + 1) * 32;
-	shared.autocOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1);
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
+    const int tid = get_local_id(0);// + get_local_id(1) * 32;    
+    int lpcOffs = (get_group_id(0) + get_group_id(1) * windowCount) * (MAX_ORDER + 1) * 32;
+    int autocOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1);
     
     if (get_local_id(0) <= MAX_ORDER)
-	shared.autoc[get_local_id(0)] = autoc[shared.autocOffs + get_local_id(0)];
+	shared.autoc[get_local_id(0)] = autoc[autocOffs + get_local_id(0)];
     if (get_local_id(0) + get_local_size(0) <= MAX_ORDER)
-	shared.autoc[get_local_id(0) + get_local_size(0)] = autoc[shared.autocOffs + get_local_id(0) + get_local_size(0)];
+	shared.autoc[get_local_id(0) + get_local_size(0)] = autoc[autocOffs + get_local_id(0) + get_local_size(0)];
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -296,14 +281,14 @@ void clComputeLPC(
 
 	// Output coeffs
 	if (get_local_id(0) <= order)
-	    lpcs[shared.lpcOffs + order * 32 + get_local_id(0)] = -shared.ldr[order - get_local_id(0)];
+	    lpcs[lpcOffs + order * 32 + get_local_id(0)] = -shared.ldr[order - get_local_id(0)];
 	//if (get_local_id(0) <= order + 1 && fabs(-shared.ldr[0]) > 3000)
 	//    printf("coef[%d] == %f, autoc == %f, error == %f\n", get_local_id(0), -shared.ldr[order - get_local_id(0)], shared.autoc[get_local_id(0)], shared.error[get_local_id(0)]);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
     // Output prediction error estimates
     if (get_local_id(0) < MAX_ORDER)
-	lpcs[shared.lpcOffs + MAX_ORDER * 32 + get_local_id(0)] = shared.error[get_local_id(0)];
+	lpcs[lpcOffs + MAX_ORDER * 32 + get_local_id(0)] = shared.error[get_local_id(0)];
 }
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
@@ -318,9 +303,10 @@ void clQuantizeLPC(
 {
     __local struct {
 	FLACCLSubframeData task;
-	volatile int tmpi[32];
 	volatile int index[64];
 	volatile float error[64];
+	volatile int maxcoef[32];
+	volatile int maxcoef2[32];
 	volatile int lpcOffs;
     } shared;
 
@@ -338,6 +324,8 @@ void clQuantizeLPC(
     shared.error[tid] = shared.task.blocksize * 64 + tid;
     shared.index[32 + tid] = MAX_ORDER - 1;
     shared.error[32 + tid] = shared.task.blocksize * 64 + tid + 32;
+    shared.maxcoef[tid] = 0;
+    shared.maxcoef2[tid] = 0;
 
     // Load prediction error estimates
     if (tid < MAX_ORDER)
@@ -399,21 +387,14 @@ void clQuantizeLPC(
 	// get 15 bits of each coeff
 	int coef = convert_int_rte(lpc * (1 << 15));
 	// remove sign bits
-	shared.tmpi[tid] = coef ^ (coef >> 31);
+	atomic_or(shared.maxcoef + i, coef ^ (coef >> 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
-	// OR reduction
-	for (int l = get_local_size(0) / 2; l > 1; l >>= 1)
-	{
-	    if (tid < l)
-		shared.tmpi[tid] |= shared.tmpi[tid + l];
-	    barrier(CLK_LOCAL_MEM_FENCE);
-	}
 	//SUM32(shared.tmpi,tid,|=);
 	// choose precision	
 	//int cbits = max(3, min(10, 5 + (shared.task.abits >> 1))); //  - convert_int_rte(shared.PE[order - 1])
 	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), clz(order) + 1 - shared.task.abits));
 	// calculate shift based on precision and number of leading zeroes in coeffs
-	int shift = max(0,min(15, clz(shared.tmpi[0] | shared.tmpi[1]) - 18 + cbits));
+	int shift = max(0,min(15, clz(shared.maxcoef[i]) - 18 + cbits));
 
 	//cbits = 13;
 	//shift = 15;
@@ -426,18 +407,10 @@ void clQuantizeLPC(
 	//shared.tmp[tid] = (tid != 0) * (shared.arp[tid - 1]*(1 << shared.task.shift) - shared.task.coefs[tid - 1]);
 	//shared.task.coefs[tid] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, convert_int_rte((shared.arp[tid]) * (1 << shared.task.shift) + shared.tmp[tid])));
 	// remove sign bits
-	shared.tmpi[tid] = coef ^ (coef >> 31);
+	atomic_or(shared.maxcoef2 + i, coef ^ (coef >> 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
-	// OR reduction
-	for (int l = get_local_size(0) / 2; l > 1; l >>= 1)
-	{
-	    if (tid < l)
-		shared.tmpi[tid] |= shared.tmpi[tid + l];
-	    barrier(CLK_LOCAL_MEM_FENCE);
-	}
-	//SUM32(shared.tmpi,tid,|=);
 	// calculate actual number of bits (+1 for sign)
-	cbits = 1 + 32 - clz(shared.tmpi[0] | shared.tmpi[1]);
+	cbits = 1 + 32 - clz(shared.maxcoef2[i]);
 
 	// output shift, cbits and output coeffs
 	int taskNo = get_group_id(1) * taskCount + get_group_id(0) * taskCountLPC + i;
@@ -452,10 +425,6 @@ void clQuantizeLPC(
     }
 }
 
-#ifndef PARTORDER
-#define PARTORDER 4
-#endif
-
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clEstimateResidual(
     __global int*output,
@@ -463,10 +432,10 @@ void clEstimateResidual(
     __global FLACCLSubframeTask *tasks
     )
 {
-    __local int data[GROUP_SIZE * 2];
+    __local float data[GROUP_SIZE * 2];
     __local FLACCLSubframeTask task;
-    __local int residual[GROUP_SIZE];
-    __local int len[GROUP_SIZE >> PARTORDER];
+    __local int psum[64];
+    __local float fcoef[32];
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task)/sizeof(int))
@@ -476,101 +445,74 @@ void clEstimateResidual(
     int ro = task.data.residualOrder;
     int bs = task.data.blocksize;
 
-    if (tid < 32 && tid >= ro)
-	task.coefs[tid] = 0;
-    if (tid < (GROUP_SIZE >> PARTORDER))
-	len[tid] = 0;
-    data[tid] = 0;
+    if (tid < 32)
+	fcoef[tid] = select(0.0f, - ((float) task.coefs[tid]) / (1 << task.data.shift), tid < ro);
+	//fcoef[tid] = select(0.0f, - ((float) task.coefs[tid + ro - MAX_ORDER]) / (1 << task.data.shift), tid + ro >= MAX_ORDER && tid < MAX_ORDER);
+    if (tid < 64)
+	psum[tid] = 0;
+    data[tid] = 0.0f;
+
+    int partOrder = clz(64) - clz(bs - 1) + 1;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local int4 * cptr = (__local int4 *)&task.coefs[0];
-    int4 cptr0 = cptr[0];
-#if MAX_ORDER > 4
-    int4 cptr1 = cptr[1];
+    float4 cptr0 = vload4(0, &fcoef[0]);
+    float4 cptr1 = vload4(1, &fcoef[0]);
 #if MAX_ORDER > 8
-    int4 cptr2 = cptr[2];
+    float4 cptr2 = vload4(2, &fcoef[0]);
 #endif
-#endif
-
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
 	int offs = pos + tid;
-	int nextData = offs < bs ? samples[task.data.samplesOffs + offs] >> task.data.wbits : 0;
+	float nextData = offs < bs ? samples[task.data.samplesOffs + offs] >> task.data.wbits : 0.0f;
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// compute residual
-	__local int4 * dptr = (__local int4 *)&data[tid + GROUP_SIZE - ro];
-	int4 sum = dptr[0] * cptr0
-#if MAX_ORDER > 4
-	    + dptr[1] * cptr1
+	__local float* dptr = &data[tid + GROUP_SIZE - ro];
+	float4 sum = cptr0 * vload4(0, dptr)
+	    + cptr1 * vload4(1, dptr)
 #if MAX_ORDER > 8
-	    + dptr[2] * cptr2
-#if MAX_ORDER > 12
-	    + dptr[3] * cptr[3]
-#if MAX_ORDER > 16
-	    + dptr[4] * cptr[4]
-	    + dptr[5] * cptr[5]
-	    + dptr[6] * cptr[6]
-	    + dptr[7] * cptr[7]
-#endif
-#endif
-#endif
+	    + cptr2 * vload4(2, dptr)
+  #if MAX_ORDER > 12
+	    + vload4(3, &fcoef[0]) * vload4(3, dptr)
+    #if MAX_ORDER > 16
+	    + vload4(4, &fcoef[0]) * vload4(4, dptr)
+	    + vload4(5, &fcoef[0]) * vload4(5, dptr)
+	    + vload4(6, &fcoef[0]) * vload4(6, dptr)
+	    + vload4(7, &fcoef[0]) * vload4(7, dptr)
+    #endif
+  #endif
 #endif
 	    ;
-    	
-	int t = nextData - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift);
+
+	int t = convert_int_rte(nextData + sum.x + sum.y + sum.z + sum.w);
+	barrier(CLK_LOCAL_MEM_FENCE);
+	data[tid] = nextData;
 	// ensure we're within frame bounds
 	t = select(0, t, offs >= ro && offs < bs);
 	// overflow protection
 	t = clamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	residual[tid] = (t << 1) ^ (t >> 31);
-	barrier(CLK_LOCAL_MEM_FENCE);
-	data[tid] = nextData;
-
-	// calculate rice partition bit length for every 16 samples
-	if (tid < (GROUP_SIZE >> PARTORDER))
-	{
-	    //__local int4 * chunk = (__local int4 *)&residual[tid << PARTORDER];
-	    __local int4 * chunk = ((__local int4 *)residual) + (tid << (PARTORDER - 2));
-#if PARTORDER == 3
-	    int4 sum = chunk[0] + chunk[1];
-#elif PARTORDER == 4
-	    int4 sum = chunk[0] + chunk[1] + chunk[2] + chunk[3]; // [0 .. (1 << (PARTORDER - 2)) - 1]
-#elif PARTORDER == 5
-	    int4 sum = chunk[0] + chunk[1] + chunk[2] + chunk[3] + chunk[4] + chunk[5] + chunk[6] + chunk[7];
-#else
-#error Invalid PARTORDER
-#endif
-	    int res = sum.x + sum.y + sum.z + sum.w;
-	    int k = clamp(clz(1 << PARTORDER) - clz(res), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
-#ifdef EXTRAMODE
-#if PARTORDER == 3
-	    sum = (chunk[0] >> k) + (chunk[1] >> k);
-#elif PARTORDER == 4
-	    sum = (chunk[0] >> k) + (chunk[1] >> k) + (chunk[2] >> k) + (chunk[3] >> k);
-#else
-#error Invalid PARTORDER
-#endif
-	    len[tid] += (k << PARTORDER) + sum.x + sum.y + sum.z + sum.w;
-#else
-	    len[tid] += (k << PARTORDER) + (res >> k);
-#endif
-	}
+	atomic_add(&psum[offs >> partOrder], (t << 1) ^ (t >> 31));
     }
 
+    // calculate rice partition bit length for every (1 << partOrder) samples
+    if (tid < 64)
+    {
+	int k = clamp(clz(1 << partOrder) - clz(psum[tid]), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
+	psum[tid] = (k << partOrder) + (psum[tid] >> k);
+    }
     barrier(CLK_LOCAL_MEM_FENCE);
-    for (int l = GROUP_SIZE >> (PARTORDER + 1); l > 0; l >>= 1)
+    for (int l = 32; l > 0; l >>= 1)
     {
 	if (tid < l)
-	    len[tid] += len[tid + l];
+	    psum[tid] += psum[tid + l];
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     if (tid == 0)
-	output[get_group_id(0)] = len[0] + (bs - ro);
+	output[get_group_id(0)] = psum[0] + (bs - ro);
 }
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
@@ -580,15 +522,16 @@ void clChooseBestMethod(
     int taskCount
     )
 {
-    __local struct {
-	volatile int index[32];
-	volatile int length[32];
-    } shared;
+    int best_length = 0x7fffffff;
+    int best_index = 0;
+    __local int partLen[32];
     __local FLACCLSubframeData task;
     const int tid = get_local_id(0);
     
-    shared.length[tid] = 0x7fffffff;
-    shared.index[tid] = tid;
+    // fetch part sum
+    if (tid < taskCount)
+	partLen[tid] = residual[tid + taskCount * get_group_id(0)];
+    barrier(CLK_LOCAL_MEM_FENCE);
     for (int taskNo = 0; taskNo < taskCount; taskNo++)
     {
 	// fetch task data
@@ -599,46 +542,27 @@ void clChooseBestMethod(
 
 	if (tid == 0)
 	{
-	    // fetch part sum
-	    int partLen = residual[taskNo + taskCount * get_group_id(0)];
-	    //// calculate part size
-	    //int residualLen = task[get_local_id(1)].data.blocksize - task[get_local_id(1)].data.residualOrder;
-	    //residualLen = residualLen * (task[get_local_id(1)].data.type != Constant || psum != 0);
-	    //// calculate rice parameter
-	    //int k = max(0, min(14, convert_int_rtz(log2((psum + 0.000001f) / (residualLen + 0.000001f) + 0.5f))));
-	    //// calculate part bit length
-	    //int partLen = residualLen * (k + 1) + (psum >> k);
-
+	    int pl = partLen[taskNo];
 	    int obits = task.obits - task.wbits;
-	    shared.length[taskNo] =
-		min(obits * task.blocksize,
-		    task.type == Fixed ? task.residualOrder * obits + 6 + (4 * 1/2) + partLen :
-		    task.type == LPC ? task.residualOrder * obits + 4 + 5 + task.residualOrder * task.cbits + 6 + (4 * 1/2)/* << porder */ + partLen :
-		    task.type == Constant ? obits * select(1, task.blocksize, partLen != task.blocksize - task.residualOrder) : 
+	    int len = min(obits * task.blocksize,
+		    task.type == Fixed ? task.residualOrder * obits + 6 + (4 * 1/2) + pl :
+		    task.type == LPC ? task.residualOrder * obits + 4 + 5 + task.residualOrder * task.cbits + 6 + (4 * 1/2)/* << porder */ + pl :
+		    task.type == Constant ? obits * select(1, task.blocksize, pl != task.blocksize - task.residualOrder) : 
 		    obits * task.blocksize);
+
+	    tasks[taskNo + taskCount * get_group_id(0)].data.size = len;
+	    if (len < best_length)
+	    {
+		best_length = len;
+		best_index = taskNo;
+	    }
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
-    //shared.index[get_local_id(0)] = get_local_id(0);
-    //shared.length[get_local_id(0)] = (get_local_id(0) < taskCount) ? tasks[get_local_id(0) + taskCount * get_group_id(0)].size : 0x7fffffff;
 
-    if (tid < taskCount)
-	tasks[tid + taskCount * get_group_id(0)].data.size = shared.length[tid];
-
-    int l1 = shared.length[tid];
-    for (int l = 16; l > 0; l >>= 1)
-    {
-	if (tid < l)
-	{
-	    int l2 = shared.length[tid + l];
-	    shared.index[tid] = shared.index[tid + select(0, l, l2 < l1)];
-	    shared.length[tid] = l1 = min(l1, l2);
-	}
-	barrier(CLK_LOCAL_MEM_FENCE);
-    }
     if (tid == 0)
-	tasks[taskCount * get_group_id(0)].data.best_index = taskCount * get_group_id(0) + shared.index[0];
+	tasks[taskCount * get_group_id(0)].data.best_index = taskCount * get_group_id(0) + best_index;
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
@@ -788,13 +712,13 @@ void clCalcPartition(
     int psize // == task.blocksize >> max_porder?
     )
 {
-    __local int pl[(GROUP_SIZE / 16)][15];
+    __local int pl[(GROUP_SIZE / 8)][15];
     __local FLACCLSubframeData task;
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task) / sizeof(int))
 	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(1)]))[tid];
-    if (tid < (GROUP_SIZE / 16))
+    if (tid < (GROUP_SIZE / 8))
     {
 	for (int k = 0; k <= 14; k++)
 	    pl[tid][k] = 0;
@@ -807,13 +731,14 @@ void clCalcPartition(
     {
 	// fetch residual
 	int s = (offs >= task.residualOrder && offs < end) ? residual[task.residualOffs + offs] : 0;
-	// convert to unsigned
+	// overflow protection
 	s = clamp(s, -0x7fffff, 0x7fffff);
+	// convert to unsigned
 	s = (s << 1) ^ (s >> 31);
 	// calc number of unary bits for each residual sample with each rice paramater
-	int part = (offs - start) / psize;
+	int part = (offs - start) / psize + (tid & 1) * (GROUP_SIZE / 16);
 	for (int k = 0; k <= 14; k++)
-	    atom_add(&pl[part][k], s >> k);
+	    atomic_add(&pl[part][k], s >> k);
 	    //pl[part][k] += s >> k;
     }   
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -825,7 +750,8 @@ void clCalcPartition(
 	{
 	    // output length
 	    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (k << (max_porder + 1));
-	    partition_lengths[pos + part] = min(0x7fffff, pl[tid][k]) + select(psize, psize - task.residualOrder, part == 0) * (k + 1);
+	    int plen = pl[tid][k] + pl[tid + (GROUP_SIZE / 16)][k];
+	    partition_lengths[pos + part] = min(0x7fffff, plen) + (psize - select(0, task.residualOrder, part == 0)) * (k + 1);
 	 //   if (get_group_id(1) == 0)
 		//printf("pl[%d][%d] == %d\n", k, part, min(0x7fffff, pl[k][tid]) + (psize - task.residualOrder * (part == 0)) * (k + 1));
 	}
@@ -911,7 +837,7 @@ void clCalcPartition16(
 	// convert to unsigned
 	res[tid] = (s << 1) ^ (s >> 31);
 
-	// for (int k = 0; k < 15; k++) atom_add(&pl[x][k], s >> k);
+	// for (int k = 0; k < 15; k++) atomic_add(&pl[x][k], s >> k);
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
@@ -1001,25 +927,23 @@ void clFindPartitionOrder(
     int max_porder
     )
 {
-    __local int partlen[9];
+    __local int partlen[16];
     __local FLACCLSubframeData task;
 
     const int pos = (get_group_id(0) << (max_porder + 2)) + (2 << max_porder);
     if (get_local_id(0) < sizeof(task) / sizeof(int))
 	((__local int*)&task)[get_local_id(0)] = ((__global int*)(&tasks[get_group_id(0)]))[get_local_id(0)];
-    if (get_local_id(0) < 9)
+    if (get_local_id(0) < 16)
 	partlen[get_local_id(0)] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // fetch partition lengths
-    for (int offs = 0; offs < (2 << max_porder); offs += GROUP_SIZE)
+    int lim = (2 << max_porder) - 1;
+    for (int offs = get_local_id(0); offs < lim; offs += GROUP_SIZE)
     {
-	if (offs + get_local_id(0) < (2 << max_porder) - 1)
-	{
-	    int len = rice_parameters[pos + offs + get_local_id(0)];
-	    int porder = 31 - clz((2 << max_porder) - 1 - offs - get_local_id(0));
-	    atom_add(&partlen[porder], len);
-	}
+	int len = rice_parameters[pos + offs];
+	int porder = 31 - clz(lim - offs);
+	atomic_add(&partlen[porder], len);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
