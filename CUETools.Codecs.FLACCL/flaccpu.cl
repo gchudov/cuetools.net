@@ -152,7 +152,23 @@ void clComputeAutocor(
     for (int tid = 0; tid < len; tid++)
 	data1[tid] = samples[task.samplesOffs + tid] * window[windowOffs + tid];
     data1[len] = 0.0f;
-
+    __global float * pout = &output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1)];
+    for (int l = 1; l < MAX_ORDER; l++)
+       data1[len + l] = 0.0f;
+ 
+ //   double ac0 = 0.0, ac1 = 0.0, ac2 = 0.0, ac3 = 0.0;
+ //   for (int j = 0; j < len; j++)
+ //   {
+	//float dj = data1[j];
+	//ac0 += dj * dj;
+	//ac1 += dj * data1[j + 1];
+	//ac2 += dj * data1[j + 2];
+	//ac3 += dj * data1[j + 3];
+ //   }
+ //   pout[0] = ac0;
+ //   pout[1] = ac1;
+ //   pout[2] = ac2;
+ //   pout[3] = ac3;
     for (int i = 0; i <= MAX_ORDER; ++i)
     {
 	double temp = 1.0;
@@ -164,7 +180,7 @@ void clComputeAutocor(
 	    temp += pdata[i] * pdata[0];
 	    temp2 += pdata[i + 1] * pdata[1];
 	}
-	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + i] = temp + temp2;
+	pout[i] = temp + temp2;
     }
 }
 

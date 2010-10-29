@@ -20,11 +20,18 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
-#ifdef DEBUG
-#pragma OPENCL EXTENSION cl_amd_printf : enable
-#endif
+#undef DEBUG
+
+//#define AMD
+
+//#ifdef DEBUG
+//#pragma OPENCL EXTENSION cl_amd_printf : enable
+//#endif
 
 //#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+
+#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics: enable
+#pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics: enable
 
 typedef enum
 {
@@ -58,6 +65,8 @@ typedef struct
     FLACCLSubframeData data;
     int coefs[32]; // fixme: should be short?
 } FLACCLSubframeTask;
+
+#define iclamp(a,b,c) max(b,min(a,c))
 
 __kernel void clStereoDecorr(
     __global int *samples,
@@ -181,8 +190,10 @@ void clComputeAutocor(
 
     int tid0 = tid % (GROUP_SIZE >> 2);
     int tid1 = tid / (GROUP_SIZE >> 2);
+#ifdef ATI
     __local float4 * dptr = ((__local float4 *)&data[0]) + tid0;
     __local float4 * dptr1 = ((__local float4 *)&data[tid1]) + tid0;
+#endif
     
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
@@ -192,8 +203,15 @@ void clComputeAutocor(
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	for (int ord4 = 0; ord4 < (MAX_ORDER / 4 + 1); ord4 ++)
+#ifdef ATI
 	    product[ord4 * GROUP_SIZE + tid] += dot(dptr[0], dptr1[ord4]);
-
+#else
+	    product[ord4 * GROUP_SIZE + tid] +=
+		data[tid0*4 + 0] * data[tid0*4 + ord4*4 + tid1 + 0] +
+		data[tid0*4 + 1] * data[tid0*4 + ord4*4 + tid1 + 1] +
+		data[tid0*4 + 2] * data[tid0*4 + ord4*4 + tid1 + 2] +
+		data[tid0*4 + 3] * data[tid0*4 + ord4*4 + tid1 + 3];
+#endif
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	data[tid] = nextData;
@@ -223,8 +241,8 @@ void clComputeLPC(
 	volatile float autoc[33];
     } shared;
     const int tid = get_local_id(0);// + get_local_id(1) * 32;    
-    int lpcOffs = (get_group_id(0) + get_group_id(1) * windowCount) * (MAX_ORDER + 1) * 32;
     int autocOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1);
+    int lpcOffs = autocOffs * 32;
     
     if (get_local_id(0) <= MAX_ORDER)
 	shared.autoc[get_local_id(0)] = autoc[autocOffs + get_local_id(0)];
@@ -272,11 +290,12 @@ void clComputeLPC(
 	    shared.error[order] = error;
 
 	// Levinson-Durbin recursion
-	float ldr = 
-	    select(0.0f, reff * shared.ldr[order - 1 - get_local_id(0)], get_local_id(0) < order) +
-	    select(0.0f, reff, get_local_id(0) == order);
+	float ldr = shared.ldr[get_local_id(0)];
         barrier(CLK_LOCAL_MEM_FENCE);
-	shared.ldr[get_local_id(0)] += ldr;
+	if (get_local_id(0) < order)
+	    shared.ldr[order - 1 - get_local_id(0)] += reff * ldr;
+	if (get_local_id(0) == order)
+	    shared.ldr[get_local_id(0)] += reff;
         barrier(CLK_LOCAL_MEM_FENCE);
 
 	// Output coeffs
@@ -329,7 +348,7 @@ void clQuantizeLPC(
 
     // Load prediction error estimates
     if (tid < MAX_ORDER)
-	shared.error[tid] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log(shared.task.blocksize);
+	shared.error[tid] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log((float)shared.task.blocksize);
 	//shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + get_local_id(0)]) + get_local_id(0) * 0.30f * (shared.task.abits + 1) * log(shared.task.blocksize);
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -387,7 +406,7 @@ void clQuantizeLPC(
 	// get 15 bits of each coeff
 	int coef = convert_int_rte(lpc * (1 << 15));
 	// remove sign bits
-	atomic_or(shared.maxcoef + i, coef ^ (coef >> 31));
+	atom_or(shared.maxcoef + i, coef ^ (coef >> 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
 	//SUM32(shared.tmpi,tid,|=);
 	// choose precision	
@@ -402,12 +421,12 @@ void clQuantizeLPC(
 	//if (shared.task.abits + 32 - clz(order) < shift
 	//int shift = max(0,min(15, (shared.task.abits >> 2) - 14 + clz(shared.tmpi[tid & ~31]) + ((32 - clz(order))>>1)));
 	// quantize coeffs with given shift
-	coef = convert_int_rte(clamp(lpc * (1 << shift), -1 << (cbits - 1), 1 << (cbits - 1)));
+	coef = convert_int_rte(clamp(lpc * (1 << shift), (float)(-1 << (cbits - 1)), (float)(1 << (cbits - 1))));
 	// error correction
 	//shared.tmp[tid] = (tid != 0) * (shared.arp[tid - 1]*(1 << shared.task.shift) - shared.task.coefs[tid - 1]);
 	//shared.task.coefs[tid] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, convert_int_rte((shared.arp[tid]) * (1 << shared.task.shift) + shared.tmp[tid])));
 	// remove sign bits
-	atomic_or(shared.maxcoef2 + i, coef ^ (coef >> 31));
+	atom_or(shared.maxcoef2 + i, coef ^ (coef >> 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
 	// calculate actual number of bits (+1 for sign)
 	cbits = 1 + 32 - clz(shared.maxcoef2[i]);
@@ -452,14 +471,16 @@ void clEstimateResidual(
 	psum[tid] = 0;
     data[tid] = 0.0f;
 
-    int partOrder = clz(64) - clz(bs - 1) + 1;
+    int partOrder = max(1, clz(64) - clz(bs - 1) + 1);
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
+#ifdef AMD
     float4 cptr0 = vload4(0, &fcoef[0]);
     float4 cptr1 = vload4(1, &fcoef[0]);
 #if MAX_ORDER > 8
     float4 cptr2 = vload4(2, &fcoef[0]);
+#endif
 #endif
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
@@ -471,6 +492,7 @@ void clEstimateResidual(
 
 	// compute residual
 	__local float* dptr = &data[tid + GROUP_SIZE - ro];
+#ifdef AMD
 	float4 sum = cptr0 * vload4(0, dptr)
 	    + cptr1 * vload4(1, dptr)
 #if MAX_ORDER > 8
@@ -488,20 +510,28 @@ void clEstimateResidual(
 	    ;
 
 	int t = convert_int_rte(nextData + sum.x + sum.y + sum.z + sum.w);
+#else
+	float sum = 
+	    fcoef[0] * dptr[0] + fcoef[1] * dptr[1] + fcoef[2] * dptr[2] + fcoef[3] * dptr[3] + 
+	    fcoef[4] * dptr[4] + fcoef[5] * dptr[5] + fcoef[6] * dptr[6] + fcoef[7] * dptr[7] + 
+	    fcoef[8] * dptr[8] + fcoef[9] * dptr[9] + fcoef[10] * dptr[10] + fcoef[11] * dptr[11] ;
+	int t = convert_int_rte(nextData + sum);
+#endif
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
 	// ensure we're within frame bounds
 	t = select(0, t, offs >= ro && offs < bs);
 	// overflow protection
-	t = clamp(t, -0x7fffff, 0x7fffff);
+	t = iclamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	atomic_add(&psum[offs >> partOrder], (t << 1) ^ (t >> 31));
+	if (offs < bs)
+	    atom_add(&psum[offs >> partOrder], (t << 1) ^ (t >> 31));
     }
 
     // calculate rice partition bit length for every (1 << partOrder) samples
     if (tid < 64)
     {
-	int k = clamp(clz(1 << partOrder) - clz(psum[tid]), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
+	int k = iclamp(clz(1 << partOrder) - clz(psum[tid]), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
 	psum[tid] = (k << partOrder) + (psum[tid] >> k);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -657,11 +687,11 @@ void clEncodeResidual(
     barrier(CLK_LOCAL_MEM_FENCE);
 
     __local int4 * cptr = (__local int4 *)&task.coefs[0];
-    int4 cptr0 = cptr[0];
+    int4 cptr0 = vload4(0, &task.coefs[0]);
 #if MAX_ORDER > 4
-    int4 cptr1 = cptr[1];
+    int4 cptr1 = vload4(1, &task.coefs[0]);
 #if MAX_ORDER > 8
-    int4 cptr2 = cptr[2];
+    int4 cptr2 = vload4(2, &task.coefs[0]);
 #endif
 #endif
 
@@ -675,19 +705,19 @@ void clEncodeResidual(
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// compute residual
-	__local int4 * dptr = (__local int4 *)&data[tid + GROUP_SIZE - ro];
-	int4 sum = dptr[0] * cptr0
+	__local int* dptr = &data[tid + GROUP_SIZE - ro];
+	int4 sum = cptr0 * vload4(0, dptr)
 #if MAX_ORDER > 4
-	    + dptr[1] * cptr1
+	    + cptr1 * vload4(1, dptr)
 #if MAX_ORDER > 8
-	    + dptr[2] * cptr2
+	    + cptr2 * vload4(2, dptr)
 #if MAX_ORDER > 12
-	    + dptr[3] * cptr[3]
+	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
 #if MAX_ORDER > 16
-	    + dptr[4] * cptr[4]
-	    + dptr[5] * cptr[5]
-	    + dptr[6] * cptr[6]
-	    + dptr[7] * cptr[7]
+	    + vload4(4, &task.coefs[0]) * vload4(4, dptr)
+	    + vload4(5, &task.coefs[0]) * vload4(5, dptr)
+	    + vload4(6, &task.coefs[0]) * vload4(6, dptr)
+	    + vload4(7, &task.coefs[0]) * vload4(7, dptr)
 #endif
 #endif
 #endif
@@ -732,13 +762,13 @@ void clCalcPartition(
 	// fetch residual
 	int s = (offs >= task.residualOrder && offs < end) ? residual[task.residualOffs + offs] : 0;
 	// overflow protection
-	s = clamp(s, -0x7fffff, 0x7fffff);
+	s = iclamp(s, -0x7fffff, 0x7fffff);
 	// convert to unsigned
 	s = (s << 1) ^ (s >> 31);
 	// calc number of unary bits for each residual sample with each rice paramater
 	int part = (offs - start) / psize + (tid & 1) * (GROUP_SIZE / 16);
 	for (int k = 0; k <= 14; k++)
-	    atomic_add(&pl[part][k], s >> k);
+	    atom_add(&pl[part][k], s >> k);
 	    //pl[part][k] += s >> k;
     }   
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -788,12 +818,11 @@ void clCalcPartition16(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local int4 * cptr = (__local int4 *)&task.coefs[0];
-    int4 cptr0 = cptr[0];
+    int4 cptr0 = vload4(0, &task.coefs[0]);
 #if MAX_ORDER > 4
-    int4 cptr1 = cptr[1];
+    int4 cptr1 = vload4(1, &task.coefs[0]);
 #if MAX_ORDER > 8
-    int4 cptr2 = cptr[2];
+    int4 cptr2 = vload4(2, &task.coefs[0]);
 #endif
 #endif
 
@@ -807,19 +836,19 @@ void clCalcPartition16(
 	barrier(CLK_LOCAL_MEM_FENCE);
 	
 	// compute residual
-	__local int4 * dptr = (__local int4 *)&data[tid + GROUP_SIZE - ro];
-	int4 sum = dptr[0] * cptr0
+	__local int* dptr = &data[tid + GROUP_SIZE - ro];
+	int4 sum = cptr0 * vload4(0, dptr)
 #if MAX_ORDER > 4
-	    + dptr[1] * cptr1
+	    + cptr1 * vload4(1, dptr)
 #if MAX_ORDER > 8
-	    + dptr[2] * cptr2
+	    + cptr2 * vload4(2, dptr)
 #if MAX_ORDER > 12
-	    + dptr[3] * cptr[3]
+	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
 #if MAX_ORDER > 16
-	    + dptr[4] * cptr[4]
-	    + dptr[5] * cptr[5]
-	    + dptr[6] * cptr[6]
-	    + dptr[7] * cptr[7]
+	    + vload4(4, &task.coefs[0]) * vload4(4, dptr)
+	    + vload4(5, &task.coefs[0]) * vload4(5, dptr)
+	    + vload4(6, &task.coefs[0]) * vload4(6, dptr)
+	    + vload4(7, &task.coefs[0]) * vload4(7, dptr)
 #endif
 #endif
 #endif
@@ -833,11 +862,11 @@ void clCalcPartition16(
 
 	//int s = select(0, residual[task.data.residualOffs + offs], offs >= ro && offs < bs);
 	
-	s = clamp(s, -0x7fffff, 0x7fffff);
+	s = iclamp(s, -0x7fffff, 0x7fffff);
 	// convert to unsigned
 	res[tid] = (s << 1) ^ (s >> 31);
 
-	// for (int k = 0; k < 15; k++) atomic_add(&pl[x][k], s >> k);
+	// for (int k = 0; k < 15; k++) atom_add(&pl[x][k], s >> k);
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
@@ -943,7 +972,7 @@ void clFindPartitionOrder(
     {
 	int len = rice_parameters[pos + offs];
 	int porder = 31 - clz(lim - offs);
-	atomic_add(&partlen[porder], len);
+	atom_add(&partlen[porder], len);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
