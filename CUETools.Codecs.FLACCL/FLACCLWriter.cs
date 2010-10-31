@@ -39,7 +39,7 @@ namespace CUETools.Codecs.FLACCL
 			this.GPUOnly = true;
             this.MappedMemory = false;
 			this.DoMD5 = true; 
-			this.GroupSize = 64;
+			this.GroupSize = 128;
 			this.DeviceType = OpenCLDeviceType.GPU;
 		}
 
@@ -61,7 +61,7 @@ namespace CUETools.Codecs.FLACCL
         [SRDescription(typeof(Properties.Resources), "DescriptionMappedMemory")]
         public bool MappedMemory { get; set; }
 
-		[DefaultValue(64)]
+		[DefaultValue(128)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionGroupSize")]
 		public int GroupSize { get; set; }
 
@@ -1504,6 +1504,7 @@ namespace CUETools.Codecs.FLACCL
 				OCLMan.Defines =
 					"#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
 					"#define GROUP_SIZE " + groupSize.ToString() + "\n" +
+					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
@@ -2112,9 +2113,9 @@ namespace CUETools.Codecs.FLACCL
 					do_constant = false;
 					do_midside = false;
 					window_function = WindowFunction.Bartlett;
+					orders_per_window = 1;
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					orders_per_window = 1;
 					max_prediction_order = 8;
 					max_partition_order = 4;
 					break;
@@ -2235,7 +2236,6 @@ namespace CUETools.Codecs.FLACCL
 		public Mem clBestRiceParams;
 		public Mem clAutocorOutput;
 		public Mem clResidualTasks;
-		public Mem clResidualOutput;
 		public Mem clBestResidualTasks;
 		public Mem clWindowFunctions;
 
@@ -2356,7 +2356,6 @@ namespace CUETools.Codecs.FLACCL
             clSamples = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, samplesBufferLen);
             clLPCData = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, lpcDataLen);
             clAutocorOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, autocorLen);
-            clResidualOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, resOutLen);
             if (writer._settings.GPUOnly)
             {
                 clPartitions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, partitionsLen);
@@ -2483,7 +2482,6 @@ namespace CUETools.Codecs.FLACCL
 			clResidual.Dispose();
 			clAutocorOutput.Dispose();
 			clResidualTasks.Dispose();
-			clResidualOutput.Dispose();
 			clBestResidualTasks.Dispose();
 			clWindowFunctions.Dispose();
 
@@ -2587,7 +2585,6 @@ namespace CUETools.Codecs.FLACCL
 				channelsCount * frameCount);
 
             clEstimateResidual.SetArgs(
-				clResidualOutput,
 				clSamples,
 				clResidualTasks);
 
@@ -2598,7 +2595,6 @@ namespace CUETools.Codecs.FLACCL
 
             clChooseBestMethod.SetArgs(
 				clResidualTasks,
-				clResidualOutput,
 				nResidualTasksPerChannel);
 
 			openCLCQ.EnqueueNDRangeKernel(
@@ -2714,6 +2710,7 @@ namespace CUETools.Codecs.FLACCL
         }
 	}
 
+#if HJHKHJ
     public static class OpenCLExtensions
     {
         public static void SetArgs(this Kernel kernel, params object[] args)
@@ -2744,4 +2741,5 @@ namespace CUETools.Codecs.FLACCL
             queue.EnqueueNDRangeKernel(kernel, 2, null, new long[] { localSizeX * globalSizeX, localSizeY * globalSizeY }, new long[] { localSizeX, localSizeY });
         }
     }
+#endif
 }

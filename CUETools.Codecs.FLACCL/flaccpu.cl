@@ -329,7 +329,6 @@ void clQuantizeLPC(
 
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEstimateResidual(
-    __global int*output,
     __global int*samples,
     __global FLACCLSubframeTask *tasks
     )
@@ -412,13 +411,18 @@ void clEstimateResidual(
 	int k = clamp(clz(1 << (12 - EPO)) - clz(res), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
 	total += (k << (12 - EPO)) + (res >> k);
     }
-    output[get_group_id(0)] = min(0x7ffffff, total) + (bs - ro);
+    int partLen = min(0x7ffffff, total) + (bs - ro);
+    int obits = task.data.obits - task.data.wbits;
+    tasks[get_group_id(0)].data.size = min(obits * bs,
+	task.data.type == Fixed ? ro * obits + 6 + (4 * 1/2) + partLen :
+	task.data.type == LPC ? ro * obits + 4 + 5 + ro * task.data.cbits + 6 + (4 * 1/2)/* << porder */ + partLen :
+	task.data.type == Constant ? obits * select(1, bs, partLen != bs - ro) :
+	obits * bs);
 }
 
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clChooseBestMethod(
     __global FLACCLSubframeTask *tasks,
-    __global int *residual,
     int taskCount
     )
 {
@@ -426,19 +430,7 @@ void clChooseBestMethod(
     int best_no = 0;
     for (int taskNo = 0; taskNo < taskCount; taskNo++)
     {
-	// fetch task data
-	__global FLACCLSubframeTask* ptask = tasks + taskNo + taskCount * get_group_id(0);
-	// fetch part sum
-	int partLen = residual[taskNo + taskCount * get_group_id(0)];
-	int obits = ptask->data.obits - ptask->data.wbits;
-	int bs = ptask->data.blocksize;
-	int ro = ptask->data.residualOrder;
-	int len = min(obits * bs,
-		ptask->data.type == Fixed ? ro * obits + 6 + (4 * 1/2) + partLen :
-		ptask->data.type == LPC ? ro * obits + 4 + 5 + ro * ptask->data.cbits + 6 + (4 * 1/2)/* << porder */ + partLen :
-		ptask->data.type == Constant ? obits * select(1, bs, partLen != bs - ro) :
-		obits * bs);
-	ptask->data.size = len;
+	int len = tasks[taskNo + taskCount * get_group_id(0)].data.size;
 	if (len < best_length)
 	{
 	    best_length = len;

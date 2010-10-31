@@ -20,15 +20,16 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
-#undef DEBUG
-
-//#define AMD
-
-//#ifdef DEBUG
-//#pragma OPENCL EXTENSION cl_amd_printf : enable
-//#endif
-
+#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__)
+#define AMD
+#ifdef DEBUG
+#pragma OPENCL EXTENSION cl_amd_printf : enable
+#endif
 //#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#define iclamp(a,b,c) clamp(a,b,c)
+#else
+#define iclamp(a,b,c) max(b,min(a,c))
+#endif
 
 #pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics: enable
 #pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics: enable
@@ -65,8 +66,6 @@ typedef struct
     FLACCLSubframeData data;
     int coefs[32]; // fixme: should be short?
 } FLACCLSubframeTask;
-
-#define iclamp(a,b,c) max(b,min(a,c))
 
 __kernel void clStereoDecorr(
     __global int *samples,
@@ -172,15 +171,11 @@ void clComputeAutocor(
 )
 {
     __local float data[GROUP_SIZE * 2];
-    __local float product[(MAX_ORDER / 4 + 1) * GROUP_SIZE];
     __local FLACCLSubframeData task;
     const int tid = get_local_id(0);
     // fetch task data
     if (tid < sizeof(task) / sizeof(int))
 	((__local int*)&task)[tid] = ((__global int*)(tasks + taskCount * get_group_id(0)))[tid];
-
-    for (int ord4 = 0; ord4 < (MAX_ORDER / 4 + 1); ord4 ++)
-	product[ord4 * GROUP_SIZE + tid] = 0.0f;
     barrier(CLK_LOCAL_MEM_FENCE);
     
     int bs = task.blocksize;
@@ -188,13 +183,9 @@ void clComputeAutocor(
 
     data[tid] = tid < bs ? samples[task.samplesOffs + tid] * window[windowOffs + tid] : 0.0f;
 
-    int tid0 = tid % (GROUP_SIZE >> 2);
-    int tid1 = tid / (GROUP_SIZE >> 2);
-#ifdef ATI
-    __local float4 * dptr = ((__local float4 *)&data[0]) + tid0;
-    __local float4 * dptr1 = ((__local float4 *)&data[tid1]) + tid0;
-#endif
-    
+    const int THREADS_FOR_ORDERS = MAX_ORDER < 8 ? 8 : MAX_ORDER < 16 ? 16 : MAX_ORDER < 32 ? 32 : 64;
+    float corr = 0.0f;
+    float corr1 = 0.0f;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
@@ -202,29 +193,40 @@ void clComputeAutocor(
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for (int ord4 = 0; ord4 < (MAX_ORDER / 4 + 1); ord4 ++)
-#ifdef ATI
-	    product[ord4 * GROUP_SIZE + tid] += dot(dptr[0], dptr1[ord4]);
+#ifdef XXXAMD
+	__local float * dptr = &data[tid & ~(THREADS_FOR_ORDERS - 1)];
+	float4 res = 0.0f;
+	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
+	    res += vload4(i, dptr) * vload4(i, &data[tid]);
+	corr += res.x + res.y + res.w + res.z;
 #else
-	    product[ord4 * GROUP_SIZE + tid] +=
-		data[tid0*4 + 0] * data[tid0*4 + ord4*4 + tid1 + 0] +
-		data[tid0*4 + 1] * data[tid0*4 + ord4*4 + tid1 + 1] +
-		data[tid0*4 + 2] * data[tid0*4 + ord4*4 + tid1 + 2] +
-		data[tid0*4 + 3] * data[tid0*4 + ord4*4 + tid1 + 3];
+	int tid1 = tid & ~(THREADS_FOR_ORDERS - 1);
+	float res = 0.0f;
+	for (int i = 0; i < THREADS_FOR_ORDERS; i++)
+	    res += data[tid1 + i] * data[tid + i];
+	corr += res;
 #endif
-	barrier(CLK_LOCAL_MEM_FENCE);
+	if (THREADS_FOR_ORDERS > 8 && (pos & (GROUP_SIZE * 7)) == 0)
+	{
+	    corr1 += corr;
+	    corr = 0.0f;
+	}
 
+	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
     }
-    for (int ord4 = 0; ord4 < (MAX_ORDER / 4 + 1); ord4 ++)
-	for (int l = (GROUP_SIZE >> 3); l > 0; l >>= 1)
-	{
-	    if (tid0 < l)
-		product[ord4 * GROUP_SIZE + tid] += product[ord4 * GROUP_SIZE + tid + l];
-	    barrier(CLK_LOCAL_MEM_FENCE);
-	}
+
+    data[tid] = corr + corr1;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int i = GROUP_SIZE / 2; i >= THREADS_FOR_ORDERS; i >>= 1)
+    {
+	if (tid < i)
+	    data[tid] += data[tid + i];
+	barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
     if (tid <= MAX_ORDER)
-	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + tid] = product[tid * (GROUP_SIZE >> 2)];
+	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + tid] = data[tid];
 }
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
@@ -326,7 +328,6 @@ void clQuantizeLPC(
 	volatile float error[64];
 	volatile int maxcoef[32];
 	volatile int maxcoef2[32];
-	volatile int lpcOffs;
     } shared;
 
     const int tid = get_local_id(0);
@@ -334,9 +335,8 @@ void clQuantizeLPC(
     // fetch task data
     if (tid < sizeof(shared.task) / sizeof(int))
 	((__local int*)&shared.task)[tid] = ((__global int*)(tasks + get_group_id(1) * taskCount))[tid];
-    if (tid == 0)
-	shared.lpcOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1) * 32;
     barrier(CLK_LOCAL_MEM_FENCE);
+    const int lpcOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1) * 32;
 
     // Select best orders based on Akaike's Criteria
     shared.index[tid] = min(MAX_ORDER - 1, tid);
@@ -348,8 +348,8 @@ void clQuantizeLPC(
 
     // Load prediction error estimates
     if (tid < MAX_ORDER)
-	shared.error[tid] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log((float)shared.task.blocksize);
-	//shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[shared.lpcOffs + MAX_ORDER * 32 + get_local_id(0)]) + get_local_id(0) * 0.30f * (shared.task.abits + 1) * log(shared.task.blocksize);
+	shared.error[tid] = shared.task.blocksize * log(lpcs[lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log((float)shared.task.blocksize);
+	//shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[lpcOffs + MAX_ORDER * 32 + get_local_id(0)]) + get_local_id(0) * 0.30f * (shared.task.abits + 1) * log(shared.task.blocksize);
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Sort using bitonic sort
@@ -402,7 +402,7 @@ void clQuantizeLPC(
     for (int i = 0; i < taskCountLPC; i ++)
     {
 	int order = shared.index[i >> precisions];
-	float lpc = tid <= order ? lpcs[shared.lpcOffs + order * 32 + tid] : 0.0f;
+	float lpc = tid <= order ? lpcs[lpcOffs + order * 32 + tid] : 0.0f;
 	// get 15 bits of each coeff
 	int coef = convert_int_rte(lpc * (1 << 15));
 	// remove sign bits
@@ -446,7 +446,6 @@ void clQuantizeLPC(
 
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clEstimateResidual(
-    __global int*output,
     __global int*samples,
     __global FLACCLSubframeTask *tasks
     )
@@ -524,7 +523,7 @@ void clEstimateResidual(
 	// overflow protection
 	t = iclamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	if (offs < bs)
+	//if (offs < bs)
 	    atom_add(&psum[offs >> partOrder], (t << 1) ^ (t >> 31));
     }
 
@@ -542,52 +541,39 @@ void clEstimateResidual(
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
     if (tid == 0)
-	output[get_group_id(0)] = psum[0] + (bs - ro);
+    {
+	int pl = psum[0] + (bs - ro);
+	int obits = task.data.obits - task.data.wbits;
+	int len = min(obits * task.data.blocksize,
+		task.data.type == Fixed ? task.data.residualOrder * obits + 6 + (4 * 1/2) + pl :
+		task.data.type == LPC ? task.data.residualOrder * obits + 4 + 5 + task.data.residualOrder * task.data.cbits + 6 + (4 * 1/2)/* << porder */ + pl :
+		task.data.type == Constant ? obits * select(1, task.data.blocksize, pl != task.data.blocksize - task.data.residualOrder) : 
+		obits * task.data.blocksize);
+	tasks[get_group_id(0)].data.size = len;
+    }
 }
 
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
 void clChooseBestMethod(
     __global FLACCLSubframeTask *tasks,
-    __global int *residual,
     int taskCount
     )
 {
     int best_length = 0x7fffffff;
     int best_index = 0;
-    __local int partLen[32];
-    __local FLACCLSubframeData task;
     const int tid = get_local_id(0);
     
-    // fetch part sum
-    if (tid < taskCount)
-	partLen[tid] = residual[tid + taskCount * get_group_id(0)];
-    barrier(CLK_LOCAL_MEM_FENCE);
     for (int taskNo = 0; taskNo < taskCount; taskNo++)
     {
-	// fetch task data
-	if (tid < sizeof(task) / sizeof(int))
-	    ((__local int*)&task)[tid] = ((__global int*)(&tasks[taskNo + taskCount * get_group_id(0)].data))[tid];
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-
 	if (tid == 0)
 	{
-	    int pl = partLen[taskNo];
-	    int obits = task.obits - task.wbits;
-	    int len = min(obits * task.blocksize,
-		    task.type == Fixed ? task.residualOrder * obits + 6 + (4 * 1/2) + pl :
-		    task.type == LPC ? task.residualOrder * obits + 4 + 5 + task.residualOrder * task.cbits + 6 + (4 * 1/2)/* << porder */ + pl :
-		    task.type == Constant ? obits * select(1, task.blocksize, pl != task.blocksize - task.residualOrder) : 
-		    obits * task.blocksize);
-
-	    tasks[taskNo + taskCount * get_group_id(0)].data.size = len;
+	    int len = tasks[taskNo + taskCount * get_group_id(0)].data.size;
 	    if (len < best_length)
 	    {
 		best_length = len;
 		best_index = taskNo;
 	    }
 	}
-
 	barrier(CLK_LOCAL_MEM_FENCE);
     }
 
@@ -686,7 +672,6 @@ void clEncodeResidual(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local int4 * cptr = (__local int4 *)&task.coefs[0];
     int4 cptr0 = vload4(0, &task.coefs[0]);
 #if MAX_ORDER > 4
     int4 cptr1 = vload4(1, &task.coefs[0]);
@@ -813,19 +798,12 @@ void clCalcPartition16(
     if (tid >= ro && tid < 32)
 	task.coefs[tid] = 0;
 
-    int k = tid % 16;
+    int k = tid & 15;
     int x = tid / 16;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
     int4 cptr0 = vload4(0, &task.coefs[0]);
-#if MAX_ORDER > 4
-    int4 cptr1 = vload4(1, &task.coefs[0]);
-#if MAX_ORDER > 8
-    int4 cptr2 = vload4(2, &task.coefs[0]);
-#endif
-#endif
-
     data[tid] = 0;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
@@ -839,9 +817,9 @@ void clCalcPartition16(
 	__local int* dptr = &data[tid + GROUP_SIZE - ro];
 	int4 sum = cptr0 * vload4(0, dptr)
 #if MAX_ORDER > 4
-	    + cptr1 * vload4(1, dptr)
+	    + vload4(1, &task.coefs[0]) * vload4(1, dptr)
 #if MAX_ORDER > 8
-	    + cptr2 * vload4(2, dptr)
+	    + vload4(2, &task.coefs[0]) * vload4(2, dptr)
 #if MAX_ORDER > 12
 	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
 #if MAX_ORDER > 16
@@ -872,8 +850,8 @@ void clCalcPartition16(
 	data[tid] = nextData;
 
 	// calc number of unary bits for each residual sample with each rice paramater
-	__local int4 * chunk = (__local int4 *)&res[x << 4];
-	sum = (chunk[0] >> k) + (chunk[1] >> k) + (chunk[2] >> k) + (chunk[3] >> k);
+	__local int * chunk = &res[x << 4];
+	sum = (vload4(0,chunk) >> k) + (vload4(1,chunk) >> k) + (vload4(2,chunk) >> k) + (vload4(3,chunk) >> k);
 	s = sum.x + sum.y + sum.z + sum.w;
 
 	const int lpos = (15 << (max_porder + 1)) * get_group_id(0) + (k << (max_porder + 1)) + offs / 16;
