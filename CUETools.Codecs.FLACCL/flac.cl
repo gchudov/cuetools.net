@@ -874,7 +874,7 @@ void clSumPartition(
     const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (get_group_id(0) << (max_porder + 1));
 
     // fetch partition lengths
-    int2 pl = get_local_id(0) * 2 < (1 << max_porder) ? *(__global int2*)&partition_lengths[pos + get_local_id(0) * 2] : 0;
+    int2 pl = get_local_id(0) * 2 < (1 << max_porder) ? vload2(get_local_id(0),&partition_lengths[pos]) : 0;
     data[get_local_id(0)] = pl.x + pl.y;
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -893,22 +893,19 @@ void clSumPartition(
 	partition_lengths[pos + (1 << max_porder) + get_local_size(0) + get_local_id(0)] = data[get_local_size(0) + get_local_id(0)];
 }
 
-// Finds optimal rice parameter for several partitions at a time.
-// get_group_id(0) == chunk index (chunk size is GROUP_SIZE, total task size is (2 << max_porder))
-// get_group_id(1) == task index
+// Finds optimal rice parameter for each partition.
+// get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clFindRiceParameter(
+    __global FLACCLSubframeTask *tasks,
     __global int* rice_parameters,
     __global int* partition_lengths,
     int max_porder
     )
 {
-    const int tid = get_local_id(0);
-    const int parts = min(GROUP_SIZE, 2 << max_porder);
-    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + get_group_id(0) * GROUP_SIZE + tid;
-
-    if (tid < parts)
+    for (int offs = get_local_id(0); offs < (2 << max_porder); offs += GROUP_SIZE)
     {
+	const int pos = (15 << (max_porder + 1)) * get_group_id(0) + offs;
 	int best_l = partition_lengths[pos];
 	int best_k = 0;
 	for (int k = 1; k <= 14; k++)
@@ -919,15 +916,16 @@ void clFindRiceParameter(
 	}
 
 	// output rice parameter
-	rice_parameters[(get_group_id(1) << (max_porder + 2)) + get_group_id(0) * GROUP_SIZE + tid] = best_k;
+	rice_parameters[(get_group_id(0) << (max_porder + 2)) + offs] = best_k;
 	// output length
-	rice_parameters[(get_group_id(1) << (max_porder + 2)) + (1 << (max_porder + 1)) + get_group_id(0) * GROUP_SIZE + tid] = best_l;
+	rice_parameters[(get_group_id(0) << (max_porder + 2)) + (1 << (max_porder + 1)) + offs] = best_l;
     }
 }
 
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clFindPartitionOrder(
+    __global int *residual,
     __global int* best_rice_parameters,
     __global FLACCLSubframeTask *tasks,
     __global int* rice_parameters,
@@ -973,9 +971,8 @@ void clFindPartitionOrder(
 	    task.type == Constant ? obits : obits * task.blocksize;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-    for (int offs = 0; offs < (1 << best_porder); offs += GROUP_SIZE)
-	if (offs + get_local_id(0) < (1 << best_porder))
-	    best_rice_parameters[(get_group_id(0) << max_porder) + offs + get_local_id(0)] = rice_parameters[pos - (2 << best_porder) + offs + get_local_id(0)];
+    for (int offs = get_local_id(0); offs < (1 << best_porder); offs += GROUP_SIZE)
+	best_rice_parameters[(get_group_id(0) << max_porder) + offs] = rice_parameters[pos - (2 << best_porder) + offs];
     // FIXME: should be bytes?
 }
 #endif

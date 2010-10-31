@@ -131,6 +131,8 @@ void clFindWastedBits(
     }
 }
 
+#define TEMPBLOCK 64
+
 // get_num_groups(0) == number of tasks
 // get_num_groups(1) == number of windows
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
@@ -145,43 +147,31 @@ void clComputeAutocor(
     FLACCLSubframeData task = tasks[get_group_id(0) * taskCount].data;
     int len = task.blocksize;
     int windowOffs = get_group_id(1) * len;
-    float data1[4096 + 32];
-
-    // TODO!!!!!!!!!!! if (bs > 4096) data1[bs + 32]
-
-    for (int tid = 0; tid < len; tid++)
-	data1[tid] = samples[task.samplesOffs + tid] * window[windowOffs + tid];
-    data1[len] = 0.0f;
-    __global float * pout = &output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1)];
-    for (int l = 1; l < MAX_ORDER; l++)
-       data1[len + l] = 0.0f;
- 
- //   double ac0 = 0.0, ac1 = 0.0, ac2 = 0.0, ac3 = 0.0;
- //   for (int j = 0; j < len; j++)
- //   {
-	//float dj = data1[j];
-	//ac0 += dj * dj;
-	//ac1 += dj * data1[j + 1];
-	//ac2 += dj * data1[j + 2];
-	//ac3 += dj * data1[j + 3];
- //   }
- //   pout[0] = ac0;
- //   pout[1] = ac1;
- //   pout[2] = ac2;
- //   pout[3] = ac3;
+    float data[TEMPBLOCK + MAX_ORDER + 3];
+    double ac[MAX_ORDER + 4];
+    
     for (int i = 0; i <= MAX_ORDER; ++i)
-    {
-	double temp = 1.0;
-	double temp2 = 1.0;
-	float* finish = data1 + len - i;
+	ac[i] = 0.0;
 
-	for (float* pdata = data1; pdata < finish; pdata += 2)
+    for (int pos = 0; pos < len; pos += TEMPBLOCK)
+    {
+	for (int tid = 0; tid < TEMPBLOCK + MAX_ORDER + 3; tid++)
+	    data[tid] = tid < len - pos ? samples[task.samplesOffs + pos + tid] * window[windowOffs + pos + tid] : 0.0f;
+ 
+	for (int i = 0; i <= MAX_ORDER; i += 4)
 	{
-	    temp += pdata[i] * pdata[0];
-	    temp2 += pdata[i + 1] * pdata[1];
+	    float4 temp = 0.0;
+	    for (int j = 0; j < min(TEMPBLOCK, len - pos); j++)
+		temp += data[j] * vload4(0, &data[j + i]);
+	    ac[i] += temp.x;
+	    ac[i+1] += temp.y;
+	    ac[i+2] += temp.z;
+	    ac[i+3] += temp.w;
 	}
-	pout[i] = temp + temp2;
     }
+    __global float * pout = &output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1)];
+    for (int i = 0; i <= MAX_ORDER; ++i)
+	pout[i] = ac[i];
 }
 
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
@@ -319,13 +309,36 @@ void clQuantizeLPC(
     }
 }
 
-#define ESTIMATE_N(ro,sum) for (int pos = ro; pos < bs; pos ++) { \
-	__global int *ptr = data + pos - ro; \
-	int t = clamp((data[pos] - ((sum) >> task.data.shift)) >> task.data.wbits, -0x7fffff, 0x7fffff); \
-	len[pos >> (12 - EPO)] += (t << 1) ^ (t >> 31); \
-    }
+inline int calc_residual(__global int *ptr, int * coefs, int ro)
+{
+    int sum = 0;
+    for (int i = 0; i < ro; i++)
+	sum += ptr[i] * coefs[i];
+    return sum;
+}
 
-//	int sum = 0; for (int i = 0; i < ro; i++) sum += *(ptr++) * task.coefs[i];
+#define ENCODE_N(cro,action) for (int pos = cro; pos < bs; pos ++) { \
+	int t = (data[pos] - (calc_residual(data + pos - cro, task.coefs, cro) >> task.data.shift)) >> task.data.wbits; \
+	action; \
+    }
+#define SWITCH_N(action) \
+    switch (ro) \
+    { \
+	case 0: ENCODE_N(0, action) break; \
+	case 1: ENCODE_N(1, action) break; \
+	case 2: ENCODE_N(2, action) /*if (task.coefs[0] == -1 && task.coefs[1] == 2) ENCODE_N(2, 2 * ptr[1] - ptr[0], action) else*/  break; \
+	case 3: ENCODE_N(3, action) break; \
+	case 4: ENCODE_N(4, action) break; \
+	case 5: ENCODE_N(5, action) break; \
+	case 6: ENCODE_N(6, action) break; \
+	case 7: ENCODE_N(7, action) break; \
+	case 8: ENCODE_N(8, action) break; \
+	case 9: ENCODE_N(9, action) break; \
+	case 10: ENCODE_N(10, action) break; \
+	case 11: ENCODE_N(11, action) break; \
+	case 12: ENCODE_N(12, action) break; \
+	default: ENCODE_N(ro, action) \
+    }
 
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEstimateResidual(
@@ -337,72 +350,15 @@ void clEstimateResidual(
     int ro = task.data.residualOrder;
     int bs = task.data.blocksize;
 #define EPO 6
-    int len[1 << EPO];
+    int len[1 << EPO]; // blocksize / 64!!!!
 
-#if 0
-    //float data[4096 + 32];
-    //float fcoef[32];
-
-    // TODO!!!!!!!!!!! if (bs > 4096) data1[bs + 32]
-
-    for (int tid = 0; tid < bs; tid++)
-	data[tid] = (float)samples[task.data.samplesOffs + tid] / (1 << task.data.wbits);
-    for (int tid = 0; tid < 32; tid++)
-	fcoef[tid] = select(0.0f, - ((float) task.coefs[tid]) / (1 << task.data.shift), tid < ro);
-    float4 c0 = vload4(0, &fcoef[0]);
-    float4 c1 = vload4(1, &fcoef[0]);
-    float4 c2 = vload4(2, &fcoef[0]);
-#else
     __global int *data = &samples[task.data.samplesOffs];
-    for (int i = ro; i < 32; i++)
-	task.coefs[i] = 0;
-#endif
+ //   for (int i = ro; i < 32; i++)
+	//task.coefs[i] = 0;
     for (int i = 0; i < 1 << EPO; i++)
 	len[i] = 0;
 
-    switch (ro)
-    {
-	case 0: ESTIMATE_N(0, 0) break;
-	case 1: ESTIMATE_N(1, *ptr * task.coefs[0]) break;
-	case 2: ESTIMATE_N(2, *(ptr++) * task.coefs[0] + *ptr * task.coefs[1]) break;
-	case 3: ESTIMATE_N(3, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *ptr * task.coefs[2]) break;
-	case 4: ESTIMATE_N(4, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *ptr * task.coefs[3]) break;
-	case 5: ESTIMATE_N(5, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *ptr * task.coefs[4]) break;
-	case 6: ESTIMATE_N(6, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *(ptr++) * task.coefs[4] + *ptr * task.coefs[5]) break;
-	case 7: ESTIMATE_N(7, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *(ptr++) * task.coefs[4] + *(ptr++) * task.coefs[5] + *ptr * task.coefs[6]) break;
-	case 8: ESTIMATE_N(8, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *(ptr++) * task.coefs[4] + *(ptr++) * task.coefs[5] + *(ptr++) * task.coefs[6] + *ptr * task.coefs[7]) break;
-	case 9: ESTIMATE_N(9, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *(ptr++) * task.coefs[4] + *(ptr++) * task.coefs[5] + *(ptr++) * task.coefs[6] + *(ptr++) * task.coefs[7] + *ptr * task.coefs[8]) break;
-	case 10: ESTIMATE_N(10, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *(ptr++) * task.coefs[4] + *(ptr++) * task.coefs[5] + *(ptr++) * task.coefs[6] + *(ptr++) * task.coefs[7] + *(ptr++) * task.coefs[8] + *ptr * task.coefs[9]) break;
-	case 11: ESTIMATE_N(11, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *(ptr++) * task.coefs[4] + *(ptr++) * task.coefs[5] + *(ptr++) * task.coefs[6] + *(ptr++) * task.coefs[7] + *(ptr++) * task.coefs[8] + *(ptr++) * task.coefs[9] + *ptr * task.coefs[10]) break;
-	case 12: ESTIMATE_N(12, *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3] + *(ptr++) * task.coefs[4] + *(ptr++) * task.coefs[5] + *(ptr++) * task.coefs[6] + *(ptr++) * task.coefs[7] + *(ptr++) * task.coefs[8] + *(ptr++) * task.coefs[9] + *(ptr++) * task.coefs[10] + *ptr * task.coefs[11]) break;
-	default:
-	    for (int pos = ro; pos < bs; pos ++)
-	    {
-	#if 0
-		float sum = dot(vload4(0, data + pos - ro), c0)
-		    + dot(vload4(1, data + pos - ro), c1)
-		    + dot(vload4(2, data + pos - ro), c2)
-		    ;
-		int t = convert_int_rte(data[pos] + sum);
-	#else
-		__global int *ptr = data + pos - ro;
-		int sum = 
-		      *(ptr++) * task.coefs[0] + *(ptr++) * task.coefs[1] + *(ptr++) * task.coefs[2] + *(ptr++) * task.coefs[3]
-		    + *(ptr++) * task.coefs[4] + *(ptr++) * task.coefs[5] + *(ptr++) * task.coefs[6] + *(ptr++) * task.coefs[7]
-		    + *(ptr++) * task.coefs[8] + *(ptr++) * task.coefs[9] + *(ptr++) * task.coefs[10] + *(ptr++) * task.coefs[11]
-		    ;
-		for (int i = 12; i < ro; i++)
-		    sum += *(ptr++) * task.coefs[i];
-		int t = (data[pos] - (sum >> task.data.shift)) >> task.data.wbits;
-	#endif
-		// overflow protection
-		t = clamp(t, -0x7fffff, 0x7fffff);
-		// convert to unsigned
-		t = (t << 1) ^ (t >> 31);
-		len[pos >> (12 - EPO)] += t;
-	    }
-	    break;
-    }
+    SWITCH_N((t = clamp(t, -0x7fffff, 0x7fffff), len[pos >> (12 - EPO)] += (t << 1) ^ (t >> 31)))
 
     int total = 0;
     for (int i = 0; i < 1 << EPO; i++)
@@ -497,4 +453,183 @@ void clCopyBestMethodStereo(
     tasks_out[2 * get_group_id(0) + 1].data.residualOffs = tasks[best_index[1]].data.residualOffs;
 }
 
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clEncodeResidual(
+    __global int *residual,
+    __global int *samples,
+    __global FLACCLSubframeTask *tasks
+    )
+{
+    FLACCLSubframeTask task = tasks[get_group_id(0)];
+    int bs = task.data.blocksize;
+    int ro = task.data.residualOrder;
+    __global int *data = &samples[task.data.samplesOffs];
+    SWITCH_N(residual[task.data.residualOffs + pos] = t);
+}
+
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clCalcPartition(
+    __global int *partition_lengths,
+    __global int *residual,
+    __global FLACCLSubframeTask *tasks,
+    int max_porder, // <= 8
+    int psize // == task.blocksize >> max_porder?
+    )
+{
+    FLACCLSubframeTask task = tasks[get_group_id(1)];
+    int bs = task.data.blocksize;
+    int ro = task.data.residualOrder;
+    //int psize = bs >> max_porder;
+    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
+
+    for (int p = 0; p < (1 << max_porder); p++)
+	pl[p] = 0;
+
+    for (int pos = ro; pos < bs; pos ++)
+    {
+	int t = residual[task.data.residualOffs + pos];
+	// overflow protection
+	t = clamp(t, -0x7fffff, 0x7fffff);
+	// convert to unsigned
+	t = (t << 1) ^ (t >> 31);
+	pl[pos / psize] += t;
+    }
+}
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clCalcPartition16(
+    __global int *partition_lengths,
+    __global int *residual,
+    __global int *samples,
+    __global FLACCLSubframeTask *tasks,
+    int max_porder // <= 8
+    )
+{
+    FLACCLSubframeTask task = tasks[get_group_id(0)];
+    int bs = task.data.blocksize;
+    int ro = task.data.residualOrder;
+    __global int *data = &samples[task.data.samplesOffs];
+    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(0);
+    for (int p = 0; p < (1 << max_porder); p++)
+	pl[p] = 0;
+    SWITCH_N((residual[task.data.residualOffs + pos] = t, t = clamp(t, -0x7fffff, 0x7fffff), t = (t << 1) ^ (t >> 31), pl[pos >> 4] += t));
+}
+
+// Sums partition lengths for a certain k == get_group_id(0)
+// get_group_id(0) == k
+// get_group_id(1) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clSumPartition(
+    __global int* partition_lengths,
+    int max_porder
+    )
+{
+    if (get_group_id(0) != 0) // ignore k != 0
+	return;
+    __global int * sums = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
+    for (int i = max_porder - 1; i >= 0; i--)
+    {
+	for (int j = 0; j < (1 << i); j++)
+	{
+	    sums[(2 << i) + j] = sums[2 * j] + sums[2 * j + 1];
+	 //   if (get_group_id(1) == 0)
+		//printf("[%d][%d]: %d + %d == %d\n", i, j, sums[2 * j], sums[2 * j + 1], sums[2 * j] + sums[2 * j + 1]);
+	}
+	sums += 2 << i;
+    }
+}
+
+// Finds optimal rice parameter for each partition.
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clFindRiceParameter(
+    __global FLACCLSubframeTask *tasks,
+    __global int* rice_parameters,
+    __global int* partition_lengths,
+    int max_porder
+    )
+{
+    __global FLACCLSubframeTask* task = tasks + get_group_id(0);
+    const int tid = get_local_id(0);
+    int lim = (2 << max_porder) - 1;
+    int psize = task->data.blocksize >> max_porder;
+    int bs = task->data.blocksize;
+    int ro = task->data.residualOrder;
+    for (int offs = 0; offs < lim; offs ++)
+    {
+	int pl = partition_lengths[(1 << (max_porder + 1)) * get_group_id(0) + offs];
+	int porder = 31 - clz(lim - offs);
+	int ps = (bs >> porder) - select(0, ro, offs == lim + 1 - (2 << porder));
+	//if (ps <= 0)
+	//    printf("max_porder == %d, porder == %d, ro == %d\n", max_porder, porder, ro);
+	int k = clamp(31 - clz(pl / max(1, ps)), 0, 14);
+	int plk = ps * (k + 1)  + (pl >> k);
+	
+	// output rice parameter
+	rice_parameters[(get_group_id(0) << (max_porder + 2)) + offs] = k;
+	// output length
+	rice_parameters[(get_group_id(0) << (max_porder + 2)) + (1 << (max_porder + 1)) + offs] = plk;
+    }
+}
+
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clFindPartitionOrder(
+    __global int *residual,
+    __global int* best_rice_parameters,
+    __global FLACCLSubframeTask *tasks,
+    __global int* rice_parameters,
+    int max_porder
+    )
+{
+    __global FLACCLSubframeTask* task = tasks + get_group_id(0);
+    int partlen[9];
+    for (int p = 0; p < 9; p++)
+	partlen[p] = 0;
+    // fetch partition lengths
+    const int pos = (get_group_id(0) << (max_porder + 2)) + (2 << max_porder);
+    int lim = (2 << max_porder) - 1;
+    for (int offs = 0; offs < lim; offs ++)
+    {
+	int len = rice_parameters[pos + offs];
+	int porder = 31 - clz(lim - offs);
+	partlen[porder] += len;
+    }
+
+    int best_length = partlen[0] + 4;
+    int best_porder = 0;
+    for (int porder = 1; porder <= max_porder; porder++)
+    {
+	int length = (4 << porder) + partlen[porder];
+	best_porder = select(best_porder, porder, length < best_length);
+	best_length = min(best_length, length);
+    }
+
+    best_length = (4 << best_porder) + task->data.blocksize - task->data.residualOrder;
+    int best_psize = task->data.blocksize >> best_porder;
+    int start = task->data.residualOffs + task->data.residualOrder;
+    int fin = task->data.residualOffs + best_psize;
+    for (int p = 0; p < (1 << best_porder); p++)
+    {
+	int k = rice_parameters[pos - (2 << best_porder) + p];
+	best_length += k * (fin - start);
+	for (int i = start; i < fin; i++)
+	{
+	    int t = residual[i];
+	    best_length += ((t << 1) ^ (t >> 31)) >> k;
+	}
+	start = fin;
+	fin += best_psize;
+    }
+
+    int obits = task->data.obits - task->data.wbits;
+    task->data.porder = best_porder;
+    task->data.size =
+	task->data.type == Fixed ? task->data.residualOrder * obits + 6 + best_length :
+	task->data.type == LPC ? task->data.residualOrder * obits + 6 + best_length + 4 + 5 + task->data.residualOrder * task->data.cbits :
+	task->data.type == Constant ? obits : obits * task->data.blocksize;
+    for (int offs = 0; offs < (1 << best_porder); offs ++)
+	best_rice_parameters[(get_group_id(0) << max_porder) + offs] = rice_parameters[pos - (2 << best_porder) + offs];
+}
 #endif

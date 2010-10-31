@@ -251,7 +251,7 @@ namespace CUETools.Codecs.FLACCL
 				if (_settings.DeviceType == OpenCLDeviceType.CPU)
 				{
 					_settings.GroupSize = 1;
-					_settings.GPUOnly = false;
+					//_settings.GPUOnly = true;
                     _settings.MappedMemory = true;
 				}
 				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
@@ -2657,11 +2657,18 @@ namespace CUETools.Codecs.FLACCL
 						max_porder,
 						frameSize >> max_porder);
 
-					openCLCQ.EnqueueNDRangeKernel(
-						clCalcPartition,
-						groupSize, 1,
-						1 + ((1 << max_porder) - 1) / (groupSize / 16),
-						channels * frameCount);
+					if (openCLCQ.Device.DeviceType == DeviceType.CPU)
+						openCLCQ.EnqueueNDRangeKernel(
+							clCalcPartition,
+							groupSize, 1,
+							1,
+							channels * frameCount);
+					else
+						openCLCQ.EnqueueNDRangeKernel(
+							clCalcPartition,
+							groupSize, 1,
+							1 + ((1 << max_porder) - 1) / (groupSize / 16),
+							channels * frameCount);
 				}
 
 				if (max_porder > 0)
@@ -2670,26 +2677,32 @@ namespace CUETools.Codecs.FLACCL
 						clPartitions,
 						max_porder);
 
-					openCLCQ.EnqueueNDRangeKernel(
-						clSumPartition,
-						128, 1,
-						(Flake.MAX_RICE_PARAM + 1),
-						channels * frameCount);
+					if (openCLCQ.Device.DeviceType == DeviceType.CPU)
+						openCLCQ.EnqueueNDRangeKernel(
+							clSumPartition,
+							1, 1, 1,
+							channels * frameCount);
+					else
+						openCLCQ.EnqueueNDRangeKernel(
+							clSumPartition,
+							128, 1,
+							(Flake.MAX_RICE_PARAM + 1),
+							channels * frameCount);
 				}
 
 				clFindRiceParameter.SetArgs(
+					clBestResidualTasks,
 					clRiceParams,
 					clPartitions,
 					max_porder);
 
 				openCLCQ.EnqueueNDRangeKernel(
 					clFindRiceParameter,
-					groupSize, 1,
-					Math.Max(1, (2 << max_porder) / groupSize),
-					channels * frameCount);
+					groupSize, channels * frameCount);
 
 				//if (max_porder > 0) // need to run even if max_porder==0 just to calculate the final frame size
 				clFindPartitionOrder.SetArgs(
+					clResidual,
 					clBestRiceParams,
 					clBestResidualTasks,
 					clRiceParams,
