@@ -308,7 +308,7 @@
     <value>Originale Dateinamen beibehalten</value>
   </data>
   <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
-    <value>Audiodateien denselben Namen wie im Origina-CUE-Sheet geben, falls möglich</value>
+    <value>Audiodateien denselben Namen wie im Original-CUE-Sheet geben, falls möglich</value>
   </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
     <value>Entferne Sonderzeichen außer:</value>
