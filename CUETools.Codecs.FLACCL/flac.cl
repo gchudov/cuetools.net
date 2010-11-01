@@ -474,13 +474,6 @@ void clEstimateResidual(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-#ifdef AMD
-    float4 cptr0 = vload4(0, &fcoef[0]);
-    float4 cptr1 = vload4(1, &fcoef[0]);
-#if MAX_ORDER > 8
-    float4 cptr2 = vload4(2, &fcoef[0]);
-#endif
-#endif
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
@@ -491,11 +484,10 @@ void clEstimateResidual(
 
 	// compute residual
 	__local float* dptr = &data[tid + GROUP_SIZE - ro];
-#ifdef AMD
-	float4 sum = cptr0 * vload4(0, dptr)
-	    + cptr1 * vload4(1, dptr)
+	float4 sum = vload4(0, &fcoef[0]) * vload4(0, dptr)
+	    + vload4(1, &fcoef[0]) * vload4(1, dptr)
 #if MAX_ORDER > 8
-	    + cptr2 * vload4(2, dptr)
+	    + vload4(2, &fcoef[0]) * vload4(2, dptr)
   #if MAX_ORDER > 12
 	    + vload4(3, &fcoef[0]) * vload4(3, dptr)
     #if MAX_ORDER > 16
@@ -509,25 +501,33 @@ void clEstimateResidual(
 	    ;
 
 	int t = convert_int_rte(nextData + sum.x + sum.y + sum.z + sum.w);
-#else
-	float sum = 
-	    fcoef[0] * dptr[0] + fcoef[1] * dptr[1] + fcoef[2] * dptr[2] + fcoef[3] * dptr[3] + 
-	    fcoef[4] * dptr[4] + fcoef[5] * dptr[5] + fcoef[6] * dptr[6] + fcoef[7] * dptr[7] + 
-	    fcoef[8] * dptr[8] + fcoef[9] * dptr[9] + fcoef[10] * dptr[10] + fcoef[11] * dptr[11] ;
-	int t = convert_int_rte(nextData + sum);
-#endif
 	barrier(CLK_LOCAL_MEM_FENCE);
-	data[tid] = nextData;
 	// ensure we're within frame bounds
 	t = select(0, t, offs >= ro && offs < bs);
 	// overflow protection
 	t = iclamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	//if (offs < bs)
-	    atom_add(&psum[offs >> partOrder], (t << 1) ^ (t >> 31));
+#ifdef AMD
+	data[tid] = nextData;
+	atom_add(&psum[min(63,offs >> partOrder)], (t << 1) ^ (t >> 31));
+#else
+	data[tid] = (t << 1) ^ (t >> 31);
+	barrier(CLK_LOCAL_MEM_FENCE);
+	int ps = (1 << partOrder) - 1;
+	for (int l = 1 << (partOrder - 1); l > 0; l >>= 1)
+	{
+             if ((tid & ps) < l) 
+		data[tid] += data[tid + l];
+	    barrier(CLK_LOCAL_MEM_FENCE);
+	}
+	if ((tid & ps) == 0)
+		psum[min(63,offs >> partOrder)] += data[tid];
+	data[tid] = nextData;
+#endif
     }
 
     // calculate rice partition bit length for every (1 << partOrder) samples
+    barrier(CLK_LOCAL_MEM_FENCE);
     if (tid < 64)
     {
 	int k = iclamp(clz(1 << partOrder) - clz(psum[tid]), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)

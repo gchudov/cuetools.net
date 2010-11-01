@@ -131,8 +131,9 @@ void clFindWastedBits(
     }
 }
 
-#define TEMPBLOCK 64
+#define TEMPBLOCK 128
 
+#if 0
 // get_num_groups(0) == number of tasks
 // get_num_groups(1) == number of windows
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
@@ -173,6 +174,78 @@ void clComputeAutocor(
     for (int i = 0; i <= MAX_ORDER; ++i)
 	pout[i] = ac[i];
 }
+#else
+#define STORE_AC(ro, val) if (ro <= MAX_ORDER) pout[ro] = val;
+#define STORE_AC4(ro, val) STORE_AC(ro*4+0, val##ro.x) STORE_AC(ro*4+1, val##ro.y) STORE_AC(ro*4+2, val##ro.z) STORE_AC(ro*4+3, val##ro.w)
+
+// get_num_groups(0) == number of tasks
+// get_num_groups(1) == number of windows
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clComputeAutocor(
+    __global float *output,
+    __global const int *samples,
+    __global const float *window,
+    __global FLACCLSubframeTask *tasks,
+    const int taskCount // tasks per block
+)
+{
+    FLACCLSubframeData task = tasks[get_group_id(0) * taskCount].data;
+    int len = task.blocksize;
+    int windowOffs = get_group_id(1) * len;
+    float data[TEMPBLOCK + MAX_ORDER + 3];
+    double4 ac0 = 0.0, ac1 = 0.0, ac2 = 0.0, ac3 = 0.0, ac4 = 0.0, ac5 = 0.0, ac6 = 0.0, ac7 = 0.0, ac8 = 0.0;
+    
+    for (int pos = 0; pos < len; pos += TEMPBLOCK)
+    {
+	for (int tid = 0; tid < TEMPBLOCK + MAX_ORDER + 3; tid++)
+	    data[tid] = tid < len - pos ? samples[task.samplesOffs + pos + tid] * window[windowOffs + pos + tid] : 0.0f;
+
+	for (int j = 0; j < TEMPBLOCK;)
+	{
+    	    float4 temp0 = 0.0f, temp1 = 0.0f, temp2 = 0.0f, temp3 = 0.0f, temp4 = 0.0f, temp5 = 0.0f, temp6 = 0.0f, temp7 = 0.0f, temp8 = 0.0f;
+	    for (int k = 0; k < 32; k++)
+	    {
+		float d0 = data[j];
+		temp0 += d0 * vload4(0, &data[j]);
+		temp1 += d0 * vload4(1, &data[j]);
+#if MAX_ORDER >= 8
+		temp2 += d0 * vload4(2, &data[j]);
+#if MAX_ORDER >= 12
+		temp3 += d0 * vload4(3, &data[j]);
+#if MAX_ORDER >= 16
+		temp4 += d0 * vload4(4, &data[j]);
+		temp5 += d0 * vload4(5, &data[j]);
+		temp6 += d0 * vload4(6, &data[j]);
+		temp7 += d0 * vload4(7, &data[j]);
+		temp8 += d0 * vload4(8, &data[j]);
+#endif
+#endif
+#endif
+		j++;
+	    }
+	    ac0 += convert_double4(temp0);
+	    ac1 += convert_double4(temp1);
+    #if MAX_ORDER >= 8
+	    ac2 += convert_double4(temp2);
+    #if MAX_ORDER >= 12
+	    ac3 += convert_double4(temp3);
+    #if MAX_ORDER >= 16
+	    ac4 += convert_double4(temp4);
+	    ac5 += convert_double4(temp5);
+	    ac6 += convert_double4(temp6);
+	    ac7 += convert_double4(temp7);
+	    ac8 += convert_double4(temp8);
+    #endif
+    #endif
+    #endif
+	}
+    }
+    __global float * pout = &output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1)];
+    STORE_AC4(0, ac) STORE_AC4(1, ac) STORE_AC4(2, ac) STORE_AC4(3, ac)
+    STORE_AC4(4, ac) STORE_AC4(5, ac) STORE_AC4(6, ac) STORE_AC4(7, ac)
+    STORE_AC4(8, ac)
+}
+#endif
 
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clComputeLPC(
