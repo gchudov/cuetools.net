@@ -474,6 +474,13 @@ void clEstimateResidual(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
+#ifdef AMD
+    float4 fc0 = vload4(0, &fcoef[0]);
+    float4 fc1 = vload4(1, &fcoef[0]);
+#if MAX_ORDER > 8
+    float4 fc2 = vload4(2, &fcoef[0]);
+#endif
+#endif
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
@@ -484,10 +491,20 @@ void clEstimateResidual(
 
 	// compute residual
 	__local float* dptr = &data[tid + GROUP_SIZE - ro];
-	float4 sum = vload4(0, &fcoef[0]) * vload4(0, dptr)
+	float4 sum 
+#ifdef AMD
+	    = fc0 * vload4(0, dptr)
+	    + fc1 * vload4(1, dptr)
+#else
+	    = vload4(0, &fcoef[0]) * vload4(0, dptr)
 	    + vload4(1, &fcoef[0]) * vload4(1, dptr)
+#endif
 #if MAX_ORDER > 8
+#ifdef AMD
+	    + fc2 * vload4(2, dptr)
+#else
 	    + vload4(2, &fcoef[0]) * vload4(2, dptr)
+#endif
   #if MAX_ORDER > 12
 	    + vload4(3, &fcoef[0]) * vload4(3, dptr)
     #if MAX_ORDER > 16
@@ -502,15 +519,20 @@ void clEstimateResidual(
 
 	int t = convert_int_rte(nextData + sum.x + sum.y + sum.z + sum.w);
 	barrier(CLK_LOCAL_MEM_FENCE);
+#ifdef AMD
+	data[tid] = nextData;
 	// ensure we're within frame bounds
 	t = select(0, t, offs >= ro && offs < bs);
 	// overflow protection
 	t = iclamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-#ifdef AMD
-	data[tid] = nextData;
 	atom_add(&psum[min(63,offs >> partOrder)], (t << 1) ^ (t >> 31));
 #else
+	// ensure we're within frame bounds
+	t = select(0, t, offs >= ro && offs < bs);
+	// overflow protection
+	t = iclamp(t, -0x7fffff, 0x7fffff);
+	// convert to unsigned
 	data[tid] = (t << 1) ^ (t >> 31);
 	barrier(CLK_LOCAL_MEM_FENCE);
 	int ps = (1 << partOrder) - 1;
