@@ -52,7 +52,8 @@ typedef struct
     int wbits;
     int abits;
     int porder;
-    int reserved[2];
+    int ignore;
+    int reserved;
 } FLACCLSubframeData;
 
 typedef struct
@@ -62,34 +63,60 @@ typedef struct
 } FLACCLSubframeTask;
 
 __kernel void clStereoDecorr(
-    __global int *samples,
-    __global short2 *src,
+    __global int4 *samples,
+    __global int4 *src,
     int offset
 )
 {
     int pos = get_global_id(0);
     if (pos < offset)
     {
-	short2 s = src[pos];
-	samples[pos] = s.x;
-	samples[1 * offset + pos] = s.y;
-	samples[2 * offset + pos] = (s.x + s.y) >> 1;
-	samples[3 * offset + pos] = s.x - s.y;
+	int4 s = src[pos];
+	int4 x = (s << 16) >> 16;
+	int4 y = s >> 16;
+	samples[pos] = x;
+	samples[1 * offset + pos] = y;
+	samples[2 * offset + pos] = (x + y) >> 1;
+	samples[3 * offset + pos] = x - y;
     }
 }
 
+__kernel void clWindowRectangle(__global float* window, int windowOffset)
+{
+    window[get_global_id(0)] = 1.0f;
+}
+
+__kernel void clWindowFlattop(__global float* window, int windowOffset)
+{
+    float p = M_PI * get_global_id(0) / (get_global_size(0) - 1);
+    window[get_global_id(0)] = 1.0f 
+	- 1.93f * cos(2 * p)
+	+ 1.29f * cos(4 * p) 
+	- 0.388f * cos(6 * p) 
+	+ 0.0322f * cos(8 * p);
+}
+
+__kernel void clWindowTukey(__global float* window, int windowOffset, float p)
+{
+    int Np = (int)(p / 2.0f * get_global_size(0)) - 1;
+    int n = select(max(Np, get_global_id(0) - (get_global_size(0) - Np - 1) + Np), get_global_id(0), get_global_id(0) <= Np);
+    window[get_global_id(0)] = 0.5f - 0.5f * cos(M_PI * n / Np);
+}
+
 __kernel void clChannelDecorr2(
-    __global int *samples,
-    __global short2 *src,
+    __global int4 *samples,
+    __global int4 *src,
     int offset
 )
 {
     int pos = get_global_id(0);
     if (pos < offset)
     {
-	short2 s = src[pos];
-	samples[pos] = s.x;
-	samples[1 * offset + pos] = s.y;
+	int4 s = src[pos];
+	int4 x = (s << 16) >> 16;
+	int4 y = s >> 16;
+	samples[pos] = x;
+	samples[1 * offset + pos] = y;
     }
 }
 
@@ -128,6 +155,8 @@ void clFindWastedBits(
     {
 	ptask[i].data.wbits = w;
 	ptask[i].data.abits = a;
+	ptask[i].data.ignore = 0;//i != 0;
+	ptask[i].data.size = ptask[i].data.obits * ptask[i].data.blocksize;
     }
 }
 
@@ -413,6 +442,20 @@ inline int calc_residual(__global int *ptr, int * coefs, int ro)
 	default: ENCODE_N(ro, action) \
     }
 
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clSelectStereoTasks(
+    __global FLACCLSubframeTask *tasks,
+    int count
+    )
+{
+    for (int i = 0; i < count; i++)
+    {
+	__global FLACCLSubframeTask* ptask = tasks + count * get_group_id(0) + i;
+	ptask->data.ignore = i != 0;
+	ptask->data.size = ptask->data.obits * ptask->data.blocksize;
+    }
+}
+
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEstimateResidual(
     __global int*samples,
@@ -424,6 +467,12 @@ void clEstimateResidual(
     int bs = task.data.blocksize;
 #define EPO 6
     int len[1 << EPO]; // blocksize / 64!!!!
+
+    if (task.data.ignore)
+    {
+	tasks[get_group_id(0)].data.size = task.data.obits * bs;
+	return;
+    }
 
     __global int *data = &samples[task.data.samplesOffs];
  //   for (int i = ro; i < 32; i++)
@@ -579,13 +628,15 @@ void clCalcPartition16(
     int max_porder // <= 8
     )
 {
-    FLACCLSubframeTask task = tasks[get_group_id(0)];
+    FLACCLSubframeTask task = tasks[get_global_id(0)];
     int bs = task.data.blocksize;
     int ro = task.data.residualOrder;
     __global int *data = &samples[task.data.samplesOffs];
-    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(0);
+    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_global_id(0);
     for (int p = 0; p < (1 << max_porder); p++)
 	pl[p] = 0;
+    //__global int *rptr = residual + task.data.residualOffs;
+    //SWITCH_N((rptr[pos] = t, pl[pos >> 4] += (t << 1) ^ (t >> 31)));
     SWITCH_N((residual[task.data.residualOffs + pos] = t, t = clamp(t, -0x7fffff, 0x7fffff), t = (t << 1) ^ (t >> 31), pl[pos >> 4] += t));
 }
 

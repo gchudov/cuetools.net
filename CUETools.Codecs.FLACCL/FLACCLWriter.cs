@@ -2217,6 +2217,7 @@ namespace CUETools.Codecs.FLACCL
 		public Kernel clComputeLPC;
 		//public Kernel cudaComputeLPCLattice;
 		public Kernel clQuantizeLPC;
+        public Kernel clSelectStereoTasks;
 		public Kernel clEstimateResidual;
 		public Kernel clChooseBestMethod;
 		public Kernel clCopyBestMethod;
@@ -2372,6 +2373,7 @@ namespace CUETools.Codecs.FLACCL
 			clComputeLPC = openCLProgram.CreateKernel("clComputeLPC");
 			clQuantizeLPC = openCLProgram.CreateKernel("clQuantizeLPC");
 			//cudaComputeLPCLattice = openCLProgram.CreateKernel("clComputeLPCLattice");
+            clSelectStereoTasks = openCLProgram.CreateKernel("clSelectStereoTasks");
 			clEstimateResidual = openCLProgram.CreateKernel("clEstimateResidual");
 			clChooseBestMethod = openCLProgram.CreateKernel("clChooseBestMethod");
 			clCopyBestMethod = openCLProgram.CreateKernel("clCopyBestMethod");
@@ -2421,6 +2423,7 @@ namespace CUETools.Codecs.FLACCL
 			clComputeLPC.Dispose();
 			clQuantizeLPC.Dispose();
 			//cudaComputeLPCLattice.Dispose();
+            clSelectStereoTasks.Dispose();
 			clEstimateResidual.Dispose();
 			clChooseBestMethod.Dispose();
 			clCopyBestMethod.Dispose();
@@ -2524,9 +2527,9 @@ namespace CUETools.Codecs.FLACCL
 			clChannelDecorr.SetArgs(
 				clSamples,
 				clSamplesBytes,
-				FLACCLWriter.MAX_BLOCKSIZE);
+				FLACCLWriter.MAX_BLOCKSIZE/4);
 
-            openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, frameSize * frameCount);
+            openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, frameSize * frameCount / 4);
 
             if (eparams.do_wasted)
 			{
@@ -2723,7 +2726,6 @@ namespace CUETools.Codecs.FLACCL
         }
 	}
 
-#if HJHKHJ
     public static class OpenCLExtensions
     {
         public static void SetArgs(this Kernel kernel, params object[] args)
@@ -2754,5 +2756,4 @@ namespace CUETools.Codecs.FLACCL
             queue.EnqueueNDRangeKernel(kernel, 2, null, new long[] { localSizeX * globalSizeX, localSizeY * globalSizeY }, new long[] { localSizeX, localSizeY });
         }
     }
-#endif
 }
