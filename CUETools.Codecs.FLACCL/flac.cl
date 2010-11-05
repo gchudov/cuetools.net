@@ -20,12 +20,14 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
-#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__)
+#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__) || defined(__CPU__)
 #define AMD
 #ifdef DEBUG
 #pragma OPENCL EXTENSION cl_amd_printf : enable
 #endif
-//#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#ifdef __CPU__
+#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
 #define iclamp(a,b,c) clamp(a,b,c)
 #else
 #define iclamp(a,b,c) max(b,min(a,c))
@@ -58,7 +60,8 @@ typedef struct
     int wbits;
     int abits;
     int porder;
-    int reserved[2];
+    int ignore;
+    int reserved;
 } FLACCLSubframeData;
 
 typedef struct
@@ -67,36 +70,54 @@ typedef struct
     int coefs[32]; // fixme: should be short?
 } FLACCLSubframeTask;
 
+__kernel void clWindowRectangle(__global float* window, int windowOffset)
+{
+    window[get_global_id(0)] = 1.0f;
+}
+
+__kernel void clWindowFlattop(__global float* window, int windowOffset)
+{
+    float p = M_PI_F * get_global_id(0) / (get_global_size(0) - 1);
+    window[get_global_id(0)] = 1.0f 
+	- 1.93f * cos(2 * p)
+	+ 1.29f * cos(4 * p) 
+	- 0.388f * cos(6 * p) 
+	+ 0.0322f * cos(8 * p);
+}
+
+__kernel void clWindowTukey(__global float* window, int windowOffset, float p)
+{
+    int Np = (int)(p / 2.0f * get_global_size(0)) - 1;
+    int n = select(max(Np, get_global_id(0) - (get_global_size(0) - Np - 1) + Np), get_global_id(0), get_global_id(0) <= Np);
+    window[get_global_id(0)] = 0.5f - 0.5f * cos(M_PI_F * n / Np);
+}
+
 __kernel void clStereoDecorr(
-    __global int *samples,
-    __global short2 *src,
+    __global int4 *samples,
+    __global int4 *src,
     int offset
 )
 {
     int pos = get_global_id(0);
-    if (pos < offset)
-    {
-	short2 s = src[pos];
-	samples[pos] = s.x;
-	samples[1 * offset + pos] = s.y;
-	samples[2 * offset + pos] = (s.x + s.y) >> 1;
-	samples[3 * offset + pos] = s.x - s.y;
-    }
+    int4 s = src[pos];
+    int4 x = (s << 16) >> 16;
+    int4 y = s >> 16;
+    samples[pos] = x;
+    samples[1 * offset + pos] = y;
+    samples[2 * offset + pos] = (x + y) >> 1;
+    samples[3 * offset + pos] = x - y;
 }
 
 __kernel void clChannelDecorr2(
-    __global int *samples,
-    __global short2 *src,
+    __global int4 *samples,
+    __global int4 *src,
     int offset
 )
 {
     int pos = get_global_id(0);
-    if (pos < offset)
-    {
-	short2 s = src[pos];
-	samples[pos] = s.x;
-	samples[1 * offset + pos] = s.y;
-    }
+    int4 s = src[pos];
+    samples[pos] = (s << 16) >> 16;
+    samples[offset + pos] = s >> 16;
 }
 
 //__kernel void clChannelDecorr(
@@ -113,6 +134,32 @@ __kernel void clChannelDecorr2(
 #define __ffs(a) (32 - clz(a & (-a)))
 //#define __ffs(a) (33 - clz(~a & (a - 1)))
 
+#ifdef __CPU__
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clFindWastedBits(
+    __global FLACCLSubframeTask *tasks,
+    __global int *samples,
+    int tasksPerChannel
+)
+{
+    __global FLACCLSubframeTask* ptask = &tasks[get_group_id(0) * tasksPerChannel];
+    int w = 0, a = 0;
+    for (int pos = 0; pos < ptask->data.blocksize; pos ++)
+    {
+	int smp = samples[ptask->data.samplesOffs + pos];
+	w |= smp;
+	a |= smp ^ (smp >> 31);
+    }    
+    w = max(0,__ffs(w) - 1);
+    a = 32 - clz(a) - w;
+    for (int i = 0; i < tasksPerChannel; i++)
+    {
+	ptask[i].data.wbits = w;
+	ptask[i].data.abits = a;
+	//ptask[i].data.size = ptask[i].data.obits * ptask[i].data.blocksize;
+    }
+}
+#else
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clFindWastedBits(
     __global FLACCLSubframeTask *tasks,
@@ -154,11 +201,88 @@ void clFindWastedBits(
     w = max(0,__ffs(wbits[0]) - 1);
     a = 32 - clz(abits[0]) - w;
     if (tid < tasksPerChannel)
-	tasks[get_group_id(0) * tasksPerChannel + tid].data.wbits = w;
-    if (tid < tasksPerChannel)
-	tasks[get_group_id(0) * tasksPerChannel + tid].data.abits = a;
+    {
+	int i = get_group_id(0) * tasksPerChannel + tid;
+	tasks[i].data.wbits = w;
+	tasks[i].data.abits = a;
+	//tasks[i].data.size = tasks[i].data.obits * tasks[i].data.blocksize;
+    }
 }
+#endif
 
+#ifdef __CPU__
+#define TEMPBLOCK 128
+#define STORE_AC(ro, val) if (ro <= MAX_ORDER) pout[ro] = val;
+#define STORE_AC4(ro, val) STORE_AC(ro*4+0, val##ro.x) STORE_AC(ro*4+1, val##ro.y) STORE_AC(ro*4+2, val##ro.z) STORE_AC(ro*4+3, val##ro.w)
+
+// get_num_groups(0) == number of tasks
+// get_num_groups(1) == number of windows
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clComputeAutocor(
+    __global float *output,
+    __global const int *samples,
+    __global const float *window,
+    __global FLACCLSubframeTask *tasks,
+    const int taskCount // tasks per block
+)
+{
+    FLACCLSubframeData task = tasks[get_group_id(0) * taskCount].data;
+    int len = task.blocksize;
+    int windowOffs = get_group_id(1) * len;
+    float data[TEMPBLOCK + MAX_ORDER + 3];
+    double4 ac0 = 0.0, ac1 = 0.0, ac2 = 0.0, ac3 = 0.0, ac4 = 0.0, ac5 = 0.0, ac6 = 0.0, ac7 = 0.0, ac8 = 0.0;
+    
+    for (int pos = 0; pos < len; pos += TEMPBLOCK)
+    {
+	for (int tid = 0; tid < TEMPBLOCK + MAX_ORDER + 3; tid++)
+	    data[tid] = tid < len - pos ? samples[task.samplesOffs + pos + tid] * window[windowOffs + pos + tid] : 0.0f;
+
+	for (int j = 0; j < TEMPBLOCK;)
+	{
+    	    float4 temp0 = 0.0f, temp1 = 0.0f, temp2 = 0.0f, temp3 = 0.0f, temp4 = 0.0f, temp5 = 0.0f, temp6 = 0.0f, temp7 = 0.0f, temp8 = 0.0f;
+	    for (int k = 0; k < 32; k++)
+	    {
+		float d0 = data[j];
+		temp0 += d0 * vload4(0, &data[j]);
+		temp1 += d0 * vload4(1, &data[j]);
+#if MAX_ORDER >= 8
+		temp2 += d0 * vload4(2, &data[j]);
+#if MAX_ORDER >= 12
+		temp3 += d0 * vload4(3, &data[j]);
+#if MAX_ORDER >= 16
+		temp4 += d0 * vload4(4, &data[j]);
+		temp5 += d0 * vload4(5, &data[j]);
+		temp6 += d0 * vload4(6, &data[j]);
+		temp7 += d0 * vload4(7, &data[j]);
+		temp8 += d0 * vload4(8, &data[j]);
+#endif
+#endif
+#endif
+		j++;
+	    }
+	    ac0 += convert_double4(temp0);
+	    ac1 += convert_double4(temp1);
+    #if MAX_ORDER >= 8
+	    ac2 += convert_double4(temp2);
+    #if MAX_ORDER >= 12
+	    ac3 += convert_double4(temp3);
+    #if MAX_ORDER >= 16
+	    ac4 += convert_double4(temp4);
+	    ac5 += convert_double4(temp5);
+	    ac6 += convert_double4(temp6);
+	    ac7 += convert_double4(temp7);
+	    ac8 += convert_double4(temp8);
+    #endif
+    #endif
+    #endif
+	}
+    }
+    __global float * pout = &output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1)];
+    STORE_AC4(0, ac) STORE_AC4(1, ac) STORE_AC4(2, ac) STORE_AC4(3, ac)
+    STORE_AC4(4, ac) STORE_AC4(5, ac) STORE_AC4(6, ac) STORE_AC4(7, ac)
+    STORE_AC4(8, ac)
+}
+#else
 // get_num_groups(0) == number of tasks
 // get_num_groups(1) == number of windows
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
@@ -181,7 +305,16 @@ void clComputeAutocor(
     int bs = task.blocksize;
     int windowOffs = get_group_id(1) * bs;
 
-    data[tid] = tid < bs ? samples[task.samplesOffs + tid] * window[windowOffs + tid] : 0.0f;
+ //   if (tid < GROUP_SIZE / 4)
+ //   {
+	//float4 dd = 0.0f;
+	//if (tid * 4 < bs)
+	//    dd = vload4(tid, window + windowOffs) * convert_float4(vload4(tid, samples + task.samplesOffs));
+	//vstore4(dd, tid, &data[0]);
+ //   }
+    data[tid] = 0.0f;
+    // This simpler code doesn't work somehow!!!
+    //data[tid] = tid < bs ? samples[task.samplesOffs + tid] * window[windowOffs + tid] : 0.0f;
 
     const int THREADS_FOR_ORDERS = MAX_ORDER < 8 ? 8 : MAX_ORDER < 16 ? 16 : MAX_ORDER < 32 ? 32 : 64;
     float corr = 0.0f;
@@ -189,24 +322,24 @@ void clComputeAutocor(
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
-	float nextData = pos + tid + GROUP_SIZE < bs ? samples[task.samplesOffs + pos + tid + GROUP_SIZE] * window[windowOffs + pos + tid + GROUP_SIZE] : 0.0f;
+	float nextData = pos + tid < bs ? samples[task.samplesOffs + pos + tid] * window[windowOffs + pos + tid] : 0.0f;
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-#ifdef XXXAMD
-	__local float * dptr = &data[tid & ~(THREADS_FOR_ORDERS - 1)];
+	int lag = tid & (THREADS_FOR_ORDERS - 1);
+	int tid1 = tid + GROUP_SIZE - lag;
+#ifdef AMD
 	float4 res = 0.0f;
 	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
-	    res += vload4(i, dptr) * vload4(i, &data[tid]);
+	    res += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
 	corr += res.x + res.y + res.w + res.z;
 #else
-	int tid1 = tid & ~(THREADS_FOR_ORDERS - 1);
 	float res = 0.0f;
 	for (int i = 0; i < THREADS_FOR_ORDERS; i++)
-	    res += data[tid1 + i] * data[tid + i];
+	    res += data[tid1 - lag + i] * data[tid1 + i];
 	corr += res;
 #endif
-	if (THREADS_FOR_ORDERS > 8 && (pos & (GROUP_SIZE * 7)) == 0)
+	if ((pos & (GROUP_SIZE * 15)) == 0)
 	{
 	    corr1 += corr;
 	    corr = 0.0f;
@@ -228,7 +361,68 @@ void clComputeAutocor(
     if (tid <= MAX_ORDER)
 	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + tid] = data[tid];
 }
+#endif
 
+#ifdef __CPU__
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clComputeLPC(
+    __global float *pautoc,
+    __global float *lpcs,
+    int windowCount
+)
+{
+    int lpcOffs = (get_group_id(0) + get_group_id(1) * windowCount) * (MAX_ORDER + 1) * 32;
+    int autocOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1);
+    volatile double ldr[32];
+    volatile double gen0[32];
+    volatile double gen1[32];
+    volatile double err[32];
+    __global float* autoc = pautoc + autocOffs;
+    
+    for (int i = 0; i < MAX_ORDER; i++)
+    {
+	gen0[i] = gen1[i] = autoc[i + 1];
+	ldr[i] = 0.0;
+    }
+
+    // Compute LPC using Schur and Levinson-Durbin recursion
+    double error = autoc[0];
+    for (int order = 0; order < MAX_ORDER; order++)
+    {
+	// Schur recursion
+	double reff = -gen1[0] / error;
+	//error += gen1[0] * reff; // Equivalent to error *= (1 - reff * reff);
+	error *= (1 - reff * reff);
+	
+	for (int j = 0; j < MAX_ORDER - 1 - order; j++)
+	{
+	    gen1[j] = gen1[j + 1] + reff * gen0[j];
+	    gen0[j] = gen1[j + 1] * reff + gen0[j];
+	}
+
+	err[order] = error;
+
+	// Levinson-Durbin recursion
+
+	ldr[order] = reff;
+	for (int j = 0; j < order / 2; j++)
+	{
+	    double tmp = ldr[j];
+	    ldr[j] += reff * ldr[order - 1 - j];
+	    ldr[order - 1 - j] += reff * tmp;
+	}
+	if (0 != (order & 1))
+	    ldr[order / 2] += ldr[order / 2] * reff;
+	
+	// Output coeffs
+	for (int j = 0; j <= order; j++)
+	    lpcs[lpcOffs + order * 32 + j] = -ldr[order - j];
+    }
+    // Output prediction error estimates
+    for (int j = 0; j < MAX_ORDER; j++)
+	lpcs[lpcOffs + MAX_ORDER * 32 + j] = err[j];
+}
+#else
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
 void clComputeLPC(
     __global float *autoc,
@@ -311,7 +505,85 @@ void clComputeLPC(
     if (get_local_id(0) < MAX_ORDER)
 	lpcs[lpcOffs + MAX_ORDER * 32 + get_local_id(0)] = shared.error[get_local_id(0)];
 }
+#endif
 
+#ifdef __CPU__
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clQuantizeLPC(
+    __global FLACCLSubframeTask *tasks,
+    __global float*lpcs,
+    int taskCount, // tasks per block
+    int taskCountLPC, // tasks per set of coeffs (<= 32)
+    int minprecision,
+    int precisions
+)
+{
+    int bs = tasks[get_group_id(1) * taskCount].data.blocksize;
+    int abits = tasks[get_group_id(1) * taskCount].data.abits;
+    int lpcOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1) * 32;
+    float error[MAX_ORDER];
+    int best_orders[MAX_ORDER];
+
+    // Load prediction error estimates based on Akaike's Criteria
+    for (int tid = 0; tid < MAX_ORDER; tid++)
+    {
+	error[tid] = bs * log(lpcs[lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log(bs);
+	best_orders[tid] = tid;
+    }
+    
+    // Select best orders 
+    for (int i = 0; i < MAX_ORDER && i < taskCountLPC; i++)
+    {
+	for (int j = i + 1; j < MAX_ORDER; j++)
+	{
+	    if (error[best_orders[j]] < error[best_orders[i]])
+	    {
+		int tmp = best_orders[j];
+		best_orders[j] = best_orders[i];
+		best_orders[i] = tmp;
+	    }
+	}				
+    }
+
+    // Quantization
+    for (int i = 0; i < taskCountLPC; i ++)
+    {
+	int order = best_orders[i >> precisions];
+	int tmpi = 0;
+	for (int tid = 0; tid <= order; tid ++)
+	{
+	    float lpc = lpcs[lpcOffs + order * 32 + tid];
+	    // get 15 bits of each coeff
+	    int c = convert_int_rte(lpc * (1 << 15));
+	    // remove sign bits
+	    tmpi |= c ^ (c >> 31);
+	}
+	// choose precision	
+	//int cbits = max(3, min(10, 5 + (abits >> 1))); //  - convert_int_rte(shared.PE[order - 1])
+	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (bs <= 2304) - (bs <= 1152) - (bs <= 576), abits), clz(order) + 1 - abits));
+	// calculate shift based on precision and number of leading zeroes in coeffs
+	int shift = max(0,min(15, clz(tmpi) - 18 + cbits));
+
+	int taskNo = get_group_id(1) * taskCount + get_group_id(0) * taskCountLPC + i;
+	tmpi = 0;
+	for (int tid = 0; tid <= order; tid ++)
+	{
+	    float lpc = lpcs[lpcOffs + order * 32 + tid];
+	    // quantize coeffs with given shift
+	    int c = convert_int_rte(clamp(lpc * (1 << shift), -1 << (cbits - 1), 1 << (cbits - 1)));
+	    // remove sign bits
+	    tmpi |= c ^ (c >> 31);
+	    tasks[taskNo].coefs[tid] = c;
+	}
+	// calculate actual number of bits (+1 for sign)
+	cbits = 1 + 32 - clz(tmpi);
+	// output shift, cbits, ro
+	tasks[taskNo].data.shift = shift;
+	tasks[taskNo].data.cbits = cbits;
+	tasks[taskNo].data.residualOrder = order + 1;
+    }
+}
+#else
 __kernel __attribute__((reqd_work_group_size(32, 1, 1)))
 void clQuantizeLPC(
     __global FLACCLSubframeTask *tasks,
@@ -443,10 +715,82 @@ void clQuantizeLPC(
 	    tasks[taskNo].coefs[tid] = coef;
     }
 }
+#endif
 
+#ifdef __CPU__
+inline int calc_residual(__global int *ptr, int * coefs, int ro)
+{
+    int sum = 0;
+    for (int i = 0; i < ro; i++)
+	sum += ptr[i] * coefs[i];
+    return sum;
+}
+
+#define ENCODE_N(cro,action) for (int pos = cro; pos < bs; pos ++) { \
+	int t = (data[pos] - (calc_residual(data + pos - cro, task.coefs, cro) >> task.data.shift)) >> task.data.wbits; \
+	action; \
+    }
+#define SWITCH_N(action) \
+    switch (ro) \
+    { \
+	case 0: ENCODE_N(0, action) break; \
+	case 1: ENCODE_N(1, action) break; \
+	case 2: ENCODE_N(2, action) /*if (task.coefs[0] == -1 && task.coefs[1] == 2) ENCODE_N(2, 2 * ptr[1] - ptr[0], action) else*/  break; \
+	case 3: ENCODE_N(3, action) break; \
+	case 4: ENCODE_N(4, action) break; \
+	case 5: ENCODE_N(5, action) break; \
+	case 6: ENCODE_N(6, action) break; \
+	case 7: ENCODE_N(7, action) break; \
+	case 8: ENCODE_N(8, action) break; \
+	case 9: ENCODE_N(9, action) break; \
+	case 10: ENCODE_N(10, action) break; \
+	case 11: ENCODE_N(11, action) break; \
+	case 12: ENCODE_N(12, action) break; \
+	default: ENCODE_N(ro, action) \
+    }
+
+__kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(1, 1, 1)))
+void clEstimateResidual(
+    __global int*samples,
+    __global int*selectedTasks,
+    __global FLACCLSubframeTask *tasks
+    )
+{
+    int selectedTask = selectedTasks[get_group_id(0)];
+    FLACCLSubframeTask task = tasks[selectedTask];
+    int ro = task.data.residualOrder;
+    int bs = task.data.blocksize;
+#define EPO 6
+    int len[1 << EPO]; // blocksize / 64!!!!
+
+    __global int *data = &samples[task.data.samplesOffs];
+ //   for (int i = ro; i < 32; i++)
+	//task.coefs[i] = 0;
+    for (int i = 0; i < 1 << EPO; i++)
+	len[i] = 0;
+
+    SWITCH_N((t = clamp(t, -0x7fffff, 0x7fffff), len[pos >> (12 - EPO)] += (t << 1) ^ (t >> 31)))
+
+    int total = 0;
+    for (int i = 0; i < 1 << EPO; i++)
+    {
+	int res = min(0x7fffff,len[i]);
+	int k = clamp(clz(1 << (12 - EPO)) - clz(res), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
+	total += (k << (12 - EPO)) + (res >> k);
+    }
+    int partLen = min(0x7ffffff, total) + (bs - ro);
+    int obits = task.data.obits - task.data.wbits;
+    tasks[selectedTask].data.size = min(obits * bs,
+	task.data.type == Fixed ? ro * obits + 6 + (4 * 1/2) + partLen :
+	task.data.type == LPC ? ro * obits + 4 + 5 + ro * task.data.cbits + 6 + (4 * 1/2)/* << porder */ + partLen :
+	task.data.type == Constant ? obits * select(1, bs, partLen != bs - ro) :
+	obits * bs);
+}
+#else
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clEstimateResidual(
     __global int*samples,
+    __global int*selectedTasks,
     __global FLACCLSubframeTask *tasks
     )
 {
@@ -454,11 +798,16 @@ void clEstimateResidual(
     __local FLACCLSubframeTask task;
     __local int psum[64];
     __local float fcoef[32];
+    __local int selectedTask;
+    
+    if (get_local_id(0) == 0)
+	selectedTask = selectedTasks[get_group_id(0)];
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task)/sizeof(int))
-	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
-    barrier(CLK_GLOBAL_MEM_FENCE);
+	((__local int*)&task)[tid] = ((__global int*)(&tasks[selectedTask]))[tid];
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     int ro = task.data.residualOrder;
     int bs = task.data.blocksize;
@@ -571,106 +920,101 @@ void clEstimateResidual(
 		task.data.type == LPC ? task.data.residualOrder * obits + 4 + 5 + task.data.residualOrder * task.data.cbits + 6 + (4 * 1/2)/* << porder */ + pl :
 		task.data.type == Constant ? obits * select(1, task.data.blocksize, pl != task.data.blocksize - task.data.residualOrder) : 
 		obits * task.data.blocksize);
-	tasks[get_group_id(0)].data.size = len;
+	tasks[selectedTask].data.size = len;
+    }
+}
+#endif
+
+__kernel
+void clSelectStereoTasks(
+    __global FLACCLSubframeTask *tasks,
+    __global int*selectedTasks,
+    __global int*selectedTasksSecondEstimate,
+    __global int*selectedTasksBestMethod,
+    int taskCount,
+    int selectedCount
+    )
+{
+    int best_size[4];
+    for (int ch = 0; ch < 4; ch++)
+    {
+	int first_no = selectedTasks[(get_global_id(0) * 4 + ch) * selectedCount];
+	int best_len = tasks[first_no].data.size;
+	for (int i = 1; i < selectedCount; i++)
+	{
+	    int task_no = selectedTasks[(get_global_id(0) * 4 + ch) * selectedCount + i];
+	    int task_len = tasks[task_no].data.size;
+	    best_len = min(task_len, best_len);
+	}
+	best_size[ch] = best_len;
+    }
+        
+    int bitsBest = best_size[2] + best_size[3]; // MidSide
+    int chMask = 2 | (3 << 2);
+    int bits = best_size[3] + best_size[1];
+    chMask = select(chMask, 3 | (1 << 2), bits < bitsBest); // RightSide
+    bitsBest = min(bits, bitsBest);
+    bits = best_size[0] + best_size[3];
+    chMask = select(chMask, 0 | (3 << 2), bits < bitsBest); // LeftSide
+    bitsBest = min(bits, bitsBest);
+    bits = best_size[0] + best_size[1];
+    chMask = select(chMask, 0 | (1 << 2), bits < bitsBest); // LeftRight
+    bitsBest = min(bits, bitsBest);
+    for (int ich = 0; ich < 2; ich++)
+    {
+	int ch = select(chMask & 3, chMask >> 2, ich > 0);
+	int roffs = tasks[(get_global_id(0) * 4 + ich) * taskCount].data.samplesOffs;
+	int nonSelectedNo = 0;
+	for (int i = 0; i < taskCount; i++)
+	{
+	    int no = (get_global_id(0) * 4 + ch) * taskCount + i;
+	    selectedTasksBestMethod[(get_global_id(0) * 2 + ich) * taskCount + i] = no;
+	    tasks[no].data.residualOffs = roffs;
+	    int selectedFound = 0;
+	    for(int selectedNo = 0; selectedNo < selectedCount; selectedNo++)
+		selectedFound |= (selectedTasks[(get_global_id(0) * 4 + ch) * selectedCount + selectedNo] == no);
+	    if (!selectedFound)
+		selectedTasksSecondEstimate[(get_global_id(0) * 2 + ich) * (taskCount - selectedCount) + nonSelectedNo++] = no;
+	}
     }
 }
 
-__kernel __attribute__((reqd_work_group_size(32, 1, 1)))
+__kernel
 void clChooseBestMethod(
+    __global FLACCLSubframeTask *tasks_out,
     __global FLACCLSubframeTask *tasks,
+    __global int*selectedTasks,
     int taskCount
     )
 {
-    int best_length = 0x7fffffff;
-    int best_index = 0;
-    const int tid = get_local_id(0);
-    
-    for (int taskNo = 0; taskNo < taskCount; taskNo++)
+    int best_no = selectedTasks[get_global_id(0) * taskCount];
+    int best_len = tasks[best_no].data.size;
+    for (int i = 1; i < taskCount; i++)
     {
-	if (tid == 0)
-	{
-	    int len = tasks[taskNo + taskCount * get_group_id(0)].data.size;
-	    if (len < best_length)
-	    {
-		best_length = len;
-		best_index = taskNo;
-	    }
-	}
-	barrier(CLK_LOCAL_MEM_FENCE);
+	int task_no = selectedTasks[get_global_id(0) * taskCount + i];
+	int task_len = tasks[task_no].data.size;
+	best_no = select(best_no, task_no, task_len < best_len);
+	best_len = min(best_len, task_len);
     }
-
-    if (tid == 0)
-	tasks[taskCount * get_group_id(0)].data.best_index = taskCount * get_group_id(0) + best_index;
+    tasks_out[get_global_id(0)] = tasks[best_no];
 }
 
-__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void clCopyBestMethod(
-    __global FLACCLSubframeTask *tasks_out,
-    __global FLACCLSubframeTask *tasks,
-    int count
+#ifdef __CPU__
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clEncodeResidual(
+    __global int *residual,
+    __global int *samples,
+    __global FLACCLSubframeTask *tasks
     )
 {
-    __local int best_index;
-    if (get_local_id(0) == 0)
-	best_index = tasks[count * get_group_id(0)].data.best_index;
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (get_local_id(0) < sizeof(FLACCLSubframeTask)/sizeof(int))
-	((__global int*)(tasks_out + get_group_id(0)))[get_local_id(0)] = ((__global int*)(tasks + best_index))[get_local_id(0)];
+    FLACCLSubframeTask task = tasks[get_group_id(0)];
+    int bs = task.data.blocksize;
+    int ro = task.data.residualOrder;
+    __global int *data = &samples[task.data.samplesOffs];
+    SWITCH_N(residual[task.data.residualOffs + pos] = t);
 }
-
-__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void clCopyBestMethodStereo(
-    __global FLACCLSubframeTask *tasks_out,
-    __global FLACCLSubframeTask *tasks,
-    int count
-    )
-{
-    __local struct {
-	int best_index[4];
-	int best_size[4];
-	int lr_index[2];
-    } shared;
-    if (get_local_id(0) < 4)
-	shared.best_index[get_local_id(0)] = tasks[count * (get_group_id(0) * 4 + get_local_id(0))].data.best_index;
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (get_local_id(0) < 4)
-	shared.best_size[get_local_id(0)] = tasks[shared.best_index[get_local_id(0)]].data.size;
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (get_local_id(0) == 0)
-    {
-	int bitsBest = shared.best_size[2] + shared.best_size[3]; // MidSide
-	shared.lr_index[0] = shared.best_index[2];
-	shared.lr_index[1] = shared.best_index[3];
-	if (bitsBest > shared.best_size[3] + shared.best_size[1]) // RightSide
-	{
-	    bitsBest = shared.best_size[3] + shared.best_size[1];
-	    shared.lr_index[0] = shared.best_index[3];
-	    shared.lr_index[1] = shared.best_index[1];
-	}
-	if (bitsBest > shared.best_size[0] + shared.best_size[3]) // LeftSide
-	{
-	    bitsBest = shared.best_size[0] + shared.best_size[3];
-	    shared.lr_index[0] = shared.best_index[0];
-	    shared.lr_index[1] = shared.best_index[3];
-	}
-	if (bitsBest > shared.best_size[0] + shared.best_size[1]) // LeftRight
-	{
-	    bitsBest = shared.best_size[0] + shared.best_size[1];
-	    shared.lr_index[0] = shared.best_index[0];
-	    shared.lr_index[1] = shared.best_index[1];
-	}
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-    if (get_local_id(0) < sizeof(FLACCLSubframeTask)/sizeof(int))
-	((__global int*)(tasks_out + 2 * get_group_id(0)))[get_local_id(0)] = ((__global int*)(tasks + shared.lr_index[0]))[get_local_id(0)];
-    if (get_local_id(0) == 0)
-	tasks_out[2 * get_group_id(0)].data.residualOffs = tasks[shared.best_index[0]].data.residualOffs;
-    if (get_local_id(0) < sizeof(FLACCLSubframeTask)/sizeof(int))
-	((__global int*)(tasks_out + 2 * get_group_id(0) + 1))[get_local_id(0)] = ((__global int*)(tasks + shared.lr_index[1]))[get_local_id(0)];
-    if (get_local_id(0) == 0)
-	tasks_out[2 * get_group_id(0) + 1].data.residualOffs = tasks[shared.best_index[1]].data.residualOffs;
-}
-
+#else
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clEncodeResidual(
@@ -737,7 +1081,38 @@ void clEncodeResidual(
 	data[tid] = nextData;
     }
 }
+#endif
 
+#ifdef __CPU__
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clCalcPartition(
+    __global int *partition_lengths,
+    __global int *residual,
+    __global FLACCLSubframeTask *tasks,
+    int max_porder, // <= 8
+    int psize // == task.blocksize >> max_porder?
+    )
+{
+    FLACCLSubframeTask task = tasks[get_group_id(1)];
+    int bs = task.data.blocksize;
+    int ro = task.data.residualOrder;
+    //int psize = bs >> max_porder;
+    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
+
+    for (int p = 0; p < (1 << max_porder); p++)
+	pl[p] = 0;
+
+    for (int pos = ro; pos < bs; pos ++)
+    {
+	int t = residual[task.data.residualOffs + pos];
+	// overflow protection
+	t = clamp(t, -0x7fffff, 0x7fffff);
+	// convert to unsigned
+	t = (t << 1) ^ (t >> 31);
+	pl[pos / psize] += t;
+    }
+}
+#else
 // get_group_id(0) == partition index / (GROUP_SIZE / 16)
 // get_group_id(1) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
@@ -794,7 +1169,31 @@ void clCalcPartition(
 	}
     }
 }
+#endif
 
+#ifdef __CPU__
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clCalcPartition16(
+    __global int *partition_lengths,
+    __global int *residual,
+    __global int *samples,
+    __global FLACCLSubframeTask *tasks,
+    int max_porder // <= 8
+    )
+{
+    FLACCLSubframeTask task = tasks[get_global_id(0)];
+    int bs = task.data.blocksize;
+    int ro = task.data.residualOrder;
+    __global int *data = &samples[task.data.samplesOffs];
+    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_global_id(0);
+    for (int p = 0; p < (1 << max_porder); p++)
+	pl[p] = 0;
+    //__global int *rptr = residual + task.data.residualOffs;
+    //SWITCH_N((rptr[pos] = t, pl[pos >> 4] += (t << 1) ^ (t >> 31)));
+    SWITCH_N((residual[task.data.residualOffs + pos] = t, t = clamp(t, -0x7fffff, 0x7fffff), t = (t << 1) ^ (t >> 31), pl[pos >> 4] += t));
+}
+#else
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clCalcPartition16(
@@ -881,7 +1280,33 @@ void clCalcPartition16(
 	    partition_lengths[lpos] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
     }    
 }
+#endif
 
+#ifdef __CPU__
+// Sums partition lengths for a certain k == get_group_id(0)
+// get_group_id(0) == k
+// get_group_id(1) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clSumPartition(
+    __global int* partition_lengths,
+    int max_porder
+    )
+{
+    if (get_group_id(0) != 0) // ignore k != 0
+	return;
+    __global int * sums = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
+    for (int i = max_porder - 1; i >= 0; i--)
+    {
+	for (int j = 0; j < (1 << i); j++)
+	{
+	    sums[(2 << i) + j] = sums[2 * j] + sums[2 * j + 1];
+	 //   if (get_group_id(1) == 0)
+		//printf("[%d][%d]: %d + %d == %d\n", i, j, sums[2 * j], sums[2 * j + 1], sums[2 * j] + sums[2 * j + 1]);
+	}
+	sums += 2 << i;
+    }
+}
+#else
 // Sums partition lengths for a certain k == get_group_id(0)
 // Requires 128 threads
 // get_group_id(0) == k
@@ -914,7 +1339,42 @@ void clSumPartition(
     if (get_local_size(0) + get_local_id(0) < (1 << max_porder))
 	partition_lengths[pos + (1 << max_porder) + get_local_size(0) + get_local_id(0)] = data[get_local_size(0) + get_local_id(0)];
 }
+#endif
 
+#ifdef __CPU__
+// Finds optimal rice parameter for each partition.
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clFindRiceParameter(
+    __global FLACCLSubframeTask *tasks,
+    __global int* rice_parameters,
+    __global int* partition_lengths,
+    int max_porder
+    )
+{
+    __global FLACCLSubframeTask* task = tasks + get_group_id(0);
+    const int tid = get_local_id(0);
+    int lim = (2 << max_porder) - 1;
+    int psize = task->data.blocksize >> max_porder;
+    int bs = task->data.blocksize;
+    int ro = task->data.residualOrder;
+    for (int offs = 0; offs < lim; offs ++)
+    {
+	int pl = partition_lengths[(1 << (max_porder + 1)) * get_group_id(0) + offs];
+	int porder = 31 - clz(lim - offs);
+	int ps = (bs >> porder) - select(0, ro, offs == lim + 1 - (2 << porder));
+	//if (ps <= 0)
+	//    printf("max_porder == %d, porder == %d, ro == %d\n", max_porder, porder, ro);
+	int k = clamp(31 - clz(pl / max(1, ps)), 0, 14);
+	int plk = ps * (k + 1)  + (pl >> k);
+	
+	// output rice parameter
+	rice_parameters[(get_group_id(0) << (max_porder + 2)) + offs] = k;
+	// output length
+	rice_parameters[(get_group_id(0) << (max_porder + 2)) + (1 << (max_porder + 1)) + offs] = plk;
+    }
+}
+#else
 // Finds optimal rice parameter for each partition.
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
@@ -943,7 +1403,69 @@ void clFindRiceParameter(
 	rice_parameters[(get_group_id(0) << (max_porder + 2)) + (1 << (max_porder + 1)) + offs] = best_l;
     }
 }
+#endif
 
+#ifdef __CPU__
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+void clFindPartitionOrder(
+    __global int *residual,
+    __global int* best_rice_parameters,
+    __global FLACCLSubframeTask *tasks,
+    __global int* rice_parameters,
+    int max_porder
+    )
+{
+    __global FLACCLSubframeTask* task = tasks + get_group_id(0);
+    int partlen[9];
+    for (int p = 0; p < 9; p++)
+	partlen[p] = 0;
+    // fetch partition lengths
+    const int pos = (get_group_id(0) << (max_porder + 2)) + (2 << max_porder);
+    int lim = (2 << max_porder) - 1;
+    for (int offs = 0; offs < lim; offs ++)
+    {
+	int len = rice_parameters[pos + offs];
+	int porder = 31 - clz(lim - offs);
+	partlen[porder] += len;
+    }
+
+    int best_length = partlen[0] + 4;
+    int best_porder = 0;
+    for (int porder = 1; porder <= max_porder; porder++)
+    {
+	int length = (4 << porder) + partlen[porder];
+	best_porder = select(best_porder, porder, length < best_length);
+	best_length = min(best_length, length);
+    }
+
+    best_length = (4 << best_porder) + task->data.blocksize - task->data.residualOrder;
+    int best_psize = task->data.blocksize >> best_porder;
+    int start = task->data.residualOffs + task->data.residualOrder;
+    int fin = task->data.residualOffs + best_psize;
+    for (int p = 0; p < (1 << best_porder); p++)
+    {
+	int k = rice_parameters[pos - (2 << best_porder) + p];
+	best_length += k * (fin - start);
+	for (int i = start; i < fin; i++)
+	{
+	    int t = residual[i];
+	    best_length += ((t << 1) ^ (t >> 31)) >> k;
+	}
+	start = fin;
+	fin += best_psize;
+    }
+
+    int obits = task->data.obits - task->data.wbits;
+    task->data.porder = best_porder;
+    task->data.size =
+	task->data.type == Fixed ? task->data.residualOrder * obits + 6 + best_length :
+	task->data.type == LPC ? task->data.residualOrder * obits + 6 + best_length + 4 + 5 + task->data.residualOrder * task->data.cbits :
+	task->data.type == Constant ? obits : obits * task->data.blocksize;
+    for (int offs = 0; offs < (1 << best_porder); offs ++)
+	best_rice_parameters[(get_group_id(0) << max_porder) + offs] = rice_parameters[pos - (2 << best_porder) + offs];
+}
+#else
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clFindPartitionOrder(
@@ -997,4 +1519,5 @@ void clFindPartitionOrder(
 	best_rice_parameters[(get_group_id(0) << max_porder) + offs] = rice_parameters[pos - (2 << best_porder) + offs];
     // FIXME: should be bytes?
 }
+#endif
 #endif

@@ -444,6 +444,20 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
+		public int OrdersPerChannel
+		{
+			get
+			{
+				return eparams.orders_per_channel;
+			}
+			set
+			{
+				if (value < 0 || value > 32)
+					throw new Exception("invalid OrdersPerWindow " + value.ToString());
+				eparams.orders_per_channel = value;
+			}
+		}
+
 		public int MinLPCOrder
 		{
 			get
@@ -998,6 +1012,10 @@ namespace CUETools.Codecs.FLACCL
 			task.nResidualTasksPerChannel = task.nWindowFunctions * task.nTasksPerWindow + (eparams.do_constant ? 1 : 0) + Math.Max(0, 1 + eparams.max_fixed_order - eparams.min_fixed_order);
             if (task.nResidualTasksPerChannel > 32)
                 throw new Exception("too many tasks");
+			if (channels == 2 && channelsCount == 4)
+				task.nEstimateTasksPerChannel = Math.Min(eparams.orders_per_channel, task.nResidualTasksPerChannel);
+			else
+				task.nEstimateTasksPerChannel = task.nResidualTasksPerChannel;
 
 			//if (task.nResidualTasksPerChannel >= 4)
 			//    task.nResidualTasksPerChannel = (task.nResidualTasksPerChannel + 7) & ~7;
@@ -1005,6 +1023,19 @@ namespace CUETools.Codecs.FLACCL
 			{
 				for (int ch = 0; ch < channelsCount; ch++)
 				{
+					int *selectedTasks = (int*)task.clSelectedTasksPtr;
+					for (int j = 0; j < task.nEstimateTasksPerChannel; j++)
+					{
+						int k = j;
+						if (j < task.nWindowFunctions * task.nTasksPerWindow && task.nWindowFunctions > 1)
+						{
+							k = (j % task.nWindowFunctions) * task.nTasksPerWindow
+								+ (j / task.nWindowFunctions);
+						}
+						selectedTasks[(iFrame * channelsCount + ch) * task.nEstimateTasksPerChannel + j] =
+							(iFrame * channelsCount + ch) * task.nResidualTasksPerChannel + k;
+					}
+
 					for (int iWindow = 0; iWindow < task.nWindowFunctions; iWindow++)
 					{
 						// LPC tasks
@@ -1018,6 +1049,9 @@ namespace CUETools.Codecs.FLACCL
 							task.ResidualTasks[task.nResidualTasks].residualOrder = order + 1;
 							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
+							task.ResidualTasks[task.nResidualTasks].ignore = 0;
+							task.ResidualTasks[task.nResidualTasks].wbits = 0;
+							task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 							task.nResidualTasks++;
 						}
 					}
@@ -1031,6 +1065,9 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
+						task.ResidualTasks[task.nResidualTasks].ignore = 0;
+						task.ResidualTasks[task.nResidualTasks].wbits = 0;
+						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOrder = 1;
 						task.ResidualTasks[task.nResidualTasks].shift = 0;
 						task.ResidualTasks[task.nResidualTasks].coefs[0] = 1;
@@ -1047,6 +1084,9 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].residualOrder = order;
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
+						task.ResidualTasks[task.nResidualTasks].ignore = 0;
+						task.ResidualTasks[task.nResidualTasks].wbits = 0;
+						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 						task.ResidualTasks[task.nResidualTasks].shift = 0;
 						switch (order)
 						{
@@ -1094,6 +1134,8 @@ namespace CUETools.Codecs.FLACCL
 
             if (!_settings.MappedMemory)
 			    task.openCLCQ.EnqueueWriteBuffer(task.clResidualTasks, true, 0, sizeof(FLACCLSubframeTask) * task.nResidualTasks, task.clResidualTasksPtr);
+			if (!_settings.MappedMemory)
+				task.openCLCQ.EnqueueWriteBuffer(task.clSelectedTasks, true, 0, sizeof(int) * (nFrames * channelsCount * task.nEstimateTasksPerChannel), task.clSelectedTasksPtr);		
 		}
 
 		unsafe void encode_residual(FLACCLTask task)
@@ -1536,7 +1578,7 @@ namespace CUETools.Codecs.FLACCL
 				openCLContext = OCLMan.Context;
 				try
 				{
-					openCLProgram = OCLMan.CompileFile(_settings.DeviceType == OpenCLDeviceType.CPU ? "flaccpu.cl" : "flac.cl");
+					openCLProgram = OCLMan.CompileFile("flac.cl");
 				}
 				catch (OpenCLBuildException ex)
 				{
@@ -2012,6 +2054,8 @@ namespace CUETools.Codecs.FLACCL
 
 		public int orders_per_window;
 
+		public int orders_per_channel;
+
 		// minimum fixed prediction order
 		// set by user prior to calling flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
@@ -2080,6 +2124,7 @@ namespace CUETools.Codecs.FLACCL
 			variable_block_size = 0;
 			lpc_min_precision_search = 0;
 			lpc_max_precision_search = 0;
+			orders_per_channel = 32;
 			do_seektable = true;
 			do_wasted = true;
 			do_constant = true;
@@ -2120,48 +2165,52 @@ namespace CUETools.Codecs.FLACCL
 					max_partition_order = 4;
 					break;
 				case 3:
-					window_function = WindowFunction.Bartlett;
 					do_constant = false;
 					min_fixed_order = 2;
 					max_fixed_order = 2;
 					orders_per_window = 1;
+					orders_per_channel = 1;
 					max_prediction_order = 8;
-					max_partition_order = 4;
 					break;
 				case 4:
 					do_constant = false;
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					orders_per_window = 1;
+					orders_per_window = 2;
+					orders_per_channel = 2;
 					max_prediction_order = 8;
-					max_partition_order = 4;
 					break;
 				case 5:
 					do_constant = false;
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					orders_per_window = 2;
+					orders_per_window = 4;
+					orders_per_channel = 4;
 					max_prediction_order = 8;
 					break;
 				case 6:
 					do_constant = false;
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					orders_per_window = 1;
+					orders_per_window = 2;
+					orders_per_channel = 2;
 					break;
 				case 7:
 					do_constant = false;
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					orders_per_window = 3;
+					orders_per_window = 4;
+					orders_per_channel = 4;
 					break;
 				case 8:
-					orders_per_window = 12;
+					orders_per_window = 8;
+					orders_per_channel = 8;
 					break;
 				case 9:
 					min_fixed_order = 2;
 					max_fixed_order = 2;
-					orders_per_window = 3;
+					orders_per_window = 4;
+					orders_per_channel = 4;
 					max_prediction_order = 32;
 					break;
 				case 10:
@@ -2201,7 +2250,8 @@ namespace CUETools.Codecs.FLACCL
 		public int wbits;
 		public int abits;
 		public int porder;
-		public fixed int reserved[2];
+		public int ignore;
+		public int reserved;
 		public fixed int coefs[32];
 	};
 
@@ -2220,8 +2270,6 @@ namespace CUETools.Codecs.FLACCL
         public Kernel clSelectStereoTasks;
 		public Kernel clEstimateResidual;
 		public Kernel clChooseBestMethod;
-		public Kernel clCopyBestMethod;
-		public Kernel clCopyBestMethodStereo;
 		public Kernel clEncodeResidual;
 		public Kernel clCalcPartition;
 		public Kernel clCalcPartition16;
@@ -2236,6 +2284,9 @@ namespace CUETools.Codecs.FLACCL
 		public Mem clRiceParams;
 		public Mem clBestRiceParams;
 		public Mem clAutocorOutput;
+		public Mem clSelectedTasks;
+		public Mem clSelectedTasksSecondEstimate;
+		public Mem clSelectedTasksBestMethod;
 		public Mem clResidualTasks;
 		public Mem clBestResidualTasks;
 		public Mem clWindowFunctions;
@@ -2246,6 +2297,7 @@ namespace CUETools.Codecs.FLACCL
         public Mem clResidualTasksPinned;
         public Mem clBestResidualTasksPinned;
         public Mem clWindowFunctionsPinned;
+		public Mem clSelectedTasksPinned;
 
         public IntPtr clSamplesBytesPtr;
         public IntPtr clResidualPtr;
@@ -2253,6 +2305,7 @@ namespace CUETools.Codecs.FLACCL
         public IntPtr clResidualTasksPtr;
         public IntPtr clBestResidualTasksPtr;
         public IntPtr clWindowFunctionsPtr;
+		public IntPtr clSelectedTasksPtr;
 
         public int[] samplesBuffer;
 		public byte[] outputBuffer;
@@ -2267,6 +2320,7 @@ namespace CUETools.Codecs.FLACCL
 		public int samplesBufferLen;
 		public int nResidualTasks = 0;
 		public int nResidualTasksPerChannel = 0;
+		public int nEstimateTasksPerChannel = 0;
 		public int nTasksPerWindow = 0;
 		public int nWindowFunctions = 0;
 		public int max_porder = 0;
@@ -2306,6 +2360,7 @@ namespace CUETools.Codecs.FLACCL
             int lpcDataLen = autocorLen * 32;
             int resOutLen = sizeof(int) * channelsCount * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * FLACCLWriter.maxFrames;
             int wndLen = sizeof(float) * FLACCLWriter.MAX_BLOCKSIZE /** 2*/ * lpc.MAX_LPC_WINDOWS;
+			int selectedLen = sizeof(int) * 32 * channelsCount * FLACCLWriter.maxFrames;
 
             if (!writer._settings.MappedMemory)
             {
@@ -2315,6 +2370,7 @@ namespace CUETools.Codecs.FLACCL
                 clResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, residualTasksLen);
                 clBestResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, bestResidualTasksLen);
                 clWindowFunctions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, wndLen);
+				clSelectedTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, selectedLen);
 
                 clSamplesBytesPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, samplesBufferLen / 2);
                 clResidualPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, samplesBufferLen);
@@ -2322,6 +2378,7 @@ namespace CUETools.Codecs.FLACCL
                 clResidualTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
                 clBestResidualTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, bestResidualTasksLen);
                 clWindowFunctionsPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, wndLen);
+				clSelectedTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
 
                 clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytesPinned, true, MapFlags.WRITE, 0, samplesBufferLen / 2);
                 clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidualPinned, true, MapFlags.WRITE, 0, samplesBufferLen);
@@ -2329,7 +2386,8 @@ namespace CUETools.Codecs.FLACCL
                 clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasksPinned, true, MapFlags.WRITE, 0, residualTasksLen);
                 clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasksPinned, true, MapFlags.WRITE, 0, bestResidualTasksLen);
                 clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctionsPinned, true, MapFlags.WRITE, 0, wndLen);
-            }
+				clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasksPinned, true, MapFlags.WRITE, 0, selectedLen);
+			}
             else
             {
                 clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, (uint)samplesBufferLen / 2);
@@ -2338,6 +2396,7 @@ namespace CUETools.Codecs.FLACCL
                 clResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
                 clBestResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, bestResidualTasksLen);
                 clWindowFunctions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, wndLen);
+				clSelectedTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
 
                 clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytes, true, MapFlags.WRITE, 0, samplesBufferLen / 2);
                 clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidual, true, MapFlags.WRITE, 0, samplesBufferLen);
@@ -2345,6 +2404,7 @@ namespace CUETools.Codecs.FLACCL
                 clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasks, true, MapFlags.WRITE, 0, residualTasksLen);
                 clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasks, true, MapFlags.WRITE, 0, bestResidualTasksLen);
                 clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctions, true, MapFlags.WRITE, 0, wndLen);
+				clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasks, true, MapFlags.WRITE, 0, selectedLen);
 
                 //clSamplesBytesPtr = clSamplesBytes.HostPtr;
                 //clResidualPtr = clResidual.HostPtr;
@@ -2357,7 +2417,9 @@ namespace CUETools.Codecs.FLACCL
             clSamples = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, samplesBufferLen);
             clLPCData = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, lpcDataLen);
             clAutocorOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, autocorLen);
-            if (writer._settings.GPUOnly)
+			clSelectedTasksSecondEstimate = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, selectedLen);
+			clSelectedTasksBestMethod = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, selectedLen);
+			if (writer._settings.GPUOnly)
             {
                 clPartitions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, partitionsLen);
                 clRiceParams = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, riceParamsLen);
@@ -2376,8 +2438,6 @@ namespace CUETools.Codecs.FLACCL
             clSelectStereoTasks = openCLProgram.CreateKernel("clSelectStereoTasks");
 			clEstimateResidual = openCLProgram.CreateKernel("clEstimateResidual");
 			clChooseBestMethod = openCLProgram.CreateKernel("clChooseBestMethod");
-			clCopyBestMethod = openCLProgram.CreateKernel("clCopyBestMethod");
-			clCopyBestMethodStereo = openCLProgram.CreateKernel("clCopyBestMethodStereo");
 			if (writer._settings.GPUOnly)
 			{
 				clEncodeResidual = openCLProgram.CreateKernel("clEncodeResidual");
@@ -2426,8 +2486,6 @@ namespace CUETools.Codecs.FLACCL
             clSelectStereoTasks.Dispose();
 			clEstimateResidual.Dispose();
 			clChooseBestMethod.Dispose();
-			clCopyBestMethod.Dispose();
-			clCopyBestMethodStereo.Dispose();
 			if (writer._settings.GPUOnly)
 			{
 				clEncodeResidual.Dispose();
@@ -2461,6 +2519,9 @@ namespace CUETools.Codecs.FLACCL
                 if (clWindowFunctionsPtr != IntPtr.Zero)
                     openCLCQ.EnqueueUnmapMemObject(clWindowFunctionsPinned, clWindowFunctionsPtr);
                 clWindowFunctionsPtr = IntPtr.Zero;
+				if (clSelectedTasksPtr != IntPtr.Zero)
+					openCLCQ.EnqueueUnmapMemObject(clSelectedTasksPinned, clSelectedTasksPtr);
+				clSelectedTasksPtr = IntPtr.Zero;
 
                 clSamplesBytesPinned.Dispose();
                 clResidualPinned.Dispose();
@@ -2468,6 +2529,7 @@ namespace CUETools.Codecs.FLACCL
                 clResidualTasksPinned.Dispose();
                 clBestResidualTasksPinned.Dispose();
                 clWindowFunctionsPinned.Dispose();
+				clSelectedTasksPinned.Dispose();
             }
             else
             {
@@ -2477,6 +2539,7 @@ namespace CUETools.Codecs.FLACCL
                 openCLCQ.EnqueueUnmapMemObject(clResidualTasks, clResidualTasksPtr);
                 openCLCQ.EnqueueUnmapMemObject(clBestResidualTasks, clBestResidualTasksPtr);
                 openCLCQ.EnqueueUnmapMemObject(clWindowFunctions, clWindowFunctionsPtr);
+				openCLCQ.EnqueueUnmapMemObject(clSelectedTasks, clSelectedTasksPtr);
             }
 
 			clSamples.Dispose();
@@ -2484,9 +2547,12 @@ namespace CUETools.Codecs.FLACCL
 			clLPCData.Dispose();
 			clResidual.Dispose();
 			clAutocorOutput.Dispose();
+			clSelectedTasksSecondEstimate.Dispose();
+			clSelectedTasksBestMethod.Dispose();
 			clResidualTasks.Dispose();
 			clBestResidualTasks.Dispose();
 			clWindowFunctions.Dispose();
+			clSelectedTasks.Dispose();
 
 			openCLCQ.Dispose();
 
@@ -2527,9 +2593,10 @@ namespace CUETools.Codecs.FLACCL
 			clChannelDecorr.SetArgs(
 				clSamples,
 				clSamplesBytes,
-				FLACCLWriter.MAX_BLOCKSIZE/4);
+				FLACCLWriter.MAX_BLOCKSIZE / 4);
 
-            openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, frameSize * frameCount / 4);
+			openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, FLACCLWriter.MAX_BLOCKSIZE / 4);
+			//openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, (frameSize * frameCount + 3) / 4);
 
             if (eparams.do_wasted)
 			{
@@ -2587,44 +2654,74 @@ namespace CUETools.Codecs.FLACCL
 				nWindowFunctions,
 				channelsCount * frameCount);
 
-            clEstimateResidual.SetArgs(
-				clSamples,
-				clResidualTasks);
-
-			openCLCQ.EnqueueNDRangeKernel(
-				clEstimateResidual,
-				groupSize,
-				nResidualTasksPerChannel * channelsCount * frameCount);
-
-            clChooseBestMethod.SetArgs(
-				clResidualTasks,
-				nResidualTasksPerChannel);
-
-			openCLCQ.EnqueueNDRangeKernel(
-				clChooseBestMethod,
-				Math.Min(groupSize, 32), channelsCount * frameCount);
-
-            if (channels == 2 && channelsCount == 4)
+			if (channels == 2 && channelsCount == 4)
 			{
-				clCopyBestMethodStereo.SetArgs(
+				clEstimateResidual.SetArgs(
+					clSamples,
+					clSelectedTasks,
+					clResidualTasks);
+
+				openCLCQ.EnqueueNDRangeKernel(
+					clEstimateResidual,
+					groupSize,
+					nEstimateTasksPerChannel * channelsCount * frameCount); // 1 per channel, 4 channels
+
+				clSelectStereoTasks.SetArgs(
+					clResidualTasks,
+					clSelectedTasks,
+					clSelectedTasksSecondEstimate,
+					clSelectedTasksBestMethod,
+					nResidualTasksPerChannel,
+					nEstimateTasksPerChannel);
+
+				openCLCQ.EnqueueNDRangeKernel(
+					clSelectStereoTasks,
+					0, frameCount);
+
+				if (nEstimateTasksPerChannel < nResidualTasksPerChannel)
+				{
+					clEstimateResidual.SetArgs(
+						clSamples,
+						clSelectedTasksSecondEstimate,
+						clResidualTasks);
+
+					openCLCQ.EnqueueNDRangeKernel(
+						clEstimateResidual,
+						groupSize,
+						(nResidualTasksPerChannel - nEstimateTasksPerChannel) * channels * frameCount);
+				}
+
+				clChooseBestMethod.SetArgs(
 					clBestResidualTasks,
 					clResidualTasks,
+					clSelectedTasksBestMethod,
 					nResidualTasksPerChannel);
 
 				openCLCQ.EnqueueNDRangeKernel(
-					clCopyBestMethodStereo,
-					Math.Min(groupSize, 64), frameCount);
+					clChooseBestMethod,
+					0, channels * frameCount);
 			}
 			else
 			{
-				clCopyBestMethod.SetArgs(
+				clEstimateResidual.SetArgs(
+					clSamples,
+					clSelectedTasks,
+					clResidualTasks);
+
+				openCLCQ.EnqueueNDRangeKernel(
+					clEstimateResidual,
+					groupSize,
+					nResidualTasksPerChannel * channelsCount * frameCount);
+
+				clChooseBestMethod.SetArgs(
 					clBestResidualTasks,
 					clResidualTasks,
+					clSelectedTasks,
 					nResidualTasksPerChannel);
 
 				openCLCQ.EnqueueNDRangeKernel(
-					clCopyBestMethod,
-					Math.Min(groupSize, 64), channels * frameCount);
+					clChooseBestMethod,
+					0, channels * frameCount);
 			}
 
 			if (writer._settings.GPUOnly)
@@ -2726,6 +2823,7 @@ namespace CUETools.Codecs.FLACCL
         }
 	}
 
+#if LKJLKJLJK
     public static class OpenCLExtensions
     {
         public static void SetArgs(this Kernel kernel, params object[] args)
@@ -2756,4 +2854,5 @@ namespace CUETools.Codecs.FLACCL
             queue.EnqueueNDRangeKernel(kernel, 2, null, new long[] { localSizeX * globalSizeX, localSizeY * globalSizeY }, new long[] { localSizeX, localSizeY });
         }
     }
+#endif
 }
