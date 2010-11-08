@@ -31,6 +31,9 @@
 #define iclamp(a,b,c) clamp(a,b,c)
 #else
 #define iclamp(a,b,c) max(b,min(a,c))
+#ifndef M_PI_F
+#define M_PI_F M_PI
+#endif
 #endif
 
 #pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics: enable
@@ -87,9 +90,11 @@ __kernel void clWindowFlattop(__global float* window, int windowOffset)
 
 __kernel void clWindowTukey(__global float* window, int windowOffset, float p)
 {
+    int tid = get_global_id(0);
     int Np = (int)(p / 2.0f * get_global_size(0)) - 1;
-    int n = select(max(Np, get_global_id(0) - (get_global_size(0) - Np - 1) + Np), get_global_id(0), get_global_id(0) <= Np);
-    window[get_global_id(0)] = 0.5f - 0.5f * cos(M_PI_F * n / Np);
+    int Np2 = tid - (get_global_size(0) - Np - 1) + Np;
+    int n = select(max(Np, Np2), tid, tid <= Np);
+    window[tid] = 0.5f - 0.5f * cos(M_PI_F * n / Np);
 }
 
 __kernel void clStereoDecorr(
@@ -1024,7 +1029,7 @@ void clEncodeResidual(
     )
 {
     __local FLACCLSubframeTask task;
-    __local int data[GROUP_SIZE * 2];
+    __local int data[GROUP_SIZE * 2 + MAX_ORDER];
     const int tid = get_local_id(0);
     if (get_local_id(0) < sizeof(task) / sizeof(int))
 	((__local int*)&task)[get_local_id(0)] = ((__global int*)(&tasks[get_group_id(0)]))[get_local_id(0)];
@@ -1038,8 +1043,8 @@ void clEncodeResidual(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
+#ifdef AMD
     int4 cptr0 = vload4(0, &task.coefs[0]);
-#if MAX_ORDER > 4
     int4 cptr1 = vload4(1, &task.coefs[0]);
 #if MAX_ORDER > 8
     int4 cptr2 = vload4(2, &task.coefs[0]);
@@ -1057,11 +1062,20 @@ void clEncodeResidual(
 
 	// compute residual
 	__local int* dptr = &data[tid + GROUP_SIZE - ro];
-	int4 sum = cptr0 * vload4(0, dptr)
-#if MAX_ORDER > 4
+	int4 sum 
+#ifdef AMD
+            = cptr0 * vload4(0, dptr)
 	    + cptr1 * vload4(1, dptr)
+#else
+            = vload4(0, &task.coefs[0]) * vload4(0, dptr)
+	    + vload4(1, &task.coefs[0]) * vload4(1, dptr)
+#endif
 #if MAX_ORDER > 8
+#ifdef AMD
 	    + cptr2 * vload4(2, dptr)
+#else
+	    + vload4(2, &task.coefs[0]) * vload4(2, dptr)
+#endif
 #if MAX_ORDER > 12
 	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
 #if MAX_ORDER > 16
@@ -1069,7 +1083,6 @@ void clEncodeResidual(
 	    + vload4(5, &task.coefs[0]) * vload4(5, dptr)
 	    + vload4(6, &task.coefs[0]) * vload4(6, dptr)
 	    + vload4(7, &task.coefs[0]) * vload4(7, dptr)
-#endif
 #endif
 #endif
 #endif
