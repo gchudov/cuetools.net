@@ -799,7 +799,7 @@ void clEstimateResidual(
     __global FLACCLSubframeTask *tasks
     )
 {
-    __local float data[GROUP_SIZE * 2];
+    __local float data[GROUP_SIZE * 2 + 32];
     __local FLACCLSubframeTask task;
     __local int psum[64];
     __local float fcoef[32];
@@ -818,11 +818,14 @@ void clEstimateResidual(
     int bs = task.data.blocksize;
 
     if (tid < 32)
-	fcoef[tid] = select(0.0f, - ((float) task.coefs[tid]) / (1 << task.data.shift), tid < ro);
-	//fcoef[tid] = select(0.0f, - ((float) task.coefs[tid + ro - MAX_ORDER]) / (1 << task.data.shift), tid + ro >= MAX_ORDER && tid < MAX_ORDER);
+	//fcoef[tid] = select(0.0f, - ((float) task.coefs[tid]) / (1 << task.data.shift), tid < ro);
+	fcoef[tid] =  tid < MAX_ORDER && tid + ro - MAX_ORDER >= 0 ? - ((float) task.coefs[tid + ro - MAX_ORDER]) / (1 << task.data.shift) : 0.0f;
     if (tid < 64)
 	psum[tid] = 0;
     data[tid] = 0.0f;
+    // need to initialize "extra" data, because NaNs can produce wierd results even when multipled by zero extra coefs
+    if (tid < 32)
+	data[GROUP_SIZE * 2 + tid] = 0.0f;
 
     int partOrder = max(1, clz(64) - clz(bs - 1) + 1);
 
@@ -844,7 +847,7 @@ void clEstimateResidual(
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// compute residual
-	__local float* dptr = &data[tid + GROUP_SIZE - ro];
+	__local float* dptr = &data[tid + GROUP_SIZE - MAX_ORDER];
 	float4 sum 
 #ifdef AMD
 	    = fc0 * vload4(0, dptr)
