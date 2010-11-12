@@ -63,8 +63,8 @@ typedef struct
     int wbits;
     int abits;
     int porder;
-    int ignore;
-    int reserved;
+    int headerLen;
+    int encodingOffset;
 } FLACCLSubframeData;
 
 typedef struct
@@ -1371,7 +1371,7 @@ void clFindRiceParameter(
     __global FLACCLSubframeTask* task = tasks + get_group_id(0);
     const int tid = get_local_id(0);
     int lim = (2 << max_porder) - 1;
-    int psize = task->data.blocksize >> max_porder;
+    //int psize = task->data.blocksize >> max_porder;
     int bs = task->data.blocksize;
     int ro = task->data.residualOrder;
     for (int offs = 0; offs < lim; offs ++)
@@ -1474,10 +1474,18 @@ void clFindPartitionOrder(
 
     int obits = task->data.obits - task->data.wbits;
     task->data.porder = best_porder;
-    task->data.size =
-	task->data.type == Fixed ? task->data.residualOrder * obits + 6 + best_length :
-	task->data.type == LPC ? task->data.residualOrder * obits + 6 + best_length + 4 + 5 + task->data.residualOrder * task->data.cbits :
-	task->data.type == Constant ? obits : obits * task->data.blocksize;
+    task->data.headerLen = 
+	task->data.type == Constant ? obits :
+	task->data.type == Verbatim ? obits * task->data.blocksize :
+	task->data.type == Fixed ? task->data.residualOrder * obits + 6 :
+	task->data.type == LPC ? task->data.residualOrder * obits + 6 + 4 + 5 + task->data.residualOrder * task->data.cbits : 0;
+    task->data.size = 
+	task->data.headerLen + ((task->data.type == Fixed || task->data.type == LPC) ? best_length : 0);
+    if (task->data.size >= obits * task->data.blocksize)
+    {
+	task->data.headerLen = task->data.size = obits * task->data.blocksize;
+	task->data.type = Verbatim;
+    }
     for (int offs = 0; offs < (1 << best_porder); offs ++)
 	best_rice_parameters[(get_group_id(0) << max_porder) + offs] = rice_parameters[pos - (2 << best_porder) + offs];
 }
@@ -1536,4 +1544,182 @@ void clFindPartitionOrder(
     // FIXME: should be bytes?
 }
 #endif
+
+#ifdef __CPU__
+typedef struct BitWriter_t
+{
+    __global int *buffer;
+    unsigned int bit_buf;
+    int bit_left;
+    int buf_ptr;
+} BitWriter;
+
+inline void writebits(BitWriter *bw, int bits, int v)
+{
+    uint val = ((uint)v) & ((1 << bits) - 1);
+    if (bits < bw->bit_left)
+    {
+	bw->bit_buf = (bw->bit_buf << bits) | val;
+	bw->bit_left -= bits;
+    }
+    else
+    {
+//	if (bits >= 32) printf("\n\n\n\n-------------------------\n\n\n");
+	unsigned int bb = (bw->bit_buf << bw->bit_left) | (val >> (bits - bw->bit_left));
+	bw->buffer[bw->buf_ptr++] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
+	bw->bit_left += (32 - bits);
+	bw->bit_buf = val;
+//	bw->bit_buf = val & ((1 << (32 - bw->bit_left)) - 1);
+    }
+}
+
+inline void flush(BitWriter *bw)
+{
+    if (bw->bit_left < 32)
+	writebits(bw, bw->bit_left, 0);
+}
+#endif
+
+inline int len_utf8(int n)
+{
+    int bts = 31 - clz(n);
+    if (bts < 7)
+	return 8;
+    return 8 * ((bts + 4) / 5);
+}
+
+// get_global_id(0) * channels == task index
+__kernel 
+void clCalcOutputOffsets(
+    __global int *residual,
+    __global int *samples,
+    __global FLACCLSubframeTask *tasks,
+    int channels,
+    int frameCount,
+    int firstFrame
+    )
+{
+    int offset = 0;
+    for (int iFrame = 0; iFrame < frameCount; iFrame++)
+    {
+	//printf("len_utf8(%d) == %d\n", firstFrame + iFrame, len_utf8(firstFrame + iFrame));
+	offset += 15 + 1 + 4 + 4 + 4 + 3 + 1 + len_utf8(firstFrame + iFrame)
+	    // + 8-16 // custom block size
+	    // + 8-16 // custom sample rate
+	    ;
+	int bs = tasks[iFrame * channels].data.blocksize;
+	//public static readonly int[] flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };
+	if (bs != 4096 && bs != 4608) // TODO: check all other standard sizes
+	    offset += select(8, 16, bs >= 256);
+	
+	// assert (offset % 8) == 0
+	offset += 8;
+	for (int ch = 0; ch < channels; ch++)
+	{
+	    __global FLACCLSubframeTask* task = tasks + iFrame * channels + ch;
+	    offset += 8 + task->data.wbits;
+	    task->data.encodingOffset = offset + task->data.headerLen;
+	    offset += task->data.size;
+	}
+	offset = (offset + 7) & ~7;
+	offset += 16;
+    }
+}
+
+// get_group_id(0) == task index
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void clRiceEncoding(
+    __global int *residual,
+    __global int *samples,
+    __global int* best_rice_parameters,
+    __global FLACCLSubframeTask *tasks,
+    __global int* output,
+    int max_porder
+    )
+{
+#ifdef __CPU__
+    __global FLACCLSubframeTask* task = tasks + get_group_id(0);
+    if (task->data.type == Fixed || task->data.type == LPC)
+    {
+	int ro = task->data.residualOrder;
+	int bs = task->data.blocksize;
+	int porder = task->data.porder;
+	int psize = bs >> porder;
+	
+	BitWriter bw;
+	bw.buffer = output;
+	bw.buf_ptr = task->data.encodingOffset / 32;
+	bw.bit_left = 32 - (task->data.encodingOffset & 31);
+	bw.bit_buf = 0;
+
+	//if (get_group_id(0) == 0) printf("%d\n", offs);
+
+	int res_cnt = psize - ro;
+	// residual
+	int j = ro;
+	__global int * kptr = &best_rice_parameters[get_group_id(0) << max_porder];
+	for (int p = 0; p < (1 << porder); p++)
+	{
+	    int k = kptr[p];
+	    writebits(&bw, 4, k);
+	    //if (get_group_id(0) == 0) printf("[%x] ", k);
+	    //if (get_group_id(0) == 0) printf("(%x) ", bw.bit_buf);
+	    if (p == 1) res_cnt = psize;
+	    int cnt = min(res_cnt, bs - j);
+	    for (int i = 0; i < cnt; i++)
+	    {
+		int v = residual[task->data.residualOffs + j + i];
+		v = (v << 1) ^ (v >> 31);
+		// write quotient in unary
+		int q = (v >> k) + 1;
+		int bits = k + q;
+		while (bits > 31)
+		{
+		    int b = min(bits - 31, 31);
+		    if (b < bw.bit_left)
+		    {
+			bw.bit_buf <<= b;
+			bw.bit_left -= b;
+		    }
+		    else
+		    {
+			unsigned int bb = bw.bit_buf << bw.bit_left;
+			bw.bit_buf = 0;
+			bw.bit_left += (32 - b);
+			bw.buffer[bw.buf_ptr++] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
+		    }
+		    bits -= b;
+		}
+		unsigned int val = (unsigned int)((v & ((1 << k) - 1)) | (1 << k));
+		if (bits < bw.bit_left)
+		{
+		    bw.bit_buf = (bw.bit_buf << bits) | val;
+		    bw.bit_left -= bits;
+		}
+		else
+		{
+		    unsigned int bb = (bw.bit_buf << bw.bit_left) | (val >> (bits - bw.bit_left));
+		    bw.bit_buf = val;
+		    bw.bit_left += (32 - bits);
+		    bw.buffer[bw.buf_ptr++] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
+		}
+		////if (get_group_id(0) == 0) printf("%x ", v);
+		//writebits(&bw, (v >> k) + 1, 1);
+		////if (get_group_id(0) == 0) printf("(%x) ", bw.bit_buf);
+		//writebits(&bw, k, v);
+		////if (get_group_id(0) == 0) printf("(%x) ", bw.bit_buf);
+	    }
+	    j += cnt;
+	}
+	//if (bw.buf_ptr * 32 + 32 - bw.bit_left != task->data.encodingOffset - task->data.headerLen + task->data.size) 
+	//    printf("bit length mismatch: encodingOffset == %d, headerLen == %d, size == %d, so should be %d, but is %d\n",
+	//	task->data.encodingOffset, task->data.headerLen, task->data.size,
+	//	task->data.encodingOffset - task->data.headerLen + task->data.size,
+	//	bw.buf_ptr * 32 + 32 - bw.bit_left
+	//	);
+	//if (get_group_id(0) == 0) printf("\n");
+	flush(&bw);
+    }
+#endif
+}
 #endif
