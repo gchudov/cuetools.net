@@ -2399,7 +2399,7 @@ namespace CUETools.Codecs.FLACCL
 			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * FLACCLWriter.maxFrames;
 			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * FLACCLWriter.maxFrames;
 			int samplesBufferLen = sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channelsCount;
-			int residualBufferLen = sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channelsCount; // *channels! but need to adjust residualOffser
+			int residualBufferLen = sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channels; // need to adjust residualOffset?
 			int partitionsLen = sizeof(int) * (30 << 8) * channels * FLACCLWriter.maxFrames;
 			int riceParamsLen = sizeof(int) * (4 << 8) * channels * FLACCLWriter.maxFrames;
             int autocorLen = sizeof(float) * (MAX_ORDER + 1) * lpc.MAX_LPC_WINDOWS * channelsCount * FLACCLWriter.maxFrames;
@@ -2407,7 +2407,7 @@ namespace CUETools.Codecs.FLACCL
             int resOutLen = sizeof(int) * channelsCount * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * FLACCLWriter.maxFrames;
             int wndLen = sizeof(float) * FLACCLWriter.MAX_BLOCKSIZE /** 2*/ * lpc.MAX_LPC_WINDOWS;
 			int selectedLen = sizeof(int) * 32 * channelsCount * FLACCLWriter.maxFrames;
-			int riceLen = sizeof(int) * channelsCount * FLACCLWriter.MAX_BLOCKSIZE;
+			int riceLen = sizeof(int) * channels * FLACCLWriter.MAX_BLOCKSIZE;
 
             if (!writer._settings.MappedMemory)
             {

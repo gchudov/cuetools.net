@@ -1780,32 +1780,25 @@ void clRiceEncoding(
 	barrier(CLK_LOCAL_MEM_FENCE);
 	//if ((get_global_id(0) == 64 || get_global_id(0) == 63) && pos == 0)
 	//    printf("v=%x,k=%d,mylen=%d,mypos=%d,pstart=%d,partlen=%d\n", v, k, mylen, mypos[tid], pstart, partlen);
-	if (mylen > 0)
+	if (pstart && mylen)
 	{
-	    if (pstart)
-	    {
-		int kpos = mypos[tid] - mylen;
-		unsigned int kval = (k << 28);
-	     //   if (get_group_id(0) == 0 && kpos / 32 - task.encodingOffset / 32 == 5 && pos == 0)
-		    //printf("{%08X |= %08X}\n", data[kpos / 32 - start32], kval >> (kpos & 31));
-		atom_or(&data[kpos / 32 - start32], kval >> (kpos & 31));
-		if ((kpos & 31) != 0)
-		atom_or(&data[kpos / 32 - start32 + 1], kval << (32 - (kpos & 31)));
-	    }
-	    int qpos = mypos[tid] - k - 1;
-	    unsigned int qval = (1U << 31) | (v << (31 - k));
-	    //if (get_group_id(0) == 0 && qpos / 32 - task.encodingOffset / 32 == 5 && pos == 0)
-	    //    printf("(%08X |= %08X) tid == %d, qpos == %d, qval == %08X\n", data[qpos / 32 - start32], qval >> (qpos & 31), tid, qpos, qval);
-	 //   if (get_group_id(0) == 0 && pos == 0)
-	 //   {
-	 //       printf("[%08X] (%08X |= %08X) qval==%08x qpos==%08x\n", qpos / 32 - start32, data[qpos / 32 - start32], qval >> (qpos & 31), qval, qpos);
-		//if (qval << (32 - (qpos & 31)) != 0)
-		//    printf("[%08X] (%08X |= %08X)\n", qpos / 32 - start32 + 1, data[qpos / 32 - start32+1], qval << (32 - (qpos & 31)));
-	 //   }
-	    atom_or(&data[qpos / 32 - start32], qval >> (qpos & 31));
-	    if ((qpos & 31) != 0)
-	    atom_or(&data[qpos / 32 - start32 + 1], qval << (32 - (qpos & 31)));
+	    int kpos = mypos[tid] - mylen;
+	    int kpos0 = (kpos >> 5) - start32;
+	    int kpos1 = kpos & 31;
+	    unsigned int kval = k << 28;
+	    unsigned int kval0 = kval >> kpos1;
+	    unsigned int kval1 = select(0, kval << (32 - kpos1), kpos1);
+	    atom_or(&data[kpos0], kval0);
+	    atom_or(&data[kpos0 + 1], kval1);
 	}
+	int qpos = mypos[tid] - k - 1;
+	int qpos0 = (qpos >> 5) - start32;
+	int qpos1 = qpos & 31;
+	unsigned int qval = select(0, (1U << 31) | (v << (31 - k)), mylen);
+	unsigned int qval0 = qval >> qpos1;
+	unsigned int qval1= select(0, qval << (32 - qpos1), qpos1);
+	atom_or(&data[qpos0], qval0);
+	atom_or(&data[qpos0 + 1], qval1);
 	if (tid == GROUP_SIZE - 1)
 	    start = mypos[tid];
 	//if (get_group_id(0) == 0 && pos == 0)
