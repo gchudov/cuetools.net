@@ -37,6 +37,7 @@ namespace CUETools.Codecs.FLACCL
 		{ 
 			this.DoVerify = false; 
 			this.GPUOnly = true;
+			this.DoRice = false;
             this.MappedMemory = false;
 			this.DoMD5 = true; 
 			this.GroupSize = 128;
@@ -56,6 +57,10 @@ namespace CUETools.Codecs.FLACCL
 		[DefaultValue(true)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionGPUOnly")]
 		public bool GPUOnly { get; set; }
+
+		[DefaultValue(false)]
+		[SRDescription(typeof(Properties.Resources), "DescriptionDoRice")]
+		public bool DoRice { get; set; }
 
         [DefaultValue(false)]
         [SRDescription(typeof(Properties.Resources), "DescriptionMappedMemory")]
@@ -837,7 +842,7 @@ namespace CUETools.Codecs.FLACCL
 			//assert(porder >= 0);
 			frame.writer.writebits(4, porder);
 
-			if (task.riceOnGPU)
+			if (_settings.DoRice)
 			{
 				if (task.BestResidualTasks[index].size != (int)sub.best.size)
 					throw new Exception("Encoding offset mismatch");
@@ -846,6 +851,7 @@ namespace CUETools.Codecs.FLACCL
 				if (task.BestResidualTasks[index].encodingOffset != frame.writer.BitLength)
 					throw new Exception("Encoding offset mismatch");
 				int len = task.BestResidualTasks[index].size - task.BestResidualTasks[index].headerLen;
+				//Console.WriteLine("{0:x} => {1:x}", _totalSize + frame.writer.BitLength / 8, _totalSize + (frame.writer.BitLength + len) / 8);
 				// task.BestResidualTasks[index].headerLen
 				frame.writer.writeints(len, (byte*)task.clRiceOutputPtr);
 				if (task.BestResidualTasks[index].encodingOffset + len != frame.writer.BitLength)
@@ -1196,7 +1202,7 @@ namespace CUETools.Codecs.FLACCL
 
 #if DEBUG
 							// check size
-							if (_settings.GPUOnly && !task.riceOnGPU)
+							if (_settings.GPUOnly && !_settings.DoRice)
 							{
 								uint real_size = measure_subframe(task.frame, task.frame.subframes[ch]);
 								if (real_size != task.frame.subframes[ch].best.size)
@@ -1204,7 +1210,7 @@ namespace CUETools.Codecs.FLACCL
 							}
 #endif
 
-							if (((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || !_settings.GPUOnly) && !task.riceOnGPU)
+							if (((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || !_settings.GPUOnly) && !_settings.DoRice)
 							{
 								if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 								if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32)
@@ -1289,10 +1295,10 @@ namespace CUETools.Codecs.FLACCL
 					frame.subframes[ch].wbits = task.BestResidualTasks[index].wbits;
 					for (int i = 0; i < task.BestResidualTasks[index].residualOrder; i++)
 						frame.subframes[ch].best.coefs[i] = task.BestResidualTasks[index].coefs[task.BestResidualTasks[index].residualOrder - 1 - i];
-					if (_settings.GPUOnly && !task.riceOnGPU && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
+					frame.subframes[ch].best.rc.porder = task.BestResidualTasks[index].porder;
+					if (_settings.GPUOnly && !_settings.DoRice && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
 					//if (_settings.GPUOnly && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
 					{
-						frame.subframes[ch].best.rc.porder = task.BestResidualTasks[index].porder;
 						int* riceParams = ((int*)task.clBestRiceParamsPtr) + (index << task.max_porder);
 						fixed (int* dstParams = frame.subframes[ch].best.rc.rparams)
 							AudioSamples.MemCpy(dstParams, riceParams, (1 << frame.subframes[ch].best.rc.porder));
@@ -1305,7 +1311,7 @@ namespace CUETools.Codecs.FLACCL
 				}
 				else
 				{
-					if (task.riceOnGPU)
+					if (_settings.DoRice && frame.subframes[ch].best.size != task.BestResidualTasks[index].size)
 						throw new Exception("size reported incorrectly");
 				}
 			}
@@ -1579,6 +1585,8 @@ namespace CUETools.Codecs.FLACCL
 					"#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
 					"#define GROUP_SIZE " + groupSize.ToString() + "\n" +
 					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
+					(_settings.GPUOnly ? "#define DO_PARTITIONS\n" : "") +
+					(_settings.DoRice ? "#define DO_RICE\n" : "") +
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
@@ -1802,7 +1810,7 @@ namespace CUETools.Codecs.FLACCL
 
 		public string Path { get { return _path; } }
 
-		public static readonly string vendor_string = "FLACCL#0.2";
+		public static readonly string vendor_string = "FLACCL#0.3";
 
 		int select_blocksize(int samplerate, int time_ms)
 		{
@@ -2362,8 +2370,6 @@ namespace CUETools.Codecs.FLACCL
 		public int nWindowFunctions = 0;
 		public int max_porder = 0;
 
-		public bool riceOnGPU = false;
-
 		public FlakeReader verify;
 
 		public Thread workThread = null;
@@ -2492,7 +2498,7 @@ namespace CUETools.Codecs.FLACCL
 				clSumPartition = openCLProgram.CreateKernel("clSumPartition");
 				clFindRiceParameter = openCLProgram.CreateKernel("clFindRiceParameter");
 				clFindPartitionOrder = openCLProgram.CreateKernel("clFindPartitionOrder");
-				if (riceOnGPU)
+				if (writer._settings.DoRice)
 				{
 					clCalcOutputOffsets = openCLProgram.CreateKernel("clCalcOutputOffsets");
 					clRiceEncoding = openCLProgram.CreateKernel("clRiceEncoding");
@@ -2545,7 +2551,7 @@ namespace CUETools.Codecs.FLACCL
 				clSumPartition.Dispose();
 				clFindRiceParameter.Dispose();
 				clFindPartitionOrder.Dispose();
-				if (riceOnGPU)
+				if (writer._settings.DoRice)
 				{
 					clCalcOutputOffsets.Dispose();
 					clRiceEncoding.Dispose();
@@ -2875,7 +2881,7 @@ namespace CUETools.Codecs.FLACCL
 					groupSize,
 					channels * frameCount);
 
-				if (riceOnGPU)
+				if (writer._settings.DoRice)
 				{
 					clCalcOutputOffsets.SetArgs(
 						clResidual,
@@ -2907,7 +2913,7 @@ namespace CUETools.Codecs.FLACCL
 				if (!writer._settings.MappedMemory)
 				{
 					openCLCQ.EnqueueReadBuffer(clBestRiceParams, false, 0, sizeof(int) * (1 << max_porder) * channels * frameCount, clBestRiceParamsPtr);
-					if (riceOnGPU)
+					if (writer._settings.DoRice)
 						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channels, clRiceOutputPtr);
 					else
 						openCLCQ.EnqueueReadBuffer(clResidual, false, 0, sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channels, clResidualPtr);

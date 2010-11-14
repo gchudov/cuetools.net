@@ -1007,6 +1007,7 @@ void clChooseBestMethod(
     tasks_out[get_global_id(0)] = tasks[best_no];
 }
 
+#ifdef DO_PARTITIONS
 #ifdef __CPU__
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
@@ -1292,8 +1293,11 @@ void clCalcPartition16(
 	s = sum.x + sum.y + sum.z + sum.w;
 
 	const int lpos = (15 << (max_porder + 1)) * get_group_id(0) + (k << (max_porder + 1)) + offs / 16;
-	if (k <= 14)
+	if (k <= 14 && offs < bs)
 	    partition_lengths[lpos] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
+
+//    	if (task.data.blocksize == 16 && x == 0 && k <= 14)
+//	    printf("[%d] = %d = s:%d + %d * (k:%d + 1), ro=%d, offs=%d, lpos=%d\n", k, partition_lengths[lpos], s, (16 - select(0, ro, offs < 16)), k, ro, offs, lpos);
     }    
 }
 #endif
@@ -1531,20 +1535,30 @@ void clFindPartitionOrder(
 
     if (get_local_id(0) == 0)
     {
-	tasks[get_group_id(0)].data.porder = best_porder;
+	task.porder = best_porder;
 	int obits = task.obits - task.wbits;
-	tasks[get_group_id(0)].data.size =
-	    task.type == Fixed ? task.residualOrder * obits + 6 + best_length :
-	    task.type == LPC ? task.residualOrder * obits + 6 + best_length + 4 + 5 + task.residualOrder * task.cbits :
-	    task.type == Constant ? obits : obits * task.blocksize;
+	task.headerLen = 
+	    task.type == Fixed ? task.residualOrder * obits + 6 :
+	    task.type == LPC ? task.residualOrder * obits + 6 + 4 + 5 + task.residualOrder * task.cbits :
+	    task.type == Constant ? obits :
+	    /* task.type == Verbatim ? */ obits * task.blocksize;
+	task.size = task.headerLen + select(0, best_length, task.type == Fixed || task.type == LPC);
+	if (task.size >= obits * task.blocksize)
+	{
+	    task.headerLen = task.size = obits * task.blocksize;
+	    task.type = Verbatim;
+	}
     }
     barrier(CLK_LOCAL_MEM_FENCE);
+    if (get_local_id(0) < sizeof(task) / sizeof(int))
+	((__global int*)(&tasks[get_group_id(0)]))[get_local_id(0)] = ((__local int*)&task)[get_local_id(0)];
     for (int offs = get_local_id(0); offs < (1 << best_porder); offs += GROUP_SIZE)
 	best_rice_parameters[(get_group_id(0) << max_porder) + offs] = rice_parameters[pos - (2 << best_porder) + offs];
     // FIXME: should be bytes?
 }
 #endif
 
+#ifdef DO_RICE
 #ifdef __CPU__
 typedef struct BitWriter_t
 {
@@ -1720,6 +1734,100 @@ void clRiceEncoding(
 	//if (get_group_id(0) == 0) printf("\n");
 	flush(&bw);
     }
+#else
+    __local FLACCLSubframeData task;
+    __local int riceparams[256];
+    __local int mypos[GROUP_SIZE];
+    __local unsigned int data[GROUP_SIZE];
+    __local int start;
+
+    int tid = get_local_id(0);
+    if (tid < sizeof(task) / sizeof(int))
+	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int offs = tid; offs < (1 << task.porder); offs += GROUP_SIZE)
+	riceparams[offs] = best_rice_parameters[(get_group_id(0) << max_porder) + offs];
+    if (tid == 0)
+	start = task.encodingOffset;
+    data[tid] = 0;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    int bs = task.blocksize;
+    int partlen = bs >> task.porder;
+    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
+    {
+	int offs = pos + tid;
+	int v = offs < bs ? residual[task.residualOffs + offs] : 0;
+	int k = offs < bs ? riceparams[offs / partlen] : 0;
+	int pstart = offs == task.residualOrder || (offs % partlen) == 0;
+	v = (v << 1) ^ (v >> 31);
+	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
+	mypos[tid] = mylen;
+	barrier(CLK_LOCAL_MEM_FENCE);
+	// Inclusive scan(+)
+	for (int offset = 1; offset < GROUP_SIZE; offset <<= 1)
+	{
+	    int t = tid >= offset ? mypos[tid - offset] : 0;
+	    barrier(CLK_LOCAL_MEM_FENCE);
+	    mypos[tid] += t;
+	    barrier(CLK_LOCAL_MEM_FENCE);
+	}
+	// make it exclusive
+	//if ((get_global_id(0) == 64 || get_global_id(0) == 63) && pos == 0)
+	//    printf("v=%x,k=%d,mylen=%d,mypos=%d,pstart=%d,partlen=%d,start=%d\n", v, k, mylen, mypos[tid-1], pstart, partlen, start);
+	//barrier(CLK_LOCAL_MEM_FENCE);
+	mypos[tid] += start;
+	int start32 = start / 32;
+	barrier(CLK_LOCAL_MEM_FENCE);
+	//if ((get_global_id(0) == 64 || get_global_id(0) == 63) && pos == 0)
+	//    printf("v=%x,k=%d,mylen=%d,mypos=%d,pstart=%d,partlen=%d\n", v, k, mylen, mypos[tid], pstart, partlen);
+	if (mylen > 0)
+	{
+	    if (pstart)
+	    {
+		int kpos = mypos[tid] - mylen;
+		unsigned int kval = (k << 28);
+	     //   if (get_group_id(0) == 0 && kpos / 32 - task.encodingOffset / 32 == 5 && pos == 0)
+		    //printf("{%08X |= %08X}\n", data[kpos / 32 - start32], kval >> (kpos & 31));
+		atom_or(&data[kpos / 32 - start32], kval >> (kpos & 31));
+		if ((kpos & 31) != 0)
+		atom_or(&data[kpos / 32 - start32 + 1], kval << (32 - (kpos & 31)));
+	    }
+	    int qpos = mypos[tid] - k - 1;
+	    unsigned int qval = (1U << 31) | (v << (31 - k));
+	    //if (get_group_id(0) == 0 && qpos / 32 - task.encodingOffset / 32 == 5 && pos == 0)
+	    //    printf("(%08X |= %08X) tid == %d, qpos == %d, qval == %08X\n", data[qpos / 32 - start32], qval >> (qpos & 31), tid, qpos, qval);
+	 //   if (get_group_id(0) == 0 && pos == 0)
+	 //   {
+	 //       printf("[%08X] (%08X |= %08X) qval==%08x qpos==%08x\n", qpos / 32 - start32, data[qpos / 32 - start32], qval >> (qpos & 31), qval, qpos);
+		//if (qval << (32 - (qpos & 31)) != 0)
+		//    printf("[%08X] (%08X |= %08X)\n", qpos / 32 - start32 + 1, data[qpos / 32 - start32+1], qval << (32 - (qpos & 31)));
+	 //   }
+	    atom_or(&data[qpos / 32 - start32], qval >> (qpos & 31));
+	    if ((qpos & 31) != 0)
+	    atom_or(&data[qpos / 32 - start32 + 1], qval << (32 - (qpos & 31)));
+	}
+	if (tid == GROUP_SIZE - 1)
+	    start = mypos[tid];
+	//if (get_group_id(0) == 0 && pos == 0)
+	//    printf("[%d] == %d\n", tid, mypos[tid]);
+	//if (get_group_id(0) == 0 && pos == 0)
+	//    printf("%d == %d\n", (((qpos % 32) / 8) * 16 + 7 - qpos % 32), (((qpos << 1) & 48) + 7 - qpos & 31));
+	barrier(CLK_LOCAL_MEM_FENCE);
+	unsigned int bb = data[tid];
+	if ((start32 + tid) * 32 <= start)
+	    output[start32 + tid] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
+	//if (get_group_id(0) == 0 && pos == 0 && bb != 0)
+	//    printf("[%08x] == %08X\n", 0x2dc8 + (tid + start32) * 4, data[tid]);
+	int remainder = data[start / 32 - start32];
+	barrier(CLK_LOCAL_MEM_FENCE);
+	data[tid] = select(0, remainder, tid == 0);
+	//if (start / 32 - start32 > GROUP_SIZE)
+	//    printf("buffer overflow: %d > %d\n", start / 32 - start32, GROUP_SIZE);
+    }
+ //   if (tid == 0 && start != task.encodingOffset - task.headerLen + task.size)
+	//printf("size mismatch: %d != %d\n", start, task.encodingOffset - task.headerLen + task.size);
 #endif
 }
+#endif /* DO_RICE */
+#endif /* DO_PARTITIONS */
 #endif

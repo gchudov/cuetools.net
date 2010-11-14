@@ -77,7 +77,7 @@ namespace CUETools.FLACCL.cmd
 				min_lpc_order = -1, max_lpc_order = -1,
 				min_fixed_order = -1, max_fixed_order = -1,
 				min_precision = -1, max_precision = -1,
-				orders_per_window = -1,
+				orders_per_window = -1, orders_per_channel = -1,
 				blocksize = -1;
 			int level = -1, padding = -1, vbr_mode = -1;
 			bool do_seektable = true;
@@ -99,6 +99,8 @@ namespace CUETools.FLACCL.cmd
 					do_seektable = false;
 				else if (args[arg] == "--slow-gpu")
 					settings.GPUOnly = false;
+				else if (args[arg] == "--do-rice")
+					settings.DoRice = true;
 				else if (args[arg] == "--no-md5")
 					settings.DoMD5 = false;
 				else if (args[arg] == "--buffered")
@@ -155,6 +157,8 @@ namespace CUETools.FLACCL.cmd
 					ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
 				else if (args[arg] == "--orders-per-window")
 					ok = (++arg < args.Length) && int.TryParse(args[arg], out orders_per_window);
+				else if (args[arg] == "--orders-per-channel")
+					ok = (++arg < args.Length) && int.TryParse(args[arg], out orders_per_channel);
 				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
 					ok = int.TryParse(args[arg], out blocksize);
 				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
@@ -248,6 +252,8 @@ namespace CUETools.FLACCL.cmd
 					encoder.VBRMode = vbr_mode;
 				if (orders_per_window >= 0)
 					encoder.OrdersPerWindow = orders_per_window;
+				if (orders_per_channel >= 0)
+					encoder.OrdersPerChannel = orders_per_channel;
 				encoder.DoSeekTable = do_seektable;
 			}
 			catch (Exception ex)
@@ -327,7 +333,7 @@ namespace CUETools.FLACCL.cmd
 				Console.Out.WriteLine("{0}\t{1}\t{2}\t{3}\t{4} ({5})\t{6}/{7}+{12}{13}\t{8}..{9}\t{10}\t{11}",
 					encoder.TotalSize,
 					encoder.UserProcessorTime.TotalSeconds > 0 ? encoder.UserProcessorTime.TotalSeconds : totalElapsed.TotalSeconds,
-					encoder.StereoMethod.ToString().PadRight(15),
+					(encoder.StereoMethod.ToString() + (encoder.OrdersPerChannel == 32 ? "" : "(" + encoder.OrdersPerChannel.ToString() + ")")).PadRight(15),
 					encoder.WindowFunction.ToString().PadRight(15),
 					encoder.MaxPartitionOrder,
 					settings.GPUOnly ? "GPU" : "CPU",
