@@ -842,7 +842,7 @@ namespace CUETools.Codecs.FLACCL
 			//assert(porder >= 0);
 			frame.writer.writebits(4, porder);
 
-			if (_settings.DoRice)
+			if (_settings.GPUOnly && _settings.DoRice)
 			{
 				if (task.BestResidualTasks[index].size != (int)sub.best.size)
 					throw new Exception("Encoding offset mismatch");
@@ -1210,7 +1210,7 @@ namespace CUETools.Codecs.FLACCL
 							}
 #endif
 
-							if (((csum << task.frame.subframes[ch].obits) >= 1UL << 32 || !_settings.GPUOnly) && !_settings.DoRice)
+							if (((csum << task.frame.subframes[ch].obits) >= 1UL << 32 && !_settings.DoRice) || !_settings.GPUOnly)
 							{
 								if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 								if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32)
@@ -1311,7 +1311,7 @@ namespace CUETools.Codecs.FLACCL
 				}
 				else
 				{
-					if (_settings.DoRice && frame.subframes[ch].best.size != task.BestResidualTasks[index].size)
+					if (_settings.GPUOnly && _settings.DoRice && frame.subframes[ch].best.size != task.BestResidualTasks[index].size)
 						throw new Exception("size reported incorrectly");
 				}
 			}
@@ -2914,7 +2914,7 @@ namespace CUETools.Codecs.FLACCL
 				{
 					openCLCQ.EnqueueReadBuffer(clBestRiceParams, false, 0, sizeof(int) * (1 << max_porder) * channels * frameCount, clBestRiceParamsPtr);
 					if (writer._settings.DoRice)
-						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channels, clRiceOutputPtr);
+						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, (channels * frameSize * 17 + 128) / 8 * frameCount, clRiceOutputPtr);
 					else
 						openCLCQ.EnqueueReadBuffer(clResidual, false, 0, sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channels, clResidualPtr);
 				}

@@ -1735,9 +1735,10 @@ void clRiceEncoding(
 	flush(&bw);
     }
 #else
+#define WARP_SIZE 32
     __local FLACCLSubframeData task;
     __local int riceparams[256];
-    __local int mypos[GROUP_SIZE];
+    __local int mypos[GROUP_SIZE+1];
     __local unsigned int data[GROUP_SIZE];
     __local int start;
 
@@ -1749,6 +1750,8 @@ void clRiceEncoding(
 	riceparams[offs] = best_rice_parameters[(get_group_id(0) << max_porder) + offs];
     if (tid == 0)
 	start = task.encodingOffset;
+    if (tid == 0)
+	mypos[GROUP_SIZE] = 0;
     data[tid] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
     int bs = task.blocksize;
@@ -1762,8 +1765,32 @@ void clRiceEncoding(
 	v = (v << 1) ^ (v >> 31);
 	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
 	mypos[tid] = mylen;
-	barrier(CLK_LOCAL_MEM_FENCE);
 	// Inclusive scan(+)
+#if 1
+	for (int offset = 1; offset < WARP_SIZE; offset <<= 1)
+	    mypos[tid] += mypos[select(GROUP_SIZE, tid - offset, offset <= (tid & (WARP_SIZE - 1)))];
+#if 1
+	barrier(CLK_LOCAL_MEM_FENCE);
+        for (int j = GROUP_SIZE - WARP_SIZE; j > 0; j -= WARP_SIZE)
+	{
+	    if (tid >= j)
+		mypos[tid] += mypos[j - 1];
+	    barrier(CLK_LOCAL_MEM_FENCE);
+	}
+#else
+	if ((tid & (WARP_SIZE - 1)) == WARP_SIZE - 1)
+	    warppos[tid/WARP_SIZE] = mypos[tid];
+	barrier(CLK_LOCAL_MEM_FENCE);
+	for (int offset = 1; offset < GROUP_SIZE/WARP_SIZE; offset <<= 1)
+	{
+	    if (offset <= tid && tid < GROUP_SIZE/WARP_SIZE)
+		warppos[tid] += warppos[tid - offset];
+	}
+	barrier(CLK_LOCAL_MEM_FENCE);
+	mypos[tid] += tid / WARP_SIZE == 0 ? 0 : warppos[tid / WARP_SIZE - 1];
+#endif
+#else
+	barrier(CLK_LOCAL_MEM_FENCE);
 	for (int offset = 1; offset < GROUP_SIZE; offset <<= 1)
 	{
 	    int t = tid >= offset ? mypos[tid - offset] : 0;
@@ -1771,7 +1798,7 @@ void clRiceEncoding(
 	    mypos[tid] += t;
 	    barrier(CLK_LOCAL_MEM_FENCE);
 	}
-	// make it exclusive
+#endif
 	//if ((get_global_id(0) == 64 || get_global_id(0) == 63) && pos == 0)
 	//    printf("v=%x,k=%d,mylen=%d,mypos=%d,pstart=%d,partlen=%d,start=%d\n", v, k, mylen, mypos[tid-1], pstart, partlen, start);
 	//barrier(CLK_LOCAL_MEM_FENCE);
