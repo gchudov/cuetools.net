@@ -162,7 +162,6 @@ namespace CUETools.Codecs.FLACCL
 		bool inited = false;
 
 		OpenCLManager OCLMan;
-		Context openCLContext;
 		Program openCLProgram;
 
 		FLACCLTask task1;
@@ -1615,7 +1614,9 @@ namespace CUETools.Codecs.FLACCL
 				}
 				OCLMan.CreateDefaultContext(platformId, (DeviceType)_settings.DeviceType);
 
-				openCLContext = OCLMan.Context;
+				if (OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics"))
+					OCLMan.Defines += "#define HAVE_ATOM\n";
+
 				try
 				{
 					openCLProgram = OCLMan.CompileFile("flac.cl");

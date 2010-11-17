@@ -36,8 +36,12 @@
 #endif
 #endif
 
+#define WARP_SIZE 32
+
+#ifdef HAVE_ATOM
 #pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics: enable
 #pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics: enable
+#endif
 
 typedef enum
 {
@@ -605,6 +609,9 @@ void clQuantizeLPC(
 	volatile float error[64];
 	volatile int maxcoef[32];
 	volatile int maxcoef2[32];
+#ifndef HAVE_ATOM
+	volatile int tmp[32];
+#endif
     } shared;
 
     const int tid = get_local_id(0);
@@ -683,7 +690,20 @@ void clQuantizeLPC(
 	// get 15 bits of each coeff
 	int coef = convert_int_rte(lpc * (1 << 15));
 	// remove sign bits
+#ifdef HAVE_ATOM
 	atom_or(shared.maxcoef + i, coef ^ (coef >> 31));
+#else
+	shared.tmp[tid] = coef ^ (coef >> 31);
+	if (tid < 16)
+	{
+	    shared.tmp[tid] |= shared.tmp[tid + 16];
+	    shared.tmp[tid] |= shared.tmp[tid + 8];
+	    shared.tmp[tid] |= shared.tmp[tid + 4];
+	    shared.tmp[tid] |= shared.tmp[tid + 2];
+	    if (tid == 0)
+		shared.maxcoef[i] = shared.tmp[tid] | shared.tmp[tid + 1];
+	}
+#endif
 	barrier(CLK_LOCAL_MEM_FENCE);
 	//SUM32(shared.tmpi,tid,|=);
 	// choose precision	
@@ -703,7 +723,20 @@ void clQuantizeLPC(
 	//shared.tmp[tid] = (tid != 0) * (shared.arp[tid - 1]*(1 << shared.task.shift) - shared.task.coefs[tid - 1]);
 	//shared.task.coefs[tid] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, convert_int_rte((shared.arp[tid]) * (1 << shared.task.shift) + shared.tmp[tid])));
 	// remove sign bits
+#ifdef HAVE_ATOM
 	atom_or(shared.maxcoef2 + i, coef ^ (coef >> 31));
+#else
+	shared.tmp[tid] = coef ^ (coef >> 31);
+	if (tid < 16)
+	{
+	    shared.tmp[tid] |= shared.tmp[tid + 16];
+	    shared.tmp[tid] |= shared.tmp[tid + 8];
+	    shared.tmp[tid] |= shared.tmp[tid + 4];
+	    shared.tmp[tid] |= shared.tmp[tid + 2];
+	    if (tid == 0)
+		shared.maxcoef2[i] = shared.tmp[tid] | shared.tmp[tid + 1];
+	}
+#endif
 	barrier(CLK_LOCAL_MEM_FENCE);
 	// calculate actual number of bits (+1 for sign)
 	cbits = 1 + 32 - clz(shared.maxcoef2[i]);
@@ -800,6 +833,9 @@ void clEstimateResidual(
     )
 {
     __local float data[GROUP_SIZE * 2 + 32];
+#if !defined(AMD) || !defined(HAVE_ATOM)
+    __local volatile int idata[GROUP_SIZE];
+#endif
     __local FLACCLSubframeTask task;
     __local int psum[64];
     __local float fcoef[32];
@@ -827,7 +863,7 @@ void clEstimateResidual(
     if (tid < 32)
 	data[GROUP_SIZE * 2 + tid] = 0.0f;
 
-    int partOrder = max(1, clz(64) - clz(bs - 1) + 1);
+    int partOrder = max(6, clz(64) - clz(bs - 1) + 1);
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -876,32 +912,31 @@ void clEstimateResidual(
 
 	int t = convert_int_rte(nextData + sum.x + sum.y + sum.z + sum.w);
 	barrier(CLK_LOCAL_MEM_FENCE);
-#ifdef AMD
 	data[tid] = nextData;
 	// ensure we're within frame bounds
 	t = select(0, t, offs >= ro && offs < bs);
 	// overflow protection
 	t = iclamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	atom_add(&psum[min(63,offs >> partOrder)], (t << 1) ^ (t >> 31));
-#else
-	// ensure we're within frame bounds
-	t = select(0, t, offs >= ro && offs < bs);
-	// overflow protection
-	t = iclamp(t, -0x7fffff, 0x7fffff);
+	t = (t << 1) ^ (t >> 31);
+#if !defined(AMD) || !defined(HAVE_ATOM)
 	// convert to unsigned
-	data[tid] = (t << 1) ^ (t >> 31);
+	idata[tid] = t;
 	barrier(CLK_LOCAL_MEM_FENCE);
 	int ps = (1 << partOrder) - 1;
-	for (int l = 1 << (partOrder - 1); l > 0; l >>= 1)
+	int lane = tid & ps;
+	for (int l = 1 << (partOrder - 1); l > WARP_SIZE; l >>= 1)
 	{
-             if ((tid & ps) < l) 
-		data[tid] += data[tid + l];
+            if (lane < l) idata[tid] += idata[tid + l];
 	    barrier(CLK_LOCAL_MEM_FENCE);
 	}
-	if ((tid & ps) == 0)
-		psum[min(63,offs >> partOrder)] += data[tid];
-	data[tid] = nextData;
+	if (lane < WARP_SIZE)
+	    for (int l = WARP_SIZE; l > 0; l >>= 1)
+		idata[tid] += idata[tid + l];
+	if (lane == 0)
+	    psum[min(63,offs >> partOrder)] += idata[tid];
+#else
+	atom_add(&psum[min(63,offs >> partOrder)], t);
 #endif
     }
 
@@ -1735,40 +1770,35 @@ void clRiceEncoding(
 	flush(&bw);
     }
 #else
-#define WARP_SIZE 32
-    __local FLACCLSubframeData task;
-    __local int riceparams[256];
-    __local int mypos[GROUP_SIZE+1];
     __local unsigned int data[GROUP_SIZE];
-    __local int start;
+    __local int mypos[GROUP_SIZE+1];
+    __local FLACCLSubframeData task;
 
     int tid = get_local_id(0);
     if (tid < sizeof(task) / sizeof(int))
 	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
     barrier(CLK_LOCAL_MEM_FENCE);
-    for (int offs = tid; offs < (1 << task.porder); offs += GROUP_SIZE)
-	riceparams[offs] = best_rice_parameters[(get_group_id(0) << max_porder) + offs];
-    if (tid == 0)
-	start = task.encodingOffset;
     if (tid == 0)
 	mypos[GROUP_SIZE] = 0;
     data[tid] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
-    int bs = task.blocksize;
-    int partlen = bs >> task.porder;
+    const int bs = task.blocksize;
+    int start = task.encodingOffset;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	int offs = pos + tid;
 	int v = offs < bs ? residual[task.residualOffs + offs] : 0;
-	int k = offs < bs ? riceparams[offs / partlen] : 0;
-	int pstart = offs == task.residualOrder || (offs % partlen) == 0;
+	int part = (offs << task.porder) / bs;
+	int k = offs < bs ? best_rice_parameters[(get_group_id(0) << max_porder) + part] : 0;
+	int pstart = offs == task.residualOrder || offs == (part * bs) >> task.porder;
 	v = (v << 1) ^ (v >> 31);
 	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
 	mypos[tid] = mylen;
 	// Inclusive scan(+)
 #if 1
+	int lane = (tid & (WARP_SIZE - 1));
 	for (int offset = 1; offset < WARP_SIZE; offset <<= 1)
-	    mypos[tid] += mypos[select(GROUP_SIZE, tid - offset, offset <= (tid & (WARP_SIZE - 1)))];
+	    mypos[tid] += mypos[select(GROUP_SIZE, tid - offset, lane >= offset)];
 #if 1
 	barrier(CLK_LOCAL_MEM_FENCE);
         for (int j = GROUP_SIZE - WARP_SIZE; j > 0; j -= WARP_SIZE)
@@ -1826,8 +1856,7 @@ void clRiceEncoding(
 	unsigned int qval1= select(0, qval << (32 - qpos1), qpos1);
 	atom_or(&data[qpos0], qval0);
 	atom_or(&data[qpos0 + 1], qval1);
-	if (tid == GROUP_SIZE - 1)
-	    start = mypos[tid];
+	start = mypos[GROUP_SIZE - 1];
 	//if (get_group_id(0) == 0 && pos == 0)
 	//    printf("[%d] == %d\n", tid, mypos[tid]);
 	//if (get_group_id(0) == 0 && pos == 0)
@@ -1835,7 +1864,7 @@ void clRiceEncoding(
 	barrier(CLK_LOCAL_MEM_FENCE);
 	unsigned int bb = data[tid];
 	if ((start32 + tid) * 32 <= start)
-	    output[start32 + tid] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
+	    output[start32 + tid] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | (bb << 24);
 	//if (get_group_id(0) == 0 && pos == 0 && bb != 0)
 	//    printf("[%08x] == %08X\n", 0x2dc8 + (tid + start32) * 4, data[tid]);
 	int remainder = data[start / 32 - start32];
