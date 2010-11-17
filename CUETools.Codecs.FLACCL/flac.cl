@@ -20,20 +20,26 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
-#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__) || defined(__CPU__)
+#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__) || defined(__ATI_RV770__) || defined(__ATI_RV730__) || defined(__ATI_RV710__)
 #define AMD
-#ifdef DEBUG
+#endif
+
+#if defined(AMD) && defined(DEBUG)
 #pragma OPENCL EXTENSION cl_amd_printf : enable
 #endif
+
 #ifdef __CPU__
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 #endif
+
+#if __OPENCL_VERSION__ == 110
 #define iclamp(a,b,c) clamp(a,b,c)
 #else
 #define iclamp(a,b,c) max(b,min(a,c))
+#endif
+
 #ifndef M_PI_F
 #define M_PI_F M_PI
-#endif
 #endif
 
 #define WARP_SIZE 32
@@ -77,6 +83,7 @@ typedef struct
     int coefs[32]; // fixme: should be short?
 } FLACCLSubframeTask;
 
+#if 0
 __kernel void clWindowRectangle(__global float* window, int windowOffset)
 {
     window[get_global_id(0)] = 1.0f;
@@ -100,6 +107,7 @@ __kernel void clWindowTukey(__global float* window, int windowOffset, float p)
     int n = select(max(Np, Np2), tid, tid <= Np);
     window[tid] = 0.5f - 0.5f * cos(M_PI_F * n / Np);
 }
+#endif
 
 __kernel void clStereoDecorr(
     __global int4 *samples,
