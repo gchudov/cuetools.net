@@ -32,7 +32,8 @@
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 #endif
 
-#if __OPENCL_VERSION__ == 110
+//#if __OPENCL_VERSION__ == 110
+#ifdef AMD
 #define iclamp(a,b,c) clamp(a,b,c)
 #else
 #define iclamp(a,b,c) max(b,min(a,c))
@@ -1690,7 +1691,7 @@ void clRiceEncoding(
     __global int *samples,
     __global int* best_rice_parameters,
     __global FLACCLSubframeTask *tasks,
-    __global int* output,
+    __global unsigned int* output,
     int max_porder
     )
 {
@@ -1798,12 +1799,12 @@ void clRiceEncoding(
 	int v = offs < bs ? residual[task.residualOffs + offs] : 0;
 	int part = (offs << task.porder) / bs;
 	int k = offs < bs ? best_rice_parameters[(get_group_id(0) << max_porder) + part] : 0;
-	int pstart = offs == task.residualOrder || offs == (part * bs) >> task.porder;
+	int pstart = offs == task.residualOrder || offs == ((part * bs) >> task.porder);
 	v = (v << 1) ^ (v >> 31);
 	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
 	mypos[tid] = mylen;
 	// Inclusive scan(+)
-#if 1
+#if 0
 	int lane = (tid & (WARP_SIZE - 1));
 	for (int offset = 1; offset < WARP_SIZE; offset <<= 1)
 	    mypos[tid] += mypos[select(GROUP_SIZE, tid - offset, lane >= offset)];
@@ -1837,49 +1838,37 @@ void clRiceEncoding(
 	    barrier(CLK_LOCAL_MEM_FENCE);
 	}
 #endif
-	//if ((get_global_id(0) == 64 || get_global_id(0) == 63) && pos == 0)
-	//    printf("v=%x,k=%d,mylen=%d,mypos=%d,pstart=%d,partlen=%d,start=%d\n", v, k, mylen, mypos[tid-1], pstart, partlen, start);
-	//barrier(CLK_LOCAL_MEM_FENCE);
 	mypos[tid] += start;
 	int start32 = start / 32;
 	barrier(CLK_LOCAL_MEM_FENCE);
-	//if ((get_global_id(0) == 64 || get_global_id(0) == 63) && pos == 0)
-	//    printf("v=%x,k=%d,mylen=%d,mypos=%d,pstart=%d,partlen=%d\n", v, k, mylen, mypos[tid], pstart, partlen);
 	if (pstart && mylen)
 	{
 	    int kpos = mypos[tid] - mylen;
 	    int kpos0 = (kpos >> 5) - start32;
 	    int kpos1 = kpos & 31;
-	    unsigned int kval = k << 28;
+	    unsigned int kval = (unsigned int)k << 28;
 	    unsigned int kval0 = kval >> kpos1;
-	    unsigned int kval1 = select(0, kval << (32 - kpos1), kpos1);
+	    unsigned int kval1 = select(0U, kval << (32 - kpos1), kpos1);
 	    atom_or(&data[kpos0], kval0);
 	    atom_or(&data[kpos0 + 1], kval1);
 	}
 	int qpos = mypos[tid] - k - 1;
 	int qpos0 = (qpos >> 5) - start32;
 	int qpos1 = qpos & 31;
-	unsigned int qval = select(0, (1U << 31) | (v << (31 - k)), mylen);
+	unsigned int qval = select(0U, (1U << 31) | ((unsigned int)v << (31 - k)), mylen);
 	unsigned int qval0 = qval >> qpos1;
-	unsigned int qval1= select(0, qval << (32 - qpos1), qpos1);
+	unsigned int qval1= select(0U, qval << (32 - qpos1), qpos1);
 	atom_or(&data[qpos0], qval0);
 	atom_or(&data[qpos0 + 1], qval1);
 	start = mypos[GROUP_SIZE - 1];
-	//if (get_group_id(0) == 0 && pos == 0)
-	//    printf("[%d] == %d\n", tid, mypos[tid]);
-	//if (get_group_id(0) == 0 && pos == 0)
-	//    printf("%d == %d\n", (((qpos % 32) / 8) * 16 + 7 - qpos % 32), (((qpos << 1) & 48) + 7 - qpos & 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
 	unsigned int bb = data[tid];
+//	bb = (bb >> 24) | ((bb >> 8) & 0xff00U) | ((bb << 8) & 0xff0000U) | (bb << 24);
 	if ((start32 + tid) * 32 <= start)
-	    output[start32 + tid] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | (bb << 24);
-	//if (get_group_id(0) == 0 && pos == 0 && bb != 0)
-	//    printf("[%08x] == %08X\n", 0x2dc8 + (tid + start32) * 4, data[tid]);
-	int remainder = data[start / 32 - start32];
+	    output[start32 + tid] = 0U;
+	unsigned int remainder = data[start / 32 - start32];
 	barrier(CLK_LOCAL_MEM_FENCE);
-	data[tid] = select(0, remainder, tid == 0);
-	//if (start / 32 - start32 > GROUP_SIZE)
-	//    printf("buffer overflow: %d > %d\n", start / 32 - start32, GROUP_SIZE);
+	data[tid] = select(0U, remainder, tid == 0);
     }
  //   if (tid == 0 && start != task.encodingOffset - task.headerLen + task.size)
 	//printf("size mismatch: %d != %d\n", start, task.encodingOffset - task.headerLen + task.size);
