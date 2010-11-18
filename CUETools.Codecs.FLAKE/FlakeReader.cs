@@ -435,7 +435,7 @@ namespace CUETools.Codecs.FLAKE
 				// subframe header
 				uint t1 = bitreader.readbit(); // ?????? == 0
 				if (t1 != 0)
-					throw new Exception("unsupported subframe coding");
+					throw new Exception("unsupported subframe coding (ch == " + ch.ToString() + ")");
 				int type_code = (int)bitreader.readbits(6);
 				frame.subframes[ch].wbits = (int)bitreader.readbit();
 				if (frame.subframes[ch].wbits != 0)

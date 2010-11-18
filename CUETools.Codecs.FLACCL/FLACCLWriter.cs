@@ -41,6 +41,7 @@ namespace CUETools.Codecs.FLACCL
             this.MappedMemory = false;
 			this.DoMD5 = true; 
 			this.GroupSize = 128;
+			this.TaskSize = 32;
 			this.DeviceType = OpenCLDeviceType.GPU;
 		}
 
@@ -69,6 +70,10 @@ namespace CUETools.Codecs.FLACCL
 		[DefaultValue(128)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionGroupSize")]
 		public int GroupSize { get; set; }
+
+		[DefaultValue(32)]
+		[SRDescription(typeof(Properties.Resources), "DescriptionTashSize")]
+		public int TaskSize { get; set; }
 
 		[SRDescription(typeof(Properties.Resources), "DescriptionDefines")]
 		public string Defines { get; set; }
@@ -146,7 +151,6 @@ namespace CUETools.Codecs.FLACCL
 		byte[] header;
 
 		int samplesInBuffer = 0;
-		int max_frames = 0;
 
 		int _compressionLevel = 7;
 		int _blocksize = 0;
@@ -171,8 +175,7 @@ namespace CUETools.Codecs.FLACCL
 
 		AudioPCMConfig _pcm;
 
-		public const int MAX_BLOCKSIZE = 4096 * 16;
-		internal const int maxFrames = 128;
+		public const int MAX_BLOCKSIZE = 65536;
 
 		public FLACCLWriter(string path, Stream IO, AudioPCMConfig pcm)
 		{
@@ -1023,6 +1026,7 @@ namespace CUETools.Codecs.FLACCL
 
 		unsafe void initializeSubframeTasks(int blocksize, int channelsCount, int nFrames, FLACCLTask task)
 		{
+			task.channelSize = ((blocksize + 3) & ~3) * nFrames;
 			task.frameSize = blocksize;
 			task.nWindowFunctions = 0;
 			if (task.frameSize > 4)
@@ -1078,7 +1082,7 @@ namespace CUETools.Codecs.FLACCL
 							task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 							task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOrder = order + 1;
-							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
+							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 							task.ResidualTasks[task.nResidualTasks].wbits = 0;
 							task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
@@ -1093,7 +1097,7 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].obits = (int)bits_per_sample + (channels == 2 && ch == 3 ? 1 : 0);
 						task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 						task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
-						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
+						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 						task.ResidualTasks[task.nResidualTasks].wbits = 0;
 						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
@@ -1111,7 +1115,7 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 						task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOrder = order;
-						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
+						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 						task.ResidualTasks[task.nResidualTasks].wbits = 0;
 						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
@@ -1150,7 +1154,7 @@ namespace CUETools.Codecs.FLACCL
 					//    task.ResidualTasks[task.nResidualTasks].abits = task.ResidualTasks[task.nResidualTasks].obits;
 					//    task.ResidualTasks[task.nResidualTasks].blocksize = blocksize;
 					//    task.ResidualTasks[task.nResidualTasks].residualOrder = 0;
-					//    task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * blocksize;
+					//    task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 					//    task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 					//    task.ResidualTasks[task.nResidualTasks].shift = 0;
 					//    task.nResidualTasks++;
@@ -1416,8 +1420,8 @@ namespace CUETools.Codecs.FLACCL
 			{
 				for (int ch = 0; ch < channelCount; ch++)
 					task.frame.subframes[ch].Init(
-						smp + ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * task.frameSize,
-						((int*)task.clResidualPtr) + ch * FLACCLWriter.MAX_BLOCKSIZE + iFrame * task.frameSize,
+						smp + ch * task.channelSize + iFrame * task.frameSize,
+						((int*)task.clResidualPtr) + ch * task.channelSize + iFrame * task.frameSize,
 						_pcm.BitsPerSample + (doMidside && ch == 3 ? 1 : 0), 0);
 
 				select_best_methods(task.frame, channelCount, iFrame, task);
@@ -1462,7 +1466,7 @@ namespace CUETools.Codecs.FLACCL
 			int channelsCount = doMidside ? 2 * channels : channels;
 
 			if (task.nResidualTasks == 0)
-				initializeSubframeTasks(task.frameSize, channelsCount, max_frames, task);
+				initializeSubframeTasks(task.frameSize, channelsCount, _settings.TaskSize, task);
 
 			estimate_residual(task, channelsCount);
 		}
@@ -1494,7 +1498,7 @@ namespace CUETools.Codecs.FLACCL
 						for (int ch = 0; ch < channels; ch++)
 						{
 							short* res = ((short*)task.clSamplesBytesPtr) + iFrame * channels * task.frameSize + ch;
-							int* smp = r + ch * Flake.MAX_BLOCKSIZE;
+							int* smp = r + ch * task.channelSize;
 							for (int i = task.frameSize; i > 0; i--)
 							{
 								//if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
@@ -1683,7 +1687,7 @@ namespace CUETools.Codecs.FLACCL
 			int pos = 0;
 			while (pos < buff.Length)
 			{
-				int block = Math.Min(buff.Length - pos, eparams.block_size * max_frames - samplesInBuffer);
+				int block = Math.Min(buff.Length - pos, eparams.block_size * _settings.TaskSize - samplesInBuffer);
 
 				fixed (byte* buf = buff.Bytes)
 					AudioSamples.MemCpy(((byte*)task1.clSamplesBytesPtr) + samplesInBuffer * _pcm.BlockAlign, buf + pos * _pcm.BlockAlign, block * _pcm.BlockAlign);
@@ -1692,7 +1696,7 @@ namespace CUETools.Codecs.FLACCL
 				pos += block;
 
 				int nFrames = samplesInBuffer / eparams.block_size;
-				if (nFrames >= max_frames)
+				if (nFrames >= _settings.TaskSize)
 					do_output_frames(nFrames);
 			}
 			if (md5 != null)
@@ -1770,9 +1774,9 @@ namespace CUETools.Codecs.FLACCL
 		public unsafe void do_output_frames(int nFrames)
 		{
 			send_to_GPU(task1, nFrames, eparams.block_size);
+			run_GPU_task(task1);
 			if (task2.frameCount > 0)
 				task2.openCLCQ.Finish();
-			run_GPU_task(task1);
 			if (task2.frameCount > 0)
 			{
 				if (cpu_tasks != null)
@@ -2010,8 +2014,6 @@ namespace CUETools.Codecs.FLACCL
 			}
 			else
 				eparams.block_size = _blocksize;
-
-			max_frames = Math.Min(maxFrames, FLACCLWriter.MAX_BLOCKSIZE / eparams.block_size);
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
 			if (channels == 2)
@@ -2357,6 +2359,7 @@ namespace CUETools.Codecs.FLACCL
         public int[] samplesBuffer;
 		public byte[] outputBuffer;
 		public int outputSize = 0;
+		public int channelSize = 0;
 		public int frameSize = 0;
 		public int frameCount = 0;
 		public int frameNumber = 0;
@@ -2397,18 +2400,20 @@ namespace CUETools.Codecs.FLACCL
 			openCLCQ = openCLProgram.Context.CreateCommandQueue(openCLProgram.Context.Devices[0], prop);
 
             int MAX_ORDER = this.writer.eparams.max_prediction_order;
-			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * FLACCLWriter.maxFrames;
-			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * FLACCLWriter.maxFrames;
-			int samplesBufferLen = sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channelsCount;
-			int residualBufferLen = sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channels; // need to adjust residualOffset?
-			int partitionsLen = sizeof(int) * (30 << 8) * channels * FLACCLWriter.maxFrames;
-			int riceParamsLen = sizeof(int) * (4 << 8) * channels * FLACCLWriter.maxFrames;
-            int autocorLen = sizeof(float) * (MAX_ORDER + 1) * lpc.MAX_LPC_WINDOWS * channelsCount * FLACCLWriter.maxFrames;
+			int MAX_FRAMES = this.writer._settings.TaskSize;
+			int MAX_CHANNELSIZE = MAX_FRAMES * writer.eparams.block_size;
+			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
+			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * MAX_FRAMES;
+			int samplesBufferLen = sizeof(int) * MAX_CHANNELSIZE * channelsCount;
+			int residualBufferLen = sizeof(int) * MAX_CHANNELSIZE * channels; // need to adjust residualOffset?
+			int partitionsLen = sizeof(int) * (30 << 8) * channels * MAX_FRAMES;
+			int riceParamsLen = sizeof(int) * (4 << 8) * channels * MAX_FRAMES;
+			int autocorLen = sizeof(float) * (MAX_ORDER + 1) * lpc.MAX_LPC_WINDOWS * channelsCount * MAX_FRAMES;
             int lpcDataLen = autocorLen * 32;
-            int resOutLen = sizeof(int) * channelsCount * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * FLACCLWriter.maxFrames;
-            int wndLen = sizeof(float) * FLACCLWriter.MAX_BLOCKSIZE /** 2*/ * lpc.MAX_LPC_WINDOWS;
-			int selectedLen = sizeof(int) * 32 * channelsCount * FLACCLWriter.maxFrames;
-			int riceLen = sizeof(int) * channels * FLACCLWriter.MAX_BLOCKSIZE;
+			int resOutLen = sizeof(int) * channelsCount * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * MAX_FRAMES;
+			int wndLen = sizeof(float) * MAX_CHANNELSIZE /** 2*/ * lpc.MAX_LPC_WINDOWS;
+			int selectedLen = sizeof(int) * 32 * channelsCount * MAX_FRAMES;
+			int riceLen = sizeof(int) * channels * MAX_CHANNELSIZE;
 
             if (!writer._settings.MappedMemory)
             {
@@ -2506,8 +2511,8 @@ namespace CUETools.Codecs.FLACCL
 				}
 			}
 
-			samplesBuffer = new int[FLACCLWriter.MAX_BLOCKSIZE * channelsCount];
-			outputBuffer = new byte[max_frame_size * FLACCLWriter.maxFrames + 1];
+			samplesBuffer = new int[MAX_CHANNELSIZE * channelsCount];
+			outputBuffer = new byte[max_frame_size * MAX_FRAMES + 1];
 			frame = new FlacFrame(channelsCount);
 			frame.writer = new BitWriter(outputBuffer, 0, outputBuffer.Length);
 
@@ -2662,9 +2667,9 @@ namespace CUETools.Codecs.FLACCL
 			clChannelDecorr.SetArgs(
 				clSamples,
 				clSamplesBytes,
-				FLACCLWriter.MAX_BLOCKSIZE / 4);
+				channelSize / 4);
 
-			openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, FLACCLWriter.MAX_BLOCKSIZE / 4);
+			openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, channelSize / 4);
 			//openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, (frameSize * frameCount + 3) / 4);
 
             if (eparams.do_wasted)
@@ -2917,7 +2922,7 @@ namespace CUETools.Codecs.FLACCL
 					if (writer._settings.DoRice)
 						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, (channels * frameSize * 17 + 128) / 8 * frameCount, clRiceOutputPtr);
 					else
-						openCLCQ.EnqueueReadBuffer(clResidual, false, 0, sizeof(int) * FLACCLWriter.MAX_BLOCKSIZE * channels, clResidualPtr);
+						openCLCQ.EnqueueReadBuffer(clResidual, false, 0, sizeof(int) * channelSize * channels, clResidualPtr);
 				}
 			}
             if (!writer._settings.MappedMemory)

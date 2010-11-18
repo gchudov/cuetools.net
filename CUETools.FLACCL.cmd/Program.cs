@@ -42,8 +42,17 @@ namespace CUETools.FLACCL.cmd
 			Console.WriteLine(" --verify             Verify during encoding");
 			Console.WriteLine(" --no-md5             Don't compute MD5 hash");
 			Console.WriteLine(" --no-seektable       Don't generate a seektable");
-			Console.WriteLine(" --slow-gpu           Some encoding stages are done on CPU");
 			Console.WriteLine(" --cpu-threads        Use additional CPU threads");
+			Console.WriteLine();
+			Console.WriteLine("OpenCL Options:");
+			Console.WriteLine();
+			Console.WriteLine(" --opencl-type <X>    CPU or GPU, default GPU");
+			Console.WriteLine(" --opencl-platform '' 'ATI Stream', 'NVIDIA Cuda', 'Intel OpenCL' etc");
+			Console.WriteLine(" --group-size #       Set GPU workgroup size (64,128,256)");
+			Console.WriteLine(" --task-size #        Set number of frames per GPU call, default 32");
+			Console.WriteLine(" --slow-gpu           Some encoding stages are done on CPU");
+			Console.WriteLine(" --do-rice            Experimental mode, not recommended");
+			Console.WriteLine(" --define <X> <Y>     OpenCL preprocessor definition");
 			Console.WriteLine();
 			Console.WriteLine("Advanced Options:");
 			Console.WriteLine();
@@ -113,6 +122,8 @@ namespace CUETools.FLACCL.cmd
 				}
 				else if (args[arg] == "--group-size" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
 					settings.GroupSize = intarg;
+				else if (args[arg] == "--task-size" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					settings.TaskSize = intarg;
 				else if (args[arg] == "--define" && arg + 2 < args.Length)
 					settings.Defines += "#define " + args[++arg] + " " + args[++arg] + "\n";
 				else if (args[arg] == "--opencl-platform" && ++arg < args.Length)

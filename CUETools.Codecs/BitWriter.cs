@@ -56,6 +56,21 @@ namespace CUETools.Codecs
 				writebits(8, c);
 		}
 
+		public unsafe void writeints(int len, byte* buf)
+		{
+			int old_pos = BitLength;
+			int start = old_pos / 8;
+			int end = (old_pos + len) / 8;
+			flush();
+			byte start_val = old_pos % 8 != 0 ? buffer[start] : (byte)0;
+			fixed (byte* buf1 = &buffer[0])
+				AudioSamples.MemCpy(buf1 + start, buf + start, end - start);
+			buffer[start] |= start_val;
+			buf_ptr = end;
+			if ((old_pos + len) % 8 != 0)
+				writebits((old_pos + len) % 8, buf[end] >> (8 - ((old_pos + len) % 8)));
+		}
+
 		public void write(params char [] chars)
 		{
 			foreach (char c in chars)
@@ -341,6 +356,14 @@ namespace CUETools.Codecs
 			{
 				flush();
 				buf_ptr = buf_start + value;
+			}
+		}
+
+		public int BitLength
+		{
+			get
+			{
+				return buf_ptr * 8 + 32 - bit_left;
 			}
 		}
 	}
