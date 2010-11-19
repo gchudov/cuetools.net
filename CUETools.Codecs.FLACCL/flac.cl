@@ -20,7 +20,7 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
-#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__) || defined(__ATI_RV770__) || defined(__ATI_RV730__) || defined(__ATI_RV710__)
+#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__) || defined(__ATI_RV770__) || defined(__ATI_RV730__) || defined(__ATI_RV710__) || defined(__CPU__)
 #define AMD
 #endif
 
@@ -152,7 +152,7 @@ __kernel void clChannelDecorr2(
 #define __ffs(a) (32 - clz(a & (-a)))
 //#define __ffs(a) (33 - clz(~a & (a - 1)))
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clFindWastedBits(
     __global FLACCLSubframeTask *tasks,
@@ -228,7 +228,7 @@ void clFindWastedBits(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 #define TEMPBLOCK 128
 #define STORE_AC(ro, val) if (ro <= MAX_ORDER) pout[ro] = val;
 #define STORE_AC4(ro, val) STORE_AC(ro*4+0, val##ro.x) STORE_AC(ro*4+1, val##ro.y) STORE_AC(ro*4+2, val##ro.z) STORE_AC(ro*4+3, val##ro.w)
@@ -381,7 +381,7 @@ void clComputeAutocor(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clComputeLPC(
     __global float *pautoc,
@@ -525,7 +525,7 @@ void clComputeLPC(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clQuantizeLPC(
     __global FLACCLSubframeTask *tasks,
@@ -545,7 +545,7 @@ void clQuantizeLPC(
     // Load prediction error estimates based on Akaike's Criteria
     for (int tid = 0; tid < MAX_ORDER; tid++)
     {
-	error[tid] = bs * log(lpcs[lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log(bs);
+	error[tid] = bs * log(lpcs[lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log((float)bs);
 	best_orders[tid] = tid;
     }
     
@@ -588,7 +588,7 @@ void clQuantizeLPC(
 	{
 	    float lpc = lpcs[lpcOffs + order * 32 + tid];
 	    // quantize coeffs with given shift
-	    int c = convert_int_rte(clamp(lpc * (1 << shift), -1 << (cbits - 1), 1 << (cbits - 1)));
+	    int c = convert_int_rte(clamp(lpc * (1 << shift), (float)(-1 << (cbits - 1)), (float)(1 << (cbits - 1))));
 	    // remove sign bits
 	    tmpi |= c ^ (c >> 31);
 	    tasks[taskNo].coefs[tid] = c;
@@ -764,7 +764,7 @@ void clQuantizeLPC(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 inline int calc_residual(__global int *ptr, int * coefs, int ro)
 {
     int sum = 0;
@@ -796,7 +796,7 @@ inline int calc_residual(__global int *ptr, int * coefs, int ro)
 	default: ENCODE_N(ro, action) \
     }
 
-__kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(1, 1, 1)))
+__kernel __attribute__(( vec_type_hint (int4))) __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEstimateResidual(
     __global int*samples,
     __global int*selectedTasks,
@@ -811,13 +811,30 @@ void clEstimateResidual(
     int len[1 << EPO]; // blocksize / 64!!!!
 
     __global int *data = &samples[task.data.samplesOffs];
- //   for (int i = ro; i < 32; i++)
-	//task.coefs[i] = 0;
+    for (int i = ro; i < 32; i++)
+	task.coefs[i] = 0;
     for (int i = 0; i < 1 << EPO; i++)
 	len[i] = 0;
 
+#ifdef AMD
     SWITCH_N((t = clamp(t, -0x7fffff, 0x7fffff), len[pos >> (12 - EPO)] += (t << 1) ^ (t >> 31)))
+#else
+    int4 c0 = vload4(0, &task.coefs[0]);
+    int4 c1 = vload4(1, &task.coefs[0]);
+    int4 c2 = vload4(2, &task.coefs[0]);
 
+    for (int pos = ro; pos < bs; pos ++) 
+    {
+	__global int * dptr = data + pos - ro;
+	int4 sum 
+	    = c0 * vload4(0, dptr)
+	    + c1 * vload4(1, dptr)
+	    + c2 * vload4(2, dptr);
+	int t = (data[pos] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift)) >> task.data.wbits;
+	t = iclamp(t, -0x7fffff, 0x7fffff);
+	len[pos >> (12 - EPO)] += (t << 1) ^ (t >> 31);
+    }
+#endif
     int total = 0;
     for (int i = 0; i < 1 << EPO; i++)
     {
@@ -1052,7 +1069,7 @@ void clChooseBestMethod(
 }
 
 #ifdef DO_PARTITIONS
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEncodeResidual(
@@ -1144,7 +1161,7 @@ void clEncodeResidual(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clCalcPartition(
     __global int *partition_lengths,
@@ -1232,7 +1249,7 @@ void clCalcPartition(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clCalcPartition16(
@@ -1346,7 +1363,7 @@ void clCalcPartition16(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 // Sums partition lengths for a certain k == get_group_id(0)
 // get_group_id(0) == k
 // get_group_id(1) == task index
@@ -1405,7 +1422,7 @@ void clSumPartition(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 // Finds optimal rice parameter for each partition.
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
@@ -1469,7 +1486,7 @@ void clFindRiceParameter(
 }
 #endif
 
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clFindPartitionOrder(
@@ -1603,10 +1620,10 @@ void clFindPartitionOrder(
 #endif
 
 #ifdef DO_RICE
-#ifdef __CPU__
+#ifdef FLACCL_CPU
 typedef struct BitWriter_t
 {
-    __global int *buffer;
+    __global unsigned int *buffer;
     unsigned int bit_buf;
     int bit_left;
     int buf_ptr;
@@ -1695,7 +1712,7 @@ void clRiceEncoding(
     int max_porder
     )
 {
-#ifdef __CPU__
+#ifdef FLACCL_CPU
     __global FLACCLSubframeTask* task = tasks + get_group_id(0);
     if (task->data.type == Fixed || task->data.type == LPC)
     {
@@ -1804,7 +1821,7 @@ void clRiceEncoding(
 	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
 	mypos[tid] = mylen;
 	// Inclusive scan(+)
-#if 0
+#if 1
 	int lane = (tid & (WARP_SIZE - 1));
 	for (int offset = 1; offset < WARP_SIZE; offset <<= 1)
 	    mypos[tid] += mypos[select(GROUP_SIZE, tid - offset, lane >= offset)];
@@ -1863,9 +1880,9 @@ void clRiceEncoding(
 	start = mypos[GROUP_SIZE - 1];
 	barrier(CLK_LOCAL_MEM_FENCE);
 	unsigned int bb = data[tid];
-//	bb = (bb >> 24) | ((bb >> 8) & 0xff00U) | ((bb << 8) & 0xff0000U) | (bb << 24);
+	bb = (bb >> 24) | ((bb >> 8) & 0xff00U) | ((bb << 8) & 0xff0000U) | (bb << 24);
 	if ((start32 + tid) * 32 <= start)
-	    output[start32 + tid] = 0U;
+	    output[start32 + tid] = bb;
 	unsigned int remainder = data[start / 32 - start32];
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = select(0U, remainder, tid == 0);

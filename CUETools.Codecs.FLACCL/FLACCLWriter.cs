@@ -1593,6 +1593,7 @@ namespace CUETools.Codecs.FLACCL
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
+					(_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
 					_settings.Defines + "\n";
 				// The BuildOptions string is passed directly to clBuild and can be used to do debug builds etc
 				OCLMan.BuildOptions = "";
