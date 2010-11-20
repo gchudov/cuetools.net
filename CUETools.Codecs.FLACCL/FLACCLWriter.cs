@@ -195,7 +195,7 @@ namespace CUETools.Codecs.FLACCL
 			_path = path;
 			_IO = IO;
 
-			eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
+			eparams.flake_set_defaults(_compressionLevel);
 			eparams.padding_size = 8192;
 
 			crc8 = new Crc8();
@@ -238,7 +238,7 @@ namespace CUETools.Codecs.FLACCL
 				if (value < 0 || value > 11)
 					throw new Exception("unsupported compression level");
 				_compressionLevel = value;
-				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
+				eparams.flake_set_defaults(_compressionLevel);
 			}
 		}
 
@@ -261,7 +261,6 @@ namespace CUETools.Codecs.FLACCL
 					//_settings.GPUOnly = true;
                     _settings.MappedMemory = true;
 				}
-				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			}
 		}
 
@@ -1582,19 +1581,6 @@ namespace CUETools.Codecs.FLACCL
 				// If true, RequireImageSupport will filter out any devices without image support
 				// In this project we don't need image support though, so we set it to false
 				OCLMan.RequireImageSupport = false;
-				// The Defines string gets prepended to any and all sources that are compiled
-				// and serve as a convenient way to pass configuration information to the compilation process
-				OCLMan.Defines =
-					"#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
-					"#define GROUP_SIZE " + groupSize.ToString() + "\n" +
-					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
-					(_settings.GPUOnly ? "#define DO_PARTITIONS\n" : "") +
-					(_settings.DoRice ? "#define DO_RICE\n" : "") +
-#if DEBUG
-					"#define DEBUG\n" +
-#endif
-					(_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
-					_settings.Defines + "\n";
 				// The BuildOptions string is passed directly to clBuild and can be used to do debug builds etc
 				OCLMan.BuildOptions = "";
 				OCLMan.SourcePath = System.IO.Path.GetDirectoryName(GetType().Assembly.Location);
@@ -1620,7 +1606,23 @@ namespace CUETools.Codecs.FLACCL
 				OCLMan.CreateDefaultContext(platformId, (DeviceType)_settings.DeviceType);
 
 				if (OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics"))
-					OCLMan.Defines += "#define HAVE_ATOM\n";
+					_settings.Defines += "#define HAVE_ATOM\n";
+				else
+					_settings.GPUOnly = false;
+
+				// The Defines string gets prepended to any and all sources that are compiled
+				// and serve as a convenient way to pass configuration information to the compilation process
+				OCLMan.Defines =
+					"#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
+					"#define GROUP_SIZE " + groupSize.ToString() + "\n" +
+					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
+					(_settings.GPUOnly ? "#define DO_PARTITIONS\n" : "") +
+					(_settings.DoRice ? "#define DO_RICE\n" : "") +
+#if DEBUG
+					"#define DEBUG\n" +
+#endif
+ (_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
+					_settings.Defines + "\n";
 
 				try
 				{
@@ -2146,7 +2148,7 @@ namespace CUETools.Codecs.FLACCL
 
 		public bool do_seektable;
 
-		public int flake_set_defaults(int lvl, bool encode_on_cpu)
+		public int flake_set_defaults(int lvl)
 		{
 			compression = lvl;
 
@@ -2165,7 +2167,7 @@ namespace CUETools.Codecs.FLACCL
 			min_prediction_order = 1;
 			max_prediction_order = 12;
 			min_partition_order = 0;
-			max_partition_order = 6;
+			max_partition_order = 8;
 			variable_block_size = 0;
 			lpc_min_precision_search = 0;
 			lpc_max_precision_search = 0;
@@ -2183,7 +2185,6 @@ namespace CUETools.Codecs.FLACCL
 					do_midside = false;
 					window_function = WindowFunction.Bartlett;
 					orders_per_window = 1;
-					max_partition_order = 4;
 					max_prediction_order = 7;
 					min_fixed_order = 3;
 					max_fixed_order = 2;
@@ -2197,7 +2198,6 @@ namespace CUETools.Codecs.FLACCL
 					min_fixed_order = 2;
 					max_fixed_order = 2;
 					max_prediction_order = 7;
-					max_partition_order = 4;
 					break;
 				case 2:
 					do_constant = false;
@@ -2207,7 +2207,6 @@ namespace CUETools.Codecs.FLACCL
 					min_fixed_order = 2;
 					max_fixed_order = 2;
 					max_prediction_order = 8;
-					max_partition_order = 4;
 					break;
 				case 3:
 					do_constant = false;
@@ -2271,9 +2270,6 @@ namespace CUETools.Codecs.FLACCL
 					max_prediction_order = 32;
 					break;
 			}
-
-			if (!encode_on_cpu)
-				max_partition_order = 8;
 
 			return 0;
 		}
@@ -2456,14 +2452,14 @@ namespace CUETools.Codecs.FLACCL
 				clSelectedTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
 				clRiceOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceLen);
 
-                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytes, true, MapFlags.WRITE, 0, samplesBufferLen / 2);
-				clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidual, true, MapFlags.WRITE, 0, residualBufferLen);
-                clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParams, true, MapFlags.WRITE, 0, riceParamsLen / 4);
-                clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasks, true, MapFlags.WRITE, 0, residualTasksLen);
-                clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasks, true, MapFlags.WRITE, 0, bestResidualTasksLen);
-                clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctions, true, MapFlags.WRITE, 0, wndLen);
-				clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasks, true, MapFlags.WRITE, 0, selectedLen);
-				clRiceOutputPtr = openCLCQ.EnqueueMapBuffer(clRiceOutput, true, MapFlags.WRITE, 0, riceLen);
+				clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytes, true, MapFlags.READ_WRITE, 0, samplesBufferLen / 2);
+				clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidual, true, MapFlags.READ_WRITE, 0, residualBufferLen);
+				clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParams, true, MapFlags.READ_WRITE, 0, riceParamsLen / 4);
+				clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasks, true, MapFlags.READ_WRITE, 0, residualTasksLen);
+				clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasks, true, MapFlags.READ_WRITE, 0, bestResidualTasksLen);
+				clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctions, true, MapFlags.READ_WRITE, 0, wndLen);
+				clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasks, true, MapFlags.READ_WRITE, 0, selectedLen);
+				clRiceOutputPtr = openCLCQ.EnqueueMapBuffer(clRiceOutput, true, MapFlags.READ_WRITE, 0, riceLen);
 
                 //clSamplesBytesPtr = clSamplesBytes.HostPtr;
                 //clResidualPtr = clResidual.HostPtr;

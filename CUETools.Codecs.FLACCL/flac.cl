@@ -865,6 +865,10 @@ void clEstimateResidual(
 	obits * bs);
 }
 #else
+
+#define MAX_BLOCKSIZE 4096
+#define ESTPARTLOG 5
+
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clEstimateResidual(
     __global int*samples,
@@ -877,7 +881,7 @@ void clEstimateResidual(
     __local volatile int idata[GROUP_SIZE];
 #endif
     __local FLACCLSubframeTask task;
-    __local int psum[64];
+    __local int psum[MAX_BLOCKSIZE >> ESTPARTLOG];
     __local float fcoef[32];
     __local int selectedTask;
     
@@ -896,14 +900,12 @@ void clEstimateResidual(
     if (tid < 32)
 	//fcoef[tid] = select(0.0f, - ((float) task.coefs[tid]) / (1 << task.data.shift), tid < ro);
 	fcoef[tid] =  tid < MAX_ORDER && tid + ro - MAX_ORDER >= 0 ? - ((float) task.coefs[tid + ro - MAX_ORDER]) / (1 << task.data.shift) : 0.0f;
-    if (tid < 64)
-	psum[tid] = 0;
+    for (int offs = tid; offs < (MAX_BLOCKSIZE >> ESTPARTLOG); offs += GROUP_SIZE)
+	psum[offs] = 0;
     data[tid] = 0.0f;
     // need to initialize "extra" data, because NaNs can produce wierd results even when multipled by zero extra coefs
     if (tid < 32)
 	data[GROUP_SIZE * 2 + tid] = 0.0f;
-
-    int partOrder = max(6, clz(64) - clz(bs - 1) + 1);
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -960,35 +962,35 @@ void clEstimateResidual(
 	// convert to unsigned
 	t = (t << 1) ^ (t >> 31);
 #if !defined(AMD) || !defined(HAVE_ATOM)
-	// convert to unsigned
 	idata[tid] = t;
-	barrier(CLK_LOCAL_MEM_FENCE);
-	int ps = (1 << partOrder) - 1;
-	int lane = tid & ps;
-	for (int l = 1 << (partOrder - 1); l > WARP_SIZE; l >>= 1)
-	{
-            if (lane < l) idata[tid] += idata[tid + l];
-	    barrier(CLK_LOCAL_MEM_FENCE);
-	}
-	if (lane < WARP_SIZE)
-	    for (int l = WARP_SIZE; l > 0; l >>= 1)
-		idata[tid] += idata[tid + l];
-	if (lane == 0)
-	    psum[min(63,offs >> partOrder)] += idata[tid];
+	for (int l = 16; l > 1; l >>= 1)
+	    idata[tid] += idata[tid + l];
+	if ((tid & 31) == 0)
+	    psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
 #else
-	atom_add(&psum[min(63,offs >> partOrder)], t);
+	atom_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
 #endif
     }
 
-    // calculate rice partition bit length for every (1 << partOrder) samples
+    // calculate rice partition bit length for every 32 samples
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid < 64)
-    {
-	int k = iclamp(clz(1 << partOrder) - clz(psum[tid]), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
-	psum[tid] = (k << partOrder) + (psum[tid] >> k);
-    }
+    // Bug: if (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) > GROUP_SIZE
+    int pl = get_local_id(0) < (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) ? pl = psum[tid * 2] + psum[tid * 2 + 1] : 0;
     barrier(CLK_LOCAL_MEM_FENCE);
-    for (int l = 32; l > 0; l >>= 1)
+ //   for (int pos = 0; pos < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2; pos += GROUP_SIZE)
+ //   {
+	//int offs = pos + tid;
+	//int pl = offs < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2 ? psum[offs * 2] + psum[offs * 2 + 1] : 0;
+	////int pl = psum[offs * 2] + psum[offs * 2 + 1];
+	//barrier(CLK_LOCAL_MEM_FENCE);
+	//if (offs < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2)
+	//    psum[offs] = pl;
+ //   }
+    int k = iclamp(31 - (ESTPARTLOG + 1) - clz(pl), 0, 14); // 26 - clz(res) == clz(32) - clz(res) == log2(res / 32)
+    if (tid < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2)
+	psum[tid] = (k << (ESTPARTLOG + 1)) + (pl >> k);
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int l = MAX_BLOCKSIZE >> (ESTPARTLOG + 2); l > 0; l >>= 1)
     {
 	if (tid < l)
 	    psum[tid] += psum[tid + l];
@@ -1796,7 +1798,11 @@ void clRiceEncoding(
 			unsigned int bb = bw.bit_buf << bw.bit_left;
 			bw.bit_buf = 0;
 			bw.bit_left += (32 - b);
+#ifdef AMD
+			bw.buffer[bw.buf_ptr++] = as_int(as_char4(bb).wzyx);
+#else
 			bw.buffer[bw.buf_ptr++] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
+#endif
 		    }
 		    bits -= b;
 		}
@@ -1811,7 +1817,11 @@ void clRiceEncoding(
 		    unsigned int bb = (bw.bit_buf << bw.bit_left) | (val >> (bits - bw.bit_left));
 		    bw.bit_buf = val;
 		    bw.bit_left += (32 - bits);
+#ifdef AMD
+		    bw.buffer[bw.buf_ptr++] = as_int(as_char4(bb).wzyx);
+#else
 		    bw.buffer[bw.buf_ptr++] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
+#endif
 		}
 		////if (get_group_id(0) == 0) printf("%x ", v);
 		//writebits(&bw, (v >> k) + 1, 1);
@@ -1916,10 +1926,8 @@ void clRiceEncoding(
 	atom_or(&data[qpos0 + 1], qval1);
 	start = mypos[GROUP_SIZE - 1];
 	barrier(CLK_LOCAL_MEM_FENCE);
-	unsigned int bb = data[tid];
-	bb = (bb >> 24) | ((bb >> 8) & 0xff00U) | ((bb << 8) & 0xff0000U) | (bb << 24);
 	if ((start32 + tid) * 32 <= start)
-	    output[start32 + tid] = bb;
+	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
 	unsigned int remainder = data[start / 32 - start32];
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = select(0U, remainder, tid == 0);
