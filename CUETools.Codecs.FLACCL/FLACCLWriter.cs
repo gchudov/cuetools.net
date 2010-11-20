@@ -1498,7 +1498,7 @@ namespace CUETools.Codecs.FLACCL
 						for (int ch = 0; ch < channels; ch++)
 						{
 							short* res = ((short*)task.clSamplesBytesPtr) + iFrame * channels * task.frameSize + ch;
-							int* smp = r + ch * task.channelSize;
+							int* smp = r + ch * Flake.MAX_BLOCKSIZE;
 							for (int i = task.frameSize; i > 0; i--)
 							{
 								//if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))

@@ -229,7 +229,7 @@ void clFindWastedBits(
 #endif
 
 #ifdef FLACCL_CPU
-#define TEMPBLOCK 128
+#define TEMPBLOCK 512
 #define STORE_AC(ro, val) if (ro <= MAX_ORDER) pout[ro] = val;
 #define STORE_AC4(ro, val) STORE_AC(ro*4+0, val##ro.x) STORE_AC(ro*4+1, val##ro.y) STORE_AC(ro*4+2, val##ro.z) STORE_AC(ro*4+3, val##ro.w)
 
@@ -765,6 +765,19 @@ void clQuantizeLPC(
 #endif
 
 #ifdef FLACCL_CPU
+
+inline int fastclz(int iv)
+{
+    unsigned int v = (unsigned int)iv;
+    int x = (0 != (v >> 16)) * 16;
+    x += (0 != (v >> (x + 8))) * 8;
+    x += (0 != (v >> (x + 4))) * 4;
+    x += (0 != (v >> (x + 2))) * 2;
+    x += (0 != (v >> (x + 1)));
+    x += (0 != (v >> x));
+    return 32 - x;
+}
+
 inline int calc_residual(__global int *ptr, int * coefs, int ro)
 {
     int sum = 0;
@@ -817,7 +830,7 @@ void clEstimateResidual(
 	len[i] = 0;
 
 #ifdef AMD
-    SWITCH_N((t = clamp(t, -0x7fffff, 0x7fffff), len[pos >> (12 - EPO)] += (t << 1) ^ (t >> 31)))
+    SWITCH_N((t = (t << 1) ^ (t >> 31), len[pos >> (12 - EPO)] += t & 0x7fffff))
 #else
     int4 c0 = vload4(0, &task.coefs[0]);
     int4 c1 = vload4(1, &task.coefs[0]);
@@ -831,15 +844,16 @@ void clEstimateResidual(
 	    + c1 * vload4(1, dptr)
 	    + c2 * vload4(2, dptr);
 	int t = (data[pos] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift)) >> task.data.wbits;
-	t = iclamp(t, -0x7fffff, 0x7fffff);
-	len[pos >> (12 - EPO)] += (t << 1) ^ (t >> 31);
+	t = (t << 1) ^ (t >> 31);
+	len[pos >> (12 - EPO)] += t & 0x7fffff;
+	//len[pos >> (12 - EPO)] += min(0x7ffffffU, (unsigned int)t);
     }
 #endif
     int total = 0;
     for (int i = 0; i < 1 << EPO; i++)
     {
 	int res = min(0x7fffff,len[i]);
-	int k = clamp(clz(1 << (12 - EPO)) - clz(res), 0, 14); // 27 - clz(res) == clz(16) - clz(res) == log2(res / 16)
+	int k = iclamp(31 - (12 - EPO) - fastclz(res), 0, 14); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
 	total += (k << (12 - EPO)) + (res >> k);
     }
     int partLen = min(0x7ffffff, total) + (bs - ro);
@@ -1267,9 +1281,9 @@ void clCalcPartition16(
     __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_global_id(0);
     for (int p = 0; p < (1 << max_porder); p++)
 	pl[p] = 0;
-    //__global int *rptr = residual + task.data.residualOffs;
-    //SWITCH_N((rptr[pos] = t, pl[pos >> 4] += (t << 1) ^ (t >> 31)));
-    SWITCH_N((residual[task.data.residualOffs + pos] = t, t = clamp(t, -0x7fffff, 0x7fffff), t = (t << 1) ^ (t >> 31), pl[pos >> 4] += t));
+    __global int *rptr = residual + task.data.residualOffs;
+    SWITCH_N((rptr[pos] = t, pl[pos >> 4] += (t << 1) ^ (t >> 31)));
+    //SWITCH_N((residual[task.data.residualOffs + pos] = t, t = (t << 1) ^ (t >> 31), pl[pos >> 4] += t));
 }
 #else
 // get_group_id(0) == task index
@@ -1439,20 +1453,37 @@ void clFindRiceParameter(
     //int psize = task->data.blocksize >> max_porder;
     int bs = task->data.blocksize;
     int ro = task->data.residualOrder;
-    for (int offs = 0; offs < lim; offs ++)
+    __global int* ppl = &partition_lengths[get_group_id(0) << (max_porder + 1)];
+    __global int* prp = &rice_parameters[get_group_id(0) << (max_porder + 2)];
+    __global int* pol = prp + (1 << (max_porder + 1));
+    for (int porder = max_porder; porder >= 0; porder--)
     {
-	int pl = partition_lengths[(1 << (max_porder + 1)) * get_group_id(0) + offs];
-	int porder = 31 - clz(lim - offs);
-	int ps = (bs >> porder) - select(0, ro, offs == lim + 1 - (2 << porder));
-	//if (ps <= 0)
-	//    printf("max_porder == %d, porder == %d, ro == %d\n", max_porder, porder, ro);
-	int k = clamp(31 - clz(pl / max(1, ps)), 0, 14);
+	int pos = (2 << max_porder) - (2 << porder);
+	int fin = pos + (1 << porder);
+
+	int pl = ppl[pos];
+	int ps = (bs >> porder) - ro;
+	int k = iclamp(31 - fastclz(pl / max(1, ps)), 0, 14);
 	int plk = ps * (k + 1)  + (pl >> k);
-	
+
 	// output rice parameter
-	rice_parameters[(get_group_id(0) << (max_porder + 2)) + offs] = k;
+	prp[pos] = k;
 	// output length
-	rice_parameters[(get_group_id(0) << (max_porder + 2)) + (1 << (max_porder + 1)) + offs] = plk;
+	pol[pos] = plk;
+
+	ps = (bs >> porder);
+
+	for (int offs = pos + 1; offs < fin; offs++)
+	{
+	    pl = ppl[offs];
+	    k = iclamp(31 - fastclz(pl / ps), 0, 14);
+	    plk = ps * (k + 1)  + (pl >> k);
+	
+	    // output rice parameter
+	    prp[offs] = k;
+	    // output length
+	    pol[offs] = plk;
+	}
     }
 }
 #else
@@ -1503,12 +1534,12 @@ void clFindPartitionOrder(
 	partlen[p] = 0;
     // fetch partition lengths
     const int pos = (get_group_id(0) << (max_porder + 2)) + (2 << max_porder);
-    int lim = (2 << max_porder) - 1;
-    for (int offs = 0; offs < lim; offs ++)
+    
+    for (int porder = max_porder; porder >= 0; porder--)
     {
-	int len = rice_parameters[pos + offs];
-	int porder = 31 - clz(lim - offs);
-	partlen[porder] += len;
+	int start = (2 << max_porder) - (2 << porder);
+	for (int offs = 0; offs < (1 << porder); offs ++)
+	    partlen[porder] += rice_parameters[pos + start + offs];
     }
 
     int best_length = partlen[0] + 4;
@@ -1657,7 +1688,11 @@ inline void flush(BitWriter *bw)
 
 inline int len_utf8(int n)
 {
+#ifdef FLACCL_CPU
+    int bts = 31 - fastclz(n);
+#else
     int bts = 31 - clz(n);
+#endif
     if (bts < 7)
 	return 8;
     return 8 * ((bts + 4) / 5);
@@ -1855,6 +1890,8 @@ void clRiceEncoding(
 	    barrier(CLK_LOCAL_MEM_FENCE);
 	}
 #endif
+	//if (tid == GROUP_SIZE - 1 && mypos[tid] > (GROUP_SIZE/2) * 32)
+	//    printf("Oops: %d\n", mypos[tid]);
 	mypos[tid] += start;
 	int start32 = start / 32;
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -1887,7 +1924,7 @@ void clRiceEncoding(
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = select(0U, remainder, tid == 0);
     }
- //   if (tid == 0 && start != task.encodingOffset - task.headerLen + task.size)
+    //   if (tid == 0 && start != task.encodingOffset - task.headerLen + task.size)
 	//printf("size mismatch: %d != %d\n", start, task.encodingOffset - task.headerLen + task.size);
 #endif
 }
