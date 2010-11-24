@@ -346,6 +346,7 @@ void clComputeAutocor(
 
 	int lag = tid & (THREADS_FOR_ORDERS - 1);
 	int tid1 = tid + GROUP_SIZE - lag;
+//#if 1
 #ifdef AMD
 	float4 res = 0.0f;
 	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
@@ -878,7 +879,7 @@ void clEstimateResidual(
 {
     __local float data[GROUP_SIZE * 2 + 32];
 #if !defined(AMD) || !defined(HAVE_ATOM)
-    __local volatile int idata[GROUP_SIZE];
+    __local volatile int idata[GROUP_SIZE + 16];
 #endif
     __local FLACCLSubframeTask task;
     __local int psum[MAX_BLOCKSIZE >> ESTPARTLOG];
@@ -909,12 +910,10 @@ void clEstimateResidual(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-#ifdef AMD
     float4 fc0 = vload4(0, &fcoef[0]);
     float4 fc1 = vload4(1, &fcoef[0]);
 #if MAX_ORDER > 8
     float4 fc2 = vload4(2, &fcoef[0]);
-#endif
 #endif
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
@@ -927,19 +926,10 @@ void clEstimateResidual(
 	// compute residual
 	__local float* dptr = &data[tid + GROUP_SIZE - MAX_ORDER];
 	float4 sum 
-#ifdef AMD
 	    = fc0 * vload4(0, dptr)
 	    + fc1 * vload4(1, dptr)
-#else
-	    = vload4(0, &fcoef[0]) * vload4(0, dptr)
-	    + vload4(1, &fcoef[0]) * vload4(1, dptr)
-#endif
 #if MAX_ORDER > 8
-#ifdef AMD
 	    + fc2 * vload4(2, dptr)
-#else
-	    + vload4(2, &fcoef[0]) * vload4(2, dptr)
-#endif
   #if MAX_ORDER > 12
 	    + vload4(3, &fcoef[0]) * vload4(3, dptr)
     #if MAX_ORDER > 16
@@ -1309,6 +1299,7 @@ void clCalcPartition16(
 
     int bs = task.data.blocksize;
     int ro = task.data.residualOrder;
+    int sh = task.data.shift;
 
     if (tid >= ro && tid < 32)
 	task.coefs[tid] = 0;
@@ -1318,7 +1309,13 @@ void clCalcPartition16(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
+    __global int * rptr = &residual[task.data.residualOffs];
+    __global int * plptr = &partition_lengths[(15 << (max_porder + 1)) * get_group_id(0) + (k << (max_porder + 1))];
+    __local int* dptr = &data[tid + GROUP_SIZE - ro];
+
     int4 cptr0 = vload4(0, &task.coefs[0]);
+    int4 cptr1 = vload4(1, &task.coefs[0]);
+    int4 cptr2 = vload4(2, &task.coefs[0]);
     data[tid] = 0;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
@@ -1329,12 +1326,11 @@ void clCalcPartition16(
 	barrier(CLK_LOCAL_MEM_FENCE);
 	
 	// compute residual
-	__local int* dptr = &data[tid + GROUP_SIZE - ro];
 	int4 sum = cptr0 * vload4(0, dptr)
 #if MAX_ORDER > 4
-	    + vload4(1, &task.coefs[0]) * vload4(1, dptr)
+	    + cptr1 * vload4(1, dptr)
 #if MAX_ORDER > 8
-	    + vload4(2, &task.coefs[0]) * vload4(2, dptr)
+	    + cptr2 * vload4(2, dptr)
 #if MAX_ORDER > 12
 	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
 #if MAX_ORDER > 16
@@ -1347,14 +1343,12 @@ void clCalcPartition16(
 #endif
 #endif
 	    ;
-	int s = select(0, nextData - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift), offs >= ro && offs < bs);
+	int s = select(0, nextData - ((sum.x + sum.y + sum.z + sum.w) >> sh), offs >= ro && offs < bs);
 
 	// output residual
 	if (offs < bs)
-	    residual[task.data.residualOffs + offs] = s;
+	    rptr[offs] = s;
 
-	//int s = select(0, residual[task.data.residualOffs + offs], offs >= ro && offs < bs);
-	
 	s = iclamp(s, -0x7fffff, 0x7fffff);
 	// convert to unsigned
 	res[tid] = (s << 1) ^ (s >> 31);
@@ -1369,9 +1363,8 @@ void clCalcPartition16(
 	sum = (vload4(0,chunk) >> k) + (vload4(1,chunk) >> k) + (vload4(2,chunk) >> k) + (vload4(3,chunk) >> k);
 	s = sum.x + sum.y + sum.z + sum.w;
 
-	const int lpos = (15 << (max_porder + 1)) * get_group_id(0) + (k << (max_porder + 1)) + offs / 16;
 	if (k <= 14 && offs < bs)
-	    partition_lengths[lpos] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
+	    plptr[offs >> 4] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
 
 //    	if (task.data.blocksize == 16 && x == 0 && k <= 14)
 //	    printf("[%d] = %d = s:%d + %d * (k:%d + 1), ro=%d, offs=%d, lpos=%d\n", k, partition_lengths[lpos], s, (16 - select(0, ro, offs < 16)), k, ro, offs, lpos);
@@ -1778,13 +1771,14 @@ void clRiceEncoding(
 	    //if (get_group_id(0) == 0) printf("(%x) ", bw.bit_buf);
 	    if (p == 1) res_cnt = psize;
 	    int cnt = min(res_cnt, bs - j);
+	    unsigned int kexp = 1U << k;
+	    __global int *rptr = &residual[task->data.residualOffs + j];
 	    for (int i = 0; i < cnt; i++)
 	    {
-		int v = residual[task->data.residualOffs + j + i];
-		v = (v << 1) ^ (v >> 31);
+		int iv = rptr[i];
+		unsigned int v = (iv << 1) ^ (iv >> 31);
 		// write quotient in unary
-		int q = (v >> k) + 1;
-		int bits = k + q;
+		int bits = k + (v >> k) + 1;
 		while (bits > 31)
 		{
 		    int b = min(bits - 31, 31);
@@ -1806,7 +1800,7 @@ void clRiceEncoding(
 		    }
 		    bits -= b;
 		}
-		unsigned int val = (unsigned int)((v & ((1 << k) - 1)) | (1 << k));
+		unsigned int val = (v & (kexp - 1)) | kexp;
 		if (bits < bw.bit_left)
 		{
 		    bw.bit_buf = (bw.bit_buf << bits) | val;
@@ -1844,7 +1838,7 @@ void clRiceEncoding(
     __local unsigned int data[GROUP_SIZE];
     __local volatile int mypos[GROUP_SIZE+1];
     //__local int brp[256];
-    __local int warppos[WARP_SIZE];
+    __local volatile int warppos[WARP_SIZE];
     __local FLACCLSubframeData task;
 
     int tid = get_local_id(0);
