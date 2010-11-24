@@ -2915,11 +2915,13 @@ namespace CUETools.Codecs.FLACCL
 
 				if (!writer._settings.MappedMemory)
 				{
-					openCLCQ.EnqueueReadBuffer(clBestRiceParams, false, 0, sizeof(int) * (1 << max_porder) * channels * frameCount, clBestRiceParamsPtr);
 					if (writer._settings.DoRice)
 						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, (channels * frameSize * 17 + 128) / 8 * frameCount, clRiceOutputPtr);
 					else
+					{
+						openCLCQ.EnqueueReadBuffer(clBestRiceParams, false, 0, sizeof(int) * (1 << max_porder) * channels * frameCount, clBestRiceParamsPtr);
 						openCLCQ.EnqueueReadBuffer(clResidual, false, 0, sizeof(int) * channelSize * channels, clResidualPtr);
+					}
 				}
 			}
             if (!writer._settings.MappedMemory)
