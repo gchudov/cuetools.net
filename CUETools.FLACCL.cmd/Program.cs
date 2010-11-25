@@ -88,6 +88,9 @@ namespace CUETools.FLACCL.cmd
 				min_precision = -1, max_precision = -1,
 				orders_per_window = -1, orders_per_channel = -1,
 				blocksize = -1;
+#if DEBUG
+			int input_len = 4096, input_val = 0;
+#endif
 			int level = -1, padding = -1, vbr_mode = -1;
 			bool do_seektable = true;
 			bool buffered = false;
@@ -128,8 +131,16 @@ namespace CUETools.FLACCL.cmd
 					settings.Defines += "#define " + args[++arg] + " " + args[++arg] + "\n";
 				else if (args[arg] == "--opencl-platform" && ++arg < args.Length)
 					settings.Platform = args[arg];
+				else if (args[arg] == "--mapped-memory")
+					settings.MappedMemory = true;
 				else if (args[arg] == "--opencl-type" && ++arg < args.Length)
 					device_type = args[arg];
+#if DEBUG
+				else if (args[arg] == "--input-length" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					input_len = intarg;
+				else if (args[arg] == "--input-value" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					input_val = intarg;
+#endif
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
@@ -207,6 +218,10 @@ namespace CUETools.FLACCL.cmd
 			IAudioSource audioSource;
 			if (input_file == "-")
 				audioSource = new WAVReader("", Console.OpenStandardInput());
+#if DEBUG
+			else if (input_file == "nul")
+				audioSource = new SilenceGenerator(input_len, input_val);
+#endif
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
 				audioSource = new WAVReader(input_file, null);
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
