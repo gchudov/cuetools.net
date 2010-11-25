@@ -695,6 +695,12 @@ namespace CUETools.Codecs
 				*(res++) = *(smp++);
 		}
 
+		unsafe public static void MemCpy(long* res, long* smp, int n)
+		{
+			for (int i = n; i > 0; i--)
+				*(res++) = *(smp++);
+		}
+
 		unsafe public static void MemCpy(short* res, short* smp, int n)
 		{
 			for (int i = n; i > 0; i--)
@@ -703,8 +709,26 @@ namespace CUETools.Codecs
 
 		unsafe public static void MemCpy(byte* res, byte* smp, int n)
 		{
-			if ((((IntPtr)smp).ToInt64() & 3) == 0 && (((IntPtr)res).ToInt64() & 3) == 0 && n > 4)
+			if ((((IntPtr)smp).ToInt64() & 7) == (((IntPtr)res).ToInt64() & 7) && n > 32)
 			{
+				int delta = (int)((8 - (((IntPtr)smp).ToInt64() & 7)) & 7);
+				for (int i = delta; i > 0; i--)
+					*(res++) = *(smp++);
+				n -= delta;
+
+				MemCpy((long*)res, (long*)smp, n >> 3);
+				int n8 = (n >> 3) << 3;
+				n -= n8;
+				smp += n8;
+				res += n8;
+			}
+			if ((((IntPtr)smp).ToInt64() & 3) == (((IntPtr)res).ToInt64() & 3) && n > 16)
+			{
+				int delta = (int)((4 - (((IntPtr)smp).ToInt64() & 3)) & 3);
+				for (int i = delta; i > 0; i--)
+					*(res++) = *(smp++);				
+				n -= delta;
+
 				MemCpy((int*)res, (int*)smp, n >> 2);
 				int n4 = (n >> 2) << 2;
 				n -= n4;
@@ -891,12 +915,19 @@ namespace CUETools.Codecs
 	{
 		private long _sampleOffset, _sampleCount;
 		private AudioPCMConfig pcm;
+		private int _sampleVal;
 
-		public SilenceGenerator(long sampleCount)
+		public SilenceGenerator(long sampleCount, int sampleVal)
 		{
+			_sampleVal = sampleVal;
 			_sampleOffset = 0;
 			_sampleCount = sampleCount;
 			pcm = AudioPCMConfig.RedBook;
+		}
+
+		public SilenceGenerator(long sampleCount)
+			: this(sampleCount, 0)
+		{
 		}
 
 		public long Length
@@ -936,7 +967,7 @@ namespace CUETools.Codecs
 			int[,] samples = buff.Samples;
 			for (int i = 0; i < buff.Length; i++)
 				for (int j = 0; j < PCM.ChannelCount; j++)
-					samples[i, j] = 0;
+					samples[i, j] = _sampleVal;
 
 			_sampleOffset += buff.Length;
 			return buff.Length;
