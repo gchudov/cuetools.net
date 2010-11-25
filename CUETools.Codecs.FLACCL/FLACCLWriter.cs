@@ -72,7 +72,7 @@ namespace CUETools.Codecs.FLACCL
 		public int GroupSize { get; set; }
 
 		[DefaultValue(32)]
-		[SRDescription(typeof(Properties.Resources), "DescriptionTashSize")]
+		[SRDescription(typeof(Properties.Resources), "DescriptionTaskSize")]
 		public int TaskSize { get; set; }
 
 		[SRDescription(typeof(Properties.Resources), "DescriptionDefines")]
@@ -845,18 +845,17 @@ namespace CUETools.Codecs.FLACCL
 
 			if (_settings.GPUOnly && _settings.DoRice)
 			{
+				int len = task.BestResidualTasks[index].size - task.BestResidualTasks[index].headerLen;
+				int pos = task.BestResidualTasks[index].encodingOffset;
 				if (task.BestResidualTasks[index].size != (int)sub.best.size)
 					throw new Exception("Encoding offset mismatch");
 				if (task.BestResidualTasks[index].headerLen != offs0 + 6)
 					throw new Exception("Encoding offset mismatch");
-				if (task.BestResidualTasks[index].encodingOffset != frame.writer.BitLength)
+				if (pos % 8 != frame.writer.BitLength % 8)
 					throw new Exception("Encoding offset mismatch");
-				int len = task.BestResidualTasks[index].size - task.BestResidualTasks[index].headerLen;
 				//Console.WriteLine("{0:x} => {1:x}", _totalSize + frame.writer.BitLength / 8, _totalSize + (frame.writer.BitLength + len) / 8);
 				// task.BestResidualTasks[index].headerLen
-				frame.writer.writeints(len, (byte*)task.clRiceOutputPtr);
-				if (task.BestResidualTasks[index].encodingOffset + len != frame.writer.BitLength)
-					throw new Exception("Encoding offset mismatch");
+				frame.writer.writeints(len, pos, (byte*)task.clRiceOutputPtr);
 			}
 			else
 			{
@@ -1212,8 +1211,15 @@ namespace CUETools.Codecs.FLACCL
 							}
 #endif
 
-							if (((csum << task.frame.subframes[ch].obits) >= 1UL << 32 && !_settings.DoRice) || !_settings.GPUOnly)
+							if (((csum << task.frame.subframes[ch].obits) >= 1UL << 32) || !_settings.GPUOnly)
 							{
+								if (_settings.GPUOnly && _settings.DoRice)
+#if DEBUG
+//									throw new Exception("DoRice failed");
+									break;
+#else
+									break;
+#endif
 								if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 								if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32)
 									lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
@@ -1227,7 +1233,7 @@ namespace CUETools.Codecs.FLACCL
 								RiceContext rc1 = task.frame.subframes[ch].best.rc;
 								task.frame.subframes[ch].best.rc = new RiceContext();
 #endif
-								task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order);								
+								task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order);
 								task.frame.subframes[ch].best.size = measure_subframe(task.frame, task.frame.subframes[ch]);
 #if KJHKJH
 								// check size
@@ -1255,7 +1261,7 @@ namespace CUETools.Codecs.FLACCL
 
 		unsafe void select_best_methods(FlacFrame frame, int channelsCount, int iFrame, FLACCLTask task)
 		{
-			if (channelsCount == 4 && channels == 2)
+			if (channelsCount == 4 && channels == 2 && frame.blocksize > 4)
 			{
 				if (task.BestResidualTasks[iFrame * 2].channel == 0 && task.BestResidualTasks[iFrame * 2 + 1].channel == 1)
 					frame.ch_mode = ChannelMode.LeftRight;
@@ -1321,7 +1327,7 @@ namespace CUETools.Codecs.FLACCL
 
 		unsafe void estimate_residual(FLACCLTask task, int channelsCount)
 		{
-			if (task.frameSize >= 4)
+			if (task.frameSize > 4)
 				task.EnqueueKernels();
 		}
 
@@ -1605,8 +1611,9 @@ namespace CUETools.Codecs.FLACCL
 				}
 				OCLMan.CreateDefaultContext(platformId, (DeviceType)_settings.DeviceType);
 
+				bool haveAtom = false;
 				if (OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics"))
-					_settings.Defines += "#define HAVE_ATOM\n";
+					haveAtom = true;					
 				else
 					_settings.GPUOnly = false;
 
@@ -1618,10 +1625,11 @@ namespace CUETools.Codecs.FLACCL
 					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
 					(_settings.GPUOnly ? "#define DO_PARTITIONS\n" : "") +
 					(_settings.DoRice ? "#define DO_RICE\n" : "") +
+					(haveAtom ? "#define HAVE_ATOM\n" : "") +
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
- (_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
+					(_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
 					_settings.Defines + "\n";
 
 				try

@@ -1723,6 +1723,8 @@ void clCalcOutputOffsets(
 	{
 	    __global FLACCLSubframeTask* task = tasks + iFrame * channels + ch;
 	    offset += 8 + task->data.wbits;
+	    // Add 32 bits to separate frames if header is too small so they can intersect
+	    offset += 64;
 	    task->data.encodingOffset = offset + task->data.headerLen;
 	    offset += task->data.size;
 	}
@@ -1845,6 +1847,8 @@ void clRiceEncoding(
     if (tid < sizeof(task) / sizeof(int))
 	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
     barrier(CLK_LOCAL_MEM_FENCE);
+    if (task.type != Fixed && task.type != LPC)
+	return;
     if (tid == 0)
 	mypos[GROUP_SIZE] = 0;
     if (tid < WARP_SIZE)

@@ -120,8 +120,29 @@
   <data name="DescriptionCPUThreads" xml:space="preserve">
     <value>Use additional CPU threads</value>
   </data>
+  <data name="DescriptionDefines" xml:space="preserve">
+    <value>Additional preprocessor definitions for OpenCL kernel</value>
+  </data>
+  <data name="DescriptionDeviceType" xml:space="preserve">
+    <value>Use CPU or GPU device</value>
+  </data>
+  <data name="DescriptionDoRice" xml:space="preserve">
+    <value>Do final encoding stages on GPU (experimental)</value>
+  </data>
   <data name="DescriptionGPUOnly" xml:space="preserve">
     <value>Use GPU on all stages</value>
+  </data>
+  <data name="DescriptionGroupSize" xml:space="preserve">
+    <value>GPU thread block size (64, 128, 256)</value>
+  </data>
+  <data name="DescriptionMappedMemory" xml:space="preserve">
+    <value>Device uses host memory (Don't use)</value>
+  </data>
+  <data name="DescriptionPlatform" xml:space="preserve">
+    <value>OpenCL platform to use (ATI Stream, NVIDIA OpenCL, Intel OpenCL, etc)</value>
+  </data>
+  <data name="DescriptionTaskSize" xml:space="preserve">
+    <value>Number of frames processed simultaniously (32, 64)</value>
   </data>
   <data name="DoMD5Description" xml:space="preserve">
     <value>Calculate MD5 hash for audio stream</value>
