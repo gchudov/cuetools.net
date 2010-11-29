@@ -1826,7 +1826,7 @@ namespace CUETools.Codecs.FLACCL
 
 		public string Path { get { return _path; } }
 
-		public static readonly string vendor_string = "FLACCL#0.3";
+		public static readonly string vendor_string = "FLACCL#0.4";
 
 		int select_blocksize(int samplerate, int time_ms)
 		{

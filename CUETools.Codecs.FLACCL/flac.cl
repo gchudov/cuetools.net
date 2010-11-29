@@ -303,6 +303,7 @@ void clComputeAutocor(
 #else
 // get_num_groups(0) == number of tasks
 // get_num_groups(1) == number of windows
+#if 0
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clComputeAutocor(
     __global float *output,
@@ -346,7 +347,6 @@ void clComputeAutocor(
 
 	int lag = tid & (THREADS_FOR_ORDERS - 1);
 	int tid1 = tid + GROUP_SIZE - lag;
-//#if 1
 #ifdef AMD
 	float4 res = 0.0f;
 	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
@@ -380,6 +380,114 @@ void clComputeAutocor(
     if (tid <= MAX_ORDER)
 	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + tid] = data[tid];
 }
+#else
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void clComputeAutocor(
+    __global float *output,
+    __global const int *samples,
+    __global const float *window,
+    __global FLACCLSubframeTask *tasks,
+    const int taskCount // tasks per block
+)
+{
+    __local float data[GROUP_SIZE * 2 + 32];
+    __local FLACCLSubframeData task;
+    const int tid = get_local_id(0);
+    // fetch task data
+    if (tid < sizeof(task) / sizeof(int))
+	((__local int*)&task)[tid] = ((__global int*)(tasks + taskCount * get_group_id(0)))[tid];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
+    int bs = task.blocksize;
+    data[tid] = 0.0f;
+    if (tid < 32)
+	data[GROUP_SIZE * 2 + tid] = 0.0f;
+
+    const int THREADS_FOR_ORDERS = MAX_ORDER < 8 ? 8 : MAX_ORDER < 16 ? 16 : MAX_ORDER < 32 ? 32 : 64;
+    int lag = tid & (THREADS_FOR_ORDERS - 1);
+    int tid1 = tid + GROUP_SIZE - lag;
+    int pos = 0;
+    const __global float * wptr = &window[get_group_id(1) * bs];
+#ifdef AMD
+    float4 corr = 0.0f;
+#else
+    float corr = 0.0f;
+#endif
+    float corr1 = 0.0f;
+    for (pos = 0; pos + GROUP_SIZE - 1 < bs; pos += GROUP_SIZE)
+    {
+	// fetch samples
+	int off = pos + tid;
+//    const __global int * sptr = &samples[task.samplesOffs];
+	float nextData = samples[task.samplesOffs + off] * wptr[off];
+	data[tid + GROUP_SIZE] = nextData;
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+#ifdef AMD
+	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
+	    corr += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
+#else
+	for (int i = 0; i < THREADS_FOR_ORDERS; i++)
+	    corr += data[tid1 - lag + i] * data[tid1 + i];
+#endif
+
+	if ((pos & (GROUP_SIZE * 15)) == 0)
+	{
+#ifdef AMD
+	    corr1 += (corr.x + corr.y) + (corr.w + corr.z);
+#else
+	    corr1 += corr;
+#endif
+	    corr = 0.0f;
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+	data[tid] = nextData;
+    }
+    if (pos < bs)
+    {
+	// fetch samples
+	int off = pos + tid;
+	float nextData = off < bs ? samples[task.samplesOffs + off] * wptr[off] : 0.0f;
+	data[tid + GROUP_SIZE] = nextData;
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	int lag = tid & (THREADS_FOR_ORDERS - 1);
+	int tid1 = tid + GROUP_SIZE - lag;
+//#if 1
+#ifdef AMD
+	float4 res = 0.0f;
+	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
+	    res += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
+	corr1 += res.x + res.y + res.w + res.z;
+#else
+	for (int i = 0; i < THREADS_FOR_ORDERS; i++)
+	    corr1 += data[tid1 - lag + i] * data[tid1 + i];
+#endif
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+	data[tid] = nextData;
+    }
+
+#ifdef AMD
+    corr1 += corr.x + corr.y + corr.w + corr.z;
+#else
+    corr1 += corr;
+#endif
+
+    data[tid] = corr1;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int i = GROUP_SIZE / 2; i >= THREADS_FOR_ORDERS; i >>= 1)
+    {
+	if (tid < i)
+	    data[tid] += data[tid + i];
+	barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
+    if (tid <= MAX_ORDER)
+	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + tid] = data[tid];
+}
+#endif
 #endif
 
 #ifdef FLACCL_CPU
@@ -915,11 +1023,63 @@ void clEstimateResidual(
 #if MAX_ORDER > 8
     float4 fc2 = vload4(2, &fcoef[0]);
 #endif
-    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
+    __global int * rptr = &samples[task.data.samplesOffs];
+    int wb = task.data.wbits;
+    int pos;
+    for (pos = 0; pos + GROUP_SIZE - 1 < bs; pos += GROUP_SIZE)
     {
 	// fetch samples
 	int offs = pos + tid;
-	float nextData = offs < bs ? samples[task.data.samplesOffs + offs] >> task.data.wbits : 0.0f;
+	float nextData = rptr[offs] >> wb;
+	data[tid + GROUP_SIZE] = nextData;
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// compute residual
+	__local float* dptr = &data[tid + GROUP_SIZE - MAX_ORDER];
+	float4 sum4
+	    = fc0 * vload4(0, dptr)
+	    + fc1 * vload4(1, dptr)
+#if MAX_ORDER > 8
+	    + fc2 * vload4(2, dptr)
+  #if MAX_ORDER > 12
+	    + vload4(3, &fcoef[0]) * vload4(3, dptr)
+    #if MAX_ORDER > 16
+	    + vload4(4, &fcoef[0]) * vload4(4, dptr)
+	    + vload4(5, &fcoef[0]) * vload4(5, dptr)
+	    + vload4(6, &fcoef[0]) * vload4(6, dptr)
+	    + vload4(7, &fcoef[0]) * vload4(7, dptr)
+    #endif
+  #endif
+#endif
+	    ;
+
+	float2 sum2 = sum4.s01 + sum4.s23;
+	int t = convert_int_rte(nextData + (sum2.s0 + sum2.s1));
+//	int t = (int)(nextData + sum.x + sum.y + sum.z + sum.w);
+	barrier(CLK_LOCAL_MEM_FENCE);
+	data[tid] = nextData;
+	// ensure we're within frame bounds
+	t = select(0, t, offs >= ro);
+	// overflow protection
+	t = iclamp(t, -0x7fffff, 0x7fffff);
+	// convert to unsigned
+	t = (t << 1) ^ (t >> 31);
+#if !defined(AMD) || !defined(HAVE_ATOM)
+	idata[tid] = t;
+	for (int l = 16; l > 1; l >>= 1)
+	    idata[tid] += idata[tid + l];
+	if ((tid & 31) == 0)
+	    psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
+#else
+	atom_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
+#endif
+    }
+#if 1
+    if (pos < bs)
+    {
+	// fetch samples
+	int offs = pos + tid;
+	float nextData = offs < bs ? rptr[offs] >> wb : 0.0f;
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -961,6 +1121,7 @@ void clEstimateResidual(
 	atom_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
 #endif
     }
+#endif
 
     // calculate rice partition bit length for every 32 samples
     barrier(CLK_LOCAL_MEM_FENCE);
