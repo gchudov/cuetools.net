@@ -47,17 +47,16 @@ namespace CUETools.FLACCL.cmd
 			Console.WriteLine("OpenCL Options:");
 			Console.WriteLine();
 			Console.WriteLine(" --opencl-type <X>    CPU or GPU, default GPU");
-			Console.WriteLine(" --opencl-platform '' 'ATI Stream', 'NVIDIA Cuda', 'Intel OpenCL' etc");
+			Console.WriteLine(" --opencl-platform    'ATI Stream', 'NVIDIA CUDA', 'Intel OpenCL' etc");
 			Console.WriteLine(" --group-size #       Set GPU workgroup size (64,128,256)");
-			Console.WriteLine(" --task-size #        Set number of frames per GPU call, default 32");
+			Console.WriteLine(" --task-size #        Set number of frames per multiprocessor, default 8");
 			Console.WriteLine(" --slow-gpu           Some encoding stages are done on CPU");
-			Console.WriteLine(" --do-rice            Experimental mode, not recommended");
+			Console.WriteLine(" --fast-gpu           Experimental mode, not recommended");
 			Console.WriteLine(" --define <X> <Y>     OpenCL preprocessor definition");
 			Console.WriteLine();
 			Console.WriteLine("Advanced Options:");
 			Console.WriteLine();
 			Console.WriteLine(" -b #                 Block size");
-			Console.WriteLine(" -v #                 Variable block size mode (0,4)");
 			Console.WriteLine(" -s <method>          Stereo decorrelation (independent,search)");
 			Console.WriteLine(" -r #[,#]             Rice partition order {max} or {min},{max} (0..8)");
 			Console.WriteLine();
@@ -88,9 +87,7 @@ namespace CUETools.FLACCL.cmd
 				min_precision = -1, max_precision = -1,
 				orders_per_window = -1, orders_per_channel = -1,
 				blocksize = -1;
-#if DEBUG
 			int input_len = 4096, input_val = 0;
-#endif
 			int level = -1, padding = -1, vbr_mode = -1;
 			bool do_seektable = true;
 			bool buffered = false;
@@ -111,7 +108,7 @@ namespace CUETools.FLACCL.cmd
 					do_seektable = false;
 				else if (args[arg] == "--slow-gpu")
 					settings.GPUOnly = false;
-				else if (args[arg] == "--do-rice")
+				else if (args[arg] == "--fast-gpu")
 					settings.DoRice = true;
 				else if (args[arg] == "--no-md5")
 					settings.DoMD5 = false;
@@ -135,12 +132,10 @@ namespace CUETools.FLACCL.cmd
 					settings.MappedMemory = true;
 				else if (args[arg] == "--opencl-type" && ++arg < args.Length)
 					device_type = args[arg];
-#if DEBUG
 				else if (args[arg] == "--input-length" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
 					input_len = intarg;
 				else if (args[arg] == "--input-value" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
 					input_val = intarg;
-#endif
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
@@ -218,10 +213,8 @@ namespace CUETools.FLACCL.cmd
 			IAudioSource audioSource;
 			if (input_file == "-")
 				audioSource = new WAVReader("", Console.OpenStandardInput());
-#if DEBUG
 			else if (input_file == "nul")
 				audioSource = new SilenceGenerator(input_len, input_val);
-#endif
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
 				audioSource = new WAVReader(input_file, null);
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
@@ -326,6 +319,9 @@ namespace CUETools.FLACCL.cmd
 				Console.Error.Write("\r                                                                         \r");
 				Console.WriteLine("Error     : {0}", ex.Message);
 				Console.WriteLine("{0}", ex.BuildLogs[0]);
+				if (debug)
+					using (StreamWriter sw = new StreamWriter("debug.txt", true))
+						sw.WriteLine("{0}\n{1}\n{2}", ex.Message, ex.StackTrace, ex.BuildLogs[0]);
 				audioDest.Delete();
 				audioSource.Close();
 				return 4;
@@ -335,6 +331,9 @@ namespace CUETools.FLACCL.cmd
 			{
 			    Console.Error.Write("\r                                                                         \r");
 			    Console.WriteLine("Error     : {0}", ex.Message);
+				if (debug)
+					using (StreamWriter sw = new StreamWriter("debug.txt", true))
+						sw.WriteLine("{0}\n{1}", ex.Message, ex.StackTrace);
 			    audioDest.Delete();
 			    audioSource.Close();
 			    return 4;

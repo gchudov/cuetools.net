@@ -139,10 +139,10 @@
     <value>Device uses host memory (Don't use)</value>
   </data>
   <data name="DescriptionPlatform" xml:space="preserve">
-    <value>OpenCL platform to use (ATI Stream, NVIDIA OpenCL, Intel OpenCL, etc)</value>
+    <value>OpenCL platform to use</value>
   </data>
   <data name="DescriptionTaskSize" xml:space="preserve">
-    <value>Number of frames processed simultaniously (32, 64)</value>
+    <value>Number of frames processed per one multiprocessor</value>
   </data>
   <data name="DoMD5Description" xml:space="preserve">
     <value>Calculate MD5 hash for audio stream</value>

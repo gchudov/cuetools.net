@@ -124,7 +124,7 @@ namespace CUETools.Codecs.FLACCL.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to OpenCL platform to use (ATI Stream, NVIDIA OpenCL, Intel OpenCL, etc).
+        ///   Looks up a localized string similar to OpenCL platform to use.
         /// </summary>
         internal static string DescriptionPlatform {
             get {
@@ -133,7 +133,7 @@ namespace CUETools.Codecs.FLACCL.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Number of frames processed simultaniously (32, 64).
+        ///   Looks up a localized string similar to Number of frames processed per one multiprocessor.
         /// </summary>
         internal static string DescriptionTaskSize {
             get {

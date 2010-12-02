@@ -41,7 +41,7 @@ namespace CUETools.Codecs.FLACCL
             this.MappedMemory = false;
 			this.DoMD5 = true; 
 			this.GroupSize = 128;
-			this.TaskSize = 32;
+			this.TaskSize = 8;
 			this.DeviceType = OpenCLDeviceType.GPU;
 		}
 
@@ -67,17 +67,19 @@ namespace CUETools.Codecs.FLACCL
         [SRDescription(typeof(Properties.Resources), "DescriptionMappedMemory")]
         public bool MappedMemory { get; set; }
 
+		[TypeConverter(typeof(FLACCLWriterSettingsGroupSizeConverter))]
 		[DefaultValue(128)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionGroupSize")]
 		public int GroupSize { get; set; }
 
-		[DefaultValue(32)]
+		[DefaultValue(8)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionTaskSize")]
 		public int TaskSize { get; set; }
 
 		[SRDescription(typeof(Properties.Resources), "DescriptionDefines")]
 		public string Defines { get; set; }
 
+		[TypeConverter(typeof(FLACCLWriterSettingsPlatformConverter))]
 		[SRDescription(typeof(Properties.Resources), "DescriptionPlatform")]
 		public string Platform { get; set; }
 
@@ -100,6 +102,35 @@ namespace CUETools.Codecs.FLACCL
 					throw new Exception("CPUThreads must be between 0..16");
 				cpu_threads = value;
 			}
+		}
+	}
+
+	public class FLACCLWriterSettingsPlatformConverter : TypeConverter
+	{
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+		{
+			return true;
+		}
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+		{			
+			var res = new List<string>();
+			foreach (var p in OpenCL.GetPlatforms())
+				res.Add(p.Name);
+			return new StandardValuesCollection(res);
+		}
+	}
+
+	public class FLACCLWriterSettingsGroupSizeConverter : TypeConverter
+	{
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+		{
+			return true;
+		}
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+		{
+			return new StandardValuesCollection(new int[] { 64, 128, 256 });
 		}
 	}
 
@@ -172,6 +203,8 @@ namespace CUETools.Codecs.FLACCL
 		FLACCLTask task2;
 		FLACCLTask[] cpu_tasks;
 		int oldest_cpu_task = 0;
+
+		internal int framesPerTask;
 
 		AudioPCMConfig _pcm;
 
@@ -1037,7 +1070,7 @@ namespace CUETools.Codecs.FLACCL
 				if (task.nWindowFunctions == 0)
 					throw new Exception("invalid windowfunction");
                 if (!_settings.MappedMemory)
-				    task.openCLCQ.EnqueueWriteBuffer(task.clWindowFunctions, true, 0, sizeof(float) * task.nWindowFunctions * task.frameSize, task.clWindowFunctionsPtr);
+				    task.openCLCQ.EnqueueWriteBuffer(task.clWindowFunctions, false, 0, sizeof(float) * task.nWindowFunctions * task.frameSize, task.clWindowFunctionsPtr);
 			}
 
 			task.nResidualTasks = 0;
@@ -1163,9 +1196,9 @@ namespace CUETools.Codecs.FLACCL
 				throw new Exception("oops");
 
             if (!_settings.MappedMemory)
-			    task.openCLCQ.EnqueueWriteBuffer(task.clResidualTasks, true, 0, sizeof(FLACCLSubframeTask) * task.nResidualTasks, task.clResidualTasksPtr);
+			    task.openCLCQ.EnqueueWriteBuffer(task.clResidualTasks, false, 0, sizeof(FLACCLSubframeTask) * task.nResidualTasks, task.clResidualTasksPtr);
 			if (!_settings.MappedMemory)
-				task.openCLCQ.EnqueueWriteBuffer(task.clSelectedTasks, true, 0, sizeof(int) * (nFrames * channelsCount * task.nEstimateTasksPerChannel), task.clSelectedTasksPtr);		
+				task.openCLCQ.EnqueueWriteBuffer(task.clSelectedTasks, false, 0, sizeof(int) * (nFrames * channelsCount * task.nEstimateTasksPerChannel), task.clSelectedTasksPtr);		
 		}
 
 		unsafe void encode_residual(FLACCLTask task)
@@ -1471,7 +1504,7 @@ namespace CUETools.Codecs.FLACCL
 			int channelsCount = doMidside ? 2 * channels : channels;
 
 			if (task.nResidualTasks == 0)
-				initializeSubframeTasks(task.frameSize, channelsCount, _settings.TaskSize, task);
+				initializeSubframeTasks(task.frameSize, channelsCount, framesPerTask, task);
 
 			estimate_residual(task, channelsCount);
 		}
@@ -1611,10 +1644,9 @@ namespace CUETools.Codecs.FLACCL
 				}
 				OCLMan.CreateDefaultContext(platformId, (DeviceType)_settings.DeviceType);
 
-				bool haveAtom = false;
-				if (OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics"))
-					haveAtom = true;					
-				else
+				this.framesPerTask = (int)OCLMan.Context.Devices[0].MaxComputeUnits * _settings.TaskSize;
+
+				if (!OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics"))
 					_settings.GPUOnly = false;
 
 				// The Defines string gets prepended to any and all sources that are compiled
@@ -1625,12 +1657,19 @@ namespace CUETools.Codecs.FLACCL
 					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
 					(_settings.GPUOnly ? "#define DO_PARTITIONS\n" : "") +
 					(_settings.DoRice ? "#define DO_RICE\n" : "") +
-					(haveAtom ? "#define HAVE_ATOM\n" : "") +
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
 					(_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
 					_settings.Defines + "\n";
+
+				var exts = new string[] { "cl_khr_local_int32_base_atomics", "cl_khr_local_int32_extended_atomics", "cl_khr_fp64", "cl_amd_fp64" };
+				foreach (string extension in exts)
+					if (OCLMan.Context.Devices[0].Extensions.Contains(extension))
+					{
+						OCLMan.Defines += "#pragma OPENCL EXTENSION " + extension + ": enable\n";
+						OCLMan.Defines += "#define HAVE_" + extension + "\n";
+					}
 
 				try
 				{
@@ -1698,7 +1737,7 @@ namespace CUETools.Codecs.FLACCL
 			int pos = 0;
 			while (pos < buff.Length)
 			{
-				int block = Math.Min(buff.Length - pos, eparams.block_size * _settings.TaskSize - samplesInBuffer);
+				int block = Math.Min(buff.Length - pos, eparams.block_size * framesPerTask - samplesInBuffer);
 
 				fixed (byte* buf = buff.Bytes)
 					AudioSamples.MemCpy(((byte*)task1.clSamplesBytesPtr) + samplesInBuffer * _pcm.BlockAlign, buf + pos * _pcm.BlockAlign, block * _pcm.BlockAlign);
@@ -1707,7 +1746,7 @@ namespace CUETools.Codecs.FLACCL
 				pos += block;
 
 				int nFrames = samplesInBuffer / eparams.block_size;
-				if (nFrames >= _settings.TaskSize)
+				if (nFrames >= framesPerTask)
 					do_output_frames(nFrames);
 			}
 			if (md5 != null)
@@ -2405,7 +2444,7 @@ namespace CUETools.Codecs.FLACCL
 			openCLCQ = openCLProgram.Context.CreateCommandQueue(openCLProgram.Context.Devices[0], prop);
 
             int MAX_ORDER = this.writer.eparams.max_prediction_order;
-			int MAX_FRAMES = this.writer._settings.TaskSize;
+			int MAX_FRAMES = this.writer.framesPerTask;
 			int MAX_CHANNELSIZE = MAX_FRAMES * writer.eparams.block_size;
 			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
 			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * MAX_FRAMES;
@@ -2440,14 +2479,14 @@ namespace CUETools.Codecs.FLACCL
 				clSelectedTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
 				clRiceOutputPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceLen);
 
-                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytesPinned, true, MapFlags.WRITE, 0, samplesBufferLen / 2);
-				clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidualPinned, true, MapFlags.WRITE, 0, residualBufferLen);
-                clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParamsPinned, true, MapFlags.WRITE, 0, riceParamsLen / 4);
-                clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasksPinned, true, MapFlags.WRITE, 0, residualTasksLen);
-                clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasksPinned, true, MapFlags.WRITE, 0, bestResidualTasksLen);
-                clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctionsPinned, true, MapFlags.WRITE, 0, wndLen);
-				clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasksPinned, true, MapFlags.WRITE, 0, selectedLen);
-				clRiceOutputPtr = openCLCQ.EnqueueMapBuffer(clRiceOutputPinned, true, MapFlags.WRITE, 0, riceLen);
+                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytesPinned, true, MapFlags.READ_WRITE, 0, samplesBufferLen / 2);
+				clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidualPinned, true, MapFlags.READ_WRITE, 0, residualBufferLen);
+				clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParamsPinned, true, MapFlags.READ_WRITE, 0, riceParamsLen / 4);
+				clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasksPinned, true, MapFlags.READ_WRITE, 0, residualTasksLen);
+				clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasksPinned, true, MapFlags.READ_WRITE, 0, bestResidualTasksLen);
+				clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctionsPinned, true, MapFlags.READ_WRITE, 0, wndLen);
+				clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasksPinned, true, MapFlags.READ_WRITE, 0, selectedLen);
+				clRiceOutputPtr = openCLCQ.EnqueueMapBuffer(clRiceOutputPinned, true, MapFlags.READ_WRITE, 0, riceLen);
 			}
             else
             {
@@ -2904,7 +2943,7 @@ namespace CUETools.Codecs.FLACCL
 
 					openCLCQ.EnqueueNDRangeKernel(
 						clCalcOutputOffsets,
-						groupSize,
+						openCLCQ.Device.DeviceType == DeviceType.CPU ? groupSize : 32,
 						1);
 
 					clRiceEncoding.SetArgs(

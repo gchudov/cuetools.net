@@ -28,9 +28,29 @@
 #pragma OPENCL EXTENSION cl_amd_printf : enable
 #endif
 
-#ifdef __CPU__
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#if defined(HAVE_cl_khr_local_int32_base_atomics) && defined(HAVE_cl_khr_local_int32_extended_atomics)
+#define HAVE_ATOM
 #endif
+
+#if defined(HAVE_cl_khr_fp64) || defined(HAVE_cl_amd_fp64)
+#define HAVE_DOUBLE
+#define ZEROD 0.0
+//#define FAST_DOUBLE
+#else
+#define double float
+#define double4 float4
+#define ZEROD 0.0f
+#endif
+#if defined(HAVE_DOUBLE) && defined(FAST_DOUBLE)
+#define fastdouble double
+#define fastdouble4 double4
+#define ZEROFD 0.0
+#else
+#define fastdouble float
+#define fastdouble4 float4
+#define ZEROFD 0.0f
+#endif
+
 
 //#if __OPENCL_VERSION__ == 110
 #ifdef AMD
@@ -44,11 +64,6 @@
 #endif
 
 #define WARP_SIZE 32
-
-#ifdef HAVE_ATOM
-#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics: enable
-#pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics: enable
-#endif
 
 typedef enum
 {
@@ -303,7 +318,6 @@ void clComputeAutocor(
 #else
 // get_num_groups(0) == number of tasks
 // get_num_groups(1) == number of windows
-#if 0
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clComputeAutocor(
     __global float *output,
@@ -313,7 +327,7 @@ void clComputeAutocor(
     const int taskCount // tasks per block
 )
 {
-    __local float data[GROUP_SIZE * 2];
+    __local fastdouble data[GROUP_SIZE * 2];
     __local FLACCLSubframeData task;
     const int tid = get_local_id(0);
     // fetch task data
@@ -322,160 +336,50 @@ void clComputeAutocor(
     barrier(CLK_LOCAL_MEM_FENCE);
     
     int bs = task.blocksize;
-    int windowOffs = get_group_id(1) * bs;
-
- //   if (tid < GROUP_SIZE / 4)
- //   {
-	//float4 dd = 0.0f;
-	//if (tid * 4 < bs)
-	//    dd = vload4(tid, window + windowOffs) * convert_float4(vload4(tid, samples + task.samplesOffs));
-	//vstore4(dd, tid, &data[0]);
- //   }
-    data[tid] = 0.0f;
-    // This simpler code doesn't work somehow!!!
-    //data[tid] = tid < bs ? samples[task.samplesOffs + tid] * window[windowOffs + tid] : 0.0f;
-
-    const int THREADS_FOR_ORDERS = MAX_ORDER < 8 ? 8 : MAX_ORDER < 16 ? 16 : MAX_ORDER < 32 ? 32 : 64;
-    float corr = 0.0f;
-    float corr1 = 0.0f;
-    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
-    {
-	// fetch samples
-	float nextData = pos + tid < bs ? samples[task.samplesOffs + pos + tid] * window[windowOffs + pos + tid] : 0.0f;
-	data[tid + GROUP_SIZE] = nextData;
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	int lag = tid & (THREADS_FOR_ORDERS - 1);
-	int tid1 = tid + GROUP_SIZE - lag;
-#ifdef AMD
-	float4 res = 0.0f;
-	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
-	    res += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
-	corr += res.x + res.y + res.w + res.z;
-#else
-	float res = 0.0f;
-	for (int i = 0; i < THREADS_FOR_ORDERS; i++)
-	    res += data[tid1 - lag + i] * data[tid1 + i];
-	corr += res;
-#endif
-	if ((pos & (GROUP_SIZE * 15)) == 0)
-	{
-	    corr1 += corr;
-	    corr = 0.0f;
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-	data[tid] = nextData;
-    }
-
-    data[tid] = corr + corr1;
-    barrier(CLK_LOCAL_MEM_FENCE);
-    for (int i = GROUP_SIZE / 2; i >= THREADS_FOR_ORDERS; i >>= 1)
-    {
-	if (tid < i)
-	    data[tid] += data[tid + i];
-	barrier(CLK_LOCAL_MEM_FENCE);
-    }
-
-    if (tid <= MAX_ORDER)
-	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + tid] = data[tid];
-}
-#else
-__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
-void clComputeAutocor(
-    __global float *output,
-    __global const int *samples,
-    __global const float *window,
-    __global FLACCLSubframeTask *tasks,
-    const int taskCount // tasks per block
-)
-{
-    __local float data[GROUP_SIZE * 2 + 32];
-    __local FLACCLSubframeData task;
-    const int tid = get_local_id(0);
-    // fetch task data
-    if (tid < sizeof(task) / sizeof(int))
-	((__local int*)&task)[tid] = ((__global int*)(tasks + taskCount * get_group_id(0)))[tid];
-    barrier(CLK_LOCAL_MEM_FENCE);
-    
-    int bs = task.blocksize;
-    data[tid] = 0.0f;
-    if (tid < 32)
-	data[GROUP_SIZE * 2 + tid] = 0.0f;
+    data[tid] = ZEROFD;
 
     const int THREADS_FOR_ORDERS = MAX_ORDER < 8 ? 8 : MAX_ORDER < 16 ? 16 : MAX_ORDER < 32 ? 32 : 64;
     int lag = tid & (THREADS_FOR_ORDERS - 1);
     int tid1 = tid + GROUP_SIZE - lag;
     int pos = 0;
     const __global float * wptr = &window[get_group_id(1) * bs];
-#ifdef AMD
-    float4 corr = 0.0f;
-#else
-    float corr = 0.0f;
-#endif
-    float corr1 = 0.0f;
+//    const __global int * sptr = &samples[task.samplesOffs];
+    double corr = ZEROD;
+
     for (pos = 0; pos + GROUP_SIZE - 1 < bs; pos += GROUP_SIZE)
     {
-	// fetch samples
 	int off = pos + tid;
-//    const __global int * sptr = &samples[task.samplesOffs];
-	float nextData = samples[task.samplesOffs + off] * wptr[off];
+	// fetch samples
+	fastdouble nextData = samples[task.samplesOffs + off] * wptr[off];
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-#ifdef AMD
+	fastdouble4 tmp = ZEROFD;
 	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
-	    corr += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
-#else
-	for (int i = 0; i < THREADS_FOR_ORDERS; i++)
-	    corr += data[tid1 - lag + i] * data[tid1 + i];
-#endif
-
-	if ((pos & (GROUP_SIZE * 15)) == 0)
-	{
-#ifdef AMD
-	    corr1 += (corr.x + corr.y) + (corr.w + corr.z);
-#else
-	    corr1 += corr;
-#endif
-	    corr = 0.0f;
-	}
+	    tmp += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
+	corr += (tmp.x + tmp.y) + (tmp.w + tmp.z);
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
     }
     if (pos < bs)
     {
-	// fetch samples
 	int off = pos + tid;
-	float nextData = off < bs ? samples[task.samplesOffs + off] * wptr[off] : 0.0f;
+	// fetch samples
+	double nextData = off < bs ? samples[task.samplesOffs + off] * wptr[off] : ZEROD;
 	data[tid + GROUP_SIZE] = nextData;
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	int lag = tid & (THREADS_FOR_ORDERS - 1);
-	int tid1 = tid + GROUP_SIZE - lag;
-//#if 1
-#ifdef AMD
-	float4 res = 0.0f;
+	fastdouble4 tmp = ZEROFD;
 	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
-	    res += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
-	corr1 += res.x + res.y + res.w + res.z;
-#else
-	for (int i = 0; i < THREADS_FOR_ORDERS; i++)
-	    corr1 += data[tid1 - lag + i] * data[tid1 + i];
-#endif
+	    tmp += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
+	corr += (tmp.x + tmp.y) + (tmp.w + tmp.z);
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
     }
 
-#ifdef AMD
-    corr1 += corr.x + corr.y + corr.w + corr.z;
-#else
-    corr1 += corr;
-#endif
-
-    data[tid] = corr1;
+    data[tid] = corr;
     barrier(CLK_LOCAL_MEM_FENCE);
     for (int i = GROUP_SIZE / 2; i >= THREADS_FOR_ORDERS; i >>= 1)
     {
@@ -487,7 +391,6 @@ void clComputeAutocor(
     if (tid <= MAX_ORDER)
 	output[(get_group_id(0) * get_num_groups(1) + get_group_id(1)) * (MAX_ORDER + 1) + tid] = data[tid];
 }
-#endif
 #endif
 
 #ifdef FLACCL_CPU
@@ -558,8 +461,8 @@ void clComputeLPC(
 )
 {
     __local struct {
-	volatile float ldr[32];
-	volatile float gen1[32];
+	volatile double ldr[32];
+	volatile double gen1[32];
 	volatile float error[32];
 	volatile float autoc[33];
     } shared;
@@ -575,9 +478,9 @@ void clComputeLPC(
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Compute LPC using Schur and Levinson-Durbin recursion
-    float gen0 = shared.gen1[get_local_id(0)] = shared.autoc[get_local_id(0)+1];
-    shared.ldr[get_local_id(0)] = 0.0f;
-    float error = shared.autoc[0];
+    double gen0 = shared.gen1[get_local_id(0)] = shared.autoc[get_local_id(0)+1];
+    shared.ldr[get_local_id(0)] = ZEROD;
+    double error = shared.autoc[0];
     
 #ifdef DEBUGPRINT1
     int magic = shared.autoc[0] == 177286873088.0f;
@@ -589,10 +492,10 @@ void clComputeLPC(
     for (int order = 0; order < MAX_ORDER; order++)
     {
 	// Schur recursion
-	float reff = -shared.gen1[0] / error;
+	double reff = -shared.gen1[0] / error;
 	//error += shared.gen1[0] * reff; // Equivalent to error *= (1 - reff * reff);
 	error *= (1 - reff * reff);
-	float gen1;
+	double gen1;
 	if (get_local_id(0) < MAX_ORDER - 1 - order)
 	{
 	    gen1 = shared.gen1[get_local_id(0) + 1] + reff * gen0;
@@ -613,7 +516,7 @@ void clComputeLPC(
 	    shared.error[order] = error;
 
 	// Levinson-Durbin recursion
-	float ldr = shared.ldr[get_local_id(0)];
+	double ldr = shared.ldr[get_local_id(0)];
         barrier(CLK_LOCAL_MEM_FENCE);
 	if (get_local_id(0) < order)
 	    shared.ldr[order - 1 - get_local_id(0)] += reff * ldr;
@@ -651,12 +554,20 @@ void clQuantizeLPC(
     float error[MAX_ORDER];
     int best_orders[MAX_ORDER];
 
+    int best8 = 0;
     // Load prediction error estimates based on Akaike's Criteria
     for (int tid = 0; tid < MAX_ORDER; tid++)
     {
-	error[tid] = bs * log(lpcs[lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log((float)bs);
+	error[tid] = bs * log(1.0f + lpcs[lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log((float)bs);
 	best_orders[tid] = tid;
+	if (tid < 8 && error[tid] < error[best8])
+	    best8 = tid;
     }
+
+#if 0
+    for (int i = best8 + 1; i < MAX_ORDER; i++)
+	error[i] += 20.5f * log((float)bs);
+#endif
     
     // Select best orders 
     for (int i = 0; i < MAX_ORDER && i < taskCountLPC; i++)
@@ -730,6 +641,7 @@ void clQuantizeLPC(
 #ifndef HAVE_ATOM
 	volatile int tmp[32];
 #endif
+//    	volatile int best8;
     } shared;
 
     const int tid = get_local_id(0);
@@ -752,6 +664,17 @@ void clQuantizeLPC(
     if (tid < MAX_ORDER)
 	shared.error[tid] = shared.task.blocksize * log(lpcs[lpcOffs + MAX_ORDER * 32 + tid]) + tid * 4.12f * log((float)shared.task.blocksize);
 	//shared.error[get_local_id(0)] = shared.task.blocksize * log(lpcs[lpcOffs + MAX_ORDER * 32 + get_local_id(0)]) + get_local_id(0) * 0.30f * (shared.task.abits + 1) * log(shared.task.blocksize);
+#if 0
+    if (tid == 0)
+    {
+	int b8 = 0;
+        for (int i = 1; i < 8; i++)
+	    if (shared.error[i] < shared.error[b8])
+		b8 = i;
+	shared.best8 = b8;
+    }
+    shared.error[tid] += select(0.0f, 20.5f * log((float)shared.task.blocksize), tid > shared.best8);
+#endif
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Sort using bitonic sort
@@ -1452,6 +1375,7 @@ void clCalcPartition16(
     __local FLACCLSubframeTask task;
     __local int data[GROUP_SIZE * 2];
     __local int res[GROUP_SIZE];
+    __local int pl[GROUP_SIZE >> 4][15];
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task) / sizeof(int))
@@ -1524,8 +1448,16 @@ void clCalcPartition16(
 	sum = (vload4(0,chunk) >> k) + (vload4(1,chunk) >> k) + (vload4(2,chunk) >> k) + (vload4(3,chunk) >> k);
 	s = sum.x + sum.y + sum.z + sum.w;
 
+#if 0
 	if (k <= 14 && offs < bs)
 	    plptr[offs >> 4] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
+#else
+	if (k <= 14) pl[x][k] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
+	barrier(CLK_LOCAL_MEM_FENCE);
+        int k1 = tid >> 3, x1 = tid & 7;
+	if (k1 <= 14 && (pos >> 4) + x1 < (1 << max_porder))
+	    partition_lengths[(15 << (max_porder + 1)) * get_group_id(0) + (k1 << (max_porder + 1)) + (pos >> 4) + x1] = pl[x1][k1];
+#endif
 
 //    	if (task.data.blocksize == 16 && x == 0 && k <= 14)
 //	    printf("[%d] = %d = s:%d + %d * (k:%d + 1), ro=%d, offs=%d, lpos=%d\n", k, partition_lengths[lpos], s, (16 - select(0, ro, offs < 16)), k, ro, offs, lpos);
@@ -1849,13 +1781,12 @@ inline int len_utf8(int n)
 #else
     int bts = 31 - clz(n);
 #endif
-    if (bts < 7)
-	return 8;
-    return 8 * ((bts + 4) / 5);
+    return select(8, 8 * ((bts + 4) / 5), bts > 6);
 }
 
+#ifdef FLACCL_CPU
 // get_global_id(0) * channels == task index
-__kernel 
+__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clCalcOutputOffsets(
     __global int *residual,
     __global int *samples,
@@ -1874,9 +1805,8 @@ void clCalcOutputOffsets(
 	    // + 8-16 // custom sample rate
 	    ;
 	int bs = tasks[iFrame * channels].data.blocksize;
-	//public static readonly int[] flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };
-	if (bs != 4096 && bs != 4608) // TODO: check all other standard sizes
-	    offset += select(8, 16, bs >= 256);
+	//public static readonly int[] flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };	
+	offset += select(0, select(8, 16, bs >= 256), bs != 4096 && bs != 4608); // TODO: check all other standard sizes
 	
 	// assert (offset % 8) == 0
 	offset += 8;
@@ -1893,6 +1823,56 @@ void clCalcOutputOffsets(
 	offset += 16;
     }
 }
+#else
+// get_global_id(0) * channels == task index
+__kernel __attribute__((reqd_work_group_size(32, 1, 1)))
+void clCalcOutputOffsets(
+    __global int *residual,
+    __global int *samples,
+    __global FLACCLSubframeTask *tasks,
+    int channels1,
+    int frameCount,
+    int firstFrame
+    )
+{
+    const int channels = 2;
+    __local FLACCLSubframeData ltasks[2];
+    __local volatile int mypos[2];
+    int offset = 0;
+    for (int iFrame = 0; iFrame < frameCount; iFrame++)
+    {
+	if (get_local_id(0) < sizeof(ltasks[0]) / sizeof(int))
+	    for (int ch = 0; ch < channels; ch++)
+		((__local int*)&ltasks[ch])[get_local_id(0)] = ((__global int*)(&tasks[iFrame * channels + ch]))[get_local_id(0)];
+
+	//printf("len_utf8(%d) == %d\n", firstFrame + iFrame, len_utf8(firstFrame + iFrame));
+	offset += 15 + 1 + 4 + 4 + 4 + 3 + 1 + len_utf8(firstFrame + iFrame)
+	    // + 8-16 // custom block size
+	    // + 8-16 // custom sample rate
+	    ;
+	int bs = ltasks[0].blocksize;
+	//public static readonly int[] flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };	
+	offset += select(0, select(8, 16, bs >= 256), bs != 4096 && bs != 4608); // TODO: check all other standard sizes
+	
+	// assert (offset % 8) == 0
+	offset += 8;
+	if (get_local_id(0) < channels)
+	{
+	    int ch = get_local_id(0);
+	    // Add 64 bits to separate frames if header is too small so they can intersect
+	    int mylen = 8 + ltasks[ch].wbits + 64 + ltasks[ch].size;
+	    mypos[ch] = mylen;
+	    for (int offset = 1; offset < WARP_SIZE && offset < channels; offset <<= 1)
+		if (ch >= offset) mypos[ch] += mypos[ch - offset];
+	    mypos[ch] += offset;
+	    tasks[iFrame * channels + ch].data.encodingOffset = mypos[ch] - ltasks[ch].size + ltasks[ch].headerLen;
+	}
+	offset = mypos[channels - 1];
+	offset = (offset + 7) & ~7;
+	offset += 16;
+    }
+}
+#endif
 
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
@@ -2000,7 +1980,9 @@ void clRiceEncoding(
 #else
     __local unsigned int data[GROUP_SIZE];
     __local volatile int mypos[GROUP_SIZE+1];
-    //__local int brp[256];
+#if 0
+    __local int brp[256];
+#endif
     __local volatile int warppos[WARP_SIZE];
     __local FLACCLSubframeData task;
 
@@ -2014,8 +1996,10 @@ void clRiceEncoding(
 	mypos[GROUP_SIZE] = 0;
     if (tid < WARP_SIZE)
 	warppos[tid] = 0;
- //   for (int offs = tid; offs < (1 << task.porder); offs ++)
-	//brp[offs] = best_rice_parameters[(get_group_id(0) << max_porder) + offs];
+#if 0
+    for (int offs = tid; offs < (1 << task.porder); offs ++)
+	brp[offs] = best_rice_parameters[(get_group_id(0) << max_porder) + offs];
+#endif
     data[tid] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
     const int bs = task.blocksize;
@@ -2023,19 +2007,23 @@ void clRiceEncoding(
     int plen = bs >> task.porder;
     //int plenoffs = 12 - task.porder;
     unsigned int remainder = 0U;
-    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
+    int pos;
+    for (pos = 0; pos + GROUP_SIZE - 1 < bs; pos += GROUP_SIZE)
     {
 	int offs = pos + tid;
-	int v = offs < bs ? residual[task.residualOffs + offs] : 0;
+	int v = residual[task.residualOffs + offs];
 	int part = offs / plen; // >> plenoffs;
-	//int k = brp[min(255, part)];
-	int k = offs < bs ? best_rice_parameters[(get_group_id(0) << max_porder) + part] : 0;
+#if 0
+	int k = brp[part];
+#else
+	int k = best_rice_parameters[(get_group_id(0) << max_porder) + part];
+#endif
 	int pstart = offs == task.residualOrder || offs == part * plen;
 	v = (v << 1) ^ (v >> 31);
 	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
 	mypos[tid] = mylen;
+	
 	// Inclusive scan(+)
-#if 1
 	int lane = (tid & (WARP_SIZE - 1));
 	for (int offset = 1; offset < WARP_SIZE; offset <<= 1)
 	    mypos[tid] += mypos[select(GROUP_SIZE, tid - offset, lane >= offset)];
@@ -2052,19 +2040,68 @@ void clRiceEncoding(
 	mp += start + select(0, warppos[tid / WARP_SIZE - 1], tid / WARP_SIZE > 0);
 	int start32 = start >> 5;
 	start += mypos[GROUP_SIZE - 1] + warppos[GROUP_SIZE / WARP_SIZE - 2];
-#else
+
+	//if (tid == GROUP_SIZE - 1 && mypos[tid] > (GROUP_SIZE/2) * 32)
+	//    printf("Oops: %d\n", mypos[tid]);
+	data[tid] = select(0U, remainder, tid == 0);
 	barrier(CLK_LOCAL_MEM_FENCE);
-	for (int offset = 1; offset < GROUP_SIZE; offset <<= 1)
+	if (mylen)
 	{
-	    int t = tid >= offset ? mypos[tid - offset] : 0;
-	    barrier(CLK_LOCAL_MEM_FENCE);
-	    mypos[tid] += t;
-	    barrier(CLK_LOCAL_MEM_FENCE);
+	    if (pstart)
+	    {
+		int kpos = mp - mylen;
+		int kpos0 = (kpos >> 5) - start32;
+		int kpos1 = kpos & 31;
+		unsigned int kval = (unsigned int)k << 28;
+		unsigned int kval0 = kval >> kpos1;
+		unsigned int kval1 = kval << (32 - kpos1);
+		if (kval0) atom_or(&data[kpos0], kval0);
+		if (kpos1 && kval1) atom_or(&data[kpos0 + 1], kval1);
+	    }
+	    int qpos = mp - k - 1;
+	    int qpos0 = (qpos >> 5) - start32;
+	    int qpos1 = qpos & 31;
+	    unsigned int qval = (1U << 31) | ((unsigned int)v << (31 - k));
+	    unsigned int qval0 = qval >> qpos1;
+	    unsigned int qval1= qval << (32 - qpos1);
+	    if (qval0) atom_or(&data[qpos0], qval0);
+	    if (qpos1 && qval1) atom_or(&data[qpos0 + 1], qval1);
 	}
-	int mp = start + mypos[tid];
-	int start32 = start / 32;
-	start += mypos[GROUP_SIZE - 1];
-#endif
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if ((start32 + tid) * 32 <= start)
+	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
+	remainder = data[start / 32 - start32];
+    }
+    if (pos < bs)
+    {
+	int offs = pos + tid;
+	int v = offs < bs ? residual[task.residualOffs + offs] : 0;
+	int part = offs / plen; // >> plenoffs;
+	//int k = brp[min(255, part)];
+	int k = offs < bs ? best_rice_parameters[(get_group_id(0) << max_porder) + part] : 0;
+	int pstart = offs == task.residualOrder || offs == part * plen;
+	v = (v << 1) ^ (v >> 31);
+	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
+	mypos[tid] = mylen;
+	
+	// Inclusive scan(+)
+	int lane = (tid & (WARP_SIZE - 1));
+	for (int offset = 1; offset < WARP_SIZE; offset <<= 1)
+	    mypos[tid] += mypos[select(GROUP_SIZE, tid - offset, lane >= offset)];
+	int mp = mypos[tid];
+	if ((tid & (WARP_SIZE - 1)) == WARP_SIZE - 1)
+	    warppos[tid/WARP_SIZE] = mp;
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (tid < GROUP_SIZE/WARP_SIZE)
+	{
+	    for (int offset = 1; offset < GROUP_SIZE/WARP_SIZE; offset <<= 1)
+		warppos[tid] += warppos[select(GROUP_SIZE/WARP_SIZE, tid - offset, tid >= offset)];
+	}
+	barrier(CLK_LOCAL_MEM_FENCE);
+	mp += start + select(0, warppos[tid / WARP_SIZE - 1], tid / WARP_SIZE > 0);
+	int start32 = start >> 5;
+	start += mypos[GROUP_SIZE - 1] + warppos[GROUP_SIZE / WARP_SIZE - 2];
+
 	//if (tid == GROUP_SIZE - 1 && mypos[tid] > (GROUP_SIZE/2) * 32)
 	//    printf("Oops: %d\n", mypos[tid]);
 	data[tid] = select(0U, remainder, tid == 0);
