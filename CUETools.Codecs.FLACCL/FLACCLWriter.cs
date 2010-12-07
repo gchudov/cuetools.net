@@ -87,7 +87,7 @@ namespace CUETools.Codecs.FLACCL
 		[SRDescription(typeof(Properties.Resources), "DescriptionDeviceType")]
 		public OpenCLDeviceType DeviceType { get; set; }
 
-		int cpu_threads = 1;
+		int cpu_threads = 0;
 		[DefaultValue(1)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionCPUThreads")]
 		public int CPUThreads
@@ -214,10 +214,11 @@ namespace CUETools.Codecs.FLACCL
 		{
 			_pcm = pcm;
 
-			if (pcm.BitsPerSample != 16)
+			// FIXME: For now, only 16-bit encoding is supported
+			if (pcm.BitsPerSample != 16 && pcm.BitsPerSample != 24)
 				throw new Exception("Bits per sample must be 16.");
-			if (pcm.ChannelCount != 2)
-				throw new Exception("ChannelCount must be 2.");
+			//if (pcm.ChannelCount != 2)
+			//    throw new Exception("ChannelCount must be 2.");
 
 			channels = pcm.ChannelCount;
 			sample_rate = pcm.SampleRate;
@@ -288,12 +289,6 @@ namespace CUETools.Codecs.FLACCL
 				if (value as FLACCLWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
 				_settings = value as FLACCLWriterSettings;
-				if (_settings.DeviceType == OpenCLDeviceType.CPU)
-				{
-					_settings.GroupSize = 1;
-					//_settings.GPUOnly = true;
-                    _settings.MappedMemory = true;
-				}
 			}
 		}
 
@@ -644,24 +639,28 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
-		static unsafe uint calc_optimal_rice_params(int porder, int* parm, uint* sums, uint n, uint pred_order)
+		static unsafe uint calc_optimal_rice_params(int porder, int* parm, ulong* sums, uint n, uint pred_order, ref int method)
 		{
 			uint part = (1U << porder);
 			uint cnt = (n >> porder) - pred_order;
-			int k = cnt > 0 ? Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[0] / cnt)) : 0;
-			uint all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
+			int maxK = method > 0 ? 30 : Flake.MAX_RICE_PARAM;
+			int k = cnt > 0 ? Math.Min(maxK, BitReader.log2i(sums[0] / cnt)) : 0;
+			int realMaxK0 = k;
+			ulong all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
 			parm[0] = k;
 			cnt = (n >> porder);
 			for (uint i = 1; i < part; i++)
 			{
-				k = Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[i] / cnt));
+				k = Math.Min(maxK, BitReader.log2i(sums[i] / cnt));
+				realMaxK0 = Math.Max(realMaxK0, k);
 				all_bits += cnt * ((uint)k + 1U) + (sums[i] >> k);
 				parm[i] = k;
 			}
-			return all_bits + (4 * part);
+			method = realMaxK0 > Flake.MAX_RICE_PARAM ? 1 : 0;
+			return (uint)all_bits + ((4U + (uint)method) * part);
 		}
 
-		static unsafe void calc_lower_sums(int pmin, int pmax, uint* sums)
+		static unsafe void calc_lower_sums(int pmin, int pmax, ulong* sums)
 		{
 			for (int i = pmax - 1; i >= pmin; i--)
 			{
@@ -674,12 +673,12 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
-		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
 		{
 			int parts = (1 << pmax);
 			uint* res = data + pred_order;
 			uint cnt = (n >> pmax) - pred_order;
-			uint sum = 0;
+			ulong sum = 0;
 			for (uint j = cnt; j > 0; j--)
 				sum += *(res++);
 			sums[0] = sum;
@@ -702,18 +701,18 @@ namespace CUETools.Codecs.FLACCL
 		/// <param name="n"></param>
 		/// <param name="pred_order"></param>
 		/// <param name="sums"></param>
-		static unsafe void calc_sums18(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		static unsafe void calc_sums18(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
 		{
 			int parts = (1 << pmax);
 			uint* res = data + pred_order;
 			uint cnt = 18 - pred_order;
-			uint sum = 0;
+			ulong sum = 0UL;
 			for (uint j = cnt; j > 0; j--)
 				sum += *(res++);
 			sums[0] = sum;
 			for (int i = 1; i < parts; i++)
 			{
-				sums[i] =
+				sums[i] = 0UL +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
@@ -731,18 +730,18 @@ namespace CUETools.Codecs.FLACCL
 		/// <param name="n"></param>
 		/// <param name="pred_order"></param>
 		/// <param name="sums"></param>
-		static unsafe void calc_sums16(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		static unsafe void calc_sums16(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
 		{
 			int parts = (1 << pmax);
 			uint* res = data + pred_order;
 			uint cnt = 16 - pred_order;
-			uint sum = 0;
+			ulong sum = 0UL;
 			for (uint j = cnt; j > 0; j--)
 				sum += *(res++);
 			sums[0] = sum;
 			for (int i = 1; i < parts; i++)
 			{
-				sums[i] =
+				sums[i] = 0UL +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
@@ -750,10 +749,10 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
-		static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order)
+		static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order, int max_method)
 		{
 			uint* udata = stackalloc uint[(int)n];
-			uint* sums = stackalloc uint[(pmax + 1) * Flake.MAX_PARTITIONS];
+			ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
 			int* parm = stackalloc int[(pmax + 1) * Flake.MAX_PARTITIONS];
 			//uint* bits = stackalloc uint[Flake.MAX_PARTITION_ORDER];
 
@@ -776,17 +775,21 @@ namespace CUETools.Codecs.FLACCL
 
 			uint opt_bits = AudioSamples.UINT32_MAX;
 			int opt_porder = pmin;
+			int opt_method = 0;
 			for (int i = pmin; i <= pmax; i++)
 			{
-				uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
+				int method = max_method;
+				uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order, ref method);
 				if (bits <= opt_bits)
 				{
 					opt_bits = bits;
 					opt_porder = i;
+					opt_method = method;
 				}
 			}
 
 			rc.porder = opt_porder;
+			rc.coding_method = opt_method;
 			fixed (int* rparms = rc.rparams)
 				AudioSamples.MemCpy(rparms, parm + opt_porder * Flake.MAX_PARTITIONS, (1 << opt_porder));
 
@@ -845,8 +848,8 @@ namespace CUETools.Codecs.FLACCL
 			for (int i = pos; i < pos + cnt; i++)
 			{
 				int v = sub.best.residual[i];
-				v = (v << 1) ^ (v >> 31);
-				q += (v >> k);
+				uint uv = (uint)((v << 1) ^ (v >> 31));
+				q += (int)(uv >> k);
 			}
 			return (k + 1) * cnt + q;
 		}
@@ -857,7 +860,7 @@ namespace CUETools.Codecs.FLACCL
 			int porder = sub.best.rc.porder;
 			int psize = frame.blocksize >> porder;
 			//assert(porder >= 0);
-			int size = 6 + (4 << porder);
+			int size = 6 + ((4 + sub.best.rc.coding_method) << porder);
 			size += measure_residual(frame, sub, sub.best.order, psize - sub.best.order, sub.best.rc.rparams[0]);
 			// residual
 			for (int p = 1; p < (1 << porder); p++)
@@ -870,13 +873,13 @@ namespace CUETools.Codecs.FLACCL
 			FlacFrame frame = task.frame;
 
 			// rice-encoded block
-			frame.writer.writebits(2, 0);
+			frame.writer.writebits(2, sub.best.rc.coding_method);
 			// partition order
 			int porder = sub.best.rc.porder;
 			//assert(porder >= 0);
 			frame.writer.writebits(4, porder);
 
-			if (_settings.GPUOnly && _settings.DoRice)
+			if (task.UseGPURice)
 			{
 				int len = task.BestResidualTasks[index].size - task.BestResidualTasks[index].headerLen;
 				int pos = task.BestResidualTasks[index].encodingOffset;
@@ -901,7 +904,7 @@ namespace CUETools.Codecs.FLACCL
 					for (int p = 0; p < (1 << porder); p++)
 					{
 						int k = sub.best.rc.rparams[p];
-						frame.writer.writebits(4, k);
+						frame.writer.writebits(4 + sub.best.rc.coding_method, k);
 						if (p == 1) res_cnt = psize;
 						int cnt = Math.Min(res_cnt, frame.blocksize - j);
 						frame.writer.write_rice_block_signed(fixbuf, k, sub.best.residual + j, cnt);
@@ -1069,7 +1072,7 @@ namespace CUETools.Codecs.FLACCL
 				calculate_window(task, lpc.window_bartlett, WindowFunction.Bartlett);
 				if (task.nWindowFunctions == 0)
 					throw new Exception("invalid windowfunction");
-                if (!_settings.MappedMemory)
+                if (!task.UseMappedMemory)
 				    task.openCLCQ.EnqueueWriteBuffer(task.clWindowFunctions, false, 0, sizeof(float) * task.nWindowFunctions * task.frameSize, task.clWindowFunctionsPtr);
 			}
 
@@ -1116,6 +1119,7 @@ namespace CUETools.Codecs.FLACCL
 							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 							task.ResidualTasks[task.nResidualTasks].wbits = 0;
+							task.ResidualTasks[task.nResidualTasks].coding_method = PCM.BitsPerSample > 16 ? 1 : 0;
 							task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 							task.nResidualTasks++;
 						}
@@ -1131,6 +1135,7 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 						task.ResidualTasks[task.nResidualTasks].wbits = 0;
+						task.ResidualTasks[task.nResidualTasks].coding_method = PCM.BitsPerSample > 16 ? 1 : 0;
 						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOrder = 1;
 						task.ResidualTasks[task.nResidualTasks].shift = 0;
@@ -1149,6 +1154,7 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 						task.ResidualTasks[task.nResidualTasks].wbits = 0;
+						task.ResidualTasks[task.nResidualTasks].coding_method = PCM.BitsPerSample > 16 ? 1 : 0;
 						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 						task.ResidualTasks[task.nResidualTasks].shift = 0;
 						switch (order)
@@ -1195,10 +1201,11 @@ namespace CUETools.Codecs.FLACCL
 			if (sizeof(FLACCLSubframeTask) * task.nResidualTasks > task.residualTasksLen)
 				throw new Exception("oops");
 
-            if (!_settings.MappedMemory)
-			    task.openCLCQ.EnqueueWriteBuffer(task.clResidualTasks, false, 0, sizeof(FLACCLSubframeTask) * task.nResidualTasks, task.clResidualTasksPtr);
-			if (!_settings.MappedMemory)
-				task.openCLCQ.EnqueueWriteBuffer(task.clSelectedTasks, false, 0, sizeof(int) * (nFrames * channelsCount * task.nEstimateTasksPerChannel), task.clSelectedTasksPtr);		
+			if (!task.UseMappedMemory)
+			{
+				task.openCLCQ.EnqueueWriteBuffer(task.clResidualTasks, false, 0, sizeof(FLACCLSubframeTask) * task.nResidualTasks, task.clResidualTasksPtr);
+				task.openCLCQ.EnqueueWriteBuffer(task.clSelectedTasks, false, 0, sizeof(int) * (nFrames * channelsCount * task.nEstimateTasksPerChannel), task.clSelectedTasksPtr);
+			}
 		}
 
 		unsafe void encode_residual(FLACCLTask task)
@@ -1215,7 +1222,7 @@ namespace CUETools.Codecs.FLACCL
 						if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 						break;
 					case SubframeType.Fixed:
-						if (!_settings.GPUOnly)
+						if (!task.UseGPUOnly)
 						{
 							if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
 							encode_residual_fixed(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples,
@@ -1224,7 +1231,7 @@ namespace CUETools.Codecs.FLACCL
 							int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
 							int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
 							uint bits = (uint)(task.frame.subframes[ch].best.order * task.frame.subframes[ch].obits) + 6;
-							task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order);
+							task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
 						}
 						break;
 					case SubframeType.LPC:
@@ -1236,7 +1243,7 @@ namespace CUETools.Codecs.FLACCL
 
 #if DEBUG
 							// check size
-							if (_settings.GPUOnly && !_settings.DoRice)
+							if (task.UseGPUOnly && !task.UseGPURice)
 							{
 								uint real_size = measure_subframe(task.frame, task.frame.subframes[ch]);
 								if (real_size != task.frame.subframes[ch].best.size)
@@ -1244,9 +1251,9 @@ namespace CUETools.Codecs.FLACCL
 							}
 #endif
 
-							if (((csum << task.frame.subframes[ch].obits) >= 1UL << 32) || !_settings.GPUOnly)
+							if ((((csum << task.frame.subframes[ch].obits) >= 1UL << 32) && PCM.BitsPerSample == 16) || !task.UseGPUOnly)
 							{
-								if (_settings.GPUOnly && _settings.DoRice)
+								if (task.UseGPURice)
 #if DEBUG
 //									throw new Exception("DoRice failed");
 									break;
@@ -1266,11 +1273,11 @@ namespace CUETools.Codecs.FLACCL
 								RiceContext rc1 = task.frame.subframes[ch].best.rc;
 								task.frame.subframes[ch].best.rc = new RiceContext();
 #endif
-								task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order);
+								task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
 								task.frame.subframes[ch].best.size = measure_subframe(task.frame, task.frame.subframes[ch]);
 #if KJHKJH
 								// check size
-								if (_settings.GPUOnly && oldsize > task.frame.subframes[ch].best.size)
+								if (task.UseGPUOnly && oldsize > task.frame.subframes[ch].best.size)
 									throw new Exception("unoptimal size reported");
 #endif
 								//if (task.frame.subframes[ch].best.size > task.frame.subframes[ch].obits * (uint)task.frame.blocksize &&
@@ -1337,8 +1344,9 @@ namespace CUETools.Codecs.FLACCL
 					for (int i = 0; i < task.BestResidualTasks[index].residualOrder; i++)
 						frame.subframes[ch].best.coefs[i] = task.BestResidualTasks[index].coefs[task.BestResidualTasks[index].residualOrder - 1 - i];
 					frame.subframes[ch].best.rc.porder = task.BestResidualTasks[index].porder;
-					if (_settings.GPUOnly && !_settings.DoRice && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
-					//if (_settings.GPUOnly && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
+					frame.subframes[ch].best.rc.coding_method = task.BestResidualTasks[index].coding_method;
+					if (task.UseGPUOnly && !task.UseGPURice && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
+					//if (task.UseGPUOnly && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
 					{
 						int* riceParams = ((int*)task.clBestRiceParamsPtr) + (index << task.max_porder);
 						fixed (int* dstParams = frame.subframes[ch].best.rc.rparams)
@@ -1352,7 +1360,7 @@ namespace CUETools.Codecs.FLACCL
 				}
 				else
 				{
-					if (_settings.GPUOnly && _settings.DoRice && frame.subframes[ch].best.size != task.BestResidualTasks[index].size)
+					if (task.UseGPURice && frame.subframes[ch].best.size != task.BestResidualTasks[index].size)
 						throw new Exception("size reported incorrectly");
 				}
 			}
@@ -1369,10 +1377,9 @@ namespace CUETools.Codecs.FLACCL
 		/// </summary>
 		/// <param name="task"></param>
 		/// <param name="doMidside"></param>
-		unsafe void unpack_samples(FLACCLTask task, int count)
+		unsafe void unpack_samples_16(FLACCLTask task, byte * srcptr, int count)
 		{
-			int iFrame = task.frame.frame_number;
-			short* src = ((short*)task.clSamplesBytesPtr) + iFrame * channels * task.frameSize;
+			short* src = (short*)srcptr;
 
 			switch (task.frame.ch_mode)
 			{
@@ -1382,7 +1389,7 @@ namespace CUETools.Codecs.FLACCL
 						int* s = task.frame.subframes[ch].samples;
 						int wbits = (int)task.frame.subframes[ch].wbits;
 						for (int i = 0; i < count; i++)
-							s[i] = src[i * channels + ch] >>= wbits;
+							s[i] = src[i * channels + ch] >> wbits;
 					}
 					break;
 				case ChannelMode.LeftRight:
@@ -1448,6 +1455,108 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
+		/// <summary>
+		/// Copy channel-interleaved input samples into separate subframes
+		/// </summary>
+		/// <param name="task"></param>
+		/// <param name="doMidside"></param>
+		unsafe void unpack_samples_24(FLACCLTask task, byte* srcptr, int count)
+		{
+			switch (task.frame.ch_mode)
+			{
+				case ChannelMode.NotStereo:
+					for (int ch = 0; ch < channels; ch++)
+					{
+						int* s = task.frame.subframes[ch].samples;
+						int wbits = (int)task.frame.subframes[ch].wbits;
+						byte* src = &srcptr[ch * 3];
+						for (int i = 0; i < count; i++)
+						{
+							s[i] = (((int)src[0] << 8) + ((int)src[1] << 16) + ((int)src[2] << 24)) >> (8 + wbits);
+							src += PCM.BlockAlign;
+						}
+					}
+					break;
+				case ChannelMode.LeftRight:
+					{
+						int* left = task.frame.subframes[0].samples;
+						int* right = task.frame.subframes[1].samples;
+						int lwbits = (int)task.frame.subframes[0].wbits;
+						int rwbits = (int)task.frame.subframes[1].wbits;
+						for (int i = 0; i < count; i++)
+						{
+							int l = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							int r = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							left[i] = l >> lwbits;
+							right[i] = r >> rwbits;
+						}
+						break;
+					}
+				case ChannelMode.LeftSide:
+					{
+						int* left = task.frame.subframes[0].samples;
+						int* right = task.frame.subframes[1].samples;
+						int lwbits = (int)task.frame.subframes[0].wbits;
+						int rwbits = (int)task.frame.subframes[1].wbits;
+						for (int i = 0; i < count; i++)
+						{
+							int l = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							int r = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							left[i] = l >> lwbits;
+							right[i] = (l - r) >> rwbits;
+						}
+						break;
+					}
+				case ChannelMode.RightSide:
+					{
+						int* left = task.frame.subframes[0].samples;
+						int* right = task.frame.subframes[1].samples;
+						int lwbits = (int)task.frame.subframes[0].wbits;
+						int rwbits = (int)task.frame.subframes[1].wbits;
+						for (int i = 0; i < count; i++)
+						{
+							int l = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							int r = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							left[i] = (l - r) >> lwbits;
+							right[i] = r >> rwbits;
+						}
+						break;
+					}
+				case ChannelMode.MidSide:
+					{
+						int* left = task.frame.subframes[0].samples;
+						int* right = task.frame.subframes[1].samples;
+						int lwbits = (int)task.frame.subframes[0].wbits;
+						int rwbits = (int)task.frame.subframes[1].wbits;
+						for (int i = 0; i < count; i++)
+						{
+							int l = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							int r = (((int)*(srcptr++) << 8) + ((int)*(srcptr++) << 16) + ((int)*(srcptr++) << 24)) >> 8;
+							left[i] = (l + r) >> (1 + lwbits);
+							right[i] = (l - r) >> rwbits;
+						}
+						break;
+					}
+			}
+		}
+
+		/// <summary>
+		/// Copy channel-interleaved input samples into separate subframes
+		/// </summary>
+		/// <param name="task"></param>
+		/// <param name="doMidside"></param>
+		unsafe void unpack_samples(FLACCLTask task, int count)
+		{
+			int iFrame = task.frame.frame_number;
+			byte* srcptr = ((byte*)task.clSamplesBytesPtr) + iFrame * task.frameSize * PCM.BlockAlign;
+			if (PCM.BitsPerSample == 16)
+				unpack_samples_16(task, srcptr, count);
+			else if (PCM.BitsPerSample == 24)
+				unpack_samples_24(task, srcptr, count);
+			else
+				throw new Exception("Invalid BPS");
+		}
+
 		unsafe int encode_frame(bool doMidside, int channelCount, int iFrame, FLACCLTask task, int current_frame_number)
 		{
 			task.frame.InitSize(task.frameSize, eparams.variable_block_size != 0);
@@ -1492,8 +1601,8 @@ namespace CUETools.Codecs.FLACCL
 			task.framePos = frame_pos;
 			frame_count += nFrames;
 			frame_pos += nFrames * blocksize;
-            if (!_settings.MappedMemory)
-			    task.openCLCQ.EnqueueWriteBuffer(task.clSamplesBytes, false, 0, sizeof(short) * channels * blocksize * nFrames, task.clSamplesBytesPtr);
+            if (!task.UseMappedMemory)
+			    task.openCLCQ.EnqueueWriteBuffer(task.clSamplesBytes, false, 0, PCM.BlockAlign * blocksize * nFrames, task.clSamplesBytesPtr);
 			//task.openCLCQ.EnqueueUnmapMemObject(task.clSamplesBytes, task.clSamplesBytes.HostPtr);
 			//task.openCLCQ.EnqueueMapBuffer(task.clSamplesBytes, true, MapFlags.WRITE, 0, task.samplesBufferLen / 2);
 		}
@@ -1530,20 +1639,38 @@ namespace CUETools.Codecs.FLACCL
 				{					
 					int decoded = task.verify.DecodeFrame(task.frame.writer.Buffer, task.frame.writer_offset, fs);
 					if (decoded != fs || task.verify.Remaining != task.frameSize)
-						throw new Exception("validation failed! frame size mismatch");
+						throw new Exception(string.Format("validation failed! frame size mismatch, iFrame={0}, decoded=={1}, fs=={2}", fn, decoded, fs));
 					fixed (int* r = task.verify.Samples)
 					{
 						for (int ch = 0; ch < channels; ch++)
 						{
-							short* res = ((short*)task.clSamplesBytesPtr) + iFrame * channels * task.frameSize + ch;
+							byte* res = ((byte*)task.clSamplesBytesPtr) + PCM.BlockAlign * iFrame * task.frameSize + ch * (PCM.BlockAlign / channels);
 							int* smp = r + ch * Flake.MAX_BLOCKSIZE;
-							for (int i = task.frameSize; i > 0; i--)
+							int ba = PCM.BlockAlign;
+							if (PCM.BitsPerSample == 16)
 							{
-								//if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
-								if (*res != *(smp++))
-									throw new Exception(string.Format("validation failed! iFrame={0}, ch={1}", iFrame, ch));
-								res += channels;
+								for (int i = task.frameSize; i > 0; i--)
+								{
+									//if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
+									int ress = *(short*)res;
+									if (ress != *(smp++))
+										throw new Exception(string.Format("validation failed! iFrame={0}, ch={1}", fn, ch));
+									res += ba;
+								}
 							}
+							else if (PCM.BitsPerSample == 24)
+							{
+								for (int i = task.frameSize; i > 0; i--)
+								{
+									//if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
+									int ress = (((int)res[0] << 8) + ((int)res[1] << 16) + ((int)res[2] << 24)) >> (8);
+									if (ress != *(smp++))
+										throw new Exception(string.Format("validation failed! iFrame={0}, ch={1}", iFrame, ch));
+									res += ba;
+								}
+							}
+							else
+								throw new Exception("Invalid BPS");
 						}
 					}
 				}
@@ -1644,10 +1771,21 @@ namespace CUETools.Codecs.FLACCL
 				}
 				OCLMan.CreateDefaultContext(platformId, (DeviceType)_settings.DeviceType);
 
-				this.framesPerTask = (int)OCLMan.Context.Devices[0].MaxComputeUnits * _settings.TaskSize;
+				this.framesPerTask = (int)OCLMan.Context.Devices[0].MaxComputeUnits * Math.Max(1, _settings.TaskSize / channels);
 
-				if (!OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics"))
-					_settings.GPUOnly = false;
+				bool UseGPUOnly = _settings.GPUOnly && OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics");
+				bool UseGPURice = UseGPUOnly && _settings.DoRice;
+
+				if (_blocksize == 0)
+				{
+					if (eparams.block_size == 0)
+						eparams.block_size = select_blocksize(sample_rate, eparams.block_time_ms);
+					_blocksize = eparams.block_size;
+				}
+				else
+					eparams.block_size = _blocksize;
+
+				int maxBS = 1 << (BitReader.log2i(eparams.block_size - 1) + 1);
 
 				// The Defines string gets prepended to any and all sources that are compiled
 				// and serve as a convenient way to pass configuration information to the compilation process
@@ -1655,8 +1793,11 @@ namespace CUETools.Codecs.FLACCL
 					"#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
 					"#define GROUP_SIZE " + groupSize.ToString() + "\n" +
 					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
-					(_settings.GPUOnly ? "#define DO_PARTITIONS\n" : "") +
-					(_settings.DoRice ? "#define DO_RICE\n" : "") +
+					(UseGPUOnly ? "#define DO_PARTITIONS\n" : "") +
+					(UseGPURice ? "#define DO_RICE\n" : "") +
+					"#define BITS_PER_SAMPLE " + PCM.BitsPerSample + "\n" +
+					"#define MAX_BLOCKSIZE " + maxBS + "\n" +
+					"#define MAX_CHANNELS " + PCM.ChannelCount + "\n" +
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
@@ -1718,13 +1859,13 @@ namespace CUETools.Codecs.FLACCL
 				if (_IO.CanSeek)
 					first_frame_offset = _IO.Position;
 
-				task1 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize);
-				task2 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize);
+				task1 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
+				task2 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
 				if (_settings.CPUThreads > 0)
 				{
 					cpu_tasks = new FLACCLTask[_settings.CPUThreads];
 					for (int i = 0; i < cpu_tasks.Length; i++)
-						cpu_tasks[i] = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize);
+						cpu_tasks[i] = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
 				}
 				inited = true;
 			}
@@ -1823,10 +1964,10 @@ namespace CUETools.Codecs.FLACCL
 
 		public unsafe void do_output_frames(int nFrames)
 		{
-			send_to_GPU(task1, nFrames, eparams.block_size);
-			run_GPU_task(task1);
 			if (task2.frameCount > 0)
 				task2.openCLCQ.Finish();
+			send_to_GPU(task1, nFrames, eparams.block_size);
+			run_GPU_task(task1);
 			if (task2.frameCount > 0)
 			{
 				if (cpu_tasks != null)
@@ -1871,15 +2012,16 @@ namespace CUETools.Codecs.FLACCL
 		{
 			int blocksize = Flake.flac_blocksizes[1];
 			int target = (samplerate * time_ms) / 1000;
-			if (eparams.variable_block_size > 0)
-			{
-				blocksize = 1024;
-				while (target >= blocksize)
-					blocksize <<= 1;
-				return blocksize >> 1;
-			}
 
-			for (int i = 0; i < Flake.flac_blocksizes.Length; i++)
+			////if (eparams.variable_block_size > 0)
+			////{
+			////    blocksize = 1024;
+			////    while (target >= blocksize)
+			////        blocksize <<= 1;
+			////    return blocksize >> 1;
+			////}
+
+			for (int i = 8; i < Flake.flac_blocksizes.Length; i++)
 				if (target >= Flake.flac_blocksizes[i] && Flake.flac_blocksizes[i] > blocksize)
 				{
 					blocksize = Flake.flac_blocksizes[i];
@@ -2052,18 +2194,6 @@ namespace CUETools.Codecs.FLACCL
 			}
 			if (i == 8)
 				throw new Exception("non-standard bps");
-			// FIXME: For now, only 16-bit encoding is supported
-			if (bits_per_sample != 16)
-				throw new Exception("non-standard bps");
-
-			if (_blocksize == 0)
-			{
-				if (eparams.block_size == 0)
-					eparams.block_size = select_blocksize(sample_rate, eparams.block_time_ms);
-				_blocksize = eparams.block_size;
-			}
-			else
-				eparams.block_size = _blocksize;
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
 			if (channels == 2)
@@ -2332,7 +2462,7 @@ namespace CUETools.Codecs.FLACCL
 		public int type;
 		public int obits;
 		public int blocksize;
-		public int best_index;
+		public int coding_method;
 		public int channel;
 		public int residualOffs;
 		public int wbits;
@@ -2350,6 +2480,7 @@ namespace CUETools.Codecs.FLACCL
 		public Kernel clStereoDecorr;
 		//public Kernel cudaChannelDecorr;
 		public Kernel clChannelDecorr2;
+		public Kernel clChannelDecorrX;
 		public Kernel clFindWastedBits;
 		public Kernel clComputeAutocor;
 		public Kernel clComputeLPC;
@@ -2428,9 +2559,15 @@ namespace CUETools.Codecs.FLACCL
 		public int groupSize = 128;
 		public int channels, channelsCount;
 		public FLACCLWriter writer;
+		public bool UseGPUOnly = false;
+		public bool UseGPURice = false;
+		public bool UseMappedMemory = false;
 
-		unsafe public FLACCLTask(Program _openCLProgram, int channelsCount, int channels, uint bits_per_sample, int max_frame_size, FLACCLWriter writer, int groupSize)
+		unsafe public FLACCLTask(Program _openCLProgram, int channelsCount, int channels, uint bits_per_sample, int max_frame_size, FLACCLWriter writer, int groupSize, bool gpuOnly, bool gpuRice)
 		{
+			this.UseGPUOnly = gpuOnly;
+			this.UseGPURice = gpuOnly && gpuRice;
+			this.UseMappedMemory = writer._settings.MappedMemory || writer._settings.DeviceType == OpenCLDeviceType.CPU;
 			this.groupSize = groupSize;
 			this.channels = channels;
 			this.channelsCount = channelsCount;
@@ -2448,9 +2585,9 @@ namespace CUETools.Codecs.FLACCL
 			int MAX_CHANNELSIZE = MAX_FRAMES * writer.eparams.block_size;
 			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
 			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * MAX_FRAMES;
-			int samplesBufferLen = sizeof(int) * MAX_CHANNELSIZE * channelsCount;
+			int samplesBufferLen = writer.PCM.BlockAlign * MAX_CHANNELSIZE * channelsCount;
 			int residualBufferLen = sizeof(int) * MAX_CHANNELSIZE * channels; // need to adjust residualOffset?
-			int partitionsLen = sizeof(int) * (30 << 8) * channels * MAX_FRAMES;
+			int partitionsLen = sizeof(int) * ((writer.PCM.BitsPerSample > 16 ? 31 : 15) * 2 << 8) * channels * MAX_FRAMES;
 			int riceParamsLen = sizeof(int) * (4 << 8) * channels * MAX_FRAMES;
 			int autocorLen = sizeof(float) * (MAX_ORDER + 1) * lpc.MAX_LPC_WINDOWS * channelsCount * MAX_FRAMES;
             int lpcDataLen = autocorLen * 32;
@@ -2459,7 +2596,7 @@ namespace CUETools.Codecs.FLACCL
 			int selectedLen = sizeof(int) * 32 * channelsCount * MAX_FRAMES;
 			int riceLen = sizeof(int) * channels * MAX_CHANNELSIZE;
 
-            if (!writer._settings.MappedMemory)
+            if (!this.UseMappedMemory)
             {
                 clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, samplesBufferLen / 2);
 				clResidual = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, residualBufferLen);
@@ -2521,7 +2658,7 @@ namespace CUETools.Codecs.FLACCL
             clAutocorOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, autocorLen);
 			clSelectedTasksSecondEstimate = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, selectedLen);
 			clSelectedTasksBestMethod = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, selectedLen);
-			if (writer._settings.GPUOnly)
+			if (UseGPUOnly)
             {
                 clPartitions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, partitionsLen);
                 clRiceParams = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, riceParamsLen);
@@ -2533,6 +2670,7 @@ namespace CUETools.Codecs.FLACCL
 			clStereoDecorr = openCLProgram.CreateKernel("clStereoDecorr");
 			//cudaChannelDecorr = openCLProgram.CreateKernel("clChannelDecorr");
 			clChannelDecorr2 = openCLProgram.CreateKernel("clChannelDecorr2");
+			clChannelDecorrX = openCLProgram.CreateKernel("clChannelDecorrX");
 			clFindWastedBits = openCLProgram.CreateKernel("clFindWastedBits");
 			clComputeLPC = openCLProgram.CreateKernel("clComputeLPC");
 			clQuantizeLPC = openCLProgram.CreateKernel("clQuantizeLPC");
@@ -2540,15 +2678,16 @@ namespace CUETools.Codecs.FLACCL
             clSelectStereoTasks = openCLProgram.CreateKernel("clSelectStereoTasks");
 			clEstimateResidual = openCLProgram.CreateKernel("clEstimateResidual");
 			clChooseBestMethod = openCLProgram.CreateKernel("clChooseBestMethod");
-			if (writer._settings.GPUOnly)
+			if (UseGPUOnly)
 			{
 				clEncodeResidual = openCLProgram.CreateKernel("clEncodeResidual");
 				clCalcPartition = openCLProgram.CreateKernel("clCalcPartition");
-				clCalcPartition16 = openCLProgram.CreateKernel("clCalcPartition16");
+				if (openCLCQ.Device.DeviceType != DeviceType.CPU)
+					clCalcPartition16 = openCLProgram.CreateKernel("clCalcPartition16");
 				clSumPartition = openCLProgram.CreateKernel("clSumPartition");
 				clFindRiceParameter = openCLProgram.CreateKernel("clFindRiceParameter");
 				clFindPartitionOrder = openCLProgram.CreateKernel("clFindPartitionOrder");
-				if (writer._settings.DoRice)
+				if (UseGPURice)
 				{
 					clCalcOutputOffsets = openCLProgram.CreateKernel("clCalcOutputOffsets");
 					clRiceEncoding = openCLProgram.CreateKernel("clRiceEncoding");
@@ -2586,6 +2725,7 @@ namespace CUETools.Codecs.FLACCL
 			clStereoDecorr.Dispose();
 			//cudaChannelDecorr.Dispose();
 			clChannelDecorr2.Dispose();
+			clChannelDecorrX.Dispose();
 			clFindWastedBits.Dispose();
 			clComputeLPC.Dispose();
 			clQuantizeLPC.Dispose();
@@ -2593,15 +2733,16 @@ namespace CUETools.Codecs.FLACCL
             clSelectStereoTasks.Dispose();
 			clEstimateResidual.Dispose();
 			clChooseBestMethod.Dispose();
-			if (writer._settings.GPUOnly)
+			if (UseGPUOnly)
 			{
 				clEncodeResidual.Dispose();
 				clCalcPartition.Dispose();
-				clCalcPartition16.Dispose();
+				if (openCLCQ.Device.DeviceType != DeviceType.CPU)
+					clCalcPartition16.Dispose();
 				clSumPartition.Dispose();
 				clFindRiceParameter.Dispose();
 				clFindPartitionOrder.Dispose();
-				if (writer._settings.DoRice)
+				if (UseGPURice)
 				{
 					clCalcOutputOffsets.Dispose();
 					clRiceEncoding.Dispose();
@@ -2611,7 +2752,7 @@ namespace CUETools.Codecs.FLACCL
                 clRiceParams.Dispose();
             }
 
-            if (!writer._settings.MappedMemory)
+			if (!this.UseMappedMemory)
             {
                 if (clSamplesBytesPtr != IntPtr.Zero) 
                     openCLCQ.EnqueueUnmapMemObject(clSamplesBytesPinned, clSamplesBytesPtr);
@@ -2701,19 +2842,36 @@ namespace CUETools.Codecs.FLACCL
 			while ((frameSize >> max_porder) < 16 && max_porder > 0)
 				this.max_porder--;
 
-			if (channels != 2) throw new Exception("channels != 2"); // need to Enqueue cudaChannelDecorr for each channel
-			Kernel clChannelDecorr = channels == 2 ? (channelsCount == 4 ? clStereoDecorr : clChannelDecorr2) : null;// cudaChannelDecorr;
-
 			// openCLCQ.EnqueueMapBuffer(cudaSamplesBytes
 			//openCLCQ.EnqueueUnmapMemObject(cudaSamplesBytes, cudaSamplesBytes.HostPtr);
 
 			// issue work to the GPU
-			clChannelDecorr.SetArgs(
-				clSamples,
-				clSamplesBytes,
-				channelSize / 4);
+			if (channels == 2)
+			{
+				Kernel clChannelDecorr = channelsCount == 4 ? clStereoDecorr : clChannelDecorr2;
+				int channelSize1 = writer.PCM.BitsPerSample == 16 ? channelSize / 4 : channelSize;
+				clChannelDecorr.SetArgs(
+					clSamples,
+					clSamplesBytes,
+					channelSize1);
 
-			openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, channelSize / 4);
+				openCLCQ.EnqueueNDRangeKernel(
+					clChannelDecorr,
+					0,
+					channelSize1);
+			}
+			else
+			{
+				clChannelDecorrX.SetArgs(
+					clSamples,
+					clSamplesBytes,
+					channelSize);
+
+				openCLCQ.EnqueueNDRangeKernel(
+					clChannelDecorrX,
+					0,
+					channelSize);
+			}
 			//openCLCQ.EnqueueNDRangeKernel(clChannelDecorr, 0, (frameSize * frameCount + 3) / 4);
 
             if (eparams.do_wasted)
@@ -2842,14 +3000,22 @@ namespace CUETools.Codecs.FLACCL
 					0, channels * frameCount);
 			}
 
-			if (writer._settings.GPUOnly)
+			if (UseGPUOnly)
 			{
-				if (frameSize >> max_porder == 16)
+				clEncodeResidual.SetArgs(
+					clResidual,
+					clSamples,
+					clBestResidualTasks);
+
+				openCLCQ.EnqueueNDRangeKernel(
+					clEncodeResidual,
+					groupSize, channels * frameCount);
+
+				if ((frameSize >> max_porder == 16) && openCLCQ.Device.DeviceType != DeviceType.CPU)
 				{
 					clCalcPartition16.SetArgs(
 						clPartitions,
 						clResidual,
-						clSamples,
 						clBestResidualTasks,
 						max_porder);
 
@@ -2859,15 +3025,6 @@ namespace CUETools.Codecs.FLACCL
 				}
 				else
 				{
-					clEncodeResidual.SetArgs(
-						clResidual,
-						clSamples,
-						clBestResidualTasks);
-
-					openCLCQ.EnqueueNDRangeKernel(
-						clEncodeResidual,
-						groupSize, channels * frameCount);
-
 					clCalcPartition.SetArgs(
 						clPartitions,
 						clResidual,
@@ -2895,6 +3052,7 @@ namespace CUETools.Codecs.FLACCL
 						clPartitions,
 						max_porder);
 
+					int maxK = writer.PCM.BitsPerSample > 16 ? 30 : Flake.MAX_RICE_PARAM;
 					if (openCLCQ.Device.DeviceType == DeviceType.CPU)
 						openCLCQ.EnqueueNDRangeKernel(
 							clSumPartition,
@@ -2904,7 +3062,7 @@ namespace CUETools.Codecs.FLACCL
 						openCLCQ.EnqueueNDRangeKernel(
 							clSumPartition,
 							128, 1,
-							(Flake.MAX_RICE_PARAM + 1),
+							(maxK + 1),
 							channels * frameCount);
 				}
 
@@ -2931,7 +3089,7 @@ namespace CUETools.Codecs.FLACCL
 					groupSize,
 					channels * frameCount);
 
-				if (writer._settings.DoRice)
+				if (UseGPURice)
 				{
 					clCalcOutputOffsets.SetArgs(
 						clResidual,
@@ -2960,10 +3118,10 @@ namespace CUETools.Codecs.FLACCL
 						channels * frameCount);
 				}
 
-				if (!writer._settings.MappedMemory)
+				if (!this.UseMappedMemory)
 				{
-					if (writer._settings.DoRice)
-						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, (channels * frameSize * 17 + 128) / 8 * frameCount, clRiceOutputPtr);
+					if (UseGPURice)
+						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, (channels * frameSize * (writer.PCM.BitsPerSample + 1) + 256) / 8 * frameCount, clRiceOutputPtr);
 					else
 					{
 						openCLCQ.EnqueueReadBuffer(clBestRiceParams, false, 0, sizeof(int) * (1 << max_porder) * channels * frameCount, clBestRiceParamsPtr);
@@ -2971,7 +3129,7 @@ namespace CUETools.Codecs.FLACCL
 					}
 				}
 			}
-            if (!writer._settings.MappedMemory)
+			if (!this.UseMappedMemory)
 			    openCLCQ.EnqueueReadBuffer(clBestResidualTasks, false, 0, sizeof(FLACCLSubframeTask) * channels * frameCount, clBestResidualTasksPtr);
         }
 	}

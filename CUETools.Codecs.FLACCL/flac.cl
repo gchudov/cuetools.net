@@ -65,6 +65,14 @@
 
 #define WARP_SIZE 32
 
+#if BITS_PER_SAMPLE > 16
+#define MAX_RICE_PARAM 30
+#define RICE_PARAM_BITS 5
+#else
+#define MAX_RICE_PARAM 14
+#define RICE_PARAM_BITS 4
+#endif
+
 typedef enum
 {
     Constant = 0,
@@ -83,7 +91,7 @@ typedef struct
     int type;
     int obits;
     int blocksize;
-    int best_index;
+    int coding_method;
     int channel;
     int residualOffs;
     int wbits;
@@ -125,6 +133,49 @@ __kernel void clWindowTukey(__global float* window, int windowOffset, float p)
 }
 #endif
 
+#if BITS_PER_SAMPLE > 16
+__kernel void clStereoDecorr(
+    __global int *samples,
+    __global unsigned char *src,
+    int offset
+)
+{
+    int pos = get_global_id(0);
+    int bpos = pos * 6;
+    int x = (((int)src[bpos] << 8) | ((int)src[bpos+1] << 16) | ((int)src[bpos+2] << 24)) >> 8;
+    int y = (((int)src[bpos+3] << 8) | ((int)src[bpos+4] << 16) | ((int)src[bpos+5] << 24)) >> 8;
+    samples[pos] = x;
+    samples[1 * offset + pos] = y;
+    samples[2 * offset + pos] = (x + y) >> 1;
+    samples[3 * offset + pos] = x - y;
+}
+
+__kernel void clChannelDecorr2(
+    __global int *samples,
+    __global unsigned char *src,
+    int offset
+)
+{
+    int pos = get_global_id(0);
+    int bpos = pos * 6;
+    samples[pos] = (((int)src[bpos] << 8) | ((int)src[bpos+1] << 16) | ((int)src[bpos+2] << 24)) >> 8;
+    samples[offset + pos] = (((int)src[bpos+3] << 8) | ((int)src[bpos+4] << 16) | ((int)src[bpos+5] << 24)) >> 8;
+}
+
+__kernel void clChannelDecorrX(
+    __global int *samples,
+    __global unsigned char *src,
+    int offset
+)
+{
+    int pos = get_global_id(0);
+    for (int ch = 0; ch < MAX_CHANNELS; ch++)
+    {
+	int bpos = 3 * (pos * MAX_CHANNELS + ch);
+	samples[offset * ch + pos] = (((int)src[bpos] << 8) | ((int)src[bpos+1] << 16) | ((int)src[bpos+2] << 24)) >> 8;
+    }
+}
+#else
 __kernel void clStereoDecorr(
     __global int4 *samples,
     __global int4 *src,
@@ -152,6 +203,21 @@ __kernel void clChannelDecorr2(
     samples[pos] = (s << 16) >> 16;
     samples[offset + pos] = s >> 16;
 }
+
+__kernel void clChannelDecorrX(
+    __global int *samples,
+    __global short *src,
+    int offset
+)
+{
+    int pos = get_global_id(0);
+    for (int ch = 0; ch < MAX_CHANNELS; ch++)
+    {
+	int bpos = pos * MAX_CHANNELS + ch;
+	samples[offset * ch + pos] = src[bpos];
+    }
+}
+#endif
 
 //__kernel void clChannelDecorr(
 //    int *samples,
@@ -598,7 +664,11 @@ void clQuantizeLPC(
 	}
 	// choose precision	
 	//int cbits = max(3, min(10, 5 + (abits >> 1))); //  - convert_int_rte(shared.PE[order - 1])
+#if BITS_PER_SAMPLE > 16
+	int cbits = max(3, min(15 - minprecision + (i - ((i >> precisions) << precisions)) - (bs <= 2304) - (bs <= 1152) - (bs <= 576), abits));
+#else
 	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (bs <= 2304) - (bs <= 1152) - (bs <= 576), abits), clz(order) + 1 - abits));
+#endif
 	// calculate shift based on precision and number of leading zeroes in coeffs
 	int shift = max(0,min(15, clz(tmpi) - 18 + cbits));
 
@@ -749,7 +819,11 @@ void clQuantizeLPC(
 	//SUM32(shared.tmpi,tid,|=);
 	// choose precision	
 	//int cbits = max(3, min(10, 5 + (shared.task.abits >> 1))); //  - convert_int_rte(shared.PE[order - 1])
+#if BITS_PER_SAMPLE > 16
+	int cbits = max(3, min(min(15 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), 15));
+#else
 	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), clz(order) + 1 - shared.task.abits));
+#endif
 	// calculate shift based on precision and number of leading zeroes in coeffs
 	int shift = max(0,min(15, clz(shared.maxcoef[i]) - 18 + cbits));
 
@@ -797,7 +871,6 @@ void clQuantizeLPC(
 #endif
 
 #ifdef FLACCL_CPU
-
 inline int fastclz(int iv)
 {
     unsigned int v = (unsigned int)iv;
@@ -809,17 +882,44 @@ inline int fastclz(int iv)
     x += (0 != (v >> x));
     return 32 - x;
 }
-
-inline int calc_residual(__global int *ptr, int * coefs, int ro)
+#else
+inline int fastclz(int iv)
 {
-    int sum = 0;
+    return clz(iv);
+}
+#endif
+inline int fastclz64(long iv)
+{
+    unsigned long v = (unsigned long)iv;
+    int x = (0 != (v >> 32)) * 32;
+    return 32 - x + fastclz(v >> x);
+}
+
+#if BITS_PER_SAMPLE > 16
+typedef long residual_t;
+#define residual_log(s) (63 - fastclz64(s))
+#define convert_bps4 convert_long4
+#define convert_bps_sat convert_int_sat
+#define bpsint4 long4
+#else
+typedef int residual_t;
+#define residual_log(s) (31 - fastclz(s))
+#define convert_bps4
+#define convert_bps_sat
+#define bpsint4 int4
+#endif
+
+#ifdef FLACCL_CPU
+inline residual_t calc_residual(__global int *ptr, int * coefs, int ro)
+{
+    residual_t sum = 0;
     for (int i = 0; i < ro; i++)
-	sum += ptr[i] * coefs[i];
+	sum += (residual_t) ptr[i] * coefs[i];
     return sum;
 }
 
 #define ENCODE_N(cro,action) for (int pos = cro; pos < bs; pos ++) { \
-	int t = (data[pos] - (calc_residual(data + pos - cro, task.coefs, cro) >> task.data.shift)) >> task.data.wbits; \
+	residual_t t = (data[pos] - (calc_residual(data + pos - cro, task.coefs, cro) >> task.data.shift)) >> task.data.wbits; \
 	action; \
     }
 #define SWITCH_N(action) \
@@ -861,7 +961,7 @@ void clEstimateResidual(
     for (int i = 0; i < 1 << EPO; i++)
 	len[i] = 0;
 
-#ifdef AMD
+#if defined(AMD) || BITS_PER_SAMPLE > 16
     SWITCH_N((t = (t << 1) ^ (t >> 31), len[pos >> (12 - EPO)] += t & 0x7fffff))
 #else
     int4 c0 = vload4(0, &task.coefs[0]);
@@ -884,21 +984,19 @@ void clEstimateResidual(
     int total = 0;
     for (int i = 0; i < 1 << EPO; i++)
     {
-	int res = min(0x7fffff,len[i]);
-	int k = iclamp(31 - (12 - EPO) - fastclz(res), 0, 14); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
+	int res = len[i];
+	int k = iclamp(31 - fastclz(res) - (12 - EPO), 0, MAX_RICE_PARAM); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
 	total += (k << (12 - EPO)) + (res >> k);
     }
     int partLen = min(0x7ffffff, total) + (bs - ro);
     int obits = task.data.obits - task.data.wbits;
     tasks[selectedTask].data.size = min(obits * bs,
-	task.data.type == Fixed ? ro * obits + 6 + (4 * 1/2) + partLen :
-	task.data.type == LPC ? ro * obits + 4 + 5 + ro * task.data.cbits + 6 + (4 * 1/2)/* << porder */ + partLen :
+	task.data.type == Fixed ? ro * obits + 6 + RICE_PARAM_BITS + partLen :
+	task.data.type == LPC ? ro * obits + 4 + 5 + ro * task.data.cbits + 6 + RICE_PARAM_BITS/* << porder */ + partLen :
 	task.data.type == Constant ? obits * select(1, bs, partLen != bs - ro) :
 	obits * bs);
 }
 #else
-
-#define MAX_BLOCKSIZE 4096
 #define ESTPARTLOG 5
 
 __kernel /*__attribute__(( vec_type_hint (int4)))*/ __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
@@ -1049,7 +1147,7 @@ void clEstimateResidual(
     // calculate rice partition bit length for every 32 samples
     barrier(CLK_LOCAL_MEM_FENCE);
     // Bug: if (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) > GROUP_SIZE
-    int pl = get_local_id(0) < (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) ? pl = psum[tid * 2] + psum[tid * 2 + 1] : 0;
+    int pl = get_local_id(0) < (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) ? psum[tid * 2] + psum[tid * 2 + 1] : 0;
     barrier(CLK_LOCAL_MEM_FENCE);
  //   for (int pos = 0; pos < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2; pos += GROUP_SIZE)
  //   {
@@ -1060,7 +1158,7 @@ void clEstimateResidual(
 	//if (offs < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2)
 	//    psum[offs] = pl;
  //   }
-    int k = iclamp(31 - (ESTPARTLOG + 1) - clz(pl), 0, 14); // 26 - clz(res) == clz(32) - clz(res) == log2(res / 32)
+    int k = iclamp(31 - fastclz(pl) - (ESTPARTLOG + 1), 0, MAX_RICE_PARAM); // 26 - clz(res) == clz(32) - clz(res) == log2(res / 32)
     if (tid < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2)
 	psum[tid] = (k << (ESTPARTLOG + 1)) + (pl >> k);
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -1075,8 +1173,8 @@ void clEstimateResidual(
 	int pl = psum[0] + (bs - ro);
 	int obits = task.data.obits - task.data.wbits;
 	int len = min(obits * task.data.blocksize,
-		task.data.type == Fixed ? task.data.residualOrder * obits + 6 + (4 * 1/2) + pl :
-		task.data.type == LPC ? task.data.residualOrder * obits + 4 + 5 + task.data.residualOrder * task.data.cbits + 6 + (4 * 1/2)/* << porder */ + pl :
+		task.data.type == Fixed ? task.data.residualOrder * obits + 6 + RICE_PARAM_BITS + pl :
+		task.data.type == LPC ? task.data.residualOrder * obits + 4 + 5 + task.data.residualOrder * task.data.cbits + 6 + RICE_PARAM_BITS/* << porder */ + pl :
 		task.data.type == Constant ? obits * select(1, task.data.blocksize, pl != task.data.blocksize - task.data.residualOrder) : 
 		obits * task.data.blocksize);
 	tasks[selectedTask].data.size = len;
@@ -1172,7 +1270,7 @@ void clEncodeResidual(
     int bs = task.data.blocksize;
     int ro = task.data.residualOrder;
     __global int *data = &samples[task.data.samplesOffs];
-    SWITCH_N(residual[task.data.residualOffs + pos] = t);
+    SWITCH_N(residual[task.data.residualOffs + pos] = convert_bps_sat(t));
 }
 #else
 // get_group_id(0) == task index
@@ -1198,12 +1296,10 @@ void clEncodeResidual(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-#ifdef AMD
-    int4 cptr0 = vload4(0, &task.coefs[0]);
-    int4 cptr1 = vload4(1, &task.coefs[0]);
+    bpsint4 cptr0 = convert_bps4(vload4(0, &task.coefs[0]));
+    bpsint4 cptr1 = convert_bps4(vload4(1, &task.coefs[0]));
 #if MAX_ORDER > 8
-    int4 cptr2 = vload4(2, &task.coefs[0]);
-#endif
+    bpsint4 cptr2 = convert_bps4(vload4(2, &task.coefs[0]));
 #endif
 
     data[tid] = 0;
@@ -1217,33 +1313,24 @@ void clEncodeResidual(
 
 	// compute residual
 	__local int* dptr = &data[tid + GROUP_SIZE - ro];
-	int4 sum 
-#ifdef AMD
-            = cptr0 * vload4(0, dptr)
-	    + cptr1 * vload4(1, dptr)
-#else
-            = vload4(0, &task.coefs[0]) * vload4(0, dptr)
-	    + vload4(1, &task.coefs[0]) * vload4(1, dptr)
-#endif
+	bpsint4 sum 
+            = cptr0 * convert_bps4(vload4(0, dptr))
+	    + cptr1 * convert_bps4(vload4(1, dptr))
 #if MAX_ORDER > 8
-#ifdef AMD
-	    + cptr2 * vload4(2, dptr)
-#else
-	    + vload4(2, &task.coefs[0]) * vload4(2, dptr)
-#endif
+	    + cptr2 * convert_bps4(vload4(2, dptr))
 #if MAX_ORDER > 12
-	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
+	    + convert_bps4(vload4(3, &task.coefs[0])) * convert_bps4(vload4(3, dptr))
 #if MAX_ORDER > 16
-	    + vload4(4, &task.coefs[0]) * vload4(4, dptr)
-	    + vload4(5, &task.coefs[0]) * vload4(5, dptr)
-	    + vload4(6, &task.coefs[0]) * vload4(6, dptr)
-	    + vload4(7, &task.coefs[0]) * vload4(7, dptr)
+	    + convert_bps4(vload4(4, &task.coefs[0])) * convert_bps4(vload4(4, dptr))
+	    + convert_bps4(vload4(5, &task.coefs[0])) * convert_bps4(vload4(5, dptr))
+	    + convert_bps4(vload4(6, &task.coefs[0])) * convert_bps4(vload4(6, dptr))
+	    + convert_bps4(vload4(7, &task.coefs[0])) * convert_bps4(vload4(7, dptr))
 #endif
 #endif
 #endif
 	    ;
 	if (off >= ro && off < bs)
-	    output[task.data.residualOffs + off] = data[tid + GROUP_SIZE] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift);
+	    output[task.data.residualOffs + off] = convert_bps_sat(nextData - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift));
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
@@ -1254,7 +1341,7 @@ void clEncodeResidual(
 #ifdef FLACCL_CPU
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clCalcPartition(
-    __global int *partition_lengths,
+    __global ulong *partition_lengths,
     __global int *residual,
     __global FLACCLSubframeTask *tasks,
     int max_porder, // <= 8
@@ -1265,18 +1352,16 @@ void clCalcPartition(
     int bs = task.data.blocksize;
     int ro = task.data.residualOrder;
     //int psize = bs >> max_porder;
-    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
+    __global ulong *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
 
     for (int p = 0; p < (1 << max_porder); p++)
-	pl[p] = 0;
+	pl[p] = 0UL;
 
     for (int pos = ro; pos < bs; pos ++)
     {
-	int t = residual[task.data.residualOffs + pos];
-	// overflow protection
-	t = clamp(t, -0x7fffff, 0x7fffff);
+	int s = residual[task.data.residualOffs + pos];
 	// convert to unsigned
-	t = (t << 1) ^ (t >> 31);
+	uint t = (s << 1) ^ (s >> 31);
 	pl[pos / psize] += t;
     }
 }
@@ -1292,15 +1377,15 @@ void clCalcPartition(
     int psize // == task.blocksize >> max_porder?
     )
 {
-    __local int pl[(GROUP_SIZE / 8)][15];
+    __local uint pl[(GROUP_SIZE / 16)][MAX_RICE_PARAM + 1];
     __local FLACCLSubframeData task;
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task) / sizeof(int))
 	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(1)]))[tid];
-    if (tid < (GROUP_SIZE / 8))
+    if (tid < (GROUP_SIZE / 16))
     {
-	for (int k = 0; k <= 14; k++)
+	for (int k = 0; k <= MAX_RICE_PARAM; k++)
 	    pl[tid][k] = 0;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -1311,14 +1396,14 @@ void clCalcPartition(
     {
 	// fetch residual
 	int s = (offs >= task.residualOrder && offs < end) ? residual[task.residualOffs + offs] : 0;
-	// overflow protection
-	s = iclamp(s, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	s = (s << 1) ^ (s >> 31);
+	uint t = (s << 1) ^ (s >> 31);
 	// calc number of unary bits for each residual sample with each rice paramater
-	int part = (offs - start) / psize + (tid & 1) * (GROUP_SIZE / 16);
-	for (int k = 0; k <= 14; k++)
-	    atom_add(&pl[part][k], s >> k);
+	int part = (offs - start) / psize;
+	// we must ensure that psize * (t >> k) doesn't overflow;
+	// i.e. t < ((1 << 32) >> (log2(psize) - k)) <= (1 << 32) >> (32 - clz(MAX_BLOCKSIZE) - k)
+	for (int k = 0; k <= MAX_RICE_PARAM; k++)
+	    atom_add(&pl[part][k], min(t, 0xffffffffU >> max(0, 32 - clz(MAX_BLOCKSIZE) - k)) >> k);
 	    //pl[part][k] += s >> k;
     }   
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -1326,141 +1411,79 @@ void clCalcPartition(
     int part = get_group_id(0) * (GROUP_SIZE / 16) + tid;
     if (tid < (GROUP_SIZE / 16) && part < (1 << max_porder))
     {
-	for (int k = 0; k <= 14; k++)
+	for (int k = 0; k <= MAX_RICE_PARAM; k++)
 	{
 	    // output length
-	    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (k << (max_porder + 1));
-	    int plen = pl[tid][k] + pl[tid + (GROUP_SIZE / 16)][k];
-	    partition_lengths[pos + part] = min(0x7fffff, plen) + (psize - select(0, task.residualOrder, part == 0)) * (k + 1);
+	    const int pos = ((MAX_RICE_PARAM + 1) << (max_porder + 1)) * get_group_id(1) + (k << (max_porder + 1));
+	    uint plen = pl[tid][k];
+	    partition_lengths[pos + part] = min(0x007fffffU, plen) + (uint)(psize - select(0, task.residualOrder, part == 0)) * (k + 1);
 	 //   if (get_group_id(1) == 0)
 		//printf("pl[%d][%d] == %d\n", k, part, min(0x7fffff, pl[k][tid]) + (psize - task.residualOrder * (part == 0)) * (k + 1));
 	}
     }
 }
-#endif
 
-#ifdef FLACCL_CPU
-// get_group_id(0) == task index
-__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
-void clCalcPartition16(
-    __global int *partition_lengths,
-    __global int *residual,
-    __global int *samples,
-    __global FLACCLSubframeTask *tasks,
-    int max_porder // <= 8
-    )
-{
-    FLACCLSubframeTask task = tasks[get_global_id(0)];
-    int bs = task.data.blocksize;
-    int ro = task.data.residualOrder;
-    __global int *data = &samples[task.data.samplesOffs];
-    __global int *pl = partition_lengths + (1 << (max_porder + 1)) * get_global_id(0);
-    for (int p = 0; p < (1 << max_porder); p++)
-	pl[p] = 0;
-    __global int *rptr = residual + task.data.residualOffs;
-    SWITCH_N((rptr[pos] = t, pl[pos >> 4] += (t << 1) ^ (t >> 31)));
-    //SWITCH_N((residual[task.data.residualOffs + pos] = t, t = (t << 1) ^ (t >> 31), pl[pos >> 4] += t));
-}
-#else
-// get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clCalcPartition16(
-    __global int *partition_lengths,
+    __global unsigned int *partition_lengths,
     __global int *residual,
-    __global int *samples,
     __global FLACCLSubframeTask *tasks,
     int max_porder // <= 8
     )
 {
-    __local FLACCLSubframeTask task;
-    __local int data[GROUP_SIZE * 2];
-    __local int res[GROUP_SIZE];
-    __local int pl[GROUP_SIZE >> 4][15];
+    __local FLACCLSubframeData task;
+    __local unsigned int res[GROUP_SIZE];
+    __local unsigned int pl[GROUP_SIZE >> 4][MAX_RICE_PARAM + 1];
 
     const int tid = get_local_id(0);
     if (tid < sizeof(task) / sizeof(int))
 	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    int bs = task.data.blocksize;
-    int ro = task.data.residualOrder;
-    int sh = task.data.shift;
-
-    if (tid >= ro && tid < 32)
-	task.coefs[tid] = 0;
-
-    int k = tid & 15;
-    int x = tid / 16;
+    int bs = task.blocksize;
+    int ro = task.residualOrder;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __global int * rptr = &residual[task.data.residualOffs];
-    __global int * plptr = &partition_lengths[(15 << (max_porder + 1)) * get_group_id(0) + (k << (max_porder + 1))];
-    __local int* dptr = &data[tid + GROUP_SIZE - ro];
-
-    int4 cptr0 = vload4(0, &task.coefs[0]);
-    int4 cptr1 = vload4(1, &task.coefs[0]);
-    int4 cptr2 = vload4(2, &task.coefs[0]);
-    data[tid] = 0;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
     {
 	int offs = pos + tid;
-	// fetch samples
-	int nextData = offs < bs ? samples[task.data.samplesOffs + offs] >> task.data.wbits : 0;
-	data[tid + GROUP_SIZE] = nextData;
-	barrier(CLK_LOCAL_MEM_FENCE);
-	
-	// compute residual
-	int4 sum = cptr0 * vload4(0, dptr)
-#if MAX_ORDER > 4
-	    + cptr1 * vload4(1, dptr)
-#if MAX_ORDER > 8
-	    + cptr2 * vload4(2, dptr)
-#if MAX_ORDER > 12
-	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
-#if MAX_ORDER > 16
-	    + vload4(4, &task.coefs[0]) * vload4(4, dptr)
-	    + vload4(5, &task.coefs[0]) * vload4(5, dptr)
-	    + vload4(6, &task.coefs[0]) * vload4(6, dptr)
-	    + vload4(7, &task.coefs[0]) * vload4(7, dptr)
-#endif
-#endif
-#endif
-#endif
-	    ;
-	int s = select(0, nextData - ((sum.x + sum.y + sum.z + sum.w) >> sh), offs >= ro && offs < bs);
-
-	// output residual
-	if (offs < bs)
-	    rptr[offs] = s;
-
-	s = iclamp(s, -0x7fffff, 0x7fffff);
+	// fetch residual
+	int s = (offs >= ro && offs < bs) ? residual[task.residualOffs + offs] : 0;
 	// convert to unsigned
 	res[tid] = (s << 1) ^ (s >> 31);
 
-	// for (int k = 0; k < 15; k++) atom_add(&pl[x][k], s >> k);
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int k0 = 0; k0 <= MAX_RICE_PARAM; k0 += 16)
+	{
+	    // calc number of unary bits for each group of 16 residual samples
+	    // with each rice parameter.
+	    int k = k0 + (tid & 15);
+	    int x = tid >> 4;
+	    // we must ensure that psize * (t >> k) doesn't overflow;
+	    // i.e. t < ((1 << 32) >> (log2(16) - k)) <= (1 << 32) >> (4 - k)
+	    uint4 lim = 0xffffffffU >> max(0, 4 - k);
+	    __local uint * chunk = &res[x << 4];
+	    uint4 rsum = (min(lim,vload4(0,chunk)) >> k) + (min(lim,vload4(1,chunk)) >> k) + (min(lim,vload4(2,chunk)) >> k) + (min(lim,vload4(3,chunk)) >> k);
+	    uint rs = rsum.x + rsum.y + rsum.z + rsum.w;
+
+	    // We can safely limit length here to 0x007fffffU, not causing length
+	    // mismatch, because any such length would cause Verbatim frame anyway.
+	    // And this limit protects us from overflows when calculating larger 
+	    // partitions, as we can have a maximum of 2^8 partitions, resulting
+	    // in maximum partition length of 0x7fffffffU + change.
+	    if (k <= MAX_RICE_PARAM) pl[x][k] = min(0x007fffffU, rs) + (uint)(16 - select(0, ro, offs < 16)) * (k + 1);
+	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
-	data[tid] = nextData;
-
-	// calc number of unary bits for each residual sample with each rice paramater
-	__local int * chunk = &res[x << 4];
-	sum = (vload4(0,chunk) >> k) + (vload4(1,chunk) >> k) + (vload4(2,chunk) >> k) + (vload4(3,chunk) >> k);
-	s = sum.x + sum.y + sum.z + sum.w;
-
-#if 0
-	if (k <= 14 && offs < bs)
-	    plptr[offs >> 4] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
-#else
-	if (k <= 14) pl[x][k] = min(0x7fffff, s) + (16 - select(0, ro, offs < 16)) * (k + 1);
-	barrier(CLK_LOCAL_MEM_FENCE);
-        int k1 = tid >> 3, x1 = tid & 7;
-	if (k1 <= 14 && (pos >> 4) + x1 < (1 << max_porder))
-	    partition_lengths[(15 << (max_porder + 1)) * get_group_id(0) + (k1 << (max_porder + 1)) + (pos >> 4) + x1] = pl[x1][k1];
-#endif
-
-//    	if (task.data.blocksize == 16 && x == 0 && k <= 14)
-//	    printf("[%d] = %d = s:%d + %d * (k:%d + 1), ro=%d, offs=%d, lpos=%d\n", k, partition_lengths[lpos], s, (16 - select(0, ro, offs < 16)), k, ro, offs, lpos);
+	
+	for (int k0 = 0; k0 <= MAX_RICE_PARAM; k0 += 16)
+	{
+	    int k1 = k0 + (tid >> 3), x1 = tid & 7;
+	    if (k1 <= MAX_RICE_PARAM && (pos >> 4) + x1 < (1 << max_porder))
+		partition_lengths[((MAX_RICE_PARAM + 1) << (max_porder + 1)) * get_group_id(0) + (k1 << (max_porder + 1)) + (pos >> 4) + x1] = pl[x1][k1];
+	}
     }    
 }
 #endif
@@ -1471,13 +1494,13 @@ void clCalcPartition16(
 // get_group_id(1) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clSumPartition(
-    __global int* partition_lengths,
+    __global ulong* partition_lengths,
     int max_porder
     )
 {
     if (get_group_id(0) != 0) // ignore k != 0
 	return;
-    __global int * sums = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
+    __global ulong * sums = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
     for (int i = max_porder - 1; i >= 0; i--)
     {
 	for (int j = 0; j < (1 << i); j++)
@@ -1496,15 +1519,15 @@ void clSumPartition(
 // get_group_id(1) == task index
 __kernel __attribute__((reqd_work_group_size(128, 1, 1)))
 void clSumPartition(
-    __global int* partition_lengths,
+    __global uint* partition_lengths,
     int max_porder
     )
 {
-    __local int data[256]; // max_porder <= 8, data length <= 1 << 9.
-    const int pos = (15 << (max_porder + 1)) * get_group_id(1) + (get_group_id(0) << (max_porder + 1));
+    __local uint data[256]; // max_porder <= 8, data length <= 1 << 9.
+    const int pos = ((MAX_RICE_PARAM + 1) << (max_porder + 1)) * get_group_id(1) + (get_group_id(0) << (max_porder + 1));
 
     // fetch partition lengths
-    int2 pl = get_local_id(0) * 2 < (1 << max_porder) ? vload2(get_local_id(0),&partition_lengths[pos]) : 0;
+    uint2 pl = get_local_id(0) * 2 < (1 << max_porder) ? vload2(get_local_id(0),&partition_lengths[pos]) : 0;
     data[get_local_id(0)] = pl.x + pl.y;
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -1512,7 +1535,7 @@ void clSumPartition(
     int out_pos = (1 << (max_porder - 1)) + get_local_id(0);
     for (int bs = 1 << (max_porder - 2); bs > 0; bs >>= 1)
     {
-	if (get_local_id(0) < bs) data[out_pos] = data[in_pos] + data[in_pos + 1];
+	if (get_local_id(0) < bs) data[out_pos] =  data[in_pos] + data[in_pos + 1];
 	in_pos += bs << 1;
 	out_pos += bs;
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -1531,7 +1554,7 @@ __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clFindRiceParameter(
     __global FLACCLSubframeTask *tasks,
     __global int* rice_parameters,
-    __global int* partition_lengths,
+    __global ulong* partition_lengths,
     int max_porder
     )
 {
@@ -1541,7 +1564,7 @@ void clFindRiceParameter(
     //int psize = task->data.blocksize >> max_porder;
     int bs = task->data.blocksize;
     int ro = task->data.residualOrder;
-    __global int* ppl = &partition_lengths[get_group_id(0) << (max_porder + 1)];
+    __global ulong* ppl = &partition_lengths[get_group_id(0) << (max_porder + 1)];
     __global int* prp = &rice_parameters[get_group_id(0) << (max_porder + 2)];
     __global int* pol = prp + (1 << (max_porder + 1));
     for (int porder = max_porder; porder >= 0; porder--)
@@ -1549,10 +1572,10 @@ void clFindRiceParameter(
 	int pos = (2 << max_porder) - (2 << porder);
 	int fin = pos + (1 << porder);
 
-	int pl = ppl[pos];
+	ulong pl = ppl[pos];
 	int ps = (bs >> porder) - ro;
-	int k = iclamp(31 - fastclz(pl / max(1, ps)), 0, 14);
-	int plk = ps * (k + 1)  + (pl >> k);
+	int k = iclamp(63 - fastclz64(pl / max(1, ps)), 0, MAX_RICE_PARAM);
+	int plk = ps * (k + 1) + (int)(pl >> k);
 
 	// output rice parameter
 	prp[pos] = k;
@@ -1564,8 +1587,8 @@ void clFindRiceParameter(
 	for (int offs = pos + 1; offs < fin; offs++)
 	{
 	    pl = ppl[offs];
-	    k = iclamp(31 - fastclz(pl / ps), 0, 14);
-	    plk = ps * (k + 1)  + (pl >> k);
+	    k = iclamp(63 - fastclz64(pl / ps), 0, MAX_RICE_PARAM);
+	    plk = ps * (k + 1) + (int)(pl >> k);
 	
 	    // output rice parameter
 	    prp[offs] = k;
@@ -1581,18 +1604,18 @@ __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clFindRiceParameter(
     __global FLACCLSubframeTask *tasks,
     __global int* rice_parameters,
-    __global int* partition_lengths,
+    __global uint* partition_lengths,
     int max_porder
     )
 {
     for (int offs = get_local_id(0); offs < (2 << max_porder); offs += GROUP_SIZE)
     {
-	const int pos = (15 << (max_porder + 1)) * get_group_id(0) + offs;
-	int best_l = partition_lengths[pos];
+	const int pos = ((MAX_RICE_PARAM + 1) << (max_porder + 1)) * get_group_id(0) + offs;
+	uint best_l = partition_lengths[pos];
 	int best_k = 0;
-	for (int k = 1; k <= 14; k++)
+	for (int k = 1; k <= MAX_RICE_PARAM; k++)
 	{
-	    int l = partition_lengths[pos + (k << (max_porder + 1))];
+	    uint l = partition_lengths[pos + (k << (max_porder + 1))];
 	    best_k = select(best_k, k, l < best_l);
 	    best_l = min(best_l, l);
 	}
@@ -1630,16 +1653,16 @@ void clFindPartitionOrder(
 	    partlen[porder] += rice_parameters[pos + start + offs];
     }
 
-    int best_length = partlen[0] + 4;
+    int best_length = partlen[0] + RICE_PARAM_BITS;
     int best_porder = 0;
     for (int porder = 1; porder <= max_porder; porder++)
     {
-	int length = (4 << porder) + partlen[porder];
+	int length = (RICE_PARAM_BITS << porder) + partlen[porder];
 	best_porder = select(best_porder, porder, length < best_length);
 	best_length = min(best_length, length);
     }
 
-    best_length = (4 << best_porder) + task->data.blocksize - task->data.residualOrder;
+    best_length = (RICE_PARAM_BITS << best_porder) + task->data.blocksize - task->data.residualOrder;
     int best_psize = task->data.blocksize >> best_porder;
     int start = task->data.residualOffs + task->data.residualOrder;
     int fin = task->data.residualOffs + best_psize;
@@ -1704,11 +1727,11 @@ void clFindPartitionOrder(
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    int best_length = partlen[0] + 4;
+    int best_length = partlen[0] + RICE_PARAM_BITS;
     int best_porder = 0;
     for (int porder = 1; porder <= max_porder; porder++)
     {
-	int length = (4 << porder) + partlen[porder];
+	int length = (RICE_PARAM_BITS << porder) + partlen[porder];
 	best_porder = select(best_porder, porder, length < best_length);
 	best_length = min(best_length, length);
     }
@@ -1836,14 +1859,14 @@ void clCalcOutputOffsets(
     )
 {
     const int channels = 2;
-    __local FLACCLSubframeData ltasks[2];
-    __local volatile int mypos[2];
+    __local FLACCLSubframeData ltasks[MAX_CHANNELS];
+    __local volatile int mypos[MAX_CHANNELS];
     int offset = 0;
     for (int iFrame = 0; iFrame < frameCount; iFrame++)
     {
 	if (get_local_id(0) < sizeof(ltasks[0]) / sizeof(int))
-	    for (int ch = 0; ch < channels; ch++)
-		((__local int*)&ltasks[ch])[get_local_id(0)] = ((__global int*)(&tasks[iFrame * channels + ch]))[get_local_id(0)];
+	    for (int ch = 0; ch < MAX_CHANNELS; ch++)
+		((__local int*)&ltasks[ch])[get_local_id(0)] = ((__global int*)(&tasks[iFrame * MAX_CHANNELS + ch]))[get_local_id(0)];
 
 	//printf("len_utf8(%d) == %d\n", firstFrame + iFrame, len_utf8(firstFrame + iFrame));
 	offset += 15 + 1 + 4 + 4 + 4 + 3 + 1 + len_utf8(firstFrame + iFrame)
@@ -1856,18 +1879,18 @@ void clCalcOutputOffsets(
 	
 	// assert (offset % 8) == 0
 	offset += 8;
-	if (get_local_id(0) < channels)
+	if (get_local_id(0) < MAX_CHANNELS)
 	{
 	    int ch = get_local_id(0);
 	    // Add 64 bits to separate frames if header is too small so they can intersect
 	    int mylen = 8 + ltasks[ch].wbits + 64 + ltasks[ch].size;
 	    mypos[ch] = mylen;
-	    for (int offset = 1; offset < WARP_SIZE && offset < channels; offset <<= 1)
+	    for (int offset = 1; offset < WARP_SIZE && offset < MAX_CHANNELS; offset <<= 1)
 		if (ch >= offset) mypos[ch] += mypos[ch - offset];
 	    mypos[ch] += offset;
-	    tasks[iFrame * channels + ch].data.encodingOffset = mypos[ch] - ltasks[ch].size + ltasks[ch].headerLen;
+	    tasks[iFrame * MAX_CHANNELS + ch].data.encodingOffset = mypos[ch] - ltasks[ch].size + ltasks[ch].headerLen;
 	}
-	offset = mypos[channels - 1];
+	offset = mypos[MAX_CHANNELS - 1];
 	offset = (offset + 7) & ~7;
 	offset += 16;
     }
@@ -1909,7 +1932,7 @@ void clRiceEncoding(
 	for (int p = 0; p < (1 << porder); p++)
 	{
 	    int k = kptr[p];
-	    writebits(&bw, 4, k);
+	    writebits(&bw, RICE_PARAM_BITS, k);
 	    //if (get_group_id(0) == 0) printf("[%x] ", k);
 	    //if (get_group_id(0) == 0) printf("(%x) ", bw.bit_buf);
 	    if (p == 1) res_cnt = psize;
@@ -1978,7 +2001,7 @@ void clRiceEncoding(
 	flush(&bw);
     }
 #else
-    __local unsigned int data[GROUP_SIZE];
+    __local uint data[GROUP_SIZE];
     __local volatile int mypos[GROUP_SIZE+1];
 #if 0
     __local int brp[256];
@@ -2006,12 +2029,12 @@ void clRiceEncoding(
     int start = task.encodingOffset;
     int plen = bs >> task.porder;
     //int plenoffs = 12 - task.porder;
-    unsigned int remainder = 0U;
+    uint remainder = 0U;
     int pos;
     for (pos = 0; pos + GROUP_SIZE - 1 < bs; pos += GROUP_SIZE)
     {
 	int offs = pos + tid;
-	int v = residual[task.residualOffs + offs];
+	int iv = residual[task.residualOffs + offs];
 	int part = offs / plen; // >> plenoffs;
 #if 0
 	int k = brp[part];
@@ -2019,10 +2042,10 @@ void clRiceEncoding(
 	int k = best_rice_parameters[(get_group_id(0) << max_porder) + part];
 #endif
 	int pstart = offs == task.residualOrder || offs == part * plen;
-	v = (v << 1) ^ (v >> 31);
-	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
+	uint v = (iv << 1) ^ (iv >> 31);
+	int mylen = select(0, (int)(v >> k) + 1 + k + select(0, RICE_PARAM_BITS, pstart), offs >= task.residualOrder && offs < bs);
 	mypos[tid] = mylen;
-	
+
 	// Inclusive scan(+)
 	int lane = (tid & (WARP_SIZE - 1));
 	for (int offset = 1; offset < WARP_SIZE; offset <<= 1)
@@ -2040,7 +2063,8 @@ void clRiceEncoding(
 	mp += start + select(0, warppos[tid / WARP_SIZE - 1], tid / WARP_SIZE > 0);
 	int start32 = start >> 5;
 	start += mypos[GROUP_SIZE - 1] + warppos[GROUP_SIZE / WARP_SIZE - 2];
-
+	//if (start / 32 - start32 >= GROUP_SIZE - 3)
+	//    tasks[get_group_id(0)].data.size = 1;
 	//if (tid == GROUP_SIZE - 1 && mypos[tid] > (GROUP_SIZE/2) * 32)
 	//    printf("Oops: %d\n", mypos[tid]);
 	data[tid] = select(0U, remainder, tid == 0);
@@ -2052,18 +2076,18 @@ void clRiceEncoding(
 		int kpos = mp - mylen;
 		int kpos0 = (kpos >> 5) - start32;
 		int kpos1 = kpos & 31;
-		unsigned int kval = (unsigned int)k << 28;
-		unsigned int kval0 = kval >> kpos1;
-		unsigned int kval1 = kval << (32 - kpos1);
+		uint kval = (uint)k << (32 - RICE_PARAM_BITS);
+		uint kval0 = kval >> kpos1;
+		uint kval1 = kval << (32 - kpos1);
 		if (kval0) atom_or(&data[kpos0], kval0);
 		if (kpos1 && kval1) atom_or(&data[kpos0 + 1], kval1);
 	    }
 	    int qpos = mp - k - 1;
 	    int qpos0 = (qpos >> 5) - start32;
 	    int qpos1 = qpos & 31;
-	    unsigned int qval = (1U << 31) | ((unsigned int)v << (31 - k));
-	    unsigned int qval0 = qval >> qpos1;
-	    unsigned int qval1= qval << (32 - qpos1);
+	    uint qval = (1U << 31) | (v << (31 - k));
+	    uint qval0 = qval >> qpos1;
+	    uint qval1= qval << (32 - qpos1);
 	    if (qval0) atom_or(&data[qpos0], qval0);
 	    if (qpos1 && qval1) atom_or(&data[qpos0 + 1], qval1);
 	}
@@ -2075,13 +2099,13 @@ void clRiceEncoding(
     if (pos < bs)
     {
 	int offs = pos + tid;
-	int v = offs < bs ? residual[task.residualOffs + offs] : 0;
+	int iv = offs < bs ? residual[task.residualOffs + offs] : 0;
 	int part = offs / plen; // >> plenoffs;
 	//int k = brp[min(255, part)];
 	int k = offs < bs ? best_rice_parameters[(get_group_id(0) << max_porder) + part] : 0;
 	int pstart = offs == task.residualOrder || offs == part * plen;
-	v = (v << 1) ^ (v >> 31);
-	int mylen = select(0, (v >> k) + 1 + k + select(0, 4, pstart), offs >= task.residualOrder && offs < bs);
+	uint v = (iv << 1) ^ (iv >> 31);
+	int mylen = select(0, (int)(v >> k) + 1 + k + select(0, RICE_PARAM_BITS, pstart), offs >= task.residualOrder && offs < bs);
 	mypos[tid] = mylen;
 	
 	// Inclusive scan(+)
@@ -2113,18 +2137,18 @@ void clRiceEncoding(
 		int kpos = mp - mylen;
 		int kpos0 = (kpos >> 5) - start32;
 		int kpos1 = kpos & 31;
-		unsigned int kval = (unsigned int)k << 28;
-		unsigned int kval0 = kval >> kpos1;
-		unsigned int kval1 = kval << (32 - kpos1);
+		uint kval = (uint)k << (32 - RICE_PARAM_BITS);
+		uint kval0 = kval >> kpos1;
+		uint kval1 = kval << (32 - kpos1);
 		if (kval0) atom_or(&data[kpos0], kval0);
 		if (kpos1 && kval1) atom_or(&data[kpos0 + 1], kval1);
 	    }
 	    int qpos = mp - k - 1;
 	    int qpos0 = (qpos >> 5) - start32;
 	    int qpos1 = qpos & 31;
-	    unsigned int qval = (1U << 31) | ((unsigned int)v << (31 - k));
-	    unsigned int qval0 = qval >> qpos1;
-	    unsigned int qval1= qval << (32 - qpos1);
+	    uint qval = (1U << 31) | (v << (31 - k));
+	    uint qval0 = qval >> qpos1;
+	    uint qval1= qval << (32 - qpos1);
 	    if (qval0) atom_or(&data[qpos0], qval0);
 	    if (qpos1 && qval1) atom_or(&data[qpos0 + 1], qval1);
 	}

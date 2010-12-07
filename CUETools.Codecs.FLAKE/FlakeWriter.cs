@@ -125,8 +125,8 @@ namespace CUETools.Codecs.FLAKE
 		{
 			_pcm = pcm;
 
-			if (_pcm.BitsPerSample != 16)
-				throw new Exception("Bits per sample must be 16.");
+			//if (_pcm.BitsPerSample != 16)
+			//    throw new Exception("Bits per sample must be 16.");
 			if (_pcm.ChannelCount != 2)
 				throw new Exception("ChannelCount must be 2.");
 
@@ -571,14 +571,14 @@ namespace CUETools.Codecs.FLAKE
 			samplesInBuffer += block;
 		}
 
-		unsafe static void channel_decorrelation(int* leftS, int* rightS, int *leftM, int *rightM, int blocksize)
-		{
-			for (int i = 0; i < blocksize; i++)
-			{
-				leftM[i] = (leftS[i] + rightS[i]) >> 1;
-				rightM[i] = leftS[i] - rightS[i];
-			}
-		}
+		//unsafe static void channel_decorrelation(int* leftS, int* rightS, int *leftM, int *rightM, int blocksize)
+		//{
+		//    for (int i = 0; i < blocksize; i++)
+		//    {
+		//        leftM[i] = (leftS[i] + rightS[i]) >> 1;
+		//        rightM[i] = leftS[i] - rightS[i];
+		//    }
+		//}
 
 		unsafe void encode_residual_verbatim(int* res, int* smp, uint n)
 		{
@@ -638,24 +638,28 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		static unsafe uint calc_optimal_rice_params(int porder, int* parm, uint* sums, uint n, uint pred_order)
+		static unsafe uint calc_optimal_rice_params(int porder, int* parm, ulong* sums, uint n, uint pred_order, ref int method)
 		{
 			uint part = (1U << porder);
 			uint cnt = (n >> porder) - pred_order;
-			int k = cnt > 0 ? Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[0] / cnt)) : 0;
-			uint all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
+			int maxK = method > 0 ? 30 : Flake.MAX_RICE_PARAM;
+			int k = cnt > 0 ? Math.Min(maxK, BitReader.log2i(sums[0] / cnt)) : 0;
+			int realMaxK0 = k;
+			ulong all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
 			parm[0] = k;
 			cnt = (n >> porder);
 			for (uint i = 1; i < part; i++)
 			{
-				k = Math.Min(Flake.MAX_RICE_PARAM, BitReader.log2i(sums[i] / cnt));
+				k = Math.Min(maxK, BitReader.log2i(sums[i] / cnt));
+				realMaxK0 = Math.Max(realMaxK0, k);
 				all_bits += cnt * ((uint)k + 1U) + (sums[i] >> k);
 				parm[i] = k;
 			}
-			return all_bits + (4 * part);
+			method = realMaxK0 > Flake.MAX_RICE_PARAM ? 1 : 0;
+			return (uint)all_bits + ((4U + (uint)method) * part);
 		}
 
-		static unsafe void calc_lower_sums(int pmin, int pmax, uint* sums)
+		static unsafe void calc_lower_sums(int pmin, int pmax, ulong* sums)
 		{
 			for (int i = pmax - 1; i >= pmin; i--)
 			{
@@ -668,12 +672,12 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
 		{
 			int parts = (1 << pmax);
 			uint* res = data + pred_order;
 			uint cnt = (n >> pmax) - pred_order;
-			uint sum = 0;
+			ulong sum = 0;
 			for (uint j = cnt; j > 0; j--)
 				sum += *(res++);
 			sums[0] = sum;
@@ -696,18 +700,18 @@ namespace CUETools.Codecs.FLAKE
 		/// <param name="n"></param>
 		/// <param name="pred_order"></param>
 		/// <param name="sums"></param>
-		static unsafe void calc_sums18(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		static unsafe void calc_sums18(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
 		{
 			int parts = (1 << pmax);
 			uint* res = data + pred_order;
 			uint cnt = 18 - pred_order;
-			uint sum = 0;
+			ulong sum = 0;
 			for (uint j = cnt; j > 0; j--)
 				sum += *(res++);
 			sums[0] = sum;
 			for (int i = 1; i < parts; i++)
 			{
-				sums[i] =
+				sums[i] = 0UL +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
@@ -725,18 +729,18 @@ namespace CUETools.Codecs.FLAKE
 		/// <param name="n"></param>
 		/// <param name="pred_order"></param>
 		/// <param name="sums"></param>
-		static unsafe void calc_sums16(int pmin, int pmax, uint* data, uint n, uint pred_order, uint* sums)
+		static unsafe void calc_sums16(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
 		{
 			int parts = (1 << pmax);
 			uint* res = data + pred_order;
 			uint cnt = 16 - pred_order;
-			uint sum = 0;
+			ulong sum = 0;
 			for (uint j = cnt; j > 0; j--)
 				sum += *(res++);
 			sums[0] = sum;
 			for (int i = 1; i < parts; i++)
 			{
-				sums[i] =
+				sums[i] = 0UL +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
 					*(res++) + *(res++) + *(res++) + *(res++) +
@@ -744,10 +748,10 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order)
+		static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order, int bps)
 		{
 			uint* udata = stackalloc uint[(int)n];
-			uint* sums = stackalloc uint[(pmax + 1) * Flake.MAX_PARTITIONS];
+			ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
 			int* parm = stackalloc int[(pmax + 1) * Flake.MAX_PARTITIONS];
 			//uint* bits = stackalloc uint[Flake.MAX_PARTITION_ORDER];
 
@@ -770,17 +774,21 @@ namespace CUETools.Codecs.FLAKE
 
 			uint opt_bits = AudioSamples.UINT32_MAX;
 			int opt_porder = pmin;
+			int opt_method = 0;
 			for (int i = pmin; i <= pmax; i++)
 			{
-				uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order);
+				int method = bps > 16 ? 1 : 0;
+				uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order, ref method);
 				if (bits <= opt_bits)
 				{
 					opt_bits = bits;
 					opt_porder = i;
+					opt_method = method;
 				}
 			}
 
 			rc.porder = opt_porder;
+			rc.coding_method = opt_method;
 			fixed (int* rparms = rc.rparams)
 				AudioSamples.MemCpy(rparms, parm + opt_porder * Flake.MAX_PARTITIONS, (1 << opt_porder));
 
@@ -841,7 +849,7 @@ namespace CUETools.Codecs.FLAKE
 					}
 					int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
 					int pmin = Math.Min(eparams.min_partition_order, pmax);
-					uint best_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order);
+					uint best_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, PCM.BitsPerSample);
 					// not working
 					//for (int o = 1; o <= frame.current.order; o++)
 					//{
@@ -877,7 +885,7 @@ namespace CUETools.Codecs.FLAKE
 			int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
 			int pmin = Math.Min(eparams.min_partition_order, pmax);
 			frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits) + 6
-				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order);
+				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, PCM.BitsPerSample);
 
 			frame.subframes[ch].done_fixed |= (1U << order);
 
@@ -1054,7 +1062,7 @@ namespace CUETools.Codecs.FLAKE
 		unsafe void output_residual(FlacFrame frame, BitWriter bitwriter, FlacSubframeInfo sub)
 		{
 			// rice-encoded block
-			bitwriter.writebits(2, 0);
+			bitwriter.writebits(2, sub.best.rc.coding_method);
 
 			// partition order
 			int porder = sub.best.rc.porder;
@@ -1063,13 +1071,14 @@ namespace CUETools.Codecs.FLAKE
 			bitwriter.writebits(4, porder);
 			int res_cnt = psize - sub.best.order;
 
+			int rice_len = 4 + sub.best.rc.coding_method;
 			// residual
 			int j = sub.best.order;
 			fixed (byte* fixbuf = &frame_buffer[0])
 			for (int p = 0; p < (1 << porder); p++)
 			{
 				int k = sub.best.rc.rparams[p];
-				bitwriter.writebits(4, k);
+				bitwriter.writebits(rice_len, k);
 				if (p == 1) res_cnt = psize;
 				int cnt = Math.Min(res_cnt, frame.blocksize - j);
 				bitwriter.write_rice_block_signed(fixbuf, k, sub.best.residual + j, cnt);
@@ -1436,6 +1445,9 @@ namespace CUETools.Codecs.FLAKE
 				output_subframes(frame, bitwriter);
 				output_frame_footer(bitwriter);
 
+				if (bitwriter.Length >= max_frame_size)
+					throw new Exception("buffer overflow");
+
 				if (frame_buffer != null)
 				{
 					if (eparams.variable_block_size > 0)
@@ -1731,9 +1743,6 @@ namespace CUETools.Codecs.FLAKE
 				}
 			}
 			if (i == 8)
-				throw new Exception("non-standard bps");
-			// FIXME: For now, only 16-bit encoding is supported
-			if (_pcm.BitsPerSample != 16)
 				throw new Exception("non-standard bps");
 
 			if (_blocksize == 0)

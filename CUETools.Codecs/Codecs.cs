@@ -422,14 +422,41 @@ namespace CUETools.Codecs
 
 		unsafe public void Interlace(int pos, int* src1, int* src2, int n)
 		{
-			if (PCM.ChannelCount != 2 || PCM.BitsPerSample != 16)
-				throw new Exception("");
-			fixed (byte* bs = Bytes)
+			if (PCM.ChannelCount != 2)
+				throw new Exception("Must be stereo");
+			if (PCM.BitsPerSample == 16)
 			{
-				int* res = ((int*)bs) + pos;
-				for (int i = n; i > 0; i--)
-					*(res++) = (*(src1++) & 0xffff) ^ (*(src2++) << 16);
+				fixed (byte* bs = Bytes)
+				{
+					int* res = ((int*)bs) + pos;
+					for (int i = n; i > 0; i--)
+						*(res++) = (*(src1++) & 0xffff) ^ (*(src2++) << 16);
+				}
 			}
+			else if (PCM.BitsPerSample == 24)
+			{
+				fixed (byte* bs = Bytes)
+				{
+					byte* res= bs + pos * 6;
+					for (int i = n; i > 0; i--)
+					{
+						uint sample_out = (uint)*(src1++);
+						*(res++) = (byte)(sample_out & 0xFF);
+						sample_out >>= 8;
+						*(res++) = (byte)(sample_out & 0xFF);
+						sample_out >>= 8;
+						*(res++) = (byte)(sample_out & 0xFF);
+						sample_out = (uint)*(src2++);
+						*(res++) = (byte)(sample_out & 0xFF);
+						sample_out >>= 8;
+						*(res++) = (byte)(sample_out & 0xFF);
+						sample_out >>= 8;
+						*(res++) = (byte)(sample_out & 0xFF);
+					}
+				}
+			}
+			else
+				throw new Exception("Unsupported BPS");
 		}
 
 		//public void Clear()
@@ -451,6 +478,7 @@ namespace CUETools.Codecs
 				short* pOutSamples = (short*)outSamples;
 				for (int i = 0; i < loopCount; i++)
 					pOutSamples[i] = (short)pInSamples[i];
+					//*(pOutSamples++) = (short)*(pInSamples++);
 			}
 		}
 
@@ -465,19 +493,8 @@ namespace CUETools.Codecs
 				throw new IndexOutOfRangeException();
 			}
 
-			fixed (int* pInSamplesFixed = &inSamples[inSampleOffset, 0])
-			{
-				fixed (byte* pOutSamplesFixed = &outSamples[outByteOffset])
-				{
-					int* pInSamples = pInSamplesFixed;
-					short* pOutSamples = (short*)pOutSamplesFixed;
-
-					for (int i = 0; i < loopCount; i++)
-					{
-						*(pOutSamples++) = (short)*(pInSamples++);
-					}
-				}
-			}
+			fixed (byte* pOutSamplesFixed = &outSamples[outByteOffset])
+				FLACSamplesToBytes_16(inSamples, inSampleOffset, pOutSamplesFixed, sampleCount, channelCount);
 		}
 
 		public static unsafe void FLACSamplesToBytes_24(int[,] inSamples, int inSampleOffset,
@@ -917,16 +934,16 @@ namespace CUETools.Codecs
 		private AudioPCMConfig pcm;
 		private int _sampleVal;
 
-		public SilenceGenerator(long sampleCount, int sampleVal)
+		public SilenceGenerator(AudioPCMConfig pcm, long sampleCount, int sampleVal)
 		{
-			_sampleVal = sampleVal;
-			_sampleOffset = 0;
-			_sampleCount = sampleCount;
-			pcm = AudioPCMConfig.RedBook;
+			this._sampleVal = sampleVal;
+			this._sampleOffset = 0;
+			this._sampleCount = sampleCount;
+			this.pcm = pcm;
 		}
 
 		public SilenceGenerator(long sampleCount)
-			: this(sampleCount, 0)
+			: this(AudioPCMConfig.RedBook, sampleCount, 0)
 		{
 		}
 
@@ -1091,19 +1108,29 @@ namespace CUETools.Codecs
 				{
 					foundFormat = true;
 
-					if (_br.ReadUInt16() != 1)
-					{
-						throw new Exception("WAVE must be PCM format.");
-					}
+					uint fmtTag = _br.ReadUInt16();
 					int _channelCount = _br.ReadInt16();
 					int _sampleRate = _br.ReadInt32();
-					_br.ReadInt32();
+					_br.ReadInt32(); // bytes per second
 					int _blockAlign = _br.ReadInt16();
 					int _bitsPerSample = _br.ReadInt16();
+					pos += 16;
+
+					if (fmtTag == 0xFFFEU && ckSize >= 34) // WAVE_FORMAT_EXTENSIBLE 
+					{
+						_br.ReadInt16(); // CbSize
+						_br.ReadInt16(); // ValidBitsPerSample
+						int channelMask = _br.ReadInt32();
+						fmtTag = _br.ReadUInt16();
+						pos += 10;
+					}
+
+					if (fmtTag != 1) // WAVE_FORMAT_PCM
+						throw new Exception("WAVE format tag not WAVE_FORMAT_PCM.");
+
 					pcm = new AudioPCMConfig(_bitsPerSample, _channelCount, _sampleRate);
 					if (pcm.BlockAlign != _blockAlign)
 						throw new Exception("WAVE has strange BlockAlign");
-					pos += 16;
 				}
 				else if (ckID == fccData)
 				{

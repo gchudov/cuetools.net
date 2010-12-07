@@ -35,6 +35,15 @@ namespace CUETools.Codecs
 			return log2i((uint)v);
 		}
 
+		public static int log2i(ulong v)
+		{
+			int n = 0;
+			if (0 != (v & 0xffffffff00000000)) { v >>= 32; n += 32; }
+			if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
+			if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
+			return n + byte_to_log2_table[v];
+		}
+
 		public static int log2i(uint v)
 		{
 			int n = 0;

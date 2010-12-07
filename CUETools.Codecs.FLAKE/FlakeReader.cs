@@ -102,7 +102,7 @@ namespace CUETools.Codecs.FLAKE
 			}
 			_samplesInBuffer = 0;
 
-			if (PCM.BitsPerSample != 16 || PCM.ChannelCount != 2 || PCM.SampleRate != 44100)
+			if ((PCM.BitsPerSample != 16 && PCM.BitsPerSample != 24) || PCM.ChannelCount != 2 || (PCM.SampleRate != 44100 && PCM.SampleRate != 48000))
 				throw new Exception("invalid flac file");
 
 			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * PCM.ChannelCount];
@@ -362,8 +362,9 @@ namespace CUETools.Codecs.FLAKE
 		unsafe void decode_residual(BitReader bitreader, FlacFrame frame, int ch)
 		{
 			// rice-encoded block
-			uint coding_method = bitreader.readbits(2); // ????? == 0
-			if (coding_method != 0 && coding_method != 1) // if 1, then parameter length == 5 bits instead of 4
+			// coding method
+			frame.subframes[ch].best.rc.coding_method = (int)bitreader.readbits(2); // ????? == 0
+			if (frame.subframes[ch].best.rc.coding_method != 0 && frame.subframes[ch].best.rc.coding_method != 1) 
 				throw new Exception("unsupported residual coding");
 			// partition order
 			frame.subframes[ch].best.rc.porder = (int)bitreader.readbits(4);
@@ -372,7 +373,7 @@ namespace CUETools.Codecs.FLAKE
 			int psize = frame.blocksize >> frame.subframes[ch].best.rc.porder;
 			int res_cnt = psize - frame.subframes[ch].best.order;
 
-			int rice_len = 4 + (int)coding_method;
+			int rice_len = 4 + frame.subframes[ch].best.rc.coding_method;
 			// residual
 			int j = frame.subframes[ch].best.order;
 			int* r = frame.subframes[ch].best.residual + j;

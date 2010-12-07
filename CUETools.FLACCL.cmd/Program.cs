@@ -87,7 +87,7 @@ namespace CUETools.FLACCL.cmd
 				min_precision = -1, max_precision = -1,
 				orders_per_window = -1, orders_per_channel = -1,
 				blocksize = -1;
-			int input_len = 4096, input_val = 0;
+			int input_len = 4096, input_val = 0, input_bps = 16, input_ch = 2, input_rate = 44100;
 			int level = -1, padding = -1, vbr_mode = -1;
 			bool do_seektable = true;
 			bool buffered = false;
@@ -136,6 +136,10 @@ namespace CUETools.FLACCL.cmd
 					input_len = intarg;
 				else if (args[arg] == "--input-value" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
 					input_val = intarg;
+				else if (args[arg] == "--input-bps" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					input_bps = intarg;
+				else if (args[arg] == "--input-channels" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					input_ch = intarg;
 				else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
 					output_file = args[arg];
 				else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
@@ -211,18 +215,28 @@ namespace CUETools.FLACCL.cmd
 			}
 
 			IAudioSource audioSource;
-			if (input_file == "-")
-				audioSource = new WAVReader("", Console.OpenStandardInput());
-			else if (input_file == "nul")
-				audioSource = new SilenceGenerator(input_len, input_val);
-			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
-				audioSource = new WAVReader(input_file, null);
-			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
-				audioSource = new FlakeReader(input_file, null);
-			else
+			try
+			{
+				if (input_file == "-")
+					audioSource = new WAVReader("", Console.OpenStandardInput());
+				else if (input_file == "nul")
+					audioSource = new SilenceGenerator(new AudioPCMConfig(input_bps, input_ch, input_rate), input_len, input_val);
+				else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
+					audioSource = new WAVReader(input_file, null);
+				else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
+					audioSource = new FlakeReader(input_file, null);
+				else
+				{
+					Usage();
+					return 2;
+				}
+			}
+			catch (Exception ex)
 			{
 				Usage();
-				return 2;
+				Console.WriteLine("");
+				Console.WriteLine("Error: {0}.", ex.Message);
+				return 3;
 			}
 			if (buffered)
 				audioSource = new AudioPipe(audioSource, FLACCLWriter.MAX_BLOCKSIZE);

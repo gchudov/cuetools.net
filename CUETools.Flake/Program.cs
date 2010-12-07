@@ -279,9 +279,10 @@ namespace CUETools.FlakeExe
 			if (!quiet)
 			{
 				Console.Error.Write("\r                                                                         \r");
-				Console.WriteLine("Results   : {0:0.00}x; {1}",
+				Console.WriteLine("Results   : {0:0.00}x; {2} bytes in {1} seconds;",
 					audioSource.Position / totalElapsed.TotalSeconds / audioSource.PCM.SampleRate,
-					totalElapsed
+					totalElapsed,
+					flake.TotalSize
 					);
 			}
 			audioSource.Close();
