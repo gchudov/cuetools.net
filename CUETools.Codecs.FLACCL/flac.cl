@@ -941,6 +941,8 @@ inline residual_t calc_residual(__global int *ptr, int * coefs, int ro)
 	default: ENCODE_N(ro, action) \
     }
 
+#define TEMPBLOCK1 TEMPBLOCK
+
 __kernel __attribute__(( vec_type_hint (int4))) __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEstimateResidual(
     __global int*samples,
@@ -953,38 +955,70 @@ void clEstimateResidual(
     int ro = task.data.residualOrder;
     int bs = task.data.blocksize;
 #define EPO 6
-    int len[1 << EPO]; // blocksize / 64!!!!
+    float len[1 << EPO]; // blocksize / 64!!!!
 
     __global int *data = &samples[task.data.samplesOffs];
+    for (int i = 0; i < 1 << EPO; i++)
+	len[i] = 0.0f;
+
+#if defined(AMD)
     for (int i = ro; i < 32; i++)
 	task.coefs[i] = 0;
-    for (int i = 0; i < 1 << EPO; i++)
-	len[i] = 0;
 
-#if defined(AMD) || BITS_PER_SAMPLE > 16
-    SWITCH_N((t = (t << 1) ^ (t >> 31), len[pos >> (12 - EPO)] += t & 0x7fffff))
+    SWITCH_N((len[pos >> (12 - EPO)] += fabs((float)t)))
 #else
-    int4 c0 = vload4(0, &task.coefs[0]);
-    int4 c1 = vload4(1, &task.coefs[0]);
-    int4 c2 = vload4(2, &task.coefs[0]);
+    float fcoef[32];
+    for (int tid = 0; tid < 32; tid++)
+	fcoef[tid] = tid < MAX_ORDER && tid + ro - MAX_ORDER >= 0 ? - ((float) task.coefs[tid + ro - MAX_ORDER]) / (1 << task.data.shift) : 0.0f;
 
-    for (int pos = ro; pos < bs; pos ++) 
+    float4 fc0 = vload4(0, &fcoef[0]);
+    float4 fc1 = vload4(1, &fcoef[0]);
+#if MAX_ORDER > 8
+    float4 fc2 = vload4(2, &fcoef[0]);
+#endif
+
+    float fdata[MAX_ORDER + TEMPBLOCK1 + 32];
+    for (int pos = 0; pos < MAX_ORDER; pos++)
+	fdata[pos] = 0.0f;
+    for (int pos = MAX_ORDER + TEMPBLOCK1; pos < MAX_ORDER + TEMPBLOCK1 + 32; pos++)
+	fdata[pos] = 0.0f;
+    for (int bpos = 0; bpos < bs; bpos += TEMPBLOCK1)
     {
-	__global int * dptr = data + pos - ro;
-	int4 sum 
-	    = c0 * vload4(0, dptr)
-	    + c1 * vload4(1, dptr)
-	    + c2 * vload4(2, dptr);
-	int t = (data[pos] - ((sum.x + sum.y + sum.z + sum.w) >> task.data.shift)) >> task.data.wbits;
-	t = (t << 1) ^ (t >> 31);
-	len[pos >> (12 - EPO)] += t & 0x7fffff;
-	//len[pos >> (12 - EPO)] += min(0x7ffffffU, (unsigned int)t);
+	int end = min(bpos + TEMPBLOCK1, bs);
+
+	for (int pos = max(bpos - ro, 0); pos < max(bpos, ro); pos++)
+	    fdata[MAX_ORDER + pos - bpos] = (float)(data[pos] >> task.data.wbits);	
+
+	for (int pos = max(bpos, ro); pos < end; pos ++)
+	{
+	    float next = (float)(data[pos] >> task.data.wbits);
+	    float * dptr = fdata + pos - bpos;
+	    dptr[MAX_ORDER] = next;
+	    float4 sum 
+		= fc0 * vload4(0, dptr)
+		+ fc1 * vload4(1, dptr)
+#if MAX_ORDER > 8
+		+ fc2 * vload4(2, dptr)
+  #if MAX_ORDER > 12
+		+ vload4(3, &fcoef[0]) * vload4(3, dptr)
+    #if MAX_ORDER > 16
+		+ vload4(4, &fcoef[0]) * vload4(4, dptr)
+		+ vload4(5, &fcoef[0]) * vload4(5, dptr)
+		+ vload4(6, &fcoef[0]) * vload4(6, dptr)
+		+ vload4(7, &fcoef[0]) * vload4(7, dptr)
+    #endif
+  #endif
+#endif
+		;
+	    next += sum.x + sum.y + sum.z + sum.w;
+	    len[pos >> (12 - EPO)] += fabs(next);
+	}
     }
 #endif
     int total = 0;
     for (int i = 0; i < 1 << EPO; i++)
     {
-	int res = len[i];
+	int res = convert_int_sat_rte(len[i] * 2);
 	int k = iclamp(31 - fastclz(res) - (12 - EPO), 0, MAX_RICE_PARAM); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
 	total += (k << (12 - EPO)) + (res >> k);
     }
@@ -1008,10 +1042,10 @@ void clEstimateResidual(
 {
     __local float data[GROUP_SIZE * 2 + 32];
 #if !defined(AMD) || !defined(HAVE_ATOM)
-    __local volatile int idata[GROUP_SIZE + 16];
+    __local volatile uint idata[GROUP_SIZE + 16];
 #endif
     __local FLACCLSubframeTask task;
-    __local int psum[MAX_BLOCKSIZE >> ESTPARTLOG];
+    __local uint psum[MAX_BLOCKSIZE >> ESTPARTLOG];
     __local float fcoef[32];
     __local int selectedTask;
     
@@ -1075,16 +1109,16 @@ void clEstimateResidual(
 	    ;
 
 	float2 sum2 = sum4.s01 + sum4.s23;
-	int t = convert_int_rte(nextData + (sum2.s0 + sum2.s1));
+	int it = convert_int_sat_rte(nextData + (sum2.s0 + sum2.s1));
 //	int t = (int)(nextData + sum.x + sum.y + sum.z + sum.w);
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
-	// ensure we're within frame bounds
-	t = select(0, t, offs >= ro);
-	// overflow protection
-	t = iclamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	t = (t << 1) ^ (t >> 31);
+	uint t = (it << 1) ^ (it >> 31);
+	// ensure we're within frame bounds
+	t = select(0U, t, offs >= ro);
+	// overflow protection
+	t = min(t, 0x7ffffffU);
 #if !defined(AMD) || !defined(HAVE_ATOM)
 	idata[tid] = t;
 	for (int l = 16; l > 1; l >>= 1)
@@ -1123,15 +1157,15 @@ void clEstimateResidual(
 #endif
 	    ;
 
-	int t = convert_int_rte(nextData + sum.x + sum.y + sum.z + sum.w);
+	int it = convert_int_sat_rte(nextData + sum.x + sum.y + sum.z + sum.w);
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
-	// ensure we're within frame bounds
-	t = select(0, t, offs >= ro && offs < bs);
-	// overflow protection
-	t = iclamp(t, -0x7fffff, 0x7fffff);
 	// convert to unsigned
-	t = (t << 1) ^ (t >> 31);
+	uint t = (it << 1) ^ (it >> 31);
+	// ensure we're within frame bounds
+	t = select(0U, t, offs >= ro && offs < bs);
+	// overflow protection
+	t = min(t, 0x7ffffffU);
 #if !defined(AMD) || !defined(HAVE_ATOM)
 	idata[tid] = t;
 	for (int l = 16; l > 1; l >>= 1)
@@ -1147,7 +1181,7 @@ void clEstimateResidual(
     // calculate rice partition bit length for every 32 samples
     barrier(CLK_LOCAL_MEM_FENCE);
     // Bug: if (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) > GROUP_SIZE
-    int pl = get_local_id(0) < (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) ? psum[tid * 2] + psum[tid * 2 + 1] : 0;
+    uint pl = get_local_id(0) < (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) ? psum[tid * 2] + psum[tid * 2 + 1] : 0;
     barrier(CLK_LOCAL_MEM_FENCE);
  //   for (int pos = 0; pos < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2; pos += GROUP_SIZE)
  //   {
@@ -1170,7 +1204,7 @@ void clEstimateResidual(
     }
     if (tid == 0)
     {
-	int pl = psum[0] + (bs - ro);
+	int pl = (int)psum[0] + (bs - ro);
 	int obits = task.data.obits - task.data.wbits;
 	int len = min(obits * task.data.blocksize,
 		task.data.type == Fixed ? task.data.residualOrder * obits + 6 + RICE_PARAM_BITS + pl :

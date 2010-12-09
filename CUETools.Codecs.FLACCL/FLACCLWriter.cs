@@ -88,7 +88,7 @@ namespace CUETools.Codecs.FLACCL
 		public OpenCLDeviceType DeviceType { get; set; }
 
 		int cpu_threads = 0;
-		[DefaultValue(1)]
+		[DefaultValue(0)]
 		[SRDescription(typeof(Properties.Resources), "DescriptionCPUThreads")]
 		public int CPUThreads
 		{
@@ -2582,7 +2582,7 @@ namespace CUETools.Codecs.FLACCL
 
             int MAX_ORDER = this.writer.eparams.max_prediction_order;
 			int MAX_FRAMES = this.writer.framesPerTask;
-			int MAX_CHANNELSIZE = MAX_FRAMES * writer.eparams.block_size;
+			int MAX_CHANNELSIZE = MAX_FRAMES * ((writer.eparams.block_size + 3) & ~3);
 			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
 			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * MAX_FRAMES;
 			int samplesBufferLen = writer.PCM.BlockAlign * MAX_CHANNELSIZE * channelsCount;
