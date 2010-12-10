@@ -954,18 +954,18 @@ void clEstimateResidual(
     FLACCLSubframeTask task = tasks[selectedTask];
     int ro = task.data.residualOrder;
     int bs = task.data.blocksize;
-#define EPO 6
-    float len[1 << EPO]; // blocksize / 64!!!!
+#define ERPARTS (MAX_BLOCKSIZE >> 6)
+    float len[ERPARTS]; // blocksize / 64!!!!
 
     __global int *data = &samples[task.data.samplesOffs];
-    for (int i = 0; i < 1 << EPO; i++)
+    for (int i = 0; i < ERPARTS; i++)
 	len[i] = 0.0f;
 
 #if defined(AMD)
     for (int i = ro; i < 32; i++)
 	task.coefs[i] = 0;
 
-    SWITCH_N((len[pos >> (12 - EPO)] += fabs((float)t)))
+    SWITCH_N((len[pos >> 6] += fabs((float)t)))
 #else
     float fcoef[32];
     for (int tid = 0; tid < 32; tid++)
@@ -977,6 +977,40 @@ void clEstimateResidual(
     float4 fc2 = vload4(2, &fcoef[0]);
 #endif
 
+#if MAX_ORDER == 8
+    float fdata[32];
+    for (int pos = 0; pos < MAX_ORDER + ro; pos++)
+	fdata[pos] = pos < MAX_ORDER ? 0.0f : (float)(data[pos - MAX_ORDER] >> task.data.wbits);
+    float4 fd0 = vload4(0, &fdata[ro]);
+    float4 fd1 = vload4(1, &fdata[ro]);
+    for (int pos = ro; pos < bs; pos ++)
+    {
+	float4 sum = fc0 * fd0 + fc1 * fd1;
+	fd0 = fd0.s1230;
+	fd1 = fd1.s1230;
+	fd0.s3 = fd1.s3;
+	fd1.s3 = (float)(data[pos] >> task.data.wbits);
+	len[pos >> 6] += fabs(fd1.s3 + (sum.x + sum.y + sum.z + sum.w));
+    }
+#elif MAX_ORDER == 12
+    float fdata[32];
+    for (int pos = 0; pos < MAX_ORDER + ro; pos++)
+	fdata[pos] = pos < MAX_ORDER ? 0.0f : (float)(data[pos - MAX_ORDER] >> task.data.wbits);
+    float4 fd0 = vload4(0, &fdata[ro]);
+    float4 fd1 = vload4(1, &fdata[ro]);
+    float4 fd2 = vload4(2, &fdata[ro]);
+    for (int pos = ro; pos < bs; pos ++)
+    {
+	float4 sum = fc0 * fd0 + fc1 * fd1 + fc2 * fd2;
+	fd0 = fd0.s1230;
+	fd1 = fd1.s1230;
+	fd2 = fd2.s1230;
+	fd0.s3 = fd1.s3;
+	fd1.s3 = fd2.s3;
+	fd2.s3 = (float)(data[pos] >> task.data.wbits);
+	len[pos >> 6] += fabs(fd2.s3 + (sum.x + sum.y + sum.z + sum.w));
+    }
+#else
     float fdata[MAX_ORDER + TEMPBLOCK1 + 32];
     for (int pos = 0; pos < MAX_ORDER; pos++)
 	fdata[pos] = 0.0f;
@@ -1011,16 +1045,17 @@ void clEstimateResidual(
 #endif
 		;
 	    next += sum.x + sum.y + sum.z + sum.w;
-	    len[pos >> (12 - EPO)] += fabs(next);
+	    len[pos >> 6] += fabs(next);
 	}
     }
 #endif
+#endif
     int total = 0;
-    for (int i = 0; i < 1 << EPO; i++)
+    for (int i = 0; i < ERPARTS; i++)
     {
 	int res = convert_int_sat_rte(len[i] * 2);
-	int k = iclamp(31 - fastclz(res) - (12 - EPO), 0, MAX_RICE_PARAM); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
-	total += (k << (12 - EPO)) + (res >> k);
+	int k = iclamp(31 - fastclz(res) - 6, 0, MAX_RICE_PARAM); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
+	total += (k << 6) + (res >> k);
     }
     int partLen = min(0x7ffffff, total) + (bs - ro);
     int obits = task.data.obits - task.data.wbits;
