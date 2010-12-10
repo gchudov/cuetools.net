@@ -1964,10 +1964,10 @@ namespace CUETools.Codecs.FLACCL
 
 		public unsafe void do_output_frames(int nFrames)
 		{
-			if (task2.frameCount > 0)
-				task2.openCLCQ.Finish();
 			send_to_GPU(task1, nFrames, eparams.block_size);
 			run_GPU_task(task1);
+			if (task2.frameCount > 0)
+				task2.openCLCQ.Finish();
 			if (task2.frameCount > 0)
 			{
 				if (cpu_tasks != null)
@@ -2681,9 +2681,11 @@ namespace CUETools.Codecs.FLACCL
 			if (UseGPUOnly)
 			{
 				clEncodeResidual = openCLProgram.CreateKernel("clEncodeResidual");
-				clCalcPartition = openCLProgram.CreateKernel("clCalcPartition");
 				if (openCLCQ.Device.DeviceType != DeviceType.CPU)
+				{
+					clCalcPartition = openCLProgram.CreateKernel("clCalcPartition");
 					clCalcPartition16 = openCLProgram.CreateKernel("clCalcPartition16");
+				}
 				clSumPartition = openCLProgram.CreateKernel("clSumPartition");
 				clFindRiceParameter = openCLProgram.CreateKernel("clFindRiceParameter");
 				clFindPartitionOrder = openCLProgram.CreateKernel("clFindPartitionOrder");
@@ -2736,9 +2738,11 @@ namespace CUETools.Codecs.FLACCL
 			if (UseGPUOnly)
 			{
 				clEncodeResidual.Dispose();
-				clCalcPartition.Dispose();
 				if (openCLCQ.Device.DeviceType != DeviceType.CPU)
+				{
+					clCalcPartition.Dispose();
 					clCalcPartition16.Dispose();
+				}
 				clSumPartition.Dispose();
 				clFindRiceParameter.Dispose();
 				clFindPartitionOrder.Dispose();
@@ -2942,11 +2946,19 @@ namespace CUETools.Codecs.FLACCL
 					groupSize,
 					nEstimateTasksPerChannel * channelsCount * frameCount); // 1 per channel, 4 channels
 
+				int tasksToSecondEstimate = nResidualTasksPerChannel - nEstimateTasksPerChannel;
+
+				//if (nEstimateTasksPerChannel < nTasksPerWindow * nWindowFunctions)
+					//tasksToSecondEstimate -= (nEstimateTasksPerChannel / nWindowFunctions) * (nWindowFunctions - 1);
+
 				clSelectStereoTasks.SetArgs(
 					clResidualTasks,
 					clSelectedTasks,
 					clSelectedTasksSecondEstimate,
 					clSelectedTasksBestMethod,
+					nTasksPerWindow,
+					nWindowFunctions,
+					tasksToSecondEstimate,
 					nResidualTasksPerChannel,
 					nEstimateTasksPerChannel);
 
@@ -2954,7 +2966,7 @@ namespace CUETools.Codecs.FLACCL
 					clSelectStereoTasks,
 					0, frameCount);
 
-				if (nEstimateTasksPerChannel < nResidualTasksPerChannel)
+				if (tasksToSecondEstimate > 0)
 				{
 					clEstimateResidual.SetArgs(
 						clSamples,
@@ -2964,7 +2976,7 @@ namespace CUETools.Codecs.FLACCL
 					openCLCQ.EnqueueNDRangeKernel(
 						clEstimateResidual,
 						groupSize,
-						(nResidualTasksPerChannel - nEstimateTasksPerChannel) * channels * frameCount);
+						tasksToSecondEstimate * channels * frameCount);
 				}
 
 				clChooseBestMethod.SetArgs(
@@ -3003,47 +3015,46 @@ namespace CUETools.Codecs.FLACCL
 			if (UseGPUOnly)
 			{
 				clEncodeResidual.SetArgs(
+					clPartitions,
 					clResidual,
 					clSamples,
-					clBestResidualTasks);
+					clBestResidualTasks,
+					max_porder,
+					frameSize >> max_porder);
 
 				openCLCQ.EnqueueNDRangeKernel(
 					clEncodeResidual,
 					groupSize, channels * frameCount);
 
-				if ((frameSize >> max_porder == 16) && openCLCQ.Device.DeviceType != DeviceType.CPU)
+				if (openCLCQ.Device.DeviceType != DeviceType.CPU)
 				{
-					clCalcPartition16.SetArgs(
-						clPartitions,
-						clResidual,
-						clBestResidualTasks,
-						max_porder);
+					if (frameSize >> max_porder == 16)
+					{
+						clCalcPartition16.SetArgs(
+							clPartitions,
+							clResidual,
+							clBestResidualTasks,
+							max_porder);
 
-					openCLCQ.EnqueueNDRangeKernel(
-						clCalcPartition16,
-						groupSize, channels * frameCount);
-				}
-				else
-				{
-					clCalcPartition.SetArgs(
-						clPartitions,
-						clResidual,
-						clBestResidualTasks,
-						max_porder,
-						frameSize >> max_porder);
-
-					if (openCLCQ.Device.DeviceType == DeviceType.CPU)
 						openCLCQ.EnqueueNDRangeKernel(
-							clCalcPartition,
-							groupSize, 1,
-							1,
-							channels * frameCount);
+							clCalcPartition16,
+							groupSize, channels * frameCount);
+					}
 					else
+					{
+						clCalcPartition.SetArgs(
+							clPartitions,
+							clResidual,
+							clBestResidualTasks,
+							max_porder,
+							frameSize >> max_porder);
+
 						openCLCQ.EnqueueNDRangeKernel(
 							clCalcPartition,
 							groupSize, 1,
 							1 + ((1 << max_porder) - 1) / (groupSize / 16),
 							channels * frameCount);
+					}
 				}
 
 				if (max_porder > 0)

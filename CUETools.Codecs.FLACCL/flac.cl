@@ -896,13 +896,13 @@ inline int fastclz64(long iv)
 }
 
 #if BITS_PER_SAMPLE > 16
-typedef long residual_t;
+#define residual_t long
 #define residual_log(s) (63 - fastclz64(s))
 #define convert_bps4 convert_long4
 #define convert_bps_sat convert_int_sat
 #define bpsint4 long4
 #else
-typedef int residual_t;
+#define residual_t int
 #define residual_log(s) (31 - fastclz(s))
 #define convert_bps4
 #define convert_bps_sat
@@ -967,88 +967,120 @@ void clEstimateResidual(
 
     SWITCH_N((len[pos >> 6] += fabs((float)t)))
 #else
-    float fcoef[32];
-    for (int tid = 0; tid < 32; tid++)
-	fcoef[tid] = tid < MAX_ORDER && tid + ro - MAX_ORDER >= 0 ? - ((float) task.coefs[tid + ro - MAX_ORDER]) / (1 << task.data.shift) : 0.0f;
-
-    float4 fc0 = vload4(0, &fcoef[0]);
-    float4 fc1 = vload4(1, &fcoef[0]);
-#if MAX_ORDER > 8
-    float4 fc2 = vload4(2, &fcoef[0]);
-#endif
-
-#if MAX_ORDER == 8
-    float fdata[32];
-    for (int pos = 0; pos < MAX_ORDER + ro; pos++)
-	fdata[pos] = pos < MAX_ORDER ? 0.0f : (float)(data[pos - MAX_ORDER] >> task.data.wbits);
-    float4 fd0 = vload4(0, &fdata[ro]);
-    float4 fd1 = vload4(1, &fdata[ro]);
-    for (int pos = ro; pos < bs; pos ++)
+    if (ro <= 4)
     {
-	float4 sum = fc0 * fd0 + fc1 * fd1;
-	fd0 = fd0.s1230;
-	fd1 = fd1.s1230;
-	fd0.s3 = fd1.s3;
-	fd1.s3 = (float)(data[pos] >> task.data.wbits);
-	len[pos >> 6] += fabs(fd1.s3 + (sum.x + sum.y + sum.z + sum.w));
-    }
-#elif MAX_ORDER == 12
-    float fdata[32];
-    for (int pos = 0; pos < MAX_ORDER + ro; pos++)
-	fdata[pos] = pos < MAX_ORDER ? 0.0f : (float)(data[pos - MAX_ORDER] >> task.data.wbits);
-    float4 fd0 = vload4(0, &fdata[ro]);
-    float4 fd1 = vload4(1, &fdata[ro]);
-    float4 fd2 = vload4(2, &fdata[ro]);
-    for (int pos = ro; pos < bs; pos ++)
-    {
-	float4 sum = fc0 * fd0 + fc1 * fd1 + fc2 * fd2;
-	fd0 = fd0.s1230;
-	fd1 = fd1.s1230;
-	fd2 = fd2.s1230;
-	fd0.s3 = fd1.s3;
-	fd1.s3 = fd2.s3;
-	fd2.s3 = (float)(data[pos] >> task.data.wbits);
-	len[pos >> 6] += fabs(fd2.s3 + (sum.x + sum.y + sum.z + sum.w));
-    }
-#else
-    float fdata[MAX_ORDER + TEMPBLOCK1 + 32];
-    for (int pos = 0; pos < MAX_ORDER; pos++)
-	fdata[pos] = 0.0f;
-    for (int pos = MAX_ORDER + TEMPBLOCK1; pos < MAX_ORDER + TEMPBLOCK1 + 32; pos++)
-	fdata[pos] = 0.0f;
-    for (int bpos = 0; bpos < bs; bpos += TEMPBLOCK1)
-    {
-	int end = min(bpos + TEMPBLOCK1, bs);
-
-	for (int pos = max(bpos - ro, 0); pos < max(bpos, ro); pos++)
-	    fdata[MAX_ORDER + pos - bpos] = (float)(data[pos] >> task.data.wbits);	
-
-	for (int pos = max(bpos, ro); pos < end; pos ++)
+	float fcoef[4];
+	for (int tid = 0; tid < 4; tid++)
+	    fcoef[tid] = tid + ro - 4 < 0 ? 0.0f : - ((float) task.coefs[tid + ro - 4]) / (1 << task.data.shift);
+	float4 fc0 = vload4(0, &fcoef[0]);
+	float fdata[4];
+	for (int pos = 0; pos < 4; pos++)
+	    fdata[pos] = pos + ro - 4 < 0 ? 0.0f : (float)(data[pos + ro - 4] >> task.data.wbits);
+	float4 fd0 = vload4(0, &fdata[0]);
+	for (int pos = ro; pos < bs; pos ++)
 	{
-	    float next = (float)(data[pos] >> task.data.wbits);
-	    float * dptr = fdata + pos - bpos;
-	    dptr[MAX_ORDER] = next;
-	    float4 sum 
-		= fc0 * vload4(0, dptr)
-		+ fc1 * vload4(1, dptr)
-#if MAX_ORDER > 8
-		+ fc2 * vload4(2, dptr)
-  #if MAX_ORDER > 12
-		+ vload4(3, &fcoef[0]) * vload4(3, dptr)
-    #if MAX_ORDER > 16
-		+ vload4(4, &fcoef[0]) * vload4(4, dptr)
-		+ vload4(5, &fcoef[0]) * vload4(5, dptr)
-		+ vload4(6, &fcoef[0]) * vload4(6, dptr)
-		+ vload4(7, &fcoef[0]) * vload4(7, dptr)
-    #endif
-  #endif
-#endif
-		;
-	    next += sum.x + sum.y + sum.z + sum.w;
-	    len[pos >> 6] += fabs(next);
+	    float4 sum4 = fc0 * fd0;
+	    float2 sum2 = sum4.s01 + sum4.s23;
+	    fd0 = fd0.s1230;
+	    fd0.s3 = (float)(data[pos] >> task.data.wbits);
+	    len[pos >> 6] += fabs(fd0.s3 + (sum2.x + sum2.y));
 	}
     }
-#endif
+    else if (ro <= 8)
+    {
+	float fcoef[8];
+	for (int tid = 0; tid < 8; tid++)
+	    fcoef[tid] = tid + ro - 8 < 0 ? 0.0f : - ((float) task.coefs[tid + ro - 8]) / (1 << task.data.shift);
+	float8 fc0 = vload8(0, &fcoef[0]);
+	float fdata[8];
+	for (int pos = 0; pos < 8; pos++)
+	    fdata[pos] = pos + ro - 8 < 0 ? 0.0f : (float)(data[pos + ro - 8] >> task.data.wbits);
+	float8 fd0 = vload8(0, &fdata[0]);
+	for (int pos = ro; pos < bs; pos ++)
+	{
+	    float8 sum8 = fc0 * fd0;
+	    float4 sum4 = sum8.s0123 + sum8.s4567;
+	    float2 sum2 = sum4.s01 + sum4.s23;
+	    fd0 = fd0.s12345670;
+	    fd0.s7 = (float)(data[pos] >> task.data.wbits);
+	    len[pos >> 6] += fabs(fd0.s7 + (sum2.x + sum2.y));
+	}
+    }
+    else if (ro <= 12)
+    {
+	float fcoef[12];
+	for (int tid = 0; tid < 12; tid++)
+	    fcoef[tid] = tid + ro - 12 >= 0 ? - ((float) task.coefs[tid + ro - 12]) / (1 << task.data.shift) : 0.0f;
+	float4 fc0 = vload4(0, &fcoef[0]);
+	float4 fc1 = vload4(1, &fcoef[0]);
+	float4 fc2 = vload4(2, &fcoef[0]);	
+	float fdata[12];
+	for (int pos = 0; pos < 12; pos++)
+	    fdata[pos] = pos + ro - 12 < 0 ? 0.0f : (float)(data[pos + ro - 12] >> task.data.wbits);
+	float4 fd0 = vload4(0, &fdata[0]);
+	float4 fd1 = vload4(1, &fdata[0]);
+	float4 fd2 = vload4(2, &fdata[0]);
+	for (int pos = ro; pos < bs; pos ++)
+	{
+	    float4 sum4 = fc0 * fd0 + fc1 * fd1 + fc2 * fd2;
+	    float2 sum2 = sum4.s01 + sum4.s23;
+	    fd0 = fd0.s1230;
+	    fd1 = fd1.s1230;
+	    fd2 = fd2.s1230;
+	    fd0.s3 = fd1.s3;
+	    fd1.s3 = fd2.s3;
+	    fd2.s3 = (float)(data[pos] >> task.data.wbits);
+	    len[pos >> 6] += fabs(fd2.s3 + (sum2.x + sum2.y));
+	}
+    }
+    else
+    {
+	float fcoef[32];
+	for (int tid = 0; tid < 32; tid++)
+	    fcoef[tid] = tid < MAX_ORDER && tid + ro - MAX_ORDER >= 0 ? - ((float) task.coefs[tid + ro - MAX_ORDER]) / (1 << task.data.shift) : 0.0f;
+
+	float4 fc0 = vload4(0, &fcoef[0]);
+	float4 fc1 = vload4(1, &fcoef[0]);
+	float4 fc2 = vload4(2, &fcoef[0]);
+
+	float fdata[MAX_ORDER + TEMPBLOCK1 + 32];
+	for (int pos = 0; pos < MAX_ORDER; pos++)
+	    fdata[pos] = 0.0f;
+	for (int pos = MAX_ORDER + TEMPBLOCK1; pos < MAX_ORDER + TEMPBLOCK1 + 32; pos++)
+	    fdata[pos] = 0.0f;
+	for (int bpos = 0; bpos < bs; bpos += TEMPBLOCK1)
+	{
+	    int end = min(bpos + TEMPBLOCK1, bs);
+
+	    for (int pos = max(bpos - ro, 0); pos < max(bpos, ro); pos++)
+		fdata[MAX_ORDER + pos - bpos] = (float)(data[pos] >> task.data.wbits);	
+
+	    for (int pos = max(bpos, ro); pos < end; pos ++)
+	    {
+		float next = (float)(data[pos] >> task.data.wbits);
+		float * dptr = fdata + pos - bpos;
+		dptr[MAX_ORDER] = next;
+		float4 sum 
+		    = fc0 * vload4(0, dptr)
+		    + fc1 * vload4(1, dptr)
+    #if MAX_ORDER > 8
+		    + fc2 * vload4(2, dptr)
+      #if MAX_ORDER > 12
+		    + vload4(3, &fcoef[0]) * vload4(3, dptr)
+	#if MAX_ORDER > 16
+		    + vload4(4, &fcoef[0]) * vload4(4, dptr)
+		    + vload4(5, &fcoef[0]) * vload4(5, dptr)
+		    + vload4(6, &fcoef[0]) * vload4(6, dptr)
+		    + vload4(7, &fcoef[0]) * vload4(7, dptr)
+	#endif
+      #endif
+    #endif
+		    ;
+		next += sum.x + sum.y + sum.z + sum.w;
+		len[pos >> 6] += fabs(next);
+	    }
+	}
+    }
 #endif
     int total = 0;
     for (int i = 0; i < ERPARTS; i++)
@@ -1257,22 +1289,31 @@ void clSelectStereoTasks(
     __global int*selectedTasks,
     __global int*selectedTasksSecondEstimate,
     __global int*selectedTasksBestMethod,
+    int tasksWindow,
+    int windowCount,
+    int tasksToSecondEstimate,
     int taskCount,
     int selectedCount
     )
 {
     int best_size[4];
+    int best_wind[4];
     for (int ch = 0; ch < 4; ch++)
     {
 	int first_no = selectedTasks[(get_global_id(0) * 4 + ch) * selectedCount];
 	int best_len = tasks[first_no].data.size;
+	int best_wnd = 0;
 	for (int i = 1; i < selectedCount; i++)
 	{
 	    int task_no = selectedTasks[(get_global_id(0) * 4 + ch) * selectedCount + i];
 	    int task_len = tasks[task_no].data.size;
+	    int task_wnd = (task_no - first_no) / tasksWindow;
+	    task_wnd = select(0, task_wnd, task_wnd < windowCount);
+	    best_wnd = select(best_wnd, task_wnd, task_len < best_len);
 	    best_len = min(task_len, best_len);
 	}
 	best_size[ch] = best_len;
+	best_wind[ch] = best_wnd;
     }
         
     int bitsBest = best_size[2] + best_size[3]; // MidSide
@@ -1291,16 +1332,17 @@ void clSelectStereoTasks(
 	int ch = select(chMask & 3, chMask >> 2, ich > 0);
 	int roffs = tasks[(get_global_id(0) * 4 + ich) * taskCount].data.samplesOffs;
 	int nonSelectedNo = 0;
-	for (int i = 0; i < taskCount; i++)
+	for (int j = taskCount - 1; j >= 0; j--)
 	{
+	    int i = select(j, (j % windowCount) * tasksWindow + (j / windowCount), j < windowCount * tasksWindow);
 	    int no = (get_global_id(0) * 4 + ch) * taskCount + i;
 	    selectedTasksBestMethod[(get_global_id(0) * 2 + ich) * taskCount + i] = no;
 	    tasks[no].data.residualOffs = roffs;
-	    int selectedFound = 0;
-	    for(int selectedNo = 0; selectedNo < selectedCount; selectedNo++)
-		selectedFound |= (selectedTasks[(get_global_id(0) * 4 + ch) * selectedCount + selectedNo] == no);
-	    if (!selectedFound)
-		selectedTasksSecondEstimate[(get_global_id(0) * 2 + ich) * (taskCount - selectedCount) + nonSelectedNo++] = no;
+	    if (j >= selectedCount)
+		tasks[no].data.size = 0x7fffffff;
+	    if (nonSelectedNo < tasksToSecondEstimate)
+		if (tasksToSecondEstimate == taskCount - selectedCount || best_wind[ch] == i / tasksWindow || i >= windowCount * tasksWindow)
+		    selectedTasksSecondEstimate[(get_global_id(0) * 2 + ich) * tasksToSecondEstimate + nonSelectedNo++] = no;
 	}
     }
 }
@@ -1330,24 +1372,42 @@ void clChooseBestMethod(
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEncodeResidual(
+    __global ulong *partition_lengths,
     __global int *residual,
     __global int *samples,
-    __global FLACCLSubframeTask *tasks
+    __global FLACCLSubframeTask *tasks,
+    int max_porder, // <= 8
+    int psize // == task.blocksize >> max_porder?
     )
 {
     FLACCLSubframeTask task = tasks[get_group_id(0)];
     int bs = task.data.blocksize;
     int ro = task.data.residualOrder;
     __global int *data = &samples[task.data.samplesOffs];
-    SWITCH_N(residual[task.data.residualOffs + pos] = convert_bps_sat(t));
+    __global ulong *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(0);
+    int r;
+    for (int p = 0; p < (1 << max_porder); p++)
+	pl[p] = 0UL;
+    __global int *rptr = residual + task.data.residualOffs;
+    if (psize == 16)
+    {
+	SWITCH_N((rptr[pos] = r = convert_bps_sat(t), pl[pos >> 4] += (uint)((r << 1) ^ (r >> 31))));
+    }
+    else
+    {
+	SWITCH_N((rptr[pos] = r = convert_bps_sat(t), pl[pos / psize] += (uint)((r << 1) ^ (r >> 31))));
+    }
 }
 #else
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
 void clEncodeResidual(
+    __global int *partition_lengths,
     __global int *output,
     __global int *samples,
-    __global FLACCLSubframeTask *tasks
+    __global FLACCLSubframeTask *tasks,
+    int max_porder, // <= 8
+    int psize // == task.blocksize >> max_porder?
     )
 {
     __local FLACCLSubframeTask task;
@@ -1407,34 +1467,7 @@ void clEncodeResidual(
 }
 #endif
 
-#ifdef FLACCL_CPU
-__kernel __attribute__((reqd_work_group_size(1, 1, 1)))
-void clCalcPartition(
-    __global ulong *partition_lengths,
-    __global int *residual,
-    __global FLACCLSubframeTask *tasks,
-    int max_porder, // <= 8
-    int psize // == task.blocksize >> max_porder?
-    )
-{
-    FLACCLSubframeTask task = tasks[get_group_id(1)];
-    int bs = task.data.blocksize;
-    int ro = task.data.residualOrder;
-    //int psize = bs >> max_porder;
-    __global ulong *pl = partition_lengths + (1 << (max_porder + 1)) * get_group_id(1);
-
-    for (int p = 0; p < (1 << max_porder); p++)
-	pl[p] = 0UL;
-
-    for (int pos = ro; pos < bs; pos ++)
-    {
-	int s = residual[task.data.residualOffs + pos];
-	// convert to unsigned
-	uint t = (s << 1) ^ (s >> 31);
-	pl[pos / psize] += t;
-    }
-}
-#else
+#ifndef FLACCL_CPU
 // get_group_id(0) == partition index / (GROUP_SIZE / 16)
 // get_group_id(1) == task index
 __kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
