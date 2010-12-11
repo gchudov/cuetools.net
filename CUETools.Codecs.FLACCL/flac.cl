@@ -895,52 +895,7 @@ inline int fastclz64(long iv)
     return 32 - x + fastclz(v >> x);
 }
 
-#if BITS_PER_SAMPLE > 16
-#define residual_t long
-#define residual_log(s) (63 - fastclz64(s))
-#define convert_bps4 convert_long4
-#define convert_bps_sat convert_int_sat
-#define bpsint4 long4
-#else
-#define residual_t int
-#define residual_log(s) (31 - fastclz(s))
-#define convert_bps4
-#define convert_bps_sat
-#define bpsint4 int4
-#endif
-
 #ifdef FLACCL_CPU
-inline residual_t calc_residual(__global int *ptr, int * coefs, int ro)
-{
-    residual_t sum = 0;
-    for (int i = 0; i < ro; i++)
-	sum += (residual_t) ptr[i] * coefs[i];
-    return sum;
-}
-
-#define ENCODE_N(cro,action) for (int pos = cro; pos < bs; pos ++) { \
-	residual_t t = (data[pos] - (calc_residual(data + pos - cro, task.coefs, cro) >> task.data.shift)) >> task.data.wbits; \
-	action; \
-    }
-#define SWITCH_N(action) \
-    switch (ro) \
-    { \
-	case 0: ENCODE_N(0, action) break; \
-	case 1: ENCODE_N(1, action) break; \
-	case 2: ENCODE_N(2, action) /*if (task.coefs[0] == -1 && task.coefs[1] == 2) ENCODE_N(2, 2 * ptr[1] - ptr[0], action) else*/  break; \
-	case 3: ENCODE_N(3, action) break; \
-	case 4: ENCODE_N(4, action) break; \
-	case 5: ENCODE_N(5, action) break; \
-	case 6: ENCODE_N(6, action) break; \
-	case 7: ENCODE_N(7, action) break; \
-	case 8: ENCODE_N(8, action) break; \
-	case 9: ENCODE_N(9, action) break; \
-	case 10: ENCODE_N(10, action) break; \
-	case 11: ENCODE_N(11, action) break; \
-	case 12: ENCODE_N(12, action) break; \
-	default: ENCODE_N(ro, action) \
-    }
-
 #define TEMPBLOCK1 TEMPBLOCK
 
 __kernel __attribute__(( vec_type_hint (int4))) __attribute__((reqd_work_group_size(1, 1, 1)))
@@ -961,12 +916,6 @@ void clEstimateResidual(
     for (int i = 0; i < ERPARTS; i++)
 	len[i] = 0.0f;
 
-#if defined(AMD)
-    for (int i = ro; i < 32; i++)
-	task.coefs[i] = 0;
-
-    SWITCH_N((len[pos >> 6] += fabs((float)t)))
-#else
     if (ro <= 4)
     {
 	float fcoef[4];
@@ -1081,7 +1030,7 @@ void clEstimateResidual(
 	    }
 	}
     }
-#endif
+
     int total = 0;
     for (int i = 0; i < ERPARTS; i++)
     {
@@ -1368,7 +1317,48 @@ void clChooseBestMethod(
 }
 
 #ifdef DO_PARTITIONS
+
+#if BITS_PER_SAMPLE > 16
+#define residual_t long
+#define convert_bps_sat convert_int_sat
+#else
+#define residual_t int
+#define convert_bps_sat
+#endif
+
 #ifdef FLACCL_CPU
+inline residual_t calc_residual(__global int *ptr, int * coefs, int ro)
+{
+    residual_t sum = 0;
+    for (int i = 0; i < ro; i++)
+	sum += (residual_t)ptr[i] * coefs[i];
+        //sum += upsample(mul_hi(ptr[i], coefs[i]), as_uint(ptr[i] * coefs[i]));
+    return sum;
+}
+
+#define ENCODE_N(cro,action) for (int pos = cro; pos < bs; pos ++) { \
+	residual_t t = (data[pos] - (calc_residual(data + pos - cro, task.coefs, cro) >> task.data.shift)) >> task.data.wbits; \
+	action; \
+    }
+#define SWITCH_N(action) \
+    switch (ro) \
+    { \
+	case 0: ENCODE_N(0, action) break; \
+	case 1: ENCODE_N(1, action) break; \
+	case 2: ENCODE_N(2, action) /*if (task.coefs[0] == -1 && task.coefs[1] == 2) ENCODE_N(2, 2 * ptr[1] - ptr[0], action) else*/  break; \
+	case 3: ENCODE_N(3, action) break; \
+	case 4: ENCODE_N(4, action) break; \
+	case 5: ENCODE_N(5, action) break; \
+	case 6: ENCODE_N(6, action) break; \
+	case 7: ENCODE_N(7, action) break; \
+	case 8: ENCODE_N(8, action) break; \
+	case 9: ENCODE_N(9, action) break; \
+	case 10: ENCODE_N(10, action) break; \
+	case 11: ENCODE_N(11, action) break; \
+	case 12: ENCODE_N(12, action) break; \
+	default: ENCODE_N(ro, action) \
+    }
+
 // get_group_id(0) == task index
 __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
 void clEncodeResidual(
@@ -1425,11 +1415,14 @@ void clEncodeResidual(
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    bpsint4 cptr0 = convert_bps4(vload4(0, &task.coefs[0]));
-    bpsint4 cptr1 = convert_bps4(vload4(1, &task.coefs[0]));
+    int4 cptr0 = vload4(0, &task.coefs[0]);
+    int4 cptr1 = vload4(1, &task.coefs[0]);
 #if MAX_ORDER > 8
-    bpsint4 cptr2 = convert_bps4(vload4(2, &task.coefs[0]));
+    int4 cptr2 = vload4(2, &task.coefs[0]);
 #endif
+
+    // We tweaked coeffs so that (task.cbits + task.abits + clz(ro) <= 32) 
+    // when BITS_PER_SAMPLE == 16, so we don't need 64bit arithmetics.
 
     data[tid] = 0;
     for (int pos = 0; pos < bs; pos += GROUP_SIZE)
@@ -1442,20 +1435,38 @@ void clEncodeResidual(
 
 	// compute residual
 	__local int* dptr = &data[tid + GROUP_SIZE - ro];
-	bpsint4 sum 
-            = cptr0 * convert_bps4(vload4(0, dptr))
-	    + cptr1 * convert_bps4(vload4(1, dptr))
-#if MAX_ORDER > 8
-	    + cptr2 * convert_bps4(vload4(2, dptr))
-#if MAX_ORDER > 12
-	    + convert_bps4(vload4(3, &task.coefs[0])) * convert_bps4(vload4(3, dptr))
-#if MAX_ORDER > 16
-	    + convert_bps4(vload4(4, &task.coefs[0])) * convert_bps4(vload4(4, dptr))
-	    + convert_bps4(vload4(5, &task.coefs[0])) * convert_bps4(vload4(5, dptr))
-	    + convert_bps4(vload4(6, &task.coefs[0])) * convert_bps4(vload4(6, dptr))
-	    + convert_bps4(vload4(7, &task.coefs[0])) * convert_bps4(vload4(7, dptr))
-#endif
-#endif
+#if BITS_PER_SAMPLE > 16
+	long4 sum
+            = upsample(mul_hi(cptr0, vload4(0, dptr)), as_uint4(cptr0 * vload4(0, dptr)))
+            + upsample(mul_hi(cptr1, vload4(1, dptr)), as_uint4(cptr1 * vload4(1, dptr)))
+  #if MAX_ORDER > 8
+            + upsample(mul_hi(cptr2, vload4(2, dptr)), as_uint4(cptr2 * vload4(2, dptr)))
+    #if MAX_ORDER > 12
+            + upsample(mul_hi(vload4(3, &task.coefs[0]), vload4(3, dptr)), as_uint4(vload4(3, &task.coefs[0]) * vload4(3, dptr)))
+      #if MAX_ORDER > 16
+            + upsample(mul_hi(vload4(4, &task.coefs[0]), vload4(4, dptr)), as_uint4(vload4(4, &task.coefs[0]) * vload4(4, dptr)))
+            + upsample(mul_hi(vload4(5, &task.coefs[0]), vload4(5, dptr)), as_uint4(vload4(5, &task.coefs[0]) * vload4(5, dptr)))
+            + upsample(mul_hi(vload4(6, &task.coefs[0]), vload4(6, dptr)), as_uint4(vload4(6, &task.coefs[0]) * vload4(6, dptr)))
+            + upsample(mul_hi(vload4(7, &task.coefs[0]), vload4(7, dptr)), as_uint4(vload4(7, &task.coefs[0]) * vload4(7, dptr)))
+      #endif
+    #endif
+  #endif
+#else
+	int4 sum 
+            = cptr0 * vload4(0, dptr)
+	    + cptr1 * vload4(1, dptr)
+  #if MAX_ORDER > 8
+	    + cptr2 * vload4(2, dptr)
+    #if MAX_ORDER > 12
+	    + vload4(3, &task.coefs[0]) * vload4(3, dptr)
+      #if MAX_ORDER > 16
+	    + vload4(4, &task.coefs[0]) * vload4(4, dptr)
+	    + vload4(5, &task.coefs[0]) * vload4(5, dptr)
+	    + vload4(6, &task.coefs[0]) * vload4(6, dptr)
+	    + vload4(7, &task.coefs[0]) * vload4(7, dptr)
+      #endif
+    #endif
+  #endif
 #endif
 	    ;
 	if (off >= ro && off < bs)
@@ -1503,9 +1514,9 @@ void clCalcPartition(
 	// calc number of unary bits for each residual sample with each rice paramater
 	int part = (offs - start) / psize;
 	// we must ensure that psize * (t >> k) doesn't overflow;
-	// i.e. t < ((1 << 32) >> (log2(psize) - k)) <= (1 << 32) >> (32 - clz(MAX_BLOCKSIZE) - k)
+	uint lim = 0x7fffffffU / (uint)psize;
 	for (int k = 0; k <= MAX_RICE_PARAM; k++)
-	    atom_add(&pl[part][k], min(t, 0xffffffffU >> max(0, 32 - clz(MAX_BLOCKSIZE) - k)) >> k);
+	    atom_add(&pl[part][k], min(lim, t >> k));
 	    //pl[part][k] += s >> k;
     }   
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -1557,17 +1568,21 @@ void clCalcPartition16(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
+	// we must ensure that psize * (t >> k) doesn't overflow;
+	uint4 lim = 0x07ffffffU;
+	int x = tid >> 4;
+	__local uint * chunk = &res[x << 4];
 	for (int k0 = 0; k0 <= MAX_RICE_PARAM; k0 += 16)
 	{
 	    // calc number of unary bits for each group of 16 residual samples
 	    // with each rice parameter.
 	    int k = k0 + (tid & 15);
-	    int x = tid >> 4;
-	    // we must ensure that psize * (t >> k) doesn't overflow;
-	    // i.e. t < ((1 << 32) >> (log2(16) - k)) <= (1 << 32) >> (4 - k)
-	    uint4 lim = 0xffffffffU >> max(0, 4 - k);
-	    __local uint * chunk = &res[x << 4];
-	    uint4 rsum = (min(lim,vload4(0,chunk)) >> k) + (min(lim,vload4(1,chunk)) >> k) + (min(lim,vload4(2,chunk)) >> k) + (min(lim,vload4(3,chunk)) >> k);
+	    uint4 rsum 
+		= min(lim, vload4(0,chunk) >> k)
+		+ min(lim, vload4(1,chunk) >> k)
+		+ min(lim, vload4(2,chunk) >> k)
+		+ min(lim, vload4(3,chunk) >> k)
+		;
 	    uint rs = rsum.x + rsum.y + rsum.z + rsum.w;
 
 	    // We can safely limit length here to 0x007fffffU, not causing length

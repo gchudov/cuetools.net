@@ -554,6 +554,12 @@ namespace CUETools.Codecs.FLACCL
 			set { eparams.do_constant = value; }
 		}
 
+		public bool EstimateWindow
+		{
+			get { return eparams.estimate_window; }
+			set { eparams.estimate_window = value; }
+		}		
+
 		public int MinPartitionOrder
 		{
 			get { return eparams.min_partition_order; }
@@ -2321,6 +2327,8 @@ namespace CUETools.Codecs.FLACCL
 
 		public bool do_constant;
 
+		public bool estimate_window;
+
 		public WindowFunction window_function;
 
 		public bool do_seektable;
@@ -2352,6 +2360,7 @@ namespace CUETools.Codecs.FLACCL
 			do_seektable = true;
 			do_wasted = true;
 			do_constant = true;
+			estimate_window = false;
 
 			// differences from level 7
 			switch (lvl)
@@ -2948,8 +2957,8 @@ namespace CUETools.Codecs.FLACCL
 
 				int tasksToSecondEstimate = nResidualTasksPerChannel - nEstimateTasksPerChannel;
 
-				//if (nEstimateTasksPerChannel < nTasksPerWindow * nWindowFunctions)
-					//tasksToSecondEstimate -= (nEstimateTasksPerChannel / nWindowFunctions) * (nWindowFunctions - 1);
+				if (writer.EstimateWindow && nEstimateTasksPerChannel < nTasksPerWindow * nWindowFunctions)
+					tasksToSecondEstimate -= (nEstimateTasksPerChannel / nWindowFunctions) * (nWindowFunctions - 1);
 
 				clSelectStereoTasks.SetArgs(
 					clResidualTasks,

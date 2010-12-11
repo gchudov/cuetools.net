@@ -90,6 +90,7 @@ namespace CUETools.FLACCL.cmd
 			int input_len = 4096, input_val = 0, input_bps = 16, input_ch = 2, input_rate = 44100;
 			int level = -1, padding = -1, vbr_mode = -1;
 			bool do_seektable = true;
+			bool estimate_window = false;
 			bool buffered = false;
 			bool ok = true;
 			int intarg;
@@ -176,14 +177,16 @@ namespace CUETools.FLACCL.cmd
 				}
 				else if ((args[arg] == "-v" || args[arg] == "--vbr"))
 					ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
-				else if (args[arg] == "--orders-per-window")
-					ok = (++arg < args.Length) && int.TryParse(args[arg], out orders_per_window);
-				else if (args[arg] == "--orders-per-channel")
-					ok = (++arg < args.Length) && int.TryParse(args[arg], out orders_per_channel);
-				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out blocksize);
-				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out padding);
+				else if (args[arg] == "--orders-per-window" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					orders_per_window = intarg;
+				else if (args[arg] == "--orders-per-channel" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					orders_per_channel = intarg;
+				else if (args[arg] == "--estimate-window")
+					estimate_window = true;
+				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					blocksize = intarg;
+				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+					padding = intarg;
 				else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
 					ok = level >= 0 && level <= 11;
 				else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
@@ -287,6 +290,8 @@ namespace CUETools.FLACCL.cmd
 					encoder.OrdersPerWindow = orders_per_window;
 				if (orders_per_channel >= 0)
 					encoder.OrdersPerChannel = orders_per_channel;
+				if (estimate_window)
+					encoder.EstimateWindow = estimate_window;
 				encoder.DoSeekTable = do_seektable;
 			}
 			catch (Exception ex)
