@@ -616,6 +616,7 @@ void clQuantizeLPC(
 {
     int bs = tasks[get_group_id(1) * taskCount].data.blocksize;
     int abits = tasks[get_group_id(1) * taskCount].data.abits;
+    int obits = tasks[get_group_id(1) * taskCount].data.obits;
     int lpcOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1) * 32;
     float error[MAX_ORDER];
     int best_orders[MAX_ORDER];
@@ -667,7 +668,7 @@ void clQuantizeLPC(
 #if BITS_PER_SAMPLE > 16
 	int cbits = max(3, min(15 - minprecision + (i - ((i >> precisions) << precisions)) - (bs <= 2304) - (bs <= 1152) - (bs <= 576), abits));
 #else
-	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (bs <= 2304) - (bs <= 1152) - (bs <= 576), abits), clz(order) + 1 - abits));
+	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (bs <= 2304) - (bs <= 1152) - (bs <= 576), abits), clz(order) + 1 - obits));
 #endif
 	// calculate shift based on precision and number of leading zeroes in coeffs
 	int shift = max(0,min(15, clz(tmpi) - 18 + cbits));
@@ -822,7 +823,7 @@ void clQuantizeLPC(
 #if BITS_PER_SAMPLE > 16
 	int cbits = max(3, min(min(15 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), 15));
 #else
-	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), clz(order) + 1 - shared.task.abits));
+	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), clz(order) + 1 - shared.task.obits));
 #endif
 	// calculate shift based on precision and number of leading zeroes in coeffs
 	int shift = max(0,min(15, clz(shared.maxcoef[i]) - 18 + cbits));
@@ -1145,7 +1146,6 @@ void clEstimateResidual(
 	atom_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
 #endif
     }
-#if 1
     if (pos < bs)
     {
 	// fetch samples
@@ -1192,7 +1192,6 @@ void clEstimateResidual(
 	atom_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
 #endif
     }
-#endif
 
     // calculate rice partition bit length for every 32 samples
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -1421,7 +1420,7 @@ void clEncodeResidual(
     int4 cptr2 = vload4(2, &task.coefs[0]);
 #endif
 
-    // We tweaked coeffs so that (task.cbits + task.abits + clz(ro) <= 32) 
+    // We tweaked coeffs so that (task.cbits + task.obits + log2i(ro) <= 32) 
     // when BITS_PER_SAMPLE == 16, so we don't need 64bit arithmetics.
 
     data[tid] = 0;

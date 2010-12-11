@@ -964,6 +964,10 @@ namespace CUETools.Codecs.FLACCL
 		{
 			switch (sub.best.type)
 			{
+				case SubframeType.Constant:
+					return (uint)sub.obits;
+				case SubframeType.Verbatim:
+					return (uint)(sub.obits * frame.blocksize);
 				case SubframeType.Fixed:
 					return measure_subframe_fixed(frame, sub);
 				case SubframeType.LPC:
@@ -1214,99 +1218,10 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
-		unsafe void encode_residual(FLACCLTask task)
+		unsafe void encode_residual(FLACCLTask task, int channelsCount, int iFrame)
 		{
-			bool unpacked = false;
-			unpack_samples(task, Math.Min(32, task.frameSize));
-			for (int ch = 0; ch < channels; ch++)
-			{
-				switch (task.frame.subframes[ch].best.type)
-				{
-					case SubframeType.Constant:
-						break;
-					case SubframeType.Verbatim:
-						if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
-						break;
-					case SubframeType.Fixed:
-						if (!task.UseGPUOnly)
-						{
-							if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
-							encode_residual_fixed(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples,
-								task.frame.blocksize, task.frame.subframes[ch].best.order);
+			FlacFrame frame = task.frame;
 
-							int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-							int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-							uint bits = (uint)(task.frame.subframes[ch].best.order * task.frame.subframes[ch].obits) + 6;
-							task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
-						}
-						break;
-					case SubframeType.LPC:
-						fixed (int* coefs = task.frame.subframes[ch].best.coefs)
-						{
-							ulong csum = 0;
-							for (int i = task.frame.subframes[ch].best.order; i > 0; i--)
-								csum += (ulong)Math.Abs(coefs[i - 1]);
-
-#if DEBUG
-							// check size
-							if (task.UseGPUOnly && !task.UseGPURice)
-							{
-								uint real_size = measure_subframe(task.frame, task.frame.subframes[ch]);
-								if (real_size != task.frame.subframes[ch].best.size)
-									throw new Exception("size reported incorrectly");
-							}
-#endif
-
-							if ((((csum << task.frame.subframes[ch].obits) >= 1UL << 32) && PCM.BitsPerSample == 16) || !task.UseGPUOnly)
-							{
-								if (task.UseGPURice)
-#if DEBUG
-//									throw new Exception("DoRice failed");
-									break;
-#else
-									break;
-#endif
-								if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
-								if ((csum << task.frame.subframes[ch].obits) >= 1UL << 32)
-									lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
-								else
-									lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
-								int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-								int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-								uint bits = (uint)(task.frame.subframes[ch].best.order * task.frame.subframes[ch].obits) + 4 + 5 + (uint)task.frame.subframes[ch].best.order * (uint)task.frame.subframes[ch].best.cbits + 6;
-#if KLJLKJLKJL
-								uint oldsize = task.frame.subframes[ch].best.size;
-								RiceContext rc1 = task.frame.subframes[ch].best.rc;
-								task.frame.subframes[ch].best.rc = new RiceContext();
-#endif
-								task.frame.subframes[ch].best.size = bits + calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
-								task.frame.subframes[ch].best.size = measure_subframe(task.frame, task.frame.subframes[ch]);
-#if KJHKJH
-								// check size
-								if (task.UseGPUOnly && oldsize > task.frame.subframes[ch].best.size)
-									throw new Exception("unoptimal size reported");
-#endif
-								//if (task.frame.subframes[ch].best.size > task.frame.subframes[ch].obits * (uint)task.frame.blocksize &&
-								//    oldsize <= task.frame.subframes[ch].obits * (uint)task.frame.blocksize)
-								//    throw new Exception("oops");
-							}
-						}
-						break;
-				}
-				if (task.frame.subframes[ch].best.size > task.frame.subframes[ch].obits * task.frame.blocksize)
-				{
-#if DEBUG
-					throw new Exception("larger than verbatim");
-#endif
-					task.frame.subframes[ch].best.type = SubframeType.Verbatim;
-					task.frame.subframes[ch].best.size = (uint)(task.frame.subframes[ch].obits * task.frame.blocksize);
-					if (!unpacked) unpack_samples(task, task.frameSize); unpacked = true;
-				}
-			}
-		}
-
-		unsafe void select_best_methods(FlacFrame frame, int channelsCount, int iFrame, FLACCLTask task)
-		{
 			if (channelsCount == 4 && channels == 2 && frame.blocksize > 4)
 			{
 				if (task.BestResidualTasks[iFrame * 2].channel == 0 && task.BestResidualTasks[iFrame * 2 + 1].channel == 1)
@@ -1325,49 +1240,106 @@ namespace CUETools.Codecs.FLACCL
 			else
 				frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 
+			// calculate wbits before unpacking samples.
+			for (int ch = 0; ch < channels; ch++)
+			{
+				int index = ch + iFrame * channels;
+				frame.subframes[ch].wbits = frame.blocksize > 4
+					? task.BestResidualTasks[index].wbits : 0;
+			}
+			unpack_samples(task, Math.Min(task.frameSize, eparams.max_prediction_order));
+
 			for (int ch = 0; ch < channels; ch++)
 			{
 				int index = ch + iFrame * channels;
 				frame.subframes[ch].best.residual = ((int*)task.clResidualPtr) + task.BestResidualTasks[index].residualOffs;
 				frame.subframes[ch].best.type = SubframeType.Verbatim;
 				frame.subframes[ch].best.size = (uint)(frame.subframes[ch].obits * frame.blocksize);
-				frame.subframes[ch].wbits = 0;
 
-				if (frame.blocksize <= Math.Max(4, eparams.max_prediction_order))
-					continue;
-				if (task.BestResidualTasks[index].size < 0)
-					throw new Exception("internal error");
-				if (frame.subframes[ch].best.size > task.BestResidualTasks[index].size
-					&& (SubframeType)task.BestResidualTasks[index].type != SubframeType.Verbatim)
+				if (frame.blocksize > Math.Max(4, eparams.max_prediction_order))
 				{
-					frame.subframes[ch].best.type = (SubframeType)task.BestResidualTasks[index].type;
-					frame.subframes[ch].best.size = (uint)task.BestResidualTasks[index].size;
-					frame.subframes[ch].best.order = task.BestResidualTasks[index].residualOrder;
-					frame.subframes[ch].best.cbits = task.BestResidualTasks[index].cbits;
-					frame.subframes[ch].best.shift = task.BestResidualTasks[index].shift;
-					frame.subframes[ch].obits -= task.BestResidualTasks[index].wbits;
-					frame.subframes[ch].wbits = task.BestResidualTasks[index].wbits;
-					for (int i = 0; i < task.BestResidualTasks[index].residualOrder; i++)
-						frame.subframes[ch].best.coefs[i] = task.BestResidualTasks[index].coefs[task.BestResidualTasks[index].residualOrder - 1 - i];
-					frame.subframes[ch].best.rc.porder = task.BestResidualTasks[index].porder;
-					frame.subframes[ch].best.rc.coding_method = task.BestResidualTasks[index].coding_method;
-					if (task.UseGPUOnly && !task.UseGPURice && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
-					//if (task.UseGPUOnly && (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC))
+					if (task.BestResidualTasks[index].size < 0)
+						throw new Exception("internal error");
+					
+					if (frame.subframes[ch].best.size > task.BestResidualTasks[index].size
+						&& (SubframeType)task.BestResidualTasks[index].type != SubframeType.Verbatim)
 					{
-						int* riceParams = ((int*)task.clBestRiceParamsPtr) + (index << task.max_porder);
-						fixed (int* dstParams = frame.subframes[ch].best.rc.rparams)
-							AudioSamples.MemCpy(dstParams, riceParams, (1 << frame.subframes[ch].best.rc.porder));
-						//for (int i = 0; i < (1 << frame.subframes[ch].best.rc.porder); i++)
-						//    frame.subframes[ch].best.rc.rparams[i] = riceParams[i];
-						uint real_size = measure_subframe(frame, frame.subframes[ch]);
-						if (real_size != task.frame.subframes[ch].best.size)
+						frame.subframes[ch].best.type = (SubframeType)task.BestResidualTasks[index].type;
+						frame.subframes[ch].best.size = (uint)task.BestResidualTasks[index].size;
+						frame.subframes[ch].best.order = task.BestResidualTasks[index].residualOrder;
+						frame.subframes[ch].best.cbits = task.BestResidualTasks[index].cbits;
+						frame.subframes[ch].best.shift = task.BestResidualTasks[index].shift;
+						frame.subframes[ch].obits -= task.BestResidualTasks[index].wbits;
+						frame.subframes[ch].wbits = task.BestResidualTasks[index].wbits;
+						for (int i = 0; i < task.BestResidualTasks[index].residualOrder; i++)
+							frame.subframes[ch].best.coefs[i] = task.BestResidualTasks[index].coefs[task.BestResidualTasks[index].residualOrder - 1 - i];
+						frame.subframes[ch].best.rc.porder = task.BestResidualTasks[index].porder;
+						frame.subframes[ch].best.rc.coding_method = task.BestResidualTasks[index].coding_method;
+						if (task.UseGPUOnly && !task.UseGPURice)
+						{
+							if (frame.subframes[ch].best.type == SubframeType.Fixed || frame.subframes[ch].best.type == SubframeType.LPC)
+							{
+								int* riceParams = ((int*)task.clBestRiceParamsPtr) + (index << task.max_porder);
+								fixed (int* dstParams = frame.subframes[ch].best.rc.rparams)
+									AudioSamples.MemCpy(dstParams, riceParams, (1 << frame.subframes[ch].best.rc.porder));
+							}
+							uint real_size = measure_subframe(frame, frame.subframes[ch]);
+							if (real_size != task.frame.subframes[ch].best.size)
+								throw new Exception("size reported incorrectly");
+						}
+					}
+					else
+					{
+						if (task.UseGPURice && frame.subframes[ch].best.size != task.BestResidualTasks[index].size)
 							throw new Exception("size reported incorrectly");
 					}
 				}
-				else
+
+				switch (task.frame.subframes[ch].best.type)
 				{
-					if (task.UseGPURice && frame.subframes[ch].best.size != task.BestResidualTasks[index].size)
-						throw new Exception("size reported incorrectly");
+					case SubframeType.Constant:
+						break;
+					case SubframeType.Verbatim:
+						unpack_samples(task, task.frameSize);
+						break;
+					case SubframeType.Fixed:
+						if (!task.UseGPUOnly)
+						{
+							unpack_samples(task, task.frameSize);
+							encode_residual_fixed(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples,
+								task.frame.blocksize, task.frame.subframes[ch].best.order);
+
+							int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
+							int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
+							calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
+						}
+						break;
+					case SubframeType.LPC:
+						if (!task.UseGPUOnly)
+						{
+							unpack_samples(task, task.frameSize);
+							fixed (int* coefs = task.frame.subframes[ch].best.coefs)
+							{
+								if (PCM.BitsPerSample > 16)
+									lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
+								else
+									lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
+							}
+
+							int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
+							int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
+							calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
+						}
+						break;
+				}
+				if (!task.UseGPUOnly)
+				{
+					task.frame.subframes[ch].best.size = measure_subframe(task.frame, task.frame.subframes[ch]);
+					if (task.frame.subframes[ch].best.size > task.frame.subframes[ch].obits * task.frame.blocksize)
+					{
+						task.frame.subframes[ch].best.type = SubframeType.Verbatim;
+						task.frame.subframes[ch].best.size = (uint)(task.frame.subframes[ch].obits * task.frame.blocksize);
+					}
 				}
 			}
 		}
@@ -1577,9 +1549,7 @@ namespace CUETools.Codecs.FLACCL
 						((int*)task.clResidualPtr) + ch * task.channelSize + iFrame * task.frameSize,
 						_pcm.BitsPerSample + (doMidside && ch == 3 ? 1 : 0), 0);
 
-				select_best_methods(task.frame, channelCount, iFrame, task);
-				//unpack_samples(task);
-				encode_residual(task);
+				encode_residual(task, channelCount, iFrame);
 
 				//task.frame.writer.Reset();
 				task.frame.frame_number = current_frame_number;
