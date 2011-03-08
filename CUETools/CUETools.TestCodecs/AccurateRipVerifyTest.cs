@@ -190,6 +190,69 @@ namespace CUETools.TestCodecs
 			Assert.AreEqual<uint>(2012115554, ar2.CRC450(1, 55), "CRC450[1,55] was not set correctly.");
 			Assert.AreEqual<uint>(1483829604, ar2.CRC450(1, -3), "CRC450[1,-3] was not set correctly.");
 		}
+
+
+		/// <summary>
+		///OffsetSafeCRCRecord
+		///</summary>
+		[TestMethod()]
+		public void OffsetSafeCRCRecordTest()
+		{
+			OffsetSafeCRCRecord[] records = new OffsetSafeCRCRecord[5000];
+			for (int i = 0; i < records.Length; i++)
+			{
+				var arv = new AccurateRipVerify(toc, null);
+				Random rnd = new Random(2314);
+				Random rnd2 = new Random(2314);
+				for (int k = 0; k < i; k++)
+				{
+					rnd.Next(-32768, 32767);
+					rnd.Next(-32768, 32767);
+				}
+				int chunk;
+				for (int k = 0; k < toc.AudioLength * 588; k += chunk)
+				{
+					chunk = Math.Min(512 + rnd2.Next(512), (int)toc.AudioLength * 588 - k);
+					AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, chunk);
+					buff.Length = chunk;
+					for (int s = 0; s < chunk; s++)
+					{
+						buff.Samples[s, 0] = rnd.Next(-32768, 32767);
+						buff.Samples[s, 1] = rnd.Next(-32768, 32767);
+					}
+					arv.Write(buff);
+				}
+				records[i] = arv.OffsetSafeCRC;
+				arv.Close();
+			}
+
+			for (int i = 0; i < records.Length; i++)
+			{
+				int real_off = -i;
+				int off;
+				bool found = records[0].FindOffset(records[i], out off);
+				if (real_off > 4096 || real_off < -4096)
+				{
+					Assert.IsFalse(found, string.Format("FindOffset found offset where it shouldn't have, real offset {0}", real_off));
+				}
+				else
+				{
+					Assert.IsTrue(found, string.Format("FindOffset failed to detect offset, real offset {0}", real_off));
+					Assert.AreEqual(real_off, off, string.Format("FindOffset returned {0}, should be {1}", off, real_off));
+				}
+				real_off = i;
+				found = records[i].FindOffset(records[0], out off);
+				if (real_off > 4096 || real_off < -4096)
+				{
+					Assert.IsFalse(found, string.Format("FindOffset found offset where it shouldn't have, real offset {0}", real_off));
+				}
+				else
+				{
+					Assert.IsTrue(found, string.Format("FindOffset failed to detect offset, real offset {0}", real_off));
+					Assert.AreEqual(real_off, off, string.Format("FindOffset returned {0}, should be {1}", off, real_off));
+				}
+			}
+		}
 	}
 
 

@@ -253,6 +253,15 @@ void CUnBitArray::FlushState(UNBIT_ARRAY_STATE & BitArrayState)
 
 void CUnBitArray::FlushBitArray()
 {
+    // G.S.C.: Fixing a bug here. There was no check here for the buffer boundary.
+    // nMod is how much we will skip in AdvanceToByteBoundary + ignoring the first byte.
+    int nMod = m_nCurrentBitIndex % 8;
+    if (nMod != 0) { nMod = 8 - nMod; }
+    nMod += 8;
+    if ((m_nCurrentBitIndex + nMod) >= m_nBits)
+        FillBitArray();
+    // G.S.C.: end
+
     AdvanceToByteBoundary();
     m_nCurrentBitIndex += 8; // ignore the first byte... (slows compression too much to not output this dummy byte)
     m_RangeCoderInfo.buffer = GetC();

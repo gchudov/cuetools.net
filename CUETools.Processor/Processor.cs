@@ -28,6 +28,7 @@ using System.Collections.Specialized;
 using System.Text;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Security.Policy;
 using System.Security.Cryptography;
@@ -94,6 +95,183 @@ namespace CUETools.Processor
 		/// Gaps left out file-per-track
 		/// </summary>
 		GapsLeftOut
+	}
+
+	[Serializable]
+	public class CUEToolsLocalDBEntry
+	{
+		public CUEToolsLocalDBEntry()
+		{
+		}
+
+		public string DiscID { get; set; }
+
+		public OffsetSafeCRCRecord OffsetSafeCRC { get; set; }
+
+		public CUEMetadata Metadata { get; set; }
+
+		public List<string> InputPaths { get; set; }
+
+		public List<string> AudioPaths { get; set; }
+
+		public int TrackCount { get; set; }
+
+		public int AudioTracks { get; set; }
+
+		public int FirstAudio { get; set; }
+
+		public string TrackOffsets { get; set; }
+
+		public uint ARConfidence { get; set; }
+
+		public string Status { get; set; }
+
+		public string Log { get; set; }
+
+		public DateTime VerificationDate { get; set; }
+
+		[XmlIgnore]
+		public string Path
+		{
+			get
+			{
+				return InputPaths == null || InputPaths.Count < 1 ? null : InputPaths[0];
+			}
+		}
+
+		static public string NormalizePath(string path)
+		{
+			if (System.Environment.OSVersion.Platform != System.PlatformID.Unix)
+				return System.IO.Path.GetFullPath(path).ToLower();
+			else
+				return System.IO.Path.GetFullPath(path);
+		}
+
+		public bool HasPath(string inputPath)
+		{
+			string norm = CUEToolsLocalDBEntry.NormalizePath(inputPath);
+			return this.InputPaths != null && this.InputPaths.Find(i => i == norm) != null;
+		}
+
+		public bool EqualAudioPaths(List<string> fullAudioPaths)
+		{
+			int count1 = this.AudioPaths == null ? 0 : this.AudioPaths.Count;
+			int count2 = fullAudioPaths == null ? 0 : fullAudioPaths.Count;
+			if (count1 == count2)
+			{
+				bool equals = true;
+				for (int i = 0; i < count1; i++)
+					equals &= this.AudioPaths[i] == fullAudioPaths[i];
+				return equals;
+			}
+			return false;
+		}
+
+		public bool EqualLayouts(CDImageLayout layout)
+		{
+			return this.TrackCount == layout.TrackCount
+				&& this.AudioTracks == layout.AudioTracks
+				&& this.FirstAudio == layout.FirstAudio
+				&& this.TrackOffsets == layout.TrackOffsets;
+		}
+
+		public bool Equals(CDImageLayout layout, List<string> fullAudioPaths)
+		{
+			return EqualLayouts(layout) && EqualAudioPaths(fullAudioPaths);
+		}
+	}
+
+	[Serializable]
+	public class CUEToolsLocalDB : List<CUEToolsLocalDBEntry>
+	{
+		private static XmlSerializer serializer = new XmlSerializer(typeof(CUEToolsLocalDB));
+
+		public bool Dirty
+		{
+			get;
+			set;
+		}
+
+		public static List<CUEToolsLocalDBEntry>[] Group(List<CUEToolsLocalDBEntry> items, Converter<CUEToolsLocalDBEntry, string> convert, Comparison<List<CUEToolsLocalDBEntry>> compare)
+		{
+			var results = new Dictionary<string, List<CUEToolsLocalDBEntry>>(items.Count);
+			foreach (var item in items)
+			{
+				var key = convert(item);
+				if (key != null)
+				{
+					if (!results.ContainsKey(key))
+						results[key] = new List<CUEToolsLocalDBEntry>();
+					results[key].Add(item);
+				}
+			}
+
+			var groups = new List<CUEToolsLocalDBEntry>[results.Count];
+			results.Values.CopyTo(groups, 0);
+			if (compare != null)
+				Array.Sort(groups, (a, b) => compare(a, b));
+			else
+			{
+				var keys = new string[results.Count];
+				results.Keys.CopyTo(keys, 0);
+				Array.Sort(keys, groups);
+			}
+			return groups;
+		}
+
+		public CUEToolsLocalDBEntry Lookup(string inputPath)
+		{
+			return this.Find(e => e.HasPath(inputPath));
+		}
+
+		public CUEToolsLocalDBEntry Lookup(CDImageLayout layout, List<string> audioPaths)
+		{
+			List<string> fullAudioPaths = audioPaths == null ? null : audioPaths.ConvertAll(p => CUEToolsLocalDBEntry.NormalizePath(p));
+			var entry = this.Find(e => e.Equals(layout, fullAudioPaths));
+			if (entry == null)
+			{
+				entry = new CUEToolsLocalDBEntry();
+				entry.TrackCount = layout.TrackCount;
+				entry.AudioTracks = (int)layout.AudioTracks;
+				entry.FirstAudio = layout.FirstAudio;
+				entry.TrackOffsets = layout.TrackOffsets;
+				entry.DiscID = layout.TOCID;
+				entry.AudioPaths = fullAudioPaths;
+				this.Add(entry);
+				this.Dirty = true;
+			}
+			return entry;
+		}
+
+		public static string LocalDBPath
+		{
+			get
+			{
+				return Path.Combine(SettingsShared.GetProfileDir("CUE Tools", System.Windows.Forms.Application.ExecutablePath), "LocalDB.xml.z");
+			}
+		}
+
+		public void Save()
+		{
+			if (!this.Dirty) return;
+			string tempPath = LocalDBPath + "." + DateTime.Now.Ticks.ToString() + ".tmp";
+			using (var fileStream = new FileStream(tempPath, FileMode.CreateNew))
+			using (var deflateStream = new DeflateStream(fileStream, CompressionMode.Compress))
+			using (TextWriter writer = new StreamWriter(deflateStream))
+				serializer.Serialize(writer, this);
+			File.Delete(LocalDBPath);
+			File.Move(tempPath, LocalDBPath);
+			this.Dirty = false;
+		}
+
+		public static CUEToolsLocalDB Load()
+		{
+			if (!File.Exists(LocalDBPath))
+				return new CUEToolsLocalDB();
+			using (var fileStream = new FileStream(LocalDBPath, FileMode.Open))
+			using (var deflateStream = new DeflateStream(fileStream, CompressionMode.Decompress))
+				return serializer.Deserialize(deflateStream) as CUEToolsLocalDB;
+		}
 	}
 
 	public static class General {
@@ -933,7 +1111,7 @@ namespace CUETools.Processor
 		public string ProxyPassword { get; set; }
 		[DefaultValue(true), Category("Cache"), DisplayName("Cache metadata")]
 		public bool CacheMetadata { get; set; }
-		[DefaultValue(new string[]{"folder.jpg", "cover.jpg", "albumart.jpg", "thumbnail.jpg", "albumartlarge.jpg", "front.jpg"})]
+		[DefaultValue(new string[]{"folder.jpg", "cover.jpg", "albumart.jpg", "thumbnail.jpg", "albumartlarge.jpg", "front.jpg", "%album%.jpg"})]
 		[Category("Cover Art"), DisplayName("Cover Art Files")]
 		public string[] CoverArtFiles { get; set; }
 		[DefaultValue(true)]
@@ -1621,6 +1799,8 @@ string status = processor.Go();
 			_useMusicBrainz = sr.LoadBoolean("MusicBrainzLookup") ?? _useMusicBrainz;
 			_useAccurateRip = sr.LoadBoolean("AccurateRipLookup") ?? _useAccurateRip;
 			_useCUEToolsDB = sr.LoadBoolean("CUEToolsDBLookup") ?? _useCUEToolsDB;
+			_useLocalDB = sr.LoadBoolean("LocalDBLookup") ?? _useLocalDB;
+			_skipRecent = sr.LoadBoolean("SkipRecent") ?? _skipRecent;
 			_outputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? _outputAudioType;
 			_outputAudioFormat = sr.Load("OutputAudioFmt") ?? _outputAudioFormat;
 			_action = (CUEAction?)sr.LoadInt32("AccurateRipMode", (int)CUEAction.Encode, (int)CUEAction.CorrectFilenames) ?? _action;
@@ -1637,6 +1817,8 @@ string status = processor.Go();
 			sw.Save("FreedbLookup", _useFreeDb);
 			sw.Save("MusicBrainzLookup", _useMusicBrainz);
 			sw.Save("AccurateRipLookup", _useAccurateRip);
+			sw.Save("LocalDBLookup", _useLocalDB);
+			sw.Save("SkipRecent", _skipRecent);
 			sw.Save("CUEToolsDBLookup", _useCUEToolsDB);
 			sw.Save("OutputAudioType", (int)_outputAudioType);
 			sw.Save("OutputAudioFmt", _outputAudioFormat);
@@ -1653,7 +1835,7 @@ string status = processor.Go();
 		public CUEAction _action = CUEAction.Encode;
 		public CUEStyle _CUEStyle = CUEStyle.SingleFileWithCUE;
 		public int _writeOffset = 0;
-		public bool _useFreeDb = true, _useMusicBrainz = true, _useAccurateRip = true, _useCUEToolsDB = true;
+		public bool _useFreeDb = true, _useMusicBrainz = true, _useAccurateRip = true, _useCUEToolsDB = true, _useLocalDB = true, _skipRecent = true;
 
 		public string _name;
 	}
@@ -1739,6 +1921,8 @@ string status = processor.Go();
 		private int _padding = 8192;
 		private IWebProxy proxy;
 		private CUEMetadata taglibMetadata;
+		private bool _useLocalDB;
+		private CUEToolsLocalDB _localDB;
 
 		public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
 		public event EventHandler<CUEToolsProgressEventArgs> CUEToolsProgress;
@@ -1768,6 +1952,7 @@ string status = processor.Go();
 			_hasEmbeddedCUESheet = false;
 			_isArchive = false;
 			_isCD = false;
+			_useLocalDB = false;
 			proxy = _config.GetProxy();
 		}
 
@@ -1902,31 +2087,193 @@ string status = processor.Go();
 			}
 		}
 
-		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz, bool useCache)
+		protected void ReportProgress(string status, double percent)
+		{
+			ShowProgress(status, percent, null, null);
+		}
+
+		public void ScanLocalDB(string folder)
+		{
+			var results = new List<string>();
+
+			int n = 2, j = 0;
+			foreach (var fmt in _config.formats)
+				if (fmt.Value.allowLossless)
+					n++;
+
+			CheckStop();
+			ReportProgress("Scanning *.cue", (double)(j++) / n);
+			results.AddRange(Directory.GetFiles(folder, "*.cue", SearchOption.AllDirectories));
+
+			CheckStop();
+			ReportProgress("Scanning *.m3u", (double)(j++) / n);
+			results.AddRange(Directory.GetFiles(folder, "*.m3u", SearchOption.AllDirectories));
+
+			foreach (var fmt in _config.formats)
+				if (fmt.Value.allowLossless)
+				{
+					CheckStop();
+					ReportProgress("Scanning *." + fmt.Key, (double)(j++) / n);
+					results.AddRange(Directory.GetFiles(folder, "*." + fmt.Key, SearchOption.AllDirectories));
+				}
+
+			int i = 0;
+			foreach (var result in results)
+			{
+				CheckStop();
+
+				var path = CUEToolsLocalDBEntry.NormalizePath(result);
+				var pathextension = Path.GetExtension(path).ToLower();
+				bool skip = false;
+				if (_localDB.Find(
+						item => item.HasPath(path) ||
+							(item.AudioPaths != null &&
+							item.AudioPaths.Count > 1 &&
+							item.AudioPaths.Contains(path))
+					) != null)
+					skip = true;
+				if (!skip && pathextension == ".m3u")
+				{
+					var contents = new List<string>();
+					using (StreamReader m3u = new StreamReader(path))
+					{
+						do
+						{
+							string line = m3u.ReadLine();
+							if (line == null) break;
+							if (line == "" || line[0] == '#') continue;
+							//if (line.IndexOfAny(Path.GetInvalidPathChars()) >= 0) 
+							//    continue;
+							try
+							{
+								string extension = Path.GetExtension(line);
+								CUEToolsFormat fmt1;
+								if (!extension.StartsWith(".") || !_config.formats.TryGetValue(extension.ToLower().Substring(1), out fmt1) || !fmt1.allowLossless)
+								{
+									skip = true;
+									break;
+								}
+								string fullpath = CUEToolsLocalDBEntry.NormalizePath(Path.Combine(Path.GetDirectoryName(path), line));
+								if (!File.Exists(fullpath))
+								{
+									skip = true;
+									break;
+								}
+								contents.Add(fullpath);
+							}
+							catch
+							{
+								skip = true;
+								break;
+							}
+						} while (!skip);
+					}
+					if (!skip && _localDB.Find(item => item.EqualAudioPaths(contents)) != null)
+						skip = true;
+				}
+				if (!skip && pathextension != ".cue" && pathextension != ".m3u")
+				{
+					if (_localDB.Find(item =>
+							item.AudioPaths != null &&
+							item.AudioPaths.Count == 1 &&
+							item.AudioPaths[0] == path
+						) != null)
+					{
+						CUEToolsFormat fmt;
+						if (!pathextension.StartsWith(".") || !_config.formats.TryGetValue(pathextension.Substring(1), out fmt) || !fmt.allowLossless || !fmt.allowEmbed)
+							skip = true;
+						else
+						{
+							TagLib.File fileInfo;
+							TagLib.UserDefined.AdditionalFileTypes.Config = _config;
+							TagLib.File.IFileAbstraction file = (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(path);
+							fileInfo = TagLib.File.Create(file);
+							NameValueCollection tags = Tagging.Analyze(fileInfo);
+							if (tags.Get("CUESHEET") == null)
+								skip = true;
+						}
+					}
+				}
+				if (skip)
+				{
+					ReportProgress("Skipping " + path, (double)(i++) / results.Count);
+				}
+				else
+				{
+					ReportProgress("Checking " + path, (double)(i++) / results.Count);
+					var cueSheet = new CUESheet(_config);
+					cueSheet.UseLocalDB(_localDB);
+					//cueSheet.PasswordRequired += new EventHandler<CompressionPasswordRequiredEventArgs>(PasswordRequired);
+					//cueSheet.CUEToolsProgress += new EventHandler<CUEToolsProgressEventArgs>(SetStatus);
+					//cueSheet.CUEToolsSelection += new EventHandler<CUEToolsSelectionEventArgs>(MakeSelection);
+					try
+					{
+						cueSheet.Open(path);
+						cueSheet.OpenLocalDBEntry();
+					}
+					catch (Exception)
+					{
+					}
+					cueSheet.Close();
+				}
+			}
+			_localDB.Save();
+		}
+
+		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz, bool useCache, bool useCUE)
 		{
 			List<object> Releases = new List<object>();
 			StringCollection DiscIds = new StringCollection();
 			DiscIds.Add(_toc.MusicBrainzId);
 
-			if (useCache)
+			CUEMetadata dbmeta = null;
+
+			if (useCache && _localDB != null)
 			{
-				try
+				List<string> fullAudioPaths = this.SourcePaths.ConvertAll(p => CUEToolsLocalDBEntry.NormalizePath(p));
+				var myEntry = _localDB.Find(e => e.Equals(this.TOC, fullAudioPaths));
+				if (myEntry != null)
+					dbmeta = myEntry.Metadata;
+			}
+			
+			if (dbmeta != null)
+				Releases.Add(new CUEMetadataEntry(dbmeta, TOC, "local"));
+			
+			//if (useCache)
+			//{
+			//    try
+			//    {
+			//        CUEMetadata cache = CUEMetadata.Load(TOC.TOCID);
+			//        if (cache != null)
+			//            Releases.Add(new CUEMetadataEntry(cache, TOC, "local"));
+			//    }
+			//    catch (Exception ex)
+			//    {
+			//        System.Diagnostics.Trace.WriteLine(ex.Message);
+			//    }
+			//}
+
+			if (useCUE)
+			{
+				CUEMetadata meta = Metadata;
+				if (dbmeta == null || !dbmeta.Contains(meta))
 				{
-					CUEMetadata cache = CUEMetadata.Load(TOC.TOCID);
-					if (cache != null)
-						Releases.Add(new CUEMetadataEntry(cache, TOC, "local"));
+					if (meta.Contains(taglibMetadata) || !taglibMetadata.Contains(meta))
+						Releases.Add(new CUEMetadataEntry(meta, TOC, "cue"));
 				}
-				catch (Exception ex)
+				if (dbmeta == null || !dbmeta.Contains(taglibMetadata))
 				{
-					System.Diagnostics.Trace.WriteLine(ex.Message);
+					if (!meta.Contains(taglibMetadata))
+						Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags"));
 				}
 			}
 
-			CUEMetadata meta = Metadata;
-			if (meta.Contains(taglibMetadata) || !taglibMetadata.Contains(meta))
-				Releases.Add(new CUEMetadataEntry(meta, TOC, "cue"));
-			if (!meta.Contains(taglibMetadata))
-				Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags"));
+			if (useCache && _localDB != null)
+			{
+				foreach (var entry in _localDB)
+					if (entry.DiscID == TOC.TOCID && entry.Metadata != null && (dbmeta == null || !dbmeta.Contains(entry.Metadata)))
+						Releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local"));
+			}
 
 			if (useFreedb)
 			{
@@ -2042,6 +2389,7 @@ string status = processor.Go();
 				//if (cdEntry != null)
 				//    FillFromFreedb(cdEntry);
 			}
+			ShowProgress("", 0, null, null);
 			return Releases;
 		}
 
@@ -2379,6 +2727,8 @@ string status = processor.Go();
 							}
 							if (!fileIsBinary)
 							{
+								if (_sourcePaths.Count != 0 && !seenFirstFileIndex)
+									throw new Exception("Double FILE in CUE sheet: \"" + line.Params[1] + "\".");
 								if (!_hasEmbeddedCUESheet)
 								{
 									if (_isArchive)
@@ -2427,7 +2777,10 @@ string status = processor.Go();
 							isAudioTrack = line.Params[2].ToUpper() == "AUDIO";
 							trackNumber = int.Parse(line.Params[1]);
 							if (trackNumber != _toc.TrackCount + 1)
-								throw new Exception("Invalid track number.");
+								throw new Exception("Invalid track number");
+							// Disabled this check: fails on Headcandy test image
+							//if (isAudioTrack && _sourcePaths.Count == 0)
+							//    throw new Exception("No FILE seen before TRACK");
 							_toc.AddTrack(new CDTrack((uint)trackNumber, 0, 0, isAudioTrack, false));
 							if (isAudioTrack)
 							{
@@ -2880,10 +3233,6 @@ string status = processor.Go();
 						break;
 					ShowProgress((string)"Contacting AccurateRip database...", (dtl - minDTL) / 75.0, null, null);
 					CheckStop();
-					lock (this)
-					{
-						Monitor.Wait(this, 500);
-					}
 				}
 			}
 			else
@@ -3087,12 +3436,15 @@ string status = processor.Go();
 			for (int iDir = 0; iDir < dirList.Count; iDir++) {
 				for (int iFile = 0; iFile < fileList.Count; iFile++) {
 					string path = Path.Combine(dirList[iDir], fileList[iFile]);
-					if ((contents == null && System.IO.File.Exists(path))
-						|| (contents != null && contents.Contains(path)))
+					if (contents == null && System.IO.File.Exists(path))
 						return path;
-					path = dirList[iDir] + '/' + fileList[iFile];
-					if (contents != null && contents.Contains(path))
-						return path;
+					if (contents != null)
+					{
+						List<string> matching = contents.FindAll(s => s.ToLower().Replace('/', Path.DirectorySeparatorChar) == 
+							path.ToLower().Replace('/', Path.DirectorySeparatorChar));
+						if (matching.Count == 1)
+							return matching[0];
+					}
 				}
 			}
 
@@ -3322,7 +3674,7 @@ string status = processor.Go();
 		{
 			ShowProgress("Analyzing input file...", 0.0, path, null);
 
-			if (Path.GetExtension(path) == ".dummy" || Path.GetExtension(path) == ".bin")
+			if (Path.GetExtension(path).ToLower() == ".dummy" || Path.GetExtension(path).ToLower() == ".bin")
 			{
 				fileInfo = null;
 			}
@@ -3773,7 +4125,7 @@ string status = processor.Go();
 			}
 		}
 
-		public readonly static string CUEToolsVersion = "2.0.9";
+		public readonly static string CUEToolsVersion = "2.1.1";
 
 		public void GenerateAccurateRipLog(TextWriter sw)
 		{
@@ -3982,6 +4334,16 @@ string status = processor.Go();
 
 			CreateRipperLOG();
 
+			if (_action == CUEAction.Verify && _useLocalDB)
+			{
+				var entry = OpenLocalDBEntry();
+				entry.Status = this.GenerateAccurateRipStatus();
+				entry.ARConfidence = _arVerify.WorstConfidence();
+				entry.Log = AccurateRipLog;
+				entry.VerificationDate = DateTime.Now;
+				entry.OffsetSafeCRC = _arVerify.OffsetSafeCRC;
+			}
+
 			if (_action == CUEAction.Encode)
 			{
 				uint tracksMatch = 0;
@@ -4139,6 +4501,23 @@ string status = processor.Go();
 			return WriteReport();
 		}
 
+		public CUEToolsLocalDBEntry OpenLocalDBEntry()
+		{
+			if (!_useLocalDB)
+				return null;
+
+			string path = CUEToolsLocalDBEntry.NormalizePath(InputPath);
+			CUEToolsLocalDBEntry entry = _localDB.Lookup(_toc, _sourcePaths);
+			if (entry.InputPaths == null)
+				entry.InputPaths = new List<string>();
+			if (!entry.InputPaths.Contains(path))
+				entry.InputPaths.Add(path);
+			if (entry.Metadata == null)
+				entry.Metadata = Metadata;
+			_localDB.Dirty = true;
+			return entry;
+		}
+
 		private static Bitmap resizeImage(Image imgToResize, Size size)
 		{
 			int sourceWidth = imgToResize.Width;
@@ -4195,8 +4574,9 @@ string status = processor.Go();
 						}
 			if ((_config.extractAlbumArt || _config.embedAlbumArt) && !_isCD)
 			{
-				foreach (string name in _config.advanced.CoverArtFiles)
+				foreach (string tpl in _config.advanced.CoverArtFiles)
 				{
+					string name = tpl.Replace("%album%", Title).Replace("%artist%", Artist);
 					string imgPath = Path.Combine(_isArchive ? _archiveCUEpath : _inputDir, name);
 					bool exists = _isArchive ? _archiveContents.Contains(imgPath) : File.Exists(imgPath);
 					if (exists)
@@ -4213,50 +4593,49 @@ string status = processor.Go();
 
 				if (!_isArchive && _config.advanced.CoverArtSearchSubdirs)
 				{
+					List<string> allfiles = new List<string>(Directory.GetFiles(_inputDir, "*.jpg", SearchOption.AllDirectories));
 					// TODO: archive case
-					foreach (string name in _config.advanced.CoverArtFiles)
+					foreach (string tpl in _config.advanced.CoverArtFiles)
 					{
-						foreach (string imgPath in Directory.GetFiles(_inputDir, name, SearchOption.AllDirectories))
+						string name = tpl.Replace("%album%", Title).Replace("%artist%", Artist);
+						List<string> matching = allfiles.FindAll(s => Path.GetFileName(s) == name);
+						if (matching.Count == 1)
 						{
+							string imgPath = matching[0];
 							TagLib.File.IFileAbstraction file = _isArchive
 								? (TagLib.File.IFileAbstraction)new ArchiveFileAbstraction(this, imgPath)
 								: (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(imgPath);
 							TagLib.Picture pic = new TagLib.Picture(file);
 							pic.Description = name;
 							_albumArt.Add(pic);
-						}
-						if (_albumArt.Count == 1)
 							return;
-						if (_albumArt.Count > 1)
-						{
-							_albumArt.Clear();
-							break;
 						}
 					}
-					foreach (string imgPath in Directory.GetFiles(_inputDir, "*.jpg", SearchOption.AllDirectories))
+
+					if (CUEToolsSelection != null
+					   && ( (Action == CUEAction.Encode && allfiles.Count < 32)
+					     || (Action != CUEAction.Encode && allfiles.Count < 2)
+						 )
+					  )
 					{
-						TagLib.Picture pic = new TagLib.Picture(imgPath);
-						if (imgPath.StartsWith(_inputDir))
-							pic.Description = imgPath.Substring(_inputDir.Length).Trim(Path.DirectorySeparatorChar);
-						else
-							pic.Description = Path.GetFileName(imgPath);
-						_albumArt.Add(pic);
+						foreach (string imgPath in allfiles)
+						{
+							TagLib.Picture pic = new TagLib.Picture(imgPath);
+							if (imgPath.StartsWith(_inputDir))
+								pic.Description = imgPath.Substring(_inputDir.Length).Trim(Path.DirectorySeparatorChar);
+							else
+								pic.Description = Path.GetFileName(imgPath);
+							_albumArt.Add(pic);
+						}
+						if (_albumArt.Count > 0)
+						{
+							CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+							e.choices = _albumArt.ToArray();
+							CUEToolsSelection(this, e);
+							TagLib.IPicture selected = e.selection == -1 ? null : _albumArt[e.selection];
+							_albumArt.RemoveAll(t => t != selected);
+						}
 					}
-				}
-
-				if (Action != CUEAction.Encode && _albumArt.Count > 1)
-				{
-					_albumArt.Clear();
-					return;
-				}
-
-				if (_albumArt.Count != 0)
-				{
-					CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
-					e.choices = _albumArt.ToArray();
-					CUEToolsSelection(this, e);
-					TagLib.IPicture selected = e.selection == -1 ? null : _albumArt[e.selection];
-					_albumArt.RemoveAll(t => t != selected);
 				}
 			}
 		}
@@ -4307,6 +4686,14 @@ string status = processor.Go();
 					try { return Image.FromStream(imageStream); }
 					catch { }
 				return null;
+			}
+		}
+
+		public List<string> SourcePaths
+		{
+			get
+			{
+				return _sourcePaths;
 			}
 		}
 
@@ -4697,6 +5084,8 @@ string status = processor.Go();
 							}
 
 							copyCount = audioSource.Read(sampleBuffer, copyCount);
+							if (copyCount == 0)
+								throw new Exception("Unexpected end of file");
 							if (_useCUEToolsDB && _useCUEToolsDBFix)
 								_CUEToolsDB.SelectedEntry.repair.Write(sampleBuffer);
 							// we use AR after CTDB fix, so that we can verify what we fixed
@@ -4737,6 +5126,15 @@ string status = processor.Go();
 						}
 					}
 				}
+				if (hdcdDecoder != null)
+					(hdcdDecoder as IAudioFilter).AudioDest = null;
+				hdcdDecoder = null;
+				if (audioSource != null)
+					audioSource.Close();
+				audioSource = null;
+				if (audioDest != null)
+					audioDest.Close();
+				audioDest = null;
 			}
 #if !DEBUG
 			catch (Exception ex)
@@ -4753,13 +5151,6 @@ string status = processor.Go();
 				throw ex;
 			}
 #endif
-
-			if (hdcdDecoder != null)
-				(hdcdDecoder as IAudioFilter).AudioDest = null;
-			if (audioSource != null)
-				audioSource.Close();
-			if (audioDest != null)
-				audioDest.Close();
 		}
 
 		public void VerifyAudio()
@@ -4844,7 +5235,8 @@ string status = processor.Go();
 						}
 
 						int copyCount = task.Step(sampleBuffer);
-
+						if (copyCount == 0)
+							throw new Exception("Unexpected end of file");
 						diskOffset += copyCount;
 
 						CheckStop();
@@ -4918,7 +5310,14 @@ string status = processor.Go();
 			int trackNo = 0;
 			foreach (FileSystemInfo file in fileGroup.files)
 			{
-				sw.WriteLine(String.Format("FILE \"{0}\" WAVE", file.Name));
+				string name = file.Name;
+				if (fileGroup.type == FileGroupInfoType.M3UFile
+					&& Path.GetDirectoryName(file.FullName) != Path.GetDirectoryName(fileGroup.main.FullName)
+					&& Path.GetDirectoryName(file.FullName).StartsWith(Path.GetDirectoryName(fileGroup.main.FullName)))
+				{
+					name = file.FullName.Substring(Path.GetDirectoryName(fileGroup.main.FullName).Length + 1);
+				}
+				sw.WriteLine(String.Format("FILE \"{0}\" WAVE", name));
 				sw.WriteLine(String.Format("  TRACK {0:00} AUDIO", ++trackNo));
 				sw.WriteLine(String.Format("    INDEX 01 00:00:00"));
 			}
@@ -4946,6 +5345,7 @@ string status = processor.Go();
 			CUELine line;
 			int i;
 			string CDDBID = "";
+			//bool isBinary = false;
 
 			using (StringReader sr = new StringReader(cue))
 			{
@@ -4956,12 +5356,28 @@ string status = processor.Go();
 					if ((line.Params.Count == 3) && (line.Params[0].ToUpper() == "FILE"))
 					{
 						string fileType = line.Params[2].ToUpper();
-						if ((fileType != "BINARY") && (fileType != "MOTOROLA"))
-						{
-							filePos.Add(lines.Count - 1);
-							origFiles.Add(line.Params[1]);
-							foundAll &= (LocateFile(dir, line.Params[1], files) != null);
-						}
+						if (fileType == "MOTOROLA")
+							continue;
+						if (fileType == "BINARY")
+							continue;
+						//{
+						//    if (filePos.Count > 0)
+						//        continue;
+						//    isBinary = true;
+						//}
+						//else
+						//{
+						//    if (isBinary)
+						//    {
+						//        filePos.Clear();
+						//        origFiles.Clear();
+						//        foundAll = false;
+						//        isBinary = false;
+						//    }
+						//}
+						filePos.Add(lines.Count - 1);
+						origFiles.Add(line.Params[1]);
+						foundAll &= (LocateFile(dir, line.Params[1], files) != null);
 					}
 					if (line.Params.Count == 3 && line.Params[0].ToUpper() == "REM" && line.Params[1].ToUpper() == "DISCID")
 						CDDBID = line.Params[2].ToLower();
@@ -5000,39 +5416,19 @@ string status = processor.Go();
 				List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, dir == "" ? "." : dir);
 
 				// Choose filegroup by track count
-				foreach (FileGroupInfo fileGroup in fileGroups)
+				List<FileGroupInfo>
+					matching = fileGroups.FindAll(f => f.type == FileGroupInfoType.TrackFiles && f.files.Count == filePos.Count);
+				// If ambiguous, use DISCID
+				if (matching.Count > 1)
+					matching = fileGroups.FindAll(f => f.type == FileGroupInfoType.TrackFiles && f.files.Count == filePos.Count && f.TOC != null && AccurateRipVerify.CalculateCDDBId(f.TOC).ToLower() == CDDBID);
+				if (matching.Count == 1)
 				{
-					if (fileGroup.type == FileGroupInfoType.TrackFiles && fileGroup.files.Count == filePos.Count)
-					{
-						if (foundAll)
-						{
-							foundAll = false;
-							break;
-						}
-						audioFiles = fileGroup.files.ConvertAll<string>(info => info.FullName).ToArray();
-						// No need to sort - hopefully already sorted by ScanFolder
-						extension = fileGroup.main.Extension.ToLower().TrimStart('.');
-						foundAll = true;
-					}
+					audioFiles = matching[0].files.ConvertAll<string>(info => info.FullName).ToArray();
+					// No need to sort - hopefully already sorted by ScanFolder
+					extension = matching[0].main.Extension.ToLower().TrimStart('.');
+					foundAll = true;
 				}
 
-				// Choose filegroup by DISCID
-				if (!foundAll)
-					foreach (FileGroupInfo fileGroup in fileGroups)
-					{
-						if (fileGroup.type == FileGroupInfoType.TrackFiles && fileGroup.files.Count == filePos.Count && fileGroup.TOC != null && AccurateRipVerify.CalculateCDDBId(fileGroup.TOC).ToLower() == CDDBID)
-						{
-							if (foundAll)
-							{
-								foundAll = false;
-								break;
-							}
-							audioFiles = fileGroup.files.ConvertAll<string>(info => info.FullName).ToArray();
-							extension = fileGroup.main.Extension.ToLower().TrimStart('.');
-							foundAll = true;
-						}
-					}
-				
 				if (!foundAll && filePos.Count == 1)
 					foreach (FileGroupInfo fileGroup in fileGroups)
 					{
@@ -5067,7 +5463,7 @@ string status = processor.Go();
 						audioFiles = files.FindAll(s => Path.GetDirectoryName(s) == dir && Path.GetExtension(s).ToLower() == "." + format.Key).ToArray();
 					if (audioFiles.Length == filePos.Count)
 					{
-						Array.Sort(audioFiles);
+						Array.Sort(audioFiles, FileGroupInfo.CompareTrackNames);
 						extension = format.Key;
 						foundAll = true;
 						break;
@@ -5496,6 +5892,7 @@ string status = processor.Go();
 					return;
 				if (!_toc[1].IsAudio)
 				{
+					// TODO: if track 2 has a pregap, we should adjust it!!!
 					for (int i = 2; i <= _toc.TrackCount; i++)
 					{
 						_toc[i].Start += value - _toc[1].Length;
@@ -5862,6 +6259,12 @@ string status = processor.Go();
 				}
 			fileGroups.Sort(FileGroupInfo.Compare);
 			return fileGroups;
+		}
+
+		public void UseLocalDB(CUEToolsLocalDB db)
+		{
+			_useLocalDB = true;
+			_localDB = db;
 		}
 
 		public string AccurateRipLog

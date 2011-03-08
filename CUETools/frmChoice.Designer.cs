@@ -46,6 +46,7 @@ namespace JDP
 			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -181,16 +182,21 @@ namespace JDP
 			this.pictureBox1.TabStop = false;
 			this.pictureBox1.DoubleClick += new System.EventHandler(this.pictureBox1_DoubleClick);
 			// 
+			// backgroundWorker1
+			// 
+			this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+			// 
 			// frmChoice
 			// 
 			this.AcceptButton = this.buttonOk;
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.tableLayoutPanel1);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
 			this.MaximizeBox = false;
 			this.Name = "frmChoice";
-			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+			this.ShowIcon = false;
+			this.ShowInTaskbar = false;
 			this.Load += new System.EventHandler(this.frmChoice_Load);
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmChoice_FormClosing);
 			this.tableLayoutPanel1.ResumeLayout(false);
@@ -219,5 +225,6 @@ namespace JDP
 		private System.Windows.Forms.ColumnHeader columnHeader2;
 		private System.Windows.Forms.ColumnHeader columnHeader3;
 		private System.Windows.Forms.PictureBox pictureBox1;
+		private System.ComponentModel.BackgroundWorker backgroundWorker1;
 	}
 }

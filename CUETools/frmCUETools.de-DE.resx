@@ -280,7 +280,7 @@
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Fortsetzen</value>
   </data>
-  <data name="tableLayoutPanelVerifyMode.ToolTip" xml:space="preserve">
+  <data name="checkBoxVerifyUseCDRepair.ToolTip" xml:space="preserve">
     <value>Verwende CUETools-Datenbank</value>
   </data>
   <data name="groupBoxMode.Text" xml:space="preserve">

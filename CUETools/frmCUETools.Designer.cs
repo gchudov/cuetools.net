@@ -38,6 +38,10 @@ namespace JDP {
 			this.fileSystemTreeView1 = new CUEControls.FileSystemTreeView();
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.groupBoxMode = new System.Windows.Forms.GroupBox();
+			this.tableLayoutPanelVerifyMode = new System.Windows.Forms.TableLayoutPanel();
+			this.checkBoxSkipRecent = new System.Windows.Forms.CheckBox();
+			this.checkBoxVerifyUseLocal = new System.Windows.Forms.CheckBox();
+			this.checkBoxVerifyUseCDRepair = new System.Windows.Forms.CheckBox();
 			this.tableLayoutPanelCUEStyle = new System.Windows.Forms.TableLayoutPanel();
 			this.checkBoxUseAccurateRip = new System.Windows.Forms.CheckBox();
 			this.checkBoxUseFreeDb = new System.Windows.Forms.CheckBox();
@@ -51,8 +55,6 @@ namespace JDP {
 			this.toolStripMenuItemCorrectorModeLocateFiles = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemCorrectorModeChangeExtension = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripDropDownButtonCorrectorFormat = new System.Windows.Forms.ToolStripDropDownButton();
-			this.tableLayoutPanelVerifyMode = new System.Windows.Forms.TableLayoutPanel();
-			this.checkBoxVerifyUseCDRepair = new System.Windows.Forms.CheckBox();
 			this.grpAudioOutput = new System.Windows.Forms.GroupBox();
 			this.labelEncoderMaxMode = new System.Windows.Forms.Label();
 			this.labelEncoderMinMode = new System.Windows.Forms.Label();
@@ -78,6 +80,7 @@ namespace JDP {
 			this.toolStripMenuItemInputBrowserFiles = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemInputBrowserMulti = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemInputBrowserDrag = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItemLocalDatabase = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemInputBrowserHide = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripOutput = new System.Windows.Forms.ToolStrip();
 			this.toolStripLabelOutput = new System.Windows.Forms.ToolStripLabel();
@@ -121,6 +124,10 @@ namespace JDP {
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.setAsMyMusicFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.resetToOriginalLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.editMetadataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.addFolderToLocalDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.removeItemFromDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.backgroundWorkerAddToLocalDB = new System.ComponentModel.BackgroundWorker();
 			this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.ContentPanel.SuspendLayout();
 			this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -130,9 +137,9 @@ namespace JDP {
 			this.grpInput.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
 			this.groupBoxMode.SuspendLayout();
+			this.tableLayoutPanelVerifyMode.SuspendLayout();
 			this.tableLayoutPanelCUEStyle.SuspendLayout();
 			this.toolStripCorrectorFormat.SuspendLayout();
-			this.tableLayoutPanelVerifyMode.SuspendLayout();
 			this.grpAudioOutput.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBoxMotd)).BeginInit();
@@ -295,12 +302,44 @@ namespace JDP {
 			// 
 			// groupBoxMode
 			// 
+			this.groupBoxMode.Controls.Add(this.tableLayoutPanelVerifyMode);
 			this.groupBoxMode.Controls.Add(this.tableLayoutPanelCUEStyle);
 			this.groupBoxMode.Controls.Add(this.toolStripCorrectorFormat);
-			this.groupBoxMode.Controls.Add(this.tableLayoutPanelVerifyMode);
 			resources.ApplyResources(this.groupBoxMode, "groupBoxMode");
 			this.groupBoxMode.Name = "groupBoxMode";
 			this.groupBoxMode.TabStop = false;
+			// 
+			// tableLayoutPanelVerifyMode
+			// 
+			resources.ApplyResources(this.tableLayoutPanelVerifyMode, "tableLayoutPanelVerifyMode");
+			this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxSkipRecent, 2, 0);
+			this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxVerifyUseLocal, 1, 0);
+			this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxVerifyUseCDRepair, 0, 0);
+			this.tableLayoutPanelVerifyMode.Name = "tableLayoutPanelVerifyMode";
+			// 
+			// checkBoxSkipRecent
+			// 
+			resources.ApplyResources(this.checkBoxSkipRecent, "checkBoxSkipRecent");
+			this.checkBoxSkipRecent.Image = global::JDP.Properties.Resources.alarm_clock__minus;
+			this.checkBoxSkipRecent.Name = "checkBoxSkipRecent";
+			this.toolTip1.SetToolTip(this.checkBoxSkipRecent, resources.GetString("checkBoxSkipRecent.ToolTip"));
+			this.checkBoxSkipRecent.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxVerifyUseLocal
+			// 
+			resources.ApplyResources(this.checkBoxVerifyUseLocal, "checkBoxVerifyUseLocal");
+			this.checkBoxVerifyUseLocal.Image = global::JDP.Properties.Resources.puzzle__arrow;
+			this.checkBoxVerifyUseLocal.Name = "checkBoxVerifyUseLocal";
+			this.toolTip1.SetToolTip(this.checkBoxVerifyUseLocal, resources.GetString("checkBoxVerifyUseLocal.ToolTip"));
+			this.checkBoxVerifyUseLocal.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxVerifyUseCDRepair
+			// 
+			resources.ApplyResources(this.checkBoxVerifyUseCDRepair, "checkBoxVerifyUseCDRepair");
+			this.checkBoxVerifyUseCDRepair.Image = global::JDP.Properties.Resources.cdrepair1;
+			this.checkBoxVerifyUseCDRepair.Name = "checkBoxVerifyUseCDRepair";
+			this.toolTip1.SetToolTip(this.checkBoxVerifyUseCDRepair, resources.GetString("checkBoxVerifyUseCDRepair.ToolTip"));
+			this.checkBoxVerifyUseCDRepair.UseVisualStyleBackColor = true;
 			// 
 			// tableLayoutPanelCUEStyle
 			// 
@@ -419,20 +458,6 @@ namespace JDP {
 			resources.ApplyResources(this.toolStripDropDownButtonCorrectorFormat, "toolStripDropDownButtonCorrectorFormat");
 			this.toolStripDropDownButtonCorrectorFormat.Name = "toolStripDropDownButtonCorrectorFormat";
 			this.toolStripDropDownButtonCorrectorFormat.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolStripDropDownButtonCorrectorFormat_DropDownItemClicked);
-			// 
-			// tableLayoutPanelVerifyMode
-			// 
-			resources.ApplyResources(this.tableLayoutPanelVerifyMode, "tableLayoutPanelVerifyMode");
-			this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxVerifyUseCDRepair, 0, 0);
-			this.tableLayoutPanelVerifyMode.Name = "tableLayoutPanelVerifyMode";
-			this.toolTip1.SetToolTip(this.tableLayoutPanelVerifyMode, resources.GetString("tableLayoutPanelVerifyMode.ToolTip"));
-			// 
-			// checkBoxVerifyUseCDRepair
-			// 
-			resources.ApplyResources(this.checkBoxVerifyUseCDRepair, "checkBoxVerifyUseCDRepair");
-			this.checkBoxVerifyUseCDRepair.Image = global::JDP.Properties.Resources.cdrepair1;
-			this.checkBoxVerifyUseCDRepair.Name = "checkBoxVerifyUseCDRepair";
-			this.checkBoxVerifyUseCDRepair.UseVisualStyleBackColor = true;
 			// 
 			// grpAudioOutput
 			// 
@@ -624,6 +649,7 @@ namespace JDP {
             this.toolStripMenuItemInputBrowserFiles,
             this.toolStripMenuItemInputBrowserMulti,
             this.toolStripMenuItemInputBrowserDrag,
+            this.toolStripMenuItemLocalDatabase,
             this.toolStripMenuItemInputBrowserHide});
 			this.toolStripSplitButtonInputBrowser.Image = global::JDP.Properties.Resources.folder;
 			resources.ApplyResources(this.toolStripSplitButtonInputBrowser, "toolStripSplitButtonInputBrowser");
@@ -648,6 +674,12 @@ namespace JDP {
 			this.toolStripMenuItemInputBrowserDrag.Image = global::JDP.Properties.Resources.folder_feed;
 			this.toolStripMenuItemInputBrowserDrag.Name = "toolStripMenuItemInputBrowserDrag";
 			resources.ApplyResources(this.toolStripMenuItemInputBrowserDrag, "toolStripMenuItemInputBrowserDrag");
+			// 
+			// toolStripMenuItemLocalDatabase
+			// 
+			this.toolStripMenuItemLocalDatabase.Image = global::JDP.Properties.Resources.puzzle__arrow;
+			this.toolStripMenuItemLocalDatabase.Name = "toolStripMenuItemLocalDatabase";
+			resources.ApplyResources(this.toolStripMenuItemLocalDatabase, "toolStripMenuItemLocalDatabase");
 			// 
 			// toolStripMenuItemInputBrowserHide
 			// 
@@ -970,7 +1002,10 @@ namespace JDP {
             this.SelectedNodeName,
             this.toolStripSeparator2,
             this.setAsMyMusicFolderToolStripMenuItem,
-            this.resetToOriginalLocationToolStripMenuItem});
+            this.resetToOriginalLocationToolStripMenuItem,
+            this.editMetadataToolStripMenuItem,
+            this.addFolderToLocalDatabaseToolStripMenuItem,
+            this.removeItemFromDatabaseToolStripMenuItem});
 			this.contextMenuStripFileTree.Name = "contextMenuStripFileTree";
 			resources.ApplyResources(this.contextMenuStripFileTree, "contextMenuStripFileTree");
 			// 
@@ -996,6 +1031,29 @@ namespace JDP {
 			resources.ApplyResources(this.resetToOriginalLocationToolStripMenuItem, "resetToOriginalLocationToolStripMenuItem");
 			this.resetToOriginalLocationToolStripMenuItem.Click += new System.EventHandler(this.resetToOriginalLocationToolStripMenuItem_Click);
 			// 
+			// editMetadataToolStripMenuItem
+			// 
+			this.editMetadataToolStripMenuItem.Name = "editMetadataToolStripMenuItem";
+			resources.ApplyResources(this.editMetadataToolStripMenuItem, "editMetadataToolStripMenuItem");
+			this.editMetadataToolStripMenuItem.Click += new System.EventHandler(this.editMetadataToolStripMenuItem_Click);
+			// 
+			// addFolderToLocalDatabaseToolStripMenuItem
+			// 
+			this.addFolderToLocalDatabaseToolStripMenuItem.Name = "addFolderToLocalDatabaseToolStripMenuItem";
+			resources.ApplyResources(this.addFolderToLocalDatabaseToolStripMenuItem, "addFolderToLocalDatabaseToolStripMenuItem");
+			this.addFolderToLocalDatabaseToolStripMenuItem.Click += new System.EventHandler(this.addFolderToLocalDatabaseToolStripMenuItem_Click);
+			// 
+			// removeItemFromDatabaseToolStripMenuItem
+			// 
+			this.removeItemFromDatabaseToolStripMenuItem.Name = "removeItemFromDatabaseToolStripMenuItem";
+			resources.ApplyResources(this.removeItemFromDatabaseToolStripMenuItem, "removeItemFromDatabaseToolStripMenuItem");
+			this.removeItemFromDatabaseToolStripMenuItem.Click += new System.EventHandler(this.removeItemFromDatabaseToolStripMenuItem_Click);
+			// 
+			// backgroundWorkerAddToLocalDB
+			// 
+			this.backgroundWorkerAddToLocalDB.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerAddToLocalDB_DoWork);
+			this.backgroundWorkerAddToLocalDB.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerAddToLocalDB_RunWorkerCompleted);
+			// 
 			// frmCUETools
 			// 
 			resources.ApplyResources(this, "$this");
@@ -1018,12 +1076,12 @@ namespace JDP {
 			this.grpInput.ResumeLayout(false);
 			this.tableLayoutPanel2.ResumeLayout(false);
 			this.groupBoxMode.ResumeLayout(false);
+			this.tableLayoutPanelVerifyMode.ResumeLayout(false);
+			this.tableLayoutPanelVerifyMode.PerformLayout();
 			this.tableLayoutPanelCUEStyle.ResumeLayout(false);
 			this.tableLayoutPanelCUEStyle.PerformLayout();
 			this.toolStripCorrectorFormat.ResumeLayout(false);
 			this.toolStripCorrectorFormat.PerformLayout();
-			this.tableLayoutPanelVerifyMode.ResumeLayout(false);
-			this.tableLayoutPanelVerifyMode.PerformLayout();
 			this.grpAudioOutput.ResumeLayout(false);
 			this.grpAudioOutput.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).EndInit();
@@ -1147,6 +1205,13 @@ namespace JDP {
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelVerifyMode;
 		private System.Windows.Forms.CheckBox checkBoxVerifyUseCDRepair;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelCTDB;
+		private System.Windows.Forms.CheckBox checkBoxVerifyUseLocal;
+		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemLocalDatabase;
+		private System.Windows.Forms.CheckBox checkBoxSkipRecent;
+		private System.Windows.Forms.ToolStripMenuItem editMetadataToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem addFolderToLocalDatabaseToolStripMenuItem;
+		private System.ComponentModel.BackgroundWorker backgroundWorkerAddToLocalDB;
+		private System.Windows.Forms.ToolStripMenuItem removeItemFromDatabaseToolStripMenuItem;
 	}
 }
 

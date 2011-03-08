@@ -51,7 +51,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -281,6 +281,16 @@
     <None Include="Resources\delete.png" />
     <None Include="Resources\cdrepair.ico" />
     <None Include="Resources\cdrepair.png" />
+    <None Include="Resources\more\icon\puzzle--arrow.png" />
+    <None Include="Resources\more\icon\alarm-clock--minus.png" />
+    <None Include="Resources\puzzle.ico" />
+    <None Include="Resources\alarm-clock.ico" />
+    <None Include="Resources\users.ico" />
+    <None Include="Resources\calendar.ico" />
+    <None Include="Resources\images.ico" />
+    <None Include="Resources\pictures.ico" />
+    <None Include="Resources\images-question.ico" />
+    <None Include="Resources\picture.ico" />
     <Content Include="unrar.dll">
     </Content>
     <Content Include="Resources\accuraterip_16.bmp" />

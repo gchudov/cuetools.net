@@ -468,7 +468,7 @@
     <value>bnComboBoxLosslessOrNot</value>
   </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -495,7 +495,7 @@
     <value>bnComboBoxEncoder</value>
   </data>
   <data name="&gt;&gt;bnComboBoxEncoder.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxEncoder.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -549,7 +549,7 @@
     <value>bnComboBoxFormat</value>
   </data>
   <data name="&gt;&gt;bnComboBoxFormat.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxFormat.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -615,7 +615,7 @@
     <value>bnComboBoxImage</value>
   </data>
   <data name="&gt;&gt;bnComboBoxImage.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxImage.Parent" xml:space="preserve">
     <value>groupBoxSettings</value>
@@ -1005,7 +1005,7 @@
     <value>bnComboBoxRelease</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1029,7 +1029,7 @@
     <value>bnComboBoxDrives</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1053,7 +1053,7 @@
     <value>bnComboBoxOutputFormat</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1729,7 +1729,7 @@
     <value>CenterScreen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.0.9</value>
+    <value>CUERipper 2.1.1</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>

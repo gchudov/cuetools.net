@@ -20,6 +20,18 @@ namespace JDP
 
 		public CUESheet CUE;
 
+		private bool freedb, musicbrainz;
+
+		public void LookupAlbumInfo(bool freedb, bool musicbrainz, bool cache, bool cue)
+		{
+			this.freedb = freedb;
+			this.musicbrainz = musicbrainz;
+			var releases = CUE.LookupAlbumInfo(false, false, cache, cue);
+			this.Choices = releases;
+			if (freedb || musicbrainz)
+				backgroundWorker1.RunWorkerAsync(null);
+		}
+
 		private void frmChoice_Load(object sender, EventArgs e)
 		{
 			buttonOk.Select();
@@ -117,7 +129,7 @@ namespace JDP
 			}
 		}
 
-		private CUEMetadataEntry ChosenRelease
+		public CUEMetadataEntry ChosenRelease
 		{
 			get
 			{
@@ -136,12 +148,15 @@ namespace JDP
 
 		private void frmChoice_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			if (backgroundWorker1.IsBusy)
+			{
+				e.Cancel = true;
+				return;
+			}
 			CUEMetadataEntry ri = ChosenRelease;
 			if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK || ri == null || CUE == null)
 				return;
 			CUE.CopyMetadata(ri.metadata);
-			if (CUE.Config.advanced.CacheMetadata)
-				ri.metadata.Save();
 		}
 
 		private void AutoResizeTracks()
@@ -281,6 +296,17 @@ namespace JDP
 		{
 			pictureBox1.SizeMode = pictureBox1.SizeMode == PictureBoxSizeMode.Zoom ?
 				PictureBoxSizeMode.CenterImage : PictureBoxSizeMode.Zoom;
+		}
+
+		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+		{
+			e.Result = CUE.LookupAlbumInfo(this.freedb, this.musicbrainz, false, false);
+		}
+
+		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			foreach (object i in (e.Result as List<object>))
+				AddItem(i);
 		}
 	}
 }

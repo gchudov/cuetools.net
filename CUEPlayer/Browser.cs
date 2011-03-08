@@ -42,7 +42,7 @@ namespace CUEPlayer
 			List<FileGroupInfo> fileGroups = CUESheet.ScanFolder(_config, e.files);
 			foreach (FileGroupInfo fileGroup in fileGroups)
 			{
-				TreeNode node = fileSystemTreeView1.NewNode(fileGroup.main, fileGroup.type == FileGroupInfoType.Folder);
+				TreeNode node = fileSystemTreeView1.NewNode(fileGroup.main);
 				if (fileGroup.type == FileGroupInfoType.TrackFiles)
 					node.Text = node.Text + ": " + fileGroup.files.Count.ToString() + " files";
 				e.node.Nodes.Add(node);

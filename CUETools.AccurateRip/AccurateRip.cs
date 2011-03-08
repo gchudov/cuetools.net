@@ -4,12 +4,152 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Xml.Serialization;
 using CUETools.Parity;
 using CUETools.CDImage;
 using CUETools.Codecs;
 
 namespace CUETools.AccurateRip
 {
+	[Serializable]
+	public class OffsetSafeCRCRecord
+	{
+		private uint[] val;
+
+		public OffsetSafeCRCRecord()
+		{
+			this.val = new uint[1];
+		}
+
+		public OffsetSafeCRCRecord(AccurateRipVerify ar)
+			: this(new uint[64 + 64])
+		{
+			int offset = 64 * 64;
+			for (int i = 0; i < 64; i++)
+				this.val[i] = ar.GetMiddleCRC32(offset + i * 64 + 64, 2 * offset - 64 - i * 64);
+			for (int i = 0; i < 64; i++)
+				this.val[i + 64] = ar.GetMiddleCRC32(offset + 64 - 1 - i, 2 * offset - 64 + 1 + i);
+		}
+
+		public OffsetSafeCRCRecord(uint[] val)
+		{
+			this.val = val;
+		}
+
+		[XmlIgnore]
+		public uint[] Value
+		{
+			get
+			{
+				return val;
+			}
+		}
+
+		public unsafe string Base64
+		{
+			get
+			{
+				byte[] res = new byte[val.Length * 4];
+				fixed (byte* pres = &res[0])
+				fixed (uint* psrc = &val[0])
+					AudioSamples.MemCpy(pres, (byte*)psrc, res.Length);
+				var b64 = new char[res.Length * 2 + 4];
+				int b64len = Convert.ToBase64CharArray(res, 0, res.Length, b64, 0);
+				StringBuilder sb = new StringBuilder(b64len + b64len / 4 + 1);
+				for (int i = 0; i < b64len; i += 64)
+				{
+					sb.Append(b64, i, Math.Min(64, b64len - i));
+					sb.AppendLine();
+				}
+				return sb.ToString();
+			}
+
+			set
+			{
+				if (value == null)
+					throw new ArgumentNullException();
+				byte[] bytes  = Convert.FromBase64String(value);
+				if (bytes.Length % 4 != 0)
+					throw new InvalidDataException();
+				val = new uint[bytes.Length / 4];
+				fixed (byte* pb = &bytes[0])
+				fixed (uint* pv = &val[0])
+					AudioSamples.MemCpy((byte*)pv, pb, bytes.Length);
+			}
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is OffsetSafeCRCRecord && this == (OffsetSafeCRCRecord)obj;
+		}
+
+		public override int GetHashCode()
+		{
+			return (int)val[0];
+		}
+
+		public static bool operator == (OffsetSafeCRCRecord x, OffsetSafeCRCRecord y)
+		{
+			if (x as object == null || y as object == null) return x as object == null && y as object == null;
+			if (x.Value.Length != y.Value.Length) return false;
+			for (int i = 0; i < x.Value.Length; i++)
+				if (x.Value[i] != y.Value[i])
+					return false;
+			return true;
+		}
+
+		public static bool operator !=(OffsetSafeCRCRecord x, OffsetSafeCRCRecord y)
+		{
+			return !(x == y);
+		}
+
+		public bool DifferByOffset(OffsetSafeCRCRecord rec)
+		{
+			int offset;
+			return FindOffset(rec, out offset);
+		}
+
+		public bool FindOffset (OffsetSafeCRCRecord rec, out int offset)
+		{
+			if (this.Value.Length != 128 || rec.Value.Length != 128)
+			{
+				offset = 0;
+				return false;
+				//throw new InvalidDataException("Unsupported OffsetSafeCRCRecord");
+			}
+
+			for (int i = 0; i < 64; i++)
+			{
+				if (rec.Value[0] == Value[i])
+				{
+					offset = i * 64;
+					return true;
+				}
+				if (Value[0] == rec.Value[i])
+				{
+					offset = -i * 64;
+					return true;
+				}
+				for (int j = 0; j < 64; j++)
+				{
+					if (rec.Value[i] == Value[64 + j])
+					{
+						offset = i * 64 + j + 1;
+						return true;
+					}
+					if (Value[i] == rec.Value[64 + j])
+					{
+						offset = -i * 64 - j - 1;
+						return true;
+					}
+				}
+			}
+			offset = 0;
+			return false;
+		}
+	}
+
 	public class AccurateRipVerify : IAudioDest
 	{
 		public AccurateRipVerify(CDImageLayout toc, IWebProxy proxy)
@@ -151,6 +291,19 @@ namespace CUETools.AccurateRip
 		public int PeakLevel(int iTrack)
 		{
 			return _Peak[iTrack];
+		}
+
+		internal uint GetMiddleCRC32(int prefixLen, int suffixLen)
+		{
+			return CTDBCRC(prefixLen * 2, suffixLen * 2);
+		}
+
+		public OffsetSafeCRCRecord OffsetSafeCRC
+		{
+			get
+			{
+				return new OffsetSafeCRCRecord(this);
+			}
 		}
 
 		public uint CRC32(int iTrack)
@@ -333,13 +486,17 @@ namespace CUETools.AccurateRip
 			Init(_toc);
 		}
 
-		internal unsafe uint CTDBCRC(int actualOffset)
+		public unsafe uint CTDBCRC(int prefixLen, int suffixLen)
 		{
+			if (prefixLen > leadin.Length || suffixLen > leadout.Length)
+				throw new ArgumentOutOfRangeException();
+			// stride - 2 * actualOffset
+			// laststride + 2 * actualOffset
 			fixed (uint* crct = Crc32.table)
 			{
 				// calculate leadin CRC
 				uint crc0 = 0;
-				for (int off = 0; off < stride - 2 * actualOffset; off++)
+				for (int off = 0; off < prefixLen; off++)
 				{
 					ushort dd = leadin[off];
 					crc0 = (crc0 >> 8) ^ crct[(byte)(crc0 ^ dd)];
@@ -347,15 +504,20 @@ namespace CUETools.AccurateRip
 				}
 				// calculate leadout CRC
 				uint crc2 = 0;
-				for (int off = laststride + 2 * actualOffset - 1; off >= 0; off--)
+				for (int off = suffixLen - 1; off >= 0; off--)
 				{
 					ushort dd = leadout[off];
 					crc2 = (crc2 >> 8) ^ crct[(byte)(crc2 ^ dd)];
 					crc2 = (crc2 >> 8) ^ crct[(byte)(crc2 ^ (dd >> 8))];
 				}
 
-				return GetCRC32(crc0, (stride - 2 * actualOffset) * 2, crc2, (laststride + 2 * actualOffset) * 2);
+				return GetCRC32(crc0, prefixLen * 2, crc2, suffixLen * 2);
 			}
+		}
+
+		public uint CTDBCRC(int actualOffset)
+		{
+			return CTDBCRC(stride - 2 * actualOffset, laststride + 2 * actualOffset);
 		}
 
 		private unsafe static void CalcSyn8(ushort* exp, ushort* log, ushort* syn, uint lo, uint n, int npar)
@@ -438,9 +600,8 @@ namespace CUETools.AccurateRip
 		/// </summary>
 		/// <param name="pSampleBuff"></param>
 		/// <param name="count"></param>
-		/// <param name="currentOffset"></param>
 		/// <param name="offs"></param>
-		public unsafe void CalculateCRCs(uint* t, ushort* exp, ushort* log, ushort* syn, ushort* wr, uint* pSampleBuff, int count, int currentOffset, int offs)
+		public unsafe void CalculateCRCs(uint* t, ushort* exp, ushort* log, ushort* syn, ushort* wr, uint* pSampleBuff, int count, int offs)
 		{
 			int currentStride = ((int)_sampleCount * 2) / stride;
 			bool doSyn = currentStride >= 1 && currentStride <= stridecount && calcSyn;
@@ -453,7 +614,7 @@ namespace CUETools.AccurateRip
 			uint crcwn = _CRCWN[_currentTrack, 0];
 			int crcnl = _CRCNL[_currentTrack, 0];
 			int peak = _Peak[_currentTrack];
-			//fixed (ushort* exp = expTbl, log = logTbl, synptr = syndrome)
+			
 			for (int i = 0; i < count; i++)
 			{
 				if (offs >= 0)
@@ -467,7 +628,7 @@ namespace CUETools.AccurateRip
 
 				uint sample = *(pSampleBuff++);
 				crcsm += sample;
-				crcar += sample * (uint)(currentOffset + i + 1);
+				crcar += sample * (uint)(_samplesDoneTrack + i + 1);
 
 				uint lo = sample & 0xffff;
 				crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ lo)];
@@ -510,7 +671,8 @@ namespace CUETools.AccurateRip
 			_Peak[_currentTrack] = peak;
 		}
 
-		private long _samplesRemTrack = 0;
+		private int _samplesRemTrack = 0;
+		private int _samplesDoneTrack = 0;
 
 		public long Position
 		{
@@ -521,14 +683,15 @@ namespace CUETools.AccurateRip
 			set
 			{
 				_sampleCount = value;
-				int tempLocation = (int)_toc[_toc.FirstAudio][0].Start * 588;
+				int tempLocation = 0; // NOT (int)_toc[_toc.FirstAudio][0].Start * 588;
 				for (int iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
 				{
 					int tempLen = (int)(iTrack == 0 ? _toc[_toc.FirstAudio].Pregap : _toc[_toc.FirstAudio + iTrack - 1].Length) * 588;
 					if (tempLocation + tempLen > _sampleCount)
 					{
 						_currentTrack = iTrack;
-						_samplesRemTrack = tempLocation + tempLen - _sampleCount;
+						_samplesRemTrack = tempLocation + tempLen - (int)_sampleCount;
+						_samplesDoneTrack = (int)_sampleCount - tempLocation;
 						return;
 					}
 					tempLocation += tempLen;
@@ -549,55 +712,67 @@ namespace CUETools.AccurateRip
 				{
 					// Process no more than there is in the buffer, no more than there is in this track, and no more than up to a sector boundary.
 					int copyCount = Math.Min(Math.Min(sampleBuffer.Length - pos, (int)_samplesRemTrack), 588 - (int)_sampleCount % 588);
-					// Calculate offset within a track
-					int currentOffset = (int)_sampleCount - (int)(_currentTrack > 0 ? _toc[_currentTrack + _toc.FirstAudio - 1].Start * 588 : 0);
-					int currentSector = currentOffset / 588;
-					int remaingSectors = (int)(_samplesRemTrack - 1) / 588;
+					int currentSector = _samplesDoneTrack / 588;
+					int remaingSectors = (_samplesRemTrack - 1) / 588;
 					uint* samples = ((uint*)pSampleBuff) + pos;
 					int currentPart = ((int)_sampleCount * 2) % stride;
 					ushort* synptr = synptr1 + npar * currentPart;
 					ushort* wr = ((ushort*)bpar) + npar * currentPart;
 					int currentStride = ((int)_sampleCount * 2) / stride;
 
-					if (currentStride < 2 && leadin != null)
-						for (int i = 0; i < copyCount * 2; i++)
-							leadin[_sampleCount * 2 + i] = ((ushort*)samples)[i];
+					for (int i = 0; i < Math.Min(leadin.Length - (int)_sampleCount * 2, copyCount * 2); i++)
+						leadin[_sampleCount * 2 + i] = ((ushort*)samples)[i];
 
-					if (currentStride >= stridecount && leadout != null)
-						for (int i = 0; i < copyCount * 2; i++)
-						{
-							int remaining = (int)(_finalSampleCount - _sampleCount) * 2 - i - 1;
-							if (remaining < stride + laststride)
-								leadout[remaining] = ((ushort*)samples)[i];
-						}
-
+					for (int i = Math.Max(0, (int)(_finalSampleCount - _sampleCount) * 2 - leadout.Length); i < copyCount * 2; i++)
+					//if (currentStride >= stridecount && leadout != null)
+					//for (int i = 0; i < copyCount * 2; i++)
+					{
+						int remaining = (int)(_finalSampleCount - _sampleCount) * 2 - i - 1;
+						leadout[remaining] = ((ushort*)samples)[i];
+					}
+					
 					if (currentSector < 10)
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, currentOffset, currentOffset);
+						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, _samplesDoneTrack);
 					else if (remaingSectors < 10)
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, currentOffset, 20 * 588 - (int)_samplesRemTrack);
+						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, 20 * 588 - _samplesRemTrack);
 					else if (currentSector >= 445 && currentSector <= 455)
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, currentOffset, 20 * 588 + currentOffset - 445 * 588);
+						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, 20 * 588 + _samplesDoneTrack - 445 * 588);
 					else
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, currentOffset, -1);
+						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, -1);
 
 					pos += copyCount;
 					_samplesRemTrack -= copyCount;
+					_samplesDoneTrack += copyCount;
 					_sampleCount += copyCount;
 
 					while (_samplesRemTrack <= 0)
 					{
 						if (++_currentTrack > _toc.AudioTracks)
 							return;
-						_samplesRemTrack = _toc[_currentTrack + _toc.FirstAudio - 1].Length * 588;
+						_samplesRemTrack = (int)_toc[_currentTrack + _toc.FirstAudio - 1].Length * 588;
+						_samplesDoneTrack = 0;
 					}
 				}
 		}
 
 		public void Combine(AccurateRipVerify part, int start, int end)
 		{
+			for (int i = 0; i < leadin.Length; i++)
+			{
+				int currentOffset = i / 2;
+				if (currentOffset >= start && currentOffset < end)
+					this.leadin[i] = part.leadin[i];
+			}
+			for (int i = 0; i < leadout.Length; i++)
+			{
+				int currentOffset = (int)_finalSampleCount - i / 2 - 1;
+				if (currentOffset >= start && currentOffset < end)
+					this.leadout[i] = part.leadout[i];
+			}
 			for (int iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
 			{
-				int tempLocation = (int) (iTrack == 0 ? _toc[_toc.FirstAudio][0].Start : _toc[_toc.FirstAudio + iTrack - 1].Start) * 588;
+				// ??? int tempLocation = (int) (iTrack == 0 ? _toc[_toc.FirstAudio][0].Start : _toc[_toc.FirstAudio + iTrack - 1].Start) * 588;
+				int tempLocation = (int) (iTrack == 0 ? 0 : _toc[_toc.FirstAudio + iTrack - 1].Start - _toc[_toc.FirstAudio][0].Start) * 588;
 				int tempLen = (int) (iTrack == 0 ? _toc[_toc.FirstAudio].Pregap : _toc[_toc.FirstAudio + iTrack - 1].Length) * 588;
 				int trStart = Math.Max(tempLocation, start);
 				int trEnd = Math.Min(tempLocation + tempLen, end);
@@ -660,24 +835,22 @@ namespace CUETools.AccurateRip
 			_Peak = new int[_toc.AudioTracks + 1];
 			syndrome = new ushort[calcSyn ? stride : 1, npar];
 			parity = new byte[stride * npar * 2];
-			if (calcSyn || calcParity)
-			{
-				leadin = new ushort[stride * 2];
-				leadout = new ushort[stride + laststride];
-			}
-			else
-			{
-				leadin = null;
-				leadout = null;
-			}
+			int leadin_len = Math.Max(4096 * 4, (calcSyn || calcParity) ? stride * 2 : 0);
+			int leadout_len = Math.Max(4096 * 4, (calcSyn || calcParity) ? stride + laststride : 0);
+			leadin = new ushort[leadin_len];
+			leadout = new ushort[leadout_len];
 			_currentTrack = 0;
-			Position = _toc[_toc.FirstAudio][0].Start * 588;
+			Position = 0; // NOT _toc[_toc.FirstAudio][0].Start * 588;
 		}
 
 		private uint readIntLE(byte[] data, int pos)
 		{
 			return (uint)(data[pos] + (data[pos + 1] << 8) + (data[pos + 2] << 16) + (data[pos + 3] << 24));
 		}
+
+        static DateTime last_accessed;
+        static readonly TimeSpan min_interval = new TimeSpan (5000000); // 0.5 second
+        static readonly object server_mutex = new object ();
 
 		public void ContactAccurateRip(string accurateRipId)
 		{
@@ -703,72 +876,89 @@ namespace CUETools.AccurateRip
 			req.Method = "GET";
 			req.Proxy = proxy;
 
-			try
+			lock (server_mutex)
 			{
-				HttpWebResponse response = (HttpWebResponse)req.GetResponse();
-				ExceptionStatus = WebExceptionStatus.ProtocolError;
-				ResponseStatus = response.StatusCode;
-				if (ResponseStatus == HttpStatusCode.OK)
+				// Don't access the AR server twice within min_interval
+				if (last_accessed != null)
 				{
-					ExceptionStatus = WebExceptionStatus.Success;
+					TimeSpan time = DateTime.Now - last_accessed;
+					if (min_interval > time)
+						Thread.Sleep((min_interval - time).Milliseconds);
+				}
 
-					// Retrieve response stream and wrap in StreamReader
-					Stream respStream = response.GetResponseStream();
-
-					// Allocate byte buffer to hold stream contents
-					byte[] urlData = new byte[13];
-					int urlDataLen, bytesRead;
-
-					_accDisks.Clear();
-					while (true)
+				try
+				{
+					using (HttpWebResponse response = (HttpWebResponse)req.GetResponse())
 					{
-						for (urlDataLen = 0; urlDataLen < 13; urlDataLen += bytesRead)
+						ExceptionStatus = WebExceptionStatus.ProtocolError;
+						ResponseStatus = response.StatusCode;
+						if (ResponseStatus == HttpStatusCode.OK)
 						{
-							bytesRead = respStream.Read(urlData, urlDataLen, 13 - urlDataLen);
-							if (0 == bytesRead)
-								break;
-						}
-						if (urlDataLen == 0)
-							break;
-						if (urlDataLen < 13)
-						{
-							ExceptionStatus = WebExceptionStatus.ReceiveFailure;
-							return;
-						}
-						AccDisk dsk = new AccDisk();
-						dsk.count = urlData[0];
-						dsk.discId1 = readIntLE(urlData, 1);
-						dsk.discId2 = readIntLE(urlData, 5);
-						dsk.cddbDiscId = readIntLE(urlData, 9);
+							ExceptionStatus = WebExceptionStatus.Success;
 
-						for (int i = 0; i < dsk.count; i++)
-						{
-							for (urlDataLen = 0; urlDataLen < 9; urlDataLen += bytesRead)
+							// Retrieve response stream and wrap in StreamReader
+							Stream respStream = response.GetResponseStream();
+
+							// Allocate byte buffer to hold stream contents
+							byte[] urlData = new byte[13];
+							int urlDataLen, bytesRead;
+
+							_accDisks.Clear();
+							while (true)
 							{
-								bytesRead = respStream.Read(urlData, urlDataLen, 9 - urlDataLen);
-								if (0 == bytesRead)
+								for (urlDataLen = 0; urlDataLen < 13; urlDataLen += bytesRead)
+								{
+									bytesRead = respStream.Read(urlData, urlDataLen, 13 - urlDataLen);
+									if (0 == bytesRead)
+										break;
+								}
+								if (urlDataLen == 0)
+									break;
+								if (urlDataLen < 13)
 								{
 									ExceptionStatus = WebExceptionStatus.ReceiveFailure;
 									return;
 								}
+								AccDisk dsk = new AccDisk();
+								dsk.count = urlData[0];
+								dsk.discId1 = readIntLE(urlData, 1);
+								dsk.discId2 = readIntLE(urlData, 5);
+								dsk.cddbDiscId = readIntLE(urlData, 9);
+
+								for (int i = 0; i < dsk.count; i++)
+								{
+									for (urlDataLen = 0; urlDataLen < 9; urlDataLen += bytesRead)
+									{
+										bytesRead = respStream.Read(urlData, urlDataLen, 9 - urlDataLen);
+										if (0 == bytesRead)
+										{
+											ExceptionStatus = WebExceptionStatus.ReceiveFailure;
+											return;
+										}
+									}
+									AccTrack trk = new AccTrack();
+									trk.count = urlData[0];
+									trk.CRC = readIntLE(urlData, 1);
+									trk.Frame450CRC = readIntLE(urlData, 5);
+									dsk.tracks.Add(trk);
+								}
+								_accDisks.Add(dsk);
 							}
-							AccTrack trk = new AccTrack();
-							trk.count = urlData[0];
-							trk.CRC = readIntLE(urlData, 1);
-							trk.Frame450CRC = readIntLE(urlData, 5);
-							dsk.tracks.Add(trk);
+							respStream.Close();
 						}
-						_accDisks.Add(dsk);
 					}
-					respStream.Close();
 				}
-			}
-			catch (WebException ex)
-			{
-				ExceptionStatus = ex.Status;
-				ExceptionMessage = ex.Message;
-				if (ExceptionStatus == WebExceptionStatus.ProtocolError)
-					ResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
+				catch (WebException ex)
+				{
+					ExceptionStatus = ex.Status;
+					ExceptionMessage = ex.Message;
+					if (ExceptionStatus == WebExceptionStatus.ProtocolError)
+						ResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
+				}
+				finally
+				{
+					last_accessed = DateTime.Now;
+				}
 			}
 		}
 

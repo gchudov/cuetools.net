@@ -99,7 +99,55 @@ namespace CUETools.TestCodecs
 			CollectionAssert.AreEqual(File.ReadAllBytes("flake.flac"), File.ReadAllBytes("flakewriter1.flac"), "flakewriter1.flac doesn't match.");
 		}
 
+		public static unsafe void
+		compute_schur_reflection(/*const*/ double* autoc, uint max_order,
+							  double* dreff/*[][MAX_LPC_ORDER]*/, double* err)
+		{
+			float* gen0 = stackalloc float[lpc.MAX_LPC_ORDER];
+			float* gen1 = stackalloc float[lpc.MAX_LPC_ORDER];
+
+			// Schur recursion
+			for (uint i = 0; i < max_order; i++)
+				gen0[i] = gen1[i] = (float)autoc[i + 1];
+			float error = (float)autoc[0];
+
+			for (uint i = 0; i < max_order; i++)
+			{
+				float reff = -gen1[0] / error;
+				error += gen1[0] * reff; 
+
+				for (uint j = 0; j < max_order - i - 1; j++)
+				{
+					gen1[j] = gen1[j + 1] + reff * gen0[j];
+					gen0[j] = gen1[j + 1] * reff + gen0[j];
+				}
+
+				dreff[i] = reff;
+				err[i] = error;
+			}
+		}
+
+
+		[TestMethod()]
+		public unsafe void LPCTest()
+		{
+			double* autoc = stackalloc double[9];
+			double* reff = stackalloc double[8];
+			double* err = stackalloc double[8];
+			float* lpcs = stackalloc float[9 * lpc.MAX_LPC_ORDER];
+			autoc[0] = 177286873088.0;
+			autoc[1] = 177010016256.0;
+			autoc[2] = 176182624256.0;
+			autoc[3] = 174806581248.0;
+			autoc[4] = 172888768512.0;
+			autoc[5] = 170436820992.0;
+			autoc[6] = 167460765696.0;
+			autoc[7] = 163973169152.0;
+			autoc[8] = 159987859456.0;
+
+			compute_schur_reflection(autoc, 8, reff, err);
+			lpc.compute_lpc_coefs(8, reff, lpcs);
+			Assert.IsTrue(lpcs[7 * lpc.MAX_LPC_ORDER] < 3000);
+		}
 	}
-
-
 }

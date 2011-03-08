@@ -430,6 +430,14 @@ namespace CUETools.AccurateRip
 			return fix;
 		}
 
+		public string OffsetSafeCRC
+		{
+			get
+			{
+				return ar.OffsetSafeCRC.Base64;
+			}
+		}
+
 		public byte[] Parity
 		{
 			get

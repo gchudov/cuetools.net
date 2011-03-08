@@ -271,7 +271,7 @@
     <value>fileSystemTreeView1</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.0.9.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
     <value>grpInput</value>
@@ -312,6 +312,141 @@
   <data name="tableLayoutPanel2.ColumnCount" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
+  <data name="tableLayoutPanelVerifyMode.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="checkBoxSkipRecent.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxSkipRecent.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="checkBoxSkipRecent.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxSkipRecent.Location" type="System.Drawing.Point, System.Drawing">
+    <value>99, 3</value>
+  </data>
+  <data name="checkBoxSkipRecent.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 29</value>
+  </data>
+  <data name="checkBoxSkipRecent.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>153, 8</value>
+  </metadata>
+  <data name="checkBoxSkipRecent.ToolTip" xml:space="preserve">
+    <value>Skip recently verified</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.Name" xml:space="preserve">
+    <value>checkBoxSkipRecent</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.Parent" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.Location" type="System.Drawing.Point, System.Drawing">
+    <value>51, 3</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 29</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.ToolTip" xml:space="preserve">
+    <value>Use local database</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.Name" xml:space="preserve">
+    <value>checkBoxVerifyUseLocal</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.Parent" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 3</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 29</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="checkBoxVerifyUseCDRepair.ToolTip" xml:space="preserve">
+    <value>Use CTDB (CUETools database)</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Name" xml:space="preserve">
+    <value>checkBoxVerifyUseCDRepair</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Parent" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 17</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.RowCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>144, 110</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Name" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Parent" xml:space="preserve">
+    <value>groupBoxMode</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxSkipRecent" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxVerifyUseLocal" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxVerifyUseCDRepair" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33,33333,Percent,33,33333,Percent,33,33333,Absolute,20" /&gt;&lt;Rows Styles="Percent,32,72727,Percent,67,27273" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
   <data name="tableLayoutPanelCUEStyle.ColumnCount" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
@@ -336,9 +471,6 @@
   <data name="checkBoxUseAccurateRip.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>153, 8</value>
-  </metadata>
   <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
     <value>Use AccurateRip</value>
   </data>
@@ -571,7 +703,7 @@
     <value>groupBoxMode</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanelCUEStyle.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="tableLayoutPanelCUEStyle.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxUseAccurateRip" Row="4" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxUseFreeDb" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="rbTracks" Row="2" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbEmbedCUE" Row="0" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbSingleFile" Row="1" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="checkBoxUseMusicBrainz" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33,33332,Percent,33,33334,Percent,33,33334" /&gt;&lt;Rows Styles="Percent,18,18229,Percent,18,18229,Percent,18,18229,Percent,22,72658,Percent,22,72658" /&gt;&lt;/TableLayoutSettings&gt;</value>
@@ -652,73 +784,7 @@
     <value>groupBoxMode</value>
   </data>
   <data name="&gt;&gt;toolStripCorrectorFormat.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.ColumnCount" type="System.Int32, mscorlib">
     <value>2</value>
-  </data>
-  <data name="checkBoxVerifyUseCDRepair.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="checkBoxVerifyUseCDRepair.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="checkBoxVerifyUseCDRepair.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="checkBoxVerifyUseCDRepair.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 3</value>
-  </data>
-  <data name="checkBoxVerifyUseCDRepair.Size" type="System.Drawing.Size, System.Drawing">
-    <value>45, 29</value>
-  </data>
-  <data name="checkBoxVerifyUseCDRepair.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Name" xml:space="preserve">
-    <value>checkBoxVerifyUseCDRepair</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Parent" xml:space="preserve">
-    <value>tableLayoutPanelVerifyMode</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 17</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.RowCount" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 110</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.ToolTip" xml:space="preserve">
-    <value>Use CUETools database</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Name" xml:space="preserve">
-    <value>tableLayoutPanelVerifyMode</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Parent" xml:space="preserve">
-    <value>groupBoxMode</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxVerifyUseCDRepair" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,36,11111,Percent,63,88889" /&gt;&lt;Rows Styles="Percent,32,72727,Percent,67,27273" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="groupBoxMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -1313,6 +1379,12 @@
   </data>
   <data name="toolStripMenuItemInputBrowserDrag.Text" xml:space="preserve">
     <value>Drag'n'drop mode</value>
+  </data>
+  <data name="toolStripMenuItemLocalDatabase.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 22</value>
+  </data>
+  <data name="toolStripMenuItemLocalDatabase.Text" xml:space="preserve">
+    <value>Local database</value>
   </data>
   <data name="toolStripMenuItemInputBrowserHide.Size" type="System.Drawing.Size, System.Drawing">
     <value>177, 22</value>
@@ -2359,28 +2431,46 @@
     <value>False</value>
   </data>
   <data name="SelectedNodeName.Size" type="System.Drawing.Size, System.Drawing">
-    <value>205, 22</value>
+    <value>223, 22</value>
   </data>
   <data name="SelectedNodeName.Text" xml:space="preserve">
     <value>Selected file</value>
   </data>
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>202, 6</value>
+    <value>220, 6</value>
   </data>
   <data name="setAsMyMusicFolderToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>205, 22</value>
+    <value>223, 22</value>
   </data>
   <data name="setAsMyMusicFolderToolStripMenuItem.Text" xml:space="preserve">
     <value>Set as My Music folder</value>
   </data>
   <data name="resetToOriginalLocationToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>205, 22</value>
+    <value>223, 22</value>
   </data>
   <data name="resetToOriginalLocationToolStripMenuItem.Text" xml:space="preserve">
     <value>Reset to original location</value>
   </data>
+  <data name="editMetadataToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>223, 22</value>
+  </data>
+  <data name="editMetadataToolStripMenuItem.Text" xml:space="preserve">
+    <value>Edit metadata</value>
+  </data>
+  <data name="addFolderToLocalDatabaseToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>223, 22</value>
+  </data>
+  <data name="addFolderToLocalDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Add folder to local database</value>
+  </data>
+  <data name="removeItemFromDatabaseToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>223, 22</value>
+  </data>
+  <data name="removeItemFromDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Remove item from database</value>
+  </data>
   <data name="contextMenuStripFileTree.Size" type="System.Drawing.Size, System.Drawing">
-    <value>206, 76</value>
+    <value>224, 142</value>
   </data>
   <data name="&gt;&gt;contextMenuStripFileTree.Name" xml:space="preserve">
     <value>contextMenuStripFileTree</value>
@@ -2388,11 +2478,14 @@
   <data name="&gt;&gt;contextMenuStripFileTree.Type" xml:space="preserve">
     <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <metadata name="backgroundWorkerAddToLocalDB.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>845, 8</value>
+  </metadata>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>29</value>
+    <value>30</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>6, 13</value>
@@ -2804,7 +2897,7 @@
     <value>700, 538</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUETools 2.0.9</value>
+    <value>CUETools 2.1.1</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>
@@ -2894,6 +2987,12 @@
     <value>toolStripMenuItemInputBrowserDrag</value>
   </data>
   <data name="&gt;&gt;toolStripMenuItemInputBrowserDrag.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemLocalDatabase.Name" xml:space="preserve">
+    <value>toolStripMenuItemLocalDatabase</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemLocalDatabase.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripMenuItemInputBrowserHide.Name" xml:space="preserve">
@@ -3021,6 +3120,30 @@
   </data>
   <data name="&gt;&gt;resetToOriginalLocationToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;editMetadataToolStripMenuItem.Name" xml:space="preserve">
+    <value>editMetadataToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;editMetadataToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;addFolderToLocalDatabaseToolStripMenuItem.Name" xml:space="preserve">
+    <value>addFolderToLocalDatabaseToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;addFolderToLocalDatabaseToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;removeItemFromDatabaseToolStripMenuItem.Name" xml:space="preserve">
+    <value>removeItemFromDatabaseToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;removeItemFromDatabaseToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;backgroundWorkerAddToLocalDB.Name" xml:space="preserve">
+    <value>backgroundWorkerAddToLocalDB</value>
+  </data>
+  <data name="&gt;&gt;backgroundWorkerAddToLocalDB.Type" xml:space="preserve">
+    <value>System.ComponentModel.BackgroundWorker, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmCUETools</value>

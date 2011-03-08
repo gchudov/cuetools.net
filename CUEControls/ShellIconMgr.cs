@@ -183,6 +183,16 @@ namespace CUEControls
 			DestroyIcon(info.hIcon);
 			return iIcon;
 		}
+
+		public int GetIconIndex(string filename)
+		{
+			int iIcon;
+			if (m_extension_map.TryGetValue(Path.GetExtension(filename).ToLower(), out iIcon))
+				return iIcon;
+			if (m_extension_map.TryGetValue(".wav", out iIcon))
+				return iIcon;
+			return 0;
+		}
 		#endregion
 
 		#region private methods

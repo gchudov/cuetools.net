@@ -68,7 +68,7 @@
 			this.IsMdiContainer = true;
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "frmCUEPlayer";
-			this.Text = "CUEPlayer 2.0.9";
+			this.Text = "CUEPlayer 2.1.1";
 			this.Load += new System.EventHandler(this.frmCUEPlayer_Load);
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmCUEPlayer_FormClosing);
 			this.menuStrip1.ResumeLayout(false);

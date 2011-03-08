@@ -26,6 +26,7 @@ namespace CUEControls
 		/// <param name="open">if true, the file is "open", most useful for folders</param>
 		/// <returns>the index into the image list for the icon associated with this file</returns>
 		int GetIconIndex(ExtraSpecialFolder folder, bool open);
+		int GetIconIndex(string filename);
 		void SetExtensionIcon(string extension, Image icon);
 		void SetExtensionIcon(string extension, Icon icon);
 		string GetFolderPath(ExtraSpecialFolder folder);
@@ -278,6 +279,16 @@ namespace CUEControls
 		/// <returns>the index into the image list for the icon associated with this file</returns>
 		public int GetIconIndex(ExtraSpecialFolder folder, bool open)
 		{
+			return 0;
+		}
+
+		public int GetIconIndex(string filename)
+		{
+			int iIcon;
+			if (m_extension_map.TryGetValue(Path.GetExtension(filename).ToLower(), out iIcon))
+				return iIcon;
+			if (m_extension_map.TryGetValue(".wav", out iIcon))
+				return iIcon;
 			return 0;
 		}
 		#endregion

@@ -85,16 +85,16 @@ int CNNFilter::Decompress(int nInput)
     int nDotProduct;
 
     if (m_bMMXAvailable)
+    {
         nDotProduct = CalculateDotProduct(&m_rbInput[-m_nOrder], &m_paryM[0], m_nOrder);
-    else
-        nDotProduct = CalculateDotProductNoMMX(&m_rbInput[-m_nOrder], &m_paryM[0], m_nOrder);
-    
-    // adapt
-    if (m_bMMXAvailable)
         Adapt(&m_paryM[0], &m_rbDeltaM[-m_nOrder], -nInput, m_nOrder);
+    }
     else
+    {
+        nDotProduct = CalculateDotProductNoMMX(&m_rbInput[-m_nOrder], &m_paryM[0], m_nOrder);
         AdaptNoMMX(&m_paryM[0], &m_rbDeltaM[-m_nOrder], nInput, m_nOrder);
-
+    }
+    
     // store the output value
     int nOutput = nInput + ((nDotProduct + (1 << (m_nShift - 1))) >> m_nShift);
 

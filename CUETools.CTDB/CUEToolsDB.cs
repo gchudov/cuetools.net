@@ -188,7 +188,11 @@ namespace CUETools.CTDB
 
 		public string Confirm(DBEntry entry)
 		{
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/confirm.php?tocid=" + toc.TOCID + "&id=" + entry.id + "&userid=" + GetUUID());
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + 
+				"/confirm.php?tocid=" + toc.TOCID + 
+				"&id=" + entry.id + 
+				"&userid=" + GetUUID() + 
+				"&offscrc=" + verify.OffsetSafeCRC.Replace('+', '.').Replace('/', '_').Replace('=', '-').Replace("\r", "").Replace("\n", ""));
 			req.Method = "GET";
 			req.Proxy = proxy;
 			req.UserAgent = userAgent;
@@ -253,6 +257,7 @@ namespace CUETools.CTDB
 					using (DBHDR CONF = DISC.HDR("CONF")) CONF.Write(confidence);
 					using (DBHDR NPAR = DISC.HDR("NPAR")) NPAR.Write(verify.NPAR);
 					using (DBHDR CRC_ = DISC.HDR("CRC ")) CRC_.Write(verify.CRC);
+					using (var OFFS = DISC.HDR("OFFS")) OFFS.Write(verify.OffsetSafeCRC);
 					using (DBHDR PAR_ = DISC.HDR("PAR ")) PAR_.Write(verify.Parity);
 				}
 			}

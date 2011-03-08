@@ -40,9 +40,169 @@ namespace CUEControls
 	public delegate void FileSystemTreeViewNodeExpandHandler(object sender, FileSystemTreeViewNodeExpandEventArgs e);
 	#endregion
 
+	public class DummyNode : TreeNode
+	{
+	}
+
+	public abstract class FileSystemTreeNode : TreeNode
+	{
+		protected IIconManager icon_mgr;
+
+		abstract public string Path
+		{
+			get;
+		}
+
+		abstract public string DisplayName
+		{
+			get;
+		}
+
+		abstract public int DisplayIcon
+		{
+			get;
+		}
+
+		public bool IsExpandable
+		{
+			get
+			{
+				return Nodes.Count == 1 && Nodes[0] is DummyNode;
+			}
+
+			set
+			{
+				if (value)
+				{
+					Nodes.Clear();
+					Nodes.Add(new DummyNode());
+				}
+			}
+		}
+
+		public FileSystemTreeNode(IIconManager icon_mgr, bool expandable)
+		{
+			this.icon_mgr = icon_mgr;
+			if (expandable)
+				IsExpandable = true;
+		}
+
+		virtual public void DoExpand()
+		{
+			if (!Directory.Exists(this.Path))
+				return;
+			var info = new DirectoryInfo(this.Path);
+			FileSystemTreeViewNodeExpandEventArgs e = new FileSystemTreeViewNodeExpandEventArgs();
+			e.node = this;
+			e.files = info.GetFileSystemInfos();
+			(this.TreeView as FileSystemTreeView).OnDoExpand(e);
+		}
+	}
+
+	public class FileSystemTreeNodeSpecialFolder : FileSystemTreeNode
+	{
+		public ExtraSpecialFolder Folder
+		{
+			get;
+			private set;
+		}
+
+		public override string Path
+		{
+			get
+			{
+				return icon_mgr.GetFolderPath(Folder);
+			}
+		}
+
+		public override string DisplayName
+		{
+			get
+			{
+				return icon_mgr.GetDisplayName(Folder);
+			}
+		}
+
+		public override int DisplayIcon
+		{
+			get
+			{
+				return icon_mgr.GetIconIndex(Folder, !IsExpandable);
+			}
+		}
+
+		public FileSystemTreeNodeSpecialFolder(IIconManager icon_mgr, ExtraSpecialFolder folder)
+			: base(icon_mgr, true)
+		{
+			this.Folder = folder;
+			this.SelectedImageIndex = this.ImageIndex = this.DisplayIcon;
+			this.Text = this.DisplayName;
+		}
+
+		public override void DoExpand()
+		{
+			switch (Folder)
+			{
+				case ExtraSpecialFolder.Desktop:
+					foreach (ExtraSpecialFolder fldr in (this.TreeView as FileSystemTreeView).SpecialFolders)
+						try { Nodes.Add(new FileSystemTreeNodeSpecialFolder(icon_mgr, fldr)); }
+						catch { }
+					break;
+				case ExtraSpecialFolder.MyComputer:
+					if (Path == "/")
+						break;
+					foreach (DriveInfo di in DriveInfo.GetDrives())
+						try { Nodes.Add(new FileSystemTreeNodeFileSystemInfo(icon_mgr, new DirectoryInfo(di.Name))); }
+						catch { }
+					return;
+			}
+			base.DoExpand();
+		}
+	}
+
+	public class FileSystemTreeNodeFileSystemInfo : FileSystemTreeNode
+	{
+		public FileSystemInfo File
+		{
+			get;
+			private set;
+		}
+
+		public override string Path
+		{
+			get
+			{
+				return File.FullName;
+			}
+		}
+
+		public override string DisplayName
+		{
+			get
+			{
+				return icon_mgr.GetDisplayName(File);
+			}
+		}
+
+		public override int DisplayIcon
+		{
+			get
+			{
+				return icon_mgr.GetIconIndex(File, !IsExpandable);
+			}
+		}
+
+		public FileSystemTreeNodeFileSystemInfo(IIconManager icon_mgr, FileSystemInfo file)
+			: base(icon_mgr, (file.Attributes & FileAttributes.Directory) != 0)
+		{
+			this.File = file;
+			this.SelectedImageIndex = this.ImageIndex = this.DisplayIcon;
+			this.Text = this.DisplayName;
+		}
+	}
+
 	public partial class FileSystemTreeView : TreeView
 	{
-		private const string DummyNodeText = "DUMMY";
 		private IIconManager m_icon_mgr;
 		private ExtraSpecialFolder[] m_extra_folders;
 
@@ -117,10 +277,8 @@ namespace CUEControls
 			{
 				if (!DesignMode && SelectedNode != null)
 				{
-					if (SelectedNode.Tag is FileSystemInfo) 
-						return ((FileSystemInfo)SelectedNode.Tag).FullName;
-					if (SelectedNode.Tag is ExtraSpecialFolder)
-						return m_icon_mgr.GetFolderPath((ExtraSpecialFolder)SelectedNode.Tag);
+					if (SelectedNode is FileSystemTreeNode)
+						return (SelectedNode as FileSystemTreeNode).Path;
 					if (SelectedNode.Tag is string)
 						return (string)SelectedNode.Tag;
 				}
@@ -145,9 +303,8 @@ namespace CUEControls
 			}
 			get
 			{
-				if (!DesignMode && SelectedNode != null)
-					if (SelectedNode.Tag is ExtraSpecialFolder)
-						return (ExtraSpecialFolder)SelectedNode.Tag;
+				if (!DesignMode && SelectedNode as FileSystemTreeNodeSpecialFolder != null)
+					return (SelectedNode as FileSystemTreeNodeSpecialFolder).Folder;
 				return ExtraSpecialFolder.Desktop;
 			}
 		}
@@ -170,7 +327,7 @@ namespace CUEControls
 		private TreeNode LookupNode(TreeNodeCollection nodes, ExtraSpecialFolder tag)
 		{
 			foreach (TreeNode node in nodes)
-				if (node.Tag is ExtraSpecialFolder && (ExtraSpecialFolder)node.Tag == tag)
+				if (node is FileSystemTreeNodeSpecialFolder && (node as FileSystemTreeNodeSpecialFolder).Folder == tag)
 					return node;
 			return null;
 		}
@@ -196,10 +353,10 @@ namespace CUEControls
 			}
 
 			foreach (TreeNode node in desktop.Nodes)
-				if (node.Tag is ExtraSpecialFolder)
+				if (node is FileSystemTreeNodeSpecialFolder)
 				{
-					specialPath = m_icon_mgr.GetFolderPath((ExtraSpecialFolder)node.Tag);
-					if (specialPath != null && path.StartsWith(specialPath.ToUpper()) && (top == null || m_icon_mgr.GetFolderPath((ExtraSpecialFolder)top.Tag).Length < specialPath.Length))
+					specialPath = (node as FileSystemTreeNodeSpecialFolder).Path;
+					if (specialPath != null && path.StartsWith(specialPath.ToUpper()) && (top as FileSystemTreeNodeSpecialFolder == null || (top as FileSystemTreeNodeSpecialFolder).Path.Length < specialPath.Length))
 					{
 						if (path == specialPath.ToUpper())
 							return node;
@@ -222,9 +379,9 @@ namespace CUEControls
 				found = false;
 				foreach (TreeNode node in top.Nodes)
 				{
-					if (node.Tag is FileSystemInfo)
+					if (node is FileSystemTreeNodeFileSystemInfo)
 					{
-						string prefix = ((FileSystemInfo)node.Tag).FullName.ToUpper();
+						string prefix = (node as FileSystemTreeNodeFileSystemInfo).File.FullName.ToUpper();
 						if (path == prefix)
 							return node;
 						if (path.StartsWith(prefix) && (prefix.EndsWith(PathSeparator) || path.Substring(prefix.Length).StartsWith(PathSeparator)))
@@ -239,31 +396,23 @@ namespace CUEControls
 			return null;
 		}
 
-		private bool IsDummy(TreeNode n)
-		{
-			return n.Nodes.Count == 1 && n.Nodes[0].Tag == null && n.Nodes[0].Text == DummyNodeText;
-		}
-
 		public TreeNode NewNode(ExtraSpecialFolder folder)
 		{
-			TreeNode node = new TreeNode();
-			node.Tag = folder;
-			node.ImageIndex = m_icon_mgr.GetIconIndex(folder, false);
-			node.SelectedImageIndex = node.ImageIndex;
-			node.Text = m_icon_mgr.GetDisplayName(folder);
-			node.Nodes.Add(DummyNodeText);
-			return node;
+			return new FileSystemTreeNodeSpecialFolder(m_icon_mgr, folder);
 		}
 
-		public TreeNode NewNode(FileSystemInfo file, bool expandable)
+		public TreeNode NewNode(FileSystemInfo file)
 		{
-			TreeNode node = new TreeNode();
-			node.Tag = file;
-			node.ImageIndex = m_icon_mgr.GetIconIndex(file, false);
-			node.SelectedImageIndex = node.ImageIndex;
-			node.Text = m_icon_mgr.GetDisplayName(file);
-			if (expandable) node.Nodes.Add(DummyNodeText);
-			return node;
+			return new FileSystemTreeNodeFileSystemInfo(m_icon_mgr, file);
+		}
+
+		public TreeNode NewNode(string file)
+		{
+			if (File.Exists(file))
+				return new FileSystemTreeNodeFileSystemInfo(m_icon_mgr, new FileInfo(file));
+			var icon = m_icon_mgr.GetIconIndex(file);
+			var res = new TreeNode(Path.GetFileNameWithoutExtension(file), icon, icon);
+			return res;
 		}
 
 		/// <summary>
@@ -272,24 +421,28 @@ namespace CUEControls
 		/// <param name="e">the arguments giving the node to be expanded</param>
 		protected override void OnBeforeExpand(TreeViewCancelEventArgs e)
 		{
-			if (!IsDummy(e.Node))
-				return;
-
-			e.Node.Nodes.Clear();
-			try
+			FileSystemTreeNode node = e.Node as FileSystemTreeNode;
+			if (node != null && node.IsExpandable)
 			{
-				ExpandDirInNode(e.Node);
-				base.OnBeforeExpand(e);
+				BeginUpdate();
+				node.Nodes.Clear();
+				try
+				{
+					node.DoExpand();
+					node.SelectedImageIndex = node.ImageIndex = node.DisplayIcon;
+				}
+				catch (Exception ex)
+				{
+					node.Text = node.DisplayName + " : " + ex.Message;
+					node.IsExpandable = true;
+					e.Cancel = true;
+				}
+				finally
+				{
+					EndUpdate();
+				}
 			}
-			catch (Exception ex)
-			{
-				e.Node.Text = (e.Node.Tag is FileSystemInfo ? m_icon_mgr.GetDisplayName((FileSystemInfo)e.Node.Tag) : 
-					e.Node.Tag is ExtraSpecialFolder ? m_icon_mgr.GetDisplayName((ExtraSpecialFolder)e.Node.Tag) : ""
-					) + " : " + ex.Message;
-				e.Node.Nodes.Clear();
-				e.Node.Nodes.Add(DummyNodeText);
-				e.Cancel = true;
-			}
+			base.OnBeforeExpand(e);
 		}
 
 		/// <summary>
@@ -299,75 +452,23 @@ namespace CUEControls
 		/// <param name="e"></param>
 		protected override void OnAfterCollapse(TreeViewEventArgs e)
 		{
-			e.Node.Nodes.Clear();
-
-			// Add the dummy node
-			e.Node.Nodes.Add(DummyNodeText);
-			if (e.Node.Tag is ExtraSpecialFolder)
-				e.Node.ImageIndex = m_icon_mgr.GetIconIndex((ExtraSpecialFolder)e.Node.Tag, false);
-			else if (e.Node.Tag is DirectoryInfo)
-				e.Node.ImageIndex = m_icon_mgr.GetIconIndex((DirectoryInfo)e.Node.Tag, false);
+			FileSystemTreeNode node = e.Node as FileSystemTreeNode;
+			if (node != null)
+			{
+				node.IsExpandable = true;
+				node.SelectedImageIndex = node.ImageIndex = node.DisplayIcon;
+			}
 		}
 
-		private void ExpandDirInNode(TreeNode node, DirectoryInfo info)
+		internal void OnDoExpand(FileSystemTreeViewNodeExpandEventArgs e)
 		{
-			FileSystemTreeViewNodeExpandEventArgs e = new FileSystemTreeViewNodeExpandEventArgs();
-			e.node = node;
-			e.files = info.GetFileSystemInfos();
 			if (NodeExpand != null)
 				NodeExpand(this, e);
 			else
 			{
 				foreach (FileSystemInfo file in e.files)
-				{
-					bool isExpandable = (file.Attributes & FileAttributes.Directory) != 0;
 					if ((file.Attributes & FileAttributes.Hidden) == 0 && (file.Attributes & FileAttributes.Directory) != 0)
-						node.Nodes.Add(NewNode(file, isExpandable));
-				}
-			}
-		}
-
-		private void ExpandDirInNode(TreeNode node, ExtraSpecialFolder path)
-		{
-			switch (path)
-			{
-				case ExtraSpecialFolder.Desktop:
-					foreach (ExtraSpecialFolder fldr in m_extra_folders)
-						try { node.Nodes.Add(NewNode(fldr)); }
-						catch { }
-					break;
-				case ExtraSpecialFolder.MyComputer:
-					if (m_icon_mgr.GetFolderPath(path) == "/")
-						break;
-					foreach (DriveInfo di in DriveInfo.GetDrives())
-						try { node.Nodes.Add(NewNode(new DirectoryInfo(di.Name), true)); }
-						catch { }
-					return;
-			}
-			string dir = m_icon_mgr.GetFolderPath(path);
-			if (dir != null && dir != "" && Directory.Exists(dir)) 
-				ExpandDirInNode(node, new DirectoryInfo(dir));
-		}
-
-		private void ExpandDirInNode(TreeNode node)
-		{
-			try
-			{
-				BeginUpdate();
-				if (node.Tag is ExtraSpecialFolder)
-				{
-					ExpandDirInNode(node, (ExtraSpecialFolder)node.Tag);
-					node.ImageIndex = m_icon_mgr.GetIconIndex((ExtraSpecialFolder)node.Tag, true);
-				}
-				if (node.Tag is DirectoryInfo)
-				{
-					ExpandDirInNode(node, (DirectoryInfo)node.Tag);
-					node.ImageIndex = m_icon_mgr.GetIconIndex((DirectoryInfo)node.Tag, true);
-				}
-			}
-			finally
-			{
-				EndUpdate();
+						e.node.Nodes.Add(NewNode(file));
 			}
 		}
 
@@ -385,10 +486,10 @@ namespace CUEControls
 		/// <param name="e">the location of the event</param>
 		protected override void OnItemDrag(ItemDragEventArgs e)
 		{
-			if (e.Item != null && e.Item is TreeNode && (e.Item as TreeNode).Tag is FileSystemInfo)
+			if (e.Item != null && e.Item is FileSystemTreeNodeFileSystemInfo)
 			{
 				string[] arr = new string[1];
-				arr[0] = ((FileSystemInfo)((e.Item as TreeNode).Tag)).FullName;
+				arr[0] = (e.Item as FileSystemTreeNodeFileSystemInfo).File.FullName;
 				DataObject dobj = new DataObject(DataFormats.FileDrop, arr);
 				DragDropEffects effects = DoDragDrop(dobj, DragDropEffects.All);
 				return;

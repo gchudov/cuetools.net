@@ -43,7 +43,7 @@ namespace CUETools.Processor
 		{
 			get
 			{
-				string cache = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CUE Tools"), "MetadataCache");
+				string cache = Path.Combine(SettingsShared.GetProfileDir("CUE Tools", System.Windows.Forms.Application.ExecutablePath), "MetadataCache");
 				if (!Directory.Exists(cache))
 					Directory.CreateDirectory(cache);
 				return cache;
@@ -66,6 +66,27 @@ namespace CUETools.Processor
 		[DefaultValue("")]
 		public string Catalog { get; set; }
 		public List<CUETrackMetadata> Tracks { get; set; }
+
+		[XmlIgnore]
+		public string DiscNumber01
+		{
+			get
+			{
+				uint td = 0, dn = 0;
+				if (uint.TryParse(TotalDiscs, out td) && uint.TryParse(DiscNumber, out dn) && td > 9 && dn > 0)
+					return string.Format("{0:00}", dn);
+				return DiscNumber;
+			}
+		}
+
+		[XmlIgnore]
+		public string DiscNumberAndTotal
+		{
+			get
+			{
+				return (TotalDiscs != "" && TotalDiscs != "1" ? DiscNumber01 + "/" + TotalDiscs : (DiscNumber != "" && DiscNumber != "1" ? DiscNumber01 : ""));
+			}
+		}
 
 		public void Save()
 		{
@@ -272,7 +293,7 @@ namespace CUETools.Processor
 	
 		public CUEMetadataEntry(CUEMetadata metadata, CDImageLayout TOC, string key)
 		{
-			this.metadata = metadata;
+			this.metadata = new CUEMetadata(metadata);
 			this.TOC = TOC;
 			this.ImageKey = key;
 		}
