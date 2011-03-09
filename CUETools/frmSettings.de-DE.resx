@@ -370,6 +370,9 @@
   <data name="tabPage6.Text" xml:space="preserve">
     <value>Taggen</value>
   </data>
+  <data name="tabPage7.Text" xml:space="preserve">
+    <value>Erweitert</value>
+  </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Qualität:</value>
   </data>

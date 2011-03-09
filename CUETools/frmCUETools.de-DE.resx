@@ -280,8 +280,17 @@
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Fortsetzen</value>
   </data>
+  <data name="checkBoxVerifyUseLocal.ToolTip" xml:space="preserve">
+    <value>Verwende lokale Datenbank</value>
+  </data>
   <data name="checkBoxVerifyUseCDRepair.ToolTip" xml:space="preserve">
-    <value>Verwende CUETools-Datenbank</value>
+    <value>Verwende CTDB (CUETools-Datenbank)</value>
+  </data>
+  <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
+    <value>Verwende AccurateRip</value>
+  </data>
+  <data name="checkBoxUseFreeDb.ToolTip" xml:space="preserve">
+    <value>Verwende freeDb</value>
   </data>
   <data name="groupBoxMode.Text" xml:space="preserve">
     <value>Modus</value>
