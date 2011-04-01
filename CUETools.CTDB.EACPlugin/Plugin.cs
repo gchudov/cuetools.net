@@ -31,6 +31,7 @@ namespace AudioDataPlugIn
 		CDImageLayout TOC;
 		string ArId;
 		AccurateRipVerify ar;
+		AccurateRipVerify arTest;
 		CUEToolsDB ctdb;
 		bool sequence_ok = true;
 		bool is_accurate;
@@ -150,6 +151,7 @@ namespace AudioDataPlugIn
 			TOC[1][0].Start = 0U;
 			ArId = AccurateRipVerify.CalculateAccurateRipId(TOC);
 			ar = new AccurateRipVerify(TOC, null);
+			arTest = new AccurateRipVerify(TOC, null);
 			ctdb = new CUEToolsDB(TOC, null);
 			ar.ContactAccurateRip(ArId);
 			ctdb.ContactDB("EAC 1.0 CTDB 2.1.1: " + m_drivename);
@@ -175,7 +177,8 @@ namespace AudioDataPlugIn
 			m_test_mode = testmode;
 			if (this.sequence_ok)
 			{
-				if (this.m_start_pos * 588 != ar.Position)
+				var thisAr = m_test_mode ? arTest : ar;
+				if (this.m_start_pos * 588 != thisAr.Position)
 					this.sequence_ok = false;
 			}
         }
@@ -190,11 +193,12 @@ namespace AudioDataPlugIn
 
         public void TransferAudioData(Array audiodata)
         {
-			if (!this.m_test_mode && this.sequence_ok)
+			if (this.sequence_ok)
 			{
 				byte[] ad = (byte[])audiodata;
 				AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, ad, ad.Length / 4);
-				ar.Write(buff);
+				var thisAr = m_test_mode ? arTest : ar;
+				thisAr.Write(buff);
 			}
         }
 
@@ -209,7 +213,8 @@ namespace AudioDataPlugIn
         {
 			if (this.sequence_ok)
 			{
-				if ((m_start_pos + m_length) * 588 != ar.Position)
+				var thisAr = m_test_mode ? arTest : ar;
+				if ((m_start_pos + m_length) * 588 != thisAr.Position)
 					this.sequence_ok = false;
 			}
 		}
@@ -227,13 +232,19 @@ namespace AudioDataPlugIn
 			{
 				if (TOC.AudioLength * 588 != ar.Position)
 					this.sequence_ok = false;
+				if (ar.Position != arTest.Position && arTest.Position > 0)
+					this.sequence_ok = false;
 			}
 			if (!this.sequence_ok)
 				return "";
 			if (this.sequence_ok)
 			{
 				int rippingErrorsCount = 0; // TODO: !!!
+				if (arTest.Position > 0 && arTest.CRC32(0) != ar.CRC32(0))
+					rippingErrorsCount = 1;
 				DBEntry confirm = null;
+				if (ctdb.AccResult == HttpStatusCode.OK)
+					ctdb.DoVerify();
 				if ((ctdb.AccResult == HttpStatusCode.NotFound || ctdb.AccResult == HttpStatusCode.OK)
 					&& this.is_accurate && rippingErrorsCount == 0)
 				{
@@ -250,9 +261,10 @@ namespace AudioDataPlugIn
 							m_data.AlbumArtist,
 							m_data.AlbumTitle);
 				}
-				sw.WriteLine("[CTDB TOCID: {0}] {1}.", TOC.TOCID, ctdb.DBStatus ?? "found");
-				if (ctdb.SubStatus != null && confirm == null)
-					sw.WriteLine("Submit result: {0}.", ctdb.SubStatus);
+				sw.WriteLine("[CTDB TOCID: {0}] {1}{2}.", 
+					TOC.TOCID, 
+					ctdb.DBStatus ?? "found",
+					(confirm != null || ctdb.SubStatus == null) ? "" : (", Submit result: " + ctdb.SubStatus));
 				foreach (DBEntry entry in ctdb.Entries)
 				{
 					string confFormat = (ctdb.Total < 10) ? "{0:0}/{1:0}" :
@@ -269,7 +281,11 @@ namespace AudioDataPlugIn
 							entry.canRecover ? string.Format("Differs in {0} samples @{1}", entry.repair.CorrectableErrors, entry.repair.AffectedSectors) :
 							(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
 							entry.httpStatus.ToString());
-					sw.WriteLine("[{0:x8}] ({1}) {2}{3}", entry.crc, conf, status, entry != confirm || ctdb.SubStatus == null ? "" : (", Submit result: " + ctdb.SubStatus));
+					sw.WriteLine("[{0:x8}] ({1}) {2}{3}", 
+						entry.crc, 
+						conf, 
+						status, 
+						(confirm != entry || ctdb.SubStatus == null) ? "" : (", Submit result: " + ctdb.SubStatus));
 				}
 				bool canFix = false;
 				if (ctdb.AccResult == HttpStatusCode.OK && rippingErrorsCount != 0)
