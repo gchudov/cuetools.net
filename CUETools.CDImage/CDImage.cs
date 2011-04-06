@@ -253,6 +253,11 @@ namespace CUETools.CDImage
 				_tracks.Add(new CDTrack(src._tracks[i]));
 		}
 
+		public CDImageLayout(string trackoffsets)
+			: this(trackoffsets.Split(' ').Length - 1, trackoffsets.Split(' ').Length - 1, 1, trackoffsets)
+		{
+		}
+
 		public CDImageLayout(int trackcount, int audiotracks, int firstaudio, string trackoffsets)
 		{
 			_audioTracks = audiotracks;

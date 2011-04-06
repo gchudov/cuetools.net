@@ -997,6 +997,96 @@ namespace CUETools.Codecs
 		public string Path { get { return null; } }
 	}
 
+	public class NoiseGenerator : IAudioSource
+	{
+		private long _sampleOffset, _sampleCount;
+		private AudioPCMConfig pcm;
+		private Random rnd;
+		private byte[] temp;
+		private int tempOffs;
+
+		public NoiseGenerator(AudioPCMConfig pcm, long sampleCount, int seed, int offset)
+		{
+			if (offset < 0)
+				throw new ArgumentOutOfRangeException("offset", "offset cannot be negative");
+
+			this._sampleOffset = 0;
+			this._sampleCount = sampleCount;
+			this.pcm = pcm;
+			this.rnd = new Random(seed);
+			this.temp = new byte[8192 * pcm.BlockAlign];
+			this.tempOffs = temp.Length;
+			int byteOff = offset * pcm.BlockAlign;
+			for (int k = 0; k < byteOff / temp.Length; k++)
+				rnd.NextBytes(temp);
+			if (byteOff % temp.Length > 0)
+				rnd.NextBytes(new byte[byteOff % temp.Length]);
+		}
+
+		public NoiseGenerator(long sampleCount)
+			: this(AudioPCMConfig.RedBook, sampleCount, 0, 0)
+		{
+		}
+
+		public long Length
+		{
+			get
+			{
+				return _sampleCount;
+			}
+		}
+
+		public long Remaining
+		{
+			get
+			{
+				return _sampleCount - _sampleOffset;
+			}
+		}
+
+		public long Position
+		{
+			get
+			{
+				return _sampleOffset;
+			}
+			set
+			{
+				_sampleOffset = value;
+			}
+		}
+
+		public AudioPCMConfig PCM { get { return pcm; } }
+
+		public int Read(AudioBuffer buff, int maxLength)
+		{
+			buff.Prepare(this, maxLength);
+
+			int buffOffs = 0;
+			while (buffOffs < buff.ByteLength)
+			{
+				if (tempOffs == temp.Length)
+				{
+					rnd.NextBytes(temp);
+					tempOffs = 0;
+				}
+				int chunk = Math.Min(buff.ByteLength - buffOffs, temp.Length - tempOffs);
+				Array.Copy(temp, tempOffs, buff.Bytes, buffOffs, chunk);
+				buffOffs += chunk;
+				tempOffs += chunk;
+			}
+
+			_sampleOffset += buff.Length;
+			return buff.Length;
+		}
+
+		public void Close()
+		{
+		}
+
+		public string Path { get { return null; } }
+	}
+
 	[AudioDecoderClass("builtin wav", "wav")]
 	public class WAVReader : IAudioSource
 	{

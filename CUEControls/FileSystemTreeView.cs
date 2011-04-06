@@ -486,13 +486,17 @@ namespace CUEControls
 		/// <param name="e">the location of the event</param>
 		protected override void OnItemDrag(ItemDragEventArgs e)
 		{
-			if (e.Item != null && e.Item is FileSystemTreeNodeFileSystemInfo)
+			if (e.Item != null && e.Item is FileSystemTreeNode)
 			{
-				string[] arr = new string[1];
-				arr[0] = (e.Item as FileSystemTreeNodeFileSystemInfo).File.FullName;
-				DataObject dobj = new DataObject(DataFormats.FileDrop, arr);
-				DragDropEffects effects = DoDragDrop(dobj, DragDropEffects.All);
-				return;
+				var item = e.Item as FileSystemTreeNode;
+				if (item.Path != null && File.Exists(item.Path))
+				{
+					string[] arr = new string[1];
+					arr[0] = item.Path;
+					DataObject dobj = new DataObject(DataFormats.FileDrop, arr);
+					DragDropEffects effects = DoDragDrop(dobj, DragDropEffects.All);
+					return;
+				}
 			}
 
 			base.OnItemDrag(e);

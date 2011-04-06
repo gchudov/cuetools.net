@@ -4255,7 +4255,8 @@ string status = processor.Go();
 					uint confidence = 0;
 
 					for (int di = 0; di < (int)_arVerify.AccDisks.Count; di++)
-						if (_arVerify.CRC(iTrack, offset) == _arVerify.AccDisks[di].tracks[iTrack].CRC)
+						if (_arVerify.CRC(iTrack, offset) == _arVerify.AccDisks[di].tracks[iTrack].CRC
+						  || offset == 0 && _arVerify.CRCV2(iTrack) == _arVerify.AccDisks[di].tracks[iTrack].CRC)
 							confidence += _arVerify.AccDisks[di].tracks[iTrack].count;
 
 					if (confidence >= minConfidence)
