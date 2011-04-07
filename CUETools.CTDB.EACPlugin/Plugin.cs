@@ -34,7 +34,8 @@ namespace AudioDataPlugIn
 		AccurateRipVerify arTest;
 		CUEToolsDB ctdb;
 		bool sequence_ok = true;
-		bool is_accurate;
+		bool is_secure_mode;
+		bool is_offset_set;
 		string m_drivename;
 
 
@@ -124,23 +125,21 @@ namespace AudioDataPlugIn
         // the offset was setted by AccurateRip (so having a comparable
         // offset value)
 
-        public void StartNewSession(IMetadataLookup data, string drivename, int offset, bool aroffset)
+		public void StartNewSession(IMetadataLookup data, string drivename, int offset, bool aroffset, int mode)
         {
             // Copy the CD metadata to the object
             m_data = data;
-			m_drivename = drivename;
+			
+			var parts = drivename.Split(' ');
+			m_drivename = parts[0].PadRight(8, ' ') + " -";
+			for (int i = 1; i < parts.Length; i++)
+				m_drivename += " " + parts[i];
+
 			TOC = new CDImageLayout();
 			for (int i = 0; i < m_data.NumberOfTracks; i++)
 			{
 				uint start = m_data.GetTrackStartPosition(i);
-				uint next;
-				if (i < m_data.NumberOfTracks - 1)
-				{
-					next = m_data.GetTrackStartPosition(i + 1);
-					if (!m_data.GetTrackDataTrack(i) && m_data.GetTrackDataTrack(i + 1))
-						next -= 152 * 75;
-				} else
-					next = m_data.LeadoutPosition;
+				uint next = m_data.GetTrackEndPosition(i);
 				TOC.AddTrack(new CDTrack(
 					(uint)i + 1,
 					start,
@@ -153,14 +152,17 @@ namespace AudioDataPlugIn
 			ar = new AccurateRipVerify(TOC, null);
 			arTest = new AccurateRipVerify(TOC, null);
 			ctdb = new CUEToolsDB(TOC, null);
+#if USEAR
 			ar.ContactAccurateRip(ArId);
-			ctdb.ContactDB("EAC 1.0 CTDB 2.1.1: " + m_drivename);
+#endif
+			ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.1: " + m_drivename);
 			ctdb.Init(true, ar);
 			this.sequence_ok = true;
 			this.m_start_pos = 0;
 			this.m_length = 0;
 			this.m_test_mode = false;
-			this.is_accurate = aroffset; // TODO: && not a virtual drive && not a burst mode!!!! 
+			this.is_offset_set = aroffset;
+			this.is_secure_mode = mode >= 2;
         }
 
         // This function will be called once per session. A session
@@ -239,14 +241,12 @@ namespace AudioDataPlugIn
 				return "";
 			if (this.sequence_ok)
 			{
-				int rippingErrorsCount = 0; // TODO: !!!
-				if (arTest.Position > 0 && arTest.CRC32(0) != ar.CRC32(0))
-					rippingErrorsCount = 1;
+				bool is_accurate = (arTest.Position == 0 && this.is_secure_mode) || arTest.CRC32(0) == ar.CRC32(0);
 				DBEntry confirm = null;
 				if (ctdb.AccResult == HttpStatusCode.OK)
 					ctdb.DoVerify();
 				if ((ctdb.AccResult == HttpStatusCode.NotFound || ctdb.AccResult == HttpStatusCode.OK)
-					&& this.is_accurate && rippingErrorsCount == 0)
+					&& is_accurate)
 				{
 					foreach (DBEntry entry in ctdb.Entries)
 						if (entry.toc.TrackOffsets == TOC.TrackOffsets && !entry.hasErrors)
@@ -256,8 +256,12 @@ namespace AudioDataPlugIn
 						ctdb.Confirm(confirm);
 					else
 						ctdb.Submit(
+#if USEAR
 							(int)ar.WorstConfidence() + 1,
 							(int)ar.WorstTotal() + 1,
+#else
+							1, 1,
+#endif
 							m_data.AlbumArtist,
 							m_data.AlbumTitle);
 				}
@@ -288,7 +292,7 @@ namespace AudioDataPlugIn
 						(confirm != entry || ctdb.SubStatus == null) ? "" : (", Submit result: " + ctdb.SubStatus));
 				}
 				bool canFix = false;
-				if (ctdb.AccResult == HttpStatusCode.OK && rippingErrorsCount != 0)
+				if (ctdb.AccResult == HttpStatusCode.OK && !is_accurate)
 				{
 					foreach (DBEntry entry in ctdb.Entries)
 						if (entry.hasErrors && entry.canRecover)
@@ -297,7 +301,9 @@ namespace AudioDataPlugIn
 				if (canFix)
 					sw.WriteLine("You can use CUETools to repair this rip.");
 				
-				//ar.GenerateFullLog(sw, true, ArId);
+#if USEAR
+				ar.GenerateFullLog(sw, false, ArId);
+#endif
 			}
 			else
 				sw.WriteLine("Some tracks have been skipped");
