@@ -1,17 +1,17 @@
-﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{6C74652F-1EF4-459E-84F4-99D93D3D17DA}</ProjectGuid>
+    <ProjectGuid>{84EBB7CB-02C9-40A9-9D32-C641B822DAA2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUETools.TestParity</RootNamespace>
-    <AssemblyName>CUETools.TestParity</AssemblyName>
+    <RootNamespace>CUETools.TestHelpers</RootNamespace>
+    <AssemblyName>CUETools.TestHelpers</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkSubset>
     </TargetFrameworkSubset>
   </PropertyGroup>
@@ -26,52 +26,40 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CDRepairDecodeTest.cs" />
+    <Compile Include="NoiseAndErrorsGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RsDecode16Test.cs" />
-    <Compile Include="RsDecodeTest.cs" />
-    <Compile Include="RsEncode16Test.cs" />
-    <Compile Include="RsEncode8Test.cs" />
+    <Compile Include="TestImageGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
       <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
       <Name>CUETools.AccurateRip</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.Parity\CUETools.Parity.csproj">
-      <Project>{ECEB839C-171B-4535-958F-9899310A0342}</Project>
-      <Name>CUETools.Parity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.TestHelpers\CUETools.TestHelpers.csproj">
-      <Project>{84EBB7CB-02C9-40A9-9D32-C641B822DAA2}</Project>
-      <Name>CUETools.TestHelpers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

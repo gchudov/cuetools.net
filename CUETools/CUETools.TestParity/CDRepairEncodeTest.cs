@@ -32,9 +32,6 @@ namespace CUETools.TestParity
 		// (or the size of CD CIRC buffer?)
 
 		const int npar = 8;
-		static byte[] wav = new byte[finalSampleCount * 4];
-		static AccurateRipVerify ar;
-		static CDImageLayout toc;
 
 		private TestContext testContextInstance;
 
@@ -54,6 +51,31 @@ namespace CUETools.TestParity
 			}
 		}
 
+		public static CDRepairEncode VerifyNoise(CDImageLayout toc, int seed, int offset, int start, int end, int errors, bool do_verify, bool do_encode)
+		{
+			if (start < 0 || start > end || end > toc.AudioLength * 588)
+				throw new ArgumentOutOfRangeException();
+			var src = new NoiseAndErrorsGenerator(AudioPCMConfig.RedBook, end - start, seed, offset + start, errors);
+			var buff = new AudioBuffer(src, 588 * 100);
+			var ar = new AccurateRipVerify(toc, null);
+			var encode = new CDRepairEncode(ar, stride, npar, do_verify, do_encode);
+			var rnd = new Random(seed);
+			ar.Position = start;
+			while (src.Remaining > 0)
+			{
+				src.Read(buff, rnd.Next(1, buff.Size));
+				ar.Write(buff);
+			}
+			ar.Close();
+			return encode;
+		}
+
+		public static CDRepairEncode VerifyNoise(string trackoffsets, int seed, int offset, int errors, bool do_verify, bool do_encode)
+		{
+			var toc = new CDImageLayout(trackoffsets);
+			return VerifyNoise(toc, seed, offset, 0, (int)toc.AudioLength * 588, errors, do_verify, do_encode);
+		}
+
 		#region Additional test attributes
 		// 
 		//You can use the following additional attributes as you write your tests:
@@ -62,9 +84,6 @@ namespace CUETools.TestParity
 		[ClassInitialize()]
 		public static void MyClassInitialize(TestContext testContext)
 		{
-			toc = new CDImageLayout(1, 1, 1, string.Format("0 {0}", (finalSampleCount / 588).ToString()));
-			ar = new AccurateRipVerify(toc, null);
-			new Random(2423).NextBytes(wav);
 		}
 
 		//Use ClassCleanup to run code after all tests in a class have run
@@ -94,13 +113,8 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairEncodeWriteTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode encode = new CDRepairEncode(ar, stride, npar, false, true);
-			buff.Prepare(wav, finalSampleCount);
-			ar.Init(toc);
-			ar.Write(buff);
-			ar.Close();
-			Assert.AreEqual<byte>(8, encode.Parity[0]);
+			var encode = VerifyNoise("0 45000", 2423, 0, 0, false, true);
+			Assert.AreEqual<string>("CAz3OBAHPAw=", Convert.ToBase64String(encode.Parity, 0, 8));
 			Assert.AreEqual<uint>(2278257733, encode.CRC);
 		}
 	}

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
 using CUETools.Codecs;
+using CUETools.TestHelpers;
 namespace CUETools.TestCodecs
 {
 	/// <summary>
@@ -38,25 +39,6 @@ namespace CUETools.TestCodecs
 			}
 		}
 
-		private static AccurateRipVerify VerifyNoise(string trackoffsets, int seed, int offset)
-		{
-			return VerifyNoise(new CDImageLayout(trackoffsets), seed, offset);
-		}
-
-		private static AccurateRipVerify VerifyNoise(CDImageLayout toc, int seed, int offset)
-		{
-			var src = new NoiseGenerator(AudioPCMConfig.RedBook, toc.AudioLength * 588, seed, offset);
-			var buff = new AudioBuffer(src, 588 * 10);
-			var ar = new AccurateRipVerify(toc, null);
-			var rnd = new Random(seed);
-			while (src.Remaining > 0)
-			{
-				src.Read(buff, rnd.Next(1, buff.Size));
-				ar.Write(buff);
-			}
-			return ar;
-		}
-
 		#region Additional test attributes
 		// 
 		//You can use the following additional attributes as you write your tests:
@@ -80,8 +62,8 @@ namespace CUETools.TestCodecs
 		[TestInitialize()]
 		public void MyTestInitialize()
 		{
-			ar = VerifyNoise("13 68 99 136", 2314, 0);
-			ar2 = VerifyNoise("0 136 886", 2314, 0);
+			ar = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 2314, 0);
+			ar2 = TestImageGenerator.CreateAccurateRipVerify("0 136 886", 2314, 0);
 		}
 		
 		//Use TestCleanup to run code after each test has run
@@ -168,10 +150,11 @@ namespace CUETools.TestCodecs
 		[TestMethod()]
 		public void CRCTestOffset()
 		{
-			var ar0 = VerifyNoise("13 68 99 136", 723722, 0);
-			for (int offs = 1; offs < 588 * 5; offs += 17)
+			var ar0 = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 723722, 0);
+			var offsets = new int[] { 1, 2, 3, 4, 11, 256, 588, 588 * 5 - 1 };
+			foreach (int offs in offsets)
 			{
-				var ar1 = VerifyNoise("13 68 99 136", 723722, offs);
+				var ar1 = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 723722, offs);
 				for (int track = 0; track < 3; track++)
 				{
 					Assert.AreEqual<uint>(ar0.CRC(track, offs), ar1.CRC(track), "CRC with offset " + offs + " was not set correctly.");
@@ -182,6 +165,39 @@ namespace CUETools.TestCodecs
 						Assert.AreEqual<uint>(ar0.CRC32(track + 1, offs), ar1.CRC32(track + 1), "CRC32 with offset " + (offs) + " was not set correctly.");
 					if (track != 0)
 						Assert.AreEqual<uint>(ar0.CRC32(track + 1), ar1.CRC32(track + 1, -offs), "CRC32 with offset " + (-offs) + " was not set correctly.");
+				}
+				Assert.AreEqual<uint>(ar0.CTDBCRC(2 * 588 * 5, 2 * 588 * 5), ar1.CTDBCRC(2 * 588 * 5 - offs * 2, 2 * 588 * 5 + offs * 2), "CTDBCRC with offset " + offs + " was not set correctly.");
+				Assert.AreEqual<uint>(ar1.CTDBCRC(2 * 588 * 5, 2 * 588 * 5), ar0.CTDBCRC(2 * 588 * 5 + offs * 2, 2 * 588 * 5 - offs * 2), "CTDBCRC with offset " + (-offs) + " was not set correctly.");
+			}
+		}
+
+		/// <summary>
+		///A test for CRC parralelism
+		///</summary>
+		[TestMethod()]
+		public void CRCTestSplit()
+		{
+			var ar0 = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 723722, 0);
+			var splits = new int[] { 1, 13 * 588 - 1, 13 * 588, 13 * 588 + 1, 30 * 588, 68 * 588 - 1, 68 * 588, 68 * 588 + 1 };
+			foreach (int split in splits)
+			{
+				var ar1 = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 723722, 0, 0, split);
+				var ar2 = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 723722, 0, split, (int)ar0.FinalSampleCount);
+				ar1.Combine(ar2, split, (int)ar0.FinalSampleCount);
+				var offsets = new int[] { 0, -1, 1, -2, 2, -3, 3, -4, 4, -11, 11, -256, 256, -588, 588, 1 - 588 * 5, 588 * 5 - 1 };
+				foreach (int offs in offsets)
+				{
+					for (int track = 0; track < 3; track++)
+					{
+						string message = "split = " + CDImageLayout.TimeToString((uint)split/588) + "." + (split%588).ToString() + ", offset = " + offs.ToString() + ", track = " + (track + 1).ToString();
+						Assert.AreEqual<uint>(ar0.CRC(track, offs), ar1.CRC(track, offs), "CRC was not set correctly, " + message);
+						Assert.AreEqual<uint>(ar0.CRC450(track, offs), ar1.CRC450(track, offs), "CRC450 was not set correctly, " + message);
+						if ((track != 2 || offs <= 0) && (track != 0 || offs >= 0))
+						{
+							Assert.AreEqual<uint>(ar0.CRC32(track + 1, offs), ar1.CRC32(track + 1, offs), "CRC32 was not set correctly, " + message);
+							Assert.AreEqual<uint>(ar0.CRCWONULL(track + 1, offs), ar1.CRCWONULL(track + 1, offs), "CRCWONULL was not set correctly, " + message);
+						}
+					}
 				}
 			}
 		}
@@ -228,7 +244,7 @@ namespace CUETools.TestCodecs
 		public void OffsetSafeCRCRecordTest()
 		{
 			//OffsetSafeCRCRecord[] records = new OffsetSafeCRCRecord[5000];
-			var record0 = VerifyNoise("13 68 99 136", 2314, 0).OffsetSafeCRC;
+			var record0 = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 2314, 0).OffsetSafeCRC;
 
 			Assert.AreEqual(
 				"8+lTDqEZidfayuC0LoxnL9Oluf4ywo1muFBu115XBgf254fKIdfVWZOcsQraS4eI\r\n" +
@@ -242,11 +258,12 @@ namespace CUETools.TestCodecs
 				"96ZJS2aBroYAw2We5RC2oekmi+N75L6+eQB/4iZOxB9aGP1sALd/UZaJqZP8FcmW\r\n" +
 				"FJOXlBi/KW68TJvujz+2w/P7EaZ0L7llQAtoHwoJniuNN5WYXBlescGc+vyYr5df\r\n" +
 				"jrul+QMmQ4xMi10mglq7CMLVfZZFFgBdvGBrn1tL9bg=\r\n",
-				VerifyNoise("13 68 99 136", 2314, 13).OffsetSafeCRC.Base64);
+				TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 2314, 13).OffsetSafeCRC.Base64);
 
-			for (int offset = 0; offset < 5000; offset += (offset < 256 ? 1 : 37))
+			var offsets = new int[] { 1, 2, 3, 4, 8, 11, 15, 16, 31, 32, 255, 256, 597, 588, 588 * 5 - 1, 588 * 5, 4095, 4096, 4097, 5000 };
+			foreach (int offset in offsets)
 			{
-				var record = VerifyNoise("13 68 99 136", 2314, offset).OffsetSafeCRC;
+				var record = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 2314, offset).OffsetSafeCRC;
 
 				int real_off = -offset;
 				int off;

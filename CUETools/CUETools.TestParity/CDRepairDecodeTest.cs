@@ -3,11 +3,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CUETools.Codecs;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
+using CUETools.TestHelpers;
 
 namespace CUETools.TestParity
 {
-    
-    
     /// <summary>
     ///This is a test class for CDRepairDecodeTest and is intended
     ///to contain all CDRepairDecodeTest Unit Tests
@@ -15,23 +14,27 @@ namespace CUETools.TestParity
 	[TestClass()]
 	public class CDRepairDecodeTest
 	{
-
-		const int finalSampleCount = 44100 * 60 * 10; // 10 minutes long
-		//const int stride = finalSampleCount * 2 / 32768;
+		// CD has maximum of 360.000 sectors; 
+		// If stride equals 10 sectors (10 sectors * 588 samples * 2 words),
+		// then maximum sequence length is 36.000 sectors.
+		// 36.000 is less than (65535 - npar), so we're ok here.
+		// npar == 8 provides error correction for 4 samples out of every 36k,
+		// i.e. at best one sample per 9k can be repaired.
+		// Parity data per one CD requires 10 * 588 * 4 * npar bytes,
+		// which equals 188.160b == 184kb
+		// We might consider shorter strides to reduce parity data size,
+		// but it probably should still be a multiple of 588 * 2;
+		// (or the size of CD CIRC buffer?)
 		const int stride = 10 * 588 * 2;
 		const int npar = 8;
-		static byte[] wav = new byte[finalSampleCount * 4];
-		static byte[] wav2 = new byte[finalSampleCount * 4];
-		static byte[] wav3 = new byte[finalSampleCount * 4];
-		static byte[] parity;
-		static uint crc;
+		const int errors = stride / 4;
 		const int offset = 48;
-		static AccurateRipVerify ar;
-		static CDImageLayout toc;
-		static CDImageLayout toc2;
+		const int seed = 2423;
 		//const int offset = 5 * 588 - 5;
 		//const int offset = 2000;
 
+		private static TestImageGenerator generator;
+		private static CDRepairEncode encode;
 		private TestContext testContextInstance;
 
 		/// <summary>
@@ -58,24 +61,8 @@ namespace CUETools.TestParity
 		[ClassInitialize()]
 		public static void MyClassInitialize(TestContext testContext)
 		{
-			toc = new CDImageLayout(1, 1, 1, string.Format("0 {0}", (finalSampleCount / 588).ToString()));
-			toc2 = new CDImageLayout(1, 1, 1, string.Format("32 {0}", (32 + finalSampleCount / 588).ToString()));
-			ar = new AccurateRipVerify(toc, null);
-
-			new Random(2423).NextBytes(wav);
-			new Random(2423).NextBytes(wav2);
-			Random rnd = new Random(987);
-			for (int i = 0; i < stride / 4; i++)
-				wav2[(int)(rnd.NextDouble() * (wav2.Length - 1))] = (byte)(rnd.NextDouble() * 255);
-
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode encode = new CDRepairEncode(ar, stride, npar, false, true);
-			buff.Prepare(wav, finalSampleCount);
-			ar.Init(toc);
-			ar.Write(buff);
-			ar.Close();
-			parity = encode.Parity;
-			crc = encode.CRC;
+			generator = new TestImageGenerator("0 9801", seed, 32 * 588, 0);
+			encode = generator.CreateCDRepairEncode(stride, npar, false, true);
 		}
 		//
 		//Use ClassCleanup to run code after all tests in a class have run
@@ -98,6 +85,15 @@ namespace CUETools.TestParity
 		//
 		#endregion
 
+		/// <summary>
+		///A test for Write
+		///</summary>
+		[TestMethod()]
+		public void CDRepairEncodeWriteTest()
+		{
+			Assert.AreEqual<string>("jvR9QJ1cSWo=", Convert.ToBase64String(encode.Parity, 0, 8));
+			Assert.AreEqual<uint>(377539636, encode.CRC);
+		}
 
 		/// <summary>
 		///Verifying rip that is accurate
@@ -105,15 +101,10 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodeOriginalTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(ar, stride, npar, true, false);
-			buff.Prepare(wav, finalSampleCount);
-			ar.Init(toc);
-			ar.Write(buff);
-			ar.Close();
+			var decode = generator.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsFalse(hasErrors, "has errors");
 			Assert.AreEqual(0, actualOffset, "wrong offset");
 		}
@@ -124,20 +115,14 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodeOriginalWithPregapTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			ar.Init(toc2);
-			CDRepairEncode decode = new CDRepairEncode(ar, stride, npar, true, false);
-			buff.Prepare(wav, (int)toc2.Pregap * 588);
-			ar.Write(buff);
-			buff.Prepare(wav, finalSampleCount);
-			ar.Write(buff);
-			ar.Close();
+			var generator2 = new TestImageGenerator("32 9833", seed, 0, 0);
+			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(-1176, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
 		}
@@ -148,20 +133,18 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodeModifiedTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(ar, stride, npar, true, false);
-			buff.Prepare(wav2, finalSampleCount);
-			ar.Init(toc);
-			ar.Write(buff);
-			ar.Close();
+			var generator2 = new TestImageGenerator("0 9801", seed, 32 * 588, errors);
+			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(0, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
+			generator2.Write(fix);
+			Assert.AreEqual<uint>(encode.CRC, fix.CRC);
 		}
 
 		/// <summary>
@@ -170,16 +153,11 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodePositiveOffsetTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(ar, stride, npar, true, false);
-			Array.Copy(wav, offset * 4, wav3, 0, (finalSampleCount - offset) * 4);
-			buff.Prepare(wav3, finalSampleCount);
-			ar.Init(toc);
-			ar.Write(buff);
-			ar.Close();
+			var generator2 = new TestImageGenerator("0 9801", seed, 32 * 588 + offset, 0);
+			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsFalse(hasErrors, "has errors");
 			Assert.AreEqual(offset, actualOffset, "wrong offset");
 		}
@@ -190,17 +168,11 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodeNegativeOffsetTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(ar, stride, npar, true, false);
-			ar.Init(toc);
-			buff.Prepare(new byte[offset * 4], offset);
-			ar.Write(buff);
-			buff.Prepare(wav, finalSampleCount - offset);
-			ar.Write(buff);
-			ar.Close();
+			var generator2 = new TestImageGenerator("0 9801", seed, 32 * 588 - offset, 0);
+			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsFalse(hasErrors, "has errors");
 			Assert.AreEqual(-offset, actualOffset, "wrong offset");
 		}
@@ -211,21 +183,18 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodePositiveOffsetErrorsTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(ar, stride, npar, true, false);
-			Array.Copy(wav2, offset * 4, wav3, 0, (finalSampleCount - offset) * 4);
-			buff.Prepare(wav3, finalSampleCount);
-			ar.Init(toc);
-			ar.Write(buff);
-			ar.Close(); 
+			var generator2 = new TestImageGenerator("0 9801", seed, 32 * 588 + offset, errors);
+			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(offset, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
+			generator2.Write(fix);
+			Assert.AreEqual<uint>(encode.CRC, fix.CRC);
 		}
 
 		/// <summary>
@@ -234,22 +203,18 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodeNegativeOffsetErrorsTest()
 		{
-			AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, 0);
-			CDRepairEncode decode = new CDRepairEncode(ar, stride, npar, true, false);
-			ar.Init(toc);
-			buff.Prepare(new byte[offset * 4], offset);
-			ar.Write(buff);
-			buff.Prepare(wav2, finalSampleCount - offset);
-			ar.Write(buff);
-			ar.Close(); 
+			var generator2 = new TestImageGenerator("0 9801", seed, 32 * 588 - offset, errors);
+			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(npar, parity, 0, crc, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(-offset, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
+			generator2.Write(fix);
+			Assert.AreEqual<uint>(encode.CRC, fix.CRC);
 		}
 	}
 }

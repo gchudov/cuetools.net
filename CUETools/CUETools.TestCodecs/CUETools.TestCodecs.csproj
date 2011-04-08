@@ -97,6 +97,10 @@
       <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
       <Name>CUETools.Ripper</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.TestHelpers\CUETools.TestHelpers.csproj">
+      <Project>{84EBB7CB-02C9-40A9-9D32-C641B822DAA2}</Project>
+      <Name>CUETools.TestHelpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Freedb\Freedb.csproj">
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>

@@ -835,7 +835,7 @@ namespace CUETools.AccurateRip
 					{
 						currentOffset = tempLocation + i - 20 * 588 + 445 * 588;
 					}
-					if (currentOffset <= trStart)
+					if (currentOffset < trStart)
 						continue;
 
 					_CRCAR[iTrack, i] = crcar + part._CRCAR[iTrack, i];
@@ -872,6 +872,8 @@ namespace CUETools.AccurateRip
 			int leadout_len = Math.Max(4096 * 4, (calcSyn || calcParity) ? stride + laststride : 0);
 			leadin = new ushort[leadin_len];
 			leadout = new ushort[leadout_len];
+			leadinCrc = null;
+			leadoutCrc = null;
 			_currentTrack = 0;
 			Position = 0; // NOT _toc[_toc.FirstAudio][0].Start * 588;
 		}
