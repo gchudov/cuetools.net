@@ -203,7 +203,7 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairDecodeNegativeOffsetErrorsTest()
 		{
-			var generator2 = new TestImageGenerator("0 9801", seed, 32 * 588 - offset, errors);
+			var generator2 = new TestImageGenerator("0 999 9801", seed, 32 * 588 - offset, errors);
 			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;

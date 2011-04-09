@@ -27,9 +27,9 @@ namespace CUETools.AccurateRip
 		{
 			int offset = 64 * 64;
 			for (int i = 0; i < 64; i++)
-				this.val[i] = ar.GetMiddleCRC32(offset + i * 64 + 64, 2 * offset - 64 - i * 64);
+				this.val[i] = ar.CTDBCRC(offset + i * 64 + 64, 2 * offset - 64 - i * 64);
 			for (int i = 0; i < 64; i++)
-				this.val[i + 64] = ar.GetMiddleCRC32(offset + 64 - 1 - i, 2 * offset - 64 + 1 + i);
+				this.val[i + 64] = ar.CTDBCRC(offset + 64 - 1 - i, 2 * offset - 64 + 1 + i);
 		}
 
 		public OffsetSafeCRCRecord(uint[] val)
@@ -255,7 +255,7 @@ namespace CUETools.AccurateRip
 		public uint CRCV2(int iTrack)
 		{
 			int offs0 = iTrack == 0 ? 5 * 588 - 1 : 0;
-			int offs1 = iTrack == _toc.AudioTracks - 1 ? 20 * 588 - 5 * 588 : 0;
+			int offs1 = iTrack == _toc.AudioTracks - 1 ? 2 * maxOffset - 5 * 588 : 0;
 			uint crcA1 = _CRCAR[iTrack + 1, offs1] - (offs0 > 0 ? _CRCAR[iTrack + 1, offs0] : 0);
 			uint crcA2 = _CRCV2[iTrack + 1, offs1] - (offs0 > 0 ? _CRCV2[iTrack + 1, offs0] : 0);
 			return crcA1 + crcA2;
@@ -264,14 +264,14 @@ namespace CUETools.AccurateRip
 		public uint CRC(int iTrack, int oi)
 		{
 			int offs0 = iTrack == 0 ? 5 * 588 + oi - 1 : oi;
-			int offs1 = iTrack == _toc.AudioTracks - 1 ? 20 * 588 - 5 * 588 + oi : (oi >= 0 ? 0 : 20 * 588 + oi);
+			int offs1 = iTrack == _toc.AudioTracks - 1 ? 2 * maxOffset - 5 * 588 + oi : (oi >= 0 ? 0 : 2 * maxOffset + oi);
 			uint crcA = _CRCAR[iTrack + 1, offs1] - (offs0 > 0 ? _CRCAR[iTrack + 1, offs0] : 0);
 			uint sumA = _CRCSM[iTrack + 1, offs1] - (offs0 > 0 ? _CRCSM[iTrack + 1, offs0] : 0);
 			uint crc = crcA - sumA * (uint)oi;
 			if (oi < 0 && iTrack > 0)
 			{
-				uint crcB = _CRCAR[iTrack, 0] - _CRCAR[iTrack, 20 * 588 + oi];
-				uint sumB = _CRCSM[iTrack, 0] - _CRCSM[iTrack, 20 * 588 + oi];
+				uint crcB = _CRCAR[iTrack, 0] - _CRCAR[iTrack, 2 * maxOffset + oi];
+				uint sumB = _CRCSM[iTrack, 0] - _CRCSM[iTrack, 2 * maxOffset + oi];
 				uint posB = _toc[iTrack + _toc.FirstAudio - 1].Length * 588 + (uint)oi;
 				crc += crcB - sumB * posB;
 			}
@@ -287,10 +287,10 @@ namespace CUETools.AccurateRip
 
 		public uint CRC450(int iTrack, int oi)
 		{
-			uint crca = _CRCAR[iTrack + 1, 20 * 588 + 5 * 588 + oi];
-			uint crcb = _CRCAR[iTrack + 1, 20 * 588 + 6 * 588 + oi];
-			uint suma = _CRCSM[iTrack + 1, 20 * 588 + 5 * 588 + oi];
-			uint sumb = _CRCSM[iTrack + 1, 20 * 588 + 6 * 588 + oi];
+			uint crca = _CRCAR[iTrack + 1, 2 * maxOffset + 5 * 588 + oi];
+			uint crcb = _CRCAR[iTrack + 1, 2 * maxOffset + 6 * 588 + oi];
+			uint suma = _CRCSM[iTrack + 1, 2 * maxOffset + 5 * 588 + oi];
+			uint sumb = _CRCSM[iTrack + 1, 2 * maxOffset + 6 * 588 + oi];
 			uint offs = 450 * 588 + (uint)oi;
 			return crcb - crca - offs * (sumb - suma);
 		}
@@ -307,11 +307,6 @@ namespace CUETools.AccurateRip
 		public int PeakLevel(int iTrack)
 		{
 			return _Peak[iTrack];
-		}
-
-		internal uint GetMiddleCRC32(int prefixLen, int suffixLen)
-		{
-			return CTDBCRC(prefixLen * 2, suffixLen * 2);
 		}
 
 		public OffsetSafeCRCRecord OffsetSafeCRC
@@ -334,6 +329,39 @@ namespace CUETools.AccurateRip
 				uint crc = 0;
 				if (iTrack == 0)
 				{
+					// New idea: 
+					// _CRC32[x, maxOffset] keeps crc state at track x boundary
+					// _CRC32[x, maxOffset +- offs] keeps crc state around track x boundary
+					// _CRC32[0, maxOffset] keeps crc state at disc end
+					// _CRC32[0, maxOffset + offs] keeps crc state around disc start
+					// _CRC32[0, maxOffset - offs] keeps crc state around disc end
+
+					//int t0len = (int)_toc[_toc.FirstAudio].Pregap * 588;
+					//int dlen = (int)_toc.AudioLength * 588;
+					//if (oi == 0)
+					//{
+					//    // whole disc crc
+					//    crc = _CRC32[0, maxOffset];
+					//}
+					//if (oi > 0)
+					//{
+					//    // whole disc crc
+					//    crc = _CRC32[0, maxOffset];
+					//    // substract prefix
+					//    // IDEA: copy _CRC32[1, maxOffset + oi - t0len] so we can always use _CRC32[0, maxOffset + oi] even if pregap is short
+					//    if (oi >= t0len)
+					//        crc = Crc32.Combine(_CRC32[1, maxOffset + oi - t0len], crc, (dlen - oi) * 4);
+					//    else
+					//        crc = Crc32.Combine(_CRC32[0, maxOffset + oi], crc, (dlen - oi) * 4);
+					//    // add zero suffix
+					//    crc = Crc32.Combine(crc, 0, oi * 4); // TODO: is crc(0) really 0?
+					//}
+					//if (oi < 0)
+					//{
+					//    crc = _CRC32[0, maxOffset + oi];
+					//    crc = Crc32.Combine(crc, 0, -oi * 4); // TODO: is crc(0) really 0?
+					//}
+
 					for (iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
 					{
 						int trackLength = (int)(iTrack > 0 ? _toc[iTrack + _toc.FirstAudio - 1].Length : _toc[_toc.FirstAudio].Pregap) * 588 * 4;
@@ -348,7 +376,7 @@ namespace CUETools.AccurateRip
 						}
 						else if (oi < 0 && iTrack == _toc.AudioTracks)
 						{
-							crc = Crc32.Combine(crc, _CRC32[iTrack, 20 * 588 + oi], trackLength + oi * 4);
+							crc = Crc32.Combine(crc, _CRC32[iTrack, 2 * maxOffset + oi], trackLength + oi * 4);
 						}
 						else
 						{
@@ -376,9 +404,9 @@ namespace CUETools.AccurateRip
 					else if (oi < 0)
 					{
 						// Calculate CRC of previous track's last oi samples by 'subtracting' it's last CRCs
-						crc = Crc32.Combine(_CRC32[iTrack - 1, 20 * 588 + oi], _CRC32[iTrack - 1, 0], -oi * 4);
+						crc = Crc32.Combine(_CRC32[iTrack - 1, 2 * maxOffset + oi], _CRC32[iTrack - 1, 0], -oi * 4);
 						// Add this track's CRC without last oi samples
-						crc = Crc32.Combine(crc, _CRC32[iTrack, 20 * 588 + oi], trackLength + oi * 4);
+						crc = Crc32.Combine(crc, _CRC32[iTrack, 2 * maxOffset + oi], trackLength + oi * 4);
 					}
 					else // oi == 0
 					{
@@ -435,18 +463,18 @@ namespace CUETools.AccurateRip
 					else if (oi < 0)
 					{
 						int nonzeroPrevLength = -oi * 4 -
-							(_CRCNL[iTrack - 1, 0] - _CRCNL[iTrack - 1, 20 * 588 + oi]) * 2;
+							(_CRCNL[iTrack - 1, 0] - _CRCNL[iTrack - 1, 2 * maxOffset + oi]) * 2;
 						// Calculate CRC of previous track's last oi samples by 'subtracting' it's last CRCs
 						crc = Crc32.Combine(
-							_CRCWN[iTrack - 1, 20 * 588 + oi],
+							_CRCWN[iTrack - 1, 2 * maxOffset + oi],
 							_CRCWN[iTrack - 1, 0],
 							nonzeroPrevLength);
 						// Use 0xffffffff as an initial state
 						crc = Crc32.Combine(0xffffffff, crc, nonzeroPrevLength);
 						// Add this track's CRC without last oi samples
 						crc = Crc32.Combine(crc,
-							_CRCWN[iTrack, 20 * 588 + oi],
-							trackLength + oi * 4 - _CRCNL[iTrack, 20 * 588 + oi] * 2);
+							_CRCWN[iTrack, 2 * maxOffset + oi],
+							trackLength + oi * 4 - _CRCNL[iTrack, 2 * maxOffset + oi] * 2);
 					}
 					else // oi == 0
 					{
@@ -472,10 +500,9 @@ namespace CUETools.AccurateRip
 
 		internal ushort[,] syndrome;
 		internal byte[] parity;
+		private int maxOffset;
 		internal ushort[] leadin;
 		internal ushort[] leadout;
-		private uint[] leadinCrc;
-		private uint[] leadoutCrc;
 		private uint preLeadoutCrc;
 		private int stride = 1, laststride = 1, stridecount = 1, npar = 1;
 		private bool calcSyn = false;
@@ -484,7 +511,9 @@ namespace CUETools.AccurateRip
 		internal void InitCDRepair(int stride, int laststride, int stridecount, int npar, bool calcSyn, bool calcParity)
 		{
 			if (npar != 8)
-				throw new NotSupportedException("npar != 8");
+				throw new ArgumentOutOfRangeException("npar");
+			if (stride % 2 != 0 || laststride % 2 != 0)
+				throw new ArgumentOutOfRangeException("stride");
 			this.stride = stride;
 			this.laststride = laststride;
 			this.stridecount = stridecount;
@@ -494,54 +523,38 @@ namespace CUETools.AccurateRip
 			Init(_toc);
 		}
 
-		public unsafe uint CTDBCRC(int prefixLen, int suffixLen)
+		public unsafe uint CTDBCRC(int prefixSamples, int suffixSamples)
 		{
-			if (prefixLen > leadin.Length || suffixLen > leadout.Length)
+			if (prefixSamples > maxOffset || suffixSamples > maxOffset)
 				throw new ArgumentOutOfRangeException();
-			// stride - 2 * actualOffset
-			// laststride + 2 * actualOffset
-			int lenAXB = (int)_toc.AudioLength * 588 * 4;
 
-			if (leadinCrc == null)
+			int discLen = (int)_toc.AudioLength * 588;
+			int lastTrackLen = (int)_toc[_toc.FirstAudio + (int)_toc.AudioTracks - 1].Length * 588;
+			int trackOneBorder = (int)_toc[_toc.FirstAudio].Pregap * 588;
+
+			if (preLeadoutCrc == 0)
 			{
-				leadinCrc = new uint[leadin.Length + 1];
-				leadoutCrc = new uint[leadout.Length + 1];
-
-				fixed (uint* crct = Crc32.table)
-				{
-					// calculate leadin CRC
-					uint crc0 = 0;
-					leadinCrc[0] = crc0;
-					for (int off = 0; off < leadin.Length; off++)
-					{
-						ushort dd = leadin[off];
-						crc0 = (crc0 >> 8) ^ crct[(byte)(crc0 ^ dd)];
-						crc0 = (crc0 >> 8) ^ crct[(byte)(crc0 ^ (dd >> 8))];
-						leadinCrc[off + 1] = crc0;
-					}
-					// calculate leadout CRC
-					uint crc2 = 0;
-					leadoutCrc[0] = crc2;
-					for (int off = leadout.Length - 1; off >= 0; off--)
-					{
-						ushort dd = leadout[off];
-						crc2 = (crc2 >> 8) ^ crct[(byte)(crc2 ^ dd)];
-						crc2 = (crc2 >> 8) ^ crct[(byte)(crc2 ^ (dd >> 8))];
-						leadoutCrc[leadout.Length - off] = crc2;
-					}
-				}
 				preLeadoutCrc = CRC32(0, 0) ^ _CRCMASK[0];
-				preLeadoutCrc = Crc32.Substract(preLeadoutCrc, leadoutCrc[leadout.Length], leadout.Length * 2);
+				preLeadoutCrc = Crc32.Substract(preLeadoutCrc, _CRC32[_toc.AudioTracks, 0], lastTrackLen * 4);
 			}
 
-			uint crcXE = Crc32.Combine(leadinCrc[prefixLen], preLeadoutCrc, lenAXB - prefixLen * 2 - leadout.Length * 2);
-			uint crcX = Crc32.Combine(crcXE, leadoutCrc[leadout.Length - suffixLen], (leadout.Length - suffixLen) * 2);
-			return Crc32.Combine(0xffffffff, crcX, lenAXB - prefixLen * 2 - suffixLen * 2) ^ 0xffffffff;
+			uint crcA = prefixSamples == 0 ? 0
+				: prefixSamples < trackOneBorder ? _CRC32[0, prefixSamples]
+				: trackOneBorder == 0 ? _CRC32[1, prefixSamples - trackOneBorder]
+				: Crc32.Combine(_CRC32[0, 0], _CRC32[1, prefixSamples - trackOneBorder], (prefixSamples - trackOneBorder) * 4);
+			if (_toc.AudioTracks == 1)
+			{
+				uint crcY = Crc32.Combine(crcA, _CRC32[_toc.AudioTracks, 2 * maxOffset - suffixSamples], (discLen - prefixSamples - suffixSamples) * 4);
+				return Crc32.Combine(0xffffffff, crcY, (discLen - prefixSamples - suffixSamples) * 4) ^ 0xffffffff;
+			}
+			uint crcXE = Crc32.Combine(crcA, preLeadoutCrc, (discLen - prefixSamples - lastTrackLen) * 4);
+			uint crcX = Crc32.Combine(crcXE, _CRC32[_toc.AudioTracks, 2 * maxOffset - suffixSamples], (lastTrackLen - suffixSamples) * 4);
+			return Crc32.Combine(0xffffffff, crcX, (discLen - prefixSamples - suffixSamples) * 4) ^ 0xffffffff;
 		}
 
 		public uint CTDBCRC(int actualOffset)
 		{
-			return CTDBCRC(stride - 2 * actualOffset, laststride + 2 * actualOffset);
+			return CTDBCRC(stride / 2 - actualOffset, laststride / 2 + actualOffset);
 		}
 
 		private unsafe static void CalcSyn8(ushort* exp, ushort* log, ushort* syn, uint lo, uint n, int npar)
@@ -741,8 +754,6 @@ namespace CUETools.AccurateRip
 				{
 					// Process no more than there is in the buffer, no more than there is in this track, and no more than up to a sector boundary.
 					int copyCount = Math.Min(Math.Min(sampleBuffer.Length - pos, (int)_samplesRemTrack), 588 - (int)_sampleCount % 588);
-					int currentSector = _samplesDoneTrack / 588;
-					int remaingSectors = (_samplesRemTrack - 1) / 588;
 					uint* samples = ((uint*)pSampleBuff) + pos;
 					int currentPart = ((int)_sampleCount * 2) % stride;
 					ushort* synptr = synptr1 + npar * currentPart;
@@ -759,15 +770,29 @@ namespace CUETools.AccurateRip
 						int remaining = (int)(_finalSampleCount - _sampleCount) * 2 - i - 1;
 						leadout[remaining] = ((ushort*)samples)[i];
 					}
-					
-					if (currentSector < 10)
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, _samplesDoneTrack);
-					else if (remaingSectors < 10)
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, 20 * 588 - _samplesRemTrack);
-					else if (currentSector >= 445 && currentSector <= 455)
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, 20 * 588 + _samplesDoneTrack - 445 * 588);
-					else
-						CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, -1);
+
+					int offset = _samplesDoneTrack < maxOffset ? _samplesDoneTrack
+						: _samplesRemTrack <= maxOffset ? 2 * maxOffset - _samplesRemTrack
+						: _samplesDoneTrack >= 445 * 588 && _samplesDoneTrack <= 455 * 588 ? 2 * maxOffset + _samplesDoneTrack - 445 * 588
+						: -1;
+
+					CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, offset);
+
+					// duplicate prefix to suffix
+					if (_samplesDoneTrack < maxOffset && _samplesRemTrack <= maxOffset)
+					{
+						Array.Copy(_CRC32, _currentTrack * 3 * maxOffset + _samplesDoneTrack,
+							_CRC32, _currentTrack * 3 * maxOffset + 2 * maxOffset - _samplesRemTrack,
+							copyCount);
+					}
+					//// duplicate prefix to pregap
+					//// be careful here not overwrite _CRC32[0, maxOffset] which can hold disc CRC in the future!!!
+					//if (_sampleCount < maxOffset && _currentTrack == 1)
+					//{
+					//    Array.Copy(_CRC32, _currentTrack * 3 * maxOffset + _samplesDoneTrack,
+					//        _CRC32, _sampleCount,
+					//        copyCount);
+					//}
 
 					pos += copyCount;
 					_samplesRemTrack -= copyCount;
@@ -820,20 +845,20 @@ namespace CUETools.AccurateRip
 				_CRC32[iTrack, 0] = Crc32.Combine(crc32, part._CRC32[iTrack, 0], 4 * (trEnd - trStart));
 				_CRCWN[iTrack, 0] = Crc32.Combine(crcwn, part._CRCWN[iTrack, 0], 4 * (trEnd - trStart) - 2 * part._CRCNL[iTrack, 0]);
 				_CRCV2[iTrack, 0] = crcv2 + part._CRCV2[iTrack, 0];
-				for (int i = 1; i < 31 * 588; i++)
+				for (int i = 1; i < 3 * maxOffset; i++)
 				{
 					int currentOffset;
-					if (i < 10 * 588)
+					if (i < maxOffset)
 					{
 						currentOffset = tempLocation + i;
 					}
-					else if (i < 20 * 588)
+					else if (i < 2 * maxOffset)
 					{
-						currentOffset = tempLocation + tempLen + i - 20 * 588;
+						currentOffset = tempLocation + tempLen + i - 2 * maxOffset;
 					}
 					else
 					{
-						currentOffset = tempLocation + i - 20 * 588 + 445 * 588;
+						currentOffset = tempLocation + i - 2 * maxOffset + 445 * 588;
 					}
 					if (currentOffset < trStart)
 						continue;
@@ -857,14 +882,19 @@ namespace CUETools.AccurateRip
 			_CRCMASK[0] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_finalSampleCount * 4);
 			for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
 				_CRCMASK[iTrack] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_toc[iTrack + _toc.FirstAudio - 1].Length * 588 * 4);
-			_CRCAR = new uint[_toc.AudioTracks + 1, 31 * 588];
-			_CRCSM = new uint[_toc.AudioTracks + 1, 31 * 588];
-			_CRC32 = new uint[_toc.AudioTracks + 1, 31 * 588];
-			_CacheCRC32 = new uint[_toc.AudioTracks + 1, 31 * 588];
-			_CRCWN = new uint[_toc.AudioTracks + 1, 31 * 588];
-			_CacheCRCWN = new uint[_toc.AudioTracks + 1, 31 * 588];
-			_CRCNL = new int[_toc.AudioTracks + 1, 31 * 588];
-			_CRCV2 = new uint[_toc.AudioTracks + 1, 31 * 588];
+			
+			maxOffset = Math.Max(4096 * 2, (calcSyn || calcParity) ? stride + laststride : 0);
+			if (maxOffset % 588 != 0)
+				maxOffset += 588 - maxOffset % 588;
+			_CRCAR = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
+			_CRCSM = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
+			_CRC32 = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
+			_CacheCRC32 = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
+			_CRCWN = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
+			_CacheCRCWN = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
+			_CRCNL = new int[_toc.AudioTracks + 1, 3 * maxOffset];
+			_CRCV2 = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
+
 			_Peak = new int[_toc.AudioTracks + 1];
 			syndrome = new ushort[calcSyn ? stride : 1, npar];
 			parity = new byte[stride * npar * 2];
@@ -872,8 +902,7 @@ namespace CUETools.AccurateRip
 			int leadout_len = Math.Max(4096 * 4, (calcSyn || calcParity) ? stride + laststride : 0);
 			leadin = new ushort[leadin_len];
 			leadout = new ushort[leadout_len];
-			leadinCrc = null;
-			leadoutCrc = null;
+			preLeadoutCrc = 0;
 			_currentTrack = 0;
 			Position = 0; // NOT _toc[_toc.FirstAudio][0].Start * 588;
 		}
