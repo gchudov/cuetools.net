@@ -263,7 +263,10 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 					do
 					{
 						if (FLAC__stream_decoder_get_state(_decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
-						    return buff->Length - samplesNeeded;
+						{
+						    buff->Length -= samplesNeeded;
+						    return buff->Length;
+						}
 						if (!FLAC__stream_decoder_process_single(_decoder))
 						{
 						    String^ state = gcnew String(FLAC__StreamDecoderStateString[FLAC__stream_decoder_get_state(_decoder)]);

@@ -91,10 +91,10 @@ namespace CUETools.TestCodecs
 		}
 
 		/// <summary>
-		///A test for CRC32
+		///A test for CRC32 with offset
 		///</summary>
 		[TestMethod()]
-		public void CRC32Test1()
+		public void CRC32TestOffset()
 		{
 			Assert.AreEqual<uint>(2953798997, ar.CRC32(0, 13), "CRC32[0][13] was not set correctly.");
 			Assert.AreEqual<uint>(0480843614, ar.CRC32(0, -7), "CRC32[0][-7] was not set correctly.");
@@ -107,6 +107,20 @@ namespace CUETools.TestCodecs
 
 			Assert.AreEqual<uint>(0480843614, ar2.CRC32(1, -7), "CRC32[1,13](2) was not set correctly.");
 		}
+
+		/// <summary>
+		///A test for CTDBCRC
+		///</summary>
+		[TestMethod()]
+		public void CTDBCRCTest()
+		{
+			Assert.AreEqual<uint>(4209773141, ar.CTDBCRC(1, 0, 5 * 588, 5 * 588), "CTDBCRC[1] was not set correctly.");
+			Assert.AreEqual<uint>(0037001035, ar.CTDBCRC(2, 0, 5 * 588, 5 * 588), "CTDBCRC[2] was not set correctly.");
+			Assert.AreEqual<uint>(1024656428, ar.CTDBCRC(3, 0, 5 * 588, 5 * 588), "CTDBCRC[3] was not set correctly.");
+
+			Assert.AreEqual<uint>(ar.CRC32(2), ar.CTDBCRC(2, 0, 5 * 588, 5 * 588), "CTDBCRC[2] was not set correctly.");
+		}
+
 
 		/// <summary>
 		///A test for ARV1 CRC
@@ -195,19 +209,21 @@ namespace CUETools.TestCodecs
 					Assert.AreEqual<uint>(ar0.CRC(track), ar1.CRC(track, -offs), "CRC with offset " + (-offs) + " was not set correctly.");
 					Assert.AreEqual<uint>(ar0.CRC450(track, offs), ar1.CRC450(track, 0), "CRC450 with offset " + offs + " was not set correctly.");
 					Assert.AreEqual<uint>(ar0.CRC450(track, 0), ar1.CRC450(track, -offs), "CRC450 with offset " + (-offs) + " was not set correctly.");
+					Assert.AreEqual<uint>(ar0.CTDBCRC(track + 1, offs, 588 * 5, 588 * 5), ar1.CTDBCRC(track + 1, 0, 588 * 5, 588 * 5), "CTDBCRC with offset " + offs + " was not set correctly.");
+					Assert.AreEqual<uint>(ar1.CTDBCRC(track + 1, -offs, 588 * 5, 588 * 5), ar0.CTDBCRC(track + 1, 0, 588 * 5, 588 * 5), "CTDBCRC with offset " + (-offs) + " was not set correctly.");
 					if (track != 2)
 					{
 						Assert.AreEqual<uint>(ar0.CRC32(track + 1, offs), ar1.CRC32(track + 1), "CRC32 with offset " + (offs) + " was not set correctly.");
 						Assert.AreEqual<uint>(ar0.CRCWONULL(track + 1, offs), ar1.CRCWONULL(track + 1), "CRCWONULL with offset " + (offs) + " was not set correctly.");
 					}
-					if (track != 0)
+					//if (track != 0)
 					{
 						Assert.AreEqual<uint>(ar0.CRC32(track + 1), ar1.CRC32(track + 1, -offs), "CRC32 with offset " + (-offs) + " was not set correctly.");
 						Assert.AreEqual<uint>(ar0.CRCWONULL(track + 1), ar1.CRCWONULL(track + 1, -offs), "CRCWONULL with offset " + (-offs) + " was not set correctly.");
 					}
 				}
-				Assert.AreEqual<uint>(ar0.CTDBCRC(588 * 5, 588 * 5), ar1.CTDBCRC(588 * 5 - offs, 588 * 5 + offs), "CTDBCRC with offset " + offs + " was not set correctly.");
-				Assert.AreEqual<uint>(ar1.CTDBCRC(588 * 5, 588 * 5), ar0.CTDBCRC(588 * 5 + offs, 588 * 5 - offs), "CTDBCRC with offset " + (-offs) + " was not set correctly.");
+				Assert.AreEqual<uint>(ar0.CTDBCRC(0, offs, 588 * 5, 588 * 5), ar1.CTDBCRC(0, 0, 588 * 5, 588 * 5), "CTDBCRC with offset " + offs + " was not set correctly.");
+				Assert.AreEqual<uint>(ar1.CTDBCRC(0, -offs, 588 * 5, 588 * 5), ar0.CTDBCRC(0, 0, 588 * 5, 588 * 5), "CTDBCRC with offset " + (-offs) + " was not set correctly.");
 			}
 		}
 
@@ -231,8 +247,10 @@ namespace CUETools.TestCodecs
 					{
 						string message = "split = " + CDImageLayout.TimeToString((uint)split/588) + "." + (split%588).ToString() + ", offset = " + offs.ToString() + ", track = " + (track + 1).ToString();
 						Assert.AreEqual<uint>(ar0.CRC(track, offs), ar1.CRC(track, offs), "CRC was not set correctly, " + message);
-						Assert.AreEqual<uint>(ar0.CRC450(track, offs), ar1.CRC450(track, offs), "CRC450 was not set correctly, " + message);
-						if ((track != 2 || offs <= 0) && (track != 0 || offs >= 0))
+						Assert.AreEqual<uint>(ar0.CTDBCRC(track, offs, 5 * 588, 5 * 588), ar1.CTDBCRC(track, offs, 5 * 588, 5 * 588), "CTDBCRC was not set correctly, " + message);
+						//CRC450 is zero here :( too small tracks
+						//Assert.AreEqual<uint>(ar0.CRC450(track, offs), ar1.CRC450(track, offs), "CRC450 was not set correctly, " + message);
+						if ((track != 2 || offs <= 0))// && (track != 0 || offs >= 0))
 						{
 							Assert.AreEqual<uint>(ar0.CRC32(track + 1, offs), ar1.CRC32(track + 1, offs), "CRC32 was not set correctly, " + message);
 							Assert.AreEqual<uint>(ar0.CRCWONULL(track + 1, offs), ar1.CRCWONULL(track + 1, offs), "CRCWONULL was not set correctly, " + message);

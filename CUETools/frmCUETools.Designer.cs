@@ -80,7 +80,6 @@ namespace JDP {
 			this.toolStripMenuItemInputBrowserFiles = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemInputBrowserMulti = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemInputBrowserDrag = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItemLocalDatabase = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItemInputBrowserHide = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripOutput = new System.Windows.Forms.ToolStrip();
 			this.toolStripLabelOutput = new System.Windows.Forms.ToolStripLabel();
@@ -649,7 +648,6 @@ namespace JDP {
             this.toolStripMenuItemInputBrowserFiles,
             this.toolStripMenuItemInputBrowserMulti,
             this.toolStripMenuItemInputBrowserDrag,
-            this.toolStripMenuItemLocalDatabase,
             this.toolStripMenuItemInputBrowserHide});
 			this.toolStripSplitButtonInputBrowser.Image = global::JDP.Properties.Resources.folder;
 			resources.ApplyResources(this.toolStripSplitButtonInputBrowser, "toolStripSplitButtonInputBrowser");
@@ -674,12 +672,6 @@ namespace JDP {
 			this.toolStripMenuItemInputBrowserDrag.Image = global::JDP.Properties.Resources.folder_feed;
 			this.toolStripMenuItemInputBrowserDrag.Name = "toolStripMenuItemInputBrowserDrag";
 			resources.ApplyResources(this.toolStripMenuItemInputBrowserDrag, "toolStripMenuItemInputBrowserDrag");
-			// 
-			// toolStripMenuItemLocalDatabase
-			// 
-			this.toolStripMenuItemLocalDatabase.Image = global::JDP.Properties.Resources.puzzle__arrow;
-			this.toolStripMenuItemLocalDatabase.Name = "toolStripMenuItemLocalDatabase";
-			resources.ApplyResources(this.toolStripMenuItemLocalDatabase, "toolStripMenuItemLocalDatabase");
 			// 
 			// toolStripMenuItemInputBrowserHide
 			// 
@@ -1206,7 +1198,6 @@ namespace JDP {
 		private System.Windows.Forms.CheckBox checkBoxVerifyUseCDRepair;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelCTDB;
 		private System.Windows.Forms.CheckBox checkBoxVerifyUseLocal;
-		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemLocalDatabase;
 		private System.Windows.Forms.CheckBox checkBoxSkipRecent;
 		private System.Windows.Forms.ToolStripMenuItem editMetadataToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem addFolderToLocalDatabaseToolStripMenuItem;

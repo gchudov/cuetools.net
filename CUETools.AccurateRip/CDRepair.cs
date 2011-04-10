@@ -332,7 +332,7 @@ namespace CUETools.AccurateRip
 						if (err_count == allowed_errors && (err_count == 0 || rs.chienSearch(_errpos, stridecount + npar, err_count, _sigma)))
 						{
 							actualOffset = offset;
-							hasErrors = err_count != 0 || ar.CTDBCRC(offset) != expectedCRC;
+							hasErrors = err_count != 0 || ar.CTDBCRC(-offset) != expectedCRC;
 							return true;
 						}
 					}

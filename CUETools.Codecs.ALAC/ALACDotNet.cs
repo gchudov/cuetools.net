@@ -108,7 +108,10 @@ namespace CUETools.Codecs.ALAC
 				int sampleDuration;
 				int sampleSize;
 				if (_iSample >= _sample_byte_size.Length)
+				{
+					buff.Length = offset;
 					return offset;
+				}
 				get_sample_info(_iSample, out sampleDuration, out sampleSize);
 				_IO.Read(_framesBuffer, 0, sampleSize);
 				decodeFrame(sampleSize);

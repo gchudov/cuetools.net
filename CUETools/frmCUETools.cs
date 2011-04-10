@@ -82,26 +82,24 @@ namespace JDP {
 			{
 				if (node.IsExpanded)
 					AddCheckedNodesToBatch(node.Nodes);
-				else if (node.Checked && node is CUEControls.FileSystemTreeNodeFileSystemInfo)
-					_batchPaths.Add((node as CUEControls.FileSystemTreeNodeFileSystemInfo).Path);
+				else if (node.Checked)
+				{
+					if (node is CUEControls.FileSystemTreeNodeFileSystemInfo || node is FileSystemTreeNodeLocalDBEntry)
+						if ((node as CUEControls.FileSystemTreeNode).Path != null)
+							_batchPaths.Add((node as CUEControls.FileSystemTreeNode).Path);
+					if (node is FileSystemTreeNodeLocalDBFolder)
+						foreach (var entry in (node as FileSystemTreeNodeLocalDBFolder).Group)
+							if (entry.Path != null)
+								_batchPaths.Add(entry.Path);
+				}
 			}
 		}
 
 		private void AddAllNodesToBatch(TreeNode node)
 		{
-			if (node.IsExpanded || !(node is CUEControls.FileSystemTreeNode))
-			{
-				AddAllNodesToBatch(node.Nodes);
-				return;
-			}
 			if (node is CUEControls.FileSystemTreeNodeFileSystemInfo)
 			{
 				_batchPaths.Add((node as CUEControls.FileSystemTreeNodeFileSystemInfo).Path);
-				return;
-			}
-			if (node is FileSystemTreeNodeLocalDBEntry)
-			{
-				_batchPaths.Add((node as FileSystemTreeNodeLocalDBEntry).Path);
 				return;
 			}
 			if (node is FileSystemTreeNodeLocalDBFolder)
@@ -109,6 +107,17 @@ namespace JDP {
 				foreach (var entry in (node as FileSystemTreeNodeLocalDBFolder).Group)
 					if (entry.Path != null)
 						_batchPaths.Add(entry.Path);
+				return;
+			}
+			if (node is FileSystemTreeNodeLocalDBEntry)
+			{
+				if ((node as FileSystemTreeNodeLocalDBEntry).Path != null)
+					_batchPaths.Add((node as FileSystemTreeNodeLocalDBEntry).Path);
+				return;
+			}
+			if (node.IsExpanded || !(node is CUEControls.FileSystemTreeNode))
+			{
+				AddAllNodesToBatch(node.Nodes);
 				return;
 			}
 		}
@@ -164,10 +173,10 @@ namespace JDP {
 			//    }
 			//}
 
-			if (FileBrowserState != FileBrowserStateEnum.Checkboxes 
-				&& FileBrowserState != FileBrowserStateEnum.DragDrop 
-				&& (FileBrowserState != FileBrowserStateEnum.LocalDB || fileSystemTreeView1.SelectedPath != null)
-				&& !Directory.Exists(InputPath))
+			if (FileBrowserState == FileBrowserStateEnum.Hidden
+				|| (FileBrowserState == FileBrowserStateEnum.Tree
+				&& !(fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBFolder)
+				&& !Directory.Exists(InputPath)))
 			{
 				StartConvert();
 				return;
@@ -182,8 +191,12 @@ namespace JDP {
 				AddCheckedNodesToBatch(fileSystemTreeView1.Nodes);
 			else if (FileBrowserState == FileBrowserStateEnum.DragDrop)
 				AddAllNodesToBatch(fileSystemTreeView1.Nodes);
-			else if (FileBrowserState == FileBrowserStateEnum.LocalDB && fileSystemTreeView1.SelectedNode != null)
-				AddAllNodesToBatch(fileSystemTreeView1.SelectedNode);
+			else if (FileBrowserState == FileBrowserStateEnum.Tree && fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBFolder)
+			{
+				foreach (var entry in (fileSystemTreeView1.SelectedNode as FileSystemTreeNodeLocalDBFolder).Group)
+					if (entry.Path != null)
+						_batchPaths.Add(entry.Path);
+			}
 			else
 			{
 				_batchRoot = InputPath;
@@ -386,7 +399,6 @@ namespace JDP {
 			Tree = 0,
 			Checkboxes = 1,
 			DragDrop = 2,
-			LocalDB = 8,
 			Hidden = 4
 		}
 
@@ -1153,7 +1165,6 @@ namespace JDP {
 			toolStripMenu.Enabled = !running;
 			fileSystemTreeView1.Enabled = !running;
 			txtInputPath.Enabled = !running;
-			txtInputPath.ReadOnly = FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes || FileBrowserState == FileBrowserStateEnum.LocalDB;
 			grpExtra.Enabled = !running && (converting || verifying);
 			//groupBoxCorrector.Enabled = !running && SelectedAction == CUEAction.CorrectFilenames;
 			//grpOutputStyle.Enabled = !running && converting;
@@ -1361,7 +1372,7 @@ namespace JDP {
 			if (InputPath == "")
 			{
 				InputPath = sr.Load("InputPath") ?? "";
-				FileBrowserState = (FileBrowserStateEnum)(sr.LoadInt32("FileBrowserState", (int)FileBrowserStateEnum.Tree, (int)FileBrowserStateEnum.LocalDB) ?? (int)FileBrowserStateEnum.Hidden);
+				FileBrowserState = (FileBrowserStateEnum)(sr.LoadInt32("FileBrowserState", (int)FileBrowserStateEnum.Tree, (int)FileBrowserStateEnum.Hidden) ?? (int)FileBrowserStateEnum.Hidden);
 			}
 			else
 				FileBrowserState = FileBrowserStateEnum.Hidden;
@@ -1542,7 +1553,7 @@ namespace JDP {
 					? toolStripMenuItemOutputManual : toolStripMenuItemOutputBrowse;
 				toolStripSplitButtonOutputBrowser.Text = toolStripSplitButtonOutputBrowser.DefaultItem.Text;
 				toolStripSplitButtonOutputBrowser.Image = toolStripSplitButtonOutputBrowser.DefaultItem.Image;
-				toolStripSplitButtonOutputBrowser.Enabled = toolStripSplitButtonOutputBrowser.DefaultItem.Enabled;
+				toolStripSplitButtonOutputBrowser.Enabled = true;// toolStripSplitButtonOutputBrowser.DefaultItem.Enabled;
 				UpdateOutputPath();
 			}
 		}
@@ -1555,7 +1566,6 @@ namespace JDP {
 				case FileBrowserStateEnum.Checkboxes: return toolStripMenuItemInputBrowserMulti;
 				case FileBrowserStateEnum.DragDrop: return toolStripMenuItemInputBrowserDrag;
 				case FileBrowserStateEnum.Hidden: return toolStripMenuItemInputBrowserHide;
-				case FileBrowserStateEnum.LocalDB: return toolStripMenuItemLocalDatabase;
 			}
 			return null;
 		}
@@ -1601,6 +1611,7 @@ namespace JDP {
 							{
 								fileSystemTreeView1.Nodes.Clear();
 								fileSystemTreeView1.IconManager = m_icon_mgr;
+								fileSystemTreeView1.Nodes.Add(new FileSystemTreeNodeLocalDB(m_icon_mgr, _localDB));
 								if (InputPath != "")
 								{
 									TreeNode node = null;
@@ -1619,8 +1630,9 @@ namespace JDP {
 									}
 								}
 							}
-							if (fileSystemTreeView1.Nodes.Count > 0)
-								fileSystemTreeView1.Nodes[0].Expand();
+							foreach (TreeNode node in fileSystemTreeView1.Nodes)
+								node.Expand();
+							
 							if (value == FileBrowserStateEnum.Checkboxes
 								&& fileSystemTreeView1.SelectedNode != null
 								&& fileSystemTreeView1.SelectedNode is CUEControls.FileSystemTreeNodeFileSystemInfo)
@@ -1646,92 +1658,6 @@ namespace JDP {
 						}
 						fileSystemTreeView1.Select();
 						fileSystemTreeView1.ShowRootLines = false;
-						break;
-					case FileBrowserStateEnum.LocalDB:
-						OutputPathUseTemplate = true;
-						if (_fileBrowserControlState != value)
-						{
-							fileSystemTreeView1.BeginUpdate();
-							fileSystemTreeView1.CheckBoxes = false;
-							//fileSystemTreeView1.StateImageList = m_state_image_list;
-							fileSystemTreeView1.Nodes.Clear();
-							fileSystemTreeView1.Nodes.Add("dummy");
-							fileSystemTreeView1.IconManager = m_icon_mgr;
-							fileSystemTreeView1.Nodes.Clear();
-							
-							fileSystemTreeView1.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
-								m_icon_mgr, _localDB, true, true, m_icon_mgr.GetIconIndex(".#puzzle"), "By Uniqueness",
-									i => ((int)FileSystemTreeNodeLocalDBCollision.GetGroupType(_localDB.FindAll(j => j.DiscID == i.DiscID))).ToString(),
-									i => FileSystemTreeNodeLocalDBCollision.GroupTypeToDescription(FileSystemTreeNodeLocalDBCollision.GetGroupType(_localDB.FindAll(j => j.DiscID == i.DiscID))),
-									i => m_icon_mgr.GetIconIndex(FileSystemTreeNodeLocalDBCollision.GroupTypeToIconTag(FileSystemTreeNodeLocalDBCollision.GetGroupType(_localDB.FindAll(j => j.DiscID == i.DiscID)))))); //converter_icon
-
-							fileSystemTreeView1.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
-								m_icon_mgr, _localDB, true, true, m_icon_mgr.GetIconIndex(".flac"), "By Format",
-									i => i.AudioPaths == null || i.AudioPaths.Count == 0 ? null : Path.GetExtension(i.AudioPaths[0]).ToLower(),
-									null,
-									i => m_icon_mgr.GetIconIndex(i.AudioPaths[0])));
-
-							fileSystemTreeView1.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
-								m_icon_mgr, _localDB, false, true, m_icon_mgr.GetIconIndex(".#users"), "By Artist",
-									i => i.Metadata.Artist, null, null));
-
-							fileSystemTreeView1.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
-								m_icon_mgr, _localDB, true, false, m_icon_mgr.GetIconIndex(".#calendar"), "By Release Date",
-									i => i.Metadata.Year, null, null));
-
-							fileSystemTreeView1.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
-								m_icon_mgr, _localDB, true, true, m_icon_mgr.GetIconIndex(".#alarm_clock"), "By Verification Date",
-									i =>
-										i.VerificationDate == DateTime.MinValue ? "0" :
-										i.VerificationDate.AddHours(1) > DateTime.Now ? "1" :
-										i.VerificationDate.AddDays(1) > DateTime.Now ? "2" :
-										i.VerificationDate.AddDays(7) > DateTime.Now ? "3" :
-										i.VerificationDate.AddDays(31) > DateTime.Now ? "4" :
-										i.VerificationDate.AddDays(365) > DateTime.Now ? "5" :
-										"6",
-									i =>
-										i.VerificationDate == DateTime.MinValue ? "never" :
-										i.VerificationDate.AddHours(1) > DateTime.Now ? "this hour" :
-										i.VerificationDate.AddDays(1) > DateTime.Now ? "this day" :
-										i.VerificationDate.AddDays(7) > DateTime.Now ? "this week" :
-										i.VerificationDate.AddDays(31) > DateTime.Now ? "this month" :
-										i.VerificationDate.AddDays(365) > DateTime.Now ? "this year" :
-										"more than a year ago",
-									null));
-
-							fileSystemTreeView1.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
-								m_icon_mgr, _localDB, true, true, m_icon_mgr.GetIconIndex(".#ar"), "By AccurateRip Confidence",
-									i =>
-										i.VerificationDate == DateTime.MinValue ? "00" :
-										i.ARConfidence == 0 ? "01" :
-										i.ARConfidence == 1 ? "02" :
-										i.ARConfidence == 2 ? "03" :
-										i.ARConfidence == 3 ? "04" :
-										i.ARConfidence < 5 ? "05" :
-										i.ARConfidence < 10 ? "06" :
-										i.ARConfidence < 20 ? "07" :
-										i.ARConfidence < 50 ? "08" :
-										i.ARConfidence < 100 ? "09" :
-										"10",
-									i =>
-										i.VerificationDate == DateTime.MinValue ? "?" :
-										i.ARConfidence == 0 ? "0" :
-										i.ARConfidence == 1 ? "1" :
-										i.ARConfidence == 2 ? "2" :
-										i.ARConfidence == 3 ? "3" :
-										i.ARConfidence < 5 ? "<   5" :
-										i.ARConfidence < 10 ? "<  10" :
-										i.ARConfidence < 20 ? "<  20" :
-										i.ARConfidence < 50 ? "<  50" :
-										i.ARConfidence < 100 ? "< 100" :
-										">=100",
-									null));
-
-							_fileBrowserControlState = value;
-							fileSystemTreeView1.EndUpdate();
-						}
-						fileSystemTreeView1.Select();
-						fileSystemTreeView1.ShowRootLines = true;
 						break;
 					case FileBrowserStateEnum.Hidden:
 						break;
@@ -1872,7 +1798,7 @@ namespace JDP {
 
 		private void UpdateActions()
 		{
-			if (FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes || FileBrowserState == FileBrowserStateEnum.LocalDB)
+			if (FileBrowserState == FileBrowserStateEnum.DragDrop || FileBrowserState == FileBrowserStateEnum.Checkboxes)
 			{
 				rbActionCorrectFilenames.Enabled = true;
 				rbActionCreateCUESheet.Enabled = true;
@@ -1881,24 +1807,21 @@ namespace JDP {
 				//toolStripSplitButtonOutputBrowser.Enabled = false;
 				toolStripMenuItemOutputManual.Enabled = 
 					toolStripMenuItemOutputBrowse.Enabled = false;
+				txtInputPath.ReadOnly = true;
 			}
 			else
 			{
 				string pathIn = InputPath;
-				rbActionCorrectFilenames.Enabled = pathIn.Length != 0
-					&& ((File.Exists(pathIn) && Path.GetExtension(pathIn).ToLower() == ".cue")
-					 || Directory.Exists(pathIn));
-				rbActionCreateCUESheet.Enabled = pathIn.Length != 0
-					&& ((File.Exists(pathIn) && Path.GetExtension(pathIn).ToLower() != ".cue")
-					//&& ((File.Exists(pathIn) && CUESheet.CreateDummyCUESheet(_profile._config, pathIn) != null) -- too slow
-					|| Directory.Exists(pathIn));
-				rbActionVerify.Enabled =
-					rbActionEncode.Enabled = pathIn.Length != 0 
-					    && (File.Exists(pathIn) || Directory.Exists(pathIn) || IsCDROM(pathIn));
-				toolStripMenuItemOutputManual.Enabled = 
-					toolStripMenuItemOutputBrowse.Enabled = 
-						pathIn.Length != 0
-						&& (IsCDROM(pathIn) || File.Exists(pathIn));
+				bool is_file = !string.IsNullOrEmpty(pathIn) && File.Exists(pathIn);
+				bool is_cue = is_file && Path.GetExtension(pathIn).ToLower() == ".cue";
+				bool is_directory = !string.IsNullOrEmpty(pathIn) && Directory.Exists(pathIn);
+				bool is_folder = FileBrowserState == FileBrowserStateEnum.Tree && fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBFolder;
+				bool is_cdrom = !string.IsNullOrEmpty(pathIn) && IsCDROM(pathIn);
+				rbActionCorrectFilenames.Enabled = is_cue || is_directory;
+				rbActionCreateCUESheet.Enabled = (is_file && !is_cue) || is_directory;
+				rbActionVerify.Enabled = rbActionEncode.Enabled = is_file || is_directory || is_folder || is_cdrom;
+				toolStripMenuItemOutputManual.Enabled = toolStripMenuItemOutputBrowse.Enabled = is_file || is_cdrom;
+				txtInputPath.ReadOnly = is_folder;
 			}
 
 			btnConvert.Enabled = btnConvert.Visible &&
@@ -1911,54 +1834,27 @@ namespace JDP {
 			comboBoxScript.Enabled = btnConvert.Enabled && comboBoxScript.Items.Count > 1;
 		}
 
-		private void DumpLocalDB(StringBuilder report, TreeNode parent)
+		private void fileSystemTreeView1_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			if (parent is FileSystemTreeNodeLocalDBFolder)
+			InputPath = fileSystemTreeView1.SelectedPath ?? "";
+			txtInputPath.SelectAll();
+			UpdateActions();
+			if (fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBEntry)
 			{
-				foreach (var entry in (parent as FileSystemTreeNodeLocalDBFolder).Group)
+				var entry = (fileSystemTreeView1.SelectedNode as FileSystemTreeNodeLocalDBEntry).Item;
+				textBatchReport.Text = (entry.Log ?? "").Replace("\r", "").Replace("\n", "\r\n");
+			}
+			else if (fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBFolder)
+			{
+				var group = (fileSystemTreeView1.SelectedNode as FileSystemTreeNodeLocalDBFolder).Group;
+				StringBuilder report = new StringBuilder();
+				foreach (var entry in group)
 					if (entry.Path != null)
 						if (entry.Status == null || entry.OffsetSafeCRC == null)
 							report.AppendFormat("{0}: never verified\r\n", entry.Path);
 						else
 							report.AppendFormat("{0}: CRC {1,8:X}, {2}\r\n", entry.Path, entry.OffsetSafeCRC.Value[0], entry.Status);
-			}
-			else
-			{
-				foreach (TreeNode node in parent.Nodes)
-					if (node is FileSystemTreeNodeLocalDBEntry)
-					{
-						var entry = (node as FileSystemTreeNodeLocalDBEntry).Item;
-						if (entry.Path != null)
-							if (entry.Status == null || entry.OffsetSafeCRC == null)
-								report.AppendFormat("{0}: never verified\r\n", entry.Path);
-							else
-								report.AppendFormat("{0}: CRC {1,8:X}, {2}\r\n", entry.Path, entry.OffsetSafeCRC.Value[0], entry.Status);
-					}
-					else
-						DumpLocalDB(report, node);
-			}
-		}
-
-		private void fileSystemTreeView1_AfterSelect(object sender, TreeViewEventArgs e)
-		{
-			if (fileSystemTreeView1.SelectedPath != null)
-			{
-				InputPath = fileSystemTreeView1.SelectedPath;
-				txtInputPath.SelectAll();
-			}
-			if (FileBrowserState == FileBrowserStateEnum.LocalDB && fileSystemTreeView1.SelectedNode != null)
-			{
-				if (fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBEntry)
-				{
-					var entry = (fileSystemTreeView1.SelectedNode as FileSystemTreeNodeLocalDBEntry).Item;
-					textBatchReport.Text = (entry.Log ?? "").Replace("\r", "").Replace("\n", "\r\n");
-				}
-				else
-				{
-					StringBuilder report = new StringBuilder();
-					DumpLocalDB(report, fileSystemTreeView1.SelectedNode);
-					textBatchReport.Text = report.ToString();
-				}
+				textBatchReport.Text = report.ToString();
 			}
 		}
 
@@ -2027,9 +1923,6 @@ namespace JDP {
 									: fileSystemTreeView1.NewNode(new FileInfo(folder));
 								fileSystemTreeView1.Nodes.Add(node);
 							}
-							break;
-						case FileBrowserStateEnum.LocalDB:
-							// ???
 							break;
 					}
 					fileSystemTreeView1.Focus();
@@ -2138,9 +2031,6 @@ namespace JDP {
 									node.Checked = true;
 							}
 							fileSystemTreeView1.Select();
-							break;
-						case FileBrowserStateEnum.LocalDB:
-							// ???
 							break;
 					}
 				}
@@ -2549,8 +2439,6 @@ namespace JDP {
 				FileBrowserState = FileBrowserStateEnum.Checkboxes;
 			if (e.ClickedItem == toolStripMenuItemInputBrowserDrag)
 				FileBrowserState = FileBrowserStateEnum.DragDrop;
-			if (e.ClickedItem == toolStripMenuItemLocalDatabase)
-				FileBrowserState = FileBrowserStateEnum.LocalDB;
 			if (e.ClickedItem == toolStripMenuItemInputBrowserHide)
 				FileBrowserState = FileBrowserStateEnum.Hidden;
 			SetupControls(false);
@@ -2951,6 +2839,112 @@ namespace JDP {
 		{
 			foreach (var group in CUEToolsLocalDB.Group(Group, m_converter_key, null))
 				this.Nodes.Add(new FileSystemTreeNodeLocalDBGroup(icon_mgr, group, ShowArtist, ShowYear, m_converter_icon(group[0]), m_converter_name(group[0])));
+		}
+	}
+
+	public class FileSystemTreeNodeLocalDB : FileSystemTreeNodeLocalDBFolder
+	{
+		public override string Path
+		{
+			get
+			{
+				return null;
+			}
+		}
+
+		public override string DisplayName
+		{
+			get
+			{
+				return "Local DB";
+			}
+		}
+
+		public override int DisplayIcon
+		{
+			get
+			{
+				return icon_mgr.GetIconIndex(".#puzzle");
+			}
+		}
+
+		public FileSystemTreeNodeLocalDB(CUEControls.IIconManager icon_mgr, List<CUEToolsLocalDBEntry> group)
+			: base(icon_mgr)
+		{
+			this.Group = group;
+			this.SelectedImageIndex = this.ImageIndex = this.DisplayIcon;
+			this.Text = this.DisplayName;
+		}
+
+		public override void DoExpand()
+		{
+			this.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
+				icon_mgr, this.Group, true, true, icon_mgr.GetIconIndex(".#puzzle"), "By Uniqueness",
+					i => ((int)FileSystemTreeNodeLocalDBCollision.GetGroupType(this.Group.FindAll(j => j.DiscID == i.DiscID))).ToString(),
+					i => FileSystemTreeNodeLocalDBCollision.GroupTypeToDescription(FileSystemTreeNodeLocalDBCollision.GetGroupType(this.Group.FindAll(j => j.DiscID == i.DiscID))),
+					i => icon_mgr.GetIconIndex(FileSystemTreeNodeLocalDBCollision.GroupTypeToIconTag(FileSystemTreeNodeLocalDBCollision.GetGroupType(this.Group.FindAll(j => j.DiscID == i.DiscID)))))); //converter_icon
+
+			this.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
+				icon_mgr, this.Group, true, true, icon_mgr.GetIconIndex(".flac"), "By Format",
+					i => i.AudioPaths == null || i.AudioPaths.Count == 0 ? null : System.IO.Path.GetExtension(i.AudioPaths[0]).ToLower(),
+					null,
+					i => icon_mgr.GetIconIndex(i.AudioPaths[0])));
+
+			this.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
+				icon_mgr, this.Group, false, true, icon_mgr.GetIconIndex(".#users"), "By Artist",
+					i => i.Metadata.Artist, null, null));
+
+			this.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
+				icon_mgr, this.Group, true, false, icon_mgr.GetIconIndex(".#calendar"), "By Release Date",
+					i => i.Metadata.Year, null, null));
+
+			this.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
+				icon_mgr, this.Group, true, true, icon_mgr.GetIconIndex(".#alarm_clock"), "By Verification Date",
+					i =>
+						i.VerificationDate == DateTime.MinValue ? "0" :
+						i.VerificationDate.AddHours(1) > DateTime.Now ? "1" :
+						i.VerificationDate.AddDays(1) > DateTime.Now ? "2" :
+						i.VerificationDate.AddDays(7) > DateTime.Now ? "3" :
+						i.VerificationDate.AddDays(31) > DateTime.Now ? "4" :
+						i.VerificationDate.AddDays(365) > DateTime.Now ? "5" :
+						"6",
+					i =>
+						i.VerificationDate == DateTime.MinValue ? "never" :
+						i.VerificationDate.AddHours(1) > DateTime.Now ? "this hour" :
+						i.VerificationDate.AddDays(1) > DateTime.Now ? "this day" :
+						i.VerificationDate.AddDays(7) > DateTime.Now ? "this week" :
+						i.VerificationDate.AddDays(31) > DateTime.Now ? "this month" :
+						i.VerificationDate.AddDays(365) > DateTime.Now ? "this year" :
+						"more than a year ago",
+					null));
+
+			this.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
+				icon_mgr, this.Group, true, true, icon_mgr.GetIconIndex(".#ar"), "By AccurateRip Confidence",
+					i =>
+						i.VerificationDate == DateTime.MinValue ? "00" :
+						i.ARConfidence == 0 ? "01" :
+						i.ARConfidence == 1 ? "02" :
+						i.ARConfidence == 2 ? "03" :
+						i.ARConfidence == 3 ? "04" :
+						i.ARConfidence < 5 ? "05" :
+						i.ARConfidence < 10 ? "06" :
+						i.ARConfidence < 20 ? "07" :
+						i.ARConfidence < 50 ? "08" :
+						i.ARConfidence < 100 ? "09" :
+						"10",
+					i =>
+						i.VerificationDate == DateTime.MinValue ? "?" :
+						i.ARConfidence == 0 ? "0" :
+						i.ARConfidence == 1 ? "1" :
+						i.ARConfidence == 2 ? "2" :
+						i.ARConfidence == 3 ? "3" :
+						i.ARConfidence < 5 ? "<   5" :
+						i.ARConfidence < 10 ? "<  10" :
+						i.ARConfidence < 20 ? "<  20" :
+						i.ARConfidence < 50 ? "<  50" :
+						i.ARConfidence < 100 ? "< 100" :
+						">=100",
+					null));
 		}
 	}
 }

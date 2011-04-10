@@ -251,7 +251,10 @@ namespace CUETools.Codecs.FLAKE
 				fill_frames_buffer();
 
 				if (_framesBufferLength == 0)
+				{
+					buff.Length = offset;
 					return offset;
+				}
 
 				int bytesDecoded = DecodeFrame(_framesBuffer, _framesBufferOffset, _framesBufferLength);
 				_framesBufferLength -= bytesDecoded;

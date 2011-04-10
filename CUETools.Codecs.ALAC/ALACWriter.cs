@@ -1628,6 +1628,8 @@ namespace CUETools.Codecs.ALAC
 				verifyBuffer = new int[Alac.MAX_BLOCKSIZE * _pcm.ChannelCount];
 			}
 
+			if (sample_count < 0)
+				throw new InvalidOperationException("FinalSampleCount unknown");
 			int frames = sample_count / eparams.block_size;
 			int header_len = max_header_len
 				+ eparams.padding_size
