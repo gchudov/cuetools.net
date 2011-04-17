@@ -438,6 +438,14 @@ namespace CUETools.AccurateRip
 			}
 		}
 
+		public ushort[,] Syndrome
+		{
+			get
+			{
+				return ar.syndrome;
+			}
+		}
+
 		public byte[] Parity
 		{
 			get

@@ -69,7 +69,7 @@ namespace CUETools.AccurateRip
 			{
 				if (value == null)
 					throw new ArgumentNullException();
-				byte[] bytes  = Convert.FromBase64String(value);
+				byte[] bytes = Convert.FromBase64String(value);
 				if (bytes.Length % 4 != 0)
 					throw new InvalidDataException();
 				val = new uint[bytes.Length / 4];
@@ -89,7 +89,7 @@ namespace CUETools.AccurateRip
 			return (int)val[0];
 		}
 
-		public static bool operator == (OffsetSafeCRCRecord x, OffsetSafeCRCRecord y)
+		public static bool operator ==(OffsetSafeCRCRecord x, OffsetSafeCRCRecord y)
 		{
 			if (x as object == null || y as object == null) return x as object == null && y as object == null;
 			if (x.Value.Length != y.Value.Length) return false;
@@ -110,7 +110,7 @@ namespace CUETools.AccurateRip
 			return FindOffset(rec, out offset);
 		}
 
-		public bool FindOffset (OffsetSafeCRCRecord rec, out int offset)
+		public bool FindOffset(OffsetSafeCRCRecord rec, out int offset)
 		{
 			if (this.Value.Length != 128 || rec.Value.Length != 128)
 			{
@@ -169,7 +169,7 @@ namespace CUETools.AccurateRip
 			uint conf = 0;
 			int trno = iTrack + _toc.FirstAudio - 1;
 			for (int di = 0; di < (int)AccDisks.Count; di++)
-				if (trno < AccDisks[di].tracks.Count 
+				if (trno < AccDisks[di].tracks.Count
 					&& (CRC(iTrack) == AccDisks[di].tracks[trno].CRC
 					  || CRCV2(iTrack) == AccDisks[di].tracks[trno].CRC))
 					conf += AccDisks[di].tracks[iTrack + _toc.FirstAudio - 1].count;
@@ -243,7 +243,7 @@ namespace CUETools.AccurateRip
 
 		public uint DBCRC(int iTrack)
 		{
-			return ARStatus == null && iTrack +_toc.FirstAudio - 1 < AccDisks[0].tracks.Count 
+			return ARStatus == null && iTrack + _toc.FirstAudio - 1 < AccDisks[0].tracks.Count
 				? AccDisks[0].tracks[iTrack + _toc.FirstAudio - 1].CRC : 0U;
 		}
 
@@ -394,7 +394,7 @@ namespace CUETools.AccurateRip
 					{
 						cnt = _CRCNL[_toc.AudioTracks, 2 * maxOffset + oi] * 2;
 						crc = _CRCWN[_toc.AudioTracks, 2 * maxOffset + oi];
-					}				
+					}
 				}
 				else
 				{
@@ -436,6 +436,8 @@ namespace CUETools.AccurateRip
 
 		internal ushort[,] syndrome;
 		internal byte[] parity;
+		internal ushort[, ,] encodeTable;
+		internal ushort[, ,] decodeTable;
 		private int maxOffset;
 		internal ushort[] leadin;
 		internal ushort[] leadout;
@@ -483,11 +485,11 @@ namespace CUETools.AccurateRip
 			uint crcA, crcB;
 			if (oi > 0)
 			{
-				crcA = iTrack > 1 ? 
-					_CRC32[iTrack, oi]:
+				crcA = iTrack > 1 ?
+					_CRC32[iTrack, oi] :
 					_CRC32[iTrack, prefixSamples];
-				crcB = iTrack < _toc.AudioTracks ? 
-					_CRC32[iTrack + 1, oi] : 
+				crcB = iTrack < _toc.AudioTracks ?
+					_CRC32[iTrack + 1, oi] :
 					_CRC32[iTrack, maxOffset * 2 - suffixSamples];
 			}
 			else //if (oi <= 0)
@@ -510,72 +512,54 @@ namespace CUETools.AccurateRip
 			return CTDBCRC(0, offset, stride / 2, laststride / 2);
 		}
 
-		private unsafe static void CalcSyn8(ushort* exp, ushort* log, ushort* syn, uint lo, uint n, int npar)
+		private unsafe static void CalcSyn8(ushort* pt, ushort* syn, uint lo, uint hi)
 		{
 			syn[0] ^= (ushort)lo;
-			uint idx = log[lo] + n; syn[1] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			idx += n; syn[2] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			idx += n; syn[3] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			idx += n; syn[4] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			idx += n; syn[5] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			idx += n; syn[6] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			idx += n; syn[7] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//for (int i = 8; i < npar; i += 8)
-			//{
-			//    idx += n; syn[i] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//    idx += n; syn[i + 1] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//    idx += n; syn[i + 2] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//    idx += n; syn[i + 3] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//    idx += n; syn[i + 4] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//    idx += n; syn[i + 5] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//    idx += n; syn[i + 6] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//    idx += n; syn[i + 7] ^= exp[(idx & 0xffff) + (idx >> 16)];
-			//}
+			syn[1] = (ushort)(lo ^ pt[(syn[1] & 255) * 16 + 1] ^ pt[(syn[1] >> 8) * 16 + 1 + 8]);
+			syn[2] = (ushort)(lo ^ pt[(syn[2] & 255) * 16 + 2] ^ pt[(syn[2] >> 8) * 16 + 2 + 8]);
+			syn[3] = (ushort)(lo ^ pt[(syn[3] & 255) * 16 + 3] ^ pt[(syn[3] >> 8) * 16 + 3 + 8]);
+			syn[4] = (ushort)(lo ^ pt[(syn[4] & 255) * 16 + 4] ^ pt[(syn[4] >> 8) * 16 + 4 + 8]);
+			syn[5] = (ushort)(lo ^ pt[(syn[5] & 255) * 16 + 5] ^ pt[(syn[5] >> 8) * 16 + 5 + 8]);
+			syn[6] = (ushort)(lo ^ pt[(syn[6] & 255) * 16 + 6] ^ pt[(syn[6] >> 8) * 16 + 6 + 8]);
+			syn[7] = (ushort)(lo ^ pt[(syn[7] & 255) * 16 + 7] ^ pt[(syn[7] >> 8) * 16 + 7 + 8]);
+			syn[8] ^= (ushort)hi;
+			syn[9] = (ushort)(hi ^ pt[(syn[9] & 255) * 16 + 1] ^ pt[(syn[9] >> 8) * 16 + 1 + 8]);
+			syn[10] = (ushort)(hi ^ pt[(syn[10] & 255) * 16 + 2] ^ pt[(syn[10] >> 8) * 16 + 2 + 8]);
+			syn[11] = (ushort)(hi ^ pt[(syn[11] & 255) * 16 + 3] ^ pt[(syn[11] >> 8) * 16 + 3 + 8]);
+			syn[12] = (ushort)(hi ^ pt[(syn[12] & 255) * 16 + 4] ^ pt[(syn[12] >> 8) * 16 + 4 + 8]);
+			syn[13] = (ushort)(hi ^ pt[(syn[13] & 255) * 16 + 5] ^ pt[(syn[13] >> 8) * 16 + 5 + 8]);
+			syn[14] = (ushort)(hi ^ pt[(syn[14] & 255) * 16 + 6] ^ pt[(syn[14] >> 8) * 16 + 6 + 8]);
+			syn[15] = (ushort)(hi ^ pt[(syn[15] & 255) * 16 + 7] ^ pt[(syn[15] >> 8) * 16 + 7 + 8]);
 		}
 
-#if alternateSynCalc
-		private unsafe static void CalcSyn8Alt(ushort* exp, ushort* log, ushort* syn, uint lo, uint n)
+		private unsafe static void CalcPar8(ushort* pt, ushort* wr, uint lo, uint hi)
 		{
-			uint idx = log[lo] + 7 * n;
-			ulong x = exp[(idx & 0xffff) + (idx >> 16)];
-			x <<= 16; idx -= n; x ^= exp[(idx & 0xffff) + (idx >> 16)];
-			x <<= 16; idx -= n; x ^= exp[(idx & 0xffff) + (idx >> 16)];
-			x <<= 16; idx -= n; x ^= exp[(idx & 0xffff) + (idx >> 16)];
-			((ulong*)syn)[1] ^= x;
-			idx -= n; x = exp[(idx & 0xffff) + (idx >> 16)];
-			x <<= 16; idx -= n; x ^= exp[(idx & 0xffff) + (idx >> 16)];
-			x <<= 16; idx -= n; x ^= exp[(idx & 0xffff) + (idx >> 16)];
-			((ulong*)syn)[0] ^= (x << 16) + lo;
-		}
+#if !sdfs
+			uint wrlo = wr[0] ^ lo;
+			uint wrhi = wr[8] ^ hi;
+			ushort* ptiblo0 = pt + (wrlo & 255) * 16;
+			ushort* ptiblo1 = pt + (wrlo >> 8) * 16 + 8;
+			ushort* ptibhi0 = pt + (wrhi & 255) * 16;
+			ushort* ptibhi1 = pt + (wrhi >> 8) * 16 + 8;
+			wr[8] = 0;
+			((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
+			((ulong*)wr)[1] = ((ulong*)(wr + 1))[1] ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
+			((ulong*)wr)[2] = ((ulong*)(wr + 1))[2] ^ ((ulong*)ptibhi0)[0] ^ ((ulong*)ptibhi1)[0];
+			((ulong*)wr)[3] = (((ulong*)(wr))[3] >> 16) ^ ((ulong*)ptibhi0)[1] ^ ((ulong*)ptibhi1)[1];
+#else
+			const int npar = 8;
+			ushort* ptiblo = pt + (wr[0] ^ lo) * npar;
+			ushort* ptibhi = pt + (wr[npar] ^ hi) * npar;
+			for (int i = 0; i < npar - 1; i++)
+			{
+				wr[i] = (ushort)(wr[i + 1] ^ ptiblo[i]);
+				wr[npar + i] = (ushort)(wr[i + 1 + npar] ^ ptibhi[i]);
+			}
+			wr[npar - 1] = ptiblo[npar - 1];
+			wr[2 * npar - 1] = ptibhi[npar - 1];
 #endif
-
-		private unsafe static void CalcPar8(ushort* exp, ushort* log, ushort* wr, uint lo)
-		{
-			uint ib = wr[0] ^ lo;
-			if (ib != 0)
-			{
-				ushort* myexp = exp + log[ib];
-				wr[0] = (ushort)(wr[1] ^ myexp[19483]);
-				wr[1] = (ushort)(wr[2] ^ myexp[41576]);
-				wr[2] = (ushort)(wr[3] ^ myexp[9460]);
-				wr[3] = (ushort)(wr[4] ^ myexp[52075]);
-				wr[4] = (ushort)(wr[5] ^ myexp[9467]);
-				wr[5] = (ushort)(wr[6] ^ myexp[41590]);
-				wr[6] = (ushort)(wr[7] ^ myexp[19504]);
-				wr[7] = myexp[28];
-			}
-			else
-			{
-				wr[0] = wr[1];
-				wr[1] = wr[2];
-				wr[2] = wr[3];
-				wr[3] = wr[4];
-				wr[4] = wr[5];
-				wr[5] = wr[6];
-				wr[6] = wr[7];
-				wr[7] = 0;
-			}
 		}
+
 
 		/// <summary>
 		/// This function calculates three different CRCs and also 
@@ -591,7 +575,7 @@ namespace CUETools.AccurateRip
 		/// <param name="pSampleBuff"></param>
 		/// <param name="count"></param>
 		/// <param name="offs"></param>
-		public unsafe void CalculateCRCs(uint* t, ushort* exp, ushort* log, ushort* syn, ushort* wr, uint* pSampleBuff, int count, int offs)
+		public unsafe void CalculateCRCs(uint* t, ushort* syn, ushort* wr, ushort* pte, ushort* ptd, uint* pSampleBuff, int count, int offs)
 		{
 			int currentStride = ((int)_sampleCount * 2) / stride;
 			bool doSyn = currentStride >= 1 && currentStride <= stridecount && calcSyn;
@@ -606,7 +590,7 @@ namespace CUETools.AccurateRip
 			int crcnl = _CRCNL[crcTrack, 2 * maxOffset];
 			uint crcv2 = _CRCV2[_currentTrack, 0];
 			int peak = _Peak[_currentTrack];
-			
+
 			for (int i = 0; i < count; i++)
 			{
 				if (offs >= 0)
@@ -635,13 +619,11 @@ namespace CUETools.AccurateRip
 					crcnl++;
 				}
 
-				int pk = ((int)(lo << 16)) >> 16;
-				peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));
-
-				if (doSyn && lo != 0) CalcSyn8(exp, log, syn + i * 16, lo, n, npar);
-				if (doPar) CalcPar8(exp, log, wr + i * 16, lo);
-
 				uint hi = sample >> 16;
+				
+				if (doSyn) CalcSyn8(ptd, syn + i * 16, lo, hi);
+				if (doPar) CalcPar8(pte, wr + i * 16, lo, hi);
+
 				crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ hi)];
 				crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (hi >> 8))];
 				if (hi != 0)
@@ -651,11 +633,10 @@ namespace CUETools.AccurateRip
 					crcnl++;
 				}
 
+				int pk = ((int)(lo << 16)) >> 16;
+				peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));
 				pk = ((int)(hi << 16)) >> 16;
 				peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));
-
-				if (doSyn && hi != 0) CalcSyn8(exp, log, syn + i * 16 + 8, hi, n, npar);
-				if (doPar) CalcPar8(exp, log, wr + i * 16 + 8, hi);
 			}
 
 			_CRCAR[_currentTrack, 0] = crcar;
@@ -702,7 +683,7 @@ namespace CUETools.AccurateRip
 
 			int pos = 0;
 			fixed (uint* t = Crc32.table)
-			fixed (ushort* exp = Galois16.instance.ExpTbl, log = Galois16.instance.LogTbl, synptr1 = syndrome)
+			fixed (ushort* synptr1 = syndrome, pte = encodeTable, ptd = decodeTable)
 			fixed (byte* pSampleBuff = &sampleBuffer.Bytes[0], bpar = parity)
 				while (pos < sampleBuffer.Length)
 				{
@@ -730,7 +711,7 @@ namespace CUETools.AccurateRip
 						: _samplesDoneTrack >= 445 * 588 && _samplesDoneTrack <= 455 * 588 ? 2 * maxOffset + 1 + _samplesDoneTrack - 445 * 588
 						: -1;
 
-					CalculateCRCs(t, exp, log, synptr, wr, samples, copyCount, offset);
+					CalculateCRCs(t, synptr, wr, pte, ptd, samples, copyCount, offset);
 
 					// duplicate prefix to suffix
 					if (_samplesDoneTrack < maxOffset && _samplesRemTrack <= maxOffset)
@@ -807,8 +788,8 @@ namespace CUETools.AccurateRip
 			for (int iTrack = 0; iTrack <= _toc.AudioTracks; iTrack++)
 			{
 				// ??? int tempLocation = (int) (iTrack == 0 ? _toc[_toc.FirstAudio][0].Start : _toc[_toc.FirstAudio + iTrack - 1].Start) * 588;
-				int tempLocation = (int) (iTrack == 0 ? 0 : _toc[_toc.FirstAudio + iTrack - 1].Start - _toc[_toc.FirstAudio][0].Start) * 588;
-				int tempLen = (int) (iTrack == 0 ? _toc[_toc.FirstAudio].Pregap : _toc[_toc.FirstAudio + iTrack - 1].Length) * 588;
+				int tempLocation = (int)(iTrack == 0 ? 0 : _toc[_toc.FirstAudio + iTrack - 1].Start - _toc[_toc.FirstAudio][0].Start) * 588;
+				int tempLen = (int)(iTrack == 0 ? _toc[_toc.FirstAudio].Pregap : _toc[_toc.FirstAudio + iTrack - 1].Length) * 588;
 				int trStart = Math.Max(tempLocation, start);
 				int trEnd = Math.Min(tempLocation + tempLen, end);
 				if (trStart >= trEnd)
@@ -856,7 +837,7 @@ namespace CUETools.AccurateRip
 			_CRCMASK[0] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_finalSampleCount * 4);
 			for (int iTrack = 1; iTrack <= _toc.AudioTracks; iTrack++)
 				_CRCMASK[iTrack] = 0xffffffff ^ Crc32.Combine(0xffffffff, 0, (int)_toc[iTrack + _toc.FirstAudio - 1].Length * 588 * 4);
-			
+
 			maxOffset = Math.Max(4096 * 2, (calcSyn || calcParity) ? stride + laststride : 0);
 			if (maxOffset % 588 != 0)
 				maxOffset += 588 - maxOffset % 588;
@@ -872,6 +853,11 @@ namespace CUETools.AccurateRip
 			_Peak = new int[_toc.AudioTracks + 1];
 			syndrome = new ushort[calcSyn ? stride : 1, npar];
 			parity = new byte[stride * npar * 2];
+			if (calcParity && npar == 8)
+				encodeTable = Galois16.instance.makeEncodeTable(npar);
+			if (calcSyn && npar == 8)
+				decodeTable = Galois16.instance.makeDecodeTable(npar);
+
 			int leadin_len = Math.Max(4096 * 4, (calcSyn || calcParity) ? stride * 2 : 0);
 			int leadout_len = Math.Max(4096 * 4, (calcSyn || calcParity) ? stride + laststride : 0);
 			leadin = new ushort[leadin_len];
@@ -885,9 +871,9 @@ namespace CUETools.AccurateRip
 			return (uint)(data[pos] + (data[pos + 1] << 8) + (data[pos + 2] << 16) + (data[pos + 3] << 24));
 		}
 
-        static DateTime last_accessed;
-        static readonly TimeSpan min_interval = new TimeSpan (5000000); // 0.5 second
-        static readonly object server_mutex = new object ();
+		static DateTime last_accessed;
+		static readonly TimeSpan min_interval = new TimeSpan(5000000); // 0.5 second
+		static readonly object server_mutex = new object();
 
 		public void ContactAccurateRip(string accurateRipId)
 		{
@@ -1047,7 +1033,7 @@ namespace CUETools.AccurateRip
 			}
 			set
 			{
-				if (value != _finalSampleCount) 
+				if (value != _finalSampleCount)
 					throw new Exception("invalid FinalSampleCount");
 			}
 		}
@@ -1106,7 +1092,7 @@ namespace CUETools.AccurateRip
 						conf += AccDisks[di].tracks[trno].count;
 					if (crc450OI == AccDisks[di].tracks[trno].Frame450CRC
 						&& 0 != AccDisks[di].tracks[trno].Frame450CRC)
-						partials ++;
+						partials++;
 				}
 				string status;
 				if (conf > 0)
@@ -1319,7 +1305,7 @@ namespace CUETools.AccurateRip
 		public static bool FindDriveReadOffset(string driveName, out int driveReadOffset)
 		{
 			string fileName = System.IO.Path.Combine(CachePath, "DriveOffsets.bin");
-			if (!File.Exists(fileName) || (DateTime.Now - File.GetLastWriteTime(fileName) > TimeSpan.FromDays(10)) )
+			if (!File.Exists(fileName) || (DateTime.Now - File.GetLastWriteTime(fileName) > TimeSpan.FromDays(10)))
 			{
 				HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://www.accuraterip.com/accuraterip/DriveOffsets.bin");
 				req.Method = "GET";

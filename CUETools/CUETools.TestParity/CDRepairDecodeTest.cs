@@ -91,7 +91,8 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairEncodeWriteTest()
 		{
-			Assert.AreEqual<string>("jvR9QJ1cSWo=", Convert.ToBase64String(encode.Parity, 0, 8));
+			Assert.AreEqual<string>("jvR9QJ1cSWpqbyP0I0tBrBkQRjCDTDDQkttZGj14ROvsXyg+AnnxVKxL7gwLZbrQmTw5ZPps1Q3744g94qaOOQ==", 
+				Convert.ToBase64String(encode.Parity, 0, 64));
 			Assert.AreEqual<uint>(377539636, encode.CRC);
 		}
 
@@ -207,7 +208,7 @@ namespace CUETools.TestParity
 			var decode = generator2.CreateCDRepairEncode(stride, npar, true, false);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
+			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors), "couldn't find offset");
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(-offset, actualOffset, "wrong offset");
 			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
@@ -216,5 +217,30 @@ namespace CUETools.TestParity
 			generator2.Write(fix);
 			Assert.AreEqual<uint>(encode.CRC, fix.CRC);
 		}
+
+		//[TestMethod]
+		//public void CDRepairDecodeSpeedTest()
+		//{
+		//    var generator = new TestImageGenerator("0 75000", seed, 0, 0);
+		//    var encode = generator.CreateCDRepairEncode(stride, npar, true, false);
+		//    var syn = new byte[64];
+		//    for (int i = 0; i < 4; i++)
+		//        for (int j = 0; j < 8; j++)
+		//        {
+		//            syn[(i * 8 + j) * 2] = (byte)encode.Syndrome[i, j];
+		//            syn[(i * 8 + j) * 2 + 1] = (byte)(encode.Syndrome[i, j] >> 8);
+		//        }
+		//    Assert.AreEqual<string>("YJPyo4+KY35P+DpljMplMGbMWXmpvhkdDOCKeEo4NDoRPPW7D0cv8hmLb7yZujp0sVg/6AEWKY5QrDKkiYp0Zw==",
+		//        Convert.ToBase64String(syn));
+		//}
+
+		//[TestMethod]
+		//public void CDRepairEncodeSpeedTest()
+		//{
+		//    var generator = new TestImageGenerator("0 75000", seed, 0, 0);
+		//    var encode = generator.CreateCDRepairEncode(stride, npar, false, true);
+		//    Assert.AreEqual<string>("CWgEDNLjSi22nIOyaeyp+12R3UCVWlzIb+nbv8XWXg9YEhkHxYr8xqrr1+hIbFwKNEXnj0esJrKbiW3XGbHsYw==",
+		//        Convert.ToBase64String(encode.Parity, 0, 64));
+		//}
 	}
 }
