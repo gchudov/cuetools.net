@@ -258,9 +258,8 @@ namespace AudioDataPlugIn
 						ctdb.Submit(
 #if USEAR
 							(int)ar.WorstConfidence() + 1,
-							(int)ar.WorstTotal() + 1,
 #else
-							1, 1,
+							1,
 #endif
 							m_data.AlbumArtist,
 							m_data.AlbumTitle);

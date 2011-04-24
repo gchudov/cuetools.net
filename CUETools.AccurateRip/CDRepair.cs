@@ -57,6 +57,10 @@ namespace CUETools.AccurateRip
 
 		public long FinalSampleCount
 		{
+			get
+			{
+				return finalSampleCount;
+			}
 			set
 			{
 				if (value < 0) // != _toc.Length?
@@ -72,22 +76,25 @@ namespace CUETools.AccurateRip
 				return npar;
 			}
 		}
+
+		public int Stride
+		{
+			get
+			{
+				return stride;
+			}
+		}
 	}
 
 	public class CDRepairEncode : CDRepair
 	{
-		internal bool verify;
-		internal bool encode;
 		protected AccurateRipVerify ar;
 
-		public CDRepairEncode(AccurateRipVerify ar, int stride, int npar, bool verify, bool encode)
+		public CDRepairEncode(AccurateRipVerify ar, int stride, int npar)
 		    : base ((int)ar.FinalSampleCount, stride, npar)
 		{
 			this.ar = ar;
-			this.verify = verify;
-			this.encode = encode;
-
-			ar.InitCDRepair(stride, laststride, stridecount, npar, verify, encode);
+			ar.InitCDRepair(stride, laststride, stridecount, npar, true);
 		}
 
 		//private unsafe void ProcessStride(int currentStride, int currentPart, int count, ushort* data)
@@ -265,6 +272,14 @@ namespace CUETools.AccurateRip
 			return VerifyParity(npar, parity2, 0, parity2.Length, actualOffset);
 		}
 
+		public AccurateRipVerify AR
+		{
+			get
+			{
+				return ar;
+			}
+		}
+
 		public uint CRC
 		{
 			get
@@ -273,12 +288,21 @@ namespace CUETools.AccurateRip
 			}
 		}
 
+		public string TrackCRCs
+		{
+			get
+			{
+				var sb = new StringBuilder();
+				for (int i = 1; i <= ar.TOC.AudioTracks; i++)
+					sb.AppendFormat(" {0:x8}", ar.CTDBCRC(i, 0, stride / 2, laststride / 2));
+				return sb.ToString().Substring(1);
+			}
+		}
+
 		public unsafe bool FindOffset(int npar2, byte[] parity2, int pos, uint expectedCRC, out int actualOffset, out bool hasErrors)
 		{
 			if (npar2 != npar)
 				throw new Exception("npar mismatch");
-			if (!verify)
-				throw new Exception("verify was not enabled");
 			if (ar.Position != ar.FinalSampleCount)
 				throw new Exception("ar.Position != ar.FinalSampleCount");
 
@@ -290,6 +314,7 @@ namespace CUETools.AccurateRip
 				int* _errpos = stackalloc int[npar];
 				int* syn = stackalloc int[npar];
 				bool foundOffset = false;
+				var arSyndrome = ar.Syndrome;
 
 				for (int allowed_errors = 0; allowed_errors < npar / 2 && !foundOffset; allowed_errors++)
 				{
@@ -307,7 +332,7 @@ namespace CUETools.AccurateRip
 
 						for (int i = 0; i < npar; i++)
 						{
-							int synI = ar.syndrome[part, i];
+							int synI = arSyndrome[part, i];
 
 							// offset < 0
 							if (part < -offset * 2)
@@ -365,6 +390,7 @@ namespace CUETools.AccurateRip
 			{
 				int* syn = stackalloc int[npar];
 				int offset = fix.actualOffset;
+				var arSyndrome = ar.Syndrome;
 
 				for (int part = 0; part < stride; part++)
 				{
@@ -374,7 +400,7 @@ namespace CUETools.AccurateRip
 
 					for (int i = 0; i < npar; i++)
 					{
-						syn[i] = ar.syndrome[part, i];
+						syn[i] = arSyndrome[part, i];
 
 						// offset < 0
 						if (part < -offset * 2)
@@ -442,7 +468,7 @@ namespace CUETools.AccurateRip
 		{
 			get
 			{
-				return ar.syndrome;
+				return ar.Syndrome;
 			}
 		}
 

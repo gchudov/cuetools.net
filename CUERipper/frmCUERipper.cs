@@ -390,7 +390,6 @@ namespace CUERipper
 					else
 						cueSheet.CTDB.Submit(
 							(int)cueSheet.ArVerify.WorstConfidence() + 1,
-							(int)cueSheet.ArVerify.WorstTotal() + 1,
 							cueSheet.Artist,
 							cueSheet.Title);
 				}

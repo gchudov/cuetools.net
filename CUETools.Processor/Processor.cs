@@ -6316,7 +6316,7 @@ string status = processor.Go();
 							CTDB.SubStatus = "will not submit";
 							return GenerateAccurateRipStatus();
 						}
-						CTDB.Submit((int)ArVerify.WorstConfidence(), (int)ArVerify.WorstTotal(), Artist, Title);
+						CTDB.Submit((int)ArVerify.WorstConfidence(), Artist, Title);
 						return GenerateAccurateRipStatus();
 					}
 				case "repair":
