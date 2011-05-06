@@ -3191,13 +3191,13 @@ string status = processor.Go();
 				_padding += _eacLog.Length;
 		}
 
-		public void UseCUEToolsDB(bool submit, string userAgent)
+		public void UseCUEToolsDB(bool submit, string userAgent, string driveName)
 		{
 			ShowProgress((string)"Contacting CUETools database...", 0, null, null);
 
 			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
 			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
-			_CUEToolsDB.ContactDB(userAgent);
+			_CUEToolsDB.ContactDB(userAgent, driveName);
 
 			if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0)
 				foreach (DBEntry e in _CUEToolsDB.Entries)
@@ -4325,11 +4325,8 @@ string status = processor.Go();
 			else if (_audioEncoderType != AudioEncoderType.NoAudio)
 				WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
 
-			if (_useCUEToolsDB && _CUEToolsDB.AccResult == HttpStatusCode.OK)
-			{
-				if (!_useCUEToolsDBFix)
-					_CUEToolsDB.DoVerify();
-			}
+			if (_useCUEToolsDB && !_useCUEToolsDBFix)
+				_CUEToolsDB.DoVerify();
 
 			_processed = true;
 
@@ -6311,17 +6308,17 @@ string status = processor.Go();
 							foreach (DBEntry entry in CTDB.Entries)
 								if (entry.toc.TrackOffsets == _toc.TrackOffsets && !entry.hasErrors)
 									return "CUEToolsDB: " + CTDB.Status;
-						if (ArVerify.WorstConfidence() < 2)
+						if (ArVerify.WorstConfidence() < 1)
 						{
 							CTDB.SubStatus = "will not submit";
 							return GenerateAccurateRipStatus();
 						}
-						CTDB.Submit((int)ArVerify.WorstConfidence(), Artist, Title);
+						CTDB.Submit((int)ArVerify.WorstConfidence(), 100, Artist, Title);
 						return GenerateAccurateRipStatus();
 					}
 				case "repair":
 					{
-						UseCUEToolsDB(false, "CUETools " + CUEToolsVersion);
+						UseCUEToolsDB(false, "CUETools " + CUEToolsVersion, null);
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;

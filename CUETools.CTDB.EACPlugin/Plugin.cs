@@ -155,7 +155,7 @@ namespace AudioDataPlugIn
 #if USEAR
 			ar.ContactAccurateRip(ArId);
 #endif
-			ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.1: " + m_drivename);
+			ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.1", m_drivename);
 			ctdb.Init(true, ar);
 			this.sequence_ok = true;
 			this.m_start_pos = 0;
@@ -241,33 +241,20 @@ namespace AudioDataPlugIn
 				return "";
 			if (this.sequence_ok)
 			{
-				bool is_accurate = (arTest.Position == 0 && this.is_secure_mode) || arTest.CRC32(0) == ar.CRC32(0);
-				DBEntry confirm = null;
-				if (ctdb.AccResult == HttpStatusCode.OK)
-					ctdb.DoVerify();
-				if ((ctdb.AccResult == HttpStatusCode.NotFound || ctdb.AccResult == HttpStatusCode.OK)
-					&& is_accurate)
-				{
-					foreach (DBEntry entry in ctdb.Entries)
-						if (entry.toc.TrackOffsets == TOC.TrackOffsets && !entry.hasErrors)
-							confirm = entry;
-
-					if (confirm != null)
-						ctdb.Confirm(confirm);
-					else
-						ctdb.Submit(
+				ctdb.DoVerify();
+				ctdb.Submit(
 #if USEAR
-							(int)ar.WorstConfidence() + 1,
+					(int)ar.WorstConfidence() + 1,
 #else
-							1,
+					1,
 #endif
-							m_data.AlbumArtist,
-							m_data.AlbumTitle);
-				}
+					(arTest.Position == 0 && this.is_secure_mode) || arTest.CRC32(0) == ar.CRC32(0) ? 100 : 0,
+					m_data.AlbumArtist,
+					m_data.AlbumTitle);
 				sw.WriteLine("[CTDB TOCID: {0}] {1}{2}.", 
 					TOC.TOCID, 
 					ctdb.DBStatus ?? "found",
-					(confirm != null || ctdb.SubStatus == null) ? "" : (", Submit result: " + ctdb.SubStatus));
+					(ctdb.SubStatus == null) ? "" : (", Submit result: " + ctdb.SubStatus));
 				foreach (DBEntry entry in ctdb.Entries)
 				{
 					string confFormat = (ctdb.Total < 10) ? "{0:0}/{1:0}" :
@@ -284,14 +271,13 @@ namespace AudioDataPlugIn
 							entry.canRecover ? string.Format("Differs in {0} samples @{1}", entry.repair.CorrectableErrors, entry.repair.AffectedSectors) :
 							(entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
 							entry.httpStatus.ToString());
-					sw.WriteLine("[{0:x8}] ({1}) {2}{3}", 
+					sw.WriteLine("[{0:x8}] ({1}) {2}", 
 						entry.crc, 
 						conf, 
-						status, 
-						(confirm != entry || ctdb.SubStatus == null) ? "" : (", Submit result: " + ctdb.SubStatus));
+						status);
 				}
 				bool canFix = false;
-				if (ctdb.AccResult == HttpStatusCode.OK && !is_accurate)
+				if (ctdb.AccResult == HttpStatusCode.OK)
 				{
 					foreach (DBEntry entry in ctdb.Entries)
 						if (entry.hasErrors && entry.canRecover)

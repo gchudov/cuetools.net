@@ -18,6 +18,7 @@ namespace CUETools.CTDB
 	{
 		const string urlbase = "http://db.cuetools.net";
 		string userAgent;
+		string driveName;
 
 		private CDRepairEncode verify;
 		private CDImageLayout toc;
@@ -38,9 +39,10 @@ namespace CUETools.CTDB
 			this.uploadHelper = new HttpUploadHelper();
 		}
 
-		public void ContactDB(string userAgent)
+		public void ContactDB(string userAgent, string driveName)
 		{
-			this.userAgent = userAgent;
+			this.driveName = driveName;
+			this.userAgent = userAgent + " (" + Environment.OSVersion.VersionString + ")" + (driveName != null ? " (" + driveName + ")" : "");
 			this.total = 0;
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/lookup.php?tocid=" + toc.TOCID);
@@ -184,17 +186,22 @@ namespace CUETools.CTDB
 			return uuidInfo;
 		}
 
-		public string Confirm(DBEntry entry)
+		public string Submit(int confidence, int quality, string artist, string title)
 		{
-			return Submit(1, null, null, !entry.hasParity /*&& entry.conf > 100*/, true, entry.id);
+			if (this.AccResult != HttpStatusCode.NotFound && this.AccResult != HttpStatusCode.OK)
+				return this.DBStatus;
+			DBEntry confirm = null;
+			foreach (DBEntry entry in this.Entries)
+				if (entry.toc.TrackOffsets == this.toc.TrackOffsets && !entry.hasErrors)
+					confirm = entry;
+			if (confirm != null) confidence = 1;
+			DoSubmit(confidence, quality, artist, title, false, confirm);
+			if (subResult == "parity needed")
+				DoSubmit(confidence, quality, artist, title, true, confirm);
+			return subResult;
 		}
 
-		public string Submit(int confidence, string artist, string title)
-		{
-			return Submit(confidence, artist, title, confidence > 1, false, null);
-		}
-
-		public string Submit(int confidence, string artist, string title, bool upload, bool confirm, string confirmid)
+		protected string DoSubmit(int confidence, int quality, string artist, string title, bool upload, DBEntry confirm)
 		{
 			UploadFile[] files;
 			if (upload)
@@ -229,8 +236,8 @@ namespace CUETools.CTDB
 			NameValueCollection form = new NameValueCollection();
 			if (upload)
 				form.Add("parityfile", "1");
-			if (confirm)
-				form.Add("confirmid", confirmid);
+			if (confirm != null)
+				form.Add("confirmid", confirm.id);
 			form.Add("tocid", toc.TOCID);
 			form.Add("crc32", ((int)verify.CRC).ToString());
 			form.Add("trackcrcs", verify.TrackCRCs);
@@ -241,6 +248,9 @@ namespace CUETools.CTDB
 			form.Add("audiotracks", toc.AudioTracks.ToString());
 			form.Add("trackoffsets", toc.TrackOffsets);
 			form.Add("userid", GetUUID());
+			form.Add("quality", quality.ToString());
+			if (driveName != null)
+				form.Add("drivename", driveName);
 			if (artist != null && artist != "") form.Add("artist", artist);
 			if (title != null && title != "") form.Add("title", title);
 
@@ -340,6 +350,8 @@ namespace CUETools.CTDB
 
 		public void DoVerify()
 		{
+			if (this.AccResult != HttpStatusCode.OK)
+				return;
 			foreach (DBEntry entry in entries)
 			{
 				if (entry.toc.Pregap != toc.Pregap || entry.toc.AudioLength != toc.AudioLength || entry.stride != verify.Stride / 2)

@@ -105,7 +105,7 @@ namespace CUETools.Codecs.LAME
 
 		protected virtual BE_CONFIG MakeConfig()
 		{
-			return new BE_CONFIG(_pcm, 128);
+			return new BE_CONFIG(_pcm);
 		}
 
 		private bool inited = false;
@@ -121,7 +121,7 @@ namespace CUETools.Codecs.LAME
 				throw new ApplicationException(string.Format("Lame_encDll.beInitStream failed with the error code {0}", LameResult));
 
 			m_InBuffer = new byte[m_InputSamples * 2]; //Input buffer is expected as short[]
-			m_OutBuffer = new byte[m_OutBufferSize];
+			m_OutBuffer = new byte[Math.Max(65536, m_OutBufferSize)];
 
 			if (_IO == null)
 				_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
@@ -129,7 +129,7 @@ namespace CUETools.Codecs.LAME
 			inited = true;
 		}
 
-		public void Write(AudioBuffer buff)
+		public unsafe void Write(AudioBuffer buff)
 		{
 			buff.Prepare(this);
 
@@ -142,59 +142,75 @@ namespace CUETools.Codecs.LAME
 			int ToCopy = 0;
 			uint EncodedSize = 0;
 			uint LameResult;
-			while (count > 0)
+			uint outBufferIndex = 0;
+			fixed (byte* pBuffer = buffer, pOutBuffer = m_OutBuffer)
 			{
-				if (m_InBufferPos > 0)
+				while (count > 0)
 				{
-					ToCopy = Math.Min(count, m_InBuffer.Length - m_InBufferPos);
-					Buffer.BlockCopy(buffer, index, m_InBuffer, m_InBufferPos, ToCopy);
-					m_InBufferPos += ToCopy;
-					index += ToCopy;
-					count -= ToCopy;
-					if (m_InBufferPos >= m_InBuffer.Length)
+					if (m_InBufferPos > 0)
 					{
-						m_InBufferPos = 0;
-						if ((LameResult = Lame_encDll.EncodeChunk(m_hLameStream, m_InBuffer, m_OutBuffer, ref EncodedSize)) == Lame_encDll.BE_ERR_SUCCESSFUL)
+						ToCopy = Math.Min(count, m_InBuffer.Length - m_InBufferPos);
+						Buffer.BlockCopy(buffer, index, m_InBuffer, m_InBufferPos, ToCopy);
+						m_InBufferPos += ToCopy;
+						index += ToCopy;
+						count -= ToCopy;
+						if (m_InBufferPos >= m_InBuffer.Length)
 						{
-							if (EncodedSize > 0)
+							m_InBufferPos = 0;
+							if (outBufferIndex > 0)
 							{
-								_IO.Write(m_OutBuffer, 0, (int)EncodedSize);
-								bytesWritten += EncodedSize;
+								_IO.Write(m_OutBuffer, 0, (int)outBufferIndex);
+								bytesWritten += outBufferIndex;
+								outBufferIndex = 0;
+							}
+
+							if ((LameResult = Lame_encDll.EncodeChunk(m_hLameStream, m_InBuffer, m_OutBuffer, ref EncodedSize)) == Lame_encDll.BE_ERR_SUCCESSFUL)
+							{
+								outBufferIndex += EncodedSize;
+							}
+							else
+							{
+								throw new ApplicationException(string.Format("Lame_encDll.EncodeChunk failed with the error code {0}", LameResult));
 							}
 						}
-						else
-						{
-							throw new ApplicationException(string.Format("Lame_encDll.EncodeChunk failed with the error code {0}", LameResult));
-						}
-					}
-				}
-				else
-				{
-					if (count >= m_InBuffer.Length)
-					{
-						if ((LameResult = Lame_encDll.EncodeChunk(m_hLameStream, buffer, index, (uint)m_InBuffer.Length, m_OutBuffer, ref EncodedSize)) == Lame_encDll.BE_ERR_SUCCESSFUL)
-						{
-							if (EncodedSize > 0)
-							{
-								_IO.Write(m_OutBuffer, 0, (int)EncodedSize);
-								bytesWritten += EncodedSize;
-							}
-						}
-						else
-						{
-							throw new ApplicationException(string.Format("Lame_encDll.EncodeChunk failed with the error code {0}", LameResult));
-						}
-						count -= m_InBuffer.Length;
-						index += m_InBuffer.Length;
 					}
 					else
 					{
-						Buffer.BlockCopy(buffer, index, m_InBuffer, 0, count);
-						m_InBufferPos = count;
-						index += count;
-						count = 0;
+						if (count >= m_InBuffer.Length)
+						{
+							if (outBufferIndex + m_OutBufferSize > m_OutBuffer.Length)
+							{
+								_IO.Write(m_OutBuffer, 0, (int)outBufferIndex);
+								bytesWritten += outBufferIndex;
+								outBufferIndex = 0;
+							}
+
+							if ((LameResult = Lame_encDll.EncodeChunk(m_hLameStream, pBuffer + index, (uint)m_InBuffer.Length, pOutBuffer + outBufferIndex, ref EncodedSize)) == Lame_encDll.BE_ERR_SUCCESSFUL)
+							{
+								outBufferIndex += EncodedSize;
+							}
+							else
+							{
+								throw new ApplicationException(string.Format("Lame_encDll.EncodeChunk failed with the error code {0}", LameResult));
+							}
+							count -= m_InBuffer.Length;
+							index += m_InBuffer.Length;
+						}
+						else
+						{
+							Buffer.BlockCopy(buffer, index, m_InBuffer, 0, count);
+							m_InBufferPos = count;
+							index += count;
+							count = 0;
+						}
 					}
 				}
+			}
+
+			if (outBufferIndex > 0)
+			{
+				_IO.Write(m_OutBuffer, 0, (int)outBufferIndex);
+				bytesWritten += outBufferIndex;
 			}
 		}
 
@@ -264,10 +280,23 @@ namespace CUETools.Codecs.LAME
 		}
 	}
 
+	public enum LAMEEncoderVBRProcessingQuality : uint
+	{
+		Best = 0,
+		Normal = 5,
+	} 
 
 	public class LAMEEncoderVBRSettings
 	{
-		public LAMEEncoderVBRSettings() { }
+		public LAMEEncoderVBRSettings()
+		{
+			// Iterate through each property and call ResetValue()
+			foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+				property.ResetValue(this);
+		}
+
+		[DefaultValue(LAMEEncoderVBRProcessingQuality.Normal)]
+		public LAMEEncoderVBRProcessingQuality Quality { get; set; }
 	}
 
 	[AudioEncoderClass("lame VBR", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", 2, typeof(LAMEEncoderVBRSettings))]
@@ -287,7 +316,7 @@ namespace CUETools.Codecs.LAME
 
 		protected override BE_CONFIG MakeConfig()
 		{
-			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, 128);
+			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, 0, (uint)_settings.Quality);
 			Mp3Config.format.lhv1.bWriteVBRHeader = 1;
 			Mp3Config.format.lhv1.nMode = MpegMode.JOINT_STEREO;
 			Mp3Config.format.lhv1.bEnableVBR = 1;
@@ -391,7 +420,7 @@ namespace CUETools.Codecs.LAME
 
 		protected override BE_CONFIG MakeConfig()
 		{
-			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, _settings.CustomBitrate > 0 ? (uint)_settings.CustomBitrate : bps);
+			BE_CONFIG Mp3Config = new BE_CONFIG(PCM, _settings.CustomBitrate > 0 ? (uint)_settings.CustomBitrate : bps, 5);
 			Mp3Config.format.lhv1.bWriteVBRHeader = 1;
 			Mp3Config.format.lhv1.nMode = _settings.StereoMode;
 			//Mp3Config.format.lhv1.nVbrMethod = VBRMETHOD.VBR_METHOD_NONE; // --cbr

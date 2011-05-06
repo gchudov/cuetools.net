@@ -137,7 +137,7 @@ namespace CUETools.Codecs.LAME
 		//[ MarshalAs( UnmanagedType.ByValArray, SizeConst=255-4*4-2 )]
 		//public byte[]	 btReserved;//[255-4*sizeof(DWORD) - sizeof( WORD )];
 
-		public LHV1(AudioPCMConfig format, uint MpeBitRate)
+		public LHV1(AudioPCMConfig format, uint MpeBitRate, uint quality)
 		{
 			dwStructVersion	= 1;
 			dwStructSize = (uint)Marshal.SizeOf(typeof(BE_CONFIG));
@@ -171,6 +171,7 @@ namespace CUETools.Codecs.LAME
 			}
 			switch (MpeBitRate)
 			{
+			case 0 :
 			case 32 :
 			case 40 :
 			case 48 :
@@ -217,7 +218,7 @@ namespace CUETools.Codecs.LAME
 			bStrictIso = 0;
 			dwMaxBitrate = 0;
 			dwVbrAbr_bps = 0;
-			nQuality = 0;
+			nQuality = (ushort)(quality | ((~quality) << 8));
 			nVbrMethod = VBRMETHOD.VBR_METHOD_NONE;
 			nVBRQuality = 0;
 		}
@@ -243,9 +244,9 @@ namespace CUETools.Codecs.LAME
 		[FieldOffset(0)]
 		public ACC acc;
 
-		public Format(AudioPCMConfig format, uint MpeBitRate)
+		public Format(AudioPCMConfig format, uint MpeBitRate, uint quality)
 		{
-			lhv1 = new LHV1(format, MpeBitRate);
+			lhv1 = new LHV1(format, MpeBitRate, quality);
 		}
 	}
 
@@ -259,13 +260,13 @@ namespace CUETools.Codecs.LAME
 		public uint	dwConfig;	
 		public Format format;
 
-		public BE_CONFIG(AudioPCMConfig format, uint MpeBitRate)
+		public BE_CONFIG(AudioPCMConfig format, uint MpeBitRate, uint quality)
 		{
 			this.dwConfig = BE_CONFIG_LAME;
-			this.format = new Format(format, MpeBitRate);
+			this.format = new Format(format, MpeBitRate, quality);
 		}
 		public BE_CONFIG(AudioPCMConfig format)
-			: this(format, 128)
+			: this(format, 0, 5)
 		{
 		}
 	}
@@ -356,7 +357,7 @@ namespace CUETools.Codecs.LAME
 		/// The amount of data written might vary from chunk to chunk</param>
 		/// <returns>On success: BE_ERR_SUCCESSFUL</returns>
 		[DllImport("Lame_enc.dll")]
-		protected static extern uint beEncodeChunk(uint hbeStream, uint nSamples, IntPtr pSamples, [In, Out] byte[] pOutput, ref uint pdwOutput);
+		protected static extern uint beEncodeChunk(uint hbeStream, uint nSamples, IntPtr pSamples, IntPtr pOutput, ref uint pdwOutput);
 
 		/// <summary>
 		/// Encodes a chunk of samples. Samples are contained in a byte array
@@ -370,20 +371,27 @@ namespace CUETools.Codecs.LAME
 		/// <param name="pdwOutput">Returns the number of bytes of encoded data written. 
 		/// The amount of data written might vary from chunk to chunk</param>
 		/// <returns>On success: BE_ERR_SUCCESSFUL</returns>
-		public static uint EncodeChunk(uint hbeStream, byte[] buffer, int index, uint nBytes, byte[] pOutput, ref uint pdwOutput)
+		public static unsafe uint EncodeChunk(uint hbeStream, byte *pSamples, uint nBytes, byte* pOutput, ref uint pdwOutput)
 		{
-			uint res;
-			GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-			try
-			{
-				IntPtr ptr = (IntPtr)(handle.AddrOfPinnedObject().ToInt32()+index);
-				res = beEncodeChunk(hbeStream, nBytes/2/*Samples*/, ptr, pOutput, ref pdwOutput);
-			}
-			finally
-			{
-				handle.Free();
-			}
-			return res;
+			return beEncodeChunk(hbeStream, nBytes / 2/*Samples*/, (IntPtr)pSamples, (IntPtr)pOutput, ref pdwOutput);
+		}
+
+		/// <summary>
+		/// Encodes a chunk of samples. Samples are contained in a byte array
+		/// </summary>
+		/// <param name="hbeStream">Handle of the stream.</param>
+		/// <param name="buffer">Bytes to encode</param>
+		/// <param name="index">Position of the first byte to encode</param>
+		/// <param name="nBytes">Number of bytes to encode (not samples, samples are two byte lenght)</param>
+		/// <param name="pOutput">Buffer where to write the encoded data.
+		/// This buffer should be at least of the minimum size returned by beInitStream().</param>
+		/// <param name="pdwOutput">Returns the number of bytes of encoded data written. 
+		/// The amount of data written might vary from chunk to chunk</param>
+		/// <returns>On success: BE_ERR_SUCCESSFUL</returns>
+		public static unsafe uint EncodeChunk(uint hbeStream, byte[] Samples, int index, uint nBytes, byte[] Output, ref uint pdwOutput)
+		{
+			fixed(byte *pSamples = &Samples[index], pOutput = Output)
+				return beEncodeChunk(hbeStream, nBytes / 2/*Samples*/, (IntPtr)pSamples, (IntPtr)pOutput, ref pdwOutput);
 		}
 
 		/// <summary>

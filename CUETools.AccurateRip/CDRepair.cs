@@ -308,6 +308,7 @@ namespace CUETools.AccurateRip
 
 			// find offset
 			fixed (byte* par2ptr = &parity2[pos])
+			fixed (ushort* chT = rs.chienTable)
 			{
 				ushort* par2 = (ushort*)par2ptr;
 				int* _sigma = stackalloc int[npar];
@@ -354,7 +355,7 @@ namespace CUETools.AccurateRip
 							err |= synI;
 						}
 						int err_count = err == 0 ? 0 : rs.calcSigmaMBM(_sigma, syn);
-						if (err_count == allowed_errors && (err_count == 0 || rs.chienSearch(_errpos, stridecount + npar, err_count, _sigma)))
+						if (err_count == allowed_errors && (err_count == 0 || rs.chienSearch(_errpos, stridecount + npar, err_count, _sigma, chT)))
 						{
 							actualOffset = offset;
 							hasErrors = err_count != 0 || ar.CTDBCRC(-offset) != expectedCRC;
@@ -386,7 +387,8 @@ namespace CUETools.AccurateRip
 			fix.errors = new int[stride];
 
 			fixed (byte* par = &parity2[pos])
-			fixed (ushort* exp = galois.ExpTbl, log = galois.LogTbl)
+			fixed (ushort* exp = galois.ExpTbl, log = galois.LogTbl, chT = rs.chienTable)
+			fixed (int* sf = fix.sigma, of = fix.omega, ef = fix.errpos)
 			{
 				int* syn = stackalloc int[npar];
 				int offset = fix.actualOffset;
@@ -437,12 +439,15 @@ namespace CUETools.AccurateRip
 
 					if (err != 0)
 					{
-						fixed (int* s = &fix.sigma[part, 0], o = &fix.omega[part, 0], e = &fix.errpos[part, 0])
+						int* s = sf + part * fix.sigma.GetLength(1);
+						int* o = of + part * fix.omega.GetLength(1);
+						int* e = ef + part * fix.errpos.GetLength(1);
+						//fixed (int* s = &fix.sigma[part, 0], o = &fix.omega[part, 0], e = &fix.errpos[part, 0])
 						{
 							fix.errors[part] = rs.calcSigmaMBM(s, syn);
 							fix.hasErrors = true;
 							fix.correctableErrors += fix.errors[part];
-							if (fix.errors[part] <= 0 || !rs.chienSearch(e, stridecount + npar, fix.errors[part], s))
+							if (fix.errors[part] <= 0 || !rs.chienSearch(e, stridecount + npar, fix.errors[part], s, chT))
 								fix.canRecover = false;
 							else
 								galois.mulPoly(o, s, syn, npar / 2 + 1, npar, npar);

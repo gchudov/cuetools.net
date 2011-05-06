@@ -873,7 +873,7 @@ namespace JDP {
 						if (useLocalDB)
 							cueSheet.UseLocalDB(_localDB);
 						if (useCUEToolsDB)
-							cueSheet.UseCUEToolsDB(false, "CUETools " + CUESheet.CUEToolsVersion);
+							cueSheet.UseCUEToolsDB(false, "CUETools " + CUESheet.CUEToolsVersion, null);
 						if (useAR)
 							cueSheet.UseAccurateRip();
 

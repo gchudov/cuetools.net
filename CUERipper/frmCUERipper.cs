@@ -376,24 +376,12 @@ namespace CUERipper
 			try
 			{
 				cueSheet.Go();
-
-				if ((cueSheet.CTDB.AccResult == HttpStatusCode.NotFound || cueSheet.CTDB.AccResult == HttpStatusCode.OK)
-					&& audioSource.CorrectionQuality > 0 && audioSource.ErrorsCount == 0)
-				{
-					DBEntry confirm = null;
-					foreach (DBEntry entry in cueSheet.CTDB.Entries)
-						if (entry.toc.TrackOffsets == selectedDriveInfo.drive.TOC.TrackOffsets && !entry.hasErrors)
-							confirm = entry;
-
-					if (confirm != null)
-						cueSheet.CTDB.Confirm(confirm);
-					else
-						cueSheet.CTDB.Submit(
-							(int)cueSheet.ArVerify.WorstConfidence() + 1,
-							cueSheet.Artist,
-							cueSheet.Title);
-				}
-
+				cueSheet.CTDB.Submit(
+					(int)cueSheet.ArVerify.WorstConfidence() + 1,
+					audioSource.CorrectionQuality == 0 ? 0 :
+					100 - (int)(7 * Math.Log(audioSource.ErrorsCount + 1)), // ErrorsCount==1 ~= 95, ErrorsCount==max ~= 5;
+					cueSheet.Artist,
+					cueSheet.Title);
 				bool canFix = false;
 				if (cueSheet.CTDB.AccResult == HttpStatusCode.OK && audioSource.ErrorsCount != 0)
 				{
@@ -628,7 +616,7 @@ namespace CUERipper
 			cueSheet.Action = CUEAction.Encode;
 
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-			cueSheet.UseCUEToolsDB(true, "CUERipper " + CUESheet.CUEToolsVersion + ": " + selectedDriveInfo.drive.ARName);
+			cueSheet.UseCUEToolsDB(true, "CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName);
 			cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
 			cueSheet.UseAccurateRip();
