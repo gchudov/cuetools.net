@@ -2056,7 +2056,7 @@ string status = processor.Go();
 			Genre = metadata.Genre;
 			Artist = metadata.Artist;
 			Title = metadata.Title;
-			Catalog = metadata.Catalog;
+			Catalog = metadata.Barcode;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Title = metadata.Tracks[i].Title;
@@ -2076,7 +2076,7 @@ string status = processor.Go();
 				metadata.Genre = Genre;
 				metadata.Artist = Artist;
 				metadata.Title = Title;
-				metadata.Catalog = Catalog;
+				metadata.Barcode = Catalog;
 				for (int i = 0; i < Tracks.Count; i++)
 				{
 					metadata.Tracks[i].Title = Tracks[i].Title;
@@ -2220,7 +2220,7 @@ string status = processor.Go();
 			_localDB.Save();
 		}
 
-		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz, bool useCache, bool useCUE)
+		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz, bool useCTDB, bool useCache, bool useCUE)
 		{
 			List<object> Releases = new List<object>();
 			StringCollection DiscIds = new StringCollection();
@@ -2273,6 +2273,22 @@ string status = processor.Go();
 				foreach (var entry in _localDB)
 					if (entry.DiscID == TOC.TOCID && entry.Metadata != null && (dbmeta == null || !dbmeta.Contains(entry.Metadata)))
 						Releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local"));
+			}
+
+			bool ctdbFound = false;
+			if (useCTDB)
+			{
+				ShowProgress("Looking up album via CTDB...", 0.0, null, null);
+				var ctdb = new CUEToolsDB(TOC, proxy);
+				ctdb.ContactDB("CUETools " + CUEToolsVersion, null, true, true);
+				foreach (var meta in ctdb.Metadata)
+				{
+					CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
+					metadata.FillFromCtdb(meta, TOC.FirstAudio - 1);
+					CDImageLayout toc = TOC; //  TocFromCDEntry(meta);
+					Releases.Add(new CUEMetadataEntry(metadata, toc, "ctdb"));
+					ctdbFound = true;
+				}
 			}
 
 			if (useFreedb)
@@ -2337,7 +2353,7 @@ string status = processor.Go();
 				}
 			}
 
-			if (useMusicBrainz)
+			if (useMusicBrainz && !ctdbFound)
 			{
 				ShowProgress("Looking up album via MusicBrainz...", 0.0, null, null);
 
@@ -3191,13 +3207,13 @@ string status = processor.Go();
 				_padding += _eacLog.Length;
 		}
 
-		public void UseCUEToolsDB(bool submit, string userAgent, string driveName)
+		public void UseCUEToolsDB(bool submit, string userAgent, string driveName, bool meta, bool fuzzy)
 		{
 			ShowProgress((string)"Contacting CUETools database...", 0, null, null);
 
 			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
 			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
-			_CUEToolsDB.ContactDB(userAgent, driveName);
+			_CUEToolsDB.ContactDB(userAgent, driveName, meta, fuzzy);
 
 			if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0)
 				foreach (DBEntry e in _CUEToolsDB.Entries)
@@ -6318,7 +6334,7 @@ string status = processor.Go();
 					}
 				case "repair":
 					{
-						UseCUEToolsDB(false, "CUETools " + CUEToolsVersion, null);
+						UseCUEToolsDB(false, "CUETools " + CUEToolsVersion, null, false, true);
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;

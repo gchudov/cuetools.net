@@ -345,5 +345,30 @@ namespace CUETools.TestParity
 			Assert.AreEqual<string>("YJPyo4+KY35P+DpljMplMGbMWXmpvhkdDOCKeEo4NDoRPPW7D0cv8hmLb7yZujp0sVg/6AEWKY5QrDKkiYp0Zw==",
 				Convert.ToBase64String(bsyn));
 		}
+
+		/// <summary>
+		///Verifying rip that has errors
+		///</summary>
+		[TestMethod()]
+		//[Ignore]
+		public void CDRepairVerifyParitySpeedTest()
+		{
+			var generator1 = new TestImageGenerator("0 98011", seed, 32 * 588, 0);
+			var encode1 = generator1.CreateCDRepairEncode(stride, npar);
+			var generator2 = new TestImageGenerator("0 98011", seed, 32 * 588, errors/2);
+			var decode = generator2.CreateCDRepairEncode(stride, npar);
+			int actualOffset;
+			bool hasErrors;
+			Assert.IsTrue(decode.FindOffset(encode1.NPAR, encode1.Parity, 0, encode1.CRC, out actualOffset, out hasErrors));
+			Assert.IsTrue(hasErrors, "doesn't have errors");
+			Assert.AreEqual(0, actualOffset, "wrong offset");
+			for (int t = 0; t < 1000; t++)
+				decode.VerifyParity(encode1.Parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode1.Parity, actualOffset);
+			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
+			Assert.IsTrue(fix.CanRecover, "cannot recover");
+			generator2.Write(fix);
+			Assert.AreEqual<uint>(encode1.CRC, fix.CRC);
+		}
 	}
 }

@@ -532,7 +532,7 @@ namespace CUERipper
 					PropertyDescriptorCollection props = TypeDescriptor.GetProperties(data.selectedRelease.metadata);
 					PropertyDescriptorCollection sortedprops = props.Sort(new string[] { "Artist", "Title", "Genre", "Year", "DiscNumber", "TotalDiscs" });
 					foreach (PropertyDescriptor p in sortedprops)
-						if (p.Name != "Tracks" && p.Name != "Id" && p.Name != "Catalog")
+						if (p.Name != "Tracks" && p.Name != "Id" && !p.Attributes.Contains(new System.Xml.Serialization.XmlIgnoreAttribute()))
 							listMetadata.Items.Add(new ListViewItem(new string[] { p.GetValue(data.selectedRelease.metadata).ToString(), p.Name }));
 				}
 			}
@@ -572,6 +572,13 @@ namespace CUERipper
 				toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " " + (e == null ? "FreeDB" : "MusicBrainz") + "...";
 				toolStripProgressBar1.Value = (100 + 2 * toolStripProgressBar1.Value) / 3;
 			});
+		}
+
+		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, CTDBResponseMeta release)
+		{
+			CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, "ctdb");
+			entry.metadata.FillFromCtdb(release, entry.TOC.FirstAudio - 1);
+			return entry;
 		}
 
 		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, Release release)
@@ -616,7 +623,7 @@ namespace CUERipper
 			cueSheet.Action = CUEAction.Encode;
 
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-			cueSheet.UseCUEToolsDB(true, "CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName);
+			cueSheet.UseCUEToolsDB(true, "CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, true, false);
 			cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
 			cueSheet.UseAccurateRip();
@@ -633,6 +640,11 @@ namespace CUERipper
 			catch (Exception ex)
 			{
 				System.Diagnostics.Trace.WriteLine(ex.Message);
+			}
+
+			foreach (var ctdbMeta in cueSheet.CTDB.Metadata)
+			{
+				data.Releases.Add(CreateCUESheet(audioSource, ctdbMeta));
 			}
 
 			if (data.Releases.Count == 0 || loadAllMetadata)

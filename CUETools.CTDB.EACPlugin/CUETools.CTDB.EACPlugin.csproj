@@ -45,6 +45,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormMetadata.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMetadata.Designer.cs">
+      <DependentUpon>FormMetadata.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Metadata.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Options.cs">
       <SubType>Form</SubType>
@@ -55,6 +62,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="FormMetadata.resx">
+      <DependentUpon>FormMetadata.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
     </EmbeddedResource>

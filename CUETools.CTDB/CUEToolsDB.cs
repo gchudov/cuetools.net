@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Management;
 using System.Net;
 using System.Xml;
+using System.Xml.Serialization;
 using System.Text;
 using System.Security.Cryptography;
 using CUETools.CDImage;
@@ -16,7 +18,7 @@ namespace CUETools.CTDB
 {
 	public class CUEToolsDB
 	{
-		const string urlbase = "http://db.cuetools.net";
+		const string urlbase = "http://dbnew.cuetools.net";
 		string userAgent;
 		string driveName;
 
@@ -27,6 +29,7 @@ namespace CUETools.CTDB
 		private int length;
 		private int total;
 		List<DBEntry> entries = new List<DBEntry>();
+		List<CTDBResponseMeta> metadata = new List<CTDBResponseMeta>();
 		DBEntry selectedEntry;
 		IWebProxy proxy;
 		HttpUploadHelper uploadHelper;
@@ -39,16 +42,19 @@ namespace CUETools.CTDB
 			this.uploadHelper = new HttpUploadHelper();
 		}
 
-		public void ContactDB(string userAgent, string driveName)
+		public void ContactDB(string userAgent, string driveName, bool musicbrainz, bool fuzzy)
 		{
 			this.driveName = driveName;
 			this.userAgent = userAgent + " (" + Environment.OSVersion.VersionString + ")" + (driveName != null ? " (" + driveName + ")" : "");
 			this.total = 0;
 
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/lookup.php?tocid=" + toc.TOCID);
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase
+				+ "/lookup2.php?musicbrainz=" + (musicbrainz ? 1 : 0) 
+				+ "&fuzzy=" + (fuzzy ? 1 : 0) 
+				+ "&toc=" + toc.ToString());
 			req.Method = "GET";
 			req.Proxy = proxy;
-			req.UserAgent = userAgent;
+			req.UserAgent = this.userAgent;
 
 			if (uploadHelper.onProgress != null)
 				uploadHelper.onProgress(this, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0));
@@ -60,55 +66,35 @@ namespace CUETools.CTDB
 
 				if (accResult == HttpStatusCode.OK)
 				{
+					XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
 					this.total = 0;
 					using (Stream responseStream = resp.GetResponseStream())
 					{
-						using (XmlTextReader reader = new XmlTextReader(responseStream))
-						{
-							reader.ReadToFollowing("ctdb");
-							if (reader.ReadToDescendant("entry"))
-								do
-								{
-									XmlReader entry = reader.ReadSubtree();
-									string crc32 = reader["crc32"];
-									string confidence = reader["confidence"];
-									string npar = reader["npar"];
-									string stride = reader["stride"];
-									string id = reader["id"];
-									string hasPatity = reader["hasparity"];
-									byte[] parity = null;
-									CDImageLayout entry_toc = null;
+						CTDBResponse ctdbResp = serializer.Deserialize(responseStream) as CTDBResponse;
+						if (ctdbResp.entry != null)
+							foreach (var ctdbRespEntry in ctdbResp.entry)
+							{
+								if (ctdbRespEntry.toc == null)
+									continue;
 
-									entry.Read();
-									while (entry.Read() && entry.NodeType != XmlNodeType.EndElement)
-									{
-										if (entry.Name == "parity")
-										{
-											entry.Read(); // entry.NodeType == XmlNodeType.Text
-											parity = Convert.FromBase64String(entry.Value);
-											entry.Read();
-										}
-										else if (entry.Name == "toc")
-										{
-											string trackcount = entry["trackcount"];
-											string audiotracks = entry["audiotracks"];
-											string firstaudio = entry["firstaudio"];
-											entry.Read();
-											string trackoffsets = entry.Value;
-											entry.Read();
-											entry_toc = new CDImageLayout(int.Parse(trackcount), int.Parse(audiotracks), int.Parse(firstaudio), trackoffsets);
-										}
-										else
-										{
-											reader.Skip();
-										}
-									}
-									entry.Close();
-									this.total += int.Parse(confidence);
-									entries.Add(new DBEntry(parity, 0, parity.Length, int.Parse(confidence), int.Parse(npar), int.Parse(stride), uint.Parse(crc32, NumberStyles.HexNumber), id, entry_toc, hasPatity == "1"));
-								} while (reader.ReadToNextSibling("entry"));
-							reader.Close();
-						}
+								var parity = Convert.FromBase64String(ctdbRespEntry.parity);
+								var entry_toc = CDImageLayout.FromString(ctdbRespEntry.toc);
+								this.total += ctdbRespEntry.confidence;
+								var entry = new DBEntry(
+									parity,
+									0,
+									parity.Length,
+									ctdbRespEntry.confidence,
+									ctdbRespEntry.npar,
+									ctdbRespEntry.stride,
+									uint.Parse(ctdbRespEntry.crc32, NumberStyles.HexNumber),
+									ctdbRespEntry.id,
+									entry_toc,
+									ctdbRespEntry.hasparity == 1);
+								entries.Add(entry);
+							}
+						if (ctdbResp.musicbrainz != null && ctdbResp.musicbrainz.Length != 0)
+							metadata.AddRange(ctdbResp.musicbrainz);
 					}
 					if (entries.Count == 0)
 						accResult = HttpStatusCode.NotFound;
@@ -128,7 +114,7 @@ namespace CUETools.CTDB
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
 			req.Method = "GET";
 			req.Proxy = proxy;
-			req.UserAgent = userAgent;
+			req.UserAgent = this.userAgent;
 
 			try
 			{
@@ -232,21 +218,17 @@ namespace CUETools.CTDB
 			}
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/submit2.php");
 			req.Proxy = proxy;
-			req.UserAgent = userAgent;
+			req.UserAgent = this.userAgent;
 			NameValueCollection form = new NameValueCollection();
 			if (upload)
 				form.Add("parityfile", "1");
 			if (confirm != null)
 				form.Add("confirmid", confirm.id);
-			form.Add("tocid", toc.TOCID);
+			form.Add("toc", toc.ToString());
 			form.Add("crc32", ((int)verify.CRC).ToString());
 			form.Add("trackcrcs", verify.TrackCRCs);
 			form.Add("parity", Convert.ToBase64String(verify.Parity, 0, 16));
 			form.Add("confidence", confidence.ToString());
-			form.Add("trackcount", toc.TrackCount.ToString());
-			form.Add("firstaudio", toc.FirstAudio.ToString());
-			form.Add("audiotracks", toc.AudioTracks.ToString());
-			form.Add("trackoffsets", toc.TrackOffsets);
 			form.Add("userid", GetUUID());
 			form.Add("quality", quality.ToString());
 			if (driveName != null)
@@ -368,7 +350,7 @@ namespace CUETools.CTDB
 						entry.canRecover = false;
 					else
 					{
-						FetchDB(string.Format("{0}/repair.php?tocid={1}&id={2}", urlbase, toc.TOCID, entry.id), entry);
+						FetchDB(string.Format("{0}/repair.php?id={1}", urlbase, entry.id), entry);
 						if (entry.httpStatus != HttpStatusCode.OK)
 							entry.canRecover = false;
 						else
@@ -493,6 +475,14 @@ namespace CUETools.CTDB
 			get
 			{
 				return entries;
+			}
+		}
+
+		public IEnumerable<CTDBResponseMeta> Metadata
+		{
+			get
+			{
+				return metadata;
 			}
 		}
 
@@ -669,5 +659,89 @@ namespace CUETools.CTDB
 		{
 			return new DBHDR(stream, name);
 		}
+	}
+
+	[Serializable]
+	public class CTDBResponseEntry
+	{
+		[XmlAttribute]
+		public string id { get; set; }
+		[XmlAttribute]
+		public string crc32 { get; set; }
+		[XmlAttribute]
+		public int confidence { get; set; }
+		[XmlAttribute]
+		public int npar { get; set; }
+		[XmlAttribute]
+		public int stride { get; set; }
+		[XmlAttribute, DefaultValue(1)]
+		public int hasparity { get; set; }
+		[XmlAttribute]
+		public string parity { get; set; }
+		[XmlAttribute]
+		public string toc { get; set; }
+	}
+
+	[Serializable]
+	public class CTDBResponseMetaTrack
+	{
+		[XmlAttribute]
+		public string name { get; set; }
+		[XmlAttribute]
+		public string artist { get; set; }
+	}
+
+	[Serializable]
+	public class CTDBResponseMetaLabel
+	{
+		[XmlAttribute]
+		public string name { get; set; }
+		[XmlAttribute]
+		public string catno { get; set; }
+	}
+	
+	[Serializable]
+	public class CTDBResponseMeta
+	{
+		[XmlAttribute]
+		public string release_gid { get; set; }
+		[XmlAttribute]
+		public string artist { get; set; }
+		[XmlAttribute]
+		public string album { get; set; }
+		[XmlAttribute]
+		public string year { get; set; }
+		[XmlAttribute]
+		public string genre { get; set; }
+		[XmlAttribute]
+		public string country { get; set; }
+		[XmlAttribute]
+		public string releasedate { get; set; }
+		[XmlAttribute]
+		public string discnumber { get; set; }
+		[XmlAttribute]
+		public string disccount { get; set; }
+		[XmlAttribute]
+		public string discname { get; set; }
+		[XmlAttribute]
+		public string coverarturl { get; set; }
+		[XmlAttribute]
+		public string infourl { get; set; }
+		[XmlAttribute]
+		public string barcode { get; set; }
+		[XmlElement]
+		public CTDBResponseMetaTrack[] track;
+		[XmlElement]
+		public CTDBResponseMetaLabel[] label;
+	}
+
+	[Serializable]
+	[XmlRoot(ElementName="ctdb", Namespace="http://db.cuetools.net/ns/mmd-1.0#")]
+	public class CTDBResponse
+	{
+		[XmlElement]
+		public CTDBResponseEntry[] entry;
+		[XmlElement]
+		public CTDBResponseMeta[] musicbrainz;
 	}
 }

@@ -15,11 +15,14 @@ namespace CUETools.Processor
 		{
 			TotalDiscs = "";
 			DiscNumber = "";
+			DiscName = "";
 			Year = "";
 			Genre = "";
 			Artist = "";
 			Title = "";
-			Catalog = "";
+			Barcode = "";
+			ReleaseDate = "";
+			Label = "";
 			Tracks = new List<CUETrackMetadata>();
 		}
 
@@ -56,6 +59,8 @@ namespace CUETools.Processor
 		[DefaultValue("")]
 		public string DiscNumber { get; set; }
 		[DefaultValue("")]
+		public string DiscName { get; set; }
+		[DefaultValue("")]
 		public string Year { get; set; }
 		[DefaultValue("")]
 		public string Genre { get; set; }
@@ -63,8 +68,12 @@ namespace CUETools.Processor
 		public string Artist { get; set; }
 		[DefaultValue("")]
 		public string Title { get; set; }
+		[DefaultValue(""), XmlElement(ElementName="Catalog")]
+		public string Barcode { get; set; }
 		[DefaultValue("")]
-		public string Catalog { get; set; }
+		public string ReleaseDate { get; set; }
+		[DefaultValue("")]
+		public string Label { get; set; }
 		public List<CUETrackMetadata> Tracks { get; set; }
 
 		[XmlIgnore]
@@ -107,17 +116,25 @@ namespace CUETools.Processor
 		{
 			if ((overwrite || TotalDiscs == "") && metadata.TotalDiscs != "") TotalDiscs = metadata.TotalDiscs;
 			if ((overwrite || DiscNumber == "") && metadata.DiscNumber != "") DiscNumber = metadata.DiscNumber;
+			if ((overwrite || DiscName == "") && metadata.DiscName != "") DiscName = metadata.DiscName;
 			if ((overwrite || Year == "") && metadata.Year != "") Year = metadata.Year;
 			if ((overwrite || Genre == "") && metadata.Genre != "") Genre = metadata.Genre;
 			if ((overwrite || Artist == "") && metadata.Artist != "") Artist = metadata.Artist;
 			if ((overwrite || Title == "") && metadata.Title != "") Title = metadata.Title;
-			if ((overwrite || Catalog == "") && metadata.Catalog != "") Catalog = metadata.Catalog;
+			if ((overwrite || Barcode == "") && metadata.Barcode != "") Barcode = metadata.Barcode;
+			if ((overwrite || ReleaseDate == "") && metadata.ReleaseDate != "") ReleaseDate = metadata.ReleaseDate;
+			if ((overwrite || Label == "") && metadata.Label != "") Label = metadata.Label;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
 				if ((overwrite || Tracks[i].Artist == "") && metadata.Tracks[i].Artist != "") Tracks[i].Artist = metadata.Tracks[i].Artist;
 				if ((overwrite || Tracks[i].ISRC == "") && metadata.Tracks[i].ISRC != "") Tracks[i].ISRC = metadata.Tracks[i].ISRC;
 			}
+		}
+
+		public override int GetHashCode()
+		{
+			return Artist.GetHashCode() ^ Title.GetHashCode() ^ Year.GetHashCode();
 		}
 
 		public override bool Equals(object obj)
@@ -127,11 +144,14 @@ namespace CUETools.Processor
 				return false;
 			if (TotalDiscs != metadata.TotalDiscs ||
 				DiscNumber != metadata.DiscNumber ||
+				DiscName != metadata.DiscName ||
 				Year != metadata.Year ||
 				Genre != metadata.Genre ||
 				Artist != metadata.Artist ||
 				Title != metadata.Title ||
-				Catalog != metadata.Catalog ||
+				Barcode != metadata.Barcode ||
+				ReleaseDate != metadata.ReleaseDate ||
+				Label != metadata.Label ||
 				Tracks.Count != metadata.Tracks.Count
 				)
 				return false;
@@ -156,11 +176,14 @@ namespace CUETools.Processor
 			// Tracks.Count = metadata.Tracks.Count;
 			TotalDiscs = metadata.TotalDiscs;
 			DiscNumber = metadata.DiscNumber;
+			DiscName = metadata.DiscName;
 			Year = metadata.Year;
 			Genre = metadata.Genre;
 			Artist = metadata.Artist;
 			Title = metadata.Title;
-			Catalog = metadata.Catalog;
+			Barcode = metadata.Barcode;
+			ReleaseDate = metadata.ReleaseDate;
+			Label = metadata.Label;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Title = metadata.Tracks[i].Title;
@@ -171,12 +194,18 @@ namespace CUETools.Processor
 
 		public void FillFromMusicBrainz(MusicBrainz.Release release, int firstAudio)
 		{
-			string date = release.GetEvents().Count > 0 ? release.GetEvents()[0].Date : null;
-			Year = date == null ? "" : date.Substring(0, 4);
+			var evs = release.GetEvents();
+			if (evs.Count > 0)
+			{
+				var ev = evs[0];
+				ReleaseDate = ev.Date ?? "";
+				Year = (ev.Date ?? "").Substring(0, 4);
+				Barcode = ev.Barcode ?? "";
+				Label = ((ev.Label == null ? null : ev.Label.GetName()) ?? "") + (ev.Label == null ? "" : " ") + (ev.CatalogNumber ?? "");
+			}
 			Artist = release.GetArtist();
 			Title = release.GetTitle();
 			// How to get Genre: http://mm.musicbrainz.org/ws/1/release/6fe1e218-2aee-49ac-94f0-7910ba2151df.html?type=xml&inc=tags
-			//Catalog = release.GetEvents().Count > 0 ? release.GetEvents()[0].Barcode : "";
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				MusicBrainz.Track track = release.GetTracks()[i + firstAudio]; // !!!!!! - _toc.FirstAudio?
@@ -184,7 +213,7 @@ namespace CUETools.Processor
 				Tracks[i].Artist = track.GetArtist();
 			}
 		}
-
+		
 		public void FillFromFreedb(Freedb.CDEntry cdEntry, int firstAudio)
 		{
 			Year = cdEntry.Year;
@@ -195,6 +224,31 @@ namespace CUETools.Processor
 			{
 				Tracks[i].Title = cdEntry.Tracks[i + firstAudio].Title;
 				Tracks[i].Artist = cdEntry.Artist;
+			}
+		}
+
+		public void FillFromCtdb(CUETools.CTDB.CTDBResponseMeta cdEntry, int firstAudio)
+		{
+			this.Year = cdEntry.year ?? "";
+			this.Genre = cdEntry.genre ?? "";
+			this.Artist = cdEntry.artist ?? "";
+			this.Title = cdEntry.album ?? "";
+			this.DiscNumber = cdEntry.discnumber ?? "";
+			this.TotalDiscs = cdEntry.disccount ?? "";
+			this.DiscName = cdEntry.discname ?? "";
+			this.Barcode = cdEntry.barcode ?? "";
+			this.ReleaseDate = cdEntry.releasedate ?? "";
+			this.Label = cdEntry.country ?? "";
+			if (cdEntry.label != null)
+				foreach (var l in cdEntry.label)
+					this.Label = (this.Label == "" ? "" : this.Label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
+			if (cdEntry.track != null && cdEntry.track.Length >= this.Tracks.Count)
+			{
+				for (int i = 0; i < this.Tracks.Count; i++)
+				{
+					this.Tracks[i].Title = cdEntry.track[i].name ?? "";
+					this.Tracks[i].Artist = cdEntry.track[i].artist ?? cdEntry.artist ?? "";
+				}
 			}
 		}
 
@@ -305,9 +359,11 @@ namespace CUETools.Processor
 
 		public override string ToString()
 		{
-			return string.Format("{0}{1} - {2}", metadata.Year != "" ? metadata.Year + ": " : "", 
+			return string.Format("{0}{1} - {2}{3}{4}", metadata.Year != "" ? metadata.Year + ": " : "", 
 				metadata.Artist == "" ? "Unknown Artist" : metadata.Artist,
-				metadata.Title == "" ? "Unknown Title" : metadata.Title);
+				metadata.Title == "" ? "Unknown Title" : metadata.Title,
+				metadata.DiscNumberAndTotal != "" ? " (disc " + metadata.DiscNumberAndTotal + (metadata.DiscName != "" ? ": " + metadata.DiscName : "") + ")" : "",
+				metadata.Label == "" ? "" : " (" + metadata.Label + ")");
 		}
 	}
 }

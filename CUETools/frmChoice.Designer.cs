@@ -35,21 +35,23 @@ namespace JDP
 			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.textBox1 = new System.Windows.Forms.TextBox();
+			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			this.tableLayoutPanelMeta = new System.Windows.Forms.TableLayoutPanel();
 			this.listTracks = new System.Windows.Forms.ListView();
 			this.Title = new System.Windows.Forms.ColumnHeader();
 			this.TrackNo = new System.Windows.Forms.ColumnHeader();
 			this.Start = new System.Windows.Forms.ColumnHeader();
 			this.Length = new System.Windows.Forms.ColumnHeader();
-			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.listMetadata = new System.Windows.Forms.ListView();
-			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-			this.pictureBox1 = new System.Windows.Forms.PictureBox();
-			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			this.columnHeaderMetadataValue = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderMetadataName = new System.Windows.Forms.ColumnHeader();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+			this.tableLayoutPanelMeta.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// buttonOk
@@ -89,6 +91,7 @@ namespace JDP
 			this.imageList1.Images.SetKeyName(3, "cue");
 			this.imageList1.Images.SetKeyName(4, "tags");
 			this.imageList1.Images.SetKeyName(5, "local");
+			this.imageList1.Images.SetKeyName(6, "ctdb");
 			// 
 			// textBox1
 			// 
@@ -97,77 +100,15 @@ namespace JDP
 			this.textBox1.Name = "textBox1";
 			this.textBox1.ReadOnly = true;
 			// 
-			// listTracks
-			// 
-			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.Title,
-            this.TrackNo,
-            this.Start,
-            this.Length});
-			resources.ApplyResources(this.listTracks, "listTracks");
-			this.listTracks.FullRowSelect = true;
-			this.listTracks.GridLines = true;
-			this.listTracks.LabelEdit = true;
-			this.listTracks.Name = "listTracks";
-			this.listTracks.UseCompatibleStateImageBehavior = false;
-			this.listTracks.View = System.Windows.Forms.View.Details;
-			this.listTracks.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_AfterLabelEdit);
-			this.listTracks.DoubleClick += new System.EventHandler(this.listTracks_DoubleClick);
-			this.listTracks.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.listTracks_PreviewKeyDown);
-			this.listTracks.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_BeforeLabelEdit);
-			this.listTracks.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listTracks_KeyDown);
-			// 
-			// Title
-			// 
-			resources.ApplyResources(this.Title, "Title");
-			// 
-			// TrackNo
-			// 
-			resources.ApplyResources(this.TrackNo, "TrackNo");
-			// 
-			// Start
-			// 
-			resources.ApplyResources(this.Start, "Start");
-			// 
-			// Length
-			// 
-			resources.ApplyResources(this.Length, "Length");
-			// 
 			// tableLayoutPanel1
 			// 
 			resources.ApplyResources(this.tableLayoutPanel1, "tableLayoutPanel1");
-			this.tableLayoutPanel1.Controls.Add(this.listMetadata, 0, 3);
-			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 5);
+			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this.textBox1, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this.listTracks, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this.listChoices, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanelMeta, 0, 3);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			// 
-			// listMetadata
-			// 
-			this.listMetadata.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader2,
-            this.columnHeader3});
-			resources.ApplyResources(this.listMetadata, "listMetadata");
-			this.listMetadata.FullRowSelect = true;
-			this.listMetadata.GridLines = true;
-			this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-			this.listMetadata.LabelEdit = true;
-			this.listMetadata.Name = "listMetadata";
-			this.listMetadata.UseCompatibleStateImageBehavior = false;
-			this.listMetadata.View = System.Windows.Forms.View.Details;
-			this.listMetadata.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_AfterLabelEdit);
-			this.listMetadata.DoubleClick += new System.EventHandler(this.listMetadata_DoubleClick);
-			this.listMetadata.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listMetadata_KeyDown);
-			// 
-			// columnHeader2
-			// 
-			resources.ApplyResources(this.columnHeader2, "columnHeader2");
-			// 
-			// columnHeader3
-			// 
-			resources.ApplyResources(this.columnHeader3, "columnHeader3");
 			// 
 			// tableLayoutPanel2
 			// 
@@ -187,6 +128,68 @@ namespace JDP
 			this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
 			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
 			// 
+			// tableLayoutPanelMeta
+			// 
+			resources.ApplyResources(this.tableLayoutPanelMeta, "tableLayoutPanelMeta");
+			this.tableLayoutPanelMeta.Controls.Add(this.listMetadata, 0, 0);
+			this.tableLayoutPanelMeta.Controls.Add(this.listTracks, 1, 0);
+			this.tableLayoutPanelMeta.Name = "tableLayoutPanelMeta";
+			// 
+			// listTracks
+			// 
+			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Title,
+            this.TrackNo,
+            this.Start,
+            this.Length});
+			resources.ApplyResources(this.listTracks, "listTracks");
+			this.listTracks.FullRowSelect = true;
+			this.listTracks.GridLines = true;
+			this.listTracks.LabelEdit = true;
+			this.listTracks.Name = "listTracks";
+			this.listTracks.UseCompatibleStateImageBehavior = false;
+			this.listTracks.View = System.Windows.Forms.View.Details;
+			this.listTracks.DoubleClick += new System.EventHandler(this.listTracks_DoubleClick);
+			// 
+			// Title
+			// 
+			resources.ApplyResources(this.Title, "Title");
+			// 
+			// TrackNo
+			// 
+			resources.ApplyResources(this.TrackNo, "TrackNo");
+			// 
+			// Start
+			// 
+			resources.ApplyResources(this.Start, "Start");
+			// 
+			// Length
+			// 
+			resources.ApplyResources(this.Length, "Length");
+			// 
+			// listMetadata
+			// 
+			this.listMetadata.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderMetadataValue,
+            this.columnHeaderMetadataName});
+			resources.ApplyResources(this.listMetadata, "listMetadata");
+			this.listMetadata.FullRowSelect = true;
+			this.listMetadata.GridLines = true;
+			this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+			this.listMetadata.LabelEdit = true;
+			this.listMetadata.Name = "listMetadata";
+			this.listMetadata.UseCompatibleStateImageBehavior = false;
+			this.listMetadata.View = System.Windows.Forms.View.Details;
+			this.listMetadata.DoubleClick += new System.EventHandler(this.listMetadata_DoubleClick);
+			// 
+			// columnHeaderMetadataValue
+			// 
+			resources.ApplyResources(this.columnHeaderMetadataValue, "columnHeaderMetadataValue");
+			// 
+			// columnHeaderMetadataName
+			// 
+			resources.ApplyResources(this.columnHeaderMetadataName, "columnHeaderMetadataName");
+			// 
 			// frmChoice
 			// 
 			this.AcceptButton = this.buttonOk;
@@ -203,6 +206,7 @@ namespace JDP
 			this.tableLayoutPanel1.PerformLayout();
 			this.tableLayoutPanel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+			this.tableLayoutPanelMeta.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -214,17 +218,18 @@ namespace JDP
 		private System.Windows.Forms.ImageList imageList1;
 		private System.Windows.Forms.TextBox textBox1;
 		private System.Windows.Forms.ListView listChoices;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+		private System.Windows.Forms.PictureBox pictureBox1;
+		private System.ComponentModel.BackgroundWorker backgroundWorker1;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelMeta;
+		private System.Windows.Forms.ListView listMetadata;
+		private System.Windows.Forms.ColumnHeader columnHeaderMetadataValue;
+		private System.Windows.Forms.ColumnHeader columnHeaderMetadataName;
 		private System.Windows.Forms.ListView listTracks;
 		private System.Windows.Forms.ColumnHeader Title;
 		private System.Windows.Forms.ColumnHeader TrackNo;
-		private System.Windows.Forms.ColumnHeader Length;
 		private System.Windows.Forms.ColumnHeader Start;
-		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-		private System.Windows.Forms.ListView listMetadata;
-		private System.Windows.Forms.ColumnHeader columnHeader2;
-		private System.Windows.Forms.ColumnHeader columnHeader3;
-		private System.Windows.Forms.PictureBox pictureBox1;
-		private System.ComponentModel.BackgroundWorker backgroundWorker1;
+		private System.Windows.Forms.ColumnHeader Length;
 	}
 }

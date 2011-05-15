@@ -173,10 +173,10 @@ namespace JDP {
 			//    }
 			//}
 
-			if (FileBrowserState == FileBrowserStateEnum.Hidden
+			if ((FileBrowserState == FileBrowserStateEnum.Hidden
 				|| (FileBrowserState == FileBrowserStateEnum.Tree
-				&& !(fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBFolder)
-				&& !Directory.Exists(InputPath)))
+				  && !(fileSystemTreeView1.SelectedNode is FileSystemTreeNodeLocalDBFolder)))
+				&& !Directory.Exists(InputPath))
 			{
 				StartConvert();
 				return;
@@ -873,7 +873,7 @@ namespace JDP {
 						if (useLocalDB)
 							cueSheet.UseLocalDB(_localDB);
 						if (useCUEToolsDB)
-							cueSheet.UseCUEToolsDB(false, "CUETools " + CUESheet.CUEToolsVersion, null);
+							cueSheet.UseCUEToolsDB(false, "CUETools " + CUESheet.CUEToolsVersion, null, false, true);
 						if (useAR)
 							cueSheet.UseAccurateRip();
 
@@ -902,7 +902,7 @@ namespace JDP {
 							{
 								frmChoice dlg = new frmChoice();
 								dlg.CUE = cueSheet;
-								dlg.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata, true);
+								dlg.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, false, _profile._config.advanced.CacheMetadata, true);
 								dlgRes = dlg.ShowDialog(this);
 								if (dlgRes == DialogResult.Cancel)
 								{
@@ -1146,7 +1146,7 @@ namespace JDP {
 					toolStripStatusLabelProcessed.Text = String.Format("{0}@{1}", toolStripProgressBar2.ToolTipText, speedStr);
 					toolStripStatusLabelProcessed.Visible = true;
 				}
-				toolStripStatusLabel1.Text = e.status;
+				toolStripStatusLabel1.Text = e.status.Replace("&", "&&");
 				toolStripProgressBar2.Value = Math.Max(0, Math.Min(100, (int)(e.percent * 100)));
 
 				toolStripStatusLabelAR.Enabled = e.cueSheet != null && e.cueSheet.ArVerify != null && e.cueSheet.ArVerify.ARStatus == null;
@@ -2128,7 +2128,7 @@ namespace JDP {
 			CueSheet.UseLocalDB(_localDB);
 			frmChoice dlg = new frmChoice();
 			dlg.CUE = CueSheet;
-			dlg.LookupAlbumInfo(true, true, true, node is FileSystemTreeNodeLocalDBEntry);
+			dlg.LookupAlbumInfo(true, true, true, true, node is FileSystemTreeNodeLocalDBEntry);
 			var dlgRes = dlg.ShowDialog(this);
 			if (dlgRes == DialogResult.OK && dlg.ChosenRelease != null)
 			{

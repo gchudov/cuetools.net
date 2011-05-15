@@ -20,15 +20,16 @@ namespace JDP
 
 		public CUESheet CUE;
 
-		private bool freedb, musicbrainz;
+		private bool freedb, musicbrainz, ctdb;
 
-		public void LookupAlbumInfo(bool freedb, bool musicbrainz, bool cache, bool cue)
+		public void LookupAlbumInfo(bool freedb, bool musicbrainz, bool ctdb, bool cache, bool cue)
 		{
 			this.freedb = freedb;
 			this.musicbrainz = musicbrainz;
-			var releases = CUE.LookupAlbumInfo(false, false, cache, cue);
+			this.ctdb = ctdb;
+			var releases = CUE.LookupAlbumInfo(false, false, false, cache, cue);
 			this.Choices = releases;
-			if (freedb || musicbrainz)
+			if (freedb || musicbrainz || ctdb)
 				backgroundWorker1.RunWorkerAsync(null);
 		}
 
@@ -92,20 +93,16 @@ namespace JDP
 				{
 					textBox1.Hide();
 					pictureBox1.Hide();
-					listTracks.Show();
-					listMetadata.Show();
-					tableLayoutPanel1.SetRowSpan(listChoices, 3);
+					tableLayoutPanelMeta.Show();
+					tableLayoutPanel1.SetRowSpan(listChoices, 2);
 					tableLayoutPanel1.PerformLayout();
 				}
 				else
 				{
 					textBox1.Show();
 					pictureBox1.Hide();
-					listTracks.Hide();
-					listMetadata.Hide();
-					tableLayoutPanel1.SetRowSpan(textBox1, 4);
-					//tableLayoutPanel1.RowStyles[2].Height = 0;
-					//tableLayoutPanel1.RowStyles[3].Height = 0;
+					tableLayoutPanelMeta.Hide();
+					tableLayoutPanel1.SetRowSpan(textBox1, 3);
 					tableLayoutPanel1.PerformLayout();
 				}
 				if (listChoices.Items.Count > 0)
@@ -180,7 +177,8 @@ namespace JDP
 					catch { }
 				textBox1.Hide();
 				pictureBox1.Show();
-				tableLayoutPanel1.SetRowSpan(pictureBox1, 4);
+				tableLayoutPanelMeta.Hide();
+				tableLayoutPanel1.SetRowSpan(pictureBox1, 2);
 			}
 			else if (item != null && item is CUEToolsSourceFile)
 			{
@@ -207,6 +205,10 @@ namespace JDP
 				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.Genre, "Genre" }));
 				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.DiscNumber, "Disc Number" }));
 				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.TotalDiscs, "Total Discs" }));
+				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.DiscName, "Disc Name" }));
+				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.Barcode, "Barcode" }));
+				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.ReleaseDate, "ReleaseDate" }));
+				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.Label, "Label" }));
 			}
 			else
 			{
@@ -287,6 +289,10 @@ namespace JDP
 					case 3: r.metadata.Genre = e.Label; break;
 					case 4: r.metadata.DiscNumber = e.Label; break;
 					case 5: r.metadata.TotalDiscs = e.Label; break;
+					case 6: r.metadata.DiscName = e.Label; break;
+					case 7: r.metadata.Barcode = e.Label; break;
+					case 8: r.metadata.ReleaseDate = e.Label; break;
+					case 9: r.metadata.Label = e.Label; break;
 				}
 				item.Text = r.ToString();
 			}
@@ -300,7 +306,7 @@ namespace JDP
 
 		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
 		{
-			e.Result = CUE.LookupAlbumInfo(this.freedb, this.musicbrainz, false, false);
+			e.Result = CUE.LookupAlbumInfo(this.freedb, this.musicbrainz, this.ctdb, false, false);
 		}
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

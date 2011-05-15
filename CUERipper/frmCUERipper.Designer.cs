@@ -548,6 +548,7 @@ namespace CUERipper
 			this.imageListMetadataSource.Images.SetKeyName(5, "tracks1");
 			this.imageListMetadataSource.Images.SetKeyName(6, "album");
 			this.imageListMetadataSource.Images.SetKeyName(7, "track");
+			this.imageListMetadataSource.Images.SetKeyName(8, "ctdb");
 			// 
 			// bnComboBoxDrives
 			// 

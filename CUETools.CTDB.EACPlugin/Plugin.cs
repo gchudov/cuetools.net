@@ -42,62 +42,26 @@ namespace AudioDataPlugIn
         // This functions just returns an unique identifier.
         // For that, the string representation of the unique
         // guid is used
-
         public string GetAudioTransferPluginGuid()
         {
-            // Determine the guid attribute of the given class
-
-            Attribute attrib = Attribute.GetCustomAttribute(typeof(AudioDataTransfer), typeof(GuidAttribute));
-
-            // Is the returned attribute a GuidAttribute as
-            // we asked for?
-
-            if (attrib is GuidAttribute)
-            {
-                // Yes, so return the guid of this class
-
-                return ((GuidAttribute)attrib).Value;
-            }
-            else
-            {
-                // No, something went wrong. Just return
-                // the name of the plugin and hope that it
-                // is unique
-
-                return GetAudioTransferPluginName();
-            }
+			return ((GuidAttribute)Attribute.GetCustomAttribute(GetType(), typeof(GuidAttribute))).Value;
         }
-
 
 
         // Each plugin has also an (unique) display name
         // which will be used for selecting/deselecting
         // the plugin and for display in the log file
-
         public string GetAudioTransferPluginName()
         {
-            // Return the name which should be
-            // displayed in EAC and in the log file
-            // including a version number
-
             return "CUETools DB Plugin V2.1.1";
         }
-
-
 
         // Each plugin should have its own options page.
         // Even though if there are no options, a help or
         // information dialog should be displayed
-
         public void ShowOptions()
         {
-            // Create a new option dialog object
-
             Options opt = new Options();
-
-            // And show that dialog (return when
-            // the dialog is closed)
-
             opt.ShowDialog();
         }
 
@@ -155,7 +119,7 @@ namespace AudioDataPlugIn
 #if USEAR
 			ar.ContactAccurateRip(ArId);
 #endif
-			ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.1", m_drivename);
+			ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.1", m_drivename, false, false);
 			ctdb.Init(true, ar);
 			this.sequence_ok = true;
 			this.m_start_pos = 0;

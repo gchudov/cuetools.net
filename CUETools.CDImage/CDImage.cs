@@ -413,6 +413,31 @@ namespace CUETools.CDImage
 			}
 		}
 
+		public static CDImageLayout FromString(string str)
+		{
+			var ids = str.Split(':');
+			int firstaudio = 1;
+			int audiotracks = 0;
+			int trackcount = ids.Length - 1;
+			while (firstaudio < ids.Length && ids[firstaudio - 1][0] == '-')
+				firstaudio ++;
+            while (firstaudio + audiotracks < ids.Length && ids[firstaudio + audiotracks - 1][0] != '-')
+				audiotracks ++;
+			for (var i = 0; i < ids.Length; i++)
+				if (ids[i][0] == '-')
+					ids[i] = ids[i].Substring(1);
+			return new CDImageLayout(trackcount, audiotracks, firstaudio, string.Join(" ", ids));
+		}
+
+		public string ToString()
+		{
+			StringBuilder mbSB = new StringBuilder();
+			for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+				mbSB.AppendFormat("{0}{1}:", _tracks[iTrack].IsAudio ? "" : "-", _tracks[iTrack].Start);
+			mbSB.AppendFormat("{0}", Length);
+			return mbSB.ToString();
+		}
+
 		public void InsertTrack(CDTrack track)
 		{
 			_tracks.Insert((int)track.Number - 1, track);

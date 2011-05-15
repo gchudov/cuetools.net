@@ -6,6 +6,9 @@ using System.Text;
 using System.Collections.Generic;
 using CUETools.Processor;
 using CUETools.AccurateRip;
+using CUETools.CTDB;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace CUETools.TestProcessor
 {
@@ -114,6 +117,22 @@ namespace CUETools.TestProcessor
 			CUESheet target = new CUESheet(new CUEConfig());
 			target.Open("Amarok\\Amarok.cue");
 			Assert.AreEqual<string>("00041f6d-00083ece-020e1201", AccurateRipVerify.CalculateAccurateRipId(target.TOC), "Wrong TOC");
+		}
+
+		[TestMethod()]
+		[Ignore]
+		public void CTDBResponseTest()
+		{
+			XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
+			string respXml = File.ReadAllText("Z:\\ctdb.xml");
+
+			CTDBResponse resp;
+			using (TextReader reader = new StringReader(respXml))
+				resp = serializer.Deserialize(reader) as CTDBResponse;
+
+			var writer = new StringWriter();
+			serializer.Serialize(writer, resp);
+			Assert.AreEqual(respXml, writer.ToString());
 		}
 	}
 }
