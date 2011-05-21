@@ -18,7 +18,7 @@ namespace CUETools.CTDB
 {
 	public class CUEToolsDB
 	{
-		const string urlbase = "http://dbnew.cuetools.net";
+		const string urlbase = "http://db.cuetools.net";
 		string userAgent;
 		string driveName;
 

@@ -10,6 +10,8 @@ using CUETools.CDImage;
 using CUETools.AccurateRip;
 using CUETools.Codecs;
 using CUETools.CTDB;
+using CUETools.CTDB.EACPlugin.Properties;
+using System.Drawing.Imaging;
 
 namespace MetadataPlugIn
 {
@@ -81,7 +83,9 @@ namespace MetadataPlugIn
 
 		public Array GetPluginLogo()
 		{
-			return null; // File.ReadAllBytes(@"C:\Work\cuetoolsnet\CUETools\Resources\accuraterip.bmp");
+			MemoryStream ms = new MemoryStream();
+            Resources.ctdb.Save(ms);
+			return ms.ToArray();
 		}
 
 		public string GetPluginName()

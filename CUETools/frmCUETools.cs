@@ -902,7 +902,7 @@ namespace JDP {
 							{
 								frmChoice dlg = new frmChoice();
 								dlg.CUE = cueSheet;
-								dlg.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, false, _profile._config.advanced.CacheMetadata, true);
+								dlg.LookupAlbumInfo(checkBoxUseFreeDb.Checked, false, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata, true);
 								dlgRes = dlg.ShowDialog(this);
 								if (dlgRes == DialogResult.Cancel)
 								{
@@ -2128,7 +2128,7 @@ namespace JDP {
 			CueSheet.UseLocalDB(_localDB);
 			frmChoice dlg = new frmChoice();
 			dlg.CUE = CueSheet;
-			dlg.LookupAlbumInfo(true, true, true, true, node is FileSystemTreeNodeLocalDBEntry);
+			dlg.LookupAlbumInfo(true, false, true, true, node is FileSystemTreeNodeLocalDBEntry);
 			var dlgRes = dlg.ShowDialog(this);
 			if (dlgRes == DialogResult.OK && dlg.ChosenRelease != null)
 			{

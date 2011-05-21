@@ -363,7 +363,7 @@ namespace CUETools.Processor
 				metadata.Artist == "" ? "Unknown Artist" : metadata.Artist,
 				metadata.Title == "" ? "Unknown Title" : metadata.Title,
 				metadata.DiscNumberAndTotal != "" ? " (disc " + metadata.DiscNumberAndTotal + (metadata.DiscName != "" ? ": " + metadata.DiscName : "") + ")" : "",
-				metadata.Label == "" ? "" : " (" + metadata.Label + ")");
+				metadata.Label == "" && metadata.ReleaseDate == "" ? "" : " (" + metadata.Label + (metadata.Label != "" && metadata.ReleaseDate != "" ? ": " : "" ) + metadata.ReleaseDate + ")");
 		}
 	}
 }

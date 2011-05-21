@@ -5,13 +5,13 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using CUETools.CTDB.EACPlugin.Properties;
 
 namespace CUETools.CTDB.EACPlugin
 {
 	public partial class FormMetadata : Form
 	{
 		private CUEToolsDB ctdb;
-		private CTDBResponseMeta meta;
 		private string agent;
 
 		public FormMetadata(CUEToolsDB ctdb, string agent)
@@ -25,12 +25,15 @@ namespace CUETools.CTDB.EACPlugin
 		{
 			get
 			{
-				return this.meta;
+				return this.DialogResult != DialogResult.Cancel && 
+					listView1.SelectedItems.Count > 0 ? 
+					listView1.SelectedItems[0].Tag as CTDBResponseMeta : null;
 			}
 		}
 
 		private void FormMetadata_Load(object sender, EventArgs e)
 		{
+			this.Icon = Resources.ctdb;
 			this.backgroundWorker1.RunWorkerAsync();
 		}
 
@@ -43,10 +46,9 @@ namespace CUETools.CTDB.EACPlugin
 		{
 			this.progressBar1.Visible = false;
 			this.button1.Visible = true;
-			CTDBResponseMeta bestMeta = null;
+			this.button2.Visible = true;
 			foreach (var metadata in ctdb.Metadata)
 			{
-				bestMeta = metadata;
 				uint td = 0, dn = 0;
 				var disccount = metadata.disccount ?? "1";
 				var discnumber = metadata.discnumber ?? "1";
@@ -57,6 +59,8 @@ namespace CUETools.CTDB.EACPlugin
 				if (metadata.label != null)
 					foreach (var l in metadata.label)
 						label = (label == "" ? "" : label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
+				if (metadata.releasedate != null)
+					label = (label == "" ? "" : label + ": ") + metadata.releasedate;
 				var text = string.Format("{0}{1} - {2}{3}{4}", metadata.year != null ? metadata.year + ": " : "",
 					metadata.artist == null ? "Unknown Artist" : metadata.artist,
 					metadata.album == "" ? "Unknown Title" : metadata.album,
@@ -65,19 +69,21 @@ namespace CUETools.CTDB.EACPlugin
 				listView1.Items.Add(new ListViewItem(text) { Tag = metadata });
 			}
 			this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-			this.meta = bestMeta;
-			if (listView1.Items.Count < 2)
-				this.Close();
+			if (listView1.Items.Count == 0)
+			{
+				this.DialogResult = DialogResult.Cancel;
+				return;
+			}
+			listView1.Items[0].Selected = true;
+			if (listView1.Items.Count == 1)
+				this.DialogResult = DialogResult.OK;
 		}
 
 		private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
 		{
 			var ht = listView1.HitTest(e.Location);
 			if (ht.Item != null)
-			{
-				meta = ht.Item.Tag as CTDBResponseMeta;
-				this.Close();
-			}
+				this.DialogResult = DialogResult.OK;
 		}
 	}
 }
