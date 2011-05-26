@@ -19,7 +19,6 @@ using CUETools.Codecs;
 using CUETools.Processor;
 using CUETools.Ripper;
 using CUEControls;
-using MusicBrainz;
 using Freedb;
 
 namespace CUERipper
@@ -562,14 +561,26 @@ namespace CUERipper
 			SetupControls();
 		}
 
-		private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
+		//private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
+		//{
+		//    CheckStop();
+		//    //_progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
+		//    //_progress.input = e.Uri.ToString();
+		//    this.BeginInvoke((MethodInvoker)delegate()
+		//    {
+		//        toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " " + (e == null ? "FreeDB" : "MusicBrainz") + "...";
+		//        toolStripProgressBar1.Value = (100 + 2 * toolStripProgressBar1.Value) / 3;
+		//    });
+		//}
+
+		private void FreeDB_LookupProgress(object sender)
 		{
 			CheckStop();
 			//_progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
 			//_progress.input = e.Uri.ToString();
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
-				toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " " + (e == null ? "FreeDB" : "MusicBrainz") + "...";
+				toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " FreeDB...";
 				toolStripProgressBar1.Value = (100 + 2 * toolStripProgressBar1.Value) / 3;
 			});
 		}
@@ -581,12 +592,12 @@ namespace CUERipper
 			return entry;
 		}
 
-		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, Release release)
-		{
-			CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, "musicbrainz");
-			entry.metadata.FillFromMusicBrainz(release, entry.TOC.FirstAudio - 1);
-			return entry;
-		}
+		//private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, Release release)
+		//{
+		//    CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, "musicbrainz");
+		//    entry.metadata.FillFromMusicBrainz(release, entry.TOC.FirstAudio - 1);
+		//    return entry;
+		//}
 
 		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, CDEntry cdEntry)
 		{
@@ -651,33 +662,34 @@ namespace CUERipper
 			{
 				loadAllMetadata = false;
 
-				this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " MusicBrainz..."; });
+				//this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " MusicBrainz..."; });
 
-				ReleaseQueryParameters p = new ReleaseQueryParameters();
-				p.DiscId = audioSource.TOC.MusicBrainzId;
-				Query<Release> results = Release.Query(p);
-				MusicBrainzService.Proxy = _config.GetProxy();
-				MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+				//ReleaseQueryParameters p = new ReleaseQueryParameters();
+				//p.DiscId = audioSource.TOC.MusicBrainzId;
+				//Query<Release> results = Release.Query(p);
+				//MusicBrainzService.Proxy = _config.GetProxy();
+				//MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 
-				try
-				{
-					foreach (Release release in results)
-					{
-						release.GetEvents();
-						release.GetTracks();
-						data.Releases.Add(CreateCUESheet(audioSource, release));
-					}
-					mbresults_count = results.Count;
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Trace.WriteLine(ex.Message);
-					if (!(ex is MusicBrainzNotFoundException))
-						musicbrainzError = ex.Message;
-				}
-				MusicBrainzService.Proxy = null;
-				MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
+				//try
+				//{
+				//    foreach (Release release in results)
+				//    {
+				//        release.GetEvents();
+				//        release.GetTracks();
+				//        data.Releases.Add(CreateCUESheet(audioSource, release));
+				//    }
+				//    mbresults_count = results.Count;
+				//}
+				//catch (Exception ex)
+				//{
+				//    System.Diagnostics.Trace.WriteLine(ex.Message);
+				//    if (!(ex is MusicBrainzNotFoundException))
+				//        musicbrainzError = ex.Message;
+				//}
+				//MusicBrainzService.Proxy = null;
+				//MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 
+				this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " Freedb..."; });
 
 				FreedbHelper m_freedb = new FreedbHelper();
 				m_freedb.Proxy = _config.GetProxy(); 
@@ -692,12 +704,12 @@ namespace CUERipper
 				string code = string.Empty;
 				try
 				{
-					MusicBrainz_LookupProgress(this, null);
+					FreeDB_LookupProgress(this);
 					code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(audioSource.TOC), out queryResult, out coll);
 					if (code == FreedbHelper.ResponseCodes.CODE_200)
 					{
 						CDEntry cdEntry;
-						MusicBrainz_LookupProgress(this, null);
+						FreeDB_LookupProgress(this);
 						code = m_freedb.Read(queryResult, out cdEntry);
 						if (code == FreedbHelper.ResponseCodes.CODE_210)
 						{
@@ -712,7 +724,7 @@ namespace CUERipper
 							foreach (QueryResult qr in coll)
 							{
 								CDEntry cdEntry;
-								MusicBrainz_LookupProgress(this, null);
+								FreeDB_LookupProgress(this);
 								code = m_freedb.Read(qr, out cdEntry);
 								if (code == FreedbHelper.ResponseCodes.CODE_210)
 								{

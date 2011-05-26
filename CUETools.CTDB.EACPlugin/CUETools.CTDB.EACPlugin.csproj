@@ -45,6 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormSubmitParity.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSubmitParity.Designer.cs">
+      <DependentUpon>FormSubmitParity.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormMetadata.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -67,6 +73,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="FormSubmitParity.resx">
+      <DependentUpon>FormSubmitParity.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormMetadata.resx">
       <DependentUpon>FormMetadata.cs</DependentUpon>
     </EmbeddedResource>
@@ -103,7 +112,7 @@
     <None Include="Resources\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ctdb.png" />
+    <None Include="Resources\ctdb64.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

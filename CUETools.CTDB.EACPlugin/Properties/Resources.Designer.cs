@@ -67,9 +67,9 @@ namespace CUETools.CTDB.EACPlugin.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap ctdb1 {
+        internal static System.Drawing.Bitmap ctdb64 {
             get {
-                object obj = ResourceManager.GetObject("ctdb1", resourceCulture);
+                object obj = ResourceManager.GetObject("ctdb64", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

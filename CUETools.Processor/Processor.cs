@@ -4141,7 +4141,7 @@ string status = processor.Go();
 			}
 		}
 
-		public readonly static string CUEToolsVersion = "2.1.1";
+		public readonly static string CUEToolsVersion = "2.1.2";
 
 		public void GenerateAccurateRipLog(TextWriter sw)
 		{

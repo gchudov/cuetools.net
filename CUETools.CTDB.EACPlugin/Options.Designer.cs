@@ -39,15 +39,15 @@ namespace AudioDataPlugIn
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(147, 13);
+			this.label1.Location = new System.Drawing.Point(95, 13);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(139, 13);
 			this.label1.TabIndex = 0;
-			this.label1.Text = "CUETools DB Plugin V2.1.1";
+			this.label1.Text = "CUETools DB Plugin V2.1.2";
 			// 
 			// label2
 			// 
-			this.label2.Location = new System.Drawing.Point(147, 67);
+			this.label2.Location = new System.Drawing.Point(95, 67);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(230, 74);
 			this.label2.TabIndex = 1;
@@ -56,7 +56,7 @@ namespace AudioDataPlugIn
 			// linkLabel1
 			// 
 			this.linkLabel1.AutoSize = true;
-			this.linkLabel1.Location = new System.Drawing.Point(147, 36);
+			this.linkLabel1.Location = new System.Drawing.Point(95, 36);
 			this.linkLabel1.Name = "linkLabel1";
 			this.linkLabel1.Size = new System.Drawing.Size(164, 13);
 			this.linkLabel1.TabIndex = 3;
@@ -66,10 +66,10 @@ namespace AudioDataPlugIn
 			// 
 			// pictureBox1
 			// 
-			this.pictureBox1.Image = global::CUETools.CTDB.EACPlugin.Properties.Resources.ctdb1;
+			this.pictureBox1.Image = global::CUETools.CTDB.EACPlugin.Properties.Resources.ctdb64;
 			this.pictureBox1.Location = new System.Drawing.Point(13, 13);
 			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(128, 128);
+			this.pictureBox1.Size = new System.Drawing.Size(64, 64);
 			this.pictureBox1.TabIndex = 4;
 			this.pictureBox1.TabStop = false;
 			// 
@@ -77,7 +77,7 @@ namespace AudioDataPlugIn
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(402, 158);
+			this.ClientSize = new System.Drawing.Size(332, 158);
 			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.linkLabel1);
 			this.Controls.Add(this.label2);

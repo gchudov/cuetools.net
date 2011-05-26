@@ -90,7 +90,7 @@ namespace CUETools.CTDB
 									uint.Parse(ctdbRespEntry.crc32, NumberStyles.HexNumber),
 									ctdbRespEntry.id,
 									entry_toc,
-									ctdbRespEntry.hasparity == 1);
+									ctdbRespEntry.hasparity);
 								entries.Add(entry);
 							}
 						if (ctdbResp.musicbrainz != null && ctdbResp.musicbrainz.Length != 0)
@@ -109,8 +109,9 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public void FetchDB(string url, DBEntry entry)
+		public void FetchDB(DBEntry entry)
 		{
+			string url = entry.hasParity[0] == '/' ? urlbase + entry.hasParity : entry.hasParity;
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
 			req.Method = "GET";
 			req.Proxy = proxy;
@@ -346,11 +347,11 @@ namespace CUETools.CTDB
 					entry.canRecover = false;
 				else if (entry.hasErrors)
 				{
-					if (!entry.hasParity)
+					if (entry.hasParity == null || entry.hasParity == "")
 						entry.canRecover = false;
 					else
 					{
-						FetchDB(string.Format("{0}/repair.php?id={1}", urlbase, entry.id), entry);
+						FetchDB(entry);
 						if (entry.httpStatus != HttpStatusCode.OK)
 							entry.canRecover = false;
 						else
@@ -511,9 +512,9 @@ namespace CUETools.CTDB
 		public HttpStatusCode httpStatus;
 		public string id;
 		public CDImageLayout toc;
-		public bool hasParity;
+		public string hasParity;
 
-		public DBEntry(byte[] parity, int pos, int len, int conf, int npar, int stride, uint crc, string id, CDImageLayout toc, bool hasParity)
+		public DBEntry(byte[] parity, int pos, int len, int conf, int npar, int stride, uint crc, string id, CDImageLayout toc, string hasParity)
 		{
 			this.parity = parity;
 			this.id = id;
@@ -674,8 +675,8 @@ namespace CUETools.CTDB
 		public int npar { get; set; }
 		[XmlAttribute]
 		public int stride { get; set; }
-		[XmlAttribute, DefaultValue(1)]
-		public int hasparity { get; set; }
+		[XmlAttribute]
+		public string hasparity { get; set; }
 		[XmlAttribute]
 		public string parity { get; set; }
 		[XmlAttribute]

@@ -42,7 +42,7 @@ namespace MetadataPlugIn
 			TOC[1][0].Start = 0U;
 
 			var ctdb = new CUEToolsDB(TOC, null);
-			var form = new CUETools.CTDB.EACPlugin.FormMetadata(ctdb, "EAC" + data.HostVersion + " CTDB 2.1.1");
+			var form = new CUETools.CTDB.EACPlugin.FormMetadata(ctdb, "EAC" + data.HostVersion + " CTDB 2.1.2");
 			form.ShowDialog();
 			var meta = form.Meta;
 			if (meta == null)
@@ -84,13 +84,13 @@ namespace MetadataPlugIn
 		public Array GetPluginLogo()
 		{
 			MemoryStream ms = new MemoryStream();
-            Resources.ctdb.Save(ms);
+			Resources.ctdb64.Save(ms, ImageFormat.Png);
 			return ms.ToArray();
 		}
 
 		public string GetPluginName()
 		{
-			return "CUETools DB Metadata Plugin V2.1.1";
+			return "CUETools DB Metadata Plugin V2.1.2";
 		}
 
 		public void ShowOptions()

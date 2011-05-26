@@ -10,6 +10,7 @@ using CUETools.CDImage;
 using CUETools.AccurateRip;
 using CUETools.Codecs;
 using CUETools.CTDB;
+using CUETools.CTDB.EACPlugin;
 
 namespace AudioDataPlugIn
 {
@@ -53,7 +54,7 @@ namespace AudioDataPlugIn
         // the plugin and for display in the log file
         public string GetAudioTransferPluginName()
         {
-            return "CUETools DB Plugin V2.1.1";
+            return "CUETools DB Plugin V2.1.2";
         }
 
         // Each plugin should have its own options page.
@@ -119,7 +120,9 @@ namespace AudioDataPlugIn
 #if USEAR
 			ar.ContactAccurateRip(ArId);
 #endif
-			ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.1", m_drivename, false, false);
+			var form = new FormSubmitParity(ctdb, "EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename);
+			//ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename, false, false);
+			form.ShowDialog();
 			ctdb.Init(true, ar);
 			this.sequence_ok = true;
 			this.m_start_pos = 0;
@@ -205,8 +208,8 @@ namespace AudioDataPlugIn
 				return "";
 			if (this.sequence_ok)
 			{
-				ctdb.DoVerify();
-				ctdb.Submit(
+				var form = new FormSubmitParity(
+					ctdb,
 #if USEAR
 					(int)ar.WorstConfidence() + 1,
 #else
@@ -215,6 +218,7 @@ namespace AudioDataPlugIn
 					(arTest.Position == 0 && this.is_secure_mode) || arTest.CRC32(0) == ar.CRC32(0) ? 100 : 0,
 					m_data.AlbumArtist,
 					m_data.AlbumTitle);
+				form.ShowDialog();
 				sw.WriteLine("[CTDB TOCID: {0}] {1}{2}.", 
 					TOC.TOCID, 
 					ctdb.DBStatus ?? "found",
