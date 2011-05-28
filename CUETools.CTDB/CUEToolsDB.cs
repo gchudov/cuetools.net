@@ -24,15 +24,16 @@ namespace CUETools.CTDB
 
 		private CDRepairEncode verify;
 		private CDImageLayout toc;
-		private HttpStatusCode accResult;
 		private string subResult;
 		private int length;
 		private int total;
-		List<DBEntry> entries = new List<DBEntry>();
-		List<CTDBResponseMeta> metadata = new List<CTDBResponseMeta>();
-		DBEntry selectedEntry;
-		IWebProxy proxy;
-		HttpUploadHelper uploadHelper;
+		private List<DBEntry> entries = new List<DBEntry>();
+		private List<CTDBResponseMeta> metadata = new List<CTDBResponseMeta>();
+		private DBEntry selectedEntry;
+		private IWebProxy proxy;
+		private HttpUploadHelper uploadHelper;
+		private HttpWebRequest currentReq;
+		private int connectTimeout, socketTimeout;
 
 		public CUEToolsDB(CDImageLayout toc, IWebProxy proxy)
 		{
@@ -40,6 +41,19 @@ namespace CUETools.CTDB
 			this.length = (int)toc.AudioLength * 588;
 			this.proxy = proxy;
 			this.uploadHelper = new HttpUploadHelper();
+			this.QueryExceptionStatus = WebExceptionStatus.Pending;
+			this.connectTimeout = 15000;
+			this.socketTimeout = 30000;
+		}
+
+		public void CancelRequest()
+		{
+			var r = currentReq;
+			// copy link to currentReq, because it can be set to null by other thread.
+			if (r != null)
+			{
+				r.Abort();
+			}
 		}
 
 		public void ContactDB(string userAgent, string driveName, bool musicbrainz, bool fuzzy)
@@ -55,57 +69,73 @@ namespace CUETools.CTDB
 			req.Method = "GET";
 			req.Proxy = proxy;
 			req.UserAgent = this.userAgent;
+			req.Timeout = connectTimeout;
+			req.ReadWriteTimeout = socketTimeout;
 
 			if (uploadHelper.onProgress != null)
 				uploadHelper.onProgress(this, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0));
 
+			currentReq = req;
 			try
 			{
-				HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-				accResult = resp.StatusCode;
-
-				if (accResult == HttpStatusCode.OK)
+				using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
 				{
-					XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
-					this.total = 0;
-					using (Stream responseStream = resp.GetResponseStream())
+					this.QueryExceptionStatus = WebExceptionStatus.ProtocolError;
+					this.QueryResponseStatus = resp.StatusCode;
+					if (this.QueryResponseStatus == HttpStatusCode.OK)
 					{
-						CTDBResponse ctdbResp = serializer.Deserialize(responseStream) as CTDBResponse;
-						if (ctdbResp.entry != null)
-							foreach (var ctdbRespEntry in ctdbResp.entry)
-							{
-								if (ctdbRespEntry.toc == null)
-									continue;
+						XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
+						this.total = 0;
+						using (Stream responseStream = resp.GetResponseStream())
+						{
+							CTDBResponse ctdbResp = serializer.Deserialize(responseStream) as CTDBResponse;
+							if (ctdbResp.entry != null)
+								foreach (var ctdbRespEntry in ctdbResp.entry)
+								{
+									if (ctdbRespEntry.toc == null)
+										continue;
 
-								var parity = Convert.FromBase64String(ctdbRespEntry.parity);
-								var entry_toc = CDImageLayout.FromString(ctdbRespEntry.toc);
-								this.total += ctdbRespEntry.confidence;
-								var entry = new DBEntry(
-									parity,
-									0,
-									parity.Length,
-									ctdbRespEntry.confidence,
-									ctdbRespEntry.npar,
-									ctdbRespEntry.stride,
-									uint.Parse(ctdbRespEntry.crc32, NumberStyles.HexNumber),
-									ctdbRespEntry.id,
-									entry_toc,
-									ctdbRespEntry.hasparity);
-								entries.Add(entry);
-							}
-						if (ctdbResp.musicbrainz != null && ctdbResp.musicbrainz.Length != 0)
-							metadata.AddRange(ctdbResp.musicbrainz);
+									var parity = Convert.FromBase64String(ctdbRespEntry.parity);
+									var entry_toc = CDImageLayout.FromString(ctdbRespEntry.toc);
+									this.total += ctdbRespEntry.confidence;
+									var entry = new DBEntry(
+										parity,
+										0,
+										parity.Length,
+										ctdbRespEntry.confidence,
+										ctdbRespEntry.npar,
+										ctdbRespEntry.stride,
+										uint.Parse(ctdbRespEntry.crc32, NumberStyles.HexNumber),
+										ctdbRespEntry.id,
+										entry_toc,
+										ctdbRespEntry.hasparity);
+									entries.Add(entry);
+								}
+							if (ctdbResp.musicbrainz != null && ctdbResp.musicbrainz.Length != 0)
+								metadata.AddRange(ctdbResp.musicbrainz);
+						}
+						if (entries.Count == 0)
+							this.QueryResponseStatus = HttpStatusCode.NotFound;
+						else
+							this.QueryExceptionStatus = WebExceptionStatus.Success;
 					}
-					if (entries.Count == 0)
-						accResult = HttpStatusCode.NotFound;
 				}
 			}
 			catch (WebException ex)
 			{
-				if (ex.Status == WebExceptionStatus.ProtocolError)
-					accResult = ((HttpWebResponse)ex.Response).StatusCode;
-				else
-					accResult = HttpStatusCode.BadRequest;
+				this.QueryExceptionStatus = ex.Status;
+				this.QueryExceptionMessage = ex.Message;
+				if (this.QueryExceptionStatus == WebExceptionStatus.ProtocolError)
+					this.QueryResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
+			}
+			catch (Exception ex)
+			{
+				this.QueryExceptionStatus = WebExceptionStatus.UnknownError;
+				this.QueryExceptionMessage = ex.Message;
+			}
+			finally
+			{
+				currentReq = null;
 			}
 		}
 
@@ -116,31 +146,36 @@ namespace CUETools.CTDB
 			req.Method = "GET";
 			req.Proxy = proxy;
 			req.UserAgent = this.userAgent;
+			req.Timeout = connectTimeout;
+			req.ReadWriteTimeout = socketTimeout;
 
+			currentReq = req;
 			try
 			{
-				HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-				entry.httpStatus = resp.StatusCode;
-
-				if (entry.httpStatus == HttpStatusCode.OK)
+				using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
 				{
-					using (Stream responseStream = resp.GetResponseStream())
+					entry.httpStatus = resp.StatusCode;
+
+					if (entry.httpStatus == HttpStatusCode.OK)
 					{
-						using(MemoryStream memoryStream = new MemoryStream())
+						using (Stream responseStream = resp.GetResponseStream())
 						{
-							byte[] buffer = new byte[16536];
-							int count = 0, pos = 0;
-							do
+							using (MemoryStream memoryStream = new MemoryStream())
 							{
-								if (uploadHelper.onProgress != null)
-									uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos) / resp.ContentLength));
-								count = responseStream.Read(buffer, 0, buffer.Length);
-								memoryStream.Write(buffer, 0, count);
-								pos += count;
-							} while (count != 0);
-							var contents = memoryStream.ToArray();
-							if (!Parse(contents, entry))
-								entry.httpStatus = HttpStatusCode.NoContent;
+								byte[] buffer = new byte[16536];
+								int count = 0, pos = 0;
+								do
+								{
+									if (uploadHelper.onProgress != null)
+										uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos) / resp.ContentLength));
+									count = responseStream.Read(buffer, 0, buffer.Length);
+									memoryStream.Write(buffer, 0, count);
+									pos += count;
+								} while (count != 0);
+								var contents = memoryStream.ToArray();
+								if (!Parse(contents, entry))
+									entry.httpStatus = HttpStatusCode.NoContent;
+							}
 						}
 					}
 				}
@@ -151,6 +186,10 @@ namespace CUETools.CTDB
 					entry.httpStatus = ((HttpWebResponse)ex.Response).StatusCode;
 				else
 					entry.httpStatus = HttpStatusCode.BadRequest;
+			}
+			finally
+			{
+				currentReq = null;
 			}
 		}
 
@@ -175,7 +214,8 @@ namespace CUETools.CTDB
 
 		public string Submit(int confidence, int quality, string artist, string title)
 		{
-			if (this.AccResult != HttpStatusCode.NotFound && this.AccResult != HttpStatusCode.OK)
+			if (this.QueryExceptionStatus != WebExceptionStatus.Success &&
+				(this.QueryExceptionStatus != WebExceptionStatus.ProtocolError || this.QueryResponseStatus != HttpStatusCode.NotFound))
 				return this.DBStatus;
 			DBEntry confirm = null;
 			foreach (DBEntry entry in this.Entries)
@@ -220,6 +260,8 @@ namespace CUETools.CTDB
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/submit2.php");
 			req.Proxy = proxy;
 			req.UserAgent = this.userAgent;
+			req.Timeout = connectTimeout;
+			req.ReadWriteTimeout = socketTimeout;
 			NameValueCollection form = new NameValueCollection();
 			if (upload)
 				form.Add("parityfile", "1");
@@ -240,6 +282,7 @@ namespace CUETools.CTDB
 			var ExceptionStatus = WebExceptionStatus.Pending;
 			string ExceptionMessage = null;
 			HttpStatusCode ResponseStatus = HttpStatusCode.OK;
+			currentReq = req;
 			try
 			{
 				using (HttpWebResponse resp = uploadHelper.Upload(req, files, form))
@@ -262,6 +305,10 @@ namespace CUETools.CTDB
 				ExceptionMessage = ex.Message;
 				if (ExceptionStatus == WebExceptionStatus.ProtocolError)
 					ResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
+			}
+			finally
+			{
+				currentReq = null;
 			}
 			subResult = ExceptionStatus == WebExceptionStatus.Success ? null :
 				ExceptionStatus != WebExceptionStatus.ProtocolError ? ("database access error: " + (ExceptionMessage ?? ExceptionStatus.ToString())) :
@@ -333,7 +380,7 @@ namespace CUETools.CTDB
 
 		public void DoVerify()
 		{
-			if (this.AccResult != HttpStatusCode.OK)
+			if (this.QueryExceptionStatus != WebExceptionStatus.Success)
 				return;
 			foreach (DBEntry entry in entries)
 			{
@@ -392,11 +439,20 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public HttpStatusCode AccResult
+		public WebExceptionStatus QueryExceptionStatus { get; private set; }
+
+		public string QueryExceptionMessage { get; private set; }
+
+		public HttpStatusCode QueryResponseStatus { get; private set; }
+
+		public string DBStatus
 		{
 			get
 			{
-				return accResult;
+				return QueryExceptionStatus == WebExceptionStatus.Success ? null :
+					QueryExceptionStatus != WebExceptionStatus.ProtocolError ? ("database access error: " + (QueryExceptionMessage ?? QueryExceptionStatus.ToString())) :
+					QueryResponseStatus != HttpStatusCode.NotFound ? "database access error: " + QueryResponseStatus.ToString() :
+					"disk not present in database";
 			}
 		}
 
@@ -417,16 +473,6 @@ namespace CUETools.CTDB
 			set
 			{
 				subResult = value;
-			}
-		}
-
-		public string DBStatus
-		{
-			get
-			{
-				return accResult == HttpStatusCode.NotFound ? "disk not present in database" :
-					accResult == HttpStatusCode.OK ? null
-					: accResult.ToString();
 			}
 		}
 

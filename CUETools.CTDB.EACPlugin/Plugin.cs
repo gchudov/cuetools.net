@@ -54,7 +54,7 @@ namespace AudioDataPlugIn
         // the plugin and for display in the log file
         public string GetAudioTransferPluginName()
         {
-            return "CUETools DB Plugin V2.1.2";
+            return "CUETools DB Plugin V2.1.2b";
         }
 
         // Each plugin should have its own options page.
@@ -219,7 +219,7 @@ namespace AudioDataPlugIn
 					m_data.AlbumArtist,
 					m_data.AlbumTitle);
 				form.ShowDialog();
-				sw.WriteLine("[CTDB TOCID: {0}] {1}{2}.", 
+				sw.WriteLine("[CTDB TOCID: {0}] {1}{2}",
 					TOC.TOCID, 
 					ctdb.DBStatus ?? "found",
 					(ctdb.SubStatus == null) ? "" : (", Submit result: " + ctdb.SubStatus));
@@ -245,7 +245,7 @@ namespace AudioDataPlugIn
 						status);
 				}
 				bool canFix = false;
-				if (ctdb.AccResult == HttpStatusCode.OK)
+				if (ctdb.QueryExceptionStatus == WebExceptionStatus.Success)
 				{
 					foreach (DBEntry entry in ctdb.Entries)
 						if (entry.hasErrors && entry.canRecover)

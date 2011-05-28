@@ -6314,13 +6314,14 @@ string status = processor.Go();
 							return "AccurateRip: confidence too low, will not submit";
 						//if (CTDB.AccResult == HttpStatusCode.OK)
 							//return "CUEToolsDB: disc already present in database";
-						if (CTDB.AccResult != HttpStatusCode.NotFound && CTDB.AccResult != HttpStatusCode.OK)// && CTDB.AccResult != HttpStatusCode.NoContent)
+						if (CTDB.QueryExceptionStatus != WebExceptionStatus.Success &&
+							(CTDB.QueryExceptionStatus != WebExceptionStatus.ProtocolError || CTDB.QueryResponseStatus != HttpStatusCode.NotFound))
 							return "CUEToolsDB: " + CTDB.DBStatus;
 						if (_accurateRipId != null && AccurateRipVerify.CalculateAccurateRipId(_toc) != _accurateRipId)
 							return string.Format("CUEToolsDB: Using preserved id {0}, actual id is {1}", _accurateRipId, AccurateRipVerify.CalculateAccurateRipId(_toc));
 						_useCUEToolsDBSibmit = true;
 						string status = Go();
-						if (CTDB.AccResult == HttpStatusCode.OK)
+						if (CTDB.QueryExceptionStatus == WebExceptionStatus.Success)
 							foreach (DBEntry entry in CTDB.Entries)
 								if (entry.toc.TrackOffsets == _toc.TrackOffsets && !entry.hasErrors)
 									return "CUEToolsDB: " + CTDB.Status;

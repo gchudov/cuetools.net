@@ -382,7 +382,7 @@ namespace CUERipper
 					cueSheet.Artist,
 					cueSheet.Title);
 				bool canFix = false;
-				if (cueSheet.CTDB.AccResult == HttpStatusCode.OK && audioSource.ErrorsCount != 0)
+				if (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.Success && audioSource.ErrorsCount != 0)
 				{
 					foreach (DBEntry entry in cueSheet.CTDB.Entries)
 						if (entry.hasErrors && entry.canRecover)

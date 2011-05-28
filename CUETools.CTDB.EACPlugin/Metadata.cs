@@ -90,7 +90,7 @@ namespace MetadataPlugIn
 
 		public string GetPluginName()
 		{
-			return "CUETools DB Metadata Plugin V2.1.2";
+			return "CUETools DB Metadata Plugin V2.1.2b";
 		}
 
 		public void ShowOptions()
