@@ -2244,6 +2244,7 @@ namespace Bwg.Scsi
         /// Read the CD text information from the leadin using the ReadTocPmaAtip command form
         /// </summary>
         /// <param name="data"></param>
+		/// <param name="_timeout"></param>
         /// <returns></returns>
         public CommandStatus ReadCDText(out byte [] data, int _timeout)
         {

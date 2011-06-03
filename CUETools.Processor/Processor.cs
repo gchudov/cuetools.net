@@ -2758,8 +2758,7 @@ string status = processor.Go();
 									if (_sourcePaths.Count > 0)
 										throw new Exception("Extra file in embedded CUE sheet: \"" + line.Params[1] + "\".");
 								}
-								_sourcePaths.Add(pathAudio);
-								absoluteFileStartTime += fileTimeLengthFrames;
+								
 								if (pathAudio == null)
 								{
 									throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
@@ -2772,7 +2771,19 @@ string status = processor.Go();
 								}
 								else
 								{
+									// Wierd case: audio file after data track with only index 00 specified.
+									if (!isAudioTrack && _sourcePaths.Count == 0 && indexes.Count > 0 && indexes[indexes.Count - 1].Index == 0)
+									{
+										indexInfo.Track = indexes[indexes.Count - 1].Track;
+										indexInfo.Index = 1;
+										indexInfo.Time = indexes[indexes.Count - 1].Time + 150;
+										indexes.Add(indexInfo);
+										absoluteFileStartTime += 150;
+									}
+
 									TagLib.File fileInfo;
+									_sourcePaths.Add(pathAudio);
+									absoluteFileStartTime += fileTimeLengthFrames;
 									fileTimeLengthSamples = GetSampleLength(pathAudio, out fileInfo);
 									if ((fileTimeLengthSamples % 588) == 492 && _config.truncate4608ExtraSamples)
 									{
@@ -3120,16 +3131,33 @@ string status = processor.Go();
 			}
 
 			// use data track length from log
-			if (tocFromLog != null && tocFromLog.AudioTracks == _toc.AudioTracks && tocFromLog.TrackCount == tocFromLog.AudioTracks + 1)
+			if (tocFromLog != null && tocFromLog.AudioTracks == _toc.AudioTracks)
 			{
-				if (!tocFromLog[tocFromLog.TrackCount].IsAudio)
+				if (tocFromLog.TrackCount == tocFromLog.AudioTracks + 1 && !tocFromLog[tocFromLog.TrackCount].IsAudio)
 				{
 					DataTrackLength = tocFromLog[tocFromLog.TrackCount].Length;
 					_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
 					_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
 					_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
-				} else
-					DataTrackLength = tocFromLog[1].Length;
+				}
+				else if (tocFromLog.TrackCount == _toc.TrackCount 
+					&& tocFromLog.FirstAudio == _toc.FirstAudio 
+					&& tocFromLog.TrackCount == tocFromLog.FirstAudio + tocFromLog.AudioTracks - 1)
+				{
+					//DataTrackLength = tocFromLog[1].Length;
+					uint delta = tocFromLog[_toc.FirstAudio].Start - _toc[_toc.FirstAudio].Start;
+					for (int itr = 1; itr < _toc.FirstAudio; itr++)
+					{
+						_toc[itr].Start = tocFromLog[itr].Start;
+						_toc[itr].Length = tocFromLog[itr].Length;
+					}
+					for (int itr = _toc.FirstAudio; itr <= _toc.TrackCount; itr++)
+					{
+						_toc[itr].Start += delta;
+						for (int j = 0; j <= _toc[itr].LastIndex; j++)
+							_toc[itr][j].Start += delta;
+					}
+				}
 			}
 
 			// use data track length from log
@@ -4127,7 +4155,7 @@ string status = processor.Go();
 					(_CUEToolsDB.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
 				string conf = string.Format(confFormat, entry.conf, _CUEToolsDB.Total);
 				string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio ? string.Format("CD-Extra data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
-						!entry.toc[1].IsAudio ? string.Format("Playstation type data track length {0}", entry.toc[1].LengthMSF) : "Has no data track";
+						!entry.toc[1].IsAudio ? string.Format("Playstation type data track length {0}", entry.toc[entry.toc.FirstAudio].StartMSF) : "Has no data track";
 				string status =
 					entry.toc.Pregap != _toc.Pregap ? string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap)) :
 					entry.toc.AudioLength != _toc.AudioLength ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
@@ -4149,7 +4177,7 @@ string status = processor.Go();
 			if (PreGapLength != 0)
 				sw.WriteLine("Pregap length {0}.", PreGapLengthMSF);
 			if (!_toc[1].IsAudio)
-				sw.WriteLine("Playstation type data track length {0}.", _toc[1].LengthMSF);
+				sw.WriteLine("Playstation type data track length {0}.", _toc[_toc.FirstAudio].StartMSF);
 			if (!_toc[_toc.TrackCount].IsAudio)
 				sw.WriteLine("CD-Extra data track length {0}.", 
 					_toc[_toc.TrackCount].Length == 0 && _minDataTrackLength.HasValue ? 

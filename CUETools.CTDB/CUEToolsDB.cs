@@ -148,6 +148,10 @@ namespace CUETools.CTDB
 			req.UserAgent = this.userAgent;
 			req.Timeout = connectTimeout;
 			req.ReadWriteTimeout = socketTimeout;
+			req.AutomaticDecompression = DecompressionMethods.None;
+
+			if (uploadHelper.onProgress != null)
+				uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0.0));
 
 			currentReq = req;
 			try
@@ -158,24 +162,28 @@ namespace CUETools.CTDB
 
 					if (entry.httpStatus == HttpStatusCode.OK)
 					{
+						if (resp.ContentLength < entry.npar * entry.stride * 4 ||
+							resp.ContentLength > entry.npar * entry.stride * 8)
+						{
+							entry.httpStatus = HttpStatusCode.PartialContent;
+						}
+					}
+
+					if (entry.httpStatus == HttpStatusCode.OK)
+					{
 						using (Stream responseStream = resp.GetResponseStream())
 						{
-							using (MemoryStream memoryStream = new MemoryStream())
+							byte[] contents = new byte[resp.ContentLength];
+							int pos = 0, count = 0;
+							do
 							{
-								byte[] buffer = new byte[16536];
-								int count = 0, pos = 0;
-								do
-								{
-									if (uploadHelper.onProgress != null)
-										uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos) / resp.ContentLength));
-									count = responseStream.Read(buffer, 0, buffer.Length);
-									memoryStream.Write(buffer, 0, count);
-									pos += count;
-								} while (count != 0);
-								var contents = memoryStream.ToArray();
-								if (!Parse(contents, entry))
-									entry.httpStatus = HttpStatusCode.NoContent;
-							}
+								count = responseStream.Read(contents, pos, Math.Min(contents.Length - pos, 32768));
+								pos += count;
+								if (uploadHelper.onProgress != null)
+									uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos) / contents.Length));
+							} while (count != 0);
+							if (!Parse(contents, entry))
+								entry.httpStatus = HttpStatusCode.NoContent;						
 						}
 					}
 				}
@@ -319,7 +327,7 @@ namespace CUETools.CTDB
 
 		private bool Parse(byte[] contents, DBEntry entry)
 		{
-			if (contents.Length == entry.npar * entry.stride)
+			if (contents.Length == entry.npar * entry.stride * 4)
 			{
 				entry.parity = contents;
 				entry.pos = 0;
