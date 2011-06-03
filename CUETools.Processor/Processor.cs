@@ -3131,16 +3131,39 @@ string status = processor.Go();
 			}
 
 			// use data track length from log
-			if (tocFromLog != null && tocFromLog.AudioTracks == _toc.AudioTracks)
+			if (tocFromLog != null)
 			{
-				if (tocFromLog.TrackCount == tocFromLog.AudioTracks + 1 && !tocFromLog[tocFromLog.TrackCount].IsAudio)
+				if (tocFromLog.AudioTracks == _toc.AudioTracks 
+					&& tocFromLog.TrackCount == tocFromLog.AudioTracks + 1 
+					&& !tocFromLog[tocFromLog.TrackCount].IsAudio)
 				{
 					DataTrackLength = tocFromLog[tocFromLog.TrackCount].Length;
 					_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
 					_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
 					_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
 				}
-				else if (tocFromLog.TrackCount == _toc.TrackCount 
+				if (_toc.TrackCount == _toc.AudioTracks
+					&& tocFromLog.TrackCount == tocFromLog.AudioTracks
+					&& tocFromLog.TrackCount > _toc.TrackCount)
+				{
+					int dtracks = tocFromLog.TrackCount - _toc.TrackCount;
+					bool matches = true;
+					for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
+						if (tocFromLog[iTrack + dtracks].Length != _toc[iTrack].Length)
+							matches = false;
+					if (matches)
+					{
+						for (int iTrack = 1; iTrack <= dtracks; iTrack++)
+						{
+							_toc.InsertTrack(new CDTrack((uint)iTrack, 0, 0, false, false));
+							tocFromLog[iTrack].IsAudio = false;
+						}
+						tocFromLog.FirstAudio += dtracks;
+						tocFromLog.AudioTracks -= (uint) dtracks;
+					}
+				}
+				if (tocFromLog.AudioTracks == _toc.AudioTracks
+					&& tocFromLog.TrackCount == _toc.TrackCount 
 					&& tocFromLog.FirstAudio == _toc.FirstAudio 
 					&& tocFromLog.TrackCount == tocFromLog.FirstAudio + tocFromLog.AudioTracks - 1)
 				{
@@ -3157,23 +3180,6 @@ string status = processor.Go();
 						for (int j = 0; j <= _toc[itr].LastIndex; j++)
 							_toc[itr][j].Start += delta;
 					}
-				}
-			}
-
-			// use data track length from log
-			if (tocFromLog != null 
-				&& _toc.TrackCount == _toc.AudioTracks
-				&& tocFromLog.TrackCount == tocFromLog.AudioTracks 
-				&& tocFromLog.TrackCount == _toc.TrackCount + 1)
-			{
-				bool matches = true;
-				for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
-					if (tocFromLog[iTrack + 1].Length != _toc[iTrack].Length)
-						matches = false;
-				if (matches)
-				{
-					_toc.InsertTrack(new CDTrack(1, 0, 0, false, false));
-					DataTrackLength = tocFromLog[1].Length;
 				}
 			}
 

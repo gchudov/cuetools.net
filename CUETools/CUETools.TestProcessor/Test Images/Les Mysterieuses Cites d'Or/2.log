@@ -1,0 +1,155 @@
+﻿Exact Audio Copy V0.99 prebeta 5 from 4. May 2009
+
+EAC extraction logfile from 12. October 2010, 19:17
+
+Haim Saban & Shuki Levy / Les Mystérieuses Cités d'Or
+
+Used drive  : ATAPI   iHAS324   Y   Adapter: 6  ID: 0
+
+Read mode               : Secure
+Utilize accurate stream : Yes
+Defeat audio cache      : Yes
+Make use of C2 pointers : No
+
+Read offset correction                      : 48
+Overread into Lead-In and Lead-Out          : No
+Fill up missing offset samples with silence : Yes
+Delete leading and trailing silent blocks   : No
+Null samples used in CRC calculations       : Yes
+Used interface                              : Native Win32 interface for Win NT & 2000
+Gap handling                                : Appended to previous track
+
+Used output format              : User Defined Encoder
+Selected bitrate                : 128 kBit/s
+Quality                         : High
+Add ID3 tag                     : No
+Command line compressor         : C:\Program Files (x86)\FLAC\flac.exe
+Additional command line options : -V -8 -T "artist=%a" -T "title=%t" -T "album=%g" -T "date=%y" -T "tracknumber=%n" -T "genre=%m" %s
+
+
+TOC of the extracted CD
+
+     Track |   Start  |  Length  | Start sector | End sector
+    ---------------------------------------------------------
+        1  |  0:00.00 |  7:06.02 |         0    |    31951  
+        2  |  7:06.02 | 21:19.06 |     31952    |   127882  
+        3  | 28:25.08 |  2:12.33 |    127883    |   137815  
+        4  | 30:37.41 |  2:31.32 |    137816    |   149172  
+        5  | 33:08.73 |  2:27.25 |    149173    |   160222  
+        6  | 35:36.23 |  2:30.06 |    160223    |   171478  
+        7  | 38:06.29 |  2:03.73 |    171479    |   180776  
+        8  | 40:10.27 |  1:19.36 |    180777    |   186737  
+        9  | 41:29.63 |  2:05.21 |    186738    |   196133  
+       10  | 43:35.09 |  2:06.29 |    196134    |   205612  
+       11  | 45:41.38 |  1:58.63 |    205613    |   214525  
+       12  | 47:40.26 |  1:35.23 |    214526    |   221673  
+       13  | 49:15.49 |  1:11.32 |    221674    |   227030  
+       14  | 50:27.06 |  1:17.18 |    227031    |   232823  
+       15  | 51:44.24 |  1:27.27 |    232824    |   239375  
+       16  | 53:11.51 |  2:14.69 |    239376    |   249494  
+       17  | 55:26.45 |  2:14.59 |    249495    |   259603  
+       18  | 57:41.29 |  1:26.61 |    259604    |   266114  
+       19  | 59:08.15 |  0:12.65 |    266115    |   267079  
+       20  | 59:21.05 |  1:46.70 |    267080    |   275099  
+       21  | 61:08.00 |  1:26.49 |    275100    |   281598  
+       22  | 62:34.49 |  0:38.03 |    281599    |   284451  
+       23  | 63:12.52 |  1:32.70 |    284452    |   291421  
+       24  | 64:45.47 |  0:54.39 |    291422    |   295510  
+       25  | 65:40.11 |  0:28.31 |    295511    |   297641  
+       26  | 66:08.42 |  0:59.47 |    297642    |   302113  
+       27  | 67:08.14 |  1:35.24 |    302114    |   309262  
+       28  | 68:43.38 |  0:40.06 |    309263    |   312268  
+       29  | 69:23.44 |  1:43.57 |    312269    |   320050  
+       30  | 71:07.26 |  1:22.34 |    320051    |   326234  
+       31  | 72:29.60 |  1:41.31 |    326235    |   333840  
+
+
+Track  3
+
+     Filename D:\Music Madness\Soundtracks\1998 - Les Mystérieuses Cités d'Or [FLAC]\03 - Les Cités d'Or (Générique).wav
+
+     Pre-gap length  0:00:03.00
+
+     Peak level 100.0 %
+     Track quality 100.0 %
+     Test CRC 5B513BDC
+     Copy CRC 5B513BDC
+     Accurately ripped (confidence 2)  [813C9D32]
+     Copy OK
+
+Track  4
+
+     Filename D:\Music Madness\Soundtracks\1998 - Les Mystérieuses Cités d'Or [FLAC]\04 - Le thème de Zia.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 100.0 %
+     Track quality 99.9 %
+     Test CRC 76674B12
+     Copy CRC 76674B12
+     Accurately ripped (confidence 2)  [1AC98E42]
+     Copy OK
+
+<<<snip>>>
+
+Track 28
+
+     Filename D:\Music Madness\Soundtracks\1998 - Les Mystérieuses Cités d'Or [FLAC]\28 - L'aventure continue.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 92.6 %
+     Track quality 100.0 %
+     Test CRC E471A040
+     Copy CRC E471A040
+     Accurately ripped (confidence 2)  [9C394487]
+     Copy OK
+
+Track 29
+
+     Filename D:\Music Madness\Soundtracks\1998 - Les Mystérieuses Cités d'Or [FLAC]\29 - Les Olmèques.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 92.6 %
+     Track quality 100.0 %
+     Test CRC 99FBCE76
+     Copy CRC 99FBCE76
+     Accurately ripped (confidence 2)  [FE9F299F]
+     Copy OK
+
+Track 30
+
+     Filename D:\Music Madness\Soundtracks\1998 - Les Mystérieuses Cités d'Or [FLAC]\30 - La fille du peuple Inca.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 100.0 %
+     Track quality 100.0 %
+     Test CRC 4F2F0F85
+     Copy CRC 4F2F0F85
+     Track not present in AccurateRip database
+     Copy OK
+
+Track 31
+
+     Filename D:\Music Madness\Soundtracks\1998 - Les Mystérieuses Cités d'Or [FLAC]\31 - Tao l'inventeur.wav
+
+     Pre-gap length  0:00:02.00
+
+     Peak level 92.6 %
+     Track quality 100.0 %
+     Test CRC DB2EFF8C
+     Copy CRC DB2EFF8C
+     Track not present in AccurateRip database
+     Copy OK
+
+
+27 track(s) accurately ripped
+2 track(s) not present in the AccurateRip database
+
+Some tracks could not be verified as accurate
+
+No errors occurred
+
+End of status report

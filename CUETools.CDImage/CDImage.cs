@@ -157,6 +157,10 @@ namespace CUETools.CDImage
 			{
 				return _number;
 			}
+			internal set
+			{
+				_number = value;
+			}
 		}
 
 		public uint Pregap
@@ -192,6 +196,10 @@ namespace CUETools.CDImage
 			get
 			{
 				return _isAudio;
+			}
+			set
+			{
+				_isAudio = value;
 			}
 		}
 
@@ -321,6 +329,11 @@ namespace CUETools.CDImage
 			{
 				return (uint) _audioTracks;
 			}
+
+			set
+			{
+				_audioTracks = (int) value;
+			}
 		}
 
 		public int FirstAudio
@@ -328,6 +341,10 @@ namespace CUETools.CDImage
 			get
 			{
 				return _firstAudio + 1;
+			}
+			set
+			{
+				_firstAudio = value - 1;
 			}
 		}
 
@@ -441,6 +458,8 @@ namespace CUETools.CDImage
 		public void InsertTrack(CDTrack track)
 		{
 			_tracks.Insert((int)track.Number - 1, track);
+			for (int i = (int)track.Number; i < _tracks.Count; i++)
+				_tracks[i].Number++;
 			if (track.IsAudio)
 				_audioTracks++;
 			if (!track.IsAudio && track.Number <= FirstAudio)

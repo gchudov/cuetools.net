@@ -99,6 +99,10 @@ namespace CUETools.TestProcessor
 			target.Open("Les Mysterieuses Cites d'Or\\Les Mysterieuses Cites d'Or.cue");
 			Assert.AreEqual<string>("-0:-31952:127883:137816:149173:160223:171479:180777:186738:196134:205613:214526:221674:227031:232824:239376:249495:259604:266115:267080:275100:281599:284452:291422:295511:297642:302114:309263:312269:320051:326235:333841", target.TOC.ToString(), "Wrong TOC");
 
+			// test playstation-type CD-Extra with two data tracks and no info in cuesheet
+			target = new CUESheet(new CUEConfig());
+			target.Open("Les Mysterieuses Cites d'Or\\2.cue");
+			Assert.AreEqual<string>("-0:-31952:127883:137816:149173:160223:171479:180777:186738:196134:205613:214526:221674:227031:232824:239376:249495:259604:266115:267080:275100:281599:284452:291422:295511:297642:302114:309263:312269:320051:326235:333841", target.TOC.ToString(), "Wrong TOC");
 		}
 
 		/// <summary>
