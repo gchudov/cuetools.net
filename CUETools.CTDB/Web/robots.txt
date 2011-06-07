@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /show.php
-Disallow: /top.php
-Disallow: /parity/
