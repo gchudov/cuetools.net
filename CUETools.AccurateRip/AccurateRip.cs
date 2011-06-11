@@ -515,7 +515,7 @@ namespace CUETools.AccurateRip
 			int posA = (int)_toc[iTrack + _toc.FirstAudio - 1].Start * 588 + (iTrack > 1 ? oi : prefixSamples);
 			int posB = iTrack < _toc.AudioTracks ?
 				(int)_toc[iTrack + 1 + _toc.FirstAudio - 1].Start * 588 + oi :
-				(int)_toc.AudioLength * 588 - suffixSamples;
+				(int)_toc.Leadout * 588 - suffixSamples;
 			uint crcA, crcB;
 			if (oi > 0)
 			{

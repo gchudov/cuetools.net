@@ -123,7 +123,7 @@ namespace AudioDataPlugIn
 			var form = new FormSubmitParity(ctdb, "EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename);
 			//ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename, false, false);
 			form.ShowDialog();
-			ctdb.Init(true, ar);
+			ctdb.Init(ar);
 			this.sequence_ok = true;
 			this.m_start_pos = 0;
 			this.m_length = 0;

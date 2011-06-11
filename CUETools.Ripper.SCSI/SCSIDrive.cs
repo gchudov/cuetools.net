@@ -591,7 +591,7 @@ namespace CUETools.Ripper.SCSI
 					{
 						string catalog = Encoding.ASCII.GetString(_subchannelBuffer, 9, 13);
 						if (catalog.ToString() != "0000000000000")
-							_toc2.Catalog = catalog.ToString();
+							_toc2.Barcode = catalog.ToString();
 					}
 			}
 
@@ -686,13 +686,13 @@ namespace CUETools.Ripper.SCSI
 								if (!isrc.ToString().Contains("#") && isrc.ToString() != "000000000000")
 									_toc2[iTrack].ISRC = isrc.ToString();
 							}
-							if (adr == 2 && _toc2.Catalog == null)
+							if (adr == 2 && _toc2.Barcode == null)
 							{
-								StringBuilder catalog = new StringBuilder();
+								StringBuilder barcode = new StringBuilder();
 								for (int i = 1; i < 8; i++)
-									catalog.AppendFormat("{0:x2}", _subchannelBuffer[offs + i]);
-								if (catalog.ToString() != "0000000000000")
-									_toc2.Catalog = catalog.ToString(0, 13);
+									barcode.AppendFormat("{0:x2}", _subchannelBuffer[offs + i]);
+								if (barcode.ToString() != "0000000000000")
+									_toc2.Barcode = barcode.ToString(0, 13);
 							}
 						}
 					}

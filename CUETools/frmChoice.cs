@@ -207,8 +207,9 @@ namespace JDP
 				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.TotalDiscs, "Total Discs" }));
 				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.DiscName, "Disc Name" }));
 				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.Barcode, "Barcode" }));
-				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.ReleaseDate, "ReleaseDate" }));
+				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.ReleaseDate, "Release Date" }));
 				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.Label, "Label" }));
+				listMetadata.Items.Add(new ListViewItem(new string[] { r.metadata.Country, "Country" }));
 			}
 			else
 			{
@@ -293,6 +294,7 @@ namespace JDP
 					case 7: r.metadata.Barcode = e.Label; break;
 					case 8: r.metadata.ReleaseDate = e.Label; break;
 					case 9: r.metadata.Label = e.Label; break;
+					case 10: r.metadata.Country = e.Label; break;
 				}
 				item.Text = r.ToString();
 			}

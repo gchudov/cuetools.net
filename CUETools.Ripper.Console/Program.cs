@@ -217,8 +217,8 @@ namespace CUETools.ConsoleRipper
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", audioSource.RipperVersion);
 				if (release != null && release.GetEvents().Count > 0)
 					cueWriter.WriteLine("REM DATE {0}", release.GetEvents()[0].Date.Substring(0, 4));
-				if (audioSource.TOC.Catalog != null)
-					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Catalog);
+				if (audioSource.TOC.Barcode != null)
+					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Barcode);
 				if (release != null)
 				{
 					cueWriter.WriteLine("PERFORMER \"{0}\"", release.GetArtist());

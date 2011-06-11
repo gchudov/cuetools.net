@@ -39,6 +39,7 @@ using System.Diagnostics;
 using CUETools.Processor;
 using CUETools.CDImage;
 using CUETools.Compression;
+using CUETools.AccurateRip;
 
 namespace JDP {
 	public partial class frmCUETools : Form {
@@ -432,7 +433,8 @@ namespace JDP {
 		Image motdImage = null;
 		string profilePath;
 		string [] OutputPathUseTemplates = {
-			"%music%\\Converted\\%artist%\\[%year% - ]%album%[ - %edition%]$ifgreater($max(%discnumber%,%totaldiscs%),1, - cd %discnumber%,)[' ('%unique%')']\\%artist% - %album%[ - %edition%].cue",
+			"%music%\\Converted\\%artist%\\[%year% - ]%album%[ '('disc %discnumberandname%')'][' ('%releasedateandlabel%')'][' ('%unique%')']\\%artist% - %album%.cue",
+			"%music%\\Converted\\%artist%\\[%year% - ]%album%[' ('%releasedateandlabel%')'][' ('%unique%')']\\%artist% - %album%[ '('disc %discnumberandname%')'].cue",
 			"[%directoryname%\\]%filename%-new[%unique%].cue",
 			"[%directoryname%\\]new[%unique%]\\%filename%.cue"
 		};
@@ -873,7 +875,7 @@ namespace JDP {
 						if (useLocalDB)
 							cueSheet.UseLocalDB(_localDB);
 						if (useCUEToolsDB)
-							cueSheet.UseCUEToolsDB(false, "CUETools " + CUESheet.CUEToolsVersion, null, false, true);
+							cueSheet.UseCUEToolsDB("CUETools " + CUESheet.CUEToolsVersion, null, false, true);
 						if (useAR)
 							cueSheet.UseAccurateRip();
 
@@ -973,37 +975,28 @@ namespace JDP {
 						if (outputExists.Count == 0)
 						{
 							cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
-							if (script == null)
+							if (script == null || (script.builtin && script.name == "default"))
+							{
 								status = cueSheet.Go();
+								if (cueSheet.Config.advanced.CTDBSubmit
+									&& useAR 
+									&& useCUEToolsDB 
+									&& cueSheet.ArVerify.ARStatus == null
+									&& cueSheet.ArVerify.WorstConfidence() >= 2
+									&& (cueSheet.AccurateRipId == null || AccurateRipVerify.CalculateAccurateRipId(cueSheet.TOC) == cueSheet.AccurateRipId)
+									&& cueSheet.CTDB.MatchingEntry == null
+									&& (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.Success
+									 || (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.ProtocolError && cueSheet.CTDB.QueryResponseStatus == HttpStatusCode.NotFound)
+									 )
+									)
+								{
+									cueSheet.CTDB.Submit((int)cueSheet.ArVerify.WorstConfidence(), 100, cueSheet.Metadata.Artist, cueSheet.Metadata.Title, cueSheet.Metadata.Barcode);
+									if (cueSheet.CTDB.SubStatus != null)
+										status += ", submit: " + cueSheet.CTDB.SubStatus;
+								}
+							}
 							else
 								status = cueSheet.ExecuteScript(script);
-
-							//if (useCUEToolsDB)
-							//{
-							//    if (cueSheet.CTDB.AccResult == HttpStatusCode.NotFound && 
-							//        cueSheet.ArVerify.ARStatus == null &&
-							//        cueSheet.ArVerify.WorstConfidence() > 2
-							//        )
-							//    {
-							//        this.Invoke((MethodInvoker)delegate()
-							//        {
-							//            dlgRes = MessageBox.Show(this, "Disc is not present in CUETools Database, " +
-							//                "do you want to submit it?", "Overwrite?", (_batchPaths.Count == 0) ?
-							//                MessageBoxButtons.YesNo : MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-							//            if (dlgRes == DialogResult.Cancel)
-							//                SetupControls(false);
-							//        });
-							//        if (dlgRes == DialogResult.Cancel)
-							//        {
-							//            cueSheet.Close();
-							//            return;
-							//        }
-							//        if (dlgRes == DialogResult.Yes)
-							//        {
-							//            cueSheet.CTDB.Submit((int)cueSheet.ArVerify.WorstConfidence(), (int)cueSheet.ArVerify.WorstTotal());
-							//        }
-							//    }
-							//}
 
 							if (_batchPaths.Count > 0)
 							{

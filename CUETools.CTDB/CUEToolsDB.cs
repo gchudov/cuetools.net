@@ -18,7 +18,8 @@ namespace CUETools.CTDB
 {
 	public class CUEToolsDB
 	{
-		const string urlbase = "http://db.cuetools.net";
+		const string defaultServer = "http://db.cuetools.net";
+		string urlbase;
 		string userAgent;
 		string driveName;
 
@@ -56,10 +57,11 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public void ContactDB(string userAgent, string driveName, bool musicbrainz, bool fuzzy)
+		public void ContactDB(string server, string userAgent, string driveName, bool musicbrainz, bool fuzzy)
 		{
 			this.driveName = driveName;
 			this.userAgent = userAgent + " (" + Environment.OSVersion.VersionString + ")" + (driveName != null ? " (" + driveName + ")" : "");
+			this.urlbase = "http://" + (server ?? defaultServer);
 			this.total = 0;
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase
@@ -220,23 +222,20 @@ namespace CUETools.CTDB
 			return uuidInfo;
 		}
 
-		public string Submit(int confidence, int quality, string artist, string title)
+		public string Submit(int confidence, int quality, string artist, string title, string barcode)
 		{
 			if (this.QueryExceptionStatus != WebExceptionStatus.Success &&
 				(this.QueryExceptionStatus != WebExceptionStatus.ProtocolError || this.QueryResponseStatus != HttpStatusCode.NotFound))
 				return this.DBStatus;
-			DBEntry confirm = null;
-			foreach (DBEntry entry in this.Entries)
-				if (entry.toc.TrackOffsets == this.toc.TrackOffsets && !entry.hasErrors)
-					confirm = entry;
+			DBEntry confirm = this.MatchingEntry;
 			if (confirm != null) confidence = 1;
-			DoSubmit(confidence, quality, artist, title, false, confirm);
+			DoSubmit(confidence, quality, artist, title, barcode, false, confirm);
 			if (subResult == "parity needed")
-				DoSubmit(confidence, quality, artist, title, true, confirm);
+				DoSubmit(confidence, quality, artist, title, barcode, true, confirm);
 			return subResult;
 		}
 
-		protected string DoSubmit(int confidence, int quality, string artist, string title, bool upload, DBEntry confirm)
+		protected string DoSubmit(int confidence, int quality, string artist, string title, string barcode, bool upload, DBEntry confirm)
 		{
 			UploadFile[] files;
 			if (upload)
@@ -282,8 +281,8 @@ namespace CUETools.CTDB
 			form.Add("confidence", confidence.ToString());
 			form.Add("userid", GetUUID());
 			form.Add("quality", quality.ToString());
-			if (driveName != null)
-				form.Add("drivename", driveName);
+			if (driveName != null && driveName != "") form.Add("drivename", driveName);
+			if (barcode != null && barcode != "") form.Add("barcode", barcode);
 			if (artist != null && artist != "") form.Add("artist", artist);
 			if (title != null && title != "") form.Add("title", title);
 
@@ -419,7 +418,20 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public void Init(bool encode, AccurateRipVerify ar)
+		public DBEntry MatchingEntry
+		{
+			get
+			{
+				if (this.QueryExceptionStatus != WebExceptionStatus.Success)
+					return null;
+				foreach (DBEntry entry in this.Entries)
+					if (entry.toc.ToString() == this.toc.ToString() && !entry.hasErrors)
+						return entry;
+				return null;
+			}
+		}
+
+		public void Init(AccurateRipVerify ar)
 		{
 			int npar = 8;
 			foreach (DBEntry entry in entries)
@@ -681,30 +693,11 @@ namespace CUETools.CTDB
 			Write(temp);
 		}
 
-		public void Write(long value)
-		{
-			byte[] temp = new byte[8];
-			temp[7] = (byte)((value) & 0xff);
-			temp[6] = (byte)((value >> 8) & 0xff);
-			temp[5] = (byte)((value >> 16) & 0xff);
-			temp[4] = (byte)((value >> 24) & 0xff);
-			temp[3] = (byte)((value >> 32) & 0xff);
-			temp[2] = (byte)((value >> 40) & 0xff);
-			temp[1] = (byte)((value >> 48) & 0xff);
-			temp[0] = (byte)((value >> 56) & 0xff);
-			Write(temp);
-		}
-
 		public void Write(string value)
 		{
 			Write(Encoding.UTF8.GetBytes(value));
 		}
-
-		public void Write(DateTime value)
-		{
-			Write(value.ToFileTimeUtc());
-		}
-		
+	
 		public void Write(byte[] value)
 		{
 			stream.Write(value, 0, value.Length);

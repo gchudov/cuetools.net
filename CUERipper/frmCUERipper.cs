@@ -53,8 +53,8 @@ namespace CUERipper
 		}
 
 		string[] OutputPathUseTemplates = {
-			"%music%\\%artist%\\[%year% - ]%album%\\%artist% - %album%.cue",
-			"%music%\\%artist%\\[%year% - ]%album%[ - %edition%]$ifgreater($max(%discnumber%,%totaldiscs%),1, - cd %discnumber%,)[' ('%unique%')']\\%artist% - %album%[ - %edition%].cue"
+			"%music%\\%artist%\\[%year% - ]%album%\\%artist% - %album%[ '('disc %discnumberandname%')'].cue",
+			"%music%\\%artist%\\[%year% - ]%album%[ '('disc %discnumberandname%')'][' ('%releasedateandlabel%')'][' ('%unique%')']\\%artist% - %album%.cue"
 		};
 
 		//// Calculate the graphics path that representing the figure in the bitmap 
@@ -379,8 +379,9 @@ namespace CUERipper
 					(int)cueSheet.ArVerify.WorstConfidence() + 1,
 					audioSource.CorrectionQuality == 0 ? 0 :
 					100 - (int)(7 * Math.Log(audioSource.ErrorsCount + 1)), // ErrorsCount==1 ~= 95, ErrorsCount==max ~= 5;
-					cueSheet.Artist,
-					cueSheet.Title);
+					cueSheet.Metadata.Artist,
+					cueSheet.Metadata.Title,
+					cueSheet.TOC.Barcode);
 				bool canFix = false;
 				if (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.Success && audioSource.ErrorsCount != 0)
 				{
@@ -634,7 +635,7 @@ namespace CUERipper
 			cueSheet.Action = CUEAction.Encode;
 
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-			cueSheet.UseCUEToolsDB(true, "CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, true, false);
+			cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, true, false);
 			cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
 			cueSheet.UseAccurateRip();

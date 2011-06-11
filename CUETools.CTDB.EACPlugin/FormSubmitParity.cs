@@ -49,12 +49,12 @@ namespace CUETools.CTDB.EACPlugin
 			this.ctdb.UploadHelper.onProgress += UploadProgress;
 			if (this.agent != null)
 			{
-				this.ctdb.ContactDB(this.agent, this.drivename, false, false);
+				this.ctdb.ContactDB(null, this.agent, this.drivename, false, false);
 			}
 			else
 			{
 				this.ctdb.DoVerify();
-				this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title);
+				this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title, null);
 			}
 			this.ctdb.UploadHelper.onProgress -= UploadProgress;
 		}

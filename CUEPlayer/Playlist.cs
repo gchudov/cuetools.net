@@ -116,9 +116,9 @@ namespace CUEPlayer
 						{
 							DataSet1.PlaylistRow row = dataSet.Playlist.AddPlaylistRow(
 								path,
-								cue.Artist,
-								cue.Tracks[iTrack].Title,
-								cue.Title,
+								cue.Metadata.Artist,
+								cue.Metadata.Tracks[iTrack].Title,
+								cue.Metadata.Title,
 								(int)cue.TOC[cue.TOC.FirstAudio + iTrack].Length / 75,
 								iTrack + 1);
 							listViewTracks.Items.Add(ToItem(row));

@@ -253,7 +253,7 @@ namespace CUETools.CDImage
 
 		public CDImageLayout(CDImageLayout src)
 		{
-			_catalog = src._catalog;
+			_barcode = src._barcode;
 			_audioTracks = src._audioTracks;
 			_firstAudio = src._firstAudio;
 			_tracks = new List<CDTrack>();
@@ -348,6 +348,14 @@ namespace CUETools.CDImage
 			}
 		}
 
+		public int LastAudio
+		{
+			get
+			{
+				return _audioTracks + _firstAudio;
+			}
+		}
+
 		public uint Leadout
 		{
 			get
@@ -364,15 +372,15 @@ namespace CUETools.CDImage
 			}
 		}
 
-		public string Catalog
+		public string Barcode
 		{
 			get
 			{
-				return _catalog;
+				return _barcode;
 			}
 			set
 			{
-				_catalog = value;
+				_barcode = value;
 			}
 		}
 
@@ -381,10 +389,9 @@ namespace CUETools.CDImage
 			get
 			{
 				StringBuilder mbSB = new StringBuilder();
-				mbSB.AppendFormat("{0} {1}", 1 + _firstAudio, AudioTracks + _firstAudio);
-				mbSB.AppendFormat(" {0}", _tracks[_firstAudio + (int)AudioTracks - 1].End + 1 + 150);
-				for (int iTrack = 0; iTrack < AudioTracks; iTrack++)
-					mbSB.AppendFormat(" {0}", _tracks[_firstAudio + iTrack].Start + 150);
+				mbSB.AppendFormat("{0} {1} {2}", 1, LastAudio, _tracks[LastAudio - 1].End + 1 + 150);
+				for (int iTrack = 0; iTrack < LastAudio; iTrack++)
+					mbSB.AppendFormat(" {0}", _tracks[iTrack].Start + 150);
 				return mbSB.ToString();
 			}
 		}
@@ -394,11 +401,11 @@ namespace CUETools.CDImage
 			get
 			{
 				StringBuilder mbSB = new StringBuilder();
-				mbSB.AppendFormat("{0:X2}{1:X2}", 1 + _firstAudio, AudioTracks + _firstAudio);
-				mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + (int)AudioTracks - 1].End + 1 + 150);
-				for (int iTrack = 0; iTrack < AudioTracks; iTrack++)
-					mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + iTrack].Start + 150);
-				mbSB.Append(new string('0', (99 - (int)AudioTracks) * 8));
+				mbSB.AppendFormat("{0:X2}{1:X2}", 1, LastAudio);
+				mbSB.AppendFormat("{0:X8}", _tracks[LastAudio - 1].End + 1 + 150);
+				for (int iTrack = 0; iTrack < LastAudio ; iTrack++)
+					mbSB.AppendFormat("{0:X8}", _tracks[iTrack].Start + 150);
+				mbSB.Append(new string('0', (99 - LastAudio) * 8));
 				byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(mbSB.ToString()));
 				return Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
 			}
@@ -520,7 +527,7 @@ namespace CUETools.CDImage
 			return TimeToString("{0:00}:{1:00}:{2:00}", t);
 		}
 
-		string _catalog;
+		string _barcode;
 		IList<CDTrack> _tracks;
 		int _audioTracks;
 		int _firstAudio;

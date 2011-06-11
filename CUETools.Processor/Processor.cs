@@ -275,6 +275,18 @@ namespace CUETools.Processor
 	}
 
 	public static class General {
+		public static string GetCUELine(List<CUELine> list, string command)
+		{
+			var line = General.FindCUELine(list, command);
+			return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
+		}
+
+		public static string GetCUELine(List<CUELine> list, string command, string command2)
+		{
+			var line = General.FindCUELine(list, command, command2);
+			return (line == null || line.Params.Count < 3) ? String.Empty : line.Params[2];
+		}
+
 		public static CUELine FindCUELine(List<CUELine> list, string command) {
 			command = command.ToUpper();
 			foreach (CUELine line in list) {
@@ -318,6 +330,12 @@ namespace CUETools.Processor
 
 		public static void SetCUELine(List<CUELine> list, string command, string value, bool quoted)
 		{
+			if (value == "")
+			{
+				General.DelCUELine(list, command);
+				return;
+			}
+
 			CUELine line = General.FindCUELine(list, command);
 			if (line == null)
 			{
@@ -339,6 +357,12 @@ namespace CUETools.Processor
 
 		public static void SetCUELine(List<CUELine> list, string command, string command2, string value, bool quoted)
 		{
+			if (value == "")
+			{
+				General.DelCUELine(list, command, command2);
+				return;
+			}
+
 			CUELine line = General.FindCUELine(list, command, command2);
 			if (line == null)
 			{
@@ -1120,6 +1144,10 @@ namespace CUETools.Processor
 		[DefaultValue(false)]
 		[DisplayName("Create TOC files")]
 		public bool CreateTOC { get; set; }
+		[DefaultValue(true), Category("CTDB"), DisplayName("Submit to CTDB")]
+		public bool CTDBSubmit { get; set; }
+		[DefaultValue("db.cuetools.net"), Category("CTDB"), DisplayName("CTDB Server")]
+		public string CTDBServer { get; set; }
 
 		public enum ProxyMode
 		{
@@ -1359,12 +1387,6 @@ processor._useCUEToolsDBFix = true;
 processor.Action = CUEAction.Encode;
 return processor.Go();
 "));
-			scripts.Add("submit", new CUEToolsScript("submit", true,
-				new CUEAction[] { CUEAction.Verify },
-@"
-string status = processor.Go();
-"));
-
 			defaultVerifyScript = "default";
 			defaultEncodeScript = "default";
 		}
@@ -1690,7 +1712,10 @@ string status = processor.Go();
 					conditions.Add((CUEAction)sr.LoadInt32(string.Format("CustomScript{0}Condition{1}", nScripts, nCondition), 0, null));
 				CUEToolsScript script;
 				if (!scripts.TryGetValue(name, out script))
-					scripts.Add(name, new CUEToolsScript(name, false, conditions, code));
+				{
+					if (name != "submit")
+						scripts.Add(name, new CUEToolsScript(name, false, conditions, code));
+				}
 				else
 				{
 					if (!script.builtin)
@@ -1885,7 +1910,6 @@ string status = processor.Go();
 		internal bool _useAccurateRip = false;
 		internal bool _useCUEToolsDB = false;
 		private bool _useCUEToolsDBFix = false;
-		private bool _useCUEToolsDBSibmit = false;
 		private bool _processed = false;
 		private uint? _minDataTrackLength;
 		private string _accurateRipId;
@@ -1921,6 +1945,7 @@ string status = processor.Go();
 		private int _padding = 8192;
 		private IWebProxy proxy;
 		private CUEMetadata taglibMetadata;
+		private CUEMetadata cueMetadata;
 		private bool _useLocalDB;
 		private CUEToolsLocalDB _localDB;
 
@@ -1965,6 +1990,7 @@ string status = processor.Go();
 				_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
 				_tracks.Add(new TrackInfo());
 			}
+			cueMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
 			_arVerify = new AccurateRipVerify(_toc, proxy);
 			_isCD = true;
 			SourceInfo cdInfo;
@@ -2032,58 +2058,18 @@ string status = processor.Go();
 			}
 		}
 
-		public void CopyMetadata(CUESheet metadata)
-		{
-			TotalDiscs = metadata.TotalDiscs;
-			DiscNumber = metadata.DiscNumber;
-			Year = metadata.Year;
-			Genre = metadata.Genre;
-			Artist = metadata.Artist;
-			Title = metadata.Title;
-			Catalog = metadata.Catalog;
-			for (int i = 0; i < Tracks.Count; i++)
-			{
-				Tracks[i].Title = metadata.Tracks[i].Title;
-				Tracks[i].Artist = metadata.Tracks[i].Artist;
-			}
-		}
-
 		public void CopyMetadata(CUEMetadata metadata)
 		{
-			TotalDiscs = metadata.TotalDiscs;
-			DiscNumber = metadata.DiscNumber;
-			Year = metadata.Year;
-			Genre = metadata.Genre;
-			Artist = metadata.Artist;
-			Title = metadata.Title;
-			Catalog = metadata.Barcode;
-			for (int i = 0; i < Tracks.Count; i++)
-			{
-				Tracks[i].Title = metadata.Tracks[i].Title;
-				Tracks[i].Artist = metadata.Tracks[i].Artist;
-				// ISRC?
-			}
+			if (this.cueMetadata == null)
+				this.cueMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
+			this.cueMetadata.CopyMetadata(metadata);
 		}
 
 		public CUEMetadata Metadata
 		{
 			get
 			{
-				CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
-				metadata.TotalDiscs = TotalDiscs;
-				metadata.DiscNumber = DiscNumber;
-				metadata.Year = Year;
-				metadata.Genre = Genre;
-				metadata.Artist = Artist;
-				metadata.Title = Title;
-				metadata.Barcode = Catalog;
-				for (int i = 0; i < Tracks.Count; i++)
-				{
-					metadata.Tracks[i].Title = Tracks[i].Title;
-					metadata.Tracks[i].Artist = Tracks[i].Artist;
-					// ISRC?
-				}
-				return metadata;
+				return cueMetadata;
 			}
 		}
 
@@ -2255,15 +2241,14 @@ string status = processor.Go();
 
 			if (useCUE)
 			{
-				CUEMetadata meta = Metadata;
-				if (dbmeta == null || !dbmeta.Contains(meta))
+				if (dbmeta == null || !dbmeta.Contains(cueMetadata))
 				{
-					if (meta.Contains(taglibMetadata) || !taglibMetadata.Contains(meta))
-						Releases.Add(new CUEMetadataEntry(meta, TOC, "cue"));
+					if (cueMetadata.Contains(taglibMetadata) || !taglibMetadata.Contains(cueMetadata))
+						Releases.Add(new CUEMetadataEntry(new CUEMetadata(cueMetadata), TOC, "cue"));
 				}
 				if (dbmeta == null || !dbmeta.Contains(taglibMetadata))
 				{
-					if (!meta.Contains(taglibMetadata))
+					if (!cueMetadata.Contains(taglibMetadata))
 						Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags"));
 				}
 			}
@@ -2280,7 +2265,7 @@ string status = processor.Go();
 			{
 				ShowProgress("Looking up album via CTDB...", 0.0, null, null);
 				var ctdb = new CUEToolsDB(TOC, proxy);
-				ctdb.ContactDB("CUETools " + CUEToolsVersion, null, true, true);
+				ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, true, true);
 				foreach (var meta in ctdb.Metadata)
 				{
 					CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
@@ -2718,12 +2703,15 @@ string status = processor.Go();
 
 			using (sr)
 			{
-				while ((lineStr = sr.ReadLine()) != null) {
+				while ((lineStr = sr.ReadLine()) != null)
+				{
 					CUELine line = new CUELine(lineStr);
-					if (line.Params.Count > 0) {
+					if (line.Params.Count > 0)
+					{
 						command = line.Params[0].ToUpper();
 
-						if (command == "FILE") {
+						if (command == "FILE")
+						{
 							fileType = line.Params[2].ToUpper();
 							fileIsBinary = (fileType == "BINARY") || (fileType == "MOTOROLA");
 							if (fileIsBinary)
@@ -2758,7 +2746,7 @@ string status = processor.Go();
 									if (_sourcePaths.Count > 0)
 										throw new Exception("Extra file in embedded CUE sheet: \"" + line.Params[1] + "\".");
 								}
-								
+
 								if (pathAudio == null)
 								{
 									throw new Exception("Unable to locate file \"" + line.Params[1] + "\".");
@@ -2799,7 +2787,7 @@ string status = processor.Go();
 								seenFirstFileIndex = false;
 							}
 						}
-						else if (command == "TRACK") 
+						else if (command == "TRACK")
 						{
 							isAudioTrack = line.Params[2].ToUpper() == "AUDIO";
 							trackNumber = int.Parse(line.Params[1]);
@@ -2815,7 +2803,7 @@ string status = processor.Go();
 								_tracks.Add(trackInfo);
 							}
 						}
-						else if (command == "INDEX") 
+						else if (command == "INDEX")
 						{
 							timeRelativeToFileStart = CDImageLayout.TimeFromString(line.Params[2]);
 							if (!seenFirstFileIndex)
@@ -2883,7 +2871,8 @@ string status = processor.Go();
 							_sources.Add(sourceInfo);
 							absoluteFileStartTime += pregapLength;
 						}
-						else if (command == "POSTGAP") {
+						else if (command == "POSTGAP")
+						{
 							throw new Exception("POSTGAP command isn't supported.");
 						}
 						//else if ((command == "REM") &&
@@ -2933,7 +2922,7 @@ string status = processor.Go();
 									string s = line.Params[nParams];
 									for (int iParam = nParams + 1; iParam < line.Params.Count; iParam++)
 										s += " " + line.Params[iParam];
-									modline.Params.Add(s); 
+									modline.Params.Add(s);
 									modline.IsQuoted.Add(true);
 									line = modline;
 								}
@@ -2965,11 +2954,11 @@ string status = processor.Go();
 			indexes.Add(indexInfo);
 
 			// Calculate the length of each index
-			for (i = 0; i < indexes.Count - 1; i++) 
+			for (i = 0; i < indexes.Count - 1; i++)
 			{
 				if (indexes[i + 1].Time - indexes[i].Time < 0)
 					throw new Exception("Indexes must be in chronological order.");
-				if ((indexes[i+1].Track != indexes[i].Track || indexes[i+1].Index != indexes[i].Index + 1) &&
+				if ((indexes[i + 1].Track != indexes[i].Track || indexes[i + 1].Index != indexes[i].Index + 1) &&
 					(indexes[i + 1].Track != indexes[i].Track + 1 || indexes[i].Index < 1 || indexes[i + 1].Index > 1))
 					throw new Exception("Indexes must be in chronological order.");
 				if (indexes[i].Index == 1 && (i == 0 || indexes[i - 1].Index != 0))
@@ -2998,9 +2987,10 @@ string status = processor.Go();
 			_htoaFilename = _hasHTOAFilename ? Path.GetFileName(_sourcePaths[0]) : "01.00.wav";
 
 			_hasTrackFilenames = !_hasEmbeddedCUESheet && !_hasSingleFilename && (_sourcePaths.Count == TrackCount || _hasHTOAFilename);
-			for (i = 0; i < TrackCount; i++) {
-				_trackFilenames.Add( _hasTrackFilenames ? Path.GetFileName(
-					_sourcePaths[i + (_hasHTOAFilename ? 1 : 0)]) : String.Format("{0:00}.wav", i + 1) );
+			for (i = 0; i < TrackCount; i++)
+			{
+				_trackFilenames.Add(_hasTrackFilenames ? Path.GetFileName(
+					_sourcePaths[i + (_hasHTOAFilename ? 1 : 0)]) : String.Format("{0:00}.wav", i + 1));
 			}
 			if (!_hasEmbeddedCUESheet && _hasSingleFilename)
 			{
@@ -3024,16 +3014,30 @@ string status = processor.Go();
 					_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_TITLE", i + 1))) :
 					null) ?? "";
 			}
-			
+
+			cueMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);				
+			cueMetadata.Artist = General.GetCUELine(_attributes, "PERFORMER");
+			cueMetadata.Title = General.GetCUELine(_attributes, "TITLE");
+			cueMetadata.Barcode = General.GetCUELine(_attributes, "CATALOG");
+			cueMetadata.Year = General.GetCUELine(_attributes, "REM", "DATE");
+			cueMetadata.DiscNumber = General.GetCUELine(_attributes, "REM", "DISCNUMBER");
+			cueMetadata.TotalDiscs = General.GetCUELine(_attributes, "REM", "TOTALDISCS");
+			cueMetadata.Genre = General.GetCUELine(_attributes, "REM", "GENRE");
+			for (i = 0; i < Tracks.Count; i ++)
+			{
+				cueMetadata.Tracks[i].Artist = General.GetCUELine(Tracks[i].Attributes, "PERFORMER");
+				cueMetadata.Tracks[i].Title = General.GetCUELine(Tracks[i].Attributes, "TITLE");
+				cueMetadata.Tracks[i].ISRC = General.GetCUELine(Tracks[i].Attributes, "ISRC");
+			}
+			// Now, TOC.TOCID might change!!!
+
 			if (_config.fillUpCUE)
 			{
-				CUEMetadata meta = Metadata; // new CUEMetadata(Metadata);
-				meta.Merge(taglibMetadata, _config.overwriteCUEData);
-				CopyMetadata(meta);
+				cueMetadata.Merge(taglibMetadata, _config.overwriteCUEData);
 				for (i = 0; i < TrackCount; i++)
 				{
-					if (_tracks[i].Title == "" && _hasTrackFilenames)
-						_tracks[i].Title = Path.GetFileNameWithoutExtension(_trackFilenames[i]).TrimStart(" .-_0123456789".ToCharArray());
+					if (cueMetadata.Tracks[i].Title == "" && _hasTrackFilenames)
+						cueMetadata.Tracks[i].Title = Path.GetFileNameWithoutExtension(_trackFilenames[i]).TrimStart(" .-_0123456789".ToCharArray());
 				}
 			}
 
@@ -3133,8 +3137,8 @@ string status = processor.Go();
 			// use data track length from log
 			if (tocFromLog != null)
 			{
-				if (tocFromLog.AudioTracks == _toc.AudioTracks 
-					&& tocFromLog.TrackCount == tocFromLog.AudioTracks + 1 
+				if (tocFromLog.AudioTracks == _toc.AudioTracks
+					&& tocFromLog.TrackCount == tocFromLog.AudioTracks + 1
 					&& !tocFromLog[tocFromLog.TrackCount].IsAudio)
 				{
 					DataTrackLength = tocFromLog[tocFromLog.TrackCount].Length;
@@ -3159,12 +3163,12 @@ string status = processor.Go();
 							tocFromLog[iTrack].IsAudio = false;
 						}
 						tocFromLog.FirstAudio += dtracks;
-						tocFromLog.AudioTracks -= (uint) dtracks;
+						tocFromLog.AudioTracks -= (uint)dtracks;
 					}
 				}
 				if (tocFromLog.AudioTracks == _toc.AudioTracks
-					&& tocFromLog.TrackCount == _toc.TrackCount 
-					&& tocFromLog.FirstAudio == _toc.FirstAudio 
+					&& tocFromLog.TrackCount == _toc.TrackCount
+					&& tocFromLog.FirstAudio == _toc.FirstAudio
 					&& tocFromLog.TrackCount == tocFromLog.FirstAudio + tocFromLog.AudioTracks - 1)
 				{
 					//DataTrackLength = tocFromLog[1].Length;
@@ -3239,15 +3243,19 @@ string status = processor.Go();
 				_albumArt.ForEach(t => _padding += _albumArt[0].Data.Count);
 			if (_config.embedLog && _eacLog != null)
 				_padding += _eacLog.Length;
+
+			cueMetadata.Id = TOC.TOCID;
+			taglibMetadata.Id = TOC.TOCID;
+			// TODO: It should also be set when assigning a DataTrack!!!
 		}
 
-		public void UseCUEToolsDB(bool submit, string userAgent, string driveName, bool meta, bool fuzzy)
+		public void UseCUEToolsDB(string userAgent, string driveName, bool meta, bool fuzzy)
 		{
 			ShowProgress((string)"Contacting CUETools database...", 0, null, null);
 
 			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
 			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
-			_CUEToolsDB.ContactDB(userAgent, driveName, meta, fuzzy);
+			_CUEToolsDB.ContactDB(_config.advanced.CTDBServer, userAgent, driveName, meta, fuzzy);
 
 			if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0)
 				foreach (DBEntry e in _CUEToolsDB.Entries)
@@ -3259,7 +3267,6 @@ string status = processor.Go();
 
 			ShowProgress("", 0.0, null, null);
 			_useCUEToolsDB = true;
-			_useCUEToolsDBSibmit = submit;
 		}
 
 		public void UseAccurateRip()
@@ -3542,17 +3549,23 @@ string status = processor.Go();
 				catch { }
 			}
 			vars.Add("music", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
-			string artist = cueSheet == null ? "Artist" : cueSheet.Artist == "" ? "Unknown Artist" : cueSheet.Artist;
-			string album = cueSheet == null ? "Album" : cueSheet.Title == "" ? "Unknown Title" : cueSheet.Title;
+			string artist = cueSheet == null ? "Artist" : cueSheet.Metadata.Artist == "" ? "Unknown Artist" : cueSheet.Metadata.Artist;
+			string album = cueSheet == null ? "Album" : cueSheet.Metadata.Title == "" ? "Unknown Title" : cueSheet.Metadata.Title;
 			vars.Add("artist", General.EmptyStringToNull(_config.CleanseString(artist)));
 			vars.Add("album", General.EmptyStringToNull(_config.CleanseString(album)));
 
 			if (cueSheet != null)
 			{
-				vars.Add("year", General.EmptyStringToNull(cueSheet.Year));
-				vars.Add("catalog", General.EmptyStringToNull(cueSheet.Catalog));
-				vars.Add("discnumber", General.EmptyStringToNull(cueSheet.DiscNumber01));
-				vars.Add("totaldiscs", General.EmptyStringToNull(cueSheet.TotalDiscs));
+				vars.Add("year", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.Year)));
+				vars.Add("catalog", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.Barcode)));
+				vars.Add("label", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.Label)));
+				vars.Add("country", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.Country)));
+				vars.Add("releasedate", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.ReleaseDate)));
+				vars.Add("discname", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.DiscName)));
+				vars.Add("discnumber", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.DiscNumber01)));
+				vars.Add("totaldiscs", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.TotalDiscs)));
+				vars.Add("releasedateandlabel", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.ReleaseDateAndLabel)));
+				vars.Add("discnumberandname", General.EmptyStringToNull(_config.CleanseString(cueSheet.Metadata.DiscNumberAndName.Replace("/", " of "))));
 				NameValueCollection tags = cueSheet.Tags;
 				if (tags != null)
 					foreach (string tag in tags.AllKeys)
@@ -3598,13 +3611,13 @@ string status = processor.Go();
 
 			NameValueCollection vars = new NameValueCollection();
 			vars.Add("unique", null);
-			vars.Add("album artist", General.EmptyStringToNull(_config.CleanseString(Artist)));
-			vars.Add("artist", General.EmptyStringToNull(_config.CleanseString(Artist)));
-			vars.Add("album", General.EmptyStringToNull(_config.CleanseString(Title)));
-			vars.Add("year", General.EmptyStringToNull(_config.CleanseString(Year)));
-			vars.Add("catalog", General.EmptyStringToNull(_config.CleanseString(Catalog)));
-			vars.Add("discnumber", General.EmptyStringToNull(_config.CleanseString(DiscNumber01)));
-			vars.Add("totaldiscs", General.EmptyStringToNull(_config.CleanseString(TotalDiscs)));
+			vars.Add("album artist", General.EmptyStringToNull(_config.CleanseString(Metadata.Artist)));
+			vars.Add("artist", General.EmptyStringToNull(_config.CleanseString(Metadata.Artist)));
+			vars.Add("album", General.EmptyStringToNull(_config.CleanseString(Metadata.Title)));
+			vars.Add("year", General.EmptyStringToNull(_config.CleanseString(Metadata.Year)));
+			vars.Add("catalog", General.EmptyStringToNull(_config.CleanseString(Metadata.Barcode)));
+			vars.Add("discnumber", General.EmptyStringToNull(_config.CleanseString(Metadata.DiscNumber01)));
+			vars.Add("totaldiscs", General.EmptyStringToNull(_config.CleanseString(Metadata.TotalDiscs)));
 			vars.Add("filename", Path.GetFileNameWithoutExtension(outputPath));
 			vars.Add("tracknumber", null);
 			vars.Add("title", null);
@@ -3645,8 +3658,8 @@ string status = processor.Go();
 				else
 				{
 					string trackStr = htoa ? "01.00" : String.Format("{0:00}", iTrack + 1);
-					string artist = Tracks[htoa ? 0 : iTrack].Artist;
-					string title = htoa ? "(HTOA)" : Tracks[iTrack].Title;
+					string artist = Metadata.Tracks[htoa ? 0 : iTrack].Artist;
+					string title = htoa ? "(HTOA)" : Metadata.Tracks[iTrack].Title;
 
 					vars["tracknumber"] = trackStr;
 					vars["artist"] = General.EmptyStringToNull(_config.CleanseString(artist)) ?? vars["album artist"];
@@ -3849,7 +3862,7 @@ string status = processor.Go();
 
 			logWriter.WriteLine(eacHeader, 
 				DateTime.Now,
-				Artist, Title, 
+				Metadata.Artist, Metadata.Title, 
 				_ripper.EACName, 
 				_ripper.CorrectionQuality > 0 ? "Secure" : "Burst", 
 				_ripper.DriveOffset,
@@ -4089,6 +4102,20 @@ string status = processor.Go();
 
 			uint timeRelativeToFileStart = 0;
 
+			General.SetCUELine(_attributes, "PERFORMER", Metadata.Artist, true);
+			General.SetCUELine(_attributes, "TITLE", Metadata.Title, true);
+			General.SetCUELine(_attributes, "CATALOG", Metadata.Barcode, false);
+			General.SetCUELine(_attributes, "REM", "DATE", Metadata.Year, false);
+			General.SetCUELine(_attributes, "REM", "DISCNUMBER", Metadata.DiscNumber, false);
+			General.SetCUELine(_attributes, "REM", "TOTALDISCS", Metadata.TotalDiscs, false);
+			General.SetCUELine(_attributes, "REM", "GENRE", Metadata.Genre, true);
+			for (i = 0; i < Tracks.Count; i++)
+			{
+				General.SetCUELine(Tracks[i].Attributes, "PERFORMER", Metadata.Tracks[i].Artist, true);
+				General.SetCUELine(Tracks[i].Attributes, "TITLE", Metadata.Tracks[i].Title, true);
+				General.SetCUELine(Tracks[i].Attributes, "ISRC", Metadata.Tracks[i].ISRC, false);
+			}
+			
 			using (sw) 
 			{
 				if (_config.writeArTagsOnEncode)
@@ -4416,7 +4443,7 @@ string status = processor.Go();
 
 				bool fNeedAlbumArtist = false;
 				for (int iTrack = 1; iTrack < TrackCount; iTrack++)
-					if (_tracks[iTrack].Artist != _tracks[0].Artist)
+					if (Metadata.Tracks[iTrack].Artist != Metadata.Tracks[0].Artist)
 						fNeedAlbumArtist = true;
 
 				if (OutputStyle == CUEStyle.SingleFileWithCUE || OutputStyle == CUEStyle.SingleFile)
@@ -4434,19 +4461,19 @@ string status = processor.Go();
 							if (_config.writeBasicTagsFromCUEData)
 							{
 								uint temp;
-								if (fileInfo.Tag.Album == null && Title != "") 
-									fileInfo.Tag.Album = Title;
-								if (fNeedAlbumArtist && fileInfo.Tag.AlbumArtists.Length == 0 && Artist != "")
-									fileInfo.Tag.AlbumArtists = new string[] { Artist };
-								if (!fNeedAlbumArtist && fileInfo.Tag.Performers.Length == 0 && Artist != "")
-									fileInfo.Tag.Performers = new string[] { Artist };
-								if (fileInfo.Tag.Genres.Length == 0 && Genre != "") 
-									fileInfo.Tag.Genres = new string[] { Genre };
-								if (fileInfo.Tag.DiscCount == 0 && TotalDiscs != "" && uint.TryParse(TotalDiscs, out temp))
+								if (fileInfo.Tag.Album == null && Metadata.Title != "")
+									fileInfo.Tag.Album = Metadata.Title;
+								if (fNeedAlbumArtist && fileInfo.Tag.AlbumArtists.Length == 0 && Metadata.Artist != "")
+									fileInfo.Tag.AlbumArtists = new string[] { Metadata.Artist };
+								if (!fNeedAlbumArtist && fileInfo.Tag.Performers.Length == 0 && Metadata.Artist != "")
+									fileInfo.Tag.Performers = new string[] { Metadata.Artist };
+								if (fileInfo.Tag.Genres.Length == 0 && Metadata.Genre != "")
+									fileInfo.Tag.Genres = new string[] { Metadata.Genre };
+								if (fileInfo.Tag.DiscCount == 0 && Metadata.TotalDiscs != "" && uint.TryParse(Metadata.TotalDiscs, out temp))
 									fileInfo.Tag.DiscCount = temp;
-								if (fileInfo.Tag.Disc == 0 && DiscNumber != "" && uint.TryParse(DiscNumber, out temp)) 
+								if (fileInfo.Tag.Disc == 0 && Metadata.DiscNumber != "" && uint.TryParse(Metadata.DiscNumber, out temp)) 
 									fileInfo.Tag.Disc = temp;
-								if (fileInfo.Tag.Year == 0 && Year != "" && uint.TryParse(Year, out temp))
+								if (fileInfo.Tag.Year == 0 && Metadata.Year != "" && uint.TryParse(Metadata.Year, out temp))
 									fileInfo.Tag.Year = temp;
 							}
 							
@@ -4497,23 +4524,23 @@ string status = processor.Go();
 									uint temp;
 									fileInfo.Tag.TrackCount = (uint)TrackCount;
 									fileInfo.Tag.Track = (uint)iTrack + 1;
-									if (fileInfo.Tag.Title == null && _tracks[iTrack].Title != "")
-										fileInfo.Tag.Title = _tracks[iTrack].Title;
-									if (fileInfo.Tag.Album == null && Title != "") 
-										fileInfo.Tag.Album = Title;
-									if (fileInfo.Tag.Performers.Length == 0 && _tracks[iTrack].Artist != "") 
-										fileInfo.Tag.Performers = new string[] { _tracks[iTrack].Artist };
-									if (fileInfo.Tag.Performers.Length == 0 && Artist != "") 
-										fileInfo.Tag.Performers = new string[] { Artist };
-									if (fNeedAlbumArtist && fileInfo.Tag.AlbumArtists.Length == 0 && Artist != "") 
-										fileInfo.Tag.AlbumArtists = new string[] { Artist };
-									if (fileInfo.Tag.Genres.Length == 0 && Genre != "") 
-										fileInfo.Tag.Genres = new string[] { Genre };
-									if (fileInfo.Tag.DiscCount == 0 && TotalDiscs != "" && uint.TryParse(TotalDiscs, out temp))
+									if (fileInfo.Tag.Title == null && Metadata.Tracks[iTrack].Title != "")
+										fileInfo.Tag.Title = Metadata.Tracks[iTrack].Title;
+									if (fileInfo.Tag.Album == null && Metadata.Title != "")
+										fileInfo.Tag.Album = Metadata.Title;
+									if (fileInfo.Tag.Performers.Length == 0 && Metadata.Tracks[iTrack].Artist != "")
+										fileInfo.Tag.Performers = new string[] { Metadata.Tracks[iTrack].Artist };
+									if (fileInfo.Tag.Performers.Length == 0 && Metadata.Artist != "")
+										fileInfo.Tag.Performers = new string[] { Metadata.Artist };
+									if (fNeedAlbumArtist && fileInfo.Tag.AlbumArtists.Length == 0 && Metadata.Artist != "")
+										fileInfo.Tag.AlbumArtists = new string[] { Metadata.Artist };
+									if (fileInfo.Tag.Genres.Length == 0 && Metadata.Genre != "")
+										fileInfo.Tag.Genres = new string[] { Metadata.Genre };
+									if (fileInfo.Tag.DiscCount == 0 && Metadata.TotalDiscs != "" && uint.TryParse(Metadata.TotalDiscs, out temp))
 										fileInfo.Tag.DiscCount = temp;
-									if (fileInfo.Tag.Disc == 0 && DiscNumber != "" && uint.TryParse(DiscNumber, out temp))
+									if (fileInfo.Tag.Disc == 0 && Metadata.DiscNumber != "" && uint.TryParse(Metadata.DiscNumber, out temp))
 										fileInfo.Tag.Disc = temp;
-									if (fileInfo.Tag.Year == 0 && Year != "" && uint.TryParse(Year, out temp))
+									if (fileInfo.Tag.Year == 0 && Metadata.Year != "" && uint.TryParse(Metadata.Year, out temp))
 										fileInfo.Tag.Year = temp;
 								}
 
@@ -4561,7 +4588,7 @@ string status = processor.Go();
 			if (!entry.InputPaths.Contains(path))
 				entry.InputPaths.Add(path);
 			if (entry.Metadata == null)
-				entry.Metadata = Metadata;
+				entry.Metadata = new CUEMetadata(cueMetadata);
 			_localDB.Dirty = true;
 			return entry;
 		}
@@ -4624,7 +4651,7 @@ string status = processor.Go();
 			{
 				foreach (string tpl in _config.advanced.CoverArtFiles)
 				{
-					string name = tpl.Replace("%album%", Title).Replace("%artist%", Artist);
+					string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
 					string imgPath = Path.Combine(_isArchive ? _archiveCUEpath : _inputDir, name);
 					bool exists = _isArchive ? _archiveContents.Contains(imgPath) : File.Exists(imgPath);
 					if (exists)
@@ -4645,7 +4672,7 @@ string status = processor.Go();
 					// TODO: archive case
 					foreach (string tpl in _config.advanced.CoverArtFiles)
 					{
-						string name = tpl.Replace("%album%", Title).Replace("%artist%", Artist);
+						string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
 						List<string> matching = allfiles.FindAll(s => Path.GetFileName(s) == name);
 						if (matching.Count == 1)
 						{
@@ -5048,7 +5075,7 @@ string status = processor.Go();
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
 			{
 				_CUEToolsDB.TOC = _toc; // This might be unnecessary, because they point to the same structure - if we modify _toc, _CUEToolsDB.TOC gets updated. Unless we set cueSheet.TOC...
-				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
+				_CUEToolsDB.Init(_arVerify);
 			}
 
 			ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0.0, null, null);
@@ -5128,7 +5155,7 @@ string status = processor.Go();
 								double trackPercent = (double)currentOffset / trackLength;
 								ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", iIndex > 0 ? iTrack + 1 : iTrack, (int)(100*trackPercent),
 									noOutput ? "Verifying" : "Writing"), (int)diskOffset, (int)diskLength,
-									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, _tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
+									_isCD ? string.Format("{0}: {1:00} - {2}", audioSource.Path, iTrack + 1, Metadata.Tracks[iTrack].Title) : audioSource.Path, discardOutput ? null : audioDest.Path);
 							}
 
 							copyCount = audioSource.Read(sampleBuffer, copyCount);
@@ -5213,7 +5240,7 @@ string status = processor.Go();
 			if (_useCUEToolsDB && !_useCUEToolsDBFix)
 			{
 				_CUEToolsDB.TOC = _toc;
-				_CUEToolsDB.Init(_useCUEToolsDBSibmit, _arVerify);
+				_CUEToolsDB.Init(_arVerify);
 			}
 
 			ShowProgress(String.Format("Verifying ({0:00}%)...", 0), 0.0, null, null);
@@ -5322,12 +5349,13 @@ string status = processor.Go();
 				return;
 
 			_toc = (CDImageLayout)_ripper.TOC.Clone();
-			if (_toc.Catalog != null)
-				Catalog = _toc.Catalog;
+			if (_toc.Barcode != null)
+				Metadata.Barcode = _toc.Barcode;
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
 				if (_toc[_toc.FirstAudio + iTrack].ISRC != null)
-					General.SetCUELine(_tracks[iTrack].Attributes, "ISRC", _toc[_toc.FirstAudio + iTrack].ISRC, false);
+					Metadata.Tracks[iTrack].ISRC = _toc[_toc.FirstAudio + iTrack].ISRC;
+				  //General.SetCUELine(_tracks[iTrack].Attributes, "ISRC", _toc[_toc.FirstAudio + iTrack].ISRC, false);
 				if (_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis)
 					_tracks[iTrack].Attributes.Add(new CUELine("FLAGS" + (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : "")));
 			}
@@ -5761,6 +5789,14 @@ string status = processor.Go();
 			}
 		}
 
+		public string AccurateRipId
+		{
+			get
+			{
+				return _accurateRipId;
+			}
+		}
+
 		public string ArLogFileName
 		{
 			get
@@ -5791,117 +5827,6 @@ string status = processor.Go();
 			{
 				TagLib.File fileInfo = _tracks[0]._fileInfo ?? _fileInfo;
 				return fileInfo != null ? Tagging.Analyze(fileInfo) : null;
-			}
-		}
-
-		public string Artist {
-			get {
-				CUELine line = General.FindCUELine(_attributes, "PERFORMER");
-				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
-			}
-			set {
-				General.SetCUELine(_attributes, "PERFORMER", value, true);
-			}
-		}
-
-		public string Year
-		{
-			get
-			{
-				CUELine line = General.FindCUELine(_attributes, "REM", "DATE");
-				return ( line == null || line.Params.Count < 3 ) ? String.Empty : line.Params[2];
-			}
-			set
-			{
-				if (value != "")
-					General.SetCUELine(_attributes, "REM", "DATE", value, false);
-				else
-					General.DelCUELine(_attributes, "REM", "DATE");
-			}
-		}
-
-		public string DiscNumber01
-		{
-			get
-			{
-				uint td = 0, dn = 0;
-				if (uint.TryParse(TotalDiscs, out td) && uint.TryParse(DiscNumber, out dn) && td > 9 && dn > 0)
-					return string.Format("{0:00}", dn);
-				return DiscNumber;
-			}
-		}
-
-		public string DiscNumber
-		{
-			get
-			{
-				CUELine line = General.FindCUELine(_attributes, "REM", "DISCNUMBER");
-				return (line == null || line.Params.Count < 3) ? String.Empty : line.Params[2];
-			}
-			set
-			{
-				if (value != "")
-					General.SetCUELine(_attributes, "REM", "DISCNUMBER", value, false);
-				else
-					General.DelCUELine(_attributes, "REM", "DISCNUMBER");
-			}
-		}
-
-		public string TotalDiscs
-		{
-			get
-			{
-				CUELine line = General.FindCUELine(_attributes, "REM", "TOTALDISCS");
-				return (line == null || line.Params.Count < 3) ? String.Empty : line.Params[2];
-			}
-			set
-			{
-				if (value != "")
-					General.SetCUELine(_attributes, "REM", "TOTALDISCS", value, false);
-				else
-					General.DelCUELine(_attributes, "REM", "TOTALDISCS");
-			}
-		}
-
-		public string Genre
-		{
-			get
-			{
-				CUELine line = General.FindCUELine(_attributes, "REM", "GENRE");
-				return (line == null  || line.Params.Count < 3) ? String.Empty : line.Params[2];
-			}
-			set
-			{
-				if (value != "")
-					General.SetCUELine(_attributes, "REM", "GENRE", value, true);
-				else
-					General.DelCUELine(_attributes, "REM", "GENRE");
-			}
-		}
-
-		public string Catalog
-		{
-			get
-			{
-				CUELine line = General.FindCUELine(_attributes, "CATALOG");
-				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
-			}
-			set
-			{
-				if (value != "")
-					General.SetCUELine(_attributes, "CATALOG", value, false);
-				else
-					General.DelCUELine(_attributes, "CATALOG");
-			}
-		}
-
-		public string Title {
-			get {
-				CUELine line = General.FindCUELine(_attributes, "TITLE");
-				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
-			}
-			set {
-				General.SetCUELine(_attributes, "TITLE", value, true);
 			}
 		}
 
@@ -6338,38 +6263,9 @@ string status = processor.Go();
 					return Go();
 				case "only if found":
 					return ArVerify.ExceptionStatus != WebExceptionStatus.Success ? WriteReport() : Go();
-				case "submit":
-					{
-						if (!_useCUEToolsDB)
-							return "CUETools DB not enabled";
-						if (ArVerify.ARStatus != null)
-							return "AccurateRip: " + ArVerify.ARStatus + ", will not submit";
-						if (ArVerify.WorstTotal() < 2)
-							return "AccurateRip: confidence too low, will not submit";
-						//if (CTDB.AccResult == HttpStatusCode.OK)
-							//return "CUEToolsDB: disc already present in database";
-						if (CTDB.QueryExceptionStatus != WebExceptionStatus.Success &&
-							(CTDB.QueryExceptionStatus != WebExceptionStatus.ProtocolError || CTDB.QueryResponseStatus != HttpStatusCode.NotFound))
-							return "CUEToolsDB: " + CTDB.DBStatus;
-						if (_accurateRipId != null && AccurateRipVerify.CalculateAccurateRipId(_toc) != _accurateRipId)
-							return string.Format("CUEToolsDB: Using preserved id {0}, actual id is {1}", _accurateRipId, AccurateRipVerify.CalculateAccurateRipId(_toc));
-						_useCUEToolsDBSibmit = true;
-						string status = Go();
-						if (CTDB.QueryExceptionStatus == WebExceptionStatus.Success)
-							foreach (DBEntry entry in CTDB.Entries)
-								if (entry.toc.TrackOffsets == _toc.TrackOffsets && !entry.hasErrors)
-									return "CUEToolsDB: " + CTDB.Status;
-						if (ArVerify.WorstConfidence() < 1)
-						{
-							CTDB.SubStatus = "will not submit";
-							return GenerateAccurateRipStatus();
-						}
-						CTDB.Submit((int)ArVerify.WorstConfidence(), 100, Artist, Title);
-						return GenerateAccurateRipStatus();
-					}
 				case "repair":
 					{
-						UseCUEToolsDB(false, "CUETools " + CUEToolsVersion, null, false, true);
+						UseCUEToolsDB("CUETools " + CUEToolsVersion, null, false, true);
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;
@@ -6690,28 +6586,6 @@ string status = processor.Go();
 		public List<CUELine> Attributes {
 			get {
 				return _attributes;
-			}
-		}
-
-		public string Artist {
-			get {
-				CUELine line = General.FindCUELine(_attributes, "PERFORMER");
-				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
-			}
-			set
-			{
-				General.SetCUELine(_attributes, "PERFORMER", value, true);
-			}
-		}
-
-		public string Title {
-			get {
-				CUELine line = General.FindCUELine(_attributes, "TITLE");
-				return (line == null || line.Params.Count < 2) ? String.Empty : line.Params[1];
-			}
-			set
-			{
-				General.SetCUELine(_attributes, "TITLE", value, true);
 			}
 		}
 	}

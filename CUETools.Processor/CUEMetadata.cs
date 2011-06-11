@@ -23,6 +23,7 @@ namespace CUETools.Processor
 			Barcode = "";
 			ReleaseDate = "";
 			Label = "";
+			Country = "";
 			Tracks = new List<CUETrackMetadata>();
 		}
 
@@ -74,6 +75,8 @@ namespace CUETools.Processor
 		public string ReleaseDate { get; set; }
 		[DefaultValue("")]
 		public string Label { get; set; }
+		[DefaultValue("")]
+		public string Country { get; set; }
 		public List<CUETrackMetadata> Tracks { get; set; }
 
 		[XmlIgnore]
@@ -94,6 +97,28 @@ namespace CUETools.Processor
 			get
 			{
 				return (TotalDiscs != "" && TotalDiscs != "1" ? DiscNumber01 + "/" + TotalDiscs : (DiscNumber != "" && DiscNumber != "1" ? DiscNumber01 : ""));
+			}
+		}
+
+		[XmlIgnore]
+		public string ReleaseDateAndLabel
+		{
+			get
+			{
+				return Label == "" && ReleaseDate == "" && Country == "" ? ""
+					: Country 
+					+ (Country != "" && Label != "" ? " - " : "") + Label 
+					+ (Label + Country != "" && ReleaseDate != "" ? " - " : "") + ReleaseDate;
+			}
+		}
+
+		[XmlIgnore]
+		public string DiscNumberAndName
+		{
+			get
+			{
+				return DiscNumberAndTotal == "" ? ""
+					: DiscNumberAndTotal + (DiscName != "" ? " - " + DiscName : "");
 			}
 		}
 
@@ -124,6 +149,7 @@ namespace CUETools.Processor
 			if ((overwrite || Barcode == "") && metadata.Barcode != "") Barcode = metadata.Barcode;
 			if ((overwrite || ReleaseDate == "") && metadata.ReleaseDate != "") ReleaseDate = metadata.ReleaseDate;
 			if ((overwrite || Label == "") && metadata.Label != "") Label = metadata.Label;
+			if ((overwrite || Country == "") && metadata.Country != "") Country = metadata.Country;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
@@ -152,6 +178,7 @@ namespace CUETools.Processor
 				Barcode != metadata.Barcode ||
 				ReleaseDate != metadata.ReleaseDate ||
 				Label != metadata.Label ||
+				Country != metadata.Country ||
 				Tracks.Count != metadata.Tracks.Count
 				)
 				return false;
@@ -183,6 +210,7 @@ namespace CUETools.Processor
 			Title = metadata.Title;
 			Barcode = metadata.Barcode;
 			ReleaseDate = metadata.ReleaseDate;
+			Country = metadata.Country;
 			Label = metadata.Label;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
@@ -201,6 +229,7 @@ namespace CUETools.Processor
 				ReleaseDate = ev.Date ?? "";
 				Year = (ev.Date ?? "").Substring(0, 4);
 				Barcode = ev.Barcode ?? "";
+				Country = ev.Country;
 				Label = ((ev.Label == null ? null : ev.Label.GetName()) ?? "") + (ev.Label == null ? "" : " ") + (ev.CatalogNumber ?? "");
 			}
 			Artist = release.GetArtist();
@@ -238,7 +267,8 @@ namespace CUETools.Processor
 			this.DiscName = cdEntry.discname ?? "";
 			this.Barcode = cdEntry.barcode ?? "";
 			this.ReleaseDate = cdEntry.releasedate ?? "";
-			this.Label = cdEntry.country ?? "";
+			this.Country = cdEntry.country ?? "";
+			this.Label = "";
 			if (cdEntry.label != null)
 				foreach (var l in cdEntry.label)
 					this.Label = (this.Label == "" ? "" : this.Label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
@@ -362,8 +392,8 @@ namespace CUETools.Processor
 			return string.Format("{0}{1} - {2}{3}{4}", metadata.Year != "" ? metadata.Year + ": " : "", 
 				metadata.Artist == "" ? "Unknown Artist" : metadata.Artist,
 				metadata.Title == "" ? "Unknown Title" : metadata.Title,
-				metadata.DiscNumberAndTotal != "" ? " (disc " + metadata.DiscNumberAndTotal + (metadata.DiscName != "" ? ": " + metadata.DiscName : "") + ")" : "",
-				metadata.Label == "" && metadata.ReleaseDate == "" ? "" : " (" + metadata.Label + (metadata.Label != "" && metadata.ReleaseDate != "" ? ": " : "" ) + metadata.ReleaseDate + ")");
+				metadata.DiscNumberAndName == "" ? "" : " (disc " + metadata.DiscNumberAndName + ")",
+				metadata.ReleaseDateAndLabel == "" ? "" : " (" + metadata.ReleaseDateAndLabel + ")");
 		}
 	}
 }

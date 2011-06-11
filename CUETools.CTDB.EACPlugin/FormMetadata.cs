@@ -39,7 +39,7 @@ namespace CUETools.CTDB.EACPlugin
 
 		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
 		{
-			this.ctdb.ContactDB(this.agent, null, true, false);
+			this.ctdb.ContactDB(null, this.agent, null, true, false);
 		}
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
