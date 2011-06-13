@@ -29,7 +29,7 @@ using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
 using CUETools.CDImage;
 using CUETools.AccurateRip;
-using MusicBrainz;
+using CUETools.CTDB;
 
 namespace CUETools.ConsoleRipper
 {
@@ -178,24 +178,19 @@ namespace CUETools.ConsoleRipper
 				AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 				string CDDBId = AccurateRipVerify.CalculateCDDBId(audioSource.TOC);
 				string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);
-				Release release;
-				ReleaseQueryParameters p = new ReleaseQueryParameters();
-				p.DiscId = audioSource.TOC.MusicBrainzId;
-				Query<Release> results = Release.Query(p);
-
+				var ctdb = new CUEToolsDB(audioSource.TOC, null);
+				ctdb.Init(arVerify);
+				ctdb.ContactDB(null, "CUETools.ConsoleRipper 2.1.2", audioSource.ARName, true, false);
 				arVerify.ContactAccurateRip(ArId);
-
-				try
+				CTDBResponseMeta meta = null;
+				foreach (var imeta in ctdb.Metadata)
 				{
-					release = results.First();
-				}
-				catch
-				{
-					release = null;
+					meta = imeta;
+					break;
 				}
 
 				//string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
-				string destFile = (release == null) ? "cdimage.wav" : release.GetArtist() + " - " + release.GetTitle() + ".wav";
+				string destFile = (meta == null) ? "cdimage.wav" : meta.artist + " - " + meta.album + ".wav";
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
@@ -204,7 +199,7 @@ namespace CUETools.ConsoleRipper
 				Console.WriteLine("Filename    : {0}", destFile);
 				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
-				Console.WriteLine("MusicBrainz : {0}", release == null ? "not found" : release.GetArtist() + " - " + release.GetTitle());
+				Console.WriteLine("MusicBrainz : {0}", meta == null ? "not found" : meta.artist + " - " + meta.album);
 
 				ProgressMeter meter = new ProgressMeter();
 				audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(meter.ReadProgress);
@@ -215,24 +210,24 @@ namespace CUETools.ConsoleRipper
 				cueWriter.WriteLine("REM DISCID {0}", CDDBId);
 				cueWriter.WriteLine("REM ACCURATERIPID {0}", ArId);
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", audioSource.RipperVersion);
-				if (release != null && release.GetEvents().Count > 0)
-					cueWriter.WriteLine("REM DATE {0}", release.GetEvents()[0].Date.Substring(0, 4));
+				if (meta != null && meta.year != "")
+					cueWriter.WriteLine("REM DATE {0}", meta.year);
 				if (audioSource.TOC.Barcode != null)
 					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Barcode);
-				if (release != null)
+				if (meta != null)
 				{
-					cueWriter.WriteLine("PERFORMER \"{0}\"", release.GetArtist());
-					cueWriter.WriteLine("TITLE \"{0}\"", release.GetTitle());
+					cueWriter.WriteLine("PERFORMER \"{0}\"", meta.artist);
+					cueWriter.WriteLine("TITLE \"{0}\"", meta.album);
 				}
 				cueWriter.WriteLine("FILE \"{0}\" WAVE", destFile);
 				for (int track = 1; track <= audioSource.TOC.TrackCount; track++)
 					if (audioSource.TOC[track].IsAudio)
 					{
 						cueWriter.WriteLine("  TRACK {0:00} AUDIO", audioSource.TOC[track].Number);
-						if (release != null && release.GetTracks().Count >= audioSource.TOC[track].Number)
+						if (meta != null && meta.track.Length >= audioSource.TOC[track].Number)
 						{
-							cueWriter.WriteLine("    TITLE \"{0}\"", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetTitle());
-							cueWriter.WriteLine("    PERFORMER \"{0}\"", release.GetTracks()[(int)audioSource.TOC[track].Number - 1].GetArtist());
+							cueWriter.WriteLine("    TITLE \"{0}\"", meta.track[(int)audioSource.TOC[track].Number - 1].name);
+							cueWriter.WriteLine("    PERFORMER \"{0}\"", meta.track[(int)audioSource.TOC[track].Number - 1].artist);
 						}
 						if (audioSource.TOC[track].ISRC != null)
 							cueWriter.WriteLine("    ISRC {0}", audioSource.TOC[track].ISRC);

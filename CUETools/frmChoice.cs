@@ -20,16 +20,15 @@ namespace JDP
 
 		public CUESheet CUE;
 
-		private bool freedb, musicbrainz, ctdb;
+		private bool freedb, ctdb;
 
-		public void LookupAlbumInfo(bool freedb, bool musicbrainz, bool ctdb, bool cache, bool cue)
+		public void LookupAlbumInfo(bool freedb, bool ctdb, bool cache, bool cue)
 		{
 			this.freedb = freedb;
-			this.musicbrainz = musicbrainz;
 			this.ctdb = ctdb;
-			var releases = CUE.LookupAlbumInfo(false, false, false, cache, cue);
+			var releases = CUE.LookupAlbumInfo(false, false, cache, cue);
 			this.Choices = releases;
-			if (freedb || musicbrainz || ctdb)
+			if (freedb || ctdb)
 				backgroundWorker1.RunWorkerAsync(null);
 		}
 
@@ -308,7 +307,7 @@ namespace JDP
 
 		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
 		{
-			e.Result = CUE.LookupAlbumInfo(this.freedb, this.musicbrainz, this.ctdb, false, false);
+			e.Result = CUE.LookupAlbumInfo(this.freedb, this.ctdb, false, false);
 		}
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

@@ -109,10 +109,6 @@
       <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
       <Name>CUETools.Codecs.LossyWAV</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
-      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
-      <Name>MusicBrainz</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

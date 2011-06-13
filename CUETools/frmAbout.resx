@@ -127,7 +127,7 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="linkLabel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>87, 10</value>
+    <value>87, 34</value>
   </data>
   <data name="linkLabel1.Size" type="System.Drawing.Size, System.Drawing">
     <value>265, 17</value>
@@ -151,23 +151,22 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;linkLabel1.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="textBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 41</value>
+    <value>12, 61</value>
   </data>
   <data name="textBox1.Multiline" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="textBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>415, 151</value>
+    <value>415, 131</value>
   </data>
   <data name="textBox1.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>AccurateRip, Monkey's Audio, Apple Lossless, RAR archives, tags
-and HDCD support (c)  Gregory S. Chudov, gchudov@gmail.com.
+    <value>
 Thanks go out to Christopher Key and Whitehobbit for insight on AccurateRip
 functionality, and to Mr Spoon for permission to use the database.
 
@@ -190,7 +189,7 @@ hdcd.dll (c) Christopher Key</value>
     <value>$this</value>
   </data>
   <data name="&gt;&gt;textBox1.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
     <value>180, 228</value>
@@ -214,7 +213,7 @@ hdcd.dll (c) Christopher Key</value>
     <value>$this</value>
   </data>
   <data name="&gt;&gt;button1.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="linkLabel2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -223,19 +222,19 @@ hdcd.dll (c) Christopher Key</value>
     <value>NoControl</value>
   </data>
   <data name="linkLabel2.LinkArea" type="System.Windows.Forms.LinkArea, System.Windows.Forms">
-    <value>36, 28</value>
+    <value>24, 23</value>
   </data>
   <data name="linkLabel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>46, 195</value>
+    <value>96, 195</value>
   </data>
   <data name="linkLabel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>346, 17</value>
+    <value>247, 17</value>
   </data>
   <data name="linkLabel2.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
   </data>
   <data name="linkLabel2.Text" xml:space="preserve">
-    <value>Updates and support can be found at http://www.hydrogenaudio.org.</value>
+    <value>Updates can be found at http://www.cuetools.net</value>
   </data>
   <data name="linkLabel2.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleCenter</value>
@@ -250,6 +249,42 @@ hdcd.dll (c) Christopher Key</value>
     <value>$this</value>
   </data>
   <data name="&gt;&gt;linkLabel2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="linkLabel3.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="linkLabel3.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="linkLabel3.LinkArea" type="System.Windows.Forms.LinkArea, System.Windows.Forms">
+    <value>0, 0</value>
+  </data>
+  <data name="linkLabel3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>58, 9</value>
+  </data>
+  <data name="linkLabel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>322, 17</value>
+  </data>
+  <data name="linkLabel3.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="linkLabel3.Text" xml:space="preserve">
+    <value>Copyright 2008-2011 Gregory S. Chudov, gchudov@gmail.com</value>
+  </data>
+  <data name="linkLabel3.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleCenter</value>
+  </data>
+  <data name="&gt;&gt;linkLabel3.Name" xml:space="preserve">
+    <value>linkLabel3</value>
+  </data>
+  <data name="&gt;&gt;linkLabel3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;linkLabel3.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;linkLabel3.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">

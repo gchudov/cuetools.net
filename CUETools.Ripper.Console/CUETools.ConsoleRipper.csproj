@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9253A314-1821-42BF-B02F-2BF986B1765D}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -54,6 +54,10 @@
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
+      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
+      <Name>CUETools.CTDB</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>
@@ -62,10 +66,6 @@
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj">
       <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
       <Name>CUETools.Ripper</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
-      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
-      <Name>MusicBrainz</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

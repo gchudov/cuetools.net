@@ -117,53 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="textBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>415, 194</value>
-  </data>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>
-Спасибо Christopher Key и Whitehobbit за их исследования принципов работы
-AccurateRip, и Mr Spoon за разрешение пользоваться базой данных.
-
-MAC_SDK (c) Matthew T. Ashland, mp4 decoder (c) David Hammerton, 
-unrar.dll (c) Alexander Roshal, Unrar.cs (c) Michael A. McCloskey
-hdcd.dll (c) Christopher Key
-
-Пользуясь возможностью, хотел бы попросить российских 
-граждан требовать от своего правительства немедленного
-освобождения политических заключенных и вывода войск 
-с оккупированных грузинских территорий. Григорий Чудов.</value>
+    <value>Предлагается отправить данные об этом диске в базу данных CUETools (CTDB). Это поможет другим пользователям исправить ошибки в их копиях данного диска.</value>
   </data>
-  <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 261</value>
+  <data name="buttonCancel.Text" xml:space="preserve">
+    <value>Отмена</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="linkLabel2.LinkArea" type="System.Windows.Forms.LinkArea, System.Windows.Forms">
-    <value>27, 23</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="checkBoxRemember.Size" type="System.Drawing.Size, System.Drawing">
+    <value>140, 17</value>
   </data>
-  <data name="linkLabel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>74, 226</value>
-  </data>
-  <data name="linkLabel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>291, 17</value>
-  </data>
-  <data name="linkLabel2.Text" xml:space="preserve">
-    <value>Официальный сайт программы http://www.cuetools.net</value>
-  </data>
-  <data name="linkLabel3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>65, 9</value>
-  </data>
-  <data name="linkLabel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>309, 17</value>
-  </data>
-  <data name="linkLabel3.Text" xml:space="preserve">
-    <value>Copyright 2008-2011 Григорий Чудов, gchudov@gmail.com</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>439, 296</value>
+  <data name="checkBoxRemember.Text" xml:space="preserve">
+    <value>Запомнить мой выбор</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUETools: О программе</value>
+    <value>Подтверждение на отправку данных в CTDB</value>
   </data>
 </root>

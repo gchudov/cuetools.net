@@ -220,29 +220,6 @@ namespace CUETools.Processor
 			}
 		}
 
-		public void FillFromMusicBrainz(MusicBrainz.Release release, int firstAudio)
-		{
-			var evs = release.GetEvents();
-			if (evs.Count > 0)
-			{
-				var ev = evs[0];
-				ReleaseDate = ev.Date ?? "";
-				Year = (ev.Date ?? "").Substring(0, 4);
-				Barcode = ev.Barcode ?? "";
-				Country = ev.Country;
-				Label = ((ev.Label == null ? null : ev.Label.GetName()) ?? "") + (ev.Label == null ? "" : " ") + (ev.CatalogNumber ?? "");
-			}
-			Artist = release.GetArtist();
-			Title = release.GetTitle();
-			// How to get Genre: http://mm.musicbrainz.org/ws/1/release/6fe1e218-2aee-49ac-94f0-7910ba2151df.html?type=xml&inc=tags
-			for (int i = 0; i < Tracks.Count; i++)
-			{
-				MusicBrainz.Track track = release.GetTracks()[i + firstAudio]; // !!!!!! - _toc.FirstAudio?
-				Tracks[i].Title = track.GetTitle();
-				Tracks[i].Artist = track.GetArtist();
-			}
-		}
-		
 		public void FillFromFreedb(Freedb.CDEntry cdEntry, int firstAudio)
 		{
 			Year = cdEntry.Year;

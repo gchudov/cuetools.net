@@ -419,6 +419,8 @@ namespace JDP {
 		bool _usePregapForFirstTrackInSingleFile;
 		bool _reducePriority;
 		string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat, _defaultNoAudioFormat;
+		int _choiceWidth, _choiceHeight;
+		bool _choiceMaxed;
 		Thread _workThread;
 		CUESheet _workClass;
 		CUEToolsProfile _profile, _defaultProfile;
@@ -530,9 +532,19 @@ namespace JDP {
 			this.Invoke((MethodInvoker)delegate()
 			{
 				frmChoice dlg = new frmChoice();
+				if (_choiceWidth != 0 && _choiceHeight != 0)
+					dlg.Size = new Size(_choiceWidth, _choiceHeight);
+				if (_choiceMaxed)
+					dlg.WindowState = FormWindowState.Maximized;
 				dlg.Choices = e.choices;
 				if (dlg.ShowDialog(this) == DialogResult.OK)
 					e.selection = dlg.ChosenIndex;
+				_choiceMaxed = dlg.WindowState == FormWindowState.Maximized;
+				if (!_choiceMaxed)
+				{
+					_choiceHeight = dlg.Height;
+					_choiceWidth = dlg.Width;
+				}
 			});
 		}
 
@@ -903,9 +915,19 @@ namespace JDP {
 							if (_batchPaths.Count == 0 && action == CUEAction.Encode && (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked))
 							{
 								frmChoice dlg = new frmChoice();
+								if (_choiceWidth != 0 && _choiceHeight != 0)
+									dlg.Size = new Size(_choiceWidth, _choiceHeight);
+								if (_choiceMaxed)
+									dlg.WindowState = FormWindowState.Maximized;
 								dlg.CUE = cueSheet;
-								dlg.LookupAlbumInfo(checkBoxUseFreeDb.Checked, false, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata, true);
+								dlg.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata, true);
 								dlgRes = dlg.ShowDialog(this);
+								_choiceMaxed = dlg.WindowState == FormWindowState.Maximized;
+								if (!_choiceMaxed)
+								{
+									_choiceHeight = dlg.Height;
+									_choiceWidth = dlg.Width;
+								}
 								if (dlgRes == DialogResult.Cancel)
 								{
 									cueSheet.Close();
@@ -980,7 +1002,7 @@ namespace JDP {
 								status = cueSheet.Go();
 								if (cueSheet.Config.advanced.CTDBSubmit
 									&& useAR 
-									&& useCUEToolsDB 
+									&& useCUEToolsDB
 									&& cueSheet.ArVerify.ARStatus == null
 									&& cueSheet.ArVerify.WorstConfidence() >= 2
 									&& (cueSheet.AccurateRipId == null || AccurateRipVerify.CalculateAccurateRipId(cueSheet.TOC) == cueSheet.AccurateRipId)
@@ -990,9 +1012,33 @@ namespace JDP {
 									 )
 									)
 								{
-									cueSheet.CTDB.Submit((int)cueSheet.ArVerify.WorstConfidence(), 100, cueSheet.Metadata.Artist, cueSheet.Metadata.Title, cueSheet.Metadata.Barcode);
-									if (cueSheet.CTDB.SubStatus != null)
-										status += ", submit: " + cueSheet.CTDB.SubStatus;
+									DialogResult res = DialogResult.OK;
+									if (cueSheet.Config.advanced.CTDBAsk)
+									{
+										bool remember = true;
+										this.Invoke((MethodInvoker)delegate()
+										{
+											var confirm = new frmSubmit();
+											res = confirm.ShowDialog(this);
+											remember = confirm.checkBoxRemember.Checked;
+										});
+										if (remember)
+										{
+											cueSheet.Config.advanced.CTDBSubmit = res == DialogResult.OK;
+											cueSheet.Config.advanced.CTDBAsk = false;
+										}
+									}
+									if (res == DialogResult.OK)
+									{
+										cueSheet.CTDB.Submit(
+											(int)cueSheet.ArVerify.WorstConfidence(),
+											100,
+											cueSheet.Metadata.Artist,
+											cueSheet.Metadata.Title + (cueSheet.Metadata.Title != "" && cueSheet.Metadata.DiscNumberAndName != "" ? " (disc " + cueSheet.Metadata.DiscNumberAndName + ")" : ""),
+											cueSheet.Metadata.Barcode);
+										if (cueSheet.CTDB.SubStatus != null)
+											status += ", submit: " + cueSheet.CTDB.SubStatus;
+									}
 								}
 							}
 							else
@@ -1328,6 +1374,9 @@ namespace JDP {
 			profilePath = sr.ProfilePath;
 			_profile.Load(sr);
 			lastMOTD = sr.LoadDate("LastMOTD") ?? DateTime.FromBinary(0);
+			_choiceWidth = sr.LoadInt32("ChoiceWidth", null, null) ?? 0;
+			_choiceHeight = sr.LoadInt32("ChoiceHeight", null, null) ?? 0;
+			_choiceMaxed = sr.LoadBoolean("ChoiceMaxed") ?? false;
 			_defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
 			_defaultLossyFormat = sr.Load("DefaultLossyFormat") ?? "mp3";
 			_defaultHybridFormat = sr.Load("DefaultHybridFormat") ?? "lossy.flac";
@@ -1383,6 +1432,9 @@ namespace JDP {
 			SettingsWriter sw = new SettingsWriter("CUE Tools", "settings.txt", Application.ExecutablePath);
 			SaveScripts(SelectedAction);
 			sw.Save("LastMOTD", lastMOTD);
+			sw.Save("ChoiceWidth", _choiceWidth);
+			sw.Save("ChoiceHeight", _choiceHeight);
+			sw.Save("ChoiceMaxed", _choiceMaxed);
 			sw.Save("InputPath", InputPath);
 			sw.Save("DefaultLosslessFormat", _defaultLosslessFormat);
 			sw.Save("DefaultLossyFormat", _defaultLossyFormat);
@@ -2120,9 +2172,19 @@ namespace JDP {
 			}
 			CueSheet.UseLocalDB(_localDB);
 			frmChoice dlg = new frmChoice();
+			if (_choiceWidth != 0 && _choiceHeight != 0)
+				dlg.Size = new Size(_choiceWidth, _choiceHeight);
+			if (_choiceMaxed)
+				dlg.WindowState = FormWindowState.Maximized;
 			dlg.CUE = CueSheet;
-			dlg.LookupAlbumInfo(true, false, true, true, node is FileSystemTreeNodeLocalDBEntry);
+			dlg.LookupAlbumInfo(true, true, true, node is FileSystemTreeNodeLocalDBEntry);
 			var dlgRes = dlg.ShowDialog(this);
+			_choiceMaxed = dlg.WindowState == FormWindowState.Maximized;
+			if (!_choiceMaxed)
+			{
+				_choiceHeight = dlg.Height;
+				_choiceWidth = dlg.Width;
+			}
 			if (dlgRes == DialogResult.OK && dlg.ChosenRelease != null)
 			{
 				if (node is FileSystemTreeNodeLocalDBCollision)
@@ -2175,10 +2237,13 @@ namespace JDP {
 					else if (info.Node as FileSystemTreeNodeLocalDBEntry != null)
 					{
 						editMetadataToolStripMenuItem.Visible = true;
-						//removeItemFromDatabaseToolStripMenuItem.Visible = true;
 					}
-					else
-						return;
+
+					if (info.Node is FileSystemTreeNodeLocalDBGroup || info.Node is FileSystemTreeNodeLocalDBEntry)
+					{
+						removeItemFromDatabaseToolStripMenuItem.Visible = true;
+					}
+
 					fileSystemTreeView1.SelectedNode = info.Node;
 					contextMenuStripFileTree.Show(fileSystemTreeView1, e.Location);
 				}
@@ -2541,14 +2606,24 @@ namespace JDP {
 
 		private void removeItemFromDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var node = contextMenuStripFileTree.Tag as FileSystemTreeNodeLocalDBEntry;
-			if (node == null || node.Path == null)
+			var items = (contextMenuStripFileTree.Tag is FileSystemTreeNodeLocalDBGroup)
+				? new List<CUEToolsLocalDBEntry>((contextMenuStripFileTree.Tag as FileSystemTreeNodeLocalDBGroup).Group)
+				: (contextMenuStripFileTree.Tag is FileSystemTreeNodeLocalDBEntry)
+				? new List<CUEToolsLocalDBEntry>(new CUEToolsLocalDBEntry[] { (contextMenuStripFileTree.Tag as FileSystemTreeNodeLocalDBEntry).Item })
+				: null;
+			if (items == null)
 				return;
-
-			_localDB.Remove(node.Item);
-			_localDB.Dirty = true;
-			SaveDatabase();
-			node.Remove();
+			foreach (var node in fileSystemTreeView1.Nodes)
+			{
+				if (node is FileSystemTreeNodeLocalDB)
+				{
+					(node as FileSystemTreeNodeLocalDB).Purge(items);
+					//_localDB.RemoveAll(i => items.Contains(i));
+					_localDB.Dirty = true;
+					SaveDatabase();
+					return;
+				}
+			}
 		}
 	}
 
@@ -2620,6 +2695,20 @@ namespace JDP {
 		public FileSystemTreeNodeLocalDBFolder(CUEControls.IIconManager icon_mgr)
 			: base(icon_mgr, true)
 		{
+		}
+
+		public void Purge(List<CUEToolsLocalDBEntry> entries)
+		{
+			foreach (TreeNode child in this.Nodes)
+			{
+				if (child is FileSystemTreeNodeLocalDBFolder)
+					(child as FileSystemTreeNodeLocalDBFolder).Purge(entries);
+				if ((child is FileSystemTreeNodeLocalDBEntry && entries.Contains((child as FileSystemTreeNodeLocalDBEntry).Item))
+					|| (child is FileSystemTreeNodeLocalDBGroup && (child as FileSystemTreeNodeLocalDBGroup).Group.Count == 0))
+					child.Remove();
+			}
+
+			this.Group.RemoveAll(item => entries.Contains(item));
 		}
 	}
 

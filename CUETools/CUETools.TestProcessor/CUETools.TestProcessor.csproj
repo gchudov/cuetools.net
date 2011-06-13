@@ -89,10 +89,6 @@
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\MusicBrainz\MusicBrainz.csproj">
-      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
-      <Name>MusicBrainz</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
 </Project>

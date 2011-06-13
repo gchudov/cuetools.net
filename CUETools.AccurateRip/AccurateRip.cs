@@ -1315,18 +1315,23 @@ namespace CUETools.AccurateRip
 									break;
 								}
 						if (extra == "")
+						{
+							int oiMin = _arOffsetRange;
+							int oiMax = -_arOffsetRange;
 							for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 								if (CRCLOG(iTrack) == CRCWONULL(iTrack, oi))
 								{
-									inLog = " W/O NULL ";
-									if (extra == "")
-										extra = string.Format(": offset {0}", oi);
-									else
-									{
-										extra = string.Format(": with offset");
-										break;
-									}
+									oiMin = Math.Min(oiMin, oi);
+									oiMax = Math.Max(oiMax, oi);
 								}
+							if (oiMax >= oiMin)
+							{
+								inLog = " W/O NULL ";
+								extra = oiMax == oiMin
+									? string.Format(": offset {0}", oiMin)
+									: string.Format(": offset {0}..{1}", oiMin, oiMax);
+							}
+						}
 					}
 					sw.WriteLine(" {0}  {5,5:F1} [{1:X8}] [{2:X8}] {3,10}{4}",
 						iTrack == 0 ? "--" : string.Format("{0:00}", iTrack),

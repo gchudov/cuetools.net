@@ -47,7 +47,6 @@ using CUETools.AccurateRip;
 using CUETools.CTDB;
 using CUETools.Ripper;
 using CUETools.Compression;
-using MusicBrainz;
 using Freedb;
 using CSScriptLibrary;
 
@@ -1146,6 +1145,8 @@ namespace CUETools.Processor
 		public bool CreateTOC { get; set; }
 		[DefaultValue(true), Category("CTDB"), DisplayName("Submit to CTDB")]
 		public bool CTDBSubmit { get; set; }
+		[DefaultValue(true), Category("CTDB"), DisplayName("Ask before submitting")]
+		public bool CTDBAsk { get; set; }
 		[DefaultValue("db.cuetools.net"), Category("CTDB"), DisplayName("CTDB Server")]
 		public string CTDBServer { get; set; }
 
@@ -1238,7 +1239,7 @@ namespace CUETools.Processor
 			writeArTagsOnEncode = true;
 			writeArLogOnConvert = true;
 			writeArTagsOnVerify = false;
-			writeArLogOnVerify = true;
+			writeArLogOnVerify = false;
 
 			autoCorrectFilenames = true;
 			preserveHTOA = true;
@@ -1547,7 +1548,7 @@ return processor.Go();
 			writeArTagsOnEncode = sr.LoadBoolean("ArWriteCRC") ?? true;
 			writeArLogOnConvert = sr.LoadBoolean("ArWriteLog") ?? true;
 			writeArTagsOnVerify = sr.LoadBoolean("ArWriteTagsOnVerify") ?? false;
-			writeArLogOnVerify = sr.LoadBoolean("ArWriteLogOnVerify") ?? true;
+			writeArLogOnVerify = sr.LoadBoolean("ArWriteLogOnVerify") ?? false;
 
 			preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
 			autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
@@ -1860,7 +1861,7 @@ return processor.Go();
 		public CUEAction _action = CUEAction.Encode;
 		public CUEStyle _CUEStyle = CUEStyle.SingleFileWithCUE;
 		public int _writeOffset = 0;
-		public bool _useFreeDb = true, _useMusicBrainz = true, _useAccurateRip = true, _useCUEToolsDB = true, _useLocalDB = true, _skipRecent = true;
+		public bool _useFreeDb = true, _useMusicBrainz = true, _useAccurateRip = true, _useCUEToolsDB = true, _useLocalDB = true, _skipRecent = false;
 
 		public string _name;
 	}
@@ -2206,11 +2207,9 @@ return processor.Go();
 			_localDB.Save();
 		}
 
-		public List<object> LookupAlbumInfo(bool useFreedb, bool useMusicBrainz, bool useCTDB, bool useCache, bool useCUE)
+		public List<object> LookupAlbumInfo(bool useFreedb, bool useCTDB, bool useCache, bool useCUE)
 		{
 			List<object> Releases = new List<object>();
-			StringCollection DiscIds = new StringCollection();
-			DiscIds.Add(_toc.MusicBrainzId);
 
 			CUEMetadata dbmeta = null;
 
@@ -2304,8 +2303,6 @@ return processor.Go();
 							CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
 							metadata.FillFromFreedb(cdEntry, TOC.FirstAudio - 1);
 							CDImageLayout toc = TocFromCDEntry(cdEntry);
-							if (!DiscIds.Contains(toc.MusicBrainzId))
-								DiscIds.Add(toc.MusicBrainzId);
 							Releases.Add(new CUEMetadataEntry(metadata, toc, "freedb"));						
 						}
 					}
@@ -2324,8 +2321,6 @@ return processor.Go();
 									CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
 									metadata.FillFromFreedb(cdEntry, TOC.FirstAudio - 1);
 									CDImageLayout toc = TocFromCDEntry(cdEntry);
-									if (!DiscIds.Contains(toc.MusicBrainzId))
-										DiscIds.Add(toc.MusicBrainzId);
 									Releases.Add(new CUEMetadataEntry(metadata, toc,"freedb"));									
 								}
 							}
@@ -2338,58 +2333,6 @@ return processor.Go();
 				}
 			}
 
-			if (useMusicBrainz && !ctdbFound)
-			{
-				ShowProgress("Looking up album via MusicBrainz...", 0.0, null, null);
-
-				//if (_tocFromLog != null && !DiscIds.Contains(_tocFromLog.MusicBrainzId))
-				//	DiscIds.Add(_tocFromLog.MusicBrainzId);
-
-				MusicBrainzService.XmlRequest += new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-				MusicBrainzService.Proxy = proxy;
-				foreach (string DiscId in DiscIds)
-				{
-					ReleaseQueryParameters p = new ReleaseQueryParameters();
-					p.DiscId = DiscId;
-					Query<Release> results = Release.Query(p);
-					try
-					{
-						foreach (MusicBrainz.Release release in results)
-						{
-							release.GetEvents();
-							release.GetTracks();
-							try
-							{
-								foreach (MusicBrainz.Track track in release.GetTracks())
-									;
-							}
-							catch { }
-							try
-							{
-								foreach (MusicBrainz.Event ev in release.GetEvents())
-									;
-							}
-							catch { }
-							CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
-							metadata.FillFromMusicBrainz(release, TOC.FirstAudio - 1);
-							Releases.Add(new CUEMetadataEntry(metadata, TOC, "musicbrainz"));
-						}
-					}
-					catch (Exception ex)
-					{
-						System.Diagnostics.Trace.WriteLine(ex.Message);
-					}
-				}
-				MusicBrainzService.Proxy = null;
-				MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-				//if (release != null)
-				//{
-				//    FillFromMusicBrainz(release);
-				//    return;
-				//}
-				//if (cdEntry != null)
-				//    FillFromFreedb(cdEntry);
-			}
 			ShowProgress("", 0, null, null);
 			return Releases;
 		}
@@ -3399,18 +3342,6 @@ return processor.Go();
 		//    _progress.status = string.Format("Ripping @{0:00.00}x {1}", speed, e.Pass > 0 ? " (Retry " + e.Pass.ToString() + ")" : "");
 		//    this.CUEToolsProgress(this, _progress);
 		//}
-
-		private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
-		{
-			if (this.CUEToolsProgress == null)
-				return;
-			_progress.percent = (1.0 + _progress.percent) / 2;
-			_progress.offset = 0;
-			_progress.input = e.Uri.ToString();
-			_progress.output = null;
-			_progress.status = "Looking up album via MusicBrainz";
-			this.CUEToolsProgress(this, _progress);
-		}
 
 		private void unzip_ExtractionProgress(object sender, CompressionExtractionProgressEventArgs e)
 		{

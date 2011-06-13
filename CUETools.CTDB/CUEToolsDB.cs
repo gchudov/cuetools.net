@@ -18,7 +18,7 @@ namespace CUETools.CTDB
 {
 	public class CUEToolsDB
 	{
-		const string defaultServer = "http://db.cuetools.net";
+		const string defaultServer = "db.cuetools.net";
 		string urlbase;
 		string userAgent;
 		string driveName;
@@ -73,6 +73,7 @@ namespace CUETools.CTDB
 			req.UserAgent = this.userAgent;
 			req.Timeout = connectTimeout;
 			req.ReadWriteTimeout = socketTimeout;
+			req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
 			if (uploadHelper.onProgress != null)
 				uploadHelper.onProgress(this, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0));

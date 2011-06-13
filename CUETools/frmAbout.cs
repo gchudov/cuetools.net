@@ -14,5 +14,10 @@ namespace JDP
 		{
 			InitializeComponent();
 		}
+
+		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			System.Diagnostics.Process.Start((sender as LinkLabel).Text.Substring(e.Link.Start, e.Link.Length));
+		}
 	}
 }

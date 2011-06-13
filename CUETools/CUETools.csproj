@@ -78,6 +78,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="frmSubmit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSubmit.Designer.cs">
+      <DependentUpon>frmSubmit.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmAbout.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -195,6 +201,15 @@
       <SubType>Designer</SubType>
       <DependentUpon>frmSettings.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmSubmit.de-DE.resx">
+      <DependentUpon>frmSubmit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSubmit.resx">
+      <DependentUpon>frmSubmit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSubmit.ru-RU.resx">
+      <DependentUpon>frmSubmit.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -249,10 +264,6 @@
     <ProjectReference Include="..\Freedb\Freedb.csproj">
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MusicBrainz\MusicBrainz.csproj">
-      <Project>{74C2036B-2C9B-4FC8-B7BD-AE81A8DCE533}</Project>
-      <Name>MusicBrainz</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

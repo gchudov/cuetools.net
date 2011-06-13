@@ -33,6 +33,7 @@ namespace JDP
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.button1 = new System.Windows.Forms.Button();
 			this.linkLabel2 = new System.Windows.Forms.LinkLabel();
+			this.linkLabel3 = new System.Windows.Forms.LinkLabel();
 			this.SuspendLayout();
 			// 
 			// linkLabel1
@@ -41,6 +42,7 @@ namespace JDP
 			this.linkLabel1.Name = "linkLabel1";
 			this.linkLabel1.TabStop = true;
 			this.linkLabel1.UseCompatibleTextRendering = true;
+			this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
 			// 
 			// textBox1
 			// 
@@ -63,12 +65,20 @@ namespace JDP
 			this.linkLabel2.Name = "linkLabel2";
 			this.linkLabel2.TabStop = true;
 			this.linkLabel2.UseCompatibleTextRendering = true;
+			this.linkLabel2.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+			// 
+			// linkLabel3
+			// 
+			resources.ApplyResources(this.linkLabel3, "linkLabel3");
+			this.linkLabel3.Name = "linkLabel3";
+			this.linkLabel3.UseCompatibleTextRendering = true;
 			// 
 			// frmAbout
 			// 
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.button1;
+			this.Controls.Add(this.linkLabel3);
 			this.Controls.Add(this.linkLabel2);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.textBox1);
@@ -91,5 +101,6 @@ namespace JDP
 		private System.Windows.Forms.TextBox textBox1;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.LinkLabel linkLabel2;
+		private System.Windows.Forms.LinkLabel linkLabel3;
 	}
 }

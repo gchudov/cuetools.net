@@ -30,7 +30,9 @@ namespace AudioDataPlugIn
         bool m_test_mode = false;
         IMetadataLookup m_data = null;
 		CDImageLayout TOC;
+#if USEAR
 		string ArId;
+#endif
 		AccurateRipVerify ar;
 		AccurateRipVerify arTest;
 		CUEToolsDB ctdb;
@@ -113,11 +115,11 @@ namespace AudioDataPlugIn
 					m_data.GetTrackPreemphasis(i)));
 			}
 			TOC[1][0].Start = 0U;
-			ArId = AccurateRipVerify.CalculateAccurateRipId(TOC);
 			ar = new AccurateRipVerify(TOC, null);
 			arTest = new AccurateRipVerify(TOC, null);
 			ctdb = new CUEToolsDB(TOC, null);
 #if USEAR
+			ArId = AccurateRipVerify.CalculateAccurateRipId(TOC);
 			ar.ContactAccurateRip(ArId);
 #endif
 			var form = new FormSubmitParity(ctdb, "EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename);

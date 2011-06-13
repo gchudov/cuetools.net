@@ -38,16 +38,16 @@ namespace JDP
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
-			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			this.tableLayoutPanelMeta = new System.Windows.Forms.TableLayoutPanel();
+			this.listMetadata = new System.Windows.Forms.ListView();
+			this.columnHeaderMetadataValue = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderMetadataName = new System.Windows.Forms.ColumnHeader();
 			this.listTracks = new System.Windows.Forms.ListView();
 			this.Title = new System.Windows.Forms.ColumnHeader();
 			this.TrackNo = new System.Windows.Forms.ColumnHeader();
 			this.Start = new System.Windows.Forms.ColumnHeader();
 			this.Length = new System.Windows.Forms.ColumnHeader();
-			this.listMetadata = new System.Windows.Forms.ListView();
-			this.columnHeaderMetadataValue = new System.Windows.Forms.ColumnHeader();
-			this.columnHeaderMetadataName = new System.Windows.Forms.ColumnHeader();
+			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -123,17 +123,35 @@ namespace JDP
 			this.pictureBox1.TabStop = false;
 			this.pictureBox1.DoubleClick += new System.EventHandler(this.pictureBox1_DoubleClick);
 			// 
-			// backgroundWorker1
-			// 
-			this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
-			// 
 			// tableLayoutPanelMeta
 			// 
 			resources.ApplyResources(this.tableLayoutPanelMeta, "tableLayoutPanelMeta");
 			this.tableLayoutPanelMeta.Controls.Add(this.listMetadata, 0, 0);
 			this.tableLayoutPanelMeta.Controls.Add(this.listTracks, 1, 0);
 			this.tableLayoutPanelMeta.Name = "tableLayoutPanelMeta";
+			// 
+			// listMetadata
+			// 
+			this.listMetadata.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderMetadataValue,
+            this.columnHeaderMetadataName});
+			resources.ApplyResources(this.listMetadata, "listMetadata");
+			this.listMetadata.FullRowSelect = true;
+			this.listMetadata.GridLines = true;
+			this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+			this.listMetadata.LabelEdit = true;
+			this.listMetadata.Name = "listMetadata";
+			this.listMetadata.UseCompatibleStateImageBehavior = false;
+			this.listMetadata.View = System.Windows.Forms.View.Details;
+			this.listMetadata.DoubleClick += new System.EventHandler(this.listMetadata_DoubleClick);
+			// 
+			// columnHeaderMetadataValue
+			// 
+			resources.ApplyResources(this.columnHeaderMetadataValue, "columnHeaderMetadataValue");
+			// 
+			// columnHeaderMetadataName
+			// 
+			resources.ApplyResources(this.columnHeaderMetadataName, "columnHeaderMetadataName");
 			// 
 			// listTracks
 			// 
@@ -167,28 +185,10 @@ namespace JDP
 			// 
 			resources.ApplyResources(this.Length, "Length");
 			// 
-			// listMetadata
+			// backgroundWorker1
 			// 
-			this.listMetadata.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderMetadataValue,
-            this.columnHeaderMetadataName});
-			resources.ApplyResources(this.listMetadata, "listMetadata");
-			this.listMetadata.FullRowSelect = true;
-			this.listMetadata.GridLines = true;
-			this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-			this.listMetadata.LabelEdit = true;
-			this.listMetadata.Name = "listMetadata";
-			this.listMetadata.UseCompatibleStateImageBehavior = false;
-			this.listMetadata.View = System.Windows.Forms.View.Details;
-			this.listMetadata.DoubleClick += new System.EventHandler(this.listMetadata_DoubleClick);
-			// 
-			// columnHeaderMetadataValue
-			// 
-			resources.ApplyResources(this.columnHeaderMetadataValue, "columnHeaderMetadataValue");
-			// 
-			// columnHeaderMetadataName
-			// 
-			resources.ApplyResources(this.columnHeaderMetadataName, "columnHeaderMetadataName");
+			this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
 			// 
 			// frmChoice
 			// 
@@ -196,7 +196,6 @@ namespace JDP
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.tableLayoutPanel1);
-			this.MaximizeBox = false;
 			this.Name = "frmChoice";
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
