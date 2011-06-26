@@ -203,7 +203,7 @@
     <value>Fehlende CUE-Daten mit Tags füllen</value>
   </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
-    <value>Bette Logdatei als Tag ein</value>
+    <value>Bette Logdatei als "LOG"-Tag ein</value>
   </data>
   <data name="chkEmbedLog.ToolTip" xml:space="preserve">
     <value>Die Datei sollte im gleichen Verzeichnis sein und die Erweiterung .log haben.</value>
@@ -219,6 +219,12 @@
   </data>
   <data name="grpGeneral.Text" xml:space="preserve">
     <value>Allgemein</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
+    <value>Separater Thread zum Dekodieren</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.ToolTip" xml:space="preserve">
+    <value>Verbessert die Geschwindigkeit auf Mehrkernprozessoren</value>
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Verifizieren</value>
@@ -260,10 +266,10 @@
     <value>ausführlich</value>
   </data>
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
-    <value>mit Vertrauen &gt;=</value>
+    <value>wenn Zuversicht &gt;=</value>
   </data>
   <data name="labelFixWhenConfidence.Text" xml:space="preserve">
-    <value>mit Vertrauen &gt;=</value>
+    <value>wenn Zuversicht &gt;=</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Verifizieren, dann konvertieren</value>
@@ -314,7 +320,7 @@
     <value>Entferne Sonderzeichen außer:</value>
   </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
-    <value>Ersetze Leerzeichen mit Unterstrichen</value>
+    <value>Ersetze Leerzeichen durch Unterstriche</value>
   </data>
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value>Vorlage für den Namen der Audiodateien bei Datei-pro-Track-Images</value>

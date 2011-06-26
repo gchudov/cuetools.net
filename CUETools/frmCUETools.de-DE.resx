@@ -401,6 +401,9 @@
   <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
     <value>Versuche fehlende Dateien automatisch zu finden</value>
   </data>
+   <data name="toolStripDropDownButtonCorrectorMode.Text" xml:space="preserve">
+    <value>Dateien suchen</value>
+  </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
     <value>Andere Erweiterung</value>
   </data>
@@ -457,5 +460,14 @@
   </data>
   <data name="resetToOriginalLocationToolStripMenuItem.Text" xml:space="preserve">
     <value>Ursprüngliches Verzeichnis nutzen</value>
+  </data>
+  <data name="editMetadataToolStripMenuItem.Text" xml:space="preserve">
+    <value>Metadaten bearbeiten</value>
+  </data>
+  <data name="addFolderToLocalDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Verzeichnis lokaler Datenbank hinzufügen</value>
+  </data>
+  <data name="removeItemFromDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Aus lokaler Datenbank entfernen</value>
   </data>
 </root>
