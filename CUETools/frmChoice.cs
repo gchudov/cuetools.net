@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows.Forms;
 using CUETools.CDImage;
 using CUETools.Processor;
+using CUETools.CTDB;
 
 namespace JDP
 {
@@ -20,15 +21,18 @@ namespace JDP
 
 		public CUESheet CUE;
 
-		private bool freedb, ctdb;
+		private bool ctdb;
+		private CTDBPriority priorityMusicbrainz, priorityFreedb, priorityFreedbFuzzy;
 
-		public void LookupAlbumInfo(bool freedb, bool ctdb, bool cache, bool cue)
+		public void LookupAlbumInfo(bool cache, bool cue, bool ctdb, CTDBPriority priorityMusicbrainz, CTDBPriority priorityFreedb, CTDBPriority priorityFreedbFuzzy)
 		{
-			this.freedb = freedb;
 			this.ctdb = ctdb;
-			var releases = CUE.LookupAlbumInfo(false, false, cache, cue);
+			this.priorityMusicbrainz = priorityMusicbrainz;
+			this.priorityFreedb = priorityFreedb;
+			this.priorityFreedbFuzzy = priorityFreedbFuzzy;
+			var releases = CUE.LookupAlbumInfo(cache, cue, false, CTDBPriority.None, CTDBPriority.None, CTDBPriority.None);
 			this.Choices = releases;
-			if (freedb || ctdb)
+			if (ctdb || priorityMusicbrainz != CTDBPriority.None || priorityFreedb != CTDBPriority.None || priorityFreedbFuzzy != CTDBPriority.None)
 				backgroundWorker1.RunWorkerAsync(null);
 		}
 
@@ -266,8 +270,37 @@ namespace JDP
 
 		private void listMetadata_KeyDown(object sender, KeyEventArgs e)
 		{
+			CUEMetadataEntry r = ChosenRelease;
 			if (e.KeyCode == Keys.F2)
 				listMetadata.FocusedItem.BeginEdit();
+			if (e.KeyCode == Keys.Delete && r != null)
+			{
+				foreach (int i in listMetadata.SelectedIndices)
+				{
+					switch (i)
+					{
+						case 0:
+							foreach (CUETrackMetadata track in r.metadata.Tracks)
+								if (track.Artist == r.metadata.Artist)
+									track.Artist = "";
+							r.metadata.Artist = "";
+							break;
+						case 1: r.metadata.Title = ""; break;
+						case 2: r.metadata.Year = ""; break;
+						case 3: r.metadata.Genre = ""; break;
+						case 4: r.metadata.DiscNumber = ""; break;
+						case 5: r.metadata.TotalDiscs = ""; break;
+						case 6: r.metadata.DiscName = ""; break;
+						case 7: r.metadata.Barcode = ""; break;
+						case 8: r.metadata.ReleaseDate = ""; break;
+						case 9: r.metadata.Label = ""; break;
+						case 10: r.metadata.Country = ""; break;
+					}
+					listMetadata.Items[i].Text = "";
+				}
+				ListViewItem item = ChosenItem;
+				item.Text = r.ToString();
+			}
 		}
 
 		private void listMetadata_AfterLabelEdit(object sender, LabelEditEventArgs e)
@@ -307,7 +340,7 @@ namespace JDP
 
 		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
 		{
-			e.Result = CUE.LookupAlbumInfo(this.freedb, this.ctdb, false, false);
+			e.Result = CUE.LookupAlbumInfo(false, false, this.ctdb, this.priorityMusicbrainz, this.priorityFreedb, this.priorityFreedbFuzzy);
 		}
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

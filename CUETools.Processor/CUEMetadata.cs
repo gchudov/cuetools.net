@@ -245,6 +245,7 @@ namespace CUETools.Processor
 			this.Barcode = cdEntry.barcode ?? "";
 			this.ReleaseDate = cdEntry.releasedate ?? "";
 			this.Country = cdEntry.country ?? "";
+			this.Genre = cdEntry.genre ?? "";
 			this.Label = "";
 			if (cdEntry.label != null)
 				foreach (var l in cdEntry.label)

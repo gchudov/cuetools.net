@@ -588,7 +588,7 @@ namespace CUERipper
 
 		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, CTDBResponseMeta release)
 		{
-			CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, "ctdb");
+			CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, release.source);
 			entry.metadata.FillFromCtdb(release, entry.TOC.FirstAudio - 1);
 			return entry;
 		}
@@ -635,7 +635,7 @@ namespace CUERipper
 			cueSheet.Action = CUEAction.Encode;
 
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-			cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, true, false);
+			cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, false, CTDBPriority.High, CTDBPriority.Medium, CTDBPriority.Low);
 			cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
 			this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
 			cueSheet.UseAccurateRip();

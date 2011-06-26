@@ -188,16 +188,33 @@ namespace CUETools.AccurateRip
 			return worstTotal == 0xffff ? 0 : worstTotal;
 		}
 
-		// TODO: Replace min(sum) with sum(min)!!!
-		public uint WorstConfidence()
+		public uint WorstConfidence(int oi)
 		{
 			uint worstConfidence = 0xffff;
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
-				uint sumConfidence = SumConfidence(iTrack);
-				if (worstConfidence > sumConfidence && (Total(iTrack) != 0 || CRC(iTrack) != 0))
-					worstConfidence = sumConfidence;
+				int trno = iTrack + _toc.FirstAudio - 1;
+				uint sum = 0;
+				// sum all matches for this track and this offset
+				for (int di = 0; di < AccDisks.Count; di++)
+					if (trno < AccDisks[di].tracks.Count
+					&& (CRC(iTrack, oi) == AccDisks[di].tracks[trno].CRC
+					  || oi == 0 && CRCV2(iTrack) == AccDisks[di].tracks[trno].CRC))
+						sum += AccDisks[di].tracks[iTrack + _toc.FirstAudio - 1].count;
+				// exclude silent tracks
+				if (worstConfidence > sum && (Total(iTrack) != 0 || CRC(iTrack, oi) != 0))
+					worstConfidence = sum;
 			}
+			return worstConfidence;
+		}
+
+		public uint WorstConfidence()
+		{
+			if (ARStatus != null)
+				return 0U;
+			uint worstConfidence = 0;
+			for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+				worstConfidence += WorstConfidence(oi);
 			return worstConfidence;
 		}
 

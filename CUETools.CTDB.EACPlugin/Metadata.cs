@@ -49,31 +49,95 @@ namespace MetadataPlugIn
 				return false;
 
 			int year, disccount, discnumber;
-			if (meta.year != null && int.TryParse(meta.year, out year))
-				data.Year = year;
-			if (meta.disccount != null && int.TryParse(meta.disccount, out disccount))
-				data.TotalNumberOfCDs = disccount;
-			if (meta.discnumber != null && int.TryParse(meta.discnumber, out discnumber))
-				data.CDNumber = discnumber;
-			if (meta.album != null)
-				data.AlbumTitle = meta.album;
-			if (meta.artist != null)
-				data.AlbumArtist = meta.artist;
+			string extra = meta.extra ?? "";
+			if (!string.IsNullOrEmpty(meta.discname))
+				extra += "Disc name: " + meta.discname + "\r\n";
+			if (!string.IsNullOrEmpty(meta.infourl))
+				extra += "Info URL: " + meta.infourl + "\r\n";
+			if (!string.IsNullOrEmpty(meta.barcode))
+				extra += "Barcode: " + meta.barcode + "\r\n";
+			if (!string.IsNullOrEmpty(meta.releasedate))
+				extra += "Release date: " + meta.releasedate + "\r\n";
+			if (!string.IsNullOrEmpty(meta.country))
+				extra += "Release country: " + meta.country + "\r\n";
+			if (meta.label != null)
+				foreach (var label in meta.label)
+				{
+					if (!string.IsNullOrEmpty(label.name))
+						extra += "Release label: " + label.name + "\r\n";
+					if (!string.IsNullOrEmpty(label.catno))
+						extra += "Release catalog#: " + label.catno + "\r\n";
+				}
+			data.Year = meta.year != null && int.TryParse(meta.year, out year) ? year : -1;
+			data.TotalNumberOfCDs = meta.disccount != null && int.TryParse(meta.disccount, out disccount) ? disccount : 1;
+			data.CDNumber = meta.discnumber != null && int.TryParse(meta.discnumber, out discnumber) ? discnumber : 1;
+			data.FirstTrackNumber = 1;
+			data.AlbumTitle = meta.album ?? "";
+			data.AlbumArtist = meta.artist ?? "";
+			data.MP3V2Type = meta.genre ?? "";
+			data.CDDBMusicType = GetFreeDBMusicType(meta);
+			data.MP3Type = GetMP3MusicType(data.CDDBMusicType);
+			data.ExtendedDiscInformation = extra;
+			data.Revision = -1; // TODO: meta.id? rock/ffffffff/16?
 			if (meta.track != null)
 				for (int track = 0; track < data.NumberOfTracks; track++)
 				{
 					if (track < meta.track.Length)
 					{
-						if (meta.track[track].name != null)
-							data.SetTrackTitle(track, meta.track[track].name);
-						var trackartist = meta.track[track].artist ?? meta.artist;
-						if (trackartist != null)
-							data.SetTrackArtist(track, trackartist);
+						data.SetTrackTitle(track, meta.track[track].name ?? "");
+						data.SetTrackArtist(track, meta.track[track].artist ?? meta.artist ?? "");
+						data.SetExtendedTrackInformation(track, meta.track[track].extra ?? "");
 					}
-					else if (meta.artist != null)
-						data.SetTrackArtist(track, meta.artist);
+					else
+					{
+						data.SetTrackTitle(track, "");
+						data.SetTrackArtist(track, meta.artist ?? "");
+						data.SetExtendedTrackInformation(track, "");
+					}
+					data.SetTrackComposer(track, "");
 				}
 			return true;
+		}
+
+		public int GetMP3MusicType(int freedbtype)
+		{
+			int[] list = { 17, 29, 34, 95, 53, 77, 90, 113, 117, 129, 95 };
+			return (freedbtype <= 0 || freedbtype >= list.Length) ? -1 : list[freedbtype];
+		}
+
+		public int GetFreeDBMusicType(CTDBResponseMeta meta)
+		{
+			int pos = meta.id.IndexOf('/');
+			if (meta.source != "freedb" || pos < 0)
+				return -1;
+			string freedbtype = meta.id.Substring(0, pos);
+			switch (freedbtype.ToUpper())
+			{
+				case "BLUES":
+					return 0;
+				case "CLASSICAL":
+					return 1;
+				case "COUNTRY":
+					return 2;
+				case "DATA":
+					return 3;
+				case "FOLK":
+					return 4;
+				case "JAZZ":
+					return 5;
+				case "NEWAGE":
+					return 6;
+				case "REGGAE":
+					return 7;
+				case "ROCK":
+					return 8;
+				case "SOUNDTRACK":
+					return 9;
+				case "MISC":
+					return 10;
+				default:
+					return -1;
+			}
 		}
 
 		public string GetPluginGuid()

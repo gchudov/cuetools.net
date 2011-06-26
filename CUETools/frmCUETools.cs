@@ -40,6 +40,7 @@ using CUETools.Processor;
 using CUETools.CDImage;
 using CUETools.Compression;
 using CUETools.AccurateRip;
+using CUETools.CTDB;
 
 namespace JDP {
 	public partial class frmCUETools : Form {
@@ -582,7 +583,7 @@ namespace JDP {
 		{
 			get
 			{
-				return "CUETools 2.1.0";
+				return "CUETools 2.1.2";
 			}
 		}
 
@@ -887,7 +888,7 @@ namespace JDP {
 						if (useLocalDB)
 							cueSheet.UseLocalDB(_localDB);
 						if (useCUEToolsDB)
-							cueSheet.UseCUEToolsDB("CUETools " + CUESheet.CUEToolsVersion, null, false, true);
+							cueSheet.UseCUEToolsDB("CUETools " + CUESheet.CUEToolsVersion, null, true, CTDBPriority.None, CTDBPriority.None, CTDBPriority.None);
 						if (useAR)
 							cueSheet.UseAccurateRip();
 
@@ -920,7 +921,12 @@ namespace JDP {
 								if (_choiceMaxed)
 									dlg.WindowState = FormWindowState.Maximized;
 								dlg.CUE = cueSheet;
-								dlg.LookupAlbumInfo(checkBoxUseFreeDb.Checked, checkBoxUseMusicBrainz.Checked, _profile._config.advanced.CacheMetadata, true);
+								dlg.LookupAlbumInfo(_profile._config.advanced.CacheMetadata,
+									true,
+									true,
+									checkBoxUseMusicBrainz.Checked ? CTDBPriority.High : CTDBPriority.None,
+									checkBoxUseFreeDb.Checked ? CTDBPriority.High : CTDBPriority.None,
+									checkBoxUseFreeDb.Checked ? CTDBPriority.Low : CTDBPriority.None);
 								dlgRes = dlg.ShowDialog(this);
 								_choiceMaxed = dlg.WindowState == FormWindowState.Maximized;
 								if (!_choiceMaxed)
@@ -2177,7 +2183,7 @@ namespace JDP {
 			if (_choiceMaxed)
 				dlg.WindowState = FormWindowState.Maximized;
 			dlg.CUE = CueSheet;
-			dlg.LookupAlbumInfo(true, true, true, node is FileSystemTreeNodeLocalDBEntry);
+			dlg.LookupAlbumInfo(true, node is FileSystemTreeNodeLocalDBEntry, true, CTDBPriority.High, CTDBPriority.Medium, CTDBPriority.Low);
 			var dlgRes = dlg.ShowDialog(this);
 			_choiceMaxed = dlg.WindowState == FormWindowState.Maximized;
 			if (!_choiceMaxed)

@@ -39,7 +39,11 @@ namespace CUETools.CTDB.EACPlugin
 
 		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
 		{
-			this.ctdb.ContactDB(null, this.agent, null, true, false);
+			
+			this.ctdb.ContactDB(null, this.agent, null, false, false,
+				AudioDataPlugIn.Options.priorityMusicbrainz,
+				AudioDataPlugIn.Options.priorityFreedb,
+				AudioDataPlugIn.Options.priorityFreedbFuzzy);
 		}
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

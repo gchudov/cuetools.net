@@ -57,7 +57,7 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public void ContactDB(string server, string userAgent, string driveName, bool musicbrainz, bool fuzzy)
+		public void ContactDB(string server, string userAgent, string driveName, bool ctdb, bool fuzzy, CTDBPriority musicbrainz, CTDBPriority freedb, CTDBPriority freedbFuzzy)
 		{
 			this.driveName = driveName;
 			this.userAgent = userAgent + " (" + Environment.OSVersion.VersionString + ")" + (driveName != null ? " (" + driveName + ")" : "");
@@ -65,7 +65,10 @@ namespace CUETools.CTDB
 			this.total = 0;
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase
-				+ "/lookup2.php?musicbrainz=" + (musicbrainz ? 1 : 0) 
+				+ "/lookup2.php"
+				+ "?ctdb=" + (ctdb ? "1" : "0")
+				+ "&musicbrainz=" + ((int)musicbrainz).ToString()
+				+ "&freedb=" + ((int)freedb + 8 * (int)freedbFuzzy).ToString()
 				+ "&fuzzy=" + (fuzzy ? 1 : 0) 
 				+ "&toc=" + toc.ToString());
 			req.Method = "GET";
@@ -419,6 +422,20 @@ namespace CUETools.CTDB
 			}
 		}
 
+		public int Confidence
+		{
+			get
+			{
+				if (this.QueryExceptionStatus != WebExceptionStatus.Success)
+					return 0;
+				int res = 0;
+				foreach (DBEntry entry in this.Entries)
+					if (entry.toc.ToString() == this.toc.ToString() && !entry.hasErrors)
+						res += entry.conf;
+				return res;
+			}
+		}
+
 		public DBEntry MatchingEntry
 		{
 			get
@@ -738,6 +755,8 @@ namespace CUETools.CTDB
 		public string name { get; set; }
 		[XmlAttribute]
 		public string artist { get; set; }
+		[XmlAttribute]
+		public string extra { get; set; }
 	}
 
 	[Serializable]
@@ -753,7 +772,9 @@ namespace CUETools.CTDB
 	public class CTDBResponseMeta
 	{
 		[XmlAttribute]
-		public string release_gid { get; set; }
+		public string source { get; set; }
+		[XmlAttribute]
+		public string id { get; set; }
 		[XmlAttribute]
 		public string artist { get; set; }
 		[XmlAttribute]
@@ -762,6 +783,8 @@ namespace CUETools.CTDB
 		public string year { get; set; }
 		[XmlAttribute]
 		public string genre { get; set; }
+		[XmlAttribute]
+		public string extra { get; set; }
 		[XmlAttribute]
 		public string country { get; set; }
 		[XmlAttribute]
@@ -792,5 +815,13 @@ namespace CUETools.CTDB
 		public CTDBResponseEntry[] entry;
 		[XmlElement]
 		public CTDBResponseMeta[] musicbrainz;
+	}
+
+	public enum CTDBPriority
+	{
+		None = 0,
+		High = 1,
+		Medium = 2,
+		Low = 3
 	}
 }

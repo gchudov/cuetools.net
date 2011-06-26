@@ -180,7 +180,7 @@ namespace CUETools.ConsoleRipper
 				string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);
 				var ctdb = new CUEToolsDB(audioSource.TOC, null);
 				ctdb.Init(arVerify);
-				ctdb.ContactDB(null, "CUETools.ConsoleRipper 2.1.2", audioSource.ARName, true, false);
+				ctdb.ContactDB(null, "CUETools.ConsoleRipper 2.1.2", audioSource.ARName, true, false, CTDBPriority.High, CTDBPriority.Medium, CTDBPriority.Low);
 				arVerify.ContactAccurateRip(ArId);
 				CTDBResponseMeta meta = null;
 				foreach (var imeta in ctdb.Metadata)

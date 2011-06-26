@@ -143,7 +143,9 @@ namespace JDP
 			this.listMetadata.Name = "listMetadata";
 			this.listMetadata.UseCompatibleStateImageBehavior = false;
 			this.listMetadata.View = System.Windows.Forms.View.Details;
+			this.listMetadata.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_AfterLabelEdit);
 			this.listMetadata.DoubleClick += new System.EventHandler(this.listMetadata_DoubleClick);
+			this.listMetadata.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listMetadata_KeyDown);
 			// 
 			// columnHeaderMetadataValue
 			// 
@@ -167,7 +169,11 @@ namespace JDP
 			this.listTracks.Name = "listTracks";
 			this.listTracks.UseCompatibleStateImageBehavior = false;
 			this.listTracks.View = System.Windows.Forms.View.Details;
+			this.listTracks.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_AfterLabelEdit);
 			this.listTracks.DoubleClick += new System.EventHandler(this.listTracks_DoubleClick);
+			this.listTracks.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.listTracks_PreviewKeyDown);
+			this.listTracks.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_BeforeLabelEdit);
+			this.listTracks.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listTracks_KeyDown);
 			// 
 			// Title
 			// 

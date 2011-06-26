@@ -129,6 +129,10 @@ namespace CUETools.Processor
 
 		public DateTime VerificationDate { get; set; }
 
+		public DateTime CTDBVerificationDate { get; set; }
+
+		public int CTDBConfidence { get; set; }
+
 		[XmlIgnore]
 		public string Path
 		{
@@ -2207,7 +2211,7 @@ return processor.Go();
 			_localDB.Save();
 		}
 
-		public List<object> LookupAlbumInfo(bool useFreedb, bool useCTDB, bool useCache, bool useCUE)
+		public List<object> LookupAlbumInfo(bool useCache, bool useCUE, bool useCTDB, CTDBPriority priorityMusicbrainz, CTDBPriority priorityFreedb, CTDBPriority priorityFreedbFuzzy)
 		{
 			List<object> Releases = new List<object>();
 
@@ -2264,18 +2268,18 @@ return processor.Go();
 			{
 				ShowProgress("Looking up album via CTDB...", 0.0, null, null);
 				var ctdb = new CUEToolsDB(TOC, proxy);
-				ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, true, true);
+				ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, priorityMusicbrainz, priorityFreedb, priorityFreedbFuzzy);
 				foreach (var meta in ctdb.Metadata)
 				{
 					CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
 					metadata.FillFromCtdb(meta, TOC.FirstAudio - 1);
 					CDImageLayout toc = TOC; //  TocFromCDEntry(meta);
-					Releases.Add(new CUEMetadataEntry(metadata, toc, "ctdb"));
+					Releases.Add(new CUEMetadataEntry(metadata, toc, meta.source));
 					ctdbFound = true;
 				}
 			}
 
-			if (useFreedb)
+			if (!ctdbFound && priorityFreedb != CTDBPriority.None)
 			{
 				ShowProgress("Looking up album via Freedb...", 0.0, null, null);
 
@@ -3192,13 +3196,13 @@ return processor.Go();
 			// TODO: It should also be set when assigning a DataTrack!!!
 		}
 
-		public void UseCUEToolsDB(string userAgent, string driveName, bool meta, bool fuzzy)
+		public void UseCUEToolsDB(string userAgent, string driveName, bool fuzzy, CTDBPriority musicbrainz, CTDBPriority freedb, CTDBPriority freedbFuzzy)
 		{
 			ShowProgress((string)"Contacting CUETools database...", 0, null, null);
 
 			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
 			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
-			_CUEToolsDB.ContactDB(_config.advanced.CTDBServer, userAgent, driveName, meta, fuzzy);
+			_CUEToolsDB.ContactDB(_config.advanced.CTDBServer, userAgent, driveName, true, fuzzy, musicbrainz, freedb, freedbFuzzy);
 
 			if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0)
 				foreach (DBEntry e in _CUEToolsDB.Entries)
@@ -4133,7 +4137,7 @@ return processor.Go();
 			}
 		}
 
-		public readonly static string CUEToolsVersion = "2.1.2";
+		public readonly static string CUEToolsVersion = "2.1.2a";
 
 		public void GenerateAccurateRipLog(TextWriter sw)
 		{
@@ -4192,10 +4196,10 @@ return processor.Go();
 					FindBestOffset(1, false, out tracksMatch, out bestOffset);
 					if (bestOffset != 0)
 						prefix += string.Format("offset {0}, ", bestOffset);
-					if (tracksMatch == TrackCount)
+					if (_arVerify.WorstConfidence() > 0)
 						prefix += string.Format("rip accurate ({0}/{1})", _arVerify.WorstConfidence(), _arVerify.WorstTotal());
 					else
-						prefix += string.Format("rip not accurate ({0}/{1})", _arVerify.WorstConfidence(), _arVerify.WorstTotal());
+						prefix += string.Format("rip not accurate ({0}/{1})", 0, _arVerify.WorstTotal());
 				}
 			} 
 			if (!_useCUEToolsDBFix && _useCUEToolsDB)
@@ -4342,11 +4346,27 @@ return processor.Go();
 
 			if (_action == CUEAction.Verify && _useLocalDB)
 			{
+				var now = DateTime.Now;
 				var entry = OpenLocalDBEntry();
 				entry.Status = this.GenerateAccurateRipStatus();
-				entry.ARConfidence = _arVerify.WorstConfidence();
+				entry.ARConfidence = _useAccurateRip ? _arVerify.WorstConfidence() : 0;
+				entry.CTDBConfidence = _useCUEToolsDB && !_useCUEToolsDBFix ? CTDB.Confidence : 0;
 				entry.Log = AccurateRipLog;
-				entry.VerificationDate = DateTime.Now;
+				entry.VerificationDate =
+					_useAccurateRip &&
+					(_arVerify.ExceptionStatus == WebExceptionStatus.Success ||
+					  (_arVerify.ExceptionStatus == WebExceptionStatus.ProtocolError &&
+						_arVerify.ResponseStatus == HttpStatusCode.NotFound
+					  )
+					) ? now : DateTime.MinValue;
+				entry.CTDBVerificationDate =
+					_useCUEToolsDB &&
+					!_useCUEToolsDBFix &&
+					(CTDB.QueryExceptionStatus == WebExceptionStatus.Success ||
+					  (CTDB.QueryExceptionStatus == WebExceptionStatus.ProtocolError &&
+						CTDB.QueryResponseStatus == HttpStatusCode.NotFound
+					  )
+					) ? now : DateTime.MinValue;
 				entry.OffsetSafeCRC = _arVerify.OffsetSafeCRC;
 			}
 
@@ -6196,7 +6216,7 @@ return processor.Go();
 					return ArVerify.ExceptionStatus != WebExceptionStatus.Success ? WriteReport() : Go();
 				case "repair":
 					{
-						UseCUEToolsDB("CUETools " + CUEToolsVersion, null, false, true);
+						UseCUEToolsDB("CUETools " + CUEToolsVersion, null, true, CTDBPriority.None, CTDBPriority.None, CTDBPriority.None);
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;
