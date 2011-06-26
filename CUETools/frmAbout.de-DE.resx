@@ -140,7 +140,7 @@ hdcd.dll (c) Christopher Key</value>
     <value>253, 17</value>
   </data>
   <data name="linkLabel2.Text" xml:space="preserve">
-    <value>Unterstützung gibt es auf http://www.cuetools.net.</value>
+    <value>Aktualisierungen gibt es auf http://www.cuetools.net.</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Über CUETools</value>

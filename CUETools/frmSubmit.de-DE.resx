@@ -118,19 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>You are about to submit information about this CD to the CUETools Database. This information will help other users to repair their copy of this CD if it contains errors.</value>
+    <value>Sie sind dabei, Informationen über diese CD an die CUETools-Datenbank zu übertragen. Diese Informationen werden anderen Nutzern helfen, ihre CD zu reparieren, falls sie Fehler enthält..</value>
   </data>
   <data name="buttonCancel.Text" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Abbrechen</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="checkBoxRemember.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 17</value>
   </data>
   <data name="checkBoxRemember.Text" xml:space="preserve">
-    <value>Remember my choice</value>
+    <value>Auswahl merken</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CTDB submission confirmation</value>
+    <value>CTDB-Übertragung bestätigen</value>
   </data>
 </root>

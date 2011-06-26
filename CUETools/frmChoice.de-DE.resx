@@ -132,4 +132,10 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Wählen Sie das beste Ergebnis aus</value>
   </data>
+  <data name="columnHeaderMetadataValue.Text" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="columnHeaderMetadataName.Text" xml:space="preserve">
+    <value>Feld</value>
+  </data>
 </root>
