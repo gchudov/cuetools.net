@@ -925,7 +925,7 @@ namespace JDP {
 									true,
 									true,
 									checkBoxUseMusicBrainz.Checked ? CTDBPriority.High : CTDBPriority.None,
-									checkBoxUseFreeDb.Checked ? CTDBPriority.High : CTDBPriority.None,
+									checkBoxUseFreeDb.Checked ? CTDBPriority.Medium : CTDBPriority.None,
 									checkBoxUseFreeDb.Checked ? CTDBPriority.Low : CTDBPriority.None);
 								dlgRes = dlg.ShowDialog(this);
 								_choiceMaxed = dlg.WindowState == FormWindowState.Maximized;

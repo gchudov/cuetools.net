@@ -1340,7 +1340,7 @@ namespace CUERipper
 			//catch
 			//{
 			//}
-			uint length = selectedDriveInfo.drive.TOC.Length / 75 - selectedDriveInfo.drive.TOC[1].Start / 75 + 2;
+			uint length = selectedDriveInfo.drive.TOC.Length / 75 + 2;
 			try
 			{
 				string res = m_freedb.Submit(entry, (int)length, AccurateRipVerify.CalculateCDDBId(selectedDriveInfo.drive.TOC), frm.Data.Category, false);

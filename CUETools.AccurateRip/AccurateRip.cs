@@ -1443,7 +1443,7 @@ namespace CUETools.AccurateRip
 			query.AppendFormat("+{0}", toc.TrackCount);
 			for (int iTrack = 1; iTrack <= toc.TrackCount; iTrack++)
 				query.AppendFormat("+{0}", toc[iTrack].Start + 150);
-			query.AppendFormat("+{0}", toc.Length / 75 - toc[1].Start / 75);
+			query.AppendFormat("+{0}", toc.Length / 75 + 2);
 			return query.ToString();
 		}
 

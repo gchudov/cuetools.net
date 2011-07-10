@@ -292,8 +292,8 @@
     <None Include="Resources\delete.png" />
     <None Include="Resources\cdrepair.ico" />
     <None Include="Resources\cdrepair.png" />
-    <None Include="Resources\more\icon\puzzle--arrow.png" />
-    <None Include="Resources\more\icon\alarm-clock--minus.png" />
+    <None Include="Resources\puzzle--arrow.png" />
+    <None Include="Resources\alarm-clock--minus.png" />
     <None Include="Resources\puzzle.ico" />
     <None Include="Resources\alarm-clock.ico" />
     <None Include="Resources\users.ico" />
