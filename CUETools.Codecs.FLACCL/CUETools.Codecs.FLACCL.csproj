@@ -35,6 +35,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OpenCLNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\OpenCLNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -49,10 +53,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ATI Stream\OpenCL.Net 0.6\source\OpenCLNet\OpenCLNet.csproj">
-      <Project>{758285C6-1ACA-458A-9906-EE6701D5AF87}</Project>
-      <Name>OpenCLNet</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
       <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
       <Name>CUETools.Codecs.FLAKE</Name>

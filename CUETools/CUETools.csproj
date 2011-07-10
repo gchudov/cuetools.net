@@ -13,7 +13,7 @@
     <ManifestCertificateThumbprint>611F49E043614FEDCFF1B128868CC8DC0B6656C5</ManifestCertificateThumbprint>
     <ManifestKeyFile>CUETools_TemporaryKey.pfx</ManifestKeyFile>
     <GenerateManifests>false</GenerateManifests>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <TargetZone>LocalIntranet</TargetZone>
     <FileUpgradeFlags>

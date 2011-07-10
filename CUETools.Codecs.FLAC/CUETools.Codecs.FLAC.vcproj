@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="CUETools.Codecs.FLAC"
 	ProjectGUID="{E70FA90A-7012-4A52-86B5-362B699D1540}"
 	RootNamespace="CUETools.Codecs.FLAC"
@@ -332,6 +332,10 @@
 			ReferencedProjectIdentifier="{6458A13A-30EF-45A9-9D58-E5031B17BEE2}"
 			CopyLocal="false"
 			RelativePathToProject="..\CUETools.Codecs\CUETools.Codecs.csproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{4CEFBC84-C215-11DB-8314-0800200C9A66}"
+			RelativePathToProject="..\flac\src\libFLAC\libFLAC_static.vcproj"
 		/>
 	</References>
 	<Files>
