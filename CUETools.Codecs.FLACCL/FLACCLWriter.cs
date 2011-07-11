@@ -1240,29 +1240,22 @@ namespace CUETools.Codecs.FLACCL
 			else
 				frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 
+			int toUnpack = Math.Min(task.frameSize, eparams.max_prediction_order);
 			// calculate wbits before unpacking samples.
-			for (int ch = 0; ch < channels; ch++)
-			{
-				int index = ch + iFrame * channels;
-				frame.subframes[ch].wbits = frame.blocksize > 4
-					? task.BestResidualTasks[index].wbits : 0;
-			}
-			unpack_samples(task, Math.Min(task.frameSize, eparams.max_prediction_order));
-
 			for (int ch = 0; ch < channels; ch++)
 			{
 				int index = ch + iFrame * channels;
 				frame.subframes[ch].best.residual = ((int*)task.clResidualPtr) + task.BestResidualTasks[index].residualOffs;
 				frame.subframes[ch].best.type = SubframeType.Verbatim;
 				frame.subframes[ch].best.size = (uint)(frame.subframes[ch].obits * frame.blocksize);
-
+				frame.subframes[ch].wbits = 0;
 				if (frame.blocksize > Math.Max(4, eparams.max_prediction_order))
 				{
 					if (task.BestResidualTasks[index].size < 0)
 						throw new Exception("internal error");
-					
-					if (frame.subframes[ch].best.size > task.BestResidualTasks[index].size
-						&& (SubframeType)task.BestResidualTasks[index].type != SubframeType.Verbatim)
+
+					if (frame.subframes[ch].best.size > task.BestResidualTasks[index].size &&
+						(SubframeType)task.BestResidualTasks[index].type != SubframeType.Verbatim)
 					{
 						frame.subframes[ch].best.type = (SubframeType)task.BestResidualTasks[index].type;
 						frame.subframes[ch].best.size = (uint)task.BestResidualTasks[index].size;
@@ -1294,18 +1287,27 @@ namespace CUETools.Codecs.FLACCL
 							throw new Exception("size reported incorrectly");
 					}
 				}
+				if (task.frame.subframes[ch].best.type == SubframeType.Verbatim)
+					toUnpack = task.frameSize;
+				if (task.frame.subframes[ch].best.type == SubframeType.LPC && !task.UseGPUOnly)
+					toUnpack = task.frameSize;
+				if (task.frame.subframes[ch].best.type == SubframeType.Fixed && !task.UseGPUOnly)
+					toUnpack = task.frameSize;
+			}
+			unpack_samples(task, toUnpack);
 
+			for (int ch = 0; ch < channels; ch++)
+			{
+				int index = ch + iFrame * channels;
 				switch (task.frame.subframes[ch].best.type)
 				{
 					case SubframeType.Constant:
 						break;
 					case SubframeType.Verbatim:
-						unpack_samples(task, task.frameSize);
 						break;
 					case SubframeType.Fixed:
 						if (!task.UseGPUOnly)
 						{
-							unpack_samples(task, task.frameSize);
 							encode_residual_fixed(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples,
 								task.frame.blocksize, task.frame.subframes[ch].best.order);
 
@@ -1317,7 +1319,6 @@ namespace CUETools.Codecs.FLACCL
 					case SubframeType.LPC:
 						if (!task.UseGPUOnly)
 						{
-							unpack_samples(task, task.frameSize);
 							fixed (int* coefs = task.frame.subframes[ch].best.coefs)
 							{
 								if (PCM.BitsPerSample > 16)

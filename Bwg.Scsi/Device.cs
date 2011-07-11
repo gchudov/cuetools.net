@@ -1463,9 +1463,16 @@ namespace Bwg.Scsi
                     return st;
 
                 len = cmd.GetBuffer8(4);
-                len += 4;
+                len += 5;
 
-                result = new InquiryResult(cmd.GetBuffer(), cmd.BufferSize);
+                if (len <= cmd.BufferSize)
+                {
+                    result = new InquiryResult(cmd.GetBuffer(), len);
+
+                    if (m_logger != null)
+                        m_logger.DumpBuffer(9, "Raw Inquiry Result", cmd.GetBuffer(), len);
+                    return CommandStatus.Success;
+                }
 
                 //
                 // As an oddity, the Sony DW-G120A only supports requests that are an even number
