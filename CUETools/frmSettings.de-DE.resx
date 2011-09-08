@@ -120,6 +120,9 @@
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
+  <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
+    <value>Auf Aktualisierungen prüfen</value>
+  </data>
   <data name="checkBoxUseSystemProxy.Text" xml:space="preserve">
     <value>Proxyeinstellungen von System übernehmen</value>
   </data>
