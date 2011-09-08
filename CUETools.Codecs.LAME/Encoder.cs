@@ -83,12 +83,19 @@ namespace CUETools.Codecs.LAME
 			DeInit(true);
 			if (needTag)
 			{
+				bool utf8Required = Encoding.Default.GetString(Encoding.Default.GetBytes(_path)) != _path;
+				var tempDir = System.IO.Path.Combine(System.IO.Path.GetPathRoot(_path), "Temp");
+				var tempName = utf8Required ? System.IO.Path.Combine(tempDir, Guid.NewGuid().ToString()) : _path;
 				try
 				{
-					Lame_encDll.beWriteInfoTag(m_hLameStream, _path);
+					if (utf8Required && !Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
+					if (utf8Required) File.Move(_path, tempName);
+					Lame_encDll.beWriteInfoTag(m_hLameStream, tempName);
+					if (utf8Required) File.Move(tempName, _path);
 				}
 				catch
 				{
+					if (utf8Required) File.Move(tempName, _path);
 				}
 			}
 		}

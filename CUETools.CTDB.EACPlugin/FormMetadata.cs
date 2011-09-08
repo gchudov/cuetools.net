@@ -41,9 +41,7 @@ namespace CUETools.CTDB.EACPlugin
 		{
 			
 			this.ctdb.ContactDB(null, this.agent, null, false, false,
-				AudioDataPlugIn.Options.priorityMusicbrainz,
-				AudioDataPlugIn.Options.priorityFreedb,
-				AudioDataPlugIn.Options.priorityFreedbFuzzy);
+				AudioDataPlugIn.Options.MetadataSearch);
 		}
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -70,7 +68,11 @@ namespace CUETools.CTDB.EACPlugin
 					metadata.album == "" ? "Unknown Title" : metadata.album,
 					discnumberandtotal != "" ? " (disc " + discnumberandtotal + (metadata.discname != null ? ": " + metadata.discname : "") + ")" : "",
 					label == "" ? "" : " (" + label + ")");
-				listView1.Items.Add(new ListViewItem(text) { Tag = metadata });
+				var tip = new StringBuilder();
+				var i = 0;
+				foreach(var tr in metadata.track)
+					tip.AppendFormat("{0}. {2}{1}\n", ++i, tr.name, ((tr.artist ?? metadata.artist) == metadata.artist) ? "" : tr.artist + " / ");
+				listView1.Items.Add(new ListViewItem(text) { Tag = metadata, ImageKey = metadata.source, ToolTipText = tip.ToString() });
 			}
 			this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
 			if (listView1.Items.Count == 0)

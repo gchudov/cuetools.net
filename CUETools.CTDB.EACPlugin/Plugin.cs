@@ -56,7 +56,7 @@ namespace AudioDataPlugIn
         // the plugin and for display in the log file
         public string GetAudioTransferPluginName()
         {
-            return "CUETools DB Plugin V2.1.2b";
+            return "CUETools DB Plugin V2.1.3";
         }
 
         // Each plugin should have its own options page.
@@ -122,7 +122,7 @@ namespace AudioDataPlugIn
 			ArId = AccurateRipVerify.CalculateAccurateRipId(TOC);
 			ar.ContactAccurateRip(ArId);
 #endif
-			var form = new FormSubmitParity(ctdb, "EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename);
+			var form = new FormSubmitParity(ctdb, "EAC" + m_data.HostVersion + " CTDB 2.1.3", m_drivename);
 			//ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename, false, false);
 			form.ShowDialog();
 			ctdb.Init(ar);

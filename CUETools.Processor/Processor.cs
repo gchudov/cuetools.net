@@ -2211,7 +2211,7 @@ return processor.Go();
 			_localDB.Save();
 		}
 
-		public List<object> LookupAlbumInfo(bool useCache, bool useCUE, bool useCTDB, CTDBPriority priorityMusicbrainz, CTDBPriority priorityFreedb, CTDBPriority priorityFreedbFuzzy)
+		public List<object> LookupAlbumInfo(bool useCache, bool useCUE, bool useCTDB, CTDBMetadataSearch metadataSearch)
 		{
 			List<object> Releases = new List<object>();
 
@@ -2268,7 +2268,7 @@ return processor.Go();
 			{
 				ShowProgress("Looking up album via CTDB...", 0.0, null, null);
 				var ctdb = new CUEToolsDB(TOC, proxy);
-				ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, priorityMusicbrainz, priorityFreedb, priorityFreedbFuzzy);
+				ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, metadataSearch);
 				foreach (var meta in ctdb.Metadata)
 				{
 					CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
@@ -2279,7 +2279,7 @@ return processor.Go();
 				}
 			}
 
-			if (!ctdbFound && priorityFreedb != CTDBPriority.None)
+			if (!ctdbFound && metadataSearch == CTDBMetadataSearch.Extensive)
 			{
 				ShowProgress("Looking up album via Freedb...", 0.0, null, null);
 
@@ -3196,13 +3196,13 @@ return processor.Go();
 			// TODO: It should also be set when assigning a DataTrack!!!
 		}
 
-		public void UseCUEToolsDB(string userAgent, string driveName, bool fuzzy, CTDBPriority musicbrainz, CTDBPriority freedb, CTDBPriority freedbFuzzy)
+		public void UseCUEToolsDB(string userAgent, string driveName, bool fuzzy, CTDBMetadataSearch metadataSearch)
 		{
 			ShowProgress((string)"Contacting CUETools database...", 0, null, null);
 
 			_CUEToolsDB = new CUEToolsDB(_toc, proxy);
 			_CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
-			_CUEToolsDB.ContactDB(_config.advanced.CTDBServer, userAgent, driveName, true, fuzzy, musicbrainz, freedb, freedbFuzzy);
+			_CUEToolsDB.ContactDB(_config.advanced.CTDBServer, userAgent, driveName, true, fuzzy, metadataSearch);
 
 			if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0)
 				foreach (DBEntry e in _CUEToolsDB.Entries)
@@ -6216,7 +6216,7 @@ return processor.Go();
 					return ArVerify.ExceptionStatus != WebExceptionStatus.Success ? WriteReport() : Go();
 				case "repair":
 					{
-						UseCUEToolsDB("CUETools " + CUEToolsVersion, null, true, CTDBPriority.None, CTDBPriority.None, CTDBPriority.None);
+						UseCUEToolsDB("CUETools " + CUEToolsVersion, null, true, CTDBMetadataSearch.None);
 						Action = CUEAction.Verify;
 						if (CTDB.DBStatus != null)
 							return CTDB.DBStatus;

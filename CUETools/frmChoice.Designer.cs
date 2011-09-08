@@ -39,19 +39,21 @@ namespace JDP
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
 			this.tableLayoutPanelMeta = new System.Windows.Forms.TableLayoutPanel();
-			this.listMetadata = new System.Windows.Forms.ListView();
-			this.columnHeaderMetadataValue = new System.Windows.Forms.ColumnHeader();
-			this.columnHeaderMetadataName = new System.Windows.Forms.ColumnHeader();
-			this.listTracks = new System.Windows.Forms.ListView();
-			this.Title = new System.Windows.Forms.ColumnHeader();
-			this.TrackNo = new System.Windows.Forms.ColumnHeader();
-			this.Start = new System.Windows.Forms.ColumnHeader();
-			this.Length = new System.Windows.Forms.ColumnHeader();
+			this.dataGridViewMetadata = new System.Windows.Forms.DataGridView();
 			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			this.dataGridViewTracks = new System.Windows.Forms.DataGridView();
+			this.dataGridViewTextBoxColumnTrackNo = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumnTrackTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumnTrackStart = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumnTrackLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Item = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.tableLayoutPanelMeta.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.dataGridViewMetadata)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.dataGridViewTracks)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// buttonOk
@@ -92,6 +94,7 @@ namespace JDP
 			this.imageList1.Images.SetKeyName(4, "tags");
 			this.imageList1.Images.SetKeyName(5, "local");
 			this.imageList1.Images.SetKeyName(6, "ctdb");
+			this.imageList1.Images.SetKeyName(7, "discogs");
 			// 
 			// textBox1
 			// 
@@ -126,75 +129,109 @@ namespace JDP
 			// tableLayoutPanelMeta
 			// 
 			resources.ApplyResources(this.tableLayoutPanelMeta, "tableLayoutPanelMeta");
-			this.tableLayoutPanelMeta.Controls.Add(this.listMetadata, 0, 0);
-			this.tableLayoutPanelMeta.Controls.Add(this.listTracks, 1, 0);
+			this.tableLayoutPanelMeta.Controls.Add(this.dataGridViewTracks, 0, 0);
+			this.tableLayoutPanelMeta.Controls.Add(this.dataGridViewMetadata, 0, 0);
 			this.tableLayoutPanelMeta.Name = "tableLayoutPanelMeta";
 			// 
-			// listMetadata
+			// dataGridViewMetadata
 			// 
-			this.listMetadata.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderMetadataValue,
-            this.columnHeaderMetadataName});
-			resources.ApplyResources(this.listMetadata, "listMetadata");
-			this.listMetadata.FullRowSelect = true;
-			this.listMetadata.GridLines = true;
-			this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-			this.listMetadata.LabelEdit = true;
-			this.listMetadata.Name = "listMetadata";
-			this.listMetadata.UseCompatibleStateImageBehavior = false;
-			this.listMetadata.View = System.Windows.Forms.View.Details;
-			this.listMetadata.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_AfterLabelEdit);
-			this.listMetadata.DoubleClick += new System.EventHandler(this.listMetadata_DoubleClick);
-			this.listMetadata.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listMetadata_KeyDown);
-			// 
-			// columnHeaderMetadataValue
-			// 
-			resources.ApplyResources(this.columnHeaderMetadataValue, "columnHeaderMetadataValue");
-			// 
-			// columnHeaderMetadataName
-			// 
-			resources.ApplyResources(this.columnHeaderMetadataName, "columnHeaderMetadataName");
-			// 
-			// listTracks
-			// 
-			this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.Title,
-            this.TrackNo,
-            this.Start,
-            this.Length});
-			resources.ApplyResources(this.listTracks, "listTracks");
-			this.listTracks.FullRowSelect = true;
-			this.listTracks.GridLines = true;
-			this.listTracks.LabelEdit = true;
-			this.listTracks.Name = "listTracks";
-			this.listTracks.UseCompatibleStateImageBehavior = false;
-			this.listTracks.View = System.Windows.Forms.View.Details;
-			this.listTracks.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_AfterLabelEdit);
-			this.listTracks.DoubleClick += new System.EventHandler(this.listTracks_DoubleClick);
-			this.listTracks.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.listTracks_PreviewKeyDown);
-			this.listTracks.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listTracks_BeforeLabelEdit);
-			this.listTracks.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listTracks_KeyDown);
-			// 
-			// Title
-			// 
-			resources.ApplyResources(this.Title, "Title");
-			// 
-			// TrackNo
-			// 
-			resources.ApplyResources(this.TrackNo, "TrackNo");
-			// 
-			// Start
-			// 
-			resources.ApplyResources(this.Start, "Start");
-			// 
-			// Length
-			// 
-			resources.ApplyResources(this.Length, "Length");
+			this.dataGridViewMetadata.AllowUserToAddRows = false;
+			this.dataGridViewMetadata.AllowUserToDeleteRows = false;
+			this.dataGridViewMetadata.AllowUserToResizeColumns = false;
+			this.dataGridViewMetadata.AllowUserToResizeRows = false;
+			this.dataGridViewMetadata.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+			this.dataGridViewMetadata.BackgroundColor = System.Drawing.SystemColors.Window;
+			this.dataGridViewMetadata.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+			this.dataGridViewMetadata.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dataGridViewMetadata.ColumnHeadersVisible = false;
+			this.dataGridViewMetadata.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Item,
+            this.Value});
+			resources.ApplyResources(this.dataGridViewMetadata, "dataGridViewMetadata");
+			this.dataGridViewMetadata.GridColor = System.Drawing.SystemColors.ControlLight;
+			this.dataGridViewMetadata.MultiSelect = false;
+			this.dataGridViewMetadata.Name = "dataGridViewMetadata";
+			this.dataGridViewMetadata.RowHeadersVisible = false;
+			this.dataGridViewMetadata.RowTemplate.Height = 24;
+			this.dataGridViewMetadata.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+			this.dataGridViewMetadata.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewMetadata_CellEndEdit);
+			this.dataGridViewMetadata.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dataGridViewMetadata_EditingControlShowing);
+			this.dataGridViewMetadata.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dataGridViewMetadata_KeyDown);
 			// 
 			// backgroundWorker1
 			// 
 			this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
 			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+			// 
+			// dataGridViewTracks
+			// 
+			this.dataGridViewTracks.AllowUserToAddRows = false;
+			this.dataGridViewTracks.AllowUserToDeleteRows = false;
+			this.dataGridViewTracks.AllowUserToResizeColumns = false;
+			this.dataGridViewTracks.AllowUserToResizeRows = false;
+			this.dataGridViewTracks.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+			this.dataGridViewTracks.BackgroundColor = System.Drawing.SystemColors.Window;
+			this.dataGridViewTracks.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+			this.dataGridViewTracks.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dataGridViewTracks.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumnTrackNo,
+            this.dataGridViewTextBoxColumnTrackTitle,
+            this.dataGridViewTextBoxColumnTrackStart,
+            this.dataGridViewTextBoxColumnTrackLength});
+			resources.ApplyResources(this.dataGridViewTracks, "dataGridViewTracks");
+			this.dataGridViewTracks.GridColor = System.Drawing.SystemColors.ControlLight;
+			this.dataGridViewTracks.MultiSelect = false;
+			this.dataGridViewTracks.Name = "dataGridViewTracks";
+			this.dataGridViewTracks.RowHeadersVisible = false;
+			this.dataGridViewTracks.RowTemplate.Height = 24;
+			this.dataGridViewTracks.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+			this.dataGridViewTracks.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTracks_CellEndEdit);
+			// 
+			// dataGridViewTextBoxColumnTrackNo
+			// 
+			this.dataGridViewTextBoxColumnTrackNo.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.dataGridViewTextBoxColumnTrackNo.Frozen = true;
+			resources.ApplyResources(this.dataGridViewTextBoxColumnTrackNo, "dataGridViewTextBoxColumnTrackNo");
+			this.dataGridViewTextBoxColumnTrackNo.Name = "dataGridViewTextBoxColumnTrackNo";
+			this.dataGridViewTextBoxColumnTrackNo.ReadOnly = true;
+			this.dataGridViewTextBoxColumnTrackNo.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+			// 
+			// dataGridViewTextBoxColumnTrackTitle
+			// 
+			this.dataGridViewTextBoxColumnTrackTitle.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+			resources.ApplyResources(this.dataGridViewTextBoxColumnTrackTitle, "dataGridViewTextBoxColumnTrackTitle");
+			this.dataGridViewTextBoxColumnTrackTitle.Name = "dataGridViewTextBoxColumnTrackTitle";
+			this.dataGridViewTextBoxColumnTrackTitle.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+			// 
+			// dataGridViewTextBoxColumnTrackStart
+			// 
+			this.dataGridViewTextBoxColumnTrackStart.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+			resources.ApplyResources(this.dataGridViewTextBoxColumnTrackStart, "dataGridViewTextBoxColumnTrackStart");
+			this.dataGridViewTextBoxColumnTrackStart.Name = "dataGridViewTextBoxColumnTrackStart";
+			this.dataGridViewTextBoxColumnTrackStart.ReadOnly = true;
+			this.dataGridViewTextBoxColumnTrackStart.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+			// 
+			// dataGridViewTextBoxColumnTrackLength
+			// 
+			this.dataGridViewTextBoxColumnTrackLength.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+			resources.ApplyResources(this.dataGridViewTextBoxColumnTrackLength, "dataGridViewTextBoxColumnTrackLength");
+			this.dataGridViewTextBoxColumnTrackLength.Name = "dataGridViewTextBoxColumnTrackLength";
+			this.dataGridViewTextBoxColumnTrackLength.ReadOnly = true;
+			this.dataGridViewTextBoxColumnTrackLength.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+			// 
+			// Item
+			// 
+			this.Item.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+			this.Item.Frozen = true;
+			resources.ApplyResources(this.Item, "Item");
+			this.Item.Name = "Item";
+			this.Item.ReadOnly = true;
+			// 
+			// Value
+			// 
+			this.Value.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+			resources.ApplyResources(this.Value, "Value");
+			this.Value.Name = "Value";
 			// 
 			// frmChoice
 			// 
@@ -207,11 +244,14 @@ namespace JDP
 			this.ShowInTaskbar = false;
 			this.Load += new System.EventHandler(this.frmChoice_Load);
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmChoice_FormClosing);
+			this.Resize += new System.EventHandler(this.frmChoice_Resize);
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
 			this.tableLayoutPanel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.tableLayoutPanelMeta.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.dataGridViewMetadata)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.dataGridViewTracks)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -228,13 +268,13 @@ namespace JDP
 		private System.Windows.Forms.PictureBox pictureBox1;
 		private System.ComponentModel.BackgroundWorker backgroundWorker1;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelMeta;
-		private System.Windows.Forms.ListView listMetadata;
-		private System.Windows.Forms.ColumnHeader columnHeaderMetadataValue;
-		private System.Windows.Forms.ColumnHeader columnHeaderMetadataName;
-		private System.Windows.Forms.ListView listTracks;
-		private System.Windows.Forms.ColumnHeader Title;
-		private System.Windows.Forms.ColumnHeader TrackNo;
-		private System.Windows.Forms.ColumnHeader Start;
-		private System.Windows.Forms.ColumnHeader Length;
+		private System.Windows.Forms.DataGridView dataGridViewMetadata;
+		private System.Windows.Forms.DataGridView dataGridViewTracks;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumnTrackNo;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumnTrackTitle;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumnTrackStart;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumnTrackLength;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Item;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Value;
 	}
 }

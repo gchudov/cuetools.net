@@ -57,7 +57,7 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public void ContactDB(string server, string userAgent, string driveName, bool ctdb, bool fuzzy, CTDBPriority musicbrainz, CTDBPriority freedb, CTDBPriority freedbFuzzy)
+		public void ContactDB(string server, string userAgent, string driveName, bool ctdb, bool fuzzy, CTDBMetadataSearch metadataSearch)
 		{
 			this.driveName = driveName;
 			this.userAgent = userAgent + " (" + Environment.OSVersion.VersionString + ")" + (driveName != null ? " (" + driveName + ")" : "");
@@ -67,9 +67,8 @@ namespace CUETools.CTDB
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase
 				+ "/lookup2.php"
 				+ "?ctdb=" + (ctdb ? "1" : "0")
-				+ "&musicbrainz=" + ((int)musicbrainz).ToString()
-				+ "&freedb=" + ((int)freedb + 8 * (int)freedbFuzzy).ToString()
-				+ "&fuzzy=" + (fuzzy ? 1 : 0) 
+				+ "&fuzzy=" + (fuzzy ? 1 : 0)
+				+ "&metadata=" + (metadataSearch == CTDBMetadataSearch.None ? "none" : metadataSearch == CTDBMetadataSearch.Fast ? "fast" : metadataSearch == CTDBMetadataSearch.Default ? "default" : "extensive")
 				+ "&toc=" + toc.ToString());
 			req.Method = "GET";
 			req.Proxy = proxy;
@@ -817,11 +816,11 @@ namespace CUETools.CTDB
 		public CTDBResponseMeta[] musicbrainz;
 	}
 
-	public enum CTDBPriority
+	public enum CTDBMetadataSearch
 	{
 		None = 0,
-		High = 1,
-		Medium = 2,
-		Low = 3
+		Fast = 1,
+		Default = 2,
+		Extensive = 3
 	}
 }

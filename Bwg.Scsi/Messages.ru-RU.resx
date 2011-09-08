@@ -126,4 +126,46 @@
   <data name="SCSIErrorMessage_3A02" xml:space="preserve">
     <value>отсутствует носитель - лоток закрыт</value>
   </data>
+  <data name="SCSISenseKey_00" xml:space="preserve">
+    <value>неизвестная ошибка</value>
+  </data>
+  <data name="SCSISenseKey_01" xml:space="preserve">
+    <value>recovered error</value>
+  </data>
+  <data name="SCSISenseKey_02" xml:space="preserve">
+    <value>устройство не готово</value>
+  </data>
+  <data name="SCSISenseKey_03" xml:space="preserve">
+    <value>ошибка носителя</value>
+  </data>
+  <data name="SCSISenseKey_04" xml:space="preserve">
+    <value>аппаратная ошибка</value>
+  </data>
+  <data name="SCSISenseKey_05" xml:space="preserve">
+    <value>некорректный запрос</value>
+  </data>
+  <data name="SCSISenseKey_06" xml:space="preserve">
+    <value>unit attention</value>
+  </data>
+  <data name="SCSISenseKey_07" xml:space="preserve">
+    <value>data protect</value>
+  </data>
+  <data name="SCSISenseKey_08" xml:space="preserve">
+    <value>blank check</value>
+  </data>
+  <data name="SCSISenseKey_09" xml:space="preserve">
+    <value>vendor specific</value>
+  </data>
+  <data name="SCSISenseKey_0A" xml:space="preserve">
+    <value>copy aborted</value>
+  </data>
+  <data name="SCSISenseKey_0B" xml:space="preserve">
+    <value>aborted command</value>
+  </data>
+  <data name="SCSISenseKey_0D" xml:space="preserve">
+    <value>volume overflow</value>
+  </data>
+  <data name="SCSISenseKey_0E" xml:space="preserve">
+    <value>miscompare</value>
+  </data>
 </root>

@@ -127,10 +127,13 @@
     <value>NO INDEX/SECTOR SIGNAL</value>
   </data>
   <data name="SCSIErrorMessage_0102" xml:space="preserve">
-    <value>NO SEEK COMPLETE</value>
+    <value>no seek complete</value>
   </data>
   <data name="SCSIErrorMessage_0103" xml:space="preserve">
     <value>PERIPHERAL DEVICE WRITE FAULT</value>
+  </data>
+  <data name="SCSIErrorMessage_0200" xml:space="preserve">
+    <value>NO SEEK COMPLETE</value>
   </data>
   <data name="SCSIErrorMessage_0400" xml:space="preserve">
     <value>LOGICAL UNIT NOT READY, CAUSE NOT REPORTABLE</value>
@@ -310,13 +313,13 @@
     <value>CANNOT WRITE MEDIUM - UNSUPPORTED MEDIUM VERSION</value>
   </data>
   <data name="SCSIErrorMessage_3A00" xml:space="preserve">
-    <value>MEDIUM NOT PRESENT</value>
+    <value>medium not present</value>
   </data>
   <data name="SCSIErrorMessage_3A01" xml:space="preserve">
-    <value>MEDIUM NOT PRESENT - TRAY CLOSED</value>
+    <value>medium not present - tray closed</value>
   </data>
   <data name="SCSIErrorMessage_3A02" xml:space="preserve">
-    <value>MEDIUM NOT PRESENT - TRAY OPEN</value>
+    <value>medium not present - tray open</value>
   </data>
   <data name="SCSIErrorMessage_3B0D" xml:space="preserve">
     <value>MEDIUM DESTINATION ELEMENT FULL</value>
@@ -488,6 +491,48 @@
   </data>
   <data name="SCSIErrorMessage_7306" xml:space="preserve">
     <value>RMA/PMA IS ALMOST FULL</value>
+  </data>
+  <data name="SCSISenseKey_00" xml:space="preserve">
+    <value>unknown error</value>
+  </data>
+  <data name="SCSISenseKey_01" xml:space="preserve">
+    <value>recovered error</value>
+  </data>
+  <data name="SCSISenseKey_02" xml:space="preserve">
+    <value>not ready</value>
+  </data>
+  <data name="SCSISenseKey_03" xml:space="preserve">
+    <value>medium error</value>
+  </data>
+  <data name="SCSISenseKey_04" xml:space="preserve">
+    <value>hardware error</value>
+  </data>
+  <data name="SCSISenseKey_05" xml:space="preserve">
+    <value>illegal request</value>
+  </data>
+  <data name="SCSISenseKey_06" xml:space="preserve">
+    <value>unit attention</value>
+  </data>
+  <data name="SCSISenseKey_07" xml:space="preserve">
+    <value>data protect</value>
+  </data>
+  <data name="SCSISenseKey_08" xml:space="preserve">
+    <value>blank check</value>
+  </data>
+  <data name="SCSISenseKey_09" xml:space="preserve">
+    <value>vendor specific</value>
+  </data>
+  <data name="SCSISenseKey_0A" xml:space="preserve">
+    <value>copy aborted</value>
+  </data>
+  <data name="SCSISenseKey_0B" xml:space="preserve">
+    <value>aborted command</value>
+  </data>
+  <data name="SCSISenseKey_0D" xml:space="preserve">
+    <value>volume overflow</value>
+  </data>
+  <data name="SCSISenseKey_0E" xml:space="preserve">
+    <value>miscompare</value>
   </data>
   <data name="UnknownSCSIError" xml:space="preserve">
     <value>NO SENSE STRING FOR</value>

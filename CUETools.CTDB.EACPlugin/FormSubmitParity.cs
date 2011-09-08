@@ -49,7 +49,7 @@ namespace CUETools.CTDB.EACPlugin
 			this.ctdb.UploadHelper.onProgress += UploadProgress;
 			if (this.agent != null)
 			{
-				this.ctdb.ContactDB(null, this.agent, this.drivename, true, false, CTDBPriority.None, CTDBPriority.None, CTDBPriority.None);
+				this.ctdb.ContactDB(null, this.agent, this.drivename, true, false, CTDBMetadataSearch.None);
 			}
 			else
 			{

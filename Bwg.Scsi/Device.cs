@@ -690,6 +690,14 @@ namespace Bwg.Scsi
 
         #region Private Functions
 
+		public string GetErrorString()
+		{
+			string res = messages.GetString(string.Format("SCSISenseKey_{0:X2}", (int)this.GetSenseKey())) ?? this.GetSenseKey().ToString();
+			if (this.GetSenseKey() == SenseKeyType.NoSense)
+				return res;
+			return res + ": " + Device.LookupSenseError(this.GetSenseAsc(), this.GetSenseAscq());
+		}
+
         /// <summary>
         /// Return a string associated with the ASC/ASCQ bytes
         /// </summary>

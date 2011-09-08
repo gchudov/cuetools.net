@@ -1144,7 +1144,7 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.labelEncoderExtension, "labelEncoderExtension");
 			this.labelEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("ImageKey", this.encodersBindingSource, "DotExtension", true, System.Windows.Forms.DataSourceUpdateMode.Never));
-			this.labelEncoderExtension.MinimumSize = new System.Drawing.Size(100, 16);
+			this.labelEncoderExtension.MinimumSize = new System.Drawing.Size(133, 21);
 			this.labelEncoderExtension.Name = "labelEncoderExtension";
 			// 
 			// tabPage11
@@ -1222,7 +1222,7 @@ namespace JDP {
 			// labelDecoderExtension
 			// 
 			resources.ApplyResources(this.labelDecoderExtension, "labelDecoderExtension");
-			this.labelDecoderExtension.MinimumSize = new System.Drawing.Size(100, 16);
+			this.labelDecoderExtension.MinimumSize = new System.Drawing.Size(133, 21);
 			this.labelDecoderExtension.Name = "labelDecoderExtension";
 			// 
 			// tabPage4
@@ -1393,7 +1393,6 @@ namespace JDP {
 			resources.ApplyResources(this, "$this");
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = btnCancel;
-			this.ControlBox = false;
 			this.Controls.Add(this.tabControl1);
 			this.Controls.Add(btnCancel);
 			this.Controls.Add(this.btnOK);

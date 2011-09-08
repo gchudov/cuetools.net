@@ -7,18 +7,52 @@ using System.Text;
 using System.Windows.Forms;
 using CUETools.CTDB.EACPlugin.Properties;
 using CUETools.CTDB;
+using Microsoft.Win32;
 
 namespace AudioDataPlugIn
 {
     public partial class Options : Form
     {
-		public static CTDBPriority priorityMusicbrainz = CTDBPriority.High;
-		public static CTDBPriority priorityFreedb = CTDBPriority.Medium;
-		public static CTDBPriority priorityFreedbFuzzy = CTDBPriority.Low;		
+		private static CTDBMetadataSearch? metadataSearch = null;
+		private static string optionsKey = @"SOFTWARE\CUETools\EACPugin";
+		public static CTDBMetadataSearch MetadataSearch
+		{
+			get
+			{
+				if (!metadataSearch.HasValue)
+				{
+					try
+					{
+						using (var key = Registry.CurrentUser.OpenSubKey(optionsKey, false))
+						{
+							var val = key.GetValue("MetadataSearch") as string;
+							if (val == "Default") metadataSearch = CTDBMetadataSearch.Default;
+							if (val == "Fast") metadataSearch = CTDBMetadataSearch.Fast;
+							if (val == "Extensive") metadataSearch = CTDBMetadataSearch.Extensive;
+						}
+					}
+					catch (Exception ex)
+					{
+					}
+				}
+
+				return metadataSearch ?? CTDBMetadataSearch.Default;
+			}
+
+			set
+			{
+				using (var key = Registry.CurrentUser.CreateSubKey(optionsKey))
+				{
+					key.SetValue("MetadataSearch", value.ToString());
+				}
+
+				metadataSearch = value;
+			}
+		}
 
         public Options()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
 		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -29,34 +63,17 @@ namespace AudioDataPlugIn
 		private void Options_Load(object sender, EventArgs e)
 		{
 			this.Icon = Resources.ctdb;
-			this.radioButtonMBHigh.Checked = priorityMusicbrainz == CTDBPriority.High;
-			this.radioButtonMBMedium.Checked = priorityMusicbrainz == CTDBPriority.Medium;
-			this.radioButtonMBLow.Checked = priorityMusicbrainz == CTDBPriority.Low;
-			this.radioButtonMBNone.Checked = priorityMusicbrainz == CTDBPriority.None;
-			this.radioButtonFDHigh.Checked = priorityFreedb == CTDBPriority.High;
-			this.radioButtonFDMedium.Checked = priorityFreedb == CTDBPriority.Medium;
-			this.radioButtonFDLow.Checked = priorityFreedb == CTDBPriority.Low;
-			this.radioButtonFDNone.Checked = priorityFreedb == CTDBPriority.None;
-			this.radioButtonFZHigh.Checked = priorityFreedbFuzzy == CTDBPriority.High;
-			this.radioButtonFZMedium.Checked = priorityFreedbFuzzy == CTDBPriority.Medium;
-			this.radioButtonFZLow.Checked = priorityFreedbFuzzy == CTDBPriority.Low;
-			this.radioButtonFZNone.Checked = priorityFreedbFuzzy == CTDBPriority.None;
+			this.radioButtonMBExtensive.Checked = MetadataSearch == CTDBMetadataSearch.Extensive;
+			this.radioButtonMBDefault.Checked = MetadataSearch == CTDBMetadataSearch.Default;
+			this.radioButtonMBFast.Checked = MetadataSearch == CTDBMetadataSearch.Fast;
 		}
 
 		private void button2_Click(object sender, EventArgs e)
 		{
-			priorityMusicbrainz = this.radioButtonMBHigh.Checked ? CTDBPriority.High
-				: this.radioButtonMBMedium.Checked ? CTDBPriority.Medium
-				: this.radioButtonMBLow.Checked ? CTDBPriority.Low
-				: CTDBPriority.None;
-			priorityFreedb = this.radioButtonFDHigh.Checked ? CTDBPriority.High
-				: this.radioButtonFDMedium.Checked ? CTDBPriority.Medium
-				: this.radioButtonFDLow.Checked ? CTDBPriority.Low
-				: CTDBPriority.None;
-			priorityFreedbFuzzy = this.radioButtonFZHigh.Checked ? CTDBPriority.High
-				: this.radioButtonFZMedium.Checked ? CTDBPriority.Medium
-				: this.radioButtonFZLow.Checked ? CTDBPriority.Low
-				: CTDBPriority.None;
+			Options.MetadataSearch = this.radioButtonMBExtensive.Checked ? CTDBMetadataSearch.Extensive
+				: this.radioButtonMBDefault.Checked ? CTDBMetadataSearch.Default
+				: this.radioButtonMBFast.Checked ? CTDBMetadataSearch.Fast
+				: CTDBMetadataSearch.None;
 		}
     }
 }

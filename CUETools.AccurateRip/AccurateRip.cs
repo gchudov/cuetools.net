@@ -1124,16 +1124,17 @@ namespace CUETools.AccurateRip
 			get { throw new Exception("unsupported"); }
 		}
 
-		public void GenerateLog(TextWriter sw, int oi, bool v2)
+		public void GenerateLog(TextWriter sw, int oi)
 		{
 			uint maxTotal = 0;
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 				maxTotal = Math.Max(maxTotal, Total(iTrack));
 
-			uint maxConf = 0;
+			uint maxConf = 0, maxConf2 = 0;
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
 			{
-				uint crcOI = v2 ? CRCV2(iTrack) : CRC(iTrack, oi);
+				uint crcOI = CRC(iTrack, oi);
+				uint crcOI2 = CRCV2(iTrack);
 				for (int di = 0; di < (int)AccDisks.Count; di++)
 				{
 					int trno = iTrack + _toc.FirstAudio - 1;
@@ -1142,12 +1143,14 @@ namespace CUETools.AccurateRip
 						&& 0 != AccDisks[di].tracks[trno].CRC
 						)
 						maxConf = Math.Max(maxConf, AccDisks[di].tracks[trno].count);
+					if (trno < AccDisks[di].tracks.Count
+						&& 0 == oi
+						&& crcOI2 == AccDisks[di].tracks[trno].CRC
+						&& 0 != AccDisks[di].tracks[trno].CRC
+						)
+						maxConf2 = Math.Max(maxConf, AccDisks[di].tracks[trno].count);
 				}
 			}
-			if (maxConf == 0 && v2)
-				return;
-			if (v2)
-				sw.WriteLine("AccurateRip v2:");
 			string ifmt = maxTotal < 10 ? ":0" : maxTotal < 100 ? ":00" : ":000";
 			//string ifmt = maxTotal < 10 ? ",1" : maxTotal < 100 ? ",2" : ",3";
 			for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
@@ -1155,7 +1158,9 @@ namespace CUETools.AccurateRip
 				uint count = 0;
 				uint partials = 0;
 				uint conf = 0;
-				uint crcOI = v2 ? CRCV2(iTrack) : CRC(iTrack, oi);
+				uint conf2 = 0;
+				uint crcOI = CRC(iTrack, oi);
+				uint crcOI2 = CRCV2(iTrack);
 				uint crc450OI = CRC450(iTrack, oi);
 				for (int di = 0; di < (int)AccDisks.Count; di++)
 				{
@@ -1166,20 +1171,29 @@ namespace CUETools.AccurateRip
 					if (crcOI == AccDisks[di].tracks[trno].CRC
 						&& 0 != AccDisks[di].tracks[trno].CRC)
 						conf += AccDisks[di].tracks[trno].count;
+					if (crcOI2 == AccDisks[di].tracks[trno].CRC
+						&& 0 == oi
+						&& 0 != AccDisks[di].tracks[trno].CRC)
+						conf2 += AccDisks[di].tracks[trno].count;
 					if (crc450OI == AccDisks[di].tracks[trno].Frame450CRC
 						&& 0 != AccDisks[di].tracks[trno].Frame450CRC)
 						partials++;
 				}
 				string status;
-				if (conf > 0)
+				if (conf + conf2 > 0)
 					status = "Accurately ripped";
 				else if (count == 0 && crcOI == 0)
 					status = "Silent track";
+				else if (partials > 0 && 0 != oi)
+					status = "No match (V2 was not tested)";
 				else if (partials > 0)
-					status = "No match but offset";
+					status = "No match";
 				else
 					status = "No match";
-				sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) {4}", iTrack + 1, crcOI, count, conf, status));
+				if (oi == 0)
+					sw.WriteLine(String.Format(" {0:00}     [{1:x8}|{5:x8}] ({3" + ifmt + "}+{6" + ifmt + "}/{2" + ifmt + "}) {4}", iTrack + 1, crcOI, count, conf, status, crcOI2, conf2));
+				else
+					sw.WriteLine(String.Format(" {0:00}     [{1:x8}] ({3" + ifmt + "}/{2" + ifmt + "}) {4}", iTrack + 1, crcOI, count, conf, status));
 			}
 		}
 
@@ -1190,9 +1204,8 @@ namespace CUETools.AccurateRip
 			{
 				if (verbose)
 				{
-					sw.WriteLine("Track   [ CRC    ] Status");
-					GenerateLog(sw, 0, false);
-					GenerateLog(sw, 0, true);
+					sw.WriteLine("Track   [  CRC   |   V2   ] Status");
+					GenerateLog(sw, 0);
 					uint offsets_match = 0;
 					for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
 					{
@@ -1217,7 +1230,7 @@ namespace CUETools.AccurateRip
 								break;
 							}
 							sw.WriteLine("Offsetted by {0}:", oi);
-							GenerateLog(sw, oi, false);
+							GenerateLog(sw, oi);
 						}
 					}
 					offsets_match = 0;
@@ -1252,7 +1265,7 @@ namespace CUETools.AccurateRip
 								break;
 							}
 							sw.WriteLine("Offsetted by {0}:", oi);
-							GenerateLog(sw, oi, false);
+							GenerateLog(sw, oi);
 						}
 					}
 				}

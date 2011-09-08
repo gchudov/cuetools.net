@@ -1220,7 +1220,7 @@ namespace CUETools.Ripper.SCSI
 	public sealed class SCSIException : Exception
 	{
 		public SCSIException(string args, Device device, Device.CommandStatus st)
-			: base(args + ": " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(device.GetSenseAsc(), device.GetSenseAscq()) : st.ToString()))
+			: base(args + ": " + (st == Device.CommandStatus.DeviceFailed ? device.GetErrorString() : st.ToString()))
 		{
 		}
 	}

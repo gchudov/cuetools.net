@@ -42,7 +42,7 @@ namespace MetadataPlugIn
 			TOC[1][0].Start = 0U;
 
 			var ctdb = new CUEToolsDB(TOC, null);
-			var form = new CUETools.CTDB.EACPlugin.FormMetadata(ctdb, "EAC" + data.HostVersion + " CTDB 2.1.2");
+			var form = new CUETools.CTDB.EACPlugin.FormMetadata(ctdb, "EAC" + data.HostVersion + " CTDB 2.1.3");
 			form.ShowDialog();
 			var meta = form.Meta;
 			if (meta == null)
@@ -154,7 +154,7 @@ namespace MetadataPlugIn
 
 		public string GetPluginName()
 		{
-			return "CUETools DB Metadata Plugin V2.1.2b";
+			return "CUETools DB Metadata Plugin V2.1.3";
 		}
 
 		public void ShowOptions()
