@@ -149,5 +149,23 @@ namespace CUETools.TestCodecs
 			lpc.compute_lpc_coefs(8, reff, lpcs);
 			Assert.IsTrue(lpcs[7 * lpc.MAX_LPC_ORDER] < 3000);
 		}
-	}
+
+        [TestMethod()]
+        public void SeekTest()
+        {
+            var r = new FlakeReader("test.flac", null);
+            var buff1 = new AudioBuffer(r, 16536);
+            var buff2 = new AudioBuffer(r, 16536);
+            r.Read(buff1, 7777);
+            r.Position = 0;
+            r.Read(buff2, 7777);
+            r.Close();
+            Assert.AreEqual(buff1.ByteLength, buff2.ByteLength);
+            var bytes1 = new byte[buff1.ByteLength];
+            var bytes2 = new byte[buff2.ByteLength];
+            Array.Copy(buff1.Bytes, bytes1, buff1.ByteLength);
+            Array.Copy(buff2.Bytes, bytes2, buff2.ByteLength);
+            CollectionAssert.AreEqual(bytes1, bytes2);
+        }
+    }
 }

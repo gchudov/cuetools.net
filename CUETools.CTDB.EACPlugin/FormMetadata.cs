@@ -70,8 +70,11 @@ namespace CUETools.CTDB.EACPlugin
 					label == "" ? "" : " (" + label + ")");
 				var tip = new StringBuilder();
 				var i = 0;
-				foreach(var tr in metadata.track)
-					tip.AppendFormat("{0}. {2}{1}\n", ++i, tr.name, ((tr.artist ?? metadata.artist) == metadata.artist) ? "" : tr.artist + " / ");
+				if (metadata.track != null)
+				{
+					foreach (var tr in metadata.track)
+						tip.AppendFormat("{0}. {2}{1}\n", ++i, tr.name, ((tr.artist ?? metadata.artist) == metadata.artist) ? "" : tr.artist + " / ");
+				}
 				listView1.Items.Add(new ListViewItem(text) { Tag = metadata, ImageKey = metadata.source, ToolTipText = tip.ToString() });
 			}
 			this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);

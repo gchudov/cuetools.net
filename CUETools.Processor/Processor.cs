@@ -4786,23 +4786,29 @@ return processor.Go();
 			{
 				if (_hasEmbeddedCUESheet)
 				{
-					string trackPrefix = String.Format("cue_track{0:00}_", iTrack + 1);
-					NameValueCollection albumTags = Tagging.Analyze(_fileInfo);
-					foreach (string key in albumTags.AllKeys)
+					if (_fileInfo != null)
 					{
-						if (key.ToLower().StartsWith(trackPrefix)
-							|| !key.ToLower().StartsWith("cue_track"))
+						string trackPrefix = String.Format("cue_track{0:00}_", iTrack + 1);
+						NameValueCollection albumTags = Tagging.Analyze(_fileInfo);
+						foreach (string key in albumTags.AllKeys)
 						{
-							string name = key.ToLower().StartsWith(trackPrefix) ?
-								key.Substring(trackPrefix.Length) : key;
-							string[] values = albumTags.GetValues(key);
-							for (int j = 0; j < values.Length; j++)
-								destTags.Add(name, values[j]);
+							if (key.ToLower().StartsWith(trackPrefix)
+								|| !key.ToLower().StartsWith("cue_track"))
+							{
+								string name = key.ToLower().StartsWith(trackPrefix) ?
+									key.Substring(trackPrefix.Length) : key;
+								string[] values = albumTags.GetValues(key);
+								for (int j = 0; j < values.Length; j++)
+									destTags.Add(name, values[j]);
+							}
 						}
 					}
 				}
 				else if (_hasTrackFilenames)
-					destTags.Add(Tagging.Analyze(_tracks[iTrack]._fileInfo));
+				{
+					if (_tracks[iTrack]._fileInfo != null)
+						destTags.Add(Tagging.Analyze(_tracks[iTrack]._fileInfo));
+				}
 				else if (_hasSingleFilename)
 				{
 					// TODO?
@@ -4850,7 +4856,8 @@ return processor.Go();
 			{
 				if (_hasEmbeddedCUESheet || _hasSingleFilename)
 				{
-					destTags.Add(Tagging.Analyze(_fileInfo));
+					if (_fileInfo != null)
+						destTags.Add(Tagging.Analyze(_fileInfo));
 					if (!fWithCUE)
 						CleanupTags(destTags, "CUE_TRACK");
 				}
@@ -4858,6 +4865,7 @@ return processor.Go();
 				{
 					for (int iTrack = 0; iTrack < TrackCount; iTrack++)
 					{
+						if (_tracks[iTrack]._fileInfo == null) continue;
 						NameValueCollection trackTags = Tagging.Analyze(_tracks[iTrack]._fileInfo);
 						foreach (string key in trackTags.AllKeys)
 						{
