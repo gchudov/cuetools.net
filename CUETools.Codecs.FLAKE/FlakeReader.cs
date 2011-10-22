@@ -167,6 +167,7 @@ namespace CUETools.Codecs.FLAKE
 						{
 							_framesBufferLength = 0;
 							_samplesInBuffer = 0;
+                            _samplesBufferOffset = 0;
 							_IO.Position = (long)seek_table[best_st].offset + first_frame_offset;
 							_sampleOffset = seek_table[best_st].number;
 						}
