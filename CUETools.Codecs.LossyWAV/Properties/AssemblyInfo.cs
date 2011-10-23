@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Copyleft")]
 [assembly: AssemblyProduct("LossyWAV#")]
-[assembly: AssemblyCopyright("Copyright Âc 2007, 2008 Nick Currie, C# port by Greg Chudov")]
+[assembly: AssemblyCopyright("Copyright ï¿½c 2007, 2008 Nick Currie, C# port by Greg Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
