@@ -102,7 +102,15 @@ namespace CUETools.TestCodecs
 			CollectionAssert.AreEqual(testSamples2, target.Samples, "CUETools.Codecs.AudioBuffer.Samples was not set correctly.");
 		}
 
-	}
+        public static void AreEqual(AudioBuffer buff1, AudioBuffer buff2)
+        {
+            var bytes1 = new byte[buff1.ByteLength];
+            var bytes2 = new byte[buff2.ByteLength];
+            Array.Copy(buff1.Bytes, bytes1, buff1.ByteLength);
+            Array.Copy(buff2.Bytes, bytes2, buff2.ByteLength);
+            CollectionAssert.AreEqual(bytes1, bytes2);
+        }
+    }
 
 
 	/// <summary>

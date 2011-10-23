@@ -156,16 +156,22 @@ namespace CUETools.TestCodecs
             var r = new FlakeReader("test.flac", null);
             var buff1 = new AudioBuffer(r, 16536);
             var buff2 = new AudioBuffer(r, 16536);
+            Assert.AreEqual(0, r.Position);
             r.Read(buff1, 7777);
+            Assert.AreEqual(7777, r.Position);
             r.Position = 0;
+            Assert.AreEqual(0, r.Position);
             r.Read(buff2, 7777);
+            Assert.AreEqual(7777, r.Position);
+            AudioBufferTest.AreEqual(buff1, buff2);
+            r.Read(buff1, 7777);
+            Assert.AreEqual(7777 + 7777, r.Position);
+            r.Position = 7777;
+            Assert.AreEqual(7777, r.Position);
+            r.Read(buff2, 7777);
+            Assert.AreEqual(7777 + 7777, r.Position);
+            AudioBufferTest.AreEqual(buff1, buff2);
             r.Close();
-            Assert.AreEqual(buff1.ByteLength, buff2.ByteLength);
-            var bytes1 = new byte[buff1.ByteLength];
-            var bytes2 = new byte[buff2.ByteLength];
-            Array.Copy(buff1.Bytes, bytes1, buff1.ByteLength);
-            Array.Copy(buff2.Bytes, bytes2, buff2.ByteLength);
-            CollectionAssert.AreEqual(bytes1, bytes2);
         }
     }
 }

@@ -229,7 +229,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 
 		virtual property Int64 Remaining {
 			Int64 get() {
-				return _sampleCount - _sampleOffset + SamplesInBuffer;
+				return _sampleCount - Position;
 			}
 		}
 
@@ -273,7 +273,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 						    throw gcnew Exception(String::Format("an error occurred while decoding: {0}", state));
 						}
 					} while (_bufferLength == 0);
-					_sampleOffset += _bufferLength;
 				}
 				Int32 copyCount = Math::Min(samplesNeeded, SamplesInBuffer);
 				Array::Copy(_sampleBuffer->Bytes, _bufferOffset * pcm->BlockAlign, buff->Bytes, buffOffset * pcm->BlockAlign, copyCount * pcm->BlockAlign);
@@ -349,6 +348,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			    }
 			}
 			_bufferLength = sampleCount;
+			_sampleOffset += _bufferLength;
 			return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 		}
 
