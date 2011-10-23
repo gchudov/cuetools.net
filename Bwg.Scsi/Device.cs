@@ -690,6 +690,10 @@ namespace Bwg.Scsi
 
         #region Private Functions
 
+        /// <summary>
+        /// Format error message using sense code.
+        /// </summary>
+        /// <returns></returns>
 		public string GetErrorString()
 		{
 			string res = messages.GetString(string.Format("SCSISenseKey_{0:X2}", (int)this.GetSenseKey())) ?? this.GetSenseKey().ToString();

@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodecLibs", "CodecLibs", "{8B179853-B7D6-479C-B8B2-6CBCE835D040}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BWGBurn", "BWGBurn", "{B36BE134-D85A-437E-AB61-2DA1CCDE06C1}"
@@ -48,28 +48,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x64", "x64", "{0E404B8B-FF8
 		..\ThirdParty\x64\Unrar.dll = ..\ThirdParty\x64\Unrar.dll
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{86BBE3FC-E4E5-4190-B675-C6745EAF4E64}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools", "CUETools.csproj", "{EF351583-A9CD-4530-92C3-20AC02136BC2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.FLAC", "..\CUETools.Codecs.FLAC\CUETools.Codecs.FLAC.vcproj", "{E70FA90A-7012-4A52-86B5-362B699D1540}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4CEFBC84-C215-11DB-8314-0800200C9A66} = {4CEFBC84-C215-11DB-8314-0800200C9A66}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.FLAC", "..\CUETools.Codecs.FLAC\CUETools.Codecs.FLAC.vcxproj", "{E70FA90A-7012-4A52-86B5-362B699D1540}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.APE", "..\CUETools.Codecs.APE\CUETools.Codecs.APE.vcproj", "{9AE965C4-301E-4C01-B90F-297AF341ACC6}"
-	ProjectSection(ProjectDependencies) = postProject
-		{0B9C97D4-61B8-4294-A1DF-BA90752A1779} = {0B9C97D4-61B8-4294-A1DF-BA90752A1779}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.APE", "..\CUETools.Codecs.APE\CUETools.Codecs.APE.vcxproj", "{9AE965C4-301E-4C01-B90F-297AF341ACC6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.WavPack", "..\CUETools.Codecs.WavPack\CUETools.Codecs.WavPack.vcproj", "{CC2E74B6-534A-43D8-9F16-AC03FE955000}"
-	ProjectSection(ProjectDependencies) = postProject
-		{5CCCB9CF-0384-458F-BA08-72B73866840F} = {5CCCB9CF-0384-458F-BA08-72B73866840F}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.WavPack", "..\CUETools.Codecs.WavPack\CUETools.Codecs.WavPack.vcxproj", "{CC2E74B6-534A-43D8-9F16-AC03FE955000}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MACLib", "..\MAC_SDK\Source\MACLib\MACLib.vcproj", "{0B9C97D4-61B8-4294-A1DF-BA90752A1779}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MACLib", "..\MAC_SDK\Source\MACLib\MACLib.vcxproj", "{0B9C97D4-61B8-4294-A1DF-BA90752A1779}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libFLAC_static", "..\flac\src\libFLAC\libFLAC_static.vcproj", "{4CEFBC84-C215-11DB-8314-0800200C9A66}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libFLAC_static", "..\flac\src\libFLAC\libFLAC_static.vcxproj", "{4CEFBC84-C215-11DB-8314-0800200C9A66}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwavpack", "..\wavpack-4.5.0\src\libwavpack.vcproj", "{5CCCB9CF-0384-458F-BA08-72B73866840F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwavpack", "..\wavpack-4.5.0\src\libwavpack.vcxproj", "{5CCCB9CF-0384-458F-BA08-72B73866840F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.ARCUE", "..\CUETools.ARCUE\CUETools.ARCUE.csproj", "{A5A8D8FA-9E32-4010-8AAF-AE580C5AF728}"
 EndProject
@@ -105,13 +98,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUERipper", "..\CUERipper\C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Freedb", "..\Freedb\Freedb.csproj", "{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TTALib", "..\ttalib-1.1\TTALib.vcproj", "{B3DF599C-1C8F-451D-91E4-DD766210DA1F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TTALib", "..\ttalib-1.1\TTALib.vcxproj", "{B3DF599C-1C8F-451D-91E4-DD766210DA1F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.TTA", "..\CUETools.Codecs.TTA\CUETools.Codecs.TTA.vcproj", "{1D1E99BC-6D22-41C0-BD94-FF4DD5EC725B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B3DF599C-1C8F-451D-91E4-DD766210DA1F} = {B3DF599C-1C8F-451D-91E4-DD766210DA1F}
-		{6458A13A-30EF-45A9-9D58-E5031B17BEE2} = {6458A13A-30EF-45A9-9D58-E5031B17BEE2}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.TTA", "..\CUETools.Codecs.TTA\CUETools.Codecs.TTA.vcxproj", "{1D1E99BC-6D22-41C0-BD94-FF4DD5EC725B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Converter", "..\CUETools.Converter\CUETools.Converter.csproj", "{115CC5B0-0385-41CD-8A23-6A7EA4C51926}"
 EndProject
@@ -172,8 +161,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.FLACL.cmd", "..\CUETools.FLACCL.cmd\CUETools.FLACL.cmd.csproj", "{1FCA8834-34E6-47CF-B53F-D8DF35345363}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenCLNet", "..\..\ATI Stream\OpenCL.Net 0.6\source\OpenCLNet\OpenCLNet.csproj", "{758285C6-1ACA-458A-9906-EE6701D5AF87}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{86BBE3FC-E4E5-4190-B675-C6745EAF4E64}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.CTDB.EACPlugin", "..\CUETools.CTDB.EACPlugin\CUETools.CTDB.EACPlugin.csproj", "{816D964C-9772-46C5-AF1D-49E8C78A1E7C}"
 EndProject
