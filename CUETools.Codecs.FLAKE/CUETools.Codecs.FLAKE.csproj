@@ -59,15 +59,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChannelMode.cs" />
+    <Compile Include="FlacFrame.cs" />
+    <Compile Include="FlacSubframe.cs" />
+    <Compile Include="FlacSubframeInfo.cs" />
     <Compile Include="Flake.cs" />
     <Compile Include="FlakeReader.cs" />
     <Compile Include="FlakeWriter.cs" />
+    <Compile Include="MetadataType.cs" />
+    <Compile Include="OrderMethod.cs" />
+    <Compile Include="PredictionType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="RiceContext.cs" />
+    <Compile Include="SeekPoint.cs" />
+    <Compile Include="StereoMethod.cs" />
+    <Compile Include="SubframeType.cs" />
+    <Compile Include="WindowFunction.cs" />
+    <Compile Include="WindowMethod.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
