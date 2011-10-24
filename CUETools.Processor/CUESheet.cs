@@ -21,6 +21,8 @@ namespace CUETools.Processor
 {
     public class CUESheet
     {
+        #region Fields
+
         private bool _stop, _pause;
         private List<CUELine> _attributes;
         private List<TrackInfo> _tracks;
@@ -74,9 +76,17 @@ namespace CUETools.Processor
         private bool _useLocalDB;
         private CUEToolsLocalDB _localDB;
 
+        #endregion
+
+        #region Events
+
         public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
         public event EventHandler<CUEToolsProgressEventArgs> CUEToolsProgress;
         public event EventHandler<CUEToolsSelectionEventArgs> CUEToolsSelection;
+
+        #endregion
+
+        #region Constructor
 
         public CUESheet(CUEConfig config)
         {
@@ -105,6 +115,10 @@ namespace CUETools.Processor
             _useLocalDB = false;
             proxy = _config.GetProxy();
         }
+
+        #endregion
+
+        #region Methods
 
         public void OpenCD(ICDRipper ripper)
         {
@@ -4492,5 +4506,7 @@ namespace CUETools.Processor
             AsmHelper helper = CompileScript(script);
             return helper != null;
         }
+
+        #endregion
     }
 }
