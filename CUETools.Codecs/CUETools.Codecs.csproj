@@ -62,16 +62,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AudioBuffer.cs" />
+    <Compile Include="AudioDecoderClass.cs" />
+    <Compile Include="AudioPCMConfig.cs" />
+    <Compile Include="AudioPipe.cs" />
+    <Compile Include="AudioSamples.cs" />
     <Compile Include="BitReader.cs" />
     <Compile Include="BitWriter.cs" />
-    <Compile Include="Codecs.cs" />
-    <Compile Include="CRCs\CRC16.cs" />
-    <Compile Include="CRCs\CRC16CCITT.cs" />
-    <Compile Include="CRCs\CRC32.cs" />
-    <Compile Include="CRCs\CRC8.cs" />
-    <Compile Include="Local.cs" />
+    <Compile Include="CRC\CRC16.cs" />
+    <Compile Include="CRC\CRC16CCITT.cs" />
+    <Compile Include="CRC\CRC32.cs" />
+    <Compile Include="CRC\CRC8.cs" />
+    <Compile Include="CyclicBuffer.cs" />
+    <Compile Include="CyclicBufferInputStream.cs" />
+    <Compile Include="CyclicBufferOutputStream.cs" />
+    <Compile Include="DummyWriter.cs" />
+    <Compile Include="IAudioDest.cs" />
+    <Compile Include="AudioEncoderClass.cs" />
+    <Compile Include="IAudioFilter.cs" />
+    <Compile Include="IAudioSource.cs" />
+    <Compile Include="IWavePlayer.cs" />
+    <Compile Include="SRDescriptionAttribute.cs" />
     <Compile Include="LPC.cs" />
+    <Compile Include="LpcContext.cs" />
+    <Compile Include="NullStream.cs" />
+    <Compile Include="PlaybackState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SilenceGenerator.cs" />
+    <Compile Include="UserDefinedReader.cs" />
+    <Compile Include="UserDefinedWriter.cs" />
+    <Compile Include="WAVReader.cs" />
+    <Compile Include="WAVWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -89,6 +110,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

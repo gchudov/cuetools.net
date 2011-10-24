@@ -1,7 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CUETools.Codecs
 {
@@ -10,7 +8,17 @@ namespace CUETools.Codecs
 	/// </summary>
 	[AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
 	public class SRDescriptionAttribute : DescriptionAttribute
-	{
+    {
+        /// <summary>
+        /// Store a flag indicating whether this has been localized
+        /// </summary>
+        private bool localized;
+
+        /// <summary>
+        /// Resource manager to use;
+        /// </summary>
+        private Type SR;
+
 		/// <summary>
 		/// Construct the description attribute
 		/// </summary>
@@ -44,15 +52,5 @@ namespace CUETools.Codecs
 				return base.Description;
 			}
 		}
-
-		/// <summary>
-		/// Store a flag indicating whether this has been localized
-		/// </summary>
-		private bool localized;
-
-		/// <summary>
-		/// Resource manager to use;
-		/// </summary>
-		private Type SR;
 	}
 }

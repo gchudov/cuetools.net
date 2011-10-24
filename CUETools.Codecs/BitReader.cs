@@ -1,58 +1,34 @@
-/**
- * CUETools.Codecs: common audio encoder/decoder routines
- * Copyright (c) 2009 Gregory S. Chudov
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
-
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CUETools.Codecs
 {
 	unsafe public class BitReader
-	{
-		byte* buffer;
-		int pos, len;
-		int _bitaccumulator;
-		uint cache;
+    {
+        #region Static Methods
 
-		public static int log2i(int v)
-		{
-			return log2i((uint)v);
-		}
+        public static int log2i(int v)
+        {
+            return log2i((uint)v);
+        }
 
-		public static int log2i(ulong v)
-		{
-			int n = 0;
-			if (0 != (v & 0xffffffff00000000)) { v >>= 32; n += 32; }
-			if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
-			if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
-			return n + byte_to_log2_table[v];
-		}
+        public static int log2i(ulong v)
+        {
+            int n = 0;
+            if (0 != (v & 0xffffffff00000000)) { v >>= 32; n += 32; }
+            if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
+            if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
+            return n + byte_to_log2_table[v];
+        }
 
-		public static int log2i(uint v)
-		{
-			int n = 0;
-			if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
-			if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
-			return n + byte_to_log2_table[v];
-		}
+        public static int log2i(uint v)
+        {
+            int n = 0;
+            if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
+            if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
+            return n + byte_to_log2_table[v];
+        }
 
-		public static readonly byte[] byte_to_unary_table = new byte[] 
+        public static readonly byte[] byte_to_unary_table = new byte[] 
 		{
 			8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
 			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -72,7 +48,7 @@ namespace CUETools.Codecs
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		};
 
-		public static readonly byte[] byte_to_log2_table = new byte[] 
+        public static readonly byte[] byte_to_log2_table = new byte[] 
 		{
 			0,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3,
 			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
@@ -91,6 +67,13 @@ namespace CUETools.Codecs
 			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
 			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
 		};
+
+        #endregion
+
+        private byte* buffer;
+        private int pos, len;
+        private int _bitaccumulator;
+        private uint cache;
 
 		public int Position
 		{
@@ -285,13 +268,15 @@ namespace CUETools.Codecs
 				v = x & 0x01;
 				i = 5;
 			}
-			else if (0xFE == x) /* 11111110 */
-			{
-				v = 0;
-				i = 6;
-			}
-			else
-				throw new Exception("invalid utf8 encoding");
+            else if (0xFE == x) /* 11111110 */
+            {
+                v = 0;
+                i = 6;
+            }
+            else
+            {
+                throw new Exception("invalid utf8 encoding");
+            }
 			for (; i > 0; i--)
 			{
 				x = readbits(8);
@@ -322,60 +307,70 @@ namespace CUETools.Codecs
 			fixed (byte* unary_table = byte_to_unary_table)
 			{
 				uint mask = (1U << k) - 1;
-				if (k == 0)
-					for (int i = n; i > 0; i--)
-						*(r++) = read_unary_signed();
-				else if (k <= 8)
-					for (int i = n; i > 0; i--)
-					{
-						//*(r++) = read_rice_signed((int)k);
-						uint bits = unary_table[cache >> 24];
-						uint msbs = bits;
-						while (bits == 8)
-						{
-							skipbits8(8);
-							bits = unary_table[cache >> 24];
-							msbs += bits;
-						}
-						int btsk = k + (int)bits + 1;
-						uint uval = (msbs << k) | ((cache >> (32 - btsk)) & mask);
-						skipbits16(btsk);
-						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
-					}
-				else if (k <= 16)
-					for (int i = n; i > 0; i--)
-					{
-						//*(r++) = read_rice_signed((int)k);
-						uint bits = unary_table[cache >> 24];
-						uint msbs = bits;
-						while (bits == 8)
-						{
-							skipbits8(8);
-							bits = unary_table[cache >> 24];
-							msbs += bits;
-						}
-						int btsk = k + (int)bits + 1;
-						uint uval = (msbs << k) | ((cache >> (32 - btsk)) & mask);
-						skipbits(btsk);
-						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
-					}
-				else
-					for (int i = n; i > 0; i--)
-					{
-						//*(r++) = read_rice_signed((int)k);
-						uint bits = unary_table[cache >> 24];
-						uint msbs = bits;
-						while (bits == 8)
-						{
-							skipbits8(8);
-							bits = unary_table[cache >> 24];
-							msbs += bits;
-						}
-						skipbits8((int)(msbs & 7) + 1);
-						uint uval = (msbs << k) | ((cache >> (32 - k)));
-						skipbits(k);
-						*(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
-					}
+                if (k == 0)
+                {
+                    for (int i = n; i > 0; i--)
+                    {
+                        *(r++) = read_unary_signed();
+                    }
+                }
+                else if (k <= 8)
+                {
+                    for (int i = n; i > 0; i--)
+                    {
+                        //*(r++) = read_rice_signed((int)k);
+                        uint bits = unary_table[cache >> 24];
+                        uint msbs = bits;
+                        while (bits == 8)
+                        {
+                            skipbits8(8);
+                            bits = unary_table[cache >> 24];
+                            msbs += bits;
+                        }
+                        int btsk = k + (int)bits + 1;
+                        uint uval = (msbs << k) | ((cache >> (32 - btsk)) & mask);
+                        skipbits16(btsk);
+                        *(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
+                    }
+                }
+                else if (k <= 16)
+                {
+                    for (int i = n; i > 0; i--)
+                    {
+                        //*(r++) = read_rice_signed((int)k);
+                        uint bits = unary_table[cache >> 24];
+                        uint msbs = bits;
+                        while (bits == 8)
+                        {
+                            skipbits8(8);
+                            bits = unary_table[cache >> 24];
+                            msbs += bits;
+                        }
+                        int btsk = k + (int)bits + 1;
+                        uint uval = (msbs << k) | ((cache >> (32 - btsk)) & mask);
+                        skipbits(btsk);
+                        *(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
+                    }
+                }
+                else
+                {
+                    for (int i = n; i > 0; i--)
+                    {
+                        //*(r++) = read_rice_signed((int)k);
+                        uint bits = unary_table[cache >> 24];
+                        uint msbs = bits;
+                        while (bits == 8)
+                        {
+                            skipbits8(8);
+                            bits = unary_table[cache >> 24];
+                            msbs += bits;
+                        }
+                        skipbits8((int)(msbs & 7) + 1);
+                        uint uval = (msbs << k) | ((cache >> (32 - k)));
+                        skipbits(k);
+                        *(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
+                    }
+                }
 			}
 		}
 	}
