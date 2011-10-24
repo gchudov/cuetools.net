@@ -28,40 +28,40 @@ namespace JDP
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmReport));
-			this.btnClose = new System.Windows.Forms.Button();
-			this.txtReport = new System.Windows.Forms.TextBox();
-			this.SuspendLayout();
-			// 
-			// btnClose
-			// 
-			resources.ApplyResources(this.btnClose, "btnClose");
-			this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.btnClose.Name = "btnClose";
-			this.btnClose.UseVisualStyleBackColor = true;
-			// 
-			// txtReport
-			// 
-			resources.ApplyResources(this.txtReport, "txtReport");
-			this.txtReport.BackColor = System.Drawing.SystemColors.Control;
-			this.txtReport.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.txtReport.Name = "txtReport";
-			this.txtReport.ReadOnly = true;
-			// 
-			// frmReport
-			// 
-			resources.ApplyResources(this, "$this");
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.CancelButton = this.btnClose;
-			this.Controls.Add(this.txtReport);
-			this.Controls.Add(this.btnClose);
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-			this.Name = "frmReport";
-			this.ShowInTaskbar = false;
-			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-			this.ResumeLayout(false);
-			this.PerformLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmReport));
+            this.btnClose = new System.Windows.Forms.Button();
+            this.txtReport = new System.Windows.Forms.TextBox();
+            this.SuspendLayout();
+            // 
+            // btnClose
+            // 
+            resources.ApplyResources(this.btnClose, "btnClose");
+            this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnClose.Name = "btnClose";
+            this.btnClose.UseVisualStyleBackColor = true;
+            // 
+            // txtReport
+            // 
+            resources.ApplyResources(this.txtReport, "txtReport");
+            this.txtReport.BackColor = System.Drawing.SystemColors.Control;
+            this.txtReport.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtReport.Name = "txtReport";
+            this.txtReport.ReadOnly = true;
+            // 
+            // frmReport
+            // 
+            resources.ApplyResources(this, "$this");
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnClose;
+            this.Controls.Add(this.txtReport);
+            this.Controls.Add(this.btnClose);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "frmReport";
+            this.ShowInTaskbar = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.ResumeLayout(false);
+            this.PerformLayout();
 
 		}
 

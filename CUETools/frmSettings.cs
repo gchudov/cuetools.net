@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.Globalization;
 using System.IO;
-using System.Threading;
-using CUETools.Processor;
+using System.Windows.Forms;
 using CUEControls;
+using CUETools.Processor;
 
-namespace JDP {
+namespace JDP
+{
 	public partial class frmSettings : Form {
 		bool _reducePriority;
 		CUEConfig _config;

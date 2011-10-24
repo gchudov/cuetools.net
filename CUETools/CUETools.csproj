@@ -82,6 +82,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBCollision.cs" />
+    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDB.cs" />
+    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBCategory.cs" />
+    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBEntry.cs" />
+    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBFolder.cs" />
+    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBGroup.cs" />
     <Compile Include="frmSubmit.cs">
       <SubType>Form</SubType>
     </Compile>
