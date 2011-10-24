@@ -59,8 +59,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CTDBMetadataSearch.cs" />
+    <Compile Include="CTDBResponse.cs" />
+    <Compile Include="CTDBResponseEntry.cs" />
+    <Compile Include="CTDBResponseMeta.cs" />
+    <Compile Include="CTDBResponseMetaLabel.cs" />
+    <Compile Include="CTDBResponseMetaTrack.cs" />
     <Compile Include="CUEToolsDB.cs" />
+    <Compile Include="DBEntry.cs" />
+    <Compile Include="DBHDR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadDB.cs" />
     <Compile Include="UploadHelper\HttpUploadHelper.cs" />
     <Compile Include="UploadHelper\MimePart.cs" />
     <Compile Include="UploadHelper\StreamMimePart.cs" />
