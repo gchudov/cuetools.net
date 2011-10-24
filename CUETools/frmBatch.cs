@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Diagnostics;
+using System.Windows.Forms;
 using CUETools.Compression;
 using CUETools.Processor;
+using CUETools.Processor.Settings;
 
 namespace JDP
 {

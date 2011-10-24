@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
-using System.IO;
-using System.Text;
-using CUETools.Processor;
-using System.Threading;
 using System.Globalization;
+using System.IO;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Ipc;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using CUETools.Processor;
+using CUETools.Processor.Settings;
 
-namespace JDP {
+namespace JDP
+{
 	static class Program {
 		[STAThread]
 		static void Main(string[] args)

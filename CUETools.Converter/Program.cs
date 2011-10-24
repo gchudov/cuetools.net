@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Text;
 using System.IO;
 using CUETools.Codecs;
 using CUETools.Processor;
+using CUETools.Processor.Settings;
 
 namespace CUETools.Converter
 {

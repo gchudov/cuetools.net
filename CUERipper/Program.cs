@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Deployment.Application;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using CUETools.Processor;
+using CUETools.Processor.Settings;
 
 namespace CUERipper
 {

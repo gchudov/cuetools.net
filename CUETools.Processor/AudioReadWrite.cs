@@ -3,7 +3,6 @@ using System.IO;
 using CUETools.CDImage;
 using CUETools.Codecs;
 using CUETools.Codecs.LossyWAV;
-using System.Xml.Serialization;
 
 namespace CUETools.Processor
 {

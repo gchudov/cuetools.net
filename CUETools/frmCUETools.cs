@@ -18,31 +18,31 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
 // ****************************************************************************
-
 // ****************************************************************************
 // Access to AccurateRip is regulated, see
 // http://www.accuraterip.com/3rdparty-access.htm for details.
 // ****************************************************************************
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Globalization;
+using System.Text;
 using System.Threading;
-using System.Diagnostics;
-using CUETools.Processor;
-using CUETools.CDImage;
-using CUETools.Compression;
+using System.Windows.Forms;
 using CUETools.AccurateRip;
+using CUETools.CDImage;
 using CUETools.CTDB;
+using CUETools.Compression;
+using CUETools.Processor;
+using CUETools.Processor.Settings;
 
-namespace JDP {
+namespace JDP
+{
 	public partial class frmCUETools : Form {
 		public frmCUETools() {
 			_profile = _defaultProfile = new CUEToolsProfile("default");

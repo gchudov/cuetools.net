@@ -1,24 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using System.Configuration;
-using System.Drawing.Drawing2D;
+using CUEControls;
 using CUETools.AccurateRip;
 using CUETools.CTDB;
-using CUETools.CDImage;
-using CUETools.Codecs;
 using CUETools.Processor;
+using CUETools.Processor.Settings;
 using CUETools.Ripper;
-using CUEControls;
 using Freedb;
 
 namespace CUERipper
