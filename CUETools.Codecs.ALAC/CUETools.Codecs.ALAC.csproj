@@ -60,9 +60,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ALACDotNet.cs" />
+    <Compile Include="ALACFrame.cs" />
+    <Compile Include="ALACSubframe.cs" />
+    <Compile Include="ALACSubframeInfo.cs" />
     <Compile Include="ALACWriter.cs" />
-    <Compile Include="ALAC.cs" />
+    <Compile Include="Alac.cs" />
+    <Compile Include="ChannelMode.cs" />
+    <Compile Include="FrameType.cs" />
+    <Compile Include="OrderMethod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RiceContext.cs" />
+    <Compile Include="StereoMethod.cs" />
+    <Compile Include="WindowFunction.cs" />
+    <Compile Include="WindowMethod.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
