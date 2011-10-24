@@ -82,7 +82,7 @@ namespace CUETools.Codecs.Icecast
 				{
 					encoder = new CUETools.Codecs.LAME.LAMEEncoderCBR("", reqStream, AudioPCMConfig.RedBook);
 					(encoder.Settings as CUETools.Codecs.LAME.LAMEEncoderCBRSettings).StereoMode = settings.JointStereo ? 
-						CUETools.Codecs.LAME.MpegMode.JOINT_STEREO : CUETools.Codecs.LAME.MpegMode.STEREO;
+						CUETools.Codecs.LAME.Interop.MpegMode.JOINT_STEREO : CUETools.Codecs.LAME.Interop.MpegMode.STEREO;
 					(encoder.Settings as CUETools.Codecs.LAME.LAMEEncoderCBRSettings).CustomBitrate = settings.Bitrate;
 				}
 			}

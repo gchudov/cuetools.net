@@ -59,8 +59,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Encoder.cs" />
-    <Compile Include="Lame.cs" />
+    <Compile Include="Interop\ACC.cs" />
+    <Compile Include="Interop\BE_CONFIG.cs" />
+    <Compile Include="Interop\BE_VERSION.cs" />
+    <Compile Include="Interop\Format.cs" />
+    <Compile Include="Interop\Lame_encDLL.cs" />
+    <Compile Include="Interop\LAME_QUALITY_PRESET.cs" />
+    <Compile Include="Interop\LHV1.cs" />
+    <Compile Include="Interop\MP3.cs" />
+    <Compile Include="Interop\MpegMode.cs" />
+    <Compile Include="Interop\VBRMETHOD.cs" />
+    <Compile Include="LAMEEncoder.cs" />
+    <Compile Include="LAMEEncoderCBR.cs" />
+    <Compile Include="LAMEEncoderCBRSettings.cs" />
+    <Compile Include="LAMEEncoderVBR.cs" />
+    <Compile Include="LAMEEncoderVBRProcessingQuality.cs" />
+    <Compile Include="LAMEEncoderVBRSettings.cs" />
     <Compile Include="LameWriter.cs" />
     <Compile Include="LameWriterSettings.cs" />
     <Compile Include="LameWriterVBR.cs" />
@@ -89,6 +103,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Interop\License.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
