@@ -57,7 +57,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mixer.cs" />
+    <Compile Include="AudioReadEventArgs.cs" />
+    <Compile Include="MixingBuffer.cs" />
+    <Compile Include="MixingSource.cs" />
+    <Compile Include="MixingWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
