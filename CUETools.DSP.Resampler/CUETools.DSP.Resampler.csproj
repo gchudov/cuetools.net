@@ -59,9 +59,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internal\dft_filter_t.cs" />
+    <Compile Include="Internal\fifo_t.cs" />
+    <Compile Include="Internal\poly_fir1_0_t.cs" />
+    <Compile Include="Internal\poly_fir1_1_t.cs" />
+    <Compile Include="Internal\poly_fir1_2_t.cs" />
+    <Compile Include="Internal\poly_fir1_3_t.cs" />
+    <Compile Include="Internal\poly_fir1_t.cs" />
+    <Compile Include="Internal\poly_fir_t.cs" />
+    <Compile Include="Internal\rate_shared_t.cs" />
+    <Compile Include="Internal\rate_t.cs" />
     <Compile Include="SOXResampler.cs" />
-    <Compile Include="SOXFft.cs" />
+    <Compile Include="Internal\SOXFft.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SOXResamplerConfig.cs" />
+    <Compile Include="SOXResamplerQuality.cs" />
+    <Compile Include="Internal\stage_fn_t.cs" />
+    <Compile Include="Internal\stage_t.cs" />
+    <Compile Include="Internal\thread_fft_cache.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace CUETools.DSP.Resampler
+namespace CUETools.DSP.Resampler.Internal
 {
-	internal class SOXFft
+	class SOXFft
 	{
 		static unsafe void bitrv2(int n, int* ip/*0*/, double* a)
 		{
