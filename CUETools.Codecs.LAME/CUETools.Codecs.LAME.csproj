@@ -75,9 +75,14 @@
     <Compile Include="LAMEEncoderVBR.cs" />
     <Compile Include="LAMEEncoderVBRProcessingQuality.cs" />
     <Compile Include="LAMEEncoderVBRSettings.cs" />
+    <Compile Include="LameException.cs" />
+    <Compile Include="LameWriterConstants.cs" />
     <Compile Include="LameWriter.cs" />
+    <Compile Include="LameWriterCBR.cs" />
+    <Compile Include="LameWriterCBRSettings.cs" />
     <Compile Include="LameWriterSettings.cs" />
     <Compile Include="LameWriterVBR.cs" />
+    <Compile Include="LameWriterVBRSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -9,7 +9,7 @@ namespace CUETools.Codecs.LAME
     {
         #region Unmanaged Functions
 
-        private const string LameDll = "lame_enc";
+        private const string LameDll = "libmp3lame";
         private const CallingConvention LameCallingConvention = CallingConvention.Cdecl;
 
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
@@ -50,7 +50,6 @@ namespace CUETools.Codecs.LAME
         private string outputPath;
         private Stream outputStream;
 
-        private LameWriterSettings settings;
         private bool closed = false, initialized = false;
         private IntPtr handle;
         private AudioPCMConfig pcm;
@@ -99,15 +98,19 @@ namespace CUETools.Codecs.LAME
         {
             get
             {
-                return this.settings;
+                return null;
             }
             set
             {
-                if (!(value is LameWriterSettings))
-                {
-                    throw new ArgumentException("Settings must be of type LameWriterSettings");
-                }
-                this.settings = (LameWriterSettings)value;
+                throw new MethodAccessException();
+            }
+        }
+
+        protected virtual LameWriterConfig Config
+        {
+            get
+            {
+                return LameWriterConfig.CreateCbr(320);
             }
         }
 
@@ -232,6 +235,8 @@ namespace CUETools.Codecs.LAME
         {
             if (!this.initialized)
             {
+                var config = this.Config;
+
                 handle = lame_init();
 
                 lame_set_bWriteVbrTag(handle, 1);
@@ -240,25 +245,25 @@ namespace CUETools.Codecs.LAME
                 lame_set_num_channels(handle, this.pcm.ChannelCount);
                 lame_set_in_samplerate(handle, this.pcm.SampleRate);
 
-                lame_set_quality(handle, (int)this.settings.Quality);
+                lame_set_quality(handle, (int)config.Quality);
 
                 if (this.finalSampleCount != 0)
                 {
                     lame_set_num_samples(handle, this.finalSampleCount);
                 }
 
-                lame_set_VBR(this.handle, (int)this.settings.VbrMode);
+                lame_set_VBR(this.handle, (int)config.VbrMode);
 
-                switch (this.settings.VbrMode)
+                switch (config.VbrMode)
                 {
                     case LameVbrMode.Abr:
-                        lame_set_VBR_mean_bitrate_kbps(handle, this.settings.Bitrate);
+                        lame_set_VBR_mean_bitrate_kbps(handle, config.Bitrate);
                         break;
                     case LameVbrMode.Default:
-                        lame_set_VBR_quality(handle, this.settings.VbrQuality);
+                        lame_set_VBR_quality(handle, config.VbrQuality);
                         break;
                     case LameVbrMode.Off:
-                        lame_set_brate(handle, this.settings.Bitrate);
+                        lame_set_brate(handle, config.Bitrate);
                         break;
                     default:
                         throw new ArgumentException("Only ABR, Default and Off VBR modes are supported.");
