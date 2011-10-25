@@ -165,10 +165,7 @@ namespace JDP
 					}
 					else if (useAR)
 					{
-						StringWriter sw = new StringWriter();
-						cueSheet.GenerateAccurateRipLog(sw);
-						textBox1.Text += sw.ToString();
-						sw.Close();
+						textBox1.Text += CUESheetLogWriter.GetAccurateRipLog(cueSheet);
 						textBox1.Show();
 					}
 					textBox1.Text += "----------------------------------------------------------\r\n";
