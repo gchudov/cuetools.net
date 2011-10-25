@@ -100,8 +100,10 @@
     <Compile Include="CUETrackMetadata.cs" />
     <Compile Include="FileGroupInfo.cs" />
     <Compile Include="FileGroupInfoType.cs" />
+    <Compile Include="FileLocator.cs" />
     <Compile Include="General.cs" />
     <Compile Include="IndexInfo.cs" />
+    <Compile Include="LogToTocParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\SettingsReader.cs" />
     <Compile Include="Settings\SettingsShared.cs" />

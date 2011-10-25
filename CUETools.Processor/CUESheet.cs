@@ -78,11 +78,51 @@ namespace CUETools.Processor
 
         #endregion
 
-        #region Events
+        #region Properties
 
-        public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
-        public event EventHandler<CUEToolsProgressEventArgs> CUEToolsProgress;
-        public event EventHandler<CUEToolsSelectionEventArgs> CUEToolsSelection;
+        public string InputPath
+        {
+            get
+            {
+                return _inputPath;
+            }
+        }
+
+        public AccurateRipVerify ArVerify
+        {
+            get
+            {
+                return _arVerify;
+            }
+        }
+
+        public CUEToolsDB CTDB
+        {
+            get
+            {
+                return _CUEToolsDB;
+            }
+        }
+
+        public ICDRipper CDRipper
+        {
+            get
+            {
+                return _ripper;
+            }
+            set
+            {
+                _ripper = value;
+            }
+        }
+
+        public CUEMetadata Metadata
+        {
+            get
+            {
+                return cueMetadata;
+            }
+        }
 
         #endregion
 
@@ -161,55 +201,11 @@ namespace CUETools.Processor
             _ripper = null;
         }
 
-        public string InputPath
-        {
-            get
-            {
-                return _inputPath;
-            }
-        }
-
-        public AccurateRipVerify ArVerify
-        {
-            get
-            {
-                return _arVerify;
-            }
-        }
-
-        public CUEToolsDB CTDB
-        {
-            get
-            {
-                return _CUEToolsDB;
-            }
-        }
-
-        public ICDRipper CDRipper
-        {
-            get
-            {
-                return _ripper;
-            }
-            set
-            {
-                _ripper = value;
-            }
-        }
-
         public void CopyMetadata(CUEMetadata metadata)
         {
             if (this.cueMetadata == null)
                 this.cueMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
             this.cueMetadata.CopyMetadata(metadata);
-        }
-
-        public CUEMetadata Metadata
-        {
-            get
-            {
-                return cueMetadata;
-            }
         }
 
         protected void ReportProgress(string status, double percent)
@@ -311,7 +307,7 @@ namespace CUETools.Processor
                         {
                             TagLib.File fileInfo;
                             TagLib.UserDefined.AdditionalFileTypes.Config = _config;
-                            TagLib.File.IFileAbstraction file = (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(path);
+                            TagLib.File.IFileAbstraction file = new TagLib.File.LocalFileAbstraction(path);
                             fileInfo = TagLib.File.Create(file);
                             NameValueCollection tags = Tagging.Analyze(fileInfo);
                             if (tags.Get("CUESHEET") == null)
@@ -491,112 +487,6 @@ namespace CUETools.Processor
             if (tocFromCDEntry.TrackCount > 0 && tocFromCDEntry[1].IsAudio)
                 tocFromCDEntry[1][0].Start = 0;
             return tocFromCDEntry;
-        }
-
-        public CDImageLayout TocFromLog(string eacLog)
-        {
-            CDImageLayout tocFromLog = new CDImageLayout();
-            using (StringReader sr = new StringReader(eacLog))
-            {
-                bool isEACLog = false;
-                bool iscdda2wavlog = false;
-                string lineStr;
-                int prevTrNo = 1, prevTrStart = 0;
-                uint firstPreGap = 0;
-                while ((lineStr = sr.ReadLine()) != null)
-                {
-                    if (isEACLog)
-                    {
-                        string[] n = lineStr.Split('|');
-                        uint trNo, trStart, trEnd;
-                        if (n.Length == 5 && uint.TryParse(n[0], out trNo) && uint.TryParse(n[3], out trStart) && uint.TryParse(n[4], out trEnd) && trNo == tocFromLog.TrackCount + 1)
-                        {
-                            bool isAudio = true;
-                            if (tocFromLog.TrackCount >= _toc.TrackCount &&
-                                trStart == tocFromLog[tocFromLog.TrackCount].End + 1U + 152U * 75U
-                                )
-                                isAudio = false;
-                            if (tocFromLog.TrackCount < _toc.TrackCount &&
-                                !_toc[tocFromLog.TrackCount + 1].IsAudio
-                                )
-                                isAudio = false;
-                            tocFromLog.AddTrack(new CDTrack(trNo, trStart, trEnd + 1 - trStart, isAudio, false));
-                        }
-                        else
-                        {
-                            string[] sepTrack = { "Track" };
-                            string[] sepGap = { "Pre-gap length" };
-
-                            string[] partsTrack = lineStr.Split(sepTrack, StringSplitOptions.None);
-                            if (partsTrack.Length == 2 && uint.TryParse(partsTrack[1], out trNo))
-                            {
-                                prevTrNo = (int)trNo;
-                                continue;
-                            }
-
-                            string[] partsGap = lineStr.Split(sepGap, StringSplitOptions.None);
-                            if (partsGap.Length == 2)
-                            {
-                                string[] n1 = partsGap[1].Split(':', '.');
-                                int h, m, s, f;
-                                if (n1.Length == 4 && int.TryParse(n1[0], out h) && int.TryParse(n1[1], out m) && int.TryParse(n1[2], out s) && int.TryParse(n1[3], out f))
-                                {
-                                    uint gap = (uint)((f * 3 + 2) / 4 + 75 * (s + 60 * (m + 60 * h)));
-                                    if (prevTrNo == 1)
-                                        gap -= 150;
-                                    if (prevTrNo == 1)
-                                        firstPreGap = gap - _toc[1].Start;
-                                    //else
-                                    //firstPreGap += gap;
-                                    while (prevTrNo > tocFromLog.TrackCount && _toc.TrackCount > tocFromLog.TrackCount)
-                                    {
-                                        tocFromLog.AddTrack(new CDTrack((uint)tocFromLog.TrackCount + 1,
-                                            _toc[tocFromLog.TrackCount + 1].Start + firstPreGap,
-                                            _toc[tocFromLog.TrackCount + 1].Length,
-                                            _toc[tocFromLog.TrackCount + 1].IsAudio, false));
-                                    }
-                                    if (prevTrNo <= tocFromLog.TrackCount)
-                                        tocFromLog[prevTrNo].Pregap = gap;
-                                }
-                            }
-                        }
-                    }
-                    else if (iscdda2wavlog)
-                    {
-                        foreach (string entry in lineStr.Split(','))
-                        {
-                            string[] n = entry.Split('(');
-                            if (n.Length < 2) continue;
-                            // assert n.Length == 2;
-                            string key = n[0].Trim(' ', '.');
-                            int trStart = int.Parse(n[1].Trim(' ', ')'));
-                            bool isAudio = true; // !!!
-                            if (key != "1")
-                                tocFromLog.AddTrack(new CDTrack((uint)prevTrNo, (uint)prevTrStart, (uint)(trStart - prevTrStart), isAudio, false));
-                            if (key == "lead-out")
-                            {
-                                iscdda2wavlog = false;
-                                break;
-                            }
-                            prevTrNo = int.Parse(key);
-                            prevTrStart = trStart;
-                        }
-                    }
-                    else if (lineStr.StartsWith("TOC of the extracted CD")
-                        || lineStr.StartsWith("Exact Audio Copy")
-                        || lineStr.StartsWith("EAC extraction logfile")
-                        || lineStr.StartsWith("CUERipper")
-                        || lineStr.StartsWith("     Track |   Start  |  Length  | Start sector | End sector")
-                        )
-                        isEACLog = true;
-                    else if (lineStr.StartsWith("Table of Contents: starting sectors"))
-                        iscdda2wavlog = true;
-                }
-            }
-            if (tocFromLog.TrackCount == 0)
-                return null;
-            tocFromLog[1][0].Start = 0;
-            return tocFromLog;
         }
 
         public void Open(string pathIn)
@@ -802,9 +692,9 @@ namespace CUETools.Processor
                                     try
                                     {
                                         if (_isArchive)
-                                            pathAudio = LocateFile(_archiveCUEpath, line.Params[1], _archiveContents);
+                                            pathAudio = FileLocator.LocateFile(_archiveCUEpath, line.Params[1], _archiveContents);
                                         else
-                                            pathAudio = LocateFile(_inputDir, line.Params[1], null);
+                                            pathAudio = FileLocator.LocateFile(_inputDir, line.Params[1], null);
                                         fileIsBinary = (pathAudio == null);
                                     }
                                     catch { }
@@ -817,9 +707,9 @@ namespace CUETools.Processor
                                 if (!_hasEmbeddedCUESheet)
                                 {
                                     if (_isArchive)
-                                        pathAudio = LocateFile(_archiveCUEpath, line.Params[1], _archiveContents);
+                                        pathAudio = FileLocator.LocateFile(_archiveCUEpath, line.Params[1], _archiveContents);
                                     else
-                                        pathAudio = LocateFile(_inputDir, line.Params[1], null);
+                                        pathAudio = FileLocator.LocateFile(_inputDir, line.Params[1], null);
                                 }
                                 else
                                 {
@@ -1134,7 +1024,7 @@ namespace CUETools.Processor
             {
                 foreach (CUEToolsSourceFile sf in _logFiles)
                 {
-                    CDImageLayout tocFromLog1 = TocFromLog(sf.contents);
+                    CDImageLayout tocFromLog1 = LogToTocParser.LogToToc(this._toc, sf.contents);
                     if (tocFromLog1 != null && tocFromLog1.TOCID == _toc.TOCID)
                     {
                         if (_eacLog == null)
@@ -1154,13 +1044,15 @@ namespace CUETools.Processor
                 _eacLog = selectedLogFile != null ? selectedLogFile.contents : null;
             }
 
-            CDImageLayout tocFromLog = _eacLog == null ? null : TocFromLog(_eacLog);
+            CDImageLayout tocFromLog = _eacLog == null ? null : LogToTocParser.LogToToc(this._toc, _eacLog);
 
             if (tocFromLog == null)
             {
                 string tocPath = Path.ChangeExtension(InputPath, ".toc");
                 if (File.Exists(tocPath))
-                    tocFromLog = TocFromLog((new StreamReader(tocPath, CUESheet.Encoding)).ReadToEnd());
+                {
+                    tocFromLog = LogToTocParser.LogToToc(this._toc, new StreamReader(tocPath, CUESheet.Encoding).ReadToEnd());
+                }
             }
 
             // use pregaps from log
@@ -1540,46 +1432,6 @@ namespace CUETools.Processor
         public string GetCommonMiscTag(string tagName)
         {
             return GetCommonTag(delegate(TagLib.File file) { return Tagging.TagListToSingleValue(Tagging.GetMiscTag(file, tagName)); });
-        }
-
-        private static string LocateFile(string dir, string file, List<string> contents)
-        {
-            List<string> dirList, fileList;
-            string altDir;
-
-            dirList = new List<string>();
-            fileList = new List<string>();
-            altDir = Path.GetDirectoryName(file);
-            file = Path.GetFileName(file);
-
-            dirList.Add(dir);
-            if (altDir.Length != 0)
-            {
-                dirList.Add(Path.IsPathRooted(altDir) ? altDir : Path.Combine(dir, altDir));
-            }
-
-            fileList.Add(file);
-            fileList.Add(file.Replace(' ', '_'));
-            fileList.Add(file.Replace('_', ' '));
-
-            for (int iDir = 0; iDir < dirList.Count; iDir++)
-            {
-                for (int iFile = 0; iFile < fileList.Count; iFile++)
-                {
-                    string path = Path.Combine(dirList[iDir], fileList[iFile]);
-                    if (contents == null && System.IO.File.Exists(path))
-                        return path;
-                    if (contents != null)
-                    {
-                        List<string> matching = contents.FindAll(s => s.ToLower().Replace('/', Path.DirectorySeparatorChar) ==
-                            path.ToLower().Replace('/', Path.DirectorySeparatorChar));
-                        if (matching.Count == 1)
-                            return matching[0];
-                    }
-                }
-            }
-
-            return null;
         }
 
         private static bool IsCDROM(string pathIn)
@@ -3552,7 +3404,7 @@ namespace CUETools.Processor
                         //}
                         filePos.Add(lines.Count - 1);
                         origFiles.Add(line.Params[1]);
-                        foundAll &= (LocateFile(dir, line.Params[1], files) != null);
+                        foundAll &= (FileLocator.LocateFile(dir, line.Params[1], files) != null);
                     }
                     if (line.Params.Count == 3 && line.Params[0].ToUpper() == "REM" && line.Params[1].ToUpper() == "DISCID")
                         CDDBID = line.Params[2].ToLower();
@@ -3573,7 +3425,7 @@ namespace CUETools.Processor
                 for (int j = 0; j < origFiles.Count; j++)
                 {
                     string newFilename = Path.ChangeExtension(Path.GetFileName(origFiles[j]), "." + format.Key);
-                    string locatedFilename = LocateFile(dir, newFilename, files);
+                    string locatedFilename = FileLocator.LocateFile(dir, newFilename, files);
                     if (locatedFilename != null)
                         newFiles.Add(locatedFilename);
                 }
@@ -3664,7 +3516,6 @@ namespace CUETools.Processor
         private int[] CalculateAudioFileLengths(CUEStyle style)
         {
             int iTrack, iIndex, iFile;
-            TrackInfo track;
             int[] fileLengths;
             bool htoaToFile = (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0);
             bool discardOutput;
@@ -3682,8 +3533,6 @@ namespace CUETools.Processor
 
             for (iTrack = 0; iTrack < TrackCount; iTrack++)
             {
-                track = _tracks[iTrack];
-
                 if (style == CUEStyle.GapsPrepended || style == CUEStyle.GapsLeftOut)
                     iFile++;
 
@@ -4506,6 +4355,14 @@ namespace CUETools.Processor
             AsmHelper helper = CompileScript(script);
             return helper != null;
         }
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<CompressionPasswordRequiredEventArgs> PasswordRequired;
+        public event EventHandler<CUEToolsProgressEventArgs> CUEToolsProgress;
+        public event EventHandler<CUEToolsSelectionEventArgs> CUEToolsSelection;
 
         #endregion
     }
