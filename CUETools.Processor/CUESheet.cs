@@ -82,6 +82,76 @@ namespace CUETools.Processor
 
         #region Properties
 
+        public int TrackCount
+        {
+            get { return _tracks.Count; }
+        }
+
+        public string OutputPath
+        {
+            get { return _outputPath; }
+        }
+
+        public string OutputDir
+        {
+            get
+            {
+                string outDir = Path.GetDirectoryName(_outputPath);
+                return outDir == "" ? "." : outDir;
+            }
+        }
+
+        public CDImageLayout TOC
+        {
+            get { return _toc; }
+            set
+            {
+                _toc = new CDImageLayout(value);
+                if (Tracks.Count == 0)
+                {
+                    for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
+                    {
+                        //_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
+                        _tracks.Add(new TrackInfo());
+                    }
+                }
+            }
+        }
+
+        public List<TagLib.IPicture> AlbumArt
+        {
+            get { return _albumArt; }
+        }
+
+        public Image Cover
+        {
+            get
+            {
+                if (AlbumArt == null || AlbumArt.Count == 0)
+                    return null;
+                TagLib.IPicture picture = AlbumArt[0];
+                using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
+                    try { return Image.FromStream(imageStream); }
+                    catch { }
+                return null;
+            }
+        }
+
+        public List<string> SourcePaths
+        {
+            get { return _sourcePaths; }
+        }
+
+        public string LOGContents
+        {
+            get { return _ripperLog; }
+        }
+
+        public string AccurateRipLog
+        {
+            get { return CUESheetLogWriter.GetAccurateRipLog(this); }
+        }
+
         public bool IsUsingAccurateRip
         {
             get { return this.isUsingAccurateRip; }
@@ -2018,14 +2088,6 @@ namespace CUETools.Processor
             WriteText(path, text, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
         }
 
-        public string LOGContents
-        {
-            get
-            {
-                return _ripperLog;
-            }
-        }
-
         public bool PrintErrors(StringWriter logWriter, uint tr_start, uint len)
         {
             uint tr_end = (len + 74) / 75;
@@ -2091,7 +2153,7 @@ namespace CUETools.Processor
             _ripperLog = CUESheetLogWriter.GetRipperLog(this);
         }
 
-        public string M3UContents(CUEStyle style)
+        public string GetM3UContents(CUEStyle style)
         {
             StringWriter sw = new StringWriter();
             if (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0)
@@ -2102,21 +2164,21 @@ namespace CUETools.Processor
             return sw.ToString();
         }
 
-        public string CUESheetContents()
+        public string GetCUESheetContents()
         {
             CUEStyle style = _hasEmbeddedCUESheet ? CUEStyle.SingleFile
                 : _hasSingleFilename ? CUEStyle.SingleFileWithCUE
                 : CUEStyle.GapsAppended;
             bool htoaToFile = _hasHTOAFilename;
-            return CUESheetContents(style, htoaToFile);
+            return GetCUESheetContents(style, htoaToFile);
         }
 
-        public string CUESheetContents(CUEStyle style)
+        public string GetCUESheetContents(CUEStyle style)
         {
-            return CUESheetContents(style, (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0));
+            return GetCUESheetContents(style, (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0));
         }
 
-        public string CUESheetContents(CUEStyle style, bool htoaToFile)
+        public string GetCUESheetContents(CUEStyle style, bool htoaToFile)
         {
             StringWriter sw = new StringWriter();
             int i, iTrack, iIndex;
@@ -2367,7 +2429,7 @@ namespace CUETools.Processor
 
             if (_action == CUEAction.Encode)
             {
-                string cueContents = CUESheetContents(OutputStyle);
+                string cueContents = GetCUESheetContents(OutputStyle);
                 if (_config.createEACLOG && _isCD)
                     cueContents = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueContents));
                 if (OutputStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded)
@@ -2503,7 +2565,7 @@ namespace CUETools.Processor
                 else
                 {
                     if (_config.createM3U)
-                        WriteText(Path.ChangeExtension(_outputPath, ".m3u"), M3UContents(OutputStyle));
+                        WriteText(Path.ChangeExtension(_outputPath, ".m3u"), GetM3UContents(OutputStyle));
                     if (_audioEncoderType != AudioEncoderType.NoAudio)
                         for (int iTrack = 0; iTrack < TrackCount; iTrack++)
                         {
@@ -2738,36 +2800,6 @@ namespace CUETools.Processor
                     }
         }
 
-        public List<TagLib.IPicture> AlbumArt
-        {
-            get
-            {
-                return _albumArt;
-            }
-        }
-
-        public Image Cover
-        {
-            get
-            {
-                if (AlbumArt == null || AlbumArt.Count == 0)
-                    return null;
-                TagLib.IPicture picture = AlbumArt[0];
-                using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
-                    try { return Image.FromStream(imageStream); }
-                    catch { }
-                return null;
-            }
-        }
-
-        public List<string> SourcePaths
-        {
-            get
-            {
-                return _sourcePaths;
-            }
-        }
-
         public string WriteReport()
         {
             if (isUsingAccurateRip)
@@ -2958,7 +2990,7 @@ namespace CUETools.Processor
             }
 
             if (fWithCUE)
-                destTags.Add("CUESHEET", CUESheetContents(CUEStyle.SingleFileWithCUE));
+                destTags.Add("CUESHEET", GetCUESheetContents(CUEStyle.SingleFileWithCUE));
 
             if (_config.embedLog && logContents != null)
                 destTags.Add("LOG", logContents);
@@ -3066,7 +3098,7 @@ namespace CUETools.Processor
             {
                 iDest++;
                 if (_isCD && style == CUEStyle.SingleFileWithCUE)
-                    _padding += Encoding.UTF8.GetByteCount(CUESheetContents(style));
+                    _padding += Encoding.UTF8.GetByteCount(GetCUESheetContents(style));
                 audioDest = GetAudioDest(_destPaths[iDest], destLengths[iDest], destBPS, _padding, noOutput);
             }
 
@@ -3652,51 +3684,6 @@ namespace CUETools.Processor
             }
         }
 
-        public int TrackCount
-        {
-            get
-            {
-                return _tracks.Count;
-            }
-        }
-
-        public string OutputPath
-        {
-            get
-            {
-                return _outputPath;
-            }
-        }
-
-        public string OutputDir
-        {
-            get
-            {
-                string outDir = Path.GetDirectoryName(_outputPath);
-                return outDir == "" ? "." : outDir;
-            }
-        }
-
-        public CDImageLayout TOC
-        {
-            get
-            {
-                return _toc;
-            }
-            set
-            {
-                _toc = new CDImageLayout(value);
-                if (Tracks.Count == 0)
-                {
-                    for (int iTrack = 0; iTrack < _toc.AudioTracks; iTrack++)
-                    {
-                        //_trackFilenames.Add(string.Format("{0:00}.wav", iTrack + 1));
-                        _tracks.Add(new TrackInfo());
-                    }
-                }
-            }
-        }
-
         private IAudioDest GetAudioDest(string path, int finalSampleCount, int bps, int padding, bool noOutput)
         {
             if (noOutput)
@@ -3992,14 +3979,6 @@ namespace CUETools.Processor
         {
             _useLocalDB = true;
             _localDB = db;
-        }
-
-        public string AccurateRipLog
-        {
-            get
-            {
-                return CUESheetLogWriter.GetAccurateRipLog(this);
-            }
         }
 
         public string ExecuteScript(CUEToolsScript script)

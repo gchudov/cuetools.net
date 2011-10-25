@@ -745,7 +745,7 @@ namespace JDP
                         if (_batchPaths.Count == 0)
                         {
                             cueSheet.Open(fileGroup.main.FullName);
-                            cueSheetContents = cueSheet.CUESheetContents();
+                            cueSheetContents = cueSheet.GetCUESheetContents();
                             cueSheet.Close();
                         }
                         else
