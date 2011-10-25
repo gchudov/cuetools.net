@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="AccurateRip.cs" />
     <Compile Include="CDRepair.cs" />
+    <Compile Include="OffsetSafeCRCRecord.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

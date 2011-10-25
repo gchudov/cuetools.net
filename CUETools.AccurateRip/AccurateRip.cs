@@ -5,154 +5,17 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Xml.Serialization;
 using CUETools.Parity;
 using CUETools.CDImage;
 using CUETools.Codecs;
 
 namespace CUETools.AccurateRip
 {
-	[Serializable]
-	public class OffsetSafeCRCRecord
-	{
-		private uint[] val;
-
-		public OffsetSafeCRCRecord()
-		{
-			this.val = new uint[1];
-		}
-
-		public OffsetSafeCRCRecord(AccurateRipVerify ar)
-			: this(new uint[64 + 64])
-		{
-			int offset = 64 * 64;
-			for (int i = 0; i < 64; i++)
-				this.val[i] = ar.CTDBCRC(0, (i + 1) * 64, offset, 2 * offset);
-			for (int i = 0; i < 64; i++)
-				this.val[i + 64] = ar.CTDBCRC(0, 63 - i, offset, 2 * offset);
-		}
-
-		public OffsetSafeCRCRecord(uint[] val)
-		{
-			this.val = val;
-		}
-
-		[XmlIgnore]
-		public uint[] Value
-		{
-			get
-			{
-				return val;
-			}
-		}
-
-		public unsafe string Base64
-		{
-			get
-			{
-				byte[] res = new byte[val.Length * 4];
-				fixed (byte* pres = &res[0])
-				fixed (uint* psrc = &val[0])
-					AudioSamples.MemCpy(pres, (byte*)psrc, res.Length);
-				var b64 = new char[res.Length * 2 + 4];
-				int b64len = Convert.ToBase64CharArray(res, 0, res.Length, b64, 0);
-				StringBuilder sb = new StringBuilder(b64len + b64len / 4 + 1);
-				for (int i = 0; i < b64len; i += 64)
-				{
-					sb.Append(b64, i, Math.Min(64, b64len - i));
-					sb.AppendLine();
-				}
-				return sb.ToString();
-			}
-
-			set
-			{
-				if (value == null)
-					throw new ArgumentNullException();
-				byte[] bytes = Convert.FromBase64String(value);
-				if (bytes.Length % 4 != 0)
-					throw new InvalidDataException();
-				val = new uint[bytes.Length / 4];
-				fixed (byte* pb = &bytes[0])
-				fixed (uint* pv = &val[0])
-					AudioSamples.MemCpy((byte*)pv, pb, bytes.Length);
-			}
-		}
-
-		public override bool Equals(object obj)
-		{
-			return obj is OffsetSafeCRCRecord && this == (OffsetSafeCRCRecord)obj;
-		}
-
-		public override int GetHashCode()
-		{
-			return (int)val[0];
-		}
-
-		public static bool operator ==(OffsetSafeCRCRecord x, OffsetSafeCRCRecord y)
-		{
-			if (x as object == null || y as object == null) return x as object == null && y as object == null;
-			if (x.Value.Length != y.Value.Length) return false;
-			for (int i = 0; i < x.Value.Length; i++)
-				if (x.Value[i] != y.Value[i])
-					return false;
-			return true;
-		}
-
-		public static bool operator !=(OffsetSafeCRCRecord x, OffsetSafeCRCRecord y)
-		{
-			return !(x == y);
-		}
-
-		public bool DifferByOffset(OffsetSafeCRCRecord rec)
-		{
-			int offset;
-			return FindOffset(rec, out offset);
-		}
-
-		public bool FindOffset(OffsetSafeCRCRecord rec, out int offset)
-		{
-			if (this.Value.Length != 128 || rec.Value.Length != 128)
-			{
-				offset = 0;
-				return false;
-				//throw new InvalidDataException("Unsupported OffsetSafeCRCRecord");
-			}
-
-			for (int i = 0; i < 64; i++)
-			{
-				if (rec.Value[0] == Value[i])
-				{
-					offset = i * 64;
-					return true;
-				}
-				if (Value[0] == rec.Value[i])
-				{
-					offset = -i * 64;
-					return true;
-				}
-				for (int j = 0; j < 64; j++)
-				{
-					if (rec.Value[i] == Value[64 + j])
-					{
-						offset = i * 64 + j + 1;
-						return true;
-					}
-					if (Value[i] == rec.Value[64 + j])
-					{
-						offset = -i * 64 - j - 1;
-						return true;
-					}
-				}
-			}
-			offset = 0;
-			return false;
-		}
-	}
-
 	public class AccurateRipVerify : IAudioDest
 	{
-		public AccurateRipVerify(CDImageLayout toc, IWebProxy proxy)
+        const int maxNpar = 8;
+
+        public AccurateRipVerify(CDImageLayout toc, IWebProxy proxy)
 		{
 			this.proxy = proxy;
 			_accDisks = new List<AccDisk>();
@@ -451,62 +314,37 @@ namespace CUETools.AccurateRip
 			_CRCLOG[iTrack] = value;
 		}
 
-		public unsafe ushort[,] GetSyndrome()
+        public unsafe byte[] GetParity(int npar = maxNpar)
+        {
+            if (npar == maxNpar)
+                return this.parity;
+
+            var synShort = this.GetSyndrome(npar);
+            return ParityToSyndrome.Syndrome2Parity(synShort);
+        }
+
+		public unsafe ushort[,] GetSyndrome(int npar = maxNpar)
 		{
-			if (!calcParity)
-				throw new InvalidOperationException();
-			var syndrome = new ushort[stride, npar];
-			fixed (byte* pbpar = parity)
-			fixed (ushort* psyn0 = syndrome, plog = Galois16.instance.LogTbl, pexp = Galois16.instance.ExpTbl)
-			{
-				ushort* ppar = (ushort*)pbpar;
-				for (int y = 0; y < stride; y++)
-				{
-					ushort* syn = psyn0 + y * npar;
-					for (int x1 = 0; x1 < npar; x1++)
-					{
-						ushort lo = ppar[y * npar + x1];
-						if (lo != 0)
-						{
-							var llo = plog[lo] + 0xffff;
-							for (int x = 0; x < npar; x++)
-								syn[x] ^= pexp[llo - (1 + x1) * x];
-						}
-					}
-				}
-			}
-			return syndrome;
+            if (!calcParity)
+                throw new InvalidOperationException();
+            return ParityToSyndrome.Parity2Syndrome(stride, npar, maxNpar, parity);
 		}
 
-		public unsafe ushort[,] Syndrome
-		{
-			get
-			{
-				if (syndrome == null)
-					syndrome = GetSyndrome();
-				return syndrome;
-			}
-		}
-
-		private ushort[,] syndrome;
-		internal byte[] parity;
+		private byte[] parity;
 		internal ushort[, ,] encodeTable;
 		private int maxOffset;
 		internal ushort[] leadin;
 		internal ushort[] leadout;
-		private int stride = 1, laststride = 1, stridecount = 1, npar = 1;
+		private int stride = 1, laststride = 1, stridecount = 1;
 		private bool calcParity = false;
 
-		internal void InitCDRepair(int stride, int laststride, int stridecount, int npar, bool calcParity)
+		internal void InitCDRepair(int stride, int laststride, int stridecount, bool calcParity)
 		{
-			if (npar != 8)
-				throw new ArgumentOutOfRangeException("npar");
 			if (stride % 2 != 0 || laststride % 2 != 0)
 				throw new ArgumentOutOfRangeException("stride");
 			this.stride = stride;
 			this.laststride = laststride;
 			this.stridecount = stridecount;
-			this.npar = npar;
 			this.calcParity = calcParity;
 			Init(_toc);
 		}
@@ -572,20 +410,37 @@ namespace CUETools.AccurateRip
 		//    ((ulong*)wr)[1] = (((ulong*)(wr))[1] >> 16) ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
 		//}
 
-		private unsafe static void CalcPar8(ushort* pt, ushort* wr, uint lo, uint hi)
+		private unsafe static void CalcPar(ushort* pt, ushort* wr, uint lo, uint hi)
 		{
+            // pt = &encodeTable
 #if !sdfs
 			uint wrlo = wr[0] ^ lo;
-			uint wrhi = wr[8] ^ hi;
-			ushort* ptiblo0 = pt + (wrlo & 255) * 16;
-			ushort* ptiblo1 = pt + (wrlo >> 8) * 16 + 8;
-			ushort* ptibhi0 = pt + (wrhi & 255) * 16;
-			ushort* ptibhi1 = pt + (wrhi >> 8) * 16 + 8;
-			wr[8] = 0;
-			((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
-			((ulong*)wr)[1] = ((ulong*)(wr + 1))[1] ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
-			((ulong*)wr)[2] = ((ulong*)(wr + 1))[2] ^ ((ulong*)ptibhi0)[0] ^ ((ulong*)ptibhi1)[0];
-			((ulong*)wr)[3] = (((ulong*)(wr))[3] >> 16) ^ ((ulong*)ptibhi0)[1] ^ ((ulong*)ptibhi1)[1];
+			uint wrhi = wr[maxNpar] ^ hi;
+			ushort* ptiblo0 = pt + (wrlo & 255) * maxNpar * 2;
+            ushort* ptiblo1 = pt + (wrlo >> 8) * maxNpar * 2 + maxNpar;
+            ushort* ptibhi0 = pt + (wrhi & 255) * maxNpar * 2;
+            ushort* ptibhi1 = pt + (wrhi >> 8) * maxNpar * 2 + maxNpar;
+			wr[maxNpar] = 0;
+            if (maxNpar == 16)
+            {
+                ((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
+                ((ulong*)wr)[1] = ((ulong*)(wr + 1))[1] ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
+                ((ulong*)wr)[2] = ((ulong*)(wr + 1))[2] ^ ((ulong*)ptiblo0)[2] ^ ((ulong*)ptiblo1)[2];
+                ((ulong*)wr)[3] = ((ulong*)(wr + 1))[3] ^ ((ulong*)ptiblo0)[3] ^ ((ulong*)ptiblo1)[3];
+                ((ulong*)wr)[4] = ((ulong*)(wr + 1))[4] ^ ((ulong*)ptibhi0)[0] ^ ((ulong*)ptibhi1)[0];
+                ((ulong*)wr)[5] = ((ulong*)(wr + 1))[5] ^ ((ulong*)ptibhi0)[1] ^ ((ulong*)ptibhi1)[1];
+                ((ulong*)wr)[6] = ((ulong*)(wr + 1))[6] ^ ((ulong*)ptibhi0)[2] ^ ((ulong*)ptibhi1)[2];
+                ((ulong*)wr)[7] = (((ulong*)(wr))[7] >> 16) ^ ((ulong*)ptibhi0)[3] ^ ((ulong*)ptibhi1)[3];
+            }
+            else if (maxNpar == 8)
+            {
+                ((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
+                ((ulong*)wr)[1] = ((ulong*)(wr + 1))[1] ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
+                ((ulong*)wr)[2] = ((ulong*)(wr + 1))[2] ^ ((ulong*)ptibhi0)[0] ^ ((ulong*)ptibhi1)[0];
+                ((ulong*)wr)[3] = (((ulong*)(wr))[3] >> 16) ^ ((ulong*)ptibhi0)[1] ^ ((ulong*)ptibhi1)[1];
+            }
+            else
+                throw new InvalidOperationException();
 #else
 			const int npar = 8;
 
@@ -665,7 +520,7 @@ namespace CUETools.AccurateRip
 				}
 
 				uint hi = sample >> 16;
-				if (doPar) CalcPar8(pte, wr + i * 16, lo, hi);
+				if (doPar) CalcPar(pte, wr + i * maxNpar * 2, lo, hi);
 				//if (doPar) CalcPar8(pte, wr + i * 16, lo);
 				//uint hi = sample >> 16;
 
@@ -738,7 +593,7 @@ namespace CUETools.AccurateRip
 					uint* samples = ((uint*)pSampleBuff) + pos;
 					int currentPart = ((int)_sampleCount * 2) % stride;
 					//ushort* synptr = synptr1 + npar * currentPart;
-					ushort* wr = ((ushort*)bpar) + npar * currentPart;
+                    ushort* wr = ((ushort*)bpar) + maxNpar * currentPart;
 					int currentStride = ((int)_sampleCount * 2) / stride;
 
 					for (int i = 0; i < Math.Min(leadin.Length - (int)_sampleCount * 2, copyCount * 2); i++)
@@ -887,18 +742,13 @@ namespace CUETools.AccurateRip
 				var imax = Math.Max(i1s, i2s);
 				var diff1 = diff + (imin < i2s ? 1 : 0) - (imin < i1s ? 1 : 0);
 				for (int i = 0; i < stride; i++)
-					for (int j = 0; j < npar; j++)
+                    for (int j = 0; j < maxNpar; j++)
 					{
 						var d1 = j * (i >= imin && i < imax ? diff1 : diff);
 						newSyndrome1[i, j] = (ushort)(newSyndrome2[i, j] ^ Galois16.instance.mulExp(newSyndrome1[i, j], (d1 & 0xffff) + (d1 >> 16)));
 					}
-				fixed (byte* p = this.parity)
-				fixed (ushort* syn = newSyndrome1)
-				{
-					ushort* p1 = (ushort*)p;
-					for (int i = 0; i < stride; i++)
-						Galois16.instance.Syndrome2Parity(syn + i * npar, p1 + i * npar, npar);
-				}
+
+                ParityToSyndrome.Syndrome2Parity(newSyndrome1, this.parity);
 			}
 		}
 
@@ -924,10 +774,12 @@ namespace CUETools.AccurateRip
 			_CRCV2 = new uint[_toc.AudioTracks + 1, 3 * maxOffset];
 
 			_Peak = new int[_toc.AudioTracks + 1];
-			syndrome = null;
-			parity = calcParity ? new byte[stride * npar * 2] : null;
-			if (calcParity && npar == 8)
-				encodeTable = Galois16.instance.makeEncodeTable(npar);
+			parity = null;
+            if (calcParity)
+            {
+                parity = new byte[stride * maxNpar * 2];
+                encodeTable = Galois16.instance.makeEncodeTable(maxNpar);
+            }
 
 			int leadin_len = Math.Max(4096 * 4, calcParity ? stride * 2 : 0);
 			int leadout_len = Math.Max(4096 * 4, calcParity ? stride + laststride : 0);

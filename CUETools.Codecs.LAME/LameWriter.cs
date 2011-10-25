@@ -1,7 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using CUETools.Codecs;
+using System.IO;
 
 namespace CUETools.Codecs.LAME
 {

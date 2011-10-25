@@ -94,7 +94,7 @@ namespace CUETools.AccurateRip
 		    : base ((int)ar.FinalSampleCount, stride, npar)
 		{
 			this.ar = ar;
-			ar.InitCDRepair(stride, laststride, stridecount, npar, true);
+			ar.InitCDRepair(stride, laststride, stridecount, true);
 		}
 
 		//private unsafe void ProcessStride(int currentStride, int currentPart, int count, ushort* data)
@@ -315,7 +315,7 @@ namespace CUETools.AccurateRip
 				int* _errpos = stackalloc int[npar];
 				int* syn = stackalloc int[npar];
 				bool foundOffset = false;
-				var arSyndrome = ar.Syndrome;
+				var arSyndrome = ar.GetSyndrome(npar);
 
 				for (int allowed_errors = 0; allowed_errors < npar / 2 && !foundOffset; allowed_errors++)
 				{
@@ -392,7 +392,7 @@ namespace CUETools.AccurateRip
 			{
 				int* syn = stackalloc int[npar];
 				int offset = fix.actualOffset;
-				var arSyndrome = ar.Syndrome;
+				var arSyndrome = ar.GetSyndrome(npar);
 
 				for (int part = 0; part < stride; part++)
 				{
@@ -473,7 +473,7 @@ namespace CUETools.AccurateRip
 		{
 			get
 			{
-				return ar.Syndrome;
+				return this.ar.GetSyndrome(this.npar);
 			}
 		}
 
@@ -481,7 +481,7 @@ namespace CUETools.AccurateRip
 		{
 			get
 			{
-				return ar.parity;
+				return this.ar.GetParity(this.npar);
 			}
 		}
 	}

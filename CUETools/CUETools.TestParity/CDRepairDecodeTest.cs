@@ -92,12 +92,14 @@ namespace CUETools.TestParity
 		[TestMethod()]
 		public void CDRepairEncodeWriteTest()
 		{
-			Assert.AreEqual<string>("jvR9QJ1cSWpqbyP0I0tBrBkQRjCDTDDQkttZGj14ROvsXyg+AnnxVKxL7gwLZbrQmTw5ZPps1Q3744g94qaOOQ==", 
-				Convert.ToBase64String(encode.Parity, 0, 64));
-			Assert.AreEqual<uint>(377539636, encode.CRC);
+            Assert.AreEqual<string>("jvR9QJ1cSWpqbyP0I0tBrBkQRjCDTDDQkttZGj14ROvsXyg+AnnxVKxL7gwLZbrQmTw5ZPps1Q3744g94qaOOQ==",
+                Convert.ToBase64String(encode.AR.GetParity(8), 0, 64));
+            //Assert.AreEqual<string>("gwln1GxlYWH/Jn74PreMLv4aFF2glkScSWVFlxMBx94v5D3/3wPx+2guRLquED0s9tOFikPLiSnAv0Xq8aIQ6Q==",
+            //    Convert.ToBase64String(encode.AR.GetParity(16), 0, 64));
+            Assert.AreEqual<uint>(377539636, encode.CRC);
 		}
 
-		/// <summary>
+        /// <summary>
 		///Verifying rip that is accurate
 		///</summary>
 		[TestMethod()]
@@ -262,6 +264,7 @@ namespace CUETools.TestParity
 		///A test for CRC parralelism
 		///</summary>
 		[TestMethod()]
+        //[Ignore]
 		public void CDRepairSplitTest()
 		{
 			var seed = 723722;
@@ -272,10 +275,9 @@ namespace CUETools.TestParity
 				var ar1 = new TestImageGenerator("13 68 99 136", seed, 0, 0, 0, split).CreateCDRepairEncode(stride, npar);
 				var ar2 = new TestImageGenerator("13 68 99 136", seed, 0, 0, split, (int)ar0.FinalSampleCount).CreateCDRepairEncode(stride, npar);
 				ar1.AR.Combine(ar2.AR, split, (int)ar0.FinalSampleCount);
-				var offsets = new int[] { 0, -1, 1, -2, 2, -3, 3, -4, 4, -11, 11, -256, 256, -588, 588, 1 - 588 * 5, 588 * 5 - 1 };
-				string message = "split = " + CDImageLayout.TimeToString((uint)split / 588) + "." + (split % 588).ToString();
+                string message = "split = " + CDImageLayout.TimeToString((uint)split / 588) + "." + (split % 588).ToString();
 				Assert.AreEqual(ar0.CRC, ar1.CRC, "CRC was not set correctly, " + message);
-				CollectionAssert.AreEqual(ar0.Parity, ar1.Parity, "Parity was not set correctly, " + message);
+                CollectionAssert.AreEqual(ar0.Parity, ar1.Parity, "Parity was not set correctly, " + message);
 			}
 		}
 
@@ -300,32 +302,18 @@ namespace CUETools.TestParity
 		public unsafe void CDRepairSyndrome2ParitySpeedTest()
 		{
 			byte[] parityCopy = new byte[encode.Parity.Length];
+            var syndrome = encode.Syndrome;
 			for (int t = 0; t < 100; t++)
-			{
-				fixed (byte* p = encode.Parity, p1 = parityCopy)
-				fixed (ushort* syn = encode.Syndrome)
-				{
-					ushort* p2 = (ushort*)p1;
-					for (int i = 0; i < stride; i++)
-						Galois16.instance.Syndrome2Parity(syn + i * npar, p2 + i * npar, npar);
-				}
-			}
+                ParityToSyndrome.Syndrome2Parity(syndrome, parityCopy);
 			CollectionAssert.AreEqual(encode.Parity, parityCopy);
 		}
 
 		[TestMethod]
 		public unsafe void CDRepairEncodeSynParTest()
 		{
-			byte[] parityCopy = new byte[encode.Parity.Length];
-			fixed(byte * p = encode.Parity, p1 = parityCopy)
-				fixed (ushort *syn = encode.Syndrome)
-				{
-					ushort* p2 = (ushort*)p1;
-					for (int i = 0; i < stride; i++)
-						Galois16.instance.Syndrome2Parity(syn + i * npar, p2 + i * npar, npar);
-				}
-			CollectionAssert.AreEqual(encode.Parity, parityCopy);
-		}
+            var parityCopy = ParityToSyndrome.Syndrome2Parity(encode.Syndrome);
+            CollectionAssert.AreEqual(encode.Parity, parityCopy);
+        }
 
 		[TestMethod]
 		public void CDRepairEncodeSpeedTest()
@@ -350,7 +338,7 @@ namespace CUETools.TestParity
 		///Verifying rip that has errors
 		///</summary>
 		[TestMethod()]
-		//[Ignore]
+		[Ignore]
 		public void CDRepairVerifyParitySpeedTest()
 		{
 			var generator1 = new TestImageGenerator("0 98011", seed, 32 * 588, 0);

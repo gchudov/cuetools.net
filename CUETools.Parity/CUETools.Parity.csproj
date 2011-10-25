@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Galois.cs" />
+    <Compile Include="Parity2Syndrome.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RsDecode.cs" />
     <Compile Include="RsEncode.cs" />

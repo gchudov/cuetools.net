@@ -97,7 +97,30 @@ namespace CUETools.TestCodecs
 			CollectionAssert.AreEqual(File.ReadAllBytes("alac.m4a"), File.ReadAllBytes("alacwriter0.m4a"), "alacwriter0.m4a doesn't match.");
 		}
 
-	}
+        [TestMethod()]
+        public void SeekTest()
+        {
+            var r = new ALACReader("alac.m4a", null);
+            var buff1 = new AudioBuffer(r, 16536);
+            var buff2 = new AudioBuffer(r, 16536);
+            Assert.AreEqual(0, r.Position);
+            r.Read(buff1, 7);
+            Assert.AreEqual(7, r.Position);
+            r.Position = 0;
+            Assert.AreEqual(0, r.Position);
+            r.Read(buff2, 7);
+            Assert.AreEqual(7, r.Position);
+            AudioBufferTest.AreEqual(buff1, buff2);
+            r.Read(buff1, 7);
+            Assert.AreEqual(7 + 7, r.Position);
+            r.Position = 7;
+            Assert.AreEqual(7, r.Position);
+            r.Read(buff2, 7);
+            Assert.AreEqual(7 + 7, r.Position);
+            AudioBufferTest.AreEqual(buff1, buff2);
+            r.Close();
+        }
+    }
 
 
 }
