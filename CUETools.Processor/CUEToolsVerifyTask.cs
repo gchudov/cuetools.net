@@ -14,7 +14,7 @@ namespace CUETools.Processor
         public IAudioDest hdcd { get; private set; }
 
         public CUEToolsVerifyTask(CUESheet cueSheet, int start, int end)
-            : this(cueSheet, start, end, cueSheet._useAccurateRip || cueSheet._useCUEToolsDB ? new AccurateRipVerify(cueSheet.TOC, null) : null, null)
+            : this(cueSheet, start, end, cueSheet.IsUsingAccurateRip || cueSheet.IsUsingCUEToolsDB ? new AccurateRipVerify(cueSheet.TOC, null) : null, null)
         {
         }
 
@@ -37,7 +37,7 @@ namespace CUETools.Processor
             if (cueSheet.IsCD || cueSheet.Config.separateDecodingThread)
                 this.source = new AudioPipe(this.source, 0x10000);
             this.source.Position = start;
-            this.ar = cueSheet._useAccurateRip ? ar : null;
+            this.ar = cueSheet.IsUsingAccurateRip ? ar : null;
             this.hdcd = hdcd;
             if (this.ar != null)
                 this.ar.Position = start;

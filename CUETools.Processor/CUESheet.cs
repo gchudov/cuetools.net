@@ -23,6 +23,8 @@ namespace CUETools.Processor
     {
         #region Fields
 
+        public readonly static string CUEToolsVersion = "2.1.2a";
+
         private bool _stop, _pause;
         private List<CUELine> _attributes;
         private List<TrackInfo> _tracks;
@@ -34,9 +36,9 @@ namespace CUETools.Processor
         private bool _paddedToFrame, _truncated4608, _usePregapForFirstTrackInSingleFile;
         private int _writeOffset;
         private CUEAction _action;
-        internal bool _useAccurateRip = false;
-        internal bool _useCUEToolsDB = false;
-        private bool _useCUEToolsDBFix = false;
+        private bool isUsingAccurateRip = false;
+        private bool isUsingCUEToolsDB = false;
+        private bool isUsingCUEToolsDBFix = false;
         private bool _processed = false;
         private uint? _minDataTrackLength;
         private string _accurateRipId;
@@ -80,6 +82,41 @@ namespace CUETools.Processor
 
         #region Properties
 
+        public bool IsUsingAccurateRip
+        {
+            get { return this.isUsingAccurateRip; }
+        }
+
+        public string[] DestPaths
+        {
+            get { return this._destPaths; }
+        }
+
+        public IAudioDest HDCDDecoder
+        {
+            get { return this.hdcdDecoder; }
+        }
+
+        public bool IsUsingCUEToolsDB
+        {
+            get { return this.isUsingCUEToolsDB; }
+        }
+
+        public bool IsUsingCUEToolsDBFix
+        {
+            get { return this.isUsingCUEToolsDBFix; }
+        }
+
+        public bool Truncated4608
+        {
+            get { return this._truncated4608; }
+        }
+
+        public string CDDBDiscIdTag
+        {
+            get { return this._cddbDiscIdTag; }
+        }
+
         public string InputPath
         {
             get
@@ -98,30 +135,307 @@ namespace CUETools.Processor
 
         public CUEToolsDB CTDB
         {
-            get
-            {
-                return _CUEToolsDB;
-            }
+            get { return _CUEToolsDB; }
         }
 
         public ICDRipper CDRipper
         {
-            get
-            {
-                return _ripper;
-            }
-            set
-            {
-                _ripper = value;
-            }
+            get { return _ripper; }
+            set { _ripper = value; }
         }
 
         public CUEMetadata Metadata
         {
+            get { return cueMetadata; }
+        }
+
+        public List<CUELine> Attributes
+        {
+            get { return _attributes; }
+        }
+
+        public List<TrackInfo> Tracks
+        {
+            get { return _tracks; }
+        }
+
+        public bool HasHTOAFilename
+        {
             get
             {
-                return cueMetadata;
+                return _hasHTOAFilename;
             }
+        }
+
+        public string HTOAFilename
+        {
+            get
+            {
+                return _htoaFilename;
+            }
+            set
+            {
+                _htoaFilename = value;
+            }
+        }
+
+        public bool HasTrackFilenames
+        {
+            get
+            {
+                return _hasTrackFilenames;
+            }
+        }
+
+        public List<string> TrackFilenames
+        {
+            get
+            {
+                return _trackFilenames;
+            }
+        }
+
+        public bool HasSingleFilename
+        {
+            get
+            {
+                return _hasSingleFilename;
+            }
+        }
+
+        public string SingleFilename
+        {
+            get
+            {
+                return _singleFilename;
+            }
+            set
+            {
+                _singleFilename = value;
+            }
+        }
+
+        public string AccurateRipId
+        {
+            get
+            {
+                return _accurateRipId;
+            }
+        }
+
+        public string ArLogFileName
+        {
+            get
+            {
+                return _arLogFileName;
+            }
+            set
+            {
+                _arLogFileName = value;
+            }
+        }
+
+        public string AlArtFileName
+        {
+            get
+            {
+                return _alArtFileName;
+            }
+            set
+            {
+                _alArtFileName = value;
+            }
+        }
+
+        public NameValueCollection Tags
+        {
+            get
+            {
+                TagLib.File fileInfo = _tracks[0]._fileInfo ?? _fileInfo;
+                return fileInfo != null ? Tagging.Analyze(fileInfo) : null;
+            }
+        }
+
+        public int WriteOffset
+        {
+            get
+            {
+                return _writeOffset;
+            }
+            set
+            {
+                if (_appliedWriteOffset)
+                {
+                    throw new Exception("Cannot change write offset after audio files have been written.");
+                }
+                _writeOffset = value;
+            }
+        }
+
+        public bool PaddedToFrame
+        {
+            get
+            {
+                return _paddedToFrame;
+            }
+        }
+
+        public uint DataTrackLength
+        {
+            get
+            {
+                if (!_toc[1].IsAudio)
+                    return _toc[1].Length;
+                else if (!_toc[_toc.TrackCount].IsAudio)
+                    return _toc[_toc.TrackCount].Length;
+                else
+                    return 0U;
+            }
+            set
+            {
+                if (value == 0)
+                    return;
+                if (!_toc[1].IsAudio)
+                {
+                    // TODO: if track 2 has a pregap, we should adjust it!!!
+                    for (int i = 2; i <= _toc.TrackCount; i++)
+                    {
+                        _toc[i].Start += value - _toc[1].Length;
+                        for (int j = 0; j <= _toc[i].LastIndex; j++)
+                            _toc[i][j].Start += value - _toc[1].Length;
+                    }
+                    _toc[1].Length = value;
+                }
+                else if (!_toc[_toc.TrackCount].IsAudio)
+                {
+                    //_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
+                    _toc[_toc.TrackCount].Length = value;
+                    //_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
+                    //_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
+                }
+                else
+                    _toc.AddTrack(new CDTrack((uint)_toc.TrackCount + 1, _toc.Length + 152U * 75U, value, false, false));
+            }
+        }
+
+        public string DataTrackLengthMSF
+        {
+            get
+            {
+                return CDImageLayout.TimeToString(DataTrackLength);
+            }
+            set
+            {
+                DataTrackLength = (uint)CDImageLayout.TimeFromString(value);
+            }
+        }
+
+        public string PreGapLengthMSF
+        {
+            get
+            {
+                return CDImageLayout.TimeToString(_toc.Pregap);
+            }
+            set
+            {
+                PreGapLength = (uint)CDImageLayout.TimeFromString(value);
+            }
+        }
+
+        public uint PreGapLength
+        {
+            get
+            {
+                return _toc.Pregap;
+            }
+            set
+            {
+                if (value == _toc.Pregap || value == 0)
+                    return;
+                if (!_toc[1].IsAudio)
+                    throw new Exception("can't set pregap to a data track");
+                if (value < _toc.Pregap)
+                    throw new Exception("can't set negative pregap");
+                uint offs = value - _toc.Pregap;
+                for (int i = 1; i <= _toc.TrackCount; i++)
+                {
+                    _toc[i].Start += offs;
+                    for (int j = 0; j <= _toc[i].LastIndex; j++)
+                        _toc[i][j].Start += offs;
+                }
+                _toc[1][0].Start = 0;
+
+                SourceInfo sourceInfo;
+                sourceInfo.Path = null;
+                sourceInfo.Offset = 0;
+                sourceInfo.Length = offs * 588;
+                _sources.Insert(0, sourceInfo);
+            }
+        }
+
+        public bool UsePregapForFirstTrackInSingleFile
+        {
+            get
+            {
+                return _usePregapForFirstTrackInSingleFile;
+            }
+            set
+            {
+                _usePregapForFirstTrackInSingleFile = value;
+            }
+        }
+
+        public CUEConfig Config
+        {
+            get
+            {
+                return _config;
+            }
+        }
+
+        public CUEAction Action
+        {
+            get
+            {
+                return _action;
+            }
+            set
+            {
+                _action = value;
+            }
+        }
+
+        public CUEStyle OutputStyle
+        {
+            get
+            {
+                return _outputStyle;
+            }
+            set
+            {
+                _outputStyle = value;
+            }
+        }
+
+        public bool Processed
+        {
+            get
+            {
+                return _processed;
+            }
+        }
+
+        public bool IsCD
+        {
+            get
+            {
+                return _isCD;
+            }
+        }
+
+        public uint? MinDataTrackLength
+        {
+            get { return this._minDataTrackLength; }
         }
 
         #endregion
@@ -1239,7 +1553,7 @@ namespace CUETools.Processor
                     }
 
             ShowProgress("", 0.0, null, null);
-            _useCUEToolsDB = true;
+            isUsingCUEToolsDB = true;
         }
 
         public void UseAccurateRip()
@@ -1269,7 +1583,7 @@ namespace CUETools.Processor
             {
                 _arVerify.ContactAccurateRip(_accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
             }
-            _useAccurateRip = true;
+            isUsingAccurateRip = true;
         }
 
         public static Encoding Encoding
@@ -1637,7 +1951,7 @@ namespace CUETools.Processor
             bool outputAudio = Action == CUEAction.Encode && _audioEncoderType != AudioEncoderType.NoAudio;
             if (outputCUE)
                 outputExists.Add(_outputPath);
-            if (_useAccurateRip && (
+            if (isUsingAccurateRip && (
                 (Action == CUEAction.Encode && _config.writeArLogOnConvert) ||
                 (Action == CUEAction.Verify && _config.writeArLogOnVerify)))
                 outputExists.Add(Path.Combine(OutputDir, ArLogFileName));
@@ -1761,161 +2075,7 @@ namespace CUETools.Processor
 
         public void CreateExactAudioCopyLOG()
         {
-            StringWriter logWriter = new StringWriter(CultureInfo.InvariantCulture);
-            string eacHeader = "{7}\r\n" +
-                "\r\n" +
-                "EAC extraction logfile from {0:d'.' MMMM yyyy', 'H':'mm}\r\n" +
-                "\r\n" +
-                "{1} / {2}\r\n" +
-                "\r\n" +
-                "Used drive  : {3}   Adapter: 1  ID: 0\r\n" +
-                "\r\n" +
-                "Read mode               : {4}\r\n" +
-                "Utilize accurate stream : Yes\r\n" +
-                "Defeat audio cache      : Yes\r\n" +
-                "Make use of C2 pointers : No\r\n" +
-                "\r\n" +
-                "Read offset correction                      : {5}\r\n" +
-                "Overread into Lead-In and Lead-Out          : No\r\n" +
-                "Fill up missing offset samples with silence : Yes\r\n" +
-                "Delete leading and trailing silent blocks   : No\r\n" +
-                "Null samples used in CRC calculations       : Yes\r\n" +
-                "Used interface                              : Native Win32 interface for Win NT & 2000\r\n" +
-                "{6}" +
-                "\r\n" +
-                "Used output format : Internal WAV Routines\r\n" +
-                "Sample format      : 44.100 Hz; 16 Bit; Stereo\r\n";
-
-            logWriter.WriteLine(eacHeader,
-                DateTime.Now,
-                Metadata.Artist, Metadata.Title,
-                _ripper.EACName,
-                _ripper.CorrectionQuality > 0 ? "Secure" : "Burst",
-                _ripper.DriveOffset,
-                (OutputStyle == CUEStyle.SingleFile || OutputStyle == CUEStyle.SingleFileWithCUE) ? "" :
-                    "Gap handling                                : " +
-                    (_ripper.GapsDetected ? "Appended to previous track\r\n" : "Not detected, thus appended to previous track\r\n"),
-                _ripper.RipperVersion); // "Exact Audio Copy V0.99 prebeta 4 from 23. January 2008"
-
-            logWriter.WriteLine();
-            logWriter.WriteLine("TOC of the extracted CD");
-            logWriter.WriteLine();
-            logWriter.Write(TOCContents());
-            logWriter.WriteLine();
-
-            bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
-                (_toc.Pregap != 0));
-            int accurateTracks = 0, knownTracks = 0;
-            bool wereErrors = false;
-            if (OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE)
-            {
-                logWriter.WriteLine();
-                for (int track = 0; track < _toc.AudioTracks; track++)
-                {
-                    logWriter.WriteLine("Track {0,2}", track + 1);
-                    logWriter.WriteLine();
-                    logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(_destPaths[track + (htoaToFile ? 1 : 0)]), ".wav"));
-                    if (_toc[track + _toc.FirstAudio].Pregap > 0 || track + _toc.FirstAudio == 1)
-                    {
-                        logWriter.WriteLine();
-                        logWriter.WriteLine("     Pre-gap length  0:{0}.{1:00}", CDImageLayout.TimeToString("{0:00}:{1:00}", _toc[track + _toc.FirstAudio].Pregap + (track + _toc.FirstAudio == 1 ? 150U : 0U)), (_toc[track + _toc.FirstAudio].Pregap % 75) * 100 / 75);
-                    }
-
-                    wereErrors |= PrintErrors(logWriter, _toc[track + _toc.FirstAudio].Start, _toc[track + _toc.FirstAudio].Length);
-
-                    logWriter.WriteLine();
-                    logWriter.WriteLine("     Peak level {0:F1} %", (_arVerify.PeakLevel(track + 1) * 1000 / 65534) * 0.1);
-                    logWriter.WriteLine("     Track quality 100.0 %");
-                    logWriter.WriteLine("     Test CRC {0:X8}", _arVerify.CRC32(track + 1));
-                    logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(track + 1));
-                    if (_arVerify.Total(track) == 0)
-                        logWriter.WriteLine("     Track not present in AccurateRip database");
-                    else
-                    {
-                        knownTracks++;
-                        if (_arVerify.Confidence(track) == 0)
-                            logWriter.WriteLine("     Cannot be verified as accurate (confidence {0})  [{1:X8}], AccurateRip returned [{2:X8}]", _arVerify.Total(track), _arVerify.CRC(track), _arVerify.DBCRC(track));
-                        else
-                        {
-                            logWriter.WriteLine("     Accurately ripped (confidence {0})  [{1:X8}]", _arVerify.Confidence(track), _arVerify.CRC(track));
-                            accurateTracks++;
-                        }
-                    }
-                    logWriter.WriteLine("     Copy OK");
-                    logWriter.WriteLine();
-                }
-            }
-            else
-            {
-                logWriter.WriteLine();
-                logWriter.WriteLine("Range status and errors");
-                logWriter.WriteLine();
-                logWriter.WriteLine("Selected range");
-                logWriter.WriteLine();
-                logWriter.WriteLine("     Filename {0}", Path.ChangeExtension(Path.GetFullPath(_destPaths[0]), ".wav"));
-                wereErrors = PrintErrors(logWriter, _toc[_toc.FirstAudio][0].Start, _toc.AudioLength);
-                logWriter.WriteLine();
-                logWriter.WriteLine("     Peak level {0:F1} %", (_arVerify.PeakLevel() * 1000 / 65535) * 0.1);
-                logWriter.WriteLine("     Range quality 100.0 %");
-                logWriter.WriteLine("     Test CRC {0:X8}", _arVerify.CRC32(0));
-                logWriter.WriteLine("     Copy CRC {0:X8}", _arVerify.CRC32(0));
-                logWriter.WriteLine("     Copy OK");
-                logWriter.WriteLine();
-                if (wereErrors)
-                    logWriter.WriteLine("There were errors");
-                else
-                    logWriter.WriteLine("No errors occurred");
-                logWriter.WriteLine();
-                logWriter.WriteLine();
-                logWriter.WriteLine("AccurateRip summary");
-                logWriter.WriteLine();
-                for (int track = 0; track < _toc.AudioTracks; track++)
-                {
-                    if (_arVerify.Total(track) == 0)
-                        logWriter.WriteLine("Track {0,2}  not present in database", track + 1);
-                    else
-                    {
-                        knownTracks++;
-                        if (_arVerify.Confidence(track) == 0)
-                            logWriter.WriteLine("Track {3,2}  cannot be verified as accurate (confidence {0})  [{1:X8}], AccurateRip returned [{2:X8}]", _arVerify.Total(track), _arVerify.CRC(track), _arVerify.DBCRC(track), track + 1);
-                        else
-                        {
-                            logWriter.WriteLine("Track {2,2}  accurately ripped (confidence {0})  [{1:X8}]", _arVerify.Confidence(track), _arVerify.CRC(track), track + 1);
-                            accurateTracks++;
-                        }
-                    }
-                }
-            }
-            logWriter.WriteLine();
-            if (knownTracks == 0)
-                logWriter.WriteLine("None of the tracks are present in the AccurateRip database");
-            else if (accurateTracks == 0)
-            {
-                logWriter.WriteLine("No tracks could be verified as accurate");
-                logWriter.WriteLine("You may have a different pressing from the one(s) in the database");
-            }
-            else if (accurateTracks == TrackCount)
-                logWriter.WriteLine("All tracks accurately ripped");
-            else
-            {
-                logWriter.WriteLine("{0,2} track(s) accurately ripped", accurateTracks);
-                if (TrackCount - knownTracks > 0)
-                    logWriter.WriteLine("{0,2} track(s) not present in the AccurateRip database", TrackCount - knownTracks);
-                logWriter.WriteLine();
-                logWriter.WriteLine("Some tracks could not be verified as accurate");
-            }
-            logWriter.WriteLine();
-            if (OutputStyle != CUEStyle.SingleFile && OutputStyle != CUEStyle.SingleFileWithCUE)
-            {
-                if (wereErrors)
-                    logWriter.WriteLine("There were errors");
-                else
-                    logWriter.WriteLine("No errors occurred");
-                logWriter.WriteLine();
-            }
-            logWriter.WriteLine("End of status report");
-            logWriter.Close();
-            _ripperLog = logWriter.ToString();
+            _ripperLog = CUESheetLogWriter.GetExactAudioCopyLog(this);
         }
 
         public void CreateRipperLOG()
@@ -1927,58 +2087,8 @@ namespace CUETools.Processor
                 CreateExactAudioCopyLOG();
                 return;
             }
-            StringWriter logWriter = new StringWriter(CultureInfo.InvariantCulture);
-            logWriter.WriteLine("{0}", _ripper.RipperVersion);
-            logWriter.WriteLine("Extraction logfile from : {0}", DateTime.Now);
-            logWriter.WriteLine("Used drive              : {0}", _ripper.ARName);
-            logWriter.WriteLine("Read offset correction  : {0}", _ripper.DriveOffset);
-            logWriter.WriteLine("Read command            : {0}", _ripper.CurrentReadCommand);
-            logWriter.WriteLine("Secure mode             : {0}", _ripper.CorrectionQuality);
-            logWriter.WriteLine("Disk length             : {0}", CDImageLayout.TimeToString(_toc.AudioLength));
-            logWriter.WriteLine("AccurateRip             : {0}", _arVerify.ARStatus == null ? "ok" : _arVerify.ARStatus);
-            if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
-                logWriter.WriteLine("HDCD                    : {0:f}", hdcdDecoder);
-            logWriter.WriteLine();
-            logWriter.WriteLine("TOC of the extracted CD");
-            logWriter.WriteLine();
-            logWriter.Write(TOCContents());
-            logWriter.WriteLine();
-            logWriter.WriteLine("     Track |   Pregap  | Indexes");
-            logWriter.WriteLine("    ---------------------------------------------------------");
-            for (int track = 1; track <= _toc.TrackCount; track++)
-                logWriter.WriteLine("{0,9}  | {1,8} |    {2,2}",
-                    _toc[track].Number,
-                    CDImageLayout.TimeToString(_toc[track].Pregap + (track == 1 ? 150U : 0U)),
-                    _toc[track].LastIndex);
-            logWriter.WriteLine();
-            logWriter.WriteLine("Destination files");
-            foreach (string path in _destPaths)
-                logWriter.WriteLine("    {0}", path);
-            bool wereErrors = PrintErrors(logWriter, _toc[_toc.FirstAudio][0].Start, _toc.AudioLength);
-            if (wereErrors)
-            {
-                logWriter.WriteLine();
-                if (wereErrors)
-                    logWriter.WriteLine("There were errors");
-                else
-                    logWriter.WriteLine("No errors occurred");
-            }
-            if (_useCUEToolsDB)
-            {
-                logWriter.WriteLine();
-                GenerateCTDBLog(logWriter);
-            }
-            if (_useAccurateRip)
-            {
-                logWriter.WriteLine();
-                logWriter.WriteLine("AccurateRip summary");
-                logWriter.WriteLine();
-                _arVerify.GenerateFullLog(logWriter, true, AccurateRipVerify.CalculateAccurateRipId(_toc));
-            }
-            logWriter.WriteLine();
-            logWriter.WriteLine("End of status report");
-            logWriter.Close();
-            _ripperLog = logWriter.ToString();
+
+            _ripperLog = CUESheetLogWriter.GetRipperLog(this);
         }
 
         public string M3UContents(CUEStyle style)
@@ -1989,21 +2099,6 @@ namespace CUETools.Processor
             for (int iTrack = 0; iTrack < TrackCount; iTrack++)
                 WriteLine(sw, 0, _trackFilenames[iTrack]);
             sw.Close();
-            return sw.ToString();
-        }
-
-        public string TOCContents()
-        {
-            StringWriter sw = new StringWriter();
-            sw.WriteLine("     Track |   Start  |  Length  | Start sector | End sector ");
-            sw.WriteLine("    ---------------------------------------------------------");
-            for (int track = 1; track <= _toc.TrackCount; track++)
-                sw.WriteLine("{0,9}  | {1,8} | {2,8} |  {3,8}    | {4,8}   ",
-                    track, // _toc[track].Number,
-                    CDImageLayout.TimeToString("{0,2}:{1:00}.{2:00}", _toc[track].Start),
-                    CDImageLayout.TimeToString("{0,2}:{1:00}.{2:00}", _toc[track].Length),
-                    _toc[track].Start,
-                    _toc[track].End);
             return sw.ToString();
         }
 
@@ -2128,53 +2223,12 @@ namespace CUETools.Processor
             }
         }
 
-        public readonly static string CUEToolsVersion = "2.1.2a";
-
-        public void GenerateAccurateRipLog(TextWriter sw)
-        {
-            sw.WriteLine("[CUETools log; Date: {0}; Version: {1}]", DateTime.Now, CUEToolsVersion);
-            if (PreGapLength != 0)
-                sw.WriteLine("Pregap length {0}.", PreGapLengthMSF);
-            if (!_toc[1].IsAudio)
-                sw.WriteLine("Playstation type data track length {0}.", _toc[_toc.FirstAudio].StartMSF);
-            if (!_toc[_toc.TrackCount].IsAudio)
-                sw.WriteLine("CD-Extra data track length {0}.",
-                    _toc[_toc.TrackCount].Length == 0 && _minDataTrackLength.HasValue ?
-                        CDImageLayout.TimeToString(_minDataTrackLength.Value) + " - " + CDImageLayout.TimeToString(_minDataTrackLength.Value + 74) :
-                        _toc[_toc.TrackCount].LengthMSF);
-            if (_cddbDiscIdTag != null && AccurateRipVerify.CalculateCDDBId(_toc).ToUpper() != _cddbDiscIdTag.ToUpper() && !_minDataTrackLength.HasValue)
-                sw.WriteLine("CDDBId mismatch: {0} vs {1}", _cddbDiscIdTag.ToUpper(), AccurateRipVerify.CalculateCDDBId(_toc).ToUpper());
-            if (_accurateRipId != null && AccurateRipVerify.CalculateAccurateRipId(_toc) != _accurateRipId)
-                sw.WriteLine("Using preserved id, actual id is {0}.", AccurateRipVerify.CalculateAccurateRipId(_toc));
-            if (_truncated4608)
-                sw.WriteLine("Truncated 4608 extra samples in some input files.");
-            if (_paddedToFrame)
-                sw.WriteLine("Padded some input files to a frame boundary.");
-
-            if (!_processed)
-            {
-                if (_useCUEToolsDB) GenerateCTDBLog(sw);
-                sw.WriteLine("[AccurateRip ID: {0}] {1}.", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc), _arVerify.ARStatus ?? "found");
-                return;
-            }
-
-            if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
-                sw.WriteLine("HDCD: {0:f}", hdcdDecoder);
-            if (0 != _writeOffset)
-                sw.WriteLine("Offset applied: {0}", _writeOffset);
-            if (_useCUEToolsDBFix)// && _CUEToolsDB.SelectedEntry != null)
-                sw.WriteLine("CUETools DB: corrected {0} errors.", _CUEToolsDB.SelectedEntry.repair.CorrectableErrors);
-            else if (_useCUEToolsDB)
-                GenerateCTDBLog(sw);
-            _arVerify.GenerateFullLog(sw, _config.arLogVerbose, _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
-        }
-
         public string GenerateAccurateRipStatus()
         {
             string prefix = "";
             if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
                 prefix += string.Format("{0:s}", hdcdDecoder);
-            if (_useAccurateRip)
+            if (isUsingAccurateRip)
             {
                 if (prefix != "") prefix += ", ";
                 prefix += "AR: ";
@@ -2193,7 +2247,7 @@ namespace CUETools.Processor
                         prefix += string.Format("rip not accurate ({0}/{1})", 0, _arVerify.WorstTotal());
                 }
             }
-            if (!_useCUEToolsDBFix && _useCUEToolsDB)
+            if (!isUsingCUEToolsDBFix && isUsingCUEToolsDB)
             {
                 if (prefix != "") prefix += ", ";
                 prefix += "CTDB: " + CTDB.Status;
@@ -2328,7 +2382,7 @@ namespace CUETools.Processor
             else if (_audioEncoderType != AudioEncoderType.NoAudio)
                 WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
 
-            if (_useCUEToolsDB && !_useCUEToolsDBFix)
+            if (isUsingCUEToolsDB && !isUsingCUEToolsDBFix)
                 _CUEToolsDB.DoVerify();
 
             _processed = true;
@@ -2340,19 +2394,19 @@ namespace CUETools.Processor
                 var now = DateTime.Now;
                 var entry = OpenLocalDBEntry();
                 entry.Status = this.GenerateAccurateRipStatus();
-                entry.ARConfidence = _useAccurateRip ? _arVerify.WorstConfidence() : 0;
-                entry.CTDBConfidence = _useCUEToolsDB && !_useCUEToolsDBFix ? CTDB.Confidence : 0;
+                entry.ARConfidence = isUsingAccurateRip ? _arVerify.WorstConfidence() : 0;
+                entry.CTDBConfidence = isUsingCUEToolsDB && !isUsingCUEToolsDBFix ? CTDB.Confidence : 0;
                 entry.Log = AccurateRipLog;
                 entry.VerificationDate =
-                    _useAccurateRip &&
+                    isUsingAccurateRip &&
                     (_arVerify.ExceptionStatus == WebExceptionStatus.Success ||
                       (_arVerify.ExceptionStatus == WebExceptionStatus.ProtocolError &&
                         _arVerify.ResponseStatus == HttpStatusCode.NotFound
                       )
                     ) ? now : DateTime.MinValue;
                 entry.CTDBVerificationDate =
-                    _useCUEToolsDB &&
-                    !_useCUEToolsDBFix &&
+                    isUsingCUEToolsDB &&
+                    !isUsingCUEToolsDBFix &&
                     (CTDB.QueryExceptionStatus == WebExceptionStatus.Success ||
                       (CTDB.QueryExceptionStatus == WebExceptionStatus.ProtocolError &&
                         CTDB.QueryResponseStatus == HttpStatusCode.NotFound
@@ -2366,7 +2420,7 @@ namespace CUETools.Processor
                 uint tracksMatch = 0;
                 int bestOffset = 0;
 
-                if (_useAccurateRip &&
+                if (isUsingAccurateRip &&
                     _config.writeArTagsOnEncode &&
                     _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                     FindBestOffset(1, true, out tracksMatch, out bestOffset);
@@ -2716,7 +2770,7 @@ namespace CUETools.Processor
 
         public string WriteReport()
         {
-            if (_useAccurateRip)
+            if (isUsingAccurateRip)
             {
                 ShowProgress((string)"Generating AccurateRip report...", 0, null, null);
                 if (_action == CUEAction.Verify && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
@@ -2755,16 +2809,17 @@ namespace CUETools.Processor
                 {
                     if (!Directory.Exists(OutputDir))
                         Directory.CreateDirectory(OutputDir);
-                    StreamWriter sw = new StreamWriter(Path.Combine(OutputDir, ArLogFileName),
-                        false, CUESheet.Encoding);
-                    GenerateAccurateRipLog(sw);
-                    sw.Close();
+
+                    using (StreamWriter sw = new StreamWriter(Path.Combine(OutputDir, ArLogFileName), false, CUESheet.Encoding))
+                    {
+                        CUESheetLogWriter.WriteAccurateRipLog(this, sw);
+                    }
                 }
                 if (_config.advanced.CreateTOC)
                 {
                     if (!Directory.Exists(OutputDir))
                         Directory.CreateDirectory(OutputDir);
-                    WriteText(Path.ChangeExtension(_outputPath, ".toc"), TOCContents());
+                    WriteText(Path.ChangeExtension(_outputPath, ".toc"), CUESheetLogWriter.GetTOCContents(this));
                 }
             }
             return GenerateAccurateRipStatus();
@@ -2833,7 +2888,7 @@ namespace CUETools.Processor
 
             if (_config.writeArTagsOnEncode &&
                 _action == CUEAction.Encode &&
-                _useAccurateRip &&
+                isUsingAccurateRip &&
                 _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                 GenerateAccurateRipTags(destTags, bestOffset, iTrack);
 
@@ -2911,7 +2966,7 @@ namespace CUETools.Processor
             if (fWithCUE &&
                 _config.writeArTagsOnEncode &&
                 _action == CUEAction.Encode &&
-                _useAccurateRip &&
+                isUsingAccurateRip &&
                 _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                 GenerateAccurateRipTags(destTags, bestOffset, -1);
 
@@ -3021,9 +3076,9 @@ namespace CUETools.Processor
             int diskOffset = 0;
 
             // we init AR before CTDB so that CTDB gets inited with correct TOC
-            if (_useAccurateRip || _useCUEToolsDB)
+            if (isUsingAccurateRip || isUsingCUEToolsDB)
                 _arVerify.Init(_toc);
-            if (_useCUEToolsDB && !_useCUEToolsDBFix)
+            if (isUsingCUEToolsDB && !isUsingCUEToolsDBFix)
             {
                 _CUEToolsDB.TOC = _toc; // This might be unnecessary, because they point to the same structure - if we modify _toc, _CUEToolsDB.TOC gets updated. Unless we set cueSheet.TOC...
                 _CUEToolsDB.Init(_arVerify);
@@ -3032,7 +3087,7 @@ namespace CUETools.Processor
             ShowProgress(String.Format("{2} track {0:00} ({1:00}%)...", 0, 0, noOutput ? "Verifying" : "Writing"), 0.0, null, null);
 
 #if !DEBUG
-			try
+            try
 #endif
             {
                 for (iTrack = 0; iTrack < TrackCount; iTrack++)
@@ -3112,10 +3167,10 @@ namespace CUETools.Processor
                             copyCount = audioSource.Read(sampleBuffer, copyCount);
                             if (copyCount == 0)
                                 throw new Exception("Unexpected end of file");
-                            if (_useCUEToolsDB && _useCUEToolsDBFix)
+                            if (isUsingCUEToolsDB && isUsingCUEToolsDBFix)
                                 _CUEToolsDB.SelectedEntry.repair.Write(sampleBuffer);
                             // we use AR after CTDB fix, so that we can verify what we fixed
-                            if (_useAccurateRip || _useCUEToolsDB)
+                            if (isUsingAccurateRip || isUsingCUEToolsDB)
                                 _arVerify.Write(sampleBuffer);
                             if (!discardOutput)
                             {
@@ -3163,19 +3218,19 @@ namespace CUETools.Processor
                 audioDest = null;
             }
 #if !DEBUG
-			catch (Exception ex)
-			{
-				if (hdcdDecoder != null)
-					(hdcdDecoder as IAudioFilter).AudioDest = null;
-				hdcdDecoder = null;
-				if (audioSource != null)
-					try { audioSource.Close(); } catch { }
-				audioSource = null;
-				if (audioDest != null)
-					try { audioDest.Delete(); } catch { }
-				audioDest = null;
-				throw ex;
-			}
+            catch (Exception ex)
+            {
+                if (hdcdDecoder != null)
+                    (hdcdDecoder as IAudioFilter).AudioDest = null;
+                hdcdDecoder = null;
+                if (audioSource != null)
+                    try { audioSource.Close(); } catch { }
+                audioSource = null;
+                if (audioDest != null)
+                    try { audioDest.Delete(); } catch { }
+                audioDest = null;
+                throw ex;
+            }
 #endif
         }
 
@@ -3186,9 +3241,9 @@ namespace CUETools.Processor
             hdcdDecoder = null;
 
             // we init AR before CTDB so that CTDB gets inited with correct TOC
-            if (_useAccurateRip || _useCUEToolsDB)
+            if (isUsingAccurateRip || isUsingCUEToolsDB)
                 _arVerify.Init(_toc);
-            if (_useCUEToolsDB && !_useCUEToolsDBFix)
+            if (isUsingCUEToolsDB && !isUsingCUEToolsDBFix)
             {
                 _CUEToolsDB.TOC = _toc;
                 _CUEToolsDB.Init(_arVerify);
@@ -3202,7 +3257,7 @@ namespace CUETools.Processor
             // also make sure all sources are seekable!!!
             // use overlapped io with large buffers?
             // ar.verify in each thread?
-            int nThreads = 1;// _isCD || !_config.separateDecodingThread || _useCUEToolsDB || _config.detectHDCD ? 1 : Environment.ProcessorCount;
+            int nThreads = 1;// _isCD || !_config.separateDecodingThread || isUsingCUEToolsDB || _config.detectHDCD ? 1 : Environment.ProcessorCount;
 
             int diskLength = 588 * (int)_toc.AudioLength;
             tasks.Add(new CUEToolsVerifyTask(this, 0, diskLength / nThreads, _arVerify));
@@ -3210,7 +3265,7 @@ namespace CUETools.Processor
                 tasks.Add(new CUEToolsVerifyTask(this, iThread * diskLength / nThreads, (iThread + 1) * diskLength / nThreads));
 
 #if !DEBUG
-			try
+            try
 #endif
             {
                 int lastProgress = -588 * 75;
@@ -3270,12 +3325,12 @@ namespace CUETools.Processor
                 } while (sourcesActive > 0);
             }
 #if !DEBUG
-			catch (Exception ex)
-			{
-				tasks.ForEach(t => t.TryClose());
-				tasks.Clear();
-				throw ex;
-			}
+            catch (Exception ex)
+            {
+                tasks.ForEach(t => t.TryClose());
+                tasks.Clear();
+                throw ex;
+            }
 #endif
             hdcdDecoder = tasks[0].hdcd;
             for (int iThread = 1; iThread < nThreads; iThread++)
@@ -3697,296 +3752,6 @@ namespace CUETools.Processor
             sw.WriteLine(line);
         }
 
-        public List<CUELine> Attributes
-        {
-            get
-            {
-                return _attributes;
-            }
-        }
-
-        public List<TrackInfo> Tracks
-        {
-            get
-            {
-                return _tracks;
-            }
-        }
-
-        public bool HasHTOAFilename
-        {
-            get
-            {
-                return _hasHTOAFilename;
-            }
-        }
-
-        public string HTOAFilename
-        {
-            get
-            {
-                return _htoaFilename;
-            }
-            set
-            {
-                _htoaFilename = value;
-            }
-        }
-
-        public bool HasTrackFilenames
-        {
-            get
-            {
-                return _hasTrackFilenames;
-            }
-        }
-
-        public List<string> TrackFilenames
-        {
-            get
-            {
-                return _trackFilenames;
-            }
-        }
-
-        public bool HasSingleFilename
-        {
-            get
-            {
-                return _hasSingleFilename;
-            }
-        }
-
-        public string SingleFilename
-        {
-            get
-            {
-                return _singleFilename;
-            }
-            set
-            {
-                _singleFilename = value;
-            }
-        }
-
-        public string AccurateRipId
-        {
-            get
-            {
-                return _accurateRipId;
-            }
-        }
-
-        public string ArLogFileName
-        {
-            get
-            {
-                return _arLogFileName;
-            }
-            set
-            {
-                _arLogFileName = value;
-            }
-        }
-
-        public string AlArtFileName
-        {
-            get
-            {
-                return _alArtFileName;
-            }
-            set
-            {
-                _alArtFileName = value;
-            }
-        }
-
-        public NameValueCollection Tags
-        {
-            get
-            {
-                TagLib.File fileInfo = _tracks[0]._fileInfo ?? _fileInfo;
-                return fileInfo != null ? Tagging.Analyze(fileInfo) : null;
-            }
-        }
-
-        public int WriteOffset
-        {
-            get
-            {
-                return _writeOffset;
-            }
-            set
-            {
-                if (_appliedWriteOffset)
-                {
-                    throw new Exception("Cannot change write offset after audio files have been written.");
-                }
-                _writeOffset = value;
-            }
-        }
-
-        public bool PaddedToFrame
-        {
-            get
-            {
-                return _paddedToFrame;
-            }
-        }
-
-        public uint DataTrackLength
-        {
-            get
-            {
-                if (!_toc[1].IsAudio)
-                    return _toc[1].Length;
-                else if (!_toc[_toc.TrackCount].IsAudio)
-                    return _toc[_toc.TrackCount].Length;
-                else
-                    return 0U;
-            }
-            set
-            {
-                if (value == 0)
-                    return;
-                if (!_toc[1].IsAudio)
-                {
-                    // TODO: if track 2 has a pregap, we should adjust it!!!
-                    for (int i = 2; i <= _toc.TrackCount; i++)
-                    {
-                        _toc[i].Start += value - _toc[1].Length;
-                        for (int j = 0; j <= _toc[i].LastIndex; j++)
-                            _toc[i][j].Start += value - _toc[1].Length;
-                    }
-                    _toc[1].Length = value;
-                }
-                else if (!_toc[_toc.TrackCount].IsAudio)
-                {
-                    //_toc[_toc.TrackCount].Start = tocFromLog[_toc.TrackCount].Start;
-                    _toc[_toc.TrackCount].Length = value;
-                    //_toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
-                    //_toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
-                }
-                else
-                    _toc.AddTrack(new CDTrack((uint)_toc.TrackCount + 1, _toc.Length + 152U * 75U, value, false, false));
-            }
-        }
-
-        public string DataTrackLengthMSF
-        {
-            get
-            {
-                return CDImageLayout.TimeToString(DataTrackLength);
-            }
-            set
-            {
-                DataTrackLength = (uint)CDImageLayout.TimeFromString(value);
-            }
-        }
-
-        public string PreGapLengthMSF
-        {
-            get
-            {
-                return CDImageLayout.TimeToString(_toc.Pregap);
-            }
-            set
-            {
-                PreGapLength = (uint)CDImageLayout.TimeFromString(value);
-            }
-        }
-
-        public uint PreGapLength
-        {
-            get
-            {
-                return _toc.Pregap;
-            }
-            set
-            {
-                if (value == _toc.Pregap || value == 0)
-                    return;
-                if (!_toc[1].IsAudio)
-                    throw new Exception("can't set pregap to a data track");
-                if (value < _toc.Pregap)
-                    throw new Exception("can't set negative pregap");
-                uint offs = value - _toc.Pregap;
-                for (int i = 1; i <= _toc.TrackCount; i++)
-                {
-                    _toc[i].Start += offs;
-                    for (int j = 0; j <= _toc[i].LastIndex; j++)
-                        _toc[i][j].Start += offs;
-                }
-                _toc[1][0].Start = 0;
-
-                SourceInfo sourceInfo;
-                sourceInfo.Path = null;
-                sourceInfo.Offset = 0;
-                sourceInfo.Length = offs * 588;
-                _sources.Insert(0, sourceInfo);
-            }
-        }
-
-        public bool UsePregapForFirstTrackInSingleFile
-        {
-            get
-            {
-                return _usePregapForFirstTrackInSingleFile;
-            }
-            set
-            {
-                _usePregapForFirstTrackInSingleFile = value;
-            }
-        }
-
-        public CUEConfig Config
-        {
-            get
-            {
-                return _config;
-            }
-        }
-
-        public CUEAction Action
-        {
-            get
-            {
-                return _action;
-            }
-            set
-            {
-                _action = value;
-            }
-        }
-
-        public CUEStyle OutputStyle
-        {
-            get
-            {
-                return _outputStyle;
-            }
-            set
-            {
-                _outputStyle = value;
-            }
-        }
-
-        public bool Processed
-        {
-            get
-            {
-                return _processed;
-            }
-        }
-
-        public bool IsCD
-        {
-            get
-            {
-                return _isCD;
-            }
-        }
-
         public static CDImageLayout CUE2TOC(string cue, int fileTimeLengthFrames)
         {
             CDImageLayout toc = new CDImageLayout();
@@ -4233,11 +3998,7 @@ namespace CUETools.Processor
         {
             get
             {
-                using (StringWriter logWriter = new StringWriter())
-                {
-                    GenerateAccurateRipLog(logWriter);
-                    return logWriter.ToString();
-                }
+                return CUESheetLogWriter.GetAccurateRipLog(this);
             }
         }
 
@@ -4258,10 +4019,10 @@ namespace CUETools.Processor
                         Action = CUEAction.Verify;
                         if (CTDB.DBStatus != null)
                             return CTDB.DBStatus;
-                        bool useAR = _useAccurateRip;
-                        _useAccurateRip = true;
+                        bool useAR = isUsingAccurateRip;
+                        isUsingAccurateRip = true;
                         Go();
-                        _useAccurateRip = useAR;
+                        isUsingAccurateRip = useAR;
                         List<CUEToolsSourceFile> choices = new List<CUEToolsSourceFile>();
                         foreach (DBEntry entry in CTDB.Entries)
                             if (!entry.hasErrors || entry.canRecover)
@@ -4284,7 +4045,7 @@ namespace CUETools.Processor
                         CTDB.SelectedEntry = (DBEntry)selectedEntry.data;
                         if (!CTDB.SelectedEntry.hasErrors)
                             return CTDB.Status;
-                        _useCUEToolsDBFix = true;
+                        isUsingCUEToolsDBFix = true;
                         Action = CUEAction.Encode;
                         return Go();
                     }
