@@ -13,7 +13,7 @@ namespace CUETools.AccurateRip
 {
 	public class AccurateRipVerify : IAudioDest
 	{
-        const int maxNpar = 8;
+        public const int maxNpar = 8;
 
         public AccurateRipVerify(CDImageLayout toc, IWebProxy proxy)
 		{
@@ -329,6 +329,13 @@ namespace CUETools.AccurateRip
                 throw new InvalidOperationException();
             return ParityToSyndrome.Parity2Syndrome(stride, npar, maxNpar, parity);
 		}
+
+        public unsafe byte[] GetSyndromeBytes(int npar = maxNpar)
+        {
+            if (!calcParity)
+                throw new InvalidOperationException();
+            return ParityToSyndrome.Parity2SyndromeBytes(stride, npar, maxNpar, parity);
+        }
 
 		private byte[] parity;
 		internal ushort[, ,] encodeTable;

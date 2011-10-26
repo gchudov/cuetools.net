@@ -94,8 +94,13 @@ namespace CUETools.TestParity
 		{
             Assert.AreEqual<string>("jvR9QJ1cSWpqbyP0I0tBrBkQRjCDTDDQkttZGj14ROvsXyg+AnnxVKxL7gwLZbrQmTw5ZPps1Q3744g94qaOOQ==",
                 Convert.ToBase64String(encode.AR.GetParity(8), 0, 64));
-            //Assert.AreEqual<string>("gwln1GxlYWH/Jn74PreMLv4aFF2glkScSWVFlxMBx94v5D3/3wPx+2guRLquED0s9tOFikPLiSnAv0Xq8aIQ6Q==",
-            //    Convert.ToBase64String(encode.AR.GetParity(16), 0, 64));
+            Assert.AreEqual<string>("DP7tAM2tuWCBRjyLjt6a+l7uRv8DejmFzRtv3ofeEWzEvqOfbqE9XFOz/6WaYU+lkHh9Am+wZxCw3m1Y7zKctw==",
+                Convert.ToBase64String(encode.AR.GetSyndromeBytes(8), 0, 64));
+            if (AccurateRipVerify.maxNpar >= 16)
+            {
+                Assert.AreEqual<string>("gwln1GxlYWH/Jn74PreMLv4aFF2glkScSWVFlxMBx94v5D3/3wPx+2guRLquED0s9tOFikPLiSnAv0Xq8aIQ6Q==",
+                    Convert.ToBase64String(encode.AR.GetParity(16), 0, 64));
+            }
             Assert.AreEqual<uint>(377539636, encode.CRC);
 		}
 
@@ -108,9 +113,9 @@ namespace CUETools.TestParity
 			var decode = generator.CreateCDRepairEncode(stride, npar);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
-			Assert.IsFalse(hasErrors, "has errors");
-			Assert.AreEqual(0, actualOffset, "wrong offset");
+            Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
+            Assert.IsFalse(hasErrors, "has errors");
+            Assert.AreEqual(0, actualOffset, "wrong offset");
 		}
 
 		/// <summary>
@@ -126,7 +131,7 @@ namespace CUETools.TestParity
 			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(-1176, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode.Syndrome, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
 		}
@@ -144,7 +149,7 @@ namespace CUETools.TestParity
 			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(0, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode.Syndrome, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
 			generator2.Write(fix);
@@ -161,9 +166,9 @@ namespace CUETools.TestParity
 			var decode = generator2.CreateCDRepairEncode(stride, npar);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
-			Assert.IsFalse(hasErrors, "has errors");
-			Assert.AreEqual(offset, actualOffset, "wrong offset");
+            Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
+            Assert.IsFalse(hasErrors, "has errors");
+            Assert.AreEqual(offset, actualOffset, "wrong offset");
 		}
 
 		/// <summary>
@@ -176,9 +181,9 @@ namespace CUETools.TestParity
 			var decode = generator2.CreateCDRepairEncode(stride, npar);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
-			Assert.IsFalse(hasErrors, "has errors");
-			Assert.AreEqual(-offset, actualOffset, "wrong offset");
+            Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
+            Assert.IsFalse(hasErrors, "has errors");
+            Assert.AreEqual(-offset, actualOffset, "wrong offset");
 		}
 
 		/// <summary>
@@ -191,14 +196,15 @@ namespace CUETools.TestParity
 			var decode = generator2.CreateCDRepairEncode(stride, npar);
 			int actualOffset;
 			bool hasErrors;
-			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors));
-			Assert.IsTrue(hasErrors, "doesn't have errors");
-			Assert.AreEqual(offset, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
-			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
-			Assert.IsTrue(fix.CanRecover, "cannot recover");
-			generator2.Write(fix);
-			Assert.AreEqual<uint>(encode.CRC, fix.CRC);
+            var syn = encode.AR.GetSyndrome(encode.NPAR);
+            Assert.IsTrue(decode.FindOffset(syn, encode.CRC, out actualOffset, out hasErrors));
+            Assert.IsTrue(hasErrors, "doesn't have errors");
+            Assert.AreEqual(offset, actualOffset, "wrong offset");
+            CDRepairFix fix = decode.VerifyParity(syn, actualOffset);
+            Assert.IsTrue(fix.HasErrors, "doesn't have errors");
+            Assert.IsTrue(fix.CanRecover, "cannot recover");
+            generator2.Write(fix);
+            Assert.AreEqual<uint>(encode.CRC, fix.CRC);
 		}
 
 		/// <summary>
@@ -214,7 +220,7 @@ namespace CUETools.TestParity
 			Assert.IsTrue(decode.FindOffset(encode.NPAR, encode.Parity, 0, encode.CRC, out actualOffset, out hasErrors), "couldn't find offset");
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(-offset, actualOffset, "wrong offset");
-			CDRepairFix fix = decode.VerifyParity(encode.Parity, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode.Syndrome, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
 			generator2.Write(fix);
@@ -351,8 +357,8 @@ namespace CUETools.TestParity
 			Assert.IsTrue(hasErrors, "doesn't have errors");
 			Assert.AreEqual(0, actualOffset, "wrong offset");
 			for (int t = 0; t < 1000; t++)
-				decode.VerifyParity(encode1.Parity, actualOffset);
-			CDRepairFix fix = decode.VerifyParity(encode1.Parity, actualOffset);
+				decode.VerifyParity(encode1.Syndrome, actualOffset);
+			CDRepairFix fix = decode.VerifyParity(encode1.Syndrome, actualOffset);
 			Assert.IsTrue(fix.HasErrors, "doesn't have errors");
 			Assert.IsTrue(fix.CanRecover, "cannot recover");
 			generator2.Write(fix);

@@ -267,11 +267,6 @@ namespace CUETools.AccurateRip
 		//    }
 		//}
 
-		public unsafe CDRepairFix VerifyParity(byte[] parity2, int actualOffset)
-		{
-			return VerifyParity(npar, parity2, 0, parity2.Length, actualOffset);
-		}
-
 		public AccurateRipVerify AR
 		{
 			get
@@ -299,80 +294,89 @@ namespace CUETools.AccurateRip
 			}
 		}
 
-		public unsafe bool FindOffset(int npar2, byte[] parity2, int pos, uint expectedCRC, out int actualOffset, out bool hasErrors)
-		{
-			if (npar2 != npar)
-				throw new Exception("npar mismatch");
-			if (ar.Position != ar.FinalSampleCount)
-				throw new Exception("ar.Position != ar.FinalSampleCount");
+        public unsafe bool FindOffset(int npar2, byte[] parity2, int pos, uint expectedCRC, out int actualOffset, out bool hasErrors)
+        {
+            var syn2 = ParityToSyndrome.Parity2Syndrome(1, npar2, npar2, parity2, pos);
+            return FindOffset(syn2, expectedCRC, out actualOffset, out hasErrors);
+        }
 
-			// find offset
-			fixed (byte* par2ptr = &parity2[pos])
-			fixed (ushort* chT = rs.chienTable)
-			{
-				ushort* par2 = (ushort*)par2ptr;
-				int* _sigma = stackalloc int[npar];
-				int* _errpos = stackalloc int[npar];
-				int* syn = stackalloc int[npar];
-				bool foundOffset = false;
-				var arSyndrome = ar.GetSyndrome(npar);
+        public unsafe bool FindOffset(ushort[,] syn2, uint expectedCRC, out int actualOffset, out bool hasErrors)
+        {
+            int npar2 = syn2.GetLength(1);
 
-				for (int allowed_errors = 0; allowed_errors < npar / 2 && !foundOffset; allowed_errors++)
-				{
-					int part2 = 0;
-					ushort* wr = par2 + part2 * npar;
+            if (npar2 != npar)
+                throw new Exception("npar mismatch");
+            if (ar.Position != ar.FinalSampleCount)
+                throw new Exception("ar.Position != ar.FinalSampleCount");
 
-					// We can only use offset if Abs(offset * 2) < stride,
-					// else we might need to add/remove more than one sample
-					// from syndrome calculations, and that would be too difficult
-					// and will probably require longer leadin/leadout.
-					for (int offset = 1 - stride / 2; offset < stride / 2; offset++)
-					{
-						int err = 0;
-						int part = (part2 + stride - offset * 2) % stride;
+            int part2 = 0;
+            // find offset
+            fixed (ushort* chT = rs.chienTable, syn2part = &syn2[part2, 0])
+            {
+                int* _sigma = stackalloc int[npar];
+                int* _errpos = stackalloc int[npar];
+                int* syn = stackalloc int[npar];
+                bool foundOffset = false;
+                var arSyndrome = ar.GetSyndrome(npar);
 
-						for (int i = 0; i < npar; i++)
-						{
-							int synI = arSyndrome[part, i];
+                for (int allowed_errors = 0; allowed_errors < npar / 2 && !foundOffset; allowed_errors++)
+                {
+                    // We can only use offset if Abs(offset * 2) < stride,
+                    // else we might need to add/remove more than one sample
+                    // from syndrome calculations, and that would be too difficult
+                    // and will probably require longer leadin/leadout.
+                    for (int offset = 1 - stride / 2; offset < stride / 2; offset++)
+                    {
+                        int err = 0;
+                        int part = (part2 + stride - offset * 2) % stride;
 
-							// offset < 0
-							if (part < -offset * 2)
-							{
-								synI ^= galois.mulExp(ar.leadin[stride + part], (i * (stridecount - 1)) % galois.Max);
-								synI = ar.leadout[laststride - part - 1] ^ galois.mulExp(synI, i);
-							}
-							// offset > 0 
-							if (part >= stride - offset * 2)
-							{
-								synI = galois.divExp(synI ^ ar.leadout[laststride + stride - part - 1], i);
-								synI ^= galois.mulExp(ar.leadin[part], (i * (stridecount - 1)) % galois.Max);
-							}
+                        for (int i = 0; i < npar; i++)
+                        {
+                            int synI = arSyndrome[part, i];
 
-							for (int j = 0; j < npar; j++)
-								synI = wr[j] ^ galois.mulExp(synI, i);
+                            // offset < 0
+                            if (part < -offset * 2)
+                            {
+                                synI ^= galois.mulExp(ar.leadin[stride + part], (i * (stridecount - 1)) % galois.Max);
+                                synI = ar.leadout[laststride - part - 1] ^ galois.mulExp(synI, i);
+                            }
+                            // offset > 0 
+                            if (part >= stride - offset * 2)
+                            {
+                                synI = galois.divExp(synI ^ ar.leadout[laststride + stride - part - 1], i);
+                                synI ^= galois.mulExp(ar.leadin[part], (i * (stridecount - 1)) % galois.Max);
+                            }
 
-							syn[i] = synI;
-							err |= synI;
-						}
-						int err_count = err == 0 ? 0 : rs.calcSigmaMBM(_sigma, syn);
-						if (err_count == allowed_errors && (err_count == 0 || rs.chienSearch(_errpos, stridecount + npar, err_count, _sigma, chT)))
-						{
-							actualOffset = offset;
-							hasErrors = err_count != 0 || ar.CTDBCRC(-offset) != expectedCRC;
-							return true;
-						}
-					}
-				}
-			}
-			actualOffset = 0;
-			hasErrors = true;
-			return false;
-		}
+                            synI = galois.mulExp(synI ^ syn2part[i], i * npar);
+                            syn[i] = synI;
+                            err |= synI;
+                        }
+                        int err_count = err == 0 ? 0 : rs.calcSigmaMBM(_sigma, syn);
+                        if (err_count == allowed_errors && (err_count == 0 || rs.chienSearch(_errpos, stridecount + npar, err_count, _sigma, chT)))
+                        {
+                            actualOffset = offset;
+                            hasErrors = err_count != 0 || ar.CTDBCRC(-offset) != expectedCRC;
+                            return true;
+                        }
+                    }
+                }
+            }
+            actualOffset = 0;
+            hasErrors = true;
+            return false;
+        }
 
-		public unsafe CDRepairFix VerifyParity(int npar2, byte[] parity2, int pos, int len, int actualOffset)
-		{
-			if (len != stride * npar * 2)
+        public unsafe CDRepairFix VerifyParity(int npar2, byte[] parity2, int pos, int len, int actualOffset)
+        {
+			if (len != stride * npar2 * 2)
 				throw new Exception("wrong size");
+            var syn2 = ParityToSyndrome.Parity2Syndrome(stride, npar2, npar2, parity2, pos);
+            return VerifyParity(syn2, actualOffset);
+        }
+
+		public unsafe CDRepairFix VerifyParity(ushort[,] syn2, int actualOffset)
+		{
+            int npar2 = syn2.GetLength(1);
 
 			CDRepairFix fix = new CDRepairFix(this);
 			fix.actualOffset = actualOffset;
@@ -386,43 +390,42 @@ namespace CUETools.AccurateRip
 			//fix.erroff = new int[stride, npar / 2];
 			fix.errors = new int[stride];
 
-			fixed (byte* par = &parity2[pos])
-			fixed (ushort* exp = galois.ExpTbl, log = galois.LogTbl, chT = rs.chienTable)
+            var syn1 = ar.GetSyndrome(npar);
+
+			//fixed (byte* par = &parity2[pos])
+			fixed (ushort* exp = galois.ExpTbl, log = galois.LogTbl, chT = rs.chienTable, psyn2 = syn2, psyn1 = syn1)
 			fixed (int* sf = fix.sigma, of = fix.omega, ef = fix.errpos)
 			{
 				int* syn = stackalloc int[npar];
 				int offset = fix.actualOffset;
-				var arSyndrome = ar.GetSyndrome(npar);
 
 				for (int part = 0; part < stride; part++)
 				{
 					int part2 = (part + offset * 2 + stride) % stride;
-					ushort* wr = (ushort*)par + part2 * npar;
+					ushort* syn1part = psyn1 + part * npar;
+                    ushort* syn2part = psyn2 + part2 * npar;
 					int err = 0;
 
 					for (int i = 0; i < npar; i++)
 					{
-						syn[i] = arSyndrome[part, i];
+						int synI = syn1part[i];
 
 						// offset < 0
 						if (part < -offset * 2)
 						{
-							syn[i] ^= galois.mulExp(ar.leadin[stride + part], (i * (stridecount - 1)) % galois.Max);
-							syn[i] = ar.leadout[laststride - part - 1] ^ galois.mulExp(syn[i], i);
+							synI ^= galois.mulExp(ar.leadin[stride + part], (i * (stridecount - 1)) % galois.Max);
+							synI = ar.leadout[laststride - part - 1] ^ galois.mulExp(synI, i);
 						}
 						// offset > 0 
 						if (part >= stride - offset * 2)
 						{
-							syn[i] = galois.divExp(syn[i] ^ ar.leadout[laststride + stride - part - 1], i);
-							syn[i] ^= galois.mulExp(ar.leadin[part], (i * (stridecount - 1)) % galois.Max);
+                            synI = galois.divExp(synI ^ ar.leadout[laststride + stride - part - 1], i);
+                            synI ^= galois.mulExp(ar.leadin[part], (i * (stridecount - 1)) % galois.Max);
 						}
 
-						//syn[i] = galois.mulExp(syn[i], i * npar);
-
-						for (int j = 0; j < npar; j++)
-							syn[i] = wr[j] ^ galois.mulExp(syn[i], i); // wk = data + wk * α^i
-
-						err |= syn[i];
+                        synI = galois.mulExp(synI ^ syn2part[i], i * npar);
+                        syn[i] = synI;
+                        err |= synI;
 					}
 
 					//for (int j = 0; j < npar; j++)
