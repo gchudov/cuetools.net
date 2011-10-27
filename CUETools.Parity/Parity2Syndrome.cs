@@ -39,6 +39,16 @@ namespace CUETools.Parity
             erasure_diff = Galois16.instance.gfdiff(erasure_loc_pol);
         }
 
+        public static unsafe string ToBase64String(ushort[,] inArray, int offset, int length)
+        {
+            var outBuf = new byte[inArray.GetLength(1) * length * 2];
+            fixed (ushort* inPtr = &inArray[offset, 0])
+            fixed (byte* outPtr = outBuf)
+                for (int i = 0; i < inArray.GetLength(1) * length; i++)
+                    ((ushort*)outPtr)[i] = inPtr[i];
+            return Convert.ToBase64String(outBuf);
+        }
+
         public static unsafe byte[] Syndrome2Parity(ushort[,] syndrome, byte[] parity = null)
         {
             var stride = syndrome.GetLength(0);
@@ -62,14 +72,6 @@ namespace CUETools.Parity
             fixed (byte* pbpar = &parity[pos])
             fixed (ushort* psyn = syndrome)
                 Parity2Syndrome((ushort*)pbpar, psyn, stride, npar, npar2);
-            return syndrome;
-        }
-
-        public static unsafe byte[] Parity2SyndromeBytes(int stride, int npar, int npar2, byte[] parity)
-        {
-            var syndrome = new byte[stride * npar * 2];
-            fixed (byte* pbpar = parity, psyn = syndrome)
-                Parity2Syndrome((ushort*)pbpar, (ushort*)psyn, stride, npar, npar2);
             return syndrome;
         }
 

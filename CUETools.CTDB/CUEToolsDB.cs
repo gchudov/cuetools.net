@@ -10,6 +10,7 @@ using System.Text;
 using System.Xml.Serialization;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
+using CUETools.Parity;
 using Krystalware.UploadHelper;
 
 namespace CUETools.CTDB
@@ -101,13 +102,16 @@ namespace CUETools.CTDB
 									var parity = Convert.FromBase64String(ctdbRespEntry.parity);
 									var entry_toc = CDImageLayout.FromString(ctdbRespEntry.toc);
 									this.total += ctdbRespEntry.confidence;
+
+                                    if (parity.Length != ctdbRespEntry.npar * 2)
+                                        throw new Exception("invalid parity length");
+                                    //if (verify.Stride != ctdbRespEntry.stride * 2)
+                                    //    throw new Exception("invalid stride length");
+                                    var syndrome = ParityToSyndrome.Parity2Syndrome(1, ctdbRespEntry.npar, ctdbRespEntry.npar, parity);
 									var entry = new DBEntry(
-										parity,
-										0,
-										parity.Length,
+										syndrome,
 										ctdbRespEntry.confidence,
-										ctdbRespEntry.npar,
-										ctdbRespEntry.stride,
+										ctdbRespEntry.stride * 2,
 										uint.Parse(ctdbRespEntry.crc32, NumberStyles.HexNumber),
 										ctdbRespEntry.id,
 										entry_toc,
@@ -165,8 +169,8 @@ namespace CUETools.CTDB
 
 					if (entry.httpStatus == HttpStatusCode.OK)
 					{
-						if (resp.ContentLength < entry.npar * entry.stride * 4 ||
-							resp.ContentLength > entry.npar * entry.stride * 8)
+						if (resp.ContentLength < entry.Npar * entry.stride * 2 ||
+							resp.ContentLength > entry.Npar * entry.stride * 4)
 						{
 							entry.httpStatus = HttpStatusCode.PartialContent;
 						}
@@ -230,13 +234,15 @@ namespace CUETools.CTDB
 				return this.DBStatus;
 			DBEntry confirm = this.MatchingEntry;
 			if (confirm != null) confidence = 1;
-			DoSubmit(confidence, quality, artist, title, barcode, false, confirm);
+            int npar = AccurateRipVerify.maxNpar;
+            var parity = verify.AR.GetParity(npar);
+			DoSubmit(confidence, quality, artist, title, barcode, false, confirm, parity, npar);
 			if (subResult == "parity needed")
-				DoSubmit(confidence, quality, artist, title, barcode, true, confirm);
+				DoSubmit(confidence, quality, artist, title, barcode, true, confirm, parity, npar);
 			return subResult;
 		}
 
-		protected string DoSubmit(int confidence, int quality, string artist, string title, string barcode, bool upload, DBEntry confirm)
+		protected string DoSubmit(int confidence, int quality, string artist, string title, string barcode, bool upload, DBEntry confirm, byte[] parity, int npar)
 		{
 			UploadFile[] files;
 			if (upload)
@@ -253,9 +259,9 @@ namespace CUETools.CTDB
 					using (DBHDR DISC = CTDB.HDR("DISC"))
 					{
 						using (DBHDR CONF = DISC.HDR("CONF")) CONF.Write(confidence);
-						using (DBHDR NPAR = DISC.HDR("NPAR")) NPAR.Write(verify.NPAR);
+						using (DBHDR NPAR = DISC.HDR("NPAR")) NPAR.Write(npar);
 						using (DBHDR CRC_ = DISC.HDR("CRC ")) CRC_.Write(verify.CRC);
-						using (DBHDR PAR_ = DISC.HDR("PAR ")) PAR_.Write(verify.Parity);
+						using (DBHDR PAR_ = DISC.HDR("PAR ")) PAR_.Write(parity);
 					}
 				}
 				newcontents.Position = 0;
@@ -278,7 +284,7 @@ namespace CUETools.CTDB
 			form.Add("toc", toc.ToString());
 			form.Add("crc32", ((int)verify.CRC).ToString());
 			form.Add("trackcrcs", verify.TrackCRCs);
-			form.Add("parity", Convert.ToBase64String(verify.Parity, 0, 16));
+			form.Add("parity", Convert.ToBase64String(parity, 0, npar * 2));
 			form.Add("confidence", confidence.ToString());
 			form.Add("userid", GetUUID());
 			form.Add("quality", quality.ToString());
@@ -327,11 +333,9 @@ namespace CUETools.CTDB
 
 		private bool Parse(byte[] contents, DBEntry entry)
 		{
-			if (contents.Length == entry.npar * entry.stride * 4)
+            if (contents.Length == entry.Npar * entry.stride * 2)
 			{
-				entry.parity = contents;
-				entry.pos = 0;
-				entry.len = contents.Length;
+                entry.syndrome = ParityToSyndrome.Parity2Syndrome(entry.stride, entry.Npar, entry.Npar, contents);
 				return true;
 			}
 
@@ -377,9 +381,9 @@ namespace CUETools.CTDB
 				}
 				if (parPos != 0)
 				{
-					entry.parity = contents;
-					entry.pos = parPos;
-					entry.len = parLen;
+                    if (parLen != entry.Npar * entry.stride * 2)
+                        return false;
+                    entry.syndrome = ParityToSyndrome.Parity2Syndrome(entry.stride, entry.Npar, entry.Npar, contents, parPos);
 					return true;
 				}
 			}
@@ -392,13 +396,13 @@ namespace CUETools.CTDB
 				return;
 			foreach (DBEntry entry in entries)
 			{
-				if (entry.toc.Pregap != toc.Pregap || entry.toc.AudioLength != toc.AudioLength || entry.stride != verify.Stride / 2)
+				if (entry.toc.Pregap != toc.Pregap || entry.toc.AudioLength != toc.AudioLength || entry.stride != verify.Stride)
 				{
 					entry.hasErrors = true;
 					entry.canRecover = false;
 					continue;
 				}
-				if (!verify.FindOffset(entry.npar, entry.parity, entry.pos, entry.crc, out entry.offset, out entry.hasErrors))
+				if (!verify.FindOffset(entry.syndrome, entry.crc, out entry.offset, out entry.hasErrors))
 					entry.canRecover = false;
 				else if (entry.hasErrors)
 				{
@@ -411,7 +415,7 @@ namespace CUETools.CTDB
 							entry.canRecover = false;
 						else
 						{
-							entry.repair = verify.VerifyParity(entry.npar, entry.parity, entry.pos, entry.len, entry.offset);
+							entry.repair = verify.VerifyParity(entry.syndrome, entry.offset);
 							entry.canRecover = entry.repair.CanRecover;
 						}
 					}
@@ -448,10 +452,7 @@ namespace CUETools.CTDB
 
 		public void Init(AccurateRipVerify ar)
 		{
-			int npar = 8;
-			foreach (DBEntry entry in entries)
-				npar = Math.Max(npar, entry.npar);
-			verify = new CDRepairEncode(ar, 10 * 588 * 2, npar);
+			verify = new CDRepairEncode(ar, 10 * 588 * 2);
 		}
 
 		public CDImageLayout TOC

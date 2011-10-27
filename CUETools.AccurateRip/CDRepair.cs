@@ -14,46 +14,26 @@ namespace CUETools.AccurateRip
 		protected int sampleCount;
 		protected int finalSampleCount;
 		internal Galois galois;
-		protected RsDecode rs;
-		//protected uint crc;
-		protected int[] encodeGx;
 		internal int stride;
 		internal int laststride;
 		internal int stridecount;
-		internal int npar;
 
-		public CDRepair(int finalSampleCount, int stride, int npar)
+		public CDRepair(int finalSampleCount, int stride)
 		{			
-			this.npar = npar;
 			this.stride = stride;
 			this.finalSampleCount = finalSampleCount;
 			sampleCount = 0;
 			galois = Galois16.instance;
-			rs = new RsDecode16(npar, galois);
-			//crc32 = new Crc32();
-			//crc = 0xffffffff;
-			encodeGx = galois.makeEncodeGxLog(npar);
 			laststride = stride + (finalSampleCount * 2) % stride;
 			stridecount = (finalSampleCount * 2) / stride - 2; // minus one for leadin and one for leadout
-			if ((finalSampleCount * 2 + stride - 1) / stride + npar > galois.Max)
+			if ((finalSampleCount * 2 + stride - 1) / stride + AccurateRipVerify.maxNpar > galois.Max)
 				throw new Exception("invalid stride");
 		}
 
 		public CDRepair(CDRepair src)
-			: this(src.finalSampleCount, src.stride, src.npar)
+			: this(src.finalSampleCount, src.stride)
 		{
 		}
-
-		//public unsafe void Write(AudioBuffer sampleBuffer)
-		//{
-		//    throw new Exception("unsupported");
-		//}
-
-		//public unsafe void Close()
-		//{
-		//    if (sampleCount != finalSampleCount)
-		//        throw new Exception("sampleCount != finalSampleCount");
-		//}
 
 		public long FinalSampleCount
 		{
@@ -66,14 +46,6 @@ namespace CUETools.AccurateRip
 				if (value < 0) // != _toc.Length?
 					throw new Exception("invalid FinalSampleCount");
 				finalSampleCount = (int)value;
-			}
-		}
-
-		public int NPAR
-		{
-			get
-			{
-				return npar;
 			}
 		}
 
@@ -90,182 +62,12 @@ namespace CUETools.AccurateRip
 	{
 		protected AccurateRipVerify ar;
 
-		public CDRepairEncode(AccurateRipVerify ar, int stride, int npar)
-		    : base ((int)ar.FinalSampleCount, stride, npar)
+		public CDRepairEncode(AccurateRipVerify ar, int stride)
+		    : base ((int)ar.FinalSampleCount, stride)
 		{
 			this.ar = ar;
 			ar.InitCDRepair(stride, laststride, stridecount, true);
 		}
-
-		//private unsafe void ProcessStride(int currentStride, int currentPart, int count, ushort* data)
-		//{
-		//    fixed (uint* crct = Crc32.table)
-		//    fixed (byte* bpar = parity)
-		//    fixed (ushort* exp = galois.ExpTbl, log = galois.LogTbl, synptr = syndrome)
-		//    fixed (int* gx = encodeGx)
-		//        for (int pos = 0; pos < count; pos++)
-		//        {
-		//            ushort* par = (ushort*)bpar;
-		//            int part = currentPart + pos;
-		//            ushort* wr = ((ushort*)par) + part * npar;
-		//            ushort dd = data[pos];
-
-		//            //crc = (crc >> 8) ^ crct[(byte)(crc ^ dd)];
-		//            //crc = (crc >> 8) ^ crct[(byte)(crc ^ (dd >> 8))];
-
-		//            if (verify)
-		//            {
-		//                ushort* syn = synptr + part * npar;
-		//                syn[0] ^= dd; // wk += data
-		//                for (int i = 1; i < npar; i++)
-		//                    syn[i] = (ushort)(dd ^ galois.mulExp(syn[i], i)); // wk = data + wk * α^i
-		//            }
-
-		//            int ib = wr[0] ^ dd;
-		//            if (ib != 0)
-		//            {
-		//                ushort* myexp = exp + log[ib];
-		//                for (int i = 0; i < npar - 1; i++)
-		//                    wr[i] = (ushort)(wr[i + 1] ^ myexp[gx[i]]);
-		//                wr[npar - 1] = myexp[gx[npar - 1]];
-		//            }
-		//            else
-		//            {
-		//                for (int i = 0; i < npar - 1; i++)
-		//                    wr[i] = wr[i + 1];
-		//                wr[npar - 1] = 0;
-		//            }
-		//        }
-		//}
-
-		//private unsafe void ProcessStride16(int currentStride, int currentPart, int count, ushort* data)
-		//{
-		//    fixed (uint* crct = Crc32.table)
-		//    fixed (byte* bpar = parity)
-		//    fixed (ushort* exp = galois.ExpTbl, log = galois.LogTbl, synptr = syndrome)
-		//        for (int pos = 0; pos < count; pos++)
-		//        {
-		//            ushort* par = (ushort*)bpar;
-		//            int part = currentPart + pos;
-		//            ushort* wr = par + part * 16;
-		//            ushort dd = data[pos];
-
-		//            //crc = (crc >> 8) ^ crct[(byte)(crc ^ dd)];
-		//            //crc = (crc >> 8) ^ crct[(byte)(crc ^ (dd >> 8))];
-
-		//            int ib = wr[0] ^ dd;
-		//            if (ib != 0)
-		//            {
-		//                ushort* myexp = exp + log[ib];
-		//                wr[0] = (ushort)(wr[1] ^ myexp[0x000059f1]);
-		//                wr[1] = (ushort)(wr[2] ^ myexp[0x0000608f]);
-		//                wr[2] = (ushort)(wr[3] ^ myexp[0x0000918b]);
-		//                wr[3] = (ushort)(wr[4] ^ myexp[0x00004487]);
-		//                wr[4] = (ushort)(wr[5] ^ myexp[0x0000a151]);
-		//                wr[5] = (ushort)(wr[6] ^ myexp[0x0000c074]);
-		//                wr[6] = (ushort)(wr[7] ^ myexp[0x00004178]);
-		//                wr[7] = (ushort)(wr[8] ^ myexp[0x00004730]);
-		//                wr[8] = (ushort)(wr[9] ^ myexp[0x00004187]);
-		//                wr[9] = (ushort)(wr[10] ^ myexp[0x0000c092]);
-		//                wr[10] = (ushort)(wr[11] ^ myexp[0x0000a17e]);
-		//                wr[11] = (ushort)(wr[12] ^ myexp[0x000044c3]);
-		//                wr[12] = (ushort)(wr[13] ^ myexp[0x000091d6]);
-		//                wr[13] = (ushort)(wr[14] ^ myexp[0x000060e9]);
-		//                wr[14] = (ushort)(wr[15] ^ myexp[0x00005a5a]);
-		//                wr[15] = myexp[0x00000078];
-		//            }
-		//            else
-		//            {
-		//                wr[0] = wr[1];
-		//                wr[1] = wr[2];
-		//                wr[2] = wr[3];
-		//                wr[3] = wr[4];
-		//                wr[4] = wr[5];
-		//                wr[5] = wr[6];
-		//                wr[6] = wr[7];
-		//                wr[7] = wr[8];
-		//                wr[8] = wr[9];
-		//                wr[9] = wr[10];
-		//                wr[10] = wr[11];
-		//                wr[11] = wr[12];
-		//                wr[12] = wr[13];
-		//                wr[13] = wr[14];
-		//                wr[14] = wr[15];
-		//                wr[15] = 0;
-		//            }
-
-		//            // syn[i] += data[pos] * α^(n*i)
-		//            if (verify && dd != 0)
-		//            {
-		//                int n = stridecount - currentStride;
-		//                ushort* syn = synptr + part * 16;
-		//                syn[0] ^= dd;
-		//                int idx = log[dd];
-		//                idx += n; syn[1] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[2] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[3] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[4] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[5] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[6] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[7] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[8] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[9] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[10] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[11] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[12] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[13] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[14] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//                idx += n; syn[15] ^= exp[(idx & 0xffff) + (idx >> 16)];
-		//            }
-		//        }
-		//}
-
-		//new public unsafe void Write(AudioBuffer sampleBuffer)
-		//{
-		//    if (!verify && !encode)
-		//        return;
-
-		//    sampleBuffer.Prepare(this);
-
-		//    if ((sampleBuffer.ByteLength & 1) != 0 || sampleCount + sampleBuffer.Length > finalSampleCount)
-		//        throw new Exception("sampleCount > finalSampleCount");
-
-		//    fixed (byte* bytes = sampleBuffer.Bytes)
-		//    {
-		//        int offs = 0;
-		//        while (offs < sampleBuffer.Length)
-		//        {
-		//            int currentPart = (sampleCount * 2) % stride;
-		//            int currentStride = (sampleCount * 2) / stride;
-		//            // Process no more than there is in the buffer, and no more than up to a stride boundary.
-		//            int copyCount = Math.Min((sampleBuffer.Length - offs) * 2, stride - currentPart);
-		//            ushort* data = ((ushort*)bytes) + offs * 2;
-
-		//            if (currentStride < 2)
-		//                for (int pos = 0; pos < copyCount; pos++)
-		//                    leadin[sampleCount * 2 + pos] = data[pos];
-
-		//            if (currentStride >= stridecount)
-		//                for (int pos = 0; pos < copyCount; pos++)
-		//                {
-		//                    int remaining = (finalSampleCount - sampleCount) * 2 - pos - 1;
-		//                    if (remaining < stride + laststride)
-		//                        leadout[remaining] = data[pos];
-		//                }
-
-		//            if (currentStride >= 1 && currentStride <= stridecount)
-		//            {
-		//                if (npar == 16)
-		//                    ProcessStride16(currentStride, currentPart, copyCount, data);
-		//                else if (npar != 8)
-		//                    ProcessStride(currentStride, currentPart, copyCount, data);
-		//            }
-
-		//            sampleCount += copyCount >> 1;
-		//            offs += copyCount >> 1;
-		//        }
-		//    }
-		//}
 
 		public AccurateRipVerify AR
 		{
@@ -294,21 +96,17 @@ namespace CUETools.AccurateRip
 			}
 		}
 
-        public unsafe bool FindOffset(int npar2, byte[] parity2, int pos, uint expectedCRC, out int actualOffset, out bool hasErrors)
-        {
-            var syn2 = ParityToSyndrome.Parity2Syndrome(1, npar2, npar2, parity2, pos);
-            return FindOffset(syn2, expectedCRC, out actualOffset, out hasErrors);
-        }
-
         public unsafe bool FindOffset(ushort[,] syn2, uint expectedCRC, out int actualOffset, out bool hasErrors)
         {
             int npar2 = syn2.GetLength(1);
+            int npar = Math.Min(AccurateRipVerify.maxNpar, npar2);
 
             if (npar2 != npar)
                 throw new Exception("npar mismatch");
             if (ar.Position != ar.FinalSampleCount)
                 throw new Exception("ar.Position != ar.FinalSampleCount");
 
+            var rs = new RsDecode16(npar, this.galois);
             int part2 = 0;
             // find offset
             fixed (ushort* chT = rs.chienTable, syn2part = &syn2[part2, 0])
@@ -366,19 +164,12 @@ namespace CUETools.AccurateRip
             return false;
         }
 
-        public unsafe CDRepairFix VerifyParity(int npar2, byte[] parity2, int pos, int len, int actualOffset)
-        {
-			if (len != stride * npar2 * 2)
-				throw new Exception("wrong size");
-            var syn2 = ParityToSyndrome.Parity2Syndrome(stride, npar2, npar2, parity2, pos);
-            return VerifyParity(syn2, actualOffset);
-        }
-
 		public unsafe CDRepairFix VerifyParity(ushort[,] syn2, int actualOffset)
 		{
             int npar2 = syn2.GetLength(1);
+            int npar = Math.Min(AccurateRipVerify.maxNpar, npar2);
 
-			CDRepairFix fix = new CDRepairFix(this);
+			CDRepairFix fix = new CDRepairFix(this, npar);
 			fix.actualOffset = actualOffset;
 			fix.correctableErrors = 0;
 			fix.hasErrors = false;
@@ -391,12 +182,16 @@ namespace CUETools.AccurateRip
 			fix.errors = new int[stride];
 
             var syn1 = ar.GetSyndrome(npar);
+            var rs = new RsDecode16(npar, this.galois);
 
 			//fixed (byte* par = &parity2[pos])
 			fixed (ushort* exp = galois.ExpTbl, log = galois.LogTbl, chT = rs.chienTable, psyn2 = syn2, psyn1 = syn1)
 			fixed (int* sf = fix.sigma, of = fix.omega, ef = fix.errpos)
 			{
-				int* syn = stackalloc int[npar];
+                int sfLen = fix.sigma.GetLength(1);
+                int ofLen = fix.omega.GetLength(1);
+                int efLen = fix.errpos.GetLength(1);
+                int* syn = stackalloc int[npar];
 				int offset = fix.actualOffset;
 
 				for (int part = 0; part < stride; part++)
@@ -442,9 +237,9 @@ namespace CUETools.AccurateRip
 
 					if (err != 0)
 					{
-						int* s = sf + part * fix.sigma.GetLength(1);
-						int* o = of + part * fix.omega.GetLength(1);
-						int* e = ef + part * fix.errpos.GetLength(1);
+                        int* s = sf + part * sfLen;
+                        int* o = of + part * ofLen;
+                        int* e = ef + part * efLen;
 						//fixed (int* s = &fix.sigma[part, 0], o = &fix.omega[part, 0], e = &fix.errpos[part, 0])
 						{
 							fix.errors[part] = rs.calcSigmaMBM(s, syn);
@@ -453,7 +248,7 @@ namespace CUETools.AccurateRip
 							if (fix.errors[part] <= 0 || !rs.chienSearch(e, stridecount + npar, fix.errors[part], s, chT))
 								fix.canRecover = false;
 							else
-								galois.mulPoly(o, s, syn, npar / 2 + 1, npar, npar);
+                                galois.mulPoly(o, s, syn, ofLen, sfLen, npar);
 						}
 					}
 					else
@@ -469,22 +264,6 @@ namespace CUETools.AccurateRip
 			get
 			{
 				return ar.OffsetSafeCRC.Base64;
-			}
-		}
-
-		public ushort[,] Syndrome
-		{
-			get
-			{
-				return this.ar.GetSyndrome(this.npar);
-			}
-		}
-
-		public byte[] Parity
-		{
-			get
-			{
-				return this.ar.GetParity(this.npar);
 			}
 		}
 	}
@@ -503,11 +282,13 @@ namespace CUETools.AccurateRip
 		internal int[] errors;
 		private BitArray affectedSectorArray;
 		private int nexterroff;
+        private int npar;
 		uint crc = 0;
 
-		internal CDRepairFix(CDRepairEncode decode)
+		internal CDRepairFix(CDRepairEncode decode, int npar)
 			: base(decode)
 		{
+            this.npar = npar;
 		}
 
 		public string AffectedSectors
@@ -561,7 +342,7 @@ namespace CUETools.AccurateRip
 			erroffcount = 0;
 			erroffsorted = new int[errpos.GetLength(0) * errpos.GetLength(1)];
 			forneysorted = new ushort[errpos.GetLength(0) * errpos.GetLength(1)];
-			for (int part = 0; part < stride; part++)
+            for (int part = 0; part < stride; part++)
 			{
 				fixed (int* s = &sigma[part, 0], o = &omega[part, 0])
 					for (int i = 0; i < errors[part]; i++)
@@ -569,7 +350,7 @@ namespace CUETools.AccurateRip
 						erroffsorted[erroffcount] = GetErrOff(part, i);
 						if (erroffsorted[erroffcount] >= 0 && erroffsorted[erroffcount] < finalSampleCount * 2)
 						{
-							forneysorted[erroffcount] = (ushort)rs.doForney(errors[part], errpos[part, i], s, o);
+							forneysorted[erroffcount] = (ushort)this.galois.doForney(errors[part], errpos[part, i], s, o);
 							erroffcount++;
 						}
 					}

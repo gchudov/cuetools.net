@@ -70,10 +70,10 @@ namespace CUETools.TestHelpers
 			return ar;
 		}
 
-		public CDRepairEncode CreateCDRepairEncode(int stride, int npar)
+		public CDRepairEncode CreateCDRepairEncode(int stride)
 		{
 			var ar = new AccurateRipVerify(toc, null);
-			var encode = new CDRepairEncode(ar, stride, npar);
+			var encode = new CDRepairEncode(ar, stride);
 			ar.Position = start;
 			Write(ar);
 			//ar.Close();

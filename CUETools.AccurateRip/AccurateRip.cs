@@ -330,13 +330,6 @@ namespace CUETools.AccurateRip
             return ParityToSyndrome.Parity2Syndrome(stride, npar, maxNpar, parity);
 		}
 
-        public unsafe byte[] GetSyndromeBytes(int npar = maxNpar)
-        {
-            if (!calcParity)
-                throw new InvalidOperationException();
-            return ParityToSyndrome.Parity2SyndromeBytes(stride, npar, maxNpar, parity);
-        }
-
 		private byte[] parity;
 		internal ushort[, ,] encodeTable;
 		private int maxOffset;

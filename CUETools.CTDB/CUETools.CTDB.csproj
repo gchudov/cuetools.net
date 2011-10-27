@@ -89,6 +89,10 @@
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.Parity\CUETools.Parity.csproj">
+      <Project>{ECEB839C-171B-4535-958F-9899310A0342}</Project>
+      <Name>CUETools.Parity</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
