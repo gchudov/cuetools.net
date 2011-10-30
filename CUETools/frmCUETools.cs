@@ -1027,7 +1027,7 @@ namespace JDP
                                     && cueSheet.ArVerify.ARStatus == null
                                     && cueSheet.ArVerify.WorstConfidence() >= 2
                                     && (cueSheet.AccurateRipId == null || AccurateRipVerify.CalculateAccurateRipId(cueSheet.TOC) == cueSheet.AccurateRipId)
-                                    && cueSheet.CTDB.MatchingEntry == null
+                                    && cueSheet.CTDB.MatchingEntries.Count == 0
                                     && (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.Success
                                      || (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.ProtocolError && cueSheet.CTDB.QueryResponseStatus == HttpStatusCode.NotFound)
                                      )

@@ -15,11 +15,11 @@ namespace CUETools.CTDB
         public bool canRecover;
         public CDRepairFix repair;
         public HttpStatusCode httpStatus;
-        public string id;
+        public long id;
         public CDImageLayout toc;
         public string hasParity;
 
-        public DBEntry(ushort[,] syndrome, int conf, int stride, uint crc, string id, CDImageLayout toc, string hasParity)
+        public DBEntry(ushort[,] syndrome, int conf, int stride, uint crc, long id, CDImageLayout toc, string hasParity)
         {
             this.syndrome = syndrome;
             this.id = id;

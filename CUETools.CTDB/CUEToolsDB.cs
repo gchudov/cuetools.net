@@ -232,13 +232,24 @@ namespace CUETools.CTDB
 			if (this.QueryExceptionStatus != WebExceptionStatus.Success &&
 				(this.QueryExceptionStatus != WebExceptionStatus.ProtocolError || this.QueryResponseStatus != HttpStatusCode.NotFound))
 				return this.DBStatus;
-			DBEntry confirm = this.MatchingEntry;
-			if (confirm != null) confidence = 1;
             int npar = AccurateRipVerify.maxNpar;
             var parity = verify.AR.GetParity(npar);
-			DoSubmit(confidence, quality, artist, title, barcode, false, confirm, parity, npar);
+            var confirms = this.MatchingEntries;
+            if (confirms.Count > 0)
+            {
+                confidence = 1;
+                foreach (var confirm in confirms)
+                {
+                    subResult = null;
+                    DoSubmit(confidence, quality, artist, title, barcode, false, confirm, parity, npar);
+                    if (subResult == "parity needed")
+                        DoSubmit(confidence, quality, artist, title, barcode, true, confirm, parity, npar);
+                }
+                return subResult;
+            }
+			DoSubmit(confidence, quality, artist, title, barcode, false, null, parity, npar);
 			if (subResult == "parity needed")
-				DoSubmit(confidence, quality, artist, title, barcode, true, confirm, parity, npar);
+				DoSubmit(confidence, quality, artist, title, barcode, true, null, parity, npar);
 			return subResult;
 		}
 
@@ -271,6 +282,13 @@ namespace CUETools.CTDB
 			{
 				files = new UploadFile[0];
 			}
+            
+            long maxId = 0;
+            foreach (var e in this.entries)
+            {
+                maxId = Math.Max(maxId, e.id);
+            }
+
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/submit2.php");
 			req.Proxy = proxy;
 			req.UserAgent = this.userAgent;
@@ -280,7 +298,8 @@ namespace CUETools.CTDB
 			if (upload)
 				form.Add("parityfile", "1");
 			if (confirm != null)
-				form.Add("confirmid", confirm.id);
+				form.Add("confirmid", confirm.id.ToString());
+            form.Add("maxid", maxId.ToString());
 			form.Add("toc", toc.ToString());
 			form.Add("crc32", ((int)verify.CRC).ToString());
 			form.Add("trackcrcs", verify.TrackCRCs);
@@ -437,17 +456,18 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public DBEntry MatchingEntry
+		public List<DBEntry> MatchingEntries
 		{
-			get
-			{
-				if (this.QueryExceptionStatus != WebExceptionStatus.Success)
-					return null;
-				foreach (DBEntry entry in this.Entries)
-					if (entry.toc.ToString() == this.toc.ToString() && !entry.hasErrors)
-						return entry;
-				return null;
-			}
+            get
+            {
+                var res = new List<DBEntry>();
+                if (this.QueryExceptionStatus != WebExceptionStatus.Success)
+                    return res;
+                foreach (DBEntry entry in this.Entries)
+                    if (entry.toc.ToString() == this.toc.ToString() && !entry.hasErrors)
+                        res.Add(entry);
+                return res;
+            }
 		}
 
 		public void Init(AccurateRipVerify ar)

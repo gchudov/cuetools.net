@@ -7,7 +7,7 @@ namespace CUETools.CTDB
     public class CTDBResponseEntry
     {
         [XmlAttribute]
-        public string id { get; set; }
+        public long id { get; set; }
         [XmlAttribute]
         public string crc32 { get; set; }
         [XmlAttribute]
