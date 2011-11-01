@@ -2,10 +2,10 @@
 {
     public struct SOXResamplerConfig
     {
-        public double phase;
-        public double bandwidth;
-        public bool allow_aliasing;
-        public SOXResamplerQuality quality;
+        public double Phase;
+        public double Bandwidth;
+        public bool AllowAliasing;
+        public SOXResamplerQuality Quality;
         /*double coef_interp; -- interpolation...*/
     }
 }

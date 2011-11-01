@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.Diagnostics;
-using NAudio.CoreAudioApi;
+using System.Windows.Forms;
 using CUETools.Codecs;
 using CUETools.Codecs.CoreAudio;
-using CUETools.DSP.Resampler;
 using CUETools.DSP.Mixer;
-using CUETools.Processor;
+using CUETools.DSP.Resampler;
+using NAudio.CoreAudioApi;
 
 namespace CUEPlayer
 {
@@ -80,10 +74,10 @@ namespace CUEPlayer
 				{
 					_player = new WasapiOut(_device, NAudio.CoreAudioApi.AudioClientShareMode.Shared, true, delay, new AudioPCMConfig(32, 2, 48000));
 					SOXResamplerConfig cfg;
-					cfg.quality = SOXResamplerQuality.Very;
-					cfg.phase = 50;
-					cfg.allow_aliasing = false;
-					cfg.bandwidth = 0;
+					cfg.Quality = SOXResamplerQuality.Very;
+					cfg.Phase = 50;
+					cfg.AllowAliasing = false;
+					cfg.Bandwidth = 0;
 					_resampler = new SOXResampler(parent.Mixer.PCM, _player.PCM, cfg);
 					resampled = new AudioBuffer(_player.PCM, parent.Mixer.BufferSize * 2 * parent.Mixer.PCM.SampleRate / _player.PCM.SampleRate);
 				}

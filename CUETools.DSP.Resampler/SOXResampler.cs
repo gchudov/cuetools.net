@@ -21,7 +21,7 @@ namespace CUETools.DSP.Resampler
 			if (inputPCM.ChannelCount != outputPCM.ChannelCount)
 				throw new NotSupportedException();
 
-			if (outputPCM.SampleRate == inputPCM.SampleRate * 4 && config.quality >= SOXResamplerQuality.Medium)
+			if (outputPCM.SampleRate == inputPCM.SampleRate * 4 && config.Quality >= SOXResamplerQuality.Medium)
 			{
 				this.rate = new rate_t[inputPCM.ChannelCount];
 				this.shared = new rate_shared_t();
@@ -31,9 +31,9 @@ namespace CUETools.DSP.Resampler
 				for (int i = 0; i < inputPCM.ChannelCount; i++)
 				{
 					rateUp2[i] = new rate_t(inputPCM.SampleRate, inputPCM.SampleRate * 2, sharedUp2, 0.5,
-						config.quality, -1, config.phase, config.bandwidth, config.allow_aliasing);
+						config.Quality, -1, config.Phase, config.Bandwidth, config.AllowAliasing);
 					rate[i] = new rate_t(inputPCM.SampleRate * 2, inputPCM.SampleRate * 4, shared, 0.5,
-						config.quality, -1, 50, 90, true);
+						config.Quality, -1, 50, 90, true);
 				}
 			}
 			else
@@ -44,7 +44,7 @@ namespace CUETools.DSP.Resampler
 				for (int i = 0; i < inputPCM.ChannelCount; i++)
 				{
 					rate[i] = new rate_t(inputPCM.SampleRate, outputPCM.SampleRate, shared, (double)inputPCM.SampleRate / outputPCM.SampleRate,
-						config.quality, -1, config.phase, config.bandwidth, config.allow_aliasing);
+						config.Quality, -1, config.Phase, config.Bandwidth, config.AllowAliasing);
 				}
 			}
 		}

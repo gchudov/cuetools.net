@@ -1,12 +1,10 @@
-﻿using CUETools.DSP.Resampler;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
 using CUETools.Codecs;
-using System;
+using CUETools.DSP.Resampler;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CUETools.TestCodecs
 {
-    
-    
     /// <summary>
     ///This is a test class for SOXResamplerTest and is intended
     ///to contain all SOXResamplerTest Unit Tests
@@ -14,8 +12,6 @@ namespace CUETools.TestCodecs
 	[TestClass()]
 	public class SOXResamplerTest
 	{
-
-
 		private TestContext testContextInstance;
 
 		/// <summary>
@@ -74,10 +70,10 @@ namespace CUETools.TestCodecs
 			AudioPCMConfig inputPCM = new AudioPCMConfig(32, 1, 44100);
 			AudioPCMConfig outputPCM = new AudioPCMConfig(32, 1, 48000);
 			SOXResamplerConfig cfg;
-			cfg.quality = SOXResamplerQuality.Very;
-			cfg.phase = 50;
-			cfg.allow_aliasing = false;
-			cfg.bandwidth = 0;
+			cfg.Quality = SOXResamplerQuality.Very;
+			cfg.Phase = 50;
+			cfg.AllowAliasing = false;
+			cfg.Bandwidth = 0;
 			SOXResampler resampler = new SOXResampler(inputPCM, outputPCM, cfg);
 			AudioBuffer src = new AudioBuffer(inputPCM, 400 * inputPCM.SampleRate / 1000);
 			AudioBuffer dst = new AudioBuffer(outputPCM, src.Size * 3);
