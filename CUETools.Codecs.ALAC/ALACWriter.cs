@@ -549,7 +549,84 @@ namespace CUETools.Codecs.ALAC
 			for (int i = 1; i <= order; i++)
 				res[i] = smp[i] - smp[i - 1];
 
-			/* general case */
+#if aaa
+            // contains errors: if (resval * orig_sign <= 0) continue; is not the same as sign(resval) * sign(orig), because 0x80000000 * 0xffffffff < 0!
+            // probably should be if (resval == 0 || sign_only(resval) != orig_sign)
+            // sign_only(d0 ^ resval); is the same as sign_only(d0) * sign_only(resval);
+            // but sign_only(d0) * orig_sign is not the same (when d0 == 0x80000000)
+            switch (order)
+            {
+                case 8:
+                    {
+                        const int constOrder = 8;
+                        int c0 = coefs[0], c1 = coefs[1], c2 = coefs[2], c3 = coefs[3], c4 = coefs[4], c5 = coefs[5], c6 = coefs[6], c7 = coefs[7];
+                        int denhalf = 1 << (shift - 1);
+                        for (int i = constOrder + 1; i < n; i++)
+                        {
+                            int sample = *(smp++);
+                            int d0 = smp[0] - sample, d1 = smp[1] - sample, d2 = smp[2] - sample, d3 = smp[3] - sample, d4 = smp[4] - sample, d5 = smp[5] - sample, d6 = smp[6] - sample, d7 = smp[7] - sample;
+                            int sum = denhalf + d0 * c0 + d1 * c1 + d2 * c2 + d3 * c3 + d4 * c4 + d5 * c5 + d6 * c6 + d7 * c7;
+                            int resval = extend_sign32(smp[constOrder] - sample - (int)(sum >> shift), bps);
+                            res[i] = resval;
+
+                            if (resval == 0) continue;
+                            int orig_sign = sign_only(resval);
+
+                            int sign = sign_only(d0 ^ resval);
+                            c0 += sign;
+                            resval -= (d0 * sign >> shift) * (0 + 1);
+                            if (resval * orig_sign <= 0) continue;
+
+                            sign = sign_only(d1 ^ resval);
+                            c1 += sign;
+                            resval -= (d1 * sign >> shift) * (1 + 1);
+                            if (resval * orig_sign <= 0) continue;
+
+                            sign = sign_only(d2 ^ resval);
+                            c2 += sign;
+                            resval -= (d2 * sign >> shift) * (2 + 1);
+                            if (resval * orig_sign <= 0) continue;
+
+                            sign = sign_only(d3 ^ resval);
+                            c3 += sign;
+                            resval -= (d3 * sign >> shift) * (3 + 1);
+                            if (resval * orig_sign <= 0) continue;
+
+                            sign = sign_only(d4 ^ resval);
+                            c4 += sign;
+                            resval -= (d4 * sign >> shift) * (4 + 1);
+                            if (resval * orig_sign <= 0) continue;
+
+                            sign = sign_only(d5 ^ resval);
+                            c5 += sign;
+                            resval -= (d5 * sign >> shift) * (5 + 1);
+                            if (resval * orig_sign <= 0) continue;
+
+                            sign = sign_only(d6 ^ resval);
+                            c6 += sign;
+                            resval -= (d6 * sign >> shift) * (6 + 1);
+                            if (resval * orig_sign <= 0) continue;
+
+                            sign = sign_only(d7 ^ resval);
+                            c7 += sign;
+                            resval -= (d7 * sign >> shift) * (7 + 1);
+                        }
+
+                        coefs[0] = c0;
+                        coefs[1] = c1;
+                        coefs[2] = c2;
+                        coefs[3] = c3;
+                        coefs[4] = c4;
+                        coefs[5] = c5;
+                        coefs[6] = c6;
+                        coefs[7] = c7;
+                        res[n] = 1; // Stop byte to help alac_entropy_coder;
+                        return;
+                    }
+            }
+#endif
+
+            /* general case */
 			for (int i = order + 1; i < n; i++)
 			{
 				int sample = *(smp++);
@@ -633,43 +710,43 @@ namespace CUETools.Codecs.ALAC
 			return size;
 		}
 
-		unsafe int alac_entropy_coder(int* res, int n, int bps, int modifier)
-		{
-			int history = initial_history;
-			int sign_modifier = 0;
-			int rice_historymult = modifier * history_mult / 4;
-			int size = 0;
-			int* fin = res + n;
+        //unsafe int alac_entropy_coder(int* res, int n, int bps, int modifier)
+        //{
+        //    int history = initial_history;
+        //    int sign_modifier = 0;
+        //    int rice_historymult = modifier * history_mult / 4;
+        //    int size = 0;
+        //    int* fin = res + n;
 
-			while (res < fin)
-			{
-				int k = BitReader.log2i((history >> 9) + 3);
-				int x = *(res++);
-				x = (x << 1) ^ (x >> 31);
+        //    while (res < fin)
+        //    {
+        //        int k = BitReader.log2i((history >> 9) + 3);
+        //        int x = *(res++);
+        //        x = (x << 1) ^ (x >> 31);
 
-				size += encode_scalar(x - sign_modifier, Math.Min(k, k_modifier), bps);
+        //        size += encode_scalar(x - sign_modifier, Math.Min(k, k_modifier), bps);
 
-				history += x * rice_historymult - ((history * rice_historymult) >> 9);
+        //        history += x * rice_historymult - ((history * rice_historymult) >> 9);
 
-				sign_modifier = 0;
-				if (x > 0xFFFF)
-					history = 0xFFFF;
+        //        sign_modifier = 0;
+        //        if (x > 0xFFFF)
+        //            history = 0xFFFF;
 
-				if (history < 128 && res < fin)
-				{
-					k = 7 - BitReader.log2i(history) + ((history + 16) >> 6);
-					int* res1 = res;
-					while (*res == 0) // we have a stop byte, so need not check if res < fin
-						res++;
-					int block_size = (int)(res - res1);
-					size += encode_scalar(block_size, Math.Min(k, k_modifier), 16);
-					//sign_modifier = (block_size <= 0xFFFF) ? 1 : 0; //never happens
-					sign_modifier = 1;
-					history = 0;
-				}
-			}
-			return size;
-		}
+        //        if (history < 128 && res < fin)
+        //        {
+        //            k = 7 - BitReader.log2i(history) + ((history + 16) >> 6);
+        //            int* res1 = res;
+        //            while (*res == 0) // we have a stop byte, so need not check if res < fin
+        //                res++;
+        //            int block_size = (int)(res - res1);
+        //            size += encode_scalar(block_size, Math.Min(k, k_modifier), 16);
+        //            //sign_modifier = (block_size <= 0xFFFF) ? 1 : 0; //never happens
+        //            sign_modifier = 1;
+        //            history = 0;
+        //        }
+        //    }
+        //    return size;
+        //}
 
 		/// <summary>
 		/// Crude estimation of entropy length

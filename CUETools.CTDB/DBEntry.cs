@@ -1,12 +1,16 @@
-﻿using System.Net;
+﻿using System;
+using System.Globalization;
+using System.Net;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
+using CUETools.Parity;
 
 namespace CUETools.CTDB
 {
     public class DBEntry
     {
         public ushort[,] syndrome;
+        public uint[] trackcrcs;
         public int conf;
         public int stride;
         public int offset;
@@ -19,15 +23,29 @@ namespace CUETools.CTDB
         public CDImageLayout toc;
         public string hasParity;
 
-        public DBEntry(ushort[,] syndrome, int conf, int stride, uint crc, long id, CDImageLayout toc, string hasParity)
+        public DBEntry(CTDBResponseEntry ctdbRespEntry)
         {
-            this.syndrome = syndrome;
-            this.id = id;
-            this.conf = conf;
-            this.crc = crc;
-            this.stride = stride;
-            this.toc = toc;
-            this.hasParity = hasParity;
+            this.syndrome = ctdbRespEntry.syndrome == null
+                ? ParityToSyndrome.Parity2Syndrome(1, 1, 8, 8, Convert.FromBase64String(ctdbRespEntry.parity))
+                : ParityToSyndrome.Bytes2Syndrome(1, Math.Min(AccurateRipVerify.maxNpar, ctdbRespEntry.npar), Convert.FromBase64String(ctdbRespEntry.syndrome));
+            this.conf = ctdbRespEntry.confidence;
+            this.stride = ctdbRespEntry.stride * 2;
+            this.crc = uint.Parse(ctdbRespEntry.crc32, NumberStyles.HexNumber);
+            this.id = ctdbRespEntry.id;
+            this.toc = CDImageLayout.FromString(ctdbRespEntry.toc);
+            this.hasParity = ctdbRespEntry.hasparity;
+            if (ctdbRespEntry.trackcrcs != null)
+            {
+                var crcs = ctdbRespEntry.trackcrcs.Split(' ');
+                if (crcs.Length == this.toc.AudioTracks)
+                {
+                    this.trackcrcs = new uint[crcs.Length];
+                    for (int i = 0; i < this.trackcrcs.Length; i++)
+                    {
+                        this.trackcrcs[i] = uint.Parse(crcs[i], NumberStyles.HexNumber);
+                    }
+                }
+            }
         }
 
         public int Npar

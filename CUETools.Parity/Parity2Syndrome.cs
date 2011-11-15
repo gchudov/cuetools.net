@@ -39,14 +39,35 @@ namespace CUETools.Parity
             erasure_diff = Galois16.instance.gfdiff(erasure_loc_pol);
         }
 
-        public static unsafe string ToBase64String(ushort[,] inArray, int offset, int length)
+        public static unsafe byte[] Syndrome2Bytes(ushort[,] inArray)
         {
-            var outBuf = new byte[inArray.GetLength(1) * length * 2];
-            fixed (ushort* inPtr = &inArray[offset, 0])
+            int stride = inArray.GetLength(0);
+            int npar = inArray.GetLength(1);
+            var outBuf = new byte[npar * stride * 2];
             fixed (byte* outPtr = outBuf)
-                for (int i = 0; i < inArray.GetLength(1) * length; i++)
-                    ((ushort*)outPtr)[i] = inPtr[i];
-            return Convert.ToBase64String(outBuf);
+            {
+                var ppar = (ushort*)outPtr;
+                for (int i = 0; i < npar; i++)
+                    for (int j = 0; j < stride; j++)
+                        ppar[j + i * stride] = inArray[j, i];
+            }
+            return outBuf;
+        }
+
+        public static unsafe ushort[,] Bytes2Syndrome(int stride, int npar, byte[] parity)
+        {
+            if (parity.Length < npar * stride * 2)
+                 throw new Exception("invalid parity length");
+            var syndrome = new ushort[stride, npar];
+            fixed (byte* pbpar = parity)
+            fixed (ushort* psyn = syndrome)
+            {
+                var ppar = (ushort*)pbpar;
+                for (int i = 0; i < npar; i++)
+                    for (int j = 0; j < stride; j++)
+                        psyn[i + j * npar] = ppar[j + i * stride];
+            }
+            return syndrome;
         }
 
         public static unsafe byte[] Syndrome2Parity(ushort[,] syndrome, byte[] parity = null)
@@ -66,25 +87,20 @@ namespace CUETools.Parity
             return parity;
         }
 
-        public static unsafe ushort[,] Parity2Syndrome(int stride, int npar, int npar2, byte[] parity, int pos = 0)
+        public static unsafe ushort[,] Parity2Syndrome(int stride, int stride2, int npar, int npar2, byte[] parity, int pos = 0, int offset = 0)
         {
+            if (npar > npar2 || stride > stride2)
+                throw new InvalidOperationException();
             var syndrome = new ushort[stride, npar];
             fixed (byte* pbpar = &parity[pos])
-            fixed (ushort* psyn = syndrome)
-                Parity2Syndrome((ushort*)pbpar, psyn, stride, npar, npar2);
-            return syndrome;
-        }
-
-        public static unsafe void Parity2Syndrome(ushort *ppar, ushort *psyn, int stride, int npar, int npar2)
-        {
-            if (npar > npar2)
-                throw new InvalidOperationException();
-            fixed (ushort *plog = Galois16.instance.LogTbl, pexp = Galois16.instance.ExpTbl)
+            fixed (ushort* psyn = syndrome, plog = Galois16.instance.LogTbl, pexp = Galois16.instance.ExpTbl)
             {
+                var ppar = (ushort*)pbpar;
                 for (int y = 0; y < stride; y++)
                 {
+					int y1 = (y - offset + stride2) % stride2;
                     ushort* syn = psyn + y * npar;
-                    ushort* par = ppar + y * npar2;
+                    ushort* par = ppar + y1 * npar2;
                     for (int x1 = 0; x1 < npar2; x1++)
                     {
                         ushort lo = par[x1];
@@ -97,6 +113,7 @@ namespace CUETools.Parity
                     }
                 }
             }
+            return syndrome;
         }
 
         public unsafe void Syndrome2Parity(ushort* syndrome, ushort* parity)

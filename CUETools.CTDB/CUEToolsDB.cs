@@ -65,7 +65,7 @@ namespace CUETools.CTDB
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase
 				+ "/lookup2.php"
-				+ "?ctdb=" + (ctdb ? "1" : "0")
+				+ "?ctdb=" + (ctdb ? "2" : "0")
 				+ "&fuzzy=" + (fuzzy ? 1 : 0)
 				+ "&metadata=" + (metadataSearch == CTDBMetadataSearch.None ? "none" : metadataSearch == CTDBMetadataSearch.Fast ? "fast" : metadataSearch == CTDBMetadataSearch.Default ? "default" : "extensive")
 				+ "&toc=" + toc.ToString());
@@ -98,24 +98,8 @@ namespace CUETools.CTDB
 								{
 									if (ctdbRespEntry.toc == null)
 										continue;
-
-									var parity = Convert.FromBase64String(ctdbRespEntry.parity);
-									var entry_toc = CDImageLayout.FromString(ctdbRespEntry.toc);
-									this.total += ctdbRespEntry.confidence;
-
-                                    if (parity.Length != ctdbRespEntry.npar * 2)
-                                        throw new Exception("invalid parity length");
-                                    //if (verify.Stride != ctdbRespEntry.stride * 2)
-                                    //    throw new Exception("invalid stride length");
-                                    var syndrome = ParityToSyndrome.Parity2Syndrome(1, ctdbRespEntry.npar, ctdbRespEntry.npar, parity);
-									var entry = new DBEntry(
-										syndrome,
-										ctdbRespEntry.confidence,
-										ctdbRespEntry.stride * 2,
-										uint.Parse(ctdbRespEntry.crc32, NumberStyles.HexNumber),
-										ctdbRespEntry.id,
-										entry_toc,
-										ctdbRespEntry.hasparity);
+                                    this.total += ctdbRespEntry.confidence;
+                                    var entry = new DBEntry(ctdbRespEntry);
 									entries.Add(entry);
 								}
 							if (ctdbResp.musicbrainz != null && ctdbResp.musicbrainz.Length != 0)
@@ -146,66 +130,84 @@ namespace CUETools.CTDB
 			}
 		}
 
-		public void FetchDB(DBEntry entry)
+		public ushort[,] FetchDB(DBEntry entry, int npar, ushort[,] syn)
 		{
 			string url = entry.hasParity[0] == '/' ? urlbase + entry.hasParity : entry.hasParity;
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+            int prevLen = syn == null ? 0 : syn.GetLength(1) * entry.stride * 2;
 			req.Method = "GET";
 			req.Proxy = proxy;
 			req.UserAgent = this.userAgent;
 			req.Timeout = connectTimeout;
 			req.ReadWriteTimeout = socketTimeout;
 			req.AutomaticDecompression = DecompressionMethods.None;
-
-			if (uploadHelper.onProgress != null)
-				uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0.0));
+            req.AddRange(prevLen, npar * entry.stride * 2 - 1);
 
 			currentReq = req;
-			try
-			{
-				using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
-				{
-					entry.httpStatus = resp.StatusCode;
+            try
+            {
+                using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
+                {
+                    if (resp.StatusCode != HttpStatusCode.OK && resp.StatusCode != HttpStatusCode.PartialContent)
+                    {
+                        entry.httpStatus = resp.StatusCode;
+                        return null;
+                    }
+                    if (resp.StatusCode == HttpStatusCode.OK && resp.ContentLength == entry.Npar * entry.stride * 2)
+                    {
+                        npar = entry.Npar;
+                        prevLen = 0;
+                        syn = null;
+                    }
+                    else if (resp.StatusCode != HttpStatusCode.PartialContent || (resp.ContentLength + prevLen) != npar * entry.stride * 2)
+                    {
+                        entry.httpStatus = HttpStatusCode.PartialContent;
+                        return null;
+                    }
 
-					if (entry.httpStatus == HttpStatusCode.OK)
-					{
-						if (resp.ContentLength < entry.Npar * entry.stride * 2 ||
-							resp.ContentLength > entry.Npar * entry.stride * 4)
-						{
-							entry.httpStatus = HttpStatusCode.PartialContent;
-						}
-					}
+                    using (Stream responseStream = resp.GetResponseStream())
+                    {
+                        byte[] contents = syn == null ? null : ParityToSyndrome.Syndrome2Bytes(syn);
+                        Array.Resize(ref contents, prevLen + (int)resp.ContentLength);
+                        int pos = prevLen, count = 0;
+                        do
+                        {
+                            if (uploadHelper.onProgress != null)
+                                uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos) / (entry.Npar * entry.stride * 2)));
+                            count = responseStream.Read(contents, pos, Math.Min(contents.Length - pos, 32768));
+                            pos += count;
+                        } while (count != 0);
 
-					if (entry.httpStatus == HttpStatusCode.OK)
-					{
-						using (Stream responseStream = resp.GetResponseStream())
-						{
-							byte[] contents = new byte[resp.ContentLength];
-							int pos = 0, count = 0;
-							do
-							{
-								count = responseStream.Read(contents, pos, Math.Min(contents.Length - pos, 32768));
-								pos += count;
-								if (uploadHelper.onProgress != null)
-									uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos) / contents.Length));
-							} while (count != 0);
-							if (!Parse(contents, entry))
-								entry.httpStatus = HttpStatusCode.NoContent;						
-						}
-					}
-				}
-			}
-			catch (WebException ex)
-			{
-				if (ex.Status == WebExceptionStatus.ProtocolError)
-					entry.httpStatus = ((HttpWebResponse)ex.Response).StatusCode;
-				else
-					entry.httpStatus = HttpStatusCode.BadRequest;
-			}
+                        if (pos != contents.Length)
+                        {
+                            entry.httpStatus = HttpStatusCode.PartialContent;
+                            return null;
+                        }
+
+                        syn = ParityToSyndrome.Bytes2Syndrome(entry.stride, npar, contents);
+                        for (int i = 0; i < npar; i++)
+                            if (syn[0, i] != entry.syndrome[0, i])
+                            {
+                                entry.httpStatus = HttpStatusCode.Conflict;
+                                return null;
+                            }
+                        entry.httpStatus = HttpStatusCode.OK;
+                        return syn;
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                if (ex.Status == WebExceptionStatus.ProtocolError)
+                    entry.httpStatus = ((HttpWebResponse)ex.Response).StatusCode;
+                else
+                    entry.httpStatus = HttpStatusCode.BadRequest;
+            }
 			finally
 			{
 				currentReq = null;
 			}
+            return null;
 		}
 
 		static string uuidInfo = null;
@@ -232,182 +234,124 @@ namespace CUETools.CTDB
 			if (this.QueryExceptionStatus != WebExceptionStatus.Success &&
 				(this.QueryExceptionStatus != WebExceptionStatus.ProtocolError || this.QueryResponseStatus != HttpStatusCode.NotFound))
 				return this.DBStatus;
-            int npar = AccurateRipVerify.maxNpar;
-            var parity = verify.AR.GetParity(npar);
+            CTDBSubmitResponse resp = null;
+            subResult = "";
             var confirms = this.MatchingEntries;
             if (confirms.Count > 0)
             {
                 confidence = 1;
                 foreach (var confirm in confirms)
                 {
-                    subResult = null;
-                    DoSubmit(confidence, quality, artist, title, barcode, false, confirm, parity, npar);
-                    if (subResult == "parity needed")
-                        DoSubmit(confidence, quality, artist, title, barcode, true, confirm, parity, npar);
+                    resp = DoSubmit(confidence, quality, artist, title, barcode, false, confirm, AccurateRipVerify.maxNpar);
+                    if (resp.ParityNeeded)
+                        resp = DoSubmit(confidence, quality, artist, title, barcode, true, confirm, Math.Min(AccurateRipVerify.maxNpar, resp.npar));
+                    subResult = subResult + (subResult == "" ? "" : ", ") + resp.message;
                 }
                 return subResult;
             }
-			DoSubmit(confidence, quality, artist, title, barcode, false, null, parity, npar);
-			if (subResult == "parity needed")
-				DoSubmit(confidence, quality, artist, title, barcode, true, null, parity, npar);
-			return subResult;
+            resp = DoSubmit(confidence, quality, artist, title, barcode, false, null, AccurateRipVerify.maxNpar);
+			if (resp.ParityNeeded)
+				resp = DoSubmit(confidence, quality, artist, title, barcode, true, null, Math.Min(AccurateRipVerify.maxNpar, resp.npar));
+            subResult = resp.message;
+            return subResult;
 		}
 
-		protected string DoSubmit(int confidence, int quality, string artist, string title, string barcode, bool upload, DBEntry confirm, byte[] parity, int npar)
-		{
-			UploadFile[] files;
-			if (upload)
-			{
-				MemoryStream newcontents = new MemoryStream();
-				using (DBHDR FTYP = new DBHDR(newcontents, "ftyp"))
-					FTYP.Write("CTDB");
-				using (DBHDR CTDB = new DBHDR(newcontents, "CTDB"))
-				{
-					using (DBHDR HEAD = CTDB.HDR("HEAD"))
-					{
-						using (DBHDR VERS = HEAD.HDR("VERS")) VERS.Write(0x101);
-					}
-					using (DBHDR DISC = CTDB.HDR("DISC"))
-					{
-						using (DBHDR CONF = DISC.HDR("CONF")) CONF.Write(confidence);
-						using (DBHDR NPAR = DISC.HDR("NPAR")) NPAR.Write(npar);
-						using (DBHDR CRC_ = DISC.HDR("CRC ")) CRC_.Write(verify.CRC);
-						using (DBHDR PAR_ = DISC.HDR("PAR ")) PAR_.Write(parity);
-					}
-				}
-				newcontents.Position = 0;
-				files = new UploadFile[1] { new UploadFile(newcontents, "parityfile", "data.bin", "image/binary") };
-			}
-			else
-			{
-				files = new UploadFile[0];
-			}
-            
+        protected CTDBSubmitResponse DoSubmit(int confidence, int quality, string artist, string title, string barcode, bool upload, DBEntry confirm, int npar)
+        {
+            var files = new List<UploadFile>();
             long maxId = 0;
             foreach (var e in this.entries)
             {
                 maxId = Math.Max(maxId, e.id);
             }
 
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/submit2.php");
-			req.Proxy = proxy;
-			req.UserAgent = this.userAgent;
-			req.Timeout = connectTimeout;
-			req.ReadWriteTimeout = socketTimeout;
-			NameValueCollection form = new NameValueCollection();
-			if (upload)
-				form.Add("parityfile", "1");
-			if (confirm != null)
-				form.Add("confirmid", confirm.id.ToString());
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase + "/submit2.php");
+            req.Proxy = proxy;
+            req.UserAgent = this.userAgent;
+            req.Timeout = connectTimeout;
+            req.ReadWriteTimeout = socketTimeout;
+            NameValueCollection form = new NameValueCollection();
+            int offset = 0;
+            if (confirm != null)
+            {
+                offset = -confirm.offset;
+
+                // Optional sanity check: should be done by server
+                
+                if (verify.AR.CTDBCRC(offset) != confirm.crc)
+                    throw new Exception("crc mismatch");
+
+                if (confirm.trackcrcs != null)
+                {
+                    bool crcEquals = true;
+                    for (int i = 0; i < confirm.trackcrcs.Length; i++)
+                        crcEquals &= verify.TrackCRC(i + 1, offset) == confirm.trackcrcs[i];
+                    if (!crcEquals)
+                        throw new Exception("track crc mismatch");
+                }
+
+                var syn2 = verify.AR.GetSyndrome(confirm.Npar, 1, offset);
+                bool equals = true;
+                for (int i = 0; i < confirm.Npar; i++)
+                    equals &= confirm.syndrome[0, i] == syn2[0, i];
+                if (!equals)
+                    throw new Exception("syndrome mismatch");
+            }
+            if (upload)
+            {
+                files.Add(new UploadFile(new MemoryStream(ParityToSyndrome.Syndrome2Bytes(verify.AR.GetSyndrome(npar, -1, offset))), "parityfile", "data.bin", "application/octet-stream"));
+                form.Add("parityfile", "1");
+            }
+            form.Add("parity", Convert.ToBase64String(ParityToSyndrome.Syndrome2Parity(verify.AR.GetSyndrome(8, 1, offset))));
+            form.Add("syndrome", Convert.ToBase64String(ParityToSyndrome.Syndrome2Bytes(verify.AR.GetSyndrome(npar, 1, offset))));
+            if (confirm != null)
+                form.Add("confirmid", confirm.id.ToString());
+            form.Add("ctdb", "2");
+            form.Add("npar", npar.ToString());
             form.Add("maxid", maxId.ToString());
-			form.Add("toc", toc.ToString());
-			form.Add("crc32", ((int)verify.CRC).ToString());
-			form.Add("trackcrcs", verify.TrackCRCs);
-			form.Add("parity", Convert.ToBase64String(parity, 0, npar * 2));
-			form.Add("confidence", confidence.ToString());
-			form.Add("userid", GetUUID());
-			form.Add("quality", quality.ToString());
-			if (driveName != null && driveName != "") form.Add("drivename", driveName);
-			if (barcode != null && barcode != "") form.Add("barcode", barcode);
-			if (artist != null && artist != "") form.Add("artist", artist);
-			if (title != null && title != "") form.Add("title", title);
+            form.Add("toc", toc.ToString());
+            form.Add("crc32", ((int)verify.AR.CTDBCRC(offset)).ToString());
+            form.Add("trackcrcs", verify.GetTrackCRCs(offset));
+            form.Add("confidence", confidence.ToString());
+            form.Add("userid", GetUUID());
+            form.Add("quality", quality.ToString());
+            if (driveName != null && driveName != "") form.Add("drivename", driveName);
+            if (barcode != null && barcode != "") form.Add("barcode", barcode);
+            if (artist != null && artist != "") form.Add("artist", artist);
+            if (title != null && title != "") form.Add("title", title);
 
-			var ExceptionStatus = WebExceptionStatus.Pending;
-			string ExceptionMessage = null;
-			HttpStatusCode ResponseStatus = HttpStatusCode.OK;
-			currentReq = req;
-			try
-			{
-				using (HttpWebResponse resp = uploadHelper.Upload(req, files, form))
-				{
-					ExceptionStatus = WebExceptionStatus.ProtocolError;
-					ResponseStatus = resp.StatusCode;
-					if (ResponseStatus == HttpStatusCode.OK)
-					{
-						ExceptionStatus = WebExceptionStatus.Success;
-						using (Stream s = resp.GetResponseStream())
-						using (StreamReader sr = new StreamReader(s))
-							subResult = sr.ReadToEnd();
-						return subResult;
-					}
-				}
-			}
-			catch (WebException ex)
-			{
-				ExceptionStatus = ex.Status;
-				ExceptionMessage = ex.Message;
-				if (ExceptionStatus == WebExceptionStatus.ProtocolError)
-					ResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
-			}
-			finally
-			{
-				currentReq = null;
-			}
-			subResult = ExceptionStatus == WebExceptionStatus.Success ? null :
-				ExceptionStatus != WebExceptionStatus.ProtocolError ? ("database access error: " + (ExceptionMessage ?? ExceptionStatus.ToString())) :
-				ResponseStatus != HttpStatusCode.NotFound ? "database access error: " + ResponseStatus.ToString() :
-				"disk not present in database";
-			return subResult;
-		}
-
-		private bool Parse(byte[] contents, DBEntry entry)
-		{
-            if (contents.Length == entry.Npar * entry.stride * 2)
-			{
-                entry.syndrome = ParityToSyndrome.Parity2Syndrome(entry.stride, entry.Npar, entry.Npar, contents);
-				return true;
-			}
-
-			ReadDB rdr = new ReadDB(contents);
-
-			int end;
-			string hdr = rdr.ReadHDR(out end);
-			uint magic = rdr.ReadUInt();
-			if (hdr != "ftyp" || magic != 0x43544442 || end != rdr.pos)
-				throw new Exception("invalid CTDB file");
-			hdr = rdr.ReadHDR(out end);
-			if (hdr != "CTDB" || end != contents.Length)
-				throw new Exception("invalid CTDB file");
-			hdr = rdr.ReadHDR(out end);
-			if (hdr != "HEAD")
-				throw new Exception("invalid CTDB file");
-			int endHead = end;
-			while (rdr.pos < endHead)
-			{
-				hdr = rdr.ReadHDR(out end);
-				rdr.pos = end;
-			}
-			rdr.pos = endHead;
-			while (rdr.pos < contents.Length)
-			{
-				hdr = rdr.ReadHDR(out end);
-				if (hdr != "DISC")
-				{
-					rdr.pos = end;
-					continue;
-				}
-				int endDisc = end;
-				int parPos = 0, parLen = 0;
-				while (rdr.pos < endDisc)
-				{
-					hdr = rdr.ReadHDR(out end);
-					if (hdr == "PAR ")
-					{
-						parPos = rdr.pos;
-						parLen = end - rdr.pos;
-					}
-					rdr.pos = end;
-				}
-				if (parPos != 0)
-				{
-                    if (parLen != entry.Npar * entry.stride * 2)
-                        return false;
-                    entry.syndrome = ParityToSyndrome.Parity2Syndrome(entry.stride, entry.Npar, entry.Npar, contents, parPos);
-					return true;
-				}
-			}
-			return false;
-		}
+            currentReq = req;
+            try
+            {
+                using (HttpWebResponse resp = uploadHelper.Upload(req, files.ToArray(), form))
+                {
+                    if (resp.StatusCode == HttpStatusCode.OK)
+                    {
+                        using (Stream s = resp.GetResponseStream())
+                        {
+                            var serializer = new XmlSerializer(typeof(CTDBSubmitResponse));
+                            return serializer.Deserialize(s) as CTDBSubmitResponse;
+                        }
+                    }
+                    else
+                    {
+                        return new CTDBSubmitResponse() { status = "database access error", message = resp.StatusCode.ToString() };
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                return new CTDBSubmitResponse() { status = "database access error", message = ex.Message ?? ex.Status.ToString() };
+            }
+            catch (Exception ex)
+            {
+                return new CTDBSubmitResponse() { status = "database access error", message = ex.Message };
+            }
+            finally
+            {
+                currentReq = null;
+            }
+        }
 
 		public void DoVerify()
 		{
@@ -429,14 +373,24 @@ namespace CUETools.CTDB
 						entry.canRecover = false;
 					else
 					{
-						FetchDB(entry);
-						if (entry.httpStatus != HttpStatusCode.OK)
-							entry.canRecover = false;
-						else
-						{
-							entry.repair = verify.VerifyParity(entry.syndrome, entry.offset);
-							entry.canRecover = entry.repair.CanRecover;
-						}
+                        ushort[,] syn = null;
+                        for (int npar = 4; npar <= Math.Min(entry.Npar, AccurateRipVerify.maxNpar); npar *= 2)
+                        {
+                            syn = FetchDB(entry, npar, syn);
+                            if (entry.httpStatus != HttpStatusCode.OK)
+                            {
+                                entry.canRecover = false;
+                                break;
+                            }
+                            npar = syn.GetLength(1);
+                            entry.repair = verify.VerifyParity(syn, entry.crc, entry.offset);
+                            entry.canRecover = entry.repair.CanRecover;
+                            if (entry.canRecover)
+                            {
+                                // entry.syndrome = syn;
+                                break;
+                            }
+                        }
 					}
 				}
 			}
@@ -511,6 +465,102 @@ namespace CUETools.CTDB
 					"disk not present in database";
 			}
 		}
+
+        public void GenerateLog(TextWriter sw, bool old)
+        {
+            if (this.DBStatus != null || this.Total == 0)
+                return;
+
+            if (old)
+            {
+                sw.WriteLine("        [ CTDBID ] Status");
+                foreach (DBEntry entry in this.Entries)
+                {
+                    string confFormat = (this.Total < 10) ? "{0:0}/{1:0}" :
+                        (this.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
+                    string conf = string.Format(confFormat, entry.conf, this.Total);
+                    string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio ? string.Format("CD-Extra data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
+                            !entry.toc[1].IsAudio ? string.Format("Playstation type data track length {0}", entry.toc[entry.toc.FirstAudio].StartMSF) : "Has no data track";
+                    string status =
+                        entry.toc.Pregap != this.TOC.Pregap ? string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap)) :
+                        entry.toc.AudioLength != this.TOC.AudioLength ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
+                        ((entry.toc.TrackOffsets != this.TOC.TrackOffsets) ? dataTrackInfo + ", " : "") +
+                            ((!entry.hasErrors) ? "Accurately ripped" :
+                        //((!entry.hasErrors) ? string.Format("Accurately ripped, offset {0}", -entry.offset) :
+                            entry.canRecover ? string.Format("Differs in {0} samples @{1}", entry.repair.CorrectableErrors, entry.repair.AffectedSectors) :
+                            (entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
+                            entry.httpStatus.ToString());
+                    sw.WriteLine("        [{0:x8}] ({1}) {2}", entry.crc, conf, status);
+                }
+            }
+
+            const int _arOffsetRange = 5 * 588 - 1;
+            sw.WriteLine("Track | CTDB Status");
+            string ifmt = this.Total < 10 ? "1" : this.Total < 100 ? "2" : "3";
+            for (int iTrack = 0; iTrack < this.TOC.AudioTracks; iTrack++)
+            {
+                int conf = 0;
+                List<int> resConfidence = new List<int>();
+                List<string> resStatus = new List<string>();
+                foreach (DBEntry entry in this.Entries)
+                {
+                    if (!entry.hasErrors)
+                    {
+                        conf += entry.conf;
+                        continue;
+                    }
+                    if (entry.canRecover)
+                    {
+                        var tri = this.TOC[this.TOC.FirstAudio + iTrack];
+                        var tr0 = this.TOC[this.TOC.FirstAudio];
+                        var min = (int)(tri.Start - tr0.Start) * 588;
+                        var max = (int)(tri.End + 1 - tr0.Start) * 588;
+                        var diffCount = entry.repair.GetAffectedSectorsCount(min, max);
+                        if (diffCount == 0)
+                        {
+                            conf += entry.conf;
+                            continue;
+                        }
+
+                        resConfidence.Add(entry.conf);
+                        resStatus.Add(string.Format("differs in {0} samples @{1}", diffCount, entry.repair.GetAffectedSectors(min, max)));
+                        continue;
+                    }
+                    if (entry.trackcrcs != null)
+                    {
+                        if (this.verify.TrackCRC(iTrack + 1, -entry.offset) == entry.trackcrcs[iTrack])
+                        {
+                            conf += entry.conf;
+                            continue;
+                        }
+                        for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+                        {
+                            if (this.verify.TrackCRC(iTrack + 1, oi) == entry.trackcrcs[iTrack])
+                            {
+                                conf += entry.conf;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (conf > 0)
+                {
+                    resConfidence.Insert(0, conf);
+                    resStatus.Insert(0, "accurately ripped");
+                }
+                if (resStatus.Count == 0)
+                {
+                    resConfidence.Add(0);
+                    resStatus.Add("no match");
+                }
+                resStatus[0] = string.Format("({0," + ifmt + "}/{1}) {2}", resConfidence[0], this.Total, char.ToUpper(resStatus[0][0]) + resStatus[0].Substring(1));
+                for (int i = 1; i < resStatus.Count; i++)
+                {
+                    resStatus[i] = string.Format("({0}/{1}) {2}", resConfidence[i], this.Total, resStatus[i]);
+                }
+                sw.WriteLine(string.Format(" {0,2}   | {1}", iTrack + 1, string.Join(", or ", resStatus.ToArray())));
+            }
+        }
 
 		public CDRepairEncode Verify
 		{

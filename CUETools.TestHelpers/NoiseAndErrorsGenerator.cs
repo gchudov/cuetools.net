@@ -15,7 +15,7 @@ namespace CUETools.TestHelpers
 		private int tempOffs;
 		private int nextError;
 
-		public NoiseAndErrorsGenerator(AudioPCMConfig pcm, long sampleCount, int seed, int offset, int errors)
+        public NoiseAndErrorsGenerator(AudioPCMConfig pcm, long sampleCount, int seed, int offset, int errors, int maxStrideErrors = 0)
 		{
 			if (offset < 0)
 				throw new ArgumentOutOfRangeException("offset", "offset cannot be negative");
@@ -35,8 +35,15 @@ namespace CUETools.TestHelpers
 				rnd.NextBytes(new byte[byteOff % temp.Length]);
 			this.errors = new int[errors];
 			this.rnd2 = new Random(seed);
-			for (int i = 0; i < errors; i++)
-				this.errors[i] = this.rnd2.Next(0, (int)sampleCount);
+            var strideErrors = new int[10 * 588];
+            for (int i = 0; i < errors; i++)
+            {
+                do
+                {
+                    this.errors[i] = this.rnd2.Next(0, (int)sampleCount);
+                } while (maxStrideErrors > 0 && strideErrors[this.errors[i] % (10 * 588)] >= maxStrideErrors);
+                strideErrors[this.errors[i] % (10 * 588)]++;
+            }
 			this.rnd2 = new Random(seed);
 			Array.Sort(this.errors);
 			this.nextError = 0;

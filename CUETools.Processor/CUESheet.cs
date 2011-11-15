@@ -2263,26 +2263,7 @@ namespace CUETools.Processor
                 return;
             if (_CUEToolsDB.SubStatus != null)
                 sw.WriteLine("CUETools DB: {0}.", _CUEToolsDB.SubStatus);
-            if (_CUEToolsDB.DBStatus == null)
-                sw.WriteLine("        [ CTDBID ] Status");
-            foreach (DBEntry entry in _CUEToolsDB.Entries)
-            {
-                string confFormat = (_CUEToolsDB.Total < 10) ? "{0:0}/{1:0}" :
-                    (_CUEToolsDB.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
-                string conf = string.Format(confFormat, entry.conf, _CUEToolsDB.Total);
-                string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio ? string.Format("CD-Extra data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
-                        !entry.toc[1].IsAudio ? string.Format("Playstation type data track length {0}", entry.toc[entry.toc.FirstAudio].StartMSF) : "Has no data track";
-                string status =
-                    entry.toc.Pregap != _toc.Pregap ? string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap)) :
-                    entry.toc.AudioLength != _toc.AudioLength ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
-                    ((entry.toc.TrackOffsets != _toc.TrackOffsets) ? dataTrackInfo + ", " : "") +
-                        ((!entry.hasErrors) ? "Accurately ripped" :
-                    //((!entry.hasErrors) ? string.Format("Accurately ripped, offset {0}", -entry.offset) :
-                        entry.canRecover ? string.Format("Differs in {0} samples @{1}", entry.repair.CorrectableErrors, entry.repair.AffectedSectors) :
-                        (entry.httpStatus == 0 || entry.httpStatus == HttpStatusCode.OK) ? "No match" :
-                        entry.httpStatus.ToString());
-                sw.WriteLine("        [{0:x8}] ({1}) {2}", entry.crc, conf, status);
-            }
+            _CUEToolsDB.GenerateLog(sw, true);
         }
 
         public string GenerateAccurateRipStatus()

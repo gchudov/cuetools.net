@@ -1,0 +1,28 @@
+﻿using System;
+using System.Xml.Serialization;
+
+namespace CUETools.CTDB
+{
+    [Serializable]
+    [XmlRoot(ElementName = "ctdb", Namespace = "http://db.cuetools.net/ns/mmd-1.0#")]
+    public class CTDBSubmitResponse
+    {
+        [XmlIgnore]
+        public bool ParityNeeded
+        {
+            get
+            {
+                return this.status == "parity needed";
+            }
+        }
+
+        [XmlAttribute]
+        public string status { get; set; }
+
+        [XmlAttribute]
+        public string message { get; set; }
+
+        [XmlAttribute]
+        public int npar { get; set; }
+    }
+}

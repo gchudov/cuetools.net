@@ -13,7 +13,7 @@ namespace CUETools.AccurateRip
 {
 	public class AccurateRipVerify : IAudioDest
 	{
-        public const int maxNpar = 8;
+        public const int maxNpar = 16;
 
         public AccurateRipVerify(CDImageLayout toc, IWebProxy proxy)
 		{
@@ -314,21 +314,68 @@ namespace CUETools.AccurateRip
 			_CRCLOG[iTrack] = value;
 		}
 
-        public unsafe byte[] GetParity(int npar = maxNpar)
+        public unsafe ushort[,] GetSyndrome(int npar = maxNpar, int strides = -1, int offset = 0)
         {
-            if (npar == maxNpar)
-                return this.parity;
-
-            var synShort = this.GetSyndrome(npar);
-            return ParityToSyndrome.Syndrome2Parity(synShort);
-        }
-
-		public unsafe ushort[,] GetSyndrome(int npar = maxNpar)
-		{
+            // We can only use offset if Abs(offset * 2) < stride,
+            // else we might need to add/remove more than one sample
+            // from syndrome calculations, and that would be too difficult
+            // and will probably require longer leadin/leadout.
             if (!calcParity)
                 throw new InvalidOperationException();
-            return ParityToSyndrome.Parity2Syndrome(stride, npar, maxNpar, parity);
-		}
+            if (strides == -1)
+                strides = stride;
+            var syn = ParityToSyndrome.Parity2Syndrome(strides, stride, npar, maxNpar, parity, 0, -offset * 2);
+            var galois = Galois16.instance;
+            for (int part2 = 0; part2 < strides; part2++)
+            {
+                int part = (part2 + offset * 2 + stride) % stride;
+                if (part < offset * 2)
+                {
+                    for (int i = 0; i < npar; i++)
+                    {
+                        int synI = syn[part2, i];
+                        synI = galois.mulExp(synI, i);
+                        synI ^= leadout[laststride - part - 1] ^ galois.mulExp(leadin[stride + part], (i * stridecount) % galois.Max);
+                        syn[part2, i] = (ushort)synI;
+                    }
+                }
+                if (part >= stride + offset * 2)
+                {
+                    for (int i = 0; i < npar; i++)
+                    {
+                        int synI = syn[part2, i];
+                        synI ^= leadout[laststride + stride - part - 1] ^ galois.mulExp(leadin[part], (i * stridecount) % galois.Max);
+                        synI = galois.divExp(synI, i);
+                        syn[part2, i] = (ushort)synI;
+                    }
+                }
+            }
+            //for (int part = 0; part < offset * 2; part++)
+            //{
+            //    int part2 = (part - offset * 2 + stride) % stride;
+            //    if (part2 < strides)
+            //    for (int i = 0; i < npar; i++)
+            //    {
+            //        int synI = syn[part2, i];
+            //        synI = galois.mulExp(synI, i);
+            //        synI ^= leadout[laststride - part - 1] ^ galois.mulExp(leadin[stride + part], (i * stridecount) % galois.Max);
+            //        syn[part2, i] = (ushort)synI;
+            //    }
+            //}
+            //for (int part = stride + offset * 2; part < stride; part++)
+            //{
+            //    int part2 = (part - offset * 2 + stride) % stride;
+            //    if (part2 < strides)
+            //    for (int i = 0; i < npar; i++)
+            //    {
+            //        int synI = syn[part2, i];
+            //        synI ^= leadout[laststride + stride - part - 1] ^ galois.mulExp(leadin[part], (i * stridecount) % galois.Max);
+            //        synI = galois.divExp(synI, i);
+            //        syn[part2, i] = (ushort)synI;
+            //    }
+            //}
+            return syn;
+        }
 
 		private byte[] parity;
 		internal ushort[, ,] encodeTable;
@@ -401,69 +448,37 @@ namespace CUETools.AccurateRip
 			return CTDBCRC(0, offset, stride / 2, laststride / 2);
 		}
 
-		//private unsafe static void CalcPar8(ushort* pt, ushort* wr, uint lo)
-		//{
-		//    uint wrlo = wr[0] ^ lo;
-		//    ushort* ptiblo0 = pt + (wrlo & 255) * 16;
-		//    ushort* ptiblo1 = pt + (wrlo >> 8) * 16 + 8;
-		//    ((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
-		//    ((ulong*)wr)[1] = (((ulong*)(wr))[1] >> 16) ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
-		//}
+        // pt = &encodeTable
+        private unsafe delegate void SyndromeCalc(ushort* pt, ushort* wr, ushort lo);
 
-		private unsafe static void CalcPar(ushort* pt, ushort* wr, uint lo, uint hi)
-		{
-            // pt = &encodeTable
-#if !sdfs
-			uint wrlo = wr[0] ^ lo;
-			uint wrhi = wr[maxNpar] ^ hi;
-			ushort* ptiblo0 = pt + (wrlo & 255) * maxNpar * 2;
+        private unsafe static void SyndromeCalcDummy(ushort* pt, ushort* wr, ushort lo)
+        {
+        }
+
+        private unsafe static void SyndromeCalc8(ushort* pt, ushort* wr, ushort lo)
+        {
+            ushort wrlo = (ushort)(wr[0] ^ lo);
+            ushort* ptiblo0 = pt + (wrlo & 255) * maxNpar * 2;
             ushort* ptiblo1 = pt + (wrlo >> 8) * maxNpar * 2 + maxNpar;
-            ushort* ptibhi0 = pt + (wrhi & 255) * maxNpar * 2;
-            ushort* ptibhi1 = pt + (wrhi >> 8) * maxNpar * 2 + maxNpar;
-			wr[maxNpar] = 0;
-            if (maxNpar == 16)
-            {
-                ((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
-                ((ulong*)wr)[1] = ((ulong*)(wr + 1))[1] ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
-                ((ulong*)wr)[2] = ((ulong*)(wr + 1))[2] ^ ((ulong*)ptiblo0)[2] ^ ((ulong*)ptiblo1)[2];
-                ((ulong*)wr)[3] = ((ulong*)(wr + 1))[3] ^ ((ulong*)ptiblo0)[3] ^ ((ulong*)ptiblo1)[3];
-                ((ulong*)wr)[4] = ((ulong*)(wr + 1))[4] ^ ((ulong*)ptibhi0)[0] ^ ((ulong*)ptibhi1)[0];
-                ((ulong*)wr)[5] = ((ulong*)(wr + 1))[5] ^ ((ulong*)ptibhi0)[1] ^ ((ulong*)ptibhi1)[1];
-                ((ulong*)wr)[6] = ((ulong*)(wr + 1))[6] ^ ((ulong*)ptibhi0)[2] ^ ((ulong*)ptibhi1)[2];
-                ((ulong*)wr)[7] = (((ulong*)(wr))[7] >> 16) ^ ((ulong*)ptibhi0)[3] ^ ((ulong*)ptibhi1)[3];
-            }
-            else if (maxNpar == 8)
-            {
-                ((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
-                ((ulong*)wr)[1] = ((ulong*)(wr + 1))[1] ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
-                ((ulong*)wr)[2] = ((ulong*)(wr + 1))[2] ^ ((ulong*)ptibhi0)[0] ^ ((ulong*)ptibhi1)[0];
-                ((ulong*)wr)[3] = (((ulong*)(wr))[3] >> 16) ^ ((ulong*)ptibhi0)[1] ^ ((ulong*)ptibhi1)[1];
-            }
-            else
-                throw new InvalidOperationException();
-#else
-			const int npar = 8;
+            ((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
+            ((ulong*)wr)[1] = (((ulong*)(wr))[1] >> 16) ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
+        }
 
-			uint s = wr[0] ^ lo;
-			ushort* ptib0 = pt + (s & 255) * 16;
-			ushort* ptib1 = pt + (s >> 8) * 16 + 8;
-			for (int i = 0; i < npar - 1; i++)
-				wr[i] = (ushort)(wr[i + 1] ^ ptib0[i] ^ ptib1[i]);
-			wr[npar - 1] = (ushort)(ptib0[npar - 1] ^ ptib1[npar - 1]);
+        //[System.Runtime.InteropServices.DllImport("CUETools.AVX.dll", CallingConvention = System.Runtime.InteropServices.CallingConvention.StdCall)]
+        //private unsafe static extern void SyndromeCalc16AVX(ushort* table, ushort* parity, ushort* samples, int n);
 
-			wr += 8;
-			
-			s = wr[0] ^ hi;
-			ptib0 = pt + (s & 255) * 16;
-			ptib1 = pt + (s >> 8) * 16 + 8;
-			for (int i = 0; i < npar - 1; i++)
-				wr[i] = (ushort)(wr[i + 1] ^ ptib0[i] ^ ptib1[i]);
-			wr[npar - 1] = (ushort)(ptib0[npar - 1] ^ ptib1[npar - 1]);
-#endif
-		}
+        private unsafe static void SyndromeCalc16(ushort* pt, ushort* wr, ushort lo)
+        {
+            ushort wrlo = (ushort)(wr[0] ^ lo);
+            ushort* ptiblo0 = pt + (wrlo & 255) * maxNpar * 2;
+            ushort* ptiblo1 = pt + (wrlo >> 8) * maxNpar * 2 + maxNpar;
+            ((ulong*)wr)[0] = ((ulong*)(wr + 1))[0] ^ ((ulong*)ptiblo0)[0] ^ ((ulong*)ptiblo1)[0];
+            ((ulong*)wr)[1] = ((ulong*)(wr + 1))[1] ^ ((ulong*)ptiblo0)[1] ^ ((ulong*)ptiblo1)[1];
+            ((ulong*)wr)[2] = ((ulong*)(wr + 1))[2] ^ ((ulong*)ptiblo0)[2] ^ ((ulong*)ptiblo1)[2];
+            ((ulong*)wr)[3] = (((ulong*)(wr))[3] >> 16) ^ ((ulong*)ptiblo0)[3] ^ ((ulong*)ptiblo1)[3];
+        }
 
-
-		/// <summary>
+        /// <summary>
 		/// This function calculates three different CRCs and also 
 		/// collects some additional information for the purposes of 
 		/// offset detection.
@@ -481,6 +496,7 @@ namespace CUETools.AccurateRip
 		{
 			int currentStride = ((int)_sampleCount * 2) / stride;
 			bool doPar = currentStride >= 1 && currentStride <= stridecount && calcParity;
+            SyndromeCalc syndromeCalc = doPar ? maxNpar == 8 ? (SyndromeCalc)SyndromeCalc8 : (SyndromeCalc)SyndromeCalc16 : (SyndromeCalc)SyndromeCalcDummy;
 
 			int crcTrack = _currentTrack + (_samplesDoneTrack == 0 && _currentTrack > 0 ? -1 : 0);
 			uint crcar = _CRCAR[_currentTrack, 0];
@@ -490,6 +506,8 @@ namespace CUETools.AccurateRip
 			int crcnl = _CRCNL[crcTrack, 2 * maxOffset];
 			uint crcv2 = _CRCV2[_currentTrack, 0];
 			int peak = _Peak[_currentTrack];
+
+            //if (doPar) SyndromeCalc16AVX(pte, wr, (ushort*)pSampleBuff, count * 2);
 
 			for (int i = 0; i < count; i++)
 			{
@@ -518,12 +536,9 @@ namespace CUETools.AccurateRip
 					crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ (lo >> 8))];
 					crcnl++;
 				}
+                syndromeCalc(pte, wr + i * maxNpar * 2, (ushort)lo);
 
 				uint hi = sample >> 16;
-				if (doPar) CalcPar(pte, wr + i * maxNpar * 2, lo, hi);
-				//if (doPar) CalcPar8(pte, wr + i * 16, lo);
-				//uint hi = sample >> 16;
-
 				crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ hi)];
 				crc32 = (crc32 >> 8) ^ t[(byte)(crc32 ^ (hi >> 8))];
 				if (hi != 0)
@@ -532,7 +547,7 @@ namespace CUETools.AccurateRip
 					crcwn = (crcwn >> 8) ^ t[(byte)(crcwn ^ (hi >> 8))];
 					crcnl++;
 				}
-				//if (doPar) CalcPar8(pte, wr + i * 16 + 8, hi);
+                syndromeCalc(pte, wr + i * maxNpar * 2 + maxNpar, (ushort)hi);
 
 				int pk = ((int)(lo << 16)) >> 16;
 				peak = Math.Max(peak, (pk << 1) ^ (pk >> 31));

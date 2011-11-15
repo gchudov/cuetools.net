@@ -21,6 +21,10 @@ namespace CUETools.CTDB
         [XmlAttribute]
         public string parity { get; set; }
         [XmlAttribute]
+        public string syndrome { get; set; }
+        [XmlAttribute]
+        public string trackcrcs { get; set; }
+        [XmlAttribute]
         public string toc { get; set; }
     }
 }

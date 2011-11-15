@@ -453,7 +453,7 @@ namespace CUETools.CDImage
 			return new CDImageLayout(trackcount, audiotracks, firstaudio, string.Join(" ", ids));
 		}
 
-		public string ToString()
+        public override string ToString()
 		{
 			StringBuilder mbSB = new StringBuilder();
 			for (int iTrack = 0; iTrack < TrackCount; iTrack++)
