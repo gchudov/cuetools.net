@@ -2011,6 +2011,10 @@ namespace Bwg.Scsi
 		/// </summary>
 		public enum MainChannelSelection
 		{
+            /// <summary>
+            /// 
+            /// </summary>
+            None,
 			/// <summary>
 			/// 
 			/// </summary>
@@ -2056,7 +2060,7 @@ namespace Bwg.Scsi
 				byte b = (byte)((exp & 0x07) << 2);
 				if (dap)
 					b |= 0x02;
-				byte byte9 = (byte) (mainmode == MainChannelSelection.UserData ? 0x10 : 0xF8);
+                byte byte9 = (byte)(mainmode == MainChannelSelection.UserData ? 0x10 : mainmode == MainChannelSelection.F8h ? 0xF8 : 0);
 				if (c2mode == C2ErrorMode.Mode294)
 					byte9 |= 0x02;
 				else if (c2mode == C2ErrorMode.Mode296)
@@ -2066,8 +2070,7 @@ namespace Bwg.Scsi
 				cmd.SetCDB24(6, length);
 				cmd.SetCDB8(9, byte9); // User data + possibly c2 errors
 				cmd.SetCDB8(10, mode);          // Subchannel
-
-				CommandStatus st = SendCommand(cmd);
+                CommandStatus st = SendCommand(cmd);
 				if (st != CommandStatus.Success)
 					return st;
 			}
@@ -2095,7 +2098,7 @@ namespace Bwg.Scsi
 			byte mode = (byte)(submode == SubChannelMode.QOnly ? 1 : submode == SubChannelMode.RWMode ? 2 : 0);
 			int size = 4 * 588 + (submode == SubChannelMode.QOnly ? 16 : submode == SubChannelMode.RWMode ? 96 : 0);
 
-			using (Command cmd = new Command(ScsiCommandCode.ReadCDDA, 12, data, size, Command.CmdDirection.In, timeout))
+			using (Command cmd = new Command(ScsiCommandCode.ReadCDDA, 12, data, (int)length * size, Command.CmdDirection.In, timeout))
 			{
 				cmd.SetCDB8(1, 0 << 5); // lun
 				cmd.SetCDB32(2, start);
@@ -2205,6 +2208,8 @@ namespace Bwg.Scsi
 
             using (Command cmd = new Command(ScsiCommandCode.ReadCd, 12, (int)(length * bytes_per_sector), Command.CmdDirection.In, timeout))
             {
+                byte b = (byte)(1 << 2);
+                cmd.SetCDB8(1, b);
                 cmd.SetCDB32(2, sector);            // The sector number to start with
                 cmd.SetCDB24(6, length);            // The length in sectors
                 cmd.SetCDB8(10, mode);                 // Corrected, de-interleaved P - W data

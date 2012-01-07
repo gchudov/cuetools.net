@@ -408,11 +408,10 @@ namespace CUETools.AccurateRip
 			{
 				int discLen = (int)_toc.AudioLength * 588;
 				int chunkLen = discLen - prefixSamples - suffixSamples;
-				crc = Crc32.Combine(
-					_CRC32[0, prefixSamples],
+				return 0xffffffff ^ Crc32.Combine(
+					0xffffffff ^ _CRC32[0, prefixSamples],
 					_CRC32[_toc.AudioTracks, 2 * maxOffset - suffixSamples],
 					chunkLen * 4);
-				return Crc32.Combine(0xffffffff, crc, chunkLen * 4) ^ 0xffffffff;
 			}
 			int posA = (int)_toc[iTrack + _toc.FirstAudio - 1].Start * 588 + (iTrack > 1 ? oi : prefixSamples);
 			int posB = iTrack < _toc.AudioTracks ?
@@ -437,10 +436,8 @@ namespace CUETools.AccurateRip
 					_CRC32[iTrack, maxOffset * 2 + oi] :
 					_CRC32[iTrack, maxOffset * 2 - suffixSamples];
 			}
-			crc = Crc32.Combine(crcA, crcB, (posB - posA) * 4);
-			// Use 0xffffffff as an initial state
-			crc = Crc32.Combine(0xffffffff, crc, (posB - posA) * 4) ^ 0xffffffff;
-			return crc;
+            // Use 0xffffffff as an initial state
+            return 0xffffffff ^ Crc32.Combine(0xffffffff ^ crcA, crcB, (posB - posA) * 4);
 		}
 
 		public uint CTDBCRC(int offset)

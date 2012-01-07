@@ -375,7 +375,7 @@ namespace CUETools.TestParity
 		///Verifying rip that has errors
 		///</summary>
 		[TestMethod()]
-		//[Ignore]
+		[Ignore]
 		public void CDRepairVerifyParitySpeedTest()
 		{
 			var generator1 = new TestImageGenerator("0 98011", seed, 32 * 588);

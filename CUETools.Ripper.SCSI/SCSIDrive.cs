@@ -72,7 +72,7 @@ namespace CUETools.Ripper.SCSI
 		Device.C2ErrorMode _c2ErrorMode = Device.C2ErrorMode.Mode296;
 		string _autodetectResult;
 		byte[] _readBuffer = new byte[NSECTORS * CB_AUDIO];
-		byte[] _subchannelBuffer = new byte[CB_AUDIO];
+        byte[] _subchannelBuffer = new byte[NSECTORS * CB_AUDIO];
 		bool _qChannelInBCD = true;
 
 		private ReadProgressArgs progressArgs = new ReadProgressArgs();
@@ -474,7 +474,27 @@ namespace CUETools.Ripper.SCSI
 
 			if (_readCDCommand == ReadCDCommand.ReadCdBEh)
 			{
-				st = m_device.ReadSubChannel(2, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)m_max_sectors, ref _subchannelBuffer, _timeout);
+                // PLEXTOR PX-W1210A always returns data, even if asked only for subchannel.
+                // So we fill the buffer with magic data, give extra space for command so it won't hang the drive,
+                // request subchannel data and check if magic data was overwritten.
+                bool overwritten = false;
+                for (int i = 0; i < 16; i++)
+                {
+                    _subchannelBuffer[m_max_sectors * (588 * 4 + 16) - 16 + i] = (byte)(13 + i);
+                }
+                fixed (byte* data = _subchannelBuffer)
+                {
+                    st = m_device.ReadCDAndSubChannel(Device.MainChannelSelection.None, Device.SubChannelMode.QOnly, Device.C2ErrorMode.None, 1, false, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)m_max_sectors, (IntPtr)((void*)data), _timeout);
+                }
+                for (int i = 0; i < 16; i++)
+                {
+                    if (_subchannelBuffer[m_max_sectors * (588 * 4 + 16) - 16 + i] != (byte)(13 + i))
+                        overwritten = true;
+                }
+                if (overwritten)
+                    st = Device.CommandStatus.NotSupported;
+                //else
+                //    st = m_device.ReadSubChannel(2, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)m_max_sectors, ref _subchannelBuffer, _timeout);
 				if (st == Device.CommandStatus.Success)
 				{
 					int[] goodsecs = new int[2];
@@ -712,7 +732,7 @@ namespace CUETools.Ripper.SCSI
 				return true;
 
 			//ReadCDCommand[] readmode = { ReadCDCommand.ReadCdBEh, ReadCDCommand.ReadCdD8h };
-			ReadCDCommand[] readmode = { ReadCDCommand.ReadCdD8h, ReadCDCommand.ReadCdBEh };
+            ReadCDCommand[] readmode = { ReadCDCommand.ReadCdBEh, ReadCDCommand.ReadCdD8h };
 			Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.Mode294, Device.C2ErrorMode.Mode296, Device.C2ErrorMode.None };
 			Device.MainChannelSelection[] mainmode = { Device.MainChannelSelection.UserData, Device.MainChannelSelection.F8h };
 			bool found = false;
@@ -731,7 +751,7 @@ namespace CUETools.Ripper.SCSI
 						_mainChannelMode = mainmode[m];
 						if (_forceReadCommand != ReadCDCommand.Unknown && _readCDCommand != _forceReadCommand)
 							continue;
-						if (_readCDCommand == ReadCDCommand.ReadCdD8h) // && (_c2ErrorMode != Device.C2ErrorMode.None || _mainChannelMode != Device.MainChannelSelection.UserData))
+                        if (_readCDCommand == ReadCDCommand.ReadCdD8h && (_c2ErrorMode != Device.C2ErrorMode.None || _mainChannelMode != Device.MainChannelSelection.UserData))
 							continue;
 						Array.Clear(_readBuffer, 0, _readBuffer.Length); // fill with something nasty instead?
 						DateTime tm = DateTime.Now;
@@ -765,12 +785,16 @@ namespace CUETools.Ripper.SCSI
 			//            break;
 			//        }
 			//    }
-			TestGaps();
-
-			if (found)
-				_autodetectResult += "Chosen " + CurrentReadCommand + "\n";
-			else
-				_readCDCommand = ReadCDCommand.Unknown;
+            if (found)
+            {
+                TestGaps();
+                _autodetectResult += "Chosen " + CurrentReadCommand + "\n";
+            }
+            else
+            {
+                _gapDetection = GapDetectionMethod.None;
+                _readCDCommand = ReadCDCommand.Unknown;
+            }
 
 			_currentStart = -1;
 			_currentEnd = -1;
