@@ -406,10 +406,10 @@ namespace CUETools.AccurateRip
 			uint crc;
 			if (iTrack == 0)
 			{
-				int discLen = (int)_toc.AudioLength * 588;
+				int discLen = ((int)_toc.AudioLength - (int)TOC.Pregap) * 588;
 				int chunkLen = discLen - prefixSamples - suffixSamples;
 				return 0xffffffff ^ Crc32.Combine(
-					0xffffffff ^ _CRC32[0, prefixSamples],
+					0xffffffff ^ _CRC32[1, prefixSamples],
 					_CRC32[_toc.AudioTracks, 2 * maxOffset - suffixSamples],
 					chunkLen * 4);
 			}
@@ -491,7 +491,8 @@ namespace CUETools.AccurateRip
 		/// <param name="offs"></param>
 		public unsafe void CalculateCRCs(uint* t, ushort* wr, ushort* pte, uint* pSampleBuff, int count, int offs)
 		{
-			int currentStride = ((int)_sampleCount * 2) / stride;
+            int currentSample = Math.Max(0, (int)_sampleCount - 588 * (int)this.TOC.Pregap);
+            int currentStride = (currentSample * 2) / stride;
 			bool doPar = currentStride >= 1 && currentStride <= stridecount && calcParity;
             SyndromeCalc syndromeCalc = doPar ? maxNpar == 8 ? (SyndromeCalc)SyndromeCalc8 : (SyndromeCalc)SyndromeCalc16 : (SyndromeCalc)SyndromeCalcDummy;
 
@@ -603,17 +604,15 @@ namespace CUETools.AccurateRip
 					// Process no more than there is in the buffer, no more than there is in this track, and no more than up to a sector boundary.
 					int copyCount = Math.Min(Math.Min(sampleBuffer.Length - pos, (int)_samplesRemTrack), 588 - (int)_sampleCount % 588);
 					uint* samples = ((uint*)pSampleBuff) + pos;
-					int currentPart = ((int)_sampleCount * 2) % stride;
+                    int currentSample = (int)_sampleCount - 588 * (int)this.TOC.Pregap;
+                    int currentPart = currentSample < 0 ? 0 : (currentSample * 2) % stride;
 					//ushort* synptr = synptr1 + npar * currentPart;
                     ushort* wr = ((ushort*)bpar) + maxNpar * currentPart;
-					int currentStride = ((int)_sampleCount * 2) / stride;
 
-					for (int i = 0; i < Math.Min(leadin.Length - (int)_sampleCount * 2, copyCount * 2); i++)
-						leadin[_sampleCount * 2 + i] = ((ushort*)samples)[i];
+                    for (int i = Math.Max(0, - currentSample * 2); i < Math.Min(leadin.Length - currentSample * 2, copyCount * 2); i++)
+                        leadin[currentSample * 2 + i] = ((ushort*)samples)[i];
 
 					for (int i = Math.Max(0, (int)(_finalSampleCount - _sampleCount) * 2 - leadout.Length); i < copyCount * 2; i++)
-					//if (currentStride >= stridecount && leadout != null)
-					//for (int i = 0; i < copyCount * 2; i++)
 					{
 						int remaining = (int)(_finalSampleCount - _sampleCount) * 2 - i - 1;
 						leadout[remaining] = ((ushort*)samples)[i];
@@ -672,7 +671,7 @@ namespace CUETools.AccurateRip
 		{
 			for (int i = 0; i < leadin.Length; i++)
 			{
-				int currentOffset = i / 2;
+                int currentOffset = i / 2 + 588 * (int)this.TOC.Pregap;
 				if (currentOffset >= start && currentOffset < end)
 					this.leadin[i] = part.leadin[i];
 			}
@@ -745,8 +744,9 @@ namespace CUETools.AccurateRip
 			{
 				var newSyndrome1 = this.GetSyndrome();
 				var newSyndrome2 = part.GetSyndrome();
-				var i1 = Math.Max(0, start * 2 - stride);
-				var i2 = Math.Min(2 * (int)_finalSampleCount - laststride - stride, end * 2 - stride);
+                int firstSample = 588 * (int)TOC.Pregap;
+                var i1 = Math.Max(0, (start - firstSample) * 2 - stride);
+                var i2 = Math.Min(2 * ((int)_finalSampleCount - firstSample) - laststride - stride, (end - firstSample) * 2 - stride);
 				var diff = i2 / stride - i1 / stride;
 				var i1s = i1 % stride;
 				var i2s = i2 % stride;

@@ -12,26 +12,28 @@ namespace CUETools.AccurateRip
 	public class CDRepair
 	{
 		protected int sampleCount;
+        protected int pregap;
 		protected int finalSampleCount;
 		internal Galois galois;
 		internal int stride;
 		internal int laststride;
 		internal int stridecount;
 
-		public CDRepair(int finalSampleCount, int stride)
-		{			
+		public CDRepair(int pregap, int finalSampleCount, int stride)
+		{
 			this.stride = stride;
-			this.finalSampleCount = finalSampleCount;
-			sampleCount = 0;
-			galois = Galois16.instance;
-			laststride = stride + (finalSampleCount * 2) % stride;
-			stridecount = (finalSampleCount * 2) / stride - 2; // minus one for leadin and one for leadout
-			if ((finalSampleCount * 2 + stride - 1) / stride + AccurateRipVerify.maxNpar > galois.Max)
+            this.pregap = pregap;
+            this.finalSampleCount = finalSampleCount;
+			this.sampleCount = 0;
+			this.galois = Galois16.instance;
+            this.laststride = this.stride + ((this.finalSampleCount - this.pregap) * 2) % this.stride;
+            this.stridecount = ((this.finalSampleCount - this.pregap) * 2) / this.stride - 2; // minus one for leadin and one for leadout
+            if (((this.finalSampleCount - this.pregap) * 2 + this.stride - 1) / this.stride + AccurateRipVerify.maxNpar > galois.Max)
 				throw new Exception("invalid stride");
 		}
 
 		public CDRepair(CDRepair src)
-			: this(src.finalSampleCount, src.stride)
+			: this(src.pregap, src.finalSampleCount, src.stride)
 		{
 		}
 
@@ -55,15 +57,7 @@ namespace CUETools.AccurateRip
 			{
 				return stride;
 			}
-		}
-    
-        public int LastStride
-        {
-            get
-            {
-                return laststride;
-            }
-        }
+		}   
     }
 
 	public class CDRepairEncode : CDRepair
@@ -71,7 +65,7 @@ namespace CUETools.AccurateRip
 		protected AccurateRipVerify ar;
 
 		public CDRepairEncode(AccurateRipVerify ar, int stride)
-		    : base ((int)ar.FinalSampleCount, stride)
+		    : base ((int)ar.TOC.Pregap * 588, (int)ar.FinalSampleCount, stride)
 		{
 			this.ar = ar;
 			ar.InitCDRepair(stride, laststride, stridecount, true);
@@ -216,9 +210,9 @@ namespace CUETools.AccurateRip
                         for (int i = 0; i < errcount; i++)
                         {
                             int pos = galois.toPos(stridecount, _errpos[i]) * stride + part2;
-                            int erroffi = stride + pos - actualOffset * 2;
+                            int erroffi = stride + pos + pregap * 2 - actualOffset * 2;
                             ushort diff = (ushort)this.galois.doForney(errcount, _errpos[i], _sigma, _omega);
-                            if (erroffi < 0 || erroffi >= finalSampleCount * 2)
+                            if (erroffi < pregap * 2 || erroffi >= finalSampleCount * 2)
                             {
                                 fix.canRecover = false;
                                 return fix;
@@ -301,7 +295,7 @@ namespace CUETools.AccurateRip
 
         public int GetAffectedSectorsCount(int min, int max)
         {
-            min = Math.Max(2 * min, stride - 2 * ActualOffset);
+            min = Math.Max(2 * min, 2 * pregap + stride - 2 * ActualOffset);
             max = Math.Min(2 * max, 2 * finalSampleCount - laststride - 2 * ActualOffset);
             int count = 0;
             for (int i = 0; i < correctableErrors; i++)
@@ -312,7 +306,7 @@ namespace CUETools.AccurateRip
 
         public string GetAffectedSectors(int min, int max)
         {
-            min = Math.Max(2 * min, stride - 2 * ActualOffset);
+            min = Math.Max(2 * min, 2 * pregap + stride - 2 * ActualOffset);
             max = Math.Min(2 * max, 2 * finalSampleCount - laststride - 2 * ActualOffset);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < correctableErrors; i++)
@@ -340,7 +334,7 @@ namespace CUETools.AccurateRip
 			if ((sampleBuffer.ByteLength & 1) != 0)
 				throw new Exception("never happens");
 
-			int firstPos = Math.Max(0, stride - sampleCount * 2 - ActualOffset * 2);
+			int firstPos = Math.Max(0, stride + (pregap - sampleCount) * 2 - ActualOffset * 2);
 			int lastPos = Math.Min(sampleBuffer.ByteLength >> 1, (finalSampleCount - sampleCount) * 2 - laststride - ActualOffset * 2);
 
 			fixed (byte* bytes = sampleBuffer.Bytes)

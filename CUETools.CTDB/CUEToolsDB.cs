@@ -359,7 +359,7 @@ namespace CUETools.CTDB
 				return;
 			foreach (DBEntry entry in entries)
 			{
-				if (entry.toc.Pregap != toc.Pregap || entry.toc.AudioLength != toc.AudioLength || entry.stride != verify.Stride)
+                if (entry.toc.AudioLength - entry.toc.Pregap != toc.AudioLength - toc.Pregap || entry.stride != verify.Stride)
 				{
 					entry.hasErrors = true;
 					entry.canRecover = false;
@@ -479,11 +479,16 @@ namespace CUETools.CTDB
                     string confFormat = (this.Total < 10) ? "{0:0}/{1:0}" :
                         (this.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
                     string conf = string.Format(confFormat, entry.conf, this.Total);
-                    string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio ? string.Format("CD-Extra data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
-                            !entry.toc[1].IsAudio ? string.Format("Playstation type data track length {0}", entry.toc[entry.toc.FirstAudio].StartMSF) : "Has no data track";
+                    string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio && this.toc[entry.toc.TrackCount].IsAudio ?
+                        string.Format("CD-Extra data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
+                        !entry.toc[1].IsAudio && this.toc[1].IsAudio ?
+                        string.Format("Playstation type data track length {0}", entry.toc[entry.toc.FirstAudio].StartMSF) :
+                        (entry.toc[1].IsAudio && !this.toc[1].IsAudio) || (entry.toc[entry.toc.TrackCount].IsAudio && !this.toc[entry.toc.TrackCount].IsAudio) ?
+                        "Has no data track" : "";
+                    if (entry.toc.Pregap != this.toc.Pregap)
+                        dataTrackInfo = dataTrackInfo + (dataTrackInfo == "" ? "" : ", ") + string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap));
                     string status =
-                        entry.toc.Pregap != this.TOC.Pregap ? string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap)) :
-                        entry.toc.AudioLength != this.TOC.AudioLength ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
+                        entry.toc.AudioLength - entry.toc.Pregap != this.TOC.AudioLength - this.TOC.Pregap ? string.Format("Has audio length {0}", CDImageLayout.TimeToString(entry.toc.AudioLength)) :
                         ((entry.toc.TrackOffsets != this.TOC.TrackOffsets) ? dataTrackInfo + ", " : "") +
                             ((!entry.hasErrors) ? "Accurately ripped" :
                         //((!entry.hasErrors) ? string.Format("Accurately ripped, offset {0}", -entry.offset) :
@@ -606,13 +611,13 @@ namespace CUETools.CTDB
 				{
 					DBEntry popular = null;
 					foreach (DBEntry entry in entries)
-						if (entry.toc.Pregap == toc.Pregap && (!entry.hasErrors || entry.canRecover))
+						if (!entry.hasErrors || entry.canRecover)
 							if (popular == null || entry.conf > popular.conf)
 								popular = entry;
 					if (popular != null)
 						res = popular.Status;
 					foreach (DBEntry entry in entries)
-						if (entry != popular && entry.toc.Pregap == toc.Pregap && (!entry.hasErrors || entry.canRecover))
+						if (entry != popular && (!entry.hasErrors || entry.canRecover))
 							res += ", or " + entry.Status;
 					if (res == null)
 						res = "could not be verified";

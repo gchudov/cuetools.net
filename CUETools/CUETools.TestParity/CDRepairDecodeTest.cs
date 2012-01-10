@@ -245,7 +245,27 @@ namespace CUETools.TestParity
             }
         }
 
-		[TestMethod]
+        /// <summary>
+        ///Verifying rip that has pregap
+        ///</summary>
+        [TestMethod()]
+        public void CDRepairDecodeModifiedWithPregapTest()
+        {
+            var generator2 = new TestImageGenerator("32 9833", seed, offset, errors);
+            var decode = generator2.CreateCDRepairEncode(stride);
+            int actualOffset;
+            bool hasErrors;
+            Assert.IsTrue(decode.FindOffset(encode.AR.GetSyndrome(), encode.CRC, out actualOffset, out hasErrors));
+            Assert.IsTrue(hasErrors, "doesn't have errors");
+            Assert.AreEqual(offset, actualOffset, "wrong offset");
+            CDRepairFix fix = decode.VerifyParity(encode.AR.GetSyndrome(), encode.CRC, actualOffset);
+            Assert.IsTrue(fix.HasErrors, "doesn't have errors");
+            Assert.IsTrue(fix.CanRecover, "cannot recover");
+            generator2.Write(fix);
+            Assert.AreEqual<uint>(encode.CRC, fix.CRC);
+        }
+
+        [TestMethod]
 		public void GFMiscTest()
 		{
 			var g16 = Galois16.instance;
@@ -288,7 +308,6 @@ namespace CUETools.TestParity
 		///A test for CRC parralelism
 		///</summary>
 		[TestMethod()]
-        //[Ignore]
 		public void CDRepairSplitTest()
 		{
 			var seed = 723722;
@@ -309,7 +328,8 @@ namespace CUETools.TestParity
 		///A test for CRC parralelism speed
 		///</summary>
 		[TestMethod()]
-		public unsafe void CDRepairSplitSpeedTest()
+        [Ignore]
+        public unsafe void CDRepairSplitSpeedTest()
 		{
 			var seed = 723722;
 			var split = 20 * 588;
@@ -323,7 +343,8 @@ namespace CUETools.TestParity
 		///A test for Syndrome2Parity speed
 		///</summary>
 		[TestMethod()]
-		public unsafe void CDRepairSyndrome2ParitySpeedTest()
+        [Ignore]
+        public unsafe void CDRepairSyndrome2ParitySpeedTest()
 		{
             var syndrome = encode.AR.GetSyndrome();
             byte[] parityCopy = ParityToSyndrome.Syndrome2Parity(syndrome);
