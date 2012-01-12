@@ -40,6 +40,9 @@ namespace AudioDataPlugIn
 		bool is_secure_mode;
 		bool is_offset_set;
 		string m_drivename;
+#if DEBUG
+        StringWriter m_trace;
+#endif
 
 
         // This functions just returns an unique identifier.
@@ -96,6 +99,10 @@ namespace AudioDataPlugIn
         {
             // Copy the CD metadata to the object
             m_data = data;
+
+#if DEBUG
+            m_trace = new StringWriter();
+#endif
 			
 			var parts = drivename.Split(' ');
 			m_drivename = parts[0].PadRight(8, ' ') + " -";
@@ -122,9 +129,6 @@ namespace AudioDataPlugIn
 			ArId = AccurateRipVerify.CalculateAccurateRipId(TOC);
 			ar.ContactAccurateRip(ArId);
 #endif
-			var form = new FormSubmitParity(ctdb, "EAC" + m_data.HostVersion + " CTDB 2.1.3", m_drivename);
-			//ctdb.ContactDB("EAC" + m_data.HostVersion + " CTDB 2.1.2", m_drivename, false, false);
-			form.ShowDialog();
 			ctdb.Init(ar);
 			this.sequence_ok = true;
 			this.m_start_pos = 0;
@@ -149,8 +153,26 @@ namespace AudioDataPlugIn
 			if (this.sequence_ok)
 			{
 				var thisAr = m_test_mode ? arTest : ar;
-				if (this.m_start_pos * 588 != thisAr.Position)
-					this.sequence_ok = false;
+                if (this.m_start_pos * 588 != thisAr.Position)
+                {
+                    if (thisAr.Position == 0 && this.m_start_pos == (int)TOC[TOC.FirstAudio].Pregap)
+                    {
+#if DEBUG
+                        m_trace.WriteLine("Adding pregap");
+#endif
+                        var ad = new byte[588 * 4];
+                        AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, ad, ad.Length / 4);
+                        for (int i = 0; i < (int)TOC[TOC.FirstAudio].Pregap; i++)
+                            thisAr.Write(buff);
+                    }
+                    else
+                    {
+#if DEBUG
+                        m_trace.WriteLine("Sequence broken on new trasfer");
+#endif
+                        this.sequence_ok = false;
+                    }
+                }
 			}
         }
 
@@ -185,8 +207,13 @@ namespace AudioDataPlugIn
 			if (this.sequence_ok)
 			{
 				var thisAr = m_test_mode ? arTest : ar;
-				if ((m_start_pos + m_length) * 588 != thisAr.Position)
-					this.sequence_ok = false;
+                if ((m_start_pos + m_length) * 588 != thisAr.Position)
+                {
+#if DEBUG
+                    m_trace.WriteLine("Sequence broken on end of trasfer");
+#endif
+                    this.sequence_ok = false;
+                }
 			}
 		}
 
@@ -201,41 +228,69 @@ namespace AudioDataPlugIn
 			StringWriter sw = new StringWriter();
 			if (this.sequence_ok)
 			{
-				if (TOC.AudioLength * 588 != ar.Position)
-					this.sequence_ok = false;
-				if (ar.Position != arTest.Position && arTest.Position > 0)
-					this.sequence_ok = false;
+                if (TOC.AudioLength * 588 != ar.Position)
+                {
+#if DEBUG
+                    m_trace.WriteLine("Sequence broken on end of session");
+#endif
+                    this.sequence_ok = false;
+                }
+                if (ar.Position != arTest.Position && arTest.Position > 0)
+                {
+#if DEBUG
+                    m_trace.WriteLine("Sequence broken on end of session");
+#endif
+                    this.sequence_ok = false;
+                }
 			}
-			if (!this.sequence_ok)
-				return "";
+            if (!this.sequence_ok)
+            {
+#if DEBUG
+                return m_trace.ToString();
+#else
+                return "";
+#endif
+            }
+#if DEBUG
+            sw.Write(m_trace.ToString());
+#endif
 			if (this.sequence_ok)
 			{
-				var form = new FormSubmitParity(
+                var form = new FormSubmitParity(
 					ctdb,
+                    "EAC" + m_data.HostVersion + " CTDB 2.1.3",
+                    m_drivename,
 #if USEAR
 					(int)ar.WorstConfidence() + 1,
 #else
 					1,
 #endif
-					(arTest.Position == 0 && this.is_secure_mode) || arTest.CRC32(0) == ar.CRC32(0) ? 100 : 0,
+					(arTest.Position == 0 && this.is_secure_mode) || (arTest.Position != 0 && arTest.CRC32(0) == ar.CRC32(0)) ? 100 : 0,
 					m_data.AlbumArtist,
 					m_data.AlbumTitle);
 				form.ShowDialog();
-				sw.WriteLine("[CTDB TOCID: {0}] {1}{2}",
+				sw.WriteLine("[CTDB TOCID: {0}] {1}",
 					TOC.TOCID, 
 					ctdb.DBStatus ?? "found");
                 if (ctdb.SubStatus != null)
                     sw.WriteLine("Submit result: " + ctdb.SubStatus);
+#if DEBUG
+                ctdb.GenerateLog(sw, true);
+#else
                 ctdb.GenerateLog(sw, false);
-				bool canFix = false;
+#endif
+                int fixConf = -1;
+                int myConf = 0;
 				if (ctdb.QueryExceptionStatus == WebExceptionStatus.Success)
 				{
 					foreach (DBEntry entry in ctdb.Entries)
-						if (entry.hasErrors && entry.canRecover)
-							canFix = true;
+                        if (!entry.hasErrors)
+                            myConf += entry.conf;
+                        else if (entry.canRecover)
+                            fixConf = Math.Max(fixConf, entry.conf);
 				}
-				if (canFix)
-					sw.WriteLine("You can use CUETools to repair this rip.");
+                if (fixConf > myConf)
+					sw.WriteLine("If you are sure that your rip contains errors, you can use CUETools to repair it.");
 				
 #if USEAR
 				ar.GenerateFullLog(sw, false, ArId);

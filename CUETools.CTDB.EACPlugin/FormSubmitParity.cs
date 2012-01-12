@@ -15,22 +15,16 @@ namespace CUETools.CTDB.EACPlugin
 		private int confidence, quality;
 		private string artist, title, agent, drivename;
 
-		public FormSubmitParity(CUEToolsDB ctdb, int confidence, int quality, string artist, string title)
+		public FormSubmitParity(CUEToolsDB ctdb, string agent, string drivename, int confidence, int quality, string artist, string title)
 		{
 			this.ctdb = ctdb;
 			this.confidence = confidence;
 			this.quality = quality;
 			this.artist = artist;
 			this.title = title;
-			this.InitializeComponent();
-		}
-
-		public FormSubmitParity(CUEToolsDB ctdb, string agent, string drivename)
-		{
-			this.ctdb = ctdb;
-			this.agent = agent;
-			this.drivename = drivename;
-			this.InitializeComponent();
+            this.agent = agent;
+            this.drivename = drivename;
+            this.InitializeComponent();
 		}
 
 		private void FormMetadata_Load(object sender, EventArgs e)
@@ -44,20 +38,19 @@ namespace CUETools.CTDB.EACPlugin
 			this.backgroundWorker1.ReportProgress((int)e.percent, e.uri);
 		}
 
-		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-		{
-			this.ctdb.UploadHelper.onProgress += UploadProgress;
-			if (this.agent != null)
-			{
-				this.ctdb.ContactDB(null, this.agent, this.drivename, true, false, CTDBMetadataSearch.None);
-			}
-			else
-			{
-				this.ctdb.DoVerify();
-				this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title, null);
-			}
-			this.ctdb.UploadHelper.onProgress -= UploadProgress;
-		}
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            this.ctdb.UploadHelper.onProgress += UploadProgress;
+#if DEBUG
+            string server = "hq.cuetools.net";
+#else
+            string server = null;
+#endif
+            this.ctdb.ContactDB(server, this.agent, this.drivename, true, true, CTDBMetadataSearch.None);
+            this.ctdb.DoVerify();
+            this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title, null);
+            this.ctdb.UploadHelper.onProgress -= UploadProgress;
+        }
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
