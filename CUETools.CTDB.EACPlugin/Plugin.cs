@@ -14,7 +14,7 @@ using CUETools.CTDB.EACPlugin;
 
 namespace AudioDataPlugIn
 {
-	[Guid("C02A1BF2-5C46-4990-80C2-78E8C395CB80"),
+    [Guid("C02A1BF2-5C46-4990-80C2-78E8C395CB80"),
     ClassInterface(ClassInterfaceType.None),
     ComSourceInterfaces(typeof(IAudioDataTransfer)),
     ]
@@ -29,17 +29,17 @@ namespace AudioDataPlugIn
         int m_start_pos = 0, m_length = 0;
         bool m_test_mode = false;
         IMetadataLookup m_data = null;
-		CDImageLayout TOC;
+        CDImageLayout TOC;
 #if USEAR
 		string ArId;
 #endif
-		AccurateRipVerify ar;
-		AccurateRipVerify arTest;
-		CUEToolsDB ctdb;
-		bool sequence_ok = true;
-		bool is_secure_mode;
-		bool is_offset_set;
-		string m_drivename;
+        AccurateRipVerify ar;
+        AccurateRipVerify arTest;
+        CUEToolsDB ctdb;
+        bool sequence_ok = true;
+        bool is_secure_mode;
+        bool is_offset_set;
+        string m_drivename;
 #if DEBUG
         StringWriter m_trace;
 #endif
@@ -50,7 +50,7 @@ namespace AudioDataPlugIn
         // guid is used
         public string GetAudioTransferPluginGuid()
         {
-			return ((GuidAttribute)Attribute.GetCustomAttribute(GetType(), typeof(GuidAttribute))).Value;
+            return ((GuidAttribute)Attribute.GetCustomAttribute(GetType(), typeof(GuidAttribute))).Value;
         }
 
 
@@ -59,7 +59,7 @@ namespace AudioDataPlugIn
         // the plugin and for display in the log file
         public string GetAudioTransferPluginName()
         {
-            return "CUETools DB Plugin V2.1.3";
+            return "CUETools DB Plugin V2.1.4";
         }
 
         // Each plugin should have its own options page.
@@ -95,7 +95,7 @@ namespace AudioDataPlugIn
         // the offset was setted by AccurateRip (so having a comparable
         // offset value)
 
-		public void StartNewSession(IMetadataLookup data, string drivename, int offset, bool aroffset, int mode)
+        public void StartNewSession(IMetadataLookup data, string drivename, int offset, bool aroffset, int mode)
         {
             // Copy the CD metadata to the object
             m_data = data;
@@ -103,39 +103,39 @@ namespace AudioDataPlugIn
 #if DEBUG
             m_trace = new StringWriter();
 #endif
-			
-			var parts = drivename.Split(' ');
-			m_drivename = parts[0].PadRight(8, ' ') + " -";
-			for (int i = 1; i < parts.Length; i++)
-				m_drivename += " " + parts[i];
 
-			TOC = new CDImageLayout();
-			for (int i = 0; i < m_data.NumberOfTracks; i++)
-			{
-				uint start = m_data.GetTrackStartPosition(i);
-				uint next = m_data.GetTrackEndPosition(i);
-				TOC.AddTrack(new CDTrack(
-					(uint)i + 1,
-					start,
-					next - start,
-					!m_data.GetTrackDataTrack(i),
-					m_data.GetTrackPreemphasis(i)));
-			}
-			TOC[1][0].Start = 0U;
-			ar = new AccurateRipVerify(TOC, null);
-			arTest = new AccurateRipVerify(TOC, null);
-			ctdb = new CUEToolsDB(TOC, null);
+            var parts = drivename.Split(' ');
+            m_drivename = parts[0].PadRight(8, ' ') + " -";
+            for (int i = 1; i < parts.Length; i++)
+                m_drivename += " " + parts[i];
+
+            TOC = new CDImageLayout();
+            for (int i = 0; i < m_data.NumberOfTracks; i++)
+            {
+                uint start = m_data.GetTrackStartPosition(i);
+                uint next = m_data.GetTrackEndPosition(i);
+                TOC.AddTrack(new CDTrack(
+                    (uint)i + 1,
+                    start,
+                    next - start,
+                    !m_data.GetTrackDataTrack(i),
+                    m_data.GetTrackPreemphasis(i)));
+            }
+            TOC[1][0].Start = 0U;
+            ar = new AccurateRipVerify(TOC, null);
+            arTest = new AccurateRipVerify(TOC, null);
+            ctdb = new CUEToolsDB(TOC, null);
 #if USEAR
 			ArId = AccurateRipVerify.CalculateAccurateRipId(TOC);
 			ar.ContactAccurateRip(ArId);
 #endif
-			ctdb.Init(ar);
-			this.sequence_ok = true;
-			this.m_start_pos = 0;
-			this.m_length = 0;
-			this.m_test_mode = false;
-			this.is_offset_set = aroffset;
-			this.is_secure_mode = mode >= 2;
+            ctdb.Init(ar);
+            this.sequence_ok = true;
+            this.m_start_pos = 0;
+            this.m_length = 0;
+            this.m_test_mode = false;
+            this.is_offset_set = aroffset;
+            this.is_secure_mode = mode >= 2;
         }
 
         // This function will be called once per session. A session
@@ -147,12 +147,12 @@ namespace AudioDataPlugIn
         public void StartNewTransfer(int startpos, int length, bool testmode)
         {
             // Copy the current parameters to the objects variables
-			m_start_pos = startpos - (int)TOC[TOC.FirstAudio][0].Start;
-			m_length = length;
-			m_test_mode = testmode;
-			if (this.sequence_ok)
-			{
-				var thisAr = m_test_mode ? arTest : ar;
+            m_start_pos = startpos - (int)TOC[TOC.FirstAudio][0].Start;
+            m_length = length;
+            m_test_mode = testmode;
+            if (this.sequence_ok)
+            {
+                var thisAr = m_test_mode ? arTest : ar;
                 if (this.m_start_pos * 588 != thisAr.Position)
                 {
                     if (thisAr.Position == 0 && this.m_start_pos == (int)TOC[TOC.FirstAudio].Pregap)
@@ -173,7 +173,7 @@ namespace AudioDataPlugIn
                         this.sequence_ok = false;
                     }
                 }
-			}
+            }
         }
 
 
@@ -186,13 +186,13 @@ namespace AudioDataPlugIn
 
         public void TransferAudioData(Array audiodata)
         {
-			if (this.sequence_ok)
-			{
-				byte[] ad = (byte[])audiodata;
-				AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, ad, ad.Length / 4);
-				var thisAr = m_test_mode ? arTest : ar;
-				thisAr.Write(buff);
-			}
+            if (this.sequence_ok)
+            {
+                byte[] ad = (byte[])audiodata;
+                AudioBuffer buff = new AudioBuffer(AudioPCMConfig.RedBook, ad, ad.Length / 4);
+                var thisAr = m_test_mode ? arTest : ar;
+                thisAr.Write(buff);
+            }
         }
 
 
@@ -204,9 +204,9 @@ namespace AudioDataPlugIn
 
         public void TransferFinished()
         {
-			if (this.sequence_ok)
-			{
-				var thisAr = m_test_mode ? arTest : ar;
+            if (this.sequence_ok)
+            {
+                var thisAr = m_test_mode ? arTest : ar;
                 if ((m_start_pos + m_length) * 588 != thisAr.Position)
                 {
 #if DEBUG
@@ -214,8 +214,8 @@ namespace AudioDataPlugIn
 #endif
                     this.sequence_ok = false;
                 }
-			}
-		}
+            }
+        }
 
 
         // The extraction has finished, the log dialog will
@@ -225,9 +225,9 @@ namespace AudioDataPlugIn
         // an empty string, in that case no log output will be done!
         public string EndOfSession()
         {
-			StringWriter sw = new StringWriter();
-			if (this.sequence_ok)
-			{
+            StringWriter sw = new StringWriter();
+            if (this.sequence_ok)
+            {
                 if (TOC.AudioLength * 588 != ar.Position)
                 {
 #if DEBUG
@@ -242,7 +242,7 @@ namespace AudioDataPlugIn
 #endif
                     this.sequence_ok = false;
                 }
-			}
+            }
             if (!this.sequence_ok)
             {
 #if DEBUG
@@ -254,24 +254,25 @@ namespace AudioDataPlugIn
 #if DEBUG
             sw.Write(m_trace.ToString());
 #endif
-			if (this.sequence_ok)
-			{
-                var form = new FormSubmitParity(
-					ctdb,
-                    "EAC" + m_data.HostVersion + " CTDB 2.1.3",
-                    m_drivename,
+            if (this.sequence_ok)
+            {
 #if USEAR
-					(int)ar.WorstConfidence() + 1,
+				int conf = (int)ar.WorstConfidence() + 1;
 #else
-					1,
+                int conf = 1;
 #endif
-					(arTest.Position == 0 && this.is_secure_mode) || (arTest.Position != 0 && arTest.CRC32(0) == ar.CRC32(0)) ? 100 : 0,
-					m_data.AlbumArtist,
-					m_data.AlbumTitle);
-				form.ShowDialog();
-				sw.WriteLine("[CTDB TOCID: {0}] {1}",
-					TOC.TOCID, 
-					ctdb.DBStatus ?? "found");
+                var form = new FormSubmitParity(
+                    ctdb,
+                    "EAC" + m_data.HostVersion + " CTDB 2.1.4",
+                    m_drivename,
+                    conf,
+                    (arTest.Position == 0 && this.is_secure_mode) || (arTest.Position != 0 && arTest.CRC32(0) == ar.CRC32(0)) ? 100 : 0,
+                    m_data.AlbumArtist,
+                    m_data.AlbumTitle);
+                form.ShowDialog();
+                sw.WriteLine("[CTDB TOCID: {0}] {1}",
+                    TOC.TOCID,
+                    ctdb.DBStatus ?? "found");
                 if (ctdb.SubStatus != null)
                     sw.WriteLine("Submit result: " + ctdb.SubStatus);
 #if DEBUG
@@ -281,24 +282,24 @@ namespace AudioDataPlugIn
 #endif
                 int fixConf = -1;
                 int myConf = 0;
-				if (ctdb.QueryExceptionStatus == WebExceptionStatus.Success)
-				{
-					foreach (DBEntry entry in ctdb.Entries)
+                if (ctdb.QueryExceptionStatus == WebExceptionStatus.Success)
+                {
+                    foreach (DBEntry entry in ctdb.Entries)
                         if (!entry.hasErrors)
                             myConf += entry.conf;
                         else if (entry.canRecover)
                             fixConf = Math.Max(fixConf, entry.conf);
-				}
+                }
                 if (fixConf > myConf)
-					sw.WriteLine("If you are sure that your rip contains errors, you can use CUETools to repair it.");
-				
+                    sw.WriteLine("If you are sure that your rip contains errors, you can use CUETools to repair it.");
+
 #if USEAR
-				ar.GenerateFullLog(sw, false, ArId);
+                ar.GenerateFullLog(sw, false, ArId);
 #endif
-			}
-			else
-				sw.WriteLine("Some tracks have been skipped");
-			return sw.ToString();
+            }
+            else
+                sw.WriteLine("Some tracks have been skipped");
+            return sw.ToString();
         }
     }
 }

@@ -51,7 +51,7 @@ namespace AudioDataPlugIn
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(182, 17);
 			this.label1.TabIndex = 0;
-			this.label1.Text = "CUETools DB Plugin V2.1.3";
+			this.label1.Text = "CUETools DB Plugin V2.1.4";
 			// 
 			// label2
 			// 
@@ -60,7 +60,7 @@ namespace AudioDataPlugIn
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(307, 42);
 			this.label2.TabIndex = 1;
-			this.label2.Text = "Copyright (c) 2011 Gregory S. Chudov";
+			this.label2.Text = "Copyright (c) 2011-12 Gregory S. Chudov";
 			// 
 			// linkLabel1
 			// 
