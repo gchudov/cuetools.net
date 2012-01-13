@@ -319,7 +319,7 @@ namespace CUETools.CDImage
 		{
 			get
 			{
-				return _tracks[0].Pregap;
+                return _tracks[_firstAudio].Pregap;
 			}
 		}
 
@@ -368,7 +368,7 @@ namespace CUETools.CDImage
 		{
 			get
 			{
-				return AudioTracks > 0 ? _tracks[_firstAudio + _audioTracks - 1].End + 1U - _tracks[_firstAudio].Start + _tracks[_firstAudio].Pregap : 0U;
+				return AudioTracks > 0 ? _tracks[_firstAudio + _audioTracks - 1].End + 1U - _tracks[_firstAudio][0].Start : 0U;
 			}
 		}
 
