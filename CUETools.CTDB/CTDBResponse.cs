@@ -10,6 +10,6 @@ namespace CUETools.CTDB
         [XmlElement]
         public CTDBResponseEntry[] entry;
         [XmlElement]
-        public CTDBResponseMeta[] musicbrainz;
+        public CTDBResponseMeta[] metadata;
     }
 }

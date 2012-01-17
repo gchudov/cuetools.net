@@ -59,6 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CTDBResponseMetaImage.cs" />
     <Compile Include="CTDBSubmitResponse.cs" />
     <Compile Include="CTDBMetadataSearch.cs" />
     <Compile Include="CTDBResponse.cs" />

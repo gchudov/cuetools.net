@@ -31,11 +31,11 @@ namespace CUETools.CTDB
         [XmlAttribute]
         public string discname { get; set; }
         [XmlAttribute]
-        public string coverarturl { get; set; }
-        [XmlAttribute]
         public string infourl { get; set; }
         [XmlAttribute]
         public string barcode { get; set; }
+        [XmlElement]
+        public CTDBResponseMetaImage[] coverart;
         [XmlElement]
         public CTDBResponseMetaTrack[] track;
         [XmlElement]

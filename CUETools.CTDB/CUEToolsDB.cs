@@ -65,8 +65,9 @@ namespace CUETools.CTDB
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase
 				+ "/lookup2.php"
-				+ "?ctdb=" + (ctdb ? "2" : "0")
-				+ "&fuzzy=" + (fuzzy ? 1 : 0)
+                + "?version=2"
+                + "&ctdb=" + (ctdb ? 1 : 0)
+                + "&fuzzy=" + (fuzzy ? 1 : 0)
 				+ "&metadata=" + (metadataSearch == CTDBMetadataSearch.None ? "none" : metadataSearch == CTDBMetadataSearch.Fast ? "fast" : metadataSearch == CTDBMetadataSearch.Default ? "default" : "extensive")
 				+ "&toc=" + toc.ToString());
 			req.Method = "GET";
@@ -102,8 +103,8 @@ namespace CUETools.CTDB
                                     var entry = new DBEntry(ctdbRespEntry);
 									entries.Add(entry);
 								}
-							if (ctdbResp.musicbrainz != null && ctdbResp.musicbrainz.Length != 0)
-								metadata.AddRange(ctdbResp.musicbrainz);
+							if (ctdbResp.metadata != null && ctdbResp.metadata.Length != 0)
+								metadata.AddRange(ctdbResp.metadata);
 						}
 						if (entries.Count == 0)
 							this.QueryResponseStatus = HttpStatusCode.NotFound;

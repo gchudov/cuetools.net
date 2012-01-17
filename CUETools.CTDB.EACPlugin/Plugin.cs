@@ -302,4 +302,26 @@ namespace AudioDataPlugIn
             return sw.ToString();
         }
     }
+
+    //private NativeWindow GetWindowFromHost(int hwnd)
+    //{
+    //   IntPtr handle = new IntPtr(hwnd);
+    //   NativeWindow nativeWindow = new NativeWindow();
+    //   nativeWindow.AssignHandle(handle);
+    //   return window;
+    //}
+    //NativeWindow parentWindow = GetWindowFromHwnd(hwnd);
+    //try
+    //{
+    //   launchTarget.ShowDialog(parentWindow);
+    //}
+    //finally
+    //{
+    //   parentWindow.ReleaseHandle();
+    //}
+    //internal class WindowWrapper : System.Windows.Forms.IWin32Window
+    //{
+    //    public IntPtr Handle { get; private set; }
+    //    public WindowWrapper(IntPtr hwnd) { Handle = hwnd; }
+    //}
 }

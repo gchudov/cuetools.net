@@ -76,6 +76,13 @@
     <Compile Include="FormMetadata.Designer.cs">
       <DependentUpon>FormMetadata.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImagePreview.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ImagePreview.designer.cs">
+      <DependentUpon>ImagePreview.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InternetImage.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Options.cs">
@@ -97,6 +104,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormMetadata.resx">
       <DependentUpon>FormMetadata.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImagePreview.resx">
+      <DependentUpon>ImagePreview.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
@@ -149,6 +159,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\document-save_12.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

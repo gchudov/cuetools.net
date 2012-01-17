@@ -61,6 +61,7 @@ namespace CUETools.CTDB.EACPlugin
 		{
 			this.progressBar1.Style = e.ProgressPercentage != 0 ? ProgressBarStyle.Continuous : ProgressBarStyle.Marquee;
 			this.progressBar1.Value = Math.Max(0, Math.Min(100, e.ProgressPercentage));
+            this.labelStatus.Text = e.UserState is string ? e.UserState as string : string.Empty;
 		}
 
 		private void FormSubmitParity_FormClosing(object sender, FormClosingEventArgs e)
