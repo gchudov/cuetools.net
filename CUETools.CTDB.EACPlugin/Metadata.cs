@@ -12,6 +12,7 @@ using CUETools.Codecs;
 using CUETools.CTDB;
 using CUETools.CTDB.EACPlugin.Properties;
 using System.Drawing.Imaging;
+using AudioDataPlugIn;
 
 namespace MetadataPlugIn
 {
@@ -24,6 +25,9 @@ namespace MetadataPlugIn
     {
         public bool GetCDInformation(CCDMetadata data, bool cdinfo, bool cover, bool lyrics)
         {
+            if (Options.CoversSearch == CTDBCoversSearch.None)
+                cover = false;
+
             if (!cdinfo && !cover)
                 return false;
 

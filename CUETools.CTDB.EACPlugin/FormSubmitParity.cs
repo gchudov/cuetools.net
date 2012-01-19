@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using CUETools.CTDB.EACPlugin.Properties;
+using System.IO;
 
 namespace CUETools.CTDB.EACPlugin
 {
@@ -14,6 +15,7 @@ namespace CUETools.CTDB.EACPlugin
 		private CUEToolsDB ctdb;
 		private int confidence, quality;
 		private string artist, title, agent, drivename;
+        private CTDBResponse resp;
 
 		public FormSubmitParity(CUEToolsDB ctdb, string agent, string drivename, int confidence, int quality, string artist, string title)
 		{
@@ -41,19 +43,41 @@ namespace CUETools.CTDB.EACPlugin
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             this.ctdb.UploadHelper.onProgress += UploadProgress;
+            if (resp == null)
+            {
 #if DEBUG
-            string server = "hq.cuetools.net";
+                string server = "hq.cuetools.net";
 #else
-            string server = null;
+                string server = null;
 #endif
-            this.ctdb.ContactDB(server, this.agent, this.drivename, true, true, CTDBMetadataSearch.None);
-            this.ctdb.DoVerify();
-            this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title, null);
+                this.ctdb.ContactDB(server, this.agent, this.drivename, true, true, CTDBMetadataSearch.None);
+                this.ctdb.DoVerify();
+                resp = this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title, null);
+            } else
+            {
+                var url = resp.updateurl;
+                resp = null;
+                var temp = Path.GetTempPath() + Path.GetFileName(url.Substring(url.LastIndexOf('/') + 1));
+                bool ok = false;
+                using (var stream = new FileStream(temp, FileMode.Create))
+                    ok = this.ctdb.FetchFile(url, stream);
+                if (ok)
+                    System.Diagnostics.Process.Start(temp);
+            }
             this.ctdb.UploadHelper.onProgress -= UploadProgress;
         }
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
+            if (resp != null && resp.updateurl != null)
+            {
+                DialogResult mb = MessageBox.Show(this, (resp.updatemsg ?? "") + " Do you wish to download and install it?", "An updated version of CTDB plugin is available", MessageBoxButtons.OKCancel);
+                if (mb == DialogResult.OK)
+                {
+                    this.backgroundWorker1.RunWorkerAsync();
+                    return;
+                }
+            }
 			this.DialogResult = DialogResult.OK;
 		}
 

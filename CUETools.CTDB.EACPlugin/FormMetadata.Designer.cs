@@ -150,6 +150,7 @@
             this.Padding = new System.Windows.Forms.Padding(10);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "CTDB Metadata Lookup";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMetadata_FormClosing);
             this.Load += new System.EventHandler(this.FormMetadata_Load);
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);

@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using CUETools.CTDB.EACPlugin.Properties;
 using System.Net;
 using System.IO;
+using AudioDataPlugIn;
 
 namespace CUETools.CTDB.EACPlugin
 {
@@ -25,6 +26,7 @@ namespace CUETools.CTDB.EACPlugin
             this.cdinfo = cdinfo;
             this.cover = cover;
             this.InitializeComponent();
+            this.Size = Options.MetadataWindowSize;
         }
 
         public CTDBResponseMeta Meta
@@ -62,54 +64,37 @@ namespace CUETools.CTDB.EACPlugin
 #endif
             this.ctdb.ContactDB(server, this.agent, null, false, false,
                 AudioDataPlugIn.Options.MetadataSearch);
-            foreach (var metadata in ctdb.Metadata)
+            if (this.cdinfo)
             {
-                backgroundWorker1.ReportProgress(0, metadata);
+                foreach (var metadata in ctdb.Metadata)
+                {
+                    backgroundWorker1.ReportProgress(0, metadata);
+                }
             }
             var knownUrls = new List<string>();
             foreach (var metadata in ctdb.Metadata)
             {
                 if (metadata.coverart == null || !this.cover)
                     continue;
+                if (!this.cdinfo)
+                {
+                    backgroundWorker1.ReportProgress(0, metadata);
+                }
                 foreach (var coverart in metadata.coverart)
                 {
-                    if (knownUrls.Contains(coverart.uri) || !coverart.primary)
+                    var uri = Options.CoversSearch == CTDBCoversSearch.Large ?
+                        coverart.uri : coverart.uri150 ?? coverart.uri;
+                    if (knownUrls.Contains(uri) || !coverart.primary)
                         continue;
-                    try
-                    {
-                        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(coverart.uri);
-                        req.Method = "GET";
-                        //req.Proxy = proxy;
-                        //req.UserAgent = this.userAgent;
-                        //req.Timeout = connectTimeout;
-                        //req.ReadWriteTimeout = socketTimeout;
-                        using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
-                        {
-                            if (resp.StatusCode != HttpStatusCode.OK)
-                                continue;
-                            using (var responseStream = resp.GetResponseStream())
-                            using (var reader = new BinaryReader(responseStream))
-                            {
-                                MemoryStream ms = new MemoryStream();
-                                var buf = new byte[4096];
-                                do
-                                {
-                                    int len = responseStream.Read(buf, 0, buf.Length);
-                                    if (len <= 0) break;
-                                    ms.Write(buf, 0, len);
-                                } while (true);
-                                var img = new InternetImage();
-                                img.URL = coverart.uri;
-                                img.Data = ms.ToArray();
-                                img.Image = new Bitmap(ms);
-                                knownUrls.Add(coverart.uri);
-                                backgroundWorker1.ReportProgress(0, img);
-                            }
-                        }
-                    }
-                    catch
-                    {
-                    }
+                    var ms = new MemoryStream();
+                    if (!this.ctdb.FetchFile(uri, ms))
+                        continue;
+                    var img = new InternetImage();
+                    img.URL = uri;
+                    img.Data = ms.ToArray();
+                    img.Image = new Bitmap(ms);
+                    knownUrls.Add(uri);
+                    backgroundWorker1.ReportProgress(0, img);
                 }
             }
         }
@@ -214,21 +199,32 @@ namespace CUETools.CTDB.EACPlugin
             this.progressBar1.Visible = false;
             this.button1.Visible = true;
             this.button2.Visible = true;
-            if (listView1.Items.Count == 0)
+            if (listView1.Items.Count == 0 && flowLayoutPanel1.Controls.Count == 0)
             {
                 this.DialogResult = DialogResult.Cancel;
                 return;
             }
-            listView1.Items[0].Selected = true;
-            if (listView1.Items.Count == 1)
+            if (listView1.Items.Count > 0)
+                listView1.Items[0].Selected = true;
+            if (flowLayoutPanel1.Controls.Count > 0 && m_currently_selected == null)
+            {
+                m_currently_selected = flowLayoutPanel1.Controls[0] as ImagePreview;
+                m_currently_selected.Selected = true;
+            }
+            if ((!this.cdinfo || listView1.Items.Count == 1) && (!this.cover || flowLayoutPanel1.Controls.Count == 1))
+            {
                 this.DialogResult = DialogResult.OK;
+            }
         }
 
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            var ht = listView1.HitTest(e.Location);
-            if (ht.Item != null)
-                this.DialogResult = DialogResult.OK;
+            if (this.cdinfo)
+            {
+                var ht = listView1.HitTest(e.Location);
+                if (ht.Item != null)
+                    this.DialogResult = DialogResult.OK;
+            }
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -271,6 +267,11 @@ namespace CUETools.CTDB.EACPlugin
                 listView1.Items.Add(new ListViewItem(text) { Tag = metadata, ImageKey = metadata.source, ToolTipText = tip.ToString() });
                 this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             }
+        }
+
+        private void FormMetadata_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Options.MetadataWindowSize = this.Size;
         }
     }
 }

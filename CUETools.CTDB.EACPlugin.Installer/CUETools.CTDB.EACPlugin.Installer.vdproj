@@ -15,32 +15,38 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_404CDECAD44DEDE89F5968D20B9790D4"
-        "OwnerKey" = "8:_5C38BA7F54E368532D5699479E787C04"
+        "MsmKey" = "8:_23A6BB18C5C16459B31F4387E1637805"
+        "OwnerKey" = "8:_7A5E0041DC75098C30D459114A6DEE81"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_404CDECAD44DEDE89F5968D20B9790D4"
-        "OwnerKey" = "8:_D773630141C71B97B8E286CAB5D6745D"
+        "MsmKey" = "8:_23A6BB18C5C16459B31F4387E1637805"
+        "OwnerKey" = "8:_EDC6E0710402166D3365BDE71ABA595A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_404CDECAD44DEDE89F5968D20B9790D4"
+        "MsmKey" = "8:_23A6BB18C5C16459B31F4387E1637805"
         "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_5C38BA7F54E368532D5699479E787C04"
+        "MsmKey" = "8:_504F307A54097796FB92030AEBB7329B"
         "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_5C38BA7F54E368532D5699479E787C04"
-        "OwnerKey" = "8:_D773630141C71B97B8E286CAB5D6745D"
+        "MsmKey" = "8:_7A5E0041DC75098C30D459114A6DEE81"
+        "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7A5E0041DC75098C30D459114A6DEE81"
+        "OwnerKey" = "8:_EDC6E0710402166D3365BDE71ABA595A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -51,32 +57,20 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_88C1C00C7C570D8CCF5DFB2742F06623"
-        "OwnerKey" = "8:_5C38BA7F54E368532D5699479E787C04"
+        "MsmKey" = "8:_A387AADC261164D68ABC68DA3BD54FF7"
+        "OwnerKey" = "8:_7A5E0041DC75098C30D459114A6DEE81"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_88C1C00C7C570D8CCF5DFB2742F06623"
+        "MsmKey" = "8:_A387AADC261164D68ABC68DA3BD54FF7"
         "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_C8D6D24D8A62DE5D9BD6EBE19184F81B"
-        "OwnerKey" = "8:_5C38BA7F54E368532D5699479E787C04"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C8D6D24D8A62DE5D9BD6EBE19184F81B"
-        "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_D773630141C71B97B8E286CAB5D6745D"
-        "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
+        "MsmKey" = "8:_A387AADC261164D68ABC68DA3BD54FF7"
+        "OwnerKey" = "8:_EDC6E0710402166D3365BDE71ABA595A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -87,7 +81,19 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_FCE5A5A259EDA6827D332455737A9470"
+        "MsmKey" = "8:_EA17591A9F261678B36DFC7E72DFC398"
+        "OwnerKey" = "8:_7A5E0041DC75098C30D459114A6DEE81"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_EA17591A9F261678B36DFC7E72DFC398"
+        "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_EDC6E0710402166D3365BDE71ABA595A"
         "OwnerKey" = "8:_82CE165AE35A4FB48DF2F4F7C072C14C"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -100,37 +106,37 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_FCE5A5A259EDA6827D332455737A9470"
+        "OwnerKey" = "8:_EDC6E0710402166D3365BDE71ABA595A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_D773630141C71B97B8E286CAB5D6745D"
+        "OwnerKey" = "8:_7A5E0041DC75098C30D459114A6DEE81"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5C38BA7F54E368532D5699479E787C04"
+        "OwnerKey" = "8:_A387AADC261164D68ABC68DA3BD54FF7"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C8D6D24D8A62DE5D9BD6EBE19184F81B"
+        "OwnerKey" = "8:_EA17591A9F261678B36DFC7E72DFC398"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_88C1C00C7C570D8CCF5DFB2742F06623"
+        "OwnerKey" = "8:_23A6BB18C5C16459B31F4387E1637805"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_404CDECAD44DEDE89F5968D20B9790D4"
+        "OwnerKey" = "8:_504F307A54097796FB92030AEBB7329B"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -145,7 +151,7 @@
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
-        "Compression" = "3:2"
+        "Compression" = "3:3"
         "SignOutput" = "11:FALSE"
         "CertificateFile" = "8:"
         "PrivateKeyFile" = "8:"
@@ -153,11 +159,24 @@
         "InstallerBootstrapper" = "3:2"
             "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
             {
-            "Enabled" = "11:TRUE"
+            "Enabled" = "11:FALSE"
             "PromptEnabled" = "11:TRUE"
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.0,Profile=Client"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4 Client Profile (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.0,Profile=Client"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
         "Release"
@@ -177,7 +196,7 @@
         "InstallerBootstrapper" = "3:2"
             "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
             {
-            "Enabled" = "11:TRUE"
+            "Enabled" = "11:FALSE"
             "PromptEnabled" = "11:TRUE"
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
@@ -217,7 +236,7 @@
                 {
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
-                "Version" = "8:3.5.30729"
+                "FrameworkVersion" = "8:.NETFramework,Version=v2.0"
                 "AllowLaterVersions" = "11:FALSE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=76617"
                 }
@@ -225,14 +244,14 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_404CDECAD44DEDE89F5968D20B9790D4"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_23A6BB18C5C16459B31F4387E1637805"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:CUETools.CDImage, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_404CDECAD44DEDE89F5968D20B9790D4"
+                    "_23A6BB18C5C16459B31F4387E1637805"
                     {
                     "Name" = "8:CUETools.CDImage.dll"
                     "Attributes" = "3:512"
@@ -256,14 +275,45 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5C38BA7F54E368532D5699479E787C04"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_504F307A54097796FB92030AEBB7329B"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Interop.HelperFunctionsLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_504F307A54097796FB92030AEBB7329B"
+                    {
+                    "Name" = "8:Interop.HelperFunctionsLib.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:Interop.HelperFunctionsLib.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_B6AE380AE9784D55925E5A2F6CEC6447"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7A5E0041DC75098C30D459114A6DEE81"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:CUETools.AccurateRip, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_5C38BA7F54E368532D5699479E787C04"
+                    "_7A5E0041DC75098C30D459114A6DEE81"
                     {
                     "Name" = "8:CUETools.AccurateRip.dll"
                     "Attributes" = "3:512"
@@ -287,82 +337,20 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_88C1C00C7C570D8CCF5DFB2742F06623"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:CUETools.Codecs, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_88C1C00C7C570D8CCF5DFB2742F06623"
-                    {
-                    "Name" = "8:CUETools.Codecs.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:CUETools.Codecs.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_B6AE380AE9784D55925E5A2F6CEC6447"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C8D6D24D8A62DE5D9BD6EBE19184F81B"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_A387AADC261164D68ABC68DA3BD54FF7"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:CUETools.Parity, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_C8D6D24D8A62DE5D9BD6EBE19184F81B"
+                    "_A387AADC261164D68ABC68DA3BD54FF7"
                     {
                     "Name" = "8:CUETools.Parity.dll"
                     "Attributes" = "3:512"
                     }
                 }
             "SourcePath" = "8:CUETools.Parity.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_B6AE380AE9784D55925E5A2F6CEC6447"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_D773630141C71B97B8E286CAB5D6745D"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:CUETools.CTDB, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_D773630141C71B97B8E286CAB5D6745D"
-                    {
-                    "Name" = "8:CUETools.CTDB.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:CUETools.CTDB.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_B6AE380AE9784D55925E5A2F6CEC6447"
@@ -400,20 +388,20 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_FCE5A5A259EDA6827D332455737A9470"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_EA17591A9F261678B36DFC7E72DFC398"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Interop.HelperFunctionsLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:CUETools.Codecs, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_FCE5A5A259EDA6827D332455737A9470"
+                    "_EA17591A9F261678B36DFC7E72DFC398"
                     {
-                    "Name" = "8:Interop.HelperFunctionsLib.dll"
+                    "Name" = "8:CUETools.Codecs.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:Interop.HelperFunctionsLib.dll"
+            "SourcePath" = "8:CUETools.Codecs.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_B6AE380AE9784D55925E5A2F6CEC6447"
@@ -427,7 +415,38 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_EDC6E0710402166D3365BDE71ABA595A"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:CUETools.CTDB, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_EDC6E0710402166D3365BDE71ABA595A"
+                    {
+                    "Name" = "8:CUETools.CTDB.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:CUETools.CTDB.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_B6AE380AE9784D55925E5A2F6CEC6447"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -488,14 +507,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:EAC CTDB Plugin"
-        "ProductCode" = "8:{808BD9EB-533A-4405-8464-5AACC9B0C6DD}"
-        "PackageCode" = "8:{6EE86F90-4EFF-43A1-B7FC-F25E1686A65F}"
+        "ProductCode" = "8:{E9DACE0D-CD24-469D-9B14-FCFD90866E10}"
+        "PackageCode" = "8:{BDACE2AD-10B4-42EF-9F36-5A1FA7F964AD}"
         "UpgradeCode" = "8:{E416086B-D9D3-424C-AAEB-397EC05ECF69}"
+        "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
-        "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:2.1.3"
+        "InstallAllUsers" = "11:TRUE"
+        "ProductVersion" = "8:2.1.4"
         "Manufacturer" = "8:Grigory Chudov"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://www.cuetools.net"

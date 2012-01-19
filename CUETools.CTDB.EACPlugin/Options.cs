@@ -8,12 +8,21 @@ using System.Windows.Forms;
 using CUETools.CTDB.EACPlugin.Properties;
 using CUETools.CTDB;
 using Microsoft.Win32;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace AudioDataPlugIn
 {
+    public enum CTDBCoversSearch
+    {
+        Large,
+        Small,
+        None
+    }
+
     public partial class Options : Form
     {
 		private static CTDBMetadataSearch? metadataSearch = null;
+        private static CTDBCoversSearch? coversSearch = null;
 		private static string optionsKey = @"SOFTWARE\CUETools\EACPugin";
 		public static CTDBMetadataSearch MetadataSearch
 		{
@@ -26,12 +35,10 @@ namespace AudioDataPlugIn
 						using (var key = Registry.CurrentUser.OpenSubKey(optionsKey, false))
 						{
 							var val = key.GetValue("MetadataSearch") as string;
-							if (val == "Default") metadataSearch = CTDBMetadataSearch.Default;
-							if (val == "Fast") metadataSearch = CTDBMetadataSearch.Fast;
-							if (val == "Extensive") metadataSearch = CTDBMetadataSearch.Extensive;
+                            metadataSearch = (CTDBMetadataSearch)Enum.Parse(typeof(CTDBMetadataSearch), val);
 						}
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
 					}
 				}
@@ -50,6 +57,68 @@ namespace AudioDataPlugIn
 			}
 		}
 
+        public static CTDBCoversSearch CoversSearch
+        {
+            get
+            {
+                if (!coversSearch.HasValue)
+                {
+                    try
+                    {
+                        using (var key = Registry.CurrentUser.OpenSubKey(optionsKey, false))
+                        {
+                            var val = key.GetValue("CoversSearch") as string;
+                            coversSearch = (CTDBCoversSearch)Enum.Parse(typeof(CTDBCoversSearch), val);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                return coversSearch ?? CTDBCoversSearch.Small;
+            }
+
+            set
+            {
+                using (var key = Registry.CurrentUser.CreateSubKey(optionsKey))
+                {
+                    key.SetValue("CoversSearch", value.ToString());
+                }
+
+                coversSearch = value;
+            }
+        }
+
+        public static Size MetadataWindowSize
+        {
+            get
+            {
+                try
+                {
+                    using (var key = Registry.CurrentUser.OpenSubKey(optionsKey, false))
+                    {
+                        var val = key.GetValue("MetadataWindowSize") as string;
+                        return (Size)TypeDescriptor.GetConverter(typeof(Size)).ConvertFromInvariantString(val);
+                    }
+                }
+                catch (Exception)
+                {
+                }
+
+                return new Size();
+            }
+
+            set
+            {
+                using (var key = Registry.CurrentUser.CreateSubKey(optionsKey))
+                {
+                    var val = TypeDescriptor.GetConverter(value.GetType()).ConvertToInvariantString(value);
+                    key.SetValue("MetadataWindowSize", val);
+                }
+            }
+        }
+
         public Options()
         {
             this.InitializeComponent();
@@ -66,6 +135,9 @@ namespace AudioDataPlugIn
 			this.radioButtonMBExtensive.Checked = MetadataSearch == CTDBMetadataSearch.Extensive;
 			this.radioButtonMBDefault.Checked = MetadataSearch == CTDBMetadataSearch.Default;
 			this.radioButtonMBFast.Checked = MetadataSearch == CTDBMetadataSearch.Fast;
+            this.radioButtonCoversLarge.Checked = CoversSearch == CTDBCoversSearch.Large;
+            this.radioButtonCoversSmall.Checked = CoversSearch == CTDBCoversSearch.Small;
+            this.radioButtonCoversNone.Checked = CoversSearch == CTDBCoversSearch.None;
 		}
 
 		private void button2_Click(object sender, EventArgs e)
@@ -74,6 +146,9 @@ namespace AudioDataPlugIn
 				: this.radioButtonMBDefault.Checked ? CTDBMetadataSearch.Default
 				: this.radioButtonMBFast.Checked ? CTDBMetadataSearch.Fast
 				: CTDBMetadataSearch.None;
-		}
+            Options.CoversSearch = this.radioButtonCoversLarge.Checked ? CTDBCoversSearch.Large
+                : this.radioButtonCoversSmall.Checked ? CTDBCoversSearch.Small
+                : CTDBCoversSearch.None;
+        }
     }
 }

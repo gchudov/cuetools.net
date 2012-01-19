@@ -20,6 +20,12 @@ namespace CUETools.CTDB
         public string status { get; set; }
 
         [XmlAttribute]
+        public string updateurl { get; set; }
+
+        [XmlAttribute]
+        public string updatemsg { get; set; }
+
+        [XmlAttribute]
         public string message { get; set; }
 
         [XmlAttribute]

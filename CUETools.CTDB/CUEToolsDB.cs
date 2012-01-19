@@ -87,6 +87,7 @@ namespace CUETools.CTDB
 				{
 					this.QueryExceptionStatus = WebExceptionStatus.ProtocolError;
 					this.QueryResponseStatus = resp.StatusCode;
+                    this.QueryExceptionMessage = resp.StatusDescription;
 					if (this.QueryResponseStatus == HttpStatusCode.OK)
 					{
 						XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
@@ -117,8 +118,11 @@ namespace CUETools.CTDB
 			{
 				this.QueryExceptionStatus = ex.Status;
 				this.QueryExceptionMessage = ex.Message;
-				if (this.QueryExceptionStatus == WebExceptionStatus.ProtocolError)
-					this.QueryResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
+                if (this.QueryExceptionStatus == WebExceptionStatus.ProtocolError)
+                {
+                    this.QueryResponseStatus = (ex.Response as HttpWebResponse).StatusCode;
+                    this.QueryExceptionMessage = (ex.Response as HttpWebResponse).StatusDescription;
+                }
 			}
 			catch (Exception ex)
 			{
@@ -130,6 +134,50 @@ namespace CUETools.CTDB
 				currentReq = null;
 			}
 		}
+
+        public bool FetchFile(string url, Stream output)
+        {
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+            req.Method = "GET";
+            req.Proxy = proxy;
+            req.UserAgent = this.userAgent;
+            req.Timeout = connectTimeout;
+            req.ReadWriteTimeout = socketTimeout;
+            req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+
+            currentReq = req;
+            try
+            {
+                using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
+                {
+                    if (resp.StatusCode != HttpStatusCode.OK)
+                        return false;
+                    using (Stream responseStream = resp.GetResponseStream())
+                    {
+                        var buf = new byte[4096];
+                        int pos = 0;
+                        do
+                        {
+                            if (uploadHelper.onProgress != null)
+                                uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, ((double)pos) / resp.ContentLength));
+                            int len = responseStream.Read(buf, 0, buf.Length);
+                            if (len <= 0) break;
+                            output.Write(buf, 0, len);
+                            pos += len;
+                        } while (true);
+                        return true;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                currentReq = null;
+            }
+            return false;
+        }
 
 		public ushort[,] FetchDB(DBEntry entry, int npar, ushort[,] syn)
 		{
@@ -230,12 +278,12 @@ namespace CUETools.CTDB
 			return uuidInfo;
 		}
 
-		public string Submit(int confidence, int quality, string artist, string title, string barcode)
+		public CTDBResponse Submit(int confidence, int quality, string artist, string title, string barcode)
 		{
 			if (this.QueryExceptionStatus != WebExceptionStatus.Success &&
 				(this.QueryExceptionStatus != WebExceptionStatus.ProtocolError || this.QueryResponseStatus != HttpStatusCode.NotFound))
-				return this.DBStatus;
-            CTDBSubmitResponse resp = null;
+				return null;
+            CTDBResponse resp = null;
             subResult = "";
             var confirms = this.MatchingEntries;
             if (confirms.Count > 0)
@@ -248,16 +296,16 @@ namespace CUETools.CTDB
                         resp = DoSubmit(confidence, quality, artist, title, barcode, true, confirm, Math.Min(AccurateRipVerify.maxNpar, resp.npar));
                     subResult = subResult + (subResult == "" ? "" : ", ") + resp.message;
                 }
-                return subResult;
+                return resp;
             }
             resp = DoSubmit(confidence, quality, artist, title, barcode, false, null, AccurateRipVerify.maxNpar);
 			if (resp.ParityNeeded)
 				resp = DoSubmit(confidence, quality, artist, title, barcode, true, null, Math.Min(AccurateRipVerify.maxNpar, resp.npar));
             subResult = resp.message;
-            return subResult;
+            return resp;
 		}
 
-        protected CTDBSubmitResponse DoSubmit(int confidence, int quality, string artist, string title, string barcode, bool upload, DBEntry confirm, int npar)
+        protected CTDBResponse DoSubmit(int confidence, int quality, string artist, string title, string barcode, bool upload, DBEntry confirm, int npar)
         {
             var files = new List<UploadFile>();
             long maxId = 0;
@@ -330,23 +378,23 @@ namespace CUETools.CTDB
                     {
                         using (Stream s = resp.GetResponseStream())
                         {
-                            var serializer = new XmlSerializer(typeof(CTDBSubmitResponse));
-                            return serializer.Deserialize(s) as CTDBSubmitResponse;
+                            var serializer = new XmlSerializer(typeof(CTDBResponse));
+                            return serializer.Deserialize(s) as CTDBResponse;
                         }
                     }
                     else
                     {
-                        return new CTDBSubmitResponse() { status = "database access error", message = resp.StatusCode.ToString() };
+                        return new CTDBResponse() { status = "database access error", message = resp.StatusCode.ToString() };
                     }
                 }
             }
             catch (WebException ex)
             {
-                return new CTDBSubmitResponse() { status = "database access error", message = ex.Message ?? ex.Status.ToString() };
+                return new CTDBResponse() { status = "database access error", message = ex.Message ?? ex.Status.ToString() };
             }
             catch (Exception ex)
             {
-                return new CTDBSubmitResponse() { status = "database access error", message = ex.Message };
+                return new CTDBResponse() { status = "database access error", message = ex.Message };
             }
             finally
             {
@@ -462,7 +510,7 @@ namespace CUETools.CTDB
 			{
 				return QueryExceptionStatus == WebExceptionStatus.Success ? null :
 					QueryExceptionStatus != WebExceptionStatus.ProtocolError ? ("database access error: " + (QueryExceptionMessage ?? QueryExceptionStatus.ToString())) :
-					QueryResponseStatus != HttpStatusCode.NotFound ? "database access error: " + QueryResponseStatus.ToString() :
+					QueryResponseStatus != HttpStatusCode.NotFound ? "database access error: " + (QueryExceptionMessage ?? QueryResponseStatus.ToString()) :
 					"disk not present in database";
 			}
 		}
