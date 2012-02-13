@@ -91,6 +91,12 @@
     <Compile Include="frmFreedbSubmit.Designer.cs">
       <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
     </Compile>
+    <Compile Include="Options.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Options.Designer.cs">
+      <DependentUpon>Options.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="frmCUERipper.de-DE.resx">
@@ -105,6 +111,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmFreedbSubmit.resx">
       <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Options.resx">
+      <DependentUpon>Options.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -235,6 +244,7 @@
     <Content Include="Plugins\CUETools.Codecs.FlaCuda.dll" />
     <Content Include="Plugins\CUETools.Codecs.FLAKE.dll" />
     <Content Include="Plugins\CUETools.Ripper.SCSI.dll" />
+    <None Include="Resources\cog.ico" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\DataSources\frmFreedbSubmitData.datasource" />
     <None Include="Resources\freedb16.png" />

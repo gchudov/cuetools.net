@@ -158,7 +158,6 @@ namespace CUERipper
 				bnComboBoxOutputFormat.Items.Add(sr.Load(string.Format("OutputPathUseTemplate{0}", iFormat)) ?? "");
 
 			bnComboBoxOutputFormat.Text = sr.Load("PathFormat") ?? "%music%\\%artist%\\[%year% - ]%album%\\%artist% - %album%.cue";
-			checkBoxEACMode.Checked = _config.createEACLOG;
 			SelectedOutputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? AudioEncoderType.Lossless;
 			bnComboBoxImage.SelectedIndex = sr.LoadInt32("ComboImage", 0, bnComboBoxImage.Items.Count - 1) ?? 0;
 			trackBarSecureMode.Value = sr.LoadInt32("SecureMode", 0, trackBarSecureMode.Maximum - 1) ?? 1;
@@ -303,6 +302,7 @@ namespace CUERipper
 			buttonEncoding.Enabled = data.selectedRelease != null && !running &&
 				data.selectedRelease.ImageKey == "freedb" && (new CUEMetadata(data.selectedRelease.metadata)).FreedbToEncoding();
 			buttonReload.Enabled = data.selectedRelease != null && !running;
+            buttonSettings.Enabled = !running;
 		}
 
 		private void CheckStop()
@@ -587,9 +587,10 @@ namespace CUERipper
 			CheckStop();
 			//_progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
 			//_progress.input = e.Uri.ToString();
+            string text = Properties.Resources.LookingUpVia + " FreeDB..." + (sender is string ? " " + (sender as string) : "");
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
-				toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " FreeDB...";
+				toolStripStatusLabel1.Text = text;
 				toolStripProgressBar1.Value = (100 + 2 * toolStripProgressBar1.Value) / 3;
 			});
 		}
@@ -643,7 +644,7 @@ namespace CUERipper
             cueSheet.Action = CUEAction.Encode;
 
             this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-            cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, false, CTDBMetadataSearch.Default);
+            cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, false, loadAllMetadata ? CTDBMetadataSearch.Extensive : _config.advanced.metadataSearch);
             cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
             this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
             cueSheet.UseAccurateRip();
@@ -717,13 +718,20 @@ namespace CUERipper
                     code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(audioSource.TOC), out queryResult, out coll);
                     if (code == FreedbHelper.ResponseCodes.CODE_200)
                     {
-                        CDEntry cdEntry;
-                        FreeDB_LookupProgress(this);
-                        code = m_freedb.Read(queryResult, out cdEntry);
-                        if (code == FreedbHelper.ResponseCodes.CODE_210)
+                        bool duplicate = false;
+                        foreach (var ctdbMeta in cueSheet.CTDB.Metadata)
+                            if (ctdbMeta.source == "freedb" && ctdbMeta.id == queryResult.Category + "/" + queryResult.Discid)
+                                duplicate = true;
+                        if (!duplicate)
                         {
-                            CUEMetadataEntry r = CreateCUESheet(audioSource, cdEntry);
-                            data.Releases.Add(r);
+                            FreeDB_LookupProgress(queryResult.Category + "/" + queryResult.Discid);
+                            CDEntry cdEntry;
+                            code = m_freedb.Read(queryResult, out cdEntry);
+                            if (code == FreedbHelper.ResponseCodes.CODE_210)
+                            {
+                                CUEMetadataEntry r = CreateCUESheet(audioSource, cdEntry);
+                                data.Releases.Add(r);
+                            }
                         }
                     }
                     else
@@ -732,13 +740,20 @@ namespace CUERipper
                         {
                             foreach (QueryResult qr in coll)
                             {
-                                CDEntry cdEntry;
-                                FreeDB_LookupProgress(this);
-                                code = m_freedb.Read(qr, out cdEntry);
-                                if (code == FreedbHelper.ResponseCodes.CODE_210)
+                                bool duplicate = false;
+                                foreach (var ctdbMeta in cueSheet.CTDB.Metadata)
+                                    if (ctdbMeta.source == "freedb" && ctdbMeta.id == qr.Category + "/" + qr.Discid)
+                                        duplicate = true;
+                                if (!duplicate)
                                 {
-                                    CUEMetadataEntry r = CreateCUESheet(audioSource, cdEntry);
-                                    data.Releases.Add(r);
+                                    CDEntry cdEntry;
+                                    FreeDB_LookupProgress(qr.Category + "/" + qr.Discid);
+                                    code = m_freedb.Read(qr, out cdEntry);
+                                    if (code == FreedbHelper.ResponseCodes.CODE_210)
+                                    {
+                                        CUEMetadataEntry r = CreateCUESheet(audioSource, cdEntry);
+                                        data.Releases.Add(r);
+                                    }
                                 }
                             }
                         }
@@ -776,7 +791,8 @@ namespace CUERipper
                 toolStripStatusLabelMusicBrainz.BorderStyle = mbresults_count > 0 ? Border3DStyle.SunkenInner : Border3DStyle.RaisedInner;
                 toolStripStatusLabelMusicBrainz.Text = mbresults_count > 0 ? mbresults_count.ToString() : "";
                 toolStripStatusLabelMusicBrainz.ToolTipText = "Musicbrainz: " + (mbresults_count > 0 ? mbresults_count.ToString() + " entries found." : (musicbrainzError + "click to submit."));
-                backgroundWorkerArtwork.RunWorkerAsync(new BackgroundWorkerArtworkArgs() { cueSheet = cueSheet, meta = data.selectedRelease });
+                if (_config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.None)
+                    backgroundWorkerArtwork.RunWorkerAsync(new BackgroundWorkerArtworkArgs() { cueSheet = cueSheet, meta = data.selectedRelease });
             });
         }
 
@@ -937,11 +953,6 @@ namespace CUERipper
 					}
 				throw new Exception("invalid value");
 			}
-		}
-
-		private void checkBoxEACMode_CheckedChanged(object sender, EventArgs e)
-		{
-			_config.createEACLOG = checkBoxEACMode.Checked;
 		}
 
 		private void bnComboBoxEncoder_SelectedValueChanged(object sender, EventArgs e)
@@ -1452,8 +1463,7 @@ namespace CUERipper
                         continue;
                     foreach (var coverart in metadata.coverart)
                     {
-                        bool large = false;
-                        var uri = large ?
+                        var uri = _config.advanced.coversSearch == CUEConfigAdvanced.CTDBCoversSearch.Large ?
                             coverart.uri : coverart.uri150 ?? coverart.uri;
                         if (knownUrls.Contains(uri) || !coverart.primary)
                             continue;
@@ -1496,6 +1506,12 @@ namespace CUERipper
                 currentAlbumArt++;
                 UpdateAlbumArt(false);
             }
+        }
+
+        private void buttonSettings_Click(object sender, EventArgs e)
+        {
+            var form = new Options(this._config);
+            form.ShowDialog(this);
         }
 	}
 

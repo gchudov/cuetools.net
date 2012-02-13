@@ -14,6 +14,13 @@ namespace CUETools.Processor
             Custom
         }
 
+        public enum CTDBCoversSearch
+        {
+            Large,
+            Small,
+            None
+        }
+
         public CUEConfigAdvanced()
         {
             // Iterate through each property and call ResetValue()
@@ -68,5 +75,11 @@ namespace CUETools.Processor
 
         [DefaultValue("db.cuetools.net"), Category("CTDB"), DisplayName("CTDB Server")]
         public string CTDBServer { get; set; }
+
+        [DefaultValue(CUETools.CTDB.CTDBMetadataSearch.Default), Category("CTDB"), DisplayName("Metadata search")]
+        public CUETools.CTDB.CTDBMetadataSearch metadataSearch { get; set; }
+
+        [DefaultValue(CTDBCoversSearch.Small), Category("CTDB"), DisplayName("Album art search")]
+        public CTDBCoversSearch coversSearch { get; set; }
     }
 }

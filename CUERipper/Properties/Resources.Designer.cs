@@ -102,6 +102,20 @@ namespace CUERipper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap cog {
+            get {
+                object obj = ResourceManager.GetObject("cog", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon cog1 {
+            get {
+                object obj = ResourceManager.GetObject("cog1", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Detecting drives.
         /// </summary>

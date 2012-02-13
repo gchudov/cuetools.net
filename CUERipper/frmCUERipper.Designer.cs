@@ -55,7 +55,6 @@ namespace CUERipper
             this.buttonPause = new System.Windows.Forms.Button();
             this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
             this.lblWriteOffset = new System.Windows.Forms.Label();
-            this.checkBoxEACMode = new System.Windows.Forms.CheckBox();
             this.groupBoxSettings = new System.Windows.Forms.GroupBox();
             this.bnComboBoxLosslessOrNot = new CUEControls.ImgComboBox();
             this.losslessOrNotBindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -102,6 +101,7 @@ namespace CUERipper
             this.panel1 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.backgroundWorkerArtwork = new System.ComponentModel.BackgroundWorker();
+            this.buttonSettings = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
             this.groupBoxSettings.SuspendLayout();
@@ -268,13 +268,6 @@ namespace CUERipper
             resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
             this.lblWriteOffset.Name = "lblWriteOffset";
             // 
-            // checkBoxEACMode
-            // 
-            resources.ApplyResources(this.checkBoxEACMode, "checkBoxEACMode");
-            this.checkBoxEACMode.Name = "checkBoxEACMode";
-            this.checkBoxEACMode.UseVisualStyleBackColor = true;
-            this.checkBoxEACMode.CheckedChanged += new System.EventHandler(this.checkBoxEACMode_CheckedChanged);
-            // 
             // groupBoxSettings
             // 
             this.groupBoxSettings.Controls.Add(this.bnComboBoxLosslessOrNot);
@@ -288,7 +281,6 @@ namespace CUERipper
             this.groupBoxSettings.Controls.Add(this.trackBarEncoderMode);
             this.groupBoxSettings.Controls.Add(this.trackBarSecureMode);
             this.groupBoxSettings.Controls.Add(this.lblWriteOffset);
-            this.groupBoxSettings.Controls.Add(this.checkBoxEACMode);
             this.groupBoxSettings.Controls.Add(this.numericWriteOffset);
             resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
             this.groupBoxSettings.Name = "groupBoxSettings";
@@ -704,10 +696,19 @@ namespace CUERipper
             this.backgroundWorkerArtwork.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerArtwork_ProgressChanged);
             this.backgroundWorkerArtwork.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerArtwork_RunWorkerCompleted);
             // 
+            // buttonSettings
+            // 
+            this.buttonSettings.Image = global::CUERipper.Properties.Resources.cog;
+            resources.ApplyResources(this.buttonSettings, "buttonSettings");
+            this.buttonSettings.Name = "buttonSettings";
+            this.buttonSettings.UseVisualStyleBackColor = true;
+            this.buttonSettings.Click += new System.EventHandler(this.buttonSettings_Click);
+            // 
             // frmCUERipper
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.buttonSettings);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonFreedbSubmit);
@@ -771,8 +772,7 @@ namespace CUERipper
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusAr;
 		private System.Windows.Forms.NumericUpDown numericWriteOffset;
-		private System.Windows.Forms.Label lblWriteOffset;
-		private System.Windows.Forms.CheckBox checkBoxEACMode;
+        private System.Windows.Forms.Label lblWriteOffset;
 		private System.Windows.Forms.GroupBox groupBoxSettings;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusCTDB;
 		private System.Windows.Forms.TrackBar trackBarEncoderMode;
@@ -821,6 +821,7 @@ namespace CUERipper
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.ComponentModel.BackgroundWorker backgroundWorkerArtwork;
+        private System.Windows.Forms.Button buttonSettings;
 	}
 }
 
