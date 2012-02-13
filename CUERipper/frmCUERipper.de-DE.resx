@@ -159,9 +159,6 @@
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Offset lesen</value>
   </data>
-  <data name="checkBoxEACMode.Text" xml:space="preserve">
-    <value>EAC-Verlauf</value>
-  </data>
   <data name="labelEncoderMinMode.Text" xml:space="preserve">
     <value>128</value>
   </data>
@@ -206,6 +203,9 @@
   </data>
   <data name="buttonFreedbSubmit.Text" xml:space="preserve">
     <value>Senden</value>
+  </data>
+  <data name="buttonSettings.Text" xml:space="preserve">
+    <value>Optionen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>CUERipper 2.1.4</value>
