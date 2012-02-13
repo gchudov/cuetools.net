@@ -2754,6 +2754,14 @@ namespace CUETools.Processor
             }
         }
 
+        public void AddAlbumArt(byte[] encoded)
+        {
+            var data = new TagLib.ByteVector(encoded);
+            var picture = new TagLib.Picture(data);
+            picture.Type = TagLib.PictureType.FrontCover;
+            _albumArt.Add(picture);
+        }
+
         public void ResizeAlbumArt()
         {
             if (_albumArt == null)

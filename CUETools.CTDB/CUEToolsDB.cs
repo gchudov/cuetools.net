@@ -145,6 +145,9 @@ namespace CUETools.CTDB
             req.ReadWriteTimeout = socketTimeout;
             req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
+            if (uploadHelper.onProgress != null)
+                uploadHelper.onProgress(url, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0.0));
+
             currentReq = req;
             try
             {
@@ -325,8 +328,8 @@ namespace CUETools.CTDB
             {
                 offset = -confirm.offset;
 
-                // Optional sanity check: should be done by server
-                
+#if DEBUG
+                // Optional sanity check: should be done by server                
                 if (verify.AR.CTDBCRC(offset) != confirm.crc)
                     throw new Exception("crc mismatch");
 
@@ -345,6 +348,7 @@ namespace CUETools.CTDB
                     equals &= confirm.syndrome[0, i] == syn2[0, i];
                 if (!equals)
                     throw new Exception("syndrome mismatch");
+#endif
             }
             if (upload)
             {

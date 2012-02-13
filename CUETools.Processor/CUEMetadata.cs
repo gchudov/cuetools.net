@@ -24,6 +24,7 @@ namespace CUETools.Processor
 			ReleaseDate = "";
 			Label = "";
 			Country = "";
+            AlbumArt = new List<CTDB.CTDBResponseMetaImage>();
 			Tracks = new List<CUETrackMetadata>();
 		}
 
@@ -78,6 +79,8 @@ namespace CUETools.Processor
 		[DefaultValue("")]
 		public string Country { get; set; }
 		public List<CUETrackMetadata> Tracks { get; set; }
+
+        public List<CTDB.CTDBResponseMetaImage> AlbumArt { get; set; }
 
 		[XmlIgnore]
 		public string DiscNumber01
@@ -150,6 +153,7 @@ namespace CUETools.Processor
 			if ((overwrite || ReleaseDate == "") && metadata.ReleaseDate != "") ReleaseDate = metadata.ReleaseDate;
 			if ((overwrite || Label == "") && metadata.Label != "") Label = metadata.Label;
 			if ((overwrite || Country == "") && metadata.Country != "") Country = metadata.Country;
+            if ((overwrite || AlbumArt.Count == 0) && metadata.AlbumArt.Count != 0) AlbumArt = metadata.AlbumArt;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
@@ -212,6 +216,7 @@ namespace CUETools.Processor
 			ReleaseDate = metadata.ReleaseDate;
 			Country = metadata.Country;
 			Label = metadata.Label;
+            AlbumArt = metadata.AlbumArt;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Title = metadata.Tracks[i].Title;
@@ -250,6 +255,9 @@ namespace CUETools.Processor
 			if (cdEntry.label != null)
 				foreach (var l in cdEntry.label)
 					this.Label = (this.Label == "" ? "" : this.Label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
+            this.AlbumArt.Clear();
+            if (cdEntry.coverart != null)
+                this.AlbumArt.AddRange(cdEntry.coverart);
 			if (cdEntry.track != null && cdEntry.track.Length >= this.Tracks.Count)
 			{
 				for (int i = 0; i < this.Tracks.Count; i++)
