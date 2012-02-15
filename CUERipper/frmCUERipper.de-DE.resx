@@ -159,6 +159,9 @@
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Offset lesen</value>
   </data>
+  <data name="checkBoxTestAndCopy.Text" xml:space="preserve">
+    <value>Testen &amp;&amp; Kopieren</value>
+  </data>
   <data name="labelEncoderMinMode.Text" xml:space="preserve">
     <value>128</value>
   </data>
