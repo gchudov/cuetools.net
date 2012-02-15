@@ -67,6 +67,7 @@ namespace CUETools.Processor
         private string _archivePassword;
         private CUEToolsProgressEventArgs _progress;
         private AccurateRipVerify _arVerify;
+        private AccurateRipVerify _arTestVerify;
         private CUEToolsDB _CUEToolsDB;
         private CDImageLayout _toc;
         private string _arLogFileName, _alArtFileName;
@@ -192,6 +193,19 @@ namespace CUETools.Processor
             get
             {
                 return _inputPath;
+            }
+        }
+
+        public AccurateRipVerify ArTestVerify
+        {
+            get
+            {
+                return _arTestVerify;
+            }
+
+            set
+            {
+                _arTestVerify = value;
             }
         }
 
@@ -1614,7 +1628,7 @@ namespace CUETools.Processor
             _CUEToolsDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
             _CUEToolsDB.ContactDB(_config.advanced.CTDBServer, userAgent, driveName, true, fuzzy, metadataSearch);
 
-            if (!_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0)
+            if (!_isCD && !_toc[_toc.TrackCount].IsAudio && DataTrackLength == 0)
                 foreach (DBEntry e in _CUEToolsDB.Entries)
                     if (e.toc.TrackCount == _toc.TrackCount && e.toc.AudioLength == _toc.AudioLength && !e.toc[e.toc.TrackCount].IsAudio)
                     {
@@ -2378,6 +2392,21 @@ namespace CUETools.Processor
             }
             outBestOffset = bestOffset;
             outTracksMatch = bestTracksMatch;
+        }
+
+        public void TestBeforeCopy()
+        {
+            if (!_isCD)
+                throw new Exception("Not a cd");
+
+            _arTestVerify = new AccurateRipVerify(_toc, proxy);
+            var buff = new AudioBuffer(AudioPCMConfig.RedBook, 0x10000);
+            while (_ripper.Read(buff, -1) != 0)
+            {
+                _arTestVerify.Write(buff);
+            }
+
+            _ripper.Position = 0;
         }
 
         public string Go()

@@ -14,6 +14,7 @@ using CUETools.Processor;
 using CUETools.Processor.Settings;
 using CUETools.Ripper;
 using Freedb;
+using CUETools.Codecs;
 
 namespace CUERipper
 {
@@ -28,6 +29,7 @@ namespace CUERipper
 		string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat;
 		private CUEControls.ShellIconMgr m_icon_mgr;
 		private string defaultDrive;
+        private bool testAndCopy = false;
 		internal CUERipperData data = new CUERipperData();
 
 		public frmCUERipper()
@@ -163,6 +165,7 @@ namespace CUERipper
 			trackBarSecureMode.Value = sr.LoadInt32("SecureMode", 0, trackBarSecureMode.Maximum - 1) ?? 1;
 			trackBarSecureMode_Scroll(this, new EventArgs());
 			defaultDrive = sr.Load("DefaultDrive");
+            this.checkBoxTestAndCopy.Checked = this.testAndCopy = sr.LoadBoolean("TestAndCopy") ?? this.testAndCopy;
 			UpdateDrives();
 		}
 
@@ -373,7 +376,12 @@ namespace CUERipper
 
 			try
 			{
-				cueSheet.Go();
+                if (this.testAndCopy)
+                    cueSheet.TestBeforeCopy();
+                else
+                    cueSheet.ArTestVerify = null;
+
+                cueSheet.Go();
 				cueSheet.CTDB.Submit(
 					(int)cueSheet.ArVerify.WorstConfidence() + 1,
 					audioSource.CorrectionQuality == 0 ? 0 :
@@ -865,7 +873,7 @@ namespace CUERipper
 		{
 			if (e.KeyCode == Keys.Enter)
 			{
-				if (listTracks.FocusedItem.Index + 1 < listTracks.Items.Count)// && e.Label != null)
+                if (listTracks.FocusedItem != null && listTracks.FocusedItem.Index + 1 < listTracks.Items.Count)// && e.Label != null)
 				{
 					listTracks.FocusedItem.Selected = false;
 					listTracks.FocusedItem = listTracks.Items[listTracks.FocusedItem.Index + 1];
@@ -899,7 +907,8 @@ namespace CUERipper
 			sw.Save("PathFormat", bnComboBoxOutputFormat.Text);
 			sw.Save("SecureMode", trackBarSecureMode.Value);
 			sw.Save("OutputPathUseTemplates", bnComboBoxOutputFormat.Items.Count - OutputPathUseTemplates.Length);
-			for (int iFormat = bnComboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathUseTemplates.Length; iFormat--)
+            sw.Save("TestAndCopy", this.testAndCopy);
+            for (int iFormat = bnComboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathUseTemplates.Length; iFormat--)
 				sw.Save(string.Format("OutputPathUseTemplate{0}", iFormat - OutputPathUseTemplates.Length), bnComboBoxOutputFormat.Items[iFormat].ToString());
 
 			if (defaultDrive != null)
@@ -1512,6 +1521,11 @@ namespace CUERipper
         {
             var form = new Options(this._config);
             form.ShowDialog(this);
+        }
+
+        private void checkBoxTestAndCopy_Click(object sender, EventArgs e)
+        {
+            this.testAndCopy = checkBoxTestAndCopy.Checked;
         }
 	}
 

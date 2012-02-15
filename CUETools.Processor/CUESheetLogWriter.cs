@@ -150,7 +150,8 @@ namespace CUETools.Processor
                     logWriter.WriteLine();
                     logWriter.WriteLine("     Peak level {0:F1} %", (sheet.ArVerify.PeakLevel(track + 1) * 1000 / 65534) * 0.1);
                     logWriter.WriteLine("     Track quality 100.0 %");
-                    logWriter.WriteLine("     Test CRC {0:X8}", sheet.ArVerify.CRC32(track + 1));
+                    if (sheet.ArTestVerify != null)
+                    logWriter.WriteLine("     Test CRC {0:X8}", sheet.ArTestVerify.CRC32(track + 1));
                     logWriter.WriteLine("     Copy CRC {0:X8}", sheet.ArVerify.CRC32(track + 1));
                     if (sheet.ArVerify.Total(track) == 0)
                         logWriter.WriteLine("     Track not present in AccurateRip database");
@@ -181,7 +182,8 @@ namespace CUETools.Processor
                 logWriter.WriteLine();
                 logWriter.WriteLine("     Peak level {0:F1} %", (sheet.ArVerify.PeakLevel() * 1000 / 65535) * 0.1);
                 logWriter.WriteLine("     Range quality 100.0 %");
-                logWriter.WriteLine("     Test CRC {0:X8}", sheet.ArVerify.CRC32(0));
+                if (sheet.ArTestVerify != null)
+                logWriter.WriteLine("     Test CRC {0:X8}", sheet.ArTestVerify.CRC32(0));
                 logWriter.WriteLine("     Copy CRC {0:X8}", sheet.ArVerify.CRC32(0));
                 logWriter.WriteLine("     Copy OK");
                 logWriter.WriteLine();

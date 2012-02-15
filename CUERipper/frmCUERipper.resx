@@ -383,7 +383,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;numericWriteOffset.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="lblWriteOffset.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -413,7 +413,34 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;lblWriteOffset.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
+  </data>
+  <data name="checkBoxTestAndCopy.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxTestAndCopy.Location" type="System.Drawing.Point, System.Drawing">
+    <value>192, 48</value>
+  </data>
+  <data name="checkBoxTestAndCopy.Size" type="System.Drawing.Size, System.Drawing">
+    <value>83, 17</value>
+  </data>
+  <data name="checkBoxTestAndCopy.TabIndex" type="System.Int32, mscorlib">
+    <value>34</value>
+  </data>
+  <data name="checkBoxTestAndCopy.Text" xml:space="preserve">
+    <value>Test &amp;&amp; Copy</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTestAndCopy.Name" xml:space="preserve">
+    <value>checkBoxTestAndCopy</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTestAndCopy.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTestAndCopy.Parent" xml:space="preserve">
+    <value>groupBoxSettings</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTestAndCopy.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <metadata name="losslessOrNotBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 95</value>
@@ -443,7 +470,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;bnComboBoxLosslessOrNot.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <metadata name="encodersBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1217, 56</value>
@@ -470,7 +497,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;bnComboBoxEncoder.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="labelSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -497,7 +524,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelSecureMode.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <metadata name="formatsBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1045, 56</value>
@@ -524,7 +551,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;bnComboBoxFormat.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="labelEncoderMinMode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -563,7 +590,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelEncoderMinMode.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <metadata name="cUEStylesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>526, 56</value>
@@ -590,7 +617,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;bnComboBoxImage.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="labelEncoderMaxMode.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -629,7 +656,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelEncoderMaxMode.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="labelEncoderMode.Font" type="System.Drawing.Font, System.Drawing">
     <value>Tahoma, 8.25pt</value>
@@ -665,7 +692,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;labelEncoderMode.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="trackBarEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -692,7 +719,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;trackBarEncoderMode.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="trackBarSecureMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -716,7 +743,7 @@
     <value>groupBoxSettings</value>
   </data>
   <data name="&gt;&gt;trackBarSecureMode.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="groupBoxSettings.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 332</value>
@@ -750,7 +777,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABy
-        CQAAAk1TRnQBSQFMAgEBBAEAAYQBAAGEAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CQAAAk1TRnQBSQFMAgEBBAEAAYwBAAGMAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -900,7 +927,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADy
-        EAAAAk1TRnQBSQFMAgEBCgEAAYQBAAGEAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        EAAAAk1TRnQBSQFMAgEBCgEAAYwBAAGMAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAATADAAEBAQABCAYAAQwYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA

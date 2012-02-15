@@ -102,6 +102,7 @@ namespace CUERipper
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.backgroundWorkerArtwork = new System.ComponentModel.BackgroundWorker();
             this.buttonSettings = new System.Windows.Forms.Button();
+            this.checkBoxTestAndCopy = new System.Windows.Forms.CheckBox();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
             this.groupBoxSettings.SuspendLayout();
@@ -270,6 +271,7 @@ namespace CUERipper
             // 
             // groupBoxSettings
             // 
+            this.groupBoxSettings.Controls.Add(this.checkBoxTestAndCopy);
             this.groupBoxSettings.Controls.Add(this.bnComboBoxLosslessOrNot);
             this.groupBoxSettings.Controls.Add(this.bnComboBoxEncoder);
             this.groupBoxSettings.Controls.Add(this.labelSecureMode);
@@ -704,6 +706,13 @@ namespace CUERipper
             this.buttonSettings.UseVisualStyleBackColor = true;
             this.buttonSettings.Click += new System.EventHandler(this.buttonSettings_Click);
             // 
+            // checkBoxTestAndCopy
+            // 
+            resources.ApplyResources(this.checkBoxTestAndCopy, "checkBoxTestAndCopy");
+            this.checkBoxTestAndCopy.Name = "checkBoxTestAndCopy";
+            this.checkBoxTestAndCopy.UseVisualStyleBackColor = true;
+            this.checkBoxTestAndCopy.Click += new System.EventHandler(this.checkBoxTestAndCopy_Click);
+            // 
             // frmCUERipper
             // 
             resources.ApplyResources(this, "$this");
@@ -822,6 +831,7 @@ namespace CUERipper
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.ComponentModel.BackgroundWorker backgroundWorkerArtwork;
         private System.Windows.Forms.Button buttonSettings;
+        private System.Windows.Forms.CheckBox checkBoxTestAndCopy;
 	}
 }
 
