@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("CUETools.ConsoleRipper")]
-[assembly: AssemblyCopyright("Copyright © Gregory S. Chudov 2008")]
+[assembly: AssemblyCopyright("Copyright © Grigory Chudov 2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

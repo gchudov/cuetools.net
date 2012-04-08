@@ -63,7 +63,7 @@ namespace AudioDataPlugIn
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(230, 34);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Copyright (c) 2011-12 Gregory S. Chudov";
+            this.label2.Text = "Copyright (c) 2011-12 Grigory Chudov";
             // 
             // linkLabel1
             // 

@@ -86,13 +86,21 @@ namespace MetadataPlugIn
                 data.ExtendedDiscInformation = extra;
                 data.Revision = -1; // TODO: meta.id? rock/ffffffff/16?
                 if (meta.track != null)
+                {
+                    int firstAudio = meta.track.Length == TOC.AudioTracks ? TOC.FirstAudio - 1 : 0;
                     for (int track = 0; track < data.NumberOfTracks; track++)
                     {
-                        if (track < meta.track.Length)
+                        if (track - firstAudio >= 0 && track - firstAudio < meta.track.Length)
                         {
-                            data.SetTrackTitle(track, meta.track[track].name ?? "");
-                            data.SetTrackArtist(track, meta.track[track].artist ?? meta.artist ?? "");
-                            data.SetExtendedTrackInformation(track, meta.track[track].extra ?? "");
+                            data.SetTrackTitle(track, meta.track[track - firstAudio].name ?? "");
+                            data.SetTrackArtist(track, meta.track[track - firstAudio].artist ?? meta.artist ?? "");
+                            data.SetExtendedTrackInformation(track, meta.track[track - firstAudio].extra ?? "");
+                        }
+                        else if (!TOC[track + 1].IsAudio)
+                        {
+                            data.SetTrackTitle(track, "[data track]");
+                            data.SetTrackArtist(track, meta.artist ?? "");
+                            data.SetExtendedTrackInformation(track, "");
                         }
                         else
                         {
@@ -102,6 +110,7 @@ namespace MetadataPlugIn
                         }
                         data.SetTrackComposer(track, "");
                     }
+                }
             }
 
             if (cover)

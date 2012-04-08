@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("CUETools.Compression.Rar")]
-[assembly: AssemblyCopyright("Copyright © Gregory S. Chudov, Michael A. McCloskey")]
+[assembly: AssemblyCopyright("Copyright © Grigory Chudov, Michael A. McCloskey")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

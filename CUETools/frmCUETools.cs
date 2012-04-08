@@ -68,6 +68,7 @@ namespace JDP
             m_icon_mgr.SetExtensionIcon(".#alarm_clock", global::JDP.Properties.Resources.alarm_clock);
             m_icon_mgr.SetExtensionIcon(".#calendar", global::JDP.Properties.Resources.calendar);
             m_icon_mgr.SetExtensionIcon(".#ar", global::JDP.Properties.Resources.AR);
+            m_icon_mgr.SetExtensionIcon(".#ctdb", global::JDP.Properties.Resources.cdrepair);
             m_icon_mgr.SetExtensionIcon(".#images", global::JDP.Properties.Resources.images);
             m_icon_mgr.SetExtensionIcon(".#images_question", global::JDP.Properties.Resources.images_question);
             m_icon_mgr.SetExtensionIcon(".#pictures", global::JDP.Properties.Resources.pictures);
@@ -1183,11 +1184,12 @@ namespace JDP
 
         public void SetStatus(object sender, CUEToolsProgressEventArgs e)
         {
+            if (e.percent == 0)
+                _startedAt = DateTime.Now;
             this.BeginInvoke((MethodInvoker)delegate()
             {
                 if (e.percent == 0)
                 {
-                    _startedAt = DateTime.Now;
                     toolStripStatusLabelProcessed.Visible = false;
                     toolStripProgressBar2.ToolTipText = "";
                 }
@@ -2118,6 +2120,27 @@ namespace JDP
             return true;
         }
 
+        private void locateInExplorerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var node = contextMenuStripFileTree.Tag as CUEControls.FileSystemTreeNode;
+            if (node is FileSystemTreeNodeLocalDBFolder)
+            {
+                foreach (var entry in (node as FileSystemTreeNodeLocalDBFolder).Group)
+                    if (entry.InputPaths != null && entry.InputPaths.Count > 0 && File.Exists(entry.InputPaths[0]))
+                    {
+                        System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + entry.InputPaths[0] + "\"");
+                    }
+            }
+            if (node is FileSystemTreeNodeLocalDBEntry)
+            {
+                var entry = (node as FileSystemTreeNodeLocalDBEntry).Item;
+                if (entry.InputPaths != null && entry.InputPaths.Count > 0 && File.Exists(entry.InputPaths[0]))
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + entry.InputPaths[0] + "\"");
+                }
+            }
+        }
+
         private void setAsMyMusicFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var node = (contextMenuStripFileTree.Tag as CUEControls.FileSystemTreeNode);
@@ -2154,6 +2177,15 @@ namespace JDP
         }
 
         private void addFolderToLocalDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var node = contextMenuStripFileTree.Tag as CUEControls.FileSystemTreeNode;
+            if (node == null || node.Path == null)
+                return;
+            SetupControls(true);
+            backgroundWorkerAddToLocalDB.RunWorkerAsync(node.Path);
+        }
+
+        private void updateLocalDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var node = contextMenuStripFileTree.Tag as CUEControls.FileSystemTreeNode;
             if (node == null || node.Path == null)
@@ -2251,12 +2283,19 @@ namespace JDP
                     setAsMyMusicFolderToolStripMenuItem.Visible = false;
                     editMetadataToolStripMenuItem.Visible = false;
                     addFolderToLocalDatabaseToolStripMenuItem.Visible = false;
+                    updateLocalDatabaseToolStripMenuItem.Visible = false;
                     removeItemFromDatabaseToolStripMenuItem.Visible = false;
+                    locateInExplorerToolStripMenuItem.Visible = false;
                     if (info.Node is CUEControls.FileSystemTreeNodeFileSystemInfo && (info.Node as CUEControls.FileSystemTreeNodeFileSystemInfo).File is DirectoryInfo)
                     {
                         setAsMyMusicFolderToolStripMenuItem.Visible = true;
                         setAsMyMusicFolderToolStripMenuItem.Image = m_icon_mgr.ImageList.Images[m_icon_mgr.GetIconIndex(CUEControls.ExtraSpecialFolder.MyMusic, true)];
-                        addFolderToLocalDatabaseToolStripMenuItem.Visible = true;
+
+                        string norm = CUEToolsLocalDBEntry.NormalizePath(((info.Node as CUEControls.FileSystemTreeNodeFileSystemInfo).File as DirectoryInfo).FullName);
+                        if (norm.Length != 0 && norm[norm.Length - 1] != System.IO.Path.DirectorySeparatorChar) norm = norm + System.IO.Path.DirectorySeparatorChar;
+                        bool hasPath = _localDB.Find(item => item.InputPaths != null && item.InputPaths.Find(i => i.StartsWith(norm)) != null) != null;
+                        addFolderToLocalDatabaseToolStripMenuItem.Visible = !hasPath;
+                        updateLocalDatabaseToolStripMenuItem.Visible = hasPath;
                     }
                     else if (info.Node is CUEControls.FileSystemTreeNodeSpecialFolder && (info.Node as CUEControls.FileSystemTreeNodeSpecialFolder).Folder == CUEControls.ExtraSpecialFolder.MyMusic)
                     {
@@ -2264,10 +2303,12 @@ namespace JDP
                     }
                     else if (info.Node is FileSystemTreeNodeLocalDBCollision)
                     {
+                        locateInExplorerToolStripMenuItem.Visible = true;
                         editMetadataToolStripMenuItem.Visible = true;
                     }
                     else if (info.Node as FileSystemTreeNodeLocalDBEntry != null)
                     {
+                        locateInExplorerToolStripMenuItem.Visible = true;
                         editMetadataToolStripMenuItem.Visible = true;
                     }
 

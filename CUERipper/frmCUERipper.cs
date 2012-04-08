@@ -382,7 +382,7 @@ namespace CUERipper
                     cueSheet.ArTestVerify = null;
 
                 cueSheet.Go();
-				cueSheet.CTDB.Submit(
+                cueSheet.CTDB.Submit(
 					(int)cueSheet.ArVerify.WorstConfidence() + 1,
 					audioSource.CorrectionQuality == 0 ? 0 :
 					100 - (int)(7 * Math.Log(audioSource.ErrorsCount + 1)), // ErrorsCount==1 ~= 95, ErrorsCount==max ~= 5;
@@ -658,7 +658,7 @@ namespace CUERipper
             cueSheet.UseAccurateRip();
 
             General.SetCUELine(cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
-            General.SetCUELine(cueSheet.Attributes, "REM", "COMMENT", _config.createEACLOG ? "ExactAudioCopy v0.99pb4" : audioSource.RipperVersion, true);
+            General.SetCUELine(cueSheet.Attributes, "REM", "COMMENT", audioSource.RipperVersion, true);
 
             try
             {
@@ -1304,7 +1304,7 @@ namespace CUERipper
 					int track = lvItem.Index + 1 - selectedDriveInfo.drive.TOC.FirstAudio;
 					if (a == lvItem.SubItems[0])
 						lvItem.BeginEdit();
-					else if (/*a == lvItem.SubItems[2] &&*/ track >= 0)
+					else if (/*a == lvItem.SubItems[2] &&*/ track >= 0 && track < selectedDriveInfo.drive.TOC.AudioTracks)
 					{
 						buttonTracks.Visible = true;
 						buttonTracks.Focus();
@@ -1327,6 +1327,22 @@ namespace CUERipper
 			entry.Year = data.selectedRelease.metadata.Year;
 			entry.Genre = data.selectedRelease.metadata.Genre;
 			int i = 1;
+            for (i = 1; i <= selectedDriveInfo.drive.TOC.TrackCount; i++)
+            {
+				Freedb.Track tt = new Freedb.Track();
+                if (i >= selectedDriveInfo.drive.TOC.FirstAudio && i < selectedDriveInfo.drive.TOC.FirstAudio + selectedDriveInfo.drive.TOC.AudioTracks)
+                {
+                    CUETrackMetadata t = data.selectedRelease.metadata.Tracks[i - selectedDriveInfo.drive.TOC.FirstAudio];
+				    if (t.Artist != "" && t.Artist != entry.Artist)
+					    tt.Title = t.Artist + " / " + t.Title;
+				    else
+					    tt.Title = t.Title;
+                } else
+                    tt.Title = "Data track";
+                tt.FrameOffset = 150 + (int)selectedDriveInfo.drive.TOC[i].Start;
+                entry.Tracks.Add(tt);
+            }
+            /*
 			foreach (CUETrackMetadata t in data.selectedRelease.metadata.Tracks)
 			{
 				Freedb.Track tt = new Freedb.Track();
@@ -1336,7 +1352,7 @@ namespace CUERipper
 					tt.Title = t.Title;
 				tt.FrameOffset = 150 + (int)selectedDriveInfo.drive.TOC[i++].Start;
 				entry.Tracks.Add(tt);
-			}
+			}*/
 
 			FreedbHelper m_freedb = new FreedbHelper();
 

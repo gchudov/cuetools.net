@@ -28,6 +28,7 @@ namespace CUETools.Processor
         public bool fixOffset;
         public bool noUnverifiedOutput;
         public bool autoCorrectFilenames;
+        public bool detectGaps;
         public bool preserveHTOA;
         public bool keepOriginalFilenames;
         public string trackFilenameFormat;
@@ -97,6 +98,7 @@ namespace CUETools.Processor
 
             autoCorrectFilenames = true;
             preserveHTOA = true;
+            detectGaps = true;
             keepOriginalFilenames = false;
             trackFilenameFormat = "%tracknumber%. %title%";
             singleFilenameFormat = "%filename%";
@@ -262,6 +264,7 @@ return processor.Go();
             sw.Save("ArWriteLogOnVerify", writeArLogOnVerify);
 
             sw.Save("PreserveHTOA", preserveHTOA);
+            sw.Save("DetectGaps", detectGaps);            
             sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
             sw.Save("KeepOriginalFilenames", keepOriginalFilenames);
             sw.Save("SingleFilenameFormat", singleFilenameFormat);
@@ -405,6 +408,7 @@ return processor.Go();
             writeArLogOnVerify = sr.LoadBoolean("ArWriteLogOnVerify") ?? false;
 
             preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
+            detectGaps = sr.LoadBoolean("DetectGaps") ?? true;
             autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
             keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? false;
             singleFilenameFormat = sr.Load("SingleFilenameFormat") ?? singleFilenameFormat;

@@ -56,6 +56,11 @@ namespace CUETools.CTDB
 			}
 		}
 
+        public void ContactDB(bool ctdb, bool fuzzy, CTDBMetadataSearch metadataSearch)
+        {
+            this.ContactDB(this.urlbase.Substring(7), this.userAgent, this.driveName, ctdb, fuzzy, metadataSearch);
+        }
+
 		public void ContactDB(string server, string userAgent, string driveName, bool ctdb, bool fuzzy, CTDBMetadataSearch metadataSearch)
 		{
 			this.driveName = driveName;
@@ -80,6 +85,8 @@ namespace CUETools.CTDB
 			if (uploadHelper.onProgress != null)
 				uploadHelper.onProgress(this, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0));
 
+            this.entries = new List<DBEntry>();
+            this.metadata = new List<CTDBResponseMeta>();
 			currentReq = req;
 			try
 			{

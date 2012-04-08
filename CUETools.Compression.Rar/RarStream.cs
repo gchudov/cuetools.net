@@ -6,7 +6,7 @@ using System.Threading;
 using CUETools.Compression;
 
 
-/*  Author:  Gregory S. Chudov
+/*  Author:  Grigory Chudov
  *  
  */
 

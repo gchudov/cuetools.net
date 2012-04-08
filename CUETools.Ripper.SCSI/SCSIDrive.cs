@@ -1,7 +1,7 @@
 // ****************************************************************************
 // 
 // CUERipper
-// Copyright (C) 2008 Gregory S. Chudov (gchudov@gmail.com)
+// Copyright (C) 2008 Grigory Chudov (gchudov@gmail.com)
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -282,8 +282,8 @@ namespace CUETools.Ripper.SCSI
 			} else
 				throw new ReadCDException(Resource1.NoAudio);
 
-			UserData = new long[MSECTORS, 2, 4 * 588];
-			C2Count = new byte[MSECTORS, 294];
+            UserData = new long[MSECTORS, 2, 4 * 588];
+            C2Count = new byte[MSECTORS, 294];
 
 			return true;
 		}
@@ -711,7 +711,7 @@ namespace CUETools.Ripper.SCSI
 								StringBuilder barcode = new StringBuilder();
 								for (int i = 1; i < 8; i++)
 									barcode.AppendFormat("{0:x2}", _subchannelBuffer[offs + i]);
-								if (barcode.ToString() != "0000000000000")
+								if (barcode.ToString(0, 13) != "0000000000000")
 									_toc2.Barcode = barcode.ToString(0, 13);
 							}
 						}
@@ -1211,7 +1211,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return "CUERipper v2.1.4 Copyright (C) 2008-10 Gregory S. Chudov";
+				return "CUERipper v2.1.4 Copyright (C) 2008-12 Grigory Chudov";
 				// ripper.GetName().Name + " " + ripper.GetName().Version;
 			}
 		}

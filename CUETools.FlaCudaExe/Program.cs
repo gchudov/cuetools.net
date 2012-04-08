@@ -1,6 +1,6 @@
 /**
  * CUETools.FlaCuda: FLAC audio encoder using CUDA
- * Copyright (c) 2009 Gregory S. Chudov
+ * Copyright (c) 2009 Grigory Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -159,7 +159,7 @@ namespace CUETools.FlaCudaExe
 			}
 			if (!quiet)
 			{
-				Console.WriteLine("{0}, Copyright (C) 2009 Gregory S. Chudov.", FlaCudaWriter.vendor_string);
+				Console.WriteLine("{0}, Copyright (C) 2009 Grigory Chudov.", FlaCudaWriter.vendor_string);
 				Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 				Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 			}

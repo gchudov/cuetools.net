@@ -260,10 +260,12 @@ namespace CUETools.Processor
                 this.AlbumArt.AddRange(cdEntry.coverart);
 			if (cdEntry.track != null && cdEntry.track.Length >= this.Tracks.Count)
 			{
+                if (cdEntry.track.Length - this.Tracks.Count != firstAudio)
+                    firstAudio = 0;
 				for (int i = 0; i < this.Tracks.Count; i++)
 				{
-					this.Tracks[i].Title = cdEntry.track[i].name ?? "";
-					this.Tracks[i].Artist = cdEntry.track[i].artist ?? cdEntry.artist ?? "";
+					this.Tracks[i].Title = cdEntry.track[i + firstAudio].name ?? "";
+                    this.Tracks[i].Artist = cdEntry.track[i + firstAudio].artist ?? cdEntry.artist ?? "";
 				}
 			}
 		}

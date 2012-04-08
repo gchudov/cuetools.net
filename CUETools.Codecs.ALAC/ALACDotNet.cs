@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using CUETools.Codecs;
 
-//Copyright (c) 2008 Gregory S. Chudov.
+//Copyright (c) 2008 Grigory Chudov.
 //This library is based on ALAC decoder by David Hammerton.
 //See http://crazney.net/programs/itunes/alac.html for details.
 //Copyright (c) 2004 David Hammerton.

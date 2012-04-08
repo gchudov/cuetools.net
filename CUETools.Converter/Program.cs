@@ -20,7 +20,7 @@ namespace CUETools.Converter
 		{
 			TextWriter stdout = Console.Out;
 			Console.SetOut(Console.Error);
-			Console.WriteLine("CUETools.Converter, Copyright (C) 2009 Gregory S. Chudov.");
+			Console.WriteLine("CUETools.Converter, Copyright (C) 2009 Grigory Chudov.");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 			if (args.Length < 2)

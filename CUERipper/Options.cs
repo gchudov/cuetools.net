@@ -58,6 +58,9 @@ namespace CUERipper
         [DefaultValue(true), Category("Extraction"), DisplayName("Preserve HTOA")]
         public bool preserveHTOA { get { return config.preserveHTOA; } set { config.preserveHTOA = value; } }
 
+        [DefaultValue(true), Category("Extraction"), DisplayName("Detect Indexes")]
+        public bool detectGaps { get { return config.detectGaps; } set { config.detectGaps = value; } }
+
         [DefaultValue(true), Category("Extraction"), DisplayName("EAC log style")]
         public bool createEACLOG { get { return config.createEACLOG; } set { config.createEACLOG = value; } }
 

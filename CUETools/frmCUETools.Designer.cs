@@ -127,6 +127,8 @@ namespace JDP {
             this.addFolderToLocalDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeItemFromDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorkerAddToLocalDB = new System.ComponentModel.BackgroundWorker();
+            this.updateLocalDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.locateInExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -997,7 +999,9 @@ namespace JDP {
             this.resetToOriginalLocationToolStripMenuItem,
             this.editMetadataToolStripMenuItem,
             this.addFolderToLocalDatabaseToolStripMenuItem,
-            this.removeItemFromDatabaseToolStripMenuItem});
+            this.removeItemFromDatabaseToolStripMenuItem,
+            this.updateLocalDatabaseToolStripMenuItem,
+            this.locateInExplorerToolStripMenuItem});
             this.contextMenuStripFileTree.Name = "contextMenuStripFileTree";
             resources.ApplyResources(this.contextMenuStripFileTree, "contextMenuStripFileTree");
             // 
@@ -1045,6 +1049,18 @@ namespace JDP {
             // 
             this.backgroundWorkerAddToLocalDB.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerAddToLocalDB_DoWork);
             this.backgroundWorkerAddToLocalDB.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerAddToLocalDB_RunWorkerCompleted);
+            // 
+            // updateLocalDatabaseToolStripMenuItem
+            // 
+            this.updateLocalDatabaseToolStripMenuItem.Name = "updateLocalDatabaseToolStripMenuItem";
+            resources.ApplyResources(this.updateLocalDatabaseToolStripMenuItem, "updateLocalDatabaseToolStripMenuItem");
+            this.updateLocalDatabaseToolStripMenuItem.Click += new System.EventHandler(this.updateLocalDatabaseToolStripMenuItem_Click);
+            // 
+            // locateInExplorerToolStripMenuItem
+            // 
+            this.locateInExplorerToolStripMenuItem.Name = "locateInExplorerToolStripMenuItem";
+            resources.ApplyResources(this.locateInExplorerToolStripMenuItem, "locateInExplorerToolStripMenuItem");
+            this.locateInExplorerToolStripMenuItem.Click += new System.EventHandler(this.locateInExplorerToolStripMenuItem_Click);
             // 
             // frmCUETools
             // 
@@ -1203,6 +1219,8 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripMenuItem addFolderToLocalDatabaseToolStripMenuItem;
 		private System.ComponentModel.BackgroundWorker backgroundWorkerAddToLocalDB;
 		private System.Windows.Forms.ToolStripMenuItem removeItemFromDatabaseToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem updateLocalDatabaseToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem locateInExplorerToolStripMenuItem;
 	}
 }
 

@@ -611,8 +611,88 @@ namespace CUETools.Processor
             ShowProgress(status, percent, null, null);
         }
 
+        public bool IsInLocalDB(string folder)
+        {
+            string norm = CUEToolsLocalDBEntry.NormalizePath(folder);
+            if (norm.Length != 0 && norm[norm.Length - 1] != System.IO.Path.DirectorySeparatorChar) norm = norm + System.IO.Path.DirectorySeparatorChar;
+            return _localDB.Find(item => item.InputPaths != null && item.InputPaths.Find(i => i.StartsWith(norm)) != null) != null;
+        }
+
         public void ScanLocalDB(string folder)
         {
+            // Delete missing files
+            string norm = CUEToolsLocalDBEntry.NormalizePath(folder);
+            if (norm.Length != 0 && norm[norm.Length - 1] != System.IO.Path.DirectorySeparatorChar) norm = norm + System.IO.Path.DirectorySeparatorChar;
+
+            ReportProgress("Checking known files", 0.0);
+            int oldi = 0, oldn = _localDB.Count;
+            foreach (var item in _localDB.ToArray())
+            {
+                bool matches = false;
+                oldi++;
+                if (item.AudioPaths != null)
+                {
+                    foreach (var f in item.AudioPaths)
+                        if (f.StartsWith(norm))
+                        {
+                            matches = true;
+                            CheckStop();
+                            if (!File.Exists(f))
+                            {
+                                _localDB.Remove(item);
+                                _localDB.Dirty = true;
+                                continue;
+                            }
+                        }
+                }
+
+                if (item.InputPaths != null)
+                {
+                    foreach (var f in item.InputPaths.ToArray())
+                        if (f.StartsWith(norm))
+                        {
+                            CheckStop();
+                            ReportProgress("Checking " + f, (double)oldi / oldn);
+                            matches = true;
+                            if (!File.Exists(f))
+                            {
+                                item.InputPaths.Remove(f);
+                                _localDB.Dirty = true;
+                            }
+                            else
+                            {
+                                var cueSheet = new CUESheet(_config);
+                                cueSheet.UseLocalDB(_localDB);
+                                try
+                                {
+                                    cueSheet.Open(f);
+                                    List<string> fullAudioPaths = cueSheet._sourcePaths == null ? null : cueSheet._sourcePaths.ConvertAll(p => CUEToolsLocalDBEntry.NormalizePath(p));
+                                    if (!item.Equals(cueSheet._toc, fullAudioPaths))
+                                    {
+                                        item.InputPaths.Remove(f);
+                                        _localDB.Dirty = true;
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    item.InputPaths.Remove(f);
+                                    _localDB.Dirty = true;
+                                }
+                                cueSheet.Close();
+                            }
+                        }
+
+                    if (matches && item.InputPaths.Count == 0)
+                    {
+                        _localDB.Remove(item);
+                        _localDB.Dirty = true;
+                        continue;
+                    }
+                }
+            }
+
+            // Add new files
+            ReportProgress("Scanning for new files", 0.0);
             var results = new List<string>();
 
             int n = 2, j = 0;
@@ -636,6 +716,7 @@ namespace CUETools.Processor
                     results.AddRange(Directory.GetFiles(folder, "*." + fmt.Key, SearchOption.AllDirectories));
                 }
 
+            ReportProgress("Checking new files", 0.0);
             int i = 0;
             foreach (var result in results)
             {
@@ -1353,7 +1434,7 @@ namespace CUETools.Processor
                 "Range.wav";
 
             _hasHTOAFilename = (_sourcePaths.Count == (TrackCount + 1));
-            _htoaFilename = _hasHTOAFilename ? Path.GetFileName(_sourcePaths[0]) : "01.00.wav";
+            _htoaFilename = _hasHTOAFilename ? Path.GetFileName(_sourcePaths[0]) : "00.wav";
 
             _hasTrackFilenames = !_hasEmbeddedCUESheet && !_hasSingleFilename && (_sourcePaths.Count == TrackCount || _hasHTOAFilename);
             for (i = 0; i < TrackCount; i++)
@@ -1981,7 +2062,7 @@ namespace CUETools.Processor
                 }
                 else
                 {
-                    string trackStr = htoa ? "01.00" : String.Format("{0:00}", iTrack + 1);
+                    string trackStr = htoa ? "00" : String.Format("{0:00}", iTrack + 1);
                     string artist = Metadata.Tracks[htoa ? 0 : iTrack].Artist;
                     string title = htoa ? "(HTOA)" : Metadata.Tracks[iTrack].Title;
 
@@ -2455,7 +2536,10 @@ namespace CUETools.Processor
                 WriteAudioFilesPass(OutputDir, OutputStyle, destLengths, htoaToFile, _action == CUEAction.Verify);
 
             if (isUsingCUEToolsDB && !isUsingCUEToolsDBFix)
+            {
+                if (_isCD) _CUEToolsDB.ContactDB(true, true, CTDBMetadataSearch.None);
                 _CUEToolsDB.DoVerify();
+            }
 
             _processed = true;
 
@@ -3394,11 +3478,14 @@ namespace CUETools.Processor
             if (!_isCD)
                 throw new Exception("not a CD");
 
-            try { _ripper.DetectGaps(); }
-            catch (Exception ex)
+            if (_config.detectGaps)
             {
-                if (ex is StopException)
-                    throw ex;
+                try { _ripper.DetectGaps(); }
+                catch (Exception ex)
+                {
+                    if (ex is StopException)
+                        throw ex;
+                }
             }
 
             if (!_ripper.GapsDetected)

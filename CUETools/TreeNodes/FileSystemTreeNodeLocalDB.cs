@@ -107,6 +107,34 @@ namespace JDP
                         i.ARConfidence < 100 ? "< 100" :
                         ">=100",
                     null));
+
+            this.Nodes.Add(new FileSystemTreeNodeLocalDBCategory(
+                icon_mgr, this.Group, true, true, icon_mgr.GetIconIndex(".#ctdb"), "By CTDB Confidence",
+                    i =>
+                        i.CTDBVerificationDate == DateTime.MinValue ? "00" :
+                        i.CTDBConfidence == 0 ? "01" :
+                        i.CTDBConfidence == 1 ? "02" :
+                        i.CTDBConfidence == 2 ? "03" :
+                        i.CTDBConfidence == 3 ? "04" :
+                        i.CTDBConfidence < 5 ? "05" :
+                        i.CTDBConfidence < 10 ? "06" :
+                        i.CTDBConfidence < 20 ? "07" :
+                        i.CTDBConfidence < 50 ? "08" :
+                        i.CTDBConfidence < 100 ? "09" :
+                        "10",
+                    i =>
+                        i.CTDBVerificationDate == DateTime.MinValue ? "?" :
+                        i.CTDBConfidence == 0 ? "0" :
+                        i.CTDBConfidence == 1 ? "1" :
+                        i.CTDBConfidence == 2 ? "2" :
+                        i.CTDBConfidence == 3 ? "3" :
+                        i.CTDBConfidence < 5 ? "<   5" :
+                        i.CTDBConfidence < 10 ? "<  10" :
+                        i.CTDBConfidence < 20 ? "<  20" :
+                        i.CTDBConfidence < 50 ? "<  50" :
+                        i.CTDBConfidence < 100 ? "< 100" :
+                        ">=100",
+                    null));
         }
     }
 }

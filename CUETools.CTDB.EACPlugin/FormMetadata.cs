@@ -227,6 +227,77 @@ namespace CUETools.CTDB.EACPlugin
             }
         }
 
+        private void AddMeta(CTDBResponseMeta metadata)
+        {
+            uint td = 0, dn = 0;
+            var disccount = metadata.disccount ?? "1";
+            var discnumber = metadata.discnumber ?? "1";
+            var discnumber01 = (uint.TryParse(disccount, out td) && uint.TryParse(discnumber, out dn) && td > 9 && dn > 0) ?
+                string.Format("{0:00}", dn) : discnumber;
+            var discnumberandtotal = disccount != "1" ? discnumber01 + "/" + disccount : (discnumber != "1" ? discnumber01 : "");
+            var label = metadata.country ?? "";
+            if (metadata.label != null)
+                foreach (var l in metadata.label)
+                    label = (label == "" ? "" : label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
+            if (metadata.releasedate != null)
+                label = (label == "" ? "" : label + ": ") + metadata.releasedate;
+            var text = string.Format("{0}{1} - {2}{3}{4}", metadata.year != null ? metadata.year + ": " : "",
+                metadata.artist == null ? "Unknown Artist" : metadata.artist,
+                metadata.album == "" ? "Unknown Title" : metadata.album,
+                discnumberandtotal != "" ? " (disc " + discnumberandtotal + (metadata.discname != null ? ": " + metadata.discname : "") + ")" : "",
+                label == "" ? "" : " (" + label + ")");
+            var tip = new StringBuilder();
+            var i = 0;
+            if (metadata.track != null)
+            {
+                foreach (var tr in metadata.track)
+                    tip.AppendFormat("{0}. {2}{1}\n", ++i, tr.name, ((tr.artist ?? metadata.artist) == metadata.artist) ? "" : tr.artist + " / ");
+            }
+            listView1.Items.Add(new ListViewItem(text) { Tag = metadata, ImageKey = metadata.source, ToolTipText = tip.ToString() });
+            this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+        }
+
+        private static string FreedbToEncoding(Encoding iso, Encoding def, ref bool changed, ref bool error, string s)
+        {
+            if (s == null) 
+                return null;
+            try
+            {
+                string res = def.GetString(iso.GetBytes(s));
+                changed |= res != s;
+                return res;
+            }
+            catch // EncoderFallbackException, DecoderFallbackException
+            {
+                error = true;
+            }
+            return s;
+        }
+
+        private CTDBResponseMeta FreedbToEncoding(CTDBResponseMeta src)
+        {
+            if (src.source != "freedb")
+                return null;
+            Encoding iso = Encoding.GetEncoding("iso-8859-1", new EncoderExceptionFallback(), new DecoderExceptionFallback());
+            Encoding def = Encoding.GetEncoding(Encoding.Default.CodePage, new EncoderExceptionFallback(), new DecoderExceptionFallback());
+            bool different = false;
+            bool error = false;
+            var metadata = new CTDBResponseMeta(src);
+            metadata.artist = FreedbToEncoding(iso, def, ref different, ref error, metadata.artist);
+            metadata.album = FreedbToEncoding(iso, def, ref different, ref error, metadata.album);
+            metadata.extra = FreedbToEncoding(iso, def, ref different, ref error, metadata.extra);
+            if (metadata.track != null)
+            {
+                for (int i = 0; i < metadata.track.Length; i++)
+                {
+                    metadata.track[i].name = FreedbToEncoding(iso, def, ref different, ref error, metadata.track[i].name);
+                    metadata.track[i].artist = FreedbToEncoding(iso, def, ref different, ref error, metadata.track[i].artist);
+                    metadata.track[i].extra = FreedbToEncoding(iso, def, ref different, ref error, metadata.track[i].extra);
+                }
+            }
+            return different && !error ? metadata : null;
+        }
+
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             if (e.UserState is InternetImage)
@@ -240,32 +311,9 @@ namespace CUETools.CTDB.EACPlugin
             if (e.UserState is CTDBResponseMeta)
             {
                 var metadata = e.UserState as CTDBResponseMeta;
-                uint td = 0, dn = 0;
-                var disccount = metadata.disccount ?? "1";
-                var discnumber = metadata.discnumber ?? "1";
-                var discnumber01 = (uint.TryParse(disccount, out td) && uint.TryParse(discnumber, out dn) && td > 9 && dn > 0) ?
-                    string.Format("{0:00}", dn) : discnumber;
-                var discnumberandtotal = disccount != "1" ? discnumber01 + "/" + disccount : (discnumber != "1" ? discnumber01 : "");
-                var label = metadata.country ?? "";
-                if (metadata.label != null)
-                    foreach (var l in metadata.label)
-                        label = (label == "" ? "" : label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
-                if (metadata.releasedate != null)
-                    label = (label == "" ? "" : label + ": ") + metadata.releasedate;
-                var text = string.Format("{0}{1} - {2}{3}{4}", metadata.year != null ? metadata.year + ": " : "",
-                    metadata.artist == null ? "Unknown Artist" : metadata.artist,
-                    metadata.album == "" ? "Unknown Title" : metadata.album,
-                    discnumberandtotal != "" ? " (disc " + discnumberandtotal + (metadata.discname != null ? ": " + metadata.discname : "") + ")" : "",
-                    label == "" ? "" : " (" + label + ")");
-                var tip = new StringBuilder();
-                var i = 0;
-                if (metadata.track != null)
-                {
-                    foreach (var tr in metadata.track)
-                        tip.AppendFormat("{0}. {2}{1}\n", ++i, tr.name, ((tr.artist ?? metadata.artist) == metadata.artist) ? "" : tr.artist + " / ");
-                }
-                listView1.Items.Add(new ListViewItem(text) { Tag = metadata, ImageKey = metadata.source, ToolTipText = tip.ToString() });
-                this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                var freedbenc = FreedbToEncoding(metadata);
+                AddMeta(metadata);
+                if (freedbenc != null) AddMeta(freedbenc);
             }
         }
 

@@ -1,6 +1,6 @@
 /**
  * CUETools.Codecs.ALAC: pure managed ALAC audio encoder
- * Copyright (c) 2009 Gregory S. Chudov
+ * Copyright (c) 2009 Grigory Chudov
  * Based on ffdshow ALAC audio encoder
  * Copyright (c) 2008  Jaikrishnan Menon, realityman@gmx.net
  *

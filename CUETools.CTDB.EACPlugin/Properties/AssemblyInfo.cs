@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("CUETools.CTDB.EACPlugin")]
-[assembly: AssemblyCopyright("Copyright © Gregory S. Chudov 2012")]
+[assembly: AssemblyCopyright("Copyright © Grigory Chudov 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
