@@ -470,4 +470,7 @@
   <data name="removeItemFromDatabaseToolStripMenuItem.Text" xml:space="preserve">
     <value>Aus lokaler Datenbank entfernen</value>
   </data>
+  <data name="locateInExplorerToolStripMenuItem.Text" xml:space="preserve">
+    <value>Im Explorer anzeigen</value>
+  </data>
 </root>
