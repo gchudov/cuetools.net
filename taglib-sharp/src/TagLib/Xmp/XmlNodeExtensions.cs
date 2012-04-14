@@ -25,11 +25,20 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
+namespace System.Runtime.CompilerServices
+{
+	[AttributeUsageAttribute(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
+	internal sealed class ExtensionAttribute : Attribute
+	{
+		public ExtensionAttribute() { }
+	}
+}
+
 namespace TagLib.Xmp
 {
 	internal static class XmlNodeExtensions
 	{
-		public static bool In (this XmlNode node, string ns)
+		public static bool In(this XmlNode node, string ns)
 		{
 			return node.NamespaceURI == ns;
 		}
