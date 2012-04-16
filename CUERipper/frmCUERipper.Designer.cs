@@ -56,6 +56,7 @@ namespace CUERipper
             this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
             this.lblWriteOffset = new System.Windows.Forms.Label();
             this.groupBoxSettings = new System.Windows.Forms.GroupBox();
+            this.checkBoxTestAndCopy = new System.Windows.Forms.CheckBox();
             this.bnComboBoxLosslessOrNot = new CUEControls.ImgComboBox();
             this.losslessOrNotBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.bindingSourceCR = new System.Windows.Forms.BindingSource(this.components);
@@ -102,7 +103,12 @@ namespace CUERipper
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.backgroundWorkerArtwork = new System.ComponentModel.BackgroundWorker();
             this.buttonSettings = new System.Windows.Forms.Button();
-            this.checkBoxTestAndCopy = new System.Windows.Forms.CheckBox();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.panel5 = new System.Windows.Forms.Panel();
+            this.panel6 = new System.Windows.Forms.Panel();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
             this.groupBoxSettings.SuspendLayout();
@@ -117,6 +123,12 @@ namespace CUERipper
             ((System.ComponentModel.ISupportInitialize)(this.releasesBindingSource)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.panel2.SuspendLayout();
+            this.panel7.SuspendLayout();
+            this.panel3.SuspendLayout();
+            this.panel4.SuspendLayout();
+            this.panel5.SuspendLayout();
+            this.panel6.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -187,13 +199,13 @@ namespace CUERipper
             // 
             // listTracks
             // 
-            resources.ApplyResources(this.listTracks, "listTracks");
             this.listTracks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Title,
             this.TrackNo,
             this.columnHeaderArtist,
             this.Start,
             this.Length});
+            resources.ApplyResources(this.listTracks, "listTracks");
             this.listTracks.FullRowSelect = true;
             this.listTracks.GridLines = true;
             this.listTracks.LabelEdit = true;
@@ -287,6 +299,13 @@ namespace CUERipper
             resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
             this.groupBoxSettings.Name = "groupBoxSettings";
             this.groupBoxSettings.TabStop = false;
+            // 
+            // checkBoxTestAndCopy
+            // 
+            resources.ApplyResources(this.checkBoxTestAndCopy, "checkBoxTestAndCopy");
+            this.checkBoxTestAndCopy.Name = "checkBoxTestAndCopy";
+            this.checkBoxTestAndCopy.UseVisualStyleBackColor = true;
+            this.checkBoxTestAndCopy.Click += new System.EventHandler(this.checkBoxTestAndCopy_Click);
             // 
             // bnComboBoxLosslessOrNot
             // 
@@ -384,6 +403,7 @@ namespace CUERipper
             rectRadius4.TopLeft = 2;
             rectRadius4.TopRight = 6;
             this.bnComboBoxImage.Radius = rectRadius4;
+            this.bnComboBoxImage.SelectedValueChanged += new System.EventHandler(this.bnComboBoxImage_SelectedValueChanged);
             // 
             // cUEStylesBindingSource
             // 
@@ -570,10 +590,10 @@ namespace CUERipper
             // 
             // bnComboBoxOutputFormat
             // 
-            resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
             this.bnComboBoxOutputFormat.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.bnComboBoxOutputFormat.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.bnComboBoxOutputFormat.BackColor = System.Drawing.Color.Transparent;
+            resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
             this.bnComboBoxOutputFormat.ImageList = null;
             this.bnComboBoxOutputFormat.MinimumSize = new System.Drawing.Size(40, 0);
             this.bnComboBoxOutputFormat.Name = "bnComboBoxOutputFormat";
@@ -590,10 +610,10 @@ namespace CUERipper
             // 
             // listMetadata
             // 
-            resources.ApplyResources(this.listMetadata, "listMetadata");
             this.listMetadata.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderValue,
             this.columnHeaderName});
+            resources.ApplyResources(this.listMetadata, "listMetadata");
             this.listMetadata.FullRowSelect = true;
             this.listMetadata.GridLines = true;
             this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
@@ -675,17 +695,18 @@ namespace CUERipper
             // 
             // panel1
             // 
-            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Controls.Add(this.buttonGo);
             this.panel1.Controls.Add(this.buttonPause);
             this.panel1.Controls.Add(this.buttonAbort);
             this.panel1.Controls.Add(this.progressBarCD);
             this.panel1.Controls.Add(this.progressBarErrors);
+            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
             // pictureBox1
             // 
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.MinimumSize = new System.Drawing.Size(100, 100);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);
@@ -706,42 +727,71 @@ namespace CUERipper
             this.buttonSettings.UseVisualStyleBackColor = true;
             this.buttonSettings.Click += new System.EventHandler(this.buttonSettings_Click);
             // 
-            // checkBoxTestAndCopy
+            // panel2
             // 
-            resources.ApplyResources(this.checkBoxTestAndCopy, "checkBoxTestAndCopy");
-            this.checkBoxTestAndCopy.Name = "checkBoxTestAndCopy";
-            this.checkBoxTestAndCopy.UseVisualStyleBackColor = true;
-            this.checkBoxTestAndCopy.Click += new System.EventHandler(this.checkBoxTestAndCopy_Click);
+            this.panel2.Controls.Add(this.panel7);
+            this.panel2.Controls.Add(this.panel1);
+            this.panel2.Controls.Add(this.groupBoxSettings);
+            resources.ApplyResources(this.panel2, "panel2");
+            this.panel2.Name = "panel2";
+            // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.pictureBox1);
+            resources.ApplyResources(this.panel7, "panel7");
+            this.panel7.Name = "panel7";
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.bnComboBoxDrives);
+            this.panel3.Controls.Add(this.bnComboBoxRelease);
+            this.panel3.Controls.Add(this.buttonSettings);
+            this.panel3.Controls.Add(this.buttonVA);
+            this.panel3.Controls.Add(this.buttonFreedbSubmit);
+            this.panel3.Controls.Add(this.buttonTrackMetadata);
+            this.panel3.Controls.Add(this.buttonTracks);
+            this.panel3.Controls.Add(this.buttonReload);
+            this.panel3.Controls.Add(this.buttonEncoding);
+            this.panel3.Controls.Add(this.buttonMetadata);
+            resources.ApplyResources(this.panel3, "panel3");
+            this.panel3.Name = "panel3";
+            // 
+            // panel4
+            // 
+            this.panel4.Controls.Add(this.listTracks);
+            this.panel4.Controls.Add(this.listMetadata);
+            resources.ApplyResources(this.panel4, "panel4");
+            this.panel4.Name = "panel4";
+            // 
+            // panel5
+            // 
+            this.panel5.Controls.Add(this.bnComboBoxOutputFormat);
+            this.panel5.Controls.Add(this.txtOutputPath);
+            resources.ApplyResources(this.panel5, "panel5");
+            this.panel5.Name = "panel5";
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.panel4);
+            this.panel6.Controls.Add(this.panel5);
+            this.panel6.Controls.Add(this.panel2);
+            this.panel6.Controls.Add(this.panel3);
+            resources.ApplyResources(this.panel6, "panel6");
+            this.panel6.Name = "panel6";
             // 
             // frmCUERipper
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.buttonSettings);
-            this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.buttonFreedbSubmit);
-            this.Controls.Add(this.buttonTracks);
-            this.Controls.Add(this.buttonEncoding);
-            this.Controls.Add(this.buttonMetadata);
-            this.Controls.Add(this.buttonReload);
-            this.Controls.Add(this.buttonTrackMetadata);
-            this.Controls.Add(this.buttonVA);
-            this.Controls.Add(this.bnComboBoxRelease);
-            this.Controls.Add(this.bnComboBoxDrives);
-            this.Controls.Add(this.bnComboBoxOutputFormat);
-            this.Controls.Add(this.groupBoxSettings);
-            this.Controls.Add(this.listTracks);
+            this.Controls.Add(this.panel6);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.txtOutputPath);
-            this.Controls.Add(this.listMetadata);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "frmCUERipper";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmCUERipper_FormClosed);
             this.Load += new System.EventHandler(this.frmCUERipper_Load);
+            this.ClientSizeChanged += new System.EventHandler(this.frmCUERipper_ClientSizeChanged);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmCUERipper_KeyDown);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
@@ -759,6 +809,13 @@ namespace CUERipper
             ((System.ComponentModel.ISupportInitialize)(this.releasesBindingSource)).EndInit();
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.panel2.ResumeLayout(false);
+            this.panel7.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
+            this.panel4.ResumeLayout(false);
+            this.panel5.ResumeLayout(false);
+            this.panel5.PerformLayout();
+            this.panel6.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -832,6 +889,12 @@ namespace CUERipper
         private System.ComponentModel.BackgroundWorker backgroundWorkerArtwork;
         private System.Windows.Forms.Button buttonSettings;
         private System.Windows.Forms.CheckBox checkBoxTestAndCopy;
+		private System.Windows.Forms.Panel panel2;
+		private System.Windows.Forms.Panel panel3;
+		private System.Windows.Forms.Panel panel4;
+		private System.Windows.Forms.Panel panel5;
+		private System.Windows.Forms.Panel panel6;
+		private System.Windows.Forms.Panel panel7;
 	}
 }
 

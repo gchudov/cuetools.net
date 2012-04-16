@@ -3,7 +3,7 @@ using System.IO;
 
 namespace CUETools.Codecs.LAME
 {
-    [AudioEncoderClass("libmp3lame VBR", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", 2, typeof(LameWriterVBRSettings))]
+    [AudioEncoderClass("VBR (libmp3lame)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", 2, typeof(LameWriterVBRSettings))]
     public class LameWriterVBR : LameWriter
     {
         private int quality = 0;

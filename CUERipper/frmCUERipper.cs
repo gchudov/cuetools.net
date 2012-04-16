@@ -166,6 +166,11 @@ namespace CUERipper
 			trackBarSecureMode_Scroll(this, new EventArgs());
 			defaultDrive = sr.Load("DefaultDrive");
             this.checkBoxTestAndCopy.Checked = this.testAndCopy = sr.LoadBoolean("TestAndCopy") ?? this.testAndCopy;
+
+			Size SizeIncrement = new Size(sr.LoadInt32("WidthIncrement", 0, null) ?? 0, sr.LoadInt32("HeightIncrement", 0, null) ?? 0);
+			Size = MinimumSize + SizeIncrement;
+			Left -= SizeIncrement.Width / 2;
+			Top -= SizeIncrement.Height / 2;
 			UpdateDrives();
 		}
 
@@ -371,6 +376,7 @@ namespace CUERipper
 		private void Rip(object o)
 		{
 			ICDRipper audioSource = o as ICDRipper;
+
 			audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
 			audioSource.DriveOffset = (int)numericWriteOffset.Value;
 
@@ -439,6 +445,7 @@ namespace CUERipper
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				SetupControls();
+				UpdateOutputPath();
 			});
 		}
 
@@ -474,14 +481,16 @@ namespace CUERipper
 				MessageBox.Show(this, "Output path generation failed", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
-			cueSheet.GenerateFilenames(SelectedOutputAudioType, selectedFormat.ToString(), _pathOut);
+            if (cueSheet.Metadata.Comment == "")
+                cueSheet.Metadata.Comment = selectedDriveInfo.drive.RipperVersion;
+            cueSheet.GenerateFilenames(SelectedOutputAudioType, selectedFormat.ToString(), _pathOut);
 			selectedDriveInfo.drive.CorrectionQuality = trackBarSecureMode.Value;
 
 			_workThread = new Thread(Rip);
 			_workThread.Priority = ThreadPriority.BelowNormal;
 			_workThread.IsBackground = true;
 			SetupControls();
-			_workThread.Start(selectedDriveInfo.drive);			
+			_workThread.Start(selectedDriveInfo.drive);
 		}
 
 		private void buttonAbort_Click(object sender, EventArgs e)
@@ -494,10 +503,21 @@ namespace CUERipper
 			_startStop.Pause();
 		}
 
+		private void ResizeList(ListView list, ColumnHeader title)
+		{
+			int colSum = 0;
+			foreach (ColumnHeader col in list.Columns)
+			{
+				colSum += col.Width + SystemInformation.BorderSize.Width;
+			}
+
+			title.Width += list.Width - colSum - 2 * SystemInformation.BorderSize.Width - SystemInformation.VerticalScrollBarWidth;
+		}
+
 		private void UpdateRelease()
 		{
 			data.selectedRelease = bnComboBoxRelease.SelectedItem as CUEMetadataEntry;
-			comboBoxOutputFormat_TextUpdate(this, new EventArgs());
+			UpdateOutputPath();
 			listTracks.BeginUpdate();
 			listMetadata.BeginUpdate();
 			listTracks.Items.Clear();
@@ -508,17 +528,7 @@ namespace CUERipper
 				listMetadata.Visible = false;
 				if (data.selectedRelease != null)
 				{
-					bool various = data.selectedRelease.metadata.IsVarious();
-					if (various)
-					{
-						Title.Width = 300;
-						columnHeaderArtist.Width = 120;
-					}
-					else
-					{
-						Title.Width = 300 + 120;
-						columnHeaderArtist.Width = 0;
-					}
+					columnHeaderArtist.Width = data.selectedRelease.metadata.IsVarious() ? 120 : 0;
 					for (int i = 1; i <= selectedDriveInfo.drive.TOC.TrackCount; i++)
 					{
 						string title = "Data track";
@@ -544,7 +554,7 @@ namespace CUERipper
 				if (data.selectedRelease != null)
 				{
 					PropertyDescriptorCollection props = TypeDescriptor.GetProperties(data.selectedRelease.metadata);
-					PropertyDescriptorCollection sortedprops = props.Sort(new string[] { "Artist", "Title", "Genre", "Year", "DiscNumber", "TotalDiscs" });
+                    PropertyDescriptorCollection sortedprops = props.Sort(new string[] { "Artist", "Title", "Genre", "Year", "DiscNumber", "TotalDiscs", "DiscName", "Label", "LabelNo", "Country", "ReleaseDate" });
 					foreach (PropertyDescriptor p in sortedprops)
 						if (p.Name != "Tracks" && p.Name != "AlbumArt" && p.Name != "Id" && !p.Attributes.Contains(new System.Xml.Serialization.XmlIgnoreAttribute()))
 							listMetadata.Items.Add(new ListViewItem(new string[] { p.GetValue(data.selectedRelease.metadata).ToString(), p.Name }));
@@ -571,6 +581,8 @@ namespace CUERipper
 					}
 				}
 			}
+			ResizeList(listTracks, Title);
+			ResizeList(listMetadata, columnHeaderValue);
 			listTracks.EndUpdate();
 			listMetadata.EndUpdate();
 
@@ -658,7 +670,6 @@ namespace CUERipper
             cueSheet.UseAccurateRip();
 
             General.SetCUELine(cueSheet.Attributes, "REM", "DISCID", AccurateRipVerify.CalculateCDDBId(audioSource.TOC), false);
-            General.SetCUELine(cueSheet.Attributes, "REM", "COMMENT", audioSource.RipperVersion, true);
 
             try
             {
@@ -908,7 +919,10 @@ namespace CUERipper
 			sw.Save("SecureMode", trackBarSecureMode.Value);
 			sw.Save("OutputPathUseTemplates", bnComboBoxOutputFormat.Items.Count - OutputPathUseTemplates.Length);
             sw.Save("TestAndCopy", this.testAndCopy);
-            for (int iFormat = bnComboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathUseTemplates.Length; iFormat--)
+			var SizeIncrement = Size - MinimumSize;
+			sw.Save("WidthIncrement", SizeIncrement.Width);
+			sw.Save("HeightIncrement", SizeIncrement.Height);
+			for (int iFormat = bnComboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathUseTemplates.Length; iFormat--)
 				sw.Save(string.Format("OutputPathUseTemplate{0}", iFormat - OutputPathUseTemplates.Length), bnComboBoxOutputFormat.Items[iFormat].ToString());
 
 			if (defaultDrive != null)
@@ -1030,12 +1044,7 @@ namespace CUERipper
 			}
 		}
 
-		private void comboBoxOutputFormat_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			comboBoxOutputFormat_TextUpdate(sender, e);
-		}
-
-		private void comboBoxOutputFormat_TextUpdate(object sender, EventArgs e)
+		private void UpdateOutputPath()
 		{
 			if (selectedFormat == null) return;
 			if (data.selectedRelease == null)
@@ -1104,7 +1113,12 @@ namespace CUERipper
 			data.Encoders.ResetBindings();
 			bnComboBoxEncoder.SelectedItem = select;
 
-			comboBoxOutputFormat_TextUpdate(sender, e);
+			UpdateOutputPath();
+		}
+
+		private void bnComboBoxImage_SelectedValueChanged(object sender, EventArgs e)
+		{
+			UpdateOutputPath();
 		}
 
 		private void bnComboBoxLosslessOrNot_SelectedValueChanged(object sender, EventArgs e)
@@ -1152,7 +1166,7 @@ namespace CUERipper
 
 		private void bnComboBoxOutputFormat_TextChanged(object sender, EventArgs e)
 		{
-			comboBoxOutputFormat_TextUpdate(sender, e);
+			UpdateOutputPath();
 		}
 
 		private void txtOutputPath_Enter(object sender, EventArgs e)
@@ -1288,7 +1302,7 @@ namespace CUERipper
 			data.selectedRelease.metadata.FreedbToEncoding();
 			UpdateRelease();
 			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			comboBoxOutputFormat_TextUpdate(sender, e);
+			UpdateOutputPath();
 			SetupControls();
 		}
 
@@ -1543,6 +1557,12 @@ namespace CUERipper
         {
             this.testAndCopy = checkBoxTestAndCopy.Checked;
         }
+
+		private void frmCUERipper_ClientSizeChanged(object sender, EventArgs e)
+		{
+			ResizeList(listTracks, Title);
+			ResizeList(listMetadata, columnHeaderValue);
+		}
 	}
 
     internal class BackgroundWorkerArtworkArgs

@@ -1304,7 +1304,7 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		string vendor_string = "CUETools.2.05";
+		string vendor_string = "CUETools 2.1.4";
 
 		int select_blocksize(int samplerate, int time_ms)
 		{

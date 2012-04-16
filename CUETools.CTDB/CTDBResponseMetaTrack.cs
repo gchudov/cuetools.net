@@ -21,7 +21,7 @@ namespace CUETools.CTDB
         public string name { get; set; }
         [XmlAttribute]
         public string artist { get; set; }
-        [XmlAttribute]
+        [XmlElement]
         public string extra { get; set; }
     }
 }

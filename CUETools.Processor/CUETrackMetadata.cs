@@ -8,13 +8,16 @@ namespace CUETools.Processor
         public string Artist { get; set; }
         [DefaultValue("")]
         public string Title { get; set; }
-        [DefaultValue("")]
+		[DefaultValue("")]
+		public string Comment { get; set; }
+		[DefaultValue("")]
         public string ISRC { get; set; }
 
         public CUETrackMetadata()
         {
             Artist = "";
             Title = "";
+			Comment = "";
             ISRC = "";
         }
     }

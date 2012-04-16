@@ -4,7 +4,7 @@ using CUETools.Codecs.LAME.Interop;
 
 namespace CUETools.Codecs.LAME
 {
-    [AudioEncoderClass("lame VBR", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", 2, typeof(LAMEEncoderVBRSettings))]
+    //[AudioEncoderClass("lame VBR", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", 2, typeof(LAMEEncoderVBRSettings))]
     public class LAMEEncoderVBR : LAMEEncoder
     {
         private int quality = 0;

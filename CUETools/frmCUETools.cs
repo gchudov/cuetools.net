@@ -2676,6 +2676,10 @@ namespace JDP
         {
             SetStatus(sender, new CUEToolsProgressEventArgs());
             SetupControls(false);
+            foreach (TreeNode node in fileSystemTreeView1.Nodes)
+                if (node is FileSystemTreeNodeLocalDB)
+                    foreach(TreeNode grp in node.Nodes)
+                        grp.Collapse();
         }
 
         private void removeItemFromDatabaseToolStripMenuItem_Click(object sender, EventArgs e)

@@ -60,7 +60,7 @@ namespace CUETools.CTDB
         public string year { get; set; }
         [XmlAttribute]
         public string genre { get; set; }
-        [XmlAttribute]
+		[XmlElement]
         public string extra { get; set; }
         [XmlAttribute]
         public string country { get; set; }

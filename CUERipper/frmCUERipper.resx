@@ -122,7 +122,7 @@
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>473, 20</value>
+    <value>487, 20</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -174,10 +174,10 @@
     <value>toolStripStatusAr</value>
   </data>
   <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 469</value>
+    <value>0, 424</value>
   </data>
   <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>650, 25</value>
+    <value>664, 25</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
@@ -196,11 +196,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="listTracks.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+    <value>1</value>
   </data>
   <data name="Title.DisplayIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -238,11 +234,15 @@
   <data name="Length.Width" type="System.Int32, mscorlib">
     <value>70</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="listTracks.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
   <data name="listTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 87</value>
+    <value>0, 0</value>
   </data>
   <data name="listTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>630, 220</value>
+    <value>656, 158</value>
   </data>
   <data name="listTracks.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -260,10 +260,10 @@
     <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;listTracks.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel4</value>
   </data>
   <data name="&gt;&gt;listTracks.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>0</value>
   </data>
   <data name="buttonGo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -362,7 +362,7 @@
     <value>1</value>
   </data>
   <data name="numericWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>257, 20</value>
+    <value>271, 20</value>
   </data>
   <data name="numericWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>54, 20</value>
@@ -392,7 +392,7 @@
     <value>NoControl</value>
   </data>
   <data name="lblWriteOffset.Location" type="System.Drawing.Point, System.Drawing">
-    <value>189, 22</value>
+    <value>203, 22</value>
   </data>
   <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>62, 13</value>
@@ -419,7 +419,7 @@
     <value>True</value>
   </data>
   <data name="checkBoxTestAndCopy.Location" type="System.Drawing.Point, System.Drawing">
-    <value>192, 48</value>
+    <value>206, 48</value>
   </data>
   <data name="checkBoxTestAndCopy.Size" type="System.Drawing.Size, System.Drawing">
     <value>83, 17</value>
@@ -452,7 +452,7 @@
     <value>6, 19</value>
   </data>
   <data name="bnComboBoxLosslessOrNot.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
+    <value>82, 21</value>
   </data>
   <data name="bnComboBoxLosslessOrNot.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -476,10 +476,10 @@
     <value>1217, 56</value>
   </metadata>
   <data name="bnComboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 46</value>
+    <value>94, 46</value>
   </data>
   <data name="bnComboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
+    <value>101, 21</value>
   </data>
   <data name="bnComboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -503,7 +503,7 @@
     <value>NoControl</value>
   </data>
   <data name="labelSecureMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>195, 103</value>
+    <value>209, 103</value>
   </data>
   <data name="labelSecureMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>109, 18</value>
@@ -530,10 +530,10 @@
     <value>1045, 56</value>
   </metadata>
   <data name="bnComboBoxFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 19</value>
+    <value>94, 19</value>
   </data>
   <data name="bnComboBoxFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
+    <value>101, 21</value>
   </data>
   <data name="bnComboBoxFormat.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -599,7 +599,7 @@
     <value>6, 46</value>
   </data>
   <data name="bnComboBoxImage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
+    <value>82, 21</value>
   </data>
   <data name="bnComboBoxImage.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -629,7 +629,7 @@
     <value>NoControl</value>
   </data>
   <data name="labelEncoderMaxMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>143, 106</value>
+    <value>166, 106</value>
   </data>
   <data name="labelEncoderMaxMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
@@ -665,13 +665,13 @@
     <value>NoControl</value>
   </data>
   <data name="labelEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 106</value>
+    <value>6, 106</value>
   </data>
   <data name="labelEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="labelEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>167, 15</value>
+    <value>189, 15</value>
   </data>
   <data name="labelEncoderMode.TabIndex" type="System.Int32, mscorlib">
     <value>31</value>
@@ -704,7 +704,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="trackBarEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>166, 45</value>
+    <value>189, 45</value>
   </data>
   <data name="trackBarEncoderMode.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -725,7 +725,7 @@
     <value>NoControl</value>
   </data>
   <data name="trackBarSecureMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>184, 76</value>
+    <value>198, 76</value>
   </data>
   <data name="trackBarSecureMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>127, 45</value>
@@ -745,11 +745,14 @@
   <data name="&gt;&gt;trackBarSecureMode.ZOrder" xml:space="preserve">
     <value>10</value>
   </data>
+  <data name="groupBoxSettings.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
   <data name="groupBoxSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 332</value>
+    <value>0, 0</value>
   </data>
   <data name="groupBoxSettings.Size" type="System.Drawing.Size, System.Drawing">
-    <value>320, 134</value>
+    <value>339, 136</value>
   </data>
   <data name="groupBoxSettings.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -761,10 +764,10 @@
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;groupBoxSettings.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel2</value>
   </data>
   <data name="&gt;&gt;groupBoxSettings.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>2</value>
   </data>
   <metadata name="drivesBindingSource.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>882, 56</value>
@@ -777,7 +780,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABy
-        CQAAAk1TRnQBSQFMAgEBBAEAAYwBAAGMAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CQAAAk1TRnQBSQFMAgEBBAEAAYwBAQGMAQEBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -851,7 +854,7 @@
     <value>progressBarErrors</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4313.32741, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Parent" xml:space="preserve">
     <value>panel1</value>
@@ -878,7 +881,7 @@
     <value>progressBarCD</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4313.32741, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Parent" xml:space="preserve">
     <value>panel1</value>
@@ -886,14 +889,14 @@
   <data name="&gt;&gt;progressBarCD.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="txtOutputPath.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="txtOutputPath.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
   </data>
   <data name="txtOutputPath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 312</value>
+    <value>0, 4</value>
   </data>
   <data name="txtOutputPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>633, 20</value>
+    <value>656, 20</value>
   </data>
   <data name="txtOutputPath.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -908,10 +911,10 @@
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;txtOutputPath.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel5</value>
   </data>
   <data name="&gt;&gt;txtOutputPath.ZOrder" xml:space="preserve">
-    <value>16</value>
+    <value>1</value>
   </data>
   <data name="bnComboBoxRelease.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -927,7 +930,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADy
-        EAAAAk1TRnQBSQFMAgEBCgEAAYwBAAGMAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        EAAAAk1TRnQBSQFMAgEBCgEAAYwBAQGMAQEBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAATADAAEBAQABCAYAAQwYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -1003,10 +1006,10 @@
 </value>
   </data>
   <data name="bnComboBoxRelease.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 33</value>
+    <value>0, 28</value>
   </data>
   <data name="bnComboBoxRelease.Size" type="System.Drawing.Size, System.Drawing">
-    <value>632, 21</value>
+    <value>656, 21</value>
   </data>
   <data name="bnComboBoxRelease.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1021,19 +1024,19 @@
     <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.4.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>1</value>
   </data>
   <data name="bnComboBoxDrives.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
   <data name="bnComboBoxDrives.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 6</value>
+    <value>0, 0</value>
   </data>
   <data name="bnComboBoxDrives.Size" type="System.Drawing.Size, System.Drawing">
-    <value>632, 21</value>
+    <value>656, 21</value>
   </data>
   <data name="bnComboBoxDrives.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1048,19 +1051,19 @@
     <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.4.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>0</value>
   </data>
-  <data name="bnComboBoxOutputFormat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="bnComboBoxOutputFormat.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
   </data>
   <data name="bnComboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 312</value>
+    <value>0, 4</value>
   </data>
   <data name="bnComboBoxOutputFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>633, 21</value>
+    <value>656, 21</value>
   </data>
   <data name="bnComboBoxOutputFormat.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -1075,13 +1078,10 @@
     <value>CUEControls.ImgComboBox, CUEControls, Version=2.1.4.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel5</value>
   </data>
   <data name="&gt;&gt;bnComboBoxOutputFormat.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="listMetadata.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+    <value>0</value>
   </data>
   <data name="columnHeaderValue.DisplayIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1101,11 +1101,14 @@
   <data name="columnHeaderName.Width" type="System.Int32, mscorlib">
     <value>140</value>
   </data>
+  <data name="listMetadata.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
   <data name="listMetadata.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 87</value>
+    <value>0, 0</value>
   </data>
   <data name="listMetadata.Size" type="System.Drawing.Size, System.Drawing">
-    <value>630, 220</value>
+    <value>656, 158</value>
   </data>
   <data name="listMetadata.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -1120,10 +1123,10 @@
     <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;listMetadata.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel4</value>
   </data>
   <data name="&gt;&gt;listMetadata.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>1</value>
   </data>
   <data name="buttonTrackMetadata.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -1135,7 +1138,7 @@
     <value>NoControl</value>
   </data>
   <data name="buttonTrackMetadata.Location" type="System.Drawing.Point, System.Drawing">
-    <value>595, 64</value>
+    <value>594, 61</value>
   </data>
   <data name="buttonTrackMetadata.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
@@ -1153,13 +1156,13 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonTrackMetadata.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonTrackMetadata.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>5</value>
   </data>
   <data name="buttonMetadata.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 60</value>
+    <value>6, 57</value>
   </data>
   <data name="buttonMetadata.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 23</value>
@@ -1180,16 +1183,16 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonMetadata.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonMetadata.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>9</value>
   </data>
   <data name="buttonVA.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="buttonVA.Location" type="System.Drawing.Point, System.Drawing">
-    <value>183, 60</value>
+    <value>182, 57</value>
   </data>
   <data name="buttonVA.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 23</value>
@@ -1210,16 +1213,16 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonVA.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonVA.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>3</value>
   </data>
   <data name="buttonReload.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="buttonReload.Location" type="System.Drawing.Point, System.Drawing">
-    <value>95, 60</value>
+    <value>94, 57</value>
   </data>
   <data name="buttonReload.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 23</value>
@@ -1240,7 +1243,7 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonReload.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonReload.ZOrder" xml:space="preserve">
     <value>7</value>
@@ -1249,7 +1252,7 @@
     <value>NoControl</value>
   </data>
   <data name="buttonEncoding.Location" type="System.Drawing.Point, System.Drawing">
-    <value>271, 60</value>
+    <value>270, 57</value>
   </data>
   <data name="buttonEncoding.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 23</value>
@@ -1270,16 +1273,16 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonEncoding.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonEncoding.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>8</value>
   </data>
   <data name="buttonTracks.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="buttonTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 60</value>
+    <value>6, 57</value>
   </data>
   <data name="buttonTracks.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 23</value>
@@ -1303,16 +1306,16 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonTracks.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonTracks.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="buttonFreedbSubmit.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="buttonFreedbSubmit.Location" type="System.Drawing.Point, System.Drawing">
-    <value>357, 60</value>
+    <value>356, 57</value>
   </data>
   <data name="buttonFreedbSubmit.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 23</value>
@@ -1333,19 +1336,19 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonFreedbSubmit.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonFreedbSubmit.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
-  <data name="panel1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
+  <data name="panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Right</value>
   </data>
   <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>462, 339</value>
+    <value>480, 0</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 125</value>
+    <value>176, 136</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>42</value>
@@ -1357,16 +1360,19 @@
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;panel1.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel2</value>
   </data>
   <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>1</value>
+  </data>
+  <data name="pictureBox1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
   </data>
   <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>332, 339</value>
+    <value>5, 5</value>
   </data>
   <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 125</value>
+    <value>131, 126</value>
   </data>
   <data name="pictureBox1.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
     <value>Zoom</value>
@@ -1381,10 +1387,10 @@
     <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;pictureBox1.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel7</value>
   </data>
   <data name="&gt;&gt;pictureBox1.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>0</value>
   </data>
   <metadata name="backgroundWorkerArtwork.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1148, 17</value>
@@ -1393,7 +1399,7 @@
     <value>NoControl</value>
   </data>
   <data name="buttonSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>443, 60</value>
+    <value>442, 57</value>
   </data>
   <data name="buttonSettings.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 23</value>
@@ -1414,9 +1420,165 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonSettings.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonSettings.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="panel7.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="panel7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>339, 0</value>
+  </data>
+  <data name="panel7.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="panel7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>141, 136</value>
+  </data>
+  <data name="panel7.TabIndex" type="System.Int32, mscorlib">
+    <value>44</value>
+  </data>
+  <data name="&gt;&gt;panel7.Name" xml:space="preserve">
+    <value>panel7</value>
+  </data>
+  <data name="&gt;&gt;panel7.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel7.Parent" xml:space="preserve">
+    <value>panel2</value>
+  </data>
+  <data name="&gt;&gt;panel7.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="panel2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
+  </data>
+  <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 284</value>
+  </data>
+  <data name="panel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>656, 136</value>
+  </data>
+  <data name="panel2.TabIndex" type="System.Int32, mscorlib">
+    <value>45</value>
+  </data>
+  <data name="&gt;&gt;panel2.Name" xml:space="preserve">
+    <value>panel2</value>
+  </data>
+  <data name="&gt;&gt;panel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel2.Parent" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;panel2.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="panel3.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="panel3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 4</value>
+  </data>
+  <data name="panel3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>656, 90</value>
+  </data>
+  <data name="panel3.TabIndex" type="System.Int32, mscorlib">
+    <value>46</value>
+  </data>
+  <data name="&gt;&gt;panel3.Name" xml:space="preserve">
+    <value>panel3</value>
+  </data>
+  <data name="&gt;&gt;panel3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel3.Parent" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;panel3.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="panel4.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="panel4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 94</value>
+  </data>
+  <data name="panel4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>656, 158</value>
+  </data>
+  <data name="panel4.TabIndex" type="System.Int32, mscorlib">
+    <value>47</value>
+  </data>
+  <data name="&gt;&gt;panel4.Name" xml:space="preserve">
+    <value>panel4</value>
+  </data>
+  <data name="&gt;&gt;panel4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel4.Parent" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;panel4.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="panel5.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
+  </data>
+  <data name="panel5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 252</value>
+  </data>
+  <data name="panel5.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 4, 0, 0</value>
+  </data>
+  <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>656, 32</value>
+  </data>
+  <data name="panel5.TabIndex" type="System.Int32, mscorlib">
+    <value>48</value>
+  </data>
+  <data name="&gt;&gt;panel5.Name" xml:space="preserve">
+    <value>panel5</value>
+  </data>
+  <data name="&gt;&gt;panel5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel5.Parent" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;panel5.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="panel6.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="panel6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="panel6.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="panel6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>664, 424</value>
+  </data>
+  <data name="panel6.TabIndex" type="System.Int32, mscorlib">
+    <value>49</value>
+  </data>
+  <data name="&gt;&gt;panel6.Name" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;panel6.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel6.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;panel6.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
@@ -1429,7 +1591,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>650, 494</value>
+    <value>664, 449</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1828,6 +1990,9 @@
         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAQAAwAMAAPAPAAA=
 </value>
   </data>
+  <data name="$this.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>680, 487</value>
+  </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterScreen</value>
   </data>
@@ -1952,31 +2117,31 @@
     <value>plainBackgroundPainter1</value>
   </data>
   <data name="&gt;&gt;plainBackgroundPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.4313.32741, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Name" xml:space="preserve">
     <value>styledBorderPainter1</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.4313.32741, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Name" xml:space="preserve">
     <value>plainProgressPainter1</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4313.32741, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Name" xml:space="preserve">
     <value>gradientGlossPainter1</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.4313.32741, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Name" xml:space="preserve">
     <value>plainProgressPainter2</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4313.32741, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
     <value>toolTip1</value>

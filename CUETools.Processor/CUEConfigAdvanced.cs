@@ -81,5 +81,8 @@ namespace CUETools.Processor
 
         [DefaultValue(CTDBCoversSearch.Small), Category("CTDB"), DisplayName("Album art search")]
         public CTDBCoversSearch coversSearch { get; set; }
+
+        [DefaultValue(false), Category("CTDB"), DisplayName("Detailed log")]
+        public bool DetailedCTDBLog { get; set; }
     }
 }

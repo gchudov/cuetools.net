@@ -4,7 +4,7 @@ using CUETools.Codecs.LAME.Interop;
 
 namespace CUETools.Codecs.LAME
 {
-    [AudioEncoderClass("lame CBR", "mp3", false, "96 128 192 256 320", "256", 2, typeof(LAMEEncoderCBRSettings))]
+    //[AudioEncoderClass("lame CBR", "mp3", false, "96 128 192 256 320", "256", 2, typeof(LAMEEncoderCBRSettings))]
     public class LAMEEncoderCBR : LAMEEncoder
     {
         private static readonly uint[] bps_table = new uint[] { 96, 128, 192, 256, 320 };

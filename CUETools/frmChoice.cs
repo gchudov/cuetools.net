@@ -214,11 +214,13 @@ namespace JDP
 				dataGridViewMetadata.Rows.Add("Disc Number", r.metadata.DiscNumber);
 				dataGridViewMetadata.Rows.Add("Total Discs", r.metadata.TotalDiscs);
 				dataGridViewMetadata.Rows.Add("Disc Name", r.metadata.DiscName);
-				dataGridViewMetadata.Rows.Add("Barcode", r.metadata.Barcode);
-				dataGridViewMetadata.Rows.Add("Release Date", r.metadata.ReleaseDate);
 				dataGridViewMetadata.Rows.Add("Label", r.metadata.Label);
-				dataGridViewMetadata.Rows.Add("Country", r.metadata.Country);
-			}
+                dataGridViewMetadata.Rows.Add("Label#", r.metadata.LabelNo);
+                dataGridViewMetadata.Rows.Add("Country", r.metadata.Country);
+                dataGridViewMetadata.Rows.Add("Release Date", r.metadata.ReleaseDate);
+                dataGridViewMetadata.Rows.Add("Barcode", r.metadata.Barcode);
+                dataGridViewMetadata.Rows.Add("Comment", r.metadata.Comment);
+            }
 			else
 			{
 				dataGridViewMetadata.Rows.Clear();
@@ -274,10 +276,12 @@ namespace JDP
 						case 4: te.AutoCompleteCustomSource.Add(r.metadata.DiscNumber); break;
 						case 5: te.AutoCompleteCustomSource.Add(r.metadata.TotalDiscs); break;
 						case 6: te.AutoCompleteCustomSource.Add(r.metadata.DiscName); break;
-						case 7: te.AutoCompleteCustomSource.Add(r.metadata.Barcode); break;
-						case 8: te.AutoCompleteCustomSource.Add(r.metadata.ReleaseDate); break;
-						case 9: te.AutoCompleteCustomSource.Add(r.metadata.Label); break;
-						case 10: te.AutoCompleteCustomSource.Add(r.metadata.Country); break;
+						case 7: te.AutoCompleteCustomSource.Add(r.metadata.Label); break;
+                        case 8: te.AutoCompleteCustomSource.Add(r.metadata.LabelNo); break;
+                        case 9: te.AutoCompleteCustomSource.Add(r.metadata.Country); break;
+                        case 10: te.AutoCompleteCustomSource.Add(r.metadata.ReleaseDate); break;
+                        case 11: te.AutoCompleteCustomSource.Add(r.metadata.Barcode); break;
+                        case 12: te.AutoCompleteCustomSource.Add(r.metadata.Comment); break;
 					}
 				}
 			}
@@ -304,11 +308,13 @@ namespace JDP
 					case 4: r.metadata.DiscNumber = label; break;
 					case 5: r.metadata.TotalDiscs = label; break;
 					case 6: r.metadata.DiscName = label; break;
-					case 7: r.metadata.Barcode = label; break;
-					case 8: r.metadata.ReleaseDate = label; break;
-					case 9: r.metadata.Label = label; break;
-					case 10: r.metadata.Country = label; break;
-				}
+					case 7: r.metadata.Label = label; break;
+                    case 8: r.metadata.LabelNo = label; break;
+					case 9: r.metadata.Country = label; break;
+                    case 10: r.metadata.ReleaseDate = label; break;
+                    case 11: r.metadata.Barcode = label; break;
+                    case 12: r.metadata.Comment = label; break;
+                }
 				item.Text = r.ToString();
 			}
 		}

@@ -16,13 +16,15 @@ namespace CUETools.Processor
 			TotalDiscs = "";
 			DiscNumber = "";
 			DiscName = "";
-			Year = "";
+            Comment = "";
+            Year = "";
 			Genre = "";
 			Artist = "";
 			Title = "";
 			Barcode = "";
 			ReleaseDate = "";
 			Label = "";
+            LabelNo = "";
 			Country = "";
             AlbumArt = new List<CTDB.CTDBResponseMetaImage>();
 			Tracks = new List<CUETrackMetadata>();
@@ -62,7 +64,9 @@ namespace CUETools.Processor
 		public string DiscNumber { get; set; }
 		[DefaultValue("")]
 		public string DiscName { get; set; }
-		[DefaultValue("")]
+        [DefaultValue("")]
+        public string Comment { get; set; }
+        [DefaultValue("")]
 		public string Year { get; set; }
 		[DefaultValue("")]
 		public string Genre { get; set; }
@@ -76,7 +80,9 @@ namespace CUETools.Processor
 		public string ReleaseDate { get; set; }
 		[DefaultValue("")]
 		public string Label { get; set; }
-		[DefaultValue("")]
+        [DefaultValue("")]
+        public string LabelNo { get; set; }
+        [DefaultValue("")]
 		public string Country { get; set; }
 		public List<CUETrackMetadata> Tracks { get; set; }
 
@@ -103,15 +109,24 @@ namespace CUETools.Processor
 			}
 		}
 
+        [XmlIgnore]
+        public string LabelAndNumber
+        {
+            get
+            {
+                return Label + (Label != "" && LabelNo != "" ? " " : "") + LabelNo;
+            }
+        }
+
 		[XmlIgnore]
 		public string ReleaseDateAndLabel
 		{
 			get
 			{
-				return Label == "" && ReleaseDate == "" && Country == "" ? ""
-					: Country 
-					+ (Country != "" && Label != "" ? " - " : "") + Label 
-					+ (Label + Country != "" && ReleaseDate != "" ? " - " : "") + ReleaseDate;
+                return LabelAndNumber == "" && ReleaseDate == "" && Country == "" ? ""
+					: Country
+                    + (Country != "" && LabelAndNumber != "" ? " - " : "") + LabelAndNumber
+                    + (LabelAndNumber + Country != "" && ReleaseDate != "" ? " - " : "") + ReleaseDate;
 			}
 		}
 
@@ -145,19 +160,22 @@ namespace CUETools.Processor
 			if ((overwrite || TotalDiscs == "") && metadata.TotalDiscs != "") TotalDiscs = metadata.TotalDiscs;
 			if ((overwrite || DiscNumber == "") && metadata.DiscNumber != "") DiscNumber = metadata.DiscNumber;
 			if ((overwrite || DiscName == "") && metadata.DiscName != "") DiscName = metadata.DiscName;
-			if ((overwrite || Year == "") && metadata.Year != "") Year = metadata.Year;
+            if ((overwrite || Comment == "") && metadata.Comment != "") Comment = metadata.Comment;
+            if ((overwrite || Year == "") && metadata.Year != "") Year = metadata.Year;
 			if ((overwrite || Genre == "") && metadata.Genre != "") Genre = metadata.Genre;
 			if ((overwrite || Artist == "") && metadata.Artist != "") Artist = metadata.Artist;
 			if ((overwrite || Title == "") && metadata.Title != "") Title = metadata.Title;
 			if ((overwrite || Barcode == "") && metadata.Barcode != "") Barcode = metadata.Barcode;
 			if ((overwrite || ReleaseDate == "") && metadata.ReleaseDate != "") ReleaseDate = metadata.ReleaseDate;
 			if ((overwrite || Label == "") && metadata.Label != "") Label = metadata.Label;
+            if ((overwrite || LabelNo == "") && metadata.LabelNo != "") LabelNo = metadata.LabelNo;
 			if ((overwrite || Country == "") && metadata.Country != "") Country = metadata.Country;
             if ((overwrite || AlbumArt.Count == 0) && metadata.AlbumArt.Count != 0) AlbumArt = metadata.AlbumArt;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
 				if ((overwrite || Tracks[i].Artist == "") && metadata.Tracks[i].Artist != "") Tracks[i].Artist = metadata.Tracks[i].Artist;
+				if ((overwrite || Tracks[i].Comment == "") && metadata.Tracks[i].Artist != "") Tracks[i].Comment = metadata.Tracks[i].Comment;
 				if ((overwrite || Tracks[i].ISRC == "") && metadata.Tracks[i].ISRC != "") Tracks[i].ISRC = metadata.Tracks[i].ISRC;
 			}
 		}
@@ -175,6 +193,7 @@ namespace CUETools.Processor
 			if (TotalDiscs != metadata.TotalDiscs ||
 				DiscNumber != metadata.DiscNumber ||
 				DiscName != metadata.DiscName ||
+                Comment != metadata.Comment ||
 				Year != metadata.Year ||
 				Genre != metadata.Genre ||
 				Artist != metadata.Artist ||
@@ -182,6 +201,7 @@ namespace CUETools.Processor
 				Barcode != metadata.Barcode ||
 				ReleaseDate != metadata.ReleaseDate ||
 				Label != metadata.Label ||
+                LabelNo != metadata.LabelNo ||
 				Country != metadata.Country ||
 				Tracks.Count != metadata.Tracks.Count
 				)
@@ -189,6 +209,7 @@ namespace CUETools.Processor
 			for (int i = 0; i < Tracks.Count; i++)
 				if (Tracks[i].Title != metadata.Tracks[i].Title ||
 					Tracks[i].Artist != metadata.Tracks[i].Artist ||
+					Tracks[i].Comment != metadata.Tracks[i].Comment ||
 					Tracks[i].ISRC != metadata.Tracks[i].ISRC)
 					return false;
 			return true;
@@ -208,6 +229,7 @@ namespace CUETools.Processor
 			TotalDiscs = metadata.TotalDiscs;
 			DiscNumber = metadata.DiscNumber;
 			DiscName = metadata.DiscName;
+            Comment = metadata.Comment;
 			Year = metadata.Year;
 			Genre = metadata.Genre;
 			Artist = metadata.Artist;
@@ -216,11 +238,13 @@ namespace CUETools.Processor
 			ReleaseDate = metadata.ReleaseDate;
 			Country = metadata.Country;
 			Label = metadata.Label;
+            LabelNo = metadata.LabelNo;
             AlbumArt = metadata.AlbumArt;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Title = metadata.Tracks[i].Title;
 				Tracks[i].Artist = metadata.Tracks[i].Artist;
+				Tracks[i].Comment = metadata.Tracks[i].Comment;
 				Tracks[i].ISRC = metadata.Tracks[i].ISRC;
 			}
 		}
@@ -231,10 +255,12 @@ namespace CUETools.Processor
 			Genre = cdEntry.Genre;
 			Artist = cdEntry.Artist;
 			Title = cdEntry.Title;
+            Comment = cdEntry.ExtendedData;
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Title = cdEntry.Tracks[i + firstAudio].Title;
 				Tracks[i].Artist = cdEntry.Artist;
+				Tracks[i].Comment = cdEntry.ExtendedData;
 			}
 		}
 
@@ -247,14 +273,32 @@ namespace CUETools.Processor
 			this.DiscNumber = cdEntry.discnumber ?? "";
 			this.TotalDiscs = cdEntry.disccount ?? "";
 			this.DiscName = cdEntry.discname ?? "";
+            this.Comment = cdEntry.extra ?? "";
 			this.Barcode = cdEntry.barcode ?? "";
 			this.ReleaseDate = cdEntry.releasedate ?? "";
 			this.Country = cdEntry.country ?? "";
 			this.Genre = cdEntry.genre ?? "";
 			this.Label = "";
-			if (cdEntry.label != null)
+            this.LabelNo = "";
+			if (cdEntry.label != null && cdEntry.label.Length > 0)
+			{
+				var listLabel = new List<string>();
+				var listLabelNo = new List<string>();
 				foreach (var l in cdEntry.label)
-					this.Label = (this.Label == "" ? "" : this.Label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
+				{
+					listLabel.Add(l.name ?? "");
+					listLabelNo.Add(l.catno?? "");
+				}
+
+				if (listLabel.Find(s => s != listLabel[0]) == null)
+					this.Label = listLabel[0];
+				else
+					this.Label = string.Join(";", listLabel.ToArray());
+				if (listLabelNo.Find(s => s != listLabelNo[0]) == null)
+					this.LabelNo = listLabelNo[0];
+				else
+					this.LabelNo = string.Join(";", listLabelNo.ToArray());
+			}
             this.AlbumArt.Clear();
             if (cdEntry.coverart != null)
                 this.AlbumArt.AddRange(cdEntry.coverart);
@@ -266,6 +310,7 @@ namespace CUETools.Processor
 				{
 					this.Tracks[i].Title = cdEntry.track[i + firstAudio].name ?? "";
                     this.Tracks[i].Artist = cdEntry.track[i + firstAudio].artist ?? cdEntry.artist ?? "";
+					this.Tracks[i].Comment = cdEntry.track[i + firstAudio].extra ?? "";
 				}
 			}
 		}
@@ -293,10 +338,12 @@ namespace CUETools.Processor
 			bool error = false;
 			Artist = FreedbToEncoding(iso, def, ref different, ref error, Artist);
 			Title = FreedbToEncoding(iso, def, ref different, ref error, Title);
+			Comment = FreedbToEncoding(iso, def, ref different, ref error, Comment);
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Artist = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Artist);
 				Tracks[i].Title = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Title);
+				Tracks[i].Comment = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Comment);
 			}
 			return different && !error;
 		}

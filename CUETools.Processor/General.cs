@@ -369,7 +369,7 @@ namespace CUETools.Processor
 
         public static string Shorten(string f, string s, int maxLen)
         {
-            return maxLen <= 0 || maxLen >= s.Length || f == "music" || f == "path" || f == "filename" || f == "filename_ext" || f == "directoryname" ?
+            return maxLen <= 0 || maxLen >= s.Length || f == "music" || f == "path" /*|| f == "filename"*/ || f == "filename_ext" || f == "directoryname" ?
                 s : s.Substring(0, maxLen);
         }
 

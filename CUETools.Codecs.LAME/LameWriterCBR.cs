@@ -3,7 +3,7 @@ using System.IO;
 
 namespace CUETools.Codecs.LAME
 {
-    [AudioEncoderClass("libmp3lame CBR", "mp3", false, "96 128 192 256 320", "256", 2, typeof(LameWriterCBRSettings))]
+    [AudioEncoderClass("CBR (libmp3lame)", "mp3", false, "96 128 192 256 320", "256", 1, typeof(LameWriterCBRSettings))]
     public class LameWriterCBR : LameWriter
     {
         private static readonly int[] bps_table = new int[] { 96, 128, 192, 256, 320 };

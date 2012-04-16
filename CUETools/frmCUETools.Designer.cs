@@ -126,9 +126,9 @@ namespace JDP {
             this.editMetadataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addFolderToLocalDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeItemFromDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.backgroundWorkerAddToLocalDB = new System.ComponentModel.BackgroundWorker();
             this.updateLocalDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.locateInExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.backgroundWorkerAddToLocalDB = new System.ComponentModel.BackgroundWorker();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -1045,11 +1045,6 @@ namespace JDP {
             resources.ApplyResources(this.removeItemFromDatabaseToolStripMenuItem, "removeItemFromDatabaseToolStripMenuItem");
             this.removeItemFromDatabaseToolStripMenuItem.Click += new System.EventHandler(this.removeItemFromDatabaseToolStripMenuItem_Click);
             // 
-            // backgroundWorkerAddToLocalDB
-            // 
-            this.backgroundWorkerAddToLocalDB.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerAddToLocalDB_DoWork);
-            this.backgroundWorkerAddToLocalDB.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerAddToLocalDB_RunWorkerCompleted);
-            // 
             // updateLocalDatabaseToolStripMenuItem
             // 
             this.updateLocalDatabaseToolStripMenuItem.Name = "updateLocalDatabaseToolStripMenuItem";
@@ -1061,6 +1056,11 @@ namespace JDP {
             this.locateInExplorerToolStripMenuItem.Name = "locateInExplorerToolStripMenuItem";
             resources.ApplyResources(this.locateInExplorerToolStripMenuItem, "locateInExplorerToolStripMenuItem");
             this.locateInExplorerToolStripMenuItem.Click += new System.EventHandler(this.locateInExplorerToolStripMenuItem_Click);
+            // 
+            // backgroundWorkerAddToLocalDB
+            // 
+            this.backgroundWorkerAddToLocalDB.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerAddToLocalDB_DoWork);
+            this.backgroundWorkerAddToLocalDB.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerAddToLocalDB_RunWorkerCompleted);
             // 
             // frmCUETools
             // 
