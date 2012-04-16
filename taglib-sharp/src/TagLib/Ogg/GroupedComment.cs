@@ -1209,6 +1209,139 @@ namespace TagLib.Ogg
 		}
 
 		/// <summary>
+		///    Gets and sets the Release Date of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the ReleaseDate of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>When getting the value, the child comments are looped
+		///    through in order and the first non-<see langword="null" />
+		///    and non-empty value is returned.</para>
+		///    <para>When setting the value, it is stored in the first
+		///    comment.</para>
+		/// </remarks>
+		public override string ReleaseDate {
+			get {
+				foreach (XiphComment tag in tags) {
+					if (tag == null)
+						continue;
+					
+					string value = tag.ReleaseDate;
+					
+					if (value != null && value.Length > 0)
+						return value;
+				}
+				
+				return null;
+			}
+			set {if (tags.Count > 0) tags [0].ReleaseDate = value;}
+		}
+
+		/// <summary>
+		///    Gets and sets the Publisher of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the Publisher of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>When getting the value, the child comments are looped
+		///    through in order and the first non-<see langword="null" />
+		///    and non-empty value is returned.</para>
+		///    <para>When setting the value, it is stored in the first
+		///    comment.</para>
+		/// </remarks>
+		public override string Publisher
+		{
+			get {
+				foreach (XiphComment tag in tags) {
+					if (tag == null)
+						continue;
+
+					string value = tag.Publisher;
+
+					if (value != null && value.Length > 0)
+						return value;
+				}
+
+				return null;
+			}
+			set {if (tags.Count > 0) tags [0].Publisher = value;}
+		}
+
+		/// <summary>
+		///    Gets and sets the CatalogNo of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the catalog number of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>When getting the value, the child comments are looped
+		///    through in order and the first non-<see langword="null" />
+		///    and non-empty value is returned.</para>
+		///    <para>When setting the value, it is stored in the first
+		///    comment.</para>
+		/// </remarks>
+		public override string CatalogNo {
+			get {
+				foreach (XiphComment tag in tags) {
+					if (tag == null)
+						continue;
+
+					string value = tag.CatalogNo;
+
+					if (value != null && value.Length > 0)
+						return value;
+				}
+
+				return null;
+			}
+			set {if (tags.Count > 0) tags [0].CatalogNo = value;}
+		}
+
+		/// <summary>
+		///    Gets and sets the DiscSubtitle of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the subtitle of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>When getting the value, the child comments are looped
+		///    through in order and the first non-<see langword="null" />
+		///    and non-empty value is returned.</para>
+		///    <para>When setting the value, it is stored in the first
+		///    comment.</para>
+		/// </remarks>
+		public override string DiscSubtitle {
+			get {
+				foreach (XiphComment tag in tags) {
+					if (tag == null)
+						continue;
+
+					string value = tag.DiscSubtitle;
+
+					if (value != null && value.Length > 0)
+						return value;
+				}
+
+				return null;
+			}
+			set {if (tags.Count > 0) tags [0].DiscSubtitle = value;}
+		}
+
+		/// <summary>
 		///    Gets and sets a collection of pictures associated with
 		///    the media represented by the current instance.
 		/// </summary>

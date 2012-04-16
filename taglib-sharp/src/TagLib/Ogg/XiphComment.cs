@@ -548,7 +548,7 @@ namespace TagLib.Ogg
 
 				return GetField ("ENSEMBLE"); 
 			}
-			set {SetField ("ALBUMARTIST", value);}
+			set {SetField ("ALBUM ARTIST", value);}
 		}
 		
 		/// <summary>
@@ -741,7 +741,8 @@ namespace TagLib.Ogg
 				return 0;
 			}
 			set {
-				SetField ("TRACKTOTAL", TrackCount);
+//				SetField ("TRACKTOTAL", TrackCount);
+				SetField ("TOTALTRACKS", TrackCount);
 				SetField ("TRACKNUMBER", value);
 			}
 		}
@@ -769,6 +770,10 @@ namespace TagLib.Ogg
 				if ((text = GetFirstField ("TRACKTOTAL")) !=
 					null && uint.TryParse (text, out value))
 					return value;
+
+				if ((text = GetFirstField ("TOTALTRACKS")) !=
+					null && uint.TryParse (text, out value))
+					return value;
 				
 				if ((text = GetFirstField ("TRACKNUMBER")) !=
 					null && (values = text.Split ('/'))
@@ -778,7 +783,8 @@ namespace TagLib.Ogg
 				
 				return 0;
 			}
-			set {SetField ("TRACKTOTAL", value);}
+			//set {SetField ("TRACKTOTAL", value);}
+			set {SetField ("TOTALTRACKS", value);}
 		}
 		
 		/// <summary>
@@ -808,7 +814,8 @@ namespace TagLib.Ogg
 				return 0;
 			}
 			set {
-				SetField ("DISCTOTAL", DiscCount);
+//				SetField ("DISCTOTAL", DiscCount);
+				SetField ("TOTALDISCS", DiscCount);
 				SetField ("DISCNUMBER", value);
 			}
 		}
@@ -836,6 +843,11 @@ namespace TagLib.Ogg
 				if ((text = GetFirstField ("DISCTOTAL")) != null
 					&& uint.TryParse (text, out value))
 					return value;
+
+
+				if ((text = GetFirstField ("TOTALDISCS")) != null
+					&& uint.TryParse (text, out value))
+					return value;				
 				
 				if ((text = GetFirstField ("DISCNUMBER")) !=
 					null && (values = text.Split ('/'))
@@ -845,7 +857,8 @@ namespace TagLib.Ogg
 				
 				return 0;
 			}
-			set {SetField ("DISCTOTAL", value);}
+//			set {SetField ("DISCTOTAL", value);}
+			set {SetField ("TOTALDISCS", value);}
 		}
 		
 		/// <summary>
@@ -1108,6 +1121,75 @@ namespace TagLib.Ogg
 		public override string MusicBrainzReleaseCountry {
 			get {return GetFirstField ("RELEASECOUNTRY");}
 			set {SetField ("RELEASECOUNTRY", value);}
+		}
+
+		/// <summary>
+		///    Gets and sets the Release Date of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the ReleaseDate of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "RELEASE DATE" field.
+		/// </remarks>
+		public override string ReleaseDate {
+			get { return GetFirstField("RELEASE DATE") ?? GetFirstField("RELEASETIME"); }
+			set { SetField("RELEASE DATE", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the Publisher of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the Publisher of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "PUBLISHER" field.
+		/// </remarks>
+		public override string Publisher
+		{
+			get { return GetFirstField("PUBLISHER") ?? GetFirstField("ORGANIZATION") ?? GetFirstField("LABEL"); }
+			set { SetField("PUBLISHER", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the CatalogNo of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the catalog number of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "LABELNO" field.
+		/// </remarks>
+		public override string CatalogNo {
+			get { return GetFirstField("LABELNO") ?? GetFirstField("CATALOGNUMBER"); }
+			set { SetField("LABELNO", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the DiscSubtitle of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the subtitle of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "DISCSUBTITLE" field.
+		/// </remarks>
+		public override string DiscSubtitle {
+			get { return GetFirstField("DISCSUBTITLE"); }
+			set { SetField("DISCSUBTITLE", value); }
 		}
 
 		/// <summary>

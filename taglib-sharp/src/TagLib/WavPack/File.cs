@@ -216,9 +216,29 @@ namespace TagLib.WavPack {
 				propertiesStyle == ReadStyle.None)
 				return;
 				
-			Seek (start);
-			header_block = ReadBlock (
-				(int) StreamHeader.Size);
+//			Seek (start);
+//			header_block = ReadBlock (
+//				(int) StreamHeader.Size);
+
+			do
+			{
+				long position = Find(StreamHeader.FileIdentifier, start);
+				if (position < 0)
+					throw new CorruptFileException(
+						"wvpk header not found");
+				Seek(position);
+				header_block = ReadBlock(
+					(int)StreamHeader.Size);
+				try 
+				{
+					new StreamHeader(header_block, header_block.Count);
+					InvariantStartPosition = position;
+					return;
+				} catch (CorruptFileException)
+				{
+					start = position + 4;
+				}
+			} while (true);
 		}
 		
 		/// <summary>

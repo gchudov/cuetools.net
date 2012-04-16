@@ -1419,6 +1419,75 @@ namespace TagLib.Ape {
 		}
 
 		/// <summary>
+		///    Gets and sets the Release Date of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the ReleaseDate of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "RELEASE DATE" item.
+		/// </remarks>
+		public override string ReleaseDate {
+			get {return GetItemAsString ("RELEASE DATE") ?? GetItemAsString ("RELEASETIME");}
+			set {SetValue ("RELEASE DATE", value);}
+		}
+
+		/// <summary>
+		///    Gets and sets the Publisher of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the Publisher of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "PUBLISHER" field.
+		/// </remarks>
+		public override string Publisher
+		{
+			get { return GetItemAsString ("PUBLISHER") ?? GetItemAsString ("LABEL"); }
+			set { SetValue ("PUBLISHER", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the CatalogNo of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the catalog number of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "LABELNO" field.
+		/// </remarks>
+		public override string CatalogNo {
+			get { return GetItemAsString ("CATALOG") ?? GetItemAsString ("CATALOGNUMBER") ?? GetItemAsString ("LABELNO"); }
+			set { SetValue ("CATALOG", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the DiscSubtitle of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the subtitle of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "DISCSUBTITLE" field.
+		/// </remarks>
+		public override string DiscSubtitle {
+			get { return GetItemAsString ("DISCSUBTITLE"); }
+			set { SetValue ("DISCSUBTITLE", value); }
+		}
+
+		/// <summary>
 		///    Gets and sets a collection of pictures associated with
 		///    the media represented by the current instance.
 		/// </summary>

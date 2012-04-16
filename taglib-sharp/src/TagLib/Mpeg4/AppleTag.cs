@@ -433,13 +433,18 @@ namespace TagLib.Mpeg4 {
 		public void SetDashBox(string meanstring, string namestring, string datastring)
 		{
 			AppleDataBox data_box = GetDashAtoms(meanstring, namestring);
-			
-			// If we did find a data_box and we have an empty datastring we should
-			// remove the entire dash box.
-			if (data_box != null && string.IsNullOrEmpty(datastring)) {
-				AppleAnnotationBox dash_box = GetParentDashBox(meanstring, namestring);
-				dash_box.ClearChildren();
-				ilst_box.RemoveChild(dash_box);
+
+			if (string.IsNullOrEmpty(datastring))
+			{
+				// If we did find a data_box and we have an empty datastring we should
+				// remove the entire dash box.
+				if (data_box != null)
+				{
+					AppleAnnotationBox dash_box = GetParentDashBox(meanstring, namestring);
+					dash_box.ClearChildren();
+					ilst_box.RemoveChild(dash_box);
+				}
+
 				return;
 			}
 			
@@ -1358,6 +1363,78 @@ namespace TagLib.Mpeg4 {
 		public override string MusicBrainzReleaseCountry {
 			get {return GetDashBox("com.apple.iTunes","MusicBrainz Album Release Country");}
 			set {SetDashBox("com.apple.iTunes", "MusicBrainz Album Release Country",value);}
+		}
+
+		/// <summary>
+		///    Gets and sets the Release Date of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the ReleaseDate of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "dash"/"----" box type.
+		/// </remarks>
+		public override string ReleaseDate {
+			get { return GetDashBox("com.apple.iTunes", "MusicBrainz Album Release Date"); }
+			set { SetDashBox("com.apple.iTunes", "MusicBrainz Album Release Date", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the Publisher of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the Publisher of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "dash"/"----" box type.
+		///    http://musicbrainz.org/doc/PicardTagMapping
+		/// </remarks>
+		public override string Publisher
+		{
+			get { return GetDashBox("com.apple.iTunes", "LABEL"); }
+			set { SetDashBox("com.apple.iTunes", "LABEL", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the CatalogNo of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the catalog number of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "dash"/"----" box type.
+		///    http://musicbrainz.org/doc/PicardTagMapping
+		/// </remarks>
+		public override string CatalogNo {
+			get { return GetDashBox("com.apple.iTunes", "CATALOGNUMBER"); }
+			set { SetDashBox("com.apple.iTunes", "CATALOGNUMBER", value); }
+		}
+
+		/// <summary>
+		///    Gets and sets the DiscSubtitle of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the subtitle of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "dash"/"----" box type.
+		///    http://musicbrainz.org/doc/PicardTagMapping
+		/// </remarks>
+		public override string DiscSubtitle {
+			get { return GetDashBox("com.apple.iTunes", "DISCSUBTITLE"); }
+			set { SetDashBox("com.apple.iTunes", "DISCSUBTITLE", value); }
 		}
 
 		/// <summary>

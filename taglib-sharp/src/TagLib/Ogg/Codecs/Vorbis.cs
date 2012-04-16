@@ -185,7 +185,11 @@ namespace TagLib.Ogg.Codecs
 			data.Add (id);
 			data.Add (comment.Render (true));
 			if (packets.Count > 1 && PacketType (packets [1]) == 0x03)
+			{
+				if (data.Count < packets [1].Count)
+					data.Add (new ByteVector (packets [1].Count - data.Count, 0));
 				packets [1] = data;
+			}
 			else
 				packets.Insert (1, data);
 		}

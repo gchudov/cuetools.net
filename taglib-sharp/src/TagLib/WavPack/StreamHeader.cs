@@ -136,6 +136,12 @@ namespace TagLib.WavPack {
 			version = data.Mid (8, 2).ToUShort (false);
 			flags = data.Mid (24, 4).ToUInt (false);
 			samples = data.Mid (12, 4).ToUInt (false);
+
+			if (!(0 == (data[4] & 1) && data[6] < 16 && 0 == data[7] && (data[6] != 0 || data[5] != 0 || data[4] > 24) && 
+				version >= 0x402 && version <= 0x410 &&
+				data[22] < 3 && 0 == data[23]))
+				throw new CorruptFileException(
+					"Not a supported wavpack header");
 		}
 		
 		#endregion

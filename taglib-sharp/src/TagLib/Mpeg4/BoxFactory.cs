@@ -119,7 +119,7 @@ namespace TagLib.Mpeg4 {
 			else if (type == BoxType.Free || type == BoxType.Skip)
 				return new IsoFreeSpaceBox (header, file,
 					handler);
-			else if (type == BoxType.Mean || type == BoxType.Name)
+			else if ((type == BoxType.Mean || type == BoxType.Name) && header.DataSize >= 4)
 				return new AppleAdditionalInfoBox (header, file,
 					handler);
 			

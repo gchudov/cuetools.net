@@ -631,6 +631,36 @@ namespace TagLib.Matroska
             set { }
         }
 
+		/// <summary>
+		///    Gets and sets the Release Date of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the ReleaseDate of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		public override string ReleaseDate {
+			get { return null; }
+			set { }
+		}
+
+		/// <summary>
+		///    Gets and sets the Publisher of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the Publisher of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		public override string Publisher
+		{
+			get { return null; }
+			set { }
+		}
+
+
         /// <summary>
         ///    Gets and sets a collection of pictures associated with
         ///    the media represented by the current instance.

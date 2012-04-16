@@ -824,6 +824,84 @@ namespace TagLib {
 		}
 
 		/// <summary>
+		///    Gets and sets the Release Date of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the ReleaseDate of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>This field represents the ReleaseDate, that describes
+		///    the year or a more accurate date when this version of an 
+		///    album was first released.  In case of remastered albums 
+                ///    this can be a later date than Year. Format can be one of
+                ///    yyyy, yyyy-MM, yyyy-MM-dd
+                ///    </para>
+		/// </remarks>
+		public virtual string ReleaseDate {
+			get { return null; }
+			set {}
+		}
+
+		/// <summary>
+		///    Gets and sets the Publisher of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the Publisher of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>This is normally the name of a record label
+                ///    </para>
+		/// </remarks>
+		public virtual string Publisher {
+			get { return null; }
+			set {}
+		}
+
+		/// <summary>
+		///    Gets and sets the CatalogNo of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the catalog number of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>This is normally a unique alphanumeric id, assigned
+                ///    to a given release by it's Publisher.
+                ///    </para>
+		/// </remarks>
+		public virtual string CatalogNo {
+			get { return null; }
+			set {}
+		}
+
+		/// <summary>
+		///    Gets and sets the DiscSubtitle of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the subtitle of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>This is normally a name which identifies the media
+                ///    within a set, for example name of a CD within a boxset release.
+                ///    </para>
+		/// </remarks>
+		public virtual string DiscSubtitle {
+			get { return null; }
+			set {}
+		}
+
+		/// <summary>
 		///    Gets and sets a collection of pictures associated with
 		///    the media represented by the current instance.
 		/// </summary>

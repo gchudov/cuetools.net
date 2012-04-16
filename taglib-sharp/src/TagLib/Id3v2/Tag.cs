@@ -1892,6 +1892,78 @@ namespace TagLib.Id3v2 {
 			get {return GetUserTextAsString ("MusicBrainz Album Release Country");}
 			set {SetUserTextAsString ("MusicBrainz Album Release Country",value);}
 		}
+
+		/// <summary>
+		///    Gets and sets the Release Date of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the ReleaseDate of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "TDRL" text.
+		/// </remarks>
+		public override string ReleaseDate {
+			get {return GetTextAsString (FrameType.TDRL);}
+			set {SetTextFrame (FrameType.TDRL, value);}
+		}
+
+		/// <summary>
+		///    Gets and sets the Publisher of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the Publisher of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "TPUB" text.
+		/// </remarks>
+		public override string Publisher
+		{
+			get {return GetTextAsString (FrameType.TPUB);}
+			set {SetTextFrame (FrameType.TPUB, value);}
+		}
+
+		/// <summary>
+		///    Gets and sets the CatalogNo of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the catalog number of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    This property is implemented using the "TXXX:CATALOGNUMBER" frame.
+		///    http://musicbrainz.org/doc/PicardTagMapping
+		/// </remarks>
+		public override string CatalogNo {
+			get {return GetUserTextAsString ("CATALOGNUMBER");}
+			set {SetUserTextAsString ("CATALOGNUMBER",value);}
+		}
+
+		/// <summary>
+		///    Gets and sets the DiscSubtitle of the media represented by
+		///    the current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="string" /> containing the subtitle of the
+		///    media represented by the current instance or null
+		///    if no value is present.
+		/// </value>
+		/// <remarks>
+		///    <para>This is normally a name which identifies the media
+                ///    within a set, for example name of a CD within a boxset release.
+                ///    </para>
+		/// </remarks>
+		public override string DiscSubtitle {
+			get {return GetTextAsString (FrameType.TSST);}
+			set {SetTextFrame (FrameType.TSST, value);}
+		}
 		
 		/// <summary>
 		///    Gets and sets a collection of pictures associated with
