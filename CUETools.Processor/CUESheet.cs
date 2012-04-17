@@ -2508,6 +2508,8 @@ namespace CUETools.Processor
             if (!_isCD)
                 throw new Exception("Not a cd");
 
+            _ripper.DetectGaps();
+
             _arTestVerify = new AccurateRipVerify(_toc, proxy);
             var buff = new AudioBuffer(AudioPCMConfig.RedBook, 0x10000);
             while (_ripper.Read(buff, -1) != 0)
@@ -3902,7 +3904,17 @@ namespace CUETools.Processor
             }
 
             if (sourceInfo.Offset != 0)
-                audioSource.Position = sourceInfo.Offset;
+            {
+                try
+                {
+                    audioSource.Position = sourceInfo.Offset;
+                }
+                catch(Exception ex)
+                {
+                    audioSource.Close();
+                    throw ex;
+                }
+            }
 
             //if (!(audioSource is AudioPipe) && !(audioSource is UserDefinedReader) && _config.separateDecodingThread)
             if (!(audioSource is AudioPipe) && pipe)

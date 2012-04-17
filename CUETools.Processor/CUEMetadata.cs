@@ -313,7 +313,7 @@ namespace CUETools.Processor
 					this.Tracks[i].Comment = cdEntry.track[i + firstAudio].extra ?? "";
 				}
 			}
-		}
+        }
 
 		private static string FreedbToEncoding(Encoding iso, Encoding def, ref bool changed, ref bool error, string s)
 		{

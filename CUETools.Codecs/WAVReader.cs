@@ -24,13 +24,32 @@ namespace CUETools.Codecs
             {
                 long seekPos;
 
+                if (_samplePos == value)
+                {
+                    return;
+                }
+
+                var oldSamplePos = _samplePos;
                 if (_sampleLen >= 0 && value > _sampleLen)
                     _samplePos = _sampleLen;
                 else
                     _samplePos = value;
 
-                seekPos = _dataOffset + _samplePos * PCM.BlockAlign;
-                _IO.Seek(seekPos, SeekOrigin.Begin);
+                if (_IO.CanSeek || _samplePos < oldSamplePos)
+                {
+                    seekPos = _dataOffset + _samplePos * PCM.BlockAlign;
+                    _IO.Seek(seekPos, SeekOrigin.Begin);
+                }
+                else
+                {
+                    int offs = (int)(_samplePos - oldSamplePos) * PCM.BlockAlign;
+                    while (offs > 0)
+                    {
+                        int chunk = Math.Min(offs, 16536);
+                        _br.ReadBytes(chunk);
+                        offs -= chunk;
+                    }
+                }
             }
         }
 

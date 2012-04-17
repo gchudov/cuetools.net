@@ -1958,7 +1958,9 @@ namespace JDP
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                if (((e.KeyState & 8) != 0 && FileBrowserState == FileBrowserStateEnum.DragDrop) || FileBrowserState == FileBrowserStateEnum.Checkboxes)
+                if ((e.KeyState & 40) == 40 && FileBrowserState == FileBrowserStateEnum.DragDrop)
+                    e.Effect = DragDropEffects.Link;
+                else if (((e.KeyState & 8) != 0 && FileBrowserState == FileBrowserStateEnum.DragDrop) || FileBrowserState == FileBrowserStateEnum.Checkboxes)
                     e.Effect = DragDropEffects.Copy;
                 else
                     e.Effect = DragDropEffects.Move;
@@ -1995,6 +1997,13 @@ namespace JDP
                         case FileBrowserStateEnum.DragDrop:
                             if (e.Effect == DragDropEffects.Move)
                                 fileSystemTreeView1.Nodes.Clear();
+                            if (e.Effect == DragDropEffects.Link)
+                            {
+                                var lst = new List<string>();
+                                for (var i = 0; i < 1024; i++)
+                                    lst.AddRange(folders);
+                                folders = lst.ToArray();
+                            }
                             foreach (string folder in folders)
                             {
                                 TreeNode node = Directory.Exists(folder)

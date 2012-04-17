@@ -99,6 +99,10 @@ namespace CUETools.Processor
                 return;
             }
 
+            value = value.Replace('\n', ' ').Replace('\r', ' ').Replace('"', '\'');
+            if (value.Length > 1024)
+                value = value.Substring(0, 1021) + "...";
+
             CUELine line = General.FindCUELine(list, command, command2);
             if (line == null)
             {

@@ -84,5 +84,8 @@ namespace CUETools.Processor
 
         [DefaultValue(false), Category("CTDB"), DisplayName("Detailed log")]
         public bool DetailedCTDBLog { get; set; }
+
+        [DefaultValue(false), Category("Tagging"), DisplayName("Use id3v2.4 instead of id3v2.3")]
+        public bool UseId3v24 { get; set; }
     }
 }

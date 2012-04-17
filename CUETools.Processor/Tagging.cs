@@ -30,6 +30,7 @@ namespace CUETools.Processor
             if (fileInfo is TagLib.Mpeg.AudioFile || (fileInfo is TagLib.UserDefined.File && (fileInfo as TagLib.UserDefined.File).Tagger == CUEToolsTagger.ID3v2))
             {
                 var id3v2 = (TagLib.Id3v2.Tag)fileInfo.GetTag(TagLib.TagTypes.Id3v2, true);
+                id3v2.Version = (byte) (config.advanced.UseId3v24 ? 4 : 3);
                 foreach (string tag in tags.AllKeys)
                 {
                     var frame = TagLib.Id3v2.UserTextInformationFrame.Get(id3v2, tag, true);

@@ -91,7 +91,7 @@ namespace CUETools.Processor
             encodeWhenZeroOffset = false;
             fixOffset = false;
             noUnverifiedOutput = false;
-            writeArTagsOnEncode = true;
+            writeArTagsOnEncode = false;
             writeArLogOnConvert = true;
             writeArTagsOnVerify = false;
             writeArLogOnVerify = false;
@@ -402,7 +402,7 @@ return processor.Go();
             encodeWhenZeroOffset = sr.LoadBoolean("ArEncodeWhenZeroOffset") ?? false;
             noUnverifiedOutput = sr.LoadBoolean("ArNoUnverifiedOutput") ?? false;
             fixOffset = sr.LoadBoolean("ArFixOffset") ?? false;
-            writeArTagsOnEncode = sr.LoadBoolean("ArWriteCRC") ?? true;
+            writeArTagsOnEncode = sr.LoadBoolean("ArWriteCRC") ?? writeArTagsOnEncode;
             writeArLogOnConvert = sr.LoadBoolean("ArWriteLog") ?? true;
             writeArTagsOnVerify = sr.LoadBoolean("ArWriteTagsOnVerify") ?? false;
             writeArLogOnVerify = sr.LoadBoolean("ArWriteLogOnVerify") ?? false;

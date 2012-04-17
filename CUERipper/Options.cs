@@ -78,5 +78,8 @@ namespace CUERipper
 
         [DefaultValue(CUETools.Processor.CUEConfigAdvanced.CTDBCoversSearch.Small), Category("CTDB"), DisplayName("Album art search")]
         public CUETools.Processor.CUEConfigAdvanced.CTDBCoversSearch coversSearch { get { return config.advanced.coversSearch; } set { config.advanced.coversSearch = value; } }
+
+        [DefaultValue(false), Category("CTDB"), DisplayName("Detailed log")]
+        public bool DetailedCTDBLog { get { return config.advanced.DetailedCTDBLog; } set { config.advanced.DetailedCTDBLog = value; } }
     }
 }
