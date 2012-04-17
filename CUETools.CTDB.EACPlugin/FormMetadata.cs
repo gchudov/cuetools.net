@@ -80,6 +80,10 @@ namespace CUETools.CTDB.EACPlugin
                 {
                     backgroundWorker1.ReportProgress(0, metadata);
                 }
+                if (backgroundWorker1.CancellationPending)
+                {
+                    throw new Exception();
+                }
                 foreach (var coverart in metadata.coverart)
                 {
                     var uri = Options.CoversSearch == CTDBCoversSearch.Large ?
@@ -101,7 +105,7 @@ namespace CUETools.CTDB.EACPlugin
 
         public void Form1_DoubleClick(object sender, MouseEventArgs e)
         {
-            if (this.m_currently_selected != null && !this.cdinfo)
+            if (this.m_currently_selected != null && !this.cdinfo && !backgroundWorker1.IsBusy)
             {
                 this.DialogResult = DialogResult.OK;
             }
@@ -219,7 +223,7 @@ namespace CUETools.CTDB.EACPlugin
 
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (this.cdinfo)
+            if (this.cdinfo && !backgroundWorker1.IsBusy)
             {
                 var ht = listView1.HitTest(e.Location);
                 if (ht.Item != null)
@@ -319,6 +323,13 @@ namespace CUETools.CTDB.EACPlugin
 
         private void FormMetadata_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (backgroundWorker1.IsBusy)
+            {
+                backgroundWorker1.CancelAsync();
+                e.Cancel = true;
+                return;
+            }
+
             Options.MetadataWindowSize = this.Size;
         }
     }
