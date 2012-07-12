@@ -267,7 +267,7 @@ namespace CUETools.Codecs
 			{
 				error += lpc_in[i] * (1 << sh);
 				q = (int)(error + 0.5);
-				if (q <= -qmax) q = -qmax + 1;
+				if (q < -(qmax+1)) q = -(qmax + 1);
 				if (q > qmax) q = qmax;
 				error -= q;
 				lpc_out[i] = q;

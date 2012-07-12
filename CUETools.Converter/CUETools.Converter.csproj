@@ -55,10 +55,6 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="taglib-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\taglib-sharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -72,6 +68,10 @@
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj">
+      <Project>{6B143A39-C7B2-4743-9917-92262C60E9A6}</Project>
+      <Name>taglib-sharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -94,13 +94,14 @@ namespace CUETools.Codecs
         /// Sorts orders based on Akaike's criteria
         /// </summary>
         /// <param name="blocksize">Frame size</param>
-        public void SortOrdersAkaike(int blocksize, int count, int max_order, double alpha, double beta)
+        public void SortOrdersAkaike(int blocksize, int count, int min_order, int max_order, double alpha, double beta)
         {
-            for (int i = 0; i < max_order; i++)
-                best_orders[i] = i + 1;
-            for (int i = 0; i < max_order && i < count; i++)
+            for (int i = min_order; i <= max_order; i++)
+                best_orders[i - min_order] = i;
+            int lim = max_order - min_order + 1;
+            for (int i = 0; i < lim && i < count; i++)
             {
-                for (int j = i + 1; j < max_order; j++)
+                for (int j = i + 1; j < lim; j++)
                 {
                     if (Akaike(blocksize, best_orders[j], alpha, beta) < Akaike(blocksize, best_orders[i], alpha, beta))
                     {

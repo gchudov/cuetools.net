@@ -942,7 +942,7 @@ namespace JDP
                                 dlg.LookupAlbumInfo(_profile._config.advanced.CacheMetadata,
                                     true,
                                     true,
-                                    CTDBMetadataSearch.Default);
+                                    _profile._config.advanced.metadataSearch);
                                 dlgRes = dlg.ShowDialog(this);
                                 _choiceMaxed = dlg.WindowState == FormWindowState.Maximized;
                                 if (!_choiceMaxed)
@@ -2250,7 +2250,7 @@ namespace JDP
             if (_choiceMaxed)
                 dlg.WindowState = FormWindowState.Maximized;
             dlg.CUE = CueSheet;
-            dlg.LookupAlbumInfo(true, node is FileSystemTreeNodeLocalDBEntry, true, CTDBMetadataSearch.Default);
+            dlg.LookupAlbumInfo(true, node is FileSystemTreeNodeLocalDBEntry, true, _profile._config.advanced.metadataSearch);
             var dlgRes = dlg.ShowDialog(this);
             _choiceMaxed = dlg.WindowState == FormWindowState.Maximized;
             if (!_choiceMaxed)

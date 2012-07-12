@@ -275,7 +275,9 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 				if (_IO_WVC_ungetc != -1)
 					throw gcnew Exception("Double PushBackCallback unsupported.");
 				_IO_WVC_ungetc = c;
-			} 
+			}
+
+			return 0;
 		}
 
 		uint32_t LengthCallback (void *id)

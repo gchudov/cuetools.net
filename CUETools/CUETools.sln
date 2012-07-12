@@ -102,6 +102,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.Codecs.TTA", "..\CUETools.Codecs.TTA\CUETools.Codecs.TTA.vcxproj", "{1D1E99BC-6D22-41C0-BD94-FF4DD5EC725B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Converter", "..\CUETools.Converter\CUETools.Converter.csproj", "{115CC5B0-0385-41CD-8A23-6A7EA4C51926}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6B143A39-C7B2-4743-9917-92262C60E9A6} = {6B143A39-C7B2-4743-9917-92262C60E9A6}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUEControls", "..\CUEControls\CUEControls.csproj", "{CA4D64E6-6544-4A29-8BA5-7DB08D50D072}"
 EndProject

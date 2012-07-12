@@ -143,7 +143,6 @@ namespace CUERipper
             resources.ApplyResources(this.statusStrip1, "statusStrip1");
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.ShowItemToolTips = true;
-            this.statusStrip1.SizingGrip = false;
             // 
             // toolStripStatusLabel1
             // 
@@ -786,9 +785,7 @@ namespace CUERipper
             this.Controls.Add(this.panel6);
             this.Controls.Add(this.statusStrip1);
             this.KeyPreview = true;
-            this.MaximizeBox = false;
             this.Name = "frmCUERipper";
-            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmCUERipper_FormClosed);
             this.Load += new System.EventHandler(this.frmCUERipper_Load);
             this.ClientSizeChanged += new System.EventHandler(this.frmCUERipper_ClientSizeChanged);

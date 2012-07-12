@@ -317,7 +317,21 @@ namespace CUETools.TestCodecs
 				}
 			}
 		}
-	}
 
+        [TestMethod()]
+        [Ignore]
+        public void asdaTest()
+        {
+            //var tempPath = @"C:\Users\user\Downloads\CUETools_2.1.2a\CUE Tools\LocalDB.xml";
+            var tempPath = @"C:\Users\user\Downloads\CUETools_2.1.4\CUE Tools\LocalDB.xml";
+            var path = tempPath + @".z";
+            //using (var fileStream = new System.IO.FileStream(tempPath, System.IO.FileMode.CreateNew))
+            //using (var deflateStream = new System.IO.Compression.DeflateStream(fileStream, System.IO.Compression.CompressionMode.Compress))
+            using (var fileStream1 = new System.IO.FileStream(tempPath, System.IO.FileMode.CreateNew))
+            using (var fileStream2 = new System.IO.FileStream(path, System.IO.FileMode.Open))
+            using (var deflateStream = new System.IO.Compression.DeflateStream(fileStream2, System.IO.Compression.CompressionMode.Decompress))
+                deflateStream.CopyTo(fileStream1);
+        }
+	}
 
 }

@@ -160,7 +160,7 @@ namespace JDP
 		private void AutoResizeList(ListView list, int mainCol)
 		{
 			list.SuspendLayout();
-			int widthAvailable = list.Width - SystemInformation.BorderSize.Width - SystemInformation.VerticalScrollBarWidth;
+			int widthAvailable = list.ClientSize.Width - 2 * SystemInformation.BorderSize.Width - SystemInformation.VerticalScrollBarWidth;
 			for (int i = 0; i < list.Columns.Count; i++)
 				if (i != mainCol)
 				{

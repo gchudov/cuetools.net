@@ -126,7 +126,7 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>503, 24</value>
+    <value>401, 24</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -997,7 +997,7 @@
     <value>10, 70</value>
   </data>
   <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
-    <value>51, 17</value>
+    <value>50, 17</value>
   </data>
   <data name="radioButtonAudioNone.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
@@ -1063,7 +1063,7 @@
     <value>10, 53</value>
   </data>
   <data name="radioButtonAudioHybrid.Size" type="System.Drawing.Size, System.Drawing">
-    <value>55, 17</value>
+    <value>56, 17</value>
   </data>
   <data name="radioButtonAudioHybrid.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
@@ -1096,7 +1096,7 @@
     <value>10, 19</value>
   </data>
   <data name="radioButtonAudioLossless.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 17</value>
+    <value>64, 17</value>
   </data>
   <data name="radioButtonAudioLossless.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1585,7 +1585,7 @@
     <value>6, 71</value>
   </data>
   <data name="rbActionCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>106, 17</value>
+    <value>109, 17</value>
   </data>
   <data name="rbActionCorrectFilenames.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -1651,7 +1651,7 @@
     <value>6, 37</value>
   </data>
   <data name="rbActionVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>51, 17</value>
+    <value>53, 17</value>
   </data>
   <data name="rbActionVerify.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1684,7 +1684,7 @@
     <value>6, 20</value>
   </data>
   <data name="rbActionEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 17</value>
+    <value>60, 17</value>
   </data>
   <data name="rbActionEncode.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>

@@ -304,10 +304,11 @@ namespace CUETools.AccurateRip
             return count;
         }
 
-        public string GetAffectedSectors(int min, int max)
+        public string GetAffectedSectors(int min, int max, int offs = 0)
         {
             min = Math.Max(2 * min, 2 * pregap + stride - 2 * ActualOffset);
             max = Math.Min(2 * max, 2 * finalSampleCount - laststride - 2 * ActualOffset);
+            offs = offs * 2;
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < correctableErrors; i++)
                 if (erroffsorted[i] >= min && erroffsorted[i] < max)
@@ -316,8 +317,8 @@ namespace CUETools.AccurateRip
                     for (j = i + 1; j < correctableErrors; j++)
                         if (erroffsorted[j] - erroffsorted[j - 1] > 2 * 588 * 5)
                             break;
-                    uint sec1 = (uint)(erroffsorted[i] - min) / 2 / 588;
-                    uint sec2 = (uint)(erroffsorted[j - 1] - min) / 2 / 588;
+                    uint sec1 = (uint)(erroffsorted[i] - offs) / 2 / 588;
+                    uint sec2 = (uint)(erroffsorted[j - 1] - offs) / 2 / 588;
                     if (sb.Length != 0) sb.Append(",");
                     sb.Append(CDImageLayout.TimeToString(sec1));
                     if (sec1 != sec2) sb.Append("-");
@@ -344,7 +345,14 @@ namespace CUETools.AccurateRip
 				for (int pos = firstPos; pos < lastPos; pos++)
 				{
                     if (nexterroff < erroffsorted.Length && sampleCount * 2 + pos == erroffsorted[nexterroff])
-						data[pos] ^= forneysorted[nexterroff++];
+                    {
+                        data[pos] ^= forneysorted[nexterroff++];
+                        // When we modify sampleBuffer.Bytes, which might have been
+                        // copied from sampleBuffer.Samples, which wasn't modified,
+                        // we need to make sure sampleBuffer.Samples will be reset;
+                        // This strange call makes sure of that.
+                        sampleBuffer.Prepare(sampleBuffer.Bytes, sampleBuffer.Length);
+                    }
 					
 					ushort dd = data[pos];
 					crc = (crc >> 8) ^ t[(byte)(crc ^ dd)];

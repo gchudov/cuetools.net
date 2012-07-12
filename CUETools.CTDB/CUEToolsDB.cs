@@ -539,11 +539,11 @@ namespace CUETools.CTDB
                     string confFormat = (this.Total < 10) ? "{0:0}/{1:0}" :
                         (this.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
                     string conf = string.Format(confFormat, entry.conf, this.Total);
-                    string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio && this.toc[entry.toc.TrackCount].IsAudio ?
+                    string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio && this.toc[this.toc.TrackCount].IsAudio ?
                         string.Format("CD-Extra data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
                         !entry.toc[1].IsAudio && this.toc[1].IsAudio ?
                         string.Format("Playstation type data track length {0}", entry.toc[entry.toc.FirstAudio].StartMSF) :
-                        (entry.toc[1].IsAudio && !this.toc[1].IsAudio) || (entry.toc[entry.toc.TrackCount].IsAudio && !this.toc[entry.toc.TrackCount].IsAudio) ?
+                        (entry.toc[1].IsAudio && !this.toc[1].IsAudio) || (entry.toc[entry.toc.TrackCount].IsAudio && !this.toc[this.toc.TrackCount].IsAudio) ?
                         "Has no data track" : "";
                     if (entry.toc.Pregap != this.toc.Pregap)
                         dataTrackInfo = dataTrackInfo + (dataTrackInfo == "" ? "" : ", ") + string.Format("Has pregap length {0}", CDImageLayout.TimeToString(entry.toc.Pregap));
@@ -588,7 +588,7 @@ namespace CUETools.CTDB
                         }
 
                         resConfidence.Add(entry.conf);
-                        resStatus.Add(string.Format("differs in {0} samples @{1}", diffCount, entry.repair.GetAffectedSectors(min, max)));
+                        resStatus.Add(string.Format("differs in {0} samples @{1}", diffCount, entry.repair.GetAffectedSectors(min, max, min)));
                         continue;
                     }
                     if (entry.trackcrcs != null)

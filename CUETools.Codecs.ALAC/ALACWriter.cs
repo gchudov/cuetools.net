@@ -916,7 +916,7 @@ namespace CUETools.Codecs.ALAC
 
 				lpc_ctx.GetReflection(max_order, smp, n, frame.window_buffer + iWindow * Alac.MAX_BLOCKSIZE * 2);
 				lpc_ctx.ComputeLPC(lpcs);
-				lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, max_order, 5.0, 1.0/18);
+				lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, min_order, max_order, 5.0, 1.0/18);
 				for (i = 0; i < eparams.estimation_depth && i < max_order; i++)
 					encode_residual_lpc_sub(frame, lpcs, iWindow, lpc_ctx.best_orders[i], ch);
 			}
@@ -1021,7 +1021,7 @@ namespace CUETools.Codecs.ALAC
 						int stereo_order = Math.Min(8, eparams.max_prediction_order);
 						double alpha = 1.5; // 4.5 + eparams.max_prediction_order / 10.0;
 						lpc_ctx.GetReflection(stereo_order, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer);
-						lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, stereo_order, alpha, 0);
+						lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, stereo_order, alpha, 0);
 						frame.subframes[ch].best.size = (uint)Math.Max(0, lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], alpha, 0));
 					}
 					break;
