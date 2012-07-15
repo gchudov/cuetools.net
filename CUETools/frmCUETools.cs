@@ -823,19 +823,17 @@ namespace JDP
                         {
                             if (toolStripButtonCorrectorOverwrite.Checked)
                             {
-                                using (StreamWriter sw = new StreamWriter(pathIn, false, CUESheet.Encoding))
-                                    sw.Write(fixedCue);
+                                CUESheet.WriteText(pathIn, fixedCue);
                                 BatchLog("corrected ({0}).", pathIn, extension);
                             }
                             else
                             {
-                                string pathFixed = Path.ChangeExtension(pathIn, extension + ".cue");
-                                if (File.Exists(pathFixed))
+                                string fixedPath = Path.ChangeExtension(pathIn, extension + ".cue");
+                                if (File.Exists(fixedPath))
                                     BatchLog("corrected cue already exists.", pathIn);
                                 else
                                 {
-                                    using (StreamWriter sw = new StreamWriter(pathFixed, false, CUESheet.Encoding))
-                                        sw.Write(fixedCue);
+                                    CUESheet.WriteText(fixedPath, fixedCue);
                                     BatchLog("corrected ({0}).", pathIn, extension);
                                 }
                             }

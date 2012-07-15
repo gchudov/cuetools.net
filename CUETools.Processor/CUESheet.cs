@@ -2197,17 +2197,12 @@ namespace CUETools.Processor
             }
         }
 
-        public static void WriteText(string path, string text, Encoding encoding)
-        {
-            StreamWriter sw1 = new StreamWriter(path, false, encoding);
-            sw1.Write(text);
-            sw1.Close();
-        }
-
         public static void WriteText(string path, string text)
         {
             bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(text)) != text;
-            WriteText(path, text, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
+            var encoding = utf8Required ? Encoding.UTF8 : CUESheet.Encoding;
+            using (StreamWriter sw1 = new StreamWriter(path, false, encoding))
+                sw1.Write(text);
         }
 
         public bool PrintErrors(StringWriter logWriter, uint tr_start, uint len)
