@@ -1,0 +1,19 @@
+syntax: glob
+bin/Debug
+bin/Release/
+bin/win32/
+bin/x64/
+CUETools.AVX/Release
+CUETools.CLParity
+*.vcxproj.user
+CUETools.Codecs.DirectSound
+obj
+_UpgradeReport_Files
+MAC_SDK/Source/MACLib/Release
+MAC_SDK/Source/MACLib/x64
+ttalib-1.1/x64
+*.sdf
+*.suo
+*.opensdf
+CUETools.AVX/Win32
+CUETools.AVX/x64

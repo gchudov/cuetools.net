@@ -1475,8 +1475,8 @@ namespace CUETools.Processor
 			}
 
             cueMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
-            cueMetadata.Artist = General.GetCUELine(_attributes, "PERFORMER");
-            cueMetadata.Title = General.GetCUELine(_attributes, "TITLE");
+            cueMetadata.Artist = General.GetCUELine(_attributes, "PERFORMER").Trim();
+            cueMetadata.Title = General.GetCUELine(_attributes, "TITLE").Trim();
             cueMetadata.Barcode = General.GetCUELine(_attributes, "CATALOG");
             cueMetadata.Year = General.GetCUELine(_attributes, "REM", "DATE");
             cueMetadata.DiscNumber = General.GetCUELine(_attributes, "REM", "DISCNUMBER");
@@ -1490,8 +1490,8 @@ namespace CUETools.Processor
 			cueMetadata.DiscName = General.GetCUELine(_attributes, "REM", "DISCSUBTITLE");
             for (i = 0; i < Tracks.Count; i++)
             {
-                cueMetadata.Tracks[i].Artist = General.GetCUELine(Tracks[i].Attributes, "PERFORMER");
-                cueMetadata.Tracks[i].Title = General.GetCUELine(Tracks[i].Attributes, "TITLE");
+                cueMetadata.Tracks[i].Artist = General.GetCUELine(Tracks[i].Attributes, "PERFORMER").Trim();
+                cueMetadata.Tracks[i].Title = General.GetCUELine(Tracks[i].Attributes, "TITLE").Trim();
                 cueMetadata.Tracks[i].ISRC = General.GetCUELine(Tracks[i].Attributes, "ISRC");
             }
             // Now, TOC.TOCID might change!!!
