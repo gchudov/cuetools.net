@@ -315,7 +315,6 @@ namespace CUERipper
             this.bnComboBoxLosslessOrNot.ImageKeyMember = "ImageKey";
             this.bnComboBoxLosslessOrNot.ImageList = null;
             resources.ApplyResources(this.bnComboBoxLosslessOrNot, "bnComboBoxLosslessOrNot");
-            this.bnComboBoxLosslessOrNot.MinimumSize = new System.Drawing.Size(40, 0);
             this.bnComboBoxLosslessOrNot.Name = "bnComboBoxLosslessOrNot";
             rectRadius1.BottomLeft = 2;
             rectRadius1.BottomRight = 2;
@@ -341,7 +340,6 @@ namespace CUERipper
             this.bnComboBoxEncoder.ForeColor = System.Drawing.SystemColors.ControlText;
             this.bnComboBoxEncoder.ImageList = null;
             resources.ApplyResources(this.bnComboBoxEncoder, "bnComboBoxEncoder");
-            this.bnComboBoxEncoder.MinimumSize = new System.Drawing.Size(40, 0);
             this.bnComboBoxEncoder.Name = "bnComboBoxEncoder";
             rectRadius2.BottomLeft = 2;
             rectRadius2.BottomRight = 2;
@@ -395,7 +393,6 @@ namespace CUERipper
             this.bnComboBoxImage.ForeColor = System.Drawing.SystemColors.ControlText;
             this.bnComboBoxImage.ImageList = null;
             resources.ApplyResources(this.bnComboBoxImage, "bnComboBoxImage");
-            this.bnComboBoxImage.MinimumSize = new System.Drawing.Size(40, 0);
             this.bnComboBoxImage.Name = "bnComboBoxImage";
             rectRadius4.BottomLeft = 2;
             rectRadius4.BottomRight = 2;
@@ -540,7 +537,6 @@ namespace CUERipper
             this.bnComboBoxRelease.ForeColor = System.Drawing.SystemColors.ControlText;
             this.bnComboBoxRelease.ImageKeyMember = "ImageKey";
             this.bnComboBoxRelease.ImageList = this.imageListMetadataSource;
-            this.bnComboBoxRelease.MinimumSize = new System.Drawing.Size(61, 0);
             this.bnComboBoxRelease.Name = "bnComboBoxRelease";
             rectRadius5.BottomLeft = 2;
             rectRadius5.BottomRight = 2;
@@ -568,6 +564,7 @@ namespace CUERipper
             this.imageListMetadataSource.Images.SetKeyName(7, "track");
             this.imageListMetadataSource.Images.SetKeyName(8, "ctdb");
             this.imageListMetadataSource.Images.SetKeyName(9, "discogs");
+            this.imageListMetadataSource.Images.SetKeyName(10, "cdstub");
             // 
             // bnComboBoxDrives
             // 
@@ -578,7 +575,6 @@ namespace CUERipper
             this.bnComboBoxDrives.ForeColor = System.Drawing.SystemColors.ControlText;
             this.bnComboBoxDrives.ImageKeyMember = "ImageKey";
             this.bnComboBoxDrives.ImageList = this.imageListMetadataSource;
-            this.bnComboBoxDrives.MinimumSize = new System.Drawing.Size(61, 0);
             this.bnComboBoxDrives.Name = "bnComboBoxDrives";
             rectRadius6.BottomLeft = 2;
             rectRadius6.BottomRight = 2;
@@ -594,7 +590,6 @@ namespace CUERipper
             this.bnComboBoxOutputFormat.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
             this.bnComboBoxOutputFormat.ImageList = null;
-            this.bnComboBoxOutputFormat.MinimumSize = new System.Drawing.Size(40, 0);
             this.bnComboBoxOutputFormat.Name = "bnComboBoxOutputFormat";
             rectRadius7.BottomLeft = 2;
             rectRadius7.BottomRight = 2;
@@ -705,7 +700,6 @@ namespace CUERipper
             // pictureBox1
             // 
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.MinimumSize = new System.Drawing.Size(100, 100);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);

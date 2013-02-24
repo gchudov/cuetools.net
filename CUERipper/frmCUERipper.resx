@@ -136,20 +136,20 @@
   <data name="toolStripStatusAr.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         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
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMISURBVDhPbZP9T5pnFIb5A7dlWdNlW2ZmSYsNbadjbrT1
-        A6QiOLWsSApS1/rRqSW2dq5TuiBWUamVIYZarUXRCSgSERD5euG99s79sJh4kjsnOXnu65zknEcmOyd8
-        PjD37tBoOeCWfY+OsQSu1Qr/PhUon+ZzY2IgT4MyR+33AorbUGWAmvsi6gER7VOR7okSLn/2LKBC6bTw
-        5g/QVqepl0umWvhaXUDRBior6IZE2p+J2F6WeTInENgunoVY9OtobuxJ5iyXqwpU14hcUYn8eAdaegTM
-        DrBPwshsBacvzcpmguDG9v8Q9Q/vuK7aplp5yCW5gPJSCbUCjBowPazwSJruqQdm3p6wewQHqRSZbJxC
-        PoPs595Zruv8yFtWqGqMoaxP0XitQJM8im8GXi9LXeeLrEUgelwmkcsQO3jPYXKZfHoZ2Xcdz7ls8CI3
-        +LliDKHW72NsTrP0qkx4K8bahw32UwKxY4F44Zido3WS2QC5k0XKORcyxb3HyM0TKLunUVsCGE1hbPe2
-        iEbT/OmeOs3JbIZIMUtE2CIlBBDKHkThhSQHshpjD3WGITSGZ+hb3dgavfTVB5l3hCme5Mikjgmthvh7
-        c4109C9Khy8hNU45NQJH/ciGHb/R2mLB2ulg+vEKw7VOvN2rJNxxYoEosekNkq7X5Oc8FNdeQGgEcecX
-        iJnJJ8aQRSIRHnZZWfUE2fCEJUAfu+5NEku75HwRQv2TZMcnwCWZl4aorFqphEwQ7oR88L9V2m420VNT
-        x7Zrgb2pIPFXfpLe9+z3j5Gx2SgMWxDGTVTcRkSvdF3BW2TW7549poXePpxfXaU0PkV2YZHi7DxxXQOF
-        zjryD1Sc/Crp+Q2yU3LSAfv5/+HNkwEmqz9nUXGBD9cusF//MXvNnxDt+Ihd86eEH33Bwmj7+ebR0VHs
-        djuDbTp+r1Uwd/VL3qou4m/6DJ/uIjOGb3ig+5af7nZhtfachTidTgYHBzGZTLTr29DptGi0t9E338TQ
-        0IC2WUNTi05SK/o7bXR1dXDfZj2F/APN0qwvsYBTqAAAAABJRU5ErkJggg==
+        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
 </value>
   </data>
   <data name="toolStripStatusAr.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
@@ -451,6 +451,9 @@
   <data name="bnComboBoxLosslessOrNot.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 19</value>
   </data>
+  <data name="bnComboBoxLosslessOrNot.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>40, 0</value>
+  </data>
   <data name="bnComboBoxLosslessOrNot.Size" type="System.Drawing.Size, System.Drawing">
     <value>82, 21</value>
   </data>
@@ -477,6 +480,9 @@
   </metadata>
   <data name="bnComboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
     <value>94, 46</value>
+  </data>
+  <data name="bnComboBoxEncoder.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>40, 0</value>
   </data>
   <data name="bnComboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
     <value>101, 21</value>
@@ -597,6 +603,9 @@
   </metadata>
   <data name="bnComboBoxImage.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 46</value>
+  </data>
+  <data name="bnComboBoxImage.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>40, 0</value>
   </data>
   <data name="bnComboBoxImage.Size" type="System.Drawing.Size, System.Drawing">
     <value>82, 21</value>
@@ -777,10 +786,10 @@
   </metadata>
   <data name="imageListChecked.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABy
-        CQAAAk1TRnQBSQFMAgEBBAEAAawBAQGsAQEBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CQAAAk1TRnQBSQFMAgEBBAEAAdQBAQHUAQEBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -854,7 +863,7 @@
     <value>progressBarErrors</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4803.25982, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarErrors.Parent" xml:space="preserve">
     <value>panel1</value>
@@ -881,7 +890,7 @@
     <value>progressBarCD</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Type" xml:space="preserve">
-    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.ProgressBarEx, ProgressODoom, Version=1.0.4803.25982, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;progressBarCD.Parent" xml:space="preserve">
     <value>panel1</value>
@@ -927,10 +936,10 @@
   </metadata>
   <data name="imageListMetadataSource.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADy
-        EAAAAk1TRnQBSQFMAgEBCgEAAawBAQGsAQEBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAY
+        EgAAAk1TRnQBSQFMAgEBCwEAAdQBAQHUAQEBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAATADAAEBAQABCAYAAQwYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -959,54 +968,62 @@
         AQABzAH/AWYBAAL/AZkBAAL/AcwBAAJmAf8BAAFmAf8BZgEAAWYC/wEAAf8CZgEAAf8BZgH/AQAC/wFm
         AQABIQEAAaUBAANfAQADdwEAA4YBAAOWAQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHw
         AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD/wUAAfQBvAG1ArQBtQG8
-        AiAJAATrKAAB/wG8AbQBCQQZAQkCIAH/BgAB6wIUARUCDgEAAQ4lAAH/AbsBCQH0AhkDCQEZAiABuwH/
-        BAABFAEHAesBFAERAg4CAAEOJAABvAEJAf8DGQEJCCACAAERARQB6wEHAesBEQIOAwABDiIAAfQBtAL/
-        BBkIIAEAAREBFQIUAusBFQERAQ4EAAERIQABvAEJAhkB9AUZAQkCIAEZAQkBvAEAAQ4CEQIVAQ4CSgIO
-        JQABtQHyAwkBGQEJArQBCQEZAiAB3QEZAbUB6wEABA4ENwEOBAAB6yAAAbQBGQMJARkBtAL/AbQBGQIg
-        AQkBGQG0AesEAAFKBDcBSgQAAesgAAG0ARkDCQEZAbQC/wG0ARkDCQEZAbQB6wQAAUoENwFKBA4B6yAA
-        AbUBGQUJArQBCQH/AfQDGQG1AesEAAEOBDcBDgIRAg4B6yAAAbwECQMZAfQB/wH0A/8BCQG8AQABDgQA
-        AQ4CSgEOAhQDESEAAfQBtAH0AQkBGQH/AgkBGQH/AfQD/wG0AfQBAAEUAwACDgERARQB6wFzAhQBEQEU
-        IgABvAEJA/8CCQEZBP8BCQG8AwABEQIAAg4BEQEVAesBBwHrARUBFCMAAf8BuwEJAf8B9AIJARkD/wEJ
-        AbsB/wQAARQBAAIOAREBFQEUA+slAAH/AbwBtAEJAhkB9AHzAQkBtAG8Af8GAAIVAw4BEQIUKAAB9AG8
-        AbUCtAG1AbwB9AoABOtnAAGZBnkB8wgAAfcBbQG8LQABmQWgAnkB9AgAAfABbQIAAZIB6gISARQBFQFD
-        AREB7AMAAZkIeQHzBgABmQh5AfMFAAGZBaABeQGaAVECeQGZBAAB8wFtAfMCAAHqAW0BEgIUARIBbQHr
-        AREDAAGZB6ACeQH0BQABmQegAnkB9AQAAZkFoAN5AVgBoAGZBAAB7wLsAgAB9wFtA+oCEgEUAewDAAGZ
-        B6ABeQGaAXkB9AQAAZkHoAF5AZoBeQH0AwABmQigAVgBoAFRAXkBmRMAAZkHoAN5AZkEAAGZB6ADeQGZ
-        AwABmQigAVgBoAFYAaABmQIAAusBbQ4AAZkKoAGZBAABmQqgAZkDAAGZCKABWAGgAVgBoAGZAgAB9AHt
-        Af8CAAH3BW0C6gGSAwABmQqgAZkEAAGZCqABmQMAAZkBwwegAVgBoAFYAaABmQMAAfQB7QIAAm0BEgET
-        ARQBEgFtAesB6gMAAZkKoAGZBAABmQqgAZkDAAEaAcMHoAFYAaABWAGgAZkCAAHvAewB7wIAAe8B6wZt
-        AfcDAAGZCqABmQQAAZkJoAGRAZgDAAEaA8MFoAFYAaABWAGgAZkTAAGZAcMJoAGZBAABmQHDCKACiwHy
-        AgABGwEaCHkBoAFYAaABmQIAA+wOAAGZAcMJoAGZBAABmQHDBKABkQSzAdoBtAHyAwABGgPDBaABWAGg
-        AZkDAAHsAwAB7wHsBOsCbQH3AwABGgHDCaABGgQAARoBwwSgAbMB3AXbAbQDAAEbARoIeQGgARoDAAHs
-        AwAB7AFtAhICEwESAm0DAAEaBMMGoAEaBAABGgTDAaABuwS0AdwBtAHyBQABGgPDBaABGgIAAe8B7AMA
-        Ae8E7APrAe8DAAEbChoBGwQAARsJGgK0AfMGAAEbCBoBGy0AAQkB8wMAAXoCUQt6AQAB7Q8KIAABUQEA
-        AREBEwEAAQ8KegG1BAQD8wEEA/MCBAFfAQoQABD/AQABvAP/ARMBDwl6AbUDBAH0AgQB9AEEAfQCBAH0
-        AgQBCgHxArwB8gEAAfIEvAHyAQAB8gK8AfEB8AK8AfAB/wHwBLwB8AH/AfACvAHwAQABvAT/AQAJegG1
-        AaICBAH/AgQB/wEEAf8CBAH/AgQBCgG8Af8B9AMHBPQDBwH0Af8CvAH/AfQDBwT0AwcB9AH/AbwBUQEP
-        AesCBwG8AQABEQQAAREDegG1AaIDBAP/AQQD/wMEAQoB8AH0AvMB9AbzAfQC8wH0AvAB9ALzAfQG8wH0
-        AvMB9AHwAXoBUQEPAgAB/wEAAQ8B9wL/AZICEQJ6AbUBogUEAf8BBAH/BQQBCgHwAfQM8wH0AvAB9Azz
-        AfQB8AR6AQAB/wEAAREE/wG8AQACegG1AaIFBAH/AQQB/wUEAQoB8AH0DPMB9ALwAfQM8wH0AfAErgEA
-        Af8CAAETAbwD/wEAAq4BtQGiDQQBCgHxAf8F9AEAAXMBvAT0Af8C8QH/BfQBAAFzAbwE9AH/AfEErgEA
-        Af8BAAESAQ8DAAH/AQACrg3/AfQB8wHsAfIB/wX0ARwBwwFRAQgD9AH/AvIB/wX0ARwBwwFRAQgD9AH/
-        AfIErgEAAf8BDwEAARECEgEAAf8BAAKuAf8BogL/AQQD/wIEA/8CBAHsAfIG/wEbAVgBegFRAQgD/wLy
-        Bv8BGwFYAXoBUQEIA/8B8gSuAQAC/wGSAREBAAEPAQAB/wEAAq4B/wGiAv8BBAL/AQQE/wEEAfQB8wHs
-        AfIH/wEaAVgBegFRARoC/wLyB/8BGgFYAXoBUQEaAv8B8gSuAQABBwP/AbwB6gEAAf8BAAKuAf8BogL/
-        AQQC/wQEAf8DBAEKAfII/wEaAVgBegFRARoB/wLyCP8BGgFYAXoBUQEaAf8B8gSuAREBEwEHBv8BAAKu
-        Af8BogEEAf8BBAL/AQQC/wEEAf8BBAH0AfMBCgHyCf8BGwFYAXoB7QHwAvIJ/wEbAVgBegHtAfAB8gWu
-        AREBAAERAZIE/wEAAq4B/wGGAv8CBAL/AgQD/wIEAewB8wryAfAB7wH0Ae0BvAHzCvIB8AHvAfQB7QG8
-        B64BEQEAAQ8B6wG8Af8BAAKuAf8Bhgv/AfQB8wHsDAAB9AG8ARYBbwwAAfQBvAEWAW8BAAmuAQ8BAAET
-        AREBrgEAAv8BtQv/AfQBBw0AAfQBFgHzDQAB9AEWAfMBQgFNAT4HAAE+AwABKAMAAUADAAEwAwABAQEA
-        AQEFAAGAAQEWAAP/AQAB8AEHAfwBPwQAAcABAwHwAQ8EAAGAAQEB4AEHBAABgAEAAcABAwYAAYABAQYA
-        AYABASYAAYABAQYAAYABAQQAAYABAQHAAQMEAAGAAQEB4AEHBAABwAEDAfABDwQAAfABDwH8AT8EAAj/
-        AYABfwGPBf8BgAE/AcwBAQHAAQ8BwAEPAYABBwGMAQEBwAEHAcABBwGAAQcBjAEBAcABAwHAAQMBgAEB
-        Av8BwAEDAcABAwGAAQEBjwH/AcABAwHAAQMBgAEBAYwBAQHAAQMBwAEDAYABAQHMAQEBwAEDAcABAwGA
-        AQEBjAEBAcABAwHAAQMBgAEBAv8BwAEDAcABAQGAAQEBjwH/AcABAwHAAQAB4AEBAdwBAQHAAQMBwAEA
-        AeABAQHcAQEBwAEDAcABAAH4AQEBnAEBAcABAwHAAQEB+AEBBf8B8wGAAQECAAT/BAAC/wYAAQgBEF4A
-        Af8B8AH/AfABgAEBAgAB/wH4Af8B+As=
+        AiAJAATrBwABBwLrCwcTAAH/AbwBtAEJBBkBCQIgAf8GAAHrAhQBFQIOAQABDgQAAesBAAEPAUMBAAEO
+        CgcRAAH/AbsBCQH0AhkDCQEZAiABuwH/BAABFAEHAesBFAERAg4CAAEOBAABBwP/AUMBDgkHEQABvAEJ
+        Af8DGQEJCCACAAERARQB6wEHAesBEQIOAwABDgMAAQcE/wEACQcQAAH0AbQC/wQZCCABAAERARUCFALr
+        ARUBEQEOBAABEQEAAesBDgHqAu8BBwEAAQ8EAAEPAwcQAAG8AQkCGQH0BRkBCQIgARkBCQG8AQABDgIR
+        AhUBDgJKAg4FAAEHAesBDgIAAf8BAAEOAe0C/wHsAg8CBxAAAbUB8gMJARkBCQK0AQkBGQIgAd0BGQG1
+        AesBAAQOBDcBDgQAAesEBwEAAf8BAAEPBP8BBwEAAgcQAAG0ARkDCQEZAbQC/wG0ARkCIAEJARkBtAHr
+        BAABSgQ3AUoEAAHrBOoBAAH/AgABQwEHA/8BAALqEAABtAEZAwkBGQG0Av8BtAEZAwkBGQG0AesEAAFK
+        BDcBSgQOAesE6gEAAf8BAAEVAQ4DAAH/AQAC6hAAAbUBGQUJArQBCQH/AfQDGQG1AesEAAEOBDcBDgIR
+        Ag4B6wTqAQAB/wEOAQABDwIVAQAB/wEAAuoQAAG8BAkDGQH0Af8B9AP/AQkBvAEAAQ4EAAEOAkoBDgIU
+        AxEBAATqAQAC/wHsAQ8BAAEOAQAB/wEAAuoQAAH0AbQB9AEJARkB/wIJARkB/wH0A/8BtAH0AQABFAMA
+        Ag4BEQEUAesBcwIUAREBFAEABOoBAAHvA/8BBwETAQAB/wEAAuoRAAG8AQkD/wIJARkE/wEJAbwDAAER
+        AgACDgERARUB6wEHAesBFQEUAgAE6gEPAUMB7wb/AQAC6hEAAf8BuwEJAf8B9AIJARkD/wEJAbsB/wQA
+        ARQBAAIOAREBFQEUA+sDAAXqAQ8BAAEPAewE/wEAAuoSAAH/AbwBtAEJAhkB9AHzAQkBtAG8Af8GAAIV
+        Aw4BEQIUBAAH6gEPAQABDgHqAQcB/wEAAuoUAAH0AbwBtQK0AbUBvAH0CgAE6wcACeoBDgEAAUMBDwHq
+        UgABmQZ5AfMIAAH3AW0BvC0AAZkFoAJ5AfQIAAHwAW0CAAGSAeoCEgEUARUBQwERAewDAAGZCHkB8wYA
+        AZkIeQHzBQABmQWgAXkBmgFRAnkBmQQAAfMBbQHzAgAB6gFtARICFAESAW0B6wERAwABmQegAnkB9AUA
+        AZkHoAJ5AfQEAAGZBaADeQFYAaABmQQAAe8C7AIAAfcBbQPqAhIBFAHsAwABmQegAXkBmgF5AfQEAAGZ
+        B6ABeQGaAXkB9AMAAZkIoAFYAaABUQF5AZkTAAGZB6ADeQGZBAABmQegA3kBmQMAAZkIoAFYAaABWAGg
+        AZkCAALrAW0OAAGZCqABmQQAAZkKoAGZAwABmQigAVgBoAFYAaABmQIAAfQB7QH/AgAB9wVtAuoBkgMA
+        AZkKoAGZBAABmQqgAZkDAAGZAcMHoAFYAaABWAGgAZkDAAH0Ae0CAAJtARIBEwEUARIBbQHrAeoDAAGZ
+        CqABmQQAAZkKoAGZAwABGgHDB6ABWAGgAVgBoAGZAgAB7wHsAe8CAAHvAesGbQH3AwABmQqgAZkEAAGZ
+        CaABkQGYAwABGgPDBaABWAGgAVgBoAGZEwABmQHDCaABmQQAAZkBwwigAosB8gIAARsBGgh5AaABWAGg
+        AZkCAAPsDgABmQHDCaABmQQAAZkBwwSgAZEEswHaAbQB8gMAARoDwwWgAVgBoAGZAwAB7AMAAe8B7ATr
+        Am0B9wMAARoBwwmgARoEAAEaAcMEoAGzAdwF2wG0AwABGwEaCHkBoAEaAwAB7AMAAewBbQISAhMBEgJt
+        AwABGgTDBqABGgQAARoEwwGgAbsEtAHcAbQB8gUAARoDwwWgARoCAAHvAewDAAHvBOwD6wHvAwABGwoa
+        ARsEAAEbCRoCtAHzBgABGwgaARstAAEJAfMDAAF6AlELegEAAe0PCiAAAVEBAAERARMBAAEPCnoBtQQE
+        A/MBBAPzAgQBXwEKEAAQ/wEAAbwD/wETAQ8JegG1AwQB9AIEAfQBBAH0AgQB9AIEAQoB8QK8AfIBAAHy
+        BLwB8gEAAfICvAHxAfACvAHwAf8B8AS8AfAB/wHwArwB8AEAAbwE/wEACXoBtQGiAgQB/wIEAf8BBAH/
+        AgQB/wIEAQoBvAH/AfQDBwT0AwcB9AH/ArwB/wH0AwcE9AMHAfQB/wG8AVEBDwHrAgcBvAEAAREEAAER
+        A3oBtQGiAwQD/wEEA/8DBAEKAfAB9ALzAfQG8wH0AvMB9ALwAfQC8wH0BvMB9ALzAfQB8AF6AVEBDwIA
+        Af8BAAEPAfcC/wGSAhECegG1AaIFBAH/AQQB/wUEAQoB8AH0DPMB9ALwAfQM8wH0AfAEegEAAf8BAAER
+        BP8BvAEAAnoBtQGiBQQB/wEEAf8FBAEKAfAB9AzzAfQC8AH0DPMB9AHwBK4BAAH/AgABEwG8A/8BAAKu
+        AbUBog0EAQoB8QH/BfQBAAFzAbwE9AH/AvEB/wX0AQABcwG8BPQB/wHxBK4BAAH/AQABEgEPAwAB/wEA
+        Aq4N/wH0AfMB7AHyAf8F9AEcAcMBUQEIA/QB/wLyAf8F9AEcAcMBUQEIA/QB/wHyBK4BAAH/AQ8BAAER
+        AhIBAAH/AQACrgH/AaIC/wEEA/8CBAP/AgQB7AHyBv8BGwFYAXoBUQEIA/8C8gb/ARsBWAF6AVEBCAP/
+        AfIErgEAAv8BkgERAQABDwEAAf8BAAKuAf8BogL/AQQC/wEEBP8BBAH0AfMB7AHyB/8BGgFYAXoBUQEa
+        Av8C8gf/ARoBWAF6AVEBGgL/AfIErgEAAQcD/wG8AeoBAAH/AQACrgH/AaIC/wEEAv8EBAH/AwQBCgHy
+        CP8BGgFYAXoBUQEaAf8C8gj/ARoBWAF6AVEBGgH/AfIErgERARMBBwb/AQACrgH/AaIBBAH/AQQC/wEE
+        Av8BBAH/AQQB9AHzAQoB8gn/ARsBWAF6Ae0B8ALyCf8BGwFYAXoB7QHwAfIFrgERAQABEQGSBP8BAAKu
+        Af8BhgL/AgQC/wIEA/8CBAHsAfMK8gHwAe8B9AHtAbwB8wryAfAB7wH0Ae0BvAeuAREBAAEPAesBvAH/
+        AQACrgH/AYYL/wH0AfMB7AwAAfQBvAEWAW8MAAH0AbwBFgFvAQAJrgEPAQABEwERAa4BAAL/AbUL/wH0
+        AQcNAAH0ARYB8w0AAfQBFgHzAUIBTQE+BwABPgMAASgDAAFAAwABMAMAAQEBAAEBBQABgAEBFgAD/wEA
+        AfABBwH8AT8BgAEBAgABwAEDAfABDwQAAYABAQHgAQcEAAGAAQABwAEDBgABgAEBBgABgAEBJgABgAEB
+        BgABgAEBBAABgAEBAcABAwQAAYABAQHgAQcEAAHAAQMB8AEPBAAB8AEPAfwBPwGAAQECAAj/AYABfwGP
+        Bf8BgAE/AcwBAQHAAQ8BwAEPAYABBwGMAQEBwAEHAcABBwGAAQcBjAEBAcABAwHAAQMBgAEBAv8BwAED
+        AcABAwGAAQEBjwH/AcABAwHAAQMBgAEBAYwBAQHAAQMBwAEDAYABAQHMAQEBwAEDAcABAwGAAQEBjAEB
+        AcABAwHAAQMBgAEBAv8BwAEDAcABAQGAAQEBjwH/AcABAwHAAQAB4AEBAdwBAQHAAQMBwAEAAeABAQHc
+        AQEBwAEDAcABAAH4AQEBnAEBAcABAwHAAQEB+AEBBf8B8wGAAQECAAT/BAAC/wYAAQgBEF4AAf8B8AH/
+        AfABgAEBAgAB/wH4Af8B+As=
 </value>
   </data>
   <data name="bnComboBoxRelease.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 28</value>
+  </data>
+  <data name="bnComboBoxRelease.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>61, 0</value>
   </data>
   <data name="bnComboBoxRelease.Size" type="System.Drawing.Size, System.Drawing">
     <value>656, 21</value>
@@ -1035,6 +1052,9 @@
   <data name="bnComboBoxDrives.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
+  <data name="bnComboBoxDrives.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>61, 0</value>
+  </data>
   <data name="bnComboBoxDrives.Size" type="System.Drawing.Size, System.Drawing">
     <value>656, 21</value>
   </data>
@@ -1061,6 +1081,9 @@
   </data>
   <data name="bnComboBoxOutputFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 4</value>
+  </data>
+  <data name="bnComboBoxOutputFormat.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>40, 0</value>
   </data>
   <data name="bnComboBoxOutputFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>656, 21</value>
@@ -1370,6 +1393,9 @@
   </data>
   <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
     <value>5, 5</value>
+  </data>
+  <data name="pictureBox1.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>100, 100</value>
   </data>
   <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 126</value>
@@ -2117,31 +2143,31 @@
     <value>plainBackgroundPainter1</value>
   </data>
   <data name="&gt;&gt;plainBackgroundPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainBackgroundPainter, ProgressODoom, Version=1.0.4803.25982, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Name" xml:space="preserve">
     <value>styledBorderPainter1</value>
   </data>
   <data name="&gt;&gt;styledBorderPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.StyledBorderPainter, ProgressODoom, Version=1.0.4803.25982, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Name" xml:space="preserve">
     <value>plainProgressPainter1</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4803.25982, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Name" xml:space="preserve">
     <value>gradientGlossPainter1</value>
   </data>
   <data name="&gt;&gt;gradientGlossPainter1.Type" xml:space="preserve">
-    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.GradientGlossPainter, ProgressODoom, Version=1.0.4803.25982, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Name" xml:space="preserve">
     <value>plainProgressPainter2</value>
   </data>
   <data name="&gt;&gt;plainProgressPainter2.Type" xml:space="preserve">
-    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4486.36018, Culture=neutral, PublicKeyToken=null</value>
+    <value>ProgressODoom.PlainProgressPainter, ProgressODoom, Version=1.0.4803.25982, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;toolTip1.Name" xml:space="preserve">
     <value>toolTip1</value>

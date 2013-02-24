@@ -32,28 +32,28 @@ namespace JDP
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmChoice));
 			this.buttonOk = new System.Windows.Forms.Button();
 			this.listChoices = new System.Windows.Forms.ListView();
-			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
 			this.tableLayoutPanelMeta = new System.Windows.Forms.TableLayoutPanel();
-			this.dataGridViewMetadata = new System.Windows.Forms.DataGridView();
-			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			this.dataGridViewTracks = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumnTrackNo = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewTextBoxColumnTrackTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewTextBoxColumnTrackStart = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewTextBoxColumnTrackLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewMetadata = new System.Windows.Forms.DataGridView();
 			this.Item = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.tableLayoutPanelMeta.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.dataGridViewMetadata)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridViewTracks)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.dataGridViewMetadata)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// buttonOk
@@ -95,6 +95,7 @@ namespace JDP
 			this.imageList1.Images.SetKeyName(5, "local");
 			this.imageList1.Images.SetKeyName(6, "ctdb");
 			this.imageList1.Images.SetKeyName(7, "discogs");
+			this.imageList1.Images.SetKeyName(8, "cdstub");
 			// 
 			// textBox1
 			// 
@@ -132,36 +133,6 @@ namespace JDP
 			this.tableLayoutPanelMeta.Controls.Add(this.dataGridViewTracks, 0, 0);
 			this.tableLayoutPanelMeta.Controls.Add(this.dataGridViewMetadata, 0, 0);
 			this.tableLayoutPanelMeta.Name = "tableLayoutPanelMeta";
-			// 
-			// dataGridViewMetadata
-			// 
-			this.dataGridViewMetadata.AllowUserToAddRows = false;
-			this.dataGridViewMetadata.AllowUserToDeleteRows = false;
-			this.dataGridViewMetadata.AllowUserToResizeColumns = false;
-			this.dataGridViewMetadata.AllowUserToResizeRows = false;
-			this.dataGridViewMetadata.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-			this.dataGridViewMetadata.BackgroundColor = System.Drawing.SystemColors.Window;
-			this.dataGridViewMetadata.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.dataGridViewMetadata.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.dataGridViewMetadata.ColumnHeadersVisible = false;
-			this.dataGridViewMetadata.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Item,
-            this.Value});
-			resources.ApplyResources(this.dataGridViewMetadata, "dataGridViewMetadata");
-			this.dataGridViewMetadata.GridColor = System.Drawing.SystemColors.ControlLight;
-			this.dataGridViewMetadata.MultiSelect = false;
-			this.dataGridViewMetadata.Name = "dataGridViewMetadata";
-			this.dataGridViewMetadata.RowHeadersVisible = false;
-			this.dataGridViewMetadata.RowTemplate.Height = 24;
-			this.dataGridViewMetadata.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-			this.dataGridViewMetadata.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewMetadata_CellEndEdit);
-			this.dataGridViewMetadata.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dataGridViewMetadata_EditingControlShowing);
-			this.dataGridViewMetadata.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dataGridViewMetadata_KeyDown);
-			// 
-			// backgroundWorker1
-			// 
-			this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
 			// 
 			// dataGridViewTracks
 			// 
@@ -219,6 +190,31 @@ namespace JDP
 			this.dataGridViewTextBoxColumnTrackLength.ReadOnly = true;
 			this.dataGridViewTextBoxColumnTrackLength.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
 			// 
+			// dataGridViewMetadata
+			// 
+			this.dataGridViewMetadata.AllowUserToAddRows = false;
+			this.dataGridViewMetadata.AllowUserToDeleteRows = false;
+			this.dataGridViewMetadata.AllowUserToResizeColumns = false;
+			this.dataGridViewMetadata.AllowUserToResizeRows = false;
+			this.dataGridViewMetadata.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+			this.dataGridViewMetadata.BackgroundColor = System.Drawing.SystemColors.Window;
+			this.dataGridViewMetadata.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+			this.dataGridViewMetadata.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dataGridViewMetadata.ColumnHeadersVisible = false;
+			this.dataGridViewMetadata.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Item,
+            this.Value});
+			resources.ApplyResources(this.dataGridViewMetadata, "dataGridViewMetadata");
+			this.dataGridViewMetadata.GridColor = System.Drawing.SystemColors.ControlLight;
+			this.dataGridViewMetadata.MultiSelect = false;
+			this.dataGridViewMetadata.Name = "dataGridViewMetadata";
+			this.dataGridViewMetadata.RowHeadersVisible = false;
+			this.dataGridViewMetadata.RowTemplate.Height = 24;
+			this.dataGridViewMetadata.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+			this.dataGridViewMetadata.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewMetadata_CellEndEdit);
+			this.dataGridViewMetadata.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dataGridViewMetadata_EditingControlShowing);
+			this.dataGridViewMetadata.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dataGridViewMetadata_KeyDown);
+			// 
 			// Item
 			// 
 			this.Item.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -233,6 +229,11 @@ namespace JDP
 			resources.ApplyResources(this.Value, "Value");
 			this.Value.Name = "Value";
 			// 
+			// backgroundWorker1
+			// 
+			this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+			// 
 			// frmChoice
 			// 
 			this.AcceptButton = this.buttonOk;
@@ -242,16 +243,16 @@ namespace JDP
 			this.Name = "frmChoice";
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
-			this.Load += new System.EventHandler(this.frmChoice_Load);
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmChoice_FormClosing);
+			this.Load += new System.EventHandler(this.frmChoice_Load);
 			this.Resize += new System.EventHandler(this.frmChoice_Resize);
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
 			this.tableLayoutPanel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.tableLayoutPanelMeta.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.dataGridViewMetadata)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridViewTracks)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.dataGridViewMetadata)).EndInit();
 			this.ResumeLayout(false);
 
 		}
