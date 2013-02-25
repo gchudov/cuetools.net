@@ -123,6 +123,9 @@
   <data name="DescriptionGPUOnly" xml:space="preserve">
     <value>Использовать GPU на всех стадиях</value>
   </data>
+  <data name="DescriptionPadding" xml:space="preserve">
+    <value>Количество байт резервируемое для тэгов</value>
+  </data>
   <data name="DoMD5Description" xml:space="preserve">
     <value>Вычислять MD5-хеш аудиопотока</value>
   </data>

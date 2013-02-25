@@ -103,6 +103,23 @@ namespace CUETools.Codecs.FLACCL
 				cpu_threads = value;
 			}
 		}
+
+		int padding = 8192;
+		[DefaultValue(8192)]
+		[SRDescription(typeof(Properties.Resources), "DescriptionPadding")]
+		public int Padding
+		{
+			get
+			{
+				return padding;
+			}
+			set
+			{
+				if (value < 0 || value > 1024*1024)
+					throw new Exception("Padding must be between 0..1MB");
+				padding = value;
+			}
+		}
 	}
 
 	public class FLACCLWriterSettingsPlatformConverter : TypeConverter
@@ -230,7 +247,7 @@ namespace CUETools.Codecs.FLACCL
 			_IO = IO;
 
 			eparams.flake_set_defaults(_compressionLevel);
-			eparams.padding_size = 8192;
+			eparams.padding_size = _settings.Padding;
 
 			crc8 = new Crc8();
 			crc16 = new Crc16();
@@ -289,7 +306,8 @@ namespace CUETools.Codecs.FLACCL
 				if (value as FLACCLWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
 				_settings = value as FLACCLWriterSettings;
-			}
+                eparams.padding_size = _settings.Padding;
+            }
 		}
 
 		//[DllImport("kernel32.dll")]
