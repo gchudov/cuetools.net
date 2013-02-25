@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CUERipperConfig.cs" />
     <Compile Include="frmCUERipper.cs">
       <SubType>Form</SubType>
     </Compile>

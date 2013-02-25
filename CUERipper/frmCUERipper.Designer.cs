@@ -274,6 +274,7 @@ namespace CUERipper
             0,
             -2147483648});
             this.numericWriteOffset.Name = "numericWriteOffset";
+            this.numericWriteOffset.ValueChanged += new System.EventHandler(this.numericWriteOffset_ValueChanged);
             // 
             // lblWriteOffset
             // 

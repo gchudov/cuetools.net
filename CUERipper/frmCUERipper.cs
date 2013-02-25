@@ -15,6 +15,8 @@ using CUETools.Processor.Settings;
 using CUETools.Ripper;
 using Freedb;
 using CUETools.Codecs;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace CUERipper
 {
@@ -23,21 +25,23 @@ namespace CUERipper
 		private Thread _workThread = null;
 		private StartStop _startStop;
 		private CUEConfig _config;
+        private CUERipperConfig cueRipperConfig;
 		private CUESheet cueSheet;
 		private DriveInfo selectedDriveInfo;
 		private string _pathOut;
-		string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat;
 		private CUEControls.ShellIconMgr m_icon_mgr;
-		private string defaultDrive;
         private bool testAndCopy = false;
 		internal CUERipperData data = new CUERipperData();
+        public readonly static XmlSerializerNamespaces xmlEmptyNamespaces = new XmlSerializerNamespaces(new XmlQualifiedName[] { XmlQualifiedName.Empty });
+        public readonly static XmlWriterSettings xmlEmptySettings = new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true };
 
 		public frmCUERipper()
 		{
 			InitializeComponent();
 			_config = new CUEConfig();
 			_startStop = new StartStop();
-			m_icon_mgr = new CUEControls.ShellIconMgr();
+            cueRipperConfig = new CUERipperConfig();
+            m_icon_mgr = new CUEControls.ShellIconMgr();
 			m_icon_mgr.SetExtensionIcon(".flac", Properties.Resources.flac);
 			m_icon_mgr.SetExtensionIcon(".wv", Properties.Resources.wv);
 			m_icon_mgr.SetExtensionIcon(".ape", Properties.Resources.ape);
@@ -141,9 +145,6 @@ namespace CUERipper
 
 			SettingsReader sr = new SettingsReader("CUERipper", "settings.txt", Application.ExecutablePath);
 			_config.Load(sr);
-			_defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
-			_defaultLossyFormat = sr.Load("DefaultLossyFormat") ?? "mp3";
-			_defaultHybridFormat = sr.Load("DefaultHybridFormat") ?? "lossy.flac";
 			//_config.createEACLOG = sr.LoadBoolean("CreateEACLOG") ?? true;
 			//_config.preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? false;
 			//_config.createM3U = sr.LoadBoolean("CreateM3U") ?? true;
@@ -151,7 +152,19 @@ namespace CUERipper
 			bindingSourceCR.DataSource = data;
 			bnComboBoxDrives.ImageList = m_icon_mgr.ImageList;
 			bnComboBoxFormat.ImageList = m_icon_mgr.ImageList;
-			SetupControls();
+
+            try
+            {
+                using (TextReader reader = new StringReader(sr.Load("CUERipper")))
+                    cueRipperConfig = CUERipperConfig.serializer.Deserialize(reader) as CUERipperConfig;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+            }
+
+
+            SetupControls();
 
 			int iFormat, nFormats = sr.LoadInt32("OutputPathUseTemplates", 0, 10) ?? 0;
 			for (iFormat = 0; iFormat < OutputPathUseTemplates.Length; iFormat++)
@@ -164,7 +177,6 @@ namespace CUERipper
 			bnComboBoxImage.SelectedIndex = sr.LoadInt32("ComboImage", 0, bnComboBoxImage.Items.Count - 1) ?? 0;
 			trackBarSecureMode.Value = sr.LoadInt32("SecureMode", 0, trackBarSecureMode.Maximum - 1) ?? 1;
 			trackBarSecureMode_Scroll(this, new EventArgs());
-			defaultDrive = sr.Load("DefaultDrive");
             this.checkBoxTestAndCopy.Checked = this.testAndCopy = sr.LoadBoolean("TestAndCopy") ?? this.testAndCopy;
 
 			Size SizeIncrement = new Size(sr.LoadInt32("WidthIncrement", 0, null) ?? 0, sr.LoadInt32("HeightIncrement", 0, null) ?? 0);
@@ -228,8 +240,10 @@ namespace CUERipper
 				reader.Close();
 				if (reader.ARName != null)
 				{
-					int driveOffset;
-					if (AccurateRipVerify.FindDriveReadOffset(reader.ARName, out driveOffset))
+                    int driveOffset;
+                    if (cueRipperConfig.DriveOffsets.ContainsKey(reader.ARName))
+                        reader.DriveOffset = cueRipperConfig.DriveOffsets[reader.ARName];
+                    else if (AccurateRipVerify.FindDriveReadOffset(reader.ARName, out driveOffset))
 						reader.DriveOffset = driveOffset;
 					else
 						reader.DriveOffset = 0;
@@ -241,7 +255,7 @@ namespace CUERipper
 				data.Drives.RaiseListChangedEvents = true;
 				data.Drives.ResetBindings();
 				for(int i = 0; i < bnComboBoxDrives.Items.Count; i++)
-					if ((bnComboBoxDrives.Items[i] as DriveInfo).Path == defaultDrive)
+					if ((bnComboBoxDrives.Items[i] as DriveInfo).Path == cueRipperConfig.DefaultDrive)
 						bnComboBoxDrives.SelectedIndex = i;
 				_workThread = null;
 				SetupControls();
@@ -824,7 +838,7 @@ namespace CUERipper
 				selectedDriveInfo.drive.Close();
 
 			selectedDriveInfo = bnComboBoxDrives.SelectedItem as DriveInfo;
-			defaultDrive = selectedDriveInfo.Path;
+            cueRipperConfig.DefaultDrive = selectedDriveInfo.Path;
 
 			toolStripStatusAr.Enabled = false;
 			toolStripStatusAr.Text = "";
@@ -851,7 +865,8 @@ namespace CUERipper
 				cueSheet.Close();
 				cueSheet = null;
 			}
-			numericWriteOffset.Value = selectedDriveInfo.drive.DriveOffset;
+
+            numericWriteOffset.Value = selectedDriveInfo.drive.DriveOffset;
 			try
 			{
 				selectedDriveInfo.drive.Open(selectedDriveInfo.drive.Path[0]);
@@ -907,9 +922,6 @@ namespace CUERipper
 		{
 			SettingsWriter sw = new SettingsWriter("CUERipper", "settings.txt", Application.ExecutablePath);
 			_config.Save(sw);
-			sw.Save("DefaultLosslessFormat", _defaultLosslessFormat);
-			sw.Save("DefaultLossyFormat", _defaultLossyFormat);
-			sw.Save("DefaultHybridFormat", _defaultHybridFormat);
 			//sw.Save("CreateEACLOG", _config.createEACLOG);
 			//sw.Save("PreserveHTOA", _config.preserveHTOA);
 			//sw.Save("CreateM3U", _config.createM3U);
@@ -925,8 +937,13 @@ namespace CUERipper
 			for (int iFormat = bnComboBoxOutputFormat.Items.Count - 1; iFormat >= OutputPathUseTemplates.Length; iFormat--)
 				sw.Save(string.Format("OutputPathUseTemplate{0}", iFormat - OutputPathUseTemplates.Length), bnComboBoxOutputFormat.Items[iFormat].ToString());
 
-			if (defaultDrive != null)
-				sw.Save("DefaultDrive", defaultDrive);
+            using (TextWriter tw = new StringWriter())
+            using (XmlWriter xw = XmlTextWriter.Create(tw, xmlEmptySettings))
+            {
+                CUERipperConfig.serializer.Serialize(xw, cueRipperConfig, xmlEmptyNamespaces);
+                sw.SaveText("CUERipper", tw.ToString());
+            }
+
 			sw.Close();
 		}
 
@@ -1084,13 +1101,13 @@ namespace CUERipper
 			switch (SelectedOutputAudioType)
 			{
 				case AudioEncoderType.Lossless:
-					_defaultLosslessFormat = SelectedOutputAudioFormat;
+                    cueRipperConfig.DefaultLosslessFormat = SelectedOutputAudioFormat;
 					break;
 				case AudioEncoderType.Lossy:
-					_defaultLossyFormat = SelectedOutputAudioFormat;
+                    cueRipperConfig.DefaultLossyFormat = SelectedOutputAudioFormat;
 					break;
 				case AudioEncoderType.Hybrid:
-					_defaultHybridFormat = SelectedOutputAudioFormat;
+                    cueRipperConfig.DefaultHybridFormat = SelectedOutputAudioFormat;
 					break;
 			}
 
@@ -1150,13 +1167,13 @@ namespace CUERipper
 			switch (SelectedOutputAudioType)
 			{
 				case AudioEncoderType.Lossless:
-					select = _defaultLosslessFormat;
+                    select = cueRipperConfig.DefaultLosslessFormat;
 					break;
 				case AudioEncoderType.Lossy:
-					select = _defaultLossyFormat;
+                    select = cueRipperConfig.DefaultLossyFormat;
 					break;
 				case AudioEncoderType.Hybrid:
-					select = _defaultHybridFormat;
+                    select = cueRipperConfig.DefaultHybridFormat;
 					break;
 			}
 			data.Formats.RaiseListChangedEvents = true;
@@ -1563,6 +1580,14 @@ namespace CUERipper
 			ResizeList(listTracks, Title);
 			ResizeList(listMetadata, columnHeaderValue);
 		}
+
+        private void numericWriteOffset_ValueChanged(object sender, EventArgs e)
+        {
+            if (selectedDriveInfo != null && selectedDriveInfo.drive.ARName != null)
+            {
+                cueRipperConfig.DriveOffsets[selectedDriveInfo.drive.ARName] = (int)numericWriteOffset.Value;
+            }
+        }
 	}
 
     internal class BackgroundWorkerArtworkArgs
