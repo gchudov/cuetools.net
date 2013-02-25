@@ -961,7 +961,7 @@ namespace CUERipper
 			}
 			set
 			{
-				foreach (FormatInfo fmt in data.Formats)
+                foreach (CUEToolsFormat fmt in data.Formats)
 					if (fmt.ToString() == value)
 						bnComboBoxFormat.SelectedItem = fmt;
 			}
@@ -971,9 +971,7 @@ namespace CUERipper
 		{
 			get
 			{
-				if (selectedFormat == null)
-					return null;
-				return selectedFormat.fmt;
+				return selectedFormat;
 			}
 		}
 
@@ -1002,9 +1000,7 @@ namespace CUERipper
 			CUEToolsUDC encoder = bnComboBoxEncoder.SelectedItem as CUEToolsUDC;
 			if (encoder == null)
 				return;
-			if (SelectedOutputAudioFormat.StartsWith("lossy."))
-				SelectedOutputAudioFmt.encoderLossless = encoder;
-			else if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+			if (SelectedOutputAudioType == AudioEncoderType.Lossless)
 				SelectedOutputAudioFmt.encoderLossless = encoder;
 			else
 				SelectedOutputAudioFmt.encoderLossy = encoder;
@@ -1088,11 +1084,11 @@ namespace CUERipper
 				UpdateDrive();
 		}
 
-		private FormatInfo selectedFormat;
+        private CUEToolsFormat selectedFormat;
 
 		private void bnComboBoxFormat_SelectedValueChanged(object sender, EventArgs e)
 		{
-			selectedFormat = bnComboBoxFormat.SelectedItem as FormatInfo;
+            selectedFormat = bnComboBoxFormat.SelectedItem as CUEToolsFormat;
 
 			data.Encoders.Clear();
 			if (SelectedOutputAudioFmt == null)
@@ -1118,13 +1114,12 @@ namespace CUERipper
 				{
 					if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.lossless)
 						continue;
-					if (SelectedOutputAudioType == AudioEncoderType.Lossy && (encoder.lossless && !selectedFormat.lossyWAV))
+					if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.lossless)
 						continue;
 					data.Encoders.Add(encoder);
 				}
 
-			CUEToolsUDC select = SelectedOutputAudioFormat.StartsWith("lossy.") ? SelectedOutputAudioFmt.encoderLossless
-				: SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
+			CUEToolsUDC select = SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
 				: SelectedOutputAudioFmt.encoderLossy;
 			data.Encoders.RaiseListChangedEvents = true;
 			data.Encoders.ResetBindings();
@@ -1151,17 +1146,7 @@ namespace CUERipper
 					continue;
 				if (SelectedOutputAudioType == AudioEncoderType.Lossy && !format.Value.allowLossy)
 					continue;
-				data.Formats.Add(new FormatInfo(format.Value, false));
-			}
-			foreach (KeyValuePair<string, CUEToolsFormat> format in _config.formats)
-			{
-				if (!format.Value.allowLossyWAV)
-					continue;
-				if (SelectedOutputAudioType == AudioEncoderType.Lossless)
-					continue;
-				if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
-					continue;
-				data.Formats.Add(new FormatInfo(format.Value, true));
+                data.Formats.Add(format.Value);
 			}
 			string select = null;
 			switch (SelectedOutputAudioType)
@@ -1653,31 +1638,6 @@ namespace CUERipper
 		}
 	}
 
-	public class FormatInfo
-	{
-		public CUEToolsFormat fmt;
-		public bool lossyWAV;
-
-		public FormatInfo(CUEToolsFormat fmt, bool lossyWAV)
-		{
-			this.fmt = fmt;
-			this.lossyWAV = lossyWAV;
-		}
-
-		public override string ToString()
-		{
-			return lossyWAV ? "lossy." + fmt.extension : fmt.extension;
-		}
-
-		public string DotExtension
-		{
-			get
-			{
-				return fmt.DotExtension;
-			}
-		}
-	}
-
 	public class DriveInfo
 	{
 		public ICDRipper drive;
@@ -1726,7 +1686,7 @@ namespace CUERipper
 		};
 		private BindingList<CUEMetadataEntry> releases = new BindingList<CUEMetadataEntry>();
 		private BindingList<DriveInfo> drives = new BindingList<DriveInfo>();
-		private BindingList<FormatInfo> formats = new BindingList<FormatInfo>();
+        private BindingList<CUEToolsFormat> formats = new BindingList<CUEToolsFormat>();
 		private BindingList<CUEToolsUDC> encoders = new BindingList<CUEToolsUDC>();
 
 		public CUEMetadataEntry selectedRelease { get; set; }
@@ -1765,7 +1725,7 @@ namespace CUERipper
 			}
 		}
 
-		public BindingList<FormatInfo> Formats
+        public BindingList<CUEToolsFormat> Formats
 		{
 			get
 			{
