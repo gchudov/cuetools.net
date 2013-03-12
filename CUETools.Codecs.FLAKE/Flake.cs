@@ -34,7 +34,7 @@ namespace CUETools.Codecs.FLAKE
 		public const int FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN = 16; /* bits */
 
 		public static readonly int[] flac_samplerates = new int[16] {
-				0, 0, 0, 0,
+				0, 88200, 176400, 192000,
 				8000, 16000, 22050, 24000, 32000, 44100, 48000, 96000,
 				0, 0, 0, 0
 			};

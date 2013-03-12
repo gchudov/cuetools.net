@@ -325,7 +325,7 @@ namespace CUETools.Codecs.FLAKE
 				frame.blocksize = Flake.flac_blocksizes[frame.bs_code0];
 
 			// custom sample rate
-			if (sr_code0 < 4 || sr_code0 > 11)
+			if (sr_code0 < 1 || sr_code0 > 11)
 			{
 				// sr_code0 == 12 -> sr == bitreader.readbits(8) * 1000;
 				// sr_code0 == 13 -> sr == bitreader.readbits(16);

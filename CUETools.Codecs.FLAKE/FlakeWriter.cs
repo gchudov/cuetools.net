@@ -1805,11 +1805,11 @@ new int[] { // 30
 			{
 				if (_IO == null)
 					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
-				int header_size = flake_encode_init();
+                inited = true;
+                int header_size = flake_encode_init();
 				_IO.Write(header, 0, header_size);
 				if (_IO.CanSeek)
 					first_frame_offset = _IO.Position;
-				inited = true;
 			}
 
 			buff.Prepare(this);
@@ -1997,7 +1997,7 @@ new int[] { // 30
 			ch_code = channels - 1;
 
 			// find samplerate in table
-			for (i = 4; i < 12; i++)
+			for (i = 1; i < 12; i++)
 			{
 				if (_pcm.SampleRate == Flake.flac_samplerates[i])
 				{
