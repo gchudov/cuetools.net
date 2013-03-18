@@ -742,7 +742,7 @@ namespace CUETools.Codecs.FLAKE
 						{
 							seek_table[e].number = (long)bitreader.readbits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN);
 							seek_table[e].offset = (long)bitreader.readbits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN);
-							seek_table[e].framesize = (int)bitreader.readbits24(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN);
+							seek_table[e].framesize = (int)bitreader.readbits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN);
 						}
 					}
 					if (_framesBufferLength < 4 + len)

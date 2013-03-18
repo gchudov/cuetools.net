@@ -71,13 +71,14 @@ namespace CUETools.Codecs
         #endregion
 
         private byte* buffer_m;
-        private int buffer_offset_m, buffer_len_m;
-        private int bitaccumulator_m;
-        private uint cache_m;
+        private byte* bptr_m;
+        private int buffer_len_m;
+        private int have_bits_m;
+        private ulong cache_m;
 
 		public int Position
 		{
-			get { return buffer_offset_m; }
+			get { return (int)(bptr_m - buffer_m - (have_bits_m >> 3)); }
 		}
 
 		public byte* Buffer
@@ -91,9 +92,9 @@ namespace CUETools.Codecs
 		public BitReader()
 		{
 			buffer_m = null;
-			buffer_offset_m = 0;
+            bptr_m = null;
 			buffer_len_m = 0;
-			bitaccumulator_m = 0;
+			have_bits_m = 0;
 			cache_m = 0;
 		}
 
@@ -105,124 +106,83 @@ namespace CUETools.Codecs
 		public void Reset(byte* _buffer, int _pos, int _len)
 		{
 			buffer_m = _buffer;
-			buffer_offset_m = _pos;
+            bptr_m = _buffer + _pos;
 			buffer_len_m = _len;
-			bitaccumulator_m = 0;
-			cache_m = peek4();
+			have_bits_m = 0;
+            cache_m = 0;
+			fill();
 		}
 
-		public uint peek4()
+		public void fill()
 		{
-			//uint result = ((((uint)buffer[pos]) << 24) | (((uint)buffer[pos + 1]) << 16) | (((uint)buffer[pos + 2]) << 8) | ((uint)buffer[pos + 3])) << bitaccumulator_m;
-			byte* b = buffer_m + buffer_offset_m;
-			uint result = *(b++);
-			result = (result << 8) + *(b++);
-			result = (result << 8) + *(b++);
-			result = (result << 8) + *(b++);
-			result <<= bitaccumulator_m;
-			return result;
-		}
+            while (have_bits_m < 56)
+            {
+                have_bits_m += 8;
+                cache_m |= (ulong)*(bptr_m++) << (64 - have_bits_m);
+            }
+        }
 
 		/* skip any number of bits */
 		public void skipbits(int bits)
 		{
-			int new_accumulator = (bitaccumulator_m + bits);
-			buffer_offset_m += (new_accumulator >> 3);
-			bitaccumulator_m = (new_accumulator & 7);
-			cache_m = peek4();
-		}
-
-		/* skip up to 16 bits */
-		public void skipbits16(int bits)
-		{
-			cache_m <<= bits;
-			int new_accumulator = (bitaccumulator_m + bits);
-			buffer_offset_m += (new_accumulator >> 3);
-			bitaccumulator_m = (new_accumulator & 7);
-			cache_m |= ((((uint)buffer_m[buffer_offset_m + 2] << 8) + (uint)buffer_m[buffer_offset_m + 3]) << bitaccumulator_m);
-		}
-
-		/* skip up to 8 bits */
-		public void skipbits8(int bits)
-		{
-			cache_m <<= bits;
-			int new_accumulator = (bitaccumulator_m + bits);
-			buffer_offset_m += (new_accumulator >> 3);
-			bitaccumulator_m = (new_accumulator & 7);
-			cache_m |= ((uint)buffer_m[buffer_offset_m + 3] << bitaccumulator_m);
-		}
-
-		/* supports reading 1 to 24 bits, in big endian format */
-		public uint readbits24(int bits)
-		{
-			//uint result = peek4() >> (32 - bits);
-			uint result = cache_m >> (32 - bits);
-			skipbits(bits);
-			return result;
-		}
-
-		public uint peekbits24(int bits)
-		{
-			return cache_m >> 32 - bits;
+            while (bits > have_bits_m)
+            {
+                bits -= have_bits_m;
+                cache_m = 0;
+                have_bits_m = 0;
+                fill();
+            }
+            cache_m <<= bits;
+            have_bits_m -= bits;
 		}
 
 		/* supports reading 1 to 32 bits, in big endian format */
-		public uint readbits(int bits)
-		{
-			uint result = cache_m >> 32 - bits;
-			if (bits <= 24)
-			{
-				skipbits(bits);
-				return result;
-			}
-			skipbits(24);
-			result |= cache_m >> 56 - bits;
-			skipbits(bits - 24);
-			return result;
-		}
+        public uint readbits(int bits)
+        {
+            fill();
+            uint result = (uint)(cache_m >> 64 - bits);
+            skipbits(bits);
+            return result;
+        }
 
-		public ulong readbits64(int bits)
+        /* supports reading 1 to 64 bits, in big endian format */
+        public ulong readbits64(int bits)
 		{
-			if (bits <= 24)
-				return readbits24(bits);
-			ulong result = readbits24(24);
-			bits -= 24;
-			if (bits <= 24)
-				return (result << bits) | readbits24(bits);
-			result = (result << 24) | readbits24(24);
-			bits -= 24;
-			return (result << bits) | readbits24(bits);
+			if (bits <= 56)
+				return readbits(bits);
+			return (readbits(32) << bits - 32) | readbits(bits - 32);
 		}
 
 		/* reads a single bit */
 		public uint readbit()
 		{
-			uint result = cache_m >> 31;
-			skipbits8(1);
-			return result;
+            return readbits(1);
 		}
 
 		public uint read_unary()
 		{
-			uint val = 0;
-
-			uint result = cache_m >> 24;
+            fill();
+            uint val = 0;
+			ulong result = cache_m >> 56;
 			while (result == 0)
 			{
 				val += 8;
-				skipbits8(8);
-				result = cache_m >> 24;
+                cache_m <<= 8;
+                cache_m |= (ulong)*(bptr_m++) << (64 - have_bits_m);
+                result = cache_m >> 56;
 			}
-
 			val += byte_to_unary_table[result];
-			skipbits8((int)(val & 7) + 1);
+			skipbits((int)(val & 7) + 1);
 			return val;
 		}
 
 		public void flush()
 		{
-			if (bitaccumulator_m > 0)
-				skipbits8(8 - bitaccumulator_m);
+            if ((have_bits_m & 7) > 0)
+            {
+                cache_m <<= have_bits_m & 7;
+                have_bits_m -= have_bits_m & 7;
+            }
 		}
 
 		public int readbits_signed(int bits)
@@ -288,67 +248,41 @@ namespace CUETools.Codecs
 			return v;
 		}
 
-		public int read_rice_signed(int k)
-		{
-			uint msbs = read_unary();
-			uint lsbs = readbits24(k);
-			uint uval = (msbs << k) | lsbs;
-			return (int)(uval >> 1 ^ -(int)(uval & 1));
-		}
-
-		public int read_unary_signed()
-		{
-			uint uval = read_unary();
-			return (int)(uval >> 1 ^ -(int)(uval & 1));
-		}
-
 		public void read_rice_block(int n, int k, int* r)
 		{
+            fill();
             fixed (byte* unary_table = byte_to_unary_table)
             {
                 uint mask = (1U << k) - 1;
-                byte* bptr = &buffer_m[buffer_offset_m];
-                int have_bits = 24 - bitaccumulator_m;
-                ulong _lcache = ((ulong)cache_m) << 32;
-                bptr += 3;
+                byte* bptr = bptr_m;
+                int have_bits = have_bits_m;
+                ulong cache = cache_m;
                 for (int i = n; i > 0; i--)
                 {
                     uint bits;
                     byte* orig_bptr = bptr;
-                    while ((bits = unary_table[_lcache >> 56]) == 8)
+                    while ((bits = unary_table[cache >> 56]) == 8)
                     {
-                        _lcache <<= 8;
-                        _lcache |= (ulong)*(bptr++) << (64 - have_bits);
+                        cache <<= 8;
+                        cache |= (ulong)*(bptr++) << (64 - have_bits);
                     }
                     uint msbs = bits + ((uint)(bptr - orig_bptr) << 3);
                     // assumes k <= 41 (have_bits < 41 + 7 + 1 + 8 == 57, so we don't loose bits here)
                     while (have_bits < 56)
                     {
                         have_bits += 8;
-                        _lcache |= (ulong)*(bptr++) << (64 - have_bits);
+                        cache |= (ulong)*(bptr++) << (64 - have_bits);
                     }
 
                     int btsk = k + (int)bits + 1;
-                    uint uval = (msbs << k) | (uint)((_lcache >> (64 - btsk)) & mask);
-                    _lcache <<= btsk;
+                    uint uval = (msbs << k) | (uint)((cache >> (64 - btsk)) & mask);
+                    cache <<= btsk;
                     have_bits -= btsk;
                     *(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
                 }
-                while (have_bits <= 24)
-                {
-                    _lcache |= ((ulong)bptr[0] << 56) >> have_bits;
-                    have_bits += 8;
-                    bptr++;
-                }
-                while (have_bits > 32)
-                {
-                    have_bits -= 8;
-                    bptr--;
-                }
-                bitaccumulator_m = 32 - have_bits;
-                cache_m = (uint)(_lcache >> 32);
-                bptr -= 4;
-                buffer_offset_m = (int)(bptr - buffer_m);
+                have_bits_m = have_bits;
+                cache_m = cache;
+                bptr_m = bptr;
             }
 		}
 	}
