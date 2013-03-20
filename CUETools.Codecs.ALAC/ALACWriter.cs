@@ -86,8 +86,6 @@ namespace CUETools.Codecs.ALAC
 		int _totalSize = 0;
 		int _windowsize = 0, _windowcount = 0;
 
-		Crc8 crc8;
-		Crc16 crc16;
 		ALACFrame frame;
 		ALACReader verify;
 
@@ -119,8 +117,6 @@ namespace CUETools.Codecs.ALAC
 			eparams.set_defaults(_compressionLevel);
 			eparams.padding_size = 4096;
 
-			crc8 = new Crc8();
-			crc16 = new Crc16();
 			frame = new ALACFrame(_pcm.ChannelCount == 2 ? 5 : _pcm.ChannelCount);
 			chunk_pos = new List<int>();
 		}

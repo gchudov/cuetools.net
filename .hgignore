@@ -17,3 +17,4 @@ ttalib-1.1/x64
 *.opensdf
 CUETools.AVX/Win32
 CUETools.AVX/x64
+CUETools/TestResults/

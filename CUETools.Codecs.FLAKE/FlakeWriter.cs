@@ -109,7 +109,6 @@ namespace CUETools.Codecs.FLAKE
 		int _windowsize = 0, _windowcount = 0;
 
 		Crc8 crc8;
-		Crc16 crc16;
 		MD5 md5;
 
 		FlacFrame frame;
@@ -146,7 +145,6 @@ namespace CUETools.Codecs.FLAKE
 			eparams.padding_size = 8192;
 
 			crc8 = new Crc8();
-			crc16 = new Crc16();
 			frame = new FlacFrame(channels * 2);
 		}
 
@@ -1445,7 +1443,7 @@ new int[] { // 30
 		void output_frame_footer(BitWriter bitwriter)
 		{
 			bitwriter.flush();
-			ushort crc = crc16.ComputeChecksum(frame_buffer, 0, bitwriter.Length);
+			ushort crc = Crc16.ComputeChecksum(0, frame_buffer, 0, bitwriter.Length);
 			bitwriter.writebits(16, crc);
 			bitwriter.flush();
 		}

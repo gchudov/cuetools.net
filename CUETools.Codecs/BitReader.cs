@@ -75,6 +75,7 @@ namespace CUETools.Codecs
         private int buffer_len_m;
         private int have_bits_m;
         private ulong cache_m;
+        private ushort crc16_m;
 
 		public int Position
 		{
@@ -96,6 +97,7 @@ namespace CUETools.Codecs
 			buffer_len_m = 0;
 			have_bits_m = 0;
 			cache_m = 0;
+            crc16_m = 0;
 		}
 
 		public BitReader(byte* _buffer, int _pos, int _len)
@@ -110,6 +112,7 @@ namespace CUETools.Codecs
 			buffer_len_m = _len;
 			have_bits_m = 0;
             cache_m = 0;
+            crc16_m = 0;
 			fill();
 		}
 
@@ -118,7 +121,9 @@ namespace CUETools.Codecs
             while (have_bits_m < 56)
             {
                 have_bits_m += 8;
-                cache_m |= (ulong)*(bptr_m++) << (64 - have_bits_m);
+                byte b = *(bptr_m++);
+                cache_m |= (ulong)b << (64 - have_bits_m);
+                crc16_m = (ushort)((crc16_m << 8) ^ Crc16.table[(crc16_m >> 8) ^ b]);
             }
         }
 
@@ -136,6 +141,36 @@ namespace CUETools.Codecs
             have_bits_m -= bits;
 		}
 
+        public long read_long()
+        {
+            return ((long)readbits(32) << 32) | readbits(32);
+        }
+
+        public ulong read_ulong()
+        {
+            return ((ulong)readbits(32) << 32) | readbits(32);
+        }
+
+        public int read_int()
+        {
+            return (int)readbits(sizeof(int));
+        }
+        
+        public uint read_uint()
+        {
+            return (uint)readbits(sizeof(uint));
+        }
+
+        public short read_short()
+        {
+            return (short)readbits(16);
+        }
+
+        public ushort read_ushort()
+        {
+            return (ushort)readbits(16);
+        }
+
 		/* supports reading 1 to 32 bits, in big endian format */
         public uint readbits(int bits)
         {
@@ -150,7 +185,7 @@ namespace CUETools.Codecs
 		{
 			if (bits <= 56)
 				return readbits(bits);
-			return (readbits(32) << bits - 32) | readbits(bits - 32);
+			return ((ulong)readbits(32) << bits - 32) | readbits(bits - 32);
 		}
 
 		/* reads a single bit */
@@ -168,7 +203,9 @@ namespace CUETools.Codecs
 			{
 				val += 8;
                 cache_m <<= 8;
-                cache_m |= (ulong)*(bptr_m++) << (64 - have_bits_m);
+                byte b = *(bptr_m++);
+                cache_m |= (ulong)b << (64 - have_bits_m);
+                crc16_m = (ushort)((crc16_m << 8) ^ Crc16.table[(crc16_m >> 8) ^ b]);
                 result = cache_m >> 56;
 			}
 			val += byte_to_unary_table[result];
@@ -183,9 +220,20 @@ namespace CUETools.Codecs
                 cache_m <<= have_bits_m & 7;
                 have_bits_m -= have_bits_m & 7;
             }
-		}
+        }
 
-		public int readbits_signed(int bits)
+        public ushort get_crc16()
+        {
+            if (have_bits_m == 0)
+                return crc16_m;
+            ushort crc = 0;
+            int n = have_bits_m >> 3;
+            for (int i = 0; i < n; i++)
+                crc = (ushort)((crc << 8) ^ Crc16.table[(crc >> 8) ^ (byte)(cache_m >> (56 - (i << 3)))]);
+            return Crc16.Substract(crc16_m, crc, n);
+        }
+
+        public int readbits_signed(int bits)
 		{
 			int val = (int)readbits(bits);
 			val <<= (32 - bits);
@@ -252,11 +300,13 @@ namespace CUETools.Codecs
 		{
             fill();
             fixed (byte* unary_table = byte_to_unary_table)
+            fixed (ushort* t = Crc16.table)
             {
                 uint mask = (1U << k) - 1;
                 byte* bptr = bptr_m;
                 int have_bits = have_bits_m;
                 ulong cache = cache_m;
+                ushort crc = crc16_m;
                 for (int i = n; i > 0; i--)
                 {
                     uint bits;
@@ -264,14 +314,18 @@ namespace CUETools.Codecs
                     while ((bits = unary_table[cache >> 56]) == 8)
                     {
                         cache <<= 8;
-                        cache |= (ulong)*(bptr++) << (64 - have_bits);
+                        byte b = *(bptr++);
+                        cache |= (ulong)b << (64 - have_bits);
+                        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
                     }
                     uint msbs = bits + ((uint)(bptr - orig_bptr) << 3);
                     // assumes k <= 41 (have_bits < 41 + 7 + 1 + 8 == 57, so we don't loose bits here)
                     while (have_bits < 56)
                     {
                         have_bits += 8;
-                        cache |= (ulong)*(bptr++) << (64 - have_bits);
+                        byte b = *(bptr++);
+                        cache |= (ulong)b << (64 - have_bits);
+                        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
                     }
 
                     int btsk = k + (int)bits + 1;
@@ -283,6 +337,7 @@ namespace CUETools.Codecs
                 have_bits_m = have_bits;
                 cache_m = cache;
                 bptr_m = bptr;
+                crc16_m = crc;
             }
 		}
 	}

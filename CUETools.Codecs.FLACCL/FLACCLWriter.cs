@@ -250,7 +250,6 @@ namespace CUETools.Codecs.FLACCL
 			eparams.padding_size = _settings.Padding;
 
 			crc8 = new Crc8();
-			crc16 = new Crc16();
 		}
 
 		public FLACCLWriter(string path, AudioPCMConfig pcm)
@@ -1060,7 +1059,7 @@ namespace CUETools.Codecs.FLACCL
 		void output_frame_footer(FlacFrame frame)
 		{
 			frame.writer.flush();
-			ushort crc = crc16.ComputeChecksum(frame.writer.Buffer, frame.writer_offset, frame.writer.Length - frame.writer_offset);
+			ushort crc = Crc16.ComputeChecksum(0, frame.writer.Buffer, frame.writer_offset, frame.writer.Length - frame.writer_offset);
 			frame.writer.writebits(16, crc);
 			frame.writer.flush();
 		}

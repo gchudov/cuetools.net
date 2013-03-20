@@ -80,6 +80,23 @@ namespace CUETools.TestCodecs
 			Assert.AreEqual<uint>(crcA, Crc32.Substract(crcAB, crcB, lenB), "CRC32 was not substracted correctly.");
 		}
 
+        /// <summary>
+        ///A test for Combine
+        ///</summary>
+        [TestMethod()]
+        public void CombineTest16()
+        {
+            int lenAB = testBytes.Length;
+            int lenA = 7;
+            int lenB = lenAB - lenA;
+            ushort crcAB = Crc16.ComputeChecksum(0, testBytes, 0, lenAB);
+            ushort crcA = Crc16.ComputeChecksum(0, testBytes, 0, lenA);
+            ushort crcB = Crc16.ComputeChecksum(0, testBytes, lenA, lenB);
+            Assert.AreEqual<uint>(crcAB, Crc16.Combine(crcA, crcB, lenB), "CRC16 was not combined correctly.");
+            Assert.AreEqual<uint>(crcB, Crc16.Combine(crcA, crcAB, lenB), "CRC16 was not substracted correctly.");
+            Assert.AreEqual<uint>(crcA, Crc16.Substract(crcAB, crcB, lenB), "CRC16 was not substracted correctly.");
+        }
+
 		/// <summary>
 		///A test for ComputeChecksum
 		///</summary>

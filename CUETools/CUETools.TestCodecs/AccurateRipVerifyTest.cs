@@ -274,17 +274,28 @@ namespace CUETools.TestCodecs
 			var record0 = TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 2314, 0).OffsetSafeCRC;
 
 			Assert.AreEqual(
-				"8+lTDqEZidfayuC0LoxnL9Oluf4ywo1muFBu115XBgf254fKIdfVWZOcsQraS4eI\r\n" +
-				"NoLn7W3t0a16i745nEvikfw27ZsMR7gWPrXgXdsI2OdtjWTRL2Vra2dLe3WOl/Ru\r\n" +
-				"wFa1jqbB3+xHiB8XNi+5VKRh3fj1o5RSXS6tOZUvBUFFqoyuZK/DkeIyZ4gkotYO\r\n" +
-				"MZSsx2JBr2tdBzHZMssUmfvWUrfJZAQD8wMv1epy7q0Mk3W/QetVz6cZZ+6rRctf\r\n" +
-				"PGqvWBgNfS/+e7LBo/49KYd16kEofaX8LuuNB/7YJ85a3W71soQovwWLkjm32Xqo\r\n" +
-				"KpaUagu9QED1WEx7frfu95vYsQLV+vq6zULP6QOznUpU6n6LuMPQa5WNA4+chigC\r\n" +
-				"71GFeKTSO3bnS3xg8FMMqRtcTJleWF/7Bs3DkUZnxbkp4g8iZYZ3eMDc7A04AiYx\r\n" +
-				"3tYvDi9WiEZMRWpvuHfoBzWU7HbfOk5+32yg8TyNyVlPq1cfFn/jwQrfNyztTyav\r\n" +
-				"96ZJS2aBroYAw2We5RC2oekmi+N75L6+eQB/4iZOxB9aGP1sALd/UZaJqZP8FcmW\r\n" +
-				"FJOXlBi/KW68TJvujz+2w/P7EaZ0L7llQAtoHwoJniuNN5WYXBlescGc+vyYr5df\r\n" +
-				"jrul+QMmQ4xMi10mglq7CMLVfZZFFgBdvGBrn1tL9bg=\r\n",
+                "xNabCDhnBPt45+ciq03CeqXDvZipuO5umMAVs6MWnHquaAQPCNK5p6aFqUwYn9pg\r\n" +
+                "JRwA7N7y56iFkAAGocLf1W5WHb7+FZqfNpwFdbdDs+yRGAeUIvOoA+wiwPupDCAA\r\n" +
+                "oA/rwLNMdbHStlNj4x85VCsLIp5OpLY96gEM9dBtralauYpI1bMne+Iz0PZQYMOf\r\n" +
+                "ZR+siqD+PSKcB4ZVXUOFsLdnaE9PK2Nt+23eaCWz7Xb7DIk3y3N5/a/fpJKeI+wA\r\n" +
+                "Z9VQKoi8ZrovomELWl5qkggU729uIY1o/2qXBMWJ6DwS67sNe10bBt1MdqqkNdV7\r\n" +
+                "rmuw1evdP80ABMX8wDjxH3gIdozrGABX+st9/En+fiubdEtkhKdo96eI4Cqa41nW\r\n" +
+                "4TvvD1UO5UrXS+gedLpa337w449cUVK3Yk7zDb5oAoJgK7jBHeetCdj/b30THmSA\r\n" +
+                "pv30LKAcXgUpc602FPDH7m7GvsRrtiQ1r9ZHMyQ9NCBt2oWCv2Hac7jDW7N4vQgv\r\n" +
+                "DJwm4nnn7H4WMZ/WziDfUVYYLVPlt/R/DXYnAlsVAj+kBHNlLojQG5A/bRqjDObN\r\n" +
+                "NsNjdI3IgVOQZHP1bkaKGQKQHAdeOGkU+HgaPVe0zKO+r2b5AwKCc66imdS6GGGk\r\n" +
+                "v5xwtNiLb6aJhmuASiOZL8oFHT+W7MPFTVb7hQEg7Ck=\r\n",
+                //"8+lTDqEZidfayuC0LoxnL9Oluf4ywo1muFBu115XBgf254fKIdfVWZOcsQraS4eI\r\n" +
+                //"NoLn7W3t0a16i745nEvikfw27ZsMR7gWPrXgXdsI2OdtjWTRL2Vra2dLe3WOl/Ru\r\n" +
+                //"wFa1jqbB3+xHiB8XNi+5VKRh3fj1o5RSXS6tOZUvBUFFqoyuZK/DkeIyZ4gkotYO\r\n" +
+                //"MZSsx2JBr2tdBzHZMssUmfvWUrfJZAQD8wMv1epy7q0Mk3W/QetVz6cZZ+6rRctf\r\n" +
+                //"PGqvWBgNfS/+e7LBo/49KYd16kEofaX8LuuNB/7YJ85a3W71soQovwWLkjm32Xqo\r\n" +
+                //"KpaUagu9QED1WEx7frfu95vYsQLV+vq6zULP6QOznUpU6n6LuMPQa5WNA4+chigC\r\n" +
+                //"71GFeKTSO3bnS3xg8FMMqRtcTJleWF/7Bs3DkUZnxbkp4g8iZYZ3eMDc7A04AiYx\r\n" +
+                //"3tYvDi9WiEZMRWpvuHfoBzWU7HbfOk5+32yg8TyNyVlPq1cfFn/jwQrfNyztTyav\r\n" +
+                //"96ZJS2aBroYAw2We5RC2oekmi+N75L6+eQB/4iZOxB9aGP1sALd/UZaJqZP8FcmW\r\n" +
+                //"FJOXlBi/KW68TJvujz+2w/P7EaZ0L7llQAtoHwoJniuNN5WYXBlescGc+vyYr5df\r\n" +
+                //"jrul+QMmQ4xMi10mglq7CMLVfZZFFgBdvGBrn1tL9bg=\r\n",
 				TestImageGenerator.CreateAccurateRipVerify("13 68 99 136", 2314, 13).OffsetSafeCRC.Base64);
 
 			var offsets = new int[] { 1, 2, 3, 4, 8, 11, 15, 16, 31, 32, 255, 256, 597, 588, 588 * 5 - 1, 588 * 5, 4095, 4096, 4097, 5000 };

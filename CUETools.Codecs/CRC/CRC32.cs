@@ -42,7 +42,7 @@ namespace CUETools.Codecs
 			return crc;
 		}
 
-		static uint Reflect(uint val, int ch)
+		internal static uint Reflect(uint val, int ch)
 		{
 			uint value = 0;
 			// Swap bit 0 for bit 7
@@ -56,7 +56,9 @@ namespace CUETools.Codecs
 			return value;
 		}
 
-		const uint ulPolynomial = 0x04c11db7;
+		const uint uPolynomial = 0x04c11db7;
+        const uint uReversePolynomial = 0xedb88320;
+        const uint uReversePolynomial2 = 0xdb710641;
 
 		private static readonly uint[,] combineTable;
 		private static readonly uint[,] substractTable;
@@ -122,13 +124,13 @@ namespace CUETools.Codecs
 			{
 				table[i] = Reflect(i, 8) << 24;
 				for (int j = 0; j < 8; j++)
-					table[i] = (table[i] << 1) ^ ((table[i] & (1U << 31)) == 0 ? 0 : ulPolynomial);
+					table[i] = (table[i] << 1) ^ ((table[i] & (1U << 31)) == 0 ? 0 : uPolynomial);
 				table[i] = Reflect(table[i], 32);
 			}
 			combineTable = new uint[GF2_DIM, GF2_DIM];
 			substractTable = new uint[GF2_DIM, GF2_DIM];
-			combineTable[0, 0] = 0xedb88320;           /* CRC-32 polynomial */
-			substractTable[0, 31] = 0xdb710641;
+            combineTable[0, 0] = uReversePolynomial;
+            substractTable[0, 31] = uReversePolynomial2;
 			for (int n = 1; n < GF2_DIM; n++)
 			{
 				combineTable[0, n] = 1U << (n - 1);
@@ -151,41 +153,44 @@ namespace CUETools.Codecs
 		const int GF2_DIM = 32;
 		//const int GF2_DIM2 = 67;
 
-		private static unsafe uint gf2_matrix_times(uint* mat, uint vec)
-		{
-			return *(mat++) * (vec & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1) ^
-			*(mat++) * ((vec >>= 1) & 1);
-		}
+        private static unsafe uint gf2_matrix_times(uint* umat, uint uvec)
+        {
+            int vec = (int)uvec;
+            int* mat = (int*)umat;
+            return (uint)(
+                (*(mat++) & ((vec << 31) >> 31)) ^
+                (*(mat++) & ((vec << 30) >> 31)) ^
+                (*(mat++) & ((vec << 29) >> 31)) ^
+                (*(mat++) & ((vec << 28) >> 31)) ^
+                (*(mat++) & ((vec << 27) >> 31)) ^
+                (*(mat++) & ((vec << 26) >> 31)) ^
+                (*(mat++) & ((vec << 25) >> 31)) ^
+                (*(mat++) & ((vec << 24) >> 31)) ^
+                (*(mat++) & ((vec << 23) >> 31)) ^
+                (*(mat++) & ((vec << 22) >> 31)) ^
+                (*(mat++) & ((vec << 21) >> 31)) ^
+                (*(mat++) & ((vec << 20) >> 31)) ^
+                (*(mat++) & ((vec << 19) >> 31)) ^
+                (*(mat++) & ((vec << 18) >> 31)) ^
+                (*(mat++) & ((vec << 17) >> 31)) ^
+                (*(mat++) & ((vec << 16) >> 31)) ^
+                (*(mat++) & ((vec << 15) >> 31)) ^
+                (*(mat++) & ((vec << 14) >> 31)) ^
+                (*(mat++) & ((vec << 13) >> 31)) ^
+                (*(mat++) & ((vec << 12) >> 31)) ^
+                (*(mat++) & ((vec << 11) >> 31)) ^
+                (*(mat++) & ((vec << 10) >> 31)) ^
+                (*(mat++) & ((vec << 09) >> 31)) ^
+                (*(mat++) & ((vec << 08) >> 31)) ^
+                (*(mat++) & ((vec << 07) >> 31)) ^
+                (*(mat++) & ((vec << 06) >> 31)) ^
+                (*(mat++) & ((vec << 05) >> 31)) ^
+                (*(mat++) & ((vec << 04) >> 31)) ^
+                (*(mat++) & ((vec << 03) >> 31)) ^
+                (*(mat++) & ((vec << 02) >> 31)) ^
+                (*(mat++) & ((vec << 01) >> 31)) ^
+                (*(mat++) & (vec >> 31)));
+        }
 
 		/* ========================================================================= */
 		private static unsafe void gf2_matrix_square(uint *square, uint *mat)

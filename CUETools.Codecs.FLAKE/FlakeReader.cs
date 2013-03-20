@@ -39,7 +39,6 @@ namespace CUETools.Codecs.FLAKE
 		SeekPoint[] seek_table;
 
 		Crc8 crc8;
-		Crc16 crc16;
 		FlacFrame frame;
 		BitReader framereader;
 		AudioPCMConfig pcm;
@@ -83,7 +82,6 @@ namespace CUETools.Codecs.FLAKE
 			_IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
 
 			crc8 = new Crc8();
-			crc16 = new Crc16();
 			
 			_framesBuffer = new byte[0x20000];
 			decode_metadata();
@@ -113,7 +111,6 @@ namespace CUETools.Codecs.FLAKE
 		{
 			pcm = _pcm;
 			crc8 = new Crc8();
-			crc16 = new Crc16();
 
 			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * PCM.ChannelCount];
 			residualBuffer = new int[Flake.MAX_BLOCKSIZE * PCM.ChannelCount];
@@ -622,10 +619,17 @@ namespace CUETools.Codecs.FLAKE
 				decode_frame_header(framereader, frame);
 				decode_subframes(framereader, frame);
 				framereader.flush();
-				ushort crc_1 = do_crc ? crc16.ComputeChecksum(framereader.Buffer + pos, framereader.Position - pos) : (ushort)0;
-				ushort crc_2 = (ushort)framereader.readbits(16);
-				if (do_crc && crc_1 != crc_2)
-					throw new Exception("frame crc mismatch");
+                framereader.get_crc16();
+                framereader.get_crc16();
+                framereader.get_crc16();
+                framereader.get_crc16();
+                framereader.get_crc16();
+                framereader.get_crc16();
+                framereader.get_crc16();
+                ushort crc_1 = framereader.get_crc16();
+				ushort crc_2 = framereader.read_ushort();
+                if (do_crc && crc_1 != crc_2)
+                    throw new Exception("frame crc mismatch");
 				restore_samples(frame);
 				_samplesInBuffer = frame.blocksize;
 				return framereader.Position - pos;
@@ -645,7 +649,7 @@ namespace CUETools.Codecs.FLAKE
 		{
 			byte x;
 			int i, id;
-			bool first = true;
+			//bool first = true;
 			byte[] FLAC__STREAM_SYNC_STRING = new byte[] { (byte)'f', (byte)'L', (byte)'a', (byte)'C' };
 			byte[] ID3V2_TAG_ = new byte[] { (byte)'I', (byte)'D', (byte)'3' };
 
@@ -656,7 +660,7 @@ namespace CUETools.Codecs.FLAKE
 				x = _framesBuffer[0];
 				if (x == FLAC__STREAM_SYNC_STRING[i])
 				{
-					first = true;
+					//first = true;
 					i++;
 					id = 0;
 					continue;
@@ -738,12 +742,12 @@ namespace CUETools.Codecs.FLAKE
 					{
 						int num_entries = len / 18;
 						seek_table = new SeekPoint[num_entries];
-						for (int e = 0; e < num_entries; e++)
-						{
-							seek_table[e].number = (long)bitreader.readbits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN);
-							seek_table[e].offset = (long)bitreader.readbits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN);
-							seek_table[e].framesize = (int)bitreader.readbits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN);
-						}
+                        for (int e = 0; e < num_entries; e++)
+                        {
+                            seek_table[e].number = bitreader.read_long();
+                            seek_table[e].offset = bitreader.read_long();
+                            seek_table[e].framesize = (int)bitreader.read_ushort();
+                        }
 					}
 					if (_framesBufferLength < 4 + len)
 					{
