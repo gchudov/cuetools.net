@@ -619,13 +619,6 @@ namespace CUETools.Codecs.FLAKE
 				decode_frame_header(framereader, frame);
 				decode_subframes(framereader, frame);
 				framereader.flush();
-                framereader.get_crc16();
-                framereader.get_crc16();
-                framereader.get_crc16();
-                framereader.get_crc16();
-                framereader.get_crc16();
-                framereader.get_crc16();
-                framereader.get_crc16();
                 ushort crc_1 = framereader.get_crc16();
 				ushort crc_2 = framereader.read_ushort();
                 if (do_crc && crc_1 != crc_2)

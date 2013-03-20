@@ -205,7 +205,6 @@ namespace CUETools.Codecs.FLACCL
 		int _totalSize = 0;
 
 		Crc8 crc8;
-		Crc16 crc16;
 		MD5 md5;
 
 		SeekPoint[] seek_table;
