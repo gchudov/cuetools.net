@@ -350,14 +350,14 @@ namespace CUETools.Codecs.FLAKE
 		unsafe void decode_subframe_constant(BitReader bitreader, FlacFrame frame, int ch)
 		{
 			int obits = frame.subframes[ch].obits;
-			frame.subframes[ch].best.residual[0] = bitreader.readbits_signed(obits);
+			frame.subframes[ch].samples[0] = bitreader.readbits_signed(obits);
 		}
 
 		unsafe void decode_subframe_verbatim(BitReader bitreader, FlacFrame frame, int ch)
 		{
 			int obits = frame.subframes[ch].obits;
 			for (int i = 0; i < frame.blocksize; i++)
-				frame.subframes[ch].best.residual[i] = bitreader.readbits_signed(obits);
+				frame.subframes[ch].samples[i] = bitreader.readbits_signed(obits);
 		}
 
 		unsafe void decode_residual(BitReader bitreader, FlacFrame frame, int ch)
@@ -376,27 +376,122 @@ namespace CUETools.Codecs.FLAKE
 
 			int rice_len = 4 + frame.subframes[ch].best.rc.coding_method;
 			// residual
-			int j = frame.subframes[ch].best.order;
-			int* r = frame.subframes[ch].best.residual + j;
-			for (int p = 0; p < (1 << frame.subframes[ch].best.rc.porder); p++)
-			{
-				if (p == 1) res_cnt = psize;
-				int n = Math.Min(res_cnt, frame.blocksize - j);
+            int order = frame.subframes[ch].best.order;
+            int shift = frame.subframes[ch].best.shift;
+			//int* r = frame.subframes[ch].best.residual;
+            int* s = frame.subframes[ch].samples + order;
+            //for (int i = 0; i < order; i++)
+            //    *(s++) = *(r++);
+            fixed (byte* unary_table = BitReader.byte_to_unary_table)
+            fixed (ushort* t = Crc16.table)
+            fixed (int* coefs = frame.subframes[ch].best.coefs)
+            {
+                //int* cc = stackalloc int[34];
+                //for (int i = 0; i < 34; i++)
+                //    cc[i] = 0;
 
-				int k = frame.subframes[ch].best.rc.rparams[p] = (int)bitreader.readbits(rice_len);
-				if (k == (1 << rice_len) - 1)
-				{
-					k = frame.subframes[ch].best.rc.esc_bps[p] = (int)bitreader.readbits(5);
-					for (int i = n; i > 0; i--)
-						*(r++) = bitreader.readbits_signed((int)k);
-				}
-				else
-				{
-					bitreader.read_rice_block(n, (int)k, r);
-					r += n;
-				}
-				j += n;
-			}
+                //switch (frame.subframes[ch].best.type)
+                //{
+                //    case SubframeType.Fixed:
+                //        shift = 0;
+                //        switch (order)
+                //        {
+                //            case 0:
+                //                break;
+                //            case 1:
+                //                cc[0] = 1;
+                //                break;
+                //            case 2:
+                //                cc[0] = -1;
+                //                cc[1] = 2;
+                //                break;
+                //            case 3:
+                //                cc[0] = 1;
+                //                cc[1] = -3;
+                //                cc[2] = 3;
+                //                break;
+                //            case 4:
+                //                cc[0] = -1;
+                //                cc[1] = 4;
+                //                cc[2] = -2;
+                //                cc[3] = 4;
+                //                break;
+                //        }
+                //        break;
+                //    case SubframeType.LPC:
+                //        for (int i = 0; i < order; i++)
+                //            cc[i] = coefs[order - 1 - i];
+                //        break;
+                //}
+
+                for (int p = 0; p < (1 << frame.subframes[ch].best.rc.porder); p++)
+                {
+                    if (p == 1) res_cnt = psize;
+                    int n = Math.Min(res_cnt, frame.blocksize - (int)(s - frame.subframes[ch].samples));
+
+                    int k = frame.subframes[ch].best.rc.rparams[p] = (int)bitreader.readbits(rice_len);
+                    if (k == (1 << rice_len) - 1)
+                    {
+                        k = frame.subframes[ch].best.rc.esc_bps[p] = (int)bitreader.readbits(5);
+                        bitreader.read_int_block(n, k, s);
+                        s += n;
+                    }
+                    else
+                    {
+                        bitreader.read_rice_block(n, k, s);
+                        s += n;
+                        //bitreader.fill();
+                        //uint mask = (1U << k) - 1;
+                        //byte* bptr = bitreader.bptr_m;
+                        //int have_bits = bitreader.have_bits_m;
+                        //ulong cache = bitreader.cache_m;
+                        //ushort crc = bitreader.crc16_m;
+
+                        //for (int i = n; i > 0; i--)
+                        //{
+                        //    uint bits;
+                        //    byte* orig_bptr = bptr;
+                        //    while ((bits = unary_table[cache >> 56]) == 8)
+                        //    {
+                        //        cache <<= 8;
+                        //        byte b = *(bptr++);
+                        //        cache |= (ulong)b << (64 - have_bits);
+                        //        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
+                        //    }
+                        //    uint msbs = bits + ((uint)(bptr - orig_bptr) << 3);
+                        //    // assumes k <= 41 (have_bits < 41 + 7 + 1 + 8 == 57, so we don't loose bits here)
+                        //    while (have_bits < 56)
+                        //    {
+                        //        have_bits += 8;
+                        //        byte b = *(bptr++);
+                        //        cache |= (ulong)b << (64 - have_bits);
+                        //        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
+                        //    }
+
+                        //    int btsk = k + (int)bits + 1;
+                        //    uint uval = (msbs << k) | (uint)((cache >> (64 - btsk)) & mask);
+                        //    cache <<= btsk;
+                        //    have_bits -= btsk;
+                        //    int res = (int)(uval >> 1 ^ -(int)(uval & 1));
+                        //    //int* so = s - order;
+                        //    //int pred =
+                        //    //      cc[00] * so[00] + cc[01] * so[01]
+                        //    //    + cc[02] * so[02] + cc[03] * so[03]
+                        //    //    + cc[04] * so[04] + cc[05] * so[05]
+                        //    //    + cc[06] * so[06] + cc[07] * so[07]
+                        //    //    + cc[08] * so[08] + cc[09] * so[09]
+                        //    //    + cc[10] * so[10] + cc[11] * so[11];
+                        //    //*(s++) = res + (pred >> shift);
+                        //    // restore_samples will overwrite s if needed
+                        //    *(s++) = res;
+                        //}
+                        //bitreader.have_bits_m = have_bits;
+                        //bitreader.cache_m = cache;
+                        //bitreader.bptr_m = bptr;
+                        //bitreader.crc16_m = crc;
+                    }
+                }
+            }
 		}
 
 		unsafe void decode_subframe_fixed(BitReader bitreader, FlacFrame frame, int ch)
@@ -404,7 +499,7 @@ namespace CUETools.Codecs.FLAKE
 			// warm-up samples
 			int obits = frame.subframes[ch].obits;
 			for (int i = 0; i < frame.subframes[ch].best.order; i++)
-				frame.subframes[ch].best.residual[i] = bitreader.readbits_signed(obits);
+				frame.subframes[ch].samples[i] = bitreader.readbits_signed(obits);
 
 			// residual
 			decode_residual(bitreader, frame, ch);
@@ -415,7 +510,7 @@ namespace CUETools.Codecs.FLAKE
 			// warm-up samples
 			int obits = frame.subframes[ch].obits;
 			for (int i = 0; i < frame.subframes[ch].best.order; i++)
-				frame.subframes[ch].best.residual[i] = bitreader.readbits_signed(obits);
+				frame.subframes[ch].samples[i] = bitreader.readbits_signed(obits);
 
 			// LPC coefficients
 			frame.subframes[ch].best.cbits = (int)bitreader.readbits(4) + 1; // lpc_precision
@@ -493,15 +588,15 @@ namespace CUETools.Codecs.FLAKE
 		{
 			FlacSubframeInfo sub = frame.subframes[ch];
 
-			AudioSamples.MemCpy(sub.samples, sub.best.residual, sub.best.order);
+			//AudioSamples.MemCpy(sub.samples, sub.best.residual, sub.best.order);
 			int* data = sub.samples + sub.best.order;
-			int* residual = sub.best.residual + sub.best.order;
+			int* residual = sub.samples + sub.best.order;
 			int data_len = frame.blocksize - sub.best.order;
 			int s0, s1, s2;
 			switch (sub.best.order)
 			{
 				case 0:
-					AudioSamples.MemCpy(data, residual, data_len);
+					//AudioSamples.MemCpy(data, residual, data_len);
 					break;
 				case 1:
 					s1 = data[-1];
@@ -543,10 +638,12 @@ namespace CUETools.Codecs.FLAKE
 			{
 				for (int i = sub.best.order; i > 0; i--)
 					csum += (ulong)Math.Abs(coefs[i - 1]);
-				if ((csum << sub.obits) >= 1UL << 32)
-					lpc.decode_residual_long(sub.best.residual, sub.samples, frame.blocksize, sub.best.order, coefs, sub.best.shift);
+                //if (frame.subframes[ch].best.order <= 12 && (csum << sub.obits) < 1UL << 32)
+                //    return;
+                if ((csum << sub.obits) >= 1UL << 32)
+					lpc.decode_residual_long(sub.samples, sub.samples, frame.blocksize, sub.best.order, coefs, sub.best.shift);
 				else
-					lpc.decode_residual(sub.best.residual, sub.samples, frame.blocksize, sub.best.order, coefs, sub.best.shift);
+					lpc.decode_residual(sub.samples, frame.blocksize, sub.best.order, coefs, sub.best.shift);
 			}
 		}
 
@@ -557,16 +654,16 @@ namespace CUETools.Codecs.FLAKE
 				switch (frame.subframes[ch].best.type)
 				{
 					case SubframeType.Constant:
-						AudioSamples.MemSet(frame.subframes[ch].samples, frame.subframes[ch].best.residual[0], frame.blocksize);
+						AudioSamples.MemSet(frame.subframes[ch].samples, frame.subframes[ch].samples[0], frame.blocksize);
 						break;
 					case SubframeType.Verbatim:
-						AudioSamples.MemCpy(frame.subframes[ch].samples, frame.subframes[ch].best.residual, frame.blocksize);
+						//AudioSamples.MemCpy(frame.subframes[ch].samples, frame.subframes[ch].best.residual, frame.blocksize);
 						break;
 					case SubframeType.Fixed:
 						restore_samples_fixed(frame, ch);
 						break;
 					case SubframeType.LPC:
-						restore_samples_lpc(frame, ch);
+                        restore_samples_lpc(frame, ch);
 						break;
 				}
 				if (frame.subframes[ch].wbits != 0)

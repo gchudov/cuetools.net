@@ -71,11 +71,11 @@ namespace CUETools.Codecs
         #endregion
 
         private byte* buffer_m;
-        private byte* bptr_m;
-        private int buffer_len_m;
-        private int have_bits_m;
-        private ulong cache_m;
-        private ushort crc16_m;
+        public byte* bptr_m;
+        public int buffer_len_m;
+        public int have_bits_m;
+        public ulong cache_m;
+        public ushort crc16_m;
 
 		public int Position
 		{
@@ -295,6 +295,38 @@ namespace CUETools.Codecs
 			}
 			return v;
 		}
+
+        public void read_int_block(int n, int k, int* r)
+        {
+            fill();
+            byte* bptr = bptr_m;
+            int have_bits = have_bits_m;
+            ulong cache = cache_m;
+            ushort crc = crc16_m;
+
+            fixed (ushort* t = Crc16.table)
+            {
+                for (int i = n; i > 0; i--)
+                {
+                    while (have_bits < 56)
+                    {
+                        have_bits += 8;
+                        byte b = *(bptr++);
+                        cache |= (ulong)b << (64 - have_bits);
+                        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
+                    }
+                    int res = (int)((long)cache >> 64 - k);
+                    cache <<= k;
+                    have_bits -= k;
+                    *(r++) = res;
+                }
+            }
+
+            have_bits_m = have_bits;
+            cache_m = cache;
+            bptr_m = bptr;
+            crc16_m = crc;
+        }
 
 		public void read_rice_block(int n, int k, int* r)
 		{
