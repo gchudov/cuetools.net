@@ -755,170 +755,160 @@ namespace CUETools.Codecs
 		}
 
 		public static unsafe void
-		decode_residual(int* smp, int n, int order,
+		decode_residual(int* res, int* smp, int n, int order,
 			int* coefs, int shift)
 		{
+			for (int i = 0; i < order; i++)
+				smp[i] = res[i];
+
 			int* s = smp;
-            int* cc = stackalloc int[12];
-            for (int i = 0; i < 12; i++)
-                cc[i] = 0;
-            if (order <= 12)
-            {
-                for (int i = 0; i < order; i++)
-                    cc[i] = coefs[order - 1 - i];
-            }
-            switch (order)
+			int* r = res + order;
+			int c0 = coefs[0];
+			int c1 = coefs[1];
+			switch (order)
 			{
 				case 1:
 					for (int i = n - order; i > 0; i--)
 					{
-						int pred = *cc * *(s++);
-						*s += pred >> shift;
+						int pred = c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
 					}
 					break;
 				case 2:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *co * *(s++);
-                        *(s--) += pred >> shift;
+						int pred = c1 * *(s++) + c0 * *(s++);
+						*(s--) = *(r++) + (pred >> shift);
 					}
 					break;
 				case 3:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) + 
-                            *co * *(s++);
-                        *s += pred >> shift;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
 						s -= 2;
 					}
 					break;
 				case 4:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *co * *(s++);
-                        *s += pred >> shift;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
 						s -= 3;
 					}
 					break;
 				case 5:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co) * *(s++);
-                        *s += pred >> shift;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
 						s -= 4;
 					}
 					break;
 				case 6:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++);
-                        *s += pred >> shift;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
 						s -= 5;
 					}
 					break;
 				case 7:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++);
-                        *s += pred >> shift;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
 						s -= 6;
 					}
 					break;
 				case 8:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++);
-                        *s += pred >> shift;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
 						s -= 7;
 					}
 					break;
 				case 9:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++);
-                        *s += pred >> shift;
-                        s -= 8;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 8;
 					}
 					break;
 				case 10:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++);
-                        *s += pred >> shift;
-                        s -= 9;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 9;
 					}
 					break;
 				case 11:
 					for (int i = n - order; i > 0; i--)
 					{
-                        int* co = cc;
-                        int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++);
-                        *s += pred >> shift;
-                        s -= 10;
+						int* co = coefs + order - 1;
+						int pred =
+							*(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 10;
 					}
 					break;
 				case 12:
 					for (int i = n - order; i > 0; i--)
 					{
-						int* co = cc;
-						int pred =
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++) +
-                            *(co++) * *(s++) + *(co++) * *(s++);
-                            //  cc[00] * s[00] + cc[01] * s[01]
-                            //+ cc[02] * s[02] + cc[03] * s[03]
-                            //+ cc[04] * s[04] + cc[05] * s[05]
-                            //+ cc[06] * s[06] + cc[07] * s[07]
-                            //+ cc[08] * s[08] + cc[09] * s[09]
-                            //+ cc[10] * s[10] + cc[11] * s[11];
-                        *s += pred >> shift;
-                        s -= 11;
+						int* co = coefs + order - 1;
+						int pred = 
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							*(co--) * *(s++) + *(co--) * *(s++) +
+							c1 * *(s++) + c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+						s -= 11;
 					}
 					break;
 				default:
@@ -936,10 +926,10 @@ namespace CUETools.Codecs
 						pred += coefs[4] * *(s++);
 						pred += coefs[3] * *(s++);
 						pred += coefs[2] * *(s++);
-                        pred += coefs[1] * *(s++);
-                        pred += coefs[0] * *(s++);
-                        *s += pred >> shift;
-                    }
+						pred += c1 * *(s++);
+						pred += c0 * *(s++);
+						*s = *(r++) + (pred >> shift);
+					}
 					break;
 			}
 		}
