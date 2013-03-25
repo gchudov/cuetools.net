@@ -233,6 +233,14 @@ namespace TagLib.Asf {
 		public ulong Preroll {
 			get {return preroll;}
 		}
+
+        //public long AudioSampleCount
+        //{
+        //    get
+        //    {
+        //        return (((long) send_duration - (long) preroll * 10000) * 44100 + 5000000) / 10000000;
+        //    }
+        //}
 		
 		/// <summary>
 		///    Gets the flags of the file described by the current
