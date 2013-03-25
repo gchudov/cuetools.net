@@ -161,6 +161,7 @@ namespace CUETools.Processor
             {
                 encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
                 encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
+                encoders.Add(new CUEToolsUDC("WMAEncode", "wma", true, "", "", "WMAEncode.exe", "-i -c lossless - %O"));
                 encoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
                 encoders.Add(new CUEToolsUDC("VBR (lame.exe)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
 				encoders.Add(new CUEToolsUDC("CBR (lame.exe)", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
@@ -169,7 +170,8 @@ namespace CUETools.Processor
                 encoders.Add(new CUEToolsUDC("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
                 decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
-                decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "%I -f wav -"));
+                decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
+                decoders.Add("wma2wav", new CUEToolsUDC("wma2wav", "wma", true, "", "", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
             }
             else
             {
@@ -184,6 +186,7 @@ namespace CUETools.Processor
             formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, true, false, true, encoders.GetDefault("wav", true), null, GetDefaultDecoder("wav")));
             formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), GetDefaultDecoder("m4a")));
             formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, true, encoders.GetDefault("tak", true), null, "takc"));
+            formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("wma", true), null, "wma2wav"));
             formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("mp3", false), null));
             formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("ogg", false), null));
 

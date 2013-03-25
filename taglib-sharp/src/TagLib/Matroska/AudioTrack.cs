@@ -136,6 +136,21 @@ namespace TagLib.Matroska
         }
 
         /// <summary>
+        ///    Gets the sample count of the audio represented by the
+        ///    current instance.
+        /// </summary>
+        /// <value>
+        ///    A <see cref="int" /> value containing the sample count
+        ///    of the audio represented by the current instance.
+        /// </value>
+        public long AudioSampleCount
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        /// <summary>
         /// Audio track sampling rate.
         /// </summary>
         public int AudioSampleRate

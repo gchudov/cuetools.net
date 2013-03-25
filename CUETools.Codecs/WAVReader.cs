@@ -202,7 +202,7 @@ namespace CUETools.Codecs
                     _dataOffset = pos;
                     if (!_IO.CanSeek || _IO.Length <= maxFileSize)
                     {
-                        if (ckSize >= 0x7fffffff)
+                        if (ckSize == 0 || ckSize >= 0x7fffffff)
                             _dataLen = -1;
                         else
                             _dataLen = (long)ckSize;

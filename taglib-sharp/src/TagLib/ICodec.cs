@@ -123,8 +123,18 @@ namespace TagLib {
 		///    A <see cref="int" /> value containing a bitrate of the
 		///    audio represented by the current instance.
 		/// </value>
-		int AudioBitrate {get;}
-		
+		int AudioBitrate {get;}		
+
+		/// <summary>
+		///    Gets the sample count of the audio represented by the
+		///    current instance.
+		/// </summary>
+		/// <value>
+		///    A <see cref="int" /> value containing the sample count
+		///    of the audio represented by the current instance.
+		/// </value>
+		long AudioSampleCount {get;}
+
 		/// <summary>
 		///    Gets the sample rate of the audio represented by the
 		///    current instance.

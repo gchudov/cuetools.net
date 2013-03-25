@@ -278,7 +278,23 @@ namespace TagLib.Aiff
 			}
 		}
 
-		/// <summary>
+        /// <summary>
+        ///    Gets the sample count of the audio represented by the
+        ///    current instance.
+        /// </summary>
+        /// <value>
+        ///    A <see cref="int" /> value containing the sample count
+        ///    of the audio represented by the current instance.
+        /// </value>
+        public long AudioSampleCount
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        
+        /// <summary>
 		///    Gets the sample rate of the audio represented by the
 		///    current instance.
 		/// </summary>

@@ -2180,15 +2180,24 @@ namespace CUETools.Processor
                     ? (TagLib.File.IFileAbstraction)new ArchiveFileAbstraction(this, path)
                     : (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(path);
                 fileInfo = TagLib.File.Create(file);
+                if (fileInfo.Properties.AudioSampleCount > 0)
+                    return (int)fileInfo.Properties.AudioSampleCount;
             }
 
             IAudioSource audioSource = AudioReadWrite.GetAudioSource(path, _isArchive ? OpenArchive(path, true) : null, _config);
             try
             {
-                if (!audioSource.PCM.IsRedBook ||
-                    audioSource.Length <= 0 ||
+                if (!audioSource.PCM.IsRedBook)
+                    throw new Exception("Audio format is not Red Book PCM.");
+                if (audioSource.Length <= 0)
+                {
+                    AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
+                    while (audioSource.Read(buff, -1) != 0)
+                        CheckStop();
+                }
+                if (audioSource.Length <= 0 ||
                     audioSource.Length >= Int32.MaxValue)
-                    throw new Exception("Audio format is invalid.");
+                    throw new Exception("Audio file length is unknown or invalid.");
                 return (int)audioSource.Length;
             }
             finally

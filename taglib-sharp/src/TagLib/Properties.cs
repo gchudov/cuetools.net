@@ -245,8 +245,36 @@ namespace TagLib {
 				return 0;
 			}
 		}
-		
-		/// <summary>
+
+        /// <summary>
+        ///    Gets the sample count of the audio represented by the
+        ///    current instance.
+        /// </summary>
+        /// <value>
+        ///    A <see cref="int" /> value containing the sample count
+        ///    of the audio represented by the current instance.
+        /// </value>
+        public long AudioSampleCount
+        {
+            get
+            {
+                foreach (ICodec codec in codecs)
+                {
+                    if (codec == null ||
+                        (codec.MediaTypes & MediaTypes.Audio) == 0)
+                        continue;
+
+                    IAudioCodec audio = codec as IAudioCodec;
+
+                    if (audio != null && audio.AudioSampleCount != 0)
+                        return audio.AudioSampleCount;
+                }
+
+                return 0;
+            }
+        }
+        
+        /// <summary>
 		///    Gets the sample rate of the audio represented by the
 		///    current instance.
 		/// </summary>

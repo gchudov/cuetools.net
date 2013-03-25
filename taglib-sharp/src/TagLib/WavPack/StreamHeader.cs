@@ -149,8 +149,24 @@ namespace TagLib.WavPack {
 		
 		
 		#region Public Properties
-		
-		/// <summary>
+
+        /// <summary>
+        ///    Gets the sample count of the audio represented by the
+        ///    current instance.
+        /// </summary>
+        /// <value>
+        ///    A <see cref="int" /> value containing the sample count
+        ///    of the audio represented by the current instance.
+        /// </value>
+        public long AudioSampleCount
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
 		///    Gets the duration of the media represented by the current
 		///    instance.
 		/// </summary>
