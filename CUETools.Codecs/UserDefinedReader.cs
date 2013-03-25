@@ -85,7 +85,10 @@ namespace CUETools.Codecs
                 ex = _ex;
             }
             if (!started)
+            {
+                _decoderProcess = null;
                 throw new Exception(_decoder + ": " + (ex == null ? "please check the path" : ex.Message));
+            }
             rdr = new WAVReader(_path, _decoderProcess.StandardOutput.BaseStream);
         }
 
