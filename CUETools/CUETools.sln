@@ -64,6 +64,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwavpack", "..\wavpack-4.5.0\src\libwavpack.vcxproj", "{5CCCB9CF-0384-458F-BA08-72B73866840F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.ARCUE", "..\CUETools.ARCUE\CUETools.ARCUE.csproj", "{A5A8D8FA-9E32-4010-8AAF-AE580C5AF728}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AA2A9A7E-45FB-4632-AD85-85B0E556F818} = {AA2A9A7E-45FB-4632-AD85-85B0E556F818}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Processor", "..\CUETools.Processor\CUETools.Processor.csproj", "{4911BD82-49EF-4858-8B51-5394F86739A4}"
 EndProject

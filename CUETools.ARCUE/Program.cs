@@ -1,30 +1,55 @@
 using System;
 using System.IO;
+using CUETools.CTDB;
 using CUETools.Processor;
 
 namespace ArCueDotNet
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            if (args.Length != 1)
+            bool ok = true;
+            bool verbose = false;
+            string pathIn = null;
+            for (int arg = 0; arg < args.Length; arg++)
+			{
+				if (args[arg].Length == 0)
+					ok = false;
+				else if ((args[arg] == "-v" || args[arg] == "--verbose"))
+					verbose = true;
+				else if (args[arg][0] != '-' && pathIn == null)
+                    pathIn = args[arg];
+				else
+					ok = false;
+				if (!ok)
+					break;
+			}
+
+            if (!ok || pathIn == null)
             {
-                Console.WriteLine("Usage: ArCueDotNet <filename>");
-                return;
+                Console.SetOut(Console.Error);
+                Console.WriteLine("Usage: ArCueDotNet [options] <filename>");
+                Console.WriteLine();
+                Console.WriteLine("Options:");
+                Console.WriteLine();
+                Console.WriteLine(" -v --verbose         Verbose mode");
+                return 1;
             }
-            string pathIn = args[0];
             if (!File.Exists(pathIn))
             {
+                Console.SetOut(Console.Error);
                 Console.WriteLine("Input CUE Sheet not found.");
-                return;
+                return 2;
             }
+
             CUEConfig config = new CUEConfig();
             config.writeArLogOnVerify = false;
             config.writeArTagsOnVerify = false;
             config.autoCorrectFilenames = true;
             config.extractAlbumArt = false;
             config.embedAlbumArt = false;
+            config.advanced.DetailedCTDBLog = verbose;
 
             string accurateRipLog;
             try
@@ -34,6 +59,7 @@ namespace ArCueDotNet
                 //cueSheet.OutputStyle = CUEStyle.SingleFile;
                 cueSheet.Open(pathIn);
                 cueSheet.UseAccurateRip();
+                cueSheet.UseCUEToolsDB("ARCUE " + CUESheet.CUEToolsVersion, null, true, CTDBMetadataSearch.None);
                 cueSheet.GenerateFilenames(AudioEncoderType.NoAudio, "dummy", pathIn);
                 cueSheet.Go();
 
@@ -42,10 +68,11 @@ namespace ArCueDotNet
             catch (Exception ex)
             {
                 Console.WriteLine("Error: " + ex.Message);
-                return;
+                return 3;
             }
 
             Console.Write(accurateRipLog);
+            return 0;
         }
     }
 }
