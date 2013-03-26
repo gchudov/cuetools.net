@@ -17,8 +17,10 @@ namespace CUETools.Codecs
         public static unsafe ushort ComputeChecksum(ushort crc, byte* bytes, int count)
 		{
 			fixed (ushort* t = table)
-				for (int i = count; i > 0; i--)
-					crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ *(bytes++)]);
+                for (int i = count; i > 0; i--)
+                {
+                    crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ *(bytes++)]);
+                }
 			return crc;
 		}
 

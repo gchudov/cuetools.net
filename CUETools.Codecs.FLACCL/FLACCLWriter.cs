@@ -1060,8 +1060,8 @@ namespace CUETools.Codecs.FLACCL
 		void output_frame_footer(FlacFrame frame)
 		{
 			frame.writer.flush();
-			ushort crc = Crc16.ComputeChecksum(0, frame.writer.Buffer, frame.writer_offset, frame.writer.Length - frame.writer_offset);
-			frame.writer.writebits(16, crc);
+            ushort crc = frame.writer.get_crc16();
+            frame.writer.writebits(16, crc);
 			frame.writer.flush();
 		}
 

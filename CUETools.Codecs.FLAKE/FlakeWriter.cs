@@ -1443,8 +1443,8 @@ new int[] { // 30
 		void output_frame_footer(BitWriter bitwriter)
 		{
 			bitwriter.flush();
-			ushort crc = Crc16.ComputeChecksum(0, frame_buffer, 0, bitwriter.Length);
-			bitwriter.writebits(16, crc);
+            ushort crc = bitwriter.get_crc16();
+            bitwriter.writebits(16, crc);
 			bitwriter.flush();
 		}
 
