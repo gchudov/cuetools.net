@@ -593,7 +593,7 @@ namespace CUETools.Codecs.FLAKE
 			AudioSamples.MemCpy(res, smp, (int) n);
 		}
 
-		unsafe void encode_residual_fixed(int* res, int* smp, int n, int order)
+		unsafe static void encode_residual_fixed(int* res, int* smp, int n, int order)
 		{
 			int i;
 			int s0, s1, s2;
@@ -1928,8 +1928,8 @@ new int[] { // 30
 			bitwriter.writebits(24, 18 * seek_table.Length);
 			for (int i = 0; i < seek_table.Length; i++)
 			{
-				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
-				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
+				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
+				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
 				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN, seek_table[i].framesize);
 			}
 			bitwriter.flush();

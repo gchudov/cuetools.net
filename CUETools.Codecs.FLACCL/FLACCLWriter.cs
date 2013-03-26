@@ -867,9 +867,11 @@ namespace CUETools.Codecs.FLACCL
 		unsafe int measure_residual(FlacFrame frame, FlacSubframeInfo sub, int pos, int cnt, int k)
 		{
 			int q = 0;
-			for (int i = pos; i < pos + cnt; i++)
+            int* r = sub.best.residual + pos;
+            int* fin = r + cnt;
+            while (r < fin)
 			{
-				int v = sub.best.residual[i];
+				int v = *(r++);
 				uint uv = (uint)((v << 1) ^ (v >> 31));
 				q += (int)(uv >> k);
 			}
@@ -2097,8 +2099,8 @@ namespace CUETools.Codecs.FLACCL
 			bitwriter.writebits(24, 18 * seek_table.Length);
 			for (int i = 0; i < seek_table.Length; i++)
 			{
-				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
-				bitwriter.writebits64(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
+				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
+				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
 				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN, seek_table[i].framesize);
 			}
 			bitwriter.flush();
@@ -2698,10 +2700,7 @@ namespace CUETools.Codecs.FLACCL
 			frame.writer = new BitWriter(outputBuffer, 0, outputBuffer.Length);
 
 			if (writer._settings.DoVerify)
-			{
 				verify = new FlakeReader(new AudioPCMConfig((int)bits_per_sample, channels, 44100));
-				verify.DoCRC = false;
-			}
 		}
 
 		public void Dispose()
