@@ -38,9 +38,20 @@ namespace CUETools.Processor
                 }
                 return true;
             }
+            if (fileInfo is TagLib.Asf.File)
+            {
+                var asf = (TagLib.Asf.Tag)fileInfo.GetTag(TagLib.TagTypes.Asf, true);
+                foreach (string tag in tags.AllKeys)
+                    if (!IsKnownXiphTag(tag))
+                        asf.SetDescriptorString(tag, tags.GetValues(tag));
+                return true;
+            }
             TagLib.Ape.Tag ape = (TagLib.Ape.Tag)fileInfo.GetTag(TagLib.TagTypes.Ape, true);
-            foreach (string tag in tags.AllKeys)
-                ape.SetValue(XiphTagNameToApe(tag), tags.GetValues(tag));
+            if (ape != null)
+            {
+                foreach (string tag in tags.AllKeys)
+                    ape.SetValue(XiphTagNameToApe(tag), tags.GetValues(tag));
+            }
             return true;
         }
 
@@ -110,6 +121,13 @@ namespace CUETools.Processor
             if (tag.ToUpper() == "DISC")
                 return "DISCNUMBER";
             return tag;
+        }
+
+        public static bool IsKnownXiphTag(string tag)
+        {
+            return tag.ToUpper() == "DATE" ||
+                tag.ToUpper() == "TRACKNUMBER" ||
+                tag.ToUpper() == "DISCNUMBER";
         }
 
         public static string XiphTagNameToApe(string tag)
