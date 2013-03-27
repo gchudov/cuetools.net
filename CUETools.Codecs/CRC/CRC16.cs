@@ -25,27 +25,25 @@ namespace CUETools.Codecs
 		}
 
         const ushort polynomial = 0x8005;
-        const ushort reversePolynomial = 0xa001;
-        const ushort reversePolynomial2 = 0x4003;
+        const ushort reversePolynomial = 0x4003;
 
 		static unsafe Crc16()
 		{
-            int poly = (polynomial + (1 << GF2_DIM));
             for (ushort i = 0; i < table.Length; i++)
             {
                 int crc = i;
                 for (int j = 0; j < GF2_DIM; j++)
                 {
                     if ((crc & (1U << (GF2_DIM - 1))) != 0)
-                        crc = ((crc << 1) ^ poly);
+                        crc = ((crc << 1) ^ polynomial);
                     else
                         crc <<= 1;
                 }
                 table[i] = (ushort)(crc & ((1 << GF2_DIM) - 1));
             }
 
-            combineTable[0, 0] = reversePolynomial;
-            substractTable[0, GF2_DIM - 1] = reversePolynomial2;
+            combineTable[0, 0] = Crc16.Reflect(polynomial);
+            substractTable[0, GF2_DIM - 1] = reversePolynomial;
             for (int n = 1; n < GF2_DIM; n++)
             {
                 combineTable[0, n] = (ushort)(1 << (n - 1));
@@ -94,10 +92,15 @@ namespace CUETools.Codecs
                 square[n] = gf2_matrix_times(mat, mat[n]);
         }
 
+        public static ushort Reflect(ushort crc)
+        {
+            return (ushort)Crc32.Reflect(crc, 16);
+        }
+
         public static unsafe ushort Combine(ushort crc1, ushort crc2, long len2)
         {
-            crc1 = (ushort)Crc32.Reflect(crc1, 16);
-            crc2 = (ushort)Crc32.Reflect(crc2, 16);
+            crc1 = Crc16.Reflect(crc1);
+            crc2 = Crc16.Reflect(crc2);
 
             /* degenerate case */
             if (len2 == 0)
@@ -123,14 +126,14 @@ namespace CUETools.Codecs
 
             /* return combined crc */
             crc1 ^= crc2;
-            crc1 = (ushort)Crc32.Reflect(crc1, 16);
+            crc1 = Crc16.Reflect(crc1);
             return crc1;
         }
 
         public static unsafe ushort Substract(ushort crc1, ushort crc2, long len2)
         {
-            crc1 = (ushort)Crc32.Reflect(crc1, 16);
-            crc2 = (ushort)Crc32.Reflect(crc2, 16);
+            crc1 = Crc16.Reflect(crc1);
+            crc2 = Crc16.Reflect(crc2);
             /* degenerate case */
             if (len2 == 0)
                 return crc1;
@@ -154,7 +157,7 @@ namespace CUETools.Codecs
             }
 
             /* return combined crc */
-            crc1 = (ushort)Crc32.Reflect(crc1, 16);
+            crc1 = Crc16.Reflect(crc1);
             return crc1;
         }
     }
