@@ -1949,7 +1949,8 @@ new int[] { // 30
 			bitwriter.writebits(7, (int)MetadataType.Padding);
 			bitwriter.writebits(24, padlen);
 
-			return padlen + 4;
+            bitwriter.flush();
+            return padlen + 4;
 		}
 
 		int write_headers()

@@ -2119,7 +2119,7 @@ namespace CUETools.Codecs.FLACCL
 			bitwriter.writebits(1, last);
 			bitwriter.writebits(7, (int)MetadataType.Padding);
 			bitwriter.writebits(24, (int)padlen);
-
+            bitwriter.flush();
 			return (int)padlen + 4;
 		}
 
