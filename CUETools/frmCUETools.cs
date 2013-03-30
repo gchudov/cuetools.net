@@ -2594,6 +2594,7 @@ namespace JDP
 
                 fileDlg.Title = "Output CUE Sheet";
                 fileDlg.Filter = "CUE Sheets (*.cue)|*.cue";
+                fileDlg.FileName = "image.cue";
 
                 dlgRes = fileDlg.ShowDialog();
                 if (dlgRes == DialogResult.OK)
