@@ -52,7 +52,7 @@ namespace CUETools.Processor
         [DefaultValue(""), Category("Proxy"), DisplayName("Proxy auth password")]
         public string ProxyPassword { get; set; }
 
-        [DefaultValue(true), Category("Cache"), DisplayName("Cache metadata")]
+        [DefaultValue(true), DisplayName("Cache metadata")]
         public bool CacheMetadata { get; set; }
 
         [DefaultValue(new string[] { "folder.jpg", "cover.jpg", "albumart.jpg", "thumbnail.jpg", "albumartlarge.jpg", "front.jpg", "%album%.jpg" })]

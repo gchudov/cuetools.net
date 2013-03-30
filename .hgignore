@@ -19,3 +19,4 @@ CUETools.AVX/Win32
 CUETools.AVX/x64
 CUETools/TestResults/
 bin/CUETools_2.1.4
+*.csproj.user
