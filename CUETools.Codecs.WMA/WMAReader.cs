@@ -40,11 +40,13 @@ namespace CUETools.Codecs.WMA
 
         long m_sampleCount = -1, m_sampleOffset = 0;
 
-        string _path;
-        //Stream _IO;
+        string m_path;
+        Stream m_IO;
+        StreamWrapper m_streamWrapper;
 
         public WMAReader(string path, Stream IO)
         {
+            m_path = path;
             isValid(path);
             bool pfIsProtected;
             WMUtils.WMIsContentProtected(path, out pfIsProtected);
@@ -52,8 +54,16 @@ namespace CUETools.Codecs.WMA
                 throw new Exception("DRM present");
             WMUtils.WMCreateSyncReader(IntPtr.Zero, Rights.None, out m_syncReader);
 
-            //m_syncReader.OpenStream()
-            m_syncReader.Open(path);
+            if (path == null)
+            {
+                m_IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
+                m_streamWrapper = new StreamWrapper(m_IO);
+                m_syncReader.OpenStream(m_streamWrapper);
+            }
+            else
+            {
+                m_syncReader.Open(path);
+            }
             var pProfile = (m_syncReader as IWMProfile);
             int dwStreamCount;
             pProfile.GetStreamCount(out dwStreamCount);
@@ -193,7 +203,6 @@ namespace CUETools.Codecs.WMA
             //}
 
             pcm = new AudioPCMConfig(m_pWfx.wBitsPerSample, m_pWfx.nChannels, m_pWfx.nSamplesPerSec);
-            _path = path;
 
             //int cbMax;
             //m_syncReader.GetMaxOutputSampleSize(m_dwAudioOutputNum, out cbMax);
@@ -214,7 +223,10 @@ namespace CUETools.Codecs.WMA
 
         public void Close()
         {
-            //_IO.Close();
+            //if (m_streamWrapper != null)
+            //    m_streamWrapper.Close();
+            if (m_IO != null)
+                m_IO.Close();
             if (m_pSample != null)
                 Marshal.ReleaseComObject(m_pSample);
             if (m_syncReader != null)
@@ -222,6 +234,7 @@ namespace CUETools.Codecs.WMA
                 m_syncReader.Close();
                 Marshal.ReleaseComObject(m_syncReader);
             }
+            m_IO = null;
             m_pSample = null;
             m_syncReader = null;
         }
@@ -252,48 +265,13 @@ namespace CUETools.Codecs.WMA
             {
                 if (m_sampleCount < 0 || value > m_sampleCount)
                     throw new Exception("seeking past end of stream");
-                throw new NotSupportedException();
-                //if (value < Position || value > _sampleOffset)
-                //{
-                //    if (seek_table != null && _IO.CanSeek)
-                //    {
-                //        int best_st = -1;
-                //        for (int st = 0; st < seek_table.Length; st++)
-                //        {
-                //            if (seek_table[st].number <= value &&
-                //                (best_st == -1 || seek_table[st].number > seek_table[best_st].number))
-                //                best_st = st;
-                //        }
-                //        if (best_st != -1)
-                //        {
-                //            _framesBufferLength = 0;
-                //            _samplesInBuffer = 0;
-                //            _samplesBufferOffset = 0;
-                //            _IO.Position = (long)seek_table[best_st].offset + first_frame_offset;
-                //            _sampleOffset = seek_table[best_st].number;
-                //        }
-                //    }
-                //    if (value < Position)
-                //        throw new Exception("cannot seek backwards without seek table");
-                //}
-                //while (value > _sampleOffset)
-                //{
-                //    _samplesInBuffer = 0;
-                //    _samplesBufferOffset = 0;
-
-                //    fill_frames_buffer();
-                //    if (_framesBufferLength == 0)
-                //        throw new Exception("seek failed");
-
-                //    int bytesDecoded = DecodeFrame(_framesBuffer, _framesBufferOffset, _framesBufferLength);
-                //    _framesBufferLength -= bytesDecoded;
-                //    _framesBufferOffset += bytesDecoded;
-
-                //    _sampleOffset += _samplesInBuffer;
-                //};
-                //int diff = _samplesInBuffer - (int)(_sampleOffset - value);
-                //_samplesInBuffer -= diff;
-                //_samplesBufferOffset += diff;
+                if (value < Position)
+                    throw new NotSupportedException();
+                if (value < Position)
+                    throw new Exception("cannot seek backwards");
+                var buff = new AudioBuffer(this, 0x10000);
+                while (value > Position && Read(buff, (int)Math.Min(Int32.MaxValue, value - Position)) != 0)
+                    ;
             }
         }
 
@@ -309,7 +287,7 @@ namespace CUETools.Codecs.WMA
         {
             get
             {
-                return _path;
+                return m_path;
             }
         }
 
