@@ -43,7 +43,7 @@ namespace CUETools.Processor
                 var asf = (TagLib.Asf.Tag)fileInfo.GetTag(TagLib.TagTypes.Asf, true);
                 foreach (string tag in tags.AllKeys)
                     if (!IsKnownXiphTag(tag))
-                        asf.SetDescriptorString(tag, tags.GetValues(tag));
+                        asf.SetDescriptorStrings(tags.GetValues(tag), "foobar2000/" + tag);
                 return true;
             }
             TagLib.Ape.Tag ape = (TagLib.Ape.Tag)fileInfo.GetTag(TagLib.TagTypes.Ape, true);
