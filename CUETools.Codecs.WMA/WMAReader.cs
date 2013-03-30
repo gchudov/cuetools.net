@@ -354,7 +354,7 @@ namespace CUETools.Codecs.WMA
                         m_sampleCount = m_sampleOffset / PCM.BlockAlign;
                         if ((buff_offset % PCM.BlockAlign) != 0)
                             throw new Exception("(buff_offset % PCM.BlockAlign) != 0");
-                        return buff_offset / PCM.BlockAlign;
+                        return buff.Length = buff_offset / PCM.BlockAlign;
                     }
                     throw ex;
                 }
@@ -378,7 +378,7 @@ namespace CUETools.Codecs.WMA
             }
             if ((buff_offset % PCM.BlockAlign) != 0)
                 throw new Exception("(buff_offset % PCM.BlockAlign) != 0");
-            return buff_offset / PCM.BlockAlign;
+            return buff.Length = buff_offset / PCM.BlockAlign;
         }
     }
 }
