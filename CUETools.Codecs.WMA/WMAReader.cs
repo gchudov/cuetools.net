@@ -31,14 +31,14 @@ namespace CUETools.Codecs.WMA
     public class WMAReader : IAudioSource
     {
         IWMSyncReader m_syncReader;
+        INSSBuffer m_pSample;
+        int m_pSampleOffset = 0, m_pSampleSize = 0;
         short m_wStreamNum = -1;
         int m_dwAudioOutputNum = -1;
 
         AudioPCMConfig pcm;
 
-        byte[] samplesBuffer;
-        int _samplesInBuffer, _samplesBufferOffset;
-        long _sampleCount = -1, _sampleOffset = 0;
+        long m_sampleCount = -1, m_sampleOffset = 0;
 
         string _path;
         //Stream _IO;
@@ -195,13 +195,8 @@ namespace CUETools.Codecs.WMA
             pcm = new AudioPCMConfig(m_pWfx.wBitsPerSample, m_pWfx.nChannels, m_pWfx.nSamplesPerSec);
             _path = path;
 
-            int cbMax;
-            m_syncReader.GetMaxOutputSampleSize(m_dwAudioOutputNum, out cbMax);
-            //m_syncReader.GetMaxStreamSampleSize(m_wStreamNum, out cbMax);
-            //var ra = m_syncReader as IWMReaderAdvanced;
-            //ra.SetAllocateForOutput(m_dwAudioOutputNum, true);
-
-            samplesBuffer = new byte[cbMax];
+            //int cbMax;
+            //m_syncReader.GetMaxOutputSampleSize(m_dwAudioOutputNum, out cbMax);
         }
 
         public void isValid(string filename)
@@ -220,15 +215,22 @@ namespace CUETools.Codecs.WMA
         public void Close()
         {
             //_IO.Close();
-            m_syncReader.Close();
-            Marshal.ReleaseComObject(m_syncReader);
+            if (m_pSample != null)
+                Marshal.ReleaseComObject(m_pSample);
+            if (m_syncReader != null)
+            {
+                m_syncReader.Close();
+                Marshal.ReleaseComObject(m_syncReader);
+            }
+            m_pSample = null;
+            m_syncReader = null;
         }
 
         public long Length
         {
             get
             {
-                return _sampleCount;
+                return m_sampleCount;
             }
         }
 
@@ -244,11 +246,11 @@ namespace CUETools.Codecs.WMA
         {
             get
             {
-                return _sampleOffset - _samplesInBuffer;
+                return m_sampleOffset / PCM.BlockAlign;
             }
             set
             {
-                if (_sampleCount < 0 || value > _sampleCount)
+                if (m_sampleCount < 0 || value > m_sampleCount)
                     throw new Exception("seeking past end of stream");
                 throw new NotSupportedException();
                 //if (value < Position || value > _sampleOffset)
@@ -311,67 +313,72 @@ namespace CUETools.Codecs.WMA
             }
         }
 
-        const int BS = 4;
-
         public int Read(AudioBuffer buff, int maxLength)
         {
             buff.Prepare(this, maxLength);
 
-            int offset = 0;
-            int sampleCount = buff.Length;
+            int buff_offset = 0;
+            int buff_size = buff.ByteLength;
 
-            while (_samplesInBuffer < sampleCount)
+            while (m_pSampleSize < buff_size)
             {
-                if (_samplesInBuffer > 0)
+                if (m_pSampleSize > 0)
                 {
-                    Array.Copy(samplesBuffer, _samplesBufferOffset * BS, buff.Bytes, offset * BS, _samplesInBuffer * BS);
-                    sampleCount -= _samplesInBuffer;
-                    offset += _samplesInBuffer;
-                    _samplesInBuffer = 0;
-                    _samplesBufferOffset = 0;
+                    IntPtr pdwBuffer;
+                    m_pSample.GetBuffer(out pdwBuffer);
+                    Marshal.Copy((IntPtr)(pdwBuffer.ToInt64() + m_pSampleOffset), buff.Bytes, buff_offset, m_pSampleSize);
+                    buff_size -= m_pSampleSize;
+                    buff_offset += m_pSampleSize;
+                    m_sampleOffset += m_pSampleSize;
+                    m_pSampleSize = 0;
+                    Marshal.ReleaseComObject(m_pSample);
+                    m_pSample = null;
                 }
 
-                INSSBuffer pSample;
                 long cnsSampleTime;
                 long cnsDuration;
                 SampleFlag flags;
                 int dwOutputNum;
                 short wStreamNum;
-                int dwLength;
-                IntPtr pdwBuffer;
                 try
                 {
-                    m_syncReader.GetNextSample(m_wStreamNum, out pSample, out cnsSampleTime, out cnsDuration, out flags, out dwOutputNum, out wStreamNum);
+                    m_syncReader.GetNextSample(m_wStreamNum, out m_pSample, out cnsSampleTime, out cnsDuration, out flags, out dwOutputNum, out wStreamNum);
                 }
                 catch (COMException ex)
                 {
                     // EOF
                     if (ex.ErrorCode == NSResults.E_NO_MORE_SAMPLES)
                     {
-                        _sampleCount = _sampleOffset;
-                        return offset;
+                        if ((m_sampleOffset % PCM.BlockAlign) != 0)
+                            throw new Exception("(m_sampleOffset % PCM.BlockAlign) != 0");
+                        m_sampleCount = m_sampleOffset / PCM.BlockAlign;
+                        if ((buff_offset % PCM.BlockAlign) != 0)
+                            throw new Exception("(buff_offset % PCM.BlockAlign) != 0");
+                        return buff_offset / PCM.BlockAlign;
                     }
                     throw ex;
                 }
                 //if (dwOutputNum != m_dwAudioOutputNum || wStreamNum != m_wStreamNum)
                 //{
                 //}
-                pSample.GetBufferAndLength(out pdwBuffer, out dwLength);
-                Marshal.Copy(pdwBuffer, samplesBuffer, 0, dwLength);
-                Marshal.ReleaseComObject(pSample);
-                _samplesInBuffer = dwLength / BS;
-                _sampleOffset += _samplesInBuffer;
-
-                //_samplesInBuffer -= _samplesBufferOffset; // can be set by Seek, otherwise zero
-                //_sampleOffset += _samplesInBuffer;
+                m_pSampleOffset = 0;
+                m_pSample.GetLength(out m_pSampleSize);
             }
 
-            Array.Copy(samplesBuffer, _samplesBufferOffset * BS, buff.Bytes, offset * BS, sampleCount * BS);
-            _samplesInBuffer -= sampleCount;
-            _samplesBufferOffset += sampleCount;
-            if (_samplesInBuffer == 0)
-                _samplesBufferOffset = 0;
-            return offset + sampleCount;
+            if (buff_size > 0)
+            {
+                IntPtr pdwBuffer;
+                m_pSample.GetBuffer(out pdwBuffer);
+                Marshal.Copy((IntPtr)(pdwBuffer.ToInt64() + m_pSampleOffset), buff.Bytes, buff_offset, buff_size);
+                m_pSampleOffset += buff_size;
+                m_pSampleSize -= buff_size;
+                m_sampleOffset += buff_size;
+                buff_offset += buff_size;
+                buff_size = 0;
+            }
+            if ((buff_offset % PCM.BlockAlign) != 0)
+                throw new Exception("(buff_offset % PCM.BlockAlign) != 0");
+            return buff_offset / PCM.BlockAlign;
         }
     }
 }
