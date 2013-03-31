@@ -75,6 +75,8 @@ namespace JDP
             this.rbGapsAppended = new System.Windows.Forms.RadioButton();
             this.rbGapsPlusHTOA = new System.Windows.Forms.RadioButton();
             this.textBoxEncoderName = new System.Windows.Forms.TextBox();
+            this.textBoxDecoderName = new System.Windows.Forms.TextBox();
+            this.bindingSourceDecoders = new System.Windows.Forms.BindingSource(this.components);
             this.grpAudioFilenames = new System.Windows.Forms.GroupBox();
             this.txtSpecialExceptions = new System.Windows.Forms.TextBox();
             this.chkRemoveSpecial = new System.Windows.Forms.CheckBox();
@@ -149,6 +151,7 @@ namespace JDP
             this.tabPage11 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBoxExternalDecoder = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.textBoxDecoderPath = new System.Windows.Forms.TextBox();
             this.labelDecoderPath = new System.Windows.Forms.Label();
             this.labelDecoderParameters = new System.Windows.Forms.Label();
@@ -158,6 +161,7 @@ namespace JDP
             this.buttonDecoderAdd = new System.Windows.Forms.Button();
             this.comboBoxDecoderExtension = new System.Windows.Forms.ComboBox();
             this.labelDecoderExtension = new System.Windows.Forms.Label();
+            this.listBoxDecoders = new System.Windows.Forms.ListBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -178,10 +182,6 @@ namespace JDP
             this.labelFormatEncoder = new System.Windows.Forms.Label();
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.textBoxDecoderName = new System.Windows.Forms.TextBox();
-            this.bindingSourceDecoders = new System.Windows.Forms.BindingSource(this.components);
-            this.listBoxDecoders = new System.Windows.Forms.ListBox();
             btnCancel = new System.Windows.Forms.Button();
             this.grpGeneral.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -191,6 +191,7 @@ namespace JDP
             ((System.ComponentModel.ISupportInitialize)(this.numFixWhenPercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cUEConfigBindingSource)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceDecoders)).BeginInit();
             this.grpAudioFilenames.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -225,7 +226,6 @@ namespace JDP
             this.tabPage5.SuspendLayout();
             this.groupBoxScriptConditions.SuspendLayout();
             this.tabPage7.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceDecoders)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCancel
@@ -354,6 +354,7 @@ namespace JDP
             // 
             // chkEncodeWhenZeroOffset
             // 
+            this.tableLayoutPanel2.SetColumnSpan(this.chkEncodeWhenZeroOffset, 2);
             resources.ApplyResources(this.chkEncodeWhenZeroOffset, "chkEncodeWhenZeroOffset");
             this.chkEncodeWhenZeroOffset.Name = "chkEncodeWhenZeroOffset";
             // 
@@ -601,6 +602,21 @@ namespace JDP
             this.textBoxEncoderName.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Name", true));
             this.textBoxEncoderName.Name = "textBoxEncoderName";
             this.toolTip1.SetToolTip(this.textBoxEncoderName, resources.GetString("textBoxEncoderName.ToolTip"));
+            // 
+            // textBoxDecoderName
+            // 
+            resources.ApplyResources(this.textBoxDecoderName, "textBoxDecoderName");
+            this.textBoxDecoderName.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bindingSourceDecoders, "Name", true));
+            this.textBoxDecoderName.Name = "textBoxDecoderName";
+            this.toolTip1.SetToolTip(this.textBoxDecoderName, resources.GetString("textBoxDecoderName.ToolTip"));
+            // 
+            // bindingSourceDecoders
+            // 
+            this.bindingSourceDecoders.AllowNew = true;
+            this.bindingSourceDecoders.DataMember = "Decoders";
+            this.bindingSourceDecoders.DataSource = this.cUEConfigBindingSource;
+            this.bindingSourceDecoders.Sort = "";
+            this.bindingSourceDecoders.CurrentItemChanged += new System.EventHandler(this.bindingSourceDecoders_CurrentItemChanged);
             // 
             // grpAudioFilenames
             // 
@@ -1213,6 +1229,11 @@ namespace JDP
             this.groupBoxExternalDecoder.Name = "groupBoxExternalDecoder";
             this.groupBoxExternalDecoder.TabStop = false;
             // 
+            // label4
+            // 
+            resources.ApplyResources(this.label4, "label4");
+            this.label4.Name = "label4";
+            // 
             // textBoxDecoderPath
             // 
             resources.ApplyResources(this.textBoxDecoderPath, "textBoxDecoderPath");
@@ -1273,6 +1294,17 @@ namespace JDP
             // 
             resources.ApplyResources(this.labelDecoderExtension, "labelDecoderExtension");
             this.labelDecoderExtension.Name = "labelDecoderExtension";
+            // 
+            // listBoxDecoders
+            // 
+            this.listBoxDecoders.BackColor = System.Drawing.SystemColors.Control;
+            this.listBoxDecoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listBoxDecoders.DataSource = this.bindingSourceDecoders;
+            this.listBoxDecoders.DisplayMember = "FullName";
+            resources.ApplyResources(this.listBoxDecoders, "listBoxDecoders");
+            this.listBoxDecoders.FormattingEnabled = true;
+            this.listBoxDecoders.Name = "listBoxDecoders";
+            this.tableLayoutPanel5.SetRowSpan(this.listBoxDecoders, 2);
             // 
             // tabPage4
             // 
@@ -1436,37 +1468,6 @@ namespace JDP
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
-            // label4
-            // 
-            resources.ApplyResources(this.label4, "label4");
-            this.label4.Name = "label4";
-            // 
-            // textBoxDecoderName
-            // 
-            resources.ApplyResources(this.textBoxDecoderName, "textBoxDecoderName");
-            this.textBoxDecoderName.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bindingSourceDecoders, "Name", true));
-            this.textBoxDecoderName.Name = "textBoxDecoderName";
-            this.toolTip1.SetToolTip(this.textBoxDecoderName, resources.GetString("textBoxDecoderName.ToolTip"));
-            // 
-            // bindingSourceDecoders
-            // 
-            this.bindingSourceDecoders.AllowNew = true;
-            this.bindingSourceDecoders.DataMember = "Decoders";
-            this.bindingSourceDecoders.DataSource = this.cUEConfigBindingSource;
-            this.bindingSourceDecoders.Sort = "";
-            this.bindingSourceDecoders.CurrentItemChanged += new System.EventHandler(this.bindingSourceDecoders_CurrentItemChanged);
-            // 
-            // listBoxDecoders
-            // 
-            this.listBoxDecoders.BackColor = System.Drawing.SystemColors.Control;
-            this.listBoxDecoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listBoxDecoders.DataSource = this.bindingSourceDecoders;
-            this.listBoxDecoders.DisplayMember = "FullName";
-            resources.ApplyResources(this.listBoxDecoders, "listBoxDecoders");
-            this.listBoxDecoders.FormattingEnabled = true;
-            this.listBoxDecoders.Name = "listBoxDecoders";
-            this.tableLayoutPanel5.SetRowSpan(this.listBoxDecoders, 2);
-            // 
             // frmSettings
             // 
             this.AcceptButton = this.btnOK;
@@ -1493,6 +1494,7 @@ namespace JDP
             ((System.ComponentModel.ISupportInitialize)(this.numFixWhenPercent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.encodersBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.cUEConfigBindingSource)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceDecoders)).EndInit();
             this.grpAudioFilenames.ResumeLayout(false);
             this.grpAudioFilenames.PerformLayout();
             this.tabControl1.ResumeLayout(false);
@@ -1543,7 +1545,6 @@ namespace JDP
             this.tabPage5.ResumeLayout(false);
             this.groupBoxScriptConditions.ResumeLayout(false);
             this.tabPage7.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceDecoders)).EndInit();
             this.ResumeLayout(false);
 
         }
