@@ -116,14 +116,6 @@ namespace JDP
 			if (comboLanguage.SelectedItem == null)
 				comboLanguage.SelectedItem = comboLanguage.Items[0];
 			
-			foreach (var decoder in _config.decoders)
-				if (decoder.path != null)
-				{
-					ListViewItem item = new ListViewItem(decoder.Name);
-					item.Tag = decoder;
-					listViewDecoders.Items.Add(item);
-				}
-			//listViewDecoders.Items[0].Selected = true;
 			listViewFormats.SmallImageList = m_icon_mgr.ImageList;
 			labelEncoderExtension.ImageList = m_icon_mgr.ImageList;
 			labelDecoderExtension.ImageList = m_icon_mgr.ImageList;
@@ -186,8 +178,6 @@ namespace JDP
 		{
 			if (listViewFormats.SelectedIndices.Count > 0)
 				listViewFormats.Items[listViewFormats.SelectedIndices[0]].Selected = false;
-			if (listViewDecoders.SelectedIndices.Count > 0)
-				listViewDecoders.Items[listViewDecoders.SelectedIndices[0]].Selected = false;
 			if (listViewScripts.SelectedItems.Count > 0)
 				listViewScripts.SelectedItems[0].Selected = false;
 
@@ -298,8 +288,6 @@ namespace JDP
 		{
 			if (listViewFormats.SelectedItems.Count > 0)
 				listViewFormats.SelectedItems[0].Selected = false;
-			if (listViewDecoders.SelectedItems.Count > 0)
-				listViewDecoders.SelectedItems[0].Selected = false;
 			if (listViewScripts.SelectedItems.Count > 0)
 				listViewScripts.SelectedItems[0].Selected = false;
 		}
@@ -375,15 +363,7 @@ namespace JDP
 							if (decoder.extension == format.extension)
 								decodersToRemove.Add(decoder);
 						foreach (var decoder in decodersToRemove)
-						{
 							_config.decoders.Remove(decoder);
-							foreach (ListViewItem item in listViewDecoders.Items)
-								if (item.Tag == decoder)
-								{
-									item.Remove();
-									break;
-								}
-						}
                         var encodersToRemove = new List<CUEToolsUDC>();
 						foreach (var encoder in _config.encoders)
 							if (encoder.extension == format.extension)
@@ -530,102 +510,46 @@ namespace JDP
 			}
 		}
 
-		private void listViewDecoders_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+
+		private void bindingSourceDecoders_CurrentItemChanged(object sender, EventArgs e)
 		{
-			if (e.IsSelected)
-			{
-				CUEToolsUDC decoder = (CUEToolsUDC)e.Item.Tag;
-				if (decoder == null) return;
-				comboBoxDecoderExtension.SelectedItem = decoder.extension;
-				comboBoxDecoderExtension.Visible = true;
-				labelDecoderExtension.Visible = true;
-				if (decoder.path != null)
-				{
-					comboBoxDecoderExtension.Enabled = true;
-					groupBoxExternalDecoder.Visible = true;
-					textBoxDecoderPath.Text = decoder.path;
-					textBoxDecoderParameters.Text = decoder.parameters;
-				}
-				else
-				{
-					comboBoxDecoderExtension.Enabled = false;
-				}
-			}
-			else
-			{
-				CUEToolsUDC decoder = (CUEToolsUDC)e.Item.Tag;
-				if (decoder == null) return;
+			var decoder = bindingSourceDecoders.Current as CUEToolsUDC;
+            if (decoder == null)
+            {
+                labelDecoderExtension.Visible =
+                comboBoxDecoderExtension.Visible = false;
+            }
+            else
+            {
+                //CUEToolsFormat format = _config.formats[decoder.extension]; // _config.formats.TryGetValue(encoder.extension, out format)
+                labelDecoderExtension.Visible =
+                comboBoxDecoderExtension.Visible = true;
+                groupBoxExternalDecoder.Visible = decoder.CanBeDeleted;
+                foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)
+                {
+                    CUEToolsFormat fmt = fmtEntry.Value;
+                    if (fmt.decoder == decoder && fmt.extension != decoder.extension)
+                        fmt.decoder = null;
+                }
+            }
+        }
 
-				if (decoder.path != null)
-				{
-					decoder.path = textBoxDecoderPath.Text;
-					decoder.parameters = textBoxDecoderParameters.Text;
-					if (decoder.extension != (string)comboBoxDecoderExtension.SelectedItem)
-					{
-						if (listViewFormats.SelectedItems.Count > 0)
-							listViewFormats.SelectedItems[0].Selected = false;
-						CUEToolsFormat format;
-						if (_config.formats.TryGetValue(decoder.extension, out format) && format.decoder == decoder)
-							format.decoder = null;
-						decoder.extension = (string)comboBoxDecoderExtension.SelectedItem;
-					}
-				}
-
-				comboBoxDecoderExtension.Visible = false;
-				labelDecoderExtension.Visible = false;
-				groupBoxExternalDecoder.Visible = false;
-			}
-		}
-
-		private void listViewDecoders_AfterLabelEdit(object sender, LabelEditEventArgs e)
-		{
-            if (e.Label == null)
-			{
-				e.CancelEdit = true;
-				return;
-			}
-            var decoder = listViewDecoders.Items[e.Item].Tag as CUEToolsUDC;
-            if (listViewFormats.SelectedItems.Count > 0)
-				listViewFormats.SelectedItems[0].Selected = false;
-			decoder.name = e.Label;
-		}
-
-		private void listViewDecoders_BeforeLabelEdit(object sender, LabelEditEventArgs e)
-		{
-			CUEToolsUDC decoder = (CUEToolsUDC)listViewDecoders.Items[e.Item].Tag;
-			if (decoder.path == null)
-				e.CancelEdit = true;
-		}
-
-		private void listViewDecoders_KeyDown(object sender, KeyEventArgs e)
-		{
-			switch (e.KeyCode)
-			{
-				case Keys.Insert:
-					{
-						var decoder = new CUEToolsUDC("new", "wav", true, "", "", "", "");
-						_config.decoders.Add(decoder);
-						ListViewItem item = new ListViewItem(decoder.name);
-						item.Tag = decoder;
-						listViewDecoders.Items.Add(item);
-						item.BeginEdit();
-						break;
-					}
-				case Keys.Delete:
-					{
-						if (listViewDecoders.SelectedItems.Count <= 0)
-							return;
-                        CUEToolsUDC decoder = listViewDecoders.SelectedItems[0].Tag as CUEToolsUDC;
-						if (decoder.path == null)
-							return;
-						if (_config.formats[decoder.extension].decoder == decoder)
-							_config.formats[decoder.extension].decoder = null;
-						_config.decoders.Remove(decoder);
-						listViewDecoders.Items.Remove(listViewDecoders.SelectedItems[0]);
-						break;
-					}
-			}
-		}
+        private void listViewDecoders_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Insert:
+                    {
+                        buttonDecoderAdd_Click(sender, e);
+                        break;
+                    }
+                case Keys.Delete:
+                    {
+                        buttonDecoderDelete_Click(sender, e);
+                        break;
+                    }
+            }
+        }
 
 		private void comboBoxDecoderExtension_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -813,6 +737,21 @@ namespace JDP
 			if (_config.formats[encoder.extension].encoderLossy == encoder)
 				_config.formats[encoder.extension].encoderLossy = null;
 			encodersBindingSource.RemoveCurrent();
-		}
+        }
+
+        private void buttonDecoderAdd_Click(object sender, EventArgs e)
+        {
+            bindingSourceDecoders.AddNew();
+        }
+
+        private void buttonDecoderDelete_Click(object sender, EventArgs e)
+        {
+            var decoder = bindingSourceDecoders.Current as CUEToolsUDC;
+            if (decoder == null || !decoder.CanBeDeleted)
+                return;
+            if (_config.formats[decoder.extension].decoder == decoder)
+                _config.formats[decoder.extension].decoder = null;
+            bindingSourceDecoders.RemoveCurrent();
+        }
 	}
 }

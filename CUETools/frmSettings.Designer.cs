@@ -148,16 +148,14 @@ namespace JDP
             this.listBoxEncoders = new System.Windows.Forms.ListBox();
             this.tabPage11 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
-            this.listViewDecoders = new System.Windows.Forms.ListView();
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBoxExternalDecoder = new System.Windows.Forms.GroupBox();
             this.textBoxDecoderPath = new System.Windows.Forms.TextBox();
             this.labelDecoderPath = new System.Windows.Forms.Label();
             this.labelDecoderParameters = new System.Windows.Forms.Label();
             this.textBoxDecoderParameters = new System.Windows.Forms.TextBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonDecoderDelete = new System.Windows.Forms.Button();
+            this.buttonDecoderAdd = new System.Windows.Forms.Button();
             this.comboBoxDecoderExtension = new System.Windows.Forms.ComboBox();
             this.labelDecoderExtension = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
@@ -180,6 +178,10 @@ namespace JDP
             this.labelFormatEncoder = new System.Windows.Forms.Label();
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.textBoxDecoderName = new System.Windows.Forms.TextBox();
+            this.bindingSourceDecoders = new System.Windows.Forms.BindingSource(this.components);
+            this.listBoxDecoders = new System.Windows.Forms.ListBox();
             btnCancel = new System.Windows.Forms.Button();
             this.grpGeneral.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -223,6 +225,7 @@ namespace JDP
             this.tabPage5.SuspendLayout();
             this.groupBoxScriptConditions.SuspendLayout();
             this.tabPage7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceDecoders)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCancel
@@ -1194,40 +1197,18 @@ namespace JDP
             resources.ApplyResources(this.tableLayoutPanel5, "tableLayoutPanel5");
             this.tableLayoutPanel5.Controls.Add(this.groupBoxExternalDecoder, 1, 1);
             this.tableLayoutPanel5.Controls.Add(this.panel2, 1, 0);
-            this.tableLayoutPanel5.Controls.Add(this.listViewDecoders, 0, 0);
+            this.tableLayoutPanel5.Controls.Add(this.listBoxDecoders, 0, 0);
             this.tableLayoutPanel5.Name = "tableLayoutPanel5";
-            // 
-            // listViewDecoders
-            // 
-            this.listViewDecoders.BackColor = System.Drawing.SystemColors.Control;
-            this.listViewDecoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewDecoders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader4});
-            this.listViewDecoders.FullRowSelect = true;
-            this.listViewDecoders.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listViewDecoders.HideSelection = false;
-            this.listViewDecoders.LabelEdit = true;
-            resources.ApplyResources(this.listViewDecoders, "listViewDecoders");
-            this.listViewDecoders.MultiSelect = false;
-            this.listViewDecoders.Name = "listViewDecoders";
-            this.tableLayoutPanel5.SetRowSpan(this.listViewDecoders, 2);
-            this.listViewDecoders.UseCompatibleStateImageBehavior = false;
-            this.listViewDecoders.View = System.Windows.Forms.View.Details;
-            this.listViewDecoders.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_AfterLabelEdit);
-            this.listViewDecoders.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_BeforeLabelEdit);
-            this.listViewDecoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewDecoders_ItemSelectionChanged);
-            this.listViewDecoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewDecoders_KeyDown);
-            // 
-            // columnHeader4
-            // 
-            resources.ApplyResources(this.columnHeader4, "columnHeader4");
             // 
             // groupBoxExternalDecoder
             // 
+            this.groupBoxExternalDecoder.Controls.Add(this.label4);
+            this.groupBoxExternalDecoder.Controls.Add(this.textBoxDecoderName);
             this.groupBoxExternalDecoder.Controls.Add(this.textBoxDecoderPath);
             this.groupBoxExternalDecoder.Controls.Add(this.labelDecoderPath);
             this.groupBoxExternalDecoder.Controls.Add(this.labelDecoderParameters);
             this.groupBoxExternalDecoder.Controls.Add(this.textBoxDecoderParameters);
+            this.groupBoxExternalDecoder.DataBindings.Add(new System.Windows.Forms.Binding("Visible", this.bindingSourceDecoders, "CanBeDeleted", true));
             resources.ApplyResources(this.groupBoxExternalDecoder, "groupBoxExternalDecoder");
             this.groupBoxExternalDecoder.Name = "groupBoxExternalDecoder";
             this.groupBoxExternalDecoder.TabStop = false;
@@ -1235,6 +1216,7 @@ namespace JDP
             // textBoxDecoderPath
             // 
             resources.ApplyResources(this.textBoxDecoderPath, "textBoxDecoderPath");
+            this.textBoxDecoderPath.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bindingSourceDecoders, "Path", true));
             this.textBoxDecoderPath.Name = "textBoxDecoderPath";
             // 
             // labelDecoderPath
@@ -1250,33 +1232,38 @@ namespace JDP
             // textBoxDecoderParameters
             // 
             resources.ApplyResources(this.textBoxDecoderParameters, "textBoxDecoderParameters");
+            this.textBoxDecoderParameters.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bindingSourceDecoders, "Parameters", true));
             this.textBoxDecoderParameters.Name = "textBoxDecoderParameters";
             // 
             // panel2
             // 
-            this.panel2.Controls.Add(this.button2);
-            this.panel2.Controls.Add(this.button1);
+            this.panel2.Controls.Add(this.buttonDecoderDelete);
+            this.panel2.Controls.Add(this.buttonDecoderAdd);
             this.panel2.Controls.Add(this.comboBoxDecoderExtension);
             this.panel2.Controls.Add(this.labelDecoderExtension);
             resources.ApplyResources(this.panel2, "panel2");
             this.panel2.Name = "panel2";
             // 
-            // button2
+            // buttonDecoderDelete
             // 
-            this.button2.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.encodersBindingSource, "CanBeDeleted", true));
-            resources.ApplyResources(this.button2, "button2");
-            this.button2.Name = "button2";
-            this.button2.UseVisualStyleBackColor = true;
+            this.buttonDecoderDelete.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.bindingSourceDecoders, "CanBeDeleted", true));
+            resources.ApplyResources(this.buttonDecoderDelete, "buttonDecoderDelete");
+            this.buttonDecoderDelete.Name = "buttonDecoderDelete";
+            this.buttonDecoderDelete.UseVisualStyleBackColor = true;
+            this.buttonDecoderDelete.Click += new System.EventHandler(this.buttonDecoderDelete_Click);
             // 
-            // button1
+            // buttonDecoderAdd
             // 
-            resources.ApplyResources(this.button1, "button1");
-            this.button1.Name = "button1";
-            this.button1.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.buttonDecoderAdd, "buttonDecoderAdd");
+            this.buttonDecoderAdd.Name = "buttonDecoderAdd";
+            this.buttonDecoderAdd.UseVisualStyleBackColor = true;
+            this.buttonDecoderAdd.Click += new System.EventHandler(this.buttonDecoderAdd_Click);
             // 
             // comboBoxDecoderExtension
             // 
             resources.ApplyResources(this.comboBoxDecoderExtension, "comboBoxDecoderExtension");
+            this.comboBoxDecoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.bindingSourceDecoders, "Extension", true));
+            this.comboBoxDecoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.bindingSourceDecoders, "CanBeDeleted", true));
             this.comboBoxDecoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDecoderExtension.FormattingEnabled = true;
             this.comboBoxDecoderExtension.Name = "comboBoxDecoderExtension";
@@ -1449,6 +1436,35 @@ namespace JDP
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
+            // label4
+            // 
+            resources.ApplyResources(this.label4, "label4");
+            this.label4.Name = "label4";
+            // 
+            // textBoxDecoderName
+            // 
+            resources.ApplyResources(this.textBoxDecoderName, "textBoxDecoderName");
+            this.textBoxDecoderName.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bindingSourceDecoders, "Name", true));
+            this.textBoxDecoderName.Name = "textBoxDecoderName";
+            this.toolTip1.SetToolTip(this.textBoxDecoderName, resources.GetString("textBoxDecoderName.ToolTip"));
+            // 
+            // bindingSourceDecoders
+            // 
+            this.bindingSourceDecoders.DataMember = "Decoders";
+            this.bindingSourceDecoders.DataSource = this.cUEConfigBindingSource;
+            this.bindingSourceDecoders.CurrentItemChanged += new System.EventHandler(this.bindingSourceDecoders_CurrentItemChanged);
+            // 
+            // listBoxDecoders
+            // 
+            this.listBoxDecoders.BackColor = System.Drawing.SystemColors.Control;
+            this.listBoxDecoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listBoxDecoders.DataSource = this.bindingSourceDecoders;
+            this.listBoxDecoders.DisplayMember = "FullName";
+            resources.ApplyResources(this.listBoxDecoders, "listBoxDecoders");
+            this.listBoxDecoders.FormattingEnabled = true;
+            this.listBoxDecoders.Name = "listBoxDecoders";
+            this.tableLayoutPanel5.SetRowSpan(this.listBoxDecoders, 2);
+            // 
             // frmSettings
             // 
             this.AcceptButton = this.btnOK;
@@ -1525,6 +1541,7 @@ namespace JDP
             this.tabPage5.ResumeLayout(false);
             this.groupBoxScriptConditions.ResumeLayout(false);
             this.tabPage7.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceDecoders)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1601,8 +1618,6 @@ namespace JDP
         private System.Windows.Forms.Label labelFormatDecoder;
         private System.Windows.Forms.ComboBox comboFormatLosslessEncoder;
         private System.Windows.Forms.Label labelFormatEncoder;
-        private System.Windows.Forms.ListView listViewDecoders;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.ComboBox comboBoxEncoderExtension;
         private System.Windows.Forms.GroupBox groupBoxExternalDecoder;
         private System.Windows.Forms.ComboBox comboBoxDecoderExtension;
@@ -1678,8 +1693,12 @@ namespace JDP
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonDecoderDelete;
+        private System.Windows.Forms.Button buttonDecoderAdd;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox textBoxDecoderName;
+        private System.Windows.Forms.BindingSource bindingSourceDecoders;
+        private System.Windows.Forms.ListBox listBoxDecoders;
 
     }
 }
