@@ -318,6 +318,7 @@ namespace JDP
         private void frmCUETools_Load(object sender, EventArgs e)
         {
             _batchPaths = new List<string>();
+            _batchProcessed = 0;
             try
             {
                 _localDB = CUEToolsLocalDB.Load();
@@ -511,7 +512,10 @@ namespace JDP
             catch (Exception ex)
             {
                 if (!ShowErrorMessage(ex))
+                {
                     _batchPaths.Clear();
+                    _batchProcessed = 0;
+                }
                 if ((_workThread == null) && (_batchPaths.Count != 0))
                 {
                     _batchPaths.RemoveAt(0);
@@ -545,7 +549,7 @@ namespace JDP
 
         private void MakeSelection(object sender, CUEToolsSelectionEventArgs e)
         {
-            if (_batchPaths.Count != 0)
+            if (_batchPaths.Count > 1 || _batchProcessed > 0)
                 return;
             this.Invoke((MethodInvoker)delegate()
             {
@@ -766,6 +770,7 @@ namespace JDP
                         sw1.Write(cueSheetContents);
                         sw1.Close();
                         BatchLog("created ok.", fullCueName);
+                        if (_batchPaths.Count > 0) _batchProcessed++;
                     }
                     else
                     {
@@ -840,6 +845,7 @@ namespace JDP
                         }
                         else
                             BatchLog("no changes.", pathIn);
+                        if (_batchPaths.Count > 0) _batchProcessed++;
                     }
                     else
                         throw new Exception("invalid path");
@@ -929,7 +935,7 @@ namespace JDP
                             toolStripStatusLabelAR.Visible = useAR;
                             toolStripStatusLabelCTDB.Visible = useCUEToolsDB;
 
-                            if (_batchPaths.Count == 0 && action == CUEAction.Encode && (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked))
+                            if (_batchPaths.Count <= 1 && _batchProcessed == 0 && action == CUEAction.Encode && (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked))
                             {
                                 frmChoice dlg = new frmChoice();
                                 if (_choiceWidth != 0 && _choiceHeight != 0)
@@ -1064,12 +1070,12 @@ namespace JDP
                             else
                                 status = cueSheet.ExecuteScript(script);
 
-                            if (_batchPaths.Count > 0)
+                            if (_batchPaths.Count > 1 || _batchProcessed > 0)
                             {
-                                _batchProcessed++;
                                 BatchLog("{0}.", pathIn, status);
                             }
                             cueSheet.CheckStop();
+                            if (_batchPaths.Count > 0) _batchProcessed++;
                         }
                     }
                     else
@@ -1077,7 +1083,7 @@ namespace JDP
                 }
                 this.Invoke((MethodInvoker)delegate()
                 {
-                    if (_batchPaths.Count == 0)
+                    if (_batchPaths.Count <= 1 && _batchProcessed <= 1)
                     {
                         if (cueSheet.IsCD)
                         {
@@ -1129,7 +1135,6 @@ namespace JDP
                 }
                 else
                 {
-                    _batchProcessed++;
                     String msg = "";
                     for (Exception e = ex; e != null; e = e.InnerException)
                         msg += ": " + e.Message;
@@ -1145,6 +1150,7 @@ namespace JDP
             catch (StopException)
             {
                 _batchPaths.Clear();
+                _batchProcessed = 0;
                 this.Invoke((MethodInvoker)delegate()
                 {
                     SetupControls(false);
