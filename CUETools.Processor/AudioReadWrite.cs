@@ -24,19 +24,18 @@ namespace CUETools.Processor
 			CUEToolsFormat fmt;
 			if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
 				throw new Exception("Unsupported audio type: " + path);
-			CUEToolsUDC decoder;
-			if (fmt.decoder == null || !config.decoders.TryGetValue(fmt.decoder, out decoder))
+			if (fmt.decoder == null)
 				throw new Exception("Unsupported audio type: " + path);
-			if (decoder.path != null)
-				return new UserDefinedReader(path, IO, decoder.path, decoder.parameters);
-			if (decoder.type == null)
+			if (fmt.decoder.path != null)
+				return new UserDefinedReader(path, IO, fmt.decoder.path, fmt.decoder.parameters);
+			if (fmt.decoder.type == null)
 				throw new Exception("Unsupported audio type: " + path);
 
 			try
 			{
-				object src = Activator.CreateInstance(decoder.type, path, IO);
+				object src = Activator.CreateInstance(fmt.decoder.type, path, IO);
 				if (src == null || !(src is IAudioSource))
-					throw new Exception("Unsupported audio type: " + path + ": " + decoder.type.FullName);
+					throw new Exception("Unsupported audio type: " + path + ": " + fmt.decoder.type.FullName);
 				return src as IAudioSource;
 			}
 			catch (System.Reflection.TargetInvocationException ex)

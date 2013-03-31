@@ -13,20 +13,14 @@ namespace CUETools.Processor
 
         private void OnAddingNew(object sender, AddingNewEventArgs e)
         {
-            string name = "new";
-            CUEToolsUDC temp;
-            while (TryGetValue(name, out temp))
-            {
-                name += "(1)";
-            }
-            e.NewObject = new CUEToolsUDC(name, "wav", true, "", "", "", "");
+            e.NewObject = new CUEToolsUDC("new", "wav", true, "", "", "", "");
         }
 
-        public bool TryGetValue(string name, out CUEToolsUDC result)
+        public bool TryGetValue(string extension, bool lossless, string name, out CUEToolsUDC result)
         {
             foreach (CUEToolsUDC udc in this)
             {
-                if (udc.name == name)
+                if (udc.extension == extension && udc.lossless == lossless && udc.name == name)
                 {
                     result = udc;
                     return true;
@@ -47,19 +41,6 @@ namespace CUETools.Processor
                 }
             }
             return result;
-        }
-
-        public CUEToolsUDC this[string name]
-        {
-            get
-            {
-                CUEToolsUDC udc;
-                if (!TryGetValue(name, out udc))
-                {
-                    throw new Exception("CUEToolsUDCList: member not found");
-                }
-                return udc;
-            }
         }
     }
 }

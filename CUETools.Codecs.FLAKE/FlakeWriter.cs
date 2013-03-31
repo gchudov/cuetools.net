@@ -48,7 +48,7 @@ namespace CUETools.Codecs.FLAKE
 		public bool DoMD5 { get; set; }
 	}
 
-	[AudioEncoderClass("libFlake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", 4, typeof(FlakeWriterSettings))]
+	[AudioEncoderClass("cuetools", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", 4, typeof(FlakeWriterSettings))]
 	//[AudioEncoderClass("libFlake nonsub", "flac", true, "9 10 11", "9", 3, typeof(FlakeWriterSettings))]
 	public class FlakeWriter : IAudioDest
 	{

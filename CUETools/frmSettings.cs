@@ -384,12 +384,12 @@ namespace JDP
 									break;
 								}
 						}
-						List<string> encodersToRemove = new List<string>();
-						foreach (CUEToolsUDC encoder in _config.encoders)
+                        var encodersToRemove = new List<CUEToolsUDC>();
+						foreach (var encoder in _config.encoders)
 							if (encoder.extension == format.extension)
-								encodersToRemove.Add(encoder.name);
-						foreach (string encoder in encodersToRemove)
-							_config.encoders.Remove(_config.encoders[encoder]);
+								encodersToRemove.Add(encoder);
+						foreach (var encoder in encodersToRemove)
+							_config.encoders.Remove(encoder);
 						comboBoxEncoderExtension.Items.Remove(format.extension);
 						comboBoxDecoderExtension.Items.Remove(format.extension);
 						_config.formats.Remove(format.extension);
@@ -424,7 +424,7 @@ namespace JDP
 				comboFormatDecoder.Items.Clear();
 				foreach (KeyValuePair<string, CUEToolsUDC> decoder in _config.decoders)
 					if (decoder.Value.extension == format.extension)
-						comboFormatDecoder.Items.Add(decoder.Key);
+						comboFormatDecoder.Items.Add(decoder.Value);
 				comboFormatDecoder.SelectedItem = format.decoder;
 				comboFormatDecoder.Enabled = format.allowLossless;
 
@@ -454,7 +454,7 @@ namespace JDP
 
 				format.encoderLossless = (CUEToolsUDC)comboFormatLosslessEncoder.SelectedItem;
 				format.encoderLossy = (CUEToolsUDC)comboFormatLossyEncoder.SelectedItem;
-				format.decoder = (string)comboFormatDecoder.SelectedItem;
+                format.decoder = (CUEToolsUDC)comboFormatDecoder.SelectedItem;
 				if (!format.builtin)
 				{
 					format.tagger = (CUEToolsTagger)comboBoxFormatTagger.SelectedItem;
@@ -565,7 +565,7 @@ namespace JDP
 						if (listViewFormats.SelectedItems.Count > 0)
 							listViewFormats.SelectedItems[0].Selected = false;
 						CUEToolsFormat format;
-						if (_config.formats.TryGetValue(decoder.extension, out format) && format.decoder == decoder.name)
+						if (_config.formats.TryGetValue(decoder.extension, out format) && format.decoder == decoder)
 							format.decoder = null;
 						decoder.extension = (string)comboBoxDecoderExtension.SelectedItem;
 					}
@@ -588,8 +588,6 @@ namespace JDP
 			decoder = (CUEToolsUDC)listViewDecoders.Items[e.Item].Tag;
 			if (listViewFormats.SelectedItems.Count > 0)
 				listViewFormats.SelectedItems[0].Selected = false;
-			if (_config.formats[decoder.extension].decoder == decoder.name)
-				_config.formats[decoder.extension].decoder = e.Label;
 			_config.decoders.Remove(decoder.name);
 			decoder.name = e.Label;
 			_config.decoders.Add(decoder.name, decoder);
@@ -626,7 +624,7 @@ namespace JDP
 						CUEToolsUDC decoder = (CUEToolsUDC)listViewDecoders.SelectedItems[0].Tag;
 						if (decoder.path == null)
 							return;
-						if (_config.formats[decoder.extension].decoder == decoder.name)
+						if (_config.formats[decoder.extension].decoder == decoder)
 							_config.formats[decoder.extension].decoder = null;
 						_config.decoders.Remove(decoder.name);
 						listViewDecoders.Items.Remove(listViewDecoders.SelectedItems[0]);

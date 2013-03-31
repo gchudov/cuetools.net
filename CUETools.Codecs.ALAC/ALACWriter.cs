@@ -42,7 +42,7 @@ namespace CUETools.Codecs.ALAC
 		public bool DoVerify { get; set; }
 	}
 
-	[AudioEncoderClass("libALAC", "m4a", true, "0 1 2 3 4 5 6 7 8 9 10", "3", 1, typeof(ALACWriterSettings))]
+	[AudioEncoderClass("cuetools", "m4a", true, "0 1 2 3 4 5 6 7 8 9 10", "3", 1, typeof(ALACWriterSettings))]
 	public class ALACWriter : IAudioDest
 	{
 		Stream _IO = null;

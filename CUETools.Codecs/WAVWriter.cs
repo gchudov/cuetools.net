@@ -4,7 +4,7 @@ using System.IO;
 
 namespace CUETools.Codecs
 {
-    [AudioEncoderClass("builtin wav", "wav", true, "", "", 10, typeof(object))]
+    [AudioEncoderClass("cuetools", "wav", true, "", "", 10, typeof(object))]
     public class WAVWriter : IAudioDest
     {
         private Stream _IO;

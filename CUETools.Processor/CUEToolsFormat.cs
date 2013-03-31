@@ -12,7 +12,7 @@
             bool _builtin,
             CUEToolsUDC _encoderLossless,
             CUEToolsUDC _encoderLossy,
-            string _decoder)
+            CUEToolsUDC _decoder)
         {
             extension = _extension;
             tagger = _tagger;
@@ -39,7 +39,7 @@
         public string extension;
         public CUEToolsUDC encoderLossless;
         public CUEToolsUDC encoderLossy;
-        public string decoder;
+        public CUEToolsUDC decoder;
         public CUEToolsTagger tagger;
         public bool allowLossless, allowLossy, allowLossyWAV, allowEmbed, builtin;
     }
