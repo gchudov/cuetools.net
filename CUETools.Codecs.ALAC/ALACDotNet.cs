@@ -27,7 +27,7 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.ALAC
 {
-	[AudioDecoderClass("builtin alac", "m4a")]
+	[AudioDecoderClass("cuetools", "m4a", 2)]
 	public class ALACReader : IAudioSource
 	{
 		public ALACReader(string path, Stream IO)

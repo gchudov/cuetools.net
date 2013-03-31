@@ -3,7 +3,7 @@ using System.IO;
 
 namespace CUETools.Codecs
 {
-    [AudioDecoderClass("builtin wav", "wav")]
+    [AudioDecoderClass("cuetools", "wav", 2)]
     public class WAVReader : IAudioSource
     {
         Stream _IO;

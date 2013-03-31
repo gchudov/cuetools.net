@@ -27,7 +27,7 @@ namespace TTA {
 		"operation canceled"
 	};
 
-	[AudioDecoderClass("ttalib", "tta")]
+	[AudioDecoderClass("ttalib", "tta", 1)]
 	public ref class TTAReader : public IAudioSource
 	{
 	public:

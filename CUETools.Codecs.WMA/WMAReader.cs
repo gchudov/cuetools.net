@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 
 namespace CUETools.Codecs.WMA
 {
-    [AudioDecoderClass("windows", "wma")]
+    [AudioDecoderClass("windows", "wma", 2)]
     public class WMAReader : IAudioSource
     {
         IWMSyncReader m_syncReader;

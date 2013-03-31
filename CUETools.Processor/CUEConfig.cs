@@ -57,7 +57,7 @@ namespace CUETools.Processor
         public string language;
         public Dictionary<string, CUEToolsFormat> formats;
         public CUEToolsUDCList encoders;
-        public Dictionary<string, CUEToolsUDC> decoders;
+        public CUEToolsUDCList decoders;
         public Dictionary<string, CUEToolsScript> scripts;
         public string defaultVerifyScript;
         public string defaultEncodeScript;
@@ -80,6 +80,10 @@ namespace CUETools.Processor
         public CUEToolsUDCList Encoders
         {
             get { return encoders; }
+        }
+        public CUEToolsUDCList Decoders
+        {
+            get { return decoders; }
         }
 
         public CUEConfig()
@@ -151,12 +155,10 @@ namespace CUETools.Processor
             foreach (Type type in CUEProcessorPlugins.encs)
                 foreach (AudioEncoderClass enc in Attribute.GetCustomAttributes(type, typeof(AudioEncoderClass)))
                     encoders.Add(new CUEToolsUDC(enc, type));
-            decoders = new Dictionary<string, CUEToolsUDC>();
+            decoders = new CUEToolsUDCList();
             foreach (Type type in CUEProcessorPlugins.decs)
-            {
-                AudioDecoderClass dec = Attribute.GetCustomAttribute(type, typeof(AudioDecoderClass)) as AudioDecoderClass;
-                decoders.Add(dec.DecoderName, new CUEToolsUDC(dec, type));
-            }
+                foreach (AudioDecoderClass dec in Attribute.GetCustomAttributes(type, typeof(AudioDecoderClass)))
+                    decoders.Add(new CUEToolsUDC(dec, type));
             if (Type.GetType("Mono.Runtime", false) == null)
             {
                 encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
@@ -169,9 +171,9 @@ namespace CUETools.Processor
                 encoders.Add(new CUEToolsUDC("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
                 encoders.Add(new CUEToolsUDC("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
-                decoders.Add("takc", new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
-                decoders.Add("ffmpeg alac", new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
-                decoders.Add("wma2wav", new CUEToolsUDC("wma2wav", "wma", true, "", "", "wma2wav.exe", "-s -i %I -w -o -"));
+                decoders.Add(new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
+                decoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
+                decoders.Add(new CUEToolsUDC("wma2wav", "wma", true, "", "", "wma2wav.exe", "-s -i %I -w -o -"));
             }
             else
             {
@@ -179,14 +181,14 @@ namespace CUETools.Processor
             }
 
             formats = new Dictionary<string, CUEToolsFormat>();
-            formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("flac", true), null, GetDefaultDecoder("flac")));
-            formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("wv", true), null, GetDefaultDecoder("wv")));
-            formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, false, true, true, encoders.GetDefault("ape", true), null, GetDefaultDecoder("ape")));
-            formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, false, true, encoders.GetDefault("tta", true), null, GetDefaultDecoder("tta")));
-            formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, true, false, true, encoders.GetDefault("wav", true), null, GetDefaultDecoder("wav")));
-            formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), GetDefaultDecoder("m4a")));
-            formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, true, encoders.GetDefault("tak", true), null, GetDefaultDecoder("tak")));
-            formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("wma", true), null, GetDefaultDecoder("wma")));
+            formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("flac", true), null, decoders.GetDefault("flac", true)));
+            formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("wv", true), null, decoders.GetDefault("wv", true)));
+            formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, false, true, true, encoders.GetDefault("ape", true), null, decoders.GetDefault("ape", true)));
+            formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, false, true, encoders.GetDefault("tta", true), null, decoders.GetDefault("tta", true)));
+            formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, true, false, true, encoders.GetDefault("wav", true), null, decoders.GetDefault("wav", true)));
+            formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), decoders.GetDefault("m4a", true)));
+            formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, true, encoders.GetDefault("tak", true), null, decoders.GetDefault("tak", true)));
+            formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("wma", true), null, decoders.GetDefault("wma", true)));
             formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("mp3", false), null));
             formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("ogg", false), null));
 
@@ -349,13 +351,13 @@ return processor.Go();
             sw.Save("ExternalEncoders", nEncoders);
 
             int nDecoders = 0;
-            foreach (KeyValuePair<string, CUEToolsUDC> decoder in decoders)
-                if (decoder.Value.path != null)
+            foreach (var decoder in decoders)
+                if (decoder.path != null)
                 {
-                    sw.Save(string.Format("ExternalDecoder{0}Name", nDecoders), decoder.Key);
-                    sw.Save(string.Format("ExternalDecoder{0}Extension", nDecoders), decoder.Value.extension);
-                    sw.Save(string.Format("ExternalDecoder{0}Path", nDecoders), decoder.Value.path);
-                    sw.Save(string.Format("ExternalDecoder{0}Parameters", nDecoders), decoder.Value.parameters);
+                    sw.Save(string.Format("ExternalDecoder{0}Name", nDecoders), decoder.Name);
+                    sw.Save(string.Format("ExternalDecoder{0}Extension", nDecoders), decoder.extension);
+                    sw.Save(string.Format("ExternalDecoder{0}Path", nDecoders), decoder.path);
+                    sw.Save(string.Format("ExternalDecoder{0}Parameters", nDecoders), decoder.parameters);
                     nDecoders++;
                 }
             sw.Save("ExternalDecoders", nDecoders);
@@ -517,8 +519,8 @@ return processor.Go();
                 string path = sr.Load(string.Format("ExternalDecoder{0}Path", nDecoders));
                 string parameters = sr.Load(string.Format("ExternalDecoder{0}Parameters", nDecoders));
                 CUEToolsUDC decoder;
-                if (!decoders.TryGetValue(name, out decoder))
-                    decoders.Add(name, new CUEToolsUDC(name, extension, true, "", "", path, parameters));
+                if (!decoders.TryGetValue(extension, true, name, out decoder))
+                    decoders.Add(new CUEToolsUDC(name, extension, true, "", "", path, parameters));
                 else
                 {
                     decoder.extension = extension;
@@ -545,8 +547,8 @@ return processor.Go();
 					udcLossless = encoders.GetDefault(extension, true);
                 if (encoderLossy == "" || !encoders.TryGetValue(extension, false, encoderLossy, out udcLossy))
 					udcLossy = encoders.GetDefault(extension, false);
-                if (decoder == "" || !decoders.TryGetValue(decoder, out udcDecoder))
-                    udcDecoder = GetDefaultDecoder(extension);
+                if (decoder == "" || !decoders.TryGetValue(extension, true, decoder, out udcDecoder))
+                    udcDecoder = decoders.GetDefault(extension, true);
                 if (!formats.TryGetValue(extension, out format))
                     formats.Add(extension, new CUEToolsFormat(extension, tagger, allowLossless, allowLossy, allowLossyWav, allowEmbed, false, udcLossless, udcLossy, udcDecoder));
                 else
@@ -603,16 +605,6 @@ return processor.Go();
                 singleFilenameFormat = "%filename%";
             if (trackFilenameFormat.Contains("%N"))
                 trackFilenameFormat = "%tracknumber%. %title%";
-        }
-
-        public CUEToolsUDC GetDefaultDecoder(string extension)
-        {
-             //|| !config.decoders.TryGetValue(fmt.decoder, out decoder)
-            CUEToolsUDC result = null;
-            foreach (KeyValuePair<string, CUEToolsUDC> decoder in decoders)
-                if (decoder.Value.Extension == extension && (result == null || result.priority < decoder.Value.priority))
-                    result = decoder.Value;
-            return result;
         }
 
         public IWebProxy GetProxy()

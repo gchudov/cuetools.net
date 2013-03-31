@@ -116,11 +116,11 @@ namespace JDP
 			if (comboLanguage.SelectedItem == null)
 				comboLanguage.SelectedItem = comboLanguage.Items[0];
 			
-			foreach (KeyValuePair<string, CUEToolsUDC> decoder in _config.decoders)
-				if (decoder.Value.path != null)
+			foreach (var decoder in _config.decoders)
+				if (decoder.path != null)
 				{
-					ListViewItem item = new ListViewItem(decoder.Key);
-					item.Tag = decoder.Value;
+					ListViewItem item = new ListViewItem(decoder.Name);
+					item.Tag = decoder;
 					listViewDecoders.Items.Add(item);
 				}
 			//listViewDecoders.Items[0].Selected = true;
@@ -326,13 +326,13 @@ namespace JDP
 				return;
 			}
 
-			foreach (CUEToolsUDC encoder in _config.encoders)
+			foreach (var encoder in _config.encoders)
 				if (encoder.extension == format.extension)
 					encoder.extension = e.Label;
 
-			foreach (KeyValuePair<string, CUEToolsUDC> decoder in _config.decoders)
-				if (decoder.Value.extension == format.extension)
-					decoder.Value.extension = e.Label;
+			foreach (var decoder in _config.decoders)
+				if (decoder.extension == format.extension)
+					decoder.extension = e.Label;
 
 			comboBoxEncoderExtension.Items.Remove(format.extension);
 			comboBoxEncoderExtension.Items.Add(e.Label);
@@ -370,15 +370,15 @@ namespace JDP
 						CUEToolsFormat format = (CUEToolsFormat)listViewFormats.SelectedItems[0].Tag;
 						if (format.builtin)
 						    return;
-						List<string> decodersToRemove = new List<string>();
-						foreach (KeyValuePair<string, CUEToolsUDC> decoder in _config.decoders)
-							if (decoder.Value.extension == format.extension)
-								decodersToRemove.Add(decoder.Key);
-						foreach (string decoder in decodersToRemove)
+                        var decodersToRemove = new List<CUEToolsUDC>();
+						foreach (var decoder in _config.decoders)
+							if (decoder.extension == format.extension)
+								decodersToRemove.Add(decoder);
+						foreach (var decoder in decodersToRemove)
 						{
 							_config.decoders.Remove(decoder);
 							foreach (ListViewItem item in listViewDecoders.Items)
-								if (item.Text == decoder)
+								if (item.Tag == decoder)
 								{
 									item.Remove();
 									break;
@@ -422,9 +422,9 @@ namespace JDP
 				comboFormatLossyEncoder.Enabled = format.allowLossy;
 
 				comboFormatDecoder.Items.Clear();
-				foreach (KeyValuePair<string, CUEToolsUDC> decoder in _config.decoders)
-					if (decoder.Value.extension == format.extension)
-						comboFormatDecoder.Items.Add(decoder.Value);
+				foreach (var decoder in _config.decoders)
+					if (decoder.extension == format.extension)
+						comboFormatDecoder.Items.Add(decoder);
 				comboFormatDecoder.SelectedItem = format.decoder;
 				comboFormatDecoder.Enabled = format.allowLossless;
 
@@ -579,18 +579,15 @@ namespace JDP
 
 		private void listViewDecoders_AfterLabelEdit(object sender, LabelEditEventArgs e)
 		{
-			CUEToolsUDC decoder;
-			if (e.Label == null || _config.decoders.TryGetValue(e.Label, out decoder))
+            if (e.Label == null)
 			{
 				e.CancelEdit = true;
 				return;
 			}
-			decoder = (CUEToolsUDC)listViewDecoders.Items[e.Item].Tag;
-			if (listViewFormats.SelectedItems.Count > 0)
+            var decoder = listViewDecoders.Items[e.Item].Tag as CUEToolsUDC;
+            if (listViewFormats.SelectedItems.Count > 0)
 				listViewFormats.SelectedItems[0].Selected = false;
-			_config.decoders.Remove(decoder.name);
 			decoder.name = e.Label;
-			_config.decoders.Add(decoder.name, decoder);
 		}
 
 		private void listViewDecoders_BeforeLabelEdit(object sender, LabelEditEventArgs e)
@@ -606,11 +603,8 @@ namespace JDP
 			{
 				case Keys.Insert:
 					{
-						CUEToolsUDC decoder;
-						if (_config.decoders.TryGetValue("new", out decoder))
-							return;
-						decoder = new CUEToolsUDC("new", "wav", true, "", "", "", "");
-						_config.decoders.Add("new", decoder);
+						var decoder = new CUEToolsUDC("new", "wav", true, "", "", "", "");
+						_config.decoders.Add(decoder);
 						ListViewItem item = new ListViewItem(decoder.name);
 						item.Tag = decoder;
 						listViewDecoders.Items.Add(item);
@@ -621,12 +615,12 @@ namespace JDP
 					{
 						if (listViewDecoders.SelectedItems.Count <= 0)
 							return;
-						CUEToolsUDC decoder = (CUEToolsUDC)listViewDecoders.SelectedItems[0].Tag;
+                        CUEToolsUDC decoder = listViewDecoders.SelectedItems[0].Tag as CUEToolsUDC;
 						if (decoder.path == null)
 							return;
 						if (_config.formats[decoder.extension].decoder == decoder)
 							_config.formats[decoder.extension].decoder = null;
-						_config.decoders.Remove(decoder.name);
+						_config.decoders.Remove(decoder);
 						listViewDecoders.Items.Remove(listViewDecoders.SelectedItems[0]);
 						break;
 					}

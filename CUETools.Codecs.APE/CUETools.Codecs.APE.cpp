@@ -101,7 +101,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		GCHandle _gchBuffer;
 	};
 
-	[AudioDecoderClass("MAC_SDK", "ape")]
+	[AudioDecoderClass("MAC_SDK", "ape", 1)]
 	public ref class APEReader : public IAudioSource
 	{
 	public:

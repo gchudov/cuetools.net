@@ -26,7 +26,7 @@ using System.IO;
 
 namespace CUETools.Codecs.FLAKE
 {
-	[AudioDecoderClass("libFlake", "flac")]
+	[AudioDecoderClass("cuetools", "flac", 2)]
 	public class FlakeReader: IAudioSource
 	{
 		int[] samplesBuffer;

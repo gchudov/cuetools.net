@@ -59,7 +59,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
 	public delegate int DecoderCanSeekDelegate(void *id);
 
-	[AudioDecoderClass("libwavpack", "wv")]
+	[AudioDecoderClass("libwavpack", "wv", 1)]
 	public ref class WavPackReader : public IAudioSource 
 	{
 	public:

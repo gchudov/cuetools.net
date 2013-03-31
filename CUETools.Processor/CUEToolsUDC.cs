@@ -69,7 +69,7 @@ namespace CUETools.Processor
             lossless = true;
             supported_modes = "";
             default_mode = "";
-            priority = 1;
+            priority = dec.Priority;
             path = null;
             parameters = null;
             type = dectype;

@@ -133,7 +133,6 @@ namespace JDP
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage10 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.listBoxEncoders = new System.Windows.Forms.ListBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
             this.labelEncoderName = new System.Windows.Forms.Label();
@@ -146,15 +145,20 @@ namespace JDP
             this.labelEncoderExtension = new System.Windows.Forms.Label();
             this.buttonEncoderAdd = new System.Windows.Forms.Button();
             this.comboBoxEncoderExtension = new System.Windows.Forms.ComboBox();
+            this.listBoxEncoders = new System.Windows.Forms.ListBox();
             this.tabPage11 = new System.Windows.Forms.TabPage();
-            this.comboBoxDecoderExtension = new System.Windows.Forms.ComboBox();
+            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
+            this.listViewDecoders = new System.Windows.Forms.ListView();
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBoxExternalDecoder = new System.Windows.Forms.GroupBox();
             this.textBoxDecoderPath = new System.Windows.Forms.TextBox();
             this.labelDecoderPath = new System.Windows.Forms.Label();
             this.labelDecoderParameters = new System.Windows.Forms.Label();
             this.textBoxDecoderParameters = new System.Windows.Forms.TextBox();
-            this.listViewDecoders = new System.Windows.Forms.ListView();
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.comboBoxDecoderExtension = new System.Windows.Forms.ComboBox();
             this.labelDecoderExtension = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -209,7 +213,9 @@ namespace JDP
             this.groupBoxExternalEncoder.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabPage11.SuspendLayout();
+            this.tableLayoutPanel5.SuspendLayout();
             this.groupBoxExternalDecoder.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).BeginInit();
@@ -519,8 +525,8 @@ namespace JDP
             // 
             // textBoxEncoderModes
             // 
-            this.textBoxEncoderModes.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "SupportedModesStr", true));
             resources.ApplyResources(this.textBoxEncoderModes, "textBoxEncoderModes");
+            this.textBoxEncoderModes.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "SupportedModesStr", true));
             this.textBoxEncoderModes.Name = "textBoxEncoderModes";
             this.toolTip1.SetToolTip(this.textBoxEncoderModes, resources.GetString("textBoxEncoderModes.ToolTip"));
             // 
@@ -545,15 +551,15 @@ namespace JDP
             // 
             // textBoxEncoderPath
             // 
-            this.textBoxEncoderPath.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Path", true));
             resources.ApplyResources(this.textBoxEncoderPath, "textBoxEncoderPath");
+            this.textBoxEncoderPath.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Path", true));
             this.textBoxEncoderPath.Name = "textBoxEncoderPath";
             this.toolTip1.SetToolTip(this.textBoxEncoderPath, resources.GetString("textBoxEncoderPath.ToolTip"));
             // 
             // textBoxEncoderParameters
             // 
-            this.textBoxEncoderParameters.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Parameters", true));
             resources.ApplyResources(this.textBoxEncoderParameters, "textBoxEncoderParameters");
+            this.textBoxEncoderParameters.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Parameters", true));
             this.textBoxEncoderParameters.Name = "textBoxEncoderParameters";
             this.toolTip1.SetToolTip(this.textBoxEncoderParameters, resources.GetString("textBoxEncoderParameters.ToolTip"));
             // 
@@ -588,8 +594,8 @@ namespace JDP
             // 
             // textBoxEncoderName
             // 
-            this.textBoxEncoderName.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Name", true));
             resources.ApplyResources(this.textBoxEncoderName, "textBoxEncoderName");
+            this.textBoxEncoderName.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "Name", true));
             this.textBoxEncoderName.Name = "textBoxEncoderName";
             this.toolTip1.SetToolTip(this.textBoxEncoderName, resources.GetString("textBoxEncoderName.ToolTip"));
             // 
@@ -1077,17 +1083,6 @@ namespace JDP
             this.tableLayoutPanel4.Controls.Add(this.listBoxEncoders, 0, 0);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             // 
-            // listBoxEncoders
-            // 
-            this.listBoxEncoders.BackColor = System.Drawing.SystemColors.Control;
-            this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listBoxEncoders.DataSource = this.encodersBindingSource;
-            this.listBoxEncoders.DisplayMember = "FullName";
-            resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
-            this.listBoxEncoders.Name = "listBoxEncoders";
-            this.tableLayoutPanel4.SetRowSpan(this.listBoxEncoders, 2);
-            this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);
-            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.groupBoxExternalEncoder);
@@ -1169,30 +1164,63 @@ namespace JDP
             // 
             // comboBoxEncoderExtension
             // 
+            resources.ApplyResources(this.comboBoxEncoderExtension, "comboBoxEncoderExtension");
             this.comboBoxEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.encodersBindingSource, "Extension", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.comboBoxEncoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxEncoderExtension.FormattingEnabled = true;
-            resources.ApplyResources(this.comboBoxEncoderExtension, "comboBoxEncoderExtension");
             this.comboBoxEncoderExtension.Name = "comboBoxEncoderExtension";
             this.comboBoxEncoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoderExtension_SelectedIndexChanged);
+            // 
+            // listBoxEncoders
+            // 
+            this.listBoxEncoders.BackColor = System.Drawing.SystemColors.Control;
+            this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listBoxEncoders.DataSource = this.encodersBindingSource;
+            this.listBoxEncoders.DisplayMember = "FullName";
+            resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
+            this.listBoxEncoders.Name = "listBoxEncoders";
+            this.tableLayoutPanel4.SetRowSpan(this.listBoxEncoders, 2);
+            this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);
             // 
             // tabPage11
             // 
             this.tabPage11.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage11.Controls.Add(this.comboBoxDecoderExtension);
-            this.tabPage11.Controls.Add(this.groupBoxExternalDecoder);
-            this.tabPage11.Controls.Add(this.listViewDecoders);
-            this.tabPage11.Controls.Add(this.labelDecoderExtension);
+            this.tabPage11.Controls.Add(this.tableLayoutPanel5);
             resources.ApplyResources(this.tabPage11, "tabPage11");
             this.tabPage11.Name = "tabPage11";
             // 
-            // comboBoxDecoderExtension
+            // tableLayoutPanel5
             // 
-            this.comboBoxDecoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxDecoderExtension.FormattingEnabled = true;
-            resources.ApplyResources(this.comboBoxDecoderExtension, "comboBoxDecoderExtension");
-            this.comboBoxDecoderExtension.Name = "comboBoxDecoderExtension";
-            this.comboBoxDecoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxDecoderExtension_SelectedIndexChanged);
+            resources.ApplyResources(this.tableLayoutPanel5, "tableLayoutPanel5");
+            this.tableLayoutPanel5.Controls.Add(this.groupBoxExternalDecoder, 1, 1);
+            this.tableLayoutPanel5.Controls.Add(this.panel2, 1, 0);
+            this.tableLayoutPanel5.Controls.Add(this.listViewDecoders, 0, 0);
+            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
+            // 
+            // listViewDecoders
+            // 
+            this.listViewDecoders.BackColor = System.Drawing.SystemColors.Control;
+            this.listViewDecoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listViewDecoders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader4});
+            this.listViewDecoders.FullRowSelect = true;
+            this.listViewDecoders.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listViewDecoders.HideSelection = false;
+            this.listViewDecoders.LabelEdit = true;
+            resources.ApplyResources(this.listViewDecoders, "listViewDecoders");
+            this.listViewDecoders.MultiSelect = false;
+            this.listViewDecoders.Name = "listViewDecoders";
+            this.tableLayoutPanel5.SetRowSpan(this.listViewDecoders, 2);
+            this.listViewDecoders.UseCompatibleStateImageBehavior = false;
+            this.listViewDecoders.View = System.Windows.Forms.View.Details;
+            this.listViewDecoders.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_AfterLabelEdit);
+            this.listViewDecoders.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_BeforeLabelEdit);
+            this.listViewDecoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewDecoders_ItemSelectionChanged);
+            this.listViewDecoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewDecoders_KeyDown);
+            // 
+            // columnHeader4
+            // 
+            resources.ApplyResources(this.columnHeader4, "columnHeader4");
             // 
             // groupBoxExternalDecoder
             // 
@@ -1224,29 +1252,35 @@ namespace JDP
             resources.ApplyResources(this.textBoxDecoderParameters, "textBoxDecoderParameters");
             this.textBoxDecoderParameters.Name = "textBoxDecoderParameters";
             // 
-            // listViewDecoders
+            // panel2
             // 
-            this.listViewDecoders.BackColor = System.Drawing.SystemColors.Control;
-            this.listViewDecoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewDecoders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader4});
-            this.listViewDecoders.FullRowSelect = true;
-            this.listViewDecoders.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listViewDecoders.HideSelection = false;
-            this.listViewDecoders.LabelEdit = true;
-            resources.ApplyResources(this.listViewDecoders, "listViewDecoders");
-            this.listViewDecoders.MultiSelect = false;
-            this.listViewDecoders.Name = "listViewDecoders";
-            this.listViewDecoders.UseCompatibleStateImageBehavior = false;
-            this.listViewDecoders.View = System.Windows.Forms.View.Details;
-            this.listViewDecoders.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_AfterLabelEdit);
-            this.listViewDecoders.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_BeforeLabelEdit);
-            this.listViewDecoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewDecoders_ItemSelectionChanged);
-            this.listViewDecoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewDecoders_KeyDown);
+            this.panel2.Controls.Add(this.button2);
+            this.panel2.Controls.Add(this.button1);
+            this.panel2.Controls.Add(this.comboBoxDecoderExtension);
+            this.panel2.Controls.Add(this.labelDecoderExtension);
+            resources.ApplyResources(this.panel2, "panel2");
+            this.panel2.Name = "panel2";
             // 
-            // columnHeader4
+            // button2
             // 
-            resources.ApplyResources(this.columnHeader4, "columnHeader4");
+            this.button2.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.encodersBindingSource, "CanBeDeleted", true));
+            resources.ApplyResources(this.button2, "button2");
+            this.button2.Name = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            resources.ApplyResources(this.button1, "button1");
+            this.button1.Name = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // comboBoxDecoderExtension
+            // 
+            resources.ApplyResources(this.comboBoxDecoderExtension, "comboBoxDecoderExtension");
+            this.comboBoxDecoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxDecoderExtension.FormattingEnabled = true;
+            this.comboBoxDecoderExtension.Name = "comboBoxDecoderExtension";
+            this.comboBoxDecoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxDecoderExtension_SelectedIndexChanged);
             // 
             // labelDecoderExtension
             // 
@@ -1476,9 +1510,11 @@ namespace JDP
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             this.tabPage11.ResumeLayout(false);
-            this.tabPage11.PerformLayout();
+            this.tableLayoutPanel5.ResumeLayout(false);
             this.groupBoxExternalDecoder.ResumeLayout(false);
             this.groupBoxExternalDecoder.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -1640,6 +1676,10 @@ namespace JDP
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button1;
 
     }
 }

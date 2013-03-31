@@ -72,7 +72,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 	[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
 	public delegate FLAC__bool DecoderEofDelegate (const FLAC__StreamDecoder *decoder, void *client_data);
 
-	[AudioDecoderClass("libFLAC", "flac")]
+	[AudioDecoderClass("libFLAC", "flac", 1)]
 	public ref class FLACReader : public IAudioSource
 	{
 	public:
