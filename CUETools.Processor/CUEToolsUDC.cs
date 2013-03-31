@@ -85,6 +85,11 @@ namespace CUETools.Processor
             get { return name; }
             set { name = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Name")); }
         }
+        public string FullName
+        {
+            get { return name + " [" + extension + "]"; }
+            //set { name = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Name")); }
+        }
         public string Path
         {
             get { return path; }

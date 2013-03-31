@@ -1,5 +1,7 @@
-namespace JDP {
-	partial class frmSettings {
+namespace JDP
+{
+	partial class frmSettings
+	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -9,8 +11,10 @@ namespace JDP {
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && (components != null))
+			{
 				components.Dispose();
 			}
 			base.Dispose(disposing);
@@ -22,7 +26,8 @@ namespace JDP {
 		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
-		private void InitializeComponent() {
+		private void InitializeComponent()
+		{
 			this.components = new System.ComponentModel.Container();
 			System.Windows.Forms.Button btnCancel;
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSettings));
@@ -125,19 +130,22 @@ namespace JDP {
 			this.labelFormatTagger = new System.Windows.Forms.Label();
 			this.comboBoxFormatTagger = new System.Windows.Forms.ComboBox();
 			this.listViewFormats = new System.Windows.Forms.ListView();
-			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.tabPage10 = new System.Windows.Forms.TabPage();
-			this.propertyGridEncoderSettings = new System.Windows.Forms.PropertyGrid();
+			this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+			this.listBoxEncoders = new System.Windows.Forms.ListBox();
+			this.panel1 = new System.Windows.Forms.Panel();
 			this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
 			this.labelEncoderName = new System.Windows.Forms.Label();
 			this.labelEncoderModes = new System.Windows.Forms.Label();
 			this.labelEncoderPath = new System.Windows.Forms.Label();
 			this.labelEncoderParameters = new System.Windows.Forms.Label();
+			this.propertyGridEncoderSettings = new System.Windows.Forms.PropertyGrid();
+			this.panel3 = new System.Windows.Forms.Panel();
 			this.buttonEncoderDelete = new System.Windows.Forms.Button();
-			this.buttonEncoderAdd = new System.Windows.Forms.Button();
-			this.listBoxEncoders = new System.Windows.Forms.ListBox();
-			this.comboBoxEncoderExtension = new System.Windows.Forms.ComboBox();
 			this.labelEncoderExtension = new System.Windows.Forms.Label();
+			this.buttonEncoderAdd = new System.Windows.Forms.Button();
+			this.comboBoxEncoderExtension = new System.Windows.Forms.ComboBox();
 			this.tabPage11 = new System.Windows.Forms.TabPage();
 			this.comboBoxDecoderExtension = new System.Windows.Forms.ComboBox();
 			this.groupBoxExternalDecoder = new System.Windows.Forms.GroupBox();
@@ -146,7 +154,7 @@ namespace JDP {
 			this.labelDecoderParameters = new System.Windows.Forms.Label();
 			this.textBoxDecoderParameters = new System.Windows.Forms.TextBox();
 			this.listViewDecoders = new System.Windows.Forms.ListView();
-			this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.labelDecoderExtension = new System.Windows.Forms.Label();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -159,14 +167,14 @@ namespace JDP {
 			this.buttonScriptCompile = new System.Windows.Forms.Button();
 			this.groupBoxScriptConditions = new System.Windows.Forms.GroupBox();
 			this.listViewScriptConditions = new System.Windows.Forms.ListView();
-			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.listViewScripts = new System.Windows.Forms.ListView();
-			this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.tabPage7 = new System.Windows.Forms.TabPage();
 			this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
 			this.labelFormatDecoder = new System.Windows.Forms.Label();
 			this.labelFormatEncoder = new System.Windows.Forms.Label();
-			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
 			btnCancel = new System.Windows.Forms.Button();
 			this.grpGeneral.SuspendLayout();
@@ -196,7 +204,10 @@ namespace JDP {
 			this.tabPage3.SuspendLayout();
 			this.groupBoxFormat.SuspendLayout();
 			this.tabPage10.SuspendLayout();
+			this.tableLayoutPanel4.SuspendLayout();
+			this.panel1.SuspendLayout();
 			this.groupBoxExternalEncoder.SuspendLayout();
+			this.panel3.SuspendLayout();
 			this.tabPage11.SuspendLayout();
 			this.groupBoxExternalDecoder.SuspendLayout();
 			this.tabPage4.SuspendLayout();
@@ -1043,8 +1054,8 @@ namespace JDP {
 			this.listViewFormats.UseCompatibleStateImageBehavior = false;
 			this.listViewFormats.View = System.Windows.Forms.View.Details;
 			this.listViewFormats.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewFormats_AfterLabelEdit);
-			this.listViewFormats.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewFormats_ItemSelectionChanged);
 			this.listViewFormats.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewFormats_BeforeLabelEdit);
+			this.listViewFormats.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewFormats_ItemSelectionChanged);
 			this.listViewFormats.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewFormats_KeyDown);
 			// 
 			// columnHeader1
@@ -1055,21 +1066,34 @@ namespace JDP {
 			// 
 			resources.ApplyResources(this.tabPage10, "tabPage10");
 			this.tabPage10.BackColor = System.Drawing.SystemColors.Control;
-			this.tabPage10.Controls.Add(this.propertyGridEncoderSettings);
-			this.tabPage10.Controls.Add(this.groupBoxExternalEncoder);
-			this.tabPage10.Controls.Add(this.buttonEncoderDelete);
-			this.tabPage10.Controls.Add(this.buttonEncoderAdd);
-			this.tabPage10.Controls.Add(this.listBoxEncoders);
-			this.tabPage10.Controls.Add(this.comboBoxEncoderExtension);
-			this.tabPage10.Controls.Add(this.labelEncoderExtension);
+			this.tabPage10.Controls.Add(this.tableLayoutPanel4);
 			this.tabPage10.Name = "tabPage10";
 			// 
-			// propertyGridEncoderSettings
+			// tableLayoutPanel4
 			// 
-			resources.ApplyResources(this.propertyGridEncoderSettings, "propertyGridEncoderSettings");
-			this.propertyGridEncoderSettings.Name = "propertyGridEncoderSettings";
-			this.propertyGridEncoderSettings.PropertySort = System.Windows.Forms.PropertySort.Categorized;
-			this.propertyGridEncoderSettings.ToolbarVisible = false;
+			resources.ApplyResources(this.tableLayoutPanel4, "tableLayoutPanel4");
+			this.tableLayoutPanel4.Controls.Add(this.panel1, 1, 1);
+			this.tableLayoutPanel4.Controls.Add(this.panel3, 1, 0);
+			this.tableLayoutPanel4.Controls.Add(this.listBoxEncoders, 0, 0);
+			this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+			// 
+			// listBoxEncoders
+			// 
+			this.listBoxEncoders.BackColor = System.Drawing.SystemColors.Control;
+			this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listBoxEncoders.DataSource = this.encodersBindingSource;
+			this.listBoxEncoders.DisplayMember = "FullName";
+			resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
+			this.listBoxEncoders.Name = "listBoxEncoders";
+			this.tableLayoutPanel4.SetRowSpan(this.listBoxEncoders, 2);
+			this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);
+			// 
+			// panel1
+			// 
+			this.panel1.Controls.Add(this.groupBoxExternalEncoder);
+			this.panel1.Controls.Add(this.propertyGridEncoderSettings);
+			resources.ApplyResources(this.panel1, "panel1");
+			this.panel1.Name = "panel1";
 			// 
 			// groupBoxExternalEncoder
 			// 
@@ -1106,6 +1130,22 @@ namespace JDP {
 			resources.ApplyResources(this.labelEncoderParameters, "labelEncoderParameters");
 			this.labelEncoderParameters.Name = "labelEncoderParameters";
 			// 
+			// propertyGridEncoderSettings
+			// 
+			resources.ApplyResources(this.propertyGridEncoderSettings, "propertyGridEncoderSettings");
+			this.propertyGridEncoderSettings.Name = "propertyGridEncoderSettings";
+			this.propertyGridEncoderSettings.PropertySort = System.Windows.Forms.PropertySort.Categorized;
+			this.propertyGridEncoderSettings.ToolbarVisible = false;
+			// 
+			// panel3
+			// 
+			this.panel3.Controls.Add(this.buttonEncoderDelete);
+			this.panel3.Controls.Add(this.labelEncoderExtension);
+			this.panel3.Controls.Add(this.buttonEncoderAdd);
+			this.panel3.Controls.Add(this.comboBoxEncoderExtension);
+			resources.ApplyResources(this.panel3, "panel3");
+			this.panel3.Name = "panel3";
+			// 
 			// buttonEncoderDelete
 			// 
 			this.buttonEncoderDelete.DataBindings.Add(new System.Windows.Forms.Binding("Enabled", this.encodersBindingSource, "CanBeDeleted", true));
@@ -1114,22 +1154,18 @@ namespace JDP {
 			this.buttonEncoderDelete.UseVisualStyleBackColor = true;
 			this.buttonEncoderDelete.Click += new System.EventHandler(this.buttonEncoderDelete_Click);
 			// 
+			// labelEncoderExtension
+			// 
+			resources.ApplyResources(this.labelEncoderExtension, "labelEncoderExtension");
+			this.labelEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("ImageKey", this.encodersBindingSource, "DotExtension", true, System.Windows.Forms.DataSourceUpdateMode.Never));
+			this.labelEncoderExtension.Name = "labelEncoderExtension";
+			// 
 			// buttonEncoderAdd
 			// 
 			resources.ApplyResources(this.buttonEncoderAdd, "buttonEncoderAdd");
 			this.buttonEncoderAdd.Name = "buttonEncoderAdd";
 			this.buttonEncoderAdd.UseVisualStyleBackColor = true;
 			this.buttonEncoderAdd.Click += new System.EventHandler(this.buttonEncoderAdd_Click);
-			// 
-			// listBoxEncoders
-			// 
-			this.listBoxEncoders.BackColor = System.Drawing.SystemColors.Control;
-			this.listBoxEncoders.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.listBoxEncoders.DataSource = this.encodersBindingSource;
-			this.listBoxEncoders.DisplayMember = "Name";
-			resources.ApplyResources(this.listBoxEncoders, "listBoxEncoders");
-			this.listBoxEncoders.Name = "listBoxEncoders";
-			this.listBoxEncoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxEncoders_KeyDown);
 			// 
 			// comboBoxEncoderExtension
 			// 
@@ -1139,13 +1175,6 @@ namespace JDP {
 			resources.ApplyResources(this.comboBoxEncoderExtension, "comboBoxEncoderExtension");
 			this.comboBoxEncoderExtension.Name = "comboBoxEncoderExtension";
 			this.comboBoxEncoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoderExtension_SelectedIndexChanged);
-			// 
-			// labelEncoderExtension
-			// 
-			resources.ApplyResources(this.labelEncoderExtension, "labelEncoderExtension");
-			this.labelEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("ImageKey", this.encodersBindingSource, "DotExtension", true, System.Windows.Forms.DataSourceUpdateMode.Never));
-			this.labelEncoderExtension.MinimumSize = new System.Drawing.Size(133, 21);
-			this.labelEncoderExtension.Name = "labelEncoderExtension";
 			// 
 			// tabPage11
 			// 
@@ -1211,8 +1240,8 @@ namespace JDP {
 			this.listViewDecoders.UseCompatibleStateImageBehavior = false;
 			this.listViewDecoders.View = System.Windows.Forms.View.Details;
 			this.listViewDecoders.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_AfterLabelEdit);
-			this.listViewDecoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewDecoders_ItemSelectionChanged);
 			this.listViewDecoders.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewDecoders_BeforeLabelEdit);
+			this.listViewDecoders.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewDecoders_ItemSelectionChanged);
 			this.listViewDecoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewDecoders_KeyDown);
 			// 
 			// columnHeader4
@@ -1222,7 +1251,6 @@ namespace JDP {
 			// labelDecoderExtension
 			// 
 			resources.ApplyResources(this.labelDecoderExtension, "labelDecoderExtension");
-			this.labelDecoderExtension.MinimumSize = new System.Drawing.Size(133, 21);
 			this.labelDecoderExtension.Name = "labelDecoderExtension";
 			// 
 			// tabPage4
@@ -1345,8 +1373,8 @@ namespace JDP {
 			this.listViewScripts.UseCompatibleStateImageBehavior = false;
 			this.listViewScripts.View = System.Windows.Forms.View.Details;
 			this.listViewScripts.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewScripts_AfterLabelEdit);
-			this.listViewScripts.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewScripts_ItemSelectionChanged);
 			this.listViewScripts.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewScripts_BeforeLabelEdit);
+			this.listViewScripts.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewScripts_ItemSelectionChanged);
 			this.listViewScripts.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewScripts_KeyDown);
 			// 
 			// columnHeader5
@@ -1401,8 +1429,8 @@ namespace JDP {
 			this.MinimizeBox = false;
 			this.Name = "frmSettings";
 			this.ShowIcon = false;
-			this.Load += new System.EventHandler(this.frmSettings_Load);
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmSettings_FormClosing);
+			this.Load += new System.EventHandler(this.frmSettings_Load);
 			this.grpGeneral.ResumeLayout(false);
 			this.grpGeneral.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
@@ -1441,9 +1469,12 @@ namespace JDP {
 			this.groupBoxFormat.ResumeLayout(false);
 			this.groupBoxFormat.PerformLayout();
 			this.tabPage10.ResumeLayout(false);
-			this.tabPage10.PerformLayout();
+			this.tableLayoutPanel4.ResumeLayout(false);
+			this.panel1.ResumeLayout(false);
 			this.groupBoxExternalEncoder.ResumeLayout(false);
 			this.groupBoxExternalEncoder.PerformLayout();
+			this.panel3.ResumeLayout(false);
+			this.panel3.PerformLayout();
 			this.tabPage11.ResumeLayout(false);
 			this.tabPage11.PerformLayout();
 			this.groupBoxExternalDecoder.ResumeLayout(false);
@@ -1606,6 +1637,9 @@ namespace JDP {
 		private System.Windows.Forms.TabPage tabPage7;
 		private System.Windows.Forms.PropertyGrid propertyGrid1;
 		private System.Windows.Forms.PropertyGrid propertyGridEncoderSettings;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
+		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.Panel panel3;
 
 	}
 }
