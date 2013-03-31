@@ -50,6 +50,7 @@ namespace CUERipper
 			m_icon_mgr.SetExtensionIcon(".mp3", Properties.Resources.mp3);
 			m_icon_mgr.SetExtensionIcon(".m4a", Properties.Resources.ipod_sound);
 			m_icon_mgr.SetExtensionIcon(".ogg", Properties.Resources.ogg);
+            m_icon_mgr.SetExtensionIcon(".wma", Properties.Resources.wma);
 		}
 
 		string[] OutputPathUseTemplates = {

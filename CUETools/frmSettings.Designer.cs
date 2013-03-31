@@ -1450,8 +1450,10 @@ namespace JDP
             // 
             // bindingSourceDecoders
             // 
+            this.bindingSourceDecoders.AllowNew = true;
             this.bindingSourceDecoders.DataMember = "Decoders";
             this.bindingSourceDecoders.DataSource = this.cUEConfigBindingSource;
+            this.bindingSourceDecoders.Sort = "";
             this.bindingSourceDecoders.CurrentItemChanged += new System.EventHandler(this.bindingSourceDecoders_CurrentItemChanged);
             // 
             // listBoxDecoders

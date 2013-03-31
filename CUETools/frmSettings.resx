@@ -2058,12 +2058,12 @@
   <data name="&gt;&gt;label4.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <metadata name="bindingSourceDecoders.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>755, 17</value>
-  </metadata>
   <data name="textBoxDecoderName.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
+  <metadata name="bindingSourceDecoders.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>755, 17</value>
+  </metadata>
   <data name="textBoxDecoderName.Location" type="System.Drawing.Point, System.Drawing">
     <value>96, 78</value>
   </data>
@@ -2196,9 +2196,6 @@
   <data name="&gt;&gt;textBoxDecoderParameters.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <metadata name="bindingSourceDecoders.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>755, 17</value>
-  </metadata>
   <data name="groupBoxExternalDecoder.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
@@ -2226,6 +2223,35 @@
   <data name="&gt;&gt;groupBoxExternalDecoder.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="buttonDecoderDelete.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6
+        JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAACaUlEQVQ4T6WT+0tTYRjH/Vv0hyhBohsh
+        YRQU5rzMnbU2t3k7y/S4xSKWpuwM0wxqGLrwh3CW2lUrf8k0sVFeMnJ2HVoeKy/t1Eat6Tm7pnzbJm0u
+        RxC98HnhPDyf78t5znmTAPwXGwoLGk3KPFWp/0CVM7MqkptRlXDvSSUzRcr1tlJpyp/9cQ+Lag3xiaLY
+        76Ym+EcsCLy1IjAxCv5+Nxa0ZXhdSLAvlEJivRMnz1VQ/PLdbqzOvkNw8B6CXc0Imi/g5+02rIwPwlGr
+        hVWezT+XZkZDItu8Wp0cku3czS6sMjYEL5+Du9mApaYa+C8ZEGih4Teegv/BLSweJzF+5IB9TLIvORoQ
+        kmlnvR4rtsnIiT4TDdd5HbwN6ji40yT8vdfwKi8Dw+IMOhrwkTrGeHqvI9hjhttYhW9F4oQsV5Hgm+rg
+        MFTjMZHORAOYCpU38LAXQZMB7rPaUCnxcshy4KIKsWRuhSVvlzdUWguYIYu8vp4O+Bu18J4pjzQnWuEA
+        Z5kCS22tGBJuiwVMlyoYl7EOvmYa3EllpDEh8jy462uxUKvDoCAt9gq2YinNSATw9nTCrZLAVSbaILPS
+        bLAFIni6rmBUuAMDWVtiQ3xTJE5+WULYFytL4LnTERmYUyFcE2W5YCUhWSIE39mOqWJxWLb3CTbHPmOY
+        yYIcYkJ2iJ87qoDnRgd+NNJwkHJ8UcrgatCDv9qOaWU++rNS+ZAc/yP95pn0IPH08H7WKtqDrzU6uFou
+        RvhcfQJPcraHZXa9HCYuIMyIeG/KsDBdbyF2M4/yd3JDgq3cQG4a05+dqu/L3PT3y/TvIOkXHdLOuWlI
+        1ksAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="buttonDecoderDelete.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="buttonDecoderDelete.Location" type="System.Drawing.Point, System.Drawing">
+    <value>42, 7</value>
+  </data>
+  <data name="buttonDecoderDelete.Size" type="System.Drawing.Size, System.Drawing">
+    <value>25, 23</value>
+  </data>
+  <data name="buttonDecoderDelete.TabIndex" type="System.Int32, mscorlib">
+    <value>30</value>
+  </data>
   <data name="&gt;&gt;buttonDecoderDelete.Name" xml:space="preserve">
     <value>buttonDecoderDelete</value>
   </data>
@@ -2237,6 +2263,35 @@
   </data>
   <data name="&gt;&gt;buttonDecoderDelete.ZOrder" xml:space="preserve">
     <value>0</value>
+  </data>
+  <data name="buttonDecoderAdd.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6
+        JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAChUlEQVQ4T6WT/UtTURzG/Vv0lwIhKTEL
+        BTWlBAtlZbNNVHSaLudsis52N5fOuc0XMp0bvlTUhm6jkW7TOR2+YCZOLV2kXocSbRRBUBv++nTPhk5N
+        guiB58D9fs/nufece04MgP/yHwWNqy6u3VlLtToEdPN4VVDypiLY8LqUFpmLKcEIN+70/BMPGpeIpZys
+        Dbxa68VKYAHe7+tY+7aMSZ8VMmc1Kg3sAO/FbdZx5hQsDLl2rdj/tYuZLw4Y6AE839bCumfA4tdZqOfF
+        KBrODXEGco5CwoN6ShTLwP6JHRN2f25haKsHT1fb0eVphdarQZ9Xja6NFkzsW0E5+cjX3fDn9WbGHgUw
+        sLR/SYFPPzaYN/ahd1MN1TsZ04pIsSqGZIEP6VIN7HsW3B3OQs6TNCnTigS02Ktph8/CfKoRHStytC1L
+        IJ4RhGGiKgsHDdPFEE1xof+gQc9iM653pdBMKxIgHas8cH92oP+jhoGbwtBZEk4WQDpXCZN3CBma5AOm
+        FAlosvIOxn2jUK9TkHvqw5PPEgmg3BUweweR2p4YDai3lNA6jxraTRWa3vIhnCsFz3wnDBERkPihk4N+
+        jwKd7ke4okiILkE4Wii9b2bB5jNBPFeGWndReM2HIrDAzkbdBBe2HSOudScj8XF8dBP5xoLY8pf5fspZ
+        hTF65GjDCFhjJyYwB+PbBjww3SOwP0F2PvobiUue5bEKB2+GGm1lsDMhOo8S1HQ5JFNl0K20wcbAfBMb
+        ifL4EAOfPEiHZuuzWSxtViBXn47ueQrG91oY17VQuRuR0ZlE4MBxmPhEAPGtnvS47O5UKrPjKp2mSgqm
+        KC8GL7deoC/J46kE2bm/X6Z/N2J+A0FGyx8pOKmLAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="buttonDecoderAdd.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="buttonDecoderAdd.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 7</value>
+  </data>
+  <data name="buttonDecoderAdd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>25, 23</value>
+  </data>
+  <data name="buttonDecoderAdd.TabIndex" type="System.Int32, mscorlib">
+    <value>29</value>
   </data>
   <data name="&gt;&gt;buttonDecoderAdd.Name" xml:space="preserve">
     <value>buttonDecoderAdd</value>
@@ -2250,6 +2305,21 @@
   <data name="&gt;&gt;buttonDecoderAdd.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="comboBoxDecoderExtension.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="comboBoxDecoderExtension.Location" type="System.Drawing.Point, System.Drawing">
+    <value>316, 7</value>
+  </data>
+  <data name="comboBoxDecoderExtension.Size" type="System.Drawing.Size, System.Drawing">
+    <value>67, 21</value>
+  </data>
+  <data name="comboBoxDecoderExtension.TabIndex" type="System.Int32, mscorlib">
+    <value>28</value>
+  </data>
+  <data name="comboBoxDecoderExtension.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
   <data name="&gt;&gt;comboBoxDecoderExtension.Name" xml:space="preserve">
     <value>comboBoxDecoderExtension</value>
   </data>
@@ -2261,6 +2331,36 @@
   </data>
   <data name="&gt;&gt;comboBoxDecoderExtension.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="labelDecoderExtension.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="labelDecoderExtension.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelDecoderExtension.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="labelDecoderExtension.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelDecoderExtension.Location" type="System.Drawing.Point, System.Drawing">
+    <value>208, 10</value>
+  </data>
+  <data name="labelDecoderExtension.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>100, 16</value>
+  </data>
+  <data name="labelDecoderExtension.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 16</value>
+  </data>
+  <data name="labelDecoderExtension.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="labelDecoderExtension.Text" xml:space="preserve">
+    <value>Extension</value>
+  </data>
+  <data name="labelDecoderExtension.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;labelDecoderExtension.Name" xml:space="preserve">
     <value>labelDecoderExtension</value>
@@ -4863,160 +4963,6 @@
   </data>
   <data name="&gt;&gt;listBoxEncoders.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="buttonDecoderDelete.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6
-        JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAACaUlEQVQ4T6WT+0tTYRjH/Vv0hyhBohsh
-        YRQU5rzMnbU2t3k7y/S4xSKWpuwM0wxqGLrwh3CW2lUrf8k0sVFeMnJ2HVoeKy/t1Eat6Tm7pnzbJm0u
-        RxC98HnhPDyf78t5znmTAPwXGwoLGk3KPFWp/0CVM7MqkptRlXDvSSUzRcr1tlJpyp/9cQ+Lag3xiaLY
-        76Ym+EcsCLy1IjAxCv5+Nxa0ZXhdSLAvlEJivRMnz1VQ/PLdbqzOvkNw8B6CXc0Imi/g5+02rIwPwlGr
-        hVWezT+XZkZDItu8Wp0cku3czS6sMjYEL5+Du9mApaYa+C8ZEGih4Teegv/BLSweJzF+5IB9TLIvORoQ
-        kmlnvR4rtsnIiT4TDdd5HbwN6ji40yT8vdfwKi8Dw+IMOhrwkTrGeHqvI9hjhttYhW9F4oQsV5Hgm+rg
-        MFTjMZHORAOYCpU38LAXQZMB7rPaUCnxcshy4KIKsWRuhSVvlzdUWguYIYu8vp4O+Bu18J4pjzQnWuEA
-        Z5kCS22tGBJuiwVMlyoYl7EOvmYa3EllpDEh8jy462uxUKvDoCAt9gq2YinNSATw9nTCrZLAVSbaILPS
-        bLAFIni6rmBUuAMDWVtiQ3xTJE5+WULYFytL4LnTERmYUyFcE2W5YCUhWSIE39mOqWJxWLb3CTbHPmOY
-        yYIcYkJ2iJ87qoDnRgd+NNJwkHJ8UcrgatCDv9qOaWU++rNS+ZAc/yP95pn0IPH08H7WKtqDrzU6uFou
-        RvhcfQJPcraHZXa9HCYuIMyIeG/KsDBdbyF2M4/yd3JDgq3cQG4a05+dqu/L3PT3y/TvIOkXHdLOuWlI
-        1ksAAAAASUVORK5CYII=
-</value>
-  </data>
-  <data name="buttonDecoderDelete.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="buttonDecoderDelete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>42, 7</value>
-  </data>
-  <data name="buttonDecoderDelete.Size" type="System.Drawing.Size, System.Drawing">
-    <value>25, 23</value>
-  </data>
-  <data name="buttonDecoderDelete.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderDelete.Name" xml:space="preserve">
-    <value>buttonDecoderDelete</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderDelete.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderDelete.Parent" xml:space="preserve">
-    <value>panel2</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderDelete.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="buttonDecoderAdd.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6
-        JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAChUlEQVQ4T6WT/UtTURzG/Vv0lwIhKTEL
-        BTWlBAtlZbNNVHSaLudsis52N5fOuc0XMp0bvlTUhm6jkW7TOR2+YCZOLV2kXocSbRRBUBv++nTPhk5N
-        guiB58D9fs/nufece04MgP/yHwWNqy6u3VlLtToEdPN4VVDypiLY8LqUFpmLKcEIN+70/BMPGpeIpZys
-        Dbxa68VKYAHe7+tY+7aMSZ8VMmc1Kg3sAO/FbdZx5hQsDLl2rdj/tYuZLw4Y6AE839bCumfA4tdZqOfF
-        KBrODXEGco5CwoN6ShTLwP6JHRN2f25haKsHT1fb0eVphdarQZ9Xja6NFkzsW0E5+cjX3fDn9WbGHgUw
-        sLR/SYFPPzaYN/ahd1MN1TsZ04pIsSqGZIEP6VIN7HsW3B3OQs6TNCnTigS02Ktph8/CfKoRHStytC1L
-        IJ4RhGGiKgsHDdPFEE1xof+gQc9iM653pdBMKxIgHas8cH92oP+jhoGbwtBZEk4WQDpXCZN3CBma5AOm
-        FAlosvIOxn2jUK9TkHvqw5PPEgmg3BUweweR2p4YDai3lNA6jxraTRWa3vIhnCsFz3wnDBERkPihk4N+
-        jwKd7ke4okiILkE4Wii9b2bB5jNBPFeGWndReM2HIrDAzkbdBBe2HSOudScj8XF8dBP5xoLY8pf5fspZ
-        hTF65GjDCFhjJyYwB+PbBjww3SOwP0F2PvobiUue5bEKB2+GGm1lsDMhOo8S1HQ5JFNl0K20wcbAfBMb
-        ifL4EAOfPEiHZuuzWSxtViBXn47ueQrG91oY17VQuRuR0ZlE4MBxmPhEAPGtnvS47O5UKrPjKp2mSgqm
-        KC8GL7deoC/J46kE2bm/X6Z/N2J+A0FGyx8pOKmLAAAAAElFTkSuQmCC
-</value>
-  </data>
-  <data name="buttonDecoderAdd.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="buttonDecoderAdd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 7</value>
-  </data>
-  <data name="buttonDecoderAdd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>25, 23</value>
-  </data>
-  <data name="buttonDecoderAdd.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderAdd.Name" xml:space="preserve">
-    <value>buttonDecoderAdd</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderAdd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderAdd.Parent" xml:space="preserve">
-    <value>panel2</value>
-  </data>
-  <data name="&gt;&gt;buttonDecoderAdd.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <metadata name="bindingSourceDecoders.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>755, 17</value>
-  </metadata>
-  <data name="comboBoxDecoderExtension.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="comboBoxDecoderExtension.Location" type="System.Drawing.Point, System.Drawing">
-    <value>316, 7</value>
-  </data>
-  <data name="comboBoxDecoderExtension.Size" type="System.Drawing.Size, System.Drawing">
-    <value>67, 21</value>
-  </data>
-  <data name="comboBoxDecoderExtension.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
-  </data>
-  <data name="comboBoxDecoderExtension.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;comboBoxDecoderExtension.Name" xml:space="preserve">
-    <value>comboBoxDecoderExtension</value>
-  </data>
-  <data name="&gt;&gt;comboBoxDecoderExtension.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBoxDecoderExtension.Parent" xml:space="preserve">
-    <value>panel2</value>
-  </data>
-  <data name="&gt;&gt;comboBoxDecoderExtension.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="labelDecoderExtension.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="labelDecoderExtension.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelDecoderExtension.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="labelDecoderExtension.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="labelDecoderExtension.Location" type="System.Drawing.Point, System.Drawing">
-    <value>208, 10</value>
-  </data>
-  <data name="labelDecoderExtension.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>100, 16</value>
-  </data>
-  <data name="labelDecoderExtension.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 16</value>
-  </data>
-  <data name="labelDecoderExtension.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
-  </data>
-  <data name="labelDecoderExtension.Text" xml:space="preserve">
-    <value>Extension</value>
-  </data>
-  <data name="labelDecoderExtension.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;labelDecoderExtension.Name" xml:space="preserve">
-    <value>labelDecoderExtension</value>
-  </data>
-  <data name="&gt;&gt;labelDecoderExtension.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelDecoderExtension.Parent" xml:space="preserve">
-    <value>panel2</value>
-  </data>
-  <data name="&gt;&gt;labelDecoderExtension.ZOrder" xml:space="preserve">
-    <value>3</value>
   </data>
   <data name="&gt;&gt;label1.Name" xml:space="preserve">
     <value>label1</value>

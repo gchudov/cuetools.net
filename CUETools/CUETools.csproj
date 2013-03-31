@@ -312,6 +312,7 @@
     <None Include="Resources\pictures.ico" />
     <None Include="Resources\images-question.ico" />
     <None Include="Resources\picture.ico" />
+    <None Include="Resources\wma.ico" />
     <Content Include="unrar.dll">
     </Content>
     <Content Include="Resources\accuraterip_16.bmp" />
