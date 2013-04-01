@@ -280,7 +280,7 @@ namespace CUETools.Codecs.LAME
 
         public void Delete()
         {
-            if (this.outputPath != null)
+            if (this.outputPath == null)
             {
                 throw new InvalidOperationException("This writer was not created from file.");
             }
