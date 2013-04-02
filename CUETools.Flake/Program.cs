@@ -326,11 +326,16 @@ namespace CUETools.FlakeExe
                             flake.FinalSampleCount = audioSource.Length - skip_a - skip_b;
                             IAudioDest audioDest = flake;
                             AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
+                            var settings = new FlakeWriterSettings();
 
                             try
                             {
                                 if (level >= 0)
-                                    flake.CompressionLevel = level;
+                                    settings.EncoderModeIndex = level;
+                                settings.DoVerify = do_verify;
+                                settings.DoMD5 = do_md5;
+
+                                flake.Settings = settings;
                                 if (prediction_type != null)
                                     flake.PredictionType = Flake.LookupPredictionType(prediction_type);
                                 if (stereo_method != null)
@@ -368,8 +373,6 @@ namespace CUETools.FlakeExe
                                 if (magic >= 0)
                                     flake.DevelopmentMode = magic;
                                 flake.DoSeekTable = do_seektable;
-                                (flake.Settings as FlakeWriterSettings).DoVerify = do_verify;
-                                (flake.Settings as FlakeWriterSettings).DoMD5 = do_md5;
                             }
                             catch (Exception ex)
                             {

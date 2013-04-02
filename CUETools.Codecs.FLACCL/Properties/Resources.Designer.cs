@@ -61,6 +61,15 @@ namespace CUETools.Codecs.FLACCL.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow non-subset modes, which allow for greater compression, but are less compatible.
+        /// </summary>
+        internal static string AllowNonSubsetDescription {
+            get {
+                return ResourceManager.GetString("AllowNonSubsetDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use additional CPU threads.
         /// </summary>
         internal static string DescriptionCPUThreads {

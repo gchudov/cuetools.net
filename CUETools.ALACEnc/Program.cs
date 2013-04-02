@@ -176,8 +176,11 @@ namespace CUETools.ALACEnc
 
 			try
 			{
-				if (level >= 0)
-					alac.CompressionLevel = level;
+                var settings = new ALACWriterSettings();
+                settings.DoVerify = do_verify;
+                if (level >= 0)
+                    settings.EncoderModeIndex = level;
+                alac.Settings = settings;
 				if (stereo_method != null)
 					alac.StereoMethod = Alac.LookupStereoMethod(stereo_method);
 				if (order_method != null)

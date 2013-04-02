@@ -12,12 +12,13 @@ namespace CUETools.Processor
         public string path = "";
         public string parameters = "";
         public Type type = null;
-        public object settings = null;
+        public AudioEncoderSettings settings = null;
         public XmlSerializer settingsSerializer = null;
-        public string supported_modes = "";
-        public string default_mode = "";
         public bool lossless = false;
         public int priority = 0;
+
+        private string supported_modes = "";
+        private string default_mode = "";
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -47,18 +48,16 @@ namespace CUETools.Processor
             name = enc.EncoderName;
             extension = enc.Extension;
             lossless = enc.Lossless;
-            supported_modes = enc.SupportedModes;
-            default_mode = enc.DefaultMode;
             priority = enc.Priority;
             path = null;
             parameters = "";
             type = enctype;
             settingsSerializer = null;
             settings = null;
-            if (enc.Settings != null && enc.Settings != typeof(object))
+            if (enc.Settings != null && typeof(AudioEncoderSettings).IsAssignableFrom(enc.Settings))
             {
                 settingsSerializer = new XmlSerializer(enc.Settings);
-                settings = Activator.CreateInstance(enc.Settings);
+                settings = Activator.CreateInstance(enc.Settings) as AudioEncoderSettings;
             }
         }
 
@@ -67,8 +66,6 @@ namespace CUETools.Processor
             name = dec.DecoderName;
             extension = dec.Extension;
             lossless = true;
-            supported_modes = "";
-            default_mode = "";
             priority = dec.Priority;
             path = null;
             parameters = null;
@@ -105,26 +102,50 @@ namespace CUETools.Processor
             get { return lossless; }
             set { lossless = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Lossless")); }
         }
+        
         public string Extension
         {
             get { return extension; }
             set { extension = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Extension")); }
         }
+        
         public string DotExtension
         {
             get { return "." + extension; }
         }
+        
         public string SupportedModesStr
         {
-            get { return supported_modes; }
-            set { supported_modes = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("SupportedModesStr")); }
+            get
+            {
+                return this.settings == null ? this.supported_modes : this.settings.GetSupportedModes();
+            }
+            set
+            {
+                if (this.settings != null) throw new NotSupportedException();
+                supported_modes = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("SupportedModesStr"));
+            }
+        }
+
+        public string EncoderMode
+        {
+            get
+            {
+                if (this.settings != null) return this.settings.EncoderMode;
+                else return this.default_mode;
+            }
+            set
+            {
+                if (this.settings != null) this.settings.EncoderMode = value;
+                else this.default_mode = value;
+            }
         }
 
         public string[] SupportedModes
         {
             get
             {
-                return supported_modes.Split(' ');
+                return this.SupportedModesStr.Split(' ');
             }
         }
 
@@ -132,11 +153,11 @@ namespace CUETools.Processor
         {
             get
             {
-                string[] modes = supported_modes.Split(' ');
+                string[] modes = this.SupportedModes;
                 if (modes == null || modes.Length < 2)
                     return -1;
                 for (int i = 0; i < modes.Length; i++)
-                    if (modes[i] == default_mode)
+                    if (modes[i] == this.EncoderMode)
                         return i;
                 return -1;
             }

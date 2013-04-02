@@ -448,10 +448,11 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		}
 	};
 
-	public ref class FLACWriterSettings
+	public ref class FLACWriterSettings: AudioEncoderSettings
 	{
 	    public:
 		FLACWriterSettings() 
+			: AudioEncoderSettings("0 1 2 3 4 5 6 7 8", "5")
 		{ 
 		    _md5Sum = true;
 		    _verify = false;
@@ -498,7 +499,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		bool _md5Sum, _verify, _disableAsm;
 	};
 	
-	[AudioEncoderClass("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", 2, FLACWriterSettings::typeid)]
+	[AudioEncoderClass("libFLAC", "flac", true, 2, FLACWriterSettings::typeid)]
 	public ref class FLACWriter : IAudioDest 
 	{
 	public:
@@ -515,7 +516,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			_path = path;
 			_finalSampleCount = 0;
 			_samplesWritten = 0;
-			_compressionLevel = 5;
 			_paddingLength = 8192;
 			_blockSize = 0;
 
@@ -608,25 +608,14 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			_samplesWritten += sampleBuffer->Length;
 		}
 
-		virtual property Int32 CompressionLevel {
-			Int32 get() {
-				return _compressionLevel;
-			}
-			void set(Int32 value) {
-				if ((value < 0) || (value > 8))
-					throw gcnew Exception("invalid compression level");
-				_compressionLevel = value;
-			}
-		}
-
-		virtual property Object^ Settings
+		virtual property AudioEncoderSettings^ Settings
 		{
-			Object^ get()
+			AudioEncoderSettings^ get()
 			{
 			    return _settings;
 			}
 			
-			void set(Object^ value)
+			void set(AudioEncoderSettings^ value)
 			{
 			    if (value == nullptr || value->GetType() != FLACWriterSettings::typeid)
 				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
@@ -652,7 +641,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten, _blockSize;
 		AudioPCMConfig^ _pcm;
-		Int32 _compressionLevel;
 		__int64 _paddingLength;
 		FLAC__StreamMetadata **_metadataList;
 		int _metadataCount;
@@ -726,7 +714,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				FLAC__stream_encoder_set_total_samples_estimate(_encoder, _finalSampleCount);
 			}
 
-			FLAC__stream_encoder_set_compression_level(_encoder, _compressionLevel);
+			FLAC__stream_encoder_set_compression_level(_encoder, _settings->EncoderModeIndex);
 
 			if (_blockSize > 0)
 				FLAC__stream_encoder_set_blocksize(_encoder, (unsigned)_blockSize);

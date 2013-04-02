@@ -2464,7 +2464,7 @@ namespace JDP
             {
                 trackBarEncoderMode.Maximum = modes.Length - 1;
                 trackBarEncoderMode.Value = encoder.DefaultModeIndex == -1 ? modes.Length - 1 : encoder.DefaultModeIndex;
-                labelEncoderMode.Text = encoder.default_mode;
+                labelEncoderMode.Text = encoder.EncoderMode;
                 labelEncoderMinMode.Text = modes[0];
                 labelEncoderMaxMode.Text = modes[modes.Length - 1];
                 trackBarEncoderMode.Visible = true;
@@ -2478,8 +2478,8 @@ namespace JDP
         {
             CUEToolsUDC encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
             string[] modes = encoder.SupportedModes;
-            encoder.default_mode = modes[trackBarEncoderMode.Value];
-            labelEncoderMode.Text = encoder.default_mode;
+            encoder.EncoderMode = modes[trackBarEncoderMode.Value];
+            labelEncoderMode.Text = encoder.EncoderMode;
         }
 
         //private void toolStripButton1_Click(object sender, EventArgs e)

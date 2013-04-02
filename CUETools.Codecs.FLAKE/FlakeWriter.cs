@@ -34,9 +34,21 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
 {
-	public class FlakeWriterSettings
+	public class FlakeWriterSettings: AudioEncoderSettings
 	{
-		public FlakeWriterSettings() { DoVerify = false; DoMD5 = true; }
+		public FlakeWriterSettings() 
+            : base("", "7")
+        { 
+            DoVerify = false;
+            DoMD5 = true;
+            AllowNonSubset = false;
+        }
+
+        public override string GetSupportedModes()
+        {
+            return this.AllowNonSubset ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
+        }
+
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
 		[SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
@@ -46,9 +58,14 @@ namespace CUETools.Codecs.FLAKE
 		[DisplayName("MD5")]
 		[SRDescription(typeof(Properties.Resources), "DoMD5Description")]
 		public bool DoMD5 { get; set; }
-	}
 
-	[AudioEncoderClass("cuetools", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "7", 4, typeof(FlakeWriterSettings))]
+        [DefaultValue(false)]
+        [DisplayName("Allow Non-subset")]
+        [SRDescription(typeof(Properties.Resources), "AllowNonSubsetDescription")]
+        public bool AllowNonSubset { get; set; }
+    }
+
+	[AudioEncoderClass("cuetools", "flac", true, 4, typeof(FlakeWriterSettings))]
 	//[AudioEncoderClass("libFlake nonsub", "flac", true, "9 10 11", "9", 3, typeof(FlakeWriterSettings))]
 	public class FlakeWriter : IAudioDest
 	{
@@ -103,7 +120,6 @@ namespace CUETools.Codecs.FLAKE
 		double[] windowScale;
 		int samplesInBuffer = 0;
 
-		int _compressionLevel = 7;
 		int _blocksize = 0;
 		int _totalSize = 0;
 		int _windowsize = 0, _windowcount = 0;
@@ -141,7 +157,7 @@ namespace CUETools.Codecs.FLAKE
 			windowBuffer = new float[Flake.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
 			windowScale = new double[lpc.MAX_LPC_WINDOWS];
 
-			eparams.flake_set_defaults(_compressionLevel);
+			eparams.flake_set_defaults(7);
 			eparams.padding_size = 8192;
 
 			crc8 = new Crc8();
@@ -161,24 +177,9 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		public int CompressionLevel
-		{
-			get
-			{
-				return _compressionLevel;
-			}
-			set
-			{
-				if (value < 0 || value > 11)
-					throw new Exception("unsupported compression level");
-				_compressionLevel = value;
-				eparams.flake_set_defaults(_compressionLevel);
-			}
-		}
-
 		FlakeWriterSettings _settings = new FlakeWriterSettings();
 
-		public object Settings
+        public AudioEncoderSettings Settings
 		{
 			get
 			{
@@ -188,7 +189,11 @@ namespace CUETools.Codecs.FLAKE
 			{
 				if (value as FlakeWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
-				_settings = value as FlakeWriterSettings;
+                _settings = value as FlakeWriterSettings;
+                var _compressionLevel = _settings.EncoderModeIndex;
+                if (_compressionLevel < 0 || _compressionLevel > 11)
+                    throw new Exception("unsupported compression level");
+                eparams.flake_set_defaults(_compressionLevel);
 			}
 		}
 

@@ -31,9 +31,10 @@ using OpenCLNet;
 
 namespace CUETools.Codecs.FLACCL
 {
-	public class FLACCLWriterSettings
+	public class FLACCLWriterSettings: AudioEncoderSettings
 	{
 		public FLACCLWriterSettings() 
+            : base("", "8")
 		{ 
 			this.DoVerify = false; 
 			this.GPUOnly = true;
@@ -43,7 +44,13 @@ namespace CUETools.Codecs.FLACCL
 			this.GroupSize = 128;
 			this.TaskSize = 8;
 			this.DeviceType = OpenCLDeviceType.GPU;
+            this.AllowNonSubset = false;
 		}
+
+        public override string GetSupportedModes()
+        {
+            return this.AllowNonSubset ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
+        }
 
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
@@ -120,7 +127,12 @@ namespace CUETools.Codecs.FLACCL
 				padding = value;
 			}
 		}
-	}
+
+        [DefaultValue(false)]
+        [DisplayName("Allow Non-subset")]
+        [SRDescription(typeof(Properties.Resources), "AllowNonSubsetDescription")]
+        public bool AllowNonSubset { get; set; }
+    }
 
 	public class FLACCLWriterSettingsPlatformConverter : TypeConverter
 	{
@@ -157,7 +169,7 @@ namespace CUETools.Codecs.FLACCL
 		GPU = DeviceType.GPU
 	}
 
-	[AudioEncoderClass("FLACCL", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11", "8", 2, typeof(FLACCLWriterSettings))]
+	[AudioEncoderClass("FLACCL", "flac", true, 2, typeof(FLACCLWriterSettings))]
 	//[AudioEncoderClass("FLACCL nonsub", "flac", true, "9 10 11", "9", 1, typeof(FLACCLWriterSettings))]
 	public class FLACCLWriter : IAudioDest
 	{
@@ -200,7 +212,6 @@ namespace CUETools.Codecs.FLACCL
 
 		int samplesInBuffer = 0;
 
-		int _compressionLevel = 7;
 		int _blocksize = 0;
 		int _totalSize = 0;
 
@@ -245,7 +256,7 @@ namespace CUETools.Codecs.FLACCL
 			_path = path;
 			_IO = IO;
 
-			eparams.flake_set_defaults(_compressionLevel);
+			eparams.flake_set_defaults(7);
 			eparams.padding_size = _settings.Padding;
 
 			crc8 = new Crc8();
@@ -276,24 +287,9 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
-		public int CompressionLevel
-		{
-			get
-			{
-				return _compressionLevel;
-			}
-			set
-			{
-				if (value < 0 || value > 11)
-					throw new Exception("unsupported compression level");
-				_compressionLevel = value;
-				eparams.flake_set_defaults(_compressionLevel);
-			}
-		}
-
 		internal FLACCLWriterSettings _settings = new FLACCLWriterSettings();
 
-		public object Settings
+        public AudioEncoderSettings Settings
 		{
 			get
 			{
@@ -304,6 +300,10 @@ namespace CUETools.Codecs.FLACCL
 				if (value as FLACCLWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
 				_settings = value as FLACCLWriterSettings;
+                var _compressionLevel = _settings.EncoderModeIndex;
+                if (_compressionLevel < 0 || _compressionLevel > 11)
+                    throw new Exception("unsupported compression level");
+                eparams.flake_set_defaults(_compressionLevel);
                 eparams.padding_size = _settings.Padding;
             }
 		}

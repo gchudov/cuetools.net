@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="AudioBuffer.cs" />
     <Compile Include="AudioDecoderClass.cs" />
+    <Compile Include="AudioEncoderSettings.cs" />
     <Compile Include="AudioPCMConfig.cs" />
     <Compile Include="AudioPipe.cs" />
     <Compile Include="AudioSamples.cs" />

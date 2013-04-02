@@ -5,19 +5,16 @@ using System.Text;
 
 namespace CUETools.Codecs.LAME
 {
-    public class LameWriterCBRSettings
+    public class LameWriterCBRSettings : AudioEncoderSettings
     {
+        public static readonly int[] bps_table = new int[] { 96, 128, 192, 256, 320 };
+
         [DefaultValue(LameQuality.High)]
         public LameQuality Quality { get; set; }
 
         public LameWriterCBRSettings()
+            : base("96 128 192 256 320", "256")
         {
-            // Iterate through each property and call ResetValue()
-            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
-            {
-                property.ResetValue(this);
-            }
-            this.Quality = LameQuality.High;
         }
     }
 }

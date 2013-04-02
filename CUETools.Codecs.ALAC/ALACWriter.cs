@@ -33,16 +33,21 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.ALAC
 {
-	public class ALACWriterSettings
+	public class ALACWriterSettings: AudioEncoderSettings
 	{
-		public ALACWriterSettings() { DoVerify = false; }
+		public ALACWriterSettings() 
+            : base("0 1 2 3 4 5 6 7 8 9 10", "3")
+        { 
+            DoVerify = false; 
+        }
+
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
 		[Description("Decode each frame and compare with original")]
 		public bool DoVerify { get; set; }
 	}
 
-	[AudioEncoderClass("cuetools", "m4a", true, "0 1 2 3 4 5 6 7 8 9 10", "3", 1, typeof(ALACWriterSettings))]
+	[AudioEncoderClass("cuetools", "m4a", true, 1, typeof(ALACWriterSettings))]
 	public class ALACWriter : IAudioDest
 	{
 		Stream _IO = null;
@@ -81,7 +86,6 @@ namespace CUETools.Codecs.ALAC
 		float[] windowBuffer;
 		int samplesInBuffer = 0;
 
-		int _compressionLevel = 5;
 		int _blocksize = 0;
 		int _totalSize = 0;
 		int _windowsize = 0, _windowcount = 0;
@@ -114,7 +118,7 @@ namespace CUETools.Codecs.ALAC
 			residualBuffer = new int[Alac.MAX_BLOCKSIZE * (_pcm.ChannelCount == 2 ? 6 : _pcm.ChannelCount + 1)];
 			windowBuffer = new float[Alac.MAX_BLOCKSIZE * 2 * Alac.MAX_LPC_WINDOWS];
 
-			eparams.set_defaults(_compressionLevel);
+			eparams.set_defaults(5);
 			eparams.padding_size = 4096;
 
 			frame = new ALACFrame(_pcm.ChannelCount == 2 ? 5 : _pcm.ChannelCount);
@@ -134,24 +138,9 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		public int CompressionLevel
-		{
-			get
-			{
-				return _compressionLevel;
-			}
-			set
-			{
-				if (value < 0 || value > 10)
-					throw new Exception("unsupported compression level");
-				_compressionLevel = value;
-				eparams.set_defaults(_compressionLevel);
-			}
-		}
-
 		ALACWriterSettings _settings = new ALACWriterSettings();
 
-		public object Settings
+		public AudioEncoderSettings Settings
 		{
 			get
 			{
@@ -162,7 +151,11 @@ namespace CUETools.Codecs.ALAC
 				if (value as ALACWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
 				_settings = value as ALACWriterSettings;
-			}
+                var _compressionLevel = _settings.EncoderModeIndex;
+                if (_compressionLevel < 0 || _compressionLevel > 10)
+                    throw new Exception("unsupported compression level");
+                eparams.set_defaults(_compressionLevel);
+            }
 		}
 
 		public long Padding

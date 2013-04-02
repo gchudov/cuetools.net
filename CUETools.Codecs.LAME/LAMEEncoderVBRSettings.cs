@@ -2,17 +2,14 @@
 
 namespace CUETools.Codecs.LAME
 {
-	public class LAMEEncoderVBRSettings
+    public class LAMEEncoderVBRSettings : AudioEncoderSettings
 	{
 		[DefaultValue(LAMEEncoderVBRProcessingQuality.Normal)]
 		public LAMEEncoderVBRProcessingQuality Quality { get; set; }
 
 		public LAMEEncoderVBRSettings()
+            : base("V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2")
 		{
-			// Iterate through each property and call ResetValue()
-			foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this)) {
-				property.ResetValue(this);
-            }
 		}
 	}
 }

@@ -252,12 +252,22 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}
 	};
 
-	[AudioEncoderClass("MAC_SDK", "ape", true, "fast normal high extra insane", "high", 1, Object::typeid)]
+	public ref class APEWriterSettings : AudioEncoderSettings
+	{
+	    public:
+		APEWriterSettings() 
+			: AudioEncoderSettings("fast normal high extra insane", "high")
+		{
+		}
+	};
+
+	[AudioEncoderClass("MAC_SDK", "ape", true, 1, APEWriterSettings::typeid)]
 	public ref class APEWriter : IAudioDest
 	{
 	public:
 		APEWriter(String^ path, AudioPCMConfig^ pcm)
 		{
+			_settings = gcnew APEWriterSettings();
 		    _pcm = pcm;
 
 		    if (_pcm->ChannelCount != 1 && _pcm->ChannelCount != 2)
@@ -267,8 +277,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 
 		    _path = path;
 		    _winFileIO = NULL;
-
-		    _compressionLevel = COMPRESSION_LEVEL_NORMAL;
 
 		    int nRetVal;
 		    pAPECompress = CreateIAPECompress (&nRetVal);
@@ -286,17 +294,13 @@ namespace CUETools { namespace Codecs { namespace APE {
 				_gchBuffer.Free();
 		}
 
-		virtual void Close() 
+		void DoClose()
 		{
 			if (pAPECompress) 
 			{
 				pAPECompress->Finish (NULL, 0, 0);
 				delete pAPECompress;
 				pAPECompress = NULL;
-			}
-
-			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
-				throw gcnew Exception("Samples written differs from the expected sample count.");
 			}
 
 			if (_IO != nullptr) 
@@ -306,9 +310,19 @@ namespace CUETools { namespace Codecs { namespace APE {
 			}
 		}
 
+		virtual void Close() 
+		{
+			DoClose();
+
+			if ((_finalSampleCount != 0) && (_samplesWritten != _finalSampleCount)) {
+				throw gcnew Exception("Samples written differs from the expected sample count.");
+			}
+		}
+
 		virtual void Delete()
 		{
-			try { Close (); } catch (Exception^) {}
+			DoClose ();
+
 			File::Delete(_path);
 		}
 
@@ -361,34 +375,24 @@ namespace CUETools { namespace Codecs { namespace APE {
 			} 
 		}
 
-		virtual property Int32 CompressionLevel {
-			Int32 get() {
-				return _compressionLevel / 1000 - 1;
-			}
-			void set(Int32 value) {
-				if (value < 0 || value > 4)
-					throw gcnew Exception("Invalid compression mode.");
-				_compressionLevel = (value + 1) * 1000;
-			}
-		}
-
 		virtual property __int64 Padding
 		{
 			void set(__int64 value) {
 			}
 		}
 
-		virtual property Object^ Settings
+		virtual property AudioEncoderSettings^ Settings
 		{
-			Object^ get()
+			AudioEncoderSettings^ get()
 			{
-			    return nullptr;
+			    return _settings;
 			}
 			
-			void set(Object^ value)
+			void set(AudioEncoderSettings^ value)
 			{
-			    if (value != nullptr && value->GetType() != Object::typeid)
+			    if (value != nullptr && value->GetType() != APEWriterSettings::typeid)
 				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+				_settings = (APEWriterSettings^)value;
 			}
 		}
 
@@ -397,7 +401,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		bool _initialized;
 		Int32 _finalSampleCount, _samplesWritten;
 		AudioPCMConfig^ _pcm;
-		Int32 _compressionLevel;
+		APEWriterSettings^ _settings;
 		String^ _path;
 		Stream^ _IO;
 		GCHandle _gchIO, _gchBuffer;
@@ -415,6 +419,8 @@ namespace CUETools { namespace Codecs { namespace APE {
 
 			WAVEFORMATEX waveFormat;
 			FillWaveFormatEx (&waveFormat, _pcm->SampleRate, _pcm->BitsPerSample, _pcm->ChannelCount);
+
+			Int32 _compressionLevel = (_settings->EncoderModeIndex + 1) * 1000;
 
 			int res = pAPECompress->StartEx (_winFileIO,
 				&waveFormat, 

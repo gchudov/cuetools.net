@@ -33,21 +33,16 @@ namespace CUETools.Codecs
             set { }
         }
 
-        public int CompressionLevel
-        {
-            get { return 0; }
-            set { } // !!!! Must not start the process in constructor, so that we can set CompressionLevel!
-        }
-
-        public object Settings
+        // !!!! Must not start the process in constructor, so that we can set CompressionLevel via Settings!
+        public AudioEncoderSettings Settings
         {
             get
             {
-                return null;
+                return new AudioEncoderSettings();
             }
             set
             {
-                if (value != null && value.GetType() != typeof(object))
+                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
                     throw new Exception("Unsupported options " + value);
             }
         }

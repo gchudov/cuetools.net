@@ -87,7 +87,7 @@ namespace CUETools.Processor
 			if (encoder == null)
 				throw new Exception("Unsupported audio type: " + path);
 			if (encoder.path != null)
-				dest = new UserDefinedWriter(path, null, pcm, encoder.path, encoder.parameters, encoder.default_mode, padding);
+				dest = new UserDefinedWriter(path, null, pcm, encoder.path, encoder.parameters, encoder.EncoderMode, padding);
 			else if (encoder.type != null)
 			{
 				object o = Activator.CreateInstance(encoder.type, path, pcm);
@@ -97,10 +97,9 @@ namespace CUETools.Processor
 			}
 			else
 				throw new Exception("Unsupported audio type: " + path);
-			dest.CompressionLevel = encoder.DefaultModeIndex;
+            dest.Settings = encoder.settings;
 			dest.FinalSampleCount = finalSampleCount;
 			dest.Padding = padding;
-			dest.Settings = encoder.settings;
 			return dest;
 		}
 

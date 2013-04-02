@@ -3,12 +3,9 @@ using System.IO;
 
 namespace CUETools.Codecs.LAME
 {
-    [AudioEncoderClass("CBR (libmp3lame)", "mp3", false, "96 128 192 256 320", "256", 1, typeof(LameWriterCBRSettings))]
+    [AudioEncoderClass("CBR (libmp3lame)", "mp3", false, 1, typeof(LameWriterCBRSettings))]
     public class LameWriterCBR : LameWriter
     {
-        private static readonly int[] bps_table = new int[] { 96, 128, 192, 256, 320 };
-        private int bps;
-
         public LameWriterCBR(string path, Stream IO, AudioPCMConfig pcm)
             : base(IO, pcm)
         {
@@ -19,30 +16,9 @@ namespace CUETools.Codecs.LAME
         {
         }
 
-        public override int CompressionLevel
-        {
-            get
-            {
-                for (int i = 0; i < bps_table.Length; i++)
-                {
-                    if (bps == bps_table[i])
-                    {
-                        return i;
-                    }
-                }
-                return -1;
-            }
-            set
-            {
-                if (value < 0 || value > bps_table.Length)
-                    throw new Exception("unsupported compression level");
-                bps = bps_table[value];
-            }
-        }
-
         LameWriterCBRSettings _settings = new LameWriterCBRSettings();
 
-        public override object Settings
+        public override AudioEncoderSettings Settings
         {
             get
             {
@@ -60,7 +36,7 @@ namespace CUETools.Codecs.LAME
         {
             get
             {
-                return LameWriterConfig.CreateCbr(this.bps, this._settings.Quality);
+                return LameWriterConfig.CreateCbr(LameWriterCBRSettings.bps_table[this._settings.EncoderModeIndex], this._settings.Quality);
             }
         }
     }

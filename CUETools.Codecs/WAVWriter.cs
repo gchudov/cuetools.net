@@ -4,7 +4,7 @@ using System.IO;
 
 namespace CUETools.Codecs
 {
-    [AudioEncoderClass("cuetools", "wav", true, "", "", 10, typeof(object))]
+    [AudioEncoderClass("cuetools", "wav", true, 10, typeof(AudioEncoderSettings))]
     public class WAVWriter : IAudioDest
     {
         private Stream _IO;
@@ -36,21 +36,15 @@ namespace CUETools.Codecs
             set { }
         }
 
-        public int CompressionLevel
-        {
-            get { return 0; }
-            set { }
-        }
-
-        public object Settings
+        public AudioEncoderSettings Settings
         {
             get
             {
-                return null;
+                return new AudioEncoderSettings();
             }
             set
             {
-                if (value != null && value.GetType() != typeof(object))
+                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
                     throw new Exception("Unsupported options " + value);
             }
         }

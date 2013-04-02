@@ -21,7 +21,7 @@ namespace CUETools.Codecs
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public sealed class AudioEncoderClass : Attribute
     {
-        private string _encoderName, _extension, _supportedModes, _defaultMode;
+        private string _encoderName, _extension;
         private bool _lossless;
         private int _priority;
         private Type _settings;
@@ -34,16 +34,6 @@ namespace CUETools.Codecs
         public string Extension
         {
             get { return _extension; }
-        }
-
-        public string SupportedModes
-        {
-            get { return _supportedModes; }
-        }
-
-        public string DefaultMode
-        {
-            get { return _defaultMode; }
         }
 
         public bool Lossless
@@ -61,12 +51,10 @@ namespace CUETools.Codecs
             get { return _settings; }
         }
 
-        public AudioEncoderClass(string encoderName, string extension, bool lossless, string supportedModes, string defaultMode, int priority, Type settings)
+        public AudioEncoderClass(string encoderName, string extension, bool lossless, int priority, Type settings)
         {
             _encoderName = encoderName;
             _extension = extension;
-            _supportedModes = supportedModes;
-            _defaultMode = defaultMode;
             _lossless = lossless;
             _priority = priority;
             _settings = settings;

@@ -931,21 +931,15 @@ namespace CUETools.AccurateRip
 			throw new Exception("unsupported");
 		}
 
-		public int CompressionLevel
-		{
-			get { return 0; }
-			set { }
-		}
-
-		public object Settings
+        public AudioEncoderSettings Settings
 		{
 			get
 			{
-				return null;
+				return new AudioEncoderSettings();
 			}
 			set
 			{
-				if (value != null && value.GetType() != typeof(object))
+                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
 					throw new Exception("Unsupported options " + value);
 			}
 		}

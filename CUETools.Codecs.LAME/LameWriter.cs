@@ -61,12 +61,6 @@ namespace CUETools.Codecs.LAME
             set { }
         }
 
-        public virtual int CompressionLevel
-        {
-            get { return 0; }
-            set { }
-        }
-
         public long FinalSampleCount
         {
             set
@@ -94,11 +88,11 @@ namespace CUETools.Codecs.LAME
             get { return this.outputPath; }
         }
 
-        public virtual object Settings
+        public virtual AudioEncoderSettings Settings
         {
             get
             {
-                return null;
+                return new AudioEncoderSettings();
             }
             set
             {

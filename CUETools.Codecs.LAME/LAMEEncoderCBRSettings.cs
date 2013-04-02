@@ -3,8 +3,10 @@ using CUETools.Codecs.LAME.Interop;
 
 namespace CUETools.Codecs.LAME
 {
-    public class LAMEEncoderCBRSettings
+    public class LAMEEncoderCBRSettings : AudioEncoderSettings
     {
+        public static readonly uint[] bps_table = new uint[] { 96, 128, 192, 256, 320 };
+
         [DefaultValue(0)]
         public int CustomBitrate { get; set; }
 
@@ -12,12 +14,8 @@ namespace CUETools.Codecs.LAME
         public MpegMode StereoMode { get; set; }
 
         public LAMEEncoderCBRSettings()
+            : base("96 128 192 256 320", "256")
         {
-            // Iterate through each property and call ResetValue()
-            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
-            {
-                property.ResetValue(this);
-            }
         }
     }
 }

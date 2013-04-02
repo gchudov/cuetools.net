@@ -187,12 +187,15 @@ namespace CUETools.FLACCL.cmd
 					blocksize = intarg;
 				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
 					padding = intarg;
-				else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
-					ok = level >= 0 && level <= 11;
-				else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
-					input_file = args[arg];
-				else
-					ok = false;
+                else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
+                {
+                    ok = level >= 0 && level <= 11;
+                    settings.EncoderModeIndex = level;
+                }
+                else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
+                    input_file = args[arg];
+                else
+                    ok = false;
 				if (!ok)
 					break;
 			}
@@ -258,8 +261,6 @@ namespace CUETools.FLACCL.cmd
 				if (device_type != null)
 					settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
 				encoder.Settings = settings;
-				if (level >= 0)
-					encoder.CompressionLevel = level;
 				if (stereo_method != null)
 					encoder.StereoMethod = Flake.LookupStereoMethod(stereo_method);
 				if (window_function != null)

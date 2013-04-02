@@ -5,8 +5,7 @@
 		AudioPCMConfig PCM { get; }
 		string Path { get; }
 
-		int CompressionLevel { get; set; }
-		object Settings { get; set; }
+        AudioEncoderSettings Settings { get; set; }
 		long FinalSampleCount { set; }
 		long BlockSize { set; }
 		long Padding { set; }

@@ -104,13 +104,7 @@ namespace HDCDDotNet
 			set { throw new Exception("unsupported"); }
 		}
 
-		public object Settings
-		{
-			get { throw new Exception("unsupported"); }
-			set { throw new Exception("unsupported"); }
-		}
-
-		public int CompressionLevel
+        public AudioEncoderSettings Settings
 		{
 			get { throw new Exception("unsupported"); }
 			set { throw new Exception("unsupported"); }

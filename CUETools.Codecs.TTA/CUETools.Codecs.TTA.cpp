@@ -205,7 +205,7 @@ namespace TTA {
 		}
 	};
 
-	[AudioEncoderClass("ttalib", "tta", true, "", "", 1, Object::typeid)]
+	[AudioEncoderClass("ttalib", "tta", true, 1, AudioEncoderSettings::typeid)]
 	public ref class TTAWriter : public IAudioDest
 	{
 	public:
@@ -221,7 +221,6 @@ namespace TTA {
 		    _path = path;
 		    _finalSampleCount = 0;
 		    _samplesWritten = 0;
-		    _compressionLevel = 5;
 		    _blockSize = 0;
 		}
 
@@ -316,33 +315,22 @@ namespace TTA {
 			_samplesWritten += sampleBuffer->Length;
 		}
 
-		virtual property Int32 CompressionLevel {
-			Int32 get() {
-				return _compressionLevel;
-			}
-			void set(Int32 value) {
-				if (value > 0) 
-					throw gcnew Exception("Invalid compression level.");
-				_compressionLevel = value;
-			}
-		}
-
 		virtual property __int64 Padding
 		{
 			void set(__int64 value) {
 			}
 		}
 
-		virtual property Object^ Settings
+		virtual property AudioEncoderSettings^ Settings
 		{
-			Object^ get()
+			AudioEncoderSettings^ get()
 			{
-			    return nullptr;
+			    return gcnew AudioEncoderSettings();
 			}
 			
-			void set(Object^ value)
+			void set(AudioEncoderSettings^ value)
 			{
-			    if (value != nullptr && value->GetType() != Object::typeid)
+			    if (value != nullptr && value->GetType() != AudioEncoderSettings::typeid)
 				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
 			}
 		}
@@ -355,86 +343,11 @@ namespace TTA {
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten, _blockSize;
 		AudioPCMConfig^ _pcm;
-		Int32 _compressionLevel;
 
 		void Initialize() 
 		{
 			if (!_finalSampleCount)
 				throw gcnew Exception("FinalSampleCount not set.");
-
-			//FLAC__StreamMetadata *padding, *seektable, *vorbiscomment;
-
-			//_metadataList = new FLAC__StreamMetadata*[8];
-			//_metadataCount = 0;
-
-			//if (_finalSampleCount != 0) {
-			//	seektable = FLAC__metadata_object_new(FLAC__METADATA_TYPE_SEEKTABLE);
-			//	FLAC__metadata_object_seektable_template_append_spaced_points_by_samples(
-			//		seektable, _sampleRate * 10, _finalSampleCount);
-			//	FLAC__metadata_object_seektable_template_sort(seektable, true);
-			//	_metadataList[_metadataCount++] = seektable;
-			//}
-
-			//vorbiscomment = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
-
-			//for (int tagno = 0; tagno < _tags->Count; tagno++)
-			//{
-			//	String ^ tag_name = _tags->GetKey(tagno);
-			//	int tag_len = tag_name->Length;
-			//    char * tag = new char [tag_len + 1];
-			//    IntPtr nameChars = Marshal::StringToHGlobalAnsi(tag_name);
-			//    memcpy (tag, (const char*)nameChars.ToPointer(), tag_len);
-			//    Marshal::FreeHGlobal(nameChars);
-			//    tag[tag_len] = 0;
-
-			//	array<String^>^ tag_values = _tags->GetValues(tagno);
-			//	for (int valno = 0; valno < tag_values->Length; valno++)
-			//	{
-			//		UTF8Encoding^ enc = gcnew UTF8Encoding();
-			//		array<Byte>^ value_array = enc->GetBytes (tag_values[valno]);
-			//		int value_len = value_array->Length;
-			//		char * value = new char [value_len + 1];
-			//		Marshal::Copy (value_array, 0, (IntPtr) value, value_len);
-			//		value[value_len] = 0;
-
-			//		FLAC__StreamMetadata_VorbisComment_Entry entry;
-			//		/* create and entry and append it */
-			//		if(!FLAC__metadata_object_vorbiscomment_entry_from_name_value_pair(&entry, tag, value)) {
-			//			throw gcnew Exception("Unable to add tags, must be valid utf8.");
-			//		}
-			//		if(!FLAC__metadata_object_vorbiscomment_append_comment(vorbiscomment, entry, /*copy=*/false)) {
-			//			throw gcnew Exception("Unable to add tags.");
-			//		}
-			//		delete [] value;
-			//	}
-			//    delete [] tag;
-			//}
-			//_metadataList[_metadataCount++] = vorbiscomment;
-	 
-			//if (_paddingLength != 0) {
-			//	padding = FLAC__metadata_object_new(FLAC__METADATA_TYPE_PADDING);
-			//	padding->length = _paddingLength;
-			//	_metadataList[_metadataCount++] = padding;
-			//}
-
-			//FLAC__stream_encoder_set_metadata(_encoder, _metadataList, _metadataCount);
-
-			//FLAC__stream_encoder_set_verify(_encoder, _verify);
-
-			//if (_finalSampleCount != 0) {
-			//	FLAC__stream_encoder_set_total_samples_estimate(_encoder, _finalSampleCount);
-			//}
-
-			//FLAC__stream_encoder_set_compression_level(_encoder, _compressionLevel);
-
-			//if (_blockSize > 0)
-			//	FLAC__stream_encoder_set_blocksize(_encoder, (unsigned)_blockSize);
-
-			//if (FLAC__stream_encoder_init_FILE(_encoder, hFile, NULL, NULL) !=
-			//	FLAC__STREAM_ENCODER_INIT_STATUS_OK)
-			//{
-			//	throw gcnew Exception("Unable to initialize the encoder.");
-			//}
 
 			_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::Write, FileShare::Read);
 			try 

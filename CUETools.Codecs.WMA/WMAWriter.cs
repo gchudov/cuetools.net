@@ -2,19 +2,18 @@
 using System.Runtime.InteropServices;
 using CUETools.Codecs;
 using System.IO;
+using System.Text;
 using WindowsMediaLib;
 using WindowsMediaLib.Defs;
-using System.Runtime.InteropServices;
 
 namespace CUETools.Codecs.WMA
 {
-    public class WMAWriterSettings
+    public class WMAWriterSettings : AudioEncoderSettings
     {
         public WMAWriterSettings() {  }
     }
 
-
-    [AudioEncoderClass("windows", "wma", true, "", "", 1, typeof(WMAWriterSettings))]
+    [AudioEncoderClass("windows", "wma", true, 1, typeof(WMAWriterSettings))]
     public class WMAWriter : IAudioDest
     {
         IWMProfileManager m_pProfileManager;
@@ -29,12 +28,6 @@ namespace CUETools.Codecs.WMA
 
         public long BlockSize
         {
-            set { }
-        }
-
-        public virtual int CompressionLevel
-        {
-            get { return 0; }
             set { }
         }
 
@@ -61,9 +54,20 @@ namespace CUETools.Codecs.WMA
             get { return this.outputPath; }
         }
 
-        public virtual object Settings
+        AudioEncoderSettings m_settings = new AudioEncoderSettings();
+
+        public virtual AudioEncoderSettings Settings
         {
-            get; set;
+            get
+            {
+                return m_settings;
+            }
+            set
+            {
+                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
+                    throw new Exception("Unsupported options " + value);
+                m_settings = value;
+            }
         }
 
         public WMAWriter(string path, AudioPCMConfig pcm)
@@ -81,6 +85,10 @@ namespace CUETools.Codecs.WMA
                 bool codecFound = false;
                 for (int iCodec = 0; iCodec < cCodecs; iCodec++)
                 {
+                    int szCodecName = 0;
+                    pCodecInfo3.GetCodecName(MediaType.Audio, iCodec, null, ref szCodecName);
+                    var codecName = new StringBuilder(szCodecName);
+                    pCodecInfo3.GetCodecName(MediaType.Audio, iCodec, codecName, ref szCodecName);
         		    //if (codec != WMAvoice)
                     try
                     {

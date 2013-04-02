@@ -325,13 +325,13 @@ return processor.Go();
             foreach (CUEToolsUDC encoder in encoders)
             {
                 sw.Save(string.Format("ExternalEncoder{0}Name", nEncoders), encoder.name);
-                sw.Save(string.Format("ExternalEncoder{0}Modes", nEncoders), encoder.supported_modes);
-                sw.Save(string.Format("ExternalEncoder{0}Mode", nEncoders), encoder.default_mode);
+                sw.Save(string.Format("ExternalEncoder{0}Extension", nEncoders), encoder.extension);
+                sw.Save(string.Format("ExternalEncoder{0}Lossless", nEncoders), encoder.lossless);
                 if (encoder.path != null)
                 {
-                    sw.Save(string.Format("ExternalEncoder{0}Extension", nEncoders), encoder.extension);
+                    sw.Save(string.Format("ExternalEncoder{0}Modes", nEncoders), encoder.SupportedModesStr);
+                    sw.Save(string.Format("ExternalEncoder{0}Mode", nEncoders), encoder.EncoderMode);
                     sw.Save(string.Format("ExternalEncoder{0}Path", nEncoders), encoder.path);
-                    sw.Save(string.Format("ExternalEncoder{0}Lossless", nEncoders), encoder.lossless);
                     sw.Save(string.Format("ExternalEncoder{0}Parameters", nEncoders), encoder.parameters);
                 }
                 else
@@ -493,6 +493,8 @@ return processor.Go();
                         encoder.path = path;
                         encoder.lossless = lossless;
                         encoder.parameters = parameters;
+                        encoder.SupportedModesStr = supported_modes;
+                        encoder.EncoderMode = default_mode;
                     }
                     else
                     {
@@ -500,14 +502,12 @@ return processor.Go();
                             try
                             {
                                 using (TextReader reader = new StringReader(parameters))
-                                    encoder.settings = encoder.settingsSerializer.Deserialize(reader);
+                                    encoder.settings = encoder.settingsSerializer.Deserialize(reader) as AudioEncoderSettings;
                             }
                             catch
                             {
                             }
                     }
-                    encoder.supported_modes = supported_modes;
-                    encoder.default_mode = default_mode;
                 }
             }
 

@@ -293,10 +293,11 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		}
 	};
 
-	public ref class WavPackWriterSettings
+	public ref class WavPackWriterSettings : AudioEncoderSettings
 	{
 	    public:
 		WavPackWriterSettings() 
+			: AudioEncoderSettings("fast normal high high+", "normal")
 		{ 
 		    _md5Sum = true;
 		    _extraMode = 0;
@@ -333,7 +334,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		Int32 _extraMode;
 	};
 
-	[AudioEncoderClass("libwavpack", "wv", true, "fast normal high high+", "normal", 1, WavPackWriterSettings::typeid)]
+	[AudioEncoderClass("libwavpack", "wv", true, 1, WavPackWriterSettings::typeid)]
 	public ref class WavPackWriter : IAudioDest 
 	{
 	public:
@@ -350,7 +351,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 
 			_path = path;
 
-			_compressionMode = 1;
 			_blockSize = 0;
 
 			IntPtr pathChars = Marshal::StringToHGlobalUni(path);
@@ -452,33 +452,20 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			} 
 		}
 
-		virtual property int CompressionLevel
-		{
-			int get() {
-				return _compressionMode;
-			}
-			void set(int value) {
-				if ((value < 0) || (value > 3)) {
-					throw gcnew Exception("Invalid compression mode.");
-				}
-				_compressionMode = value;
-			}
-		}
-
 		virtual property __int64 Padding
 		{
 			void set(__int64 value) {
 			}
 		}
 
-		virtual property Object^ Settings
+		virtual property AudioEncoderSettings^ Settings
 		{
-			Object^ get()
+			AudioEncoderSettings^ get()
 			{
 			    return _settings;
 			}
 			
-			void set(Object^ value)
+			void set(AudioEncoderSettings^ value)
 			{
 			    if (value == nullptr || value->GetType() != WavPackWriterSettings::typeid)
 				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
@@ -500,7 +487,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		bool _initialized;
 		WavpackContext *_wpc;
 		Int32 _finalSampleCount, _samplesWritten;
-		Int32 _compressionMode, _blockSize;
+		Int32 _blockSize;
 		String^ _path;
 		MD5^ _md5hasher;
 		array<int,2>^ _shiftedSampleBuffer;
@@ -521,6 +508,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			config.num_channels = _pcm->ChannelCount;
 			config.channel_mask = 5 - _pcm->ChannelCount;
 			config.sample_rate = _pcm->SampleRate;
+			Int32 _compressionMode = _settings->EncoderModeIndex;
 			if (_compressionMode == 0) config.flags |= CONFIG_FAST_FLAG;
 			if (_compressionMode == 2) config.flags |= CONFIG_HIGH_FLAG;
 			if (_compressionMode == 3) config.flags |= CONFIG_HIGH_FLAG | CONFIG_VERY_HIGH_FLAG;

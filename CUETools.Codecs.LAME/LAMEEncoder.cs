@@ -22,28 +22,15 @@ namespace CUETools.Codecs.LAME
         private long bytesWritten = 0;
         private bool inited = false;
 
-        public virtual int CompressionLevel
+        public virtual AudioEncoderSettings Settings
         {
             get
             {
-                return 0;
+                return new AudioEncoderSettings();
             }
             set
             {
-                if (value != 0)
-                    throw new Exception("unsupported compression level");
-            }
-        }
-
-        public virtual object Settings
-        {
-            get
-            {
-                return null;
-            }
-            set
-            {
-                if (value != null && value.GetType() != typeof(object))
+                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
                     throw new Exception("Unsupported options " + value);
             }
         }
