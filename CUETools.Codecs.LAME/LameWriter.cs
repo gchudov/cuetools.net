@@ -5,6 +5,8 @@ using System.IO;
 
 namespace CUETools.Codecs.LAME
 {
+    [AudioEncoderClass("CBR (libmp3lame)", "mp3", false, 1, typeof(LameWriterCBRSettings))]
+    [AudioEncoderClass("VBR (libmp3lame)", "mp3", false, 2, typeof(LameWriterVBRSettings))]
     public class LameWriter : IAudioDest
     {
         #region Unmanaged Functions
@@ -13,48 +15,48 @@ namespace CUETools.Codecs.LAME
         private const CallingConvention LameCallingConvention = CallingConvention.Cdecl;
 
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern IntPtr lame_init();
+        internal static extern IntPtr lame_init();
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_close(IntPtr handle);
+        internal static extern int lame_close(IntPtr handle);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_num_channels(IntPtr handle, int channels);
+        internal static extern int lame_set_num_channels(IntPtr handle, int channels);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_in_samplerate(IntPtr handle, int sampleRate);
+        internal static extern int lame_set_in_samplerate(IntPtr handle, int sampleRate);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_quality(IntPtr handle, int quality);
+        internal static extern int lame_set_quality(IntPtr handle, int quality);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_VBR(IntPtr handle, int vbrMode);
+        internal static extern int lame_set_VBR(IntPtr handle, int vbrMode);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_VBR_mean_bitrate_kbps(IntPtr handle, int meanBitrate);
+        internal static extern int lame_set_VBR_mean_bitrate_kbps(IntPtr handle, int meanBitrate);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_init_params(IntPtr handle);
+        internal static extern int lame_init_params(IntPtr handle);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_num_samples(IntPtr handle, uint numSamples);
+        internal static extern int lame_set_num_samples(IntPtr handle, uint numSamples);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_encode_buffer_interleaved(IntPtr handle, IntPtr pcm, int num_samples, IntPtr mp3buf, int mp3buf_size);
+        internal static extern int lame_encode_buffer_interleaved(IntPtr handle, IntPtr pcm, int num_samples, IntPtr mp3buf, int mp3buf_size);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_encode_flush(IntPtr handle, IntPtr mp3buf, int size);
+        internal static extern int lame_encode_flush(IntPtr handle, IntPtr mp3buf, int size);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern uint lame_get_lametag_frame(IntPtr handle, IntPtr buffer, uint size);
+        internal static extern uint lame_get_lametag_frame(IntPtr handle, IntPtr buffer, uint size);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_VBR_quality(IntPtr handle, float vbrQuality);
+        internal static extern int lame_set_VBR_quality(IntPtr handle, float vbrQuality);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_brate(IntPtr handle, int bitrate);
+        internal static extern int lame_set_brate(IntPtr handle, int bitrate);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_bWriteVbrTag(IntPtr handle, int writeVbrTag);
+        internal static extern int lame_set_bWriteVbrTag(IntPtr handle, int writeVbrTag);
         [DllImport(LameDll, CallingConvention = LameCallingConvention)]
-        private static extern int lame_set_write_id3tag_automatic(IntPtr handle, int automaticWriteId3Tag);
+        internal static extern int lame_set_write_id3tag_automatic(IntPtr handle, int automaticWriteId3Tag);
 
         #endregion
 
-        private string outputPath;
-        private Stream outputStream;
+        private string m_outputPath;
+        private Stream m_outputStream;
 
-        private bool closed = false, initialized = false;
-        private IntPtr handle;
-        private AudioPCMConfig pcm;
-        private uint finalSampleCount;
-        private byte[] outputBuffer;
+        private bool m_closed = false, m_initialized = false;
+        private IntPtr m_handle;
+        private AudioPCMConfig m_pcm;
+        private uint m_finalSampleCount;
+        private byte[] m_outputBuffer;
 
         public long BlockSize
         {
@@ -69,13 +71,13 @@ namespace CUETools.Codecs.LAME
                 {
                     throw new ArgumentException("Input file too big.");
                 }
-                this.finalSampleCount = (uint)value;
+                this.m_finalSampleCount = (uint)value;
             }
         }
 
         public AudioPCMConfig PCM
         {
-            get { return this.pcm; }
+            get { return this.m_pcm; }
         }
 
         public long Padding
@@ -85,44 +87,39 @@ namespace CUETools.Codecs.LAME
 
         public string Path
         {
-            get { return this.outputPath; }
+            get { return this.m_outputPath; }
         }
+
+        private LameWriterSettings m_settings = new LameWriterCBRSettings();
 
         public virtual AudioEncoderSettings Settings
         {
             get
             {
-                return new AudioEncoderSettings();
+                return m_settings;
             }
             set
             {
-                throw new MethodAccessException();
+                if (value as LameWriterSettings == null)
+                     throw new InvalidOperationException("Unsupported options " + value);
+                m_settings = value as LameWriterSettings;
             }
         }
 
-        protected virtual LameWriterConfig Config
+        public LameWriter(string path, Stream output, AudioPCMConfig pcm)
         {
-            get
-            {
-                return LameWriterConfig.CreateCbr(320);
-            }
+            this.CheckPCMConfig(pcm);
+            this.m_pcm = pcm;
+            this.m_outputPath = path;
+            this.m_outputStream = output != null ? output : File.Create(path);
         }
 
         public LameWriter(string path, AudioPCMConfig pcm)
         {
             this.CheckPCMConfig(pcm);
-
-            this.pcm = pcm;
-            this.outputPath = path;
-            this.outputStream = File.Create(path);
-        }
-
-        public LameWriter(Stream output, AudioPCMConfig pcm)
-        {
-            this.CheckPCMConfig(pcm);
-
-            this.outputStream = output;
-            this.pcm = pcm;
+            this.m_pcm = pcm;
+            this.m_outputPath = path;
+            this.m_outputStream = File.Create(path);
         }
 
         private void CheckPCMConfig(AudioPCMConfig pcm)
@@ -140,9 +137,9 @@ namespace CUETools.Codecs.LAME
             int flushResult;
             unsafe
             {
-                fixed (byte* outputBufferPtr = outputBuffer)
+                fixed (byte* outputBufferPtr = m_outputBuffer)
                 {
-                    flushResult = lame_encode_flush(handle, (IntPtr)outputBufferPtr, outputBuffer.Length);
+                    flushResult = lame_encode_flush(m_handle, (IntPtr)outputBufferPtr, m_outputBuffer.Length);
                 }
             }
             if (flushResult < 0)
@@ -151,19 +148,19 @@ namespace CUETools.Codecs.LAME
             }
             if (flushResult > 0)
             {
-                this.outputStream.Write(this.outputBuffer, 0, flushResult);
+                this.m_outputStream.Write(this.m_outputBuffer, 0, flushResult);
             }
 
             int lametagFrameSize = this.GetLametagFrame();
-            this.outputStream.Seek(0, SeekOrigin.Begin);
-            this.outputStream.Write(this.outputBuffer, 0, lametagFrameSize);
+            this.m_outputStream.Seek(0, SeekOrigin.Begin);
+            this.m_outputStream.Write(this.m_outputBuffer, 0, lametagFrameSize);
         }
 
         public void Close()
         {
-            if (!this.closed)
+            if (!this.m_closed)
             {
-                if (this.initialized)
+                if (this.m_initialized)
                 {
                     try
                     {
@@ -173,20 +170,20 @@ namespace CUETools.Codecs.LAME
                         }
                         finally
                         {
-                            lame_close(handle);
+                            lame_close(m_handle);
                         }
                     }
                     finally
                     {
-                        handle = IntPtr.Zero;
-                        if (this.outputPath != null)
+                        m_handle = IntPtr.Zero;
+                        if (this.m_outputPath != null)
                         {
-                            this.outputStream.Close();
+                            this.m_outputStream.Close();
                         }
                     }
                 }
 
-                this.closed = true;
+                this.m_closed = true;
             }
         }
 
@@ -197,16 +194,16 @@ namespace CUETools.Codecs.LAME
                 uint lametagFrameResult;
                 unsafe
                 {
-                    fixed (byte* outputBufferPtr = outputBuffer)
+                    fixed (byte* outputBufferPtr = m_outputBuffer)
                     {
-                        lametagFrameResult = lame_get_lametag_frame(this.handle, (IntPtr)outputBufferPtr, (uint)outputBuffer.Length);
+                        lametagFrameResult = lame_get_lametag_frame(this.m_handle, (IntPtr)outputBufferPtr, (uint)m_outputBuffer.Length);
                     }
                 }
                 if (lametagFrameResult < 0)
                 {
                     throw new LameException("Error getting lametag frame.");
                 }
-                if (lametagFrameResult <= outputBuffer.Length)
+                if (lametagFrameResult <= m_outputBuffer.Length)
                 {
                     return (int)lametagFrameResult;
                 }
@@ -220,83 +217,64 @@ namespace CUETools.Codecs.LAME
             {
                 fixed (byte* outputBufferPtr = outputBuffer)
                 {
-                    return lame_get_lametag_frame(handle, (IntPtr)outputBufferPtr, (uint)outputBuffer.Length);
+                    return lame_get_lametag_frame(m_handle, (IntPtr)outputBufferPtr, (uint)outputBuffer.Length);
                 }
             }
         }
 
         private void EnsureInitialized()
         {
-            if (!this.initialized)
+            if (!this.m_initialized)
             {
-                var config = this.Config;
+                m_handle = lame_init();
 
-                handle = lame_init();
+                lame_set_bWriteVbrTag(m_handle, 1);
+                lame_set_write_id3tag_automatic(m_handle, 0);
 
-                lame_set_bWriteVbrTag(handle, 1);
-                lame_set_write_id3tag_automatic(handle, 0);
+                lame_set_num_channels(m_handle, this.m_pcm.ChannelCount);
+                lame_set_in_samplerate(m_handle, this.m_pcm.SampleRate);
 
-                lame_set_num_channels(handle, this.pcm.ChannelCount);
-                lame_set_in_samplerate(handle, this.pcm.SampleRate);
-
-                lame_set_quality(handle, (int)config.Quality);
-
-                if (this.finalSampleCount != 0)
+                if (this.m_finalSampleCount != 0)
                 {
-                    lame_set_num_samples(handle, this.finalSampleCount);
+                    lame_set_num_samples(m_handle, this.m_finalSampleCount);
                 }
 
-                lame_set_VBR(this.handle, (int)config.VbrMode);
+                m_settings.Apply(m_handle);
 
-                switch (config.VbrMode)
-                {
-                    case LameVbrMode.Abr:
-                        lame_set_VBR_mean_bitrate_kbps(handle, config.Bitrate);
-                        break;
-                    case LameVbrMode.Default:
-                        lame_set_VBR_quality(handle, config.VbrQuality);
-                        break;
-                    case LameVbrMode.Off:
-                        lame_set_brate(handle, config.Bitrate);
-                        break;
-                    default:
-                        throw new ArgumentException("Only ABR, Default and Off VBR modes are supported.");
-                }
-
-                if (lame_init_params(handle) != 0)
+                if (lame_init_params(m_handle) != 0)
                 {
                     throw new LameException("lame_init_params failed");
                 }
 
-                this.initialized = true;
+                this.m_initialized = true;
             }
         }
 
         public void Delete()
         {
-            if (this.outputPath == null)
+            if (this.m_outputPath == null)
             {
                 throw new InvalidOperationException("This writer was not created from file.");
             }
 
-            if (!closed)
+            if (!m_closed)
             {
                 this.Close();
-                File.Delete(this.outputPath);
+                File.Delete(this.m_outputPath);
             }
         }
 
         private void EnsureOutputBufferSize(int requiredSize)
         {
-            if (this.outputBuffer == null || this.outputBuffer.Length < requiredSize)
+            if (this.m_outputBuffer == null || this.m_outputBuffer.Length < requiredSize)
             {
-                this.outputBuffer = new byte[requiredSize];
+                this.m_outputBuffer = new byte[requiredSize];
             }
         }
 
         public void Write(AudioBuffer buffer)
         {
-            if (this.closed)
+            if (this.m_closed)
             {
                 throw new InvalidOperationException("Writer already closed.");
             }
@@ -314,9 +292,9 @@ namespace CUETools.Codecs.LAME
             {
                 fixed (byte* bytesPtr = bytes)
                 {
-                    fixed (byte* outputBufferPtr = this.outputBuffer)
+                    fixed (byte* outputBufferPtr = this.m_outputBuffer)
                     {
-                        result = lame_encode_buffer_interleaved(handle, (IntPtr)bytesPtr, buffer.Length, (IntPtr)outputBufferPtr, outputBuffer.Length);
+                        result = lame_encode_buffer_interleaved(m_handle, (IntPtr)bytesPtr, buffer.Length, (IntPtr)outputBufferPtr, m_outputBuffer.Length);
                     }
                 }
             }
@@ -340,7 +318,7 @@ namespace CUETools.Codecs.LAME
 
             if (result > 0)
             {
-                this.outputStream.Write(this.outputBuffer, 0, result);
+                this.m_outputStream.Write(this.m_outputBuffer, 0, result);
             }
         }
     }
