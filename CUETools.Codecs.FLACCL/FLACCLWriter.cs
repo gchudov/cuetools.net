@@ -52,6 +52,13 @@ namespace CUETools.Codecs.FLACCL
             return this.AllowNonSubset ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
         }
 
+        public override bool IsValid()
+        {
+            return EncoderModeIndex >= 0 && Padding >= 0 &&
+                (BlockSize == 0 || (BlockSize >= 256 && BlockSize <= Flake.MAX_BLOCKSIZE)) &&
+                (AllowNonSubset || EncoderModeIndex <= 8);
+        }
+
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
 		[SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
@@ -212,7 +219,7 @@ namespace CUETools.Codecs.FLACCL
 
 		int samplesInBuffer = 0;
 
-		int _blocksize = 0;
+		internal int m_blockSize = 0;
 		int _totalSize = 0;
 
 		Crc8 crc8;
@@ -257,7 +264,6 @@ namespace CUETools.Codecs.FLACCL
 			_IO = IO;
 
 			eparams.flake_set_defaults(7);
-			eparams.padding_size = _settings.Padding;
 
 			crc8 = new Crc8();
 		}
@@ -275,36 +281,19 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
-		public long Padding
-		{
-			get
-			{
-				return eparams.padding_size;
-			}
-			set
-			{
-				eparams.padding_size = value;
-			}
-		}
-
-		internal FLACCLWriterSettings _settings = new FLACCLWriterSettings();
+		internal FLACCLWriterSettings m_settings = new FLACCLWriterSettings();
 
         public AudioEncoderSettings Settings
 		{
 			get
 			{
-				return _settings;
+				return m_settings;
 			}
 			set
 			{
-				if (value as FLACCLWriterSettings == null)
-					throw new Exception("Unsupported options " + value);
-				_settings = value as FLACCLWriterSettings;
-                var _compressionLevel = _settings.EncoderModeIndex;
-                if (_compressionLevel < 0 || _compressionLevel > 11)
-                    throw new Exception("unsupported compression level");
+                m_settings = value.Clone<FLACCLWriterSettings>();
+                var _compressionLevel = m_settings.EncoderModeIndex;
                 eparams.flake_set_defaults(_compressionLevel);
-                eparams.padding_size = _settings.Padding;
             }
 		}
 
@@ -317,12 +306,12 @@ namespace CUETools.Codecs.FLACCL
 		{
 			if (inited)
 			{
-				int nFrames = samplesInBuffer / eparams.block_size;
+				int nFrames = samplesInBuffer / m_blockSize;
 				if (nFrames > 0)
 					do_output_frames(nFrames);
 				if (samplesInBuffer > 0)
 				{
-					eparams.block_size = samplesInBuffer;
+                    m_blockSize = samplesInBuffer;
 					do_output_frames(1);
 				}
 				if (task2.frameCount > 0)
@@ -422,16 +411,6 @@ namespace CUETools.Codecs.FLACCL
 		public long FinalSampleCount
 		{
 			set { sample_count = (int)value; }
-		}
-
-		public long BlockSize
-		{
-			set {
-				if (value < 256 || value > MAX_BLOCKSIZE )
-					throw new Exception("unsupported BlockSize value");
-				_blocksize = (int)value; 
-			}
-			get { return _blocksize == 0 ? eparams.block_size : _blocksize; }
 		}
 
 		public StereoMethod StereoMethod
@@ -1723,8 +1702,10 @@ namespace CUETools.Codecs.FLACCL
 			{
 				if (OpenCL.NumberOfPlatforms < 1)
 					throw new Exception("no opencl platforms found");
+                if (!m_settings.IsValid())
+                    throw new Exception("unsupported encoder settings");
 
-				int groupSize = _settings.DeviceType == OpenCLDeviceType.CPU ? 1 : _settings.GroupSize;
+				int groupSize = m_settings.DeviceType == OpenCLDeviceType.CPU ? 1 : m_settings.GroupSize;
 				OCLMan = new OpenCLManager();
 				// Attempt to save binaries after compilation, as well as load precompiled binaries
 				// to avoid compilation. Usually you'll want this to be true. 
@@ -1747,7 +1728,7 @@ namespace CUETools.Codecs.FLACCL
 				OCLMan.SourcePath = System.IO.Path.GetDirectoryName(GetType().Assembly.Location);
 				OCLMan.BinaryPath = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CUE Tools"), "OpenCL");
 				int platformId = 0;
-				if (_settings.Platform != null)
+				if (m_settings.Platform != null)
 				{
 					platformId = -1;
 					string platforms = "";
@@ -1755,32 +1736,26 @@ namespace CUETools.Codecs.FLACCL
 					{
 						var platform = OpenCL.GetPlatform(i);
 						platforms += " \"" + platform.Name + "\"";
-						if (platform.Name.Equals(_settings.Platform, StringComparison.InvariantCultureIgnoreCase))
+						if (platform.Name.Equals(m_settings.Platform, StringComparison.InvariantCultureIgnoreCase))
 						{
 							platformId = i;
 							break;
 						}
 					}
 					if (platformId < 0)
-						throw new Exception("unknown platform \"" + _settings.Platform + "\". Platforms available:" + platforms);
+						throw new Exception("unknown platform \"" + m_settings.Platform + "\". Platforms available:" + platforms);
 				}
-				OCLMan.CreateDefaultContext(platformId, (DeviceType)_settings.DeviceType);
+				OCLMan.CreateDefaultContext(platformId, (DeviceType)m_settings.DeviceType);
 
-				this.framesPerTask = (int)OCLMan.Context.Devices[0].MaxComputeUnits * Math.Max(1, _settings.TaskSize / channels);
+				this.framesPerTask = (int)OCLMan.Context.Devices[0].MaxComputeUnits * Math.Max(1, m_settings.TaskSize / channels);
 
-				bool UseGPUOnly = _settings.GPUOnly && OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics");
-				bool UseGPURice = UseGPUOnly && _settings.DoRice;
+				bool UseGPUOnly = m_settings.GPUOnly && OCLMan.Context.Devices[0].Extensions.Contains("cl_khr_local_int32_extended_atomics");
+				bool UseGPURice = UseGPUOnly && m_settings.DoRice;
 
-				if (_blocksize == 0)
-				{
-					if (eparams.block_size == 0)
-						eparams.block_size = select_blocksize(sample_rate, eparams.block_time_ms);
-					_blocksize = eparams.block_size;
-				}
-				else
-					eparams.block_size = _blocksize;
+                m_blockSize = m_settings.BlockSize != 0 ? m_settings.BlockSize : 
+                    select_blocksize(sample_rate, eparams.block_time_ms);
 
-				int maxBS = 1 << (BitReader.log2i(eparams.block_size - 1) + 1);
+				int maxBS = 1 << (BitReader.log2i(m_blockSize - 1) + 1);
 
 				// The Defines string gets prepended to any and all sources that are compiled
 				// and serve as a convenient way to pass configuration information to the compilation process
@@ -1796,8 +1771,8 @@ namespace CUETools.Codecs.FLACCL
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
-					(_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
-					_settings.Defines + "\n";
+					(m_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
+					m_settings.Defines + "\n";
 
 				var exts = new string[] { "cl_khr_local_int32_base_atomics", "cl_khr_local_int32_extended_atomics", "cl_khr_fp64", "cl_amd_fp64" };
 				foreach (string extension in exts)
@@ -1848,7 +1823,7 @@ namespace CUETools.Codecs.FLACCL
 
 				if (_IO == null)
 					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
-				int header_size = flake_encode_init();
+                int header_size = flake_encode_init();
 				_IO.Write(header, 0, header_size);
 				_totalSize += header_size;
 				if (_IO.CanSeek)
@@ -1856,9 +1831,9 @@ namespace CUETools.Codecs.FLACCL
 
 				task1 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
 				task2 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
-				if (_settings.CPUThreads > 0)
+				if (m_settings.CPUThreads > 0)
 				{
-					cpu_tasks = new FLACCLTask[_settings.CPUThreads];
+					cpu_tasks = new FLACCLTask[m_settings.CPUThreads];
 					for (int i = 0; i < cpu_tasks.Length; i++)
 						cpu_tasks[i] = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
 				}
@@ -1873,7 +1848,7 @@ namespace CUETools.Codecs.FLACCL
 			int pos = 0;
 			while (pos < buff.Length)
 			{
-				int block = Math.Min(buff.Length - pos, eparams.block_size * framesPerTask - samplesInBuffer);
+				int block = Math.Min(buff.Length - pos, m_blockSize * framesPerTask - samplesInBuffer);
 
 				fixed (byte* buf = buff.Bytes)
 					AudioSamples.MemCpy(((byte*)task1.clSamplesBytesPtr) + samplesInBuffer * _pcm.BlockAlign, buf + pos * _pcm.BlockAlign, block * _pcm.BlockAlign);
@@ -1881,7 +1856,7 @@ namespace CUETools.Codecs.FLACCL
 				samplesInBuffer += block;
 				pos += block;
 
-				int nFrames = samplesInBuffer / eparams.block_size;
+                int nFrames = samplesInBuffer / m_blockSize;
 				if (nFrames >= framesPerTask)
 					do_output_frames(nFrames);
 			}
@@ -1959,7 +1934,7 @@ namespace CUETools.Codecs.FLACCL
 
 		public unsafe void do_output_frames(int nFrames)
 		{
-			send_to_GPU(task1, nFrames, eparams.block_size);
+            send_to_GPU(task1, nFrames, m_blockSize);
 			run_GPU_task(task1);
 			if (task2.frameCount > 0)
 				task2.openCLCQ.Finish();
@@ -1986,7 +1961,7 @@ namespace CUETools.Codecs.FLACCL
 					write_result(task2);
 				}
 			}
-			int bs = eparams.block_size * nFrames;
+            int bs = m_blockSize * nFrames;
 			samplesInBuffer -= bs;
 			if (samplesInBuffer > 0)
 				AudioSamples.MemCpy(
@@ -2037,9 +2012,9 @@ namespace CUETools.Codecs.FLACCL
 			if (eparams.variable_block_size > 0)
 				bitwriter.writebits(16, 0);
 			else
-				bitwriter.writebits(16, eparams.block_size);
+                bitwriter.writebits(16, m_blockSize);
 
-			bitwriter.writebits(16, eparams.block_size);
+            bitwriter.writebits(16, m_blockSize);
 			bitwriter.writebits(24, 0);
 			bitwriter.writebits(24, max_frame_size);
 			bitwriter.writebits(20, sample_rate);
@@ -2144,14 +2119,14 @@ namespace CUETools.Codecs.FLACCL
 				header_size += write_seekpoints(header, header_size, last);
 
 			// vorbis comment
-			if (eparams.padding_size == 0) last = 1;
+			if (m_settings.Padding == 0) last = 1;
 			header_size += write_vorbis_comment(header, header_size, last);
 
 			// padding
-			if (eparams.padding_size > 0)
+            if (m_settings.Padding > 0)
 			{
 				last = 1;
-				header_size += write_padding(header, header_size, last, eparams.padding_size);
+                header_size += write_padding(header, header_size, last, m_settings.Padding);
 			}
 
 			return header_size;
@@ -2192,9 +2167,9 @@ namespace CUETools.Codecs.FLACCL
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
 			if (channels == 2)
-				max_frame_size = 16 + ((eparams.block_size * (int)(bits_per_sample + bits_per_sample + 1) + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * (int)(bits_per_sample + bits_per_sample + 1) + 7) >> 3);
 			else
-				max_frame_size = 16 + ((eparams.block_size * channels * (int)bits_per_sample + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * channels * (int)bits_per_sample + 7) >> 3);
 
 			if (_IO.CanSeek && eparams.do_seektable && sample_count > 0)
 			{
@@ -2212,11 +2187,11 @@ namespace CUETools.Codecs.FLACCL
 			}
 
 			// output header bytes
-			header = new byte[eparams.padding_size + 1024 + (seek_table == null ? 0 : seek_table.Length * 18)];
+            header = new byte[m_settings.Padding + 1024 + (seek_table == null ? 0 : seek_table.Length * 18)];
 			header_len = write_headers();
 
 			// initialize CRC & MD5
-			if (_IO.CanSeek && _settings.DoMD5)
+			if (_IO.CanSeek && m_settings.DoMD5)
 				md5 = new MD5CryptoServiceProvider();
 
 			return header_len;
@@ -2242,22 +2217,11 @@ namespace CUETools.Codecs.FLACCL
 		// 1 = mid-side encoding
 		public bool do_midside;
 
-		// block size in samples
-		// set by the user prior to calling flake_encode_init
-		// if set to 0, a block size is chosen based on block_time_ms
-		// can also be changed by user before encoding a frame
-		public int block_size;
-
 		// block time in milliseconds
 		// set by the user prior to calling flake_encode_init
 		// used to calculate block_size based on sample rate
 		// can also be changed by user before encoding a frame
 		public int block_time_ms;
-
-		// padding size in bytes
-		// set by the user prior to calling flake_encode_init
-		// if set to less than 0, defaults to 4096
-		public long padding_size;
 
 		// minimum LPC order
 		// set by user prior to calling flake_encode_init
@@ -2334,7 +2298,6 @@ namespace CUETools.Codecs.FLACCL
 			// default to level 5 params
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
 			do_midside = true;
-			block_size = 0;
 			block_time_ms = 100;
 			min_fixed_order = 0;
 			max_fixed_order = 4;
@@ -2565,7 +2528,7 @@ namespace CUETools.Codecs.FLACCL
 		{
 			this.UseGPUOnly = gpuOnly;
 			this.UseGPURice = gpuOnly && gpuRice;
-			this.UseMappedMemory = writer._settings.MappedMemory || writer._settings.DeviceType == OpenCLDeviceType.CPU;
+			this.UseMappedMemory = writer.m_settings.MappedMemory || writer.m_settings.DeviceType == OpenCLDeviceType.CPU;
 			this.groupSize = groupSize;
 			this.channels = channels;
 			this.channelsCount = channelsCount;
@@ -2580,7 +2543,7 @@ namespace CUETools.Codecs.FLACCL
 
             int MAX_ORDER = this.writer.eparams.max_prediction_order;
 			int MAX_FRAMES = this.writer.framesPerTask;
-			int MAX_CHANNELSIZE = MAX_FRAMES * ((writer.eparams.block_size + 3) & ~3);
+			int MAX_CHANNELSIZE = MAX_FRAMES * ((writer.m_blockSize + 3) & ~3);
 			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
 			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * MAX_FRAMES;
 			int samplesBufferLen = writer.PCM.BlockAlign * MAX_CHANNELSIZE * channelsCount;
@@ -2699,7 +2662,7 @@ namespace CUETools.Codecs.FLACCL
 			frame = new FlacFrame(channelsCount);
 			frame.writer = new BitWriter(outputBuffer, 0, outputBuffer.Length);
 
-			if (writer._settings.DoVerify)
+			if (writer.m_settings.DoVerify)
 				verify = new FlakeReader(new AudioPCMConfig((int)bits_per_sample, channels, 44100));
 		}
 

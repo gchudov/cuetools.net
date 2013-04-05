@@ -516,8 +516,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			_path = path;
 			_finalSampleCount = 0;
 			_samplesWritten = 0;
-			_paddingLength = 8192;
-			_blockSize = 0;
 
 			_encoder = FLAC__stream_encoder_new();
 
@@ -558,14 +556,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				if (_initialized)
 					throw gcnew Exception("final sample count cannot be changed after encoding begins");
 				_finalSampleCount = value;
-			}
-		}
-
-		virtual property Int64 BlockSize
-		{
-			void set(Int64 value) 
-			{
-				_blockSize = value;
 			}
 		}
 
@@ -617,20 +607,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			
 			void set(AudioEncoderSettings^ value)
 			{
-			    if (value == nullptr || value->GetType() != FLACWriterSettings::typeid)
-				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
-			    _settings = (FLACWriterSettings^)value;
-			}
-		}
-
-		virtual property __int64 Padding {
-			__int64 get() {
-				return _paddingLength;
-			}
-			void set(__int64 value) {
-				if (value < 0)
-					throw gcnew Exception("invalid padding length");
-				_paddingLength = value;
+				_settings = value->Clone<FLACWriterSettings^>();
 			}
 		}
 
@@ -639,9 +616,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		FLAC__StreamEncoder *_encoder;
 		bool _initialized;
 		String^ _path;
-		Int64 _finalSampleCount, _samplesWritten, _blockSize;
+		Int64 _finalSampleCount, _samplesWritten;
 		AudioPCMConfig^ _pcm;
-		__int64 _paddingLength;
 		FLAC__StreamMetadata **_metadataList;
 		int _metadataCount;
 
@@ -696,9 +672,9 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			//}
 			_metadataList[_metadataCount++] = vorbiscomment;
 	 
-			if (_paddingLength != 0) {
+			if (_settings->Padding != 0) {
 				padding = FLAC__metadata_object_new(FLAC__METADATA_TYPE_PADDING);
-				padding->length = (int)_paddingLength;
+				padding->length = _settings->Padding;
 				_metadataList[_metadataCount++] = padding;
 			}
 
@@ -716,8 +692,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 
 			FLAC__stream_encoder_set_compression_level(_encoder, _settings->EncoderModeIndex);
 
-			if (_blockSize > 0)
-				FLAC__stream_encoder_set_blocksize(_encoder, (unsigned)_blockSize);
+			if (_settings->BlockSize > 0)
+				FLAC__stream_encoder_set_blocksize(_encoder, (unsigned)_settings->BlockSize);
 
 			pathChars = Marshal::StringToHGlobalUni(_path);
 			errno_t err = _wfopen_s(&hFile, (const wchar_t*)pathChars.ToPointer(), L"w+b");

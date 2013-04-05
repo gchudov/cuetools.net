@@ -31,11 +31,6 @@ namespace CUETools.Codecs
             set { _finalSampleCount = value; }
         }
 
-        public long BlockSize
-        {
-            set { }
-        }
-
         public AudioEncoderSettings Settings
         {
             get
@@ -47,11 +42,6 @@ namespace CUETools.Codecs
                 if (value != null && value.GetType() != typeof(AudioEncoderSettings))
                     throw new Exception("Unsupported options " + value);
             }
-        }
-
-        public long Padding
-        {
-            set { }
         }
 
         public AudioPCMConfig PCM

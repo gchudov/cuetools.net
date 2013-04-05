@@ -351,8 +351,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 
 			_path = path;
 
-			_blockSize = 0;
-
 			IntPtr pathChars = Marshal::StringToHGlobalUni(path);
 			_hFile = _wfopen((const wchar_t*)pathChars.ToPointer(), L"w+b");
 			Marshal::FreeHGlobal(pathChars);
@@ -400,14 +398,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
-		virtual property Int64 BlockSize
-		{
-			void set(Int64 value) 
-			{
-				_blockSize = value;
-			}
-		}
-
 		virtual property AudioPCMConfig^ PCM
 		{
 			AudioPCMConfig^ get() { return _pcm;  }
@@ -452,12 +442,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			} 
 		}
 
-		virtual property __int64 Padding
-		{
-			void set(__int64 value) {
-			}
-		}
-
 		virtual property AudioEncoderSettings^ Settings
 		{
 			AudioEncoderSettings^ get()
@@ -467,9 +451,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			
 			void set(AudioEncoderSettings^ value)
 			{
-			    if (value == nullptr || value->GetType() != WavPackWriterSettings::typeid)
-				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
-			    _settings = (WavPackWriterSettings^)value;
+				_settings = value->Clone<WavPackWriterSettings^>();
 			}
 		}
 
@@ -487,7 +469,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		bool _initialized;
 		WavpackContext *_wpc;
 		Int32 _finalSampleCount, _samplesWritten;
-		Int32 _blockSize;
 		String^ _path;
 		MD5^ _md5hasher;
 		array<int,2>^ _shiftedSampleBuffer;
@@ -522,8 +503,8 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			    _md5hasher = gcnew MD5CryptoServiceProvider ();
 			    config.flags |= CONFIG_MD5_CHECKSUM;
 			}
-			config.block_samples = (int)_blockSize;
-			if (_blockSize > 0 && _blockSize < 2048)
+			config.block_samples = (int)_settings->BlockSize;
+			if (_settings->BlockSize > 0 && _settings->BlockSize < 2048)
 				config.flags |= CONFIG_MERGE_BLOCKS;
 
 			if (!WavpackSetConfiguration(_wpc, &config, (_finalSampleCount == 0) ? -1 : _finalSampleCount)) {

@@ -28,28 +28,19 @@ namespace CUETools.Codecs
             set { _finalSampleCount = wrt.FinalSampleCount = value; }
         }
 
-        public long BlockSize
-        {
-            set { }
-        }
-
         // !!!! Must not start the process in constructor, so that we can set CompressionLevel via Settings!
+        private AudioEncoderSettings m_settings = new AudioEncoderSettings();
+
         public AudioEncoderSettings Settings
         {
             get
             {
-                return new AudioEncoderSettings();
+                return m_settings;
             }
             set
             {
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-                    throw new Exception("Unsupported options " + value);
+                m_settings = value.Clone<AudioEncoderSettings>();
             }
-        }
-
-        public long Padding
-        {
-            set { }
         }
 
         public AudioPCMConfig PCM

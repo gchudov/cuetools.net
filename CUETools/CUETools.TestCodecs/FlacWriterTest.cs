@@ -39,8 +39,8 @@ namespace CUETools.TestCodecs
             FLACWriter target;
 
             target = new FLACWriter("flacwriter2.flac", buff.PCM);
-            target.Padding = 1;
-            target.BlockSize = 32;
+            target.Settings.Padding = 1;
+            target.Settings.BlockSize = 32;
             //target.Vendor = "CUETools";
             //target.CreationTime = DateTime.Parse("15 Aug 1976");
             target.FinalSampleCount = buff.Length;

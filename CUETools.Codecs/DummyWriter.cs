@@ -37,16 +37,6 @@ namespace CUETools.Codecs
             }
         }
 
-        public long Padding
-        {
-            set { }
-        }
-
-        public long BlockSize
-        {
-            set { }
-        }
-
         public AudioPCMConfig PCM
         {
             get { return _pcm; }

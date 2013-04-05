@@ -22,11 +22,6 @@ namespace CUETools.DSP.Mixer
             set { throw new NotSupportedException(); }
         }
 
-        public long BlockSize
-        {
-            set { throw new NotSupportedException(); }
-        }
-
         public AudioEncoderSettings Settings
         {
             get
@@ -38,11 +33,6 @@ namespace CUETools.DSP.Mixer
                 if (value != null && value.GetType() != typeof(AudioEncoderSettings))
                     throw new Exception("Unsupported options " + value);
             }
-        }
-
-        public long Padding
-        {
-            set { }
         }
 
         public AudioPCMConfig PCM

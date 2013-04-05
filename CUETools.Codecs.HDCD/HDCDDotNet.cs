@@ -89,19 +89,9 @@ namespace HDCDDotNet
 			set { throw new Exception("unsupported"); }
 		}
 
-		public long BlockSize
-		{
-			set { throw new Exception("unsupported"); }
-		}
-
 		public string Path
 		{
 			get { throw new Exception("unsupported"); }
-		}
-
-		public long Padding
-		{
-			set { throw new Exception("unsupported"); }
 		}
 
         public AudioEncoderSettings Settings

@@ -484,11 +484,6 @@ namespace CUETools.Codecs.CoreAudio
 			}
 		}
 
-		public long BlockSize
-		{
-			set { }
-		}
-
 		public long FinalSampleCount
 		{
 			set { ; }
@@ -505,11 +500,6 @@ namespace CUETools.Codecs.CoreAudio
                 if (value != null && value.GetType() != typeof(AudioEncoderSettings))
 					throw new Exception("Unsupported options " + value);
 			}
-		}
-
-		public long Padding
-		{
-			set { }
 		}
 
 		public AudioPCMConfig PCM

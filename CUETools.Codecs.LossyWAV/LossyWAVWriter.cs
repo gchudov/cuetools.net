@@ -71,11 +71,6 @@ namespace CUETools.Codecs.LossyWAV
             }
         }
 
-        public long BlockSize
-        {
-            set { }
-        }
-
         public AudioEncoderSettings Settings
         {
             get
@@ -87,11 +82,6 @@ namespace CUETools.Codecs.LossyWAV
                 if (value != null && value.GetType() != typeof(AudioEncoderSettings))
                     throw new Exception("Unsupported options " + value);
             }
-        }
-
-        public long Padding
-        {
-            set { }
         }
 
         public AudioPCMConfig PCM
@@ -488,8 +478,8 @@ namespace CUETools.Codecs.LossyWAV
             string factString = "lossyWAV " + version_string + " @ " + datestamp + ", " + parameter_string + "\r\n\0";
             if (_audioDest != null && _audioDest is WAVWriter) ((WAVWriter)_audioDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
             if (_lwcdfDest != null && _lwcdfDest is WAVWriter) ((WAVWriter)_lwcdfDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
-            if (_audioDest != null) _audioDest.BlockSize = codec_block_size;
-            if (_lwcdfDest != null) _lwcdfDest.BlockSize = codec_block_size * 2;
+            if (_audioDest != null) _audioDest.Settings.BlockSize = codec_block_size;
+            if (_lwcdfDest != null) _lwcdfDest.Settings.BlockSize = codec_block_size * 2;
         }
 
         double fill_fft_input(int actual_analysis_block_start, int this_fft_length, int channel)

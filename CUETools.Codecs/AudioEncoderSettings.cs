@@ -13,24 +13,54 @@ namespace CUETools.Codecs
             // Iterate through each property and call ResetValue()
             foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
                 property.ResetValue(this);
-            this.supported_modes = "";
+            this.m_supported_modes = "";
             this.EncoderMode = "";
         }
 
-        public AudioEncoderSettings(string _supported_modes, string _default_mode)
+        public AudioEncoderSettings(string supported_modes, string default_mode)
         {
             // Iterate through each property and call ResetValue()
             foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
                 property.ResetValue(this);
-            this.supported_modes = _supported_modes;
-            this.EncoderMode =  _default_mode;
+            this.m_supported_modes = supported_modes;
+            this.EncoderMode =  default_mode;
         }
 
-        private string supported_modes;
+        private string m_supported_modes;
 
         public virtual string GetSupportedModes()
         {
-            return this.supported_modes;
+            return this.m_supported_modes;
+        }
+
+        public virtual bool IsValid()
+        {
+            return BlockSize == 0 && Padding >= 0;
+        }
+
+        public T Clone<T>() where T : AudioEncoderSettings
+        {
+            if (this as T == null)
+                throw new Exception("Unsupported options " + this);
+            var result = this.MemberwiseClone() as T;
+            if (!result.IsValid())
+                throw new Exception("unsupported encoder settings");
+            return result;
+        }
+
+        [Browsable(false)]
+        [DefaultValue(0)]
+        public int BlockSize
+        {
+            get; set;
+        }
+
+        [Browsable(false)]
+        [DefaultValue(4096)]
+        public int Padding
+        {
+            get;
+            set;
         }
 
         [Browsable(false)]

@@ -81,14 +81,13 @@ namespace CUETools.FLACCL.cmd
 			string input_file = null;
 			string output_file = null;
 			string device_type = null;
-			int min_partition_order = -1, max_partition_order = -1,
-				min_lpc_order = -1, max_lpc_order = -1,
-				min_fixed_order = -1, max_fixed_order = -1,
-				min_precision = -1, max_precision = -1,
-				orders_per_window = -1, orders_per_channel = -1,
-				blocksize = -1;
+            int min_partition_order = -1, max_partition_order = -1,
+                min_lpc_order = -1, max_lpc_order = -1,
+                min_fixed_order = -1, max_fixed_order = -1,
+                min_precision = -1, max_precision = -1,
+                orders_per_window = -1, orders_per_channel = -1;
 			int input_len = 4096, input_val = 0, input_bps = 16, input_ch = 2, input_rate = 44100;
-			int level = -1, padding = -1, vbr_mode = -1;
+			int level = -1, vbr_mode = -1;
 			bool do_seektable = true;
 			bool estimate_window = false;
 			bool buffered = false;
@@ -184,9 +183,9 @@ namespace CUETools.FLACCL.cmd
 				else if (args[arg] == "--estimate-window")
 					estimate_window = true;
 				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
-					blocksize = intarg;
+                    settings.BlockSize = intarg;
 				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
-					padding = intarg;
+                    settings.Padding = intarg;
                 else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
                 {
                     ok = level >= 0 && level <= 11;
@@ -260,7 +259,7 @@ namespace CUETools.FLACCL.cmd
 			{
 				if (device_type != null)
 					settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
-				encoder.Settings = settings;
+                encoder.Settings = settings;
 				if (stereo_method != null)
 					encoder.StereoMethod = Flake.LookupStereoMethod(stereo_method);
 				if (window_function != null)
@@ -281,10 +280,6 @@ namespace CUETools.FLACCL.cmd
 					encoder.MaxPrecisionSearch = max_precision;
 				if (min_precision >= 0)
 					encoder.MinPrecisionSearch = min_precision;
-				if (blocksize >= 0)
-					encoder.BlockSize = blocksize;
-				if (padding >= 0)
-					encoder.Padding = padding;
 				if (vbr_mode >= 0)
 					encoder.VBRMode = vbr_mode;
 				if (orders_per_window >= 0)
@@ -386,7 +381,7 @@ namespace CUETools.FLACCL.cmd
 					encoder.MaxLPCOrder,
 					encoder.MinPrecisionSearch,
 					encoder.MaxPrecisionSearch,
-					encoder.BlockSize,
+					encoder.Settings.BlockSize,
 					encoder.VBRMode,
 					encoder.MaxFixedOrder - encoder.MinFixedOrder + 1,
 					encoder.DoConstant ? "c" : ""

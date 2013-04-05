@@ -49,6 +49,13 @@ namespace CUETools.Codecs.FLAKE
             return this.AllowNonSubset ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
         }
 
+        public override bool IsValid()
+        {
+            return EncoderModeIndex >= 0 && Padding >= 0 &&
+                (BlockSize == 0 || (BlockSize >= 256 && BlockSize <= Flake.MAX_BLOCKSIZE)) &&
+                (AllowNonSubset || EncoderModeIndex <= 8);
+        }
+
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
 		[SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
@@ -120,7 +127,7 @@ namespace CUETools.Codecs.FLAKE
 		double[] windowScale;
 		int samplesInBuffer = 0;
 
-		int _blocksize = 0;
+		int m_blockSize = 0;
 		int _totalSize = 0;
 		int _windowsize = 0, _windowcount = 0;
 
@@ -158,7 +165,6 @@ namespace CUETools.Codecs.FLAKE
 			windowScale = new double[lpc.MAX_LPC_WINDOWS];
 
 			eparams.flake_set_defaults(7);
-			eparams.padding_size = 8192;
 
 			crc8 = new Crc8();
 			frame = new FlacFrame(channels * 2);
@@ -177,35 +183,19 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		FlakeWriterSettings _settings = new FlakeWriterSettings();
+		FlakeWriterSettings m_settings = new FlakeWriterSettings();
 
         public AudioEncoderSettings Settings
 		{
 			get
 			{
-				return _settings;
+				return m_settings;
 			}
 			set
 			{
-				if (value as FlakeWriterSettings == null)
-					throw new Exception("Unsupported options " + value);
-                _settings = value as FlakeWriterSettings;
-                var _compressionLevel = _settings.EncoderModeIndex;
-                if (_compressionLevel < 0 || _compressionLevel > 11)
-                    throw new Exception("unsupported compression level");
+                m_settings = value.Clone<FlakeWriterSettings>();
+                var _compressionLevel = m_settings.EncoderModeIndex;
                 eparams.flake_set_defaults(_compressionLevel);
-			}
-		}
-
-		public long Padding
-		{
-			get
-			{
-				return eparams.padding_size;
-			}
-			set
-			{
-				eparams.padding_size = (int)value;
 			}
 		}
 
@@ -222,7 +212,7 @@ namespace CUETools.Codecs.FLAKE
 			{
 				while (samplesInBuffer > 0)
 				{
-					eparams.block_size = samplesInBuffer;
+                    m_blockSize = samplesInBuffer;
 					output_frame();
 				}
 
@@ -292,12 +282,6 @@ namespace CUETools.Codecs.FLAKE
 		public long FinalSampleCount
 		{
 			set { sample_count = (int)value; }
-		}
-
-		public long BlockSize
-		{
-			set { _blocksize = (int)value; }
-			get { return _blocksize == 0 ? eparams.block_size : _blocksize; }
 		}
 
 		public OrderMethod OrderMethod
@@ -1632,7 +1616,7 @@ new int[] { // 30
 			fixed (int* s = samplesBuffer, r = residualBuffer)
 			fixed (float* window = windowBuffer)
 			{
-				frame.InitSize(eparams.block_size, eparams.variable_block_size != 0);
+				frame.InitSize(m_blockSize, eparams.variable_block_size != 0);
 
 				if (frame.blocksize != _windowsize && frame.blocksize > 4)
 				{
@@ -1745,11 +1729,11 @@ new int[] { // 30
 			{
 				fixed (int* s = verifyBuffer, r = samplesBuffer)
 					for (int ch = 0; ch < channels; ch++)
-						AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, eparams.block_size);
+                        AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, m_blockSize);
 			}
 
 			int fs, bs;
-			//if (0 != eparams.variable_block_size && 0 == (eparams.block_size & 7) && eparams.block_size >= 128)
+            //if (0 != eparams.variable_block_size && 0 == (m_blockSize & 7) && m_blockSize >= 128)
 			//    fs = encode_frame_vbs();
 			//else
 			fs = encode_frame(out bs);
@@ -1788,13 +1772,13 @@ new int[] { // 30
 				}
 			}
 
-			if (bs < eparams.block_size)
+            if (bs < m_blockSize)
 			{
 				for (int ch = 0; ch < (channels == 2 ? 4 : channels); ch++)
-					Buffer.BlockCopy(samplesBuffer, (bs + ch * Flake.MAX_BLOCKSIZE) * sizeof(int), samplesBuffer, ch * Flake.MAX_BLOCKSIZE * sizeof(int), (eparams.block_size - bs) * sizeof(int));
+                    Buffer.BlockCopy(samplesBuffer, (bs + ch * Flake.MAX_BLOCKSIZE) * sizeof(int), samplesBuffer, ch * Flake.MAX_BLOCKSIZE * sizeof(int), (m_blockSize - bs) * sizeof(int));
 				//fixed (int* s = samplesBuffer)
 				//    for (int ch = 0; ch < channels; ch++)
-				//        AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, s + bs + ch * Flake.MAX_BLOCKSIZE, eparams.block_size - bs);
+                //        AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, s + bs + ch * Flake.MAX_BLOCKSIZE, m_blockSize - bs);
 			}
 
 			samplesInBuffer -= bs;
@@ -1808,6 +1792,8 @@ new int[] { // 30
 			{
 				if (_IO == null)
 					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
+                if (!m_settings.IsValid())
+                    throw new Exception("unsupported encoder settings");
                 inited = true;
                 int header_size = flake_encode_init();
 				_IO.Write(header, 0, header_size);
@@ -1820,13 +1806,13 @@ new int[] { // 30
 			int pos = 0;
 			while (pos < buff.Length)
 			{
-				int block = Math.Min(buff.Length - pos, eparams.block_size - samplesInBuffer);
+                int block = Math.Min(buff.Length - pos, m_blockSize - samplesInBuffer);
 
 				copy_samples(buff.Samples, pos, block);
 
 				pos += block;
 
-				while (samplesInBuffer >= eparams.block_size)
+                while (samplesInBuffer >= m_blockSize)
 					output_frame();
 			}
 
@@ -1871,9 +1857,9 @@ new int[] { // 30
 			if (eparams.variable_block_size > 0)
 				bitwriter.writebits(16, 0);
 			else
-				bitwriter.writebits(16, eparams.block_size);
+                bitwriter.writebits(16, m_blockSize);
 
-			bitwriter.writebits(16, eparams.block_size);
+            bitwriter.writebits(16, m_blockSize);
 			bitwriter.writebits(24, 0);
 			bitwriter.writebits(24, max_frame_size);
 			bitwriter.writebits(20, _pcm.SampleRate);
@@ -1979,14 +1965,14 @@ new int[] { // 30
 				header_size += write_seekpoints(header, header_size, last);
 
 			// vorbis comment
-			if (eparams.padding_size == 0) last = 1;
+			if (m_settings.Padding == 0) last = 1;
 			header_size += write_vorbis_comment(header, header_size, last);
 
 			// padding
-			if (eparams.padding_size > 0)
+			if (m_settings.Padding > 0)
 			{
 				last = 1;
-				header_size += write_padding(header, header_size, last, eparams.padding_size);
+				header_size += write_padding(header, header_size, last, m_settings.Padding);
 			}
 
 			return header_size;
@@ -2025,20 +2011,14 @@ new int[] { // 30
 			if (i == 8)
 				throw new Exception("non-standard bps");
 
-			if (_blocksize == 0)
-			{
-				if (eparams.block_size == 0)
-					eparams.block_size = select_blocksize(_pcm.SampleRate, eparams.block_time_ms);
-				_blocksize = eparams.block_size;
-			}
-			else
-				eparams.block_size = _blocksize;
+            m_blockSize = m_settings.BlockSize != 0 ? m_settings.BlockSize :
+                select_blocksize(_pcm.SampleRate, eparams.block_time_ms);
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
 			if (channels == 2)
-				max_frame_size = 16 + ((eparams.block_size * (_pcm.BitsPerSample + _pcm.BitsPerSample + 1) + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * (_pcm.BitsPerSample + _pcm.BitsPerSample + 1) + 7) >> 3);
 			else
-				max_frame_size = 16 + ((eparams.block_size * channels * _pcm.BitsPerSample + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * channels * _pcm.BitsPerSample + 7) >> 3);
 
 			if (_IO.CanSeek && eparams.do_seektable && sample_count > 0)
 			{
@@ -2056,14 +2036,14 @@ new int[] { // 30
 			}
 
 			// output header bytes
-			header = new byte[eparams.padding_size + 1024 + (seek_table == null ? 0 : seek_table.Length * 18)];
+			header = new byte[m_settings.Padding + 1024 + (seek_table == null ? 0 : seek_table.Length * 18)];
 			header_len = write_headers();
 
 			// initialize CRC & MD5
-			if (_IO.CanSeek && _settings.DoMD5)
+			if (_IO.CanSeek && m_settings.DoMD5)
 				md5 = new MD5CryptoServiceProvider();
 
-			if (_settings.DoVerify)
+			if (m_settings.DoVerify)
 			{
 				verify = new FlakeReader(_pcm);
 				verifyBuffer = new int[Flake.MAX_BLOCKSIZE * channels];
@@ -2110,22 +2090,11 @@ new int[] { // 30
 
 		public WindowMethod window_method;
 
-		// block size in samples
-		// set by the user prior to calling flake_encode_init
-		// if set to 0, a block size is chosen based on block_time_ms
-		// can also be changed by user before encoding a frame
-		public int block_size;
-
 		// block time in milliseconds
 		// set by the user prior to calling flake_encode_init
 		// used to calculate block_size based on sample rate
 		// can also be changed by user before encoding a frame
 		public int block_time_ms;
-
-		// padding size in bytes
-		// set by the user prior to calling flake_encode_init
-		// if set to less than 0, defaults to 4096
-		public int padding_size;
 
 		// minimum LPC order
 		// set by user prior to calling flake_encode_init
@@ -2206,7 +2175,6 @@ new int[] { // 30
 			order_method = OrderMethod.Akaike;
 			stereo_method = StereoMethod.Evaluate;
 			window_method = WindowMethod.Evaluate;
-			block_size = 0;
 			block_time_ms = 105;			
 			prediction_type = PredictionType.Search;
 			min_prediction_order = 1;

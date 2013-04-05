@@ -80,7 +80,7 @@ namespace CUETools.TestCodecs
 			ALACWriter target;
 
 			target = new ALACWriter("alacwriter1.m4a", null, buff.PCM);
-			target.Padding = 1;
+			target.Settings.Padding = 1;
 			target.Vendor = "CUETools";
 			target.CreationTime = DateTime.Parse("15 Aug 1976");
 			target.FinalSampleCount = buff.Length;
@@ -89,7 +89,7 @@ namespace CUETools.TestCodecs
 			CollectionAssert.AreEqual(File.ReadAllBytes("alac.m4a"), File.ReadAllBytes("alacwriter1.m4a"), "alacwriter1.m4a doesn't match.");
 
 			target = new ALACWriter("alacwriter0.m4a", null, buff.PCM);
-			target.Padding = 1;
+			target.Settings.Padding = 1;
 			target.Vendor = "CUETools";
 			target.CreationTime = DateTime.Parse("15 Aug 1976");
 			target.Write(buff);

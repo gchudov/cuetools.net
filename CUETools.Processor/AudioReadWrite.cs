@@ -98,8 +98,8 @@ namespace CUETools.Processor
 			else
 				throw new Exception("Unsupported audio type: " + path);
             dest.Settings = encoder.settings;
-			dest.FinalSampleCount = finalSampleCount;
-			dest.Padding = padding;
+            dest.Settings.Padding = padding;
+            dest.FinalSampleCount = finalSampleCount;
 			return dest;
 		}
 

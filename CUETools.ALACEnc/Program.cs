@@ -54,13 +54,14 @@ namespace CUETools.ALACEnc
 			string input_file = null;
 			string output_file = null;
 			int min_lpc_order = -1, max_lpc_order = -1,
-				blocksize = -1, estimation_depth = -1,
+				estimation_depth = -1,
 				min_modifier = -1, max_modifier = -1;
-			int level = -1, padding = -1;
+			int intarg = -1;
 			int initial_history = -1, history_mult = -1;
 			int adaptive_passes = -1;
-			bool do_seektable = true, do_verify = false;
+			bool do_seektable = true;
 			bool buffered = false;
+            var settings = new ALACWriterSettings();
 
 			for (int arg = 0; arg < args.Length; arg++)
 			{
@@ -72,7 +73,7 @@ namespace CUETools.ALACEnc
 				else if ((args[arg] == "-q" || args[arg] == "--quiet"))
 					quiet = true;
 				else if (args[arg] == "--verify")
-					do_verify = true;
+					settings.DoVerify = true;
 				else if (args[arg] == "--no-seektable")
 					do_seektable = false;
 				else if (args[arg] == "--buffered")
@@ -109,16 +110,25 @@ namespace CUETools.ALACEnc
 					ok = int.TryParse(args[arg], out history_mult);
 				else if ((args[arg] == "-e" || args[arg] == "--estimation-depth") && ++arg < args.Length)
 					ok = int.TryParse(args[arg], out estimation_depth);
-				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out blocksize);
-				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out padding);
-				else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
-					ok = level >= 0 && level <= 11;
-				else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
-					input_file = args[arg];
-				else
-					ok = false;
+                else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
+                {
+                    ok = int.TryParse(args[arg], out intarg);
+                    settings.BlockSize = intarg;
+                }
+                else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
+                {
+                    ok = int.TryParse(args[arg], out intarg);
+                    settings.Padding = intarg;
+                }
+                else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out intarg))
+                {
+                    ok = intarg >= 0 && intarg <= 11;
+                    settings.EncoderModeIndex = intarg;
+                }
+                else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
+                    input_file = args[arg];
+                else
+                    ok = false;
 				if (!ok)
 				{
 					Usage();
@@ -176,10 +186,6 @@ namespace CUETools.ALACEnc
 
 			try
 			{
-                var settings = new ALACWriterSettings();
-                settings.DoVerify = do_verify;
-                if (level >= 0)
-                    settings.EncoderModeIndex = level;
                 alac.Settings = settings;
 				if (stereo_method != null)
 					alac.StereoMethod = Alac.LookupStereoMethod(stereo_method);
@@ -201,16 +207,11 @@ namespace CUETools.ALACEnc
 					alac.HistoryMult = history_mult;
 				if (initial_history >= 0)
 					alac.InitialHistory = initial_history;
-				if (blocksize >= 0)
-					alac.BlockSize = blocksize;
 				if (estimation_depth >= 0)
 					alac.EstimationDepth = estimation_depth;
-				if (padding >= 0)
-					alac.Padding = padding;
 				if (adaptive_passes >= 0)
 					alac.AdaptivePasses = adaptive_passes;
 				alac.DoSeekTable = do_seektable;
-				(alac.Settings as ALACWriterSettings).DoVerify = do_verify;
 			}
 			catch (Exception ex)
 			{
@@ -285,7 +286,7 @@ namespace CUETools.ALACEnc
 					alac.MaxLPCOrder,
 					alac.MinHistoryModifier,
 					alac.MaxHistoryModifier,
-					alac.BlockSize
+					alac.Settings.BlockSize
 					);
 			}
 			//File.SetAttributes(output_file, FileAttributes.ReadOnly);

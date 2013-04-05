@@ -141,12 +141,13 @@ namespace CUETools.FlakeExe
                 min_lpc_order = -1, max_lpc_order = -1,
                 min_fixed_order = -1, max_fixed_order = -1,
                 min_precision = -1, max_precision = -1,
-                blocksize = -1, estimation_depth = -1;
+                estimation_depth = -1;
             int skip_a = 0, skip_b = 0;
-            int level = -1, padding = -1, vbr_mode = -1, magic = -1;
-            bool do_md5 = true, do_seektable = true, do_verify = false;
+            int intarg = -1, vbr_mode = -1, magic = -1;
+            bool do_seektable = true;
             bool buffered = false;
             string coeffs = null;
+            var settings = new FlakeWriterSettings();
 #if FINETUNE
             int finetune_depth = -1;
 #endif
@@ -161,11 +162,11 @@ namespace CUETools.FlakeExe
                 else if ((args[arg] == "-q" || args[arg] == "--quiet"))
                     quiet = true;
                 else if (args[arg] == "--verify")
-                    do_verify = true;
+                    settings.DoVerify = true;
                 else if (args[arg] == "--no-seektable")
                     do_seektable = false;
                 else if (args[arg] == "--no-md5")
-                    do_md5 = false;
+                    settings.DoMD5 = false;
                 else if (args[arg] == "--buffered")
                     buffered = true;
                 else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
@@ -219,10 +220,10 @@ namespace CUETools.FlakeExe
                 }
                 else if ((args[arg] == "-v" || args[arg] == "--vbr"))
                     ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
-                else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length)
-                    ok = int.TryParse(args[arg], out blocksize);
-                else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
-                    ok = int.TryParse(args[arg], out padding);
+                else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                    settings.BlockSize = intarg;
+                else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                    settings.Padding = intarg;
                 else if (args[arg] == "--magic" && ++arg < args.Length)
                     ok = int.TryParse(args[arg], out magic);
 #if FINETUNE
@@ -231,8 +232,11 @@ namespace CUETools.FlakeExe
 #endif
                 else if (args[arg] == "--coefs" && ++arg < args.Length)
                     coeffs = args[arg];
-                else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
-                    ok = level >= 0 && level <= 11;
+                else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out intarg))
+                {
+                    ok = intarg >= 0 && intarg <= 11;
+                    settings.EncoderModeIndex = intarg;
+                }
                 else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
                     input_file = args[arg];
                 else
@@ -326,15 +330,9 @@ namespace CUETools.FlakeExe
                             flake.FinalSampleCount = audioSource.Length - skip_a - skip_b;
                             IAudioDest audioDest = flake;
                             AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
-                            var settings = new FlakeWriterSettings();
 
                             try
                             {
-                                if (level >= 0)
-                                    settings.EncoderModeIndex = level;
-                                settings.DoVerify = do_verify;
-                                settings.DoMD5 = do_md5;
-
                                 flake.Settings = settings;
                                 if (prediction_type != null)
                                     flake.PredictionType = Flake.LookupPredictionType(prediction_type);
@@ -362,12 +360,8 @@ namespace CUETools.FlakeExe
                                     flake.MinPrecisionSearch = min_precision;
                                 if (max_precision >= 0)
                                     flake.MaxPrecisionSearch = max_precision;
-                                if (blocksize >= 0)
-                                    flake.BlockSize = blocksize;
                                 if (estimation_depth >= 0)
                                     flake.EstimationDepth = estimation_depth;
-                                if (padding >= 0)
-                                    flake.Padding = padding;
                                 if (vbr_mode >= 0)
                                     flake.VBRMode = vbr_mode;
                                 if (magic >= 0)
@@ -475,7 +469,7 @@ namespace CUETools.FlakeExe
                                     flake.MaxFixedOrder,
                                     flake.MinPrecisionSearch,
                                     flake.MaxPrecisionSearch,
-                                    flake.BlockSize,
+                                    flake.Settings.BlockSize,
                                     flake.VBRMode,
                                     coeffs ?? ""
                                 );

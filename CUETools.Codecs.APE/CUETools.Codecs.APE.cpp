@@ -252,7 +252,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}
 	};
 
-	public ref class APEWriterSettings : AudioEncoderSettings
+	public ref class APEWriterSettings : public AudioEncoderSettings
 	{
 	    public:
 		APEWriterSettings() 
@@ -342,13 +342,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 			}
 		}
 
-		virtual property Int64 BlockSize
-		{
-			void set(Int64 value)
-			{
-			}
-		}
-
 		virtual property AudioPCMConfig^ PCM 
 		{
 			AudioPCMConfig^ get() 
@@ -375,12 +368,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 			} 
 		}
 
-		virtual property __int64 Padding
-		{
-			void set(__int64 value) {
-			}
-		}
-
 		virtual property AudioEncoderSettings^ Settings
 		{
 			AudioEncoderSettings^ get()
@@ -390,9 +377,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 			
 			void set(AudioEncoderSettings^ value)
 			{
-			    if (value != nullptr && value->GetType() != APEWriterSettings::typeid)
-				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
-				_settings = (APEWriterSettings^)value;
+				_settings = value->Clone<APEWriterSettings^>();
 			}
 		}
 

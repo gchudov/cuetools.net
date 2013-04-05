@@ -200,11 +200,6 @@ namespace CUETools.Codecs.Icecast
 			}
 		}
 
-		public long BlockSize
-		{
-			set { }
-		}
-
 		public long FinalSampleCount
 		{
 			set { ; }
@@ -221,11 +216,6 @@ namespace CUETools.Codecs.Icecast
                 if (value != null && value.GetType() != typeof(AudioEncoderSettings))
 					throw new Exception("Unsupported options " + value);
 			}
-		}
-
-		public long Padding
-		{
-			set { }
 		}
 
 		public AudioPCMConfig PCM

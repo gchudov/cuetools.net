@@ -26,11 +26,6 @@ namespace CUETools.Codecs.WMA
         private AudioPCMConfig pcm;
         private long sampleCount, finalSampleCount;
 
-        public long BlockSize
-        {
-            set { }
-        }
-
         public long FinalSampleCount
         {
             set
@@ -42,11 +37,6 @@ namespace CUETools.Codecs.WMA
         public AudioPCMConfig PCM
         {
             get { return this.pcm; }
-        }
-
-        public long Padding
-        {
-            set { }
         }
 
         public string Path
@@ -64,9 +54,7 @@ namespace CUETools.Codecs.WMA
             }
             set
             {
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-                    throw new Exception("Unsupported options " + value);
-                m_settings = value;
+                m_settings = value.Clone<AudioEncoderSettings>();
             }
         }
 

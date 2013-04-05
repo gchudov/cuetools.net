@@ -211,6 +211,7 @@ namespace TTA {
 	public:
 		TTAWriter(String^ path, AudioPCMConfig^ pcm)
 		{
+			_settings = gcnew AudioEncoderSettings();
 		    _pcm = pcm;
 
 		    if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
@@ -221,7 +222,6 @@ namespace TTA {
 		    _path = path;
 		    _finalSampleCount = 0;
 		    _samplesWritten = 0;
-		    _blockSize = 0;
 		}
 
 		virtual void Close() {
@@ -271,14 +271,6 @@ namespace TTA {
 			}
 		}
 
-		virtual property Int64 BlockSize
-		{
-			void set(Int64 value) 
-			{
-				_blockSize = value;
-			}
-		}
-
 		virtual property AudioPCMConfig^ PCM
 		{
 			AudioPCMConfig^ get() { return _pcm;  }
@@ -315,23 +307,16 @@ namespace TTA {
 			_samplesWritten += sampleBuffer->Length;
 		}
 
-		virtual property __int64 Padding
-		{
-			void set(__int64 value) {
-			}
-		}
-
 		virtual property AudioEncoderSettings^ Settings
 		{
 			AudioEncoderSettings^ get()
 			{
-			    return gcnew AudioEncoderSettings();
+			    return _settings;
 			}
 			
 			void set(AudioEncoderSettings^ value)
 			{
-			    if (value != nullptr && value->GetType() != AudioEncoderSettings::typeid)
-				throw gcnew Exception(String::Format("Unsupported options: {0}", value));
+				_settings = value->Clone<AudioEncoderSettings^>();
 			}
 		}
 
@@ -341,8 +326,9 @@ namespace TTA {
 		array<long>^ _sampleBuffer;
 		bool _initialized;
 		String^ _path;
-		Int64 _finalSampleCount, _samplesWritten, _blockSize;
+		Int64 _finalSampleCount, _samplesWritten;
 		AudioPCMConfig^ _pcm;
+		AudioEncoderSettings^ _settings;
 
 		void Initialize() 
 		{

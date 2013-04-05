@@ -35,11 +35,6 @@ namespace CUETools.Codecs.LAME
             }
         }
 
-        public long Padding
-        {
-            set { }
-        }
-
         public long Position
         {
             get { return position; }
@@ -48,12 +43,6 @@ namespace CUETools.Codecs.LAME
         public long FinalSampleCount
         {
             set { sample_count = (int)value; }
-        }
-
-        public long BlockSize
-        {
-            set { }
-            get { return 0; }
         }
 
         public AudioPCMConfig PCM

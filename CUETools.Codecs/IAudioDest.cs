@@ -7,8 +7,6 @@
 
         AudioEncoderSettings Settings { get; set; }
 		long FinalSampleCount { set; }
-		long BlockSize { set; }
-		long Padding { set; }
 
 		void Write(AudioBuffer buffer);
 		void Close();

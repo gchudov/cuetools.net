@@ -58,11 +58,6 @@ namespace CUETools.Codecs.LAME
         private uint m_finalSampleCount;
         private byte[] m_outputBuffer;
 
-        public long BlockSize
-        {
-            set { }
-        }
-
         public long FinalSampleCount
         {
             set
@@ -80,11 +75,6 @@ namespace CUETools.Codecs.LAME
             get { return this.m_pcm; }
         }
 
-        public long Padding
-        {
-            set { }
-        }
-
         public string Path
         {
             get { return this.m_outputPath; }
@@ -100,9 +90,7 @@ namespace CUETools.Codecs.LAME
             }
             set
             {
-                if (value as LameWriterSettings == null)
-                     throw new InvalidOperationException("Unsupported options " + value);
-                m_settings = value as LameWriterSettings;
+                m_settings = value.Clone<LameWriterSettings>();
             }
         }
 

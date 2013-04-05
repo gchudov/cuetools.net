@@ -426,19 +426,9 @@ namespace CUETools.AccurateRip
 			}
 		}
 
-		public long Padding
-		{
-			set { }
-		}
-
 		public AudioPCMConfig PCM
 		{
 			get { return AudioPCMConfig.RedBook; }
-		}
-
-		public long BlockSize
-		{
-			set { throw new Exception("unsupported"); }
 		}
 
 		public string Path
