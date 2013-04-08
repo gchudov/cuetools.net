@@ -213,23 +213,37 @@ namespace CUETools.Codecs.WMA
         }
     }
 
-    public class WMAVBRWriterSettings : WMAWriterSettings
+    public class WMAV8VBRWriterSettings : WMAWriterSettings
     {
-        public WMAVBRWriterSettings()
+        public WMAV8VBRWriterSettings()
             : base(MediaSubType.WMAudioV8)
         {
-        }
-
-        [DefaultValue(true)]
-        public bool VBR
-        {
-            get { return m_vbr; }
-            set { m_vbr = value; }
+            this.m_vbr = true;
         }
     }
 
-    [AudioEncoderClass("windows", "wma", true, 1, typeof(WMALWriterSettings))]
-    [AudioEncoderClass("windows", "wma", false, 1, typeof(WMAVBRWriterSettings))]
+    public class WMAV8CBRWriterSettings : WMAWriterSettings
+    {
+        public WMAV8CBRWriterSettings()
+            : base(MediaSubType.WMAudioV8)
+        {
+            this.m_vbr = false;
+        }
+    }
+
+    public class WMAV9CBRWriterSettings : WMAWriterSettings
+    {
+        public WMAV9CBRWriterSettings()
+            : base(MediaSubType.WMAudioV9)
+        {
+            this.m_vbr = false;
+        }
+    }
+
+    [AudioEncoderClass("wma lossless", "wma", true, 1, typeof(WMALWriterSettings))]
+    [AudioEncoderClass("wma v8 vbr", "wma", false, 3, typeof(WMAV8VBRWriterSettings))]
+    [AudioEncoderClass("wma v9 cbr", "wma", false, 2, typeof(WMAV9CBRWriterSettings))]
+    [AudioEncoderClass("wma v8 cbr", "wma", false, 1, typeof(WMAV8CBRWriterSettings))]
     public class WMAWriter : IAudioDest
     {
         IWMWriter m_pWriter;
