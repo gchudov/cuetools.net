@@ -273,7 +273,6 @@ namespace CUETools.Codecs.FLACCL
         {
             if (inited)
             {
-                inited = false;
                 int nFrames = samplesInBuffer / m_blockSize;
                 if (nFrames > 0)
                     do_output_frames(nFrames);
@@ -338,7 +337,6 @@ namespace CUETools.Codecs.FLACCL
                     }
                 }
                 _IO.Close();
-
                 inited = false;
             }
         }
