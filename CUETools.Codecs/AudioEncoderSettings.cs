@@ -116,7 +116,7 @@ namespace CUETools.Codecs
                 if (modes.Length == 0 && value < 0)
                     return;
                 if (value < 0 || value >= modes.Length)
-                    throw new InvalidOperationException();
+                    throw new IndexOutOfRangeException();
                 this.EncoderMode = modes[value];
             }
         }

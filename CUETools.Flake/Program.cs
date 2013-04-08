@@ -147,7 +147,7 @@ namespace CUETools.FlakeExe
             bool do_seektable = true;
             bool buffered = false;
             string coeffs = null;
-            var settings = new FlakeWriterSettings();
+            var settings = new FlakeWriterSettings() { AllowNonSubset = true };
 #if FINETUNE
             int finetune_depth = -1;
 #endif
