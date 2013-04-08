@@ -4,12 +4,11 @@ using System.IO;
 
 namespace CUETools.Codecs
 {
-    [AudioEncoderClass("cuetools", "wav", true, 10, typeof(AudioEncoderSettings))]
+    [AudioEncoderClass("cuetools", "wav", true, 10, typeof(WAVWriterSettings))]
     public class WAVWriter : IAudioDest
     {
         private Stream _IO;
         private BinaryWriter _bw;
-        private AudioPCMConfig _pcm;
         private long _sampleLen;
         private string _path;
         private long hdrLen = 0;
@@ -17,6 +16,7 @@ namespace CUETools.Codecs
         private long _finalSampleCount = -1;
         private List<byte[]> _chunks = null;
         private List<uint> _chunkFCCs = null;
+        private WAVWriterSettings m_settings;
 
         public long Position
         {
@@ -35,32 +35,22 @@ namespace CUETools.Codecs
         {
             get
             {
-                return new AudioEncoderSettings();
+                return m_settings;
             }
-            set
-            {
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-                    throw new Exception("Unsupported options " + value);
-            }
-        }
-
-        public AudioPCMConfig PCM
-        {
-            get { return _pcm; }
         }
 
         public string Path { get { return _path; } }
 
-        public WAVWriter(string path, Stream IO, AudioPCMConfig pcm)
+        public WAVWriter(string path, Stream IO, WAVWriterSettings settings)
         {
-            _pcm = pcm;
+            m_settings = settings;
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
             _bw = new BinaryWriter(_IO);
         }
 
-        public WAVWriter(string path, AudioPCMConfig pcm)
-            : this(path, null, pcm)
+        public WAVWriter(string path, WAVWriterSettings settings)
+            : this(path, null, settings)
         {
         }
 
@@ -85,11 +75,11 @@ namespace CUETools.Codecs
             const uint fccFormat = 0x20746D66;
             const uint fccData = 0x61746164;
 
-            bool wavex = _pcm.BitsPerSample != 16 && _pcm.BitsPerSample != 24;
+            bool wavex = Settings.PCM.BitsPerSample != 16 && Settings.PCM.BitsPerSample != 24;
 
             hdrLen += 36 + (wavex ? 24 : 0) + 8;
 
-            uint dataLen = (uint)(_finalSampleCount * _pcm.BlockAlign);
+            uint dataLen = (uint)(_finalSampleCount * Settings.PCM.BlockAlign);
             uint dataLenPadded = dataLen + (dataLen & 1);
 
             _bw.Write(fccRIFF);
@@ -106,15 +96,15 @@ namespace CUETools.Codecs
                 _bw.Write((uint)16);
                 _bw.Write((ushort)1); // PCM
             }
-            _bw.Write((ushort)_pcm.ChannelCount);
-            _bw.Write((uint)_pcm.SampleRate);
-            _bw.Write((uint)(_pcm.SampleRate * _pcm.BlockAlign));
-            _bw.Write((ushort)_pcm.BlockAlign);
-            _bw.Write((ushort)((_pcm.BitsPerSample + 7) / 8 * 8));
+            _bw.Write((ushort)Settings.PCM.ChannelCount);
+            _bw.Write((uint)Settings.PCM.SampleRate);
+            _bw.Write((uint)(Settings.PCM.SampleRate * Settings.PCM.BlockAlign));
+            _bw.Write((ushort)Settings.PCM.BlockAlign);
+            _bw.Write((ushort)((Settings.PCM.BitsPerSample + 7) / 8 * 8));
             if (wavex)
             {
                 _bw.Write((ushort)22); // length of WAVEX structure
-                _bw.Write((ushort)_pcm.BitsPerSample);
+                _bw.Write((ushort)Settings.PCM.BitsPerSample);
                 _bw.Write((uint)3); // speaker positions (3 == stereo)
                 _bw.Write((ushort)1); // PCM
                 _bw.Write((ushort)0);
@@ -150,11 +140,11 @@ namespace CUETools.Codecs
             if (_finalSampleCount <= 0)
             {
                 const long maxFileSize = 0x7FFFFFFEL;
-                long dataLen = _sampleLen * _pcm.BlockAlign;
+                long dataLen = _sampleLen * Settings.PCM.BlockAlign;
                 if ((dataLen & 1) == 1)
                     _bw.Write((byte)0);
                 if (dataLen + hdrLen > maxFileSize)
-                    dataLen = ((maxFileSize - hdrLen) / _pcm.BlockAlign) * _pcm.BlockAlign;
+                    dataLen = ((maxFileSize - hdrLen) / Settings.PCM.BlockAlign) * Settings.PCM.BlockAlign;
                 long dataLenPadded = dataLen + (dataLen & 1);
 
                 _bw.Seek(4, SeekOrigin.Begin);

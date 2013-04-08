@@ -126,7 +126,7 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>401, 24</value>
+    <value>503, 24</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -465,6 +465,9 @@
   <data name="checkBoxUseAccurateRip.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
+  <data name="checkBoxUseAccurateRip.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
+  </data>
   <data name="checkBoxUseAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
     <value>49, 26</value>
   </data>
@@ -500,6 +503,9 @@
   </data>
   <data name="checkBoxUseFreeDb.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
+  </data>
+  <data name="checkBoxUseFreeDb.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
   </data>
   <data name="checkBoxUseFreeDb.Size" type="System.Drawing.Size, System.Drawing">
     <value>48, 26</value>
@@ -653,6 +659,9 @@
   </data>
   <data name="checkBoxUseMusicBrainz.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
+  </data>
+  <data name="checkBoxUseMusicBrainz.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
   </data>
   <data name="checkBoxUseMusicBrainz.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 26</value>
@@ -1127,6 +1136,9 @@
   </data>
   <data name="labelFormat.Location" type="System.Drawing.Point, System.Drawing">
     <value>11, 90</value>
+  </data>
+  <data name="labelFormat.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>16, 16</value>
   </data>
   <data name="labelFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>16, 16</value>
@@ -2252,6 +2264,9 @@
   </data>
   <data name="toolStripContainer1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
+  </data>
+  <data name="toolStripContainer1.LeftToolStripPanel.MaximumSize" type="System.Drawing.Size, System.Drawing">
+    <value>32, 0</value>
   </data>
   <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Name" xml:space="preserve">
     <value>toolStripContainer1.LeftToolStripPanel</value>

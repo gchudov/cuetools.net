@@ -205,16 +205,23 @@ namespace TTA {
 		}
 	};
 
-	[AudioEncoderClass("ttalib", "tta", true, 1, AudioEncoderSettings::typeid)]
+	public ref class TTAWriterSettings : public AudioEncoderSettings
+	{
+	    public:
+		TTAWriterSettings() : AudioEncoderSettings()
+		{
+		}
+	};
+
+	[AudioEncoderClass("ttalib", "tta", true, 1, TTAWriterSettings::typeid)]
 	public ref class TTAWriter : public IAudioDest
 	{
 	public:
-		TTAWriter(String^ path, AudioPCMConfig^ pcm)
+		TTAWriter(String^ path, TTAWriterSettings^ settings)
 		{
-			_settings = gcnew AudioEncoderSettings();
-		    _pcm = pcm;
+			_settings = settings;
 
-		    if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
+		    if (_settings->PCM->BitsPerSample < 16 || _settings->PCM->BitsPerSample > 24)
 	    		throw gcnew Exception("Bits per sample must be 16..24.");
 
 		    _initialized = false;
@@ -271,11 +278,6 @@ namespace TTA {
 			}
 		}
 
-		virtual property AudioPCMConfig^ PCM
-		{
-			AudioPCMConfig^ get() { return _pcm;  }
-		}
-
 		virtual property String^ Path { 
 			String^ get() { 
 				return _path; 
@@ -287,12 +289,12 @@ namespace TTA {
 
 			sampleBuffer->Prepare(this);
 
-			if ((_sampleBuffer == nullptr) || (_sampleBuffer->Length < sampleBuffer->Length * _pcm->ChannelCount))
-				_sampleBuffer = gcnew array<long> (sampleBuffer->Length * _pcm->ChannelCount);
+			if ((_sampleBuffer == nullptr) || (_sampleBuffer->Length < sampleBuffer->Length * _settings->PCM->ChannelCount))
+				_sampleBuffer = gcnew array<long> (sampleBuffer->Length * _settings->PCM->ChannelCount);
 
 			interior_ptr<Int32> pSampleBuffer = &sampleBuffer->Samples[0, 0];
 			interior_ptr<long> pTTABuffer = &_sampleBuffer[0];
-			for (int i = 0; i < sampleBuffer->Length * _pcm->ChannelCount; i++)
+			for (int i = 0; i < sampleBuffer->Length * _settings->PCM->ChannelCount; i++)
 				pTTABuffer[i] = pSampleBuffer[i];
 
 			pin_ptr<long> buffer = &_sampleBuffer[0];
@@ -313,11 +315,6 @@ namespace TTA {
 			{
 			    return _settings;
 			}
-			
-			void set(AudioEncoderSettings^ value)
-			{
-				_settings = value->Clone<AudioEncoderSettings^>();
-			}
 		}
 
 	private:
@@ -327,7 +324,6 @@ namespace TTA {
 		bool _initialized;
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten;
-		AudioPCMConfig^ _pcm;
 		AudioEncoderSettings^ _settings;
 
 		void Initialize() 
@@ -338,7 +334,7 @@ namespace TTA {
 			_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::Write, FileShare::Read);
 			try 
 			{
-			    _ttaWriter = new TTALib::TTAWriter((HANDLE)_IO->Handle, 0, WAVE_FORMAT_PCM, _pcm->ChannelCount, _pcm->BitsPerSample, _pcm->SampleRate, _finalSampleCount);
+			    _ttaWriter = new TTALib::TTAWriter((HANDLE)_IO->Handle, 0, WAVE_FORMAT_PCM, _settings->PCM->ChannelCount, _settings->PCM->BitsPerSample, _settings->PCM->SampleRate, _finalSampleCount);
 			} catch (TTALib::TTAException ex)
 			{
 				throw gcnew Exception(String::Format("TTA encoder: {0}", gcnew String(TTAErrorsStr[ex.GetErrNo()])));

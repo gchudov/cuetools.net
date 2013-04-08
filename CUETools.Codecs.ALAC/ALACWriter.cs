@@ -35,10 +35,9 @@ namespace CUETools.Codecs.ALAC
 {
 	public class ALACWriterSettings: AudioEncoderSettings
 	{
-		public ALACWriterSettings() 
+        public ALACWriterSettings()
             : base("0 1 2 3 4 5 6 7 8 9 10", "3")
-        { 
-            DoVerify = false; 
+        {
         }
 
         public override bool IsValid()
@@ -103,15 +102,13 @@ namespace CUETools.Codecs.ALAC
 
 		List<int> chunk_pos;
 
-		AudioPCMConfig _pcm;
-
-		public ALACWriter(string path, Stream IO, AudioPCMConfig pcm)
+        public ALACWriter(string path, Stream IO, ALACWriterSettings settings)
 		{
-			_pcm = pcm;
+            m_settings = settings;
 
-			if (_pcm.BitsPerSample != 16)
+            if (Settings.PCM.BitsPerSample != 16)
 				throw new Exception("Bits per sample must be 16.");
-			if (_pcm.ChannelCount != 2)
+            if (Settings.PCM.ChannelCount != 2)
 				throw new Exception("ChannelCount must be 2.");
 
 			_path = path;
@@ -120,18 +117,18 @@ namespace CUETools.Codecs.ALAC
 			if (_IO != null && !_IO.CanSeek)
 				throw new NotSupportedException("stream doesn't support seeking");
 
-			samplesBuffer = new int[Alac.MAX_BLOCKSIZE * (_pcm.ChannelCount == 2 ? 5 : _pcm.ChannelCount)];
-			residualBuffer = new int[Alac.MAX_BLOCKSIZE * (_pcm.ChannelCount == 2 ? 6 : _pcm.ChannelCount + 1)];
+            samplesBuffer = new int[Alac.MAX_BLOCKSIZE * (Settings.PCM.ChannelCount == 2 ? 5 : Settings.PCM.ChannelCount)];
+            residualBuffer = new int[Alac.MAX_BLOCKSIZE * (Settings.PCM.ChannelCount == 2 ? 6 : Settings.PCM.ChannelCount + 1)];
 			windowBuffer = new float[Alac.MAX_BLOCKSIZE * 2 * Alac.MAX_LPC_WINDOWS];
 
-			eparams.set_defaults(5);
+            eparams.set_defaults(m_settings.EncoderModeIndex);
 
-			frame = new ALACFrame(_pcm.ChannelCount == 2 ? 5 : _pcm.ChannelCount);
+            frame = new ALACFrame(Settings.PCM.ChannelCount == 2 ? 5 : Settings.PCM.ChannelCount);
 			chunk_pos = new List<int>();
 		}
 
-		public ALACWriter(string path, AudioPCMConfig pcm)
-			: this(path, null, pcm)
+        public ALACWriter(string path, ALACWriterSettings settings)
+            : this(path, null, settings)
 		{
 		}
 
@@ -143,7 +140,7 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		ALACWriterSettings m_settings = new ALACWriterSettings();
+		ALACWriterSettings m_settings;
 
 		public AudioEncoderSettings Settings
 		{
@@ -151,12 +148,6 @@ namespace CUETools.Codecs.ALAC
 			{
 				return m_settings;
 			}
-            set
-            {
-                m_settings = value.Clone<ALACWriterSettings>();
-                var _compressionLevel = m_settings.EncoderModeIndex;
-                eparams.set_defaults(_compressionLevel);
-            }
 		}
 
 #if INTEROP
@@ -446,11 +437,6 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		public AudioPCMConfig PCM
-		{
-			get { return _pcm; }
-		}
-
 		/// <summary>
 		/// Copy channel-interleaved input samples into separate subframes
 		/// </summary>
@@ -461,13 +447,13 @@ namespace CUETools.Codecs.ALAC
 		{
 			fixed (int* fsamples = samplesBuffer, src = &samples[pos, 0])
 			{
-				if (_pcm.ChannelCount == 2)
+				if (Settings.PCM.ChannelCount == 2)
 					AudioSamples.Deinterlace(fsamples + samplesInBuffer, fsamples + Alac.MAX_BLOCKSIZE + samplesInBuffer, src, block);
 				else
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 					{
 						int* psamples = fsamples + ch * Alac.MAX_BLOCKSIZE + samplesInBuffer;
-						int channels = _pcm.ChannelCount;
+                        int channels = Settings.PCM.ChannelCount;
 						for (int i = 0; i < block; i++)
 							psamples[i] = src[i * channels + ch];
 					}
@@ -794,7 +780,7 @@ namespace CUETools.Codecs.ALAC
 				frame.current.order = order;
 				frame.current.window = iWindow;
 
-				int bps = _pcm.BitsPerSample + _pcm.ChannelCount - 1;
+                int bps = Settings.PCM.BitsPerSample + Settings.PCM.ChannelCount - 1;
 
 				int* coefs = stackalloc int[lpc.MAX_LPC_ORDER];
 
@@ -849,7 +835,7 @@ namespace CUETools.Codecs.ALAC
 		{
 			int* smp = frame.subframes[ch].samples;
 			int i, n = frame.blocksize;
-			int bps = _pcm.BitsPerSample + _pcm.ChannelCount - 1;
+            int bps = Settings.PCM.BitsPerSample + Settings.PCM.ChannelCount - 1;
 
 			// FIXED
 			//if (0 == (2 & frame.subframes[ch].done_fixed) && (pass != 1 || n < eparams.max_prediction_order))
@@ -896,7 +882,7 @@ namespace CUETools.Codecs.ALAC
 
 		unsafe void output_frame_header(ALACFrame frame, BitWriter bitwriter)
 		{
-			bitwriter.writebits(3, _pcm.ChannelCount - 1);
+            bitwriter.writebits(3, Settings.PCM.ChannelCount - 1);
 			bitwriter.writebits(16, 0);
 			bitwriter.writebits(1, frame.blocksize != m_blockSize ? 1 : 0); // sample count is in the header
 			bitwriter.writebits(2, 0); // wasted bytes
@@ -907,7 +893,7 @@ namespace CUETools.Codecs.ALAC
 			{
 				bitwriter.writebits(8, frame.interlacing_shift);
 				bitwriter.writebits(8, frame.interlacing_leftweight);
-				for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 				{
 					bitwriter.writebits(4, 0); // prediction type
 					bitwriter.writebits(4, frame.subframes[ch].best.shift);
@@ -982,7 +968,7 @@ namespace CUETools.Codecs.ALAC
 
 		unsafe void estimate_frame(ALACFrame frame, bool do_midside)
 		{
-			int subframes = do_midside ? 5 : _pcm.ChannelCount;
+            int subframes = do_midside ? 5 : Settings.PCM.ChannelCount;
 
 			switch (eparams.stereo_method)
 			{
@@ -1041,7 +1027,7 @@ namespace CUETools.Codecs.ALAC
 				return total + bitsBest;
 			}
 
-			for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+            for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 				total += frame.subframes[ch].best.size;
 
 			return total;
@@ -1052,14 +1038,14 @@ namespace CUETools.Codecs.ALAC
 			switch (eparams.stereo_method)
 			{
 				case StereoMethod.Estimate:
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 					{
 						frame.subframes[ch].best.size = AudioSamples.UINT32_MAX;
 						encode_residual_pass2(frame, ch);
 					}
 					break;
 				case StereoMethod.Evaluate:
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 						encode_residual_pass2(frame, ch);
 					break;
 				case StereoMethod.Search:
@@ -1107,15 +1093,15 @@ namespace CUETools.Codecs.ALAC
 				}
 				frame.window_buffer = window;
 
-				int bps = _pcm.BitsPerSample + _pcm.ChannelCount - 1;
-				if (_pcm.ChannelCount != 2 || frame.blocksize <= 32 || eparams.stereo_method == StereoMethod.Independent)
+                int bps = Settings.PCM.BitsPerSample + Settings.PCM.ChannelCount - 1;
+                if (Settings.PCM.ChannelCount != 2 || frame.blocksize <= 32 || eparams.stereo_method == StereoMethod.Independent)
 				{
-					frame.current.residual = r + _pcm.ChannelCount * Alac.MAX_BLOCKSIZE;
+                    frame.current.residual = r + Settings.PCM.ChannelCount * Alac.MAX_BLOCKSIZE;
 
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 						frame.subframes[ch].Init(s + ch * Alac.MAX_BLOCKSIZE, r + ch * Alac.MAX_BLOCKSIZE);
 
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 						encode_residual_pass2(frame, ch);
 				}
 				else
@@ -1131,7 +1117,7 @@ namespace CUETools.Codecs.ALAC
 					encode_estimated_frame(frame);
 				}
 
-				for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 				{
 					if (eparams.min_modifier == eparams.max_modifier)
 						frame.subframes[ch].best.ricemodifier = eparams.max_modifier;
@@ -1141,19 +1127,19 @@ namespace CUETools.Codecs.ALAC
 				}
 
 				uint fs = measure_frame_size(frame, false);
-				frame.type = ((int)fs > frame.blocksize * _pcm.ChannelCount * bps) ? FrameType.Verbatim : FrameType.Compressed;
+                frame.type = ((int)fs > frame.blocksize * Settings.PCM.ChannelCount * bps) ? FrameType.Verbatim : FrameType.Compressed;
 				BitWriter bitwriter = new BitWriter(frame_buffer, 0, max_frame_size);
 				output_frame_header(frame, bitwriter);
 				if (frame.type == FrameType.Verbatim)
 				{
-					int obps = _pcm.BitsPerSample;
+                    int obps = Settings.PCM.BitsPerSample;
 					for (int i = 0; i < frame.blocksize; i++)
-						for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                        for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 							bitwriter.writebits_signed(obps, frame.subframes[ch].samples[i]);
 				}
 				else if (frame.type == FrameType.Compressed)
 				{
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 						alac_entropy_coder(bitwriter, frame.subframes[ch].best.residual, frame.blocksize, 
 							bps, frame.subframes[ch].best.ricemodifier);
 				}
@@ -1177,7 +1163,7 @@ namespace CUETools.Codecs.ALAC
 			if (verify != null)
 			{
 				fixed (int* s = verifyBuffer, r = samplesBuffer)
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 						AudioSamples.MemCpy(s + ch * Alac.MAX_BLOCKSIZE, r + ch * Alac.MAX_BLOCKSIZE, blocksize);
 			}
 
@@ -1196,13 +1182,13 @@ namespace CUETools.Codecs.ALAC
 				int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
 				if (decoded != fs || verify.Remaining != bs)
 					throw new Exception("validation failed!");
-				int[,] deinterlaced = new int[bs, _pcm.ChannelCount];
+                int[,] deinterlaced = new int[bs, Settings.PCM.ChannelCount];
 				verify.deinterlace(deinterlaced, 0, bs);
 				fixed (int* s = verifyBuffer, r = deinterlaced)
 				{
-					int channels = _pcm.ChannelCount;
+                    int channels = Settings.PCM.ChannelCount;
 					for (int i = 0; i < bs; i++)
-						for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                        for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 							if (r[i * channels + ch] != s[ch * Alac.MAX_BLOCKSIZE + i])
 								throw new Exception("validation failed!");
 				}
@@ -1211,7 +1197,7 @@ namespace CUETools.Codecs.ALAC
 			if (bs < blocksize)
 			{
 				fixed (int* s = samplesBuffer)
-					for (int ch = 0; ch < _pcm.ChannelCount; ch++)
+                    for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 						AudioSamples.MemCpy(s + ch * Alac.MAX_BLOCKSIZE, s + bs + ch * Alac.MAX_BLOCKSIZE, blocksize - bs);
 			}
 
@@ -1297,7 +1283,7 @@ namespace CUETools.Codecs.ALAC
 				bitwriter.writebits(32, 0);
 				bitwriter.writebits(_creationTime.Value);
 				bitwriter.writebits(_creationTime.Value);
-				bitwriter.writebits(32, _pcm.SampleRate);
+                bitwriter.writebits(32, Settings.PCM.SampleRate);
 				bitwriter.writebits(32, sample_count);
 				bitwriter.writebits(32, 0x00010000); // reserved (preferred rate) 1.0 = normal
 				bitwriter.writebits(16, 0x0100); // reserved (preferred volume) 1.0 = normal
@@ -1374,7 +1360,7 @@ namespace CUETools.Codecs.ALAC
 							bitwriter.writebits(16, 16); // reserved bps
 							bitwriter.writebits(16, 0); // reserved compression ID
 							bitwriter.writebits(16, 0); // packet size
-							bitwriter.writebits(16, _pcm.SampleRate); // time scale
+                            bitwriter.writebits(16, Settings.PCM.SampleRate); // time scale
 							bitwriter.writebits(16, 0); // reserved
 							chunk_start(bitwriter);
 							{
@@ -1389,15 +1375,15 @@ namespace CUETools.Codecs.ALAC
 								bitwriter.writebits(32, 0); // reserved
 								bitwriter.writebits(32, m_blockSize); // max frame size
 								bitwriter.writebits(8, 0); // reserved
-								bitwriter.writebits(8, _pcm.BitsPerSample);
+                                bitwriter.writebits(8, Settings.PCM.BitsPerSample);
 								bitwriter.writebits(8, history_mult);
 								bitwriter.writebits(8, initial_history);
 								bitwriter.writebits(8, k_modifier);
-								bitwriter.writebits(8, _pcm.ChannelCount); // channels
+                                bitwriter.writebits(8, Settings.PCM.ChannelCount); // channels
 								bitwriter.writebits(16, 0); // reserved or 0x00 0xff????
 								bitwriter.writebits(32, max_fs);
-								bitwriter.writebits(32, (int)(8 * sum_fs * _pcm.SampleRate / sample_count)); // average bitrate
-								bitwriter.writebits(32, _pcm.SampleRate);
+                                bitwriter.writebits(32, (int)(8 * sum_fs * Settings.PCM.SampleRate / sample_count)); // average bitrate
+                                bitwriter.writebits(32, Settings.PCM.SampleRate);
 							}
 							chunk_end(bitwriter);
 						}
@@ -1487,7 +1473,7 @@ namespace CUETools.Codecs.ALAC
 					bitwriter.writebits(32, 0); // version & flags
 					bitwriter.writebits(_creationTime.Value);
 					bitwriter.writebits(_creationTime.Value);
-					bitwriter.writebits(32, _pcm.SampleRate);
+                    bitwriter.writebits(32, Settings.PCM.SampleRate);
 					bitwriter.writebits(32, sample_count);
 					bitwriter.writebits(16, 0x55c4); // language
 					bitwriter.writebits(16, 0); // quality
@@ -1646,30 +1632,30 @@ namespace CUETools.Codecs.ALAC
 		void encode_init()
 		{
 			// FIXME: For now, only 44100 samplerate is supported
-			if (_pcm.SampleRate != 44100)
+            if (Settings.PCM.SampleRate != 44100)
 				throw new Exception("non-standard samplerate");
 
 			// FIXME: For now, only 16-bit encoding is supported
-			if (_pcm.BitsPerSample != 16)
+            if (Settings.PCM.BitsPerSample != 16)
 				throw new Exception("non-standard bps");
 
             m_blockSize =
                 m_settings.BlockSize != 0 ? m_settings.BlockSize :
-                select_blocksize(_pcm.SampleRate, eparams.block_time_ms);
+                select_blocksize(Settings.PCM.SampleRate, eparams.block_time_ms);
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
-			if (_pcm.ChannelCount == 2)
-                max_frame_size = 16 + ((m_blockSize * (_pcm.BitsPerSample + _pcm.BitsPerSample + 1) + 7) >> 3);
+            if (Settings.PCM.ChannelCount == 2)
+                max_frame_size = 16 + ((m_blockSize * (Settings.PCM.BitsPerSample + Settings.PCM.BitsPerSample + 1) + 7) >> 3);
 			else
-                max_frame_size = 16 + ((m_blockSize * _pcm.ChannelCount * _pcm.BitsPerSample + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * Settings.PCM.ChannelCount * Settings.PCM.BitsPerSample + 7) >> 3);
 
 			frame_buffer = new byte[max_frame_size];
             _sample_byte_size = new uint[Math.Max(0x100, sample_count / m_blockSize + 1)];
 
 			if (m_settings.DoVerify)
 			{
-                verify = new ALACReader(_pcm, history_mult, initial_history, k_modifier, m_blockSize);
-				verifyBuffer = new int[Alac.MAX_BLOCKSIZE * _pcm.ChannelCount];
+                verify = new ALACReader(Settings.PCM, history_mult, initial_history, k_modifier, m_blockSize);
+                verifyBuffer = new int[Alac.MAX_BLOCKSIZE * Settings.PCM.ChannelCount];
 			}
 
 			if (sample_count < 0)

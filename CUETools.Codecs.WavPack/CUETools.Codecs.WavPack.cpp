@@ -338,15 +338,13 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 	public ref class WavPackWriter : IAudioDest 
 	{
 	public:
-		WavPackWriter(String^ path, AudioPCMConfig^ pcm)
+		WavPackWriter(String^ path, WavPackWriterSettings^ settings)
 		{
-			_settings = gcnew WavPackWriterSettings();
+			_settings = settings;
 
-			_pcm = pcm;
-
-			if (_pcm->ChannelCount != 1 && _pcm->ChannelCount != 2)
+			if (_settings->PCM->ChannelCount != 1 && _settings->PCM->ChannelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
-			if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
+			if (_settings->PCM->BitsPerSample < 16 || _settings->PCM->BitsPerSample > 24)
 				throw gcnew Exception("Bits per sample must be 16..24.");
 
 			_path = path;
@@ -398,11 +396,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 		}
 
-		virtual property AudioPCMConfig^ PCM
-		{
-			AudioPCMConfig^ get() { return _pcm;  }
-		}
-
 		virtual void Write(AudioBuffer^ sampleBuffer) 
 		{
 			if (!_initialized) 
@@ -413,12 +406,12 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			if (_settings->MD5Sum)
 				UpdateHash(sampleBuffer->Bytes, sampleBuffer->ByteLength);
 
-			if ((_pcm->BitsPerSample & 7) != 0)
+			if ((_settings->PCM->BitsPerSample & 7) != 0)
 			{
 				if (_shiftedSampleBuffer == nullptr || _shiftedSampleBuffer.GetLength(0) < sampleBuffer->Length)
-				    _shiftedSampleBuffer = gcnew array<int,2>(sampleBuffer->Length, _pcm->ChannelCount);
-				int shift = 8 - (_pcm->BitsPerSample & 7);
-				int ch = _pcm->ChannelCount;
+				    _shiftedSampleBuffer = gcnew array<int,2>(sampleBuffer->Length, _settings->PCM->ChannelCount);
+				int shift = 8 - (_settings->PCM->BitsPerSample & 7);
+				int ch = _settings->PCM->ChannelCount;
 				for (int i = 0; i < sampleBuffer->Length; i++)
 					for (int c = 0; c < ch; c++)
 					    _shiftedSampleBuffer[i,c] = sampleBuffer->Samples[i,c] << shift;
@@ -448,11 +441,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			{
 			    return _settings;
 			}
-			
-			void set(AudioEncoderSettings^ value)
-			{
-				_settings = value->Clone<WavPackWriterSettings^>();
-			}
 		}
 
 		void UpdateHash(array<unsigned char>^ buff, Int32 len) 
@@ -472,7 +460,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		String^ _path;
 		MD5^ _md5hasher;
 		array<int,2>^ _shiftedSampleBuffer;
-		AudioPCMConfig^ _pcm;
 		WavPackWriterSettings^ _settings;
 
 		void Initialize() {
@@ -484,11 +471,11 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			}
 
 			memset(&config, 0, sizeof(WavpackConfig));
-			config.bits_per_sample = _pcm->BitsPerSample;
-			config.bytes_per_sample = (_pcm->BitsPerSample + 7) / 8;
-			config.num_channels = _pcm->ChannelCount;
-			config.channel_mask = 5 - _pcm->ChannelCount;
-			config.sample_rate = _pcm->SampleRate;
+			config.bits_per_sample = _settings->PCM->BitsPerSample;
+			config.bytes_per_sample = (_settings->PCM->BitsPerSample + 7) / 8;
+			config.num_channels = _settings->PCM->ChannelCount;
+			config.channel_mask = 5 - _settings->PCM->ChannelCount;
+			config.sample_rate = _settings->PCM->SampleRate;
 			Int32 _compressionMode = _settings->EncoderModeIndex;
 			if (_compressionMode == 0) config.flags |= CONFIG_FAST_FLAG;
 			if (_compressionMode == 2) config.flags |= CONFIG_HIGH_FLAG;

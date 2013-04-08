@@ -54,7 +54,6 @@ namespace CUETools.Codecs.LAME
 
         private bool m_closed = false, m_initialized = false;
         private IntPtr m_handle;
-        private AudioPCMConfig m_pcm;
         private uint m_finalSampleCount;
         private byte[] m_outputBuffer;
 
@@ -70,17 +69,12 @@ namespace CUETools.Codecs.LAME
             }
         }
 
-        public AudioPCMConfig PCM
-        {
-            get { return this.m_pcm; }
-        }
-
         public string Path
         {
             get { return this.m_outputPath; }
         }
 
-        private LameWriterSettings m_settings = new LameWriterCBRSettings();
+        private LameWriterSettings m_settings;
 
         public virtual AudioEncoderSettings Settings
         {
@@ -88,26 +82,19 @@ namespace CUETools.Codecs.LAME
             {
                 return m_settings;
             }
-            set
-            {
-                m_settings = value.Clone<LameWriterSettings>();
-            }
         }
 
-        public LameWriter(string path, Stream output, AudioPCMConfig pcm)
+        public LameWriter(string path, Stream output, LameWriterSettings settings)
         {
-            this.CheckPCMConfig(pcm);
-            this.m_pcm = pcm;
+            this.CheckPCMConfig(settings.PCM);
+            this.m_settings = settings;
             this.m_outputPath = path;
             this.m_outputStream = output != null ? output : File.Create(path);
         }
 
-        public LameWriter(string path, AudioPCMConfig pcm)
+        public LameWriter(string path, LameWriterSettings settings)
+            : this(path, null, settings)
         {
-            this.CheckPCMConfig(pcm);
-            this.m_pcm = pcm;
-            this.m_outputPath = path;
-            this.m_outputStream = File.Create(path);
         }
 
         private void CheckPCMConfig(AudioPCMConfig pcm)
@@ -219,8 +206,8 @@ namespace CUETools.Codecs.LAME
                 lame_set_bWriteVbrTag(m_handle, 1);
                 lame_set_write_id3tag_automatic(m_handle, 0);
 
-                lame_set_num_channels(m_handle, this.m_pcm.ChannelCount);
-                lame_set_in_samplerate(m_handle, this.m_pcm.SampleRate);
+                lame_set_num_channels(m_handle, this.Settings.PCM.ChannelCount);
+                lame_set_in_samplerate(m_handle, this.Settings.PCM.SampleRate);
 
                 if (this.m_finalSampleCount != 0)
                 {

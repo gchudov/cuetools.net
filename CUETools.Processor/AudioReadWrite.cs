@@ -74,7 +74,7 @@ namespace CUETools.Processor
 			IAudioDest dest;
 			if (audioEncoderType == AudioEncoderType.NoAudio || extension == ".dummy")
 			{
-				dest = new DummyWriter(path, pcm);
+				dest = new DummyWriter(path, new AudioEncoderSettings(pcm));
 				dest.FinalSampleCount = finalSampleCount;
 				return dest;
 			}
@@ -86,19 +86,21 @@ namespace CUETools.Processor
 				null;
 			if (encoder == null)
 				throw new Exception("Unsupported audio type: " + path);
-			if (encoder.path != null)
-				dest = new UserDefinedWriter(path, null, pcm, encoder.path, encoder.parameters, encoder.EncoderMode, padding);
+            var settings = encoder.settings.Clone();
+            settings.PCM = pcm;
+            settings.Padding = padding;
+            settings.Validate();
+            if (encoder.path != null)
+                dest = new UserDefinedWriter(path, null, settings, encoder.path, encoder.parameters, encoder.EncoderMode, padding);
 			else if (encoder.type != null)
 			{
-				object o = Activator.CreateInstance(encoder.type, path, pcm);
+                object o = Activator.CreateInstance(encoder.type, path, settings);
 				if (o == null || !(o is IAudioDest))
 					throw new Exception("Unsupported audio type: " + path + ": " + encoder.type.FullName);
 				dest = o as IAudioDest;
 			}
 			else
 				throw new Exception("Unsupported audio type: " + path);
-            dest.Settings = encoder.settings;
-            dest.Settings.Padding = padding;
             dest.FinalSampleCount = finalSampleCount;
 			return dest;
 		}
@@ -114,7 +116,7 @@ namespace CUETools.Processor
 			AudioPCMConfig lossypcm = new AudioPCMConfig((config.detectHDCD && config.decodeHDCD && !config.decodeHDCDtoLW16) ? 24 : 16, pcm.ChannelCount, pcm.SampleRate);
 			IAudioDest lossyDest = GetAudioDest(AudioEncoderType.Lossless, path, lossypcm, finalSampleCount, padding, extension, config);
 			IAudioDest lwcdfDest = audioEncoderType == AudioEncoderType.Hybrid ? GetAudioDest(AudioEncoderType.Lossless, lwcdfPath, lossypcm, finalSampleCount, padding, extension, config) : null;
-			return new LossyWAVWriter(lossyDest, lwcdfDest, config.lossyWAVQuality, pcm);
+			return new LossyWAVWriter(lossyDest, lwcdfDest, config.lossyWAVQuality, new AudioEncoderSettings(pcm));
 		}
 	}
 }

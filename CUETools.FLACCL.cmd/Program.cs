@@ -247,10 +247,11 @@ namespace CUETools.FLACCL.cmd
 				audioSource = new AudioPipe(audioSource, FLACCLWriter.MAX_BLOCKSIZE);
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "flac");
+            settings.PCM = audioSource.PCM;
 			FLACCLWriter encoder = new FLACCLWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
 				output_file == "-" ? Console.OpenStandardOutput() :
 				output_file == "nul" ? new NullStream() : null,
-				audioSource.PCM);
+				settings);
 			encoder.FinalSampleCount = audioSource.Length;
 			IAudioDest audioDest = encoder;
 			AudioBuffer buff = new AudioBuffer(audioSource, FLACCLWriter.MAX_BLOCKSIZE);
@@ -259,7 +260,7 @@ namespace CUETools.FLACCL.cmd
 			{
 				if (device_type != null)
 					settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
-                encoder.Settings = settings;
+                settings.Validate();
 				if (stereo_method != null)
 					encoder.StereoMethod = Flake.LookupStereoMethod(stereo_method);
 				if (window_function != null)

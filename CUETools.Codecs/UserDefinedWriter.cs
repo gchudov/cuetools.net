@@ -14,6 +14,7 @@ namespace CUETools.Codecs
         string tempFile = null;
         long _finalSampleCount = -1;
         bool closed = false;
+        private AudioEncoderSettings m_settings;
 
         public long Position
         {
@@ -29,29 +30,19 @@ namespace CUETools.Codecs
         }
 
         // !!!! Must not start the process in constructor, so that we can set CompressionLevel via Settings!
-        private AudioEncoderSettings m_settings = new AudioEncoderSettings();
-
         public AudioEncoderSettings Settings
         {
             get
             {
                 return m_settings;
             }
-            set
-            {
-                m_settings = value.Clone<AudioEncoderSettings>();
-            }
-        }
-
-        public AudioPCMConfig PCM
-        {
-            get { return wrt.PCM; }
         }
 
         public string Path { get { return _path; } }
 
-        public UserDefinedWriter(string path, Stream IO, AudioPCMConfig pcm, string encoder, string encoderParams, string encoderMode, int padding)
+        public UserDefinedWriter(string path, Stream IO, AudioEncoderSettings settings, string encoder, string encoderParams, string encoderMode, int padding)
         {
+            m_settings = settings as AudioEncoderSettings;
             _path = path;
             _encoder = encoder;
             _encoderParams = encoderParams;
@@ -70,7 +61,7 @@ namespace CUETools.Codecs
                 _encoderProcess.StartInfo.RedirectStandardOutput = true;
             if (useTempFile)
             {
-                wrt = new WAVWriter(tempFile, null, pcm);
+                wrt = new WAVWriter(tempFile, null, new WAVWriterSettings(settings.PCM));
                 return;
             }
             bool started = false;
@@ -93,7 +84,7 @@ namespace CUETools.Codecs
                 outputBuffer = new CyclicBuffer(2 * 1024 * 1024, _encoderProcess.StandardOutput.BaseStream, outputStream);
             }
             Stream inputStream = new CyclicBufferOutputStream(_encoderProcess.StandardInput.BaseStream, 128 * 1024);
-            wrt = new WAVWriter(path, inputStream, pcm);
+            wrt = new WAVWriter(path, inputStream, new WAVWriterSettings(settings.PCM));
         }
 
         public void Close()

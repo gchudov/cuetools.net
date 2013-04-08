@@ -15,7 +15,7 @@ namespace CUETools.Codecs.LAME
         private byte[] m_InBuffer = null;
         private int m_InBufferPos = 0;
         private byte[] m_OutBuffer = null;
-        private AudioPCMConfig _pcm;
+        private AudioEncoderSettings m_settings;
         private string _path;
         private Stream _IO;
         private long position = 0, sample_count = -1;
@@ -26,12 +26,7 @@ namespace CUETools.Codecs.LAME
         {
             get
             {
-                return new AudioEncoderSettings();
-            }
-            set
-            {
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-                    throw new Exception("Unsupported options " + value);
+                return m_settings;
             }
         }
 
@@ -45,11 +40,6 @@ namespace CUETools.Codecs.LAME
             set { sample_count = (int)value; }
         }
 
-        public AudioPCMConfig PCM
-        {
-            get { return _pcm; }
-        }
-
         public string Path { get { return _path; } }
 
         public long BytesWritten
@@ -57,17 +47,17 @@ namespace CUETools.Codecs.LAME
             get { return bytesWritten; }
         }
 
-        public LAMEEncoder(string path, Stream IO, AudioPCMConfig pcm)
+        public LAMEEncoder(string path, Stream IO, AudioEncoderSettings settings)
         {
-            if (pcm.BitsPerSample != 16)// && pcm.BitsPerSample != 32)
+            if (settings.PCM.BitsPerSample != 16)// && pcm.BitsPerSample != 32)
                 throw new ArgumentOutOfRangeException("format", "Only 16 & 32 bits samples supported");
-            _pcm = pcm;
+            m_settings = settings;
             _path = path;
             _IO = IO;
         }
 
-        public LAMEEncoder(string path, AudioPCMConfig pcm)
-            : this(path, null, pcm)
+        public LAMEEncoder(string path, AudioEncoderSettings settings)
+            : this(path, null, settings)
         {
         }
 
@@ -146,7 +136,7 @@ namespace CUETools.Codecs.LAME
 
         protected virtual BE_CONFIG MakeConfig()
         {
-            return new BE_CONFIG(_pcm);
+            return new BE_CONFIG(Settings.PCM);
         }
 
         private void Init()

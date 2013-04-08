@@ -323,17 +323,18 @@ namespace CUETools.FlakeExe
                                 audioSource = new AudioPipe(audioSource, 0x10000);
                             if (output_file == null)
                                 output_file = Path.ChangeExtension(input_file, "flac");
+                            settings.PCM = audioSource.PCM;
                             FlakeWriter flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
                                 output_file == "-" ? Console.OpenStandardOutput() :
                                 output_file == "nul" ? new NullStream() : null,
-                                audioSource.PCM);
+                                settings);
                             flake.FinalSampleCount = audioSource.Length - skip_a - skip_b;
                             IAudioDest audioDest = flake;
                             AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
                             try
                             {
-                                flake.Settings = settings;
+                                settings.Validate();
                                 if (prediction_type != null)
                                     flake.PredictionType = Flake.LookupPredictionType(prediction_type);
                                 if (stereo_method != null)

@@ -1,90 +1,115 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using CUETools.Codecs;
 using System.IO;
 using System.Text;
 using WindowsMediaLib;
 using WindowsMediaLib.Defs;
+using System.Collections.Generic;
 
 namespace CUETools.Codecs.WMA
 {
-    public class WMAWriterSettings : AudioEncoderSettings
+    public abstract class WMAWriterSettings : AudioEncoderSettings
     {
-        public WMAWriterSettings() {  }
-    }
-
-    [AudioEncoderClass("windows", "wma", true, 1, typeof(WMAWriterSettings))]
-    public class WMAWriter : IAudioDest
-    {
-        IWMProfileManager m_pProfileManager;
-        IWMWriter m_pWriter;
-        int m_iCodec, m_iFormat;
-
-        private string outputPath;
-
-        private bool closed = false;
-        private AudioPCMConfig pcm;
-        private long sampleCount, finalSampleCount;
-
-        public long FinalSampleCount
+        public WMAWriterSettings(Guid subType)
+            : base()
         {
-            set
-            {
-                this.finalSampleCount = value;
-            }
+            this.m_subType = subType;
         }
 
-        public AudioPCMConfig PCM
+        private readonly Guid m_subType;
+        protected bool m_vbr = true;
+
+        public IWMWriter GetWriter()
         {
-            get { return this.pcm; }
-        }
-
-        public string Path
-        {
-            get { return this.outputPath; }
-        }
-
-        AudioEncoderSettings m_settings = new AudioEncoderSettings();
-
-        public virtual AudioEncoderSettings Settings
-        {
-            get
-            {
-                return m_settings;
-            }
-            set
-            {
-                m_settings = value.Clone<AudioEncoderSettings>();
-            }
-        }
-
-        public WMAWriter(string path, AudioPCMConfig pcm)
-        {
-            this.CheckPCMConfig(pcm);
-            this.pcm = pcm;
-            this.outputPath = path;
-
+            IWMProfileManager pProfileManager = null;
             try
             {
-                WMUtils.WMCreateProfileManager(out m_pProfileManager);
-                var pCodecInfo3 = m_pProfileManager as IWMCodecInfo3;
+                WMUtils.WMCreateProfileManager(out pProfileManager);
+                var pCodecInfo3 = pProfileManager as IWMCodecInfo3;
+                // We have to use the same pProfileManager for enumeration,
+                // because it calls SetCodecEnumerationSetting, so chosenFormat.format
+                // would not point to the same format for a pProfileManager
+                // with different (default) settings, and GetCodecFormat
+                // would return the wrong stream config.
+                var formats = GetFormats(pProfileManager);
+                if (this.EncoderMode != "")
+                    formats.RemoveAll(fmt => fmt.modeName != this.EncoderMode);
+                if (formats.Count < 1)
+                    throw new NotSupportedException("codec/format not found");
+                if (formats.Count > 1)
+                    throw new NotSupportedException("codec/format ambiguous");
+                var chosenFormat = formats[0];
+                IWMStreamConfig pStreamConfig1;
+                pCodecInfo3.GetCodecFormat(MediaType.Audio, chosenFormat.codec, chosenFormat.format, out pStreamConfig1);
+                try
+                {
+                    pStreamConfig1.SetStreamNumber(1);
+                    IWMProfile pProfile;
+                    pProfileManager.CreateEmptyProfile(WMVersion.V9_0, out pProfile);
+                    try
+                    {
+                        pProfile.AddStream(pStreamConfig1);
+                        IWMWriter pWriter;
+                        WMUtils.WMCreateWriter(IntPtr.Zero, out pWriter);
+                        try
+                        {
+                            pWriter.SetProfile(pProfile);
+                        }
+                        catch (Exception ex)
+                        {
+                            Marshal.ReleaseComObject(pWriter);
+                            throw ex;
+                        }
+                        return pWriter;
+                    }
+                    finally
+                    {
+                        Marshal.ReleaseComObject(pProfile);
+                    }
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(pStreamConfig1);
+                }
+            }
+            finally
+            {
+                Marshal.ReleaseComObject(pProfileManager);
+            }
+        }
+
+        internal IEnumerable<WMAFormatInfo> EnumerateFormatInfo(IWMProfileManager pProfileManager2)
+        {
+            IWMProfileManager pProfileManager = null;
+            try
+            {
+                if (pProfileManager2 == null)
+                    WMUtils.WMCreateProfileManager(out pProfileManager);
+                var pCodecInfo3 = (pProfileManager2 ?? pProfileManager) as IWMCodecInfo3;
                 int cCodecs;
                 pCodecInfo3.GetCodecInfoCount(MediaType.Audio, out cCodecs);
-                bool codecFound = false;
                 for (int iCodec = 0; iCodec < cCodecs; iCodec++)
                 {
                     int szCodecName = 0;
                     pCodecInfo3.GetCodecName(MediaType.Audio, iCodec, null, ref szCodecName);
                     var codecName = new StringBuilder(szCodecName);
                     pCodecInfo3.GetCodecName(MediaType.Audio, iCodec, codecName, ref szCodecName);
-        		    //if (codec != WMAvoice)
-                    try
+                    var attrDataType = new AttrDataType();
+                    int dwAttrSize = 0;
+                    byte[] pAttrValue = new byte[4];
+                    pCodecInfo3.GetCodecProp(MediaType.Audio, iCodec, Constants.g_wszIsVBRSupported, out attrDataType, pAttrValue, ref dwAttrSize);
+                    if (pAttrValue[0] != 1)
+                        continue;
+                    if (m_vbr)
                     {
-                        pCodecInfo3.SetCodecEnumerationSetting(MediaType.Audio, iCodec, Constants.g_wszVBREnabled, AttrDataType.BOOL, new byte[] {1, 0, 0, 0}, 4);
-                        //pCodecInfo3.SetCodecEnumerationSetting(MediaType.Audio, iCodec, Constants.g_wszNumPasses, AttrDataType.DWORD, new byte[] {1, 0, 0, 0}, 4);
-		            }
-                    catch (COMException)
+                        pCodecInfo3.SetCodecEnumerationSetting(MediaType.Audio, iCodec, Constants.g_wszVBREnabled, AttrDataType.BOOL, new byte[] { 1, 0, 0, 0 }, 4);
+                        pCodecInfo3.SetCodecEnumerationSetting(MediaType.Audio, iCodec, Constants.g_wszNumPasses, AttrDataType.DWORD, new byte[] { 1, 0, 0, 0 }, 4);
+                    }
+                    else
                     {
+                        pCodecInfo3.SetCodecEnumerationSetting(MediaType.Audio, iCodec, Constants.g_wszVBREnabled, AttrDataType.BOOL, new byte[] { 0, 0, 0, 0 }, 4);
                     }
 
                     int cFormat;
@@ -92,7 +117,11 @@ namespace CUETools.Codecs.WMA
                     for (int iFormat = 0; iFormat < cFormat; iFormat++)
                     {
                         IWMStreamConfig pStreamConfig;
-                        pCodecInfo3.GetCodecFormat(MediaType.Audio, iCodec, iFormat, out pStreamConfig);
+                        int cchDesc = 1024;
+                        StringBuilder szDesc = new StringBuilder(cchDesc);
+                        pCodecInfo3.GetCodecFormatDesc(MediaType.Audio, iCodec, iFormat, out pStreamConfig, szDesc, ref cchDesc);
+                        if (szDesc.ToString().Contains("(A/V)")) 
+                            continue;
                         try
                         {
                             var pProps = pStreamConfig as IWMMediaProps;
@@ -104,16 +133,21 @@ namespace CUETools.Codecs.WMA
                             pProps.GetMediaType(pMediaType, ref cbType);
                             try
                             {
-                                if (pMediaType.majorType == MediaType.Audio && pMediaType.formatType == FormatType.WaveEx && pMediaType.subType == MediaSubType.WMAudio_Lossless)
+                                if (pMediaType.majorType == MediaType.Audio && pMediaType.formatType == FormatType.WaveEx && pMediaType.subType == m_subType)
                                 {
                                     WaveFormatEx pWfx = new WaveFormatEx();
                                     Marshal.PtrToStructure(pMediaType.formatPtr, pWfx);
-                                    if (pWfx.nChannels == pcm.ChannelCount && pWfx.wBitsPerSample == pcm.BitsPerSample && pWfx.nSamplesPerSec == pcm.SampleRate)
+                                    var info = new WMAFormatInfo()
                                     {
-                                        m_iCodec = iCodec;
-                                        m_iFormat = iFormat;
-                                        codecFound = true;
-                                    }
+                                        codec = iCodec,
+                                        codecName = codecName.ToString(),
+                                        format = iFormat,
+                                        formatName = szDesc.ToString(),
+                                        subType = pMediaType.subType,
+                                        pcm = new AudioPCMConfig(pWfx.wBitsPerSample, pWfx.nChannels, pWfx.nSamplesPerSec)
+                                    };
+                                    if (PCM == null || (pWfx.nChannels == PCM.ChannelCount && pWfx.wBitsPerSample == PCM.BitsPerSample && pWfx.nSamplesPerSec == PCM.SampleRate))
+                                        yield return info;
                                 }
                             }
                             finally
@@ -127,48 +161,131 @@ namespace CUETools.Codecs.WMA
                         }
                     }
                 }
-                if (!codecFound)
-                    throw new NotSupportedException("codec not found");
-                IWMStreamConfig pStreamConfig1;
-                pCodecInfo3.GetCodecFormat(MediaType.Audio, m_iCodec, m_iFormat, out pStreamConfig1);
-                try
-                {
-                    pStreamConfig1.SetStreamNumber(1);
-                    IWMProfile pProfile;
-                    m_pProfileManager.CreateEmptyProfile(WMVersion.V9_0, out pProfile);
-                    try
-                    {
-                        pProfile.AddStream(pStreamConfig1);
-                        WMUtils.WMCreateWriter(IntPtr.Zero, out m_pWriter);
-                        m_pWriter.SetProfile(pProfile);
-                        int cInputs;
-                        m_pWriter.GetInputCount(out cInputs);
-                        //for (int iInput = 0; iInput < cInputs; iInput++)
-                        //{
-                        //}
-                        //IWMInputMediaProps pInput;
-                        //pWriter.GetInputProps(0, out pInput);
-                        //pInput.GetMediaType(pType, ref cbType);
-                        // fill (WAVEFORMATEX*)pType->pbFormat
-                        // WAVEFORMATEXTENSIBLE if needed (dwChannelMask, wValidBitsPerSample)
-                        // if (chg)
-                        //pInput.SetMediaType(pType);
-                        //pWriter.SetInputProps(0, pInput);
+            }
+            finally
+            {
+                if (pProfileManager != null)
+                    Marshal.ReleaseComObject(pProfileManager);
+            }
+        }
 
-                        //{ DWORD dwFormatCount = 0; hr = pWriter->GetInputFormatCount(0, &dwFormatCount); TEST(hr); TESTB(dwFormatCount > 0); }
-                        //// GetInputFormatCount failed previously for multichannel formats, before ...mask = guessChannelMask() added. Leave this check j.i.c.
-                        m_pWriter.SetOutputFilename(outputPath);
-                        m_pWriter.BeginWriting();
-                    }
-                    finally
-                    {
-                        Marshal.ReleaseComObject(pProfile);
-                    }
-                }
-                finally
-                {
-                    Marshal.ReleaseComObject(pStreamConfig1);
-                }
+        internal List<WMAFormatInfo> GetFormats(IWMProfileManager pProfileManager)
+        {
+            var formats = new List<WMAFormatInfo>(this.EnumerateFormatInfo(pProfileManager));
+            if (formats.Count < 2) return formats;
+            int prefixLen = 0, suffixLen = 0;
+            while (formats.TrueForAll(s => s.formatName.Length > prefixLen &&
+                s.formatName.Substring(0, prefixLen + 1) ==
+                formats[0].formatName.Substring(0, prefixLen + 1)))
+                prefixLen++;
+            while (formats.TrueForAll(s => s.formatName.Length > suffixLen &&
+                s.formatName.Substring(s.formatName.Length - suffixLen - 1) ==
+                formats[0].formatName.Substring(formats[0].formatName.Length - suffixLen - 1)))
+                suffixLen++;
+            formats.ForEach(s => s.modeName = s.formatName.Substring(prefixLen, s.formatName.Length - suffixLen - prefixLen).Trim().Replace(' ', '_'));
+            int ix, iy;
+            formats.Sort((Comparison<WMAFormatInfo>)((x, y) => int.TryParse(x.modeName, out ix) && int.TryParse(y.modeName, out iy) ? ix - iy : x.modeName.CompareTo(y.modeName)));
+            return formats;
+        }
+
+        public override string GetSupportedModes()
+        {
+            return string.Join(" ", GetFormats(null).ConvertAll(s => s.modeName).ToArray());
+        }
+    }
+
+    internal class WMAFormatInfo
+    {
+        public int codec;
+        public string codecName;
+        public int format;
+        public string formatName;
+        public string modeName;
+        public Guid subType;
+        public AudioPCMConfig pcm;
+    }
+
+    public class WMALWriterSettings : WMAWriterSettings
+    {
+        public WMALWriterSettings()
+            : base(MediaSubType.WMAudio_Lossless)
+        {
+        }
+    }
+
+    public class WMAVBRWriterSettings : WMAWriterSettings
+    {
+        public WMAVBRWriterSettings()
+            : base(MediaSubType.WMAudioV8)
+        {
+        }
+
+        [DefaultValue(true)]
+        public bool VBR
+        {
+            get { return m_vbr; }
+            set { m_vbr = value; }
+        }
+    }
+
+    [AudioEncoderClass("windows", "wma", true, 1, typeof(WMALWriterSettings))]
+    [AudioEncoderClass("windows", "wma", false, 1, typeof(WMAVBRWriterSettings))]
+    public class WMAWriter : IAudioDest
+    {
+        IWMWriter m_pWriter;
+        private string outputPath;
+        private bool closed = false;
+        private long sampleCount, finalSampleCount;
+
+        public long FinalSampleCount
+        {
+            set
+            {
+                this.finalSampleCount = value;
+            }
+        }
+
+        public string Path
+        {
+            get { return this.outputPath; }
+        }
+
+        WMAWriterSettings m_settings;
+
+        public virtual AudioEncoderSettings Settings
+        {
+            get
+            {
+                return m_settings;
+            }
+        }
+
+        public WMAWriter(string path, WMAWriterSettings settings)
+        {
+            this.m_settings = settings;
+            this.outputPath = path;
+
+            try
+            {
+                m_pWriter = settings.GetWriter();
+                int cInputs;
+                m_pWriter.GetInputCount(out cInputs);
+                //for (int iInput = 0; iInput < cInputs; iInput++)
+                //{
+                //}
+                //IWMInputMediaProps pInput;
+                //pWriter.GetInputProps(0, out pInput);
+                //pInput.GetMediaType(pType, ref cbType);
+                // fill (WAVEFORMATEX*)pType->pbFormat
+                // WAVEFORMATEXTENSIBLE if needed (dwChannelMask, wValidBitsPerSample)
+                // if (chg)
+                //pInput.SetMediaType(pType);
+                //pWriter.SetInputProps(0, pInput);
+
+                //{ DWORD dwFormatCount = 0; hr = pWriter->GetInputFormatCount(0, &dwFormatCount); TEST(hr); TESTB(dwFormatCount > 0); }
+                //// GetInputFormatCount failed previously for multichannel formats, before ...mask = guessChannelMask() added. Leave this check j.i.c.
+                m_pWriter.SetOutputFilename(outputPath);
+                m_pWriter.BeginWriting();
             }
             catch (Exception ex)
             {
@@ -177,20 +294,7 @@ namespace CUETools.Codecs.WMA
                     Marshal.ReleaseComObject(m_pWriter);
                     m_pWriter = null;
                 }
-                if (m_pProfileManager != null)
-                {
-                    Marshal.ReleaseComObject(m_pProfileManager);
-                    m_pProfileManager = null;
-                }
                 throw ex;
-            }
-        }
-
-        private void CheckPCMConfig(AudioPCMConfig pcm)
-        {
-            if (pcm.BitsPerSample != 16)
-            {
-                throw new ArgumentException("LAME only supports 16 bits/sample.");
             }
         }
 
@@ -208,11 +312,6 @@ namespace CUETools.Codecs.WMA
                     {
                         Marshal.ReleaseComObject(m_pWriter);
                         m_pWriter = null;
-                    }
-                    if (m_pProfileManager != null)
-                    {
-                        Marshal.ReleaseComObject(m_pProfileManager);
-                        m_pProfileManager = null;
                     }
                 }
 
@@ -248,7 +347,7 @@ namespace CUETools.Codecs.WMA
             pSample.GetBuffer(out pdwBuffer);
             pSample.SetLength(buffer.ByteLength);
             Marshal.Copy(buffer.Bytes, 0, pdwBuffer, buffer.ByteLength);
-            long cnsSampleTime = sampleCount * 10000000L / pcm.SampleRate;
+            long cnsSampleTime = sampleCount * 10000000L / Settings.PCM.SampleRate;
             m_pWriter.WriteSample(0, cnsSampleTime, SampleFlag.CleanPoint, pSample);
             Marshal.ReleaseComObject(pSample);
             sampleCount += buffer.Length;

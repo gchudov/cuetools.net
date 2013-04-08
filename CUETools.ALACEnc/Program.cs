@@ -176,17 +176,18 @@ namespace CUETools.ALACEnc
 				audioSource = new AudioPipe(audioSource, 0x10000);
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "m4a");
+            settings.PCM = audioSource.PCM;
 			ALACWriter alac = new ALACWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
 				output_file == "-" ? Console.OpenStandardOutput() :
 				output_file == "nul" ? new NullStream() : null,
-				audioSource.PCM);
+				settings);
 			alac.FinalSampleCount = audioSource.Length;
 			IAudioDest audioDest = alac;
 			AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
 			try
 			{
-                alac.Settings = settings;
+                settings.Validate();
 				if (stereo_method != null)
 					alac.StereoMethod = Alac.LookupStereoMethod(stereo_method);
 				if (order_method != null)

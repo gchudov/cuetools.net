@@ -265,14 +265,13 @@ namespace CUETools { namespace Codecs { namespace APE {
 	public ref class APEWriter : IAudioDest
 	{
 	public:
-		APEWriter(String^ path, AudioPCMConfig^ pcm)
+		APEWriter(String^ path, APEWriterSettings^ settings)
 		{
-			_settings = gcnew APEWriterSettings();
-		    _pcm = pcm;
+			_settings = settings;
 
-		    if (_pcm->ChannelCount != 1 && _pcm->ChannelCount != 2)
+		    if (_settings->PCM->ChannelCount != 1 && _settings->PCM->ChannelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
-		    if (_pcm->BitsPerSample != 16 && _pcm->BitsPerSample != 24)
+		    if (_settings->PCM->BitsPerSample != 16 && _settings->PCM->BitsPerSample != 24)
 				throw gcnew Exception("Monkey's Audio doesn't support selected bits per sample value.");
 
 		    _path = path;
@@ -342,14 +341,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 			}
 		}
 
-		virtual property AudioPCMConfig^ PCM 
-		{
-			AudioPCMConfig^ get() 
-			{
-				return _pcm;
-			}
-		}
-
 		virtual void Write(AudioBuffer^ buff)
 		{
 			if (!_initialized) 
@@ -374,18 +365,12 @@ namespace CUETools { namespace Codecs { namespace APE {
 			{
 			    return _settings;
 			}
-			
-			void set(AudioEncoderSettings^ value)
-			{
-				_settings = value->Clone<APEWriterSettings^>();
-			}
 		}
 
 	private:
 		IAPECompress * pAPECompress;
 		bool _initialized;
 		Int32 _finalSampleCount, _samplesWritten;
-		AudioPCMConfig^ _pcm;
 		APEWriterSettings^ _settings;
 		String^ _path;
 		Stream^ _IO;
@@ -403,13 +388,13 @@ namespace CUETools { namespace Codecs { namespace APE {
 			_winFileIO = new CWinFileIO(_gchIO, _gchBuffer);
 
 			WAVEFORMATEX waveFormat;
-			FillWaveFormatEx (&waveFormat, _pcm->SampleRate, _pcm->BitsPerSample, _pcm->ChannelCount);
+			FillWaveFormatEx (&waveFormat, _settings->PCM->SampleRate, _settings->PCM->BitsPerSample, _settings->PCM->ChannelCount);
 
 			Int32 _compressionLevel = (_settings->EncoderModeIndex + 1) * 1000;
 
 			int res = pAPECompress->StartEx (_winFileIO,
 				&waveFormat, 
-				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * _pcm->BlockAlign,
+				(_finalSampleCount == 0) ? MAX_AUDIO_BYTES_UNKNOWN : _finalSampleCount * _settings->PCM->BlockAlign,
 				_compressionLevel, 
 				NULL, 
 				CREATE_WAV_HEADER_ON_DECOMPRESSION);

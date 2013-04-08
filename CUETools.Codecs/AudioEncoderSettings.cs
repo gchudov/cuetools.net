@@ -9,12 +9,14 @@ namespace CUETools.Codecs
     public class AudioEncoderSettings
     {
         public AudioEncoderSettings()
+            : this("", "")
         {
-            // Iterate through each property and call ResetValue()
-            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
-                property.ResetValue(this);
-            this.m_supported_modes = "";
-            this.EncoderMode = "";
+        }
+
+        public AudioEncoderSettings(AudioPCMConfig pcm)
+            : this("", "")
+        {
+            this.PCM = pcm;
         }
 
         public AudioEncoderSettings(string supported_modes, string default_mode)
@@ -38,24 +40,36 @@ namespace CUETools.Codecs
             return BlockSize == 0 && Padding >= 0;
         }
 
-        public T Clone<T>() where T : AudioEncoderSettings
+        public void Validate()
         {
-            if (this as T == null)
-                throw new Exception("Unsupported options " + this);
-            var result = this.MemberwiseClone() as T;
-            if (!result.IsValid())
+            if (!IsValid())
                 throw new Exception("unsupported encoder settings");
-            return result;
         }
+
+        public AudioEncoderSettings Clone()
+        {
+            return this.MemberwiseClone() as AudioEncoderSettings;
+        }
+
+        [Browsable(false)]
+        [XmlIgnore]
+        public AudioPCMConfig PCM
+        {
+            get;
+            set;
+        }
+
 
         [Browsable(false)]
         [DefaultValue(0)]
         public int BlockSize
         {
-            get; set;
+            get;
+            set;
         }
 
         [Browsable(false)]
+        [XmlIgnore]
         [DefaultValue(4096)]
         public int Padding
         {
@@ -64,6 +78,7 @@ namespace CUETools.Codecs
         }
 
         [Browsable(false)]
+        [DefaultValue("")]
         public string EncoderMode
         {
             get;

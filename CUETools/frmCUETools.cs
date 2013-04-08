@@ -40,6 +40,7 @@ using CUETools.CTDB;
 using CUETools.Compression;
 using CUETools.Processor;
 using CUETools.Processor.Settings;
+using CUETools.Codecs;
 
 namespace JDP
 {
@@ -2452,6 +2453,8 @@ namespace JDP
                 SelectedOutputAudioFmt.encoderLossless = encoder;
             else
                 SelectedOutputAudioFmt.encoderLossy = encoder;
+            // TODO: something cleverer than this hack...
+            if (encoder.settings != null) encoder.settings.PCM = AudioPCMConfig.RedBook;
             string[] modes = encoder.SupportedModes;
             if (modes == null || modes.Length < 2)
             {

@@ -3877,7 +3877,7 @@ namespace CUETools.Processor
         {
             var pcm = new AudioPCMConfig(bps, 2, 44100);
             if (noOutput)
-                return new DummyWriter(path, pcm);
+                return new DummyWriter(path, new AudioEncoderSettings(pcm));
             return AudioReadWrite.GetAudioDest(_audioEncoderType, path, finalSampleCount, padding, pcm, _config);
         }
 

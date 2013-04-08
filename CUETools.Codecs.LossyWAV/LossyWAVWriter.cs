@@ -10,7 +10,7 @@ namespace CUETools.Codecs.LossyWAV
         public const string version_string = "1.1.1#";
 
         private IAudioDest _audioDest, _lwcdfDest;
-        private AudioPCMConfig _pcm;
+        private AudioEncoderSettings m_settings;
         private AudioBuffer _audioBuffer;
         private short[] fft_bit_length;
         private float[] frequency_limits;
@@ -75,18 +75,8 @@ namespace CUETools.Codecs.LossyWAV
         {
             get
             {
-                return new AudioEncoderSettings();
+                return m_settings;
             }
-            set
-            {
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-                    throw new Exception("Unsupported options " + value);
-            }
-        }
-
-        public AudioPCMConfig PCM
-        {
-            get { return _pcm; }
         }
 
         public int OverallBitsRemoved
@@ -164,15 +154,15 @@ namespace CUETools.Codecs.LossyWAV
 
         #region Constructor
 
-        public LossyWAVWriter(IAudioDest audioDest, IAudioDest lwcdfDest, double quality, AudioPCMConfig pcm)
+        public LossyWAVWriter(IAudioDest audioDest, IAudioDest lwcdfDest, double quality, AudioEncoderSettings settings)
         {
             _audioDest = audioDest;
             _lwcdfDest = lwcdfDest;
-            _pcm = pcm;
+            m_settings = settings;
 
-            if (_audioDest != null && _audioDest.PCM.BitsPerSample > _pcm.BitsPerSample)
+            if (_audioDest != null && _audioDest.Settings.PCM.BitsPerSample > Settings.PCM.BitsPerSample)
                 throw new Exception("audio parameters mismatch");
-            if (_lwcdfDest != null && _lwcdfDest.PCM.BitsPerSample != _pcm.BitsPerSample)
+            if (_lwcdfDest != null && _lwcdfDest.Settings.PCM.BitsPerSample != Settings.PCM.BitsPerSample)
                 throw new Exception("audio parameters mismatch");
 
             int quality_integer = (int)Math.Floor(quality);
@@ -195,7 +185,7 @@ namespace CUETools.Codecs.LossyWAV
             shaping_factor = Math.Min(1, quality / 10);
             shaping_is_on = shaping_factor > 0;
 
-            _audioBuffer = new AudioBuffer(_pcm, 256);
+            _audioBuffer = new AudioBuffer(Settings.PCM, 256);
         }
 
         #endregion
@@ -208,7 +198,7 @@ namespace CUETools.Codecs.LossyWAV
             {
                 shift_codec_blocks();
                 if (samplesInBuffer > 0)
-                    Array.Copy(sampleBuffer, 0, rotating_blocks_ptr[3], 0, samplesInBuffer * _pcm.ChannelCount);
+                    Array.Copy(sampleBuffer, 0, rotating_blocks_ptr[3], 0, samplesInBuffer * Settings.PCM.ChannelCount);
                 next_codec_block_size = samplesInBuffer;
                 process_this_codec_block();
                 if (next_codec_block_size > 0)
@@ -237,8 +227,8 @@ namespace CUETools.Codecs.LossyWAV
             {
                 shift_codec_blocks(); // next_codec_block_size is now zero
                 if (samplesInBuffer > 0)
-                    Array.Copy(sampleBuffer, 0, rotating_blocks_ptr[3], 0, samplesInBuffer * _pcm.ChannelCount);
-                Array.Copy(buff.Samples, pos * _pcm.ChannelCount, rotating_blocks_ptr[3], samplesInBuffer * _pcm.ChannelCount, (codec_block_size - samplesInBuffer) * _pcm.ChannelCount);
+                    Array.Copy(sampleBuffer, 0, rotating_blocks_ptr[3], 0, samplesInBuffer * Settings.PCM.ChannelCount);
+                Array.Copy(buff.Samples, pos * Settings.PCM.ChannelCount, rotating_blocks_ptr[3], samplesInBuffer * Settings.PCM.ChannelCount, (codec_block_size - samplesInBuffer) * Settings.PCM.ChannelCount);
                 next_codec_block_size = codec_block_size;
                 pos += codec_block_size - samplesInBuffer;
                 sampleCount -= codec_block_size - samplesInBuffer;
@@ -249,7 +239,7 @@ namespace CUETools.Codecs.LossyWAV
             }
             if (sampleCount > 0)
             {
-                Array.Copy(buff.Samples, pos * _pcm.ChannelCount, sampleBuffer, samplesInBuffer * _pcm.ChannelCount, sampleCount * _pcm.ChannelCount);
+                Array.Copy(buff.Samples, pos * Settings.PCM.ChannelCount, sampleBuffer, samplesInBuffer * Settings.PCM.ChannelCount, sampleCount * Settings.PCM.ChannelCount);
                 samplesInBuffer += sampleCount;
             }
         }
@@ -319,7 +309,7 @@ namespace CUETools.Codecs.LossyWAV
 				{ 4.876022F,5.668487F,6.605748F,7.589148F,8.584943F,9.583902F,10.583678F,11.583589F,12.583571F,13.583568F,14.583551F,15.583574F,16.583541F,17.583544F,18.583555F,19.583554F,20.583574F,21.583577F,22.583531F,23.583560F,24.583548F,25.583570F,26.583561F,27.583581F,28.583552F,29.583540F,30.583564F,31.583530F,32.583546F,33.583585F,34.583557F,35.583567F}
 			};
 
-            if (_pcm.SampleRate > 46050)
+            if (Settings.PCM.SampleRate > 46050)
             {
                 shaping_a = /* order_4_48000_a */ new double[4] { +0.90300, +0.01160, -0.58530, -0.25710 };
                 shaping_b = /* order_4_48000_b */ new double[4] { -2.23740, +0.73390, +0.12510, +0.60330 };
@@ -336,8 +326,8 @@ namespace CUETools.Codecs.LossyWAV
             short bits_in_block_size = (short)Math.Floor(fastlog2(codec_block_size));
             for (int i = 0; i < precalc_analyses; i++)
                 fft_bit_length[i] += (short)(bits_in_block_size - 9);
-            if (frequency_limits[spread_freqs] > _pcm.SampleRate / 2)
-                frequency_limits[spread_freqs] = _pcm.SampleRate / 2;
+            if (frequency_limits[spread_freqs] > Settings.PCM.SampleRate / 2)
+                frequency_limits[spread_freqs] = Settings.PCM.SampleRate / 2;
             fill_fft_lookup_block = new int[maxblocksize * 4];
             fill_fft_lookup_offset = new int[maxblocksize * 4];
             for (int i = 0; i < codec_block_size * 4; i++)
@@ -350,8 +340,8 @@ namespace CUETools.Codecs.LossyWAV
                 for (int j = 0; j < precalc_analyses; j++)
                     saved_fft_results[i, j].start = -1;
             clipped_samples = 0;
-            this_max_sample = (1 << (_pcm.BitsPerSample - 1)) - 1;
-            this_min_sample = 0 - (1 << (_pcm.BitsPerSample - 1));
+            this_max_sample = (1 << (Settings.PCM.BitsPerSample - 1)) - 1;
+            this_min_sample = 0 - (1 << (Settings.PCM.BitsPerSample - 1));
             for (int this_fft_bit_length = 1; this_fft_bit_length <= MaxFFTBitLength; this_fft_bit_length++)
             {
                 int this_fft_length = 1 << this_fft_bit_length;
@@ -368,7 +358,7 @@ namespace CUETools.Codecs.LossyWAV
                 shaping_a[i] *= sf;
                 shaping_b[i] *= sf;
             }
-            static_maximum_bits_to_remove = (short)(_pcm.BitsPerSample - static_minimum_bits_to_keep);
+            static_maximum_bits_to_remove = (short)(Settings.PCM.BitsPerSample - static_minimum_bits_to_keep);
             double lfb = Math.Log10(frequency_limits[0]); // 20Hz lower limit for skewing;
             double mfb = Math.Log10(frequency_limits[2]); // 3445.3125Hz upper limit for skewing;
             double dfb = mfb - lfb;						  // skewing range;
@@ -394,8 +384,8 @@ namespace CUETools.Codecs.LossyWAV
             fft_array = new double[1 << (MaxFFTBitLength + 1)];
             fft_result = new double[1 << MaxFFTBitLength];
             rotating_blocks_ptr = new int[4][,];
-            sampleBuffer = new int[codec_block_size, _pcm.ChannelCount];
-            channel_recs = new channel_rec[_pcm.ChannelCount];
+            sampleBuffer = new int[codec_block_size, Settings.PCM.ChannelCount];
+            channel_recs = new channel_rec[Settings.PCM.ChannelCount];
             analysis_recs = new analysis_rec[precalc_analyses];
 
             for (int analysis_number = 0; analysis_number < precalc_analyses; analysis_number++)
@@ -418,7 +408,7 @@ namespace CUETools.Codecs.LossyWAV
                 analysis_recs[analysis_number].fft_underlap_length = total_overlap_length * 1.0 / Math.Max(1, analysis_recs[analysis_number].analysis_blocks);
 
                 // Calculate actual analysis_time values for fft_lengths
-                analysis_recs[analysis_number].bin_width = _pcm.SampleRate * 1.0 / (1 << this_fft_bit_length);
+                analysis_recs[analysis_number].bin_width = Settings.PCM.SampleRate * 1.0 / (1 << this_fft_bit_length);
                 analysis_recs[analysis_number].bin_time = 1.0 / analysis_recs[analysis_number].bin_width;
 
                 // Calculate which FFT bin corresponds to the low frequency limit
@@ -464,9 +454,9 @@ namespace CUETools.Codecs.LossyWAV
                     analysis_recs[analysis_number].threshold_index[last_filled++] = 32; // ?? 31?
             } // calculating for each analysis_number
             for (int i = 0; i < 4; i++)
-                rotating_blocks_ptr[i] = new int[codec_block_size, _pcm.ChannelCount];
-            btrd_codec_block = new int[codec_block_size, _pcm.ChannelCount];
-            corr_codec_block = new int[codec_block_size, _pcm.ChannelCount];
+                rotating_blocks_ptr[i] = new int[codec_block_size, Settings.PCM.ChannelCount];
+            btrd_codec_block = new int[codec_block_size, Settings.PCM.ChannelCount];
+            corr_codec_block = new int[codec_block_size, Settings.PCM.ChannelCount];
             blocks_processed = 0;
             overall_bits_removed = 0;
             overall_bits_lost = 0;
@@ -530,8 +520,8 @@ namespace CUETools.Codecs.LossyWAV
         void remove_bits(int channel, short bits_to_remove_from_this_channel)
         {
             short min_bits_to_remove = 0;
-            if (_audioDest != null && _audioDest.PCM.BitsPerSample < _pcm.BitsPerSample)
-                min_bits_to_remove = (short)(_pcm.BitsPerSample - _audioDest.PCM.BitsPerSample);
+            if (_audioDest != null && _audioDest.Settings.PCM.BitsPerSample < Settings.PCM.BitsPerSample)
+                min_bits_to_remove = (short)(Settings.PCM.BitsPerSample - _audioDest.Settings.PCM.BitsPerSample);
             if (bits_to_remove_from_this_channel < min_bits_to_remove)
                 bits_to_remove_from_this_channel = min_bits_to_remove;
 
@@ -610,18 +600,18 @@ namespace CUETools.Codecs.LossyWAV
 
         void process_this_codec_block()
         {
-            short codec_block_dependent_bits_to_remove = (short)_pcm.BitsPerSample;
+            short codec_block_dependent_bits_to_remove = (short)Settings.PCM.BitsPerSample;
 
             double min_codec_block_channel_rms = channel_recs[0].this_codec_block_rms;
-            for (int channel = 0; channel < _pcm.ChannelCount; channel++)
+            for (int channel = 0; channel < Settings.PCM.ChannelCount; channel++)
                 min_codec_block_channel_rms = Math.Min(min_codec_block_channel_rms, channel_recs[channel].this_codec_block_rms);
 
-            for (int channel = 0; channel < _pcm.ChannelCount; channel++)
+            for (int channel = 0; channel < Settings.PCM.ChannelCount; channel++)
             {
                 // if (linkchannels)...
                 channel_recs[channel].this_codec_block_bits = channel_recs[channel].this_codec_block_rms;
             }
-            for (int channel = 0; channel < _pcm.ChannelCount; channel++)
+            for (int channel = 0; channel < Settings.PCM.ChannelCount; channel++)
             {
                 fft_results_rec min_fft_result;
 
@@ -712,7 +702,7 @@ namespace CUETools.Codecs.LossyWAV
                 codec_block_dependent_bits_to_remove = Math.Min(codec_block_dependent_bits_to_remove, channel_recs[channel].bits_to_remove);
             }
 
-            for (int channel = 0; channel < _pcm.ChannelCount; channel++)
+            for (int channel = 0; channel < Settings.PCM.ChannelCount; channel++)
             {
                 // if (linkchannels)
                 overall_bits_removed += channel_recs[channel].bits_to_remove;
@@ -722,11 +712,11 @@ namespace CUETools.Codecs.LossyWAV
 
             if (_audioDest != null)
             {
-                if (_audioDest.PCM.BitsPerSample < _pcm.BitsPerSample)
+                if (_audioDest.Settings.PCM.BitsPerSample < Settings.PCM.BitsPerSample)
                 {
-                    int sh = _pcm.BitsPerSample - _audioDest.PCM.BitsPerSample;
+                    int sh = Settings.PCM.BitsPerSample - _audioDest.Settings.PCM.BitsPerSample;
                     for (int i = 0; i < this_codec_block_size; i++)
-                        for (int c = 0; c < _pcm.ChannelCount; c++)
+                        for (int c = 0; c < Settings.PCM.ChannelCount; c++)
                             btrd_codec_block[i, c] >>= sh;
                 }
                 _audioBuffer.Prepare(btrd_codec_block, this_codec_block_size);
@@ -755,7 +745,7 @@ namespace CUETools.Codecs.LossyWAV
             if (this_codec_block_size > 0)
             {
                 blocks_processed++;
-                for (int channel = 0; channel < _pcm.ChannelCount; channel++)
+                for (int channel = 0; channel < Settings.PCM.ChannelCount; channel++)
                 {
                     double x = 0;
                     for (int i = 0; i < this_codec_block_size; i++)

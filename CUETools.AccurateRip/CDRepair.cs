@@ -417,18 +417,8 @@ namespace CUETools.AccurateRip
 		{
 			get
 			{
-				return new AudioEncoderSettings();
+				return new AudioEncoderSettings(AudioPCMConfig.RedBook);
 			}
-			set
-			{
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-					throw new Exception("Unsupported options " + value);
-			}
-		}
-
-		public AudioPCMConfig PCM
-		{
-			get { return AudioPCMConfig.RedBook; }
 		}
 
 		public string Path

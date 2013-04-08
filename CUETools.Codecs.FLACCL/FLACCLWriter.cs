@@ -33,19 +33,10 @@ namespace CUETools.Codecs.FLACCL
 {
 	public class FLACCLWriterSettings: AudioEncoderSettings
 	{
-		public FLACCLWriterSettings() 
+        public FLACCLWriterSettings()
             : base("", "8")
-		{ 
-			this.DoVerify = false; 
-			this.GPUOnly = true;
-			this.DoRice = false;
-            this.MappedMemory = false;
-			this.DoMD5 = true; 
-			this.GroupSize = 128;
-			this.TaskSize = 8;
-			this.DeviceType = OpenCLDeviceType.GPU;
-            this.AllowNonSubset = false;
-		}
+        {
+        }
 
         public override string GetSupportedModes()
         {
@@ -115,23 +106,6 @@ namespace CUETools.Codecs.FLACCL
 				if (value < 0 || value > 16)
 					throw new Exception("CPUThreads must be between 0..16");
 				cpu_threads = value;
-			}
-		}
-
-		int padding = 8192;
-		[DefaultValue(8192)]
-		[SRDescription(typeof(Properties.Resources), "DescriptionPadding")]
-		public int Padding
-		{
-			get
-			{
-				return padding;
-			}
-			set
-			{
-				if (value < 0 || value > 1024*1024)
-					throw new Exception("Padding must be between 0..1MB");
-				padding = value;
 			}
 		}
 
@@ -240,36 +214,35 @@ namespace CUETools.Codecs.FLACCL
 
 		internal int framesPerTask;
 
-		AudioPCMConfig _pcm;
-
 		public const int MAX_BLOCKSIZE = 65536;
 
-		public FLACCLWriter(string path, Stream IO, AudioPCMConfig pcm)
+		public FLACCLWriter(string path, Stream IO, FLACCLWriterSettings settings)
 		{
-			_pcm = pcm;
+            m_settings = settings;
 
 			// FIXME: For now, only 16-bit encoding is supported
-			if (pcm.BitsPerSample != 16 && pcm.BitsPerSample != 24)
+            if (Settings.PCM.BitsPerSample != 16 && Settings.PCM.BitsPerSample != 24)
 				throw new Exception("Bits per sample must be 16.");
 			//if (pcm.ChannelCount != 2)
 			//    throw new Exception("ChannelCount must be 2.");
 
-			channels = pcm.ChannelCount;
-			sample_rate = pcm.SampleRate;
-			bits_per_sample = (uint) pcm.BitsPerSample;
+            channels = Settings.PCM.ChannelCount;
+            sample_rate = Settings.PCM.SampleRate;
+            bits_per_sample = (uint)Settings.PCM.BitsPerSample;
 
 			// flake_validate_params
 
 			_path = path;
 			_IO = IO;
 
-			eparams.flake_set_defaults(7);
+            var _compressionLevel = Settings.EncoderModeIndex;
+            eparams.flake_set_defaults(_compressionLevel);
 
 			crc8 = new Crc8();
 		}
 
-		public FLACCLWriter(string path, AudioPCMConfig pcm)
-			: this(path, null, pcm)
+        public FLACCLWriter(string path, FLACCLWriterSettings settings)
+			: this(path, null, settings)
 		{
 		}
 
@@ -281,7 +254,7 @@ namespace CUETools.Codecs.FLACCL
 			}
 		}
 
-		internal FLACCLWriterSettings m_settings = new FLACCLWriterSettings();
+		internal FLACCLWriterSettings m_settings;
 
         public AudioEncoderSettings Settings
 		{
@@ -289,12 +262,6 @@ namespace CUETools.Codecs.FLACCL
 			{
 				return m_settings;
 			}
-			set
-			{
-                m_settings = value.Clone<FLACCLWriterSettings>();
-                var _compressionLevel = m_settings.EncoderModeIndex;
-                eparams.flake_set_defaults(_compressionLevel);
-            }
 		}
 
 		//[DllImport("kernel32.dll")]
@@ -580,11 +547,6 @@ namespace CUETools.Codecs.FLACCL
 		public TimeSpan UserProcessorTime
 		{
 			get { return _userProcessorTime; }
-		}
-
-		public AudioPCMConfig PCM
-		{
-			get { return _pcm; }
 		}
 
 		unsafe void encode_residual_fixed(int* res, int* smp, int n, int order)
@@ -1126,7 +1088,7 @@ namespace CUETools.Codecs.FLACCL
 							task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 							task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 							task.ResidualTasks[task.nResidualTasks].wbits = 0;
-							task.ResidualTasks[task.nResidualTasks].coding_method = PCM.BitsPerSample > 16 ? 1 : 0;
+							task.ResidualTasks[task.nResidualTasks].coding_method = Settings.PCM.BitsPerSample > 16 ? 1 : 0;
 							task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 							task.nResidualTasks++;
 						}
@@ -1142,7 +1104,7 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 						task.ResidualTasks[task.nResidualTasks].wbits = 0;
-						task.ResidualTasks[task.nResidualTasks].coding_method = PCM.BitsPerSample > 16 ? 1 : 0;
+						task.ResidualTasks[task.nResidualTasks].coding_method = Settings.PCM.BitsPerSample > 16 ? 1 : 0;
 						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOrder = 1;
 						task.ResidualTasks[task.nResidualTasks].shift = 0;
@@ -1161,7 +1123,7 @@ namespace CUETools.Codecs.FLACCL
 						task.ResidualTasks[task.nResidualTasks].samplesOffs = ch * task.channelSize + iFrame * blocksize;
 						task.ResidualTasks[task.nResidualTasks].residualOffs = task.ResidualTasks[task.nResidualTasks].samplesOffs;
 						task.ResidualTasks[task.nResidualTasks].wbits = 0;
-						task.ResidualTasks[task.nResidualTasks].coding_method = PCM.BitsPerSample > 16 ? 1 : 0;
+                        task.ResidualTasks[task.nResidualTasks].coding_method = Settings.PCM.BitsPerSample > 16 ? 1 : 0;
 						task.ResidualTasks[task.nResidualTasks].size = task.ResidualTasks[task.nResidualTasks].obits * blocksize;
 						task.ResidualTasks[task.nResidualTasks].shift = 0;
 						switch (order)
@@ -1310,7 +1272,7 @@ namespace CUETools.Codecs.FLACCL
 
 							int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
 							int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-							calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
+                            calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, Settings.PCM.BitsPerSample > 16 ? 1 : 0);
 						}
 						break;
 					case SubframeType.LPC:
@@ -1318,7 +1280,7 @@ namespace CUETools.Codecs.FLACCL
 						{
 							fixed (int* coefs = task.frame.subframes[ch].best.coefs)
 							{
-								if (PCM.BitsPerSample > 16)
+                                if (Settings.PCM.BitsPerSample > 16)
 									lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
 								else
 									lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
@@ -1326,7 +1288,7 @@ namespace CUETools.Codecs.FLACCL
 
 							int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
 							int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-							calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, PCM.BitsPerSample > 16 ? 1 : 0);
+                            calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, Settings.PCM.BitsPerSample > 16 ? 1 : 0);
 						}
 						break;
 				}
@@ -1446,10 +1408,11 @@ namespace CUETools.Codecs.FLACCL
 						int* s = task.frame.subframes[ch].samples;
 						int wbits = (int)task.frame.subframes[ch].wbits;
 						byte* src = &srcptr[ch * 3];
+                        int ba = Settings.PCM.BlockAlign;
 						for (int i = 0; i < count; i++)
 						{
 							s[i] = (((int)src[0] << 8) + ((int)src[1] << 16) + ((int)src[2] << 24)) >> (8 + wbits);
-							src += PCM.BlockAlign;
+                            src += ba;
 						}
 					}
 					break;
@@ -1524,10 +1487,10 @@ namespace CUETools.Codecs.FLACCL
 		unsafe void unpack_samples(FLACCLTask task, int count)
 		{
 			int iFrame = task.frame.frame_number;
-			byte* srcptr = ((byte*)task.clSamplesBytesPtr) + iFrame * task.frameSize * PCM.BlockAlign;
-			if (PCM.BitsPerSample == 16)
+            byte* srcptr = ((byte*)task.clSamplesBytesPtr) + iFrame * task.frameSize * Settings.PCM.BlockAlign;
+            if (Settings.PCM.BitsPerSample == 16)
 				unpack_samples_16(task, srcptr, count);
-			else if (PCM.BitsPerSample == 24)
+            else if (Settings.PCM.BitsPerSample == 24)
 				unpack_samples_24(task, srcptr, count);
 			else
 				throw new Exception("Invalid BPS");
@@ -1545,7 +1508,7 @@ namespace CUETools.Codecs.FLACCL
 					task.frame.subframes[ch].Init(
 						smp + ch * task.channelSize + iFrame * task.frameSize,
 						((int*)task.clResidualPtr) + ch * task.channelSize + iFrame * task.frameSize,
-						_pcm.BitsPerSample + (doMidside && ch == 3 ? 1 : 0), 0);
+						Settings.PCM.BitsPerSample + (doMidside && ch == 3 ? 1 : 0), 0);
 
 				encode_residual(task, channelCount, iFrame);
 
@@ -1576,7 +1539,7 @@ namespace CUETools.Codecs.FLACCL
 			frame_count += nFrames;
 			frame_pos += nFrames * blocksize;
             if (!task.UseMappedMemory)
-			    task.openCLCQ.EnqueueWriteBuffer(task.clSamplesBytes, false, 0, PCM.BlockAlign * blocksize * nFrames, task.clSamplesBytesPtr);
+			    task.openCLCQ.EnqueueWriteBuffer(task.clSamplesBytes, false, 0, Settings.PCM.BlockAlign * blocksize * nFrames, task.clSamplesBytesPtr);
 			//task.openCLCQ.EnqueueUnmapMemObject(task.clSamplesBytes, task.clSamplesBytes.HostPtr);
 			//task.openCLCQ.EnqueueMapBuffer(task.clSamplesBytes, true, MapFlags.WRITE, 0, task.samplesBufferLen / 2);
 		}
@@ -1618,10 +1581,10 @@ namespace CUETools.Codecs.FLACCL
 					{
 						for (int ch = 0; ch < channels; ch++)
 						{
-							byte* res = ((byte*)task.clSamplesBytesPtr) + PCM.BlockAlign * iFrame * task.frameSize + ch * (PCM.BlockAlign / channels);
+                            byte* res = ((byte*)task.clSamplesBytesPtr) + Settings.PCM.BlockAlign * iFrame * task.frameSize + ch * (Settings.PCM.BlockAlign / channels);
 							int* smp = r + ch * Flake.MAX_BLOCKSIZE;
-							int ba = PCM.BlockAlign;
-							if (PCM.BitsPerSample == 16)
+                            int ba = Settings.PCM.BlockAlign;
+                            if (Settings.PCM.BitsPerSample == 16)
 							{
 								for (int i = task.frameSize; i > 0; i--)
 								{
@@ -1632,7 +1595,7 @@ namespace CUETools.Codecs.FLACCL
 									res += ba;
 								}
 							}
-							else if (PCM.BitsPerSample == 24)
+                            else if (Settings.PCM.BitsPerSample == 24)
 							{
 								for (int i = task.frameSize; i > 0; i--)
 								{
@@ -1765,9 +1728,9 @@ namespace CUETools.Codecs.FLACCL
 					"#define FLACCL_VERSION \"" + vendor_string + "\"\n" +
 					(UseGPUOnly ? "#define DO_PARTITIONS\n" : "") +
 					(UseGPURice ? "#define DO_RICE\n" : "") +
-					"#define BITS_PER_SAMPLE " + PCM.BitsPerSample + "\n" +
+                    "#define BITS_PER_SAMPLE " + Settings.PCM.BitsPerSample + "\n" +
 					"#define MAX_BLOCKSIZE " + maxBS + "\n" +
-					"#define MAX_CHANNELS " + PCM.ChannelCount + "\n" +
+                    "#define MAX_CHANNELS " + Settings.PCM.ChannelCount + "\n" +
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
@@ -1829,13 +1792,13 @@ namespace CUETools.Codecs.FLACCL
 				if (_IO.CanSeek)
 					first_frame_offset = _IO.Position;
 
-				task1 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
-				task2 = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
+				task1 = new FLACCLTask(openCLProgram, channelCount, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
+				task2 = new FLACCLTask(openCLProgram, channelCount, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
 				if (m_settings.CPUThreads > 0)
 				{
 					cpu_tasks = new FLACCLTask[m_settings.CPUThreads];
 					for (int i = 0; i < cpu_tasks.Length; i++)
-						cpu_tasks[i] = new FLACCLTask(openCLProgram, channelCount, channels, bits_per_sample, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
+						cpu_tasks[i] = new FLACCLTask(openCLProgram, channelCount, max_frame_size, this, groupSize, UseGPUOnly, UseGPURice);
 				}
 				inited = true;
 			}
@@ -1851,7 +1814,7 @@ namespace CUETools.Codecs.FLACCL
 				int block = Math.Min(buff.Length - pos, m_blockSize * framesPerTask - samplesInBuffer);
 
 				fixed (byte* buf = buff.Bytes)
-					AudioSamples.MemCpy(((byte*)task1.clSamplesBytesPtr) + samplesInBuffer * _pcm.BlockAlign, buf + pos * _pcm.BlockAlign, block * _pcm.BlockAlign);
+                    AudioSamples.MemCpy(((byte*)task1.clSamplesBytesPtr) + samplesInBuffer * Settings.PCM.BlockAlign, buf + pos * Settings.PCM.BlockAlign, block * Settings.PCM.BlockAlign);
 				
 				samplesInBuffer += block;
 				pos += block;
@@ -1966,8 +1929,8 @@ namespace CUETools.Codecs.FLACCL
 			if (samplesInBuffer > 0)
 				AudioSamples.MemCpy(
 					((byte*)task2.clSamplesBytesPtr),
-					((byte*)task1.clSamplesBytesPtr) + bs * _pcm.BlockAlign, 
-					samplesInBuffer * _pcm.BlockAlign);
+                    ((byte*)task1.clSamplesBytesPtr) + bs * Settings.PCM.BlockAlign,
+                    samplesInBuffer * Settings.PCM.BlockAlign);
 			FLACCLTask tmp = task1;
 			task1 = task2;
 			task2 = tmp;
@@ -2524,13 +2487,13 @@ namespace CUETools.Codecs.FLACCL
 		public bool UseGPURice = false;
 		public bool UseMappedMemory = false;
 
-		unsafe public FLACCLTask(Program _openCLProgram, int channelsCount, int channels, uint bits_per_sample, int max_frame_size, FLACCLWriter writer, int groupSize, bool gpuOnly, bool gpuRice)
+		unsafe public FLACCLTask(Program _openCLProgram, int channelsCount, int max_frame_size, FLACCLWriter writer, int groupSize, bool gpuOnly, bool gpuRice)
 		{
 			this.UseGPUOnly = gpuOnly;
 			this.UseGPURice = gpuOnly && gpuRice;
 			this.UseMappedMemory = writer.m_settings.MappedMemory || writer.m_settings.DeviceType == OpenCLDeviceType.CPU;
 			this.groupSize = groupSize;
-			this.channels = channels;
+            this.channels = writer.Settings.PCM.ChannelCount;
 			this.channelsCount = channelsCount;
 			this.writer = writer;
 			openCLProgram = _openCLProgram;
@@ -2546,9 +2509,9 @@ namespace CUETools.Codecs.FLACCL
 			int MAX_CHANNELSIZE = MAX_FRAMES * ((writer.m_blockSize + 3) & ~3);
 			residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
 			bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * MAX_FRAMES;
-			int samplesBufferLen = writer.PCM.BlockAlign * MAX_CHANNELSIZE * channelsCount;
+			int samplesBufferLen = writer.Settings.PCM.BlockAlign * MAX_CHANNELSIZE * channelsCount;
 			int residualBufferLen = sizeof(int) * MAX_CHANNELSIZE * channels; // need to adjust residualOffset?
-			int partitionsLen = sizeof(int) * ((writer.PCM.BitsPerSample > 16 ? 31 : 15) * 2 << 8) * channels * MAX_FRAMES;
+            int partitionsLen = sizeof(int) * ((writer.Settings.PCM.BitsPerSample > 16 ? 31 : 15) * 2 << 8) * channels * MAX_FRAMES;
 			int riceParamsLen = sizeof(int) * (4 << 8) * channels * MAX_FRAMES;
 			int autocorLen = sizeof(float) * (MAX_ORDER + 1) * lpc.MAX_LPC_WINDOWS * channelsCount * MAX_FRAMES;
             int lpcDataLen = autocorLen * 32;
@@ -2663,7 +2626,7 @@ namespace CUETools.Codecs.FLACCL
 			frame.writer = new BitWriter(outputBuffer, 0, outputBuffer.Length);
 
 			if (writer.m_settings.DoVerify)
-				verify = new FlakeReader(new AudioPCMConfig((int)bits_per_sample, channels, 44100));
+				verify = new FlakeReader(writer.Settings.PCM);
 		}
 
 		public void Dispose()
@@ -2811,7 +2774,7 @@ namespace CUETools.Codecs.FLACCL
 			if (channels == 2)
 			{
 				Kernel clChannelDecorr = channelsCount == 4 ? clStereoDecorr : clChannelDecorr2;
-				int channelSize1 = writer.PCM.BitsPerSample == 16 ? channelSize / 4 : channelSize;
+				int channelSize1 = writer.Settings.PCM.BitsPerSample == 16 ? channelSize / 4 : channelSize;
 				clChannelDecorr.SetArgs(
 					clSamples,
 					clSamplesBytes,
@@ -3021,7 +2984,7 @@ namespace CUETools.Codecs.FLACCL
 						clPartitions,
 						max_porder);
 
-					int maxK = writer.PCM.BitsPerSample > 16 ? 30 : Flake.MAX_RICE_PARAM;
+                    int maxK = writer.Settings.PCM.BitsPerSample > 16 ? 30 : Flake.MAX_RICE_PARAM;
 					if (openCLCQ.Device.DeviceType == DeviceType.CPU)
 						openCLCQ.EnqueueNDRangeKernel(
 							clSumPartition,
@@ -3090,7 +3053,7 @@ namespace CUETools.Codecs.FLACCL
 				if (!this.UseMappedMemory)
 				{
 					if (UseGPURice)
-						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, (channels * frameSize * (writer.PCM.BitsPerSample + 1) + 256) / 8 * frameCount, clRiceOutputPtr);
+						openCLCQ.EnqueueReadBuffer(clRiceOutput, false, 0, (channels * frameSize * (writer.Settings.PCM.BitsPerSample + 1) + 256) / 8 * frameCount, clRiceOutputPtr);
 					else
 					{
 						openCLCQ.EnqueueReadBuffer(clBestRiceParams, false, 0, sizeof(int) * (1 << max_porder) * channels * frameCount, clBestRiceParamsPtr);

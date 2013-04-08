@@ -154,7 +154,15 @@ namespace CUETools.Processor
             encoders = new CUEToolsUDCList();
             foreach (Type type in CUEProcessorPlugins.encs)
                 foreach (AudioEncoderClass enc in Attribute.GetCustomAttributes(type, typeof(AudioEncoderClass)))
-                    encoders.Add(new CUEToolsUDC(enc, type));
+                {
+                    try
+                    {
+                        encoders.Add(new CUEToolsUDC(enc, type));
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
             decoders = new CUEToolsUDCList();
             foreach (Type type in CUEProcessorPlugins.decs)
                 foreach (AudioDecoderClass dec in Attribute.GetCustomAttributes(type, typeof(AudioDecoderClass)))

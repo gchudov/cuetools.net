@@ -10,6 +10,7 @@ namespace CUETools.DSP.Mixer
         private long samplePos;
         private MixingBuffer mixbuff;
         private float volume;
+        private AudioEncoderSettings m_settings;
 
         public long Position
         {
@@ -26,18 +27,8 @@ namespace CUETools.DSP.Mixer
         {
             get
             {
-                return new AudioEncoderSettings();
+                return m_settings;
             }
-            set
-            {
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-                    throw new Exception("Unsupported options " + value);
-            }
-        }
-
-        public AudioPCMConfig PCM
-        {
-            get { return mixer.PCM; }
         }
 
         public float Volume
@@ -50,6 +41,7 @@ namespace CUETools.DSP.Mixer
 
         public MixingWriter(MixingSource mixer, int iSource)
         {
+            this.m_settings = new AudioEncoderSettings(mixer.PCM);
             this.mixer = mixer;
             this.iSource = iSource;
             this.samplePos = 0;
@@ -76,7 +68,7 @@ namespace CUETools.DSP.Mixer
             if (mixbuff != null)
             {
                 if (mixbuff.source[iSource].Length < mixbuff.source[iSource].Size)
-                    AudioSamples.MemSet(mixbuff.source[iSource].Bytes, 0, mixbuff.source[iSource].Length * PCM.BlockAlign, (mixbuff.source[iSource].Size - mixbuff.source[iSource].Length) * PCM.BlockAlign);
+                    AudioSamples.MemSet(mixbuff.source[iSource].Bytes, 0, mixbuff.source[iSource].Length * Settings.PCM.BlockAlign, (mixbuff.source[iSource].Size - mixbuff.source[iSource].Length) * Settings.PCM.BlockAlign);
                 mixer.UnlockEmptyBuffer(mixbuff, iSource, volume);
                 mixbuff = null;
             }
@@ -84,7 +76,7 @@ namespace CUETools.DSP.Mixer
 
         public void Write(AudioBuffer buff)
         {
-            int bs = PCM.BlockAlign;
+            int bs = Settings.PCM.BlockAlign;
             int buff_offs = 0;
 
             while (buff_offs < buff.Length)

@@ -78,8 +78,8 @@ namespace CUEPlayer
 					cfg.Phase = 50;
 					cfg.AllowAliasing = false;
 					cfg.Bandwidth = 0;
-					_resampler = new SOXResampler(parent.Mixer.PCM, _player.PCM, cfg);
-					resampled = new AudioBuffer(_player.PCM, parent.Mixer.BufferSize * 2 * parent.Mixer.PCM.SampleRate / _player.PCM.SampleRate);
+					_resampler = new SOXResampler(parent.Mixer.PCM, _player.Settings.PCM, cfg);
+                    resampled = new AudioBuffer(_player.Settings.PCM, parent.Mixer.BufferSize * 2 * parent.Mixer.PCM.SampleRate / _player.Settings.PCM.SampleRate);
 				}
 				catch (Exception ex)
 				{

@@ -503,13 +503,11 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 	public ref class FLACWriter : IAudioDest 
 	{
 	public:
-		FLACWriter(String^ path, AudioPCMConfig^ pcm)
+		FLACWriter(String^ path, FLACWriterSettings^ settings)
 		{
-		    _pcm = pcm;
+		    _settings = settings;
 
-		    _settings = gcnew FLACWriterSettings();
-
-		    if (_pcm->BitsPerSample < 16 || _pcm->BitsPerSample > 24)
+		    if (_settings->PCM->BitsPerSample < 16 || _settings->PCM->BitsPerSample > 24)
 				throw gcnew Exception("bits per sample must be 16..24");
 
 			_initialized = false;
@@ -519,9 +517,9 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 
 			_encoder = FLAC__stream_encoder_new();
 
-			FLAC__stream_encoder_set_bits_per_sample(_encoder, _pcm->BitsPerSample);
-			FLAC__stream_encoder_set_channels(_encoder, _pcm->ChannelCount);
-			FLAC__stream_encoder_set_sample_rate(_encoder, _pcm->SampleRate);
+			FLAC__stream_encoder_set_bits_per_sample(_encoder, _settings->PCM->BitsPerSample);
+			FLAC__stream_encoder_set_channels(_encoder, _settings->PCM->ChannelCount);
+			FLAC__stream_encoder_set_sample_rate(_encoder, _settings->PCM->SampleRate);
 		}
 
 		virtual void Close() {
@@ -556,12 +554,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				if (_initialized)
 					throw gcnew Exception("final sample count cannot be changed after encoding begins");
 				_finalSampleCount = value;
-			}
-		}
-
-		virtual property AudioPCMConfig^ PCM {
-			AudioPCMConfig^ get() {
-				return _pcm;
 			}
 		}
 
@@ -604,11 +596,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			{
 			    return _settings;
 			}
-			
-			void set(AudioEncoderSettings^ value)
-			{
-				_settings = value->Clone<FLACWriterSettings^>();
-			}
 		}
 
 	private:
@@ -617,7 +604,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		bool _initialized;
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten;
-		AudioPCMConfig^ _pcm;
 		FLAC__StreamMetadata **_metadataList;
 		int _metadataCount;
 
@@ -632,7 +618,7 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			if (_finalSampleCount != 0) {
 				seektable = FLAC__metadata_object_new(FLAC__METADATA_TYPE_SEEKTABLE);
 				FLAC__metadata_object_seektable_template_append_spaced_points_by_samples(
-				    seektable, _pcm->SampleRate * 10, _finalSampleCount);
+				    seektable, _settings->PCM->SampleRate * 10, _finalSampleCount);
 				FLAC__metadata_object_seektable_template_sort(seektable, true);
 				_metadataList[_metadataCount++] = seektable;
 			}

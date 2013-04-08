@@ -172,7 +172,7 @@ namespace JDP {
             // 
             // toolStripContainer1.LeftToolStripPanel
             // 
-            this.toolStripContainer1.LeftToolStripPanel.MaximumSize = new System.Drawing.Size(32, 0);
+            resources.ApplyResources(this.toolStripContainer1.LeftToolStripPanel, "toolStripContainer1.LeftToolStripPanel");
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Name = "toolStripContainer1";
             this.toolStripContainer1.RightToolStripPanelVisible = false;
@@ -357,7 +357,6 @@ namespace JDP {
             // 
             resources.ApplyResources(this.checkBoxUseAccurateRip, "checkBoxUseAccurateRip");
             this.checkBoxUseAccurateRip.Image = global::JDP.Properties.Resources.AR;
-            this.checkBoxUseAccurateRip.MinimumSize = new System.Drawing.Size(0, 16);
             this.checkBoxUseAccurateRip.Name = "checkBoxUseAccurateRip";
             this.toolTip1.SetToolTip(this.checkBoxUseAccurateRip, resources.GetString("checkBoxUseAccurateRip.ToolTip"));
             this.checkBoxUseAccurateRip.UseVisualStyleBackColor = true;
@@ -367,7 +366,6 @@ namespace JDP {
             // 
             resources.ApplyResources(this.checkBoxUseFreeDb, "checkBoxUseFreeDb");
             this.checkBoxUseFreeDb.Image = global::JDP.Properties.Resources.freedb16;
-            this.checkBoxUseFreeDb.MinimumSize = new System.Drawing.Size(0, 16);
             this.checkBoxUseFreeDb.Name = "checkBoxUseFreeDb";
             this.toolTip1.SetToolTip(this.checkBoxUseFreeDb, resources.GetString("checkBoxUseFreeDb.ToolTip"));
             this.checkBoxUseFreeDb.UseVisualStyleBackColor = true;
@@ -405,7 +403,6 @@ namespace JDP {
             // 
             resources.ApplyResources(this.checkBoxUseMusicBrainz, "checkBoxUseMusicBrainz");
             this.checkBoxUseMusicBrainz.Image = global::JDP.Properties.Resources.musicbrainz;
-            this.checkBoxUseMusicBrainz.MinimumSize = new System.Drawing.Size(0, 16);
             this.checkBoxUseMusicBrainz.Name = "checkBoxUseMusicBrainz";
             this.toolTip1.SetToolTip(this.checkBoxUseMusicBrainz, resources.GetString("checkBoxUseMusicBrainz.ToolTip"));
             this.checkBoxUseMusicBrainz.UseVisualStyleBackColor = true;
@@ -549,7 +546,6 @@ namespace JDP {
             // labelFormat
             // 
             resources.ApplyResources(this.labelFormat, "labelFormat");
-            this.labelFormat.MinimumSize = new System.Drawing.Size(16, 16);
             this.labelFormat.Name = "labelFormat";
             // 
             // comboBoxAudioFormat

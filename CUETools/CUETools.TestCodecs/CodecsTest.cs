@@ -336,13 +336,13 @@ namespace CUETools.TestCodecs
 			AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
 			WAVWriter target;
 
-			target = new WAVWriter("wavwriter0.wav", null, buff.PCM);
+            target = new WAVWriter("wavwriter0.wav", null, new WAVWriterSettings(buff.PCM));
 			//target.FinalSampleCount = buff.Length;
 			target.Write(buff);
 			target.Close();
 			CollectionAssert.AreEqual(File.ReadAllBytes("test.wav"), File.ReadAllBytes("wavwriter0.wav"), "wavwriter0.wav doesn't match.");
 
-			target = new WAVWriter("wavwriter1.wav", null, buff.PCM);
+            target = new WAVWriter("wavwriter1.wav", null, new WAVWriterSettings(buff.PCM));
 			target.FinalSampleCount = buff.Length;
 			target.Write(buff);
 			target.Close();

@@ -94,6 +94,7 @@
     <Compile Include="UserDefinedWriter.cs" />
     <Compile Include="WAVReader.cs" />
     <Compile Include="WAVWriter.cs" />
+    <Compile Include="WAVWriterSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

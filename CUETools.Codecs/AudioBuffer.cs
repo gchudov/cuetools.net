@@ -327,7 +327,7 @@ namespace CUETools.Codecs
 
         public void Prepare(IAudioDest dest)
         {
-            if (dest.PCM.ChannelCount != pcm.ChannelCount || dest.PCM.BitsPerSample != pcm.BitsPerSample)
+            if (dest.Settings.PCM.ChannelCount != pcm.ChannelCount || dest.Settings.PCM.BitsPerSample != pcm.BitsPerSample)
                 throw new Exception("AudioBuffer format mismatch");
         }
 

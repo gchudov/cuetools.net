@@ -34,14 +34,11 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.FLAKE
 {
-	public class FlakeWriterSettings: AudioEncoderSettings
-	{
-		public FlakeWriterSettings() 
+    public class FlakeWriterSettings : AudioEncoderSettings
+    {
+        public FlakeWriterSettings()
             : base("", "7")
-        { 
-            DoVerify = false;
-            DoMD5 = true;
-            AllowNonSubset = false;
+        {
         }
 
         public override string GetSupportedModes()
@@ -51,20 +48,21 @@ namespace CUETools.Codecs.FLAKE
 
         public override bool IsValid()
         {
-            return EncoderModeIndex >= 0 && Padding >= 0 &&
+            return EncoderModeIndex >= 0 &&
+                (Padding >= 0 && Padding <= 1024 * 1024) &&
                 (BlockSize == 0 || (BlockSize >= 256 && BlockSize <= Flake.MAX_BLOCKSIZE)) &&
                 (AllowNonSubset || EncoderModeIndex <= 8);
         }
 
-		[DefaultValue(false)]
-		[DisplayName("Verify")]
-		[SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
-		public bool DoVerify { get; set; }
+        [DefaultValue(false)]
+        [DisplayName("Verify")]
+        [SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
+        public bool DoVerify { get; set; }
 
-		[DefaultValue(true)]
-		[DisplayName("MD5")]
-		[SRDescription(typeof(Properties.Resources), "DoMD5Description")]
-		public bool DoMD5 { get; set; }
+        [DefaultValue(true)]
+        [DisplayName("MD5")]
+        [SRDescription(typeof(Properties.Resources), "DoMD5Description")]
+        public bool DoMD5 { get; set; }
 
         [DefaultValue(false)]
         [DisplayName("Allow Non-subset")]
@@ -141,18 +139,17 @@ namespace CUETools.Codecs.FLAKE
 		int seek_table_offset = -1;
 
 		bool inited = false;
-		AudioPCMConfig _pcm;
 
-		public FlakeWriter(string path, Stream IO, AudioPCMConfig pcm)
+		public FlakeWriter(string path, Stream IO, FlakeWriterSettings settings)
 		{
-			_pcm = pcm;
+            m_settings = settings;
 
-			//if (_pcm.BitsPerSample != 16)
+			//if (Settings.PCM.BitsPerSample != 16)
 			//    throw new Exception("Bits per sample must be 16.");
-            //if (_pcm.ChannelCount != 2)
+            //if (Settings.PCM.ChannelCount != 2)
             //    throw new Exception("ChannelCount must be 2.");
 
-			channels = pcm.ChannelCount;
+            channels = Settings.PCM.ChannelCount;
 
 			// flake_validate_params
 
@@ -164,14 +161,15 @@ namespace CUETools.Codecs.FLAKE
 			windowBuffer = new float[Flake.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
 			windowScale = new double[lpc.MAX_LPC_WINDOWS];
 
-			eparams.flake_set_defaults(7);
+            var _compressionLevel = Settings.EncoderModeIndex;
+            eparams.flake_set_defaults(_compressionLevel);
 
 			crc8 = new Crc8();
 			frame = new FlacFrame(channels * 2);
 		}
 
-		public FlakeWriter(string path, AudioPCMConfig pcm)
-			: this(path, null, pcm)
+        public FlakeWriter(string path, FlakeWriterSettings settings)
+            : this(path, null, settings)
 		{
 		}
 
@@ -183,19 +181,13 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		FlakeWriterSettings m_settings = new FlakeWriterSettings();
+		FlakeWriterSettings m_settings;
 
         public AudioEncoderSettings Settings
 		{
 			get
 			{
 				return m_settings;
-			}
-			set
-			{
-                m_settings = value.Clone<FlakeWriterSettings>();
-                var _compressionLevel = m_settings.EncoderModeIndex;
-                eparams.flake_set_defaults(_compressionLevel);
 			}
 		}
 
@@ -492,11 +484,6 @@ namespace CUETools.Codecs.FLAKE
 				return new TimeSpan(0);
 #endif
 			}
-		}
-
-		public AudioPCMConfig PCM
-		{
-			get { return _pcm; }
 		}
 
 		unsafe int get_wasted_bits(int* signal, int samples)
@@ -979,7 +966,7 @@ new int[] { // 30
                             lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
                     }
 
-                    var cur_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, PCM.BitsPerSample);
+                    var cur_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
                     frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits + 4 + 5 + frame.current.order * frame.current.cbits + 6 + (int)cur_size);
 
                     if (frame.current.size < best_size)
@@ -1099,7 +1086,7 @@ new int[] { // 30
                     }
                     int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
                     int pmin = Math.Min(eparams.min_partition_order, pmax);
-                    uint best_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, PCM.BitsPerSample);
+                    uint best_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
                     // not working
                     //for (int o = 1; o <= frame.current.order; o++)
                     //{
@@ -1142,7 +1129,7 @@ new int[] { // 30
 			int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
 			int pmin = Math.Min(eparams.min_partition_order, pmax);
 			frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits) + 6
-				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, PCM.BitsPerSample);
+				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
 
 			frame.subframes[ch].done_fixed |= (1U << order);
 
@@ -1638,7 +1625,7 @@ new int[] { // 30
 					frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 					for (int ch = 0; ch < channels; ch++)
 						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
-							_pcm.BitsPerSample, get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
+                            Settings.PCM.BitsPerSample, get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
 
 					for (int ch = 0; ch < channels; ch++)
 						encode_residual_pass2(frame, ch);
@@ -1650,7 +1637,7 @@ new int[] { // 30
 					frame.current.residual = r + 4 * Flake.MAX_BLOCKSIZE;
 					for (int ch = 0; ch < 4; ch++)
 						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
-							_pcm.BitsPerSample + (ch == 3 ? 1 : 0), get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
+                            Settings.PCM.BitsPerSample + (ch == 3 ? 1 : 0), get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
 
 					//for (int ch = 0; ch < 4; ch++)
 					//    for (int iWindow = 0; iWindow < _windowcount; iWindow++)
@@ -1862,9 +1849,9 @@ new int[] { // 30
             bitwriter.writebits(16, m_blockSize);
 			bitwriter.writebits(24, 0);
 			bitwriter.writebits(24, max_frame_size);
-			bitwriter.writebits(20, _pcm.SampleRate);
+            bitwriter.writebits(20, Settings.PCM.SampleRate);
 			bitwriter.writebits(3, channels - 1);
-			bitwriter.writebits(5, _pcm.BitsPerSample - 1);
+            bitwriter.writebits(5, Settings.PCM.BitsPerSample - 1);
 
 			// total samples
 			if (sample_count > 0)
@@ -1989,7 +1976,7 @@ new int[] { // 30
 			// find samplerate in table
 			for (i = 1; i < 12; i++)
 			{
-				if (_pcm.SampleRate == Flake.flac_samplerates[i])
+                if (Settings.PCM.SampleRate == Flake.flac_samplerates[i])
 				{
 					sr_code0 = i;
 					break;
@@ -2002,7 +1989,7 @@ new int[] { // 30
 
 			for (i = 1; i < 8; i++)
 			{
-				if (_pcm.BitsPerSample == Flake.flac_bitdepths[i])
+                if (Settings.PCM.BitsPerSample == Flake.flac_bitdepths[i])
 				{
 					bps_code = i;
 					break;
@@ -2012,17 +1999,17 @@ new int[] { // 30
 				throw new Exception("non-standard bps");
 
             m_blockSize = m_settings.BlockSize != 0 ? m_settings.BlockSize :
-                select_blocksize(_pcm.SampleRate, eparams.block_time_ms);
+                select_blocksize(Settings.PCM.SampleRate, eparams.block_time_ms);
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
 			if (channels == 2)
-                max_frame_size = 16 + ((m_blockSize * (_pcm.BitsPerSample + _pcm.BitsPerSample + 1) + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * (Settings.PCM.BitsPerSample + Settings.PCM.BitsPerSample + 1) + 7) >> 3);
 			else
-                max_frame_size = 16 + ((m_blockSize * channels * _pcm.BitsPerSample + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * channels * Settings.PCM.BitsPerSample + 7) >> 3);
 
 			if (_IO.CanSeek && eparams.do_seektable && sample_count > 0)
 			{
-				int seek_points_distance = _pcm.SampleRate * 10;
+                int seek_points_distance = Settings.PCM.SampleRate * 10;
 				int num_seek_points = 1 + sample_count / seek_points_distance; // 1 seek point per 10 seconds
 				if (sample_count % seek_points_distance == 0)
 					num_seek_points--;
@@ -2045,7 +2032,7 @@ new int[] { // 30
 
 			if (m_settings.DoVerify)
 			{
-				verify = new FlakeReader(_pcm);
+                verify = new FlakeReader(Settings.PCM);
 				verifyBuffer = new int[Flake.MAX_BLOCKSIZE * channels];
 			}
 

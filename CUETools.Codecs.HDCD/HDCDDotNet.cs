@@ -79,11 +79,6 @@ namespace HDCDDotNet
 			}
 		}
 
-		public AudioPCMConfig PCM
-		{
-			get { return AudioPCMConfig.RedBook; }
-		}
-
 		public long FinalSampleCount
 		{
 			set { throw new Exception("unsupported"); }

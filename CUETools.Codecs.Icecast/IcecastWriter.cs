@@ -11,7 +11,7 @@ namespace CUETools.Codecs.Icecast
 	public class IcecastWriter: IAudioDest
 	{
 		private long _sampleOffset = 0;
-		private AudioPCMConfig pcm = AudioPCMConfig.RedBook;
+        private AudioEncoderSettings m_settings;
 		private LAME.LAMEEncoderCBR encoder = null;
 		private HttpWebRequest req = null;
 		private HttpWebResponse resp = null;
@@ -28,7 +28,7 @@ namespace CUETools.Codecs.Icecast
 
 		public IcecastWriter(AudioPCMConfig pcm, IcecastSettingsData settings)
 		{
-			this.pcm = pcm;
+            this.m_settings = new AudioEncoderSettings(pcm);
 			this.settings = settings;
 		}
 
@@ -80,10 +80,12 @@ namespace CUETools.Codecs.Icecast
 				resp = req.GetResponse() as HttpWebResponse;
 				if (resp.StatusCode == HttpStatusCode.OK)
 				{
-					encoder = new CUETools.Codecs.LAME.LAMEEncoderCBR("", reqStream, AudioPCMConfig.RedBook);
-					(encoder.Settings as CUETools.Codecs.LAME.LAMEEncoderCBRSettings).StereoMode = settings.JointStereo ? 
-						CUETools.Codecs.LAME.Interop.MpegMode.JOINT_STEREO : CUETools.Codecs.LAME.Interop.MpegMode.STEREO;
-					(encoder.Settings as CUETools.Codecs.LAME.LAMEEncoderCBRSettings).CustomBitrate = settings.Bitrate;
+                    var encoderSettings = new CUETools.Codecs.LAME.LAMEEncoderCBRSettings() { PCM = AudioPCMConfig.RedBook };
+                    encoderSettings.StereoMode = settings.JointStereo ?
+                        CUETools.Codecs.LAME.Interop.MpegMode.JOINT_STEREO :
+                        CUETools.Codecs.LAME.Interop.MpegMode.STEREO;
+                    encoderSettings.CustomBitrate = settings.Bitrate;
+                    encoder = new CUETools.Codecs.LAME.LAMEEncoderCBR("", reqStream, encoderSettings);
 				}
 			}
 			catch (WebException ex)
@@ -209,18 +211,8 @@ namespace CUETools.Codecs.Icecast
 		{
 			get
 			{
-				return new AudioEncoderSettings();
+				return m_settings;
 			}
-			set
-			{
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-					throw new Exception("Unsupported options " + value);
-			}
-		}
-
-		public AudioPCMConfig PCM
-		{
-			get { return pcm; }
 		}
 
 		public string Path { get { return null; } }

@@ -93,9 +93,9 @@ namespace LossyWAVSharp
 				WAVReader audioSource = new WAVReader(sourceFile, (sourceFile == "-" ? Console.OpenStandardInput() : null));
 				if (sourceFile == "-" && stdinName != null) sourceFile = stdinName;
 				AudioPCMConfig pcm = outputBPS == 0 ? audioSource.PCM : new AudioPCMConfig(outputBPS, audioSource.PCM.ChannelCount, audioSource.PCM.SampleRate);
-				WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), toStdout ? Console.OpenStandardOutput() : null, pcm);
-				WAVWriter lwcdfDest = createCorrection ? new WAVWriter(Path.ChangeExtension(sourceFile, ".lwcdf.wav"), null, audioSource.PCM) : null;
-				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, quality, audioSource.PCM);
+                WAVWriter audioDest = new WAVWriter(Path.ChangeExtension(sourceFile, ".lossy.wav"), toStdout ? Console.OpenStandardOutput() : null, new WAVWriterSettings(pcm));
+                WAVWriter lwcdfDest = createCorrection ? new WAVWriter(Path.ChangeExtension(sourceFile, ".lwcdf.wav"), null, new WAVWriterSettings(audioSource.PCM)) : null;
+				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, quality, new AudioEncoderSettings(audioSource.PCM));
 				AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
 				Console.WriteLine("Filename  : {0}", sourceFile);

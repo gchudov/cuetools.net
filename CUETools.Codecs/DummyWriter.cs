@@ -4,11 +4,11 @@ namespace CUETools.Codecs
 {
     public class DummyWriter : IAudioDest
     {
-        AudioPCMConfig _pcm;
+        AudioEncoderSettings m_settings;
 
-        public DummyWriter(string path, AudioPCMConfig pcm)
+        public DummyWriter(string path, AudioEncoderSettings settings)
         {
-            _pcm = pcm;
+            m_settings = settings;
         }
 
         public void Close()
@@ -28,18 +28,8 @@ namespace CUETools.Codecs
         {
             get
             {
-                return new AudioEncoderSettings();
+                return m_settings;
             }
-            set
-            {
-                if (value != null && value.GetType() != typeof(AudioEncoderSettings))
-                    throw new Exception("Unsupported options " + value);
-            }
-        }
-
-        public AudioPCMConfig PCM
-        {
-            get { return _pcm; }
         }
 
         public void Write(AudioBuffer buff)
