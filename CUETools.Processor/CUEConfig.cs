@@ -171,7 +171,6 @@ namespace CUETools.Processor
             {
                 encoders.Add(new CUEToolsUDC("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
                 encoders.Add(new CUEToolsUDC("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
-                encoders.Add(new CUEToolsUDC("WMAEncode", "wma", true, "", "", "WMAEncode.exe", "-i -c lossless - %O"));
                 encoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
                 encoders.Add(new CUEToolsUDC("VBR (lame.exe)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
 				encoders.Add(new CUEToolsUDC("CBR (lame.exe)", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
@@ -181,7 +180,6 @@ namespace CUETools.Processor
 
                 decoders.Add(new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
                 decoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
-                decoders.Add(new CUEToolsUDC("wma2wav", "wma", true, "", "", "wma2wav.exe", "-s -i %I -w -o -"));
             }
             else
             {
