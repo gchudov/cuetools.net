@@ -73,7 +73,7 @@ namespace CUETools.FLACCL.cmd
 			TextWriter stdout = Console.Out;
 			Console.SetOut(Console.Error);
 
-			var settings = new FLACCLWriterSettings();
+            var settings = new FLACCLWriterSettings() { AllowNonSubset = true };
 			TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
 			bool debug = false, quiet = false;
 			string stereo_method = null;
@@ -305,6 +305,16 @@ namespace CUETools.FLACCL.cmd
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
 			}
 
+            bool keepRunning = true;
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
+            {
+                keepRunning = false;
+                if (e.SpecialKey == ConsoleSpecialKey.ControlC)
+                    e.Cancel = true;
+                else
+                    audioDest.Delete();
+            };
+
 			DateTime start = DateTime.Now;
 			try
 			{
@@ -327,7 +337,9 @@ namespace CUETools.FLACCL.cmd
 							lastPrint = elapsed;
 						}
 					}
-				}
+                    if (!keepRunning)
+                        throw new Exception("Aborted");
+                }
 				audioDest.Close();
 			}
 			catch (OpenCLNet.OpenCLBuildException ex)
