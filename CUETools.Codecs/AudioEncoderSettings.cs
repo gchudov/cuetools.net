@@ -51,6 +51,22 @@ namespace CUETools.Codecs
             return this.MemberwiseClone() as AudioEncoderSettings;
         }
 
+        public bool HasBrowsableAttributes()
+        {
+            bool hasBrowsable = false;
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+            {
+                bool isBrowsable = true;
+                foreach (var attribute in property.Attributes)
+                {
+                    var browsable = attribute as BrowsableAttribute;
+                    isBrowsable &= browsable == null || browsable.Browsable;
+                }
+                hasBrowsable |= isBrowsable;
+            }
+            return hasBrowsable;
+        }
+
         [Browsable(false)]
         [XmlIgnore]
         public AudioPCMConfig PCM

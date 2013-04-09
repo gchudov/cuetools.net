@@ -994,6 +994,35 @@ namespace CUERipper
 			}
 		}
 
+        private void resetEncoderModes(CUEToolsUDC encoder)
+        {
+            if (encoder.settings != null)
+            {
+                encoder.settings.PCM = AudioPCMConfig.RedBook;
+                buttonEncoderSettings.Enabled = encoder.settings.HasBrowsableAttributes();
+            }
+            string[] modes = encoder.SupportedModes;
+            if (modes == null || modes.Length < 2)
+            {
+                trackBarEncoderMode.Visible = false;
+                labelEncoderMode.Visible = false;
+                labelEncoderMinMode.Visible = false;
+                labelEncoderMaxMode.Visible = false;
+            }
+            else
+            {
+                trackBarEncoderMode.Maximum = modes.Length - 1;
+                trackBarEncoderMode.Value = encoder.DefaultModeIndex == -1 ? modes.Length - 1 : encoder.DefaultModeIndex;
+                labelEncoderMode.Text = encoder.EncoderMode;
+                labelEncoderMinMode.Text = modes[0];
+                labelEncoderMaxMode.Text = modes[modes.Length - 1];
+                trackBarEncoderMode.Visible = true;
+                labelEncoderMode.Visible = true;
+                labelEncoderMinMode.Visible = true;
+                labelEncoderMaxMode.Visible = true;
+            }
+        }
+
 		private void bnComboBoxEncoder_SelectedValueChanged(object sender, EventArgs e)
 		{
 			if (SelectedOutputAudioFormat == null)
@@ -1005,27 +1034,7 @@ namespace CUERipper
 				SelectedOutputAudioFmt.encoderLossless = encoder;
 			else
 				SelectedOutputAudioFmt.encoderLossy = encoder;
-            if (encoder.settings != null) encoder.settings.PCM = AudioPCMConfig.RedBook;
-			string[] modes = encoder.SupportedModes;
-			if (modes == null || modes.Length < 2)
-			{
-				trackBarEncoderMode.Visible = false;
-				labelEncoderMode.Visible = false;
-				labelEncoderMinMode.Visible = false;
-				labelEncoderMaxMode.Visible = false;
-			}
-			else
-			{
-				trackBarEncoderMode.Maximum = modes.Length - 1;
-				trackBarEncoderMode.Value = encoder.DefaultModeIndex == -1 ? modes.Length - 1 : encoder.DefaultModeIndex;
-				labelEncoderMode.Text = encoder.EncoderMode;
-				labelEncoderMinMode.Text = modes[0];
-				labelEncoderMaxMode.Text = modes[modes.Length - 1];
-				trackBarEncoderMode.Visible = true;
-				labelEncoderMode.Visible = true;
-				labelEncoderMinMode.Visible = true;
-				labelEncoderMaxMode.Visible = true;
-			}
+            resetEncoderModes(encoder);
 		}
 
 		private void trackBarEncoderMode_Scroll(object sender, EventArgs e)
@@ -1552,7 +1561,7 @@ namespace CUERipper
 
         private void buttonSettings_Click(object sender, EventArgs e)
         {
-            var form = new Options(this._config);
+            var form = new Options(new CUERipperSettings(this._config));
             form.ShowDialog(this);
         }
 
@@ -1573,6 +1582,18 @@ namespace CUERipper
             {
                 cueRipperConfig.DriveOffsets[selectedDriveInfo.drive.ARName] = (int)numericWriteOffset.Value;
             }
+        }
+
+        private void buttonEncoderSettings_Click(object sender, EventArgs e)
+        {
+            CUEToolsUDC encoder = bnComboBoxEncoder.SelectedItem as CUEToolsUDC;
+            if (encoder == null)
+                return;
+            if (encoder.settings == null)
+                return;
+            var form = new Options(encoder.settings);
+            form.ShowDialog(this);
+            resetEncoderModes(encoder);
         }
 	}
 

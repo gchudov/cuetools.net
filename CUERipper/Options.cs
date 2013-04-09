@@ -14,9 +14,9 @@ namespace CUERipper
 {
     public partial class Options : Form
     {
-        private CUEConfig config;
+        private object config;
 
-        public Options(CUEConfig config)
+        public Options(object config)
         {
             this.config = config;
             this.InitializeComponent();
@@ -24,7 +24,7 @@ namespace CUERipper
 
         private void Options_Load(object sender, EventArgs e)
         {
-            this.propertyGrid1.SelectedObject = new CUERipperSettings(this.config);
+            this.propertyGrid1.SelectedObject = this.config;
         }
     }
 

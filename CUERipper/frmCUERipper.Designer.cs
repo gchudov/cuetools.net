@@ -56,6 +56,7 @@ namespace CUERipper
             this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
             this.lblWriteOffset = new System.Windows.Forms.Label();
             this.groupBoxSettings = new System.Windows.Forms.GroupBox();
+            this.buttonEncoderSettings = new System.Windows.Forms.Button();
             this.checkBoxTestAndCopy = new System.Windows.Forms.CheckBox();
             this.bnComboBoxLosslessOrNot = new CUEControls.ImgComboBox();
             this.losslessOrNotBindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -283,6 +284,7 @@ namespace CUERipper
             // 
             // groupBoxSettings
             // 
+            this.groupBoxSettings.Controls.Add(this.buttonEncoderSettings);
             this.groupBoxSettings.Controls.Add(this.checkBoxTestAndCopy);
             this.groupBoxSettings.Controls.Add(this.bnComboBoxLosslessOrNot);
             this.groupBoxSettings.Controls.Add(this.bnComboBoxEncoder);
@@ -299,6 +301,14 @@ namespace CUERipper
             resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
             this.groupBoxSettings.Name = "groupBoxSettings";
             this.groupBoxSettings.TabStop = false;
+            // 
+            // buttonEncoderSettings
+            // 
+            this.buttonEncoderSettings.BackgroundImage = global::CUERipper.Properties.Resources.cog;
+            resources.ApplyResources(this.buttonEncoderSettings, "buttonEncoderSettings");
+            this.buttonEncoderSettings.Name = "buttonEncoderSettings";
+            this.buttonEncoderSettings.UseVisualStyleBackColor = true;
+            this.buttonEncoderSettings.Click += new System.EventHandler(this.buttonEncoderSettings_Click);
             // 
             // checkBoxTestAndCopy
             // 
@@ -887,6 +897,7 @@ namespace CUERipper
 		private System.Windows.Forms.Panel panel5;
 		private System.Windows.Forms.Panel panel6;
 		private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.Button buttonEncoderSettings;
 	}
 }
 
