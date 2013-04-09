@@ -1005,7 +1005,7 @@ namespace CUERipper
 				SelectedOutputAudioFmt.encoderLossless = encoder;
 			else
 				SelectedOutputAudioFmt.encoderLossy = encoder;
-
+            if (encoder.settings != null) encoder.settings.PCM = AudioPCMConfig.RedBook;
 			string[] modes = encoder.SupportedModes;
 			if (modes == null || modes.Length < 2)
 			{
