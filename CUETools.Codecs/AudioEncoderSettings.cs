@@ -25,13 +25,17 @@ namespace CUETools.Codecs
             foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
                 property.ResetValue(this);
             this.m_supported_modes = supported_modes;
-            this.EncoderMode =  default_mode;
+            this.m_default_mode = default_mode;
+            //GetSupportedModes(out m_default_mode);
+            this.EncoderMode = m_default_mode;
         }
 
-        private string m_supported_modes;
+        protected string m_supported_modes;
+        protected string m_default_mode;
 
-        public virtual string GetSupportedModes()
+        public virtual string GetSupportedModes(out string defaultMode)
         {
+            defaultMode = m_default_mode;
             return this.m_supported_modes;
         }
 
@@ -103,21 +107,12 @@ namespace CUETools.Codecs
 
         [XmlIgnore]
         [Browsable(false)]
-        public string[] SupportedModes
-        {
-            get
-            {
-                return this.GetSupportedModes().Split(' ');
-            }
-        }
-        
-        [XmlIgnore]
-        [Browsable(false)]
         public int EncoderModeIndex
         {
             get
             {
-                string[] modes = this.SupportedModes;
+                string defaultMode;
+                string[] modes = this.GetSupportedModes(out defaultMode).Split(' ');
                 if (modes == null || modes.Length < 1)
                     return -1;
                 for (int i = 0; i < modes.Length; i++)
@@ -128,7 +123,8 @@ namespace CUETools.Codecs
 
             set
             {
-                string[] modes = this.SupportedModes;
+                string defaultMode;
+                string[] modes = this.GetSupportedModes(out defaultMode).Split(' ');
                 if (modes.Length == 0 && value < 0)
                     return;
                 if (value < 0 || value >= modes.Length)

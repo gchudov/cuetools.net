@@ -90,6 +90,7 @@
     <Compile Include="PlaybackState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SilenceGenerator.cs" />
+    <Compile Include="UserDefinedEncoderSettings.cs" />
     <Compile Include="UserDefinedReader.cs" />
     <Compile Include="UserDefinedWriter.cs" />
     <Compile Include="WAVReader.cs" />

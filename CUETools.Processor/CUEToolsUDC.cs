@@ -43,7 +43,7 @@ namespace CUETools.Processor
             type = null;
         }
 
-        public CUEToolsUDC(AudioEncoderClass enc, Type enctype)
+        public CUEToolsUDC(AudioEncoderClassAttribute enc, Type enctype)
         {
             name = enc.EncoderName;
             extension = enc.Extension;
@@ -118,7 +118,8 @@ namespace CUETools.Processor
         {
             get
             {
-                return this.settings == null ? this.supported_modes : this.settings.GetSupportedModes();
+                string defaultMode;
+                return this.settings == null ? this.supported_modes : this.settings.GetSupportedModes(out defaultMode);
             }
             set
             {
@@ -149,7 +150,7 @@ namespace CUETools.Processor
             }
         }
 
-        public int DefaultModeIndex
+        public int EncoderModeIndex
         {
             get
             {

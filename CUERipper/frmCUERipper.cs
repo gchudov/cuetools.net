@@ -996,11 +996,8 @@ namespace CUERipper
 
         private void resetEncoderModes(CUEToolsUDC encoder)
         {
-            if (encoder.settings != null)
-            {
-                encoder.settings.PCM = AudioPCMConfig.RedBook;
-                buttonEncoderSettings.Enabled = encoder.settings.HasBrowsableAttributes();
-            }
+            if (encoder.settings != null) encoder.settings.PCM = AudioPCMConfig.RedBook;
+            buttonEncoderSettings.Enabled = encoder.settings != null && encoder.settings.HasBrowsableAttributes();
             string[] modes = encoder.SupportedModes;
             if (modes == null || modes.Length < 2)
             {
@@ -1011,8 +1008,14 @@ namespace CUERipper
             }
             else
             {
+                if (encoder.EncoderModeIndex == -1 && encoder.settings != null)
+                {
+                    string defaultMode;
+                    encoder.settings.GetSupportedModes(out defaultMode);
+                    encoder.EncoderMode = defaultMode;
+                }
                 trackBarEncoderMode.Maximum = modes.Length - 1;
-                trackBarEncoderMode.Value = encoder.DefaultModeIndex == -1 ? modes.Length - 1 : encoder.DefaultModeIndex;
+                trackBarEncoderMode.Value = encoder.EncoderModeIndex == -1 ? modes.Length - 1 : encoder.EncoderModeIndex;
                 labelEncoderMode.Text = encoder.EncoderMode;
                 labelEncoderMinMode.Text = modes[0];
                 labelEncoderMaxMode.Text = modes[modes.Length - 1];

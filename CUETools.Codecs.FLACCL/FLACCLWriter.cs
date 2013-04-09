@@ -34,12 +34,13 @@ namespace CUETools.Codecs.FLACCL
     public class FLACCLWriterSettings : AudioEncoderSettings
     {
         public FLACCLWriterSettings()
-            : base("", "8")
+            : base()
         {
         }
 
-        public override string GetSupportedModes()
+        public override string GetSupportedModes(out string defaultMode)
         {
+            defaultMode = "8";
             return this.AllowNonSubset ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
         }
 

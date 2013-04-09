@@ -8,7 +8,7 @@ namespace CUETools.Codecs
     /// </summary>
     /// <remarks>
     ///    When plugins with classes that provide <see cref="IAudioDest" /> are
-    ///    registered, their <see cref="AudioEncoderClass" /> attributes are read.
+    ///    registered, their <see cref="AudioEncoderClassAttribute" /> attributes are read.
     /// </remarks>
     /// <example>
     ///    <code lang="C#">using CUETools.Codecs;
@@ -19,7 +19,7 @@ namespace CUETools.Codecs
     ///}</code>
     /// </example>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public sealed class AudioEncoderClass : Attribute
+    public sealed class AudioEncoderClassAttribute : Attribute
     {
         private string _encoderName, _extension;
         private bool _lossless;
@@ -51,7 +51,7 @@ namespace CUETools.Codecs
             get { return _settings; }
         }
 
-        public AudioEncoderClass(string encoderName, string extension, bool lossless, int priority, Type settings)
+        public AudioEncoderClassAttribute(string encoderName, string extension, bool lossless, int priority, Type settings)
         {
             _encoderName = encoderName;
             _extension = extension;

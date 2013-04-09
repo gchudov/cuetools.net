@@ -188,9 +188,11 @@ namespace CUETools.Codecs.WMA
             return formats;
         }
 
-        public override string GetSupportedModes()
+        public override string GetSupportedModes(out string defaultMode)
         {
-            return string.Join(" ", GetFormats(null).ConvertAll(s => s.modeName).ToArray());
+            var fmts = GetFormats(null);
+            defaultMode = fmts.Count > 0 ? fmts[fmts.Count - 1].modeName : "";
+            return string.Join(" ", fmts.ConvertAll(s => s.modeName).ToArray());
         }
     }
 

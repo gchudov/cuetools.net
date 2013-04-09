@@ -153,7 +153,7 @@ namespace CUETools.Processor
 
             encoders = new CUEToolsUDCList();
             foreach (Type type in CUEProcessorPlugins.encs)
-                foreach (AudioEncoderClass enc in Attribute.GetCustomAttributes(type, typeof(AudioEncoderClass)))
+                foreach (AudioEncoderClassAttribute enc in Attribute.GetCustomAttributes(type, typeof(AudioEncoderClassAttribute)))
                 {
                     try
                     {

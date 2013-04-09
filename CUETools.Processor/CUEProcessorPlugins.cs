@@ -70,7 +70,7 @@ namespace CUETools.Processor
                         decs.Add(type);
                     }
                     //if (type.IsClass && !type.IsAbstract && typeof(IAudioDest).IsAssignableFrom(type))
-                    if (Attribute.GetCustomAttributes(type, typeof(AudioEncoderClass)).Length > 0)
+                    if (Attribute.GetCustomAttributes(type, typeof(AudioEncoderClassAttribute)).Length > 0)
                     {
                         encs.Add(type);
                     }

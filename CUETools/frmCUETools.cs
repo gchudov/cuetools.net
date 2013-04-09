@@ -2465,8 +2465,14 @@ namespace JDP
             }
             else
             {
+                if (encoder.EncoderModeIndex == -1 && encoder.settings != null)
+                {
+                    string defaultMode;
+                    encoder.settings.GetSupportedModes(out defaultMode);
+                    encoder.EncoderMode = defaultMode;
+                }
                 trackBarEncoderMode.Maximum = modes.Length - 1;
-                trackBarEncoderMode.Value = encoder.DefaultModeIndex == -1 ? modes.Length - 1 : encoder.DefaultModeIndex;
+                trackBarEncoderMode.Value = encoder.EncoderModeIndex == -1 ? modes.Length - 1 : encoder.EncoderModeIndex;
                 labelEncoderMode.Text = encoder.EncoderMode;
                 labelEncoderMinMode.Text = modes[0];
                 labelEncoderMaxMode.Text = modes[modes.Length - 1];
