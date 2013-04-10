@@ -6,7 +6,7 @@ namespace CUETools.Codecs
 {
     public class UserDefinedWriter : IAudioDest
     {
-        string _path, _encoder, _encoderParams, _encoderMode;
+        string _path;
         Process _encoderProcess;
         WAVWriter wrt;
         CyclicBuffer outputBuffer = null;
@@ -14,7 +14,7 @@ namespace CUETools.Codecs
         string tempFile = null;
         long _finalSampleCount = -1;
         bool closed = false;
-        private AudioEncoderSettings m_settings;
+        private UserDefinedEncoderSettings m_settings;
 
         public long Position
         {
@@ -40,24 +40,26 @@ namespace CUETools.Codecs
 
         public string Path { get { return _path; } }
 
-        public UserDefinedWriter(string path, Stream IO, AudioEncoderSettings settings, string encoder, string encoderParams, string encoderMode, int padding)
+        public UserDefinedWriter(string path, UserDefinedEncoderSettings settings)
+            : this(path, null, settings)
         {
-            m_settings = settings as AudioEncoderSettings;
+        }
+
+        public UserDefinedWriter(string path, Stream IO, UserDefinedEncoderSettings settings)
+        {
+            m_settings = settings;
             _path = path;
-            _encoder = encoder;
-            _encoderParams = encoderParams;
-            _encoderMode = encoderMode;
-            useTempFile = _encoderParams.Contains("%I");
+            useTempFile = m_settings.Parameters.Contains("%I");
             tempFile = path + ".tmp.wav";
 
             _encoderProcess = new Process();
-            _encoderProcess.StartInfo.FileName = _encoder;
-            _encoderProcess.StartInfo.Arguments = _encoderParams.Replace("%O", "\"" + path + "\"").Replace("%M", encoderMode).Replace("%P", padding.ToString()).Replace("%I", "\"" + tempFile + "\"");
+            _encoderProcess.StartInfo.FileName = m_settings.Path;
+            _encoderProcess.StartInfo.Arguments = m_settings.Parameters.Replace("%O", "\"" + path + "\"").Replace("%M", m_settings.EncoderMode).Replace("%P", m_settings.Padding.ToString()).Replace("%I", "\"" + tempFile + "\"");
             _encoderProcess.StartInfo.CreateNoWindow = true;
             if (!useTempFile)
                 _encoderProcess.StartInfo.RedirectStandardInput = true;
             _encoderProcess.StartInfo.UseShellExecute = false;
-            if (!_encoderParams.Contains("%O"))
+            if (!m_settings.Parameters.Contains("%O"))
                 _encoderProcess.StartInfo.RedirectStandardOutput = true;
             if (useTempFile)
             {
@@ -77,7 +79,7 @@ namespace CUETools.Codecs
                 ex = _ex;
             }
             if (!started)
-                throw new Exception(_encoder + ": " + (ex == null ? "please check the path" : ex.Message));
+                throw new Exception(m_settings.Path + ": " + (ex == null ? "please check the path" : ex.Message));
             if (_encoderProcess.StartInfo.RedirectStandardOutput)
             {
                 Stream outputStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
@@ -108,7 +110,7 @@ namespace CUETools.Codecs
                     ex = _ex;
                 }
                 if (!started)
-                    throw new Exception(_encoder + ": " + (ex == null ? "please check the path" : ex.Message));
+                    throw new Exception(m_settings.Path + ": " + (ex == null ? "please check the path" : ex.Message));
             }
             wrt = null;
             if (!_encoderProcess.HasExited)
@@ -118,7 +120,7 @@ namespace CUETools.Codecs
             if (outputBuffer != null)
                 outputBuffer.Close();
             if (_encoderProcess.ExitCode != 0)
-                throw new Exception(String.Format("{0} returned error code {1}", _encoder, _encoderProcess.ExitCode));
+                throw new Exception(String.Format("{0} returned error code {1}", m_settings.Path, _encoderProcess.ExitCode));
         }
 
         public void Delete()
@@ -136,7 +138,7 @@ namespace CUETools.Codecs
             catch (IOException ex)
             {
                 if (_encoderProcess.HasExited)
-                    throw new IOException(string.Format("{0} has exited prematurely with code {1}", _encoder, _encoderProcess.ExitCode), ex);
+                    throw new IOException(string.Format("{0} has exited prematurely with code {1}", m_settings.Path, _encoderProcess.ExitCode), ex);
                 else
                     throw ex;
             }

@@ -5,15 +5,20 @@ namespace CUETools.Processor
 {
     public class CUEToolsUDCList : BindingList<CUEToolsUDC>
     {
-        public CUEToolsUDCList()
+        bool m_encoder;
+
+        public CUEToolsUDCList(bool encoder)
             : base()
         {
             AddingNew += OnAddingNew;
+            m_encoder = encoder;
         }
 
         private void OnAddingNew(object sender, AddingNewEventArgs e)
         {
-            e.NewObject = new CUEToolsUDC("new", "wav", true, "", "", "", "");
+            e.NewObject = m_encoder ?
+                new CUEToolsUDC("new", "wav", true, "", "", "", "") :
+                new CUEToolsUDC("new", "wav", "", "");
         }
 
         public bool TryGetValue(string extension, bool lossless, string name, out CUEToolsUDC result)

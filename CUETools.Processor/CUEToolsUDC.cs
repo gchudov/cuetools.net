@@ -17,9 +17,6 @@ namespace CUETools.Processor
         public bool lossless = false;
         public int priority = 0;
 
-        private string supported_modes = "";
-        private string default_mode = "";
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public CUEToolsUDC(
@@ -35,12 +32,12 @@ namespace CUETools.Processor
             name = _name;
             extension = _extension;
             lossless = _lossless;
-            supported_modes = _supported_modes;
-            default_mode = _default_mode;
             priority = 0;
-            path = _path;
-            parameters = _parameters;
-            type = null;
+            path = null;
+            parameters = null;
+            type = typeof(UserDefinedWriter);
+            settingsSerializer = new XmlSerializer(typeof(UserDefinedEncoderSettings));
+            settings = new UserDefinedEncoderSettings() { SupportedModes = _supported_modes, DefaultMode = _default_mode, Path = _path, Parameters = _parameters };
         }
 
         public CUEToolsUDC(AudioEncoderClassAttribute enc, Type enctype)
@@ -50,15 +47,28 @@ namespace CUETools.Processor
             lossless = enc.Lossless;
             priority = enc.Priority;
             path = null;
-            parameters = "";
+            parameters = null;
             type = enctype;
-            settingsSerializer = null;
-            settings = null;
-            if (enc.Settings != null && typeof(AudioEncoderSettings).IsAssignableFrom(enc.Settings))
-            {
-                settingsSerializer = new XmlSerializer(enc.Settings);
-                settings = Activator.CreateInstance(enc.Settings) as AudioEncoderSettings;
-            }
+            settingsSerializer = new XmlSerializer(enc.Settings);
+            settings = Activator.CreateInstance(enc.Settings) as AudioEncoderSettings;
+            if (settings == null)
+                throw new InvalidOperationException("invalid codec");
+        }
+
+        public CUEToolsUDC(
+            string _name,
+            string _extension,
+            string _path,
+            string _parameters
+            )
+        {
+            name = _name;
+            extension = _extension;
+            lossless = true;
+            priority = 0;
+            path = _path;
+            parameters = _parameters;
+            type = null;
         }
 
         public CUEToolsUDC(AudioDecoderClass dec, Type dectype)
@@ -89,13 +99,33 @@ namespace CUETools.Processor
         }
         public string Path
         {
-            get { return path; }
-            set { path = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Path")); }
+            get
+            {
+                var settings = this.settings as UserDefinedEncoderSettings;
+                return settings == null ? path : settings.Path;
+            }
+            set
+            {
+                var settings = this.settings as UserDefinedEncoderSettings;
+                if (settings == null) path = value;
+                else settings.Path = value;
+                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Path"));
+            }
         }
         public string Parameters
         {
-            get { return parameters; }
-            set { parameters = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Parameters")); }
+            get
+            {
+                var settings = this.settings as UserDefinedEncoderSettings;
+                return settings == null ? parameters : settings.Parameters;
+            }
+            set
+            {
+                var settings = this.settings as UserDefinedEncoderSettings;
+                if (settings == null) parameters = value;
+                else settings.Parameters = value;
+                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Parameters"));
+            }
         }
         public bool Lossless
         {
@@ -119,26 +149,14 @@ namespace CUETools.Processor
             get
             {
                 string defaultMode;
-                return this.settings == null ? this.supported_modes : this.settings.GetSupportedModes(out defaultMode);
+                return this.settings.GetSupportedModes(out defaultMode);
             }
             set
             {
-                if (this.settings != null) throw new NotSupportedException();
-                supported_modes = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("SupportedModesStr"));
-            }
-        }
-
-        public string EncoderMode
-        {
-            get
-            {
-                if (this.settings != null) return this.settings.EncoderMode;
-                else return this.default_mode;
-            }
-            set
-            {
-                if (this.settings != null) this.settings.EncoderMode = value;
-                else this.default_mode = value;
+                var settings = this.settings as UserDefinedEncoderSettings;
+                if (settings == null) throw new InvalidOperationException();
+                settings.SupportedModes = value;
+                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("SupportedModesStr"));
             }
         }
 
@@ -158,7 +176,7 @@ namespace CUETools.Processor
                 if (modes == null || modes.Length < 2)
                     return -1;
                 for (int i = 0; i < modes.Length; i++)
-                    if (modes[i] == this.EncoderMode)
+                    if (modes[i] == this.settings.EncoderMode)
                         return i;
                 return -1;
             }
@@ -168,7 +186,7 @@ namespace CUETools.Processor
         {
             get
             {
-                return path != null;
+                return type == null || type == typeof(UserDefinedWriter);
             }
         }
     }

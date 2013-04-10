@@ -90,9 +90,7 @@ namespace CUETools.Processor
             settings.PCM = pcm;
             settings.Padding = padding;
             settings.Validate();
-            if (encoder.path != null)
-                dest = new UserDefinedWriter(path, null, settings, encoder.path, encoder.parameters, encoder.EncoderMode, padding);
-			else if (encoder.type != null)
+			if (encoder.type != null)
 			{
                 object o = Activator.CreateInstance(encoder.type, path, settings);
 				if (o == null || !(o is IAudioDest))

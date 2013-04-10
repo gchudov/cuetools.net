@@ -12,6 +12,20 @@ namespace CUETools.Codecs
         {
         }
 
+        [DefaultValue(null)]
+        public string Path
+        {
+            get;
+            set;
+        }
+
+        [DefaultValue(null)]
+        public string Parameters
+        {
+            get;
+            set;
+        }
+
         public string SupportedModes
         {
             get

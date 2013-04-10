@@ -151,7 +151,7 @@ namespace CUETools.Processor
 
             language = Thread.CurrentThread.CurrentUICulture.Name;
 
-            encoders = new CUEToolsUDCList();
+            encoders = new CUEToolsUDCList(true);
             foreach (Type type in CUEProcessorPlugins.encs)
                 foreach (AudioEncoderClassAttribute enc in Attribute.GetCustomAttributes(type, typeof(AudioEncoderClassAttribute)))
                 {
@@ -163,7 +163,7 @@ namespace CUETools.Processor
                     {
                     }
                 }
-            decoders = new CUEToolsUDCList();
+            decoders = new CUEToolsUDCList(false);
             foreach (Type type in CUEProcessorPlugins.decs)
                 foreach (AudioDecoderClass dec in Attribute.GetCustomAttributes(type, typeof(AudioDecoderClass)))
                     decoders.Add(new CUEToolsUDC(dec, type));
@@ -333,24 +333,11 @@ return processor.Go();
                 sw.Save(string.Format("ExternalEncoder{0}Name", nEncoders), encoder.name);
                 sw.Save(string.Format("ExternalEncoder{0}Extension", nEncoders), encoder.extension);
                 sw.Save(string.Format("ExternalEncoder{0}Lossless", nEncoders), encoder.lossless);
-                if (encoder.path != null)
+                using (TextWriter tw = new StringWriter())
+                using (XmlWriter xw = XmlTextWriter.Create(tw, xmlEmptySettings))
                 {
-                    sw.Save(string.Format("ExternalEncoder{0}Modes", nEncoders), encoder.SupportedModesStr);
-                    sw.Save(string.Format("ExternalEncoder{0}Mode", nEncoders), encoder.EncoderMode);
-                    sw.Save(string.Format("ExternalEncoder{0}Path", nEncoders), encoder.path);
-                    sw.Save(string.Format("ExternalEncoder{0}Parameters", nEncoders), encoder.parameters);
-                }
-                else
-                {
-                    if (encoder.settingsSerializer != null)
-                    {
-                        using (TextWriter tw = new StringWriter())
-                        using (XmlWriter xw = XmlTextWriter.Create(tw, xmlEmptySettings))
-                        {
-                            encoder.settingsSerializer.Serialize(xw, encoder.settings, xmlEmptyNamespaces);
-                            sw.SaveText(string.Format("ExternalEncoder{0}Parameters", nEncoders), tw.ToString());
-                        }
-                    }
+                    encoder.settingsSerializer.Serialize(xw, encoder.settings, xmlEmptyNamespaces);
+                    sw.SaveText(string.Format("ExternalEncoder{0}Settings", nEncoders), tw.ToString());
                 }
                 nEncoders++;
             }
@@ -478,42 +465,22 @@ return processor.Go();
             {
                 string name = sr.Load(string.Format("ExternalEncoder{0}Name", nEncoders));
                 string extension = sr.Load(string.Format("ExternalEncoder{0}Extension", nEncoders));
-                string path = sr.Load(string.Format("ExternalEncoder{0}Path", nEncoders));
-                string parameters = sr.Load(string.Format("ExternalEncoder{0}Parameters", nEncoders));
+                string settings = sr.Load(string.Format("ExternalEncoder{0}Settings", nEncoders));
                 bool lossless = sr.LoadBoolean(string.Format("ExternalEncoder{0}Lossless", nEncoders)) ?? true;
-                string supported_modes = sr.Load(string.Format("ExternalEncoder{0}Modes", nEncoders)) ?? "";
-                string default_mode = sr.Load(string.Format("ExternalEncoder{0}Mode", nEncoders)) ?? "";
                 CUEToolsUDC encoder;
-                if (name == null) continue;
+                if (name == null || extension == null) continue;
                 if (!encoders.TryGetValue(extension, lossless, name, out encoder))
                 {
-                    if (path == null || parameters == null || extension == null) continue;
-                    encoders.Add(new CUEToolsUDC(name, extension, lossless, supported_modes, default_mode, path, parameters));
+                    encoder = new CUEToolsUDC(name, extension, lossless, "", "", "", "");
+                    encoders.Add(encoder);
                 }
-                else if (version == 203)
+                try
                 {
-                    if (encoder.path != null)
-                    {
-                        if (path == null || parameters == null || extension == null) continue;
-                        encoder.extension = extension;
-                        encoder.path = path;
-                        encoder.lossless = lossless;
-                        encoder.parameters = parameters;
-                        encoder.SupportedModesStr = supported_modes;
-                        encoder.EncoderMode = default_mode;
-                    }
-                    else
-                    {
-                        if (encoder.settingsSerializer != null && parameters != "")
-                            try
-                            {
-                                using (TextReader reader = new StringReader(parameters))
-                                    encoder.settings = encoder.settingsSerializer.Deserialize(reader) as AudioEncoderSettings;
-                            }
-                            catch
-                            {
-                            }
-                    }
+                    using (TextReader reader = new StringReader(settings))
+                        encoder.settings = encoder.settingsSerializer.Deserialize(reader) as AudioEncoderSettings;
+                }
+                catch
+                {
                 }
             }
 
