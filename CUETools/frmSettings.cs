@@ -474,7 +474,7 @@ namespace JDP
 				comboBoxEncoderExtension.Enabled = encoder.CanBeDeleted;
                 groupBoxExternalEncoder.Visible = encoder.CanBeDeleted;
 				checkBoxEncoderLossless.Enabled = format != null && format.allowLossless && format.allowLossy;
-                propertyGridEncoderSettings.Visible = !encoder.CanBeDeleted;
+                propertyGridEncoderSettings.Visible = !encoder.CanBeDeleted && encoder.settings.HasBrowsableAttributes();
                 propertyGridEncoderSettings.SelectedObject = encoder.CanBeDeleted ? null : encoder.settings;
                 if (!checkBoxEncoderLossless.Enabled && format != null && encoder.Lossless != format.allowLossless)
                     encoder.Lossless = format.allowLossless;
