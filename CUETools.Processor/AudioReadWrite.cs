@@ -90,15 +90,10 @@ namespace CUETools.Processor
             settings.PCM = pcm;
             settings.Padding = padding;
             settings.Validate();
-			if (encoder.type != null)
-			{
-                object o = Activator.CreateInstance(encoder.type, path, settings);
-				if (o == null || !(o is IAudioDest))
-					throw new Exception("Unsupported audio type: " + path + ": " + encoder.type.FullName);
-				dest = o as IAudioDest;
-			}
-			else
-				throw new Exception("Unsupported audio type: " + path);
+            object o = Activator.CreateInstance(encoder.type, path, settings);
+			if (o == null || !(o is IAudioDest))
+				throw new Exception("Unsupported audio type: " + path + ": " + encoder.type.FullName);
+			dest = o as IAudioDest;
             dest.FinalSampleCount = finalSampleCount;
 			return dest;
 		}

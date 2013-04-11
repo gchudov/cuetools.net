@@ -2454,7 +2454,7 @@ namespace JDP
             else
                 SelectedOutputAudioFmt.encoderLossy = encoder;
             // TODO: something cleverer than this hack...
-            if (encoder.settings != null) encoder.settings.PCM = AudioPCMConfig.RedBook;
+            encoder.settings.PCM = AudioPCMConfig.RedBook;
             string[] modes = encoder.SupportedModes;
             if (modes == null || modes.Length < 2)
             {
@@ -2465,7 +2465,7 @@ namespace JDP
             }
             else
             {
-                if (encoder.EncoderModeIndex == -1 && encoder.settings != null)
+                if (encoder.EncoderModeIndex == -1)
                 {
                     string defaultMode;
                     encoder.settings.GetSupportedModes(out defaultMode);

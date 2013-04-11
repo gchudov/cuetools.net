@@ -996,8 +996,8 @@ namespace CUERipper
 
         private void resetEncoderModes(CUEToolsUDC encoder)
         {
-            if (encoder.settings != null) encoder.settings.PCM = AudioPCMConfig.RedBook;
-            buttonEncoderSettings.Enabled = encoder.settings != null && encoder.settings.HasBrowsableAttributes();
+            encoder.settings.PCM = AudioPCMConfig.RedBook;
+            buttonEncoderSettings.Enabled = encoder.settings.HasBrowsableAttributes();
             string[] modes = encoder.SupportedModes;
             if (modes == null || modes.Length < 2)
             {
@@ -1008,7 +1008,7 @@ namespace CUERipper
             }
             else
             {
-                if (encoder.EncoderModeIndex == -1 && encoder.settings != null)
+                if (encoder.EncoderModeIndex == -1)
                 {
                     string defaultMode;
                     encoder.settings.GetSupportedModes(out defaultMode);
@@ -1591,8 +1591,6 @@ namespace CUERipper
         {
             CUEToolsUDC encoder = bnComboBoxEncoder.SelectedItem as CUEToolsUDC;
             if (encoder == null)
-                return;
-            if (encoder.settings == null)
                 return;
             var form = new Options(encoder.settings);
             form.ShowDialog(this);
