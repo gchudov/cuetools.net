@@ -437,7 +437,7 @@ namespace JDP
         int _batchProcessed;
         bool _usePregapForFirstTrackInSingleFile;
         bool _reducePriority;
-        string _defaultLosslessFormat, _defaultLossyFormat, _defaultHybridFormat, _defaultNoAudioFormat;
+        string _defaultLosslessFormat, _defaultLossyFormat, _defaultNoAudioFormat;
         int _choiceWidth, _choiceHeight;
         bool _choiceMaxed;
         Thread _workThread;
@@ -1414,7 +1414,6 @@ namespace JDP
             _choiceMaxed = sr.LoadBoolean("ChoiceMaxed") ?? false;
             _defaultLosslessFormat = sr.Load("DefaultLosslessFormat") ?? "flac";
             _defaultLossyFormat = sr.Load("DefaultLossyFormat") ?? "mp3";
-            _defaultHybridFormat = sr.Load("DefaultHybridFormat") ?? "lossy.flac";
             _defaultNoAudioFormat = sr.Load("DefaultNoAudioFormat") ?? "wav";
             int iFormat, nFormats = sr.LoadInt32("OutputPathUseTemplates", 0, 10) ?? 0;
             for (iFormat = 0; iFormat < OutputPathUseTemplates.Length; iFormat++)
@@ -1473,7 +1472,6 @@ namespace JDP
             sw.Save("InputPath", InputPath);
             sw.Save("DefaultLosslessFormat", _defaultLosslessFormat);
             sw.Save("DefaultLossyFormat", _defaultLossyFormat);
-            sw.Save("DefaultHybridFormat", _defaultHybridFormat);
             sw.Save("DefaultNoAudioFormat", _defaultNoAudioFormat);
             sw.Save("DontGenerate", !_outputPathUseTemplate);
             sw.Save("OutputPathUseTemplates", comboBoxOutputFormat.Items.Count - OutputPathUseTemplates.Length);
@@ -2340,50 +2338,40 @@ namespace JDP
             if (SelectedOutputAudioFmt == null)
                 return;
 
-            if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
-            {
-                comboBoxEncoder.Enabled = false;
-                trackBarEncoderMode.Visible = false;
-                labelEncoderMode.Visible = false;
-                labelEncoderMinMode.Visible = false;
-                labelEncoderMaxMode.Visible = false;
-            }
-            else
-            {
-                foreach (CUEToolsUDC encoder in _profile._config.encoders)
-                    if (encoder.extension == SelectedOutputAudioFmt.extension)
-                    {
-                        if (SelectedOutputAudioFormat.StartsWith("lossy."))
-                        {
-                            if (!encoder.lossless)
-                                continue;
-                        }
-                        else if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.lossless)
-                            continue;
-                        else if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.lossless)
-                            continue;
-                        comboBoxEncoder.Items.Add(encoder);
-                    }
-                comboBoxEncoder.SelectedItem = SelectedOutputAudioFormat.StartsWith("lossy.") ? SelectedOutputAudioFmt.encoderLossless
-                    : SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
-                    : SelectedOutputAudioFmt.encoderLossy;
-                comboBoxEncoder.Enabled = true;
-            }
-
             switch (SelectedOutputAudioType)
             {
-                case AudioEncoderType.Lossless:
-                    _defaultLosslessFormat = SelectedOutputAudioFormat;
-                    break;
-                case AudioEncoderType.Lossy:
-                    _defaultLossyFormat = SelectedOutputAudioFormat;
-                    break;
-                case AudioEncoderType.Hybrid:
-                    _defaultHybridFormat = SelectedOutputAudioFormat;
-                    break;
                 case AudioEncoderType.NoAudio:
-                    _defaultNoAudioFormat = SelectedOutputAudioFormat;
-                    break;
+                    {
+                        comboBoxEncoder.Enabled = false;
+                        trackBarEncoderMode.Visible = false;
+                        labelEncoderMode.Visible = false;
+                        labelEncoderMinMode.Visible = false;
+                        labelEncoderMaxMode.Visible = false;
+                        _defaultNoAudioFormat = SelectedOutputAudioFormat;
+                        break;
+                    }
+                case AudioEncoderType.Lossless:
+                    {
+                        foreach (CUEToolsUDC encoder in _profile._config.encoders)
+                            if (encoder.extension == SelectedOutputAudioFmt.extension)
+                                if (encoder.lossless)
+                                    comboBoxEncoder.Items.Add(encoder);
+                        comboBoxEncoder.SelectedItem = SelectedOutputAudioFmt.encoderLossless;
+                        comboBoxEncoder.Enabled = true;
+                        _defaultLosslessFormat = SelectedOutputAudioFormat;
+                        break;
+                    }
+                case AudioEncoderType.Lossy:
+                    {
+                        foreach (CUEToolsUDC encoder in _profile._config.encoders)
+                            if (encoder.extension == SelectedOutputAudioFmt.extension)
+                                if (!encoder.lossless)
+                                    comboBoxEncoder.Items.Add(encoder);
+                        comboBoxEncoder.SelectedItem = SelectedOutputAudioFmt.encoderLossy;
+                        comboBoxEncoder.Enabled = true;
+                        _defaultLossyFormat = SelectedOutputAudioFormat;
+                        break;
+                    }
             }
         }
 
@@ -2396,8 +2384,6 @@ namespace JDP
             foreach (KeyValuePair<string, CUEToolsFormat> format in _profile._config.formats)
             {
                 if (SelectedOutputAudioType == AudioEncoderType.Lossless && !format.Value.allowLossless)
-                    continue;
-                if (SelectedOutputAudioType == AudioEncoderType.Hybrid) // && format.Key != "wv") TODO!!!!!
                     continue;
                 if (SelectedOutputAudioType == AudioEncoderType.Lossy && !format.Value.allowLossy)
                     continue;
@@ -2412,9 +2398,6 @@ namespace JDP
                     break;
                 case AudioEncoderType.Lossy:
                     SelectedOutputAudioFormat = _defaultLossyFormat;
-                    break;
-                case AudioEncoderType.Hybrid:
-                    SelectedOutputAudioFormat = _defaultHybridFormat;
                     break;
                 case AudioEncoderType.NoAudio:
                     SelectedOutputAudioFormat = _defaultNoAudioFormat;
@@ -2434,9 +2417,7 @@ namespace JDP
             if (SelectedOutputAudioFormat == null)
                 return;
             CUEToolsUDC encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
-            if (SelectedOutputAudioFormat.StartsWith("lossy."))
-                SelectedOutputAudioFmt.encoderLossless = encoder;
-            else if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+            if (SelectedOutputAudioType == AudioEncoderType.Lossless)
                 SelectedOutputAudioFmt.encoderLossless = encoder;
             else
                 SelectedOutputAudioFmt.encoderLossy = encoder;
