@@ -49,7 +49,6 @@ namespace CUETools.Processor
         public bool createM3U;
         public bool createCUEFileWhenEmbedded;
         public bool truncate4608ExtraSamples;
-        public int lossyWAVQuality;
         public bool decodeHDCDtoLW16;
         public bool decodeHDCDto24bit;
         public bool oneInstance;
@@ -122,7 +121,6 @@ namespace CUETools.Processor
             createM3U = false;
             createCUEFileWhenEmbedded = true;
             truncate4608ExtraSamples = true;
-            lossyWAVQuality = 5;
             decodeHDCDtoLW16 = false;
             decodeHDCDto24bit = true;
 
@@ -187,16 +185,16 @@ namespace CUETools.Processor
             }
 
             formats = new Dictionary<string, CUEToolsFormat>();
-            formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("flac", true), null, decoders.GetDefault("flac", true)));
-            formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, true, encoders.GetDefault("wv", true), null, decoders.GetDefault("wv", true)));
-            formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, false, true, true, encoders.GetDefault("ape", true), null, decoders.GetDefault("ape", true)));
-            formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, false, true, encoders.GetDefault("tta", true), null, decoders.GetDefault("tta", true)));
-            formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, true, false, true, encoders.GetDefault("wav", true), null, decoders.GetDefault("wav", true)));
-            formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), decoders.GetDefault("m4a", true)));
-            formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, true, encoders.GetDefault("tak", true), null, decoders.GetDefault("tak", true)));
-            formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, false, true, encoders.GetDefault("wma", true), encoders.GetDefault("wma", false), decoders.GetDefault("wma", true)));
-            formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("mp3", false), null));
-            formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, false, true, null, encoders.GetDefault("ogg", false), null));
+            formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, encoders.GetDefault("flac", true), null, decoders.GetDefault("flac", true)));
+            formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, encoders.GetDefault("wv", true), null, decoders.GetDefault("wv", true)));
+            formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, true, true, encoders.GetDefault("ape", true), null, decoders.GetDefault("ape", true)));
+            formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, true, encoders.GetDefault("tta", true), null, decoders.GetDefault("tta", true)));
+            formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, false, true, encoders.GetDefault("wav", true), null, decoders.GetDefault("wav", true)));
+            formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), decoders.GetDefault("m4a", true)));
+            formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, encoders.GetDefault("tak", true), null, decoders.GetDefault("tak", true)));
+            formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, true, encoders.GetDefault("wma", true), encoders.GetDefault("wma", false), decoders.GetDefault("wma", true)));
+            formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("mp3", false), null));
+            formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("ogg", false), null));
 
             scripts = new Dictionary<string, CUEToolsScript>();
             scripts.Add("default", new CUEToolsScript("default", true,
@@ -296,7 +294,6 @@ return processor.Go();
             sw.Save("CreateM3U", createM3U);
             sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
             sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
-            sw.Save("LossyWAVQuality", lossyWAVQuality);
             sw.Save("DecodeHDCDToLossyWAV16", decodeHDCDtoLW16);
             sw.Save("DecodeHDCDTo24bit", decodeHDCDto24bit);
             sw.Save("OneInstance", oneInstance);
@@ -365,7 +362,6 @@ return processor.Go();
                 sw.Save(string.Format("CustomFormat{0}Tagger", nFormats), (int)format.Value.tagger);
                 sw.Save(string.Format("CustomFormat{0}AllowLossless", nFormats), format.Value.allowLossless);
                 sw.Save(string.Format("CustomFormat{0}AllowLossy", nFormats), format.Value.allowLossy);
-                sw.Save(string.Format("CustomFormat{0}AllowLossyWAV", nFormats), format.Value.allowLossyWAV);
                 sw.Save(string.Format("CustomFormat{0}AllowEmbed", nFormats), format.Value.allowEmbed);
                 nFormats++;
             }
@@ -427,7 +423,6 @@ return processor.Go();
             createM3U = sr.LoadBoolean("CreateM3U") ?? false;
             createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? true;
             truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
-            lossyWAVQuality = sr.LoadInt32("LossyWAVQuality", 0, 10) ?? 5;
             decodeHDCDtoLW16 = sr.LoadBoolean("DecodeHDCDToLossyWAV16") ?? false;
             decodeHDCDto24bit = sr.LoadBoolean("DecodeHDCDTo24bit") ?? true;
 
@@ -512,7 +507,6 @@ return processor.Go();
                 CUEToolsTagger tagger = (CUEToolsTagger)(sr.LoadInt32(string.Format("CustomFormat{0}Tagger", nFormats), 0, 2) ?? 0);
                 bool allowLossless = sr.LoadBoolean(string.Format("CustomFormat{0}AllowLossless", nFormats)) ?? false;
                 bool allowLossy = sr.LoadBoolean(string.Format("CustomFormat{0}AllowLossy", nFormats)) ?? false;
-                bool allowLossyWav = sr.LoadBoolean(string.Format("CustomFormat{0}AllowLossyWAV", nFormats)) ?? false;
                 bool allowEmbed = sr.LoadBoolean(string.Format("CustomFormat{0}AllowEmbed", nFormats)) ?? false;
                 CUEToolsFormat format;
                 CUEToolsUDC udcLossless, udcLossy, udcDecoder;
@@ -523,7 +517,7 @@ return processor.Go();
                 if (decoder == "" || !decoders.TryGetValue(extension, true, decoder, out udcDecoder))
                     udcDecoder = decoders.GetDefault(extension, true);
                 if (!formats.TryGetValue(extension, out format))
-                    formats.Add(extension, new CUEToolsFormat(extension, tagger, allowLossless, allowLossy, allowLossyWav, allowEmbed, false, udcLossless, udcLossy, udcDecoder));
+                    formats.Add(extension, new CUEToolsFormat(extension, tagger, allowLossless, allowLossy, allowEmbed, false, udcLossless, udcLossy, udcDecoder));
                 else
                 {
                     format.encoderLossless = udcLossless;
@@ -534,7 +528,6 @@ return processor.Go();
                         format.tagger = tagger;
                         format.allowLossless = allowLossless;
                         format.allowLossy = allowLossy;
-                        format.allowLossyWAV = allowLossyWav;
                         format.allowEmbed = allowEmbed;
                     }
                 }

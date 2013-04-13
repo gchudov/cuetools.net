@@ -63,7 +63,6 @@ namespace JDP {
             this.comboBoxEncoder = new System.Windows.Forms.ComboBox();
             this.radioButtonAudioNone = new System.Windows.Forms.RadioButton();
             this.radioButtonAudioLossy = new System.Windows.Forms.RadioButton();
-            this.radioButtonAudioHybrid = new System.Windows.Forms.RadioButton();
             this.radioButtonAudioLossless = new System.Windows.Forms.RadioButton();
             this.labelFormat = new System.Windows.Forms.Label();
             this.comboBoxAudioFormat = new System.Windows.Forms.ComboBox();
@@ -466,7 +465,6 @@ namespace JDP {
             this.grpAudioOutput.Controls.Add(this.comboBoxEncoder);
             this.grpAudioOutput.Controls.Add(this.radioButtonAudioNone);
             this.grpAudioOutput.Controls.Add(this.radioButtonAudioLossy);
-            this.grpAudioOutput.Controls.Add(this.radioButtonAudioHybrid);
             this.grpAudioOutput.Controls.Add(this.radioButtonAudioLossless);
             this.grpAudioOutput.Controls.Add(this.labelFormat);
             this.grpAudioOutput.Controls.Add(this.comboBoxAudioFormat);
@@ -524,15 +522,6 @@ namespace JDP {
             this.toolTip1.SetToolTip(this.radioButtonAudioLossy, resources.GetString("radioButtonAudioLossy.ToolTip"));
             this.radioButtonAudioLossy.UseVisualStyleBackColor = true;
             this.radioButtonAudioLossy.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
-            // 
-            // radioButtonAudioHybrid
-            // 
-            resources.ApplyResources(this.radioButtonAudioHybrid, "radioButtonAudioHybrid");
-            this.radioButtonAudioHybrid.Name = "radioButtonAudioHybrid";
-            this.radioButtonAudioHybrid.TabStop = true;
-            this.toolTip1.SetToolTip(this.radioButtonAudioHybrid, resources.GetString("radioButtonAudioHybrid.ToolTip"));
-            this.radioButtonAudioHybrid.UseVisualStyleBackColor = true;
-            this.radioButtonAudioHybrid.CheckedChanged += new System.EventHandler(this.radioButtonAudioLossless_CheckedChanged);
             // 
             // radioButtonAudioLossless
             // 
@@ -1149,8 +1138,7 @@ namespace JDP {
 		private System.Windows.Forms.GroupBox groupBoxMode;
 		private System.Windows.Forms.ComboBox comboBoxScript;
 		private System.Windows.Forms.RadioButton radioButtonAudioNone;
-		private System.Windows.Forms.RadioButton radioButtonAudioLossy;
-		private System.Windows.Forms.RadioButton radioButtonAudioHybrid;
+        private System.Windows.Forms.RadioButton radioButtonAudioLossy;
 		private System.Windows.Forms.RadioButton radioButtonAudioLossless;
 		private System.Windows.Forms.ComboBox comboBoxEncoder;
 		private System.Windows.Forms.ToolStripContainer toolStripContainer1;

@@ -1003,7 +1003,7 @@
     <value>NoControl</value>
   </data>
   <data name="radioButtonAudioNone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 70</value>
+    <value>10, 53</value>
   </data>
   <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
     <value>50, 17</value>
@@ -1062,39 +1062,6 @@
   <data name="&gt;&gt;radioButtonAudioLossy.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="radioButtonAudioHybrid.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButtonAudioHybrid.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="radioButtonAudioHybrid.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 53</value>
-  </data>
-  <data name="radioButtonAudioHybrid.Size" type="System.Drawing.Size, System.Drawing">
-    <value>56, 17</value>
-  </data>
-  <data name="radioButtonAudioHybrid.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
-  </data>
-  <data name="radioButtonAudioHybrid.Text" xml:space="preserve">
-    <value>Hybrid</value>
-  </data>
-  <data name="radioButtonAudioHybrid.ToolTip" xml:space="preserve">
-    <value>Hybrid codecs</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAudioHybrid.Name" xml:space="preserve">
-    <value>radioButtonAudioHybrid</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAudioHybrid.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAudioHybrid.Parent" xml:space="preserve">
-    <value>grpAudioOutput</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAudioHybrid.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
   <data name="radioButtonAudioLossless.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1126,7 +1093,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;radioButtonAudioLossless.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>7</value>
   </data>
   <data name="labelFormat.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1156,7 +1123,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;labelFormat.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>8</value>
   </data>
   <data name="comboBoxAudioFormat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -1183,7 +1150,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;comboBoxAudioFormat.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>9</value>
   </data>
   <data name="grpAudioOutput.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>

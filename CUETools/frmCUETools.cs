@@ -1537,8 +1537,6 @@ namespace JDP
                 if (comboBoxAudioFormat.SelectedItem == null)
                     return null;
                 string formatName = (string)comboBoxAudioFormat.SelectedItem;
-                if (formatName.StartsWith("lossy."))
-                    formatName = formatName.Substring(6);
                 return _profile._config.formats.TryGetValue(formatName, out fmt) ? fmt : null;
             }
         }
@@ -1549,7 +1547,6 @@ namespace JDP
             {
                 return
                     radioButtonAudioNone.Checked ? AudioEncoderType.NoAudio :
-                    radioButtonAudioHybrid.Checked ? AudioEncoderType.Hybrid :
                     radioButtonAudioLossy.Checked ? AudioEncoderType.Lossy :
                     AudioEncoderType.Lossless;
             }
@@ -1560,10 +1557,6 @@ namespace JDP
                     case AudioEncoderType.NoAudio:
                         radioButtonAudioNone.Checked = false;
                         radioButtonAudioNone.Checked = true;
-                        break;
-                    case AudioEncoderType.Hybrid:
-                        radioButtonAudioHybrid.Checked = false;
-                        radioButtonAudioHybrid.Checked = true;
                         break;
                     case AudioEncoderType.Lossy:
                         radioButtonAudioLossy.Checked = false;
@@ -2407,16 +2400,6 @@ namespace JDP
                 //if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
                 //continue;
                 comboBoxAudioFormat.Items.Add(format.Key);
-            }
-            foreach (KeyValuePair<string, CUEToolsFormat> format in _profile._config.formats)
-            {
-                if (!format.Value.allowLossyWAV)
-                    continue;
-                if (SelectedOutputAudioType == AudioEncoderType.Lossless)
-                    continue;
-                if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
-                    continue;
-                comboBoxAudioFormat.Items.Add("lossy." + format.Key);
             }
             switch (SelectedOutputAudioType)
             {

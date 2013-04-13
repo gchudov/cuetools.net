@@ -3876,9 +3876,8 @@ namespace CUETools.Processor
         private IAudioDest GetAudioDest(string path, int finalSampleCount, int bps, int padding, bool noOutput)
         {
             var pcm = new AudioPCMConfig(bps, 2, 44100);
-            if (noOutput)
-                return new DummyWriter(path, new AudioEncoderSettings(pcm));
-            return AudioReadWrite.GetAudioDest(_audioEncoderType, path, finalSampleCount, padding, pcm, _config);
+            string extension = Path.GetExtension(path).ToLower();
+            return AudioReadWrite.GetAudioDest(noOutput ? AudioEncoderType.NoAudio : _audioEncoderType, path, pcm, finalSampleCount, padding, extension, _config);
         }
 
         internal IAudioSource GetAudioSource(int sourceIndex, bool pipe)

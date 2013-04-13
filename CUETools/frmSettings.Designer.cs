@@ -123,7 +123,6 @@ namespace JDP
             this.labelFormatLossyEncoder = new System.Windows.Forms.Label();
             this.checkBoxFormatAllowLossy = new System.Windows.Forms.CheckBox();
             this.comboFormatLosslessEncoder = new System.Windows.Forms.ComboBox();
-            this.checkBoxFormatSupportsLossyWAV = new System.Windows.Forms.CheckBox();
             this.labelFormatLosslessEncoder = new System.Windows.Forms.Label();
             this.checkBoxFormatEmbedCUESheet = new System.Windows.Forms.CheckBox();
             this.comboFormatDecoder = new System.Windows.Forms.ComboBox();
@@ -163,9 +162,6 @@ namespace JDP
             this.labelDecoderExtension = new System.Windows.Forms.Label();
             this.listBoxDecoders = new System.Windows.Forms.ListBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.numericLossyWAVQuality = new System.Windows.Forms.NumericUpDown();
             this.grpHDCD = new System.Windows.Forms.GroupBox();
             this.chkHDCDDetect = new System.Windows.Forms.CheckBox();
             this.tabPage5 = new System.Windows.Forms.TabPage();
@@ -220,8 +216,6 @@ namespace JDP
             this.groupBoxExternalDecoder.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tabPage4.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).BeginInit();
             this.grpHDCD.SuspendLayout();
             this.tabPage5.SuspendLayout();
             this.groupBoxScriptConditions.SuspendLayout();
@@ -979,7 +973,6 @@ namespace JDP
             this.groupBoxFormat.Controls.Add(this.labelFormatLossyEncoder);
             this.groupBoxFormat.Controls.Add(this.checkBoxFormatAllowLossy);
             this.groupBoxFormat.Controls.Add(this.comboFormatLosslessEncoder);
-            this.groupBoxFormat.Controls.Add(this.checkBoxFormatSupportsLossyWAV);
             this.groupBoxFormat.Controls.Add(this.labelFormatLosslessEncoder);
             this.groupBoxFormat.Controls.Add(this.checkBoxFormatEmbedCUESheet);
             this.groupBoxFormat.Controls.Add(this.comboFormatDecoder);
@@ -1015,12 +1008,6 @@ namespace JDP
             this.comboFormatLosslessEncoder.FormattingEnabled = true;
             resources.ApplyResources(this.comboFormatLosslessEncoder, "comboFormatLosslessEncoder");
             this.comboFormatLosslessEncoder.Name = "comboFormatLosslessEncoder";
-            // 
-            // checkBoxFormatSupportsLossyWAV
-            // 
-            resources.ApplyResources(this.checkBoxFormatSupportsLossyWAV, "checkBoxFormatSupportsLossyWAV");
-            this.checkBoxFormatSupportsLossyWAV.Name = "checkBoxFormatSupportsLossyWAV";
-            this.checkBoxFormatSupportsLossyWAV.UseVisualStyleBackColor = true;
             // 
             // labelFormatLosslessEncoder
             // 
@@ -1309,39 +1296,10 @@ namespace JDP
             // tabPage4
             // 
             this.tabPage4.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage4.Controls.Add(this.groupBox2);
             this.tabPage4.Controls.Add(this.grpHDCD);
             this.tabPage4.Controls.Add(this.chkHDCDDetect);
             resources.ApplyResources(this.tabPage4, "tabPage4");
             this.tabPage4.Name = "tabPage4";
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Controls.Add(this.numericLossyWAVQuality);
-            resources.ApplyResources(this.groupBox2, "groupBox2");
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.TabStop = false;
-            // 
-            // label1
-            // 
-            resources.ApplyResources(this.label1, "label1");
-            this.label1.Name = "label1";
-            // 
-            // numericLossyWAVQuality
-            // 
-            resources.ApplyResources(this.numericLossyWAVQuality, "numericLossyWAVQuality");
-            this.numericLossyWAVQuality.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.numericLossyWAVQuality.Name = "numericLossyWAVQuality";
-            this.numericLossyWAVQuality.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
             // 
             // grpHDCD
             // 
@@ -1537,9 +1495,6 @@ namespace JDP
             this.panel2.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericLossyWAVQuality)).EndInit();
             this.grpHDCD.ResumeLayout(false);
             this.grpHDCD.PerformLayout();
             this.tabPage5.ResumeLayout(false);
@@ -1609,9 +1564,6 @@ namespace JDP
         private System.Windows.Forms.Label labelDecoderParameters;
         private System.Windows.Forms.Label labelDecoderPath;
         private System.Windows.Forms.Label labelDecoderExtension;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numericLossyWAVQuality;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Label labelFormatDefaultDecoder;
         private System.Windows.Forms.Label labelFormatLosslessEncoder;
@@ -1626,7 +1578,6 @@ namespace JDP
         private System.Windows.Forms.ComboBox comboBoxDecoderExtension;
         private System.Windows.Forms.Label labelFormatTagger;
         private System.Windows.Forms.ComboBox comboBoxFormatTagger;
-        private System.Windows.Forms.CheckBox checkBoxFormatSupportsLossyWAV;
         private System.Windows.Forms.CheckBox checkBoxFormatEmbedCUESheet;
         private System.Windows.Forms.CheckBox checkBoxFormatAllowLossless;
         private System.Windows.Forms.GroupBox groupBoxFormat;

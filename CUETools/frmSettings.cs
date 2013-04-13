@@ -65,7 +65,6 @@ namespace JDP
 			chkCreateM3U.Checked = _config.createM3U;
 			chkCreateCUEFileWhenEmbedded.Checked = _config.createCUEFileWhenEmbedded;
 			chkTruncateExtra4206Samples.Checked = _config.truncate4608ExtraSamples;
-			numericLossyWAVQuality.Value = _config.lossyWAVQuality;
 			chkHDCDLW16.Checked = _config.decodeHDCDtoLW16;
 			chkHDCD24bit.Checked = _config.decodeHDCDto24bit;
 			chkOverwriteTags.Checked = _config.overwriteCUEData;
@@ -188,7 +187,6 @@ namespace JDP
 				rbGapsLeftOut.Checked ? CUEStyle.GapsLeftOut :
 				CUEStyle.GapsAppended;
 			_config.autoCorrectFilenames = chkAutoCorrectFilenames.Checked;
-			_config.lossyWAVQuality = (int)numericLossyWAVQuality.Value;
 			_config.fixOffsetMinimumTracksPercent = (uint)numFixWhenPercent.Value;
 			_config.fixOffsetMinimumConfidence = (uint)numFixWhenConfidence.Value;
 			_config.encodeWhenPercent = (uint)numEncodeWhenPercent.Value;
@@ -341,7 +339,7 @@ namespace JDP
 						CUEToolsFormat format;
 						if (_config.formats.TryGetValue("new", out format))
 							return;
-						format = new CUEToolsFormat("new", CUEToolsTagger.TagLibSharp, true, true, false, false, false, null, null, null);
+						format = new CUEToolsFormat("new", CUEToolsTagger.TagLibSharp, true, true, false, false, null, null, null);
 						_config.formats.Add("new", format);
 						ListViewItem item = new ListViewItem(format.extension, "." + format.extension);
 						item.Tag = format;
@@ -413,11 +411,9 @@ namespace JDP
 				checkBoxFormatEmbedCUESheet.Checked = format.allowEmbed;
 				checkBoxFormatAllowLossless.Checked = format.allowLossless;
 				checkBoxFormatAllowLossy.Checked = format.allowLossy;
-				checkBoxFormatSupportsLossyWAV.Checked = format.allowLossyWAV;
 
 				comboBoxFormatTagger.Enabled =
 					checkBoxFormatEmbedCUESheet.Enabled =
-					checkBoxFormatSupportsLossyWAV.Enabled =
 					checkBoxFormatAllowLossless.Enabled =
 					checkBoxFormatAllowLossy.Enabled =
 					!format.builtin;
@@ -439,7 +435,6 @@ namespace JDP
 				{
 					format.tagger = (CUEToolsTagger)comboBoxFormatTagger.SelectedItem;
 					format.allowEmbed = checkBoxFormatEmbedCUESheet.Checked;
-					format.allowLossyWAV = checkBoxFormatSupportsLossyWAV.Checked;
 					format.allowLossless = checkBoxFormatAllowLossless.Checked;
 					format.allowLossy = checkBoxFormatAllowLossy.Checked;
 				}

@@ -7,7 +7,6 @@
             CUEToolsTagger _tagger,
             bool _allowLossless,
             bool _allowLossy,
-            bool _allowLossyWAV,
             bool _allowEmbed,
             bool _builtin,
             CUEToolsUDC _encoderLossless,
@@ -18,7 +17,6 @@
             tagger = _tagger;
             allowLossless = _allowLossless;
             allowLossy = _allowLossy;
-            allowLossyWAV = _allowLossyWAV;
             allowEmbed = _allowEmbed;
             builtin = _builtin;
             encoderLossless = _encoderLossless;
@@ -41,6 +39,6 @@
         public CUEToolsUDC encoderLossy;
         public CUEToolsUDC decoder;
         public CUEToolsTagger tagger;
-        public bool allowLossless, allowLossy, allowLossyWAV, allowEmbed, builtin;
+        public bool allowLossless, allowLossy, allowEmbed, builtin;
     }
 }
