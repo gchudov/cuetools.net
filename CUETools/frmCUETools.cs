@@ -2343,6 +2343,10 @@ namespace JDP
             if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
             {
                 comboBoxEncoder.Enabled = false;
+                trackBarEncoderMode.Visible = false;
+                labelEncoderMode.Visible = false;
+                labelEncoderMinMode.Visible = false;
+                labelEncoderMaxMode.Visible = false;
             }
             else
             {
