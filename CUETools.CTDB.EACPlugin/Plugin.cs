@@ -59,7 +59,7 @@ namespace AudioDataPlugIn
         // the plugin and for display in the log file
         public string GetAudioTransferPluginName()
         {
-            return "CUETools DB Plugin V2.1.4";
+            return "CUETools DB Plugin V2.1.5";
         }
 
         // Each plugin should have its own options page.
@@ -263,7 +263,7 @@ namespace AudioDataPlugIn
 #endif
                 var form = new FormSubmitParity(
                     ctdb,
-                    "EAC" + m_data.HostVersion + " CTDB 2.1.4",
+                    "EAC" + m_data.HostVersion + " CTDB 2.1.5",
                     m_drivename,
                     conf,
                     (arTest.Position == 0 && this.is_secure_mode) || (arTest.Position != 0 && arTest.CRC32(0) == ar.CRC32(0)) ? 100 : 0,
