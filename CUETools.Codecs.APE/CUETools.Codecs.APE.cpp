@@ -128,7 +128,8 @@ namespace CUETools { namespace Codecs { namespace APE {
 			pcm = gcnew AudioPCMConfig(
 			    pAPEDecompress->GetInfo (APE_INFO_BITS_PER_SAMPLE, 0, 0),
 			    pAPEDecompress->GetInfo (APE_INFO_CHANNELS, 0, 0),
-			    pAPEDecompress->GetInfo (APE_INFO_SAMPLE_RATE, 0, 0));
+			    pAPEDecompress->GetInfo (APE_INFO_SAMPLE_RATE, 0, 0),
+				(AudioPCMConfig::SpeakerConfig)0);
 
 			// make a buffer to hold 16384 blocks of audio data
 			nBlockAlign = pAPEDecompress->GetInfo (APE_INFO_BLOCK_ALIGN, 0, 0);

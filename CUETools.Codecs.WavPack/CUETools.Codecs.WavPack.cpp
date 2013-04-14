@@ -110,7 +110,8 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			pcm = gcnew AudioPCMConfig(
 			    WavpackGetBitsPerSample(_wpc), 
 			    WavpackGetNumChannels(_wpc), 
-			    (int)WavpackGetSampleRate(_wpc));
+			    (int)WavpackGetSampleRate(_wpc),
+				(AudioPCMConfig::SpeakerConfig)WavpackGetChannelMask(_wpc));
 			_sampleCount = WavpackGetNumSamples(_wpc);
 			_sampleOffset = 0;
 		}
@@ -342,8 +343,6 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 		{
 			_settings = settings;
 
-			if (_settings->PCM->ChannelCount != 1 && _settings->PCM->ChannelCount != 2)
-				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
 			if (_settings->PCM->BitsPerSample < 16 || _settings->PCM->BitsPerSample > 24)
 				throw gcnew Exception("Bits per sample must be 16..24.");
 
@@ -474,7 +473,7 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			config.bits_per_sample = _settings->PCM->BitsPerSample;
 			config.bytes_per_sample = (_settings->PCM->BitsPerSample + 7) / 8;
 			config.num_channels = _settings->PCM->ChannelCount;
-			config.channel_mask = 5 - _settings->PCM->ChannelCount;
+			config.channel_mask = (int32_t)_settings->PCM->ChannelMask;
 			config.sample_rate = _settings->PCM->SampleRate;
 			Int32 _compressionMode = _settings->EncoderModeIndex;
 			if (_compressionMode == 0) config.flags |= CONFIG_FAST_FLAG;

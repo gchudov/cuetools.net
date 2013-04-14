@@ -360,7 +360,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 				pcm = gcnew AudioPCMConfig(
 				    metadata->data.stream_info.bits_per_sample,
 				    metadata->data.stream_info.channels,
-				    metadata->data.stream_info.sample_rate);
+				    metadata->data.stream_info.sample_rate,
+					(AudioPCMConfig::SpeakerConfig)0);
 				_sampleCount = metadata->data.stream_info.total_samples;
 			}
 			//if (metadata->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) 

@@ -72,7 +72,7 @@ namespace TTA {
 			if (WAVE_FORMAT_PCM != _ttaReader->ttahdr.AudioFormat)
 				throw gcnew Exception("floating point format not supported.");
 
-			pcm = gcnew AudioPCMConfig((int)_ttaReader->ttahdr.BitsPerSample, (int)_ttaReader->ttahdr.NumChannels, (int)_ttaReader->ttahdr.SampleRate);
+			pcm = gcnew AudioPCMConfig((int)_ttaReader->ttahdr.BitsPerSample, (int)_ttaReader->ttahdr.NumChannels, (int)_ttaReader->ttahdr.SampleRate, (AudioPCMConfig::SpeakerConfig)0);
 			_sampleCount = _ttaReader->ttahdr.DataLength;
 		}
 
