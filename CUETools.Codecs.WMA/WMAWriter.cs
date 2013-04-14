@@ -12,13 +12,12 @@ namespace CUETools.Codecs.WMA
 {
     public abstract class WMAWriterSettings : AudioEncoderSettings
     {
-        public WMAWriterSettings(Guid subType)
+        public WMAWriterSettings()
             : base()
         {
-            this.m_subType = subType;
         }
 
-        private readonly Guid m_subType;
+        protected Guid m_subType;
         protected bool m_vbr = true;
 
         public IWMWriter GetWriter()
@@ -146,7 +145,7 @@ namespace CUETools.Codecs.WMA
                                         subType = pMediaType.subType,
                                         pcm = new AudioPCMConfig(pWfx.wBitsPerSample, pWfx.nChannels, pWfx.nSamplesPerSec)
                                     };
-                                    if (PCM == null || (pWfx.nChannels == PCM.ChannelCount && pWfx.wBitsPerSample == PCM.BitsPerSample && pWfx.nSamplesPerSec == PCM.SampleRate))
+                                    if (PCM == null || (pWfx.nChannels == PCM.ChannelCount && pWfx.wBitsPerSample >= PCM.BitsPerSample && pWfx.nSamplesPerSec == PCM.SampleRate))
                                         yield return info;
                                 }
                             }
@@ -172,6 +171,7 @@ namespace CUETools.Codecs.WMA
         internal List<WMAFormatInfo> GetFormats(IWMProfileManager pProfileManager)
         {
             var formats = new List<WMAFormatInfo>(this.EnumerateFormatInfo(pProfileManager));
+            formats.RemoveAll(fmt => formats.Exists(fmt2 => fmt2.pcm.BitsPerSample < fmt.pcm.BitsPerSample && fmt2.pcm.ChannelCount == fmt.pcm.ChannelCount && fmt2.pcm.SampleRate == fmt.pcm.SampleRate));
             if (formats.Count < 2) return formats;
             int prefixLen = 0, suffixLen = 0;
             while (formats.TrueForAll(s => s.formatName.Length > prefixLen &&
@@ -210,48 +210,84 @@ namespace CUETools.Codecs.WMA
     public class WMALWriterSettings : WMAWriterSettings
     {
         public WMALWriterSettings()
-            : base(MediaSubType.WMAudio_Lossless)
+            : base()
         {
+            this.m_subType = MediaSubType.WMAudio_Lossless;
         }
     }
 
-    public class WMAV8VBRWriterSettings : WMAWriterSettings
+    public class WMALossyWriterSettings : WMAWriterSettings
     {
-        public WMAV8VBRWriterSettings()
-            : base(MediaSubType.WMAudioV8)
+        public WMALossyWriterSettings()
+            : base()
         {
-            this.m_vbr = true;
+            this.m_subType = MediaSubType.WMAudioV9;
         }
-    }
 
-    public class WMAV8CBRWriterSettings : WMAWriterSettings
-    {
-        public WMAV8CBRWriterSettings()
-            : base(MediaSubType.WMAudioV8)
+        public enum Codec
         {
-            this.m_vbr = false;
+            WMA9,
+            WMA10Pro
         }
-    }
 
-    public class WMAV9CBRWriterSettings : WMAWriterSettings
-    {
-        public WMAV9CBRWriterSettings()
-            : base(MediaSubType.WMAudioV9)
+        [DefaultValue(Codec.WMA10Pro)]
+        public Codec Version
         {
-            this.m_vbr = false;
+            get
+            {
+                return this.m_subType == MediaSubType.WMAudioV9 ? Codec.WMA10Pro : Codec.WMA9;
+            }
+            set
+            {
+                this.m_subType = value == Codec.WMA10Pro ? MediaSubType.WMAudioV9 : MediaSubType.WMAudioV8;
+            }
+        }
+
+        [DefaultValue(true)]
+        public bool VBR
+        {
+            get
+            {
+                return this.m_vbr;
+            }
+            set
+            {
+                this.m_vbr = value;
+            }
         }
     }
 
     [AudioEncoderClass("wma lossless", "wma", true, 1, typeof(WMALWriterSettings))]
-    [AudioEncoderClass("wma v8 vbr", "wma", false, 3, typeof(WMAV8VBRWriterSettings))]
-    [AudioEncoderClass("wma v9 cbr", "wma", false, 2, typeof(WMAV9CBRWriterSettings))]
-    [AudioEncoderClass("wma v8 cbr", "wma", false, 1, typeof(WMAV8CBRWriterSettings))]
+    [AudioEncoderClass("wma lossy", "wma", false, 1, typeof(WMALossyWriterSettings))]
     public class WMAWriter : IAudioDest
     {
         IWMWriter m_pWriter;
         private string outputPath;
         private bool closed = false;
+        private bool fileCreated = false;
+        private bool writingBegan = false;
         private long sampleCount, finalSampleCount;
+
+        const ushort WAVE_FORMAT_EXTENSIBLE = 0xFFFE;
+        const ushort WAVE_FORMAT_PCM = 1;
+
+        /// <summary>
+        /// From WAVEFORMATEXTENSIBLE
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        public struct WaveFormatExtensible
+        {
+            public short wFormatTag;        /* format type */
+            public short nChannels;         /* number of channels (i.e. mono, stereo, etc.) */
+            public int nSamplesPerSec;    /* sample rate */
+            public int nAvgBytesPerSec;   /* for buffer estimation */
+            public short nBlockAlign;       /* block size of data */
+            public short wBitsPerSample;
+            public short cbSize;
+            public short wValidBitsPerSample;
+            public int dwChannelMask;
+            public Guid SubFormat;
+        }
 
         public long FinalSampleCount
         {
@@ -286,22 +322,58 @@ namespace CUETools.Codecs.WMA
                 m_pWriter = settings.GetWriter();
                 int cInputs;
                 m_pWriter.GetInputCount(out cInputs);
-                //for (int iInput = 0; iInput < cInputs; iInput++)
-                //{
-                //}
-                //IWMInputMediaProps pInput;
-                //pWriter.GetInputProps(0, out pInput);
-                //pInput.GetMediaType(pType, ref cbType);
-                // fill (WAVEFORMATEX*)pType->pbFormat
-                // WAVEFORMATEXTENSIBLE if needed (dwChannelMask, wValidBitsPerSample)
-                // if (chg)
-                //pInput.SetMediaType(pType);
-                //pWriter.SetInputProps(0, pInput);
-
-                //{ DWORD dwFormatCount = 0; hr = pWriter->GetInputFormatCount(0, &dwFormatCount); TEST(hr); TESTB(dwFormatCount > 0); }
-                //// GetInputFormatCount failed previously for multichannel formats, before ...mask = guessChannelMask() added. Leave this check j.i.c.
-                m_pWriter.SetOutputFilename(outputPath);
-                m_pWriter.BeginWriting();
+                if (cInputs < 1) throw new InvalidOperationException();
+                IWMInputMediaProps pInput;
+                m_pWriter.GetInputProps(0, out pInput);
+                try
+                {
+                    int cbType = 0;
+                    AMMediaType pMediaType = null;
+                    pInput.GetMediaType(pMediaType, ref cbType);
+                    pMediaType = new AMMediaType();
+                    pMediaType.formatSize = cbType - Marshal.SizeOf(typeof(AMMediaType));
+                    pInput.GetMediaType(pMediaType, ref cbType);
+                    try
+                    {
+                        var wfe = new WaveFormatExtensible();
+                        wfe.nChannels = (short)m_settings.PCM.ChannelCount;
+                        wfe.nSamplesPerSec = m_settings.PCM.SampleRate;
+                        wfe.nBlockAlign = (short)m_settings.PCM.BlockAlign;
+                        wfe.wBitsPerSample = (short)m_settings.PCM.BitsPerSample;
+                        wfe.nAvgBytesPerSec = wfe.nSamplesPerSec * wfe.nBlockAlign;
+                        if ((m_settings.PCM.BitsPerSample == 8 || m_settings.PCM.BitsPerSample == 16 || m_settings.PCM.BitsPerSample == 24) &&
+                            (m_settings.PCM.ChannelCount == 1 || m_settings.PCM.ChannelCount == 2))
+                        {
+                            wfe.wFormatTag = unchecked((short)WAVE_FORMAT_PCM);
+                            wfe.cbSize = 0;
+                        }
+                        else
+                        {
+                            wfe.wFormatTag = unchecked((short)WAVE_FORMAT_EXTENSIBLE);
+                            wfe.cbSize = 22;
+                            wfe.wValidBitsPerSample = wfe.wBitsPerSample;
+                            wfe.nBlockAlign = (short)((wfe.wBitsPerSample / 8) * wfe.nChannels);
+                            wfe.dwChannelMask = (int)m_settings.PCM.ChannelMask;
+                            wfe.SubFormat = MediaSubType.PCM;
+                        }
+                        Marshal.FreeCoTaskMem(pMediaType.formatPtr);
+                        pMediaType.formatPtr = IntPtr.Zero;
+                        pMediaType.formatSize = 0;
+                        pMediaType.formatPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(wfe));
+                        pMediaType.formatSize = Marshal.SizeOf(wfe);
+                        Marshal.StructureToPtr(wfe, pMediaType.formatPtr, false);
+                        pInput.SetMediaType(pMediaType);
+                        m_pWriter.SetInputProps(0, pInput);
+                    }
+                    finally
+                    {
+                        WMUtils.FreeWMMediaType(pMediaType);
+                    }
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(pInput);
+                }
             }
             catch (Exception ex)
             {
@@ -320,7 +392,11 @@ namespace CUETools.Codecs.WMA
             {
                 try
                 {
-                    m_pWriter.EndWriting();
+                    if (this.writingBegan)
+                    {
+                        m_pWriter.EndWriting();
+                        this.writingBegan = false;
+                    }
                 }
                 finally
                 {
@@ -338,22 +414,34 @@ namespace CUETools.Codecs.WMA
         public void Delete()
         {
             if (this.outputPath == null)
-            {
                 throw new InvalidOperationException("This writer was not created from file.");
-            }
 
-            if (!closed)
+            if (!this.closed)
             {
                 this.Close();
-                File.Delete(this.outputPath);
+
+                if (this.fileCreated)
+                {
+                    File.Delete(this.outputPath);
+                    this.fileCreated = false;
+                }
             }
         }
 
         public void Write(AudioBuffer buffer)
         {
             if (this.closed)
-            {
                 throw new InvalidOperationException("Writer already closed.");
+
+            if (!this.fileCreated)
+            {
+                this.m_pWriter.SetOutputFilename(outputPath);
+                this.fileCreated = true;
+            }
+            if (!this.writingBegan)
+            {
+                this.m_pWriter.BeginWriting();
+                this.writingBegan = true;
             }
 
             buffer.Prepare(this);
