@@ -70,7 +70,7 @@ namespace CUETools.Codecs.WMA
             for (int dwIndex = 0; dwIndex < dwStreamCount; dwIndex++)
             {
                 IWMStreamConfig pConfig = null;
-                pProfile.GetStream(0, out pConfig);
+                pProfile.GetStream(dwIndex, out pConfig);
                 try
                 {
                     Guid guid;
@@ -84,14 +84,15 @@ namespace CUETools.Codecs.WMA
                     var pIWMMediaProps = pConfig as IWMMediaProps;
                     int cbType = 0;
                     pIWMMediaProps.GetMediaType(null, ref cbType);
-                    var mt = new AMMediaType();
-                    mt.formatSize = cbType;
-                    pIWMMediaProps.GetMediaType(mt, ref cbType);
-                    if (mt.formatType != FormatType.WaveEx)
+                    var pMediaType = new AMMediaType();
+                    pMediaType.formatSize = cbType;
+                    pIWMMediaProps.GetMediaType(pMediaType, ref cbType);
+                    if (pMediaType.formatType != FormatType.WaveEx)
                         continue;
-                    if (mt.subType != MediaSubType.WMAudio_Lossless)
+                    if (pMediaType.subType != MediaSubType.WMAudio_Lossless)
                         continue;
                     m_wStreamNum = wStreamNum;
+                    pcm = WaveFormatExtensible.FromMediaType(pMediaType).GetConfig();
                     break;
                 }
                 finally
@@ -110,7 +111,7 @@ namespace CUETools.Codecs.WMA
             m_syncReader.GetOutputNumberForStream(m_wStreamNum, out m_dwAudioOutputNum);
             IWMOutputMediaProps pProps;
             m_syncReader.GetOutputProps(m_dwAudioOutputNum, out pProps);
-            var m_pWfx = new WaveFormatEx();
+
             try
             {
                 StringBuilder sName = null;
@@ -129,6 +130,12 @@ namespace CUETools.Codecs.WMA
                 sName = new StringBuilder(iName);
                 pProps.GetConnectionName(sName, ref iName);
 
+                if (pcm.ChannelCount > 2)
+                {
+                    m_syncReader.SetOutputSetting(m_dwAudioOutputNum, Constants.g_wszEnableDiscreteOutput, AttrDataType.BOOL, new byte[] { 1, 0, 0, 0 }, 4);
+                    m_syncReader.SetOutputSetting(m_dwAudioOutputNum, Constants.g_wszSpeakerConfig, AttrDataType.DWORD, new byte[] { 0, 0, 0, 0 }, 4);
+                }
+
                 pMediaType = new AMMediaType();
                 pMediaType.formatSize = cbType - Marshal.SizeOf(typeof(AMMediaType));
 
@@ -143,7 +150,15 @@ namespace CUETools.Codecs.WMA
                         throw new Exception("not Audio");
                     if (FormatType.WaveEx != pMediaType.formatType)
                         throw new Exception("not WaveEx");
-                    Marshal.PtrToStructure(pMediaType.formatPtr, m_pWfx);
+                    var wfe = new WaveFormatExtensible(pcm);
+                    Marshal.FreeCoTaskMem(pMediaType.formatPtr);
+                    pMediaType.formatPtr = IntPtr.Zero;
+                    pMediaType.formatSize = 0;
+                    pMediaType.formatPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(wfe));
+                    pMediaType.formatSize = Marshal.SizeOf(wfe);
+                    Marshal.StructureToPtr(wfe, pMediaType.formatPtr, false);
+                    pProps.SetMediaType(pMediaType);
+                    m_syncReader.SetOutputProps(m_dwAudioOutputNum, pProps);
                 }
                 finally
                 {
@@ -201,8 +216,6 @@ namespace CUETools.Codecs.WMA
             //catch (COMException)
             //{
             //}
-
-            pcm = new AudioPCMConfig(m_pWfx.wBitsPerSample, m_pWfx.nChannels, m_pWfx.nSamplesPerSec);
 
             //int cbMax;
             //m_syncReader.GetMaxOutputSampleSize(m_dwAudioOutputNum, out cbMax);

@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IStreamWrapper.cs" />
+    <Compile Include="WaveFormatExtensible.cs" />
     <Compile Include="WMAReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

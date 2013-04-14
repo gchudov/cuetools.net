@@ -177,13 +177,14 @@ namespace CUETools.Codecs
                     _br.ReadInt32(); // bytes per second
                     int _blockAlign = _br.ReadInt16();
                     int _bitsPerSample = _br.ReadInt16();
+                    int _channelMask = 0;
                     pos += 16;
 
                     if (fmtTag == 0xFFFEU && ckSize >= 34) // WAVE_FORMAT_EXTENSIBLE 
                     {
                         _br.ReadInt16(); // CbSize
                         _br.ReadInt16(); // ValidBitsPerSample
-                        int channelMask = _br.ReadInt32();
+                        _channelMask = _br.ReadInt32();
                         fmtTag = _br.ReadUInt16();
                         pos += 10;
                     }
@@ -191,7 +192,7 @@ namespace CUETools.Codecs
                     if (fmtTag != 1) // WAVE_FORMAT_PCM
                         throw new Exception("WAVE format tag not WAVE_FORMAT_PCM.");
 
-                    pcm = new AudioPCMConfig(_bitsPerSample, _channelCount, _sampleRate);
+                    pcm = new AudioPCMConfig(_bitsPerSample, _channelCount, _sampleRate, (AudioPCMConfig.SpeakerConfig)_channelMask);
                     if (pcm.BlockAlign != _blockAlign)
                         throw new Exception("WAVE has strange BlockAlign");
                 }

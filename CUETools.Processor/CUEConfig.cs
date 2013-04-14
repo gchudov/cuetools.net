@@ -473,6 +473,8 @@ return processor.Go();
                 {
                     using (TextReader reader = new StringReader(settings))
                         encoder.settings = encoder.settingsSerializer.Deserialize(reader) as AudioEncoderSettings;
+                    if (encoder.settings is UserDefinedEncoderSettings && (encoder.settings as UserDefinedEncoderSettings).Path == "")
+                        encoders.Remove(encoder);
                 }
                 catch
                 {

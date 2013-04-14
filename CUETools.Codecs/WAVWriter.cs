@@ -75,7 +75,7 @@ namespace CUETools.Codecs
             const uint fccFormat = 0x20746D66;
             const uint fccData = 0x61746164;
 
-            bool wavex = Settings.PCM.BitsPerSample != 16 && Settings.PCM.BitsPerSample != 24;
+            bool wavex = (Settings.PCM.BitsPerSample != 16 && Settings.PCM.BitsPerSample != 24) || Settings.PCM.ChannelMask != AudioPCMConfig.GetDefaultChannelMask(Settings.PCM.ChannelCount);
 
             hdrLen += 36 + (wavex ? 24 : 0) + 8;
 
@@ -83,7 +83,10 @@ namespace CUETools.Codecs
             uint dataLenPadded = dataLen + (dataLen & 1);
 
             _bw.Write(fccRIFF);
-            _bw.Write((uint)(dataLenPadded + hdrLen - 8));
+            if (_finalSampleCount <= 0)
+                _bw.Write((uint)0xffffffff);
+            else
+                _bw.Write((uint)(dataLenPadded + hdrLen - 8));
             _bw.Write(fccWAVE);
             _bw.Write(fccFormat);
             if (wavex)
@@ -105,8 +108,8 @@ namespace CUETools.Codecs
             {
                 _bw.Write((ushort)22); // length of WAVEX structure
                 _bw.Write((ushort)Settings.PCM.BitsPerSample);
-                _bw.Write((uint)3); // speaker positions (3 == stereo)
-                _bw.Write((ushort)1); // PCM
+                _bw.Write((uint)Settings.PCM.ChannelMask);
+                _bw.Write((ushort)1); // PCM Guid
                 _bw.Write((ushort)0);
                 _bw.Write((ushort)0);
                 _bw.Write((ushort)0x10);
@@ -130,7 +133,10 @@ namespace CUETools.Codecs
                 }
 
             _bw.Write(fccData);
-            _bw.Write(dataLen);
+            if (_finalSampleCount <= 0)
+                _bw.Write((uint)0xffffffff);
+            else
+                _bw.Write(dataLen);
 
             _headersWritten = true;
         }
@@ -139,19 +145,19 @@ namespace CUETools.Codecs
         {
             if (_finalSampleCount <= 0)
             {
-                const long maxFileSize = 0x7FFFFFFEL;
                 long dataLen = _sampleLen * Settings.PCM.BlockAlign;
-                if ((dataLen & 1) == 1)
-                    _bw.Write((byte)0);
-                if (dataLen + hdrLen > maxFileSize)
-                    dataLen = ((maxFileSize - hdrLen) / Settings.PCM.BlockAlign) * Settings.PCM.BlockAlign;
                 long dataLenPadded = dataLen + (dataLen & 1);
+                if (dataLenPadded + hdrLen - 8 < 0xffffffff)
+                {
+                    if ((dataLen & 1) == 1)
+                        _bw.Write((byte)0);
 
-                _bw.Seek(4, SeekOrigin.Begin);
-                _bw.Write((uint)(dataLenPadded + hdrLen - 8));
+                    _bw.Seek(4, SeekOrigin.Begin);
+                    _bw.Write((uint)(dataLenPadded + hdrLen - 8));
 
-                _bw.Seek((int)hdrLen - 4, SeekOrigin.Begin);
-                _bw.Write((uint)dataLen);
+                    _bw.Seek((int)hdrLen - 4, SeekOrigin.Begin);
+                    _bw.Write((uint)dataLen);
+                }
             }
 
             _bw.Close();

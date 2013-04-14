@@ -24,6 +24,7 @@
             SPEAKER_TOP_BACK_CENTER = 0x10000,
             SPEAKER_TOP_BACK_RIGHT = 0x20000,
 
+            DIRECTOUT = 0,
             KSAUDIO_SPEAKER_MONO = (SPEAKER_FRONT_CENTER),
             KSAUDIO_SPEAKER_STEREO = (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT),
             KSAUDIO_SPEAKER_QUAD = (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT),
@@ -45,9 +46,9 @@
         public int BlockAlign { get { return _channelCount * ((_bitsPerSample + 7) / 8); } }
         public SpeakerConfig ChannelMask { get { return _channelMask; } }
         public bool IsRedBook { get { return _bitsPerSample == 16 && _channelCount == 2 && _sampleRate == 44100; } }
-        public SpeakerConfig GetDefaultChannelMask()
+        public static SpeakerConfig GetDefaultChannelMask(int channelCount)
         {
-            switch (_channelCount)
+            switch (channelCount)
             {
                 case 1:
                     return SpeakerConfig.KSAUDIO_SPEAKER_MONO;
@@ -68,15 +69,15 @@
                 case 8:
                     return SpeakerConfig.KSAUDIO_SPEAKER_7POINT1_SURROUND; 
             }
-            return (SpeakerConfig)((1 << _channelCount) - 1);
+            return (SpeakerConfig)((1 << channelCount) - 1);
         }
 
-        public AudioPCMConfig(int bitsPerSample, int channelCount, int sampleRate)
+        public AudioPCMConfig(int bitsPerSample, int channelCount, int sampleRate, SpeakerConfig channelMask = SpeakerConfig.DIRECTOUT)
         {
             _bitsPerSample = bitsPerSample;
             _channelCount = channelCount;
             _sampleRate = sampleRate;
-            _channelMask = GetDefaultChannelMask();
+            _channelMask = channelMask == 0 ? GetDefaultChannelMask(channelCount) : channelMask;
         }
     }
 }

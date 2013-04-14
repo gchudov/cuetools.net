@@ -134,19 +134,17 @@ namespace CUETools.Codecs.WMA
                             {
                                 if (pMediaType.majorType == MediaType.Audio && pMediaType.formatType == FormatType.WaveEx && pMediaType.subType == m_subType)
                                 {
-                                    WaveFormatEx pWfx = new WaveFormatEx();
-                                    Marshal.PtrToStructure(pMediaType.formatPtr, pWfx);
-                                    var info = new WMAFormatInfo()
-                                    {
-                                        codec = iCodec,
-                                        codecName = codecName.ToString(),
-                                        format = iFormat,
-                                        formatName = szDesc.ToString(),
-                                        subType = pMediaType.subType,
-                                        pcm = new AudioPCMConfig(pWfx.wBitsPerSample, pWfx.nChannels, pWfx.nSamplesPerSec)
-                                    };
-                                    if (PCM == null || (pWfx.nChannels == PCM.ChannelCount && pWfx.wBitsPerSample >= PCM.BitsPerSample && pWfx.nSamplesPerSec == PCM.SampleRate))
-                                        yield return info;
+                                    var pcm = WaveFormatExtensible.FromMediaType(pMediaType).GetConfig();
+                                    if (PCM == null || (pcm.ChannelCount == PCM.ChannelCount && pcm.SampleRate == PCM.SampleRate && pcm.BitsPerSample >= PCM.BitsPerSample))
+                                        yield return new WMAFormatInfo()
+                                        {
+                                            codec = iCodec,
+                                            codecName = codecName.ToString(),
+                                            format = iFormat,
+                                            formatName = szDesc.ToString(),
+                                            subType = pMediaType.subType,
+                                            pcm = pcm
+                                        };
                                 }
                             }
                             finally
@@ -268,27 +266,6 @@ namespace CUETools.Codecs.WMA
         private bool writingBegan = false;
         private long sampleCount, finalSampleCount;
 
-        const ushort WAVE_FORMAT_EXTENSIBLE = 0xFFFE;
-        const ushort WAVE_FORMAT_PCM = 1;
-
-        /// <summary>
-        /// From WAVEFORMATEXTENSIBLE
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        public struct WaveFormatExtensible
-        {
-            public short wFormatTag;        /* format type */
-            public short nChannels;         /* number of channels (i.e. mono, stereo, etc.) */
-            public int nSamplesPerSec;    /* sample rate */
-            public int nAvgBytesPerSec;   /* for buffer estimation */
-            public short nBlockAlign;       /* block size of data */
-            public short wBitsPerSample;
-            public short cbSize;
-            public short wValidBitsPerSample;
-            public int dwChannelMask;
-            public Guid SubFormat;
-        }
-
         public long FinalSampleCount
         {
             set
@@ -335,27 +312,7 @@ namespace CUETools.Codecs.WMA
                     pInput.GetMediaType(pMediaType, ref cbType);
                     try
                     {
-                        var wfe = new WaveFormatExtensible();
-                        wfe.nChannels = (short)m_settings.PCM.ChannelCount;
-                        wfe.nSamplesPerSec = m_settings.PCM.SampleRate;
-                        wfe.nBlockAlign = (short)m_settings.PCM.BlockAlign;
-                        wfe.wBitsPerSample = (short)m_settings.PCM.BitsPerSample;
-                        wfe.nAvgBytesPerSec = wfe.nSamplesPerSec * wfe.nBlockAlign;
-                        if ((m_settings.PCM.BitsPerSample == 8 || m_settings.PCM.BitsPerSample == 16 || m_settings.PCM.BitsPerSample == 24) &&
-                            (m_settings.PCM.ChannelCount == 1 || m_settings.PCM.ChannelCount == 2))
-                        {
-                            wfe.wFormatTag = unchecked((short)WAVE_FORMAT_PCM);
-                            wfe.cbSize = 0;
-                        }
-                        else
-                        {
-                            wfe.wFormatTag = unchecked((short)WAVE_FORMAT_EXTENSIBLE);
-                            wfe.cbSize = 22;
-                            wfe.wValidBitsPerSample = wfe.wBitsPerSample;
-                            wfe.nBlockAlign = (short)((wfe.wBitsPerSample / 8) * wfe.nChannels);
-                            wfe.dwChannelMask = (int)m_settings.PCM.ChannelMask;
-                            wfe.SubFormat = MediaSubType.PCM;
-                        }
+                        var wfe = new WaveFormatExtensible(m_settings.PCM);
                         Marshal.FreeCoTaskMem(pMediaType.formatPtr);
                         pMediaType.formatPtr = IntPtr.Zero;
                         pMediaType.formatSize = 0;
