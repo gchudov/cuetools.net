@@ -32,6 +32,7 @@ namespace CUERipper
 		private CUEControls.ShellIconMgr m_icon_mgr;
         private bool testAndCopy = false;
 		internal CUERipperData data = new CUERipperData();
+        private bool initDone = false;
         public readonly static XmlSerializerNamespaces xmlEmptyNamespaces = new XmlSerializerNamespaces(new XmlQualifiedName[] { XmlQualifiedName.Empty });
         public readonly static XmlWriterSettings xmlEmptySettings = new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true };
 
@@ -150,10 +151,6 @@ namespace CUERipper
 			//_config.preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? false;
 			//_config.createM3U = sr.LoadBoolean("CreateM3U") ?? true;
 
-			bindingSourceCR.DataSource = data;
-			bnComboBoxDrives.ImageList = m_icon_mgr.ImageList;
-			bnComboBoxFormat.ImageList = m_icon_mgr.ImageList;
-
             try
             {
                 using (TextReader reader = new StringReader(sr.Load("CUERipper")))
@@ -164,6 +161,10 @@ namespace CUERipper
                 System.Diagnostics.Trace.WriteLine(ex.Message);
             }
 
+            bindingSourceCR.DataSource = data;
+            initDone = true;
+            bnComboBoxDrives.ImageList = m_icon_mgr.ImageList;
+            bnComboBoxFormat.ImageList = m_icon_mgr.ImageList;
 
             SetupControls();
 
@@ -1107,18 +1108,21 @@ namespace CUERipper
 			if (SelectedOutputAudioFmt == null)
 				return;
 
-			switch (SelectedOutputAudioType)
-			{
-				case AudioEncoderType.Lossless:
-                    cueRipperConfig.DefaultLosslessFormat = SelectedOutputAudioFormat;
-					break;
-				case AudioEncoderType.Lossy:
-                    cueRipperConfig.DefaultLossyFormat = SelectedOutputAudioFormat;
-					break;
-				case AudioEncoderType.Hybrid:
-                    cueRipperConfig.DefaultHybridFormat = SelectedOutputAudioFormat;
-					break;
-			}
+            if (initDone)
+            {
+                switch (SelectedOutputAudioType)
+                {
+                    case AudioEncoderType.Lossless:
+                        cueRipperConfig.DefaultLosslessFormat = SelectedOutputAudioFormat;
+                        break;
+                    case AudioEncoderType.Lossy:
+                        cueRipperConfig.DefaultLossyFormat = SelectedOutputAudioFormat;
+                        break;
+                    case AudioEncoderType.Hybrid:
+                        cueRipperConfig.DefaultHybridFormat = SelectedOutputAudioFormat;
+                        break;
+                }
+            }
 
 			data.Encoders.RaiseListChangedEvents = false;
 
