@@ -147,6 +147,7 @@ namespace CUERipper
 
 			SettingsReader sr = new SettingsReader("CUERipper", "settings.txt", Application.ExecutablePath);
 			_config.Load(sr);
+            _config.CopyAlbumArt = false;
 			//_config.createEACLOG = sr.LoadBoolean("CreateEACLOG") ?? true;
 			//_config.preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? false;
 			//_config.createM3U = sr.LoadBoolean("CreateM3U") ?? true;
