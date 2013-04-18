@@ -2261,22 +2261,14 @@ namespace CUETools.Processor
             return errCount > 0;
         }
 
-        public void CreateExactAudioCopyLOG()
-        {
-            _ripperLog = CUESheetLogWriter.GetExactAudioCopyLog(this);
-        }
-
         public void CreateRipperLOG()
         {
-            if (!_isCD || _ripper == null || _ripperLog != null)
+            if (!_isCD || _ripper == null)
                 return;
-            if (_config.createEACLOG)
-            {
-                CreateExactAudioCopyLOG();
-                return;
-            }
 
-            _ripperLog = CUESheetLogWriter.GetRipperLog(this);
+            _ripperLog = _config.createEACLOG ?
+                CUESheetLogWriter.GetExactAudioCopyLog(this) :
+                CUESheetLogWriter.GetRipperLog(this);
         }
 
         public string GetM3UContents(CUEStyle style)
@@ -2512,7 +2504,7 @@ namespace CUETools.Processor
             if (!_isCD)
                 throw new Exception("Not a cd");
 
-            _ripper.DetectGaps();
+            this.DetectGaps();
 
             _arTestVerify = new AccurateRipVerify(_toc, proxy);
             var buff = new AudioBuffer(AudioPCMConfig.RedBook, 0x10000);
