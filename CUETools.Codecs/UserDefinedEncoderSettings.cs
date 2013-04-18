@@ -37,17 +37,5 @@ namespace CUETools.Codecs
                 m_supported_modes = value;
             }
         }
-
-        public string DefaultMode
-        {
-            get
-            {
-                return m_default_mode;
-            }
-            set
-            {
-                m_default_mode = value;
-            }
-        }
     }
 }

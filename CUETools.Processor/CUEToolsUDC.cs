@@ -37,7 +37,7 @@ namespace CUETools.Processor
             parameters = null;
             type = typeof(UserDefinedWriter);
             settingsSerializer = new XmlSerializer(typeof(UserDefinedEncoderSettings));
-            settings = new UserDefinedEncoderSettings() { SupportedModes = _supported_modes, DefaultMode = _default_mode, Path = _path, Parameters = _parameters };
+            settings = new UserDefinedEncoderSettings() { SupportedModes = _supported_modes, EncoderMode = _default_mode, Path = _path, Parameters = _parameters };
         }
 
         public CUEToolsUDC(AudioEncoderClassAttribute enc, Type enctype)

@@ -259,7 +259,7 @@ return processor.Go();
 
         public void Save(SettingsWriter sw)
         {
-            sw.Save("Version", 203);
+            sw.Save("Version", 204);
             sw.Save("ArFixWhenConfidence", fixOffsetMinimumConfidence);
             sw.Save("ArFixWhenPercent", fixOffsetMinimumTracksPercent);
             sw.Save("ArEncodeWhenConfidence", encodeWhenConfidence);
@@ -474,10 +474,19 @@ return processor.Go();
                     using (TextReader reader = new StringReader(settings))
                         encoder.settings = encoder.settingsSerializer.Deserialize(reader) as AudioEncoderSettings;
                     if (encoder.settings is UserDefinedEncoderSettings && (encoder.settings as UserDefinedEncoderSettings).Path == "")
-                        encoders.Remove(encoder);
+                        throw new Exception();
                 }
                 catch
                 {
+                    if (version == 203 && encoder.settings is UserDefinedEncoderSettings)
+                    {
+                        (encoder.settings as UserDefinedEncoderSettings).SupportedModes = sr.Load(string.Format("ExternalEncoder{0}Modes", nEncoders));
+                        (encoder.settings as UserDefinedEncoderSettings).EncoderMode = sr.Load(string.Format("ExternalEncoder{0}Mode", nEncoders));
+                        (encoder.settings as UserDefinedEncoderSettings).Path = sr.Load(string.Format("ExternalEncoder{0}Path", nEncoders));
+                        (encoder.settings as UserDefinedEncoderSettings).Parameters = sr.Load(string.Format("ExternalEncoder{0}Parameters", nEncoders));
+                    }
+                    else
+                        encoders.Remove(encoder);
                 }
             }
 
