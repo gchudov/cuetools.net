@@ -155,6 +155,9 @@ namespace JDP
                 tabControl1.Selecting += new TabControlCancelEventHandler((s, e1) => e1.Cancel = true);
                 encodersBindingSource.Position = _config.Encoders.IndexOf(m_encoder);
                 listBoxEncoders.Enabled = false;
+                buttonEncoderAdd.Enabled = false;
+                buttonEncoderDelete.Enabled = false;
+                comboBoxEncoderExtension.Enabled = false;
             }
 
             EnableDisable();

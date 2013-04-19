@@ -346,6 +346,11 @@ namespace JDP
             this.toolTip1.SetToolTip(this.chkWriteArTagsOnConvert, resources.GetString("chkWriteArTagsOnConvert.ToolTip"));
             this.chkWriteArTagsOnConvert.UseVisualStyleBackColor = true;
             // 
+            // chkEncodeWhenZeroOffset
+            // 
+            resources.ApplyResources(this.chkEncodeWhenZeroOffset, "chkEncodeWhenZeroOffset");
+            this.chkEncodeWhenZeroOffset.Name = "chkEncodeWhenZeroOffset";
+            // 
             // numEncodeWhenPercent
             // 
             resources.ApplyResources(this.numEncodeWhenPercent, "numEncodeWhenPercent");
@@ -1165,7 +1170,7 @@ namespace JDP
             // comboBoxEncoderExtension
             // 
             resources.ApplyResources(this.comboBoxEncoderExtension, "comboBoxEncoderExtension");
-            this.comboBoxEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.encodersBindingSource, "Extension", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.comboBoxEncoderExtension.DataBindings.Add(new System.Windows.Forms.Binding("SelectedItem", this.encodersBindingSource, "Extension", true));
             this.comboBoxEncoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxEncoderExtension.FormattingEnabled = true;
             this.comboBoxEncoderExtension.Name = "comboBoxEncoderExtension";

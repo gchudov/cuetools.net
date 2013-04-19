@@ -90,7 +90,7 @@ namespace CUETools.Processor
         public string Name
         {
             get { return name; }
-            set { name = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Name")); }
+            set { if (name == value) return;  name = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Name")); }
         }
         public string FullName
         {
@@ -136,7 +136,7 @@ namespace CUETools.Processor
         public string Extension
         {
             get { return extension; }
-            set { extension = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Extension")); }
+            set { if (extension == value) return; extension = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Extension")); }
         }
         
         public string DotExtension

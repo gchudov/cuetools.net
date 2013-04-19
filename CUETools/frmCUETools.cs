@@ -2447,7 +2447,13 @@ namespace JDP
         {
             var encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
             if (SelectedOutputAudioType == AudioEncoderType.NoAudio || SelectedOutputAudioFormat == null || encoder == null)
+            {
+                trackBarEncoderMode.Visible = false;
+                labelEncoderMode.Visible = false;
+                labelEncoderMinMode.Visible = false;
+                labelEncoderMaxMode.Visible = false;
                 return;
+            }
             if (SelectedOutputAudioType == AudioEncoderType.Lossless)
                 SelectedOutputAudioFmt.encoderLossless = encoder;
             else
@@ -2713,7 +2719,7 @@ namespace JDP
                 settingsForm.ShowDialog(this);
             }
             SaveSettings();
-            resetEncoderModes(encoder);
+            SelectedOutputAudioType = SelectedOutputAudioType;
         }
     }
 }
