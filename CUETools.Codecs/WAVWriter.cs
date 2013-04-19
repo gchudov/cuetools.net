@@ -143,7 +143,7 @@ namespace CUETools.Codecs
 
         public void Close()
         {
-            if (_finalSampleCount <= 0)
+            if (_finalSampleCount <= 0 && _IO.CanSeek)
             {
                 long dataLen = _sampleLen * Settings.PCM.BlockAlign;
                 long dataLenPadded = dataLen + (dataLen & 1);

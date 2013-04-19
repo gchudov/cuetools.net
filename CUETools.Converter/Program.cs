@@ -40,9 +40,9 @@ namespace CUETools.Converter
                     audioEncoderType = AudioEncoderType.Lossy;
                 else if (args[arg] == "--lossless")
                     audioEncoderType = AudioEncoderType.Lossless;
-                else if (args[arg][0] != '-' && sourceFile == null)
+                else if ((args[arg][0] != '-' || args[arg] == "-") && sourceFile == null)
                     sourceFile = args[arg];
-                else if (args[arg][0] != '-' && sourceFile != null && destFile == null)
+                else if ((args[arg][0] != '-' || args[arg] == "-") && sourceFile != null && destFile == null)
                     destFile = args[arg];
                 else
                     ok = false;
@@ -59,13 +59,13 @@ namespace CUETools.Converter
                 return 22;
             }
 
-            if (File.Exists(destFile))
+            if (destFile != "-" && File.Exists(destFile))
             {
                 Console.Error.WriteLine("Error: file already exists.");
                 return 17;
             }
 
-            string extension = Path.GetExtension(destFile).ToLower();
+            string extension = destFile == "-" ? ".wav" : Path.GetExtension(destFile).ToLower();
             DateTime start = DateTime.Now;
             TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
             CUEConfig config = new CUEConfig();
@@ -78,9 +78,13 @@ namespace CUETools.Converter
             {
                 IAudioSource audioSource = null;
                 IAudioDest audioDest = null;
+                TagLib.UserDefined.AdditionalFileTypes.Config = config;
+                TagLib.File sourceInfo = sourceFile == "-" ? null : TagLib.File.Create(new TagLib.File.LocalFileAbstraction(sourceFile));
                 try
                 {
-                    audioSource = AudioReadWrite.GetAudioSource(sourceFile, null, config);
+                    audioSource = sourceFile == "-" ?
+                        new WAVReader("", Console.OpenStandardInput()) :
+                        AudioReadWrite.GetAudioSource(sourceFile, null, config);
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);
                     Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
@@ -100,8 +104,10 @@ namespace CUETools.Converter
                     settings.Validate();
                     object o = null;
                     try
-                    {
-                        o = Activator.CreateInstance(encoder.type, destFile, settings);
+                    {                        
+                        o = destFile == "-" ?
+                            Activator.CreateInstance(encoder.type, "", Console.OpenStandardOutput(), settings) :
+                            Activator.CreateInstance(encoder.type, destFile, settings);
                     }
                     catch (System.Reflection.TargetInvocationException ex)
                     {
@@ -128,11 +134,15 @@ namespace CUETools.Converter
                         TimeSpan elapsed = DateTime.Now - start;
                         if ((elapsed - lastPrint).TotalMilliseconds > 60)
                         {
+                            long length = audioSource.Length;
+                            if (length < 0 && sourceInfo != null) length = (long)(sourceInfo.Properties.Duration.TotalMilliseconds * audioSource.PCM.SampleRate / 1000);
+                            if (length < audioSource.Position) length = audioSource.Position;
+                            if (length < 1) length = 1;
                             Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
-                                100.0 * audioSource.Position / audioSource.Length,
+                                100.0 * audioSource.Position / length,
                                 audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
                                 elapsed,
-                                TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
+                                TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * length)
                                 );
                             lastPrint = elapsed;
                         }
@@ -156,14 +166,15 @@ namespace CUETools.Converter
                 audioSource.Close();
                 audioDest.Close();
 
-                TagLib.UserDefined.AdditionalFileTypes.Config = config;
-                TagLib.File sourceInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(sourceFile));
-                TagLib.File destInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
-                if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config))
+                if (sourceFile != "-" && destFile != "-")
                 {
-                    sourceInfo.Tag.CopyTo(destInfo.Tag, true);
-                    destInfo.Tag.Pictures = sourceInfo.Tag.Pictures;
-                    destInfo.Save();
+                    TagLib.File destInfo = destFile == "-" ? null : TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+                    if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config))
+                    {
+                        sourceInfo.Tag.CopyTo(destInfo.Tag, true);
+                        destInfo.Tag.Pictures = sourceInfo.Tag.Pictures;
+                        destInfo.Save();
+                    }
                 }
             }
 #if !DEBUG
