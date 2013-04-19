@@ -132,11 +132,17 @@ namespace CUETools.Processor
             get { return lossless; }
             set { lossless = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Lossless")); }
         }
-        
+
         public string Extension
         {
             get { return extension; }
-            set { if (extension == value) return; extension = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Extension")); }
+            set
+            {
+                if (extension == value) return;
+                if (type != null && type != typeof(UserDefinedWriter)) throw new InvalidOperationException();
+                extension = value; 
+                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Extension"));
+            }
         }
         
         public string DotExtension

@@ -1174,7 +1174,6 @@ namespace JDP
             this.comboBoxEncoderExtension.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxEncoderExtension.FormattingEnabled = true;
             this.comboBoxEncoderExtension.Name = "comboBoxEncoderExtension";
-            this.comboBoxEncoderExtension.SelectedIndexChanged += new System.EventHandler(this.comboBoxEncoderExtension_SelectedIndexChanged);
             // 
             // listBoxEncoders
             // 

@@ -2718,7 +2718,6 @@ namespace JDP
                 settingsForm.Config = _profile._config;
                 settingsForm.ShowDialog(this);
             }
-            SaveSettings();
             SelectedOutputAudioType = SelectedOutputAudioType;
         }
     }

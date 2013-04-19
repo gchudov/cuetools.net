@@ -459,13 +459,6 @@ namespace JDP
 			}			
 		}
 
-		private void comboBoxEncoderExtension_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			// Setting DataSourceUpdateMode to OnPropertyChanged doesn't seem 
-			// to do the trick, so updating manually
-			comboBoxEncoderExtension.DataBindings["SelectedItem"].WriteValue();
-		}
-
 		private void encodersBindingSource_CurrentItemChanged(object sender, EventArgs e)
 		{
 			CUEToolsUDC encoder = encodersBindingSource.Current as CUEToolsUDC;
