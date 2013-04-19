@@ -56,6 +56,7 @@ namespace JDP {
             this.toolStripMenuItemCorrectorModeChangeExtension = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripDropDownButtonCorrectorFormat = new System.Windows.Forms.ToolStripDropDownButton();
             this.grpAudioOutput = new System.Windows.Forms.GroupBox();
+            this.buttonEncoderSettings = new System.Windows.Forms.Button();
             this.labelEncoderMaxMode = new System.Windows.Forms.Label();
             this.labelEncoderMinMode = new System.Windows.Forms.Label();
             this.labelEncoderMode = new System.Windows.Forms.Label();
@@ -458,6 +459,7 @@ namespace JDP {
             // 
             // grpAudioOutput
             // 
+            this.grpAudioOutput.Controls.Add(this.buttonEncoderSettings);
             this.grpAudioOutput.Controls.Add(this.labelEncoderMaxMode);
             this.grpAudioOutput.Controls.Add(this.labelEncoderMinMode);
             this.grpAudioOutput.Controls.Add(this.labelEncoderMode);
@@ -472,6 +474,15 @@ namespace JDP {
             this.grpAudioOutput.Name = "grpAudioOutput";
             this.tableLayoutPanel2.SetRowSpan(this.grpAudioOutput, 2);
             this.grpAudioOutput.TabStop = false;
+            // 
+            // buttonEncoderSettings
+            // 
+            this.buttonEncoderSettings.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.buttonEncoderSettings, "buttonEncoderSettings");
+            this.buttonEncoderSettings.Image = global::JDP.Properties.Resources.cog;
+            this.buttonEncoderSettings.Name = "buttonEncoderSettings";
+            this.buttonEncoderSettings.UseVisualStyleBackColor = true;
+            this.buttonEncoderSettings.Click += new System.EventHandler(this.buttonEncoderSettings_Click);
             // 
             // labelEncoderMaxMode
             // 
@@ -1205,6 +1216,7 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripMenuItem removeItemFromDatabaseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem updateLocalDatabaseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem locateInExplorerToolStripMenuItem;
+        private System.Windows.Forms.Button buttonEncoderSettings;
 	}
 }
 

@@ -132,7 +132,7 @@ namespace JDP
             this.comboBoxFormatTagger = new System.Windows.Forms.ComboBox();
             this.listViewFormats = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.tabPage10 = new System.Windows.Forms.TabPage();
+            this.tabPageEncoders = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.groupBoxExternalEncoder = new System.Windows.Forms.GroupBox();
@@ -206,7 +206,7 @@ namespace JDP
             this.groupBoxVerify.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBoxFormat.SuspendLayout();
-            this.tabPage10.SuspendLayout();
+            this.tabPageEncoders.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBoxExternalEncoder.SuspendLayout();
@@ -345,12 +345,6 @@ namespace JDP
             this.chkWriteArTagsOnConvert.Name = "chkWriteArTagsOnConvert";
             this.toolTip1.SetToolTip(this.chkWriteArTagsOnConvert, resources.GetString("chkWriteArTagsOnConvert.ToolTip"));
             this.chkWriteArTagsOnConvert.UseVisualStyleBackColor = true;
-            // 
-            // chkEncodeWhenZeroOffset
-            // 
-            this.tableLayoutPanel2.SetColumnSpan(this.chkEncodeWhenZeroOffset, 2);
-            resources.ApplyResources(this.chkEncodeWhenZeroOffset, "chkEncodeWhenZeroOffset");
-            this.chkEncodeWhenZeroOffset.Name = "chkEncodeWhenZeroOffset";
             // 
             // numEncodeWhenPercent
             // 
@@ -666,7 +660,7 @@ namespace JDP
             this.tabControl1.Controls.Add(this.tabPage6);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Controls.Add(this.tabPage10);
+            this.tabControl1.Controls.Add(this.tabPageEncoders);
             this.tabControl1.Controls.Add(this.tabPage11);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage5);
@@ -1074,12 +1068,12 @@ namespace JDP
             // 
             resources.ApplyResources(this.columnHeader1, "columnHeader1");
             // 
-            // tabPage10
+            // tabPageEncoders
             // 
-            resources.ApplyResources(this.tabPage10, "tabPage10");
-            this.tabPage10.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage10.Controls.Add(this.tableLayoutPanel4);
-            this.tabPage10.Name = "tabPage10";
+            resources.ApplyResources(this.tabPageEncoders, "tabPageEncoders");
+            this.tabPageEncoders.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPageEncoders.Controls.Add(this.tableLayoutPanel4);
+            this.tabPageEncoders.Name = "tabPageEncoders";
             // 
             // tableLayoutPanel4
             // 
@@ -1480,7 +1474,7 @@ namespace JDP
             this.tabPage3.ResumeLayout(false);
             this.groupBoxFormat.ResumeLayout(false);
             this.groupBoxFormat.PerformLayout();
-            this.tabPage10.ResumeLayout(false);
+            this.tabPageEncoders.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.groupBoxExternalEncoder.ResumeLayout(false);
@@ -1529,7 +1523,6 @@ namespace JDP
         private System.Windows.Forms.NumericUpDown numEncodeWhenConfidence;
         private System.Windows.Forms.NumericUpDown numEncodeWhenPercent;
         private System.Windows.Forms.CheckBox chkFilenamesANSISafe;
-        private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage3;
@@ -1551,7 +1544,6 @@ namespace JDP
         private System.Windows.Forms.CheckBox chkAllowMultipleInstances;
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboLanguage;
-        private System.Windows.Forms.TabPage tabPage10;
         private System.Windows.Forms.GroupBox groupBoxExternalEncoder;
         private System.Windows.Forms.TextBox textBoxEncoderPath;
         private System.Windows.Forms.TextBox textBoxEncoderParameters;
@@ -1653,6 +1645,8 @@ namespace JDP
         private System.Windows.Forms.TextBox textBoxDecoderName;
         private System.Windows.Forms.BindingSource bindingSourceDecoders;
         private System.Windows.Forms.ListBox listBoxDecoders;
+        public System.Windows.Forms.TabControl tabControl1;
+        public System.Windows.Forms.TabPage tabPageEncoders;
 
     }
 }

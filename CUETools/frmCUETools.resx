@@ -822,6 +822,30 @@
   <data name="&gt;&gt;groupBoxMode.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="buttonEncoderSettings.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonEncoderSettings.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 115</value>
+  </data>
+  <data name="buttonEncoderSettings.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
+  </data>
+  <data name="buttonEncoderSettings.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.Name" xml:space="preserve">
+    <value>buttonEncoderSettings</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="labelEncoderMaxMode.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
@@ -859,7 +883,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;labelEncoderMaxMode.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="labelEncoderMinMode.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -898,7 +922,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;labelEncoderMinMode.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="labelEncoderMode.Font" type="System.Drawing.Font, System.Drawing">
     <value>Tahoma, 8.25pt</value>
@@ -937,7 +961,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;labelEncoderMode.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="trackBarEncoderMode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -967,16 +991,16 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;trackBarEncoderMode.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="comboBoxEncoder.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
   <data name="comboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 116</value>
+    <value>38, 116</value>
   </data>
   <data name="comboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
-    <value>129, 21</value>
+    <value>101, 21</value>
   </data>
   <data name="comboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
@@ -994,7 +1018,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;comboBoxEncoder.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="radioButtonAudioNone.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1027,7 +1051,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;radioButtonAudioNone.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="radioButtonAudioLossy.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1060,7 +1084,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;radioButtonAudioLossy.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="radioButtonAudioLossless.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1093,7 +1117,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;radioButtonAudioLossless.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="labelFormat.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1123,7 +1147,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;labelFormat.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="comboBoxAudioFormat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -1150,7 +1174,7 @@
     <value>grpAudioOutput</value>
   </data>
   <data name="&gt;&gt;comboBoxAudioFormat.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="grpAudioOutput.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>

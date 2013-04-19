@@ -2410,19 +2410,11 @@ namespace JDP
             UpdateOutputPath();
         }
 
-        private void comboBoxEncoder_SelectedIndexChanged(object sender, EventArgs e)
+        private void resetEncoderModes(CUEToolsUDC encoder)
         {
-            if (SelectedOutputAudioType == AudioEncoderType.NoAudio)
-                return;
-            if (SelectedOutputAudioFormat == null)
-                return;
-            CUEToolsUDC encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
-            if (SelectedOutputAudioType == AudioEncoderType.Lossless)
-                SelectedOutputAudioFmt.encoderLossless = encoder;
-            else
-                SelectedOutputAudioFmt.encoderLossy = encoder;
             // TODO: something cleverer than this hack...
             encoder.settings.PCM = AudioPCMConfig.RedBook;
+            buttonEncoderSettings.Visible = encoder.settings.HasBrowsableAttributes();
             string[] modes = encoder.SupportedModes;
             if (modes == null || modes.Length < 2)
             {
@@ -2449,6 +2441,18 @@ namespace JDP
                 labelEncoderMinMode.Visible = true;
                 labelEncoderMaxMode.Visible = true;
             }
+        }
+
+        private void comboBoxEncoder_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
+            if (SelectedOutputAudioType == AudioEncoderType.NoAudio || SelectedOutputAudioFormat == null || encoder == null)
+                return;
+            if (SelectedOutputAudioType == AudioEncoderType.Lossless)
+                SelectedOutputAudioFmt.encoderLossless = encoder;
+            else
+                SelectedOutputAudioFmt.encoderLossy = encoder;
+            resetEncoderModes(encoder);
         }
 
         private void trackBarEncoderMode_Scroll(object sender, EventArgs e)
@@ -2694,6 +2698,22 @@ namespace JDP
                     return;
                 }
             }
+        }
+
+        private void buttonEncoderSettings_Click(object sender, EventArgs e)
+        {
+            var encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
+            if (encoder == null)
+                return;
+            using (frmSettings settingsForm = new frmSettings(encoder))
+            {
+                settingsForm.IconMgr = m_icon_mgr;
+                settingsForm.ReducePriority = _reducePriority;
+                settingsForm.Config = _profile._config;
+                settingsForm.ShowDialog(this);
+            }
+            SaveSettings();
+            resetEncoderModes(encoder);
         }
     }
 }

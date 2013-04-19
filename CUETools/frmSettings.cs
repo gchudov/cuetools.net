@@ -14,10 +14,18 @@ namespace JDP
 		bool _reducePriority;
 		CUEConfig _config;
 		private IIconManager m_icon_mgr;
+        private CUEToolsUDC m_encoder;
 
-		public frmSettings() {
+		public frmSettings() 
+        {
 			InitializeComponent();
 		}
+
+        public frmSettings(CUEToolsUDC encoder)
+        {
+            InitializeComponent();
+            m_encoder = encoder;
+        }
 
 		public IIconManager IconMgr
 		{
@@ -36,7 +44,6 @@ namespace JDP
 			cUEConfigBindingSource.DataSource = _config;
 			encodersBindingSource.DataMember = "Encoders"; // for MONO bug (setting BindingSource.DataSource clears DataMember:(
 			propertyGrid1.SelectedObject = _config.advanced;
-			
 			chkReducePriority.Checked = _reducePriority;
 			checkBoxCheckForUpdates.Checked = _config.checkForUpdates;
 			chkAutoCorrectFilenames.Checked = _config.autoCorrectFilenames;
@@ -142,7 +149,15 @@ namespace JDP
 			listViewScriptConditions.Items[0].Tag = CUEAction.Verify;
 			listViewScriptConditions.Items[1].Tag = CUEAction.Encode;
 
-			EnableDisable();
+            if (m_encoder != null)
+            {
+                tabControl1.SelectedTab = tabPageEncoders;
+                tabControl1.Selecting += new TabControlCancelEventHandler((s, e1) => e1.Cancel = true);
+                encodersBindingSource.Position = _config.Encoders.IndexOf(m_encoder);
+                listBoxEncoders.Enabled = false;
+            }
+
+            EnableDisable();
 		}
 
 		//private void DictionaryToListView(IDictionary<> dict, ListView view)
