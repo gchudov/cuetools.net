@@ -1598,6 +1598,7 @@ namespace CUERipper
             if (encoder == null)
                 return;
             var form = new Options(encoder.settings);
+            form.propertyGrid1.HelpVisible = true;
             form.ShowDialog(this);
             resetEncoderModes(encoder);
         }

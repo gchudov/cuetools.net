@@ -477,6 +477,7 @@ namespace JDP {
             // 
             // buttonEncoderSettings
             // 
+            this.buttonEncoderSettings.FlatAppearance.BorderColor = System.Drawing.SystemColors.Control;
             this.buttonEncoderSettings.FlatAppearance.BorderSize = 0;
             resources.ApplyResources(this.buttonEncoderSettings, "buttonEncoderSettings");
             this.buttonEncoderSettings.Image = global::JDP.Properties.Resources.cog;

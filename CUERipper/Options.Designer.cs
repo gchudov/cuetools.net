@@ -78,6 +78,6 @@ namespace CUERipper
         #endregion
 
         private System.Windows.Forms.Button buttonCancel;
-        private System.Windows.Forms.PropertyGrid propertyGrid1;
+        public System.Windows.Forms.PropertyGrid propertyGrid1;
     }
 }
