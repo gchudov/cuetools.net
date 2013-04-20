@@ -85,6 +85,7 @@ namespace CUETools.CTDB
 			if (uploadHelper.onProgress != null)
 				uploadHelper.onProgress(this, new UploadProgressEventArgs(req.RequestUri.AbsoluteUri, 0));
 
+            this.subResult = null;
             this.entries = new List<DBEntry>();
             this.metadata = new List<CTDBResponseMeta>();
 			currentReq = req;
