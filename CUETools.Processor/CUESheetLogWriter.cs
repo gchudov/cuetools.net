@@ -83,6 +83,15 @@ namespace CUETools.Processor
 
         #region EAC
 
+        private static double GetRangeQuality(CUESheet sheet, uint start, uint length)
+        {
+            int errCount = 0;
+            for (uint iSector = start; iSector < start + length; iSector++)
+                if (sheet.CDRipper.Errors[(int)iSector - (int)sheet.TOC[sheet.TOC.FirstAudio][0].Start])
+                    errCount++;
+            return 100 * (1.0 - Math.Log(errCount / 5.0 + 1) / Math.Log(length / 5.0 + 1));
+        }
+
         public static string GetExactAudioCopyLog(CUESheet sheet)
         {
             StringWriter logWriter = new StringWriter(CultureInfo.InvariantCulture);
@@ -149,7 +158,7 @@ namespace CUETools.Processor
 
                     logWriter.WriteLine();
                     logWriter.WriteLine("     Peak level {0:F1} %", (sheet.ArVerify.PeakLevel(track + 1) * 1000 / 65534) * 0.1);
-                    logWriter.WriteLine("     Track quality 100.0 %");
+                    logWriter.WriteLine("     Track quality {0:F1} %", GetRangeQuality(sheet, sheet.TOC[track + sheet.TOC.FirstAudio].Start, sheet.TOC[track + sheet.TOC.FirstAudio].Length));
                     if (sheet.ArTestVerify != null)
                     logWriter.WriteLine("     Test CRC {0:X8}", sheet.ArTestVerify.CRC32(track + 1));
                     logWriter.WriteLine("     Copy CRC {0:X8}", sheet.ArVerify.CRC32(track + 1));
@@ -181,7 +190,7 @@ namespace CUETools.Processor
                 wereErrors = sheet.PrintErrors(logWriter, sheet.TOC[sheet.TOC.FirstAudio][0].Start, sheet.TOC.AudioLength);
                 logWriter.WriteLine();
                 logWriter.WriteLine("     Peak level {0:F1} %", (sheet.ArVerify.PeakLevel() * 1000 / 65535) * 0.1);
-                logWriter.WriteLine("     Range quality 100.0 %");
+                logWriter.WriteLine("     Range quality {0:F1} %", GetRangeQuality(sheet, sheet.TOC[sheet.TOC.FirstAudio][0].Start, sheet.TOC.AudioLength));
                 if (sheet.ArTestVerify != null)
                 logWriter.WriteLine("     Test CRC {0:X8}", sheet.ArTestVerify.CRC32(0));
                 logWriter.WriteLine("     Copy CRC {0:X8}", sheet.ArVerify.CRC32(0));

@@ -381,8 +381,7 @@ namespace CUERipper
 				toolStripStatusLabel1.Text = status;
 				toolStripProgressBar1.Value = Math.Max(0, Math.Min(100, (int)(percentTrck * 100)));
 
-				progressBarErrors.Maximum = (int)(Math.Log(e.PassEnd - e.PassStart + 1) * 10);
-				progressBarErrors.Value = Math.Min(progressBarErrors.Maximum, (int)(Math.Log(e.ErrorsCount + 1) * 10));
+                progressBarErrors.Value = Math.Min(progressBarErrors.Maximum, (int)(100 * Math.Log(e.ErrorsCount / 10.0 + 1) / Math.Log((e.PassEnd - e.PassStart) / 10.0 + 1)));
 				progressBarErrors.Enabled = e.Pass >= audioSource.CorrectionQuality;
 
 				progressBarCD.Maximum = (int) audioSource.TOC.AudioLength;
@@ -408,7 +407,7 @@ namespace CUERipper
                 cueSheet.CTDB.Submit(
 					(int)cueSheet.ArVerify.WorstConfidence() + 1,
 					audioSource.CorrectionQuality == 0 ? 0 :
-					100 - (int)(7 * Math.Log(audioSource.ErrorsCount + 1)), // ErrorsCount==1 ~= 95, ErrorsCount==max ~= 5;
+					(int)(100 * (1.0 - Math.Log(audioSource.ErrorsCount + 1) / Math.Log(audioSource.TOC.AudioLength + 1))),
 					cueSheet.Metadata.Artist,
 					cueSheet.Metadata.Title,
 					cueSheet.TOC.Barcode);
@@ -1376,17 +1375,6 @@ namespace CUERipper
                 tt.FrameOffset = 150 + (int)selectedDriveInfo.drive.TOC[i].Start;
                 entry.Tracks.Add(tt);
             }
-            /*
-			foreach (CUETrackMetadata t in data.selectedRelease.metadata.Tracks)
-			{
-				Freedb.Track tt = new Freedb.Track();
-				if (t.Artist != "" && t.Artist != entry.Artist)
-					tt.Title = t.Artist + " / " + t.Title;
-				else
-					tt.Title = t.Title;
-				tt.FrameOffset = 150 + (int)selectedDriveInfo.drive.TOC[i++].Start;
-				entry.Tracks.Add(tt);
-			}*/
 
 			FreedbHelper m_freedb = new FreedbHelper();
 
