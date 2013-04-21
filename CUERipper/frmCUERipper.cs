@@ -1608,8 +1608,8 @@ namespace CUERipper
             //ratio = Math.Min(ratio, 1.0f);
             float ratio = 1.0f;
             var rf = new RectangleF(
-                e.Location.X * (isz.Width / pictureBox1.ClientSize.Width - ratio),
-                e.Location.Y * (isz.Height / pictureBox1.ClientSize.Height - ratio),
+                Math.Min(pictureBox1.ClientSize.Width, Math.Max(0, e.Location.X)) * (isz.Width / pictureBox1.ClientSize.Width - ratio),
+                Math.Min(pictureBox1.ClientSize.Height, Math.Max(0, e.Location.Y)) * (isz.Height / pictureBox1.ClientSize.Height - ratio),
                 pictureBox1.ClientSize.Width * ratio,
                 pictureBox1.ClientSize.Height * ratio);
             pictureBox1.Image = cropImage(albumArt[currentAlbumArt].image, pictureBox1.ClientSize, rf);
