@@ -477,7 +477,7 @@ namespace CUERipper
 					bnComboBoxOutputFormat.Items.RemoveAt(OutputPathUseTemplates.Length + 10);
 			}
 
-            if (currentAlbumArt < albumArt.Count)
+            if (currentAlbumArt >= 0 && currentAlbumArt < albumArt.Count)
             {
                 data.selectedRelease.metadata.AlbumArt.Clear();
                 data.selectedRelease.metadata.AlbumArt.Add(albumArt[currentAlbumArt].meta);
@@ -602,7 +602,7 @@ namespace CUERipper
 			listTracks.EndUpdate();
 			listMetadata.EndUpdate();
 
-            UpdateAlbumArt(true);
+            SelectAlbumArt();
 			SetupControls();
 		}
 
@@ -1457,18 +1457,13 @@ namespace CUERipper
                     backgroundWorkerArtwork.CancelAsync();
                 albumArt.Clear();
             }
-            UpdateAlbumArt(false);
+            currentAlbumArt = 0;
+            resetPictureBox(null);
         }
 
-        private void UpdateAlbumArt(bool selectRelease)
+        private void SelectAlbumArt()
         {
-            if (albumArt.Count == 0)
-            {
-                resetPictureBox(null);
-                return;
-            }
-
-            if (selectRelease && data.selectedRelease != null && data.selectedRelease.metadata.AlbumArt.Count > 0)
+            if (data.selectedRelease != null && data.selectedRelease.metadata.AlbumArt.Count > 0)
             {
                 for (int i = 0; i < albumArt.Count; i++)
                 {
@@ -1483,8 +1478,6 @@ namespace CUERipper
                 }
             }
 
-            if (currentAlbumArt >= albumArt.Count)
-                currentAlbumArt = 0;
             resetPictureBox(null);
         }
 
@@ -1537,22 +1530,13 @@ namespace CUERipper
 
         private void backgroundWorkerArtwork_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            UpdateAlbumArt(true);
+            SelectAlbumArt();
         }
 
         private void backgroundWorkerArtwork_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             toolStripStatusLabel1.Text = "";
             toolStripProgressBar1.Value = 0;
-        }
-
-        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == System.Windows.Forms.MouseButtons.Left)
-            {
-                currentAlbumArt++;
-                UpdateAlbumArt(false);
-            }
         }
 
         private void buttonSettings_Click(object sender, EventArgs e)
@@ -1605,7 +1589,13 @@ namespace CUERipper
         private void resetPictureBox(MouseEventArgs e)
         {
             if (currentAlbumArt < 0 || currentAlbumArt >= albumArt.Count)
+            {
+                pictureBox1.Image = null;
+                toolStripStatusLabel1.Text = "";
                 return;
+            }
+
+            toolStripStatusLabel1.Text = albumArt[currentAlbumArt].meta.uri;
 
             if (e == null || e.Button != System.Windows.Forms.MouseButtons.Right || _config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.Large)
             {
@@ -1625,15 +1615,37 @@ namespace CUERipper
             pictureBox1.Image = cropImage(albumArt[currentAlbumArt].image, pictureBox1.ClientSize, rf);
         }
 
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                if (++currentAlbumArt > albumArt.Count)
+                    currentAlbumArt = 0;
+                resetPictureBox(null);
+            }
+        }
+
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
                 resetPictureBox(e);
+            if (currentAlbumArt < 0 || currentAlbumArt >= albumArt.Count)
+            {
+                toolStripStatusLabel1.Text = "";
+                return;
+            }
+            toolStripStatusLabel1.Text = albumArt[currentAlbumArt].meta.uri;
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-            resetPictureBox(null);
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+                resetPictureBox(null);
+        }
+
+        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            toolStripStatusLabel1.Text = null;
         }
 	}
 
