@@ -1549,20 +1549,30 @@ namespace CUETools.Processor
                 }
             }
 
+            if (tocFromLog == null)
+            {
+                var tocTag = GetCommonMiscTag("CDTOC");
+                if (tocTag != null)
+                {
+                    tocFromLog = CDImageLayout.FromTag(tocTag);
+                    if (tocFromLog != null && tocFromLog.TOCID != _toc.TOCID)
+                        tocFromLog = null;
+                }
+            }
+
             // use pregaps from log
             if (tocFromLog != null)
             {
-                //int srcNo = (int) _toc[_toc.FirstAudio].LastIndex - (PreGapLength == 0 ? 1 : 0);
-                if (PreGapLength < tocFromLog.Pregap)
-                {
-                    PreGapLength = tocFromLog.Pregap;
-                    //srcNo ++;
-                }
                 int trNo;
-                for (trNo = 1; trNo < tocFromLog.AudioTracks && trNo < _toc.AudioTracks; trNo++)
+                for (trNo = 0; trNo < tocFromLog.AudioTracks && trNo < _toc.AudioTracks; trNo++)
                 {
                     if (_toc[_toc.FirstAudio + trNo].Pregap < tocFromLog[tocFromLog.FirstAudio + trNo].Pregap)
-                        _toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
+                    {
+                        if (_toc.FirstAudio + trNo == 1)
+                            PreGapLength = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
+                        else
+                            _toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
+                    }
                 }
                 //if (_toc[_toc.FirstAudio].Length > tocFromLog[tocFromLog.FirstAudio].Length)
                 //{
@@ -1613,26 +1623,31 @@ namespace CUETools.Processor
                     _toc[_toc.TrackCount][0].Start = tocFromLog[_toc.TrackCount].Start;
                     _toc[_toc.TrackCount][1].Start = tocFromLog[_toc.TrackCount].Start;
                 }
+
                 if (_toc.TrackCount == _toc.AudioTracks
                     && tocFromLog.TrackCount == tocFromLog.AudioTracks
                     && tocFromLog.TrackCount > _toc.TrackCount)
                 {
                     int dtracks = tocFromLog.TrackCount - _toc.TrackCount;
-                    bool matches = true;
-                    for (int iTrack = 1; iTrack <= _toc.TrackCount; iTrack++)
-                        if (tocFromLog[iTrack + dtracks].Length != _toc[iTrack].Length)
-                            matches = false;
-                    if (matches)
-                    {
-                        for (int iTrack = 1; iTrack <= dtracks; iTrack++)
-                        {
-                            _toc.InsertTrack(new CDTrack((uint)iTrack, 0, 0, false, false));
-                            tocFromLog[iTrack].IsAudio = false;
-                        }
-                        tocFromLog.FirstAudio += dtracks;
-                        tocFromLog.AudioTracks -= (uint)dtracks;
-                    }
+                    var toc2 = new CDImageLayout(tocFromLog);
+                    for (int iTrack = 1; iTrack <= dtracks; iTrack++)
+                        toc2[iTrack].IsAudio = false;
+                    toc2.FirstAudio += dtracks;
+                    toc2.AudioTracks -= (uint)dtracks;
+                    if (toc2.TOCID == _toc.TOCID)
+                        tocFromLog = toc2;
                 }
+
+                if (tocFromLog.AudioTracks == _toc.AudioTracks
+//                    && tocFromLog.TOCID == _toc.TOCID
+                    && _toc.TrackCount == _toc.AudioTracks
+                    && tocFromLog.FirstAudio > 1
+                    && tocFromLog.TrackCount == tocFromLog.FirstAudio + tocFromLog.AudioTracks - 1)
+                {
+                    for (int iTrack = 1; iTrack < tocFromLog.FirstAudio; iTrack++)
+                        _toc.InsertTrack(new CDTrack((uint)iTrack, 0, 0, false, false));
+                }
+
                 if (tocFromLog.AudioTracks == _toc.AudioTracks
                     && tocFromLog.TrackCount == _toc.TrackCount
                     && tocFromLog.FirstAudio == _toc.FirstAudio
@@ -3100,6 +3115,9 @@ namespace CUETools.Processor
                 isUsingAccurateRip &&
                 _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                 GenerateAccurateRipTags(destTags, bestOffset, iTrack);
+            
+            if (_config.advanced.WriteCDTOCTag)
+                destTags.Add("CDTOC", _toc.TAG);
 
             return destTags;
         }
@@ -4096,6 +4114,7 @@ namespace CUETools.Processor
                     uint number = 0;
                     string album = null;
                     string cueFound = null;
+                    CDImageLayout tocFound = null;
                     TimeSpan dur = TimeSpan.Zero;
                     TagLib.UserDefined.AdditionalFileTypes.Config = _config;
                     TagLib.File.IFileAbstraction fileAbsraction = new TagLib.File.LocalFileAbstraction(file.FullName);
@@ -4106,7 +4125,10 @@ namespace CUETools.Processor
                         album = fileInfo.Tag.Album;
                         number = fileInfo.Tag.Track;
                         dur = fileInfo.Properties.Duration;
-                        cueFound = fmt.allowEmbed ? Tagging.Analyze(fileInfo).Get("CUESHEET") : null;
+                        var tags = Tagging.Analyze(fileInfo);
+                        cueFound = fmt.allowEmbed ? tags.Get("CUESHEET") : null;
+                        var toc = tags.Get("CDTOC");
+                        if (toc != null) tocFound = CDImageLayout.FromTag(toc);
                     }
                     catch { }
                     if (cueFound != null)
@@ -4117,13 +4139,14 @@ namespace CUETools.Processor
                         fileGroups.Add(group);
                         continue;
                     }
-                    disc = Math.Min(5, Math.Max(1, disc));
+                    disc = Math.Min(50, Math.Max(1, disc));
                     FileGroupInfo groupFound = null;
                     foreach (FileGroupInfo fileGroup in fileGroups)
                     {
                         if (fileGroup.type == FileGroupInfoType.TrackFiles
                             && fileGroup.discNo == disc
                             && fileGroup.album == album
+                            && (fileGroup.TOC == null ? "" : fileGroup.TOC.ToString()) == (tocFound == null ? "" : tocFound.ToString())
                             && fileGroup.main.Extension.ToLower() == ext)
                         {
                             groupFound = fileGroup;
@@ -4135,6 +4158,7 @@ namespace CUETools.Processor
                         groupFound = new FileGroupInfo(file, FileGroupInfoType.TrackFiles);
                         groupFound.discNo = disc;
                         groupFound.album = album;
+                        groupFound.TOC = tocFound;
                         groupFound.durations = new Dictionary<FileSystemInfo, TimeSpan>();
                         fileGroups.Add(groupFound);
                     }
@@ -4143,7 +4167,9 @@ namespace CUETools.Processor
                     if (dur != TimeSpan.Zero) groupFound.durations.Add(file, dur);
                 }
             }
-            fileGroups.RemoveAll(group => group.type == FileGroupInfoType.TrackFiles && group.files.Count < 2);
+            fileGroups.RemoveAll(group => group.type == FileGroupInfoType.TrackFiles && (
+                (group.TOC == null && group.files.Count < 2) ||
+                (group.TOC != null && group.TOC.AudioTracks != group.files.Count)));
             // tracks must be sorted according to tracknumer (or filename if missing)
             foreach (FileGroupInfo group in fileGroups)
                 if (group.type == FileGroupInfoType.TrackFiles)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Globalization;
 
 namespace CUETools.CDImage
 {
@@ -437,6 +438,21 @@ namespace CUETools.CDImage
 			}
 		}
 
+        public string TAG
+        {
+            get
+            {
+                StringBuilder mbSB = new StringBuilder();
+                mbSB.AppendFormat(CultureInfo.InvariantCulture, "{0:X}", AudioTracks);
+                for (int iTrack = _firstAudio; iTrack < TrackCount; iTrack++)
+                    mbSB.AppendFormat("+{0:X}", _tracks[iTrack].Start + 150);
+                mbSB.AppendFormat("+{0:X}", Length + 150);
+                for (int iTrack = 0; iTrack < _firstAudio; iTrack++)
+                    mbSB.AppendFormat("+X{0:X}", _tracks[iTrack].Start + 150);
+                return mbSB.ToString();
+            }
+        }
+
 		public static CDImageLayout FromString(string str)
 		{
 			var ids = str.Split(':');
@@ -452,6 +468,44 @@ namespace CUETools.CDImage
 					ids[i] = ids[i].Substring(1);
 			return new CDImageLayout(trackcount, audiotracks, firstaudio, string.Join(" ", ids));
 		}
+
+        public static CDImageLayout FromTag(string str)
+        {
+            var ids = str.Split('+');
+            int audiotracks;
+            int firstaudio = 1;
+            int trackcount = ids.Length - 2;
+            int offs;
+            var ids2 = new List<string>();
+            if (!int.TryParse(ids[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out audiotracks))
+                return null;
+            if (trackcount > audiotracks && ids[ids.Length - 1][0] == 'X')
+            {
+                firstaudio = 1 + trackcount - audiotracks;
+                for (int i = 0; i < trackcount - audiotracks; i++)
+                {
+                    if (!int.TryParse(ids[i + 2 + audiotracks].Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
+                        return null;
+                    ids2.Add((offs - 150).ToString());
+                }
+                for (int i = 0; i <= audiotracks; i++)
+                {
+                    if (!int.TryParse(ids[i + 1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
+                        return null;
+                    ids2.Add((offs - 150).ToString());
+                }
+            }
+            else
+            {
+                for (int i = 0; i <= trackcount; i++)
+                {
+                    if (!int.TryParse(ids[i + 1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
+                        return null;
+                    ids2.Add((offs - 150).ToString());
+                }
+            }
+            return new CDImageLayout(trackcount, audiotracks, firstaudio, string.Join(" ", ids2.ToArray()));
+        }
 
         public override string ToString()
 		{
