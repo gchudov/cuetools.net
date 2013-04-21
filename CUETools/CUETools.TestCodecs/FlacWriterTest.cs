@@ -38,7 +38,7 @@ namespace CUETools.TestCodecs
             AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
             FLACWriter target;
 
-            target = new FLACWriter("flacwriter2.flac", new FLACWriterSettings() { PCM = buff.PCM });
+            target = new FLACWriter("flacwriter2.flac", new FLACWriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
             target.Settings.Padding = 1;
             target.Settings.BlockSize = 32;
             //target.Vendor = "CUETools";

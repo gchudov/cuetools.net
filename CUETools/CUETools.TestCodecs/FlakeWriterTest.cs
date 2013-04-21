@@ -79,7 +79,7 @@ namespace CUETools.TestCodecs
             AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
             FlakeWriter target;
 
-            target = new FlakeWriter("flakewriter0.flac", null, new FlakeWriterSettings() { PCM = buff.PCM });
+            target = new FlakeWriter("flakewriter0.flac", null, new FlakeWriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
             target.Settings.Padding = 1;
             target.DoSeekTable = false;
             //target.Vendor = "CUETools";
@@ -89,7 +89,7 @@ namespace CUETools.TestCodecs
             target.Close();
             CollectionAssert.AreEqual(File.ReadAllBytes("flake.flac"), File.ReadAllBytes("flakewriter0.flac"), "flakewriter0.flac doesn't match.");
 
-            target = new FlakeWriter("flakewriter1.flac", null, new FlakeWriterSettings() { PCM = buff.PCM });
+            target = new FlakeWriter("flakewriter1.flac", null, new FlakeWriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
             target.Settings.Padding = 1;
             target.DoSeekTable = false;
             //target.Vendor = "CUETools";
