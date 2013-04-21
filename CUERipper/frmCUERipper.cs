@@ -1590,6 +1590,40 @@ namespace CUERipper
             form.ShowDialog(this);
             resetEncoderModes(encoder);
         }
+
+        private static Bitmap cropImage(Image imgToResize, Size boxSize, RectangleF srcRect)
+        {
+            Bitmap b = new Bitmap(boxSize.Width, boxSize.Height);
+             //area.Width / 2 - area.X, area.Height /2 - area.Y, area.Width, area.Height
+            Graphics g = Graphics.FromImage((Image)b);
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            g.DrawImage(imgToResize, new Rectangle(0, 0, boxSize.Width, boxSize.Height), srcRect, GraphicsUnit.Pixel);
+            g.Dispose();
+            return b;
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (currentAlbumArt < 0 || currentAlbumArt >= albumArt.Count || _config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.Large)
+                return;
+
+            var isz = new RectangleF(0.0f, 0.0f, albumArt[currentAlbumArt].image.Width, albumArt[currentAlbumArt].image.Height);
+            float ratio = Math.Min(isz.Width / pictureBox1.ClientSize.Width, isz.Height / pictureBox1.ClientSize.Height);
+            ratio = Math.Min(ratio, 1.0f);
+            var rf = new RectangleF(
+                e.Location.X * (isz.Width / pictureBox1.ClientSize.Width - ratio),
+                e.Location.Y * (isz.Height / pictureBox1.ClientSize.Height - ratio),
+                pictureBox1.ClientSize.Width * ratio,
+                pictureBox1.ClientSize.Height * ratio);
+            pictureBox1.Image = cropImage(albumArt[currentAlbumArt].image, pictureBox1.ClientSize, rf);
+        }
+
+        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            if (currentAlbumArt < 0 || currentAlbumArt >= albumArt.Count)
+                return;
+            pictureBox1.Image = albumArt[currentAlbumArt].image;
+        }
 	}
 
     internal class BackgroundWorkerArtworkArgs
