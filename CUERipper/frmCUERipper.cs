@@ -1464,7 +1464,7 @@ namespace CUERipper
         {
             if (albumArt.Count == 0)
             {
-                pictureBox1.Image = null;
+                resetPictureBox(null);
                 return;
             }
 
@@ -1485,7 +1485,7 @@ namespace CUERipper
 
             if (currentAlbumArt >= albumArt.Count)
                 currentAlbumArt = 0;
-            pictureBox1.Image = albumArt[currentAlbumArt].image;
+            resetPictureBox(null);
         }
 
         private void backgroundWorkerArtwork_DoWork(object sender, DoWorkEventArgs e)
@@ -1602,14 +1602,21 @@ namespace CUERipper
             return b;
         }
 
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        private void resetPictureBox(MouseEventArgs e)
         {
-            if (currentAlbumArt < 0 || currentAlbumArt >= albumArt.Count || _config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.Large)
+            if (currentAlbumArt < 0 || currentAlbumArt >= albumArt.Count)
                 return;
 
+            if (e == null || e.Button != System.Windows.Forms.MouseButtons.Right || _config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.Large)
+            {
+                pictureBox1.Image = albumArt[currentAlbumArt].image;
+                return;
+            }
+
             var isz = new RectangleF(0.0f, 0.0f, albumArt[currentAlbumArt].image.Width, albumArt[currentAlbumArt].image.Height);
-            float ratio = Math.Min(isz.Width / pictureBox1.ClientSize.Width, isz.Height / pictureBox1.ClientSize.Height);
-            ratio = Math.Min(ratio, 1.0f);
+            //float ratio = Math.Min(isz.Width / pictureBox1.ClientSize.Width, isz.Height / pictureBox1.ClientSize.Height);
+            //ratio = Math.Min(ratio, 1.0f);
+            float ratio = 1.0f;
             var rf = new RectangleF(
                 e.Location.X * (isz.Width / pictureBox1.ClientSize.Width - ratio),
                 e.Location.Y * (isz.Height / pictureBox1.ClientSize.Height - ratio),
@@ -1618,11 +1625,15 @@ namespace CUERipper
             pictureBox1.Image = cropImage(albumArt[currentAlbumArt].image, pictureBox1.ClientSize, rf);
         }
 
-        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            if (currentAlbumArt < 0 || currentAlbumArt >= albumArt.Count)
-                return;
-            pictureBox1.Image = albumArt[currentAlbumArt].image;
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+                resetPictureBox(e);
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            resetPictureBox(null);
         }
 	}
 
