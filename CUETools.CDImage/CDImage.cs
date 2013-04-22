@@ -482,24 +482,24 @@ namespace CUETools.CDImage
             if (trackcount > audiotracks && ids[ids.Length - 1][0] == 'X')
             {
                 firstaudio = 1 + trackcount - audiotracks;
-                for (int i = 0; i < trackcount - audiotracks; i++)
+                for (int i = 2 + audiotracks; i < 2 + trackcount; i++)
                 {
-                    if (!int.TryParse(ids[i + 2 + audiotracks].Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
+                    if (!int.TryParse(ids[i].Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
                         return null;
                     ids2.Add((offs - 150).ToString());
                 }
-                for (int i = 0; i <= audiotracks; i++)
+                for (int i = 1; i < 2 + audiotracks; i++)
                 {
-                    if (!int.TryParse(ids[i + 1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
+                    if (!int.TryParse(ids[i], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
                         return null;
                     ids2.Add((offs - 150).ToString());
                 }
             }
             else
             {
-                for (int i = 0; i <= trackcount; i++)
+                for (int i = 1; i < 2 + trackcount; i++)
                 {
-                    if (!int.TryParse(ids[i + 1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
+                    if (!int.TryParse(ids[i], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out offs))
                         return null;
                     ids2.Add((offs - 150).ToString());
                 }
