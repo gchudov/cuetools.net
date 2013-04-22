@@ -390,7 +390,7 @@ namespace JDP
                     using (StreamReader sr = new StreamReader(MOTDTextPath, Encoding.UTF8))
                     {
                         string version = sr.ReadLine();
-                        if (version != MOTDVersion)
+                        if (string.Compare(version, MOTDVersion) > 0)
                         {
                             string motd = sr.ReadToEnd();
                             _batchReport = new StringBuilder();
@@ -606,7 +606,7 @@ namespace JDP
         {
             get
             {
-                return "CUETools 2.1.4";
+                return "CUETools 2.1.5";
             }
         }
 
@@ -712,7 +712,7 @@ namespace JDP
                             using (StreamReader sr = new StreamReader(MOTDTextPath, Encoding.UTF8))
                             {
                                 string version = sr.ReadLine();
-                                if (version != MOTDVersion)
+                                if (string.Compare(version, MOTDVersion) > 0)
                                 {
                                     string motd = sr.ReadToEnd();
                                     _batchReport.Append(motd);
