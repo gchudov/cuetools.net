@@ -2320,7 +2320,7 @@ namespace CUETools.Processor
 
             General.SetCUELine(_attributes, "PERFORMER", Metadata.Artist, true);
             General.SetCUELine(_attributes, "TITLE", Metadata.Title, true);
-            General.SetCUELine(_attributes, "CATALOG", Metadata.Barcode, false);
+            General.SetCUELine(_attributes, "CATALOG", Metadata.Barcode == "" ? "" : Metadata.Barcode.PadLeft(13, '0'), false);
             General.SetCUELine(_attributes, "REM", "DATE", Metadata.Year, false);
             General.SetCUELine(_attributes, "REM", "DISCNUMBER", Metadata.DiscNumber, false);
             General.SetCUELine(_attributes, "REM", "TOTALDISCS", Metadata.TotalDiscs, false);
