@@ -1455,11 +1455,11 @@ namespace CUETools.Processor
             taglibMetadata.Comment = GetCommonTag(file => file.Tag.Comment) ?? "";
             taglibMetadata.TotalDiscs = GetCommonTag(file => file.Tag.DiscCount != 0 ? file.Tag.DiscCount.ToString() : null) ?? "";
             taglibMetadata.DiscNumber = GetCommonTag(file => file.Tag.Disc != 0 ? file.Tag.Disc.ToString() : null) ?? "";
-			taglibMetadata.ReleaseDate = GetCommonTag(file => file.Tag.ReleaseDate) ?? "";
-			taglibMetadata.Country = GetCommonTag(file => file.Tag.MusicBrainzReleaseCountry) ?? "";
-			taglibMetadata.Label = GetCommonTag(file => file.Tag.Publisher) ?? "";
-			taglibMetadata.LabelNo = GetCommonTag(file => file.Tag.CatalogNo) ?? "";
-			taglibMetadata.DiscName = GetCommonTag(file => file.Tag.DiscSubtitle) ?? "";
+            taglibMetadata.ReleaseDate = GetCommonTag(file => file.Tag.ReleaseDate) ?? "";
+            taglibMetadata.Country = GetCommonTag(file => file.Tag.MusicBrainzReleaseCountry) ?? "";
+            taglibMetadata.Label = GetCommonTag(file => file.Tag.Publisher) ?? "";
+            taglibMetadata.LabelNo = GetCommonTag(file => file.Tag.CatalogNo) ?? "";
+            taglibMetadata.DiscName = GetCommonTag(file => file.Tag.DiscSubtitle) ?? "";
             for (i = 0; i < TrackCount; i++)
             {
                 TrackInfo track = _tracks[i];
@@ -1469,10 +1469,10 @@ namespace CUETools.Processor
                 taglibMetadata.Tracks[i].Title = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
                     _hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_TITLE", i + 1))) :
                     null) ?? "";
-				taglibMetadata.Tracks[i].Comment = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
-					_hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_COMMENT", i + 1))) :
-					null) ?? "";
-			}
+                taglibMetadata.Tracks[i].Comment = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
+                    _hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_COMMENT", i + 1))) :
+                    null) ?? "";
+            }
 
             cueMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
             cueMetadata.Artist = General.GetCUELine(_attributes, "PERFORMER").Trim();
@@ -1483,11 +1483,11 @@ namespace CUETools.Processor
             cueMetadata.TotalDiscs = General.GetCUELine(_attributes, "REM", "TOTALDISCS");
             cueMetadata.Genre = General.GetCUELine(_attributes, "REM", "GENRE");
             cueMetadata.Comment = General.GetCUELine(_attributes, "REM", "COMMENT");
-			cueMetadata.ReleaseDate = General.GetCUELine(_attributes, "REM", "RELEASEDATE");
-			cueMetadata.Country = General.GetCUELine(_attributes, "REM", "COUNTRY");
-			cueMetadata.Label = General.GetCUELine(_attributes, "REM", "LABEL");
-			cueMetadata.LabelNo = General.GetCUELine(_attributes, "REM", "CATALOGNUMBER");
-			cueMetadata.DiscName = General.GetCUELine(_attributes, "REM", "DISCSUBTITLE");
+            cueMetadata.ReleaseDate = General.GetCUELine(_attributes, "REM", "RELEASEDATE");
+            cueMetadata.Country = General.GetCUELine(_attributes, "REM", "COUNTRY");
+            cueMetadata.Label = General.GetCUELine(_attributes, "REM", "LABEL");
+            cueMetadata.LabelNo = General.GetCUELine(_attributes, "REM", "CATALOGNUMBER");
+            cueMetadata.DiscName = General.GetCUELine(_attributes, "REM", "DISCSUBTITLE");
             for (i = 0; i < Tracks.Count; i++)
             {
                 cueMetadata.Tracks[i].Artist = General.GetCUELine(Tracks[i].Attributes, "PERFORMER").Trim();
@@ -1639,7 +1639,7 @@ namespace CUETools.Processor
                 }
 
                 if (tocFromLog.AudioTracks == _toc.AudioTracks
-//                    && tocFromLog.TOCID == _toc.TOCID
+                    //                    && tocFromLog.TOCID == _toc.TOCID
                     && _toc.TrackCount == _toc.AudioTracks
                     && tocFromLog.FirstAudio > 1
                     && tocFromLog.TrackCount == tocFromLog.FirstAudio + tocFromLog.AudioTracks - 1)
@@ -2067,17 +2067,17 @@ namespace CUETools.Processor
                     extension = ".20bit" + extension;
             }
 
-			for (int maxLen = 255; maxLen >= 8; maxLen--)
-			{
-				ArLogFileName = General.ReplaceMultiple(_config.ArLogFilenameFormat, vars, "unique", CheckIfFileExists, maxLen);
-				if (ArLogFileName == "" || ArLogFileName == null)
-				{
-					ArLogFileName = "ar.log";
-					break;
-				}
-				if (Path.Combine(OutputDir, ArLogFileName).Length < 255)
-					break;
-			}
+            for (int maxLen = 255; maxLen >= 8; maxLen--)
+            {
+                ArLogFileName = General.ReplaceMultiple(_config.ArLogFilenameFormat, vars, "unique", CheckIfFileExists, maxLen);
+                if (ArLogFileName == "" || ArLogFileName == null)
+                {
+                    ArLogFileName = "ar.log";
+                    break;
+                }
+                if (Path.Combine(OutputDir, ArLogFileName).Length < 255)
+                    break;
+            }
 
             AlArtFileName = General.ReplaceMultiple(_config.AlArtFilenameFormat, vars, "unique", CheckIfFileExists, -1)
                 ?? "folder.jpg";
@@ -2670,17 +2670,17 @@ namespace CUETools.Processor
                                     fileInfo.Tag.Year = temp;
                                 if (fileInfo.Tag.Comment == null && Metadata.Comment != "")
                                     fileInfo.Tag.Comment = Metadata.Comment;
-								if (fileInfo.Tag.ReleaseDate == null && Metadata.ReleaseDate != "")
-									fileInfo.Tag.ReleaseDate = Metadata.ReleaseDate;
-								if (fileInfo.Tag.MusicBrainzReleaseCountry == null && Metadata.Country != "")
-									fileInfo.Tag.MusicBrainzReleaseCountry = Metadata.Country;
-								if (fileInfo.Tag.Publisher == null && Metadata.Label != "")
-									fileInfo.Tag.Publisher = Metadata.Label;
-								if (fileInfo.Tag.CatalogNo == null && Metadata.LabelNo != "")
-									fileInfo.Tag.CatalogNo = Metadata.LabelNo;
-								if (fileInfo.Tag.DiscSubtitle == null && Metadata.DiscName != "")
-									fileInfo.Tag.DiscSubtitle = Metadata.DiscName;
-							}
+                                if (fileInfo.Tag.ReleaseDate == null && Metadata.ReleaseDate != "")
+                                    fileInfo.Tag.ReleaseDate = Metadata.ReleaseDate;
+                                if (fileInfo.Tag.MusicBrainzReleaseCountry == null && Metadata.Country != "")
+                                    fileInfo.Tag.MusicBrainzReleaseCountry = Metadata.Country;
+                                if (fileInfo.Tag.Publisher == null && Metadata.Label != "")
+                                    fileInfo.Tag.Publisher = Metadata.Label;
+                                if (fileInfo.Tag.CatalogNo == null && Metadata.LabelNo != "")
+                                    fileInfo.Tag.CatalogNo = Metadata.LabelNo;
+                                if (fileInfo.Tag.DiscSubtitle == null && Metadata.DiscName != "")
+                                    fileInfo.Tag.DiscSubtitle = Metadata.DiscName;
+                            }
 
                             // fill up missing information from tags
                             if (_config.copyBasicTags && sourceFileInfo != null)
@@ -2702,17 +2702,17 @@ namespace CUETools.Processor
                                     fileInfo.Tag.Year = sourceFileInfo.Tag.Year;
                                 if (fileInfo.Tag.Comment == null)
                                     fileInfo.Tag.Comment = sourceFileInfo.Tag.Comment;
-								if (fileInfo.Tag.ReleaseDate == null)
-									fileInfo.Tag.ReleaseDate = sourceFileInfo.Tag.ReleaseDate;
-								if (fileInfo.Tag.MusicBrainzReleaseCountry == null)
-									fileInfo.Tag.MusicBrainzReleaseCountry = sourceFileInfo.Tag.MusicBrainzReleaseCountry;
-								if (fileInfo.Tag.Publisher == null)
-									fileInfo.Tag.Publisher = sourceFileInfo.Tag.Publisher;
-								if (fileInfo.Tag.CatalogNo == null)
-									fileInfo.Tag.CatalogNo = sourceFileInfo.Tag.CatalogNo;
-								if (fileInfo.Tag.DiscSubtitle == null)
-									fileInfo.Tag.DiscSubtitle = sourceFileInfo.Tag.DiscSubtitle;
-							}
+                                if (fileInfo.Tag.ReleaseDate == null)
+                                    fileInfo.Tag.ReleaseDate = sourceFileInfo.Tag.ReleaseDate;
+                                if (fileInfo.Tag.MusicBrainzReleaseCountry == null)
+                                    fileInfo.Tag.MusicBrainzReleaseCountry = sourceFileInfo.Tag.MusicBrainzReleaseCountry;
+                                if (fileInfo.Tag.Publisher == null)
+                                    fileInfo.Tag.Publisher = sourceFileInfo.Tag.Publisher;
+                                if (fileInfo.Tag.CatalogNo == null)
+                                    fileInfo.Tag.CatalogNo = sourceFileInfo.Tag.CatalogNo;
+                                if (fileInfo.Tag.DiscSubtitle == null)
+                                    fileInfo.Tag.DiscSubtitle = sourceFileInfo.Tag.DiscSubtitle;
+                            }
 
                             if ((_config.embedAlbumArt || _config.CopyAlbumArt) && _albumArt.Count > 0)
                                 fileInfo.Tag.Pictures = _albumArt.ToArray();
@@ -2761,17 +2761,17 @@ namespace CUETools.Processor
                                         fileInfo.Tag.Year = temp;
                                     if (fileInfo.Tag.Comment == null && Metadata.Comment != "")
                                         fileInfo.Tag.Comment = Metadata.Comment;
-									if (fileInfo.Tag.ReleaseDate == null && Metadata.ReleaseDate != "")
-										fileInfo.Tag.ReleaseDate = Metadata.ReleaseDate;
-									if (fileInfo.Tag.MusicBrainzReleaseCountry == null && Metadata.Country != "")
-										fileInfo.Tag.MusicBrainzReleaseCountry = Metadata.Country;
-									if (fileInfo.Tag.Publisher == null && Metadata.Label != "")
-										fileInfo.Tag.Publisher = Metadata.Label;
-									if (fileInfo.Tag.CatalogNo == null && Metadata.LabelNo != "")
-										fileInfo.Tag.CatalogNo = Metadata.LabelNo;
-									if (fileInfo.Tag.DiscSubtitle == null && Metadata.DiscName != "")
-										fileInfo.Tag.DiscSubtitle = Metadata.DiscName;
-								}
+                                    if (fileInfo.Tag.ReleaseDate == null && Metadata.ReleaseDate != "")
+                                        fileInfo.Tag.ReleaseDate = Metadata.ReleaseDate;
+                                    if (fileInfo.Tag.MusicBrainzReleaseCountry == null && Metadata.Country != "")
+                                        fileInfo.Tag.MusicBrainzReleaseCountry = Metadata.Country;
+                                    if (fileInfo.Tag.Publisher == null && Metadata.Label != "")
+                                        fileInfo.Tag.Publisher = Metadata.Label;
+                                    if (fileInfo.Tag.CatalogNo == null && Metadata.LabelNo != "")
+                                        fileInfo.Tag.CatalogNo = Metadata.LabelNo;
+                                    if (fileInfo.Tag.DiscSubtitle == null && Metadata.DiscName != "")
+                                        fileInfo.Tag.DiscSubtitle = Metadata.DiscName;
+                                }
 
                                 if (_config.copyBasicTags && sourceFileInfo != null)
                                 {
@@ -2793,17 +2793,17 @@ namespace CUETools.Processor
                                         fileInfo.Tag.Genres = sourceFileInfo.Tag.Genres;
                                     if (fileInfo.Tag.Comment == null)
                                         fileInfo.Tag.Comment = sourceFileInfo.Tag.Comment;
-									if (fileInfo.Tag.ReleaseDate == null)
-										fileInfo.Tag.ReleaseDate = sourceFileInfo.Tag.ReleaseDate;
-									if (fileInfo.Tag.MusicBrainzReleaseCountry == null)
-										fileInfo.Tag.MusicBrainzReleaseCountry = sourceFileInfo.Tag.MusicBrainzReleaseCountry;
-									if (fileInfo.Tag.Publisher == null)
-										fileInfo.Tag.Publisher = sourceFileInfo.Tag.Publisher;
-									if (fileInfo.Tag.CatalogNo == null)
-										fileInfo.Tag.CatalogNo = sourceFileInfo.Tag.CatalogNo;
-									if (fileInfo.Tag.DiscSubtitle == null)
-										fileInfo.Tag.DiscSubtitle = sourceFileInfo.Tag.DiscSubtitle;
-								}
+                                    if (fileInfo.Tag.ReleaseDate == null)
+                                        fileInfo.Tag.ReleaseDate = sourceFileInfo.Tag.ReleaseDate;
+                                    if (fileInfo.Tag.MusicBrainzReleaseCountry == null)
+                                        fileInfo.Tag.MusicBrainzReleaseCountry = sourceFileInfo.Tag.MusicBrainzReleaseCountry;
+                                    if (fileInfo.Tag.Publisher == null)
+                                        fileInfo.Tag.Publisher = sourceFileInfo.Tag.Publisher;
+                                    if (fileInfo.Tag.CatalogNo == null)
+                                        fileInfo.Tag.CatalogNo = sourceFileInfo.Tag.CatalogNo;
+                                    if (fileInfo.Tag.DiscSubtitle == null)
+                                        fileInfo.Tag.DiscSubtitle = sourceFileInfo.Tag.DiscSubtitle;
+                                }
 
                                 if ((_config.embedAlbumArt || _config.CopyAlbumArt) && _albumArt.Count > 0)
                                     fileInfo.Tag.Pictures = _albumArt.ToArray();
@@ -3107,7 +3107,7 @@ namespace CUETools.Processor
                 isUsingAccurateRip &&
                 _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                 GenerateAccurateRipTags(destTags, bestOffset, iTrack);
-            
+
             if (_config.advanced.WriteCDTOCTag)
                 destTags.Add("CDTOC", _toc.TAG);
 
@@ -3444,10 +3444,12 @@ namespace CUETools.Processor
                     (hdcdDecoder as IAudioFilter).AudioDest = null;
                 hdcdDecoder = null;
                 if (audioSource != null)
-                    try { audioSource.Close(); } catch { }
+                    try { audioSource.Close(); }
+                    catch { }
                 audioSource = null;
                 if (audioDest != null)
-                    try { audioDest.Delete(); } catch { }
+                    try { audioDest.Delete(); }
+                    catch { }
                 audioDest = null;
                 throw ex;
             }
@@ -3915,7 +3917,7 @@ namespace CUETools.Processor
                 {
                     audioSource.Position = sourceInfo.Offset;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     audioSource.Close();
                     throw ex;
