@@ -1810,7 +1810,20 @@ new int[] { // 30
 
 		public string Path { get { return _path; } }
 
-		string vendor_string = "Flake#0.1";
+        public static string Vendor
+        {
+            get
+            {
+                var version = typeof(FlakeWriter).Assembly.GetName().Version;
+                return vendor_string ?? "CUETools " + version.Major + "." + version.Minor + "." + version.Build;
+            }
+            set
+            {
+                vendor_string = value;
+            }
+        }
+
+        static string vendor_string = null;
 
 		int select_blocksize(int samplerate, int time_ms)
 		{
@@ -1876,7 +1889,7 @@ new int[] { // 30
 		{
 			BitWriter bitwriter = new BitWriter(comment, pos, 4);
 			Encoding enc = new ASCIIEncoding();
-			int vendor_len = enc.GetBytes(vendor_string, 0, vendor_string.Length, comment, pos + 8);
+			int vendor_len = enc.GetBytes(Vendor, 0, Vendor.Length, comment, pos + 8);
 
 			// metadata header
 			bitwriter.writebits(1, last);

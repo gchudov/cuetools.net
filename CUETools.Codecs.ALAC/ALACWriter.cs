@@ -1252,19 +1252,20 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		public string Vendor
+		public static string Vendor
 		{
 			get
 			{
-				return vendor_string;
-			}
+                var version = typeof(ALACWriter).Assembly.GetName().Version;
+                return vendor_string ?? "CUETools " + version.Major + "." + version.Minor + "." + version.Build;
+            }
 			set
 			{
 				vendor_string = value;
 			}
 		}
 
-		string vendor_string = "CUETools 2.1.5";
+		static string vendor_string = null;
 
 		int select_blocksize(int samplerate, int time_ms)
 		{
@@ -1566,7 +1567,7 @@ namespace CUETools.Codecs.ALAC
 								bitwriter.write('d', 'a', 't', 'a');
 								bitwriter.writebits(32, 1);
 								bitwriter.writebits(32, 0);
-								bitwriter.write(vendor_string);
+								bitwriter.write(Vendor);
 							}
 							chunk_end(bitwriter);
 						}

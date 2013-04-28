@@ -200,7 +200,7 @@ namespace CUETools.FLACCL.cmd
 			}
 			if (!quiet)
 			{
-				Console.WriteLine("{0}, Copyright (C) 2010 Grigory Chudov.", FLACCLWriter.vendor_string);
+				Console.WriteLine("{0}, Copyright (C) 2010 Grigory Chudov.", FLACCLWriter.Vendor);
 				Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 				Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 			}

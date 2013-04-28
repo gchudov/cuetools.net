@@ -78,10 +78,11 @@ namespace CUETools.TestCodecs
 		{
 			AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
 			ALACWriter target;
+            
+            ALACWriter.Vendor = "CUETools";
 
             target = new ALACWriter("alacwriter1.m4a", null, new ALACWriterSettings() { PCM = buff.PCM });
 			target.Settings.Padding = 1;
-			target.Vendor = "CUETools";
 			target.CreationTime = DateTime.Parse("15 Aug 1976");
 			target.FinalSampleCount = buff.Length;
 			target.Write(buff);
@@ -90,7 +91,6 @@ namespace CUETools.TestCodecs
 
             target = new ALACWriter("alacwriter0.m4a", null, new ALACWriterSettings() { PCM = buff.PCM });
 			target.Settings.Padding = 1;
-			target.Vendor = "CUETools";
 			target.CreationTime = DateTime.Parse("15 Aug 1976");
 			target.Write(buff);
 			target.Close();
