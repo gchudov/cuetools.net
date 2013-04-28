@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
+using TagLib.Asf;
 
 namespace CUETools.Processor
 {
@@ -42,15 +43,14 @@ namespace CUETools.Processor
             {
                 var asf = (TagLib.Asf.Tag)fileInfo.GetTag(TagLib.TagTypes.Asf, true);
                 foreach (string tag in tags.AllKeys)
-                    if (!IsKnownXiphTag(tag))
-                        asf.SetDescriptorStrings(tags.GetValues(tag), "foobar2000/" + tag);
+                    asf.SetDescriptorStrings(tags.GetValues(tag), "foobar2000/" + tag);
                 return true;
             }
             TagLib.Ape.Tag ape = (TagLib.Ape.Tag)fileInfo.GetTag(TagLib.TagTypes.Ape, true);
             if (ape != null)
             {
                 foreach (string tag in tags.AllKeys)
-                    ape.SetValue(XiphTagNameToApe(tag), tags.GetValues(tag));
+                    ape.SetValue(tag, tags.GetValues(tag));
             }
             return true;
         }
@@ -112,15 +112,11 @@ namespace CUETools.Processor
                 null; // TODO: merge them?
         }
 
-        public static string ApeTagNameToXiph(string tag)
+        public static bool IsKnownApeTag(string tag)
         {
-            if (tag.ToUpper() == "YEAR")
-                return "DATE";
-            if (tag.ToUpper() == "TRACK")
-                return "TRACKNUMBER";
-            if (tag.ToUpper() == "DISC")
-                return "DISCNUMBER";
-            return tag;
+            return tag.ToUpper() == "YEAR" ||
+                tag.ToUpper() == "TRACK" ||
+                tag.ToUpper() == "DISC";
         }
 
         public static bool IsKnownXiphTag(string tag)
@@ -128,17 +124,6 @@ namespace CUETools.Processor
             return tag.ToUpper() == "DATE" ||
                 tag.ToUpper() == "TRACKNUMBER" ||
                 tag.ToUpper() == "DISCNUMBER";
-        }
-
-        public static string XiphTagNameToApe(string tag)
-        {
-            if (tag.ToUpper() == "DATE")
-                return "Year";
-            if (tag.ToUpper() == "TRACKNUMBER")
-                return "Track";
-            if (tag.ToUpper() == "DISCNUMBER")
-                return "Disc";
-            return tag;
         }
 
         public static NameValueCollection Analyze(string path)
@@ -155,20 +140,29 @@ namespace CUETools.Processor
         {
             NameValueCollection tags = new NameValueCollection();
 
-            TagLib.Ogg.XiphComment xiph = (TagLib.Ogg.XiphComment)fileInfo.GetTag(TagLib.TagTypes.Xiph);
-            TagLib.Ape.Tag ape = (TagLib.Ape.Tag)fileInfo.GetTag(TagLib.TagTypes.Ape);
+            var xiph = (TagLib.Ogg.XiphComment)fileInfo.GetTag(TagLib.TagTypes.Xiph);
+            var ape = (TagLib.Ape.Tag)fileInfo.GetTag(TagLib.TagTypes.Ape);
+            var asf = (TagLib.Asf.Tag)fileInfo.GetTag(TagLib.TagTypes.Asf);
 
             if (xiph != null)
             {
                 foreach (string tag in xiph)
                     foreach (string value in xiph.GetField(tag))
-                        tags.Add(tag, value);
+                        if (!IsKnownXiphTag(tag))
+                            tags.Add(tag, value);
             }
             else if (ape != null)
             {
                 foreach (string tag in ape)
                     foreach (string value in ape.GetItem(tag).ToStringArray())
-                        tags.Add(ApeTagNameToXiph(tag), value);
+                        if (!IsKnownApeTag(tag))
+                            tags.Add(tag, value);
+            }
+            else if (asf != null)
+            {
+                foreach (ContentDescriptor desc in asf.ExtendedContentDescriptionObject)
+                    if (desc != null && desc.Type == DataType.Unicode && desc.Name.StartsWith("foobar2000/"))
+                        tags.Add(desc.Name.Substring("foobar2000/".Length), desc.ToString());
             }
             else
             {
