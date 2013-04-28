@@ -548,7 +548,7 @@ namespace TagLib.Ogg
 
 				return GetField ("ENSEMBLE"); 
 			}
-			set {SetField ("ALBUM ARTIST", value);}
+			set {SetField ("ALBUMARTIST", value);}
 		}
 		
 		/// <summary>
@@ -741,8 +741,7 @@ namespace TagLib.Ogg
 				return 0;
 			}
 			set {
-//				SetField ("TRACKTOTAL", TrackCount);
-				SetField ("TOTALTRACKS", TrackCount);
+				SetField ("TRACKTOTAL", TrackCount);
 				SetField ("TRACKNUMBER", value);
 			}
 		}
@@ -783,8 +782,7 @@ namespace TagLib.Ogg
 				
 				return 0;
 			}
-			//set {SetField ("TRACKTOTAL", value);}
-			set {SetField ("TOTALTRACKS", value);}
+			set {SetField ("TRACKTOTAL", value);}
 		}
 		
 		/// <summary>
@@ -814,8 +812,7 @@ namespace TagLib.Ogg
 				return 0;
 			}
 			set {
-//				SetField ("DISCTOTAL", DiscCount);
-				SetField ("TOTALDISCS", DiscCount);
+				SetField ("DISCTOTAL", DiscCount);
 				SetField ("DISCNUMBER", value);
 			}
 		}
@@ -857,8 +854,7 @@ namespace TagLib.Ogg
 				
 				return 0;
 			}
-//			set {SetField ("DISCTOTAL", value);}
-			set {SetField ("TOTALDISCS", value);}
+			set {SetField ("DISCTOTAL", value);}
 		}
 		
 		/// <summary>
