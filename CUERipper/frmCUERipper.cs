@@ -477,11 +477,13 @@ namespace CUERipper
 					bnComboBoxOutputFormat.Items.RemoveAt(OutputPathUseTemplates.Length + 10);
 			}
 
+            cueSheet.AlbumArt.Clear();
             if (currentAlbumArt >= 0 && currentAlbumArt < albumArt.Count)
             {
                 data.selectedRelease.metadata.AlbumArt.Clear();
                 data.selectedRelease.metadata.AlbumArt.Add(albumArt[currentAlbumArt].meta);
-                cueSheet.AddAlbumArt(albumArt[currentAlbumArt].contents);
+                var blob = new TagLib.ByteVector(albumArt[currentAlbumArt].contents);
+                cueSheet.AlbumArt.Add(new TagLib.Picture(blob) { Type = TagLib.PictureType.FrontCover });
             }            
 
 			data.selectedRelease.metadata.Save();
