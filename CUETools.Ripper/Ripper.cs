@@ -11,6 +11,7 @@ namespace CUETools.Ripper
 	public interface ICDRipper : IAudioSource, IDisposable
 	{
 		bool Open(char Drive);
+        void EjectDisk();
 		bool DetectGaps();
 		bool GapsDetected { get; }
 		CDImageLayout TOC { get; }

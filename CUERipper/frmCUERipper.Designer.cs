@@ -93,7 +93,6 @@ namespace CUERipper
             this.listMetadata = new System.Windows.Forms.ListView();
             this.columnHeaderValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.buttonTrackMetadata = new System.Windows.Forms.Button();
             this.buttonMetadata = new System.Windows.Forms.Button();
             this.buttonVA = new System.Windows.Forms.Button();
             this.buttonReload = new System.Windows.Forms.Button();
@@ -107,6 +106,7 @@ namespace CUERipper
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel7 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.buttonEjectDisk = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
             this.panel6 = new System.Windows.Forms.Panel();
@@ -639,18 +639,6 @@ namespace CUERipper
             // 
             resources.ApplyResources(this.columnHeaderName, "columnHeaderName");
             // 
-            // buttonTrackMetadata
-            // 
-            this.buttonTrackMetadata.BackColor = System.Drawing.Color.Transparent;
-            this.buttonTrackMetadata.FlatAppearance.BorderSize = 0;
-            this.buttonTrackMetadata.FlatAppearance.MouseDownBackColor = System.Drawing.SystemColors.Control;
-            this.buttonTrackMetadata.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            resources.ApplyResources(this.buttonTrackMetadata, "buttonTrackMetadata");
-            this.buttonTrackMetadata.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.buttonTrackMetadata.ImageList = this.imageListChecked;
-            this.buttonTrackMetadata.Name = "buttonTrackMetadata";
-            this.buttonTrackMetadata.UseVisualStyleBackColor = false;
-            // 
             // buttonMetadata
             // 
             this.buttonMetadata.Image = global::CUERipper.Properties.Resources.tag_label;
@@ -752,18 +740,26 @@ namespace CUERipper
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.buttonEjectDisk);
             this.panel3.Controls.Add(this.bnComboBoxDrives);
             this.panel3.Controls.Add(this.bnComboBoxRelease);
             this.panel3.Controls.Add(this.buttonSettings);
             this.panel3.Controls.Add(this.buttonVA);
             this.panel3.Controls.Add(this.buttonFreedbSubmit);
-            this.panel3.Controls.Add(this.buttonTrackMetadata);
             this.panel3.Controls.Add(this.buttonTracks);
             this.panel3.Controls.Add(this.buttonReload);
             this.panel3.Controls.Add(this.buttonEncoding);
             this.panel3.Controls.Add(this.buttonMetadata);
             resources.ApplyResources(this.panel3, "panel3");
             this.panel3.Name = "panel3";
+            // 
+            // buttonEjectDisk
+            // 
+            this.buttonEjectDisk.Image = global::CUERipper.Properties.Resources.cd_eject;
+            resources.ApplyResources(this.buttonEjectDisk, "buttonEjectDisk");
+            this.buttonEjectDisk.Name = "buttonEjectDisk";
+            this.buttonEjectDisk.UseVisualStyleBackColor = true;
+            this.buttonEjectDisk.Click += new System.EventHandler(this.buttonEjectDisk_Click);
             // 
             // panel4
             // 
@@ -882,8 +878,7 @@ namespace CUERipper
 		private System.Windows.Forms.ImageList imageListChecked;
 		private System.Windows.Forms.ListView listMetadata;
 		private System.Windows.Forms.ColumnHeader columnHeaderName;
-		private System.Windows.Forms.ColumnHeader columnHeaderValue;
-		private System.Windows.Forms.Button buttonTrackMetadata;
+        private System.Windows.Forms.ColumnHeader columnHeaderValue;
 		private System.Windows.Forms.Button buttonMetadata;
 		private System.Windows.Forms.Button buttonVA;
 		private System.Windows.Forms.Button buttonReload;
@@ -903,6 +898,7 @@ namespace CUERipper
 		private System.Windows.Forms.Panel panel6;
 		private System.Windows.Forms.Panel panel7;
         private System.Windows.Forms.Button buttonEncoderSettings;
+        private System.Windows.Forms.Button buttonEjectDisk;
 	}
 }
 

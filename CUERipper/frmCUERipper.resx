@@ -816,7 +816,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABy
-        CQAAAk1TRnQBSQFMAgEBBAEAAawBAgGsAQIBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CQAAAk1TRnQBSQFMAgEBBAEAAcQBAgHEAQIBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -966,7 +966,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAY
-        EgAAAk1TRnQBSQFMAgEBCwEAAawBAgGsAQIBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        EgAAAk1TRnQBSQFMAgEBCwEAAcQBAgHEAQIBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAATADAAEBAQABCAYAAQwYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -1071,7 +1071,7 @@
     <value>panel3</value>
   </data>
   <data name="&gt;&gt;bnComboBoxRelease.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="bnComboBoxDrives.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -1101,7 +1101,7 @@
     <value>panel3</value>
   </data>
   <data name="&gt;&gt;bnComboBoxDrives.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="bnComboBoxOutputFormat.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -1178,39 +1178,6 @@
   <data name="&gt;&gt;listMetadata.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="buttonTrackMetadata.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
-  <data name="buttonTrackMetadata.ImageIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="buttonTrackMetadata.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="buttonTrackMetadata.Location" type="System.Drawing.Point, System.Drawing">
-    <value>594, 61</value>
-  </data>
-  <data name="buttonTrackMetadata.Size" type="System.Drawing.Size, System.Drawing">
-    <value>19, 17</value>
-  </data>
-  <data name="buttonTrackMetadata.TabIndex" type="System.Int32, mscorlib">
-    <value>40</value>
-  </data>
-  <data name="buttonTrackMetadata.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;buttonTrackMetadata.Name" xml:space="preserve">
-    <value>buttonTrackMetadata</value>
-  </data>
-  <data name="&gt;&gt;buttonTrackMetadata.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;buttonTrackMetadata.Parent" xml:space="preserve">
-    <value>panel3</value>
-  </data>
-  <data name="&gt;&gt;buttonTrackMetadata.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
   <data name="buttonMetadata.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 57</value>
   </data>
@@ -1242,10 +1209,10 @@
     <value>NoControl</value>
   </data>
   <data name="buttonVA.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 57</value>
+    <value>270, 57</value>
   </data>
   <data name="buttonVA.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 23</value>
+    <value>80, 24</value>
   </data>
   <data name="buttonVA.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1266,7 +1233,7 @@
     <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonVA.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="buttonReload.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -1275,7 +1242,7 @@
     <value>94, 57</value>
   </data>
   <data name="buttonReload.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 23</value>
+    <value>80, 24</value>
   </data>
   <data name="buttonReload.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1302,10 +1269,10 @@
     <value>NoControl</value>
   </data>
   <data name="buttonEncoding.Location" type="System.Drawing.Point, System.Drawing">
-    <value>270, 57</value>
+    <value>358, 57</value>
   </data>
   <data name="buttonEncoding.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 23</value>
+    <value>80, 24</value>
   </data>
   <data name="buttonEncoding.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -1335,7 +1302,7 @@
     <value>6, 57</value>
   </data>
   <data name="buttonTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 23</value>
+    <value>80, 24</value>
   </data>
   <data name="buttonTracks.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1365,10 +1332,10 @@
     <value>NoControl</value>
   </data>
   <data name="buttonFreedbSubmit.Location" type="System.Drawing.Point, System.Drawing">
-    <value>356, 57</value>
+    <value>446, 57</value>
   </data>
   <data name="buttonFreedbSubmit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 23</value>
+    <value>80, 24</value>
   </data>
   <data name="buttonFreedbSubmit.TabIndex" type="System.Int32, mscorlib">
     <value>41</value>
@@ -1389,7 +1356,7 @@
     <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonFreedbSubmit.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Right</value>
@@ -1452,10 +1419,10 @@
     <value>NoControl</value>
   </data>
   <data name="buttonSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>442, 57</value>
+    <value>534, 57</value>
   </data>
   <data name="buttonSettings.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 23</value>
+    <value>80, 24</value>
   </data>
   <data name="buttonSettings.TabIndex" type="System.Int32, mscorlib">
     <value>44</value>
@@ -1476,7 +1443,7 @@
     <value>panel3</value>
   </data>
   <data name="&gt;&gt;buttonSettings.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="panel7.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -1528,6 +1495,36 @@
   </data>
   <data name="&gt;&gt;panel2.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="buttonEjectDisk.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="buttonEjectDisk.Location" type="System.Drawing.Point, System.Drawing">
+    <value>182, 57</value>
+  </data>
+  <data name="buttonEjectDisk.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 24</value>
+  </data>
+  <data name="buttonEjectDisk.TabIndex" type="System.Int32, mscorlib">
+    <value>45</value>
+  </data>
+  <data name="buttonEjectDisk.Text" xml:space="preserve">
+    <value>Eject</value>
+  </data>
+  <data name="buttonEjectDisk.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
+    <value>ImageBeforeText</value>
+  </data>
+  <data name="&gt;&gt;buttonEjectDisk.Name" xml:space="preserve">
+    <value>buttonEjectDisk</value>
+  </data>
+  <data name="&gt;&gt;buttonEjectDisk.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonEjectDisk.Parent" xml:space="preserve">
+    <value>panel3</value>
+  </data>
+  <data name="&gt;&gt;buttonEjectDisk.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="panel3.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Top</value>

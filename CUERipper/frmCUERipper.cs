@@ -327,6 +327,7 @@ namespace CUERipper
 			buttonEncoding.Enabled = data.selectedRelease != null && !running &&
 				data.selectedRelease.ImageKey == "freedb" && (new CUEMetadata(data.selectedRelease.metadata)).FreedbToEncoding();
 			buttonReload.Enabled = data.selectedRelease != null && !running;
+            buttonEjectDisk.Enabled = selectedDriveInfo !=null && !running;
             buttonSettings.Enabled = !running;
 		}
 
@@ -1648,6 +1649,12 @@ namespace CUERipper
         private void pictureBox1_MouseLeave(object sender, EventArgs e)
         {
             toolStripStatusLabel1.Text = null;
+        }
+
+        private void buttonEjectDisk_Click(object sender, EventArgs e)
+        {
+            if (selectedDriveInfo != null)
+                selectedDriveInfo.drive.EjectDisk();
         }
 	}
 

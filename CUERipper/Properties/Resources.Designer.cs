@@ -103,6 +103,16 @@ namespace CUERipper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap cd_eject {
+            get {
+                object obj = ResourceManager.GetObject("cd_eject", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap cddb {
             get {
                 object obj = ResourceManager.GetObject("cddb", resourceCulture);

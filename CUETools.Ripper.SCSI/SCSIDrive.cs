@@ -584,6 +584,36 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
+        public unsafe void EjectDisk()
+        {
+            if (m_device != null)
+            {
+                m_device.StartStopUnit(true, Device.PowerControl.NoChange, Device.StartState.EjectDisk);
+            }
+            else
+            {
+                try
+                {
+                    m_device = new Device(m_logger);
+                    if (m_device.Open(m_device_letter))
+                    {
+                        try
+                        {
+                            m_device.StartStopUnit(true, Device.PowerControl.NoChange, Device.StartState.LoadDisk);
+                        }
+                        finally
+                        {
+                            m_device.Close();
+                        }
+                    }
+                }
+                finally
+                {
+                    m_device = null;
+                }
+            }
+        }
+
 		bool gapsDetected = false;
 
 		public unsafe bool DetectGaps()
