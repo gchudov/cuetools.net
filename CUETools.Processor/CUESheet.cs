@@ -1469,7 +1469,7 @@ namespace CUETools.Processor
                 taglibMetadata.Tracks[i].Title = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
                     _hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_TITLE", i + 1))) :
                     null) ?? "";
-                taglibMetadata.Tracks[i].Comment = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Title :
+                taglibMetadata.Tracks[i].Comment = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Comment :
                     _hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_COMMENT", i + 1))) :
                     null) ?? "";
             }
@@ -2759,6 +2759,8 @@ namespace CUETools.Processor
                                         fileInfo.Tag.Disc = temp;
                                     if (fileInfo.Tag.Year == 0 && Metadata.Year != "" && uint.TryParse(Metadata.Year, out temp))
                                         fileInfo.Tag.Year = temp;
+                                    if (fileInfo.Tag.Comment == null && Metadata.Tracks[iTrack].Comment != "")
+                                        fileInfo.Tag.Comment = Metadata.Tracks[iTrack].Comment;
                                     if (fileInfo.Tag.Comment == null && Metadata.Comment != "")
                                         fileInfo.Tag.Comment = Metadata.Comment;
                                     if (fileInfo.Tag.ReleaseDate == null && Metadata.ReleaseDate != "")
@@ -3141,7 +3143,7 @@ namespace CUETools.Processor
                                 if (destTags.Get(key) == null)
                                     destTags.Add(key, singleValue);
                             }
-                            else if (fWithCUE && key.ToUpper() != "TRACKNUMBER" && key.ToUpper() != "TITLE" && key.ToUpper() != "ARTIST")
+                            else if (fWithCUE && key.ToUpper() != "TRACKNUMBER" && key.ToUpper() != "TITLE" && key.ToUpper() != "ARTIST" && key.ToUpper() != "COMMENT")
                             {
                                 string[] values = trackTags.GetValues(key);
                                 for (int j = 0; j < values.Length; j++)
@@ -3175,6 +3177,14 @@ namespace CUETools.Processor
                 //CleanupTags(destTags, "REPLAYGAIN");
 
                 destTags.Remove("CUESHEET");
+            }
+
+            for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+            {
+                var comment = _config.writeBasicTagsFromCUEData && Metadata.Tracks[iTrack].Comment != "" ? Metadata.Tracks[iTrack].Comment :
+                    _config.copyBasicTags && _tracks[iTrack]._fileInfo != null && _tracks[iTrack]._fileInfo.Tag.Comment != null ?_tracks[iTrack]._fileInfo.Tag.Comment : null;
+                if (comment != null)
+                    destTags.Add(String.Format("cue_track{0:00}_COMMENT", iTrack + 1), comment);
             }
 
             if (fWithCUE)
