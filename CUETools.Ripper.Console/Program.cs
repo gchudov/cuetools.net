@@ -254,7 +254,7 @@ namespace CUETools.ConsoleRipper
 				Console.Write("\r                                                                             \r");
 				Console.WriteLine("Results     : {0:0.00}x; {1:d5} errors; {2:d2}:{3:d2}:{4:d2}",
 					audioSource.Length / totalElapsed.TotalSeconds / audioSource.PCM.SampleRate,
-					audioSource.ErrorsCount,
+                    audioSource.FailedSectors.PopulationCount(),
 					totalElapsed.Hours, totalElapsed.Minutes, totalElapsed.Seconds
 					);
 				audioDest.Close();
@@ -267,7 +267,7 @@ namespace CUETools.ConsoleRipper
 				bool wereErrors = false;
 				for (int iTrack = 1; iTrack <= audioSource.TOC.AudioTracks; iTrack++)
 					for (uint iSector = audioSource.TOC[iTrack].Start; iSector <= audioSource.TOC[iTrack].End; iSector ++)
-						if (audioSource.Errors[(int)iSector])
+						if (audioSource.FailedSectors[(int)iSector])
 						{
 							if (!wereErrors)
 							{

@@ -408,20 +408,20 @@ namespace CUERipper
                 cueSheet.CTDB.Submit(
 					(int)cueSheet.ArVerify.WorstConfidence() + 1,
 					audioSource.CorrectionQuality == 0 ? 0 :
-					(int)(100 * (1.0 - Math.Log(audioSource.ErrorsCount + 1) / Math.Log(audioSource.TOC.AudioLength + 1))),
+					(int)(100 * (1.0 - Math.Log(audioSource.FailedSectors.PopulationCount() + 1) / Math.Log(audioSource.TOC.AudioLength + 1))),
 					cueSheet.Metadata.Artist,
 					cueSheet.Metadata.Title,
 					cueSheet.TOC.Barcode);
 				bool canFix = false;
-				if (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.Success && audioSource.ErrorsCount != 0)
+                if (cueSheet.CTDB.QueryExceptionStatus == WebExceptionStatus.Success && audioSource.FailedSectors.PopulationCount() != 0)
 				{
 					foreach (DBEntry entry in cueSheet.CTDB.Entries)
 						if (entry.hasErrors && entry.canRecover)
 							canFix = true;
 				}
 				this.Invoke((MethodInvoker)delegate()
-				{					
-					DialogResult dlgRes = audioSource.ErrorsCount != 0 ? 
+				{
+                    DialogResult dlgRes = audioSource.FailedSectors.PopulationCount() != 0 ? 
 						MessageBox.Show(this, cueSheet.GenerateAccurateRipStatus() + (canFix ? "\n" + Properties.Resources.DoneRippingRepair : "") + ".", Properties.Resources.DoneRippingErrors, MessageBoxButtons.OK, MessageBoxIcon.Error) :
 						MessageBox.Show(this, cueSheet.GenerateAccurateRipStatus() + ".", Properties.Resources.DoneRipping, MessageBoxButtons.OK, MessageBoxIcon.Information);
 				});

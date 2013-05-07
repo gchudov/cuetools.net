@@ -21,8 +21,8 @@ namespace CUETools.Ripper
 		string RipperVersion { get; }
 		string CurrentReadCommand { get; }
 		int CorrectionQuality { get; set; }
-		int ErrorsCount { get; }
-		BitArray Errors { get; }
+		BitArray FailedSectors { get; }
+        BitArray RetrySectors { get; }
 
 		event EventHandler<ReadProgressArgs> ReadProgress;
 	}
@@ -62,4 +62,30 @@ namespace CUETools.Ripper
 			PassTime = passTime;
 		}
 	}
+
+    public static class BitArrayUtils
+    {
+        public static int PopulationCount(this BitArray bits, int start, int len)
+        {
+            int cnt = 0;
+            for (int i = start; i < start + len; i++)
+                if (bits[i])
+                    cnt++;
+            return cnt;
+        }
+
+        public static int PopulationCount(this BitArray bits)
+        {
+            return bits.PopulationCount(0, bits.Count);
+        }
+    }
+}
+
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsageAttribute(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
+    internal sealed class ExtensionAttribute : Attribute
+    {
+        public ExtensionAttribute() { }
+    }
 }

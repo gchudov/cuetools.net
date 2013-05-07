@@ -2,6 +2,7 @@
 using System.IO;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
+using CUETools.Ripper;
 using System.Globalization;
 
 namespace CUETools.Processor
@@ -85,11 +86,9 @@ namespace CUETools.Processor
 
         private static double GetRangeQuality(CUESheet sheet, uint start, uint length)
         {
-            int errCount = 0;
-            for (uint iSector = start; iSector < start + length; iSector++)
-                if (sheet.CDRipper.Errors[(int)iSector - (int)sheet.TOC[sheet.TOC.FirstAudio][0].Start])
-                    errCount++;
-            return 100 * (1.0 - Math.Log(errCount / 5.0 + 1) / Math.Log(length / 5.0 + 1));
+            int failedSectorsCount = sheet.CDRipper.FailedSectors.PopulationCount((int)start - (int)sheet.TOC[sheet.TOC.FirstAudio][0].Start, (int)length);
+            int retrySectorsCount = sheet.CDRipper.RetrySectors.PopulationCount((int)start - (int)sheet.TOC[sheet.TOC.FirstAudio][0].Start, (int)length);
+            return 100 * (1.0 - Math.Log(failedSectorsCount / 5.0 + retrySectorsCount / 100.0 + 1) / Math.Log(length / 5.0 + length / 100.0 + 1));
         }
 
         public static string GetExactAudioCopyLog(CUESheet sheet)

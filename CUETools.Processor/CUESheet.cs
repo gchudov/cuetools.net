@@ -2239,7 +2239,7 @@ namespace CUETools.Processor
                 uint sec_end = Math.Min(sec_start + 74, tr_start + len - 1);
                 bool fError = false;
                 for (uint iSector = sec_start; iSector <= sec_end; iSector++)
-                    if (_ripper.Errors[(int)iSector - (int)_toc[_toc.FirstAudio][0].Start])
+                    if (_ripper.FailedSectors[(int)iSector - (int)_toc[_toc.FirstAudio][0].Start])
                         fError = true;
                 if (fError)
                 {
@@ -2250,7 +2250,7 @@ namespace CUETools.Processor
                         uint jsec_end = Math.Min(jsec_start + 74, tr_start + len - 1);
                         bool jfError = false;
                         for (uint jSector = jsec_start; jSector <= jsec_end; jSector++)
-                            if (_ripper.Errors[(int)jSector - (int)_toc[_toc.FirstAudio][0].Start])
+                            if (_ripper.FailedSectors[(int)jSector - (int)_toc[_toc.FirstAudio][0].Start])
                                 jfError = true;
                         if (!jfError)
                         {
@@ -2429,10 +2429,10 @@ namespace CUETools.Processor
                 if (prefix != "") prefix += ", ";
                 prefix += "CTDB: " + CTDB.Status;
             }
-            if (_isCD && _ripper.ErrorsCount > 0)
+            if (_isCD && _ripper.FailedSectors.PopulationCount() > 0)
             {
                 if (prefix != "") prefix += ", ";
-                prefix += "ripper found " + _ripper.ErrorsCount + " suspicious sectors";
+                prefix += "ripper found " + _ripper.FailedSectors.PopulationCount() + " suspicious sectors";
             }
             if (prefix == "")
                 prefix += "done";

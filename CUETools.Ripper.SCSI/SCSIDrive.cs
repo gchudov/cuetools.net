@@ -60,8 +60,7 @@ namespace CUETools.Ripper.SCSI
 		public long[,,] UserData;
 		public byte[,] C2Count;
 		public long[] byte2long;
-		BitArray _errors;
-		int _errorsCount;
+		BitArray m_failedSectors, m_retrySctors;
 		int _crcErrorsCount = 0;
 		AudioBuffer currentData = new AudioBuffer(AudioPCMConfig.RedBook, MSECTORS * 588);
 		short[] _valueScore = new short[256];
@@ -86,21 +85,21 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
-		public BitArray Errors
+		public BitArray FailedSectors
 		{
 			get
 			{
-				return _errors;
+				return m_failedSectors;
 			}
 		}
 
-		public int ErrorsCount
-		{
-			get
-			{
-				return _errorsCount;
-			}
-		}
+        public BitArray RetrySectors
+        {
+            get
+            {
+                return m_retrySctors;
+            }
+        }
 
 		public int Timeout
 		{
@@ -967,7 +966,7 @@ namespace CUETools.Ripper.SCSI
 			throw ex;
 		}
 
-		private unsafe void CorrectSectors(int pass, int sector, int Sectors2Read, bool markErrors)
+		private unsafe void CorrectSectors(int pass, int sector, int Sectors2Read, BitArray markErrors)
 		{
 			for (int iSector = 0; iSector < Sectors2Read; iSector++)
 			{
@@ -1005,11 +1004,8 @@ namespace CUETools.Ripper.SCSI
 				//_currentErrorsCount += newerr;
 				_currentErrorsCount += newerr - errtmp[pos];
 				errtmp[pos] = newerr;
-				if (markErrors)
-				{
-					_errors[sector + iSector] |= fError;
-					_errorsCount += fError ? 1 : 0;
-				}
+				if (markErrors != null)
+                    markErrors[sector + iSector] |= fError;
 			}
 
 		}
@@ -1075,7 +1071,7 @@ namespace CUETools.Ripper.SCSI
 					//TimeSpan delay1 = DateTime.Now - LastFetch;
 					//DateTime LastFetched = DateTime.Now;
 					if (pass >= _correctionQuality)
-						CorrectSectors(pass, sector, Sectors2Read, pass == max_scans - 1);
+                        CorrectSectors(pass, sector, Sectors2Read, pass == max_scans - 1 ? m_failedSectors : pass == _correctionQuality ? m_retrySctors : null);
 					//TimeSpan delay2 = DateTime.Now - LastFetched;
 					//if (sector == _currentStart)
 					//System.Console.WriteLine("\n{0},{1}", delay1.TotalMilliseconds, delay2.TotalMilliseconds);
@@ -1194,10 +1190,10 @@ namespace CUETools.Ripper.SCSI
 				if (_toc == null || _toc.AudioLength <= 0)
 					throw new ReadCDException(Resource1.NoAudio);
 				_crcErrorsCount = 0;
-				_errorsCount = 0;
 				_currentStart = -1;
 				_currentEnd = -1;
-				_errors = new BitArray((int)_toc.AudioLength); // !!!
+				m_failedSectors = new BitArray((int)_toc.AudioLength); // !!!
+                m_retrySctors = new BitArray((int)_toc.AudioLength);
 				_sampleOffset = (int)value + _driveOffset;
 			}
 		}
