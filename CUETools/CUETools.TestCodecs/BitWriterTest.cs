@@ -85,6 +85,7 @@ namespace CUETools.TestCodecs
                 }
                 while (target.Length < buf.Length - 32);
                 target.flush();
+                ushort c1 = target.get_crc16(), c2;
                 rnd = new Random(seed);
                 unsafe
                 {
@@ -98,8 +99,11 @@ namespace CUETools.TestCodecs
                             ulong val1 = reader.readbits64(bits);
                             Assert.AreEqual(val, val1, string.Format("i = {0}, bits = {1}, seed = {2}, pos = {3}", i, bits, seed, reader.Position));
                         }
+                        reader.flush();
+                        c2 = reader.get_crc16();
                     }
                 }
+                Assert.AreEqual(c1, c2, string.Format("seed = {0}", seed));
             }
         }
     }
