@@ -139,7 +139,7 @@ namespace CUETools.Codecs
             //assert(bits == 32 || val < (1U << bits));
 
             if (bits == 0 || eof) return;
-            if (bits <= bit_left_m)
+            if (bits < bit_left_m)
             {
                 bit_left_m -= bits;
                 bit_buf_m |= val << bit_left_m;
@@ -174,8 +174,10 @@ namespace CUETools.Codecs
                     buffer[buf_ptr_m + 0] = (byte)(bb & 0xFF);
                     buf_ptr_m += 8;
                 }
-                bit_left_m = 64 + bit_left_m - bits;
-                bit_buf_m = val << bit_left_m;
+                // cannot do this in one shift, because bit_left_m can be 64,
+                // 
+                bit_left_m += 64 - bits;
+                bit_buf_m = bit_left_m == 64 ? 0 : val << bit_left_m;
             }
         }
 
@@ -284,7 +286,7 @@ namespace CUETools.Codecs
                 // write quotient in unary
                 int q = (v >> k) + 1;
                 int bits = k + q;
-                while (bits > 56)
+                while (bits > 64)
                 {
 #if DEBUG
                     if (buf + 1 > fixedbuf + buf_end)
@@ -302,7 +304,7 @@ namespace CUETools.Codecs
                 // write remainder in binary using 'k' bits
                 //writebits_fast(k + q, (uint)((v & ((1 << k) - 1)) | (1 << k)), ref buf);
                 ulong val = (uint)((v & ((1 << k) - 1)) | (1 << k));
-                if (bits <= bit_left)
+                if (bits < bit_left)
                 {
                     bit_left -= bits;
                     bit_buf |= val << bit_left;
@@ -335,8 +337,8 @@ namespace CUETools.Codecs
                     *(buf++) = (byte)(bb >> 16);
                     *(buf++) = (byte)(bb >> 8);
                     *(buf++) = (byte)(bb);
-                    bit_left = 64 + bit_left - bits;
-                    bit_buf = val << bit_left;
+                    bit_left += 64 - bits;
+                    bit_buf = (val << bit_left - 1) << 1;
                 }
             }
             crc16_m = crc16;
