@@ -14,11 +14,57 @@ namespace CUETools.Converter
             Console.Error.WriteLine();
             Console.Error.WriteLine("Options:");
             Console.Error.WriteLine();
-            Console.Error.WriteLine(" --lossy              Use lossy encoder.");
-            Console.Error.WriteLine(" --lossless           Use lossless encoder (default).");
+            Console.Error.WriteLine(" --decoder <name>     Use non-default decoder.");
+            Console.Error.WriteLine(" --encoder <name>     Use non-default encoder.");
+            Console.Error.WriteLine(" --lossy              Use lossy encoder/mode.");
+            Console.Error.WriteLine(" --lossless           Use lossless encoder/mode (default).");
             Console.Error.WriteLine(" -p #                 Padding bytes.");
             Console.Error.WriteLine(" -m <mode>            Encoder mode (0..8 for flac, V0..V9 for mp3, etc)");
             Console.Error.WriteLine();
+        }
+
+        public static CUEToolsUDC GetEncoder(CUEConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
+        {
+            CUEToolsUDC tmpEncoder;
+            return chosenEncoder != null && config.encoders.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder :
+                lossless ? fmt.encoderLossless : fmt.encoderLossy;
+        }
+
+        public static IAudioSource GetAudioSource(CUEConfig config, string path, string chosenDecoder)
+        {
+            if (path == "-")
+                return new WAVReader("", Console.OpenStandardInput());
+            string extension = Path.GetExtension(path).ToLower();
+            Stream IO = null;
+            if (extension == ".bin")
+                return new WAVReader(path, IO, AudioPCMConfig.RedBook);
+            CUEToolsFormat fmt;
+            if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
+                throw new Exception("Unsupported audio type: " + path);
+
+            var decoder = fmt.decoder;
+            if (chosenDecoder != null && !config.decoders.TryGetValue(fmt.extension, true, chosenDecoder, out decoder))
+                throw new Exception("Unknown audio decoder " + chosenDecoder + " or unsupported audio type " + fmt.extension);
+            if (decoder == null)
+                throw new Exception("Unsupported audio type: " + path);
+            if (decoder.path != null)
+                return new UserDefinedReader(path, IO, decoder.path, decoder.parameters);
+            if (decoder.type == null)
+                throw new Exception("Unsupported audio type: " + path);
+
+            try
+            {
+                object src = Activator.CreateInstance(decoder.type, path, IO);
+                if (src == null || !(src is IAudioSource))
+                    throw new Exception("Unsupported audio type: " + path + ": " + decoder.type.FullName);
+                return src as IAudioSource;
+            }
+            catch (System.Reflection.TargetInvocationException ex)
+            {
+                if (ex.InnerException == null)
+                    throw ex;
+                throw ex.InnerException;
+            }
         }
 
         static int Main(string[] args)
@@ -27,11 +73,20 @@ namespace CUETools.Converter
             string sourceFile = null, destFile = null;
             int padding = 8192;
             string encoderMode = null;
+            string decoderName = null;
+            string encoderName = null;
+            string encoderFormat = null;
             AudioEncoderType audioEncoderType = AudioEncoderType.NoAudio;
             for (int arg = 0; arg < args.Length; arg++)
             {
                 if (args[arg].Length == 0)
                     ok = false;
+                else if (args[arg] == "--decoder" && ++arg < args.Length)
+                    decoderName = args[arg];
+                else if (args[arg] == "--encoder" && ++arg < args.Length)
+                    encoderName = args[arg];
+                else if (args[arg] == "--encoder-format" && ++arg < args.Length)
+                    encoderFormat = args[arg];
                 else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
                     ok = int.TryParse(args[arg], out padding);
                 else if ((args[arg] == "-m" || args[arg] == "--mode") && ++arg < args.Length)
@@ -59,13 +114,12 @@ namespace CUETools.Converter
                 return 22;
             }
 
-            if (destFile != "-" && File.Exists(destFile))
+            if (destFile != "-" && destFile != "nul" && File.Exists(destFile))
             {
                 Console.Error.WriteLine("Error: file already exists.");
                 return 17;
             }
 
-            string extension = destFile == "-" ? ".wav" : Path.GetExtension(destFile).ToLower();
             DateTime start = DateTime.Now;
             TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
             CUEConfig config = new CUEConfig();
@@ -80,23 +134,35 @@ namespace CUETools.Converter
                 IAudioDest audioDest = null;
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
                 TagLib.File sourceInfo = sourceFile == "-" ? null : TagLib.File.Create(new TagLib.File.LocalFileAbstraction(sourceFile));
+
                 try
                 {
-                    audioSource = sourceFile == "-" ?
-                        new WAVReader("", Console.OpenStandardInput()) :
-                        AudioReadWrite.GetAudioSource(sourceFile, null, config);
+                    audioSource = Program.GetAudioSource(config, sourceFile, decoderName);
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);
                     Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
 
                     CUEToolsFormat fmt;
-                    if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
-                        throw new Exception("Unsupported audio type: " + destFile);
-                    CUEToolsUDC encoder = audioEncoderType == AudioEncoderType.Lossless ? fmt.encoderLossless :
-                        audioEncoderType == AudioEncoderType.Lossy ? fmt.encoderLossy :
-                        fmt.encoderLossless != null ? fmt.encoderLossless : fmt.encoderLossy;
+                    if (encoderFormat == null)
+                    {
+                        if (destFile == "-" || destFile == "nul")
+                            encoderFormat = "wav";
+                        else
+                        {
+                            string extension = Path.GetExtension(destFile).ToLower();
+                            if (!extension.StartsWith("."))
+                                throw new Exception("Unknown encoder format: " + destFile);
+                            encoderFormat = extension.Substring(1);
+                        }
+                    }
+                    if (!config.formats.TryGetValue(encoderFormat, out fmt))
+                        throw new Exception("Unsupported encoder format: " + encoderFormat);
+                    CUEToolsUDC encoder =
+                        audioEncoderType == AudioEncoderType.Lossless ? Program.GetEncoder(config, fmt, true, encoderName) :
+                        audioEncoderType == AudioEncoderType.Lossy ? Program.GetEncoder(config, fmt, false, encoderName) :
+                        Program.GetEncoder(config, fmt, true, encoderName) ?? Program.GetEncoder(config, fmt, false, encoderName);
                     if (encoder == null)
-                        throw new Exception("Encoder available for format " + extension + ": " + (fmt.encoderLossless != null ? fmt.encoderLossless.Name + " (lossless)" : fmt.encoderLossy != null ? fmt.encoderLossy.Name + " (lossy)" : "none"));
+                        throw new Exception("Encoder available for format " + fmt.extension + ": " + (fmt.encoderLossless != null ? fmt.encoderLossless.Name + " (lossless)" : fmt.encoderLossy != null ? fmt.encoderLossy.Name + " (lossy)" : "none"));
                     var settings = encoder.settings.Clone();
                     settings.PCM = audioSource.PCM;
                     settings.Padding = padding;
@@ -105,8 +171,8 @@ namespace CUETools.Converter
                     object o = null;
                     try
                     {                        
-                        o = destFile == "-" ?
-                            Activator.CreateInstance(encoder.type, "", Console.OpenStandardOutput(), settings) :
+                        o = destFile == "-" ? Activator.CreateInstance(encoder.type, "", Console.OpenStandardOutput(), settings) :
+                            destFile == "nul" ? Activator.CreateInstance(encoder.type, "", new NullStream(), settings) :
                             Activator.CreateInstance(encoder.type, destFile, settings);
                     }
                     catch (System.Reflection.TargetInvocationException ex)
@@ -166,9 +232,9 @@ namespace CUETools.Converter
                 audioSource.Close();
                 audioDest.Close();
 
-                if (sourceFile != "-" && destFile != "-")
+                if (sourceFile != "-" && destFile != "-" && destFile != "nul")
                 {
-                    TagLib.File destInfo = destFile == "-" ? null : TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+                    TagLib.File destInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
                     if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config))
                     {
                         sourceInfo.Tag.CopyTo(destInfo.Tag, true);

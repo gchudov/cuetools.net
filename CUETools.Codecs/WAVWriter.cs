@@ -174,7 +174,8 @@ namespace CUETools.Codecs
             _bw.Close();
             _bw = null;
             _IO = null;
-            File.Delete(_path);
+            if (_path != "")
+                File.Delete(_path);
         }
 
         public void Write(AudioBuffer buff)
