@@ -2118,7 +2118,7 @@ namespace CUETools.Codecs.FLACCL
             ch_code = channels - 1;
 
             // find samplerate in table
-            for (i = 4; i < 12; i++)
+            for (i = 1; i < 12; i++)
             {
                 if (sample_rate == Flake.flac_samplerates[i])
                 {
