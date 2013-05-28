@@ -679,7 +679,7 @@ void clQuantizeLPC(
 	{
 	    float lpc = lpcs[lpcOffs + order * 32 + tid];
 	    // quantize coeffs with given shift
-	    int c = convert_int_rte(clamp(lpc * (1 << shift), (float)(-1 << (cbits - 1)), (float)(1 << (cbits - 1))));
+		int c = convert_int_rte(clamp(lpc * (1 << shift), (float)((-1 << (cbits - 1)) + 1), (float)((1 << (cbits - 1)) - 1)));
 	    // remove sign bits
 	    tmpi |= c ^ (c >> 31);
 	    tasks[taskNo].coefs[tid] = c;
@@ -825,7 +825,11 @@ void clQuantizeLPC(
 #else
 	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), clz(order) + 1 - shared.task.obits));
 #endif
-	// calculate shift based on precision and number of leading zeroes in coeffs
+	// Calculate shift based on precision and number of leading zeroes in coeffs.
+	// We know that if shifted by 15, coefs require 
+	// 33 - clz(shared.maxcoef[i]) bits;
+	// So to get the desired cbits, we need to shift coefs by 
+	// 15 + cbits - (33 - clz(shared.maxcoef[i]));
 	int shift = max(0,min(15, clz(shared.maxcoef[i]) - 18 + cbits));
 
 	//cbits = 13;
@@ -834,7 +838,7 @@ void clQuantizeLPC(
 	//if (shared.task.abits + 32 - clz(order) < shift
 	//int shift = max(0,min(15, (shared.task.abits >> 2) - 14 + clz(shared.tmpi[tid & ~31]) + ((32 - clz(order))>>1)));
 	// quantize coeffs with given shift
-	coef = convert_int_rte(clamp(lpc * (1 << shift), (float)(-1 << (cbits - 1)), (float)(1 << (cbits - 1))));
+	coef = convert_int_rte(clamp(lpc * (1 << shift), (float)((-1 << (cbits - 1)) + 1), (float)((1 << (cbits - 1)) - 1)));
 	// error correction
 	//shared.tmp[tid] = (tid != 0) * (shared.arp[tid - 1]*(1 << shared.task.shift) - shared.task.coefs[tid - 1]);
 	//shared.task.coefs[tid] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, convert_int_rte((shared.arp[tid]) * (1 << shared.task.shift) + shared.tmp[tid])));

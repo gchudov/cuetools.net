@@ -416,7 +416,9 @@ namespace CUETools.Codecs.FLAKE
 
 			// LPC coefficients
 			frame.subframes[ch].best.cbits = (int)bitreader.readbits(4) + 1; // lpc_precision
-			frame.subframes[ch].best.shift = bitreader.readbits_signed(5);
+            if (frame.subframes[ch].best.cbits >= 16)
+                throw new Exception("cbits >= 16");
+            frame.subframes[ch].best.shift = bitreader.readbits_signed(5);
 			if (frame.subframes[ch].best.shift < 0)
 				throw new Exception("negative shift");
 			for (int i = 0; i < frame.subframes[ch].best.order; i++)
