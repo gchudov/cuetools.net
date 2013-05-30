@@ -708,7 +708,6 @@ void clQuantizeLPC(
 	volatile int index[64];
 	volatile float error[64];
 	volatile int maxcoef[32];
-	volatile int maxcoef2[32];
 #ifndef HAVE_ATOM
 	volatile int tmp[32];
 #endif
@@ -729,7 +728,6 @@ void clQuantizeLPC(
     shared.index[32 + tid] = MAX_ORDER - 1;
     shared.error[32 + tid] = shared.task.blocksize * 64 + tid + 32;
     shared.maxcoef[tid] = 0;
-    shared.maxcoef2[tid] = 0;
 
     // Load prediction error estimates
     if (tid < MAX_ORDER)
@@ -817,49 +815,23 @@ void clQuantizeLPC(
 	}
 #endif
 	barrier(CLK_LOCAL_MEM_FENCE);
-	//SUM32(shared.tmpi,tid,|=);
-	// choose precision	
-	//int cbits = max(3, min(10, 5 + (shared.task.abits >> 1))); //  - convert_int_rte(shared.PE[order - 1])
-#if BITS_PER_SAMPLE > 16
-	int cbits = max(3, min(min(15 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), 15));
-#else
-	int cbits = max(3, min(min(13 - minprecision + (i - ((i >> precisions) << precisions)) - (shared.task.blocksize <= 2304) - (shared.task.blocksize <= 1152) - (shared.task.blocksize <= 576), shared.task.abits), clz(order) + 1 - shared.task.obits));
+
+        int cbits = min(51 - 2 * clz(shared.task.blocksize), shared.task.abits);
+#if BITS_PER_SAMPLE <= 16
+	// Limit cbits so that 32-bit arithmetics will be enough when calculating residual
+        cbits = min(cbits, clz(order) + 1 - shared.task.obits);
 #endif
+        cbits = iclamp(cbits - minprecision + (i - ((i >> precisions) << precisions)), 3, 15);
+
 	// Calculate shift based on precision and number of leading zeroes in coeffs.
 	// We know that if shifted by 15, coefs require 
 	// 33 - clz(shared.maxcoef[i]) bits;
 	// So to get the desired cbits, we need to shift coefs by 
 	// 15 + cbits - (33 - clz(shared.maxcoef[i]));
-	int shift = max(0,min(15, clz(shared.maxcoef[i]) - 18 + cbits));
+	int shift = iclamp(clz(shared.maxcoef[i]) - 18 + cbits, 0, 15);
 
-	//cbits = 13;
-	//shift = 15;
-
-	//if (shared.task.abits + 32 - clz(order) < shift
-	//int shift = max(0,min(15, (shared.task.abits >> 2) - 14 + clz(shared.tmpi[tid & ~31]) + ((32 - clz(order))>>1)));
-	// quantize coeffs with given shift
-	coef = convert_int_rte(clamp(lpc * (1 << shift), (float)((-1 << (cbits - 1)) + 1), (float)((1 << (cbits - 1)) - 1)));
-	// error correction
-	//shared.tmp[tid] = (tid != 0) * (shared.arp[tid - 1]*(1 << shared.task.shift) - shared.task.coefs[tid - 1]);
-	//shared.task.coefs[tid] = max(-(1 << (shared.task.cbits - 1)), min((1 << (shared.task.cbits - 1))-1, convert_int_rte((shared.arp[tid]) * (1 << shared.task.shift) + shared.tmp[tid])));
-	// remove sign bits
-#ifdef HAVE_ATOM
-	atom_or(shared.maxcoef2 + i, coef ^ (coef >> 31));
-#else
-	shared.tmp[tid] = coef ^ (coef >> 31);
-	if (tid < 16)
-	{
-	    shared.tmp[tid] |= shared.tmp[tid + 16];
-	    shared.tmp[tid] |= shared.tmp[tid + 8];
-	    shared.tmp[tid] |= shared.tmp[tid + 4];
-	    shared.tmp[tid] |= shared.tmp[tid + 2];
-	    if (tid == 0)
-		shared.maxcoef2[i] = shared.tmp[tid] | shared.tmp[tid + 1];
-	}
-#endif
-	barrier(CLK_LOCAL_MEM_FENCE);
-	// calculate actual number of bits (+1 for sign)
-	cbits = 1 + 32 - clz(shared.maxcoef2[i]);
+	int lim = (1 << (cbits - 1)) - 1;
+	coef = iclamp(convert_int_rte(lpc * (1 << shift)), -lim, lim);
 
 	// output shift, cbits and output coeffs
 	int taskNo = get_group_id(1) * taskCount + get_group_id(0) * taskCountLPC + i;
