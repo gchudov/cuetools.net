@@ -206,7 +206,7 @@ namespace CUETools.Codecs.FLACCL
         bool inited = false;
 
         OpenCLManager OCLMan;
-        Program openCLProgram;
+        CLProgram openCLProgram;
 
         FLACCLTask task1;
         FLACCLTask task2;
@@ -1735,10 +1735,17 @@ namespace CUETools.Codecs.FLACCL
 #if DEBUG
 					"#define DEBUG\n" +
 #endif
- (m_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
+                    (m_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
+                    "#define OPENCL_PLATFORM \"" + OpenCL.GetPlatform(platformId).Name + "\"\n" +
                     m_settings.Defines + "\n";
 
-                var exts = new string[] { "cl_khr_local_int32_base_atomics", "cl_khr_local_int32_extended_atomics", "cl_khr_fp64", "cl_amd_fp64" };
+                var exts = new string[] { 
+                    "cl_khr_fp64", 
+                    "cl_amd_fp64", 
+#if DEBUG
+                    "cl_amd_printf",
+#endif
+                };
                 foreach (string extension in exts)
                     if (OCLMan.Context.Devices[0].Extensions.Contains(extension))
                     {
@@ -2413,7 +2420,7 @@ namespace CUETools.Codecs.FLACCL
 
     internal class FLACCLTask
     {
-        Program openCLProgram;
+        CLProgram openCLProgram;
         public CommandQueue openCLCQ;
         public Kernel clStereoDecorr;
         //public Kernel cudaChannelDecorr;
@@ -2501,7 +2508,7 @@ namespace CUETools.Codecs.FLACCL
         public bool UseGPURice = false;
         public bool UseMappedMemory = false;
 
-        unsafe public FLACCLTask(Program _openCLProgram, int channelsCount, int max_frame_size, FLACCLWriter writer, int groupSize, bool gpuOnly, bool gpuRice)
+        unsafe public FLACCLTask(CLProgram _openCLProgram, int channelsCount, int max_frame_size, FLACCLWriter writer, int groupSize, bool gpuOnly, bool gpuRice)
         {
             this.UseGPUOnly = gpuOnly;
             this.UseGPURice = gpuOnly && gpuRice;
@@ -3080,7 +3087,6 @@ namespace CUETools.Codecs.FLACCL
         }
     }
 
-#if LKJLKJLJK
     public static class OpenCLExtensions
     {
         public static void SetArgs(this Kernel kernel, params object[] args)
@@ -3111,5 +3117,13 @@ namespace CUETools.Codecs.FLACCL
             queue.EnqueueNDRangeKernel(kernel, 2, null, new long[] { localSizeX * globalSizeX, localSizeY * globalSizeY }, new long[] { localSizeX, localSizeY });
         }
     }
-#endif
+}
+
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsageAttribute(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
+    internal sealed class ExtensionAttribute : Attribute
+    {
+        public ExtensionAttribute() { }
+    }
 }

@@ -20,16 +20,16 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
-#if defined(__Cedar__) || defined(__Redwood__) || defined(__Juniper__) || defined(__Cypress__) || defined(__ATI_RV770__) || defined(__ATI_RV730__) || defined(__ATI_RV710__) || defined(__CPU__)
+#if __OPENCL_VERSION__ < 110
+#error OpenCL 1.1+ required!
+#endif
+
+#if defined(__WinterPark__) || defined(__BeaverCreek__) || defined(__Turks__) || defined(__Caicos__) || defined(__Tahiti__) || defined(__Pitcairn__) || defined(__Capeverde__)
 #define AMD
-#endif
-
-#if defined(AMD) && defined(DEBUG)
-#pragma OPENCL EXTENSION cl_amd_printf : enable
-#endif
-
-#if defined(HAVE_cl_khr_local_int32_base_atomics) && defined(HAVE_cl_khr_local_int32_extended_atomics)
-#define HAVE_ATOM
+#elif defined(__Cayman__) || defined(__Barts__) || defined(__Cypress__) || defined(__Juniper__) || defined(__Redwood__) || defined(__Cedar__)
+#define AMD
+#elif defined(__ATI_RV770__) || defined(__ATI_RV730__) || defined(__ATI_RV710__)
+#define AMD
 #endif
 
 #if defined(HAVE_cl_khr_fp64) || defined(HAVE_cl_amd_fp64)
@@ -49,18 +49,6 @@
 #define fastdouble float
 #define fastdouble4 float4
 #define ZEROFD 0.0f
-#endif
-
-
-//#if __OPENCL_VERSION__ == 110
-#ifdef AMD
-#define iclamp(a,b,c) clamp(a,b,c)
-#else
-#define iclamp(a,b,c) max(b,min(a,c))
-#endif
-
-#ifndef M_PI_F
-#define M_PI_F M_PI
 #endif
 
 #define WARP_SIZE 32
@@ -708,9 +696,6 @@ void clQuantizeLPC(
 	volatile int index[64];
 	volatile float error[64];
 	volatile int maxcoef[32];
-#ifndef HAVE_ATOM
-	volatile int tmp[32];
-#endif
 //    	volatile int best8;
     } shared;
 
@@ -800,20 +785,7 @@ void clQuantizeLPC(
 	// get 15 bits of each coeff
 	int coef = convert_int_rte(lpc * (1 << 15));
 	// remove sign bits
-#ifdef HAVE_ATOM
-	atom_or(shared.maxcoef + i, coef ^ (coef >> 31));
-#else
-	shared.tmp[tid] = coef ^ (coef >> 31);
-	if (tid < 16)
-	{
-	    shared.tmp[tid] |= shared.tmp[tid + 16];
-	    shared.tmp[tid] |= shared.tmp[tid + 8];
-	    shared.tmp[tid] |= shared.tmp[tid + 4];
-	    shared.tmp[tid] |= shared.tmp[tid + 2];
-	    if (tid == 0)
-		shared.maxcoef[i] = shared.tmp[tid] | shared.tmp[tid + 1];
-	}
-#endif
+	atomic_or(shared.maxcoef + i, coef ^ (coef >> 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
 
         int cbits = min(51 - 2 * clz(shared.task.blocksize), shared.task.abits);
@@ -821,17 +793,17 @@ void clQuantizeLPC(
 	// Limit cbits so that 32-bit arithmetics will be enough when calculating residual
         cbits = min(cbits, clz(order) + 1 - shared.task.obits);
 #endif
-        cbits = iclamp(cbits - minprecision + (i - ((i >> precisions) << precisions)), 3, 15);
+        cbits = clamp(cbits - minprecision + (i - ((i >> precisions) << precisions)), 3, 15);
 
 	// Calculate shift based on precision and number of leading zeroes in coeffs.
 	// We know that if shifted by 15, coefs require 
 	// 33 - clz(shared.maxcoef[i]) bits;
 	// So to get the desired cbits, we need to shift coefs by 
 	// 15 + cbits - (33 - clz(shared.maxcoef[i]));
-	int shift = iclamp(clz(shared.maxcoef[i]) - 18 + cbits, 0, 15);
+	int shift = clamp(clz(shared.maxcoef[i]) - 18 + cbits, 0, 15);
 
 	int lim = (1 << (cbits - 1)) - 1;
-	coef = iclamp(convert_int_rte(lpc * (1 << shift)), -lim, lim);
+	coef = clamp(convert_int_rte(lpc * (1 << shift)), -lim, lim);
 
 	// output shift, cbits and output coeffs
 	int taskNo = get_group_id(1) * taskCount + get_group_id(0) * taskCountLPC + i;
@@ -846,31 +818,6 @@ void clQuantizeLPC(
     }
 }
 #endif
-
-#ifdef FLACCL_CPU
-inline int fastclz(int iv)
-{
-    unsigned int v = (unsigned int)iv;
-    int x = (0 != (v >> 16)) * 16;
-    x += (0 != (v >> (x + 8))) * 8;
-    x += (0 != (v >> (x + 4))) * 4;
-    x += (0 != (v >> (x + 2))) * 2;
-    x += (0 != (v >> (x + 1)));
-    x += (0 != (v >> x));
-    return 32 - x;
-}
-#else
-inline int fastclz(int iv)
-{
-    return clz(iv);
-}
-#endif
-inline int fastclz64(long iv)
-{
-    unsigned long v = (unsigned long)iv;
-    int x = (0 != (v >> 32)) * 32;
-    return 32 - x + fastclz(v >> x);
-}
 
 #ifdef FLACCL_CPU
 #define TEMPBLOCK1 TEMPBLOCK
@@ -1012,7 +959,7 @@ void clEstimateResidual(
     for (int i = 0; i < ERPARTS; i++)
     {
 	int res = convert_int_sat_rte(len[i] * 2);
-	int k = iclamp(31 - fastclz(res) - 6, 0, MAX_RICE_PARAM); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
+	int k = clamp(31 - clz(res) - 6, 0, MAX_RICE_PARAM); // 25 - clz(res) == clz(64) - clz(res) == log2(res / 64)
 	total += (k << 6) + (res >> k);
     }
     int partLen = min(0x7ffffff, total) + (bs - ro);
@@ -1034,7 +981,7 @@ void clEstimateResidual(
     )
 {
     __local float data[GROUP_SIZE * 2 + 32];
-#if !defined(AMD) || !defined(HAVE_ATOM)
+#if !defined(AMD)
     __local volatile uint idata[GROUP_SIZE + 16];
 #endif
     __local FLACCLSubframeTask task;
@@ -1112,14 +1059,14 @@ void clEstimateResidual(
 	t = select(0U, t, offs >= ro);
 	// overflow protection
 	t = min(t, 0x7ffffffU);
-#if !defined(AMD) || !defined(HAVE_ATOM)
+#if !defined(AMD)
 	idata[tid] = t;
 	for (int l = 16; l > 1; l >>= 1)
 	    idata[tid] += idata[tid + l];
 	if ((tid & 31) == 0)
 	    psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
 #else
-	atom_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
+	atomic_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
 #endif
     }
     if (pos < bs)
@@ -1158,14 +1105,14 @@ void clEstimateResidual(
 	t = select(0U, t, offs >= ro && offs < bs);
 	// overflow protection
 	t = min(t, 0x7ffffffU);
-#if !defined(AMD) || !defined(HAVE_ATOM)
+#if !defined(AMD)
 	idata[tid] = t;
 	for (int l = 16; l > 1; l >>= 1)
 	    idata[tid] += idata[tid + l];
 	if ((tid & 31) == 0)
 	    psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
 #else
-	atom_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
+	atomic_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
 #endif
     }
 
@@ -1183,7 +1130,7 @@ void clEstimateResidual(
 	//if (offs < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2)
 	//    psum[offs] = pl;
  //   }
-    int k = iclamp(31 - fastclz(pl) - (ESTPARTLOG + 1), 0, MAX_RICE_PARAM); // 26 - clz(res) == clz(32) - clz(res) == log2(res / 32)
+    int k = clamp(31 - (int)clz(pl) - (ESTPARTLOG + 1), 0, MAX_RICE_PARAM); // 26 - clz(res) == clz(32) - clz(res) == log2(res / 32)
     if (tid < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2)
 	psum[tid] = (k << (ESTPARTLOG + 1)) + (pl >> k);
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -1491,7 +1438,7 @@ void clCalcPartition(
 	// we must ensure that psize * (t >> k) doesn't overflow;
 	uint lim = 0x7fffffffU / (uint)psize;
 	for (int k = 0; k <= MAX_RICE_PARAM; k++)
-	    atom_add(&pl[part][k], min(lim, t >> k));
+	    atomic_add(&pl[part][k], min(lim, t >> k));
 	    //pl[part][k] += s >> k;
     }   
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -1666,7 +1613,7 @@ void clFindRiceParameter(
 
 	ulong pl = ppl[pos];
 	int ps = (bs >> porder) - ro;
-	int k = iclamp(63 - fastclz64(pl / max(1, ps)), 0, MAX_RICE_PARAM);
+	int k = clamp(63 - (int)clz(pl / max(1, ps)), 0, MAX_RICE_PARAM);
 	int plk = ps * (k + 1) + (int)(pl >> k);
 
 	// output rice parameter
@@ -1679,7 +1626,7 @@ void clFindRiceParameter(
 	for (int offs = pos + 1; offs < fin; offs++)
 	{
 	    pl = ppl[offs];
-	    k = iclamp(63 - fastclz64(pl / ps), 0, MAX_RICE_PARAM);
+	    k = clamp(63 - (int)clz(pl / ps), 0, MAX_RICE_PARAM);
 	    plk = ps * (k + 1) + (int)(pl >> k);
 	
 	    // output rice parameter
@@ -1815,7 +1762,7 @@ void clFindPartitionOrder(
     {
 	int len = rice_parameters[pos + offs];
 	int porder = 31 - clz(lim - offs);
-	atom_add(&partlen[porder], len);
+	atomic_add(&partlen[porder], len);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -1891,11 +1838,7 @@ inline void flush(BitWriter *bw)
 
 inline int len_utf8(int n)
 {
-#ifdef FLACCL_CPU
-    int bts = 31 - fastclz(n);
-#else
     int bts = 31 - clz(n);
-#endif
     return select(8, 8 * ((bts + 4) / 5), bts > 6);
 }
 
@@ -2050,11 +1993,7 @@ void clRiceEncoding(
 			unsigned int bb = bw.bit_buf << bw.bit_left;
 			bw.bit_buf = 0;
 			bw.bit_left += (32 - b);
-#ifdef AMD
 			bw.buffer[bw.buf_ptr++] = as_int(as_char4(bb).wzyx);
-#else
-			bw.buffer[bw.buf_ptr++] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
-#endif
 		    }
 		    bits -= b;
 		}
@@ -2069,11 +2008,7 @@ void clRiceEncoding(
 		    unsigned int bb = (bw.bit_buf << bw.bit_left) | (val >> (bits - bw.bit_left));
 		    bw.bit_buf = val;
 		    bw.bit_left += (32 - bits);
-#ifdef AMD
 		    bw.buffer[bw.buf_ptr++] = as_int(as_char4(bb).wzyx);
-#else
-		    bw.buffer[bw.buf_ptr++] = (bb >> 24) | ((bb >> 8) & 0xff00) | ((bb << 8) & 0xff0000) | ((bb << 24) & 0xff000000);
-#endif
 		}
 		////if (get_group_id(0) == 0) printf("%x ", v);
 		//writebits(&bw, (v >> k) + 1, 1);
@@ -2171,8 +2106,8 @@ void clRiceEncoding(
 		uint kval = (uint)k << (32 - RICE_PARAM_BITS);
 		uint kval0 = kval >> kpos1;
 		uint kval1 = kval << (32 - kpos1);
-		if (kval0) atom_or(&data[kpos0], kval0);
-		if (kpos1 && kval1) atom_or(&data[kpos0 + 1], kval1);
+		if (kval0) atomic_or(&data[kpos0], kval0);
+		if (kpos1 && kval1) atomic_or(&data[kpos0 + 1], kval1);
 	    }
 	    int qpos = mp - k - 1;
 	    int qpos0 = (qpos >> 5) - start32;
@@ -2180,8 +2115,8 @@ void clRiceEncoding(
 	    uint qval = (1U << 31) | (v << (31 - k));
 	    uint qval0 = qval >> qpos1;
 	    uint qval1= qval << (32 - qpos1);
-	    if (qval0) atom_or(&data[qpos0], qval0);
-	    if (qpos1 && qval1) atom_or(&data[qpos0 + 1], qval1);
+	    if (qval0) atomic_or(&data[qpos0], qval0);
+	    if (qpos1 && qval1) atomic_or(&data[qpos0 + 1], qval1);
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
 	if ((start32 + tid) * 32 <= start)
@@ -2232,8 +2167,8 @@ void clRiceEncoding(
 		uint kval = (uint)k << (32 - RICE_PARAM_BITS);
 		uint kval0 = kval >> kpos1;
 		uint kval1 = kval << (32 - kpos1);
-		if (kval0) atom_or(&data[kpos0], kval0);
-		if (kpos1 && kval1) atom_or(&data[kpos0 + 1], kval1);
+		if (kval0) atomic_or(&data[kpos0], kval0);
+		if (kpos1 && kval1) atomic_or(&data[kpos0 + 1], kval1);
 	    }
 	    int qpos = mp - k - 1;
 	    int qpos0 = (qpos >> 5) - start32;
@@ -2241,8 +2176,8 @@ void clRiceEncoding(
 	    uint qval = (1U << 31) | (v << (31 - k));
 	    uint qval0 = qval >> qpos1;
 	    uint qval1= qval << (32 - qpos1);
-	    if (qval0) atom_or(&data[qpos0], qval0);
-	    if (qpos1 && qval1) atom_or(&data[qpos0 + 1], qval1);
+	    if (qval0) atomic_or(&data[qpos0], qval0);
+	    if (qpos1 && qval1) atomic_or(&data[qpos0 + 1], qval1);
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
 	if ((start32 + tid) * 32 <= start)
