@@ -1519,11 +1519,75 @@ void clCalcPartition16(
 	
 	for (int k0 = 0; k0 <= MAX_RICE_PARAM; k0 += 16)
 	{
-	    int k1 = k0 + (tid >> 3), x1 = tid & 7;
+            int k1 = k0 + (tid >> (GROUP_SIZE_LOG - 4)), x1 = tid & ((1 << (GROUP_SIZE_LOG - 4)) - 1);
 	    if (k1 <= MAX_RICE_PARAM && (pos >> 4) + x1 < (1 << max_porder))
 		partition_lengths[((MAX_RICE_PARAM + 1) << (max_porder + 1)) * get_group_id(0) + (k1 << (max_porder + 1)) + (pos >> 4) + x1] = pl[x1][k1];
 	}
     }    
+}
+__kernel __attribute__((reqd_work_group_size(GROUP_SIZE, 1, 1)))
+void clCalcPartition32(
+    __global unsigned int *partition_lengths,
+    __global int *residual,
+    __global FLACCLSubframeTask *tasks,
+    int max_porder // <= 8
+    )
+{
+    __local FLACCLSubframeData task;
+    __local unsigned int res[GROUP_SIZE];
+    __local unsigned int pl[GROUP_SIZE >> 5][32];
+    const int tid = get_local_id(0);
+    if (tid < sizeof(task) / sizeof(int))
+	((__local int*)&task)[tid] = ((__global int*)(&tasks[get_group_id(0)]))[tid];
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    int bs = task.blocksize;
+    int ro = task.residualOrder;
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    for (int pos = 0; pos < bs; pos += GROUP_SIZE)
+    {
+	int offs = pos + tid;
+	// fetch residual
+	int s = (offs >= ro && offs < bs) ? residual[task.residualOffs + offs] : 0;
+	// convert to unsigned
+	res[tid] = (s << 1) ^ (s >> 31);
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// we must ensure that psize * (t >> k) doesn't overflow;
+	uint4 lim = 0x07ffffffU;
+	int x = tid >> 5;
+	__local uint * chunk = &res[x << 5];
+	// calc number of unary bits for each group of 32 residual samples
+	// with each rice parameter.
+	int k = tid & 31;
+	uint4 rsum 
+	    = min(lim, vload4(0,chunk) >> k)
+	    + min(lim, vload4(1,chunk) >> k)
+	    + min(lim, vload4(2,chunk) >> k)
+	    + min(lim, vload4(3,chunk) >> k)
+	    + min(lim, vload4(4,chunk) >> k)
+	    + min(lim, vload4(5,chunk) >> k)
+	    + min(lim, vload4(6,chunk) >> k)
+	    + min(lim, vload4(7,chunk) >> k)
+	    ;
+	uint rs = rsum.x + rsum.y + rsum.z + rsum.w;
+
+	// We can safely limit length here to 0x007fffffU, not causing length
+	// mismatch, because any such length would cause Verbatim frame anyway.
+	// And this limit protects us from overflows when calculating larger 
+	// partitions, as we can have a maximum of 2^8 partitions, resulting
+	// in maximum partition length of 0x7fffffffU + change.
+	if (k <= MAX_RICE_PARAM) pl[x][k] = min(0x007fffffU, rs) + (uint)(32 - select(0, ro, offs < 32)) * (k + 1);
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+	
+	int k1 = (tid >> (GROUP_SIZE_LOG - 5)), x1 = tid & ((1 << (GROUP_SIZE_LOG - 5)) - 1);
+	if (k1 <= MAX_RICE_PARAM && (pos >> 5) + x1 < (1 << max_porder))
+	    partition_lengths[((MAX_RICE_PARAM + 1) << (max_porder + 1)) * get_group_id(0) + (k1 << (max_porder + 1)) + (pos >> 5) + x1] = pl[x1][k1];
+    }
 }
 #endif
 

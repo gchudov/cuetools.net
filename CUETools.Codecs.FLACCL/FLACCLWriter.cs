@@ -354,6 +354,19 @@ namespace CUETools.Codecs.FLACCL
             if (inited)
             {
                 _IO.Close();
+                if (task2.frameCount > 0)
+                {
+                    if (cpu_tasks != null)
+                    {
+                        for (int i = 0; i < cpu_tasks.Length; i++)
+                        {
+                            wait_for_cpu_task();
+                            oldest_cpu_task = (oldest_cpu_task + 1) % cpu_tasks.Length;
+                        }
+                    }
+                    task2.openCLCQ.Finish(); // cuda.SynchronizeStream(task2.stream);
+                    task2.frameCount = 0;
+                }
                 task1.Dispose();
                 task2.Dispose();
                 if (cpu_tasks != null)
@@ -686,6 +699,38 @@ namespace CUETools.Codecs.FLACCL
         }
 
         /// <summary>
+        /// Special case when (n >> pmax) == 32
+        /// </summary>
+        /// <param name="pmin"></param>
+        /// <param name="pmax"></param>
+        /// <param name="data"></param>
+        /// <param name="n"></param>
+        /// <param name="pred_order"></param>
+        /// <param name="sums"></param>
+        static unsafe void calc_sums32(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
+        {
+            int parts = (1 << pmax);
+            uint* res = data + pred_order;
+            uint cnt = 32 - pred_order;
+            ulong sum = 0UL;
+            for (uint j = cnt; j > 0; j--)
+                sum += *(res++);
+            sums[0] = sum;
+            for (int i = 1; i < parts; i++)
+            {
+                sums[i] = 0UL +
+                    *(res++) + *(res++) + *(res++) + *(res++) +
+                    *(res++) + *(res++) + *(res++) + *(res++) +
+                    *(res++) + *(res++) + *(res++) + *(res++) +
+                    *(res++) + *(res++) + *(res++) + *(res++) +
+                    *(res++) + *(res++) + *(res++) + *(res++) +
+                    *(res++) + *(res++) + *(res++) + *(res++) +
+                    *(res++) + *(res++) + *(res++) + *(res++) +
+                    *(res++) + *(res++) + *(res++) + *(res++);
+            }
+        }
+
+        /// <summary>
         /// Special case when (n >> pmax) == 18
         /// </summary>
         /// <param name="pmin"></param>
@@ -728,7 +773,9 @@ namespace CUETools.Codecs.FLACCL
                 udata[i] = (uint)((data[i] << 1) ^ (data[i] >> 31));
 
             // sums for highest level
-            if ((n >> pmax) == 18)
+            if ((n >> pmax) == 32)
+                calc_sums32(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+            else if ((n >> pmax) == 18)
                 calc_sums18(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
             else if ((n >> pmax) == 16)
                 calc_sums16(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
@@ -1726,6 +1773,7 @@ namespace CUETools.Codecs.FLACCL
                 OCLMan.Defines =
                     "#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
                     "#define GROUP_SIZE " + groupSize.ToString() + "\n" +
+                    "#define GROUP_SIZE_LOG " + BitReader.log2i(groupSize).ToString() + "\n" +
                     "#define FLACCL_VERSION \"" + Vendor + "\"\n" +
                     (UseGPUOnly ? "#define DO_PARTITIONS\n" : "") +
                     (UseGPURice ? "#define DO_RICE\n" : "") +
@@ -2437,6 +2485,7 @@ namespace CUETools.Codecs.FLACCL
         public Kernel clEncodeResidual;
         public Kernel clCalcPartition;
         public Kernel clCalcPartition16;
+        public Kernel clCalcPartition32;
         public Kernel clSumPartition;
         public Kernel clFindRiceParameter;
         public Kernel clFindPartitionOrder;
@@ -2530,7 +2579,8 @@ namespace CUETools.Codecs.FLACCL
             int MAX_CHANNELSIZE = MAX_FRAMES * ((writer.m_blockSize + 3) & ~3);
             residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
             bestResidualTasksLen = sizeof(FLACCLSubframeTask) * channels * MAX_FRAMES;
-            int samplesBufferLen = writer.Settings.PCM.BlockAlign * MAX_CHANNELSIZE * channelsCount;
+            int samplesBytesLen = writer.Settings.PCM.BlockAlign * MAX_CHANNELSIZE;
+            int samplesBufferLen =  sizeof(int) * MAX_CHANNELSIZE * channelsCount;
             int residualBufferLen = sizeof(int) * MAX_CHANNELSIZE * channels; // need to adjust residualOffset?
             int partitionsLen = sizeof(int) * ((writer.Settings.PCM.BitsPerSample > 16 ? 31 : 15) * 2 << 8) * channels * MAX_FRAMES;
             int riceParamsLen = sizeof(int) * (4 << 8) * channels * MAX_FRAMES;
@@ -2543,7 +2593,7 @@ namespace CUETools.Codecs.FLACCL
 
             if (!this.UseMappedMemory)
             {
-                clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, samplesBufferLen / 2);
+                clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, samplesBytesLen);
                 clResidual = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, residualBufferLen);
                 clBestRiceParams = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, riceParamsLen / 4);
                 clResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, residualTasksLen);
@@ -2552,7 +2602,7 @@ namespace CUETools.Codecs.FLACCL
                 clSelectedTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, selectedLen);
                 clRiceOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, riceLen);
 
-                clSamplesBytesPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, samplesBufferLen / 2);
+                clSamplesBytesPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, samplesBytesLen);
                 clResidualPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualBufferLen);
                 clBestRiceParamsPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceParamsLen / 4);
                 clResidualTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
@@ -2561,7 +2611,7 @@ namespace CUETools.Codecs.FLACCL
                 clSelectedTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
                 clRiceOutputPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceLen);
 
-                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytesPinned, true, MapFlags.READ_WRITE, 0, samplesBufferLen / 2);
+                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytesPinned, true, MapFlags.READ_WRITE, 0, samplesBytesLen);
                 clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidualPinned, true, MapFlags.READ_WRITE, 0, residualBufferLen);
                 clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParamsPinned, true, MapFlags.READ_WRITE, 0, riceParamsLen / 4);
                 clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasksPinned, true, MapFlags.READ_WRITE, 0, residualTasksLen);
@@ -2572,7 +2622,7 @@ namespace CUETools.Codecs.FLACCL
             }
             else
             {
-                clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, (uint)samplesBufferLen / 2);
+                clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, (uint)samplesBytesLen);
                 clResidual = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualBufferLen);
                 clBestRiceParams = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceParamsLen / 4);
                 clResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
@@ -2581,7 +2631,7 @@ namespace CUETools.Codecs.FLACCL
                 clSelectedTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
                 clRiceOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceLen);
 
-                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytes, true, MapFlags.READ_WRITE, 0, samplesBufferLen / 2);
+                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytes, true, MapFlags.READ_WRITE, 0, samplesBytesLen);
                 clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidual, true, MapFlags.READ_WRITE, 0, residualBufferLen);
                 clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParams, true, MapFlags.READ_WRITE, 0, riceParamsLen / 4);
                 clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasks, true, MapFlags.READ_WRITE, 0, residualTasksLen);
@@ -2630,6 +2680,7 @@ namespace CUETools.Codecs.FLACCL
                 {
                     clCalcPartition = openCLProgram.CreateKernel("clCalcPartition");
                     clCalcPartition16 = openCLProgram.CreateKernel("clCalcPartition16");
+                    clCalcPartition32 = openCLProgram.CreateKernel("clCalcPartition32");
                 }
                 clSumPartition = openCLProgram.CreateKernel("clSumPartition");
                 clFindRiceParameter = openCLProgram.CreateKernel("clFindRiceParameter");
@@ -2684,6 +2735,7 @@ namespace CUETools.Codecs.FLACCL
                 {
                     clCalcPartition.Dispose();
                     clCalcPartition16.Dispose();
+                    clCalcPartition32.Dispose();
                 }
                 clSumPartition.Dispose();
                 clFindRiceParameter.Dispose();
@@ -2759,7 +2811,9 @@ namespace CUETools.Codecs.FLACCL
             clSelectedTasks.Dispose();
             clRiceOutput.Dispose();
 
+            openCLCQ.Finish();
             openCLCQ.Dispose();
+            openCLCQ = null;
 
             GC.SuppressFinalize(this);
         }
@@ -2808,6 +2862,9 @@ namespace CUETools.Codecs.FLACCL
             }
             else
             {
+                // channelSize == blockSize * nFrames;
+                // clSamplesBytes length = blockSize * nFrames * blockalign
+                // clSamples length = 4 * blockSize * nFrames * channels
                 clChannelDecorrX.SetArgs(
                     clSamples,
                     clSamplesBytes,
@@ -2980,6 +3037,18 @@ namespace CUETools.Codecs.FLACCL
 
                         openCLCQ.EnqueueNDRangeKernel(
                             clCalcPartition16,
+                            groupSize, channels * frameCount);
+                    }
+                    else if (frameSize >> max_porder == 32)
+                    {
+                        clCalcPartition32.SetArgs(
+                            clPartitions,
+                            clResidual,
+                            clBestResidualTasks,
+                            max_porder);
+
+                        openCLCQ.EnqueueNDRangeKernel(
+                            clCalcPartition32,
                             groupSize, channels * frameCount);
                     }
                     else
