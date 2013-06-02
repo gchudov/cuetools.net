@@ -788,12 +788,12 @@ void clQuantizeLPC(
 	atomic_or(shared.maxcoef + i, coef ^ (coef >> 31));
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-        int cbits = min(51 - 2 * clz(shared.task.blocksize), shared.task.abits);
+        int cbits = min(51 - 2 * clz(shared.task.blocksize), shared.task.abits) - minprecision + (i - ((i >> precisions) << precisions));
 #if BITS_PER_SAMPLE <= 16
 	// Limit cbits so that 32-bit arithmetics will be enough when calculating residual
         cbits = min(cbits, clz(order) + 1 - shared.task.obits);
 #endif
-        cbits = clamp(cbits - minprecision + (i - ((i >> precisions) << precisions)), 3, 15);
+        cbits = clamp(cbits, 3, 15);
 
 	// Calculate shift based on precision and number of leading zeroes in coeffs.
 	// We know that if shifted by 15, coefs require 
