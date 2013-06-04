@@ -38,17 +38,17 @@ namespace JDP {
             this.fileSystemTreeView1 = new CUEControls.FileSystemTreeView();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBoxMode = new System.Windows.Forms.GroupBox();
-            this.tableLayoutPanelVerifyMode = new System.Windows.Forms.TableLayoutPanel();
-            this.checkBoxSkipRecent = new System.Windows.Forms.CheckBox();
-            this.checkBoxVerifyUseLocal = new System.Windows.Forms.CheckBox();
-            this.checkBoxVerifyUseCDRepair = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanelCUEStyle = new System.Windows.Forms.TableLayoutPanel();
-            this.checkBoxUseAccurateRip = new System.Windows.Forms.CheckBox();
-            this.checkBoxUseFreeDb = new System.Windows.Forms.CheckBox();
             this.rbTracks = new System.Windows.Forms.RadioButton();
             this.rbEmbedCUE = new System.Windows.Forms.RadioButton();
             this.rbSingleFile = new System.Windows.Forms.RadioButton();
-            this.checkBoxUseMusicBrainz = new System.Windows.Forms.CheckBox();
+            this.checkBoxEditTags = new System.Windows.Forms.CheckBox();
+            this.checkBoxARVerifyOnEncode = new System.Windows.Forms.CheckBox();
+            this.checkBoxCTDBVerifyOnEncode = new System.Windows.Forms.CheckBox();
+            this.tableLayoutPanelVerifyMode = new System.Windows.Forms.TableLayoutPanel();
+            this.checkBoxSkipRecent = new System.Windows.Forms.CheckBox();
+            this.checkBoxVerifyUseLocal = new System.Windows.Forms.CheckBox();
+            this.checkBoxCTDBVerify = new System.Windows.Forms.CheckBox();
             this.toolStripCorrectorFormat = new System.Windows.Forms.ToolStrip();
             this.toolStripButtonCorrectorOverwrite = new System.Windows.Forms.ToolStripButton();
             this.toolStripDropDownButtonCorrectorMode = new System.Windows.Forms.ToolStripDropDownButton();
@@ -138,8 +138,8 @@ namespace JDP {
             this.grpInput.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBoxMode.SuspendLayout();
-            this.tableLayoutPanelVerifyMode.SuspendLayout();
             this.tableLayoutPanelCUEStyle.SuspendLayout();
+            this.tableLayoutPanelVerifyMode.SuspendLayout();
             this.toolStripCorrectorFormat.SuspendLayout();
             this.grpAudioOutput.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarEncoderMode)).BeginInit();
@@ -303,72 +303,23 @@ namespace JDP {
             // 
             // groupBoxMode
             // 
-            this.groupBoxMode.Controls.Add(this.tableLayoutPanelVerifyMode);
             this.groupBoxMode.Controls.Add(this.tableLayoutPanelCUEStyle);
             this.groupBoxMode.Controls.Add(this.toolStripCorrectorFormat);
+            this.groupBoxMode.Controls.Add(this.tableLayoutPanelVerifyMode);
             resources.ApplyResources(this.groupBoxMode, "groupBoxMode");
             this.groupBoxMode.Name = "groupBoxMode";
             this.groupBoxMode.TabStop = false;
             // 
-            // tableLayoutPanelVerifyMode
-            // 
-            resources.ApplyResources(this.tableLayoutPanelVerifyMode, "tableLayoutPanelVerifyMode");
-            this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxSkipRecent, 2, 0);
-            this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxVerifyUseLocal, 1, 0);
-            this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxVerifyUseCDRepair, 0, 0);
-            this.tableLayoutPanelVerifyMode.Name = "tableLayoutPanelVerifyMode";
-            // 
-            // checkBoxSkipRecent
-            // 
-            resources.ApplyResources(this.checkBoxSkipRecent, "checkBoxSkipRecent");
-            this.checkBoxSkipRecent.Image = global::JDP.Properties.Resources.alarm_clock__minus;
-            this.checkBoxSkipRecent.Name = "checkBoxSkipRecent";
-            this.toolTip1.SetToolTip(this.checkBoxSkipRecent, resources.GetString("checkBoxSkipRecent.ToolTip"));
-            this.checkBoxSkipRecent.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxVerifyUseLocal
-            // 
-            resources.ApplyResources(this.checkBoxVerifyUseLocal, "checkBoxVerifyUseLocal");
-            this.checkBoxVerifyUseLocal.Image = global::JDP.Properties.Resources.puzzle__arrow;
-            this.checkBoxVerifyUseLocal.Name = "checkBoxVerifyUseLocal";
-            this.toolTip1.SetToolTip(this.checkBoxVerifyUseLocal, resources.GetString("checkBoxVerifyUseLocal.ToolTip"));
-            this.checkBoxVerifyUseLocal.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxVerifyUseCDRepair
-            // 
-            resources.ApplyResources(this.checkBoxVerifyUseCDRepair, "checkBoxVerifyUseCDRepair");
-            this.checkBoxVerifyUseCDRepair.Image = global::JDP.Properties.Resources.cdrepair1;
-            this.checkBoxVerifyUseCDRepair.Name = "checkBoxVerifyUseCDRepair";
-            this.toolTip1.SetToolTip(this.checkBoxVerifyUseCDRepair, resources.GetString("checkBoxVerifyUseCDRepair.ToolTip"));
-            this.checkBoxVerifyUseCDRepair.UseVisualStyleBackColor = true;
-            // 
             // tableLayoutPanelCUEStyle
             // 
             resources.ApplyResources(this.tableLayoutPanelCUEStyle, "tableLayoutPanelCUEStyle");
-            this.tableLayoutPanelCUEStyle.Controls.Add(this.checkBoxUseAccurateRip, 2, 4);
-            this.tableLayoutPanelCUEStyle.Controls.Add(this.checkBoxUseFreeDb, 1, 4);
             this.tableLayoutPanelCUEStyle.Controls.Add(this.rbTracks, 0, 2);
             this.tableLayoutPanelCUEStyle.Controls.Add(this.rbEmbedCUE, 0, 0);
             this.tableLayoutPanelCUEStyle.Controls.Add(this.rbSingleFile, 0, 1);
-            this.tableLayoutPanelCUEStyle.Controls.Add(this.checkBoxUseMusicBrainz, 0, 4);
+            this.tableLayoutPanelCUEStyle.Controls.Add(this.checkBoxEditTags, 0, 4);
+            this.tableLayoutPanelCUEStyle.Controls.Add(this.checkBoxARVerifyOnEncode, 2, 4);
+            this.tableLayoutPanelCUEStyle.Controls.Add(this.checkBoxCTDBVerifyOnEncode, 1, 4);
             this.tableLayoutPanelCUEStyle.Name = "tableLayoutPanelCUEStyle";
-            // 
-            // checkBoxUseAccurateRip
-            // 
-            resources.ApplyResources(this.checkBoxUseAccurateRip, "checkBoxUseAccurateRip");
-            this.checkBoxUseAccurateRip.Image = global::JDP.Properties.Resources.AR;
-            this.checkBoxUseAccurateRip.Name = "checkBoxUseAccurateRip";
-            this.toolTip1.SetToolTip(this.checkBoxUseAccurateRip, resources.GetString("checkBoxUseAccurateRip.ToolTip"));
-            this.checkBoxUseAccurateRip.UseVisualStyleBackColor = true;
-            this.checkBoxUseAccurateRip.CheckedChanged += new System.EventHandler(this.checkBoxUseAccurateRip_CheckedChanged);
-            // 
-            // checkBoxUseFreeDb
-            // 
-            resources.ApplyResources(this.checkBoxUseFreeDb, "checkBoxUseFreeDb");
-            this.checkBoxUseFreeDb.Image = global::JDP.Properties.Resources.freedb16;
-            this.checkBoxUseFreeDb.Name = "checkBoxUseFreeDb";
-            this.toolTip1.SetToolTip(this.checkBoxUseFreeDb, resources.GetString("checkBoxUseFreeDb.ToolTip"));
-            this.checkBoxUseFreeDb.UseVisualStyleBackColor = true;
             // 
             // rbTracks
             // 
@@ -399,13 +350,62 @@ namespace JDP {
             this.toolTip1.SetToolTip(this.rbSingleFile, resources.GetString("rbSingleFile.ToolTip"));
             this.rbSingleFile.UseVisualStyleBackColor = true;
             // 
-            // checkBoxUseMusicBrainz
+            // checkBoxEditTags
             // 
-            resources.ApplyResources(this.checkBoxUseMusicBrainz, "checkBoxUseMusicBrainz");
-            this.checkBoxUseMusicBrainz.Image = global::JDP.Properties.Resources.musicbrainz;
-            this.checkBoxUseMusicBrainz.Name = "checkBoxUseMusicBrainz";
-            this.toolTip1.SetToolTip(this.checkBoxUseMusicBrainz, resources.GetString("checkBoxUseMusicBrainz.ToolTip"));
-            this.checkBoxUseMusicBrainz.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.checkBoxEditTags, "checkBoxEditTags");
+            this.checkBoxEditTags.Image = global::JDP.Properties.Resources.card__pencil;
+            this.checkBoxEditTags.Name = "checkBoxEditTags";
+            this.toolTip1.SetToolTip(this.checkBoxEditTags, resources.GetString("checkBoxEditTags.ToolTip"));
+            this.checkBoxEditTags.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxARVerifyOnEncode
+            // 
+            resources.ApplyResources(this.checkBoxARVerifyOnEncode, "checkBoxARVerifyOnEncode");
+            this.checkBoxARVerifyOnEncode.Image = global::JDP.Properties.Resources.AR;
+            this.checkBoxARVerifyOnEncode.Name = "checkBoxARVerifyOnEncode";
+            this.toolTip1.SetToolTip(this.checkBoxARVerifyOnEncode, resources.GetString("checkBoxARVerifyOnEncode.ToolTip"));
+            this.checkBoxARVerifyOnEncode.UseVisualStyleBackColor = true;
+            this.checkBoxARVerifyOnEncode.CheckedChanged += new System.EventHandler(this.checkBoxUseAccurateRip_CheckedChanged);
+            // 
+            // checkBoxCTDBVerifyOnEncode
+            // 
+            resources.ApplyResources(this.checkBoxCTDBVerifyOnEncode, "checkBoxCTDBVerifyOnEncode");
+            this.checkBoxCTDBVerifyOnEncode.Image = global::JDP.Properties.Resources.cdrepair1;
+            this.checkBoxCTDBVerifyOnEncode.Name = "checkBoxCTDBVerifyOnEncode";
+            this.toolTip1.SetToolTip(this.checkBoxCTDBVerifyOnEncode, resources.GetString("checkBoxCTDBVerifyOnEncode.ToolTip"));
+            this.checkBoxCTDBVerifyOnEncode.UseVisualStyleBackColor = true;
+            // 
+            // tableLayoutPanelVerifyMode
+            // 
+            resources.ApplyResources(this.tableLayoutPanelVerifyMode, "tableLayoutPanelVerifyMode");
+            this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxSkipRecent, 2, 0);
+            this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxVerifyUseLocal, 1, 0);
+            this.tableLayoutPanelVerifyMode.Controls.Add(this.checkBoxCTDBVerify, 0, 0);
+            this.tableLayoutPanelVerifyMode.Name = "tableLayoutPanelVerifyMode";
+            // 
+            // checkBoxSkipRecent
+            // 
+            resources.ApplyResources(this.checkBoxSkipRecent, "checkBoxSkipRecent");
+            this.checkBoxSkipRecent.Image = global::JDP.Properties.Resources.alarm_clock__minus;
+            this.checkBoxSkipRecent.Name = "checkBoxSkipRecent";
+            this.toolTip1.SetToolTip(this.checkBoxSkipRecent, resources.GetString("checkBoxSkipRecent.ToolTip"));
+            this.checkBoxSkipRecent.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxVerifyUseLocal
+            // 
+            resources.ApplyResources(this.checkBoxVerifyUseLocal, "checkBoxVerifyUseLocal");
+            this.checkBoxVerifyUseLocal.Image = global::JDP.Properties.Resources.puzzle__arrow;
+            this.checkBoxVerifyUseLocal.Name = "checkBoxVerifyUseLocal";
+            this.toolTip1.SetToolTip(this.checkBoxVerifyUseLocal, resources.GetString("checkBoxVerifyUseLocal.ToolTip"));
+            this.checkBoxVerifyUseLocal.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxCTDBVerify
+            // 
+            resources.ApplyResources(this.checkBoxCTDBVerify, "checkBoxCTDBVerify");
+            this.checkBoxCTDBVerify.Image = global::JDP.Properties.Resources.cdrepair1;
+            this.checkBoxCTDBVerify.Name = "checkBoxCTDBVerify";
+            this.toolTip1.SetToolTip(this.checkBoxCTDBVerify, resources.GetString("checkBoxCTDBVerify.ToolTip"));
+            this.checkBoxCTDBVerify.UseVisualStyleBackColor = true;
             // 
             // toolStripCorrectorFormat
             // 
@@ -1081,10 +1081,10 @@ namespace JDP {
             this.grpInput.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.groupBoxMode.ResumeLayout(false);
-            this.tableLayoutPanelVerifyMode.ResumeLayout(false);
-            this.tableLayoutPanelVerifyMode.PerformLayout();
             this.tableLayoutPanelCUEStyle.ResumeLayout(false);
             this.tableLayoutPanelCUEStyle.PerformLayout();
+            this.tableLayoutPanelVerifyMode.ResumeLayout(false);
+            this.tableLayoutPanelVerifyMode.PerformLayout();
             this.toolStripCorrectorFormat.ResumeLayout(false);
             this.toolStripCorrectorFormat.PerformLayout();
             this.grpAudioOutput.ResumeLayout(false);
@@ -1203,11 +1203,11 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemCorrectorModeLocateFiles;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemCorrectorModeChangeExtension;
 		private System.Windows.Forms.ToolStripButton toolStripButtonCorrectorOverwrite;
-		private System.Windows.Forms.CheckBox checkBoxUseMusicBrainz;
-		private System.Windows.Forms.CheckBox checkBoxUseAccurateRip;
-		private System.Windows.Forms.CheckBox checkBoxUseFreeDb;
+		private System.Windows.Forms.CheckBox checkBoxEditTags;
+		private System.Windows.Forms.CheckBox checkBoxARVerifyOnEncode;
+		private System.Windows.Forms.CheckBox checkBoxCTDBVerifyOnEncode;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelVerifyMode;
-		private System.Windows.Forms.CheckBox checkBoxVerifyUseCDRepair;
+		private System.Windows.Forms.CheckBox checkBoxCTDBVerify;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelCTDB;
 		private System.Windows.Forms.CheckBox checkBoxVerifyUseLocal;
 		private System.Windows.Forms.CheckBox checkBoxSkipRecent;

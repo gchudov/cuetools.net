@@ -527,6 +527,50 @@ namespace CUETools.CTDB
 			}
 		}
 
+        public int GetConfidence(int iTrack)
+        {
+            if (this.QueryExceptionStatus != WebExceptionStatus.Success)
+                return 0;
+
+            int conf = 0;
+            foreach (DBEntry entry in this.Entries)
+            {
+                if (!entry.hasErrors)
+                {
+                    conf += entry.conf;
+                    continue;
+                }
+                if (entry.canRecover)
+                {
+                    var tri = this.TOC[this.TOC.FirstAudio + iTrack];
+                    var tr0 = this.TOC[this.TOC.FirstAudio];
+                    var min = (int)(tri.Start - tr0.Start) * 588;
+                    var max = (int)(tri.End + 1 - tr0.Start) * 588;
+                    if (0 == entry.repair.GetAffectedSectorsCount(min, max))
+                        conf += entry.conf;
+                    continue;
+                }
+                if (entry.trackcrcs != null)
+                {
+                    if (this.verify.TrackCRC(iTrack + 1, -entry.offset) == entry.trackcrcs[iTrack])
+                    {
+                        conf += entry.conf;
+                        continue;
+                    }
+                    const int _arOffsetRange = 5 * 588 - 1;
+                    for (int oi = -_arOffsetRange; oi <= _arOffsetRange; oi++)
+                    {
+                        if (this.verify.TrackCRC(iTrack + 1, oi) == entry.trackcrcs[iTrack])
+                        {
+                            conf += entry.conf;
+                            break;
+                        }
+                    }
+                }
+            }
+            return conf;
+        }
+
         public void GenerateLog(TextWriter sw, bool old)
         {
             if (this.DBStatus != null || this.Total == 0)

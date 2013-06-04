@@ -422,8 +422,8 @@ namespace CUERipper
 				this.Invoke((MethodInvoker)delegate()
 				{
                     DialogResult dlgRes = audioSource.FailedSectors.PopulationCount() != 0 ? 
-						MessageBox.Show(this, cueSheet.GenerateAccurateRipStatus() + (canFix ? "\n" + Properties.Resources.DoneRippingRepair : "") + ".", Properties.Resources.DoneRippingErrors, MessageBoxButtons.OK, MessageBoxIcon.Error) :
-						MessageBox.Show(this, cueSheet.GenerateAccurateRipStatus() + ".", Properties.Resources.DoneRipping, MessageBoxButtons.OK, MessageBoxIcon.Information);
+						MessageBox.Show(this, cueSheet.GenerateVerifyStatus() + (canFix ? "\n" + Properties.Resources.DoneRippingRepair : "") + ".", Properties.Resources.DoneRippingErrors, MessageBoxButtons.OK, MessageBoxIcon.Error) :
+						MessageBox.Show(this, cueSheet.GenerateVerifyStatus() + ".", Properties.Resources.DoneRipping, MessageBoxButtons.OK, MessageBoxIcon.Information);
 				});
 			}
 			catch (StopException)

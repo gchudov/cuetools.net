@@ -1037,7 +1037,8 @@ namespace CUETools.AccurateRip
 
 		public void GenerateFullLog(TextWriter sw, bool verbose, string id)
 		{
-			sw.WriteLine("[AccurateRip ID: {0}] {1}.", id, ARStatus ?? "found");
+            if (ExceptionStatus != WebExceptionStatus.Pending)
+			    sw.WriteLine("[AccurateRip ID: {0}] {1}.", id, ARStatus ?? "found");
 			if (ExceptionStatus == WebExceptionStatus.Success)
 			{
 				if (verbose)

@@ -125,7 +125,7 @@ namespace JDP
 				if (_profile._action == CUEAction.CreateDummyCUE)
 					throw new Exception("CreateDummyCUE action not yet supported in commandline mode.");
 
-				bool useAR = _profile._action == CUEAction.Verify || _profile._useAccurateRip;
+				bool useAR = _profile._action == CUEAction.Verify || _profile._ARVerifyOnEncode;
 
 				cueSheet.Action = _profile._action;
 				cueSheet.OutputStyle = _profile._CUEStyle;

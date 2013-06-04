@@ -2400,7 +2400,7 @@ namespace CUETools.Processor
             _CUEToolsDB.GenerateLog(sw, _config.advanced.DetailedCTDBLog);
         }
 
-        public string GenerateAccurateRipStatus()
+        public string GenerateVerifyStatus()
         {
             string prefix = "";
             if (hdcdDecoder != null && string.Format("{0:s}", hdcdDecoder) != "")
@@ -2461,6 +2461,25 @@ namespace CUETools.Processor
                 for (iTrack = 0; iTrack < TrackCount; iTrack++)
                 {
                     GenerateAccurateRipTagsForTrack(tags, bestOffset, iTrack,
+                        String.Format("cue_track{0:00}_", iTrack + 1));
+                }
+        }
+
+        public void GenerateCTDBTagsForTrack(NameValueCollection tags, int iTrack, string prefix)
+        {
+            tags.Add(String.Format("{0}CTDBTRACKCONFIDENCE", prefix), String.Format("{0}/{1}", _CUEToolsDB.GetConfidence(iTrack), _CUEToolsDB.Total));
+        }
+        
+        public void GenerateCTDBTags(NameValueCollection tags, int iTrack)
+        {
+            //tags.Add("ACCURATERIPID", _accurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(_toc));
+            tags.Add(String.Format("CTDBDISCCONFIDENCE"), String.Format("{0}/{1}", _CUEToolsDB.Confidence, _CUEToolsDB.Total));
+            if (iTrack != -1)
+                GenerateCTDBTagsForTrack(tags, iTrack, "");
+            else
+                for (iTrack = 0; iTrack < TrackCount; iTrack++)
+                {
+                    GenerateCTDBTagsForTrack(tags, iTrack,
                         String.Format("cue_track{0:00}_", iTrack + 1));
                 }
         }
@@ -2590,7 +2609,7 @@ namespace CUETools.Processor
             {
                 var now = DateTime.Now;
                 var entry = OpenLocalDBEntry();
-                entry.Status = this.GenerateAccurateRipStatus();
+                entry.Status = this.GenerateVerifyStatus();
                 entry.ARConfidence = isUsingAccurateRip ? _arVerify.WorstConfidence() : 0;
                 entry.CTDBConfidence = isUsingCUEToolsDB && !isUsingCUEToolsDBFix ? CTDB.Confidence : 0;
                 entry.Log = AccurateRipLog;
@@ -2987,18 +3006,20 @@ namespace CUETools.Processor
 
         public string WriteReport()
         {
-            if (isUsingAccurateRip)
+            if (isUsingAccurateRip || isUsingCUEToolsDB)
             {
                 ShowProgress((string)"Generating AccurateRip report...", 0, null, null);
-                if (_action == CUEAction.Verify && _config.writeArTagsOnVerify && _writeOffset == 0 && !_isArchive && !_isCD)
+                if (_action == CUEAction.Verify && _writeOffset == 0 && !_isArchive && !_isCD)
                 {
-                    uint tracksMatch;
-                    int bestOffset;
-                    FindBestOffset(1, true, out tracksMatch, out bestOffset);
-
-                    if (_hasEmbeddedCUESheet)
+                    if (_config.writeArTagsOnVerify &&
+                        isUsingAccurateRip &&
+                        _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                     {
-                        if (_fileInfo is TagLib.Flac.File)
+                        uint tracksMatch;
+                        int bestOffset;
+                        FindBestOffset(1, true, out tracksMatch, out bestOffset);
+
+                        if (_hasEmbeddedCUESheet)
                         {
                             NameValueCollection tags = Tagging.Analyze(_fileInfo);
                             CleanupTags(tags, "ACCURATERIP");
@@ -3006,11 +3027,9 @@ namespace CUETools.Processor
                             if (Tagging.UpdateTags(_fileInfo, tags, _config))
                                 _fileInfo.Save();
                         }
-                    }
-                    else if (_hasTrackFilenames)
-                    {
-                        for (int iTrack = 0; iTrack < TrackCount; iTrack++)
-                            if (_tracks[iTrack]._fileInfo is TagLib.Flac.File)
+                        else if (_hasTrackFilenames)
+                        {
+                            for (int iTrack = 0; iTrack < TrackCount; iTrack++)
                             {
                                 NameValueCollection tags = Tagging.Analyze(_tracks[iTrack]._fileInfo);
                                 CleanupTags(tags, "ACCURATERIP");
@@ -3018,6 +3037,34 @@ namespace CUETools.Processor
                                 if (Tagging.UpdateTags(_tracks[iTrack]._fileInfo, tags, _config))
                                     _tracks[iTrack]._fileInfo.Save();
                             }
+                        }
+                    }
+
+                    if (_config.advanced.WriteCTDBTagsOnVerify &&
+                        isUsingCUEToolsDB &&
+                        _CUEToolsDB.QueryExceptionStatus == WebExceptionStatus.Success)
+                    {
+                        if (_hasEmbeddedCUESheet)
+                        {
+                            NameValueCollection tags = Tagging.Analyze(_fileInfo);
+                            CleanupTags(tags, "CTDBDISCCONFIDENCE");
+                            CleanupTags(tags, "CTDBTRACKCONFIDENCE");
+                            GenerateCTDBTags(tags, -1);
+                            if (Tagging.UpdateTags(_fileInfo, tags, _config))
+                                _fileInfo.Save();
+                        }
+                        else if (_hasTrackFilenames)
+                        {
+                            for (int iTrack = 0; iTrack < TrackCount; iTrack++)
+                            {
+                                NameValueCollection tags = Tagging.Analyze(_tracks[iTrack]._fileInfo);
+                                CleanupTags(tags, "CTDBDISCCONFIDENCE");
+                                CleanupTags(tags, "CTDBTRACKCONFIDENCE");
+                                GenerateCTDBTags(tags, iTrack);
+                                if (Tagging.UpdateTags(_tracks[iTrack]._fileInfo, tags, _config))
+                                    _tracks[iTrack]._fileInfo.Save();
+                            }
+                        }
                     }
                 }
 
@@ -3039,7 +3086,7 @@ namespace CUETools.Processor
                     WriteText(Path.ChangeExtension(_outputPath, ".toc"), CUESheetLogWriter.GetTOCContents(this));
                 }
             }
-            return GenerateAccurateRipStatus();
+            return GenerateVerifyStatus();
         }
 
         private NameValueCollection GenerateTrackTags(int iTrack, int bestOffset)
@@ -3109,6 +3156,13 @@ namespace CUETools.Processor
                 isUsingAccurateRip &&
                 _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                 GenerateAccurateRipTags(destTags, bestOffset, iTrack);
+
+            if (_config.advanced.WriteCTDBTagsOnEncode &&
+                _action == CUEAction.Encode &&
+                isUsingCUEToolsDB &&
+                !isUsingCUEToolsDBFix &&
+                _CUEToolsDB.QueryExceptionStatus == WebExceptionStatus.Success)
+                GenerateCTDBTags(destTags, iTrack);
 
             if (_config.advanced.WriteCDTOCTag)
                 destTags.Add("CDTOC", _toc.TAG);
@@ -3199,6 +3253,14 @@ namespace CUETools.Processor
                 isUsingAccurateRip &&
                 _arVerify.ExceptionStatus == WebExceptionStatus.Success)
                 GenerateAccurateRipTags(destTags, bestOffset, -1);
+
+            if (fWithCUE &&
+                _config.advanced.WriteCTDBTagsOnEncode &&
+                _action == CUEAction.Encode &&
+                isUsingCUEToolsDB &&
+                !isUsingCUEToolsDBFix &&
+                _CUEToolsDB.QueryExceptionStatus == WebExceptionStatus.Success)
+                GenerateCTDBTags(destTags, -1);
 
             return destTags;
         }

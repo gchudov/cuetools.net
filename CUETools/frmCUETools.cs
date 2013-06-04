@@ -624,8 +624,8 @@ namespace JDP
             DialogResult dlgRes = DialogResult.OK;
             string status = null;
             bool outputAudio = action == CUEAction.Encode && audioEncoderType != AudioEncoderType.NoAudio;
-            bool useAR = action == CUEAction.Verify || (outputAudio && checkBoxUseAccurateRip.Checked);
-            bool useCUEToolsDB = action == CUEAction.Verify && checkBoxVerifyUseCDRepair.Checked;
+            bool useAR = action == CUEAction.Verify || (outputAudio && checkBoxARVerifyOnEncode.Checked);
+            bool useCUEToolsDB = (action == CUEAction.Verify && checkBoxCTDBVerify.Checked) || (outputAudio && checkBoxCTDBVerifyOnEncode.Checked);
             bool useLocalDB = action != CUEAction.Verify || checkBoxVerifyUseLocal.Checked;
             bool skipRecent = action == CUEAction.Verify && checkBoxSkipRecent.Checked;
 
@@ -937,7 +937,7 @@ namespace JDP
                             toolStripStatusLabelAR.Visible = useAR;
                             toolStripStatusLabelCTDB.Visible = useCUEToolsDB;
 
-                            if (_batchPaths.Count <= 1 && _batchProcessed == 0 && action == CUEAction.Encode && (checkBoxUseFreeDb.Checked || checkBoxUseMusicBrainz.Checked))
+                            if (_batchPaths.Count <= 1 && _batchProcessed == 0 && action == CUEAction.Encode && checkBoxEditTags.Checked)
                             {
                                 frmChoice dlg = new frmChoice();
                                 if (_choiceWidth != 0 && _choiceHeight != 0)
@@ -1100,7 +1100,7 @@ namespace JDP
                             //reportForm.Message = _batchReport.ToString();
                             //reportForm.ShowDialog(this);
                         }
-                        else if (useAR && cueSheet.Processed)
+                        else if ((useAR || useCUEToolsDB) && cueSheet.Processed)
                         {
                             _batchReport.Append(CUESheetLogWriter.GetAccurateRipLog(cueSheet));
                             ReportState = true;
@@ -1228,7 +1228,10 @@ namespace JDP
         private void SetupControls(bool running)
         {
             bool converting = (SelectedAction == CUEAction.Encode);
-            bool verifying = (SelectedAction == CUEAction.Verify || (SelectedAction == CUEAction.Encode && SelectedOutputAudioType != AudioEncoderType.NoAudio && checkBoxUseAccurateRip.Checked));
+            bool verifying = SelectedAction == CUEAction.Verify ||
+                (SelectedAction == CUEAction.Encode &&
+                SelectedOutputAudioType != AudioEncoderType.NoAudio &&
+                (checkBoxARVerifyOnEncode.Checked || checkBoxCTDBVerifyOnEncode.Checked));
             //grpInput.Enabled = !running;
             toolStripMenu.Enabled = !running;
             fileSystemTreeView1.Enabled = !running;
@@ -1342,10 +1345,10 @@ namespace JDP
             comboBoxOutputFormat.Text = _profile._outputTemplate ?? comboBoxOutputFormat.Items[0].ToString();
             toolStripDropDownButtonProfile.Text = _profile._name;
             SelectedScript = _profile._script;
-            checkBoxUseFreeDb.Checked = _profile._useFreeDb;
-            checkBoxUseMusicBrainz.Checked = _profile._useMusicBrainz;
-            checkBoxUseAccurateRip.Checked = _profile._useAccurateRip;
-            checkBoxVerifyUseCDRepair.Checked = _profile._useCUEToolsDB;
+            checkBoxEditTags.Checked = _profile._editTags;
+            checkBoxCTDBVerifyOnEncode.Checked = _profile._CTDBVerifyOnEncode;
+            checkBoxARVerifyOnEncode.Checked = _profile._ARVerifyOnEncode;
+            checkBoxCTDBVerify.Checked = _profile._CTDBVerify;
             checkBoxVerifyUseLocal.Checked = _profile._useLocalDB;
             checkBoxSkipRecent.Checked = _profile._skipRecent;
         }
@@ -1388,10 +1391,10 @@ namespace JDP
             _profile._writeOffset = (int)numericWriteOffset.Value;
             _profile._outputTemplate = comboBoxOutputFormat.Text;
             _profile._script = SelectedScript;
-            _profile._useFreeDb = checkBoxUseFreeDb.Checked;
-            _profile._useMusicBrainz = checkBoxUseMusicBrainz.Checked;
-            _profile._useAccurateRip = checkBoxUseAccurateRip.Checked;
-            _profile._useCUEToolsDB = checkBoxVerifyUseCDRepair.Checked;
+            _profile._editTags = checkBoxEditTags.Checked;
+            _profile._CTDBVerifyOnEncode = checkBoxCTDBVerifyOnEncode.Checked;
+            _profile._ARVerifyOnEncode = checkBoxARVerifyOnEncode.Checked;
+            _profile._CTDBVerify = checkBoxCTDBVerify.Checked;
             _profile._useLocalDB = checkBoxVerifyUseLocal.Checked;
             _profile._skipRecent = checkBoxSkipRecent.Checked;
 

@@ -28,10 +28,10 @@ namespace CUETools.Processor
         {
             _config.Load(sr);
 
-            _useFreeDb = sr.LoadBoolean("FreedbLookup") ?? _useFreeDb;
-            _useMusicBrainz = sr.LoadBoolean("MusicBrainzLookup") ?? _useMusicBrainz;
-            _useAccurateRip = sr.LoadBoolean("AccurateRipLookup") ?? _useAccurateRip;
-            _useCUEToolsDB = sr.LoadBoolean("CUEToolsDBLookup") ?? _useCUEToolsDB;
+            _editTags = sr.LoadBoolean("MusicBrainzLookup") ?? _editTags;
+            _CTDBVerifyOnEncode = sr.LoadBoolean("CTDBVerifyOnEncode") ?? _CTDBVerifyOnEncode;
+            _ARVerifyOnEncode = sr.LoadBoolean("AccurateRipLookup") ?? _ARVerifyOnEncode;
+            _CTDBVerify = sr.LoadBoolean("CUEToolsDBLookup") ?? _CTDBVerify;
             _useLocalDB = sr.LoadBoolean("LocalDBLookup") ?? _useLocalDB;
             _skipRecent = sr.LoadBoolean("SkipRecent") ?? _skipRecent;
             _outputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? _outputAudioType;
@@ -47,12 +47,12 @@ namespace CUETools.Processor
         {
             _config.Save(sw);
 
-            sw.Save("FreedbLookup", _useFreeDb);
-            sw.Save("MusicBrainzLookup", _useMusicBrainz);
-            sw.Save("AccurateRipLookup", _useAccurateRip);
+            sw.Save("MusicBrainzLookup", _editTags);
+            sw.Save("CTDBVerifyOnEncode", _CTDBVerifyOnEncode);
+            sw.Save("AccurateRipLookup", _ARVerifyOnEncode);
             sw.Save("LocalDBLookup", _useLocalDB);
             sw.Save("SkipRecent", _skipRecent);
-            sw.Save("CUEToolsDBLookup", _useCUEToolsDB);
+            sw.Save("CUEToolsDBLookup", _CTDBVerify);
             sw.Save("OutputAudioType", (int)_outputAudioType);
             sw.Save("OutputAudioFmt", _outputAudioFormat);
             sw.Save("AccurateRipMode", (int)_action);
@@ -68,7 +68,7 @@ namespace CUETools.Processor
         public CUEAction _action = CUEAction.Encode;
         public CUEStyle _CUEStyle = CUEStyle.SingleFileWithCUE;
         public int _writeOffset = 0;
-        public bool _useFreeDb = true, _useMusicBrainz = true, _useAccurateRip = true, _useCUEToolsDB = true, _useLocalDB = true, _skipRecent = false;
+        public bool _editTags = true, _CTDBVerifyOnEncode = true, _ARVerifyOnEncode = true, _CTDBVerify = true, _useLocalDB = true, _skipRecent = false;
 
         public string _name;
     }

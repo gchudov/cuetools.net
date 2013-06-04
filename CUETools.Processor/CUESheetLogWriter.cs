@@ -35,6 +35,7 @@ namespace CUETools.Processor
             if (!sheet.Processed)
             {
                 if (sheet.IsUsingCUEToolsDB) sheet.GenerateCTDBLog(writer);
+                if (sheet.IsUsingAccurateRip)
                 writer.WriteLine("[AccurateRip ID: {0}] {1}.", sheet.AccurateRipId ?? AccurateRipVerify.CalculateAccurateRipId(sheet.TOC), sheet.ArVerify.ARStatus ?? "found");
                 return;
             }

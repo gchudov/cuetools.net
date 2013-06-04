@@ -297,23 +297,266 @@
   <data name="tableLayoutPanel2.ColumnCount" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
-  <metadata name="toolStripCorrectorFormat.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>3, 17</value>
+  <data name="tableLayoutPanelCUEStyle.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>153, 8</value>
   </metadata>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Name" xml:space="preserve">
-    <value>tableLayoutPanelVerifyMode</value>
+  <data name="rbTracks.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="rbTracks.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
   </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Parent" xml:space="preserve">
-    <value>groupBoxMode</value>
+  <data name="rbTracks.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.ZOrder" xml:space="preserve">
+  <data name="rbTracks.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 40</value>
+  </data>
+  <data name="rbTracks.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="rbTracks.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 20</value>
+  </data>
+  <data name="rbTracks.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="rbTracks.Text" xml:space="preserve">
+    <value>&amp;Tracks</value>
+  </data>
+  <data name="rbTracks.ToolTip" xml:space="preserve">
+    <value>File per track. Gap handling can be selected in advanced settings.</value>
+  </data>
+  <data name="&gt;&gt;rbTracks.Name" xml:space="preserve">
+    <value>rbTracks</value>
+  </data>
+  <data name="&gt;&gt;rbTracks.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbTracks.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCUEStyle</value>
+  </data>
+  <data name="&gt;&gt;rbTracks.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="tableLayoutPanelVerifyMode.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxSkipRecent" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxVerifyUseLocal" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxVerifyUseCDRepair" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33.33333,Percent,33.33333,Percent,33.33333,Absolute,20" /&gt;&lt;Rows Styles="Percent,32.72727,Percent,67.27273" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  <data name="rbEmbedCUE.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbEmbedCUE.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="rbEmbedCUE.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="rbEmbedCUE.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 0</value>
+  </data>
+  <data name="rbEmbedCUE.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 20</value>
+  </data>
+  <data name="rbEmbedCUE.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="rbEmbedCUE.Text" xml:space="preserve">
+    <value>&amp;Embedded</value>
+  </data>
+  <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
+    <value>Create single file with embedded CUE sheet.</value>
+  </data>
+  <data name="&gt;&gt;rbEmbedCUE.Name" xml:space="preserve">
+    <value>rbEmbedCUE</value>
+  </data>
+  <data name="&gt;&gt;rbEmbedCUE.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbEmbedCUE.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCUEStyle</value>
+  </data>
+  <data name="&gt;&gt;rbEmbedCUE.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="rbSingleFile.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="rbSingleFile.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="rbSingleFile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="rbSingleFile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 20</value>
+  </data>
+  <data name="rbSingleFile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 20</value>
+  </data>
+  <data name="rbSingleFile.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="rbSingleFile.Text" xml:space="preserve">
+    <value>Image + CUE</value>
+  </data>
+  <data name="rbSingleFile.ToolTip" xml:space="preserve">
+    <value>Create single file + CUE sheet</value>
+  </data>
+  <data name="&gt;&gt;rbSingleFile.Name" xml:space="preserve">
+    <value>rbSingleFile</value>
+  </data>
+  <data name="&gt;&gt;rbSingleFile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rbSingleFile.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCUEStyle</value>
+  </data>
+  <data name="&gt;&gt;rbSingleFile.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="checkBoxEditTags.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxEditTags.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="checkBoxEditTags.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxEditTags.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 84</value>
+  </data>
+  <data name="checkBoxEditTags.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="checkBoxEditTags.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
+  </data>
+  <data name="checkBoxEditTags.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 26</value>
+  </data>
+  <data name="checkBoxEditTags.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>153, 8</value>
+  </metadata>
+  <data name="checkBoxEditTags.ToolTip" xml:space="preserve">
+    <value>Edit Tags</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEditTags.Name" xml:space="preserve">
+    <value>checkBoxEditTags</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEditTags.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEditTags.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCUEStyle</value>
+  </data>
+  <data name="&gt;&gt;checkBoxEditTags.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>95, 84</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>49, 26</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.ToolTip" xml:space="preserve">
+    <value>Verify using AccurateRip</value>
+  </data>
+  <data name="&gt;&gt;checkBoxARVerifyOnEncode.Name" xml:space="preserve">
+    <value>checkBoxARVerifyOnEncode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxARVerifyOnEncode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxARVerifyOnEncode.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCUEStyle</value>
+  </data>
+  <data name="&gt;&gt;checkBoxARVerifyOnEncode.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>47, 84</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 26</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.ToolTip" xml:space="preserve">
+    <value>Verify using CTDB</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerifyOnEncode.Name" xml:space="preserve">
+    <value>checkBoxCTDBVerifyOnEncode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerifyOnEncode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerifyOnEncode.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCUEStyle</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerifyOnEncode.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="tableLayoutPanelCUEStyle.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tableLayoutPanelCUEStyle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 17</value>
+  </data>
+  <data name="tableLayoutPanelCUEStyle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="tableLayoutPanelCUEStyle.RowCount" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="tableLayoutPanelCUEStyle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>144, 110</value>
+  </data>
+  <data name="tableLayoutPanelCUEStyle.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanelCUEStyle.Name" xml:space="preserve">
     <value>tableLayoutPanelCUEStyle</value>
@@ -325,10 +568,31 @@
     <value>groupBoxMode</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanelCUEStyle.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>0</value>
   </data>
   <data name="tableLayoutPanelCUEStyle.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxUseAccurateRip" Row="4" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxUseFreeDb" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="rbTracks" Row="2" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbEmbedCUE" Row="0" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbSingleFile" Row="1" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="checkBoxUseMusicBrainz" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33.33332,Percent,33.33334,Percent,33.33334" /&gt;&lt;Rows Styles="Percent,18.18229,Percent,18.18229,Percent,18.18229,Percent,22.72658,Percent,22.72658" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="rbTracks" Row="2" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbEmbedCUE" Row="0" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbSingleFile" Row="1" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="checkBoxEditTags" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxARVerifyOnEncode" Row="4" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxCTDBVerifyOnEncode" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33.33332,Percent,33.33334,Percent,33.33334" /&gt;&lt;Rows Styles="Percent,18.18229,Percent,18.18229,Percent,18.18229,Percent,22.72658,Percent,22.72658" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <metadata name="toolStripCorrectorFormat.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>3, 17</value>
+  </metadata>
+  <data name="toolStripCorrectorFormat.AutoSize" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="toolStripCorrectorFormat.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="toolStripCorrectorFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 17</value>
+  </data>
+  <data name="toolStripCorrectorFormat.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 1, 0</value>
+  </data>
+  <data name="toolStripCorrectorFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>144, 110</value>
+  </data>
+  <data name="toolStripCorrectorFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
   </data>
   <data name="&gt;&gt;toolStripCorrectorFormat.Name" xml:space="preserve">
     <value>toolStripCorrectorFormat</value>
@@ -340,7 +604,76 @@
     <value>groupBoxMode</value>
   </data>
   <data name="&gt;&gt;toolStripCorrectorFormat.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.Name" xml:space="preserve">
+    <value>checkBoxSkipRecent</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.Parent" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxSkipRecent.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.Name" xml:space="preserve">
+    <value>checkBoxVerifyUseLocal</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.Parent" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxVerifyUseLocal.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerify.Name" xml:space="preserve">
+    <value>checkBoxCTDBVerify</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerify.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerify.Parent" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;checkBoxCTDBVerify.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 17</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.RowCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>144, 110</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Name" xml:space="preserve">
+    <value>tableLayoutPanelVerifyMode</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Parent" xml:space="preserve">
+    <value>groupBoxMode</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelVerifyMode.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelVerifyMode.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxSkipRecent" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxVerifyUseLocal" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxCTDBVerify" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33.33333,Percent,33.33333,Percent,33.33333,Absolute,20" /&gt;&lt;Rows Styles="Percent,32.72727,Percent,67.27273" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="groupBoxMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -369,18 +702,6 @@
   <data name="&gt;&gt;groupBoxMode.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="buttonEncoderSettings.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
-  <data name="buttonEncoderSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 115</value>
-  </data>
-  <data name="buttonEncoderSettings.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
-  </data>
-  <data name="buttonEncoderSettings.TabIndex" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
   <data name="&gt;&gt;buttonEncoderSettings.Name" xml:space="preserve">
     <value>buttonEncoderSettings</value>
   </data>
@@ -392,33 +713,6 @@
   </data>
   <data name="&gt;&gt;buttonEncoderSettings.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="labelEncoderMaxMode.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="labelEncoderMaxMode.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
-  </data>
-  <data name="labelEncoderMaxMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="labelEncoderMaxMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>100, 174</value>
-  </data>
-  <data name="labelEncoderMaxMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="labelEncoderMaxMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>39, 13</value>
-  </data>
-  <data name="labelEncoderMaxMode.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
-  </data>
-  <data name="labelEncoderMaxMode.Text" xml:space="preserve">
-    <value>320</value>
-  </data>
-  <data name="labelEncoderMaxMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopRight</value>
   </data>
   <data name="&gt;&gt;labelEncoderMaxMode.Name" xml:space="preserve">
     <value>labelEncoderMaxMode</value>
@@ -432,33 +726,6 @@
   <data name="&gt;&gt;labelEncoderMaxMode.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="labelEncoderMinMode.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelEncoderMinMode.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="labelEncoderMinMode.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
-  </data>
-  <data name="labelEncoderMinMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="labelEncoderMinMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 174</value>
-  </data>
-  <data name="labelEncoderMinMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="labelEncoderMinMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>25, 13</value>
-  </data>
-  <data name="labelEncoderMinMode.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
-  </data>
-  <data name="labelEncoderMinMode.Text" xml:space="preserve">
-    <value>128</value>
-  </data>
   <data name="&gt;&gt;labelEncoderMinMode.Name" xml:space="preserve">
     <value>labelEncoderMinMode</value>
   </data>
@@ -470,33 +737,6 @@
   </data>
   <data name="&gt;&gt;labelEncoderMinMode.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="labelEncoderMode.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Tahoma, 8.25pt</value>
-  </data>
-  <data name="labelEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="labelEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 174</value>
-  </data>
-  <data name="labelEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="labelEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>139, 15</value>
-  </data>
-  <data name="labelEncoderMode.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
-  </data>
-  <data name="labelEncoderMode.Text" xml:space="preserve">
-    <value>256</value>
-  </data>
-  <data name="labelEncoderMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopCenter</value>
-  </data>
-  <data name="labelEncoderMode.ToolTip" xml:space="preserve">
-    <value>For lossless formats, the level of compression. For lossy formats, target quality</value>
   </data>
   <data name="&gt;&gt;labelEncoderMode.Name" xml:space="preserve">
     <value>labelEncoderMode</value>
@@ -510,24 +750,6 @@
   <data name="&gt;&gt;labelEncoderMode.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="trackBarEncoderMode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="trackBarEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="trackBarEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 143</value>
-  </data>
-  <data name="trackBarEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="trackBarEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>142, 45</value>
-  </data>
-  <data name="trackBarEncoderMode.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
-  </data>
   <data name="&gt;&gt;trackBarEncoderMode.Name" xml:space="preserve">
     <value>trackBarEncoderMode</value>
   </data>
@@ -539,21 +761,6 @@
   </data>
   <data name="&gt;&gt;trackBarEncoderMode.ZOrder" xml:space="preserve">
     <value>4</value>
-  </data>
-  <data name="comboBoxEncoder.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="comboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
-    <value>38, 116</value>
-  </data>
-  <data name="comboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
-    <value>101, 21</value>
-  </data>
-  <data name="comboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
-  </data>
-  <data name="comboBoxEncoder.ToolTip" xml:space="preserve">
-    <value>Encoder to use</value>
   </data>
   <data name="&gt;&gt;comboBoxEncoder.Name" xml:space="preserve">
     <value>comboBoxEncoder</value>
@@ -567,27 +774,6 @@
   <data name="&gt;&gt;comboBoxEncoder.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="radioButtonAudioNone.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButtonAudioNone.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="radioButtonAudioNone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 53</value>
-  </data>
-  <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
-    <value>50, 17</value>
-  </data>
-  <data name="radioButtonAudioNone.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
-  </data>
-  <data name="radioButtonAudioNone.Text" xml:space="preserve">
-    <value>None</value>
-  </data>
-  <data name="radioButtonAudioNone.ToolTip" xml:space="preserve">
-    <value>No audio output</value>
-  </data>
   <data name="&gt;&gt;radioButtonAudioNone.Name" xml:space="preserve">
     <value>radioButtonAudioNone</value>
   </data>
@@ -599,27 +785,6 @@
   </data>
   <data name="&gt;&gt;radioButtonAudioNone.ZOrder" xml:space="preserve">
     <value>6</value>
-  </data>
-  <data name="radioButtonAudioLossy.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButtonAudioLossy.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="radioButtonAudioLossy.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 36</value>
-  </data>
-  <data name="radioButtonAudioLossy.Size" type="System.Drawing.Size, System.Drawing">
-    <value>52, 17</value>
-  </data>
-  <data name="radioButtonAudioLossy.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
-  </data>
-  <data name="radioButtonAudioLossy.Text" xml:space="preserve">
-    <value>Lossy</value>
-  </data>
-  <data name="radioButtonAudioLossy.ToolTip" xml:space="preserve">
-    <value>Codecs which reduce audio quality</value>
   </data>
   <data name="&gt;&gt;radioButtonAudioLossy.Name" xml:space="preserve">
     <value>radioButtonAudioLossy</value>
@@ -633,27 +798,6 @@
   <data name="&gt;&gt;radioButtonAudioLossy.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="radioButtonAudioLossless.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButtonAudioLossless.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="radioButtonAudioLossless.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 19</value>
-  </data>
-  <data name="radioButtonAudioLossless.Size" type="System.Drawing.Size, System.Drawing">
-    <value>64, 17</value>
-  </data>
-  <data name="radioButtonAudioLossless.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="radioButtonAudioLossless.Text" xml:space="preserve">
-    <value>Lossless</value>
-  </data>
-  <data name="radioButtonAudioLossless.ToolTip" xml:space="preserve">
-    <value>Codecs that preserve bit-exact audio copy</value>
-  </data>
   <data name="&gt;&gt;radioButtonAudioLossless.Name" xml:space="preserve">
     <value>radioButtonAudioLossless</value>
   </data>
@@ -666,24 +810,6 @@
   <data name="&gt;&gt;radioButtonAudioLossless.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="labelFormat.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelFormat.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="labelFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 90</value>
-  </data>
-  <data name="labelFormat.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>16, 16</value>
-  </data>
-  <data name="labelFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>16, 16</value>
-  </data>
-  <data name="labelFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
   <data name="&gt;&gt;labelFormat.Name" xml:space="preserve">
     <value>labelFormat</value>
   </data>
@@ -695,21 +821,6 @@
   </data>
   <data name="&gt;&gt;labelFormat.ZOrder" xml:space="preserve">
     <value>9</value>
-  </data>
-  <data name="comboBoxAudioFormat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="comboBoxAudioFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>38, 88</value>
-  </data>
-  <data name="comboBoxAudioFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>101, 21</value>
-  </data>
-  <data name="comboBoxAudioFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
-  </data>
-  <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
-    <value>Audio file format</value>
   </data>
   <data name="&gt;&gt;comboBoxAudioFormat.Name" xml:space="preserve">
     <value>comboBoxAudioFormat</value>
@@ -1230,78 +1341,6 @@
   <data name="&gt;&gt;fileSystemTreeView1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="tableLayoutPanelVerifyMode.ColumnCount" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;checkBoxSkipRecent.Name" xml:space="preserve">
-    <value>checkBoxSkipRecent</value>
-  </data>
-  <data name="&gt;&gt;checkBoxSkipRecent.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxSkipRecent.Parent" xml:space="preserve">
-    <value>tableLayoutPanelVerifyMode</value>
-  </data>
-  <data name="&gt;&gt;checkBoxSkipRecent.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseLocal.Name" xml:space="preserve">
-    <value>checkBoxVerifyUseLocal</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseLocal.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseLocal.Parent" xml:space="preserve">
-    <value>tableLayoutPanelVerifyMode</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseLocal.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Name" xml:space="preserve">
-    <value>checkBoxVerifyUseCDRepair</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Parent" xml:space="preserve">
-    <value>tableLayoutPanelVerifyMode</value>
-  </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 17</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.RowCount" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 110</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Name" xml:space="preserve">
-    <value>tableLayoutPanelVerifyMode</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.Parent" xml:space="preserve">
-    <value>groupBoxMode</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelVerifyMode.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="tableLayoutPanelVerifyMode.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxSkipRecent" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxVerifyUseLocal" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxVerifyUseCDRepair" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33.33333,Percent,33.33333,Percent,33.33333,Absolute,20" /&gt;&lt;Rows Styles="Percent,32.72727,Percent,67.27273" /&gt;&lt;/TableLayoutSettings&gt;</value>
-  </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>153, 8</value>
-  </metadata>
   <data name="checkBoxSkipRecent.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1368,412 +1407,37 @@
   <data name="&gt;&gt;checkBoxVerifyUseLocal.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="checkBoxVerifyUseCDRepair.AutoSize" type="System.Boolean, mscorlib">
+  <data name="checkBoxCTDBVerify.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="checkBoxVerifyUseCDRepair.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+  <data name="checkBoxCTDBVerify.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
-  <data name="checkBoxVerifyUseCDRepair.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="checkBoxCTDBVerify.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="checkBoxVerifyUseCDRepair.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="checkBoxCTDBVerify.Location" type="System.Drawing.Point, System.Drawing">
     <value>3, 3</value>
   </data>
-  <data name="checkBoxVerifyUseCDRepair.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="checkBoxCTDBVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>42, 29</value>
   </data>
-  <data name="checkBoxVerifyUseCDRepair.TabIndex" type="System.Int32, mscorlib">
+  <data name="checkBoxCTDBVerify.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="checkBoxVerifyUseCDRepair.ToolTip" xml:space="preserve">
+  <data name="checkBoxCTDBVerify.ToolTip" xml:space="preserve">
     <value>Use CTDB (CUETools database)</value>
   </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Name" xml:space="preserve">
-    <value>checkBoxVerifyUseCDRepair</value>
+  <data name="&gt;&gt;checkBoxCTDBVerify.Name" xml:space="preserve">
+    <value>checkBoxCTDBVerify</value>
   </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Type" xml:space="preserve">
+  <data name="&gt;&gt;checkBoxCTDBVerify.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.Parent" xml:space="preserve">
+  <data name="&gt;&gt;checkBoxCTDBVerify.Parent" xml:space="preserve">
     <value>tableLayoutPanelVerifyMode</value>
   </data>
-  <data name="&gt;&gt;checkBoxVerifyUseCDRepair.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.ColumnCount" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.Name" xml:space="preserve">
-    <value>checkBoxUseAccurateRip</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.Name" xml:space="preserve">
-    <value>checkBoxUseFreeDb</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.Name" xml:space="preserve">
-    <value>rbTracks</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Name" xml:space="preserve">
-    <value>rbEmbedCUE</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Name" xml:space="preserve">
-    <value>rbSingleFile</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.Name" xml:space="preserve">
-    <value>checkBoxUseMusicBrainz</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 17</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.RowCount" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 110</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelCUEStyle.Name" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelCUEStyle.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelCUEStyle.Parent" xml:space="preserve">
-    <value>groupBoxMode</value>
-  </data>
-  <data name="&gt;&gt;tableLayoutPanelCUEStyle.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="tableLayoutPanelCUEStyle.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="checkBoxUseAccurateRip" Row="4" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxUseFreeDb" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="rbTracks" Row="2" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbEmbedCUE" Row="0" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="rbSingleFile" Row="1" RowSpan="1" Column="0" ColumnSpan="3" /&gt;&lt;Control Name="checkBoxUseMusicBrainz" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,33.33332,Percent,33.33334,Percent,33.33334" /&gt;&lt;Rows Styles="Percent,18.18229,Percent,18.18229,Percent,18.18229,Percent,22.72658,Percent,22.72658" /&gt;&lt;/TableLayoutSettings&gt;</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>95, 84</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>0, 16</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>49, 26</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
-    <value>Use AccurateRip</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.Name" xml:space="preserve">
-    <value>checkBoxUseAccurateRip</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseAccurateRip.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="checkBoxUseFreeDb.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="checkBoxUseFreeDb.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="checkBoxUseFreeDb.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="checkBoxUseFreeDb.Location" type="System.Drawing.Point, System.Drawing">
-    <value>47, 84</value>
-  </data>
-  <data name="checkBoxUseFreeDb.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="checkBoxUseFreeDb.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>0, 16</value>
-  </data>
-  <data name="checkBoxUseFreeDb.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 26</value>
-  </data>
-  <data name="checkBoxUseFreeDb.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="checkBoxUseFreeDb.ToolTip" xml:space="preserve">
-    <value>Use FreeDb</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.Name" xml:space="preserve">
-    <value>checkBoxUseFreeDb</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseFreeDb.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="rbTracks.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="rbTracks.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="rbTracks.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="rbTracks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 40</value>
-  </data>
-  <data name="rbTracks.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 0, 3, 0</value>
-  </data>
-  <data name="rbTracks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 20</value>
-  </data>
-  <data name="rbTracks.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="rbTracks.Text" xml:space="preserve">
-    <value>&amp;Tracks</value>
-  </data>
-  <data name="rbTracks.ToolTip" xml:space="preserve">
-    <value>File per track. Gap handling can be selected in advanced settings.</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.Name" xml:space="preserve">
-    <value>rbTracks</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;rbTracks.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="rbEmbedCUE.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="rbEmbedCUE.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="rbEmbedCUE.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="rbEmbedCUE.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 0</value>
-  </data>
-  <data name="rbEmbedCUE.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 0, 3, 0</value>
-  </data>
-  <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 20</value>
-  </data>
-  <data name="rbEmbedCUE.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="rbEmbedCUE.Text" xml:space="preserve">
-    <value>&amp;Embedded</value>
-  </data>
-  <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
-    <value>Create single file with embedded CUE sheet.</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Name" xml:space="preserve">
-    <value>rbEmbedCUE</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;rbEmbedCUE.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="rbSingleFile.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="rbSingleFile.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="rbSingleFile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="rbSingleFile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 20</value>
-  </data>
-  <data name="rbSingleFile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 0, 3, 0</value>
-  </data>
-  <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 20</value>
-  </data>
-  <data name="rbSingleFile.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="rbSingleFile.Text" xml:space="preserve">
-    <value>Image + CUE</value>
-  </data>
-  <data name="rbSingleFile.ToolTip" xml:space="preserve">
-    <value>Create single file + CUE sheet</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Name" xml:space="preserve">
-    <value>rbSingleFile</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;rbSingleFile.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 84</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>0, 16</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 26</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.ToolTip" xml:space="preserve">
-    <value>Use MusicBrainz</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.Name" xml:space="preserve">
-    <value>checkBoxUseMusicBrainz</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.Parent" xml:space="preserve">
-    <value>tableLayoutPanelCUEStyle</value>
-  </data>
-  <data name="&gt;&gt;checkBoxUseMusicBrainz.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <metadata name="toolStripCorrectorFormat.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>3, 17</value>
-  </metadata>
-  <data name="toolStripCorrectorFormat.AutoSize" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="toolStripCorrectorFormat.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="toolStripCorrectorFormat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 17</value>
-  </data>
-  <data name="toolStripCorrectorFormat.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 0, 1, 0</value>
-  </data>
-  <data name="toolStripCorrectorFormat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 110</value>
-  </data>
-  <data name="toolStripCorrectorFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
-  <data name="&gt;&gt;toolStripCorrectorFormat.Name" xml:space="preserve">
-    <value>toolStripCorrectorFormat</value>
-  </data>
-  <data name="&gt;&gt;toolStripCorrectorFormat.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripCorrectorFormat.Parent" xml:space="preserve">
-    <value>groupBoxMode</value>
-  </data>
-  <data name="&gt;&gt;toolStripCorrectorFormat.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;checkBoxCTDBVerify.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
   <data name="toolStripButtonCorrectorOverwrite.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
@@ -1820,6 +1484,360 @@
   </data>
   <data name="toolStripDropDownButtonCorrectorFormat.Text" xml:space="preserve">
     <value>flac</value>
+  </data>
+  <data name="buttonEncoderSettings.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonEncoderSettings.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 115</value>
+  </data>
+  <data name="buttonEncoderSettings.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
+  </data>
+  <data name="buttonEncoderSettings.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.Name" xml:space="preserve">
+    <value>buttonEncoderSettings</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;buttonEncoderSettings.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="labelEncoderMaxMode.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="labelEncoderMaxMode.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 8.25pt</value>
+  </data>
+  <data name="labelEncoderMaxMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelEncoderMaxMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>100, 174</value>
+  </data>
+  <data name="labelEncoderMaxMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="labelEncoderMaxMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>39, 13</value>
+  </data>
+  <data name="labelEncoderMaxMode.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="labelEncoderMaxMode.Text" xml:space="preserve">
+    <value>320</value>
+  </data>
+  <data name="labelEncoderMaxMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopRight</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.Name" xml:space="preserve">
+    <value>labelEncoderMaxMode</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMaxMode.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="labelEncoderMinMode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelEncoderMinMode.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="labelEncoderMinMode.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 8.25pt</value>
+  </data>
+  <data name="labelEncoderMinMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelEncoderMinMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 174</value>
+  </data>
+  <data name="labelEncoderMinMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="labelEncoderMinMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>25, 13</value>
+  </data>
+  <data name="labelEncoderMinMode.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="labelEncoderMinMode.Text" xml:space="preserve">
+    <value>128</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.Name" xml:space="preserve">
+    <value>labelEncoderMinMode</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMinMode.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="labelEncoderMode.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 8.25pt</value>
+  </data>
+  <data name="labelEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 174</value>
+  </data>
+  <data name="labelEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="labelEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>139, 15</value>
+  </data>
+  <data name="labelEncoderMode.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="labelEncoderMode.Text" xml:space="preserve">
+    <value>256</value>
+  </data>
+  <data name="labelEncoderMode.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="labelEncoderMode.ToolTip" xml:space="preserve">
+    <value>For lossless formats, the level of compression. For lossy formats, target quality</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.Name" xml:space="preserve">
+    <value>labelEncoderMode</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;labelEncoderMode.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="trackBarEncoderMode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="trackBarEncoderMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="trackBarEncoderMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 143</value>
+  </data>
+  <data name="trackBarEncoderMode.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="trackBarEncoderMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>142, 45</value>
+  </data>
+  <data name="trackBarEncoderMode.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.Name" xml:space="preserve">
+    <value>trackBarEncoderMode</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TrackBar, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;trackBarEncoderMode.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="comboBoxEncoder.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="comboBoxEncoder.Location" type="System.Drawing.Point, System.Drawing">
+    <value>38, 116</value>
+  </data>
+  <data name="comboBoxEncoder.Size" type="System.Drawing.Size, System.Drawing">
+    <value>101, 21</value>
+  </data>
+  <data name="comboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="comboBoxEncoder.ToolTip" xml:space="preserve">
+    <value>Encoder to use</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.Name" xml:space="preserve">
+    <value>comboBoxEncoder</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;comboBoxEncoder.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="radioButtonAudioNone.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAudioNone.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="radioButtonAudioNone.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 53</value>
+  </data>
+  <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
+    <value>50, 17</value>
+  </data>
+  <data name="radioButtonAudioNone.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="radioButtonAudioNone.Text" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="radioButtonAudioNone.ToolTip" xml:space="preserve">
+    <value>No audio output</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioNone.Name" xml:space="preserve">
+    <value>radioButtonAudioNone</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioNone.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioNone.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioNone.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="radioButtonAudioLossy.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAudioLossy.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="radioButtonAudioLossy.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 36</value>
+  </data>
+  <data name="radioButtonAudioLossy.Size" type="System.Drawing.Size, System.Drawing">
+    <value>52, 17</value>
+  </data>
+  <data name="radioButtonAudioLossy.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="radioButtonAudioLossy.Text" xml:space="preserve">
+    <value>Lossy</value>
+  </data>
+  <data name="radioButtonAudioLossy.ToolTip" xml:space="preserve">
+    <value>Codecs which reduce audio quality</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.Name" xml:space="preserve">
+    <value>radioButtonAudioLossy</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossy.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="radioButtonAudioLossless.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAudioLossless.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="radioButtonAudioLossless.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 19</value>
+  </data>
+  <data name="radioButtonAudioLossless.Size" type="System.Drawing.Size, System.Drawing">
+    <value>64, 17</value>
+  </data>
+  <data name="radioButtonAudioLossless.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="radioButtonAudioLossless.Text" xml:space="preserve">
+    <value>Lossless</value>
+  </data>
+  <data name="radioButtonAudioLossless.ToolTip" xml:space="preserve">
+    <value>Codecs that preserve bit-exact audio copy</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.Name" xml:space="preserve">
+    <value>radioButtonAudioLossless</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAudioLossless.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="labelFormat.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelFormat.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="labelFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 90</value>
+  </data>
+  <data name="labelFormat.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>16, 16</value>
+  </data>
+  <data name="labelFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>16, 16</value>
+  </data>
+  <data name="labelFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;labelFormat.Name" xml:space="preserve">
+    <value>labelFormat</value>
+  </data>
+  <data name="&gt;&gt;labelFormat.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelFormat.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;labelFormat.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="comboBoxAudioFormat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="comboBoxAudioFormat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>38, 88</value>
+  </data>
+  <data name="comboBoxAudioFormat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>101, 21</value>
+  </data>
+  <data name="comboBoxAudioFormat.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
+    <value>Audio file format</value>
+  </data>
+  <data name="&gt;&gt;comboBoxAudioFormat.Name" xml:space="preserve">
+    <value>comboBoxAudioFormat</value>
+  </data>
+  <data name="&gt;&gt;comboBoxAudioFormat.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBoxAudioFormat.Parent" xml:space="preserve">
+    <value>grpAudioOutput</value>
+  </data>
+  <data name="&gt;&gt;comboBoxAudioFormat.ZOrder" xml:space="preserve">
+    <value>10</value>
   </data>
   <metadata name="toolStripInput.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>0, 0</value>
@@ -1971,6 +1989,9 @@
   <data name="&gt;&gt;labelOutputTemplate.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>153, 8</value>
+  </metadata>
   <data name="comboBoxOutputFormat.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
@@ -2877,9 +2898,6 @@
   <data name="toolStripButtonShowLog.Text" xml:space="preserve">
     <value>Batch log</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>153, 8</value>
-  </metadata>
   <metadata name="contextMenuStripFileTree.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>424, 8</value>
   </metadata>
