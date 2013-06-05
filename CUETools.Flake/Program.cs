@@ -92,10 +92,11 @@ namespace CUETools.FlakeExe
             Console.WriteLine();
             Console.WriteLine("Options:");
             Console.WriteLine();
-            Console.WriteLine(" -0 .. -11            Compression level, default 7.");
+            Console.WriteLine(" -0 .. -11            Compression level, default 7; 9..11 require --lax");
             Console.WriteLine(" -o <file>            Output filename, or \"-\" for stdout, or nul.");
             Console.WriteLine(" -p #                 Padding bytes.");
             Console.WriteLine(" -q --quiet           Quiet mode.");
+            Console.WriteLine(" --lax                Allow non-subset modes");
             Console.WriteLine(" --verify             Verify during encoding.");
             Console.WriteLine(" --no-md5             Don't compute MD5 hash.");
             Console.WriteLine(" --no-seektable       Don't generate a seektable.");
@@ -148,6 +149,7 @@ namespace CUETools.FlakeExe
             bool buffered = false;
             string coeffs = null;
             var settings = new FlakeWriterSettings() { AllowNonSubset = true };
+            bool allowNonSubset = false;
 #if FINETUNE
             int finetune_depth = -1;
 #endif
@@ -167,6 +169,8 @@ namespace CUETools.FlakeExe
                     do_seektable = false;
                 else if (args[arg] == "--no-md5")
                     settings.DoMD5 = false;
+                else if (args[arg] == "--lax")
+                    allowNonSubset = true;
                 else if (args[arg] == "--buffered")
                     buffered = true;
                 else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
@@ -324,6 +328,7 @@ namespace CUETools.FlakeExe
                             if (output_file == null)
                                 output_file = Path.ChangeExtension(input_file, "flac");
                             settings.PCM = audioSource.PCM;
+                            settings.AllowNonSubset = allowNonSubset;
                             FlakeWriter flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
                                 output_file == "-" ? Console.OpenStandardOutput() :
                                 output_file == "nul" ? new NullStream() : null,
@@ -383,6 +388,16 @@ namespace CUETools.FlakeExe
                                 Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
                             }
 
+                            bool keepRunning = true;
+                            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
+                            {
+                                keepRunning = false;
+                                if (e.SpecialKey == ConsoleSpecialKey.ControlC)
+                                    e.Cancel = true;
+                                else
+                                    audioDest.Delete();
+                            };
+
                             start = DateTime.Now;
 
 #if !DEBUG
@@ -407,6 +422,8 @@ namespace CUETools.FlakeExe
                                             lastPrint = elapsed;
                                         }
                                     }
+                                    if (!keepRunning)
+                                        throw new Exception("Aborted");
                                 }
                                 audioDest.Close();
                             }

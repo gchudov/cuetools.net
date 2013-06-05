@@ -373,9 +373,6 @@ namespace CUETools.Codecs.FLACCL
                         task.Dispose();
                 openCLProgram.Dispose();
                 OCLMan.Dispose();
-                // For some reason, if i move _IO.Close before OCLMan.Dispose, 
-                // interrupting conversion takes many seconds - Delete() just
-                // hangs somewhere in the vicinity of File.Delete().
                 _IO.Close();
                 inited = false;
             }
