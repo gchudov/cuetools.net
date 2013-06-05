@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using CUEControls;
 using CUETools.Processor;
+using CUETools.Codecs;
 
 namespace JDP
 {

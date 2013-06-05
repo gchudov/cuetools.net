@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using TagLib;
+using CUETools.Codecs;
 
 namespace TagLib.UserDefined {
 	/// <summary>
@@ -46,7 +47,7 @@ namespace TagLib.UserDefined {
 	{
 		#region Private Fields
 
-		private CUETools.Processor.CUEToolsTagger tagger;
+		private CUEToolsTagger tagger;
 		
 		#endregion
 		
@@ -71,17 +72,17 @@ namespace TagLib.UserDefined {
 		/// <exception cref="ArgumentNullException">
 		///    <paramref name="path" /> is <see langword="null" />.
 		/// </exception>
-		public File (string path, ReadStyle propertiesStyle, CUETools.Processor.CUEToolsTagger _tagger)
+		public File (string path, ReadStyle propertiesStyle, CUEToolsTagger _tagger)
 			: base (path, propertiesStyle)
 		{
 			tagger = _tagger;
 			// Make sure we have a tag.
 			switch (tagger)
 			{
-				case CUETools.Processor.CUEToolsTagger.APEv2:
+                case CUEToolsTagger.APEv2:
 					GetTag(TagTypes.Ape, true);
 					break;
-				case CUETools.Processor.CUEToolsTagger.ID3v2:
+                case CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
 					break;
 			}
@@ -99,17 +100,17 @@ namespace TagLib.UserDefined {
 		/// <exception cref="ArgumentNullException">
 		///    <paramref name="path" /> is <see langword="null" />.
 		/// </exception>
-		public File(string path, CUETools.Processor.CUEToolsTagger _tagger)
+        public File(string path, CUEToolsTagger _tagger)
 			: base(path)
 		{
 			tagger = _tagger;
 			// Make sure we have a tag.
 			switch (tagger)
 			{
-				case CUETools.Processor.CUEToolsTagger.APEv2:
+                case CUEToolsTagger.APEv2:
 					GetTag(TagTypes.Ape, true);
 					break;
-				case CUETools.Processor.CUEToolsTagger.ID3v2:
+                case CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
 					break;
 			}
@@ -134,17 +135,17 @@ namespace TagLib.UserDefined {
 		///    />.
 		/// </exception>
 		public File (File.IFileAbstraction abstraction,
-					 ReadStyle propertiesStyle, CUETools.Processor.CUEToolsTagger _tagger)
+                     ReadStyle propertiesStyle, CUEToolsTagger _tagger)
 			: base (abstraction, propertiesStyle)
 		{
 			tagger = _tagger;
 			// Make sure we have a tag.
 			switch (tagger)
 			{
-				case CUETools.Processor.CUEToolsTagger.APEv2:
+                case CUEToolsTagger.APEv2:
 					GetTag(TagTypes.Ape, true);
 					break;
-				case CUETools.Processor.CUEToolsTagger.ID3v2:
+                case CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
 					break;
 			}
@@ -163,17 +164,17 @@ namespace TagLib.UserDefined {
 		///    <paramref name="abstraction" /> is <see langword="null"
 		///    />.
 		/// </exception>
-		public File(File.IFileAbstraction abstraction, CUETools.Processor.CUEToolsTagger _tagger)
+        public File(File.IFileAbstraction abstraction, CUEToolsTagger _tagger)
 			: base (abstraction)
 		{
 			tagger = _tagger;
 			// Make sure we have a tag.
 			switch (tagger)
 			{
-				case CUETools.Processor.CUEToolsTagger.APEv2:
+                case CUEToolsTagger.APEv2:
 					GetTag(TagTypes.Ape, true);
 					break;
-				case CUETools.Processor.CUEToolsTagger.ID3v2:
+                case CUEToolsTagger.ID3v2:
 					GetTag(TagTypes.Id3v2, true);
 					break;
 			}
@@ -185,7 +186,7 @@ namespace TagLib.UserDefined {
 		
 		#region Public Methods
 
-		public CUETools.Processor.CUEToolsTagger Tagger
+        public CUEToolsTagger Tagger
 		{
 			get
 			{
@@ -331,8 +332,8 @@ namespace TagLib.UserDefined {
 
 		private static TagLib.File UserDefinedResolver(TagLib.File.IFileAbstraction abstraction, string mimetype, TagLib.ReadStyle style)
 		{
-			foreach (KeyValuePair<string,CUETools.Processor.CUEToolsFormat> fmt in _config.formats)
-				if (fmt.Value.tagger != CUETools.Processor.CUEToolsTagger.TagLibSharp && mimetype == "taglib/" + fmt.Key)
+			foreach (KeyValuePair<string,CUEToolsFormat> fmt in _config.formats)
+                if (fmt.Value.tagger != CUEToolsTagger.TagLibSharp && mimetype == "taglib/" + fmt.Key)
 					return new File(abstraction, style, fmt.Value.tagger);
 			return null;
 		}

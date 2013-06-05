@@ -1,4 +1,4 @@
-﻿namespace CUETools.Processor
+﻿namespace CUETools.Codecs
 {
     public class CUEToolsFormat
     {

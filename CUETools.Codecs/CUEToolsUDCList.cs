@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace CUETools.Processor
+namespace CUETools.Codecs
 {
     public class CUEToolsUDCList : BindingList<CUEToolsUDC>
     {

@@ -74,6 +74,10 @@
     <Compile Include="CRC\CRC16CCITT.cs" />
     <Compile Include="CRC\CRC32.cs" />
     <Compile Include="CRC\CRC8.cs" />
+    <Compile Include="CUEToolsFormat.cs" />
+    <Compile Include="CUEToolsTagger.cs" />
+    <Compile Include="CUEToolsUDC.cs" />
+    <Compile Include="CUEToolsUDCList.cs" />
     <Compile Include="CyclicBuffer.cs" />
     <Compile Include="CyclicBufferInputStream.cs" />
     <Compile Include="CyclicBufferOutputStream.cs" />

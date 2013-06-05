@@ -259,7 +259,7 @@ namespace CUETools.FlakeExe
 
             if (!quiet)
             {
-                Console.WriteLine("CUETools.Flake, Copyright (C) 2009 Grigory Chudov.");
+                Console.WriteLine("CUETools.Flake, Copyright (C) 2009-2013 Grigory Chudov.");
                 Console.WriteLine("Based on Flake encoder by Justin Ruggles, <http://flake-enc.sourceforge.net/>.");
                 Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
                 Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");

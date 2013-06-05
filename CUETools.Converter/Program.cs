@@ -15,12 +15,13 @@ namespace CUETools.Converter
             Console.Error.WriteLine();
             Console.Error.WriteLine("Options:");
             Console.Error.WriteLine();
-            Console.Error.WriteLine(" --decoder <name>     Use non-default decoder.");
-            Console.Error.WriteLine(" --encoder <name>     Use non-default encoder.");
-            Console.Error.WriteLine(" --lossy              Use lossy encoder/mode.");
-            Console.Error.WriteLine(" --lossless           Use lossless encoder/mode (default).");
-            Console.Error.WriteLine(" -p #                 Padding bytes.");
-            Console.Error.WriteLine(" -m <mode>            Encoder mode (0..8 for flac, V0..V9 for mp3, etc)");
+            Console.Error.WriteLine(" --decoder <name>       Use non-default decoder.");
+            Console.Error.WriteLine(" --encoder <name>       Use non-default encoder.");
+            Console.Error.WriteLine(" --encoder-format <ext> Use encoder format different from file extension.");
+            Console.Error.WriteLine(" --lossy                Use lossy encoder/mode.");
+            Console.Error.WriteLine(" --lossless             Use lossless encoder/mode (default).");
+            Console.Error.WriteLine(" -p #                   Padding bytes.");
+            Console.Error.WriteLine(" -m <mode>              Encoder mode (0..8 for flac, V0..V9 for mp3, etc)");
             Console.Error.WriteLine();
         }
 
@@ -107,7 +108,7 @@ namespace CUETools.Converter
                     break;
             }
 
-            Console.Error.WriteLine("CUETools.Converter, Copyright (C) 2009-13 Grigory Chudov.");
+            Console.Error.WriteLine("CUETools.Converter, Copyright (C) 2009-2013 Grigory Chudov.");
             Console.Error.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
             Console.Error.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
             if (!ok || sourceFile == null || destFile == null)
@@ -126,8 +127,6 @@ namespace CUETools.Converter
             TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
             CUEConfig config = new CUEConfig();
 
-            SettingsReader sr = new SettingsReader("CUE Tools", "settings.txt", null);
-            config.Load(sr);
 #if !DEBUG
             try
 #endif

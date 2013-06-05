@@ -1,9 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using CUETools.Codecs;
 
-namespace CUETools.Processor
+namespace CUETools.Codecs
 {
     public class CUEToolsUDC : INotifyPropertyChanged
     {
