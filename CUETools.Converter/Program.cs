@@ -3,6 +3,7 @@ using System.IO;
 using CUETools.Codecs;
 using CUETools.Processor;
 using CUETools.Processor.Settings;
+using System.Collections.Generic;
 
 namespace CUETools.Converter
 {
@@ -26,8 +27,9 @@ namespace CUETools.Converter
         public static CUEToolsUDC GetEncoder(CUEConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
         {
             CUEToolsUDC tmpEncoder;
-            return chosenEncoder != null && config.encoders.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder :
-                lossless ? fmt.encoderLossless : fmt.encoderLossy;
+            return chosenEncoder != null ?
+                (config.encoders.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder : null) :
+                (lossless ? fmt.encoderLossless : fmt.encoderLossy);
         }
 
         public static IAudioSource GetAudioSource(CUEConfig config, string path, string chosenDecoder)
@@ -162,7 +164,12 @@ namespace CUETools.Converter
                         audioEncoderType == AudioEncoderType.Lossy ? Program.GetEncoder(config, fmt, false, encoderName) :
                         Program.GetEncoder(config, fmt, true, encoderName) ?? Program.GetEncoder(config, fmt, false, encoderName);
                     if (encoder == null)
-                        throw new Exception("Encoder available for format " + fmt.extension + ": " + (fmt.encoderLossless != null ? fmt.encoderLossless.Name + " (lossless)" : fmt.encoderLossy != null ? fmt.encoderLossy.Name + " (lossy)" : "none"));
+                    {
+                        var lst = new List<CUEToolsUDC>(config.Encoders).FindAll(
+                            e => e.extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
+                                ConvertAll(e => e.Name + (e.Lossless ? " (lossless)" : " (lossy)"));
+                        throw new Exception("Encoders available for format " + fmt.extension + ": " + (lst.Count == 0 ? "none" : string.Join(", ", lst.ToArray())));
+                    }
                     var settings = encoder.settings.Clone();
                     settings.PCM = audioSource.PCM;
                     settings.Padding = padding;
