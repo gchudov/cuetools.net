@@ -49,8 +49,7 @@ namespace CUETools.Codecs.FLAKE
 
         public override bool IsValid()
         {
-            return EncoderModeIndex >= 0 &&
-                (Padding >= 0 && Padding <= 1024 * 1024) &&
+            return EncoderModeIndex >= 0 && Padding >= 0 &&
                 (BlockSize == 0 || (BlockSize >= 256 && BlockSize <= Flake.MAX_BLOCKSIZE)) &&
                 (AllowNonSubset || EncoderModeIndex <= 8);
         }
