@@ -87,9 +87,15 @@ namespace CUETools.Processor
 
         private static double GetRangeQuality(CUESheet sheet, uint start, uint length)
         {
-            int failedSectorsCount = sheet.CDRipper.FailedSectors.PopulationCount((int)start - (int)sheet.TOC[sheet.TOC.FirstAudio][0].Start, (int)length);
-            int retrySectorsCount = sheet.CDRipper.RetrySectors.PopulationCount((int)start - (int)sheet.TOC[sheet.TOC.FirstAudio][0].Start, (int)length);
-            return 100 * (1.0 - Math.Log(failedSectorsCount / 5.0 + retrySectorsCount / 100.0 + 1) / Math.Log(length / 5.0 + length / 100.0 + 1));
+            int retrySectorsCount = 0;
+            for (int i = 0; i < (int)length; i++)
+                retrySectorsCount += sheet.CDRipper.RetryCount[(int)start - (int)sheet.TOC[sheet.TOC.FirstAudio][0].Start + i];
+#if LOGQ
+            int max_scans = (16 << sheet.CDRipper.CorrectionQuality) - 1;
+            return 100 * (1.0 - Math.Log(retrySectorsCount / 100.0 + 1) / Math.Log(max_scans * (int)length / 100.0 + 1));
+#else
+            return 100.0 * (sheet.CDRipper.CorrectionQuality + 1) * length / retrySectorsCount;
+#endif
         }
 
         public static string GetExactAudioCopyLog(CUESheet sheet)

@@ -22,7 +22,7 @@ namespace CUETools.Ripper
 		string CurrentReadCommand { get; }
 		int CorrectionQuality { get; set; }
 		BitArray FailedSectors { get; }
-        BitArray RetrySectors { get; }
+        byte[] RetryCount { get; }
 
 		event EventHandler<ReadProgressArgs> ReadProgress;
 	}
