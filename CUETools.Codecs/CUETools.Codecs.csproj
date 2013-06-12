@@ -74,6 +74,7 @@
     <Compile Include="CRC\CRC16CCITT.cs" />
     <Compile Include="CRC\CRC32.cs" />
     <Compile Include="CRC\CRC8.cs" />
+    <Compile Include="CUEToolsCodecsConfig.cs" />
     <Compile Include="CUEToolsFormat.cs" />
     <Compile Include="CUEToolsTagger.cs" />
     <Compile Include="CUEToolsUDC.cs" />

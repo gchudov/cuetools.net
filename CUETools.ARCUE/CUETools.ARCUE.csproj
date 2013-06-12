@@ -61,6 +61,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
+      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
+      <Name>CUETools.Codecs</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
       <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
       <Name>CUETools.CTDB</Name>

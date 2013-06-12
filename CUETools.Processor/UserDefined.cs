@@ -319,9 +319,9 @@ namespace TagLib.UserDefined {
 	public static class AdditionalFileTypes
 	{
 		private static bool inited = false;
-		private static CUETools.Processor.CUEConfig _config;
+        private static CUEToolsCodecsConfig _config;
 
-		public static CUETools.Processor.CUEConfig Config
+        public static CUEToolsCodecsConfig Config
 		{
 			set
 			{

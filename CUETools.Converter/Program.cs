@@ -1,9 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using CUETools.Codecs;
 using CUETools.Processor;
-using CUETools.Processor.Settings;
-using System.Collections.Generic;
 
 namespace CUETools.Converter
 {
@@ -25,7 +24,7 @@ namespace CUETools.Converter
             Console.Error.WriteLine();
         }
 
-        public static CUEToolsUDC GetEncoder(CUEConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
+        public static CUEToolsUDC GetEncoder(CUEToolsCodecsConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
         {
             CUEToolsUDC tmpEncoder;
             return chosenEncoder != null ?
@@ -33,7 +32,7 @@ namespace CUETools.Converter
                 (lossless ? fmt.encoderLossless : fmt.encoderLossy);
         }
 
-        public static IAudioSource GetAudioSource(CUEConfig config, string path, string chosenDecoder)
+        public static IAudioSource GetAudioSource(CUEToolsCodecsConfig config, string path, string chosenDecoder)
         {
             if (path == "-")
                 return new WAVReader("", Console.OpenStandardInput());
@@ -125,7 +124,7 @@ namespace CUETools.Converter
 
             DateTime start = DateTime.Now;
             TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
-            CUEConfig config = new CUEConfig();
+            CUEToolsCodecsConfig config = new CUEConfig();
 
 #if !DEBUG
             try
@@ -164,7 +163,7 @@ namespace CUETools.Converter
                         Program.GetEncoder(config, fmt, true, encoderName) ?? Program.GetEncoder(config, fmt, false, encoderName);
                     if (encoder == null)
                     {
-                        var lst = new List<CUEToolsUDC>(config.Encoders).FindAll(
+                        var lst = new List<CUEToolsUDC>(config.encoders).FindAll(
                             e => e.extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
                                 ConvertAll(e => e.Name + (e.Lossless ? " (lossless)" : " (lossy)"));
                         throw new Exception("Encoders available for format " + fmt.extension + ": " + (lst.Count == 0 ? "none" : string.Join(", ", lst.ToArray())));
@@ -241,7 +240,7 @@ namespace CUETools.Converter
                 if (sourceFile != "-" && destFile != "-" && destFile != "nul")
                 {
                     TagLib.File destInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
-                    if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config))
+                    if (Tagging.UpdateTags(destInfo, Tagging.Analyze(sourceInfo), config, false))
                     {
                         sourceInfo.Tag.CopyTo(destInfo.Tag, true);
                         destInfo.Tag.Pictures = sourceInfo.Tag.Pictures;

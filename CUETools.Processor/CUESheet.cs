@@ -2665,7 +2665,7 @@ namespace CUETools.Processor
                         NameValueCollection tags = GenerateAlbumTags(bestOffset, OutputStyle == CUEStyle.SingleFileWithCUE, _ripperLog ?? _eacLog);
                         TagLib.UserDefined.AdditionalFileTypes.Config = _config;
                         TagLib.File fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(_destPaths[0]));
-                        if (Tagging.UpdateTags(fileInfo, tags, _config))
+                        if (Tagging.UpdateTags(fileInfo, tags, _config, _config.advanced.UseId3v24))
                         {
                             TagLib.File sourceFileInfo = _tracks[0]._fileInfo ?? _fileInfo;
 
@@ -2751,7 +2751,7 @@ namespace CUETools.Processor
                             NameValueCollection tags = GenerateTrackTags(iTrack, bestOffset);
                             TagLib.UserDefined.AdditionalFileTypes.Config = _config;
                             TagLib.File fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(path));
-                            if (Tagging.UpdateTags(fileInfo, tags, _config))
+                            if (Tagging.UpdateTags(fileInfo, tags, _config, _config.advanced.UseId3v24))
                             {
                                 TagLib.File sourceFileInfo = _tracks[iTrack]._fileInfo ?? _fileInfo;
 
@@ -3024,7 +3024,7 @@ namespace CUETools.Processor
                             NameValueCollection tags = Tagging.Analyze(_fileInfo);
                             CleanupTags(tags, "ACCURATERIP");
                             GenerateAccurateRipTags(tags, bestOffset, -1);
-                            if (Tagging.UpdateTags(_fileInfo, tags, _config))
+                            if (Tagging.UpdateTags(_fileInfo, tags, _config, _config.advanced.UseId3v24))
                                 _fileInfo.Save();
                         }
                         else if (_hasTrackFilenames)
@@ -3034,7 +3034,7 @@ namespace CUETools.Processor
                                 NameValueCollection tags = Tagging.Analyze(_tracks[iTrack]._fileInfo);
                                 CleanupTags(tags, "ACCURATERIP");
                                 GenerateAccurateRipTags(tags, bestOffset, iTrack);
-                                if (Tagging.UpdateTags(_tracks[iTrack]._fileInfo, tags, _config))
+                                if (Tagging.UpdateTags(_tracks[iTrack]._fileInfo, tags, _config, _config.advanced.UseId3v24))
                                     _tracks[iTrack]._fileInfo.Save();
                             }
                         }
@@ -3050,7 +3050,7 @@ namespace CUETools.Processor
                             CleanupTags(tags, "CTDBDISCCONFIDENCE");
                             CleanupTags(tags, "CTDBTRACKCONFIDENCE");
                             GenerateCTDBTags(tags, -1);
-                            if (Tagging.UpdateTags(_fileInfo, tags, _config))
+                            if (Tagging.UpdateTags(_fileInfo, tags, _config, _config.advanced.UseId3v24))
                                 _fileInfo.Save();
                         }
                         else if (_hasTrackFilenames)
@@ -3061,7 +3061,7 @@ namespace CUETools.Processor
                                 CleanupTags(tags, "CTDBDISCCONFIDENCE");
                                 CleanupTags(tags, "CTDBTRACKCONFIDENCE");
                                 GenerateCTDBTags(tags, iTrack);
-                                if (Tagging.UpdateTags(_tracks[iTrack]._fileInfo, tags, _config))
+                                if (Tagging.UpdateTags(_tracks[iTrack]._fileInfo, tags, _config, _config.advanced.UseId3v24))
                                     _tracks[iTrack]._fileInfo.Save();
                             }
                         }

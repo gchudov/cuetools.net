@@ -9,7 +9,7 @@ namespace CUETools.Processor
 {
     public class Tagging
     {
-        public static bool UpdateTags(TagLib.File fileInfo, NameValueCollection tags, CUEConfig config)
+        public static bool UpdateTags(TagLib.File fileInfo, NameValueCollection tags, CUEToolsCodecsConfig config, bool useId3v24)
         {
             if (fileInfo is TagLib.Riff.File)
                 return false;
@@ -29,10 +29,11 @@ namespace CUETools.Processor
                 }
                 return true;
             }
-            if (fileInfo is TagLib.Mpeg.AudioFile || (fileInfo is TagLib.UserDefined.File && (fileInfo as TagLib.UserDefined.File).Tagger == CUEToolsTagger.ID3v2))
+            if (fileInfo is TagLib.Mpeg.AudioFile || (fileInfo is TagLib.UserDefined.File &&
+                (fileInfo as TagLib.UserDefined.File).Tagger == CUEToolsTagger.ID3v2))
             {
                 var id3v2 = (TagLib.Id3v2.Tag)fileInfo.GetTag(TagLib.TagTypes.Id3v2, true);
-                id3v2.Version = (byte) (config.advanced.UseId3v24 ? 4 : 3);
+                id3v2.Version = (byte)(useId3v24 ? 4 : 3);
                 foreach (string tag in tags.AllKeys)
                 {
                     var frame = TagLib.Id3v2.UserTextInformationFrame.Get(id3v2, tag, true);
@@ -56,11 +57,11 @@ namespace CUETools.Processor
             return true;
         }
 
-        public static void UpdateTags(string path, NameValueCollection tags, CUEConfig config)
+        public static void UpdateTags(string path, NameValueCollection tags, CUEToolsCodecsConfig config, bool useId3v24)
         {
             TagLib.UserDefined.AdditionalFileTypes.Config = config;
             TagLib.File fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(path));
-            if (UpdateTags(fileInfo, tags, config))
+            if (UpdateTags(fileInfo, tags, config, useId3v24))
                 fileInfo.Save();
             //IAudioSource audioSource = AudioReadWrite.GetAudioSource(path, null, config);
             //audioSource.Tags = tags;
