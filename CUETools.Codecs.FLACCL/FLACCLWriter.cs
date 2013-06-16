@@ -2023,7 +2023,7 @@ namespace CUETools.Codecs.FLACCL
             ////    return blocksize >> 1;
             ////}
 
-            for (int i = 8; i < Flake.flac_blocksizes.Length; i++)
+            for (int i = 8; i < Flake.flac_blocksizes.Length - 1; i++)
                 if (target >= Flake.flac_blocksizes[i] && Flake.flac_blocksizes[i] > blocksize)
                 {
                     blocksize = Flake.flac_blocksizes[i];

@@ -48,7 +48,7 @@ namespace CUETools.FLACCL.cmd
 			Console.WriteLine("OpenCL Options:");
 			Console.WriteLine();
 			Console.WriteLine(" --opencl-type <X>    CPU or GPU, default GPU");
-			Console.WriteLine(" --opencl-platform    'ATI Stream', 'NVIDIA CUDA', 'Intel OpenCL' etc");
+			Console.WriteLine(" --opencl-platform    \"ATI Stream\", \"NVIDIA CUDA\", \"Intel(R) OpenCL\" etc");
 			Console.WriteLine(" --group-size #       Set GPU workgroup size (64,128,256)");
 			Console.WriteLine(" --task-size #        Set number of frames per multiprocessor, default 8");
 			Console.WriteLine(" --slow-gpu           Some encoding stages are done on CPU");

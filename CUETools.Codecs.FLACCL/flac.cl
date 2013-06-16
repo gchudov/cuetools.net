@@ -1118,8 +1118,10 @@ void clEstimateResidual(
 
     // calculate rice partition bit length for every 32 samples
     barrier(CLK_LOCAL_MEM_FENCE);
-    // Bug: if (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) > GROUP_SIZE
-    uint pl = get_local_id(0) < (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) ? psum[tid * 2] + psum[tid * 2 + 1] : 0;
+#if (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) > GROUP_SIZE
+#error MAX_BLOCKSIZE is too large for this GROUP_SIZE
+#endif
+    uint pl = tid < (MAX_BLOCKSIZE >> (ESTPARTLOG + 1)) ? psum[tid * 2] + psum[tid * 2 + 1] : 0;
     barrier(CLK_LOCAL_MEM_FENCE);
  //   for (int pos = 0; pos < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2; pos += GROUP_SIZE)
  //   {
@@ -1131,7 +1133,7 @@ void clEstimateResidual(
 	//    psum[offs] = pl;
  //   }
     int k = clamp(31 - (int)clz(pl) - (ESTPARTLOG + 1), 0, MAX_RICE_PARAM); // 26 - clz(res) == clz(32) - clz(res) == log2(res / 32)
-    if (tid < (MAX_BLOCKSIZE >> ESTPARTLOG) / 2)
+    if (tid < MAX_BLOCKSIZE >> (ESTPARTLOG + 1))
 	psum[tid] = (k << (ESTPARTLOG + 1)) + (pl >> k);
     barrier(CLK_LOCAL_MEM_FENCE);
     for (int l = MAX_BLOCKSIZE >> (ESTPARTLOG + 2); l > 0; l >>= 1)
