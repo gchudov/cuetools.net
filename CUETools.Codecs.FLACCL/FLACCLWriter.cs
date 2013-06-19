@@ -61,13 +61,7 @@ namespace CUETools.Codecs.FLACCL
         {
             if (EncoderModeIndex < 0)
                 throw new Exception("unsupported encoder mode");
-            var thisModeSettings = FLACCLWriterSettings.modeSettings[EncoderModeIndex];
-            if (MaxLPCOrder < 0)
-                MaxLPCOrder = thisModeSettings.MaxLPCOrder;
-            if (MinFixedOrder < 0)
-                MinFixedOrder = thisModeSettings.MinFixedOrder;
-            if (MaxFixedOrder < 0)
-                MaxFixedOrder = thisModeSettings.MaxFixedOrder;
+            SetDefaultValuesForMode();
             if (Padding < 0)
                 throw new Exception("unsupported padding value " + Padding.ToString());
             if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Flake.MAX_BLOCKSIZE))
@@ -82,57 +76,21 @@ namespace CUETools.Codecs.FLACCL
                 throw new Exception("invalid MinPartitionOrder " + MinPartitionOrder.ToString());
             if (MinPartitionOrder > MaxPartitionOrder || MaxPartitionOrder > 8)
                 throw new Exception("invalid MaxPartitionOrder " + MaxPartitionOrder.ToString());
+            if (CPUThreads < 0 || CPUThreads > 16)
+                throw new Exception("CPUThreads must be between 0..16");
             if (!AllowNonSubset && !IsSubset())
                 throw new Exception("the encoding parameters specified do not conform to the FLAC Subset");
         }
 
-        private static FLACCLWriterSettings[] modeSettings =
-        {
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 3, MaxFixedOrder = 2, MaxLPCOrder = 7,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 7,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 0, MaxFixedOrder = 4, MaxLPCOrder = 12,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32,
-            },
-            new FLACCLWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32,
-            },
-        };
-
         [DefaultValue(-1)]
+        [DefaultValueForMode(3, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2)]
         [Browsable(false)]
         [DisplayName("MinFixedOrder")]
         [SRDescription(typeof(Properties.Resources), "MinFixedOrderDescription")]
         public int MinFixedOrder { get; set; }
 
         [DefaultValue(-1)]
+        [DefaultValueForMode(2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2)]
         [Browsable(false)]
         [DisplayName("MaxFixedOrder")]
         [SRDescription(typeof(Properties.Resources), "MaxFixedOrderDescription")]
@@ -145,6 +103,7 @@ namespace CUETools.Codecs.FLACCL
         public int MinLPCOrder { get; set; }
 
         [DefaultValue(-1)]
+        [DefaultValueForMode(7, 7, 8, 8, 8, 8, 12, 12, 12, 32, 32, 32)]
         [Browsable(false)]
         [DisplayName("MaxLPCOrder")]
         [SRDescription(typeof(Properties.Resources), "MaxLPCOrderDescription")]
@@ -207,22 +166,9 @@ namespace CUETools.Codecs.FLACCL
         [SRDescription(typeof(Properties.Resources), "DescriptionDeviceType")]
         public OpenCLDeviceType DeviceType { get; set; }
 
-        int cpu_threads = 0;
         [DefaultValue(0)]
         [SRDescription(typeof(Properties.Resources), "DescriptionCPUThreads")]
-        public int CPUThreads
-        {
-            get
-            {
-                return cpu_threads;
-            }
-            set
-            {
-                if (value < 0 || value > 16)
-                    throw new Exception("CPUThreads must be between 0..16");
-                cpu_threads = value;
-            }
-        }
+        public int CPUThreads { get; set; }
 
         [DefaultValue(false)]
         [DisplayName("Allow Non-subset")]

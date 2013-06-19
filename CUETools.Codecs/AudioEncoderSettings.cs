@@ -67,6 +67,18 @@ namespace CUETools.Codecs
             return hasBrowsable;
         }
 
+        protected void SetDefaultValuesForMode()
+        {
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+                if (!property.CanResetValue(this))
+                    foreach (var attribute in property.Attributes)
+                        if (attribute is DefaultValueForModeAttribute)
+                        {
+                            var defaultValueForMode = attribute as DefaultValueForModeAttribute;
+                            property.SetValue(this, defaultValueForMode.m_values[EncoderModeIndex]);
+                        }
+        }
+
         [Browsable(false)]
         [XmlIgnore]
         public AudioPCMConfig PCM

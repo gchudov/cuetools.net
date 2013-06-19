@@ -64,15 +64,7 @@ namespace CUETools.Codecs.FLAKE
         {
             if (EncoderModeIndex < 0)
                 throw new Exception("unsupported encoder mode");
-            var thisModeSettings = FlakeWriterSettings.modeSettings[EncoderModeIndex];
-            if (MaxLPCOrder < 0)
-                MaxLPCOrder = thisModeSettings.MaxLPCOrder;
-            if (MinFixedOrder < 0)
-                MinFixedOrder = thisModeSettings.MinFixedOrder;
-            if (MaxFixedOrder < 0)
-                MaxFixedOrder = thisModeSettings.MaxFixedOrder;
-            if (MaxPartitionOrder < 0)
-                MaxPartitionOrder = thisModeSettings.MaxPartitionOrder;
+            SetDefaultValuesForMode();
             if (Padding < 0)
                 throw new Exception("unsupported padding value " + Padding.ToString());
             if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Flake.MAX_BLOCKSIZE))
@@ -91,53 +83,15 @@ namespace CUETools.Codecs.FLAKE
                 throw new Exception("the encoding parameters specified do not conform to the FLAC Subset");
         }
 
-        private static FlakeWriterSettings[] modeSettings =
-        {
-            new FlakeWriterSettings() {
-                MinFixedOrder = 3, MaxFixedOrder = 2, MaxLPCOrder = 6, MaxPartitionOrder = 6,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8, MaxPartitionOrder = 6,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 6,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 0, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 0, MaxFixedOrder = 4, MaxLPCOrder = 32, MaxPartitionOrder = 8,
-            },
-            new FlakeWriterSettings() {
-                MinFixedOrder = 0, MaxFixedOrder = 4, MaxLPCOrder = 32, MaxPartitionOrder = 8,
-            },
-        };
-
         [DefaultValue(-1)]
+        [DefaultValueForMode(3, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0)]
         [Browsable(false)]
         [DisplayName("MinFixedOrder")]
         [SRDescription(typeof(Properties.Resources), "MinFixedOrderDescription")]
         public int MinFixedOrder { get; set; }
 
         [DefaultValue(-1)]
+        [DefaultValueForMode(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4)]
         [Browsable(false)]
         [DisplayName("MaxFixedOrder")]
         [SRDescription(typeof(Properties.Resources), "MaxFixedOrderDescription")]
@@ -150,6 +104,7 @@ namespace CUETools.Codecs.FLAKE
         public int MinLPCOrder { get; set; }
 
         [DefaultValue(-1)]
+        [DefaultValueForMode(6, 8, 12, 8, 12, 12, 12, 12, 12, 32, 32, 32)]
         [Browsable(false)]
         [DisplayName("MaxLPCOrder")]
         [SRDescription(typeof(Properties.Resources), "MaxLPCOrderDescription")]
@@ -162,6 +117,7 @@ namespace CUETools.Codecs.FLAKE
         public int MinPartitionOrder { get; set; }
 
         [DefaultValue(-1)]
+        [DefaultValueForMode(6, 6, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8)]
         [DisplayName("MaxPartitionOrder")]
         [Browsable(false)]
         [SRDescription(typeof(Properties.Resources), "MaxPartitionOrderDescription")]
