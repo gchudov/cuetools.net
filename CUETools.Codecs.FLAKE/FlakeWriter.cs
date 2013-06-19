@@ -44,15 +44,128 @@ namespace CUETools.Codecs.FLAKE
         public override string GetSupportedModes(out string defaultMode)
         {
             defaultMode = "7";
-            return this.AllowNonSubset ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
+            return this.AllowNonSubset || (this.PCM != null && this.PCM.SampleRate > 48000) ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
         }
 
-        public override bool IsValid()
+        public bool IsSubset()
         {
-            return EncoderModeIndex >= 0 && Padding >= 0 &&
-                (BlockSize == 0 || (BlockSize >= 256 && BlockSize <= Flake.MAX_BLOCKSIZE)) &&
-                (AllowNonSubset || EncoderModeIndex <= 8);
+            return (BlockSize == 0 || (BlockSize <= 16384 && (PCM.SampleRate > 48000 || BlockSize <= 4608)))
+                && (PCM.SampleRate > 48000 || MaxLPCOrder <= 12)
+                && MaxPartitionOrder <= 8
+                ;
+            //The blocksize bits in the frame header must be 0001-1110. The blocksize must be <=16384; if the sample rate is <= 48000Hz, the blocksize must be <=4608.
+            //The sample rate bits in the frame header must be 0001-1110.
+            //The bits-per-sample bits in the frame header must be 001-111.
+            //If the sample rate is <= 48000Hz, the filter order in LPC subframes must be less than or equal to 12, i.e. the subframe type bits in the subframe header may not be 101100-111111.
+            //The Rice partition order in a Rice-coded residual section must be less than or equal to 8.
         }
+
+        public void Validate()
+        {
+            if (EncoderModeIndex < 0)
+                throw new Exception("unsupported encoder mode");
+            var thisModeSettings = FlakeWriterSettings.modeSettings[EncoderModeIndex];
+            if (MaxLPCOrder < 0)
+                MaxLPCOrder = thisModeSettings.MaxLPCOrder;
+            if (MinFixedOrder < 0)
+                MinFixedOrder = thisModeSettings.MinFixedOrder;
+            if (MaxFixedOrder < 0)
+                MaxFixedOrder = thisModeSettings.MaxFixedOrder;
+            if (MaxPartitionOrder < 0)
+                MaxPartitionOrder = thisModeSettings.MaxPartitionOrder;
+            if (Padding < 0)
+                throw new Exception("unsupported padding value " + Padding.ToString());
+            if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Flake.MAX_BLOCKSIZE))
+                throw new Exception("unsupported block size " + BlockSize.ToString());
+            if (MinLPCOrder > MaxLPCOrder || MaxLPCOrder > lpc.MAX_LPC_ORDER)
+                throw new Exception("invalid MaxLPCOrder " + MaxLPCOrder.ToString());
+            if (MinFixedOrder < 0 || MinFixedOrder > 4)
+                throw new Exception("invalid MinFixedOrder " + MinFixedOrder.ToString());
+            if (MaxFixedOrder < 0 || MaxFixedOrder > 4)
+                throw new Exception("invalid MaxFixedOrder " + MaxFixedOrder.ToString());
+            if (MinPartitionOrder < 0)
+                throw new Exception("invalid MinPartitionOrder " + MinPartitionOrder.ToString());
+            if (MinPartitionOrder > MaxPartitionOrder || MaxPartitionOrder > 8)
+                throw new Exception("invalid MaxPartitionOrder " + MaxPartitionOrder.ToString());
+            if (!AllowNonSubset && !IsSubset())
+                throw new Exception("the encoding parameters specified do not conform to the FLAC Subset");
+        }
+
+        private static FlakeWriterSettings[] modeSettings =
+        {
+            new FlakeWriterSettings() {
+                MinFixedOrder = 3, MaxFixedOrder = 2, MaxLPCOrder = 6, MaxPartitionOrder = 6,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8, MaxPartitionOrder = 6,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 6,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 0, MaxFixedOrder = 2, MaxLPCOrder = 12, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 0, MaxFixedOrder = 4, MaxLPCOrder = 32, MaxPartitionOrder = 8,
+            },
+            new FlakeWriterSettings() {
+                MinFixedOrder = 0, MaxFixedOrder = 4, MaxLPCOrder = 32, MaxPartitionOrder = 8,
+            },
+        };
+
+        [DefaultValue(-1)]
+        [Browsable(false)]
+        [DisplayName("MinFixedOrder")]
+        [SRDescription(typeof(Properties.Resources), "MinFixedOrderDescription")]
+        public int MinFixedOrder { get; set; }
+
+        [DefaultValue(-1)]
+        [Browsable(false)]
+        [DisplayName("MaxFixedOrder")]
+        [SRDescription(typeof(Properties.Resources), "MaxFixedOrderDescription")]
+        public int MaxFixedOrder { get; set; }
+
+        [DefaultValue(1)]
+        [Browsable(false)]
+        [DisplayName("MinLPCOrder")]
+        [SRDescription(typeof(Properties.Resources), "MinLPCOrderDescription")]
+        public int MinLPCOrder { get; set; }
+
+        [DefaultValue(-1)]
+        [Browsable(false)]
+        [DisplayName("MaxLPCOrder")]
+        [SRDescription(typeof(Properties.Resources), "MaxLPCOrderDescription")]
+        public int MaxLPCOrder { get; set; }
+
+        [DefaultValue(0)]
+        [DisplayName("MinPartitionOrder")]
+        [Browsable(false)]
+        [SRDescription(typeof(Properties.Resources), "MinPartitionOrderDescription")]
+        public int MinPartitionOrder { get; set; }
+
+        [DefaultValue(-1)]
+        [DisplayName("MaxPartitionOrder")]
+        [Browsable(false)]
+        [SRDescription(typeof(Properties.Resources), "MaxPartitionOrderDescription")]
+        public int MaxPartitionOrder { get; set; }
 
         [DefaultValue(false)]
         [DisplayName("Verify")]
@@ -142,7 +255,8 @@ namespace CUETools.Codecs.FLAKE
 
 		public FlakeWriter(string path, Stream IO, FlakeWriterSettings settings)
 		{
-            m_settings = settings;
+            m_settings = settings.Clone() as FlakeWriterSettings;
+            m_settings.Validate();
 
 			//if (Settings.PCM.BitsPerSample != 16)
 			//    throw new Exception("Bits per sample must be 16.");
@@ -161,8 +275,7 @@ namespace CUETools.Codecs.FLAKE
 			windowBuffer = new float[Flake.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
 			windowScale = new double[lpc.MAX_LPC_WINDOWS];
 
-            var _compressionLevel = Settings.EncoderModeIndex;
-            eparams.flake_set_defaults(_compressionLevel);
+            eparams.flake_set_defaults(m_settings);
 
 			crc8 = new Crc8();
 			frame = new FlacFrame(channels * 2);
@@ -346,70 +459,6 @@ namespace CUETools.Codecs.FLAKE
 			set { eparams.variable_block_size = value; }
 		}
 
-		public int MinPredictionOrder
-		{
-			get
-			{
-				return PredictionType == PredictionType.Fixed ?
-					MinFixedOrder : MinLPCOrder;
-			}
-			set
-			{
-				if (PredictionType == PredictionType.Fixed)
-					MinFixedOrder = value;
-				else
-					MinLPCOrder = value;
-			}
-		}
-
-		public int MaxPredictionOrder
-		{
-			get 
-			{
-				return PredictionType == PredictionType.Fixed ?
-					MaxFixedOrder : MaxLPCOrder; 
-			}
-			set
-			{
-				if (PredictionType == PredictionType.Fixed)
-					MaxFixedOrder = value;
-				else
-					MaxLPCOrder = value;
-			}
-		}
-
-		public int MinLPCOrder
-		{
-			get
-			{
-				return eparams.min_prediction_order;
-			}
-			set
-			{
-				if (value < 1)
-					throw new Exception("invalid MinLPCOrder " + value.ToString());
-                if (eparams.max_prediction_order < value)
-                    eparams.max_prediction_order = value;
-				eparams.min_prediction_order = value;
-			}
-		}
-
-		public int MaxLPCOrder
-		{
-			get
-			{
-				return eparams.max_prediction_order;
-			}
-			set
-			{
-				if (value > lpc.MAX_LPC_ORDER)
-					throw new Exception("invalid MaxLPCOrder " + value.ToString());
-                if (eparams.min_prediction_order > value)
-                    eparams.min_prediction_order = value;
-                eparams.max_prediction_order = value;
-			}
-		}
-
 		public int EstimationDepth
 		{
 			get
@@ -421,56 +470,6 @@ namespace CUETools.Codecs.FLAKE
 				if (value > 32 || value < 1)
 					throw new Exception("invalid estimation_depth " + value.ToString());
 				eparams.estimation_depth = value;
-			}
-		}
-
-		public int MinFixedOrder
-		{
-			get
-			{
-				return eparams.min_fixed_order;
-			}
-			set
-			{
-				if (value < 0 || value > eparams.max_fixed_order)
-					throw new Exception("invalid MinFixedOrder " + value.ToString());
-				eparams.min_fixed_order = value;
-			}
-		}
-
-		public int MaxFixedOrder
-		{
-			get
-			{
-				return eparams.max_fixed_order;
-			}
-			set
-			{
-				if (value > 4 || value < eparams.min_fixed_order)
-					throw new Exception("invalid MaxFixedOrder " + value.ToString());
-				eparams.max_fixed_order = value;
-			}
-		}
-
-		public int MinPartitionOrder
-		{
-			get { return eparams.min_partition_order; }
-			set
-			{
-				if (value < 0 || value > eparams.max_partition_order)
-					throw new Exception("invalid MinPartitionOrder " + value.ToString());
-				eparams.min_partition_order = value;
-			}
-		}
-
-		public int MaxPartitionOrder
-		{
-			get { return eparams.max_partition_order; }
-			set
-			{
-				if (value > 8 || value < eparams.min_partition_order)
-					throw new Exception("invalid MaxPartitionOrder " + value.ToString());
-				eparams.max_partition_order = value;
 			}
 		}
 
@@ -904,8 +903,8 @@ new int[] { // 30
             int orig_xx = -1;
             int orig_seq = 0;
             int maxxx = Math.Min(good_x[orig_order].Length, eparams.development_mode);
-            var pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, orig_order);
-            var pmin = Math.Min(eparams.min_partition_order, pmax);
+            var pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, orig_order);
+            var pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
             ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
 
             while (true)
@@ -1084,8 +1083,8 @@ new int[] { // 30
                             lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
 
                     }
-                    int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
-                    int pmin = Math.Min(eparams.min_partition_order, pmax);
+                    int pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, frame.current.order);
+                    int pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
                     uint best_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
                     // not working
                     //for (int o = 1; o <= frame.current.order; o++)
@@ -1126,8 +1125,8 @@ new int[] { // 30
 
 			encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order);
 
-			int pmax = get_max_p_order(eparams.max_partition_order, frame.blocksize, frame.current.order);
-			int pmin = Math.Min(eparams.min_partition_order, pmax);
+            int pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, frame.current.order);
+            int pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
 			frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits) + 6
 				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
 
@@ -1164,7 +1163,7 @@ new int[] { // 30
 				return;
 
 			// LPC
-			if (n > eparams.max_prediction_order &&
+            if (n > m_settings.MaxLPCOrder &&
 			   (predict == PredictionType.Levinson ||
 				predict == PredictionType.Search)
 				//predict == PredictionType.Search ||
@@ -1172,8 +1171,8 @@ new int[] { // 30
 				)
 			{
 				float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
-				int min_order = eparams.min_prediction_order;
-				int max_order = eparams.max_prediction_order;
+                int min_order = m_settings.MinLPCOrder;
+                int max_order = m_settings.MaxLPCOrder;
 
 				for (int iWindow = 0; iWindow < _windowcount; iWindow++)
 				{
@@ -1257,10 +1256,10 @@ new int[] { // 30
                 (predict == PredictionType.Search && pass != 1) ||
                 //predict == PredictionType.Search ||
                 //(pass == 2 && frame.subframes[ch].best.type == SubframeType.Fixed) ||
-                (n > eparams.max_fixed_order && n <= eparams.max_prediction_order))
+                (n > m_settings.MaxFixedOrder && n <= m_settings.MaxLPCOrder))
             {
-                int max_fixed_order = Math.Min(eparams.max_fixed_order, 4);
-                int min_fixed_order = Math.Min(eparams.min_fixed_order, max_fixed_order);
+                int max_fixed_order = Math.Min(m_settings.MaxFixedOrder, 4);
+                int min_fixed_order = Math.Min(m_settings.MinFixedOrder, max_fixed_order);
 
                 for (i = min_fixed_order; i <= max_fixed_order; i++)
                     encode_residual_fixed_sub(frame, i, ch);
@@ -1426,27 +1425,27 @@ new int[] { // 30
 
 		unsafe void encode_residual_pass1(FlacFrame frame, int ch, int best_window)
 		{
-			int max_prediction_order = eparams.max_prediction_order;
-			int max_fixed_order = eparams.max_fixed_order;
-			int min_fixed_order = eparams.min_fixed_order;
+            int max_prediction_order = m_settings.MaxLPCOrder;
+            int max_fixed_order = m_settings.MaxFixedOrder;
+            int min_fixed_order = m_settings.MinFixedOrder;
 			int lpc_min_precision_search = eparams.lpc_min_precision_search;
 			int lpc_max_precision_search = eparams.lpc_max_precision_search;
-			int max_partition_order = eparams.max_partition_order;
+            int max_partition_order = m_settings.MaxPartitionOrder;
 			int estimation_depth = eparams.estimation_depth;
             var development_mode = eparams.development_mode;
-			eparams.min_fixed_order = 2;
-			eparams.max_fixed_order = 2;
+            m_settings.MinFixedOrder = 2;
+            m_settings.MaxFixedOrder = 2;
 			eparams.lpc_min_precision_search = eparams.lpc_max_precision_search;
-			eparams.max_prediction_order = Math.Min(eparams.max_prediction_order, Math.Max(eparams.min_prediction_order, 8));
+            m_settings.MaxLPCOrder = Math.Min(m_settings.MaxLPCOrder, Math.Max(m_settings.MinLPCOrder, 8));
 			eparams.estimation_depth = 1;
             eparams.development_mode = Math.Min(eparams.development_mode, -1);
             encode_residual(frame, ch, eparams.prediction_type, OrderMethod.Akaike, 1, best_window);
-			eparams.min_fixed_order = min_fixed_order;
-			eparams.max_fixed_order = max_fixed_order;
-			eparams.max_prediction_order = max_prediction_order;
+            m_settings.MinFixedOrder = min_fixed_order;
+            m_settings.MaxFixedOrder = max_fixed_order;
+            m_settings.MaxLPCOrder = max_prediction_order;
 			eparams.lpc_min_precision_search = lpc_min_precision_search;
 			eparams.lpc_max_precision_search = lpc_max_precision_search;
-			eparams.max_partition_order = max_partition_order;
+            m_settings.MaxPartitionOrder = max_partition_order;
 			eparams.estimation_depth = estimation_depth;
             eparams.development_mode = development_mode;
 		}
@@ -1501,7 +1500,7 @@ new int[] { // 30
 						LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[0];
 						lpc_ctx.GetReflection(4, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer);
 						lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, 4, 4.5, 0.0);
-						frame.subframes[ch].best.size = (uint)Math.Max(0, lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], 4.5, 0.0) + 7.1 * frame.subframes[ch].obits * eparams.max_prediction_order);
+                        frame.subframes[ch].best.size = (uint)Math.Max(0, lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], 4.5, 0.0) + 7.1 * frame.subframes[ch].obits * m_settings.MaxLPCOrder);
 					}
 					break;
 				case StereoMethod.Evaluate:
@@ -1779,8 +1778,6 @@ new int[] { // 30
 			{
 				if (_IO == null)
 					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
-                if (!m_settings.IsValid())
-                    throw new Exception("unsupported encoder settings");
                 inited = true;
                 int header_size = flake_encode_init();
 				_IO.Write(header, 0, header_size);
@@ -1836,7 +1833,7 @@ new int[] { // 30
 				return blocksize >> 1;
 			}
 
-			for (int i = 0; i < Flake.flac_blocksizes.Length; i++)
+            for (int i = 8; i < Flake.flac_blocksizes.Length - 1; i++)
 				if (target >= Flake.flac_blocksizes[i] && Flake.flac_blocksizes[i] > blocksize)
 				{
 					blocksize = Flake.flac_blocksizes[i];
@@ -2057,15 +2054,6 @@ new int[] { // 30
 
 	struct FlakeEncodeParams
 	{
-		// compression quality
-		// set by user prior to calling flake_encode_init
-		// standard values are 0 to 8
-		// 0 is lower compression, faster encoding
-		// 8 is higher compression, slower encoding
-		// extended values 9 to 12 are slower and/or use
-		// higher prediction orders
-		public int compression;
-
 		// prediction order selection method
 		// set by user prior to calling flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
@@ -2078,7 +2066,6 @@ new int[] { // 30
 		// 5 = full search
 		// 6 = log search
 		public OrderMethod order_method;
-
 
 		// stereo decorrelation method
 		// set by user prior to calling flake_encode_init
@@ -2096,51 +2083,15 @@ new int[] { // 30
 		// can also be changed by user before encoding a frame
 		public int block_time_ms;
 
-		// minimum LPC order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 1 to 32
-		public int min_prediction_order;
-
-		// maximum LPC order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 1 to 32 
-		public int max_prediction_order;
-
 		// Number of LPC orders to try (for estimate mode)
 		// set by user prior to calling flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 1 to 32 
 		public int estimation_depth;
 
-		// minimum fixed prediction order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 4
-		public int min_fixed_order;
-
-		// maximum fixed prediction order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 4
-		public int max_fixed_order;
-
 		// type of linear prediction
 		// set by user prior to calling flake_encode_init
 		public PredictionType prediction_type;
-
-		// minimum partition order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 8
-		public int min_partition_order;
-
-		// maximum partition order
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 8
-		public int max_partition_order;
 
 		// whether to use variable block sizes
 		// set by user prior to calling flake_encode_init
@@ -2161,60 +2112,42 @@ new int[] { // 30
 
         public int development_mode;
 
-		public int flake_set_defaults(int lvl)
+		public int flake_set_defaults(FlakeWriterSettings settings)
 		{
-			compression = lvl;
-
-			if ((lvl < 0 || lvl > 12) && (lvl != 99))
-			{
-				return -1;
-			}
-
-			// default to level 5 params
+			// default to level 7 params
 			window_function = WindowFunction.Flattop | WindowFunction.Tukey;
 			order_method = OrderMethod.Akaike;
 			stereo_method = StereoMethod.Evaluate;
 			window_method = WindowMethod.Evaluate;
 			block_time_ms = 105;			
 			prediction_type = PredictionType.Search;
-			min_prediction_order = 1;
-			max_prediction_order = 12;
-			estimation_depth = 1;
-			min_fixed_order = 2;
-			max_fixed_order = 2;
-			min_partition_order = 0;
-			max_partition_order = 8;
-			variable_block_size = 0;
+            estimation_depth = 1;
+            variable_block_size = 0;
 			lpc_min_precision_search = 1;
 			lpc_max_precision_search = 1;
 			do_seektable = true;
             development_mode = -1;
 
 			// differences from level 7
-			switch (lvl)
+			switch (settings.EncoderModeIndex)
 			{
 				case 0:
 					block_time_ms = 53;
 					prediction_type = PredictionType.Fixed;
 					stereo_method = StereoMethod.Independent;
-					max_partition_order = 6;
 					break;
 				case 1:
 					prediction_type = PredictionType.Levinson;
 					stereo_method = StereoMethod.Independent;
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 8;
-					max_partition_order = 6;
 					break;
 				case 2:
 					stereo_method = StereoMethod.Independent;
 					window_function = WindowFunction.Bartlett;
-					max_partition_order = 6;
 					break;
 				case 3:
 					stereo_method = StereoMethod.Estimate;
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 8;
 					break;
 				case 4:
 					stereo_method = StereoMethod.Estimate;
@@ -2231,23 +2164,15 @@ new int[] { // 30
 					break;
 				case 8:
 					estimation_depth = 2;
-					min_fixed_order = 0;
 					lpc_min_precision_search = 0;
 					break;
 				case 9:
 					window_function = WindowFunction.Bartlett;
-					max_prediction_order = 32;
 					break;
 				case 10:
-					min_fixed_order = 0;
-					max_fixed_order = 4;
-					max_prediction_order = 32;
 					//lpc_max_precision_search = 2;
 					break;
 				case 11:
-					min_fixed_order = 0;
-					max_fixed_order = 4;
-					max_prediction_order = 32;
 					estimation_depth = 5;
 					//lpc_max_precision_search = 2;
 					variable_block_size = 4;

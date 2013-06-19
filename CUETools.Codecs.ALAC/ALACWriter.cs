@@ -40,10 +40,12 @@ namespace CUETools.Codecs.ALAC
         {
         }
 
-        public override bool IsValid()
+        public void Validate()
         {
-            return EncoderModeIndex >= 0 && Padding >= 0 &&
-                (BlockSize == 0 || BlockSize >= 256 && BlockSize < Int32.MaxValue);
+            if (EncoderModeIndex < 0
+                || Padding < 0
+                || (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Int32.MaxValue)))
+                throw new Exception("unsupported encoder settings");
         }
 
 		[DefaultValue(false)]
@@ -105,6 +107,7 @@ namespace CUETools.Codecs.ALAC
         public ALACWriter(string path, Stream IO, ALACWriterSettings settings)
 		{
             m_settings = settings;
+            m_settings.Validate();
 
             if (Settings.PCM.BitsPerSample != 16)
 				throw new Exception("Bits per sample must be 16.");
@@ -1216,8 +1219,6 @@ namespace CUETools.Codecs.ALAC
 					_IO = new FileStream(_path, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 				if (_IO != null && !_IO.CanSeek)
 					throw new NotSupportedException("stream doesn't support seeking");
-                if (!m_settings.IsValid())
-                    throw new Exception("unsupported encoder settings");
                 encode_init();
 				inited = true;
 			}

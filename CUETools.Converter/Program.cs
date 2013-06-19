@@ -172,7 +172,6 @@ namespace CUETools.Converter
                     settings.PCM = audioSource.PCM;
                     settings.Padding = padding;
                     settings.EncoderMode = encoderMode ?? settings.EncoderMode;
-                    settings.Validate();
                     object o = null;
                     try
                     {                        

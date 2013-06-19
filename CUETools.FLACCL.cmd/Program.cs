@@ -82,10 +82,7 @@ namespace CUETools.FLACCL.cmd
 			string input_file = null;
 			string output_file = null;
 			string device_type = null;
-            int min_partition_order = -1, max_partition_order = -1,
-                min_lpc_order = -1, max_lpc_order = -1,
-                min_fixed_order = -1, max_fixed_order = -1,
-                min_precision = -1, max_precision = -1,
+            int min_precision = -1, max_precision = -1,
                 orders_per_window = -1, orders_per_channel = -1;
 			int input_len = 4096, input_val = 0, input_bps = 16, input_ch = 2, input_rate = 44100;
 			int level = -1, vbr_mode = -1;
@@ -152,43 +149,55 @@ namespace CUETools.FLACCL.cmd
 					window_function = args[arg];
 				else if ((args[arg] == "-r" || args[arg] == "--partition-order") && ++arg < args.Length)
 				{
-					ok = (args[arg].Split(',').Length == 2 &&
-						int.TryParse(args[arg].Split(',')[0], out min_partition_order) &&
-						int.TryParse(args[arg].Split(',')[1], out max_partition_order)) ||
-						int.TryParse(args[arg], out max_partition_order);
+                    int min_partition_order, max_partition_order;
+                    ok = (args[arg].Split(',').Length == 2
+                        && int.TryParse(args[arg].Split(',')[0], out min_partition_order)
+                        && (settings.MinPartitionOrder = min_partition_order) != -1
+                        && int.TryParse(args[arg].Split(',')[1], out max_partition_order)
+                        && (settings.MaxPartitionOrder = max_partition_order) != -1)
+                        || (int.TryParse(args[arg], out max_partition_order)
+                        && (settings.MaxPartitionOrder = max_partition_order) != -1);
 				}
 				else if ((args[arg] == "-l" || args[arg] == "--lpc-order") && ++arg < args.Length)
 				{
-					ok = (args[arg].Split(',').Length == 2 &&
-						int.TryParse(args[arg].Split(',')[0], out min_lpc_order) &&
-						int.TryParse(args[arg].Split(',')[1], out max_lpc_order)) ||
-						int.TryParse(args[arg], out max_lpc_order);
+                    int min_lpc_order, max_lpc_order;
+					ok = (args[arg].Split(',').Length == 2
+					    && int.TryParse(args[arg].Split(',')[0], out min_lpc_order)
+                        && (settings.MinLPCOrder = min_lpc_order) != -1
+						&& int.TryParse(args[arg].Split(',')[1], out max_lpc_order)
+                        && (settings.MaxLPCOrder = max_lpc_order) != -1)
+						|| (int.TryParse(args[arg], out max_lpc_order)
+                        && (settings.MaxLPCOrder = max_lpc_order) != -1);
 				}
-				else if (args[arg] == "--fixed-order" && ++arg < args.Length)
-				{
-					ok = (args[arg].Split(',').Length == 2 &&
-						int.TryParse(args[arg].Split(',')[0], out min_fixed_order) &&
-						int.TryParse(args[arg].Split(',')[1], out max_fixed_order)) ||
-						int.TryParse(args[arg], out max_fixed_order);
-				}
-				else if ((args[arg] == "-c" || args[arg] == "--max-precision") && ++arg < args.Length)
-				{
-					ok = (args[arg].Split(',').Length == 2 &&
-						int.TryParse(args[arg].Split(',')[0], out min_precision) &&
-						int.TryParse(args[arg].Split(',')[1], out max_precision)) ||
-						int.TryParse(args[arg], out max_precision);
-				}
-				else if ((args[arg] == "-v" || args[arg] == "--vbr"))
-					ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
-				else if (args[arg] == "--orders-per-window" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
-					orders_per_window = intarg;
-				else if (args[arg] == "--orders-per-channel" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
-					orders_per_channel = intarg;
-				else if (args[arg] == "--estimate-window")
-					estimate_window = true;
-				else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                else if (args[arg] == "--fixed-order" && ++arg < args.Length)
+                {
+                    int min_fixed_order, max_fixed_order;
+                    ok = (args[arg].Split(',').Length == 2
+                        && int.TryParse(args[arg].Split(',')[0], out min_fixed_order)
+                        && (settings.MinFixedOrder = min_fixed_order) != -1
+                        && int.TryParse(args[arg].Split(',')[1], out max_fixed_order)
+                        && (settings.MaxFixedOrder = max_fixed_order) != -1)
+                        || (int.TryParse(args[arg], out max_fixed_order)
+                        && (settings.MaxFixedOrder = max_fixed_order) != -1);
+                }
+                else if ((args[arg] == "-c" || args[arg] == "--max-precision") && ++arg < args.Length)
+                {
+                    ok = (args[arg].Split(',').Length == 2 &&
+                        int.TryParse(args[arg].Split(',')[0], out min_precision) &&
+                        int.TryParse(args[arg].Split(',')[1], out max_precision)) ||
+                        int.TryParse(args[arg], out max_precision);
+                }
+                else if ((args[arg] == "-v" || args[arg] == "--vbr"))
+                    ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
+                else if (args[arg] == "--orders-per-window" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                    orders_per_window = intarg;
+                else if (args[arg] == "--orders-per-channel" && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                    orders_per_channel = intarg;
+                else if (args[arg] == "--estimate-window")
+                    estimate_window = true;
+                else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
                     settings.BlockSize = intarg;
-				else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
                     settings.Padding = intarg;
                 else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
                 {
@@ -253,35 +262,21 @@ namespace CUETools.FLACCL.cmd
 				output_file = Path.ChangeExtension(input_file, "flac");
             settings.PCM = audioSource.PCM;
             settings.AllowNonSubset = allowNonSubset;
-			FLACCLWriter encoder = new FLACCLWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
-				output_file == "-" ? Console.OpenStandardOutput() :
-				output_file == "nul" ? new NullStream() : null,
-				settings);
-			encoder.FinalSampleCount = audioSource.Length;
-			IAudioDest audioDest = encoder;
-			AudioBuffer buff = new AudioBuffer(audioSource, FLACCLWriter.MAX_BLOCKSIZE);
+            FLACCLWriter encoder;
 
 			try
 			{
-				if (device_type != null)
-					settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
-                settings.Validate();
+                if (device_type != null)
+                    settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
+                encoder = new FLACCLWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
+                    output_file == "-" ? Console.OpenStandardOutput() :
+                    output_file == "nul" ? new NullStream() : null,
+                    settings);
+                encoder.FinalSampleCount = audioSource.Length;
 				if (stereo_method != null)
 					encoder.StereoMethod = Flake.LookupStereoMethod(stereo_method);
 				if (window_function != null)
 					encoder.WindowFunction = Flake.LookupWindowFunction(window_function);
-				if (min_partition_order >= 0)
-					encoder.MinPartitionOrder = min_partition_order;
-				if (max_partition_order >= 0)
-					encoder.MaxPartitionOrder = max_partition_order;
-				if (min_lpc_order >= 0)
-					encoder.MinLPCOrder = min_lpc_order;
-				if (max_lpc_order >= 0)
-					encoder.MaxLPCOrder = max_lpc_order;
-				if (min_fixed_order >= 0)
-					encoder.MinFixedOrder = min_fixed_order;
-				if (max_fixed_order >= 0)
-					encoder.MaxFixedOrder = max_fixed_order;
 				if (max_precision >= 0)
 					encoder.MaxPrecisionSearch = max_precision;
 				if (min_precision >= 0)
@@ -303,6 +298,9 @@ namespace CUETools.FLACCL.cmd
 				Console.WriteLine("Error: {0}.", ex.Message);
 				return 3;
 			}
+
+            IAudioDest audioDest = encoder;
+            AudioBuffer buff = new AudioBuffer(audioSource, FLACCLWriter.MAX_BLOCKSIZE);
 
 			if (!quiet)
 			{
@@ -393,15 +391,15 @@ namespace CUETools.FLACCL.cmd
 					encoder.UserProcessorTime.TotalSeconds > 0 ? encoder.UserProcessorTime.TotalSeconds : totalElapsed.TotalSeconds,
 					(encoder.StereoMethod.ToString() + (encoder.OrdersPerChannel == 32 ? "" : "(" + encoder.OrdersPerChannel.ToString() + ")")).PadRight(15),
 					encoder.WindowFunction.ToString().PadRight(15),
-					encoder.MaxPartitionOrder,
+					settings.MaxPartitionOrder,
 					settings.GPUOnly ? "GPU" : "CPU",
 					encoder.OrdersPerWindow,
-					encoder.MaxLPCOrder,
+                    (encoder.Settings as FLACCLWriterSettings).MaxLPCOrder,
 					encoder.MinPrecisionSearch,
 					encoder.MaxPrecisionSearch,
 					encoder.Settings.BlockSize,
 					encoder.VBRMode,
-					encoder.MaxFixedOrder - encoder.MinFixedOrder + 1,
+                    (encoder.Settings as FLACCLWriterSettings).MaxFixedOrder - (encoder.Settings as FLACCLWriterSettings).MinFixedOrder + 1,
 					encoder.DoConstant ? "c" : ""
 					);
 			}

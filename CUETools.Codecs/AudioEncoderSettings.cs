@@ -46,17 +46,6 @@ namespace CUETools.Codecs
             return this.m_supported_modes;
         }
 
-        public virtual bool IsValid()
-        {
-            return BlockSize == 0 && Padding >= 0;
-        }
-
-        public void Validate()
-        {
-            if (!IsValid())
-                throw new Exception("unsupported encoder settings");
-        }
-
         public AudioEncoderSettings Clone()
         {
             return this.MemberwiseClone() as AudioEncoderSettings;

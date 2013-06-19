@@ -41,15 +41,126 @@ namespace CUETools.Codecs.FLACCL
         public override string GetSupportedModes(out string defaultMode)
         {
             defaultMode = "8";
-            return this.AllowNonSubset ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
+            return this.AllowNonSubset || (this.PCM != null && this.PCM.SampleRate > 48000) ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
         }
 
-        public override bool IsValid()
+        public bool IsSubset()
         {
-            return EncoderModeIndex >= 0 && Padding >= 0 &&
-                (BlockSize == 0 || (BlockSize >= 256 && BlockSize <= Flake.MAX_BLOCKSIZE)) &&
-                (AllowNonSubset || EncoderModeIndex <= 8);
+            return (BlockSize == 0 || (BlockSize <= 16384 && (PCM.SampleRate > 48000 || BlockSize <= 4608)))
+                && (PCM.SampleRate > 48000 || MaxLPCOrder <= 12)
+                && MaxPartitionOrder <= 8
+                ;
+            //The blocksize bits in the frame header must be 0001-1110. The blocksize must be <=16384; if the sample rate is <= 48000Hz, the blocksize must be <=4608.
+            //The sample rate bits in the frame header must be 0001-1110.
+            //The bits-per-sample bits in the frame header must be 001-111.
+            //If the sample rate is <= 48000Hz, the filter order in LPC subframes must be less than or equal to 12, i.e. the subframe type bits in the subframe header may not be 101100-111111.
+            //The Rice partition order in a Rice-coded residual section must be less than or equal to 8.
         }
+
+        public void Validate()
+        {
+            if (EncoderModeIndex < 0)
+                throw new Exception("unsupported encoder mode");
+            var thisModeSettings = FLACCLWriterSettings.modeSettings[EncoderModeIndex];
+            if (MaxLPCOrder < 0)
+                MaxLPCOrder = thisModeSettings.MaxLPCOrder;
+            if (MinFixedOrder < 0)
+                MinFixedOrder = thisModeSettings.MinFixedOrder;
+            if (MaxFixedOrder < 0)
+                MaxFixedOrder = thisModeSettings.MaxFixedOrder;
+            if (Padding < 0)
+                throw new Exception("unsupported padding value " + Padding.ToString());
+            if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Flake.MAX_BLOCKSIZE))
+                throw new Exception("unsupported block size " + BlockSize.ToString());
+            if (MinLPCOrder > MaxLPCOrder || MaxLPCOrder > lpc.MAX_LPC_ORDER)
+                throw new Exception("invalid MaxLPCOrder " + MaxLPCOrder.ToString());
+            if (MinFixedOrder < 0 || MinFixedOrder > 4)
+                throw new Exception("invalid MinFixedOrder " + MinFixedOrder.ToString());
+            if (MaxFixedOrder < 0 || MaxFixedOrder > 4)
+                throw new Exception("invalid MaxFixedOrder " + MaxFixedOrder.ToString());
+            if (MinPartitionOrder < 0)
+                throw new Exception("invalid MinPartitionOrder " + MinPartitionOrder.ToString());
+            if (MinPartitionOrder > MaxPartitionOrder || MaxPartitionOrder > 8)
+                throw new Exception("invalid MaxPartitionOrder " + MaxPartitionOrder.ToString());
+            if (!AllowNonSubset && !IsSubset())
+                throw new Exception("the encoding parameters specified do not conform to the FLAC Subset");
+        }
+
+        private static FLACCLWriterSettings[] modeSettings =
+        {
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 3, MaxFixedOrder = 2, MaxLPCOrder = 7,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 7,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 8,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 12,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 0, MaxFixedOrder = 4, MaxLPCOrder = 12,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32,
+            },
+            new FLACCLWriterSettings() {
+                MinFixedOrder = 2, MaxFixedOrder = 2, MaxLPCOrder = 32,
+            },
+        };
+
+        [DefaultValue(-1)]
+        [Browsable(false)]
+        [DisplayName("MinFixedOrder")]
+        [SRDescription(typeof(Properties.Resources), "MinFixedOrderDescription")]
+        public int MinFixedOrder { get; set; }
+
+        [DefaultValue(-1)]
+        [Browsable(false)]
+        [DisplayName("MaxFixedOrder")]
+        [SRDescription(typeof(Properties.Resources), "MaxFixedOrderDescription")]
+        public int MaxFixedOrder { get; set; }
+
+        [DefaultValue(1)]
+        [Browsable(false)]
+        [DisplayName("MinLPCOrder")]
+        [SRDescription(typeof(Properties.Resources), "MinLPCOrderDescription")]
+        public int MinLPCOrder { get; set; }
+
+        [DefaultValue(-1)]
+        [Browsable(false)]
+        [DisplayName("MaxLPCOrder")]
+        [SRDescription(typeof(Properties.Resources), "MaxLPCOrderDescription")]
+        public int MaxLPCOrder { get; set; }
+
+        [DefaultValue(0)]
+        [DisplayName("MinPartitionOrder")]
+        [Browsable(false)]
+        [SRDescription(typeof(Properties.Resources), "MinPartitionOrderDescription")]
+        public int MinPartitionOrder { get; set; }
+        
+        [DefaultValue(8)]
+        [DisplayName("MaxPartitionOrder")]
+        [Browsable(false)]
+        [SRDescription(typeof(Properties.Resources), "MaxPartitionOrderDescription")]
+        public int MaxPartitionOrder { get; set; }
 
         [DefaultValue(false)]
         [DisplayName("Verify")]
@@ -70,6 +181,7 @@ namespace CUETools.Codecs.FLACCL
         public bool DoRice { get; set; }
 
         [DefaultValue(false)]
+        [Browsable(false)]
         [SRDescription(typeof(Properties.Resources), "DescriptionMappedMemory")]
         public bool MappedMemory { get; set; }
 
@@ -79,10 +191,12 @@ namespace CUETools.Codecs.FLACCL
         public int GroupSize { get; set; }
 
         [DefaultValue(8)]
+        [Browsable(false)]
         [SRDescription(typeof(Properties.Resources), "DescriptionTaskSize")]
         public int TaskSize { get; set; }
 
         [SRDescription(typeof(Properties.Resources), "DescriptionDefines")]
+        [Browsable(false)]
         public string Defines { get; set; }
 
         [TypeConverter(typeof(FLACCLWriterSettingsPlatformConverter))]
@@ -164,7 +278,7 @@ namespace CUETools.Codecs.FLACCL
         int channels, ch_code;
 
         // audio sample rate in Hz
-        int sample_rate, sr_code0, sr_code1;
+        int sr_code0, sr_code1;
 
         // sample size in bits
         // only 16-bit is currently supported
@@ -219,7 +333,8 @@ namespace CUETools.Codecs.FLACCL
 
         public FLACCLWriter(string path, Stream IO, FLACCLWriterSettings settings)
         {
-            m_settings = settings;
+            m_settings = settings.Clone() as FLACCLWriterSettings;
+            m_settings.Validate();
 
             // FIXME: For now, only 16-bit encoding is supported
             if (Settings.PCM.BitsPerSample != 16 && Settings.PCM.BitsPerSample != 24)
@@ -228,7 +343,6 @@ namespace CUETools.Codecs.FLACCL
             //    throw new Exception("ChannelCount must be 2.");
 
             channels = Settings.PCM.ChannelCount;
-            sample_rate = Settings.PCM.SampleRate;
             bits_per_sample = (uint)Settings.PCM.BitsPerSample;
 
             // flake_validate_params
@@ -236,8 +350,7 @@ namespace CUETools.Codecs.FLACCL
             _path = path;
             _IO = IO;
 
-            var _compressionLevel = Settings.EncoderModeIndex;
-            eparams.flake_set_defaults(_compressionLevel);
+            eparams.flake_set_defaults(m_settings);
 
             crc8 = new Crc8();
         }
@@ -468,62 +581,6 @@ namespace CUETools.Codecs.FLACCL
             }
         }
 
-        public int MinLPCOrder
-        {
-            get
-            {
-                return eparams.min_prediction_order;
-            }
-            set
-            {
-                if (value < 1 || value > eparams.max_prediction_order)
-                    throw new Exception("invalid MinLPCOrder " + value.ToString());
-                eparams.min_prediction_order = value;
-            }
-        }
-
-        public int MaxLPCOrder
-        {
-            get
-            {
-                return eparams.max_prediction_order;
-            }
-            set
-            {
-                if (value > lpc.MAX_LPC_ORDER || value < eparams.min_prediction_order)
-                    throw new Exception("invalid MaxLPCOrder " + value.ToString());
-                eparams.max_prediction_order = value;
-            }
-        }
-
-        public int MinFixedOrder
-        {
-            get
-            {
-                return eparams.min_fixed_order;
-            }
-            set
-            {
-                if (value < 0 || value > 4)
-                    throw new Exception("invalid MinFixedOrder " + value.ToString());
-                eparams.min_fixed_order = value;
-            }
-        }
-
-        public int MaxFixedOrder
-        {
-            get
-            {
-                return eparams.max_fixed_order;
-            }
-            set
-            {
-                if (value > 4 || value < 0)
-                    throw new Exception("invalid MaxFixedOrder " + value.ToString());
-                eparams.max_fixed_order = value;
-            }
-        }
-
         public bool DoConstant
         {
             get { return eparams.do_constant; }
@@ -534,28 +591,6 @@ namespace CUETools.Codecs.FLACCL
         {
             get { return eparams.estimate_window; }
             set { eparams.estimate_window = value; }
-        }
-
-        public int MinPartitionOrder
-        {
-            get { return eparams.min_partition_order; }
-            set
-            {
-                if (value < 0 || value > eparams.max_partition_order)
-                    throw new Exception("invalid MinPartitionOrder " + value.ToString());
-                eparams.min_partition_order = value;
-            }
-        }
-
-        public int MaxPartitionOrder
-        {
-            get { return eparams.max_partition_order; }
-            set
-            {
-                if (value > 8 || value < eparams.min_partition_order)
-                    throw new Exception("invalid MaxPartitionOrder " + value.ToString());
-                eparams.max_partition_order = value;
-            }
         }
 
         public TimeSpan UserProcessorTime
@@ -1095,7 +1130,7 @@ namespace CUETools.Codecs.FLACCL
 
             task.nResidualTasks = 0;
             task.nTasksPerWindow = Math.Min(32, eparams.orders_per_window);
-            task.nResidualTasksPerChannel = task.nWindowFunctions * task.nTasksPerWindow + (eparams.do_constant ? 1 : 0) + Math.Max(0, 1 + eparams.max_fixed_order - eparams.min_fixed_order);
+            task.nResidualTasksPerChannel = task.nWindowFunctions * task.nTasksPerWindow + (eparams.do_constant ? 1 : 0) + Math.Max(0, 1 + m_settings.MaxFixedOrder - m_settings.MinFixedOrder);
             if (task.nResidualTasksPerChannel > 32)
                 throw new Exception("too many tasks");
             if (channels == 2 && channelsCount == 4)
@@ -1160,7 +1195,7 @@ namespace CUETools.Codecs.FLACCL
                         task.nResidualTasks++;
                     }
                     // Fixed prediction
-                    for (int order = eparams.min_fixed_order; order <= eparams.max_fixed_order; order++)
+                    for (int order = m_settings.MinFixedOrder; order <= m_settings.MaxFixedOrder; order++)
                     {
                         task.ResidualTasks[task.nResidualTasks].type = (int)SubframeType.Fixed;
                         task.ResidualTasks[task.nResidualTasks].channel = ch;
@@ -1247,7 +1282,7 @@ namespace CUETools.Codecs.FLACCL
             else
                 frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 
-            int toUnpack = Math.Min(task.frameSize, eparams.max_prediction_order);
+            int toUnpack = Math.Min(task.frameSize, m_settings.MaxLPCOrder);
             // calculate wbits before unpacking samples.
             for (int ch = 0; ch < channels; ch++)
             {
@@ -1256,7 +1291,7 @@ namespace CUETools.Codecs.FLACCL
                 frame.subframes[ch].best.type = SubframeType.Verbatim;
                 frame.subframes[ch].best.size = (uint)(frame.subframes[ch].obits * frame.blocksize);
                 frame.subframes[ch].wbits = 0;
-                if (frame.blocksize > Math.Max(4, eparams.max_prediction_order))
+                if (frame.blocksize > Math.Max(4, m_settings.MaxLPCOrder))
                 {
                     if (task.BestResidualTasks[index].size < 0)
                         throw new Exception("internal error");
@@ -1318,8 +1353,8 @@ namespace CUETools.Codecs.FLACCL
                             encode_residual_fixed(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples,
                                 task.frame.blocksize, task.frame.subframes[ch].best.order);
 
-                            int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-                            int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
+                            int pmin = get_max_p_order(m_settings.MinPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
+                            int pmax = get_max_p_order(m_settings.MaxPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
                             calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, Settings.PCM.BitsPerSample > 16 ? 1 : 0);
                         }
                         break;
@@ -1334,8 +1369,8 @@ namespace CUETools.Codecs.FLACCL
                                     lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
                             }
 
-                            int pmin = get_max_p_order(eparams.min_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
-                            int pmax = get_max_p_order(eparams.max_partition_order, task.frame.blocksize, task.frame.subframes[ch].best.order);
+                            int pmin = get_max_p_order(m_settings.MinPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
+                            int pmax = get_max_p_order(m_settings.MaxPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
                             calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, Settings.PCM.BitsPerSample > 16 ? 1 : 0);
                         }
                         break;
@@ -1713,8 +1748,6 @@ namespace CUETools.Codecs.FLACCL
             {
                 if (OpenCL.NumberOfPlatforms < 1)
                     throw new Exception("no opencl platforms found");
-                if (!m_settings.IsValid())
-                    throw new Exception("unsupported encoder settings");
 
                 int groupSize = m_settings.DeviceType == OpenCLDeviceType.CPU ? 1 : m_settings.GroupSize;
                 OCLMan = new OpenCLManager();
@@ -1764,14 +1797,14 @@ namespace CUETools.Codecs.FLACCL
                 bool UseGPURice = UseGPUOnly && m_settings.DoRice;
 
                 m_blockSize = m_settings.BlockSize != 0 ? m_settings.BlockSize :
-                    select_blocksize(sample_rate, eparams.block_time_ms);
+                    select_blocksize(m_settings.PCM.SampleRate, eparams.block_time_ms);
 
                 int maxBS = 1 << (BitReader.log2i(m_blockSize - 1) + 1);
 
                 // The Defines string gets prepended to any and all sources that are compiled
                 // and serve as a convenient way to pass configuration information to the compilation process
                 OCLMan.Defines =
-                    "#define MAX_ORDER " + eparams.max_prediction_order.ToString() + "\n" +
+                    "#define MAX_ORDER " + m_settings.MaxLPCOrder.ToString() + "\n" +
                     "#define GROUP_SIZE " + groupSize.ToString() + "\n" +
                     "#define GROUP_SIZE_LOG " + BitReader.log2i(groupSize).ToString() + "\n" +
                     "#define FLACCL_VERSION \"" + Vendor + "\"\n" +
@@ -2049,7 +2082,7 @@ namespace CUETools.Codecs.FLACCL
             bitwriter.writebits(16, m_blockSize);
             bitwriter.writebits(24, 0);
             bitwriter.writebits(24, max_frame_size);
-            bitwriter.writebits(20, sample_rate);
+            bitwriter.writebits(20, m_settings.PCM.SampleRate);
             bitwriter.writebits(3, channels - 1);
             bitwriter.writebits(5, bits_per_sample - 1);
 
@@ -2175,7 +2208,7 @@ namespace CUETools.Codecs.FLACCL
             // find samplerate in table
             for (i = 1; i < 12; i++)
             {
-                if (sample_rate == Flake.flac_samplerates[i])
+                if (m_settings.PCM.SampleRate == Flake.flac_samplerates[i])
                 {
                     sr_code0 = i;
                     break;
@@ -2205,7 +2238,7 @@ namespace CUETools.Codecs.FLACCL
 
             if (_IO.CanSeek && eparams.do_seektable && sample_count > 0)
             {
-                int seek_points_distance = sample_rate * 10;
+                int seek_points_distance = m_settings.PCM.SampleRate * 10;
                 int num_seek_points = 1 + sample_count / seek_points_distance; // 1 seek point per 10 seconds
                 if (sample_count % seek_points_distance == 0)
                     num_seek_points--;
@@ -2232,15 +2265,6 @@ namespace CUETools.Codecs.FLACCL
 
     struct FlakeEncodeParams
     {
-        // compression quality
-        // set by user prior to calling flake_encode_init
-        // standard values are 0 to 8
-        // 0 is lower compression, faster encoding
-        // 8 is higher compression, slower encoding
-        // extended values 9 to 12 are slower and/or use
-        // higher prediction orders
-        public int compression;
-
         // stereo decorrelation method
         // set by user prior to calling flake_encode_init
         // if set to less than 0, it is chosen based on compression.
@@ -2255,45 +2279,9 @@ namespace CUETools.Codecs.FLACCL
         // can also be changed by user before encoding a frame
         public int block_time_ms;
 
-        // minimum LPC order
-        // set by user prior to calling flake_encode_init
-        // if set to less than 0, it is chosen based on compression.
-        // valid values are 1 to 32
-        public int min_prediction_order;
-
-        // maximum LPC order
-        // set by user prior to calling flake_encode_init
-        // if set to less than 0, it is chosen based on compression.
-        // valid values are 1 to 32 
-        public int max_prediction_order;
-
         public int orders_per_window;
 
         public int orders_per_channel;
-
-        // minimum fixed prediction order
-        // set by user prior to calling flake_encode_init
-        // if set to less than 0, it is chosen based on compression.
-        // valid values are 0 to 4
-        public int min_fixed_order;
-
-        // maximum fixed prediction order
-        // set by user prior to calling flake_encode_init
-        // if set to less than 0, it is chosen based on compression.
-        // valid values are 0 to 4 
-        public int max_fixed_order;
-
-        // minimum partition order
-        // set by user prior to calling flake_encode_init
-        // if set to less than 0, it is chosen based on compression.
-        // valid values are 0 to 8
-        public int min_partition_order;
-
-        // maximum partition order
-        // set by user prior to calling flake_encode_init
-        // if set to less than 0, it is chosen based on compression.
-        // valid values are 0 to 8
-        public int max_partition_order;
 
         // whether to use variable block sizes
         // set by user prior to calling flake_encode_init
@@ -2318,25 +2306,13 @@ namespace CUETools.Codecs.FLACCL
 
         public bool do_seektable;
 
-        public int flake_set_defaults(int lvl)
+        public int flake_set_defaults(FLACCLWriterSettings settings)
         {
-            compression = lvl;
-
-            if ((lvl < 0 || lvl > 12) && (lvl != 99))
-            {
-                return -1;
-            }
-
+            int lvl = settings.EncoderModeIndex;
             // default to level 5 params
             window_function = WindowFunction.Flattop | WindowFunction.Tukey;
             do_midside = true;
             block_time_ms = 100;
-            min_fixed_order = 0;
-            max_fixed_order = 4;
-            min_prediction_order = 1;
-            max_prediction_order = 12;
-            min_partition_order = 0;
-            max_partition_order = 8;
             variable_block_size = 0;
             lpc_min_precision_search = 0;
             lpc_max_precision_search = 0;
@@ -2355,9 +2331,6 @@ namespace CUETools.Codecs.FLACCL
                     do_midside = false;
                     window_function = WindowFunction.Bartlett;
                     orders_per_window = 1;
-                    max_prediction_order = 7;
-                    min_fixed_order = 3;
-                    max_fixed_order = 2;
                     break;
                 case 1:
                     do_constant = false;
@@ -2365,54 +2338,35 @@ namespace CUETools.Codecs.FLACCL
                     do_midside = false;
                     window_function = WindowFunction.Bartlett;
                     orders_per_window = 1;
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
-                    max_prediction_order = 7;
                     break;
                 case 2:
                     do_constant = false;
                     do_midside = false;
                     window_function = WindowFunction.Bartlett;
                     orders_per_window = 1;
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
-                    max_prediction_order = 8;
                     break;
                 case 3:
                     do_constant = false;
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 1;
                     orders_per_channel = 1;
-                    max_prediction_order = 8;
                     break;
                 case 4:
                     do_constant = false;
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 2;
                     orders_per_channel = 2;
-                    max_prediction_order = 8;
                     break;
                 case 5:
                     do_constant = false;
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 4;
                     orders_per_channel = 4;
-                    max_prediction_order = 8;
                     break;
                 case 6:
                     do_constant = false;
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 2;
                     orders_per_channel = 2;
                     break;
                 case 7:
                     do_constant = false;
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 4;
                     orders_per_channel = 4;
                     break;
@@ -2421,26 +2375,16 @@ namespace CUETools.Codecs.FLACCL
                     orders_per_channel = 8;
                     break;
                 case 9:
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 4;
                     orders_per_channel = 4;
-                    max_prediction_order = 32;
                     break;
                 case 10:
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 7;
-                    max_prediction_order = 32;
                     break;
                 case 11:
-                    min_fixed_order = 2;
-                    max_fixed_order = 2;
                     orders_per_window = 11;
-                    max_prediction_order = 32;
                     break;
             }
-
             return 0;
         }
     }
@@ -2574,7 +2518,7 @@ namespace CUETools.Codecs.FLACCL
 #endif
             openCLCQ = openCLProgram.Context.CreateCommandQueue(openCLProgram.Context.Devices[0], prop);
 
-            int MAX_ORDER = this.writer.eparams.max_prediction_order;
+            int MAX_ORDER = this.writer.m_settings.MaxLPCOrder;
             int MAX_FRAMES = this.writer.framesPerTask;
             int MAX_CHANNELSIZE = MAX_FRAMES * ((writer.m_blockSize + 3) & ~3);
             residualTasksLen = sizeof(FLACCLSubframeTask) * 32 * channelsCount * MAX_FRAMES;
@@ -2836,9 +2780,10 @@ namespace CUETools.Codecs.FLACCL
 
         internal unsafe void EnqueueKernels()
         {
-            FlakeEncodeParams eparams = writer.eparams;
+            var eparams = writer.eparams;
+            var settings = writer.Settings as FLACCLWriterSettings;
 
-            this.max_porder = FLACCLWriter.get_max_p_order(eparams.max_partition_order, frameSize, eparams.max_prediction_order);
+            this.max_porder = FLACCLWriter.get_max_p_order(settings.MaxPartitionOrder, frameSize, settings.MaxLPCOrder);
             while ((frameSize >> max_porder) < 16 && max_porder > 0)
                 this.max_porder--;
 

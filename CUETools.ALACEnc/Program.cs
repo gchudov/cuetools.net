@@ -187,7 +187,6 @@ namespace CUETools.ALACEnc
 
 			try
 			{
-                settings.Validate();
 				if (stereo_method != null)
 					alac.StereoMethod = Alac.LookupStereoMethod(stereo_method);
 				if (order_method != null)

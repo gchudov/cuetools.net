@@ -38,7 +38,12 @@ namespace CUETools.Codecs.FLAKE
 				8000, 16000, 22050, 24000, 32000, 44100, 48000, 96000,
 				0, 0, 0, 0
 			};
+        //1100 : get 8 bit sample rate (in kHz) from end of header
+        //1101 : get 16 bit sample rate (in Hz) from end of header
+        //1110 : get 16 bit sample rate (in tens of Hz) from end of header
 		public static readonly int[] flac_blocksizes = new int[15] { 0, 192, 576, 1152, 2304, 4608, 0, 0, 256, 512, 1024, 2048, 4096, 8192, 16384 };
+        //0110 : get 8 bit (blocksize-1) from end of header
+        //0111 : get 16 bit (blocksize-1) from end of header
 		public static readonly int[] flac_bitdepths = new int[8] { 0, 8, 12, 0, 16, 20, 24, 0 };
 
 		public static PredictionType LookupPredictionType(string name)

@@ -138,10 +138,7 @@ namespace CUETools.FlakeExe
             string window_function = null;
             string input_file = null;
             string output_file = null;
-            int min_partition_order = -1, max_partition_order = -1,
-                min_lpc_order = -1, max_lpc_order = -1,
-                min_fixed_order = -1, max_fixed_order = -1,
-                min_precision = -1, max_precision = -1,
+            int min_precision = -1, max_precision = -1,
                 estimation_depth = -1;
             int skip_a = 0, skip_b = 0;
             int intarg = -1, vbr_mode = -1, magic = -1;
@@ -187,24 +184,36 @@ namespace CUETools.FlakeExe
                     window_method = args[arg];
                 else if ((args[arg] == "-r" || args[arg] == "--partition-order") && ++arg < args.Length)
                 {
-                    ok = (args[arg].Split(',').Length == 2 &&
-                        int.TryParse(args[arg].Split(',')[0], out min_partition_order) &&
-                        int.TryParse(args[arg].Split(',')[1], out max_partition_order)) ||
-                        int.TryParse(args[arg], out max_partition_order);
+                    int min_partition_order, max_partition_order;
+                    ok = (args[arg].Split(',').Length == 2
+                        && int.TryParse(args[arg].Split(',')[0], out min_partition_order)
+                        && (settings.MinPartitionOrder = min_partition_order) != -1
+                        && int.TryParse(args[arg].Split(',')[1], out max_partition_order)
+                        && (settings.MaxPartitionOrder = max_partition_order) != -1)
+                        || (int.TryParse(args[arg], out max_partition_order)
+                        && (settings.MaxPartitionOrder = max_partition_order) != -1);
                 }
                 else if ((args[arg] == "-l" || args[arg] == "--lpc-order") && ++arg < args.Length)
                 {
-                    ok = (args[arg].Split(',').Length == 2 &&
-                        int.TryParse(args[arg].Split(',')[0], out min_lpc_order) &&
-                        int.TryParse(args[arg].Split(',')[1], out max_lpc_order)) ||
-                        int.TryParse(args[arg], out max_lpc_order);
+                    int min_lpc_order, max_lpc_order;
+                    ok = (args[arg].Split(',').Length == 2
+                        && int.TryParse(args[arg].Split(',')[0], out min_lpc_order)
+                        && (settings.MinLPCOrder = min_lpc_order) != -1
+                        && int.TryParse(args[arg].Split(',')[1], out max_lpc_order)
+                        && (settings.MaxLPCOrder = max_lpc_order) != -1)
+                        || (int.TryParse(args[arg], out max_lpc_order)
+                        && (settings.MaxLPCOrder = max_lpc_order) != -1);
                 }
                 else if ((args[arg] == "-f" || args[arg] == "--fixed-order") && ++arg < args.Length)
                 {
-                    ok = (args[arg].Split(',').Length == 2 &&
-                        int.TryParse(args[arg].Split(',')[0], out min_fixed_order) &&
-                        int.TryParse(args[arg].Split(',')[1], out max_fixed_order)) ||
-                        int.TryParse(args[arg], out max_fixed_order);
+                    int min_fixed_order, max_fixed_order;
+                    ok = (args[arg].Split(',').Length == 2
+                        && int.TryParse(args[arg].Split(',')[0], out min_fixed_order)
+                        && (settings.MinFixedOrder = min_fixed_order) != -1
+                        && int.TryParse(args[arg].Split(',')[1], out max_fixed_order)
+                        && (settings.MaxFixedOrder = max_fixed_order) != -1)
+                        || (int.TryParse(args[arg], out max_fixed_order)
+                        && (settings.MaxFixedOrder = max_fixed_order) != -1);
                 }
                 else if (args[arg] == "--skip" && ++arg < args.Length)
                 {
@@ -329,17 +338,16 @@ namespace CUETools.FlakeExe
                                 output_file = Path.ChangeExtension(input_file, "flac");
                             settings.PCM = audioSource.PCM;
                             settings.AllowNonSubset = allowNonSubset;
-                            FlakeWriter flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
-                                output_file == "-" ? Console.OpenStandardOutput() :
-                                output_file == "nul" ? new NullStream() : null,
-                                settings);
-                            flake.FinalSampleCount = audioSource.Length - skip_a - skip_b;
-                            IAudioDest audioDest = flake;
-                            AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
+                            FlakeWriter flake;
 
                             try
                             {
-                                settings.Validate();
+                                flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
+                                    output_file == "-" ? Console.OpenStandardOutput() :
+                                    output_file == "nul" ? new NullStream() : null,
+                                    settings);
+                                flake.FinalSampleCount = audioSource.Length - skip_a - skip_b;
+
                                 if (prediction_type != null)
                                     flake.PredictionType = Flake.LookupPredictionType(prediction_type);
                                 if (stereo_method != null)
@@ -350,18 +358,6 @@ namespace CUETools.FlakeExe
                                     flake.OrderMethod = Flake.LookupOrderMethod(order_method);
                                 if (window_function != null)
                                     flake.WindowFunction = Flake.LookupWindowFunction(window_function);
-                                if (min_partition_order >= 0)
-                                    flake.MinPartitionOrder = min_partition_order;
-                                if (max_partition_order >= 0)
-                                    flake.MaxPartitionOrder = max_partition_order;
-                                if (min_lpc_order >= 0)
-                                    flake.MinLPCOrder = min_lpc_order;
-                                if (max_lpc_order >= 0)
-                                    flake.MaxLPCOrder = max_lpc_order;
-                                if (min_fixed_order >= 0)
-                                    flake.MinFixedOrder = min_fixed_order;
-                                if (max_fixed_order >= 0)
-                                    flake.MaxFixedOrder = max_fixed_order;
                                 if (min_precision >= 0)
                                     flake.MinPrecisionSearch = min_precision;
                                 if (max_precision >= 0)
@@ -381,6 +377,9 @@ namespace CUETools.FlakeExe
                                 Console.WriteLine("Error: {0}.", ex.Message);
                                 return 4;
                             }
+
+                            IAudioDest audioDest = flake;
+                            AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
                             if (!quiet)
                             {
@@ -479,12 +478,12 @@ namespace CUETools.FlakeExe
                                     flake.StereoMethod.ToString().PadRight(15),
                                     (flake.OrderMethod.ToString() + "(" + flake.EstimationDepth.ToString() + ")").PadRight(15),
                                     flake.WindowFunction,
-                                    flake.MinPartitionOrder,
-                                    flake.MaxPartitionOrder,
-                                    flake.MinLPCOrder,
-                                    flake.MaxLPCOrder,
-                                    flake.MinFixedOrder,
-                                    flake.MaxFixedOrder,
+                                    (flake.Settings as FlakeWriterSettings).MinPartitionOrder,
+                                    (flake.Settings as FlakeWriterSettings).MaxPartitionOrder,
+                                    (flake.Settings as FlakeWriterSettings).MinLPCOrder,
+                                    (flake.Settings as FlakeWriterSettings).MaxLPCOrder,
+                                    (flake.Settings as FlakeWriterSettings).MinFixedOrder,
+                                    (flake.Settings as FlakeWriterSettings).MaxFixedOrder,
                                     flake.MinPrecisionSearch,
                                     flake.MaxPrecisionSearch,
                                     flake.Settings.BlockSize,

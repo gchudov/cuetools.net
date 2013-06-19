@@ -67,8 +67,15 @@ namespace CUETools.Processor
             var settings = encoder.settings.Clone();
             settings.PCM = pcm;
             settings.Padding = padding;
-            settings.Validate();
-            object o = Activator.CreateInstance(encoder.type, path, settings);
+            object o;
+            try
+            {
+                o = Activator.CreateInstance(encoder.type, path, settings);
+            }
+            catch (System.Reflection.TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
 			if (o == null || !(o is IAudioDest))
 				throw new Exception("Unsupported audio type: " + path + ": " + encoder.type.FullName);
 			dest = o as IAudioDest;
