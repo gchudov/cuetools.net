@@ -1764,6 +1764,7 @@ namespace CUETools.Codecs.FLACCL
 #endif
                     (m_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
                     "#define OPENCL_PLATFORM \"" + OpenCL.GetPlatform(platformId).Name + "\"\n" +
+                    "#define VENDOR_ID " + OCLMan.Context.Devices[0].VendorID + "\n" +
                     m_settings.Defines + "\n";
 
                 var exts = new string[] { 

@@ -82,6 +82,7 @@
     <Compile Include="CyclicBuffer.cs" />
     <Compile Include="CyclicBufferInputStream.cs" />
     <Compile Include="CyclicBufferOutputStream.cs" />
+    <Compile Include="DefaultValueForMode.cs" />
     <Compile Include="DummyWriter.cs" />
     <Compile Include="IAudioDest.cs" />
     <Compile Include="AudioEncoderClass.cs" />

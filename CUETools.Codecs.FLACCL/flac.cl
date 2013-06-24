@@ -32,6 +32,18 @@
 #define AMD
 #endif
 
+#define VENDOR_ID_INTEL  0x8086
+#define VENDOR_ID_NVIDIA 0x10DE
+#define VENDOR_ID_ATIAMD 0x1002
+
+#ifndef FLACCL_CPU
+#if VENDOR_ID == VENDOR_ID_INTEL
+#define WARP_SIZE 16
+#else
+#define WARP_SIZE 32
+#endif
+#endif
+
 #if defined(HAVE_cl_khr_fp64) || defined(HAVE_cl_amd_fp64)
 #define HAVE_DOUBLE
 #define ZEROD 0.0
@@ -50,8 +62,6 @@
 #define fastdouble4 float4
 #define ZEROFD 0.0f
 #endif
-
-#define WARP_SIZE 32
 
 #if BITS_PER_SAMPLE > 16
 #define MAX_RICE_PARAM 30
@@ -416,21 +426,17 @@ void clComputeAutocor(
 	barrier(CLK_LOCAL_MEM_FENCE);
 	data[tid] = nextData;
     }
-    if (pos < bs)
     {
 	int off = pos + tid;
 	// fetch samples
 	double nextData = off < bs ? samples[task.samplesOffs + off] * wptr[off] : ZEROD;
 	data[tid + GROUP_SIZE] = nextData;
-	barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
 
 	fastdouble4 tmp = ZEROFD;
 	for (int i = 0; i < THREADS_FOR_ORDERS / 4; i++)
 	    tmp += vload4(i, &data[tid1 - lag]) * vload4(i, &data[tid1]);
 	corr += (tmp.x + tmp.y) + (tmp.w + tmp.z);
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-	data[tid] = nextData;
     }
 
     data[tid] = corr;
@@ -524,8 +530,7 @@ void clComputeLPC(
     int autocOffs = (get_group_id(0) + get_group_id(1) * get_num_groups(0)) * (MAX_ORDER + 1);
     int lpcOffs = autocOffs * 32;
     
-    if (get_local_id(0) <= MAX_ORDER)
-	shared.autoc[get_local_id(0)] = autoc[autocOffs + get_local_id(0)];
+    shared.autoc[get_local_id(0)] = get_local_id(0) <= MAX_ORDER ? autoc[autocOffs + get_local_id(0)] : 0;
     if (get_local_id(0) + get_local_size(0) <= MAX_ORDER)
 	shared.autoc[get_local_id(0) + get_local_size(0)] = autoc[autocOffs + get_local_id(0) + get_local_size(0)];
 
@@ -537,7 +542,7 @@ void clComputeLPC(
     double error = shared.autoc[0];
     
 #ifdef DEBUGPRINT1
-    int magic = shared.autoc[0] == 177286873088.0f;
+    int magic = autocOffs == 0; // shared.autoc[0] == 177286873088.0f;
     if (magic && get_local_id(0) <= MAX_ORDER)
         printf("autoc[%d] == %f\n", get_local_id(0), shared.autoc[get_local_id(0)]);
 #endif
@@ -585,6 +590,10 @@ void clComputeLPC(
 	//    printf("coef[%d] == %f, autoc == %f, error == %f\n", get_local_id(0), -shared.ldr[order - get_local_id(0)], shared.autoc[get_local_id(0)], shared.error[get_local_id(0)]);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
+#ifdef DEBUGPRINT1
+    if (magic && get_local_id(0) < MAX_ORDER)
+        printf("error[%d] == %f\n", get_local_id(0), shared.error[get_local_id(0)]);
+#endif
     // Output prediction error estimates
     if (get_local_id(0) < MAX_ORDER)
 	lpcs[lpcOffs + MAX_ORDER * 32 + get_local_id(0)] = shared.error[get_local_id(0)];
@@ -1059,14 +1068,24 @@ void clEstimateResidual(
 	t = select(0U, t, offs >= ro);
 	// overflow protection
 	t = min(t, 0x7ffffffU);
-#if !defined(AMD)
-	idata[tid] = t;
-	for (int l = 16; l > 1; l >>= 1)
-	    idata[tid] += idata[tid + l];
-	if ((tid & 31) == 0)
-	    psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
-#else
+#if defined(AMD)
 	atomic_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
+#else
+	idata[tid] = t;
+#if WARP_SIZE <= (1 << (ESTPARTLOG - 1))
+        barrier(CLK_LOCAL_MEM_FENCE);
+	for (int l = 1 << (ESTPARTLOG - 1); l >= WARP_SIZE; l >>= 1) {
+            if (!(tid & l)) idata[tid] += idata[tid + l];
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
+	for (int l = WARP_SIZE / 2; l > 1; l >>= 1)
+	    idata[tid] += idata[tid + l];
+#else
+	for (int l = 1 << (ESTPARTLOG - 1); l > 1; l >>= 1)
+	    idata[tid] += idata[tid + l];
+#endif
+	if ((tid & (1 << ESTPARTLOG) - 1) == 0)
+            psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
 #endif
     }
     if (pos < bs)
@@ -1105,14 +1124,24 @@ void clEstimateResidual(
 	t = select(0U, t, offs >= ro && offs < bs);
 	// overflow protection
 	t = min(t, 0x7ffffffU);
-#if !defined(AMD)
-	idata[tid] = t;
-	for (int l = 16; l > 1; l >>= 1)
-	    idata[tid] += idata[tid + l];
-	if ((tid & 31) == 0)
-	    psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
-#else
+#if defined(AMD)
 	atomic_add(&psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG], t);
+#else
+	idata[tid] = t;
+#if WARP_SIZE <= (1 << (ESTPARTLOG - 1))
+        barrier(CLK_LOCAL_MEM_FENCE);
+	for (int l = 1 << (ESTPARTLOG - 1); l >= WARP_SIZE; l >>= 1) {
+            if (!(tid & l)) idata[tid] += idata[tid + l];
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
+	for (int l = WARP_SIZE / 2; l > 1; l >>= 1)
+	    idata[tid] += idata[tid + l];
+#else
+	for (int l = 1 << (ESTPARTLOG - 1); l > 1; l >>= 1)
+	    idata[tid] += idata[tid + l];
+#endif
+	if ((tid & (1 << ESTPARTLOG) - 1) == 0)
+	    psum[min(MAX_BLOCKSIZE - 1, offs) >> ESTPARTLOG] = idata[tid] + idata[tid + 1];
 #endif
     }
 
