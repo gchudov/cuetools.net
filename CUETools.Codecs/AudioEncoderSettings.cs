@@ -24,17 +24,11 @@ namespace CUETools.Codecs
             // Iterate through each property and call ResetValue()
             foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
                 property.ResetValue(this);
+            this.m_supported_modes = supported_modes;
+            this.m_default_mode = default_mode;
             if (default_mode == "")
-            {
                 GetSupportedModes(out default_mode);
-                this.EncoderMode = default_mode;
-            }
-            else
-            {
-                this.m_supported_modes = supported_modes;
-                this.m_default_mode = default_mode;
-                this.EncoderMode = m_default_mode;
-            }
+            this.EncoderMode = default_mode;
         }
 
         protected string m_supported_modes;
