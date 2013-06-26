@@ -28,6 +28,7 @@ namespace CUERipper
 		/// </summary>
 		private void InitializeComponent()
 		{
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmCUERipper));
             CUEControls.RectRadius rectRadius1 = new CUEControls.RectRadius();
             CUEControls.RectRadius rectRadius2 = new CUEControls.RectRadius();
@@ -58,22 +59,22 @@ namespace CUERipper
             this.buttonEncoderSettings = new System.Windows.Forms.Button();
             this.checkBoxTestAndCopy = new System.Windows.Forms.CheckBox();
             this.bnComboBoxLosslessOrNot = new CUEControls.ImgComboBox();
-            this.losslessOrNotBindingSource = new System.Windows.Forms.BindingSource();
-            this.bindingSourceCR = new System.Windows.Forms.BindingSource();
+            this.losslessOrNotBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.bindingSourceCR = new System.Windows.Forms.BindingSource(this.components);
             this.bnComboBoxEncoder = new CUEControls.ImgComboBox();
-            this.encodersBindingSource = new System.Windows.Forms.BindingSource();
+            this.encodersBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.labelSecureMode = new System.Windows.Forms.Label();
             this.bnComboBoxFormat = new CUEControls.ImgComboBox();
-            this.formatsBindingSource = new System.Windows.Forms.BindingSource();
+            this.formatsBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.labelEncoderMinMode = new System.Windows.Forms.Label();
             this.bnComboBoxImage = new CUEControls.ImgComboBox();
-            this.cUEStylesBindingSource = new System.Windows.Forms.BindingSource();
+            this.cUEStylesBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.labelEncoderMaxMode = new System.Windows.Forms.Label();
             this.labelEncoderMode = new System.Windows.Forms.Label();
             this.trackBarEncoderMode = new System.Windows.Forms.TrackBar();
             this.trackBarSecureMode = new System.Windows.Forms.TrackBar();
-            this.drivesBindingSource = new System.Windows.Forms.BindingSource();
-            this.imageListChecked = new System.Windows.Forms.ImageList();
+            this.drivesBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.imageListChecked = new System.Windows.Forms.ImageList(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.progressBarErrors = new ProgressODoom.ProgressBarEx();
             this.plainBackgroundPainter1 = new ProgressODoom.PlainBackgroundPainter();
@@ -83,10 +84,10 @@ namespace CUERipper
             this.progressBarCD = new ProgressODoom.ProgressBarEx();
             this.plainProgressPainter2 = new ProgressODoom.PlainProgressPainter();
             this.txtOutputPath = new System.Windows.Forms.TextBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.bnComboBoxRelease = new CUEControls.ImgComboBox();
-            this.releasesBindingSource = new System.Windows.Forms.BindingSource();
-            this.imageListMetadataSource = new System.Windows.Forms.ImageList();
+            this.releasesBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.imageListMetadataSource = new System.Windows.Forms.ImageList(this.components);
             this.bnComboBoxDrives = new CUEControls.ImgComboBox();
             this.bnComboBoxOutputFormat = new CUEControls.ImgComboBox();
             this.listMetadata = new System.Windows.Forms.ListView();
@@ -565,17 +566,16 @@ namespace CUERipper
             // 
             this.imageListMetadataSource.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageListMetadataSource.ImageStream")));
             this.imageListMetadataSource.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageListMetadataSource.Images.SetKeyName(0, "musicbrainz");
-            this.imageListMetadataSource.Images.SetKeyName(1, "freedb");
-            this.imageListMetadataSource.Images.SetKeyName(2, "local");
-            this.imageListMetadataSource.Images.SetKeyName(3, "localshadow");
-            this.imageListMetadataSource.Images.SetKeyName(4, "tracks");
-            this.imageListMetadataSource.Images.SetKeyName(5, "tracks1");
-            this.imageListMetadataSource.Images.SetKeyName(6, "album");
-            this.imageListMetadataSource.Images.SetKeyName(7, "track");
-            this.imageListMetadataSource.Images.SetKeyName(8, "ctdb");
-            this.imageListMetadataSource.Images.SetKeyName(9, "discogs");
-            this.imageListMetadataSource.Images.SetKeyName(10, "cdstub");
+            this.imageListMetadataSource.Images.SetKeyName(0, "tracks");
+            this.imageListMetadataSource.Images.SetKeyName(1, "tracks1");
+            this.imageListMetadataSource.Images.SetKeyName(2, "album");
+            this.imageListMetadataSource.Images.SetKeyName(3, "track");
+            this.imageListMetadataSource.Images.SetKeyName(4, "cdstub");
+            this.imageListMetadataSource.Images.SetKeyName(5, "local");
+            this.imageListMetadataSource.Images.SetKeyName(6, "ctdb");
+            this.imageListMetadataSource.Images.SetKeyName(7, "freedb");
+            this.imageListMetadataSource.Images.SetKeyName(8, "discogs");
+            this.imageListMetadataSource.Images.SetKeyName(9, "musicbrainz");
             // 
             // bnComboBoxDrives
             // 
