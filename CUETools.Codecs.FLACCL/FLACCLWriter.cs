@@ -33,6 +33,9 @@ namespace CUETools.Codecs.FLACCL
 {
     public class FLACCLWriterSettings : AudioEncoderSettings
     {
+        internal IntPtr m_platform = IntPtr.Zero;
+        internal IntPtr m_device = IntPtr.Zero;
+
         public FLACCLWriterSettings()
             : base()
         {
@@ -61,6 +64,37 @@ namespace CUETools.Codecs.FLACCL
         {
             if (EncoderModeIndex < 0)
                 throw new Exception("unsupported encoder mode");
+            if (OpenCL.NumberOfPlatforms < 1)
+                throw new Exception("no opencl platforms found");
+            if (Platform == null)
+                m_platform = OpenCL.GetPlatform(0).PlatformID;
+            else
+            {
+                for (int i = 0; i < OpenCL.NumberOfPlatforms; i++)
+                {
+                    var platform = OpenCL.GetPlatform(i);
+                    if (platform.Name.Equals(Platform, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        m_platform = platform.PlatformID;
+                        break;
+                    }
+                }
+                if (m_platform == IntPtr.Zero)
+                    throw new Exception("unknown platform \"" + Platform + "\". Platforms available:" + 
+                        string.Join(", ", (new List<Platform>(OpenCL.GetPlatforms())).ConvertAll(p => "\"" + p.Name + "\"").ToArray()));
+            }
+            Platform = OpenCL.GetPlatform(m_platform).Name;
+            {
+                //var device = OpenCL.GetPlatform(m_platform).GetDevice(OpenCL.GetPlatform(m_platform).QueryDeviceIntPtr()[0]);
+                var devices = new List<Device>(OpenCL.GetPlatform(m_platform).QueryDevices((DeviceType)DeviceType));
+                var RequireImageSupport = true;
+                var RequiredExtensions = new List<string>();
+                devices.RemoveAll(d => (d.ImageSupport != true && RequireImageSupport) || !d.HasExtensions(RequiredExtensions.ToArray()));
+                if (devices.Count == 0)
+                    throw new Exception("no OpenCL devices found that matched filter criteria");
+                m_device = devices[0].DeviceID;
+                Device = devices[0].Name;
+            }
             SetDefaultValuesForMode();
             if (Padding < 0)
                 throw new Exception("unsupported padding value " + Padding.ToString());
@@ -165,6 +199,11 @@ namespace CUETools.Codecs.FLACCL
         [DefaultValue(OpenCLDeviceType.GPU)]
         [SRDescription(typeof(Properties.Resources), "DescriptionDeviceType")]
         public OpenCLDeviceType DeviceType { get; set; }
+
+        //[TypeConverter(typeof(FLACCLWriterSettingsDeviceConverter))]
+        [SRDescription(typeof(Properties.Resources), "DescriptionDevice")]
+        [Browsable(false)]
+        public string Device { get; set; }
 
         [DefaultValue(0)]
         [SRDescription(typeof(Properties.Resources), "DescriptionCPUThreads")]
@@ -1717,25 +1756,7 @@ namespace CUETools.Codecs.FLACCL
                 OCLMan.BuildOptions = "";
                 OCLMan.SourcePath = System.IO.Path.GetDirectoryName(GetType().Assembly.Location);
                 OCLMan.BinaryPath = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CUE Tools"), "OpenCL");
-                int platformId = 0;
-                if (m_settings.Platform != null)
-                {
-                    platformId = -1;
-                    string platforms = "";
-                    for (int i = 0; i < OpenCL.NumberOfPlatforms; i++)
-                    {
-                        var platform = OpenCL.GetPlatform(i);
-                        platforms += " \"" + platform.Name + "\"";
-                        if (platform.Name.Equals(m_settings.Platform, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            platformId = i;
-                            break;
-                        }
-                    }
-                    if (platformId < 0)
-                        throw new Exception("unknown platform \"" + m_settings.Platform + "\". Platforms available:" + platforms);
-                }
-                OCLMan.CreateDefaultContext(platformId, (DeviceType)m_settings.DeviceType);
+                OCLMan.CreateContext(OpenCL.GetPlatform(m_settings.m_platform).GetDevice(m_settings.m_device));
 
                 this.framesPerTask = (int)OCLMan.Context.Devices[0].MaxComputeUnits * Math.Max(1, m_settings.TaskSize / channels);
 
@@ -1763,7 +1784,7 @@ namespace CUETools.Codecs.FLACCL
 					"#define DEBUG\n" +
 #endif
                     (m_settings.DeviceType == OpenCLDeviceType.CPU ? "#define FLACCL_CPU\n" : "") +
-                    "#define OPENCL_PLATFORM \"" + OpenCL.GetPlatform(platformId).Name + "\"\n" +
+                    "#define OPENCL_PLATFORM \"" + OpenCL.GetPlatform(m_settings.m_platform).Name + "\"\n" +
                     "#define VENDOR_ID " + OCLMan.Context.Devices[0].VendorID + "\n" +
                     m_settings.Defines + "\n";
 

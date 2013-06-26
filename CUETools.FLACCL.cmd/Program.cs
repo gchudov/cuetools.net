@@ -35,37 +35,40 @@ namespace CUETools.FLACCL.cmd
 			Console.WriteLine();
 			Console.WriteLine("Options:");
 			Console.WriteLine();
-			Console.WriteLine(" -0 .. -11            Compression level, default 8; 9..11 require --lax");
-			Console.WriteLine(" -o <file>            Output filename, or \"-\" for stdout, or nul");
-			Console.WriteLine(" -p #                 Padding bytes");
-			Console.WriteLine(" -q --quiet           Quiet mode");
-            Console.WriteLine(" --lax                Allow non-subset modes");
-            Console.WriteLine(" --verify             Verify during encoding");
-			Console.WriteLine(" --no-md5             Don't compute MD5 hash");
-			Console.WriteLine(" --no-seektable       Don't generate a seektable");
-			Console.WriteLine(" --cpu-threads        Use additional CPU threads");
+			Console.WriteLine(" -0 .. -11             Compression level, default 8; 9..11 require --lax");
+			Console.WriteLine(" -o <file>             Output filename, or \"-\" for stdout, or nul");
+			Console.WriteLine(" -p #                  Padding bytes");
+			Console.WriteLine(" -q --quiet            Quiet mode");
+            Console.WriteLine(" --lax                 Allow non-subset modes");
+            Console.WriteLine(" --verify              Verify during encoding");
+			Console.WriteLine(" --no-md5              Don't compute MD5 hash");
+			Console.WriteLine(" --no-seektable        Don't generate a seektable");
+			Console.WriteLine(" --cpu-threads         Use additional CPU threads");
 			Console.WriteLine();
 			Console.WriteLine("OpenCL Options:");
 			Console.WriteLine();
-			Console.WriteLine(" --opencl-type <X>    CPU or GPU, default GPU");
-			Console.WriteLine(" --opencl-platform    \"ATI Stream\", \"NVIDIA CUDA\", \"Intel(R) OpenCL\" etc");
-			Console.WriteLine(" --group-size #       Set GPU workgroup size (64,128,256)");
-			Console.WriteLine(" --task-size #        Set number of frames per multiprocessor, default 8");
-			Console.WriteLine(" --slow-gpu           Some encoding stages are done on CPU");
-			Console.WriteLine(" --fast-gpu           Experimental mode, not recommended");
-			Console.WriteLine(" --define <X> <Y>     OpenCL preprocessor definition");
+			Console.WriteLine(" --opencl-type <X>     CPU or GPU, default GPU");
+            var platforms = new List<string>();
+            foreach (var value in (new FLACCLWriterSettingsPlatformConverter()).GetStandardValues(null))
+                platforms.Add(value as string);
+            Console.WriteLine(" --opencl-platform <X> {0}", platforms.Count == 0 ? "No OpenCL platforms detected" : string.Join(", ", platforms.ConvertAll(s => "\"" + s + "\"").ToArray()));
+			Console.WriteLine(" --group-size #        Set GPU workgroup size (64,128,256)");
+			Console.WriteLine(" --task-size #         Set number of frames per multiprocessor, default 8");
+			Console.WriteLine(" --slow-gpu            Some encoding stages are done on CPU");
+			Console.WriteLine(" --fast-gpu            Experimental mode, not recommended");
+			Console.WriteLine(" --define <X> <Y>      OpenCL preprocessor definition");
 			Console.WriteLine();
 			Console.WriteLine("Advanced Options:");
 			Console.WriteLine();
-			Console.WriteLine(" -b #                 Block size");
-			Console.WriteLine(" -s <method>          Stereo decorrelation (independent,search)");
-			Console.WriteLine(" -r #[,#]             Rice partition order {max} or {min},{max} (0..8)");
+			Console.WriteLine(" -b #                  Block size");
+			Console.WriteLine(" -s <method>           Stereo decorrelation (independent,search)");
+			Console.WriteLine(" -r #[,#]              Rice partition order {max} or {min},{max} (0..8)");
 			Console.WriteLine();
 			Console.WriteLine("LPC options:");
 			Console.WriteLine();
-			Console.WriteLine(" -w <func>[,<func>]   Window functions (bartlett,welch,hann,flattop,tukey)");
-			Console.WriteLine(" -l #[,#]             Prediction order {max} or {min},{max} (1..32)");
-			Console.WriteLine("    --max-precision   Coefficients precision search (0..1)");
+			Console.WriteLine(" -w <func>[,<func>]    Window functions (bartlett,welch,hann,flattop,tukey)");
+			Console.WriteLine(" -l #[,#]              Prediction order {max} or {min},{max} (1..32)");
+			Console.WriteLine("    --max-precision    Coefficients precision search (0..1)");
 			Console.WriteLine();
 		}
 
@@ -225,10 +228,9 @@ namespace CUETools.FLACCL.cmd
 
 			if (((input_file == "-" || Path.GetExtension(input_file) == ".flac") && output_file == null))
 			{
-				Console.WriteLine();
+                Usage();
+                Console.WriteLine();
 				Console.WriteLine("Output file not specified.");
-				Console.WriteLine();
-				Usage();
 				return 2;
 			}
 
@@ -245,7 +247,9 @@ namespace CUETools.FLACCL.cmd
 					audioSource = new FlakeReader(input_file, null);
 				else
 				{
-					Usage();
+                    Usage();
+                    Console.WriteLine();
+                    Console.WriteLine("Input file \"{0}\" does not exist.", input_file);
 					return 2;
 				}
 			}
@@ -272,6 +276,7 @@ namespace CUETools.FLACCL.cmd
                     output_file == "-" ? Console.OpenStandardOutput() :
                     output_file == "nul" ? new NullStream() : null,
                     settings);
+                settings = encoder.Settings as FLACCLWriterSettings;
                 encoder.FinalSampleCount = audioSource.Length;
 				if (stereo_method != null)
 					encoder.StereoMethod = Flake.LookupStereoMethod(stereo_method);
@@ -306,7 +311,9 @@ namespace CUETools.FLACCL.cmd
 			{
 				Console.WriteLine("Filename  : {0}", input_file);
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
-			}
+                Console.WriteLine("Platform  : {0}", settings.Platform);
+                Console.WriteLine("Device    : {0}", settings.Device);
+            }
 
             bool keepRunning = true;
             Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
@@ -394,12 +401,12 @@ namespace CUETools.FLACCL.cmd
 					settings.MaxPartitionOrder,
 					settings.GPUOnly ? "GPU" : "CPU",
 					encoder.OrdersPerWindow,
-                    (encoder.Settings as FLACCLWriterSettings).MaxLPCOrder,
+                    settings.MaxLPCOrder,
 					encoder.MinPrecisionSearch,
 					encoder.MaxPrecisionSearch,
 					encoder.Settings.BlockSize,
 					encoder.VBRMode,
-                    (encoder.Settings as FLACCLWriterSettings).MaxFixedOrder - (encoder.Settings as FLACCLWriterSettings).MinFixedOrder + 1,
+                    settings.MaxFixedOrder - settings.MinFixedOrder + 1,
 					encoder.DoConstant ? "c" : ""
 					);
 			}
