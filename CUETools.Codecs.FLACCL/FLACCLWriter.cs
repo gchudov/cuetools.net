@@ -2452,7 +2452,7 @@ namespace CUETools.Codecs.FLACCL
         {
             this.UseGPUOnly = gpuOnly;
             this.UseGPURice = gpuOnly && gpuRice;
-            this.UseMappedMemory = writer.m_settings.MappedMemory || writer.m_settings.DeviceType == OpenCLDeviceType.CPU;
+            this.UseMappedMemory = writer.m_settings.MappedMemory || _openCLProgram.Context.Devices[0].HostUnifiedMemory;
             this.groupSize = groupSize;
             this.channels = writer.Settings.PCM.ChannelCount;
             this.channelsCount = channelsCount;
@@ -2482,6 +2482,26 @@ namespace CUETools.Codecs.FLACCL
             int selectedLen = sizeof(int) * 32 * channelsCount * MAX_FRAMES;
             int riceLen = sizeof(int) * channels * MAX_CHANNELSIZE;
 
+            clSamplesBytesPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, samplesBytesLen);
+            clResidualPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualBufferLen);
+            clBestRiceParamsPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceParamsLen / 4);
+            clResidualTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
+            clBestResidualTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, bestResidualTasksLen);
+            clWindowFunctionsPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, wndLen);
+            clSelectedTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
+            clRiceOutputPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceLen);
+
+            clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytesPinned, true, MapFlags.READ_WRITE, 0, samplesBytesLen);
+            clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidualPinned, true, MapFlags.READ_WRITE, 0, residualBufferLen);
+            clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParamsPinned, true, MapFlags.READ_WRITE, 0, riceParamsLen / 4);
+            clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasksPinned, true, MapFlags.READ_WRITE, 0, residualTasksLen);
+            clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasksPinned, true, MapFlags.READ_WRITE, 0, bestResidualTasksLen);
+            clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctionsPinned, true, MapFlags.READ_WRITE, 0, wndLen);
+            clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasksPinned, true, MapFlags.READ_WRITE, 0, selectedLen);
+            clRiceOutputPtr = openCLCQ.EnqueueMapBuffer(clRiceOutputPinned, true, MapFlags.READ_WRITE, 0, riceLen);
+
+            openCLCQ.Finish();
+
             if (!this.UseMappedMemory)
             {
                 clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, samplesBytesLen);
@@ -2492,51 +2512,17 @@ namespace CUETools.Codecs.FLACCL
                 clWindowFunctions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, wndLen);
                 clSelectedTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, selectedLen);
                 clRiceOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, riceLen);
-
-                clSamplesBytesPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, samplesBytesLen);
-                clResidualPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualBufferLen);
-                clBestRiceParamsPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceParamsLen / 4);
-                clResidualTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
-                clBestResidualTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, bestResidualTasksLen);
-                clWindowFunctionsPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, wndLen);
-                clSelectedTasksPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
-                clRiceOutputPinned = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceLen);
-
-                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytesPinned, true, MapFlags.READ_WRITE, 0, samplesBytesLen);
-                clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidualPinned, true, MapFlags.READ_WRITE, 0, residualBufferLen);
-                clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParamsPinned, true, MapFlags.READ_WRITE, 0, riceParamsLen / 4);
-                clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasksPinned, true, MapFlags.READ_WRITE, 0, residualTasksLen);
-                clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasksPinned, true, MapFlags.READ_WRITE, 0, bestResidualTasksLen);
-                clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctionsPinned, true, MapFlags.READ_WRITE, 0, wndLen);
-                clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasksPinned, true, MapFlags.READ_WRITE, 0, selectedLen);
-                clRiceOutputPtr = openCLCQ.EnqueueMapBuffer(clRiceOutputPinned, true, MapFlags.READ_WRITE, 0, riceLen);
             }
             else
             {
-                clSamplesBytes = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, (uint)samplesBytesLen);
-                clResidual = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualBufferLen);
-                clBestRiceParams = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceParamsLen / 4);
-                clResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, residualTasksLen);
-                clBestResidualTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, bestResidualTasksLen);
-                clWindowFunctions = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, wndLen);
-                clSelectedTasks = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, selectedLen);
-                clRiceOutput = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE | MemFlags.ALLOC_HOST_PTR, riceLen);
-
-                clSamplesBytesPtr = openCLCQ.EnqueueMapBuffer(clSamplesBytes, true, MapFlags.READ_WRITE, 0, samplesBytesLen);
-                clResidualPtr = openCLCQ.EnqueueMapBuffer(clResidual, true, MapFlags.READ_WRITE, 0, residualBufferLen);
-                clBestRiceParamsPtr = openCLCQ.EnqueueMapBuffer(clBestRiceParams, true, MapFlags.READ_WRITE, 0, riceParamsLen / 4);
-                clResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clResidualTasks, true, MapFlags.READ_WRITE, 0, residualTasksLen);
-                clBestResidualTasksPtr = openCLCQ.EnqueueMapBuffer(clBestResidualTasks, true, MapFlags.READ_WRITE, 0, bestResidualTasksLen);
-                clWindowFunctionsPtr = openCLCQ.EnqueueMapBuffer(clWindowFunctions, true, MapFlags.READ_WRITE, 0, wndLen);
-                clSelectedTasksPtr = openCLCQ.EnqueueMapBuffer(clSelectedTasks, true, MapFlags.READ_WRITE, 0, selectedLen);
-                clRiceOutputPtr = openCLCQ.EnqueueMapBuffer(clRiceOutput, true, MapFlags.READ_WRITE, 0, riceLen);
-
-                //clSamplesBytesPtr = clSamplesBytes.HostPtr;
-                //clResidualPtr = clResidual.HostPtr;
-                //clBestRiceParamsPtr = clBestRiceParams.HostPtr;
-                //clResidualTasksPtr = clResidualTasks.HostPtr;
-                //clBestResidualTasksPtr = clBestResidualTasks.HostPtr;
-                //clWindowFunctionsPtr = clWindowFunctions.HostPtr;
+                clSamplesBytes = clSamplesBytesPinned;
+                clResidual = clResidualPinned;
+                clBestRiceParams = clBestRiceParamsPinned;
+                clResidualTasks = clResidualTasksPinned;
+                clBestResidualTasks = clBestResidualTasksPinned;
+                clWindowFunctions = clWindowFunctionsPinned;
+                clSelectedTasks = clSelectedTasksPinned;
+                clRiceOutput = clRiceOutputPinned;
             }
 
             clSamples = openCLProgram.Context.CreateBuffer(MemFlags.READ_WRITE, samplesBufferLen);
@@ -2641,33 +2627,33 @@ namespace CUETools.Codecs.FLACCL
                 clRiceParams.Dispose();
             }
 
+            if (clSamplesBytesPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clSamplesBytesPinned, clSamplesBytesPtr);
+            clSamplesBytesPtr = IntPtr.Zero;
+            if (clResidualPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clResidualPinned, clResidualPtr);
+            clResidualPtr = IntPtr.Zero;
+            if (clBestRiceParamsPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clBestRiceParamsPinned, clBestRiceParamsPtr);
+            clBestRiceParamsPtr = IntPtr.Zero;
+            if (clResidualTasksPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clResidualTasksPinned, clResidualTasksPtr);
+            clResidualTasksPtr = IntPtr.Zero;
+            if (clBestResidualTasksPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clBestResidualTasksPinned, clBestResidualTasksPtr);
+            clBestResidualTasksPtr = IntPtr.Zero;
+            if (clWindowFunctionsPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clWindowFunctionsPinned, clWindowFunctionsPtr);
+            clWindowFunctionsPtr = IntPtr.Zero;
+            if (clSelectedTasksPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clSelectedTasksPinned, clSelectedTasksPtr);
+            clSelectedTasksPtr = IntPtr.Zero;
+            if (clRiceOutputPtr != IntPtr.Zero)
+                openCLCQ.EnqueueUnmapMemObject(clRiceOutputPinned, clRiceOutputPtr);
+            clRiceOutputPtr = IntPtr.Zero;
+
             if (!this.UseMappedMemory)
             {
-                if (clSamplesBytesPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clSamplesBytesPinned, clSamplesBytesPtr);
-                clSamplesBytesPtr = IntPtr.Zero;
-                if (clResidualPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clResidualPinned, clResidualPtr);
-                clResidualPtr = IntPtr.Zero;
-                if (clBestRiceParamsPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clBestRiceParamsPinned, clBestRiceParamsPtr);
-                clBestRiceParamsPtr = IntPtr.Zero;
-                if (clResidualTasksPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clResidualTasksPinned, clResidualTasksPtr);
-                clResidualTasksPtr = IntPtr.Zero;
-                if (clBestResidualTasksPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clBestResidualTasksPinned, clBestResidualTasksPtr);
-                clBestResidualTasksPtr = IntPtr.Zero;
-                if (clWindowFunctionsPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clWindowFunctionsPinned, clWindowFunctionsPtr);
-                clWindowFunctionsPtr = IntPtr.Zero;
-                if (clSelectedTasksPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clSelectedTasksPinned, clSelectedTasksPtr);
-                clSelectedTasksPtr = IntPtr.Zero;
-                if (clRiceOutputPtr != IntPtr.Zero)
-                    openCLCQ.EnqueueUnmapMemObject(clRiceOutputPinned, clRiceOutputPtr);
-                clRiceOutputPtr = IntPtr.Zero;
-
                 clSamplesBytesPinned.Dispose();
                 clResidualPinned.Dispose();
                 clBestRiceParamsPinned.Dispose();
@@ -2676,17 +2662,6 @@ namespace CUETools.Codecs.FLACCL
                 clWindowFunctionsPinned.Dispose();
                 clSelectedTasksPinned.Dispose();
                 clRiceOutputPinned.Dispose();
-            }
-            else
-            {
-                openCLCQ.EnqueueUnmapMemObject(clSamplesBytes, clSamplesBytesPtr);
-                openCLCQ.EnqueueUnmapMemObject(clResidual, clResidualPtr);
-                openCLCQ.EnqueueUnmapMemObject(clBestRiceParams, clBestRiceParamsPtr);
-                openCLCQ.EnqueueUnmapMemObject(clResidualTasks, clResidualTasksPtr);
-                openCLCQ.EnqueueUnmapMemObject(clBestResidualTasks, clBestResidualTasksPtr);
-                openCLCQ.EnqueueUnmapMemObject(clWindowFunctions, clWindowFunctionsPtr);
-                openCLCQ.EnqueueUnmapMemObject(clSelectedTasks, clSelectedTasksPtr);
-                openCLCQ.EnqueueUnmapMemObject(clRiceOutput, clRiceOutputPtr);
             }
 
             clSamples.Dispose();
