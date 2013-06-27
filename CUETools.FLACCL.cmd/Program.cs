@@ -311,8 +311,7 @@ namespace CUETools.FLACCL.cmd
 			{
 				Console.WriteLine("Filename  : {0}", input_file);
 				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
-                Console.WriteLine("Platform  : {0}", settings.Platform);
-                Console.WriteLine("Device    : {0}", settings.Device);
+                Console.WriteLine("Device    : {0}, Platform: \"{1}\", Version: {2}, Driver: {3}", settings.Device.Trim(), settings.Platform, settings.PlatformVersion.Trim(), settings.DriverVersion.Trim());
             }
 
             bool keepRunning = true;

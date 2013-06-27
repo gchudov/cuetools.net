@@ -28,6 +28,7 @@ using System.Runtime.InteropServices;
 using CUETools.Codecs;
 using CUETools.Codecs.FLAKE;
 using OpenCLNet;
+using System.Xml.Serialization;
 
 namespace CUETools.Codecs.FLACCL
 {
@@ -84,6 +85,7 @@ namespace CUETools.Codecs.FLACCL
                         string.Join(", ", (new List<Platform>(OpenCL.GetPlatforms())).ConvertAll(p => "\"" + p.Name + "\"").ToArray()));
             }
             Platform = OpenCL.GetPlatform(m_platform).Name;
+            PlatformVersion = OpenCL.GetPlatform(m_platform).Version;
             {
                 //var device = OpenCL.GetPlatform(m_platform).GetDevice(OpenCL.GetPlatform(m_platform).QueryDeviceIntPtr()[0]);
                 var devices = new List<Device>(OpenCL.GetPlatform(m_platform).QueryDevices((DeviceType)DeviceType));
@@ -94,6 +96,7 @@ namespace CUETools.Codecs.FLACCL
                     throw new Exception("no OpenCL devices found that matched filter criteria");
                 m_device = devices[0].DeviceID;
                 Device = devices[0].Name;
+                DriverVersion = devices[0].DriverVersion;
             }
             SetDefaultValuesForMode();
             if (Padding < 0)
@@ -202,6 +205,7 @@ namespace CUETools.Codecs.FLACCL
 
         //[TypeConverter(typeof(FLACCLWriterSettingsDeviceConverter))]
         [SRDescription(typeof(Properties.Resources), "DescriptionDevice")]
+        [XmlIgnore]
         [Browsable(false)]
         public string Device { get; set; }
 
@@ -213,6 +217,14 @@ namespace CUETools.Codecs.FLACCL
         [DisplayName("Allow Non-subset")]
         [SRDescription(typeof(Properties.Resources), "AllowNonSubsetDescription")]
         public bool AllowNonSubset { get; set; }
+
+        [XmlIgnore]
+        [Browsable(false)]
+        public string PlatformVersion { get; set; }
+
+        [XmlIgnore]
+        [Browsable(false)]
+        public string DriverVersion { get; set; }
     }
 
     public class FLACCLWriterSettingsPlatformConverter : TypeConverter
