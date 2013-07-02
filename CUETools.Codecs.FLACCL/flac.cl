@@ -20,10 +20,6 @@
 #ifndef _FLACCL_KERNEL_H_
 #define _FLACCL_KERNEL_H_
 
-#if __OPENCL_VERSION__ < 110
-#error OpenCL 1.1+ required!
-#endif
-
 #if defined(__WinterPark__) || defined(__BeaverCreek__) || defined(__Turks__) || defined(__Caicos__) || defined(__Tahiti__) || defined(__Pitcairn__) || defined(__Capeverde__)
 #define AMD
 #elif defined(__Cayman__) || defined(__Barts__) || defined(__Cypress__) || defined(__Juniper__) || defined(__Redwood__) || defined(__Cedar__)
