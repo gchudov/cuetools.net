@@ -4091,8 +4091,16 @@ namespace CUETools.Processor
             {
                 // file.Refresh();
                 // file.Attributes returns -1 for long paths!!!
-                if ((file.Attributes & FileAttributes.Hidden) != 0)
+                try
+                {
+
+                    if ((file.Attributes & FileAttributes.Hidden) != 0)
+                        continue;
+                }
+                catch (UnauthorizedAccessException)
+                {
                     continue;
+                }
                 if ((file.Attributes & FileAttributes.Directory) != 0)
                 {
                     // foreach (FileSystemInfo subfile in ((DirectoryInfo)e.file).GetFileSystemInfos())
