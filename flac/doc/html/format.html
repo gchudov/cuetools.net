@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<!-- Copyright (c) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson -->
+<!-- Copyright (c) 2000-2009  Josh Coalson -->
+<!-- Copyright (c) 2011-2013  Xiph.Org Foundation -->
 <!-- Permission is granted to copy, distribute and/or modify this document -->
 <!-- under the terms of the GNU Free Documentation License, Version 1.1 -->
 <!-- or any later version published by the Free Software Foundation; -->
@@ -1121,7 +1122,7 @@
 				&lt;1&gt;
 			</td>
 			<td>
-				Reserved:<br />
+				Reserved: <a href="#frame_header_notes">[1]</a><br />
 				<ul>
 				<li>
 					<tt>0</tt> : mandatory value
@@ -1137,7 +1138,7 @@
 				&lt;1&gt;
 			</td>
 			<td>
-				Blocking strategy:<br />
+				Blocking strategy: <a href="#frame_header_notes">[2]</a> <a href="#frame_header_notes">[3]</a><br />
 				<ul>
 				<li>
 					<tt>0</tt> : fixed-blocksize stream; frame header encodes the frame number
@@ -1247,11 +1248,11 @@
 						<li>1 channel: mono</li>
 						<li>2 channels: left, right</li>
 						<li>3 channels: left, right, center</li>
-						<li>4 channels: left, right, back left, back right</li>
-						<li>5 channels: left, right, center, back/surround left, back/surround right</li>
-						<li>6 channels: left, right, center, LFE, back/surround left, back/surround right</li>
-						<li>7 channels: not defined</li>
-						<li>8 channels: not defined</li>
+						<li>4 channels: front left, front right, back left, back right</li>
+						<li>5 channels: front left, front right, front center, back/surround left, back/surround right</li>
+						<li>6 channels: front left, front right, front center, LFE, back/surround left, back/surround right</li>
+						<li>7 channels: front left, front right, front center, LFE, back center, side left, side right</li>
+						<li>8 channels: front left, front right, front center, LFE, back left, back right, side left, side right</li>
 					</ul>
 				</li>
 				<li>
@@ -1325,9 +1326,9 @@
 			</td>
 			<td>
 				if(variable blocksize)<br />
-				&nbsp;&nbsp;&nbsp;&lt;8-56&gt;:"UTF-8" coded sample number (decoded number is 36 bits)<br />
+				&nbsp;&nbsp;&nbsp;&lt;8-56&gt;:"UTF-8" coded sample number (decoded number is 36 bits) <a href="#frame_header_notes">[4]</a><br />
 				else<br />
-				&nbsp;&nbsp;&nbsp;&lt;8-48&gt;:"UTF-8" coded frame number (decoded number is 31 bits)
+				&nbsp;&nbsp;&nbsp;&lt;8-48&gt;:"UTF-8" coded frame number (decoded number is 31 bits) <a href="#frame_header_notes">[4]</a>
 			</td>
 		</tr>
 		<tr>
@@ -1360,8 +1361,11 @@
 			<td>
 			</td>
 			<td bgcolor="#F4F4CC">
-				<font size="+1">NOTES</font><br />
-				<ul>
+				<a name="frame_header_notes"><font size="+1">NOTES</font></a><br />
+				<ol>
+				<li>
+					This bit must remain reserved for <tt>0</tt> in order for a FLAC frame's initial 15 bits to be distinguishable from the start of an MPEG audio frame (<a href="http://lists.xiph.org/pipermail/flac-dev/2008-December/002607.html">see also</a>).
+				</li>
 				<li>
 					The "blocking strategy" bit must be the same throughout the entire stream.
 				</li>
@@ -1371,7 +1375,7 @@
 				<li>
 					The "UTF-8" coding used for the sample/frame number is the same variable length code used to store compressed UCS-2, extended to handle larger input.
 				</li>
-				</ul>
+				</ol>
 			</td>
 		</tr>
 	</table>
@@ -1833,7 +1837,9 @@
 	<table>
 		<tr>
 			<td align="left">
-				Copyright (c) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+				Copyright (c) 2000-2009  Josh Coalson
+				<br/>
+				Copyright (c) 2011-2013  Xiph.Org Foundation
 			</td>
 			<td width="1%" align="right">
 				<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=13478&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>

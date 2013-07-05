@@ -1,10 +1,11 @@
 #!/bin/sh
 
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2001-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -16,6 +17,9 @@
 #  it may be distributed under the Xiph.Org license, which is the least
 #  restrictive of those mentioned above.  See the file COPYING.Xiph in this
 #  distribution.
+
+# we use '.' as decimal separator in --skip/--until tests
+export LANG=C LC_ALL=C
 
 die ()
 {
@@ -46,20 +50,22 @@ LD_LIBRARY_PATH=`pwd`/../src/share/getopt/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=`pwd`/../src/share/replaygain_analysis/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=`pwd`/../src/share/replaygain_synthesis/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=`pwd`/../src/share/utf8/.libs:$LD_LIBRARY_PATH
-LD_LIBRARY_PATH=`pwd`/../obj/$BUILD/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=`pwd`/../objs/$BUILD/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH
+export MALLOC_CHECK_=3
+export MALLOC_PERTURB_=$(($(date +%s) % 255 + 1))
 PATH=`pwd`/../src/flac:$PATH
 PATH=`pwd`/../src/metaflac:$PATH
 PATH=`pwd`/../src/test_streams:$PATH
-PATH=`pwd`/../obj/$BUILD/bin:$PATH
+PATH=`pwd`/../objs/$BUILD/bin:$PATH
 
 flac --help 1>/dev/null 2>/dev/null || die "ERROR can't find flac executable"
 
 run_flac ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 flac $*" >>test_flac.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 flac $* 4>>test_flac.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 flac $*" >>test_flac.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 flac $* 4>>test_flac.valgrind.log
 	else
 		flac $*
 	fi
@@ -68,8 +74,8 @@ run_flac ()
 run_metaflac ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 metaflac $*" >>test_flac.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 metaflac $* 4>>test_flac.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 metaflac $*" >>test_flac.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 metaflac $* 4>>test_flac.valgrind.log
 	else
 		metaflac $*
 	fi

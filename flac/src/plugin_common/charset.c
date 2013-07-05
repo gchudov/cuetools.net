@@ -1,5 +1,6 @@
 /* plugin_common - Routines common to several plugins
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2002-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * Only slightly modified charset.c from:
  *  EasyTAG - Tag editor for MP3 and OGG files
@@ -15,9 +16,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
@@ -85,7 +86,7 @@ char* FLAC_plugin__charset_convert_string (const char *string, char *from, char 
 	outsize = ((length + 3) & ~3) + 1;
 	if(outsize < length) /* overflow check */
 		return NULL;
-	out = (char*)malloc(outsize);
+	out = malloc(outsize);
 	outleft = outsize - 1;
 	outptr = out;
 

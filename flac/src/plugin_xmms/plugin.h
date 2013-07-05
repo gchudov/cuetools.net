@@ -1,5 +1,6 @@
 /* libxmms-flac - XMMS FLAC input plugin
- * Copyright (C) 2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2004-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,13 +12,21 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #ifndef FLAC__PLUGIN_XMMS__PLUGIN_H
 #define FLAC__PLUGIN_XMMS__PLUGIN_H
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#if defined(__GNUC_STDC_INLINE__)
+#  define G_INLINE_FUNC extern inline __attribute__((gnu_inline))
+#endif
 
 void set_track_info(const char* title, int length_in_msec);
 

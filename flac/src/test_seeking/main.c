@@ -1,5 +1,6 @@
 /* test_seeking - Seeking tester for libFLAC
- * Copyright (C) 2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2004-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
@@ -33,6 +34,7 @@
 #include "FLAC/assert.h"
 #include "FLAC/metadata.h"
 #include "FLAC/stream_decoder.h"
+#include "share/compat.h"
 
 typedef struct {
 	FLAC__int32 **pcm;
@@ -47,9 +49,9 @@ typedef struct {
 
 static FLAC__bool stop_signal_ = false;
 
-static void our_sigint_handler_(int signal)
+static void our_sigint_handler_(int signum)
 {
-	(void)signal;
+	(void)signum;
 	printf("(caught SIGINT) ");
 	fflush(stdout);
 	stop_signal_ = true;
@@ -90,11 +92,11 @@ static unsigned local_rand_(void)
 #undef RNDFUNC
 }
 
-static off_t get_filesize_(const char *srcpath)
+static FLAC__off_t get_filesize_(const char *srcpath)
 {
-	struct stat srcstat;
+	struct flac_stat_s srcstat;
 
-	if(0 == stat(srcpath, &srcstat))
+	if(0 == flac_stat(srcpath, &srcstat))
 		return srcstat.st_size;
 	else
 		return -1;
@@ -105,7 +107,7 @@ static FLAC__bool read_pcm_(FLAC__int32 *pcm[], const char *rawfilename, const c
 	FILE *f;
 	unsigned channels = 0, bps = 0, samples, i, j;
 
-	off_t rawfilesize = get_filesize_(rawfilename);
+	FLAC__off_t rawfilesize = get_filesize_(rawfilename);
 	if (rawfilesize < 0) {
 		fprintf(stderr, "ERROR: can't determine filesize for %s\n", rawfilename);
 		return false;
@@ -152,12 +154,12 @@ static FLAC__bool read_pcm_(FLAC__int32 *pcm[], const char *rawfilename, const c
 		return false;
 	}
 	for(i = 0; i < channels; i++) {
-		if(0 == (pcm[i] = (FLAC__int32*)malloc(sizeof(FLAC__int32)*samples))) {
+		if(0 == (pcm[i] = malloc(sizeof(FLAC__int32)*samples))) {
 			printf("ERROR: allocating space for PCM samples\n");
 			return false;
 		}
 	}
-	if(0 == (f = fopen(rawfilename, "rb"))) {
+	if(0 == (f = flac_fopen(rawfilename, "rb"))) {
 		printf("ERROR: opening %s for reading\n", rawfilename);
 		return false;
 	}
@@ -166,8 +168,8 @@ static FLAC__bool read_pcm_(FLAC__int32 *pcm[], const char *rawfilename, const c
 		signed char c;
 		for(i = 0; i < samples; i++) {
 			for(j = 0; j < channels; j++) {
-				fread(&c, 1, 1, f);
-				pcm[j][i] = c;
+				if (fread(&c, 1, 1, f) == 1)
+					pcm[j][i] = c;
 			}
 		}
 	}
@@ -175,8 +177,8 @@ static FLAC__bool read_pcm_(FLAC__int32 *pcm[], const char *rawfilename, const c
 		unsigned char c[2];
 		for(i = 0; i < samples; i++) {
 			for(j = 0; j < channels; j++) {
-				fread(&c, 1, 2, f);
-				pcm[j][i] = ((int)((signed char)c[0])) << 8 | (int)c[1];
+				if (fread(&c, 1, 2, f) == 2)
+					pcm[j][i] = ((int)((signed char)c[0])) << 8 | (int)c[1];
 			}
 		}
 	}
@@ -200,11 +202,7 @@ static FLAC__StreamDecoderWriteStatus write_callback_(const FLAC__StreamDecoder 
 
 	FLAC__ASSERT(frame->header.number_type == FLAC__FRAME_NUMBER_TYPE_SAMPLE_NUMBER); /* decoder guarantees this */
 	if (!dcd->quiet)
-#ifdef _MSC_VER
-		printf("frame@%I64u(%u)... ", frame->header.number.sample_number, frame->header.blocksize);
-#else
-		printf("frame@%llu(%u)... ", (unsigned long long)frame->header.number.sample_number, frame->header.blocksize);
-#endif
+		printf("frame@%" PRIu64 "(%u)... ", frame->header.number.sample_number, frame->header.blocksize);
 	fflush(stdout);
 
 	/* check against PCM data if we have it */
@@ -265,7 +263,7 @@ static void error_callback_(const FLAC__StreamDecoder *decoder, FLAC__StreamDeco
  * 1 - read 2 frames
  * 2 - read until end
  */
-static FLAC__bool seek_barrage(FLAC__bool is_ogg, const char *filename, off_t filesize, unsigned count, FLAC__int64 total_samples, unsigned read_mode, FLAC__int32 **pcm)
+static FLAC__bool seek_barrage(FLAC__bool is_ogg, const char *filename, FLAC__off_t filesize, unsigned count, FLAC__int64 total_samples, unsigned read_mode, FLAC__int32 **pcm)
 {
 	FLAC__StreamDecoder *decoder;
 	DecoderClientData decoder_client_data;
@@ -309,11 +307,7 @@ static FLAC__bool seek_barrage(FLAC__bool is_ogg, const char *filename, off_t fi
 			return die_s_("expected FLAC__STREAM_DECODER_END_OF_STREAM", decoder);
 	}
 
-#ifdef _MSC_VER
-	printf("file's total_samples is %I64u\n", decoder_client_data.total_samples);
-#else
-	printf("file's total_samples is %llu\n", (unsigned long long)decoder_client_data.total_samples);
-#endif
+	printf("file's total_samples is %" PRIu64 "\n", decoder_client_data.total_samples);
 	n = (long int)decoder_client_data.total_samples;
 
 	if(n == 0 && total_samples >= 0)
@@ -347,11 +341,7 @@ static FLAC__bool seek_barrage(FLAC__bool is_ogg, const char *filename, off_t fi
 			pos = (FLAC__uint64)(local_rand_() % n);
 		}
 
-#ifdef _MSC_VER
-		printf("#%u:seek(%I64u)... ", i, pos);
-#else
-		printf("#%u:seek(%llu)... ", i, (unsigned long long)pos);
-#endif
+		printf("#%u:seek(%" PRIu64 ")... ", i, pos);
 		fflush(stdout);
 		if(!FLAC__stream_decoder_seek_absolute(decoder, pos)) {
 			if(pos >= (FLAC__uint64)n)
@@ -422,14 +412,14 @@ int main(int argc, char *argv[])
 	const char *flacfilename, *rawfilename = 0;
 	unsigned count = 0, read_mode;
 	FLAC__int64 samples = -1;
-	off_t flacfilesize;
+	FLAC__off_t flacfilesize;
 	FLAC__int32 *pcm[2] = { 0, 0 };
 	FLAC__bool ok = true;
 
 	static const char * const usage = "usage: test_seeking file.flac [#seeks] [#samples-in-file.flac] [file.raw]\n";
 
 	if (argc < 2 || argc > 5) {
-		fprintf(stderr, usage);
+		fputs(usage, stderr);
 		return 1;
 	}
 

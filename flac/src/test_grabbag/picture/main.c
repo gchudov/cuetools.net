@@ -1,5 +1,6 @@
 /* test_picture - Simple tester for picture routines in grabbag
- * Copyright (C) 2006,2007,2008  Josh Coalson
+ * Copyright (C) 2006-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
@@ -70,17 +71,9 @@ static FLAC__bool test_one_picture(const char *prefix, const PictureFile *pf, co
 	const char *error;
 	char s[4096];
 	if(fn_only)
-#if defined _MSC_VER || defined __MINGW32__
-		_snprintf(s, sizeof(s)-1, "%s/%s", prefix, pf->path);
-#else
-		snprintf(s, sizeof(s)-1, "%s/%s", prefix, pf->path);
-#endif
+		flac_snprintf(s, sizeof(s), "%s/%s", prefix, pf->path);
 	else
-#if defined _MSC_VER || defined __MINGW32__
-		_snprintf(s, sizeof(s)-1, "%u|%s|%s|%s|%s/%s", (unsigned)pf->type, pf->mime_type, pf->description, res, prefix, pf->path);
-#else
-		snprintf(s, sizeof(s)-1, "%u|%s|%s|%s|%s/%s", (unsigned)pf->type, pf->mime_type, pf->description, res, prefix, pf->path);
-#endif
+		flac_snprintf(s, sizeof(s), "%u|%s|%s|%s|%s/%s", (unsigned)pf->type, pf->mime_type, pf->description, res, prefix, pf->path);
 
 	printf("testing grabbag__picture_parse_specification(\"%s\")... ", s);
 	if(0 == (obj = grabbag__picture_parse_specification(s, &error)))
@@ -211,12 +204,12 @@ int main(int argc, char *argv[])
 	const char *usage = "usage: test_pictures path_prefix\n";
 
 	if(argc > 1 && 0 == strcmp(argv[1], "-h")) {
-		printf(usage);
+		puts(usage);
 		return 0;
 	}
 
 	if(argc != 2) {
-		fprintf(stderr, usage);
+		fputs(usage, stderr);
 		return 255;
 	}
 

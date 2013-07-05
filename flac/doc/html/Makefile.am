@@ -1,8 +1,9 @@
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2001-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -14,8 +15,6 @@
 #  it may be distributed under the Xiph.Org license, which is the least
 #  restrictive of those mentioned above.  See the file COPYING.Xiph in this
 #  distribution.
-
-AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = ru images
 
@@ -69,12 +68,14 @@ doc_DATA = \
 
 EXTRA_DIST = $(doc_DATA) api
 
+if FLaC__HAS_DOXYGEN
 # The install targets don't copy whole directories so we have to
 # handle 'api/' specially:
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/api
-	(cd api && $(INSTALL_DATA) * $(DESTDIR)$(docdir)/api)
+	(cd $(builddir)/api && $(INSTALL_DATA) * $(DESTDIR)$(docdir)/api)
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)/api
-maintainer-clean-local:
-	rm -rf api
+distclean-local:
+	-rm -rf api
+endif

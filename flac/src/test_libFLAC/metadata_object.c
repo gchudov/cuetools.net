@@ -1,5 +1,6 @@
 /* test_libFLAC - Unit tester for libFLAC
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2002-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
@@ -23,6 +24,7 @@
 #include "FLAC/assert.h"
 #include "FLAC/metadata.h"
 #include "test_libs_common/metadata_utils.h"
+#include "share/compat.h"
 #include "metadata.h"
 #include <stdio.h>
 #include <stdlib.h> /* for malloc() */
@@ -32,7 +34,7 @@ static FLAC__byte *make_dummydata_(FLAC__byte *dummydata, unsigned len)
 {
 	FLAC__byte *ret;
 
-	if(0 == (ret = (FLAC__byte*)malloc(len))) {
+	if(0 == (ret = malloc(len))) {
 		printf("FAILED, malloc error\n");
 		exit(1);
 	}
@@ -47,11 +49,7 @@ static FLAC__bool compare_track_(const FLAC__StreamMetadata_CueSheet_Track *from
 	unsigned i;
 
 	if(from->offset != to->offset) {
-#ifdef _MSC_VER
-		printf("FAILED, track offset mismatch, expected %I64u, got %I64u\n", to->offset, from->offset);
-#else
-		printf("FAILED, track offset mismatch, expected %llu, got %llu\n", (unsigned long long)to->offset, (unsigned long long)from->offset);
-#endif
+		printf("FAILED, track offset mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", to->offset, from->offset);
 		return false;
 	}
 	if(from->number != to->number) {
@@ -83,11 +81,7 @@ static FLAC__bool compare_track_(const FLAC__StreamMetadata_CueSheet_Track *from
 	else {
 		for(i = 0; i < to->num_indices; i++) {
 			if(from->indices[i].offset != to->indices[i].offset) {
-#ifdef _MSC_VER
-				printf("FAILED, track indices[%u].offset mismatch, expected %I64u, got %I64u\n", i, to->indices[i].offset, from->indices[i].offset);
-#else
-				printf("FAILED, track indices[%u].offset mismatch, expected %llu, got %llu\n", i, (unsigned long long)to->indices[i].offset, (unsigned long long)from->indices[i].offset);
-#endif
+				printf("FAILED, track indices[%u].offset mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", i, to->indices[i].offset, from->indices[i].offset);
 				return false;
 			}
 			if(from->indices[i].number != to->indices[i].number) {
@@ -109,19 +103,11 @@ static FLAC__bool compare_seekpoint_array_(const FLAC__StreamMetadata_SeekPoint 
 
 	for(i = 0; i < n; i++) {
 		if(from[i].sample_number != to[i].sample_number) {
-#ifdef _MSC_VER
-			printf("FAILED, point[%u].sample_number mismatch, expected %I64u, got %I64u\n", i, to[i].sample_number, from[i].sample_number);
-#else
-			printf("FAILED, point[%u].sample_number mismatch, expected %llu, got %llu\n", i, (unsigned long long)to[i].sample_number, (unsigned long long)from[i].sample_number);
-#endif
+			printf("FAILED, point[%u].sample_number mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", i, to[i].sample_number, from[i].sample_number);
 			return false;
 		}
 		if(from[i].stream_offset != to[i].stream_offset) {
-#ifdef _MSC_VER
-			printf("FAILED, point[%u].stream_offset mismatch, expected %I64u, got %I64u\n", i, to[i].stream_offset, from[i].stream_offset);
-#else
-			printf("FAILED, point[%u].stream_offset mismatch, expected %llu, got %llu\n", i, (unsigned long long)to[i].stream_offset, (unsigned long long)from[i].stream_offset);
-#endif
+			printf("FAILED, point[%u].stream_offset mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", i, to[i].stream_offset, from[i].stream_offset);
 			return false;
 		}
 		if(from[i].frame_samples != to[i].frame_samples) {
@@ -163,7 +149,7 @@ static FLAC__bool check_seektable_(const FLAC__StreamMetadata *block, unsigned n
 static void entry_new_(FLAC__StreamMetadata_VorbisComment_Entry *entry, const char *field)
 {
 	entry->length = strlen(field);
-	entry->entry = (FLAC__byte*)malloc(entry->length+1);
+	entry->entry = malloc(entry->length+1);
 	FLAC__ASSERT(0 != entry->entry);
 	memcpy(entry->entry, field, entry->length);
 	entry->entry[entry->length] = '\0';
@@ -171,7 +157,7 @@ static void entry_new_(FLAC__StreamMetadata_VorbisComment_Entry *entry, const ch
 
 static void entry_clone_(FLAC__StreamMetadata_VorbisComment_Entry *entry)
 {
-	FLAC__byte *x = (FLAC__byte*)malloc(entry->length+1);
+	FLAC__byte *x = malloc(entry->length+1);
 	FLAC__ASSERT(0 != x);
 	memcpy(x, entry->entry, entry->length);
 	x[entry->length] = '\0';
@@ -213,7 +199,7 @@ static void vc_resize_(FLAC__StreamMetadata *block, unsigned num)
 		}
 	}
 	else {
-		vc->comments = (FLAC__StreamMetadata_VorbisComment_Entry*)realloc(vc->comments, sizeof(FLAC__StreamMetadata_VorbisComment_Entry)*num);
+		vc->comments = realloc(vc->comments, sizeof(FLAC__StreamMetadata_VorbisComment_Entry)*num);
 		FLAC__ASSERT(0 != vc->comments);
 		if(num > vc->num_comments)
 			memset(vc->comments+vc->num_comments, 0, sizeof(FLAC__StreamMetadata_VorbisComment_Entry)*(num-vc->num_comments));
@@ -275,22 +261,22 @@ static void vc_delete_(FLAC__StreamMetadata *block, unsigned pos)
 
 static void vc_replace_new_(FLAC__StreamMetadata_VorbisComment_Entry *entry, FLAC__StreamMetadata *block, const char *field, FLAC__bool all)
 {
-	int index;
+	int indx;
 	char field_name[256];
 	const char *eq = strchr(field, '=');
 	FLAC__ASSERT(eq>field && (unsigned)(eq-field) < sizeof(field_name));
 	memcpy(field_name, field, eq-field);
 	field_name[eq-field]='\0';
 
-	index = vc_find_from_(block, field_name, 0);
-	if(index < 0)
+	indx = vc_find_from_(block, field_name, 0);
+	if(indx < 0)
 		vc_insert_new_(entry, block, block->data.vorbis_comment.num_comments, field);
 	else {
-		vc_set_new_(entry, block, (unsigned)index, field);
+		vc_set_new_(entry, block, (unsigned)indx, field);
 		if(all) {
-			for(index = index+1; index >= 0 && (unsigned)index < block->data.vorbis_comment.num_comments; )
-				if((index = vc_find_from_(block, field_name, (unsigned)index)) >= 0)
-					vc_delete_(block, (unsigned)index);
+			for(indx = indx+1; indx >= 0 && (unsigned)indx < block->data.vorbis_comment.num_comments; )
+				if((indx = vc_find_from_(block, field_name, (unsigned)indx)) >= 0)
+					vc_delete_(block, (unsigned)indx);
 		}
 	}
 
@@ -312,7 +298,7 @@ static void track_clone_(FLAC__StreamMetadata_CueSheet_Track *track)
 {
 	if(track->num_indices > 0) {
 		size_t bytes = sizeof(FLAC__StreamMetadata_CueSheet_Index) * track->num_indices;
-		FLAC__StreamMetadata_CueSheet_Index *x = (FLAC__StreamMetadata_CueSheet_Index*)malloc(bytes);
+		FLAC__StreamMetadata_CueSheet_Index *x = malloc(bytes);
 		FLAC__ASSERT(0 != x);
 		memcpy(x, track->indices, bytes);
 		track->indices = x;
@@ -367,7 +353,7 @@ static void tr_resize_(FLAC__StreamMetadata *block, unsigned track_num, unsigned
 		}
 	}
 	else {
-		tr->indices = (FLAC__StreamMetadata_CueSheet_Index*)realloc(tr->indices, sizeof(FLAC__StreamMetadata_CueSheet_Index)*num);
+		tr->indices = realloc(tr->indices, sizeof(FLAC__StreamMetadata_CueSheet_Index)*num);
 		FLAC__ASSERT(0 != tr->indices);
 		if(num > tr->num_indices)
 			memset(tr->indices+tr->num_indices, 0, sizeof(FLAC__StreamMetadata_CueSheet_Index)*(num-tr->num_indices));
@@ -377,7 +363,7 @@ static void tr_resize_(FLAC__StreamMetadata *block, unsigned track_num, unsigned
 	cs_calc_len_(block);
 }
 
-static void tr_set_new_(FLAC__StreamMetadata *block, unsigned track_num, unsigned pos, FLAC__StreamMetadata_CueSheet_Index index)
+static void tr_set_new_(FLAC__StreamMetadata *block, unsigned track_num, unsigned pos, FLAC__StreamMetadata_CueSheet_Index indx)
 {
 	FLAC__StreamMetadata_CueSheet_Track *tr;
 
@@ -387,12 +373,12 @@ static void tr_set_new_(FLAC__StreamMetadata *block, unsigned track_num, unsigne
 
 	FLAC__ASSERT(pos < tr->num_indices);
 
-	tr->indices[pos] = index;
+	tr->indices[pos] = indx;
 
 	cs_calc_len_(block);
 }
 
-static void tr_insert_new_(FLAC__StreamMetadata *block, unsigned track_num, unsigned pos, FLAC__StreamMetadata_CueSheet_Index index)
+static void tr_insert_new_(FLAC__StreamMetadata *block, unsigned track_num, unsigned pos, FLAC__StreamMetadata_CueSheet_Index indx)
 {
 	FLAC__StreamMetadata_CueSheet_Track *tr;
 
@@ -404,7 +390,7 @@ static void tr_insert_new_(FLAC__StreamMetadata *block, unsigned track_num, unsi
 
 	tr_resize_(block, track_num, tr->num_indices+1);
 	memmove(&tr->indices[pos+1], &tr->indices[pos], sizeof(FLAC__StreamMetadata_CueSheet_Index)*(tr->num_indices-1-pos));
-	tr_set_new_(block, track_num, pos, index);
+	tr_set_new_(block, track_num, pos, indx);
 	cs_calc_len_(block);
 }
 
@@ -444,7 +430,7 @@ static void cs_resize_(FLAC__StreamMetadata *block, unsigned num)
 		}
 	}
 	else {
-		cs->tracks = (FLAC__StreamMetadata_CueSheet_Track*)realloc(cs->tracks, sizeof(FLAC__StreamMetadata_CueSheet_Track)*num);
+		cs->tracks = realloc(cs->tracks, sizeof(FLAC__StreamMetadata_CueSheet_Track)*num);
 		FLAC__ASSERT(0 != cs->tracks);
 		if(num > cs->num_tracks)
 			memset(cs->tracks+cs->num_tracks, 0, sizeof(FLAC__StreamMetadata_CueSheet_Track)*(num-cs->num_tracks));
@@ -519,7 +505,7 @@ FLAC__bool test_metadata_object(void)
 	FLAC__StreamMetadata *block, *blockcopy, *vorbiscomment, *cuesheet, *picture;
 	FLAC__StreamMetadata_SeekPoint seekpoint_array[14];
 	FLAC__StreamMetadata_VorbisComment_Entry entry;
-	FLAC__StreamMetadata_CueSheet_Index index;
+	FLAC__StreamMetadata_CueSheet_Index indx;
 	FLAC__StreamMetadata_CueSheet_Track track;
 	unsigned i, expected_length, seekpoints;
 	int j;
@@ -1810,11 +1796,11 @@ FLAC__bool test_metadata_object(void)
 		return false;
 	printf("OK\n");
 
-	index.offset = 0;
-	index.number = 1;
+	indx.offset = 0;
+	indx.number = 1;
 	printf("testing FLAC__metadata_object_cuesheet_track_insert_index() on empty array...");
-	tr_insert_new_(cuesheet, 0, 0, index);
-	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 0, index)) {
+	tr_insert_new_(cuesheet, 0, 0, indx);
+	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 0, indx)) {
 		printf("FAILED, returned false\n");
 		return false;
 	}
@@ -1822,11 +1808,11 @@ FLAC__bool test_metadata_object(void)
 		return false;
 	printf("OK\n");
 
-	index.offset = 10;
-	index.number = 2;
+	indx.offset = 10;
+	indx.number = 2;
 	printf("testing FLAC__metadata_object_cuesheet_track_insert_index() on beginning of non-empty array...");
-	tr_insert_new_(cuesheet, 0, 0, index);
-	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 0, index)) {
+	tr_insert_new_(cuesheet, 0, 0, indx);
+	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 0, indx)) {
 		printf("FAILED, returned false\n");
 		return false;
 	}
@@ -1834,11 +1820,11 @@ FLAC__bool test_metadata_object(void)
 		return false;
 	printf("OK\n");
 
-	index.offset = 20;
-	index.number = 3;
+	indx.offset = 20;
+	indx.number = 3;
 	printf("testing FLAC__metadata_object_cuesheet_track_insert_index() on middle of non-empty array...");
-	tr_insert_new_(cuesheet, 0, 1, index);
-	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 1, index)) {
+	tr_insert_new_(cuesheet, 0, 1, indx);
+	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 1, indx)) {
 		printf("FAILED, returned false\n");
 		return false;
 	}
@@ -1846,11 +1832,11 @@ FLAC__bool test_metadata_object(void)
 		return false;
 	printf("OK\n");
 
-	index.offset = 30;
-	index.number = 4;
+	indx.offset = 30;
+	indx.number = 4;
 	printf("testing FLAC__metadata_object_cuesheet_track_insert_index() on end of non-empty array...");
-	tr_insert_new_(cuesheet, 0, 3, index);
-	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 3, index)) {
+	tr_insert_new_(cuesheet, 0, 3, indx);
+	if(!FLAC__metadata_object_cuesheet_track_insert_index(block, 0, 3, indx)) {
 		printf("FAILED, returned false\n");
 		return false;
 	}
@@ -1858,10 +1844,10 @@ FLAC__bool test_metadata_object(void)
 		return false;
 	printf("OK\n");
 
-	index.offset = 0;
-	index.number = 0;
+	indx.offset = 0;
+	indx.number = 0;
 	printf("testing FLAC__metadata_object_cuesheet_track_insert_blank_index() on end of non-empty array...");
-	tr_insert_new_(cuesheet, 0, 4, index);
+	tr_insert_new_(cuesheet, 0, 4, indx);
 	if(!FLAC__metadata_object_cuesheet_track_insert_blank_index(block, 0, 4)) {
 		printf("FAILED, returned false\n");
 		return false;

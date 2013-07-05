@@ -1,5 +1,6 @@
 /* libFLAC - Free Lossless Audio Codec library
- * Copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2000-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -795,19 +796,6 @@ FLAC_API FLAC__bool FLAC__stream_decoder_set_ogg_serial_number(FLAC__StreamDecod
  *    \c false if the decoder is already initialized, else \c true.
  */
 FLAC_API FLAC__bool FLAC__stream_decoder_set_md5_checking(FLAC__StreamDecoder *decoder, FLAC__bool value);
-
-/** Set the "disable_asm" flag.  If \c true, the decoder will
- *  not use assembler code.
- *
- * \default \c false
- * \param  decoder  A decoder instance to set.
- * \param  value    Flag value (see above).
- * \assert
- *    \code decoder != NULL \endcode
- * \retval FLAC__bool
- *    \c false if the decoder is already initialized, else \c true.
- */
-FLAC_API FLAC__bool FLAC__stream_decoder_set_disable_asm(FLAC__StreamDecoder *decoder, FLAC__bool value);
 
 /** Direct the decoder to pass on all metadata blocks of type \a type.
  *

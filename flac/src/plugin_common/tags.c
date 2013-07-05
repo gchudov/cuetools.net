@@ -1,5 +1,6 @@
 /* plugin_common - Routines common to several plugins
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2002-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,7 +49,7 @@ static FLaC__INLINE size_t local__wide_strlen(const FLAC__uint16 *s)
  * and a more clear explanation at the end of this section:
  *   http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
  */
-static FLaC__INLINE size_t local__utf8len(const FLAC__byte *utf8)
+static size_t local__utf8len(const FLAC__byte *utf8)
 {
 	FLAC__ASSERT(0 != utf8);
 	if ((utf8[0] & 0x80) == 0) {
@@ -90,7 +91,7 @@ static FLaC__INLINE size_t local__utf8len(const FLAC__byte *utf8)
 }
 
 
-static FLaC__INLINE size_t local__utf8_to_ucs2(const FLAC__byte *utf8, FLAC__uint16 *ucs2)
+static size_t local__utf8_to_ucs2(const FLAC__byte *utf8, FLAC__uint16 *ucs2)
 {
 	const size_t len = local__utf8len(utf8);
 
@@ -128,7 +129,7 @@ static FLAC__uint16 *local__convert_utf8_to_ucs2(const char *src, unsigned lengt
 	}
 
 	/* allocate */
-	out = (FLAC__uint16*)safe_malloc_mul_2op_(chars, /*times*/sizeof(FLAC__uint16));
+	out = safe_malloc_mul_2op_(chars, /*times*/sizeof(FLAC__uint16));
 	if (0 == out) {
 		FLAC__ASSERT(0);
 		return 0;
@@ -155,7 +156,7 @@ static FLaC__INLINE size_t local__ucs2len(FLAC__uint16 ucs2)
 		return 3;
 }
 
-static FLaC__INLINE size_t local__ucs2_to_utf8(FLAC__uint16 ucs2, FLAC__byte *utf8)
+static size_t local__ucs2_to_utf8(FLAC__uint16 ucs2, FLAC__byte *utf8)
 {
 	if (ucs2 < 0x080) {
 		utf8[0] = (FLAC__byte)ucs2;
@@ -193,7 +194,7 @@ static char *local__convert_ucs2_to_utf8(const FLAC__uint16 *src, unsigned lengt
 	}
 
 	/* allocate */
-	out = (char*)safe_malloc_mul_2op_(len, /*times*/sizeof(char));
+	out = safe_malloc_mul_2op_(len, /*times*/sizeof(char));
 	if (0 == out)
 		return 0;
 
@@ -316,7 +317,7 @@ FLAC__bool FLAC_plugin__tags_add_tag_utf8(FLAC__StreamMetadata *tags, const char
 		const size_t value_len = strlen(value);
 		const size_t separator_len = strlen(separator);
 		FLAC__byte *new_entry;
-		if(0 == (new_entry = (FLAC__byte*)safe_realloc_add_4op_(entry->entry, entry->length, /*+*/value_len, /*+*/separator_len, /*+*/1)))
+		if(0 == (new_entry = safe_realloc_add_4op_(entry->entry, entry->length, /*+*/value_len, /*+*/separator_len, /*+*/1)))
 			return false;
 		memcpy(new_entry+entry->length, separator, separator_len);
 		entry->length += separator_len;

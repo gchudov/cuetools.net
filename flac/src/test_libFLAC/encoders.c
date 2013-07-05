@@ -1,5 +1,6 @@
 /* test_libFLAC - Unit tester for libFLAC
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2002-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
@@ -28,6 +29,7 @@
 #include "FLAC/assert.h"
 #include "FLAC/stream_encoder.h"
 #include "share/grabbag.h"
+#include "share/compat.h"
 #include "test_libs_common/file_utils_flac.h"
 #include "test_libs_common/metadata_utils.h"
 
@@ -119,7 +121,7 @@ static FLAC__StreamEncoderSeekStatus stream_encoder_seek_callback_(const FLAC__S
 {
 	FILE *f = (FILE*)client_data;
 	(void)encoder;
-	if(fseek(f, (long)absolute_byte_offset, SEEK_SET) < 0)
+	if(fseeko(f, (long)absolute_byte_offset, SEEK_SET) < 0)
 		return FLAC__STREAM_ENCODER_SEEK_STATUS_ERROR;
 	else
 		return FLAC__STREAM_ENCODER_SEEK_STATUS_OK;
@@ -128,9 +130,9 @@ static FLAC__StreamEncoderSeekStatus stream_encoder_seek_callback_(const FLAC__S
 static FLAC__StreamEncoderTellStatus stream_encoder_tell_callback_(const FLAC__StreamEncoder *encoder, FLAC__uint64 *absolute_byte_offset, void *client_data)
 {
 	FILE *f = (FILE*)client_data;
-	long pos;
+	FLAC__off_t pos;
 	(void)encoder;
-	if((pos = ftell(f)) < 0)
+	if((pos = ftello(f)) < 0)
 		return FLAC__STREAM_ENCODER_TELL_STATUS_ERROR;
 	else {
 		*absolute_byte_offset = (FLAC__uint64)pos;
@@ -275,7 +277,7 @@ static FLAC__bool test_stream_encoder(Layer layer, FLAC__bool is_ogg)
 
 	if(layer < LAYER_FILENAME) {
 		printf("opening file for FLAC output... ");
-		file = fopen(flacfilename(is_ogg), "w+b");
+		file = flac_fopen(flacfilename(is_ogg), "w+b");
 		if(0 == file) {
 			printf("ERROR (%s)\n", strerror(errno));
 			return false;
@@ -449,11 +451,7 @@ static FLAC__bool test_stream_encoder(Layer layer, FLAC__bool is_ogg)
 
 	printf("testing FLAC__stream_encoder_get_total_samples_estimate()... ");
 	if(FLAC__stream_encoder_get_total_samples_estimate(encoder) != streaminfo_.data.stream_info.total_samples) {
-#ifdef _MSC_VER
-		printf("FAILED, expected %I64u, got %I64u\n", streaminfo_.data.stream_info.total_samples, FLAC__stream_encoder_get_total_samples_estimate(encoder));
-#else
-		printf("FAILED, expected %llu, got %llu\n", (unsigned long long)streaminfo_.data.stream_info.total_samples, (unsigned long long)FLAC__stream_encoder_get_total_samples_estimate(encoder));
-#endif
+		printf("FAILED, expected %" PRIu64 ", got %" PRIu64 "\n", streaminfo_.data.stream_info.total_samples, FLAC__stream_encoder_get_total_samples_estimate(encoder));
 		return false;
 	}
 	printf("OK\n");

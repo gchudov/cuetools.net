@@ -1,8 +1,9 @@
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2001-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -22,15 +23,15 @@
 include $(topdir)/build/config.mk
 
 ifeq ($(OS),Darwin)
-CC          = cc
-CCC         = c++
+    CC          = cc
+    CCC         = c++
 else
-CC          = gcc
-CCC         = g++
+    CC          = gcc
+    CCC         = g++
 endif
 NASM        = nasm
 LINK        = $(CC) $(LINKAGE)
-OBJPATH     = $(topdir)/obj
+OBJPATH     = $(topdir)/objs
 BINPATH     = $(OBJPATH)/$(BUILD)/bin
 LIBPATH     = $(OBJPATH)/$(BUILD)/lib
 DEBUG_BINPATH   = $(OBJPATH)/debug/bin

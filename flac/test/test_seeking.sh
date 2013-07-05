@@ -1,10 +1,11 @@
 #!/bin/sh
 
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2004-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -30,13 +31,15 @@ else
 fi
 
 LD_LIBRARY_PATH=../src/libFLAC/.libs:$LD_LIBRARY_PATH
-LD_LIBRARY_PATH=../obj/$BUILD/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=../objs/$BUILD/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH
+export MALLOC_CHECK_=3
+export MALLOC_PERTURB_=$((RANDOM % 255 + 1))
 PATH=../src/flac:$PATH
 PATH=../src/metaflac:$PATH
 PATH=../src/test_seeking:$PATH
 PATH=../src/test_streams:$PATH
-PATH=../obj/$BUILD/bin:$PATH
+PATH=../objs/$BUILD/bin:$PATH
 
 if [ x"$FLAC__TEST_LEVEL" = x ] ; then
 	FLAC__TEST_LEVEL=1
@@ -48,8 +51,8 @@ metaflac --help 1>/dev/null 2>/dev/null || die "ERROR can't find metaflac execut
 run_flac ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 flac $*" >>test_seeking.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 flac $* 4>>test_seeking.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 flac $*" >>test_seeking.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 flac $* 4>>test_seeking.valgrind.log
 	else
 		flac $*
 	fi
@@ -58,8 +61,8 @@ run_flac ()
 run_metaflac ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 metaflac $*" >>test_seeking.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 metaflac $* 4>>test_seeking.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 metaflac $*" >>test_seeking.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 metaflac $* 4>>test_seeking.valgrind.log
 	else
 		metaflac $*
 	fi
@@ -68,8 +71,8 @@ run_metaflac ()
 run_test_seeking ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 test_seeking $*" >>test_seeking.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 test_seeking $* 4>>test_seeking.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 test_seeking $*" >>test_seeking.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 test_seeking $* 4>>test_seeking.valgrind.log
 	else
 		test_seeking $*
 	fi
@@ -103,7 +106,7 @@ tiny_seek_count=100
 if [ "$FLAC__TEST_LEVEL" -gt 1 ] ; then
 	small_seek_count=10000
 else
-	small_seek_count=100000
+	small_seek_count=100
 fi
 
 for suffix in '' '-s' ; do

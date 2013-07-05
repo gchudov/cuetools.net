@@ -1,5 +1,6 @@
 /* test_libFLAC - Unit tester for libFLAC
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2002-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
@@ -26,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h> /* for stat() */
+#include "share/compat.h"
 
 #ifdef min
 #undef min
@@ -67,7 +69,7 @@ static void encoder_metadata_callback_(const FLAC__StreamEncoder *encoder, const
 	(void)encoder, (void)metadata, (void)client_data;
 }
 
-FLAC__bool file_utils__generate_flacfile(FLAC__bool is_ogg, const char *output_filename, off_t *output_filesize, unsigned length, const FLAC__StreamMetadata *streaminfo, FLAC__StreamMetadata **metadata, unsigned num_metadata)
+FLAC__bool file_utils__generate_flacfile(FLAC__bool is_ogg, const char *output_filename, FLAC__off_t *output_filesize, unsigned length, const FLAC__StreamMetadata *streaminfo, FLAC__StreamMetadata **metadata, unsigned num_metadata)
 {
 	FLAC__int32 samples[1024];
 	FLAC__StreamEncoder *encoder;
@@ -80,7 +82,7 @@ FLAC__bool file_utils__generate_flacfile(FLAC__bool is_ogg, const char *output_f
 	FLAC__ASSERT(streaminfo->type == FLAC__METADATA_TYPE_STREAMINFO);
 	FLAC__ASSERT((streaminfo->is_last && num_metadata == 0) || (!streaminfo->is_last && num_metadata > 0));
 
-	if(0 == (encoder_client_data.file = fopen(output_filename, "wb")))
+	if(0 == (encoder_client_data.file = flac_fopen(output_filename, "wb")))
 		return false;
 
 	encoder = FLAC__stream_encoder_new();
@@ -141,9 +143,9 @@ FLAC__bool file_utils__generate_flacfile(FLAC__bool is_ogg, const char *output_f
 	FLAC__stream_encoder_delete(encoder);
 
 	if(0 != output_filesize) {
-		struct stat filestats;
+		struct flac_stat_s filestats;
 
-		if(stat(output_filename, &filestats) != 0)
+		if(flac_stat(output_filename, &filestats) != 0)
 			return false;
 		else
 			*output_filesize = filestats.st_size;

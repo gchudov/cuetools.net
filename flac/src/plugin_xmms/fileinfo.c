@@ -1,7 +1,7 @@
 /*  XMMS - Cross-platform multimedia player
  *  Copyright (C) 1998-2000  Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
  *  Copyright (C) 1999,2000  Håvard Kvålen
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Daisuke Shimamura
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Daisuke Shimamura
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,14 +13,12 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "plugin.h"
 
 #include <stdlib.h>
 #include <string.h> /* for strlen() */
@@ -28,6 +26,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <inttypes.h>
 #include <gtk/gtk.h>
 
 #include "FLAC/metadata.h"
@@ -182,7 +181,7 @@ static void remove_tag(GtkWidget * w, gpointer data)
 {
 	(void)w;
 	(void)data;
-	
+
 	FLAC_plugin__tags_delete_tag(tags_, "TITLE");
 	FLAC_plugin__tags_delete_tag(tags_, "ARTIST");
 	FLAC_plugin__tags_delete_tag(tags_, "ALBUM");
@@ -221,17 +220,13 @@ static void show_file_info(void)
 		label_set_text(flac_blocksize, _("Blocksize: variable\n  min/max: %d/%d"), streaminfo.data.stream_info.min_blocksize, streaminfo.data.stream_info.max_blocksize);
 
 	if (streaminfo.data.stream_info.total_samples)
-		label_set_text(flac_samples, _("Samples: %llu\nLength: %d:%.2d"),
+		label_set_text(flac_samples, _("Samples: %" PRIu64 "\nLength: %d:%.2d"),
 				streaminfo.data.stream_info.total_samples,
 				(int)(streaminfo.data.stream_info.total_samples / streaminfo.data.stream_info.sample_rate / 60),
 				(int)(streaminfo.data.stream_info.total_samples / streaminfo.data.stream_info.sample_rate % 60));
 
 	if(!stat(current_filename, &_stat) && S_ISREG(_stat.st_mode)) {
-#if _FILE_OFFSET_BITS == 64
-		label_set_text(flac_filesize, _("Filesize: %lld B"), _stat.st_size);
-#else
-		label_set_text(flac_filesize, _("Filesize: %ld B"), _stat.st_size);
-#endif
+		label_set_text(flac_filesize, _("Filesize: %zd B"), _stat.st_size);
 		if (streaminfo.data.stream_info.total_samples)
 			label_set_text(flac_bitrate, _("Avg. bitrate: %.1f kb/s\nCompression ratio: %.1f%%"),
 					8.0 * (float)(_stat.st_size) / (1000.0 * (float)streaminfo.data.stream_info.total_samples / (float)streaminfo.data.stream_info.sample_rate),

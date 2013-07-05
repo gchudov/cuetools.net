@@ -1,5 +1,6 @@
 /* test_libFLAC++ - Unit tester for libFLAC++
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2002-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,16 +12,17 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "FLAC/assert.h"
-#include "FLAC++/metadata.h"
 #include <stdio.h>
 #include <stdlib.h> /* for malloc() */
 #include <string.h> /* for memcmp() */
+#include "FLAC/assert.h"
+#include "FLAC++/metadata.h"
+#include "share/safe_str.h"
 
 static ::FLAC__StreamMetadata streaminfo_, padding_, seektable_, application_, vorbiscomment_, cuesheet_, picture_;
 
@@ -50,11 +52,11 @@ static char *strdup_or_die_(const char *s)
 	return x;
 }
 
-static bool index_is_equal_(const ::FLAC__StreamMetadata_CueSheet_Index &index, const ::FLAC__StreamMetadata_CueSheet_Index &indexcopy)
+static bool index_is_equal_(const ::FLAC__StreamMetadata_CueSheet_Index &indx, const ::FLAC__StreamMetadata_CueSheet_Index &indxcopy)
 {
-	if(indexcopy.offset != index.offset)
+	if(indxcopy.offset != indx.offset)
 		return false;
-	if(indexcopy.number != index.number)
+	if(indxcopy.number != indx.number)
 		return false;
 	return true;
 }
@@ -1694,7 +1696,7 @@ bool test_metadata_object_cuesheet()
 	{
 		char mcn[129];
 		memset(mcn, 0, sizeof(mcn));
-		strcpy(mcn, "1234567890123");
+		safe_strncpy(mcn, "1234567890123", sizeof(mcn));
 		block.set_media_catalog_number(mcn);
 		if(0 != memcmp(block.get_media_catalog_number(), mcn, sizeof(mcn)))
 			return die_("value mismatch");
@@ -2020,7 +2022,7 @@ bool test_metadata_object_picture()
 	printf("testing Picture::set_colors()... +\n");
 	printf("        Picture::get_colors()... ");
 	block.set_colors(1u>16);
-	if(block.get_colors() != 1u>16)
+	if(block.get_colors() != (1u>16))
 		return die_("value mismatch, expected 2^16");
 	printf("OK\n");
 

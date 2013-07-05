@@ -1,5 +1,6 @@
 /* flactimer - Runs a command and prints timing information
- * Copyright (C) 2007,2008  Josh Coalson
+ * Copyright (C) 2007-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,14 +12,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include "share/compat.h"
+#include "share/safe_str.h"
 
 #define int64_t __int64
 #define uint64_t unsigned int64_t
@@ -106,8 +109,8 @@ int main(int argc, char *argv[])
 	args[0] = '\0';
 	for(i = 0; i < argc; i++) {
 		if(i > 0)
-			strcat(args, " ");
-		strcat(args, argv[i]);
+			safe_strncat(args, " ", sizeof(args));
+		safe_strncat(args, argv[i], sizeof(args));
 	}
 
 	//fprintf(stderr, "@@@ cmd=[%s] args=[%s]\n", argv[0], args);

@@ -1,5 +1,6 @@
 #  test_seeking - Seeking tester for libFLAC
-#  Copyright (C) 2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2004-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -11,24 +12,23 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#  You should have received a copy of the GNU General Public License along
+#  with this program; if not, write to the Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 EXTRA_DIST = \
 	Makefile.lite \
-	test_seeking.dsp \
 	test_seeking.vcproj
 
 AM_CFLAGS = @OGG_CFLAGS@
 
-INCLUDES = 
+AM_CPPFLAGS = -I$(top_builddir) -I$(srcdir)/include -I$(top_srcdir)/include
 
 noinst_PROGRAMS = test_seeking
 test_seeking_LDADD = \
-	$(top_builddir)/src/libFLAC/libFLAC.la \
-	@OGG_LIBS@ \
-	@MINGW_WINSOCK_LIBS@ \
-	-lm
+	$(top_builddir)/src/libFLAC/libFLAC.la
+
 test_seeking_SOURCES = \
 	main.c
+
+CLEANFILES = test_seeking.exe

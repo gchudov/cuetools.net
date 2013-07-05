@@ -1,5 +1,6 @@
 /* flac - Command-line FLAC encoder/decoder
- * Copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2000-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,28 +12,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-/* where MSVC puts unlink() */
-# include <io.h>
-#else
-# include <unistd.h>
-#endif
-#if defined _MSC_VER || defined __MINGW32__
-#include <sys/types.h> /* for off_t */
-#if _MSC_VER <= 1600 /* @@@ [2G limit] */
-#define fseeko fseek
-#define ftello ftell
-#endif
-#endif
 #include <errno.h>
 #include <math.h> /* for floor() */
 #include <stdio.h> /* for FILE etc. */
@@ -40,6 +28,7 @@
 #include "FLAC/all.h"
 #include "share/grabbag.h"
 #include "share/replaygain_synthesis.h"
+#include "share/compat.h"
 #include "decode.h"
 
 typedef struct {
@@ -77,6 +66,7 @@ typedef struct {
 	FLAC__bool abort_flag;
 	FLAC__bool aborting_due_to_until; /* true if we intentionally abort decoding prematurely because we hit the --until point */
 	FLAC__bool aborting_due_to_unparseable; /* true if we abort decoding because we hit an unparseable frame */
+	FLAC__bool error_callback_suppress_messages; /* turn on to prevent repeating messages from the error callback */
 
 	FLAC__bool iff_headers_need_fixup;
 
@@ -98,7 +88,7 @@ typedef struct {
 	FILE *fout;
 
 	foreign_metadata_t *foreign_metadata; /* NULL unless --keep-foreign-metadata requested */
-	off_t fm_offset1, fm_offset2, fm_offset3;
+	FLAC__off_t fm_offset1, fm_offset2, fm_offset3;
 } DecoderSession;
 
 
@@ -183,6 +173,7 @@ int flac__decode_file(const char *infilename, const char *outfilename, FLAC__boo
 	)
 		return 1;
 
+	stats_new_file();
 	if(!DecoderSession_init_decoder(&decoder_session, infilename))
 		return DecoderSession_finish_error(&decoder_session);
 
@@ -228,6 +219,7 @@ FLAC__bool DecoderSession_construct(DecoderSession *d, FLAC__bool is_ogg, FLAC__
 	d->abort_flag = false;
 	d->aborting_due_to_until = false;
 	d->aborting_due_to_unparseable = false;
+	d->error_callback_suppress_messages = false;
 
 	d->iff_headers_need_fixup = false;
 
@@ -254,7 +246,7 @@ FLAC__bool DecoderSession_construct(DecoderSession *d, FLAC__bool is_ogg, FLAC__
 			d->fout = grabbag__file_get_binary_stdout();
 		}
 		else {
-			if(0 == (d->fout = fopen(outfilename, "wb"))) {
+			if(0 == (d->fout = flac_fopen(outfilename, "wb"))) {
 				flac__utils_printf(stderr, 1, "%s: ERROR: can't open output file %s: %s\n", d->inbasefilename, outfilename, strerror(errno));
 				DecoderSession_destroy(d, /*error_occurred=*/true);
 				return false;
@@ -273,7 +265,7 @@ void DecoderSession_destroy(DecoderSession *d, FLAC__bool error_occurred)
 	if(0 != d->fout && d->fout != stdout) {
 		fclose(d->fout);
 		if(error_occurred)
-			unlink(d->outfilename);
+			flac_unlink(d->outfilename);
 	}
 }
 
@@ -343,32 +335,32 @@ FLAC__bool DecoderSession_process(DecoderSession *d)
 		return false;
 
 	/* set channel mapping */
-	if(!d->channel_map_none) {
-		/* currently FLAC order matches SMPTE/WAVEFORMATEXTENSIBLE order, so no reordering is necessary; see encode.c */
-		/* only the channel mask must be set if it was not already picked up from the WAVEFORMATEXTENSIBLE_CHANNEL_MASK tag */
+	/* currently FLAC order matches SMPTE/WAVEFORMATEXTENSIBLE order, so no reordering is necessary; see encode.c */
+	/* only the channel mask must be set if it was not already picked up from the WAVEFORMATEXTENSIBLE_CHANNEL_MASK tag */
+	if(!d->channel_map_none && d->channel_mask == 0) {
 		if(d->channels == 1) {
-			if(d->channel_mask == 0)
-				d->channel_mask = 0x0001;
+			d->channel_mask = 0x0001;
 		}
 		else if(d->channels == 2) {
-			if(d->channel_mask == 0)
-				d->channel_mask = 0x0003;
+			d->channel_mask = 0x0003;
 		}
 		else if(d->channels == 3) {
-			if(d->channel_mask == 0)
-				d->channel_mask = 0x0007;
+			d->channel_mask = 0x0007;
 		}
 		else if(d->channels == 4) {
-			if(d->channel_mask == 0)
-				d->channel_mask = 0x0033;
+			d->channel_mask = 0x0033;
 		}
 		else if(d->channels == 5) {
-			if(d->channel_mask == 0)
-				d->channel_mask = 0x0607;
+			d->channel_mask = 0x0607;
 		}
 		else if(d->channels == 6) {
-			if(d->channel_mask == 0)
-				d->channel_mask = 0x060f;
+			d->channel_mask = 0x060f;
+		}
+		else if(d->channels == 7) {
+			d->channel_mask = 0x070f;
+		}
+		else if(d->channels == 8) {
+			d->channel_mask = 0x063f;
 		}
 	}
 
@@ -443,19 +435,23 @@ int DecoderSession_finish_ok(DecoderSession *d)
 	if(d->analysis_mode)
 		flac__analyze_finish(d->aopts);
 	if(md5_failure) {
-		flac__utils_printf(stderr, 1, "\r%s: ERROR, MD5 signature mismatch\n", d->inbasefilename);
+		stats_print_name(1, d->inbasefilename);
+		flac__utils_printf(stderr, 1, "ERROR, MD5 signature mismatch\n");
 		ok = d->continue_through_decode_errors;
 	}
 	else {
 		if(!d->got_stream_info) {
-			flac__utils_printf(stderr, 1, "\r%s: WARNING, cannot check MD5 signature since there was no STREAMINFO\n", d->inbasefilename);
+			stats_print_name(1, d->inbasefilename);
+			flac__utils_printf(stderr, 1, "WARNING, cannot check MD5 signature since there was no STREAMINFO\n");
 			ok = !d->treat_warnings_as_errors;
 		}
 		else if(!d->has_md5sum) {
-			flac__utils_printf(stderr, 1, "\r%s: WARNING, cannot check MD5 signature since it was unset in the STREAMINFO\n", d->inbasefilename);
+			stats_print_name(1, d->inbasefilename);
+			flac__utils_printf(stderr, 1, "WARNING, cannot check MD5 signature since it was unset in the STREAMINFO\n");
 			ok = !d->treat_warnings_as_errors;
 		}
-		flac__utils_printf(stderr, 2, "\r%s: %s         \n", d->inbasefilename, d->test_only? "ok           ":d->analysis_mode?"done           ":"done");
+		stats_print_name(2, d->inbasefilename);
+		flac__utils_printf(stderr, 2, "%s         \n", d->test_only? "ok           ":d->analysis_mode?"done           ":"done");
 	}
 	DecoderSession_destroy(d, /*error_occurred=*/!ok);
 	if(!d->analysis_mode && !d->test_only && d->format != FORMAT_RAW) {
@@ -625,12 +621,12 @@ FLAC__bool write_iff_headers(FILE *f, DecoderSession *decoder_session, FLAC__uin
 				break;
 			case FORMAT_WAVE64:
 				/* RIFF GUID 66666972-912E-11CF-A5D6-28DB04C10000 */
-				if(flac__utils_fwrite("\x72\x69\x66\x66\x2E\x91\xCF\x11\xD6\xA5\x28\xDB\x04\xC1\x00\x00", 1, 16, f) != 16)
+				if(flac__utils_fwrite("\x72\x69\x66\x66\x2E\x91\xCF\x11\xA5\xD6\x28\xDB\x04\xC1\x00\x00", 1, 16, f) != 16)
 					return false;
 				if(!write_little_endian_uint64(f, iff_size))
 					return false;
 				/* WAVE GUID 65766177-ACF3-11D3-8CD1-00C04F8EDB8A */
-				if(flac__utils_fwrite("\x77\x61\x76\x65\xF3\xAC\xD3\x11\xD1\x8C\x00\xC0\x4F\x8E\xDB\x8A", 1, 16, f) != 16)
+				if(flac__utils_fwrite("\x77\x61\x76\x65\xF3\xAC\xD3\x11\x8C\xD1\x00\xC0\x4F\x8E\xDB\x8A", 1, 16, f) != 16)
 					return false;
 				break;
 			case FORMAT_RF64:
@@ -686,7 +682,7 @@ FLAC__bool write_iff_headers(FILE *f, DecoderSession *decoder_session, FLAC__uin
 		}
 		else { /* Wave64 */
 			/* fmt GUID 20746D66-ACF3-11D3-8CD1-00C04F8EDB8A */
-			if(flac__utils_fwrite("\x66\x6D\x74\x20\xF3\xAC\xD3\x11\xD1\x8C\x00\xC0\x4F\x8E\xDB\x8A", 1, 16, f) != 16)
+			if(flac__utils_fwrite("\x66\x6D\x74\x20\xF3\xAC\xD3\x11\x8C\xD1\x00\xC0\x4F\x8E\xDB\x8A", 1, 16, f) != 16)
 				return false;
 			/* chunk size (+16+8 for GUID and size fields) */
 			if(!write_little_endian_uint64(f, 16+8+(is_waveformatextensible?40:16)))
@@ -716,7 +712,7 @@ FLAC__bool write_iff_headers(FILE *f, DecoderSession *decoder_session, FLAC__uin
 		}
 		else { /* Wave64 */
 			/* data GUID 61746164-ACF3-11D3-8CD1-00C04F8EDB8A */
-			if(flac__utils_fwrite("\x64\x61\x74\x61\xF3\xAC\xD3\x11\xD1\x8C\x00\xC0\x4F\x8E\xDB\x8A", 1, 16, f) != 16)
+			if(flac__utils_fwrite("\x64\x61\x74\x61\xF3\xAC\xD3\x11\x8C\xD1\x00\xC0\x4F\x8E\xDB\x8A", 1, 16, f) != 16)
 				return false;
 			/* +16+8 for GUID and size fields */
 			if(!write_little_endian_uint64(f, 16+8 + data_size))
@@ -936,7 +932,7 @@ FLAC__bool fixup_iff_headers(DecoderSession *d)
 		d->format==FORMAT_WAVE64? "Wave64" :
 		d->format==FORMAT_RF64? "RF64" :
 		"AIFF";
-	FILE *f = fopen(d->outfilename, "r+b"); /* stream is positioned at beginning of file */
+	FILE *f = flac_fopen(d->outfilename, "r+b"); /* stream is positioned at beginning of file */
 
 	if(0 == f) {
 		flac__utils_printf(stderr, 1, "ERROR, couldn't open file %s while fixing up %s chunk size: %s\n", d->outfilename, fmt_desc, strerror(errno));
@@ -968,7 +964,7 @@ FLAC__StreamDecoderWriteStatus write_callback(const FLAC__StreamDecoder *decoder
 		decoder_session->format == FORMAT_WAVE || decoder_session->format == FORMAT_WAVE64 || decoder_session->format == FORMAT_RF64 ? bps<=8 :
 		decoder_session->is_unsigned_samples
 	));
-	unsigned wide_samples = frame->header.blocksize, wide_sample, sample, channel, byte;
+	unsigned wide_samples = frame->header.blocksize, wide_sample, sample, channel;
 	unsigned frame_bytes = 0;
 	static FLAC__int8 s8buffer[FLAC__MAX_BLOCK_SIZE * FLAC__MAX_CHANNELS * sizeof(FLAC__int32)]; /* WATCHOUT: can be up to 2 megs */
 	FLAC__uint8  *u8buffer  = (FLAC__uint8  *)s8buffer;
@@ -1166,10 +1162,11 @@ FLAC__StreamDecoderWriteStatus write_callback(const FLAC__StreamDecoder *decoder
 				if(is_big_endian != is_big_endian_host_) {
 					unsigned char tmp;
 					const unsigned bytes = sample * 2;
-					for(byte = 0; byte < bytes; byte += 2) {
-						tmp = u8buffer[byte];
-						u8buffer[byte] = u8buffer[byte+1];
-						u8buffer[byte+1] = tmp;
+					unsigned b;
+					for(b = 0; b < bytes; b += 2) {
+						tmp = u8buffer[b];
+						u8buffer[b] = u8buffer[b+1];
+						u8buffer[b+1] = tmp;
 					}
 				}
 				bytes_to_write = 2 * sample;
@@ -1188,33 +1185,34 @@ FLAC__StreamDecoderWriteStatus write_callback(const FLAC__StreamDecoder *decoder
 				if(is_big_endian != is_big_endian_host_) {
 					unsigned char tmp;
 					const unsigned bytes = sample * 4;
-					for(byte = 0; byte < bytes; byte += 4) {
-						tmp = u8buffer[byte];
-						u8buffer[byte] = u8buffer[byte+3];
-						u8buffer[byte+3] = tmp;
-						tmp = u8buffer[byte+1];
-						u8buffer[byte+1] = u8buffer[byte+2];
-						u8buffer[byte+2] = tmp;
+					unsigned b;
+					for(b = 0; b < bytes; b += 4) {
+						tmp = u8buffer[b];
+						u8buffer[b] = u8buffer[b+3];
+						u8buffer[b+3] = tmp;
+						tmp = u8buffer[b+1];
+						u8buffer[b+1] = u8buffer[b+2];
+						u8buffer[b+2] = tmp;
 					}
 				}
 				if(is_big_endian) {
-					unsigned lbyte;
+					unsigned b, lbyte;
 					const unsigned bytes = sample * 4;
-					for(lbyte = byte = 0; byte < bytes; ) {
-						byte++;
-						u8buffer[lbyte++] = u8buffer[byte++];
-						u8buffer[lbyte++] = u8buffer[byte++];
-						u8buffer[lbyte++] = u8buffer[byte++];
+					for(lbyte = b = 0; b < bytes; ) {
+						b++;
+						u8buffer[lbyte++] = u8buffer[b++];
+						u8buffer[lbyte++] = u8buffer[b++];
+						u8buffer[lbyte++] = u8buffer[b++];
 					}
 				}
 				else {
-					unsigned lbyte;
+					unsigned b, lbyte;
 					const unsigned bytes = sample * 4;
-					for(lbyte = byte = 0; byte < bytes; ) {
-						u8buffer[lbyte++] = u8buffer[byte++];
-						u8buffer[lbyte++] = u8buffer[byte++];
-						u8buffer[lbyte++] = u8buffer[byte++];
-						byte++;
+					for(lbyte = b = 0; b < bytes; ) {
+						u8buffer[lbyte++] = u8buffer[b++];
+						u8buffer[lbyte++] = u8buffer[b++];
+						u8buffer[lbyte++] = u8buffer[b++];
+						b++;
 					}
 				}
 				bytes_to_write = 3 * sample;
@@ -1357,11 +1355,27 @@ void error_callback(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderError
 {
 	DecoderSession *decoder_session = (DecoderSession*)client_data;
 	(void)decoder;
-	flac__utils_printf(stderr, 1, "%s: *** Got error code %d:%s\n", decoder_session->inbasefilename, status, FLAC__StreamDecoderErrorStatusString[status]);
+	if(!decoder_session->error_callback_suppress_messages)
+		stats_print_name(1, decoder_session->inbasefilename);
+		flac__utils_printf(stderr, 1, "*** Got error code %d:%s\n", status, FLAC__StreamDecoderErrorStatusString[status]);
 	if(!decoder_session->continue_through_decode_errors) {
-		decoder_session->abort_flag = true;
-		if(status == FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM)
+		/* if we got a sync error while looking for metadata, either it's not a FLAC file (more likely) or the file is corrupted */
+		if(
+			!decoder_session->error_callback_suppress_messages &&
+			status == FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC &&
+			FLAC__stream_decoder_get_state(decoder) == FLAC__STREAM_DECODER_SEARCH_FOR_METADATA
+		) {
+			flac__utils_printf(stderr, 1,
+				"\n"
+				"The input file is either not a FLAC file or is corrupted.  If you are\n"
+				"convinced it is a FLAC file, you can rerun the same command and add the\n"
+				"-F parameter to try and recover as much as possible from the file.\n"
+			);
+			decoder_session->error_callback_suppress_messages = true;
+		}
+		else if(status == FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM)
 			decoder_session->aborting_due_to_unparseable = true;
+		decoder_session->abort_flag = true;
 	}
 }
 
@@ -1416,18 +1430,22 @@ void print_stats(const DecoderSession *decoder_session)
 #else
 		const double progress = (double)decoder_session->samples_processed / (double)decoder_session->total_samples * 100.0;
 #endif
+
 		if(decoder_session->total_samples > 0) {
-			fprintf(stderr, "\r%s: %s%u%% complete",
-				decoder_session->inbasefilename,
+			if ((unsigned)floor(progress + 0.5) == 100)
+				return;
+
+			stats_print_name(2, decoder_session->inbasefilename);
+			stats_print_info(2, "%s%u%% complete",
 				decoder_session->test_only? "testing, " : decoder_session->analysis_mode? "analyzing, " : "",
 				(unsigned)floor(progress + 0.5)
 			);
 		}
 		else {
-			fprintf(stderr, "\r%s: %s %u samples",
-				decoder_session->inbasefilename,
+			stats_print_name(2, decoder_session->inbasefilename);
+			stats_print_info(2, "%s %" PRIu64 " samples",
 				decoder_session->test_only? "tested" : decoder_session->analysis_mode? "analyzed" : "wrote",
-				(unsigned)decoder_session->samples_processed
+				decoder_session->samples_processed
 			);
 		}
 	}

@@ -1,7 +1,8 @@
 ;  vim:filetype=nasm ts=8
 
 ;  libFLAC - Free Lossless Audio Codec library
-;  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+;  Copyright (C) 2001-2009  Josh Coalson
+;  Copyright (C) 2011-2013  Xiph.Org Foundation
 ;
 ;  Redistribution and use in source and binary forms, with or without
 ;  modification, are permitted provided that the following conditions
@@ -140,7 +141,12 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 %ifdef FLAC__PUBLIC_NEEDS_UNDERSCORE
 	mov	edi, _FLAC__crc16_table
 %else
+%ifdef OBJ_FORMAT_elf
+	mov	edi, [esp + 16]		;		saved ebx (GOT base)
+	lea	edi, [edi + FLAC__crc16_table wrt ..gotoff]
+%else
 	mov	edi, FLAC__crc16_table
+%endif
 %endif
 	;; eax (ax)	crc a.k.a. br->read_crc
 	;; ebx (bl)	intermediate result index into FLAC__crc16_table[]
@@ -216,7 +222,12 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 %ifdef FLAC__PUBLIC_NEEDS_UNDERSCORE
 	mov	edi, _FLAC__crc16_table
 %else
+%ifdef OBJ_FORMAT_elf
+	mov	edi, [esp + 16]		;		saved ebx (GOT base)
+	lea	edi, [edi + FLAC__crc16_table wrt ..gotoff]
+%else
 	mov	edi, FLAC__crc16_table
+%endif
 %endif
 	;; eax (ax)	crc a.k.a. br->read_crc
 	;; ebx (bl)	intermediate result index into FLAC__crc16_table[]
@@ -272,10 +283,11 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 	;; edi		uval
 	;; ebp		br
 	mov	edx, [ebp + 12]		;     edx <- br->bytes
-	test	edx, edx
-	jz	.read1			;     if(br->bytes) {  [NOTE: this case is rare so it doesn't have to be all that fast ]
+	shl	edx, 3			;     edx <- br->bytes*8
+	cmp	edx, ecx
+	jbe	.read1			;     if(br->bytes*8 > cbits) {  [NOTE: this case is rare so it doesn't have to be all that fast ]
 	mov	ebx, [ebp]
-	shl	edx, 3			;       edx <- const unsigned end = br->bytes * 8;
+					;       edx <- const unsigned end = br->bytes * 8;
 	mov	eax, [ebx + 4*esi]	;       b = br->buffer[cwords]
 	xchg	edx, ecx		;       [edx <- cbits , ecx <- end]
 	mov	ebx, 0xffffffff		;       ebx <- FLAC__WORD_ALL_ONES
@@ -296,7 +308,7 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 .c1_next3:				;       } else {
 	sub	edi, ecx
 	add	edi, edx		;         uval += end - cbits;
-	add	ecx, edx		;         cbits += end
+	mov	ecx, edx		;         cbits = end
 					;         /* didn't find stop bit yet, have to keep going... */
 					;       }
 					;     }
@@ -315,7 +327,12 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 %ifdef FLAC__PUBLIC_NEEDS_UNDERSCORE
 	call	_bitreader_read_from_client_
 %else
+%ifdef OBJ_FORMAT_elf
+	mov	ebx, [esp + 20]		;		saved ebx (GOT base)
+	call	bitreader_read_from_client_ wrt ..plt
+%else
 	call	bitreader_read_from_client_
+%endif
 %endif
 	pop	edx			;     /* discard, unused */
 	pop	ecx			;     /* restore */
@@ -362,13 +379,20 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 	mov	[ebp + 16], esi		;       br->consumed_words = cwords;
 	mov	[ebp + 20], ecx		;       br->consumed_bits = cbits;
 	push	ecx			;       /* save */
+	push	ebx			;       /* save */
 	push	ebp			;       /* push br argument */
 %ifdef FLAC__PUBLIC_NEEDS_UNDERSCORE
 	call	_bitreader_read_from_client_
 %else
+%ifdef OBJ_FORMAT_elf
+	mov	ebx, [esp + 24]		;		saved ebx (GOT base)
+	call	bitreader_read_from_client_ wrt ..plt
+%else
 	call	bitreader_read_from_client_
 %endif
+%endif
 	pop	edx			;       /* discard, unused */
+	pop	ebx			;       /* restore */
 	pop	ecx			;       /* restore */
 	mov	esi, [ebp + 16]		;       cwords = br->consumed_words;
 					;       ucbits = (br->words-cwords)*FLAC__BITS_PER_WORD + br->bytes*8 - cbits;
@@ -437,7 +461,12 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 %ifdef FLAC__PUBLIC_NEEDS_UNDERSCORE
 	mov	edi, _FLAC__crc16_table
 %else
+%ifdef OBJ_FORMAT_elf
+	mov	edi, [esp + 24]		;		saved ebx (GOT base)
+	lea	edi, [edi + FLAC__crc16_table wrt ..gotoff]
+%else
 	mov	edi, FLAC__crc16_table
+%endif
 %endif
 	;; eax (ax)	crc a.k.a. br->read_crc
 	;; ebx (bl)	intermediate result index into FLAC__crc16_table[]
@@ -562,7 +591,3 @@ cident FLAC__bitreader_read_rice_signed_block_asm_ia32_bswap
 	ret
 
 end
-
-%ifdef OBJ_FORMAT_elf
-	section .note.GNU-stack noalloc
-%endif

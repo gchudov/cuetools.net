@@ -1,10 +1,11 @@
 #!/bin/sh
 
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2001-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -32,11 +33,13 @@ fi
 LD_LIBRARY_PATH=../src/libFLAC/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=../src/share/grabbag/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=../src/share/replaygain_analysis/.libs:$LD_LIBRARY_PATH
-LD_LIBRARY_PATH=../obj/$BUILD/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=../objs/$BUILD/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH
+export MALLOC_CHECK_=3
+export MALLOC_PERTURB_=$(($(date +%s) % 255 + 1))
 PATH=../src/test_grabbag/cuesheet:$PATH
 PATH=../src/test_grabbag/picture:$PATH
-PATH=../obj/$BUILD/bin:$PATH
+PATH=../objs/$BUILD/bin:$PATH
 
 test_cuesheet -h 1>/dev/null 2>/dev/null || die "ERROR can't find test_cuesheet executable"
 test_picture -h 1>/dev/null 2>/dev/null || die "ERROR can't find test_picture executable"
@@ -44,8 +47,8 @@ test_picture -h 1>/dev/null 2>/dev/null || die "ERROR can't find test_picture ex
 run_test_cuesheet ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 test_cuesheet $*" >>test_grabbag.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 test_cuesheet $* 4>>test_grabbag.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 test_cuesheet $*" >>test_grabbag.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 test_cuesheet $* 4>>test_grabbag.valgrind.log
 	else
 		test_cuesheet $*
 	fi
@@ -54,8 +57,8 @@ run_test_cuesheet ()
 run_test_picture ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 test_picture $*" >>test_grabbag.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 test_picture $* 4>>test_grabbag.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 test_picture $*" >>test_grabbag.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 test_picture $* 4>>test_grabbag.valgrind.log
 	else
 		test_picture $*
 	fi
@@ -111,7 +114,7 @@ rm -f $log
 #
 for cuesheet in $bad_cuesheets ; do
 	echo "NEGATIVE $cuesheet" >> $log 2>&1
-	run_test_cuesheet $cuesheet $good_leadout cdda >> $log 2>&1
+	run_test_cuesheet $cuesheet $good_leadout 44100 cdda >> $log 2>&1
 	exit_code=$?
 	if [ "$exit_code" = 255 ] ; then
 		die "Error: test script is broken"
@@ -126,7 +129,7 @@ done
 #
 for cuesheet in $good_cuesheets ; do
 	echo "POSITIVE $cuesheet" >> $log 2>&1
-	run_test_cuesheet $cuesheet $good_leadout cdda >> $log 2>&1
+	run_test_cuesheet $cuesheet $good_leadout 44100 cdda >> $log 2>&1
 	exit_code=$?
 	if [ "$exit_code" = 255 ] ; then
 		die "Error: test script is broken"

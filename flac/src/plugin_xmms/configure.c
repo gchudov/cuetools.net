@@ -1,5 +1,5 @@
 /* libxmms-flac - XMMS FLAC input plugin
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Daisuke Shimamura
+ * Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Daisuke Shimamura
  *
  * Based on mpg123 plugin
  *          and prefs.c - 2000/05/06
@@ -16,14 +16,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "plugin.h"
 
 #include <stdlib.h>
 #include <string.h>

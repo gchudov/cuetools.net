@@ -1,5 +1,6 @@
 /* example_cpp_decode_file - Simple FLAC file decoder using libFLAC
- * Copyright (C) 2007,2008  Josh Coalson
+ * Copyright (C) 2007-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 /*
@@ -30,7 +31,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "FLAC++/decoder.h"
+#include "share/compat.h"
 
 static FLAC__uint64 total_samples = 0;
 static unsigned sample_rate = 0;
@@ -175,11 +178,7 @@ void OurDecoder::metadata_callback(const ::FLAC__StreamMetadata *metadata)
 		fprintf(stderr, "sample rate    : %u Hz\n", sample_rate);
 		fprintf(stderr, "channels       : %u\n", channels);
 		fprintf(stderr, "bits per sample: %u\n", bps);
-#ifdef _MSC_VER
-		fprintf(stderr, "total samples  : %I64u\n", total_samples);
-#else
-		fprintf(stderr, "total samples  : %llu\n", total_samples);
-#endif
+		fprintf(stderr, "total samples  : %" PRIu64 "\n", total_samples);
 	}
 }
 

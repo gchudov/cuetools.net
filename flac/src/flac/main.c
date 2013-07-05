@@ -1,5 +1,6 @@
 /* flac - Command-line FLAC encoder/decoder
- * Copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2000-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
@@ -36,6 +37,8 @@
 #include "FLAC/all.h"
 #include "share/alloc.h"
 #include "share/grabbag.h"
+#include "share/compat.h"
+#include "share/safe_str.h"
 #include "analyze.h"
 #include "decode.h"
 #include "encode.h"
@@ -43,7 +46,7 @@
 #include "utils.h"
 #include "vorbiscomment.h"
 
-#if defined _MSC_VER || defined __MINGW32__ || defined __EMX__
+#if defined _MSC_VER || defined __MINGW32__
 #define FLAC__STRCASECMP stricmp
 #else
 #define FLAC__STRCASECMP strcasecmp
@@ -84,11 +87,6 @@ static const char *get_outfilename(const char *infilename, const char *suffix);
 static void die(const char *message);
 static int conditional_fclose(FILE *f);
 static char *local_strdup(const char *source);
-#ifdef _MSC_VER
-/* There's no strtoll() in MSVC6 so we just write a specialized one */
-static FLAC__int64 local__strtoll(const char *src, char **endptr);
-#endif
-
 
 /*
  * share__getopt format struct; note that for long options with no
@@ -267,7 +265,7 @@ static struct {
 	int format_channels;
 	int format_bps;
 	int format_sample_rate;
-	off_t format_input_size;
+	FLAC__off_t format_input_size;
 	char requested_seek_points[5000]; /* bad MAGIC NUMBER but buffer overflow is checked */
 	int num_requested_seek_points; /* -1 => no -S options were given, 0 => -S- was given */
 	const char *cuesheet_filename;
@@ -306,6 +304,12 @@ int main(int argc, char *argv[])
 #ifdef __EMX__
 	_response(&argc, &argv);
 	_wildcard(&argc, &argv);
+#endif
+#ifdef _WIN32
+	if (get_utf8_argv(&argc, &argv) != 0) {
+		fprintf(stderr, "ERROR: failed to convert command line parameters to UTF-8\n");
+		return 1;
+	}
 #endif
 
 	srand((unsigned)time(0));
@@ -474,7 +478,7 @@ int do_it(void)
 	}
 
 	flac__utils_printf(stderr, 2, "\n");
-	flac__utils_printf(stderr, 2, "flac %s, Copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson\n", FLAC__VERSION_STRING);
+	flac__utils_printf(stderr, 2, "flac %s, Copyright (C) 2000-2009, 2011-2013  Josh Coalson & Xiph.Org Foundation\n", FLAC__VERSION_STRING);
 	flac__utils_printf(stderr, 2, "flac comes with ABSOLUTELY NO WARRANTY.  This is free software, and you are\n");
 	flac__utils_printf(stderr, 2, "welcome to redistribute it under certain conditions.  Type `flac' for details.\n\n");
 
@@ -523,12 +527,6 @@ int do_it(void)
 					if(0 == outfilename) {
 						flac__utils_printf(stderr, 1, "ERROR: filename too long: %s", option_values.filenames[i]);
 						return 1;
-					}
-					if(0 == strcmp(option_values.filenames[i], "-")) {
-						FLAC__ASSERT(0);
-						/* double protection */
-						flac__utils_printf(stderr, 1, "internal error\n");
-						return 2;
 					}
 					if(0 != (error = grabbag__replaygain_store_to_file_album(outfilename, album_gain, album_peak, option_values.preserve_modtime))) {
 						flac__utils_printf(stderr, 1, "%s: ERROR writing ReplayGain album tags (%s)\n", outfilename, error);
@@ -590,7 +588,7 @@ FLAC__bool init_options(void)
 	option_values.format_channels = -1;
 	option_values.format_bps = -1;
 	option_values.format_sample_rate = -1;
-	option_values.format_input_size = (off_t)(-1);
+	option_values.format_input_size = (FLAC__off_t)(-1);
 	option_values.requested_seek_points[0] = '\0';
 	option_values.num_requested_seek_points = -1;
 	option_values.cuesheet_filename = 0;
@@ -644,7 +642,7 @@ int parse_options(int argc, char *argv[])
 
 	if(option_values.num_files > 0) {
 		unsigned i = 0;
-		if(0 == (option_values.filenames = (char**)malloc(sizeof(char*) * option_values.num_files)))
+		if(0 == (option_values.filenames = malloc(sizeof(char*) * option_values.num_files)))
 			die("out of memory allocating space for file names list");
 		while(share__optind < argc)
 			option_values.filenames[i++] = local_strdup(argv[share__optind++]);
@@ -656,8 +654,6 @@ int parse_options(int argc, char *argv[])
 int parse_option(int short_option, const char *long_option, const char *option_argument)
 {
 	const char *violation;
-	char *p;
-	int i;
 
 	if(short_option == 0) {
 		FLAC__ASSERT(0 != long_option);
@@ -689,17 +685,12 @@ int parse_option(int short_option, const char *long_option, const char *option_a
 			FLAC__ASSERT(0 != option_argument);
 			{
 				char *end;
-#ifdef _MSC_VER
-				FLAC__int64 i;
-				i = local__strtoll(option_argument, &end);
-#else
-				long long i;
-				i = strtoll(option_argument, &end, 10);
-#endif
+				FLAC__int64 ix;
+				ix = strtoll(option_argument, &end, 10);
 				if(0 == strlen(option_argument) || *end)
 					return usage_error("ERROR: --%s must be a number\n", long_option);
-				option_values.format_input_size = (off_t)i;
-				if(option_values.format_input_size != i) /* check if off_t is smaller than long long */
+				option_values.format_input_size = (FLAC__off_t)ix;
+				if(option_values.format_input_size != ix) /* check if FLAC__off_t is smaller than long long */
 					return usage_error("ERROR: --%s too large; this build of flac does not support filesizes over 2GB\n", long_option);
 				if(option_values.format_input_size <= 0)
 					return usage_error("ERROR: --%s must be > 0\n", long_option);
@@ -994,8 +985,8 @@ int parse_option(int short_option, const char *long_option, const char *option_a
 						return usage_error("ERROR: too many seekpoints requested\n");
 					}
 					else {
-						strcat(option_values.requested_seek_points, option_argument);
-						strcat(option_values.requested_seek_points, ";");
+						size_t len = strlen(option_values.requested_seek_points);
+						flac_snprintf(option_values.requested_seek_points+len, sizeof(option_values.requested_seek_points) - len, "%s;", option_argument);
 					}
 				}
 				break;
@@ -1006,11 +997,14 @@ int parse_option(int short_option, const char *long_option, const char *option_a
 					return usage_error("ERROR: argument to -%c must be >= 0; for no padding use -%c-\n", short_option, short_option);
 				break;
 			case 'b':
-				FLAC__ASSERT(0 != option_argument);
-				i = atoi(option_argument);
-				if((i < (int)FLAC__MIN_BLOCK_SIZE || i > (int)FLAC__MAX_BLOCK_SIZE))
-					return usage_error("ERROR: invalid blocksize (-%c) '%d', must be >= %u and <= %u\n", short_option, i, FLAC__MIN_BLOCK_SIZE, FLAC__MAX_BLOCK_SIZE);
-				add_compression_setting_unsigned(CST_BLOCKSIZE, (unsigned)i);
+				{
+					unsigned i ;
+					FLAC__ASSERT(0 != option_argument);
+					i = atoi(option_argument);
+					if((i < (int)FLAC__MIN_BLOCK_SIZE || i > (int)FLAC__MAX_BLOCK_SIZE))
+						return usage_error("ERROR: invalid blocksize (-%c) '%d', must be >= %u and <= %u\n", short_option, i, FLAC__MIN_BLOCK_SIZE, FLAC__MAX_BLOCK_SIZE);
+					add_compression_setting_unsigned(CST_BLOCKSIZE, (unsigned)i);
+				}
 				break;
 			case 'e':
 				add_compression_setting_bool(CST_DO_EXHAUSTIVE_MODEL_SEARCH, true);
@@ -1019,11 +1013,14 @@ int parse_option(int short_option, const char *long_option, const char *option_a
 				add_compression_setting_bool(CST_DO_ESCAPE_CODING, true);
 				break;
 			case 'l':
-				FLAC__ASSERT(0 != option_argument);
-				i = atoi(option_argument);
-				if((i < 0 || i > (int)FLAC__MAX_LPC_ORDER))
-					return usage_error("ERROR: invalid LPC order (-%c) '%d', must be >= %u and <= %u\n", short_option, i, 0, FLAC__MAX_LPC_ORDER);
-				add_compression_setting_unsigned(CST_MAX_LPC_ORDER, (unsigned)i);
+				{
+					unsigned i ;
+					FLAC__ASSERT(0 != option_argument);
+					i = atoi(option_argument);
+					if(i > FLAC__MAX_LPC_ORDER)
+						return usage_error("ERROR: invalid LPC order (-%c) '%d', must be >= %u and <= %u\n", short_option, i, 0, FLAC__MAX_LPC_ORDER);
+					add_compression_setting_unsigned(CST_MAX_LPC_ORDER, i);
+				}
 				break;
 			case 'A':
 				FLAC__ASSERT(0 != option_argument);
@@ -1041,38 +1038,46 @@ int parse_option(int short_option, const char *long_option, const char *option_a
 				add_compression_setting_bool(CST_DO_QLP_COEFF_PREC_SEARCH, true);
 				break;
 			case 'q':
-				FLAC__ASSERT(0 != option_argument);
-				i = atoi(option_argument);
-				if(i < 0 || (i > 0 && (i < (int)FLAC__MIN_QLP_COEFF_PRECISION || i > (int)FLAC__MAX_QLP_COEFF_PRECISION)))
-					return usage_error("ERROR: invalid value '%d' for qlp coeff precision (-%c), must be 0 or between %u and %u, inclusive\n", i, short_option, FLAC__MIN_QLP_COEFF_PRECISION, FLAC__MAX_QLP_COEFF_PRECISION);
-				add_compression_setting_unsigned(CST_QLP_COEFF_PRECISION, (unsigned)i);
+				{
+					unsigned i ;
+					FLAC__ASSERT(0 != option_argument);
+					i = atoi(option_argument);
+					if((i > 0 && (i < FLAC__MIN_QLP_COEFF_PRECISION || i > FLAC__MAX_QLP_COEFF_PRECISION)))
+						return usage_error("ERROR: invalid value '%d' for qlp coeff precision (-%c), must be 0 or between %u and %u, inclusive\n", i, short_option, FLAC__MIN_QLP_COEFF_PRECISION, FLAC__MAX_QLP_COEFF_PRECISION);
+					add_compression_setting_unsigned(CST_QLP_COEFF_PRECISION, i);
+				}
 				break;
 			case 'r':
-				FLAC__ASSERT(0 != option_argument);
-				p = strchr(option_argument, ',');
-				if(0 == p) {
-					add_compression_setting_unsigned(CST_MIN_RESIDUAL_PARTITION_ORDER, 0);
-					i = atoi(option_argument);
-					if(i < 0)
-						return usage_error("ERROR: invalid value '%d' for residual partition order (-%c), must be between 0 and %u, inclusive\n", i, short_option, FLAC__MAX_RICE_PARTITION_ORDER);
-					add_compression_setting_unsigned(CST_MAX_RESIDUAL_PARTITION_ORDER, (unsigned)i);
-				}
-				else {
-					i = atoi(option_argument);
-					if(i < 0)
-						return usage_error("ERROR: invalid value '%d' for min residual partition order (-%c), must be between 0 and %u, inclusive\n", i, short_option, FLAC__MAX_RICE_PARTITION_ORDER);
-					add_compression_setting_unsigned(CST_MIN_RESIDUAL_PARTITION_ORDER, (unsigned)i);
-					i = atoi(++p);
-					if(i < 0)
-						return usage_error("ERROR: invalid value '%d' for max residual partition order (-%c), must be between 0 and %u, inclusive\n", i, short_option, FLAC__MAX_RICE_PARTITION_ORDER);
-					add_compression_setting_unsigned(CST_MAX_RESIDUAL_PARTITION_ORDER, (unsigned)i);
+				{
+					unsigned i;
+					char * p;
+					FLAC__ASSERT(0 != option_argument);
+					p = strchr(option_argument, ',');
+					if(0 == p) {
+						add_compression_setting_unsigned(CST_MIN_RESIDUAL_PARTITION_ORDER, 0);
+						i = atoi(option_argument);
+						if(i > FLAC__MAX_RICE_PARTITION_ORDER)
+							return usage_error("ERROR: invalid value '%d' for residual partition order (-%c), must be between 0 and %u, inclusive\n", i, short_option, FLAC__MAX_RICE_PARTITION_ORDER);
+						add_compression_setting_unsigned(CST_MAX_RESIDUAL_PARTITION_ORDER, i);
+					}
+					else {
+						i = atoi(option_argument);
+						if(i > FLAC__MAX_RICE_PARTITION_ORDER)
+							return usage_error("ERROR: invalid value '%d' for min residual partition order (-%c), must be between 0 and %u, inclusive\n", i, short_option, FLAC__MAX_RICE_PARTITION_ORDER);
+						add_compression_setting_unsigned(CST_MIN_RESIDUAL_PARTITION_ORDER, i);
+						i = atoi(++p);
+						if(i > FLAC__MAX_RICE_PARTITION_ORDER)
+							return usage_error("ERROR: invalid value '%d' for max residual partition order (-%c), must be between 0 and %u, inclusive\n", i, short_option, FLAC__MAX_RICE_PARTITION_ORDER);
+						add_compression_setting_unsigned(CST_MAX_RESIDUAL_PARTITION_ORDER, i);
+					}
 				}
 				break;
 			case 'R':
-				i = atoi(option_argument);
-				if(i < 0)
-					return usage_error("ERROR: invalid value '%d' for Rice parameter search distance (-%c), must be >= 0\n", i, short_option);
-				add_compression_setting_unsigned(CST_RICE_PARAMETER_SEARCH_DIST, (unsigned)i);
+				{
+					unsigned i;
+					i = atoi(option_argument);
+					add_compression_setting_unsigned(CST_RICE_PARAMETER_SEARCH_DIST, i);
+				}
 				break;
 			default:
 				FLAC__ASSERT(0);
@@ -1153,7 +1158,8 @@ static void usage_header(void)
 {
 	printf("===============================================================================\n");
 	printf("flac - Command-line FLAC encoder/decoder version %s\n", FLAC__VERSION_STRING);
-	printf("Copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson\n");
+	printf("Copyright (C) 2000-2009  Josh Coalson\n");
+	printf("Copyright (C) 2011-2013  Xiph.Org Foundation\n");
 	printf("\n");
 	printf("This program is free software; you can redistribute it and/or\n");
 	printf("modify it under the terms of the GNU General Public License\n");
@@ -1165,9 +1171,9 @@ static void usage_header(void)
 	printf("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
 	printf("GNU General Public License for more details.\n");
 	printf("\n");
-	printf("You should have received a copy of the GNU General Public License\n");
-	printf("along with this program; if not, write to the Free Software\n");
-	printf("Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n");
+	printf("You should have received a copy of the GNU General Public License along\n");
+	printf("with this program; if not, write to the Free Software Foundation, Inc.,\n");
+	printf("51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n");
 	printf("===============================================================================\n");
 }
 
@@ -1244,9 +1250,7 @@ void show_help(void)
 	printf("encoding options:\n");
 	printf("  -V, --verify                 Verify a correct encoding\n");
 	printf("      --lax                    Allow encoder to generate non-Subset files\n");
-#if 0 /*@@@ currently undocumented */
 	printf("      --ignore-chunk-sizes     Ignore data chunk sizes in WAVE/AIFF files\n");
-#endif
 	printf("      --sector-align (DEPRECATED) Align multiple files on sector boundaries\n");
 	printf("      --replay-gain            Calculate ReplayGain & store in FLAC tags\n");
 	printf("      --cuesheet=FILENAME      Import cuesheet and store in CUESHEET block\n");
@@ -1286,6 +1290,7 @@ void show_help(void)
 	printf("      --force-wave64-format    Force decoding to Wave64 format\n");
 	printf("negative options:\n");
 	printf("      --no-adaptive-mid-side\n");
+	printf("      --no-cued-seekpoints\n");
 	printf("      --no-decode-through-errors\n");
 	printf("      --no-delete-input-file\n");
 	printf("      --no-preserve-modtime\n");
@@ -1301,9 +1306,7 @@ void show_help(void)
 	printf("      --no-replay-gain\n");
 	printf("      --no-residual-gnuplot\n");
 	printf("      --no-residual-text\n");
-#if 0 /*@@@ currently undocumented */
 	printf("      --no-ignore-chunk-sizes\n");
-#endif
 	printf("      --no-sector-align\n");
 	printf("      --no-seektable\n");
 	printf("      --no-silent\n");
@@ -1607,7 +1610,7 @@ void show_explain(void)
 	printf("      --input-size=#           Size of the raw input in bytes.  If you are\n");
 	printf("                               encoding raw samples from stdin, you must set\n");
 	printf("                               this option in order to be able to use --skip,\n");
-	printf("                               --until, --cue-sheet, or other options that need\n");
+	printf("                               --until, --cuesheet, or other options that need\n");
 	printf("                               to know the size of the input beforehand.  If\n");
 	printf("                               the size given is greater than what is found in\n");
 	printf("                               the input stream, the encoder will complain\n");
@@ -1632,6 +1635,7 @@ void show_explain(void)
 	printf("                               auto-detected.\n");
 	printf("negative options:\n");
 	printf("      --no-adaptive-mid-side\n");
+	printf("      --no-cued-seekpoints\n");
 	printf("      --no-decode-through-errors\n");
 	printf("      --no-delete-input-file\n");
 	printf("      --no-preserve-modtime\n");
@@ -1671,7 +1675,7 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 	unsigned lookahead_length = 0;
 	FileFormat input_format = FORMAT_RAW;
 	int retval;
-	off_t infilesize;
+	FLAC__off_t infilesize;
 	encode_options_t encode_options;
 	const char *outfilename = get_encoded_outfilename(infilename); /* the final name of the encoded file */
 	/* internal_outfilename is the file we will actually write to; it will be a temporary name if infilename==outfilename */
@@ -1683,12 +1687,12 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 	}
 
 	if(0 == strcmp(infilename, "-")) {
-		infilesize = (off_t)(-1);
+		infilesize = (FLAC__off_t)(-1);
 		encode_infile = grabbag__file_get_binary_stdin();
 	}
 	else {
 		infilesize = grabbag__file_get_filesize(infilename);
-		if(0 == (encode_infile = fopen(infilename, "rb"))) {
+		if(0 == (encode_infile = flac_fopen(infilename, "rb"))) {
 			flac__utils_printf(stderr, 1, "ERROR: can't open input file %s: %s\n", infilename, strerror(errno));
 			return 1;
 		}
@@ -1729,13 +1733,14 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 		else {
 			if(!memcmp(lookahead, "ID3", 3)) {
 				flac__utils_printf(stderr, 1, "ERROR: input file %s has an ID3v2 tag\n", infilename);
+				conditional_fclose(encode_infile);
 				return 1;
 			}
 			else if(!memcmp(lookahead, "RIFF", 4) && !memcmp(lookahead+8, "WAVE", 4))
 				input_format = FORMAT_WAVE;
 			else if(!memcmp(lookahead, "RF64", 4) && !memcmp(lookahead+8, "WAVE", 4))
 				input_format = FORMAT_RF64;
-			else if(!memcmp(lookahead, "riff\x2E\x91\xCF\x11\xD6\xA5\x28\xDB", 12)) /* just check 1st 12 bytes of GUID */
+			else if(!memcmp(lookahead, "riff\x2E\x91\xCF\x11\xA5\xD6\x28\xDB", 12)) /* just check 1st 12 bytes of GUID */
 				input_format = FORMAT_WAVE64;
 			else if(!memcmp(lookahead, "FORM", 4) && !memcmp(lookahead+8, "AIFF", 4))
 				input_format = FORMAT_AIFF;
@@ -1776,7 +1781,7 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 	 * Error if output file already exists (and -f not used).
 	 * Use grabbag__file_get_filesize() as a cheap way to check.
 	 */
-	if(!option_values.test_only && !option_values.force_file_overwrite && strcmp(outfilename, "-") && grabbag__file_get_filesize(outfilename) != (off_t)(-1)) {
+	if(!option_values.test_only && !option_values.force_file_overwrite && strcmp(outfilename, "-") && grabbag__file_get_filesize(outfilename) != (FLAC__off_t)(-1)) {
 		if(input_format == FORMAT_FLAC) {
 			/* need more detailed error message when re-flac'ing to avoid confusing the user */
 			flac__utils_printf(stderr, 1,
@@ -1834,7 +1839,7 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 		}
 	}
 
-	if(/*@@@@@@why no stdin?*/encode_infile == stdin || option_values.force_to_stdout) {
+	if(option_values.force_to_stdout) {
 		if(option_values.replay_gain) {
 			conditional_fclose(encode_infile);
 			return usage_error("ERROR: --replay-gain cannot be used when encoding to stdout\n");
@@ -1900,14 +1905,15 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 	/* if infilename and outfilename point to the same file, we need to write to a temporary file */
 	if(encode_infile != stdin && grabbag__file_are_same(infilename, outfilename)) {
 		static const char *tmp_suffix = ".tmp,fl-ac+en'c";
+		size_t dest_len = strlen(outfilename) + strlen(tmp_suffix) + 1;
 		/*@@@@ still a remote possibility that a file with this filename exists */
-		if(0 == (internal_outfilename = (char *)safe_malloc_add_3op_(strlen(outfilename), /*+*/strlen(tmp_suffix), /*+*/1))) {
+		if(0 == (internal_outfilename = safe_malloc_(dest_len))) {
 			flac__utils_printf(stderr, 1, "ERROR allocating memory for tempfile name\n");
 			conditional_fclose(encode_infile);
 			return 1;
 		}
-		strcpy(internal_outfilename, outfilename);
-		strcat(internal_outfilename, tmp_suffix);
+		safe_strncpy(internal_outfilename, outfilename, dest_len);
+		safe_strncat(internal_outfilename, tmp_suffix, dest_len);
 	}
 
 	if(input_format == FORMAT_RAW) {
@@ -1938,6 +1944,8 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 			if(0 == encode_options.format_options.iff.foreign_metadata) {
 				flac__utils_printf(stderr, 1, "ERROR: creating foreign metadata object\n");
 				conditional_fclose(encode_infile);
+				if(internal_outfilename != 0)
+					free(internal_outfilename);
 				return 1;
 			}
 		}
@@ -1973,14 +1981,14 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 
 	/* rename temporary file if necessary */
 	if(retval == 0 && internal_outfilename != 0) {
-		if(rename(internal_outfilename, outfilename) < 0) {
+		if(flac_rename(internal_outfilename, outfilename) < 0) {
 #if defined _MSC_VER || defined __MINGW32__ || defined __EMX__
-			/* on some flavors of windows, rename() will fail if the destination already exists, so we unlink and try again */
-			if(unlink(outfilename) < 0) {
+			/* on some flavors of windows, flac_rename() will fail if the destination already exists, so we unlink and try again */
+			if(flac_unlink(outfilename) < 0) {
 				flac__utils_printf(stderr, 1, "ERROR: moving new FLAC file %s back on top of original FLAC file %s, keeping both\n", internal_outfilename, outfilename);
 				retval = 1;
 			}
-			else if(rename(internal_outfilename, outfilename) < 0) {
+			else if(flac_rename(internal_outfilename, outfilename) < 0) {
 				flac__utils_printf(stderr, 1, "ERROR: moving new FLAC file %s back on top of original FLAC file %s, you must do it\n", internal_outfilename, outfilename);
 				retval = 1;
 			}
@@ -1993,7 +2001,7 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
 
 	/* handle --delete-input-file, but don't want to delete if piping from stdin, or if input filename and output filename are the same */
 	if(retval == 0 && option_values.delete_input && strcmp(infilename, "-") && internal_outfilename == 0)
-		unlink(infilename);
+		flac_unlink(infilename);
 
 	if(internal_outfilename != 0)
 		free(internal_outfilename);
@@ -2018,7 +2026,7 @@ int decode_file(const char *infilename)
 	 * Error if output file already exists (and -f not used).
 	 * Use grabbag__file_get_filesize() as a cheap way to check.
 	 */
-	if(!option_values.test_only && !option_values.force_file_overwrite && strcmp(outfilename, "-") && grabbag__file_get_filesize(outfilename) != (off_t)(-1)) {
+	if(!option_values.test_only && !option_values.force_file_overwrite && strcmp(outfilename, "-") && grabbag__file_get_filesize(outfilename) != (FLAC__off_t)(-1)) {
 		flac__utils_printf(stderr, 1, "ERROR: output file %s already exists, use -f to override\n", outfilename);
 		return 1;
 	}
@@ -2135,7 +2143,7 @@ int decode_file(const char *infilename)
 		if(option_values.preserve_modtime && strcmp(outfilename, "-"))
 			grabbag__file_copy_metadata(infilename, outfilename);
 		if(option_values.delete_input && !option_values.test_only && !option_values.analyze)
-			unlink(infilename);
+			flac_unlink(infilename);
 	}
 
 	return retval;
@@ -2177,7 +2185,7 @@ const char *get_outfilename(const char *infilename, const char *suffix)
 		static char buffer[4096]; /* @@@ bad MAGIC NUMBER */
 
 		if(0 == strcmp(infilename, "-") || option_values.force_to_stdout) {
-			strcpy(buffer, "-");
+			safe_strncpy(buffer, "-", sizeof(buffer));
 		}
 		else {
 			char *p;
@@ -2225,29 +2233,3 @@ char *local_strdup(const char *source)
 		die("out of memory during strdup()");
 	return ret;
 }
-
-#ifdef _MSC_VER
-/* There's no strtoll() in MSVC6 so we just write a specialized one */
-FLAC__int64 local__strtoll(const char *src, char **endptr)
-{
-	FLAC__bool neg = false;
-	FLAC__int64 ret = 0;
-	int c;
-	FLAC__ASSERT(0 != src);
-	if(*src == '-') {
-		neg = true;
-		src++;
-	}
-	while(0 != (c = *src)) {
-		c -= '0';
-		if(c >= 0 && c <= 9)
-			ret = (ret * 10) + c;
-		else
-			break;
-		src++;
-	}
-	if(endptr)
-		*endptr = (char*)src;
-	return neg? -ret : ret;
-}
-#endif

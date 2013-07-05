@@ -1,8 +1,9 @@
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2001-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -15,22 +16,50 @@
 #  restrictive of those mentioned above.  See the file COPYING.Xiph in this
 #  distribution.
 
-if FLaC__WITH_CPPLIBS
-CPPLIBS_TESTS = test_libFLAC++.sh
-endif
-
-TESTS_ENVIRONMENT = FLAC__TEST_LEVEL=@FLAC__TEST_LEVEL@ FLAC__TEST_WITH_VALRGIND=@FLAC__TEST_WITH_VALGRIND@
+TESTS_ENVIRONMENT = FLAC__TEST_LEVEL=@FLAC__TEST_LEVEL@ FLAC__TEST_WITH_VALGRIND=@FLAC__TEST_WITH_VALGRIND@
 
 SUBDIRS = cuesheets flac-to-flac-metadata-test-files metaflac-test-files pictures
 
-TESTS = \
-	./test_libFLAC.sh \
-	$(CPPLIBS_TESTS) \
-	./test_grabbag.sh \
-	./test_flac.sh \
-	./test_metaflac.sh \
-	./test_seeking.sh \
-	./test_streams.sh
+check_SCRIPTS = \
+	test_libFLAC.sh \
+	test_libFLAC++.sh \
+	test_grabbag.sh \
+	test_flac.sh \
+	test_metaflac.sh \
+	test_seeking.sh \
+	test_streams.sh \
+	test_compression.sh
+
+# This one should pass when building out-of-tree (eg 'make distcheck').
+check: $(check_SCRIPTS)
+	$(TESTS_ENVIRONMENT) $(srcdir)/test_libFLAC.sh
+if FLaC__WITH_CPPLIBS
+	$(TESTS_ENVIRONMENT) $(srcdir)/test_libFLAC++.sh
+endif
+	$(TESTS_ENVIRONMENT) $(srcdir)/test_seeking.sh
+	$(TESTS_ENVIRONMENT) $(srcdir)/test_streams.sh
+	$(TESTS_ENVIRONMENT) $(srcdir)/test_compression.sh
+	@echo "----------------"
+	@echo "All tests passed"
+	@echo "----------------"
+
+# This is the full test suite, but only works correctly in-tree.
+# In particular test_grabbag.sh, test_flac.sh and test_metaflac.sh will not
+# run correctly out-of-tree.
+fullcheck: $(check_SCRIPTS)
+	$(TESTS_ENVIRONMENT) ./test_libFLAC.sh
+if FLaC__WITH_CPPLIBS
+	$(TESTS_ENVIRONMENT) ./test_libFLAC++.sh
+endif
+	$(TESTS_ENVIRONMENT) ./test_grabbag.sh
+	$(TESTS_ENVIRONMENT) ./test_flac.sh
+	$(TESTS_ENVIRONMENT) ./test_metaflac.sh
+	$(TESTS_ENVIRONMENT) ./test_seeking.sh
+	$(TESTS_ENVIRONMENT) ./test_streams.sh
+	$(TESTS_ENVIRONMENT) ./test_compression.sh
+	@echo "----------------"
+	@echo "All tests passed"
+	@echo "----------------"
 
 EXTRA_DIST = \
 	Makefile.lite \
@@ -38,13 +67,8 @@ EXTRA_DIST = \
 	metaflac.flac.in \
 	metaflac.flac.ok \
 	picture.ok \
-	test_libFLAC.sh \
-	$(CPPLIBS_TESTS) \
-	test_flac.sh \
-	test_metaflac.sh \
-	test_grabbag.sh \
-	test_seeking.sh \
-	test_streams.sh \
+	$(check_SCRIPTS) \
+	test_wrapper.sh \
 	test_bins.sh \
 	write_iff.pl
 

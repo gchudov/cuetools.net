@@ -1,5 +1,6 @@
 /* test_libFLAC - Unit tester for libFLAC
- * Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2002-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,9 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 /*
@@ -26,6 +27,7 @@
 
 #include "FLAC/metadata.h"
 #include "test_libs_common/metadata_utils.h"
+#include "share/compat.h"
 #include <stdio.h>
 #include <stdlib.h> /* for malloc() */
 #include <string.h> /* for memcmp() */
@@ -61,11 +63,7 @@ FLAC__bool mutils__compare_block_data_streaminfo(const FLAC__StreamMetadata_Stre
 		return false;
 	}
 	if(blockcopy->total_samples != block->total_samples) {
-#ifdef _MSC_VER
-		printf("FAILED, total_samples mismatch, expected %I64u, got %I64u\n", block->total_samples, blockcopy->total_samples);
-#else
-		printf("FAILED, total_samples mismatch, expected %llu, got %llu\n", (unsigned long long)block->total_samples, (unsigned long long)blockcopy->total_samples);
-#endif
+		printf("FAILED, total_samples mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", block->total_samples, blockcopy->total_samples);
 		return false;
 	}
 	if(0 != memcmp(blockcopy->md5sum, block->md5sum, sizeof(block->md5sum))) {
@@ -166,19 +164,11 @@ FLAC__bool mutils__compare_block_data_seektable(const FLAC__StreamMetadata_SeekT
 	}
 	for(i = 0; i < block->num_points; i++) {
 		if(blockcopy->points[i].sample_number != block->points[i].sample_number) {
-#ifdef _MSC_VER
-			printf("FAILED, points[%u].sample_number mismatch, expected %I64u, got %I64u\n", i, block->points[i].sample_number, blockcopy->points[i].sample_number);
-#else
-			printf("FAILED, points[%u].sample_number mismatch, expected %llu, got %llu\n", i, (unsigned long long)block->points[i].sample_number, (unsigned long long)blockcopy->points[i].sample_number);
-#endif
+			printf("FAILED, points[%u].sample_number mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", i, block->points[i].sample_number, blockcopy->points[i].sample_number);
 			return false;
 		}
 		if(blockcopy->points[i].stream_offset != block->points[i].stream_offset) {
-#ifdef _MSC_VER
-			printf("FAILED, points[%u].stream_offset mismatch, expected %I64u, got %I64u\n", i, block->points[i].stream_offset, blockcopy->points[i].stream_offset);
-#else
-			printf("FAILED, points[%u].stream_offset mismatch, expected %llu, got %llu\n", i, (unsigned long long)block->points[i].stream_offset, (unsigned long long)blockcopy->points[i].stream_offset);
-#endif
+			printf("FAILED, points[%u].stream_offset mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", i, block->points[i].stream_offset, blockcopy->points[i].stream_offset);
 			return false;
 		}
 		if(blockcopy->points[i].frame_samples != block->points[i].frame_samples) {
@@ -240,11 +230,7 @@ FLAC__bool mutils__compare_block_data_cuesheet(const FLAC__StreamMetadata_CueShe
 		return false;
 	}
 	if(blockcopy->lead_in != block->lead_in) {
-#ifdef _MSC_VER
-		printf("FAILED, lead_in mismatch, expected %I64u, got %I64u\n", block->lead_in, blockcopy->lead_in);
-#else
-		printf("FAILED, lead_in mismatch, expected %llu, got %llu\n", (unsigned long long)block->lead_in, (unsigned long long)blockcopy->lead_in);
-#endif
+		printf("FAILED, lead_in mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", block->lead_in, blockcopy->lead_in);
 		return false;
 	}
 	if(blockcopy->is_cd != block->is_cd) {
@@ -257,11 +243,7 @@ FLAC__bool mutils__compare_block_data_cuesheet(const FLAC__StreamMetadata_CueShe
 	}
 	for(i = 0; i < block->num_tracks; i++) {
 		if(blockcopy->tracks[i].offset != block->tracks[i].offset) {
-#ifdef _MSC_VER
-			printf("FAILED, tracks[%u].offset mismatch, expected %I64u, got %I64u\n", i, block->tracks[i].offset, blockcopy->tracks[i].offset);
-#else
-			printf("FAILED, tracks[%u].offset mismatch, expected %llu, got %llu\n", i, (unsigned long long)block->tracks[i].offset, (unsigned long long)blockcopy->tracks[i].offset);
-#endif
+			printf("FAILED, tracks[%u].offset mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", i, block->tracks[i].offset, blockcopy->tracks[i].offset);
 			return false;
 		}
 		if(blockcopy->tracks[i].number != block->tracks[i].number) {
@@ -295,11 +277,7 @@ FLAC__bool mutils__compare_block_data_cuesheet(const FLAC__StreamMetadata_CueShe
 			else {
 				for(j = 0; j < block->tracks[i].num_indices; j++) {
 					if(blockcopy->tracks[i].indices[j].offset != block->tracks[i].indices[j].offset) {
-#ifdef _MSC_VER
-						printf("FAILED, tracks[%u].indices[%u].offset mismatch, expected %I64u, got %I64u\n", i, j, block->tracks[i].indices[j].offset, blockcopy->tracks[i].indices[j].offset);
-#else
-						printf("FAILED, tracks[%u].indices[%u].offset mismatch, expected %llu, got %llu\n", i, j, (unsigned long long)block->tracks[i].indices[j].offset, (unsigned long long)blockcopy->tracks[i].indices[j].offset);
-#endif
+						printf("FAILED, tracks[%u].indices[%u].offset mismatch, expected %" PRIu64 ", got %" PRIu64 "\n", i, j, block->tracks[i].indices[j].offset, blockcopy->tracks[i].indices[j].offset);
 						return false;
 					}
 					if(blockcopy->tracks[i].indices[j].number != block->tracks[i].indices[j].number) {
@@ -498,7 +476,7 @@ void mutils__init_metadata_blocks(
 	seektable->type = FLAC__METADATA_TYPE_SEEKTABLE;
 	seektable->data.seek_table.num_points = 2;
 	seektable->length = seektable->data.seek_table.num_points * FLAC__STREAM_METADATA_SEEKPOINT_LENGTH;
-	seektable->data.seek_table.points = (FLAC__StreamMetadata_SeekPoint*)malloc_or_die_(seektable->data.seek_table.num_points * sizeof(FLAC__StreamMetadata_SeekPoint));
+	seektable->data.seek_table.points = malloc_or_die_(seektable->data.seek_table.num_points * sizeof(FLAC__StreamMetadata_SeekPoint));
 	seektable->data.seek_table.points[0].sample_number = 0;
 	seektable->data.seek_table.points[0].stream_offset = 0;
 	seektable->data.seek_table.points[0].frame_samples = streaminfo->data.stream_info.min_blocksize;
@@ -510,7 +488,7 @@ void mutils__init_metadata_blocks(
 	application1->type = FLAC__METADATA_TYPE_APPLICATION;
 	application1->length = 8;
 	memcpy(application1->data.application.id, "\xfe\xdc\xba\x98", 4);
-	application1->data.application.data = (FLAC__byte*)malloc_or_die_(4);
+	application1->data.application.data = malloc_or_die_(4);
 	memcpy(application1->data.application.data, "\xf0\xe1\xd2\xc3", 4);
 
 	application2->is_last = false;
@@ -525,12 +503,12 @@ void mutils__init_metadata_blocks(
 		vorbiscomment->type = FLAC__METADATA_TYPE_VORBIS_COMMENT;
 		vorbiscomment->length = (4 + vendor_string_length) + 4 + (4 + 5) + (4 + 0);
 		vorbiscomment->data.vorbis_comment.vendor_string.length = vendor_string_length;
-		vorbiscomment->data.vorbis_comment.vendor_string.entry = (FLAC__byte*)malloc_or_die_(vendor_string_length+1);
+		vorbiscomment->data.vorbis_comment.vendor_string.entry = malloc_or_die_(vendor_string_length+1);
 		memcpy(vorbiscomment->data.vorbis_comment.vendor_string.entry, FLAC__VENDOR_STRING, vendor_string_length+1);
 		vorbiscomment->data.vorbis_comment.num_comments = 2;
-		vorbiscomment->data.vorbis_comment.comments = (FLAC__StreamMetadata_VorbisComment_Entry*)malloc_or_die_(vorbiscomment->data.vorbis_comment.num_comments * sizeof(FLAC__StreamMetadata_VorbisComment_Entry));
+		vorbiscomment->data.vorbis_comment.comments = malloc_or_die_(vorbiscomment->data.vorbis_comment.num_comments * sizeof(FLAC__StreamMetadata_VorbisComment_Entry));
 		vorbiscomment->data.vorbis_comment.comments[0].length = 5;
-		vorbiscomment->data.vorbis_comment.comments[0].entry = (FLAC__byte*)malloc_or_die_(5+1);
+		vorbiscomment->data.vorbis_comment.comments[0].entry = malloc_or_die_(5+1);
 		memcpy(vorbiscomment->data.vorbis_comment.comments[0].entry, "ab=cd", 5+1);
 		vorbiscomment->data.vorbis_comment.comments[1].length = 0;
 		vorbiscomment->data.vorbis_comment.comments[1].entry = 0;
@@ -570,14 +548,14 @@ void mutils__init_metadata_blocks(
 	cuesheet->data.cue_sheet.lead_in = 2 * 44100;
 	cuesheet->data.cue_sheet.is_cd = true;
 	cuesheet->data.cue_sheet.num_tracks = 3;
-	cuesheet->data.cue_sheet.tracks = (FLAC__StreamMetadata_CueSheet_Track*)calloc_or_die_(cuesheet->data.cue_sheet.num_tracks, sizeof(FLAC__StreamMetadata_CueSheet_Track));
+	cuesheet->data.cue_sheet.tracks = calloc_or_die_(cuesheet->data.cue_sheet.num_tracks, sizeof(FLAC__StreamMetadata_CueSheet_Track));
 	cuesheet->data.cue_sheet.tracks[0].offset = 0;
 	cuesheet->data.cue_sheet.tracks[0].number = 1;
 	memcpy(cuesheet->data.cue_sheet.tracks[0].isrc, "ACBDE1234567", sizeof(cuesheet->data.cue_sheet.tracks[0].isrc));
 	cuesheet->data.cue_sheet.tracks[0].type = 0;
 	cuesheet->data.cue_sheet.tracks[0].pre_emphasis = 1;
 	cuesheet->data.cue_sheet.tracks[0].num_indices = 2;
-	cuesheet->data.cue_sheet.tracks[0].indices = (FLAC__StreamMetadata_CueSheet_Index*)malloc_or_die_(cuesheet->data.cue_sheet.tracks[0].num_indices * sizeof(FLAC__StreamMetadata_CueSheet_Index));
+	cuesheet->data.cue_sheet.tracks[0].indices = malloc_or_die_(cuesheet->data.cue_sheet.tracks[0].num_indices * sizeof(FLAC__StreamMetadata_CueSheet_Index));
 	cuesheet->data.cue_sheet.tracks[0].indices[0].offset = 0;
 	cuesheet->data.cue_sheet.tracks[0].indices[0].number = 0;
 	cuesheet->data.cue_sheet.tracks[0].indices[1].offset = 123 * 588;
@@ -588,7 +566,7 @@ void mutils__init_metadata_blocks(
 	cuesheet->data.cue_sheet.tracks[1].type = 1;
 	cuesheet->data.cue_sheet.tracks[1].pre_emphasis = 0;
 	cuesheet->data.cue_sheet.tracks[1].num_indices = 1;
-	cuesheet->data.cue_sheet.tracks[1].indices = (FLAC__StreamMetadata_CueSheet_Index*)malloc_or_die_(cuesheet->data.cue_sheet.tracks[1].num_indices * sizeof(FLAC__StreamMetadata_CueSheet_Index));
+	cuesheet->data.cue_sheet.tracks[1].indices = malloc_or_die_(cuesheet->data.cue_sheet.tracks[1].num_indices * sizeof(FLAC__StreamMetadata_CueSheet_Index));
 	cuesheet->data.cue_sheet.tracks[1].indices[0].offset = 0;
 	cuesheet->data.cue_sheet.tracks[1].indices[0].number = 1;
 	cuesheet->data.cue_sheet.tracks[2].offset = 12345 * 588;
@@ -625,7 +603,7 @@ void mutils__init_metadata_blocks(
 	unknown->is_last = true;
 	unknown->type = 126;
 	unknown->length = 8;
-	unknown->data.unknown.data = (FLAC__byte*)malloc_or_die_(unknown->length);
+	unknown->data.unknown.data = malloc_or_die_(unknown->length);
 	memcpy(unknown->data.unknown.data, "\xfe\xdc\xba\x98\xf0\xe1\xd2\xc3", unknown->length);
 }
 

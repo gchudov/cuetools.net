@@ -1,10 +1,11 @@
 #!/bin/sh
 
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2001-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -35,10 +36,12 @@ LD_LIBRARY_PATH=../src/share/getopt/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=../src/share/replaygain_analysis/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=../src/share/replaygain_synthesis/.libs:$LD_LIBRARY_PATH
 LD_LIBRARY_PATH=../src/share/utf8/.libs:$LD_LIBRARY_PATH
-LD_LIBRARY_PATH=../obj/$BUILD/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=../objs/$BUILD/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH
+export MALLOC_CHECK_=3
+export MALLOC_PERTURB_==$(($(date +%s) % 255 + 1))
 PATH=../src/flac:$PATH
-PATH=../obj/$BUILD/bin:$PATH
+PATH=../objs/$BUILD/bin:$PATH
 BINS_PATH=../../test_files/bins
 
 if [ x"$FLAC__TEST_LEVEL" = x ] ; then
@@ -50,8 +53,8 @@ flac --help 1>/dev/null 2>/dev/null || die "ERROR can't find flac executable"
 run_flac ()
 {
 	if [ x"$FLAC__TEST_WITH_VALGRIND" = xyes ] ; then
-		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=100 flac $*" >>test_bins.valgrind.log
-		valgrind --leak-check=yes --show-reachable=yes --num-callers=100 --log-fd=4 flac $* 4>>test_bins.valgrind.log
+		echo "valgrind --leak-check=yes --show-reachable=yes --num-callers=50 flac $*" >>test_bins.valgrind.log
+		valgrind --leak-check=yes --show-reachable=yes --num-callers=50 --log-fd=4 flac $* 4>>test_bins.valgrind.log
 	else
 		flac $*
 	fi

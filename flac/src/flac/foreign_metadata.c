@@ -1,5 +1,6 @@
 /* flac - Command-line FLAC encoder/decoder
- * Copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2000-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,28 +12,22 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-#if defined _MSC_VER || defined __MINGW32__
-#include <sys/types.h> /* for off_t */
-#if _MSC_VER <= 1600 /* @@@ [2G limit] */
-#define fseeko fseek
-#define ftello ftell
-#endif
-#endif
 #include <stdio.h> /* for FILE etc. */
 #include <stdlib.h> /* for calloc() etc. */
 #include <string.h> /* for memcmp() etc. */
 #include "FLAC/assert.h"
 #include "FLAC/metadata.h"
 #include "share/alloc.h"
+#include "share/compat.h"
 #include "foreign_metadata.h"
 
 #ifdef min
@@ -78,7 +73,7 @@ static FLAC__bool copy_data_(FILE *fin, FILE *fout, size_t size, const char **er
 	return true;
 }
 
-static FLAC__bool append_block_(foreign_metadata_t *fm, off_t offset, FLAC__uint32 size, const char **error)
+static FLAC__bool append_block_(foreign_metadata_t *fm, FLAC__off_t offset, FLAC__uint32 size, const char **error)
 {
 	foreign_block_t *fb = safe_realloc_muladd2_(fm->blocks, sizeof(foreign_block_t), /*times (*/fm->num_blocks, /*+*/1/*)*/);
 	if(fb) {
@@ -95,7 +90,7 @@ static FLAC__bool append_block_(foreign_metadata_t *fm, off_t offset, FLAC__uint
 static FLAC__bool read_from_aiff_(foreign_metadata_t *fm, FILE *f, const char **error)
 {
 	FLAC__byte buffer[12];
-	off_t offset, eof_offset;
+	FLAC__off_t offset, eof_offset;
 	if((offset = ftello(f)) < 0) {
 		if(error) *error = "ftello() error (001)";
 		return false;
@@ -106,7 +101,7 @@ static FLAC__bool read_from_aiff_(foreign_metadata_t *fm, FILE *f, const char **
 	}
 	if(!append_block_(fm, offset, 12, error))
 		return false;
-	eof_offset = (off_t)8 + (off_t)unpack32be_(buffer+4);
+	eof_offset = (FLAC__off_t)8 + (FLAC__off_t)unpack32be_(buffer+4);
 	while(!feof(f)) {
 		FLAC__uint32 size;
 		if((offset = ftello(f)) < 0) {
@@ -186,7 +181,7 @@ static FLAC__bool read_from_aiff_(foreign_metadata_t *fm, FILE *f, const char **
 static FLAC__bool read_from_wave_(foreign_metadata_t *fm, FILE *f, const char **error)
 {
 	FLAC__byte buffer[12];
-	off_t offset, eof_offset = -1, ds64_data_size = -1;
+	FLAC__off_t offset, eof_offset = -1, ds64_data_size = -1;
 	if((offset = ftello(f)) < 0) {
 		if(error) *error = "ftello() error (001)";
 		return false;
@@ -197,14 +192,14 @@ static FLAC__bool read_from_wave_(foreign_metadata_t *fm, FILE *f, const char **
 	}
 	if(!memcmp(buffer, "RF64", 4))
 		fm->is_rf64 = true;
-	if(fm->is_rf64 && sizeof(off_t) < 8) {
+	if(fm->is_rf64 && sizeof(FLAC__off_t) < 8) {
 		if(error) *error = "RF64 is not supported on this compile (r00)";
 		return false;
 	}
 	if(!append_block_(fm, offset, 12, error))
 		return false;
 	if(!fm->is_rf64 || unpack32le_(buffer+4) != 0xffffffffu)
-		eof_offset = (off_t)8 + (off_t)unpack32le_(buffer+4);
+		eof_offset = (FLAC__off_t)8 + (FLAC__off_t)unpack32le_(buffer+4);
 	while(!feof(f)) {
 		FLAC__uint32 size;
 		if((offset = ftello(f)) < 0) {
@@ -270,8 +265,8 @@ static FLAC__bool read_from_wave_(foreign_metadata_t *fm, FILE *f, const char **
 				if(error) *error = "unexpected EOF reading \"ds64\" chunk data in RF64 file (r05)";
 				return false;
 			}
-			ds64_data_size = (off_t)unpack64le_(buffer2+8);
-			if(ds64_data_size == (off_t)(-1)) {
+			ds64_data_size = (FLAC__off_t)unpack64le_(buffer2+8);
+			if(ds64_data_size == (FLAC__off_t)(-1)) {
 				if(error) *error = "RF64 file has \"ds64\" chunk with data size == -1 (r08)";
 				return false;
 			}
@@ -287,9 +282,9 @@ static FLAC__bool read_from_wave_(foreign_metadata_t *fm, FILE *f, const char **
 				if(error) *error = "RF64 file has \"ds64\" chunk with extra size table, which is not currently supported (r06)";
 				return false;
 			}
-			eof_offset = (off_t)8 + (off_t)unpack64le_(buffer2);
+			eof_offset = (FLAC__off_t)8 + (FLAC__off_t)unpack64le_(buffer2);
 			/* @@@ [2^63 limit] */
-			if((off_t)unpack64le_(buffer2) < 0 || eof_offset < 0) {
+			if((FLAC__off_t)unpack64le_(buffer2) < 0 || eof_offset < 0) {
 				if(error) *error = "RF64 file too large (r07)";
 				return false;
 			}
@@ -309,7 +304,7 @@ static FLAC__bool read_from_wave_(foreign_metadata_t *fm, FILE *f, const char **
 			}
 		}
 	}
-	if(fm->is_rf64 && eof_offset == (off_t)(-1)) {
+	if(fm->is_rf64 && eof_offset == (FLAC__off_t)(-1)) {
 		if(error) *error = "invalid RF64 file: all RIFF sizes are -1 (r11)";
 		return false;
 	}
@@ -331,7 +326,7 @@ static FLAC__bool read_from_wave_(foreign_metadata_t *fm, FILE *f, const char **
 static FLAC__bool read_from_wave64_(foreign_metadata_t *fm, FILE *f, const char **error)
 {
 	FLAC__byte buffer[40];
-	off_t offset, eof_offset = -1;
+	FLAC__off_t offset, eof_offset = -1;
 	if((offset = ftello(f)) < 0) {
 		if(error) *error = "ftello() error (001)";
 		return false;
@@ -339,20 +334,20 @@ static FLAC__bool read_from_wave64_(foreign_metadata_t *fm, FILE *f, const char 
 	if(
 		fread(buffer, 1, 40, f) < 40 ||
 		/* RIFF GUID 66666972-912E-11CF-A5D6-28DB04C10000 */
-		memcmp(buffer, "\x72\x69\x66\x66\x2E\x91\xCF\x11\xD6\xA5\x28\xDB\x04\xC1\x00\x00", 16) ||
+		memcmp(buffer, "\x72\x69\x66\x66\x2E\x91\xCF\x11\xA5\xD6\x28\xDB\x04\xC1\x00\x00", 16) ||
 		/* WAVE GUID 65766177-ACF3-11D3-8CD1-00C04F8EDB8A */
-		memcmp(buffer+24, "\x77\x61\x76\x65\xF3\xAC\xD3\x11\xD1\x8C\x00\xC0\x4F\x8E\xDB\x8A", 16)
+		memcmp(buffer+24, "\x77\x61\x76\x65\xF3\xAC\xD3\x11\x8C\xD1\x00\xC0\x4F\x8E\xDB\x8A", 16)
 	) {
 		if(error) *error = "unsupported Wave64 layout (002)";
 		return false;
 	}
-	if(sizeof(off_t) < 8) {
+	if(sizeof(FLAC__off_t) < 8) {
 		if(error) *error = "Wave64 is not supported on this compile (r00)";
 		return false;
 	}
 	if(!append_block_(fm, offset, 40, error))
 		return false;
-	eof_offset = (off_t)unpack64le_(buffer+16); /*@@@ [2^63 limit] */
+	eof_offset = (FLAC__off_t)unpack64le_(buffer+16); /*@@@ [2^63 limit] */
 	while(!feof(f)) {
 		FLAC__uint64 size;
 		if((offset = ftello(f)) < 0) {
@@ -370,7 +365,7 @@ static FLAC__bool read_from_wave64_(foreign_metadata_t *fm, FILE *f, const char 
 		if(size & 7)
 			size = (size+7) & (~((FLAC__uint64)7));
 		/* fmt GUID 20746D66-ACF3-11D3-8CD1-00C04F8EDB8A */
-		if(!memcmp(buffer, "\x66\x6D\x74\x20\xF3\xAC\xD3\x11\xD1\x8C\x00\xC0\x4F\x8E\xDB\x8A", 16)) {
+		if(!memcmp(buffer, "\x66\x6D\x74\x20\xF3\xAC\xD3\x11\x8C\xD1\x00\xC0\x4F\x8E\xDB\x8A", 16)) {
 			if(fm->format_block) {
 				if(error) *error = "invalid Wave64 file: multiple \"fmt \" chunks (005)";
 				return false;
@@ -382,7 +377,7 @@ static FLAC__bool read_from_wave64_(foreign_metadata_t *fm, FILE *f, const char 
 			fm->format_block = fm->num_blocks;
 		}
 		/* data GUID 61746164-ACF3-11D3-8CD1-00C04F8EDB8A */
-		else if(!memcmp(buffer, "\x64\x61\x74\x61\xF3\xAC\xD3\x11\xD1\x8C\x00\xC0\x4F\x8E\xDB\x8A", 16)) {
+		else if(!memcmp(buffer, "\x64\x61\x74\x61\xF3\xAC\xD3\x11\x8C\xD1\x00\xC0\x4F\x8E\xDB\x8A", 16)) {
 			if(fm->audio_block) {
 				if(error) *error = "invalid Wave64 file: multiple \"data\" chunks (007)";
 				return false;
@@ -393,7 +388,7 @@ static FLAC__bool read_from_wave64_(foreign_metadata_t *fm, FILE *f, const char 
 			}
 			fm->audio_block = fm->num_blocks;
 		}
-		if(!append_block_(fm, offset, memcmp(buffer, "\x64\x61\x74\x61\xF3\xAC\xD3\x11\xD1\x8C\x00\xC0\x4F\x8E\xDB\x8A", 16)? (FLAC__uint32)size : 16+8, error))
+		if(!append_block_(fm, offset, memcmp(buffer, "\x64\x61\x74\x61\xF3\xAC\xD3\x11\x8C\xD1\x00\xC0\x4F\x8E\xDB\x8A", 16)? (FLAC__uint32)size : 16+8, error))
 			return false;
 		/* skip to next chunk */
 		if(fseeko(f, size-24, SEEK_CUR) < 0) {
@@ -475,7 +470,7 @@ static FLAC__bool write_to_flac_(foreign_metadata_t *fm, FILE *fin, FILE *fout, 
 static FLAC__bool read_from_flac_(foreign_metadata_t *fm, FILE *f, FLAC__Metadata_SimpleIterator *it, const char **error)
 {
 	FLAC__byte id[4], buffer[12];
-	off_t offset;
+	FLAC__off_t offset;
 	FLAC__bool type_found = false, ds64_found = false;
 
 	FLAC__ASSERT(FLAC__STREAM_METADATA_APPLICATION_ID_LEN == sizeof(id)*8);
@@ -494,7 +489,7 @@ static FLAC__bool read_from_flac_(foreign_metadata_t *fm, FILE *f, FLAC__Metadat
 		offset += (FLAC__STREAM_METADATA_IS_LAST_LEN + FLAC__STREAM_METADATA_TYPE_LEN + FLAC__STREAM_METADATA_LENGTH_LEN) / 8;
 		offset += sizeof(id);
 		/* look for format or audio blocks */
-		if(fseek(f, offset, SEEK_SET) < 0) {
+		if(fseeko(f, offset, SEEK_SET) < 0) {
 			if(error) *error = "seek error (003)";
 			return false;
 		}
@@ -642,7 +637,7 @@ static FLAC__bool read_from_flac_(foreign_metadata_t *fm, FILE *f, FLAC__Metadat
 	return true;
 }
 
-static FLAC__bool write_to_iff_(foreign_metadata_t *fm, FILE *fin, FILE *fout, off_t offset1, off_t offset2, off_t offset3, const char **error)
+static FLAC__bool write_to_iff_(foreign_metadata_t *fm, FILE *fin, FILE *fout, FLAC__off_t offset1, FLAC__off_t offset2, FLAC__off_t offset3, const char **error)
 {
 	size_t i;
 	if(fseeko(fout, offset1, SEEK_SET) < 0) {
@@ -688,7 +683,7 @@ static FLAC__bool write_to_iff_(foreign_metadata_t *fm, FILE *fin, FILE *fout, o
 foreign_metadata_t *flac__foreign_metadata_new(foreign_block_type_t type)
 {
 	/* calloc() to zero all the member variables */
-	foreign_metadata_t *x = (foreign_metadata_t*)calloc(sizeof(foreign_metadata_t), 1);
+	foreign_metadata_t *x = calloc(sizeof(foreign_metadata_t), 1);
 	if(x) {
 		x->type = type;
 		x->is_rf64 = false;
@@ -708,7 +703,7 @@ void flac__foreign_metadata_delete(foreign_metadata_t *fm)
 FLAC__bool flac__foreign_metadata_read_from_aiff(foreign_metadata_t *fm, const char *filename, const char **error)
 {
 	FLAC__bool ok;
-	FILE *f = fopen(filename, "rb");
+	FILE *f = flac_fopen(filename, "rb");
 	if(!f) {
 		if(error) *error = "can't open AIFF file for reading (000)";
 		return false;
@@ -721,7 +716,7 @@ FLAC__bool flac__foreign_metadata_read_from_aiff(foreign_metadata_t *fm, const c
 FLAC__bool flac__foreign_metadata_read_from_wave(foreign_metadata_t *fm, const char *filename, const char **error)
 {
 	FLAC__bool ok;
-	FILE *f = fopen(filename, "rb");
+	FILE *f = flac_fopen(filename, "rb");
 	if(!f) {
 		if(error) *error = "can't open WAVE file for reading (000)";
 		return false;
@@ -734,7 +729,7 @@ FLAC__bool flac__foreign_metadata_read_from_wave(foreign_metadata_t *fm, const c
 FLAC__bool flac__foreign_metadata_read_from_wave64(foreign_metadata_t *fm, const char *filename, const char **error)
 {
 	FLAC__bool ok;
-	FILE *f = fopen(filename, "rb");
+	FILE *f = flac_fopen(filename, "rb");
 	if(!f) {
 		if(error) *error = "can't open Wave64 file for reading (000)";
 		return false;
@@ -758,12 +753,12 @@ FLAC__bool flac__foreign_metadata_write_to_flac(foreign_metadata_t *fm, const ch
 		FLAC__metadata_simple_iterator_delete(it);
 		return false;
 	}
-	if(0 == (fin = fopen(infilename, "rb"))) {
+	if(0 == (fin = flac_fopen(infilename, "rb"))) {
 		if(error) *error = "can't open WAVE/AIFF file for reading (002)";
 		FLAC__metadata_simple_iterator_delete(it);
 		return false;
 	}
-	if(0 == (fout = fopen(outfilename, "r+b"))) {
+	if(0 == (fout = flac_fopen(outfilename, "r+b"))) {
 		if(error) *error = "can't open FLAC file for updating (003)";
 		FLAC__metadata_simple_iterator_delete(it);
 		fclose(fin);
@@ -790,7 +785,7 @@ FLAC__bool flac__foreign_metadata_read_from_flac(foreign_metadata_t *fm, const c
 		FLAC__metadata_simple_iterator_delete(it);
 		return false;
 	}
-	if(0 == (f = fopen(filename, "rb"))) {
+	if(0 == (f = flac_fopen(filename, "rb"))) {
 		if(error) *error = "can't open FLAC file for reading (002)";
 		FLAC__metadata_simple_iterator_delete(it);
 		return false;
@@ -801,15 +796,15 @@ FLAC__bool flac__foreign_metadata_read_from_flac(foreign_metadata_t *fm, const c
 	return ok;
 }
 
-FLAC__bool flac__foreign_metadata_write_to_iff(foreign_metadata_t *fm, const char *infilename, const char *outfilename, off_t offset1, off_t offset2, off_t offset3, const char **error)
+FLAC__bool flac__foreign_metadata_write_to_iff(foreign_metadata_t *fm, const char *infilename, const char *outfilename, FLAC__off_t offset1, FLAC__off_t offset2, FLAC__off_t offset3, const char **error)
 {
 	FLAC__bool ok;
 	FILE *fin, *fout;
-	if(0 == (fin = fopen(infilename, "rb"))) {
+	if(0 == (fin = flac_fopen(infilename, "rb"))) {
 		if(error) *error = "can't open FLAC file for reading (000)";
 		return false;
 	}
-	if(0 == (fout = fopen(outfilename, "r+b"))) {
+	if(0 == (fout = flac_fopen(outfilename, "r+b"))) {
 		if(error) *error = "can't open WAVE/AIFF file for updating (001)";
 		fclose(fin);
 		return false;

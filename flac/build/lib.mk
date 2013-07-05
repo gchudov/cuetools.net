@@ -1,8 +1,9 @@
 #  FLAC - Free Lossless Audio Codec
-#  Copyright (C) 2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+#  Copyright (C) 2001-2009  Josh Coalson
+#  Copyright (C) 2011-2013  Xiph.Org Foundation
 #
 #  This file is part the FLAC project.  FLAC is comprised of several
-#  components distributed under difference licenses.  The codec libraries
+#  components distributed under different licenses.  The codec libraries
 #  are distributed under Xiph.Org's BSD-like license (see the file
 #  COPYING.Xiph in this distribution).  All other programs, libraries, and
 #  plugins are distributed under the GPL (see COPYING.GPL).  The documentation
@@ -22,25 +23,28 @@
 include $(topdir)/build/config.mk
 
 ifeq ($(OS),Darwin)
-CC          = cc
-CCC         = c++
+    CC          = cc
+    CCC         = c++
 else
-CC          = gcc
-CCC         = g++
+    CC          = gcc
+    CCC         = g++
 endif
 AS          = as
 NASM        = nasm
 LINK        = ar cru
-OBJPATH     = $(topdir)/obj
+OBJPATH     = $(topdir)/objs
 LIBPATH     = $(OBJPATH)/$(BUILD)/lib
 DEBUG_LIBPATH     = $(OBJPATH)/debug/lib
 RELEASE_LIBPATH   = $(OBJPATH)/release/lib
 ifeq ($(OS),Darwin)
-STATIC_LIB_SUFFIX = a
-DYNAMIC_LIB_SUFFIX = dylib
+    STATIC_LIB_SUFFIX = a
+    DYNAMIC_LIB_SUFFIX = dylib
+else ifeq ($(findstring MINGW,$(OS)),MINGW)
+    STATIC_LIB_SUFFIX = a
+    DYNAMIC_LIB_SUFFIX = dll
 else
-STATIC_LIB_SUFFIX = a
-DYNAMIC_LIB_SUFFIX = so
+    STATIC_LIB_SUFFIX = a
+    DYNAMIC_LIB_SUFFIX = so
 endif
 STATIC_LIB_NAME     = $(LIB_NAME).$(STATIC_LIB_SUFFIX)
 DYNAMIC_LIB_NAME    = $(LIB_NAME).$(DYNAMIC_LIB_SUFFIX)
@@ -51,9 +55,9 @@ DEBUG_DYNAMIC_LIB   = $(DEBUG_LIBPATH)/$(DYNAMIC_LIB_NAME)
 RELEASE_STATIC_LIB  = $(RELEASE_LIBPATH)/$(STATIC_LIB_NAME)
 RELEASE_DYNAMIC_LIB = $(RELEASE_LIBPATH)/$(DYNAMIC_LIB_NAME)
 ifeq ($(OS),Darwin)
-LINKD       = $(CC) -dynamiclib -flat_namespace -undefined suppress -install_name $(DYNAMIC_LIB)
+    LINKD       = $(CC) -dynamiclib -flat_namespace -undefined suppress -install_name $(DYNAMIC_LIB)
 else
-LINKD       = $(CC) -shared
+    LINKD       = $(CC) -shared
 endif
 
 debug   : CFLAGS = -g -O0 -DDEBUG $(CONFIG_CFLAGS) $(DEBUG_CFLAGS) -W -Wall -Wmissing-prototypes -Wstrict-prototypes -DVERSION=$(VERSION) $(DEFINES) $(INCLUDES)

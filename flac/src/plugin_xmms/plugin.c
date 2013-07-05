@@ -1,5 +1,6 @@
 /* libxmms-flac - XMMS FLAC input plugin
- * Copyright (C) 2000,2001,2002,2003,2004,2005,2006,2007,2008  Josh Coalson
+ * Copyright (C) 2000-2009  Josh Coalson
+ * Copyright (C) 2011-2013  Xiph.Org Foundation
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -11,14 +12,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "plugin.h"
 
 #include <limits.h>
 #include <pthread.h>
@@ -404,8 +403,9 @@ void FLAC_XMMS__get_song_info(char *filename, char **title, int *length_in_msec)
 					*title = NULL;
 				}
 				else {
-					*title = g_malloc(strlen(errtitle) + 1 + strlen(filename) + 1 + 1);
-					sprintf(*title, "%s\"%s\"", errtitle, filename);
+					size_t len = strlen(errtitle) + 1 + strlen(filename) + 1 + 1;
+					*title = g_malloc(len);
+					flac_snprintf(*title, len, "%s\"%s\"", errtitle, filename);
 				}
 			} else {
 				*title = NULL;
