@@ -16,3 +16,5 @@ CUETools.AVX/x64
 CUETools/TestResults/
 *.csproj.user
 bin/
+flac/src/libFLAC/ia32/*.obj
+CUETools/ipch/
