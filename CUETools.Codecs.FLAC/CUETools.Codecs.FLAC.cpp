@@ -454,7 +454,6 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 		{ 
 		    _md5Sum = true;
 		    _verify = false;
-		    _disableAsm = false;
 		}
 
 		[DefaultValue(false)]
@@ -481,20 +480,8 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			}
 		}
 
-		[DefaultValue(false)]
-		[DisplayName("Disable ASM")]
-		[Description("Disable MMX/SSE optimizations")]
-		property bool DisableAsm {
-			bool get() {
-				return _disableAsm;
-			}
-			void set(bool value) {
-				_disableAsm = value;
-			}
-		}
-
 	    private:
-		bool _md5Sum, _verify, _disableAsm;
+		bool _md5Sum, _verify;
 	};
 	
 	[AudioEncoderClass("libFLAC", "flac", true, 2, FLACWriterSettings::typeid)]
