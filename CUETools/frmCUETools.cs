@@ -1323,7 +1323,7 @@ namespace JDP
 
         private bool CheckWriteOffset()
         {
-            if (numericWriteOffset.Value == 0 || SelectedOutputAudioType == AudioEncoderType.NoAudio || rbActionVerify.Checked)
+            if (!rbActionEncode.Checked || SelectedOutputAudioType == AudioEncoderType.NoAudio || numericWriteOffset.Value == 0)
             {
                 return true;
             }
