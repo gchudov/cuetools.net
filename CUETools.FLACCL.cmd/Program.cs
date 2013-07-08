@@ -43,7 +43,8 @@ namespace CUETools.FLACCL.cmd
             Console.WriteLine(" --verify              Verify during encoding");
 			Console.WriteLine(" --no-md5              Don't compute MD5 hash");
 			Console.WriteLine(" --no-seektable        Don't generate a seektable");
-			Console.WriteLine(" --cpu-threads         Use additional CPU threads");
+            Console.WriteLine(" --ignore-chunk-sizes  Ignore WAV length (for pipe input)");
+            Console.WriteLine(" --cpu-threads         Use additional CPU threads");
 			Console.WriteLine();
 			Console.WriteLine("OpenCL Options:");
 			Console.WriteLine();
@@ -94,6 +95,7 @@ namespace CUETools.FLACCL.cmd
 			bool buffered = false;
 			bool ok = true;
             bool allowNonSubset = false;
+            bool ignore_chunk_sizes = false;
 			int intarg;
 
 			for (int arg = 0; arg < args.Length; arg++)
@@ -106,9 +108,11 @@ namespace CUETools.FLACCL.cmd
 					quiet = true;
 				else if (args[arg] == "--verify")
 					settings.DoVerify = true;
-				else if (args[arg] == "--no-seektable")
+                else if (args[arg] == "--no-seektable")
 					do_seektable = false;
-				else if (args[arg] == "--slow-gpu")
+                else if (args[arg] == "--ignore-chunk-sizes")
+                    ignore_chunk_sizes = true;
+                else if (args[arg] == "--slow-gpu")
 					settings.GPUOnly = false;
 				else if (args[arg] == "--fast-gpu")
 					settings.DoRice = true;
@@ -238,7 +242,7 @@ namespace CUETools.FLACCL.cmd
 			try
 			{
 				if (input_file == "-")
-					audioSource = new WAVReader("", Console.OpenStandardInput());
+					audioSource = new WAVReader("", Console.OpenStandardInput(), ignore_chunk_sizes);
 				else if (input_file == "nul")
 					audioSource = new SilenceGenerator(new AudioPCMConfig(input_bps, input_ch, input_rate), input_len, input_val);
 				else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
@@ -337,11 +341,12 @@ namespace CUETools.FLACCL.cmd
 					{
 						if ((elapsed - lastPrint).TotalMilliseconds > 60)
 						{
-							Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
-								100.0 * audioSource.Position / audioSource.Length,
+                            long length = Math.Max(audioSource.Position, audioSource.Length);
+                            Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
+                                100.0 * audioSource.Position / length,
 								audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
 								elapsed,
-								TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
+                                TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * length)
 								);
 							lastPrint = elapsed;
 						}

@@ -100,6 +100,7 @@ namespace CUETools.FlakeExe
             Console.WriteLine(" --verify             Verify during encoding.");
             Console.WriteLine(" --no-md5             Don't compute MD5 hash.");
             Console.WriteLine(" --no-seektable       Don't generate a seektable.");
+            Console.WriteLine(" --ignore-chunk-sizes  Ignore WAV length (for pipe input)");
             Console.WriteLine();
             Console.WriteLine("Advanced Options:");
             Console.WriteLine();
@@ -147,6 +148,7 @@ namespace CUETools.FlakeExe
             string coeffs = null;
             var settings = new FlakeWriterSettings() { AllowNonSubset = true };
             bool allowNonSubset = false;
+            bool ignore_chunk_sizes = false;
 #if FINETUNE
             int finetune_depth = -1;
 #endif
@@ -164,6 +166,8 @@ namespace CUETools.FlakeExe
                     settings.DoVerify = true;
                 else if (args[arg] == "--no-seektable")
                     do_seektable = false;
+                else if (args[arg] == "--ignore-chunk-sizes")
+                    ignore_chunk_sizes = true;
                 else if (args[arg] == "--no-md5")
                     settings.DoMD5 = false;
                 else if (args[arg] == "--lax")
@@ -321,7 +325,7 @@ namespace CUETools.FlakeExe
 
                             IAudioSource audioSource;
                             if (input_file == "-")
-                                audioSource = new WAVReader("", Console.OpenStandardInput());
+                                audioSource = new WAVReader("", Console.OpenStandardInput(), ignore_chunk_sizes);
                             else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
                                 audioSource = new WAVReader(input_file, null);
                             else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
@@ -346,7 +350,7 @@ namespace CUETools.FlakeExe
                                     output_file == "-" ? Console.OpenStandardOutput() :
                                     output_file == "nul" ? new NullStream() : null,
                                     settings);
-                                flake.FinalSampleCount = audioSource.Length - skip_a - skip_b;
+                                flake.FinalSampleCount = audioSource.Length < 0 ? -1 : audioSource.Length - skip_a - skip_b;
 
                                 if (prediction_type != null)
                                     flake.PredictionType = Flake.LookupPredictionType(prediction_type);
@@ -412,11 +416,12 @@ namespace CUETools.FlakeExe
                                     {
                                         if ((elapsed - lastPrint).TotalMilliseconds > 60)
                                         {
+                                            long length = Math.Max(audioSource.Position, audioSource.Length);
                                             Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
-                                                100.0 * audioSource.Position / audioSource.Length,
+                                                100.0 * audioSource.Position / length,
                                                 audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
                                                 elapsed,//.ToString(@"[-][d’.’]hh’:’mm’:’ss[‘.’ff]"),
-                                                TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * audioSource.Length)
+                                                TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * length)
                                                 );
                                             lastPrint = elapsed;
                                         }

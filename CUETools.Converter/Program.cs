@@ -19,6 +19,7 @@ namespace CUETools.Converter
             Console.Error.WriteLine(" --encoder-format <ext> Use encoder format different from file extension.");
             Console.Error.WriteLine(" --lossy                Use lossy encoder/mode.");
             Console.Error.WriteLine(" --lossless             Use lossless encoder/mode (default).");
+            Console.Error.WriteLine(" --ignore-chunk-sizes   Ignore WAV length (for pipe input)");
             Console.Error.WriteLine(" -p #                   Padding bytes.");
             Console.Error.WriteLine(" -m <mode>              Encoder mode (0..8 for flac, V0..V9 for mp3, etc)");
             Console.Error.WriteLine();
@@ -32,10 +33,10 @@ namespace CUETools.Converter
                 (lossless ? fmt.encoderLossless : fmt.encoderLossy);
         }
 
-        public static IAudioSource GetAudioSource(CUEToolsCodecsConfig config, string path, string chosenDecoder)
+        public static IAudioSource GetAudioSource(CUEToolsCodecsConfig config, string path, string chosenDecoder, bool ignore_chunk_sizes)
         {
             if (path == "-")
-                return new WAVReader("", Console.OpenStandardInput());
+                return new WAVReader("", Console.OpenStandardInput(), ignore_chunk_sizes);
             string extension = Path.GetExtension(path).ToLower();
             Stream IO = null;
             if (extension == ".bin")
@@ -78,11 +79,15 @@ namespace CUETools.Converter
             string decoderName = null;
             string encoderName = null;
             string encoderFormat = null;
+            bool ignore_chunk_sizes = false;
             AudioEncoderType audioEncoderType = AudioEncoderType.NoAudio;
+
             for (int arg = 0; arg < args.Length; arg++)
             {
                 if (args[arg].Length == 0)
                     ok = false;
+                else if (args[arg] == "--ignore-chunk-sizes")
+                    ignore_chunk_sizes = true;
                 else if (args[arg] == "--decoder" && ++arg < args.Length)
                     decoderName = args[arg];
                 else if (args[arg] == "--encoder" && ++arg < args.Length)
@@ -137,7 +142,7 @@ namespace CUETools.Converter
 
                 try
                 {
-                    audioSource = Program.GetAudioSource(config, sourceFile, decoderName);
+                    audioSource = Program.GetAudioSource(config, sourceFile, decoderName, ignore_chunk_sizes);
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);
                     Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));

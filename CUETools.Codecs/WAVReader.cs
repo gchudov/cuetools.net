@@ -74,6 +74,11 @@ namespace CUETools.Codecs
         public string Path { get { return _path; } }
 
         public WAVReader(string path, Stream IO)
+            : this(path, IO, false)
+        {
+        }
+
+        public WAVReader(string path, Stream IO, bool ignore_chunk_sizes)
         {
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
@@ -81,7 +86,7 @@ namespace CUETools.Codecs
 
             ParseHeaders();
 
-            if (_dataLen < 0)
+            if (_dataLen < 0 || ignore_chunk_sizes)
                 _sampleLen = -1;
             else
                 _sampleLen = _dataLen / pcm.BlockAlign;
