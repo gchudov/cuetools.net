@@ -97,7 +97,6 @@ namespace JDP {
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.labelPregap = new System.Windows.Forms.Label();
             this.lblWriteOffset = new System.Windows.Forms.Label();
-            this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
             this.txtPreGapLength = new System.Windows.Forms.MaskedTextBox();
             this.labelDataTrack = new System.Windows.Forms.Label();
             this.txtDataTrackLength = new System.Windows.Forms.MaskedTextBox();
@@ -129,6 +128,7 @@ namespace JDP {
             this.updateLocalDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.locateInExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorkerAddToLocalDB = new System.ComponentModel.BackgroundWorker();
+            this.textBoxOffset = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -151,7 +151,6 @@ namespace JDP {
             this.grpAction.SuspendLayout();
             this.grpExtra.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).BeginInit();
             this.panelGo.SuspendLayout();
             this.toolStripMenu.SuspendLayout();
             this.contextMenuStripFileTree.SuspendLayout();
@@ -793,10 +792,10 @@ namespace JDP {
             resources.ApplyResources(this.tableLayoutPanel4, "tableLayoutPanel4");
             this.tableLayoutPanel4.Controls.Add(this.labelPregap, 0, 0);
             this.tableLayoutPanel4.Controls.Add(this.lblWriteOffset, 0, 2);
-            this.tableLayoutPanel4.Controls.Add(this.numericWriteOffset, 1, 2);
             this.tableLayoutPanel4.Controls.Add(this.txtPreGapLength, 1, 0);
             this.tableLayoutPanel4.Controls.Add(this.labelDataTrack, 0, 1);
             this.tableLayoutPanel4.Controls.Add(this.txtDataTrackLength, 1, 1);
+            this.tableLayoutPanel4.Controls.Add(this.textBoxOffset, 1, 2);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             // 
             // labelPregap
@@ -808,22 +807,6 @@ namespace JDP {
             // 
             resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
             this.lblWriteOffset.Name = "lblWriteOffset";
-            // 
-            // numericWriteOffset
-            // 
-            resources.ApplyResources(this.numericWriteOffset, "numericWriteOffset");
-            this.numericWriteOffset.Maximum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            0});
-            this.numericWriteOffset.Minimum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            -2147483648});
-            this.numericWriteOffset.Name = "numericWriteOffset";
-            this.toolTip1.SetToolTip(this.numericWriteOffset, resources.GetString("numericWriteOffset.ToolTip"));
             // 
             // txtPreGapLength
             // 
@@ -1059,6 +1042,13 @@ namespace JDP {
             this.backgroundWorkerAddToLocalDB.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerAddToLocalDB_DoWork);
             this.backgroundWorkerAddToLocalDB.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerAddToLocalDB_RunWorkerCompleted);
             // 
+            // textBoxOffset
+            // 
+            resources.ApplyResources(this.textBoxOffset, "textBoxOffset");
+            this.textBoxOffset.Name = "textBoxOffset";
+            this.textBoxOffset.TextChanged += new System.EventHandler(this.textBoxOffset_TextChanged);
+            this.textBoxOffset.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxOffset_KeyPress);
+            // 
             // frmCUETools
             // 
             resources.ApplyResources(this, "$this");
@@ -1103,7 +1093,6 @@ namespace JDP {
             this.grpExtra.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericWriteOffset)).EndInit();
             this.panelGo.ResumeLayout(false);
             this.toolStripMenu.ResumeLayout(false);
             this.toolStripMenu.PerformLayout();
@@ -1141,8 +1130,7 @@ namespace JDP {
 		private System.Windows.Forms.ToolStripMenuItem setAsMyMusicFolderToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem SelectedNodeName;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-		private System.Windows.Forms.ToolStripMenuItem resetToOriginalLocationToolStripMenuItem;
-		private System.Windows.Forms.NumericUpDown numericWriteOffset;
+        private System.Windows.Forms.ToolStripMenuItem resetToOriginalLocationToolStripMenuItem;
 		private System.Windows.Forms.Label lblWriteOffset;
 		private System.Windows.Forms.TextBox textBatchReport;
 		private System.Windows.Forms.ComboBox comboBoxAudioFormat;
@@ -1218,6 +1206,7 @@ namespace JDP {
         private System.Windows.Forms.ToolStripMenuItem updateLocalDatabaseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem locateInExplorerToolStripMenuItem;
         private System.Windows.Forms.Button buttonEncoderSettings;
+        private System.Windows.Forms.TextBox textBoxOffset;
 	}
 }
 

@@ -491,7 +491,7 @@ namespace JDP
                 cueSheet.PasswordRequired += new EventHandler<CompressionPasswordRequiredEventArgs>(PasswordRequired);
                 cueSheet.CUEToolsProgress += new EventHandler<CUEToolsProgressEventArgs>(SetStatus);
                 cueSheet.CUEToolsSelection += new EventHandler<CUEToolsSelectionEventArgs>(MakeSelection);
-                cueSheet.WriteOffset = (int)numericWriteOffset.Value;
+                cueSheet.WriteOffset = Int32.Parse(textBoxOffset.Text);
 
                 object[] p = new object[7];
 
@@ -1323,7 +1323,7 @@ namespace JDP
 
         private bool CheckWriteOffset()
         {
-            if (!rbActionEncode.Checked || SelectedOutputAudioType == AudioEncoderType.NoAudio || numericWriteOffset.Value == 0)
+            if (!rbActionEncode.Checked || SelectedOutputAudioType == AudioEncoderType.NoAudio || 0 == Int32.Parse(textBoxOffset.Text))
             {
                 return true;
             }
@@ -1341,7 +1341,7 @@ namespace JDP
             SelectedOutputAudioFormat = _profile._outputAudioFormat;
             SelectedAction = _profile._action;
             SelectedCUEStyle = _profile._CUEStyle;
-            numericWriteOffset.Value = _profile._writeOffset;
+            textBoxOffset.Text = _profile._writeOffset.ToString();
             comboBoxOutputFormat.Text = _profile._outputTemplate ?? comboBoxOutputFormat.Items[0].ToString();
             toolStripDropDownButtonProfile.Text = _profile._name;
             SelectedScript = _profile._script;
@@ -1388,7 +1388,7 @@ namespace JDP
             _profile._outputAudioFormat = SelectedOutputAudioFormat;
             _profile._action = SelectedAction;
             _profile._CUEStyle = SelectedCUEStyle;
-            _profile._writeOffset = (int)numericWriteOffset.Value;
+            _profile._writeOffset = Int32.Parse(textBoxOffset.Text);
             _profile._outputTemplate = comboBoxOutputFormat.Text;
             _profile._script = SelectedScript;
             _profile._editTags = checkBoxEditTags.Checked;
@@ -2722,6 +2722,36 @@ namespace JDP
                 settingsForm.ShowDialog(this);
             }
             SelectedOutputAudioType = SelectedOutputAudioType;
+        }
+
+        private void textBoxOffset_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar)
+                && !char.IsDigit(e.KeyChar)
+                && e.KeyChar != '-')
+            {
+                e.Handled = true;
+            }
+            base.OnKeyPress(e);
+        }
+
+        private void textBoxOffset_TextChanged(object sender, EventArgs e)
+        {
+            int res;
+            var sb = new StringBuilder();
+            foreach (var c in textBoxOffset.Text.ToCharArray())
+                if (char.IsDigit(c) || (c == '-' && sb.Length == 0))
+                    sb.Append(c);
+            if (textBoxOffset.Text != sb.ToString())
+                textBoxOffset.Text = sb.ToString();
+            if (!int.TryParse(textBoxOffset.Text, out res))
+                textBoxOffset.Text = "0";
+            else
+            {
+                res = Math.Max(-9999,Math.Min(res, 9999));
+                if (textBoxOffset.Text != res.ToString() && textBoxOffset.Text != "-0")
+                    textBoxOffset.Text = res.ToString();
+            }
         }
     }
 }
