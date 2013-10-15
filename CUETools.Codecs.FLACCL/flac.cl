@@ -796,7 +796,7 @@ void clQuantizeLPC(
         int cbits = min(51 - 2 * clz(shared.task.blocksize), shared.task.abits) - minprecision + (i - ((i >> precisions) << precisions));
 #if BITS_PER_SAMPLE <= 16
 	// Limit cbits so that 32-bit arithmetics will be enough when calculating residual
-        cbits = min(cbits, clz(order) + 1 - shared.task.obits);
+        cbits = min(cbits, clz(order + 1) + 1 - shared.task.obits);
 #endif
         cbits = clamp(cbits, 3, 15);
 
@@ -1584,7 +1584,7 @@ void clCalcPartition32(
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// we must ensure that psize * (t >> k) doesn't overflow;
-	uint4 lim = 0x07ffffffU;
+	uint4 lim = 0x03ffffffU;
 	int x = tid >> 5;
 	__local uint * chunk = &res[x << 5];
 	// calc number of unary bits for each group of 32 residual samples
@@ -1984,7 +1984,6 @@ void clCalcOutputOffsets(
     int firstFrame
     )
 {
-    const int channels = 2;
     __local FLACCLSubframeData ltasks[MAX_CHANNELS];
     __local volatile int mypos[MAX_CHANNELS];
     int offset = 0;
@@ -2153,15 +2152,17 @@ void clRiceEncoding(
     {
 	int offs = pos + tid;
 	int iv = residual[task.residualOffs + offs];
-	int part = offs / plen; // >> plenoffs;
+	int part = offs / plen;
+	//int part = offs >> plenoffs;
 #if 0
 	int k = brp[part];
 #else
 	int k = best_rice_parameters[(get_group_id(0) << max_porder) + part];
 #endif
-	int pstart = offs == task.residualOrder || offs == part * plen;
+	int pstart = offs == part * plen;
+        //int pstart = offs == part << plenoffs;
 	uint v = (iv << 1) ^ (iv >> 31);
-	int mylen = select(0, (int)(v >> k) + 1 + k + select(0, RICE_PARAM_BITS, pstart), offs >= task.residualOrder && offs < bs);
+	int mylen = select(0, (int)(v >> k) + 1 + k, offs >= task.residualOrder && offs < bs) + select(0, RICE_PARAM_BITS, pstart);
 	mypos[tid] = mylen;
 
 	// Inclusive scan(+)
@@ -2187,19 +2188,19 @@ void clRiceEncoding(
 	//    printf("Oops: %d\n", mypos[tid]);
 	data[tid] = select(0U, remainder, tid == 0);
 	barrier(CLK_LOCAL_MEM_FENCE);
-	if (mylen)
+	if (pstart)
 	{
-	    if (pstart)
-	    {
-		int kpos = mp - mylen;
-		int kpos0 = (kpos >> 5) - start32;
-		int kpos1 = kpos & 31;
-		uint kval = (uint)k << (32 - RICE_PARAM_BITS);
-		uint kval0 = kval >> kpos1;
-		uint kval1 = kval << (32 - kpos1);
-		if (kval0) atomic_or(&data[kpos0], kval0);
-		if (kpos1 && kval1) atomic_or(&data[kpos0 + 1], kval1);
-	    }
+	    int kpos = mp - mylen;
+	    int kpos0 = (kpos >> 5) - start32;
+	    int kpos1 = kpos & 31;
+	    uint kval = (uint)k << (32 - RICE_PARAM_BITS);
+	    uint kval0 = kval >> kpos1;
+	    uint kval1 = kval << (32 - kpos1);
+	    if (kval0) atomic_or(&data[kpos0], kval0);
+	    if (kpos1 && kval1) atomic_or(&data[kpos0 + 1], kval1);
+	}
+        if (offs >= task.residualOrder && offs < bs)
+        {
 	    int qpos = mp - k - 1;
 	    int qpos0 = (qpos >> 5) - start32;
 	    int qpos1 = qpos & 31;
@@ -2208,7 +2209,7 @@ void clRiceEncoding(
 	    uint qval1= qval << (32 - qpos1);
 	    if (qval0) atomic_or(&data[qpos0], qval0);
 	    if (qpos1 && qval1) atomic_or(&data[qpos0 + 1], qval1);
-	}
+        }
 	barrier(CLK_LOCAL_MEM_FENCE);
 	if ((start32 + tid) * 32 <= start)
 	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
@@ -2221,9 +2222,9 @@ void clRiceEncoding(
 	int part = offs / plen; // >> plenoffs;
 	//int k = brp[min(255, part)];
 	int k = offs < bs ? best_rice_parameters[(get_group_id(0) << max_porder) + part] : 0;
-	int pstart = offs == task.residualOrder || offs == part * plen;
+	int pstart = offs == part * plen;
 	uint v = (iv << 1) ^ (iv >> 31);
-	int mylen = select(0, (int)(v >> k) + 1 + k + select(0, RICE_PARAM_BITS, pstart), offs >= task.residualOrder && offs < bs);
+	int mylen = select(0, (int)(v >> k) + 1 + k, offs >= task.residualOrder && offs < bs) + select(0, RICE_PARAM_BITS, pstart);
 	mypos[tid] = mylen;
 	
 	// Inclusive scan(+)
@@ -2248,19 +2249,19 @@ void clRiceEncoding(
 	//    printf("Oops: %d\n", mypos[tid]);
 	data[tid] = select(0U, remainder, tid == 0);
 	barrier(CLK_LOCAL_MEM_FENCE);
-	if (mylen)
+	if (pstart)
 	{
-	    if (pstart)
-	    {
-		int kpos = mp - mylen;
-		int kpos0 = (kpos >> 5) - start32;
-		int kpos1 = kpos & 31;
-		uint kval = (uint)k << (32 - RICE_PARAM_BITS);
-		uint kval0 = kval >> kpos1;
-		uint kval1 = kval << (32 - kpos1);
-		if (kval0) atomic_or(&data[kpos0], kval0);
-		if (kpos1 && kval1) atomic_or(&data[kpos0 + 1], kval1);
-	    }
+	    int kpos = mp - mylen;
+	    int kpos0 = (kpos >> 5) - start32;
+	    int kpos1 = kpos & 31;
+	    uint kval = (uint)k << (32 - RICE_PARAM_BITS);
+	    uint kval0 = kval >> kpos1;
+	    uint kval1 = kval << (32 - kpos1);
+	    if (kval0) atomic_or(&data[kpos0], kval0);
+	    if (kpos1 && kval1) atomic_or(&data[kpos0 + 1], kval1);
+	}
+        if (offs >= task.residualOrder && offs < bs)
+        {
 	    int qpos = mp - k - 1;
 	    int qpos0 = (qpos >> 5) - start32;
 	    int qpos1 = qpos & 31;
