@@ -589,11 +589,25 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
-        public unsafe void EjectDisk()
+        private void DoEjectDisk(Device.StartState action)
+        {
+            EventStatusNotification status;
+            m_device.GetEventStatusNotification(true, Device.NotificationClass.Media, out status);
+            if (status.Valid && status.EventAvailable && status.EventData.Length > 1)
+            {
+                // 0 - tray closed no disc
+                // 1 - tray open
+                // 2 - tray closed, disc
+                action = status.EventData[1] == 1 ? Device.StartState.LoadDisk : Device.StartState.EjectDisk;
+            }
+            m_device.StartStopUnit(true, Device.PowerControl.NoChange, action);
+        }
+
+        public void EjectDisk()
         {
             if (m_device != null)
             {
-                m_device.StartStopUnit(true, Device.PowerControl.NoChange, Device.StartState.EjectDisk);
+                DoEjectDisk(Device.StartState.EjectDisk);
             }
             else
             {
@@ -604,7 +618,7 @@ namespace CUETools.Ripper.SCSI
                     {
                         try
                         {
-                            m_device.StartStopUnit(true, Device.PowerControl.NoChange, Device.StartState.LoadDisk);
+                            DoEjectDisk(Device.StartState.LoadDisk);
                         }
                         finally
                         {
