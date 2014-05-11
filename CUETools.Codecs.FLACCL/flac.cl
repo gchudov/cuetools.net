@@ -796,7 +796,14 @@ void clQuantizeLPC(
         int cbits = min(51 - 2 * clz(shared.task.blocksize), shared.task.abits) - minprecision + (i - ((i >> precisions) << precisions));
 #if BITS_PER_SAMPLE <= 16
 	// Limit cbits so that 32-bit arithmetics will be enough when calculating residual
-        cbits = min(cbits, clz(order + 1) + 1 - shared.task.obits);
+        // (1 << (obits - 1)) * ((1 << (cbits - 1)) - 1) * (order + 1) < (1 << 31)
+        // (1 << (cbits - 1)) - 1 < (1 << (32 - obits)) / (order + 1)
+        // (1 << (cbits - 1)) <= (1 << (32 - obits)) / (order + 1)
+        // (1 << (cbits - 1)) <= (1 << (32 - obits - (32 - clz(order))) <= (1 << (32 - obits)) / (order + 1)
+        // (1 << (cbits - 1)) <= (1 << (clz(order) - obits))
+        // cbits - 1 <= clz(order) - obits
+        // cbits <= clz(order) - obits + 1
+        cbits = min(cbits, clz(order) + 1 - shared.task.obits);
 #endif
         cbits = clamp(cbits, 3, 15);
 
