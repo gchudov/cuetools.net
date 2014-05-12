@@ -3920,168 +3920,6 @@
   <data name="&gt;&gt;tabPage4.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="richTextBoxScript.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Courier New, 8pt</value>
-  </data>
-  <data name="richTextBoxScript.Location" type="System.Drawing.Point, System.Drawing">
-    <value>144, 110</value>
-  </data>
-  <data name="richTextBoxScript.Size" type="System.Drawing.Size, System.Drawing">
-    <value>382, 167</value>
-  </data>
-  <data name="richTextBoxScript.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
-  </data>
-  <data name="richTextBoxScript.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="richTextBoxScript.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="richTextBoxScript.WordWrap" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;richTextBoxScript.Name" xml:space="preserve">
-    <value>richTextBoxScript</value>
-  </data>
-  <data name="&gt;&gt;richTextBoxScript.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;richTextBoxScript.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;richTextBoxScript.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="buttonScriptCompile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="buttonScriptCompile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>422, 19</value>
-  </data>
-  <data name="buttonScriptCompile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="buttonScriptCompile.TabIndex" type="System.Int32, mscorlib">
-    <value>27</value>
-  </data>
-  <data name="buttonScriptCompile.Text" xml:space="preserve">
-    <value>Compile</value>
-  </data>
-  <data name="buttonScriptCompile.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;buttonScriptCompile.Name" xml:space="preserve">
-    <value>buttonScriptCompile</value>
-  </data>
-  <data name="&gt;&gt;buttonScriptCompile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;buttonScriptCompile.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;buttonScriptCompile.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="columnHeader6.Width" type="System.Int32, mscorlib">
-    <value>200</value>
-  </data>
-  <data name="listViewScriptConditions.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 20</value>
-  </data>
-  <data name="listViewScriptConditions.Size" type="System.Drawing.Size, System.Drawing">
-    <value>249, 77</value>
-  </data>
-  <data name="listViewScriptConditions.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;listViewScriptConditions.Name" xml:space="preserve">
-    <value>listViewScriptConditions</value>
-  </data>
-  <data name="&gt;&gt;listViewScriptConditions.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;listViewScriptConditions.Parent" xml:space="preserve">
-    <value>groupBoxScriptConditions</value>
-  </data>
-  <data name="&gt;&gt;listViewScriptConditions.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="groupBoxScriptConditions.Location" type="System.Drawing.Point, System.Drawing">
-    <value>144, 7</value>
-  </data>
-  <data name="groupBoxScriptConditions.Size" type="System.Drawing.Size, System.Drawing">
-    <value>261, 101</value>
-  </data>
-  <data name="groupBoxScriptConditions.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="groupBoxScriptConditions.Text" xml:space="preserve">
-    <value>Conditions</value>
-  </data>
-  <data name="groupBoxScriptConditions.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;groupBoxScriptConditions.Name" xml:space="preserve">
-    <value>groupBoxScriptConditions</value>
-  </data>
-  <data name="&gt;&gt;groupBoxScriptConditions.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBoxScriptConditions.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;groupBoxScriptConditions.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="columnHeader5.Width" type="System.Int32, mscorlib">
-    <value>120</value>
-  </data>
-  <data name="listViewScripts.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 6</value>
-  </data>
-  <data name="listViewScripts.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 271</value>
-  </data>
-  <data name="listViewScripts.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;listViewScripts.Name" xml:space="preserve">
-    <value>listViewScripts</value>
-  </data>
-  <data name="&gt;&gt;listViewScripts.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;listViewScripts.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;listViewScripts.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="tabPage5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 22</value>
-  </data>
-  <data name="tabPage5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>535, 291</value>
-  </data>
-  <data name="tabPage5.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="tabPage5.Text" xml:space="preserve">
-    <value>Scripts</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.Name" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.Parent" xml:space="preserve">
-    <value>tabControl1</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
   <data name="propertyGrid1.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 6</value>
   </data>
@@ -4128,7 +3966,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage7.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>7</value>
   </data>
   <data name="tabControl1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
@@ -4278,18 +4116,6 @@
     <value>columnHeader1</value>
   </data>
   <data name="&gt;&gt;columnHeader1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;columnHeader6.Name" xml:space="preserve">
-    <value>columnHeader6</value>
-  </data>
-  <data name="&gt;&gt;columnHeader6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;columnHeader5.Name" xml:space="preserve">
-    <value>columnHeader5</value>
-  </data>
-  <data name="&gt;&gt;columnHeader5.Type" xml:space="preserve">
     <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;columnHeader2.Name" xml:space="preserve">

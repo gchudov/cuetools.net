@@ -100,6 +100,7 @@ namespace JDP {
             this.txtPreGapLength = new System.Windows.Forms.MaskedTextBox();
             this.labelDataTrack = new System.Windows.Forms.Label();
             this.txtDataTrackLength = new System.Windows.Forms.MaskedTextBox();
+            this.textBoxOffset = new System.Windows.Forms.TextBox();
             this.panelGo = new System.Windows.Forms.Panel();
             this.btnConvert = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
@@ -128,7 +129,6 @@ namespace JDP {
             this.updateLocalDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.locateInExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorkerAddToLocalDB = new System.ComponentModel.BackgroundWorker();
-            this.textBoxOffset = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -833,6 +833,13 @@ namespace JDP {
             this.txtDataTrackLength.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
             this.toolTip1.SetToolTip(this.txtDataTrackLength, resources.GetString("txtDataTrackLength.ToolTip"));
             // 
+            // textBoxOffset
+            // 
+            resources.ApplyResources(this.textBoxOffset, "textBoxOffset");
+            this.textBoxOffset.Name = "textBoxOffset";
+            this.textBoxOffset.TextChanged += new System.EventHandler(this.textBoxOffset_TextChanged);
+            this.textBoxOffset.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxOffset_KeyPress);
+            // 
             // panelGo
             // 
             this.panelGo.Controls.Add(this.btnConvert);
@@ -1041,13 +1048,6 @@ namespace JDP {
             // 
             this.backgroundWorkerAddToLocalDB.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerAddToLocalDB_DoWork);
             this.backgroundWorkerAddToLocalDB.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerAddToLocalDB_RunWorkerCompleted);
-            // 
-            // textBoxOffset
-            // 
-            resources.ApplyResources(this.textBoxOffset, "textBoxOffset");
-            this.textBoxOffset.Name = "textBoxOffset";
-            this.textBoxOffset.TextChanged += new System.EventHandler(this.textBoxOffset_TextChanged);
-            this.textBoxOffset.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxOffset_KeyPress);
             // 
             // frmCUETools
             // 

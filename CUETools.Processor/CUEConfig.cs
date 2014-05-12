@@ -148,62 +148,16 @@ namespace CUETools.Processor
             language = Thread.CurrentThread.CurrentUICulture.Name;
 
             scripts = new Dictionary<string, CUEToolsScript>();
-            scripts.Add("default", new CUEToolsScript("default", true,
-                new CUEAction[] { CUEAction.Verify, CUEAction.Encode },
-                "return processor.Go();"));
-            scripts.Add("only if found", new CUEToolsScript("only if found", true,
-                new CUEAction[] { CUEAction.Verify },
-@"if (processor.ArVerify.AccResult != HttpStatusCode.OK)
-	return processor.WriteReport(); 
-return processor.Go();"));
-            scripts.Add("fix offset", new CUEToolsScript("fix offset", true,
-                new CUEAction[] { CUEAction.Encode },
-@"if (processor.ArVerify.AccResult != HttpStatusCode.OK)
-    return processor.WriteReport(); 
-processor.WriteOffset = 0;
-processor.Action = CUEAction.Verify;
-string status = processor.Go();
-uint tracksMatch;
-int bestOffset;
-processor.FindBestOffset(processor.Config.fixOffsetMinimumConfidence, !processor.Config.fixOffsetToNearest, out tracksMatch, out bestOffset);
-if (tracksMatch * 100 < processor.Config.fixOffsetMinimumTracksPercent * processor.TrackCount)
-    return status;
-processor.WriteOffset = bestOffset;
-processor.Action = CUEAction.Encode;
-//MessageBox.Show(null, processor.AccurateRipLog, " + "\"Done\"" + @"MessageBoxButtons.OK, MessageBoxIcon.Information);
-return processor.Go();
-"));
-            scripts.Add("encode if verified", new CUEToolsScript("encode if verified", true,
-                new CUEAction[] { CUEAction.Encode },
-@"if (processor.ArVerify.AccResult != HttpStatusCode.OK)
-    return processor.WriteReport();
-processor.Action = CUEAction.Verify;
-string status = processor.Go();
-uint tracksMatch;
-int bestOffset;
-processor.FindBestOffset(processor.Config.encodeWhenConfidence, false, out tracksMatch, out bestOffset);
-if (tracksMatch * 100 < processor.Config.encodeWhenPercent * processor.TrackCount || (processor.Config.encodeWhenZeroOffset && bestOffset != 0))
-    return status;
-processor.Action = CUEAction.Encode;
-return processor.Go();
-"));
-            scripts.Add("repair", new CUEToolsScript("repair", true,
-                new CUEAction[] { CUEAction.Encode },
-@"
-processor.UseCUEToolsDB();
-processor.Action = CUEAction.Verify;
-if (processor.CTDB.DBStatus != null)
-	return CTDB.DBStatus;
-processor.Go();
-processor.CTDB.DoVerify();
-if (!processor.CTDB.Verify.HasErrors)
-	return ""nothing to fix"";
-if (!processor.CTDB.Verify.CanRecover)
-	return ""cannot fix"";
-processor._useCUEToolsDBFix = true;
-processor.Action = CUEAction.Encode;
-return processor.Go();
-"));
+            scripts.Add("default", new CUEToolsScript("default",
+                new CUEAction[] { CUEAction.Verify, CUEAction.Encode }));
+            scripts.Add("only if found", new CUEToolsScript("only if found",
+                new CUEAction[] { CUEAction.Verify }));
+            scripts.Add("fix offset", new CUEToolsScript("fix offset",
+                new CUEAction[] { CUEAction.Encode }));
+            scripts.Add("encode if verified", new CUEToolsScript("encode if verified",
+                new CUEAction[] { CUEAction.Encode }));
+            scripts.Add("repair", new CUEToolsScript("repair",
+                new CUEAction[] { CUEAction.Encode }));
             defaultVerifyScript = "default";
             defaultEncodeScript = "default";
         }
@@ -322,7 +276,6 @@ return processor.Go();
             foreach (KeyValuePair<string, CUEToolsScript> script in scripts)
             {
                 sw.Save(string.Format("CustomScript{0}Name", nScripts), script.Key);
-                sw.SaveText(string.Format("CustomScript{0}Code", nScripts), script.Value.code);
                 int nCondition = 0;
                 foreach (CUEAction action in script.Value.conditions)
                     sw.Save(string.Format("CustomScript{0}Condition{1}", nScripts, nCondition++), (int)action);
@@ -491,31 +444,6 @@ return processor.Go();
                         format.allowLossless = allowLossless;
                         format.allowLossy = allowLossy;
                         format.allowEmbed = allowEmbed;
-                    }
-                }
-            }
-
-            int totalScripts = sr.LoadInt32("CustomScripts", 0, null) ?? 0;
-            for (int nScripts = 0; nScripts < totalScripts; nScripts++)
-            {
-                string name = sr.Load(string.Format("CustomScript{0}Name", nScripts));
-                string code = sr.Load(string.Format("CustomScript{0}Code", nScripts));
-                List<CUEAction> conditions = new List<CUEAction>();
-                int totalConditions = sr.LoadInt32(string.Format("CustomScript{0}Conditions", nScripts), 0, null) ?? 0;
-                for (int nCondition = 0; nCondition < totalConditions; nCondition++)
-                    conditions.Add((CUEAction)sr.LoadInt32(string.Format("CustomScript{0}Condition{1}", nScripts, nCondition), 0, null));
-                CUEToolsScript script;
-                if (!scripts.TryGetValue(name, out script))
-                {
-                    if (name != "submit")
-                        scripts.Add(name, new CUEToolsScript(name, false, conditions, code));
-                }
-                else
-                {
-                    if (!script.builtin)
-                    {
-                        script.code = code;
-                        script.conditions = conditions;
                     }
                 }
             }

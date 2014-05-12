@@ -138,17 +138,6 @@ namespace JDP
 			comboBoxFormatTagger.Items.Add(CUEToolsTagger.TagLibSharp);
 			comboBoxFormatTagger.Items.Add(CUEToolsTagger.APEv2);
 			comboBoxFormatTagger.Items.Add(CUEToolsTagger.ID3v2);
-			foreach (KeyValuePair<string, CUEToolsScript> script in _config.scripts)
-			{
-				ListViewItem item = new ListViewItem(script.Key);
-				item.Tag = script.Value;
-				listViewScripts.Items.Add(item);
-			}
-			ComponentResourceManager resources = new ComponentResourceManager(typeof(frmCUETools));
-			listViewScriptConditions.Items.Add(resources.GetString("rbActionVerify.Text").Replace("&", ""));
-			listViewScriptConditions.Items.Add(resources.GetString("rbActionEncode.Text").Replace("&", ""));
-			listViewScriptConditions.Items[0].Tag = CUEAction.Verify;
-			listViewScriptConditions.Items[1].Tag = CUEAction.Encode;
 
             if (m_encoder != null)
             {
@@ -196,8 +185,6 @@ namespace JDP
 		{
 			if (listViewFormats.SelectedIndices.Count > 0)
 				listViewFormats.Items[listViewFormats.SelectedIndices[0]].Selected = false;
-			if (listViewScripts.SelectedItems.Count > 0)
-				listViewScripts.SelectedItems[0].Selected = false;
 
 			_reducePriority = chkReducePriority.Checked;
 			_config.checkForUpdates = checkBoxCheckForUpdates.Checked;
@@ -305,8 +292,6 @@ namespace JDP
 		{
 			if (listViewFormats.SelectedItems.Count > 0)
 				listViewFormats.SelectedItems[0].Selected = false;
-			if (listViewScripts.SelectedItems.Count > 0)
-				listViewScripts.SelectedItems[0].Selected = false;
 		}
 
 		private void listViewFormats_BeforeLabelEdit(object sender, LabelEditEventArgs e)
@@ -553,172 +538,6 @@ namespace JDP
 		private void comboBoxDecoderExtension_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			labelDecoderExtension.ImageKey = "." + (string)comboBoxDecoderExtension.SelectedItem;
-		}
-
-		private void listViewScripts_BeforeLabelEdit(object sender, LabelEditEventArgs e)
-		{
-			CUEToolsScript script = (CUEToolsScript)listViewScripts.Items[e.Item].Tag;
-			if (script.builtin)
-				e.CancelEdit = true;
-		}
-
-		private void listViewScripts_AfterLabelEdit(object sender, LabelEditEventArgs e)
-		{
-			CUEToolsScript script;
-			if (e.Label == null || _config.scripts.TryGetValue(e.Label, out script))
-			{
-				e.CancelEdit = true;
-				return;
-			}
-			script = (CUEToolsScript)listViewScripts.Items[e.Item].Tag;
-			if (script.builtin)
-			{
-				e.CancelEdit = true;
-				return;
-			}
-			_config.scripts.Remove(script.name);
-			script.name = e.Label;
-			_config.scripts.Add(script.name, script);
-		}
-
-		private void listViewScripts_KeyDown(object sender, KeyEventArgs e)
-		{
-			switch (e.KeyCode)
-			{
-				case Keys.Insert:
-					{
-						CUEToolsScript script;
-						if (_config.scripts.TryGetValue("new", out script))
-							return;
-						script = new CUEToolsScript("new", false, new CUEAction[] {}, "");
-						_config.scripts.Add("new", script);
-						ListViewItem item = new ListViewItem(script.name);
-						item.Tag = script;
-						listViewScripts.Items.Add(item);
-						item.BeginEdit();
-						break;
-					}
-				case Keys.Delete:
-					{
-						if (listViewScripts.SelectedItems.Count <= 0)
-							return;
-						CUEToolsScript script = (CUEToolsScript)listViewScripts.SelectedItems[0].Tag;
-						if (script.builtin)
-							return;
-						_config.scripts.Remove(script.name);
-						listViewScripts.Items.Remove(listViewScripts.SelectedItems[0]);
-						break;
-					}
-			}
-		}
-
-		private void listViewScripts_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
-		{
-			if (e.IsSelected)
-			{
-				CUEToolsScript script = (CUEToolsScript)e.Item.Tag;
-				if (script == null) return;
-				foreach (ListViewItem item in listViewScriptConditions.Items)
-					item.Checked = script.conditions.Contains((CUEAction)item.Tag);
-				groupBoxScriptConditions.Visible = true;
-				richTextBoxScript.Text = script.code;
-				richTextBoxScript.Visible = true;
-				buttonScriptCompile.Visible = true;
-
-				groupBoxScriptConditions.Enabled =
-					buttonScriptCompile.Enabled =
-					!script.builtin;
-				richTextBoxScript.ReadOnly = script.builtin;
-			}
-			else
-			{
-				CUEToolsScript script = (CUEToolsScript)e.Item.Tag;
-				if (script == null) return;
-				if (!script.builtin)
-				{
-					script.conditions.Clear();
-					foreach (ListViewItem item in listViewScriptConditions.Items)
-						if (item.Checked)
-							script.conditions.Add((CUEAction)item.Tag);
-					script.code = richTextBoxScript.Text;
-				}
-				groupBoxScriptConditions.Visible = false;
-				richTextBoxScript.Visible = false;
-				buttonScriptCompile.Visible = false;
-			}
-		}
-
-		private static int WordLength(string text, int pos)
-		{
-			if (pos >= text.Length)
-				return 1;
-			if ((text[pos] >= 'a' && text[pos] <= 'z') ||
-				(text[pos] >= 'A' && text[pos] <= 'Z') ||
-				(text[pos] == '_'))
-			{
-				for (int len = 1; len < text.Length - pos; len++)
-				{
-					bool ok = (text[pos + len] >= 'a' && text[pos + len] <= 'z') ||
-						(text[pos + len] >= 'A' && text[pos + len] <= 'Z') ||
-						(text[pos + len] == '_');
-					if (!ok)
-						return len;
-				}
-				return text.Length - pos;
-			}
-			return 1;
-		}
-
-		private void buttonScriptCompile_Click(object sender, EventArgs e)
-		{
-			richTextBoxScript.SelectAll();
-			richTextBoxScript.SelectionColor = richTextBoxScript.ForeColor;
-			richTextBoxScript.DeselectAll();
-			try
-			{
-				CUESheet.TryCompileScript(richTextBoxScript.Text);
-			}
-			catch (Exception ex)
-			{
-				using (StringWriter sw = new StringWriter())
-				{
-					using (StringReader sr = new StringReader(ex.Message))
-					{
-						string lineStr;
-						while ((lineStr = sr.ReadLine()) != null)
-						{
-							string[] s = { ".tmp(" };
-							string[] n = lineStr.Split(s, 2, StringSplitOptions.None);
-							if (n.Length == 2)
-							{
-								string[] n2 = n[1].Split(")".ToCharArray(), 2);
-								if (n2.Length == 2)
-								{
-									string[] n3 = n2[0].Split(",".ToCharArray(), 2);
-									int row, col;
-									if (n3.Length == 2 && int.TryParse(n3[0], out row) && int.TryParse(n3[1], out col) && row > 1)
-									{
-										int pos = richTextBoxScript.GetFirstCharIndexFromLine(row - 2);
-										if (pos >= 0)
-										{
-											pos += col - 1;
-											richTextBoxScript.Select(pos, WordLength(richTextBoxScript.Text, pos));
-											richTextBoxScript.SelectionColor = Color.Red;
-											richTextBoxScript.DeselectAll();
-										}
-									}
-								}
-								sw.WriteLine("({0}", n[1]);
-							}
-							else
-								sw.WriteLine("{0}", lineStr);
-						}
-					}
-					MessageBox.Show(this, sw.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				}
-				return;
-			}
-			MessageBox.Show(this, "Script compiled successfully.", "Ok", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 		private void buttonEncoderAdd_Click(object sender, EventArgs e)

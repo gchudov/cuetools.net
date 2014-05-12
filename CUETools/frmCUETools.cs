@@ -1025,7 +1025,7 @@ namespace JDP
                         if (outputExists.Count == 0)
                         {
                             cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
-                            if (script == null || (script.builtin && script.name == "default"))
+                            if (script == null || script.name == "default")
                             {
                                 status = cueSheet.Go();
                                 if (cueSheet.Config.advanced.CTDBSubmit

@@ -164,14 +164,6 @@ namespace JDP
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.grpHDCD = new System.Windows.Forms.GroupBox();
             this.chkHDCDDetect = new System.Windows.Forms.CheckBox();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.richTextBoxScript = new System.Windows.Forms.RichTextBox();
-            this.buttonScriptCompile = new System.Windows.Forms.Button();
-            this.groupBoxScriptConditions = new System.Windows.Forms.GroupBox();
-            this.listViewScriptConditions = new System.Windows.Forms.ListView();
-            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.listViewScripts = new System.Windows.Forms.ListView();
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.labelFormatDecoder = new System.Windows.Forms.Label();
@@ -217,8 +209,6 @@ namespace JDP
             this.panel2.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.grpHDCD.SuspendLayout();
-            this.tabPage5.SuspendLayout();
-            this.groupBoxScriptConditions.SuspendLayout();
             this.tabPage7.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -668,7 +658,6 @@ namespace JDP
             this.tabControl1.Controls.Add(this.tabPageEncoders);
             this.tabControl1.Controls.Add(this.tabPage11);
             this.tabControl1.Controls.Add(this.tabPage4);
-            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage7);
             this.tabControl1.HotTrack = true;
             this.tabControl1.Multiline = true;
@@ -1316,80 +1305,6 @@ namespace JDP
             this.chkHDCDDetect.UseVisualStyleBackColor = true;
             this.chkHDCDDetect.CheckedChanged += new System.EventHandler(this.chkHDCDDetect_CheckedChanged);
             // 
-            // tabPage5
-            // 
-            this.tabPage5.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage5.Controls.Add(this.richTextBoxScript);
-            this.tabPage5.Controls.Add(this.buttonScriptCompile);
-            this.tabPage5.Controls.Add(this.groupBoxScriptConditions);
-            this.tabPage5.Controls.Add(this.listViewScripts);
-            resources.ApplyResources(this.tabPage5, "tabPage5");
-            this.tabPage5.Name = "tabPage5";
-            // 
-            // richTextBoxScript
-            // 
-            this.richTextBoxScript.AcceptsTab = true;
-            this.richTextBoxScript.DetectUrls = false;
-            resources.ApplyResources(this.richTextBoxScript, "richTextBoxScript");
-            this.richTextBoxScript.Name = "richTextBoxScript";
-            // 
-            // buttonScriptCompile
-            // 
-            resources.ApplyResources(this.buttonScriptCompile, "buttonScriptCompile");
-            this.buttonScriptCompile.Name = "buttonScriptCompile";
-            this.buttonScriptCompile.UseVisualStyleBackColor = true;
-            this.buttonScriptCompile.Click += new System.EventHandler(this.buttonScriptCompile_Click);
-            // 
-            // groupBoxScriptConditions
-            // 
-            this.groupBoxScriptConditions.Controls.Add(this.listViewScriptConditions);
-            resources.ApplyResources(this.groupBoxScriptConditions, "groupBoxScriptConditions");
-            this.groupBoxScriptConditions.Name = "groupBoxScriptConditions";
-            this.groupBoxScriptConditions.TabStop = false;
-            // 
-            // listViewScriptConditions
-            // 
-            this.listViewScriptConditions.BackColor = System.Drawing.SystemColors.Control;
-            this.listViewScriptConditions.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewScriptConditions.CheckBoxes = true;
-            this.listViewScriptConditions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader6});
-            this.listViewScriptConditions.FullRowSelect = true;
-            this.listViewScriptConditions.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            resources.ApplyResources(this.listViewScriptConditions, "listViewScriptConditions");
-            this.listViewScriptConditions.MultiSelect = false;
-            this.listViewScriptConditions.Name = "listViewScriptConditions";
-            this.listViewScriptConditions.UseCompatibleStateImageBehavior = false;
-            this.listViewScriptConditions.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeader6
-            // 
-            resources.ApplyResources(this.columnHeader6, "columnHeader6");
-            // 
-            // listViewScripts
-            // 
-            this.listViewScripts.BackColor = System.Drawing.SystemColors.Control;
-            this.listViewScripts.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewScripts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader5});
-            this.listViewScripts.FullRowSelect = true;
-            this.listViewScripts.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listViewScripts.HideSelection = false;
-            this.listViewScripts.LabelEdit = true;
-            resources.ApplyResources(this.listViewScripts, "listViewScripts");
-            this.listViewScripts.MultiSelect = false;
-            this.listViewScripts.Name = "listViewScripts";
-            this.listViewScripts.UseCompatibleStateImageBehavior = false;
-            this.listViewScripts.View = System.Windows.Forms.View.Details;
-            this.listViewScripts.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewScripts_AfterLabelEdit);
-            this.listViewScripts.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewScripts_BeforeLabelEdit);
-            this.listViewScripts.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewScripts_ItemSelectionChanged);
-            this.listViewScripts.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewScripts_KeyDown);
-            // 
-            // columnHeader5
-            // 
-            resources.ApplyResources(this.columnHeader5, "columnHeader5");
-            // 
             // tabPage7
             // 
             this.tabPage7.BackColor = System.Drawing.SystemColors.Control;
@@ -1495,8 +1410,6 @@ namespace JDP
             this.tabPage4.PerformLayout();
             this.grpHDCD.ResumeLayout(false);
             this.grpHDCD.PerformLayout();
-            this.tabPage5.ResumeLayout(false);
-            this.groupBoxScriptConditions.ResumeLayout(false);
             this.tabPage7.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -1581,14 +1494,6 @@ namespace JDP
         private System.Windows.Forms.CheckBox checkBoxFormatAllowLossy;
         private System.Windows.Forms.ComboBox comboFormatLossyEncoder;
         private System.Windows.Forms.Label labelFormatLossyEncoder;
-        private System.Windows.Forms.TabPage tabPage5;
-        private System.Windows.Forms.GroupBox groupBoxScriptConditions;
-        private System.Windows.Forms.ListView listViewScripts;
-        private System.Windows.Forms.ColumnHeader columnHeader5;
-        private System.Windows.Forms.ListView listViewScriptConditions;
-        private System.Windows.Forms.ColumnHeader columnHeader6;
-        private System.Windows.Forms.Button buttonScriptCompile;
-        private System.Windows.Forms.RichTextBox richTextBoxScript;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.Label label2;
