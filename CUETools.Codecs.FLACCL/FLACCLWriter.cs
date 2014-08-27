@@ -270,6 +270,8 @@ namespace CUETools.Codecs.FLACCL
         string _path;
         long _position;
 
+        public const int MAX_LPC_WINDOWS = 2;
+
         // number of audio channels
         // valid values are 1 to 8
         int channels, ch_code;
@@ -1090,7 +1092,7 @@ namespace CUETools.Codecs.FLACCL
 
         unsafe void calculate_window(FLACCLTask task, window_function func, WindowFunction flag)
         {
-            if ((eparams.window_function & flag) == 0 || task.nWindowFunctions == lpc.MAX_LPC_WINDOWS)
+            if ((eparams.window_function & flag) == 0 || task.nWindowFunctions == MAX_LPC_WINDOWS)
                 return;
 
             func(((float*)task.clWindowFunctionsPtr) + task.nWindowFunctions * task.frameSize, task.frameSize);
@@ -2508,10 +2510,10 @@ namespace CUETools.Codecs.FLACCL
             int residualBufferLen = sizeof(int) * MAX_CHANNELSIZE * channels; // need to adjust residualOffset?
             int partitionsLen = sizeof(int) * ((writer.Settings.PCM.BitsPerSample > 16 ? 31 : 15) * 2 << 8) * channels * MAX_FRAMES;
             int riceParamsLen = sizeof(int) * (4 << 8) * channels * MAX_FRAMES;
-            int autocorLen = sizeof(float) * (MAX_ORDER + 1) * lpc.MAX_LPC_WINDOWS * channelsCount * MAX_FRAMES;
+            int autocorLen = sizeof(float) * (MAX_ORDER + 1) * FLACCLWriter.MAX_LPC_WINDOWS * channelsCount * MAX_FRAMES;
             int lpcDataLen = autocorLen * 32;
-            int resOutLen = sizeof(int) * channelsCount * (lpc.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * MAX_FRAMES;
-            int wndLen = sizeof(float) * MAX_CHANNELSIZE /** 2*/ * lpc.MAX_LPC_WINDOWS;
+            int resOutLen = sizeof(int) * channelsCount * (FLACCLWriter.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * MAX_FRAMES;
+            int wndLen = sizeof(float) * MAX_CHANNELSIZE /** 2*/ * FLACCLWriter.MAX_LPC_WINDOWS;
             int selectedLen = sizeof(int) * 32 * channelsCount * MAX_FRAMES;
             int riceLen = sizeof(int) * channels * MAX_CHANNELSIZE;
 

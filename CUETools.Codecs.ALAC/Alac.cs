@@ -28,7 +28,6 @@ namespace CUETools.Codecs.ALAC
 		public const int MAX_RICE_PARAM = 14;
 		public const int MAX_PARTITION_ORDER = 8;
 		public const int MAX_PARTITIONS = 1 << MAX_PARTITION_ORDER;
-		public const int MAX_LPC_WINDOWS = 4;
 
 		public const uint UINT32_MAX = 0xffffffff;
 

@@ -475,25 +475,45 @@ namespace CUETools.FlakeExe
 
                             if (debug)
                             {
+                                settings = flake.Settings as FlakeWriterSettings;
                                 Console.SetOut(stdout);
-                                Console.Out.WriteLine("{0}\t{1:0.00}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}\t{16}",
+                                Console.Out.WriteLine("{17}\t{0}\t{1:0.00}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}\t{16}\t{18}",
                                     flake.TotalSize,
                                     flake.UserProcessorTime.TotalSeconds > 0 ? flake.UserProcessorTime.TotalSeconds : totalElapsed.TotalSeconds,
                                     flake.PredictionType.ToString().PadRight(15),
                                     flake.StereoMethod.ToString().PadRight(15),
                                     (flake.OrderMethod.ToString() + "(" + flake.EstimationDepth.ToString() + ")").PadRight(15),
-                                    flake.WindowFunction,
-                                    (flake.Settings as FlakeWriterSettings).MinPartitionOrder,
-                                    (flake.Settings as FlakeWriterSettings).MaxPartitionOrder,
-                                    (flake.Settings as FlakeWriterSettings).MinLPCOrder,
-                                    (flake.Settings as FlakeWriterSettings).MaxLPCOrder,
-                                    (flake.Settings as FlakeWriterSettings).MinFixedOrder,
-                                    (flake.Settings as FlakeWriterSettings).MaxFixedOrder,
+                                    (flake.WindowMethod.ToString().PadRight(10) + "(" +
+                                        ((flake.WindowFunction & WindowFunction.Tukey) != 0 ? "T" : " ") +
+                                        ((flake.WindowFunction & WindowFunction.PartialTukey) != 0 ? "P" : " ") +
+                                        (((flake.WindowFunction & WindowFunction.PunchoutTukey) != 0 ? "O" : "") +
+                                        ((flake.WindowFunction & WindowFunction.Welch) == 0 ? "" : "W") +
+                                        ((flake.WindowFunction & WindowFunction.Hann) == 0 ? "" : "H") +
+                                        ((flake.WindowFunction & WindowFunction.Flattop) == 0 ? "" : "F") +
+                                        ((flake.WindowFunction & WindowFunction.Bartlett) == 0 ? "" : "B")).PadRight(1))
+                                         +")",
+                                    settings.MinPartitionOrder,
+                                    settings.MaxPartitionOrder,
+                                    settings.MinLPCOrder,
+                                    settings.MaxLPCOrder,
+                                    settings.MinFixedOrder,
+                                    settings.MaxFixedOrder,
                                     flake.MinPrecisionSearch,
                                     flake.MaxPrecisionSearch,
                                     flake.Settings.BlockSize,
                                     flake.VBRMode,
-                                    coeffs ?? ""
+                                    coeffs ?? "",
+                                    audioSource.Position * audioSource.PCM.BlockAlign,
+                                    (flake.PredictionType == PredictionType.Search && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.EvaluateN && flake.WindowFunction == (WindowFunction.PunchoutTukey | WindowFunction.PartialTukey | WindowFunction.Tukey) && flake.EstimationDepth == 2 && flake.MinPrecisionSearch == 0 && settings.HasDefaultValuesForMode(8)) ? "8" :
+                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.EvaluateN && flake.WindowFunction == (WindowFunction.PunchoutTukey | WindowFunction.PartialTukey | WindowFunction.Tukey) && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(7)) ? "7" :
+                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.EstimateN && flake.WindowFunction == (WindowFunction.PunchoutTukey | WindowFunction.PartialTukey) && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(6)) ? "6" :
+                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PunchoutTukey && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(5)) ? "5" :
+                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Estimate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PunchoutTukey && flake.EstimationDepth == 2 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(4)) ? "4" :
+                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Estimate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PunchoutTukey && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(3)) ? "3" :
+                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Estimate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PartialTukey && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(2)) ? "2" :
+                                    (flake.PredictionType == PredictionType.Fixed && flake.StereoMethod == StereoMethod.Independent && flake.WindowMethod == WindowMethod.Estimate && flake.MinPrecisionSearch == 1 && flake.WindowFunction == WindowFunction.Tukey && settings.HasDefaultValuesForMode(1)) ? "1" :
+                                    (flake.PredictionType == PredictionType.Fixed && flake.StereoMethod == StereoMethod.Independent && flake.WindowMethod == WindowMethod.Estimate && flake.MinPrecisionSearch == 1 && flake.WindowFunction == WindowFunction.Tukey && settings.HasDefaultValuesForMode(0)) ? "0" :
+                                    "?"
                                 );
                             }
 #endif

@@ -2,8 +2,16 @@
 {
     public enum WindowMethod
     {
-        Estimate = 0,
-        Evaluate = 1,
-        Search = 2
+        Evaluate,
+        Search,
+        Estimate,
+        Estimate2,
+        Estimate3,
+        EstimateN,
+        Evaluate2,
+        Evaluate2N,
+        Evaluate3,
+        Evaluate3N,
+        EvaluateN,
     }
 }

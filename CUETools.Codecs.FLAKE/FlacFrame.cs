@@ -11,6 +11,7 @@
         public int frame_number;
         public FlacSubframe current;
         public float* window_buffer;
+        public int nSeg = 0;
 
         public BitWriter writer = null;
         public int writer_offset = 0;

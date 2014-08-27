@@ -73,6 +73,19 @@ namespace CUETools.Codecs
                         }
         }
 
+        public bool HasDefaultValuesForMode(int index)
+        {
+            bool res = true;
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+                foreach (var attribute in property.Attributes)
+                    if (attribute is DefaultValueForModeAttribute)
+                    {
+                        var defaultValueForMode = attribute as DefaultValueForModeAttribute;
+                        res &= (int)property.GetValue(this) == defaultValueForMode.m_values[index];
+                    }
+            return res;
+        }
+
         [Browsable(false)]
         [XmlIgnore]
         public AudioPCMConfig PCM
