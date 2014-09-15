@@ -403,7 +403,7 @@ namespace CUETools.Processor
                 string parameters = sr.Load(string.Format("ExternalDecoder{0}Parameters", nDecoders));
                 CUEToolsUDC decoder;
                 if (!decoders.TryGetValue(extension, true, name, out decoder))
-                    decoders.Add(new CUEToolsUDC(name, extension, true, "", "", path, parameters));
+                    decoders.Add(new CUEToolsUDC(name, extension, path, parameters));
                 else
                 {
                     decoder.extension = extension;

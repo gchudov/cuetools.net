@@ -46,8 +46,8 @@ namespace CUETools.Codecs
                 encoders.Add(new CUEToolsUDC("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
                 encoders.Add(new CUEToolsUDC("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
-                decoders.Add(new CUEToolsUDC("takc", "tak", true, "", "", "takc.exe", "-d %I -"));
-                decoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
+                decoders.Add(new CUEToolsUDC("takc", "tak", "takc.exe", "-d %I -"));
+                decoders.Add(new CUEToolsUDC("ffmpeg alac", "m4a", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
             }
             else
             {
