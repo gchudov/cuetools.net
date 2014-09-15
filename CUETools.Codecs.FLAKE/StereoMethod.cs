@@ -7,5 +7,7 @@ namespace CUETools.Codecs.FLAKE
 		Estimate = 1,
 		Evaluate = 2,
         Search = 3,
-	}
+        EstimateX = 4,
+        EvaluateX = 5,
+    }
 }

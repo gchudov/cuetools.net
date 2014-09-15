@@ -131,7 +131,7 @@ namespace CUETools.Codecs
 		 * A window function is applied before calculation.
 		 */
 		static public unsafe void
-            compute_autocorr(/*const*/ int* data, float* window, int len, int min, int lag, double* autoc, int prev, int next)
+            compute_autocorr(/*const*/ int* data, float* window, int len, int min, int lag, double* autoc)
 		{
 #if FPAC
 			short* data1 = stackalloc short[len + 1];
@@ -220,22 +220,18 @@ namespace CUETools.Codecs
                 if (lag < min) return;
             }
 #endif
-            double* data1 = stackalloc double[lag + len + lag];
+            double* data1 = stackalloc double[len];
             int i;
 
-            for (i = 0; i < lag; i++)
-                data1[i] = prev != 0 ? data[i - lag] : 0;
             for (i = 0; i < len; i++)
-                data1[lag + i] = data[i] * window[i];
-            for (i = 0; i < lag; i++)
-                data1[lag + len + i] = next != 0 ? data[len + i] : 0;
+                data1[i] = data[i] * window[i];
 
             for (i = min; i <= lag; ++i)
 			{
 				double temp = 0;
 				double temp2 = 0;
-                double* pdata = data1 + lag - i;
-				double* finish = data1 + lag + len - 1;
+                double* pdata = data1;
+				double* finish = data1 + len - 1 - i;
 
                 while (pdata < finish)
                 {
@@ -358,6 +354,23 @@ namespace CUETools.Codecs
                 if (pdata <= finish)
                     temp += (long)pdata[i] * (*pdata++);
                 autoc[i] += temp + temp2;
+            }
+        }
+
+        static public unsafe void
+            compute_autocorr_glue(/*const*/ int* data, float* window, int offs, int sz, int min, int lag, double* autoc)
+        {
+            double* data1 = stackalloc double[lag + lag];
+            for (int i = -lag; i < lag; i++)
+                data1[i + lag] = offs + i >= 0 && offs + i < sz ? data[offs + i] * window[offs + i] : 0;
+            for (int i = min; i <= lag; ++i)
+            {
+                double temp = 0;
+                double* pdata = data1 + lag - i;
+                double* finish = data1 + lag;
+                while (pdata < finish)
+                    temp += pdata[i] * (*pdata++);
+                autoc[i] += temp;
             }
         }
 

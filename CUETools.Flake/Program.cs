@@ -100,7 +100,7 @@ namespace CUETools.FlakeExe
             Console.WriteLine(" --verify             Verify during encoding.");
             Console.WriteLine(" --no-md5             Don't compute MD5 hash.");
             Console.WriteLine(" --no-seektable       Don't generate a seektable.");
-            Console.WriteLine(" --ignore-chunk-sizes  Ignore WAV length (for pipe input)");
+            Console.WriteLine(" --ignore-chunk-sizes Ignore WAV length (for pipe input)");
             Console.WriteLine();
             Console.WriteLine("Advanced Options:");
             Console.WriteLine();
@@ -114,10 +114,12 @@ namespace CUETools.FlakeExe
             Console.WriteLine();
             Console.WriteLine(" -m <method>          Prediction order search (akaike).");
             Console.WriteLine(" -e #                 Prediction order search depth (1..32).");
-            Console.WriteLine(" -w <func>[,<func>]   One or more window functions (bartlett,welch,hann,flattop,tukey).");
+            Console.WriteLine(" -w <func>[,<func>]   One or more window functions (tukey,partialtukey,");
+            Console.WriteLine("                      punchouttukey,bartlett,welch,hann,flattop).");
             Console.WriteLine(" -l #[,#]             Prediction order {max} or {min},{max} (1..32).");
-            Console.WriteLine("    --window-method   Window selection method (estimate,evaluate,search).");
-            Console.WriteLine("    --max-precision   Coefficients precision search (0..1).");
+            Console.WriteLine(" --window-method <wm> Window selection method (estimate,estimateN,");
+            Console.WriteLine("                      evaluate,evaluateN,search).");
+            Console.WriteLine(" --max-precision #,#  Coefficients precision search (0..1).");
             Console.WriteLine();
             Console.WriteLine("Fixed prediction options:");
             Console.WriteLine();

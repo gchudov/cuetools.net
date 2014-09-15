@@ -1464,8 +1464,8 @@ new int[] { // 30
 					LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
                     fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, iWindow, 0])
                         lpc_ctx.GetReflection(
-                            frame.subframes[ch].sf, max_order, smp, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections,
-                            frame.subframes[ch].obits * 2 + BitReader.log2i(frame.blocksize) >= 61);
+                            frame.subframes[ch].sf, max_order, frame.blocksize, 
+                            smp, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections);
                     lpc_ctx.ComputeLPC(lpcs);
 
 					//int frameSize = n;
@@ -1671,7 +1671,7 @@ new int[] { // 30
 			bitwriter.writebits_signed(5, sub.best.shift);
 			for (int i = 0; i < sub.best.order; i++)
 				bitwriter.writebits_signed(cbits, sub.best.coefs[i]);
-			
+
 			// residual
 			output_residual(frame, bitwriter, sub);
 		}
@@ -1777,9 +1777,8 @@ new int[] { // 30
                 int estimate_order = 4;
                 fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, i, 0])
                 lpc_ctx.GetReflection(
-                    frame.subframes[ch].sf, estimate_order, 
-                    frame.subframes[ch].samples, frame.window_buffer + i * Flake.MAX_BLOCKSIZE * 2, sections,
-                    frame.subframes[ch].obits * 2 + BitReader.log2i(frame.blocksize) >= 61);
+                    frame.subframes[ch].sf, estimate_order, frame.blocksize,
+                    frame.subframes[ch].samples, frame.window_buffer + i * Flake.MAX_BLOCKSIZE * 2, sections);
                 lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, estimate_order, 4.5, 0.0);
                 //err[i] = (float)(lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], 4.5, 0.0));
                 //err[i] = (float)((frame.blocksize * lpc_ctx.prediction_error[lpc_ctx.best_orders[0] - 1] / windowScale[i]) + lpc_ctx.best_orders[0] * 4.5);
@@ -1895,37 +1894,65 @@ new int[] { // 30
 
 			switch (eparams.stereo_method)
 			{
-				case StereoMethod.Estimate:                    
+				case StereoMethod.Estimate:
 					for (int ch = 0; ch < subframes; ch++)
 					{
-#if XXX
-                        ulong* fixed_errors = stackalloc ulong[5];
-                        fixed_compute_best_predictor(frame.subframes[ch].samples + 4, (uint)frame.blocksize - 4, fixed_errors);
-                        int best_order = fixed_compute_best_predictor_order(fixed_errors);
-                        //residual_bits_per_sample[0] = (float)((total_error_0 > 0) ? log(M_LN2 * (FLAC__double)total_error_0 / (FLAC__double)data_len) / M_LN2 : 0.0);
-                        frame.subframes[ch].best.size = (uint)fixed_errors[best_order];
-#else
                         LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[0];
                         int estimate_order = 4;
                         int iWindow = 0;
                         fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, iWindow, 0])
                             lpc_ctx.GetReflection(
-                                frame.subframes[ch].sf, estimate_order,
-                                frame.subframes[ch].samples, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections,
-                                frame.subframes[ch].obits * 2 + BitReader.log2i(frame.blocksize) >= 61);
+                                frame.subframes[ch].sf, estimate_order, frame.blocksize,
+                                frame.subframes[ch].samples, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections);
                         lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, estimate_order, 4.5, 0.0);
                         frame.subframes[ch].best.size 
                             = (uint)Math.Max(0, frame.blocksize * (Math.Log(lpc_ctx.prediction_error[lpc_ctx.best_orders[0] - 1])) + Math.Log(frame.blocksize) * lpc_ctx.best_orders[0] * 4.5
                             //= (uint)Math.Max(0, lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], 4.5, 0.0)
                             //* 2.0 / Math.Log(windowScale[0] / frame.blocksize)
                             + 7.1 * frame.subframes[ch].obits * m_settings.MaxLPCOrder);
-#endif
                     }
 					break;
+#if XXX
+                case StereoMethod.EstimateFixed:
+                    for (int ch = 0; ch < subframes; ch++)
+                    {
+                        ulong* fixed_errors = stackalloc ulong[5];
+                        fixed_compute_best_predictor(frame.subframes[ch].samples + 4, (uint)frame.blocksize - 4, fixed_errors);
+                        int best_order = fixed_compute_best_predictor_order(fixed_errors);
+                        //residual_bits_per_sample[0] = (float)((total_error_0 > 0) ? log(M_LN2 * (FLAC__double)total_error_0 / (FLAC__double)data_len) / M_LN2 : 0.0);
+                        frame.subframes[ch].best.size = (uint)fixed_errors[best_order];
+                    }
+                    break;
+#endif
+                case StereoMethod.EstimateX:
+                    for (int ch = 0; ch < subframes; ch++)
+                        for (int iWindow = 0; iWindow < _windowcount; iWindow++)
+                        {
+                            LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
+                            int estimate_order = 4;
+                            fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, iWindow, 0])
+                                lpc_ctx.GetReflection(
+                                    frame.subframes[ch].sf, estimate_order, frame.blocksize,
+                                    frame.subframes[ch].samples, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections);
+                            lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, estimate_order, 4.5, 0.0);
+                            uint estimate
+                                = (uint)Math.Max(0, frame.blocksize * (Math.Log(lpc_ctx.prediction_error[lpc_ctx.best_orders[0] - 1])) + Math.Log(frame.blocksize) * lpc_ctx.best_orders[0] * 4.5
+                                //= (uint)Math.Max(0, lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], 4.5, 0.0)
+                                //* 2.0 / Math.Log(windowScale[0] / frame.blocksize)
+                                + 7.1 * frame.subframes[ch].obits * m_settings.MaxLPCOrder);
+                            if (iWindow == 0 || frame.subframes[ch].best.size > estimate)
+                                frame.subframes[ch].best.size = estimate;
+                        }
+                    break;
                 case StereoMethod.Evaluate:
                     for (int ch = 0; ch < subframes; ch++)
                         encode_residual_pass1(frame, ch, 1);
 					break;
+                case StereoMethod.EvaluateX:
+                    for (int ch = 0; ch < subframes; ch++)
+                        encode_residual_pass1(frame, ch,
+                            estimate_best_windows_akaike(frame, ch, 1, false));
+					break;                    
 				case StereoMethod.Search:
 					for (int ch = 0; ch < subframes; ch++)
 					    encode_residual_pass2(frame, ch);
@@ -1977,14 +2004,16 @@ new int[] { // 30
 			switch (eparams.stereo_method)
 			{
 				case StereoMethod.Estimate:
-					for (int ch = 0; ch < channels; ch++)
+                case StereoMethod.EstimateX:
+                    for (int ch = 0; ch < channels; ch++)
 					{
 						frame.subframes[ch].best.size = AudioSamples.UINT32_MAX;
 						encode_residual_pass2(frame, ch);
 					}
 					break;
                 case StereoMethod.Evaluate:
-					for (int ch = 0; ch < channels; ch++)
+                case StereoMethod.EvaluateX:
+                    for (int ch = 0; ch < channels; ch++)
 						encode_residual_pass2(frame, ch);
 					break;
 				case StereoMethod.Search:
@@ -2070,7 +2099,7 @@ new int[] { // 30
                     do
         			{
                         fixed (LpcWindowSection* sections = &windowSections[nSeg, 0, 0])
-                            LpcWindowSection.Detect(_windowcount, window_segment, Flake.MAX_BLOCKSIZE * 2, sz, sections);
+                            LpcWindowSection.Detect(_windowcount, window_segment, Flake.MAX_BLOCKSIZE * 2, sz, Settings.PCM.BitsPerSample, sections);
                         if ((sz & 1) != 0)
                             break;
                         window_segment += sz;
@@ -2087,7 +2116,7 @@ new int[] { // 30
                             for (int sec = 0; sec < lpc.MAX_LPC_SECTIONS; sec++)
                                 if (windowSections[0, i, sec].m_type != LpcWindowSection.SectionType.Zero || windowSections[0, i, sec].m_start != windowSections[0, i, sec].m_end)
                                 {
-                                    tx.WriteLine("{0}\t{1}\t{2}", windowSections[0, i, sec].m_start, windowSections[0, i, sec].m_end, windowSections[0, i, sec].m_type);
+                                    tx.WriteLine("{0}\t{1}\t{2}\t{3}", windowSections[0, i, sec].m_start, windowSections[0, i, sec].m_end, windowSections[0, i, sec].m_type, windowSections[0, i, sec].m_id);
                                     if (windowSections[0, i, sec].m_type != LpcWindowSection.SectionType.One)
                                         total += windowSections[0, i, sec].m_end - windowSections[0, i, sec].m_start;
                                 }
