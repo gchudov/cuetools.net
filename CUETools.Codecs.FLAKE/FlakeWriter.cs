@@ -1156,10 +1156,7 @@ new int[] { // 30
                     fixed (int* coefs = frame.current.coefs)
                     {
                         if ((csum << frame.subframes[ch].obits) >= 1UL << 32)
-                        {
-                            if (!lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift))
-                                continue;
-                        }
+                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
                         else
                             lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
                     }
@@ -1277,10 +1274,7 @@ new int[] { // 30
                             csum += (ulong)Math.Abs(coefs[i - 1]);
 
                         if ((csum << frame.subframes[ch].obits) >= 1UL << 32)
-                        {
-                            if (!lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift))
-                                continue;
-                        }
+                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
                         else
                             lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
 
@@ -2276,33 +2270,15 @@ new int[] { // 30
 
 			if (verify != null)
 			{
-                try
-                {
-                    int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
-                    if (decoded != fs || verify.Remaining != bs)
-                        throw new Exception(Properties.Resources.ExceptionValidationFailed);
-                    fixed (int* s = verifyBuffer, r = verify.Samples)
-                    {
-                        for (int ch = 0; ch < channels; ch++)
-                            if (AudioSamples.MemCmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
-                                throw new Exception(Properties.Resources.ExceptionValidationFailed);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //if (channels == 2)
-                    //{
-                    //    var sw = new WAVWriter("verify.wav", new WAVWriterSettings(this.Settings.PCM));
-                    //    sw.FinalSampleCount = this.frame.blocksize;
-                    //    var ab = new AudioBuffer(this.Settings.PCM, this.frame.blocksize);
-                    //    ab.Prepare(this.frame.blocksize);
-                    //    fixed (int* abs = ab.Samples, s = verifyBuffer)
-                    //        AudioSamples.Interlace(abs, s, s + Flake.MAX_BLOCKSIZE, this.frame.blocksize);
-                    //    sw.Write(ab);
-                    //    sw.Close();
-                    //}
-                    throw ex;
-                }
+				int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
+				if (decoded != fs || verify.Remaining != bs)
+					throw new Exception(Properties.Resources.ExceptionValidationFailed);
+				fixed (int* s = verifyBuffer, r = verify.Samples)
+				{
+					for (int ch = 0; ch < channels; ch++)
+						if (AudioSamples.MemCmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
+							throw new Exception(Properties.Resources.ExceptionValidationFailed);
+				}
 			}
 
             if (bs < m_blockSize)
