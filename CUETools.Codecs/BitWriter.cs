@@ -280,11 +280,11 @@ namespace CUETools.Codecs
             fixed (ushort *crc16_t = Crc16.table)
             for (int i = count; i > 0; i--)
             {
-                int v = *(residual++);
-                v = (v << 1) ^ (v >> 31);
+                int vi = *(residual++);
+                uint v = (uint)((vi << 1) ^ (vi >> 31));
 
                 // write quotient in unary
-                int q = (v >> k) + 1;
+                int q = (int)(v >> k) + 1;
                 int bits = k + q;
                 while (bits > 64)
                 {
@@ -303,7 +303,7 @@ namespace CUETools.Codecs
 
                 // write remainder in binary using 'k' bits
                 //writebits_fast(k + q, (uint)((v & ((1 << k) - 1)) | (1 << k)), ref buf);
-                ulong val = (uint)((v & ((1 << k) - 1)) | (1 << k));
+                ulong val = (uint)((v & ((1U << k) - 1)) | (1U << k));
                 if (bits < bit_left)
                 {
                     bit_left -= bits;
