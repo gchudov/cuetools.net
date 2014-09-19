@@ -693,7 +693,7 @@ namespace CUETools.Codecs
 			}
 		}
 
-		public static unsafe void
+		public static unsafe bool
 		encode_residual_long(int* res, int* smp, int n, int order,
 			int* coefs, int shift)
 		{
@@ -704,13 +704,16 @@ namespace CUETools.Codecs
 			int* r = res + order;
 			int c0 = coefs[0];
 			int c1 = coefs[1];
+			long overflows = 0L;
 			switch (order)
 			{
 				case 1:
 					for (int i = n - order; i > 0; i--)
 					{
 						long pred = c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 					}
 					break;
 				case 2:
@@ -718,7 +721,9 @@ namespace CUETools.Codecs
 					{
 						long pred = c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *(s--) - (int)(pred >> shift);
+						pred = *(s--) - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 					}
 					break;
 				case 3:
@@ -727,7 +732,9 @@ namespace CUETools.Codecs
 						long pred = coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 						s -= 2;
 					}
 					break;
@@ -738,7 +745,9 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 						s -= 3;
 					}
 					break;
@@ -750,7 +759,9 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 						s -= 4;
 					}
 					break;
@@ -763,7 +774,9 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 						s -= 5;
 					}
 					break;
@@ -777,7 +790,9 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 						s -= 6;
 					}
 					break;
@@ -792,7 +807,9 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 						s -= 7;
 					}
 					break;
@@ -813,10 +830,13 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						pred = *s - (pred >> shift);
+						overflows += (pred ^ (pred >> 63)) >> 30;
+						*(r++) = (int)pred;
 					}
 					break;
 			}
+			return overflows == 0;
 		}
 
 		public static unsafe void

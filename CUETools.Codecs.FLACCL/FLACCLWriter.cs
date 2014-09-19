@@ -1363,7 +1363,14 @@ namespace CUETools.Codecs.FLACCL
                             fixed (int* coefs = task.frame.subframes[ch].best.coefs)
                             {
                                 if (Settings.PCM.BitsPerSample > 16)
-                                    lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
+                                {
+                                    if (!lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift))
+                                    {
+                                        task.frame.subframes[ch].best.type = SubframeType.Verbatim;
+                                        task.frame.subframes[ch].best.size = (uint)(task.frame.subframes[ch].obits * task.frame.blocksize);
+                                        return;
+                                    }
+                                }
                                 else
                                     lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
                             }
