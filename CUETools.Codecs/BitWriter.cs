@@ -295,8 +295,7 @@ namespace CUETools.Codecs
                         return;
                     }
 #endif
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bit_buf >> 56)]);
-                    *(buf++) = (byte)(bit_buf >> 56);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bit_buf >> 56))]);
                     bit_buf <<= 8;
                     bits -= 8;
                 }
@@ -320,23 +319,15 @@ namespace CUETools.Codecs
                     }
 #endif
 
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb >> 56)]);
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb >> 48)]);
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb >> 40)]);
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb >> 32)]);
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb >> 24)]);
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb >> 16)]);
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb >> 8)]);
-                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (byte)(bb)]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb >> 56))]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb >> 48))]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb >> 40))]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb >> 32))]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb >> 24))]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb >> 16))]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb >> 8))]);
+                    crc16 = (ushort)((crc16 << 8) ^ crc16_t[(crc16 >> 8) ^ (*(buf++) = (byte)(bb))]);
 
-                    *(buf++) = (byte)(bb >> 56);
-                    *(buf++) = (byte)(bb >> 48);
-                    *(buf++) = (byte)(bb >> 40);
-                    *(buf++) = (byte)(bb >> 32);
-                    *(buf++) = (byte)(bb >> 24);
-                    *(buf++) = (byte)(bb >> 16);
-                    *(buf++) = (byte)(bb >> 8);
-                    *(buf++) = (byte)(bb);
                     bit_left += 64 - bits;
                     bit_buf = (val << bit_left - 1) << 1;
                 }

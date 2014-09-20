@@ -1156,12 +1156,12 @@ new int[] { // 30
                     fixed (int* coefs = frame.current.coefs)
                     {
                         if ((csum << frame.subframes[ch].obits) >= 1UL << 32)
-                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
+                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
                         else
-                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
+                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
                     }
 
-                    var cur_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
+                    var cur_size = calc_rice_params_sums(frame.current.rc, pmin, pmax, sums, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
                     frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits + 4 + 5 + frame.current.order * frame.current.cbits + 6 + (int)cur_size);
 
                     if (frame.current.size < best_size)
@@ -1261,6 +1261,10 @@ new int[] { // 30
                     frame.current.window = iWindow;
                     frame.current.cbits = (int)cbits;
 
+                    int pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, frame.current.order);
+                    int pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
+                    ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
+                    ulong csum = 0;
                     fixed (int* coefs = frame.current.coefs)
                     {
                         lpc.quantize_lpc_coefs(lpcs + (frame.current.order - 1) * lpc.MAX_LPC_ORDER,
@@ -1269,36 +1273,16 @@ new int[] { // 30
                         if (frame.current.shift < 0 || frame.current.shift > 15)
                             throw new Exception("negative shift");
 
-                        ulong csum = 0;
                         for (int i = frame.current.order; i > 0; i--)
                             csum += (ulong)Math.Abs(coefs[i - 1]);
 
                         if ((csum << frame.subframes[ch].obits) >= 1UL << 32)
-                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
+                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
                         else
-                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift);
+                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
 
                     }
-                    int pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, frame.current.order);
-                    int pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
-                    uint best_size = calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
-                    // not working
-                    //for (int o = 1; o <= frame.current.order; o++)
-                    //{
-                    //    if (frame.current.coefs[o - 1] > -(1 << frame.current.shift))
-                    //    {
-                    //        for (int i = o; i < frame.blocksize; i++)
-                    //            frame.current.residual[i] += frame.subframes[ch].samples[i - o] >> frame.current.shift;
-                    //        frame.current.coefs[o - 1]--;
-                    //        uint new_size = calc_rice_params(ref frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order);
-                    //        if (new_size > best_size)
-                    //        {
-                    //            for (int i = o; i < frame.blocksize; i++)
-                    //                frame.current.residual[i] -= frame.subframes[ch].samples[i - o] >> frame.current.shift;
-                    //            frame.current.coefs[o - 1]++;
-                    //        }
-                    //    }
-                    //}
+                    uint best_size = calc_rice_params_sums(frame.current.rc, pmin, pmax, sums, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
                     frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits + 4 + 5 + frame.current.order * (int)cbits + 6 + (int)best_size);
                     frame.ChooseBestSubframe(ch);
                     //if (frame.current.size >= frame.subframes[ch].best.size)
@@ -1522,7 +1506,7 @@ new int[] { // 30
 					{
 						case OrderMethod.Akaike:
 							//lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, max_order, 7.1, 0.0);
-							lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, min_order, max_order, 4.5, 0.0);
+							lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, min_order, max_order, 4.5, 0);
 							break;
 						default:
 							throw new Exception("unknown order method");
@@ -2175,13 +2159,17 @@ new int[] { // 30
 						{
 							frame2.InitSize(frame.blocksize / 2, true);
 							frame2.window_buffer = frame.window_buffer + frame.blocksize;
-                            frame2.nSeg++;
+                            frame2.nSeg = frame.nSeg + 1;
 							frame2.current.residual = r + tumbler * 5 * Flake.MAX_BLOCKSIZE;
 							for (int ch = 0; ch < 4; ch++)
 								frame2.subframes[ch].Init(frame.subframes[ch].samples, frame2.current.residual + (ch + 1) * frame2.blocksize,
 									frame.subframes[ch].obits + frame.subframes[ch].wbits, frame.subframes[ch].wbits);
 							estimate_frame(frame2, true);
-							uint fs2 = measure_frame_size(frame2, true);
+                            //measure_frame_size(frame2, true);
+                            //frame2.ChooseSubframes();
+                            //encode_estimated_frame(frame2);
+                            //uint fs2 = measure_frame_size(frame2, false);
+                            uint fs2 = measure_frame_size(frame2, true);
 							uint fs3 = fs2;
 							if (eparams.variable_block_size == 2 || eparams.variable_block_size == 4)
 							{

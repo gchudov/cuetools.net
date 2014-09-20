@@ -1360,16 +1360,18 @@ namespace CUETools.Codecs.FLACCL
                     case SubframeType.LPC:
                         if (!task.UseGPUOnly)
                         {
+                            int pmin = get_max_p_order(m_settings.MinPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
+                            int pmax = get_max_p_order(m_settings.MaxPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
+                            ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
+
                             fixed (int* coefs = task.frame.subframes[ch].best.coefs)
                             {
                                 if (Settings.PCM.BitsPerSample > 16)
-                                    lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
+                                    lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
                                 else
-                                    lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift);
+                                    lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
                             }
 
-                            int pmin = get_max_p_order(m_settings.MinPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
-                            int pmax = get_max_p_order(m_settings.MaxPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
                             calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, Settings.PCM.BitsPerSample > 16 ? 1 : 0);
                         }
                         break;

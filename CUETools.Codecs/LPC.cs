@@ -515,80 +515,82 @@ namespace CUETools.Codecs
 			shift = sh;
 		}
 
-		public static unsafe void
-		encode_residual(int* res, int* smp, int n, int order,
-			int* coefs, int shift)
+		private static unsafe ulong
+		encode_residual_partition(int* s, int* r, int* seg_end, int* coefs, int shift, int order)
 		{
-			for (int i = 0; i < order; i++)
-				res[i] = smp[i];
-
-			int* s = smp;
-			int* r = res + order;
+			ulong sum = 0ul;
 			int c0 = coefs[0];
 			int c1 = coefs[1];
 			switch (order)
 			{
 				case 1:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int pred = c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						//*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 					}
 					break;
 				case 2:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int pred = c1 * *(s++);
 						pred += c0 * *(s++);
-						*(r++) = *(s--) - (pred >> shift);
+						int d = *(r++) = *(s--) - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 					}
 					break;
 				case 3:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int pred = coefs[2] * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 2;
 					}
 					break;
 				case 4:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 3;
 					}
 					break;
 				case 5:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
 							*(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 4;
 					}
 					break;
 				case 6:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 5;
 					}
 					break;
 				case 7:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
@@ -596,12 +598,13 @@ namespace CUETools.Codecs
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 6;
 					}
 					break;
 				case 8:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
@@ -609,26 +612,28 @@ namespace CUETools.Codecs
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 7;
 					}
 					break;
 				case 9:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
-							*(c--) * *(s++) + 
+							*(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 8;
 					}
 					break;
 				case 10:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
@@ -637,12 +642,13 @@ namespace CUETools.Codecs
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 9;
 					}
 					break;
 				case 11:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
@@ -652,12 +658,13 @@ namespace CUETools.Codecs
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 10;
 					}
 					break;
 				case 12:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						int* c = coefs + order - 1;
 						int pred =
@@ -667,14 +674,14 @@ namespace CUETools.Codecs
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 11;
 					}
 					break;
 				default:
-					for (int i = order; i < n; i++)
+					while (s < seg_end)
 					{
-						s = smp + i - order;
 						int pred = 0;
 						int* c = coefs + order - 1;
 						int* c11 = coefs + 11;
@@ -687,75 +694,99 @@ namespace CUETools.Codecs
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							*(c--) * *(s++) + *(c--) * *(s++) +
 							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
+						int d = *(r++) = *s - (pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
+						s -= order - 1;
 					}
 					break;
 			}
+			return sum;
 		}
 
 		public static unsafe void
-		encode_residual_long(int* res, int* smp, int n, int order,
-			int* coefs, int shift)
+		encode_residual(int* res, int* smp, int n, int order,
+			int* coefs, int shift, ulong* sums, int pmax)
 		{
 			for (int i = 0; i < order; i++)
 				res[i] = smp[i];
 
 			int* s = smp;
+			int* s_end = smp + n - order;
+			int* seg_end = s + (n >> pmax) - order;
 			int* r = res + order;
+			while (s < s_end)
+			{
+				*(sums++) = encode_residual_partition(s, r, seg_end, coefs, shift, order);
+				r += seg_end - s;
+				s = seg_end;
+				seg_end += n >> pmax;
+			}
+		}
+
+		private static unsafe ulong
+		encode_residual_long_partition(int* s, int* r, int* seg_end, int* coefs, int shift, int order)
+		{
+			ulong sum = 0ul;
 			int c0 = coefs[0];
 			int c1 = coefs[1];
 			switch (order)
 			{
 				case 1:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 					}
 					break;
 				case 2:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *(s--) - (int)(pred >> shift);
+						int d = *(r++) = *(s--) - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 					}
 					break;
 				case 3:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
 						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 2;
 					}
 					break;
 				case 4:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = coefs[3] * (long)*(s++);
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 3;
 					}
 					break;
 				case 5:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = coefs[4] * (long)*(s++);
 						pred += coefs[3] * (long)*(s++);
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 4;
 					}
 					break;
 				case 6:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = coefs[5] * (long)*(s++);
 						pred += coefs[4] * (long)*(s++);
@@ -763,12 +794,13 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 5;
 					}
 					break;
 				case 7:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = coefs[6] * (long)*(s++);
 						pred += coefs[5] * (long)*(s++);
@@ -777,12 +809,13 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 6;
 					}
 					break;
 				case 8:
-					for (int i = n - order; i > 0; i--)
+					while (s < seg_end)
 					{
 						long pred = coefs[7] * (long)*(s++);
 						pred += coefs[6] * (long)*(s++);
@@ -792,14 +825,14 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 7;
 					}
 					break;
 				default:
-					for (int i = order; i < n; i++)
+					while (s < seg_end)
 					{
-						s = smp + i - order;
 						long pred = 0;
 						int* co = coefs + order - 1;
 						int* c7 = coefs + 7;
@@ -813,188 +846,36 @@ namespace CUETools.Codecs
 						pred += coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
+						int d = *(r++) = *s - (int)(pred >> shift);
+						sum += (uint)((d << 1) ^ (d >> 31));
+						s -= order - 1;
 					}
 					break;
 			}
+			return sum;
 		}
 
 		public static unsafe void
-		encode_residual2(int* res, int* smp, int n, int order,
-			int* coefs, int shift)
+		encode_residual_long(int* res, int* smp, int n, int order,
+			int* coefs, int shift, ulong* sums, int pmax)
 		{
+			for (int i = 0; i < order; i++)
+				res[i] = smp[i];
+
 			int* s = smp;
-			int* r = res;
-			int c0 = coefs[0];
-			int c1 = coefs[1];
-			switch (order)
+			int* s_end = smp + n - order;
+			int* seg_end = s + (n >> pmax) - order;
+			int* r = res + order;
+			while (s < s_end)
 			{
-				case 1:
-					for (int i = n - order; i > 0; i--)
-					{
-						int pred = c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-					}
-					break;
-				case 2:
-					for (int i = n - order; i > 0; i--)
-					{
-						int pred = c1 * *(s++);
-						pred += c0 * *(s++);
-						*(r++) = *(s--) - (pred >> shift);
-					}
-					break;
-				case 3:
-					for (int i = n - order; i > 0; i--)
-					{
-						int pred = coefs[2] * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 2;
-					}
-					break;
-				case 4:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 3;
-					}
-					break;
-				case 5:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 4;
-					}
-					break;
-				case 6:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 5;
-					}
-					break;
-				case 7:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 6;
-					}
-					break;
-				case 8:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 7;
-					}
-					break;
-				case 9:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 8;
-					}
-					break;
-				case 10:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 9;
-					}
-					break;
-				case 11:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 10;
-					}
-					break;
-				case 12:
-					for (int i = n - order; i > 0; i--)
-					{
-						int* c = coefs + order - 1;
-						int pred =
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-						s -= 11;
-					}
-					break;
-				default:
-					for (int i = order; i < n; i++)
-					{
-						s = smp + i - order;
-						int pred = 0;
-						int* c = coefs + order - 1;
-						int* c11 = coefs + 11;
-						while (c > c11)
-							pred += *(c--) * *(s++);
-						pred +=
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							*(c--) * *(s++) + *(c--) * *(s++) +
-							c1 * *(s++) + c0 * *(s++);
-						*(r++) = *s - (pred >> shift);
-					}
-					break;
+				*(sums++) = encode_residual_long_partition(s, r, seg_end, coefs, shift, order);
+				r += seg_end - s;
+				s = seg_end;
+				seg_end += n >> pmax;
 			}
 		}
 
-		public static unsafe void
+    	public static unsafe void
 		decode_residual(int* res, int* smp, int n, int order,
 			int* coefs, int shift)
 		{
