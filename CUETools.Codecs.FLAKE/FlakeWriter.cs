@@ -2257,17 +2257,33 @@ new int[] { // 30
 			_totalSize += fs;
 
 			if (verify != null)
-			{
-				int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
-				if (decoded != fs || verify.Remaining != bs)
-					throw new Exception(Properties.Resources.ExceptionValidationFailed);
-				fixed (int* s = verifyBuffer, r = verify.Samples)
+				try
 				{
-					for (int ch = 0; ch < channels; ch++)
-						if (AudioSamples.MemCmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
-							throw new Exception(Properties.Resources.ExceptionValidationFailed);
+					int decoded = verify.DecodeFrame(frame_buffer, 0, fs);
+					if (decoded != fs || verify.Remaining != bs)
+						throw new Exception(Properties.Resources.ExceptionValidationFailed);
+					fixed (int* s = verifyBuffer, r = verify.Samples)
+					{
+						for (int ch = 0; ch < channels; ch++)
+							if (AudioSamples.MemCmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
+								throw new Exception(Properties.Resources.ExceptionValidationFailed);
+					}
 				}
-			}
+				catch (Exception ex)
+				{
+					//if (channels == 2)
+					//{
+					//    var sw = new WAVWriter(string.Format("verify_{0}.wav", this.frame_count), new WAVWriterSettings(this.Settings.PCM));
+					//    sw.FinalSampleCount = this.frame.blocksize;
+					//    var ab = new AudioBuffer(this.Settings.PCM, this.frame.blocksize);
+					//    ab.Prepare(this.frame.blocksize);
+					//    fixed (int* abs = ab.Samples, s = verifyBuffer)
+					//        AudioSamples.Interlace(abs, s, s + Flake.MAX_BLOCKSIZE, this.frame.blocksize);
+					//    sw.Write(ab);
+					//    sw.Close();
+					//} else
+					throw ex;
+				}
 
             if (bs < m_blockSize)
 			{

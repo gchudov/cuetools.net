@@ -754,7 +754,6 @@ namespace CUETools.Codecs
 						long pred = coefs[2] * (long)*(s++);
 						pred += c1 * (long)*(s++);
 						pred += c0 * (long)*(s++);
-						*(r++) = *s - (int)(pred >> shift);
 						int d = *(r++) = *s - (int)(pred >> shift);
 						sum += (uint)((d << 1) ^ (d >> 31));
 						s -= 2;
