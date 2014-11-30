@@ -162,6 +162,87 @@ namespace CUETools.Processor
             defaultEncodeScript = "default";
         }
 
+        public CUEConfig(CUEConfig src)
+            : base(src)
+        {
+            fixOffsetMinimumConfidence = src.fixOffsetMinimumConfidence;
+            fixOffsetMinimumTracksPercent = src.fixOffsetMinimumTracksPercent;
+            encodeWhenConfidence = src.encodeWhenConfidence;
+            encodeWhenPercent = src.encodeWhenPercent;
+            encodeWhenZeroOffset = src.encodeWhenZeroOffset;
+            fixOffset = src.fixOffset;
+            noUnverifiedOutput = src.noUnverifiedOutput;
+            writeArTagsOnEncode = src.writeArTagsOnEncode;
+            writeArLogOnConvert = src.writeArLogOnConvert;
+            writeArTagsOnVerify = src.writeArTagsOnVerify;
+            writeArLogOnVerify = src.writeArLogOnVerify;
+
+            autoCorrectFilenames = src.autoCorrectFilenames;
+            preserveHTOA = src.preserveHTOA;
+            detectGaps = src.detectGaps;
+            keepOriginalFilenames = src.keepOriginalFilenames;
+            trackFilenameFormat = src.trackFilenameFormat;
+            singleFilenameFormat = src.singleFilenameFormat;
+            removeSpecial = src.removeSpecial;
+            specialExceptions = src.specialExceptions;
+            replaceSpaces = src.replaceSpaces;
+            embedLog = src.embedLog;
+            extractLog = src.extractLog;
+            fillUpCUE = src.fillUpCUE;
+            overwriteCUEData = src.overwriteCUEData;
+            filenamesANSISafe = src.filenamesANSISafe;
+            bruteForceDTL = src.bruteForceDTL;
+            createEACLOG = src.createEACLOG;
+            detectHDCD = src.detectHDCD;
+            wait750FramesForHDCD = src.wait750FramesForHDCD;
+            decodeHDCD = src.decodeHDCD;
+            createM3U = src.createM3U;
+            createCUEFileWhenEmbedded = src.createCUEFileWhenEmbedded;
+            truncate4608ExtraSamples = src.truncate4608ExtraSamples;
+            decodeHDCDtoLW16 = src.decodeHDCDtoLW16;
+            decodeHDCDto24bit = src.decodeHDCDto24bit;
+
+            oneInstance = src.oneInstance;
+            checkForUpdates = src.checkForUpdates;
+
+            writeBasicTagsFromCUEData = src.writeBasicTagsFromCUEData;
+            copyBasicTags = src.copyBasicTags;
+            copyUnknownTags = src.copyUnknownTags;
+            CopyAlbumArt = src.CopyAlbumArt;
+            embedAlbumArt = src.embedAlbumArt;
+            extractAlbumArt = src.extractAlbumArt;
+            maxAlbumArtSize = src.maxAlbumArtSize;
+
+            arLogToSourceFolder = src.arLogToSourceFolder;
+            arLogVerbose = src.arLogVerbose;
+            fixOffsetToNearest = src.fixOffsetToNearest;
+            ArLogFilenameFormat = src.ArLogFilenameFormat;
+            AlArtFilenameFormat = src.AlArtFilenameFormat;
+
+            separateDecodingThread = src.separateDecodingThread;
+
+            gapsHandling = src.gapsHandling;
+
+            advanced = new CUEConfigAdvanced(src.advanced);
+
+            language = src.language;
+
+            scripts = new Dictionary<string, CUEToolsScript>();
+            scripts.Add("default", new CUEToolsScript("default",
+                new CUEAction[] { CUEAction.Verify, CUEAction.Encode }));
+            scripts.Add("only if found", new CUEToolsScript("only if found",
+                new CUEAction[] { CUEAction.Verify }));
+            scripts.Add("fix offset", new CUEToolsScript("fix offset",
+                new CUEAction[] { CUEAction.Encode }));
+            scripts.Add("encode if verified", new CUEToolsScript("encode if verified",
+                new CUEAction[] { CUEAction.Encode }));
+            scripts.Add("repair", new CUEToolsScript("repair",
+                new CUEAction[] { CUEAction.Encode }));
+
+            defaultVerifyScript = src.defaultVerifyScript;
+            defaultEncodeScript = src.defaultEncodeScript;
+        }
+
         public void Save(SettingsWriter sw)
         {
             sw.Save("Version", 204);

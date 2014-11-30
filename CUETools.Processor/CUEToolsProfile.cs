@@ -24,6 +24,14 @@ namespace CUETools.Processor
             }
         }
 
+        public CUEToolsProfile Clone(string name)
+        {
+            var res = this.MemberwiseClone() as CUEToolsProfile;
+            res._config = new CUEConfig(_config);
+            res._name = string.Copy(name);
+            return res;
+        }
+
         public void Load(SettingsReader sr)
         {
             _config.Load(sr);

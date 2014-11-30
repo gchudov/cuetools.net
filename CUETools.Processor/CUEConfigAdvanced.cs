@@ -30,6 +30,15 @@ namespace CUETools.Processor
             }
         }
 
+        public CUEConfigAdvanced(CUEConfigAdvanced src)
+        {
+            // Iterate through each property and call SetValue()
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+            {
+                property.SetValue(this, property.GetValue(src));
+            }
+        }
+
         internal static XmlSerializer serializer = new XmlSerializer(typeof(CUEConfigAdvanced));
         [DefaultValue("i"), Category("Freedb"), DisplayName("Email user")]
         public string FreedbUser { get; set; }

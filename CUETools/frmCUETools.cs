@@ -1360,10 +1360,6 @@ namespace JDP
             _profile = new CUEToolsProfile(profileName);
             SettingsReader sr = new SettingsReader("CUE Tools", string.Format("profile-{0}.txt", _profile._name), Application.ExecutablePath);
             _profile.Load(sr);
-            _profile._config.encoders = _defaultProfile._config.encoders;
-            _profile._config.decoders = _defaultProfile._config.decoders;
-            _profile._config.formats = _defaultProfile._config.formats;
-            _profile._config.scripts = _defaultProfile._config.scripts;
             ActivateProfile();
         }
 
@@ -1373,10 +1369,6 @@ namespace JDP
 
             if (_profile != _defaultProfile)
             {
-                _defaultProfile._config.encoders = _profile._config.encoders;
-                _defaultProfile._config.decoders = _profile._config.decoders;
-                _defaultProfile._config.formats = _profile._config.formats;
-                _defaultProfile._config.scripts = _profile._config.scripts;
                 _profile = _defaultProfile;
                 ActivateProfile();
             }
@@ -2551,8 +2543,9 @@ namespace JDP
             e.SuppressKeyPress = true;
 
             string profileName = item.Text;
-            DeactivateProfile();
-            _profile = new CUEToolsProfile(profileName);
+            SaveProfile();
+            //DeactivateProfile();
+            _profile = _profile.Clone(profileName);
             ActivateProfile();
         }
 

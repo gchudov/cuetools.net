@@ -30,10 +30,21 @@
                 return "." + extension;
             }
         }
+
+        public CUEToolsFormat Clone(CUEToolsCodecsConfig cfg)
+        {
+            var res = this.MemberwiseClone() as CUEToolsFormat;
+            if (decoder != null) cfg.decoders.TryGetValue(decoder.extension, decoder.lossless, decoder.name, out res.decoder);
+            if (encoderLossy != null) cfg.encoders.TryGetValue(encoderLossy.extension, encoderLossy.lossless, encoderLossy.name, out res.encoderLossy);
+            if (encoderLossless != null) cfg.encoders.TryGetValue(encoderLossless.extension, encoderLossless.lossless, encoderLossless.name, out res.encoderLossless);
+            return res;
+        }
+
         public override string ToString()
         {
             return extension;
         }
+
         public string extension;
         public CUEToolsUDC encoderLossless;
         public CUEToolsUDC encoderLossy;

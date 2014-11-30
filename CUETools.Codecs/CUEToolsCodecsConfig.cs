@@ -15,6 +15,19 @@ namespace CUETools.Codecs
         public CUEToolsUDCList encoders;
         public CUEToolsUDCList decoders;
 
+        public CUEToolsCodecsConfig(CUEToolsCodecsConfig src)
+        {
+            encoders = new CUEToolsUDCList(true);
+            foreach (var enc in src.encoders)
+                encoders.Add(enc.Clone());
+            decoders = new CUEToolsUDCList(false);
+            foreach (var dec in src.decoders)
+                decoders.Add(dec.Clone());
+            formats = new Dictionary<string, CUEToolsFormat>();
+            foreach (var fmt in src.formats)
+                formats.Add(fmt.Key, fmt.Value.Clone(this));
+        }
+
         public CUEToolsCodecsConfig(List<Type> encs, List<Type> decs)
         {
             encoders = new CUEToolsUDCList(true);

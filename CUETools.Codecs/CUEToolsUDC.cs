@@ -81,6 +81,13 @@ namespace CUETools.Codecs
             type = dectype;
         }
 
+        public CUEToolsUDC Clone()
+        {
+            var res = this.MemberwiseClone() as CUEToolsUDC;
+            if (settings != null) res.settings = settings.Clone();
+            return res;
+        }
+
         public override string ToString()
         {
             return name;
