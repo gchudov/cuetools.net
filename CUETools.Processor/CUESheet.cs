@@ -22,7 +22,7 @@ namespace CUETools.Processor
     {
         #region Fields
 
-        public readonly static string CUEToolsVersion = "2.1.5";
+        public readonly static string CUEToolsVersion = "2.1.6";
 
         private bool _stop, _pause;
         private List<CUELine> _attributes;
