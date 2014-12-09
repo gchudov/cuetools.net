@@ -81,9 +81,21 @@ namespace CUETools.Codecs
                     if (attribute is DefaultValueForModeAttribute)
                     {
                         var defaultValueForMode = attribute as DefaultValueForModeAttribute;
-                        res &= (int)property.GetValue(this) == defaultValueForMode.m_values[index];
+                        res &= property.GetValue(this).Equals(defaultValueForMode.m_values[index]);
                     }
             return res;
+        }
+
+        public int GuessEncoderMode()
+        {
+            string defaultMode;
+            string[] modes = this.GetSupportedModes(out defaultMode).Split(' ');
+            if (modes == null || modes.Length < 1)
+                return -1;
+            for (int i = 0; i < modes.Length; i++)
+                if (HasDefaultValuesForMode(i))
+                    return i;
+            return -1;
         }
 
         [Browsable(false)]

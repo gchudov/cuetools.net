@@ -1118,7 +1118,10 @@ namespace CUETools.Codecs.FLACCL
             {
                 calculate_window(task, lpc.window_welch, WindowFunction.Welch);
                 calculate_window(task, lpc.window_flattop, WindowFunction.Flattop);
-                calculate_window(task, lpc.window_tukey, WindowFunction.Tukey);
+                calculate_window(task, (w, wsz) =>
+                {
+                    lpc.window_tukey(w, wsz, 0.5);
+                }, WindowFunction.Tukey);
                 calculate_window(task, lpc.window_hann, WindowFunction.Hann);
                 calculate_window(task, lpc.window_bartlett, WindowFunction.Bartlett);
                 if (task.nWindowFunctions == 0)

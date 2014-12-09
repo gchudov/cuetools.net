@@ -13,13 +13,13 @@ namespace CUETools.Codecs
         /// <summary>
         /// Resource manager to use;
         /// </summary>
-        public int[] m_values;
+        public object[] m_values;
 
         /// <summary>
         /// Construct the description attribute
         /// </summary>
         /// <param name="text"></param>
-        public DefaultValueForModeAttribute(params int[] values)
+        public DefaultValueForModeAttribute(params object[] values)
         {
             this.m_values = values;
         }

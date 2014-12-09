@@ -83,7 +83,7 @@ namespace CUETools.Codecs
             else if (m_type == SectionType.Data)
                 lpc.compute_autocorr(data + m_start, window + m_start, m_end - m_start, min_order, order, autoc);
             else if (m_type == SectionType.Glue)
-                lpc.compute_autocorr_glue(data, window, m_start, blocksize, min_order, order, autoc);
+                lpc.compute_autocorr_glue(data, window, m_start, m_end, min_order, order, autoc);
             else if (m_type == SectionType.OneGlue)
                 lpc.compute_autocorr_glue(data + m_start, min_order, order, autoc);
         }
@@ -109,6 +109,7 @@ namespace CUETools.Codecs
                                 && w == window_segment[i1 * stride + x])
                                 alias[i1, boundaries.Count] = i;
                     }
+                    if (boundaries.Count >= lpc.MAX_LPC_SECTIONS * 2) throw new IndexOutOfRangeException();
                     types[i, boundaries.Count] =
                         boundaries.Count >= lpc.MAX_LPC_SECTIONS * 2 - 2 ?
                         LpcWindowSection.SectionType.Data : w == 0.0 ?
@@ -143,6 +144,7 @@ namespace CUETools.Codecs
                     // leave room for glue
                     if (secs[i] >= lpc.MAX_LPC_SECTIONS - 1)
                     {
+                        throw new IndexOutOfRangeException();
                         window_sections[secs[i] - 1].m_type = LpcWindowSection.SectionType.Data;
                         window_sections[secs[i] - 1].m_end = boundaries[j + 1];
                         continue;
@@ -165,6 +167,7 @@ namespace CUETools.Codecs
                         secs[i]--;
                         continue;
                     }
+                    if (section_id >= lpc.MAX_LPC_SECTIONS) throw new IndexOutOfRangeException();
                     if (alias_set[i, j] != 0
                         && types[i, j] != SectionType.Zero
                         && section_id < lpc.MAX_LPC_SECTIONS)
@@ -174,7 +177,7 @@ namespace CUETools.Codecs
                                 sections[i1 * lpc.MAX_LPC_SECTIONS + secs[i1] - 1].m_id = section_id;
                         section_id++;
                     }
-                    // TODO: section_id for glue?
+                    // TODO: section_id for glue? nontrivial, must be sure next sections are the same size
                     if (sec > 0
                         && (window_sections[sec].m_type == SectionType.One || window_sections[sec].m_type == SectionType.OneLarge)
                         && window_sections[sec].m_end - window_sections[sec].m_start >= lpc.MAX_LPC_ORDER
@@ -203,6 +206,15 @@ namespace CUETools.Codecs
             }
             for (int i = 0; i < _windowcount; i++)
             {
+                for (int s = 0; s < secs[i]; s++)
+                {
+                    LpcWindowSection* window_sections = sections + i * lpc.MAX_LPC_SECTIONS;
+                    if (window_sections[s].m_type == SectionType.Glue
+                        || window_sections[s].m_type == SectionType.OneGlue)
+                    {
+                        window_sections[s].m_end = window_sections[s + 1].m_end;
+                    }
+                }
                 while (secs[i] < lpc.MAX_LPC_SECTIONS)
                 {
                     LpcWindowSection* window_sections = sections + i * lpc.MAX_LPC_SECTIONS;

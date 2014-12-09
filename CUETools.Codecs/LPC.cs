@@ -5,9 +5,9 @@ namespace CUETools.Codecs
 	public class lpc
 	{
 		public const int MAX_LPC_ORDER = 32;
-		public const int MAX_LPC_WINDOWS = 8;
+		public const int MAX_LPC_WINDOWS = 16;
 		public const int MAX_LPC_PRECISIONS = 4;
-        public const int MAX_LPC_SECTIONS = 32;
+        public const int MAX_LPC_SECTIONS = 128;
 
 		public unsafe static void window_welch(float* window, int L)
 		{
@@ -47,9 +47,8 @@ namespace CUETools.Codecs
 				window[n] = (float)(1.0 - 1.93 * Math.Cos(2.0 * Math.PI * n / N) + 1.29 * Math.Cos(4.0 * Math.PI * n / N) - 0.388 * Math.Cos(6.0 * Math.PI * n / N) + 0.0322 * Math.Cos(8.0 * Math.PI * n / N));
 		}
 
-        public unsafe static void window_tukey(float* window, int L)
+        public unsafe static void window_tukey(float* window, int L, double p)
 		{
-			double p = 0.5;
             int z = 0;
             int Np = (int)(p / 2.0 * L) - z;
 			if (Np > 0)
@@ -63,28 +62,29 @@ namespace CUETools.Codecs
 			}
 		}
 
-        public unsafe static void window_punchout_tukey(float* window, int L, double p, double start, double end)
+        public unsafe static void window_punchout_tukey(float* window, int L, double p, double p1, double start, double end)
         {
             int start_n = (int)(start * L);
             int end_n = (int)(end * L);
             int Np = (int)(p / 2.0 * L);
+            int Np1 = (int)(p1 / 2.0 * L);
             int i, n = 0;
 
             if (start_n != 0)
             {
                 for (i = 1; n < Np; n++, i++)
                     window[n] = (float)(0.5 - 0.5 * Math.Cos(Math.PI * i / Np));
-                for (; n < start_n - Np; n++)
+                for (; n < start_n - Np1; n++)
                     window[n] = 1.0f;
-                for (i = Np; n < start_n; n++, i--)
-                    window[n] = (float)(0.5 - 0.5 * Math.Cos(Math.PI * i / Np));
+                for (i = Np1; n < start_n; n++, i--)
+                    window[n] = (float)(0.5 - 0.5 * Math.Cos(Math.PI * i / Np1));
             }
             for (; n < end_n; n++)
 		        window[n] = 0.0f;
             if (end_n != L)
             {
-                for (i = 1; n < end_n + Np; n++, i++)
-                    window[n] = (float)(0.5 - 0.5 * Math.Cos(Math.PI * i / Np));
+                for (i = 1; n < end_n + Np1; n++, i++)
+                    window[n] = (float)(0.5 - 0.5 * Math.Cos(Math.PI * i / Np1));
                 for (; n < L - Np; n++)
                     window[n] = 1.0f;
                 for (i = Np; n < L; n++, i--)
@@ -358,11 +358,11 @@ namespace CUETools.Codecs
         }
 
         static public unsafe void
-            compute_autocorr_glue(/*const*/ int* data, float* window, int offs, int sz, int min, int lag, double* autoc)
+            compute_autocorr_glue(/*const*/ int* data, float* window, int offs, int offs1, int min, int lag, double* autoc)
         {
             double* data1 = stackalloc double[lag + lag];
             for (int i = -lag; i < lag; i++)
-                data1[i + lag] = offs + i >= 0 && offs + i < sz ? data[offs + i] * window[offs + i] : 0;
+                data1[i + lag] = offs + i >= 0 && offs + i < offs1 ? data[offs + i] * window[offs + i] : 0;
             for (int i = min; i <= lag; ++i)
             {
                 double temp = 0;

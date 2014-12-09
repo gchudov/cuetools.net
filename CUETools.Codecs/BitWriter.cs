@@ -108,6 +108,12 @@ namespace CUETools.Codecs
                 writebits(8, (byte)s[i]);
         }
 
+        public void write(byte[] s)
+        {
+            for (int i = 0; i < s.Length; i++)
+                writebits(8, s[i]);
+        }
+
         public void writebits_signed(int bits, int val)
         {
             writebits(bits, val & ((1 << bits) - 1));

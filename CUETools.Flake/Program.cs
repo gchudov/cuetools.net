@@ -94,21 +94,23 @@ namespace CUETools.FlakeExe
             Console.WriteLine();
             Console.WriteLine(" -0 .. -11            Compression level, default 7; 9..11 require --lax");
             Console.WriteLine(" -o <file>            Output filename, or \"-\" for stdout, or nul.");
-            Console.WriteLine(" -p #                 Padding bytes.");
-            Console.WriteLine(" -q --quiet           Quiet mode.");
-            Console.WriteLine(" --lax                Allow non-subset modes");
-            Console.WriteLine(" --verify             Verify during encoding.");
+            Console.WriteLine(" -P, --padding #      Padding bytes.");
+            Console.WriteLine(" -q, --quiet          Quiet mode.");
+            Console.WriteLine(" -f, --force          Overwrite existing files.");
+            Console.WriteLine(" -V, --verify         Verify a correct encoding.");
+            Console.WriteLine(" -T, --tag FIELD=VAL  Add a FLAC tag; may appear multiple times");
+            Console.WriteLine(" --lax                Allow encoder to generate non-Subset files");
             Console.WriteLine(" --no-md5             Don't compute MD5 hash.");
             Console.WriteLine(" --no-seektable       Don't generate a seektable.");
-            Console.WriteLine(" --ignore-chunk-sizes Ignore WAV length (for pipe input)");
+            Console.WriteLine(" --ignore-chunk-sizes Ignore data chunk sizes in WAVE files (for pipe input)");
             Console.WriteLine();
             Console.WriteLine("Advanced Options:");
             Console.WriteLine();
             Console.WriteLine(" -b #                 Block size.");
-            Console.WriteLine(" -v #                 Variable block size mode (0,4).");
             Console.WriteLine(" -t <type>            Prediction type (fixed,levinson,search).");
             Console.WriteLine(" -s <method>          Stereo decorrelation (independent,estimate,evaluate,search).");
             Console.WriteLine(" -r #[,#]             Rice partition order {max} or {min},{max} (0..8).");
+            Console.WriteLine(" --vbr #              Variable block size mode (0,4).");
             Console.WriteLine();
             Console.WriteLine("LPC options:");
             Console.WriteLine();
@@ -134,15 +136,9 @@ namespace CUETools.FlakeExe
             DateTime start = DateTime.Now;
             TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
             bool debug = false, quiet = false;
-            string prediction_type = null;
-            string stereo_method = null;
-            string window_method = null;
             string order_method = null;
-            string window_function = null;
             string input_file = null;
             string output_file = null;
-            int min_precision = -1, max_precision = -1,
-                estimation_depth = -1;
             int skip_a = 0, skip_b = 0;
             int intarg = -1, vbr_mode = -1, magic = -1;
             bool do_seektable = true;
@@ -151,6 +147,7 @@ namespace CUETools.FlakeExe
             var settings = new FlakeWriterSettings() { AllowNonSubset = true };
             bool allowNonSubset = false;
             bool ignore_chunk_sizes = false;
+            bool force = false;
 #if FINETUNE
             int finetune_depth = -1;
 #endif
@@ -158,112 +155,141 @@ namespace CUETools.FlakeExe
             for (int arg = 0; arg < args.Length; arg++)
             {
                 bool ok = true;
-                if (args[arg].Length == 0)
-                    ok = false;
-                else if (args[arg] == "--debug")
-                    debug = true;
-                else if ((args[arg] == "-q" || args[arg] == "--quiet"))
-                    quiet = true;
-                else if (args[arg] == "--verify")
-                    settings.DoVerify = true;
-                else if (args[arg] == "--no-seektable")
-                    do_seektable = false;
-                else if (args[arg] == "--ignore-chunk-sizes")
-                    ignore_chunk_sizes = true;
-                else if (args[arg] == "--no-md5")
-                    settings.DoMD5 = false;
-                else if (args[arg] == "--lax")
-                    allowNonSubset = true;
-                else if (args[arg] == "--buffered")
-                    buffered = true;
-                else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
-                    output_file = args[arg];
-                else if ((args[arg] == "-t" || args[arg] == "--prediction-type") && ++arg < args.Length)
-                    prediction_type = args[arg];
-                else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
-                    stereo_method = args[arg];
-                else if ((args[arg] == "-m" || args[arg] == "--order-method") && ++arg < args.Length)
-                    order_method = args[arg];
-                else if ((args[arg] == "-w" || args[arg] == "--window") && ++arg < args.Length)
-                    window_function = args[arg];
-                else if (args[arg] == "--window-method" && ++arg < args.Length)
-                    window_method = args[arg];
-                else if ((args[arg] == "-r" || args[arg] == "--partition-order") && ++arg < args.Length)
+                try
                 {
-                    int min_partition_order, max_partition_order;
-                    ok = (args[arg].Split(',').Length == 2
-                        && int.TryParse(args[arg].Split(',')[0], out min_partition_order)
-                        && (settings.MinPartitionOrder = min_partition_order) != -1
-                        && int.TryParse(args[arg].Split(',')[1], out max_partition_order)
-                        && (settings.MaxPartitionOrder = max_partition_order) != -1)
-                        || (int.TryParse(args[arg], out max_partition_order)
-                        && (settings.MaxPartitionOrder = max_partition_order) != -1);
-                }
-                else if ((args[arg] == "-l" || args[arg] == "--lpc-order") && ++arg < args.Length)
-                {
-                    int min_lpc_order, max_lpc_order;
-                    ok = (args[arg].Split(',').Length == 2
-                        && int.TryParse(args[arg].Split(',')[0], out min_lpc_order)
-                        && (settings.MinLPCOrder = min_lpc_order) != -1
-                        && int.TryParse(args[arg].Split(',')[1], out max_lpc_order)
-                        && (settings.MaxLPCOrder = max_lpc_order) != -1)
-                        || (int.TryParse(args[arg], out max_lpc_order)
-                        && (settings.MaxLPCOrder = max_lpc_order) != -1);
-                }
-                else if ((args[arg] == "-f" || args[arg] == "--fixed-order") && ++arg < args.Length)
-                {
-                    int min_fixed_order, max_fixed_order;
-                    ok = (args[arg].Split(',').Length == 2
-                        && int.TryParse(args[arg].Split(',')[0], out min_fixed_order)
-                        && (settings.MinFixedOrder = min_fixed_order) != -1
-                        && int.TryParse(args[arg].Split(',')[1], out max_fixed_order)
-                        && (settings.MaxFixedOrder = max_fixed_order) != -1)
-                        || (int.TryParse(args[arg], out max_fixed_order)
-                        && (settings.MaxFixedOrder = max_fixed_order) != -1);
-                }
-                else if (args[arg] == "--skip" && ++arg < args.Length)
-                {
-                    ok = (args[arg].Split(',').Length == 2 &&
-                        int.TryParse(args[arg].Split(',')[0], out skip_a) &&
-                        int.TryParse(args[arg].Split(',')[1], out skip_b)) ||
-                        int.TryParse(args[arg], out skip_a);
-                }
-                else if ((args[arg] == "-e" || args[arg] == "--estimation-depth") && ++arg < args.Length)
-                    ok = int.TryParse(args[arg], out estimation_depth);
-                else if ((args[arg] == "-c" || args[arg] == "--max-precision") && ++arg < args.Length)
-                {
-                    ok = (args[arg].Split(',').Length == 2 &&
-                        int.TryParse(args[arg].Split(',')[0], out min_precision) &&
-                        int.TryParse(args[arg].Split(',')[1], out max_precision)) ||
-                        int.TryParse(args[arg], out max_precision);
-                }
-                else if ((args[arg] == "-v" || args[arg] == "--vbr"))
-                    ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
-                else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
-                    settings.BlockSize = intarg;
-                else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
-                    settings.Padding = intarg;
-                else if (args[arg] == "--magic" && ++arg < args.Length)
-                    ok = int.TryParse(args[arg], out magic);
+                    if (args[arg].Length == 0)
+                        ok = false;
+                    else if (args[arg] == "--debug")
+                        debug = true;
+                    else if ((args[arg] == "-f" || args[arg] == "--force"))
+                        force = true;
+                    else if ((args[arg] == "-q" || args[arg] == "--quiet"))
+                        quiet = true;
+                    else if ((args[arg] == "-V" || args[arg] == "--verify"))
+                        settings.DoVerify = true;
+                    else if (args[arg] == "--no-seektable")
+                        do_seektable = false;
+                    else if (args[arg] == "--ignore-chunk-sizes")
+                        ignore_chunk_sizes = true;
+                    else if (args[arg] == "--no-md5")
+                        settings.DoMD5 = false;
+                    else if (args[arg] == "--lax")
+                        allowNonSubset = true;
+                    else if (args[arg] == "--buffered")
+                        buffered = true;
+                    else if ((args[arg] == "-o" || args[arg] == "--output") && ++arg < args.Length)
+                        output_file = args[arg];
+                    else if ((args[arg] == "-T" || args[arg] == "--tag") && ++arg < args.Length)
+                    {
+                        var tags = settings.Tags != null ? new List<string>(settings.Tags) : new List<string>();
+                        tags.Add(args[arg]);
+                        settings.Tags = tags.ToArray();
+                    }
+                    else if ((args[arg] == "-t" || args[arg] == "--prediction-type") && ++arg < args.Length)
+                        settings.PredictionType = Flake.LookupPredictionType(args[arg]);
+                    else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
+                        settings.StereoMethod = Flake.LookupStereoMethod(args[arg]);
+                    else if ((args[arg] == "-m" || args[arg] == "--order-method") && ++arg < args.Length)
+                        order_method = args[arg];
+                    else if ((args[arg] == "-w" || args[arg] == "--window") && ++arg < args.Length)
+                        settings.WindowFunctions = Flake.LookupWindowFunction(args[arg]);
+                    else if (args[arg] == "--window-method" && ++arg < args.Length)
+                        settings.WindowMethod = Flake.LookupWindowMethod(args[arg]);
+                    else if ((args[arg] == "-r" || args[arg] == "--partition-order") && ++arg < args.Length)
+                    {
+                        int min_partition_order, max_partition_order;
+                        ok = (args[arg].Split(',').Length == 2
+                            && int.TryParse(args[arg].Split(',')[0], out min_partition_order)
+                            && (settings.MinPartitionOrder = min_partition_order) != -1
+                            && int.TryParse(args[arg].Split(',')[1], out max_partition_order)
+                            && (settings.MaxPartitionOrder = max_partition_order) != -1)
+                            || (int.TryParse(args[arg], out max_partition_order)
+                            && (settings.MaxPartitionOrder = max_partition_order) != -1);
+                    }
+                    else if ((args[arg] == "-l" || args[arg] == "--lpc-order") && ++arg < args.Length)
+                    {
+                        int min_lpc_order, max_lpc_order;
+                        ok = (args[arg].Split(',').Length == 2
+                            && int.TryParse(args[arg].Split(',')[0], out min_lpc_order)
+                            && (settings.MinLPCOrder = min_lpc_order) != -1
+                            && int.TryParse(args[arg].Split(',')[1], out max_lpc_order)
+                            && (settings.MaxLPCOrder = max_lpc_order) != -1)
+                            || (int.TryParse(args[arg], out max_lpc_order)
+                            && (settings.MaxLPCOrder = max_lpc_order) != -1);
+                    }
+                    else if ((args[arg] == "--fixed-order") && ++arg < args.Length)
+                    {
+                        int min_fixed_order, max_fixed_order;
+                        ok = (args[arg].Split(',').Length == 2
+                            && int.TryParse(args[arg].Split(',')[0], out min_fixed_order)
+                            && (settings.MinFixedOrder = min_fixed_order) != -1
+                            && int.TryParse(args[arg].Split(',')[1], out max_fixed_order)
+                            && (settings.MaxFixedOrder = max_fixed_order) != -1)
+                            || (int.TryParse(args[arg], out max_fixed_order)
+                            && (settings.MaxFixedOrder = max_fixed_order) != -1);
+                    }
+                    else if (args[arg] == "--skip" && ++arg < args.Length)
+                    {
+                        ok = (args[arg].Split(',').Length == 2 &&
+                            int.TryParse(args[arg].Split(',')[0], out skip_a) &&
+                            int.TryParse(args[arg].Split(',')[1], out skip_b)) ||
+                            int.TryParse(args[arg], out skip_a);
+                    }
+                    else if ((args[arg] == "-e" || args[arg] == "--estimation-depth") && ++arg < args.Length)
+                    {
+                        settings.EstimationDepth = int.Parse(args[arg]);
+                    }
+                    else if (args[arg] == "--tukey-parts" && ++arg < args.Length)
+                        settings.TukeyParts = int.Parse(args[arg]);
+                    else if (args[arg] == "--tukey-overlap" && ++arg < args.Length)
+                        settings.TukeyOverlap = double.Parse(args[arg]);
+                    else if (args[arg] == "--tukey-p" && ++arg < args.Length)
+                        settings.TukeyP = double.Parse(args[arg]);
+                    else if ((args[arg] == "-c" || args[arg] == "--max-precision") && ++arg < args.Length)
+                    {
+                        int min_precision = -1, max_precision = -1;
+                        ok = (args[arg].Split(',').Length == 2 &&
+                            int.TryParse(args[arg].Split(',')[0], out min_precision) &&
+                            int.TryParse(args[arg].Split(',')[1], out max_precision)) ||
+                            int.TryParse(args[arg], out max_precision);
+                        settings.MinPrecisionSearch = min_precision;
+                        settings.MaxPrecisionSearch = max_precision;
+                    }
+                    else if (args[arg] == "--vbr")
+                        ok = (++arg < args.Length) && int.TryParse(args[arg], out vbr_mode);
+                    else if ((args[arg] == "-b" || args[arg] == "--blocksize") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                        settings.BlockSize = intarg;
+                    else if ((args[arg] == "-P" || args[arg] == "--padding") && ++arg < args.Length && int.TryParse(args[arg], out intarg))
+                        settings.Padding = intarg;
+                    else if (args[arg] == "--magic" && ++arg < args.Length)
+                        ok = int.TryParse(args[arg], out magic);
 #if FINETUNE
                 else if (args[arg] == "--depth" && ++arg < args.Length)
                     ok = int.TryParse(args[arg], out finetune_depth);
 #endif
-                else if (args[arg] == "--coefs" && ++arg < args.Length)
-                    coeffs = args[arg];
-                else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out intarg))
-                {
-                    ok = intarg >= 0 && intarg <= 11;
-                    settings.EncoderModeIndex = intarg;
+                    else if (args[arg] == "--coefs" && ++arg < args.Length)
+                        coeffs = args[arg];
+                    else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out intarg))
+                    {
+                        ok = intarg >= 0 && intarg <= 11;
+                        settings.EncoderModeIndex = intarg;
+                    }
+                    else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
+                        input_file = args[arg];
+                    else
+                        ok = false;
+                    if (!ok)
+                    {
+                        Usage();
+                        return 1;
+                    }
                 }
-                else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
-                    input_file = args[arg];
-                else
-                    ok = false;
-                if (!ok)
+                catch (Exception ex)
                 {
                     Usage();
-                    return 1;
+                    Console.WriteLine("");
+                    Console.WriteLine("{0}: {1}", args[arg - 1], ex.Message);
+                    return 5;
                 }
             }
             if (input_file == null || ((input_file == "-" || Path.GetExtension(input_file) == ".flac") && output_file == null))
@@ -274,8 +300,8 @@ namespace CUETools.FlakeExe
 
             if (!quiet)
             {
-                Console.WriteLine("CUETools.Flake, Copyright (C) 2009-2013 Grigory Chudov.");
-                Console.WriteLine("Based on Flake encoder by Justin Ruggles, <http://flake-enc.sourceforge.net/>.");
+                Console.WriteLine("CUETools.Flake, Copyright (C) 2009-2014 Grigory Chudov.");
+                Console.WriteLine("Initially based on Flake encoder by Justin Ruggles.");
                 Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
                 Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
             }
@@ -342,6 +368,13 @@ namespace CUETools.FlakeExe
                                 audioSource = new AudioPipe(audioSource, 0x10000);
                             if (output_file == null)
                                 output_file = Path.ChangeExtension(input_file, "flac");
+                            if (File.Exists(output_file) && !force)
+                            {
+                                Usage();
+                                Console.WriteLine();
+                                Console.WriteLine("File '{0}' already exists.", output_file);
+                                return 9;
+                            }
                             settings.PCM = audioSource.PCM;
                             settings.AllowNonSubset = allowNonSubset;
                             FlakeWriter flake;
@@ -354,22 +387,8 @@ namespace CUETools.FlakeExe
                                     settings);
                                 flake.FinalSampleCount = audioSource.Length < 0 ? -1 : audioSource.Length - skip_a - skip_b;
 
-                                if (prediction_type != null)
-                                    flake.PredictionType = Flake.LookupPredictionType(prediction_type);
-                                if (stereo_method != null)
-                                    flake.StereoMethod = Flake.LookupStereoMethod(stereo_method);
-                                if (window_method != null)
-                                    flake.WindowMethod = Flake.LookupWindowMethod(window_method);
                                 if (order_method != null)
                                     flake.OrderMethod = Flake.LookupOrderMethod(order_method);
-                                if (window_function != null)
-                                    flake.WindowFunction = Flake.LookupWindowFunction(window_function);
-                                if (min_precision >= 0)
-                                    flake.MinPrecisionSearch = min_precision;
-                                if (max_precision >= 0)
-                                    flake.MaxPrecisionSearch = max_precision;
-                                if (estimation_depth >= 0)
-                                    flake.EstimationDepth = estimation_depth;
                                 if (vbr_mode >= 0)
                                     flake.VBRMode = vbr_mode;
                                 if (magic >= 0)
@@ -479,20 +498,23 @@ namespace CUETools.FlakeExe
                             {
                                 settings = flake.Settings as FlakeWriterSettings;
                                 Console.SetOut(stdout);
-                                Console.Out.WriteLine("{17}\t{0}\t{1:0.00}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}\t{16}\t{18}",
+                                Console.Out.WriteLine("{17}\t{0}\t{1:0.000}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}\t{16}\t{18}",
                                     flake.TotalSize,
                                     flake.UserProcessorTime.TotalSeconds > 0 ? flake.UserProcessorTime.TotalSeconds : totalElapsed.TotalSeconds,
-                                    flake.PredictionType.ToString().PadRight(15),
-                                    flake.StereoMethod.ToString().PadRight(15),
-                                    (flake.OrderMethod.ToString() + "(" + flake.EstimationDepth.ToString() + ")").PadRight(15),
-                                    (flake.WindowMethod.ToString().PadRight(10) + "(" +
-                                        ((flake.WindowFunction & WindowFunction.Tukey) != 0 ? "T" : " ") +
-                                        ((flake.WindowFunction & WindowFunction.PartialTukey) != 0 ? "P" : " ") +
-                                        (((flake.WindowFunction & WindowFunction.PunchoutTukey) != 0 ? "O" : "") +
-                                        ((flake.WindowFunction & WindowFunction.Welch) == 0 ? "" : "W") +
-                                        ((flake.WindowFunction & WindowFunction.Hann) == 0 ? "" : "H") +
-                                        ((flake.WindowFunction & WindowFunction.Flattop) == 0 ? "" : "F") +
-                                        ((flake.WindowFunction & WindowFunction.Bartlett) == 0 ? "" : "B")).PadRight(1))
+                                    settings.PredictionType.ToString().PadRight(15),
+                                    settings.StereoMethod.ToString().PadRight(15),
+                                    (flake.OrderMethod.ToString() + "(" + settings.EstimationDepth.ToString() + ")").PadRight(15),
+                                    (settings.WindowMethod.ToString().PadRight(10) + "(" +
+                                        ((settings.WindowFunctions & WindowFunction.Tukey1X) != 0 ? "X" : (settings.WindowFunctions & WindowFunction.Tukey) != 0 ? "T" : (settings.WindowFunctions & WindowFunction.Tukey1A) != 0 ? "A" : (settings.WindowFunctions & WindowFunction.Tukey1B) != 0 ? "B" : " ") +
+                                        ((settings.WindowFunctions & WindowFunction.Tukey2X) != 0 ? "X" : (settings.WindowFunctions & WindowFunction.Tukey2) != 0 ? "2" : (settings.WindowFunctions & WindowFunction.Tukey2A) != 0 ? "A" : (settings.WindowFunctions & WindowFunction.Tukey2B) != 0 ? "B" : " ") +
+                                        ((settings.WindowFunctions & WindowFunction.Tukey3X) != 0 ? "X" : (settings.WindowFunctions & WindowFunction.Tukey3) != 0 ? "3" : (settings.WindowFunctions & WindowFunction.Tukey3A) != 0 ? "A" : (settings.WindowFunctions & WindowFunction.Tukey3B) != 0 ? "B" : " ") +
+                                        ((settings.WindowFunctions & WindowFunction.Tukey4X) != 0 ? "X" : ((settings.WindowFunctions & WindowFunction.Tukey4) != 0 ? "4" : (settings.WindowFunctions & WindowFunction.Tukey4A) != 0 ? "A" : (settings.WindowFunctions & WindowFunction.Tukey4B) != 0 ? "B" : " ") +
+                                        ((settings.WindowFunctions & WindowFunction.Welch) == 0 ? "" : "W") +
+                                        ((settings.WindowFunctions & WindowFunction.Hann) == 0 ? "" : "H") +
+                                        ((settings.WindowFunctions & WindowFunction.Flattop) == 0 ? "" : "F") +
+                                        ((settings.WindowFunctions & WindowFunction.Bartlett) == 0 ? "" : "B")).PadRight(1))
+                                        + ((settings.WindowFunctions & (WindowFunction.Tukey1X|WindowFunction.Tukey2X|WindowFunction.Tukey2X|WindowFunction.Tukey3X|WindowFunction.Tukey4X)) != 0 ? 
+                                        ("," + settings.TukeyOverlap.ToString("F3").PadLeft(6) + "," + settings.TukeyP.ToString("F3")) : "").PadRight(13)
                                          +")",
                                     settings.MinPartitionOrder,
                                     settings.MaxPartitionOrder,
@@ -500,22 +522,13 @@ namespace CUETools.FlakeExe
                                     settings.MaxLPCOrder,
                                     settings.MinFixedOrder,
                                     settings.MaxFixedOrder,
-                                    flake.MinPrecisionSearch,
-                                    flake.MaxPrecisionSearch,
+                                    settings.MinPrecisionSearch,
+                                    settings.MaxPrecisionSearch,
                                     flake.Settings.BlockSize,
                                     flake.VBRMode,
                                     coeffs ?? "",
                                     audioSource.Position * audioSource.PCM.BlockAlign,
-                                    (flake.PredictionType == PredictionType.Search && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.EvaluateN && flake.WindowFunction == (WindowFunction.PunchoutTukey | WindowFunction.PartialTukey | WindowFunction.Tukey) && flake.EstimationDepth == 2 && flake.MinPrecisionSearch == 0 && settings.HasDefaultValuesForMode(8)) ? "8" :
-                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.EvaluateN && flake.WindowFunction == (WindowFunction.PunchoutTukey | WindowFunction.PartialTukey | WindowFunction.Tukey) && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(7)) ? "7" :
-                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.EstimateN && flake.WindowFunction == (WindowFunction.PunchoutTukey | WindowFunction.PartialTukey) && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(6)) ? "6" :
-                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Evaluate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PunchoutTukey && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(5)) ? "5" :
-                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Estimate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PunchoutTukey && flake.EstimationDepth == 2 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(4)) ? "4" :
-                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Estimate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PunchoutTukey && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(3)) ? "3" :
-                                    (flake.PredictionType == PredictionType.Levinson && flake.StereoMethod == StereoMethod.Estimate && flake.WindowMethod == WindowMethod.Estimate && flake.WindowFunction == WindowFunction.PartialTukey && flake.EstimationDepth == 1 && flake.MinPrecisionSearch == 1 && settings.HasDefaultValuesForMode(2)) ? "2" :
-                                    (flake.PredictionType == PredictionType.Fixed && flake.StereoMethod == StereoMethod.Independent && flake.WindowMethod == WindowMethod.Estimate && flake.MinPrecisionSearch == 1 && flake.WindowFunction == WindowFunction.Tukey && settings.HasDefaultValuesForMode(1)) ? "1" :
-                                    (flake.PredictionType == PredictionType.Fixed && flake.StereoMethod == StereoMethod.Independent && flake.WindowMethod == WindowMethod.Estimate && flake.MinPrecisionSearch == 1 && flake.WindowFunction == WindowFunction.Tukey && settings.HasDefaultValuesForMode(0)) ? "0" :
-                                    "?"
+                                    settings.GuessEncoderMode().ToString().Replace("-1","?")
                                 );
                             }
 #endif

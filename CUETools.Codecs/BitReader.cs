@@ -11,21 +11,32 @@ namespace CUETools.Codecs
             return log2i((uint)v);
         }
 
+        public static readonly byte[] MultiplyDeBruijnBitPosition = new byte[32]
+        {
+            0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30,
+            8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31
+        };
+
         public static int log2i(ulong v)
         {
-            int n = 0;
-            if (0 != (v & 0xffffffff00000000)) { v >>= 32; n += 32; }
-            if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
-            if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
-            return n + byte_to_log2_table[v];
+            v |= v >> 1; // first round down to one less than a power of 2 
+            v |= v >> 2;
+            v |= v >> 4;
+            v |= v >> 8;
+            v |= v >> 16;
+            if (v >> 32 == 0)
+                return MultiplyDeBruijnBitPosition[(uint)((uint)v * 0x07C4ACDDU) >> 27];
+            return 32 + MultiplyDeBruijnBitPosition[(uint)((uint)(v >> 32) * 0x07C4ACDDU) >> 27];
         }
 
         public static int log2i(uint v)
         {
-            int n = 0;
-            if (0 != (v & 0xffff0000)) { v >>= 16; n += 16; }
-            if (0 != (v & 0xff00)) { v >>= 8; n += 8; }
-            return n + byte_to_log2_table[v];
+            v |= v >> 1; // first round down to one less than a power of 2 
+            v |= v >> 2;
+            v |= v >> 4;
+            v |= v >> 8;
+            v |= v >> 16;
+            return MultiplyDeBruijnBitPosition[(uint)(v * 0x07C4ACDDU) >> 27];
         }
 
         public static readonly byte[] byte_to_unary_table = new byte[] 
@@ -46,26 +57,6 @@ namespace CUETools.Codecs
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		};
-
-        public static readonly byte[] byte_to_log2_table = new byte[] 
-		{
-			0,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3,
-			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
-			5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-			5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-			7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
 		};
 
         #endregion

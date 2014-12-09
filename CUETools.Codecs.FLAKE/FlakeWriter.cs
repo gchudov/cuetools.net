@@ -80,19 +80,36 @@ namespace CUETools.Codecs.FLAKE
                 throw new Exception("invalid MinPartitionOrder " + MinPartitionOrder.ToString());
             if (MinPartitionOrder > MaxPartitionOrder || MaxPartitionOrder > 8)
                 throw new Exception("invalid MaxPartitionOrder " + MaxPartitionOrder.ToString());
+            if (PredictionType == PredictionType.None)
+                throw new Exception("invalid PredictionType " + PredictionType.ToString());
+            if (PredictionType != PredictionType.Fixed)
+            {
+                if (WindowMethod == WindowMethod.Invalid)
+                    throw new InvalidOperationException("invalid WindowMethod " + WindowMethod.ToString());
+                if (WindowFunctions == WindowFunction.None)
+                    throw new InvalidOperationException("invalid WindowFunctions " + WindowFunctions.ToString());
+                if (EstimationDepth > 32 || EstimationDepth < 1)
+                    throw new InvalidOperationException("invalid EstimationDepth " + EstimationDepth.ToString());
+                if (MinPrecisionSearch < 0 || MinPrecisionSearch >= lpc.MAX_LPC_PRECISIONS)
+					throw new Exception("unsupported MinPrecisionSearch value");
+                if (MaxPrecisionSearch < 0 || MaxPrecisionSearch >= lpc.MAX_LPC_PRECISIONS)
+    				throw new Exception("unsupported MaxPrecisionSearch value");
+                if (MaxPrecisionSearch < MinPrecisionSearch)
+                    throw new Exception("unsupported MaxPrecisionSearch value");
+            }
             if (!AllowNonSubset && !IsSubset())
                 throw new Exception("the encoding parameters specified do not conform to the FLAC Subset");
         }
 
         [DefaultValue(-1)]
-        [DefaultValueForMode(2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0)]
+        [DefaultValueForMode(2, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0)]
         [Browsable(false)]
         [DisplayName("MinFixedOrder")]
         [SRDescription(typeof(Properties.Resources), "MinFixedOrderDescription")]
         public int MinFixedOrder { get; set; }
 
         [DefaultValue(-1)]
-        [DefaultValueForMode(2, 4, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4)]
+        [DefaultValueForMode(2, 4, 4, 4, 2, 2, 4, 4, 4, 4, 4, 4)]
         [Browsable(false)]
         [DisplayName("MaxFixedOrder")]
         [SRDescription(typeof(Properties.Resources), "MaxFixedOrderDescription")]
@@ -118,7 +135,7 @@ namespace CUETools.Codecs.FLAKE
         public int MinPartitionOrder { get; set; }
 
         [DefaultValue(-1)]
-        [DefaultValueForMode(6, 8, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8)]
+        [DefaultValueForMode(6, 6, 6, 6, 6, 6, 6, 6, 7, 6, 6, 8)]
         [DisplayName("MaxPartitionOrder")]
         [Browsable(false)]
         [SRDescription(typeof(Properties.Resources), "MaxPartitionOrderDescription")]
@@ -138,6 +155,106 @@ namespace CUETools.Codecs.FLAKE
         [DisplayName("Allow Non-subset")]
         [SRDescription(typeof(Properties.Resources), "AllowNonSubsetDescription")]
         public bool AllowNonSubset { get; set; }
+
+        [DefaultValue(StereoMethod.Invalid)]
+        [DefaultValueForMode(
+            /*  0 */ StereoMethod.Independent,
+            /*  1 */ StereoMethod.EstimateFixed,
+            /*  2 */ StereoMethod.Estimate,
+            /*  3 */ StereoMethod.Estimate,
+            /*  4 */ StereoMethod.Evaluate,
+            /*  5 */ StereoMethod.Evaluate,
+            /*  6 */ StereoMethod.Evaluate,
+            /*  7 */ StereoMethod.Evaluate,
+            /*  8 */ StereoMethod.Evaluate,
+            /*  9 */ StereoMethod.Evaluate,
+            /* 10 */ StereoMethod.Evaluate,
+            /* 11 */ StereoMethod.Evaluate)]
+        [Browsable(false)]
+        public StereoMethod StereoMethod { get; set; }
+
+        [DefaultValue(PredictionType.None)]
+        [DefaultValueForMode(
+            /*  0 */ PredictionType.Fixed,
+            /*  1 */ PredictionType.Fixed,
+            /*  2 */ PredictionType.Levinson,
+            /*  3 */ PredictionType.Levinson,
+            /*  4 */ PredictionType.Search,
+            /*  5 */ PredictionType.Search,
+            /*  6 */ PredictionType.Search,
+            /*  7 */ PredictionType.Search,
+            /*  8 */ PredictionType.Search,
+            /*  9 */ PredictionType.Levinson,
+            /* 10 */ PredictionType.Search,
+            /* 11 */ PredictionType.Search)]
+        [Browsable(false)]
+        public PredictionType PredictionType { get; set; }
+
+        [DefaultValue(WindowMethod.Invalid)]
+        [DefaultValueForMode(
+            /*  0 */ WindowMethod.Invalid,
+            /*  1 */ WindowMethod.Invalid,
+            /*  2 */ WindowMethod.Estimate,
+            /*  3 */ WindowMethod.Estimate,
+            /*  4 */ WindowMethod.Estimate,
+            /*  5 */ WindowMethod.EvaluateN,
+            /*  6 */ WindowMethod.EvaluateN,
+            /*  7 */ WindowMethod.EvaluateN,
+            /*  8 */ WindowMethod.EvaluateN,
+            /*  9 */ WindowMethod.EvaluateN,
+            /* 10 */ WindowMethod.EvaluateN,
+            /* 11 */ WindowMethod.EvaluateN)]
+        [Browsable(false)]
+        public WindowMethod WindowMethod { get; set; }
+
+        [DefaultValue(WindowFunction.None)]
+        [DefaultValueForMode(
+            /*  0 */ WindowFunction.None,
+            /*  1 */ WindowFunction.None,
+            /*  2 */ WindowFunction.Tukey3,
+            /*  3 */ WindowFunction.Tukey4,
+            /*  4 */ WindowFunction.Tukey4,
+            /*  5 */ WindowFunction.Tukey4 | WindowFunction.Tukey3,
+            /*  6 */ WindowFunction.Tukey4 | WindowFunction.Tukey3 | WindowFunction.Tukey,
+            /*  7 */ WindowFunction.Tukey4 | WindowFunction.Tukey3 | WindowFunction.Tukey2 | WindowFunction.Tukey,
+            /*  8 */ WindowFunction.Tukey4 | WindowFunction.Tukey3 | WindowFunction.Tukey2 | WindowFunction.Tukey,
+            /*  9 */ WindowFunction.Tukey3 | WindowFunction.Tukey2 | WindowFunction.Tukey,
+            /* 10 */ WindowFunction.Tukey3 | WindowFunction.Tukey2 | WindowFunction.Tukey,
+            /* 11 */ WindowFunction.Tukey3 | WindowFunction.Tukey2 | WindowFunction.Tukey)]
+        [Browsable(false)]
+        [DisplayName("WindowFunctions")]
+        [SRDescription(typeof(Properties.Resources), "WindowFunctionsDescription")]
+        public WindowFunction WindowFunctions { get; set; }
+
+        [DefaultValue(0)]
+        [DefaultValueForMode(0, 0, 1, 1, 1, 1, 1, 1, 3, 1, 1, 5)]
+        [Browsable(false)]
+        public int EstimationDepth { get; set; }
+
+        [DefaultValue(-1)]
+        [DefaultValueForMode(1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1)]
+        [Browsable(false)]
+        public int MinPrecisionSearch { get; set; }
+
+        [DefaultValue(-1)]
+        [DefaultValueForMode(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)]
+        [Browsable(false)]
+        public int MaxPrecisionSearch { get; set; }
+
+        [DefaultValue(0)]
+        [Browsable(false)]
+        public int TukeyParts { get; set; }
+
+        [DefaultValue(1.0)]
+        [Browsable(false)]
+        public double TukeyOverlap { get; set; }
+
+        [DefaultValue(1.0)]
+        [Browsable(false)]
+        public double TukeyP { get; set; }
+
+        [Browsable(false)]
+        public string[] Tags { get; set; }
     }
 
 	[AudioEncoderClass("cuetools", "flac", true, 4, typeof(FlakeWriterSettings))]
@@ -357,57 +474,11 @@ namespace CUETools.Codecs.FLAKE
 			set { eparams.order_method = value; }
 		}
 
-		public PredictionType PredictionType
-		{
-			get { return eparams.prediction_type; }
-			set { eparams.prediction_type = value; }
-		}
-
-		public StereoMethod StereoMethod
-		{
-			get { return eparams.stereo_method; }
-			set { eparams.stereo_method = value; }
-		}
-
-		public WindowMethod WindowMethod
-		{
-			get { return eparams.window_method; }
-			set { eparams.window_method = value; }
-		}
-
         public int DevelopmentMode
         {
             get { return eparams.development_mode; }
             set { eparams.development_mode = value; }
         }
-
-        public int MinPrecisionSearch
-		{
-			get { return eparams.lpc_min_precision_search; }
-			set
-			{
-				if (value < 0 || value > eparams.lpc_max_precision_search)
-					throw new Exception("unsupported MinPrecisionSearch value");
-				eparams.lpc_min_precision_search = value;
-			}
-		}
-
-		public int MaxPrecisionSearch
-		{
-			get { return eparams.lpc_max_precision_search; }
-			set
-			{
-				if (value < eparams.lpc_min_precision_search || value >= lpc.MAX_LPC_PRECISIONS)
-					throw new Exception("unsupported MaxPrecisionSearch value");
-				eparams.lpc_max_precision_search = value;
-			}
-		}
-
-		public WindowFunction WindowFunction
-		{
-			get { return eparams.window_function; }
-			set { eparams.window_function = value; }
-		}
 
 		public bool DoSeekTable
 		{
@@ -419,20 +490,6 @@ namespace CUETools.Codecs.FLAKE
 		{
 			get { return eparams.variable_block_size; }
 			set { eparams.variable_block_size = value; }
-		}
-
-		public int EstimationDepth
-		{
-			get
-			{
-				return eparams.estimation_depth;
-			}
-			set
-			{
-				if (value > 32 || value < 1)
-					throw new Exception("invalid estimation_depth " + value.ToString());
-				eparams.estimation_depth = value;
-			}
 		}
 
 		public TimeSpan UserProcessorTime
@@ -486,7 +543,7 @@ namespace CUETools.Codecs.FLAKE
 			{
 				if (channels == 2)
 				{
-					if (eparams.stereo_method == StereoMethod.Independent)
+					if (m_settings.StereoMethod == StereoMethod.Independent)
 						AudioSamples.Deinterlace(fsamples + samplesInBuffer, fsamples + Flake.MAX_BLOCKSIZE + samplesInBuffer, src, block);
 					else
 					{
@@ -530,142 +587,112 @@ namespace CUETools.Codecs.FLAKE
 			AudioSamples.MemCpy(res, smp, (int) n);
 		}
 
-        unsafe static void encode_residual_fixed(int* res, int* smp, int n, int order)
+        unsafe static ulong encode_residual_fixed_partition(int* res, int* smp, int* end, int order, int* last_errors)
         {
-            int next_error_0, next_error_1, next_error_2, next_error_3, next_error_4;
-            int last_error_0, last_error_1, last_error_2, last_error_3;
-            int* end = smp + n;
-
-            if (order == 0)
+            ulong sum = 0UL;
+            switch (order)
             {
-                AudioSamples.MemCpy(res, smp, n);
-                return;
+                case 0:
+                    {
+                        while (smp < end)
+                        {
+                            int error = *(res++) = *(smp++);
+                            sum += (uint)((error << 1) ^ (error >> 31));
+                        }
+                        break;
+                    }
+                case 1:
+                    {
+                        int last_error_0 = last_errors[0];
+                        while (smp < end)
+                        {
+                            int error, save;
+                            error = *(smp++); save = error;
+                            error -= last_error_0; *(res++) = error; last_error_0 = save;
+                            sum += (uint)((error << 1) ^ (error >> 31));
+                        }
+                        last_errors[0] = last_error_0;
+                        break;
+                    }
+                case 2:
+                    {
+                        int last_error_0 = last_errors[0], last_error_1 = last_errors[1];
+                        while (smp < end)
+                        {
+                            int error, save;
+                            error = *(smp++); save = error;
+                            error -= last_error_0; last_error_0 = save; save = error;
+                            error -= last_error_1; *(res++) = error; last_error_1 = save;
+                            sum += (uint)((error << 1) ^ (error >> 31));
+                        }
+                        last_errors[0] = last_error_0; last_errors[1] = last_error_1; ;
+                        break;
+                    }
+                case 3:
+                    {
+                        int last_error_0 = last_errors[0], last_error_1 = last_errors[1], last_error_2 = last_errors[2];
+                        while (smp < end)
+                        {
+                            int error, save;
+                            error = *(smp++); save = error;
+                            error -= last_error_0; last_error_0 = save; save = error;
+                            error -= last_error_1; last_error_1 = save; save = error;
+                            error -= last_error_2; *(res++) = error; last_error_2 = save;
+                            sum += (uint)((error << 1) ^ (error >> 31));
+                        }
+                        last_errors[0] = last_error_0; last_errors[1] = last_error_1; last_errors[2] = last_error_2;
+                        break;
+                    }
+                case 4:
+                    {
+                        int last_error_0 = last_errors[0], last_error_1 = last_errors[1], last_error_2 = last_errors[2], last_error_3 = last_errors[3];
+                        while (smp < end)
+                        {
+                            int error, save;
+                            error = *(smp++); save = error;
+                            error -= last_error_0; last_error_0 = save; save = error;
+                            error -= last_error_1; last_error_1 = save; save = error;
+                            error -= last_error_2; last_error_2 = save; save = error;
+                            error -= last_error_3; *(res++) = error; last_error_3 = save;
+                            sum += (uint)((error << 1) ^ (error >> 31));
+                        }
+                        last_errors[0] = last_error_0; last_errors[1] = last_error_1; last_errors[2] = last_error_2; last_errors[3] = last_error_3;
+                        break;
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-
-            next_error_0 = *(res++) = *(smp++);
-            last_error_0 = next_error_0;
-
-            if (order == 1)
-            {
-                while (smp < end)
-                {
-#if VARIANT1
-                    int error, save;
-                    error = *(smp++); save = error;
-                    error -= last_error_0; *(res++) = error;  last_error_0 = save;
-#else
-                    next_error_0 = *(smp++);
-                    next_error_1 = next_error_0 - last_error_0;
-
-                    last_error_0 = next_error_0;
-
-                    *(res++) = (int)next_error_1;
-#endif
-                }
-                return;
-            }
-
-            next_error_0 = *(res++) = *(smp++);
-            next_error_1 = next_error_0 - last_error_0;
-            last_error_0 = next_error_0;
-            last_error_1 = next_error_1;
-
-            if (order == 2)
-            {
-                while (smp < end)
-                {
-#if VARIANT1
-                    int error, save;
-                    error = *(smp++); save = error;
-                    error -= last_error_0; last_error_0 = save; save = error;
-                    error -= last_error_1; *(res++) = error; last_error_1 = save;
-#else
-                    next_error_0 = *(smp++);
-                    next_error_1 = next_error_0 - last_error_0;
-                    next_error_2 = next_error_1 - last_error_1;
-
-                    last_error_0 = next_error_0;
-                    last_error_1 = next_error_1;
-
-                    *(res++) = (int)next_error_2;
-#endif
-                }
-                return;
-            }
-
-            next_error_0 = *(res++) = *(smp++);
-            next_error_1 = next_error_0 - last_error_0;
-            next_error_2 = next_error_1 - last_error_1;
-            last_error_0 = next_error_0;
-            last_error_1 = next_error_1;
-            last_error_2 = next_error_2;
-
-            if (order == 3)
-            {
-                while (smp < end)
-                {
-#if VARIANT1
-                    int error, save;
-                    error = *(smp++); save = error;
-                    error -= last_error_0; last_error_0 = save; save = error;
-                    error -= last_error_1; last_error_1 = save; save = error;
-                    error -= last_error_2; *(res++) = error; last_error_2 = save;
-#else
-                    next_error_0 = *(smp++);
-                    next_error_1 = next_error_0 - last_error_0;
-                    next_error_2 = next_error_1 - last_error_1;
-                    next_error_3 = next_error_2 - last_error_2;
-
-                    last_error_0 = next_error_0;
-                    last_error_1 = next_error_1;
-                    last_error_2 = next_error_2;
-
-                    *(res++) = (int)next_error_3;
-#endif
-                }
-                return;
-            }
-
-            next_error_0 = *(res++) = *(smp++);
-            next_error_1 = next_error_0 - last_error_0;
-            next_error_2 = next_error_1 - last_error_1;
-            next_error_3 = next_error_2 - last_error_2;
-            last_error_0 = next_error_0;
-            last_error_1 = next_error_1;
-            last_error_2 = next_error_2;
-            last_error_3 = next_error_3;
-
-            if (order == 4)
-            {
-                while (smp < end)
-                {
-#if VARIANT1
-                    int error, save;
-                    error = *(smp++); save = error;
-                    error -= last_error_0; last_error_0 = save; save = error;
-                    error -= last_error_1; last_error_1 = save; save = error;
-                    error -= last_error_2; last_error_2 = save; save = error;
-                    error -= last_error_3; *(res++) = error; last_error_3 = save;
-#else
-                    next_error_0 = *(smp++);
-                    next_error_1 = next_error_0 - last_error_0;
-                    next_error_2 = next_error_1 - last_error_1;
-                    next_error_3 = next_error_2 - last_error_2;
-                    next_error_4 = next_error_3 - last_error_3;
-
-                    last_error_0 = next_error_0;
-                    last_error_1 = next_error_1;
-                    last_error_2 = next_error_2;
-                    last_error_3 = next_error_3;
-
-                    *(res++) = (int)next_error_4;
-#endif
-                }
-                return;
-            }
-
-            throw new ArgumentOutOfRangeException();
+            return sum;
         }
+
+        unsafe static void encode_residual_fixed(int* res, int* smp, int n, int order, ulong* sums, int pmax)
+        {
+            int* last_errors = stackalloc int[4];
+            int* end = smp + n;
+            int* seg_end = smp + (n >> pmax);
+
+            if (order > 4)
+                throw new ArgumentOutOfRangeException();
+
+            for (int i = 0; i < order; i++)
+            {
+                int* next_errors = stackalloc int[4];
+                next_errors[0] = *(res++) = *(smp++);
+                for (int j = 0; j < i; j++)
+                    next_errors[j + 1] = next_errors[j] - last_errors[j];
+                for (int j = 0; j <= i; j++)
+                    last_errors[j] = next_errors[j];
+            }
+
+            while (smp < end)
+            {
+                *(sums++) = encode_residual_fixed_partition(res, smp, seg_end, order, last_errors);
+                res += seg_end - smp;
+                smp = seg_end;
+                seg_end += n >> pmax;
+            }
+        }
+
 #if XXX
         unsafe static int encode_residual_fixed_estimate_best_order(int* res, int* smp, int n, int order)
         {
@@ -827,14 +854,33 @@ namespace CUETools.Codecs.FLAKE
 			ulong all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
 			parm[0] = k;
 			cnt = (n >> porder);
-			for (uint i = 1; i < part; i++)
-			{
-				k = Math.Min(maxK, BitReader.log2i(sums[i] / cnt));
-				realMaxK0 = Math.Max(realMaxK0, k);
-				all_bits += cnt * ((uint)k + 1U) + (sums[i] >> k);
-				parm[i] = k;
-			}
-			method = realMaxK0 > Flake.MAX_RICE_PARAM ? 1 : 0;
+            int logcnt = BitReader.log2i(cnt);
+            if (cnt == 1 << logcnt)
+            {
+                for (uint i = 1; i < part; i++)
+                {
+                    ulong s = sums[i];
+                    ulong u = s >> logcnt;
+                    k = u >> maxK != 0 ? maxK : BitReader.log2i((uint)u);
+                    realMaxK0 = Math.Max(realMaxK0, k);
+                    all_bits += ((uint)k << logcnt) + (s >> k);
+                    parm[i] = k;
+                }
+            }
+            else
+            {
+                for (uint i = 1; i < part; i++)
+                {
+                    ulong s = sums[i];
+                    ulong u = s / cnt;
+                    k = u >> maxK != 0 ? maxK : BitReader.log2i((uint)u);
+                    realMaxK0 = Math.Max(realMaxK0, k);
+                    all_bits += cnt * (uint)k + (s >> k);
+                    parm[i] = k;
+                }
+            }
+            all_bits += cnt * (part - 1U);
+            method = realMaxK0 > Flake.MAX_RICE_PARAM ? 1 : 0;
 			return (uint)all_bits + ((4U + (uint)method) * part);
 		}
 
@@ -848,82 +894,6 @@ namespace CUETools.Codecs.FLAKE
 						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j] +
 						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j + 1];
 				}
-			}
-		}
-
-		static unsafe void calc_sums(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
-		{
-			int parts = (1 << pmax);
-			uint* res = data + pred_order;
-			uint cnt = (n >> pmax) - pred_order;
-			ulong sum = 0;
-			for (uint j = cnt; j > 0; j--)
-				sum += *(res++);
-			sums[0] = sum;
-			cnt = (n >> pmax);
-			for (int i = 1; i < parts; i++)
-			{
-				sum = 0;
-				for (uint j = cnt; j > 0; j--)
-					sum += *(res++);
-				sums[i] = sum;
-			}
-		}
-
-		/// <summary>
-		/// Special case when (n >> pmax) == 18
-		/// </summary>
-		/// <param name="pmin"></param>
-		/// <param name="pmax"></param>
-		/// <param name="data"></param>
-		/// <param name="n"></param>
-		/// <param name="pred_order"></param>
-		/// <param name="sums"></param>
-		static unsafe void calc_sums18(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
-		{
-			int parts = (1 << pmax);
-			uint* res = data + pred_order;
-			uint cnt = 18 - pred_order;
-			ulong sum = 0;
-			for (uint j = cnt; j > 0; j--)
-				sum += *(res++);
-			sums[0] = sum;
-			for (int i = 1; i < parts; i++)
-			{
-				sums[i] = 0UL +
-					*(res++) + *(res++) + *(res++) + *(res++) +
-					*(res++) + *(res++) + *(res++) + *(res++) +
-					*(res++) + *(res++) + *(res++) + *(res++) +
-					*(res++) + *(res++) + *(res++) + *(res++) +
-					*(res++) + *(res++);
-			}
-		}
-
-		/// <summary>
-		/// Special case when (n >> pmax) == 18
-		/// </summary>
-		/// <param name="pmin"></param>
-		/// <param name="pmax"></param>
-		/// <param name="data"></param>
-		/// <param name="n"></param>
-		/// <param name="pred_order"></param>
-		/// <param name="sums"></param>
-		static unsafe void calc_sums16(int pmin, int pmax, uint* data, uint n, uint pred_order, ulong* sums)
-		{
-			int parts = (1 << pmax);
-			uint* res = data + pred_order;
-			uint cnt = 16 - pred_order;
-			ulong sum = 0;
-			for (uint j = cnt; j > 0; j--)
-				sum += *(res++);
-			sums[0] = sum;
-			for (int i = 1; i < parts; i++)
-			{
-				sums[i] = 0UL +
-					*(res++) + *(res++) + *(res++) + *(res++) +
-					*(res++) + *(res++) + *(res++) + *(res++) +
-					*(res++) + *(res++) + *(res++) + *(res++) +
-					*(res++) + *(res++) + *(res++) + *(res++);
 			}
 		}
 
@@ -961,29 +931,6 @@ namespace CUETools.Codecs.FLAKE
 
             return opt_bits;
         }
-
-		static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order, int bps)
-		{
-			uint* udata = stackalloc uint[(int)n];
-			ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
-
-			//assert(pmin >= 0 && pmin <= Flake.MAX_PARTITION_ORDER);
-			//assert(pmax >= 0 && pmax <= Flake.MAX_PARTITION_ORDER);
-			//assert(pmin <= pmax);
-
-			for (uint i = 0; i < n; i++)
-				udata[i] = (uint) ((data[i] << 1) ^ (data[i] >> 31));
-
-			// sums for highest level
-			if ((n >> pmax) == 18)
-				calc_sums18(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
-			else if ((n >> pmax) == 16)
-				calc_sums16(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
-			else
-				calc_sums(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
-
-            return calc_rice_params_sums(rc, pmin, pmax, sums, n, pred_order, bps);
-		}
 
 		static int get_max_p_order(int max_porder, int n, int order)
 		{
@@ -1248,7 +1195,7 @@ new int[] { // 30
             else if (frame.blocksize <= 16384) lpc_precision = 14U;
             else lpc_precision = 15;
 
-            for (int i_precision = eparams.lpc_min_precision_search; i_precision <= eparams.lpc_max_precision_search && lpc_precision + i_precision < 16; i_precision++)
+            for (int i_precision = m_settings.MinPrecisionSearch; i_precision <= m_settings.MaxPrecisionSearch && lpc_precision + i_precision < 16; i_precision++)
                 // check if we already calculated with this order, window and precision
                 if ((frame.subframes[ch].lpc_ctx[iWindow].done_lpcs[i_precision] & (1U << (order - 1))) == 0)
                 {
@@ -1295,13 +1242,13 @@ new int[] { // 30
                 }
         }
 
-		unsafe void encode_residual_fixed_sub(FlacFrame frame, int order, int ch)
-		{
-			if ((frame.subframes[ch].done_fixed & (1U << order)) != 0)
-				return; // already calculated;
+        unsafe void encode_residual_fixed_sub(FlacFrame frame, int order, int ch)
+        {
+            if ((frame.subframes[ch].done_fixed & (1U << order)) != 0)
+                return; // already calculated;
 
-			frame.current.order = order;
-			frame.current.type = SubframeType.Fixed;
+            frame.current.order = order;
+            frame.current.type = SubframeType.Fixed;
 
 #if XXX
             int best_order = order;
@@ -1318,17 +1265,18 @@ new int[] { // 30
             }
             else
 #endif
-                encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order);
-
             int pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, frame.current.order);
             int pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
-			frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits) + 6
-				+ calc_rice_params(frame.current.rc, pmin, pmax, frame.current.residual, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
+            ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
+            encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, sums + pmax * Flake.MAX_PARTITIONS, pmax);
 
-			frame.subframes[ch].done_fixed |= (1U << order);
+            frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits) + 6
+                + calc_rice_params_sums(frame.current.rc, pmin, pmax, sums, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
 
-			frame.ChooseBestSubframe(ch);
-		}
+            frame.subframes[ch].done_fixed |= (1U << order);
+
+            frame.ChooseBestSubframe(ch);
+        }
 
         unsafe void fixed_compute_best_predictor(int* data, uint data_len, ulong* errors)//, float* residual_bits_per_sample)
         {
@@ -1505,14 +1453,14 @@ new int[] { // 30
 					switch (omethod)
 					{
 						case OrderMethod.Akaike:
-							//lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, max_order, 7.1, 0.0);
-							lpc_ctx.SortOrdersAkaike(frame.blocksize, eparams.estimation_depth, min_order, max_order, 4.5, 0);
+                            //lpc_ctx.SortOrdersAkaike(frame.blocksize, m_settings.EstimationDepth, max_order, 7.1, 0.0);
+							lpc_ctx.SortOrdersAkaike(frame.blocksize, m_settings.EstimationDepth, min_order, max_order, 4.5, 0);
 							break;
 						default:
 							throw new Exception("unknown order method");
 					}
 
-					for (i = 0; i < eparams.estimation_depth && i < max_order; i++)
+                    for (i = 0; i < m_settings.EstimationDepth && i < max_order; i++)
 						encode_residual_lpc_sub(frame, lpcs, iWindow, lpc_ctx.best_orders[i], ch);
                 }
 
@@ -1531,10 +1479,13 @@ new int[] { // 30
 
                 if (min_fixed_order == 0 && max_fixed_order == 4)
                 {
-                    if (frame.subframes[ch].done_fixed == 0)
+                    fixed (ulong* fixed_errors = frame.subframes[ch].best_fixed)
                     {
-                        ulong* fixed_errors = stackalloc ulong[5];
-                        fixed_compute_best_predictor(smp + 4, (uint)n - 4, fixed_errors);
+                        if ((frame.subframes[ch].done_fixed & (1U << 5)) == 0)
+                        {
+                            fixed_compute_best_predictor(smp + 4, (uint)n - 4, fixed_errors);
+                            frame.subframes[ch].done_fixed |= (1U << 5);
+                        }
                         i = fixed_compute_best_predictor_order(fixed_errors);
                         encode_residual_fixed_sub(frame, i, ch);
                     }
@@ -1709,31 +1660,31 @@ new int[] { // 30
             int max_prediction_order = m_settings.MaxLPCOrder;
             //int max_fixed_order = m_settings.MaxFixedOrder;
             //int min_fixed_order = m_settings.MinFixedOrder;
-			int lpc_min_precision_search = eparams.lpc_min_precision_search;
-			int lpc_max_precision_search = eparams.lpc_max_precision_search;
+			int lpc_min_precision_search = m_settings.MinPrecisionSearch;
+            int lpc_max_precision_search = m_settings.MaxPrecisionSearch;
             int max_partition_order = m_settings.MaxPartitionOrder;
-			int estimation_depth = eparams.estimation_depth;
+            int estimation_depth = m_settings.EstimationDepth;
             var development_mode = eparams.development_mode;
             //m_settings.MinFixedOrder = 2;
             //m_settings.MaxFixedOrder = 2;
-			eparams.lpc_min_precision_search = eparams.lpc_max_precision_search;
+            m_settings.MinPrecisionSearch = m_settings.MaxPrecisionSearch;
             m_settings.MaxLPCOrder = Math.Min(m_settings.MaxLPCOrder, Math.Max(m_settings.MinLPCOrder, 8));
-			eparams.estimation_depth = 1;
+            m_settings.EstimationDepth = 1;
             eparams.development_mode = Math.Min(eparams.development_mode, -1);
-            encode_residual(frame, ch, eparams.prediction_type, OrderMethod.Akaike, 1, windows_mask);
+            encode_residual(frame, ch, m_settings.PredictionType, OrderMethod.Akaike, 1, windows_mask);
             //m_settings.MinFixedOrder = min_fixed_order;
             //m_settings.MaxFixedOrder = max_fixed_order;
             m_settings.MaxLPCOrder = max_prediction_order;
-			eparams.lpc_min_precision_search = lpc_min_precision_search;
-			eparams.lpc_max_precision_search = lpc_max_precision_search;
+            m_settings.MinPrecisionSearch = lpc_min_precision_search;
+            m_settings.MaxPrecisionSearch = lpc_max_precision_search;
             m_settings.MaxPartitionOrder = max_partition_order;
-			eparams.estimation_depth = estimation_depth;
+            m_settings.EstimationDepth = estimation_depth;
             eparams.development_mode = development_mode;
 		}
 
 		unsafe void encode_residual_pass2(FlacFrame frame, int ch)
 		{
-			encode_residual(frame, ch, eparams.prediction_type, eparams.order_method, 2, estimate_best_windows(frame, ch));
+            encode_residual(frame, ch, m_settings.PredictionType, eparams.order_method, 2, estimate_best_windows(frame, ch));
 		}
 
         unsafe int estimate_best_windows_akaike(FlacFrame frame, int ch, int count, bool onePerType)
@@ -1826,9 +1777,9 @@ new int[] { // 30
 
 		unsafe int estimate_best_windows(FlacFrame frame, int ch)
 		{
-            if (_windowcount == 1 || eparams.prediction_type == PredictionType.Fixed)
+            if (_windowcount == 1 || m_settings.PredictionType == PredictionType.Fixed)
 				return 1;
-			switch (eparams.window_method)
+			switch (m_settings.WindowMethod)
 			{
                 case WindowMethod.Estimate:
                     return estimate_best_windows_akaike(frame, ch, 1, false);
@@ -1876,7 +1827,7 @@ new int[] { // 30
 		{
 			int subframes = do_midside ? channels * 2 : channels;
 
-			switch (eparams.stereo_method)
+			switch (m_settings.StereoMethod)
 			{
 				case StereoMethod.Estimate:
 					for (int ch = 0; ch < subframes; ch++)
@@ -1896,20 +1847,25 @@ new int[] { // 30
                             + 7.1 * frame.subframes[ch].obits * m_settings.MaxLPCOrder);
                     }
 					break;
-#if XXX
                 case StereoMethod.EstimateFixed:
                     for (int ch = 0; ch < subframes; ch++)
                     {
-                        ulong* fixed_errors = stackalloc ulong[5];
-                        fixed_compute_best_predictor(frame.subframes[ch].samples + 4, (uint)frame.blocksize - 4, fixed_errors);
-                        int best_order = fixed_compute_best_predictor_order(fixed_errors);
-                        //residual_bits_per_sample[0] = (float)((total_error_0 > 0) ? log(M_LN2 * (FLAC__double)total_error_0 / (FLAC__double)data_len) / M_LN2 : 0.0);
-                        frame.subframes[ch].best.size = (uint)fixed_errors[best_order];
+                        fixed (ulong* fixed_errors = frame.subframes[ch].best_fixed)
+                        {
+                            if ((frame.subframes[ch].done_fixed & (1U << 5)) == 0)
+                            {
+                                fixed_compute_best_predictor(frame.subframes[ch].samples + 4, (uint)frame.blocksize - 4, fixed_errors);
+                                frame.subframes[ch].done_fixed |= (1U << 5);
+                            }
+                            int best_order = fixed_compute_best_predictor_order(fixed_errors);
+                            //residual_bits_per_sample[0] = (float)((total_error_0 > 0) ? log(M_LN2 * (FLAC__double)total_error_0 / (FLAC__double)data_len) / M_LN2 : 0.0);
+                            frame.subframes[ch].best.size = (uint)fixed_errors[best_order];
+                        }
                     }
                     break;
-#endif
                 case StereoMethod.EstimateX:
                     for (int ch = 0; ch < subframes; ch++)
+                    {
                         for (int iWindow = 0; iWindow < _windowcount; iWindow++)
                         {
                             LpcContext lpc_ctx = frame.subframes[ch].lpc_ctx[iWindow];
@@ -1927,6 +1883,7 @@ new int[] { // 30
                             if (iWindow == 0 || frame.subframes[ch].best.size > estimate)
                                 frame.subframes[ch].best.size = estimate;
                         }
+                    }
                     break;
                 case StereoMethod.Evaluate:
                     for (int ch = 0; ch < subframes; ch++)
@@ -1985,10 +1942,11 @@ new int[] { // 30
 
 		unsafe void encode_estimated_frame(FlacFrame frame)
 		{
-			switch (eparams.stereo_method)
+			switch (m_settings.StereoMethod)
 			{
 				case StereoMethod.Estimate:
                 case StereoMethod.EstimateX:
+                case StereoMethod.EstimateFixed:
                     for (int ch = 0; ch < channels; ch++)
 					{
 						frame.subframes[ch].best.size = AudioSamples.UINT32_MAX;
@@ -2009,7 +1967,7 @@ new int[] { // 30
 
 		unsafe void calculate_window(float* window, window_function func, WindowFunction flag)
 		{
-			if ((eparams.window_function & flag) == 0 || _windowcount == lpc.MAX_LPC_WINDOWS)
+			if ((m_settings.WindowFunctions & flag) == 0 || _windowcount == lpc.MAX_LPC_WINDOWS)
 				return;
 			int sz = _windowsize;
 			float* pos1 = window + _windowcount * Flake.MAX_BLOCKSIZE * 2;
@@ -2037,6 +1995,23 @@ new int[] { // 30
 			_windowcount++;
 		}
 
+        class PunchoutTukeyVariant
+        {
+            public PunchoutTukeyVariant(
+                WindowFunction _type,
+                int _parts, double _overlap, double _p)
+            {
+                parts = _parts;
+                type = _type;
+                overlap = _overlap;
+                p = _p;
+            }            
+            public WindowFunction type;
+            public int parts;
+            public double overlap;
+            public double p;
+        };
+
 		unsafe int encode_frame(out int size)
 		{
 			fixed (int* s = samplesBuffer, r = residualBuffer)
@@ -2044,37 +2019,56 @@ new int[] { // 30
 			{
 				frame.InitSize(m_blockSize, eparams.variable_block_size != 0);
 
-                if (frame.blocksize != _windowsize && frame.blocksize > 4)
+                if (frame.blocksize != _windowsize && frame.blocksize > 4 && m_settings.PredictionType != PredictionType.Fixed)
                 {
                     _windowsize = frame.blocksize;
                     _windowcount = 0;
                     calculate_window(window, lpc.window_welch, WindowFunction.Welch);
-                    calculate_window(window, lpc.window_tukey, WindowFunction.Tukey);
                     calculate_window(window, lpc.window_flattop, WindowFunction.Flattop);
                     calculate_window(window, lpc.window_hann, WindowFunction.Hann);
                     calculate_window(window, lpc.window_bartlett, WindowFunction.Bartlett);
-                    int tukey_parts = 2;
-                    double overlap = -0.3;
-                    double overlap_units = overlap / (1.0 - overlap);
-                    for (int m = 0; m < tukey_parts; m++)
-                        calculate_window(window, (w, wsz) =>
-                        {
-                            lpc.window_punchout_tukey(w, wsz, 0.1,
-                                m / (tukey_parts + overlap_units),
-                                (m + 1 + overlap_units) / (tukey_parts + overlap_units));
-                        }, WindowFunction.PartialTukey);
+                    var tukeys = new PunchoutTukeyVariant[]
+                    {
+                        new PunchoutTukeyVariant(WindowFunction.Tukey4,  4, 0, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey4A, 4, 0, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey4B, 4, 0, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey4X, 4, m_settings.TukeyOverlap, m_settings.TukeyP),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey3,  3, 1.0/3, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey3A, 3, 1.0/3, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey3B, 3, 1.0/3, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey3X, 3, m_settings.TukeyOverlap, m_settings.TukeyP),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey2,  2, 0.25, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey2A, 2, 0.25, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey2B, 2, 0.25, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey2X, 2, m_settings.TukeyOverlap, m_settings.TukeyP),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey,   1, 0.0, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey1A, 1, 0.0, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey1B, 1, 0.0, 0.03),
+                        new PunchoutTukeyVariant(WindowFunction.Tukey1X, 1, m_settings.TukeyOverlap, m_settings.TukeyP),
+                    };
 
-                    tukey_parts = 3;
-                    overlap = -0.1;
-                    //overlap = 0.1;
-                    overlap_units = overlap / (1.0 - overlap);
-                    for (int m = 0; m < tukey_parts; m++)
-                        calculate_window(window, (w, wsz) =>
+                    foreach (var tukey in tukeys)
+                    {
+                        if (tukey.parts == 0 || (m_settings.WindowFunctions & tukey.type) == 0) continue;
+                        if (tukey.parts == 1)
                         {
-                            lpc.window_punchout_tukey(w, wsz, 0.1,
-                                m / (tukey_parts + overlap_units),
-                                (m + 1 + overlap_units) / (tukey_parts + overlap_units));
-                        }, WindowFunction.PunchoutTukey);
+                            calculate_window(window, (w, wsz) =>
+                            {
+                                lpc.window_tukey(w, wsz, tukey.p);
+                            }, tukey.type);
+                            continue;
+                        }
+                        double overlap = tukey.overlap;
+                        double overlap_units = overlap / (1.0 - overlap);
+                        for (int m = 0; m < tukey.parts; m++)
+                            calculate_window(window, (w, wsz) =>
+                            {
+                                lpc.window_punchout_tukey(w, wsz, tukey.p, tukey.p,
+                                    m / (tukey.parts + overlap_units),
+                                    (m + 1 + overlap_units) / (tukey.parts + overlap_units));
+                            }, tukey.type);
+                    }
+
                     if (_windowcount == 0)
                         throw new Exception("invalid windowfunction");
                     int nSeg = 0;
@@ -2091,8 +2085,9 @@ new int[] { // 30
                         sz >>= 1;
                     } while (sz >= 32);
 #if NONONO
-                    using (TextWriter tx = File.CreateText("C:\\Temp\\w.csv"))
+                    using (TextWriter tx = File.CreateText(@"H:\ubuntu\flac\w.txt"))
                     {
+#if !NONONO
                         int totaltotal = 0;
                         for (int i = 0; i < _windowcount; i++)
                         {
@@ -2108,19 +2103,19 @@ new int[] { // 30
                             tx.WriteLine("{0} total window data", total);
                         }
                         tx.WriteLine("{0} grand total window data", totaltotal);
-                        for (int x = 0; x < frame.blocksize; x++)
+#endif
+                        for (int x = 0; x < frame.blocksize; x++)       
                         {
+                            tx.Write("{0}", x);
                             for (int i = 0; i < _windowcount; i++)
-                            {
-                                tx.Write("{0}\t", window[i * Flake.MAX_BLOCKSIZE * 2 + x]);
-                            }
+                                tx.Write("\t{0}", window[i * Flake.MAX_BLOCKSIZE * 2 + x]);
                             tx.WriteLine();
                         }
                     }
 #endif
                 }
 
-				if (channels != 2 || frame.blocksize <= 32 || eparams.stereo_method == StereoMethod.Independent)
+				if (channels != 2 || frame.blocksize <= 32 || m_settings.StereoMethod == StereoMethod.Independent)
 				{
 					frame.window_buffer = window;
                     frame.nSeg = 0;
@@ -2304,7 +2299,7 @@ new int[] { // 30
 			if (!inited)
 			{
 				if (_IO == null)
-					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
+					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read, 0x10000);
                 inited = true;
                 int header_size = flake_encode_init();
 				_IO.Write(header, 0, header_size);
@@ -2408,27 +2403,36 @@ new int[] { // 30
 		 * Write vorbis comment metadata block to byte array.
 		 * Just writes the vendor string for now.
 	     */
-		int write_vorbis_comment(byte[] comment, int pos, int last)
+		int write_vorbis_comment(byte[] comment, int pos, int len, int last)
 		{
-			BitWriter bitwriter = new BitWriter(comment, pos, 4);
-			Encoding enc = new ASCIIEncoding();
-			int vendor_len = enc.GetBytes(Vendor, 0, Vendor.Length, comment, pos + 8);
+			BitWriter bitwriter = new BitWriter(comment, pos, len);
+			Encoding enc = new UTF8Encoding();
+            byte[] str = enc.GetBytes(Vendor);
 
 			// metadata header
 			bitwriter.writebits(1, last);
 			bitwriter.writebits(7, (int)MetadataType.VorbisComment);
-			bitwriter.writebits(24, vendor_len + 8);
-
-			comment[pos + 4] = (byte)(vendor_len & 0xFF);
-			comment[pos + 5] = (byte)((vendor_len >> 8) & 0xFF);
-			comment[pos + 6] = (byte)((vendor_len >> 16) & 0xFF);
-			comment[pos + 7] = (byte)((vendor_len >> 24) & 0xFF);
-			comment[pos + 8 + vendor_len] = 0;
-			comment[pos + 9 + vendor_len] = 0;
-			comment[pos + 10 + vendor_len] = 0;
-			comment[pos + 11 + vendor_len] = 0;
+            int tagsLen = 0;
+            if (m_settings.Tags != null)
+                foreach (var t in m_settings.Tags)
+                    tagsLen += 4 + enc.GetByteCount(t);
+            bitwriter.writebits(24, 8 + str.Length + tagsLen);
+            for (int i = 0; i < 4; i++)
+                bitwriter.writebits(8, (str.Length >> (i * 8)) & 0xff);
+            bitwriter.write(str);
+            int nTags = m_settings.Tags != null ? m_settings.Tags.Length : 0;
+            for (int i = 0; i < 4; i++)
+                bitwriter.writebits(8, (nTags >> (i * 8)) & 0xff);
+            if (m_settings.Tags != null)
+                foreach (var tag in m_settings.Tags)
+                {
+                    str = enc.GetBytes(tag);
+                    for (int i = 0; i < 4; i++)
+                        bitwriter.writebits(8, (str.Length >> (i * 8)) & 0xff);
+                    bitwriter.write(str);
+                }
 			bitwriter.flush();
-			return vendor_len + 12;
+            return bitwriter.Length;
 		}
 
 		int write_seekpoints(byte[] header, int pos, int last)
@@ -2488,9 +2492,9 @@ new int[] { // 30
 			if (_IO.CanSeek && seek_table != null)
 				header_size += write_seekpoints(header, header_size, last);
 
-			// vorbis comment
-			if (m_settings.Padding == 0) last = 1;
-			header_size += write_vorbis_comment(header, header_size, last);
+			// vorbis comments
+            if (m_settings.Padding == 0) last = 1;
+            header_size += write_vorbis_comment(header, header_size, header.Length - header_size, last);
 
 			// padding
 			if (m_settings.Padding > 0)
@@ -2560,7 +2564,12 @@ new int[] { // 30
 			}
 
 			// output header bytes
-			header = new byte[m_settings.Padding + 1024 + (seek_table == null ? 0 : seek_table.Length * 18)];
+            int tagsLen = 0;
+			Encoding enc = new UTF8Encoding();
+            if (m_settings.Tags != null)
+                foreach (var t in m_settings.Tags)
+                    tagsLen += 4 + enc.GetByteCount(t);
+            header = new byte[m_settings.Padding + 1024 + (seek_table == null ? 0 : seek_table.Length * 18) + tagsLen];
 			header_len = write_headers();
 
 			// initialize CRC & MD5
@@ -2594,31 +2603,11 @@ new int[] { // 30
 		// 6 = log search
 		public OrderMethod order_method;
 
-		// stereo decorrelation method
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 2
-		// 0 = independent L+R channels
-		// 1 = mid-side encoding
-		public StereoMethod stereo_method;
-
-		public WindowMethod window_method;
-
 		// block time in milliseconds
 		// set by the user prior to calling flake_encode_init
 		// used to calculate block_size based on sample rate
 		// can also be changed by user before encoding a frame
 		public int block_time_ms;
-
-		// Number of LPC orders to try (for estimate mode)
-		// set by user prior to calling flake_encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 1 to 32 
-		public int estimation_depth;
-
-		// type of linear prediction
-		// set by user prior to calling flake_encode_init
-		public PredictionType prediction_type;
 
 		// whether to use variable block sizes
 		// set by user prior to calling flake_encode_init
@@ -2626,95 +2615,22 @@ new int[] { // 30
 		// 1 = variable block size
 		public int variable_block_size;
 
-		// whether to try various lpc_precisions
-		// 0 - use only one precision
-		// 1 - try two precisions
-		public int lpc_max_precision_search;
-
-		public int lpc_min_precision_search;
-
-		public WindowFunction window_function;
-
 		public bool do_seektable;
 
         public int development_mode;
 
-		public int flake_set_defaults(FlakeWriterSettings settings)
-		{
-			// default to level 7 params
-			window_function = WindowFunction.PunchoutTukey | WindowFunction.PartialTukey | WindowFunction.Tukey;
-			order_method = OrderMethod.Akaike;
-			stereo_method = StereoMethod.Evaluate;
-			window_method = WindowMethod.EvaluateN;
-			block_time_ms = 105;			
-			prediction_type = PredictionType.Levinson;
-            estimation_depth = 1;
+        public int flake_set_defaults(FlakeWriterSettings settings)
+        {
+            order_method = OrderMethod.Akaike;
+            block_time_ms = 105;
             variable_block_size = 0;
-			lpc_min_precision_search = 1;
-			lpc_max_precision_search = 1;
-			do_seektable = true;
+            do_seektable = true;
             development_mode = -1;
 
-			// differences from level 7
-			switch (settings.EncoderModeIndex)
-			{
-				case 0:
-					prediction_type = PredictionType.Fixed;
-					stereo_method = StereoMethod.Independent;
-                    window_method = WindowMethod.Estimate;
-                    window_function = WindowFunction.Tukey;
-					break;
-				case 1:
-					prediction_type = PredictionType.Fixed;
-					stereo_method = StereoMethod.Independent;
-                    window_method = WindowMethod.Estimate;
-                    window_function = WindowFunction.Tukey;
-					break;
-				case 2:
-					stereo_method = StereoMethod.Estimate;
-					window_method = WindowMethod.Estimate;
-                    window_function = WindowFunction.PartialTukey;
-					break;
-				case 3:
-					stereo_method = StereoMethod.Estimate;
-					window_method = WindowMethod.Estimate;
-			        window_function = WindowFunction.PunchoutTukey;
-					break;
-				case 4:
-					stereo_method = StereoMethod.Estimate;
-					window_method = WindowMethod.Estimate;
-			        window_function = WindowFunction.PunchoutTukey;
-					estimation_depth = 2;
-					break;
-				case 5:
-					window_method = WindowMethod.Estimate;
-			        window_function = WindowFunction.PunchoutTukey;
-					break;
-				case 6:
-                    window_method = WindowMethod.EstimateN;
-			        window_function = WindowFunction.PunchoutTukey | WindowFunction.PartialTukey;
-					break;
-				case 7:
-					break;
-				case 8:
-                    prediction_type = PredictionType.Search;
-					estimation_depth = 2;
-					lpc_min_precision_search = 0;
-					break;
-				case 9:
-					window_function = WindowFunction.Bartlett;
-					break;
-				case 10:
-					//lpc_max_precision_search = 2;
-					break;
-				case 11:
-					estimation_depth = 5;
-					//lpc_max_precision_search = 2;
-					variable_block_size = 4;
-					break;
-			}
+            if (settings.EncoderModeIndex == 11)
+                variable_block_size = 4;
 
-			return 0;
-		}
+            return 0;
+        }
 	}
 }

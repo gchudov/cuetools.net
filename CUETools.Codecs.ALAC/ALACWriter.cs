@@ -1162,7 +1162,10 @@ namespace CUETools.Codecs.ALAC
 					_windowcount = 0;
 					calculate_window(window, lpc.window_welch, WindowFunction.Welch);
 					calculate_window(window, lpc.window_bartlett, WindowFunction.Bartlett);
-					calculate_window(window, lpc.window_tukey, WindowFunction.Tukey);
+                    calculate_window(window, (w, wsz) =>
+                    {
+                        lpc.window_tukey(w, wsz, 0.5);
+                    }, WindowFunction.Tukey);
 					calculate_window(window, lpc.window_hann, WindowFunction.Hann);
 					calculate_window(window, lpc.window_flattop, WindowFunction.Flattop);
                     int tukey_parts = 2;
@@ -1171,7 +1174,7 @@ namespace CUETools.Codecs.ALAC
                     for (int m = 0; m < tukey_parts; m++)
                         calculate_window(window, (w, wsz) =>
                         {
-                            lpc.window_punchout_tukey(w, wsz, 0.1,
+                            lpc.window_punchout_tukey(w, wsz, 0.1, 0.1,
                                 m / (tukey_parts + overlap_units),
                                 (m + 1 + overlap_units) / (tukey_parts + overlap_units));
                         }, WindowFunction.PartialTukey);
@@ -1183,7 +1186,7 @@ namespace CUETools.Codecs.ALAC
                     for (int m = 0; m < tukey_parts; m++)
                         calculate_window(window, (w, wsz) =>
                         {
-                            lpc.window_punchout_tukey(w, wsz, 0.1,
+                            lpc.window_punchout_tukey(w, wsz, 0.1, 0.1,
                                 m / (tukey_parts + overlap_units),
                                 (m + 1 + overlap_units) / (tukey_parts + overlap_units));
                         }, WindowFunction.PunchoutTukey);

@@ -2,6 +2,7 @@
 {
     public enum WindowMethod
     {
+        Invalid,
         Evaluate,
         Search,
         Estimate,
