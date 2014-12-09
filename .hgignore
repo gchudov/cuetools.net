@@ -18,3 +18,4 @@ CUETools/TestResults/
 bin/
 flac/src/libFLAC/ia32/*.obj
 CUETools/ipch/
+flac/src/libFLAC/x64/

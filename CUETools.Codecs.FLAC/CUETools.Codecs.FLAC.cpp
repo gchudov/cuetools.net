@@ -52,6 +52,10 @@ struct FLAC__Metadata_Chain
 
 extern "C" {
     FLAC_API FLAC__bool FLAC__stream_encoder_set_do_md5(FLAC__StreamEncoder *encoder, FLAC__bool value);
+    FILE *fopen_utf8(const char *filename, const char *mode)
+    {
+        return NULL;
+    }
 }
 
 namespace CUETools { namespace Codecs { namespace FLAC {
