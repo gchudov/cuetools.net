@@ -44,7 +44,7 @@ namespace CUETools.Codecs.FLAKE
 
         public override string GetSupportedModes(out string defaultMode)
         {
-            defaultMode = "7";
+            defaultMode = "5";
             return this.AllowNonSubset || (this.PCM != null && this.PCM.SampleRate > 48000) ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
         }
 

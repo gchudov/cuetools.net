@@ -92,7 +92,7 @@ namespace CUETools.FlakeExe
             Console.WriteLine();
             Console.WriteLine("Options:");
             Console.WriteLine();
-            Console.WriteLine(" -0 .. -11            Compression level, default 7; 9..11 require --lax");
+            Console.WriteLine(" -0 .. -11            Compression level, default 5; 9..11 require --lax");
             Console.WriteLine(" -o <file>            Output filename, or \"-\" for stdout, or nul.");
             Console.WriteLine(" -P, --padding #      Padding bytes.");
             Console.WriteLine(" -q, --quiet          Quiet mode.");
