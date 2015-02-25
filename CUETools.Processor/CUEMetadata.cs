@@ -275,8 +275,8 @@ namespace CUETools.Processor
 			this.DiscName = cdEntry.discname ?? "";
             this.Comment = cdEntry.extra ?? "";
 			this.Barcode = cdEntry.barcode ?? "";
-			this.ReleaseDate = cdEntry.releasedate ?? "";
-			this.Country = cdEntry.country ?? "";
+			this.ReleaseDate = (cdEntry.release == null || cdEntry.release.Length == 0 ? null : cdEntry.release[0].date) ?? "";
+            this.Country = (cdEntry.release == null || cdEntry.release.Length == 0 ? null : cdEntry.release[0].country) ?? "";
 			this.Genre = cdEntry.genre ?? "";
 			this.Label = "";
             this.LabelNo = "";
