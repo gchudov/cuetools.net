@@ -70,7 +70,7 @@ namespace CUETools.CTDB
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(urlbase
 				+ "/lookup2.php"
-                + "?version=2"
+                + "?version=3"
                 + "&ctdb=" + (ctdb ? 1 : 0)
                 + "&fuzzy=" + (fuzzy ? 1 : 0)
 				+ "&metadata=" + (metadataSearch == CTDBMetadataSearch.None ? "none" : metadataSearch == CTDBMetadataSearch.Fast ? "fast" : metadataSearch == CTDBMetadataSearch.Default ? "default" : "extensive")

@@ -62,10 +62,14 @@ namespace MetadataPlugIn
                     extra += "Info URL: " + meta.infourl + "\r\n";
                 if (!string.IsNullOrEmpty(meta.barcode))
                     extra += "Barcode: " + meta.barcode + "\r\n";
-                if (!string.IsNullOrEmpty(meta.releasedate))
-                    extra += "Release date: " + meta.releasedate + "\r\n";
-                if (!string.IsNullOrEmpty(meta.country))
-                    extra += "Release country: " + meta.country + "\r\n";
+                if (meta.release != null)
+                    foreach (var release in meta.release)
+                    {
+                        if (!string.IsNullOrEmpty(release.date))
+                            extra += "Release date: " + release.date + "\r\n";
+                        if (!string.IsNullOrEmpty(release.country))
+                            extra += "Release country: " + release.country + "\r\n";
+                    }
                 if (meta.label != null)
                     foreach (var label in meta.label)
                     {

@@ -27,6 +27,8 @@ namespace AudioDataPlugIn
     public class AudioDataTransfer : IAudioDataTransfer
     {
         int m_start_pos = 0, m_length = 0;
+        int m_suspicious = 0;
+        int m_suspiciousTest = 0;
         bool m_test_mode = false;
         IMetadataLookup m_data = null;
         CDImageLayout TOC;
@@ -72,6 +74,17 @@ namespace AudioDataPlugIn
         }
 
 
+        public void SuspiciousPosition()
+        {
+            if (this.m_test_mode)
+                this.m_suspiciousTest++;
+            else
+                this.m_suspicious++;
+#if DEBUG
+            var thisAr = m_test_mode ? arTest : ar;
+            m_trace.WriteLine("Suspicious position: {0} ({1}*588)", thisAr.Position, thisAr.Position/588);
+#endif
+        }
 
         // Now to the audio transfer functions, the sequence how
         // the functions are called is:
@@ -133,6 +146,8 @@ namespace AudioDataPlugIn
             this.sequence_ok = true;
             this.m_start_pos = 0;
             this.m_length = 0;
+            this.m_suspicious = 0;
+            this.m_suspiciousTest = 0;
             this.m_test_mode = false;
             this.is_offset_set = aroffset;
             this.is_secure_mode = mode >= 2;
@@ -266,7 +281,10 @@ namespace AudioDataPlugIn
                     "EAC" + m_data.HostVersion + " CTDB 2.1.6",
                     m_drivename,
                     conf,
-                    (arTest.Position == 0 && this.is_secure_mode) || (arTest.Position != 0 && arTest.CRC32(0) == ar.CRC32(0)) ? 100 : 0,
+                    (arTest.Position != 0 && arTest.CRC32(0) == ar.CRC32(0)) ? 100 : 
+                    (arTest.Position == 0 && this.is_secure_mode) ? 
+                    (int)(100 * (1.0 - Math.Log(m_suspicious + 1) / Math.Log(TOC.AudioLength + 1))) :
+                    (int)( 49 * (1.0 - Math.Log(m_suspicious + 1) / Math.Log(TOC.AudioLength + 1))),
                     m_data.AlbumArtist,
                     m_data.AlbumTitle);
                 form.ShowDialog();

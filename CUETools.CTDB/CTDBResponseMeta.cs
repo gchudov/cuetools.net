@@ -19,8 +19,6 @@ namespace CUETools.CTDB
             this.year = src.year;
             this.genre = src.genre;
             this.extra = src.extra;
-            this.country = src.country;
-            this.releasedate = src.releasedate;
             this.discnumber = src.discnumber;
             this.disccount = src.disccount;
             this.discname = src.discname;
@@ -46,6 +44,13 @@ namespace CUETools.CTDB
                 for (int i = 0; i < src.label.Length; i++)
                     this.label[i] = new CTDBResponseMetaLabel(src.label[i]);
             }
+
+            if (src.release != null)
+            {
+                this.release = new CTDBResponseMetaRelease[src.release.Length];
+                for (int i = 0; i < src.release.Length; i++)
+                    this.release[i] = new CTDBResponseMetaRelease(src.release[i]);
+            }
         }
 
         [XmlAttribute]
@@ -63,10 +68,6 @@ namespace CUETools.CTDB
 		[XmlElement]
         public string extra { get; set; }
         [XmlAttribute]
-        public string country { get; set; }
-        [XmlAttribute]
-        public string releasedate { get; set; }
-        [XmlAttribute]
         public string discnumber { get; set; }
         [XmlAttribute]
         public string disccount { get; set; }
@@ -82,5 +83,7 @@ namespace CUETools.CTDB
         public CTDBResponseMetaTrack[] track;
         [XmlElement]
         public CTDBResponseMetaLabel[] label;
+        [XmlElement]
+        public CTDBResponseMetaRelease[] release;
     }
 }

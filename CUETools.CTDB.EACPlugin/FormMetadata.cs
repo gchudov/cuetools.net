@@ -58,7 +58,7 @@ namespace CUETools.CTDB.EACPlugin
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
 #if DEBUG
-            string server = "hq.cuetools.net";
+            string server = "db.cuetools.net";
 #else
             string server = null;
 #endif
@@ -239,12 +239,13 @@ namespace CUETools.CTDB.EACPlugin
             var discnumber01 = (uint.TryParse(disccount, out td) && uint.TryParse(discnumber, out dn) && td > 9 && dn > 0) ?
                 string.Format("{0:00}", dn) : discnumber;
             var discnumberandtotal = disccount != "1" ? discnumber01 + "/" + disccount : (discnumber != "1" ? discnumber01 : "");
-            var label = metadata.country ?? "";
+            var label = "";
+            if (metadata.release != null)
+                foreach (var r in metadata.release)
+                    label = (label == "" ? "" : label + ": ") + (r.country ?? "") + (r.country != null && r.date != null ? " " : "") + (r.date ?? "");
             if (metadata.label != null)
                 foreach (var l in metadata.label)
                     label = (label == "" ? "" : label + ": ") + (l.name ?? "") + (l.name != null && l.catno != null ? " " : "") + (l.catno ?? "");
-            if (metadata.releasedate != null)
-                label = (label == "" ? "" : label + ": ") + metadata.releasedate;
             var text = string.Format("{0}{1} - {2}{3}{4}", metadata.year != null ? metadata.year + ": " : "",
                 metadata.artist == null ? "Unknown Artist" : metadata.artist,
                 metadata.album == "" ? "Unknown Title" : metadata.album,
