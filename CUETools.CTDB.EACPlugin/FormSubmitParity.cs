@@ -46,7 +46,7 @@ namespace CUETools.CTDB.EACPlugin
             if (resp == null)
             {
 #if DEBUG
-                string server = "hq.cuetools.net";
+                string server = "db.cuetools.net";
 #else
                 string server = null;
 #endif

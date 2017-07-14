@@ -304,7 +304,7 @@ namespace CUETools.AccurateRip
             return count;
         }
 
-        public string GetAffectedSectors(int min, int max, int offs = 0)
+        public string GetAffectedSectors(int min, int max, int offs = 0, int coalesce = 2 * 588 * 5)
         {
             min = Math.Max(2 * min, 2 * pregap + stride - 2 * ActualOffset);
             max = Math.Min(2 * max, 2 * finalSampleCount - laststride - 2 * ActualOffset);
@@ -315,7 +315,7 @@ namespace CUETools.AccurateRip
                 {
                     int j;
                     for (j = i + 1; j < correctableErrors; j++)
-                        if (erroffsorted[j] - erroffsorted[j - 1] > 2 * 588 * 5)
+                        if (erroffsorted[j] - erroffsorted[j - 1] >= coalesce)
                             break;
                     uint sec1 = (uint)(erroffsorted[i] - offs) / 2 / 588;
                     uint sec2 = (uint)(erroffsorted[j - 1] - offs) / 2 / 588;

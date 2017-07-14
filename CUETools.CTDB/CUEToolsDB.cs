@@ -609,10 +609,14 @@ namespace CUETools.CTDB
             string ifmt = this.Total < 10 ? "1" : this.Total < 100 ? "2" : "3";
             for (int iTrack = 0; iTrack < this.TOC.AudioTracks; iTrack++)
             {
-                int conf = 0;
-                List<int> resConfidence = new List<int>();
-                List<string> resStatus = new List<string>();
-                foreach (DBEntry entry in this.Entries)
+                int coalesce = 2 * 588 * 5;
+                string line;
+                do
+                {
+                    int conf = 0;
+                    List<int> resConfidence = new List<int>();
+                    List<string> resStatus = new List<string>();
+                    foreach (DBEntry entry in this.Entries)
                 {
                     if (!entry.hasErrors)
                     {
@@ -633,7 +637,10 @@ namespace CUETools.CTDB
                         }
 
                         resConfidence.Add(entry.conf);
-                        resStatus.Add(string.Format("differs in {0} samples @{1}", diffCount, entry.repair.GetAffectedSectors(min, max, min)));
+                        if (coalesce >= 64 * 588 * 5)
+                            resStatus.Add(string.Format("differs in {0} samples", diffCount));
+                        else
+                            resStatus.Add(string.Format("differs in {0} samples @{1}", diffCount, entry.repair.GetAffectedSectors(min, max, min, coalesce)));
                         continue;
                     }
                     if (entry.trackcrcs != null)
@@ -668,7 +675,13 @@ namespace CUETools.CTDB
                 {
                     resStatus[i] = string.Format("({0}/{1}) {2}", resConfidence[i], this.Total, resStatus[i]);
                 }
-                sw.WriteLine(string.Format(" {0,2}   | {1}", iTrack + 1, string.Join(", or ", resStatus.ToArray())));
+
+                    coalesce *= 2;
+                    line = string.Join(", or ", resStatus.ToArray());
+                }
+                while (line.Length > 1024 && coalesce < 128 * 588 * 5);
+                if (line.Length > 1024) line = line.Substring(0, 1024) + "...";
+                sw.WriteLine(string.Format(" {0,2}   | {1}", iTrack + 1, line));
             }
         }
 
