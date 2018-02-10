@@ -221,6 +221,8 @@ namespace CUETools.Codecs.WMA
             //m_syncReader.GetMaxOutputSampleSize(m_dwAudioOutputNum, out cbMax);
         }
 
+        public AudioDecoderSettings Settings { get { return null; } }
+
         public void isValid(string filename)
         {
             int pdwDataSize = 0;

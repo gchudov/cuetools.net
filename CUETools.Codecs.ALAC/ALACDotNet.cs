@@ -59,6 +59,8 @@ namespace CUETools.Codecs.ALAC
 			_framesBuffer = new byte[65536];
 		}
 
+        public AudioDecoderSettings Settings { get { return null; } }
+
 		private void InitTables()
 		{
 			if (_predicterror_buffer_a != null)

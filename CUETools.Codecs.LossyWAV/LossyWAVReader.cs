@@ -10,6 +10,8 @@ namespace CUETools.Codecs.LossyWAV
         private AudioBuffer lwcdfBuffer;
         private double scaling_factor;
 
+        public AudioDecoderSettings Settings { get { return null; } }
+
         public long Length
         {
             get

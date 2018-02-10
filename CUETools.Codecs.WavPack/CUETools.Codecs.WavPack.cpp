@@ -185,6 +185,12 @@ namespace CUETools { namespace Codecs { namespace WavPack {
 			return sampleBuffer->Length;
 		}
 
+                virtual property AudioDecoderSettings^ Settings {
+                    AudioDecoderSettings^ get(void) {
+                        return nullptr;
+                    }
+                }
+
 	private:
 		WavpackContext *_wpc;
 		Int32 _sampleCount, _sampleOffset;

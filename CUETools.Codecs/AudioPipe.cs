@@ -18,6 +18,8 @@ namespace CUETools.Codecs
         private bool own;
         private ThreadPriority priority;
 
+        public AudioDecoderSettings Settings { get { return null; } }
+
         public long Position
         {
             get

@@ -14,12 +14,14 @@ namespace CUETools.Codecs.BDLPCM
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
             streams = new Dictionary<ushort, TsStream>();
             frameBuffer = new byte[192];
-            streamId = 0;
             demuxer_channel = 0;
             _samplePos = 0;
             _sampleLen = -1;
             demux_ts_packets(null, 0);
+            settings = new BDLPCMReaderSettings();
         }
+
+        public AudioDecoderSettings Settings { get { return settings; } }
 
         public void Close()
         {
@@ -44,31 +46,6 @@ namespace CUETools.Codecs.BDLPCM
             get
             {
                 return _sampleLen - _samplePos;
-            }
-        }
-
-        public unsafe int StreamId
-        {
-            get
-            {
-                return streamId;
-            }
-            set
-            {
-                streamId = value;
-                chosenStream = null;
-                foreach (var s in streams)
-                {
-                    if (s.Value.is_opened && s.Value.streamId == streamId)
-                    {
-                        chosenStream = s.Value;
-                        if (chosenStream.pcm == null)
-                        {
-                            demux_ts_packets(null, 0);
-                        }
-                        break;
-                    }
-                }
             }
         }
 
@@ -101,13 +78,37 @@ namespace CUETools.Codecs.BDLPCM
             }
         }
 
-        public AudioPCMConfig PCM { get { return chosenStream.pcm; } }
+        public unsafe AudioPCMConfig PCM
+        {
+            get {
+                if (chosenStream == null)
+                {
+                    if (settings.Stream != null)
+                    {
+                        foreach (var s in streams)
+                        {
+                            if (s.Value.is_opened && s.Value.streamId.ToString() == settings.Stream)
+                            {
+                                chosenStream = s.Value;
+                                if (chosenStream.pcm == null)
+                                {
+                                    demux_ts_packets(null, 0);
+                                }
+                                return chosenStream.pcm;
+                            }
+                        }
+                    }
+
+                    throw new Exception("multiple streams present, please specify");
+                }
+                return chosenStream.pcm; 
+            }
+        }
 
         public string Path { get { return _path; } }
 
         public unsafe int Read(AudioBuffer buff, int maxLength)
         {
-            if (chosenStream == null) throw new InvalidOperationException("chosenStream == null");
             buff.Prepare(this, maxLength);
             int sampleCount;
             fixed (byte* dest = &buff.Bytes[0])
@@ -164,7 +165,7 @@ namespace CUETools.Codecs.BDLPCM
                     TsStream s;
                     demux_ts_packet(fr, out s);
                     int dataLen = (int) fr.Length;
-                    if (dataLen > 0 && s != null)
+                    if (dataLen > 0 && s != null && (chosenStream == null || s == chosenStream))
                     {
                         int dataOffset = (int)(fr.Ptr - ptr);
                         if (s.savedBufferSize > 0)
@@ -687,7 +688,7 @@ namespace CUETools.Codecs.BDLPCM
                 //    }
                 //}
 
-                if (s.is_opened && streamId == s.streamId)
+                if (s.is_opened)
                 {
                     if (s.at_packet_header)
                     {
@@ -706,8 +707,8 @@ namespace CUETools.Codecs.BDLPCM
         byte[] frameBuffer;
 
         int demuxer_channel;
-        int streamId;
         TsStream chosenStream;
         long _samplePos, _sampleLen;
+        BDLPCMReaderSettings settings;
     }
 }

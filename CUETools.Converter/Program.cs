@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using CUETools.Codecs;
@@ -81,6 +82,7 @@ namespace CUETools.Converter
             string encoderFormat = null;
             bool ignore_chunk_sizes = false;
             AudioEncoderType audioEncoderType = AudioEncoderType.NoAudio;
+            var decoderOptions = new Dictionary<string, string>();
 
             for (int arg = 0; arg < args.Length; arg++)
             {
@@ -90,6 +92,12 @@ namespace CUETools.Converter
                     ignore_chunk_sizes = true;
                 else if (args[arg] == "--decoder" && ++arg < args.Length)
                     decoderName = args[arg];
+                else if (args[arg] == "--decoder-option" && arg + 2 < args.Length)
+                {
+                    var optionName = args[++arg];
+                    var optionValue = args[++arg];
+                    decoderOptions.Add(optionName, optionValue);
+                }
                 else if (args[arg] == "--encoder" && ++arg < args.Length)
                     encoderName = args[arg];
                 else if (args[arg] == "--encoder-format" && ++arg < args.Length)
@@ -143,6 +151,17 @@ namespace CUETools.Converter
                 try
                 {
                     audioSource = Program.GetAudioSource(config, sourceFile, decoderName, ignore_chunk_sizes);
+                    foreach (var decOpt in decoderOptions)
+                    {
+                        var decoderSettings = audioSource.Settings;
+                        if (decoderSettings == null)
+                            throw new Exception(String.Format("{0} doesn't have any properties.", audioSource.GetType().Name));
+                        var property = TypeDescriptor.GetProperties(decoderSettings).Find(decOpt.Key, true);
+                        if (property == null)
+                            throw new Exception(String.Format("{0} doesn't have a property named {1}.", audioSource.GetType().Name, decOpt.Key));
+                        property.SetValue(decoderSettings, decOpt.Value);
+                    }
+
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);
                     Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));

@@ -284,6 +284,12 @@ namespace CUETools { namespace Codecs { namespace FLAC {
 			return buff->Length;
 		}
 
+                virtual property AudioDecoderSettings^ Settings {
+                    AudioDecoderSettings^ get(void) {
+                        return nullptr;
+                    }
+                }
+
 	private:
 		DecoderWriteDelegate^ _writeDel;
 		DecoderMetadataDelegate^ _metadataDel;

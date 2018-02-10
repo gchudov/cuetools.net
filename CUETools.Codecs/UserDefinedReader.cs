@@ -10,6 +10,8 @@ namespace CUETools.Codecs
         Process _decoderProcess;
         WAVReader rdr;
 
+        public AudioDecoderSettings Settings { get { return null; } }
+
         public long Position
         {
             get

@@ -230,6 +230,12 @@ namespace CUETools { namespace Codecs { namespace APE {
 			return buff->Length;
 		}
 
+                virtual property AudioDecoderSettings^ Settings {
+                    AudioDecoderSettings^ get(void) {
+                        return nullptr;
+                    }
+                }
+
 	private:
 		IAPEDecompress * pAPEDecompress;
 

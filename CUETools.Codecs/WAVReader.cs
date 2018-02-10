@@ -14,6 +14,8 @@ namespace CUETools.Codecs
         bool _largeFile;
         string _path;
 
+        public AudioDecoderSettings Settings { get { return null; } }
+
         public long Position
         {
             get

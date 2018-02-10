@@ -2,6 +2,8 @@
 {
 	public interface IAudioSource
 	{
+        AudioDecoderSettings Settings { get; }
+
 		AudioPCMConfig PCM { get; }
 		string Path { get; }
 

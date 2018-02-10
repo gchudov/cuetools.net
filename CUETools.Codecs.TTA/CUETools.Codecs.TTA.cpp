@@ -187,6 +187,12 @@ namespace TTA {
 			return buff->Length;
 		}
 
+                virtual property AudioDecoderSettings^ Settings {
+                    AudioDecoderSettings^ get(void) {
+                        return nullptr;
+                    }
+                }
+
 	private:
 		Int64 _sampleCount, _sampleOffset;
 		AudioPCMConfig^ pcm;

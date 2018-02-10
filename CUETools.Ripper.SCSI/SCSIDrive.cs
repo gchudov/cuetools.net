@@ -77,7 +77,9 @@ namespace CUETools.Ripper.SCSI
 		private ReadProgressArgs progressArgs = new ReadProgressArgs();
 		public event EventHandler<ReadProgressArgs> ReadProgress;
 
-		public CDImageLayout TOC
+        public AudioDecoderSettings Settings { get { return null; } }
+
+        public CDImageLayout TOC
 		{
 			get
 			{

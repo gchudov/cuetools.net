@@ -17,6 +17,8 @@ namespace CUETools.DSP.Mixer
         private int mixoffs = 0;
         private int current = 0;
 
+        public AudioDecoderSettings Settings { get { return null; } }
+
         public void Close()
         {
         }

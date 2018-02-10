@@ -118,7 +118,9 @@ namespace CUETools.Codecs.FLAKE
 			framereader = new BitReader();
 		}
 
-		public void Close()
+        public AudioDecoderSettings Settings { get { return null; } }
+
+        public void Close()
 		{
 			_IO.Close();
 		}
