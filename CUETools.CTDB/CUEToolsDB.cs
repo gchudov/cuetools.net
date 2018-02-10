@@ -98,7 +98,8 @@ namespace CUETools.CTDB
                     this.QueryExceptionMessage = resp.StatusDescription;
 					if (this.QueryResponseStatus == HttpStatusCode.OK)
 					{
-						XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
+						// XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
+                        XmlSerializer serializer = new Microsoft.Xml.Serialization.GeneratedAssembly.CTDBResponseSerializer();
 						this.total = 0;
 						using (Stream responseStream = resp.GetResponseStream())
 						{
