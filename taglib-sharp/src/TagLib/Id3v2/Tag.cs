@@ -522,7 +522,7 @@ namespace TagLib.Id3v2 {
 				RemoveFrames (ident);
 			} else if (count != 0) {
 				SetTextFrame (ident, string.Format (
-					CultureInfo.InvariantCulture, "{0}/{1}",
+					CultureInfo.InvariantCulture, count > 9 && number > 0 ? "{0:00}/{1}" : "{0}/{1}",
 					number, count));
 			} else {
 				SetTextFrame (ident, number.ToString (
