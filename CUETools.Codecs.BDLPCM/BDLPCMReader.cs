@@ -111,16 +111,15 @@ namespace CUETools.Codecs.BDLPCM
         {
             buff.Prepare(this, maxLength);
             int sampleCount;
-            fixed (byte* dest = &buff.Bytes[0])
+            fixed (int* dest = &buff.Samples[0,0])
                 sampleCount = demux_ts_packets(dest, buff.Length);
             buff.Length = sampleCount;
             _samplePos += sampleCount;
             return sampleCount;
         }
 
-        unsafe int demux_ts_packets(byte* dest, int maxSamples)
+        unsafe int demux_ts_packets(int* dest, int maxSamples)
         {
-            int byteOffset = 0;
             int samplesOffset = 0;
             while (true)
             {
@@ -132,12 +131,12 @@ namespace CUETools.Codecs.BDLPCM
                         int chunkSamples = Math.Min(samplesInBuffer, maxSamples - samplesOffset);
                         int chunkLen = chunkSamples * chosenStream.pcm.BlockAlign;
                         fixed (byte* psrc_start = &chosenStream.savedBuffer[0])
-                            remux(
-                                dest + byteOffset, 
+                            BDBytesToFLACSamples(
+                                dest,
                                 psrc_start + chosenStream.savedBufferOffset,
                                 chunkSamples, chosenStream.pcm);
-                        byteOffset += chunkLen;
                         samplesOffset += chunkSamples;
+                        dest += chunkSamples * chosenStream.pcm.ChannelCount;
                         chosenStream.savedBufferOffset += chunkLen;
                         chosenStream.savedBufferSize -= chunkLen;
                     }
@@ -180,9 +179,9 @@ namespace CUETools.Codecs.BDLPCM
                             if (chosenStream.savedBufferSize == blockLen)
                             {
                                 fixed (byte* psrc = &s.savedBuffer[s.savedBufferOffset])
-                                    remux(dest + byteOffset, psrc, 1, s.pcm);
-                                byteOffset += blockLen;
+                                    BDBytesToFLACSamples(dest, psrc, 1, s.pcm);
                                 samplesOffset += 1;
+                                dest += chosenStream.pcm.ChannelCount;
                                 chosenStream.savedBufferOffset = 0;
                                 chosenStream.savedBufferSize = 0;
                             }
@@ -203,23 +202,66 @@ namespace CUETools.Codecs.BDLPCM
             return samplesOffset;
         }
 
-        unsafe static void remux(byte* pdest, byte* psrc, int samples, AudioPCMConfig pcm)
+        unsafe static void BDBytesToFLACSamples_24bit_6ch(int* pdest, byte* psrc, int samples, int wastedBits)
         {
-            if (pcm.BitsPerSample == 24)
+            for (int i = 0; i < samples; i++)
             {
-                for (int i = 0; i < samples * pcm.ChannelCount; i++)
-                {
-                    byte p0 = *(psrc++);
-                    byte p1 = *(psrc++);
-                    byte p2 = *(psrc++);
-                    *(pdest++) = p2;
-                    *(pdest++) = p1;
-                    *(pdest++) = p0;
-                }
-                // if (0 != (pcm.ChannelCount & 1)) channels are padded with one extra unused channel! is it the same for wav?
+                // front left
+                *(pdest++) = ((((((int)*(psrc++) << 8) + (int)*(psrc++)) << 8) + (int)*(psrc++)) << 8) >> (8 + wastedBits);
+                // front right
+                *(pdest++) = ((((((int)*(psrc++) << 8) + (int)*(psrc++)) << 8) + (int)*(psrc++)) << 8) >> (8 + wastedBits);
+                // front center
+                *(pdest++) = ((((((int)*(psrc++) << 8) + (int)*(psrc++)) << 8) + (int)*(psrc++)) << 8) >> (8 + wastedBits);
+                // surround left
+                pdest[1] = ((((((int)*(psrc++) << 8) + (int)*(psrc++)) << 8) + (int)*(psrc++)) << 8) >> (8 + wastedBits);
+                // surround right
+                pdest[2] = ((((((int)*(psrc++) << 8) + (int)*(psrc++)) << 8) + (int)*(psrc++)) << 8) >> (8 + wastedBits);
+                // LFE
+                pdest[0] = ((((((int)*(psrc++) << 8) + (int)*(psrc++)) << 8) + (int)*(psrc++)) << 8) >> (8 + wastedBits);
+                pdest += 3;
             }
-            else
-                throw new NotSupportedException();
+        }
+
+        unsafe static void BDBytesToFLACSamples_24bit_noremap(int* pdest, byte* psrc, int samples, int channels, int wastedBits)
+        {
+            for (int i = 0; i < samples * channels; i++)
+            {
+                *(pdest++) = ((((((int)*(psrc++) << 8) + (int)*(psrc++)) << 8) + (int)*(psrc++)) << 8) >> (8 + wastedBits);
+            }
+            // if (0 != (pcm.ChannelCount & 1)) channels are padded with one extra unused channel! is it the same for wav?
+        }
+
+        unsafe static void BDBytesToFLACSamples_24bit(int* pdest, byte* psrc, int samples, int channels, int wastedBits)
+        {
+            switch (channels)
+            {
+                case 2:
+                    BDBytesToFLACSamples_24bit_noremap(pdest, psrc, samples, channels, wastedBits);
+                    break;
+                case 4:
+                    BDBytesToFLACSamples_24bit_noremap(pdest, psrc, samples, channels, wastedBits);
+                    break;
+                case 6:
+                    BDBytesToFLACSamples_24bit_6ch(pdest, psrc, samples, wastedBits);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        unsafe static void BDBytesToFLACSamples(int* pdest, byte* psrc, int samples, AudioPCMConfig pcm)
+        {
+            switch (pcm.BitsPerSample)
+            {
+                case 24:
+                    BDBytesToFLACSamples_24bit(pdest, psrc, samples, pcm.ChannelCount, 0);
+                    break;
+                case 20:
+                    BDBytesToFLACSamples_24bit(pdest, psrc, samples, pcm.ChannelCount, 4);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
         unsafe void process_psi_pat(TsStream s, FrameReader fr)
@@ -401,91 +443,56 @@ namespace CUETools.Codecs.BDLPCM
             int pi_channels_padding;
             int pi_bits;
             int pi_rate;
-            //uint[] pi_channels_in;
-
-//static const uint32_t pi_8channels_in[] =
-//{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
-//  AOUT_CHAN_MIDDLELEFT, AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT,
-//  AOUT_CHAN_MIDDLERIGHT, AOUT_CHAN_LFE, 0 };
-
-//static const uint32_t pi_7channels_in[] =
-//{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
-//  AOUT_CHAN_MIDDLELEFT, AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT,
-//  AOUT_CHAN_MIDDLERIGHT, 0 };
-
-//static const uint32_t pi_6channels_in[] =
-//{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
-//  AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT, AOUT_CHAN_LFE, 0 };
-
-//static const uint32_t pi_5channels_in[] =
-//{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
-//  AOUT_CHAN_MIDDLELEFT, AOUT_CHAN_MIDDLERIGHT, 0 };
-
-//static const uint32_t pi_4channels_in[] =
-//{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT,
-//  AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT, 0 };
-
-//static const uint32_t pi_3channels_in[] =
-//{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT,
-//  AOUT_CHAN_CENTER, 0 };
 
             switch( ( h & 0xf000) >> 12 )
             {
             case 1:
                 pi_channels = 1;
-                //pi_original_channels = AOUT_CHAN_CENTER;
                 break;
             case 3:
                 pi_channels = 2;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT;
                 break;
             case 4:
                 pi_channels = 3;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT | AOUT_CHAN_CENTER;
-                //pi_channels_in = pi_3channels_in;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT,
+                //  AOUT_CHAN_CENTER, 0 };
                 break;
             case 5:
                 pi_channels = 3;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT | AOUT_CHAN_REARCENTER;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT,
+                //  AOUT_CHAN_REARCENTER, 0 };
                 break;
             case 6:
                 pi_channels = 4;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT | AOUT_CHAN_CENTER |
-                //                        AOUT_CHAN_REARCENTER;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT,
+                //  AOUT_CHAN_CENTER, AOUT_CHAN_REARCENTER, 0 };
                 break;
             case 7:
                 pi_channels = 4;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT |
-                //                        AOUT_CHAN_REARLEFT | AOUT_CHAN_REARRIGHT;
-                //pi_channels_in = pi_4channels_in;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT,
+                //  AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT, 0 };
                 break;
             case 8:
                 pi_channels = 5;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT | AOUT_CHAN_CENTER |
-                //                        AOUT_CHAN_REARLEFT | AOUT_CHAN_REARRIGHT;
-                //pi_channels_in = pi_5channels_in;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
+                //  AOUT_CHAN_MIDDLELEFT, AOUT_CHAN_MIDDLERIGHT, 0 };
                 break;
             case 9:
                 pi_channels = 6;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT | AOUT_CHAN_CENTER |
-                //                        AOUT_CHAN_REARLEFT | AOUT_CHAN_REARRIGHT |
-                //                        AOUT_CHAN_LFE;
-                //pi_channels_in = pi_6channels_in;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
+                //  AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT, AOUT_CHAN_LFE, 0 };
                 break;
             case 10:
                 pi_channels = 7;
-                //*pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT | AOUT_CHAN_CENTER |
-                //                        AOUT_CHAN_REARLEFT | AOUT_CHAN_REARRIGHT |
-                //                        AOUT_CHAN_MIDDLELEFT | AOUT_CHAN_MIDDLERIGHT;
-                //pi_channels_in = pi_7channels_in;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
+                //  AOUT_CHAN_MIDDLELEFT, AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT,
+                //  AOUT_CHAN_MIDDLERIGHT, 0 };
                 break;
             case 11:
                 pi_channels = 8;
-                //pi_original_channels = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT | AOUT_CHAN_CENTER |
-                //                        AOUT_CHAN_REARLEFT | AOUT_CHAN_REARRIGHT |
-                //                        AOUT_CHAN_MIDDLELEFT | AOUT_CHAN_MIDDLERIGHT |
-                //                        AOUT_CHAN_LFE;
-                //pi_channels_in = pi_8channels_in;
+                //{ AOUT_CHAN_LEFT, AOUT_CHAN_RIGHT, AOUT_CHAN_CENTER,
+                //  AOUT_CHAN_MIDDLELEFT, AOUT_CHAN_REARLEFT, AOUT_CHAN_REARRIGHT,
+                //  AOUT_CHAN_MIDDLERIGHT, AOUT_CHAN_LFE, 0 };
                 break;
 
             default:
@@ -498,8 +505,10 @@ namespace CUETools.Codecs.BDLPCM
             case 1:
                 pi_bits = 16;
                 break;
-            case 2: /* 20 bits but samples are stored on 24 bits */
-            case 3: /* 24 bits */
+            case 2:
+                pi_bits = 20;
+                break;
+            case 3:
                 pi_bits = 24;
                 break;
             default:
@@ -523,14 +532,6 @@ namespace CUETools.Codecs.BDLPCM
 
             if (s.pcm == null)
                 s.pcm = new AudioPCMConfig(pi_bits, pi_channels, pi_rate);
-
-            //if( pi_channels_in )
-            //{
-            //    p_sys->i_chans_to_reorder =
-            //        aout_CheckChannelReorder( pi_channels_in, NULL,
-            //                                  *pi_original_channels,
-            //                                  p_sys->pi_chan_table );
-            //}
         }
 
         unsafe void demux_ts_packet(FrameReader fr, out TsStream dataStream)
