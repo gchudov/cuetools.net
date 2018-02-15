@@ -120,7 +120,7 @@ namespace CUETools.Converter
                     break;
             }
 
-            Console.Error.WriteLine("CUETools.Converter, Copyright (C) 2009-2013 Grigory Chudov.");
+            Console.Error.WriteLine("CUETools.Converter, Copyright (C) 2009-2018 Grigory Chudov.");
             Console.Error.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
             Console.Error.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
             if (!ok || sourceFile == null || destFile == null)
@@ -159,7 +159,8 @@ namespace CUETools.Converter
                         var property = TypeDescriptor.GetProperties(decoderSettings).Find(decOpt.Key, true);
                         if (property == null)
                             throw new Exception(String.Format("{0} doesn't have a property named {1}.", audioSource.GetType().Name, decOpt.Key));
-                        property.SetValue(decoderSettings, decOpt.Value);
+                        property.SetValue(decoderSettings, 
+                            TypeDescriptor.GetConverter(property.PropertyType).ConvertFromString(decOpt.Value));
                     }
 
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);

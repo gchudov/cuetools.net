@@ -18,11 +18,26 @@ namespace CUETools.Codecs.BDLPCM
             end_m = ptr + len;
         }
 
+        internal FrameReader(FrameReader src, long len)
+        {
+            if (src.ptr_m + len > src.end_m) throw new IndexOutOfRangeException();
+            ptr_m = src.ptr_m;
+            end_m = src.ptr_m + len;
+        }
+
         internal void read_bytes(byte* dst, int len)
         {
             if (ptr_m + len > end_m) throw new IndexOutOfRangeException();
             AudioSamples.MemCpy(dst, ptr_m, len);
             ptr_m += len;
+        }
+
+        internal byte[] read_bytes(int len)
+        {
+            var res = new byte[len];
+            fixed (byte* ptr = &res[0])
+                read_bytes(ptr, len);
+            return res;
         }
 
         internal byte read_byte()

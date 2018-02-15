@@ -8,6 +8,12 @@ namespace CUETools.Codecs.BDLPCM
     [AudioDecoderClass("cuetools", "m2ts", 2)]
     public class BDLPCMReader : IAudioSource
     {
+        public unsafe BDLPCMReader(string path, Stream IO, ushort pid)
+            : this(path, IO)
+        {
+            settings.Pid = pid;
+        }
+
         public unsafe BDLPCMReader(string path, Stream IO)
         {
             _path = path;
@@ -83,11 +89,29 @@ namespace CUETools.Codecs.BDLPCM
             get {
                 if (chosenStream == null)
                 {
-                    if (settings.Stream != null)
+                    if (settings.Pid.HasValue)
+                    {
+                        if (streams.ContainsKey(settings.Pid.Value))
+                        {
+                            var s = streams[settings.Pid.Value];
+                            if (s.is_opened)
+                            {
+                                chosenStream = s;
+                                if (chosenStream.pcm == null)
+                                {
+                                    demux_ts_packets(null, 0);
+                                }
+                                return chosenStream.pcm;
+                            }
+                        }
+                        throw new Exception("Pid can be " + 
+                            string.Join(", ", (new List<ushort>(streams.Keys)).FindAll(pid => streams[pid].is_opened).ConvertAll(pid => pid.ToString()).ToArray()));
+                    }
+                    if (settings.Stream.HasValue)
                     {
                         foreach (var s in streams)
                         {
-                            if (s.Value.is_opened && s.Value.streamId.ToString() == settings.Stream)
+                            if (s.Value.is_opened && s.Value.streamId == settings.Stream.Value)
                             {
                                 chosenStream = s.Value;
                                 if (chosenStream.pcm == null)
@@ -97,9 +121,11 @@ namespace CUETools.Codecs.BDLPCM
                                 return chosenStream.pcm;
                             }
                         }
+                        throw new Exception("Stream can be " +
+                            string.Join(", ", (new List<TsStream>(streams.Values)).FindAll(s => s.is_opened).ConvertAll(s => s.streamId.ToString()).ToArray()));
                     }
 
-                    throw new Exception("multiple streams present, please specify");
+                    throw new Exception("multiple streams present, please specify Pid or Stream");
                 }
                 return chosenStream.pcm; 
             }

@@ -12,6 +12,9 @@ namespace CUETools.Codecs.BDLPCM
         }
      
         [Browsable(false)]
-        public string Stream { get; set; }
+        public int? Stream { get; set; }
+
+        [Browsable(false)]
+        public ushort? Pid { get; set; }
     }
 }

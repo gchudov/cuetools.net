@@ -73,6 +73,7 @@ namespace CUETools.Codecs
             formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, true, true, encoders.GetDefault("ape", true), null, decoders.GetDefault("ape", true)));
             formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, true, encoders.GetDefault("tta", true), null, decoders.GetDefault("tta", true)));
             formats.Add("m2ts", new CUEToolsFormat("m2ts", CUEToolsTagger.APEv2, true, false, false, true, null, null, decoders.GetDefault("m2ts", true)));
+            formats.Add("mpls", new CUEToolsFormat("mpls", CUEToolsTagger.APEv2, true, false, false, true, null, null, decoders.GetDefault("mpls", true)));
             formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, false, true, encoders.GetDefault("wav", true), null, decoders.GetDefault("wav", true)));
             formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), decoders.GetDefault("m4a", true)));
             formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, encoders.GetDefault("tak", true), null, decoders.GetDefault("tak", true)));
