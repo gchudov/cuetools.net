@@ -73,8 +73,8 @@ namespace CUETools.Processor
             {
                 sw.WriteLine("{0,9}  | {1,8} | {2,8} |  {3,8}    | {4,8}   ",
                     track, // sheet.TOC[track].Number,
-                    CDImageLayout.TimeToString("{0,2}:{1:00}.{2:00}", sheet.TOC[track].Start),
-                    CDImageLayout.TimeToString("{0,2}:{1:00}.{2:00}", sheet.TOC[track].Length),
+                    CDImageLayout.TimeToString(sheet.TOC[track].Start, "{0,2}:{1:00}.{2:00}"),
+                    CDImageLayout.TimeToString(sheet.TOC[track].Length, "{0,2}:{1:00}.{2:00}"),
                     sheet.TOC[track].Start,
                     sheet.TOC[track].End);
             }
@@ -157,7 +157,7 @@ namespace CUETools.Processor
                     if (sheet.TOC[track + sheet.TOC.FirstAudio].Pregap > 0 || track + sheet.TOC.FirstAudio == 1)
                     {
                         logWriter.WriteLine();
-                        logWriter.WriteLine("     Pre-gap length  0:{0}.{1:00}", CDImageLayout.TimeToString("{0:00}:{1:00}", sheet.TOC[track + sheet.TOC.FirstAudio].Pregap + (track + sheet.TOC.FirstAudio == 1 ? 150U : 0U)), (sheet.TOC[track + sheet.TOC.FirstAudio].Pregap % 75) * 100 / 75);
+                        logWriter.WriteLine("     Pre-gap length  0:{0}.{1:00}", CDImageLayout.TimeToString(sheet.TOC[track + sheet.TOC.FirstAudio].Pregap + (track + sheet.TOC.FirstAudio == 1 ? 150U : 0U), "{0:00}:{1:00}"), (sheet.TOC[track + sheet.TOC.FirstAudio].Pregap % 75) * 100 / 75);
                     }
 
                     wereErrors |= sheet.PrintErrors(logWriter, sheet.TOC[track + sheet.TOC.FirstAudio].Start, sheet.TOC[track + sheet.TOC.FirstAudio].Length);

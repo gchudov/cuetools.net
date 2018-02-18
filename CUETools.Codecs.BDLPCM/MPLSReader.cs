@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Globalization;
 
 namespace CUETools.Codecs.BDLPCM
 {
@@ -123,8 +124,7 @@ namespace CUETools.Codecs.BDLPCM
             parentFr.skip(len);
 
             // Primary Clip identifer
-            var clip_id = fr.read_bytes(5);
-            item.clip_id = Encoding.UTF8.GetString(clip_id, 0, clip_id.Length);
+            item.clip_id = fr.read_string(5);
 
             // skip the redundant "M2TS" CodecIdentifier
             uint codecId = fr.read_uint();
@@ -218,30 +218,12 @@ namespace CUETools.Codecs.BDLPCM
             parentFr.skip(len);
 
             s.coding_type = fr.read_byte();
-            //value_map_t codec_map[] = {
-            //    {0x01, "MPEG-1 Video"},
-            //    {0x02, "MPEG-2 Video"},
-            //    {0x03, "MPEG-1 Audio"},
-            //    {0x04, "MPEG-2 Audio"},
-            //    {0x80, "LPCM"},
-            //    {0x81, "AC-3"},
-            //    {0x82, "DTS"},
-            //    {0x83, "TrueHD"},
-            //    {0x84, "AC-3 Plus"},
-            //    {0x85, "DTS-HD"},
-            //    {0x86, "DTS-HD Master"},
-            //    {0xea, "VC-1"},
-            //    {0x1b, "H.264"},
-            //    {0x90, "Presentation Graphics"},
-            //    {0x91, "Interactive Graphics"},
-            //    {0x92, "Text Subtitle"},
-            //    {0, NULL}
-            //};
             if (s.coding_type == 0x01
                 || s.coding_type == 0x02
                 || s.coding_type == 0xea
                 || s.coding_type == 0x1b)
             {
+                // Video
                 byte fmt = fr.read_byte();
                 s.format = (byte)(fmt >> 4);
                 s.rate = (byte)(fmt & 15);
@@ -257,42 +239,20 @@ namespace CUETools.Codecs.BDLPCM
                 || s.coding_type == 0x86)
             {
                 // Audio
-                //value_map_t audio_format_map[] = {
-                //    {0, "Reserved1"},
-                //    {1, "Mono"},
-                //    {2, "Reserved2"},
-                //    {3, "Stereo"},
-                //    {4, "Reserved3"},
-                //    {5, "Reserved4"},
-                //    {6, "Multi Channel"},
-                //    {12, "Combo"},
-                //    {0, NULL}
-                //};
-                //value_map_t audio_rate_map[] = {
-                //    {0, "Reserved1"},
-                //    {1, "48 Khz"},
-                //    {2, "Reserved2"},
-                //    {3, "Reserved3"},
-                //    {4, "96 Khz"},
-                //    {5, "192 Khz"},
-                //    {12, "48/192 Khz"},
-                //    {14, "48/96 Khz"},
-                //    {0, NULL}
-                //};
                 byte fmt = fr.read_byte();
                 s.format = (byte)(fmt >> 4);
                 s.rate = (byte)(fmt & 15);
-                s.lang = fr.read_bytes(3);
+                s.lang = fr.read_string(3);
             }
             else if (s.coding_type == 0x90
                 || s.coding_type == 0x91)
             {
-                s.lang = fr.read_bytes(3);
+                s.lang = fr.read_string(3);
             }
             else if (s.coding_type == 0x92)
             {
                 s.char_code = fr.read_byte();
-                s.lang = fr.read_bytes(3);
+                s.lang = fr.read_string(3);
             }
             else throw new Exception("unrecognized stream type");
 
@@ -329,6 +289,20 @@ namespace CUETools.Codecs.BDLPCM
             get
             {
                 return -1;
+            }
+        }
+
+        public TimeSpan Duration
+        {
+            get
+            {
+                uint totalLength = 0;
+                foreach (var item in hdr_m.play_item)
+                {
+                    totalLength += item.out_time - item.in_time;
+                }
+
+                return TimeSpan.FromSeconds(totalLength / 45000.0);
             }
         }
 
@@ -389,6 +363,14 @@ namespace CUETools.Codecs.BDLPCM
             return res;
         }
 
+        public MPLSHeader MPLSHeader
+        {
+            get
+            {
+                return hdr_m;
+            }
+        }
+
         string _path;
         Stream _IO;
         byte[] contents;
@@ -400,7 +382,7 @@ namespace CUETools.Codecs.BDLPCM
         BDLPCMReaderSettings settings;
     }
 
-    internal struct MPLSPlaylistMark
+    public struct MPLSPlaylistMark
     {
         public byte mark_id;
         public byte mark_type;
@@ -410,7 +392,7 @@ namespace CUETools.Codecs.BDLPCM
         public uint duration;
     }
 
-    internal struct MPLSStream
+    public struct MPLSStream
     {
         public byte stream_type;
         public byte coding_type;
@@ -420,10 +402,151 @@ namespace CUETools.Codecs.BDLPCM
         public byte format;
         public byte rate;
         public byte char_code;
-        public byte[] lang;
+        public string lang;
+
+        public string FormatString
+        {
+            get
+            {
+                if (coding_type == 0x01
+                    || coding_type == 0x02
+                    || coding_type == 0xea
+                    || coding_type == 0x1b)
+                    switch (format)
+                    {
+                        case 0: return "reserved0";
+                        case 1: return "480i";
+                        case 2: return "576i";
+                        case 3: return "480p";
+                        case 4: return "1080i";
+                        case 5: return "720p";
+                        case 6: return "1080p";
+                        case 7: return "576p";
+                        default: return format.ToString();
+                    }
+                switch (format)
+                {
+                    case 0: return "reserved0";
+                    case 1: return "mono";
+                    case 2: return "reserved2";
+                    case 3: return "stereo";
+                    case 4: return "reserved4";
+                    case 5: return "reserved5";
+                    case 6: return "multi-channel";
+                    case 12: return "combo";
+                    default: return format.ToString();
+                }
+            }
+        }
+
+        public int FrameRate
+        {
+            get
+            {
+                switch (rate)
+                {
+                    case 1: return 23;
+                    case 2: return 24;
+                    case 3: return 25;
+                    case 4: return 30;
+                    case 6: return 50;
+                    case 7: return 60;
+                    default: throw new NotSupportedException();
+                }
+            }
+        }
+
+        public bool Interlaced
+        {
+            get
+            {
+                return format == 1 || format == 2 || format == 4;
+            }
+        }
+
+        public string RateString
+        {
+            get
+            {
+                if (coding_type == 0x01
+                    || coding_type == 0x02
+                    || coding_type == 0xea
+                    || coding_type == 0x1b)
+                    switch (rate)
+                    {
+                        case 0: return "reserved0";
+                        case 1: return "23.976";
+                        case 2: return "24";
+                        case 3: return "25";
+                        case 4: return "29.97";
+                        case 5: return "reserved5";
+                        case 6: return "50";
+                        case 7: return "59.94";
+                        default: return rate.ToString();
+                    }
+                switch (rate)
+                {
+                    case 0: return "reserved0";
+                    case 1: return "48KHz";
+                    case 2: return "reserved2";
+                    case 3: return "reserved3";
+                    case 4: return "96KHz";
+                    case 5: return "192KHz";
+                    case 12: return "48/192KHz";
+                    case 14: return "48/96KHz";
+                    default: return rate.ToString();
+                }
+            }
+        }
+
+        public string CodecString
+        {
+            get
+            {
+                switch (coding_type)
+                {
+                    case 0x01: return "MPEG-1 Video";
+                    case 0x02: return "MPEG-2 Video";
+                    case 0x03: return "MPEG-1 Audio";
+                    case 0x04: return "MPEG-2 Audio";
+                    //case 0x80: return "LPCM";
+                    case 0x80: return "RAW/PCM";
+                    case 0x81: return "AC-3";
+                    case 0x82: return "DTS";
+                    case 0x83: return "TrueHD";
+                    case 0x84: return "AC-3 Plus";
+                    case 0x85: return "DTS-HD";
+                    case 0x86: return "DTS-HD Master";
+                    case 0xea: return "VC-1";
+                    case 0x1b: return "h264/AVC";
+                    case 0x90: return "Presentation Graphics";
+                    case 0x91: return "Interactive Graphics";
+                    case 0x92: return "Text Subtitle";
+                    default: return coding_type.ToString();
+                }
+            }
+        }
+
+        public string LanguageString
+        {
+            get
+            {
+                CultureInfo[] cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
+                foreach (var culture in cultures)
+                {
+                    // Exclude custom cultures.
+                    if ((culture.CultureTypes & CultureTypes.UserCustomCulture) == CultureTypes.UserCustomCulture)
+                        continue;
+
+                    if (culture.ThreeLetterISOLanguageName == lang)
+                        return culture.EnglishName;
+                }
+                return lang;
+            }
+        }
     }
 
-    internal struct MPLSPlaylistItem
+    public struct MPLSPlaylistItem
     {
         public string clip_id;
         public byte connection_condition;
@@ -443,7 +566,7 @@ namespace CUETools.Codecs.BDLPCM
         public List<MPLSStream> pg;
     }
 
-    internal struct MPLSHeader
+    public struct MPLSHeader
     {
         public uint type_indicator;
         public uint type_indicator2;
@@ -457,5 +580,26 @@ namespace CUETools.Codecs.BDLPCM
 
         public List<MPLSPlaylistItem> play_item;
         public List<MPLSPlaylistMark> play_mark;
+
+        public List<uint> Chapters
+        {
+            get
+            {
+                var res = new List<uint>();
+                if (play_mark.Count < 1) return res;
+                if (play_item.Count < 1) return res;
+                uint start = play_item[0].in_time;
+                uint end = play_item[play_item.Count - 1].out_time;
+                if (play_mark[0].time - start > 45000)
+                    res.Add(0);
+                for (int i = 0; i < mark_count; i++)
+                {
+                    if (end - play_mark[i].time > 45000)
+                        res.Add(play_mark[i].time - start);
+                }
+                res.Add(end - start);
+                return res;
+            }
+        }
     }
 }

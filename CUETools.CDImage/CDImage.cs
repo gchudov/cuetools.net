@@ -563,7 +563,7 @@ namespace CUETools.CDImage
 			return frame + (sec * 75) + (min * 60 * 75);
 		}
 
-		public static string TimeToString(string format, uint t)
+        public static string TimeToString(uint t, string format = "{0:00}:{1:00}:{2:00}")
 		{
 			uint min, sec, frame;
 
@@ -576,12 +576,20 @@ namespace CUETools.CDImage
 			return String.Format(format, min, sec, frame);
 		}
 
-		public static string TimeToString(uint t)
-		{
-			return TimeToString("{0:00}:{1:00}:{2:00}", t);
-		}
+        public static string TimeToString(TimeSpan ts, string format = "{0:00}:{1:00}:{2:00}.{3:000}")
+        {
+            ulong t = (ulong) ts.TotalMilliseconds;
+            ulong ms = t % 1000;
+            t /= 1000;
+            ulong s = t % 60;
+            t /= 60;
+            ulong m = t % 60;
+            t /= 60;
+            ulong hr = t;
+            return String.Format(format, hr, m, s, ms);
+        }
 
-		string _barcode;
+        string _barcode;
 		IList<CDTrack> _tracks;
 		int _audioTracks;
 		int _firstAudio;

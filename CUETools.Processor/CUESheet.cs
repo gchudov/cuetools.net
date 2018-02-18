@@ -2263,8 +2263,8 @@ namespace CUETools.Processor
                         break;
                     //"Suspicious position 0:02:20"
                     //"   Suspicious position 0:02:23 - 0:02:24"
-                    string s1 = CDImageLayout.TimeToString("0:{0:00}:{1:00}", iSecond * 75);
-                    string s2 = CDImageLayout.TimeToString("0:{0:00}:{1:00}", end * 75);
+                    string s1 = CDImageLayout.TimeToString(iSecond * 75, "0:{0:00}:{1:00}");
+                    string s2 = CDImageLayout.TimeToString(end * 75, "0:{0:00}:{1:00}");
                     if (iSecond == end)
                         logWriter.WriteLine("     Suspicious position {0}", s1);
                     else

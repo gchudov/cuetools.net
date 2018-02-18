@@ -40,6 +40,14 @@ namespace CUETools.Codecs.BDLPCM
             return res;
         }
 
+        internal string read_string(int len)
+        {
+            var res = new byte[len];
+            fixed (byte* ptr = &res[0])
+                read_bytes(ptr, len);
+            return Encoding.UTF8.GetString(res, 0, res.Length);;
+        }
+
         internal byte read_byte()
         {
             if (ptr_m + 1 > end_m) throw new IndexOutOfRangeException();
