@@ -43,7 +43,7 @@ namespace CUETools.Processor
 
         private static void AddPluginDirectory(string plugins_path)
         {
-            foreach (string plugin_path in Directory.GetFiles(plugins_path, "*.dll", SearchOption.TopDirectoryOnly))
+            foreach (string plugin_path in Directory.GetFiles(plugins_path, "CUETools.*.dll", SearchOption.TopDirectoryOnly))
             {
                 try
                 {

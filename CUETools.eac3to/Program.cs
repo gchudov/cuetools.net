@@ -126,21 +126,24 @@ namespace CUETools.eac3to
                 {
                     audioSource = new MPLSReader(sourceFile, null);
                     Console.ForegroundColor = ConsoleColor.White;
-                    int maxVideo = 0, maxAudio = 0, frameRate = 0;
+                    int frameRate = 0;
                     bool interlaced = false;
                     var chapters = audioSource.MPLSHeader.Chapters;
-                    audioSource.MPLSHeader.play_item.ForEach(i => maxVideo = Math.Max(maxVideo, i.video.Count));
-                    audioSource.MPLSHeader.play_item.ForEach(i => maxAudio = Math.Max(maxAudio, i.audio.Count));
-                    audioSource.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => frameRate = v.FrameRate));
-                    audioSource.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => interlaced = v.Interlaced));
-                    Console.Error.WriteLine("M2TS, {0} video track{1}, {2} audio track{3}, {4}, {5}{6}", maxVideo, maxVideo > 1 ? "s" : "", maxAudio, maxAudio > 1 ? "s" : "",
+                    var videos = new List<MPLSStream>();
+                    var audios = new List<MPLSStream>();
+                    audioSource.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => { if (!videos.Exists(v1 => v1.pid == v.pid)) videos.Add(v); }));
+                    audioSource.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.pid == v.pid)) audios.Add(v); }));
+                    videos.ForEach(v => { frameRate = v.FrameRate; interlaced = v.Interlaced; });
+                    Console.Error.WriteLine("M2TS, {0} video track{1}, {2} audio track{3}, {4}, {5}{6}",
+                        videos.Count, videos.Count > 1 ? "s" : "",
+                        audios.Count, audios.Count > 1 ? "s" : "",
                         CDImageLayout.TimeToString(audioSource.Duration, "{0:0}:{1:00}:{2:00}"), frameRate * (interlaced ? 2 : 1), interlaced ? "i" : "p");
                     //foreach (var item in audioSource.MPLSHeader.play_item)
-                        //Console.Error.WriteLine("{0}.m2ts", item.clip_id);
+                    //Console.Error.WriteLine("{0}.m2ts", item.clip_id);
                     {
                         Console.ForegroundColor = ConsoleColor.Gray;
                         int id = 1;
-                        if (audioSource.MPLSHeader.mark_count > 2)
+                        if (chapters.Count > 1)
                         {
                             Console.ForegroundColor = ConsoleColor.White;
                             Console.Error.Write(id++);
@@ -148,24 +151,21 @@ namespace CUETools.eac3to
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Console.Error.WriteLine("Chapters, {0} chapters", chapters.Count - 1);
                         }
-                        if (audioSource.MPLSHeader.play_item.Count > 0)
+                        foreach (var video in videos)
                         {
-                            foreach (var video in audioSource.MPLSHeader.play_item[0].video)
-                            {
-                                Console.ForegroundColor = ConsoleColor.White;
-                                Console.Error.Write(id++);
-                                Console.Error.Write(": ");
-                                Console.ForegroundColor = ConsoleColor.Gray;
-                                Console.Error.WriteLine("{0}, {1}{2}", video.CodecString, video.FormatString, video.FrameRate * (video.Interlaced ? 2 : 1));
-                            }
-                            foreach (var audio in audioSource.MPLSHeader.play_item[0].audio)
-                            {
-                                Console.ForegroundColor = ConsoleColor.White;
-                                Console.Error.Write(id++);
-                                Console.Error.Write(": ");
-                                Console.ForegroundColor = ConsoleColor.Gray;
-                                Console.Error.WriteLine("{0}, {1}, {2}, {3}", audio.CodecString, audio.LanguageString, audio.FormatString, audio.RateString);
-                            }
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.Error.Write(id++);
+                            Console.Error.Write(": ");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.Error.WriteLine("{0}, {1}{2}", video.CodecString, video.FormatString, video.FrameRate * (video.Interlaced ? 2 : 1));
+                        }
+                        foreach (var audio in audios)
+                        {
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.Error.Write(id++);
+                            Console.Error.Write(": ");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.Error.WriteLine("{0}, {1}, {2}, {3}", audio.CodecString, audio.LanguageString, audio.FormatString, audio.RateString);
                         }
                     }
 
@@ -174,149 +174,131 @@ namespace CUETools.eac3to
 
                     if (stream > 0)
                     {
-                        int id = 1;
-                        ushort pid = 0;
-                        if (chapters.Count > 1)
+                        int chapterStreams = chapters.Count > 1 ? 1 : 0;
+                        if (stream <= chapterStreams)
                         {
-                            if (stream == id)
+                            string extension = Path.GetExtension(destFile).ToLower();
+                            if (!extension.StartsWith("."))
+                                throw new Exception("Unknown encoder format: " + destFile);
+                            encoderFormat = extension.Substring(1);
+
+                            if (encoderFormat == "txt")
                             {
-                                string extension = Path.GetExtension(destFile).ToLower();
-                                if (!extension.StartsWith("."))
-                                    throw new Exception("Unknown encoder format: " + destFile);
-                                encoderFormat = extension.Substring(1);
-
-                                if (encoderFormat == "txt")
+                                Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
+                                using (StreamWriter sw = new StreamWriter(destFile))
                                 {
-                                    Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
-                                    using (StreamWriter sw = new StreamWriter(destFile))
+                                    for (int i = 0; i < chapters.Count - 1; i++)
                                     {
-                                        for (int i = 0; i < chapters.Count - 1; i++)
-                                        {
-                                            sw.WriteLine("CHAPTER{0:00}={1}", i + 1,
-                                                CDImageLayout.TimeToString(TimeSpan.FromSeconds(chapters[i] / 45000.0)));
-                                            sw.WriteLine("CHAPTER{0:00}NAME=", i + 1);
-                                        }
+                                        sw.WriteLine("CHAPTER{0:00}={1}", i + 1,
+                                            CDImageLayout.TimeToString(TimeSpan.FromSeconds(chapters[i] / 45000.0)));
+                                        sw.WriteLine("CHAPTER{0:00}NAME=", i + 1);
                                     }
-                                    Console.BackgroundColor = ConsoleColor.DarkGreen;
-                                    Console.Error.Write("Done.");
-                                    Console.BackgroundColor = ConsoleColor.Black;
-                                    Console.Error.WriteLine();
-                                    return 0;
                                 }
-
-                                if (encoderFormat == "cue")
-                                {
-                                    Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
-                                    string strtoc = "";
-                                    for (int i = 0; i < chapters.Count; i++)
-                                        strtoc += string.Format(" {0}", chapters[i] / 600);
-                                    strtoc = strtoc.Substring(1);
-                                    CDImageLayout toc = new CDImageLayout(strtoc);
-                                    CTDBResponseMeta meta = null;
-                                    bool queryMeta = true;
-                                    if (queryMeta)
-                                    {
-                                        var ctdb = new CUEToolsDB(toc, null);
-                                        Console.Error.WriteLine("Contacting CTDB...");
-                                        ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
-                                        foreach (var imeta in ctdb.Metadata)
-                                        {
-                                            meta = imeta;
-                                            break;
-                                        }
-                                    }
-                                    //if (outputPath == null)
-                                    //{
-                                    //    if (meta != null)
-                                    //        outputPath = string.Format("{0} - {1} - {2}.cue", meta.artist ?? "Unknown Artist", meta.year ?? "XXXX", meta.album ?? "Unknown Album");
-                                    //    else
-                                    //        outputPath = "unknown.cue";
-                                    //}
-                                    using (StreamWriter cueWriter = new StreamWriter(destFile))
-                                    {
-                                        cueWriter.WriteLine("REM COMMENT \"{0}\"", "Created by CUETools.eac3to");
-                                        if (meta != null && meta.year != null)
-                                            cueWriter.WriteLine("REM DATE {0}", meta.year);
-                                        else
-                                            cueWriter.WriteLine("REM DATE XXXX");
-                                        if (meta != null)
-                                        {
-                                            cueWriter.WriteLine("PERFORMER \"{0}\"", meta.artist);
-                                            cueWriter.WriteLine("TITLE \"{0}\"", meta.album);
-                                        }
-                                        else
-                                        {
-                                            cueWriter.WriteLine("PERFORMER \"\"");
-                                            cueWriter.WriteLine("TITLE \"\"");
-                                        }
-                                        if (meta != null)
-                                        {
-                                            //cueWriter.WriteLine("FILE \"{0}\" WAVE", Path.GetFileNameWithoutExtension(destFile) + (extension ?? ".wav"));
-                                            cueWriter.WriteLine("FILE \"{0}\" WAVE", Path.GetFileNameWithoutExtension(destFile) + (".wav"));
-                                        }
-                                        else
-                                        {
-                                            cueWriter.WriteLine("FILE \"{0}\" WAVE", "");
-                                        }
-                                        for (int track = 1; track <= toc.TrackCount; track++)
-                                            if (toc[track].IsAudio)
-                                            {
-                                                cueWriter.WriteLine("  TRACK {0:00} AUDIO", toc[track].Number);
-                                                if (meta != null && meta.track.Length >= toc[track].Number)
-                                                {
-                                                    cueWriter.WriteLine("    TITLE \"{0}\"", meta.track[(int)toc[track].Number - 1].name);
-                                                    if (meta.track[(int)toc[track].Number - 1].artist != null)
-                                                        cueWriter.WriteLine("    PERFORMER \"{0}\"", meta.track[(int)toc[track].Number - 1].artist);
-                                                }
-                                                else
-                                                {
-                                                    cueWriter.WriteLine("    TITLE \"\"");
-                                                }
-                                                if (toc[track].ISRC != null)
-                                                    cueWriter.WriteLine("    ISRC {0}", toc[track].ISRC);
-                                                for (int index = toc[track].Pregap > 0 ? 0 : 1; index <= toc[track].LastIndex; index++)
-                                                    cueWriter.WriteLine("    INDEX {0:00} {1}", index, toc[track][index].MSF);
-                                            }
-                                    }
-                                    Console.BackgroundColor = ConsoleColor.DarkGreen;
-                                    Console.Error.Write("Done.");
-                                    Console.BackgroundColor = ConsoleColor.Black;
-                                    Console.Error.WriteLine();
-                                    return 0;
-                                }
-
-                                Console.Error.WriteLine("Unsupported chapters file format \"{0}\"", encoderFormat);
+                                Console.BackgroundColor = ConsoleColor.DarkGreen;
+                                Console.Error.Write("Done.");
+                                Console.BackgroundColor = ConsoleColor.Black;
+                                Console.Error.WriteLine();
                                 return 0;
                             }
-                            else
+
+                            if (encoderFormat == "cue")
                             {
-                                id++;
-                            }
-                        }
-                        if (audioSource.MPLSHeader.play_item.Count > 0)
-                        {
-                            foreach (var video in audioSource.MPLSHeader.play_item[0].video)
-                            {
-                                if (stream == id)
+                                Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
+                                string strtoc = "";
+                                for (int i = 0; i < chapters.Count; i++)
+                                    strtoc += string.Format(" {0}", chapters[i] / 600);
+                                strtoc = strtoc.Substring(1);
+                                CDImageLayout toc = new CDImageLayout(strtoc);
+                                CTDBResponseMeta meta = null;
+                                bool queryMeta = true;
+                                if (queryMeta)
                                 {
-                                    pid = video.pid;
+                                    var ctdb = new CUEToolsDB(toc, null);
+                                    Console.Error.WriteLine("Contacting CTDB...");
+                                    ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
+                                    foreach (var imeta in ctdb.Metadata)
+                                    {
+                                        meta = imeta;
+                                        break;
+                                    }
                                 }
-                                id++;
-                            }
-                            foreach (var audio in audioSource.MPLSHeader.play_item[0].audio)
-                            {
-                                if (stream == id)
+                                //if (outputPath == null)
+                                //{
+                                //    if (meta != null)
+                                //        outputPath = string.Format("{0} - {1} - {2}.cue", meta.artist ?? "Unknown Artist", meta.year ?? "XXXX", meta.album ?? "Unknown Album");
+                                //    else
+                                //        outputPath = "unknown.cue";
+                                //}
+                                using (StreamWriter cueWriter = new StreamWriter(destFile))
                                 {
-                                    pid = audio.pid;
+                                    cueWriter.WriteLine("REM COMMENT \"{0}\"", "Created by CUETools.eac3to");
+                                    if (meta != null && meta.year != null)
+                                        cueWriter.WriteLine("REM DATE {0}", meta.year);
+                                    else
+                                        cueWriter.WriteLine("REM DATE XXXX");
+                                    if (meta != null)
+                                    {
+                                        cueWriter.WriteLine("PERFORMER \"{0}\"", meta.artist);
+                                        cueWriter.WriteLine("TITLE \"{0}\"", meta.album);
+                                    }
+                                    else
+                                    {
+                                        cueWriter.WriteLine("PERFORMER \"\"");
+                                        cueWriter.WriteLine("TITLE \"\"");
+                                    }
+                                    if (meta != null)
+                                    {
+                                        //cueWriter.WriteLine("FILE \"{0}\" WAVE", Path.GetFileNameWithoutExtension(destFile) + (extension ?? ".wav"));
+                                        cueWriter.WriteLine("FILE \"{0}\" WAVE", Path.GetFileNameWithoutExtension(destFile) + (".wav"));
+                                    }
+                                    else
+                                    {
+                                        cueWriter.WriteLine("FILE \"{0}\" WAVE", "");
+                                    }
+                                    for (int track = 1; track <= toc.TrackCount; track++)
+                                        if (toc[track].IsAudio)
+                                        {
+                                            cueWriter.WriteLine("  TRACK {0:00} AUDIO", toc[track].Number);
+                                            if (meta != null && meta.track.Length >= toc[track].Number)
+                                            {
+                                                cueWriter.WriteLine("    TITLE \"{0}\"", meta.track[(int)toc[track].Number - 1].name);
+                                                if (meta.track[(int)toc[track].Number - 1].artist != null)
+                                                    cueWriter.WriteLine("    PERFORMER \"{0}\"", meta.track[(int)toc[track].Number - 1].artist);
+                                            }
+                                            else
+                                            {
+                                                cueWriter.WriteLine("    TITLE \"\"");
+                                            }
+                                            if (toc[track].ISRC != null)
+                                                cueWriter.WriteLine("    ISRC {0}", toc[track].ISRC);
+                                            for (int index = toc[track].Pregap > 0 ? 0 : 1; index <= toc[track].LastIndex; index++)
+                                                cueWriter.WriteLine("    INDEX {0:00} {1}", index, toc[track][index].MSF);
+                                        }
                                 }
-                                id++;
+                                Console.BackgroundColor = ConsoleColor.DarkGreen;
+                                Console.Error.Write("Done.");
+                                Console.BackgroundColor = ConsoleColor.Black;
+                                Console.Error.WriteLine();
+                                return 0;
                             }
-                        }
-                        if (pid == 0)
-                        {
-                            Console.Error.WriteLine("Stream {0} not found.", stream);
+
+                            Console.Error.WriteLine("Unsupported chapters file format \"{0}\"", encoderFormat);
                             return 0;
                         }
+                        if (stream - chapterStreams <= videos.Count)
+                        {
+                            Console.Error.WriteLine("Video extraction not supported.");
+                            return 0;
+                        }
+                        if (stream - chapterStreams - videos.Count > audios.Count)
+                        {
+                            Console.BackgroundColor = ConsoleColor.DarkRed;
+                            Console.Error.Write("The source file doesn't contain a track with the number {0}.", stream);
+                            Console.BackgroundColor = ConsoleColor.Black;
+                            Console.Error.WriteLine();
+                            return 0;
+                        }
+                        ushort pid = audios[stream - chapterStreams - videos.Count - 1].pid;
                         (audioSource.Settings as BDLPCMReaderSettings).Pid = pid;
                     }
 
