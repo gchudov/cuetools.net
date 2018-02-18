@@ -128,6 +128,7 @@ namespace CUETools.eac3to
                     Console.ForegroundColor = ConsoleColor.White;
                     int maxVideo = 0, maxAudio = 0, frameRate = 0;
                     bool interlaced = false;
+                    var chapters = audioSource.MPLSHeader.Chapters;
                     audioSource.MPLSHeader.play_item.ForEach(i => maxVideo = Math.Max(maxVideo, i.video.Count));
                     audioSource.MPLSHeader.play_item.ForEach(i => maxAudio = Math.Max(maxAudio, i.audio.Count));
                     audioSource.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => frameRate = v.FrameRate));
@@ -145,7 +146,7 @@ namespace CUETools.eac3to
                             Console.Error.Write(id++);
                             Console.Error.Write(": ");
                             Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Error.WriteLine("Chapters, {0} chapters", audioSource.MPLSHeader.mark_count - 1);
+                            Console.Error.WriteLine("Chapters, {0} chapters", chapters.Count - 1);
                         }
                         if (audioSource.MPLSHeader.play_item.Count > 0)
                         {
@@ -175,7 +176,6 @@ namespace CUETools.eac3to
                     {
                         int id = 1;
                         ushort pid = 0;
-                        var chapters = audioSource.MPLSHeader.Chapters;
                         if (chapters.Count > 1)
                         {
                             if (stream == id)

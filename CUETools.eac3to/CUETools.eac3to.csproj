@@ -68,6 +68,7 @@
     <ProjectReference Include="..\CUETools.Codecs.BDLPCM\CUETools.Codecs.BDLPCM.csproj">
       <Project>{E75F7CCD-4266-42E1-A039-DC7EB5EDD8F6}</Project>
       <Name>CUETools.Codecs.BDLPCM</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
@@ -102,6 +103,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

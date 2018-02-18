@@ -445,7 +445,7 @@ namespace CUETools.Codecs.BDLPCM
             {
                 switch (rate)
                 {
-                    case 1: return 23;
+                    case 1: return 24;
                     case 2: return 24;
                     case 3: return 25;
                     case 4: return 30;
@@ -492,8 +492,10 @@ namespace CUETools.Codecs.BDLPCM
                     case 3: return "reserved3";
                     case 4: return "96KHz";
                     case 5: return "192KHz";
-                    case 12: return "48/192KHz";
-                    case 14: return "48/96KHz";
+                    //case 12: return "48/192KHz"; (core/hd)
+                    case 12: return "192KHz";
+                    //case 14: return "48/96KHz"; (core/hd)
+                    case 14: return "96KHz";
                     default: return rate.ToString();
                 }
             }
@@ -516,7 +518,8 @@ namespace CUETools.Codecs.BDLPCM
                     case 0x83: return "TrueHD";
                     case 0x84: return "AC-3 Plus";
                     case 0x85: return "DTS-HD";
-                    case 0x86: return "DTS-HD Master";
+                    //case 0x86: return "DTS-HD Master";
+                    case 0x86: return "DTS Master Audio";
                     case 0xea: return "VC-1";
                     case 0x1b: return "h264/AVC";
                     case 0x90: return "Presentation Graphics";
