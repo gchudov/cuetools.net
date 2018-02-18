@@ -9,8 +9,12 @@ namespace CUETools.Codecs.BDLPCM
     {
         public BDLPCMReaderSettings()
         {
+            IgnoreShortItems = true;
         }
-     
+
+        [Browsable(false)]
+        public bool IgnoreShortItems { get; set; }
+
         [Browsable(false)]
         public int? Stream { get; set; }
 

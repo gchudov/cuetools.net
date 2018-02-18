@@ -57,9 +57,10 @@ namespace CUETools.Codecs.BDLPCM
                 foreach (var audio in item.audio)
                 {
                     if (audio.coding_type != 0x80 /* LPCM */) continue;
+                    if (settings.IgnoreShortItems && item.out_time - item.in_time < shortItemDuration) continue;
                     if (audio.pid == chosenPid)
                     {
-                        var parent = Directory.GetParent(System.IO.Path.GetDirectoryName(_path));
+                        var parent = Directory.GetParent(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(_path)));
                         var m2ts = System.IO.Path.Combine(
                             System.IO.Path.Combine(parent.FullName, "STREAM"), 
                             item.clip_id + ".m2ts");
@@ -299,7 +300,10 @@ namespace CUETools.Codecs.BDLPCM
                 uint totalLength = 0;
                 foreach (var item in hdr_m.play_item)
                 {
-                    totalLength += item.out_time - item.in_time;
+                    if (item.num_audio == 0) continue;
+                    uint item_duration = item.out_time - item.in_time;
+                    if (settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
+                    totalLength += item_duration;
                 }
 
                 return TimeSpan.FromSeconds(totalLength / 45000.0);
@@ -370,6 +374,48 @@ namespace CUETools.Codecs.BDLPCM
                 return hdr_m;
             }
         }
+
+        public List<uint> Chapters
+        {
+            get
+            {
+                //settings.IgnoreShortItems
+                var res = new List<uint>();
+                if (hdr_m.play_mark.Count < 1) return res;
+                if (hdr_m.play_item.Count < 1) return res;
+                res.Add(0);
+                for (int i = 0; i < hdr_m.mark_count; i++)
+                {
+                    ushort mark_item = hdr_m.play_mark[i].play_item_ref;
+                    uint item_in_time = hdr_m.play_item[mark_item].in_time;
+                    uint item_out_time = hdr_m.play_item[mark_item].out_time;
+                    if (settings.IgnoreShortItems && item_out_time - item_in_time < shortItemDuration) continue;
+                    uint item_offset = 0;
+                    for (int j = 0; j < mark_item; j++)
+                    {
+                        if (hdr_m.play_item[j].num_audio == 0) continue;
+                        uint item_duration = hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
+                        if (settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
+                        item_offset += item_duration;
+                    }
+                    res.Add(hdr_m.play_mark[i].time - item_in_time + item_offset);
+                }
+                uint end_offset = 0;
+                for (int j = 0; j < hdr_m.play_item.Count; j++)
+                {
+                    if (hdr_m.play_item[j].num_audio == 0) continue;
+                    uint item_duration = hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
+                    if (settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
+                    end_offset += hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
+                }
+                res.Add(end_offset);
+                while (res.Count > 1 && res[1] - res[0] < 45000) res.RemoveAt(1);
+                while (res.Count > 1 && res[res.Count - 1] - res[res.Count - 2] < 45000) res.RemoveAt(res.Count - 2);
+                return res;
+            }
+        }
+
+        readonly static int shortItemDuration = 45000 * 30;
 
         string _path;
         Stream _IO;
@@ -583,26 +629,5 @@ namespace CUETools.Codecs.BDLPCM
 
         public List<MPLSPlaylistItem> play_item;
         public List<MPLSPlaylistMark> play_mark;
-
-        public List<uint> Chapters
-        {
-            get
-            {
-                var res = new List<uint>();
-                if (play_mark.Count < 1) return res;
-                if (play_item.Count < 1) return res;
-                uint start = play_item[0].in_time;
-                uint end = play_item[play_item.Count - 1].out_time;
-                if (play_mark[0].time - start > 45000)
-                    res.Add(0);
-                for (int i = 0; i < mark_count; i++)
-                {
-                    if (end - play_mark[i].time > 45000)
-                        res.Add(play_mark[i].time - start);
-                }
-                res.Add(end - start);
-                return res;
-            }
-        }
     }
 }

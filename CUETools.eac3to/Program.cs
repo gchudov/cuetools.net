@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using CUETools.Codecs.BDLPCM;
 using CUETools.CDImage;
 using CUETools.CTDB;
+using System.Text;
 
 namespace CUETools.eac3to
 {
@@ -128,7 +129,7 @@ namespace CUETools.eac3to
                     Console.ForegroundColor = ConsoleColor.White;
                     int frameRate = 0;
                     bool interlaced = false;
-                    var chapters = audioSource.MPLSHeader.Chapters;
+                    var chapters = audioSource.Chapters;
                     var videos = new List<MPLSStream>();
                     var audios = new List<MPLSStream>();
                     audioSource.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => { if (!videos.Exists(v1 => v1.pid == v.pid)) videos.Add(v); }));
@@ -177,21 +178,59 @@ namespace CUETools.eac3to
                         int chapterStreams = chapters.Count > 1 ? 1 : 0;
                         if (stream <= chapterStreams)
                         {
-                            string extension = Path.GetExtension(destFile).ToLower();
-                            if (!extension.StartsWith("."))
-                                throw new Exception("Unknown encoder format: " + destFile);
-                            encoderFormat = extension.Substring(1);
+                            if (destFile == "-" || destFile == "nul")
+                            {
+                                encoderFormat = "txt";
+                            }
+                            else
+                            {
+                                string extension = Path.GetExtension(destFile).ToLower();
+                                if (!extension.StartsWith("."))
+                                    encoderFormat = destFile;
+                                else
+                                    encoderFormat = extension.Substring(1);
+                                if (encoderFormat != "txt" && encoderFormat != "cue")
+                                {
+                                    Console.BackgroundColor = ConsoleColor.DarkRed;
+                                    Console.Error.Write("Unsupported chapters file format \"{0}\"", encoderFormat);
+                                    Console.BackgroundColor = ConsoleColor.Black;
+                                    Console.Error.WriteLine();
+                                    return 0;
+                                }
+                            }
+
+                            string strtoc = "";
+                            for (int i = 0; i < chapters.Count; i++)
+                                strtoc += string.Format(" {0}", chapters[i] / 600);
+                            strtoc = strtoc.Substring(1);
+                            CDImageLayout toc = new CDImageLayout(strtoc);
+                            CTDBResponseMeta meta = null;
+                            bool queryMeta = true;
+                            if (queryMeta)
+                            {
+                                var ctdb = new CUEToolsDB(toc, null);
+                                Console.Error.WriteLine("Contacting CTDB...");
+                                ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
+                                foreach (var imeta in ctdb.Metadata)
+                                {
+                                    meta = imeta;
+                                    break;
+                                }
+                            }
 
                             if (encoderFormat == "txt")
                             {
                                 Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
-                                using (StreamWriter sw = new StreamWriter(destFile))
+                                using (TextWriter sw = destFile == "nul" ? (TextWriter)new StringWriter() : destFile == "-" ? Console.Out : (TextWriter)new StreamWriter(destFile))
                                 {
                                     for (int i = 0; i < chapters.Count - 1; i++)
                                     {
                                         sw.WriteLine("CHAPTER{0:00}={1}", i + 1,
                                             CDImageLayout.TimeToString(TimeSpan.FromSeconds(chapters[i] / 45000.0)));
-                                        sw.WriteLine("CHAPTER{0:00}NAME=", i + 1);
+                                        if (meta != null && meta.track.Length >= toc[i+1].Number)
+                                            sw.WriteLine("CHAPTER{0:00}NAME={1}", i + 1, meta.track[(int)toc[i+1].Number - 1].name);
+                                        else
+                                            sw.WriteLine("CHAPTER{0:00}NAME=", i + 1);
                                     }
                                 }
                                 Console.BackgroundColor = ConsoleColor.DarkGreen;
@@ -204,24 +243,6 @@ namespace CUETools.eac3to
                             if (encoderFormat == "cue")
                             {
                                 Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
-                                string strtoc = "";
-                                for (int i = 0; i < chapters.Count; i++)
-                                    strtoc += string.Format(" {0}", chapters[i] / 600);
-                                strtoc = strtoc.Substring(1);
-                                CDImageLayout toc = new CDImageLayout(strtoc);
-                                CTDBResponseMeta meta = null;
-                                bool queryMeta = true;
-                                if (queryMeta)
-                                {
-                                    var ctdb = new CUEToolsDB(toc, null);
-                                    Console.Error.WriteLine("Contacting CTDB...");
-                                    ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
-                                    foreach (var imeta in ctdb.Metadata)
-                                    {
-                                        meta = imeta;
-                                        break;
-                                    }
-                                }
                                 //if (outputPath == null)
                                 //{
                                 //    if (meta != null)
@@ -229,7 +250,7 @@ namespace CUETools.eac3to
                                 //    else
                                 //        outputPath = "unknown.cue";
                                 //}
-                                using (StreamWriter cueWriter = new StreamWriter(destFile))
+                                using (StreamWriter cueWriter = new StreamWriter(destFile, false, Encoding.UTF8))
                                 {
                                     cueWriter.WriteLine("REM COMMENT \"{0}\"", "Created by CUETools.eac3to");
                                     if (meta != null && meta.year != null)
@@ -282,8 +303,7 @@ namespace CUETools.eac3to
                                 return 0;
                             }
 
-                            Console.Error.WriteLine("Unsupported chapters file format \"{0}\"", encoderFormat);
-                            return 0;
+                            throw new Exception("Unknown encoder format: " + destFile);
                         }
                         if (stream - chapterStreams <= videos.Count)
                         {
