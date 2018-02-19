@@ -69,7 +69,7 @@ namespace CUEPlayer
 					{
 						_icecastWriter.Write(result);
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
 						close = true;
 					}

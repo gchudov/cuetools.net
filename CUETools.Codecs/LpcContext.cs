@@ -145,9 +145,9 @@ namespace CUETools.Codecs
                     if (secs[i] >= lpc.MAX_LPC_SECTIONS - 1)
                     {
                         throw new IndexOutOfRangeException();
-                        window_sections[secs[i] - 1].m_type = LpcWindowSection.SectionType.Data;
-                        window_sections[secs[i] - 1].m_end = boundaries[j + 1];
-                        continue;
+                        //window_sections[secs[i] - 1].m_type = LpcWindowSection.SectionType.Data;
+                        //window_sections[secs[i] - 1].m_end = boundaries[j + 1];
+                        //continue;
                     }
                     window_sections[secs[i]].setData(boundaries[j], boundaries[j + 1]);
                     window_sections[secs[i]++].m_type = types[i, j];

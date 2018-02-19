@@ -246,7 +246,7 @@ namespace HDCDDotNet
 
 		private AudioBuffer _audioBuffer;
 		private IntPtr _decoder;
-		private int[,] _inSampleBuffer;
+		//private int[,] _inSampleBuffer;
 		private int[,] _outSampleBuffer;
 		private int _channelCount, _bitsPerSample;
 		hdcd_decoder_write_callback _decoderCallback;

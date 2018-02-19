@@ -1446,7 +1446,7 @@ namespace CUERipper
 		}
 
         List<AlbumArt> albumArt = new List<AlbumArt>();
-        int currentAlbumArt = 0, frontAlbumArt = -1;
+        int currentAlbumArt = 0;//, frontAlbumArt = -1;
 
         private void ResetAlbumArt()
         {
@@ -1490,7 +1490,7 @@ namespace CUERipper
             var cueSheet = args.cueSheet;
             albumArt.Clear();
             currentAlbumArt = 0;
-            frontAlbumArt = -1;
+            //frontAlbumArt = -1;
             var knownUrls = new List<string>();
             var firstUrls = new List<string>();
 

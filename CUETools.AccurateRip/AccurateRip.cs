@@ -403,7 +403,6 @@ namespace CUETools.AccurateRip
 			if (prefixSamples < 0 || prefixSamples >= maxOffset || suffixSamples < 0 || suffixSamples > maxOffset)
 				throw new ArgumentOutOfRangeException();
 
-			uint crc;
 			if (iTrack == 0)
 			{
 				int discLen = ((int)_toc.AudioLength - (int)TOC.Pregap) * 588;
@@ -1262,7 +1261,7 @@ namespace CUETools.AccurateRip
 					respStream.Close();
 					myOffsetsSaved.Close();
 				}
-				catch (WebException ex)
+				catch (WebException)
 				{
 					driveReadOffset = 0;
 					return false;

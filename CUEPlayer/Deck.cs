@@ -160,7 +160,7 @@ namespace CUEPlayer
 					}
 				} while (true);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 			}
 			if (playingCue != null)
@@ -198,7 +198,7 @@ namespace CUEPlayer
 				needUpdate = true;
 				UpdateDeck();
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				playingStart = playingFinish = 0;
 				playingCue = null;

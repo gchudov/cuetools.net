@@ -1,0 +1,13 @@
+.vs/
+obj/
+bin/
+lib/
+Release/
+*.vcxproj.user
+*.csproj.user
+*.sdf
+*.suo
+*.opensdf
+Win32/
+x64/
+ia32/

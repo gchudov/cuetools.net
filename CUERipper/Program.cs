@@ -43,7 +43,7 @@ namespace CUERipper
 					{
 						deploy.DownloadFileGroup(groupName);
 					}
-					catch (DeploymentException de)
+					catch (DeploymentException)
 					{
 						// Log error. Do not report this error to the user, because a satellite
 						// assembly may not exist if the user's culture and the application's
