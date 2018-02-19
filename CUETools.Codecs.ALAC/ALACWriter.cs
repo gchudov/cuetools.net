@@ -492,14 +492,16 @@ namespace CUETools.Codecs.ALAC
 			res[0] = smp[0];
 			for (int i = 1; i < n; i++)
 				res[i] = smp[i] - smp[i - 1];
-		}
+            res[n] = 1; // Stop byte to help alac_entropy_coder;
+        }
 
-		unsafe static void alac_encode_residual_0(int* res, int* smp, int n)
+        unsafe static void alac_encode_residual_0(int* res, int* smp, int n)
 		{
 			AudioSamples.MemCpy(res, smp, n);
-		}
+            res[n] = 1; // Stop byte to help alac_entropy_coder;
+        }
 
-		unsafe static void alac_encode_residual(int* res, int* smp, int n, int order, int* coefs, int shift, int bps)
+        unsafe static void alac_encode_residual(int* res, int* smp, int n, int order, int* coefs, int shift, int bps)
 		{
 			int csum = 0;
 
@@ -838,35 +840,32 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		unsafe void encode_residual(ALACFrame frame, int ch, int pass, int best_windows)
-		{
-			int* smp = frame.subframes[ch].samples;
-			int i, n = frame.blocksize;
+        unsafe void encode_residual(ALACFrame frame, int ch, int pass, int best_windows)
+        {
+            int* smp = frame.subframes[ch].samples;
+            int i, n = frame.blocksize;
             int bps = Settings.PCM.BitsPerSample + Settings.PCM.ChannelCount - 1;
 
-			// FIXED
-			//if (0 == (2 & frame.subframes[ch].done_fixed) && (pass != 1 || n < eparams.max_prediction_order))
-			//{
-			//    frame.subframes[ch].done_fixed |= 2;
-			//    frame.current.order = 31;
-			//    frame.current.window = -1;
-			//    alac_encode_residual_31(frame.current.residual, frame.subframes[ch].samples, frame.blocksize);
-			//    frame.current.size = (uint)(alac_entropy_coder(frame.current.residual, frame.blocksize, bps, out frame.current.ricemodifier) + 16);
-			//    frame.ChooseBestSubframe(ch);
-			//}
-			//if (0 == (1 & frame.subframes[ch].done_fixed) && (pass != 1 || n < eparams.max_prediction_order))
-			//{
-			//    frame.subframes[ch].done_fixed |= 1;
-			//    frame.current.order = 0;
-			//    frame.current.window = -1;
-			//    alac_encode_residual_0(frame.current.residual, frame.subframes[ch].samples, frame.blocksize);
-			//    frame.current.size = (uint)(alac_entropy_coder(frame.current.residual, frame.blocksize, bps, out frame.current.ricemodifier) + 16);
-			//    frame.ChooseBestSubframe(ch);
-			//}
-
-			// LPC
-			if (n < eparams.max_prediction_order)
-				return;
+            // FIXED
+            //if (0 == (2 & frame.subframes[ch].done_fixed) && (pass != 1 || n < eparams.max_prediction_order))
+            //{
+            //    frame.subframes[ch].done_fixed |= 2;
+            //    frame.current.order = 31;
+            //    frame.current.window = -1;
+            //    alac_encode_residual_31(frame.current.residual, frame.subframes[ch].samples, frame.blocksize);
+            //    frame.current.size = (uint)(alac_entropy_coder(frame.current.residual, frame.blocksize, bps, out frame.current.ricemodifier) + 16);
+            //    frame.ChooseBestSubframe(ch);
+            //}
+            //if (0 == (1 & frame.subframes[ch].done_fixed) && (pass != 1 || n < eparams.max_prediction_order))
+            if (0 == (1 & frame.subframes[ch].done_fixed) && n < eparams.max_prediction_order)
+            {
+                frame.subframes[ch].done_fixed |= 1;
+                frame.current.order = 0;
+                frame.current.window = -1;
+                alac_encode_residual_0(frame.current.residual, frame.subframes[ch].samples, frame.blocksize);
+                frame.current.size = (uint)(alac_entropy_coder(frame.current.residual, frame.blocksize, bps, out frame.current.ricemodifier) + 16);
+                frame.ChooseBestSubframe(ch);
+            }
 
 			float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
 			int min_order = eparams.min_prediction_order;
