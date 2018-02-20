@@ -514,7 +514,7 @@ namespace CUETools.Codecs.ALAC
 			/* generate warm-up samples */
 			res[0] = smp[0];
 			for (int i = 1; i <= order; i++)
-				res[i] = smp[i] - smp[i - 1];
+                res[i] = extend_sign32(smp[i] - smp[i - 1], bps);
 
 #if aaa
             // contains errors: if (resval * orig_sign <= 0) continue; is not the same as sign(resval) * sign(orig), because 0x80000000 * 0xffffffff < 0!
@@ -594,7 +594,7 @@ namespace CUETools.Codecs.ALAC
 #endif
 
             /* general case */
-			for (int i = order + 1; i < n; i++)
+            for (int i = order + 1; i < n; i++)
 			{
 				int sample = *(smp++);
 				int/*long*/ sum = (1 << (shift - 1));
@@ -738,8 +738,10 @@ namespace CUETools.Codecs.ALAC
 				k = k > k_modifier ? k_modifier : k;
 				size += (x >> k) > 8 ? 9 + bps : (x >> k) + k + 1;
 				history += x * rice_historymult - ((history * rice_historymult) >> 9);
-			}
-			return size;
+                if (x > 0xFFFF)
+                    history = 0xFFFF;
+            }
+            return size;
 		}
 
 		unsafe void alac_entropy_coder(BitWriter bitwriter, int* res, int n, int bps, int modifier)
@@ -760,7 +762,9 @@ namespace CUETools.Codecs.ALAC
 				history += x * rice_historymult - ((history * rice_historymult) >> 9);
 
 				sign_modifier = 0;
-				if (x > 0xFFFF)
+                // this werid if actually hurts compression speed and ratio, but
+                // unfortunately cannot be removed because the decoder does the same.
+                if (x > 0xFFFF)
 					history = 0xFFFF;
 
 				if (history < 128 && res < fin)
@@ -867,7 +871,10 @@ namespace CUETools.Codecs.ALAC
                 frame.ChooseBestSubframe(ch);
             }
 
-			float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
+            // Before returning, we must call ChooseBestSubframe at least once.
+            if (n < eparams.max_prediction_order) return;
+
+            float* lpcs = stackalloc float[lpc.MAX_LPC_ORDER * lpc.MAX_LPC_ORDER];
 			int min_order = eparams.min_prediction_order;
 			int max_order = eparams.max_prediction_order;
 
@@ -1236,7 +1243,10 @@ namespace CUETools.Codecs.ALAC
 				if (frame.type == FrameType.Verbatim)
 				{
                     int obps = Settings.PCM.BitsPerSample;
-					for (int i = 0; i < frame.blocksize; i++)
+                    // Second call to ChooseSubframes will undo the
+                    // channel swap
+                    frame.ChooseSubframes();
+                    for (int i = 0; i < frame.blocksize; i++)
                         for (int ch = 0; ch < Settings.PCM.ChannelCount; ch++)
 							bitwriter.writebits_signed(obps, frame.subframes[ch].samples[i]);
 				}
@@ -1247,8 +1257,10 @@ namespace CUETools.Codecs.ALAC
 							bps, frame.subframes[ch].best.ricemodifier);
 				}
 				output_frame_footer(bitwriter);
+                if (bitwriter.Length >= max_frame_size)
+                    throw new Exception("buffer overflow");
 
-				if (_sample_byte_size.Length <= frame_count)
+                if (_sample_byte_size.Length <= frame_count)
 				{
 					uint[] tmp = new uint[frame_count * 2];
 					Array.Copy(_sample_byte_size, tmp, _sample_byte_size.Length);
@@ -1747,7 +1759,7 @@ namespace CUETools.Codecs.ALAC
 
 			// set maximum encoded frame size (if larger, re-encodes in verbatim mode)
             if (Settings.PCM.ChannelCount == 2)
-                max_frame_size = 16 + ((m_blockSize * (Settings.PCM.BitsPerSample + Settings.PCM.BitsPerSample + 1) + 7) >> 3);
+                max_frame_size = 16 + ((m_blockSize * Settings.PCM.ChannelCount * (Settings.PCM.BitsPerSample + Settings.PCM.ChannelCount - 1) + 7) >> 3);
 			else
                 max_frame_size = 16 + ((m_blockSize * Settings.PCM.ChannelCount * Settings.PCM.BitsPerSample + 7) >> 3);
 
