@@ -1,0 +1,71 @@
+﻿<Window x:Class="CUETools.eac3ui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CUETools.eac3ui"
+        mc:Ignorable="d"
+        MinWidth="300" MaxWidth="1200" MinHeight="300" MaxHeight="300"
+        Title="CUETools eac3to" Height="300" Width="600" Closing="Window_Closing">
+	<StackPanel>
+        <DockPanel>
+            <Label x:Name="labelSource" Content="Source" Margin="8" Width="80"/>
+            <Button x:Name="buttonBrowseSource" Content="Browse" Click="ButtonBrowseSource_Click" DockPanel.Dock="Right" Margin="8"/>
+            <TextBox x:Name="textBoxSource" TextWrapping="NoWrap" Margin="8" TextChanged="textBoxSource_TextChanged"/>
+		</DockPanel>
+        <DockPanel>
+            <Label x:Name="labelDestination" Content="Destination" Margin="8" Width="80"/>
+            <Button x:Name="buttonBrowseDestination" Content="Browse" Click="buttonBrowseDestination_Click" DockPanel.Dock="Right" Margin="8"/>
+            <TextBox x:Name="textBoxDestination" TextWrapping="NoWrap" Margin="8"/>
+        </DockPanel>
+        <DockPanel>
+            <Label x:Name="labelTitleSet" Content="Title Set" Margin="8" Width="80"/>
+            <ComboBox x:Name="cmbTitleSet" Margin="8" SelectionChanged="cmbTitleSet_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />
+                            <TextBlock Text="{Binding FileName}" Margin="10,0" />
+                            <TextBlock Text="{Binding Duration}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </DockPanel>
+        <DockPanel>
+            <Label x:Name="labelAudioTrack" Content="Audio Track" Margin="8" Width="80"/>
+            <ComboBox x:Name="cmbAudioTrack" Margin="8" SelectionChanged="cmbAudioTrack_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />
+                            <TextBlock Text="{Binding CodecString}" Margin="10,0" />
+                            <TextBlock Text="{Binding LanguageString}" Margin="10,0" />
+                            <TextBlock Text="{Binding FormatString}" Margin="10,0" />
+                            <TextBlock Text="{Binding RateString}" Margin="10,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </DockPanel>
+        <DockPanel>
+            <Label x:Name="labelMetadata" Content="Metadata" Margin="8" Width="80"/>
+            <ComboBox x:Name="cmbMetadata" Margin="8">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Fill="{Binding source}" Width="16" Height="16" Margin="0,2,5,2" />
+                            <TextBlock Text="{Binding artist}" Margin="10,0" />
+                            <TextBlock Text="{Binding year}" Margin="10,0" />
+                            <TextBlock Text="{Binding album}" Margin="10,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </DockPanel>
+        <DockPanel>
+            <Button x:Name="buttonExtract" Content="Extract" DockPanel.Dock="Right" Margin="8"/>
+            <Label></Label>
+        </DockPanel>
+    </StackPanel>
+</Window>
