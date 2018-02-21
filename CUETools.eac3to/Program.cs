@@ -24,6 +24,7 @@ namespace CUETools.eac3to
             Console.Error.WriteLine();
             Console.Error.WriteLine("Options:");
             Console.Error.WriteLine();
+            Console.Error.WriteLine(" --ctdb                 Query CTDB for metadata.");
             Console.Error.WriteLine(" --encoder <name>       Use non-default encoder.");
             Console.Error.WriteLine(" --encoder-format <ext> Use encoder format different from file extension.");
             Console.Error.WriteLine(" --lossy                Use lossy encoder/mode.");
@@ -51,6 +52,7 @@ namespace CUETools.eac3to
             string encoderName = null;
             string encoderFormat = null;
             AudioEncoderType audioEncoderType = AudioEncoderType.NoAudio;
+            bool queryMeta = false;
 
             for (int arg = 0; arg < args.Length; arg++)
             {
@@ -68,6 +70,8 @@ namespace CUETools.eac3to
                     audioEncoderType = AudioEncoderType.Lossy;
                 else if (args[arg] == "--lossless")
                     audioEncoderType = AudioEncoderType.Lossless;
+                else if (args[arg] == "--ctdb")
+                    queryMeta = true;
                 else if ((args[arg][0] != '-' || args[arg] == "-") && sourceFile == null)
                     sourceFile = args[arg];
                 else if ((args[arg][0] != '-' || args[arg] == "-") && sourceFile != null && destFile == null)
@@ -173,6 +177,24 @@ namespace CUETools.eac3to
                     if (destFile == null)
                         return 0;
 
+                    string strtoc = "";
+                    for (int i = 0; i < chapters.Count; i++)
+                        strtoc += string.Format(" {0}", chapters[i] / 600);
+                    strtoc = strtoc.Substring(1);
+                    CDImageLayout toc = new CDImageLayout(strtoc);
+                    CTDBResponseMeta meta = null;
+                    if (queryMeta)
+                    {
+                        var ctdb = new CUEToolsDB(toc, null);
+                        Console.Error.WriteLine("Contacting CTDB...");
+                        ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
+                        foreach (var imeta in ctdb.Metadata)
+                        {
+                            meta = imeta;
+                            break;
+                        }
+                    }
+
                     if (stream > 0)
                     {
                         int chapterStreams = chapters.Count > 1 ? 1 : 0;
@@ -186,41 +208,23 @@ namespace CUETools.eac3to
                             {
                                 string extension = Path.GetExtension(destFile).ToLower();
                                 if (!extension.StartsWith("."))
+                                {
                                     encoderFormat = destFile;
+                                    if (meta == null || meta.artist == null || meta.album == null)
+                                        destFile = string.Format("{0}.{1}", Path.GetFileNameWithoutExtension(sourceFile), destFile);
+                                    else
+                                        destFile = string.Format("{0} - {1} - {2}.{3}", meta.artist, meta.year, meta.album, destFile);
+                                }
                                 else
                                     encoderFormat = extension.Substring(1);
                                 if (encoderFormat != "txt" && encoderFormat != "cue")
-                                {
-                                    Console.BackgroundColor = ConsoleColor.DarkRed;
-                                    Console.Error.Write("Unsupported chapters file format \"{0}\"", encoderFormat);
-                                    Console.BackgroundColor = ConsoleColor.Black;
-                                    Console.Error.WriteLine();
-                                    return 0;
-                                }
+                                    throw new Exception(string.Format("Unsupported chapters file format \"{0}\"", encoderFormat));
                             }
 
-                            string strtoc = "";
-                            for (int i = 0; i < chapters.Count; i++)
-                                strtoc += string.Format(" {0}", chapters[i] / 600);
-                            strtoc = strtoc.Substring(1);
-                            CDImageLayout toc = new CDImageLayout(strtoc);
-                            CTDBResponseMeta meta = null;
-                            bool queryMeta = true;
-                            if (queryMeta)
-                            {
-                                var ctdb = new CUEToolsDB(toc, null);
-                                Console.Error.WriteLine("Contacting CTDB...");
-                                ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
-                                foreach (var imeta in ctdb.Metadata)
-                                {
-                                    meta = imeta;
-                                    break;
-                                }
-                            }
+                            Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
 
                             if (encoderFormat == "txt")
                             {
-                                Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
                                 using (TextWriter sw = destFile == "nul" ? (TextWriter)new StringWriter() : destFile == "-" ? Console.Out : (TextWriter)new StreamWriter(destFile))
                                 {
                                     for (int i = 0; i < chapters.Count - 1; i++)
@@ -242,14 +246,6 @@ namespace CUETools.eac3to
 
                             if (encoderFormat == "cue")
                             {
-                                Console.Error.WriteLine("Creating file \"{0}\"...", destFile);
-                                //if (outputPath == null)
-                                //{
-                                //    if (meta != null)
-                                //        outputPath = string.Format("{0} - {1} - {2}.cue", meta.artist ?? "Unknown Artist", meta.year ?? "XXXX", meta.album ?? "Unknown Album");
-                                //    else
-                                //        outputPath = "unknown.cue";
-                                //}
                                 using (StreamWriter cueWriter = new StreamWriter(destFile, false, Encoding.UTF8))
                                 {
                                     cueWriter.WriteLine("REM COMMENT \"{0}\"", "Created by CUETools.eac3to");
@@ -306,18 +302,9 @@ namespace CUETools.eac3to
                             throw new Exception("Unknown encoder format: " + destFile);
                         }
                         if (stream - chapterStreams <= videos.Count)
-                        {
-                            Console.Error.WriteLine("Video extraction not supported.");
-                            return 0;
-                        }
+                            throw new Exception("Video extraction not supported.");
                         if (stream - chapterStreams - videos.Count > audios.Count)
-                        {
-                            Console.BackgroundColor = ConsoleColor.DarkRed;
-                            Console.Error.Write("The source file doesn't contain a track with the number {0}.", stream);
-                            Console.BackgroundColor = ConsoleColor.Black;
-                            Console.Error.WriteLine();
-                            return 0;
-                        }
+                            throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
                         ushort pid = audios[stream - chapterStreams - videos.Count - 1].pid;
                         (audioSource.Settings as BDLPCMReaderSettings).Pid = pid;
                     }
@@ -336,8 +323,17 @@ namespace CUETools.eac3to
                         {
                             string extension = Path.GetExtension(destFile).ToLower();
                             if (!extension.StartsWith("."))
-                                throw new Exception("Unknown encoder format: " + destFile);
-                            encoderFormat = extension.Substring(1);
+                            {
+                                encoderFormat = destFile;
+                                if (meta == null || meta.artist == null || meta.album == null)
+                                    destFile = string.Format("{0} - {1}.{2}", Path.GetFileNameWithoutExtension(sourceFile), stream, destFile);
+                                else
+                                    destFile = string.Format("{0} - {1} - {2}.{3}", meta.artist, meta.year, meta.album, destFile);
+                            }
+                            else
+                                encoderFormat = extension.Substring(1);
+                            if (File.Exists(destFile))
+                                throw new Exception(string.Format("Error: file {0} already exists.", destFile));
                         }
                     }
                     if (!config.formats.TryGetValue(encoderFormat, out fmt))
@@ -353,6 +349,7 @@ namespace CUETools.eac3to
                                 ConvertAll(e => e.Name + (e.Lossless ? " (lossless)" : " (lossy)"));
                         throw new Exception("Encoders available for format " + fmt.extension + ": " + (lst.Count == 0 ? "none" : string.Join(", ", lst.ToArray())));
                     }
+                    Console.Error.WriteLine("Output {0}  : {1}", stream, destFile);
                     var settings = encoder.settings.Clone();
                     settings.PCM = audioSource.PCM;
                     settings.Padding = padding;
@@ -434,7 +431,10 @@ namespace CUETools.eac3to
             catch (Exception ex)
             {
                 Console.Error.Write("\r                                                                         \r");
-                Console.Error.WriteLine("Error     : {0}", ex.Message);
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                Console.Error.Write("Error     : {0}", ex.Message);
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Error.WriteLine();
                 return 1;
                 //Console.WriteLine("{0}", ex.StackTrace);
             }

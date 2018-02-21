@@ -276,6 +276,7 @@ namespace CUETools.Codecs.BDLPCM
 
         public void Close()
         {
+            if (readers != null)
             foreach (var rdr in readers)
             {
                 rdr.Close();
@@ -365,6 +366,14 @@ namespace CUETools.Codecs.BDLPCM
                 currentReader = null;
             }
             return res;
+        }
+
+        public string FileName
+        {
+            get
+            {
+                return System.IO.Path.GetFileName(_path);
+            }
         }
 
         public MPLSHeader MPLSHeader
