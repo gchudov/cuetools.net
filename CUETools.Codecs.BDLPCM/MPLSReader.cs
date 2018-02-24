@@ -9,6 +9,12 @@ namespace CUETools.Codecs.BDLPCM
     [AudioDecoderClass("cuetools", "mpls", 2)]
     public class MPLSReader : IAudioSource
     {
+        public unsafe MPLSReader(string path, Stream IO, ushort pid)
+                : this(path, IO)
+        {
+            settings.Pid = pid;
+        }
+
         public unsafe MPLSReader(string path, Stream IO)
         {
             settings = new BDLPCMReaderSettings();

@@ -103,6 +103,10 @@
       <Project>{e75f7ccd-4266-42e1-a039-dc7eb5edd8f6}</Project>
       <Name>CUETools.Codecs.BDLPCM</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
+      <Project>{082d6b9e-326e-4d15-9798-edae9ede70a6}</Project>
+      <Name>CUETools.Codecs.FLAKE</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458a13a-30ef-45a9-9d58-e5031b17bee2}</Project>
       <Name>CUETools.Codecs</Name>
