@@ -31,9 +31,10 @@ namespace CUETools.eac3ui
     {
         public MainWindow()
         {
+            filterShort = 900;
+            filterRepeats = 2;
+            filterDups = true;
             InitializeComponent();
-            textBoxSource.Text = Properties.Settings.Default.SourceFolder;
-            textBoxDestination.Text = Properties.Settings.Default.DestinationFolder;
         }
 
         private void ButtonBrowseSource_Click(object sender, RoutedEventArgs e)
@@ -75,7 +76,7 @@ namespace CUETools.eac3ui
             IEnumerable<string> playlists = null;
             try
             {
-                playlists = Directory.EnumerateFiles(Path.Combine(Path.Combine(textBoxSource.Text, "BDMV"), "PLAYLIST"));
+                playlists = Directory.EnumerateFiles(Path.Combine(Path.Combine(textBoxSource.Text, "BDMV"), "PLAYLIST")).OrderBy(f => f);
             }
             catch
             {
@@ -83,7 +84,34 @@ namespace CUETools.eac3ui
             if (playlists != null)
                 foreach (var playlist in playlists)
                 {
-                    titleSets.Add(new MPLSReader(playlist, null));
+                    var title = new MPLSReader(playlist, null);
+                    if (filterDups)
+                    {
+                        if (titleSets.Exists(title2 =>
+                            title.MPLSHeader.play_item.Count == title2.MPLSHeader.play_item.Count &&
+                            Enumerable.Range(0, title.MPLSHeader.play_item.Count).ToList().TrueForAll(i =>
+                                {
+                                    var i1 = title.MPLSHeader.play_item[i];
+                                    var i2 = title2.MPLSHeader.play_item[i];
+                                    return i1.clip_id == i2.clip_id && i1.in_time == i2.in_time && i1.out_time == i2.out_time;
+                                })
+                            ))
+                            continue;
+                    }
+
+                    if (filterRepeats > 1)
+                    {
+                        if (title.MPLSHeader.play_item.GroupBy(clip => clip.clip_id).Select(grp => grp.Count()).Max() > filterRepeats)
+                            continue;
+                    }
+
+                    if (filterShort > 0)
+                    {
+                        if (title.Duration.TotalSeconds < filterShort)
+                            continue;
+                    }
+
+                    titleSets.Add(title);
                 }
             cmbTitleSet.ItemsSource = titleSets;
             cmbTitleSet.SelectedIndex = 0;
@@ -163,6 +191,10 @@ namespace CUETools.eac3ui
         string outputFolderPath;
         string outputAudioPath;
         string outputCuePath;
+
+        bool filterDups;
+        int filterShort;
+        int filterRepeats;
 
         private void buttonExtract_Click(object sender, RoutedEventArgs e)
         {
@@ -308,6 +340,12 @@ namespace CUETools.eac3ui
             workerExtract.CancelAsync();
             buttonStop.Visibility = Visibility.Hidden;
             buttonStop.IsEnabled = false;
+        }
+
+        private void Window_Initialized(object sender, EventArgs e)
+        {
+            textBoxSource.Text = Properties.Settings.Default.SourceFolder;
+            textBoxDestination.Text = Properties.Settings.Default.DestinationFolder;
         }
     }
 }

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:CUETools.eac3ui"
         mc:Ignorable="d"
         MinWidth="300" MaxWidth="1200" MinHeight="300" MaxHeight="300"
-        Title="CUETools eac3to" Height="300" Width="600" Closing="Window_Closing">
+        Title="CUETools eac3to" Height="300" Width="600" Closing="Window_Closing" Initialized="Window_Initialized">
     <StackPanel>
         <StackPanel x:Name="stackParams">
             <DockPanel>
