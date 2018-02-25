@@ -158,17 +158,23 @@ namespace CUETools.eac3ui
 
         BackgroundWorker workerExtract;
         CTDBResponseMeta meta;
-        MPLSReader reader;
+        MPLSReader chosenReader;
         ushort pid;
-        string outputPath;
+        string outputFolderPath;
+        string outputAudioPath;
+        string outputCuePath;
 
         private void buttonExtract_Click(object sender, RoutedEventArgs e)
         {
             if (cmbTitleSet.SelectedItem == null) return;
             pid = ((MPLSStream)cmbAudioTrack.SelectedItem).pid;
-            reader = new MPLSReader((cmbTitleSet.SelectedItem as MPLSReader).Path, null, pid);
+            chosenReader = cmbTitleSet.SelectedItem as MPLSReader;
             meta = cmbMetadata.SelectedItem as CTDBResponseMeta;
-            outputPath = Path.Combine(textBoxDestination.Text, meta != null ? meta.artist + " - " + meta.year + " - " + meta.album + ".flac" : "image.flac");
+            outputFolderPath = Path.Combine(textBoxDestination.Text, meta != null ? 
+                meta.artist + " - " + meta.year + " - " + meta.album :
+                Path.GetFileName(textBoxSource.Text) + "." + chosenReader.FileName + "." + pid.ToString());
+            outputAudioPath = Path.Combine(outputFolderPath, meta != null ? meta.artist + " - " + meta.year + " - " + meta.album + ".flac" : "image.flac");
+            outputCuePath = Path.ChangeExtension(outputAudioPath, "cue");
 
             pbStatus.Visibility = Visibility.Visible;
             pbStatus.Value = 0.0;
@@ -186,8 +192,13 @@ namespace CUETools.eac3ui
 
         void workerExtract_DoWork(object sender, DoWorkEventArgs e)
         {
+            MPLSReader reader = null;
             try
             {
+                reader = new MPLSReader(chosenReader.Path, null, pid);
+                Directory.CreateDirectory(outputFolderPath);
+                if (File.Exists(outputCuePath)) throw new Exception(string.Format("File \"{0}\" already exists", outputCuePath));
+                if (File.Exists(outputAudioPath)) throw new Exception(string.Format("File \"{0}\" already exists", outputAudioPath));
                 AudioBuffer buff = new AudioBuffer(reader, 0x10000);
                 FlakeWriterSettings settings = new FlakeWriterSettings()
                 {
@@ -195,9 +206,51 @@ namespace CUETools.eac3ui
                     Padding = 16536,
                     EncoderMode = "5"
                 };
+                if (ctdb != null)
+                {
+                    using (StreamWriter cueWriter = new StreamWriter(outputCuePath, false, Encoding.UTF8))
+                    {
+                        cueWriter.WriteLine("REM COMMENT \"{0}\"", "Created by CUETools.eac3to");
+                        if (meta != null && meta.year != null)
+                            cueWriter.WriteLine("REM DATE {0}", meta.year);
+                        else
+                            cueWriter.WriteLine("REM DATE XXXX");
+                        if (meta != null)
+                        {
+                            cueWriter.WriteLine("PERFORMER \"{0}\"", meta.artist);
+                            cueWriter.WriteLine("TITLE \"{0}\"", meta.album);
+                        }
+                        else
+                        {
+                            cueWriter.WriteLine("PERFORMER \"\"");
+                            cueWriter.WriteLine("TITLE \"\"");
+                        }
+                        cueWriter.WriteLine("FILE \"{0}\" WAVE", Path.GetFileName(outputAudioPath));
+                        var toc = ctdb.TOC;
+                        for (int track = 1; track <= toc.TrackCount; track++)
+                            if (toc[track].IsAudio)
+                            {
+                                cueWriter.WriteLine("  TRACK {0:00} AUDIO", toc[track].Number);
+                                if (meta != null && meta.track.Length >= toc[track].Number)
+                                {
+                                    cueWriter.WriteLine("    TITLE \"{0}\"", meta.track[(int)toc[track].Number - 1].name);
+                                    if (meta.track[(int)toc[track].Number - 1].artist != null)
+                                        cueWriter.WriteLine("    PERFORMER \"{0}\"", meta.track[(int)toc[track].Number - 1].artist);
+                                }
+                                else
+                                {
+                                    cueWriter.WriteLine("    TITLE \"\"");
+                                }
+                                if (toc[track].ISRC != null)
+                                    cueWriter.WriteLine("    ISRC {0}", toc[track].ISRC);
+                                for (int index = toc[track].Pregap > 0 ? 0 : 1; index <= toc[track].LastIndex; index++)
+                                    cueWriter.WriteLine("    INDEX {0:00} {1}", index, toc[track][index].MSF);
+                            }
+                    }
+                }
                 var start = DateTime.Now;
                 TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
-                var writer = new FlakeWriter(outputPath, settings);
+                var writer = new FlakeWriter(outputAudioPath, settings);
                 try
                 {
                     while (reader.Read(buff, -1) != 0)
@@ -219,10 +272,13 @@ namespace CUETools.eac3ui
                         }
                     }
                 }
-                finally
+                catch (Exception ex)
                 {
-                    writer.Close();
+                    writer.Delete();
+                    try { File.Delete(outputCuePath); } catch (Exception) { }
+                    throw ex;
                 }
+                writer.Close();
             }
             catch (Exception ex)
             {
@@ -233,8 +289,7 @@ namespace CUETools.eac3ui
             }
             finally
             {
-                reader.Close();
-                reader = null;
+                if (reader != null) reader.Close();
             }
 
             this.Dispatcher.Invoke(() =>
