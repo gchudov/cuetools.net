@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,10 +28,13 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Icons\cue2.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -104,10 +107,12 @@
     <ProjectReference Include="..\CUETools.Codecs.BDLPCM\CUETools.Codecs.BDLPCM.csproj">
       <Project>{e75f7ccd-4266-42e1-a039-dc7eb5edd8f6}</Project>
       <Name>CUETools.Codecs.BDLPCM</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
       <Project>{082d6b9e-326e-4d15-9798-edae9ede70a6}</Project>
       <Name>CUETools.Codecs.FLAKE</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458a13a-30ef-45a9-9d58-e5031b17bee2}</Project>
@@ -124,9 +129,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\freedb16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Icons\musicbrainz.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\discogs.png" />
@@ -172,6 +174,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\cue2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\discogs-32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\musicbrainz-16x16.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\musicbrainz-picard.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

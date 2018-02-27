@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BluTools"
         mc:Ignorable="d"
-        MinWidth="300" MaxWidth="1200" MinHeight="260" MaxHeight="300"
+        MinWidth="300" MaxWidth="1200" MinHeight="260" MaxHeight="260"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Icon="Icons/cue2.ico"
         Title="BluTools" Height="260" Width="600" Closing="Window_Closing" Initialized="Window_Initialized">
@@ -37,8 +37,8 @@
         <Image x:Key="format_type_6" Source="/BluTools;component/Icons/ic_surround_sound_black_48dp_1x.png"></Image>
 
         <Image x:Key="freedb" Source="/BluTools;component/Icons/freedb16.png"></Image>
-        <Image x:Key="musicbrainz" Source="/BluTools;component/Icons/musicbrainz.ico"></Image>
-        <Image x:Key="discogs" Source="/BluTools;component/Icons/discogs.png"></Image>
+        <Image x:Key="musicbrainz" Source="/BluTools;component/Icons/musicbrainz-picard.png"></Image>
+        <Image x:Key="discogs" Source="/BluTools;component/Icons/discogs-32x32.png"></Image>
     </Window.Resources>
     <StackPanel>
         <StackPanel x:Name="stackParams">
@@ -92,7 +92,7 @@
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding ImageKey, Converter={StaticResource MetadataSourceToIcon}}" Width="Auto" Margin="1,1,5,1" MinWidth="16" MinHeight="16"></Image>
+                                <Image Source="{Binding ImageKey, Converter={StaticResource MetadataSourceToIcon}}" Margin="1,1,5,1" Width="16" Height="16"></Image>
                                 <!--<TextBlock Text="{Binding metadata.Artist}" Margin="10,0" />
                                 <TextBlock Text="{Binding metadata.Year}" Margin="10,0" />
                                 <TextBlock Text="{Binding metadata.Title}" Margin="10,0" />-->
