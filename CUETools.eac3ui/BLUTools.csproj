@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{678875A6-6B3A-4AAC-83B6-D9A72D9016CF}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>CUETools.eac3ui</RootNamespace>
-    <AssemblyName>CUETools.eac3ui</AssemblyName>
+    <RootNamespace>BluTools</RootNamespace>
+    <AssemblyName>BluTools</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -36,6 +36,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -85,6 +86,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -119,6 +121,57 @@
       <Project>{4911bd82-49ef-4858-8b51-5394f86739a4}</Project>
       <Name>CUETools.Processor</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\freedb16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\musicbrainz.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\discogs.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-audio-wave-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-dolby-digital-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\headphones-box.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-copy-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-export-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-import-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-open-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-playlist-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-tags-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-musical-notes-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-cancel-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\ic_surround_sound_black_48dp_1x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\icons8-dts-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\cue2.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

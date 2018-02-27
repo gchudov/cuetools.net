@@ -1,31 +1,67 @@
-﻿<Window x:Class="CUETools.eac3ui.MainWindow"
+﻿<Window x:Class="BluTools.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CUETools.eac3ui"
+        xmlns:local="clr-namespace:BluTools"
         mc:Ignorable="d"
-        MinWidth="300" MaxWidth="1200" MinHeight="300" MaxHeight="300"
-        Title="CUETools eac3to" Height="300" Width="600" Closing="Window_Closing" Initialized="Window_Initialized">
+        MinWidth="300" MaxWidth="1200" MinHeight="260" MaxHeight="300"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Icon="Icons/cue2.ico"
+        Title="BluTools" Height="260" Width="600" Closing="Window_Closing" Initialized="Window_Initialized">
+    <Window.Resources>
+        <local:CodingTypeToIcon x:Key="CodingTypeToIcon" />
+        <local:FormatTypeToIcon x:Key="FormatTypeToIcon" />
+        <local:MetadataSourceToIcon x:Key="MetadataSourceToIcon" />
+
+        <!--<Canvas x:Key="canvas_dolby" Width="24" Height="24">
+            <Path Stroke="Black" Fill="Gray" Data="M2,5V19H22V5H2M6,17H4V7H6C8.86,7.09 11.1,9.33 11,12C11.1,14.67 8.86,16.91 6,17M20,17H18C15.14,16.91 12.9,14.67 13,12C12.9,9.33 15.14,7.09 18,7H20V17Z" />
+        </Canvas>-->
+
+        <!--PCM-->
+        <Image x:Key="coding_type_128" Source="/BluTools;component/Icons/icons8-audio-wave-32.png"></Image>
+        <!--AC3-->
+        <Image x:Key="coding_type_129" Source="/BluTools;component/Icons/icons8-dolby-digital-32.png"></Image>
+        <!--DTS-->
+        <Image x:Key="coding_type_130" Source="/BluTools;component/Icons/icons8-dts-48.png"></Image>
+        <!--Dolby TrueHD-->
+        <Image x:Key="coding_type_131" Source="/BluTools;component/Icons/icons8-dolby-digital-32.png"></Image>
+        <!--EAC3-->
+        <Image x:Key="coding_type_132" Source="/BluTools;component/Icons/icons8-dolby-digital-32.png"></Image>
+        <!--DTSHD-->
+        <Image x:Key="coding_type_133" Source="/BluTools;component/Icons/icons8-dts-48.png"></Image>
+        <!--DTSHDMA-->
+        <Image x:Key="coding_type_134" Source="/BluTools;component/Icons/icons8-dts-48.png"></Image>
+
+        <Image x:Key="format_type_3" Source="/BluTools;component/Icons/headphones-box.png"></Image>
+        <Image x:Key="format_type_6" Source="/BluTools;component/Icons/ic_surround_sound_black_48dp_1x.png"></Image>
+
+        <Image x:Key="freedb" Source="/BluTools;component/Icons/freedb16.png"></Image>
+        <Image x:Key="musicbrainz" Source="/BluTools;component/Icons/musicbrainz.ico"></Image>
+        <Image x:Key="discogs" Source="/BluTools;component/Icons/discogs.png"></Image>
+    </Window.Resources>
     <StackPanel>
         <StackPanel x:Name="stackParams">
             <DockPanel>
-                <Label x:Name="labelSource" Content="Source" Margin="8" Width="80"/>
-                <Button x:Name="buttonBrowseSource" Content="Browse" Click="ButtonBrowseSource_Click" DockPanel.Dock="Right" Margin="8"/>
-                <TextBox x:Name="textBoxSource" TextWrapping="NoWrap" Margin="8" TextChanged="textBoxSource_TextChanged"/>
+                <Image Source="/BluTools;component/Icons/icons8-import-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Source"/>
+                <Button x:Name="buttonBrowseSource" Click="ButtonBrowseSource_Click" DockPanel.Dock="Right" Margin="10,5" ToolTip="Browse">
+                    <Image Source="/BluTools;component/Icons/icons8-open-48.png" Width="24" />
+                </Button>
+                <TextBox x:Name="textBoxSource" TextWrapping="NoWrap" Margin="10,5" TextChanged="textBoxSource_TextChanged"/>
             </DockPanel>
             <DockPanel>
-                <Label x:Name="labelDestination" Content="Destination" Margin="8" Width="80"/>
-                <Button x:Name="buttonBrowseDestination" Content="Browse" Click="buttonBrowseDestination_Click" DockPanel.Dock="Right" Margin="8"/>
-                <TextBox x:Name="textBoxDestination" TextWrapping="NoWrap" Margin="8"/>
+                <Image Source="/BluTools;component/Icons/icons8-export-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Destination"/>
+                <Button x:Name="buttonBrowseDestination" Click="buttonBrowseDestination_Click" DockPanel.Dock="Right" Margin="10,5" ToolTip="Browse">
+                    <Image Source="/BluTools;component/Icons/icons8-open-48.png" Width="24" />
+                </Button>
+                <TextBox x:Name="textBoxDestination" TextWrapping="NoWrap" Margin="10,5"/>
             </DockPanel>
             <DockPanel>
-                <Label x:Name="labelTitleSet" Content="Title Set" Margin="8" Width="80"/>
-                <ComboBox x:Name="cmbTitleSet" Margin="8" SelectionChanged="cmbTitleSet_SelectionChanged">
+                <Image Source="/BluTools;component/Icons/icons8-playlist-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Title Set"/>
+                <ComboBox x:Name="cmbTitleSet" Margin="10,5" SelectionChanged="cmbTitleSet_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />
                                 <TextBlock Text="{Binding FileName}" Margin="10,0" />
                                 <TextBlock Text="{Binding Duration, StringFormat={}({0:hh\\:mm\\:ss})}" />
                                 <TextBlock Text="{Binding Chapters.Count, StringFormat={}{0,2} chapters}" Margin="10,0" />
@@ -35,31 +71,32 @@
                 </ComboBox>
             </DockPanel>
             <DockPanel>
-                <Label x:Name="labelAudioTrack" Content="Audio Track" Margin="8" Width="80"/>
-                <ComboBox x:Name="cmbAudioTrack" Margin="8" SelectionChanged="cmbAudioTrack_SelectionChanged">
+                <Image Source="/BluTools;component/Icons/icons8-musical-notes-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Audio"/>
+                <ComboBox x:Name="cmbAudioTrack" Margin="10,5" SelectionChanged="cmbAudioTrack_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />
-                                <TextBlock Text="{Binding CodecString}" Margin="10,0" />
-                                <TextBlock Text="{Binding LanguageString}" Margin="10,0" />
-                                <TextBlock Text="{Binding FormatString}" Margin="10,0" />
-                                <TextBlock Text="{Binding RateString}" Margin="10,0" />
+                                <Image Source="{Binding FormatType, Converter={StaticResource FormatTypeToIcon}}" Margin="1,1,5,1" Width="16" Height="16"></Image>
+                                <Image Source="{Binding CodingType, Converter={StaticResource CodingTypeToIcon}}" Margin="1,1,5,1" Width="16" Height="16"></Image>
+                                <TextBlock Text="{Binding LanguageString}" Margin="5,0" />
+                                <TextBlock Text="{Binding RateString}" Margin="5,0" />
+                                <TextBlock Text="{Binding CodecString}" Margin="5,0" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </DockPanel>
             <DockPanel>
-                <Label x:Name="labelMetadata" Content="Metadata" Margin="8" Width="80"/>
-                <ComboBox x:Name="cmbMetadata" Margin="8">
+                <Image Source="/BluTools;component/Icons/icons8-tags-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Metadata"/>
+                <ComboBox x:Name="cmbMetadata" Margin="10,5">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Rectangle Fill="{Binding source}" Width="16" Height="16" Margin="0,2,5,2" />
-                                <TextBlock Text="{Binding artist}" Margin="10,0" />
-                                <TextBlock Text="{Binding year}" Margin="10,0" />
-                                <TextBlock Text="{Binding album}" Margin="10,0" />
+                                <Image Source="{Binding ImageKey, Converter={StaticResource MetadataSourceToIcon}}" Width="Auto" Margin="1,1,5,1" MinWidth="16" MinHeight="16"></Image>
+                                <!--<TextBlock Text="{Binding metadata.Artist}" Margin="10,0" />
+                                <TextBlock Text="{Binding metadata.Year}" Margin="10,0" />
+                                <TextBlock Text="{Binding metadata.Title}" Margin="10,0" />-->
+                                <TextBlock Text="{Binding}" Margin="5,0" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -67,9 +104,15 @@
             </DockPanel>
         </StackPanel>
         <DockPanel>
-            <Button x:Name="buttonStop" Content="Stop" DockPanel.Dock="Left" Margin="8" Click="buttonStop_Click" Visibility="Hidden" Width="80"/>
-            <Button x:Name="buttonExtract" Content="Extract" DockPanel.Dock="Right" Margin="8" Click="buttonExtract_Click"/>
-            <ProgressBar Minimum="0" Maximum="100" Name="pbStatus" Margin="8" Visibility="Collapsed"/>
+            <Grid Margin="10,5" >
+                <Button x:Name="buttonStop" Click="buttonStop_Click" Visibility="Hidden" Margin="0" ToolTip="Cancel">
+                    <Image Source="/BluTools;component/Icons/icons8-cancel-48.png" Width="24" />
+                </Button>
+                <Button x:Name="buttonExtract" Click="buttonExtract_Click" Margin="0" ToolTip="Copy">
+                    <Image Source="/BluTools;component/Icons/icons8-copy-48.png" Width="24" />
+                </Button>
+            </Grid>
+            <ProgressBar Minimum="0" Maximum="100" Name="pbStatus" Margin="10,5" Visibility="Collapsed"/>
         </DockPanel>
     </StackPanel>
 </Window>

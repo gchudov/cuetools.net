@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace CUETools.eac3ui
+namespace BluTools
 {
     /// <summary>
     /// Interaction logic for App.xaml

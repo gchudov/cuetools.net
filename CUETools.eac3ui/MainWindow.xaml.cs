@@ -20,9 +20,11 @@ using System.ComponentModel;
 using Krystalware.UploadHelper;
 using CUETools.Codecs;
 using CUETools.Codecs.FLAKE;
+using CUETools.Processor;
+using System.Collections.ObjectModel;
 //using Microsoft.Win32;
 
-namespace CUETools.eac3ui
+namespace BluTools
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -31,6 +33,7 @@ namespace CUETools.eac3ui
     {
         public MainWindow()
         {
+            metaresults = new ObservableCollection<CUEMetadataEntry>();
             filterShort = 900;
             filterRepeats = 2;
             filterDups = true;
@@ -158,9 +161,19 @@ namespace CUETools.eac3ui
             ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
             this.Dispatcher.Invoke(() =>
             {
+                //metaresults.RaiseListChangedEvents = false; 
+                cmbMetadata.ItemsSource = null;
+                metaresults.Clear();
+                foreach (var m in ctdb.Metadata)
+                {
+                    var entry = new CUEMetadataEntry(ctdb.TOC, m.source);
+                    entry.metadata.FillFromCtdb(m, entry.TOC.FirstAudio - 1);
+                    metaresults.Add(entry);
+                }
+                //metaresults.RaiseListChangedEvents = true; 
+                cmbMetadata.ItemsSource = metaresults;
                 pbStatus.Visibility = Visibility.Collapsed;
                 pbStatus.IsIndeterminate = false;
-                cmbMetadata.ItemsSource = ctdb.Metadata;
                 cmbMetadata.SelectedIndex = 0;
             });
         }
@@ -185,7 +198,8 @@ namespace CUETools.eac3ui
         CUEToolsDB ctdb;
 
         BackgroundWorker workerExtract;
-        CTDBResponseMeta meta;
+        CUEMetadataEntry metaresult;
+        ObservableCollection<CUEMetadataEntry> metaresults;
         MPLSReader chosenReader;
         ushort pid;
         string outputFolderPath;
@@ -201,11 +215,11 @@ namespace CUETools.eac3ui
             if (cmbTitleSet.SelectedItem == null) return;
             pid = ((MPLSStream)cmbAudioTrack.SelectedItem).pid;
             chosenReader = cmbTitleSet.SelectedItem as MPLSReader;
-            meta = cmbMetadata.SelectedItem as CTDBResponseMeta;
-            outputFolderPath = Path.Combine(textBoxDestination.Text, meta != null ? 
-                meta.artist + " - " + meta.year + " - " + meta.album :
+            metaresult = cmbMetadata.SelectedItem as CUEMetadataEntry;
+            outputFolderPath = Path.Combine(textBoxDestination.Text, metaresult != null ? 
+                metaresult.metadata.Artist + " - " + metaresult.metadata.Year + " - " + metaresult.metadata.Title :
                 Path.GetFileName(textBoxSource.Text) + "." + chosenReader.FileName + "." + pid.ToString());
-            outputAudioPath = Path.Combine(outputFolderPath, meta != null ? meta.artist + " - " + meta.year + " - " + meta.album + ".flac" : "image.flac");
+            outputAudioPath = Path.Combine(outputFolderPath, metaresult != null ? metaresult.metadata.Artist + " - " + metaresult.metadata.Year + " - " + metaresult.metadata.Title + ".flac" : "image.flac");
             outputCuePath = Path.ChangeExtension(outputAudioPath, "cue");
 
             pbStatus.Visibility = Visibility.Visible;
@@ -213,6 +227,7 @@ namespace CUETools.eac3ui
             //pbStatus.IsIndeterminate = true;
             stackParams.IsEnabled = false;
             buttonExtract.IsEnabled = false;
+            buttonExtract.Visibility = Visibility.Hidden;
             buttonStop.Visibility = Visibility.Visible;
             buttonStop.IsEnabled = true;
 
@@ -243,14 +258,14 @@ namespace CUETools.eac3ui
                     using (StreamWriter cueWriter = new StreamWriter(outputCuePath, false, Encoding.UTF8))
                     {
                         cueWriter.WriteLine("REM COMMENT \"{0}\"", "Created by CUETools.eac3to");
-                        if (meta != null && meta.year != null)
-                            cueWriter.WriteLine("REM DATE {0}", meta.year);
+                        if (metaresult != null && metaresult.metadata.Year != "")
+                            cueWriter.WriteLine("REM DATE {0}", metaresult.metadata.Year);
                         else
                             cueWriter.WriteLine("REM DATE XXXX");
-                        if (meta != null)
+                        if (metaresult != null)
                         {
-                            cueWriter.WriteLine("PERFORMER \"{0}\"", meta.artist);
-                            cueWriter.WriteLine("TITLE \"{0}\"", meta.album);
+                            cueWriter.WriteLine("PERFORMER \"{0}\"", metaresult.metadata.Artist);
+                            cueWriter.WriteLine("TITLE \"{0}\"", metaresult.metadata.Title);
                         }
                         else
                         {
@@ -263,11 +278,11 @@ namespace CUETools.eac3ui
                             if (toc[track].IsAudio)
                             {
                                 cueWriter.WriteLine("  TRACK {0:00} AUDIO", toc[track].Number);
-                                if (meta != null && meta.track.Length >= toc[track].Number)
+                                if (metaresult != null && metaresult.metadata.Tracks.Count >= toc[track].Number)
                                 {
-                                    cueWriter.WriteLine("    TITLE \"{0}\"", meta.track[(int)toc[track].Number - 1].name);
-                                    if (meta.track[(int)toc[track].Number - 1].artist != null)
-                                        cueWriter.WriteLine("    PERFORMER \"{0}\"", meta.track[(int)toc[track].Number - 1].artist);
+                                    cueWriter.WriteLine("    TITLE \"{0}\"", metaresult.metadata.Tracks[(int)toc[track].Number - 1].Title);
+                                    if (metaresult.metadata.Tracks[(int)toc[track].Number - 1].Artist != "")
+                                        cueWriter.WriteLine("    PERFORMER \"{0}\"", metaresult.metadata.Tracks[(int)toc[track].Number - 1].Artist);
                                 }
                                 else
                                 {
@@ -330,6 +345,7 @@ namespace CUETools.eac3ui
                 //pbStatus.IsIndeterminate = false;
                 stackParams.IsEnabled = true;
                 buttonExtract.IsEnabled = true;
+                buttonExtract.Visibility = Visibility.Visible;
                 buttonStop.Visibility = Visibility.Hidden;
                 buttonStop.IsEnabled = false;
             });
@@ -346,6 +362,49 @@ namespace CUETools.eac3ui
         {
             textBoxSource.Text = Properties.Settings.Default.SourceFolder;
             textBoxDestination.Text = Properties.Settings.Default.DestinationFolder;
+            cmbMetadata.ItemsSource = metaresults;
+        }
+    }
+    public class CodingTypeToIcon : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            // TODO: ResourceDictionary?
+            var image = Application.Current.MainWindow.Resources["coding_type_" + value.ToString()] as Image;
+            return image == null ? null : image.Source;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return null;
+        }
+    }
+
+    public class FormatTypeToIcon : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var image = Application.Current.MainWindow.Resources["format_type_" + value.ToString()] as Image;
+            return image == null ? null : image.Source;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return null;
+        }
+    }
+
+    public class MetadataSourceToIcon : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var image = Application.Current.MainWindow.Resources[value.ToString()] as Image;
+            return image == null ? null : image.Source;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return null;
         }
     }
 }

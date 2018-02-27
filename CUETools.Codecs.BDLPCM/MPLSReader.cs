@@ -591,6 +591,22 @@ namespace CUETools.Codecs.BDLPCM
             }
         }
 
+        public byte CodingType
+        {
+            get
+            {
+                return coding_type;
+            }
+        }
+
+        public byte FormatType
+        {
+            get
+            {
+                return format;
+            }
+        }
+
         public string LanguageString
         {
             get
