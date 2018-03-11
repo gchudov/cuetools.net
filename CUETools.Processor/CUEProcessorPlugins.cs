@@ -32,13 +32,15 @@ namespace CUETools.Processor
             //string arch = asi.ApplicationId.ProcessorArchitecture;
             //ActivationContext is null most of the time :(
 
-            string arch = Type.GetType("Mono.Runtime", false) != null ? "mono" : Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "Win32";
-            string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins (" + arch + ")");
+            string plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins");
             if (Directory.Exists(plugins_path))
+            {
                 AddPluginDirectory(plugins_path);
-            plugins_path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Plugins");
-            if (Directory.Exists(plugins_path))
-                AddPluginDirectory(plugins_path);
+                string arch = Type.GetType("Mono.Runtime", false) != null ? "mono" : Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "win32";
+                plugins_path = Path.Combine(plugins_path, arch);
+                if (Directory.Exists(plugins_path))
+                    AddPluginDirectory(plugins_path);
+            }
         }
 
         private static void AddPluginDirectory(string plugins_path)

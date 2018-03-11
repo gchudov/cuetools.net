@@ -20,7 +20,6 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0B9C97D4-61B8-4294-A1DF-BA90752A1779}</ProjectGuid>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <RootNamespace>MACLib</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -573,6 +572,7 @@ nasmw -d WIN32 -f win64 -o Assembly64.obj Assembly64.nas
   <ItemGroup>
     <Object Include="Assembly\Assembly.obj">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </Object>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

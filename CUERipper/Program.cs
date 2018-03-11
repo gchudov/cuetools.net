@@ -20,8 +20,8 @@ namespace CUERipper
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
-			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "Win32";
-			GetSatelliteAssemblies("Plugins (" + arch + ")");
+			string arch = Marshal.SizeOf(typeof(IntPtr)) == 8 ? "x64" : "win32";
+			GetSatelliteAssemblies(System.IO.Path.Combine("plugins", arch));
 
 			CUEConfig config = new CUEConfig();
 			config.Load(new SettingsReader("CUERipper", "settings.txt", Application.ExecutablePath));
