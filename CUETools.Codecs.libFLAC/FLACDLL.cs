@@ -8,9 +8,15 @@ namespace CUETools.Codecs.libFLAC
         internal const string libFLACDll = "libFLAC_dynamic";
         internal const CallingConvention libFLACCallingConvention = CallingConvention.Cdecl;
         internal const int FLAC__MAX_CHANNELS = 8;
+        private static string version;
+
+        internal static string GetVersion => version;
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr LoadLibrary(string dllToLoad);
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetProcAddress(IntPtr hModule, string procedureName);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate FLAC__StreamDecoderReadStatus FLAC__StreamDecoderReadCallback(IntPtr decoder, byte* buffer, ref long bytes, void* client_data);
@@ -35,6 +41,7 @@ namespace CUETools.Codecs.libFLAC
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void FLAC__StreamDecoderErrorCallback(IntPtr decoder, FLAC__StreamDecoderErrorStatus status, void* client_data);
+
 
         [DllImport(libFLACDll, CallingConvention = libFLACCallingConvention)]
         internal static extern IntPtr FLAC__stream_decoder_new();
@@ -157,10 +164,17 @@ namespace CUETools.Codecs.libFLAC
             var is64 = IntPtr.Size == 8;
             var subfolder = is64 ? "plugins (x64)" : "plugins (win32)";
 #if NET40
-            LoadLibrary(System.IO.Path.Combine(myFolder, "..", subfolder, libFLACDll + ".dll"));
+            IntPtr Dll = LoadLibrary(System.IO.Path.Combine(myFolder, "..", subfolder, libFLACDll + ".dll"));
 #else
-            LoadLibrary(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(myFolder, ".."), subfolder), libFLACDll + ".dll"));
+            IntPtr Dll = LoadLibrary(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(myFolder, ".."), subfolder), libFLACDll + ".dll"));
 #endif
+            if (Dll == IntPtr.Zero)
+                Dll = LoadLibrary(libFLACDll + ".dll");
+            if (Dll == IntPtr.Zero)
+                throw new DllNotFoundException();
+            IntPtr addr = GetProcAddress(Dll, "FLAC__VERSION_STRING");
+            IntPtr ptr = Marshal.ReadIntPtr(addr);
+            version = Marshal.PtrToStringAnsi(ptr);
         }
     };
 }

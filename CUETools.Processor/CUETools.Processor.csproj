@@ -1,178 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{4911BD82-49EF-4858-8B51-5394F86739A4}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUETools.Processor</RootNamespace>
+    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
+    <Version>2.1.6.0</Version>
     <AssemblyName>CUETools.Processor</AssemblyName>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <RootNamespace>CUETools.Processor</RootNamespace>
+    <Product>CUETools</Product>
+    <Description>A library for working with CUE Sheets and CD images.</Description>
+    <Copyright>Copyright (c) 2008-2018 Grigory Chudov</Copyright>
+    <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Company />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
+    <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
+    <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
+    <ProjectReference Include="..\Freedb\Freedb.csproj" />
+    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CUESheetLogWriter.cs" />
-    <Compile Include="ArchiveFileAbstraction.cs" />
-    <Compile Include="AudioEncoderType.cs" />
-    <Compile Include="AudioReadWrite.cs" />
-    <Compile Include="CUEAction.cs" />
-    <Compile Include="CUEConfig.cs" />
-    <Compile Include="CUEConfigAdvanced.cs" />
-    <Compile Include="CUELine.cs" />
-    <Compile Include="CUEMetadata.cs" />
-    <Compile Include="CUEMetadataEntry.cs" />
-    <Compile Include="CUEProcessorPlugins.cs" />
-    <Compile Include="CUESheet.cs" />
-    <Compile Include="CUESheetAudio.cs" />
-    <Compile Include="CUEStyle.cs" />
-    <Compile Include="CUEToolsLocalDB.cs" />
-    <Compile Include="CUEToolsLocalDBEntry.cs" />
-    <Compile Include="CUEToolsProfile.cs" />
-    <Compile Include="CUEToolsProgressEventArgs.cs" />
-    <Compile Include="CUEToolsScript.cs" />
-    <Compile Include="CUEToolsSelectionEventArgs.cs" />
-    <Compile Include="CUEToolsSourceFile.cs" />
-    <Compile Include="CUEToolsVerifyTask.cs" />
-    <Compile Include="CUETrackMetadata.cs" />
-    <Compile Include="FileGroupInfo.cs" />
-    <Compile Include="FileGroupInfoType.cs" />
-    <Compile Include="FileLocator.cs" />
-    <Compile Include="General.cs" />
-    <Compile Include="IndexInfo.cs" />
-    <Compile Include="LogToTocParser.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Settings\SettingsReader.cs" />
-    <Compile Include="Settings\SettingsShared.cs" />
-    <Compile Include="Settings\SettingsWriter.cs" />
-    <Compile Include="SourceInfo.cs" />
-    <Compile Include="StopException.cs" />
-    <Compile Include="Tagging.cs" />
-    <Compile Include="TrackInfo.cs" />
-    <Compile Include="UserDefined.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
-      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>CUETools.Codecs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
-      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
-      <Name>CUETools.AccurateRip</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
-      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
-      <Name>CUETools.CDImage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj">
-      <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
-      <Name>CUETools.Compression</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
-      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
-      <Name>CUETools.CTDB</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj">
-      <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
-      <Name>CUETools.Ripper</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Freedb\Freedb.csproj">
-      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
-      <Name>Freedb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj">
-      <Project>{6B143A39-C7B2-4743-9917-92262C60E9A6}</Project>
-      <Name>taglib-sharp</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="License.txt" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

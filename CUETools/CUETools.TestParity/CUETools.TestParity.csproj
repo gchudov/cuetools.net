@@ -37,7 +37,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\Debug\net40\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -47,7 +47,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\net40\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -72,22 +72,27 @@
     <ProjectReference Include="..\..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
       <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
       <Name>CUETools.AccurateRip</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Parity\CUETools.Parity.csproj">
       <Project>{ECEB839C-171B-4535-958F-9899310A0342}</Project>
       <Name>CUETools.Parity</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.TestHelpers\CUETools.TestHelpers.csproj">
       <Project>{84EBB7CB-02C9-40A9-9D32-C641B822DAA2}</Project>
       <Name>CUETools.TestHelpers</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

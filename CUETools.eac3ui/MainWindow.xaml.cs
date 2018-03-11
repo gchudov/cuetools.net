@@ -152,14 +152,14 @@ namespace BluTools
         void workerCtdb_DoWork(object sender, DoWorkEventArgs e)
         {
             //Console.Error.WriteLine("Contacting CTDB...");
-            this.Dispatcher.Invoke(() =>
+            this.Dispatcher.Invoke((Action)(() =>
             {
                 pbStatus.Visibility = Visibility.Visible;
                 pbStatus.IsIndeterminate = true;
-            });
+            }));
             //ctdb.UploadHelper.onProgress += worker_ctdbProgress;
             ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
-            this.Dispatcher.Invoke(() =>
+            this.Dispatcher.Invoke((Action)(() =>
             {
                 //metaresults.RaiseListChangedEvents = false; 
                 cmbMetadata.ItemsSource = null;
@@ -175,7 +175,7 @@ namespace BluTools
                 pbStatus.Visibility = Visibility.Collapsed;
                 pbStatus.IsIndeterminate = false;
                 cmbMetadata.SelectedIndex = 0;
-            });
+            }));
         }
 
         //private void worker_ctdbProgress(object sender, UploadProgressEventArgs args)
@@ -307,10 +307,10 @@ namespace BluTools
                         if ((elapsed - lastPrint).TotalMilliseconds > 60)
                         {
                             long length = Math.Max((long)(reader.Duration.TotalSeconds * reader.PCM.SampleRate), Math.Max(reader.Position, 1));
-                            this.Dispatcher.Invoke(() =>
+                            this.Dispatcher.Invoke((Action)(() =>
                             {
                                 pbStatus.Value = 100.0 * reader.Position / length;
-                            });
+                            }));
                             lastPrint = elapsed;
                         }
                         if (workerExtract.CancellationPending)
@@ -329,17 +329,17 @@ namespace BluTools
             }
             catch (Exception ex)
             {
-                this.Dispatcher.Invoke(() =>
+                this.Dispatcher.Invoke((Action)(() =>
                 {
                     MessageBox.Show(this, ex.Message, "Extraction failed");
-                });
+                }));
             }
             finally
             {
                 if (reader != null) reader.Close();
             }
 
-            this.Dispatcher.Invoke(() =>
+            this.Dispatcher.Invoke((Action)(() =>
             {
                 pbStatus.Visibility = Visibility.Collapsed;
                 //pbStatus.IsIndeterminate = false;
@@ -348,7 +348,7 @@ namespace BluTools
                 buttonExtract.Visibility = Visibility.Visible;
                 buttonStop.Visibility = Visibility.Hidden;
                 buttonStop.IsEnabled = false;
-            });
+            }));
         }
 
         private void buttonStop_Click(object sender, RoutedEventArgs e)

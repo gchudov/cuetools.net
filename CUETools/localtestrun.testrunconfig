@@ -2,13 +2,8 @@
 <TestSettings name="Local Test Run" id="cad9b348-419f-496e-92ed-2dfc5d74da06" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>This is a default test run configuration for a local test run.</Description>
   <Deployment>
-    <DeploymentItem filename="CUETools.TestCodecs\alac.m4a" />
+    <DeploymentItem filename="CUETools.TestCodecs\Data\" />
     <DeploymentItem filename="CUETools.TestProcessor\Test Images\" />
-    <DeploymentItem filename="CUETools.TestCodecs\flake.flac" />
-    <DeploymentItem filename="CUETools.TestCodecs\test.flac" />
-    <DeploymentItem filename="CUETools.TestCodecs\pipe.wav" />
-    <DeploymentItem filename="CUETools.TestCodecs\test.wav" />
-    <DeploymentItem filename="CUETools.TestCodecs\flacwriter1.flac" />
   </Deployment>
   <Execution hostProcessPlatform="MSIL">
     <Timeouts testTimeout="300000" />

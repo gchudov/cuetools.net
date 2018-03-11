@@ -1,0 +1,25 @@
+You can find the actual encoding/decoding code in
+reed_solomon.c and reed_solomon.h
+
+The file main.c is just there as an example to show how to use the
+encoding/decoding functions and to display the speed in MB/s.
+
+Compile it with one of the following commands
+gcc -O3 reed_solomon.c main.c -o test
+gcc -O3 -DSSE -mssse3 reed_solomon.c main.c -o test_sse
+
+Then the program work with
+./test K N [S in Byte] [message size in MB]
+
+Like 
+./test 1024 2048 1024 50
+
+We give three speed:
+1. message size / encoding time
+2. full coded size / encoding time
+3. message size / decoding time
+
+The current version is optimised for GF(2^16).
+But all the code is present to work on other field of the form GF(2^m).
+
+

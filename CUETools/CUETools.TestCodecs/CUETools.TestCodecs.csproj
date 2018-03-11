@@ -37,7 +37,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>.\bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\Debug\tests\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -45,7 +45,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\tests\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -55,6 +55,7 @@
     <Reference Include="CSScriptLibrary.v1.1, Version=2.3.2.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ThirdParty\CSScriptLibrary.v1.1.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
@@ -78,52 +79,61 @@
     <ProjectReference Include="..\..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
       <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
       <Name>CUETools.AccurateRip</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs.ALAC\CUETools.Codecs.ALAC.csproj">
       <Project>{F2EC7193-D5E5-4252-9803-5CEB407E910F}</Project>
       <Name>CUETools.Codecs.ALAC</Name>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.Codecs.FLAC\CUETools.Codecs.FLAC.vcxproj">
-      <Project>{E70FA90A-7012-4A52-86B5-362B699D1540}</Project>
-      <Name>CUETools.Codecs.FLAC</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
       <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
       <Name>CUETools.Codecs.FLAKE</Name>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.Codecs.libFLAC\CUETools.Codecs.libFLAC.csproj">
+      <Project>{f10ab92c-9afb-4fc0-94e0-06fcd3ca8155}</Project>
+      <Name>CUETools.Codecs.libFLAC</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj">
       <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
       <Name>CUETools.Codecs.LossyWAV</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Compression\CUETools.Compression.csproj">
       <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
       <Name>CUETools.Compression</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.DSP.Resampler\CUETools.DSP.Resampler.csproj">
       <Project>{A6303861-CA06-4C2C-A104-BA9291538F6F}</Project>
       <Name>CUETools.DSP.Resampler</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj">
       <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
       <Name>CUETools.Ripper</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.TestHelpers\CUETools.TestHelpers.csproj">
       <Project>{84EBB7CB-02C9-40A9-9D32-C641B822DAA2}</Project>
       <Name>CUETools.TestHelpers</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\Freedb\Freedb.csproj">
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +157,32 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\alac.m4a">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\flacwriter1.flac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\flake.flac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\hires1.flac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\hires1.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\pipe.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\test.flac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\test.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
 </Project>

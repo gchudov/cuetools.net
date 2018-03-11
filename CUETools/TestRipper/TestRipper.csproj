@@ -66,26 +66,32 @@
     <ProjectReference Include="..\..\Bwg.Logging\Bwg.Logging.csproj">
       <Project>{F2DFEB00-BB35-4665-85EA-CB8C7729A6B7}</Project>
       <Name>Bwg.Logging</Name>
+      <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\Bwg.Scsi\Bwg.Scsi.csproj">
       <Project>{A05B6AA6-0EC3-495D-BCC4-ECE1210071A8}</Project>
       <Name>Bwg.Scsi</Name>
+      <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
+      <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
+      <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj">
       <Project>{8CF07381-BEA2-4AFC-B3DD-9B2F21C65A3A}</Project>
       <Name>CUETools.Ripper.SCSI</Name>
+      <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj">
       <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
       <Name>CUETools.Ripper</Name>
+      <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

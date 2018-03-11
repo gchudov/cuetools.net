@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CUEPlayer</RootNamespace>
     <AssemblyName>CUEPlayer</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <FileUpgradeFlags>
@@ -31,12 +31,13 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\net40\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -45,7 +46,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\net40\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -70,12 +71,6 @@
       <DependentUpon>Browser.cs</DependentUpon>
     </Compile>
     <Compile Include="DataSet1.cs">
-      <DependentUpon>DataSet1.xsd</DependentUpon>
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="DataSet1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
       <DependentUpon>DataSet1.xsd</DependentUpon>
     </Compile>
     <Compile Include="Deck.cs">
@@ -162,10 +157,12 @@
     <ProjectReference Include="..\CUEControls\CUEControls.csproj">
       <Project>{CA4D64E6-6544-4A29-8BA5-7DB08D50D072}</Project>
       <Name>CUEControls</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.CoreAudio\CUETools.Codecs.CoreAudio.csproj">
       <Project>{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}</Project>
@@ -178,6 +175,7 @@
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.DSP.Mixer\CUETools.DSP.Mixer.csproj">
       <Project>{AFF1AFF9-839D-4892-88CD-8BD09BAFC1D2}</Project>
@@ -190,6 +188,7 @@
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\ProgressODoom\ProgressODoom.csproj">
       <Project>{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}</Project>
@@ -234,7 +233,6 @@
     <None Include="DataSet1.xsd">
       <SubType>Designer</SubType>
       <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>DataSet1.Designer.cs</LastGenOutput>
     </None>
     <None Include="DataSet1.xss">
       <DependentUpon>DataSet1.xsd</DependentUpon>

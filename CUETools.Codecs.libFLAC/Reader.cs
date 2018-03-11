@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using CUETools.Codecs;
 
-namespace CUETools.Codecs.libFLAC.Reader
+namespace CUETools.Codecs.libFLAC
 {
     [AudioDecoderClass("libFLAC", "flac", 1)]
     public unsafe class Reader : IAudioSource

@@ -32,7 +32,7 @@
             {
                 for (i = 0; i < 15; i++)
                 {
-                    if (bs == Flake.flac_blocksizes[i])
+                    if (bs == FlakeConstants.flac_blocksizes[i])
                     {
                         bs_code0 = i;
                         bs_code1 = -1;

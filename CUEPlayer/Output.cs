@@ -11,7 +11,7 @@ namespace CUEPlayer
 {
 	public partial class Output : Form
 	{
-		private IWavePlayer _player;
+		private CUETools.Codecs.CoreAudio.IWavePlayer _player;
 		private AudioBuffer resampled;
 		private SOXResampler _resampler;
 		private MMDevice _device;

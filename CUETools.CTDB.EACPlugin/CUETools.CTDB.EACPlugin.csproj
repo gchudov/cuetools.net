@@ -52,18 +52,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.HelperFunctionsLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\Interop.HelperFunctionsLib.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="FormSubmitParity.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -117,24 +105,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
-      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
-      <Name>CUETools.AccurateRip</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
-      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
-      <Name>CUETools.CDImage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
-      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>CUETools.Codecs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
-      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
-      <Name>CUETools.CTDB</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +132,42 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\document-save_12.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Interop.HelperFunctionsLib">
+      <HintPath>.\Interop.HelperFunctionsLib.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
+      <Project>{5802c7e9-157e-4124-946d-70b5ae48a5a1}</Project>
+      <Name>CUETools.AccurateRip</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
+      <Project>{1dd41038-d885-46c5-8dde-e0b82f066584}</Project>
+      <Name>CUETools.CDImage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
+      <Project>{6458a13a-30ef-45a9-9d58-e5031b17bee2}</Project>
+      <Name>CUETools.Codecs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj">
+      <Project>{c36efaa5-4f81-4a29-800d-ba866ff13bc8}</Project>
+      <Name>CUETools.CTDB.Types</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
+      <Project>{aa2a9a7e-45fb-4632-ad85-85b0e556f818}</Project>
+      <Name>CUETools.CTDB</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.Parity\CUETools.Parity.csproj">
+      <Project>{eceb839c-171b-4535-958f-9899310a0342}</Project>
+      <Name>CUETools.Parity</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

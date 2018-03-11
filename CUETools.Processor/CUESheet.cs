@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
+#if NET40 || NET20
 using System.Drawing.Drawing2D;
+#endif
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -123,6 +125,7 @@ namespace CUETools.Processor
             get { return _albumArt; }
         }
 
+#if NET40 || NET20
         public Image Cover
         {
             get
@@ -136,6 +139,7 @@ namespace CUETools.Processor
                 return null;
             }
         }
+#endif
 
         public List<string> SourcePaths
         {
@@ -1719,7 +1723,9 @@ namespace CUETools.Processor
             }
 
             LoadAlbumArt(_tracks[0]._fileInfo ?? _fileInfo);
+#if NET40 || NET20
             ResizeAlbumArt();
+#endif
             if (_config.embedAlbumArt || _config.CopyAlbumArt)
                 _albumArt.ForEach(t => _padding += _albumArt[0].Data.Count);
             if (_config.embedLog && _eacLog != null)
@@ -2854,6 +2860,7 @@ namespace CUETools.Processor
             return entry;
         }
 
+#if NET40 || NET20
         private static Bitmap resizeImage(Image imgToResize, Size size)
         {
             int sourceWidth = imgToResize.Width;
@@ -2883,6 +2890,7 @@ namespace CUETools.Processor
 
             return b;
         }
+#endif
 
         public void ExtractAlbumArt()
         {
@@ -2976,6 +2984,7 @@ namespace CUETools.Processor
             }
         }
 
+#if NET40 || NET20
         public void ResizeAlbumArt()
         {
             if (_albumArt == null)
@@ -3002,6 +3011,7 @@ namespace CUETools.Processor
                     {
                     }
         }
+#endif
 
         public string WriteReport()
         {

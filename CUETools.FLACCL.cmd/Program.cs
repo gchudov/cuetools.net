@@ -283,9 +283,9 @@ namespace CUETools.FLACCL.cmd
                 settings = encoder.Settings as FLACCLWriterSettings;
                 encoder.FinalSampleCount = audioSource.Length;
 				if (stereo_method != null)
-					encoder.StereoMethod = Flake.LookupStereoMethod(stereo_method);
+					encoder.StereoMethod = FlakeConstants.LookupStereoMethod(stereo_method);
 				if (window_function != null)
-					encoder.WindowFunction = Flake.LookupWindowFunction(window_function);
+					encoder.WindowFunction = FlakeConstants.LookupWindowFunction(window_function);
 				if (max_precision >= 0)
 					encoder.MaxPrecisionSearch = max_precision;
 				if (min_precision >= 0)

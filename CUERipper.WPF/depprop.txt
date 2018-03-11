@@ -1,0 +1,17 @@
+		//public static global::System.Workflow.ComponentModel.DependencyProperty MyPropertyProperty = DependencyProperty.Register("MyProperty", typeof(string), typeof(Window1));
+
+		//[System.ComponentModel.DescriptionAttribute("MyProperty")]
+		//[System.ComponentModel.CategoryAttribute("MyProperty Category")]
+		//[System.ComponentModel.BrowsableAttribute(true)]
+		//[System.ComponentModel.DesignerSerializationVisibilityAttribute(System.ComponentModel.DesignerSerializationVisibility.Visible)]
+		//public string MyProperty
+		//{
+		//    get
+		//    {
+		//        return ((string)(base.GetValue(Window1.MyPropertyProperty)));
+		//    }
+		//    set
+		//    {
+		//        base.SetValue(Window1.MyPropertyProperty, value);
+		//    }
+		//}

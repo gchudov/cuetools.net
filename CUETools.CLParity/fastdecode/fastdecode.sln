@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fastdecode", "fastdecode.vcproj", "{32B8B6B7-FAED-4D9D-B90D-7E5C1E392DD8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32B8B6B7-FAED-4D9D-B90D-7E5C1E392DD8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{32B8B6B7-FAED-4D9D-B90D-7E5C1E392DD8}.Debug|Win32.Build.0 = Debug|Win32
+		{32B8B6B7-FAED-4D9D-B90D-7E5C1E392DD8}.Release|Win32.ActiveCfg = Release|Win32
+		{32B8B6B7-FAED-4D9D-B90D-7E5C1E392DD8}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

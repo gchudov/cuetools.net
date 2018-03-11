@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using CUETools.Codecs;
 
-namespace CUETools.Codecs.libFLAC.Writer
+namespace CUETools.Codecs.libFLAC
 {
     public class WriterSettings : AudioEncoderSettings
     {
@@ -24,6 +24,10 @@ namespace CUETools.Codecs.libFLAC.Writer
         [DisplayName("MD5")]
         [Description("Calculate MD5 hash for audio stream")]
         public bool MD5Sum { get; set; }
+
+        [DisplayName("Version")]
+        [Description("Library version")]
+        public string Version => FLACDLL.GetVersion;
     };
 
     [AudioEncoderClass("libFLAC", "flac", true, 2, typeof(WriterSettings))]

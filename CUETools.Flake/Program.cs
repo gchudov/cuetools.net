@@ -186,15 +186,15 @@ namespace CUETools.FlakeExe
                         settings.Tags = tags.ToArray();
                     }
                     else if ((args[arg] == "-t" || args[arg] == "--prediction-type") && ++arg < args.Length)
-                        settings.PredictionType = Flake.LookupPredictionType(args[arg]);
+                        settings.PredictionType = FlakeConstants.LookupPredictionType(args[arg]);
                     else if ((args[arg] == "-s" || args[arg] == "--stereo") && ++arg < args.Length)
-                        settings.StereoMethod = Flake.LookupStereoMethod(args[arg]);
+                        settings.StereoMethod = FlakeConstants.LookupStereoMethod(args[arg]);
                     else if ((args[arg] == "-m" || args[arg] == "--order-method") && ++arg < args.Length)
                         order_method = args[arg];
                     else if ((args[arg] == "-w" || args[arg] == "--window") && ++arg < args.Length)
-                        settings.WindowFunctions = Flake.LookupWindowFunction(args[arg]);
+                        settings.WindowFunctions = FlakeConstants.LookupWindowFunction(args[arg]);
                     else if (args[arg] == "--window-method" && ++arg < args.Length)
-                        settings.WindowMethod = Flake.LookupWindowMethod(args[arg]);
+                        settings.WindowMethod = FlakeConstants.LookupWindowMethod(args[arg]);
                     else if ((args[arg] == "-r" || args[arg] == "--partition-order") && ++arg < args.Length)
                     {
                         int min_partition_order, max_partition_order;
@@ -388,7 +388,7 @@ namespace CUETools.FlakeExe
                                 flake.FinalSampleCount = audioSource.Length < 0 ? -1 : audioSource.Length - skip_a - skip_b;
 
                                 if (order_method != null)
-                                    flake.OrderMethod = Flake.LookupOrderMethod(order_method);
+                                    flake.OrderMethod = FlakeConstants.LookupOrderMethod(order_method);
                                 if (vbr_mode >= 0)
                                     flake.VBRMode = vbr_mode;
                                 if (magic >= 0)

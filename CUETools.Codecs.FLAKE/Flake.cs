@@ -22,7 +22,7 @@ using System;
 
 namespace CUETools.Codecs.FLAKE
 {
-	public class Flake
+	public class FlakeConstants
 	{
 		public const int MAX_BLOCKSIZE = 65535;
 		public const int MAX_RICE_PARAM = 14;

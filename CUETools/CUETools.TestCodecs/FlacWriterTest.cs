@@ -1,10 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
+﻿using CUETools.Codecs;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using System.Text;
-using CUETools.Codecs;
-using CUETools.Codecs.FLAC;
 
 namespace CUETools.TestCodecs
 {
@@ -33,12 +29,13 @@ namespace CUETools.TestCodecs
         ///A test for FlacWriter (string, int, int, int, Stream)
         ///</summary>
         [TestMethod()]
+        [DeploymentItem("../ThirdParty/x64/libFLAC_dynamic.dll", "")]
         public void ConstructorTest()
         {
             AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
-            FLACWriter target;
+            CUETools.Codecs.libFLAC.Writer target;
 
-            target = new FLACWriter("flacwriter2.flac", new FLACWriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
+            target = new CUETools.Codecs.libFLAC.Writer("flacwriter2.flac", new CUETools.Codecs.libFLAC.WriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
             target.Settings.Padding = 1;
             target.Settings.BlockSize = 32;
             //target.Vendor = "CUETools";
@@ -52,7 +49,7 @@ namespace CUETools.TestCodecs
         [TestMethod()]
         public void SeekTest()
         {
-            var r = new FLACReader("test.flac", null);
+            var r = new CUETools.Codecs.libFLAC.Reader("test.flac", null);
             var buff1 = new AudioBuffer(r, 16536);
             var buff2 = new AudioBuffer(r, 16536);
             Assert.AreEqual(0, r.Position);

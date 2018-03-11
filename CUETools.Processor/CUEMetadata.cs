@@ -50,7 +50,8 @@ namespace CUETools.Processor
 		{
 			get
 			{
-				string cache = Path.Combine(SettingsShared.GetProfileDir("CUE Tools", System.Windows.Forms.Application.ExecutablePath), "MetadataCache");
+                // AppDomain.CurrentDomain.BaseDirectory
+                string cache = Path.Combine(SettingsShared.GetProfileDir("CUE Tools", Environment.GetCommandLineArgs()[0]), "MetadataCache");
 				if (!Directory.Exists(cache))
 					Directory.CreateDirectory(cache);
 				return cache;

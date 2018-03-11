@@ -68,7 +68,7 @@ namespace CUETools.Codecs.FLAKE
             SetDefaultValuesForMode();
             if (Padding < 0)
                 throw new Exception("unsupported padding value " + Padding.ToString());
-            if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Flake.MAX_BLOCKSIZE))
+            if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= FlakeConstants.MAX_BLOCKSIZE))
                 throw new Exception("unsupported block size " + BlockSize.ToString());
             if (MinLPCOrder > MaxLPCOrder || MaxLPCOrder > lpc.MAX_LPC_ORDER)
                 throw new Exception("invalid MaxLPCOrder " + MaxLPCOrder.ToString());
@@ -347,9 +347,9 @@ namespace CUETools.Codecs.FLAKE
 			_path = path;
 			_IO = IO;
 
-			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)];
-			residualBuffer = new int[Flake.MAX_BLOCKSIZE * (channels == 2 ? 10 : channels + 1)];
-			windowBuffer = new float[Flake.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
+			samplesBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * (channels == 2 ? 4 : channels)];
+			residualBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * (channels == 2 ? 10 : channels + 1)];
+			windowBuffer = new float[FlakeConstants.MAX_BLOCKSIZE * 2 * lpc.MAX_LPC_WINDOWS];
             windowScale = new double[lpc.MAX_LPC_WINDOWS];
             windowType = new WindowFunction[lpc.MAX_LPC_WINDOWS];
             windowSections = new LpcWindowSection[12, lpc.MAX_LPC_WINDOWS, lpc.MAX_LPC_SECTIONS];
@@ -544,13 +544,13 @@ namespace CUETools.Codecs.FLAKE
 				if (channels == 2)
 				{
 					if (m_settings.StereoMethod == StereoMethod.Independent)
-						AudioSamples.Deinterlace(fsamples + samplesInBuffer, fsamples + Flake.MAX_BLOCKSIZE + samplesInBuffer, src, block);
+						AudioSamples.Deinterlace(fsamples + samplesInBuffer, fsamples + FlakeConstants.MAX_BLOCKSIZE + samplesInBuffer, src, block);
 					else
 					{
 						int* left = fsamples + samplesInBuffer;
-						int* right = left + Flake.MAX_BLOCKSIZE;
-						int* leftM = right + Flake.MAX_BLOCKSIZE;
-						int* rightM = leftM + Flake.MAX_BLOCKSIZE;
+						int* right = left + FlakeConstants.MAX_BLOCKSIZE;
+						int* leftM = right + FlakeConstants.MAX_BLOCKSIZE;
+						int* rightM = leftM + FlakeConstants.MAX_BLOCKSIZE;
 						for (int i = 0; i < block; i++)
 						{
 							int l = src[2 * i];
@@ -565,7 +565,7 @@ namespace CUETools.Codecs.FLAKE
 				else
 					for (int ch = 0; ch < channels; ch++)
 					{
-						int* psamples = fsamples + ch * Flake.MAX_BLOCKSIZE + samplesInBuffer;
+						int* psamples = fsamples + ch * FlakeConstants.MAX_BLOCKSIZE + samplesInBuffer;
 						for (int i = 0; i < block; i++)
 							psamples[i] = src[i * channels + ch];
 					}
@@ -848,7 +848,7 @@ namespace CUETools.Codecs.FLAKE
 		{
 			uint part = (1U << porder);
 			uint cnt = (n >> porder) - pred_order;
-			int maxK = method > 0 ? 30 : Flake.MAX_RICE_PARAM;
+			int maxK = method > 0 ? 30 : FlakeConstants.MAX_RICE_PARAM;
 			int k = cnt > 0 ? Math.Min(maxK, BitReader.log2i(sums[0] / cnt)) : 0;
 			int realMaxK0 = k;
 			ulong all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
@@ -880,7 +880,7 @@ namespace CUETools.Codecs.FLAKE
                 }
             }
             all_bits += cnt * (part - 1U);
-            method = realMaxK0 > Flake.MAX_RICE_PARAM ? 1 : 0;
+            method = realMaxK0 > FlakeConstants.MAX_RICE_PARAM ? 1 : 0;
 			return (uint)all_bits + ((4U + (uint)method) * part);
 		}
 
@@ -890,20 +890,20 @@ namespace CUETools.Codecs.FLAKE
 			{
 				for (int j = 0; j < (1 << i); j++)
 				{
-					sums[i * Flake.MAX_PARTITIONS + j] =
-						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j] +
-						sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j + 1];
+					sums[i * FlakeConstants.MAX_PARTITIONS + j] =
+						sums[(i + 1) * FlakeConstants.MAX_PARTITIONS + 2 * j] +
+						sums[(i + 1) * FlakeConstants.MAX_PARTITIONS + 2 * j + 1];
 				}
 			}
 		}
 
         static unsafe uint calc_rice_params_sums(RiceContext rc, int pmin, int pmax, ulong* sums, uint n, uint pred_order, int bps)
         {
-            int* parm = stackalloc int[(pmax + 1) * Flake.MAX_PARTITIONS];
-            //uint* bits = stackalloc uint[Flake.MAX_PARTITION_ORDER];
+            int* parm = stackalloc int[(pmax + 1) * FlakeConstants.MAX_PARTITIONS];
+            //uint* bits = stackalloc uint[FlakeConstants.MAX_PARTITION_ORDER];
 
-            //assert(pmin >= 0 && pmin <= Flake.MAX_PARTITION_ORDER);
-            //assert(pmax >= 0 && pmax <= Flake.MAX_PARTITION_ORDER);
+            //assert(pmin >= 0 && pmin <= FlakeConstants.MAX_PARTITION_ORDER);
+            //assert(pmax >= 0 && pmax <= FlakeConstants.MAX_PARTITION_ORDER);
             //assert(pmin <= pmax);
 
             // sums for lower levels
@@ -915,7 +915,7 @@ namespace CUETools.Codecs.FLAKE
             for (int i = pmin; i <= pmax; i++)
             {
                 int method = bps > 16 ? 1 : 0;
-                uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order, ref method);
+                uint bits = calc_optimal_rice_params(i, parm + i * FlakeConstants.MAX_PARTITIONS, sums + i * FlakeConstants.MAX_PARTITIONS, n, pred_order, ref method);
                 if (bits <= opt_bits)
                 {
                     opt_bits = bits;
@@ -927,7 +927,7 @@ namespace CUETools.Codecs.FLAKE
             rc.porder = opt_porder;
             rc.coding_method = opt_method;
             fixed (int* rparms = rc.rparams)
-                AudioSamples.MemCpy(rparms, parm + opt_porder * Flake.MAX_PARTITIONS, (1 << opt_porder));
+                AudioSamples.MemCpy(rparms, parm + opt_porder * FlakeConstants.MAX_PARTITIONS, (1 << opt_porder));
 
             return opt_bits;
         }
@@ -1048,7 +1048,7 @@ new int[] { // 30
             int maxxx = Math.Min(good_x[orig_order].Length, eparams.development_mode);
             var pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, orig_order);
             var pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
-            ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
+            ulong* sums = stackalloc ulong[(pmax + 1) * FlakeConstants.MAX_PARTITIONS];
 
             while (true)
             {
@@ -1103,9 +1103,9 @@ new int[] { // 30
                     fixed (int* coefs = frame.current.coefs)
                     {
                         if ((csum << frame.subframes[ch].obits) >= 1UL << 32)
-                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
+                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * FlakeConstants.MAX_PARTITIONS, pmax);
                         else
-                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
+                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * FlakeConstants.MAX_PARTITIONS, pmax);
                     }
 
                     var cur_size = calc_rice_params_sums(frame.current.rc, pmin, pmax, sums, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
@@ -1210,7 +1210,7 @@ new int[] { // 30
 
                     int pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, frame.current.order);
                     int pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
-                    ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
+                    ulong* sums = stackalloc ulong[(pmax + 1) * FlakeConstants.MAX_PARTITIONS];
                     ulong csum = 0;
                     fixed (int* coefs = frame.current.coefs)
                     {
@@ -1224,9 +1224,9 @@ new int[] { // 30
                             csum += (ulong)Math.Abs(coefs[i - 1]);
 
                         if ((csum << frame.subframes[ch].obits) >= 1UL << 32)
-                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
+                            lpc.encode_residual_long(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * FlakeConstants.MAX_PARTITIONS, pmax);
                         else
-                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
+                            lpc.encode_residual(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, coefs, frame.current.shift, sums + pmax * FlakeConstants.MAX_PARTITIONS, pmax);
 
                     }
                     uint best_size = calc_rice_params_sums(frame.current.rc, pmin, pmax, sums, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
@@ -1267,8 +1267,8 @@ new int[] { // 30
 #endif
             int pmax = get_max_p_order(m_settings.MaxPartitionOrder, frame.blocksize, frame.current.order);
             int pmin = Math.Min(m_settings.MinPartitionOrder, pmax);
-            ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
-            encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, sums + pmax * Flake.MAX_PARTITIONS, pmax);
+            ulong* sums = stackalloc ulong[(pmax + 1) * FlakeConstants.MAX_PARTITIONS];
+            encode_residual_fixed(frame.current.residual, frame.subframes[ch].samples, frame.blocksize, frame.current.order, sums + pmax * FlakeConstants.MAX_PARTITIONS, pmax);
 
             frame.current.size = (uint)(frame.current.order * frame.subframes[ch].obits) + 6
                 + calc_rice_params_sums(frame.current.rc, pmin, pmax, sums, (uint)frame.blocksize, (uint)frame.current.order, Settings.PCM.BitsPerSample);
@@ -1397,7 +1397,7 @@ new int[] { // 30
                     fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, iWindow, 0])
                         lpc_ctx.GetReflection(
                             frame.subframes[ch].sf, max_order, frame.blocksize, 
-                            smp, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections);
+                            smp, frame.window_buffer + iWindow * FlakeConstants.MAX_BLOCKSIZE * 2, sections);
                     lpc_ctx.ComputeLPC(lpcs);
 
 					//int frameSize = n;
@@ -1713,7 +1713,7 @@ new int[] { // 30
                 fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, i, 0])
                 lpc_ctx.GetReflection(
                     frame.subframes[ch].sf, estimate_order, frame.blocksize,
-                    frame.subframes[ch].samples, frame.window_buffer + i * Flake.MAX_BLOCKSIZE * 2, sections);
+                    frame.subframes[ch].samples, frame.window_buffer + i * FlakeConstants.MAX_BLOCKSIZE * 2, sections);
                 lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, estimate_order, 4.5, 0.0);
                 //err[i] = (float)(lpc_ctx.Akaike(frame.blocksize, lpc_ctx.best_orders[0], 4.5, 0.0));
                 //err[i] = (float)((frame.blocksize * lpc_ctx.prediction_error[lpc_ctx.best_orders[0] - 1] / windowScale[i]) + lpc_ctx.best_orders[0] * 4.5);
@@ -1838,7 +1838,7 @@ new int[] { // 30
                         fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, iWindow, 0])
                             lpc_ctx.GetReflection(
                                 frame.subframes[ch].sf, estimate_order, frame.blocksize,
-                                frame.subframes[ch].samples, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections);
+                                frame.subframes[ch].samples, frame.window_buffer + iWindow * FlakeConstants.MAX_BLOCKSIZE * 2, sections);
                         lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, estimate_order, 4.5, 0.0);
                         frame.subframes[ch].best.size 
                             = (uint)Math.Max(0, frame.blocksize * (Math.Log(lpc_ctx.prediction_error[lpc_ctx.best_orders[0] - 1])) + Math.Log(frame.blocksize) * lpc_ctx.best_orders[0] * 4.5
@@ -1873,7 +1873,7 @@ new int[] { // 30
                             fixed (LpcWindowSection* sections = &windowSections[frame.nSeg, iWindow, 0])
                                 lpc_ctx.GetReflection(
                                     frame.subframes[ch].sf, estimate_order, frame.blocksize,
-                                    frame.subframes[ch].samples, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2, sections);
+                                    frame.subframes[ch].samples, frame.window_buffer + iWindow * FlakeConstants.MAX_BLOCKSIZE * 2, sections);
                             lpc_ctx.SortOrdersAkaike(frame.blocksize, 1, 1, estimate_order, 4.5, 0.0);
                             uint estimate
                                 = (uint)Math.Max(0, frame.blocksize * (Math.Log(lpc_ctx.prediction_error[lpc_ctx.best_orders[0] - 1])) + Math.Log(frame.blocksize) * lpc_ctx.best_orders[0] * 4.5
@@ -1970,7 +1970,7 @@ new int[] { // 30
 			if ((m_settings.WindowFunctions & flag) == 0 || _windowcount == lpc.MAX_LPC_WINDOWS)
 				return;
 			int sz = _windowsize;
-			float* pos1 = window + _windowcount * Flake.MAX_BLOCKSIZE * 2;
+			float* pos1 = window + _windowcount * FlakeConstants.MAX_BLOCKSIZE * 2;
 			float* pos = pos1;
             int nSeg = 0;
 			do
@@ -2077,7 +2077,7 @@ new int[] { // 30
                     do
         			{
                         fixed (LpcWindowSection* sections = &windowSections[nSeg, 0, 0])
-                            LpcWindowSection.Detect(_windowcount, window_segment, Flake.MAX_BLOCKSIZE * 2, sz, Settings.PCM.BitsPerSample, sections);
+                            LpcWindowSection.Detect(_windowcount, window_segment, FlakeConstants.MAX_BLOCKSIZE * 2, sz, Settings.PCM.BitsPerSample, sections);
                         if ((sz & 1) != 0)
                             break;
                         window_segment += sz;
@@ -2108,7 +2108,7 @@ new int[] { // 30
                         {
                             tx.Write("{0}", x);
                             for (int i = 0; i < _windowcount; i++)
-                                tx.Write("\t{0}", window[i * Flake.MAX_BLOCKSIZE * 2 + x]);
+                                tx.Write("\t{0}", window[i * FlakeConstants.MAX_BLOCKSIZE * 2 + x]);
                             tx.WriteLine();
                         }
                     }
@@ -2119,28 +2119,28 @@ new int[] { // 30
 				{
 					frame.window_buffer = window;
                     frame.nSeg = 0;
-					frame.current.residual = r + channels * Flake.MAX_BLOCKSIZE;
+					frame.current.residual = r + channels * FlakeConstants.MAX_BLOCKSIZE;
 					frame.ch_mode = channels != 2 ? ChannelMode.NotStereo : ChannelMode.LeftRight;
 					for (int ch = 0; ch < channels; ch++)
-						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
-                            Settings.PCM.BitsPerSample, get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
+						frame.subframes[ch].Init(s + ch * FlakeConstants.MAX_BLOCKSIZE, r + ch * FlakeConstants.MAX_BLOCKSIZE,
+                            Settings.PCM.BitsPerSample, get_wasted_bits(s + ch * FlakeConstants.MAX_BLOCKSIZE, frame.blocksize));
 
 					for (int ch = 0; ch < channels; ch++)
 						encode_residual_pass2(frame, ch);
 				}
 				else
 				{
-					//channel_decorrelation(s, s + Flake.MAX_BLOCKSIZE, s + 2 * Flake.MAX_BLOCKSIZE, s + 3 * Flake.MAX_BLOCKSIZE, frame.blocksize);
+					//channel_decorrelation(s, s + FlakeConstants.MAX_BLOCKSIZE, s + 2 * FlakeConstants.MAX_BLOCKSIZE, s + 3 * FlakeConstants.MAX_BLOCKSIZE, frame.blocksize);
 					frame.window_buffer = window;
                     frame.nSeg = 0;
-					frame.current.residual = r + 4 * Flake.MAX_BLOCKSIZE;
+					frame.current.residual = r + 4 * FlakeConstants.MAX_BLOCKSIZE;
 					for (int ch = 0; ch < 4; ch++)
-						frame.subframes[ch].Init(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE,
-                            Settings.PCM.BitsPerSample + (ch == 3 ? 1 : 0), get_wasted_bits(s + ch * Flake.MAX_BLOCKSIZE, frame.blocksize));
+						frame.subframes[ch].Init(s + ch * FlakeConstants.MAX_BLOCKSIZE, r + ch * FlakeConstants.MAX_BLOCKSIZE,
+                            Settings.PCM.BitsPerSample + (ch == 3 ? 1 : 0), get_wasted_bits(s + ch * FlakeConstants.MAX_BLOCKSIZE, frame.blocksize));
 
 					//for (int ch = 0; ch < 4; ch++)
 					//    for (int iWindow = 0; iWindow < _windowcount; iWindow++)
-					//        frame.subframes[ch].lpc_ctx[iWindow].GetReflection(32, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer + iWindow * Flake.MAX_BLOCKSIZE * 2);
+					//        frame.subframes[ch].lpc_ctx[iWindow].GetReflection(32, frame.subframes[ch].samples, frame.blocksize, frame.window_buffer + iWindow * FlakeConstants.MAX_BLOCKSIZE * 2);
 
 					estimate_frame(frame, true);
 					uint fs = measure_frame_size(frame, true);
@@ -2155,7 +2155,7 @@ new int[] { // 30
 							frame2.InitSize(frame.blocksize / 2, true);
 							frame2.window_buffer = frame.window_buffer + frame.blocksize;
                             frame2.nSeg = frame.nSeg + 1;
-							frame2.current.residual = r + tumbler * 5 * Flake.MAX_BLOCKSIZE;
+							frame2.current.residual = r + tumbler * 5 * FlakeConstants.MAX_BLOCKSIZE;
 							for (int ch = 0; ch < 4; ch++)
 								frame2.subframes[ch].Init(frame.subframes[ch].samples, frame2.current.residual + (ch + 1) * frame2.blocksize,
 									frame.subframes[ch].obits + frame.subframes[ch].wbits, frame.subframes[ch].wbits);
@@ -2221,7 +2221,7 @@ new int[] { // 30
 			{
 				fixed (int* s = verifyBuffer, r = samplesBuffer)
 					for (int ch = 0; ch < channels; ch++)
-                        AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, m_blockSize);
+                        AudioSamples.MemCpy(s + ch * FlakeConstants.MAX_BLOCKSIZE, r + ch * FlakeConstants.MAX_BLOCKSIZE, m_blockSize);
 			}
 
 			int fs, bs;
@@ -2260,7 +2260,7 @@ new int[] { // 30
 					fixed (int* s = verifyBuffer, r = verify.Samples)
 					{
 						for (int ch = 0; ch < channels; ch++)
-							if (AudioSamples.MemCmp(s + ch * Flake.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, bs))
+							if (AudioSamples.MemCmp(s + ch * FlakeConstants.MAX_BLOCKSIZE, r + ch * FlakeConstants.MAX_BLOCKSIZE, bs))
 								throw new Exception(Properties.Resources.ExceptionValidationFailed);
 					}
 				}
@@ -2273,7 +2273,7 @@ new int[] { // 30
 					//    var ab = new AudioBuffer(this.Settings.PCM, this.frame.blocksize);
 					//    ab.Prepare(this.frame.blocksize);
 					//    fixed (int* abs = ab.Samples, s = verifyBuffer)
-					//        AudioSamples.Interlace(abs, s, s + Flake.MAX_BLOCKSIZE, this.frame.blocksize);
+					//        AudioSamples.Interlace(abs, s, s + FlakeConstants.MAX_BLOCKSIZE, this.frame.blocksize);
 					//    sw.Write(ab);
 					//    sw.Close();
 					//} else
@@ -2283,10 +2283,10 @@ new int[] { // 30
             if (bs < m_blockSize)
 			{
 				for (int ch = 0; ch < (channels == 2 ? 4 : channels); ch++)
-                    Buffer.BlockCopy(samplesBuffer, (bs + ch * Flake.MAX_BLOCKSIZE) * sizeof(int), samplesBuffer, ch * Flake.MAX_BLOCKSIZE * sizeof(int), (m_blockSize - bs) * sizeof(int));
+                    Buffer.BlockCopy(samplesBuffer, (bs + ch * FlakeConstants.MAX_BLOCKSIZE) * sizeof(int), samplesBuffer, ch * FlakeConstants.MAX_BLOCKSIZE * sizeof(int), (m_blockSize - bs) * sizeof(int));
 				//fixed (int* s = samplesBuffer)
 				//    for (int ch = 0; ch < channels; ch++)
-                //        AudioSamples.MemCpy(s + ch * Flake.MAX_BLOCKSIZE, s + bs + ch * Flake.MAX_BLOCKSIZE, m_blockSize - bs);
+                //        AudioSamples.MemCpy(s + ch * FlakeConstants.MAX_BLOCKSIZE, s + bs + ch * FlakeConstants.MAX_BLOCKSIZE, m_blockSize - bs);
 			}
 
 			samplesInBuffer -= bs;
@@ -2345,7 +2345,7 @@ new int[] { // 30
 
 		int select_blocksize(int samplerate, int time_ms)
 		{
-			int blocksize = Flake.flac_blocksizes[1];
+			int blocksize = FlakeConstants.flac_blocksizes[1];
 			int target = (samplerate * time_ms) / 1000;
 			if (eparams.variable_block_size > 0)
 			{
@@ -2355,10 +2355,10 @@ new int[] { // 30
 				return blocksize >> 1;
 			}
 
-            for (int i = 8; i < Flake.flac_blocksizes.Length - 1; i++)
-				if (target >= Flake.flac_blocksizes[i] && Flake.flac_blocksizes[i] > blocksize)
+            for (int i = 8; i < FlakeConstants.flac_blocksizes.Length - 1; i++)
+				if (target >= FlakeConstants.flac_blocksizes[i] && FlakeConstants.flac_blocksizes[i] > blocksize)
 				{
-					blocksize = Flake.flac_blocksizes[i];
+					blocksize = FlakeConstants.flac_blocksizes[i];
 				}
 			return blocksize;
 		}
@@ -2447,9 +2447,9 @@ new int[] { // 30
 			bitwriter.writebits(24, 18 * seek_table.Length);
 			for (int i = 0; i < seek_table.Length; i++)
 			{
-				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
-				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
-				bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN, seek_table[i].framesize);
+				bitwriter.writebits(FlakeConstants.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
+				bitwriter.writebits(FlakeConstants.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
+				bitwriter.writebits(FlakeConstants.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN, seek_table[i].framesize);
 			}
 			bitwriter.flush();
 			return 4 + 18 * seek_table.Length;
@@ -2517,7 +2517,7 @@ new int[] { // 30
 			// find samplerate in table
 			for (i = 1; i < 12; i++)
 			{
-                if (Settings.PCM.SampleRate == Flake.flac_samplerates[i])
+                if (Settings.PCM.SampleRate == FlakeConstants.flac_samplerates[i])
 				{
 					sr_code0 = i;
 					break;
@@ -2530,7 +2530,7 @@ new int[] { // 30
 
 			for (i = 1; i < 8; i++)
 			{
-                if (Settings.PCM.BitsPerSample == Flake.flac_bitdepths[i])
+                if (Settings.PCM.BitsPerSample == FlakeConstants.flac_bitdepths[i])
 				{
 					bps_code = i;
 					break;
@@ -2579,7 +2579,7 @@ new int[] { // 30
 			if (m_settings.DoVerify)
 			{
                 verify = new FlakeReader(Settings.PCM);
-				verifyBuffer = new int[Flake.MAX_BLOCKSIZE * channels];
+				verifyBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * channels];
 			}
 
 			frame_buffer = new byte[max_frame_size];

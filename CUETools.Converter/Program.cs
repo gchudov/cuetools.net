@@ -148,7 +148,9 @@ namespace CUETools.Converter
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
                 TagLib.File sourceInfo = sourceFile == "-" ? null : TagLib.File.Create(new TagLib.File.LocalFileAbstraction(sourceFile));
 
+#if !DEBUG
                 try
+#endif
                 {
                     audioSource = Program.GetAudioSource(config, sourceFile, decoderName, ignore_chunk_sizes);
                     foreach (var decOpt in decoderOptions)
@@ -252,12 +254,14 @@ namespace CUETools.Converter
                         totalElapsed
                         );
                 }
+#if !DEBUG
                 catch (Exception ex)
                 {
                     if (audioSource != null) audioSource.Close();
                     if (audioDest != null) audioDest.Delete();
                     throw ex;
                 }
+#endif
                 audioSource.Close();
                 audioDest.Close();
 

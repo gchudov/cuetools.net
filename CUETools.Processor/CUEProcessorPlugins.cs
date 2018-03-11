@@ -59,7 +59,7 @@ namespace CUETools.Processor
         private static void AddPlugin(string plugin_path)
         {
             AssemblyName name = AssemblyName.GetAssemblyName(plugin_path);
-            Assembly assembly = Assembly.Load(name, Assembly.GetEntryAssembly().Evidence);
+            Assembly assembly = Assembly.Load(name);
             System.Diagnostics.Trace.WriteLine("Loaded " + assembly.FullName);
             foreach (Type type in assembly.GetExportedTypes())
             {

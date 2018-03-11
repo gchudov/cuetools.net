@@ -1,162 +1,29 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A05B6AA6-0EC3-495D-BCC4-ECE1210071A8}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Bwg.Scsi</RootNamespace>
+    <TargetFrameworks>net40;net20</TargetFrameworks>
+    <Version>0.0.7.1</Version>
     <AssemblyName>Bwg.Scsi</AssemblyName>
-    <SccProjectName>
-    </SccProjectName>
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccProvider>
-    </SccProvider>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <RootNamespace>Bwg.Scsi</RootNamespace>
+    <Product>BwgBurn</Product>
+    <Description>CD-R/CD-RW/DVD-R/DVD-RW burning program for Windows XP: Windows SCSI interface.</Description>
+    <Copyright>Copyright © 2006 by Jack W. Griffin, Jr.</Copyright>
+    <Authors>Jack W. Griffin, Jr</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Debug\Bwg.Scsi.XML</DocumentationFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutputPath>..\bin\$(Configuration)\plugins</OutputPath>
+    <RepositoryUrl>https://svn.code.sf.net/p/bwgburn/code/</RepositoryUrl>
+    <RepositoryType>svn</RepositoryType>
+    <Company>BwgSoftware</Company>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\plugins\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>
-    </DocumentationFile>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AtipInfo.cs" />
-    <Compile Include="CapacityDescriptor.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="Defs.cs" />
-    <Compile Include="Device.cs" />
-    <Compile Include="DeviceInfo.cs" />
-    <Compile Include="DeviceManager.cs" />
-    <Compile Include="DeviceManagerRescanArgs.cs" />
-    <Compile Include="DiskInformation.cs" />
-    <Compile Include="EventStatusNotification.cs" />
-    <Compile Include="Feature.cs" />
-    <Compile Include="FeatureList.cs" />
-    <None Include="app.config" />
-    <None Include="FileReader.cs" />
-    <Compile Include="FormatParameterList.cs" />
-    <Compile Include="HeaderData.cs" />
-    <Compile Include="InitializationPattern.cs" />
-    <Compile Include="InquiryResult.cs" />
-    <Compile Include="MinuteSecondFrame.cs" />
-    <Compile Include="ModePage.cs" />
-    <Compile Include="ModeTable.cs" />
-    <Compile Include="OpcTableEntry.cs" />
-    <Compile Include="Performance.cs" />
-    <Compile Include="PerformanceList.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Result.cs" />
-    <Compile Include="SpeedDescriptor.cs" />
-    <Compile Include="SpeedDescriptorList.cs" />
-    <Compile Include="SubheaderData.cs" />
-    <Compile Include="TocEntry.cs" />
-    <Compile Include="TrackInformation.cs" />
-    <Compile Include="WinDev.cs" />
-    <Compile Include="WriteBuffer.cs" />
-    <Compile Include="WriteBufferPool.cs" />
-    <Compile Include="WriteBufferStream.cs" />
-    <Compile Include="WriteParameterModePage.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Bwg.Logging\Bwg.Logging.csproj">
-      <Project>{F2DFEB00-BB35-4665-85EA-CB8C7729A6B7}</Project>
-      <Name>Bwg.Logging</Name>
+
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <Private>False</Private>
     </ProjectReference>
-  </ItemGroup>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <ProjectReference Include="..\Bwg.Logging\Bwg.Logging.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Messages.resx">
-    </EmbeddedResource>
-    <EmbeddedResource Include="Messages.ru-RU.resx" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

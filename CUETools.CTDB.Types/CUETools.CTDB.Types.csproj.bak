@@ -1,0 +1,41 @@
+﻿"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7.1 Tools\sgen.exe" C:\Users\Grigory\source\repos\cuetools.net\bin\Release\net20\CUETools.CTDB.Types.dll  /keep
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net20;netstandard2.0</TargetFrameworks>
+    <Version>2.1.6.0</Version>
+    <AssemblyName>CUETools.CTDB.Types</AssemblyName>
+    <RootNamespace>CUETools.CTDB</RootNamespace>
+    <Product>CUETools</Product>
+    <Description>A library containing serializable types for accessing CUETools Database.</Description>
+    <Copyright>Copyright (c) 2008-2018 Grigory Chudov</Copyright>
+    <Authors>Grigory Chudov</Authors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Company />
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="1.0.0" />
+    <DotNetCliToolReference Include="Microsoft.XmlSerializer.Generator" Version="1.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net20'">
+    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
+    <SGenUseProxyTypes>false</SGenUseProxyTypes>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net40'">
+    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
+    <SGenUseProxyTypes>false</SGenUseProxyTypes>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
+</Project>

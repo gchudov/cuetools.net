@@ -103,8 +103,8 @@ namespace CUETools.Codecs.FLAKE
 			if (PCM.BitsPerSample != 16 && PCM.BitsPerSample != 24)
 				throw new Exception("invalid flac file");
 
-			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * PCM.ChannelCount];
-			residualBuffer = new int[Flake.MAX_BLOCKSIZE * PCM.ChannelCount];
+			samplesBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * PCM.ChannelCount];
+			residualBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * PCM.ChannelCount];
 		}
 
 		public FlakeReader(AudioPCMConfig _pcm)
@@ -112,8 +112,8 @@ namespace CUETools.Codecs.FLAKE
 			pcm = _pcm;
 			crc8 = new Crc8();
 
-			samplesBuffer = new int[Flake.MAX_BLOCKSIZE * PCM.ChannelCount];
-			residualBuffer = new int[Flake.MAX_BLOCKSIZE * PCM.ChannelCount];
+			samplesBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * PCM.ChannelCount];
+			residualBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * PCM.ChannelCount];
 			frame = new FlacFrame(PCM.ChannelCount);
 			framereader = new BitReader();
 		}
@@ -216,12 +216,12 @@ namespace CUETools.Codecs.FLAKE
 			if (PCM.ChannelCount == 2)
 			{
 				fixed (int* src = &samplesBuffer[_samplesBufferOffset])
-					buff.Interlace(offset, src, src + Flake.MAX_BLOCKSIZE, count);
+					buff.Interlace(offset, src, src + FlakeConstants.MAX_BLOCKSIZE, count);
 			}
 			else
 			{
 				for (int ch = 0; ch < PCM.ChannelCount; ch++)
-					fixed (int* res = &buff.Samples[offset, ch], src = &samplesBuffer[_samplesBufferOffset + ch * Flake.MAX_BLOCKSIZE])
+					fixed (int* res = &buff.Samples[offset, ch], src = &samplesBuffer[_samplesBufferOffset + ch * FlakeConstants.MAX_BLOCKSIZE])
 					{
 						int* psrc = src;
 						for (int i = 0; i < count; i++)
@@ -299,7 +299,7 @@ namespace CUETools.Codecs.FLAKE
 			uint sr_code0 = bitreader.readbits(4);
 			frame.ch_mode = (ChannelMode)bitreader.readbits(4);
 			uint bps_code = bitreader.readbits(3);
-			if (Flake.flac_bitdepths[bps_code] != PCM.BitsPerSample)
+			if (FlakeConstants.flac_bitdepths[bps_code] != PCM.BitsPerSample)
 				throw new Exception("unsupported bps coding");
 			uint t1 = bitreader.readbit(); // == 0?????
 			if (t1 != 0)
@@ -318,7 +318,7 @@ namespace CUETools.Codecs.FLAKE
 				frame.blocksize = frame.bs_code1 + 1;
 			}
 			else
-				frame.blocksize = Flake.flac_blocksizes[frame.bs_code0];
+				frame.blocksize = FlakeConstants.flac_blocksizes[frame.bs_code0];
 
 			// custom sample rate
 			if (sr_code0 < 1 || sr_code0 > 11)
@@ -466,8 +466,8 @@ namespace CUETools.Codecs.FLAKE
 					frame.subframes[ch].best.type = SubframeType.Fixed;
 				}
 
-				frame.subframes[ch].best.residual = r + ch * Flake.MAX_BLOCKSIZE;
-				frame.subframes[ch].samples = s + ch * Flake.MAX_BLOCKSIZE;
+				frame.subframes[ch].best.residual = r + ch * FlakeConstants.MAX_BLOCKSIZE;
+				frame.subframes[ch].samples = s + ch * FlakeConstants.MAX_BLOCKSIZE;
 
 				// subframe
 				switch (frame.subframes[ch].best.type)

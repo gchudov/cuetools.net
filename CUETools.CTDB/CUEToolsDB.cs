@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
-using System.Management;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,6 +10,13 @@ using System.Xml.Serialization;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
 using CUETools.Parity;
+#if NET20
+using System.Management;
+#else
+using DeviceId;
+using DeviceId.Encoders;
+using DeviceId.Formatters;
+#endif
 using Krystalware.UploadHelper;
 
 namespace CUETools.CTDB
@@ -98,9 +104,9 @@ namespace CUETools.CTDB
                     this.QueryExceptionMessage = resp.StatusDescription;
 					if (this.QueryResponseStatus == HttpStatusCode.OK)
 					{
-						//XmlSerializer serializer = new XmlSerializer(typeof(CTDBResponse));
-                        XmlSerializer serializer = new Microsoft.Xml.Serialization.GeneratedAssembly.CTDBResponseSerializer();
-						this.total = 0;
+                        //var serializer = new XmlSerializer(typeof(CTDBResponse));
+                        var serializer = new Microsoft.Xml.Serialization.GeneratedAssembly.CTDBResponseSerializer();
+                        this.total = 0;
 						using (Stream responseStream = resp.GetResponseStream())
 						{
 							CTDBResponse ctdbResp = serializer.Deserialize(responseStream) as CTDBResponse;
@@ -277,16 +283,27 @@ namespace CUETools.CTDB
 		{
 			if (uuidInfo == null)
 			{
+#if NET20
 				string id = "CTDB userid";
 				using (ManagementClass mc = new ManagementClass("Win32_ComputerSystemProduct"))
 					foreach (ManagementObject mo in mc.GetInstances())
 					{
-						id = id + mo.Properties["UUID"].Value.ToString();
-						break;
-					}
-				byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(id));
-				uuidInfo = Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
-			}
+					id = id + mo.Properties["UUID"].Value.ToString();
+					break;
+				}
+    			byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(id));
+			    uuidInfo = Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
+#else
+                uuidInfo = new DeviceIdBuilder()
+                    .AddMachineName()
+#if NET40
+                    .AddProcessorId()
+                    .AddMotherboardSerialNumber()
+#endif
+                    .UseFormatter(new HashDeviceIdFormatter(() => SHA256.Create(), new Base64UrlByteArrayEncoder()))
+                    .ToString();
+#endif
+            }
 			return uuidInfo;
 		}
 
@@ -391,7 +408,8 @@ namespace CUETools.CTDB
                     {
                         using (Stream s = resp.GetResponseStream())
                         {
-                            var serializer = new XmlSerializer(typeof(CTDBResponse));
+                            //var serializer = new XmlSerializer(typeof(CTDBResponse));
+                            var serializer = new Microsoft.Xml.Serialization.GeneratedAssembly.CTDBResponseSerializer();
                             return serializer.Deserialize(s) as CTDBResponse;
                         }
                     }

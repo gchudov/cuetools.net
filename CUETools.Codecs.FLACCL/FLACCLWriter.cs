@@ -101,7 +101,7 @@ namespace CUETools.Codecs.FLACCL
             SetDefaultValuesForMode();
             if (Padding < 0)
                 throw new Exception("unsupported padding value " + Padding.ToString());
-            if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Flake.MAX_BLOCKSIZE))
+            if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= FlakeConstants.MAX_BLOCKSIZE))
                 throw new Exception("unsupported block size " + BlockSize.ToString());
             if (MinLPCOrder > MaxLPCOrder || MaxLPCOrder > lpc.MAX_LPC_ORDER)
                 throw new Exception("invalid MaxLPCOrder " + MaxLPCOrder.ToString());
@@ -654,7 +654,7 @@ namespace CUETools.Codecs.FLACCL
         {
             uint part = (1U << porder);
             uint cnt = (n >> porder) - pred_order;
-            int maxK = method > 0 ? 30 : Flake.MAX_RICE_PARAM;
+            int maxK = method > 0 ? 30 : FlakeConstants.MAX_RICE_PARAM;
             int k = cnt > 0 ? Math.Min(maxK, BitReader.log2i(sums[0] / cnt)) : 0;
             int realMaxK0 = k;
             ulong all_bits = cnt * ((uint)k + 1U) + (sums[0] >> k);
@@ -667,7 +667,7 @@ namespace CUETools.Codecs.FLACCL
                 all_bits += cnt * ((uint)k + 1U) + (sums[i] >> k);
                 parm[i] = k;
             }
-            method = realMaxK0 > Flake.MAX_RICE_PARAM ? 1 : 0;
+            method = realMaxK0 > FlakeConstants.MAX_RICE_PARAM ? 1 : 0;
             return (uint)all_bits + ((4U + (uint)method) * part);
         }
 
@@ -677,9 +677,9 @@ namespace CUETools.Codecs.FLACCL
             {
                 for (int j = 0; j < (1 << i); j++)
                 {
-                    sums[i * Flake.MAX_PARTITIONS + j] =
-                        sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j] +
-                        sums[(i + 1) * Flake.MAX_PARTITIONS + 2 * j + 1];
+                    sums[i * FlakeConstants.MAX_PARTITIONS + j] =
+                        sums[(i + 1) * FlakeConstants.MAX_PARTITIONS + 2 * j] +
+                        sums[(i + 1) * FlakeConstants.MAX_PARTITIONS + 2 * j + 1];
                 }
             }
         }
@@ -795,12 +795,12 @@ namespace CUETools.Codecs.FLACCL
         static unsafe uint calc_rice_params(RiceContext rc, int pmin, int pmax, int* data, uint n, uint pred_order, int max_method)
         {
             uint* udata = stackalloc uint[(int)n];
-            ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
-            int* parm = stackalloc int[(pmax + 1) * Flake.MAX_PARTITIONS];
-            //uint* bits = stackalloc uint[Flake.MAX_PARTITION_ORDER];
+            ulong* sums = stackalloc ulong[(pmax + 1) * FlakeConstants.MAX_PARTITIONS];
+            int* parm = stackalloc int[(pmax + 1) * FlakeConstants.MAX_PARTITIONS];
+            //uint* bits = stackalloc uint[FlakeConstants.MAX_PARTITION_ORDER];
 
-            //assert(pmin >= 0 && pmin <= Flake.MAX_PARTITION_ORDER);
-            //assert(pmax >= 0 && pmax <= Flake.MAX_PARTITION_ORDER);
+            //assert(pmin >= 0 && pmin <= FlakeConstants.MAX_PARTITION_ORDER);
+            //assert(pmax >= 0 && pmax <= FlakeConstants.MAX_PARTITION_ORDER);
             //assert(pmin <= pmax);
 
             for (uint i = 0; i < n; i++)
@@ -808,13 +808,13 @@ namespace CUETools.Codecs.FLACCL
 
             // sums for highest level
             if ((n >> pmax) == 32)
-                calc_sums32(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+                calc_sums32(pmin, pmax, udata, n, pred_order, sums + pmax * FlakeConstants.MAX_PARTITIONS);
             else if ((n >> pmax) == 18)
-                calc_sums18(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+                calc_sums18(pmin, pmax, udata, n, pred_order, sums + pmax * FlakeConstants.MAX_PARTITIONS);
             else if ((n >> pmax) == 16)
-                calc_sums16(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+                calc_sums16(pmin, pmax, udata, n, pred_order, sums + pmax * FlakeConstants.MAX_PARTITIONS);
             else
-                calc_sums(pmin, pmax, udata, n, pred_order, sums + pmax * Flake.MAX_PARTITIONS);
+                calc_sums(pmin, pmax, udata, n, pred_order, sums + pmax * FlakeConstants.MAX_PARTITIONS);
             // sums for lower levels
             calc_lower_sums(pmin, pmax, sums);
 
@@ -824,7 +824,7 @@ namespace CUETools.Codecs.FLACCL
             for (int i = pmin; i <= pmax; i++)
             {
                 int method = max_method;
-                uint bits = calc_optimal_rice_params(i, parm + i * Flake.MAX_PARTITIONS, sums + i * Flake.MAX_PARTITIONS, n, pred_order, ref method);
+                uint bits = calc_optimal_rice_params(i, parm + i * FlakeConstants.MAX_PARTITIONS, sums + i * FlakeConstants.MAX_PARTITIONS, n, pred_order, ref method);
                 if (bits <= opt_bits)
                 {
                     opt_bits = bits;
@@ -836,7 +836,7 @@ namespace CUETools.Codecs.FLACCL
             rc.porder = opt_porder;
             rc.coding_method = opt_method;
             fixed (int* rparms = rc.rparams)
-                AudioSamples.MemCpy(rparms, parm + opt_porder * Flake.MAX_PARTITIONS, (1 << opt_porder));
+                AudioSamples.MemCpy(rparms, parm + opt_porder * FlakeConstants.MAX_PARTITIONS, (1 << opt_porder));
 
             return opt_bits;
         }
@@ -1365,14 +1365,14 @@ namespace CUETools.Codecs.FLACCL
                         {
                             int pmin = get_max_p_order(m_settings.MinPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
                             int pmax = get_max_p_order(m_settings.MaxPartitionOrder, task.frame.blocksize, task.frame.subframes[ch].best.order);
-                            ulong* sums = stackalloc ulong[(pmax + 1) * Flake.MAX_PARTITIONS];
+                            ulong* sums = stackalloc ulong[(pmax + 1) * FlakeConstants.MAX_PARTITIONS];
 
                             fixed (int* coefs = task.frame.subframes[ch].best.coefs)
                             {
                                 if (Settings.PCM.BitsPerSample > 16)
-                                    lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
+                                    lpc.encode_residual_long(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift, sums + pmax * FlakeConstants.MAX_PARTITIONS, pmax);
                                 else
-                                    lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift, sums + pmax * Flake.MAX_PARTITIONS, pmax);
+                                    lpc.encode_residual(task.frame.subframes[ch].best.residual, task.frame.subframes[ch].samples, task.frame.blocksize, task.frame.subframes[ch].best.order, coefs, task.frame.subframes[ch].best.shift, sums + pmax * FlakeConstants.MAX_PARTITIONS, pmax);
                             }
 
                             calc_rice_params(task.frame.subframes[ch].best.rc, pmin, pmax, task.frame.subframes[ch].best.residual, (uint)task.frame.blocksize, (uint)task.frame.subframes[ch].best.order, Settings.PCM.BitsPerSample > 16 ? 1 : 0);
@@ -1669,13 +1669,13 @@ namespace CUETools.Codecs.FLACCL
                         for (int ch = 0; ch < channels; ch++)
                         {
                             byte* res = ((byte*)task.clSamplesBytesPtr) + Settings.PCM.BlockAlign * iFrame * task.frameSize + ch * (Settings.PCM.BlockAlign / channels);
-                            int* smp = r + ch * Flake.MAX_BLOCKSIZE;
+                            int* smp = r + ch * FlakeConstants.MAX_BLOCKSIZE;
                             int ba = Settings.PCM.BlockAlign;
                             if (Settings.PCM.BitsPerSample == 16)
                             {
                                 for (int i = task.frameSize; i > 0; i--)
                                 {
-                                    //if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
+                                    //if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * FlakeConstants.MAX_BLOCKSIZE, task.frameSize))
                                     int ress = *(short*)res;
                                     if (ress != *(smp++))
                                         throw new Exception(string.Format("validation failed! iFrame={0}, ch={1}", fn, ch));
@@ -1686,7 +1686,7 @@ namespace CUETools.Codecs.FLACCL
                             {
                                 for (int i = task.frameSize; i > 0; i--)
                                 {
-                                    //if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * Flake.MAX_BLOCKSIZE, task.frameSize))
+                                    //if (AudioSamples.MemCmp(s + iFrame * task.frameSize + ch * FLACCLWriter.MAX_BLOCKSIZE, r + ch * FlakeConstants.MAX_BLOCKSIZE, task.frameSize))
                                     int ress = (((int)res[0] << 8) + ((int)res[1] << 16) + ((int)res[2] << 24)) >> (8);
                                     if (ress != *(smp++))
                                         throw new Exception(string.Format("validation failed! iFrame={0}, ch={1}", iFrame, ch));
@@ -2032,7 +2032,7 @@ namespace CUETools.Codecs.FLACCL
 
         int select_blocksize(int samplerate, int time_ms)
         {
-            int blocksize = Flake.flac_blocksizes[1];
+            int blocksize = FlakeConstants.flac_blocksizes[1];
             int target = (samplerate * time_ms) / 1000;
 
             ////if (eparams.variable_block_size > 0)
@@ -2043,10 +2043,10 @@ namespace CUETools.Codecs.FLACCL
             ////    return blocksize >> 1;
             ////}
 
-            for (int i = 8; i < Flake.flac_blocksizes.Length - 1; i++)
-                if (target >= Flake.flac_blocksizes[i] && Flake.flac_blocksizes[i] > blocksize)
+            for (int i = 8; i < FlakeConstants.flac_blocksizes.Length - 1; i++)
+                if (target >= FlakeConstants.flac_blocksizes[i] && FlakeConstants.flac_blocksizes[i] > blocksize)
                 {
-                    blocksize = Flake.flac_blocksizes[i];
+                    blocksize = FlakeConstants.flac_blocksizes[i];
                 }
             return blocksize;
         }
@@ -2126,9 +2126,9 @@ namespace CUETools.Codecs.FLACCL
             bitwriter.writebits(24, 18 * seek_table.Length);
             for (int i = 0; i < seek_table.Length; i++)
             {
-                bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
-                bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
-                bitwriter.writebits(Flake.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN, seek_table[i].framesize);
+                bitwriter.writebits(FlakeConstants.FLAC__STREAM_METADATA_SEEKPOINT_SAMPLE_NUMBER_LEN, (ulong)seek_table[i].number);
+                bitwriter.writebits(FlakeConstants.FLAC__STREAM_METADATA_SEEKPOINT_STREAM_OFFSET_LEN, (ulong)seek_table[i].offset);
+                bitwriter.writebits(FlakeConstants.FLAC__STREAM_METADATA_SEEKPOINT_FRAME_SAMPLES_LEN, seek_table[i].framesize);
             }
             bitwriter.flush();
             return 4 + 18 * seek_table.Length;
@@ -2195,7 +2195,7 @@ namespace CUETools.Codecs.FLACCL
             // find samplerate in table
             for (i = 1; i < 12; i++)
             {
-                if (m_settings.PCM.SampleRate == Flake.flac_samplerates[i])
+                if (m_settings.PCM.SampleRate == FlakeConstants.flac_samplerates[i])
                 {
                     sr_code0 = i;
                     break;
@@ -2208,7 +2208,7 @@ namespace CUETools.Codecs.FLACCL
 
             for (i = 1; i < 8; i++)
             {
-                if (bits_per_sample == Flake.flac_bitdepths[i])
+                if (bits_per_sample == FlakeConstants.flac_bitdepths[i])
                 {
                     bps_code = i;
                     break;
@@ -2981,7 +2981,7 @@ namespace CUETools.Codecs.FLACCL
                         clPartitions,
                         max_porder);
 
-                    int maxK = writer.Settings.PCM.BitsPerSample > 16 ? 30 : Flake.MAX_RICE_PARAM;
+                    int maxK = writer.Settings.PCM.BitsPerSample > 16 ? 30 : FlakeConstants.MAX_RICE_PARAM;
                     if (openCLCQ.Device.DeviceType == DeviceType.CPU)
                         openCLCQ.EnqueueNDRangeKernel(
                             clSumPartition,

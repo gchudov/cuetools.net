@@ -37,24 +37,22 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>.\bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\Debug\net40\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\net40\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CSScriptLibrary.v1.1, Version=2.3.2.0, Culture=neutral">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\CUETools.Processor\CSScriptLibrary.v1.1.dll</HintPath>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -70,38 +68,51 @@
     <ProjectReference Include="..\..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
       <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
       <Name>CUETools.AccurateRip</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs.LossyWAV\CUETools.Codecs.LossyWAV.csproj">
       <Project>{8A0426FA-0BC2-4C49-A6E5-1F9A68156F19}</Project>
       <Name>CUETools.Codecs.LossyWAV</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs\CUETools.Codecs.csproj">
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Compression\CUETools.Compression.csproj">
       <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
       <Name>CUETools.Compression</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj">
+      <Project>{c36efaa5-4f81-4a29-800d-ba866ff13bc8}</Project>
+      <Name>CUETools.CTDB.Types</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.CTDB\CUETools.CTDB.csproj">
       <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
       <Name>CUETools.CTDB</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Processor\CUETools.Processor.csproj">
       <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
       <Name>CUETools.Processor</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj">
       <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
       <Name>CUETools.Ripper</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\Freedb\Freedb.csproj">
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

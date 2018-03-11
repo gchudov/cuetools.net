@@ -3,11 +3,12 @@ obj/
 bin/
 lib/
 Release/
+Debug/
 *.vcxproj.user
 *.csproj.user
 *.sdf
 *.suo
 *.opensdf
-Win32/
-x64/
-ia32/
+a32/
+launchSettings.json
+/CUETools/TestResults

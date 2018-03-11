@@ -1,0 +1,95 @@
+﻿<Window x:Class="CUERipper.WPF.Window1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="CUERipper" Height="504" Width="623" ResizeMode="CanResize" SizeToContent="Manual" Background="#efefef" Loaded="Window_Loaded"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Window.Resources>
+        <!--<Image></Image>
+        <XmlDataProvider x:Key="data" XPath="Images/Image">
+            <x:XData>
+                <Images xxmlns="">
+                    <Image Name="Apple"></Image>
+                </Images>
+            </x:XData>
+        </XmlDataProvider>-->
+    </Window.Resources>
+    <Grid Height="Auto" Width="Auto" Margin="10,10,10,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="249*" />
+            <RowDefinition Height="110*" />
+            <RowDefinition Height="30*" />
+        </Grid.RowDefinitions>
+        <ListView Name="listView1" Grid.Row="3" IsTabStop="True" ItemsSource="{Binding SelectedRelease.metadata.Tracks}" Margin="0,5">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Title}" Width="50" >Track</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Title}" Width="300">Title</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Artist}" Width="200">Artist</GridViewColumn>
+                </GridView>
+                <!--<GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}"></GridView>-->
+            </ListView.View>
+        </ListView>
+        <ProgressBar Name="progressBar1" HorizontalAlignment="Right" Width="158" Grid.Row="4" Margin="0,0,14,12" Height="20" VerticalAlignment="Bottom" />
+        <ComboBox Name="comboBox1" IsEditable="False" ClipToBounds="False" IsReadOnly="False" SelectedItem="{Binding SelectedDrive}" ItemsSource="{Binding Drives}" Padding="4,0" VerticalContentAlignment="Center" Margin="0,5">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Icon}" Width="Auto" Margin="1,1,5,1" MinWidth="16" MinHeight="16"></Image>
+                        <TextBlock Text="{Binding Name}" Width="Auto"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <ComboBox x:Name="comboBoxReleases" Grid.Row="1" IsEditable="False" ClipToBounds="False" Padding="4,0" SelectedItem="{Binding SelectedRelease}" ItemsSource="{Binding Releases}" VerticalContentAlignment="Center" Margin="0,5">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding ImageKey}" Width="Auto" Margin="1,1,5,1" MinWidth="16" MinHeight="16"></Image>
+                        <TextBlock Text="{Binding}" Width="Auto"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <GroupBox Name="groupBox1" Grid.Row="4" Margin="6,6,178,12">
+            <Grid Height="auto" Name="grid1" Width="auto">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="100*" />
+                    <RowDefinition Height="100*" />
+                    <RowDefinition Height="100*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="104*" />
+                    <ColumnDefinition Width="104*" />
+                    <ColumnDefinition Width="88*" />
+                    <ColumnDefinition Width="119.5*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox Margin="10,5,10,5" Name="comboBox3" SelectedIndex="0" Padding="4,1" VerticalContentAlignment="Center">
+                    <ComboBoxItem>lossless</ComboBoxItem>
+                    <ComboBoxItem>lossy</ComboBoxItem>
+                </ComboBox>
+                <ComboBox Margin="10,5,10,5" Name="comboBox4" Grid.Row="1" SelectedIndex="0" Padding="4,1" VerticalContentAlignment="Center">
+                    <ComboBoxItem>image</ComboBoxItem>
+                    <ComboBoxItem>tracks</ComboBoxItem>
+                </ComboBox>
+                <ComboBox Margin="10,5,10,5" Name="comboBox5" Grid.Column="1" Padding="4,1" />
+                <ComboBox Margin="10,5,10,5" Name="comboBox6" Grid.Column="1" Grid.Row="1" Padding="4,1" />
+                <Slider Grid.ColumnSpan="2" Grid.Row="2" Margin="25,3,25,3" Name="slider1" TickPlacement="BottomRight" />
+                <Slider Grid.Column="3" Grid.Row="2" Margin="15,3,15,3" Name="slider2" />
+                <CheckBox Grid.Column="3" Grid.Row="1" Margin="15,3,15,3" Name="checkBox1">EAC log</CheckBox>
+                <TextBox Grid.Column="3" Margin="56,5,10,5" Name="textBox1" />
+            </Grid>
+        </GroupBox>
+        <Button HorizontalAlignment="Right" Width="158" Margin="0,14,14,52" Grid.Row="4">Ok</Button>
+        <StatusBar Grid.Row="5" Height="Auto" HorizontalAlignment="Stretch" Name="statusBar1" VerticalAlignment="Stretch" Width="Auto">
+            <StatusBarItem HorizontalAlignment="Right" VerticalAlignment="Center">
+                <ProgressBar Width="84" Height="15"></ProgressBar>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right" VerticalAlignment="Center">
+                <ProgressBar Width="84" Height="15"></ProgressBar>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

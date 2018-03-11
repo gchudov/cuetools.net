@@ -74,7 +74,7 @@ namespace CUETools.Processor
         {
             get
             {
-                return Path.Combine(SettingsShared.GetProfileDir("CUE Tools", System.Windows.Forms.Application.ExecutablePath), "LocalDB.xml.z");
+                return Path.Combine(SettingsShared.GetProfileDir("CUE Tools", Environment.GetCommandLineArgs()[0]), "LocalDB.xml.z");
             }
         }
 

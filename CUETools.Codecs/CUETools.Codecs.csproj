@@ -1,135 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUETools.Codecs</RootNamespace>
+    <TargetFrameworks>net40;net20;netstandard2.0</TargetFrameworks>
+    <Version>2.1.6.0</Version>
     <AssemblyName>CUETools.Codecs</AssemblyName>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <RootNamespace>CUETools.Codecs</RootNamespace>
+    <Product>CUETools</Product>
+    <Description>A library for encoding and decoding audio.</Description>
+    <Copyright>Copyright (c) 2008-2018 Grigory Chudov</Copyright>
+    <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Company />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AudioBuffer.cs" />
-    <Compile Include="AudioDecoderClass.cs" />
-    <Compile Include="AudioDecoderSettings.cs" />
-    <Compile Include="AudioEncoderSettings.cs" />
-    <Compile Include="AudioPCMConfig.cs" />
-    <Compile Include="AudioPipe.cs" />
-    <Compile Include="AudioSamples.cs" />
-    <Compile Include="BitReader.cs" />
-    <Compile Include="BitWriter.cs" />
-    <Compile Include="CRC\CRC16.cs" />
-    <Compile Include="CRC\CRC16CCITT.cs" />
-    <Compile Include="CRC\CRC32.cs" />
-    <Compile Include="CRC\CRC8.cs" />
-    <Compile Include="CUEToolsCodecsConfig.cs" />
-    <Compile Include="CUEToolsFormat.cs" />
-    <Compile Include="CUEToolsTagger.cs" />
-    <Compile Include="CUEToolsUDC.cs" />
-    <Compile Include="CUEToolsUDCList.cs" />
-    <Compile Include="CyclicBuffer.cs" />
-    <Compile Include="CyclicBufferInputStream.cs" />
-    <Compile Include="CyclicBufferOutputStream.cs" />
-    <Compile Include="DefaultValueForMode.cs" />
-    <Compile Include="DummyWriter.cs" />
-    <Compile Include="IAudioDest.cs" />
-    <Compile Include="AudioEncoderClass.cs" />
-    <Compile Include="IAudioFilter.cs" />
-    <Compile Include="IAudioSource.cs" />
-    <Compile Include="IWavePlayer.cs" />
-    <Compile Include="SRDescriptionAttribute.cs" />
-    <Compile Include="LPC.cs" />
-    <Compile Include="LpcContext.cs" />
-    <Compile Include="NullStream.cs" />
-    <Compile Include="PlaybackState.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SilenceGenerator.cs" />
-    <Compile Include="UserDefinedEncoderSettings.cs" />
-    <Compile Include="UserDefinedReader.cs" />
-    <Compile Include="UserDefinedWriter.cs" />
-    <Compile Include="WAVReader.cs" />
-    <Compile Include="WAVWriter.cs" />
-    <Compile Include="WAVWriterSettings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="License.txt" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

@@ -43,14 +43,14 @@
     <StackPanel>
         <StackPanel x:Name="stackParams">
             <DockPanel>
-                <Image Source="/BluTools;component/Icons/icons8-import-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Source"/>
+                <Image Source="/BluTools;component/Icons/icons8-import-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Source folder containing BluRay disc structure"/>
                 <Button x:Name="buttonBrowseSource" Click="ButtonBrowseSource_Click" DockPanel.Dock="Right" Margin="10,5" ToolTip="Browse">
                     <Image Source="/BluTools;component/Icons/icons8-open-48.png" Width="24" />
                 </Button>
                 <TextBox x:Name="textBoxSource" TextWrapping="NoWrap" Margin="10,5" TextChanged="textBoxSource_TextChanged"/>
             </DockPanel>
             <DockPanel>
-                <Image Source="/BluTools;component/Icons/icons8-export-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Destination"/>
+                <Image Source="/BluTools;component/Icons/icons8-export-48.png" Height="24 " Width="24" Margin="10,5" ToolTip="Destination folder (subfolder will be created)"/>
                 <Button x:Name="buttonBrowseDestination" Click="buttonBrowseDestination_Click" DockPanel.Dock="Right" Margin="10,5" ToolTip="Browse">
                     <Image Source="/BluTools;component/Icons/icons8-open-48.png" Width="24" />
                 </Button>
