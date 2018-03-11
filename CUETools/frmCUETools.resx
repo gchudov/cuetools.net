@@ -439,7 +439,7 @@
     <value>fileSystemTreeView1</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.1.6.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.1.7.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
     <value>grpInput</value>
@@ -496,7 +496,7 @@
     <value>fileSystemTreeView1</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.1.6.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.1.7.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
     <value>grpInput</value>
@@ -3632,7 +3632,7 @@
     <value>699, 537</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUETools 2.1.6</value>
+    <value>CUETools 2.1.7</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>

@@ -133,7 +133,8 @@ hdcd.dll (c) Christopher Key
 Пользуясь возможностью, хотел бы попросить российских 
 граждан требовать от своего правительства немедленного
 освобождения политических заключенных и вывода войск 
-с оккупированных грузинских территорий. Григорий Чудов.</value>
+с оккупированных грузинских и украинских территорий. 
+Григорий Чудов.</value>
   </data>
   <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
     <value>182, 261</value>
@@ -158,7 +159,7 @@ hdcd.dll (c) Christopher Key
     <value>309, 17</value>
   </data>
   <data name="linkLabel3.Text" xml:space="preserve">
-    <value>Copyright 2008-2013 Григорий Чудов, gchudov@gmail.com</value>
+    <value>Copyright 2008-2018 Григорий Чудов, gchudov@gmail.com</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>439, 296</value>
