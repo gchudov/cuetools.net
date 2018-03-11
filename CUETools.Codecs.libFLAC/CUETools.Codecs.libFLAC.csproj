@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net20;netstandard2.0</TargetFrameworks>
+    <Version>2.1.6.0</Version>
+    <AssemblyName>CUETools.Codecs.libFLAC</AssemblyName>
+    <RootNamespace>CUETools.Codecs.libFLAC</RootNamespace>
+    <Product>CUETools</Product>
+    <Description>A library for encoding flac using official encoder.</Description>
+    <Copyright>Copyright (c) 2008-2018 Grigory Chudov</Copyright>
+    <Authors>Grigory Chudov</Authors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>..\bin\$(Configuration)\plugins</OutputPath>
+    <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Company />
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
+  </ItemGroup>
+
+</Project>
