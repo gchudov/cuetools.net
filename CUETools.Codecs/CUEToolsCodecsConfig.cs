@@ -56,6 +56,7 @@ namespace CUETools.Codecs
                 encoders.Add(new CUEToolsUDC("VBR (lame.exe)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
 				encoders.Add(new CUEToolsUDC("CBR (lame.exe)", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
                 encoders.Add(new CUEToolsUDC("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
+                encoders.Add(new CUEToolsUDC("opusenc", "opus", false, "6 16 32 48 64 96 128 192 256", "128", "opusenc.exe", "--bitrate %M - %O"));
                 encoders.Add(new CUEToolsUDC("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
                 encoders.Add(new CUEToolsUDC("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
@@ -80,6 +81,7 @@ namespace CUETools.Codecs
             formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, true, encoders.GetDefault("wma", true), encoders.GetDefault("wma", false), decoders.GetDefault("wma", true)));
             formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("mp3", false), null));
             formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("ogg", false), null));
+            formats.Add("opus", new CUEToolsFormat("opus", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("opus", false), null));
         }
     }
 }

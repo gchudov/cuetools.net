@@ -64,6 +64,7 @@ namespace JDP
             m_icon_mgr.SetExtensionIcon(".m4a", global::JDP.Properties.Resources.ipod_sound);
             m_icon_mgr.SetExtensionIcon(".wma", global::JDP.Properties.Resources.wma);
             m_icon_mgr.SetExtensionIcon(".ogg", global::JDP.Properties.Resources.ogg);
+            m_icon_mgr.SetExtensionIcon(".opus", global::JDP.Properties.Resources.opus);
             m_icon_mgr.SetExtensionIcon(".cue", global::JDP.Properties.Resources.cue3);
             m_icon_mgr.SetExtensionIcon(".#puzzle", global::JDP.Properties.Resources.puzzle);
             m_icon_mgr.SetExtensionIcon(".#users", global::JDP.Properties.Resources.users);

@@ -181,8 +181,8 @@
       <Project>{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}</Project>
       <Name>ProgressODoom</Name>
     </ProjectReference>
-    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj">
-      <Project>{6B143A39-C7B2-4743-9917-92262C60E9A6}</Project>
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj">
+      <Project>{1219a514-d3fa-40db-bbb2-92ce05e35839}</Project>
       <Name>taglib-sharp</Name>
     </ProjectReference>
   </ItemGroup>

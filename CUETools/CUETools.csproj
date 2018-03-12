@@ -276,8 +276,8 @@
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
     </ProjectReference>
-    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj">
-      <Project>{6b143a39-c7b2-4743-9917-92262c60e9a6}</Project>
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj">
+      <Project>{1219a514-d3fa-40db-bbb2-92ce05e35839}</Project>
       <Name>taglib-sharp</Name>
     </ProjectReference>
   </ItemGroup>
@@ -319,6 +319,7 @@
     <None Include="Resources\picture.ico" />
     <None Include="Resources\wma.ico" />
     <None Include="Resources\more\card--pencil.png" />
+    <Content Include="Resources\opus.ico" />
     <Content Include="unrar.dll">
     </Content>
     <Content Include="Resources\accuraterip_16.bmp" />

@@ -442,6 +442,16 @@ namespace JDP.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
+        internal static System.Drawing.Icon opus {
+            get {
+                object obj = ResourceManager.GetObject("opus", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
         internal static System.Drawing.Icon picture {
             get {
                 object obj = ResourceManager.GetObject("picture", resourceCulture);

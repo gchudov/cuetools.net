@@ -30,7 +30,9 @@
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
     <ProjectReference Include="..\Freedb\Freedb.csproj" />
-    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj" />
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj">
+      <Private>true</Private>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
-    <ProjectReference Include="..\taglib-sharp\src\taglib-sharp.csproj" />
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj" />
   </ItemGroup>
 
