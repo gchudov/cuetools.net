@@ -190,6 +190,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.libFLAC", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "taglib-sharp", "..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj", "{1219A514-D3FA-40DB-BBB2-92CE05E35839}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libFLAC_dynamic", "..\ThirdParty\flac\src\libFLAC\libFLAC_dynamic.vcxproj", "{4CEFBC83-C215-11DB-8314-0800200C9A66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1120,6 +1122,24 @@ Global
 		{1219A514-D3FA-40DB-BBB2-92CE05E35839}.Release|x64.Build.0 = Release|Any CPU
 		{1219A514-D3FA-40DB-BBB2-92CE05E35839}.Release|x86.ActiveCfg = Release|Any CPU
 		{1219A514-D3FA-40DB-BBB2-92CE05E35839}.Release|x86.Build.0 = Release|Any CPU
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|Win32.Build.0 = Debug|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|x64.ActiveCfg = Debug|x64
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|x64.Build.0 = Debug|x64
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|x86.ActiveCfg = Debug|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Debug|x86.Build.0 = Debug|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|Any CPU.ActiveCfg = Release|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|Win32.ActiveCfg = Release|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|Win32.Build.0 = Release|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|x64.ActiveCfg = Release|x64
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|x64.Build.0 = Release|x64
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|x86.ActiveCfg = Release|Win32
+		{4CEFBC83-C215-11DB-8314-0800200C9A66}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1177,6 +1197,7 @@ Global
 		{2D8D7A03-DFFA-44EF-9299-8BB56D122245} = {BC0C1801-0212-4ECC-92D5-8F2D6F69E888}
 		{F10AB92C-9AFB-4FC0-94E0-06FCD3CA8155} = {93B7AE1D-DEF6-4A04-A222-5CDE09DF262D}
 		{1219A514-D3FA-40DB-BBB2-92CE05E35839} = {7E402406-7E51-4F0D-8209-60824C1CD6E8}
+		{4CEFBC83-C215-11DB-8314-0800200C9A66} = {7E402406-7E51-4F0D-8209-60824C1CD6E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C634D169-5814-4203-94B6-6A11371DDA95}

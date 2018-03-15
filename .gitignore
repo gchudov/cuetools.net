@@ -12,3 +12,9 @@ Debug/
 a32/
 launchSettings.json
 /CUETools/TestResults
+/ThirdParty/x64/libFLAC_dynamic.pdb
+/ThirdParty/x64/libFLAC_dynamic.lib
+/ThirdParty/x64/libFLAC_dynamic.exp
+/ThirdParty/Win32/libFLAC_dynamic.pdb
+/ThirdParty/Win32/libFLAC_dynamic.lib
+/ThirdParty/Win32/libFLAC_dynamic.exp

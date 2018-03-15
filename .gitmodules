@@ -1,3 +1,6 @@
 [submodule "ThirdParty/taglib-sharp"]
 	path = ThirdParty/taglib-sharp
 	url = https://github.com/gchudov/taglib-sharp.git
+[submodule "ThirdParty/flac"]
+	path = ThirdParty/flac
+	url = https://github.com/gchudov/flac.git
