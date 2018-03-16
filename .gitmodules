@@ -4,3 +4,6 @@
 [submodule "ThirdParty/flac"]
 	path = ThirdParty/flac
 	url = https://github.com/gchudov/flac.git
+[submodule "ThirdParty/MAC_SDK"]
+	path = ThirdParty/MAC_SDK
+	url = git@github.com:gchudov/MAC_SDK.git

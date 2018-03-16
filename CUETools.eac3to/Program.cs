@@ -121,55 +121,63 @@ namespace CUETools.eac3to
             try
 #endif
             {
-                MPLSReader audioSource = null;
+                IAudioSource audioSource = null;
                 IAudioDest audioDest = null;
+                var videos = new List<MPLSStream>();
+                var audios = new List<MPLSStream>();
+                List<uint> chapters;
+                TimeSpan duration;
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
 
                 try
                 {
-                    audioSource = new MPLSReader(sourceFile, null);
-                    Console.ForegroundColor = ConsoleColor.White;
-                    int frameRate = 0;
-                    bool interlaced = false;
-                    var chapters = audioSource.Chapters;
-                    var videos = new List<MPLSStream>();
-                    var audios = new List<MPLSStream>();
-                    audioSource.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => { if (!videos.Exists(v1 => v1.pid == v.pid)) videos.Add(v); }));
-                    audioSource.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.pid == v.pid)) audios.Add(v); }));
-                    videos.ForEach(v => { frameRate = v.FrameRate; interlaced = v.Interlaced; });
-                    Console.Error.WriteLine("M2TS, {0} video track{1}, {2} audio track{3}, {4}, {5}{6}",
-                        videos.Count, videos.Count > 1 ? "s" : "",
-                        audios.Count, audios.Count > 1 ? "s" : "",
-                        CDImageLayout.TimeToString(audioSource.Duration, "{0:0}:{1:00}:{2:00}"), frameRate * (interlaced ? 2 : 1), interlaced ? "i" : "p");
-                    //foreach (var item in audioSource.MPLSHeader.play_item)
-                    //Console.Error.WriteLine("{0}.m2ts", item.clip_id);
+                    if (true)
                     {
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                        int id = 1;
-                        if (chapters.Count > 1)
+                        var mpls = new MPLSReader(sourceFile, null);
+                        audioSource = mpls;
+                        Console.ForegroundColor = ConsoleColor.White;
+                        int frameRate = 0;
+                        bool interlaced = false;
+                        chapters = mpls.Chapters;
+                        mpls.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => { if (!videos.Exists(v1 => v1.pid == v.pid)) videos.Add(v); }));
+                        mpls.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.pid == v.pid)) audios.Add(v); }));
+                        videos.ForEach(v => { frameRate = v.FrameRate; interlaced = v.Interlaced; });
+                        Console.Error.WriteLine("M2TS, {0} video track{1}, {2} audio track{3}, {4}, {5}{6}",
+                            videos.Count, videos.Count > 1 ? "s" : "",
+                            audios.Count, audios.Count > 1 ? "s" : "",
+                            CDImageLayout.TimeToString(mpls.Duration, "{0:0}:{1:00}:{2:00}"), frameRate * (interlaced ? 2 : 1), interlaced ? "i" : "p");
+                        //foreach (var item in mpls.MPLSHeader.play_item)
+                        //Console.Error.WriteLine("{0}.m2ts", item.clip_id);
                         {
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.Error.Write(id++);
-                            Console.Error.Write(": ");
                             Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Error.WriteLine("Chapters, {0} chapters", chapters.Count - 1);
+                            int id = 1;
+                            if (chapters.Count > 1)
+                            {
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.Error.Write(id++);
+                                Console.Error.Write(": ");
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                Console.Error.WriteLine("Chapters, {0} chapters", chapters.Count - 1);
+                            }
+                            foreach (var video in videos)
+                            {
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.Error.Write(id++);
+                                Console.Error.Write(": ");
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                Console.Error.WriteLine("{0}, {1}{2}", video.CodecString, video.FormatString, video.FrameRate * (video.Interlaced ? 2 : 1));
+                            }
+                            foreach (var audio in audios)
+                            {
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.Error.Write(id++);
+                                Console.Error.Write(": ");
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                Console.Error.WriteLine("{0}, {1}, {2}, {3}", audio.CodecString, audio.LanguageString, audio.FormatString, audio.RateString);
+                            }
                         }
-                        foreach (var video in videos)
-                        {
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.Error.Write(id++);
-                            Console.Error.Write(": ");
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Error.WriteLine("{0}, {1}{2}", video.CodecString, video.FormatString, video.FrameRate * (video.Interlaced ? 2 : 1));
-                        }
-                        foreach (var audio in audios)
-                        {
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.Error.Write(id++);
-                            Console.Error.Write(": ");
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Error.WriteLine("{0}, {1}, {2}, {3}", audio.CodecString, audio.LanguageString, audio.FormatString, audio.RateString);
-                        }
+
+                        duration = mpls.Duration;
                     }
 
                     if (destFile == null)
@@ -299,18 +307,21 @@ namespace CUETools.eac3to
 
                             throw new Exception("Unknown encoder format: " + destFile);
                         }
-                        if (stream - chapterStreams <= videos.Count)
-                            throw new Exception("Video extraction not supported.");
-                        if (stream - chapterStreams - videos.Count > audios.Count)
-                            throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
-                        ushort pid = audios[stream - chapterStreams - videos.Count - 1].pid;
-                        (audioSource.Settings as BDLPCMReaderSettings).Pid = pid;
+                        if (audioSource is MPLSReader)
+                        {
+                            if (stream - chapterStreams <= videos.Count)
+                                throw new Exception("Video extraction not supported.");
+                            if (stream - chapterStreams - videos.Count > audios.Count)
+                                throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
+                            ushort pid = audios[stream - chapterStreams - videos.Count - 1].pid;
+                            (audioSource.Settings as BDLPCMReaderSettings).Pid = pid;
+                        }
                     }
 
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);
                     Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample,
-                        audioSource.Duration);
+                        duration);
 
                     CUEToolsFormat fmt;
                     if (encoderFormat == null)
@@ -384,7 +395,7 @@ namespace CUETools.eac3to
                         TimeSpan elapsed = DateTime.Now - start;
                         if ((elapsed - lastPrint).TotalMilliseconds > 60)
                         {
-                            long length = (long)(audioSource.Duration.TotalSeconds * audioSource.PCM.SampleRate);
+                            long length = (long)(duration.TotalSeconds * audioSource.PCM.SampleRate);
                             if (length < audioSource.Position) length = audioSource.Position;
                             if (length < 1) length = 1;
                             Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",

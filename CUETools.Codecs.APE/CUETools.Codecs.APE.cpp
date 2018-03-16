@@ -7,39 +7,18 @@ using namespace System::Runtime::InteropServices;
 using namespace System::IO;
 using namespace CUETools::Codecs;
 
-#ifndef _WAVEFORMATEX_
-#define _WAVEFORMATEX_
-
-#define BOOL int
-#define TRUE 1
-#define FALSE 0
-#define HWND long
-
-/*
- *  extended waveform format structure used for all non-PCM formats. this
- *  structure is common to all non-PCM formats.
- */
-typedef struct tWAVEFORMATEX
-{
-    Int16        wFormatTag;         /* format type */
-    Int16        nChannels;          /* number of channels (i.e. mono, stereo...) */
-    Int32       nSamplesPerSec;     /* sample rate */
-    Int32       nAvgBytesPerSec;    /* for buffer estimation */
-    Int16        nBlockAlign;        /* block size of data */
-    Int16        wBitsPerSample;     /* number of bits per sample of mono data */
-    Int16        cbSize;             /* the count in bytes of the size of */
-                                    /* extra information (after cbSize) */
-} WAVEFORMATEX, *PWAVEFORMATEX, *NPWAVEFORMATEX, *LPWAVEFORMATEX;
-
-#endif /* _WAVEFORMATEX_ */
-
+#define PLATFORM_WINDOWS
+#define PLATFORM_WINDOWS_NO_HEADER
+#define EXCLUDE_CIO
 #include "All.h"
 #include "MACLib.h"
 #include "IO.h"
 
+using namespace ::APE;
+
 namespace CUETools { namespace Codecs { namespace APE {
 
-	class CWinFileIO : public CIO
+	class CWinFileIO : public ::APE::CIO
 	{
 	public:
 
@@ -54,7 +33,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}
 
 		// open / close
-		int Open(const wchar_t * pName)
+		int Open(const wchar_t * pName, bool bOpenReadOnly = false)
 		{
 			throw gcnew Exception("CIO::Open Unsupported.");
 		}
@@ -89,7 +68,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 
 		// attributes
 		int GetPosition();
-		int GetSize();
+		unsigned int GetSize();
 
 		int GetName(wchar_t * pBuffer)
 		{
@@ -237,7 +216,7 @@ namespace CUETools { namespace Codecs { namespace APE {
                 }
 
 	private:
-		IAPEDecompress * pAPEDecompress;
+		::APE::IAPEDecompress * pAPEDecompress;
 
 		Int64 _sampleCount, _sampleOffset;
 		AudioPCMConfig^ pcm;
@@ -266,6 +245,14 @@ namespace CUETools { namespace Codecs { namespace APE {
 			: AudioEncoderSettings("fast normal high extra insane", "high")
 		{
 		}
+
+		virtual property String^ Version
+		{
+			String^ get()
+			{
+				return MAC_VERSION_STRING;
+			}
+		}		
 	};
 
 	[AudioEncoderClass("MAC_SDK", "ape", true, 1, APEWriterSettings::typeid)]
@@ -377,7 +364,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 	private:
 		IAPECompress * pAPECompress;
 		bool _initialized;
-		Int32 _finalSampleCount, _samplesWritten;
+		Int64 _finalSampleCount, _samplesWritten;
 		APEWriterSettings^ _settings;
 		String^ _path;
 		Stream^ _IO;
@@ -445,7 +432,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		return ((Stream^)_gchIO.Target)->Position;
 	}
 
-	int CWinFileIO::GetSize()
+	unsigned int CWinFileIO::GetSize()
 	{
 		return ((Stream^)_gchIO.Target)->Length;
 	}
