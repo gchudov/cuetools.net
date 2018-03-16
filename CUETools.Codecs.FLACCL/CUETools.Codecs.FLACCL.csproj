@@ -54,10 +54,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenCLNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\OpenCLNet.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -81,6 +77,10 @@
       <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
       <Name>CUETools.Codecs</Name>
       <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ThirdParty\openclnet\source\OpenCLNet.csproj">
+      <Project>{8373e3b2-16f0-4fd3-a13b-0b0248ffc228}</Project>
+      <Name>OpenCLNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
