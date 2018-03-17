@@ -4,6 +4,7 @@ bin/
 lib/
 Release/
 Debug/
+*.vcxproj.filters
 *.vcxproj.user
 *.csproj.user
 *.sdf
@@ -14,3 +15,5 @@ launchSettings.json
 /CUETools/TestResults
 /ThirdParty/*/libFLAC_dynamic.*
 /ThirdParty/*/MACLib.*
+/ThirdParty/*/wavpackdll.*
+/ThirdParty/*/libwavpack.*
