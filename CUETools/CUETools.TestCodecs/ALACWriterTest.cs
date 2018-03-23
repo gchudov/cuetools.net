@@ -76,12 +76,12 @@ namespace CUETools.TestCodecs
 		[TestMethod()]
 		public void ConstructorTest()
 		{
-			AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
-			ALACWriter target;
-            
-            ALACWriter.Vendor = "CUETools";
+			AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
+			AudioEncoder target;
 
-            target = new ALACWriter("alacwriter1.m4a", null, new ALACWriterSettings() { PCM = buff.PCM });
+            AudioEncoder.Vendor = "CUETools";
+
+            target = new Codecs.ALAC.AudioEncoder("alacwriter1.m4a", null, new Codecs.ALAC.EncoderSettings() { PCM = buff.PCM });
 			target.Settings.Padding = 1;
 			target.CreationTime = DateTime.Parse("15 Aug 1976");
 			target.FinalSampleCount = buff.Length;
@@ -89,7 +89,7 @@ namespace CUETools.TestCodecs
 			target.Close();
 			CollectionAssert.AreEqual(File.ReadAllBytes("alac.m4a"), File.ReadAllBytes("alacwriter1.m4a"), "alacwriter1.m4a doesn't match.");
 
-            target = new ALACWriter("alacwriter0.m4a", null, new ALACWriterSettings() { PCM = buff.PCM });
+            target = new Codecs.ALAC.AudioEncoder("alacwriter0.m4a", null, new Codecs.ALAC.EncoderSettings() { PCM = buff.PCM });
 			target.Settings.Padding = 1;
 			target.CreationTime = DateTime.Parse("15 Aug 1976");
 			target.Write(buff);
@@ -100,7 +100,7 @@ namespace CUETools.TestCodecs
         [TestMethod()]
         public void SeekTest()
         {
-            var r = new ALACReader("alac.m4a", null);
+            var r = new AudioDecoder(new DecoderSettings(), "alac.m4a");
             var buff1 = new AudioBuffer(r, 16536);
             var buff2 = new AudioBuffer(r, 16536);
             Assert.AreEqual(0, r.Position);

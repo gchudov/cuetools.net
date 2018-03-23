@@ -3,29 +3,25 @@ using System.ComponentModel;
 
 namespace CUETools.Codecs
 {
-    public class CUEToolsUDCList : BindingList<CUEToolsUDC>
+    public class CUEToolsUDCEncoderList : BindingList<AudioEncoderSettingsViewModel>
     {
-        bool m_encoder;
-
-        public CUEToolsUDCList(bool encoder)
+        public CUEToolsUDCEncoderList()
             : base()
         {
             AddingNew += OnAddingNew;
-            m_encoder = encoder;
         }
 
         private void OnAddingNew(object sender, AddingNewEventArgs e)
         {
-            e.NewObject = m_encoder ?
-                new CUEToolsUDC("new", "wav", true, "", "", "", "") :
-                new CUEToolsUDC("new", "wav", "", "");
+            e.NewObject = new AudioEncoderSettingsViewModel("new", "wav", true, "", "", "", "");
         }
 
-        public bool TryGetValue(string extension, bool lossless, string name, out CUEToolsUDC result)
+        public bool TryGetValue(string extension, bool lossless, string name, out AudioEncoderSettingsViewModel result)
         {
-            foreach (CUEToolsUDC udc in this)
+            //result = this.Where(udc => udc.settings.Extension == extension && udc.settings.Lossless == lossless && udc.settings.Name == name).First();
+            foreach (AudioEncoderSettingsViewModel udc in this)
             {
-                if (udc.extension == extension && udc.lossless == lossless && udc.name == name)
+                if (udc.settings.Extension == extension && udc.settings.Lossless == lossless && udc.settings.Name == name)
                 {
                     result = udc;
                     return true;
@@ -35,12 +31,53 @@ namespace CUETools.Codecs
             return false;
         }
 
-        public CUEToolsUDC GetDefault(string extension, bool lossless)
+        public AudioEncoderSettingsViewModel GetDefault(string extension, bool lossless)
         {
-            CUEToolsUDC result = null;
-            foreach (CUEToolsUDC udc in this)
+            AudioEncoderSettingsViewModel result = null;
+            foreach (AudioEncoderSettingsViewModel udc in this)
             {
-                if (udc.extension == extension && udc.lossless == lossless && (result == null || result.priority < udc.priority))
+                if (udc.settings.Extension == extension && udc.settings.Lossless == lossless && (result == null || result.settings.Priority < udc.settings.Priority))
+                {
+                    result = udc;
+                }
+            }
+            return result;
+        }
+    }
+
+    public class CUEToolsUDCDecoderList : BindingList<AudioDecoderSettingsViewModel>
+    {
+        public CUEToolsUDCDecoderList()
+            : base()
+        {
+            AddingNew += OnAddingNew;
+        }
+
+        private void OnAddingNew(object sender, AddingNewEventArgs e)
+        {
+            e.NewObject = new AudioDecoderSettingsViewModel(new CommandLineDecoderSettings("new", "wav", "", ""));
+        }
+
+        public bool TryGetValue(string extension, bool lossless, string name, out AudioDecoderSettingsViewModel result)
+        {
+            foreach (AudioDecoderSettingsViewModel udc in this)
+            {
+                if (udc.decoderSettings.Extension == extension && udc.decoderSettings.Lossless == lossless && udc.decoderSettings.Name == name)
+                {
+                    result = udc;
+                    return true;
+                }
+            }
+            result = null;
+            return false;
+        }
+
+        public AudioDecoderSettingsViewModel GetDefault(string extension, bool lossless)
+        {
+            AudioDecoderSettingsViewModel result = null;
+            foreach (AudioDecoderSettingsViewModel udc in this)
+            {
+                if (udc.decoderSettings.Extension == extension && udc.decoderSettings.Lossless == lossless && (result == null || result.decoderSettings.Priority < udc.decoderSettings.Priority))
                 {
                     result = udc;
                 }

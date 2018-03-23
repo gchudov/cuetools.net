@@ -15,14 +15,14 @@ namespace JDP
 		bool _reducePriority;
 		CUEConfig _config;
 		private IIconManager m_icon_mgr;
-        private CUEToolsUDC m_encoder;
+        private AudioEncoderSettingsViewModel m_encoder;
 
 		public frmSettings() 
         {
 			InitializeComponent();
 		}
 
-        public frmSettings(CUEToolsUDC encoder)
+        public frmSettings(AudioEncoderSettingsViewModel encoder)
         {
             InitializeComponent();
             m_encoder = encoder;
@@ -317,12 +317,12 @@ namespace JDP
 			}
 
 			foreach (var encoder in _config.encoders)
-				if (encoder.extension == format.extension)
-					encoder.extension = e.Label;
+				if (encoder.Extension == format.extension)
+					encoder.Extension = e.Label;
 
 			foreach (var decoder in _config.decoders)
-				if (decoder.extension == format.extension)
-					decoder.extension = e.Label;
+				if (decoder.Extension == format.extension)
+					decoder.Extension = e.Label;
 
 			comboBoxEncoderExtension.Items.Remove(format.extension);
 			comboBoxEncoderExtension.Items.Add(e.Label);
@@ -360,15 +360,15 @@ namespace JDP
 						CUEToolsFormat format = (CUEToolsFormat)listViewFormats.SelectedItems[0].Tag;
 						if (format.builtin)
 						    return;
-                        var decodersToRemove = new List<CUEToolsUDC>();
+                        var decodersToRemove = new List<AudioDecoderSettingsViewModel>();
 						foreach (var decoder in _config.decoders)
-							if (decoder.extension == format.extension)
+							if (decoder.Extension == format.extension)
 								decodersToRemove.Add(decoder);
 						foreach (var decoder in decodersToRemove)
 							_config.decoders.Remove(decoder);
-                        var encodersToRemove = new List<CUEToolsUDC>();
+                        var encodersToRemove = new List<AudioEncoderSettingsViewModel>();
 						foreach (var encoder in _config.encoders)
-							if (encoder.extension == format.extension)
+							if (encoder.Extension == format.extension)
 								encodersToRemove.Add(encoder);
 						foreach (var encoder in encodersToRemove)
 							_config.encoders.Remove(encoder);
@@ -390,22 +390,22 @@ namespace JDP
 					return;
 
 				comboFormatLosslessEncoder.Items.Clear();
-				foreach (CUEToolsUDC encoder in _config.encoders)
-					if (encoder.extension == format.extension && encoder.lossless)
+				foreach (var encoder in _config.encoders)
+					if (encoder.Extension == format.extension && encoder.Lossless)
 						comboFormatLosslessEncoder.Items.Add(encoder);
 				comboFormatLosslessEncoder.SelectedItem = format.encoderLossless;
 				comboFormatLosslessEncoder.Enabled = format.allowLossless;
 
 				comboFormatLossyEncoder.Items.Clear();
-				foreach (CUEToolsUDC encoder in _config.encoders)
-					if (encoder.extension == format.extension && !encoder.lossless)
+				foreach (var encoder in _config.encoders)
+					if (encoder.Extension == format.extension && !encoder.Lossless)
 						comboFormatLossyEncoder.Items.Add(encoder);
 				comboFormatLossyEncoder.SelectedItem = format.encoderLossy;
 				comboFormatLossyEncoder.Enabled = format.allowLossy;
 
 				comboFormatDecoder.Items.Clear();
 				foreach (var decoder in _config.decoders)
-					if (decoder.extension == format.extension)
+					if (decoder.Extension == format.extension)
 						comboFormatDecoder.Items.Add(decoder);
 				comboFormatDecoder.SelectedItem = format.decoder;
 				comboFormatDecoder.Enabled = format.allowLossless;
@@ -432,9 +432,9 @@ namespace JDP
 				if (format == null)
 					return;
 
-				format.encoderLossless = (CUEToolsUDC)comboFormatLosslessEncoder.SelectedItem;
-				format.encoderLossy = (CUEToolsUDC)comboFormatLossyEncoder.SelectedItem;
-                format.decoder = (CUEToolsUDC)comboFormatDecoder.SelectedItem;
+				format.encoderLossless = (AudioEncoderSettingsViewModel)comboFormatLosslessEncoder.SelectedItem;
+				format.encoderLossy = (AudioEncoderSettingsViewModel)comboFormatLossyEncoder.SelectedItem;
+                format.decoder = (AudioDecoderSettingsViewModel)comboFormatDecoder.SelectedItem;
 				if (!format.builtin)
 				{
 					format.tagger = (CUEToolsTagger)comboBoxFormatTagger.SelectedItem;
@@ -447,7 +447,7 @@ namespace JDP
 
 		private void encodersBindingSource_CurrentItemChanged(object sender, EventArgs e)
 		{
-			CUEToolsUDC encoder = encodersBindingSource.Current as CUEToolsUDC;
+			var encoder = encodersBindingSource.Current as AudioEncoderSettingsViewModel;
 			if (encoder == null)
 			{
 				labelEncoderExtension.Visible =
@@ -460,7 +460,7 @@ namespace JDP
 			}
 			else
 			{
-				CUEToolsFormat format = _config.formats[encoder.extension]; // _config.formats.TryGetValue(encoder.extension, out format)
+				CUEToolsFormat format = _config.formats[encoder.Extension]; // _config.formats.TryGetValue(encoder.extension, out format)
 				labelEncoderExtension.Visible = true;
 				comboBoxEncoderExtension.Visible = true;
 				comboBoxEncoderExtension.Enabled = encoder.CanBeDeleted;
@@ -473,9 +473,9 @@ namespace JDP
                 foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)
 				{
 					CUEToolsFormat fmt = fmtEntry.Value;
-					if (fmt.encoderLossless == encoder && (fmt.extension != encoder.extension || !encoder.Lossless))
+					if (fmt.encoderLossless == encoder && (fmt.extension != encoder.Extension || !encoder.Lossless))
 						fmt.encoderLossless = null;
-					if (fmt.encoderLossy == encoder && (fmt.extension != encoder.extension || encoder.Lossless))
+					if (fmt.encoderLossy == encoder && (fmt.extension != encoder.Extension || encoder.Lossless))
 						fmt.encoderLossy = null;
 				}
 			}
@@ -497,7 +497,7 @@ namespace JDP
 
 		private void bindingSourceDecoders_CurrentItemChanged(object sender, EventArgs e)
 		{
-			var decoder = bindingSourceDecoders.Current as CUEToolsUDC;
+			var decoder = bindingSourceDecoders.Current as AudioDecoderSettingsViewModel;
             if (decoder == null)
             {
                 labelDecoderExtension.Visible =
@@ -512,7 +512,7 @@ namespace JDP
                 foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)
                 {
                     CUEToolsFormat fmt = fmtEntry.Value;
-                    if (fmt.decoder == decoder && fmt.extension != decoder.extension)
+                    if (fmt.decoder == decoder && fmt.extension != decoder.Extension)
                         fmt.decoder = null;
                 }
             }
@@ -547,13 +547,13 @@ namespace JDP
 
 		private void buttonEncoderDelete_Click(object sender, EventArgs e)
 		{
-			CUEToolsUDC encoder = encodersBindingSource.Current as CUEToolsUDC;
+			var encoder = encodersBindingSource.Current as AudioEncoderSettingsViewModel;
 			if (encoder == null || !encoder.CanBeDeleted)
 				return;
-			if (_config.formats[encoder.extension].encoderLossless == encoder)
-				_config.formats[encoder.extension].encoderLossless = null;
-			if (_config.formats[encoder.extension].encoderLossy == encoder)
-				_config.formats[encoder.extension].encoderLossy = null;
+			if (_config.formats[encoder.Extension].encoderLossless == encoder)
+				_config.formats[encoder.Extension].encoderLossless = null;
+			if (_config.formats[encoder.Extension].encoderLossy == encoder)
+				_config.formats[encoder.Extension].encoderLossy = null;
 			encodersBindingSource.RemoveCurrent();
         }
 
@@ -564,11 +564,11 @@ namespace JDP
 
         private void buttonDecoderDelete_Click(object sender, EventArgs e)
         {
-            var decoder = bindingSourceDecoders.Current as CUEToolsUDC;
+            var decoder = bindingSourceDecoders.Current as AudioDecoderSettingsViewModel;
             if (decoder == null || !decoder.CanBeDeleted)
                 return;
-            if (_config.formats[decoder.extension].decoder == decoder)
-                _config.formats[decoder.extension].decoder = null;
+            if (_config.formats[decoder.Extension].decoder == decoder)
+                _config.formats[decoder.Extension].decoder = null;
             bindingSourceDecoders.RemoveCurrent();
         }
 	}

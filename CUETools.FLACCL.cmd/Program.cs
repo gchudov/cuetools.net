@@ -50,7 +50,7 @@ namespace CUETools.FLACCL.cmd
 			Console.WriteLine();
 			Console.WriteLine(" --opencl-type <X>     CPU or GPU, default GPU");
             var platforms = new List<string>();
-            foreach (var value in (new FLACCLWriterSettingsPlatformConverter()).GetStandardValues(null))
+            foreach (var value in (new EncoderSettingsPlatformConverter()).GetStandardValues(null))
                 platforms.Add(value as string);
             Console.WriteLine(" --opencl-platform <X> {0}", platforms.Count == 0 ? "No OpenCL platforms detected" : string.Join(", ", platforms.ConvertAll(s => "\"" + s + "\"").ToArray()));
 			Console.WriteLine(" --group-size #        Set GPU workgroup size (64,128,256)");
@@ -78,7 +78,7 @@ namespace CUETools.FLACCL.cmd
 			TextWriter stdout = Console.Out;
 			Console.SetOut(Console.Error);
 
-            var settings = new FLACCLWriterSettings() { AllowNonSubset = true };
+            var settings = new Codecs.FLACCL.EncoderSettings() { AllowNonSubset = true };
 			TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
 			bool debug = false, quiet = false;
 			string stereo_method = null;
@@ -220,7 +220,7 @@ namespace CUETools.FLACCL.cmd
 			}
 			if (!quiet)
 			{
-				Console.WriteLine("{0}, Copyright (C) 2010-2013 Grigory Chudov.", FLACCLWriter.Vendor);
+                Console.WriteLine("{0}, Copyright (C) 2010-2013 Grigory Chudov.", Codecs.FLACCL.AudioEncoder.Vendor);
 				Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 				Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 			}
@@ -241,14 +241,14 @@ namespace CUETools.FLACCL.cmd
 			IAudioSource audioSource;
 			try
 			{
-				if (input_file == "-")
-					audioSource = new WAVReader("", Console.OpenStandardInput(), ignore_chunk_sizes);
+                if (input_file == "-")
+                    audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings() { IgnoreChunkSizes = true }, "", Console.OpenStandardInput());
 				else if (input_file == "nul")
 					audioSource = new SilenceGenerator(new AudioPCMConfig(input_bps, input_ch, input_rate), input_len, input_val);
 				else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
-					audioSource = new WAVReader(input_file, null);
+					audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), input_file);
 				else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
-					audioSource = new FlakeReader(input_file, null);
+					audioSource = new AudioDecoder(new DecoderSettings(), input_file);
 				else
 				{
                     Usage();
@@ -265,22 +265,22 @@ namespace CUETools.FLACCL.cmd
 				return 3;
 			}
 			if (buffered)
-				audioSource = new AudioPipe(audioSource, FLACCLWriter.MAX_BLOCKSIZE);
+				audioSource = new AudioPipe(audioSource, Codecs.FLACCL.AudioEncoder.MAX_BLOCKSIZE);
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "flac");
             settings.PCM = audioSource.PCM;
             settings.AllowNonSubset = allowNonSubset;
-            FLACCLWriter encoder;
+            Codecs.FLACCL.AudioEncoder encoder;
 
 			try
 			{
                 if (device_type != null)
                     settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
-                encoder = new FLACCLWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
+                encoder = new Codecs.FLACCL.AudioEncoder((output_file == "-" || output_file == "nul") ? "" : output_file,
                     output_file == "-" ? Console.OpenStandardOutput() :
                     output_file == "nul" ? new NullStream() : null,
                     settings);
-                settings = encoder.Settings as FLACCLWriterSettings;
+                settings = encoder.Settings as Codecs.FLACCL.EncoderSettings;
                 encoder.FinalSampleCount = audioSource.Length;
 				if (stereo_method != null)
 					encoder.StereoMethod = FlakeConstants.LookupStereoMethod(stereo_method);
@@ -309,7 +309,7 @@ namespace CUETools.FLACCL.cmd
 			}
 
             IAudioDest audioDest = encoder;
-            AudioBuffer buff = new AudioBuffer(audioSource, FLACCLWriter.MAX_BLOCKSIZE);
+            AudioBuffer buff = new AudioBuffer(audioSource, Codecs.FLACCL.AudioEncoder.MAX_BLOCKSIZE);
 
 			if (!quiet)
 			{

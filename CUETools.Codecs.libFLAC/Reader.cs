@@ -8,7 +8,20 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.libFLAC
 {
-    [AudioDecoderClass("libFLAC", "flac", 1)]
+    public class Settings : AudioDecoderSettings
+    {
+        public override string Extension => "flac";
+
+        public override string Name => "libFLAC";
+
+        public override Type DecoderType => typeof(Reader);
+
+        public override int Priority => 1;
+
+        public Settings() : base() { }
+    }
+
+    [AudioDecoderClass(typeof(Settings))]
     public unsafe class Reader : IAudioSource
     {
         public Reader(string path, Stream IO)

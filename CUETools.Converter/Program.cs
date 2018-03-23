@@ -26,9 +26,9 @@ namespace CUETools.Converter
             Console.Error.WriteLine();
         }
 
-        public static CUEToolsUDC GetEncoder(CUEToolsCodecsConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
+        public static AudioEncoderSettingsViewModel GetEncoder(CUEToolsCodecsConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
         {
-            CUEToolsUDC tmpEncoder;
+            AudioEncoderSettingsViewModel tmpEncoder;
             return chosenEncoder != null ?
                 (config.encoders.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder : null) :
                 (lossless ? fmt.encoderLossless : fmt.encoderLossy);
@@ -37,11 +37,11 @@ namespace CUETools.Converter
         public static IAudioSource GetAudioSource(CUEToolsCodecsConfig config, string path, string chosenDecoder, bool ignore_chunk_sizes)
         {
             if (path == "-")
-                return new WAVReader("", Console.OpenStandardInput(), ignore_chunk_sizes);
+                return new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings() { IgnoreChunkSizes = true }, "", Console.OpenStandardInput());
             string extension = Path.GetExtension(path).ToLower();
             Stream IO = null;
             if (extension == ".bin")
-                return new WAVReader(path, IO, AudioPCMConfig.RedBook);
+                return new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), path, IO, AudioPCMConfig.RedBook);
             CUEToolsFormat fmt;
             if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
                 throw new Exception("Unsupported audio type: " + path);
@@ -51,16 +51,12 @@ namespace CUETools.Converter
                 throw new Exception("Unknown audio decoder " + chosenDecoder + " or unsupported audio type " + fmt.extension);
             if (decoder == null)
                 throw new Exception("Unsupported audio type: " + path);
-            if (decoder.path != null)
-                return new UserDefinedReader(path, IO, decoder.path, decoder.parameters);
-            if (decoder.type == null)
-                throw new Exception("Unsupported audio type: " + path);
-
+            var settings = fmt.decoder.decoderSettings.Clone();
             try
             {
-                object src = Activator.CreateInstance(decoder.type, path, IO);
+                object src = Activator.CreateInstance(decoder.decoderSettings.DecoderType, settings, path, IO);
                 if (src == null || !(src is IAudioSource))
-                    throw new Exception("Unsupported audio type: " + path + ": " + decoder.type.FullName);
+                    throw new Exception("Unsupported audio type: " + path + ": " + decoder.decoderSettings.DecoderType.FullName);
                 return src as IAudioSource;
             }
             catch (System.Reflection.TargetInvocationException ex)
@@ -184,14 +180,14 @@ namespace CUETools.Converter
                     }
                     if (!config.formats.TryGetValue(encoderFormat, out fmt))
                         throw new Exception("Unsupported encoder format: " + encoderFormat);
-                    CUEToolsUDC encoder =
+                    AudioEncoderSettingsViewModel encoder =
                         audioEncoderType == AudioEncoderType.Lossless ? Program.GetEncoder(config, fmt, true, encoderName) :
                         audioEncoderType == AudioEncoderType.Lossy ? Program.GetEncoder(config, fmt, false, encoderName) :
                         Program.GetEncoder(config, fmt, true, encoderName) ?? Program.GetEncoder(config, fmt, false, encoderName);
                     if (encoder == null)
                     {
-                        var lst = new List<CUEToolsUDC>(config.encoders).FindAll(
-                            e => e.extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
+                        var lst = new List<AudioEncoderSettingsViewModel>(config.encoders).FindAll(
+                            e => e.Extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
                                 ConvertAll(e => e.Name + (e.Lossless ? " (lossless)" : " (lossy)"));
                         throw new Exception("Encoders available for format " + fmt.extension + ": " + (lst.Count == 0 ? "none" : string.Join(", ", lst.ToArray())));
                     }
@@ -202,16 +198,16 @@ namespace CUETools.Converter
                     object o = null;
                     try
                     {                        
-                        o = destFile == "-" ? Activator.CreateInstance(encoder.type, "", Console.OpenStandardOutput(), settings) :
-                            destFile == "nul" ? Activator.CreateInstance(encoder.type, "", new NullStream(), settings) :
-                            Activator.CreateInstance(encoder.type, destFile, settings);
+                        o = destFile == "-" ? Activator.CreateInstance(settings.EncoderType, settings, "", Console.OpenStandardOutput()) :
+                            destFile == "nul" ? Activator.CreateInstance(settings.EncoderType, settings, "", new NullStream()) :
+                            Activator.CreateInstance(settings.EncoderType, settings, destFile, null);
                     }
                     catch (System.Reflection.TargetInvocationException ex)
                     {
                         throw ex.InnerException;
                     }
                     if (o == null || !(o is IAudioDest))
-                        throw new Exception("Unsupported audio type: " + destFile + ": " + encoder.type.FullName);
+                        throw new Exception("Unsupported audio type: " + destFile + ": " + settings.EncoderType.FullName);
                     audioDest = o as IAudioDest;
                     audioDest.FinalSampleCount = audioSource.Length;
 

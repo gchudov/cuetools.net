@@ -8,13 +8,27 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.libwavpack
 {
-    [AudioDecoderClass("libwavpack", "wv", 1)]
-    public unsafe class Reader : IAudioSource
+    public class DecoderSettings : AudioDecoderSettings
+    {
+        public override string Extension => "wv";
+
+        public override string Name => "libwavpack";
+
+        public override Type DecoderType => typeof(AudioDecoder);
+
+        public override int Priority => 1;
+
+        public DecoderSettings() : base() { }
+    }
+
+    [AudioDecoderClass(typeof(DecoderSettings))]
+    public unsafe class AudioDecoder : IAudioSource
     {
         private readonly void* IO_ID_WV = ((IntPtr)1).ToPointer();
         private readonly void* IO_ID_WVC = ((IntPtr)2).ToPointer();
-        public Reader(string path, Stream IO, Stream IO_WVC)
+        public AudioDecoder(DecoderSettings settings, string path, Stream IO, Stream IO_WVC)
         {
+            m_settings = settings;
             m_read_bytes = ReadCallback;
             m_get_pos = TellCallback;
             m_set_pos_abs = SeekCallback;
@@ -58,11 +72,13 @@ namespace CUETools.Codecs.libwavpack
 			_sampleOffset = 0;
         }
 
-        public Reader(string path, Stream IO)
-            : this(path, IO, null)
+        public AudioDecoder(DecoderSettings settings, string path, Stream IO = null)
+            : this(settings, path, IO, null)
         {}
 
-        public AudioDecoderSettings Settings => null;
+        private DecoderSettings m_settings;
+
+        public AudioDecoderSettings Settings => m_settings;
 
         public AudioPCMConfig PCM => pcm;
 

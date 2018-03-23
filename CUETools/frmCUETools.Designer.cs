@@ -185,6 +185,7 @@ namespace JDP {
             // statusStrip1
             // 
             resources.ApplyResources(this.statusStrip1, "statusStrip1");
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabelProcessed,
@@ -378,6 +379,7 @@ namespace JDP {
             // 
             resources.ApplyResources(this.toolStripCorrectorFormat, "toolStripCorrectorFormat");
             this.toolStripCorrectorFormat.BackColor = System.Drawing.Color.Transparent;
+            this.toolStripCorrectorFormat.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripCorrectorFormat.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButtonCorrectorOverwrite,
             this.toolStripDropDownButtonCorrectorMode,
@@ -627,6 +629,7 @@ namespace JDP {
             // 
             resources.ApplyResources(this.toolStripInput, "toolStripInput");
             this.toolStripInput.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStripInput.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripInput.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripLabelInput,
             this.toolStripSplitButtonInputBrowser});
@@ -682,6 +685,7 @@ namespace JDP {
             resources.ApplyResources(this.toolStripOutput, "toolStripOutput");
             this.toolStripOutput.GripMargin = new System.Windows.Forms.Padding(0);
             this.toolStripOutput.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStripOutput.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripOutput.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripLabelOutput,
             this.toolStripSplitButtonOutputBrowser});
@@ -882,6 +886,7 @@ namespace JDP {
             this.toolStripMenu.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             resources.ApplyResources(this.toolStripMenu, "toolStripMenu");
             this.toolStripMenu.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStripMenu.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDropDownButtonProfile,
             this.toolStripSeparator3,
@@ -979,6 +984,7 @@ namespace JDP {
             // 
             // contextMenuStripFileTree
             // 
+            this.contextMenuStripFileTree.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.contextMenuStripFileTree.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.SelectedNodeName,
             this.toolStripSeparator2,

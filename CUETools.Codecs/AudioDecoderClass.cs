@@ -13,37 +13,23 @@ namespace CUETools.Codecs
     /// <example>
     ///    <code lang="C#">using CUETools.Codecs;
     ///
-    ///[AudioDecoderClass("libFLAC", "flac")]
+    ///[AudioDecoderClass(typeof(MyDecoderSettings))]
     ///public class MyDecoder : IAudioSource {
     ///	...
     ///}</code>
     /// </example>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class AudioDecoderClass : Attribute
+    public sealed class AudioDecoderClassAttribute : Attribute
     {
-        public string DecoderName
+        public Type Settings
         {
             get;
-            set;
+            private set;
         }
 
-        public string Extension
+        public AudioDecoderClassAttribute(Type settings)
         {
-            get;
-            set;
-        }
-
-        public int Priority
-        {
-            get;
-            set;
-        }
-
-        public AudioDecoderClass(string decoderName, string extension, int priority)
-        {
-            DecoderName = decoderName;
-            Extension = extension;
-            Priority = priority;
+            Settings = settings;
         }
     }
 }

@@ -30,12 +30,24 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 #endif
 using CUETools.Codecs;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.ALAC
 {
-	public class ALACWriterSettings: AudioEncoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class EncoderSettings: AudioEncoderSettings
 	{
-        public ALACWriterSettings()
+        public override string Extension => "m4a";
+
+        public override string Name => "cuetools";
+
+        public override Type EncoderType => typeof(AudioEncoder);
+
+        public override int Priority => 1;
+
+        public override bool Lossless => true;
+
+        public EncoderSettings()
             : base("0 1 2 3 4 5 6 7 8 9 10", "5")
         {
         }
@@ -51,11 +63,12 @@ namespace CUETools.Codecs.ALAC
 		[DefaultValue(false)]
 		[DisplayName("Verify")]
 		[Description("Decode each frame and compare with original")]
-		public bool DoVerify { get; set; }
+        [JsonProperty]
+        public bool DoVerify { get; set; }
 	}
 
-	[AudioEncoderClass("cuetools", "m4a", true, 1, typeof(ALACWriterSettings))]
-	public class ALACWriter : IAudioDest
+	[AudioEncoderClass(typeof(EncoderSettings))]
+	public class AudioEncoder : IAudioDest
 	{
 		Stream _IO = null;
 		bool _pathGiven = false;
@@ -100,13 +113,13 @@ namespace CUETools.Codecs.ALAC
 		int _windowsize = 0, _windowcount = 0;
 
 		ALACFrame frame;
-		ALACReader verify;
+		AudioDecoder verify;
 
 		bool inited = false;
 
 		List<int> chunk_pos;
 
-        public ALACWriter(string path, Stream IO, ALACWriterSettings settings)
+        public AudioEncoder(string path, Stream IO, EncoderSettings settings)
 		{
             m_settings = settings;
             m_settings.Validate();
@@ -134,7 +147,7 @@ namespace CUETools.Codecs.ALAC
 			chunk_pos = new List<int>();
 		}
 
-        public ALACWriter(string path, ALACWriterSettings settings)
+        public AudioEncoder(string path, EncoderSettings settings)
             : this(path, null, settings)
 		{
 		}
@@ -147,7 +160,7 @@ namespace CUETools.Codecs.ALAC
 			}
 		}
 
-		ALACWriterSettings m_settings;
+		EncoderSettings m_settings;
 
 		public AudioEncoderSettings Settings
 		{
@@ -1369,7 +1382,7 @@ namespace CUETools.Codecs.ALAC
 		{
 			get
 			{
-                var version = typeof(ALACWriter).Assembly.GetName().Version;
+                var version = typeof(AudioEncoder).Assembly.GetName().Version;
                 return vendor_string ?? "CUETools " + version.Major + "." + version.Minor + "." + version.Build;
             }
 			set
@@ -1768,7 +1781,7 @@ namespace CUETools.Codecs.ALAC
 
 			if (m_settings.DoVerify)
 			{
-                verify = new ALACReader(Settings.PCM, history_mult, initial_history, k_modifier, m_blockSize);
+                verify = new AudioDecoder(Settings.PCM, history_mult, initial_history, k_modifier, m_blockSize);
                 verifyBuffer = new int[Alac.MAX_BLOCKSIZE * Settings.PCM.ChannelCount];
 			}
 

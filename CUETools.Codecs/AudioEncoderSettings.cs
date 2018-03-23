@@ -1,13 +1,42 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Collections.Generic;
-using System.Xml.Serialization;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs
 {
+    public interface IAudioEncoderSettings
+    {
+        string Name { get; }
+
+        string Extension { get; }
+
+        Type EncoderType { get; }
+
+        bool Lossless { get; }
+
+        int Priority { get; }
+    }
+
+    [JsonObject(MemberSerialization.OptIn)]
     public class AudioEncoderSettings
     {
+        [Browsable(false)]
+        public virtual string Name => null;
+
+        [Browsable(false)]
+        public virtual string Extension => null;
+
+        [Browsable(false)]
+        public virtual Type EncoderType => null;
+
+        [Browsable(false)]
+        public virtual bool Lossless => false;
+
+        [Browsable(false)]
+        public virtual int Priority => 0;
+
         public AudioEncoderSettings()
             : this("", "")
         {
@@ -99,7 +128,6 @@ namespace CUETools.Codecs
         }
 
         [Browsable(false)]
-        [XmlIgnore]
         public AudioPCMConfig PCM
         {
             get;
@@ -116,7 +144,6 @@ namespace CUETools.Codecs
         }
 
         [Browsable(false)]
-        [XmlIgnore]
         [DefaultValue(4096)]
         public int Padding
         {
@@ -126,13 +153,13 @@ namespace CUETools.Codecs
 
         [Browsable(false)]
         [DefaultValue("")]
+        [JsonProperty]
         public string EncoderMode
         {
             get;
             set;
         }
 
-        [XmlIgnore]
         [Browsable(false)]
         public int EncoderModeIndex
         {

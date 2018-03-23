@@ -4,13 +4,14 @@ using System.IO;
 
 namespace CUETools.Codecs
 {
-    public class UserDefinedReader : IAudioSource
+    public class CommandLineDecoder : IAudioSource
     {
-        string _path, _decoder, _decoderParams;
+        string _path;
         Process _decoderProcess;
-        WAVReader rdr;
+        WAV.AudioDecoder rdr;
 
-        public AudioDecoderSettings Settings { get { return null; } }
+        private CommandLineDecoderSettings m_settings;
+        public AudioDecoderSettings Settings => m_settings;
 
         public long Position
         {
@@ -55,11 +56,10 @@ namespace CUETools.Codecs
 
         public string Path { get { return _path; } }
 
-        public UserDefinedReader(string path, Stream IO, string decoder, string decoderParams)
+        public CommandLineDecoder(CommandLineDecoderSettings settings, string path, Stream IO)
         {
+            m_settings = settings;
             _path = path;
-            _decoder = decoder;
-            _decoderParams = decoderParams;
             _decoderProcess = null;
             rdr = null;
         }
@@ -69,8 +69,8 @@ namespace CUETools.Codecs
             if (_decoderProcess != null)
                 return;
             _decoderProcess = new Process();
-            _decoderProcess.StartInfo.FileName = _decoder;
-            _decoderProcess.StartInfo.Arguments = _decoderParams.Replace("%I", "\"" + _path + "\"");
+            _decoderProcess.StartInfo.FileName = m_settings.Path;
+            _decoderProcess.StartInfo.Arguments = m_settings.Parameters.Replace("%I", "\"" + _path + "\"");
             _decoderProcess.StartInfo.CreateNoWindow = true;
             _decoderProcess.StartInfo.RedirectStandardOutput = true;
             _decoderProcess.StartInfo.UseShellExecute = false;
@@ -89,9 +89,9 @@ namespace CUETools.Codecs
             if (!started)
             {
                 _decoderProcess = null;
-                throw new Exception(_decoder + ": " + (ex == null ? "please check the path" : ex.Message));
+                throw new Exception(m_settings.Path + ": " + (ex == null ? "please check the path" : ex.Message));
             }
-            rdr = new WAVReader(_path, _decoderProcess.StandardOutput.BaseStream);
+            rdr = new WAV.AudioDecoder(new WAV.DecoderSettings(), _path, _decoderProcess.StandardOutput.BaseStream);
         }
 
         public void Close()

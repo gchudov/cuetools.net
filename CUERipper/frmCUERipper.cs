@@ -998,7 +998,7 @@ namespace CUERipper
 			}
 		}
 
-        private void resetEncoderModes(CUEToolsUDC encoder)
+        private void resetEncoderModes(AudioEncoderSettingsViewModel encoder)
         {
             encoder.settings.PCM = AudioPCMConfig.RedBook;
             buttonEncoderSettings.Enabled = encoder.settings.HasBrowsableAttributes();
@@ -1034,7 +1034,7 @@ namespace CUERipper
 		{
 			if (SelectedOutputAudioFormat == null)
 				return;
-			CUEToolsUDC encoder = bnComboBoxEncoder.SelectedItem as CUEToolsUDC;
+			var encoder = bnComboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
 			if (encoder == null)
 				return;
 			if (SelectedOutputAudioType == AudioEncoderType.Lossless)
@@ -1046,7 +1046,7 @@ namespace CUERipper
 
 		private void trackBarEncoderMode_Scroll(object sender, EventArgs e)
 		{
-			CUEToolsUDC encoder = bnComboBoxEncoder.SelectedItem as CUEToolsUDC;
+			var encoder = bnComboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
 			string[] modes = encoder.SupportedModes;
 			encoder.settings.EncoderMode = modes[trackBarEncoderMode.Value];
 			labelEncoderMode.Text = encoder.settings.EncoderMode;
@@ -1129,17 +1129,17 @@ namespace CUERipper
 
 			data.Encoders.RaiseListChangedEvents = false;
 
-			foreach (CUEToolsUDC encoder in _config.encoders)
-				if (encoder.extension == SelectedOutputAudioFmt.extension)
+			foreach (var encoder in _config.encoders)
+				if (encoder.Extension == SelectedOutputAudioFmt.extension)
 				{
-					if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.lossless)
+					if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Lossless)
 						continue;
-					if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.lossless)
+					if (SelectedOutputAudioType == AudioEncoderType.Lossy && encoder.Lossless)
 						continue;
 					data.Encoders.Add(encoder);
 				}
 
-			CUEToolsUDC select = SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
+			var select = SelectedOutputAudioType == AudioEncoderType.Lossless ? SelectedOutputAudioFmt.encoderLossless
 				: SelectedOutputAudioFmt.encoderLossy;
 			data.Encoders.RaiseListChangedEvents = true;
 			data.Encoders.ResetBindings();
@@ -1569,7 +1569,7 @@ namespace CUERipper
 
         private void buttonEncoderSettings_Click(object sender, EventArgs e)
         {
-            CUEToolsUDC encoder = bnComboBoxEncoder.SelectedItem as CUEToolsUDC;
+            var encoder = bnComboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
             if (encoder == null)
                 return;
             var form = new Options(encoder.settings);
@@ -1770,7 +1770,7 @@ namespace CUERipper
 		private BindingList<CUEMetadataEntry> releases = new BindingList<CUEMetadataEntry>();
 		private BindingList<DriveInfo> drives = new BindingList<DriveInfo>();
         private BindingList<CUEToolsFormat> formats = new BindingList<CUEToolsFormat>();
-		private BindingList<CUEToolsUDC> encoders = new BindingList<CUEToolsUDC>();
+		private BindingList<AudioEncoderSettingsViewModel> encoders = new BindingList<AudioEncoderSettingsViewModel>();
 
 		public CUEMetadataEntry selectedRelease { get; set; }
 		public bool metadataMode { get; set; }
@@ -1816,7 +1816,7 @@ namespace CUERipper
 			}
 		}
 
-		public BindingList<CUEToolsUDC> Encoders
+		public BindingList<AudioEncoderSettingsViewModel> Encoders
 		{
 			get
 			{

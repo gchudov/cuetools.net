@@ -80,12 +80,52 @@ namespace CUETools { namespace Codecs { namespace APE {
 		GCHandle _gchBuffer;
 	};
 
-	[AudioDecoderClass("MAC_SDK", "ape", 1)]
-	public ref class APEReader : public IAudioSource
+	ref class AudioDecoder;
+
+	public ref class DecoderSettings : public AudioDecoderSettings
 	{
 	public:
-		APEReader(String^ path, Stream^ IO) 
+		DecoderSettings()
+			: AudioDecoderSettings()
 		{
+		}
+
+		virtual property String^ Name
+		{
+			String^ get() override { return "MAC_SDK"; }
+		}
+
+		virtual property String^ Extension
+		{
+			String^ get() override { return "ape"; }
+		}
+
+		virtual property Type^ DecoderType
+		{
+			Type^ get() override { return AudioDecoder::typeid; }
+		}
+
+		virtual property int Priority
+		{
+			int get() override { return 1; }
+		}
+
+		virtual property String^ Version
+		{
+			String^ get()
+			{
+				return MAC_VERSION_STRING;
+			}
+		}
+	};
+
+	[AudioDecoderClass(DecoderSettings::typeid)]
+	public ref class AudioDecoder : public IAudioSource
+	{
+	public:
+		AudioDecoder(DecoderSettings^ settings, String^ path, Stream^ IO)
+		{
+			m_settings = settings;
 			pAPEDecompress = NULL;
 			_sampleOffset = 0;
 			_bufferOffset = 0;
@@ -118,7 +158,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 			_sampleCount = pAPEDecompress->GetInfo (APE_DECOMPRESS_TOTAL_BLOCKS, 0, 0); // * ?
 		}
 
-		~APEReader ()
+		~AudioDecoder ()
 		{
 			if (_winFileIO)
 				delete _winFileIO;
@@ -211,7 +251,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 
                 virtual property AudioDecoderSettings^ Settings {
                     AudioDecoderSettings^ get(void) {
-                        return nullptr;
+                        return m_settings;
                     }
                 }
 
@@ -228,6 +268,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		array<unsigned char>^ _readBuffer;
 		CWinFileIO* _winFileIO;
 		GCHandle _gchIO, _gchReadBuffer;
+		DecoderSettings^ m_settings;
 
 		property Int32 SamplesInBuffer 
 		{
@@ -238,12 +279,39 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}
 	};
 
-	public ref class APEWriterSettings : public AudioEncoderSettings
+	ref class AudioEncoder;
+
+	public ref class EncoderSettings : public AudioEncoderSettings
 	{
 	    public:
-		APEWriterSettings() 
+		EncoderSettings() 
 			: AudioEncoderSettings("fast normal high extra insane", "high")
 		{
+		}
+
+		virtual property String^ Name
+		{
+			String^ get() override { return "MAC_SDK"; }
+		}
+
+		virtual property String^ Extension
+		{
+			String^ get() override { return "ape"; }
+		}
+
+		virtual property Type^ EncoderType
+		{
+			Type^ get() override { return AudioEncoder::typeid; }
+		}
+
+		virtual property bool Lossless
+		{
+			bool get() override { return true; }
+		}
+
+		virtual property int Priority
+		{
+			int get() override { return 1; }
 		}
 
 		virtual property String^ Version
@@ -255,13 +323,14 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}		
 	};
 
-	[AudioEncoderClass("MAC_SDK", "ape", true, 1, APEWriterSettings::typeid)]
-	public ref class APEWriter : IAudioDest
+	[AudioEncoderClass(EncoderSettings::typeid)]
+	public ref class AudioEncoder : IAudioDest
 	{
 	public:
-		APEWriter(String^ path, APEWriterSettings^ settings)
+		AudioEncoder(EncoderSettings^ settings, String^ path, Stream^ IO)
 		{
 			_settings = settings;
+			_IO = IO;
 
 		    if (_settings->PCM->ChannelCount != 1 && _settings->PCM->ChannelCount != 2)
 				throw gcnew Exception("Only stereo and mono audio formats are allowed.");
@@ -277,7 +346,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 			    throw gcnew Exception("Unable to open APE compressor.");
 		}
 
-		~APEWriter()
+		~AudioEncoder()
 		{
 			if (_winFileIO)
 				delete _winFileIO;
@@ -365,7 +434,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 		IAPECompress * pAPECompress;
 		bool _initialized;
 		Int64 _finalSampleCount, _samplesWritten;
-		APEWriterSettings^ _settings;
+		EncoderSettings^ _settings;
 		String^ _path;
 		Stream^ _IO;
 		GCHandle _gchIO, _gchBuffer;
@@ -374,7 +443,8 @@ namespace CUETools { namespace Codecs { namespace APE {
 		array<unsigned char>^ _sampleBuffer;
 
 		void Initialize() {
-			_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::ReadWrite, FileShare::Read);
+			if (_IO == nullptr)
+				_IO = gcnew FileStream (_path, FileMode::Create, FileAccess::ReadWrite, FileShare::Read);
 			_writeBuffer = gcnew array<unsigned char>(0x4000);
 
 			_gchIO = GCHandle::Alloc(_IO);

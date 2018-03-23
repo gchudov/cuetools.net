@@ -144,7 +144,7 @@ namespace CUETools.FlakeExe
             bool do_seektable = true;
             bool buffered = false;
             string coeffs = null;
-            var settings = new FlakeWriterSettings() { AllowNonSubset = true };
+            var settings = new Codecs.FLAKE.EncoderSettings() { AllowNonSubset = true };
             bool allowNonSubset = false;
             bool ignore_chunk_sizes = false;
             bool force = false;
@@ -353,11 +353,11 @@ namespace CUETools.FlakeExe
 
                             IAudioSource audioSource;
                             if (input_file == "-")
-                                audioSource = new WAVReader("", Console.OpenStandardInput(), ignore_chunk_sizes);
+                                audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings() { IgnoreChunkSizes = ignore_chunk_sizes }, "", Console.OpenStandardInput());
                             else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
-                                audioSource = new WAVReader(input_file, null);
+                                audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), input_file);
                             else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
-                                audioSource = new FlakeReader(input_file, null);
+                                audioSource = new Codecs.FLAKE.AudioDecoder(new Codecs.FLAKE.DecoderSettings(), input_file);
                             else
                             {
                                 Usage();
@@ -377,14 +377,13 @@ namespace CUETools.FlakeExe
                             }
                             settings.PCM = audioSource.PCM;
                             settings.AllowNonSubset = allowNonSubset;
-                            FlakeWriter flake;
+                            AudioEncoder flake;
 
                             try
                             {
-                                flake = new FlakeWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
+                                flake = new AudioEncoder(settings, (output_file == "-" || output_file == "nul") ? "" : output_file,
                                     output_file == "-" ? Console.OpenStandardOutput() :
-                                    output_file == "nul" ? new NullStream() : null,
-                                    settings);
+                                    output_file == "nul" ? new NullStream() : null);
                                 flake.FinalSampleCount = audioSource.Length < 0 ? -1 : audioSource.Length - skip_a - skip_b;
 
                                 if (order_method != null)
@@ -496,7 +495,7 @@ namespace CUETools.FlakeExe
 
                             if (debug)
                             {
-                                settings = flake.Settings as FlakeWriterSettings;
+                                settings = flake.Settings as Codecs.FLAKE.EncoderSettings;
                                 Console.SetOut(stdout);
                                 Console.Out.WriteLine("{17}\t{0}\t{1:0.000}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}\t{16}\t{18}",
                                     flake.TotalSize,

@@ -2,23 +2,22 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.BDLPCM
 {
-    public class BDLPCMReaderSettings : AudioDecoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class BDLPCMDecoderSettings : AudioDecoderSettings
     {
-        public BDLPCMReaderSettings()
+        public BDLPCMDecoderSettings()
         {
             IgnoreShortItems = true;
         }
 
-        [Browsable(false)]
         public bool IgnoreShortItems { get; set; }
 
-        [Browsable(false)]
         public int? Stream { get; set; }
 
-        [Browsable(false)]
         public ushort? Pid { get; set; }
     }
 }

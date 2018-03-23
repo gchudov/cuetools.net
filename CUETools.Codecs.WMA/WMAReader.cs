@@ -27,8 +27,21 @@ using System.Runtime.InteropServices;
 
 namespace CUETools.Codecs.WMA
 {
-    [AudioDecoderClass("windows", "wma", 2)]
-    public class WMAReader : IAudioSource
+    public class DecoderSettings : AudioDecoderSettings
+    {
+        public override string Extension => "wma";
+
+        public override string Name => "windows";
+
+        public override Type DecoderType => typeof(AudioDecoder);
+
+        public override int Priority => 2;
+
+        public DecoderSettings() : base() { }
+    }
+
+    [AudioDecoderClass(typeof(DecoderSettings))]
+    public class AudioDecoder : IAudioSource
     {
         IWMSyncReader m_syncReader;
         INSSBuffer m_pSample;
@@ -44,7 +57,7 @@ namespace CUETools.Codecs.WMA
         Stream m_IO;
         StreamWrapper m_streamWrapper;
 
-        public WMAReader(string path, Stream IO)
+        public AudioDecoder(string path, Stream IO)
         {
             m_path = path;
             isValid(path);

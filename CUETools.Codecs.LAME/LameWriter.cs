@@ -5,9 +5,9 @@ using System.IO;
 
 namespace CUETools.Codecs.LAME
 {
-    [AudioEncoderClass("CBR (libmp3lame)", "mp3", false, 1, typeof(LameWriterCBRSettings))]
-    [AudioEncoderClass("VBR (libmp3lame)", "mp3", false, 2, typeof(LameWriterVBRSettings))]
-    public class LameWriter : IAudioDest
+    [AudioEncoderClass(typeof(CBREncoderSettings))]
+    [AudioEncoderClass(typeof(VBREncoderSettings))]
+    public class AudioEncoder : IAudioDest
     {
         #region Unmanaged Functions
 
@@ -74,7 +74,7 @@ namespace CUETools.Codecs.LAME
             get { return this.m_outputPath; }
         }
 
-        private LameWriterSettings m_settings;
+        private LameEncoderSettings m_settings;
 
         public virtual AudioEncoderSettings Settings
         {
@@ -84,7 +84,7 @@ namespace CUETools.Codecs.LAME
             }
         }
 
-        public LameWriter(string path, Stream output, LameWriterSettings settings)
+        public AudioEncoder(string path, Stream output, LameEncoderSettings settings)
         {
             this.CheckPCMConfig(settings.PCM);
             this.m_settings = settings;
@@ -92,7 +92,7 @@ namespace CUETools.Codecs.LAME
             this.m_outputStream = output != null ? output : File.Create(path);
         }
 
-        public LameWriter(string path, LameWriterSettings settings)
+        public AudioEncoder(string path, LameEncoderSettings settings)
             : this(path, null, settings)
         {
         }

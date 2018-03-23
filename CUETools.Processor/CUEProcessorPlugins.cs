@@ -25,8 +25,8 @@ namespace CUETools.Processor
             arcp = new List<Type>();
             arcp_fmt = new List<string>();
 
-            encs.Add(typeof(CUETools.Codecs.WAVWriter));
-            decs.Add(typeof(CUETools.Codecs.WAVReader));
+            encs.Add(typeof(CUETools.Codecs.WAV.AudioEncoder));
+            decs.Add(typeof(CUETools.Codecs.WAV.AudioDecoder));
 
             //ApplicationSecurityInfo asi = new ApplicationSecurityInfo(AppDomain.CurrentDomain.ActivationContext);
             //string arch = asi.ApplicationId.ProcessorArchitecture;
@@ -67,7 +67,7 @@ namespace CUETools.Processor
             {
                 try
                 {
-                    if (Attribute.GetCustomAttribute(type, typeof(AudioDecoderClass)) != null)
+                    if (Attribute.GetCustomAttribute(type, typeof(AudioDecoderClassAttribute)) != null)
                     {
                         decs.Add(type);
                     }

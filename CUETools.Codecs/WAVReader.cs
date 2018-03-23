@@ -1,10 +1,25 @@
 ﻿using System;
 using System.IO;
 
-namespace CUETools.Codecs
+namespace CUETools.Codecs.WAV
 {
-    [AudioDecoderClass("cuetools", "wav", 2)]
-    public class WAVReader : IAudioSource
+    public class DecoderSettings : AudioDecoderSettings
+    {
+        public override string Name => "cuetools";
+
+        public override string Extension => "wav";
+
+        public override Type DecoderType => typeof(AudioDecoder);
+
+        public override int Priority => 2;
+
+        public DecoderSettings() : base() {}
+
+        public bool IgnoreChunkSizes;
+    }
+
+    [AudioDecoderClass(typeof(DecoderSettings))]
+    public class AudioDecoder : IAudioSource
     {
         Stream _IO;
         BinaryReader _br;
@@ -14,7 +29,8 @@ namespace CUETools.Codecs
         bool _largeFile;
         string _path;
 
-        public AudioDecoderSettings Settings { get { return null; } }
+        private DecoderSettings m_settings;
+        public AudioDecoderSettings Settings => m_settings;
 
         public long Position
         {
@@ -75,27 +91,24 @@ namespace CUETools.Codecs
 
         public string Path { get { return _path; } }
 
-        public WAVReader(string path, Stream IO)
-            : this(path, IO, false)
+        public AudioDecoder(DecoderSettings settings, string path, Stream IO = null)
         {
-        }
-
-        public WAVReader(string path, Stream IO, bool ignore_chunk_sizes)
-        {
+            m_settings = settings;
             _path = path;
-            _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
+            _IO = IO ?? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
             _br = new BinaryReader(_IO);
 
             ParseHeaders();
 
-            if (_dataLen < 0 || ignore_chunk_sizes)
+            if (_dataLen < 0 || m_settings.IgnoreChunkSizes)
                 _sampleLen = -1;
             else
                 _sampleLen = _dataLen / pcm.BlockAlign;
         }
 
-        public WAVReader(string path, Stream IO, AudioPCMConfig _pcm)
+        public AudioDecoder(DecoderSettings settings, string path, Stream IO, AudioPCMConfig _pcm)
         {
+            m_settings = settings;
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000, FileOptions.SequentialScan);
             _br = new BinaryReader(_IO);
@@ -115,9 +128,9 @@ namespace CUETools.Codecs
             }
         }
 
-        public static AudioBuffer ReadAllSamples(string path, Stream IO)
+        public static AudioBuffer ReadAllSamples(DecoderSettings settings, string path, Stream IO = null)
         {
-            WAVReader reader = new WAVReader(path, IO);
+            AudioDecoder reader = new AudioDecoder(settings, path, IO);
             AudioBuffer buff = new AudioBuffer(reader, (int)reader.Length);
             reader.Read(buff, -1);
             if (reader.Remaining != 0)

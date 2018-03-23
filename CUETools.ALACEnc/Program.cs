@@ -61,7 +61,7 @@ namespace CUETools.ALACEnc
 			int adaptive_passes = -1;
 			bool do_seektable = true;
 			bool buffered = false;
-            var settings = new ALACWriterSettings();
+            var settings = new Codecs.ALAC.EncoderSettings();
 
 			for (int arg = 0; arg < args.Length; arg++)
 			{
@@ -162,11 +162,11 @@ namespace CUETools.ALACEnc
 			//return 0;
 			IAudioSource audioSource;
 			if (input_file == "-")
-				audioSource = new WAVReader("", Console.OpenStandardInput());
+				audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings() { IgnoreChunkSizes = true }, "", Console.OpenStandardInput());
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
-				audioSource = new WAVReader(input_file, null);
+				audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), input_file);
 			else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".m4a")
-				audioSource = new ALACReader(input_file, null);
+				audioSource = new Codecs.ALAC.AudioDecoder(new Codecs.ALAC.DecoderSettings(), input_file);
 			else
 			{
 				Usage();
@@ -177,7 +177,7 @@ namespace CUETools.ALACEnc
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "m4a");
             settings.PCM = audioSource.PCM;
-			ALACWriter alac = new ALACWriter((output_file == "-" || output_file == "nul") ? "" : output_file,
+            Codecs.ALAC.AudioEncoder alac = new Codecs.ALAC.AudioEncoder((output_file == "-" || output_file == "nul") ? "" : output_file,
 				output_file == "-" ? Console.OpenStandardOutput() :
 				output_file == "nul" ? new NullStream() : null,
 				settings);

@@ -28,16 +28,27 @@ using System.Runtime.InteropServices;
 using CUETools.Codecs;
 using CUETools.Codecs.FLAKE;
 using OpenCLNet;
-using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.FLACCL
 {
-    public class FLACCLWriterSettings : AudioEncoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class EncoderSettings : AudioEncoderSettings
     {
+        public override string Extension => "flac";
+
+        public override string Name => "FLACCL";
+
+        public override Type EncoderType => typeof(AudioEncoder);
+
+        public override int Priority => 2;
+
+        public override bool Lossless => true;
+
         internal IntPtr m_platform = IntPtr.Zero;
         internal IntPtr m_device = IntPtr.Zero;
 
-        public FLACCLWriterSettings()
+        public EncoderSettings()
             : base()
         {
         }
@@ -161,19 +172,23 @@ namespace CUETools.Codecs.FLACCL
         [DefaultValue(false)]
         [DisplayName("Verify")]
         [SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
+        [JsonProperty]
         public bool DoVerify { get; set; }
 
         [DefaultValue(true)]
         [DisplayName("MD5")]
         [SRDescription(typeof(Properties.Resources), "DoMD5Description")]
+        [JsonProperty]
         public bool DoMD5 { get; set; }
 
         [DefaultValue(true)]
         [SRDescription(typeof(Properties.Resources), "DescriptionGPUOnly")]
+        [JsonProperty]
         public bool GPUOnly { get; set; }
 
         [DefaultValue(false)]
         [SRDescription(typeof(Properties.Resources), "DescriptionDoRice")]
+        [JsonProperty]
         public bool DoRice { get; set; }
 
         [DefaultValue(false)]
@@ -181,9 +196,10 @@ namespace CUETools.Codecs.FLACCL
         [SRDescription(typeof(Properties.Resources), "DescriptionMappedMemory")]
         public bool MappedMemory { get; set; }
 
-        [TypeConverter(typeof(FLACCLWriterSettingsGroupSizeConverter))]
+        [TypeConverter(typeof(EncoderSettingsGroupSizeConverter))]
         [DefaultValue(128)]
         [SRDescription(typeof(Properties.Resources), "DescriptionGroupSize")]
+        [JsonProperty]
         public int GroupSize { get; set; }
 
         [DefaultValue(8)]
@@ -195,39 +211,40 @@ namespace CUETools.Codecs.FLACCL
         [Browsable(false)]
         public string Defines { get; set; }
 
-        [TypeConverter(typeof(FLACCLWriterSettingsPlatformConverter))]
+        [TypeConverter(typeof(EncoderSettingsPlatformConverter))]
         [SRDescription(typeof(Properties.Resources), "DescriptionPlatform")]
+        [JsonProperty]
         public string Platform { get; set; }
 
         [DefaultValue(OpenCLDeviceType.GPU)]
         [SRDescription(typeof(Properties.Resources), "DescriptionDeviceType")]
+        [JsonProperty]
         public OpenCLDeviceType DeviceType { get; set; }
 
         //[TypeConverter(typeof(FLACCLWriterSettingsDeviceConverter))]
         [SRDescription(typeof(Properties.Resources), "DescriptionDevice")]
-        [XmlIgnore]
         [Browsable(false)]
         public string Device { get; set; }
 
         [DefaultValue(0)]
         [SRDescription(typeof(Properties.Resources), "DescriptionCPUThreads")]
+        [JsonProperty]
         public int CPUThreads { get; set; }
 
         [DefaultValue(false)]
         [DisplayName("Allow Non-subset")]
         [SRDescription(typeof(Properties.Resources), "AllowNonSubsetDescription")]
+        [JsonProperty]
         public bool AllowNonSubset { get; set; }
 
-        [XmlIgnore]
         [Browsable(false)]
         public string PlatformVersion { get; set; }
 
-        [XmlIgnore]
         [Browsable(false)]
         public string DriverVersion { get; set; }
     }
 
-    public class FLACCLWriterSettingsPlatformConverter : TypeConverter
+    public class EncoderSettingsPlatformConverter : TypeConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
@@ -243,7 +260,7 @@ namespace CUETools.Codecs.FLACCL
         }
     }
 
-    public class FLACCLWriterSettingsGroupSizeConverter : TypeConverter
+    public class EncoderSettingsGroupSizeConverter : TypeConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
@@ -262,9 +279,8 @@ namespace CUETools.Codecs.FLACCL
         GPU = DeviceType.GPU
     }
 
-    [AudioEncoderClass("FLACCL", "flac", true, 2, typeof(FLACCLWriterSettings))]
-    //[AudioEncoderClass("FLACCL nonsub", "flac", true, "9 10 11", "9", 1, typeof(FLACCLWriterSettings))]
-    public class FLACCLWriter : IAudioDest
+    [AudioEncoderClass(typeof(EncoderSettings))]
+    public class AudioEncoder : IAudioDest
     {
         Stream _IO = null;
         string _path;
@@ -330,9 +346,9 @@ namespace CUETools.Codecs.FLACCL
 
         public const int MAX_BLOCKSIZE = 65536;
 
-        public FLACCLWriter(string path, Stream IO, FLACCLWriterSettings settings)
+        public AudioEncoder(string path, Stream IO, EncoderSettings settings)
         {
-            m_settings = settings.Clone() as FLACCLWriterSettings;
+            m_settings = settings.Clone() as EncoderSettings;
             m_settings.Validate();
 
             // FIXME: For now, only 16-bit encoding is supported
@@ -354,7 +370,7 @@ namespace CUETools.Codecs.FLACCL
             crc8 = new Crc8();
         }
 
-        public FLACCLWriter(string path, FLACCLWriterSettings settings)
+        public AudioEncoder(string path, EncoderSettings settings)
             : this(path, null, settings)
         {
         }
@@ -367,7 +383,7 @@ namespace CUETools.Codecs.FLACCL
             }
         }
 
-        internal FLACCLWriterSettings m_settings;
+        internal EncoderSettings m_settings;
 
         public AudioEncoderSettings Settings
         {
@@ -2019,7 +2035,7 @@ namespace CUETools.Codecs.FLACCL
         {
             get
             {
-                var version = typeof(FLACCLWriter).Assembly.GetName().Version;
+                var version = typeof(AudioEncoder).Assembly.GetName().Version;
                 return vendor_string ?? "CUETools FLACCL " + version.Major + "." + version.Minor + "." + version.Build;
             }
             set
@@ -2293,7 +2309,7 @@ namespace CUETools.Codecs.FLACCL
 
         public bool do_seektable;
 
-        public int flake_set_defaults(FLACCLWriterSettings settings)
+        public int flake_set_defaults(EncoderSettings settings)
         {
             int lvl = settings.EncoderModeIndex;
             // default to level 5 params
@@ -2474,7 +2490,7 @@ namespace CUETools.Codecs.FLACCL
         public int nWindowFunctions = 0;
         public int max_porder = 0;
 
-        public FlakeReader verify;
+        public AudioDecoder verify;
 
         public Thread workThread = null;
         public Exception exception = null;
@@ -2483,12 +2499,12 @@ namespace CUETools.Codecs.FLACCL
 
         public int groupSize = 128;
         public int channels, channelsCount;
-        public FLACCLWriter writer;
+        public AudioEncoder writer;
         public bool UseGPUOnly = false;
         public bool UseGPURice = false;
         public bool UseMappedMemory = false;
 
-        unsafe public FLACCLTask(CLProgram _openCLProgram, int channelsCount, int max_frame_size, FLACCLWriter writer, int groupSize, bool gpuOnly, bool gpuRice)
+        unsafe public FLACCLTask(CLProgram _openCLProgram, int channelsCount, int max_frame_size, AudioEncoder writer, int groupSize, bool gpuOnly, bool gpuRice)
         {
             this.UseGPUOnly = gpuOnly;
             this.UseGPURice = gpuOnly && gpuRice;
@@ -2515,10 +2531,10 @@ namespace CUETools.Codecs.FLACCL
             int residualBufferLen = sizeof(int) * MAX_CHANNELSIZE * channels; // need to adjust residualOffset?
             int partitionsLen = sizeof(int) * ((writer.Settings.PCM.BitsPerSample > 16 ? 31 : 15) * 2 << 8) * channels * MAX_FRAMES;
             int riceParamsLen = sizeof(int) * (4 << 8) * channels * MAX_FRAMES;
-            int autocorLen = sizeof(float) * (MAX_ORDER + 1) * FLACCLWriter.MAX_LPC_WINDOWS * channelsCount * MAX_FRAMES;
+            int autocorLen = sizeof(float) * (MAX_ORDER + 1) * AudioEncoder.MAX_LPC_WINDOWS * channelsCount * MAX_FRAMES;
             int lpcDataLen = autocorLen * 32;
-            int resOutLen = sizeof(int) * channelsCount * (FLACCLWriter.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * MAX_FRAMES;
-            int wndLen = sizeof(float) * MAX_CHANNELSIZE /** 2*/ * FLACCLWriter.MAX_LPC_WINDOWS;
+            int resOutLen = sizeof(int) * channelsCount * (AudioEncoder.MAX_LPC_WINDOWS * lpc.MAX_LPC_ORDER + 8) * MAX_FRAMES;
+            int wndLen = sizeof(float) * MAX_CHANNELSIZE /** 2*/ * AudioEncoder.MAX_LPC_WINDOWS;
             int selectedLen = sizeof(int) * 32 * channelsCount * MAX_FRAMES;
             int riceLen = sizeof(int) * channels * MAX_CHANNELSIZE;
 
@@ -2615,7 +2631,7 @@ namespace CUETools.Codecs.FLACCL
             frame.writer = new BitWriter(outputBuffer, 0, outputBuffer.Length);
 
             if (writer.m_settings.DoVerify)
-                verify = new FlakeReader(writer.Settings.PCM);
+                verify = new FLAKE.AudioDecoder(writer.Settings.PCM);
         }
 
         public void Dispose()
@@ -2743,9 +2759,9 @@ namespace CUETools.Codecs.FLACCL
         internal unsafe void EnqueueKernels()
         {
             var eparams = writer.eparams;
-            var settings = writer.Settings as FLACCLWriterSettings;
+            var settings = writer.Settings as EncoderSettings;
 
-            this.max_porder = FLACCLWriter.get_max_p_order(settings.MaxPartitionOrder, frameSize, settings.MaxLPCOrder);
+            this.max_porder = AudioEncoder.get_max_p_order(settings.MaxPartitionOrder, frameSize, settings.MaxLPCOrder);
             while ((frameSize >> max_porder) < 16 && max_porder > 0)
                 this.max_porder--;
 

@@ -1,24 +1,23 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.ComponentModel;
-using System.Xml.Serialization;
 
 namespace CUETools.Codecs
 {
-    public class CUEToolsUDC : INotifyPropertyChanged
+    [JsonObject(MemberSerialization.OptIn)]
+    public class AudioEncoderSettingsViewModel : INotifyPropertyChanged
     {
-        public string name = "";
-        public string extension = "wav";
-        public string path = "";
-        public string parameters = "";
-        public Type type = null;
+        [JsonProperty]
         public AudioEncoderSettings settings = null;
-        public XmlSerializer settingsSerializer = null;
-        public bool lossless = false;
-        public int priority = 0;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public CUEToolsUDC(
+        [JsonConstructor]
+        private AudioEncoderSettingsViewModel()
+        {
+        }
+
+        public AudioEncoderSettingsViewModel(
             string _name,
             string _extension,
             bool _lossless,
@@ -28,134 +27,103 @@ namespace CUETools.Codecs
             string _parameters
             )
         {
-            name = _name;
-            extension = _extension;
-            lossless = _lossless;
-            priority = 0;
-            path = null;
-            parameters = null;
-            type = typeof(UserDefinedWriter);
-            settingsSerializer = new XmlSerializer(typeof(UserDefinedEncoderSettings));
-            settings = new UserDefinedEncoderSettings() { SupportedModes = _supported_modes, EncoderMode = _default_mode, Path = _path, Parameters = _parameters };
+            settings = new CommandLineEncoderSettings() { name = _name, extension = _extension, SupportedModes = _supported_modes, EncoderMode = _default_mode, Path = _path, Parameters = _parameters, lossless = _lossless };
         }
 
-        public CUEToolsUDC(AudioEncoderClassAttribute enc, Type enctype)
+        public AudioEncoderSettingsViewModel(AudioEncoderClassAttribute enc)
         {
-            name = enc.EncoderName;
-            extension = enc.Extension;
-            lossless = enc.Lossless;
-            priority = enc.Priority;
-            path = null;
-            parameters = null;
-            type = enctype;
-            settingsSerializer = new XmlSerializer(enc.Settings);
             settings = Activator.CreateInstance(enc.Settings) as AudioEncoderSettings;
             if (settings == null)
                 throw new InvalidOperationException("invalid codec");
         }
 
-        public CUEToolsUDC(
-            string _name,
-            string _extension,
-            string _path,
-            string _parameters
-            )
+        public AudioEncoderSettingsViewModel Clone()
         {
-            name = _name;
-            extension = _extension;
-            lossless = true;
-            priority = 0;
-            path = _path;
-            parameters = _parameters;
-            type = null;
-        }
-
-        public CUEToolsUDC(AudioDecoderClass dec, Type dectype)
-        {
-            name = dec.DecoderName;
-            extension = dec.Extension;
-            lossless = true;
-            priority = dec.Priority;
-            path = null;
-            parameters = null;
-            type = dectype;
-        }
-
-        public CUEToolsUDC Clone()
-        {
-            var res = this.MemberwiseClone() as CUEToolsUDC;
+            var res = this.MemberwiseClone() as AudioEncoderSettingsViewModel;
             if (settings != null) res.settings = settings.Clone();
             return res;
         }
 
         public override string ToString()
         {
-            return name;
+            return Name;
         }
 
-        public string Name
-        {
-            get { return name; }
-            set { if (name == value) return;  name = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Name")); }
-        }
-        public string FullName
-        {
-            get { return name + " [" + extension + "]"; }
-            //set { name = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Name")); }
-        }
+        public string FullName => Name + " [" + Extension + "]";
+
         public string Path
         {
             get
             {
-                var settings = this.settings as UserDefinedEncoderSettings;
-                return settings == null ? path : settings.Path;
+                if (settings is CommandLineEncoderSettings)
+                    return (settings as CommandLineEncoderSettings).Path;
+                return "";
             }
             set
             {
-                var settings = this.settings as UserDefinedEncoderSettings;
-                if (settings == null) path = value;
-                else settings.Path = value;
-                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Path"));
+                var settings = this.settings as CommandLineEncoderSettings;
+                if (settings == null) throw new InvalidOperationException();
+                settings.Path = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Path"));
             }
         }
+
         public string Parameters
         {
             get
             {
-                var settings = this.settings as UserDefinedEncoderSettings;
-                return settings == null ? parameters : settings.Parameters;
+                if (settings is CommandLineEncoderSettings)
+                    return (settings as CommandLineEncoderSettings).Parameters;
+                return "";
             }
             set
             {
-                var settings = this.settings as UserDefinedEncoderSettings;
-                if (settings == null) parameters = value;
-                else settings.Parameters = value;
-                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Parameters"));
+                var settings = this.settings as CommandLineEncoderSettings;
+                if (settings == null) throw new InvalidOperationException();
+                settings.Parameters = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Parameters"));
             }
         }
+
         public bool Lossless
         {
-            get { return lossless; }
-            set { lossless = value; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Lossless")); }
+            get => settings.Lossless;
+            set
+            {
+                var settings = this.settings as CommandLineEncoderSettings;
+                if (settings == null) throw new InvalidOperationException();
+                settings.lossless = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Lossless"));
+            }
+        }
+
+        
+        public string Name
+        {
+            get => settings.Name;
+            set
+            {
+                var settings = this.settings as CommandLineEncoderSettings;
+                if (settings == null) throw new InvalidOperationException();
+                settings.name = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
+            }
         }
 
         public string Extension
         {
-            get { return extension; }
+            get => settings.Extension;
             set
             {
-                if (extension == value) return;
-                if (type != null && type != typeof(UserDefinedWriter)) throw new InvalidOperationException();
-                extension = value; 
-                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Extension"));
+                var settings = this.settings as CommandLineEncoderSettings;
+                if (settings == null) throw new InvalidOperationException();
+                settings.extension = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Extension"));
             }
         }
-        
-        public string DotExtension
-        {
-            get { return "." + extension; }
-        }
-        
+
+        public string DotExtension => "." + Extension;
+
         public string SupportedModesStr
         {
             get
@@ -165,20 +133,14 @@ namespace CUETools.Codecs
             }
             set
             {
-                var settings = this.settings as UserDefinedEncoderSettings;
+                var settings = this.settings as CommandLineEncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.SupportedModes = value;
-                if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("SupportedModesStr"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SupportedModesStr"));
             }
         }
 
-        public string[] SupportedModes
-        {
-            get
-            {
-                return this.SupportedModesStr.Split(' ');
-            }
-        }
+        public string[] SupportedModes => this.SupportedModesStr.Split(' ');
 
         public int EncoderModeIndex
         {
@@ -194,12 +156,116 @@ namespace CUETools.Codecs
             }
         }
 
-        public bool CanBeDeleted
+        public bool CanBeDeleted => settings is CommandLineEncoderSettings;
+
+        public bool IsValid =>
+               (settings != null)
+            && (settings is CommandLineEncoderSettings ? (settings as CommandLineEncoderSettings).Path != "" : true);
+    }
+
+    [JsonObject(MemberSerialization.OptIn)]
+    public class AudioDecoderSettingsViewModel : INotifyPropertyChanged
+    {
+        [JsonProperty]
+        public AudioDecoderSettings decoderSettings = null;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [JsonConstructor]
+        private AudioDecoderSettingsViewModel()
+        {
+        }
+
+        public AudioDecoderSettingsViewModel(AudioDecoderSettings settings)
+        {
+            decoderSettings = settings;
+        }
+
+        public AudioDecoderSettingsViewModel Clone()
+        {
+            var res = this.MemberwiseClone() as AudioDecoderSettingsViewModel;
+            if (decoderSettings != null) res.decoderSettings = decoderSettings.Clone();
+            return res;
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public string FullName => Name + " [" + Extension + "]";
+
+        public string Path
         {
             get
             {
-                return type == null || type == typeof(UserDefinedWriter);
+                if (decoderSettings is CommandLineDecoderSettings)
+                    return (decoderSettings as CommandLineDecoderSettings).Path;
+                return "";
+            }
+            set
+            {
+                if (decoderSettings is CommandLineDecoderSettings)
+                    (decoderSettings as CommandLineDecoderSettings).Path = value;
+                else throw new InvalidOperationException();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Path"));
             }
         }
+        public string Parameters
+        {
+            get
+            {
+                if (decoderSettings is CommandLineDecoderSettings)
+                    return (decoderSettings as CommandLineDecoderSettings).Parameters;
+                return "";
+            }
+            set
+            {
+                if (decoderSettings is CommandLineDecoderSettings)
+                    (decoderSettings as CommandLineDecoderSettings).Parameters = value;
+                else throw new InvalidOperationException();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Parameters"));
+            }
+        }
+
+        public bool Lossless
+        {
+            get => true;
+            set {
+                throw new InvalidOperationException();
+            }
+        }
+
+        public string Name
+        {
+            get => decoderSettings.Name;
+            set
+            {
+                if (decoderSettings is CommandLineDecoderSettings)
+                    (decoderSettings as CommandLineDecoderSettings).name = value;
+                else throw new InvalidOperationException();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
+            }
+        }
+
+        public string Extension
+        {
+            get => decoderSettings.Extension;
+            set
+            {
+                if (decoderSettings is CommandLineDecoderSettings)
+                    (decoderSettings as CommandLineDecoderSettings).extension = value;
+                else throw new InvalidOperationException();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Extension"));
+            }
+        }
+
+        public string DotExtension => "." + Extension;
+
+        public bool CanBeDeleted => decoderSettings is CommandLineDecoderSettings;
+
+        public bool IsValid =>
+               (decoderSettings != null)
+            && (decoderSettings is CommandLineDecoderSettings ? (decoderSettings as CommandLineDecoderSettings).Path != "" : true);
     }
 }

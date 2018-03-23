@@ -6,18 +6,31 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using CUETools.Codecs;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.libwavpack
 {
-    public class WriterSettings : AudioEncoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class EncoderSettings : AudioEncoderSettings
     {
-        public WriterSettings()
+        public override string Extension => "wv";
+
+        public override string Name => "libwavpack";
+
+        public override Type EncoderType => typeof(AudioEncoder);
+
+        public override int Priority => 1;
+
+        public override bool Lossless => true;
+
+        public EncoderSettings()
             : base("fast normal high high+", "normal")
         {
         }
 
         [DefaultValue(0)]
 		[DisplayName("ExtraMode")]
+        [JsonProperty]
         public int ExtraMode { 
             get => m_extraMode; 
             set {
@@ -31,6 +44,7 @@ namespace CUETools.Codecs.libwavpack
         [DefaultValue(true)]
         [DisplayName("MD5")]
         [Description("Calculate MD5 hash for audio stream")]
+        [JsonProperty]
         public bool MD5Sum { get; set; }
 
         [DisplayName("Version")]
@@ -40,10 +54,10 @@ namespace CUETools.Codecs.libwavpack
         private int m_extraMode;
     };
 
-    [AudioEncoderClass("libwavpack", "wv", true, 1, typeof(WriterSettings))]
-    public unsafe class Writer : IAudioDest
+    [AudioEncoderClass(typeof(EncoderSettings))]
+    public unsafe class AudioEncoder : IAudioDest
     {
-        public Writer(string path, Stream output, WriterSettings settings)
+        public AudioEncoder(EncoderSettings settings, string path, Stream output = null)
         {
             m_path = path;
             m_stream = output;
@@ -55,11 +69,6 @@ namespace CUETools.Codecs.libwavpack
             m_blockOutput = BlockOutputCallback;
             if (m_settings.PCM.BitsPerSample < 16 || m_settings.PCM.BitsPerSample > 24)
                 throw new Exception("bits per sample must be 16..24");
-        }
-
-        public Writer(string path, WriterSettings settings)
-            : this(path, null, settings)
-        {
         }
 
         public AudioEncoderSettings Settings => m_settings;
@@ -209,7 +218,7 @@ namespace CUETools.Codecs.libwavpack
 
         int[,] _shiftedSampleBuffer;
         WavpackContext* _wpc;
-        WriterSettings m_settings;
+        EncoderSettings m_settings;
         Stream m_stream;
         MD5 _md5hasher;
         bool m_streamGiven;

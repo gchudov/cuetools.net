@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace CUETools.Codecs
+namespace CUETools.Codecs.WAV
 {
-    [AudioEncoderClass("cuetools", "wav", true, 10, typeof(WAVWriterSettings))]
-    public class WAVWriter : IAudioDest
+    [AudioEncoderClass(typeof(EncoderSettings))]
+    public class AudioEncoder : IAudioDest
     {
         private Stream _IO;
         private BinaryWriter _bw;
@@ -16,7 +16,6 @@ namespace CUETools.Codecs
         private long _finalSampleCount = -1;
         private List<byte[]> _chunks = null;
         private List<uint> _chunkFCCs = null;
-        private WAVWriterSettings m_settings;
 
         public long Position
         {
@@ -31,27 +30,17 @@ namespace CUETools.Codecs
             set { _finalSampleCount = value; }
         }
 
-        public AudioEncoderSettings Settings
-        {
-            get
-            {
-                return m_settings;
-            }
-        }
+        private EncoderSettings m_settings;
+        public AudioEncoderSettings Settings => m_settings;
 
         public string Path { get { return _path; } }
 
-        public WAVWriter(string path, Stream IO, WAVWriterSettings settings)
+        public AudioEncoder(EncoderSettings settings, string path, Stream IO = null)
         {
             m_settings = settings;
             _path = path;
-            _IO = IO != null ? IO : new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+            _IO = IO ?? new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
             _bw = new BinaryWriter(_IO);
-        }
-
-        public WAVWriter(string path, WAVWriterSettings settings)
-            : this(path, null, settings)
-        {
         }
 
         public void WriteChunk(uint fcc, byte[] data)

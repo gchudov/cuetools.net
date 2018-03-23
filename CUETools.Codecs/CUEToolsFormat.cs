@@ -9,9 +9,9 @@
             bool _allowLossy,
             bool _allowEmbed,
             bool _builtin,
-            CUEToolsUDC _encoderLossless,
-            CUEToolsUDC _encoderLossy,
-            CUEToolsUDC _decoder)
+            AudioEncoderSettingsViewModel _encoderLossless,
+            AudioEncoderSettingsViewModel _encoderLossy,
+            AudioDecoderSettingsViewModel _decoder)
         {
             extension = _extension;
             tagger = _tagger;
@@ -34,9 +34,9 @@
         public CUEToolsFormat Clone(CUEToolsCodecsConfig cfg)
         {
             var res = this.MemberwiseClone() as CUEToolsFormat;
-            if (decoder != null) cfg.decoders.TryGetValue(decoder.extension, decoder.lossless, decoder.name, out res.decoder);
-            if (encoderLossy != null) cfg.encoders.TryGetValue(encoderLossy.extension, encoderLossy.lossless, encoderLossy.name, out res.encoderLossy);
-            if (encoderLossless != null) cfg.encoders.TryGetValue(encoderLossless.extension, encoderLossless.lossless, encoderLossless.name, out res.encoderLossless);
+            if (decoder != null) cfg.decoders.TryGetValue(decoder.decoderSettings.Extension, decoder.Lossless, decoder.decoderSettings.Name, out res.decoder);
+            if (encoderLossy != null) cfg.encoders.TryGetValue(encoderLossy.settings.Extension, encoderLossy.Lossless, encoderLossy.settings.Name, out res.encoderLossy);
+            if (encoderLossless != null) cfg.encoders.TryGetValue(encoderLossless.settings.Extension, encoderLossless.Lossless, encoderLossless.settings.Name, out res.encoderLossless);
             return res;
         }
 
@@ -46,9 +46,9 @@
         }
 
         public string extension;
-        public CUEToolsUDC encoderLossless;
-        public CUEToolsUDC encoderLossy;
-        public CUEToolsUDC decoder;
+        public AudioEncoderSettingsViewModel encoderLossless;
+        public AudioEncoderSettingsViewModel encoderLossy;
+        public AudioDecoderSettingsViewModel decoder;
         public CUEToolsTagger tagger;
         public bool allowLossless, allowLossy, allowEmbed, builtin;
     }

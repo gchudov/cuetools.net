@@ -4,9 +4,11 @@ using System.Text;
 
 namespace CUETools.Codecs.LAME
 {
-    public class LameWriterSettings : AudioEncoderSettings
+    public class LameEncoderSettings : AudioEncoderSettings
     {
-        public LameWriterSettings(string modes, string defaultMode)
+        public override Type EncoderType => typeof(AudioEncoder);
+
+        public LameEncoderSettings(string modes, string defaultMode)
             : base(modes, defaultMode)
         {
         }

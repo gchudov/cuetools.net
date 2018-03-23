@@ -27,13 +27,27 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.ALAC
 {
-	[AudioDecoderClass("cuetools", "m4a", 2)]
-	public class ALACReader : IAudioSource
+    public class DecoderSettings : AudioDecoderSettings
+    {
+        public override string Extension => "m4a";
+
+        public override string Name => "cuetools";
+
+        public override Type DecoderType => typeof(AudioDecoder);
+
+        public override int Priority => 2;
+
+        public DecoderSettings() : base() { }
+    }
+
+    [AudioDecoderClass(typeof(DecoderSettings))]
+	public class AudioDecoder : IAudioSource
 	{
-		public ALACReader(string path, Stream IO)
+		public AudioDecoder(DecoderSettings settings, string path, Stream IO = null)
 		{
+            m_settings = settings;
 			_path = path;
-			_IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+			_IO = IO ?? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			_buff = new byte[512];
 			_tags = new NameValueCollection();
 			qtmovie_read();
@@ -43,7 +57,7 @@ namespace CUETools.Codecs.ALAC
 			calculate_length();
 		}
 
-		public ALACReader(AudioPCMConfig _pcm, int rice_historymult, int rice_initialhistory, int rice_kmodifier, int blocksize)
+		public AudioDecoder(AudioPCMConfig _pcm, int rice_historymult, int rice_initialhistory, int rice_kmodifier, int blocksize)
 		{
 			pcm = _pcm;
 
@@ -59,9 +73,10 @@ namespace CUETools.Codecs.ALAC
 			_framesBuffer = new byte[65536];
 		}
 
-        public AudioDecoderSettings Settings { get { return null; } }
+        private DecoderSettings m_settings;
+        public AudioDecoderSettings Settings => m_settings;
 
-		private void InitTables()
+        private void InitTables()
 		{
 			if (_predicterror_buffer_a != null)
 				return;

@@ -2348,9 +2348,9 @@ namespace JDP
                     }
                 case AudioEncoderType.Lossless:
                     {
-                        foreach (CUEToolsUDC encoder in _profile._config.encoders)
-                            if (encoder.extension == SelectedOutputAudioFmt.extension)
-                                if (encoder.lossless)
+                        foreach (AudioEncoderSettingsViewModel encoder in _profile._config.encoders)
+                            if (encoder.Extension == SelectedOutputAudioFmt.extension)
+                                if (encoder.Lossless)
                                     comboBoxEncoder.Items.Add(encoder);
                         comboBoxEncoder.SelectedItem = SelectedOutputAudioFmt.encoderLossless;
                         comboBoxEncoder.Enabled = true;
@@ -2359,9 +2359,9 @@ namespace JDP
                     }
                 case AudioEncoderType.Lossy:
                     {
-                        foreach (CUEToolsUDC encoder in _profile._config.encoders)
-                            if (encoder.extension == SelectedOutputAudioFmt.extension)
-                                if (!encoder.lossless)
+                        foreach (AudioEncoderSettingsViewModel encoder in _profile._config.encoders)
+                            if (encoder.Extension == SelectedOutputAudioFmt.extension)
+                                if (!encoder.Lossless)
                                     comboBoxEncoder.Items.Add(encoder);
                         comboBoxEncoder.SelectedItem = SelectedOutputAudioFmt.encoderLossy;
                         comboBoxEncoder.Enabled = true;
@@ -2406,7 +2406,7 @@ namespace JDP
             UpdateOutputPath();
         }
 
-        private void resetEncoderModes(CUEToolsUDC encoder)
+        private void resetEncoderModes(AudioEncoderSettingsViewModel encoder)
         {
             // TODO: something cleverer than this hack...
             encoder.settings.PCM = AudioPCMConfig.RedBook;
@@ -2441,7 +2441,7 @@ namespace JDP
 
         private void comboBoxEncoder_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
+            var encoder = comboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
             if (SelectedOutputAudioType == AudioEncoderType.NoAudio || SelectedOutputAudioFormat == null || encoder == null)
             {
                 trackBarEncoderMode.Visible = false;
@@ -2459,7 +2459,7 @@ namespace JDP
 
         private void trackBarEncoderMode_Scroll(object sender, EventArgs e)
         {
-            CUEToolsUDC encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
+            var encoder = comboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
             string[] modes = encoder.SupportedModes;
             encoder.settings.EncoderMode = modes[trackBarEncoderMode.Value];
             labelEncoderMode.Text = encoder.settings.EncoderMode;
@@ -2705,7 +2705,7 @@ namespace JDP
 
         private void buttonEncoderSettings_Click(object sender, EventArgs e)
         {
-            var encoder = comboBoxEncoder.SelectedItem as CUEToolsUDC;
+            var encoder = comboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
             if (encoder == null)
                 return;
             using (frmSettings settingsForm = new frmSettings(encoder))

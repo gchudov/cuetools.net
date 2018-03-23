@@ -27,12 +27,44 @@ namespace TTA {
 		"operation canceled"
 	};
 
-	[AudioDecoderClass("ttalib", "tta", 1)]
-	public ref class TTAReader : public IAudioSource
+	ref class AudioDecoder;
+
+	public ref class DecoderSettings : public AudioDecoderSettings
 	{
 	public:
-		TTAReader(String^ path, Stream^ IO)
+		DecoderSettings()
+			: AudioDecoderSettings()
 		{
+		}
+
+		virtual property String^ Name
+		{
+			String^ get() override { return "ttalib"; }
+		}
+
+		virtual property String^ Extension
+		{
+			String^ get() override { return "tta"; }
+		}
+
+		virtual property Type^ DecoderType
+		{
+			Type^ get() override { return AudioDecoder::typeid; }
+		}
+
+		virtual property int Priority
+		{
+			int get() override { return 1; }
+		}
+	};
+
+	[AudioDecoderClass(DecoderSettings::typeid)]
+	public ref class AudioDecoder : public IAudioSource
+	{
+	public:
+		AudioDecoder(DecoderSettings^ settings, String^ path, Stream^ IO)
+		{
+			m_settings = settings;
 			_sampleOffset = 0;
 			_sampleBuffer = nullptr;
 			_path = path;
@@ -76,7 +108,7 @@ namespace TTA {
 			_sampleCount = _ttaReader->ttahdr.DataLength;
 		}
 
-		~TTAReader ()
+		~AudioDecoder ()
 		{
 		    Close ();
 		}
@@ -189,7 +221,7 @@ namespace TTA {
 
                 virtual property AudioDecoderSettings^ Settings {
                     AudioDecoderSettings^ get(void) {
-                        return nullptr;
+                        return m_settings;
                     }
                 }
 
@@ -202,6 +234,7 @@ namespace TTA {
 		Stream^ _IO;
 		Int32 _bufferOffset, _bufferLength;
 		TTALib::TTAReader * _ttaReader;
+		DecoderSettings^ m_settings;
 
 		property Int32 SamplesInBuffer {
 			Int32 get () 
@@ -211,19 +244,46 @@ namespace TTA {
 		}
 	};
 
-	public ref class TTAWriterSettings : public AudioEncoderSettings
+	ref class AudioEncoder;
+
+	public ref class EncoderSettings : public AudioEncoderSettings
 	{
 	    public:
-		TTAWriterSettings() : AudioEncoderSettings()
+		EncoderSettings() : AudioEncoderSettings()
 		{
+		}
+
+		virtual property String^ Name
+		{
+			String^ get() override { return "ttalib"; }
+		}
+
+		virtual property String^ Extension
+		{
+			String^ get() override { return "tta"; }
+		}
+
+		virtual property Type^ EncoderType
+		{
+			Type^ get() override { return AudioEncoder::typeid; }
+		}
+
+		virtual property bool Lossless
+		{
+			bool get() override { return true; }
+		}
+
+		virtual property int Priority
+		{
+			int get() override { return 1; }
 		}
 	};
 
-	[AudioEncoderClass("ttalib", "tta", true, 1, TTAWriterSettings::typeid)]
-	public ref class TTAWriter : public IAudioDest
+	[AudioEncoderClass(EncoderSettings::typeid)]
+	public ref class AudioEncoder : public IAudioDest
 	{
 	public:
-		TTAWriter(String^ path, TTAWriterSettings^ settings)
+		AudioEncoder(EncoderSettings^ settings, String^ path, Stream^ IO)
 		{
 			_settings = settings;
 

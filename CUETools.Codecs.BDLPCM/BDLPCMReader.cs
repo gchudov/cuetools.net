@@ -5,16 +5,29 @@ using System.IO;
 
 namespace CUETools.Codecs.BDLPCM
 {
-    [AudioDecoderClass("cuetools", "m2ts", 2)]
-    public class BDLPCMReader : IAudioSource
+    public class DecoderSettings : AudioDecoderSettings
     {
-        public unsafe BDLPCMReader(string path, Stream IO, ushort pid)
+        public override string Extension => "m2ts";
+
+        public override string Name => "cuetools";
+
+        public override Type DecoderType => typeof(AudioDecoder);
+
+        public override int Priority => 2;
+
+        public DecoderSettings() : base() { }
+    }
+
+    [AudioDecoderClass(typeof(DecoderSettings))]
+    public class AudioDecoder : IAudioSource
+    {
+        public unsafe AudioDecoder(string path, Stream IO, ushort pid)
             : this(path, IO)
         {
             settings.Pid = pid;
         }
 
-        public unsafe BDLPCMReader(string path, Stream IO)
+        public unsafe AudioDecoder(string path, Stream IO)
         {
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
@@ -24,7 +37,7 @@ namespace CUETools.Codecs.BDLPCM
             _samplePos = 0;
             _sampleLen = -1;
             demux_ts_packets(null, 0);
-            settings = new BDLPCMReaderSettings();
+            settings = new BDLPCMDecoderSettings();
         }
 
         public AudioDecoderSettings Settings { get { return settings; } }
@@ -736,6 +749,6 @@ namespace CUETools.Codecs.BDLPCM
         int demuxer_channel;
         TsStream chosenStream;
         long _samplePos, _sampleLen;
-        BDLPCMReaderSettings settings;
+        BDLPCMDecoderSettings settings;
     }
 }

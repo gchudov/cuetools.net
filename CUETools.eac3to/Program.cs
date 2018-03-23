@@ -32,9 +32,9 @@ namespace CUETools.eac3to
             Console.Error.WriteLine();
         }
 
-        public static CUEToolsUDC GetEncoder(CUEToolsCodecsConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
+        public static AudioEncoderSettingsViewModel GetEncoder(CUEToolsCodecsConfig config, CUEToolsFormat fmt, bool lossless, string chosenEncoder)
         {
-            CUEToolsUDC tmpEncoder;
+            AudioEncoderSettingsViewModel tmpEncoder;
             return chosenEncoder != null ?
                 (config.encoders.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder : null) :
                 (lossless ? fmt.encoderLossless : fmt.encoderLossy);
@@ -133,7 +133,7 @@ namespace CUETools.eac3to
                 {
                     if (true)
                     {
-                        var mpls = new MPLSReader(sourceFile, null);
+                        var mpls = new MPLSDecoder(sourceFile, null);
                         audioSource = mpls;
                         Console.ForegroundColor = ConsoleColor.White;
                         int frameRate = 0;
@@ -307,14 +307,14 @@ namespace CUETools.eac3to
 
                             throw new Exception("Unknown encoder format: " + destFile);
                         }
-                        if (audioSource is MPLSReader)
+                        if (audioSource is MPLSDecoder)
                         {
                             if (stream - chapterStreams <= videos.Count)
                                 throw new Exception("Video extraction not supported.");
                             if (stream - chapterStreams - videos.Count > audios.Count)
                                 throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
                             ushort pid = audios[stream - chapterStreams - videos.Count - 1].pid;
-                            (audioSource.Settings as BDLPCMReaderSettings).Pid = pid;
+                            (audioSource.Settings as BDLPCMDecoderSettings).Pid = pid;
                         }
                     }
 
@@ -347,14 +347,14 @@ namespace CUETools.eac3to
                     }
                     if (!config.formats.TryGetValue(encoderFormat, out fmt))
                         throw new Exception("Unsupported encoder format: " + encoderFormat);
-                    CUEToolsUDC encoder =
+                    AudioEncoderSettingsViewModel encoder =
                         audioEncoderType == AudioEncoderType.Lossless ? Program.GetEncoder(config, fmt, true, encoderName) :
                         audioEncoderType == AudioEncoderType.Lossy ? Program.GetEncoder(config, fmt, false, encoderName) :
                         Program.GetEncoder(config, fmt, true, encoderName) ?? Program.GetEncoder(config, fmt, false, encoderName);
                     if (encoder == null)
                     {
-                        var lst = new List<CUEToolsUDC>(config.encoders).FindAll(
-                            e => e.extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
+                        var lst = new List<AudioEncoderSettingsViewModel>(config.encoders).FindAll(
+                            e => e.Extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
                                 ConvertAll(e => e.Name + (e.Lossless ? " (lossless)" : " (lossy)"));
                         throw new Exception("Encoders available for format " + fmt.extension + ": " + (lst.Count == 0 ? "none" : string.Join(", ", lst.ToArray())));
                     }
@@ -366,16 +366,16 @@ namespace CUETools.eac3to
                     object o = null;
                     try
                     {
-                        o = destFile == "-" ? Activator.CreateInstance(encoder.type, "", Console.OpenStandardOutput(), settings) :
-                            destFile == "nul" ? Activator.CreateInstance(encoder.type, "", new NullStream(), settings) :
-                            Activator.CreateInstance(encoder.type, destFile, settings);
+                        o = destFile == "-" ? Activator.CreateInstance(settings.EncoderType, "", Console.OpenStandardOutput(), settings) :
+                            destFile == "nul" ? Activator.CreateInstance(settings.EncoderType, "", new NullStream(), settings) :
+                            Activator.CreateInstance(settings.EncoderType, destFile, settings);
                     }
                     catch (System.Reflection.TargetInvocationException ex)
                     {
                         throw ex.InnerException;
                     }
                     if (o == null || !(o is IAudioDest))
-                        throw new Exception("Unsupported audio type: " + destFile + ": " + encoder.type.FullName);
+                        throw new Exception("Unsupported audio type: " + destFile + ": " + settings.EncoderType.FullName);
                     audioDest = o as IAudioDest;
                     audioDest.FinalSampleCount = audioSource.Length;
 

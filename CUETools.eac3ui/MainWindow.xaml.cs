@@ -75,7 +75,7 @@ namespace BluTools
 
         private void textBoxSource_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var titleSets = new List<MPLSReader>();
+            var titleSets = new List<MPLSDecoder>();
             IEnumerable<string> playlists = null;
             try
             {
@@ -87,7 +87,7 @@ namespace BluTools
             if (playlists != null)
                 foreach (var playlist in playlists)
                 {
-                    var title = new MPLSReader(playlist, null);
+                    var title = new MPLSDecoder(playlist, null);
                     if (filterDups)
                     {
                         if (titleSets.Exists(title2 =>
@@ -128,7 +128,7 @@ namespace BluTools
             var audios = new List<MPLSStream>();
             if (e.AddedItems.Count == 1)
             {
-                MPLSReader rdr = e.AddedItems[0] as MPLSReader;
+                MPLSDecoder rdr = e.AddedItems[0] as MPLSDecoder;
                 rdr.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.pid == v.pid)) audios.Add(v); }));
 
                 var chapters = rdr.Chapters;
@@ -200,7 +200,7 @@ namespace BluTools
         BackgroundWorker workerExtract;
         CUEMetadataEntry metaresult;
         ObservableCollection<CUEMetadataEntry> metaresults;
-        MPLSReader chosenReader;
+        MPLSDecoder chosenReader;
         ushort pid;
         string outputFolderPath;
         string outputAudioPath;
@@ -214,7 +214,7 @@ namespace BluTools
         {
             if (cmbTitleSet.SelectedItem == null) return;
             pid = ((MPLSStream)cmbAudioTrack.SelectedItem).pid;
-            chosenReader = cmbTitleSet.SelectedItem as MPLSReader;
+            chosenReader = cmbTitleSet.SelectedItem as MPLSDecoder;
             metaresult = cmbMetadata.SelectedItem as CUEMetadataEntry;
             outputFolderPath = Path.Combine(textBoxDestination.Text, metaresult != null ? 
                 metaresult.metadata.Artist + " - " + metaresult.metadata.Year + " - " + metaresult.metadata.Title :
@@ -239,15 +239,15 @@ namespace BluTools
 
         void workerExtract_DoWork(object sender, DoWorkEventArgs e)
         {
-            MPLSReader reader = null;
+            MPLSDecoder reader = null;
             try
             {
-                reader = new MPLSReader(chosenReader.Path, null, pid);
+                reader = new MPLSDecoder(chosenReader.Path, null, pid);
                 Directory.CreateDirectory(outputFolderPath);
                 if (File.Exists(outputCuePath)) throw new Exception(string.Format("File \"{0}\" already exists", outputCuePath));
                 if (File.Exists(outputAudioPath)) throw new Exception(string.Format("File \"{0}\" already exists", outputAudioPath));
                 AudioBuffer buff = new AudioBuffer(reader, 0x10000);
-                FlakeWriterSettings settings = new FlakeWriterSettings()
+                EncoderSettings settings = new EncoderSettings()
                 {
                     PCM = reader.PCM,
                     Padding = 16536,
@@ -297,7 +297,7 @@ namespace BluTools
                 }
                 var start = DateTime.Now;
                 TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
-                var writer = new FlakeWriter(outputAudioPath, settings);
+                var writer = new AudioEncoder(settings, outputAudioPath);
                 try
                 {
                     while (reader.Read(buff, -1) != 0)

@@ -1,10 +1,13 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using CUETools.Codecs.LAME.Interop;
 
 namespace CUETools.Codecs.LAME
 {
     public class LAMEEncoderCBRSettings : AudioEncoderSettings
     {
+        public override Type EncoderType => typeof(LAMEEncoderCBR);
+
         public static readonly uint[] bps_table = new uint[] { 96, 128, 192, 256, 320 };
 
         [DefaultValue(0)]

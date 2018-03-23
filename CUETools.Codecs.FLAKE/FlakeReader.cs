@@ -26,8 +26,21 @@ using System.IO;
 
 namespace CUETools.Codecs.FLAKE
 {
-	[AudioDecoderClass("cuetools", "flac", 2)]
-	public class FlakeReader: IAudioSource
+    public class DecoderSettings : AudioDecoderSettings
+    {
+        public override string Extension => "flac";
+
+        public override string Name => "cuetools";
+
+        public override Type DecoderType => typeof(AudioDecoder);
+
+        public override int Priority => 2;
+
+        public DecoderSettings() : base() { }
+    }
+
+    [AudioDecoderClass(typeof(DecoderSettings))]
+	public class AudioDecoder: IAudioSource
 	{
 		int[] samplesBuffer;
 		int[] residualBuffer;
@@ -76,9 +89,11 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		public FlakeReader(string path, Stream IO)
+		public AudioDecoder(DecoderSettings settings, string path, Stream IO = null)
 		{
-			_path = path;
+            m_settings = settings;
+
+            _path = path;
 			_IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
 
 			crc8 = new Crc8();
@@ -107,7 +122,7 @@ namespace CUETools.Codecs.FLAKE
 			residualBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * PCM.ChannelCount];
 		}
 
-		public FlakeReader(AudioPCMConfig _pcm)
+		public AudioDecoder(AudioPCMConfig _pcm)
 		{
 			pcm = _pcm;
 			crc8 = new Crc8();
@@ -118,7 +133,8 @@ namespace CUETools.Codecs.FLAKE
 			framereader = new BitReader();
 		}
 
-        public AudioDecoderSettings Settings { get { return null; } }
+        private DecoderSettings m_settings;
+        public AudioDecoderSettings Settings => m_settings;
 
         public void Close()
 		{

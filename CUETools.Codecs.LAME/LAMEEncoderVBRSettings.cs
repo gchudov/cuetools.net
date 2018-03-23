@@ -1,10 +1,13 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace CUETools.Codecs.LAME
 {
     public class LAMEEncoderVBRSettings : AudioEncoderSettings
 	{
-		[DefaultValue(LAMEEncoderVBRProcessingQuality.Normal)]
+        public override Type EncoderType => typeof(LAMEEncoderVBR);
+
+        [DefaultValue(LAMEEncoderVBRProcessingQuality.Normal)]
 		public LAMEEncoderVBRProcessingQuality Quality { get; set; }
 
 		public LAMEEncoderVBRSettings()

@@ -2,16 +2,26 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CUETools.Codecs
+namespace CUETools.Codecs.WAV
 {
-    public class WAVWriterSettings : AudioEncoderSettings
+    public class EncoderSettings : AudioEncoderSettings
     {
-        public WAVWriterSettings()
+        public override string Extension => "wav";
+
+        public override string Name => "cuetools";
+
+        public override Type EncoderType => typeof(WAV.AudioEncoder);
+
+        public override int Priority => 10;
+
+        public override bool Lossless => true;
+
+        public EncoderSettings()
             : this(null)
         {
         }
 
-        public WAVWriterSettings(AudioPCMConfig pcm)
+        public EncoderSettings(AudioPCMConfig pcm)
             : base(pcm)
         {
         }

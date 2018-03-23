@@ -32,12 +32,24 @@ using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 #endif
 using CUETools.Codecs;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.FLAKE
 {
-    public class FlakeWriterSettings : AudioEncoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class EncoderSettings : AudioEncoderSettings
     {
-        public FlakeWriterSettings()
+        public override string Extension => "flac";
+
+        public override string Name => "cuetools";
+
+        public override Type EncoderType => typeof(AudioEncoder);
+
+        public override int Priority => 4;
+
+        public override bool Lossless => true;
+
+        public EncoderSettings()
             : base()
         {
         }
@@ -144,16 +156,19 @@ namespace CUETools.Codecs.FLAKE
         [DefaultValue(false)]
         [DisplayName("Verify")]
         [SRDescription(typeof(Properties.Resources), "DoVerifyDescription")]
+        [JsonProperty]
         public bool DoVerify { get; set; }
 
         [DefaultValue(true)]
         [DisplayName("MD5")]
         [SRDescription(typeof(Properties.Resources), "DoMD5Description")]
+        [JsonProperty]
         public bool DoMD5 { get; set; }
 
         [DefaultValue(false)]
         [DisplayName("Allow Non-subset")]
         [SRDescription(typeof(Properties.Resources), "AllowNonSubsetDescription")]
+        [JsonProperty]
         public bool AllowNonSubset { get; set; }
 
         [DefaultValue(StereoMethod.Invalid)]
@@ -257,9 +272,9 @@ namespace CUETools.Codecs.FLAKE
         public string[] Tags { get; set; }
     }
 
-	[AudioEncoderClass("cuetools", "flac", true, 4, typeof(FlakeWriterSettings))]
+	[AudioEncoderClass(typeof(EncoderSettings))]
 	//[AudioEncoderClass("libFlake nonsub", "flac", true, "9 10 11", "9", 3, typeof(FlakeWriterSettings))]
-	public class FlakeWriter : IAudioDest
+	public class AudioEncoder : IAudioDest
 	{
 		Stream _IO = null;
 		string _path;
@@ -323,16 +338,16 @@ namespace CUETools.Codecs.FLAKE
 		MD5 md5;
 
 		FlacFrame frame;
-		FlakeReader verify;
+		AudioDecoder verify;
 
 		SeekPoint[] seek_table;
 		int seek_table_offset = -1;
 
 		bool inited = false;
 
-		public FlakeWriter(string path, Stream IO, FlakeWriterSettings settings)
+		public AudioEncoder(EncoderSettings settings, string path, Stream IO = null)
 		{
-            m_settings = settings.Clone() as FlakeWriterSettings;
+            m_settings = settings.Clone() as EncoderSettings;
             m_settings.Validate();
 
 			//if (Settings.PCM.BitsPerSample != 16)
@@ -360,11 +375,6 @@ namespace CUETools.Codecs.FLAKE
 			frame = new FlacFrame(channels * 2);
 		}
 
-        public FlakeWriter(string path, FlakeWriterSettings settings)
-            : this(path, null, settings)
-		{
-		}
-
 		public int TotalSize
 		{
 			get
@@ -373,15 +383,9 @@ namespace CUETools.Codecs.FLAKE
 			}
 		}
 
-		FlakeWriterSettings m_settings;
+		EncoderSettings m_settings;
 
-        public AudioEncoderSettings Settings
-		{
-			get
-			{
-				return m_settings;
-			}
-		}
+        public AudioEncoderSettings Settings => m_settings;
 
 #if INTEROP
 		[DllImport("kernel32.dll")]
@@ -2332,7 +2336,7 @@ new int[] { // 30
         {
             get
             {
-                var version = typeof(FlakeWriter).Assembly.GetName().Version;
+                var version = typeof(AudioEncoder).Assembly.GetName().Version;
                 return vendor_string ?? "CUETools " + version.Major + "." + version.Minor + "." + version.Build;
             }
             set
@@ -2578,7 +2582,7 @@ new int[] { // 30
 
 			if (m_settings.DoVerify)
 			{
-                verify = new FlakeReader(Settings.PCM);
+                verify = new AudioDecoder(Settings.PCM);
 				verifyBuffer = new int[FlakeConstants.MAX_BLOCKSIZE * channels];
 			}
 
@@ -2619,7 +2623,7 @@ new int[] { // 30
 
         public int development_mode;
 
-        public int flake_set_defaults(FlakeWriterSettings settings)
+        public int flake_set_defaults(EncoderSettings settings)
         {
             order_method = OrderMethod.Akaike;
             block_time_ms = 105;

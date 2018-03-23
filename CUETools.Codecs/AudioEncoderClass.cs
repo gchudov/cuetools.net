@@ -13,7 +13,7 @@ namespace CUETools.Codecs
     /// <example>
     ///    <code lang="C#">using CUETools.Codecs;
     ///
-    ///[AudioEncoderClass("libFLAC", "flac", true, "0 1 2 3 4 5 6 7 8", "5", 1)]
+    ///[AudioEncoderClass(typeof(MyEncoderSettings))]
     ///public class MyEncoder : IAudioDest {
     ///	...
     ///}</code>
@@ -21,43 +21,15 @@ namespace CUETools.Codecs
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public sealed class AudioEncoderClassAttribute : Attribute
     {
-        private string _encoderName, _extension;
-        private bool _lossless;
-        private int _priority;
-        private Type _settings;
-
-        public string EncoderName
-        {
-            get { return _encoderName; }
-        }
-
-        public string Extension
-        {
-            get { return _extension; }
-        }
-
-        public bool Lossless
-        {
-            get { return _lossless; }
-        }
-
-        public int Priority
-        {
-            get { return _priority; }
-        }
-
         public Type Settings
         {
-            get { return _settings; }
+            get;
+            private set;
         }
 
-        public AudioEncoderClassAttribute(string encoderName, string extension, bool lossless, int priority, Type settings)
+        public AudioEncoderClassAttribute(Type settings)
         {
-            _encoderName = encoderName;
-            _extension = extension;
-            _lossless = lossless;
-            _priority = priority;
-            _settings = settings;
+            Settings = settings;
         }
     }
 }

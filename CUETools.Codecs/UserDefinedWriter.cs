@@ -4,17 +4,16 @@ using System.IO;
 
 namespace CUETools.Codecs
 {
-    public class UserDefinedWriter : IAudioDest
+    public class CommandLineEncoder : IAudioDest
     {
         string _path;
         Process _encoderProcess;
-        WAVWriter wrt;
+        WAV.AudioEncoder wrt;
         CyclicBuffer outputBuffer = null;
         bool useTempFile = false;
         string tempFile = null;
         long _finalSampleCount = -1;
         bool closed = false;
-        private UserDefinedEncoderSettings m_settings;
 
         public long Position
         {
@@ -30,22 +29,12 @@ namespace CUETools.Codecs
         }
 
         // !!!! Must not start the process in constructor, so that we can set CompressionLevel via Settings!
-        public AudioEncoderSettings Settings
-        {
-            get
-            {
-                return m_settings;
-            }
-        }
+        private CommandLineEncoderSettings m_settings;
+        public AudioEncoderSettings Settings => m_settings;
 
         public string Path { get { return _path; } }
 
-        public UserDefinedWriter(string path, UserDefinedEncoderSettings settings)
-            : this(path, null, settings)
-        {
-        }
-
-        public UserDefinedWriter(string path, Stream IO, UserDefinedEncoderSettings settings)
+        public CommandLineEncoder(CommandLineEncoderSettings settings, string path, Stream IO = null)
         {
             m_settings = settings;
             _path = path;
@@ -63,7 +52,7 @@ namespace CUETools.Codecs
                 _encoderProcess.StartInfo.RedirectStandardOutput = true;
             if (useTempFile)
             {
-                wrt = new WAVWriter(tempFile, null, new WAVWriterSettings(settings.PCM));
+                wrt = new WAV.AudioEncoder(new WAV.EncoderSettings(settings.PCM), tempFile);
                 return;
             }
             bool started = false;
@@ -86,7 +75,7 @@ namespace CUETools.Codecs
                 outputBuffer = new CyclicBuffer(2 * 1024 * 1024, _encoderProcess.StandardOutput.BaseStream, outputStream);
             }
             Stream inputStream = new CyclicBufferOutputStream(_encoderProcess.StandardInput.BaseStream, 128 * 1024);
-            wrt = new WAVWriter(path, inputStream, new WAVWriterSettings(settings.PCM));
+            wrt = new WAV.AudioEncoder(new WAV.EncoderSettings(settings.PCM), path, inputStream);
         }
 
         public void Close()

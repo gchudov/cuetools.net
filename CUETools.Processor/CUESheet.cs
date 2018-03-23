@@ -2918,7 +2918,7 @@ namespace CUETools.Processor
                         }
             if ((_config.extractAlbumArt || _config.embedAlbumArt) && !_isCD)
             {
-                foreach (string tpl in _config.advanced.CoverArtFiles)
+                foreach (string tpl in _config.advanced.CoverArtFiles.Split(';'))
                 {
                     string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
                     string imgPath = Path.Combine(_isArchive ? _archiveCUEpath : _inputDir, name);
@@ -2939,7 +2939,7 @@ namespace CUETools.Processor
                 {
                     List<string> allfiles = new List<string>(Directory.GetFiles(_inputDir, "*.jpg", SearchOption.AllDirectories));
                     // TODO: archive case
-                    foreach (string tpl in _config.advanced.CoverArtFiles)
+                    foreach (string tpl in _config.advanced.CoverArtFiles.Split(';'))
                     {
                         string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
                         List<string> matching = allfiles.FindAll(s => Path.GetFileName(s) == name);

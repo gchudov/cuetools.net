@@ -242,7 +242,7 @@ namespace CUETools.ConsoleRipper
 				cueFile.Close();
 
 				//IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
-                IAudioDest audioDest = new WAVWriter(destFile, null, new WAVWriterSettings(audioSource.PCM));
+                IAudioDest audioDest = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(audioSource.PCM), destFile);
 				audioDest.FinalSampleCount = audioSource.Length;
 				while (audioSource.Read(buff, -1) != 0)
 				{

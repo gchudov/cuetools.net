@@ -466,8 +466,8 @@ namespace CUETools.Codecs.LossyWAV
             string datestamp = DateTime.Now.ToString();
             string parameter_string = "--standard "; // !!!!!
             string factString = "lossyWAV " + version_string + " @ " + datestamp + ", " + parameter_string + "\r\n\0";
-            if (_audioDest != null && _audioDest is WAVWriter) ((WAVWriter)_audioDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
-            if (_lwcdfDest != null && _lwcdfDest is WAVWriter) ((WAVWriter)_lwcdfDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
+            if (_audioDest != null && _audioDest is WAV.AudioEncoder) ((WAV.AudioEncoder)_audioDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
+            if (_lwcdfDest != null && _lwcdfDest is WAV.AudioEncoder) ((WAV.AudioEncoder)_lwcdfDest).WriteChunk(fccFact, new ASCIIEncoding().GetBytes(factString));
             if (_audioDest != null) _audioDest.Settings.BlockSize = codec_block_size;
             if (_lwcdfDest != null) _lwcdfDest.Settings.BlockSize = codec_block_size * 2;
         }

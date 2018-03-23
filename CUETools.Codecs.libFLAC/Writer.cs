@@ -5,12 +5,24 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using CUETools.Codecs;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.libFLAC
 {
-    public class WriterSettings : AudioEncoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class EncoderSettings : AudioEncoderSettings
     {
-        public WriterSettings()
+        public override string Extension => "flac";
+
+        public override string Name => "libFLAC";
+
+        public override Type EncoderType => typeof(Encoder);
+
+        public override int Priority => 2;
+
+        public override bool Lossless => true;
+
+        public EncoderSettings()
             : base("0 1 2 3 4 5 6 7 8", "5")
         {
         }
@@ -18,11 +30,13 @@ namespace CUETools.Codecs.libFLAC
         [DefaultValue(false)]
         [DisplayName("Verify")]
         [Description("Decode each frame and compare with original")]
+        [JsonProperty]
         public bool Verify { get; set; }
 
         [DefaultValue(true)]
         [DisplayName("MD5")]
         [Description("Calculate MD5 hash for audio stream")]
+        [JsonProperty]
         public bool MD5Sum { get; set; }
 
         [DisplayName("Version")]
@@ -30,10 +44,10 @@ namespace CUETools.Codecs.libFLAC
         public string Version => FLACDLL.GetVersion;
     };
 
-    [AudioEncoderClass("libFLAC", "flac", true, 2, typeof(WriterSettings))]
-    public unsafe class Writer : IAudioDest
+    [AudioEncoderClass(typeof(EncoderSettings))]
+    public unsafe class Encoder : IAudioDest
     {
-        public Writer(string path, Stream output, WriterSettings settings)
+        public Encoder(string path, Stream output, EncoderSettings settings)
         {
             m_path = path;
             m_stream = output;
@@ -56,7 +70,7 @@ namespace CUETools.Codecs.libFLAC
             FLACDLL.FLAC__stream_encoder_set_sample_rate(m_encoder, (uint)m_settings.PCM.SampleRate);
         }
 
-        public Writer(string path, WriterSettings settings)
+        public Encoder(string path, EncoderSettings settings)
             : this(path, null, settings)
         {
         }
@@ -241,7 +255,7 @@ namespace CUETools.Codecs.libFLAC
             m_initialized = true;
         }
 
-        WriterSettings m_settings;
+        EncoderSettings m_settings;
         Stream m_stream;
         bool m_streamGiven;
         IntPtr m_encoder;

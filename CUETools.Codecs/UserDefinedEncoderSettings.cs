@@ -2,17 +2,37 @@
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs
 {
-    public class UserDefinedEncoderSettings : AudioEncoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class CommandLineEncoderSettings : AudioEncoderSettings
     {
-        public UserDefinedEncoderSettings()
+        public override string Name => name;
+
+        public override string Extension => extension;
+
+        public override Type EncoderType => typeof(CommandLineEncoder);
+
+        public override bool Lossless => lossless;
+
+        public CommandLineEncoderSettings()
             : base()
         {
         }
 
+        [JsonProperty]
+        public string name;
+
+        [JsonProperty]
+        public string extension;
+
+        [JsonProperty]
+        public bool lossless;
+
         [DefaultValue(null)]
+        [JsonProperty]
         public string Path
         {
             get;
@@ -20,12 +40,14 @@ namespace CUETools.Codecs
         }
 
         [DefaultValue(null)]
+        [JsonProperty]
         public string Parameters
         {
             get;
             set;
         }
 
+        [JsonProperty]
         public string SupportedModes
         {
             get

@@ -123,8 +123,8 @@ namespace CUETools.TestCodecs
 
 
 		private TestContext testContextInstance;
-		private WAVReader pipe = null;
-		private WAVReader wave = null;
+		private Codecs.WAV.AudioDecoder pipe = null;
+		private Codecs.WAV.AudioDecoder wave = null;
 
 		public readonly static int[,] pipeSamples = new int[,] { { -1, 1 }, { 0, -1 }, { -1, 0 }, { 0, -1 }, { -1, -1 }, { -1, -1 }, { 1, 0 }, { -3, -2 }, { 3, 1 }, { -4, -3 }, { 3, 2 }, { -4, -3 }, { 3, 1 }, { -3, -1 }, { 1, -1 }, { -1, 1 }, { -1, -3 }, { 0, 3 }, { -2, -4 }, { 0, 3 }, { -1, -4 }, { -1, 3 }, { 0, -3 }, { -2, 1 }, { 1, -1 }, { -2, -1 }, { 0, 1 }, { -1, -2 }, { -1, 1 }, { 1, -2 }, { -3, 1 }, { 3, -2 }, { -4, 0 }, { 3, -1 }, { -4, -1 }, { 3, -1 }, { -3, 0 }, { 1, -1 }, { -1, 1 }, { -1, -2 }, { 0, 2 }, { -1, -3 }, { 0, 2 }, { 0, -3 }, { -1, 1 }, { 1, -1 }, { -2, -1 }, { 2, 1 }, { -2, -3 }, { 1, 3 }, { -1, -4 }, { -1, 3 }, { 1, -4 }, { 0, 0 } };
 		public readonly static int[,] testSamples = new int[,] { { -1, 1 }, { 0, -1 }, { -1, 0 }, { 0, -1 }, { -1, -1 }, { -1, -1 }, { 1, 0 }, { -3, -2 }, { 3, 1 }, { -4, -3 }, { 3, 2 }, { -4, -3 }, { 3, 1 }, { -3, -1 }, { 1, -1 }, { -1, 1 }, { -1, -3 }, { 0, 3 }, { -2, -4 }, { 0, 3 }, { -1, -4 }, { -1, 3 }, { 0, -3 }, { -2, 1 }, { 1, -1 }, { -2, -1 }, { 0, 1 }, { -1, -2 }, { -1, 1 }, { 1, -2 }, { -3, 1 }, { 3, -2 }, { -4, 0 }, { 3, -1 }, { -4, -1 }, { 3, -1 }, { -3, 0 }, { 1, -1 }, { -1, 1 }, { -1, -2 }, { 0, 2 }, { -1, -3 }, { 0, 2 }, { 0, -3 }, { -1, 1 }, { 1, -1 }, { -2, -1 }, { 2, 1 }, { -2, -3 }, { 1, 3 }, { -1, -4 }, { -1, 3 }, { 1, -4 }};
@@ -168,8 +168,8 @@ namespace CUETools.TestCodecs
 		[TestInitialize()]
 		public void MyTestInitialize()
 		{
-			pipe = new WAVReader("pipe.wav", null);
-			wave = new WAVReader("test.wav", null);
+			pipe = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), "pipe.wav");
+			wave = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), "test.wav");
 		}
 		//
 		//Use TestCleanup to run code after each test has run
@@ -262,7 +262,7 @@ namespace CUETools.TestCodecs
 		[TestMethod()]
 		public void ReadAllSamplesTest()
 		{
-			AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
+			AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
 			CollectionAssert.AreEqual(testSamples, buff.Samples, "AudioBuffer.Samples was not set correctly.");
 		}
 	}
@@ -333,16 +333,16 @@ namespace CUETools.TestCodecs
 		[TestMethod()]
 		public void ConstructorTest()
 		{
-			AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
-			WAVWriter target;
+			AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
+            Codecs.WAV.AudioEncoder target;
 
-            target = new WAVWriter("wavwriter0.wav", null, new WAVWriterSettings(buff.PCM));
+            target = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(buff.PCM), "wavwriter0.wav");
 			//target.FinalSampleCount = buff.Length;
 			target.Write(buff);
 			target.Close();
 			CollectionAssert.AreEqual(File.ReadAllBytes("test.wav"), File.ReadAllBytes("wavwriter0.wav"), "wavwriter0.wav doesn't match.");
 
-            target = new WAVWriter("wavwriter1.wav", null, new WAVWriterSettings(buff.PCM));
+            target = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(buff.PCM), "wavwriter1.wav");
 			target.FinalSampleCount = buff.Length;
 			target.Write(buff);
 			target.Close();

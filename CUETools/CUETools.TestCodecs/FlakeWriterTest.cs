@@ -76,10 +76,10 @@ namespace CUETools.TestCodecs
         [TestMethod()]
         public void ConstructorTest()
         {
-            AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
-            FlakeWriter target;
+            AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
+            AudioEncoder target;
 
-            target = new FlakeWriter("flakewriter0.flac", null, new FlakeWriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
+            target = new AudioEncoder(new EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" }, "flakewriter0.flac");
             target.Settings.Padding = 1;
             target.DoSeekTable = false;
             //target.Vendor = "CUETools";
@@ -89,7 +89,7 @@ namespace CUETools.TestCodecs
             target.Close();
             CollectionAssert.AreEqual(File.ReadAllBytes("flake.flac"), File.ReadAllBytes("flakewriter0.flac"), "flakewriter0.flac doesn't match.");
 
-            target = new FlakeWriter("flakewriter1.flac", null, new FlakeWriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
+            target = new AudioEncoder(new EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" }, "flakewriter1.flac");
             target.Settings.Padding = 1;
             target.DoSeekTable = false;
             //target.Vendor = "CUETools";
@@ -153,7 +153,7 @@ namespace CUETools.TestCodecs
         [TestMethod()]
         public void SeekTest()
         {
-            var r = new FlakeReader("test.flac", null);
+            var r = new AudioDecoder(new DecoderSettings(), "test.flac");
             var buff1 = new AudioBuffer(r, 16536);
             var buff2 = new AudioBuffer(r, 16536);
             Assert.AreEqual(0, r.Position);

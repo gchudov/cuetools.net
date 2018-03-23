@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Xml.Serialization;
 
 namespace CUETools.Processor
 {
@@ -39,7 +38,6 @@ namespace CUETools.Processor
             }
         }
 
-        internal static XmlSerializer serializer = new XmlSerializer(typeof(CUEConfigAdvanced));
         [DefaultValue("i"), Category("Freedb"), DisplayName("Email user")]
         public string FreedbUser { get; set; }
 
@@ -64,9 +62,9 @@ namespace CUETools.Processor
         [DefaultValue(true), Category("Tagging"), DisplayName("Cache metadata")]
         public bool CacheMetadata { get; set; }
 
-        [DefaultValue(new string[] { "folder.jpg", "cover.jpg", "albumart.jpg", "thumbnail.jpg", "albumartlarge.jpg", "front.jpg", "%album%.jpg" })]
+        [DefaultValue("folder.jpg;cover.jpg;albumart.jpg;thumbnail.jpg;albumartlarge.jpg;front.jpg;%album%.jpg")]
         [Category("Cover Art"), DisplayName("Cover Art Files")]
-        public string[] CoverArtFiles { get; set; }
+        public string CoverArtFiles { get; set; }
 
         [DefaultValue(true)]
         [Category("Cover Art"), DisplayName("Cover Art Extended Search")]

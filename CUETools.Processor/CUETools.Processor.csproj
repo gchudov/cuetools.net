@@ -23,6 +23,10 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />

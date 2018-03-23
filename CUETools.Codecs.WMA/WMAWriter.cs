@@ -7,12 +7,17 @@ using System.Text;
 using WindowsMediaLib;
 using WindowsMediaLib.Defs;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.WMA
 {
-    public abstract class WMAWriterSettings : AudioEncoderSettings
+    public abstract class EncoderSettings : AudioEncoderSettings
     {
-        public WMAWriterSettings()
+        public override Type EncoderType => typeof(AudioEncoder);
+
+        public override bool Lossless => true;
+
+        public EncoderSettings()
             : base()
         {
         }
@@ -205,18 +210,32 @@ namespace CUETools.Codecs.WMA
         public AudioPCMConfig pcm;
     }
 
-    public class WMALWriterSettings : WMAWriterSettings
+    public class LosslessEncoderSettings : EncoderSettings
     {
-        public WMALWriterSettings()
+        public override string Extension => "wma";
+
+        public override string Name => "wma lossless";
+
+        public override int Priority => 1;
+
+        public override bool Lossless => true;
+
+        public LosslessEncoderSettings()
             : base()
         {
             this.m_subType = MediaSubType.WMAudio_Lossless;
         }
     }
 
-    public class WMALossyWriterSettings : WMAWriterSettings
+    public class LossyEncoderSettings : EncoderSettings
     {
-        public WMALossyWriterSettings()
+        public override string Extension => "wma";
+
+        public override string Name => "wma lossy";
+
+        public override int Priority => 1;
+
+        public LossyEncoderSettings()
             : base()
         {
             this.m_subType = MediaSubType.WMAudioV9;
@@ -229,6 +248,7 @@ namespace CUETools.Codecs.WMA
         }
 
         [DefaultValue(Codec.WMA10Pro)]
+        [JsonProperty]
         public Codec Version
         {
             get
@@ -242,6 +262,7 @@ namespace CUETools.Codecs.WMA
         }
 
         [DefaultValue(true)]
+        [JsonProperty]
         public bool VBR
         {
             get
@@ -255,11 +276,11 @@ namespace CUETools.Codecs.WMA
         }
     }
 
-    [AudioEncoderClass("wma lossless", "wma", true, 1, typeof(WMALWriterSettings))]
-    [AudioEncoderClass("wma lossy", "wma", false, 1, typeof(WMALossyWriterSettings))]
-    public class WMAWriter : IAudioDest
+    [AudioEncoderClass(typeof(LosslessEncoderSettings))]
+    [AudioEncoderClass(typeof(LossyEncoderSettings))]
+    public class AudioEncoder : IAudioDest
     {
-        IWMWriter m_pWriter;
+        IWMWriter m_pEncoder;
         private string outputPath;
         private bool closed = false;
         private bool fileCreated = false;
@@ -279,7 +300,7 @@ namespace CUETools.Codecs.WMA
             get { return this.outputPath; }
         }
 
-        WMAWriterSettings m_settings;
+        EncoderSettings m_settings;
 
         public virtual AudioEncoderSettings Settings
         {
@@ -289,19 +310,19 @@ namespace CUETools.Codecs.WMA
             }
         }
 
-        public WMAWriter(string path, WMAWriterSettings settings)
+        public AudioEncoder(string path, EncoderSettings settings)
         {
             this.m_settings = settings;
             this.outputPath = path;
 
             try
             {
-                m_pWriter = settings.GetWriter();
+                m_pEncoder = settings.GetWriter();
                 int cInputs;
-                m_pWriter.GetInputCount(out cInputs);
+                m_pEncoder.GetInputCount(out cInputs);
                 if (cInputs < 1) throw new InvalidOperationException();
                 IWMInputMediaProps pInput;
-                m_pWriter.GetInputProps(0, out pInput);
+                m_pEncoder.GetInputProps(0, out pInput);
                 try
                 {
                     int cbType = 0;
@@ -320,7 +341,7 @@ namespace CUETools.Codecs.WMA
                         pMediaType.formatSize = Marshal.SizeOf(wfe);
                         Marshal.StructureToPtr(wfe, pMediaType.formatPtr, false);
                         pInput.SetMediaType(pMediaType);
-                        m_pWriter.SetInputProps(0, pInput);
+                        m_pEncoder.SetInputProps(0, pInput);
                     }
                     finally
                     {
@@ -334,10 +355,10 @@ namespace CUETools.Codecs.WMA
             }
             catch (Exception ex)
             {
-                if (m_pWriter != null)
+                if (m_pEncoder != null)
                 {
-                    Marshal.ReleaseComObject(m_pWriter);
-                    m_pWriter = null;
+                    Marshal.ReleaseComObject(m_pEncoder);
+                    m_pEncoder = null;
                 }
                 throw ex;
             }
@@ -351,16 +372,16 @@ namespace CUETools.Codecs.WMA
                 {
                     if (this.writingBegan)
                     {
-                        m_pWriter.EndWriting();
+                        m_pEncoder.EndWriting();
                         this.writingBegan = false;
                     }
                 }
                 finally
                 {
-                    if (m_pWriter != null)
+                    if (m_pEncoder != null)
                     {
-                        Marshal.ReleaseComObject(m_pWriter);
-                        m_pWriter = null;
+                        Marshal.ReleaseComObject(m_pEncoder);
+                        m_pEncoder = null;
                     }
                 }
 
@@ -392,24 +413,24 @@ namespace CUETools.Codecs.WMA
 
             if (!this.fileCreated)
             {
-                this.m_pWriter.SetOutputFilename(outputPath);
+                this.m_pEncoder.SetOutputFilename(outputPath);
                 this.fileCreated = true;
             }
             if (!this.writingBegan)
             {
-                this.m_pWriter.BeginWriting();
+                this.m_pEncoder.BeginWriting();
                 this.writingBegan = true;
             }
 
             buffer.Prepare(this);
             INSSBuffer pSample;
-            m_pWriter.AllocateSample(buffer.ByteLength, out pSample);
+            m_pEncoder.AllocateSample(buffer.ByteLength, out pSample);
             IntPtr pdwBuffer;
             pSample.GetBuffer(out pdwBuffer);
             pSample.SetLength(buffer.ByteLength);
             Marshal.Copy(buffer.Bytes, 0, pdwBuffer, buffer.ByteLength);
             long cnsSampleTime = sampleCount * 10000000L / Settings.PCM.SampleRate;
-            m_pWriter.WriteSample(0, cnsSampleTime, SampleFlag.CleanPoint, pSample);
+            m_pEncoder.WriteSample(0, cnsSampleTime, SampleFlag.CleanPoint, pSample);
             Marshal.ReleaseComObject(pSample);
             sampleCount += buffer.Length;
         }

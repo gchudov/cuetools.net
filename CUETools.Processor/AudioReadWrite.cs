@@ -19,22 +19,18 @@ namespace CUETools.Processor
 				}
 			}
 			if (extension == ".bin")
-				return new WAVReader(path, IO, AudioPCMConfig.RedBook);
+				return new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), path, IO, AudioPCMConfig.RedBook);
 			CUEToolsFormat fmt;
 			if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
 				throw new Exception("Unsupported audio type: " + path);
 			if (fmt.decoder == null)
 				throw new Exception("Unsupported audio type: " + path);
-			if (fmt.decoder.path != null)
-				return new UserDefinedReader(path, IO, fmt.decoder.path, fmt.decoder.parameters);
-			if (fmt.decoder.type == null)
-				throw new Exception("Unsupported audio type: " + path);
-
-			try
+            var settings = fmt.decoder.decoderSettings.Clone();
+            try
 			{
-				object src = Activator.CreateInstance(fmt.decoder.type, path, IO);
+				object src = Activator.CreateInstance(fmt.decoder.decoderSettings.DecoderType, settings, path, IO);
 				if (src == null || !(src is IAudioSource))
-					throw new Exception("Unsupported audio type: " + path + ": " + fmt.decoder.type.FullName);
+					throw new Exception("Unsupported audio type: " + path + ": " + fmt.decoder.decoderSettings.DecoderType.FullName);
 				return src as IAudioSource;
 			}
 			catch (System.Reflection.TargetInvocationException ex)
@@ -59,7 +55,7 @@ namespace CUETools.Processor
 			CUEToolsFormat fmt;
 			if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
 				throw new Exception("Unsupported audio type: " + path);
-			CUEToolsUDC encoder = audioEncoderType == AudioEncoderType.Lossless ? fmt.encoderLossless :
+			AudioEncoderSettingsViewModel encoder = audioEncoderType == AudioEncoderType.Lossless ? fmt.encoderLossless :
 				audioEncoderType == AudioEncoderType.Lossy ? fmt.encoderLossy :
 				null;
 			if (encoder == null)
@@ -70,14 +66,14 @@ namespace CUETools.Processor
             object o;
             try
             {
-                o = Activator.CreateInstance(encoder.type, path, settings);
+                o = Activator.CreateInstance(settings.EncoderType, settings, path, null);
             }
             catch (System.Reflection.TargetInvocationException ex)
             {
                 throw ex.InnerException;
             }
 			if (o == null || !(o is IAudioDest))
-				throw new Exception("Unsupported audio type: " + path + ": " + encoder.type.FullName);
+				throw new Exception("Unsupported audio type: " + path + ": " + settings.EncoderType.FullName);
 			dest = o as IAudioDest;
             dest.FinalSampleCount = finalSampleCount;
 			return dest;

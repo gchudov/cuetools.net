@@ -6,18 +6,31 @@ using System.Globalization;
 
 namespace CUETools.Codecs.BDLPCM
 {
-    [AudioDecoderClass("cuetools", "mpls", 2)]
-    public class MPLSReader : IAudioSource
+    public class MPLSDecoderSettings : AudioDecoderSettings
     {
-        public unsafe MPLSReader(string path, Stream IO, ushort pid)
+        public override string Extension => "mpls";
+
+        public override string Name => "cuetools";
+
+        public override Type DecoderType => typeof(MPLSDecoder);
+
+        public override int Priority => 2;
+
+        public MPLSDecoderSettings() : base() { }
+    }
+
+    [AudioDecoderClass(typeof(MPLSDecoderSettings))]
+    public class MPLSDecoder : IAudioSource
+    {
+        public unsafe MPLSDecoder(string path, Stream IO, ushort pid)
                 : this(path, IO)
         {
             settings.Pid = pid;
         }
 
-        public unsafe MPLSReader(string path, Stream IO)
+        public unsafe MPLSDecoder(string path, Stream IO)
         {
-            settings = new BDLPCMReaderSettings();
+            settings = new BDLPCMDecoderSettings();
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
             int length = (int)_IO.Length;
@@ -36,7 +49,7 @@ namespace CUETools.Codecs.BDLPCM
 
         void openEntries()
         {
-            readers = new List<BDLPCMReader>();
+            readers = new List<AudioDecoder>();
             var pids = new List<ushort>();
             foreach (var item in hdr_m.play_item)
                 foreach (var audio in item.audio)
@@ -70,7 +83,7 @@ namespace CUETools.Codecs.BDLPCM
                         var m2ts = System.IO.Path.Combine(
                             System.IO.Path.Combine(parent.FullName, "STREAM"), 
                             item.clip_id + ".m2ts");
-                        var entry = new BDLPCMReader(m2ts, null, chosenPid);
+                        var entry = new AudioDecoder(m2ts, null, chosenPid);
                         readers.Add(entry);
                         break;
                     }
@@ -437,10 +450,10 @@ namespace CUETools.Codecs.BDLPCM
         byte[] contents;
 
         AudioPCMConfig pcm;
-        List<BDLPCMReader> readers;
-        BDLPCMReader currentReader;
+        List<AudioDecoder> readers;
+        AudioDecoder currentReader;
         MPLSHeader hdr_m;
-        BDLPCMReaderSettings settings;
+        BDLPCMDecoderSettings settings;
     }
 
     public struct MPLSPlaylistMark

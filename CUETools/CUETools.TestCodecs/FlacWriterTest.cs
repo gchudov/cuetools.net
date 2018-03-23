@@ -32,10 +32,10 @@ namespace CUETools.TestCodecs
         [DeploymentItem("../ThirdParty/x64/libFLAC_dynamic.dll", "")]
         public void ConstructorTest()
         {
-            AudioBuffer buff = WAVReader.ReadAllSamples("test.wav", null);
-            CUETools.Codecs.libFLAC.Writer target;
+            AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
+            CUETools.Codecs.libFLAC.Encoder target;
 
-            target = new CUETools.Codecs.libFLAC.Writer("flacwriter2.flac", new CUETools.Codecs.libFLAC.WriterSettings() { PCM = buff.PCM, EncoderMode = "7" });
+            target = new CUETools.Codecs.libFLAC.Encoder("flacwriter2.flac", new CUETools.Codecs.libFLAC.EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" });
             target.Settings.Padding = 1;
             target.Settings.BlockSize = 32;
             //target.Vendor = "CUETools";

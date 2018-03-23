@@ -3,11 +3,41 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs
 {
-    public class AudioDecoderSettings
+    public interface IAudioDecoderSettings
     {
+        string Name { get; }
+
+        string Extension { get; }
+
+        Type DecoderType { get; }
+
+        bool Lossless { get; }
+
+        int Priority { get; }
+    }
+
+    [JsonObject(MemberSerialization.OptIn)]
+    public class AudioDecoderSettings: IAudioDecoderSettings
+    {
+        [Browsable(false)]
+        public virtual string Name => null;
+
+        [Browsable(false)]
+        public virtual string Extension => null;
+
+        [Browsable(false)]
+        public virtual Type DecoderType => null;
+
+        [Browsable(false)]
+        public virtual bool Lossless => true;
+
+        [Browsable(false)]
+        public virtual int Priority => 0;
+
         public AudioDecoderSettings()
         {
             // Iterate through each property and call ResetValue()
