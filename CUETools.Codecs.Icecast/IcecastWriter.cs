@@ -12,7 +12,7 @@ namespace CUETools.Codecs.Icecast
 	{
 		private long _sampleOffset = 0;
         private AudioEncoderSettings m_settings;
-		private LAME.AudioEncoder encoder = null;
+		private libmp3lame.AudioEncoder encoder = null;
 		private HttpWebRequest req = null;
 		private HttpWebResponse resp = null;
 		private Stream reqStream;
@@ -80,12 +80,12 @@ namespace CUETools.Codecs.Icecast
 				resp = req.GetResponse() as HttpWebResponse;
 				if (resp.StatusCode == HttpStatusCode.OK)
 				{
-                    var encoderSettings = new CUETools.Codecs.LAME.CBREncoderSettings() { PCM = AudioPCMConfig.RedBook };
+                    var encoderSettings = new CUETools.Codecs.libmp3lame.CBREncoderSettings() { PCM = AudioPCMConfig.RedBook };
                     //encoderSettings.StereoMode = settings.JointStereo ?
                     //    CUETools.Codecs.LAME.Interop.MpegMode.JOINT_STEREO :
                     //    CUETools.Codecs.LAME.Interop.MpegMode.STEREO;
                     //encoderSettings.CustomBitrate = settings.Bitrate;
-                    encoder = new CUETools.Codecs.LAME.AudioEncoder(encoderSettings, "", reqStream);
+                    encoder = new CUETools.Codecs.libmp3lame.AudioEncoder(encoderSettings, "", reqStream);
 				}
 			}
 			catch (WebException ex)

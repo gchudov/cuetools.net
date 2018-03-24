@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
-    <ProjectReference Include="..\CUETools.Codecs.LAME\CUETools.Codecs.LAME.csproj" />
+    <ProjectReference Include="..\CUETools.Codecs.libmp3lame\CUETools.Codecs.libmp3lame.csproj" />
   </ItemGroup>
 
 </Project>

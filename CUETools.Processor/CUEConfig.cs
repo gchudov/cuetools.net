@@ -408,6 +408,10 @@ namespace CUETools.Processor
                         {
                             DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
                             TypeNameHandling = TypeNameHandling.Auto,
+                            Error = (sender, ev) => {
+                                System.Diagnostics.Trace.WriteLine(ev.ErrorContext.Error.ToString());
+                                ev.ErrorContext.Handled = true;
+                            }
                         });
                     if (jsonObject as CUEConfigAdvanced == null)
                         throw new Exception();
