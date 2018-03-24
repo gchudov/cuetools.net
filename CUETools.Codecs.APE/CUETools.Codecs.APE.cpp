@@ -119,7 +119,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}
 	};
 
-	[AudioDecoderClass(DecoderSettings::typeid)]
 	public ref class AudioDecoder : public IAudioSource
 	{
 	public:
@@ -323,7 +322,6 @@ namespace CUETools { namespace Codecs { namespace APE {
 		}		
 	};
 
-	[AudioEncoderClass(EncoderSettings::typeid)]
 	public ref class AudioEncoder : IAudioDest
 	{
 	public:

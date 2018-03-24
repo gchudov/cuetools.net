@@ -58,7 +58,6 @@ namespace TTA {
 		}
 	};
 
-	[AudioDecoderClass(DecoderSettings::typeid)]
 	public ref class AudioDecoder : public IAudioSource
 	{
 	public:
@@ -279,7 +278,6 @@ namespace TTA {
 		}
 	};
 
-	[AudioEncoderClass(EncoderSettings::typeid)]
 	public ref class AudioEncoder : public IAudioDest
 	{
 	public:
