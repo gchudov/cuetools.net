@@ -12,15 +12,15 @@ namespace CUETools.Codecs
     public class CUEToolsCodecsConfig
     {
         public Dictionary<string, CUEToolsFormat> formats;
-        public CUEToolsUDCEncoderList encoders;
-        public CUEToolsUDCDecoderList decoders;
+        public EncoderListViewModel encoders;
+        public DecoderListViewModel decoders;
 
         public CUEToolsCodecsConfig(CUEToolsCodecsConfig src)
         {
-            encoders = new CUEToolsUDCEncoderList();
+            encoders = new EncoderListViewModel();
             foreach (var enc in src.encoders)
                 encoders.Add(enc.Clone());
-            decoders = new CUEToolsUDCDecoderList();
+            decoders = new DecoderListViewModel();
             foreach (var dec in src.decoders)
                 decoders.Add(dec.Clone());
             formats = new Dictionary<string, CUEToolsFormat>();
@@ -30,7 +30,7 @@ namespace CUETools.Codecs
 
         public CUEToolsCodecsConfig(List<Type> encs, List<Type> decs)
         {
-            encoders = new CUEToolsUDCEncoderList();
+            encoders = new EncoderListViewModel();
             foreach (Type type in encs)
                 foreach (AudioEncoderClassAttribute enc in Attribute.GetCustomAttributes(type, typeof(AudioEncoderClassAttribute)))
                     try
@@ -42,7 +42,7 @@ namespace CUETools.Codecs
                         System.Diagnostics.Trace.WriteLine(ex.Message);
                     }
 
-            decoders = new CUEToolsUDCDecoderList();
+            decoders = new DecoderListViewModel();
             foreach (Type type in decs)
                 foreach (AudioDecoderClassAttribute dec in Attribute.GetCustomAttributes(type, typeof(AudioDecoderClassAttribute)))
                     try
@@ -66,8 +66,8 @@ namespace CUETools.Codecs
                 encoders.Add(new AudioEncoderSettingsViewModel("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
                 encoders.Add(new AudioEncoderSettingsViewModel("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
-                decoders.Add(new AudioDecoderSettingsViewModel(new CommandLineDecoderSettings("takc", "tak", "takc.exe", "-d %I -")));
-                decoders.Add(new AudioDecoderSettingsViewModel(new CommandLineDecoderSettings("ffmpeg alac", "m4a", "ffmpeg.exe", "-v 0 -i %I -f wav -")));
+                decoders.Add(new AudioDecoderSettingsViewModel(new CommandLine.DecoderSettings("takc", "tak", "takc.exe", "-d %I -")));
+                decoders.Add(new AudioDecoderSettingsViewModel(new CommandLine.DecoderSettings("ffmpeg alac", "m4a", "ffmpeg.exe", "-v 0 -i %I -f wav -")));
             }
             else
             {

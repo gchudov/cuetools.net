@@ -244,7 +244,7 @@ namespace CUETools.FLACCL.cmd
                 if (input_file == "-")
                     audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings() { IgnoreChunkSizes = true }, "", Console.OpenStandardInput());
 				else if (input_file == "nul")
-					audioSource = new SilenceGenerator(new AudioPCMConfig(input_bps, input_ch, input_rate), input_len, input_val);
+					audioSource = new Codecs.NULL.AudioDecoder(new AudioPCMConfig(input_bps, input_ch, input_rate), input_len, input_val);
 				else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
 					audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), input_file);
 				else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")

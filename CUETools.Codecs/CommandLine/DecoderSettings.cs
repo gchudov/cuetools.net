@@ -4,21 +4,21 @@ using System.Text;
 using System.ComponentModel;
 using Newtonsoft.Json;
 
-namespace CUETools.Codecs
+namespace CUETools.Codecs.CommandLine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class CommandLineDecoderSettings : AudioDecoderSettings
+    public class DecoderSettings : AudioDecoderSettings
     {
         public override string Name => name;
 
         public override string Extension => extension;
 
-        public CommandLineDecoderSettings()
+        public DecoderSettings()
             : base()
         {
         }
 
-        public CommandLineDecoderSettings(
+        public DecoderSettings(
             string _name,
             string _extension,
             string _path,

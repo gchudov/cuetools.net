@@ -3972,7 +3972,7 @@ namespace CUETools.Processor
 
             if (sourceInfo.Path == null)
             {
-                audioSource = new SilenceGenerator(sourceInfo.Offset + sourceInfo.Length);
+                audioSource = new Codecs.NULL.AudioDecoder(sourceInfo.Offset + sourceInfo.Length);
             }
             else
             {

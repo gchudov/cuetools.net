@@ -71,8 +71,8 @@ namespace CUETools.Processor
         public bool CopyAlbumArt { get; set; }
         public string ArLogFilenameFormat { get; set; }
         public string AlArtFilenameFormat { get; set; }
-        public CUEToolsUDCEncoderList Encoders => encoders;
-        public CUEToolsUDCDecoderList Decoders => decoders;
+        public EncoderListViewModel Encoders => encoders;
+        public DecoderListViewModel Decoders => decoders;
 
         public CUEConfig()
             : base(CUEProcessorPlugins.encs, CUEProcessorPlugins.decs)
@@ -312,9 +312,9 @@ namespace CUETools.Processor
 
             int nDecoders = 0;
             foreach (var decoder in decoders)
-                if (decoder.decoderSettings is CommandLineDecoderSettings)
+                if (decoder.decoderSettings is Codecs.CommandLine.DecoderSettings)
                 {
-                    var settings = decoder.decoderSettings as CommandLineDecoderSettings;
+                    var settings = decoder.decoderSettings as Codecs.CommandLine.DecoderSettings;
                     sw.Save(string.Format("ExternalDecoder{0}Name", nDecoders), settings.Name);
                     sw.Save(string.Format("ExternalDecoder{0}Extension", nDecoders), settings.Extension);
                     sw.Save(string.Format("ExternalDecoder{0}Path", nDecoders), settings.Path);
@@ -434,14 +434,14 @@ namespace CUETools.Processor
             try
             {
                 var jsonObject = JsonConvert.DeserializeObject(sr.Load("Encoders"),
-                    typeof(CUEToolsUDCEncoderList),
+                    typeof(EncoderListViewModel),
                     new JsonSerializerSettings {
                         DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
                         TypeNameHandling = TypeNameHandling.Auto
                     });
-                if (jsonObject as CUEToolsUDCEncoderList == null)
+                if (jsonObject as EncoderListViewModel == null)
                     throw new Exception();
-                encoders = jsonObject as CUEToolsUDCEncoderList;
+                encoders = jsonObject as EncoderListViewModel;
                 encoders.Where(x => !x.IsValid).ToList().ForEach(x => encoders.Remove(x));
                 AudioEncoderSettingsViewModel tmp;
                 encodersBackup.Where(x => !encoders.TryGetValue(x.Extension, x.Lossless, x.Name, out tmp)).ToList().ForEach(x => encoders.Add(x));
@@ -503,7 +503,7 @@ namespace CUETools.Processor
                 string parameters = sr.Load(string.Format("ExternalDecoder{0}Parameters", nDecoders));
                 AudioDecoderSettingsViewModel decoder;
                 if (!decoders.TryGetValue(extension, true, name, out decoder))
-                    decoders.Add(new AudioDecoderSettingsViewModel(new CommandLineDecoderSettings(name, extension, path, parameters)));
+                    decoders.Add(new AudioDecoderSettingsViewModel(new Codecs.CommandLine.DecoderSettings(name, extension, path, parameters)));
                 else
                 {
                     decoder.Extension = extension;

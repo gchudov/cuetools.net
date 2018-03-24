@@ -15,7 +15,7 @@ namespace CUETools.Processor
 					long len;
 					if (!long.TryParse(slen, out len))
 						len = CDImageLayout.TimeFromString(slen) * 588;
-					return new SilenceGenerator(len);
+					return new Codecs.NULL.AudioDecoder(len);
 				}
 			}
 			if (extension == ".bin")
@@ -51,7 +51,7 @@ namespace CUETools.Processor
 		{
 			IAudioDest dest;
             if (audioEncoderType == AudioEncoderType.NoAudio || extension == ".dummy")
-                return new DummyWriter(path, new AudioEncoderSettings(pcm)) { FinalSampleCount = finalSampleCount };
+                return new Codecs.NULL.AudioEncoder(path, new AudioEncoderSettings(pcm)) { FinalSampleCount = finalSampleCount };
 			CUEToolsFormat fmt;
 			if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
 				throw new Exception("Unsupported audio type: " + path);
