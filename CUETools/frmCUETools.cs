@@ -2348,7 +2348,7 @@ namespace JDP
                     }
                 case AudioEncoderType.Lossless:
                     {
-                        foreach (AudioEncoderSettingsViewModel encoder in _profile._config.encoders)
+                        foreach (AudioEncoderSettingsViewModel encoder in _profile._config.Encoders)
                             if (encoder.Extension == SelectedOutputAudioFmt.extension)
                                 if (encoder.Lossless)
                                     comboBoxEncoder.Items.Add(encoder);
@@ -2359,7 +2359,7 @@ namespace JDP
                     }
                 case AudioEncoderType.Lossy:
                     {
-                        foreach (AudioEncoderSettingsViewModel encoder in _profile._config.encoders)
+                        foreach (AudioEncoderSettingsViewModel encoder in _profile._config.Encoders)
                             if (encoder.Extension == SelectedOutputAudioFmt.extension)
                                 if (!encoder.Lossless)
                                     comboBoxEncoder.Items.Add(encoder);
@@ -2409,8 +2409,8 @@ namespace JDP
         private void resetEncoderModes(AudioEncoderSettingsViewModel encoder)
         {
             // TODO: something cleverer than this hack...
-            encoder.settings.PCM = AudioPCMConfig.RedBook;
-            buttonEncoderSettings.Visible = encoder.settings.HasBrowsableAttributes();
+            encoder.Settings.PCM = AudioPCMConfig.RedBook;
+            buttonEncoderSettings.Visible = encoder.Settings.HasBrowsableAttributes();
             string[] modes = encoder.SupportedModes;
             if (modes == null || modes.Length < 2)
             {
@@ -2424,12 +2424,12 @@ namespace JDP
                 if (encoder.EncoderModeIndex == -1)
                 {
                     string defaultMode;
-                    encoder.settings.GetSupportedModes(out defaultMode);
-                    encoder.settings.EncoderMode = defaultMode;
+                    encoder.Settings.GetSupportedModes(out defaultMode);
+                    encoder.Settings.EncoderMode = defaultMode;
                 }
                 trackBarEncoderMode.Maximum = modes.Length - 1;
                 trackBarEncoderMode.Value = encoder.EncoderModeIndex == -1 ? modes.Length - 1 : encoder.EncoderModeIndex;
-                labelEncoderMode.Text = encoder.settings.EncoderMode;
+                labelEncoderMode.Text = encoder.Settings.EncoderMode;
                 labelEncoderMinMode.Text = modes[0];
                 labelEncoderMaxMode.Text = modes[modes.Length - 1];
                 trackBarEncoderMode.Visible = true;
@@ -2461,8 +2461,8 @@ namespace JDP
         {
             var encoder = comboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
             string[] modes = encoder.SupportedModes;
-            encoder.settings.EncoderMode = modes[trackBarEncoderMode.Value];
-            labelEncoderMode.Text = encoder.settings.EncoderMode;
+            encoder.Settings.EncoderMode = modes[trackBarEncoderMode.Value];
+            labelEncoderMode.Text = encoder.Settings.EncoderMode;
         }
 
         //private void toolStripButton1_Click(object sender, EventArgs e)

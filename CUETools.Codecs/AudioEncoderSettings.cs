@@ -20,7 +20,7 @@ namespace CUETools.Codecs
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    public class AudioEncoderSettings
+    public class AudioEncoderSettings : IAudioEncoderSettings
     {
         [Browsable(false)]
         public virtual string Name => null;

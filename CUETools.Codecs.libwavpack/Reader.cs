@@ -21,7 +21,6 @@ namespace CUETools.Codecs.libwavpack
         public DecoderSettings() : base() { }
     }
 
-    [AudioDecoderClass(typeof(DecoderSettings))]
     public unsafe class AudioDecoder : IAudioSource
     {
         private readonly void* IO_ID_WV = ((IntPtr)1).ToPointer();

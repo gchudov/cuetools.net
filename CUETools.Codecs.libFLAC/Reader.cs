@@ -21,7 +21,6 @@ namespace CUETools.Codecs.libFLAC
         public Settings() : base() { }
     }
 
-    [AudioDecoderClass(typeof(Settings))]
     public unsafe class Reader : IAudioSource
     {
         public Reader(string path, Stream IO)

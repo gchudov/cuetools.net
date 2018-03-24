@@ -30,7 +30,7 @@ namespace CUETools.Converter
         {
             AudioEncoderSettingsViewModel tmpEncoder;
             return chosenEncoder != null ?
-                (config.encoders.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder : null) :
+                (config.encodersViewModel.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder : null) :
                 (lossless ? fmt.encoderLossless : fmt.encoderLossy);
         }
 
@@ -47,16 +47,16 @@ namespace CUETools.Converter
                 throw new Exception("Unsupported audio type: " + path);
 
             var decoder = fmt.decoder;
-            if (chosenDecoder != null && !config.decoders.TryGetValue(fmt.extension, true, chosenDecoder, out decoder))
+            if (chosenDecoder != null && !config.decodersViewModel.TryGetValue(fmt.extension, true, chosenDecoder, out decoder))
                 throw new Exception("Unknown audio decoder " + chosenDecoder + " or unsupported audio type " + fmt.extension);
             if (decoder == null)
                 throw new Exception("Unsupported audio type: " + path);
-            var settings = fmt.decoder.decoderSettings.Clone();
+            var settings = fmt.decoder.Settings.Clone();
             try
             {
-                object src = Activator.CreateInstance(decoder.decoderSettings.DecoderType, settings, path, IO);
+                object src = Activator.CreateInstance(decoder.Settings.DecoderType, settings, path, IO);
                 if (src == null || !(src is IAudioSource))
-                    throw new Exception("Unsupported audio type: " + path + ": " + decoder.decoderSettings.DecoderType.FullName);
+                    throw new Exception("Unsupported audio type: " + path + ": " + decoder.Settings.DecoderType.FullName);
                 return src as IAudioSource;
             }
             catch (System.Reflection.TargetInvocationException ex)
@@ -133,7 +133,8 @@ namespace CUETools.Converter
 
             DateTime start = DateTime.Now;
             TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
-            CUEToolsCodecsConfig config = new CUEConfig();
+            var config = new CUEConfigAdvanced();
+            config.Init();
 
 #if !DEBUG
             try
@@ -186,12 +187,12 @@ namespace CUETools.Converter
                         Program.GetEncoder(config, fmt, true, encoderName) ?? Program.GetEncoder(config, fmt, false, encoderName);
                     if (encoder == null)
                     {
-                        var lst = new List<AudioEncoderSettingsViewModel>(config.encoders).FindAll(
+                        var lst = new List<AudioEncoderSettingsViewModel>(config.encodersViewModel).FindAll(
                             e => e.Extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
                                 ConvertAll(e => e.Name + (e.Lossless ? " (lossless)" : " (lossy)"));
                         throw new Exception("Encoders available for format " + fmt.extension + ": " + (lst.Count == 0 ? "none" : string.Join(", ", lst.ToArray())));
                     }
-                    var settings = encoder.settings.Clone();
+                    var settings = encoder.Settings.Clone();
                     settings.PCM = audioSource.PCM;
                     settings.Padding = padding;
                     settings.EncoderMode = encoderMode ?? settings.EncoderMode;

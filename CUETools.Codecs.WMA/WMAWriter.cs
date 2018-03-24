@@ -276,8 +276,6 @@ namespace CUETools.Codecs.WMA
         }
     }
 
-    [AudioEncoderClass(typeof(LosslessEncoderSettings))]
-    [AudioEncoderClass(typeof(LossyEncoderSettings))]
     public class AudioEncoder : IAudioDest
     {
         IWMWriter m_pEncoder;

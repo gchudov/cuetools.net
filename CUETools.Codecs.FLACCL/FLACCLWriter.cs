@@ -279,7 +279,6 @@ namespace CUETools.Codecs.FLACCL
         GPU = DeviceType.GPU
     }
 
-    [AudioEncoderClass(typeof(EncoderSettings))]
     public class AudioEncoder : IAudioDest
     {
         Stream _IO = null;

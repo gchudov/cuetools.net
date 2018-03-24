@@ -1,19 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace CUETools.Codecs
 {
     public class EncoderListViewModel : BindingList<AudioEncoderSettingsViewModel>
     {
-        public EncoderListViewModel()
+        private List<AudioEncoderSettings> model;
+
+        public EncoderListViewModel(List<AudioEncoderSettings> model)
             : base()
         {
+            this.model = model;
+            model.ForEach(item => Add(new AudioEncoderSettingsViewModel(item)));
             AddingNew += OnAddingNew;
         }
 
         private void OnAddingNew(object sender, AddingNewEventArgs e)
         {
-            e.NewObject = new AudioEncoderSettingsViewModel("new", "wav", true, "", "", "", "");
+            var item = new CommandLine.EncoderSettings("new", "wav", true, "", "", "", "");
+            model.Add(item);
+            e.NewObject = new AudioEncoderSettingsViewModel(item);
         }
 
         public bool TryGetValue(string extension, bool lossless, string name, out AudioEncoderSettingsViewModel result)
@@ -21,7 +28,7 @@ namespace CUETools.Codecs
             //result = this.Where(udc => udc.settings.Extension == extension && udc.settings.Lossless == lossless && udc.settings.Name == name).First();
             foreach (AudioEncoderSettingsViewModel udc in this)
             {
-                if (udc.settings.Extension == extension && udc.settings.Lossless == lossless && udc.settings.Name == name)
+                if (udc.Settings.Extension == extension && udc.Settings.Lossless == lossless && udc.Settings.Name == name)
                 {
                     result = udc;
                     return true;
@@ -36,7 +43,7 @@ namespace CUETools.Codecs
             AudioEncoderSettingsViewModel result = null;
             foreach (AudioEncoderSettingsViewModel udc in this)
             {
-                if (udc.settings.Extension == extension && udc.settings.Lossless == lossless && (result == null || result.settings.Priority < udc.settings.Priority))
+                if (udc.Settings.Extension == extension && udc.Settings.Lossless == lossless && (result == null || result.Settings.Priority < udc.Settings.Priority))
                 {
                     result = udc;
                 }

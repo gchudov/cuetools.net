@@ -40,7 +40,6 @@ namespace CUETools.Codecs.ALAC
         public DecoderSettings() : base() { }
     }
 
-    [AudioDecoderClass(typeof(DecoderSettings))]
 	public class AudioDecoder : IAudioSource
 	{
 		public AudioDecoder(DecoderSettings settings, string path, Stream IO = null)

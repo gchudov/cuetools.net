@@ -1,10 +1,11 @@
-﻿using System;
+﻿using CUETools.Codecs;
+using System;
 using System.ComponentModel;
 
 namespace CUETools.Processor
 {
     [Serializable]
-    public class CUEConfigAdvanced
+    public class CUEConfigAdvanced : CUEToolsCodecsConfig
     {
         public enum ProxyMode
         {
@@ -36,6 +37,11 @@ namespace CUETools.Processor
             {
                 property.SetValue(this, property.GetValue(src));
             }
+        }
+
+        public void Init()
+        {
+            Init(CUEProcessorPlugins.encs, CUEProcessorPlugins.decs);
         }
 
         [DefaultValue("i"), Category("Freedb"), DisplayName("Email user")]

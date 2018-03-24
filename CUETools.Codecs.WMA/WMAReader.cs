@@ -40,7 +40,6 @@ namespace CUETools.Codecs.WMA
         public DecoderSettings() : base() { }
     }
 
-    [AudioDecoderClass(typeof(DecoderSettings))]
     public class AudioDecoder : IAudioSource
     {
         IWMSyncReader m_syncReader;

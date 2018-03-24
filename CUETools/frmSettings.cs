@@ -316,11 +316,11 @@ namespace JDP
 				return;
 			}
 
-			foreach (var encoder in _config.encoders)
+			foreach (var encoder in _config.Encoders)
 				if (encoder.Extension == format.extension)
 					encoder.Extension = e.Label;
 
-			foreach (var decoder in _config.decoders)
+			foreach (var decoder in _config.Decoders)
 				if (decoder.Extension == format.extension)
 					decoder.Extension = e.Label;
 
@@ -361,17 +361,17 @@ namespace JDP
 						if (format.builtin)
 						    return;
                         var decodersToRemove = new List<AudioDecoderSettingsViewModel>();
-						foreach (var decoder in _config.decoders)
+						foreach (var decoder in _config.Decoders)
 							if (decoder.Extension == format.extension)
 								decodersToRemove.Add(decoder);
 						foreach (var decoder in decodersToRemove)
-							_config.decoders.Remove(decoder);
+							_config.Decoders.Remove(decoder);
                         var encodersToRemove = new List<AudioEncoderSettingsViewModel>();
-						foreach (var encoder in _config.encoders)
+						foreach (var encoder in _config.Encoders)
 							if (encoder.Extension == format.extension)
 								encodersToRemove.Add(encoder);
 						foreach (var encoder in encodersToRemove)
-							_config.encoders.Remove(encoder);
+							_config.Encoders.Remove(encoder);
 						comboBoxEncoderExtension.Items.Remove(format.extension);
 						comboBoxDecoderExtension.Items.Remove(format.extension);
 						_config.formats.Remove(format.extension);
@@ -390,21 +390,21 @@ namespace JDP
 					return;
 
 				comboFormatLosslessEncoder.Items.Clear();
-				foreach (var encoder in _config.encoders)
+				foreach (var encoder in _config.Encoders)
 					if (encoder.Extension == format.extension && encoder.Lossless)
 						comboFormatLosslessEncoder.Items.Add(encoder);
 				comboFormatLosslessEncoder.SelectedItem = format.encoderLossless;
 				comboFormatLosslessEncoder.Enabled = format.allowLossless;
 
 				comboFormatLossyEncoder.Items.Clear();
-				foreach (var encoder in _config.encoders)
+				foreach (var encoder in _config.Encoders)
 					if (encoder.Extension == format.extension && !encoder.Lossless)
 						comboFormatLossyEncoder.Items.Add(encoder);
 				comboFormatLossyEncoder.SelectedItem = format.encoderLossy;
 				comboFormatLossyEncoder.Enabled = format.allowLossy;
 
 				comboFormatDecoder.Items.Clear();
-				foreach (var decoder in _config.decoders)
+				foreach (var decoder in _config.Decoders)
 					if (decoder.Extension == format.extension)
 						comboFormatDecoder.Items.Add(decoder);
 				comboFormatDecoder.SelectedItem = format.decoder;
@@ -466,8 +466,8 @@ namespace JDP
 				comboBoxEncoderExtension.Enabled = encoder.CanBeDeleted;
                 groupBoxExternalEncoder.Visible = encoder.CanBeDeleted;
 				checkBoxEncoderLossless.Enabled = format != null && format.allowLossless && format.allowLossy;
-                propertyGridEncoderSettings.Visible = !encoder.CanBeDeleted && encoder.settings.HasBrowsableAttributes();
-                propertyGridEncoderSettings.SelectedObject = encoder.CanBeDeleted ? null : encoder.settings;
+                propertyGridEncoderSettings.Visible = !encoder.CanBeDeleted && encoder.Settings.HasBrowsableAttributes();
+                propertyGridEncoderSettings.SelectedObject = encoder.CanBeDeleted ? null : encoder.Settings;
                 if (!checkBoxEncoderLossless.Enabled && format != null && encoder.Lossless != format.allowLossless)
                     encoder.Lossless = format.allowLossless;
                 foreach (KeyValuePair<string, CUEToolsFormat> fmtEntry in _config.formats)

@@ -34,9 +34,9 @@
         public CUEToolsFormat Clone(CUEToolsCodecsConfig cfg)
         {
             var res = this.MemberwiseClone() as CUEToolsFormat;
-            if (decoder != null) cfg.decoders.TryGetValue(decoder.decoderSettings.Extension, decoder.Lossless, decoder.decoderSettings.Name, out res.decoder);
-            if (encoderLossy != null) cfg.encoders.TryGetValue(encoderLossy.settings.Extension, encoderLossy.Lossless, encoderLossy.settings.Name, out res.encoderLossy);
-            if (encoderLossless != null) cfg.encoders.TryGetValue(encoderLossless.settings.Extension, encoderLossless.Lossless, encoderLossless.settings.Name, out res.encoderLossless);
+            if (decoder != null) cfg.decodersViewModel.TryGetValue(decoder.Settings.Extension, decoder.Lossless, decoder.Settings.Name, out res.decoder);
+            if (encoderLossy != null) cfg.encodersViewModel.TryGetValue(encoderLossy.Settings.Extension, encoderLossy.Lossless, encoderLossy.Settings.Name, out res.encoderLossy);
+            if (encoderLossless != null) cfg.encodersViewModel.TryGetValue(encoderLossless.Settings.Extension, encoderLossless.Lossless, encoderLossless.Settings.Name, out res.encoderLossless);
             return res;
         }
 

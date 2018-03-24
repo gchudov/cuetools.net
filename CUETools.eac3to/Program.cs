@@ -36,7 +36,7 @@ namespace CUETools.eac3to
         {
             AudioEncoderSettingsViewModel tmpEncoder;
             return chosenEncoder != null ?
-                (config.encoders.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder : null) :
+                (config.encodersViewModel.TryGetValue(fmt.extension, lossless, chosenEncoder, out tmpEncoder) ? tmpEncoder : null) :
                 (lossless ? fmt.encoderLossless : fmt.encoderLossy);
         }
 
@@ -115,7 +115,8 @@ namespace CUETools.eac3to
 
             DateTime start = DateTime.Now;
             TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
-            CUEToolsCodecsConfig config = new CUEConfig();
+            var config = new CUEConfigAdvanced();
+            config.Init();
 
 #if !DEBUG
             try
@@ -314,7 +315,7 @@ namespace CUETools.eac3to
                             if (stream - chapterStreams - videos.Count > audios.Count)
                                 throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
                             ushort pid = audios[stream - chapterStreams - videos.Count - 1].pid;
-                            (audioSource.Settings as BDLPCMDecoderSettings).Pid = pid;
+                            (audioSource.Settings as Codecs.MPLS.DecoderSettings).Pid = pid;
                         }
                     }
 
@@ -353,13 +354,13 @@ namespace CUETools.eac3to
                         Program.GetEncoder(config, fmt, true, encoderName) ?? Program.GetEncoder(config, fmt, false, encoderName);
                     if (encoder == null)
                     {
-                        var lst = new List<AudioEncoderSettingsViewModel>(config.encoders).FindAll(
+                        var lst = new List<AudioEncoderSettingsViewModel>(config.encodersViewModel).FindAll(
                             e => e.Extension == fmt.extension && (audioEncoderType == AudioEncoderType.NoAudio || audioEncoderType == (e.Lossless ? AudioEncoderType.Lossless : AudioEncoderType.Lossy))).
                                 ConvertAll(e => e.Name + (e.Lossless ? " (lossless)" : " (lossy)"));
                         throw new Exception("Encoders available for format " + fmt.extension + ": " + (lst.Count == 0 ? "none" : string.Join(", ", lst.ToArray())));
                     }
                     Console.Error.WriteLine("Output {0}  : {1}", stream, destFile);
-                    var settings = encoder.settings.Clone();
+                    var settings = encoder.Settings.Clone();
                     settings.PCM = audioSource.PCM;
                     settings.Padding = padding;
                     settings.EncoderMode = encoderMode ?? settings.EncoderMode;

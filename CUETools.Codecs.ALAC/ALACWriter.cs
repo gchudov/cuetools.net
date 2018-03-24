@@ -67,7 +67,6 @@ namespace CUETools.Codecs.ALAC
         public bool DoVerify { get; set; }
 	}
 
-	[AudioEncoderClass(typeof(EncoderSettings))]
 	public class AudioEncoder : IAudioDest
 	{
 		Stream _IO = null;

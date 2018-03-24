@@ -133,7 +133,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUEPlayer", "..\CUEPlayer\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.CoreAudio", "..\CUETools.Codecs.CoreAudio\CUETools.Codecs.CoreAudio.csproj", "{FAD09EE2-D6B2-4A8E-9F1C-2A9FB293661A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.LAME", "..\CUETools.Codecs.LAME\CUETools.Codecs.LAME.csproj", "{1AF02E2C-2CB2-44B5-B417-37653071FEC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.libmp3lame", "..\CUETools.Codecs.libmp3lame\CUETools.Codecs.libmp3lame.csproj", "{1AF02E2C-2CB2-44B5-B417-37653071FEC6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.DirectSound", "..\CUETools.Codecs.DirectSound\CUETools.Codecs.DirectSound.csproj", "{5A9FB016-6388-475D-AB33-6F86AD49FDAD}"
 EndProject
@@ -192,8 +192,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwavpack", "..\ThirdParty\WavPack\src\libwavpack.vcxproj", "{5CCCB9CF-0384-458F-BA08-72B73866840F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wavpackdll", "..\ThirdParty\WavPack\wavpackdll\wavpackdll.vcxproj", "{1A87F412-BA74-4DBB-9F77-FD55C042FB63}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ttadll", "..\ThirdParty\libtta\ttaddl.vcxproj", "{083CE608-B3E8-4E3E-871E-1144F8F751FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -737,16 +735,6 @@ Global
 		{1A87F412-BA74-4DBB-9F77-FD55C042FB63}.Release|Win32.Build.0 = Release|Win32
 		{1A87F412-BA74-4DBB-9F77-FD55C042FB63}.Release|x64.ActiveCfg = Release|x64
 		{1A87F412-BA74-4DBB-9F77-FD55C042FB63}.Release|x64.Build.0 = Release|x64
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Debug|Win32.ActiveCfg = Debug|Win32
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Debug|Win32.Build.0 = Debug|Win32
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Debug|x64.ActiveCfg = Debug|x64
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Debug|x64.Build.0 = Debug|x64
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Release|Any CPU.ActiveCfg = Release|Win32
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Release|Win32.ActiveCfg = Release|Win32
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Release|Win32.Build.0 = Release|Win32
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Release|x64.ActiveCfg = Release|x64
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -806,7 +794,6 @@ Global
 		{4D1B3411-F4F7-4E62-B7CB-A3AC3D530443} = {93B7AE1D-DEF6-4A04-A222-5CDE09DF262D}
 		{5CCCB9CF-0384-458F-BA08-72B73866840F} = {8B179853-B7D6-479C-B8B2-6CBCE835D040}
 		{1A87F412-BA74-4DBB-9F77-FD55C042FB63} = {8B179853-B7D6-479C-B8B2-6CBCE835D040}
-		{083CE608-B3E8-4E3E-871E-1144F8F751FD} = {8B179853-B7D6-479C-B8B2-6CBCE835D040}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C634D169-5814-4203-94B6-6A11371DDA95}

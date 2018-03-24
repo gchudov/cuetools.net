@@ -25,12 +25,12 @@ namespace CUETools.Processor
 				throw new Exception("Unsupported audio type: " + path);
 			if (fmt.decoder == null)
 				throw new Exception("Unsupported audio type: " + path);
-            var settings = fmt.decoder.decoderSettings.Clone();
+            var settings = fmt.decoder.Settings.Clone();
             try
 			{
-				object src = Activator.CreateInstance(fmt.decoder.decoderSettings.DecoderType, settings, path, IO);
+				object src = Activator.CreateInstance(fmt.decoder.Settings.DecoderType, settings, path, IO);
 				if (src == null || !(src is IAudioSource))
-					throw new Exception("Unsupported audio type: " + path + ": " + fmt.decoder.decoderSettings.DecoderType.FullName);
+					throw new Exception("Unsupported audio type: " + path + ": " + fmt.decoder.Settings.DecoderType.FullName);
 				return src as IAudioSource;
 			}
 			catch (System.Reflection.TargetInvocationException ex)
@@ -60,7 +60,7 @@ namespace CUETools.Processor
 				null;
 			if (encoder == null)
 				throw new Exception("Unsupported audio type: " + path);
-            var settings = encoder.settings.Clone();
+            var settings = encoder.Settings.Clone();
             settings.PCM = pcm;
             settings.Padding = padding;
             object o;

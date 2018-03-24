@@ -4,7 +4,6 @@ using System.IO;
 
 namespace CUETools.Codecs.WAV
 {
-    [AudioEncoderClass(typeof(EncoderSettings))]
     public class AudioEncoder : IAudioDest
     {
         private Stream _IO;

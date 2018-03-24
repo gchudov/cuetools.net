@@ -44,7 +44,6 @@ namespace CUETools.Codecs.libFLAC
         public string Version => FLACDLL.GetVersion;
     };
 
-    [AudioEncoderClass(typeof(EncoderSettings))]
     public unsafe class Encoder : IAudioDest
     {
         public Encoder(string path, Stream output, EncoderSettings settings)

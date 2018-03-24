@@ -6,20 +6,6 @@ using System.Globalization;
 
 namespace CUETools.Codecs.BDLPCM
 {
-    public class MPLSDecoderSettings : AudioDecoderSettings
-    {
-        public override string Extension => "mpls";
-
-        public override string Name => "cuetools";
-
-        public override Type DecoderType => typeof(MPLSDecoder);
-
-        public override int Priority => 2;
-
-        public MPLSDecoderSettings() : base() { }
-    }
-
-    [AudioDecoderClass(typeof(MPLSDecoderSettings))]
     public class MPLSDecoder : IAudioSource
     {
         public unsafe MPLSDecoder(string path, Stream IO, ushort pid)
@@ -30,7 +16,7 @@ namespace CUETools.Codecs.BDLPCM
 
         public unsafe MPLSDecoder(string path, Stream IO)
         {
-            settings = new BDLPCMDecoderSettings();
+            settings = new DecoderSettings();
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
             int length = (int)_IO.Length;
@@ -453,7 +439,7 @@ namespace CUETools.Codecs.BDLPCM
         List<AudioDecoder> readers;
         AudioDecoder currentReader;
         MPLSHeader hdr_m;
-        BDLPCMDecoderSettings settings;
+        DecoderSettings settings;
     }
 
     public struct MPLSPlaylistMark

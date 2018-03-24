@@ -11,8 +11,8 @@ namespace CUETools.Processor
 {
     public static class CUEProcessorPlugins
     {
-        public static List<Type> encs;
-        public static List<Type> decs;
+        public static List<AudioEncoderSettings> encs;
+        public static List<AudioDecoderSettings> decs;
         public static List<Type> arcp;
         public static List<string> arcp_fmt;
         public static Type hdcd;
@@ -20,13 +20,13 @@ namespace CUETools.Processor
 
         static CUEProcessorPlugins()
         {
-            encs = new List<Type>();
-            decs = new List<Type>();
+            encs = new List<AudioEncoderSettings>();
+            decs = new List<AudioDecoderSettings>();
             arcp = new List<Type>();
             arcp_fmt = new List<string>();
 
-            encs.Add(typeof(CUETools.Codecs.WAV.AudioEncoder));
-            decs.Add(typeof(CUETools.Codecs.WAV.AudioDecoder));
+            encs.Add(new Codecs.WAV.EncoderSettings());
+            decs.Add(new Codecs.WAV.DecoderSettings());
 
             //ApplicationSecurityInfo asi = new ApplicationSecurityInfo(AppDomain.CurrentDomain.ActivationContext);
             //string arch = asi.ApplicationId.ProcessorArchitecture;
@@ -67,14 +67,14 @@ namespace CUETools.Processor
             {
                 try
                 {
-                    if (Attribute.GetCustomAttribute(type, typeof(AudioDecoderClassAttribute)) != null)
+                    if (!type.IsClass || type.IsAbstract) continue;
+                    if (type.GetInterface(typeof(IAudioDecoderSettings).Name) != null && type != typeof(AudioDecoderSettings))
                     {
-                        decs.Add(type);
+                        decs.Add(Activator.CreateInstance(type) as AudioDecoderSettings);
                     }
-                    //if (type.IsClass && !type.IsAbstract && typeof(IAudioDest).IsAssignableFrom(type))
-                    if (Attribute.GetCustomAttributes(type, typeof(AudioEncoderClassAttribute)).Length > 0)
+                    if (type.GetInterface(typeof(IAudioEncoderSettings).Name) != null && type != typeof(AudioEncoderSettings))
                     {
-                        encs.Add(type);
+                        encs.Add(Activator.CreateInstance(type) as AudioEncoderSettings);
                     }
                     CompressionProviderClass archclass = Attribute.GetCustomAttribute(type, typeof(CompressionProviderClass)) as CompressionProviderClass;
                     if (archclass != null)
@@ -87,7 +87,7 @@ namespace CUETools.Processor
                     {
                         hdcd = type;
                     }
-                    if (type.IsClass && !type.IsAbstract && typeof(ICDRipper).IsAssignableFrom(type))
+                    if (type.GetInterface(typeof(ICDRipper).Name) != null)
                     {
                         ripper = type;
                     }

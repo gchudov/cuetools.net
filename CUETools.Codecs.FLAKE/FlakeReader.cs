@@ -39,7 +39,6 @@ namespace CUETools.Codecs.FLAKE
         public DecoderSettings() : base() { }
     }
 
-    [AudioDecoderClass(typeof(DecoderSettings))]
 	public class AudioDecoder: IAudioSource
 	{
 		int[] samplesBuffer;

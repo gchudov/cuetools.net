@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace CUETools.Processor
 {
-    public class CUEConfig : CUEToolsCodecsConfig
+    public class CUEConfig
     {
         public uint fixOffsetMinimumConfidence;
         public uint fixOffsetMinimumTracksPercent;
@@ -71,11 +71,12 @@ namespace CUETools.Processor
         public bool CopyAlbumArt { get; set; }
         public string ArLogFilenameFormat { get; set; }
         public string AlArtFilenameFormat { get; set; }
-        public EncoderListViewModel Encoders => encoders;
-        public DecoderListViewModel Decoders => decoders;
+        public EncoderListViewModel Encoders => advanced.encodersViewModel;
+        public DecoderListViewModel Decoders => advanced.decodersViewModel;
+        public Dictionary<string, CUEToolsFormat> formats => advanced.formats;
 
         public CUEConfig()
-            : base(CUEProcessorPlugins.encs, CUEProcessorPlugins.decs)
+            : base()
         {
             fixOffsetMinimumConfidence = 2;
             fixOffsetMinimumTracksPercent = 51;
@@ -136,6 +137,7 @@ namespace CUETools.Processor
             gapsHandling = CUEStyle.GapsAppended;
 
             advanced = new CUEConfigAdvanced();
+            advanced.Init();
 
             language = Thread.CurrentThread.CurrentUICulture.Name;
 
@@ -155,7 +157,6 @@ namespace CUETools.Processor
         }
 
         public CUEConfig(CUEConfig src)
-            : base(src)
         {
             fixOffsetMinimumConfidence = src.fixOffsetMinimumConfidence;
             fixOffsetMinimumTracksPercent = src.fixOffsetMinimumTracksPercent;
@@ -299,29 +300,9 @@ namespace CUETools.Processor
                 Newtonsoft.Json.Formatting.Indented,
                 new JsonSerializerSettings
                 {
-                    DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
-                }));
-
-            sw.SaveText("Encoders", JsonConvert.SerializeObject(encoders,
-                Newtonsoft.Json.Formatting.Indented,
-                new JsonSerializerSettings
-                {
                     DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                    TypeNameHandling = TypeNameHandling.Auto
+                    TypeNameHandling = TypeNameHandling.Auto,
                 }));
-
-            int nDecoders = 0;
-            foreach (var decoder in decoders)
-                if (decoder.decoderSettings is Codecs.CommandLine.DecoderSettings)
-                {
-                    var settings = decoder.decoderSettings as Codecs.CommandLine.DecoderSettings;
-                    sw.Save(string.Format("ExternalDecoder{0}Name", nDecoders), settings.Name);
-                    sw.Save(string.Format("ExternalDecoder{0}Extension", nDecoders), settings.Extension);
-                    sw.Save(string.Format("ExternalDecoder{0}Path", nDecoders), settings.Path);
-                    sw.Save(string.Format("ExternalDecoder{0}Parameters", nDecoders), settings.Parameters);
-                    nDecoders++;
-                }
-            sw.Save("ExternalDecoders", nDecoders);
 
             int nFormats = 0;
             foreach (KeyValuePair<string, CUEToolsFormat> format in formats)
@@ -415,100 +396,56 @@ namespace CUETools.Processor
 
             separateDecodingThread = sr.LoadBoolean("SeparateDecodingThread") ?? separateDecodingThread;
 
-            try
+            var jsonConfig = sr.Load("Advanced");
+            if (jsonConfig != null)
             {
-                var jsonObject = JsonConvert.DeserializeObject(sr.Load("Advanced"),
-                    typeof(CUEConfigAdvanced),
-                    new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
-                    });
-                if (jsonObject as CUEConfigAdvanced == null)
-                    throw new Exception();
-                advanced = jsonObject as CUEConfigAdvanced;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(ex.Message);
-            }
-
-            var encodersBackup = encoders;
-            try
-            {
-                var jsonObject = JsonConvert.DeserializeObject(sr.Load("Encoders"),
-                    typeof(EncoderListViewModel),
-                    new JsonSerializerSettings {
-                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                        TypeNameHandling = TypeNameHandling.Auto
-                    });
-                if (jsonObject as EncoderListViewModel == null)
-                    throw new Exception();
-                encoders = jsonObject as EncoderListViewModel;
-                encoders.Where(x => !x.IsValid).ToList().ForEach(x => encoders.Remove(x));
-                AudioEncoderSettingsViewModel tmp;
-                encodersBackup.Where(x => !encoders.TryGetValue(x.Extension, x.Lossless, x.Name, out tmp)).ToList().ForEach(x => encoders.Add(x));
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(ex.Message);
-            }
-
-            //int totalEncoders = sr.LoadInt32("ExternalEncoders", 0, null) ?? 0;
-            //for (int nEncoders = 0; nEncoders < totalEncoders; nEncoders++)
-            //{
-            //    string name = sr.Load(string.Format("ExternalEncoder{0}Name", nEncoders));
-            //    string extension = sr.Load(string.Format("ExternalEncoder{0}Extension", nEncoders));
-            //    string settings = sr.Load(string.Format("ExternalEncoder{0}Settings", nEncoders));
-            //    bool lossless = sr.LoadBoolean(string.Format("ExternalEncoder{0}Lossless", nEncoders)) ?? true;
-            //    CUEToolsUDC encoder;
-            //    if (name == null || extension == null) continue;
-            //    if (!encoders.TryGetValue(extension, lossless, name, out encoder))
-            //    {
-            //        encoder = new CUEToolsUDC(name, extension, lossless, "", "", "", "");
-            //        encoders.Add(encoder);
-            //    }
-            //    try
-            //    {
-            //        if (settings != null)
-            //        {
-            //            var encoderSettings = JsonConvert.DeserializeObject(settings,
-            //                encoder.settings.GetType(),
-            //                new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate });
-            //            if (encoderSettings as AudioEncoderSettings == null)
-            //                throw new Exception();
-            //            encoder.settings = encoderSettings as AudioEncoderSettings;
-            //            if (encoder.settings is UserDefinedEncoderSettings && (encoder.settings as UserDefinedEncoderSettings).Path == "")
-            //                throw new Exception();
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        System.Diagnostics.Trace.WriteLine(ex.Message);
-            //        if (version == 203 && encoder.settings is UserDefinedEncoderSettings)
-            //        {
-            //            (encoder.settings as UserDefinedEncoderSettings).SupportedModes = sr.Load(string.Format("ExternalEncoder{0}Modes", nEncoders));
-            //            (encoder.settings as UserDefinedEncoderSettings).EncoderMode = sr.Load(string.Format("ExternalEncoder{0}Mode", nEncoders));
-            //            (encoder.settings as UserDefinedEncoderSettings).Path = sr.Load(string.Format("ExternalEncoder{0}Path", nEncoders));
-            //            (encoder.settings as UserDefinedEncoderSettings).Parameters = sr.Load(string.Format("ExternalEncoder{0}Parameters", nEncoders));
-            //        }
-            //        else
-            //            encoders.Remove(encoder);
-            //    }
-            //}
-
-            int totalDecoders = sr.LoadInt32("ExternalDecoders", 0, null) ?? 0;
-            for (int nDecoders = 0; nDecoders < totalDecoders; nDecoders++)
-            {
-                string name = sr.Load(string.Format("ExternalDecoder{0}Name", nDecoders));
-                string extension = sr.Load(string.Format("ExternalDecoder{0}Extension", nDecoders));
-                string path = sr.Load(string.Format("ExternalDecoder{0}Path", nDecoders));
-                string parameters = sr.Load(string.Format("ExternalDecoder{0}Parameters", nDecoders));
-                AudioDecoderSettingsViewModel decoder;
-                if (!decoders.TryGetValue(extension, true, name, out decoder))
-                    decoders.Add(new AudioDecoderSettingsViewModel(new Codecs.CommandLine.DecoderSettings(name, extension, path, parameters)));
-                else
+                var backup = advanced;
+                try
                 {
-                    decoder.Extension = extension;
-                    decoder.Path = path;
-                    decoder.Parameters = parameters;
+                    var jsonObject = JsonConvert.DeserializeObject(jsonConfig,
+                        typeof(CUEConfigAdvanced),
+                        new JsonSerializerSettings
+                        {
+                            DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                            TypeNameHandling = TypeNameHandling.Auto,
+                        });
+                    if (jsonObject as CUEConfigAdvanced == null)
+                        throw new Exception();
+                    advanced = jsonObject as CUEConfigAdvanced;
+
+                    // Add missing codecs
+                    backup.encoders.Where(x => advanced.encoders
+                        .FindAll(y => y.Extension == x.Extension && y.Lossless == x.Lossless && y.Name == x.Name).Count == 0)
+                        .ToList().ForEach(x => advanced.encoders.Add(x));
+                    backup.decoders.Where(x => advanced.decoders
+                        .FindAll(y => y.Extension == x.Extension && y.Lossless == x.Lossless && y.Name == x.Name).Count == 0)
+                        .ToList().ForEach(x => advanced.decoders.Add(x));
+
+                    // Reset the ViewModel
+                    advanced.encodersViewModel = new EncoderListViewModel(advanced.encoders);
+                    advanced.decodersViewModel = new DecoderListViewModel(advanced.decoders);
+
+                    // Reset the links in formats
+                    foreach (var extension in formats.Keys)
+                    {
+                        var format = formats[extension];
+                        AudioEncoderSettingsViewModel encoderLossless, encoderLossy;
+                        AudioDecoderSettingsViewModel decoder;
+                        if (format.encoderLossless == null || !Encoders.TryGetValue(extension, true, format.encoderLossless.Name, out encoderLossless))
+                            encoderLossless = Encoders.GetDefault(extension, true);
+                        if (format.encoderLossy == null || !Encoders.TryGetValue(extension, false, format.encoderLossy.Name, out encoderLossy))
+                            encoderLossy = Encoders.GetDefault(extension, false);
+                        if (format.decoder == null || !Decoders.TryGetValue(extension, true, format.decoder.Name, out decoder))
+                            decoder = Decoders.GetDefault(extension, true);
+                        format.encoderLossless = encoderLossless;
+                        format.encoderLossy = encoderLossy;
+                        format.decoder = decoder;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(ex.Message);
+                    advanced = backup;
                 }
             }
 
@@ -526,12 +463,12 @@ namespace CUETools.Processor
                 CUEToolsFormat format;
                 AudioEncoderSettingsViewModel udcLossless, udcLossy;
                 AudioDecoderSettingsViewModel udcDecoder;
-                if (encoderLossless == "" || !encoders.TryGetValue(extension, true, encoderLossless, out udcLossless))
-					udcLossless = encoders.GetDefault(extension, true);
-                if (encoderLossy == "" || !encoders.TryGetValue(extension, false, encoderLossy, out udcLossy))
-					udcLossy = encoders.GetDefault(extension, false);
-                if (decoder == "" || !decoders.TryGetValue(extension, true, decoder, out udcDecoder))
-                    udcDecoder = decoders.GetDefault(extension, true);
+                if (encoderLossless == "" || !Encoders.TryGetValue(extension, true, encoderLossless, out udcLossless))
+					udcLossless = Encoders.GetDefault(extension, true);
+                if (encoderLossy == "" || !Encoders.TryGetValue(extension, false, encoderLossy, out udcLossy))
+					udcLossy = Encoders.GetDefault(extension, false);
+                if (decoder == "" || !Decoders.TryGetValue(extension, true, decoder, out udcDecoder))
+                    udcDecoder = Decoders.GetDefault(extension, true);
                 if (!formats.TryGetValue(extension, out format))
                     formats.Add(extension, new CUEToolsFormat(extension, tagger, allowLossless, allowLossy, allowEmbed, false, udcLossless, udcLossy, udcDecoder));
                 else

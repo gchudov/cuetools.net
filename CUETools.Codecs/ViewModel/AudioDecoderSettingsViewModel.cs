@@ -8,7 +8,7 @@ namespace CUETools.Codecs
     public class AudioDecoderSettingsViewModel : INotifyPropertyChanged
     {
         [JsonProperty]
-        public AudioDecoderSettings decoderSettings = null;
+        public AudioDecoderSettings Settings = null;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -19,14 +19,7 @@ namespace CUETools.Codecs
 
         public AudioDecoderSettingsViewModel(AudioDecoderSettings settings)
         {
-            decoderSettings = settings;
-        }
-
-        public AudioDecoderSettingsViewModel Clone()
-        {
-            var res = this.MemberwiseClone() as AudioDecoderSettingsViewModel;
-            if (decoderSettings != null) res.decoderSettings = decoderSettings.Clone();
-            return res;
+            this.Settings = settings;
         }
 
         public override string ToString()
@@ -40,14 +33,14 @@ namespace CUETools.Codecs
         {
             get
             {
-                if (decoderSettings is CommandLine.DecoderSettings)
-                    return (decoderSettings as CommandLine.DecoderSettings).Path;
+                if (Settings is CommandLine.DecoderSettings)
+                    return (Settings as CommandLine.DecoderSettings).Path;
                 return "";
             }
             set
             {
-                if (decoderSettings is CommandLine.DecoderSettings)
-                    (decoderSettings as CommandLine.DecoderSettings).Path = value;
+                if (Settings is CommandLine.DecoderSettings)
+                    (Settings as CommandLine.DecoderSettings).Path = value;
                 else throw new InvalidOperationException();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Path"));
             }
@@ -56,14 +49,14 @@ namespace CUETools.Codecs
         {
             get
             {
-                if (decoderSettings is CommandLine.DecoderSettings)
-                    return (decoderSettings as CommandLine.DecoderSettings).Parameters;
+                if (Settings is CommandLine.DecoderSettings)
+                    return (Settings as CommandLine.DecoderSettings).Parameters;
                 return "";
             }
             set
             {
-                if (decoderSettings is CommandLine.DecoderSettings)
-                    (decoderSettings as CommandLine.DecoderSettings).Parameters = value;
+                if (Settings is CommandLine.DecoderSettings)
+                    (Settings as CommandLine.DecoderSettings).Parameters = value;
                 else throw new InvalidOperationException();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Parameters"));
             }
@@ -79,11 +72,11 @@ namespace CUETools.Codecs
 
         public string Name
         {
-            get => decoderSettings.Name;
+            get => Settings.Name;
             set
             {
-                if (decoderSettings is CommandLine.DecoderSettings)
-                    (decoderSettings as CommandLine.DecoderSettings).name = value;
+                if (Settings is CommandLine.DecoderSettings)
+                    (Settings as CommandLine.DecoderSettings).name = value;
                 else throw new InvalidOperationException();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
             }
@@ -91,11 +84,11 @@ namespace CUETools.Codecs
 
         public string Extension
         {
-            get => decoderSettings.Extension;
+            get => Settings.Extension;
             set
             {
-                if (decoderSettings is CommandLine.DecoderSettings)
-                    (decoderSettings as CommandLine.DecoderSettings).extension = value;
+                if (Settings is CommandLine.DecoderSettings)
+                    (Settings as CommandLine.DecoderSettings).extension = value;
                 else throw new InvalidOperationException();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Extension"));
             }
@@ -103,10 +96,10 @@ namespace CUETools.Codecs
 
         public string DotExtension => "." + Extension;
 
-        public bool CanBeDeleted => decoderSettings is CommandLine.DecoderSettings;
+        public bool CanBeDeleted => Settings is CommandLine.DecoderSettings;
 
         public bool IsValid =>
-               (decoderSettings != null)
-            && (decoderSettings is CommandLine.DecoderSettings ? (decoderSettings as CommandLine.DecoderSettings).Path != "" : true);
+               (Settings != null)
+            && (Settings is CommandLine.DecoderSettings ? (Settings as CommandLine.DecoderSettings).Path != "" : true);
     }
 }

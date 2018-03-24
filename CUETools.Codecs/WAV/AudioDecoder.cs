@@ -3,7 +3,6 @@ using System.IO;
 
 namespace CUETools.Codecs.WAV
 {
-    [AudioDecoderClass(typeof(DecoderSettings))]
     public class AudioDecoder : IAudioSource
     {
         Stream _IO;

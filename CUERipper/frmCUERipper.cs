@@ -1000,8 +1000,8 @@ namespace CUERipper
 
         private void resetEncoderModes(AudioEncoderSettingsViewModel encoder)
         {
-            encoder.settings.PCM = AudioPCMConfig.RedBook;
-            buttonEncoderSettings.Enabled = encoder.settings.HasBrowsableAttributes();
+            encoder.Settings.PCM = AudioPCMConfig.RedBook;
+            buttonEncoderSettings.Enabled = encoder.Settings.HasBrowsableAttributes();
             string[] modes = encoder.SupportedModes;
             if (modes == null || modes.Length < 2)
             {
@@ -1015,12 +1015,12 @@ namespace CUERipper
                 if (encoder.EncoderModeIndex == -1)
                 {
                     string defaultMode;
-                    encoder.settings.GetSupportedModes(out defaultMode);
-                    encoder.settings.EncoderMode = defaultMode;
+                    encoder.Settings.GetSupportedModes(out defaultMode);
+                    encoder.Settings.EncoderMode = defaultMode;
                 }
                 trackBarEncoderMode.Maximum = modes.Length - 1;
                 trackBarEncoderMode.Value = encoder.EncoderModeIndex == -1 ? modes.Length - 1 : encoder.EncoderModeIndex;
-                labelEncoderMode.Text = encoder.settings.EncoderMode;
+                labelEncoderMode.Text = encoder.Settings.EncoderMode;
                 labelEncoderMinMode.Text = modes[0];
                 labelEncoderMaxMode.Text = modes[modes.Length - 1];
                 trackBarEncoderMode.Visible = true;
@@ -1048,8 +1048,8 @@ namespace CUERipper
 		{
 			var encoder = bnComboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
 			string[] modes = encoder.SupportedModes;
-			encoder.settings.EncoderMode = modes[trackBarEncoderMode.Value];
-			labelEncoderMode.Text = encoder.settings.EncoderMode;
+			encoder.Settings.EncoderMode = modes[trackBarEncoderMode.Value];
+			labelEncoderMode.Text = encoder.Settings.EncoderMode;
 		}
 
 		private void trackBarSecureMode_Scroll(object sender, EventArgs e)
@@ -1129,7 +1129,7 @@ namespace CUERipper
 
 			data.Encoders.RaiseListChangedEvents = false;
 
-			foreach (var encoder in _config.encoders)
+			foreach (var encoder in _config.Encoders)
 				if (encoder.Extension == SelectedOutputAudioFmt.extension)
 				{
 					if (SelectedOutputAudioType == AudioEncoderType.Lossless && !encoder.Lossless)
@@ -1572,7 +1572,7 @@ namespace CUERipper
             var encoder = bnComboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
             if (encoder == null)
                 return;
-            var form = new Options(encoder.settings);
+            var form = new Options(encoder.Settings);
             form.propertyGrid1.HelpVisible = true;
             form.ShowDialog(this);
             resetEncoderModes(encoder);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -11,83 +12,81 @@ namespace CUETools.Codecs
 {
     public class CUEToolsCodecsConfig
     {
+        [JsonIgnore]
         public Dictionary<string, CUEToolsFormat> formats;
-        public EncoderListViewModel encoders;
-        public DecoderListViewModel decoders;
+        public List<AudioEncoderSettings> encoders;
+        public List<AudioDecoderSettings> decoders;
+        [JsonIgnore]
+        public EncoderListViewModel encodersViewModel;
+        [JsonIgnore]
+        public DecoderListViewModel decodersViewModel;
+
+        public CUEToolsCodecsConfig()
+        {
+            encoders = new List<AudioEncoderSettings>();
+            decoders = new List<AudioDecoderSettings>();
+            encodersViewModel = new EncoderListViewModel(encoders);
+            decodersViewModel = new DecoderListViewModel(decoders);
+            formats = new Dictionary<string, CUEToolsFormat>();
+        }
 
         public CUEToolsCodecsConfig(CUEToolsCodecsConfig src)
         {
-            encoders = new EncoderListViewModel();
-            foreach (var enc in src.encoders)
-                encoders.Add(enc.Clone());
-            decoders = new DecoderListViewModel();
-            foreach (var dec in src.decoders)
-                decoders.Add(dec.Clone());
+            encoders = new List<AudioEncoderSettings>();
+            decoders = new List<AudioDecoderSettings>();
+            src.encoders.ForEach(item => encoders.Add(item.Clone()));
+            src.decoders.ForEach(item => decoders.Add(item.Clone()));
+            encodersViewModel = new EncoderListViewModel(encoders);
+            decodersViewModel = new DecoderListViewModel(decoders);
             formats = new Dictionary<string, CUEToolsFormat>();
             foreach (var fmt in src.formats)
                 formats.Add(fmt.Key, fmt.Value.Clone(this));
         }
 
-        public CUEToolsCodecsConfig(List<Type> encs, List<Type> decs)
+        public void Init(List<AudioEncoderSettings> src_encoders, List<AudioDecoderSettings> src_decoders)
         {
-            encoders = new EncoderListViewModel();
-            foreach (Type type in encs)
-                foreach (AudioEncoderClassAttribute enc in Attribute.GetCustomAttributes(type, typeof(AudioEncoderClassAttribute)))
-                    try
-                    {
-                        encoders.Add(new AudioEncoderSettingsViewModel(enc));
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Trace.WriteLine(ex.Message);
-                    }
-
-            decoders = new DecoderListViewModel();
-            foreach (Type type in decs)
-                foreach (AudioDecoderClassAttribute dec in Attribute.GetCustomAttributes(type, typeof(AudioDecoderClassAttribute)))
-                    try
-                    {
-                        decoders.Add(new AudioDecoderSettingsViewModel(Activator.CreateInstance(dec.Settings) as AudioDecoderSettings));
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Trace.WriteLine(ex.Message);
-                    }
+            encoders = new List<AudioEncoderSettings>();
+            decoders = new List<AudioDecoderSettings>();
+            src_encoders.ForEach(item => encoders.Add(item.Clone()));
+            src_decoders.ForEach(item => decoders.Add(item.Clone()));
 
             if (Type.GetType("Mono.Runtime", false) == null)
             {
-                encoders.Add(new AudioEncoderSettingsViewModel("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
-                encoders.Add(new AudioEncoderSettingsViewModel("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
-                encoders.Add(new AudioEncoderSettingsViewModel("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
-                encoders.Add(new AudioEncoderSettingsViewModel("VBR (lame.exe)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
-				encoders.Add(new AudioEncoderSettingsViewModel("CBR (lame.exe)", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
-                encoders.Add(new AudioEncoderSettingsViewModel("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
-                encoders.Add(new AudioEncoderSettingsViewModel("opusenc", "opus", false, "6 16 32 48 64 96 128 192 256", "128", "opusenc.exe", "--bitrate %M - %O"));
-                encoders.Add(new AudioEncoderSettingsViewModel("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
-                encoders.Add(new AudioEncoderSettingsViewModel("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
+                encoders.Add(new CommandLine.EncoderSettings("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
+                encoders.Add(new CommandLine.EncoderSettings("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
+                encoders.Add(new CommandLine.EncoderSettings("VBR (lame.exe)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("CBR (lame.exe)", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
+                encoders.Add(new CommandLine.EncoderSettings("opusenc", "opus", false, "6 16 32 48 64 96 128 192 256", "128", "opusenc.exe", "--bitrate %M - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
+                encoders.Add(new CommandLine.EncoderSettings("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
-                decoders.Add(new AudioDecoderSettingsViewModel(new CommandLine.DecoderSettings("takc", "tak", "takc.exe", "-d %I -")));
-                decoders.Add(new AudioDecoderSettingsViewModel(new CommandLine.DecoderSettings("ffmpeg alac", "m4a", "ffmpeg.exe", "-v 0 -i %I -f wav -")));
+                decoders.Add(new CommandLine.DecoderSettings("takc", "tak", "takc.exe", "-d %I -"));
+                decoders.Add(new CommandLine.DecoderSettings("ffmpeg alac", "m4a", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
             }
             else
             {
                 // !!!
             }
 
+            encodersViewModel = new EncoderListViewModel(encoders);
+            decodersViewModel = new DecoderListViewModel(decoders);
+
             formats = new Dictionary<string, CUEToolsFormat>();
-            formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, encoders.GetDefault("flac", true), null, decoders.GetDefault("flac", true)));
-            formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, encoders.GetDefault("wv", true), null, decoders.GetDefault("wv", true)));
-            formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, true, true, encoders.GetDefault("ape", true), null, decoders.GetDefault("ape", true)));
-            formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, true, encoders.GetDefault("tta", true), null, decoders.GetDefault("tta", true)));
-            formats.Add("m2ts", new CUEToolsFormat("m2ts", CUEToolsTagger.APEv2, true, false, false, true, null, null, decoders.GetDefault("m2ts", true)));
-            formats.Add("mpls", new CUEToolsFormat("mpls", CUEToolsTagger.APEv2, true, false, false, true, null, null, decoders.GetDefault("mpls", true)));
-            formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, false, true, encoders.GetDefault("wav", true), null, decoders.GetDefault("wav", true)));
-            formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, true, encoders.GetDefault("m4a", true), encoders.GetDefault("m4a", false), decoders.GetDefault("m4a", true)));
-            formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, encoders.GetDefault("tak", true), null, decoders.GetDefault("tak", true)));
-            formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, true, encoders.GetDefault("wma", true), encoders.GetDefault("wma", false), decoders.GetDefault("wma", true)));
-            formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("mp3", false), null));
-            formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("ogg", false), null));
-            formats.Add("opus", new CUEToolsFormat("opus", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encoders.GetDefault("opus", false), null));
+            formats.Add("flac", new CUEToolsFormat("flac", CUEToolsTagger.TagLibSharp, true, false, true, true, encodersViewModel.GetDefault("flac", true), null, decodersViewModel.GetDefault("flac", true)));
+            formats.Add("wv", new CUEToolsFormat("wv", CUEToolsTagger.TagLibSharp, true, false, true, true, encodersViewModel.GetDefault("wv", true), null, decodersViewModel.GetDefault("wv", true)));
+            formats.Add("ape", new CUEToolsFormat("ape", CUEToolsTagger.TagLibSharp, true, false, true, true, encodersViewModel.GetDefault("ape", true), null, decodersViewModel.GetDefault("ape", true)));
+            formats.Add("tta", new CUEToolsFormat("tta", CUEToolsTagger.APEv2, true, false, false, true, encodersViewModel.GetDefault("tta", true), null, decodersViewModel.GetDefault("tta", true)));
+            formats.Add("m2ts", new CUEToolsFormat("m2ts", CUEToolsTagger.APEv2, true, false, false, true, null, null, decodersViewModel.GetDefault("m2ts", true)));
+            formats.Add("mpls", new CUEToolsFormat("mpls", CUEToolsTagger.APEv2, true, false, false, true, null, null, decodersViewModel.GetDefault("mpls", true)));
+            formats.Add("wav", new CUEToolsFormat("wav", CUEToolsTagger.TagLibSharp, true, false, false, true, encodersViewModel.GetDefault("wav", true), null, decodersViewModel.GetDefault("wav", true)));
+            formats.Add("m4a", new CUEToolsFormat("m4a", CUEToolsTagger.TagLibSharp, true, true, false, true, encodersViewModel.GetDefault("m4a", true), encodersViewModel.GetDefault("m4a", false), decodersViewModel.GetDefault("m4a", true)));
+            formats.Add("tak", new CUEToolsFormat("tak", CUEToolsTagger.APEv2, true, false, true, true, encodersViewModel.GetDefault("tak", true), null, decodersViewModel.GetDefault("tak", true)));
+            formats.Add("wma", new CUEToolsFormat("wma", CUEToolsTagger.TagLibSharp, true, true, false, true, encodersViewModel.GetDefault("wma", true), encodersViewModel.GetDefault("wma", false), decodersViewModel.GetDefault("wma", true)));
+            formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encodersViewModel.GetDefault("mp3", false), null));
+            formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encodersViewModel.GetDefault("ogg", false), null));
+            formats.Add("opus", new CUEToolsFormat("opus", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encodersViewModel.GetDefault("opus", false), null));
         }
     }
 }

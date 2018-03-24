@@ -5,20 +5,6 @@ using System.IO;
 
 namespace CUETools.Codecs.BDLPCM
 {
-    public class DecoderSettings : AudioDecoderSettings
-    {
-        public override string Extension => "m2ts";
-
-        public override string Name => "cuetools";
-
-        public override Type DecoderType => typeof(AudioDecoder);
-
-        public override int Priority => 2;
-
-        public DecoderSettings() : base() { }
-    }
-
-    [AudioDecoderClass(typeof(DecoderSettings))]
     public class AudioDecoder : IAudioSource
     {
         public unsafe AudioDecoder(string path, Stream IO, ushort pid)
@@ -37,7 +23,7 @@ namespace CUETools.Codecs.BDLPCM
             _samplePos = 0;
             _sampleLen = -1;
             demux_ts_packets(null, 0);
-            settings = new BDLPCMDecoderSettings();
+            settings = new DecoderSettings();
         }
 
         public AudioDecoderSettings Settings { get { return settings; } }
@@ -749,6 +735,6 @@ namespace CUETools.Codecs.BDLPCM
         int demuxer_channel;
         TsStream chosenStream;
         long _samplePos, _sampleLen;
-        BDLPCMDecoderSettings settings;
+        DecoderSettings settings;
     }
 }

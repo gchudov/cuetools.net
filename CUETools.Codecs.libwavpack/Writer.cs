@@ -54,7 +54,6 @@ namespace CUETools.Codecs.libwavpack
         private int m_extraMode;
     };
 
-    [AudioEncoderClass(typeof(EncoderSettings))]
     public unsafe class AudioEncoder : IAudioDest
     {
         public AudioEncoder(EncoderSettings settings, string path, Stream output = null)

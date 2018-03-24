@@ -272,8 +272,6 @@ namespace CUETools.Codecs.FLAKE
         public string[] Tags { get; set; }
     }
 
-	[AudioEncoderClass(typeof(EncoderSettings))]
-	//[AudioEncoderClass("libFlake nonsub", "flac", true, "9 10 11", "9", 3, typeof(FlakeWriterSettings))]
 	public class AudioEncoder : IAudioDest
 	{
 		Stream _IO = null;

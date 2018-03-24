@@ -8,7 +8,7 @@ namespace CUETools.Codecs
     public class AudioEncoderSettingsViewModel : INotifyPropertyChanged
     {
         [JsonProperty]
-        public AudioEncoderSettings settings = null;
+        public AudioEncoderSettings Settings = null;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -17,31 +17,9 @@ namespace CUETools.Codecs
         {
         }
 
-        public AudioEncoderSettingsViewModel(
-            string _name,
-            string _extension,
-            bool _lossless,
-            string _supported_modes,
-            string _default_mode,
-            string _path,
-            string _parameters
-            )
+        public AudioEncoderSettingsViewModel(AudioEncoderSettings settings)
         {
-            settings = new CommandLine.EncoderSettings() { name = _name, extension = _extension, SupportedModes = _supported_modes, EncoderMode = _default_mode, Path = _path, Parameters = _parameters, lossless = _lossless };
-        }
-
-        public AudioEncoderSettingsViewModel(AudioEncoderClassAttribute enc)
-        {
-            settings = Activator.CreateInstance(enc.Settings) as AudioEncoderSettings;
-            if (settings == null)
-                throw new InvalidOperationException("invalid codec");
-        }
-
-        public AudioEncoderSettingsViewModel Clone()
-        {
-            var res = this.MemberwiseClone() as AudioEncoderSettingsViewModel;
-            if (settings != null) res.settings = settings.Clone();
-            return res;
+            this.Settings = settings;
         }
 
         public override string ToString()
@@ -55,13 +33,13 @@ namespace CUETools.Codecs
         {
             get
             {
-                if (settings is CommandLine.EncoderSettings)
-                    return (settings as CommandLine.EncoderSettings).Path;
+                if (Settings is CommandLine.EncoderSettings)
+                    return (Settings as CommandLine.EncoderSettings).Path;
                 return "";
             }
             set
             {
-                var settings = this.settings as CommandLine.EncoderSettings;
+                var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.Path = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Path"));
@@ -72,13 +50,13 @@ namespace CUETools.Codecs
         {
             get
             {
-                if (settings is CommandLine.EncoderSettings)
-                    return (settings as CommandLine.EncoderSettings).Parameters;
+                if (Settings is CommandLine.EncoderSettings)
+                    return (Settings as CommandLine.EncoderSettings).Parameters;
                 return "";
             }
             set
             {
-                var settings = this.settings as CommandLine.EncoderSettings;
+                var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.Parameters = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Parameters"));
@@ -87,10 +65,10 @@ namespace CUETools.Codecs
 
         public bool Lossless
         {
-            get => settings.Lossless;
+            get => Settings.Lossless;
             set
             {
-                var settings = this.settings as CommandLine.EncoderSettings;
+                var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.lossless = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Lossless"));
@@ -100,10 +78,10 @@ namespace CUETools.Codecs
         
         public string Name
         {
-            get => settings.Name;
+            get => Settings.Name;
             set
             {
-                var settings = this.settings as CommandLine.EncoderSettings;
+                var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.name = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
@@ -112,10 +90,10 @@ namespace CUETools.Codecs
 
         public string Extension
         {
-            get => settings.Extension;
+            get => Settings.Extension;
             set
             {
-                var settings = this.settings as CommandLine.EncoderSettings;
+                var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.extension = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Extension"));
@@ -129,11 +107,11 @@ namespace CUETools.Codecs
             get
             {
                 string defaultMode;
-                return this.settings.GetSupportedModes(out defaultMode);
+                return this.Settings.GetSupportedModes(out defaultMode);
             }
             set
             {
-                var settings = this.settings as CommandLine.EncoderSettings;
+                var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.SupportedModes = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SupportedModesStr"));
@@ -150,16 +128,16 @@ namespace CUETools.Codecs
                 if (modes == null || modes.Length < 2)
                     return -1;
                 for (int i = 0; i < modes.Length; i++)
-                    if (modes[i] == this.settings.EncoderMode)
+                    if (modes[i] == this.Settings.EncoderMode)
                         return i;
                 return -1;
             }
         }
 
-        public bool CanBeDeleted => settings is CommandLine.EncoderSettings;
+        public bool CanBeDeleted => Settings is CommandLine.EncoderSettings;
 
         public bool IsValid =>
-               (settings != null)
-            && (settings is CommandLine.EncoderSettings ? (settings as CommandLine.EncoderSettings).Path != "" : true);
+               (Settings != null)
+            && (Settings is CommandLine.EncoderSettings ? (Settings as CommandLine.EncoderSettings).Path != "" : true);
     }
 }
