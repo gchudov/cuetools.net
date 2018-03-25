@@ -8,7 +8,7 @@ namespace CUETools.Codecs
     public class AudioDecoderSettingsViewModel : INotifyPropertyChanged
     {
         [JsonProperty]
-        public AudioDecoderSettings Settings = null;
+        public IAudioDecoderSettings Settings = null;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -17,7 +17,7 @@ namespace CUETools.Codecs
         {
         }
 
-        public AudioDecoderSettingsViewModel(AudioDecoderSettings settings)
+        public AudioDecoderSettingsViewModel(IAudioDecoderSettings settings)
         {
             this.Settings = settings;
         }
@@ -62,21 +62,13 @@ namespace CUETools.Codecs
             }
         }
 
-        public bool Lossless
-        {
-            get => true;
-            set {
-                throw new InvalidOperationException();
-            }
-        }
-
         public string Name
         {
             get => Settings.Name;
             set
             {
                 if (Settings is CommandLine.DecoderSettings)
-                    (Settings as CommandLine.DecoderSettings).name = value;
+                    (Settings as CommandLine.DecoderSettings).Name = value;
                 else throw new InvalidOperationException();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
             }
@@ -88,7 +80,7 @@ namespace CUETools.Codecs
             set
             {
                 if (Settings is CommandLine.DecoderSettings)
-                    (Settings as CommandLine.DecoderSettings).extension = value;
+                    (Settings as CommandLine.DecoderSettings).Extension = value;
                 else throw new InvalidOperationException();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Extension"));
             }

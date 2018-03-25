@@ -30,7 +30,7 @@ namespace CUETools.Codecs.CommandLine
 
         // !!!! Must not start the process in constructor, so that we can set CompressionLevel via Settings!
         private EncoderSettings m_settings;
-        public AudioEncoderSettings Settings => m_settings;
+        public IAudioEncoderSettings Settings => m_settings;
 
         public string Path { get { return _path; } }
 

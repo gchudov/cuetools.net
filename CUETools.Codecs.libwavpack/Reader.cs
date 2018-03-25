@@ -5,20 +5,36 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using CUETools.Codecs;
+using Newtonsoft.Json;
 
 namespace CUETools.Codecs.libwavpack
 {
-    public class DecoderSettings : AudioDecoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class DecoderSettings : IAudioDecoderSettings
     {
-        public override string Extension => "wv";
+        #region IAudioDecoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "wv";
 
-        public override string Name => "libwavpack";
+        [Browsable(false)]
+        public string Name => "libwavpack";
 
-        public override Type DecoderType => typeof(AudioDecoder);
+        [Browsable(false)]
+        public Type DecoderType => typeof(AudioDecoder);
 
-        public override int Priority => 1;
+        [Browsable(false)]
+        public int Priority => 1;
 
-        public DecoderSettings() : base() { }
+        public IAudioDecoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioDecoderSettings;
+        }
+        #endregion
+
+        public DecoderSettings()
+        {
+            this.Init();
+        }
     }
 
     public unsafe class AudioDecoder : IAudioSource
@@ -77,7 +93,7 @@ namespace CUETools.Codecs.libwavpack
 
         private DecoderSettings m_settings;
 
-        public AudioDecoderSettings Settings => m_settings;
+        public IAudioDecoderSettings Settings => m_settings;
 
         public AudioPCMConfig PCM => pcm;
 

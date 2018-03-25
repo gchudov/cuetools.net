@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.Flake;
 
 namespace CUETools.FlakeExe
 {
@@ -144,7 +144,7 @@ namespace CUETools.FlakeExe
             bool do_seektable = true;
             bool buffered = false;
             string coeffs = null;
-            var settings = new Codecs.FLAKE.EncoderSettings() { AllowNonSubset = true };
+            var settings = new Codecs.Flake.EncoderSettings() { AllowNonSubset = true };
             bool allowNonSubset = false;
             bool ignore_chunk_sizes = false;
             bool force = false;
@@ -272,7 +272,7 @@ namespace CUETools.FlakeExe
                     else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out intarg))
                     {
                         ok = intarg >= 0 && intarg <= 11;
-                        settings.EncoderModeIndex = intarg;
+                        settings.SetEncoderModeIndex(intarg);
                     }
                     else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
                         input_file = args[arg];
@@ -357,7 +357,7 @@ namespace CUETools.FlakeExe
                             else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".wav")
                                 audioSource = new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings(), input_file);
                             else if (File.Exists(input_file) && Path.GetExtension(input_file) == ".flac")
-                                audioSource = new Codecs.FLAKE.AudioDecoder(new Codecs.FLAKE.DecoderSettings(), input_file);
+                                audioSource = new Codecs.Flake.AudioDecoder(new Codecs.Flake.DecoderSettings(), input_file);
                             else
                             {
                                 Usage();
@@ -495,7 +495,7 @@ namespace CUETools.FlakeExe
 
                             if (debug)
                             {
-                                settings = flake.Settings as Codecs.FLAKE.EncoderSettings;
+                                settings = flake.Settings as Codecs.Flake.EncoderSettings;
                                 Console.SetOut(stdout);
                                 Console.Out.WriteLine("{17}\t{0}\t{1:0.000}\t{2}\t{3}\t{4}\t{5}\t{6}..{7}\t{8}..{9}\t{10}..{11}\t{12}..{13}\t{14}\t{15}\t{16}\t{18}",
                                     flake.TotalSize,

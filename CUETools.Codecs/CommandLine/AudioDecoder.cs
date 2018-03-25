@@ -11,7 +11,7 @@ namespace CUETools.Codecs.CommandLine
         WAV.AudioDecoder rdr;
 
         private DecoderSettings m_settings;
-        public AudioDecoderSettings Settings => m_settings;
+        public IAudioDecoderSettings Settings => m_settings;
 
         public long Position
         {

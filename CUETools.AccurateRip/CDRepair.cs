@@ -413,15 +413,9 @@ namespace CUETools.AccurateRip
 			throw new Exception("unsupported");
 		}
 
-        public AudioEncoderSettings Settings
-		{
-			get
-			{
-				return new AudioEncoderSettings(AudioPCMConfig.RedBook);
-			}
-		}
+        public IAudioEncoderSettings Settings => new Codecs.WAV.EncoderSettings(AudioPCMConfig.RedBook);
 
-		public string Path
+        public string Path
 		{
 			get { throw new Exception("unsupported"); }
 		}

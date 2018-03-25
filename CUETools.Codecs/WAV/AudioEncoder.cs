@@ -30,7 +30,7 @@ namespace CUETools.Codecs.WAV
         }
 
         private EncoderSettings m_settings;
-        public AudioEncoderSettings Settings => m_settings;
+        public IAudioEncoderSettings Settings => m_settings;
 
         public string Path { get { return _path; } }
 

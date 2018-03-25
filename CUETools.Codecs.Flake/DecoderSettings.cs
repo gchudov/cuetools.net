@@ -1,15 +1,17 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 
-namespace CUETools.Codecs.WAV
+namespace CUETools.Codecs.Flake
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class DecoderSettings : IAudioDecoderSettings
     {
         #region IAudioDecoderSettings implementation
         [Browsable(false)]
-        public string Extension => "wav";
+        public string Extension => "flac";
 
         [Browsable(false)]
         public string Name => "cuetools";
@@ -30,7 +32,5 @@ namespace CUETools.Codecs.WAV
         {
             this.Init();
         }
-
-        public bool IgnoreChunkSizes { get; set; }
     }
 }

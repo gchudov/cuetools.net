@@ -11,7 +11,7 @@ namespace CUETools.Codecs.Icecast
 	public class IcecastWriter: IAudioDest
 	{
 		private long _sampleOffset = 0;
-        private AudioEncoderSettings m_settings;
+        private Codecs.WAV.EncoderSettings m_settings;
 		private libmp3lame.AudioEncoder encoder = null;
 		private HttpWebRequest req = null;
 		private HttpWebResponse resp = null;
@@ -28,7 +28,7 @@ namespace CUETools.Codecs.Icecast
 
 		public IcecastWriter(AudioPCMConfig pcm, IcecastSettingsData settings)
 		{
-            this.m_settings = new AudioEncoderSettings(pcm);
+            this.m_settings = new Codecs.WAV.EncoderSettings(pcm);
 			this.settings = settings;
 		}
 
@@ -194,28 +194,16 @@ namespace CUETools.Codecs.Icecast
 			encoder.Write(tmp);
 		}
 
-		public long Position
-		{
-			get
-			{
-				return _sampleOffset;
-			}
-		}
+        public long Position => _sampleOffset;
 
 		public long FinalSampleCount
 		{
 			set { ; }
 		}
 
-        public AudioEncoderSettings Settings
-		{
-			get
-			{
-				return m_settings;
-			}
-		}
+        public IAudioEncoderSettings Settings => m_settings;
 
-		public string Path { get { return null; } }
+        public string Path => null;
 		#endregion
 
 		public long BytesWritten

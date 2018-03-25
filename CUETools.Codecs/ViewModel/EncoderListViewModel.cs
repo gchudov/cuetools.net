@@ -6,9 +6,9 @@ namespace CUETools.Codecs
 {
     public class EncoderListViewModel : BindingList<AudioEncoderSettingsViewModel>
     {
-        private List<AudioEncoderSettings> model;
+        private List<IAudioEncoderSettings> model;
 
-        public EncoderListViewModel(List<AudioEncoderSettings> model)
+        public EncoderListViewModel(List<IAudioEncoderSettings> model)
             : base()
         {
             this.model = model;

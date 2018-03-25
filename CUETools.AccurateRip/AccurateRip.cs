@@ -930,25 +930,13 @@ namespace CUETools.AccurateRip
 			throw new Exception("unsupported");
 		}
 
-        public AudioEncoderSettings Settings
-		{
-			get
-			{
-				return new AudioEncoderSettings(AudioPCMConfig.RedBook);
-			}
-		}
+        public IAudioEncoderSettings Settings => new Codecs.WAV.EncoderSettings(AudioPCMConfig.RedBook);
 
-		public CDImageLayout TOC
-		{
-			get { return _toc; }
-		}
+        public CDImageLayout TOC => _toc;
 
 		public long FinalSampleCount
 		{
-			get
-			{
-				return _finalSampleCount;
-			}
+			get => _finalSampleCount;
 			set
 			{
 				if (value != _finalSampleCount)

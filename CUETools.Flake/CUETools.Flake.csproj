@@ -24,7 +24,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj" />
+    <ProjectReference Include="..\CUETools.Codecs.Flake\CUETools.Codecs.Flake.csproj" />
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
   </ItemGroup>
 

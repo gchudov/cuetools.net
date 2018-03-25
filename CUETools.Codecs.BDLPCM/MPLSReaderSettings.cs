@@ -7,25 +7,39 @@ using Newtonsoft.Json;
 namespace CUETools.Codecs.MPLS
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class DecoderSettings : AudioDecoderSettings
+    public class DecoderSettings : IAudioDecoderSettings
     {
-        public override string Extension => "mpls";
+        #region IAudioDecoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "mpls";
 
-        public override string Name => "cuetools";
+        [Browsable(false)]
+        public string Name => "cuetools";
 
-        public override Type DecoderType => typeof(BDLPCM.MPLSDecoder);
+        [Browsable(false)]
+        public Type DecoderType => typeof(BDLPCM.MPLSDecoder);
 
-        public override int Priority => 2;
+        [Browsable(false)]
+        public int Priority => 2;
 
+        public IAudioDecoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioDecoderSettings;
+        }
+        #endregion
+
+        public DecoderSettings()
+        {
+            this.Init();
+        }
+
+        [DefaultValue(true)]
         public bool IgnoreShortItems { get; set; }
 
+        [Browsable(false)]
         public int? Stream { get; set; }
 
+        [Browsable(false)]
         public ushort? Pid { get; set; }
-
-        public DecoderSettings() : base()
-        {
-            IgnoreShortItems = true;
-        }
     }
 }

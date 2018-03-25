@@ -1002,7 +1002,7 @@ namespace CUERipper
         {
             encoder.Settings.PCM = AudioPCMConfig.RedBook;
             buttonEncoderSettings.Enabled = encoder.Settings.HasBrowsableAttributes();
-            string[] modes = encoder.SupportedModes;
+            string[] modes = encoder.SupportedModes.Split(' ');
             if (modes == null || modes.Length < 2)
             {
                 trackBarEncoderMode.Visible = false;
@@ -1013,11 +1013,7 @@ namespace CUERipper
             else
             {
                 if (encoder.EncoderModeIndex == -1)
-                {
-                    string defaultMode;
-                    encoder.Settings.GetSupportedModes(out defaultMode);
-                    encoder.Settings.EncoderMode = defaultMode;
-                }
+                    encoder.Settings.EncoderMode = encoder.Settings.DefaultMode;
                 trackBarEncoderMode.Maximum = modes.Length - 1;
                 trackBarEncoderMode.Value = encoder.EncoderModeIndex == -1 ? modes.Length - 1 : encoder.EncoderModeIndex;
                 labelEncoderMode.Text = encoder.Settings.EncoderMode;
@@ -1047,7 +1043,7 @@ namespace CUERipper
 		private void trackBarEncoderMode_Scroll(object sender, EventArgs e)
 		{
 			var encoder = bnComboBoxEncoder.SelectedItem as AudioEncoderSettingsViewModel;
-			string[] modes = encoder.SupportedModes;
+			string[] modes = encoder.SupportedModes.Split(' ');
 			encoder.Settings.EncoderMode = modes[trackBarEncoderMode.Value];
 			labelEncoderMode.Text = encoder.Settings.EncoderMode;
 		}

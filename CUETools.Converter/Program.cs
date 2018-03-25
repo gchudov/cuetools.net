@@ -47,7 +47,7 @@ namespace CUETools.Converter
                 throw new Exception("Unsupported audio type: " + path);
 
             var decoder = fmt.decoder;
-            if (chosenDecoder != null && !config.decodersViewModel.TryGetValue(fmt.extension, true, chosenDecoder, out decoder))
+            if (chosenDecoder != null && !config.decodersViewModel.TryGetValue(fmt.extension, chosenDecoder, out decoder))
                 throw new Exception("Unknown audio decoder " + chosenDecoder + " or unsupported audio type " + fmt.extension);
             if (decoder == null)
                 throw new Exception("Unsupported audio type: " + path);

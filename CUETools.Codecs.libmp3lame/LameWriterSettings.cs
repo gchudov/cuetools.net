@@ -1,21 +1,61 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace CUETools.Codecs.libmp3lame
 {
-    public class LameEncoderSettings : AudioEncoderSettings
+    public abstract class LameEncoderSettings : IAudioEncoderSettings
     {
-        public override Type EncoderType => typeof(AudioEncoder);
+        #region IAudioEncoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "mp3";
 
-        public LameEncoderSettings(string modes, string defaultMode)
-            : base(modes, defaultMode)
+        [Browsable(false)]
+        public abstract string Name { get; }
+
+        [Browsable(false)]
+        public Type EncoderType => typeof(AudioEncoder);
+
+        [Browsable(false)]
+        public bool Lossless => false;
+
+        [Browsable(false)]
+        public abstract int Priority { get; }
+
+        [Browsable(false)]
+        public abstract string SupportedModes { get; }
+
+        [Browsable(false)]
+        public abstract string DefaultMode { get; }
+
+        [Browsable(false)]
+        [DefaultValue("")]
+        [JsonProperty]
+        public string EncoderMode { get; set; }
+
+        [Browsable(false)]
+        public AudioPCMConfig PCM { get; set; }
+
+        [Browsable(false)]
+        public int BlockSize { get; set; }
+
+        [Browsable(false)]
+        [DefaultValue(4096)]
+        public int Padding { get; set; }
+
+        public IAudioEncoderSettings Clone()
         {
+            return MemberwiseClone() as IAudioEncoderSettings;
+        }
+        #endregion
+
+        public LameEncoderSettings()
+        {
+            this.Init();
         }
 
-        public virtual void Apply(IntPtr lame)
-        {
-            throw new MethodAccessException();
-        }
+        public abstract void Apply(IntPtr lame);
     }
 }

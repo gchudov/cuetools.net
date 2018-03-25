@@ -4,9 +4,9 @@ namespace CUETools.Codecs.NULL
 {
     public class AudioEncoder : IAudioDest
     {
-        AudioEncoderSettings m_settings;
+        IAudioEncoderSettings m_settings;
 
-        public AudioEncoder(string path, AudioEncoderSettings settings)
+        public AudioEncoder(string path, IAudioEncoderSettings settings)
         {
             m_settings = settings;
         }
@@ -24,7 +24,7 @@ namespace CUETools.Codecs.NULL
             set { }
         }
 
-        public AudioEncoderSettings Settings => m_settings;
+        public IAudioEncoderSettings Settings => m_settings;
 
         public void Write(AudioBuffer buff)
         {

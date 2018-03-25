@@ -11,7 +11,7 @@ namespace CUETools.Processor
         private long nextPos;
         private long _samplePos, _sampleLen;
 
-        public AudioDecoderSettings Settings { get { return null; } }
+        public IAudioDecoderSettings Settings => null;
 
         public long Length
         {

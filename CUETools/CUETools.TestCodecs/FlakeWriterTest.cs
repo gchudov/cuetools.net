@@ -6,7 +6,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.Flake;
 namespace CUETools.TestCodecs
 {
 	/// <summary>

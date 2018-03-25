@@ -8,7 +8,7 @@ namespace CUETools.Codecs
     public class AudioEncoderSettingsViewModel : INotifyPropertyChanged
     {
         [JsonProperty]
-        public AudioEncoderSettings Settings = null;
+        public IAudioEncoderSettings Settings = null;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -17,7 +17,7 @@ namespace CUETools.Codecs
         {
         }
 
-        public AudioEncoderSettingsViewModel(AudioEncoderSettings settings)
+        public AudioEncoderSettingsViewModel(IAudioEncoderSettings settings)
         {
             this.Settings = settings;
         }
@@ -70,7 +70,7 @@ namespace CUETools.Codecs
             {
                 var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
-                settings.lossless = value;
+                settings.Lossless = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Lossless"));
             }
         }
@@ -83,7 +83,7 @@ namespace CUETools.Codecs
             {
                 var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
-                settings.name = value;
+                settings.Name = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
             }
         }
@@ -95,36 +95,30 @@ namespace CUETools.Codecs
             {
                 var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
-                settings.extension = value;
+                settings.Extension = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Extension"));
             }
         }
 
         public string DotExtension => "." + Extension;
 
-        public string SupportedModesStr
+        public string SupportedModes
         {
-            get
-            {
-                string defaultMode;
-                return this.Settings.GetSupportedModes(out defaultMode);
-            }
+            get => Settings.SupportedModes;
             set
             {
                 var settings = this.Settings as CommandLine.EncoderSettings;
                 if (settings == null) throw new InvalidOperationException();
                 settings.SupportedModes = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SupportedModesStr"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SupportedModes"));
             }
         }
-
-        public string[] SupportedModes => this.SupportedModesStr.Split(' ');
 
         public int EncoderModeIndex
         {
             get
             {
-                string[] modes = this.SupportedModes;
+                string[] modes = this.SupportedModes.Split(' ');
                 if (modes == null || modes.Length < 2)
                     return -1;
                 for (int i = 0; i < modes.Length; i++)

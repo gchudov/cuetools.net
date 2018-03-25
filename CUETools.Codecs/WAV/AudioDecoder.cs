@@ -14,7 +14,7 @@ namespace CUETools.Codecs.WAV
         string _path;
 
         private DecoderSettings m_settings;
-        public AudioDecoderSettings Settings => m_settings;
+        public IAudioDecoderSettings Settings => m_settings;
 
         public long Position
         {

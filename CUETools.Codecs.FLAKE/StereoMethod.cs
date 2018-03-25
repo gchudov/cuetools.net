@@ -1,5 +1,5 @@
 ﻿
-namespace CUETools.Codecs.FLAKE
+namespace CUETools.Codecs.Flake
 {
 	public enum StereoMethod
 	{

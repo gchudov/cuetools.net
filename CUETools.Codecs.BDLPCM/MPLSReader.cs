@@ -277,7 +277,7 @@ namespace CUETools.Codecs.BDLPCM
             return mark;
         }
 
-        public AudioDecoderSettings Settings { get { return settings; } }
+        public IAudioDecoderSettings Settings => settings;
 
         public void Close()
         {

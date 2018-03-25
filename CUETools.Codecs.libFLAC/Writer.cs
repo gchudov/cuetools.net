@@ -10,21 +10,54 @@ using Newtonsoft.Json;
 namespace CUETools.Codecs.libFLAC
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class EncoderSettings : AudioEncoderSettings
+    public class EncoderSettings : IAudioEncoderSettings
     {
-        public override string Extension => "flac";
+        #region IAudioEncoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "flac";
 
-        public override string Name => "libFLAC";
+        [Browsable(false)]
+        public string Name => "libFLAC";
 
-        public override Type EncoderType => typeof(Encoder);
+        [Browsable(false)]
+        public Type EncoderType => typeof(Encoder);
 
-        public override int Priority => 2;
+        [Browsable(false)]
+        public bool Lossless => true;
 
-        public override bool Lossless => true;
+        [Browsable(false)]
+        public int Priority => 2;
+
+        [Browsable(false)]
+        public string SupportedModes => "0 1 2 3 4 5 6 7 8";
+
+        [Browsable(false)]
+        public string DefaultMode => "5";
+
+        [Browsable(false)]
+        [DefaultValue("")]
+        [JsonProperty]
+        public string EncoderMode { get; set; }
+
+        [Browsable(false)]
+        public AudioPCMConfig PCM { get; set; }
+
+        [Browsable(false)]
+        public int BlockSize { get; set; }
+
+        [Browsable(false)]
+        [DefaultValue(4096)]
+        public int Padding { get; set; }
+
+        public IAudioEncoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioEncoderSettings;
+        }
+        #endregion
 
         public EncoderSettings()
-            : base("0 1 2 3 4 5 6 7 8", "5")
         {
+            this.Init();
         }
 
         [DefaultValue(false)]
@@ -74,7 +107,7 @@ namespace CUETools.Codecs.libFLAC
         {
         }
 
-        public AudioEncoderSettings Settings => m_settings;
+        public IAudioEncoderSettings Settings => m_settings;
 
         public string Path { get => m_path; }
 
@@ -239,7 +272,7 @@ namespace CUETools.Codecs.libFLAC
             FLACDLL.FLAC__stream_encoder_set_metadata(m_encoder, metadata, metadataCount);
             FLACDLL.FLAC__stream_encoder_set_verify(m_encoder, m_settings.Verify ? 1 : 0);
             FLACDLL.FLAC__stream_encoder_set_do_md5(m_encoder, m_settings.MD5Sum ? 1 : 0);
-            FLACDLL.FLAC__stream_encoder_set_compression_level(m_encoder, m_settings.EncoderModeIndex);
+            FLACDLL.FLAC__stream_encoder_set_compression_level(m_encoder, m_settings.GetEncoderModeIndex());
             if (m_finalSampleCount != 0)
                 FLACDLL.FLAC__stream_encoder_set_total_samples_estimate(m_encoder, m_finalSampleCount);
             if (m_settings.BlockSize > 0)

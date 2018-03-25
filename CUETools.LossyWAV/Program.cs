@@ -96,7 +96,7 @@ namespace CUETools.LossyWAVSharp
 				AudioPCMConfig pcm = outputBPS == 0 ? audioSource.PCM : new AudioPCMConfig(outputBPS, audioSource.PCM.ChannelCount, audioSource.PCM.SampleRate, audioSource.PCM.ChannelMask);
                 Codecs.WAV.AudioEncoder audioDest = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(pcm), Path.ChangeExtension(sourceFile, ".lossy.wav"), toStdout ? Console.OpenStandardOutput() : null);
                 Codecs.WAV.AudioEncoder lwcdfDest = createCorrection ? new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(audioSource.PCM), Path.ChangeExtension(sourceFile, ".lwcdf.wav")) : null;
-				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, quality, new AudioEncoderSettings(audioSource.PCM));
+				LossyWAVWriter lossyWAV = new LossyWAVWriter(audioDest, lwcdfDest, quality, new Codecs.WAV.EncoderSettings(audioSource.PCM));
 				AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
 
 				Console.WriteLine("Filename  : {0}", sourceFile);

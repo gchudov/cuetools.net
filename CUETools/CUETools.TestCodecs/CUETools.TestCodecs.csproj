@@ -91,9 +91,9 @@
       <Name>CUETools.Codecs.ALAC</Name>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\CUETools.Codecs.FLAKE\CUETools.Codecs.FLAKE.csproj">
+    <ProjectReference Include="..\..\CUETools.Codecs.Flake\CUETools.Codecs.Flake.csproj">
       <Project>{082D6B9E-326E-4D15-9798-EDAE9EDE70A6}</Project>
-      <Name>CUETools.Codecs.FLAKE</Name>
+      <Name>CUETools.Codecs.Flake</Name>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CUETools.Codecs.libFLAC\CUETools.Codecs.libFLAC.csproj">

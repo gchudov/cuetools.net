@@ -11,8 +11,8 @@ namespace CUETools.Processor
 {
     public static class CUEProcessorPlugins
     {
-        public static List<AudioEncoderSettings> encs;
-        public static List<AudioDecoderSettings> decs;
+        public static List<IAudioEncoderSettings> encs;
+        public static List<IAudioDecoderSettings> decs;
         public static List<Type> arcp;
         public static List<string> arcp_fmt;
         public static Type hdcd;
@@ -20,8 +20,8 @@ namespace CUETools.Processor
 
         static CUEProcessorPlugins()
         {
-            encs = new List<AudioEncoderSettings>();
-            decs = new List<AudioDecoderSettings>();
+            encs = new List<IAudioEncoderSettings>();
+            decs = new List<IAudioDecoderSettings>();
             arcp = new List<Type>();
             arcp_fmt = new List<string>();
 
@@ -68,13 +68,13 @@ namespace CUETools.Processor
                 try
                 {
                     if (!type.IsClass || type.IsAbstract) continue;
-                    if (type.GetInterface(typeof(IAudioDecoderSettings).Name) != null && type != typeof(AudioDecoderSettings))
+                    if (type.GetInterface(typeof(IAudioDecoderSettings).Name) != null)
                     {
-                        decs.Add(Activator.CreateInstance(type) as AudioDecoderSettings);
+                        decs.Add(Activator.CreateInstance(type) as IAudioDecoderSettings);
                     }
-                    if (type.GetInterface(typeof(IAudioEncoderSettings).Name) != null && type != typeof(AudioEncoderSettings))
+                    if (type.GetInterface(typeof(IAudioEncoderSettings).Name) != null)
                     {
-                        encs.Add(Activator.CreateInstance(type) as AudioEncoderSettings);
+                        encs.Add(Activator.CreateInstance(type) as IAudioEncoderSettings);
                     }
                     CompressionProviderClass archclass = Attribute.GetCustomAttribute(type, typeof(CompressionProviderClass)) as CompressionProviderClass;
                     if (archclass != null)

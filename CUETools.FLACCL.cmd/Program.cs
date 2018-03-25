@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.Flake;
 using CUETools.Codecs.FLACCL;
 
 namespace CUETools.FLACCL.cmd
@@ -209,7 +209,7 @@ namespace CUETools.FLACCL.cmd
                 else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out level))
                 {
                     ok = level >= 0 && level <= 11;
-                    settings.EncoderModeIndex = level;
+                    settings.SetEncoderModeIndex(level);
                 }
                 else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
                     input_file = args[arg];

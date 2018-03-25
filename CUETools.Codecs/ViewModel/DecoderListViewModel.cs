@@ -6,9 +6,9 @@ namespace CUETools.Codecs
 {
     public class DecoderListViewModel : BindingList<AudioDecoderSettingsViewModel>
     {
-        private List<AudioDecoderSettings> model;
+        private List<IAudioDecoderSettings> model;
 
-        public DecoderListViewModel(List<AudioDecoderSettings> model)
+        public DecoderListViewModel(List<IAudioDecoderSettings> model)
             : base()
         {
             this.model = model;
@@ -23,11 +23,11 @@ namespace CUETools.Codecs
             e.NewObject = new AudioDecoderSettingsViewModel(item);
         }
 
-        public bool TryGetValue(string extension, bool lossless, string name, out AudioDecoderSettingsViewModel result)
+        public bool TryGetValue(string extension, string name, out AudioDecoderSettingsViewModel result)
         {
             foreach (AudioDecoderSettingsViewModel udc in this)
             {
-                if (udc.Settings.Extension == extension && udc.Settings.Lossless == lossless && udc.Settings.Name == name)
+                if (udc.Settings.Extension == extension && udc.Settings.Name == name)
                 {
                     result = udc;
                     return true;
@@ -37,12 +37,12 @@ namespace CUETools.Codecs
             return false;
         }
 
-        public AudioDecoderSettingsViewModel GetDefault(string extension, bool lossless)
+        public AudioDecoderSettingsViewModel GetDefault(string extension)
         {
             AudioDecoderSettingsViewModel result = null;
             foreach (AudioDecoderSettingsViewModel udc in this)
             {
-                if (udc.Settings.Extension == extension && udc.Settings.Lossless == lossless && (result == null || result.Settings.Priority < udc.Settings.Priority))
+                if (udc.Settings.Extension == extension && (result == null || result.Settings.Priority < udc.Settings.Priority))
                 {
                     result = udc;
                 }

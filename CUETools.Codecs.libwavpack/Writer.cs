@@ -11,21 +11,54 @@ using Newtonsoft.Json;
 namespace CUETools.Codecs.libwavpack
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class EncoderSettings : AudioEncoderSettings
+    public class EncoderSettings : IAudioEncoderSettings
     {
-        public override string Extension => "wv";
+        #region IAudioEncoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "wv";
 
-        public override string Name => "libwavpack";
+        [Browsable(false)]
+        public string Name => "libwavpack";
 
-        public override Type EncoderType => typeof(AudioEncoder);
+        [Browsable(false)]
+        public Type EncoderType => typeof(AudioEncoder);
 
-        public override int Priority => 1;
+        [Browsable(false)]
+        public bool Lossless => true;
 
-        public override bool Lossless => true;
+        [Browsable(false)]
+        public int Priority => 1;
+
+        [Browsable(false)]
+        public string SupportedModes => "fast normal high high+";
+
+        [Browsable(false)]
+        public string DefaultMode => "normal";
+
+        [Browsable(false)]
+        [DefaultValue("")]
+        [JsonProperty]
+        public string EncoderMode { get; set; }
+
+        [Browsable(false)]
+        public AudioPCMConfig PCM { get; set; }
+
+        [Browsable(false)]
+        public int BlockSize { get; set; }
+
+        [Browsable(false)]
+        [DefaultValue(4096)]
+        public int Padding { get; set; }
+
+        public IAudioEncoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioEncoderSettings;
+        }
+        #endregion
 
         public EncoderSettings()
-            : base("fast normal high high+", "normal")
         {
+            this.Init();
         }
 
         [DefaultValue(0)]
@@ -70,7 +103,7 @@ namespace CUETools.Codecs.libwavpack
                 throw new Exception("bits per sample must be 16..24");
         }
 
-        public AudioEncoderSettings Settings => m_settings;
+        public IAudioEncoderSettings Settings => m_settings;
 
         public string Path { get => m_path; }
 
@@ -186,7 +219,7 @@ namespace CUETools.Codecs.libwavpack
 			config.channel_mask = (int)m_settings.PCM.ChannelMask;
 			config.sample_rate = m_settings.PCM.SampleRate;
             config.flags = ConfigFlags.CONFIG_COMPATIBLE_WRITE;
-            Int32 _compressionMode = m_settings.EncoderModeIndex;
+            Int32 _compressionMode = m_settings.GetEncoderModeIndex();
             if (_compressionMode == 0) config.flags |= ConfigFlags.CONFIG_FAST_FLAG;
 			if (_compressionMode == 2) config.flags |= ConfigFlags.CONFIG_HIGH_FLAG;
 			if (_compressionMode == 3) config.flags |= ConfigFlags.CONFIG_HIGH_FLAG | ConfigFlags.CONFIG_VERY_HIGH_FLAG;

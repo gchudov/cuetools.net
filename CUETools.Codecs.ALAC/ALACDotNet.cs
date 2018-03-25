@@ -4,6 +4,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using CUETools.Codecs;
+using System.ComponentModel;
+using Newtonsoft.Json;
 
 //Copyright (c) 2008 Grigory Chudov.
 //This library is based on ALAC decoder by David Hammerton.
@@ -27,17 +29,32 @@ using CUETools.Codecs;
 
 namespace CUETools.Codecs.ALAC
 {
-    public class DecoderSettings : AudioDecoderSettings
+    [JsonObject(MemberSerialization.OptIn)]
+    public class DecoderSettings : IAudioDecoderSettings
     {
-        public override string Extension => "m4a";
+        #region IAudioDecoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "m4a";
 
-        public override string Name => "cuetools";
+        [Browsable(false)]
+        public string Name => "cuetools";
 
-        public override Type DecoderType => typeof(AudioDecoder);
+        [Browsable(false)]
+        public Type DecoderType => typeof(AudioDecoder);
 
-        public override int Priority => 2;
+        [Browsable(false)]
+        public int Priority => 2;
 
-        public DecoderSettings() : base() { }
+        public IAudioDecoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioDecoderSettings;
+        }
+        #endregion
+
+        public DecoderSettings()
+        {
+            this.Init();
+        }
     }
 
 	public class AudioDecoder : IAudioSource
@@ -73,7 +90,7 @@ namespace CUETools.Codecs.ALAC
 		}
 
         private DecoderSettings m_settings;
-        public AudioDecoderSettings Settings => m_settings;
+        public IAudioDecoderSettings Settings => m_settings;
 
         private void InitTables()
 		{

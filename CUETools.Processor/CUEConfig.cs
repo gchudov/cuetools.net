@@ -422,7 +422,7 @@ namespace CUETools.Processor
                         .FindAll(y => y.Extension == x.Extension && y.Lossless == x.Lossless && y.Name == x.Name).Count == 0)
                         .ToList().ForEach(x => advanced.encoders.Add(x));
                     backup.decoders.Where(x => advanced.decoders
-                        .FindAll(y => y.Extension == x.Extension && y.Lossless == x.Lossless && y.Name == x.Name).Count == 0)
+                        .FindAll(y => y.Extension == x.Extension && y.Name == x.Name).Count == 0)
                         .ToList().ForEach(x => advanced.decoders.Add(x));
 
                     // Reset the ViewModel
@@ -439,8 +439,8 @@ namespace CUETools.Processor
                             encoderLossless = Encoders.GetDefault(extension, true);
                         if (format.encoderLossy == null || !Encoders.TryGetValue(extension, false, format.encoderLossy.Name, out encoderLossy))
                             encoderLossy = Encoders.GetDefault(extension, false);
-                        if (format.decoder == null || !Decoders.TryGetValue(extension, true, format.decoder.Name, out decoder))
-                            decoder = Decoders.GetDefault(extension, true);
+                        if (format.decoder == null || !Decoders.TryGetValue(extension, format.decoder.Name, out decoder))
+                            decoder = Decoders.GetDefault(extension);
                         format.encoderLossless = encoderLossless;
                         format.encoderLossy = encoderLossy;
                         format.decoder = decoder;
@@ -471,8 +471,8 @@ namespace CUETools.Processor
 					udcLossless = Encoders.GetDefault(extension, true);
                 if (encoderLossy == "" || !Encoders.TryGetValue(extension, false, encoderLossy, out udcLossy))
 					udcLossy = Encoders.GetDefault(extension, false);
-                if (decoder == "" || !Decoders.TryGetValue(extension, true, decoder, out udcDecoder))
-                    udcDecoder = Decoders.GetDefault(extension, true);
+                if (decoder == "" || !Decoders.TryGetValue(extension, decoder, out udcDecoder))
+                    udcDecoder = Decoders.GetDefault(extension);
                 if (!formats.TryGetValue(extension, out format))
                     formats.Add(extension, new CUEToolsFormat(extension, tagger, allowLossless, allowLossy, allowEmbed, false, udcLossless, udcLossy, udcDecoder));
                 else

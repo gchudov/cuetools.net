@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CUETools.Codecs.FLAKE
+namespace CUETools.Codecs.Flake
 {
     unsafe public class FlacSubframeInfo
     {

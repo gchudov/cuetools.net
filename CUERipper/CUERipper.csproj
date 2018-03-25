@@ -252,7 +252,7 @@
     <Content Include="Plugins\CUDA.NET.dll" />
     <Content Include="Plugins\CUETools.Codecs.ALAC.dll" />
     <Content Include="Plugins\CUETools.Codecs.FlaCuda.dll" />
-    <Content Include="Plugins\CUETools.Codecs.FLAKE.dll" />
+    <Content Include="Plugins\CUETools.Codecs.Flake.dll" />
     <Content Include="Plugins\CUETools.Ripper.SCSI.dll" />
     <None Include="Resources\cd_eject.png" />
     <None Include="Resources\wma.ico" />

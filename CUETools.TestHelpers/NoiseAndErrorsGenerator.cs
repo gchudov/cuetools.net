@@ -49,7 +49,7 @@ namespace CUETools.TestHelpers
 			this.nextError = 0;
 		}
 
-        public AudioDecoderSettings Settings { get { return null; } }
+        public IAudioDecoderSettings Settings => null;
 
 		public NoiseAndErrorsGenerator(long sampleCount)
 			: this(AudioPCMConfig.RedBook, sampleCount, 0, 0, 0)

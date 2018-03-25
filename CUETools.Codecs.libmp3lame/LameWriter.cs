@@ -35,7 +35,7 @@ namespace CUETools.Codecs.libmp3lame
 
         private LameEncoderSettings m_settings;
 
-        public virtual AudioEncoderSettings Settings
+        public IAudioEncoderSettings Settings
         {
             get
             {

@@ -10,7 +10,7 @@ namespace CUETools.Codecs.LossyWAV
         public const string version_string = "1.1.1#";
 
         private IAudioDest _audioDest, _lwcdfDest;
-        private AudioEncoderSettings m_settings;
+        private Codecs.WAV.EncoderSettings m_settings;
         private AudioBuffer _audioBuffer;
         private short[] fft_bit_length;
         private float[] frequency_limits;
@@ -71,13 +71,7 @@ namespace CUETools.Codecs.LossyWAV
             }
         }
 
-        public AudioEncoderSettings Settings
-        {
-            get
-            {
-                return m_settings;
-            }
-        }
+        public IAudioEncoderSettings Settings => m_settings;
 
         public int OverallBitsRemoved
         {
@@ -154,7 +148,7 @@ namespace CUETools.Codecs.LossyWAV
 
         #region Constructor
 
-        public LossyWAVWriter(IAudioDest audioDest, IAudioDest lwcdfDest, double quality, AudioEncoderSettings settings)
+        public LossyWAVWriter(IAudioDest audioDest, IAudioDest lwcdfDest, double quality, Codecs.WAV.EncoderSettings settings)
         {
             _audioDest = audioDest;
             _lwcdfDest = lwcdfDest;

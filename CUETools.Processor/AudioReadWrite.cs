@@ -51,7 +51,7 @@ namespace CUETools.Processor
 		{
 			IAudioDest dest;
             if (audioEncoderType == AudioEncoderType.NoAudio || extension == ".dummy")
-                return new Codecs.NULL.AudioEncoder(path, new AudioEncoderSettings(pcm)) { FinalSampleCount = finalSampleCount };
+                return new Codecs.NULL.AudioEncoder(path, new Codecs.WAV.EncoderSettings(pcm)) { FinalSampleCount = finalSampleCount };
 			CUEToolsFormat fmt;
 			if (!extension.StartsWith(".") || !config.formats.TryGetValue(extension.Substring(1), out fmt))
 				throw new Exception("Unsupported audio type: " + path);

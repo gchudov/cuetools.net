@@ -7,50 +7,79 @@ using Newtonsoft.Json;
 namespace CUETools.Codecs.CommandLine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class EncoderSettings : AudioEncoderSettings
+    public class EncoderSettings : IAudioEncoderSettings
     {
-        public override string Name => name;
+        #region IAudioEncoderSettings implementation
+        [DefaultValue("")]
+        [JsonProperty]
+        public string Name { get; set; }
 
-        public override string Extension => extension;
+        [DefaultValue("")]
+        [JsonProperty]
+        public string Extension { get; set; }
 
-        public override Type EncoderType => typeof(AudioEncoder);
+        [Browsable(false)]
+        public Type EncoderType => typeof(AudioEncoder);
 
-        public override bool Lossless => lossless;
+        [JsonProperty]
+        public bool Lossless { get; set; }
+
+        [Browsable(false)]
+        public int Priority => 0;
+
+        [DefaultValue("")]
+        [JsonProperty]
+        public string SupportedModes { get; set; }
+
+        public string DefaultMode => EncoderMode;
+
+        [Browsable(false)]
+        [DefaultValue("")]
+        [JsonProperty]
+        public string EncoderMode { get; set; }
+
+        [Browsable(false)]
+        public AudioPCMConfig PCM { get; set; }
+
+        [Browsable(false)]
+        public int BlockSize { get; set; }
+
+        [Browsable(false)]
+        [DefaultValue(4096)]
+        public int Padding { get; set; }
+
+        public IAudioEncoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioEncoderSettings;
+        }
+        #endregion
 
         public EncoderSettings()
-            : base()
         {
+            this.Init();
         }
 
         public EncoderSettings(
-            string _name,
-            string _extension,
-            bool _lossless,
-            string _supported_modes,
-            string _default_mode,
-            string _path,
-            string _parameters
+            string name,
+            string extension,
+            bool lossless,
+            string supportedModes,
+            string defaultMode,
+            string path,
+            string parameters
             )
         {
-            name = _name;
-            extension = _extension;
-            lossless = _lossless;
-            SupportedModes = _supported_modes;
-            EncoderMode = _default_mode;
-            Path = _path;
-            Parameters = _parameters;
+            this.Init();
+            Name = name;
+            Extension = extension;
+            Lossless = lossless;
+            SupportedModes = supportedModes;
+            Path = path;
+            EncoderMode = defaultMode;
+            Parameters = parameters;
         }
 
-        [JsonProperty]
-        public string name;
-
-        [JsonProperty]
-        public string extension;
-
-        [JsonProperty]
-        public bool lossless;
-
-        [DefaultValue(null)]
+        [DefaultValue("")]
         [JsonProperty]
         public string Path
         {
@@ -58,25 +87,12 @@ namespace CUETools.Codecs.CommandLine
             set;
         }
 
-        [DefaultValue(null)]
+        [DefaultValue("")]
         [JsonProperty]
         public string Parameters
         {
             get;
             set;
-        }
-
-        [JsonProperty]
-        public string SupportedModes
-        {
-            get
-            {
-                return m_supported_modes;
-            }
-            set
-            {
-                m_supported_modes = value;
-            }
         }
     }
 }

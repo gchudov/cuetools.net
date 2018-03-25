@@ -35,26 +35,59 @@ using Newtonsoft.Json;
 namespace CUETools.Codecs.ALAC
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class EncoderSettings: AudioEncoderSettings
+    public class EncoderSettings: IAudioEncoderSettings
 	{
-        public override string Extension => "m4a";
+        #region IAudioEncoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "m4a";
 
-        public override string Name => "cuetools";
+        [Browsable(false)]
+        public string Name => "cuetools";
 
-        public override Type EncoderType => typeof(AudioEncoder);
+        [Browsable(false)]
+        public Type EncoderType => typeof(AudioEncoder);
 
-        public override int Priority => 1;
+        [Browsable(false)]
+        public bool Lossless => true;
 
-        public override bool Lossless => true;
+        [Browsable(false)]
+        public int Priority => 1;
+
+        [Browsable(false)]
+        public string SupportedModes => "0 1 2 3 4 5 6 7 8 9 10";
+
+        [Browsable(false)]
+        public string DefaultMode => "5";
+
+        [Browsable(false)]
+        [DefaultValue("")]
+        [JsonProperty]
+        public string EncoderMode { get; set; }
+
+        [Browsable(false)]
+        public AudioPCMConfig PCM { get; set; }
+
+        [Browsable(false)]
+        public int BlockSize { get; set; }
+
+        [Browsable(false)]
+        [DefaultValue(4096)]
+        public int Padding { get; set; }
+
+        public IAudioEncoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioEncoderSettings;
+        }
+        #endregion
 
         public EncoderSettings()
-            : base("0 1 2 3 4 5 6 7 8 9 10", "5")
         {
+            this.Init();
         }
 
         public void Validate()
         {
-            if (EncoderModeIndex < 0
+            if (this.GetEncoderModeIndex() < 0
                 || Padding < 0
                 || (BlockSize != 0 && (BlockSize < 256 || BlockSize >= Int32.MaxValue)))
                 throw new Exception("unsupported encoder settings");
@@ -140,7 +173,7 @@ namespace CUETools.Codecs.ALAC
             windowType = new WindowFunction[lpc.MAX_LPC_WINDOWS];
             windowSections = new LpcWindowSection[lpc.MAX_LPC_WINDOWS, lpc.MAX_LPC_SECTIONS];
 
-            eparams.set_defaults(m_settings.EncoderModeIndex);
+            eparams.set_defaults(m_settings.GetEncoderModeIndex());
 
             frame = new ALACFrame(Settings.PCM.ChannelCount == 2 ? 5 : Settings.PCM.ChannelCount);
 			chunk_pos = new List<int>();
@@ -161,13 +194,7 @@ namespace CUETools.Codecs.ALAC
 
 		EncoderSettings m_settings;
 
-		public AudioEncoderSettings Settings
-		{
-			get
-			{
-				return m_settings;
-			}
-		}
+        public IAudioEncoderSettings Settings => m_settings;
 
 #if INTEROP
 		[DllImport("kernel32.dll")]

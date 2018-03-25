@@ -7,37 +7,48 @@ using Newtonsoft.Json;
 namespace CUETools.Codecs.CommandLine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class DecoderSettings : AudioDecoderSettings
+    public class DecoderSettings : IAudioDecoderSettings
     {
-        public override string Name => name;
+        #region IAudioDecoderSettings implementation
+        [DefaultValue("")]
+        [JsonProperty]
+        public string Name { get; set; }
 
-        public override string Extension => extension;
+        [DefaultValue("")]
+        [JsonProperty]
+        public string Extension { get; set; }
+
+        [Browsable(false)]
+        public Type DecoderType => typeof(AudioDecoder);
+
+        [Browsable(false)]
+        public int Priority => 2;
+
+        public IAudioDecoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioDecoderSettings;
+        }
+        #endregion
 
         public DecoderSettings()
-            : base()
         {
+            this.Init();
         }
 
         public DecoderSettings(
-            string _name,
-            string _extension,
-            string _path,
-            string _parameters)
+            string name,
+            string extension,
+            string path,
+            string parameters)
             : base()
         {
-            name = _name;
-            extension = _extension;
-            Path = _path;
-            Parameters = _parameters;
+            Name = name;
+            Extension = extension;
+            Path = path;
+            Parameters = parameters;
         }
 
-        [JsonProperty]
-        public string name;
-
-        [JsonProperty]
-        public string extension;
-
-        [DefaultValue(null)]
+        [DefaultValue("")]
         [JsonProperty]
         public string Path
         {
@@ -45,7 +56,7 @@ namespace CUETools.Codecs.CommandLine
             set;
         }
 
-        [DefaultValue(null)]
+        [DefaultValue("")]
         [JsonProperty]
         public string Parameters
         {

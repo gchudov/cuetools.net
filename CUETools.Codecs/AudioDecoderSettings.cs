@@ -15,45 +15,17 @@ namespace CUETools.Codecs
 
         Type DecoderType { get; }
 
-        bool Lossless { get; }
-
         int Priority { get; }
+
+        IAudioDecoderSettings Clone();
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
-    public class AudioDecoderSettings: IAudioDecoderSettings
+    public static class IAudioDecoderSettingsExtensions
     {
-        [Browsable(false)]
-        public virtual string Name => null;
-
-        [Browsable(false)]
-        public virtual string Extension => null;
-
-        [Browsable(false)]
-        public virtual Type DecoderType => null;
-
-        [Browsable(false)]
-        public virtual bool Lossless => true;
-
-        [Browsable(false)]
-        public virtual int Priority => 0;
-
-        public AudioDecoderSettings()
-        {
-            // Iterate through each property and call ResetValue()
-            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
-                property.ResetValue(this);
-        }
-
-        public AudioDecoderSettings Clone()
-        {
-            return this.MemberwiseClone() as AudioDecoderSettings;
-        }
-
-        public bool HasBrowsableAttributes()
+        public static bool HasBrowsableAttributes(this IAudioDecoderSettings settings)
         {
             bool hasBrowsable = false;
-            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(settings))
             {
                 bool isBrowsable = true;
                 foreach (var attribute in property.Attributes)
@@ -64,6 +36,13 @@ namespace CUETools.Codecs
                 hasBrowsable |= isBrowsable;
             }
             return hasBrowsable;
+        }
+
+        public static void Init(this IAudioDecoderSettings settings)
+        {
+            // Iterate through each property and call ResetValue()
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(settings))
+                property.ResetValue(settings);
         }
     }
 }

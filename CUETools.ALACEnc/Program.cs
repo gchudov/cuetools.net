@@ -123,7 +123,7 @@ namespace CUETools.ALACEnc
                 else if (args[arg] != "-" && args[arg][0] == '-' && int.TryParse(args[arg].Substring(1), out intarg))
                 {
                     ok = intarg >= 0 && intarg <= 11;
-                    settings.EncoderModeIndex = intarg;
+                    settings.SetEncoderModeIndex(intarg);
                 }
                 else if ((args[arg][0] != '-' || args[arg] == "-") && input_file == null)
                     input_file = args[arg];

@@ -66,7 +66,7 @@ namespace CUETools.Codecs.HDCD
 			get { throw new Exception("unsupported"); }
 		}
 
-        public AudioEncoderSettings Settings
+        public IAudioEncoderSettings Settings
 		{
 			get { throw new Exception("unsupported"); }
 			set { throw new Exception("unsupported"); }

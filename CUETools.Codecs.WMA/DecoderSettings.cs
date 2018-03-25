@@ -2,17 +2,17 @@
 using System;
 using System.ComponentModel;
 
-namespace CUETools.Codecs.WAV
+namespace CUETools.Codecs.WMA
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class DecoderSettings : IAudioDecoderSettings
     {
         #region IAudioDecoderSettings implementation
         [Browsable(false)]
-        public string Extension => "wav";
+        public string Extension => "wma";
 
         [Browsable(false)]
-        public string Name => "cuetools";
+        public string Name => "windows";
 
         [Browsable(false)]
         public Type DecoderType => typeof(AudioDecoder);
@@ -30,7 +30,5 @@ namespace CUETools.Codecs.WAV
         {
             this.Init();
         }
-
-        public bool IgnoreChunkSizes { get; set; }
     }
 }

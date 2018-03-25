@@ -19,7 +19,7 @@ using CUETools.CTDB;
 using System.ComponentModel;
 using Krystalware.UploadHelper;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+//using CUETools.Codecs.Flake;
 using CUETools.Processor;
 using System.Collections.ObjectModel;
 //using Microsoft.Win32;
@@ -247,7 +247,7 @@ namespace BluTools
                 if (File.Exists(outputCuePath)) throw new Exception(string.Format("File \"{0}\" already exists", outputCuePath));
                 if (File.Exists(outputAudioPath)) throw new Exception(string.Format("File \"{0}\" already exists", outputAudioPath));
                 AudioBuffer buff = new AudioBuffer(reader, 0x10000);
-                EncoderSettings settings = new EncoderSettings()
+                CUETools.Codecs.Flake.EncoderSettings settings = new CUETools.Codecs.Flake.EncoderSettings()
                 {
                     PCM = reader.PCM,
                     Padding = 16536,
@@ -297,7 +297,7 @@ namespace BluTools
                 }
                 var start = DateTime.Now;
                 TimeSpan lastPrint = TimeSpan.FromMilliseconds(0);
-                var writer = new AudioEncoder(settings, outputAudioPath);
+                var writer = new CUETools.Codecs.Flake.AudioEncoder(settings, outputAudioPath);
                 try
                 {
                     while (reader.Read(buff, -1) != 0)

@@ -7,25 +7,39 @@ using Newtonsoft.Json;
 namespace CUETools.Codecs.BDLPCM
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class DecoderSettings : AudioDecoderSettings
+    public class DecoderSettings : IAudioDecoderSettings
     {
-        public override string Extension => "m2ts";
+        #region IAudioDecoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "m2ts";
 
-        public override string Name => "cuetools";
+        [Browsable(false)]
+        public string Name => "cuetools";
 
-        public override Type DecoderType => typeof(AudioDecoder);
+        [Browsable(false)]
+        public Type DecoderType => typeof(AudioDecoder);
 
-        public override int Priority => 2;
+        [Browsable(false)]
+        public int Priority => 2;
 
+        public IAudioDecoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioDecoderSettings;
+        }
+        #endregion
+
+        public DecoderSettings()
+        {
+            this.Init();
+        }
+
+        [DefaultValue(true)]
         public bool IgnoreShortItems { get; set; }
 
+        [Browsable(false)]
         public int? Stream { get; set; }
 
+        [Browsable(false)]
         public ushort? Pid { get; set; }
-
-        public DecoderSettings() : base()
-        {
-            IgnoreShortItems = true;
-        }
     }
 }

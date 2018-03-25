@@ -26,37 +26,64 @@ using System.Threading;
 using System.Text;
 using System.Runtime.InteropServices;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.Flake;
 using OpenCLNet;
 using Newtonsoft.Json;
 
 namespace CUETools.Codecs.FLACCL
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class EncoderSettings : AudioEncoderSettings
+    public class EncoderSettings : IAudioEncoderSettings
     {
-        public override string Extension => "flac";
+        #region IAudioEncoderSettings implementation
+        [Browsable(false)]
+        public string Extension => "flac";
 
-        public override string Name => "FLACCL";
+        [Browsable(false)]
+        public string Name => "FLACCL";
 
-        public override Type EncoderType => typeof(AudioEncoder);
+        [Browsable(false)]
+        public Type EncoderType => typeof(AudioEncoder);
 
-        public override int Priority => 2;
+        [Browsable(false)]
+        public bool Lossless => true;
 
-        public override bool Lossless => true;
+        [Browsable(false)]
+        public int Priority => 2;
+
+        [Browsable(false)]
+        public string SupportedModes => this.AllowNonSubset || (this.PCM != null && this.PCM.SampleRate > 48000) ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
+
+        [Browsable(false)]
+        public string DefaultMode => "8";
+
+        [Browsable(false)]
+        [DefaultValue("")]
+        [JsonProperty]
+        public string EncoderMode { get; set; }
+
+        [Browsable(false)]
+        public AudioPCMConfig PCM { get; set; }
+
+        [Browsable(false)]
+        public int BlockSize { get; set; }
+
+        [Browsable(false)]
+        [DefaultValue(4096)]
+        public int Padding { get; set; }
+
+        public IAudioEncoderSettings Clone()
+        {
+            return MemberwiseClone() as IAudioEncoderSettings;
+        }
+        #endregion
 
         internal IntPtr m_platform = IntPtr.Zero;
         internal IntPtr m_device = IntPtr.Zero;
 
         public EncoderSettings()
-            : base()
         {
-        }
-
-        public override string GetSupportedModes(out string defaultMode)
-        {
-            defaultMode = "8";
-            return this.AllowNonSubset || (this.PCM != null && this.PCM.SampleRate > 48000) ? "0 1 2 3 4 5 6 7 8 9 10 11" : "0 1 2 3 4 5 6 7 8";
+            this.Init();
         }
 
         public bool IsSubset()
@@ -74,7 +101,7 @@ namespace CUETools.Codecs.FLACCL
 
         public void Validate()
         {
-            if (EncoderModeIndex < 0)
+            if (this.GetEncoderModeIndex() < 0)
                 throw new Exception("unsupported encoder mode");
             if (OpenCL.NumberOfPlatforms < 1)
                 throw new Exception("no opencl platforms found");
@@ -109,7 +136,7 @@ namespace CUETools.Codecs.FLACCL
                 Device = devices[0].Name;
                 DriverVersion = devices[0].DriverVersion;
             }
-            SetDefaultValuesForMode();
+            this.SetDefaultValuesForMode();
             if (Padding < 0)
                 throw new Exception("unsupported padding value " + Padding.ToString());
             if (BlockSize != 0 && (BlockSize < 256 || BlockSize >= FlakeConstants.MAX_BLOCKSIZE))
@@ -384,7 +411,7 @@ namespace CUETools.Codecs.FLACCL
 
         internal EncoderSettings m_settings;
 
-        public AudioEncoderSettings Settings
+        public IAudioEncoderSettings Settings
         {
             get
             {
@@ -2310,7 +2337,7 @@ namespace CUETools.Codecs.FLACCL
 
         public int flake_set_defaults(EncoderSettings settings)
         {
-            int lvl = settings.EncoderModeIndex;
+            int lvl = settings.GetEncoderModeIndex();
             // default to level 5 params
             window_function = WindowFunction.Flattop | WindowFunction.Tukey;
             do_midside = true;
@@ -2630,7 +2657,7 @@ namespace CUETools.Codecs.FLACCL
             frame.writer = new BitWriter(outputBuffer, 0, outputBuffer.Length);
 
             if (writer.m_settings.DoVerify)
-                verify = new FLAKE.AudioDecoder(writer.Settings.PCM);
+                verify = new Flake.AudioDecoder(writer.Settings.PCM);
         }
 
         public void Dispose()

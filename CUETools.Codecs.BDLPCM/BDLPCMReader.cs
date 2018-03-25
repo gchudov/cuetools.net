@@ -26,7 +26,7 @@ namespace CUETools.Codecs.BDLPCM
             settings = new DecoderSettings();
         }
 
-        public AudioDecoderSettings Settings { get { return settings; } }
+        public IAudioDecoderSettings Settings => settings;
 
         public void Close()
         {

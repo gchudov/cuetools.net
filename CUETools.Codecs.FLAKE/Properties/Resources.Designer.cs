@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CUETools.Codecs.FLAKE.Properties {
+namespace CUETools.Codecs.Flake.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace CUETools.Codecs.FLAKE.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CUETools.Codecs.FLAKE.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CUETools.Codecs.Flake.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

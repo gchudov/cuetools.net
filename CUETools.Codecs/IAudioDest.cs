@@ -2,7 +2,7 @@
 {
 	public interface IAudioDest
 	{
-        AudioEncoderSettings Settings { get; }
+        IAudioEncoderSettings Settings { get; }
         
         string Path { get; }
         long FinalSampleCount { set; }

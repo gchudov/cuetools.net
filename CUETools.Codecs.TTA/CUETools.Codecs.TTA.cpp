@@ -29,32 +29,41 @@ namespace TTA {
 
 	ref class AudioDecoder;
 
-	public ref class DecoderSettings : public AudioDecoderSettings
+	[Newtonsoft::Json::JsonObject(Newtonsoft::Json::MemberSerialization::OptIn)]
+	public ref class DecoderSettings : public IAudioDecoderSettings
 	{
 	public:
 		DecoderSettings()
-			: AudioDecoderSettings()
 		{
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Name
 		{
-			String^ get() override { return "ttalib"; }
+			String^ get() { return "ttalib"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Extension
 		{
-			String^ get() override { return "tta"; }
+			String^ get() { return "tta"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property Type^ DecoderType
 		{
-			Type^ get() override { return AudioDecoder::typeid; }
+			Type^ get() { return AudioDecoder::typeid; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property int Priority
 		{
-			int get() override { return 1; }
+			int get() { return 1; }
+		}
+
+		virtual IAudioDecoderSettings^ Clone()
+		{
+			return (IAudioDecoderSettings^)MemberwiseClone();
 		}
 	};
 
@@ -218,8 +227,8 @@ namespace TTA {
 			return buff->Length;
 		}
 
-                virtual property AudioDecoderSettings^ Settings {
-                    AudioDecoderSettings^ get(void) {
+                virtual property IAudioDecoderSettings^ Settings {
+                    IAudioDecoderSettings^ get(void) {
                         return m_settings;
                     }
                 }
@@ -245,37 +254,95 @@ namespace TTA {
 
 	ref class AudioEncoder;
 
-	public ref class EncoderSettings : public AudioEncoderSettings
+	[Newtonsoft::Json::JsonObject(Newtonsoft::Json::MemberSerialization::OptIn)]
+	public ref class EncoderSettings : public IAudioEncoderSettings
 	{
-	    public:
-		EncoderSettings() : AudioEncoderSettings()
-		{
-		}
-
+	public:
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Name
 		{
-			String^ get() override { return "ttalib"; }
+			String^ get() { return "ttalib"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Extension
 		{
-			String^ get() override { return "tta"; }
+			String^ get() { return "tta"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property Type^ EncoderType
 		{
-			Type^ get() override { return AudioEncoder::typeid; }
+			Type^ get() { return AudioEncoder::typeid; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property bool Lossless
 		{
-			bool get() override { return true; }
+			bool get() { return true; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property int Priority
 		{
-			int get() override { return 1; }
+			int get() { return 1; }
 		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property String^ SupportedModes
+		{
+			String^ get() { return ""; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property String^ DefaultMode
+		{
+			String^ get() { return ""; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property String^ EncoderMode
+		{
+			String^ get() { return encoderMode; }
+			void set(String^ value) { encoderMode = value; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property AudioPCMConfig^ PCM
+		{
+			AudioPCMConfig^ get() { return pcm; }
+			void set(AudioPCMConfig^ value) { pcm = value; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property int BlockSize
+		{
+			int get() { return blockSize; }
+			void set(int value) { blockSize = value; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property int Padding
+		{
+			int get() { return padding; }
+			void set(int value) { padding = value; }
+		}
+
+		virtual IAudioEncoderSettings^ Clone()
+		{
+			return (IAudioEncoderSettings^)MemberwiseClone();
+		}
+
+		EncoderSettings()
+		{
+			IAudioEncoderSettingsExtensions::Init(this, nullptr);
+		}
+
+	private:
+		String ^ encoderMode;
+		AudioPCMConfig^ pcm;
+		int blockSize;
+		int padding;
 	};
 
 	public ref class AudioEncoder : public IAudioDest
@@ -373,9 +440,9 @@ namespace TTA {
 			_samplesWritten += sampleBuffer->Length;
 		}
 
-		virtual property AudioEncoderSettings^ Settings
+		virtual property IAudioEncoderSettings^ Settings
 		{
-			AudioEncoderSettings^ get()
+			IAudioEncoderSettings^ get()
 			{
 			    return _settings;
 			}
@@ -388,7 +455,7 @@ namespace TTA {
 		bool _initialized;
 		String^ _path;
 		Int64 _finalSampleCount, _samplesWritten;
-		AudioEncoderSettings^ _settings;
+		EncoderSettings^ _settings;
 
 		void Initialize() 
 		{

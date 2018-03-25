@@ -6,7 +6,7 @@
         private AudioPCMConfig pcm;
         private int _sampleVal;
 
-        public AudioDecoderSettings Settings { get { return null; } }
+        public IAudioDecoderSettings Settings => null;
 
         public long Length
         {

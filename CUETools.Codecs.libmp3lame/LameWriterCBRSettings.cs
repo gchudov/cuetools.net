@@ -9,11 +9,13 @@ namespace CUETools.Codecs.libmp3lame
     [JsonObject(MemberSerialization.OptIn)]
     public class CBREncoderSettings : LameEncoderSettings
     {
-        public override string Extension => "mp3";
-
         public override string Name => "libmp3lame-CBR";
 
         public override int Priority => 1;
+
+        public override string SupportedModes => "96 128 192 256 320";
+
+        public override string DefaultMode => "256";
 
         public static readonly int[] bps_table = new int[] { 96, 128, 192, 256, 320 };
 
@@ -22,14 +24,14 @@ namespace CUETools.Codecs.libmp3lame
         public LameQuality Quality { get; set; }
 
         public CBREncoderSettings()
-            : base("96 128 192 256 320", "256")
+            : base()
         {
         }
 
         public override void Apply(IntPtr lame)
         {
             libmp3lamedll.lame_set_VBR(lame, (int)LameVbrMode.Off);
-            libmp3lamedll.lame_set_brate(lame, CBREncoderSettings.bps_table[this.EncoderModeIndex]);
+            libmp3lamedll.lame_set_brate(lame, CBREncoderSettings.bps_table[this.GetEncoderModeIndex()]);
             libmp3lamedll.lame_set_quality(lame, (int)this.Quality);
         }
     }

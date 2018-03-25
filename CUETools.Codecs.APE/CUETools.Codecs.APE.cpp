@@ -82,35 +82,44 @@ namespace CUETools { namespace Codecs { namespace APE {
 
 	ref class AudioDecoder;
 
-	public ref class DecoderSettings : public AudioDecoderSettings
+	[Newtonsoft::Json::JsonObject(Newtonsoft::Json::MemberSerialization::OptIn)]
+	public ref class DecoderSettings : public IAudioDecoderSettings
 	{
 	public:
 		DecoderSettings()
-			: AudioDecoderSettings()
 		{
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Name
 		{
-			String^ get() override { return "MAC_SDK"; }
+			String^ get() { return "MAC_SDK"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Extension
 		{
-			String^ get() override { return "ape"; }
+			String^ get() { return "ape"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property Type^ DecoderType
 		{
-			Type^ get() override { return AudioDecoder::typeid; }
+			Type^ get() { return AudioDecoder::typeid; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property int Priority
 		{
-			int get() override { return 1; }
+			int get() { return 1; }
 		}
 
-		virtual property String^ Version
+		virtual IAudioDecoderSettings^ Clone()
+		{
+			return (IAudioDecoderSettings^)MemberwiseClone();
+		}
+
+		property String^ Version
 		{
 			String^ get()
 			{
@@ -248,8 +257,8 @@ namespace CUETools { namespace Codecs { namespace APE {
 			return buff->Length;
 		}
 
-                virtual property AudioDecoderSettings^ Settings {
-                    AudioDecoderSettings^ get(void) {
+                virtual property IAudioDecoderSettings^ Settings {
+                    IAudioDecoderSettings^ get(void) {
                         return m_settings;
                     }
                 }
@@ -280,46 +289,103 @@ namespace CUETools { namespace Codecs { namespace APE {
 
 	ref class AudioEncoder;
 
-	public ref class EncoderSettings : public AudioEncoderSettings
+	[Newtonsoft::Json::JsonObject(Newtonsoft::Json::MemberSerialization::OptIn)]
+	public ref class EncoderSettings : public IAudioEncoderSettings
 	{
-	    public:
-		EncoderSettings() 
-			: AudioEncoderSettings("fast normal high extra insane", "high")
-		{
-		}
-
+	public:
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Name
 		{
-			String^ get() override { return "MAC_SDK"; }
+			String^ get() { return "MAC_SDK"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property String^ Extension
 		{
-			String^ get() override { return "ape"; }
+			String^ get() { return "ape"; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property Type^ EncoderType
 		{
-			Type^ get() override { return AudioEncoder::typeid; }
+			Type^ get() { return AudioEncoder::typeid; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property bool Lossless
 		{
-			bool get() override { return true; }
+			bool get() { return true; }
 		}
 
+		[System::ComponentModel::Browsable(false)]
 		virtual property int Priority
 		{
-			int get() override { return 1; }
+			int get() { return 1; }
 		}
 
-		virtual property String^ Version
+		[System::ComponentModel::Browsable(false)]
+		virtual property String^ SupportedModes
+		{
+			String^ get() { return "fast normal high extra insane"; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property String^ DefaultMode
+		{
+			String^ get() { return "high"; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		[Newtonsoft::Json::JsonProperty]
+		virtual property String^ EncoderMode
+		{
+			String^ get() { return encoderMode;  }
+			void set(String^ value) { encoderMode = value; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property AudioPCMConfig^ PCM
+		{
+			AudioPCMConfig^ get() { return pcm; }
+			void set(AudioPCMConfig^ value) { pcm = value; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property int BlockSize
+		{
+			int get() { return blockSize; }
+			void set(int value) { blockSize = value; }
+		}
+
+		[System::ComponentModel::Browsable(false)]
+		virtual property int Padding
+		{
+			int get() { return padding; }
+			void set(int value) { padding = value; }
+		}
+
+		virtual IAudioEncoderSettings^ Clone()
+		{
+			return (IAudioEncoderSettings^)MemberwiseClone();
+		}
+
+		EncoderSettings()
+		{
+			IAudioEncoderSettingsExtensions::Init(this, nullptr);
+		}
+
+		property String^ Version
 		{
 			String^ get()
 			{
 				return MAC_VERSION_STRING;
 			}
-		}		
+		}
+	private:
+		String ^ encoderMode;
+		AudioPCMConfig^ pcm;
+		int blockSize;
+		int padding;
 	};
 
 	public ref class AudioEncoder : IAudioDest
@@ -420,9 +486,9 @@ namespace CUETools { namespace Codecs { namespace APE {
 			} 
 		}
 
-		virtual property AudioEncoderSettings^ Settings
+		virtual property IAudioEncoderSettings^ Settings
 		{
-			AudioEncoderSettings^ get()
+			IAudioEncoderSettings^ get()
 			{
 			    return _settings;
 			}
@@ -452,7 +518,7 @@ namespace CUETools { namespace Codecs { namespace APE {
 			WAVEFORMATEX waveFormat;
 			FillWaveFormatEx (&waveFormat, _settings->PCM->SampleRate, _settings->PCM->BitsPerSample, _settings->PCM->ChannelCount);
 
-			Int32 _compressionLevel = (_settings->EncoderModeIndex + 1) * 1000;
+			Int32 _compressionLevel = (IAudioEncoderSettingsExtensions::GetEncoderModeIndex(_settings) + 1) * 1000;
 
 			int res = pAPECompress->StartEx (_winFileIO,
 				&waveFormat, 

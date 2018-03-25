@@ -513,7 +513,7 @@ namespace JDP
             // textBoxEncoderModes
             // 
             resources.ApplyResources(this.textBoxEncoderModes, "textBoxEncoderModes");
-            this.textBoxEncoderModes.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "SupportedModesStr", true));
+            this.textBoxEncoderModes.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.encodersBindingSource, "SupportedModes", true));
             this.textBoxEncoderModes.Name = "textBoxEncoderModes";
             this.toolTip1.SetToolTip(this.textBoxEncoderModes, resources.GetString("textBoxEncoderModes.ToolTip"));
             // 

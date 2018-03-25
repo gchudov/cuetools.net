@@ -28,7 +28,7 @@ namespace CUETools.Codecs.CoreAudio
 		private long _sampleOffset;
 		private NAudio.Wave.WaveFormatExtensible outputFormat;
 		WaitHandle[] waitHandles;
-        AudioEncoderSettings m_settings;
+        Codecs.WAV.EncoderSettings m_settings;
         
         /// <summary>
         /// Playback Stopped
@@ -67,7 +67,7 @@ namespace CUETools.Codecs.CoreAudio
         /// <param name="latency"></param>
 		public WasapiOut(MMDevice device, AudioClientShareMode shareMode, bool useEventSync, int latency, AudioPCMConfig pcm)
         {
-            this.m_settings = new AudioEncoderSettings(pcm);
+            this.m_settings = new Codecs.WAV.EncoderSettings(pcm);
             this.audioClient = device.AudioClient;
             this.shareMode = shareMode;
             this.isUsingEventSync = useEventSync;
@@ -474,30 +474,18 @@ namespace CUETools.Codecs.CoreAudio
 
         #endregion
 
-		#region IAudioDest Members
+        #region IAudioDest Members
 
-		public long Position
-		{
-			get
-			{
-				return _sampleOffset;
-			}
-		}
+        public long Position => _sampleOffset;
 
 		public long FinalSampleCount
 		{
 			set { ; }
 		}
 
-        public AudioEncoderSettings Settings
-		{
-			get
-			{
-				return m_settings;
-			}
-		}
+        public IAudioEncoderSettings Settings => m_settings;
 
-		public string Path { get { return null; } }
+        public string Path => null;
 
 		#endregion
 

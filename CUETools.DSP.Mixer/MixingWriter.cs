@@ -10,7 +10,7 @@ namespace CUETools.DSP.Mixer
         private long samplePos;
         private MixingBuffer mixbuff;
         private float volume;
-        private AudioEncoderSettings m_settings;
+        private Codecs.WAV.EncoderSettings m_settings;
 
         public long Position
         {
@@ -23,13 +23,7 @@ namespace CUETools.DSP.Mixer
             set { throw new NotSupportedException(); }
         }
 
-        public AudioEncoderSettings Settings
-        {
-            get
-            {
-                return m_settings;
-            }
-        }
+        public IAudioEncoderSettings Settings => m_settings;
 
         public float Volume
         {
@@ -41,7 +35,7 @@ namespace CUETools.DSP.Mixer
 
         public MixingWriter(MixingSource mixer, int iSource)
         {
-            this.m_settings = new AudioEncoderSettings(mixer.PCM);
+            this.m_settings = new Codecs.WAV.EncoderSettings(mixer.PCM);
             this.mixer = mixer;
             this.iSource = iSource;
             this.samplePos = 0;

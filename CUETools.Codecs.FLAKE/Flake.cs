@@ -20,7 +20,7 @@
  */
 using System;
 
-namespace CUETools.Codecs.FLAKE
+namespace CUETools.Codecs.Flake
 {
 	public class FlakeConstants
 	{
