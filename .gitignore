@@ -15,5 +15,7 @@ launchSettings.json
 /CUETools/TestResults
 /ThirdParty/*/libFLAC_dynamic.*
 /ThirdParty/*/MACLib.*
+/ThirdParty/*/MACLibDll.*
 /ThirdParty/*/wavpackdll.*
 /ThirdParty/*/libwavpack.*
+/ThirdPartyDebug/
