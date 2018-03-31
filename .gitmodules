@@ -13,3 +13,6 @@
 [submodule "ThirdParty/WavPack"]
 	path = ThirdParty/WavPack
 	url = git@github.com:gchudov/WavPack.git
+[submodule "ThirdParty/WindowsMediaLib"]
+	path = ThirdParty/WindowsMediaLib
+	url = git@github.com:gchudov/WindowsMediaLib.git

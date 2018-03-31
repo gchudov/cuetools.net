@@ -16,18 +16,18 @@ namespace CUETools.Codecs.MACLib
             m_StreamIO = new StreamIO(m_stream);
 
             int errorCode = 0;
-            pAPEDecompress = MACLibDll.c_APEDecompress_CreateEx(m_StreamIO.Callbacks, out errorCode);
+            pAPEDecompress = MACLibDll.c_APEDecompress_CreateEx(m_StreamIO.CIO, out errorCode);
 			if (pAPEDecompress == null) {
 				throw new Exception("Unable to initialize the decoder: " + errorCode);
 			}
 
 			pcm = new AudioPCMConfig(
-                MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_INFO_BITS_PER_SAMPLE, 0, 0),
-                MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_INFO_CHANNELS, 0, 0),
-                MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_INFO_SAMPLE_RATE, 0, 0),
+                MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_INFO_BITS_PER_SAMPLE, 0, 0).ToInt32(),
+                MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_INFO_CHANNELS, 0, 0).ToInt32(),
+                MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_INFO_SAMPLE_RATE, 0, 0).ToInt32(),
 				(AudioPCMConfig.SpeakerConfig)0);
             _samplesBuffer = new byte[16384 * pcm.BlockAlign];
-            _sampleCount = MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_DECOMPRESS_TOTAL_BLOCKS, 0, 0);
+            _sampleCount = MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_DECOMPRESS_TOTAL_BLOCKS, 0, 0).ToInt64();
             _sampleOffset = 0;
         }
 
@@ -65,8 +65,6 @@ namespace CUETools.Codecs.MACLib
         {
             Dispose(false);
         }
-
-        // TODO: intn should always be 64 bit? Or should we use different interface in 32-bit mode?
 
         private DecoderSettings m_settings;
 

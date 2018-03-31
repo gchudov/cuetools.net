@@ -18,6 +18,18 @@ namespace CUETools.Codecs.MACLib
         internal static extern IntPtr GetVersionString();
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
+        internal static extern IntPtr c_APECIO_Create(
+            void* pUserData,
+            CIO_ReadDelegate CIO_Read,
+            CIO_WriteDelegate CIO_Write,
+            CIO_SeekDelegate CIO_Seek,
+            CIO_GetPositionDelegate CIO_GetPosition,
+            CIO_GetSizeDelegate CIO_GetSize);
+
+        [DllImport(DllName, CallingConvention = DllCallingConvention)]
+        internal static extern void c_APECIO_Destroy(IntPtr hCIO);
+
+        [DllImport(DllName, CallingConvention = DllCallingConvention)]
         internal static extern IntPtr c_APECompress_Create(out int error);
         
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
@@ -32,7 +44,7 @@ namespace CUETools.Codecs.MACLib
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
         internal static extern int c_APECompress_StartEx(
             IntPtr hAPECompress, 
-            APE_CIO_Callbacks* pCIO,
+            IntPtr hCIO,
             WAVEFORMATEX* pwfeInput,
             int nMaxAudioBytes,
             int nCompressionLevel, 
@@ -40,10 +52,10 @@ namespace CUETools.Codecs.MACLib
             int nHeaderBytes);
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
-        internal static extern IntPtr c_APEDecompress_CreateEx(APE_CIO_Callbacks* pCIO, out int pErrorCode);
+        internal static extern IntPtr c_APEDecompress_CreateEx(IntPtr hCIO, out int pErrorCode);
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
-        internal static extern int c_APEDecompress_GetInfo(IntPtr hAPEDecompress, APE_DECOMPRESS_FIELDS Field, int nParam1 = 0, int nParam2 = 0);
+        internal static extern IntPtr c_APEDecompress_GetInfo(IntPtr hAPEDecompress, APE_DECOMPRESS_FIELDS Field, int nParam1 = 0, int nParam2 = 0);
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
         internal static extern int c_APEDecompress_Seek(IntPtr hAPEDecompress, int nBlockOffset);

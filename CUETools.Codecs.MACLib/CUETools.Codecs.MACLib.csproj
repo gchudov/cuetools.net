@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
+    <ProjectReference Include="..\ThirdParty\MAC_SDK\Source\Projects\VS2017\MACLibDll\MACLibDll.vcxproj" />
   </ItemGroup>
 
 </Project>

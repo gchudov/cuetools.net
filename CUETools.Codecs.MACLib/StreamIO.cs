@@ -12,18 +12,15 @@ namespace CUETools.Codecs.MACLib
         {
             m_stream = stream;
 
+            // We keep the references to those callbacks to
+            // prevent them from being garbage collected.
             m_read_bytes = ReadCallback;
             m_write_bytes = WriteCallback;
             m_get_pos = TellCallback;
             m_get_size = GetSizeCallback;
             m_seek = SeekRelativeCallback;
 
-            m_callbacks = (APE_CIO_Callbacks*)Marshal.AllocHGlobal(sizeof(APE_CIO_Callbacks)).ToPointer();
-            m_callbacks->read_bytes = Marshal.GetFunctionPointerForDelegate(m_read_bytes);
-            m_callbacks->write_bytes = Marshal.GetFunctionPointerForDelegate(m_write_bytes);
-            m_callbacks->get_pos = Marshal.GetFunctionPointerForDelegate(m_get_pos);
-            m_callbacks->get_size = Marshal.GetFunctionPointerForDelegate(m_get_size);
-            m_callbacks->seek = Marshal.GetFunctionPointerForDelegate(m_seek);
+            m_hCIO = MACLibDll.c_APECIO_Create(null, m_read_bytes, m_write_bytes, m_seek, m_get_pos, m_get_size);
         }
 
         public void Dispose()
@@ -40,8 +37,8 @@ namespace CUETools.Codecs.MACLib
                 _readBuffer = null;
             }
 
-            if (m_callbacks != null) Marshal.FreeHGlobal((IntPtr)m_callbacks);
-            m_callbacks = null;
+            MACLibDll.c_APECIO_Destroy(m_hCIO);
+            m_hCIO = IntPtr.Zero;
         }
 
         ~StreamIO()
@@ -49,7 +46,7 @@ namespace CUETools.Codecs.MACLib
             Dispose(false);
         }
 
-        private int ReadCallback(APE_CIO_Callbacks* id, void* data, int bcount, out int pBytesRead)
+        private int ReadCallback(void* id, void* data, int bcount, out int pBytesRead)
         {
             if (_readBuffer == null || _readBuffer.Length < bcount)
                 _readBuffer = new byte[Math.Max(bcount, 0x4000)];
@@ -59,7 +56,7 @@ namespace CUETools.Codecs.MACLib
             return 0;
         }
 
-        private int WriteCallback(APE_CIO_Callbacks* id, void* data, int bcount, out int pBytesWritten)
+        private int WriteCallback(void* id, void* data, int bcount, out int pBytesWritten)
         {
             if (_readBuffer == null || _readBuffer.Length < bcount)
                 _readBuffer = new byte[Math.Max(bcount, 0x4000)];
@@ -69,25 +66,24 @@ namespace CUETools.Codecs.MACLib
             return 0;
         }
 
-        int TellCallback(APE_CIO_Callbacks* id)
+        int TellCallback(void* id)
         {
             return (int)m_stream.Position;
         }
 
-        uint GetSizeCallback(APE_CIO_Callbacks* id)
+        uint GetSizeCallback(void* id)
         {
             return (uint)m_stream.Length;
         }
 
-        int SeekRelativeCallback(APE_CIO_Callbacks* id, IntPtr delta, int mode)
+        int SeekRelativeCallback(void* id, IntPtr delta, int mode)
         {
             m_stream.Seek((long)delta, (SeekOrigin)(mode));
             return 0;
         }
 
-        internal APE_CIO_Callbacks* Callbacks => m_callbacks;
+        internal IntPtr CIO => m_hCIO;
 
-        APE_CIO_Callbacks* m_callbacks;
         Stream m_stream;
         byte[] _readBuffer;
         CIO_ReadDelegate m_read_bytes;
@@ -95,5 +91,6 @@ namespace CUETools.Codecs.MACLib
         CIO_GetPositionDelegate m_get_pos;
         CIO_GetSizeDelegate m_get_size;
         CIO_SeekDelegate m_seek;
+        internal IntPtr m_hCIO;
     }
 }

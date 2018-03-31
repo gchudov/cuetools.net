@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
-    <ProjectReference Include="..\WindowsMediaLib\WindowsMediaLib.csproj" />
+    <ProjectReference Include="..\ThirdParty\WindowsMediaLib\wmlib\src\WindowsMediaLib.csproj" />
   </ItemGroup>
 
 </Project>

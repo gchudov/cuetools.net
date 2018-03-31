@@ -159,7 +159,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUETools.AVX", "..\CUETools
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party Libraries", "Third Party Libraries", "{7E402406-7E51-4F0D-8209-60824C1CD6E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsMediaLib", "..\WindowsMediaLib\WindowsMediaLib.csproj", "{7EA4160F-3BBD-47C9-A38C-4053B64B24A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsMediaLib", "..\ThirdParty\WindowsMediaLib\wmlib\src\WindowsMediaLib.csproj", "{7EA4160F-3BBD-47C9-A38C-4053B64B24A8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.WMA", "..\CUETools.Codecs.WMA\CUETools.Codecs.WMA.csproj", "{082D6B9E-326E-4D15-9798-DE70A6EDAE9E}"
 EndProject

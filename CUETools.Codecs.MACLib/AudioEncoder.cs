@@ -133,7 +133,7 @@ namespace CUETools.Codecs.MACLib
 
             int res = MACLibDll.c_APECompress_StartEx(
                 pAPECompress,
-                m_StreamIO.Callbacks,
+                m_StreamIO.CIO,
                 pWaveFormatEx,
                 (m_finalSampleCount == 0) ? -1 : (int) (m_finalSampleCount * m_settings.PCM.BlockAlign),
                 compressionLevel,

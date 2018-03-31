@@ -49,15 +49,15 @@ namespace CUETools.Codecs.MACLib
     };
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate int CIO_ReadDelegate(APE_CIO_Callbacks* pCIO, void* pBuffer, int nBytesToRead, out int pBytesRead);
+    internal unsafe delegate int CIO_ReadDelegate(void* pUserData, void* pBuffer, int nBytesToRead, out int pBytesRead);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate int CIO_WriteDelegate(APE_CIO_Callbacks* pCIO, void* pBuffer, int nBytesToWrite, out int pBytesWritten);
+    internal unsafe delegate int CIO_WriteDelegate(void* pUserData, void* pBuffer, int nBytesToWrite, out int pBytesWritten);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate int CIO_GetPositionDelegate(APE_CIO_Callbacks* pCIO);
+    internal unsafe delegate int CIO_GetPositionDelegate(void* pUserData);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate uint CIO_GetSizeDelegate(APE_CIO_Callbacks* pCIO);
+    internal unsafe delegate uint CIO_GetSizeDelegate(void* pUserData);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate int CIO_SeekDelegate(APE_CIO_Callbacks* pCIO, IntPtr delta, int mode);
+    internal unsafe delegate int CIO_SeekDelegate(void* pUserData, IntPtr delta, int mode);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 2)]
     public unsafe struct WAVEFORMATEX
@@ -77,14 +77,4 @@ namespace CUETools.Codecs.MACLib
         /// <summary>number of following bytes</summary>
         internal short extraSize;
     }
-
-    [StructLayout(LayoutKind.Sequential), Serializable]
-    internal unsafe struct APE_CIO_Callbacks
-    {
-        internal IntPtr read_bytes;
-        internal IntPtr write_bytes;
-        internal IntPtr seek;
-        internal IntPtr get_pos;
-        internal IntPtr get_size;
-    };
 }
