@@ -79,14 +79,14 @@ namespace CUETools.Codecs.libFLAC
 
     public unsafe class Encoder : IAudioDest
     {
-        public Encoder(string path, Stream output, EncoderSettings settings)
+        public Encoder(EncoderSettings settings, string path, Stream output = null)
         {
             m_path = path;
             m_stream = output;
             m_settings = settings;
             m_streamGiven = output != null;
             m_initialized = false;
-            m_finalSampleCount = 0;
+            m_finalSampleCount = -1;
             m_samplesWritten = 0;
             m_write_callback = StreamEncoderWriteCallback;
             m_seek_callback = StreamEncoderSeekCallback;
@@ -102,11 +102,6 @@ namespace CUETools.Codecs.libFLAC
             FLACDLL.FLAC__stream_encoder_set_sample_rate(m_encoder, (uint)m_settings.PCM.SampleRate);
         }
 
-        public Encoder(string path, EncoderSettings settings)
-            : this(path, null, settings)
-        {
-        }
-
         public IAudioEncoderSettings Settings => m_settings;
 
         public string Path { get => m_path; }
@@ -116,8 +111,6 @@ namespace CUETools.Codecs.libFLAC
             get => m_finalSampleCount;
             set
             {
-                if (value < 0)
-                    throw new Exception("invalid final sample count");
                 if (m_initialized)
                     throw new Exception("final sample count cannot be changed after encoding begins");
                 m_finalSampleCount = value;
@@ -138,7 +131,7 @@ namespace CUETools.Codecs.libFLAC
                 m_stream.Close();
                 m_stream = null;
             }
-            if ((m_finalSampleCount != 0) && (m_samplesWritten != m_finalSampleCount))
+            if ((m_finalSampleCount > 0) && (m_samplesWritten != m_finalSampleCount))
                 throw new Exception("samples written differs from the expected sample count");
         }
 
@@ -250,7 +243,7 @@ namespace CUETools.Codecs.libFLAC
             int metadataCount = 0;
             FLAC__StreamMetadata* padding, seektable, vorbiscomment;
 
-            if (m_finalSampleCount != 0)
+            if (m_finalSampleCount > 0)
             {
                 seektable = FLACDLL.FLAC__metadata_object_new(FLAC__MetadataType.FLAC__METADATA_TYPE_SEEKTABLE);
                 FLACDLL.FLAC__metadata_object_seektable_template_append_spaced_points_by_samples(
@@ -273,7 +266,7 @@ namespace CUETools.Codecs.libFLAC
             FLACDLL.FLAC__stream_encoder_set_verify(m_encoder, m_settings.Verify ? 1 : 0);
             FLACDLL.FLAC__stream_encoder_set_do_md5(m_encoder, m_settings.MD5Sum ? 1 : 0);
             FLACDLL.FLAC__stream_encoder_set_compression_level(m_encoder, m_settings.GetEncoderModeIndex());
-            if (m_finalSampleCount != 0)
+            if (m_finalSampleCount > 0)
                 FLACDLL.FLAC__stream_encoder_set_total_samples_estimate(m_encoder, m_finalSampleCount);
             if (m_settings.BlockSize > 0)
                 FLACDLL.FLAC__stream_encoder_set_blocksize(m_encoder, m_settings.BlockSize);

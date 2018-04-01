@@ -39,8 +39,10 @@ namespace CUETools.Codecs.libFLAC
 
     public unsafe class Reader : IAudioSource
     {
-        public Reader(string path, Stream IO)
+        public Reader(DecoderSettings settings, string path, Stream IO)
         {
+            m_settings = settings;
+
             m_writeCallback = WriteCallback;
             m_metadataCallback = MetadataCallback;
             m_errorCallback = ErrorCallback;
@@ -298,7 +300,7 @@ namespace CUETools.Codecs.libFLAC
             return m_stream.Position == m_stream.Length ? 1 : 0;
 		}
 
-        public IAudioDecoderSettings Settings => null;
+        public IAudioDecoderSettings Settings => m_settings;
 
         public AudioPCMConfig PCM => m_pcm;
 
@@ -371,6 +373,7 @@ namespace CUETools.Codecs.libFLAC
 			return buff.Length;
         }
 
+        DecoderSettings m_settings;
         AudioBuffer m_sampleBuffer;
         byte[] m_readBuffer;
         long m_sampleCount, m_sampleOffset;
