@@ -87,6 +87,7 @@ namespace CUETools.Codecs
             formats.Add("mp3", new CUEToolsFormat("mp3", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encodersViewModel.GetDefault("mp3", false), null));
             formats.Add("ogg", new CUEToolsFormat("ogg", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encodersViewModel.GetDefault("ogg", false), null));
             formats.Add("opus", new CUEToolsFormat("opus", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encodersViewModel.GetDefault("opus", false), null));
+            formats.Add("mlp", new CUEToolsFormat("mlp", CUEToolsTagger.APEv2, true, false, false, false, null, null, decodersViewModel.GetDefault("mlp")));
         }
     }
 }
