@@ -23,7 +23,7 @@ namespace CUETools.Codecs.libwavpack
         public Type DecoderType => typeof(AudioDecoder);
 
         [Browsable(false)]
-        public int Priority => 1;
+        public int Priority => 2;
 
         public IAudioDecoderSettings Clone()
         {

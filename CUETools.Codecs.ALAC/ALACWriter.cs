@@ -151,7 +151,7 @@ namespace CUETools.Codecs.ALAC
 
 		List<int> chunk_pos;
 
-        public AudioEncoder(string path, Stream IO, EncoderSettings settings)
+        public AudioEncoder(EncoderSettings settings, string path, Stream IO)
 		{
             m_settings = settings;
             m_settings.Validate();
@@ -177,11 +177,6 @@ namespace CUETools.Codecs.ALAC
 
             frame = new ALACFrame(Settings.PCM.ChannelCount == 2 ? 5 : Settings.PCM.ChannelCount);
 			chunk_pos = new List<int>();
-		}
-
-        public AudioEncoder(string path, EncoderSettings settings)
-            : this(path, null, settings)
-		{
 		}
 
 		public int TotalSize

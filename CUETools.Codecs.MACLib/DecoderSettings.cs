@@ -19,7 +19,7 @@ namespace CUETools.Codecs.MACLib
         public Type DecoderType => typeof(AudioDecoder);
 
         [Browsable(false)]
-        public int Priority => 1;
+        public int Priority => 2;
 
         public IAudioDecoderSettings Clone()
         {
