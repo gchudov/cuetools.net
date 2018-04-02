@@ -16,15 +16,15 @@ namespace CUETools.Codecs.ffmpegdll
                 case PlatformID.Win32Windows:
                     SetDllDirectory(path);
                     break;
-                //case PlatformID.Unix:
-                //case PlatformID.MacOSX:
-                //    string currentValue = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
-                //    if (string.IsNullOrWhiteSpace(currentValue) == false && currentValue.Contains(path) == false)
-                //    {
-                //        string newValue = currentValue + Path.PathSeparator + path;
-                //        Environment.SetEnvironmentVariable(LD_LIBRARY_PATH, newValue);
-                //    }
-                //    break;
+                    //case PlatformID.Unix:
+                    //case PlatformID.MacOSX:
+                    //    string currentValue = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
+                    //    if (string.IsNullOrWhiteSpace(currentValue) == false && currentValue.Contains(path) == false)
+                    //    {
+                    //        string newValue = currentValue + Path.PathSeparator + path;
+                    //        Environment.SetEnvironmentVariable(LD_LIBRARY_PATH, newValue);
+                    //    }
+                    //    break;
             }
         }
 
@@ -35,9 +35,9 @@ namespace CUETools.Codecs.ffmpegdll
         {
             m_settings = settings;
 
-			_path = path;
+            _path = path;
 
-            m_stream = (IO != null) ? IO : new FileStream (path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            m_stream = (IO != null) ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 
             switch (Environment.OSVersion.Platform)
             {
@@ -59,22 +59,119 @@ namespace CUETools.Codecs.ffmpegdll
                         current = Directory.GetParent(current)?.FullName;
                     }
                     break;
-                //case PlatformID.Unix:
-                //case PlatformID.MacOSX:
-                //    var libraryPath = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
-                //    RegisterLibrariesSearchPath(libraryPath);
-                //    break;
+                    //case PlatformID.Unix:
+                    //case PlatformID.MacOSX:
+                    //    var libraryPath = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
+                    //    RegisterLibrariesSearchPath(libraryPath);
+                    //    break;
             }
 
             pkt = ffmpeg.av_packet_alloc();
-			if (pkt == null)
-				throw new Exception("Unable to initialize the decoder");
+            if (pkt == null)
+                throw new Exception("Unable to initialize the decoder");
 
             decoded_frame = ffmpeg.av_frame_alloc();
             if (decoded_frame == null)
                 throw new Exception("Could not allocate audio frame");
 
             ffmpeg.avcodec_register_all();
+            ffmpeg.av_register_all();
+
+#if DEBUG
+            ffmpeg.av_log_set_level(ffmpeg.AV_LOG_DEBUG);
+
+            av_log_set_callback_callback logCallback = (p0, level, format, vl) =>
+            {
+                if (level > ffmpeg.av_log_get_level()) return;
+
+                var lineSize = 1024;
+                var lineBuffer = stackalloc byte[lineSize];
+                var printPrefix = 1;
+                ffmpeg.av_log_format_line(p0, level, format, vl, lineBuffer, lineSize, &printPrefix);
+                var line = Marshal.PtrToStringAnsi((IntPtr) lineBuffer);
+                System.Diagnostics.Trace.Write(line);
+            };
+
+            ffmpeg.av_log_set_callback(logCallback);
+#endif
+
+            if (m_stream.CanSeek)
+            {
+                m_read_packet_callback = readPacketCallback;
+                m_seek_callback = seekCallback;
+
+                int ret;
+                AVFormatContext* fmt_ctx = ffmpeg.avformat_alloc_context();
+                if (fmt_ctx == null)
+                    throw new Exception("ffmpeg.avformat_alloc_context() failed");
+
+                ulong avio_ctx_buffer_size = 4096;
+                void* avio_ctx_buffer = ffmpeg.av_malloc(avio_ctx_buffer_size);
+
+                AVIOContext* avio_ctx = ffmpeg.avio_alloc_context((byte*)avio_ctx_buffer, (int)avio_ctx_buffer_size,
+                    0, null, m_read_packet_callback, null, m_seek_callback);
+                if (avio_ctx == null)
+                {
+                    ffmpeg.avformat_free_context(fmt_ctx);
+                    throw new Exception("Cannot find stream information");
+                }
+
+                fmt_ctx->pb = avio_ctx;
+
+                AVInputFormat* fmt = ffmpeg.av_find_input_format(m_settings.Format);
+                if (fmt==null)
+                {
+                    ffmpeg.avformat_free_context(fmt_ctx);
+                    throw new Exception($"Cannot find input format ${m_settings.Format}");
+                }
+
+                if ((ret = ffmpeg.avformat_open_input(&fmt_ctx, null, fmt, null)) < 0)
+                {
+                    ffmpeg.avformat_close_input(&fmt_ctx);
+                    throw new Exception("Cannot open input file");
+                }
+
+                if ((ret = ffmpeg.avformat_find_stream_info(fmt_ctx, null)) < 0)
+                {
+                    ffmpeg.avformat_close_input(&fmt_ctx);
+                    throw new Exception("Cannot find stream information");
+                }
+
+#if FINDBESTSTREAM
+                /* select the audio stream */
+                ret = ffmpeg.av_find_best_stream(fmt_ctx, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, &dec, 0);
+                if (ret < 0)
+                {
+                    ffmpeg.avformat_close_input(&fmt_ctx);
+                    throw new Exception("Cannot find an audio stream in the input file");
+                }
+#else
+                if (fmt_ctx->nb_streams != 1)
+                {
+                    ffmpeg.avformat_close_input(&fmt_ctx);
+                    throw new Exception("More than one stream");
+                }
+#endif
+
+                int audio_stream_index = 0; // ret
+
+                if (fmt_ctx->streams[audio_stream_index]->duration > 0)
+                    _sampleCount = fmt_ctx->streams[audio_stream_index]->duration;
+                else
+                    _sampleCount = -1;
+                pcm = new AudioPCMConfig(
+                    fmt_ctx->streams[audio_stream_index]->codecpar->bits_per_raw_sample,
+                    fmt_ctx->streams[audio_stream_index]->codecpar->channels,
+                    fmt_ctx->streams[audio_stream_index]->codecpar->sample_rate,
+                    (AudioPCMConfig.SpeakerConfig)0);// fmt_ctx->streams[audio_stream_index]->codecpar->channel_layout);
+
+                // ret = ffmpeg.av_read_frame(fmt_ctx, pkt);
+
+                ffmpeg.avformat_close_input(&fmt_ctx);
+                fmt_ctx = null;
+
+                m_stream.Seek(0, SeekOrigin.Begin);
+            }
 
             codec = ffmpeg.avcodec_find_decoder(m_settings.Codec);
             if (codec == null)
@@ -87,7 +184,8 @@ namespace CUETools.Codecs.ffmpegdll
             c = ffmpeg.avcodec_alloc_context3(codec);
             if (c == null)
                 throw new Exception("Could not allocate audio codec context");
-            //c->refcounted_frames == 0;
+            // ffmpeg.av_opt_set_int(c, "refcounted_frames", 1, 0);
+            // ffmpeg.avcodec_parameters_to_context(c, fmt_ctx->streams[audio_stream_index]->codecpar);
 
             /* open it */
             if (ffmpeg.avcodec_open2(c, codec, null) < 0)
@@ -99,27 +197,15 @@ namespace CUETools.Codecs.ffmpegdll
             m_decoded_frame_offset = 0;
             m_decoded_frame_size = 0;
 
-            fill();
+            if (pcm == null)
+            {
+                fill();
+                _sampleCount = -1;
+                pcm = new AudioPCMConfig(
+                    c->bits_per_raw_sample, c->channels, c->sample_rate,
+                    (AudioPCMConfig.SpeakerConfig)0); // c->channel_layout;
+            }
 
-            //switch(c->sample_fmt)
-            //{
-            //    case AVSampleFormat.AV_SAMPLE_FMT_S16:
-            //        break;
-            //    case AVSampleFormat.AV_SAMPLE_FMT_S32:
-            //        break;
-            //    default:
-            //        throw new Exception("Bad sample format");
-            //}
-
-            bytes_per_sample = ffmpeg.av_get_bytes_per_sample(c->sample_fmt);
-            /* This should not occur, checking just for paranoia */
-            if (bytes_per_sample < 0) throw new Exception("Failed to calculate data size");
-
-            pcm = new AudioPCMConfig(
-                c->bits_per_raw_sample, c->channels, c->sample_rate,
-                (AudioPCMConfig.SpeakerConfig)0); // c->channel_layout;
-            //_sampleCount = MACLibDll.c_APEDecompress_GetInfo(pAPEDecompress, APE_DECOMPRESS_FIELDS.APE_DECOMPRESS_TOTAL_BLOCKS, 0, 0).ToInt64();
-            _sampleCount = -1;
             _sampleOffset = 0;
         }
 
@@ -202,6 +288,24 @@ namespace CUETools.Codecs.ffmpegdll
             Dispose(true);
         }
 
+        byte[] _readBuffer;
+        int readPacketCallback(void* @opaque, byte* @buf, int @buf_size)
+        {
+            if (_readBuffer == null || _readBuffer.Length < @buf_size)
+                _readBuffer = new byte[Math.Max(@buf_size, 0x4000)];
+            int len = m_stream.Read(_readBuffer, 0, @buf_size);
+            if (len > 0) Marshal.Copy(_readBuffer, 0, (IntPtr)buf, len);
+            return len;
+        }
+
+        long seekCallback(void* @opaque, long @offset, int @whence)
+        {
+            if (whence == ffmpeg.AVSEEK_SIZE)
+                return m_stream.Length;
+            whence &= ~ffmpeg.AVSEEK_FORCE;
+            return m_stream.Seek(@offset, (SeekOrigin)@whence);
+        }
+
         const int AUDIO_INBUF_SIZE = 65536;
         const int AUDIO_REFILL_THRESH = 4096;
 
@@ -235,15 +339,15 @@ namespace CUETools.Codecs.ffmpegdll
                     data_offs = 0;
                     int len = m_stream.Read(data_buf, data_size, data_buf.Length - data_size);
                     data_size += len;
-                    if (data_size <= 0) return;
                 }
+                // int ret = ffmpeg.av_read_frame(fmt_ctx, pkt);
                 fixed (byte* data = &data_buf[data_offs])
                     ret = ffmpeg.av_parser_parse2(parser, c, &pkt->data, &pkt->size,
                         data, data_size, ffmpeg.AV_NOPTS_VALUE, ffmpeg.AV_NOPTS_VALUE, 0);
-                if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
-                    return;
-                if (ret < 0)
+                if (ret < 0 && ret != ffmpeg.AVERROR(ffmpeg.EAGAIN))
                     throw new Exception("Error while parsing");
+                if (pkt->size == 0 && data_size == 0 && ret == 0)
+                    return;
                 data_offs += ret;
                 data_size -= ret;
             }
@@ -271,7 +375,7 @@ namespace CUETools.Codecs.ffmpegdll
                 {
                     case AVSampleFormat.AV_SAMPLE_FMT_S32:
                         {
-                            byte* ptr = decoded_frame->data[0u] + c->channels * bytes_per_sample * m_decoded_frame_offset;
+                            byte* ptr = decoded_frame->data[0u] + c->channels * 4 * m_decoded_frame_offset;
                             int rshift = 32 - pcm.BitsPerSample;
                             int* smp = (int*)ptr;
                             fixed (int* dst_start = &buff.Samples[buffOffset, 0])
@@ -304,7 +408,10 @@ namespace CUETools.Codecs.ffmpegdll
         AVCodecParserContext* parser;
         AVCodecContext* c;
 
-		long _sampleCount, _sampleOffset;
+        avio_alloc_context_read_packet m_read_packet_callback;
+        avio_alloc_context_seek m_seek_callback;
+
+        long _sampleCount, _sampleOffset;
         AudioPCMConfig pcm;
         string _path;
         Stream m_stream;
@@ -314,7 +421,5 @@ namespace CUETools.Codecs.ffmpegdll
         byte[] data_buf;
         int data_size;
         int data_offs;
-
-        int bytes_per_sample;
     }
 }

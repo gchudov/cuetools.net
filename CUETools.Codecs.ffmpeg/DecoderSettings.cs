@@ -32,6 +32,8 @@ namespace CUETools.Codecs.ffmpegdll
 
         public abstract AVCodecID Codec { get; }
 
+        public abstract string Format { get; }
+
         //        [DisplayName("Version")]
         //        [Description("Library version")]
         //        public string Version => Marshal.PtrToStringAnsi(MACLibDll.GetVersionString());
@@ -40,6 +42,7 @@ namespace CUETools.Codecs.ffmpegdll
     public class MLPDecoderSettings : DecoderSettings, IAudioDecoderSettings
     {
         public override string Extension => "mlp";
+        public override string Format => "mlp";
         public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_MLP;
         public MLPDecoderSettings()
         {
@@ -49,18 +52,60 @@ namespace CUETools.Codecs.ffmpegdll
     public class FLACDecoderSettings : DecoderSettings, IAudioDecoderSettings
     {
         public override string Extension => "flac";
+        public override string Format => "flac";
         public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_FLAC;
         public FLACDecoderSettings()
         {
             this.Init();
         }
     }
-
     public class WavPackDecoderSettings : DecoderSettings, IAudioDecoderSettings
     {
         public override string Extension => "wv";
+        public override string Format => "wv";
         public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_WAVPACK;
         public WavPackDecoderSettings()
+        {
+            this.Init();
+        }
+    }
+    public class TtaDecoderSettings : DecoderSettings, IAudioDecoderSettings
+    {
+        public override string Extension => "tta";
+        public override string Format => "tta";
+        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_TTA;
+        public TtaDecoderSettings()
+        {
+            this.Init();
+        }
+    }
+    public class ShnDecoderSettings : DecoderSettings, IAudioDecoderSettings
+    {
+        public override string Extension => "shn";
+        public override string Format => "shn";
+        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_SHORTEN;
+        public ShnDecoderSettings()
+        {
+            this.Init();
+        }
+    }
+    public class AlacDecoderSettings : DecoderSettings, IAudioDecoderSettings
+    {
+        public override string Extension => "m4a";
+        public override string Format => "m4a";
+        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_ALAC;
+        public AlacDecoderSettings()
+        {
+            this.Init();
+        }
+    }
+    // This one doesn't work; There's a decoder but no parser (demuxer)
+    public class APEDecoderSettings : DecoderSettings, IAudioDecoderSettings
+    {
+        public override string Extension => "ape";
+        public override string Format => "ape";
+        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_APE;
+        public APEDecoderSettings()
         {
             this.Init();
         }
