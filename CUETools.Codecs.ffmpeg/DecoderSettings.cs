@@ -99,7 +99,6 @@ namespace CUETools.Codecs.ffmpegdll
             this.Init();
         }
     }
-    // This one doesn't work; There's a decoder but no parser (demuxer)
     public class APEDecoderSettings : DecoderSettings, IAudioDecoderSettings
     {
         public override string Extension => "ape";
