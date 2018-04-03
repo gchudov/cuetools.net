@@ -164,7 +164,7 @@ namespace CUETools.Codecs.ffmpegdll
             int channels = new_fmt_ctx->streams[audio_stream_index]->codecpar->channels;
             int sample_rate = new_fmt_ctx->streams[audio_stream_index]->codecpar->sample_rate;
             ulong channel_layout = new_fmt_ctx->streams[audio_stream_index]->codecpar->channel_layout;
-            pcm = new AudioPCMConfig(bps, channels, sample_rate, (AudioPCMConfig.SpeakerConfig)0);
+            pcm = new AudioPCMConfig(bps, channels, sample_rate, (AudioPCMConfig.SpeakerConfig)channel_layout);
 
             // ret = ffmpeg.av_read_frame(new_fmt_ctx, pkt);
 
@@ -172,7 +172,7 @@ namespace CUETools.Codecs.ffmpegdll
 
             //m_stream.Seek(0, SeekOrigin.Begin);
 
-            codec = ffmpeg.avcodec_find_decoder(m_settings.Codec);
+            codec = ffmpeg.avcodec_find_decoder(fmt_ctx->streams[audio_stream_index]->codecpar->codec_id);
             if (codec == null)
                 throw new Exception("Codec not found");
 
@@ -185,7 +185,7 @@ namespace CUETools.Codecs.ffmpegdll
             c->request_sample_fmt = AVSampleFormat.AV_SAMPLE_FMT_S32;
 
             /* open it */
-            if (ffmpeg.avcodec_open2(c, codec, null) < 0)
+            if (ffmpeg.avcodec_open2(c, null, null) < 0)
                 throw new Exception("Could not open codec");
 
             m_decoded_frame_offset = 0;

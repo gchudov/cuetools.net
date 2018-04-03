@@ -30,8 +30,6 @@ namespace CUETools.Codecs.ffmpegdll
         }
         #endregion
 
-        public abstract AVCodecID Codec { get; }
-
         public abstract string Format { get; }
 
         //        [DisplayName("Version")]
@@ -43,7 +41,6 @@ namespace CUETools.Codecs.ffmpegdll
     {
         public override string Extension => "mlp";
         public override string Format => "mlp";
-        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_MLP;
         public MLPDecoderSettings()
         {
             this.Init();
@@ -53,7 +50,6 @@ namespace CUETools.Codecs.ffmpegdll
     {
         public override string Extension => "flac";
         public override string Format => "flac";
-        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_FLAC;
         public FLACDecoderSettings()
         {
             this.Init();
@@ -63,7 +59,6 @@ namespace CUETools.Codecs.ffmpegdll
     {
         public override string Extension => "wv";
         public override string Format => "wv";
-        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_WAVPACK;
         public WavPackDecoderSettings()
         {
             this.Init();
@@ -73,7 +68,6 @@ namespace CUETools.Codecs.ffmpegdll
     {
         public override string Extension => "tta";
         public override string Format => "tta";
-        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_TTA;
         public TtaDecoderSettings()
         {
             this.Init();
@@ -83,7 +77,6 @@ namespace CUETools.Codecs.ffmpegdll
     {
         public override string Extension => "shn";
         public override string Format => "shn";
-        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_SHORTEN;
         public ShnDecoderSettings()
         {
             this.Init();
@@ -93,7 +86,6 @@ namespace CUETools.Codecs.ffmpegdll
     {
         public override string Extension => "m4a";
         public override string Format => "m4a";
-        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_ALAC;
         public AlacDecoderSettings()
         {
             this.Init();
@@ -103,7 +95,6 @@ namespace CUETools.Codecs.ffmpegdll
     {
         public override string Extension => "ape";
         public override string Format => "ape";
-        public override AVCodecID Codec => AVCodecID.AV_CODEC_ID_APE;
         public APEDecoderSettings()
         {
             this.Init();
