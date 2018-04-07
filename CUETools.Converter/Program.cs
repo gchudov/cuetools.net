@@ -16,6 +16,7 @@ namespace CUETools.Converter
             Console.Error.WriteLine("Options:");
             Console.Error.WriteLine();
             Console.Error.WriteLine(" --decoder <name>       Use non-default decoder.");
+            Console.Error.WriteLine(" --decoder-option <name> <value>");
             Console.Error.WriteLine(" --encoder <name>       Use non-default encoder.");
             Console.Error.WriteLine(" --encoder-format <ext> Use encoder format different from file extension.");
             Console.Error.WriteLine(" --lossy                Use lossy encoder/mode.");
@@ -34,7 +35,7 @@ namespace CUETools.Converter
                 (lossless ? fmt.encoderLossless : fmt.encoderLossy);
         }
 
-        public static IAudioSource GetAudioSource(CUEToolsCodecsConfig config, string path, string chosenDecoder, bool ignore_chunk_sizes)
+        public static IAudioSource GetAudioSource(CUEToolsCodecsConfig config, string path, string chosenDecoder, bool ignore_chunk_sizes, Dictionary<string, string> decoderOptions)
         {
             if (path == "-")
                 return new Codecs.WAV.AudioDecoder(new Codecs.WAV.DecoderSettings() { IgnoreChunkSizes = true }, "", Console.OpenStandardInput());
@@ -52,6 +53,14 @@ namespace CUETools.Converter
             if (decoder == null)
                 throw new Exception("Unsupported audio type: " + path);
             var settings = decoder.Settings.Clone();
+            foreach (var decOpt in decoderOptions)
+            {
+                var property = TypeDescriptor.GetProperties(settings).Find(decOpt.Key, true);
+                if (property == null)
+                    throw new Exception($"{settings.Name} {settings.Extension} decoder settings object (of type {settings.GetType().FullName}) doesn't have a property named {decOpt.Key}.");
+                property.SetValue(settings,
+                    TypeDescriptor.GetConverter(property.PropertyType).ConvertFromString(decOpt.Value));
+            }
             try
             {
                 object src = Activator.CreateInstance(decoder.Settings.DecoderType, settings, path, IO);
@@ -149,18 +158,7 @@ namespace CUETools.Converter
                 try
 #endif
                 {
-                    audioSource = Program.GetAudioSource(config, sourceFile, decoderName, ignore_chunk_sizes);
-                    foreach (var decOpt in decoderOptions)
-                    {
-                        var decoderSettings = audioSource.Settings;
-                        if (decoderSettings == null)
-                            throw new Exception(String.Format("{0} doesn't have any properties.", audioSource.GetType().Name));
-                        var property = TypeDescriptor.GetProperties(decoderSettings).Find(decOpt.Key, true);
-                        if (property == null)
-                            throw new Exception(String.Format("{0} doesn't have a property named {1}.", audioSource.GetType().Name, decOpt.Key));
-                        property.SetValue(decoderSettings, 
-                            TypeDescriptor.GetConverter(property.PropertyType).ConvertFromString(decOpt.Value));
-                    }
+                    audioSource = Program.GetAudioSource(config, sourceFile, decoderName, ignore_chunk_sizes, decoderOptions);
 
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);

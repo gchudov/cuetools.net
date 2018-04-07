@@ -5,6 +5,24 @@ using FFmpeg.AutoGen;
 
 namespace CUETools.Codecs.ffmpegdll
 {
+    internal static class FFmpegHelper
+    {
+        public static unsafe string av_strerror(int error)
+        {
+            var bufferSize = 1024;
+            var buffer = stackalloc byte[bufferSize];
+            ffmpeg.av_strerror(error, buffer, (ulong)bufferSize);
+            var message = Marshal.PtrToStringAnsi((IntPtr)buffer);
+            return message;
+        }
+
+        public static int ThrowExceptionIfError(this int error)
+        {
+            if (error < 0) throw new ApplicationException(av_strerror(error));
+            return error;
+        }
+    };
+
     public unsafe class AudioDecoder : IAudioSource, IDisposable
     {
         private static void RegisterLibrariesSearchPath(string path)
@@ -126,13 +144,13 @@ namespace CUETools.Codecs.ffmpegdll
             if ((ret = ffmpeg.avformat_open_input(&new_fmt_ctx, null, fmt, null)) < 0)
             {
                 ffmpeg.avformat_free_context(new_fmt_ctx);
-                throw new Exception("Cannot open input file");
+                ret.ThrowExceptionIfError();
             }
 
             if ((ret = ffmpeg.avformat_find_stream_info(new_fmt_ctx, null)) < 0)
             {
                 ffmpeg.avformat_close_input(&new_fmt_ctx);
-                throw new Exception("Cannot find stream information");
+                ret.ThrowExceptionIfError();
             }
 
 #if FINDBESTSTREAM
@@ -141,38 +159,51 @@ namespace CUETools.Codecs.ffmpegdll
             if (ret < 0)
             {
                 ffmpeg.avformat_close_input(&new_fmt_ctx);
-                throw new Exception("Cannot find an audio stream in the input file");
-            }
-#else
-            if (new_fmt_ctx->nb_streams != 1)
-            {
-                ffmpeg.avformat_close_input(&new_fmt_ctx);
-                throw new Exception("More than one stream");
+                ret.ThrowExceptionIfError();
             }
 #endif
+            int matching_stream = -1;
+            int matching_streams = 0;
+            for (int i = 0; i < (int)new_fmt_ctx->nb_streams; i++)
+            {
+                AVStream* stream_i = new_fmt_ctx->streams[i];
+                if (stream_i->codecpar->codec_type == AVMediaType.AVMEDIA_TYPE_AUDIO &&
+                    (settings.StreamId == 0 || settings.StreamId == stream_i->id))
+                {
+                    matching_stream = i;
+                    matching_streams++;
+                }
+            }
 
-            int audio_stream_index = 0; // ret
+            if (matching_streams == 0)
+            {
+                ffmpeg.avformat_close_input(&new_fmt_ctx);
+                throw new Exception("No matching streams");
+            }
+            if (matching_streams != 1)
+            {
+                ffmpeg.avformat_close_input(&new_fmt_ctx);
+                throw new Exception("More than one stream matches");
+            }
 
-            if (new_fmt_ctx->streams[audio_stream_index]->duration > 0)
-                _sampleCount = new_fmt_ctx->streams[audio_stream_index]->duration;
-            else
+            stream = new_fmt_ctx->streams[matching_stream];
+            // Duration is unreliable for most codecs.
+            //if (stream->duration > 0)
+            //    _sampleCount = stream->duration;
+            //else
                 _sampleCount = -1;
 
-            int bps = new_fmt_ctx->streams[audio_stream_index]->codecpar->bits_per_raw_sample != 0 ?
-                new_fmt_ctx->streams[audio_stream_index]->codecpar->bits_per_raw_sample :
-                new_fmt_ctx->streams[audio_stream_index]->codecpar->bits_per_coded_sample;
-            int channels = new_fmt_ctx->streams[audio_stream_index]->codecpar->channels;
-            int sample_rate = new_fmt_ctx->streams[audio_stream_index]->codecpar->sample_rate;
-            ulong channel_layout = new_fmt_ctx->streams[audio_stream_index]->codecpar->channel_layout;
+            int bps = stream->codecpar->bits_per_raw_sample != 0 ?
+                stream->codecpar->bits_per_raw_sample :
+                stream->codecpar->bits_per_coded_sample;
+            int channels = stream->codecpar->channels;
+            int sample_rate = stream->codecpar->sample_rate;
+            ulong channel_layout = stream->codecpar->channel_layout;
             pcm = new AudioPCMConfig(bps, channels, sample_rate, (AudioPCMConfig.SpeakerConfig)channel_layout);
-
-            // ret = ffmpeg.av_read_frame(new_fmt_ctx, pkt);
 
             fmt_ctx = new_fmt_ctx;
 
-            //m_stream.Seek(0, SeekOrigin.Begin);
-
-            codec = ffmpeg.avcodec_find_decoder(fmt_ctx->streams[audio_stream_index]->codecpar->codec_id);
+            codec = ffmpeg.avcodec_find_decoder(stream->codecpar->codec_id);
             if (codec == null)
                 throw new Exception("Codec not found");
 
@@ -180,7 +211,7 @@ namespace CUETools.Codecs.ffmpegdll
             if (c == null)
                 throw new Exception("Could not allocate audio codec context");
             // ffmpeg.av_opt_set_int(c, "refcounted_frames", 1, 0);
-            ffmpeg.avcodec_parameters_to_context(c, fmt_ctx->streams[audio_stream_index]->codecpar);
+            ffmpeg.avcodec_parameters_to_context(c, stream->codecpar);
 
             c->request_sample_fmt = AVSampleFormat.AV_SAMPLE_FMT_S32;
 
@@ -305,7 +336,7 @@ namespace CUETools.Codecs.ffmpegdll
                     return;
                 if (ret != ffmpeg.AVERROR(ffmpeg.EAGAIN))
                 {
-                    if (ret < 0) throw new Exception("Error during decoding");
+                    if (ret < 0) ret.ThrowExceptionIfError();
                     m_decoded_frame_offset = 0;
                     m_decoded_frame_size = decoded_frame->nb_samples;
                     return;
@@ -315,15 +346,12 @@ namespace CUETools.Codecs.ffmpegdll
                 {
                     if (ret == ffmpeg.AVERROR_EOF)
                         return;
-                    byte* buf = stackalloc byte[256];
-                    ffmpeg.av_strerror(ret, buf, 256);
-                    throw new Exception("Error while parsing: " + Marshal.PtrToStringAnsi((IntPtr)buf));
+                    ret.ThrowExceptionIfError();
                 }
-                if (pkt->size != 0)
+                if (pkt->size != 0 && pkt->stream_index == stream->index)
                 {
                     /* send the packet with the compressed data to the decoder */
-                    ret = ffmpeg.avcodec_send_packet(c, pkt);
-                    if (ret < 0) throw new Exception("Error submitting the packet to the decoder");
+                    ffmpeg.avcodec_send_packet(c, pkt).ThrowExceptionIfError();
                 }
             }
         }
@@ -402,6 +430,7 @@ namespace CUETools.Codecs.ffmpegdll
         AVCodec* codec;
         AVCodecContext* c;
         AVFormatContext* fmt_ctx;
+        AVStream* stream;
 
         avio_alloc_context_read_packet m_read_packet_callback;
         avio_alloc_context_seek m_seek_callback;

@@ -130,11 +130,13 @@ namespace CUETools.eac3to
                 TimeSpan duration;
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
 
+#if !DEBUG
                 try
+#endif
                 {
                     if (true)
                     {
-                        var mpls = new MPLSDecoder(sourceFile, null);
+                        var mpls = new MPLSDecoder(new Codecs.MPLS.DecoderSettings(), sourceFile, null);
                         audioSource = mpls;
                         Console.ForegroundColor = ConsoleColor.White;
                         int frameRate = 0;
@@ -314,8 +316,8 @@ namespace CUETools.eac3to
                                 throw new Exception("Video extraction not supported.");
                             if (stream - chapterStreams - videos.Count > audios.Count)
                                 throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
-                            ushort pid = audios[stream - chapterStreams - videos.Count - 1].pid;
-                            (audioSource.Settings as Codecs.MPLS.DecoderSettings).Pid = pid;
+                            int pid = audios[stream - chapterStreams - videos.Count - 1].pid;
+                            (audioSource.Settings as Codecs.MPLS.DecoderSettings).StreamId = pid;
                         }
                     }
 
@@ -367,9 +369,9 @@ namespace CUETools.eac3to
                     object o = null;
                     try
                     {
-                        o = destFile == "-" ? Activator.CreateInstance(settings.EncoderType, "", Console.OpenStandardOutput(), settings) :
-                            destFile == "nul" ? Activator.CreateInstance(settings.EncoderType, "", new NullStream(), settings) :
-                            Activator.CreateInstance(settings.EncoderType, destFile, settings);
+                        o = destFile == "-" ? Activator.CreateInstance(settings.EncoderType, settings, "", Console.OpenStandardOutput()) :
+                            destFile == "nul" ? Activator.CreateInstance(settings.EncoderType, settings, "", new NullStream()) :
+                            Activator.CreateInstance(settings.EncoderType, settings, destFile, null);
                     }
                     catch (System.Reflection.TargetInvocationException ex)
                     {
@@ -418,12 +420,14 @@ namespace CUETools.eac3to
                         totalElapsed
                         );
                 }
+#if !DEBUG
                 catch (Exception ex)
                 {
                     if (audioSource != null) audioSource.Close();
                     if (audioDest != null) audioDest.Delete();
                     throw ex;
                 }
+#endif
                 audioSource.Close();
                 audioDest.Close();
 

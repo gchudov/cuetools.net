@@ -177,10 +177,10 @@ namespace CUETools.ALACEnc
 			if (output_file == null)
 				output_file = Path.ChangeExtension(input_file, "m4a");
             settings.PCM = audioSource.PCM;
-            Codecs.ALAC.AudioEncoder alac = new Codecs.ALAC.AudioEncoder((output_file == "-" || output_file == "nul") ? "" : output_file,
+            Codecs.ALAC.AudioEncoder alac = new Codecs.ALAC.AudioEncoder(settings,
+                (output_file == "-" || output_file == "nul") ? "" : output_file,
 				output_file == "-" ? Console.OpenStandardOutput() :
-				output_file == "nul" ? new NullStream() : null,
-				settings);
+				output_file == "nul" ? new NullStream() : null);
 			alac.FinalSampleCount = audioSource.Length;
 			IAudioDest audioDest = alac;
 			AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);

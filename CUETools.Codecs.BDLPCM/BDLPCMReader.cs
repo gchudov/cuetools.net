@@ -7,13 +7,12 @@ namespace CUETools.Codecs.BDLPCM
 {
     public class AudioDecoder : IAudioSource
     {
-        public unsafe AudioDecoder(string path, Stream IO, ushort pid)
-            : this(path, IO)
+        public unsafe AudioDecoder(string path, Stream IO, int pid)
+            : this(new DecoderSettings() { StreamId = pid }, path, IO)
         {
-            settings.Pid = pid;
         }
 
-        public unsafe AudioDecoder(string path, Stream IO)
+        public unsafe AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
@@ -23,10 +22,10 @@ namespace CUETools.Codecs.BDLPCM
             _samplePos = 0;
             _sampleLen = -1;
             demux_ts_packets(null, 0);
-            settings = new DecoderSettings();
+            m_settings = settings;
         }
 
-        public IAudioDecoderSettings Settings => settings;
+        public IAudioDecoderSettings Settings => m_settings;
 
         public void Close()
         {
@@ -88,11 +87,11 @@ namespace CUETools.Codecs.BDLPCM
             get {
                 if (chosenStream == null)
                 {
-                    if (settings.Pid.HasValue)
+                    if (m_settings.StreamId.HasValue)
                     {
-                        if (streams.ContainsKey(settings.Pid.Value))
+                        if (streams.ContainsKey((ushort)m_settings.StreamId.Value))
                         {
-                            var s = streams[settings.Pid.Value];
+                            var s = streams[(ushort)m_settings.StreamId.Value];
                             if (s.is_opened)
                             {
                                 chosenStream = s;
@@ -103,14 +102,14 @@ namespace CUETools.Codecs.BDLPCM
                                 return chosenStream.pcm;
                             }
                         }
-                        throw new Exception("Pid can be " + 
+                        throw new Exception("StreamId can be " + 
                             string.Join(", ", (new List<ushort>(streams.Keys)).FindAll(pid => streams[pid].is_opened).ConvertAll(pid => pid.ToString()).ToArray()));
                     }
-                    if (settings.Stream.HasValue)
+                    if (m_settings.Stream.HasValue)
                     {
                         foreach (var s in streams)
                         {
-                            if (s.Value.is_opened && s.Value.streamId == settings.Stream.Value)
+                            if (s.Value.is_opened && s.Value.streamId == m_settings.Stream.Value)
                             {
                                 chosenStream = s.Value;
                                 if (chosenStream.pcm == null)
@@ -124,7 +123,7 @@ namespace CUETools.Codecs.BDLPCM
                             string.Join(", ", (new List<TsStream>(streams.Values)).FindAll(s => s.is_opened).ConvertAll(s => s.streamId.ToString()).ToArray()));
                     }
 
-                    throw new Exception("multiple streams present, please specify Pid or Stream");
+                    throw new Exception("multiple streams present, please specify StreamId or Stream");
                 }
                 return chosenStream.pcm; 
             }
@@ -735,6 +734,6 @@ namespace CUETools.Codecs.BDLPCM
         int demuxer_channel;
         TsStream chosenStream;
         long _samplePos, _sampleLen;
-        DecoderSettings settings;
+        DecoderSettings m_settings;
     }
 }

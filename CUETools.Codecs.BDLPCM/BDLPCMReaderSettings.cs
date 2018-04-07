@@ -40,6 +40,6 @@ namespace CUETools.Codecs.BDLPCM
         public int? Stream { get; set; }
 
         [Browsable(false)]
-        public ushort? Pid { get; set; }
+        public int? StreamId { get; set; }
     }
 }

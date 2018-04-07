@@ -9,14 +9,13 @@ namespace CUETools.Codecs.BDLPCM
     public class MPLSDecoder : IAudioSource
     {
         public unsafe MPLSDecoder(string path, Stream IO, ushort pid)
-                : this(path, IO)
+                : this(new MPLS.DecoderSettings() { StreamId = pid }, path, IO)
         {
-            settings.Pid = pid;
         }
 
-        public unsafe MPLSDecoder(string path, Stream IO)
+        public unsafe MPLSDecoder(MPLS.DecoderSettings settings, string path, Stream IO)
         {
-            settings = new DecoderSettings();
+            m_settings = settings;
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
             int length = (int)_IO.Length;
@@ -36,33 +35,33 @@ namespace CUETools.Codecs.BDLPCM
         void openEntries()
         {
             readers = new List<AudioDecoder>();
-            var pids = new List<ushort>();
+            var pids = new List<int>();
             foreach (var item in hdr_m.play_item)
                 foreach (var audio in item.audio)
                 {
                     if (audio.coding_type != 0x80 /* LPCM */) continue;
                     pids.Add(audio.pid);
                 }
-            ushort chosenPid;
-            if (settings.Pid.HasValue)
+            int chosenPid;
+            if (m_settings.StreamId.HasValue)
             {
-                if (!pids.Contains(settings.Pid.Value))
-                    throw new Exception("Pid can be " +
+                if (!pids.Contains(m_settings.StreamId.Value))
+                    throw new Exception("StreamId can be " +
                         string.Join(", ", pids.ConvertAll(pid => pid.ToString()).ToArray()));
-                chosenPid = settings.Pid.Value;
+                chosenPid = m_settings.StreamId.Value;
             }
-            else if (settings.Stream.HasValue)
+            else if (m_settings.Stream.HasValue)
             {
-                if (settings.Stream.Value < 0 || settings.Stream.Value >= pids.Count)
+                if (m_settings.Stream.Value < 0 || m_settings.Stream.Value >= pids.Count)
                     throw new Exception("Stream can be 0.." + (pids.Count - 1).ToString());
-                chosenPid = pids[settings.Stream.Value];
+                chosenPid = pids[m_settings.Stream.Value];
             }
-            else throw new Exception("multiple streams present, please specify Pid or Stream");
+            else throw new Exception("multiple streams present, please specify StreamId or Stream");
             foreach (var item in hdr_m.play_item)
                 foreach (var audio in item.audio)
                 {
                     if (audio.coding_type != 0x80 /* LPCM */) continue;
-                    if (settings.IgnoreShortItems && item.out_time - item.in_time < shortItemDuration) continue;
+                    if (m_settings.IgnoreShortItems && item.out_time - item.in_time < shortItemDuration) continue;
                     if (audio.pid == chosenPid)
                     {
                         var parent = Directory.GetParent(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(_path)));
@@ -277,7 +276,7 @@ namespace CUETools.Codecs.BDLPCM
             return mark;
         }
 
-        public IAudioDecoderSettings Settings => settings;
+        public IAudioDecoderSettings Settings => m_settings;
 
         public void Close()
         {
@@ -308,7 +307,7 @@ namespace CUETools.Codecs.BDLPCM
                 {
                     if (item.num_audio == 0) continue;
                     uint item_duration = item.out_time - item.in_time;
-                    if (settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
+                    if (m_settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
                     totalLength += item_duration;
                 }
 
@@ -403,13 +402,13 @@ namespace CUETools.Codecs.BDLPCM
                     ushort mark_item = hdr_m.play_mark[i].play_item_ref;
                     uint item_in_time = hdr_m.play_item[mark_item].in_time;
                     uint item_out_time = hdr_m.play_item[mark_item].out_time;
-                    if (settings.IgnoreShortItems && item_out_time - item_in_time < shortItemDuration) continue;
+                    if (m_settings.IgnoreShortItems && item_out_time - item_in_time < shortItemDuration) continue;
                     uint item_offset = 0;
                     for (int j = 0; j < mark_item; j++)
                     {
                         if (hdr_m.play_item[j].num_audio == 0) continue;
                         uint item_duration = hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
-                        if (settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
+                        if (m_settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
                         item_offset += item_duration;
                     }
                     res.Add(hdr_m.play_mark[i].time - item_in_time + item_offset);
@@ -419,7 +418,7 @@ namespace CUETools.Codecs.BDLPCM
                 {
                     if (hdr_m.play_item[j].num_audio == 0) continue;
                     uint item_duration = hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
-                    if (settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
+                    if (m_settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
                     end_offset += hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
                 }
                 res.Add(end_offset);
@@ -439,7 +438,7 @@ namespace CUETools.Codecs.BDLPCM
         List<AudioDecoder> readers;
         AudioDecoder currentReader;
         MPLSHeader hdr_m;
-        DecoderSettings settings;
+        MPLS.DecoderSettings m_settings;
     }
 
     public struct MPLSPlaylistMark

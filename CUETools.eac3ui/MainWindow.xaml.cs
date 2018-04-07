@@ -87,7 +87,7 @@ namespace BluTools
             if (playlists != null)
                 foreach (var playlist in playlists)
                 {
-                    var title = new MPLSDecoder(playlist, null);
+                    var title = new MPLSDecoder(new CUETools.Codecs.MPLS.DecoderSettings(), playlist, null);
                     if (filterDups)
                     {
                         if (titleSets.Exists(title2 =>

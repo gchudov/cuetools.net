@@ -35,7 +35,7 @@ namespace CUETools.TestCodecs
             AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
             CUETools.Codecs.libFLAC.Encoder target;
 
-            target = new CUETools.Codecs.libFLAC.Encoder("flacwriter2.flac", new CUETools.Codecs.libFLAC.EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" });
+            target = new CUETools.Codecs.libFLAC.Encoder(new CUETools.Codecs.libFLAC.EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" }, "flacwriter2.flac");
             target.Settings.Padding = 1;
             target.Settings.BlockSize = 32;
             //target.Vendor = "CUETools";
@@ -49,7 +49,7 @@ namespace CUETools.TestCodecs
         [TestMethod()]
         public void SeekTest()
         {
-            var r = new CUETools.Codecs.libFLAC.Reader("test.flac", null);
+            var r = new CUETools.Codecs.libFLAC.Reader(new Codecs.libFLAC.DecoderSettings(), "test.flac", null);
             var buff1 = new AudioBuffer(r, 16536);
             var buff2 = new AudioBuffer(r, 16536);
             Assert.AreEqual(0, r.Position);

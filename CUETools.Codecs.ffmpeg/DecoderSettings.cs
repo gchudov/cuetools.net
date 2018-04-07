@@ -32,6 +32,8 @@ namespace CUETools.Codecs.ffmpegdll
 
         public abstract string Format { get; }
 
+        public int StreamId { get; set; }
+
         //        [DisplayName("Version")]
         //        [Description("Library version")]
         //        public string Version => Marshal.PtrToStringAnsi(MACLibDll.GetVersionString());
@@ -96,6 +98,15 @@ namespace CUETools.Codecs.ffmpegdll
         public override string Extension => "ape";
         public override string Format => "ape";
         public APEDecoderSettings()
+        {
+            this.Init();
+        }
+    }
+    public class MpegTSDecoderSettings : DecoderSettings, IAudioDecoderSettings
+    {
+        public override string Extension => "m2ts";
+        public override string Format => "mpegts";
+        public MpegTSDecoderSettings()
         {
             this.Init();
         }
