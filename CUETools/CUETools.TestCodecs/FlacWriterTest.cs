@@ -49,7 +49,7 @@ namespace CUETools.TestCodecs
         [TestMethod()]
         public void SeekTest()
         {
-            var r = new CUETools.Codecs.libFLAC.Reader(new Codecs.libFLAC.DecoderSettings(), "test.flac", null);
+            var r = new Codecs.libFLAC.DecoderSettings().Open("test.flac", null);
             var buff1 = new AudioBuffer(r, 16536);
             var buff2 = new AudioBuffer(r, 16536);
             Assert.AreEqual(0, r.Position);

@@ -228,10 +228,11 @@ namespace BluTools
 
         void workerExtract_DoWork(object sender, DoWorkEventArgs e)
         {
-            CUETools.Codecs.MPEG.MPLS.AudioDecoder reader = null;
+            IAudioSource reader = null;
             try
             {
-                reader = new CUETools.Codecs.MPEG.MPLS.AudioDecoder(chosenReader.Path, null, pid);
+                var decoderSettings = new CUETools.Codecs.MPEG.MPLS.DecoderSettings() { StreamId = pid };
+                reader = decoderSettings.Open(chosenReader.Path);
                 Directory.CreateDirectory(outputFolderPath);
                 if (File.Exists(outputCuePath)) throw new Exception(string.Format("File \"{0}\" already exists", outputCuePath));
                 if (File.Exists(outputAudioPath)) throw new Exception(string.Format("File \"{0}\" already exists", outputAudioPath));

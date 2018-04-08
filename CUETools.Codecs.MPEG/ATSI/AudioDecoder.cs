@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
-namespace CUETools.Codecs.MPEG.MPLS
+namespace CUETools.Codecs.MPEG.ATSI
 {
     public class AudioDecoder : IAudioSource
     {

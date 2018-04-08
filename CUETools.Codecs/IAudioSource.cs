@@ -1,4 +1,6 @@
-﻿namespace CUETools.Codecs
+﻿using System;
+
+namespace CUETools.Codecs
 {
 	public interface IAudioSource
 	{
@@ -7,7 +9,8 @@
 		AudioPCMConfig PCM { get; }
 		string Path { get; }
 
-		long Length { get; }
+        TimeSpan Duration { get; }
+        long Length { get; }
 		long Position { get; set; }
 		long Remaining { get; }
 

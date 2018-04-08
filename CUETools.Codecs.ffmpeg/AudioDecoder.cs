@@ -191,7 +191,7 @@ namespace CUETools.Codecs.ffmpegdll
             //if (stream->duration > 0)
             //    _sampleCount = stream->duration;
             //else
-                _sampleCount = -1;
+            _sampleCount = -1;
 
             int bps = stream->codecpar->bits_per_raw_sample != 0 ?
                 stream->codecpar->bits_per_raw_sample :
@@ -278,6 +278,21 @@ namespace CUETools.Codecs.ffmpegdll
         public AudioPCMConfig PCM => pcm;
 
         public string Path => _path;
+
+        public TimeSpan Duration
+        {
+            get
+            {
+                // Sadly, duration is unreliable for most codecs.
+                if (stream->codecpar->codec_id == AVCodecID.AV_CODEC_ID_MLP)
+                    return TimeSpan.Zero;
+                if (stream->duration > 0)
+                    return TimeSpan.FromSeconds((double)stream->duration / stream->codecpar->sample_rate);
+                if (fmt_ctx->duration > 0)
+                    return TimeSpan.FromSeconds((double)fmt_ctx->duration / ffmpeg.AV_TIME_BASE);
+                return TimeSpan.Zero;
+            }
+        }
 
         public long Length => _sampleCount;
 

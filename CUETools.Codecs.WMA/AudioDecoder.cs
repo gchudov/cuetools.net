@@ -252,6 +252,8 @@ namespace CUETools.Codecs.WMA
             m_syncReader = null;
         }
 
+        public TimeSpan Duration => Length < 0 ? TimeSpan.Zero : TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
+
         public long Length
         {
             get

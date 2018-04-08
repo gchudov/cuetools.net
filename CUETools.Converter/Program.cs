@@ -162,7 +162,7 @@ namespace CUETools.Converter
 
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);
-                    Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
+                    Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, audioSource.Duration);
 
                     CUEToolsFormat fmt;
                     if (encoderFormat == null)
@@ -226,15 +226,16 @@ namespace CUETools.Converter
                         TimeSpan elapsed = DateTime.Now - start;
                         if ((elapsed - lastPrint).TotalMilliseconds > 60)
                         {
-                            long length = audioSource.Length;
-                            if (length < 0 && sourceInfo != null) length = (long)(sourceInfo.Properties.Duration.TotalMilliseconds * audioSource.PCM.SampleRate / 1000);
-                            if (length < audioSource.Position) length = audioSource.Position;
-                            if (length < 1) length = 1;
+                            var duration = audioSource.Duration;
+                            var position = TimeSpan.FromSeconds((double)audioSource.Position / audioSource.PCM.SampleRate);
+                            if (duration == TimeSpan.Zero && sourceInfo != null) duration = sourceInfo.Properties.Duration;
+                            if (duration < position) duration = position;
+                            if (duration < TimeSpan.FromSeconds(1)) duration = TimeSpan.FromSeconds(1);
                             Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
-                                100.0 * audioSource.Position / length,
-                                audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
+                                100.0 * position.TotalSeconds / duration.TotalSeconds,
+                                position.TotalSeconds / elapsed.TotalSeconds,
                                 elapsed,
-                                TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * length)
+                                TimeSpan.FromSeconds(elapsed.TotalSeconds / position.TotalSeconds * duration.TotalSeconds)
                                 );
                             lastPrint = elapsed;
                         }

@@ -74,6 +74,8 @@ namespace CUETools.Codecs.MACLib
 
         public string Path => _path;
 
+        public TimeSpan Duration => Length < 0 ? TimeSpan.Zero : TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
+
         public long Length => _sampleCount;
 
         internal long SamplesInBuffer => _bufferLength - _bufferOffset;

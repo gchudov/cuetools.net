@@ -20,7 +20,7 @@ namespace CUETools.Codecs.libFLAC
         public string Name => "libFLAC";
 
         [Browsable(false)]
-        public Type DecoderType => typeof(Reader);
+        public Type DecoderType => typeof(AudioDecoder);
 
         [Browsable(false)]
         public int Priority => 1;
@@ -37,9 +37,9 @@ namespace CUETools.Codecs.libFLAC
         }
     }
 
-    public unsafe class Reader : IAudioSource
+    public unsafe class AudioDecoder : IAudioSource
     {
-        public Reader(DecoderSettings settings, string path, Stream IO)
+        public AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
             m_settings = settings;
 
@@ -305,6 +305,8 @@ namespace CUETools.Codecs.libFLAC
         public AudioPCMConfig PCM => m_pcm;
 
         public string Path => m_path;
+
+        public TimeSpan Duration => Length < 0 ? TimeSpan.Zero : TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
 
         public long Length => m_sampleCount;
 

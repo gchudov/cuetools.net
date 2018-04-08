@@ -165,7 +165,9 @@ namespace CUETools.Codecs.ALAC
 			_IO.Close();
 		}
 
-		public long Length
+        public TimeSpan Duration => Length < 0 ? TimeSpan.Zero : TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
+
+        public long Length
 		{
 			get
 			{

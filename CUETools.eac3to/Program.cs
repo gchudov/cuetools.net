@@ -126,7 +126,6 @@ namespace CUETools.eac3to
                 var videos = new List<Codecs.MPEG.MPLS.MPLSStream>();
                 var audios = new List<Codecs.MPEG.MPLS.MPLSStream>();
                 List<uint> chapters;
-                TimeSpan duration;
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
 
 #if !DEBUG
@@ -147,7 +146,7 @@ namespace CUETools.eac3to
                         Console.Error.WriteLine("M2TS, {0} video track{1}, {2} audio track{3}, {4}, {5}{6}",
                             videos.Count, videos.Count > 1 ? "s" : "",
                             audios.Count, audios.Count > 1 ? "s" : "",
-                            CDImageLayout.TimeToString(mpls.Duration, "{0:0}:{1:00}:{2:00}"), frameRate * (interlaced ? 2 : 1), interlaced ? "i" : "p");
+                            CDImageLayout.TimeToString(audioSource.Duration, "{0:0}:{1:00}:{2:00}"), frameRate * (interlaced ? 2 : 1), interlaced ? "i" : "p");
                         //foreach (var item in mpls.MPLSHeader.play_item)
                         //Console.Error.WriteLine("{0}.m2ts", item.clip_id);
                         {
@@ -178,8 +177,6 @@ namespace CUETools.eac3to
                                 Console.Error.WriteLine("{0}, {1}, {2}, {3}", audio.CodecString, audio.LanguageString, audio.FormatString, audio.RateString);
                             }
                         }
-
-                        duration = mpls.Duration;
                     }
 
                     if (destFile == null)
@@ -323,7 +320,7 @@ namespace CUETools.eac3to
                     AudioBuffer buff = new AudioBuffer(audioSource, 0x10000);
                     Console.Error.WriteLine("Filename  : {0}", sourceFile);
                     Console.Error.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample,
-                        duration);
+                        audioSource.Duration);
 
                     CUEToolsFormat fmt;
                     if (encoderFormat == null)
@@ -397,14 +394,15 @@ namespace CUETools.eac3to
                         TimeSpan elapsed = DateTime.Now - start;
                         if ((elapsed - lastPrint).TotalMilliseconds > 60)
                         {
-                            long length = (long)(duration.TotalSeconds * audioSource.PCM.SampleRate);
-                            if (length < audioSource.Position) length = audioSource.Position;
-                            if (length < 1) length = 1;
+                            var duration = audioSource.Duration;
+                            var position = TimeSpan.FromSeconds((double)audioSource.Position / audioSource.PCM.SampleRate);
+                            if (duration < position) duration = position;
+                            if (duration < TimeSpan.FromSeconds(1)) duration = TimeSpan.FromSeconds(1);
                             Console.Error.Write("\rProgress  : {0:00}%; {1:0.00}x; {2}/{3}",
-                                100.0 * audioSource.Position / length,
-                                audioSource.Position / elapsed.TotalSeconds / audioSource.PCM.SampleRate,
+                                100.0 * position.TotalSeconds / duration.TotalSeconds,
+                                position.TotalSeconds / elapsed.TotalSeconds,
                                 elapsed,
-                                TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / audioSource.Position * length)
+                                TimeSpan.FromSeconds(elapsed.TotalSeconds / position.TotalSeconds * duration.TotalSeconds)
                                 );
                             lastPrint = elapsed;
                         }
