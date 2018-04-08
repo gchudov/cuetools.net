@@ -1,6 +1,5 @@
 using CUETools.CDImage;
 using CUETools.Codecs;
-using CUETools.Codecs.BDLPCM;
 using CUETools.CTDB;
 using CUETools.Processor;
 using System;
@@ -124,8 +123,8 @@ namespace CUETools.eac3to
             {
                 IAudioSource audioSource = null;
                 IAudioDest audioDest = null;
-                var videos = new List<MPLSStream>();
-                var audios = new List<MPLSStream>();
+                var videos = new List<Codecs.MPEG.MPLS.MPLSStream>();
+                var audios = new List<Codecs.MPEG.MPLS.MPLSStream>();
                 List<uint> chapters;
                 TimeSpan duration;
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
@@ -136,7 +135,7 @@ namespace CUETools.eac3to
                 {
                     if (true)
                     {
-                        var mpls = new MPLSDecoder(new Codecs.MPLS.DecoderSettings(), sourceFile, null);
+                        var mpls = new Codecs.MPEG.MPLS.AudioDecoder(new Codecs.MPEG.MPLS.DecoderSettings(), sourceFile, null);
                         audioSource = mpls;
                         Console.ForegroundColor = ConsoleColor.White;
                         int frameRate = 0;
@@ -310,14 +309,14 @@ namespace CUETools.eac3to
 
                             throw new Exception("Unknown encoder format: " + destFile);
                         }
-                        if (audioSource is MPLSDecoder)
+                        if (audioSource is Codecs.MPEG.MPLS.AudioDecoder)
                         {
                             if (stream - chapterStreams <= videos.Count)
                                 throw new Exception("Video extraction not supported.");
                             if (stream - chapterStreams - videos.Count > audios.Count)
                                 throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
                             int pid = audios[stream - chapterStreams - videos.Count - 1].pid;
-                            (audioSource.Settings as Codecs.MPLS.DecoderSettings).StreamId = pid;
+                            (audioSource.Settings as Codecs.MPEG.MPLS.DecoderSettings).StreamId = pid;
                         }
                     }
 

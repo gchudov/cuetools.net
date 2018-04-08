@@ -27,7 +27,7 @@
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj" />
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
-    <ProjectReference Include="..\CUETools.Codecs.BDLPCM\CUETools.Codecs.BDLPCM.csproj" />
+    <ProjectReference Include="..\CUETools.Codecs.MPEG\CUETools.Codecs.MPEG.csproj" />
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
   </ItemGroup>
 

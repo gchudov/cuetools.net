@@ -163,7 +163,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsMediaLib", "..\Third
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.WMA", "..\CUETools.Codecs.WMA\CUETools.Codecs.WMA.csproj", "{082D6B9E-326E-4D15-9798-DE70A6EDAE9E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.BDLPCM", "..\CUETools.Codecs.BDLPCM\CUETools.Codecs.BDLPCM.csproj", "{E75F7CCD-4266-42E1-A039-DC7EB5EDD8F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.BDLPCM", "..\CUETools.Codecs.MPEG\CUETools.Codecs.MPEG.csproj", "{E75F7CCD-4266-42E1-A039-DC7EB5EDD8F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.eac3to", "..\CUETools.eac3to\CUETools.eac3to.csproj", "{E3FF7539-6B22-4922-8FEF-6D26F2C2E3CE}"
 EndProject

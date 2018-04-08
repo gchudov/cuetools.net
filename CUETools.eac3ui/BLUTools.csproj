@@ -105,9 +105,9 @@
       <Project>{1dd41038-d885-46c5-8dde-e0b82f066584}</Project>
       <Name>CUETools.CDImage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs.BDLPCM\CUETools.Codecs.BDLPCM.csproj">
+    <ProjectReference Include="..\CUETools.Codecs.MPEG\CUETools.Codecs.MPEG.csproj">
       <Project>{e75f7ccd-4266-42e1-a039-dc7eb5edd8f6}</Project>
-      <Name>CUETools.Codecs.BDLPCM</Name>
+      <Name>CUETools.Codecs.MPEG</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.Codecs.Flake\CUETools.Codecs.Flake.csproj">

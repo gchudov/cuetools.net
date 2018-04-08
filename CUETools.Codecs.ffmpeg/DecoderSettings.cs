@@ -111,4 +111,13 @@ namespace CUETools.Codecs.ffmpegdll
             this.Init();
         }
     }
+    public class MpegDecoderSettings : DecoderSettings, IAudioDecoderSettings
+    {
+        public override string Extension => "aob";
+        public override string Format => "mpeg";
+        public MpegDecoderSettings()
+        {
+            this.Init();
+        }
+    }
 }

@@ -1,28 +1,17 @@
-﻿using System;
-using System.IO;
+﻿using CUETools.CDImage;
+using CUETools.Codecs;
+using CUETools.CTDB;
+using CUETools.Processor;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-//using System.Windows.Shapes;
-using CUETools.Codecs.BDLPCM;
-using CUETools.CDImage;
-using CUETools.CTDB;
-using System.ComponentModel;
-using Krystalware.UploadHelper;
-using CUETools.Codecs;
-//using CUETools.Codecs.Flake;
-using CUETools.Processor;
-using System.Collections.ObjectModel;
-//using Microsoft.Win32;
 
 namespace BluTools
 {
@@ -75,7 +64,7 @@ namespace BluTools
 
         private void textBoxSource_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var titleSets = new List<MPLSDecoder>();
+            var titleSets = new List<CUETools.Codecs.MPEG.MPLS.AudioDecoder>();
             IEnumerable<string> playlists = null;
             try
             {
@@ -87,7 +76,7 @@ namespace BluTools
             if (playlists != null)
                 foreach (var playlist in playlists)
                 {
-                    var title = new MPLSDecoder(new CUETools.Codecs.MPLS.DecoderSettings(), playlist, null);
+                    var title = new CUETools.Codecs.MPEG.MPLS.AudioDecoder(new CUETools.Codecs.MPEG.MPLS.DecoderSettings(), playlist, null);
                     if (filterDups)
                     {
                         if (titleSets.Exists(title2 =>
@@ -125,10 +114,10 @@ namespace BluTools
             cmbMetadata.ItemsSource = new List<CTDBResponseMeta>();
             ctdb = null;
 
-            var audios = new List<MPLSStream>();
+            var audios = new List<CUETools.Codecs.MPEG.MPLS.MPLSStream>();
             if (e.AddedItems.Count == 1)
             {
-                MPLSDecoder rdr = e.AddedItems[0] as MPLSDecoder;
+                var rdr = e.AddedItems[0] as CUETools.Codecs.MPEG.MPLS.AudioDecoder;
                 rdr.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.pid == v.pid)) audios.Add(v); }));
 
                 var chapters = rdr.Chapters;
@@ -190,7 +179,7 @@ namespace BluTools
         {
             if (e.AddedItems.Count == 1)
             {
-                MPLSStream stream = (MPLSStream)(e.AddedItems[0]);
+                CUETools.Codecs.MPEG.MPLS.MPLSStream stream = (CUETools.Codecs.MPEG.MPLS.MPLSStream)(e.AddedItems[0]);
             }
         }
 
@@ -200,7 +189,7 @@ namespace BluTools
         BackgroundWorker workerExtract;
         CUEMetadataEntry metaresult;
         ObservableCollection<CUEMetadataEntry> metaresults;
-        MPLSDecoder chosenReader;
+        CUETools.Codecs.MPEG.MPLS.AudioDecoder chosenReader;
         ushort pid;
         string outputFolderPath;
         string outputAudioPath;
@@ -213,8 +202,8 @@ namespace BluTools
         private void buttonExtract_Click(object sender, RoutedEventArgs e)
         {
             if (cmbTitleSet.SelectedItem == null) return;
-            pid = ((MPLSStream)cmbAudioTrack.SelectedItem).pid;
-            chosenReader = cmbTitleSet.SelectedItem as MPLSDecoder;
+            pid = ((CUETools.Codecs.MPEG.MPLS.MPLSStream)cmbAudioTrack.SelectedItem).pid;
+            chosenReader = cmbTitleSet.SelectedItem as CUETools.Codecs.MPEG.MPLS.AudioDecoder;
             metaresult = cmbMetadata.SelectedItem as CUEMetadataEntry;
             outputFolderPath = Path.Combine(textBoxDestination.Text, metaresult != null ? 
                 metaresult.metadata.Artist + " - " + metaresult.metadata.Year + " - " + metaresult.metadata.Title :
@@ -239,10 +228,10 @@ namespace BluTools
 
         void workerExtract_DoWork(object sender, DoWorkEventArgs e)
         {
-            MPLSDecoder reader = null;
+            CUETools.Codecs.MPEG.MPLS.AudioDecoder reader = null;
             try
             {
-                reader = new MPLSDecoder(chosenReader.Path, null, pid);
+                reader = new CUETools.Codecs.MPEG.MPLS.AudioDecoder(chosenReader.Path, null, pid);
                 Directory.CreateDirectory(outputFolderPath);
                 if (File.Exists(outputCuePath)) throw new Exception(string.Format("File \"{0}\" already exists", outputCuePath));
                 if (File.Exists(outputAudioPath)) throw new Exception(string.Format("File \"{0}\" already exists", outputAudioPath));

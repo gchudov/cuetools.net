@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace CUETools.Codecs.MPLS
+namespace CUETools.Codecs.MPEG.MPLS
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class DecoderSettings : IAudioDecoderSettings
@@ -17,7 +17,7 @@ namespace CUETools.Codecs.MPLS
         public string Name => "cuetools";
 
         [Browsable(false)]
-        public Type DecoderType => typeof(BDLPCM.MPLSDecoder);
+        public Type DecoderType => typeof(AudioDecoder);
 
         [Browsable(false)]
         public int Priority => 2;
