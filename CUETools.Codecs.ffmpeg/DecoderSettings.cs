@@ -13,7 +13,7 @@ namespace CUETools.Codecs.ffmpegdll
         #region IAudioDecoderSettings implementation
 
         [Browsable(false)]
-        public string Name => "ffmpeg";
+        public string Name => "ffmpeg.dll";
 
         [Browsable(false)]
         public Type DecoderType => typeof(AudioDecoder);
