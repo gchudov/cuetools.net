@@ -56,4 +56,13 @@ namespace CUETools.Codecs.MPEG
             savedBufferSize = 0;
         }
     };
+
+    public class AudioDescription
+    {
+        public int StreamId;
+        public string CodecString;
+        public string LanguageString;
+        public string FormatString;
+        public string RateString;
+    };
 }

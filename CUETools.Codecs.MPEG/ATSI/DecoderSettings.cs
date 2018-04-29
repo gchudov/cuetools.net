@@ -41,5 +41,8 @@ namespace CUETools.Codecs.MPEG.ATSI
 
         [Browsable(false)]
         public int? StreamId { get; set; }
+
+        [Browsable(false)]
+        public int? Title { get; set; }
     }
 }

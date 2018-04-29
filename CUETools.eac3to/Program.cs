@@ -4,6 +4,7 @@ using CUETools.CTDB;
 using CUETools.Processor;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 
@@ -49,6 +50,7 @@ namespace CUETools.eac3to
             string encoderName = null;
             string encoderFormat = null;
             AudioEncoderType audioEncoderType = AudioEncoderType.NoAudio;
+            var decoderOptions = new Dictionary<string, string>();
             bool queryMeta = false;
 
             for (int arg = 0; arg < args.Length; arg++)
@@ -61,14 +63,20 @@ namespace CUETools.eac3to
                     encoderFormat = args[arg];
                 else if ((args[arg] == "-p" || args[arg] == "--padding") && ++arg < args.Length)
                     ok = int.TryParse(args[arg], out padding);
-                else if ((args[arg] == "-m" || args[arg] == "--mode") && ++arg < args.Length)
-                    encoderMode = args[arg];
+                else if ((args[arg] == "-m" || args[arg] == "--mode") && arg + 1 < args.Length)
+                    encoderMode = args[++arg];
                 else if (args[arg] == "--lossy")
                     audioEncoderType = AudioEncoderType.Lossy;
                 else if (args[arg] == "--lossless")
                     audioEncoderType = AudioEncoderType.Lossless;
                 else if (args[arg] == "--ctdb")
                     queryMeta = true;
+                else if (args[arg] == "--decoder-option" && arg + 2 < args.Length)
+                {
+                    var optionName = args[++arg];
+                    var optionValue = args[++arg];
+                    decoderOptions.Add(optionName, optionValue);
+                }
                 else if ((args[arg][0] != '-' || args[arg] == "-") && sourceFile == null)
                     sourceFile = args[arg];
                 else if ((args[arg][0] != '-' || args[arg] == "-") && sourceFile != null && destFile == null)
@@ -122,10 +130,11 @@ namespace CUETools.eac3to
 #endif
             {
                 IAudioSource audioSource = null;
+                IAudioContainer audioContainer = null;
                 IAudioDest audioDest = null;
                 var videos = new List<Codecs.MPEG.MPLS.MPLSStream>();
-                var audios = new List<Codecs.MPEG.MPLS.MPLSStream>();
-                List<uint> chapters;
+                var audios = new List<Codecs.MPEG.AudioDescription>();
+                List<TimeSpan> chapters = null;
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
 
 #if !DEBUG
@@ -134,19 +143,49 @@ namespace CUETools.eac3to
                 {
                     if (true)
                     {
-                        var mpls = new Codecs.MPEG.MPLS.AudioDecoder(new Codecs.MPEG.MPLS.DecoderSettings(), sourceFile, null);
-                        audioSource = mpls;
+                        IAudioDecoderSettings decoderSettings = null;
+                        if (Path.GetExtension(sourceFile) == ".mpls")
+                        {
+                            decoderSettings = new Codecs.MPEG.MPLS.DecoderSettings();
+                        } else
+                        {
+                            decoderSettings = new Codecs.MPEG.ATSI.DecoderSettings();
+                        }
+                        foreach (var decOpt in decoderOptions)
+                        {
+                            var property = TypeDescriptor.GetProperties(decoderSettings).Find(decOpt.Key, true);
+                            if (property == null)
+                                throw new Exception($"{decoderSettings.Name} {decoderSettings.Extension} decoder settings object (of type {decoderSettings.GetType().FullName}) doesn't have a property named {decOpt.Key}.");
+                            property.SetValue(decoderSettings,
+                                TypeDescriptor.GetConverter(property.PropertyType).ConvertFromString(decOpt.Value));
+                        }
+                        audioSource = decoderSettings.Open(sourceFile);
+                        audioContainer = audioSource as IAudioContainer;
+                        if (audioContainer == null) audioContainer = new NoContainer(audioSource);
                         Console.ForegroundColor = ConsoleColor.White;
                         int frameRate = 0;
                         bool interlaced = false;
-                        chapters = mpls.Chapters;
-                        mpls.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => { if (!videos.Exists(v1 => v1.pid == v.pid)) videos.Add(v); }));
-                        mpls.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.pid == v.pid)) audios.Add(v); }));
+                        audioContainer.AudioTitles.ForEach(t => chapters = t.Chapters);
+                        if (audioSource is Codecs.MPEG.MPLS.AudioDecoder)
+                        {
+                            var mpls = audioSource as Codecs.MPEG.MPLS.AudioDecoder;
+                            mpls.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => { if (!videos.Exists(v1 => v1.pid == v.pid)) videos.Add(v); }));
+                            mpls.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.StreamId == v.pid)) audios.Add(new Codecs.MPEG.AudioDescription() { StreamId = v.pid, CodecString = v.CodecString, LanguageString = v.LanguageString, FormatString = v.FormatString, RateString = v.RateString }); }));
+                        }
+                        else
+                        if (audioSource is Codecs.MPEG.ATSI.AudioDecoder)
+                        {
+                            var atsi = audioSource as Codecs.MPEG.ATSI.AudioDecoder;
+                            atsi.ATSIHeader.titles.ForEach(t => audios.Add(new Codecs.MPEG.AudioDescription() { StreamId = 0/*!*/, CodecString = t.CodecString, FormatString = t.FormatString, RateString = t.RateString }));
+                        }
                         videos.ForEach(v => { frameRate = v.FrameRate; interlaced = v.Interlaced; });
-                        Console.Error.WriteLine("M2TS, {0} video track{1}, {2} audio track{3}, {4}, {5}{6}",
-                            videos.Count, videos.Count > 1 ? "s" : "",
-                            audios.Count, audios.Count > 1 ? "s" : "",
-                            CDImageLayout.TimeToString(audioSource.Duration, "{0:0}:{1:00}:{2:00}"), frameRate * (interlaced ? 2 : 1), interlaced ? "i" : "p");
+                        Console.Error.Write($@"M2TS, {
+                            videos.Count} video track{(videos.Count != 1 ? "s" : "")}, {
+                            audios.Count} audio track{(audios.Count != 1 ? "s" : "")}, {
+                            CDImageLayout.TimeToString(audioSource.Duration, "{0:0}:{1:00}:{2:00}")}, {
+                            (frameRate * (interlaced ? 2 : 1))}{
+                            (interlaced ? "i" : "p")}");
+                        Console.Error.WriteLine();
                         //foreach (var item in mpls.MPLSHeader.play_item)
                         //Console.Error.WriteLine("{0}.m2ts", item.clip_id);
                         {
@@ -184,7 +223,7 @@ namespace CUETools.eac3to
 
                     string strtoc = "";
                     for (int i = 0; i < chapters.Count; i++)
-                        strtoc += string.Format(" {0}", chapters[i] / 600);
+                        strtoc += string.Format(" {0}", (int)Math.Round((chapters[i].TotalSeconds * 75)));
                     strtoc = strtoc.Substring(1);
                     CDImageLayout toc = new CDImageLayout(strtoc);
                     CTDBResponseMeta meta = null;
@@ -235,9 +274,9 @@ namespace CUETools.eac3to
                                     for (int i = 0; i < chapters.Count - 1; i++)
                                     {
                                         sw.WriteLine("CHAPTER{0:00}={1}", i + 1,
-                                            CDImageLayout.TimeToString(TimeSpan.FromSeconds(chapters[i] / 45000.0)));
-                                        if (meta != null && meta.track.Length >= toc[i+1].Number)
-                                            sw.WriteLine("CHAPTER{0:00}NAME={1}", i + 1, meta.track[(int)toc[i+1].Number - 1].name);
+                                            CDImageLayout.TimeToString(chapters[i]));
+                                        if (meta != null && meta.track.Length >= toc[i + 1].Number)
+                                            sw.WriteLine("CHAPTER{0:00}NAME={1}", i + 1, meta.track[(int)toc[i + 1].Number - 1].name);
                                         else
                                             sw.WriteLine("CHAPTER{0:00}NAME=", i + 1);
                                     }
@@ -306,14 +345,14 @@ namespace CUETools.eac3to
 
                             throw new Exception("Unknown encoder format: " + destFile);
                         }
+                        if (stream - chapterStreams <= videos.Count)
+                            throw new Exception("Video extraction not supported.");
+                        if (stream - chapterStreams - videos.Count > audios.Count)
+                            throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
+                        int streamId = audios[stream - chapterStreams - videos.Count - 1].StreamId;
                         if (audioSource is Codecs.MPEG.MPLS.AudioDecoder)
                         {
-                            if (stream - chapterStreams <= videos.Count)
-                                throw new Exception("Video extraction not supported.");
-                            if (stream - chapterStreams - videos.Count > audios.Count)
-                                throw new Exception(string.Format("The source file doesn't contain a track with the number {0}.", stream));
-                            int pid = audios[stream - chapterStreams - videos.Count - 1].pid;
-                            (audioSource.Settings as Codecs.MPEG.MPLS.DecoderSettings).StreamId = pid;
+                            (audioSource.Settings as Codecs.MPEG.MPLS.DecoderSettings).StreamId = streamId;
                         }
                     }
 

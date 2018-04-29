@@ -5,7 +5,7 @@ using System.IO;
 
 namespace CUETools.Codecs.MPEG.MPLS
 {
-    public class AudioDecoder : IAudioSource
+    public class AudioDecoder : IAudioSource, IAudioContainer
     {
         public unsafe AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
@@ -13,6 +13,7 @@ namespace CUETools.Codecs.MPEG.MPLS
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
             int length = (int)_IO.Length;
+            if (length > 0x100000) throw new Exception("File too big");
             contents = new byte[length];
             if (_IO.Read(contents, 0, length) != length) throw new Exception("");
             fixed (byte* ptr = &contents[0])
@@ -383,15 +384,30 @@ namespace CUETools.Codecs.MPEG.MPLS
             }
         }
 
-        public List<uint> Chapters
+        public List<IAudioTitle> AudioTitles
+        {
+            get
+            {
+                var titles = new List<IAudioTitle>();
+                foreach (var item in hdr_m.play_item)
+                    foreach (var audio in item.audio)
+                    {
+                        if (audio.coding_type != 0x80 /* LPCM */) continue;
+                        titles.Add(new AudioTitle(this, audio.pid));
+                    }
+                return titles;
+            }
+        }
+
+        public List<TimeSpan> Chapters
         {
             get
             {
                 //settings.IgnoreShortItems
-                var res = new List<uint>();
+                var res = new List<TimeSpan>();
                 if (hdr_m.play_mark.Count < 1) return res;
                 if (hdr_m.play_item.Count < 1) return res;
-                res.Add(0);
+                res.Add(TimeSpan.Zero);
                 for (int i = 0; i < hdr_m.mark_count; i++)
                 {
                     ushort mark_item = hdr_m.play_mark[i].play_item_ref;
@@ -406,7 +422,7 @@ namespace CUETools.Codecs.MPEG.MPLS
                         if (m_settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
                         item_offset += item_duration;
                     }
-                    res.Add(hdr_m.play_mark[i].time - item_in_time + item_offset);
+                    res.Add(TimeSpan.FromSeconds((hdr_m.play_mark[i].time - item_in_time + item_offset) / 45000.0));
                 }
                 uint end_offset = 0;
                 for (int j = 0; j < hdr_m.play_item.Count; j++)
@@ -416,9 +432,9 @@ namespace CUETools.Codecs.MPEG.MPLS
                     if (m_settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
                     end_offset += hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
                 }
-                res.Add(end_offset);
-                while (res.Count > 1 && res[1] - res[0] < 45000) res.RemoveAt(1);
-                while (res.Count > 1 && res[res.Count - 1] - res[res.Count - 2] < 45000) res.RemoveAt(res.Count - 2);
+                res.Add(TimeSpan.FromSeconds(end_offset / 45000.0));
+                while (res.Count > 1 && res[1] - res[0] < TimeSpan.FromSeconds(1.0)) res.RemoveAt(1);
+                while (res.Count > 1 && res[res.Count - 1] - res[res.Count - 2] < TimeSpan.FromSeconds(1.0)) res.RemoveAt(res.Count - 2);
                 return res;
             }
         }
@@ -434,6 +450,20 @@ namespace CUETools.Codecs.MPEG.MPLS
         IAudioSource currentReader;
         MPLSHeader hdr_m;
         DecoderSettings m_settings;
+    }
+
+    public class AudioTitle : IAudioTitle
+    {
+        public AudioTitle(AudioDecoder source, int pid)
+        {
+            this.source = source;
+            this.pid = pid;
+        }
+
+        public List<TimeSpan> Chapters => source.Chapters;
+
+        AudioDecoder source;
+        int pid;
     }
 
     public struct MPLSPlaylistMark

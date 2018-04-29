@@ -125,7 +125,7 @@ namespace BluTools
                 {
                     string strtoc = "";
                     for (int i = 0; i < chapters.Count; i++)
-                        strtoc += string.Format(" {0}", chapters[i] / 600);
+                        strtoc += string.Format(" {0}", (int) Math.Round((chapters[i].TotalSeconds * 75)));
                     strtoc = strtoc.Substring(1);
                     CDImageLayout toc = new CDImageLayout(strtoc);
                     ctdb = new CUEToolsDB(toc, null);
