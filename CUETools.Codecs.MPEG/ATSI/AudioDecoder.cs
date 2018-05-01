@@ -6,7 +6,7 @@ using static CUETools.Codecs.AudioPCMConfig;
 
 namespace CUETools.Codecs.MPEG.ATSI
 {
-    public class AudioDecoder : IAudioSource, IAudioContainer
+    public class AudioDecoder : IAudioSource, IAudioTitleSet
     {
         public unsafe AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
@@ -331,7 +331,7 @@ namespace CUETools.Codecs.MPEG.ATSI
         public ushort codec;
         public uint format;
 
-        public byte StreamId
+        public int StreamId
         {
             get
             {
@@ -339,64 +339,6 @@ namespace CUETools.Codecs.MPEG.ATSI
                 if (track_sector[0].dvdaBlock == null) return 0;
                 if (track_sector[0].dvdaBlock.sh == null) return 0;
                 return track_sector[0].dvdaBlock.sh.stream_id;
-            }
-        }
-
-        public string CodecString
-        {
-            get
-            {
-                switch (StreamId)
-                {
-                    case DVDA.PCM_STREAM_ID: return "RAW/PCM";
-                    case DVDA.MLP_STREAM_ID: return "MLP";
-                    default: return StreamId.ToString();
-                }
-                //switch (codec)
-                //{
-                //    case 0x000: return "RAW/PCM";
-                //    case 0x100: return "MLP";
-                //    default: return codec.ToString();
-                //}
-            }
-        }
-
-        public AudioPCMConfig PCM
-        {
-            get
-            {
-                if (track_sector.Count < 1) return null;
-                if (track_sector[0].dvdaBlock == null) return null;
-                return new AudioPCMConfig(
-                    track_sector[0].dvdaBlock.gr1_bits,
-                    track_sector[0].dvdaBlock.channels,
-                    track_sector[0].dvdaBlock.gr1_frequency);
-            }
-        }
-
-        public string RateString
-        {
-            get
-            {
-                var sr = PCM.SampleRate;
-                if (sr % 1000 == 0) return $"{sr / 1000}KHz";
-                if (sr % 100 == 0) return $"{sr / 100}.{(sr / 100) % 10}KHz";
-                return $"{sr}Hz";
-            }
-        }
-
-        public string FormatString
-        {
-            get
-            {
-                if (track_sector.Count < 1) return "?";
-                if (track_sector[0].dvdaBlock == null) return "?";
-                switch (track_sector[0].dvdaBlock.ch_assignment)
-                {
-                    case 0: return "mono";
-                    case 1: return "stereo";
-                    default: return "multi-channel";
-                }
             }
         }
 
@@ -435,6 +377,40 @@ namespace CUETools.Codecs.MPEG.ATSI
                 return res;
             }
         }
+
+        public AudioPCMConfig PCM
+        {
+            get
+            {
+                if (track_sector.Count < 1) return null;
+                if (track_sector[0].dvdaBlock == null) return null;
+                return new AudioPCMConfig(
+                    track_sector[0].dvdaBlock.gr1_bits,
+                    track_sector[0].dvdaBlock.channels,
+                    track_sector[0].dvdaBlock.gr1_frequency);
+            }
+        }
+
+        public string Codec
+        {
+            get
+            {
+                switch (StreamId)
+                {
+                    case DVDA.PCM_STREAM_ID: return "RAW/PCM";
+                    case DVDA.MLP_STREAM_ID: return "MLP";
+                    default: return StreamId.ToString();
+                }
+                //switch (codec)
+                //{
+                //    case 0x000: return "RAW/PCM";
+                //    case 0x100: return "MLP";
+                //    default: return codec.ToString();
+                //}
+            }
+        }
+
+        public string Language => "";
 
         public List<ATSITrackTimestamp> track_timestamp;
         public List<ATSITrackSector> track_sector;

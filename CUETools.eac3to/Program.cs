@@ -130,10 +130,10 @@ namespace CUETools.eac3to
 #endif
             {
                 IAudioSource audioSource = null;
-                IAudioContainer audioContainer = null;
+                IAudioTitleSet audioContainer = null;
                 IAudioDest audioDest = null;
                 var videos = new List<Codecs.MPEG.MPLS.MPLSStream>();
-                var audios = new List<Codecs.MPEG.AudioDescription>();
+                List<IAudioTitle> audios = null;
                 List<TimeSpan> chapters = null;
                 TagLib.UserDefined.AdditionalFileTypes.Config = config;
 
@@ -160,29 +160,23 @@ namespace CUETools.eac3to
                                 TypeDescriptor.GetConverter(property.PropertyType).ConvertFromString(decOpt.Value));
                         }
                         audioSource = decoderSettings.Open(sourceFile);
-                        audioContainer = audioSource as IAudioContainer;
-                        if (audioContainer == null) audioContainer = new NoContainer(audioSource);
+                        audioContainer = audioSource as IAudioTitleSet;
+                        if (audioContainer == null) audioContainer = new SingleAudioTitleSet(audioSource);
                         Console.ForegroundColor = ConsoleColor.White;
                         int frameRate = 0;
                         bool interlaced = false;
-                        audioContainer.AudioTitles.ForEach(t => chapters = t.Chapters);
+                        audios = audioContainer.AudioTitles;
+                        audios.ForEach(t => chapters = t.Chapters);
                         if (audioSource is Codecs.MPEG.MPLS.AudioDecoder)
                         {
                             var mpls = audioSource as Codecs.MPEG.MPLS.AudioDecoder;
                             mpls.MPLSHeader.play_item.ForEach(i => i.video.ForEach(v => { if (!videos.Exists(v1 => v1.pid == v.pid)) videos.Add(v); }));
-                            mpls.MPLSHeader.play_item.ForEach(i => i.audio.ForEach(v => { if (!audios.Exists(v1 => v1.StreamId == v.pid)) audios.Add(new Codecs.MPEG.AudioDescription() { StreamId = v.pid, CodecString = v.CodecString, LanguageString = v.LanguageString, FormatString = v.FormatString, RateString = v.RateString }); }));
-                        }
-                        else
-                        if (audioSource is Codecs.MPEG.ATSI.AudioDecoder)
-                        {
-                            var atsi = audioSource as Codecs.MPEG.ATSI.AudioDecoder;
-                            atsi.ATSIHeader.titles.ForEach(t => audios.Add(new Codecs.MPEG.AudioDescription() { StreamId = 0/*!*/, CodecString = t.CodecString, FormatString = t.FormatString, RateString = t.RateString }));
                         }
                         videos.ForEach(v => { frameRate = v.FrameRate; interlaced = v.Interlaced; });
                         Console.Error.Write($@"M2TS, {
                             videos.Count} video track{(videos.Count != 1 ? "s" : "")}, {
                             audios.Count} audio track{(audios.Count != 1 ? "s" : "")}, {
-                            CDImageLayout.TimeToString(audioSource.Duration, "{0:0}:{1:00}:{2:00}")}, {
+                            CDImageLayout.TimeToString(audios[0].GetDuration(), "{0:0}:{1:00}:{2:00}")}, {
                             (frameRate * (interlaced ? 2 : 1))}{
                             (interlaced ? "i" : "p")}");
                         Console.Error.WriteLine();
@@ -213,7 +207,7 @@ namespace CUETools.eac3to
                                 Console.Error.Write(id++);
                                 Console.Error.Write(": ");
                                 Console.ForegroundColor = ConsoleColor.Gray;
-                                Console.Error.WriteLine("{0}, {1}, {2}, {3}", audio.CodecString, audio.LanguageString, audio.FormatString, audio.RateString);
+                                Console.Error.WriteLine("{0}, {1}, {2}, {3}", audio.Codec, audio.Language, audio.GetFormatString(), audio.GetRateString());
                             }
                         }
                     }

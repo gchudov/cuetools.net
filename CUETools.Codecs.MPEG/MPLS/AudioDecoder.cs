@@ -5,7 +5,7 @@ using System.IO;
 
 namespace CUETools.Codecs.MPEG.MPLS
 {
-    public class AudioDecoder : IAudioSource, IAudioContainer
+    public class AudioDecoder : IAudioSource, IAudioTitleSet
     {
         public unsafe AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
@@ -392,7 +392,7 @@ namespace CUETools.Codecs.MPEG.MPLS
                 foreach (var item in hdr_m.play_item)
                     foreach (var audio in item.audio)
                     {
-                        if (audio.coding_type != 0x80 /* LPCM */) continue;
+                        //if (audio.coding_type != 0x80 /* LPCM */) continue;
                         titles.Add(new AudioTitle(this, audio.pid));
                     }
                 return titles;
@@ -461,6 +461,44 @@ namespace CUETools.Codecs.MPEG.MPLS
         }
 
         public List<TimeSpan> Chapters => source.Chapters;
+        public AudioPCMConfig PCM
+        {
+            get
+            {
+                var s = FirstStream;
+                int channelCount = s.format == 1 ? 1 : s.format == 3 ? 2 : s.format == 6 ? 5 : 0;
+                int sampleRate = s.rate == 1 ? 48000 : s.rate == 4 ? 96000 : s.rate == 5 ? 192000 : s.rate == 12 ? 192000 : s.rate == 14 ? 96000 : 0;
+                int bitsPerSample = 0;
+                return new AudioPCMConfig(bitsPerSample, channelCount, sampleRate);
+            }
+        }
+        public string Codec
+        {
+            get
+            {
+                var s = FirstStream;
+                return s != null ? s.CodecString : "?";
+            }
+        }
+        public string Language
+        {
+            get
+            {
+                var s = FirstStream;
+                return s != null ? s.LanguageString : "?";
+            }
+        }
+        public int StreamId => pid;
+
+        MPLSStream FirstStream
+        {
+            get
+            {
+                MPLSStream result = null;
+                source.MPLSHeader.play_item.ForEach(i => i.audio.FindAll(a => a.pid == pid).ForEach(x => result = x));
+                return result;
+            }
+        }
 
         AudioDecoder source;
         int pid;
@@ -476,7 +514,7 @@ namespace CUETools.Codecs.MPEG.MPLS
         public uint duration;
     }
 
-    public struct MPLSStream
+    public class MPLSStream
     {
         public byte stream_type;
         public byte coding_type;

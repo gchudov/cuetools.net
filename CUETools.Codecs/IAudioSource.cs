@@ -22,25 +22,61 @@ namespace CUETools.Codecs
     public interface IAudioTitle
     {
         List<TimeSpan> Chapters { get; }
+        AudioPCMConfig PCM { get; }
+        string Codec { get; }
+        string Language { get; }
+        int StreamId { get; }
         //IAudioSource Open { get; }
     }
 
-    public interface IAudioContainer
+    public interface IAudioTitleSet
     {
         List<IAudioTitle> AudioTitles { get; }
     }
 
-    public class NoContainerAudioTitle : IAudioTitle
+    public static class IAudioTitleExtensions
     {
-        public NoContainerAudioTitle(IAudioSource source) { this.source = source; }
+        public static TimeSpan GetDuration(this IAudioTitle title)
+        {
+            var chapters = title.Chapters;
+            return chapters[chapters.Count - 1];
+        }
+
+
+        public static string GetRateString(this IAudioTitle title)
+        {
+            var sr = title.PCM.SampleRate;
+            if (sr % 1000 == 0) return $"{sr / 1000}KHz";
+            if (sr % 100 == 0) return $"{sr / 100}.{(sr / 100) % 10}KHz";
+            return $"{sr}Hz";
+        }
+
+        public static string GetFormatString(this IAudioTitle title)
+        {
+            switch (title.PCM.ChannelCount)
+            {
+                case 1: return "mono";
+                case 2: return "stereo";
+                default: return "multi-channel";
+            }
+        }
+    }
+
+    public class SingleAudioTitle : IAudioTitle
+    {
+        public SingleAudioTitle(IAudioSource source) { this.source = source; }
         public List<TimeSpan> Chapters => new List<TimeSpan> { TimeSpan.Zero, source.Duration };
+        public AudioPCMConfig PCM => source.PCM;
+        public string Codec => source.Settings.Extension;
+        public string Language => "";
+        public int StreamId => 0;
         IAudioSource source;
     }
 
-    public class NoContainer : IAudioContainer
+    public class SingleAudioTitleSet : IAudioTitleSet
     {
-        public NoContainer(IAudioSource source) { this.source = source; }
-        public List<IAudioTitle> AudioTitles => new List<IAudioTitle> { new NoContainerAudioTitle(source) };
+        public SingleAudioTitleSet(IAudioSource source) { this.source = source; }
+        public List<IAudioTitle> AudioTitles => new List<IAudioTitle> { new SingleAudioTitle(source) };
         IAudioSource source;
     }
 }
