@@ -6,13 +6,13 @@
 	url = https://github.com/gchudov/flac.git
 [submodule "ThirdParty/MAC_SDK"]
 	path = ThirdParty/MAC_SDK
-	url = https://github.com:gchudov/MAC_SDK.git
+	url = https://github.com/gchudov/MAC_SDK.git
 [submodule "ThirdParty/openclnet"]
 	path = ThirdParty/openclnet
-	url = https://github.com:gchudov/openclnet.git
+	url = https://github.com/gchudov/openclnet.git
 [submodule "ThirdParty/WavPack"]
 	path = ThirdParty/WavPack
-	url = https://github.com:gchudov/WavPack.git
+	url = https://github.com/gchudov/WavPack.git
 [submodule "ThirdParty/WindowsMediaLib"]
 	path = ThirdParty/WindowsMediaLib
-	url = https://github.com:gchudov/WindowsMediaLib.git
+	url = https://github.com/gchudov/WindowsMediaLib.git
