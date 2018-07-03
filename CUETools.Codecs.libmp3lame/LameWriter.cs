@@ -15,6 +15,7 @@ namespace CUETools.Codecs.libmp3lame
         private uint m_finalSampleCount;
         private byte[] m_outputBuffer;
         private long m_bytesWritten;
+        private long m_streamStart;
 
         public long FinalSampleCount
         {
@@ -85,7 +86,7 @@ namespace CUETools.Codecs.libmp3lame
             }
 
             int lametagFrameSize = this.GetLametagFrame();
-            this.m_outputStream.Seek(0, SeekOrigin.Begin);
+            this.m_outputStream.Seek(m_streamStart, SeekOrigin.Begin);
             this.m_outputStream.Write(this.m_outputBuffer, 0, lametagFrameSize);
         }
 
@@ -122,6 +123,7 @@ namespace CUETools.Codecs.libmp3lame
 
         private int GetLametagFrame()
         {
+            this.EnsureOutputBufferSize(1024);
             while (true)
             {
                 uint lametagFrameResult;
@@ -141,17 +143,6 @@ namespace CUETools.Codecs.libmp3lame
                     return (int)lametagFrameResult;
                 }
                 this.EnsureOutputBufferSize((int)lametagFrameResult);
-            }
-        }
-
-        public uint GetLametagFrame(byte[] outputBuffer)
-        {
-            unsafe
-            {
-                fixed (byte* outputBufferPtr = outputBuffer)
-                {
-                    return libmp3lamedll.lame_get_lametag_frame(m_handle, (IntPtr)outputBufferPtr, (uint)outputBuffer.Length);
-                }
             }
         }
 
@@ -178,6 +169,21 @@ namespace CUETools.Codecs.libmp3lame
                 {
                     throw new LameException("lame_init_params failed");
                 }
+
+                byte[] id3v2 = { 0x49, 0x44, 0x33, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                int padding = m_settings.Padding;
+                int id3v2sz = padding;
+                int i = 9;
+                do
+                {
+                    id3v2[i--] = (byte)(id3v2sz & 0x7f);
+                    id3v2sz >>= 7;
+                } while (id3v2sz != 0);
+                m_outputStream.Write(id3v2, 0, id3v2.Length);
+                m_bytesWritten += id3v2.Length;
+                m_outputStream.Write(new byte[padding], 0, padding);
+                m_bytesWritten += padding;
+                m_streamStart = this.m_outputStream.Position;
 
                 this.m_initialized = true;
             }
