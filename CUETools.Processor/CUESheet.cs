@@ -1573,6 +1573,15 @@ namespace CUETools.Processor
                     {
                         if (_toc.FirstAudio + trNo == 1)
                             PreGapLength = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
+                        else if (_toc.FirstAudio != 1 && trNo == 0)
+                        {
+                            SourceInfo sourceInfo1;
+                            sourceInfo1.Path = null;
+                            sourceInfo1.Offset = 0;
+                            sourceInfo1.Length = (tocFromLog[tocFromLog.FirstAudio + trNo].Pregap - _toc[_toc.FirstAudio + trNo].Pregap) * 588;
+                            _sources.Insert(0, sourceInfo1);
+                            _toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
+                        }
                         else
                             _toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
                     }
@@ -1727,7 +1736,7 @@ namespace CUETools.Processor
             ResizeAlbumArt();
 #endif
             if (_config.embedAlbumArt || _config.CopyAlbumArt)
-                _albumArt.ForEach(t => _padding += _albumArt[0].Data.Count);
+                _albumArt.ForEach(t => _padding += t.Data.Count);
             if (_config.embedLog && _eacLog != null)
                 _padding += _eacLog.Length;
 
@@ -2916,26 +2925,23 @@ namespace CUETools.Processor
                             _albumArt.Add(picture);
                             return;
                         }
+
+            bool isValidName = true;
             if ((_config.extractAlbumArt || _config.embedAlbumArt) && !_isCD)
             {
+                List<string> files = new List<string>();
                 foreach (string tpl in _config.advanced.CoverArtFiles.Split(';'))
                 {
                     string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
                     string imgPath = Path.Combine(_isArchive ? _archiveCUEpath : _inputDir, name);
                     bool exists = _isArchive ? _archiveContents.Contains(imgPath) : File.Exists(imgPath);
-                    if (exists)
-                    {
-                        TagLib.File.IFileAbstraction file = _isArchive
-                            ? (TagLib.File.IFileAbstraction)new ArchiveFileAbstraction(this, imgPath)
-                            : (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(imgPath);
-                        TagLib.Picture pic = new TagLib.Picture(file);
-                        pic.Description = name;
-                        _albumArt.Add(pic);
-                        return;
-                    }
+                    if (exists) files.Add(imgPath);
                 }
 
-                if (!_isArchive && _config.advanced.CoverArtSearchSubdirs)
+                int maxChoice = CUEToolsSelection == null || Action != CUEAction.Encode ? 1 : 32;
+                if (files.Count > maxChoice) return;
+
+                if (files.Count == 0 && !_isArchive && _config.advanced.CoverArtSearchSubdirs)
                 {
                     List<string> allfiles = new List<string>(Directory.GetFiles(_inputDir, "*.jpg", SearchOption.AllDirectories));
                     // TODO: archive case
@@ -2943,44 +2949,57 @@ namespace CUETools.Processor
                     {
                         string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
                         List<string> matching = allfiles.FindAll(s => Path.GetFileName(s) == name);
-                        if (matching.Count == 1)
-                        {
-                            string imgPath = matching[0];
-                            TagLib.File.IFileAbstraction file = _isArchive
-                                ? (TagLib.File.IFileAbstraction)new ArchiveFileAbstraction(this, imgPath)
-                                : (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(imgPath);
-                            TagLib.Picture pic = new TagLib.Picture(file);
-                            pic.Description = name;
-                            _albumArt.Add(pic);
-                            return;
-                        }
+                        files.AddRange(matching);
                     }
 
-                    if (CUEToolsSelection != null
-                       && ((Action == CUEAction.Encode && allfiles.Count < 32)
-                         || (Action != CUEAction.Encode && allfiles.Count < 2)
-                         )
-                      )
+                    if (files.Count > maxChoice) return;
+
+                    if (files.Count == 0)
                     {
-                        foreach (string imgPath in allfiles)
-                        {
-                            TagLib.Picture pic = new TagLib.Picture(imgPath);
-                            if (imgPath.StartsWith(_inputDir))
-                                pic.Description = imgPath.Substring(_inputDir.Length).Trim(Path.DirectorySeparatorChar);
-                            else
-                                pic.Description = Path.GetFileName(imgPath);
-                            _albumArt.Add(pic);
-                        }
-                        if (_albumArt.Count > 0)
-                        {
-                            CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
-                            e.choices = _albumArt.ToArray();
-                            CUEToolsSelection(this, e);
-                            TagLib.IPicture selected = e.selection == -1 ? null : _albumArt[e.selection];
-                            _albumArt.RemoveAll(t => t != selected);
-                        }
+                        files = allfiles;
+                        isValidName = false;
                     }
+
+                    if (files.Count > maxChoice) return;
                 }
+
+                bool isSquare = false;
+                foreach (string imgPath in files)
+                {
+                    TagLib.File.IFileAbstraction file = _isArchive
+                        ? (TagLib.File.IFileAbstraction)new ArchiveFileAbstraction(this, imgPath)
+                        : (TagLib.File.IFileAbstraction)new TagLib.File.LocalFileAbstraction(imgPath);
+                    TagLib.Picture pic = new TagLib.Picture(file);
+                    if (imgPath.StartsWith(_inputDir))
+                        pic.Description = imgPath.Substring(_inputDir.Length).Trim(Path.DirectorySeparatorChar);
+                    else
+                        pic.Description = Path.GetFileName(imgPath);
+                    using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
+                        try
+                        {
+#if NET40 || NET20
+                            var image = Image.FromStream(imageStream);
+                            pic.Description += $" ({image.Width}x{image.Height})";
+                            if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                                isSquare = true;
+                            // pic.MimeType = f(image.RawFormat);
+#endif
+                        }
+                        catch { }
+                    _albumArt.Add(pic);
+                }
+
+                if (_albumArt.Count == 0 || CUEToolsSelection == null)
+                    return;
+
+                if (_albumArt.Count == 1 && isSquare && isValidName)
+                    return;
+
+                CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+                e.choices = _albumArt.ToArray();
+                CUEToolsSelection(this, e);
+                TagLib.IPicture selected = e.selection == -1 ? null : _albumArt[e.selection];
+                _albumArt.RemoveAll(t => t != selected);
             }
         }
 
