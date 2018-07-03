@@ -352,9 +352,7 @@
     <None Include="Resources\wv.ico" />
     <None Include="Resources\wave.ico" />
     <None Include="Resources\tta.ico" />
-    <Content Include="user_profiles_enabled">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="user_profiles_enabled" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

@@ -240,11 +240,13 @@ namespace JDP
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
+            this.KeyPreview = true;
             this.Name = "frmChoice";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmChoice_FormClosing);
             this.Load += new System.EventHandler(this.frmChoice_Load);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.frmChoice_KeyPress);
             this.Resize += new System.EventHandler(this.frmChoice_Resize);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();

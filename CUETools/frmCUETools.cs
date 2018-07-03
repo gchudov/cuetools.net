@@ -557,6 +557,7 @@ namespace JDP
             this.Invoke((MethodInvoker)delegate()
             {
                 frmChoice dlg = new frmChoice();
+                dlg.config = _profile._config;
                 if (_choiceWidth != 0 && _choiceHeight != 0)
                     dlg.Size = new Size(_choiceWidth, _choiceHeight);
                 if (_choiceMaxed)
@@ -941,6 +942,7 @@ namespace JDP
                             if (_batchPaths.Count <= 1 && _batchProcessed == 0 && action == CUEAction.Encode && checkBoxEditTags.Checked)
                             {
                                 frmChoice dlg = new frmChoice();
+                                dlg.config = _profile._config;
                                 if (_choiceWidth != 0 && _choiceHeight != 0)
                                     dlg.Size = new Size(_choiceWidth, _choiceHeight);
                                 if (_choiceMaxed)
@@ -969,6 +971,19 @@ namespace JDP
                                     {
                                         _localDB.Dirty = true;
                                         entry.Metadata.CopyMetadata(dlg.ChosenRelease.metadata);
+                                    }
+                                }
+                                if (dlgRes != DialogResult.Cancel)
+                                {
+                                    if (cueSheet.AlbumArt.Count == 0 && cueSheet.Metadata.AlbumArt.Count > 0)
+                                    {
+                                        var ms = new MemoryStream();
+                                        var image = cueSheet.Metadata.AlbumArt.Find(x => x.primary) ?? cueSheet.Metadata.AlbumArt[0];
+                                        if (cueSheet.CTDB.FetchFile(image.uri, ms))
+                                        {
+                                            var blob = new TagLib.ByteVector(ms.ToArray());
+                                            cueSheet.AlbumArt.Add(new TagLib.Picture(new TagLib.ByteVector(blob)));
+                                        }
                                     }
                                 }
                                 dlg.Close();
@@ -2238,6 +2253,7 @@ namespace JDP
             }
             CueSheet.UseLocalDB(_localDB);
             frmChoice dlg = new frmChoice();
+            dlg.config = _profile._config;
             if (_choiceWidth != 0 && _choiceHeight != 0)
                 dlg.Size = new Size(_choiceWidth, _choiceHeight);
             if (_choiceMaxed)
