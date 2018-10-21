@@ -371,11 +371,27 @@ namespace JDP
         private void dataGridViewMetadata_KeyDown(object sender, KeyEventArgs e)
         {
             CUEMetadataEntry r = ChosenRelease;
-            if (e.KeyCode == Keys.Delete && r != null)
+            if (r != null)
             {
-                var ee = new DataGridViewCellEventArgs(1, dataGridViewMetadata.CurrentCellAddress.Y);
-                dataGridViewMetadata.Rows[ee.RowIndex].Cells[1].Value = "";
-                dataGridViewMetadata_CellEndEdit(sender, ee);
+                if (e.KeyCode == Keys.Delete && e.Modifiers.HasFlag(Keys.Shift))
+                {
+                    var ee = new DataGridViewCellEventArgs(1, dataGridViewMetadata.CurrentCellAddress.Y);
+                    Clipboard.SetText(dataGridViewMetadata.Rows[ee.RowIndex].Cells[1].Value as string);
+                    dataGridViewMetadata.Rows[ee.RowIndex].Cells[1].Value = null;
+                    dataGridViewMetadata_CellEndEdit(sender, ee);
+                }
+                else if (e.KeyCode == Keys.Delete)
+                {
+                    var ee = new DataGridViewCellEventArgs(1, dataGridViewMetadata.CurrentCellAddress.Y);
+                    dataGridViewMetadata.Rows[ee.RowIndex].Cells[1].Value = null;
+                    dataGridViewMetadata_CellEndEdit(sender, ee);
+                }
+                else if (e.KeyCode == Keys.Insert && e.Modifiers.HasFlag(Keys.Shift))
+                {
+                    var ee = new DataGridViewCellEventArgs(1, dataGridViewMetadata.CurrentCellAddress.Y);
+                    dataGridViewMetadata.Rows[ee.RowIndex].Cells[1].Value = Clipboard.GetText();
+                    dataGridViewMetadata_CellEndEdit(sender, ee);
+                }
             }
         }
 
