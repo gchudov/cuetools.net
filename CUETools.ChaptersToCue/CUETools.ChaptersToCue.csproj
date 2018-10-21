@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9253A314-1821-42BF-B02F-2BF986B1765D}</ProjectGuid>
+    <ProjectGuid>{6ADBBF4B-AD3A-4782-A694-18662196780B}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CUETools.ChaptersToCue</RootNamespace>
@@ -15,7 +15,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -36,7 +36,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\net40\</OutputPath>
+    <OutputPath>..\bin\Debug\net47\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -45,7 +45,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\net40\</OutputPath>
+    <OutputPath>..\bin\Release\net47\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -68,6 +68,10 @@
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
       <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
       <Name>CUETools.CDImage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj">
+      <Project>{c36efaa5-4f81-4a29-800d-ba866ff13bc8}</Project>
+      <Name>CUETools.CTDB.Types</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
       <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>

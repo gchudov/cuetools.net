@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net40;net20</TargetFrameworks>
+    <TargetFrameworks>net47;net20</TargetFrameworks>
     <Version>2.1.7.0</Version>
     <AssemblyName>CUETools.Codecs.WMA</AssemblyName>
     <RootNamespace>CUETools.Codecs.WMA</RootNamespace>

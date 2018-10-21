@@ -86,9 +86,10 @@ namespace CUETools.CTDB.EACPlugin
                 }
                 foreach (var coverart in metadata.coverart)
                 {
-                    var uri = Options.CoversSearch == CTDBCoversSearch.Large ?
+                    var uri = Options.CoversSize == CTDBCoversSize.Large ?
                         coverart.uri : coverart.uri150 ?? coverart.uri;
-                    if (knownUrls.Contains(uri) || !coverart.primary)
+                    if (knownUrls.Contains(uri) || 
+                        (Options.CoversSearch == CTDBCoversSearch.Primary && !coverart.primary))
                         continue;
                     var ms = new MemoryStream();
                     if (!this.ctdb.FetchFile(uri, ms))

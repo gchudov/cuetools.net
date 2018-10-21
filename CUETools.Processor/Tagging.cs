@@ -150,14 +150,14 @@ namespace CUETools.Processor
             {
                 foreach (string tag in xiph)
                     foreach (string value in xiph.GetField(tag))
-                        if (!IsKnownXiphTag(tag))
+                        if (!IsKnownXiphTag(tag) && value != null)
                             tags.Add(tag, value);
             }
             else if (ape != null)
             {
                 foreach (string tag in ape)
                     foreach (string value in ape.GetItem(tag).ToStringArray())
-                        if (!IsKnownApeTag(tag))
+                        if (!IsKnownApeTag(tag) && value != null)
                             tags.Add(tag, value);
             }
             else if (asf != null)

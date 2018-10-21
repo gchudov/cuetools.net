@@ -14,11 +14,17 @@ namespace CUETools.Processor
             Custom
         }
 
+        public enum CTDBCoversSize
+        {
+            Small,
+            Large
+        }
+
         public enum CTDBCoversSearch
         {
-            Large,
-            Small,
-            None
+            None,
+            Primary,
+            Extensive
         }
 
         public CUEConfigAdvanced()
@@ -92,7 +98,10 @@ namespace CUETools.Processor
         [DefaultValue(CUETools.CTDB.CTDBMetadataSearch.Default), Category("CTDB"), DisplayName("Metadata search")]
         public CUETools.CTDB.CTDBMetadataSearch metadataSearch { get; set; }
 
-        [DefaultValue(CTDBCoversSearch.Small), Category("CTDB"), DisplayName("Album art search")]
+        [DefaultValue(CTDBCoversSize.Large), Category("CTDB"), DisplayName("Album art size")]
+        public CTDBCoversSize coversSize { get; set; }
+
+        [DefaultValue(CTDBCoversSearch.Primary), Category("CTDB"), DisplayName("Album art search")]
         public CTDBCoversSearch coversSearch { get; set; }
 
         [DefaultValue(false), Category("CTDB"), DisplayName("Detailed log")]

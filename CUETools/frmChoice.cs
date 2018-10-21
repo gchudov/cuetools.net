@@ -105,6 +105,8 @@ namespace JDP
                     tableLayoutPanelMeta.Show();
                     tableLayoutPanel1.SetRowSpan(listChoices, 2);
                     tableLayoutPanel1.PerformLayout();
+                    buttonMusicBrainz.Show();
+                    buttonNavigateCTDB.Show();
                 }
                 else
                 {
@@ -113,6 +115,8 @@ namespace JDP
                     tableLayoutPanelMeta.Hide();
                     tableLayoutPanel1.SetRowSpan(textBox1, 3);
                     tableLayoutPanel1.PerformLayout();
+                    buttonMusicBrainz.Hide();
+                    buttonNavigateCTDB.Hide();
                 }
                 if (listChoices.Items.Count > 0)
                     listChoices.Items[0].Selected = true;
@@ -176,7 +180,13 @@ namespace JDP
             CUEMetadataEntry ri = ChosenRelease;
             if (e.CloseReason != CloseReason.None || DialogResult != DialogResult.OK || ri == null || CUE == null)
                 return;
+            for (int i = 0; i < ri.metadata.Tracks.Count; i++)
+            {
+                if (ri.metadata.Tracks[i].ISRC == "")
+                    ri.metadata.Tracks[i].ISRC = CUE.Metadata.Tracks[i].ISRC;
+            }
             CUE.CopyMetadata(ri.metadata);
+
             // TODO: copy album art
 
         }
@@ -330,8 +340,8 @@ namespace JDP
         {
             ListViewItem item = ChosenItem;
             CUEMetadataEntry r = ChosenRelease;
-            var label = dataGridViewMetadata.Rows[e.RowIndex].Cells[1].Value as string;
-            if (label != null && item != null && r != null)
+            var label = dataGridViewMetadata.Rows[e.RowIndex].Cells[1].Value as string ?? "";
+            if (item != null && r != null)
             {
                 switch (e.RowIndex)
                 {
@@ -399,6 +409,7 @@ namespace JDP
                         break;
                 }
                 ResetPictureBox();
+                e.Handled = true;
                 return;
             }
 
@@ -417,6 +428,7 @@ namespace JDP
                         break;
                 }
                 ResetPictureBox();
+                e.Handled = true;
                 return;
             }
 
@@ -426,6 +438,7 @@ namespace JDP
                 else trimEdge <<= 1;
                 if (trimEdge > 1024) trimEdge = 0;
                 ResetPictureBox();
+                e.Handled = true;
                 return;
             }
         }
@@ -483,6 +496,18 @@ namespace JDP
                     image.Dispose();
                 }
                 catch { }
+        }
+
+        private void buttonMusicBrainz_Click(object sender, EventArgs e)
+        {
+            if (CUE == null) return;
+            System.Diagnostics.Process.Start($"http://musicbrainz.org/bare/cdlookup.html?toc={CUE.TOC.MusicBrainzTOC}");
+        }
+
+        private void buttonNavigateCTDB_Click(object sender, EventArgs e)
+        {
+            if (CUE == null) return;
+            System.Diagnostics.Process.Start($"http://{config.advanced.CTDBServer}/?tocid={CUE.TOC.TOCID}");
         }
 
         /*

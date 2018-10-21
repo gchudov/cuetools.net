@@ -33,6 +33,7 @@ namespace CUERipper
         private bool testAndCopy = false;
 		internal CUERipperData data = new CUERipperData();
         private bool initDone = false;
+        private bool freezeReleasesUpdates_m = false;
         public readonly static XmlSerializerNamespaces xmlEmptyNamespaces = new XmlSerializerNamespaces(new XmlQualifiedName[] { XmlQualifiedName.Empty });
         public readonly static XmlWriterSettings xmlEmptySettings = new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true };
 
@@ -382,7 +383,7 @@ namespace CUERipper
 				toolStripStatusLabel1.Text = status;
 				toolStripProgressBar1.Value = Math.Max(0, Math.Min(100, (int)(percentTrck * 100)));
 
-                progressBarErrors.Value = Math.Min(progressBarErrors.Maximum, (int)(100 * Math.Log(e.ErrorsCount / 10.0 + 1) / Math.Log((e.PassEnd - e.PassStart) / 10.0 + 1)));
+                progressBarErrors.Value = Math.Max(0,Math.Min(progressBarErrors.Maximum, (int)(100 * Math.Log(e.ErrorsCount / 10.0 + 1) / Math.Log((e.PassEnd - e.PassStart) / 10.0 + 1))));
 				progressBarErrors.Enabled = e.Pass >= audioSource.CorrectionQuality;
 
 				progressBarCD.Maximum = (int) audioSource.TOC.AudioLength;
@@ -483,6 +484,23 @@ namespace CUERipper
             {
                 data.selectedRelease.metadata.AlbumArt.Clear();
                 data.selectedRelease.metadata.AlbumArt.Add(albumArt[currentAlbumArt].meta);
+
+                if (albumArt[currentAlbumArt].meta.uri != null &&
+                    albumArt[currentAlbumArt].meta.uri150 != null &&
+                    albumArt[currentAlbumArt].meta.uri != albumArt[currentAlbumArt].meta.uri150 &&
+                    _config.advanced.coversSize == CUEConfigAdvanced.CTDBCoversSize.Large
+                    )
+                {
+                    var ms = new MemoryStream();
+                    try
+                    {
+                        if (cueSheet.CTDB.FetchFile(albumArt[currentAlbumArt].meta.uri, ms))
+                            albumArt[currentAlbumArt].contents = ms.ToArray();
+                    } catch (Exception)
+                    {
+                    }
+                }
+
                 var blob = new TagLib.ByteVector(albumArt[currentAlbumArt].contents);
                 cueSheet.AlbumArt.Add(new TagLib.Picture(blob) { Type = TagLib.PictureType.FrontCover });
             }            
@@ -1088,7 +1106,8 @@ namespace CUERipper
 
 		private void bnComboBoxRelease_SelectedValueChanged(object sender, EventArgs e)
 		{
-			UpdateRelease();
+            if (freezeReleasesUpdates_m) return;
+            UpdateRelease();
 		}
 
 		private void bnComboBoxDrives_SelectedIndexChanged(object sender, EventArgs e)
@@ -1261,8 +1280,10 @@ namespace CUERipper
 					data.selectedRelease.metadata.UpdateArtist(e.Label);
 				else
 					prop.SetValue(data.selectedRelease.metadata, e.Label);
-				data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			}
+                freezeReleasesUpdates_m = true;
+                data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
+                freezeReleasesUpdates_m = false;
+            }
 			else
 			{
 				CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.metadataTrack];
@@ -1502,9 +1523,9 @@ namespace CUERipper
                         continue;
                     foreach (var coverart in metadata.coverart)
                     {
-                        var uri = _config.advanced.coversSearch == CUEConfigAdvanced.CTDBCoversSearch.Large ?
-                            coverart.uri : coverart.uri150 ?? coverart.uri;
-                        if (knownUrls.Contains(uri) || !coverart.primary)
+                        var uri = coverart.uri150;
+                        if (knownUrls.Contains(uri) || 
+                            (_config.advanced.coversSearch == CUEConfigAdvanced.CTDBCoversSearch.Primary && !coverart.primary))
                             continue;
                         if (i == 0 && !firstUrls.Contains(coverart.uri))
                             continue;
@@ -1596,7 +1617,7 @@ namespace CUERipper
 
             toolStripStatusLabel1.Text = albumArt[currentAlbumArt].meta.uri;
 
-            if (e == null || e.Button != System.Windows.Forms.MouseButtons.Right || _config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.Large)
+            if (e == null || e.Button != System.Windows.Forms.MouseButtons.Right || _config.advanced.coversSize != CUEConfigAdvanced.CTDBCoversSize.Large)
             {
                 pictureBox1.Image = albumArt[currentAlbumArt].image;
                 return;

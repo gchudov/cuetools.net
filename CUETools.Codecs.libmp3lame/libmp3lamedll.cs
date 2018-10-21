@@ -52,7 +52,7 @@ namespace CUETools.Codecs.libmp3lame
             var myFolder = System.IO.Path.GetDirectoryName(myPath);
             var is64 = IntPtr.Size == 8;
             var subfolder = is64 ? "x64" : "win32";
-#if NET40
+#if NET47
             IntPtr Dll = LoadLibrary(System.IO.Path.Combine(myFolder, subfolder, DllName + ".dll"));
 #else
             IntPtr Dll = LoadLibrary(System.IO.Path.Combine(System.IO.Path.Combine(myFolder, subfolder), DllName + ".dll"));

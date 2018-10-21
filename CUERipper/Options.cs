@@ -76,7 +76,10 @@ namespace CUERipper
         [DefaultValue(CUETools.CTDB.CTDBMetadataSearch.Default), Category("CTDB"), DisplayName("Metadata search")]
         public CUETools.CTDB.CTDBMetadataSearch metadataSearch { get { return config.advanced.metadataSearch; } set { config.advanced.metadataSearch = value; } }
 
-        [DefaultValue(CUETools.Processor.CUEConfigAdvanced.CTDBCoversSearch.Small), Category("CTDB"), DisplayName("Album art search")]
+        [DefaultValue(CUETools.Processor.CUEConfigAdvanced.CTDBCoversSize.Large), Category("CTDB"), DisplayName("Album art size")]
+        public CUETools.Processor.CUEConfigAdvanced.CTDBCoversSize coversSize { get { return config.advanced.coversSize; } set { config.advanced.coversSize = value; } }
+
+        [DefaultValue(CUETools.Processor.CUEConfigAdvanced.CTDBCoversSearch.Primary), Category("CTDB"), DisplayName("Album art search")]
         public CUETools.Processor.CUEConfigAdvanced.CTDBCoversSearch coversSearch { get { return config.advanced.coversSearch; } set { config.advanced.coversSearch = value; } }
 
         [DefaultValue(false), Category("CTDB"), DisplayName("Detailed log")]

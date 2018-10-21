@@ -359,9 +359,10 @@ namespace CUETools.Processor
             {
                 while (exists(result))
                 {
+                    var oldkey = tags[unique_key];
                     tags[unique_key] = unique.ToString();
                     string new_result = ReplaceMultiple(fmt, tags, maxLen);
-                    if (new_result == result || new_result == String.Empty || new_result == null)
+                    if ((new_result == result && oldkey != tags[unique_key]) || new_result == String.Empty || new_result == null)
                         break;
                     result = new_result;
                     unique++;

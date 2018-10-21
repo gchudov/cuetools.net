@@ -2065,7 +2065,7 @@ new int[] { // 30
 			if (!inited)
 			{
 				if (_IO == null)
-					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read, 0x10000);
+					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read, 0x20000);
                 inited = true;
                 int header_size = flake_encode_init();
 				_IO.Write(header, 0, header_size);

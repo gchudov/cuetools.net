@@ -163,7 +163,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsMediaLib", "..\Third
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.WMA", "..\CUETools.Codecs.WMA\CUETools.Codecs.WMA.csproj", "{082D6B9E-326E-4D15-9798-DE70A6EDAE9E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.BDLPCM", "..\CUETools.Codecs.MPEG\CUETools.Codecs.MPEG.csproj", "{E75F7CCD-4266-42E1-A039-DC7EB5EDD8F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.MPEG", "..\CUETools.Codecs.MPEG\CUETools.Codecs.MPEG.csproj", "{E75F7CCD-4266-42E1-A039-DC7EB5EDD8F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.eac3to", "..\CUETools.eac3to\CUETools.eac3to.csproj", "{E3FF7539-6B22-4922-8FEF-6D26F2C2E3CE}"
 EndProject
@@ -198,6 +198,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.ffmpeg", "..\CUETools.Codecs.ffmpeg\CUETools.Codecs.ffmpeg.csproj", "{A2C09014-C430-4E58-A323-306CCDF313C5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFmpeg.AutoGen", "..\..\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj", "{B0A0C17A-C1BC-4CB1-BE1E-F545F54A7923}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.ChaptersToCue", "..\CUETools.ChaptersToCue\CUETools.ChaptersToCue.csproj", "{6ADBBF4B-AD3A-4782-A694-18662196780B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -773,6 +775,18 @@ Global
 		{B0A0C17A-C1BC-4CB1-BE1E-F545F54A7923}.Release|Win32.Build.0 = Release|Any CPU
 		{B0A0C17A-C1BC-4CB1-BE1E-F545F54A7923}.Release|x64.ActiveCfg = Release|Any CPU
 		{B0A0C17A-C1BC-4CB1-BE1E-F545F54A7923}.Release|x64.Build.0 = Release|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Debug|Win32.Build.0 = Debug|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Debug|x64.Build.0 = Debug|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Release|Win32.ActiveCfg = Release|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Release|Win32.Build.0 = Release|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Release|x64.ActiveCfg = Release|Any CPU
+		{6ADBBF4B-AD3A-4782-A694-18662196780B}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -835,6 +849,7 @@ Global
 		{8FE405A0-E837-4088-88AD-B63652E34790} = {93B7AE1D-DEF6-4A04-A222-5CDE09DF262D}
 		{A2C09014-C430-4E58-A323-306CCDF313C5} = {93B7AE1D-DEF6-4A04-A222-5CDE09DF262D}
 		{B0A0C17A-C1BC-4CB1-BE1E-F545F54A7923} = {8B179853-B7D6-479C-B8B2-6CBCE835D040}
+		{6ADBBF4B-AD3A-4782-A694-18662196780B} = {4B59E09C-A51F-4B80-91BE-987904DCEF7D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C634D169-5814-4203-94B6-6A11371DDA95}

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
-#if NET40 || NET20
+#if NET47 || NET20
 using System.Drawing.Drawing2D;
 #endif
 using System.Globalization;
@@ -125,7 +125,7 @@ namespace CUETools.Processor
             get { return _albumArt; }
         }
 
-#if NET40 || NET20
+#if NET47 || NET20
         public Image Cover
         {
             get
@@ -1582,6 +1582,10 @@ namespace CUETools.Processor
                             _sources.Insert(0, sourceInfo1);
                             _toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
                         }
+                        else if (trNo > 1 && _toc[_toc.FirstAudio + trNo].Start - tocFromLog[tocFromLog.FirstAudio + trNo].Pregap <= _toc[_toc.FirstAudio + trNo - 1][(int) _toc[_toc.FirstAudio + trNo - 1].LastIndex].Start)
+                        {
+
+                        }
                         else
                             _toc[_toc.FirstAudio + trNo].Pregap = tocFromLog[tocFromLog.FirstAudio + trNo].Pregap;
                     }
@@ -1663,7 +1667,8 @@ namespace CUETools.Processor
                 if (tocFromLog.AudioTracks == _toc.AudioTracks
                     && tocFromLog.TrackCount == _toc.TrackCount
                     && tocFromLog.FirstAudio == _toc.FirstAudio
-                    && tocFromLog.TrackCount == tocFromLog.FirstAudio + tocFromLog.AudioTracks - 1)
+                    && tocFromLog.TrackCount == tocFromLog.FirstAudio + tocFromLog.AudioTracks - 1
+                    && tocFromLog[_toc.FirstAudio].Start >= _toc[_toc.FirstAudio].Start)
                 {
                     //DataTrackLength = tocFromLog[1].Length;
                     uint delta = tocFromLog[_toc.FirstAudio].Start - _toc[_toc.FirstAudio].Start;
@@ -1732,7 +1737,7 @@ namespace CUETools.Processor
             }
 
             LoadAlbumArt(_tracks[0]._fileInfo ?? _fileInfo);
-#if NET40 || NET20
+#if NET47 || NET20
             ResizeAlbumArt();
 #endif
             if (_config.embedAlbumArt || _config.CopyAlbumArt)
@@ -2038,7 +2043,7 @@ namespace CUETools.Processor
                     return "";
                 try { outputPath = Path.ChangeExtension(outputPath, ext); }
                 catch { return ""; }
-                if (outputPath.Length < 255)
+                if (outputPath.Length < 255 || outputPath.StartsWith("\\\\?\\"))
                     return outputPath;
             }
             return outputPath;
@@ -2089,7 +2094,7 @@ namespace CUETools.Processor
                     ArLogFileName = "ar.log";
                     break;
                 }
-                if (Path.Combine(OutputDir, ArLogFileName).Length < 255)
+                 if (Path.Combine(OutputDir, ArLogFileName).Length < 255 || OutputDir.StartsWith("\\\\?\\"))
                     break;
             }
 
@@ -2135,7 +2140,7 @@ namespace CUETools.Processor
                             filename = vars["tracknumber"];
                             break;
                         }
-                        if (OutputDir.Length + filename.Length < 255)
+                        if (OutputDir.Length + filename.Length < 255 || OutputDir.StartsWith("\\\\?\\"))
                             break;
                     }
 
@@ -2869,7 +2874,7 @@ namespace CUETools.Processor
             return entry;
         }
 
-#if NET40 || NET20
+#if NET47 || NET20
         private static Bitmap resizeImage(Image imgToResize, Size size)
         {
             int sourceWidth = imgToResize.Width;
@@ -2932,7 +2937,7 @@ namespace CUETools.Processor
                 List<string> files = new List<string>();
                 foreach (string tpl in _config.advanced.CoverArtFiles.Split(';'))
                 {
-                    string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
+                    string name = tpl.Replace("%album%", _config.CleanseString(Metadata.Title)).Replace("%artist%", _config.CleanseString(Metadata.Artist));
                     string imgPath = Path.Combine(_isArchive ? _archiveCUEpath : _inputDir, name);
                     bool exists = _isArchive ? _archiveContents.Contains(imgPath) : File.Exists(imgPath);
                     if (exists) files.Add(imgPath);
@@ -2944,10 +2949,11 @@ namespace CUETools.Processor
                 if (files.Count == 0 && !_isArchive && _config.advanced.CoverArtSearchSubdirs)
                 {
                     List<string> allfiles = new List<string>(Directory.GetFiles(_inputDir, "*.jpg", SearchOption.AllDirectories));
+                    allfiles.AddRange(new List<string>(Directory.GetFiles(_inputDir, "*.png", SearchOption.AllDirectories)));
                     // TODO: archive case
                     foreach (string tpl in _config.advanced.CoverArtFiles.Split(';'))
                     {
-                        string name = tpl.Replace("%album%", Metadata.Title).Replace("%artist%", Metadata.Artist);
+                        string name = tpl.Replace("%album%", _config.CleanseString(Metadata.Title)).Replace("%artist%", _config.CleanseString(Metadata.Artist));
                         List<string> matching = allfiles.FindAll(s => Path.GetFileName(s) == name);
                         files.AddRange(matching);
                     }
@@ -2977,7 +2983,7 @@ namespace CUETools.Processor
                     using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                         try
                         {
-#if NET40 || NET20
+#if NET47 || NET20
                             var image = Image.FromStream(imageStream);
                             pic.Description += $" ({image.Width}x{image.Height})";
                             if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
@@ -3003,7 +3009,7 @@ namespace CUETools.Processor
             }
         }
 
-#if NET40 || NET20
+#if NET47 || NET20
         public void ResizeAlbumArt()
         {
             if (_albumArt == null)

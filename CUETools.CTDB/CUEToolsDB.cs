@@ -296,7 +296,7 @@ namespace CUETools.CTDB
 #else
                 uuidInfo = new DeviceIdBuilder()
                     .AddMachineName()
-#if NET40
+#if NET47
                     .AddProcessorId()
                     .AddMotherboardSerialNumber()
 #endif
