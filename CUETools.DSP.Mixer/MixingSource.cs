@@ -29,6 +29,11 @@ namespace CUETools.DSP.Mixer
             set { throw new NotSupportedException(); }
         }
 
+        public TimeSpan Duration
+        {
+            get { throw new NotSupportedException(); }
+        }
+
         public long Length
         {
             get { throw new NotSupportedException(); }

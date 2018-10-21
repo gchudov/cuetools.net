@@ -52,18 +52,18 @@ namespace CUETools.Codecs
 
             if (Type.GetType("Mono.Runtime", false) == null)
             {
-                encoders.Add(new CommandLine.EncoderSettings("flake", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
-                encoders.Add(new CommandLine.EncoderSettings("takc", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
-                encoders.Add(new CommandLine.EncoderSettings("ffmpeg alac", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
-                encoders.Add(new CommandLine.EncoderSettings("VBR (lame.exe)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
-                encoders.Add(new CommandLine.EncoderSettings("CBR (lame.exe)", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
-                encoders.Add(new CommandLine.EncoderSettings("oggenc", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
-                encoders.Add(new CommandLine.EncoderSettings("opusenc", "opus", false, "6 16 32 48 64 96 128 192 256", "128", "opusenc.exe", "--bitrate %M - %O"));
-                encoders.Add(new CommandLine.EncoderSettings("nero aac", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
-                encoders.Add(new CommandLine.EncoderSettings("qaac tvbr", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
+                encoders.Add(new CommandLine.EncoderSettings("flake.exe", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
+                encoders.Add(new CommandLine.EncoderSettings("takc.exe", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("ffmpeg.exe", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
+                encoders.Add(new CommandLine.EncoderSettings("lame.exe (VBR)", "mp3", false, "V9 V8 V7 V6 V5 V4 V3 V2 V1 V0", "V2", "lame.exe", "--vbr-new -%M - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("lame.exe (CBR)", "mp3", false, "96 128 192 256 320", "256", "lame.exe", "-m s -q 0 -b %M --noreplaygain - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("oggenc.exe", "ogg", false, "-1 -0.5 0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8", "3", "oggenc.exe", "-q %M - -o %O"));
+                encoders.Add(new CommandLine.EncoderSettings("opusenc.exe", "opus", false, "6 16 32 48 64 96 128 192 256", "128", "opusenc.exe", "--bitrate %M - %O"));
+                encoders.Add(new CommandLine.EncoderSettings("neroAacEnc.exe", "m4a", false, "0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9", "0.4", "neroAacEnc.exe", "-q %M -if - -of %O"));
+                encoders.Add(new CommandLine.EncoderSettings("qaac.exe (tvbr)", "m4a", false, "10 20 30 40 50 60 70 80 90 100 110 127", "80", "qaac.exe", "-s -V %M -q 2 - -o %O"));
 
-                decoders.Add(new CommandLine.DecoderSettings("takc", "tak", "takc.exe", "-d %I -"));
-                decoders.Add(new CommandLine.DecoderSettings("ffmpeg alac", "m4a", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
+                decoders.Add(new CommandLine.DecoderSettings("takc.exe", "tak", "takc.exe", "-d %I -"));
+                decoders.Add(new CommandLine.DecoderSettings("ffmpeg.exe", "m4a", "ffmpeg.exe", "-v 0 -i %I -f wav -"));
             }
             else
             {

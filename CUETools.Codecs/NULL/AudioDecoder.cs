@@ -1,4 +1,6 @@
-﻿namespace CUETools.Codecs.NULL
+﻿using System;
+
+namespace CUETools.Codecs.NULL
 {
     public class AudioDecoder : IAudioSource
     {
@@ -7,6 +9,8 @@
         private int _sampleVal;
 
         public IAudioDecoderSettings Settings => null;
+
+        public TimeSpan Duration => TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
 
         public long Length
         {

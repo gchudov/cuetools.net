@@ -27,6 +27,15 @@ namespace CUETools.Codecs.CommandLine
             }
         }
 
+        public TimeSpan Duration
+        {
+            get
+            {
+                Initialize();
+                return rdr.Duration;
+            }
+        }
+
         public long Length
         {
             get

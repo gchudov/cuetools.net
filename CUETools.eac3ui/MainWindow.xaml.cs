@@ -125,7 +125,7 @@ namespace BluTools
                 {
                     string strtoc = "";
                     for (int i = 0; i < chapters.Count; i++)
-                        strtoc += string.Format(" {0}", chapters[i] / 600);
+                        strtoc += string.Format(" {0}", (int) Math.Round((chapters[i].TotalSeconds * 75)));
                     strtoc = strtoc.Substring(1);
                     CDImageLayout toc = new CDImageLayout(strtoc);
                     ctdb = new CUEToolsDB(toc, null);
@@ -228,10 +228,11 @@ namespace BluTools
 
         void workerExtract_DoWork(object sender, DoWorkEventArgs e)
         {
-            CUETools.Codecs.MPEG.MPLS.AudioDecoder reader = null;
+            IAudioSource reader = null;
             try
             {
-                reader = new CUETools.Codecs.MPEG.MPLS.AudioDecoder(chosenReader.Path, null, pid);
+                var decoderSettings = new CUETools.Codecs.MPEG.MPLS.DecoderSettings() { StreamId = pid };
+                reader = decoderSettings.Open(chosenReader.Path);
                 Directory.CreateDirectory(outputFolderPath);
                 if (File.Exists(outputCuePath)) throw new Exception(string.Format("File \"{0}\" already exists", outputCuePath));
                 if (File.Exists(outputAudioPath)) throw new Exception(string.Format("File \"{0}\" already exists", outputAudioPath));

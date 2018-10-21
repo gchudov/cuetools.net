@@ -8,11 +8,6 @@ namespace CUETools.Codecs.MPEG.BDLPCM
 {
     public class AudioDecoder : IAudioSource
     {
-        public unsafe AudioDecoder(string path, Stream IO, int pid)
-            : this(new DecoderSettings() { StreamId = pid }, path, IO)
-        {
-        }
-
         public unsafe AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
             _path = path;
@@ -37,6 +32,8 @@ namespace CUETools.Codecs.MPEG.BDLPCM
             //}
             _IO = null;
         }
+
+        public TimeSpan Duration => Length < 0 ? TimeSpan.Zero : TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
 
         public long Length
         {

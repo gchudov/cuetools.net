@@ -12,13 +12,9 @@ namespace CUETools.Codecs.LossyWAV
 
         public IAudioDecoderSettings Settings => null;
 
-        public long Length
-        {
-            get
-            {
-                return _audioSource.Length;
-            }
-        }
+        public TimeSpan Duration => _audioSource.Duration;
+
+        public long Length => _audioSource.Length;
 
         public long Position
         {
@@ -33,29 +29,11 @@ namespace CUETools.Codecs.LossyWAV
             }
         }
 
-        public long Remaining
-        {
-            get
-            {
-                return _audioSource.Remaining;
-            }
-        }
+        public long Remaining => _audioSource.Remaining;
 
-        public AudioPCMConfig PCM
-        {
-            get
-            {
-                return _audioSource.PCM;
-            }
-        }
+        public AudioPCMConfig PCM => _audioSource.PCM;
 
-        public string Path
-        {
-            get
-            {
-                return _audioSource.Path;
-            }
-        }
+        public string Path => _audioSource.Path;
 
         public LossyWAVReader(IAudioSource audioSource, IAudioSource lwcdfSource)
         {

@@ -127,6 +127,11 @@ namespace TTA {
 			}
 		}
 
+		virtual property TimeSpan Duration {
+			TimeSpan get() {
+				return Length < 0 ? TimeSpan::Zero : TimeSpan::FromSeconds((double)Length / PCM->SampleRate);
+			}
+		}
 		virtual property Int64 Length {
 			Int64 get() {
 				return _sampleCount;

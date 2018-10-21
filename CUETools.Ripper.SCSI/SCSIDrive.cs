@@ -1149,7 +1149,9 @@ namespace CUETools.Ripper.SCSI
 			return buff.Length;
 		}
 
-		public long Length
+        public TimeSpan Duration => TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
+
+        public long Length
 		{
 			get
 			{

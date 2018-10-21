@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Text;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace CUETools.Codecs
 {
@@ -43,6 +44,11 @@ namespace CUETools.Codecs
             // Iterate through each property and call ResetValue()
             foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(settings))
                 property.ResetValue(settings);
+        }
+
+        public static IAudioSource Open(this IAudioDecoderSettings settings, string path, Stream IO = null)
+        {
+            return Activator.CreateInstance(settings.DecoderType, settings, path, IO) as IAudioSource;
         }
     }
 }

@@ -99,6 +99,8 @@ namespace CUETools.Codecs.libwavpack
 
         public string Path => _path;
 
+        public TimeSpan Duration => Length < 0 ? TimeSpan.Zero : TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
+
         public long Length => _sampleCount;
 
         public long Position

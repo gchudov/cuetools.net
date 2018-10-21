@@ -5,19 +5,15 @@ using System.IO;
 
 namespace CUETools.Codecs.MPEG.MPLS
 {
-    public class AudioDecoder : IAudioSource
+    public class AudioDecoder : IAudioSource, IAudioTitleSet
     {
-        public unsafe AudioDecoder(string path, Stream IO, ushort pid)
-                : this(new DecoderSettings() { StreamId = pid }, path, IO)
-        {
-        }
-
         public unsafe AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
             m_settings = settings;
             _path = path;
             _IO = IO != null ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0x10000);
             int length = (int)_IO.Length;
+            if (length > 0x100000) throw new Exception("File too big");
             contents = new byte[length];
             if (_IO.Read(contents, 0, length) != length) throw new Exception("");
             fixed (byte* ptr = &contents[0])
@@ -33,7 +29,7 @@ namespace CUETools.Codecs.MPEG.MPLS
 
         void openEntries()
         {
-            readers = new List<BDLPCM.AudioDecoder>();
+            readers = new List<IAudioSource>();
             var pids = new List<int>();
             foreach (var item in hdr_m.play_item)
                 foreach (var audio in item.audio)
@@ -67,7 +63,8 @@ namespace CUETools.Codecs.MPEG.MPLS
                         var m2ts = System.IO.Path.Combine(
                             System.IO.Path.Combine(parent.FullName, "STREAM"), 
                             item.clip_id + ".m2ts");
-                        var entry = new BDLPCM.AudioDecoder(m2ts, null, chosenPid);
+                        var settings = new BDLPCM.DecoderSettings() { StreamId = chosenPid };
+                        var entry = settings.Open(m2ts);
                         readers.Add(entry);
                         break;
                     }
@@ -387,15 +384,30 @@ namespace CUETools.Codecs.MPEG.MPLS
             }
         }
 
-        public List<uint> Chapters
+        public List<IAudioTitle> AudioTitles
+        {
+            get
+            {
+                var titles = new List<IAudioTitle>();
+                foreach (var item in hdr_m.play_item)
+                    foreach (var audio in item.audio)
+                    {
+                        //if (audio.coding_type != 0x80 /* LPCM */) continue;
+                        titles.Add(new AudioTitle(this, audio.pid));
+                    }
+                return titles;
+            }
+        }
+
+        public List<TimeSpan> Chapters
         {
             get
             {
                 //settings.IgnoreShortItems
-                var res = new List<uint>();
+                var res = new List<TimeSpan>();
                 if (hdr_m.play_mark.Count < 1) return res;
                 if (hdr_m.play_item.Count < 1) return res;
-                res.Add(0);
+                res.Add(TimeSpan.Zero);
                 for (int i = 0; i < hdr_m.mark_count; i++)
                 {
                     ushort mark_item = hdr_m.play_mark[i].play_item_ref;
@@ -410,7 +422,7 @@ namespace CUETools.Codecs.MPEG.MPLS
                         if (m_settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
                         item_offset += item_duration;
                     }
-                    res.Add(hdr_m.play_mark[i].time - item_in_time + item_offset);
+                    res.Add(TimeSpan.FromSeconds((hdr_m.play_mark[i].time - item_in_time + item_offset) / 45000.0));
                 }
                 uint end_offset = 0;
                 for (int j = 0; j < hdr_m.play_item.Count; j++)
@@ -420,9 +432,9 @@ namespace CUETools.Codecs.MPEG.MPLS
                     if (m_settings.IgnoreShortItems && item_duration < shortItemDuration) continue;
                     end_offset += hdr_m.play_item[j].out_time - hdr_m.play_item[j].in_time;
                 }
-                res.Add(end_offset);
-                while (res.Count > 1 && res[1] - res[0] < 45000) res.RemoveAt(1);
-                while (res.Count > 1 && res[res.Count - 1] - res[res.Count - 2] < 45000) res.RemoveAt(res.Count - 2);
+                res.Add(TimeSpan.FromSeconds(end_offset / 45000.0));
+                while (res.Count > 1 && res[1] - res[0] < TimeSpan.FromSeconds(1.0)) res.RemoveAt(1);
+                while (res.Count > 1 && res[res.Count - 1] - res[res.Count - 2] < TimeSpan.FromSeconds(1.0)) res.RemoveAt(res.Count - 2);
                 return res;
             }
         }
@@ -434,10 +446,62 @@ namespace CUETools.Codecs.MPEG.MPLS
         byte[] contents;
 
         AudioPCMConfig pcm;
-        List<BDLPCM.AudioDecoder> readers;
-        BDLPCM.AudioDecoder currentReader;
+        List<IAudioSource> readers;
+        IAudioSource currentReader;
         MPLSHeader hdr_m;
         DecoderSettings m_settings;
+    }
+
+    public class AudioTitle : IAudioTitle
+    {
+        public AudioTitle(AudioDecoder source, int pid)
+        {
+            this.source = source;
+            this.pid = pid;
+        }
+
+        public List<TimeSpan> Chapters => source.Chapters;
+        public AudioPCMConfig PCM
+        {
+            get
+            {
+                var s = FirstStream;
+                int channelCount = s.format == 1 ? 1 : s.format == 3 ? 2 : s.format == 6 ? 5 : 0;
+                int sampleRate = s.rate == 1 ? 48000 : s.rate == 4 ? 96000 : s.rate == 5 ? 192000 : s.rate == 12 ? 192000 : s.rate == 14 ? 96000 : 0;
+                int bitsPerSample = 0;
+                return new AudioPCMConfig(bitsPerSample, channelCount, sampleRate);
+            }
+        }
+        public string Codec
+        {
+            get
+            {
+                var s = FirstStream;
+                return s != null ? s.CodecString : "?";
+            }
+        }
+        public string Language
+        {
+            get
+            {
+                var s = FirstStream;
+                return s != null ? s.LanguageString : "?";
+            }
+        }
+        public int StreamId => pid;
+
+        MPLSStream FirstStream
+        {
+            get
+            {
+                MPLSStream result = null;
+                source.MPLSHeader.play_item.ForEach(i => i.audio.FindAll(a => a.pid == pid).ForEach(x => result = x));
+                return result;
+            }
+        }
+
+        AudioDecoder source;
+        int pid;
     }
 
     public struct MPLSPlaylistMark
@@ -450,7 +514,7 @@ namespace CUETools.Codecs.MPEG.MPLS
         public uint duration;
     }
 
-    public struct MPLSStream
+    public class MPLSStream
     {
         public byte stream_type;
         public byte coding_type;
