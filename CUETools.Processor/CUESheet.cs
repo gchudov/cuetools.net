@@ -34,6 +34,7 @@ namespace CUETools.Processor
         private string _htoaFilename, _singleFilename;
         private bool _hasHTOAFilename = false, _hasTrackFilenames = false, _hasSingleFilename = false, _appliedWriteOffset;
         private bool _hasEmbeddedCUESheet;
+        private bool _hasEmbeddedArtwork;
         private bool _paddedToFrame, _truncated4608, _usePregapForFirstTrackInSingleFile;
         private int _writeOffset;
         private CUEAction _action;
@@ -130,9 +131,12 @@ namespace CUETools.Processor
         {
             get
             {
-                if (AlbumArt == null || AlbumArt.Count == 0)
+                if (AlbumArt == null)
                     return null;
-                TagLib.IPicture picture = AlbumArt[0];
+                var picture = AlbumArt.Find(x => x.Type == TagLib.PictureType.FrontCover) ??
+                    AlbumArt.Find(x => x.Type != TagLib.PictureType.NotAPicture);
+                if (picture == null)
+                    return null;
                 using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
                     try { return Image.FromStream(imageStream); }
                     catch { }
@@ -551,6 +555,7 @@ namespace CUETools.Processor
             _minDataTrackLength = null;
             hdcdDecoder = null;
             _hasEmbeddedCUESheet = false;
+            _hasEmbeddedArtwork = false;
             _isArchive = false;
             _isCD = false;
             _useLocalDB = false;
@@ -837,8 +842,15 @@ namespace CUETools.Processor
                     dbmeta = myEntry.Metadata;
             }
 
+            byte[] frontCover = null;
+            {
+                var picture = AlbumArt.Find(x => x.Type == TagLib.PictureType.FrontCover) ??
+                    AlbumArt.Find(x => x.Type != TagLib.PictureType.NotAPicture);
+                if (picture != null) frontCover = picture.Data.Data;
+            }
+
             if (dbmeta != null)
-                Releases.Add(new CUEMetadataEntry(dbmeta, TOC, "local"));
+                Releases.Add(new CUEMetadataEntry(dbmeta, TOC, "local") { cover = frontCover });
 
             //if (useCache)
             //{
@@ -859,12 +871,12 @@ namespace CUETools.Processor
                 if (dbmeta == null || !dbmeta.Contains(cueMetadata))
                 {
                     if (cueMetadata.Contains(taglibMetadata) || !taglibMetadata.Contains(cueMetadata))
-                        Releases.Add(new CUEMetadataEntry(new CUEMetadata(cueMetadata), TOC, "cue"));
+                        Releases.Add(new CUEMetadataEntry(new CUEMetadata(cueMetadata), TOC, "cue") { cover = frontCover });
                 }
                 if (dbmeta == null || !dbmeta.Contains(taglibMetadata))
                 {
                     if (!cueMetadata.Contains(taglibMetadata))
-                        Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags"));
+                        Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags") { cover = frontCover });
                 }
             }
 
@@ -872,7 +884,7 @@ namespace CUETools.Processor
             {
                 foreach (var entry in _localDB)
                     if (entry.DiscID == TOC.TOCID && entry.Metadata != null && (dbmeta == null || !dbmeta.Contains(entry.Metadata)))
-                        Releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local"));
+                        Releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local") { cover = frontCover });
             }
 
             bool ctdbFound = false;
@@ -1737,17 +1749,70 @@ namespace CUETools.Processor
             }
 
             LoadAlbumArt(_tracks[0]._fileInfo ?? _fileInfo);
-#if NET47 || NET20
-            ResizeAlbumArt();
-#endif
-            if (_config.embedAlbumArt || _config.CopyAlbumArt)
-                _albumArt.ForEach(t => _padding += t.Data.Count);
+
             if (_config.embedLog && _eacLog != null)
                 _padding += _eacLog.Length;
 
             cueMetadata.Id = TOC.TOCID;
             taglibMetadata.Id = TOC.TOCID;
             // TODO: It should also be set when assigning a DataTrack!!!
+        }
+
+        public void LoadAndResizeAlbumArt()
+        {
+            if (Action != CUEAction.Encode)
+                return;
+            if (!_hasEmbeddedArtwork)
+            {
+                var images = Metadata.AlbumArt;
+                var primaryImages = images.FindAll(x => x.primary);
+                if (primaryImages.Count > 0) images = primaryImages;
+                foreach (var imageMeta in images)
+                {
+                    // TODO: load secondary album art?
+                    // TODO: load uri150 version first, load full version in background of choice form?
+                    var ms = new MemoryStream();
+                    if (CTDB.FetchFile(imageMeta.uri, ms))
+                    {
+                        TagLib.Picture pic = new TagLib.Picture(new TagLib.ByteVector(ms.ToArray()));
+                        pic.Description = imageMeta.uri;
+                        using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
+                            try
+                            {
+#if NET47 || NET20
+                                var image = Image.FromStream(ms);
+                                pic.Description += $" ({image.Width}x{image.Height})";
+                                //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                                //    isSquare = true;
+                                // pic.MimeType = f(image.RawFormat);
+#endif
+                            }
+                            catch { }
+
+                        _albumArt.Add(pic);
+                    }
+                }
+                CheckStop();
+
+                if (_albumArt.Count != 1 || _albumArt[0].Type != TagLib.PictureType.FrontCover)
+                {
+                    if (_albumArt.Count == 0 || CUEToolsSelection == null)
+                    {
+                        _albumArt.Clear();
+                    }
+                    else
+                    {
+                        CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
+                        e.choices = _albumArt.ToArray();
+                        CUEToolsSelection(this, e);
+                        TagLib.IPicture selected = e.selection == -1 ? null : _albumArt[e.selection];
+                        _albumArt.RemoveAll(t => t != selected);
+                    }
+                }
+            }
+#if NET47 || NET20
+            ResizeAlbumArt();
+#endif
         }
 
         public void UseCUEToolsDB(string userAgent, string driveName, bool fuzzy, CTDBMetadataSearch metadataSearch)
@@ -2920,16 +2985,21 @@ namespace CUETools.Processor
                 }
         }
 
-        public void LoadAlbumArt(TagLib.File fileInfo)
+        private void LoadAlbumArt(TagLib.File fileInfo)
         {
-            if ((_config.extractAlbumArt || _config.CopyAlbumArt) && fileInfo != null)
-                foreach (TagLib.IPicture picture in fileInfo.Tag.Pictures)
-                    if (picture.Type == TagLib.PictureType.FrontCover)
-                        if (picture.MimeType == "image/jpeg")
-                        {
-                            _albumArt.Add(picture);
-                            return;
-                        }
+            if (_config.extractAlbumArt || _config.CopyAlbumArt)
+            {
+                if (fileInfo != null)
+                    foreach (TagLib.IPicture picture in fileInfo.Tag.Pictures)
+                    {
+                        if (picture.Type == TagLib.PictureType.NotAPicture) continue;
+                        // if (picture.MimeType == "image/jpeg" && picture.Type == TagLib.PictureType.FrontCover)
+                        _albumArt.Add(picture);
+                        _hasEmbeddedArtwork = true;
+                    }
+            }
+
+            if (_hasEmbeddedArtwork) return;
 
             bool isValidName = true;
             if ((_config.extractAlbumArt || _config.embedAlbumArt) && !_isCD)
@@ -2969,7 +3039,6 @@ namespace CUETools.Processor
                     if (files.Count > maxChoice) return;
                 }
 
-                bool isSquare = false;
                 foreach (string imgPath in files)
                 {
                     TagLib.File.IFileAbstraction file = _isArchive
@@ -2980,6 +3049,7 @@ namespace CUETools.Processor
                         pic.Description = imgPath.Substring(_inputDir.Length).Trim(Path.DirectorySeparatorChar);
                     else
                         pic.Description = Path.GetFileName(imgPath);
+                    pic.Type = TagLib.PictureType.Other;
                     using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                         try
                         {
@@ -2987,25 +3057,16 @@ namespace CUETools.Processor
                             var image = Image.FromStream(imageStream);
                             pic.Description += $" ({image.Width}x{image.Height})";
                             if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
-                                isSquare = true;
+                            {
+                                if (isValidName)
+                                    pic.Type = TagLib.PictureType.FrontCover;
+                            }
                             // pic.MimeType = f(image.RawFormat);
 #endif
                         }
                         catch { }
                     _albumArt.Add(pic);
                 }
-
-                if (_albumArt.Count == 0 || CUEToolsSelection == null)
-                    return;
-
-                if (_albumArt.Count == 1 && isSquare && isValidName)
-                    return;
-
-                CUEToolsSelectionEventArgs e = new CUEToolsSelectionEventArgs();
-                e.choices = _albumArt.ToArray();
-                CUEToolsSelection(this, e);
-                TagLib.IPicture selected = e.selection == -1 ? null : _albumArt[e.selection];
-                _albumArt.RemoveAll(t => t != selected);
             }
         }
 
@@ -3014,13 +3075,16 @@ namespace CUETools.Processor
         {
             if (_albumArt == null)
                 return;
+            int j = 0;
             foreach (TagLib.IPicture picture in _albumArt)
                 using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
                     try
                     {
+                        CheckStop();
                         using (Image img = Image.FromStream(imageStream))
                             if (img.Width > _config.maxAlbumArtSize || img.Height > _config.maxAlbumArtSize)
                             {
+                                ReportProgress("Resizing Album Art", (double)(j++) / _albumArt.Count);
                                 using (Bitmap small = resizeImage(img, new Size(_config.maxAlbumArtSize, _config.maxAlbumArtSize)))
                                 using (MemoryStream encoded = new MemoryStream())
                                 {
@@ -3387,6 +3451,9 @@ namespace CUETools.Processor
                 if (hdcdDecoder == null || !_config.decodeHDCD)
                     destBPS = 16;
             }
+
+            if (_config.embedAlbumArt || _config.CopyAlbumArt)
+                _albumArt.ForEach(t => _padding += t.Data.Count);
 
             if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
             {

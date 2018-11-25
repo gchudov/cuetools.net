@@ -7,6 +7,7 @@ namespace CUETools.Processor
         public CUEMetadata metadata { get; set; }
         public CDImageLayout TOC { get; set; }
         public string ImageKey { get; set; }
+        public byte[] cover { get; set; }
 
         public CUEMetadataEntry(CUEMetadata metadata, CDImageLayout TOC, string key)
         {

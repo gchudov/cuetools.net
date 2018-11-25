@@ -240,7 +240,7 @@ namespace CUETools.Processor
 			Country = metadata.Country;
 			Label = metadata.Label;
             LabelNo = metadata.LabelNo;
-            AlbumArt = metadata.AlbumArt;
+            AlbumArt = metadata.AlbumArt.ConvertAll(x => new CTDB.CTDBResponseMetaImage(x));
 			for (int i = 0; i < Tracks.Count; i++)
 			{
 				Tracks[i].Title = metadata.Tracks[i].Title;

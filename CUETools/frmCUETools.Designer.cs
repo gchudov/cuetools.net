@@ -198,6 +198,7 @@ namespace JDP {
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
             this.toolStripStatusLabel1.Spring = true;
             // 
@@ -208,6 +209,7 @@ namespace JDP {
             | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
             this.toolStripStatusLabelProcessed.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
             this.toolStripStatusLabelProcessed.Name = "toolStripStatusLabelProcessed";
+            this.toolStripStatusLabelProcessed.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             resources.ApplyResources(this.toolStripStatusLabelProcessed, "toolStripStatusLabelProcessed");
             // 
             // toolStripStatusLabelCTDB
@@ -219,6 +221,7 @@ namespace JDP {
             resources.ApplyResources(this.toolStripStatusLabelCTDB, "toolStripStatusLabelCTDB");
             this.toolStripStatusLabelCTDB.Image = global::JDP.Properties.Resources.cdrepair1;
             this.toolStripStatusLabelCTDB.Name = "toolStripStatusLabelCTDB";
+            this.toolStripStatusLabelCTDB.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             // 
             // toolStripStatusLabelAR
             // 
@@ -229,12 +232,14 @@ namespace JDP {
             resources.ApplyResources(this.toolStripStatusLabelAR, "toolStripStatusLabelAR");
             this.toolStripStatusLabelAR.Image = global::JDP.Properties.Resources.AR;
             this.toolStripStatusLabelAR.Name = "toolStripStatusLabelAR";
+            this.toolStripStatusLabelAR.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             this.toolStripStatusLabelAR.Padding = new System.Windows.Forms.Padding(0, 0, 5, 0);
             // 
             // toolStripProgressBar2
             // 
             this.toolStripProgressBar2.AutoToolTip = true;
             this.toolStripProgressBar2.Name = "toolStripProgressBar2";
+            this.toolStripProgressBar2.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             resources.ApplyResources(this.toolStripProgressBar2, "toolStripProgressBar2");
             this.toolStripProgressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             // 

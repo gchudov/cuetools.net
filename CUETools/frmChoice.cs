@@ -186,9 +186,6 @@ namespace JDP
                     ri.metadata.Tracks[i].ISRC = CUE.Metadata.Tracks[i].ISRC;
             }
             CUE.CopyMetadata(ri.metadata);
-
-            // TODO: copy album art
-
         }
 
         private void AutoResizeList(ListView list, int mainCol)
@@ -260,11 +257,23 @@ namespace JDP
                     pictureBox1.Image = null;
                 }
                 pictureBox1.ImageLocation = null;
-                if (r.metadata.AlbumArt.Count > 0)
+                if (r.metadata.AlbumArt.Count > 0 || r.cover != null)
                 {
                     pictureBox1.Show();
-                    var image = r.metadata.AlbumArt.Find(x => x.primary) ?? r.metadata.AlbumArt[0];
-                    pictureBox1.ImageLocation = image.uri150;
+                    if (r.cover != null)
+                    {
+                        using (MemoryStream imageStream = new MemoryStream(r.cover, 0, r.cover.Length))
+                            try
+                            {
+                                pictureBox1.Image = Image.FromStream(imageStream);
+                            }
+                            catch { }
+                    }
+                    else
+                    {
+                        var image = r.metadata.AlbumArt.Find(x => x.primary) ?? r.metadata.AlbumArt[0];
+                        pictureBox1.ImageLocation = image.uri150;
+                    }
                 } else
                 {
                     pictureBox1.Hide();

@@ -973,19 +973,6 @@ namespace JDP
                                         entry.Metadata.CopyMetadata(dlg.ChosenRelease.metadata);
                                     }
                                 }
-                                if (dlgRes != DialogResult.Cancel)
-                                {
-                                    if (cueSheet.AlbumArt.Count == 0 && cueSheet.Metadata.AlbumArt.Count > 0)
-                                    {
-                                        var ms = new MemoryStream();
-                                        var image = cueSheet.Metadata.AlbumArt.Find(x => x.primary) ?? cueSheet.Metadata.AlbumArt[0];
-                                        if (cueSheet.CTDB.FetchFile(image.uri, ms))
-                                        {
-                                            var blob = new TagLib.ByteVector(ms.ToArray());
-                                            cueSheet.AlbumArt.Add(new TagLib.Picture(new TagLib.ByteVector(blob)));
-                                        }
-                                    }
-                                }
                                 dlg.Close();
                             }
                             else if (_profile._config.advanced.CacheMetadata)
@@ -1005,6 +992,8 @@ namespace JDP
 
                         if (dlgRes == DialogResult.Cancel)
                             return;
+
+                        cueSheet.LoadAndResizeAlbumArt();
 
                         cueSheet.GenerateFilenames(audioEncoderType, outputFormat, pathOut);
 
@@ -1040,6 +1029,10 @@ namespace JDP
                         }
                         if (outputExists.Count == 0)
                         {
+                            this.Invoke((MethodInvoker)delegate ()
+                            {
+                                pictureBoxMotd.Image = cueSheet.Cover ?? motdImage;
+                            });
                             cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
                             if (script == null || script.name == "default")
                             {
@@ -1212,7 +1205,7 @@ namespace JDP
             {
                 if (e.percent == 0)
                 {
-                    toolStripStatusLabelProcessed.Visible = false;
+                    toolStripStatusLabelProcessed.Text = "";
                     toolStripProgressBar2.ToolTipText = "";
                 }
                 else if (e.percent > 0.02)
@@ -1227,9 +1220,9 @@ namespace JDP
                     }
                     toolStripProgressBar2.ToolTipText = String.Format("{0}:{1:00}/{2}:{3:00}", (int)span.TotalMinutes, span.Seconds, (int)eta.TotalMinutes, eta.Seconds);
                     toolStripStatusLabelProcessed.Text = String.Format("{0}@{1}", toolStripProgressBar2.ToolTipText, speedStr);
-                    toolStripStatusLabelProcessed.Visible = true;
                 }
                 toolStripStatusLabel1.Text = e.status.Replace("&", "&&");
+                toolStripStatusLabel1.ToolTipText = e.status;
                 toolStripProgressBar2.Value = Math.Max(0, Math.Min(100, (int)(e.percent * 100)));
 
                 toolStripStatusLabelAR.Enabled = e.cueSheet != null && e.cueSheet.ArVerify != null && e.cueSheet.ArVerify.ARStatus == null;
@@ -1290,7 +1283,7 @@ namespace JDP
             {
                 UpdateActions();
                 pictureBoxMotd.Image = motdImage;
-                toolStripStatusLabelProcessed.Visible = false;
+                toolStripStatusLabelProcessed.Text = "";
             }
 
             //rbGapsLeftOut.Visible = 
