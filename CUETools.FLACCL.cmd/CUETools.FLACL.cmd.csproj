@@ -56,7 +56,7 @@
   <ItemGroup>
     <Reference Include="OpenCLNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\openclnet\source\bin\Release\net40\OpenCLNet.dll</HintPath>
+      <HintPath>..\ThirdParty\openclnet\source\bin\$(Configuration)\net47\OpenCLNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
