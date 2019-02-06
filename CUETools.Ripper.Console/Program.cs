@@ -22,8 +22,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
-using System.Collections.Generic;
 using CUETools.Ripper;
 using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
@@ -33,7 +31,10 @@ using CUETools.CTDB;
 
 namespace CUETools.ConsoleRipper
 {
-	class ProgressMeter
+    using TagLib;
+    using TagLib.Ogg;
+
+    class ProgressMeter
 	{
 		public DateTime realStart;
 
@@ -84,6 +85,7 @@ namespace CUETools.ConsoleRipper
 			Console.WriteLine("-T, --test               detect read command;");
 			Console.WriteLine("--d8                     force D8h read command;");
 			Console.WriteLine("--be                     force BEh read command;");
+		    Console.WriteLine("-F, --flac               rip to FLAC instead of WAV (uses Flake with compression level 8)");
 		}
 
 		static void Main(string[] args)
@@ -98,29 +100,33 @@ namespace CUETools.ConsoleRipper
 			int driveOffset = 0;
 			bool test = false;
 			bool forceD8 = false, forceBE = false, quiet = false;
+            bool flac = false;
+
 			for (int arg = 0; arg < args.Length; arg++)
 			{
 				bool ok = true;
-				if (args[arg] == "-P" || args[arg] == "--paranoid")
-					correctionQuality = 2;
-				else if (args[arg] == "-S" || args[arg] == "--secure")
-					correctionQuality = 1;
-				else if (args[arg] == "-B" || args[arg] == "--burst")
-					correctionQuality = 0;
-				else if (args[arg] == "-T" || args[arg] == "--test")
-					test = true;
-				else if (args[arg] == "--d8")
-					forceD8 = true;
-				else if (args[arg] == "--be")
-					forceBE = true;
-				else if (args[arg] == "-Q" || args[arg] == "--quiet")
-					quiet = true;
-				else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
-					driveLetter = args[arg];
-				else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out driveOffset);
-				else
-					ok = false;
+                if (args[arg] == "-P" || args[arg] == "--paranoid")
+                    correctionQuality = 2;
+                else if (args[arg] == "-S" || args[arg] == "--secure")
+                    correctionQuality = 1;
+                else if (args[arg] == "-B" || args[arg] == "--burst")
+                    correctionQuality = 0;
+                else if (args[arg] == "-T" || args[arg] == "--test")
+                    test = true;
+                else if (args[arg] == "--d8")
+                    forceD8 = true;
+                else if (args[arg] == "--be")
+                    forceBE = true;
+                else if (args[arg] == "-Q" || args[arg] == "--quiet")
+                    quiet = true;
+                else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
+                    driveLetter = args[arg];
+                else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
+                    ok = int.TryParse(args[arg], out driveOffset);
+                else if (args[arg] == "--flac" || args[arg] == "-F")
+                    flac = true;
+                else
+                    ok = false;
 				if (!ok)
 				{
 					Usage();
@@ -189,8 +195,9 @@ namespace CUETools.ConsoleRipper
 					break;
 				}
 
-				//string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
-				string destFile = (meta == null) ? "cdimage.wav" : meta.artist + " - " + meta.album + ".wav";
+                string destFile = flac ?
+                    (meta == null ? "cdimage.flac" : meta.artist + " - " + meta.album + ".flac") :
+                    (meta == null ? "cdimage.wav" : meta.artist + " - " + meta.album + ".wav");
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
@@ -241,8 +248,20 @@ namespace CUETools.ConsoleRipper
 				cueFile.Write(cueWriter.ToString());
 				cueFile.Close();
 
-				//IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
-                IAudioDest audioDest = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(audioSource.PCM), destFile);
+                IAudioDest audioDest;
+
+			    if (flac)
+			    {
+			        var settings = new Codecs.Flake.EncoderSettings();
+                    settings.PCM = audioSource.PCM;
+			        settings.SetEncoderModeIndex(8);
+                    audioDest = new Codecs.Flake.AudioEncoder(settings, destFile);
+			    }
+			    else
+			    {
+                    audioDest = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(audioSource.PCM), destFile);
+                }
+
 				audioDest.FinalSampleCount = audioSource.Length;
 				while (audioSource.Read(buff, -1) != 0)
 				{
@@ -304,10 +323,37 @@ namespace CUETools.ConsoleRipper
 
 				audioSource.Close();
 
-				//FLACReader tagger = new FLACReader(destFile, null);
-				//tagger.Tags.Add("CUESHEET", cueWriter.ToString());
-				//tagger.Tags.Add("LOG", logWriter.ToString());
-				//tagger.UpdateTags(false);
+			    if (flac)
+			    {
+			        var fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+
+			        var xiph = (XiphComment)fileInfo.GetTag(TagTypes.Xiph);
+			        xiph.SetField("CUESHEET", cueWriter.ToString());
+			        xiph.SetField("LOG", logWriter.ToString());
+
+                    fileInfo.Tag.Album = meta.album;
+			        fileInfo.Tag.AlbumArtists = new[] { meta.artist };
+			        fileInfo.Tag.Performers = new[] { meta.artist };
+			        fileInfo.Tag.Genres = new[] { meta.genre };
+			        fileInfo.Tag.DiscSubtitle = meta.discname;
+
+                    if (uint.TryParse(meta.disccount, out uint discCount))
+			        {
+                        fileInfo.Tag.DiscCount = discCount;
+			        }
+
+			        if (uint.TryParse(meta.discnumber, out uint discNumber))
+			        {
+                        fileInfo.Tag.Disc = discNumber;
+			        }
+
+			        if (uint.TryParse(meta.year, out uint year))
+			        {
+                        fileInfo.Tag.Year = year;
+			        }
+
+			        fileInfo.Save();
+			    }
 			}
 #if !DEBUG
 			catch (Exception ex)

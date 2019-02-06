@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20</TargetFrameworks>
+    <TargetFrameworks>net47</TargetFrameworks>
     <Version>2.1.7.0</Version>
     <AssemblyName>CUETools.Ripper.Console</AssemblyName>
     <RootNamespace>CUETools.Ripper.Console</RootNamespace>
@@ -24,12 +24,14 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CUETools.Codecs.Flake\CUETools.Codecs.Flake.csproj" />
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
     <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
     <ProjectReference Include="..\CUETools.Ripper.SCSI\CUETools.Ripper.SCSI.csproj" />
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj" />
   </ItemGroup>
 
 </Project>
