@@ -31,6 +31,9 @@ using CUETools.CTDB;
 
 namespace CUETools.ConsoleRipper
 {
+    using System.Globalization;
+    using System.Text.RegularExpressions;
+
     using TagLib;
     using TagLib.Ogg;
 
@@ -196,8 +199,8 @@ namespace CUETools.ConsoleRipper
 				}
 
                 string destFile = flac ?
-                    (meta == null ? "cdimage.flac" : meta.artist + " - " + meta.album + ".flac") :
-                    (meta == null ? "cdimage.wav" : meta.artist + " - " + meta.album + ".wav");
+                    (meta == null ? "cdimage.flac" : Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".flac")) :
+                    (meta == null ? "cdimage.wav" : Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".wav"));
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
@@ -365,16 +368,56 @@ namespace CUETools.ConsoleRipper
 #endif
 		}
 
-		//private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
-		//{
-		//    if (this.CUEToolsProgress == null)
-		//        return;
-		//    _progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
-		//    _progress.percentTrack = 0;
-		//    _progress.input = e.Uri.ToString();
-		//    _progress.output = null;
-		//    _progress.status = "Looking up album via MusicBrainz";
-		//    this.CUEToolsProgress(this, _progress);
-		//}
-	}
+	    private static readonly string[] reservedWords = new[] { "CON", "PRN", "AUX", "CLOCK$", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+	    private static readonly string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()) + "'");
+
+        private static string CoerceValidFileName(string filename)
+	    {
+	        string invalidReStr = string.Format(CultureInfo.InvariantCulture, @"[{0}]+", Program.invalidChars);
+	        string sanitisedNamePart = Regex.Replace(filename, invalidReStr, "_");
+
+	        var pieces = sanitisedNamePart.Split('.');
+	        bool needsRegEx = false;
+
+	        foreach (string piece in pieces)
+	        {
+	            foreach (string word in Program.reservedWords)
+	            {
+	                if (word.Equals(piece, StringComparison.OrdinalIgnoreCase))
+	                {
+	                    needsRegEx = true;
+	                    break;
+	                }
+	            }
+
+	            if (needsRegEx)
+	            {
+	                break;
+	            }
+	        }
+
+	        if (needsRegEx)
+	        {
+	            foreach (string reservedWord in Program.reservedWords)
+	            {
+	                string reservedWordPattern = string.Format(CultureInfo.InvariantCulture, "^{0}\\.", reservedWord);
+	                sanitisedNamePart = Regex.Replace(sanitisedNamePart, reservedWordPattern, "_reservedWord_.", RegexOptions.IgnoreCase);
+	            }
+	        }
+
+	        return sanitisedNamePart;
+	    }
+
+        //private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
+        //{
+        //    if (this.CUEToolsProgress == null)
+        //        return;
+        //    _progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
+        //    _progress.percentTrack = 0;
+        //    _progress.input = e.Uri.ToString();
+        //    _progress.output = null;
+        //    _progress.status = "Looking up album via MusicBrainz";
+        //    this.CUEToolsProgress(this, _progress);
+        //}
+    }
 }
