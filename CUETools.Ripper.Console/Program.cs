@@ -89,6 +89,8 @@ namespace CUETools.ConsoleRipper
 			Console.WriteLine("--d8                     force D8h read command;");
 			Console.WriteLine("--be                     force BEh read command;");
 		    Console.WriteLine("-F, --flac               rip to FLAC instead of WAV (uses Flake with compression level 8)");
+		    Console.WriteLine("-I, --info               only output information on the CD; do not rip it");
+		    Console.WriteLine("-N, --filename           specify the output file name (do not specify file extension)");
 		}
 
 		static void Main(string[] args)
@@ -104,6 +106,8 @@ namespace CUETools.ConsoleRipper
 			bool test = false;
 			bool forceD8 = false, forceBE = false, quiet = false;
             bool flac = false;
+            bool infoOnly = false;
+            string destFileNameWithoutExtension = null;
 
 			for (int arg = 0; arg < args.Length; arg++)
 			{
@@ -128,6 +132,10 @@ namespace CUETools.ConsoleRipper
                     ok = int.TryParse(args[arg], out driveOffset);
                 else if (args[arg] == "--flac" || args[arg] == "-F")
                     flac = true;
+                else if (args[arg] == "-I" || args[arg] == "--info")
+                    infoOnly = true;
+                else if ((args[arg] == "-N" || args[arg] == "--filename") && ++arg < args.Length)
+                    destFileNameWithoutExtension = args[arg];
                 else
                     ok = false;
 				if (!ok)
@@ -198,9 +206,38 @@ namespace CUETools.ConsoleRipper
 					break;
 				}
 
-                string destFile = flac ?
-                    (meta == null ? "cdimage.flac" : Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".flac")) :
-                    (meta == null ? "cdimage.wav" : Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".wav"));
+			    string destFile;
+
+			    if (flac)
+			    {
+			        if (!string.IsNullOrEmpty(destFileNameWithoutExtension))
+			        {
+			            destFile = destFileNameWithoutExtension + ".flac";
+			        }
+                    else if (meta != null)
+			        {
+			            destFile = Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".flac");
+			        }
+			        else
+			        {
+			            destFile = "cdimage.flac";
+			        }
+			    }
+			    else
+			    {
+			        if (!string.IsNullOrEmpty(destFileNameWithoutExtension))
+			        {
+			            destFile = destFileNameWithoutExtension + ".wav";
+			        }
+			        else if (meta != null)
+			        {
+			            destFile = Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".wav");
+			        }
+			        else
+			        {
+			            destFile = "cdimage.wav";
+			        }
+                }
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
@@ -210,6 +247,18 @@ namespace CUETools.ConsoleRipper
 				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 				Console.WriteLine("MusicBrainz : {0}", meta == null ? "not found" : meta.artist + " - " + meta.album);
+			    Console.WriteLine("Artist      : {0}", meta == null ? string.Empty : meta.artist);
+			    Console.WriteLine("Album       : {0}", meta == null ? string.Empty : meta.album);
+			    Console.WriteLine("Year        : {0}", meta == null ? string.Empty : meta.year);
+			    Console.WriteLine("Genre       : {0}", meta == null ? string.Empty : meta.genre);
+			    Console.WriteLine("Disc Number : {0}", meta == null ? string.Empty : meta.discnumber);
+			    Console.WriteLine("Disc Name   : {0}", meta == null ? string.Empty : meta.discname);
+			    Console.WriteLine("Disc Count  : {0}", meta == null ? string.Empty : meta.disccount);
+
+			    if (infoOnly)
+			    {
+                    return;
+			    }
 
 				ProgressMeter meter = new ProgressMeter();
 				audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(meter.ReadProgress);
@@ -334,25 +383,28 @@ namespace CUETools.ConsoleRipper
 			        xiph.SetField("CUESHEET", cueWriter.ToString());
 			        xiph.SetField("LOG", logWriter.ToString());
 
-                    fileInfo.Tag.Album = meta.album;
-			        fileInfo.Tag.AlbumArtists = new[] { meta.artist };
-			        fileInfo.Tag.Performers = new[] { meta.artist };
-			        fileInfo.Tag.Genres = new[] { meta.genre };
-			        fileInfo.Tag.DiscSubtitle = meta.discname;
-
-                    if (uint.TryParse(meta.disccount, out uint discCount))
+			        if (meta != null)
 			        {
-                        fileInfo.Tag.DiscCount = discCount;
-			        }
+			            fileInfo.Tag.Album = meta.album;
+			            fileInfo.Tag.AlbumArtists = new[] { meta.artist };
+			            fileInfo.Tag.Performers = new[] { meta.artist };
+			            fileInfo.Tag.Genres = new[] { meta.genre };
+			            fileInfo.Tag.DiscSubtitle = meta.discname;
 
-			        if (uint.TryParse(meta.discnumber, out uint discNumber))
-			        {
-                        fileInfo.Tag.Disc = discNumber;
-			        }
+			            if (uint.TryParse(meta.disccount, out uint discCount))
+			            {
+			                fileInfo.Tag.DiscCount = discCount;
+			            }
 
-			        if (uint.TryParse(meta.year, out uint year))
-			        {
-                        fileInfo.Tag.Year = year;
+			            if (uint.TryParse(meta.discnumber, out uint discNumber))
+			            {
+			                fileInfo.Tag.Disc = discNumber;
+			            }
+
+			            if (uint.TryParse(meta.year, out uint year))
+			            {
+			                fileInfo.Tag.Year = year;
+			            }
 			        }
 
 			        fileInfo.Save();
