@@ -91,6 +91,13 @@ namespace CUETools.ConsoleRipper
 		    Console.WriteLine("-F, --flac               rip to FLAC instead of WAV (uses Flake with compression level 8)");
 		    Console.WriteLine("-I, --info               only output information on the CD; do not rip it");
 		    Console.WriteLine("-N, --filename           specify the output file name (do not specify file extension)");
+		    Console.WriteLine("-A, --artist             specify the artist");
+		    Console.WriteLine("-L, --album              specify the album");
+		    Console.WriteLine("-G, --genres             specify semicolon-separated list of genres");
+		    Console.WriteLine("-Y, --year               specify year");
+		    Console.WriteLine("-B, --discnumber         specify disc number");
+		    Console.WriteLine("-C, --disccount          specify disc count");
+		    Console.WriteLine("-M, --discname           specify disc name");
 		}
 
 		static void Main(string[] args)
@@ -108,6 +115,8 @@ namespace CUETools.ConsoleRipper
             bool flac = false;
             bool infoOnly = false;
             string destFileNameWithoutExtension = null;
+		    string artist = null, album = null, genres = null, discName = null;
+		    uint year = 0, discNumber = 0, discCount = 0;
 
 			for (int arg = 0; arg < args.Length; arg++)
 			{
@@ -136,6 +145,20 @@ namespace CUETools.ConsoleRipper
                     infoOnly = true;
                 else if ((args[arg] == "-N" || args[arg] == "--filename") && ++arg < args.Length)
                     destFileNameWithoutExtension = args[arg];
+                else if ((args[arg] == "-A" || args[arg] == "--artist") && ++arg < args.Length)
+                    artist = args[arg];
+			    else if ((args[arg] == "-L" || args[arg] == "--album") && ++arg < args.Length)
+                    album = args[arg];
+			    else if ((args[arg] == "-G" || args[arg] == "--genres") && ++arg < args.Length)
+                    genres = args[arg];
+			    else if ((args[arg] == "-Y" || args[arg] == "--year") && ++arg < args.Length)
+                    ok = uint.TryParse(args[arg], out year);
+			    else if ((args[arg] == "-B" || args[arg] == "--discnumber") && ++arg < args.Length)
+                    ok = uint.TryParse(args[arg], out discNumber);
+			    else if ((args[arg] == "-C" || args[arg] == "--disccount") && ++arg < args.Length)
+                    ok = uint.TryParse(args[arg], out discCount);
+                else if ((args[arg] == "-M" || args[arg] == "--discname") && ++arg < args.Length)
+                    discName = args[arg];
                 else
                     ok = false;
 				if (!ok)
@@ -239,6 +262,41 @@ namespace CUETools.ConsoleRipper
 			        }
                 }
 
+			    if (string.IsNullOrEmpty(artist) && meta != null)
+			    {
+                    artist = meta.artist;
+			    }
+
+			    if (string.IsNullOrEmpty(album) && meta != null)
+			    {
+                    album = meta.album;
+			    }
+
+			    if (string.IsNullOrEmpty(genres) && meta != null)
+			    {
+                    genres = meta.genre;
+			    }
+
+			    if (year == 0 && meta != null)
+			    {
+			        uint.TryParse(meta.year, out year);
+			    }
+
+			    if (discNumber == 0 && meta != null)
+			    {
+			        uint.TryParse(meta.discnumber, out discNumber);
+			    }
+
+			    if (discCount == 0 && meta != null)
+			    {
+			        uint.TryParse(meta.disccount, out discCount);
+			    }
+
+			    if (string.IsNullOrEmpty(discName) && meta != null)
+			    {
+			        discName = meta.discname;
+			    }
+
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
 				Console.WriteLine("Read cmd    : {0}", audioSource.CurrentReadCommand);
@@ -247,13 +305,13 @@ namespace CUETools.ConsoleRipper
 				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 				Console.WriteLine("MusicBrainz : {0}", meta == null ? "not found" : meta.artist + " - " + meta.album);
-			    Console.WriteLine("Artist      : {0}", meta == null ? string.Empty : meta.artist);
-			    Console.WriteLine("Album       : {0}", meta == null ? string.Empty : meta.album);
-			    Console.WriteLine("Year        : {0}", meta == null ? string.Empty : meta.year);
-			    Console.WriteLine("Genre       : {0}", meta == null ? string.Empty : meta.genre);
-			    Console.WriteLine("Disc Number : {0}", meta == null ? string.Empty : meta.discnumber);
-			    Console.WriteLine("Disc Name   : {0}", meta == null ? string.Empty : meta.discname);
-			    Console.WriteLine("Disc Count  : {0}", meta == null ? string.Empty : meta.disccount);
+			    Console.WriteLine("Artist      : {0}", artist);
+			    Console.WriteLine("Album       : {0}", album);
+			    Console.WriteLine("Year        : {0}", year);
+			    Console.WriteLine("Genre       : {0}", genres);
+			    Console.WriteLine("Disc Number : {0}", discNumber);
+			    Console.WriteLine("Disc Name   : {0}", discName);
+			    Console.WriteLine("Disc Count  : {0}", discCount);
 
 			    if (infoOnly)
 			    {
@@ -269,20 +327,28 @@ namespace CUETools.ConsoleRipper
 				cueWriter.WriteLine("REM DISCID {0}", CDDBId);
 				cueWriter.WriteLine("REM ACCURATERIPID {0}", ArId);
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", audioSource.RipperVersion);
-				if (meta != null && meta.year != "")
-					cueWriter.WriteLine("REM DATE {0}", meta.year);
+				if (year > 0)
+					cueWriter.WriteLine("REM DATE {0}", year);
 				if (audioSource.TOC.Barcode != null)
 					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Barcode);
-				if (meta != null)
+
+			    if (!string.IsNullOrEmpty(artist))
+			    {
+			        cueWriter.WriteLine("PERFORMER \"{0}\"", artist);
+                }
+
+				if (!string.IsNullOrEmpty(album))
 				{
-					cueWriter.WriteLine("PERFORMER \"{0}\"", meta.artist);
-					cueWriter.WriteLine("TITLE \"{0}\"", meta.album);
+					cueWriter.WriteLine("TITLE \"{0}\"", album);
 				}
+
 				cueWriter.WriteLine("FILE \"{0}\" WAVE", destFile);
+
 				for (int track = 1; track <= audioSource.TOC.TrackCount; track++)
 					if (audioSource.TOC[track].IsAudio)
 					{
 						cueWriter.WriteLine("  TRACK {0:00} AUDIO", audioSource.TOC[track].Number);
+
 						if (meta != null && meta.track.Length >= audioSource.TOC[track].Number)
 						{
 							cueWriter.WriteLine("    TITLE \"{0}\"", meta.track[(int)audioSource.TOC[track].Number - 1].name);
@@ -383,28 +449,47 @@ namespace CUETools.ConsoleRipper
 			        xiph.SetField("CUESHEET", cueWriter.ToString());
 			        xiph.SetField("LOG", logWriter.ToString());
 
-			        if (meta != null)
+			        if (!string.IsNullOrEmpty(album))
 			        {
-			            fileInfo.Tag.Album = meta.album;
-			            fileInfo.Tag.AlbumArtists = new[] { meta.artist };
-			            fileInfo.Tag.Performers = new[] { meta.artist };
-			            fileInfo.Tag.Genres = new[] { meta.genre };
-			            fileInfo.Tag.DiscSubtitle = meta.discname;
+                        fileInfo.Tag.Album = album;
+			        }
 
-			            if (uint.TryParse(meta.disccount, out uint discCount))
+			        if (!string.IsNullOrEmpty(artist))
+			        {
+			            fileInfo.Tag.AlbumArtists = new[] { artist };
+			            fileInfo.Tag.Performers = new[] { artist };
+                    }
+
+			        if (!string.IsNullOrEmpty(genres))
+			        {
+			            var splitGenres = genres.Split(';');
+
+			            for (int i = 0; i < splitGenres.Length; i++)
 			            {
-			                fileInfo.Tag.DiscCount = discCount;
+			                splitGenres[i] = splitGenres[i]?.Trim();
 			            }
 
-			            if (uint.TryParse(meta.discnumber, out uint discNumber))
-			            {
-			                fileInfo.Tag.Disc = discNumber;
-			            }
+                        fileInfo.Tag.Genres = splitGenres;
+			        }
 
-			            if (uint.TryParse(meta.year, out uint year))
-			            {
-			                fileInfo.Tag.Year = year;
-			            }
+			        if (!string.IsNullOrEmpty(discName))
+			        {
+                        fileInfo.Tag.DiscSubtitle = discName;
+			        }
+
+			        if (discCount > 0)
+			        {
+                        fileInfo.Tag.DiscCount = discCount;
+			        }
+
+			        if (discNumber > 0)
+			        {
+                        fileInfo.Tag.Disc = discNumber;
+			        }
+
+			        if (year > 0)
+			        {
+			            fileInfo.Tag.Year = year;
 			        }
 
 			        fileInfo.Save();
