@@ -432,7 +432,11 @@ namespace CUETools.CDImage
 				for (int iTrack = 1; iTrack < AudioTracks; iTrack++)
 					mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + iTrack].Start - _tracks[_firstAudio].Start);
 				mbSB.AppendFormat("{0:X8}", _tracks[_firstAudio + (int)AudioTracks - 1].End + 1 - _tracks[_firstAudio].Start);
-				mbSB.Append(new string('0', (100 - (int)AudioTracks) * 8));
+				int numberOfRemainingAudioTracks = 100 - (int)AudioTracks;
+				if (numberOfRemainingAudioTracks < 0)
+					// Non-standard CUE sheet with more than 99 tracks.
+					numberOfRemainingAudioTracks = 0;
+				mbSB.Append(new string('0', numberOfRemainingAudioTracks * 8));
 				byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(mbSB.ToString()));
 				return Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
 			}
