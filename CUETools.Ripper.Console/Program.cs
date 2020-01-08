@@ -190,7 +190,7 @@ namespace CUETools.ConsoleRipper
 				}
 
 				//string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
-				string destFile = (meta == null) ? "cdimage.wav" : meta.artist + " - " + meta.album + ".wav";
+				string destFile = (meta == null) ? "cdimage.wav" : string.Join("_", (meta.artist + " - " + meta.album).Split(Path.GetInvalidFileNameChars())) + ".wav";
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
