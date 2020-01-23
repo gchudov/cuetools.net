@@ -12,7 +12,7 @@ namespace CUETools.LossyWAVSharp
 	{
 		static void Usage()
 		{
-			Console.WriteLine("Usage    : LossyWAVSharp.exe <file.wav> <options>");
+			Console.WriteLine("Usage    : CUETools.LossyWAV.exe <file.wav> <options>");
 			Console.WriteLine();
 			Console.WriteLine("Quality Options:");
 			Console.WriteLine();

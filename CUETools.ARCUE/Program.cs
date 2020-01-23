@@ -29,7 +29,7 @@ namespace ArCueDotNet
             if (!ok || pathIn == null)
             {
                 Console.SetOut(Console.Error);
-                Console.WriteLine("Usage: ArCueDotNet [options] <filename>");
+                Console.WriteLine("Usage    : CUETools.ARCUE.exe [options] <filename>");
                 Console.WriteLine();
                 Console.WriteLine("Options:");
                 Console.WriteLine();
