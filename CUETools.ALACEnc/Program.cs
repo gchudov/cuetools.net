@@ -143,7 +143,7 @@ namespace CUETools.ALACEnc
 
 			if (!quiet)
 			{
-				Console.WriteLine("CUETools.ALACEnc, Copyright (C) 2009 Grigory Chudov.");
+				Console.WriteLine("CUETools.ALACEnc, Copyright (C) 2009-2020 Grigory Chudov.");
 				Console.WriteLine("Based on ffdshow ALAC audio encoder");
 				Console.WriteLine("Copyright (c) 2008  Jaikrishnan Menon, <realityman@gmx.net>");
 				Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");

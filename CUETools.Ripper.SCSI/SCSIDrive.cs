@@ -1,7 +1,7 @@
 // ****************************************************************************
 // 
 // CUERipper
-// Copyright (C) 2008-13 Grigory Chudov (gchudov@gmail.com)
+// Copyright (C) 2008-2020 Grigory Chudov (gchudov@gmail.com)
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1261,7 +1261,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return "CUERipper v2.1.7 Copyright (C) 2008-13 Grigory Chudov";
+				return "CUERipper v2.1.7 Copyright (C) 2008-2020 Grigory Chudov";
 				// ripper.GetName().Name + " " + ripper.GetName().Version;
 			}
 		}
