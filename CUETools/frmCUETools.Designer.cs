@@ -100,7 +100,7 @@ namespace JDP {
             this.txtPreGapLength = new System.Windows.Forms.MaskedTextBox();
             this.labelDataTrack = new System.Windows.Forms.Label();
             this.txtDataTrackLength = new System.Windows.Forms.MaskedTextBox();
-            this.textBoxOffset = new System.Windows.Forms.TextBox();
+            this.numericUpDownOffset = new System.Windows.Forms.NumericUpDown();
             this.panelGo = new System.Windows.Forms.Panel();
             this.btnConvert = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
@@ -151,6 +151,7 @@ namespace JDP {
             this.grpAction.SuspendLayout();
             this.grpExtra.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownOffset)).BeginInit();
             this.panelGo.SuspendLayout();
             this.toolStripMenu.SuspendLayout();
             this.contextMenuStripFileTree.SuspendLayout();
@@ -804,7 +805,7 @@ namespace JDP {
             this.tableLayoutPanel4.Controls.Add(this.txtPreGapLength, 1, 0);
             this.tableLayoutPanel4.Controls.Add(this.labelDataTrack, 0, 1);
             this.tableLayoutPanel4.Controls.Add(this.txtDataTrackLength, 1, 1);
-            this.tableLayoutPanel4.Controls.Add(this.textBoxOffset, 1, 2);
+            this.tableLayoutPanel4.Controls.Add(this.numericUpDownOffset, 1, 2);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             // 
             // labelPregap
@@ -842,12 +843,21 @@ namespace JDP {
             this.txtDataTrackLength.TextMaskFormat = System.Windows.Forms.MaskFormat.IncludePromptAndLiterals;
             this.toolTip1.SetToolTip(this.txtDataTrackLength, resources.GetString("txtDataTrackLength.ToolTip"));
             // 
-            // textBoxOffset
+            // numericUpDownOffset
             // 
-            resources.ApplyResources(this.textBoxOffset, "textBoxOffset");
-            this.textBoxOffset.Name = "textBoxOffset";
-            this.textBoxOffset.TextChanged += new System.EventHandler(this.textBoxOffset_TextChanged);
-            this.textBoxOffset.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxOffset_KeyPress);
+            resources.ApplyResources(this.numericUpDownOffset, "numericUpDownOffset");
+            this.numericUpDownOffset.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.numericUpDownOffset.Minimum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            -2147483648});
+            this.numericUpDownOffset.Name = "numericUpDownOffset";
+            this.numericUpDownOffset.ValueChanged += new System.EventHandler(this.numericUpDownOffset_ValueChanged);
             // 
             // panelGo
             // 
@@ -918,8 +928,8 @@ namespace JDP {
             // 
             // toolStripTextBoxAddProfile
             // 
-            this.toolStripTextBoxAddProfile.Name = "toolStripTextBoxAddProfile";
             resources.ApplyResources(this.toolStripTextBoxAddProfile, "toolStripTextBoxAddProfile");
+            this.toolStripTextBoxAddProfile.Name = "toolStripTextBoxAddProfile";
             this.toolStripTextBoxAddProfile.KeyDown += new System.Windows.Forms.KeyEventHandler(this.toolStripTextBoxAddProfile_KeyDown);
             // 
             // toolStripMenuItemDeleteProfile
@@ -1104,6 +1114,7 @@ namespace JDP {
             this.grpExtra.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownOffset)).EndInit();
             this.panelGo.ResumeLayout(false);
             this.toolStripMenu.ResumeLayout(false);
             this.toolStripMenu.PerformLayout();
@@ -1217,7 +1228,7 @@ namespace JDP {
         private System.Windows.Forms.ToolStripMenuItem updateLocalDatabaseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem locateInExplorerToolStripMenuItem;
         private System.Windows.Forms.Button buttonEncoderSettings;
-        private System.Windows.Forms.TextBox textBoxOffset;
-	}
+        private System.Windows.Forms.NumericUpDown numericUpDownOffset;
+    }
 }
 

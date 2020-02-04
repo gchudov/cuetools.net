@@ -940,7 +940,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel4.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="labelPregap" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="lblWriteOffset" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtPreGapLength" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="labelDataTrack" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtDataTrackLength" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="textBoxOffset" Row="2" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,56.75676,Percent,43.24324" /&gt;&lt;Rows Styles="Percent,33.33333,Percent,33.33333,Percent,33.33333" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="labelPregap" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="lblWriteOffset" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtPreGapLength" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="labelDataTrack" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtDataTrackLength" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="numericUpDownOffset" Row="2" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,56.75676,Percent,43.24324" /&gt;&lt;Rows Styles="Percent,33.33333,Percent,33.33333,Percent,33.33333" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="grpExtra.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -2550,16 +2550,16 @@
   <data name="&gt;&gt;txtDataTrackLength.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.Name" xml:space="preserve">
-    <value>textBoxOffset</value>
+  <data name="&gt;&gt;numericUpDownOffset.Name" xml:space="preserve">
+    <value>numericUpDownOffset</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.Type" xml:space="preserve">
+  <data name="&gt;&gt;numericUpDownOffset.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.Parent" xml:space="preserve">
+  <data name="&gt;&gt;numericUpDownOffset.Parent" xml:space="preserve">
     <value>tableLayoutPanel4</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;numericUpDownOffset.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
   <data name="tableLayoutPanel4.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
@@ -2593,7 +2593,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel4.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="labelPregap" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="lblWriteOffset" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtPreGapLength" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="labelDataTrack" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtDataTrackLength" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="textBoxOffset" Row="2" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,56.75676,Percent,43.24324" /&gt;&lt;Rows Styles="Percent,33.33333,Percent,33.33333,Percent,33.33333" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="labelPregap" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="lblWriteOffset" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtPreGapLength" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="labelDataTrack" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="txtDataTrackLength" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="numericUpDownOffset" Row="2" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,56.75676,Percent,43.24324" /&gt;&lt;Rows Styles="Percent,33.33333,Percent,33.33333,Percent,33.33333" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="labelPregap.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2790,40 +2790,34 @@
   <data name="&gt;&gt;txtDataTrackLength.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="textBoxOffset.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+  <data name="numericUpDownOffset.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
-  <data name="textBoxOffset.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="numericUpDownOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>128, 81</value>
   </data>
-  <data name="textBoxOffset.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+  <data name="numericUpDownOffset.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 8, 6, 8</value>
   </data>
-  <data name="textBoxOffset.MaxLength" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="textBoxOffset.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="numericUpDownOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>87, 27</value>
   </data>
-  <data name="textBoxOffset.TabIndex" type="System.Int32, mscorlib">
+  <data name="numericUpDownOffset.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
-  <data name="textBoxOffset.Text" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="textBoxOffset.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
+  <data name="numericUpDownOffset.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.Name" xml:space="preserve">
-    <value>textBoxOffset</value>
+  <data name="&gt;&gt;numericUpDownOffset.Name" xml:space="preserve">
+    <value>numericUpDownOffset</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.Type" xml:space="preserve">
+  <data name="&gt;&gt;numericUpDownOffset.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.Parent" xml:space="preserve">
+  <data name="&gt;&gt;numericUpDownOffset.Parent" xml:space="preserve">
     <value>tableLayoutPanel4</value>
   </data>
-  <data name="&gt;&gt;textBoxOffset.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;numericUpDownOffset.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
   <data name="btnConvert.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">

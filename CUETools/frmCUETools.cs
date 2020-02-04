@@ -492,7 +492,7 @@ namespace JDP
                 cueSheet.PasswordRequired += new EventHandler<CompressionPasswordRequiredEventArgs>(PasswordRequired);
                 cueSheet.CUEToolsProgress += new EventHandler<CUEToolsProgressEventArgs>(SetStatus);
                 cueSheet.CUEToolsSelection += new EventHandler<CUEToolsSelectionEventArgs>(MakeSelection);
-                cueSheet.WriteOffset = Int32.Parse(textBoxOffset.Text);
+                cueSheet.WriteOffset = (int)numericUpDownOffset.Value;
 
                 object[] p = new object[7];
 
@@ -1332,7 +1332,7 @@ namespace JDP
 
         private bool CheckWriteOffset()
         {
-            if (!rbActionEncode.Checked || SelectedOutputAudioType == AudioEncoderType.NoAudio || 0 == Int32.Parse(textBoxOffset.Text))
+            if (!rbActionEncode.Checked || SelectedOutputAudioType == AudioEncoderType.NoAudio || numericUpDownOffset.Value == 0)
             {
                 return true;
             }
@@ -1350,7 +1350,7 @@ namespace JDP
             SelectedOutputAudioFormat = _profile._outputAudioFormat;
             SelectedAction = _profile._action;
             SelectedCUEStyle = _profile._CUEStyle;
-            textBoxOffset.Text = _profile._writeOffset.ToString();
+            numericUpDownOffset.Value = _profile._writeOffset;
             comboBoxOutputFormat.Text = _profile._outputTemplate ?? comboBoxOutputFormat.Items[0].ToString();
             toolStripDropDownButtonProfile.Text = _profile._name;
             SelectedScript = _profile._script;
@@ -1389,7 +1389,7 @@ namespace JDP
             _profile._outputAudioFormat = SelectedOutputAudioFormat;
             _profile._action = SelectedAction;
             _profile._CUEStyle = SelectedCUEStyle;
-            _profile._writeOffset = Int32.Parse(textBoxOffset.Text);
+            _profile._writeOffset = (int)numericUpDownOffset.Value;
             _profile._outputTemplate = comboBoxOutputFormat.Text;
             _profile._script = SelectedScript;
             _profile._editTags = checkBoxEditTags.Checked;
@@ -2656,6 +2656,12 @@ namespace JDP
                 CorrectorModeEnum.Extension : CorrectorModeEnum.Locate;
         }
 
+        private void numericUpDownOffset_ValueChanged(object sender, EventArgs e)
+        {
+            // Round the same way as displayed in the NumericUpDown control, if decimal values are entered.
+            numericUpDownOffset.Value = Math.Round(numericUpDownOffset.Value, 0, MidpointRounding.AwayFromZero);
+        }
+
         private void pictureBoxMotd_Click(object sender, EventArgs e)
         {
             if (motdImage != null && pictureBoxMotd.Image == motdImage)
@@ -2723,36 +2729,6 @@ namespace JDP
                 settingsForm.ShowDialog(this);
             }
             SelectedOutputAudioType = SelectedOutputAudioType;
-        }
-
-        private void textBoxOffset_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsControl(e.KeyChar)
-                && !char.IsDigit(e.KeyChar)
-                && e.KeyChar != '-')
-            {
-                e.Handled = true;
-            }
-            base.OnKeyPress(e);
-        }
-
-        private void textBoxOffset_TextChanged(object sender, EventArgs e)
-        {
-            int res;
-            var sb = new StringBuilder();
-            foreach (var c in textBoxOffset.Text.ToCharArray())
-                if (char.IsDigit(c) || (c == '-' && sb.Length == 0))
-                    sb.Append(c);
-            if (textBoxOffset.Text != sb.ToString())
-                textBoxOffset.Text = sb.ToString();
-            if (!int.TryParse(textBoxOffset.Text, out res))
-                textBoxOffset.Text = "0";
-            else
-            {
-                res = Math.Max(-9999,Math.Min(res, 9999));
-                if (textBoxOffset.Text != res.ToString() && textBoxOffset.Text != "-0")
-                    textBoxOffset.Text = res.ToString();
-            }
         }
     }
 }
