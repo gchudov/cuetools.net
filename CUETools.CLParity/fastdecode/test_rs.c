@@ -136,7 +136,7 @@ void fill_table()
         if (state>>n_field!=0) exit(0);
     }
 
-    // usefull since later
+    // useful since later
     // log_table[1] = modulo
     exp_table[2*modulo]=1;
 }
@@ -283,7 +283,7 @@ void compute_product_quadratic(int K, int *positions)
 // [output] is where we will write the result
 
 // both functions are almost identical
-// but it is usefull to have two for profiling
+// but it is useful to have two for profiling
 
 void quadratic_enc(int K, int S, symbol *data, symbol *output, int x)
 {
@@ -292,7 +292,7 @@ void quadratic_enc(int K, int S, symbol *data, symbol *output, int x)
 
     // first time we overwrite output
     {
-        // the second substraction can also
+        // the second subtraction can also
         // go into quadratic_init
         int t = m - log_table[x] - product_enc[0];
         if (t<0) t+= modulo;
@@ -317,7 +317,7 @@ void quadratic_enc(int K, int S, symbol *data, symbol *output, int x)
     // other time we just xor into the output
     for (i=1; i<K; i++)
     {
-        // the second substraction can also
+        // the second subtraction can also
         // go into quadratic_init
         int t = m - log_table[i ^ x] - product_enc[i];
         if (t<0) t+= modulo;
@@ -347,7 +347,7 @@ void quadratic_dec(int K, int S, int *positions, symbol *data, symbol *output, i
 
     // first time we erase output
     {
-        // the second substraction can also
+        // the second subtraction can also
         // go into quadratic_init
         int t = m - log_table[positions[0] ^ x] - product[positions[0]];
         if (t<0) t+= modulo;
@@ -372,7 +372,7 @@ void quadratic_dec(int K, int S, int *positions, symbol *data, symbol *output, i
     // other time we just xor into the output
     for (i=1; i<K; i++)
     {
-        // the second substraction can also
+        // the second subtraction can also
         // go into quadratic_init
         int t = m - log_table[positions[i] ^ x] - product[positions[i]];
         if (t<0) t+= modulo;

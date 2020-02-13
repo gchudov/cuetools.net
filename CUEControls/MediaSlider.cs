@@ -2,7 +2,7 @@
 /************************************************************************************
     *  MediaSlider v1.3                                                                 *
     *                                                                                   *
-    *  Created:     Febuary 7, 2010                                                     *
+    *  Created:     February 7, 2010                                                     *
     *  Built on:    Win7                                                                *
     *  Purpose:     Animated slider control                                             *
     *  Revision:    1.3                                                                 *
@@ -100,7 +100,7 @@ namespace MediaSlider
         {
             None = 0,
             OnFocus,
-            Persistant
+            Persistent
         }
 
         public enum PresetType : uint
@@ -456,7 +456,7 @@ namespace MediaSlider
 
         #region Public Properties
         /// <summary>Run the animation effect when focused</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Run the animation effect when focused")]
         public bool Animated
         {
@@ -476,7 +476,7 @@ namespace MediaSlider
         }
 
         /// <summary>Animation cycle speed</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Animation cycle speed")]
         public AnimateSpeed AnimationSpeed
         {
@@ -502,7 +502,7 @@ namespace MediaSlider
         }
 
         /// <summary>Use an image for the slider background</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Use an image for the slider background")]
         public new Bitmap BackgroundImage
         {
@@ -538,7 +538,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify button accent color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Modify button accent color")]
         public Color ButtonAccentColor
         {
@@ -551,7 +551,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify button border color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Modify button border color")]
         public Color ButtonBorderColor
         {
@@ -564,7 +564,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify button base color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Modify button base color")]
         public Color ButtonColor
         {
@@ -586,7 +586,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify slider button size</summary>
-        [Browsable(true), Category("Appearence"), RefreshProperties(RefreshProperties.All),
+        [Browsable(true), Category("Appearance"), RefreshProperties(RefreshProperties.All),
         Description("Modify slider button size")]
         public Size ButtonSize
         {
@@ -600,7 +600,7 @@ namespace MediaSlider
         }
 
         /// <summary>Set the button style</summary>
-        [Browsable(true), Category("Appearence"), RefreshProperties(RefreshProperties.All),
+        [Browsable(true), Category("Appearance"), RefreshProperties(RefreshProperties.All),
         Description("Set the button style")]
         public ButtonType ButtonStyle
         {
@@ -734,7 +734,7 @@ namespace MediaSlider
         }
 
         /// <summary>The orientation of the control</summary>
-        [Browsable(true), Category("Appearence"), RefreshProperties(RefreshProperties.All),
+        [Browsable(true), Category("Appearance"), RefreshProperties(RefreshProperties.All),
         Description("The orientation of the control")]
         public Orientation Orientation
         {
@@ -764,7 +764,7 @@ namespace MediaSlider
         }
 
         /// <summary>Show the slider button only when control is focused or mouse is hovering</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Show the slider button only when control is focused or mouse is hovering")]
         public bool ShowButtonOnHover
         {
@@ -773,7 +773,7 @@ namespace MediaSlider
         }
 
         /// <summary>Enable the flyout caption window</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Enable the flyout caption window")]
         public FlyOutStyle SliderFlyOut
         {
@@ -874,7 +874,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify slider tick color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Modify slider tick color")]
         public Color TickColor
         {
@@ -887,7 +887,7 @@ namespace MediaSlider
         }
 
         /// <summary>Select the tickstyle</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Select the tickstyle")]
         public TickStyle TickStyle
         {
@@ -900,7 +900,7 @@ namespace MediaSlider
         }
 
         /// <summary>Select the tick drawing style</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Select the tick drawing style")]
         public TickMode TickType
         {
@@ -913,7 +913,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify slider border color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Modify slider border color")]
         public Color TrackBorderColor
         {
@@ -926,7 +926,7 @@ namespace MediaSlider
         }
 
         /// <summary>Adjust the slider track depth</summary>
-        [Browsable(true), Category("Appearence"), RefreshProperties(RefreshProperties.All),
+        [Browsable(true), Category("Appearance"), RefreshProperties(RefreshProperties.All),
         Description("Adjust the slider track depth")]
         public int TrackDepth
         {
@@ -940,7 +940,7 @@ namespace MediaSlider
         }
 
         /// <summary>Set the track fill color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Set the track fill color")]
         public Color TrackFillColor
         {
@@ -953,7 +953,7 @@ namespace MediaSlider
         }
 
         /// <summary>Set the track progress color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Set the track progress color")]
         public Color TrackProgressColor
         {
@@ -966,7 +966,7 @@ namespace MediaSlider
         }
 
         /// <summary>Enable track border shadow</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Enable track shadow")]
         public bool TrackShadow
         {
@@ -979,7 +979,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify track shadow color</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Modify track shadow color")]
         public Color TrackShadowColor
         {
@@ -992,7 +992,7 @@ namespace MediaSlider
         }
 
         /// <summary>Modify the display style of track</summary>
-        [Browsable(true), Category("Appearence"),
+        [Browsable(true), Category("Appearance"),
         Description("Modify the display style of track")]
         public TrackType TrackStyle
         {
@@ -1226,7 +1226,7 @@ namespace MediaSlider
             using (Graphics g = Graphics.FromHdc(_cControlDc.Hdc))
             {
                 DrawTrack();
-                if (this.SliderFlyOut == FlyOutStyle.Persistant)
+                if (this.SliderFlyOut == FlyOutStyle.Persistent)
                     DrawFlyOut(g);
 
                 switch (_eSliderState)
@@ -2578,7 +2578,7 @@ namespace MediaSlider
             }
         }
 
-        /// <summary>Destroy grahics objects</summary>
+        /// <summary>Destroy graphics objects</summary>
         private void DestroyGraphicsObjects()
         {
             // destroy sprite and timer
@@ -2818,7 +2818,7 @@ namespace MediaSlider
             }
         }
 
-        /// <summary>Maximun size based on control options</summary>
+        /// <summary>Maximum size based on control options</summary>
         private void CalculateMaximumSize()
         {
             Size sz = new Size(0, 0);

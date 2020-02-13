@@ -1224,7 +1224,7 @@ namespace CUETools.Processor
                                 }
                                 else
                                 {
-                                    // Wierd case: audio file after data track with only index 00 specified.
+                                    // Weird case: audio file after data track with only index 00 specified.
                                     if (!isAudioTrack && _sourcePaths.Count == 0 && indexes.Count > 0 && indexes[indexes.Count - 1].Index == 0)
                                     {
                                         indexInfo.Track = indexes[indexes.Count - 1].Track;
@@ -3223,7 +3223,7 @@ namespace CUETools.Processor
                     // TODO?
                 }
 
-                // these will be set explicitely
+                // these will be set explicitly
                 destTags.Remove("ARTIST");
                 destTags.Remove("TITLE");
                 destTags.Remove("ALBUM");
@@ -3305,7 +3305,7 @@ namespace CUETools.Processor
                     }
                 }
 
-                // these will be set explicitely
+                // these will be set explicitly
                 destTags.Remove("ARTIST");
                 destTags.Remove("TITLE");
                 destTags.Remove("ALBUM");

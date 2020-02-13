@@ -874,7 +874,7 @@
     <value>Decode HDCD to 20 bit</value>
   </data>
   <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
-    <value>HDCD decoding is irreversable. Resulting files cannot be burned to the CD. 24-bit audio files are created, but the actual resolution is 20 bit</value>
+    <value>HDCD decoding is irreversible. Resulting files cannot be burned to the CD. 24-bit audio files are created, but the actual resolution is 20 bit</value>
   </data>
   <data name="&gt;&gt;chkHDCDDecode.Name" xml:space="preserve">
     <value>chkHDCDDecode</value>

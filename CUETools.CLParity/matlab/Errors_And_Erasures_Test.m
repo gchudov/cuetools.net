@@ -28,7 +28,7 @@ t = h/2
 
 %*** Generate the Galois Field and Generator polynomial ***
 
-% This step is neccessary for Matlab.  Here we create the Galois Field which is used for
+% This step is necessary for Matlab.  Here we create the Galois Field which is used for
 % computations of the Reed-Solomon code
 
 

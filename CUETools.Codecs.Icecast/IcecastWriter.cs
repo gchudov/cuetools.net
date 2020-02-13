@@ -55,7 +55,7 @@ namespace CUETools.Codecs.Icecast
 			req.Headers.Add("ice-public", "1");
 			if ((settings.Url ?? "") != "") req.Headers.Add("ice-url", settings.Url);
 			if ((settings.Genre ?? "") != "") req.Headers.Add("ice-genre", settings.Genre);
-			if ((settings.Desctiption ?? "") != "") req.Headers.Add("ice-description", settings.Desctiption);
+			if ((settings.Description ?? "") != "") req.Headers.Add("ice-description", settings.Description);
 			req.Headers.Add("Authorization", string.Format("Basic {0}", Convert.ToBase64String(Encoding.ASCII.GetBytes(string.Format("source:{0}", settings.Password)))));
 			req.Timeout = System.Threading.Timeout.Infinite;
 			req.ReadWriteTimeout = System.Threading.Timeout.Infinite;
@@ -237,7 +237,7 @@ namespace CUETools.Codecs.Icecast
 		public string Password { get { return password; } set { password = value; } }
 		public string Mount { get { return mount; } set { mount = value; } }
 		public string Name { get { return name; } set { name = value; } }
-		public string Desctiption { get { return description; } set { description = value; } }
+		public string Description { get { return description; } set { description = value; } }
 		public string Url { get { return url; } set { url = value; } }
 		public string Genre { get { return genre; } set { genre = value; } }
 		public int    Bitrate { get; set; }

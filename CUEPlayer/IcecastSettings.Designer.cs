@@ -117,7 +117,7 @@
 			// 
 			// textBoxDesctiption
 			// 
-			this.textBoxDesctiption.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.icecastSettingsDataBindingSource, "Desctiption", true));
+			this.textBoxDesctiption.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.icecastSettingsDataBindingSource, "Description", true));
 			this.textBoxDesctiption.Location = new System.Drawing.Point(91, 142);
 			this.textBoxDesctiption.Name = "textBoxDesctiption";
 			this.textBoxDesctiption.Size = new System.Drawing.Size(181, 20);

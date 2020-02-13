@@ -36,8 +36,8 @@ namespace CUETools.Codecs.LAME.Interop
         public int bNoRes;	// Disable Bit resorvoir (TRUE/FALSE)
         // MISC SETTINGS
         public int bStrictIso;			// Use strict ISO encoding rules (TRUE/FALSE)
-        public ushort nQuality;			// Quality Setting, HIGH BYTE should be NOT LOW byte, otherwhise quality=5
-        // FUTURE USE, SET TO 0, align strucutre to 331 bytes
+        public ushort nQuality;			// Quality Setting, HIGH BYTE should be NOT LOW byte, otherwise quality=5
+        // FUTURE USE, SET TO 0, align structure to 331 bytes
         //[ MarshalAs( UnmanagedType.ByValArray, SizeConst=255-4*4-2 )]
         //public byte[]	 btReserved;//[255-4*sizeof(DWORD) - sizeof( WORD )];
 

@@ -76,8 +76,8 @@ namespace CUETools.TestCodecs
 			uint crcA = Crc32.ComputeChecksum(0, testBytes, 0, lenA);
 			uint crcB = Crc32.ComputeChecksum(0, testBytes, lenA, lenB);
 			Assert.AreEqual<uint>(crcAB, Crc32.Combine(crcA, crcB, lenB), "CRC32 was not combined correctly.");
-			Assert.AreEqual<uint>(crcB, Crc32.Combine(crcA, crcAB, lenB), "CRC32 was not substracted correctly.");
-			Assert.AreEqual<uint>(crcA, Crc32.Substract(crcAB, crcB, lenB), "CRC32 was not substracted correctly.");
+			Assert.AreEqual<uint>(crcB, Crc32.Combine(crcA, crcAB, lenB), "CRC32 was not subtracted correctly.");
+			Assert.AreEqual<uint>(crcA, Crc32.Subtract(crcAB, crcB, lenB), "CRC32 was not subtracted correctly.");
 		}
 
         /// <summary>
@@ -93,8 +93,8 @@ namespace CUETools.TestCodecs
             ushort crcA = Crc16.ComputeChecksum(0, testBytes, 0, lenA);
             ushort crcB = Crc16.ComputeChecksum(0, testBytes, lenA, lenB);
             Assert.AreEqual<uint>(crcAB, Crc16.Combine(crcA, crcB, lenB), "CRC16 was not combined correctly.");
-            Assert.AreEqual<uint>(crcB, Crc16.Combine(crcA, crcAB, lenB), "CRC16 was not substracted correctly.");
-            Assert.AreEqual<uint>(crcA, Crc16.Substract(crcAB, crcB, lenB), "CRC16 was not substracted correctly.");
+            Assert.AreEqual<uint>(crcB, Crc16.Combine(crcA, crcAB, lenB), "CRC16 was not subtracted correctly.");
+            Assert.AreEqual<uint>(crcA, Crc16.Subtract(crcAB, crcB, lenB), "CRC16 was not subtracted correctly.");
         }
 
 		/// <summary>

@@ -145,7 +145,7 @@ namespace CUETools.Parity
             //else
             //    for i = 1:length(S_M)
             //        if (S_M(i) ~= -Inf)
-            //            flag = 1;     %Other errors occured in conjunction with erasures
+            //            flag = 1;     %Other errors occurred in conjunction with erasures
             //        end
             //    end
             //end

@@ -228,7 +228,7 @@ namespace CUETools.Codecs
 			return crc1;
 		}
 
-		public static unsafe uint Substract(uint crc1, uint crc2, long len2)
+		public static unsafe uint Subtract(uint crc1, uint crc2, long len2)
 		{
 			/* degenerate case */
 			if (len2 == 0)

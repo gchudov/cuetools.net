@@ -1,7 +1,7 @@
 function sum = gfsubstitute(polynomial,value,terms,n,field)
 
 %use: gfsubstitute(polynomial,value,terms,n,field)
-%Subtitute i^value in polynomial
+%Substitute i^value in polynomial
 %the number of terms in polynomial
 %n = n of the decoder
 

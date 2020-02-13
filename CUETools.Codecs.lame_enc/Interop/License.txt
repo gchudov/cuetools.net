@@ -9,7 +9,7 @@ Email:	yetiicb@hotmail.com
 Copyright (C) 2002-2003 Idael Cardoso. 
 	
 LAME ( LAME Ain't an Mp3 Encoder ) 
-You must call the fucntion "beVersion" to obtain information  like version 
+You must call the function "beVersion" to obtain information  like version 
 numbers (both of the DLL and encoding engine), release date and URL for 
 lame_enc's homepage. All this information should be made available to the 
 user of your product through a dialog box or something similar.

@@ -42,7 +42,7 @@
 // type used to store one field symbol
 // With short int, we can work up to GF(16)
 // and we can apply the fast algo up to N_walsh=15
-// If one wants to work on bigger fied, replace this by int.
+// If one wants to work on bigger field, replace this by int.
 typedef uint16_t symbol;
 typedef uint8_t byte;
 

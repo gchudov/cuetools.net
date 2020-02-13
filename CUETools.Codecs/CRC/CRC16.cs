@@ -130,7 +130,7 @@ namespace CUETools.Codecs
             return crc1;
         }
 
-        public static unsafe ushort Substract(ushort crc1, ushort crc2, long len2)
+        public static unsafe ushort Subtract(ushort crc1, ushort crc2, long len2)
         {
             crc1 = Crc16.Reflect(crc1);
             crc2 = Crc16.Reflect(crc2);

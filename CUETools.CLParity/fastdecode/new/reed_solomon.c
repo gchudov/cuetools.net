@@ -81,7 +81,7 @@ void memory_init()
     inverse = t_inverse = (symbol *) malloc(sizeof(symbol) * N_walsh * n_field + 8);
     coeff = t_coeff = (symbol *) malloc(sizeof(symbol) * N_walsh * n_field + 8);
 
-    // allign memory for SSE operation
+    // align memory for SSE operation
     while ((int)(inverse) & 0xf) inverse++;
     while ((int)(coeff) & 0xf) coeff++;
 }
@@ -362,7 +362,7 @@ void compute_product()
 }
 
 // Same but quadratic version
-// Here only for debuging purpose
+// Here only for debugging purpose
 void compute_product_quadratic(int K, int *positions)
 {
     int i,j;

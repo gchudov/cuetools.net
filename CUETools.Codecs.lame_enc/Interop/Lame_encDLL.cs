@@ -20,7 +20,7 @@ namespace CUETools.Codecs.LAME.Interop
         /// </summary>
         /// <param name="pbeConfig">Encoder settings</param>
         /// <param name="dwSamples">Receives the number of samples (not bytes, each sample is a SHORT) to send to each beEncodeChunk() on return.</param>
-        /// <param name="dwBufferSize">Receives the minimun number of bytes that must have the output(result) buffer</param>
+        /// <param name="dwBufferSize">Receives the minimum number of bytes that must have the output(result) buffer</param>
         /// <param name="phbeStream">Receives the stream handle on return</param>
         /// <returns>On success: BE_ERR_SUCCESSFUL</returns>
         [DllImport("Lame_enc.dll")]
@@ -71,7 +71,7 @@ namespace CUETools.Codecs.LAME.Interop
         /// <param name="hbeStream">Handle of the stream.</param>
         /// <param name="buffer">Bytes to encode</param>
         /// <param name="index">Position of the first byte to encode</param>
-        /// <param name="nBytes">Number of bytes to encode (not samples, samples are two byte lenght)</param>
+        /// <param name="nBytes">Number of bytes to encode (not samples, samples are two byte length)</param>
         /// <param name="pOutput">Buffer where to write the encoded data.
         /// This buffer should be at least of the minimum size returned by beInitStream().</param>
         /// <param name="pdwOutput">Returns the number of bytes of encoded data written. 
@@ -88,7 +88,7 @@ namespace CUETools.Codecs.LAME.Interop
         /// <param name="hbeStream">Handle of the stream.</param>
         /// <param name="buffer">Bytes to encode</param>
         /// <param name="index">Position of the first byte to encode</param>
-        /// <param name="nBytes">Number of bytes to encode (not samples, samples are two byte lenght)</param>
+        /// <param name="nBytes">Number of bytes to encode (not samples, samples are two byte length)</param>
         /// <param name="pOutput">Buffer where to write the encoded data.
         /// This buffer should be at least of the minimum size returned by beInitStream().</param>
         /// <param name="pdwOutput">Returns the number of bytes of encoded data written. 

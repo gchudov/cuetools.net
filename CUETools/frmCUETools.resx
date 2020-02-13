@@ -2437,7 +2437,7 @@
     <value>&amp;Verify</value>
   </data>
   <data name="rbActionVerify.ToolTip" xml:space="preserve">
-    <value>Contact the AccurateRip databse for validation and compare the image against database</value>
+    <value>Contact the AccurateRip database for validation and compare the image against database</value>
   </data>
   <data name="&gt;&gt;rbActionVerify.Name" xml:space="preserve">
     <value>rbActionVerify</value>
@@ -2776,7 +2776,7 @@
     <value>1</value>
   </data>
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
-    <value>Not used for normal music CDs. Enhanced CDs with data tracks cannot be found in database unless you know the length of the data track. You can often find it in EAC log. If EAC log is found next to the CUE sheet, it will be parsed automaticly and you won't have to enter anything here.</value>
+    <value>Not used for normal music CDs. Enhanced CDs with data tracks cannot be found in database unless you know the length of the data track. You can often find it in EAC log. If EAC log is found next to the CUE sheet, it will be parsed automatically and you won't have to enter anything here.</value>
   </data>
   <data name="&gt;&gt;txtDataTrackLength.Name" xml:space="preserve">
     <value>txtDataTrackLength</value>
