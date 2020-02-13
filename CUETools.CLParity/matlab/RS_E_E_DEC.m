@@ -12,7 +12,7 @@ function DECODED = RS_E_E_DEC(received, erasures,n,k,t,h,g,field);
 
 %syndrome calculation
 S = [];
-%Subtitute alpha^i in received polynomial - Lin + Costello p.152 eq. 6.13
+%Substitute alpha^i in received polynomial - Lin + Costello p.152 eq. 6.13
 for ii = 1:2*t
     S(ii)= -Inf;
     for cc = 1:n
@@ -21,7 +21,7 @@ for ii = 1:2*t
 end
 %S
 
-%Test if syndrome  = 0, if syndrome equals 0, assume that no errors occured
+%Test if syndrome  = 0, if syndrome equals 0, assume that no errors occurred
 for i = 1:2*t
     test_pol(i) = -Inf;
 end
@@ -78,7 +78,7 @@ else
     else
         for i = 1:length(S_M)
             if (S_M(i) ~= -Inf)
-                flag = 1;     %Other errors occured in conjunction with erasures
+                flag = 1;     %Other errors occurred in conjunction with erasures
             end
         end
     end

@@ -106,7 +106,7 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Gets property key at sepecified index
+        /// Gets property key at specified index
         /// </summary>
         /// <param name="index">Index</param>
         /// <returns>Property key</returns>

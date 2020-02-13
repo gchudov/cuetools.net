@@ -1029,7 +1029,7 @@ extern "C" __global__ void cudaCalcPartition(
     s = (psize - shared.task.data.residualOrder * (threadIdx.x + blockIdx.x == 0)) * (threadIdx.y + 1);
     int dpos = __mul24(threadIdx.x, psize + 1);
     //int dpos = __mul24(threadIdx.x, psize);
-    // calc number of unary bits for part threadIdx.x with rice paramater threadIdx.y
+    // calc number of unary bits for part threadIdx.x with rice parameter threadIdx.y
 #pragma unroll 0
     for (int i = 0; i < psize; i++)
 	s += shared.data[dpos + i] >> threadIdx.y;
@@ -1095,7 +1095,7 @@ extern "C" __global__ void cudaCalcPartition16(
     shared.data[tid + threadIdx.y] = s;
     __syncthreads();
 
-    // calc number of unary bits for part threadIdx.x with rice paramater threadIdx.y
+    // calc number of unary bits for part threadIdx.x with rice parameter threadIdx.y
     int dpos = __mul24(threadIdx.x, 17);
     int sum =
 	(shared.data[dpos + 0] >> threadIdx.y) + (shared.data[dpos + 1] >> threadIdx.y) + 
@@ -1143,10 +1143,10 @@ extern "C" __global__ void cudaCalcLargePartition(
 	shared.data[tid] = min(0xfffff, (s << 1) ^ (s >> 31));
 	__syncthreads();
 
-	// calc number of unary bits for each residual sample with each rice paramater
+	// calc number of unary bits for each residual sample with each rice parameter
 #pragma unroll 0
 	for (int i = threadIdx.x; i < min(psize,256); i += 16)
-	    // for sample (i + threadIdx.x) with this rice paramater (threadIdx.y)
+	    // for sample (i + threadIdx.x) with this rice parameter (threadIdx.y)
 	    sum += shared.data[i] >> threadIdx.y;
 	__syncthreads();
     }
@@ -1331,7 +1331,7 @@ extern "C" __global__ void cudaFindPartitionOrder(
 	for (int i = 0; i < order; i++)
 	    if (threadIdx.x >= i)
 		sum[threadIdx.x - i] += coefs[threadIdx.x] * sample[order - i - 1];
-	fot (int i = order; i < blocksize; i++)
+	for (int i = order; i < blocksize; i++)
 	{
 	    if (!threadIdx.x) sample[order + i] = s = residual[order + i] + (sum[order + i] >> shift);
 	    sum[threadIdx.x + i + 1] += coefs[threadIdx.x] * s;

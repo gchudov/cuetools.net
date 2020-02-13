@@ -1019,7 +1019,7 @@ void clEstimateResidual(
     for (int offs = tid; offs < (MAX_BLOCKSIZE >> ESTPARTLOG); offs += GROUP_SIZE)
 	psum[offs] = 0;
     data[tid] = 0.0f;
-    // need to initialize "extra" data, because NaNs can produce wierd results even when multipled by zero extra coefs
+    // need to initialize "extra" data, because NaNs can produce weird results even when multiplied by zero extra coefs
     if (tid < 32)
 	data[GROUP_SIZE * 2 + tid] = 0.0f;
 
@@ -1467,7 +1467,7 @@ void clCalcPartition(
 	int s = (offs >= task.residualOrder && offs < end) ? residual[task.residualOffs + offs] : 0;
 	// convert to unsigned
 	uint t = (s << 1) ^ (s >> 31);
-	// calc number of unary bits for each residual sample with each rice paramater
+	// calc number of unary bits for each residual sample with each rice parameter
 	int part = (offs - start) / psize;
 	// we must ensure that psize * (t >> k) doesn't overflow;
 	uint lim = 0x7fffffffU / (uint)psize;

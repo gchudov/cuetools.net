@@ -136,7 +136,7 @@ void fill_table(int nf)
         if (state>>n_field!=0) exit(0);
     }
 
-    // usefull since later
+    // useful since later
     // since log_table[0]=0
     // we set log_table[1]=modulo
     // so log_table is a bijection...
@@ -686,7 +686,7 @@ void incremental_encode(int N, int K, int S, void *b_src, void *b_dst)
         void *dst = b_dst + (x-K)*S;
         void *src = b_src + i*S;
 
-        // the second substraction can also
+        // the second subtraction can also
         // go into quadratic_init
         int t = product_enc[x] - log_table[i ^ x] - product_enc[i];
         if (t<0) t+= modulo;
@@ -790,7 +790,7 @@ void quadratic_encode(int N, int K, int S, void *b_src, void *b_dst)
         {
             void *src = b_src + i*S;
 
-            // the second substraction can also
+            // the second subtraction can also
             // go into quadratic_init
             int t = product_enc[x] - log_table[i ^ x] - product_enc[i];
             if (t<0) t+= modulo;
@@ -830,7 +830,7 @@ void quadratic_decode(int N, int K, int S, int *positions, void *b_src, void *b_
             {
                 void *src = b_src + i*S;
 
-                // the second substraction can also
+                // the second subtraction can also
                 // go into quadratic_init
                 int t = product[x] - log_table[positions[i] ^ x] - product[positions[i]];
                 if (t<0) t+= modulo;
@@ -978,7 +978,7 @@ void fast_decode(int N, int K, int S, int *positions, void *b_src, void *b_dst)
     karatsuba(fast_out+K*S, fast_in+K*S, inverse+K, n_walsh-1, S);
     memxor(fast_out, fast_out + K*S, K*S);
 
-    // final multiplication of unknow pieces
+    // final multiplication of unknown pieces
     for (i=0; i<K; i++) {
         if (pos[i]==0) {
             process_eq(product[i], b_dst + i*S, fast_out + i*S, S);

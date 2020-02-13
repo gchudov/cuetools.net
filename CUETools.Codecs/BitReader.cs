@@ -221,7 +221,7 @@ namespace CUETools.Codecs
             int n = have_bits_m >> 3;
             for (int i = 0; i < n; i++)
                 crc = (ushort)((crc << 8) ^ Crc16.table[(crc >> 8) ^ (byte)(cache_m >> (56 - (i << 3)))]);
-            return Crc16.Substract(crc16_m, crc, n);
+            return Crc16.Subtract(crc16_m, crc, n);
         }
 
         public int readbits_signed(int bits)

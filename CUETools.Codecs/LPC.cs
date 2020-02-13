@@ -398,7 +398,7 @@ namespace CUETools.Codecs
 			double* lpc_tmp = stackalloc double[MAX_LPC_ORDER];
 
 			if (max_order > MAX_LPC_ORDER)
-				throw new Exception("wierd");
+				throw new Exception("weird");
 
 			for (int i = 0; i < max_order; i++)
 				lpc_tmp[i] = 0;

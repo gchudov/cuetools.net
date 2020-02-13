@@ -105,7 +105,7 @@ namespace AudioDataPlugIn
         // StartNewSession is called once at the very beginning of an
         // extraction session. It receives the CD metadata, the
         // name of the used drive, the used read offset and whether
-        // the offset was setted by AccurateRip (so having a comparable
+        // the offset was set by AccurateRip (so having a comparable
         // offset value)
 
         public void StartNewSession(IMetadataLookup data, string drivename, int offset, bool aroffset, int mode)
@@ -183,7 +183,7 @@ namespace AudioDataPlugIn
                     else
                     {
 #if DEBUG
-                        m_trace.WriteLine("Sequence broken on new trasfer");
+                        m_trace.WriteLine("Sequence broken on new transfer");
 #endif
                         this.sequence_ok = false;
                     }
@@ -225,7 +225,7 @@ namespace AudioDataPlugIn
                 if ((m_start_pos + m_length) * 588 != thisAr.Position)
                 {
 #if DEBUG
-                    m_trace.WriteLine("Sequence broken on end of trasfer");
+                    m_trace.WriteLine("Sequence broken on end of transfer");
 #endif
                     this.sequence_ok = false;
                 }

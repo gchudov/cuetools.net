@@ -86,7 +86,7 @@ namespace CUETools.Codecs
             fixed (byte* buf1 = &buffer[0])
             {
                 if (old_pos % 8 != 0)
-                    crc16_m = Crc16.Substract(crc16_m, 0, 1);
+                    crc16_m = Crc16.Subtract(crc16_m, 0, 1);
                 crc16_m = Crc16.ComputeChecksum(crc16_m, buf + start1, end - start);
                 AudioSamples.MemCpy(buf1 + start, buf + start1, end - start);
                 buf1[start] |= start_val;
