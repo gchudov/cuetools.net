@@ -640,6 +640,7 @@ namespace JDP {
             this.toolStripSplitButtonInputBrowser});
             this.toolStripInput.Name = "toolStripInput";
             this.toolStripInput.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.toolStripInput.Click += new System.EventHandler(this.toolStripInput_Click);
             // 
             // toolStripLabelInput
             // 
@@ -697,6 +698,7 @@ namespace JDP {
             this.toolStripOutput.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.toolStripOutput.Name = "toolStripOutput";
             this.toolStripOutput.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.toolStripOutput.Click += new System.EventHandler(this.toolStripOutput_Click);
             // 
             // toolStripLabelOutput
             // 
@@ -848,6 +850,7 @@ namespace JDP {
             this.textBoxOffset.Name = "textBoxOffset";
             this.textBoxOffset.TextChanged += new System.EventHandler(this.textBoxOffset_TextChanged);
             this.textBoxOffset.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxOffset_KeyPress);
+            this.textBoxOffset.Validating += new System.ComponentModel.CancelEventHandler(this.textBoxOffset_Validating);
             // 
             // panelGo
             // 
@@ -902,6 +905,7 @@ namespace JDP {
             this.toolStripMenu.Name = "toolStripMenu";
             this.toolStripMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.toolStripMenu.Stretch = true;
+            this.toolStripMenu.Click += new System.EventHandler(this.toolStripMenu_Click);
             // 
             // toolStripDropDownButtonProfile
             // 
