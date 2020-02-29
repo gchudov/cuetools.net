@@ -163,7 +163,7 @@
     <value>415, 131</value>
   </data>
   <data name="textBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="textBox1.Text" xml:space="preserve">
     <value>
@@ -231,7 +231,7 @@ hdcd.dll (c) Christopher Key</value>
     <value>247, 17</value>
   </data>
   <data name="linkLabel2.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>2</value>
   </data>
   <data name="linkLabel2.Text" xml:space="preserve">
     <value>Updates can be found at http://www.cuetools.net</value>
