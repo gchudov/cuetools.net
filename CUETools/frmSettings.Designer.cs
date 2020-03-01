@@ -824,6 +824,7 @@ namespace JDP
             resources.ApplyResources(this.chkFillUpCUE, "chkFillUpCUE");
             this.chkFillUpCUE.Name = "chkFillUpCUE";
             this.chkFillUpCUE.UseVisualStyleBackColor = true;
+            this.chkFillUpCUE.CheckedChanged += new System.EventHandler(this.chkFillUpCUE_CheckedChanged);
             // 
             // tabPage2
             // 
