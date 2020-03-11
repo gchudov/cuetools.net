@@ -355,7 +355,7 @@
     <value>227, 211</value>
   </data>
   <data name="groupBoxMode.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>3</value>
   </data>
   <data name="groupBoxMode.Text" xml:space="preserve">
     <value>Mode</value>
@@ -520,7 +520,7 @@
     <value>222, 314</value>
   </data>
   <data name="grpAudioOutput.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
     <value>Audio Output</value>
@@ -622,7 +622,7 @@
     <value>549, 29</value>
   </data>
   <data name="comboBoxOutputFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>4</value>
   </data>
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>153, 8</value>
@@ -655,7 +655,7 @@
     <value>549, 27</value>
   </data>
   <data name="txtInputPath.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="txtInputPath.ToolTip" xml:space="preserve">
     <value>Input file</value>
@@ -685,7 +685,7 @@
     <value>549, 27</value>
   </data>
   <data name="txtOutputPath.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>3</value>
   </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value>Output file</value>
@@ -718,7 +718,7 @@
     <value>147, 39</value>
   </data>
   <data name="toolStripInput.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>0</value>
   </data>
   <data name="toolStripInput.Text" xml:space="preserve">
     <value>toolStripInput</value>
@@ -751,7 +751,7 @@
     <value>147, 39</value>
   </data>
   <data name="toolStripOutput.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>2</value>
   </data>
   <data name="toolStripOutput.Text" xml:space="preserve">
     <value>toolStripOutput</value>
@@ -910,7 +910,7 @@
     <value>247, 211</value>
   </data>
   <data name="grpAction.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>2</value>
   </data>
   <data name="grpAction.Text" xml:space="preserve">
     <value>Action</value>
@@ -958,7 +958,7 @@
     <value>227, 144</value>
   </data>
   <data name="grpExtra.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="grpExtra.Text" xml:space="preserve">
     <value>Extra</value>
@@ -1879,7 +1879,7 @@
     <value>30, 32</value>
   </data>
   <data name="buttonEncoderSettings.TabIndex" type="System.Int32, mscorlib">
-    <value>20</value>
+    <value>5</value>
   </data>
   <data name="&gt;&gt;buttonEncoderSettings.Name" xml:space="preserve">
     <value>buttonEncoderSettings</value>
@@ -2026,7 +2026,7 @@
     <value>213, 69</value>
   </data>
   <data name="trackBarEncoderMode.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
+    <value>6</value>
   </data>
   <data name="&gt;&gt;trackBarEncoderMode.Name" xml:space="preserve">
     <value>trackBarEncoderMode</value>
@@ -2053,7 +2053,7 @@
     <value>150, 29</value>
   </data>
   <data name="comboBoxEncoder.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
+    <value>4</value>
   </data>
   <data name="comboBoxEncoder.ToolTip" xml:space="preserve">
     <value>Encoder to use</value>
@@ -2086,7 +2086,7 @@
     <value>73, 25</value>
   </data>
   <data name="radioButtonAudioNone.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
+    <value>2</value>
   </data>
   <data name="radioButtonAudioNone.Text" xml:space="preserve">
     <value>None</value>
@@ -2122,7 +2122,7 @@
     <value>76, 25</value>
   </data>
   <data name="radioButtonAudioLossy.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>1</value>
   </data>
   <data name="radioButtonAudioLossy.Text" xml:space="preserve">
     <value>Lossy</value>
@@ -2158,7 +2158,7 @@
     <value>97, 25</value>
   </data>
   <data name="radioButtonAudioLossless.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
+    <value>0</value>
   </data>
   <data name="radioButtonAudioLossless.Text" xml:space="preserve">
     <value>Lossless</value>
@@ -2224,7 +2224,7 @@
     <value>150, 29</value>
   </data>
   <data name="comboBoxAudioFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>3</value>
   </data>
   <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
     <value>Audio file format</value>
@@ -2326,7 +2326,7 @@
     <value>224, 29</value>
   </data>
   <data name="comboBoxScript.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+    <value>4</value>
   </data>
   <data name="comboBoxScript.ToolTip" xml:space="preserve">
     <value>Run custom script</value>
@@ -2359,7 +2359,7 @@
     <value>165, 25</value>
   </data>
   <data name="rbActionCorrectFilenames.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>3</value>
   </data>
   <data name="rbActionCorrectFilenames.Text" xml:space="preserve">
     <value>Correct filenames</value>
@@ -2395,7 +2395,7 @@
     <value>167, 25</value>
   </data>
   <data name="rbActionCreateCUESheet.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>2</value>
   </data>
   <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
     <value>Create CUE Sheet</value>
@@ -2431,7 +2431,7 @@
     <value>77, 25</value>
   </data>
   <data name="rbActionVerify.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>1</value>
   </data>
   <data name="rbActionVerify.Text" xml:space="preserve">
     <value>&amp;Verify</value>
@@ -2467,7 +2467,7 @@
     <value>89, 25</value>
   </data>
   <data name="rbActionEncode.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>0</value>
   </data>
   <data name="rbActionEncode.Text" xml:space="preserve">
     <value>&amp;Encode</value>
@@ -2806,7 +2806,7 @@
     <value>87, 27</value>
   </data>
   <data name="textBoxOffset.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>2</value>
   </data>
   <data name="textBoxOffset.Text" xml:space="preserve">
     <value>0</value>

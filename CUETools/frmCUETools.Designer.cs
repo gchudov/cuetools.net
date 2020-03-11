@@ -641,6 +641,7 @@ namespace JDP {
             this.toolStripInput.Name = "toolStripInput";
             this.toolStripInput.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.toolStripInput.Click += new System.EventHandler(this.toolStripInput_Click);
+            this.toolStripInput.TabStop = true;
             // 
             // toolStripLabelInput
             // 
@@ -699,6 +700,7 @@ namespace JDP {
             this.toolStripOutput.Name = "toolStripOutput";
             this.toolStripOutput.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.toolStripOutput.Click += new System.EventHandler(this.toolStripOutput_Click);
+            this.toolStripOutput.TabStop = true;
             // 
             // toolStripLabelOutput
             // 
@@ -778,6 +780,7 @@ namespace JDP {
             // 
             resources.ApplyResources(this.rbActionVerify, "rbActionVerify");
             this.rbActionVerify.Name = "rbActionVerify";
+            this.rbActionVerify.TabStop = true;
             this.toolTip1.SetToolTip(this.rbActionVerify, resources.GetString("rbActionVerify.ToolTip"));
             this.rbActionVerify.UseVisualStyleBackColor = true;
             this.rbActionVerify.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
@@ -786,6 +789,7 @@ namespace JDP {
             // 
             resources.ApplyResources(this.rbActionEncode, "rbActionEncode");
             this.rbActionEncode.Name = "rbActionEncode";
+            this.rbActionEncode.TabStop = true;
             this.toolTip1.SetToolTip(this.rbActionEncode, resources.GetString("rbActionEncode.ToolTip"));
             this.rbActionEncode.UseVisualStyleBackColor = true;
             this.rbActionEncode.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
