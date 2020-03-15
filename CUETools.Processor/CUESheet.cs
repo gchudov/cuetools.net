@@ -80,6 +80,7 @@ namespace CUETools.Processor
         private CUEMetadata cueMetadata;
         private bool _useLocalDB;
         private CUEToolsLocalDB _localDB;
+        private bool _gapsDetected = false;
 
         #endregion
 
@@ -3760,9 +3761,11 @@ namespace CUETools.Processor
                 if (_toc[_toc.FirstAudio + iTrack].ISRC != null)
                     Metadata.Tracks[iTrack].ISRC = _toc[_toc.FirstAudio + iTrack].ISRC;
                 //General.SetCUELine(_tracks[iTrack].Attributes, "ISRC", _toc[_toc.FirstAudio + iTrack].ISRC, false);
-                if (_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis)
+                // Check if gaps have already been detected. This avoids writing FLAGS multiple times per track to the cue sheet.
+                if ((_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis) && !_gapsDetected)
                     _tracks[iTrack].Attributes.Add(new CUELine("FLAGS" + (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : "")));
             }
+            _gapsDetected = true;
         }
 
         public static string CreateDummyCUESheet(CUEConfig _config, string pathIn)
