@@ -321,8 +321,6 @@
     <None Include="Resources\wma.ico" />
     <None Include="Resources\more\card--pencil.png" />
     <Content Include="Resources\opus.ico" />
-    <Content Include="unrar.dll">
-    </Content>
     <Content Include="Resources\accuraterip_16.bmp" />
     <None Include="Resources\ape.ico" />
     <Content Include="Resources\AR.ico" />
