@@ -294,8 +294,6 @@
     <None Include="Properties\DataSources\CUETools.Processor.CUEConfig.datasource" />
     <None Include="Resources\accuraterip.jpg" />
     <Content Include="cue2.ico" />
-    <Content Include="hdcd.dll">
-    </Content>
     <None Include="Resources\freedb16.png" />
     <None Include="Resources\more\icons\report.png" />
     <None Include="Resources\report.png" />
