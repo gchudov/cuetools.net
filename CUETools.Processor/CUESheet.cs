@@ -3014,7 +3014,7 @@ namespace CUETools.Processor
                     if (exists) files.Add(imgPath);
                 }
 
-                int maxChoice = CUEToolsSelection == null || Action != CUEAction.Encode ? 1 : 32;
+                int maxChoice = CUEToolsSelection == null || Action != CUEAction.Encode ? 1 : 1000;
                 if (files.Count > maxChoice) return;
 
                 if (files.Count == 0 && !_isArchive && _config.advanced.CoverArtSearchSubdirs)
@@ -3037,9 +3037,17 @@ namespace CUETools.Processor
                         isValidName = false;
                     }
 
-                    if (files.Count > maxChoice) return;
+                    // if (files.Count > maxChoice) return;
+                    if (files.Count > maxChoice)
+                    {
+                        // Processing a large number of image files can take some time and consume resources.
+                        // Continue anyway and show progress.
+                        ShowProgress("There are more than " + maxChoice + " image files to process: " + files.Count, 0.0, null, null);
+                        Thread.Sleep(2000); // show this info for 2 s
+                    }
                 }
 
+                int lineNumber = 0;
                 foreach (string imgPath in files)
                 {
                     TagLib.File.IFileAbstraction file = _isArchive
@@ -3067,6 +3075,7 @@ namespace CUETools.Processor
                         }
                         catch { }
                     _albumArt.Add(pic);
+                    ShowProgress(String.Format("Number of image files to process: {0} ({1:00})%", files.Count, (int)(100 * (++lineNumber + 0.0) / files.Count)), 0.0, null, null);
                 }
             }
         }
