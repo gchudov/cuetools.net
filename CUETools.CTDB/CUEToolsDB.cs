@@ -603,7 +603,7 @@ namespace CUETools.CTDB
                     string confFormat = (this.Total < 10) ? "{0:0}/{1:0}" :
                         (this.Total < 100) ? "{0:00}/{1:00}" : "{0:000}/{1:000}";
                     string conf = string.Format(confFormat, entry.conf, this.Total);
-                    string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio && this.toc[this.toc.TrackCount].IsAudio ?
+                    string dataTrackInfo = !entry.toc[entry.toc.TrackCount].IsAudio && this.toc[1].IsAudio ?
                         string.Format("CD-Extra data track length {0}", entry.toc[entry.toc.TrackCount].LengthMSF) :
                         !entry.toc[1].IsAudio && this.toc[1].IsAudio ?
                         string.Format("Playstation type data track length {0}", entry.toc[entry.toc.FirstAudio].StartMSF) :
