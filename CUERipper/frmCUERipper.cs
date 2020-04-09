@@ -214,11 +214,21 @@ namespace CUERipper
 			{
 				int val = m.WParam.ToInt32();
 				if (val == DBT_DEVICEARRIVAL || val == DBT_DEVICEREMOVECOMPLETE)
+				{
+					// Save current metadata before clearing
+					if (data.selectedRelease != null)
+						data.selectedRelease.metadata.Save();
 					UpdateDrive();
+				}
 				else if (val == DBT_DEVNODES_CHANGED)
 				{
 					if (_workThread == null)
+					{
+						// Save current metadata before clearing
+						if (data.selectedRelease != null)
+							data.selectedRelease.metadata.Save();
 						UpdateDrives();
+					}
 				}
 			}
 			base.WndProc(ref m);
