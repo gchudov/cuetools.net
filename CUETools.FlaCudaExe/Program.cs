@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.Flake;
 using CUETools.Codecs.FlaCuda;
 
 namespace CUETools.FlaCudaExe

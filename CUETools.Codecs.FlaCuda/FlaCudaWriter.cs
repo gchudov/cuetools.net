@@ -25,7 +25,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Text;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.Flake;
 using GASS.CUDA;
 using GASS.CUDA.Types;
 
@@ -105,7 +105,7 @@ namespace CUETools.Codecs.FlaCuda
 		TimeSpan _userProcessorTime;
 
 		// header bytes
-		// allocated by flake_encode_init and freed by flake_encode_close
+		// allocated by Flake_encode_init and freed by Flake_encode_close
 		byte[] header;
 
 		float[] windowBuffer;
@@ -156,14 +156,14 @@ namespace CUETools.Codecs.FlaCuda
 			sample_rate = pcm.SampleRate;
 			bits_per_sample = (uint) pcm.BitsPerSample;
 
-			// flake_validate_params
+			// Flake_validate_params
 
 			_path = path;
 			_IO = IO;
 
 			windowBuffer = new float[FlaCudaWriter.MAX_BLOCKSIZE * lpc.MAX_LPC_WINDOWS];
 
-			eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
+			eparams.Flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			eparams.padding_size = 8192;
 
 			crc8 = new Crc8();
@@ -206,7 +206,7 @@ namespace CUETools.Codecs.FlaCuda
 				if (value < 0 || value > 11)
 					throw new Exception("unsupported compression level");
 				_compressionLevel = value;
-				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
+				eparams.Flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			}
 		}
 
@@ -223,7 +223,7 @@ namespace CUETools.Codecs.FlaCuda
 				if (value as FlaCudaWriterSettings == null)
 					throw new Exception("Unsupported options " + value);
 				_settings = value as FlaCudaWriterSettings;
-				eparams.flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
+				eparams.Flake_set_defaults(_compressionLevel, !_settings.GPUOnly);
 			}
 		}
 
@@ -1574,7 +1574,7 @@ namespace CUETools.Codecs.FlaCuda
 				//cuda.LoadModule(System.IO.Path.Combine(Environment.CurrentDirectory, "flacuda.cubin"));
 				if (_IO == null)
 					_IO = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.Read);
-				int header_size = flake_encode_init();
+				int header_size = Flake_encode_init();
 				_IO.Write(header, 0, header_size);
 				if (_IO.CanSeek)
 					first_frame_offset = _IO.Position;
@@ -1880,11 +1880,11 @@ namespace CUETools.Codecs.FlaCuda
 			return header_size;
 		}
 
-		int flake_encode_init()
+		int Flake_encode_init()
 		{
 			int i, header_len;
 
-			//if(flake_validate_params(s) < 0)
+			//if(Flake_validate_params(s) < 0)
 
 			ch_code = channels - 1;
 
@@ -1963,7 +1963,7 @@ namespace CUETools.Codecs.FlaCuda
 	struct FlakeEncodeParams
 	{
 		// compression quality
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// standard values are 0 to 8
 		// 0 is lower compression, faster encoding
 		// 8 is higher compression, slower encoding
@@ -1972,7 +1972,7 @@ namespace CUETools.Codecs.FlaCuda
 		public int compression;
 
 		// stereo decorrelation method
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 0 to 2
 		// 0 = independent L+R channels
@@ -1980,30 +1980,30 @@ namespace CUETools.Codecs.FlaCuda
 		public bool do_midside;
 
 		// block size in samples
-		// set by the user prior to calling flake_encode_init
+		// set by the user prior to calling Flake_encode_init
 		// if set to 0, a block size is chosen based on block_time_ms
 		// can also be changed by user before encoding a frame
 		public int block_size;
 
 		// block time in milliseconds
-		// set by the user prior to calling flake_encode_init
+		// set by the user prior to calling Flake_encode_init
 		// used to calculate block_size based on sample rate
 		// can also be changed by user before encoding a frame
 		public int block_time_ms;
 
 		// padding size in bytes
-		// set by the user prior to calling flake_encode_init
+		// set by the user prior to calling Flake_encode_init
 		// if set to less than 0, defaults to 4096
 		public long padding_size;
 
 		// minimum LPC order
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 1 to 32
 		public int min_prediction_order;
 
 		// maximum LPC order
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 1 to 32 
 		public int max_prediction_order;
@@ -2011,31 +2011,31 @@ namespace CUETools.Codecs.FlaCuda
 		public int orders_per_window;
 
 		// minimum fixed prediction order
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 0 to 4
 		public int min_fixed_order;
 
 		// maximum fixed prediction order
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 0 to 4 
 		public int max_fixed_order;
 
 		// minimum partition order
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 0 to 8
 		public int min_partition_order;
 
 		// maximum partition order
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// if set to less than 0, it is chosen based on compression.
 		// valid values are 0 to 8
 		public int max_partition_order;
 
 		// whether to use variable block sizes
-		// set by user prior to calling flake_encode_init
+		// set by user prior to calling Flake_encode_init
 		// 0 = fixed block size
 		// 1 = variable block size
 		public int variable_block_size;
@@ -2055,7 +2055,7 @@ namespace CUETools.Codecs.FlaCuda
 
 		public bool do_seektable;
 
-		public int flake_set_defaults(int lvl, bool encode_on_cpu)
+		public int Flake_set_defaults(int lvl, bool encode_on_cpu)
 		{
 			compression = lvl;
 

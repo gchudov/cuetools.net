@@ -10,8 +10,8 @@ using CUETools.Codecs.Flake;
 namespace CUETools.TestCodecs
 {
 	/// <summary>
-	///This is a test class for CUETools.Codecs.FLAKE.FlakeWriter and is intended
-	///to contain all CUETools.Codecs.FLAKE.FlakeWriter Unit Tests
+	///This is a test class for CUETools.Codecs.Flake.FlakeWriter and is intended
+	///to contain all CUETools.Codecs.Flake.FlakeWriter Unit Tests
 	///</summary>
 	[TestClass()]
 	public class FlakeWriterTest
@@ -79,7 +79,7 @@ namespace CUETools.TestCodecs
             AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
             AudioEncoder target;
 
-            target = new AudioEncoder(new EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" }, "flakewriter0.flac");
+            target = new AudioEncoder(new EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" }, "Flakewriter0.flac");
             target.Settings.Padding = 1;
             target.DoSeekTable = false;
             //target.Vendor = "CUETools";
@@ -87,16 +87,16 @@ namespace CUETools.TestCodecs
             target.FinalSampleCount = buff.Length;
             target.Write(buff);
             target.Close();
-            CollectionAssert.AreEqual(File.ReadAllBytes("flake.flac"), File.ReadAllBytes("flakewriter0.flac"), "flakewriter0.flac doesn't match.");
+            CollectionAssert.AreEqual(File.ReadAllBytes("Flake.flac"), File.ReadAllBytes("Flakewriter0.flac"), "Flakewriter0.flac doesn't match.");
 
-            target = new AudioEncoder(new EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" }, "flakewriter1.flac");
+            target = new AudioEncoder(new EncoderSettings() { PCM = buff.PCM, EncoderMode = "7" }, "Flakewriter1.flac");
             target.Settings.Padding = 1;
             target.DoSeekTable = false;
             //target.Vendor = "CUETools";
             //target.CreationTime = DateTime.Parse("15 Aug 1976");
             target.Write(buff);
             target.Close();
-            CollectionAssert.AreEqual(File.ReadAllBytes("flake.flac"), File.ReadAllBytes("flakewriter1.flac"), "flakewriter1.flac doesn't match.");
+            CollectionAssert.AreEqual(File.ReadAllBytes("Flake.flac"), File.ReadAllBytes("Flakewriter1.flac"), "Flakewriter1.flac doesn't match.");
         }
 
 		public static unsafe void
