@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
-    <ProjectReference Include="..\..\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj" />
+    <ProjectReference Include="..\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj" />
   </ItemGroup>
 
 </Project>
