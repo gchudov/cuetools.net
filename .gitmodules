@@ -16,3 +16,6 @@
 [submodule "ThirdParty/WindowsMediaLib"]
 	path = ThirdParty/WindowsMediaLib
 	url = https://github.com/gchudov/WindowsMediaLib.git
+[submodule "ThirdParty/FFmpeg.AutoGen"]
+	path = ThirdParty/FFmpeg.AutoGen
+	url = https://github.com/Ruslan-B/FFmpeg.AutoGen.git
