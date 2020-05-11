@@ -1093,7 +1093,7 @@ namespace CUETools.Processor
                 if (_config.autoCorrectFilenames)
                     sr = new StringReader(CorrectAudioFilenames(_config, pathIn, false));
                 else
-                    sr = new StreamReader(pathIn, CUESheet.Encoding);
+                    sr = StreamReader_UTF_ANSI(pathIn);
 
                 _logFiles = new List<CUEToolsSourceFile>();
                 _defaultLog = Path.GetFileNameWithoutExtension(pathIn);
@@ -3872,7 +3872,7 @@ namespace CUETools.Processor
 
         public static string CorrectAudioFilenames(CUEConfig _config, string path, bool always)
         {
-            StreamReader sr = new StreamReader(path, CUESheet.Encoding);
+            StreamReader sr = StreamReader_UTF_ANSI(path);
             string cue = sr.ReadToEnd();
             sr.Close();
             string extension;
