@@ -67,7 +67,7 @@
     <Compile Include="ImagePreview.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImagePreview.designer.cs">
+    <Compile Include="ImagePreview.Designer.cs">
       <DependentUpon>ImagePreview.cs</DependentUpon>
     </Compile>
     <Compile Include="InternetImage.cs" />
