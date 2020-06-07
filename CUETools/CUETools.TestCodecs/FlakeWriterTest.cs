@@ -10,8 +10,8 @@ using CUETools.Codecs.Flake;
 namespace CUETools.TestCodecs
 {
 	/// <summary>
-	///This is a test class for CUETools.Codecs.FLAKE.FlakeWriter and is intended
-	///to contain all CUETools.Codecs.FLAKE.FlakeWriter Unit Tests
+	///This is a test class for CUETools.Codecs.Flake.FlakeWriter and is intended
+	///to contain all CUETools.Codecs.Flake.FlakeWriter Unit Tests
 	///</summary>
 	[TestClass()]
 	public class FlakeWriterTest
