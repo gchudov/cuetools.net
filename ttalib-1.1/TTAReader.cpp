@@ -27,7 +27,6 @@
  * information.
  */
 
-#include "stdafx.h"
 #include "BitReader.h"
 #include "TTAReader.h"
 #include "filters3.h"

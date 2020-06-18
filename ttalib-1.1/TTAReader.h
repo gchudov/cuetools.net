@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include "ttacommon.h"
+#include "TTACommon.h"
 
 #define WAVE_FORMAT_PCM	1
 #define WAVE_FORMAT_IEEE_FLOAT 3
