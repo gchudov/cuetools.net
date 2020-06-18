@@ -1,5 +1,5 @@
 #pragma once
-#include "bitreader.h"
+#include "BitReader.h"
 
 namespace TTALib 
 {

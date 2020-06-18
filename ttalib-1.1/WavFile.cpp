@@ -27,7 +27,6 @@
  * information.
  */
 
-#include "stdafx.h"
 #include <windows.h>
 #include "TTACommon.h"
 #include "TTAError.h"
