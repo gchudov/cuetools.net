@@ -28,7 +28,7 @@ namespace CUETools.Processor
 
             while (true)
             {
-                while ((start < lineLen) && (line[start] == ' '))
+                while ((start < lineLen) && ((line[start] == ' ') || (line[start] == '\t')))
                 {
                     start++;
                 }
