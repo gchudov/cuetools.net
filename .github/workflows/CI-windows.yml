@@ -1,0 +1,40 @@
+---
+name: CI-windows
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        # https://github.com/actions/virtual-environments/blob/master/images/win/Windows2016-Readme.md
+        os: [windows-2016]
+      fail-fast: true
+    runs-on: ${{ matrix.os }}
+    env:
+      # yamllint disable-line rule:line-length
+      DEVENV_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.com
+      SLN_PATH: CUETools\CUETools.sln
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      # nasm is required for building Release|Win32
+      - uses: ilammy/setup-nasm@v1
+      - name: Build Release|Any CPU
+        run: |
+          "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Any CPU"
+      - name: Build Release|x64
+        run: |
+          "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|x64"
+      - name: Build Release|Win32
+        run: |
+          "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Win32"
