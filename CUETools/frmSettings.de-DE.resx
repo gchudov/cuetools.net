@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -178,9 +178,6 @@
   <data name="chkReducePriority.ToolTip" xml:space="preserve">
     <value>Reduziere Prozesspriorität, nutze Leerlaufzeit zum Arbeiten</value>
   </data>
-  <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
-    <value>Prüfe auf Aktualisierungen</value>
-  </data>
   <data name="checkBoxCheckForUpdates.ToolTip" xml:space="preserve">
     <value>Prüfe auf Aktualisierungen beim Start des Programms</value>
   </data>
@@ -222,12 +219,6 @@
   </data>
   <data name="grpGeneral.Text" xml:space="preserve">
     <value>Allgemein</value>
-  </data>
-  <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
-    <value>Separater Thread zum Dekodieren</value>
-  </data>
-  <data name="checkBoxSeparateDecodingThread.ToolTip" xml:space="preserve">
-    <value>Verbessert die Geschwindigkeit auf Mehrkernprozessoren</value>
   </data>
   <data name="chkFLACVerify.Text" xml:space="preserve">
     <value>Verifizieren</value>
