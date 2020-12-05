@@ -123,9 +123,6 @@
   <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
     <value>Auf Aktualisierungen prüfen</value>
   </data>
-  <data name="checkBoxUseSystemProxy.Text" xml:space="preserve">
-    <value>Proxyeinstellungen von System übernehmen</value>
-  </data>
   <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
     <value>In eigenem Thread dekodieren</value>
   </data>
@@ -219,18 +216,6 @@
   </data>
   <data name="grpGeneral.Text" xml:space="preserve">
     <value>Allgemein</value>
-  </data>
-  <data name="chkFLACVerify.Text" xml:space="preserve">
-    <value>Verifizieren</value>
-  </data>
-  <data name="chkWVStoreMD5.Text" xml:space="preserve">
-    <value>Speichere MD5-Wert</value>
-  </data>
-  <data name="chkWVExtraMode.Text" xml:space="preserve">
-    <value>Extramodus:</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
-    <value>und Null-Offset</value>
   </data>
   <data name="chkWriteArLogOnConvert.Text" xml:space="preserve">
     <value>Schreibe AccurateRip-Log</value>
@@ -373,9 +358,6 @@
   <data name="tabPage7.Text" xml:space="preserve">
     <value>Erweitert</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Qualität:</value>
-  </data>
   <data name="groupBox5.Text" xml:space="preserve">
     <value>Kodieren, falls verifiziert</value>
   </data>
@@ -394,38 +376,14 @@
   <data name="checkBoxFormatAllowLossy.Text" xml:space="preserve">
     <value>Unterstützt verlustbehaftete Codierung</value>
   </data>
-  <data name="checkBoxFormatSupportsLossyWAV.Text" xml:space="preserve">
-    <value>Unterstützt LossyWAV</value>
-  </data>
   <data name="checkBoxFormatAllowLossless.Text" xml:space="preserve">
     <value>Unterstützt verlustfreie Codierung</value>
   </data>
   <data name="checkBoxFormatEmbedCUESheet.Text" xml:space="preserve">
     <value>Unterstützt eingebettete CUE-Sheets</value>
   </data>
-  <data name="tabPage10.Text" xml:space="preserve">
-    <value>Encoder</value>
-  </data>
   <data name="labelEncoderExtension.Text" xml:space="preserve">
     <value>Erweiterung</value>
-  </data>
-  <data name="groupBoxLibFLAC.Text" xml:space="preserve">
-    <value>libFLAC-Optionen</value>
-  </data>
-  <data name="checkBoxFlaCudaGPUOnly.Text" xml:space="preserve">
-    <value>nur GPU</value>
-  </data>
-  <data name="checkBoxFlaCudaVerify.Text" xml:space="preserve">
-    <value>Verifizieren</value>
-  </data>
-  <data name="groupBoxFlaCudaOptions.Text" xml:space="preserve">
-    <value>FlaCuda-Optionen</value>
-  </data>
-  <data name="groupBoxLibWavpack.Text" xml:space="preserve">
-    <value>WavPack-Optionen</value>
-  </data>
-  <data name="groupBoxLibMAC_SDK.Text" xml:space="preserve">
-    <value>Monkey's-Audio-Optionen</value>
   </data>
   <data name="groupBoxExternalEncoder.Text" xml:space="preserve">
     <value>Externer Encoder</value>
@@ -466,12 +424,6 @@
   <data name="labelDecoderParameters.Text" xml:space="preserve">
     <value>Parameter</value>
   </data>
-  <data name="groupBoxScriptConditions.Text" xml:space="preserve">
-    <value>Bedingungen</value>
-  </data>
-  <data name="buttonScriptCompile.Text" xml:space="preserve">
-    <value>Kompilieren</value>
-  </data>
   <data name="label3.Text" xml:space="preserve">
     <value>% der verif. Tracks &gt;=</value>
   </data>
@@ -481,14 +433,8 @@
   <data name="chkHDCDDetect.Text" xml:space="preserve">
     <value>Erkenne HDCD-Kodierung</value>
   </data>
-  <data name="chkHDCDDetect.ToolTip" xml:space="preserve">
-    <value />
-  </data>
   <data name="checkBox1.Text" xml:space="preserve">
     <value>Verifizieren</value>
-  </data>
-  <data name="tabControl1.ToolTip" xml:space="preserve">
-    <value />
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Erweiterte Einstellungen</value>
