@@ -164,19 +164,19 @@
     <value>Logdatei extrahieren</value>
   </data>
   <data name="chkAllowMultipleInstances.Text" xml:space="preserve">
-    <value>Erlaube mehrere Instanzen</value>
+    <value>Mehrere Instanzen erlauben</value>
   </data>
   <data name="chkAllowMultipleInstances.ToolTip" xml:space="preserve">
     <value>Ermöglicht das Öffnen mehrerer CUETools-Fenster zur gleichen Zeit.</value>
   </data>
   <data name="chkReducePriority.Text" xml:space="preserve">
-    <value>Reduziere Prozesspriorität auf Untätig</value>
+    <value>Prozesspriorität auf untätig reduzieren</value>
   </data>
   <data name="chkReducePriority.ToolTip" xml:space="preserve">
-    <value>Reduziere Prozesspriorität, nutze Leerlaufzeit zum Arbeiten</value>
+    <value>Prozesspriorität reduzieren, indem Leerlaufzeit zum Arbeiten genutzt wird.</value>
   </data>
   <data name="checkBoxCheckForUpdates.ToolTip" xml:space="preserve">
-    <value>Prüfe auf Aktualisierungen beim Start des Programms</value>
+    <value>Beim Start des Programms auf Aktualisierungen prüfen</value>
   </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
     <value>Nullsamples abschneiden, falls vorhanden</value>
@@ -194,19 +194,19 @@
     <value>Erstelle .m3u-Abspiellisten</value>
   </data>
   <data name="chkCreateM3U.ToolTip" xml:space="preserve">
-    <value>Erstellt M3U-Playlistdateien für Einzeltracks.</value>
+    <value>Erstellt .m3u-Playlistdateien für Einzeltracks.</value>
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
     <value>Fehlende CUE-Daten mit Tags füllen</value>
   </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
-    <value>Bette Logdatei als "LOG"-Tag ein</value>
+    <value>Logdatei als "LOG"-Tag einbetten</value>
   </data>
   <data name="chkEmbedLog.ToolTip" xml:space="preserve">
     <value>Die Datei sollte im gleichen Verzeichnis sein und die Erweiterung .log haben.</value>
   </data>
   <data name="checkBoxWriteCUETags.Text" xml:space="preserve">
-    <value>Schreibe Basistags aus CUE-Datei</value>
+    <value>Basistags aus CUE-Datei schreiben</value>
   </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Audiodaten suchen, falls fehlend</value>
@@ -218,13 +218,13 @@
     <value>Allgemein</value>
   </data>
   <data name="chkWriteArLogOnConvert.Text" xml:space="preserve">
-    <value>Schreibe AccurateRip-Log</value>
+    <value>AccurateRip-Log schreiben</value>
   </data>
   <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
-    <value>Schreibe AccurateRip-Tags</value>
+    <value>AccurateRip-Tags schreiben</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
-    <value>Füge den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzu. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
+    <value>Den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzufügen. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
   </data>
   <data name="checkBoxARVerifyUseSourceFolder.Text" xml:space="preserve">
     <value>In Quellordner</value>
@@ -239,7 +239,7 @@
     <value>zu nächstem</value>
   </data>
   <data name="labelLogFileExtension.Text" xml:space="preserve">
-    <value>Erweiterung</value>
+    <value>Erweiterung:</value>
   </data>
   <data name="checkBoxARLogVerbose.Text" xml:space="preserve">
     <value>ausführlich</value>
@@ -260,13 +260,13 @@
     <value>Zur Kompatibilität mit Nicht-Unicode-Anwendungen nur Zeichen erlauben, die in der ANSI-Codepage vorhanden sind.</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Text" xml:space="preserve">
-    <value>Schreibe AccurateRip-Tags</value>
+    <value>AccurateRip-Tags schreiben</value>
   </data>
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
-    <value>Füge den Eingabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzu. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
+    <value>Den Eingabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzufügen. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
   </data>
   <data name="chkHDCDDecode.Text" xml:space="preserve">
-    <value>Dekodiere HDCD auf 20 Bit</value>
+    <value>HDCD auf 20 Bit dekodieren</value>
   </data>
   <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
     <value>HDCD-Dekodierung ist nicht umkehrbar. Die resultierenden Dateien können nicht auf CD gebrannt werden. 24-Bit-Audiodateien werden erstellt, aber die eigentliche Bitrate beträgt 20 Bit</value>
@@ -278,16 +278,16 @@
     <value>Nicht mehr nach HDCD-Informationen suchen, wenn sie in den ersten 10 Sekunden der CD nicht zu finden sind</value>
   </data>
   <data name="chkHDCD24bit.Text" xml:space="preserve">
-    <value>Speichere als 24-Bit-"verlustfrei"</value>
+    <value>Als 24-Bit-"verlustfrei" speichern</value>
   </data>
   <data name="chkHDCD24bit.ToolTip" xml:space="preserve">
     <value>Wenn lossyWAV nicht verwendet wird, für Kompatibilität auf 24 Bit erweitern</value>
   </data>
   <data name="chkHDCDLW16.Text" xml:space="preserve">
-    <value>Speichere als 16-Bit-LossyWAV</value>
+    <value>Als 16-Bit-LossyWAV speichern</value>
   </data>
   <data name="chkHDCDLW16.ToolTip" xml:space="preserve">
-    <value>Beim Konvertieren in lossyWAV auf 16 Bit beschneiden</value>
+    <value>Beim Konvertieren in lossyWAV auf 16-Bit beschneiden</value>
   </data>
   <data name="chkKeepOriginalFilenames.Text" xml:space="preserve">
     <value>Originale Dateinamen beibehalten</value>
@@ -296,10 +296,10 @@
     <value>Audiodateien denselben Namen wie im Original-CUE-Sheet geben, falls möglich</value>
   </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
-    <value>Entferne Sonderzeichen außer:</value>
+    <value>Sonderzeichen entfernen außer:</value>
   </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
-    <value>Ersetze Leerzeichen durch Unterstriche</value>
+    <value>Leerzeichen durch Unterstriche ersetzen</value>
   </data>
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
     <value>Vorlage für den Namen der Audiodateien bei Datei-pro-Track-Images</value>
@@ -326,7 +326,7 @@
     <value>Lücken &amp;angehängt + HTOA</value>
   </data>
   <data name="rbGapsPlusHTOA.ToolTip" xml:space="preserve">
-    <value>Lücken werden an vorige Spur angehängt. Die HTOA (Hidden Track One Audio, d.h. die Lücke vor der ersten Spur) wird in einer separaten Datei gespeichert.</value>
+    <value>Lücken werden an das vorige Stück angehängt. Die HTOA (Hidden Track One Audio, d.h. die Lücke vor dem ersten Stück) wird in einer separaten Datei gespeichert.</value>
   </data>
   <data name="rbGapsAppended.Text" xml:space="preserve">
     <value>Lücken angehängt</value>
@@ -347,7 +347,7 @@
     <value>Lücken werden ausgelassen und durch Stille ersetzt.</value>
   </data>
   <data name="chkWriteARLogOnVerify.Text" xml:space="preserve">
-    <value>Schreibe AccurateRip-Log</value>
+    <value>AccurateRip-Log schreiben</value>
   </data>
   <data name="groupBoxVerify.Text" xml:space="preserve">
     <value>Verifizieren</value>
@@ -431,12 +431,51 @@
     <value>HDCD-Optionen</value>
   </data>
   <data name="chkHDCDDetect.Text" xml:space="preserve">
-    <value>Erkenne HDCD-Kodierung</value>
+    <value>HDCD-Kodierung erkennen</value>
   </data>
   <data name="checkBox1.Text" xml:space="preserve">
     <value>Verifizieren</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Erweiterte Einstellungen</value>
+  </data>
+  <data name="btnOK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="checkBoxEncoderLossless.ToolTip" xml:space="preserve">
+    <value>Legt fest, ob es sich um einen verlustfreien Encoder handelt</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="labelEncoderName.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="labelFormatDecoder.Text" xml:space="preserve">
+    <value>Decoder</value>
+  </data>
+  <data name="labelFormatDefaultDecoder.Text" xml:space="preserve">
+    <value>Decoder</value>
+  </data>
+  <data name="labelFormatEncoder.Text" xml:space="preserve">
+    <value>Encoder</value>
+  </data>
+  <data name="labelFormatTagger.Text" xml:space="preserve">
+    <value>Tagger</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>AccurateRip</value>
+  </data>
+  <data name="tabPage4.Text" xml:space="preserve">
+    <value>HDCD</value>
+  </data>
+  <data name="textBoxDecoderName.ToolTip" xml:space="preserve">
+    <value>Name des Decoders</value>
+  </data>
+  <data name="textBoxEncoderModes.ToolTip" xml:space="preserve">
+    <value>Unterstützte Modi, getrennt durch Leerzeichen</value>
+  </data>
+  <data name="tabPageEncoders.Text" xml:space="preserve">
+    <value>Encoder</value>
   </data>
 </root>

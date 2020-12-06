@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1423,7 +1423,7 @@
     <value>2</value>
   </data>
   <data name="textBoxDecoderName.ToolTip" xml:space="preserve">
-    <value>Name of the encoder</value>
+    <value>Name of the decoder</value>
   </data>
   <data name="&gt;&gt;textBoxDecoderName.Name" xml:space="preserve">
     <value>textBoxDecoderName</value>
