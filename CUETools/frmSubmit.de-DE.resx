@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>Sie sind dabei, Informationen über diese CD an die CUETools-Datenbank zu übertragen. Diese Informationen werden anderen Nutzern helfen, ihre CD zu reparieren, falls sie Fehler enthält..</value>
+    <value>Sie sind dabei, Informationen über diese CD an die CUETools-Datenbank zu übertragen. Diese Informationen werden anderen Nutzern helfen, ihre CD zu reparieren, falls sie Fehler enthält.</value>
   </data>
   <data name="buttonCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
@@ -132,5 +132,8 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>CTDB-Übertragung bestätigen</value>
+  </data>
+  <data name="buttonOk.Text" xml:space="preserve">
+    <value>OK</value>
   </data>
 </root>

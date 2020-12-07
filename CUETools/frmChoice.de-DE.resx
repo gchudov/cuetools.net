@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,25 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="button1.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="Title.Text" xml:space="preserve">
-    <value>Titel</value>
-  </data>
-  <data name="Length.Text" xml:space="preserve">
-    <value>Länge</value>
-  </data>
-  <data name="btnEdit.Text" xml:space="preserve">
-    <value>Ändern</value>
-  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Wählen Sie das beste Ergebnis aus</value>
   </data>
-  <data name="columnHeaderMetadataValue.Text" xml:space="preserve">
-    <value>Wert</value>
+  <data name="buttonMusicBrainz.Text" xml:space="preserve">
+    <value>&amp;Musicbrainz</value>
   </data>
-  <data name="columnHeaderMetadataName.Text" xml:space="preserve">
-    <value>Feld</value>
+  <data name="buttonNavigateCTDB.Text" xml:space="preserve">
+    <value>CT&amp;DB</value>
+  </data>
+  <data name="buttonOk.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="dataGridViewTextBoxColumnTrackLength.HeaderText" xml:space="preserve">
+    <value>Länge</value>
+  </data>
+  <data name="dataGridViewTextBoxColumnTrackNo.HeaderText" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="dataGridViewTextBoxColumnTrackStart.HeaderText" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="dataGridViewTextBoxColumnTrackTitle.HeaderText" xml:space="preserve">
+    <value>Titel</value>
+  </data>
+  <data name="Item.HeaderText" xml:space="preserve">
+    <value>Spalte1</value>
+  </data>
+  <data name="Value.HeaderText" xml:space="preserve">
+    <value>Spalte1</value>
   </data>
 </root>
