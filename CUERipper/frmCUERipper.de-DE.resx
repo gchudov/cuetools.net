@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -177,9 +177,6 @@
   <data name="progressBarCD.Text" xml:space="preserve">
     <value>10%</value>
   </data>
-  <data name="comboBoxOutputFormat.ToolTip" xml:space="preserve">
-    <value>Vorlage für Ausgabedateien (foobar2000-Format)</value>
-  </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value>Klicken, um die Vorlage zu ändern</value>
   </data>
@@ -212,5 +209,26 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>CUERipper 2.1.7</value>
+  </data>
+  <data name="bnComboBoxDrives.Text" xml:space="preserve">
+    <value>Laufwerke</value>
+  </data>
+  <data name="bnComboBoxEncoder.Text" xml:space="preserve">
+    <value>libFlac</value>
+  </data>
+  <data name="bnComboBoxFormat.Text" xml:space="preserve">
+    <value>flac</value>
+  </data>
+  <data name="bnComboBoxImage.Text" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="bnComboBoxLosslessOrNot.Text" xml:space="preserve">
+    <value>verlustfrei</value>
+  </data>
+  <data name="bnComboBoxRelease.Text" xml:space="preserve">
+    <value>Veröffentlichungen</value>
+  </data>
+  <data name="buttonEjectDisk.Text" xml:space="preserve">
+    <value>Auswerfen</value>
   </data>
 </root>
