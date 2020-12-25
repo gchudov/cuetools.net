@@ -112,6 +112,9 @@
     <EmbeddedResource Include="frmCUERipper.ru-RU.resx">
       <DependentUpon>frmCUERipper.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmFreedbSubmit.de-DE.resx">
+      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmFreedbSubmit.resx">
       <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
     </EmbeddedResource>
