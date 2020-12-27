@@ -568,7 +568,8 @@
     <value>Write AccurateRip tags</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
-    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to output files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
+    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to output files.
+You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
   </data>
   <data name="&gt;&gt;chkWriteArTagsOnConvert.Name" xml:space="preserve">
     <value>chkWriteArTagsOnConvert</value>
@@ -841,7 +842,8 @@
     <value>Write AccurateRip tags</value>
   </data>
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
-    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to input files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
+    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to input files.
+You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
   </data>
   <data name="&gt;&gt;chkWriteARTagsOnVerify.Name" xml:space="preserve">
     <value>chkWriteARTagsOnVerify</value>

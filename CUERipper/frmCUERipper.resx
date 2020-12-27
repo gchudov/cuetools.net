@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -159,7 +159,7 @@
     <value>28, 30</value>
   </data>
   <data name="toolStripStatusAr.ToolTipText" xml:space="preserve">
-    <value>Album found in AccurateRip database.</value>
+    <value>AccurateRip status</value>
   </data>
   <data name="toolStripProgressBar1.Size" type="System.Drawing.Size, System.Drawing">
     <value>150, 29</value>
@@ -1708,6 +1708,9 @@
   </data>
   <data name="&gt;&gt;panel2.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="buttonEjectDisk.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="buttonEjectDisk.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>

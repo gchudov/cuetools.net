@@ -272,7 +272,7 @@
     <value>40, 17</value>
   </data>
   <data name="btnResume.Text" xml:space="preserve">
-    <value>&amp;Fortsetzen</value>
+    <value>&amp;Weiter</value>
   </data>
   <data name="checkBoxVerifyUseLocal.ToolTip" xml:space="preserve">
     <value>Lokale Datenbank verwenden</value>
@@ -357,7 +357,7 @@
     <value>Überschreiben</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
-    <value />
+    <value>CUETools-Webseite</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
     <value>Einstellungen</value>

@@ -203,7 +203,7 @@
     <value>Logdatei als "LOG"-Tag einbetten</value>
   </data>
   <data name="chkEmbedLog.ToolTip" xml:space="preserve">
-    <value>Die Datei sollte im gleichen Verzeichnis sein und die Erweiterung .log haben.</value>
+    <value>Die Datei sollte im selben Verzeichnis sein und die Erweiterung .log haben.</value>
   </data>
   <data name="checkBoxWriteCUETags.Text" xml:space="preserve">
     <value>Basistags aus CUE-Datei schreiben</value>
@@ -224,7 +224,8 @@
     <value>AccurateRip-Tags schreiben</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
-    <value>Den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzufügen. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
+    <value>Den Ausgabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzufügen.
+Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
   </data>
   <data name="checkBoxARVerifyUseSourceFolder.Text" xml:space="preserve">
     <value>In Quellordner</value>
@@ -263,7 +264,8 @@
     <value>AccurateRip-Tags schreiben</value>
   </data>
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
-    <value>Den Eingabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzufügen. Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
+    <value>Den Eingabedateien ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL-Tags hinzufügen.
+Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Musik korrekt kopiert wurde oder wie beliebt sie ist.</value>
   </data>
   <data name="chkHDCDDecode.Text" xml:space="preserve">
     <value>HDCD auf 20 Bit dekodieren</value>
