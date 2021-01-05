@@ -1,6 +1,6 @@
 /**
  * CUETools.FLACCL: FLAC audio encoder using OpenCL
- * Copyright (c) 2010-2020 Gregory S. Chudov
+ * Copyright (c) 2010-2021 Gregory S. Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
