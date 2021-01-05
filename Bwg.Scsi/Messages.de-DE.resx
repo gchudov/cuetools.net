@@ -112,39 +112,60 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Wählen Sie das beste Ergebnis aus</value>
+  <data name="SCSIErrorMessage_3A00" xml:space="preserve">
+    <value>Medium nicht vorhanden</value>
   </data>
-  <data name="buttonMusicBrainz.Text" xml:space="preserve">
-    <value>&amp;Musicbrainz</value>
+  <data name="SCSIErrorMessage_3A01" xml:space="preserve">
+    <value>Medium nicht vorhanden - Schublade geschlossen</value>
   </data>
-  <data name="buttonNavigateCTDB.Text" xml:space="preserve">
-    <value>CT&amp;DB</value>
+  <data name="SCSIErrorMessage_3A02" xml:space="preserve">
+    <value>Medium nicht vorhanden - Schublade offen</value>
   </data>
-  <data name="buttonOk.Text" xml:space="preserve">
-    <value>OK</value>
+  <data name="SCSISenseKey_00" xml:space="preserve">
+    <value>unbekannter Fehler</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackLength.HeaderText" xml:space="preserve">
-    <value>Länge</value>
+  <data name="SCSISenseKey_01" xml:space="preserve">
+    <value>behobener Fehler</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackNo.HeaderText" xml:space="preserve">
-    <value>#</value>
+  <data name="SCSISenseKey_02" xml:space="preserve">
+    <value>nicht bereit</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackStart.HeaderText" xml:space="preserve">
-    <value>Start</value>
+  <data name="SCSISenseKey_03" xml:space="preserve">
+    <value>Mediumfehler</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackTitle.HeaderText" xml:space="preserve">
-    <value>Titel</value>
+  <data name="SCSISenseKey_04" xml:space="preserve">
+    <value>Hardwarefehler</value>
   </data>
-  <data name="Item.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
+  <data name="SCSISenseKey_05" xml:space="preserve">
+    <value>ungültige Anfrage</value>
   </data>
-  <data name="Value.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
+  <data name="SCSISenseKey_06" xml:space="preserve">
+    <value>unit attention</value>
+  </data>
+  <data name="SCSISenseKey_07" xml:space="preserve">
+    <value>data protect</value>
+  </data>
+  <data name="SCSISenseKey_08" xml:space="preserve">
+    <value>blank check</value>
+  </data>
+  <data name="SCSISenseKey_09" xml:space="preserve">
+    <value>vendor specific</value>
+  </data>
+  <data name="SCSISenseKey_0A" xml:space="preserve">
+    <value>Kopieren abgebrochen</value>
+  </data>
+  <data name="SCSISenseKey_0B" xml:space="preserve">
+    <value>abgebrochener Befehl</value>
+  </data>
+  <data name="SCSISenseKey_0D" xml:space="preserve">
+    <value>Volumenüberlauf</value>
+  </data>
+  <data name="SCSISenseKey_0E" xml:space="preserve">
+    <value>Vergleichsfehler</value>
   </data>
 </root>

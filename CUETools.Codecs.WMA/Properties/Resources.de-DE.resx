@@ -112,39 +112,18 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Wählen Sie das beste Ergebnis aus</value>
+  <data name="DoMD5Description" xml:space="preserve">
+    <value>MD5-Prüfsumme für Audiodaten berechnen</value>
   </data>
-  <data name="buttonMusicBrainz.Text" xml:space="preserve">
-    <value>&amp;Musicbrainz</value>
+  <data name="DoVerifyDescription" xml:space="preserve">
+    <value>Jeden Frame dekodieren und mit dem Original vergleichen</value>
   </data>
-  <data name="buttonNavigateCTDB.Text" xml:space="preserve">
-    <value>CT&amp;DB</value>
-  </data>
-  <data name="buttonOk.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="dataGridViewTextBoxColumnTrackLength.HeaderText" xml:space="preserve">
-    <value>Länge</value>
-  </data>
-  <data name="dataGridViewTextBoxColumnTrackNo.HeaderText" xml:space="preserve">
-    <value>#</value>
-  </data>
-  <data name="dataGridViewTextBoxColumnTrackStart.HeaderText" xml:space="preserve">
-    <value>Start</value>
-  </data>
-  <data name="dataGridViewTextBoxColumnTrackTitle.HeaderText" xml:space="preserve">
-    <value>Titel</value>
-  </data>
-  <data name="Item.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
-  </data>
-  <data name="Value.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
+  <data name="ExceptionSampleCount" xml:space="preserve">
+    <value>Die geschriebenen Samples unterscheiden sich von der erwarteten Anzahl</value>
   </data>
 </root>

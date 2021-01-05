@@ -121,14 +121,8 @@
   <data name="toolStripStatusLabelProcessed.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 21</value>
   </data>
-  <data name="toolStripStatusLabelProcessed.Text" xml:space="preserve">
-    <value>Restzeit</value>
-  </data>
   <data name="toolStripStatusLabelAR.ToolTipText" xml:space="preserve">
     <value>Album in AccurateRip-Datenbank gefunden.</value>
-  </data>
-  <data name="toolStripProgressBar1.ToolTipText" xml:space="preserve">
-    <value>Trackfortschritt</value>
   </data>
   <data name="toolStripProgressBar2.ToolTipText" xml:space="preserve">
     <value>Gesamtfortschritt</value>
@@ -206,19 +200,19 @@
     <value>131, 17</value>
   </data>
   <data name="rbActionCorrectFilenames.Text" xml:space="preserve">
-    <value>Korrigiere Dateinamen</value>
+    <value>Dateinamen korrigieren</value>
   </data>
   <data name="rbActionCorrectFilenames.ToolTip" xml:space="preserve">
-    <value />
+    <value>Dateinamen in CUE-Sheets korrigieren</value>
   </data>
   <data name="rbActionCreateCUESheet.Size" type="System.Drawing.Size, System.Drawing">
     <value>119, 17</value>
   </data>
   <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
-    <value>Erzeuge leeres CUE</value>
+    <value>Leeres CUE-Sheet erzeugen</value>
   </data>
   <data name="rbActionCreateCUESheet.ToolTip" xml:space="preserve">
-    <value />
+    <value>Ein CUE-Sheet für Tracks erzeugen und eingebettete CUE-Sheets extrahieren</value>
   </data>
   <data name="rbActionVerifyAndEncode.Size" type="System.Drawing.Size, System.Drawing">
     <value>116, 17</value>
@@ -227,7 +221,7 @@
     <value>95, 17</value>
   </data>
   <data name="rbActionVerify.Text" xml:space="preserve">
-    <value>&amp;Nur AR verifiz.</value>
+    <value>&amp;Verifizieren</value>
   </data>
   <data name="rbActionVerify.ToolTip" xml:space="preserve">
     <value>Kontaktiert die AccurateRip-Datenbank und verifiziert das Image anhand dieser.</value>
@@ -239,7 +233,7 @@
     <value>&amp;Kodieren</value>
   </data>
   <data name="rbActionEncode.ToolTip" xml:space="preserve">
-    <value>Verif. und kodieren</value>
+    <value>In ein anderes Format kodieren. AccurateRip-Datenbank nicht zum Verifizieren kontaktieren</value>
   </data>
   <data name="comboBoxScript.ToolTip" xml:space="preserve">
     <value>Eigenes Script ausführen</value>
@@ -260,7 +254,7 @@
     <value>Das Pregap ist eine mit Stille oder versteckten Audiodaten gefüllte Zeitspanne vor dem Beginn der ersten Tonspur. Normalerweise ist diese aus dem CUE-Sheet bekannt, aber falls Sie ohne CUE-Sheet arbeiten, können Sie diesen Wert manuell ändern.</value>
   </data>
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
-    <value>Nicht für normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren können nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die Länge der Datenspur. Sie können sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie müssen hier nichts eingeben.</value>
+    <value>Wird nicht für normale Musik-CDs verwendet. Erweiterte CDs mit Datenspuren können nicht in der Datenbank gefunden werden, es sei denn, Sie kennen die Länge der Datenspur. Sie können sie oft im EAC-Log finden. Falls das EAC-Log beim CUE-Sheet gefunden wird, wird es automatisch ausgelesen, und Sie müssen hier nichts eingeben.</value>
   </data>
   <data name="labelDataTrack.Text" xml:space="preserve">
     <value>Datenspur</value>
@@ -278,19 +272,10 @@
     <value>40, 17</value>
   </data>
   <data name="btnResume.Text" xml:space="preserve">
-    <value>&amp;Fortsetzen</value>
+    <value>&amp;Weiter</value>
   </data>
   <data name="checkBoxVerifyUseLocal.ToolTip" xml:space="preserve">
-    <value>Verwende lokale Datenbank</value>
-  </data>
-  <data name="checkBoxVerifyUseCDRepair.ToolTip" xml:space="preserve">
-    <value>Verwende CTDB (CUETools-Datenbank)</value>
-  </data>
-  <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
-    <value>Verwende AccurateRip</value>
-  </data>
-  <data name="checkBoxUseFreeDb.ToolTip" xml:space="preserve">
-    <value>Verwende freeDb</value>
+    <value>Lokale Datenbank verwenden</value>
   </data>
   <data name="groupBoxMode.Text" xml:space="preserve">
     <value>Modus</value>
@@ -305,7 +290,7 @@
     <value>&amp;Eingebettet</value>
   </data>
   <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
-    <value>Erstelle einzelne Datei mit eingebettetem CUE-Sheet</value>
+    <value>Einzelne Datei mit eingebettetem CUE-Sheet erstellen.</value>
   </data>
   <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
     <value>126, 17</value>
@@ -314,13 +299,13 @@
     <value>Image + CUE</value>
   </data>
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
-    <value>Erstelle einzelne Datei + CUE-Sheet</value>
+    <value>Einzelne Datei + CUE-Sheet erstellen</value>
   </data>
   <data name="rbTracks.Text" xml:space="preserve">
     <value>Einzelda&amp;teien</value>
   </data>
   <data name="rbTracks.ToolTip" xml:space="preserve">
-    <value>Erstelle eine Datei pro Stück. Die Verhalten bei Lücken kann in den erweiterten Einstellungen geändert werden.</value>
+    <value>Eine Datei pro Stück erstellen. Das Verhalten bei Lücken kann in den erweiterten Einstellungen geändert werden.</value>
   </data>
   <data name="grpOutputStyle.Text" xml:space="preserve">
     <value>CUE-Stil</value>
@@ -359,12 +344,6 @@
         AAAAAAAAAAAAAIABAADAAwAA4AcAAPAPAAA=
 </value>
   </data>
-  <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
-    <value>Verwende AccurateRip</value>
-  </data>
-  <data name="checkBoxUseFreeDb.ToolTip" xml:space="preserve">
-    <value>FreeDB-Abfrage</value>
-  </data>
   <data name="checkBoxUseMusicBrainz.ToolTip" xml:space="preserve">
     <value>MusicBrainz-Abfrage</value>
   </data>
@@ -372,13 +351,13 @@
     <value>CUE-Pfade</value>
   </data>
   <data name="toolStripButtonAbout.Text" xml:space="preserve">
-    <value>Über</value>
+    <value>Info</value>
   </data>
   <data name="toolStripButtonCorrectorOverwrite.Text" xml:space="preserve">
     <value>Überschreiben</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
-    <value />
+    <value>CUETools-Webseite</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
     <value>Einstellungen</value>
@@ -401,14 +380,14 @@
   <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
     <value>Versuche fehlende Dateien automatisch zu finden</value>
   </data>
-   <data name="toolStripDropDownButtonCorrectorMode.Text" xml:space="preserve">
+  <data name="toolStripDropDownButtonCorrectorMode.Text" xml:space="preserve">
     <value>Dateien suchen</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
     <value>Andere Erweiterung</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
-    <value>Ersetze Erweiterung für Audiodateien mit dieser:</value>
+    <value>Erweiterung für Audiodateien mit dieser ersetzen:</value>
   </data>
   <data name="toolStripMenuItemInputBrowserDrag.Text" xml:space="preserve">
     <value>Drag'n'drop-Modus</value>
@@ -429,7 +408,7 @@
     <value>Manuell</value>
   </data>
   <data name="toolStripMenuItemOutputTemplate.Text" xml:space="preserve">
-    <value>Verwende Vorlage</value>
+    <value>Vorlage verwenden</value>
   </data>
   <data name="labelOutputTemplate.Text" xml:space="preserve">
     <value>Vorlage:</value>
@@ -452,9 +431,6 @@
   <data name="toolStripDropDownButtonProfile.Text" xml:space="preserve">
     <value>Standard</value>
   </data>
-  <data name="toolStripDropDownButtonProfile.ToolTip" xml:space="preserve">
-    <value>Profil</value>
-  </data>
   <data name="setAsMyMusicFolderToolStripMenuItem.Text" xml:space="preserve">
     <value>Für meine Musik verwenden</value>
   </data>
@@ -472,5 +448,47 @@
   </data>
   <data name="locateInExplorerToolStripMenuItem.Text" xml:space="preserve">
     <value>Im Explorer anzeigen</value>
+  </data>
+  <data name="btnPause.Text" xml:space="preserve">
+    <value>&amp;Pause</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.ToolTip" xml:space="preserve">
+    <value>Mit AccurateRip verifizieren</value>
+  </data>
+  <data name="checkBoxCTDBVerify.ToolTip" xml:space="preserve">
+    <value>CTDB (CUETools-Datenbank) verwenden</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.ToolTip" xml:space="preserve">
+    <value>Mit CTDB verifizieren</value>
+  </data>
+  <data name="checkBoxEditTags.ToolTip" xml:space="preserve">
+    <value>Tags bearbeiten</value>
+  </data>
+  <data name="checkBoxSkipRecent.ToolTip" xml:space="preserve">
+    <value>Kürzlich verifizierte überspringen</value>
+  </data>
+  <data name="labelEncoderMaxMode.Text" xml:space="preserve">
+    <value>320</value>
+  </data>
+  <data name="labelEncoderMinMode.Text" xml:space="preserve">
+    <value>128</value>
+  </data>
+  <data name="labelEncoderMode.Text" xml:space="preserve">
+    <value>256</value>
+  </data>
+  <data name="toolStripDropDownButtonCorrectorFormat.Text" xml:space="preserve">
+    <value>flac</value>
+  </data>
+  <data name="toolStripDropDownButtonProfile.ToolTipText" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="toolStripStatusLabelAR.Text" xml:space="preserve">
+    <value>55</value>
+  </data>
+  <data name="toolStripStatusLabelCTDB.Text" xml:space="preserve">
+    <value>77</value>
+  </data>
+  <data name="updateLocalDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Lokale Datenbank aktualisieren</value>
   </data>
 </root>

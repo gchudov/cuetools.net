@@ -112,39 +112,39 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Wählen Sie das beste Ergebnis aus</value>
+  <data name="AutodetectReadCommandFailed" xml:space="preserve">
+    <value>Lesebefehl konnte nicht erkannt werden</value>
   </data>
-  <data name="buttonMusicBrainz.Text" xml:space="preserve">
-    <value>&amp;Musicbrainz</value>
+  <data name="DeviceInquiryError" xml:space="preserve">
+    <value>Fehler bei der Abfrage des Laufwerks</value>
   </data>
-  <data name="buttonNavigateCTDB.Text" xml:space="preserve">
-    <value>CT&amp;DB</value>
+  <data name="DeviceNotMMC" xml:space="preserve">
+    <value>Kein MMC-Gerät</value>
   </data>
-  <data name="buttonOk.Text" xml:space="preserve">
-    <value>OK</value>
+  <data name="DeviceOpenError" xml:space="preserve">
+    <value>Öffnen fehlgeschlagen</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackLength.HeaderText" xml:space="preserve">
-    <value>Länge</value>
+  <data name="NoAudio" xml:space="preserve">
+    <value>Keine Audio-Tracks</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackNo.HeaderText" xml:space="preserve">
-    <value>#</value>
+  <data name="ReadCDError" xml:space="preserve">
+    <value>Fehler beim Lesen der CD</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackStart.HeaderText" xml:space="preserve">
-    <value>Start</value>
+  <data name="ReadTOCError" xml:space="preserve">
+    <value>CD kann nicht geöffnet werden</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackTitle.HeaderText" xml:space="preserve">
-    <value>Titel</value>
+  <data name="StatusDetectingDriveFeatures" xml:space="preserve">
+    <value>Laufwerkseigenschaften werden erkannt</value>
   </data>
-  <data name="Item.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
+  <data name="StatusDetectingGaps" xml:space="preserve">
+    <value>Lücken (Gaps) werden erkannt</value>
   </data>
-  <data name="Value.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
+  <data name="StatusRipping" xml:space="preserve">
+    <value>Rippen</value>
   </data>
 </root>

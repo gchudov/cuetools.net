@@ -112,39 +112,39 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Wählen Sie das beste Ergebnis aus</value>
+  <data name="DetectingDrives" xml:space="preserve">
+    <value>Laufwerkserkennung läuft</value>
   </data>
-  <data name="buttonMusicBrainz.Text" xml:space="preserve">
-    <value>&amp;Musicbrainz</value>
+  <data name="DoneRipping" xml:space="preserve">
+    <value>Rippen abgeschlossen</value>
   </data>
-  <data name="buttonNavigateCTDB.Text" xml:space="preserve">
-    <value>CT&amp;DB</value>
+  <data name="DoneRippingErrors" xml:space="preserve">
+    <value>Der Rip enthält wahrscheinlich Fehler</value>
   </data>
-  <data name="buttonOk.Text" xml:space="preserve">
-    <value>OK</value>
+  <data name="DoneRippingRepair" xml:space="preserve">
+    <value>Sie können eine Reparatur mit CUETools versuchen</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackLength.HeaderText" xml:space="preserve">
-    <value>Länge</value>
+  <data name="ExceptionMessage" xml:space="preserve">
+    <value>Ausnahme</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackNo.HeaderText" xml:space="preserve">
-    <value>#</value>
+  <data name="FailedToLoadRipperModule" xml:space="preserve">
+    <value>Laden des Ripper-Moduls fehlgeschlagen</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackStart.HeaderText" xml:space="preserve">
-    <value>Start</value>
+  <data name="LookingUpVia" xml:space="preserve">
+    <value>Albumsuche via</value>
   </data>
-  <data name="dataGridViewTextBoxColumnTrackTitle.HeaderText" xml:space="preserve">
-    <value>Titel</value>
+  <data name="NoDrives" xml:space="preserve">
+    <value>Keine CD-Laufwerke gefunden</value>
   </data>
-  <data name="Item.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
+  <data name="PausedMessage" xml:space="preserve">
+    <value>Pausiert</value>
   </data>
-  <data name="Value.HeaderText" xml:space="preserve">
-    <value>Spalte1</value>
+  <data name="Retry" xml:space="preserve">
+    <value>erneut versuchen</value>
   </data>
 </root>
