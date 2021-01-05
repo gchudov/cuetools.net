@@ -1,6 +1,6 @@
 /**
  * CUETools.Flake: pure managed FLAC audio encoder
- * Copyright (c) 2009-2020 Grigory Chudov
+ * Copyright (c) 2009-2021 Grigory Chudov
  * Based on Flake encoder, http://flake-enc.sourceforge.net/
  * Copyright (c) 2006-2009 Justin Ruggles
  *

@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("CUERipper")]
-[assembly: AssemblyCopyright("Copyright (c) 2008-2020 Greg Chudov")]
+[assembly: AssemblyCopyright("Copyright (c) 2008-2021 Greg Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

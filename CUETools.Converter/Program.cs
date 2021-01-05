@@ -125,7 +125,7 @@ namespace CUETools.Converter
                     break;
             }
 
-            Console.Error.WriteLine("CUETools.Converter, Copyright (C) 2009-2020 Grigory Chudov.");
+            Console.Error.WriteLine("CUETools.Converter, Copyright (C) 2009-2021 Grigory Chudov.");
             Console.Error.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
             Console.Error.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
             if (!ok || sourceFile == null || destFile == null)
