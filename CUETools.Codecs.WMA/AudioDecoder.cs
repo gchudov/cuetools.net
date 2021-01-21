@@ -42,8 +42,9 @@ namespace CUETools.Codecs.WMA
         Stream m_IO;
         StreamWrapper m_streamWrapper;
 
-        public AudioDecoder(string path, Stream IO)
+        public AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
+            m_settings = settings;
             m_path = path;
             isValid(path);
             bool pfIsProtected;
@@ -219,6 +220,7 @@ namespace CUETools.Codecs.WMA
             //m_syncReader.GetMaxOutputSampleSize(m_dwAudioOutputNum, out cbMax);
         }
 
+        private DecoderSettings m_settings;
         public IAudioDecoderSettings Settings => null;
 
         public void isValid(string filename)

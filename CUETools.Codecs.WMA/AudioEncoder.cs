@@ -32,7 +32,7 @@ namespace CUETools.Codecs.WMA
 
         public IAudioEncoderSettings Settings => m_settings;
 
-        public AudioEncoder(string path, EncoderSettings settings)
+        public AudioEncoder(EncoderSettings settings, string path, Stream IO = null)
         {
             this.m_settings = settings;
             this.outputPath = path;
