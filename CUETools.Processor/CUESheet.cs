@@ -914,7 +914,7 @@ namespace CUETools.Processor
                 m_freedb.Hostname = _config.advanced.FreedbDomain;
                 m_freedb.ClientName = "CUETools";
                 m_freedb.Version = CUEToolsVersion;
-                m_freedb.SetDefaultSiteAddress("freedb.org");
+                m_freedb.SetDefaultSiteAddress("gnudb.gnudb.org");
 
                 QueryResult queryResult;
                 QueryResultCollection coll;
