@@ -30,7 +30,7 @@ namespace Freedb
 	/// </summary>
 	public class FreedbHelper
 	{
-		public const string MAIN_FREEDB_ADDRESS = "freedb.freedb.org";
+		public const string MAIN_FREEDB_ADDRESS = "gnudb.gnudb.org";
 		public const string DEFAULT_ADDITIONAL_URL_INFO = "/~cddb/cddb.cgi";
 		public const string SUBMIT_ADDITIONAL_URL_INFO = "/~cddb/submit.cgi";
 		private Site m_mainSite = new Site(MAIN_FREEDB_ADDRESS,"http",DEFAULT_ADDITIONAL_URL_INFO);
