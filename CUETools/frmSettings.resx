@@ -1770,10 +1770,13 @@ You can set up foobar2000 to show those values, and see if your music was ripped
     <value>NoControl</value>
   </data>
   <data name="labelAlbumArtMaximumResolution.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 69</value>
+    <value>3, 72</value>
+  </data>
+  <data name="labelAlbumArtMaximumResolution.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
   </data>
   <data name="labelAlbumArtMaximumResolution.Size" type="System.Drawing.Size, System.Drawing">
-    <value>203, 26</value>
+    <value>203, 20</value>
   </data>
   <data name="labelAlbumArtMaximumResolution.TabIndex" type="System.Int32, mscorlib">
     <value>20</value>
@@ -3840,6 +3843,9 @@ You can set up foobar2000 to show those values, and see if your music was ripped
   </data>
   <data name="&gt;&gt;tabPage11.ZOrder" xml:space="preserve">
     <value>5</value>
+  </data>
+  <data name="grpHDCD.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="grpHDCD.Location" type="System.Drawing.Point, System.Drawing">
     <value>19, 42</value>
