@@ -130,9 +130,6 @@
   <data name="labelInput.Size" type="System.Drawing.Size, System.Drawing">
     <value>49, 13</value>
   </data>
-  <data name="checkBoxDontGenerate.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 17</value>
-  </data>
   <data name="grpInput.Text" xml:space="preserve">
     <value>Eingabe</value>
   </data>
@@ -142,17 +139,11 @@
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value>Ausgabedatei</value>
   </data>
-  <data name="radioButtonAudioNone.Size" type="System.Drawing.Size, System.Drawing">
-    <value>51, 17</value>
-  </data>
   <data name="radioButtonAudioNone.Text" xml:space="preserve">
     <value>Keine</value>
   </data>
   <data name="radioButtonAudioNone.ToolTip" xml:space="preserve">
     <value>Keine Audioausgabe</value>
-  </data>
-  <data name="radioButtonAudioLossy.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 17</value>
   </data>
   <data name="radioButtonAudioLossy.Text" xml:space="preserve">
     <value>Verlustbehaftet</value>
@@ -165,9 +156,6 @@
   </data>
   <data name="radioButtonAudioHybrid.ToolTip" xml:space="preserve">
     <value>Hybride Codecs</value>
-  </data>
-  <data name="radioButtonAudioLossless.Size" type="System.Drawing.Size, System.Drawing">
-    <value>74, 17</value>
   </data>
   <data name="radioButtonAudioLossless.Text" xml:space="preserve">
     <value>Verlustfrei</value>
@@ -184,20 +172,8 @@
   <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
     <value>Audiodateiformat</value>
   </data>
-  <data name="rbCorrectorLocateFiles.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 17</value>
-  </data>
-  <data name="rbCorrectorChangeExtension.Size" type="System.Drawing.Size, System.Drawing">
-    <value>111, 17</value>
-  </data>
-  <data name="checkBoxCorrectorOverwrite.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 17</value>
-  </data>
   <data name="grpAction.Text" xml:space="preserve">
     <value>Aktion</value>
-  </data>
-  <data name="rbActionCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
-    <value>131, 17</value>
   </data>
   <data name="rbActionCorrectFilenames.Text" xml:space="preserve">
     <value>Dateinamen korrigieren</value>
@@ -205,29 +181,17 @@
   <data name="rbActionCorrectFilenames.ToolTip" xml:space="preserve">
     <value>Dateinamen in CUE-Sheets korrigieren</value>
   </data>
-  <data name="rbActionCreateCUESheet.Size" type="System.Drawing.Size, System.Drawing">
-    <value>119, 17</value>
-  </data>
   <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
-    <value>Leeres CUE-Sheet erzeugen</value>
+    <value>CUE-Sheet erzeugen</value>
   </data>
   <data name="rbActionCreateCUESheet.ToolTip" xml:space="preserve">
     <value>Ein CUE-Sheet für Tracks erzeugen und eingebettete CUE-Sheets extrahieren</value>
-  </data>
-  <data name="rbActionVerifyAndEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>116, 17</value>
-  </data>
-  <data name="rbActionVerify.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 17</value>
   </data>
   <data name="rbActionVerify.Text" xml:space="preserve">
     <value>&amp;Verifizieren</value>
   </data>
   <data name="rbActionVerify.ToolTip" xml:space="preserve">
     <value>Kontaktiert die AccurateRip-Datenbank und verifiziert das Image anhand dieser.</value>
-  </data>
-  <data name="rbActionEncode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>126, 17</value>
   </data>
   <data name="rbActionEncode.Text" xml:space="preserve">
     <value>&amp;Kodieren</value>
@@ -261,15 +225,6 @@
   </data>
   <data name="grpExtra.Text" xml:space="preserve">
     <value>Extra</value>
-  </data>
-  <data name="rbFreedbAlways.Size" type="System.Drawing.Size, System.Drawing">
-    <value>55, 17</value>
-  </data>
-  <data name="rbFreedbIf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 17</value>
-  </data>
-  <data name="rbFreedbNever.Size" type="System.Drawing.Size, System.Drawing">
-    <value>40, 17</value>
   </data>
   <data name="btnResume.Text" xml:space="preserve">
     <value>&amp;Weiter</value>
