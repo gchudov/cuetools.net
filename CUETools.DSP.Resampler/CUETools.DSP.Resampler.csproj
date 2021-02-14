@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
-    <Version>2.1.7.0</Version>
+    <Version>2.1.8.0</Version>
     <AssemblyName>CUETools.DSP.Resampler</AssemblyName>
     <RootNamespace>CUETools.DSP.Resampler</RootNamespace>
     <Product>CUETools</Product>
