@@ -276,10 +276,9 @@ namespace CUETools.FLACCL.cmd
 			{
                 if (device_type != null)
                     settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
-                encoder = new Codecs.FLACCL.AudioEncoder((output_file == "-" || output_file == "nul") ? "" : output_file,
+                encoder = new Codecs.FLACCL.AudioEncoder(settings, (output_file == "-" || output_file == "nul") ? "" : output_file,
                     output_file == "-" ? Console.OpenStandardOutput() :
-                    output_file == "nul" ? new NullStream() : null,
-                    settings);
+                    output_file == "nul" ? new NullStream() : null);
                 settings = encoder.Settings as Codecs.FLACCL.EncoderSettings;
                 encoder.FinalSampleCount = audioSource.Length;
 				if (stereo_method != null)
