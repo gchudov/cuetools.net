@@ -147,4 +147,10 @@
   <data name="Value.HeaderText" xml:space="preserve">
     <value>Spalte1</value>
   </data>
+  <data name="buttonMusicBrainz.ToolTip" xml:space="preserve">
+    <value>Album bei MusicBrainz nachschlagen</value>
+  </data>
+  <data name="buttonNavigateCTDB.ToolTip" xml:space="preserve">
+    <value>Album in CUETools DB anzeigen</value>
+  </data>
 </root>

@@ -37,6 +37,8 @@ namespace JDP
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.buttonMusicBrainz = new System.Windows.Forms.Button();
+            this.buttonNavigateCTDB = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanelMeta = new System.Windows.Forms.TableLayoutPanel();
             this.dataGridViewTracks = new System.Windows.Forms.DataGridView();
@@ -48,8 +50,7 @@ namespace JDP
             this.Item = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.buttonMusicBrainz = new System.Windows.Forms.Button();
-            this.buttonNavigateCTDB = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -123,6 +124,24 @@ namespace JDP
             this.tableLayoutPanel2.Controls.Add(this.buttonMusicBrainz, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.buttonNavigateCTDB, 1, 0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            // 
+            // buttonMusicBrainz
+            // 
+            resources.ApplyResources(this.buttonMusicBrainz, "buttonMusicBrainz");
+            this.buttonMusicBrainz.Image = global::JDP.Properties.Resources.musicbrainz;
+            this.buttonMusicBrainz.Name = "buttonMusicBrainz";
+            this.toolTip1.SetToolTip(this.buttonMusicBrainz, resources.GetString("buttonMusicBrainz.ToolTip"));
+            this.buttonMusicBrainz.UseVisualStyleBackColor = true;
+            this.buttonMusicBrainz.Click += new System.EventHandler(this.buttonMusicBrainz_Click);
+            // 
+            // buttonNavigateCTDB
+            // 
+            resources.ApplyResources(this.buttonNavigateCTDB, "buttonNavigateCTDB");
+            this.buttonNavigateCTDB.Image = global::JDP.Properties.Resources.cdrepair1;
+            this.buttonNavigateCTDB.Name = "buttonNavigateCTDB";
+            this.toolTip1.SetToolTip(this.buttonNavigateCTDB, resources.GetString("buttonNavigateCTDB.ToolTip"));
+            this.buttonNavigateCTDB.UseVisualStyleBackColor = true;
+            this.buttonNavigateCTDB.Click += new System.EventHandler(this.buttonNavigateCTDB_Click);
             // 
             // pictureBox1
             // 
@@ -238,22 +257,6 @@ namespace JDP
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
-            // buttonMusicBrainz
-            // 
-            resources.ApplyResources(this.buttonMusicBrainz, "buttonMusicBrainz");
-            this.buttonMusicBrainz.Image = global::JDP.Properties.Resources.musicbrainz;
-            this.buttonMusicBrainz.Name = "buttonMusicBrainz";
-            this.buttonMusicBrainz.UseVisualStyleBackColor = true;
-            this.buttonMusicBrainz.Click += new System.EventHandler(this.buttonMusicBrainz_Click);
-            // 
-            // buttonNavigateCTDB
-            // 
-            resources.ApplyResources(this.buttonNavigateCTDB, "buttonNavigateCTDB");
-            this.buttonNavigateCTDB.Image = global::JDP.Properties.Resources.cdrepair1;
-            this.buttonNavigateCTDB.Name = "buttonNavigateCTDB";
-            this.buttonNavigateCTDB.UseVisualStyleBackColor = true;
-            this.buttonNavigateCTDB.Click += new System.EventHandler(this.buttonNavigateCTDB_Click);
-            // 
             // frmChoice
             // 
             this.AcceptButton = this.buttonOk;
@@ -301,5 +304,6 @@ namespace JDP
 		private System.Windows.Forms.DataGridViewTextBoxColumn Value;
         private System.Windows.Forms.Button buttonMusicBrainz;
         private System.Windows.Forms.Button buttonNavigateCTDB;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
