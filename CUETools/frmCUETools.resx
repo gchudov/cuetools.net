@@ -1360,7 +1360,7 @@
     <value>38, 21</value>
   </data>
   <data name="toolStripLabelInput.Text" xml:space="preserve">
-    <value>Input:</value>
+    <value>&amp;Input:</value>
   </data>
   <data name="toolStripMenuItemInputBrowserFiles.Size" type="System.Drawing.Size, System.Drawing">
     <value>177, 22</value>
@@ -1432,7 +1432,7 @@
     <value>48, 24</value>
   </data>
   <data name="toolStripLabelOutput.Text" xml:space="preserve">
-    <value>Output:</value>
+    <value>&amp;Output:</value>
   </data>
   <data name="toolStripMenuItemOutputBrowse.Size" type="System.Drawing.Size, System.Drawing">
     <value>143, 22</value>
@@ -1690,7 +1690,7 @@
     <value>0</value>
   </data>
   <data name="rbActionEncode.Text" xml:space="preserve">
-    <value>&amp;Encode</value>
+    <value>En&amp;code</value>
   </data>
   <data name="rbActionEncode.ToolTip" xml:space="preserve">
     <value>Convert to another format. Don't contact the AccurateRip database for validation</value>
@@ -2371,7 +2371,7 @@
     <value>23, 22</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
-    <value>Settings</value>
+    <value>&amp;Settings</value>
   </data>
   <data name="toolStripButtonShowLog.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>

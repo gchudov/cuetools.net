@@ -287,7 +287,7 @@
     <value>CUETools-Webseite</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
-    <value>Einstellungen</value>
+    <value>Ein&amp;stellungen</value>
   </data>
   <data name="toolStripButtonShowLog.Text" xml:space="preserve">
     <value>Logdatei</value>
