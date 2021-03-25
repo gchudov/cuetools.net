@@ -367,7 +367,7 @@
     <value>60, 22</value>
   </data>
   <data name="toolStripButtonAbout.Text" xml:space="preserve">
-    <value>About</value>
+    <value>&amp;About</value>
   </data>
   <data name="toolStripButtonHelp.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
     <value>Magenta</value>
@@ -376,7 +376,7 @@
     <value>119, 22</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
-    <value>CUETools website</value>
+    <value>CUETools &amp;website</value>
   </data>
   <data name="toolStripButtonSettings.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
     <value>Magenta</value>
@@ -397,7 +397,7 @@
     <value>77, 22</value>
   </data>
   <data name="toolStripButtonShowLog.Text" xml:space="preserve">
-    <value>Batch log</value>
+    <value>Batch &amp;log</value>
   </data>
   <data name="toolStripMenu.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>

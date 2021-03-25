@@ -278,19 +278,19 @@
     <value>CUE-Pfade</value>
   </data>
   <data name="toolStripButtonAbout.Text" xml:space="preserve">
-    <value>Info</value>
+    <value>In&amp;fo</value>
   </data>
   <data name="toolStripButtonCorrectorOverwrite.Text" xml:space="preserve">
     <value>Überschreiben</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
-    <value>CUETools-Webseite</value>
+    <value>CUETools-&amp;Webseite</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
     <value>Ein&amp;stellungen</value>
   </data>
   <data name="toolStripButtonShowLog.Text" xml:space="preserve">
-    <value>Logdatei</value>
+    <value>&amp;Logdatei</value>
   </data>
   <data name="toolStripSplitButtonInputBrowser.Text" xml:space="preserve">
     <value>Dateiauswahl öffnen/schließen</value>
