@@ -950,7 +950,6 @@ namespace JDP {
             // toolStripButtonAbout
             // 
             this.toolStripButtonAbout.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonAbout.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonAbout.Image = global::JDP.Properties.Resources.information;
             resources.ApplyResources(this.toolStripButtonAbout, "toolStripButtonAbout");
             this.toolStripButtonAbout.Name = "toolStripButtonAbout";
@@ -959,7 +958,6 @@ namespace JDP {
             // toolStripButtonHelp
             // 
             this.toolStripButtonHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonHelp.Image = global::JDP.Properties.Resources.world_go;
             resources.ApplyResources(this.toolStripButtonHelp, "toolStripButtonHelp");
             this.toolStripButtonHelp.Name = "toolStripButtonHelp";
@@ -968,7 +966,6 @@ namespace JDP {
             // toolStripButtonSettings
             // 
             this.toolStripButtonSettings.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonSettings.Image = global::JDP.Properties.Resources.cog;
             resources.ApplyResources(this.toolStripButtonSettings, "toolStripButtonSettings");
             this.toolStripButtonSettings.Name = "toolStripButtonSettings";
@@ -977,7 +974,6 @@ namespace JDP {
             // toolStripButtonShowLog
             // 
             this.toolStripButtonShowLog.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonShowLog.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonShowLog.Image = global::JDP.Properties.Resources.report;
             resources.ApplyResources(this.toolStripButtonShowLog, "toolStripButtonShowLog");
             this.toolStripButtonShowLog.Name = "toolStripButtonShowLog";

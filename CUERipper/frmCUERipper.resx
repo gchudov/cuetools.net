@@ -281,7 +281,7 @@
     <value>12</value>
   </data>
   <data name="buttonGo.Text" xml:space="preserve">
-    <value>Go</value>
+    <value>&amp;Go</value>
   </data>
   <data name="&gt;&gt;buttonGo.Name" xml:space="preserve">
     <value>buttonGo</value>
@@ -311,7 +311,7 @@
     <value>13</value>
   </data>
   <data name="buttonAbort.Text" xml:space="preserve">
-    <value>Abort</value>
+    <value>&amp;Abort</value>
   </data>
   <data name="buttonAbort.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -344,7 +344,7 @@
     <value>20</value>
   </data>
   <data name="buttonPause.Text" xml:space="preserve">
-    <value>Pause</value>
+    <value>&amp;Pause</value>
   </data>
   <data name="buttonPause.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1294,7 +1294,7 @@
     <value>3</value>
   </data>
   <data name="buttonMetadata.Text" xml:space="preserve">
-    <value>Meta</value>
+    <value>&amp;Meta</value>
   </data>
   <data name="buttonMetadata.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>
@@ -1324,7 +1324,7 @@
     <value>5</value>
   </data>
   <data name="buttonVA.Text" xml:space="preserve">
-    <value>V/A</value>
+    <value>&amp;V/A</value>
   </data>
   <data name="buttonVA.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>
@@ -1354,7 +1354,7 @@
     <value>4</value>
   </data>
   <data name="buttonReload.Text" xml:space="preserve">
-    <value>Reload</value>
+    <value>&amp;Reload</value>
   </data>
   <data name="buttonReload.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>
@@ -1384,7 +1384,7 @@
     <value>6</value>
   </data>
   <data name="buttonEncoding.Text" xml:space="preserve">
-    <value>Codepage</value>
+    <value>&amp;Codepage</value>
   </data>
   <data name="buttonEncoding.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>
@@ -1414,7 +1414,7 @@
     <value>3</value>
   </data>
   <data name="buttonTracks.Text" xml:space="preserve">
-    <value>Tracks</value>
+    <value>&amp;Tracks</value>
   </data>
   <data name="buttonTracks.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>
@@ -1447,7 +1447,7 @@
     <value>41</value>
   </data>
   <data name="buttonFreedbSubmit.Text" xml:space="preserve">
-    <value>Submit</value>
+    <value>&amp;Submit</value>
   </data>
   <data name="buttonFreedbSubmit.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>
@@ -1534,7 +1534,7 @@
     <value>44</value>
   </data>
   <data name="buttonSettings.Text" xml:space="preserve">
-    <value>Options</value>
+    <value>&amp;Options</value>
   </data>
   <data name="buttonSettings.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>
@@ -1618,7 +1618,7 @@
     <value>45</value>
   </data>
   <data name="buttonEjectDisk.Text" xml:space="preserve">
-    <value>Eject</value>
+    <value>&amp;Eject</value>
   </data>
   <data name="buttonEjectDisk.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
     <value>ImageBeforeText</value>

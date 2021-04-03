@@ -148,13 +148,13 @@
     <value>Doppelklick zum Ändern von Titeln</value>
   </data>
   <data name="buttonGo.Text" xml:space="preserve">
-    <value>Los</value>
+    <value>&amp;Los</value>
   </data>
   <data name="buttonAbort.Text" xml:space="preserve">
-    <value>Abbrechen</value>
+    <value>&amp;Abbrechen</value>
   </data>
   <data name="buttonPause.Text" xml:space="preserve">
-    <value>Pause</value>
+    <value>&amp;Pause</value>
   </data>
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Offset lesen</value>
@@ -187,25 +187,25 @@
     <value>Name</value>
   </data>
   <data name="buttonMetadata.Text" xml:space="preserve">
-    <value>Meta</value>
+    <value>&amp;Meta</value>
   </data>
   <data name="buttonVA.Text" xml:space="preserve">
-    <value>div.</value>
+    <value>di&amp;v.</value>
   </data>
   <data name="buttonReload.Text" xml:space="preserve">
-    <value>Neu laden</value>
+    <value>&amp;Neu laden</value>
   </data>
   <data name="buttonEncoding.Text" xml:space="preserve">
-    <value>Codepage</value>
+    <value>&amp;Codepage</value>
   </data>
   <data name="buttonTracks.Text" xml:space="preserve">
-    <value>Tracks</value>
+    <value>&amp;Tracks</value>
   </data>
   <data name="buttonFreedbSubmit.Text" xml:space="preserve">
-    <value>Senden</value>
+    <value>&amp;Senden</value>
   </data>
   <data name="buttonSettings.Text" xml:space="preserve">
-    <value>Optionen</value>
+    <value>&amp;Optionen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>CUERipper 2.1.8</value>
@@ -229,6 +229,6 @@
     <value>Veröffentlichungen</value>
   </data>
   <data name="buttonEjectDisk.Text" xml:space="preserve">
-    <value>Auswerfen</value>
+    <value>Ausw&amp;erfen</value>
   </data>
 </root>

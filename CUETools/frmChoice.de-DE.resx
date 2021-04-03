@@ -121,7 +121,7 @@
     <value>Wählen Sie das beste Ergebnis aus</value>
   </data>
   <data name="buttonMusicBrainz.Text" xml:space="preserve">
-    <value>&amp;Musicbrainz</value>
+    <value>&amp;MusicBrainz</value>
   </data>
   <data name="buttonNavigateCTDB.Text" xml:space="preserve">
     <value>CT&amp;DB</value>
