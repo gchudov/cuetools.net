@@ -29,6 +29,9 @@ jobs:
           submodules: recursive
       # nasm is required for building Release|Win32
       - uses: ilammy/setup-nasm@v1
+      - name: Apply patch
+        # yamllint disable-line rule:line-length
+        run: git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch --verbose
       - name: Build Release|Any CPU
         run: |
           "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Any CPU"
