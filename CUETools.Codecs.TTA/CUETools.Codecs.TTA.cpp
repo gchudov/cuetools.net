@@ -1,14 +1,12 @@
 // This is the main DLL file.
 
-#include "stdafx.h"
-
 #include "CUETools.Codecs.TTA.h"
 
 typedef void * HANDLE;
 
-#include "../TTALib-1.1/TTAReader.h"
-#include "../TTALib-1.1/TTAWriter.h"
-#include "../TTALib-1.1/TTAError.h"
+#include "../ttalib-1.1/TTAReader.h"
+#include "../ttalib-1.1/TTAWriter.h"
+#include "../ttalib-1.1/TTAError.h"
 
 namespace CUETools { 
 namespace Codecs { 

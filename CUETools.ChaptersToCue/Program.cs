@@ -1,7 +1,7 @@
 // ****************************************************************************
 // 
 // ChaptersToCue
-// Copyright (C) 2018 Grigory Chudov (gchudov@gmail.com)
+// Copyright (C) 2018-2021 Grigory Chudov (gchudov@gmail.com)
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ namespace CUETools.ChaptersToCue
         {
             TextWriter stdout = Console.Out;
             Console.SetOut(Console.Error);
-            Console.WriteLine("CUETools.ChaptersToCue v2.1.7 Copyright (C) 2017 Grigory Chudov");
+            Console.WriteLine("CUETools.ChaptersToCue v2.1.8 Copyright (C) 2017-2021 Grigory Chudov");
             Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
             Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 
@@ -166,7 +166,7 @@ namespace CUETools.ChaptersToCue
             if (queryMeta)
             {
                 var ctdb = new CUEToolsDB(toc, null);
-                ctdb.ContactDB(null, "CUETools.ChaptersToCue 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
+                ctdb.ContactDB(null, "CUETools.ChaptersToCue 2.1.8", "", false, true, CTDBMetadataSearch.Extensive);
                 foreach (var imeta in ctdb.Metadata)
                 {
                     meta = imeta;

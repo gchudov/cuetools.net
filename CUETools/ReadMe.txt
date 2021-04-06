@@ -60,7 +60,7 @@ is FLAC, and 'Add tags with CRCs' option in advanced settings is checked,
 the output flac file will contain ACCURATERIPCOUNT tag for each track,
 which shows that the track was ripped from the CD correctly, and also
 demonstrates how popular is this CD. You can set up foobar2000 to display
-this nice statictics for each file.
+this nice statistics for each file.
 
 The settings file is located in the "%AppData%\CUE Tools" folder.  For example,
 on Windows XP if your username is "John", the settings folder is likely
@@ -71,5 +71,5 @@ When called with a file name as argument, opens the usual dialog
 with this file name in the input box.
 When called with /verify switch and a filename, starts automatic
 AccurateRip verification, /convert stats conversion, and /fix
-starts AccurateRip verification and convertion (with possible
+starts AccurateRip verification and conversion (with possible
 offset correction).

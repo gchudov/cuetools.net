@@ -583,7 +583,7 @@ namespace CUETools.Compression.Rar
 				currentFile.Method=(int)header.Method;
 				currentFile.FileAttributes=(int)header.FileAttr;
 				currentFile.BytesExtracted=0;
-				if((header.Flags & 0xE0) == 0xE0)
+				if((header.Flags & 0x20) == 0x20)
 					currentFile.IsDirectory=true;
 				this.OnNewFile();
 			}

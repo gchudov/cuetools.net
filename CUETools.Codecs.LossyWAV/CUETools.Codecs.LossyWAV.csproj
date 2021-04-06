@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
-    <Version>2.1.7.0</Version>
+    <Version>2.1.8.0</Version>
     <AssemblyName>CUETools.Codecs.LossyWAV</AssemblyName>
     <RootNamespace>CUETools.Codecs.LossyWAV</RootNamespace>
     <Product>CUETools</Product>
     <Description>A library for encoding and decoding LossyWAV.</Description>
-    <Copyright>Copyright (c) 2007-2008 Nick Currie, C# port (c) 2008-2018 Grigory Chudov</Copyright>
+    <Copyright>Copyright (c) 2007-2008 Nick Currie, C# port (c) 2008-2021 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)</OutputPath>

@@ -24,7 +24,7 @@ namespace CUETools.Processor
     {
         #region Fields
 
-        public readonly static string CUEToolsVersion = "2.1.7";
+        public readonly static string CUEToolsVersion = "2.1.8";
 
         private bool _stop, _pause;
         private List<CUELine> _attributes;
@@ -80,6 +80,7 @@ namespace CUETools.Processor
         private CUEMetadata cueMetadata;
         private bool _useLocalDB;
         private CUEToolsLocalDB _localDB;
+        private bool _gapsDetected = false;
 
         #endregion
 
@@ -913,7 +914,7 @@ namespace CUETools.Processor
                 m_freedb.Hostname = _config.advanced.FreedbDomain;
                 m_freedb.ClientName = "CUETools";
                 m_freedb.Version = CUEToolsVersion;
-                m_freedb.SetDefaultSiteAddress("freedb.org");
+                m_freedb.SetDefaultSiteAddress("gnudb.gnudb.org");
 
                 QueryResult queryResult;
                 QueryResultCollection coll;
@@ -1224,7 +1225,7 @@ namespace CUETools.Processor
                                 }
                                 else
                                 {
-                                    // Wierd case: audio file after data track with only index 00 specified.
+                                    // Weird case: audio file after data track with only index 00 specified.
                                     if (!isAudioTrack && _sourcePaths.Count == 0 && indexes.Count > 0 && indexes[indexes.Count - 1].Index == 0)
                                     {
                                         indexInfo.Track = indexes[indexes.Count - 1].Track;
@@ -2309,6 +2310,9 @@ namespace CUETools.Processor
         {
             bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(text)) != text;
             var encoding = utf8Required ? Encoding.UTF8 : CUESheet.Encoding;
+            // Preserve original UTF-16LE encoding of EAC log files, which contain a log checksum
+            if ((text.StartsWith("Exact Audio Copy") || text.StartsWith("EAC extraction logfile")) && text.Contains("==== Log checksum"))
+                encoding = Encoding.Unicode;
             using (StreamWriter sw1 = new StreamWriter(path, false, encoding))
                 sw1.Write(text);
         }
@@ -3013,7 +3017,7 @@ namespace CUETools.Processor
                     if (exists) files.Add(imgPath);
                 }
 
-                int maxChoice = CUEToolsSelection == null || Action != CUEAction.Encode ? 1 : 32;
+                int maxChoice = CUEToolsSelection == null || Action != CUEAction.Encode ? 1 : 1000;
                 if (files.Count > maxChoice) return;
 
                 if (files.Count == 0 && !_isArchive && _config.advanced.CoverArtSearchSubdirs)
@@ -3036,9 +3040,17 @@ namespace CUETools.Processor
                         isValidName = false;
                     }
 
-                    if (files.Count > maxChoice) return;
+                    // if (files.Count > maxChoice) return;
+                    if (files.Count > maxChoice)
+                    {
+                        // Processing a large number of image files can take some time and consume resources.
+                        // Continue anyway and show progress.
+                        ShowProgress("There are more than " + maxChoice + " image files to process: " + files.Count, 0.0, null, null);
+                        Thread.Sleep(2000); // show this info for 2 s
+                    }
                 }
 
+                int lineNumber = 0;
                 foreach (string imgPath in files)
                 {
                     TagLib.File.IFileAbstraction file = _isArchive
@@ -3066,6 +3078,7 @@ namespace CUETools.Processor
                         }
                         catch { }
                     _albumArt.Add(pic);
+                    ShowProgress(String.Format("Number of image files to process: {0} ({1:00})%", files.Count, (int)(100 * (++lineNumber + 0.0) / files.Count)), 0.0, null, null);
                 }
             }
         }
@@ -3223,7 +3236,7 @@ namespace CUETools.Processor
                     // TODO?
                 }
 
-                // these will be set explicitely
+                // these will be set explicitly
                 destTags.Remove("ARTIST");
                 destTags.Remove("TITLE");
                 destTags.Remove("ALBUM");
@@ -3305,7 +3318,7 @@ namespace CUETools.Processor
                     }
                 }
 
-                // these will be set explicitely
+                // these will be set explicitly
                 destTags.Remove("ARTIST");
                 destTags.Remove("TITLE");
                 destTags.Remove("ALBUM");
@@ -3760,9 +3773,11 @@ namespace CUETools.Processor
                 if (_toc[_toc.FirstAudio + iTrack].ISRC != null)
                     Metadata.Tracks[iTrack].ISRC = _toc[_toc.FirstAudio + iTrack].ISRC;
                 //General.SetCUELine(_tracks[iTrack].Attributes, "ISRC", _toc[_toc.FirstAudio + iTrack].ISRC, false);
-                if (_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis)
+                // Check if gaps have already been detected. This avoids writing FLAGS multiple times per track to the cue sheet.
+                if ((_toc[_toc.FirstAudio + iTrack].DCP || _toc[_toc.FirstAudio + iTrack].PreEmphasis) && !_gapsDetected)
                     _tracks[iTrack].Attributes.Add(new CUELine("FLAGS" + (_toc[_toc.FirstAudio + iTrack].PreEmphasis ? " PRE" : "") + (_toc[_toc.FirstAudio + iTrack].DCP ? " DCP" : "")));
             }
+            _gapsDetected = true;
         }
 
         public static string CreateDummyCUESheet(CUEConfig _config, string pathIn)

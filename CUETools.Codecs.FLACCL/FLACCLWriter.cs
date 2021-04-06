@@ -1,6 +1,6 @@
 /**
  * CUETools.FLACCL: FLAC audio encoder using CUDA
- * Copyright (c) 2009 Grigory Chudov
+ * Copyright (c) 2009-2021 Grigory Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -372,7 +372,7 @@ namespace CUETools.Codecs.FLACCL
 
         public const int MAX_BLOCKSIZE = 65536;
 
-        public AudioEncoder(string path, Stream IO, EncoderSettings settings)
+        public AudioEncoder(EncoderSettings settings, string path, Stream IO)
         {
             m_settings = settings.Clone() as EncoderSettings;
             m_settings.Validate();
@@ -394,11 +394,6 @@ namespace CUETools.Codecs.FLACCL
             eparams.flake_set_defaults(m_settings);
 
             crc8 = new Crc8();
-        }
-
-        public AudioEncoder(string path, EncoderSettings settings)
-            : this(path, null, settings)
-        {
         }
 
         public int TotalSize

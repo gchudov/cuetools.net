@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="toolStripStatusAr.ToolTipText" xml:space="preserve">
-    <value>Album in der AccurateRip-Datenbank gefunden.</value>
+    <value>AccurateRip-Status</value>
   </data>
   <data name="toolStripProgressBar1.ToolTipText" xml:space="preserve">
     <value>Lesefortschritt</value>
@@ -148,13 +148,13 @@
     <value>Doppelklick zum Ändern von Titeln</value>
   </data>
   <data name="buttonGo.Text" xml:space="preserve">
-    <value>Los</value>
+    <value>&amp;Los</value>
   </data>
   <data name="buttonAbort.Text" xml:space="preserve">
-    <value>Abbrechen</value>
+    <value>&amp;Abbrechen</value>
   </data>
   <data name="buttonPause.Text" xml:space="preserve">
-    <value>Pause</value>
+    <value>&amp;Pause</value>
   </data>
   <data name="lblWriteOffset.Text" xml:space="preserve">
     <value>Offset lesen</value>
@@ -177,9 +177,6 @@
   <data name="progressBarCD.Text" xml:space="preserve">
     <value>10%</value>
   </data>
-  <data name="comboBoxOutputFormat.ToolTip" xml:space="preserve">
-    <value>Vorlage für Ausgabedateien (foobar2000-Format)</value>
-  </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value>Klicken, um die Vorlage zu ändern</value>
   </data>
@@ -190,27 +187,48 @@
     <value>Name</value>
   </data>
   <data name="buttonMetadata.Text" xml:space="preserve">
-    <value>Meta</value>
+    <value>&amp;Meta</value>
   </data>
   <data name="buttonVA.Text" xml:space="preserve">
-    <value>div.</value>
+    <value>di&amp;v.</value>
   </data>
   <data name="buttonReload.Text" xml:space="preserve">
-    <value>Neu laden</value>
+    <value>&amp;Neu laden</value>
   </data>
   <data name="buttonEncoding.Text" xml:space="preserve">
-    <value>Codepage</value>
+    <value>&amp;Codepage</value>
   </data>
   <data name="buttonTracks.Text" xml:space="preserve">
-    <value>Tracks</value>
+    <value>&amp;Tracks</value>
   </data>
   <data name="buttonFreedbSubmit.Text" xml:space="preserve">
-    <value>Senden</value>
+    <value>&amp;Senden</value>
   </data>
   <data name="buttonSettings.Text" xml:space="preserve">
-    <value>Optionen</value>
+    <value>&amp;Optionen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.1.7</value>
+    <value>CUERipper 2.1.8</value>
+  </data>
+  <data name="bnComboBoxDrives.Text" xml:space="preserve">
+    <value>Laufwerke</value>
+  </data>
+  <data name="bnComboBoxEncoder.Text" xml:space="preserve">
+    <value>libFlac</value>
+  </data>
+  <data name="bnComboBoxFormat.Text" xml:space="preserve">
+    <value>flac</value>
+  </data>
+  <data name="bnComboBoxImage.Text" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="bnComboBoxLosslessOrNot.Text" xml:space="preserve">
+    <value>verlustfrei</value>
+  </data>
+  <data name="bnComboBoxRelease.Text" xml:space="preserve">
+    <value>Veröffentlichungen</value>
+  </data>
+  <data name="buttonEjectDisk.Text" xml:space="preserve">
+    <value>Ausw&amp;erfen</value>
   </data>
 </root>

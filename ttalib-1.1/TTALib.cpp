@@ -27,14 +27,13 @@
  * information.
  */
 
-#include "stdafx.h"
 #include <windows.h>
 
 #include "TTALib.h"
-#include "ttacommon.h"
+#include "TTACommon.h"
 #include "filters3.h"
-#include "ttawriter.h"
-#include "ttareader.h"
+#include "TTAWriter.h"
+#include "TTAReader.h"
 #include "WavFile.h"
 #include "TTAError.h"
 #include "TTATester.h"

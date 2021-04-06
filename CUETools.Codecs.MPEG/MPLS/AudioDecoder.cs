@@ -124,7 +124,7 @@ namespace CUETools.Codecs.MPEG.MPLS
             var fr = new FrameReader(parentFr, len);
             parentFr.skip(len);
 
-            // Primary Clip identifer
+            // Primary Clip identifier
             item.clip_id = fr.read_string(5);
 
             // skip the redundant "M2TS" CodecIdentifier

@@ -1,6 +1,6 @@
 /**
  * CUETools.FLACCL: FLAC audio encoder using CUDA
- * Copyright (c) 2009 Grigory Chudov
+ * Copyright (c) 2009-2021 Grigory Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -220,7 +220,7 @@ namespace CUETools.FLACCL.cmd
 			}
 			if (!quiet)
 			{
-                Console.WriteLine("{0}, Copyright (C) 2010-2013 Grigory Chudov.", Codecs.FLACCL.AudioEncoder.Vendor);
+                Console.WriteLine("{0}, Copyright (C) 2010-2021 Grigory Chudov.", Codecs.FLACCL.AudioEncoder.Vendor);
 				Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 				Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 			}
@@ -276,10 +276,9 @@ namespace CUETools.FLACCL.cmd
 			{
                 if (device_type != null)
                     settings.DeviceType = (OpenCLDeviceType)(Enum.Parse(typeof(OpenCLDeviceType), device_type, true));
-                encoder = new Codecs.FLACCL.AudioEncoder((output_file == "-" || output_file == "nul") ? "" : output_file,
+                encoder = new Codecs.FLACCL.AudioEncoder(settings, (output_file == "-" || output_file == "nul") ? "" : output_file,
                     output_file == "-" ? Console.OpenStandardOutput() :
-                    output_file == "nul" ? new NullStream() : null,
-                    settings);
+                    output_file == "nul" ? new NullStream() : null);
                 settings = encoder.Settings as Codecs.FLACCL.EncoderSettings;
                 encoder.FinalSampleCount = audioSource.Length;
 				if (stereo_method != null)
@@ -314,7 +313,7 @@ namespace CUETools.FLACCL.cmd
 			if (!quiet)
 			{
 				Console.WriteLine("Filename  : {0}", input_file);
-				Console.WriteLine("File Info : {0}kHz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
+				Console.WriteLine("File Info : {0} Hz; {1} channel; {2} bit; {3}", audioSource.PCM.SampleRate, audioSource.PCM.ChannelCount, audioSource.PCM.BitsPerSample, TimeSpan.FromSeconds(audioSource.Length * 1.0 / audioSource.PCM.SampleRate));
                 Console.WriteLine("Device    : {0}, Platform: \"{1}\", Version: {2}, Driver: {3}", settings.Device.Trim(), settings.Platform, settings.PlatformVersion.Trim(), settings.DriverVersion.Trim());
             }
 

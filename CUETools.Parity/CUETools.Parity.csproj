@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
-    <Version>2.1.7.0</Version>
+    <TargetFrameworks>net20;net47;netstandard2.0</TargetFrameworks>
+    <Version>2.1.8.0</Version>
     <AssemblyName>CUETools.Parity</AssemblyName>
     <RootNamespace>CUETools.Parity</RootNamespace>
     <Product>CUETools</Product>
     <Description>A library for Reed-Solomon coding.</Description>
-    <Copyright>Copyright (c) 2008-2018 Grigory Chudov, based on work by Masayuki Miyazaki</Copyright>
+    <Copyright>Copyright (c) 2008-2021 Grigory Chudov, based on work by Masayuki Miyazaki</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>

@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20</TargetFrameworks>
-    <Version>2.1.7.0</Version>
+    <Version>2.1.8.0</Version>
     <AssemblyName>CUETools.Codecs.CoreAudio</AssemblyName>
     <RootNamespace>CUETools.Codecs.CoreAudio</RootNamespace>
     <Product>CUETools</Product>
     <Description>A library for playing sound on Windows using NAudio.</Description>
-    <Copyright>Copyright (c) 2008-2018 Grigory Chudov. Uses NAudio by Mark Heath</Copyright>
+    <Copyright>Copyright (c) 2008-2021 Grigory Chudov. Uses NAudio by Mark Heath</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)</OutputPath>

@@ -1,0 +1,174 @@
+diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj b/src/libFLAC/libFLAC_dynamic.vcxproj
+index 3c0c10e3..1639ada0 100644
+--- a/src/libFLAC/libFLAC_dynamic.vcxproj
++++ b/src/libFLAC/libFLAC_dynamic.vcxproj
+@@ -1,5 +1,5 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
+@@ -22,21 +22,26 @@
+     <ProjectGuid>{4cefbc83-c215-11db-8314-0800200c9a66}</ProjectGuid>
+     <RootNamespace>libFLAC_dynamic</RootNamespace>
+     <Keyword>Win32Proj</Keyword>
++    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <WholeProgramOptimization>true</WholeProgramOptimization>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <WholeProgramOptimization>true</WholeProgramOptimization>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
+@@ -58,23 +63,23 @@
+     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+-    <OutDir>$(SolutionDir)objs\$(Configuration)\lib\</OutDir>
+-    <IntDir>$(Configuration)_dynamic\</IntDir>
++    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
+     <LinkIncremental>true</LinkIncremental>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+     <LinkIncremental>true</LinkIncremental>
+-    <OutDir>$(SolutionDir)objs\$(Platform)\$(Configuration)\lib\</OutDir>
++    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
+     <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+-    <OutDir>$(SolutionDir)objs\$(Configuration)\lib\</OutDir>
+-    <IntDir>$(Configuration)_dynamic\</IntDir>
++    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
+     <LinkIncremental>false</LinkIncremental>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+     <LinkIncremental>false</LinkIncremental>
+-    <OutDir>$(SolutionDir)objs\$(Platform)\$(Configuration)\lib\</OutDir>
++    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
+     <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+@@ -82,7 +87,7 @@
+       <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
+       <Optimization>Disabled</Optimization>
+       <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG;FLAC__CPU_IA32;FLAC__HAS_NASM;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_NASM;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>true</MinimalRebuild>
+       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+@@ -92,7 +97,6 @@
+       <DisableSpecificWarnings>4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>$(SolutionDir)objs\$(Configuration)\lib\libogg_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+@@ -104,7 +108,7 @@
+       <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
+       <Optimization>Disabled</Optimization>
+       <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+       <WarningLevel>Level3</WarningLevel>
+@@ -113,7 +117,6 @@
+       <DisableSpecificWarnings>4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>$(SolutionDir)objs\$(Platform)\$(Configuration)\lib\libogg_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+@@ -127,8 +130,8 @@
+       <OmitFramePointers>true</OmitFramePointers>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+       <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG;FLAC__CPU_IA32;FLAC__HAS_NASM;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";FLaC__INLINE=_inline;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_NASM;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";FLaC__INLINE=_inline;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+@@ -137,7 +140,6 @@
+       <FloatingPointModel>Fast</FloatingPointModel>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>$(SolutionDir)objs\$(Configuration)\lib\libogg_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+@@ -155,8 +157,8 @@
+       <OmitFramePointers>true</OmitFramePointers>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+       <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";FLaC__INLINE=_inline;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.3.3";FLaC__INLINE=_inline;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+@@ -165,7 +167,6 @@
+       <FloatingPointModel>Fast</FloatingPointModel>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>$(SolutionDir)objs\$(Platform)\$(Configuration)\lib\libogg_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+@@ -241,10 +242,6 @@
+     <ClCompile Include="memory.c" />
+     <ClCompile Include="metadata_iterators.c" />
+     <ClCompile Include="metadata_object.c" />
+-    <ClCompile Include="ogg_decoder_aspect.c" />
+-    <ClCompile Include="ogg_encoder_aspect.c" />
+-    <ClCompile Include="ogg_helper.c" />
+-    <ClCompile Include="ogg_mapping.c" />
+     <ClCompile Include="stream_decoder.c" />
+     <ClCompile Include="stream_encoder.c" />
+     <ClCompile Include="stream_encoder_framing.c" />
+diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj.filters b/src/libFLAC/libFLAC_dynamic.vcxproj.filters
+index 875c0216..a92f2a74 100644
+--- a/src/libFLAC/libFLAC_dynamic.vcxproj.filters
++++ b/src/libFLAC/libFLAC_dynamic.vcxproj.filters
+@@ -193,18 +193,6 @@
+     <ClCompile Include="metadata_object.c">
+       <Filter>Source Files</Filter>
+     </ClCompile>
+-    <ClCompile Include="ogg_decoder_aspect.c">
+-      <Filter>Source Files</Filter>
+-    </ClCompile>
+-    <ClCompile Include="ogg_encoder_aspect.c">
+-      <Filter>Source Files</Filter>
+-    </ClCompile>
+-    <ClCompile Include="ogg_helper.c">
+-      <Filter>Source Files</Filter>
+-    </ClCompile>
+-    <ClCompile Include="ogg_mapping.c">
+-      <Filter>Source Files</Filter>
+-    </ClCompile>
+     <ClCompile Include="stream_decoder.c">
+       <Filter>Source Files</Filter>
+     </ClCompile>

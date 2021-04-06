@@ -3,7 +3,7 @@
 	url = https://github.com/gchudov/taglib-sharp.git
 [submodule "ThirdParty/flac"]
 	path = ThirdParty/flac
-	url = https://github.com/gchudov/flac.git
+	url = https://github.com/xiph/flac.git
 [submodule "ThirdParty/MAC_SDK"]
 	path = ThirdParty/MAC_SDK
 	url = https://github.com/gchudov/MAC_SDK.git
@@ -16,3 +16,6 @@
 [submodule "ThirdParty/WindowsMediaLib"]
 	path = ThirdParty/WindowsMediaLib
 	url = https://github.com/gchudov/WindowsMediaLib.git
+[submodule "ThirdParty/FFmpeg.AutoGen"]
+	path = ThirdParty/FFmpeg.AutoGen
+	url = https://github.com/Ruslan-B/FFmpeg.AutoGen.git

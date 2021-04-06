@@ -134,7 +134,6 @@ namespace CUERipper
             // 
             // statusStrip1
             // 
-            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabelMusicBrainz,
@@ -209,6 +208,7 @@ namespace CUERipper
             resources.ApplyResources(this.listTracks, "listTracks");
             this.listTracks.FullRowSelect = true;
             this.listTracks.GridLines = true;
+            this.listTracks.HideSelection = false;
             this.listTracks.LabelEdit = true;
             this.listTracks.Name = "listTracks";
             this.toolTip1.SetToolTip(this.listTracks, resources.GetString("listTracks.ToolTip"));
@@ -623,6 +623,7 @@ namespace CUERipper
             this.listMetadata.FullRowSelect = true;
             this.listMetadata.GridLines = true;
             this.listMetadata.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listMetadata.HideSelection = false;
             this.listMetadata.LabelEdit = true;
             this.listMetadata.Name = "listMetadata";
             this.listMetadata.UseCompatibleStateImageBehavior = false;
@@ -755,8 +756,8 @@ namespace CUERipper
             // 
             // buttonEjectDisk
             // 
-            this.buttonEjectDisk.Image = global::CUERipper.Properties.Resources.cd_eject;
             resources.ApplyResources(this.buttonEjectDisk, "buttonEjectDisk");
+            this.buttonEjectDisk.Image = global::CUERipper.Properties.Resources.cd_eject;
             this.buttonEjectDisk.Name = "buttonEjectDisk";
             this.buttonEjectDisk.UseVisualStyleBackColor = true;
             this.buttonEjectDisk.Click += new System.EventHandler(this.buttonEjectDisk_Click);
@@ -815,6 +816,7 @@ namespace CUERipper
             this.panel2.ResumeLayout(false);
             this.panel7.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();

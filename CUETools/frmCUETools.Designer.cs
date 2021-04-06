@@ -185,7 +185,6 @@ namespace JDP {
             // statusStrip1
             // 
             resources.ApplyResources(this.statusStrip1, "statusStrip1");
-            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabelProcessed,
@@ -384,7 +383,6 @@ namespace JDP {
             // 
             resources.ApplyResources(this.toolStripCorrectorFormat, "toolStripCorrectorFormat");
             this.toolStripCorrectorFormat.BackColor = System.Drawing.Color.Transparent;
-            this.toolStripCorrectorFormat.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripCorrectorFormat.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButtonCorrectorOverwrite,
             this.toolStripDropDownButtonCorrectorMode,
@@ -634,12 +632,13 @@ namespace JDP {
             // 
             resources.ApplyResources(this.toolStripInput, "toolStripInput");
             this.toolStripInput.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStripInput.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripInput.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripLabelInput,
             this.toolStripSplitButtonInputBrowser});
             this.toolStripInput.Name = "toolStripInput";
             this.toolStripInput.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.toolStripInput.TabStop = true;
+            this.toolStripInput.Click += new System.EventHandler(this.toolStripInput_Click);
             // 
             // toolStripLabelInput
             // 
@@ -690,13 +689,14 @@ namespace JDP {
             resources.ApplyResources(this.toolStripOutput, "toolStripOutput");
             this.toolStripOutput.GripMargin = new System.Windows.Forms.Padding(0);
             this.toolStripOutput.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStripOutput.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripOutput.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripLabelOutput,
             this.toolStripSplitButtonOutputBrowser});
             this.toolStripOutput.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.toolStripOutput.Name = "toolStripOutput";
             this.toolStripOutput.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.toolStripOutput.TabStop = true;
+            this.toolStripOutput.Click += new System.EventHandler(this.toolStripOutput_Click);
             // 
             // toolStripLabelOutput
             // 
@@ -776,6 +776,7 @@ namespace JDP {
             // 
             resources.ApplyResources(this.rbActionVerify, "rbActionVerify");
             this.rbActionVerify.Name = "rbActionVerify";
+            this.rbActionVerify.TabStop = true;
             this.toolTip1.SetToolTip(this.rbActionVerify, resources.GetString("rbActionVerify.ToolTip"));
             this.rbActionVerify.UseVisualStyleBackColor = true;
             this.rbActionVerify.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
@@ -784,6 +785,7 @@ namespace JDP {
             // 
             resources.ApplyResources(this.rbActionEncode, "rbActionEncode");
             this.rbActionEncode.Name = "rbActionEncode";
+            this.rbActionEncode.TabStop = true;
             this.toolTip1.SetToolTip(this.rbActionEncode, resources.GetString("rbActionEncode.ToolTip"));
             this.rbActionEncode.UseVisualStyleBackColor = true;
             this.rbActionEncode.CheckedChanged += new System.EventHandler(this.rbAction_CheckedChanged);
@@ -848,6 +850,7 @@ namespace JDP {
             this.textBoxOffset.Name = "textBoxOffset";
             this.textBoxOffset.TextChanged += new System.EventHandler(this.textBoxOffset_TextChanged);
             this.textBoxOffset.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxOffset_KeyPress);
+            this.textBoxOffset.Validating += new System.ComponentModel.CancelEventHandler(this.textBoxOffset_Validating);
             // 
             // panelGo
             // 
@@ -891,7 +894,6 @@ namespace JDP {
             this.toolStripMenu.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             resources.ApplyResources(this.toolStripMenu, "toolStripMenu");
             this.toolStripMenu.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStripMenu.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStripMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDropDownButtonProfile,
             this.toolStripSeparator3,
@@ -902,6 +904,7 @@ namespace JDP {
             this.toolStripMenu.Name = "toolStripMenu";
             this.toolStripMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.toolStripMenu.Stretch = true;
+            this.toolStripMenu.Click += new System.EventHandler(this.toolStripMenu_Click);
             // 
             // toolStripDropDownButtonProfile
             // 
@@ -947,7 +950,6 @@ namespace JDP {
             // toolStripButtonAbout
             // 
             this.toolStripButtonAbout.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonAbout.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonAbout.Image = global::JDP.Properties.Resources.information;
             resources.ApplyResources(this.toolStripButtonAbout, "toolStripButtonAbout");
             this.toolStripButtonAbout.Name = "toolStripButtonAbout";
@@ -956,7 +958,6 @@ namespace JDP {
             // toolStripButtonHelp
             // 
             this.toolStripButtonHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonHelp.Image = global::JDP.Properties.Resources.world_go;
             resources.ApplyResources(this.toolStripButtonHelp, "toolStripButtonHelp");
             this.toolStripButtonHelp.Name = "toolStripButtonHelp";
@@ -965,7 +966,6 @@ namespace JDP {
             // toolStripButtonSettings
             // 
             this.toolStripButtonSettings.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonSettings.Image = global::JDP.Properties.Resources.cog;
             resources.ApplyResources(this.toolStripButtonSettings, "toolStripButtonSettings");
             this.toolStripButtonSettings.Name = "toolStripButtonSettings";
@@ -974,7 +974,6 @@ namespace JDP {
             // toolStripButtonShowLog
             // 
             this.toolStripButtonShowLog.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButtonShowLog.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonShowLog.Image = global::JDP.Properties.Resources.report;
             resources.ApplyResources(this.toolStripButtonShowLog, "toolStripButtonShowLog");
             this.toolStripButtonShowLog.Name = "toolStripButtonShowLog";
@@ -989,7 +988,6 @@ namespace JDP {
             // 
             // contextMenuStripFileTree
             // 
-            this.contextMenuStripFileTree.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.contextMenuStripFileTree.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.SelectedNodeName,
             this.toolStripSeparator2,

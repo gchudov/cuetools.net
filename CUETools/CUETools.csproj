@@ -40,8 +40,8 @@
     <PublisherName>CUETools</PublisherName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>7</ApplicationRevision>
-    <ApplicationVersion>2.0.3.%2a</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -218,6 +218,7 @@
     <EmbeddedResource Include="frmSubmit.ru-RU.resx">
       <DependentUpon>frmSubmit.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.de-DE.resx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -294,8 +295,6 @@
     <None Include="Properties\DataSources\CUETools.Processor.CUEConfig.datasource" />
     <None Include="Resources\accuraterip.jpg" />
     <Content Include="cue2.ico" />
-    <Content Include="hdcd.dll">
-    </Content>
     <None Include="Resources\freedb16.png" />
     <None Include="Resources\more\icons\report.png" />
     <None Include="Resources\report.png" />
@@ -321,8 +320,6 @@
     <None Include="Resources\wma.ico" />
     <None Include="Resources\more\card--pencil.png" />
     <Content Include="Resources\opus.ico" />
-    <Content Include="unrar.dll">
-    </Content>
     <Content Include="Resources\accuraterip_16.bmp" />
     <None Include="Resources\ape.ico" />
     <Content Include="Resources\AR.ico" />

@@ -1,6 +1,6 @@
 /**
  * CUETools.CLParity: Reed-Solomon (32 bit) using OpenCL
- * Copyright (c) 2009 Gregory S. Chudov
+ * Copyright (c) 2009-2021 Gregory S. Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -383,7 +383,7 @@ namespace CUETools.CLParity
 
         public string Path { get { return null; } }
 
-        public static readonly string vendor_string = "CLParity#2.1.7";
+        public static readonly string vendor_string = "CLParity#2.1.8";
     }
 
 	internal class CLParityTask

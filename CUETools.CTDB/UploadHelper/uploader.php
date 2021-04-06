@@ -103,7 +103,7 @@ $file = $_FILES['uploadedfile'];
 
 //echo $file['name'], ini_get('upload_max_filesize');
 
-    // give info on PHP catched upload errors
+    // give info on PHP caught upload errors
     if($file['error']) switch($file['error']){
         case 1:
         case 2:

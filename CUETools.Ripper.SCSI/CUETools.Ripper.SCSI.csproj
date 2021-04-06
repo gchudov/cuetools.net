@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20</TargetFrameworks>
-    <Version>2.1.7.0</Version>
+    <Version>2.1.8.0</Version>
     <AssemblyName>CUETools.Ripper.SCSI</AssemblyName>
     <RootNamespace>CUETools.Ripper.SCSI</RootNamespace>
     <Product>CUETools</Product>
     <Description>A library for extracting audio CDs using SCSI interface.</Description>
-    <Copyright>Copyright (c) 2008-2018 Grigory Chudov</Copyright>
+    <Copyright>Copyright (c) 2008-2021 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\plugins\</OutputPath>

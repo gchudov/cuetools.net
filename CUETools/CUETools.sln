@@ -143,7 +143,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.Icecast", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.Codecs.FLACCL", "..\CUETools.Codecs.FLACCL\CUETools.Codecs.FLACCL.csproj", "{DFE55765-564C-4B8F-993B-A94C4D1C212E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.FLACL.cmd", "..\CUETools.FLACCL.cmd\CUETools.FLACL.cmd.csproj", "{1FCA8834-34E6-47CF-B53F-D8DF35345363}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.FLACCL.cmd", "..\CUETools.FLACCL.cmd\CUETools.FLACCL.cmd.csproj", "{1FCA8834-34E6-47CF-B53F-D8DF35345363}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.CTDB.EACPlugin", "..\CUETools.CTDB.EACPlugin\CUETools.CTDB.EACPlugin.csproj", "{816D964C-9772-46C5-AF1D-49E8C78A1E7C}"
 EndProject
@@ -197,7 +197,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.MACLib", ".
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.ffmpeg", "..\CUETools.Codecs.ffmpeg\CUETools.Codecs.ffmpeg.csproj", "{A2C09014-C430-4E58-A323-306CCDF313C5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFmpeg.AutoGen", "..\..\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj", "{B0A0C17A-C1BC-4CB1-BE1E-F545F54A7923}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFmpeg.AutoGen", "..\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj", "{B0A0C17A-C1BC-4CB1-BE1E-F545F54A7923}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUETools.ChaptersToCue", "..\CUETools.ChaptersToCue\CUETools.ChaptersToCue.csproj", "{6ADBBF4B-AD3A-4782-A694-18662196780B}"
 EndProject

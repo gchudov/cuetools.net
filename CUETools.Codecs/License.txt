@@ -1,5 +1,5 @@
 ﻿CUETools.Codecs: common audio encoder/decoder routines
-Copyright (c) 2009 Gregory S. Chudov
+Copyright (c) 2009-2021 Gregory S. Chudov
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

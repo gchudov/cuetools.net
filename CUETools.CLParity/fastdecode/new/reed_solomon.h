@@ -35,7 +35,7 @@
 
 // type used to store one field symbol
 // With short int, we can work up to GF(16)
-// If one wants to work on bigger fied, replace this by int.
+// If one wants to work on bigger field, replace this by int.
 typedef unsigned short symbol;
 typedef unsigned char  byte;
 

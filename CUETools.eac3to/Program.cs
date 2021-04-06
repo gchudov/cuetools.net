@@ -14,7 +14,7 @@ namespace CUETools.eac3to
     {
         static void Usage()
         {
-            Console.Error.WriteLine("CUETools.eac3to, Copyright (C) 2018 Grigory Chudov.");
+            Console.Error.WriteLine("CUETools.eac3to, Copyright (C) 2018-2021 Grigory Chudov.");
             Console.Error.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
             Console.Error.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
             Console.Error.WriteLine();
@@ -225,7 +225,7 @@ namespace CUETools.eac3to
                     {
                         var ctdb = new CUEToolsDB(toc, null);
                         Console.Error.WriteLine("Contacting CTDB...");
-                        ctdb.ContactDB(null, "CUETools.eac3to 2.1.7", "", false, true, CTDBMetadataSearch.Extensive);
+                        ctdb.ContactDB(null, "CUETools.eac3to 2.1.8", "", false, true, CTDBMetadataSearch.Extensive);
                         foreach (var imeta in ctdb.Metadata)
                         {
                             meta = imeta;

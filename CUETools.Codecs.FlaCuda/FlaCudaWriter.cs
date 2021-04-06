@@ -25,7 +25,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Text;
 using CUETools.Codecs;
-using CUETools.Codecs.FLAKE;
+using CUETools.Codecs.Flake;
 using GASS.CUDA;
 using GASS.CUDA.Types;
 

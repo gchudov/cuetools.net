@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
-    <Version>2.1.7.0</Version>
+    <Version>2.1.8.0</Version>
     <AssemblyName>CUETools.Codecs.ffmpegdll</AssemblyName>
     <RootNamespace>CUETools.Codecs.ffmpegdll</RootNamespace>
     <Product>CUETools</Product>
     <Description>A library for encoding various files using official encoder.</Description>
-    <Copyright>Copyright (c) 2018 Grigory Chudov</Copyright>
+    <Copyright>Copyright (c) 2018-2021 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\plugins</OutputPath>
@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
-    <ProjectReference Include="..\..\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj" />
+    <ProjectReference Include="..\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj" />
   </ItemGroup>
 
 </Project>

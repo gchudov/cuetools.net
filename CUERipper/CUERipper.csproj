@@ -43,8 +43,8 @@
     <PublisherName>Gregory S. Chudov</PublisherName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>2</ApplicationRevision>
-    <ApplicationVersion>2.1.4.0</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -112,12 +112,16 @@
     <EmbeddedResource Include="frmCUERipper.ru-RU.resx">
       <DependentUpon>frmCUERipper.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmFreedbSubmit.de-DE.resx">
+      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmFreedbSubmit.resx">
       <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.de-DE.resx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

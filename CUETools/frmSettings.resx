@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -160,7 +160,7 @@
     <value>168, 17</value>
   </data>
   <data name="checkBoxSeparateDecodingThread.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>7</value>
   </data>
   <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
     <value>Separate thread for decoding</value>
@@ -196,7 +196,7 @@
     <value>114, 17</value>
   </data>
   <data name="checkBoxCheckForUpdates.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+    <value>2</value>
   </data>
   <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
     <value>Check for updates</value>
@@ -295,7 +295,7 @@
     <value>215, 17</value>
   </data>
   <data name="chkTruncateExtra4206Samples.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>3</value>
   </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
     <value>Truncate extra 4608 samples if present</value>
@@ -328,7 +328,7 @@
     <value>189, 17</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
     <value>Create .cue file even if embedded</value>
@@ -361,7 +361,7 @@
     <value>127, 17</value>
   </data>
   <data name="chkCreateM3U.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>4</value>
   </data>
   <data name="chkCreateM3U.Text" xml:space="preserve">
     <value>Create .m3u playlists</value>
@@ -394,7 +394,7 @@
     <value>155, 17</value>
   </data>
   <data name="chkAutoCorrectFilenames.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>6</value>
   </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Locate audio files if missing</value>
@@ -568,7 +568,8 @@
     <value>Write AccurateRip tags</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
-    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to output files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
+    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to output files.
+You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
   </data>
   <data name="&gt;&gt;chkWriteArTagsOnConvert.Name" xml:space="preserve">
     <value>chkWriteArTagsOnConvert</value>
@@ -751,7 +752,7 @@
     <value>43, 21</value>
   </data>
   <data name="numFixWhenConfidence.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;numFixWhenConfidence.Name" xml:space="preserve">
     <value>numFixWhenConfidence</value>
@@ -775,7 +776,7 @@
     <value>43, 21</value>
   </data>
   <data name="numFixWhenPercent.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;numFixWhenPercent.Name" xml:space="preserve">
     <value>numFixWhenPercent</value>
@@ -841,7 +842,8 @@
     <value>Write AccurateRip tags</value>
   </data>
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
-    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to input files. You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
+    <value>Add ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL tags to input files.
+You can set up foobar2000 to show those values, and see if your music was ripped correctly or how popular it is.</value>
   </data>
   <data name="&gt;&gt;chkWriteARTagsOnVerify.Name" xml:space="preserve">
     <value>chkWriteARTagsOnVerify</value>
@@ -874,7 +876,7 @@
     <value>Decode HDCD to 20 bit</value>
   </data>
   <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
-    <value>HDCD decoding is irreversable. Resulting files cannot be burned to the CD. 24-bit audio files are created, but the actual resolution is 20 bit</value>
+    <value>HDCD decoding is irreversible. Resulting files cannot be burned to the CD. 24-bit audio files are created, but the actual resolution is 20 bit</value>
   </data>
   <data name="&gt;&gt;chkHDCDDecode.Name" xml:space="preserve">
     <value>chkHDCDDecode</value>
@@ -1000,7 +1002,7 @@
     <value>184, 17</value>
   </data>
   <data name="chkEmbedLog.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+    <value>1</value>
   </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
     <value>Write extraction log to "LOG" tag</value>
@@ -1138,7 +1140,7 @@
     <value>287, 21</value>
   </data>
   <data name="textBoxEncoderModes.TabIndex" type="System.Int32, mscorlib">
-    <value>27</value>
+    <value>2</value>
   </data>
   <data name="textBoxEncoderModes.ToolTip" xml:space="preserve">
     <value>Supported modes, separated by space character</value>
@@ -1174,7 +1176,7 @@
     <value>65, 17</value>
   </data>
   <data name="checkBoxEncoderLossless.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
+    <value>4</value>
   </data>
   <data name="checkBoxEncoderLossless.Text" xml:space="preserve">
     <value>Lossless</value>
@@ -1204,7 +1206,7 @@
     <value>287, 21</value>
   </data>
   <data name="textBoxEncoderPath.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>0</value>
   </data>
   <data name="textBoxEncoderPath.ToolTip" xml:space="preserve">
     <value>Path to external encoder executable</value>
@@ -1231,7 +1233,7 @@
     <value>287, 21</value>
   </data>
   <data name="textBoxEncoderParameters.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
+    <value>1</value>
   </data>
   <data name="textBoxEncoderParameters.ToolTip" xml:space="preserve">
     <value>Arguments for external encoder executable</value>
@@ -1390,7 +1392,7 @@
     <value>212, 21</value>
   </data>
   <data name="textBoxEncoderName.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
+    <value>3</value>
   </data>
   <data name="textBoxEncoderName.ToolTip" xml:space="preserve">
     <value>Name of the encoder</value>
@@ -1420,10 +1422,10 @@
     <value>287, 21</value>
   </data>
   <data name="textBoxDecoderName.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
+    <value>2</value>
   </data>
   <data name="textBoxDecoderName.ToolTip" xml:space="preserve">
-    <value>Name of the encoder</value>
+    <value>Name of the decoder</value>
   </data>
   <data name="&gt;&gt;textBoxDecoderName.Name" xml:space="preserve">
     <value>textBoxDecoderName</value>
@@ -1678,7 +1680,7 @@
     <value>142, 17</value>
   </data>
   <data name="checkBoxCopyAlbumArt.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
+    <value>7</value>
   </data>
   <data name="checkBoxCopyAlbumArt.Text" xml:space="preserve">
     <value>Copy album art tags</value>
@@ -1711,7 +1713,7 @@
     <value>142, 17</value>
   </data>
   <data name="checkBoxExtractAlbumArt.TabIndex" type="System.Int32, mscorlib">
-    <value>21</value>
+    <value>9</value>
   </data>
   <data name="checkBoxExtractAlbumArt.Text" xml:space="preserve">
     <value>Extract album art to Folder.jpg</value>
@@ -1744,7 +1746,7 @@
     <value>142, 17</value>
   </data>
   <data name="checkBoxEmbedAlbumArt.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
+    <value>8</value>
   </data>
   <data name="checkBoxEmbedAlbumArt.Text" xml:space="preserve">
     <value>Embed Folder.jpg</value>
@@ -1768,10 +1770,13 @@
     <value>NoControl</value>
   </data>
   <data name="labelAlbumArtMaximumResolution.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 69</value>
+    <value>3, 72</value>
+  </data>
+  <data name="labelAlbumArtMaximumResolution.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
   </data>
   <data name="labelAlbumArtMaximumResolution.Size" type="System.Drawing.Size, System.Drawing">
-    <value>203, 26</value>
+    <value>203, 20</value>
   </data>
   <data name="labelAlbumArtMaximumResolution.TabIndex" type="System.Int32, mscorlib">
     <value>20</value>
@@ -1804,7 +1809,7 @@
     <value>57, 21</value>
   </data>
   <data name="numericUpDownMaxResolution.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
+    <value>11</value>
   </data>
   <data name="numericUpDownMaxResolution.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
@@ -1843,7 +1848,7 @@
     <value>118, 21</value>
   </data>
   <data name="textBoxAlArtFilenameFormat.TabIndex" type="System.Int32, mscorlib">
-    <value>22</value>
+    <value>10</value>
   </data>
   <data name="&gt;&gt;textBoxAlArtFilenameFormat.Name" xml:space="preserve">
     <value>textBoxAlArtFilenameFormat</value>
@@ -1921,7 +1926,7 @@
     <value>95, 17</value>
   </data>
   <data name="chkExtractLog.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
+    <value>0</value>
   </data>
   <data name="chkExtractLog.Text" xml:space="preserve">
     <value>Extract log file</value>
@@ -1951,7 +1956,7 @@
     <value>102, 17</value>
   </data>
   <data name="checkBoxCopyBasicTags.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
+    <value>5</value>
   </data>
   <data name="checkBoxCopyBasicTags.Text" xml:space="preserve">
     <value>Copy basic tags</value>
@@ -1981,7 +1986,7 @@
     <value>176, 17</value>
   </data>
   <data name="checkBoxWriteCUETags.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>2</value>
   </data>
   <data name="checkBoxWriteCUETags.Text" xml:space="preserve">
     <value>Write basic tags from CUE data</value>
@@ -2011,7 +2016,7 @@
     <value>121, 17</value>
   </data>
   <data name="checkBoxCopyUnknownTags.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>6</value>
   </data>
   <data name="checkBoxCopyUnknownTags.Text" xml:space="preserve">
     <value>Copy unknown tags</value>
@@ -2041,7 +2046,7 @@
     <value>122, 17</value>
   </data>
   <data name="chkOverwriteTags.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
+    <value>4</value>
   </data>
   <data name="chkOverwriteTags.Text" xml:space="preserve">
     <value>Overwrite CUE data</value>
@@ -2071,7 +2076,7 @@
     <value>187, 17</value>
   </data>
   <data name="chkFillUpCUE.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>3</value>
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
     <value>Fill up missing CUE data from tags</value>
@@ -2164,7 +2169,7 @@
     <value>154, 21</value>
   </data>
   <data name="textBoxARLogExtension.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;textBoxARLogExtension.Name" xml:space="preserve">
     <value>textBoxARLogExtension</value>
@@ -2221,7 +2226,7 @@
     <value>65, 17</value>
   </data>
   <data name="checkBoxARLogVerbose.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="checkBoxARLogVerbose.Text" xml:space="preserve">
     <value>Verbose</value>
@@ -2335,7 +2340,7 @@
     <value>248, 91</value>
   </data>
   <data name="groupBox5.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>2</value>
   </data>
   <data name="groupBox5.Text" xml:space="preserve">
     <value>Encode if verified</value>
@@ -2461,7 +2466,7 @@
     <value>248, 91</value>
   </data>
   <data name="groupBox4.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="groupBox4.Text" xml:space="preserve">
     <value>Fix offset</value>
@@ -2596,7 +2601,7 @@
     <value>184, 21</value>
   </data>
   <data name="comboFormatLossyEncoder.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
+    <value>2</value>
   </data>
   <data name="&gt;&gt;comboFormatLossyEncoder.Name" xml:space="preserve">
     <value>comboFormatLossyEncoder</value>
@@ -2653,7 +2658,7 @@
     <value>142, 17</value>
   </data>
   <data name="checkBoxFormatAllowLossy.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
+    <value>5</value>
   </data>
   <data name="checkBoxFormatAllowLossy.Text" xml:space="preserve">
     <value>Supports lossy encoding</value>
@@ -2677,7 +2682,7 @@
     <value>184, 21</value>
   </data>
   <data name="comboFormatLosslessEncoder.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;comboFormatLosslessEncoder.Name" xml:space="preserve">
     <value>comboFormatLosslessEncoder</value>
@@ -2734,7 +2739,7 @@
     <value>181, 17</value>
   </data>
   <data name="checkBoxFormatEmbedCUESheet.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>6</value>
   </data>
   <data name="checkBoxFormatEmbedCUESheet.Text" xml:space="preserve">
     <value>Supports embedded CUE Sheets</value>
@@ -2758,7 +2763,7 @@
     <value>184, 21</value>
   </data>
   <data name="comboFormatDecoder.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;comboFormatDecoder.Name" xml:space="preserve">
     <value>comboFormatDecoder</value>
@@ -2785,7 +2790,7 @@
     <value>154, 17</value>
   </data>
   <data name="checkBoxFormatAllowLossless.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>4</value>
   </data>
   <data name="checkBoxFormatAllowLossless.Text" xml:space="preserve">
     <value>Supports lossless encoding</value>
@@ -2869,7 +2874,7 @@
     <value>184, 21</value>
   </data>
   <data name="comboBoxFormatTagger.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>3</value>
   </data>
   <data name="&gt;&gt;comboBoxFormatTagger.Name" xml:space="preserve">
     <value>comboBoxFormatTagger</value>
@@ -3094,7 +3099,7 @@
     <value>394, 235</value>
   </data>
   <data name="groupBoxExternalEncoder.TabIndex" type="System.Int32, mscorlib">
-    <value>22</value>
+    <value>3</value>
   </data>
   <data name="groupBoxExternalEncoder.Text" xml:space="preserve">
     <value>External encoder options</value>
@@ -3148,7 +3153,7 @@
     <value>394, 236</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
-    <value>32</value>
+    <value>2</value>
   </data>
   <data name="&gt;&gt;panel1.Name" xml:space="preserve">
     <value>panel1</value>
@@ -3189,7 +3194,7 @@
     <value>25, 23</value>
   </data>
   <data name="buttonEncoderDelete.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;buttonEncoderDelete.Name" xml:space="preserve">
     <value>buttonEncoderDelete</value>
@@ -3269,7 +3274,7 @@
     <value>25, 23</value>
   </data>
   <data name="buttonEncoderAdd.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;buttonEncoderAdd.Name" xml:space="preserve">
     <value>buttonEncoderAdd</value>
@@ -3293,7 +3298,7 @@
     <value>67, 21</value>
   </data>
   <data name="comboBoxEncoderExtension.TabIndex" type="System.Int32, mscorlib">
-    <value>26</value>
+    <value>2</value>
   </data>
   <data name="comboBoxEncoderExtension.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -3320,7 +3325,7 @@
     <value>394, 37</value>
   </data>
   <data name="panel3.TabIndex" type="System.Int32, mscorlib">
-    <value>34</value>
+    <value>4</value>
   </data>
   <data name="&gt;&gt;panel3.Name" xml:space="preserve">
     <value>panel3</value>
@@ -3344,7 +3349,7 @@
     <value>123, 279</value>
   </data>
   <data name="listBoxEncoders.TabIndex" type="System.Int32, mscorlib">
-    <value>27</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;listBoxEncoders.Name" xml:space="preserve">
     <value>listBoxEncoders</value>
@@ -3371,7 +3376,7 @@
     <value>529, 285</value>
   </data>
   <data name="tableLayoutPanel4.TabIndex" type="System.Int32, mscorlib">
-    <value>32</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanel4.Name" xml:space="preserve">
     <value>tableLayoutPanel4</value>
@@ -3458,7 +3463,7 @@
     <value>287, 21</value>
   </data>
   <data name="textBoxDecoderPath.TabIndex" type="System.Int32, mscorlib">
-    <value>21</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;textBoxDecoderPath.Name" xml:space="preserve">
     <value>textBoxDecoderPath</value>
@@ -3542,7 +3547,7 @@
     <value>287, 21</value>
   </data>
   <data name="textBoxDecoderParameters.TabIndex" type="System.Int32, mscorlib">
-    <value>23</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;textBoxDecoderParameters.Name" xml:space="preserve">
     <value>textBoxDecoderParameters</value>
@@ -3566,7 +3571,7 @@
     <value>394, 238</value>
   </data>
   <data name="groupBoxExternalDecoder.TabIndex" type="System.Int32, mscorlib">
-    <value>27</value>
+    <value>2</value>
   </data>
   <data name="groupBoxExternalDecoder.Text" xml:space="preserve">
     <value>External decoder options</value>
@@ -3610,7 +3615,7 @@
     <value>25, 23</value>
   </data>
   <data name="buttonDecoderDelete.TabIndex" type="System.Int32, mscorlib">
-    <value>30</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;buttonDecoderDelete.Name" xml:space="preserve">
     <value>buttonDecoderDelete</value>
@@ -3651,7 +3656,7 @@
     <value>25, 23</value>
   </data>
   <data name="buttonDecoderAdd.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;buttonDecoderAdd.Name" xml:space="preserve">
     <value>buttonDecoderAdd</value>
@@ -3675,7 +3680,7 @@
     <value>67, 21</value>
   </data>
   <data name="comboBoxDecoderExtension.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
+    <value>2</value>
   </data>
   <data name="comboBoxDecoderExtension.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -3744,7 +3749,7 @@
     <value>394, 35</value>
   </data>
   <data name="panel2.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
+    <value>3</value>
   </data>
   <data name="&gt;&gt;panel2.Name" xml:space="preserve">
     <value>panel2</value>
@@ -3768,7 +3773,7 @@
     <value>123, 279</value>
   </data>
   <data name="listBoxDecoders.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
+    <value>1</value>
   </data>
   <data name="&gt;&gt;listBoxDecoders.Name" xml:space="preserve">
     <value>listBoxDecoders</value>
@@ -3795,7 +3800,7 @@
     <value>529, 285</value>
   </data>
   <data name="tableLayoutPanel5.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
+    <value>0</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanel5.Name" xml:space="preserve">
     <value>tableLayoutPanel5</value>
@@ -3838,6 +3843,9 @@
   </data>
   <data name="&gt;&gt;tabPage11.ZOrder" xml:space="preserve">
     <value>5</value>
+  </data>
+  <data name="grpHDCD.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="grpHDCD.Location" type="System.Drawing.Point, System.Drawing">
     <value>19, 42</value>

@@ -2,6 +2,7 @@
 // 
 // CUE Tools
 // Copyright (C) 2006-2007  Moitah (moitah@yahoo.com)
+// Copyright (C) 2008-2021  Gregory S. Chudov (gchudov@gmail.com)
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -608,7 +609,7 @@ namespace JDP
         {
             get
             {
-                return "CUETools 2.1.7";
+                return "CUETools 2.1.8";
             }
         }
 
@@ -1389,7 +1390,10 @@ namespace JDP
             _profile._outputAudioFormat = SelectedOutputAudioFormat;
             _profile._action = SelectedAction;
             _profile._CUEStyle = SelectedCUEStyle;
-            _profile._writeOffset = Int32.Parse(textBoxOffset.Text);
+            // _profile._writeOffset = Int32.Parse(textBoxOffset.Text);
+            // Use Int32.TryParse() instead of Int32.Parse to make sure that 0 is written to the settings file
+            // in case of invalid textBoxOffset.Text (empty or '-'), which should not happen anyway because of validating
+            Int32.TryParse(textBoxOffset.Text, out _profile._writeOffset);
             _profile._outputTemplate = comboBoxOutputFormat.Text;
             _profile._script = SelectedScript;
             _profile._editTags = checkBoxEditTags.Checked;
@@ -2678,6 +2682,24 @@ namespace JDP
             cueSheet.ScanLocalDB(folder);
         }
 
+        private void toolStripMenu_Click(object sender, EventArgs e)
+        {
+            // Trigger textBoxOffset_Validating event, when clicking here
+            toolStripMenu.Focus();
+        }
+
+        private void toolStripInput_Click(object sender, EventArgs e)
+        {
+            // Trigger textBoxOffset_Validating event, when clicking here
+            toolStripInput.Focus();
+        }
+
+        private void toolStripOutput_Click(object sender, EventArgs e)
+        {
+            // Trigger textBoxOffset_Validating event, when clicking here
+            toolStripOutput.Focus();
+        }
+
         private void backgroundWorkerAddToLocalDB_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             SetStatus(sender, new CUEToolsProgressEventArgs());
@@ -2745,13 +2767,20 @@ namespace JDP
                     sb.Append(c);
             if (textBoxOffset.Text != sb.ToString())
                 textBoxOffset.Text = sb.ToString();
-            if (!int.TryParse(textBoxOffset.Text, out res))
-                textBoxOffset.Text = "0";
-            else
+            if (int.TryParse(textBoxOffset.Text, out res))
+                // invalid values of textBoxOffset.Text are handled in textBoxOffset_Validating
             {
                 res = Math.Max(-9999,Math.Min(res, 9999));
                 if (textBoxOffset.Text != res.ToString() && textBoxOffset.Text != "-0")
                     textBoxOffset.Text = res.ToString();
+            }
+        }
+
+        private void textBoxOffset_Validating(object sender, CancelEventArgs e)
+        {
+            if (!int.TryParse(textBoxOffset.Text, out _))
+            {
+                textBoxOffset.Text = "0";
             }
         }
     }

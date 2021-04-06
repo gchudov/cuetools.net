@@ -51,6 +51,7 @@ namespace JDP
 			resources.ApplyResources(this.textBox1, "textBox1");
 			this.textBox1.Name = "textBox1";
 			this.textBox1.ReadOnly = true;
+			this.textBox1.TabStop = false;
 			// 
 			// button1
 			// 
