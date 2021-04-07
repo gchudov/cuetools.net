@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -131,7 +131,7 @@
     <value>Разрешить несколько окон</value>
   </data>
   <data name="chkAllowMultipleInstances.ToolTip" xml:space="preserve">
-    <value>Разрешить запускать несколько копий приложения одновременно</value>
+    <value>Разрешить запускать несколько копий CUETools одновременно.</value>
   </data>
   <data name="chkReducePriority.Size" type="System.Drawing.Size, System.Drawing">
     <value>180, 17</value>
@@ -140,16 +140,17 @@
     <value>Понизить приоритет процесса</value>
   </data>
   <data name="chkReducePriority.ToolTip" xml:space="preserve">
-    <value />
+    <value>Уменьшить приоритет процесса, используя время простоя для работы других приложений.</value>
   </data>
   <data name="chkTruncateExtra4206Samples.Size" type="System.Drawing.Size, System.Drawing">
     <value>202, 17</value>
   </data>
   <data name="chkTruncateExtra4206Samples.Text" xml:space="preserve">
-    <value>Выкидывать лишние 4608 сэмплов</value>
+    <value>Обрезать 4608 добавочных сэмплов</value>
   </data>
   <data name="chkTruncateExtra4206Samples.ToolTip" xml:space="preserve">
-    <value>Некоторые FLAC-кодировщики добавляют лишние 4608 пустых сэмплов в конце файла. Эту ситуацию можно легко обнаружить и исправить.</value>
+    <value>Некоторые кодировщики FLAC ошибочно добавляют 4608 пустых сэмплов в конец каждого файла.
+Эти лишние сэмплы могут быть найдены и удалены.</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
     <value>224, 17</value>
@@ -158,7 +159,7 @@
     <value>Создавать .cue даже при встраивании</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.ToolTip" xml:space="preserve">
-    <value />
+    <value>Создавать отдельный файл .cue даже при встраивании его в аудиофайл.</value>
   </data>
   <data name="chkCreateM3U.Size" type="System.Drawing.Size, System.Drawing">
     <value>166, 17</value>
@@ -167,16 +168,16 @@
     <value>Создавать плейлисты .m3u</value>
   </data>
   <data name="chkCreateM3U.ToolTip" xml:space="preserve">
-    <value />
+    <value>Создавать плейлисты .m3u для отдельных треков</value>
   </data>
   <data name="chkAutoCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>213, 17</value>
   </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
-    <value>Автоматически искать аудио файлы</value>
+    <value>Автоматически искать аудиофайлы</value>
   </data>
   <data name="chkAutoCorrectFilenames.ToolTip" xml:space="preserve">
-    <value>Автоматически исправить имена, если .cue ссылается на несуществующие файлы</value>
+    <value>Исправить имена файлов, если аудиоданные не были найдены</value>
   </data>
   <data name="labelLanguage.Size" type="System.Drawing.Size, System.Drawing">
     <value>33, 13</value>
@@ -185,7 +186,7 @@
     <value>Язык</value>
   </data>
   <data name="comboLanguage.ToolTip" xml:space="preserve">
-    <value>Язык интерфейса</value>
+    <value>Язык интерфейса CUETools</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Проверить и записать</value>
@@ -200,19 +201,17 @@
     <value>173, 17</value>
   </data>
   <data name="chkWriteArTagsOnConvert.Text" xml:space="preserve">
-    <value>Записывать тэги AccurateRip</value>
+    <value>Записывать теги AccurateRip</value>
   </data>
   <data name="chkWriteArTagsOnConvert.ToolTip" xml:space="preserve">
-    <value>Добавлять тэги ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL в выходные файлы. Можно настроить foobar2000 на их отображение, чтобы видеть качество рипа и популярность дисков в вашей библиотеке.</value>
+    <value>Добавлять теги ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL в выходные файлы.
+Можно настроить foobar2000 на их отображение, чтобы видеть качество рипа и популярность дисков в вашей библиотеке.</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.Location" type="System.Drawing.Point, System.Drawing">
     <value>100, 63</value>
   </data>
   <data name="chkEncodeWhenZeroOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>138, 17</value>
-  </data>
-  <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
-    <value>и нулевым смещением</value>
   </data>
   <data name="labelEncodeWhenConfidence.Text" xml:space="preserve">
     <value>с достоверностью &gt;=</value>
@@ -224,28 +223,31 @@
     <value>207, 17</value>
   </data>
   <data name="chkFilenamesANSISafe.Text" xml:space="preserve">
-    <value>Только символы из ANSI кодировки</value>
+    <value>Имена файлов в ANSI кодировке</value>
   </data>
   <data name="chkFilenamesANSISafe.ToolTip" xml:space="preserve">
-    <value>Использовать только символы, присутствующие в ANSI (1251) кодировке, для совместимости с приложениями, не поддерживающими Unicode (такими, как Far manager)</value>
+    <value>Разрешить использовать только символы из кодовой страницы ANSI 
+для совместимости с приложениями, не использующими Unicode</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>173, 17</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Text" xml:space="preserve">
-    <value>Записывать тэги AccurateRip</value>
+    <value>Записывать теги AccurateRip</value>
   </data>
   <data name="chkWriteARTagsOnVerify.ToolTip" xml:space="preserve">
-    <value>Добавлять тэги ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL в исходные файлы. Можно настроить foobar2000 на их отображение, чтобы видеть качество рипа и популярность дисков в вашей библиотеке.</value>
+    <value>Добавлять теги ACCURATERIPCOUNT/ACCURATERIPCOUNTALLOFFSETS/ACCURATERIPTOTAL в исходные файлы.
+Можно настроить foobar2000 на их отображение, чтобы видеть качество рипа и популярность дисков в вашей библиотеке.</value>
   </data>
   <data name="chkHDCDDecode.Size" type="System.Drawing.Size, System.Drawing">
     <value>146, 17</value>
   </data>
   <data name="chkHDCDDecode.Text" xml:space="preserve">
-    <value>Декодировать в 20 бит</value>
+    <value>Декодировать HDCD в 20 бит</value>
   </data>
   <data name="chkHDCDDecode.ToolTip" xml:space="preserve">
-    <value>Декодирование HDCD - необратимый процесс. Результирующие файлы не могут быть записаны на CD. Создаются файлы с разрешением 24 бита, но подлинное разрешение составляет 20 бит.</value>
+    <value>Декодирование HDCD - необратимый процесс. Результирующие файлы не могут быть записаны на CD.
+Создаются файлы с разрешением 24 бита, но фактическое разрешение составляет 20 бит</value>
   </data>
   <data name="chkHDCDStopLooking.Size" type="System.Drawing.Size, System.Drawing">
     <value>172, 17</value>
@@ -254,61 +256,63 @@
     <value>Определять по 750 фреймам</value>
   </data>
   <data name="chkHDCDStopLooking.ToolTip" xml:space="preserve">
-    <value>Прекращать поиск HDCD-кодировки, если её не обнаружено в первых 10 секундах аудио данных.</value>
+    <value>Прекратить поиск информации HDCD, если она не была найдена в течение первых 10 секунд диска</value>
   </data>
   <data name="chkHDCD24bit.Size" type="System.Drawing.Size, System.Drawing">
     <value>170, 17</value>
   </data>
   <data name="chkHDCD24bit.Text" xml:space="preserve">
-    <value>Записывать 24 бит "lossless"</value>
+    <value>Сохранить в 24 бит (без потерь)</value>
   </data>
   <data name="chkHDCD24bit.ToolTip" xml:space="preserve">
-    <value>Когда не используется lossyWAV, расширить до 24 бит для совместимости</value>
+    <value>Когда не используется lossyWAV расширить до 24 бит для совместимости</value>
   </data>
   <data name="chkHDCDLW16.Size" type="System.Drawing.Size, System.Drawing">
     <value>176, 17</value>
   </data>
   <data name="chkHDCDLW16.Text" xml:space="preserve">
-    <value>Записывать 16 бит LossyWAV</value>
+    <value>Сохранить в 16 бит LossyWAV</value>
   </data>
   <data name="chkHDCDLW16.ToolTip" xml:space="preserve">
-    <value>При конвертации в lossyWAV, обрезать до 16 бит</value>
+    <value>При конвертации в lossyWAV обрезать до 16 бит</value>
   </data>
   <data name="chkEmbedLog.Size" type="System.Drawing.Size, System.Drawing">
     <value>156, 17</value>
   </data>
   <data name="chkEmbedLog.Text" xml:space="preserve">
-    <value>Встроить .log в виде тэга</value>
+    <value>Встроить .log в виде тега</value>
   </data>
   <data name="chkEmbedLog.ToolTip" xml:space="preserve">
-    <value>Работает, если .log лежит в той же папке и имеет то же имя, что и исходный файл</value>
+    <value>Файл должен находиться в том же каталоге, что и исходный файл и иметь расширение .log</value>
   </data>
   <data name="chkKeepOriginalFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>157, 17</value>
   </data>
   <data name="chkKeepOriginalFilenames.Text" xml:space="preserve">
-    <value>Сохранять оригинальные</value>
+    <value>Сохранять оригинальные имена файлов</value>
   </data>
   <data name="chkKeepOriginalFilenames.ToolTip" xml:space="preserve">
-    <value />
+    <value>Создавать аудиофайлы с теми же именами, что и в исходном CUE, когда это возможно</value>
   </data>
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
+    <value>Шаблон имени аудиофайла для треков сохраняемых потреково</value>
   </data>
   <data name="txtSingleFilenameFormat.ToolTip" xml:space="preserve">
-    <value />
+    <value>Шаблон имени аудиофайла для треков сохраняемых в образ</value>
   </data>
   <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
-    <value>Межтрековые зазоры выкидываются.</value>
+    <value>Межтрековые зазоры пропущены (заменены тишиной)</value>
   </data>
   <data name="rbGapsPrepended.ToolTip" xml:space="preserve">
-    <value>Межтрековые зазоры дописываются в начало следующего трека.</value>
+    <value>Межтрековые зазоры записываются в начало следующего трека.</value>
   </data>
   <data name="rbGapsAppended.ToolTip" xml:space="preserve">
-    <value>Межтрековые зазоры дописываются в конец предидущего трека. HTOA теряется.</value>
+    <value>Межтрековые зазоры дописываются в конец предыдущего трека.
+HTOA (Hidden Track One Audio - зазор перед первым треком) теряется.</value>
   </data>
   <data name="rbGapsPlusHTOA.ToolTip" xml:space="preserve">
-    <value>Межтрековые зазоры дописываются в конец предидущего трека.  HTOA (зазор перед первым треком) сохраняется отдельно. Режим по умолчанию.</value>
+    <value>Межтрековые зазоры дописываются в конец предыдущего трека.
+HTOA (Hidden Track One Audio - зазор перед первым треком) сохраняется в отдельный файл.</value>
   </data>
   <data name="grpAudioFilenames.Text" xml:space="preserve">
     <value>Имена аудиофайлов</value>
@@ -317,25 +321,25 @@
     <value>223, 17</value>
   </data>
   <data name="chkRemoveSpecial.Text" xml:space="preserve">
-    <value>Удалять специальные символы кроме:</value>
+    <value>Удалять специальные символы, кроме:</value>
   </data>
   <data name="chkReplaceSpaces.Size" type="System.Drawing.Size, System.Drawing">
     <value>209, 17</value>
   </data>
   <data name="chkReplaceSpaces.Text" xml:space="preserve">
-    <value>Заменять пробелы подчеркиванями</value>
+    <value>Заменять пробелы на подчеркивания</value>
   </data>
   <data name="lblTrackFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>35, 13</value>
   </data>
   <data name="lblTrackFilenameFormat.Text" xml:space="preserve">
-    <value>Трек:</value>
+    <value>Формат трека:</value>
   </data>
   <data name="lblSingleFilenameFormat.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 13</value>
   </data>
   <data name="lblSingleFilenameFormat.Text" xml:space="preserve">
-    <value>Образ диска:</value>
+    <value>Формат образа:</value>
   </data>
   <data name="groupBoxGaps.Text" xml:space="preserve">
     <value>Режим обработки зазоров (gaps)</value>
@@ -354,9 +358,6 @@
   </data>
   <data name="checkBoxFixToNearest.Size" type="System.Drawing.Size, System.Drawing">
     <value>99, 17</value>
-  </data>
-  <data name="checkBoxFixToNearest.Text" xml:space="preserve">
-    <value>к ближайшему</value>
   </data>
   <data name="checkBoxARVerifyUseSourceFolder.Size" type="System.Drawing.Size, System.Drawing">
     <value>116, 17</value>
@@ -416,54 +417,198 @@
     <value>127, 17</value>
   </data>
   <data name="chkExtractLog.Text" xml:space="preserve">
-    <value>Извлечь .log в файл</value>
+    <value>Извлекать .log в файл</value>
   </data>
   <data name="chkOverwriteTags.Size" type="System.Drawing.Size, System.Drawing">
     <value>186, 17</value>
   </data>
   <data name="chkOverwriteTags.Text" xml:space="preserve">
-    <value>Игнорируя информацию из .cue</value>
+    <value>Перезаписать информацию из CUE</value>
   </data>
   <data name="chkFillUpCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>221, 17</value>
   </data>
   <data name="chkFillUpCUE.Text" xml:space="preserve">
-    <value>Пополнить .cue информацией из тэгов</value>
+    <value>Заполнить данные CUE из тегов</value>
   </data>
   <data name="chkWVStoreMD5.Size" type="System.Drawing.Size, System.Drawing">
     <value>119, 17</value>
   </data>
-  <data name="chkWVStoreMD5.Text" xml:space="preserve">
-    <value>MD5-хеширование</value>
-  </data>
   <data name="chkWVExtraMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>89, 17</value>
-  </data>
-  <data name="chkWVExtraMode.Text" xml:space="preserve">
-    <value>Доп. режим:</value>
   </data>
   <data name="chkFLACVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>94, 17</value>
   </data>
-  <data name="chkFLACVerify.Text" xml:space="preserve">
-    <value>Верификация</value>
-  </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 13</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Качество:</value>
-  </data>
   <data name="grpHDCD.Text" xml:space="preserve">
-    <value>Параметры</value>
+    <value>Параметры HDCD</value>
   </data>
   <data name="chkHDCDDetect.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 17</value>
   </data>
   <data name="chkHDCDDetect.Text" xml:space="preserve">
-    <value>Определять HDCD</value>
+    <value>Определять HDCD-кодирование</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Продвинутые настройки</value>
+    <value>Расширенные настройки</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>AccurateRip</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>CUETools</value>
+  </data>
+  <data name="labelFormatDecoder.Text" xml:space="preserve">
+    <value>Декодер</value>
+  </data>
+  <data name="labelFormatDefaultDecoder.Text" xml:space="preserve">
+    <value>Декодер</value>
+  </data>
+  <data name="tabPage11.Text" xml:space="preserve">
+    <value>Декодер</value>
+  </data>
+  <data name="tabPage4.Text" xml:space="preserve">
+    <value>HDCD</value>
+  </data>
+  <data name="btnOK.Text" xml:space="preserve">
+    <value>ОК</value>
+  </data>
+  <data name="checkBox1.Text" xml:space="preserve">
+    <value>Проверить</value>
+  </data>
+  <data name="checkBoxCheckForUpdates.Text" xml:space="preserve">
+    <value>Проверять обновления</value>
+  </data>
+  <data name="checkBoxCheckForUpdates.ToolTip" xml:space="preserve">
+    <value>Проверять обновления при запуске программы</value>
+  </data>
+  <data name="checkBoxCopyAlbumArt.Text" xml:space="preserve">
+    <value>Копировать теги обложек альбомов</value>
+  </data>
+  <data name="checkBoxCopyBasicTags.Text" xml:space="preserve">
+    <value>Копировать основные теги</value>
+  </data>
+  <data name="checkBoxCopyUnknownTags.Text" xml:space="preserve">
+    <value>Копировать неизвестные теги</value>
+  </data>
+  <data name="checkBoxEmbedAlbumArt.Text" xml:space="preserve">
+    <value>Встраивать folder.jpg</value>
+  </data>
+  <data name="checkBoxEncoderLossless.Text" xml:space="preserve">
+    <value>Lossless</value>
+  </data>
+  <data name="checkBoxEncoderLossless.ToolTip" xml:space="preserve">
+    <value>Это кодировщик без потерь</value>
+  </data>
+  <data name="checkBoxExtractAlbumArt.Text" xml:space="preserve">
+    <value>Извлечь обложку альбома в folder.jpg</value>
+  </data>
+  <data name="checkBoxFormatAllowLossless.Text" xml:space="preserve">
+    <value>Поддержка lossless кодирования (без потерь)</value>
+  </data>
+  <data name="checkBoxFormatAllowLossy.Text" xml:space="preserve">
+    <value>Поддержка lossy кодирования (с потерями)</value>
+  </data>
+  <data name="checkBoxFormatEmbedCUESheet.Text" xml:space="preserve">
+    <value>Поддержка встроенных CUE</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
+    <value>Отдельный поток для декодирования</value>
+  </data>
+  <data name="checkBoxSeparateDecodingThread.ToolTip" xml:space="preserve">
+    <value>Повышает скорость на многоядерных процессорах</value>
+  </data>
+  <data name="checkBoxWriteCUETags.Text" xml:space="preserve">
+    <value>Записать базовые теги из данных CUE</value>
+  </data>
+  <data name="groupBox4.Text" xml:space="preserve">
+    <value>Исправить смещение</value>
+  </data>
+  <data name="groupBox5.Text" xml:space="preserve">
+    <value>Кодировать если проверено</value>
+  </data>
+  <data name="groupBoxAlbumArt.Text" xml:space="preserve">
+    <value>Обложка альбома</value>
+  </data>
+  <data name="groupBoxVerify.Text" xml:space="preserve">
+    <value>Подробный</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>% проверенных треков &gt;=</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>% проверенных треков &gt;=</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="labelAlbumArtMaximumResolution.Text" xml:space="preserve">
+    <value>Изменить размер, если разрешение &gt;</value>
+  </data>
+  <data name="labelDecoderExtension.Text" xml:space="preserve">
+    <value>Расширение</value>
+  </data>
+  <data name="labelEncoderName.Text" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="labelFormatEncoder.Text" xml:space="preserve">
+    <value>Кодировщик</value>
+  </data>
+  <data name="labelFormatLosslessEncoder.Text" xml:space="preserve">
+    <value>Кодировщик (без потерь)</value>
+  </data>
+  <data name="labelFormatLossyEncoder.Text" xml:space="preserve">
+    <value>Кодировщик (с потерями)</value>
+  </data>
+  <data name="labelLogFileExtension.Text" xml:space="preserve">
+    <value>Формат имени:</value>
+  </data>
+  <data name="labelFormatTagger.Text" xml:space="preserve">
+    <value>Теги</value>
+  </data>
+  <data name="rbGapsAppended.Text" xml:space="preserve">
+    <value>Зазоры дописанные в конец</value>
+  </data>
+  <data name="rbGapsLeftOut.Text" xml:space="preserve">
+    <value>Зазоры пропущены</value>
+  </data>
+  <data name="rbGapsPlusHTOA.Text" xml:space="preserve">
+    <value>Зазоры &amp;дописанные в конец + HTOA</value>
+  </data>
+  <data name="rbGapsPrepended.Text" xml:space="preserve">
+    <value>Зазоры записанные в начало</value>
+  </data>
+  <data name="tabPage6.Text" xml:space="preserve">
+    <value>Тегирование</value>
+  </data>
+  <data name="tabPage7.Text" xml:space="preserve">
+    <value>Расширенные</value>
+  </data>
+  <data name="tabPageEncoders.Text" xml:space="preserve">
+    <value>Кодировщики</value>
+  </data>
+  <data name="textBoxDecoderName.ToolTip" xml:space="preserve">
+    <value>Название декодера</value>
+  </data>
+  <data name="textBoxEncoderModes.ToolTip" xml:space="preserve">
+    <value>Поддерживаемые режимы, разделенные пробелом</value>
+  </data>
+  <data name="textBoxEncoderName.ToolTip" xml:space="preserve">
+    <value>Название кодировщика</value>
+  </data>
+  <data name="textBoxEncoderParameters.ToolTip" xml:space="preserve">
+    <value>Аргументы для исполняемого файла внешнего кодировщика</value>
+  </data>
+  <data name="textBoxEncoderPath.ToolTip" xml:space="preserve">
+    <value>Путь к исполняемому файлу внешнего кодировщика</value>
+  </data>
+  <data name="checkBoxFixToNearest.Text" xml:space="preserve">
+    <value>к ближайшему</value>
+  </data>
+  <data name="chkEncodeWhenZeroOffset.Text" xml:space="preserve">
+    <value>и нулевым смещением</value>
   </data>
 </root>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -130,7 +130,7 @@
     <value />
   </data>
   <data name="grpInput.Text" xml:space="preserve">
-    <value>Проводник</value>
+    <value>Ввод</value>
   </data>
   <data name="grpInput.ToolTip" xml:space="preserve">
     <value />
@@ -158,19 +158,19 @@
     <value>71, 17</value>
   </data>
   <data name="comboBoxOutputFormat.ToolTip" xml:space="preserve">
-    <value />
+    <value>Шаблон для выходных файлов (формат foobar2000)</value>
   </data>
   <data name="txtInputPath.ToolTip" xml:space="preserve">
-    <value />
+    <value>Входной файл</value>
   </data>
   <data name="btnBrowseOutput.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
-    <value />
+    <value>Выходной файл</value>
   </data>
   <data name="grpOutputPathGeneration.Text" xml:space="preserve">
-    <value>Файлы</value>
+    <value>Пути CUE</value>
   </data>
   <data name="grpOutputPathGeneration.ToolTip" xml:space="preserve">
     <value />
@@ -182,7 +182,8 @@
     <value />
   </data>
   <data name="labelEncoderMode.ToolTip" xml:space="preserve">
-    <value>Для lossless форматов, уровень сжатия. Для lossy форматов, качество.</value>
+    <value>Для lossless форматов (без потерь) - уровень сжатия
+Для lossy форматов (с потерями) - качество</value>
   </data>
   <data name="trackBarEncoderMode.ToolTip" xml:space="preserve">
     <value />
@@ -197,31 +198,25 @@
     <value>Без аудио</value>
   </data>
   <data name="radioButtonAudioNone.ToolTip" xml:space="preserve">
-    <value>Не создавать аудио-файлов</value>
+    <value>Не создавать аудиофайлы</value>
   </data>
   <data name="radioButtonAudioLossy.ToolTip" xml:space="preserve">
-    <value>Форматы сжатия с потерей качества</value>
+    <value>Кодировщики сохраняющие аудиоданные с потерей качества</value>
   </data>
   <data name="radioButtonAudioHybrid.Size" type="System.Drawing.Size, System.Drawing">
     <value>82, 17</value>
   </data>
-  <data name="radioButtonAudioHybrid.Text" xml:space="preserve">
-    <value>Гибридный</value>
-  </data>
-  <data name="radioButtonAudioHybrid.ToolTip" xml:space="preserve">
-    <value>Гибридные форматы</value>
-  </data>
   <data name="radioButtonAudioLossless.ToolTip" xml:space="preserve">
-    <value>Форматы сжатия без потерь. Позволяют создать точную копию оригинального диска.</value>
+    <value>Кодировщики сохраняющие побитовую идентичность аудиоданных извлеченных с оригинального диска</value>
   </data>
   <data name="labelFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="comboBoxAudioFormat.ToolTip" xml:space="preserve">
-    <value>Формат аудио файлов</value>
+    <value>Формат аудиофайлов</value>
   </data>
   <data name="grpAudioOutput.Text" xml:space="preserve">
-    <value>Формат аудио</value>
+    <value>Вывод аудио</value>
   </data>
   <data name="grpAudioOutput.ToolTip" xml:space="preserve">
     <value />
@@ -232,29 +227,20 @@
   <data name="rbCorrectorChangeExtension.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 17</value>
   </data>
-  <data name="checkBoxCorrectorOverwrite.Text" xml:space="preserve">
-    <value>Заменить CUE</value>
-  </data>
-  <data name="checkBoxCorrectorOverwrite.ToolTip" xml:space="preserve">
-    <value>Записать исправленное CUE поверх существующего</value>
-  </data>
   <data name="labelCorrectorFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="comboBoxCorrectorFormat.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="groupBoxCorrector.Text" xml:space="preserve">
-    <value>Исправить имена</value>
-  </data>
   <data name="groupBoxCorrector.ToolTip" xml:space="preserve">
-    <value />
+    <value>Исправить имена</value>
   </data>
   <data name="checkBoxAdvancedMode.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="comboBoxScript.ToolTip" xml:space="preserve">
-    <value>Запустить скрипт</value>
+    <value>Запустить свой скрипт</value>
   </data>
   <data name="rbActionCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>153, 17</value>
@@ -269,37 +255,31 @@
     <value>92, 17</value>
   </data>
   <data name="rbActionCreateCUESheet.Text" xml:space="preserve">
-    <value>Создать .cue</value>
+    <value>Создать CUE</value>
   </data>
   <data name="rbActionCreateCUESheet.ToolTip" xml:space="preserve">
-    <value>Создать CUE для наборов треков и/или извлечь встроенные CUE</value>
+    <value>Создать CUE для треков и/или извлечь встроенные CUE</value>
   </data>
   <data name="rbActionVerifyAndEncode.Size" type="System.Drawing.Size, System.Drawing">
     <value>154, 17</value>
-  </data>
-  <data name="rbActionVerifyAndEncode.Text" xml:space="preserve">
-    <value>Конвертация + проверка</value>
-  </data>
-  <data name="rbActionVerifyAndEncode.ToolTip" xml:space="preserve">
-    <value>Конвертировать в другой формат, и проверить по базе данных AccurateRip</value>
   </data>
   <data name="rbActionVerify.Size" type="System.Drawing.Size, System.Drawing">
     <value>112, 17</value>
   </data>
   <data name="rbActionVerify.Text" xml:space="preserve">
-    <value>Только проверка</value>
+    <value>&amp;Проверить</value>
   </data>
   <data name="rbActionVerify.ToolTip" xml:space="preserve">
-    <value>Проверить рип по базе данных AccurateRip</value>
+    <value>Соединиться с базой данных AccurateRip для проверки и сравнения образа</value>
   </data>
   <data name="rbActionEncode.Size" type="System.Drawing.Size, System.Drawing">
     <value>92, 17</value>
   </data>
   <data name="rbActionEncode.Text" xml:space="preserve">
-    <value>Конвертация</value>
+    <value>&amp;Конвертировать</value>
   </data>
   <data name="rbActionEncode.ToolTip" xml:space="preserve">
-    <value>Конвертировать в другой формат</value>
+    <value>Конвертировать в другой формат. Не соединяться с базой данных AccurateRip для проверки</value>
   </data>
   <data name="grpAction.Text" xml:space="preserve">
     <value>Действие</value>
@@ -308,16 +288,15 @@
     <value />
   </data>
   <data name="btnConvert.Text" xml:space="preserve">
-    <value>Поехали</value>
+    <value>&amp;Поехали</value>
   </data>
   <data name="btnConvert.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
-    <value>Смещение в сэмплах</value>
-  </data>
   <data name="txtPreGapLength.ToolTip" xml:space="preserve">
-    <value>Длина зазора перед первым треком. Если она не указана в CUE, может потребоваться указать её чтобы диск нашелся в базе данных AccurateRip</value>
+    <value>Pregap это определенная тишина или скрытый звук перед первой дорожкой.
+Обычно данные берутся из CUE, но при конвертации/проверке отдельных дорожек
+без CUE вы можете установить значение здесь.</value>
   </data>
   <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 13</value>
@@ -336,13 +315,16 @@
     <value />
   </data>
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
-    <value>Не используется для обычных музыкальных дисков. "Улучшенные" компакт диски с треком данных не найдутся в базе данных, если не указать длину трека данных. Её часто можно найти в логе EAC. Если лог EAC лежит в той же папке что и .cue, и имеет такое же имя как .cue файл, то он будет проанализирован автоматически и тут опять же ничего не надо будет вводить.</value>
+    <value>Не используется для обычных музыкальных дисков. "Улучшенные" компакт диски с треком данных
+не найдутся в базе данных, если не указать длину трека данных. Её часто можно найти в журнале EAC.
+Если журнал EAC лежит в той же папке, что и .cue, и имеет такое же имя как .cue файл, то он будет
+проанализирован автоматически, и тут опять же ничего не надо будет вводить.</value>
   </data>
   <data name="labelDataTrack.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 13</value>
   </data>
   <data name="labelDataTrack.Text" xml:space="preserve">
-    <value>Данные</value>
+    <value>Трек данных</value>
   </data>
   <data name="labelDataTrack.ToolTip" xml:space="preserve">
     <value />
@@ -356,17 +338,11 @@
   <data name="rbFreedbAlways.Size" type="System.Drawing.Size, System.Drawing">
     <value>60, 17</value>
   </data>
-  <data name="rbFreedbAlways.Text" xml:space="preserve">
-    <value>Всегда</value>
-  </data>
   <data name="rbFreedbAlways.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="rbFreedbIf.Size" type="System.Drawing.Size, System.Drawing">
     <value>76, 17</value>
-  </data>
-  <data name="rbFreedbIf.Text" xml:space="preserve">
-    <value>Если надо</value>
   </data>
   <data name="rbFreedbIf.ToolTip" xml:space="preserve">
     <value />
@@ -374,26 +350,20 @@
   <data name="rbFreedbNever.Size" type="System.Drawing.Size, System.Drawing">
     <value>68, 17</value>
   </data>
-  <data name="rbFreedbNever.Text" xml:space="preserve">
-    <value>Никогда</value>
-  </data>
   <data name="rbFreedbNever.ToolTip" xml:space="preserve">
     <value />
-  </data>
-  <data name="grpFreedb.Text" xml:space="preserve">
-    <value>Поиск в Freedb</value>
   </data>
   <data name="grpFreedb.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="btnResume.Text" xml:space="preserve">
-    <value>&amp;Поехали</value>
+    <value>П&amp;родолжить</value>
   </data>
   <data name="btnResume.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="btnPause.Text" xml:space="preserve">
-    <value>Пауза</value>
+    <value>П&amp;ауза</value>
   </data>
   <data name="btnPause.ToolTip" xml:space="preserve">
     <value />
@@ -402,19 +372,20 @@
     <value>88, 17</value>
   </data>
   <data name="rbTracks.Text" xml:space="preserve">
-    <value>Потрековый</value>
+    <value>Пот&amp;рековый</value>
   </data>
   <data name="rbTracks.ToolTip" xml:space="preserve">
-    <value>Записать каждый трек отдельным файлом. Метод обработки зазоров (gaps) задан в настройках</value>
+    <value>Записать каждый трек отдельным файлом.
+Обработка зазоров (Gaps) задается в настройках.</value>
   </data>
   <data name="rbEmbedCUE.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 17</value>
   </data>
   <data name="rbEmbedCUE.Text" xml:space="preserve">
-    <value>Встроенный</value>
+    <value>&amp;Встроенный</value>
   </data>
   <data name="rbEmbedCUE.ToolTip" xml:space="preserve">
-    <value>Создать образ диска в виде одного аудио-файла со встроеным .cue (вложенным в него в виде тага CUESHEET)</value>
+    <value>Создать один файл со встроенным CUE.</value>
   </data>
   <data name="rbSingleFile.Size" type="System.Drawing.Size, System.Drawing">
     <value>90, 17</value>
@@ -423,16 +394,13 @@
     <value>Образ + CUE</value>
   </data>
   <data name="rbSingleFile.ToolTip" xml:space="preserve">
-    <value>Создать образ диска в виде одного аудио-файла и .cue файла</value>
-  </data>
-  <data name="grpOutputStyle.Text" xml:space="preserve">
-    <value>Стиль CUE</value>
+    <value>Создать один файл + CUE</value>
   </data>
   <data name="grpOutputStyle.ToolTip" xml:space="preserve">
     <value />
   </data>
   <data name="btnStop.Text" xml:space="preserve">
-    <value>Стоп</value>
+    <value>&amp;Стоп</value>
   </data>
   <data name="btnStop.ToolTip" xml:space="preserve">
     <value />
@@ -864,70 +832,169 @@
   <data name="$this.ToolTip" xml:space="preserve">
     <value />
   </data>
-  <data name="checkBoxUseAccurateRip.ToolTip" xml:space="preserve">
-    <value>Использовать AccurateRip</value>
-  </data>
-  <data name="checkBoxUseFreeDb.ToolTip" xml:space="preserve">
-    <value>Использовать FreeDb</value>
-  </data>
-  <data name="checkBoxUseMusicBrainz.ToolTip" xml:space="preserve">
-    <value>Использовать MusicBrainz</value>
-  </data>
   <data name="toolStripButtonAbout.Text" xml:space="preserve">
-    <value>О программе</value>
+    <value>&amp;О программе</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
-    <value>Сайт</value>
+    <value>&amp;Веб-сайт CUETools</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
-    <value>Настройки...</value>
+    <value>&amp;Настройки</value>
   </data>
   <data name="toolStripButtonShowLog.Text" xml:space="preserve">
-    <value>Журнал работы</value>
+    <value>&amp;Журнал</value>
   </data>
   <data name="toolStripMenuItemInputBrowserDrag.Text" xml:space="preserve">
     <value>Режим drag'n'drop</value>
   </data>
   <data name="toolStripMenuItemInputBrowserFiles.Text" xml:space="preserve">
-    <value>Проводник</value>
+    <value>Обзор папок</value>
   </data>
   <data name="toolStripMenuItemInputBrowserHide.Text" xml:space="preserve">
-    <value>Скрыть проводник</value>
+    <value>Скрыть обзор</value>
   </data>
   <data name="toolStripMenuItemInputBrowserMulti.Text" xml:space="preserve">
-    <value>Проводник (пакетный режим)</value>
+    <value>Обзор папок (пакетный режим)</value>
   </data>
   <data name="toolStripMenuItemOutputBrowse.Text" xml:space="preserve">
-    <value>Проводник</value>
+    <value>Обзор</value>
   </data>
   <data name="toolStripMenuItemOutputManual.Text" xml:space="preserve">
     <value>Вручную</value>
   </data>
   <data name="toolStripMenuItemOutputTemplate.Text" xml:space="preserve">
-    <value>По шаблону</value>
+    <value>Использовать шаблон</value>
   </data>
   <data name="toolStripButtonCorrectorOverwrite.Text" xml:space="preserve">
-    <value>Заменить CUE</value>
+    <value>Перезаписать CUE</value>
   </data>
   <data name="toolStripLabelInput.Text" xml:space="preserve">
-    <value>Вход:</value>
+    <value>&amp;Ввод:</value>
   </data>
   <data name="toolStripLabelOutput.Text" xml:space="preserve">
-    <value>Выход:</value>
+    <value>В&amp;ывод:</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.Text" xml:space="preserve">
-    <value>Расширение</value>
+    <value>Изменить расширение</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeChangeExtension.ToolTipText" xml:space="preserve">
-    <value>Заменить расширение аудио-файлов</value>
+    <value>Заменить расширение для аудиофайлов следующим:</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.Text" xml:space="preserve">
     <value>Поиск файлов</value>
   </data>
   <data name="toolStripMenuItemCorrectorModeLocateFiles.ToolTipText" xml:space="preserve">
-    <value>Автоматический поиск переименованных файлов</value>
+    <value>Пытаться автоматически найти отсутствующие файлы</value>
   </data>
   <data name="groupBoxMode.Text" xml:space="preserve">
-    <value>Настройки</value>
+    <value>Режим</value>
+  </data>
+  <data name="labelEncoderMinMode.Text" xml:space="preserve">
+    <value>128</value>
+  </data>
+  <data name="labelEncoderMode.Text" xml:space="preserve">
+    <value>256</value>
+  </data>
+  <data name="labelEncoderMaxMode.Text" xml:space="preserve">
+    <value>320</value>
+  </data>
+  <data name="toolStripStatusLabelAR.Text" xml:space="preserve">
+    <value>55</value>
+  </data>
+  <data name="toolStripStatusLabelCTDB.Text" xml:space="preserve">
+    <value>77</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>CUETools 2.1.8</value>
+  </data>
+  <data name="defaultToolStripMenuItem.Text" xml:space="preserve">
+    <value>по умолчанию</value>
+  </data>
+  <data name="toolStripDropDownButtonProfile.Text" xml:space="preserve">
+    <value>по умолчанию</value>
+  </data>
+  <data name="toolStripMenuItemDeleteProfile.Text" xml:space="preserve">
+    <value>удалить</value>
+  </data>
+  <data name="toolStripMenuItemDeleteProfile.ToolTipText" xml:space="preserve">
+    <value>Удалить текущий профиль</value>
+  </data>
+  <data name="toolStripDropDownButtonProfile.ToolTipText" xml:space="preserve">
+    <value>Профиль</value>
+  </data>
+  <data name="addFolderToLocalDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Добавить папку в локальную базу данных</value>
+  </data>
+  <data name="checkBoxARVerifyOnEncode.ToolTip" xml:space="preserve">
+    <value>Проверить с помощью AccurateRip</value>
+  </data>
+  <data name="checkBoxCTDBVerify.ToolTip" xml:space="preserve">
+    <value>Использовать CTDB (база данных CUETools)</value>
+  </data>
+  <data name="checkBoxCTDBVerifyOnEncode.ToolTip" xml:space="preserve">
+    <value>Проверить с помощью CTDB</value>
+  </data>
+  <data name="checkBoxEditTags.ToolTip" xml:space="preserve">
+    <value>Редактировать теги</value>
+  </data>
+  <data name="checkBoxSkipRecent.ToolTip" xml:space="preserve">
+    <value>Пропустить недавно проверенные</value>
+  </data>
+  <data name="checkBoxVerifyUseLocal.ToolTip" xml:space="preserve">
+    <value>Использовать локальную базу данных</value>
+  </data>
+  <data name="editMetadataToolStripMenuItem.Text" xml:space="preserve">
+    <value>Редактировать метаданные</value>
+  </data>
+  <data name="labelPregap.Text" xml:space="preserve">
+    <value>Pregap</value>
+  </data>
+  <data name="locateInExplorerToolStripMenuItem.Text" xml:space="preserve">
+    <value>Найти в проводнике</value>
+  </data>
+  <data name="radioButtonAudioLossless.Text" xml:space="preserve">
+    <value>Lossless (без потерь)</value>
+  </data>
+  <data name="radioButtonAudioLossy.Text" xml:space="preserve">
+    <value>Lossy (с потерями)</value>
+  </data>
+  <data name="removeItemFromDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Удалить из локальной базы данных</value>
+  </data>
+  <data name="resetToOriginalLocationToolStripMenuItem.Text" xml:space="preserve">
+    <value>Восстановить исходное положение</value>
+  </data>
+  <data name="SelectedNodeName.Text" xml:space="preserve">
+    <value>Выбранный файл</value>
+  </data>
+  <data name="setAsMyMusicFolderToolStripMenuItem.Text" xml:space="preserve">
+    <value>Установить в качестве папки Моя музыка</value>
+  </data>
+  <data name="toolStripDropDownButtonCorrectorFormat.Text" xml:space="preserve">
+    <value>flac</value>
+  </data>
+  <data name="toolStripDropDownButtonCorrectorMode.Text" xml:space="preserve">
+    <value>Поиск файлов</value>
+  </data>
+  <data name="toolStripProgressBar2.ToolTipText" xml:space="preserve">
+    <value>Прогресс диска</value>
+  </data>
+  <data name="toolStripSplitButtonInputBrowser.Text" xml:space="preserve">
+    <value>Открыть/закрыть браузер ввода</value>
+  </data>
+  <data name="toolStripStatusLabelAR.ToolTipText" xml:space="preserve">
+    <value>Альбом найден в базе данных AccurateRip.</value>
+  </data>
+  <data name="toolStripTextBoxAddProfile.ToolTipText" xml:space="preserve">
+    <value>Создать новый профиль</value>
+  </data>
+  <data name="updateLocalDatabaseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Обновить локальную базу данных</value>
+  </data>
+  <data name="radioButtonAudioHybrid.Text" xml:space="preserve">
+    <value>Гибридный</value>
+  </data>
+  <data name="radioButtonAudioHybrid.ToolTip" xml:space="preserve">
+    <value>Гибридные форматы</value>
   </data>
 </root>
