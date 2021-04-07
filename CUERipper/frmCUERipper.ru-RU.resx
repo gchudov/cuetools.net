@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -122,22 +122,22 @@
     <value>Название</value>
   </data>
   <data name="Start.Text" xml:space="preserve">
-    <value>Начало</value>
+    <value>Старт</value>
   </data>
   <data name="Length.Text" xml:space="preserve">
     <value>Длина</value>
   </data>
   <data name="listTracks.ToolTip" xml:space="preserve">
-    <value>Редактирование названий треков начинается двойным кликом мыши</value>
+    <value>Нажмите дважды, чтобы изменить названия треков</value>
   </data>
   <data name="buttonGo.Text" xml:space="preserve">
-    <value>Поехали</value>
+    <value>&amp;Поехали</value>
   </data>
   <data name="buttonAbort.Text" xml:space="preserve">
-    <value>Стоп</value>
+    <value>&amp;Прервать</value>
   </data>
   <data name="buttonPause.Text" xml:space="preserve">
-    <value>Пауза</value>
+    <value>&amp;Пауза</value>
   </data>
   <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>61, 13</value>
@@ -152,6 +152,93 @@
     <value>Отчет в стиле EAC</value>
   </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
-    <value>Для выбора шаблона выходной папки кликните мышкой</value>
+    <value>Нажмите, чтобы отредактировать шаблон пути вывода</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>CUERipper 2.1.8</value>
+  </data>
+  <data name="bnComboBoxDrives.Text" xml:space="preserve">
+    <value>Приводы</value>
+  </data>
+  <data name="bnComboBoxEncoder.Text" xml:space="preserve">
+    <value>libFlac</value>
+  </data>
+  <data name="bnComboBoxFormat.Text" xml:space="preserve">
+    <value>flac</value>
+  </data>
+  <data name="bnComboBoxImage.Text" xml:space="preserve">
+    <value>Образ</value>
+  </data>
+  <data name="bnComboBoxLosslessOrNot.Text" xml:space="preserve">
+    <value>Lossless (сжатие без потерь)</value>
+  </data>
+  <data name="bnComboBoxRelease.Text" xml:space="preserve">
+    <value>Релизы</value>
+  </data>
+  <data name="buttonEjectDisk.Text" xml:space="preserve">
+    <value>&amp;Извлечь</value>
+  </data>
+  <data name="buttonEncoding.Text" xml:space="preserve">
+    <value>&amp;Кодовая страница</value>
+  </data>
+  <data name="buttonFreedbSubmit.Text" xml:space="preserve">
+    <value>&amp;Отправить</value>
+  </data>
+  <data name="buttonMetadata.Text" xml:space="preserve">
+    <value>&amp;Мета</value>
+  </data>
+  <data name="columnHeaderArtist.Text" xml:space="preserve">
+    <value>Исполнитель</value>
+  </data>
+  <data name="columnHeaderName.Text" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="columnHeaderValue.Text" xml:space="preserve">
+    <value>Значение</value>
+  </data>
+  <data name="labelEncoderMaxMode.Text" xml:space="preserve">
+    <value>320</value>
+  </data>
+  <data name="labelEncoderMinMode.Text" xml:space="preserve">
+    <value>128</value>
+  </data>
+  <data name="labelEncoderMode.Text" xml:space="preserve">
+    <value>256</value>
+  </data>
+  <data name="progressBarCD.Text" xml:space="preserve">
+    <value>10%</value>
+  </data>
+  <data name="statusStrip1.Text" xml:space="preserve">
+    <value>statusStrip1</value>
+  </data>
+  <data name="toolStripMenuItem1.Text" xml:space="preserve">
+    <value>toolStripMenuItem1</value>
+  </data>
+  <data name="toolStripProgressBar1.ToolTipText" xml:space="preserve">
+    <value>Прогресс чтения</value>
+  </data>
+  <data name="toolStripStatusAr.ToolTipText" xml:space="preserve">
+    <value>Статус AccurateRip</value>
+  </data>
+  <data name="toolStripStatusLabel2.Text" xml:space="preserve">
+    <value>toolStripStatusAr</value>
+  </data>
+  <data name="TrackNo.Text" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="checkBoxTestAndCopy.Text" xml:space="preserve">
+    <value>Тест &amp;и копия</value>
+  </data>
+  <data name="buttonVA.Text" xml:space="preserve">
+    <value>&amp;V/A</value>
+  </data>
+  <data name="buttonTracks.Text" xml:space="preserve">
+    <value>&amp;Треки</value>
+  </data>
+  <data name="buttonSettings.Text" xml:space="preserve">
+    <value>Па&amp;раметры</value>
+  </data>
+  <data name="buttonReload.Text" xml:space="preserve">
+    <value>П&amp;ерезагрузить</value>
   </data>
 </root>

@@ -118,33 +118,33 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AutodetectReadCommandFailed" xml:space="preserve">
-    <value>не удалось определить команду чтения</value>
+    <value>Не удалось определить команду чтения</value>
   </data>
   <data name="DeviceInquiryError" xml:space="preserve">
-    <value>Ошибка при опросе устройства</value>
+    <value>Ошибка при опросе привода</value>
   </data>
   <data name="DeviceNotMMC" xml:space="preserve">
     <value>Устройство не поддерживает стандарт MMC</value>
   </data>
   <data name="DeviceOpenError" xml:space="preserve">
-    <value>Ошибка при открытии устройства</value>
+    <value>Ошибка открытия</value>
   </data>
   <data name="NoAudio" xml:space="preserve">
-    <value>Отсутствуют аудио-треки</value>
+    <value>Отсутствуют аудиотреки</value>
   </data>
   <data name="ReadCDError" xml:space="preserve">
-    <value>Ошибка при чтении диска</value>
+    <value>Ошибка чтения CD</value>
   </data>
   <data name="ReadTOCError" xml:space="preserve">
-    <value>Ошибка при обращении к диску</value>
+    <value>Ошибка обращения к CD</value>
   </data>
   <data name="StatusDetectingDriveFeatures" xml:space="preserve">
-    <value>Диагностика устройства</value>
+    <value>Определение характеристик привода</value>
   </data>
   <data name="StatusDetectingGaps" xml:space="preserve">
     <value>Определение зазоров</value>
   </data>
   <data name="StatusRipping" xml:space="preserve">
-    <value>Извлечение аудио</value>
+    <value>Извлечение</value>
   </data>
 </root>

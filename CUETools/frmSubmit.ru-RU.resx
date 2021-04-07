@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>Предлагается отправить данные об этом диске в базу данных CUETools (CTDB). Это поможет другим пользователям исправить ошибки в их копиях данного диска.</value>
+    <value>Вы собираетесь отправить информацию об этом CD в базу данных CUETools. Эта информация поможет другим пользователям восстановить свою копию этого CD, если она содержит ошибки.</value>
   </data>
   <data name="buttonCancel.Text" xml:space="preserve">
     <value>Отмена</value>
@@ -128,9 +128,12 @@
     <value>140, 17</value>
   </data>
   <data name="checkBoxRemember.Text" xml:space="preserve">
-    <value>Запомнить мой выбор</value>
+    <value>Запомнить выбор</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Подтверждение на отправку данных в CTDB</value>
+  </data>
+  <data name="buttonOk.Text" xml:space="preserve">
+    <value>ОК</value>
   </data>
 </root>

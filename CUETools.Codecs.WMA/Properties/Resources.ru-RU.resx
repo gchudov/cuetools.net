@@ -121,10 +121,10 @@
     <value>Вычислять MD5-хеш аудиопотока</value>
   </data>
   <data name="DoVerifyDescription" xml:space="preserve">
-    <value>Декодировать каждый блок и сравнивать с оригиналом</value>
+    <value>Декодировать каждый кадр и сравнивать с оригиналом</value>
   </data>
   <data name="ExceptionSampleCount" xml:space="preserve">
-    <value>Количество записанных сэмплов отличается от ожидавшегося</value>
+    <value>Количество записанных сэмплов отличается от ожидаемого</value>
   </data>
   <data name="ExceptionValidationFailed" xml:space="preserve">
     <value>Ошибка верификации</value>

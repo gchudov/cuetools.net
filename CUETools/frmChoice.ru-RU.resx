@@ -112,49 +112,45 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DescriptionCPUThreads" xml:space="preserve">
-    <value>Использовать дополнительные потоки CPU</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Выберите лучшее совпадение</value>
   </data>
-  <data name="DescriptionGPUOnly" xml:space="preserve">
-    <value>Использовать GPU на всех стадиях</value>
+  <data name="buttonMusicBrainz.Text" xml:space="preserve">
+    <value>&amp;MusicBrainz</value>
   </data>
-  <data name="DoMD5Description" xml:space="preserve">
-    <value>Вычислять MD5-хеш аудиопотока</value>
+  <data name="buttonMusicBrainz.ToolTip" xml:space="preserve">
+    <value>Поиск альбома на MusicBrainz</value>
   </data>
-  <data name="DoVerifyDescription" xml:space="preserve">
-    <value>Декодировать каждый кадр и сравнивать с оригиналом</value>
+  <data name="buttonNavigateCTDB.Text" xml:space="preserve">
+    <value>CT&amp;DB</value>
   </data>
-  <data name="ExceptionSampleCount" xml:space="preserve">
-    <value>Количество записанных сэмплов отличается от ожидаемого</value>
+  <data name="buttonNavigateCTDB.ToolTip" xml:space="preserve">
+    <value>Перейти к альбому в CUETools DB</value>
   </data>
-  <data name="ExceptionValidationFailed" xml:space="preserve">
-    <value>Ошибка верификации</value>
+  <data name="buttonOk.Text" xml:space="preserve">
+    <value>ОК</value>
   </data>
-  <data name="DescriptionDefines" xml:space="preserve">
-    <value>Дополнительные определения препроцессора для ядра OpenCL</value>
+  <data name="dataGridViewTextBoxColumnTrackLength.HeaderText" xml:space="preserve">
+    <value>Длина</value>
   </data>
-  <data name="DescriptionDeviceType" xml:space="preserve">
-    <value>Использовать CPU или GPU</value>
+  <data name="dataGridViewTextBoxColumnTrackNo.HeaderText" xml:space="preserve">
+    <value>#</value>
   </data>
-  <data name="DescriptionDoRice" xml:space="preserve">
-    <value>Выполнять финальные этапы кодирования на GPU
-(экспериментальная функция)</value>
+  <data name="dataGridViewTextBoxColumnTrackStart.HeaderText" xml:space="preserve">
+    <value>Старт</value>
   </data>
-  <data name="DescriptionGroupSize" xml:space="preserve">
-    <value>Размер блока потока GPU (64, 128, 256)</value>
+  <data name="dataGridViewTextBoxColumnTrackTitle.HeaderText" xml:space="preserve">
+    <value>Заголовок</value>
   </data>
-  <data name="DescriptionMappedMemory" xml:space="preserve">
-    <value>Устройство использует системную память (не использовать)</value>
+  <data name="Item.HeaderText" xml:space="preserve">
+    <value>Столбец1</value>
   </data>
-  <data name="DescriptionPlatform" xml:space="preserve">
-    <value>Используемая платформа OpenCL</value>
-  </data>
-  <data name="DescriptionTaskSize" xml:space="preserve">
-    <value>Количество кадров, обрабатываемых одним мультипроцессором</value>
+  <data name="Value.HeaderText" xml:space="preserve">
+    <value>Столбец1</value>
   </data>
 </root>

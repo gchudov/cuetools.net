@@ -124,22 +124,22 @@
     <value>Извлечение завершено</value>
   </data>
   <data name="DoneRippingErrors" xml:space="preserve">
-    <value>Судя по всему, были ошибки</value>
+    <value>Вероятно, во время извлечения произошли ошибки</value>
   </data>
   <data name="DoneRippingRepair" xml:space="preserve">
-    <value>Можете попытаться исправить ошибки с помощью CUETools</value>
+    <value>Можете попробовать исправить ошибки с помощью CUETools</value>
   </data>
   <data name="ExceptionMessage" xml:space="preserve">
-    <value>Ошибка</value>
+    <value>Исключение</value>
   </data>
   <data name="FailedToLoadRipperModule" xml:space="preserve">
-    <value>Не удалось загрузить библиотеку</value>
+    <value>Не удалось загрузить модуль извлечения</value>
   </data>
   <data name="LookingUpVia" xml:space="preserve">
     <value>Поиск альбома в базе</value>
   </data>
   <data name="NoDrives" xml:space="preserve">
-    <value>Приводы не найдены</value>
+    <value>CD-приводы не найдены</value>
   </data>
   <data name="PausedMessage" xml:space="preserve">
     <value>Пауза</value>

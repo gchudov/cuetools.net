@@ -118,6 +118,9 @@
     <EmbeddedResource Include="frmFreedbSubmit.resx">
       <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmFreedbSubmit.ru-RU.resx">
+      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
     </EmbeddedResource>

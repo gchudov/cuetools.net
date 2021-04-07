@@ -118,24 +118,50 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DescriptionCPUThreads" xml:space="preserve">
-    <value>Использовать дополнительные потоки</value>
+    <value>Использовать дополнительные потоки CPU</value>
   </data>
   <data name="DescriptionGPUOnly" xml:space="preserve">
     <value>Использовать GPU на всех стадиях</value>
   </data>
   <data name="DescriptionPadding" xml:space="preserve">
-    <value>Количество байт резервируемое для тэгов</value>
+    <value>Количество байт зарезервированных для метаданных</value>
   </data>
   <data name="DoMD5Description" xml:space="preserve">
     <value>Вычислять MD5-хеш аудиопотока</value>
   </data>
   <data name="DoVerifyDescription" xml:space="preserve">
-    <value>Декодировать каждый блок и сравнивать с оригиналом</value>
+    <value>Декодировать каждый кадр и сравнивать с оригиналом</value>
   </data>
   <data name="ExceptionSampleCount" xml:space="preserve">
-    <value>Количество записанных сэмплов отличается от ожидавшегося</value>
+    <value>Количество записанных сэмплов отличается от ожидаемого</value>
   </data>
   <data name="ExceptionValidationFailed" xml:space="preserve">
     <value>Ошибка верификации</value>
+  </data>
+  <data name="AllowNonSubsetDescription" xml:space="preserve">
+    <value>Разрешить non-subset режимы, допускающие большее сжатие,
+но меньшую совместимость с декодерами</value>
+  </data>
+  <data name="DescriptionDefines" xml:space="preserve">
+    <value>Дополнительные определения препроцессора для ядра OpenCL</value>
+  </data>
+  <data name="DescriptionDeviceType" xml:space="preserve">
+    <value>Использовать CPU или GPU</value>
+  </data>
+  <data name="DescriptionDoRice" xml:space="preserve">
+    <value>Выполнять финальные этапы кодирования на GPU
+(экспериментальная функция)</value>
+  </data>
+  <data name="DescriptionGroupSize" xml:space="preserve">
+    <value>Размер блока потока GPU (64, 128, 256)</value>
+  </data>
+  <data name="DescriptionMappedMemory" xml:space="preserve">
+    <value>Устройство использует системную память (не использовать)</value>
+  </data>
+  <data name="DescriptionPlatform" xml:space="preserve">
+    <value>Используемая платформа OpenCL</value>
+  </data>
+  <data name="DescriptionTaskSize" xml:space="preserve">
+    <value>Количество кадров, обрабатываемых одним мультипроцессором</value>
   </data>
 </root>
