@@ -155,6 +155,6 @@
     <value>Используемая платформа OpenCL</value>
   </data>
   <data name="DescriptionTaskSize" xml:space="preserve">
-    <value>Количество кадров, обрабатываемых одним мультипроцессором</value>
+    <value>Количество кадров обрабатываемых одним мультипроцессором</value>
   </data>
 </root>

@@ -149,8 +149,8 @@
     <value>Обрезать 4608 добавочных сэмплов</value>
   </data>
   <data name="chkTruncateExtra4206Samples.ToolTip" xml:space="preserve">
-    <value>Некоторые кодировщики FLAC, ошибочно добавляют 4608 пустых сэмплов в конец каждого файла.
-Эти лишние сэмплы, могут быть найдены и удалены.</value>
+    <value>Некоторые кодировщики FLAC ошибочно добавляют 4608 пустых сэмплов в конец каждого файла.
+Эти лишние сэмплы могут быть найдены и удалены.</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
     <value>224, 17</value>
@@ -226,7 +226,7 @@
     <value>Имена файлов в ANSI кодировке</value>
   </data>
   <data name="chkFilenamesANSISafe.ToolTip" xml:space="preserve">
-    <value>Разрешить использовать только символы из кодовой страницы ANSI,
+    <value>Разрешить использовать только символы из кодовой страницы ANSI 
 для совместимости с приложениями, не использующими Unicode</value>
   </data>
   <data name="chkWriteARTagsOnVerify.Size" type="System.Drawing.Size, System.Drawing">
@@ -265,7 +265,7 @@
     <value>Сохранить в 24 бит (без потерь)</value>
   </data>
   <data name="chkHDCD24bit.ToolTip" xml:space="preserve">
-    <value>Когда не используется lossyWAV, расширить до 24 бит для совместимости</value>
+    <value>Когда не используется lossyWAV расширить до 24 бит для совместимости</value>
   </data>
   <data name="chkHDCDLW16.Size" type="System.Drawing.Size, System.Drawing">
     <value>176, 17</value>
@@ -274,7 +274,7 @@
     <value>Сохранить в 16 бит LossyWAV</value>
   </data>
   <data name="chkHDCDLW16.ToolTip" xml:space="preserve">
-    <value>При конвертации в lossyWAV, обрезать до 16 бит</value>
+    <value>При конвертации в lossyWAV обрезать до 16 бит</value>
   </data>
   <data name="chkEmbedLog.Size" type="System.Drawing.Size, System.Drawing">
     <value>156, 17</value>
@@ -283,7 +283,7 @@
     <value>Встроить .log в виде тега</value>
   </data>
   <data name="chkEmbedLog.ToolTip" xml:space="preserve">
-    <value>Файл должен находиться в том же каталоге, что и исходный файл, и иметь расширение .log</value>
+    <value>Файл должен находиться в том же каталоге, что и исходный файл и иметь расширение .log</value>
   </data>
   <data name="chkKeepOriginalFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>157, 17</value>
@@ -295,10 +295,10 @@
     <value>Создавать аудиофайлы с теми же именами, что и в исходном CUE, когда это возможно</value>
   </data>
   <data name="txtTrackFilenameFormat.ToolTip" xml:space="preserve">
-    <value>Шаблон имени аудиофайла, для треков сохраняемых потреково</value>
+    <value>Шаблон имени аудиофайла для треков сохраняемых потреково</value>
   </data>
   <data name="txtSingleFilenameFormat.ToolTip" xml:space="preserve">
-    <value>Шаблон имени аудиофайла, для треков сохраняемых в образ</value>
+    <value>Шаблон имени аудиофайла для треков сохраняемых в образ</value>
   </data>
   <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
     <value>Межтрековые зазоры пропущены (заменены тишиной)</value>
@@ -453,7 +453,7 @@ HTOA (Hidden Track One Audio - зазор перед первым треком) 
     <value>Определять HDCD-кодирование</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Продвинутые настройки</value>
+    <value>Расширенные настройки</value>
   </data>
   <data name="tabPage2.Text" xml:space="preserve">
     <value>AccurateRip</value>
@@ -567,7 +567,7 @@ HTOA (Hidden Track One Audio - зазор перед первым треком) 
     <value>Формат имени:</value>
   </data>
   <data name="labelFormatTagger.Text" xml:space="preserve">
-    <value>Тегер</value>
+    <value>Теги</value>
   </data>
   <data name="rbGapsAppended.Text" xml:space="preserve">
     <value>Зазоры дописанные в конец</value>

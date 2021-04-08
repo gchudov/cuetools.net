@@ -201,13 +201,13 @@
     <value>Не создавать аудиофайлы</value>
   </data>
   <data name="radioButtonAudioLossy.ToolTip" xml:space="preserve">
-    <value>Кодировщики, сохраняющие аудиоданные с потерей качества</value>
+    <value>Кодировщики сохраняющие аудиоданные с потерей качества</value>
   </data>
   <data name="radioButtonAudioHybrid.Size" type="System.Drawing.Size, System.Drawing">
     <value>82, 17</value>
   </data>
   <data name="radioButtonAudioLossless.ToolTip" xml:space="preserve">
-    <value>Кодировщики, сохраняющие побитовую идентичность аудиоданных извлеченных с оригинального диска</value>
+    <value>Кодировщики сохраняющие побитовую идентичность аудиоданных извлеченных с оригинального диска</value>
   </data>
   <data name="labelFormat.ToolTip" xml:space="preserve">
     <value />
@@ -296,7 +296,7 @@
   <data name="txtPreGapLength.ToolTip" xml:space="preserve">
     <value>Pregap это определенная тишина или скрытый звук перед первой дорожкой.
 Обычно данные берутся из CUE, но при конвертации/проверке отдельных дорожек
-без CUE, вы можете установить значения.</value>
+без CUE вы можете установить значение здесь.</value>
   </data>
   <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 13</value>
@@ -317,8 +317,8 @@
   <data name="txtDataTrackLength.ToolTip" xml:space="preserve">
     <value>Не используется для обычных музыкальных дисков. "Улучшенные" компакт диски с треком данных
 не найдутся в базе данных, если не указать длину трека данных. Её часто можно найти в журнале EAC.
-Если журнал EAC лежит в той же папке что и .cue, и имеет такое же имя как .cue файл, то он будет
-проанализирован автоматически и тут опять же ничего не надо будет вводить.</value>
+Если журнал EAC лежит в той же папке, что и .cue, и имеет такое же имя как .cue файл, то он будет
+проанализирован автоматически, и тут опять же ничего не надо будет вводить.</value>
   </data>
   <data name="labelDataTrack.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 13</value>

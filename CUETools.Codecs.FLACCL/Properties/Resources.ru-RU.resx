@@ -139,7 +139,7 @@
     <value>Ошибка верификации</value>
   </data>
   <data name="AllowNonSubsetDescription" xml:space="preserve">
-    <value>Разрешить non-subset режимы, допускающие большее сжатие,
+    <value>Разрешить non-subset режимы допускающие большее сжатие,
 но меньшую совместимость с декодерами</value>
   </data>
   <data name="DescriptionDefines" xml:space="preserve">
@@ -162,6 +162,6 @@
     <value>Используемая платформа OpenCL</value>
   </data>
   <data name="DescriptionTaskSize" xml:space="preserve">
-    <value>Количество кадров, обрабатываемых одним мультипроцессором</value>
+    <value>Количество кадров обрабатываемых одним мультипроцессором</value>
   </data>
 </root>

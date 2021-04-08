@@ -149,7 +149,7 @@ hdcd.dll (c) Christopher Key
     <value>291, 17</value>
   </data>
   <data name="linkLabel2.Text" xml:space="preserve">
-    <value>Обновления можно найти на http://www.cuetools.net/.</value>
+    <value>Обновления можно найти на  http://www.cuetools.net</value>
   </data>
   <data name="linkLabel3.Location" type="System.Drawing.Point, System.Drawing">
     <value>65, 9</value>
