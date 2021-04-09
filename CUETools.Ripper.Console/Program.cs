@@ -22,8 +22,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
-using System.Collections.Generic;
 using CUETools.Ripper;
 using CUETools.Ripper.SCSI;
 using CUETools.Codecs;
@@ -33,7 +31,13 @@ using CUETools.CTDB;
 
 namespace CUETools.ConsoleRipper
 {
-	class ProgressMeter
+    using System.Globalization;
+    using System.Text.RegularExpressions;
+
+    using TagLib;
+    using TagLib.Ogg;
+
+    class ProgressMeter
 	{
 		public DateTime realStart;
 
@@ -84,6 +88,16 @@ namespace CUETools.ConsoleRipper
 			Console.WriteLine("-T, --test               detect read command;");
 			Console.WriteLine("--d8                     force D8h read command;");
 			Console.WriteLine("--be                     force BEh read command;");
+		    Console.WriteLine("-F, --flac               rip to FLAC instead of WAV (uses Flake with compression level 8)");
+		    Console.WriteLine("-I, --info               only output information on the CD; do not rip it");
+		    Console.WriteLine("-N, --filename           specify the output file name (do not specify file extension)");
+		    Console.WriteLine("-A, --artist             specify the artist");
+		    Console.WriteLine("-L, --album              specify the album");
+		    Console.WriteLine("-G, --genres             specify semicolon-separated list of genres");
+		    Console.WriteLine("-Y, --year               specify year");
+		    Console.WriteLine("-B, --discnumber         specify disc number");
+		    Console.WriteLine("-C, --disccount          specify disc count");
+		    Console.WriteLine("-M, --discname           specify disc name");
 		}
 
 		static void Main(string[] args)
@@ -98,29 +112,55 @@ namespace CUETools.ConsoleRipper
 			int driveOffset = 0;
 			bool test = false;
 			bool forceD8 = false, forceBE = false, quiet = false;
+            bool flac = false;
+            bool infoOnly = false;
+            string destFileNameWithoutExtension = null;
+		    string artist = null, album = null, genres = null, discName = null;
+		    uint year = 0, discNumber = 0, discCount = 0;
+
 			for (int arg = 0; arg < args.Length; arg++)
 			{
 				bool ok = true;
-				if (args[arg] == "-P" || args[arg] == "--paranoid")
-					correctionQuality = 2;
-				else if (args[arg] == "-S" || args[arg] == "--secure")
-					correctionQuality = 1;
-				else if (args[arg] == "-B" || args[arg] == "--burst")
-					correctionQuality = 0;
-				else if (args[arg] == "-T" || args[arg] == "--test")
-					test = true;
-				else if (args[arg] == "--d8")
-					forceD8 = true;
-				else if (args[arg] == "--be")
-					forceBE = true;
-				else if (args[arg] == "-Q" || args[arg] == "--quiet")
-					quiet = true;
-				else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
-					driveLetter = args[arg];
-				else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
-					ok = int.TryParse(args[arg], out driveOffset);
-				else
-					ok = false;
+                if (args[arg] == "-P" || args[arg] == "--paranoid")
+                    correctionQuality = 2;
+                else if (args[arg] == "-S" || args[arg] == "--secure")
+                    correctionQuality = 1;
+                else if (args[arg] == "-B" || args[arg] == "--burst")
+                    correctionQuality = 0;
+                else if (args[arg] == "-T" || args[arg] == "--test")
+                    test = true;
+                else if (args[arg] == "--d8")
+                    forceD8 = true;
+                else if (args[arg] == "--be")
+                    forceBE = true;
+                else if (args[arg] == "-Q" || args[arg] == "--quiet")
+                    quiet = true;
+                else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
+                    driveLetter = args[arg];
+                else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
+                    ok = int.TryParse(args[arg], out driveOffset);
+                else if (args[arg] == "--flac" || args[arg] == "-F")
+                    flac = true;
+                else if (args[arg] == "-I" || args[arg] == "--info")
+                    infoOnly = true;
+                else if ((args[arg] == "-N" || args[arg] == "--filename") && ++arg < args.Length)
+                    destFileNameWithoutExtension = args[arg];
+                else if ((args[arg] == "-A" || args[arg] == "--artist") && ++arg < args.Length)
+                    artist = args[arg];
+			    else if ((args[arg] == "-L" || args[arg] == "--album") && ++arg < args.Length)
+                    album = args[arg];
+			    else if ((args[arg] == "-G" || args[arg] == "--genres") && ++arg < args.Length)
+                    genres = args[arg];
+			    else if ((args[arg] == "-Y" || args[arg] == "--year") && ++arg < args.Length)
+                    ok = uint.TryParse(args[arg], out year);
+			    else if ((args[arg] == "-B" || args[arg] == "--discnumber") && ++arg < args.Length)
+                    ok = uint.TryParse(args[arg], out discNumber);
+			    else if ((args[arg] == "-C" || args[arg] == "--disccount") && ++arg < args.Length)
+                    ok = uint.TryParse(args[arg], out discCount);
+                else if ((args[arg] == "-M" || args[arg] == "--discname") && ++arg < args.Length)
+                    discName = args[arg];
+                else
+                    ok = false;
 				if (!ok)
 				{
 					Usage();
@@ -189,8 +229,73 @@ namespace CUETools.ConsoleRipper
 					break;
 				}
 
-				//string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
-				string destFile = (meta == null) ? "cdimage.wav" : string.Join("_", (meta.artist + " - " + meta.album).Split(Path.GetInvalidFileNameChars())) + ".wav";
+			    string destFile;
+
+			    if (flac)
+			    {
+			        if (!string.IsNullOrEmpty(destFileNameWithoutExtension))
+			        {
+			            destFile = destFileNameWithoutExtension + ".flac";
+			        }
+                    else if (meta != null)
+			        {
+			            destFile = Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".flac");
+			        }
+			        else
+			        {
+			            destFile = "cdimage.flac";
+			        }
+			    }
+			    else
+			    {
+			        if (!string.IsNullOrEmpty(destFileNameWithoutExtension))
+			        {
+			            destFile = destFileNameWithoutExtension + ".wav";
+			        }
+			        else if (meta != null)
+			        {
+			            destFile = Program.CoerceValidFileName(meta.artist + " - " + meta.album + ".wav");
+			        }
+			        else
+			        {
+			            destFile = "cdimage.wav";
+			        }
+                }
+
+			    if (string.IsNullOrEmpty(artist) && meta != null)
+			    {
+                    artist = meta.artist;
+			    }
+
+			    if (string.IsNullOrEmpty(album) && meta != null)
+			    {
+                    album = meta.album;
+			    }
+
+			    if (string.IsNullOrEmpty(genres) && meta != null)
+			    {
+                    genres = meta.genre;
+			    }
+
+			    if (year == 0 && meta != null)
+			    {
+			        uint.TryParse(meta.year, out year);
+			    }
+
+			    if (discNumber == 0 && meta != null)
+			    {
+			        uint.TryParse(meta.discnumber, out discNumber);
+			    }
+
+			    if (discCount == 0 && meta != null)
+			    {
+			        uint.TryParse(meta.disccount, out discCount);
+			    }
+
+			    if (string.IsNullOrEmpty(discName) && meta != null)
+			    {
+			        discName = meta.discname;
+			    }
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
@@ -200,6 +305,18 @@ namespace CUETools.ConsoleRipper
 				Console.WriteLine("Disk length : {0}", CDImageLayout.TimeToString(audioSource.TOC.AudioLength));
 				Console.WriteLine("AccurateRip : {0}", arVerify.ARStatus == null ? "ok" : arVerify.ARStatus);
 				Console.WriteLine("MusicBrainz : {0}", meta == null ? "not found" : meta.artist + " - " + meta.album);
+			    Console.WriteLine("Artist      : {0}", artist);
+			    Console.WriteLine("Album       : {0}", album);
+			    Console.WriteLine("Year        : {0}", year);
+			    Console.WriteLine("Genre       : {0}", genres);
+			    Console.WriteLine("Disc Number : {0}", discNumber);
+			    Console.WriteLine("Disc Name   : {0}", discName);
+			    Console.WriteLine("Disc Count  : {0}", discCount);
+
+			    if (infoOnly)
+			    {
+                    return;
+			    }
 
 				ProgressMeter meter = new ProgressMeter();
 				audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(meter.ReadProgress);
@@ -210,20 +327,28 @@ namespace CUETools.ConsoleRipper
 				cueWriter.WriteLine("REM DISCID {0}", CDDBId);
 				cueWriter.WriteLine("REM ACCURATERIPID {0}", ArId);
 				cueWriter.WriteLine("REM COMMENT \"{0}\"", audioSource.RipperVersion);
-				if (meta != null && meta.year != "")
-					cueWriter.WriteLine("REM DATE {0}", meta.year);
+				if (year > 0)
+					cueWriter.WriteLine("REM DATE {0}", year);
 				if (audioSource.TOC.Barcode != null)
 					cueWriter.WriteLine("CATALOG {0}", audioSource.TOC.Barcode);
-				if (meta != null)
+
+			    if (!string.IsNullOrEmpty(artist))
+			    {
+			        cueWriter.WriteLine("PERFORMER \"{0}\"", artist);
+                }
+
+				if (!string.IsNullOrEmpty(album))
 				{
-					cueWriter.WriteLine("PERFORMER \"{0}\"", meta.artist);
-					cueWriter.WriteLine("TITLE \"{0}\"", meta.album);
+					cueWriter.WriteLine("TITLE \"{0}\"", album);
 				}
+
 				cueWriter.WriteLine("FILE \"{0}\" WAVE", destFile);
+
 				for (int track = 1; track <= audioSource.TOC.TrackCount; track++)
 					if (audioSource.TOC[track].IsAudio)
 					{
 						cueWriter.WriteLine("  TRACK {0:00} AUDIO", audioSource.TOC[track].Number);
+
 						if (meta != null && meta.track.Length >= audioSource.TOC[track].Number)
 						{
 							cueWriter.WriteLine("    TITLE \"{0}\"", meta.track[(int)audioSource.TOC[track].Number - 1].name);
@@ -241,8 +366,20 @@ namespace CUETools.ConsoleRipper
 				cueFile.Write(cueWriter.ToString());
 				cueFile.Close();
 
-				//IAudioDest audioDest = new FLACWriter(destFile, audioSource.BitsPerSample, audioSource.ChannelCount, audioSource.SampleRate);
-                IAudioDest audioDest = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(audioSource.PCM), destFile);
+                IAudioDest audioDest;
+
+			    if (flac)
+			    {
+			        var settings = new Codecs.Flake.EncoderSettings();
+                    settings.PCM = audioSource.PCM;
+			        settings.SetEncoderModeIndex(8);
+                    audioDest = new Codecs.Flake.AudioEncoder(settings, destFile);
+			    }
+			    else
+			    {
+                    audioDest = new Codecs.WAV.AudioEncoder(new Codecs.WAV.EncoderSettings(audioSource.PCM), destFile);
+                }
+
 				audioDest.FinalSampleCount = audioSource.Length;
 				while (audioSource.Read(buff, -1) != 0)
 				{
@@ -304,10 +441,59 @@ namespace CUETools.ConsoleRipper
 
 				audioSource.Close();
 
-				//FLACReader tagger = new FLACReader(destFile, null);
-				//tagger.Tags.Add("CUESHEET", cueWriter.ToString());
-				//tagger.Tags.Add("LOG", logWriter.ToString());
-				//tagger.UpdateTags(false);
+			    if (flac)
+			    {
+			        var fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+
+			        var xiph = (XiphComment)fileInfo.GetTag(TagTypes.Xiph);
+			        xiph.SetField("CUESHEET", cueWriter.ToString());
+			        xiph.SetField("LOG", logWriter.ToString());
+
+			        if (!string.IsNullOrEmpty(album))
+			        {
+                        fileInfo.Tag.Album = album;
+			        }
+
+			        if (!string.IsNullOrEmpty(artist))
+			        {
+			            fileInfo.Tag.AlbumArtists = new[] { artist };
+			            fileInfo.Tag.Performers = new[] { artist };
+                    }
+
+			        if (!string.IsNullOrEmpty(genres))
+			        {
+			            var splitGenres = genres.Split(';');
+
+			            for (int i = 0; i < splitGenres.Length; i++)
+			            {
+			                splitGenres[i] = splitGenres[i]?.Trim();
+			            }
+
+                        fileInfo.Tag.Genres = splitGenres;
+			        }
+
+			        if (!string.IsNullOrEmpty(discName))
+			        {
+                        fileInfo.Tag.DiscSubtitle = discName;
+			        }
+
+			        if (discCount > 0)
+			        {
+                        fileInfo.Tag.DiscCount = discCount;
+			        }
+
+			        if (discNumber > 0)
+			        {
+                        fileInfo.Tag.Disc = discNumber;
+			        }
+
+			        if (year > 0)
+			        {
+			            fileInfo.Tag.Year = year;
+			        }
+
+			        fileInfo.Save();
+			    }
 			}
 #if !DEBUG
 			catch (Exception ex)
@@ -319,16 +505,56 @@ namespace CUETools.ConsoleRipper
 #endif
 		}
 
-		//private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
-		//{
-		//    if (this.CUEToolsProgress == null)
-		//        return;
-		//    _progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
-		//    _progress.percentTrack = 0;
-		//    _progress.input = e.Uri.ToString();
-		//    _progress.output = null;
-		//    _progress.status = "Looking up album via MusicBrainz";
-		//    this.CUEToolsProgress(this, _progress);
-		//}
-	}
+	    private static readonly string[] reservedWords = new[] { "CON", "PRN", "AUX", "CLOCK$", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+	    private static readonly string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()) + "'");
+
+        private static string CoerceValidFileName(string filename)
+	    {
+	        string invalidReStr = string.Format(CultureInfo.InvariantCulture, @"[{0}]+", Program.invalidChars);
+	        string sanitisedNamePart = Regex.Replace(filename, invalidReStr, "_");
+
+	        var pieces = sanitisedNamePart.Split('.');
+	        bool needsRegEx = false;
+
+	        foreach (string piece in pieces)
+	        {
+	            foreach (string word in Program.reservedWords)
+	            {
+	                if (word.Equals(piece, StringComparison.OrdinalIgnoreCase))
+	                {
+	                    needsRegEx = true;
+	                    break;
+	                }
+	            }
+
+	            if (needsRegEx)
+	            {
+	                break;
+	            }
+	        }
+
+	        if (needsRegEx)
+	        {
+	            foreach (string reservedWord in Program.reservedWords)
+	            {
+	                string reservedWordPattern = string.Format(CultureInfo.InvariantCulture, "^{0}\\.", reservedWord);
+	                sanitisedNamePart = Regex.Replace(sanitisedNamePart, reservedWordPattern, "_reservedWord_.", RegexOptions.IgnoreCase);
+	            }
+	        }
+
+	        return sanitisedNamePart;
+	    }
+
+        //private void MusicBrainz_LookupProgress(object sender, XmlRequestEventArgs e)
+        //{
+        //    if (this.CUEToolsProgress == null)
+        //        return;
+        //    _progress.percentDisk = (1.0 + _progress.percentDisk) / 2;
+        //    _progress.percentTrack = 0;
+        //    _progress.input = e.Uri.ToString();
+        //    _progress.output = null;
+        //    _progress.status = "Looking up album via MusicBrainz";
+        //    this.CUEToolsProgress(this, _progress);
+        //}
+    }
 }
