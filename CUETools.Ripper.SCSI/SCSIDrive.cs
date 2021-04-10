@@ -782,9 +782,14 @@ namespace CUETools.Ripper.SCSI
 			if (readCommandFound)
 				return true;
 
-			//ReadCDCommand[] readmode = { ReadCDCommand.ReadCdBEh, ReadCDCommand.ReadCdD8h };
-            ReadCDCommand[] readmode = { ReadCDCommand.ReadCdBEh, ReadCDCommand.ReadCdD8h };
+			ReadCDCommand[] readmode = { ReadCDCommand.ReadCdBEh, ReadCDCommand.ReadCdD8h };
 			Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.Mode294, Device.C2ErrorMode.Mode296, Device.C2ErrorMode.None };
+			// Mode294 does not work for these drives: LG GH24NSD1, ASUS DRW-24D5MT. Try Mode296 first
+			if (Path.Contains("GH24NSD1") || Path.Contains("DRW-24D5MT"))
+			{
+				c2mode.SetValue(Device.C2ErrorMode.Mode296, 0);
+				c2mode.SetValue(Device.C2ErrorMode.Mode294, 1);
+			}
 			Device.MainChannelSelection[] mainmode = { Device.MainChannelSelection.UserData, Device.MainChannelSelection.F8h };
 			bool found = false;
 			_autodetectResult = "";
