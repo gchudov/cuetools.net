@@ -354,6 +354,10 @@ namespace CUETools.Processor
             string result = ReplaceMultiple(fmt, tags, maxLen);
             if (result == String.Empty || result == null)
                 return result;
+            // Album titles can contain three periods at the end.
+            // Remove "...\" from the DirectoryName to retain the behavior as in CUETools 2.1.7
+            if (result.Contains("...\\"))
+                result = result.Replace("...\\", "\\");
             int unique = 1;
             try
             {
@@ -362,6 +366,8 @@ namespace CUETools.Processor
                     var oldkey = tags[unique_key];
                     tags[unique_key] = unique.ToString();
                     string new_result = ReplaceMultiple(fmt, tags, maxLen);
+                    if (new_result.Contains("...\\"))
+                        new_result = new_result.Replace("...\\", "\\");
                     if ((new_result == result && oldkey != tags[unique_key]) || new_result == String.Empty || new_result == null)
                         break;
                     result = new_result;
