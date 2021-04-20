@@ -118,7 +118,6 @@ xcopy /Y /D %base_dir%\ThirdParty\x64\wavpackdll.dll %release_dir%\plugins\x64\
 
 REM EAC Plugin
 REM CUETools.CTDB.Types.dll is also required now
-REM Newtonsoft.Json.dll is not required for the EAC plugin
 xcopy /Y /D %base_dir%\bin\Release\interop\EAC\CUETools.AccurateRip.dll %release_dir%\interop\EAC\
 xcopy /Y /D %base_dir%\bin\Release\interop\EAC\CUETools.CDImage.dll %release_dir%\interop\EAC\
 xcopy /Y /D %base_dir%\bin\Release\interop\EAC\CUETools.Codecs.dll %release_dir%\interop\EAC\
@@ -126,6 +125,7 @@ xcopy /Y /D %base_dir%\bin\Release\interop\EAC\CUETools.CTDB.dll %release_dir%\i
 xcopy /Y /D %base_dir%\bin\Release\interop\EAC\CUETools.CTDB.EACPlugin.dll %release_dir%\interop\EAC\
 xcopy /Y /D %base_dir%\bin\Release\interop\EAC\CUETools.CTDB.Types.dll %release_dir%\interop\EAC\
 xcopy /Y /D %base_dir%\bin\Release\interop\EAC\CUETools.Parity.dll %release_dir%\interop\EAC\
+xcopy /Y /D %base_dir%\bin\Release\interop\EAC\Newtonsoft.Json.dll %release_dir%\interop\EAC\
 
 REM required for running CUERipper:
 REM Newtonsoft.Json.dll
