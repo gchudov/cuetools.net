@@ -12,7 +12,7 @@
 	url = https://github.com/gchudov/openclnet.git
 [submodule "ThirdParty/WavPack"]
 	path = ThirdParty/WavPack
-	url = https://github.com/gchudov/WavPack.git
+	url = https://github.com/dbry/WavPack.git
 [submodule "ThirdParty/WindowsMediaLib"]
 	path = ThirdParty/WindowsMediaLib
 	url = https://github.com/gchudov/WindowsMediaLib.git
