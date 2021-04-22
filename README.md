@@ -11,8 +11,9 @@ Prebuilt binaries can be downloaded from [CUETools Download](http://cue.tools/wi
 `git clone https://github.com/gchudov/cuetools.net.git`
 * Get the required submodules using:  
 `git submodule update --init --recursive`
-* Apply patch to submodule flac:  
-`git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch`
+* Apply patches to submodules:  
+`git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch`  
+`git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools_VS2017.patch`
 * The solution can be built using Microsoft Visual Studio 2017 or newer (Community Edition will work)
   * Install the required .NET development tools (currently .NET Framework 4.7 and .NET Core 2.0)
   * Install an appropriate Windows SDK version (currently 10.0.16299.0)

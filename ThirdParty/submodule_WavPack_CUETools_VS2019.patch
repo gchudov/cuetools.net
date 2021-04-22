@@ -1,0 +1,338 @@
+diff --git a/src/libwavpack.vcxproj b/src/libwavpack.vcxproj
+index 3d586d6..e3299c5 100644
+--- a/src/libwavpack.vcxproj
++++ b/src/libwavpack.vcxproj
+@@ -61,29 +61,29 @@
+     <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+-    <IntDir>$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
+     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+-    <IntDir>$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
+     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+   </PropertyGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+       <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>true</MinimalRebuild>
+       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <PrecompiledHeader />
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+@@ -96,10 +96,10 @@
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+       <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>true</MinimalRebuild>
+       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <PrecompiledHeader />
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+@@ -113,10 +113,10 @@
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <OmitFramePointers>true</OmitFramePointers>
+-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;OPT_ASM_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;OPT_ASM_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <StringPooling>true</StringPooling>
+       <ExceptionHandling />
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <FunctionLevelLinking>true</FunctionLevelLinking>
+       <DisableLanguageExtensions>false</DisableLanguageExtensions>
+@@ -142,10 +142,10 @@
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <OmitFramePointers>true</OmitFramePointers>
+-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;OPT_ASM_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;OPT_ASM_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <StringPooling>true</StringPooling>
+       <ExceptionHandling />
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <FunctionLevelLinking>true</FunctionLevelLinking>
+       <DisableLanguageExtensions>false</DisableLanguageExtensions>
+@@ -172,13 +172,33 @@
+     <ClCompile Include="entropy_utils.c" />
+     <ClCompile Include="extra1.c" />
+     <ClCompile Include="extra2.c" />
+-    <ClCompile Include="open_filename.c" />
+-    <ClCompile Include="open_legacy.c" />
+-    <ClCompile Include="open_raw.c" />
++    <ClCompile Include="open_filename.c">
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
++    </ClCompile>
++    <ClCompile Include="open_legacy.c">
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
++    </ClCompile>
++    <ClCompile Include="open_raw.c">
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
++    </ClCompile>
+     <ClCompile Include="open_utils.c" />
+     <ClCompile Include="pack.c" />
+     <ClCompile Include="pack_dns.c" />
+-    <ClCompile Include="pack_dsd.c" />
++    <ClCompile Include="pack_dsd.c">
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
++      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
++    </ClCompile>
+     <ClCompile Include="pack_floats.c" />
+     <ClCompile Include="pack_utils.c" />
+     <ClCompile Include="read_words.c" />
+diff --git a/wavpackdll/wavpackdll.rc b/wavpackdll/wavpackdll.rc
+index 782c69f..4ea10a3 100644
+--- a/wavpackdll/wavpackdll.rc
++++ b/wavpackdll/wavpackdll.rc
+@@ -7,7 +7,7 @@
+ //
+ // Generated from the TEXTINCLUDE 2 resource.
+ //
+-#include "afxres.h"
++#include "winres.h"
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ #undef APSTUDIO_READONLY_SYMBOLS
+@@ -34,7 +34,7 @@ END
+ 
+ 2 TEXTINCLUDE 
+ BEGIN
+-    "#include ""afxres.h""\r\n"
++    "#include ""winres.h""\r\n"
+     "\0"
+ END
+ 
+diff --git a/wavpackdll/wavpackdll.vcxproj b/wavpackdll/wavpackdll.vcxproj
+index eabba53..5a77dea 100644
+--- a/wavpackdll/wavpackdll.vcxproj
++++ b/wavpackdll/wavpackdll.vcxproj
+@@ -61,22 +61,22 @@
+     <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+-    <IntDir>$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+     <LinkIncremental>true</LinkIncremental>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
+     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+     <LinkIncremental>true</LinkIncremental>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+-    <IntDir>$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+     <LinkIncremental>false</LinkIncremental>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
++    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
+     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+     <LinkIncremental>false</LinkIncremental>
+   </PropertyGroup>
+@@ -93,18 +93,18 @@
+       <CompileAs>Default</CompileAs>
+     </ClCompile>
+     <Link>
+-      <AdditionalOptions>/export:WavpackOpenFileInput /export:WavpackOpenFileInputEx /export:WavpackGetMode
++      <AdditionalOptions>/export:WavpackGetMode
+ /export:WavpackGetVersion /export:WavpackGetErrorMessage /export:WavpackUnpackSamples
+-/export:WavpackSeekSample /export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
++/export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
+ /export:WavpackGetEncodedNoise
+ 
+ /export:WavpackGetTagItemIndexed /export:WavpackGetBinaryTagItemIndexed /export:WavpackOpenFileOutput
+-/export:WavpackSetConfiguration /export:WavpackPackInit /export:WavpackPackSamples
++/export:WavpackPackInit /export:WavpackPackSamples
+ /export:WavpackFlushSamples /export:WavpackAddWrapper /export:WavpackStoreMD5Sum
+ /export:WavpackUpdateNumSamples /export:WavpackGetWrapperLocation
+ /export:WavpackAppendTagItem /export:WavpackAppendBinaryTagItem /export:WavpackDeleteTagItem /export:WavpackWriteTag
+-/export:WavpackGetNumSamples /export:WavpackGetSampleIndex /export:WavpackGetNumErrors
+-/export:WavpackLossyBlocks /export:WavpackGetProgress /export:WavpackGetFileSize
++/export:WavpackGetNumErrors
++/export:WavpackLossyBlocks /export:WavpackGetProgress
+ /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
+ /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
+ /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
+@@ -116,11 +116,11 @@
+ /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
+ /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
+ 
+-/export:WavpackOpenRawDecoder /export:WavpackOpenFileInputEx64
++/export:WavpackOpenFileInputEx64
+ /export:WavpackGetNumSamples64 /export:WavpackGetSampleIndex64
+ /export:WavpackSeekSample64 /export:WavpackGetFileSize64
+ /export:WavpackGetQualifyMode /export:WavpackGetFileExtension
+-/export:WavpackGetFileFormat /export:WavpackGetNumSamplesInFrame
++/export:WavpackGetFileFormat
+ /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
+ /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
+ /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
+@@ -150,16 +150,16 @@
+       <CompileAs>Default</CompileAs>
+     </ClCompile>
+     <Link>
+-      <AdditionalOptions>/export:WavpackOpenFileInput /export:WavpackOpenFileInputEx /export:WavpackGetMode
++      <AdditionalOptions>/export:WavpackGetMode
+ /export:WavpackGetVersion /export:WavpackGetErrorMessage /export:WavpackUnpackSamples
+-/export:WavpackSeekSample /export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
++/export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
+ /export:WavpackGetTagItemIndexed /export:WavpackGetBinaryTagItemIndexed /export:WavpackOpenFileOutput
+-/export:WavpackSetConfiguration /export:WavpackPackInit /export:WavpackPackSamples
++/export:WavpackPackInit /export:WavpackPackSamples
+ /export:WavpackFlushSamples /export:WavpackAddWrapper /export:WavpackStoreMD5Sum
+ /export:WavpackUpdateNumSamples /export:WavpackGetWrapperLocation
+ /export:WavpackAppendTagItem /export:WavpackAppendBinaryTagItem /export:WavpackDeleteTagItem /export:WavpackWriteTag
+-/export:WavpackGetNumSamples /export:WavpackGetSampleIndex /export:WavpackGetNumErrors
+-/export:WavpackLossyBlocks /export:WavpackGetProgress /export:WavpackGetFileSize
++/export:WavpackGetNumErrors
++/export:WavpackLossyBlocks /export:WavpackGetProgress
+ /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
+ /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
+ /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
+@@ -171,11 +171,11 @@
+ /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
+ /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
+ 
+-/export:WavpackOpenRawDecoder /export:WavpackOpenFileInputEx64
++/export:WavpackOpenFileInputEx64
+ /export:WavpackGetNumSamples64 /export:WavpackGetSampleIndex64
+ /export:WavpackSeekSample64 /export:WavpackGetFileSize64
+ /export:WavpackGetQualifyMode /export:WavpackGetFileExtension
+-/export:WavpackGetFileFormat /export:WavpackGetNumSamplesInFrame
++/export:WavpackGetFileFormat
+ /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
+ /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
+ /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
+@@ -198,23 +198,23 @@
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <OmitFramePointers>true</OmitFramePointers>
+       <WholeProgramOptimization>false</WholeProgramOptimization>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+       <PrecompiledHeader />
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <CompileAs>Default</CompileAs>
+     </ClCompile>
+     <Link>
+-      <AdditionalOptions>/export:WavpackOpenFileInput /export:WavpackOpenFileInputEx /export:WavpackGetMode
++      <AdditionalOptions>/export:WavpackGetMode
+ /export:WavpackGetVersion /export:WavpackGetErrorMessage /export:WavpackUnpackSamples
+-/export:WavpackSeekSample /export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
++/export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
+ /export:WavpackGetTagItemIndexed /export:WavpackGetBinaryTagItemIndexed /export:WavpackOpenFileOutput
+-/export:WavpackSetConfiguration /export:WavpackPackInit /export:WavpackPackSamples
++/export:WavpackPackInit /export:WavpackPackSamples
+ /export:WavpackFlushSamples /export:WavpackAddWrapper /export:WavpackStoreMD5Sum
+ /export:WavpackUpdateNumSamples /export:WavpackGetWrapperLocation
+ /export:WavpackAppendTagItem /export:WavpackAppendBinaryTagItem /export:WavpackDeleteTagItem /export:WavpackWriteTag
+-/export:WavpackGetNumSamples /export:WavpackGetSampleIndex /export:WavpackGetNumErrors
+-/export:WavpackLossyBlocks /export:WavpackGetProgress /export:WavpackGetFileSize
++/export:WavpackGetNumErrors
++/export:WavpackLossyBlocks /export:WavpackGetProgress
+ /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
+ /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
+ /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
+@@ -227,11 +227,11 @@
+ /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
+ /export:WavpackGetEncodedNoise
+ 
+-/export:WavpackOpenRawDecoder /export:WavpackOpenFileInputEx64
++/export:WavpackOpenFileInputEx64
+ /export:WavpackGetNumSamples64 /export:WavpackGetSampleIndex64
+ /export:WavpackSeekSample64 /export:WavpackGetFileSize64
+ /export:WavpackGetQualifyMode /export:WavpackGetFileExtension
+-/export:WavpackGetFileFormat /export:WavpackGetNumSamplesInFrame
++/export:WavpackGetFileFormat
+ /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
+ /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
+ /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
+@@ -259,25 +259,25 @@
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <OmitFramePointers>true</OmitFramePointers>
+       <WholeProgramOptimization>false</WholeProgramOptimization>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+       <PrecompiledHeader />
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <CompileAs>Default</CompileAs>
+     </ClCompile>
+     <Link>
+-      <AdditionalOptions>/export:WavpackOpenFileInput /export:WavpackOpenFileInputEx /export:WavpackGetMode
++      <AdditionalOptions>/export:WavpackGetMode
+ /export:WavpackGetVersion /export:WavpackGetErrorMessage /export:WavpackUnpackSamples
+-/export:WavpackSeekSample /export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
++/export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
+ /export:WavpackGetEncodedNoise
+ 
+ /export:WavpackGetTagItemIndexed /export:WavpackGetBinaryTagItemIndexed /export:WavpackOpenFileOutput
+-/export:WavpackSetConfiguration /export:WavpackPackInit /export:WavpackPackSamples
++/export:WavpackPackInit /export:WavpackPackSamples
+ /export:WavpackFlushSamples /export:WavpackAddWrapper /export:WavpackStoreMD5Sum
+ /export:WavpackUpdateNumSamples /export:WavpackGetWrapperLocation
+ /export:WavpackAppendTagItem /export:WavpackAppendBinaryTagItem /export:WavpackDeleteTagItem /export:WavpackWriteTag
+-/export:WavpackGetNumSamples /export:WavpackGetSampleIndex /export:WavpackGetNumErrors
+-/export:WavpackLossyBlocks /export:WavpackGetProgress /export:WavpackGetFileSize
++/export:WavpackGetNumErrors
++/export:WavpackLossyBlocks /export:WavpackGetProgress
+ /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
+ /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
+ /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
+@@ -289,11 +289,11 @@
+ /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
+ /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
+ 
+-/export:WavpackOpenRawDecoder /export:WavpackOpenFileInputEx64
++/export:WavpackOpenFileInputEx64
+ /export:WavpackGetNumSamples64 /export:WavpackGetSampleIndex64
+ /export:WavpackSeekSample64 /export:WavpackGetFileSize64
+ /export:WavpackGetQualifyMode /export:WavpackGetFileExtension
+-/export:WavpackGetFileFormat /export:WavpackGetNumSamplesInFrame
++/export:WavpackGetFileFormat
+ /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
+ /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
+ /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
