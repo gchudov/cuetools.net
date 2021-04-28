@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;netcoreapp2.0</TargetFrameworks>
-    <Version>2.1.8.0</Version>
+    <Version>2.1.9.0</Version>
     <AssemblyName>CUETools.Converter</AssemblyName>
     <RootNamespace>CUETools.Converter</RootNamespace>
     <Product>CUETools</Product>

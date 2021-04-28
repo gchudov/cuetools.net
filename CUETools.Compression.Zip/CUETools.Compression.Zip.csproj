@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
-    <Version>2.1.8.0</Version>
+    <Version>2.1.9.0</Version>
     <AssemblyName>CUETools.Compression.Zip</AssemblyName>
     <RootNamespace>CUETools.Compression.Zip</RootNamespace>
     <Product>CUETools</Product>

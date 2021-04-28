@@ -147,7 +147,7 @@ namespace BluTools
                 pbStatus.IsIndeterminate = true;
             }));
             //ctdb.UploadHelper.onProgress += worker_ctdbProgress;
-            ctdb.ContactDB(null, "CUETools.eac3to 2.1.8", "", false, true, CTDBMetadataSearch.Extensive);
+            ctdb.ContactDB(null, "CUETools.eac3to 2.1.9", "", false, true, CTDBMetadataSearch.Extensive);
             this.Dispatcher.Invoke((Action)(() =>
             {
                 //metaresults.RaiseListChangedEvents = false; 
