@@ -89,7 +89,7 @@ namespace CUETools.ConsoleRipper
 		static void Main(string[] args)
 		{
 			Console.SetOut(Console.Error);
-			Console.WriteLine("CUERipper v2.1.8 Copyright (C) 2008-2021 Grigory Chudov");
+			Console.WriteLine("CUERipper v2.1.9 Copyright (C) 2008-2021 Grigory Chudov");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 
@@ -180,7 +180,7 @@ namespace CUETools.ConsoleRipper
 				string ArId = AccurateRipVerify.CalculateAccurateRipId(audioSource.TOC);
 				var ctdb = new CUEToolsDB(audioSource.TOC, null);
 				ctdb.Init(arVerify);
-				ctdb.ContactDB(null, "CUETools.ConsoleRipper 2.1.8", audioSource.ARName, true, false, CTDBMetadataSearch.Fast);
+				ctdb.ContactDB(null, "CUETools.ConsoleRipper 2.1.9", audioSource.ARName, true, false, CTDBMetadataSearch.Fast);
 				arVerify.ContactAccurateRip(ArId);
 				CTDBResponseMeta meta = null;
 				foreach (var imeta in ctdb.Metadata)
