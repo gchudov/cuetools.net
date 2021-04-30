@@ -154,9 +154,6 @@
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value>Нажмите, чтобы отредактировать шаблон пути вывода</value>
   </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.1.8</value>
-  </data>
   <data name="bnComboBoxDrives.Text" xml:space="preserve">
     <value>Приводы</value>
   </data>

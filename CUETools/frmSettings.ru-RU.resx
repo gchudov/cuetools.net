@@ -576,7 +576,7 @@ HTOA - зазор перед первым треком сохраняется в
     <value>Удалять зазоры</value>
   </data>
   <data name="rbGapsPlusHTOA.Text" xml:space="preserve">
-    <value>&amp;Добавлять зазор к предыдущему треку + HTOA</value>
+    <value>&amp;Доб. зазор к предыдущему треку + HTOA</value>
   </data>
   <data name="rbGapsPrepended.Text" xml:space="preserve">
     <value>До&amp;бавлять зазор к следующему треку</value>
