@@ -176,10 +176,10 @@
     <value>&amp;Извлечь</value>
   </data>
   <data name="buttonEncoding.Text" xml:space="preserve">
-    <value>&amp;Кодовая страница</value>
+    <value>&amp;Кодировка</value>
   </data>
   <data name="buttonFreedbSubmit.Text" xml:space="preserve">
-    <value>&amp;Отправить</value>
+    <value>&amp;Отправ.</value>
   </data>
   <data name="buttonMetadata.Text" xml:space="preserve">
     <value>&amp;Мета</value>
@@ -233,9 +233,9 @@
     <value>&amp;Треки</value>
   </data>
   <data name="buttonSettings.Text" xml:space="preserve">
-    <value>Па&amp;раметры</value>
+    <value>Па&amp;рам.</value>
   </data>
   <data name="buttonReload.Text" xml:space="preserve">
-    <value>П&amp;ерезагрузить</value>
+    <value>П&amp;ерезагр.</value>
   </data>
 </root>
