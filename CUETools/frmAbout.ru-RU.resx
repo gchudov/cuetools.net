@@ -122,18 +122,14 @@
     <value>415, 194</value>
   </data>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>Спасибо Christopher Key и Whitehobbit за их исследования принципов работы
-AccurateRip, и Mr Spoon за разрешение пользоваться базой данных.
+    <value>Спасибо Christopher Key и Whitehobbit за понимание функционала
+AccurateRip, и Mr Spoon за разрешение использовать базу данных.
 
-MAC_SDK (c) Matthew T. Ashland, mp4 decoder (c) David Hammerton, 
-unrar.dll (c) Alexander Roshal, Unrar.cs (c) Michael A. McCloskey
-hdcd.dll (c) Christopher Key
-
-Пользуясь возможностью, хотел бы попросить российских граждан
-требовать от своего правительства немедленного освобождения
-политических заключенных и вывода войск с оккупированных
-грузинских и украинских территорий.
-Григорий Чудов.</value>
+MAC_SDK (c) Matthew T. Ashland
+mp4 decoder (c) David Hammerton
+unrar.dll (c) Alexander Roshal
+Unrar.cs (c) Michael A. McCloskey
+hdcd.dll (c) Christopher Key</value>
   </data>
   <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
     <value>182, 261</value>
