@@ -836,7 +836,7 @@
     <value>&amp;О программе</value>
   </data>
   <data name="toolStripButtonHelp.Text" xml:space="preserve">
-    <value>&amp;Веб-сайт CUETools</value>
+    <value>&amp;Веб-сайт</value>
   </data>
   <data name="toolStripButtonSettings.Text" xml:space="preserve">
     <value>&amp;Настройки</value>
@@ -903,9 +903,6 @@
   </data>
   <data name="toolStripStatusLabelCTDB.Text" xml:space="preserve">
     <value>77</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>CUETools 2.1.8</value>
   </data>
   <data name="defaultToolStripMenuItem.Text" xml:space="preserve">
     <value>по умолчанию</value>

@@ -301,18 +301,18 @@
     <value>Шаблон имени аудиофайла для треков сохраняемых в образ</value>
   </data>
   <data name="rbGapsLeftOut.ToolTip" xml:space="preserve">
-    <value>Межтрековые зазоры пропущены (заменены тишиной)</value>
+    <value>Межтрековые зазоры удалены (заменены тишиной)</value>
   </data>
   <data name="rbGapsPrepended.ToolTip" xml:space="preserve">
     <value>Межтрековые зазоры записываются в начало следующего трека.</value>
   </data>
   <data name="rbGapsAppended.ToolTip" xml:space="preserve">
     <value>Межтрековые зазоры дописываются в конец предыдущего трека.
-HTOA (Hidden Track One Audio - зазор перед первым треком) теряется.</value>
+HTOA - зазор перед первым треком теряется.</value>
   </data>
   <data name="rbGapsPlusHTOA.ToolTip" xml:space="preserve">
     <value>Межтрековые зазоры дописываются в конец предыдущего трека.
-HTOA (Hidden Track One Audio - зазор перед первым треком) сохраняется в отдельный файл.</value>
+HTOA - зазор перед первым треком сохраняется в отдельный файл.</value>
   </data>
   <data name="grpAudioFilenames.Text" xml:space="preserve">
     <value>Имена аудиофайлов</value>
@@ -570,16 +570,16 @@ HTOA (Hidden Track One Audio - зазор перед первым треком) 
     <value>Теги</value>
   </data>
   <data name="rbGapsAppended.Text" xml:space="preserve">
-    <value>Зазоры дописанные в конец</value>
+    <value>Добавлять зазор к предыдущему треку</value>
   </data>
   <data name="rbGapsLeftOut.Text" xml:space="preserve">
-    <value>Зазоры пропущены</value>
+    <value>Удалять зазоры</value>
   </data>
   <data name="rbGapsPlusHTOA.Text" xml:space="preserve">
-    <value>Зазоры &amp;дописанные в конец + HTOA</value>
+    <value>&amp;Доб. зазор к предыдущему треку + HTOA</value>
   </data>
   <data name="rbGapsPrepended.Text" xml:space="preserve">
-    <value>Зазоры записанные в начало</value>
+    <value>До&amp;бавлять зазор к следующему треку</value>
   </data>
   <data name="tabPage6.Text" xml:space="preserve">
     <value>Тегирование</value>
