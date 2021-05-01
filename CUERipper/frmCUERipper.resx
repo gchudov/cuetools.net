@@ -1341,6 +1341,9 @@
   <data name="&gt;&gt;buttonVA.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="buttonReload.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
   <data name="buttonReload.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
@@ -1370,6 +1373,9 @@
   </data>
   <data name="&gt;&gt;buttonReload.ZOrder" xml:space="preserve">
     <value>7</value>
+  </data>
+  <data name="buttonEncoding.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="buttonEncoding.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
