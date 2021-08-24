@@ -37,6 +37,7 @@ namespace CUETools.Processor
         }
 
         public CUEConfigAdvanced(CUEConfigAdvanced src)
+            : base(src)
         {
             // Iterate through each property and call SetValue()
             foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(this))
