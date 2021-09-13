@@ -97,6 +97,12 @@ namespace Bwg.Scsi
             [FieldOffset(22)]public byte AdapterUsesPio;
         } ;
 
+        [StructLayout(LayoutKind.Explicit)]
+        private struct PREVENT_MEDIA_REMOVAL
+        {
+            [FieldOffset(0)] public uint PreventMediaRemoval;
+        };
+
         #endregion
 
         #region Private data members
@@ -127,6 +133,7 @@ namespace Bwg.Scsi
         #region Private constants
         private const uint IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x4d014;
         private const uint IOCTL_SCSI_GET_CAPABILITIES = 0x41010;
+        private const uint IOCTL_STORAGE_MEDIA_REMOVAL = 0x2D4804;
 
         private const uint ERROR_NOT_SUPPORTED = 50 ;
         #endregion
@@ -3690,5 +3697,31 @@ namespace Bwg.Scsi
         }
 
         #endregion
+
+        /// <summary>
+        /// Disable/Enable to eject the media/CD in the drive
+        /// </summary>
+        /// <param name="bDisable">If true, CD eject is disabled. If false, CD eject is enabled</param>
+        /// <returns></returns>
+        public bool DisableEjectDrive(bool bDisable)
+        {
+            PREVENT_MEDIA_REMOVAL pmr = new PREVENT_MEDIA_REMOVAL();
+            pmr.PreventMediaRemoval = bDisable ? 1u : 0u;
+            uint uiPmrSize = (uint)Marshal.SizeOf(pmr);
+
+            bool bResult;
+            {
+                uint uiReturnedBytes = 0;
+                IntPtr pt = new IntPtr(&pmr);
+                bResult = Control(IOCTL_STORAGE_MEDIA_REMOVAL, pt, uiPmrSize, pt, uiPmrSize, ref uiReturnedBytes, IntPtr.Zero);
+                if (!bResult)
+                {
+                    string str = "IOCTL_STORAGE_MEDIA_REMOVAL failed - " + Win32ErrorToString(LastError);
+                    m_logger.LogMessage(new UserMessage(UserMessage.Category.Error, 0, str));
+                }
+            }
+            return bResult;
+        }
+
     }
 }

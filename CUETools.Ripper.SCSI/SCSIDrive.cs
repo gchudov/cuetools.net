@@ -635,7 +635,35 @@ namespace CUETools.Ripper.SCSI
             }
         }
 
-		bool gapsDetected = false;
+        public void DisableEjectDrive(bool bDisable)
+        {
+            if (m_device != null)
+                m_device.DisableEjectDrive(bDisable);
+            else
+            {
+                try
+                {
+                    m_device = new Device(m_logger);
+                    if (m_device.Open(m_device_letter))
+                    {
+                        try
+                        {
+                            m_device.DisableEjectDrive(bDisable);
+                        }
+                        finally
+                        {
+                            m_device.Close();
+                        }
+                    }
+                }
+                finally
+                {
+                    m_device = null;
+                }
+            }
+        }
+
+        bool gapsDetected = false;
 
 		public unsafe bool DetectGaps()
 		{

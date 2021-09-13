@@ -28,6 +28,8 @@ namespace CUETools.Processor
         public bool autoCorrectFilenames;
         public bool detectGaps;
         public bool preserveHTOA;
+        public bool ejectAfterRip;
+        public bool disableEjectDrive;
         public bool keepOriginalFilenames;
         public string trackFilenameFormat;
         public string singleFilenameFormat;
@@ -92,6 +94,8 @@ namespace CUETools.Processor
 
             autoCorrectFilenames = true;
             preserveHTOA = true;
+            ejectAfterRip = true;
+            disableEjectDrive = false;
             detectGaps = true;
             keepOriginalFilenames = false;
             trackFilenameFormat = "%tracknumber%. %title%";
@@ -172,6 +176,8 @@ namespace CUETools.Processor
 
             autoCorrectFilenames = src.autoCorrectFilenames;
             preserveHTOA = src.preserveHTOA;
+            ejectAfterRip = src.ejectAfterRip;
+            disableEjectDrive = src.disableEjectDrive;
             detectGaps = src.detectGaps;
             keepOriginalFilenames = src.keepOriginalFilenames;
             trackFilenameFormat = src.trackFilenameFormat;
@@ -252,6 +258,8 @@ namespace CUETools.Processor
             sw.Save("ArWriteLogOnVerify", writeArLogOnVerify);
 
             sw.Save("PreserveHTOA", preserveHTOA);
+            sw.Save("EjectAfterRip", ejectAfterRip);
+            sw.Save("DisableEjectButtonDrive", disableEjectDrive);
             sw.Save("DetectGaps", detectGaps);            
             sw.Save("AutoCorrectFilenames", autoCorrectFilenames);
             sw.Save("KeepOriginalFilenames", keepOriginalFilenames);
@@ -353,6 +361,8 @@ namespace CUETools.Processor
             writeArLogOnVerify = sr.LoadBoolean("ArWriteLogOnVerify") ?? false;
 
             preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
+            ejectAfterRip = sr.LoadBoolean("EjectAfterRip") ?? true;
+            disableEjectDrive = sr.LoadBoolean("DisableEjectButtonDrive") ?? false;
             detectGaps = sr.LoadBoolean("DetectGaps") ?? true;
             autoCorrectFilenames = sr.LoadBoolean("AutoCorrectFilenames") ?? true;
             keepOriginalFilenames = sr.LoadBoolean("KeepOriginalFilenames") ?? false;
