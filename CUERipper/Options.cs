@@ -70,6 +70,12 @@ namespace CUERipper
         [DefaultValue(true), Category("Extraction"), DisplayName("Embed album art")]
         public bool embedAlbumArt { get { return config.embedAlbumArt; } set { config.embedAlbumArt = value; } }
 
+        [DefaultValue(true), Category("Extraction"), DisplayName("Eject after rip")]
+        public bool ejectAfterRip { get { return config.ejectAfterRip; } set { config.ejectAfterRip = value; } }
+
+        [DefaultValue(false), Category("Extraction"), DisplayName("Disable eject drive")]
+        public bool disableDriveEject { get { return config.disableEjectDrive; } set { config.disableEjectDrive = value; } }
+
         [DefaultValue("%tracknumber%. %title%"), Category("Extraction"), DisplayName("Track filename")]
         public string trackFilenameFormat { get { return config.trackFilenameFormat; } set { config.trackFilenameFormat = value; } }
 
