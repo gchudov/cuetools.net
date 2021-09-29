@@ -86,7 +86,7 @@ xcopy /Y /D  %base_dir%\bin\Release\plugins\net47\CUETools.Ripper.SCSI.dll %rele
 xcopy /Y /D  %base_dir%\bin\Release\plugins\net47\flac.cl %release_dir%\plugins\
 xcopy /Y /D  %base_dir%\bin\Release\plugins\net47\OpenCLNet.dll %release_dir%\plugins\
 xcopy /Y /D  %base_dir%\bin\Release\plugins\net47\WindowsMediaLib.dll %release_dir%\plugins\
-xcopy /Y /D  %base_dir%\bin\Release\plugins\net45\CUETools.Codecs.ffmpegdll.dll %release_dir%\plugins\
+xcopy /Y /D  %base_dir%\bin\Release\plugins\net47\CUETools.Codecs.ffmpegdll.dll %release_dir%\plugins\
 
 xcopy /Y /D %base_dir%\bin\Release\plugins\win32\net47\CUETools.Codecs.TTA.dll %release_dir%\plugins\Win32\
 xcopy /Y /D %base_dir%\bin\Release\plugins\win32\net47\CUETools.Compression.Rar.dll %release_dir%\plugins\Win32\
