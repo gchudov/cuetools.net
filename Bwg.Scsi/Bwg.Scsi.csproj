@@ -10,7 +10,9 @@
     <Copyright>Copyright © 2006 by Jack W. Griffin, Jr.</Copyright>
     <Authors>Jack W. Griffin, Jr</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>..\bin\$(Configuration)\plugins</OutputPath>
+    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
     <RepositoryUrl>https://svn.code.sf.net/p/bwgburn/code/</RepositoryUrl>
     <RepositoryType>svn</RepositoryType>
     <Company>BwgSoftware</Company>

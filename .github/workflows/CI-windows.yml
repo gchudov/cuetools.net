@@ -34,6 +34,7 @@ jobs:
         run: |
           git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch --verbose
           git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools_VS2017.patch --verbose
+          git apply --directory=ThirdParty/WindowsMediaLib ThirdParty/submodule_WindowsMediaLib_CUETools.patch --verbose
       - name: Build Release|Any CPU
         run: |
           "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Any CPU"

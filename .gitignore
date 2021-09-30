@@ -16,6 +16,7 @@ launchSettings.json
 /ThirdParty/*/libFLAC_dynamic.*
 /ThirdParty/*/MACLib.*
 /ThirdParty/*/MACLibDll.*
+/ThirdParty/*/TTALib.*
 /ThirdParty/*/wavpackdll.*
 /ThirdParty/*/libwavpack.*
 /ThirdPartyDebug/
