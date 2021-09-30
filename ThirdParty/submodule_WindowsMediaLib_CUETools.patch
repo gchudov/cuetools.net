@@ -1,0 +1,15 @@
+diff --git a/wmlib/src/WindowsMediaLib.csproj b/wmlib/src/WindowsMediaLib.csproj
+index 24c8569..62cb8db 100644
+--- a/wmlib/src/WindowsMediaLib.csproj
++++ b/wmlib/src/WindowsMediaLib.csproj
+@@ -10,7 +10,9 @@
+     <Copyright>Copyright (c) 2008-2018 snarfle</Copyright>
+     <Authors>snarfle</Authors>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+-    <OutputPath>$(SolutionDir)\..\bin\$(Configuration)\plugins</OutputPath>
++    <OutputPath>$(SolutionDir)\..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
++    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
++    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+     <RepositoryUrl>https://svn.code.sf.net/p/windowsmedianet/code/</RepositoryUrl>
+     <RepositoryType>svn</RepositoryType>
+     <Company />

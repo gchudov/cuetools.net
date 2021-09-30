@@ -10,7 +10,12 @@
     <Copyright>Copyright (c) 2008-2021 Grigory Chudov, Michael A. McCloskey</Copyright>
     <Authors>Grigory Chudov, Michael A. McCloskey</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>..\bin\$(Configuration)\plugins\win32</OutputPath>
+    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\win32\</OutputPath>
+    <!-- The output to plugins\win32\ is intentional. CUETools.Compression.Rar.dll needs to be
+    in the same directory as unrar.dll. For distribution, CUETools.Compression.Rar.dll is later on
+    copied to plugins\x64\ -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
     <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Company />
