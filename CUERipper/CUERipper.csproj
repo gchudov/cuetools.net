@@ -262,6 +262,7 @@
     <Content Include="Plugins\CUETools.Codecs.FlaCuda.dll" />
     <Content Include="Plugins\CUETools.Codecs.Flake.dll" />
     <Content Include="Plugins\CUETools.Ripper.SCSI.dll" />
+    <None Include="Resources\opus.ico" />
     <None Include="Resources\cd_eject.png" />
     <None Include="Resources\wma.ico" />
     <None Include="Resources\cog.ico" />
