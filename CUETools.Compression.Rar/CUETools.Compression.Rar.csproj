@@ -31,4 +31,11 @@
     <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj" />
   </ItemGroup>
 
+  <Target Name="CopyFiles" AfterTargets="Build">
+    <CreateItem Include="$(OutputPath)\CUETools.Compression.Rar.*">
+      <Output TaskParameter="Include" ItemName="FilesToCopy" />
+    </CreateItem>
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(OutputPath)\..\x64\" ContinueOnError="true" />
+  </Target>
+
 </Project>
