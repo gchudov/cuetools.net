@@ -1743,9 +1743,9 @@ namespace CUETools.Processor
                         if (lineStr.Contains(" CRC32 hash  "))
                         {
                             string[] parts = lineStr.Split(':');
-							if (parts.Length == 2 && uint.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var crc))
-								_arVerify.CRCLOG(trNo++, crc);
-						}
+                            if (parts.Length == 2 && uint.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var crc))
+                                _arVerify.CRCLOG(trNo++, crc);
+                        }
                     }
                     else if (isWhipperLog && trNo <= TrackCount)
                     {
