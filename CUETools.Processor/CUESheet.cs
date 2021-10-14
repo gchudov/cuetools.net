@@ -1718,6 +1718,8 @@ namespace CUETools.Processor
             {
                 sr = new StringReader(_eacLog);
                 bool isEACLog = false;
+                bool isXLDLog = false;
+                bool isWhipperLog = false;
                 int trNo = 1;
                 while ((lineStr = sr.ReadLine()) != null)
                 {
@@ -1736,12 +1738,35 @@ namespace CUETools.Processor
                                 _arVerify.CRCLOG(trNo++, crc);
                         }
                     }
+                    else if (isXLDLog && trNo <= TrackCount)
+                    {
+                        if (lineStr.Contains(" CRC32 hash  "))
+                        {
+                            string[] parts = lineStr.Split(':');
+							if (parts.Length == 2 && uint.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var crc))
+								_arVerify.CRCLOG(trNo++, crc);
+						}
+                    }
+                    else if (isWhipperLog && trNo <= TrackCount)
+                    {
+                        string[] s = { "Copy CRC:" };
+                        string[] parts = lineStr.Split(s, StringSplitOptions.None);
+                        if (parts.Length == 2 && uint.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var crc))
+                            _arVerify.CRCLOG(trNo++, crc);
+                    }
                     else
                         if (lineStr.StartsWith("Exact Audio Copy")
                             || lineStr.StartsWith("EAC extraction logfile"))
                             isEACLog = true;
+                    else
+                        if (lineStr.StartsWith("X Lossless Decoder")
+                            || lineStr.StartsWith("XLD extraction logfile"))
+                            isXLDLog = true;
+                    else
+                        if (lineStr.StartsWith("Log created by: whipper"))
+                            isWhipperLog = true;
                 }
-                if (trNo == 2)
+                if (trNo == 2 && isEACLog)
                 {
                     _arVerify.CRCLOG(0, _arVerify.CRCLOG(1));
                     if (TrackCount > 1)
