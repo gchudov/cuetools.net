@@ -242,26 +242,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="cue2.ico" />
-    <Content Include="Plugins %28win32%29\CUETools.Codecs.APE.dll" />
-    <Content Include="Plugins %28win32%29\CUETools.Codecs.FLAC.dll" />
-    <Content Include="Plugins %28win32%29\CUETools.Codecs.HDCD.dll" />
-    <Content Include="Plugins %28win32%29\CUETools.Codecs.TTA.dll" />
-    <Content Include="Plugins %28win32%29\CUETools.Codecs.WavPack.dll" />
-    <Content Include="Plugins %28win32%29\hdcd.dll" />
-    <Content Include="Plugins %28x64%29\CUETools.Codecs.APE.dll" />
-    <Content Include="Plugins %28x64%29\CUETools.Codecs.FLAC.dll" />
-    <Content Include="Plugins %28x64%29\CUETools.Codecs.HDCD.dll" />
-    <Content Include="Plugins %28x64%29\CUETools.Codecs.TTA.dll" />
-    <Content Include="Plugins %28x64%29\CUETools.Codecs.WavPack.dll" />
-    <Content Include="Plugins %28x64%29\hdcd.dll" />
-    <Content Include="Plugins\Bwg.Hardware.dll" />
-    <Content Include="Plugins\Bwg.Logging.dll" />
-    <Content Include="Plugins\Bwg.Scsi.dll" />
-    <Content Include="Plugins\CUDA.NET.dll" />
-    <Content Include="Plugins\CUETools.Codecs.ALAC.dll" />
-    <Content Include="Plugins\CUETools.Codecs.FlaCuda.dll" />
-    <Content Include="Plugins\CUETools.Codecs.Flake.dll" />
-    <Content Include="Plugins\CUETools.Ripper.SCSI.dll" />
     <None Include="Resources\opus.ico" />
     <None Include="Resources\cd_eject.png" />
     <None Include="Resources\wma.ico" />
