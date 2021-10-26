@@ -1445,7 +1445,7 @@ namespace CUETools.Processor
             }
 
             // Store the audio filenames, generating generic names if necessary
-            _hasSingleFilename = _sourcePaths.Count == 1;
+            _hasSingleFilename = (_sourcePaths.Count == 1 && TrackCount > 1); // Enable _hasTrackFilenames for CD-Singles with 1 track
             _singleFilename = _hasSingleFilename ? Path.GetFileName(_sourcePaths[0]) :
                 "Range.wav";
 
