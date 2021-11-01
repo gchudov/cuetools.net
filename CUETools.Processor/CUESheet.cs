@@ -744,7 +744,7 @@ namespace CUETools.Processor
                 if (!skip && pathextension == ".m3u")
                 {
                     var contents = new List<string>();
-                    using (StreamReader m3u = new StreamReader(path))
+                    using (StreamReader m3u = StreamReader_UTF_ANSI(path))
                     {
                         do
                         {
@@ -1896,6 +1896,31 @@ namespace CUETools.Processor
             get
             {
                 return Encoding.Default;
+            }
+        }
+
+        private static StreamReader StreamReader_UTF_ANSI(string path)
+        {
+            // StreamReader() detects the encoding of files properly, if a BOM is present.
+            // Enable detection of UTF-8 files without BOM. Otherwise fall back to default encoding, which is typically ANSI.
+            try
+            {
+                // Check first for a BOM, else try with UTF-8. This allows detection of UTF-8 encoded files without BOM.
+                var sr = new StreamReader(path, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true), detectEncodingFromByteOrderMarks: true);
+                // Read the file, to detect the encoding
+                sr.ReadToEnd();
+                sr.BaseStream.Position = sr.CurrentEncoding.GetPreamble().Length; // Return StreamReader to Beginning, with or without BOM
+                sr.DiscardBufferedData();
+                return sr;
+            }
+            catch (DecoderFallbackException)
+            {
+                // Use Encoding.Default (typically ANSI)
+                var sr = new StreamReader(path, Encoding.Default);
+                sr.ReadToEnd();
+                sr.BaseStream.Position = 0;
+                sr.DiscardBufferedData();
+                return sr;
             }
         }
 
@@ -4262,7 +4287,7 @@ namespace CUETools.Processor
                 if (ext == ".m3u")
                 {
                     FileGroupInfo m3uGroup = new FileGroupInfo(file, FileGroupInfoType.M3UFile);
-                    using (StreamReader m3u = new StreamReader(file.FullName))
+                    using (StreamReader m3u = StreamReader_UTF_ANSI(file.FullName))
                     {
                         do
                         {
