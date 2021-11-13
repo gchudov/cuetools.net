@@ -88,7 +88,7 @@ namespace CUETools.FlakeExe
     {
         static void Usage()
         {
-            Console.WriteLine("Usage    : CUETools.Flake.exe [options] <input.wav>");
+            Console.WriteLine("Usage    : CUETools.Flake.exe [options] <input.wav> (or \"-\" for stdin)");
             Console.WriteLine();
             Console.WriteLine("Options:");
             Console.WriteLine();
