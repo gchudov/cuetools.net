@@ -1,0 +1,1427 @@
+diff --git a/src/TaglibSharp/Aac/AudioHeader.cs b/src/TaglibSharp/Aac/AudioHeader.cs
+index 50613aa..8828d19 100644
+--- a/src/TaglibSharp/Aac/AudioHeader.cs
++++ b/src/TaglibSharp/Aac/AudioHeader.cs
+@@ -203,6 +203,18 @@ public class AudioHeader : IAudioCodec
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Aiff/StreamHeader.cs b/src/TaglibSharp/Aiff/StreamHeader.cs
+index 3d8d9ee..f41bbaf 100644
+--- a/src/TaglibSharp/Aiff/StreamHeader.cs
++++ b/src/TaglibSharp/Aiff/StreamHeader.cs
+@@ -252,6 +252,18 @@ public StreamHeader (ByteVector data, long streamLength)
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Ape/StreamHeader.cs b/src/TaglibSharp/Ape/StreamHeader.cs
+index 75a2675..4bdd5c3 100644
+--- a/src/TaglibSharp/Ape/StreamHeader.cs
++++ b/src/TaglibSharp/Ape/StreamHeader.cs
+@@ -294,6 +294,18 @@ public StreamHeader (ByteVector data, long streamLength)
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+@@ -356,4 +368,5 @@ public StreamHeader (ByteVector data, long streamLength)
+         public CompressionLevel Compression { get; private set; }
+ 
+         #endregion
+-    }}
+\ No newline at end of file
++    }
++}
+\ No newline at end of file
+diff --git a/src/TaglibSharp/Ape/Tag.cs b/src/TaglibSharp/Ape/Tag.cs
+index c3b631b..49a7f37 100644
+--- a/src/TaglibSharp/Ape/Tag.cs
++++ b/src/TaglibSharp/Ape/Tag.cs
+@@ -1536,6 +1536,74 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 			set { SetValue ("RELEASECOUNTRY", value); }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "RELEASE DATE" item.
++		/// </remarks>
++		public override string ReleaseDate {
++			get { return GetItemAsString ("RELEASE DATE") ?? GetItemAsString ("RELEASETIME"); }
++			set { SetValue ("RELEASE DATE", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the Publisher of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the Publisher of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "PUBLISHER" field.
++		/// </remarks>
++		public override string Publisher {
++			get { return GetItemAsString ("PUBLISHER") ?? GetItemAsString ("LABEL"); }
++			set { SetValue ("PUBLISHER", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the CatalogNo of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the catalog number of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "LABELNO" field.
++		/// </remarks>
++		public override string CatalogNo {
++			get { return GetItemAsString ("CATALOG") ?? GetItemAsString ("CATALOGNUMBER") ?? GetItemAsString ("LABELNO"); }
++			set { SetValue ("CATALOG", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the DiscSubtitle of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the subtitle of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "DISCSUBTITLE" field.
++		/// </remarks>
++		public override string DiscSubtitle {
++			get { return GetItemAsString ("DISCSUBTITLE"); }
++			set { SetValue ("DISCSUBTITLE", value); }
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets the ReplayGain track gain in dB.
+ 		/// </summary>
+diff --git a/src/TaglibSharp/Asf/FilePropertiesObject.cs b/src/TaglibSharp/Asf/FilePropertiesObject.cs
+index fc0f513..64111bd 100644
+--- a/src/TaglibSharp/Asf/FilePropertiesObject.cs
++++ b/src/TaglibSharp/Asf/FilePropertiesObject.cs
+@@ -198,6 +198,12 @@ public FilePropertiesObject (File file, long position)
+ 		/// </value>
+ 		public ulong Preroll { get; private set; }
+ 
++		//public long AudioSampleCount {
++		//	get {
++		//		return (((long) send_duration - (long) preroll * 10000) * 44100 + 5000000) / 10000000;
++		//	}
++		//}
++
+ 		/// <summary>
+ 		///    Gets the flags of the file described by the current
+ 		///    instance.
+diff --git a/src/TaglibSharp/Asf/Tag.cs b/src/TaglibSharp/Asf/Tag.cs
+index 84717ba..5251b84 100644
+--- a/src/TaglibSharp/Asf/Tag.cs
++++ b/src/TaglibSharp/Asf/Tag.cs
+@@ -1298,6 +1298,40 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 			set { SetDescriptorString (value, "MusicBrainz/Album Release Country"); }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "ReleaseDate" field.
++		/// </remarks>
++		public override string ReleaseDate {
++			get { return GetDescriptorString("ReleaseDate"); }
++			set { SetDescriptorString(value, "ReleaseDate"); }
++		}
++
++		/// <summary>
++		///    Gets and sets the Publisher of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the Publisher of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "PUBLISHER" field.
++		/// </remarks>
++		public override string Publisher {
++			get { return GetDescriptorString("WM/Publisher"); }
++			set { SetDescriptorString(value, "WM/Publisher"); }
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets the ReplayGain track gain in dB.
+ 		/// </summary>
+diff --git a/src/TaglibSharp/CombinedTag.cs b/src/TaglibSharp/CombinedTag.cs
+index 99706cb..80ec4a9 100644
+--- a/src/TaglibSharp/CombinedTag.cs
++++ b/src/TaglibSharp/CombinedTag.cs
+@@ -1637,6 +1637,162 @@ protected void ClearTags ()
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>When getting the value, the child tags are looped
++		///    through in order and the first non-<see langword="null" />
++		///    and non-empty value is returned.</para>
++		///    <para>When setting the value, it is stored in each child
++		///    tag.</para>
++		/// </remarks>
++		/// <seealso cref="Tag.ReleaseDate" />
++		public override string ReleaseDate {
++			get {
++				foreach (Tag tag in tags) {
++					if (tag == null)
++						continue;
++
++					string value = tag.ReleaseDate;
++
++					if (value != null)
++						return value;
++				}
++
++				return null;
++			}
++
++			set {
++				foreach (Tag tag in tags)
++					if (tag != null)
++						tag.ReleaseDate = value;
++			}
++		}
++
++		// /// <summary>
++		// ///    Gets and sets the Publisher of the media represented by
++		// ///    the current instance.
++		// /// </summary>
++		// /// <value>
++		// ///    A <see cref="string" /> containing the Publisher of the
++		// ///    media represented by the current instance or null
++		// ///    if no value is present.
++		// /// </value>
++		// /// <remarks>
++		// ///    <para>When getting the value, the child tags are looped
++		// ///    through in order and the first non-<see langword="null" />
++		// ///    and non-empty value is returned.</para>
++		// ///    <para>When setting the value, it is stored in each child
++		// ///    tag.</para>
++		// /// </remarks>
++		// /// <seealso cref="Tag.Publisher" />
++		// public override string Publisher {
++			// get {
++				// foreach (Tag tag in tags) {
++					// if (tag == null)
++						// continue;
++
++					// string value = tag.Publisher;
++
++					// if (value != null)
++						// return value;
++				// }
++
++				// return null;
++			// }
++
++			// set {
++				// foreach (Tag tag in tags)
++					// if (tag != null)
++						// tag.Publisher = value;
++			// }
++		// }
++
++		/// <summary>
++		///    Gets and sets the CatalogNo of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the catalog number of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>When getting the value, the child tags are looped
++		///    through in order and the first non-<see langword="null" />
++		///    and non-empty value is returned.</para>
++		///    <para>When setting the value, it is stored in each child
++		///    tag.</para>
++		/// </remarks>
++		/// <seealso cref="Tag.CatalogNo" />
++		public override string CatalogNo {
++			get {
++				foreach (Tag tag in tags) {
++					if (tag == null)
++						continue;
++
++					string value = tag.CatalogNo;
++
++					if (value != null)
++						return value;
++				}
++
++				return null;
++			}
++
++			set {
++				foreach (Tag tag in tags)
++					if (tag != null)
++						tag.CatalogNo = value;
++			}
++		}
++
++		/// <summary>
++		///    Gets and sets the DiscSubtitle of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the subtitle of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>When getting the value, the child tags are looped
++		///    through in order and the first non-<see langword="null" />
++		///    and non-empty value is returned.</para>
++		///    <para>When setting the value, it is stored in each child
++		///    tag.</para>
++		/// </remarks>
++		/// <seealso cref="Tag.DiscSubtitle" />
++		public override string DiscSubtitle {
++			get {
++				foreach (Tag tag in tags) {
++					if (tag == null)
++						continue;
++
++					string value = tag.DiscSubtitle;
++
++					if (value != null)
++						return value;
++				}
++
++				return null;
++			}
++
++			set {
++				foreach (Tag tag in tags)
++					if (tag != null)
++						tag.DiscSubtitle = value;
++			}
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets a collection of pictures associated with
+ 		///    the media represented by the current instance.
+diff --git a/src/TaglibSharp/Dsf/StreamHeader.cs b/src/TaglibSharp/Dsf/StreamHeader.cs
+index 339d2f3..0651c84 100644
+--- a/src/TaglibSharp/Dsf/StreamHeader.cs
++++ b/src/TaglibSharp/Dsf/StreamHeader.cs
+@@ -249,6 +249,18 @@ public StreamHeader (ByteVector data, long streamLength)
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Flac/BlockHeader.cs b/src/TaglibSharp/Flac/BlockHeader.cs
+index ecc4955..1bfb20a 100644
+--- a/src/TaglibSharp/Flac/BlockHeader.cs
++++ b/src/TaglibSharp/Flac/BlockHeader.cs
+@@ -121,6 +121,10 @@ public BlockHeader (ByteVector data)
+ 		/// </param>
+ 		public BlockHeader (BlockType type, uint blockSize)
+ 		{
++			if (blockSize > 0xffffff)
++				throw new CorruptFileException (
++					"Block size too large.");
++
+ 			BlockType = type;
+ 			IsLastBlock = false;
+ 			BlockSize = blockSize;
+diff --git a/src/TaglibSharp/Flac/StreamHeader.cs b/src/TaglibSharp/Flac/StreamHeader.cs
+index 5a57bbc..0c4d054 100644
+--- a/src/TaglibSharp/Flac/StreamHeader.cs
++++ b/src/TaglibSharp/Flac/StreamHeader.cs
+@@ -130,6 +130,18 @@ public StreamHeader (ByteVector data, long streamLength)
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/ICodec.cs b/src/TaglibSharp/ICodec.cs
+index 1f3d4d2..2019b36 100644
+--- a/src/TaglibSharp/ICodec.cs
++++ b/src/TaglibSharp/ICodec.cs
+@@ -126,6 +126,16 @@ public interface IAudioCodec : ICodec
+ 		/// </value>
+ 		int AudioBitrate { get; }
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		long AudioSampleCount { get; }
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Id3v2/FrameTypes.cs b/src/TaglibSharp/Id3v2/FrameTypes.cs
+index 829253a..3228e56 100644
+--- a/src/TaglibSharp/Id3v2/FrameTypes.cs
++++ b/src/TaglibSharp/Id3v2/FrameTypes.cs
+@@ -58,6 +58,7 @@ static class FrameType
+ 		public static readonly ReadOnlyByteVector TCMP = "TCMP";
+ 		public static readonly ReadOnlyByteVector TDRC = "TDRC";
+ 		public static readonly ReadOnlyByteVector TDAT = "TDAT";
++		public static readonly ReadOnlyByteVector TDRL = "TDRL"; // Release Date
+ 		public static readonly ReadOnlyByteVector TDTG = "TDTG";
+ 		public static readonly ReadOnlyByteVector TEXT = "TEXT";
+ 		public static readonly ReadOnlyByteVector TIT1 = "TIT1";
+@@ -73,7 +74,7 @@ static class FrameType
+ 		public static readonly ReadOnlyByteVector TPE3 = "TPE3";
+ 		public static readonly ReadOnlyByteVector TPE4 = "TPE4";
+ 		public static readonly ReadOnlyByteVector TPOS = "TPOS";
+-		public static readonly ReadOnlyByteVector TPUB = "TPUB";
++		public static readonly ReadOnlyByteVector TPUB = "TPUB"; // Publisher
+ 		public static readonly ReadOnlyByteVector TRCK = "TRCK";
+ 		public static readonly ReadOnlyByteVector TRDA = "TRDA";
+ 		public static readonly ReadOnlyByteVector TSIZ = "TSIZ";
+@@ -82,6 +83,7 @@ static class FrameType
+ 		public static readonly ReadOnlyByteVector TSOC = "TSOC"; // Composer Sort Frame
+ 		public static readonly ReadOnlyByteVector TSOP = "TSOP"; // Performer Sort Frame
+ 		public static readonly ReadOnlyByteVector TSOT = "TSOT"; // Track Title Sort Frame
++		public static readonly ReadOnlyByteVector TSST = "TSST"; // Set subtitle
+ 		public static readonly ReadOnlyByteVector TSRC = "TSRC";
+ 		public static readonly ReadOnlyByteVector TXXX = "TXXX";
+ 		public static readonly ReadOnlyByteVector TYER = "TYER";
+diff --git a/src/TaglibSharp/Id3v2/Tag.cs b/src/TaglibSharp/Id3v2/Tag.cs
+index 3e9b866..bd421c8 100644
+--- a/src/TaglibSharp/Id3v2/Tag.cs
++++ b/src/TaglibSharp/Id3v2/Tag.cs
+@@ -2083,6 +2083,77 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 			set { SetUserTextAsString ("MusicBrainz Album Release Country", value); }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "TDRL" text.
++		/// </remarks>
++		public override string ReleaseDate {
++			get { return GetTextAsString (FrameType.TDRL); }
++			set { SetTextFrame (FrameType.TDRL, value); }
++		}
++
++		// /// <summary>
++		// ///    Gets and sets the Publisher of the media represented by
++		// ///    the current instance.
++		// /// </summary>
++		// /// <value>
++		// ///    A <see cref="string" /> containing the Publisher of the
++		// ///    media represented by the current instance or null
++		// ///    if no value is present.
++		// /// </value>
++		// /// <remarks>
++		// ///    This property is implemented using the "TPUB" text.
++		// /// </remarks>
++		// public override string Publisher {
++			// get { return GetTextAsString (FrameType.TPUB); }
++			// set { SetTextFrame (FrameType.TPUB, value); }
++		// }
++
++		/// <summary>
++		///    Gets and sets the CatalogNo of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the catalog number of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "TXXX:CATALOGNUMBER" frame.
++		///    http://musicbrainz.org/doc/PicardTagMapping
++		/// </remarks>
++		public override string CatalogNo {
++			get { return GetUserTextAsString ("CATALOGNUMBER"); }
++			set { SetUserTextAsString ("CATALOGNUMBER",value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the DiscSubtitle of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the subtitle of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>This is normally a name which identifies the media
++		///    within a set, for example name of a CD within a boxset release.
++		///    </para>
++		/// </remarks>
++		public override string DiscSubtitle {
++			get { return GetTextAsString (FrameType.TSST); }
++			set { SetTextFrame (FrameType.TSST, value); }
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets the ReplayGain track gain in dB.
+ 		/// </summary>
+diff --git a/src/TaglibSharp/Matroska/AudioTrack.cs b/src/TaglibSharp/Matroska/AudioTrack.cs
+index e3ee49e..062f5cf 100644
+--- a/src/TaglibSharp/Matroska/AudioTrack.cs
++++ b/src/TaglibSharp/Matroska/AudioTrack.cs
+@@ -127,6 +127,18 @@ public AudioTrack (File _file, EBMLreader element)
+ 			get { return 0; }
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		/// Audio track sampling rate.
+ 		/// </summary>
+diff --git a/src/TaglibSharp/Matroska/Tag.cs b/src/TaglibSharp/Matroska/Tag.cs
+index 0fc3f7d..bc139ee 100644
+--- a/src/TaglibSharp/Matroska/Tag.cs
++++ b/src/TaglibSharp/Matroska/Tag.cs
+@@ -1248,6 +1248,34 @@ uint GetUint (string key, string subkey = null, bool recu = false)
+ 			set { }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		public override string ReleaseDate {
++			get { return null; }
++			set { }
++		}
++
++		/// <summary>
++		///    Gets and sets the Publisher of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the Publisher of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		public override string Publisher {
++			get { return null; }
++			set { }
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets a collection of pictures associated with
+ 		///    the media represented by the current instance.
+diff --git a/src/TaglibSharp/Mpc/StreamHeader.cs b/src/TaglibSharp/Mpc/StreamHeader.cs
+index 16bb005..987114c 100644
+--- a/src/TaglibSharp/Mpc/StreamHeader.cs
++++ b/src/TaglibSharp/Mpc/StreamHeader.cs
+@@ -361,6 +361,18 @@ ulong ReadSize (ByteVector data, ref int pos)
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Mpeg/AudioHeader.cs b/src/TaglibSharp/Mpeg/AudioHeader.cs
+index d18ea77..06a15e1 100644
+--- a/src/TaglibSharp/Mpeg/AudioHeader.cs
++++ b/src/TaglibSharp/Mpeg/AudioHeader.cs
+@@ -356,6 +356,18 @@ public struct AudioHeader : IAudioCodec
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Mpeg4/AppleTag.cs b/src/TaglibSharp/Mpeg4/AppleTag.cs
+index 020aab1..ac53ef5 100644
+--- a/src/TaglibSharp/Mpeg4/AppleTag.cs
++++ b/src/TaglibSharp/Mpeg4/AppleTag.cs
+@@ -442,12 +442,17 @@ public void SetDashBox (string meanstring, string namestring, string datastring)
+ 		{
+ 			AppleDataBox data_box = GetDashAtom (meanstring, namestring);
+ 
+-			// If we did find a data_box and we have an empty datastring we should
+-			// remove the entire dash box.
+-			if (data_box != null && string.IsNullOrEmpty (datastring)) {
+-				AppleAnnotationBox dash_box = GetParentDashBox (meanstring, namestring);
+-				dash_box.ClearChildren ();
+-				ilst_box.RemoveChild (dash_box);
++			if (string.IsNullOrEmpty(datastring))
++			{
++				// If we did find a data_box and we have an empty datastring we should
++				// remove the entire dash box.
++				if (data_box != null)
++				{
++					AppleAnnotationBox dash_box = GetParentDashBox (meanstring, namestring);
++					dash_box.ClearChildren ();
++					ilst_box.RemoveChild (dash_box);
++				}
++
+ 				return;
+ 			}
+ 
+@@ -540,8 +545,8 @@ AppleDataBox GetDashAtom (string meanstring, string namestring)
+ 				var name_box = (AppleAdditionalInfoBox)box.GetChild (BoxType.Name);
+ 
+ 				if (mean_box == null || name_box == null ||
+-				    mean_box.Text != meanstring ||
+-				    !name_box.Text.Equals (namestring, StringComparison.OrdinalIgnoreCase)) {
++					mean_box.Text != meanstring ||
++					!name_box.Text.Equals (namestring, StringComparison.OrdinalIgnoreCase)) {
+ 					continue;
+ 				} else {
+ 					return (AppleDataBox)box.GetChild (BoxType.Data);
+@@ -1580,6 +1585,77 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 			set { SetDashBox ("com.apple.iTunes", "MusicBrainz Album Release Country", value); }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "dash"/"----" box type.
++		/// </remarks>
++		public override string ReleaseDate {
++			get { return GetDashBox("com.apple.iTunes", "MusicBrainz Album Release Date"); }
++			set { SetDashBox("com.apple.iTunes", "MusicBrainz Album Release Date", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the Publisher of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the Publisher of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "dash"/"----" box type.
++		///    http://musicbrainz.org/doc/PicardTagMapping
++		/// </remarks>
++		public override string Publisher {
++			get { return GetDashBox("com.apple.iTunes", "LABEL"); }
++			set { SetDashBox("com.apple.iTunes", "LABEL", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the CatalogNo of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the catalog number of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "dash"/"----" box type.
++		///    http://musicbrainz.org/doc/PicardTagMapping
++		/// </remarks>
++		public override string CatalogNo {
++			get { return GetDashBox("com.apple.iTunes", "CATALOGNUMBER"); }
++			set { SetDashBox("com.apple.iTunes", "CATALOGNUMBER", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the DiscSubtitle of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the subtitle of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "dash"/"----" box type.
++		///    http://musicbrainz.org/doc/PicardTagMapping
++		/// </remarks>
++		public override string DiscSubtitle {
++			get { return GetDashBox("com.apple.iTunes", "DISCSUBTITLE"); }
++			set { SetDashBox("com.apple.iTunes", "DISCSUBTITLE", value); }
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets the ReplayGain Track Value of the media represented by
+ 		///    the current instance.
+@@ -1742,21 +1818,21 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 			set { SetDashBox ("com.apple.iTunes", "ISRC", value); }
+ 		}
+ 
+-		/// <summary>
+-		///    Gets and sets the Publisher
+-		/// </summary>
+-		/// <value>
+-		///    A <see cref="string" /> containing the Publisher
+-		///    for the media described by the current  instance, 
+-		///    or null if no value is present. 
+-		/// </value>
+-		/// <remarks>
+-		///    This property is implemented using the "dash"/"----" box type.
+-		/// </remarks>
+-		public override string Publisher {
+-			get { return GetDashBox ("com.apple.iTunes", "publisher"); }
+-			set { SetDashBox ("com.apple.iTunes", "publisher", value); }
+-		}
++		// /// <summary>
++		// ///    Gets and sets the Publisher
++		// /// </summary>
++		// /// <value>
++		// ///    A <see cref="string" /> containing the Publisher
++		// ///    for the media described by the current  instance,
++		// ///    or null if no value is present.
++		// /// </value>
++		// /// <remarks>
++		// ///    This property is implemented using the "dash"/"----" box type.
++		// /// </remarks>
++		// public override string Publisher {
++			// get { return GetDashBox ("com.apple.iTunes", "publisher"); }
++			// set { SetDashBox ("com.apple.iTunes", "publisher", value); }
++		// }
+ 
+ 		/// <summary>
+ 		///    Gets and sets the Remixer
+diff --git a/src/TaglibSharp/Mpeg4/BoxFactory.cs b/src/TaglibSharp/Mpeg4/BoxFactory.cs
+index 1c952f6..0fed9f4 100644
+--- a/src/TaglibSharp/Mpeg4/BoxFactory.cs
++++ b/src/TaglibSharp/Mpeg4/BoxFactory.cs
+@@ -112,7 +112,7 @@ public static class BoxFactory
+ 				return new AppleElementaryStreamDescriptor (header, file, handler);
+ 			else if (type == BoxType.Free || type == BoxType.Skip)
+ 				return new IsoFreeSpaceBox (header, file, handler);
+-			else if (type == BoxType.Mean || type == BoxType.Name)
++			else if ((type == BoxType.Mean || type == BoxType.Name) && header.DataSize >= 4)
+ 				return new AppleAdditionalInfoBox (header, file, handler);
+ 
+ 			// If we still don't have a tag, and we're inside an
+diff --git a/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs b/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs
+index d8f71c3..6f59f99 100644
+--- a/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs
++++ b/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs
+@@ -189,6 +189,18 @@ public IsoAudioSampleEntry (BoxHeader header, TagLib.File file, IsoHandlerBox ha
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Ogg/Codecs/Opus.cs b/src/TaglibSharp/Ogg/Codecs/Opus.cs
+index a4717cc..68f2219 100644
+--- a/src/TaglibSharp/Ogg/Codecs/Opus.cs
++++ b/src/TaglibSharp/Ogg/Codecs/Opus.cs
+@@ -209,6 +209,18 @@ public override void SetCommentPacket (ByteVectorCollection packets, XiphComment
+ 			get { return 0; }
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Ogg/Codecs/Vorbis.cs b/src/TaglibSharp/Ogg/Codecs/Vorbis.cs
+index 917f9cb..c6c8438 100644
+--- a/src/TaglibSharp/Ogg/Codecs/Vorbis.cs
++++ b/src/TaglibSharp/Ogg/Codecs/Vorbis.cs
+@@ -178,7 +178,11 @@ public override void SetCommentPacket (ByteVectorCollection packets, XiphComment
+ 			data.Add (id);
+ 			data.Add (comment.Render (true));
+ 			if (packets.Count > 1 && PacketType (packets[1]) == 0x03)
++			{
++				if (data.Count < packets[1].Count)
++					data.Add (new ByteVector (packets[1].Count - data.Count, 0));
+ 				packets[1] = data;
++			}
+ 			else
+ 				packets.Insert (1, data);
+ 		}
+@@ -203,6 +207,18 @@ public override void SetCommentPacket (ByteVectorCollection packets, XiphComment
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Ogg/GroupedComment.cs b/src/TaglibSharp/Ogg/GroupedComment.cs
+index 80f2a90..2b30997 100644
+--- a/src/TaglibSharp/Ogg/GroupedComment.cs
++++ b/src/TaglibSharp/Ogg/GroupedComment.cs
+@@ -1290,6 +1290,138 @@ public void AddComment (uint streamSerialNumber, ByteVector data)
+ 			set { if (tags.Count > 0) tags[0].MusicBrainzReleaseCountry = value; }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>When getting the value, the child comments are looped
++		///    through in order and the first non-<see langword="null" />
++		///    and non-empty value is returned.</para>
++		///    <para>When setting the value, it is stored in the first
++		///    comment.</para>
++		/// </remarks>
++		public override string ReleaseDate {
++			get {
++				foreach (XiphComment tag in tags) {
++					if (tag == null)
++						continue;
++
++					string value = tag.ReleaseDate;
++
++					if (value != null && value.Length > 0)
++						return value;
++				}
++
++				return null;
++			}
++			set {if (tags.Count > 0) tags [0].ReleaseDate = value;}
++		}
++
++		/// <summary>
++		///    Gets and sets the Publisher of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the Publisher of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>When getting the value, the child comments are looped
++		///    through in order and the first non-<see langword="null" />
++		///    and non-empty value is returned.</para>
++		///    <para>When setting the value, it is stored in the first
++		///    comment.</para>
++		/// </remarks>
++		public override string Publisher {
++			get {
++				foreach (XiphComment tag in tags) {
++					if (tag == null)
++						continue;
++
++					string value = tag.Publisher;
++
++					if (value != null && value.Length > 0)
++						return value;
++				}
++
++				return null;
++			}
++			set {if (tags.Count > 0) tags [0].Publisher = value;}
++		}
++
++		/// <summary>
++		///    Gets and sets the CatalogNo of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the catalog number of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>When getting the value, the child comments are looped
++		///    through in order and the first non-<see langword="null" />
++		///    and non-empty value is returned.</para>
++		///    <para>When setting the value, it is stored in the first
++		///    comment.</para>
++		/// </remarks>
++		public override string CatalogNo {
++			get {
++				foreach (XiphComment tag in tags) {
++					if (tag == null)
++						continue;
++
++					string value = tag.CatalogNo;
++
++					if (value != null && value.Length > 0)
++						return value;
++				}
++
++				return null;
++			}
++			set {if (tags.Count > 0) tags [0].CatalogNo = value;}
++		}
++
++		/// <summary>
++		///    Gets and sets the DiscSubtitle of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the subtitle of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>When getting the value, the child comments are looped
++		///    through in order and the first non-<see langword="null" />
++		///    and non-empty value is returned.</para>
++		///    <para>When setting the value, it is stored in the first
++		///    comment.</para>
++		/// </remarks>
++		public override string DiscSubtitle {
++			get {
++				foreach (XiphComment tag in tags) {
++					if (tag == null)
++						continue;
++
++					string value = tag.DiscSubtitle;
++
++					if (value != null && value.Length > 0)
++						return value;
++				}
++
++				return null;
++			}
++			set {if (tags.Count > 0) tags [0].DiscSubtitle = value;}
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets the ReplayGain Track Value of the media represented by
+ 		///    the current instance.
+diff --git a/src/TaglibSharp/Ogg/XiphComment.cs b/src/TaglibSharp/Ogg/XiphComment.cs
+index dd1f98e..102c200 100644
+--- a/src/TaglibSharp/Ogg/XiphComment.cs
++++ b/src/TaglibSharp/Ogg/XiphComment.cs
+@@ -982,6 +982,10 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 					null && uint.TryParse (text, out var value))
+ 					return value;
+ 
++				if ((text = GetFirstField ("TOTALTRACKS")) !=
++					null && uint.TryParse (text, out value))
++					return value;
++
+ 				if ((text = GetFirstField ("TRACKNUMBER")) !=
+ 					null && (values = text.Split ('/'))
+ 					.Length > 1 && uint.TryParse (
+@@ -1047,6 +1051,10 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 					&& uint.TryParse (text, out var value))
+ 					return value;
+ 
++				if ((text = GetFirstField ("TOTALDISCS")) != null
++					&& uint.TryParse (text, out value))
++					return value;
++
+ 				if ((text = GetFirstField ("DISCNUMBER")) !=
+ 					null && (values = text.Split ('/'))
+ 					.Length > 1 && uint.TryParse (
+@@ -1400,6 +1408,74 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 			set { SetField ("RELEASECOUNTRY", value); }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "RELEASE DATE" field.
++		/// </remarks>
++		public override string ReleaseDate {
++			get { return GetFirstField("RELEASE DATE") ?? GetFirstField("RELEASETIME"); }
++			set { SetField("RELEASE DATE", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the Publisher of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the Publisher of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "PUBLISHER" field.
++		/// </remarks>
++		public override string Publisher {
++			get { return GetFirstField("PUBLISHER") ?? GetFirstField("ORGANIZATION") ?? GetFirstField("LABEL"); }
++			set { SetField("PUBLISHER", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the CatalogNo of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the catalog number of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "LABELNO" field.
++		/// </remarks>
++		public override string CatalogNo {
++			get { return GetFirstField("LABELNO") ?? GetFirstField("CATALOGNUMBER"); }
++			set { SetField("LABELNO", value); }
++		}
++
++		/// <summary>
++		///    Gets and sets the DiscSubtitle of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the subtitle of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    This property is implemented using the "DISCSUBTITLE" field.
++		/// </remarks>
++		public override string DiscSubtitle {
++			get { return GetFirstField("DISCSUBTITLE"); }
++			set { SetField("DISCSUBTITLE", value); }
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets a collection of pictures associated with
+ 		///    the media represented by the current instance.
+@@ -1637,19 +1713,19 @@ IEnumerator IEnumerable.GetEnumerator ()
+ 			set { SetField ("REMIXEDBY", value); }
+ 		}
+ 
+-		/// <summary>
+-		///    Gets and sets the publisher of the song.
+-		/// </summary>
+-		/// <value>
+-		///    A <see cref="string" /> object containing the publisher of the song.
+-		/// </value>
+-		/// <remarks>
+-		///    This property is implemented using the "ORGANIZATION" field.
+-		/// </remarks>
+-		public override string Publisher {
+-			get { return GetFirstField ("ORGANIZATION"); }
+-			set { SetField ("ORGANIZATION", value); }
+-		}
++		// /// <summary>
++		// ///    Gets and sets the publisher of the song.
++		// /// </summary>
++		// /// <value>
++		// ///    A <see cref="string" /> object containing the publisher of the song.
++		// /// </value>
++		// /// <remarks>
++		// ///    This property is implemented using the "ORGANIZATION" field.
++		// /// </remarks>
++		// public override string Publisher {
++			// get { return GetFirstField ("ORGANIZATION"); }
++			// set { SetField ("ORGANIZATION", value); }
++		// }
+ 
+ 		/// <summary>
+ 		///    Gets and sets the ISRC (International Standard Recording Code) of the song.
+diff --git a/src/TaglibSharp/Properties.cs b/src/TaglibSharp/Properties.cs
+index befda88..5a6ce9a 100644
+--- a/src/TaglibSharp/Properties.cs
++++ b/src/TaglibSharp/Properties.cs
+@@ -242,6 +242,32 @@ public Properties (TimeSpan duration, IEnumerable<ICodec> codecs)
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get {
++				foreach (ICodec codec in codecs)
++				{
++					if (codec == null ||
++						(codec.MediaTypes & MediaTypes.Audio) == 0)
++						continue;
++
++					IAudioCodec audio = codec as IAudioCodec;
++
++					if (audio != null && audio.AudioSampleCount != 0)
++						return audio.AudioSampleCount;
++				}
++
++				return 0;
++			}
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Riff/WaveFormatEx.cs b/src/TaglibSharp/Riff/WaveFormatEx.cs
+index 360a2b6..03b2873 100644
+--- a/src/TaglibSharp/Riff/WaveFormatEx.cs
++++ b/src/TaglibSharp/Riff/WaveFormatEx.cs
+@@ -179,6 +179,18 @@ public WaveFormatEx (ByteVector data, int offset)
+ 			}
+ 		}
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the sample rate of the audio represented by the
+ 		///    current instance.
+diff --git a/src/TaglibSharp/Tag.cs b/src/TaglibSharp/Tag.cs
+index fb7be5c..ed2a3ab 100644
+--- a/src/TaglibSharp/Tag.cs
++++ b/src/TaglibSharp/Tag.cs
+@@ -1059,6 +1059,66 @@ public abstract class Tag
+ 			set { }
+ 		}
+ 
++		/// <summary>
++		///    Gets and sets the Release Date of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the ReleaseDate of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>This field represents the ReleaseDate, that describes
++		///    the year or a more accurate date when this version of an
++		///    album was first released.  In case of remastered albums
++		///    this can be a later date than Year. Format can be one of
++		///    yyyy, yyyy-MM, yyyy-MM-dd
++		///    </para>
++		/// </remarks>
++		public virtual string ReleaseDate {
++			get { return null; }
++			set { }
++		}
++
++		/// <summary>
++		///    Gets and sets the CatalogNo of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the catalog number of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>This is normally a unique alphanumeric id, assigned
++		///    to a given release by it's Publisher.
++		///    </para>
++		/// </remarks>
++		public virtual string CatalogNo {
++			get { return null; }
++			set { }
++		}
++
++		/// <summary>
++		///    Gets and sets the DiscSubtitle of the media represented by
++		///    the current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="string" /> containing the subtitle of the
++		///    media represented by the current instance or null
++		///    if no value is present.
++		/// </value>
++		/// <remarks>
++		///    <para>This is normally a name which identifies the media
++		///    within a set, for example name of a CD within a boxset release.
++		///    </para>
++		/// </remarks>
++		public virtual string DiscSubtitle {
++			get { return null; }
++			set { }
++		}
++
+ 		/// <summary>
+ 		///    Gets and sets a collection of pictures associated with
+ 		///    the media represented by the current instance.
+diff --git a/src/TaglibSharp/TaglibSharp.csproj b/src/TaglibSharp/TaglibSharp.csproj
+index 88ac00d..aec9676 100644
+--- a/src/TaglibSharp/TaglibSharp.csproj
++++ b/src/TaglibSharp/TaglibSharp.csproj
+@@ -1,6 +1,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
++    <ReleaseVersion>2.3.0.0</ReleaseVersion> <!-- From Directory.Build.props -->
++    <LibTargetFrameworks>net47;netstandard2.0</LibTargetFrameworks> <!-- From Directory.Build.props -->
+     <TargetFrameworks>$(LibTargetFrameworks)</TargetFrameworks>
+     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\TaglibSharp.xml</DocumentationFile>
+     <AssemblyName>TagLibSharp</AssemblyName>
+diff --git a/src/TaglibSharp/WavPack/File.cs b/src/TaglibSharp/WavPack/File.cs
+index 54df146..96220e9 100644
+--- a/src/TaglibSharp/WavPack/File.cs
++++ b/src/TaglibSharp/WavPack/File.cs
+@@ -215,8 +215,28 @@ protected override void ReadStart (long start, ReadStyle propertiesStyle)
+ 				(propertiesStyle & ReadStyle.Average) == 0)
+ 				return;
+ 
+-			Seek (start);
+-			header_block = ReadBlock ((int)StreamHeader.Size);
++//			Seek (start);
++//			header_block = ReadBlock ((int)StreamHeader.Size);
++
++			do
++			{
++				long position = Find(StreamHeader.FileIdentifier, start);
++				if (position < 0)
++					throw new CorruptFileException(
++						"wvpk header not found");
++				Seek(position);
++				header_block = ReadBlock(
++					(int)StreamHeader.Size);
++				try
++				{
++					new StreamHeader(header_block, header_block.Count);
++					InvariantStartPosition = position;
++					return;
++				} catch (CorruptFileException)
++				{
++					start = position + 4;
++				}
++			} while (true);
+ 		}
+ 
+ 		/// <summary>
+diff --git a/src/TaglibSharp/WavPack/StreamHeader.cs b/src/TaglibSharp/WavPack/StreamHeader.cs
+index 80df608..6536517 100644
+--- a/src/TaglibSharp/WavPack/StreamHeader.cs
++++ b/src/TaglibSharp/WavPack/StreamHeader.cs
+@@ -136,6 +136,12 @@ public StreamHeader (ByteVector data, long streamLength)
+ 			version = data.Mid (8, 2).ToUShort (false);
+ 			flags = data.Mid (24, 4).ToUInt (false);
+ 			samples = data.Mid (12, 4).ToUInt (false);
++
++			if (!(0 == (data[4] & 1) && data[6] < 16 && 0 == data[7] && (data[6] != 0 || data[5] != 0 || data[4] > 24) &&
++				version >= 0x402 && version <= 0x410 &&
++				data[22] < 3 && 0 == data[23]))
++				throw new CorruptFileException(
++					"Not a supported wavpack header");
+ 		}
+ 
+ 		#endregion
+@@ -144,6 +150,18 @@ public StreamHeader (ByteVector data, long streamLength)
+ 
+ 		#region Public Properties
+ 
++		/// <summary>
++		///    Gets the sample count of the audio represented by the
++		///    current instance.
++		/// </summary>
++		/// <value>
++		///    A <see cref="int" /> value containing the sample count
++		///    of the audio represented by the current instance.
++		/// </value>
++		public long AudioSampleCount {
++			get { return 0; }
++		}
++
+ 		/// <summary>
+ 		///    Gets the duration of the media represented by the current
+ 		///    instance.

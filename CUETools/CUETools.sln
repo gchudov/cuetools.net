@@ -177,7 +177,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.CTDB.Types", "..\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.libFLAC", "..\CUETools.Codecs.libFLAC\CUETools.Codecs.libFLAC.csproj", "{F10AB92C-9AFB-4FC0-94E0-06FCD3CA8155}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "taglib-sharp", "..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj", "{1219A514-D3FA-40DB-BBB2-92CE05E35839}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "taglib-sharp", "..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj", "{1219A514-D3FA-40DB-BBB2-92CE05E35839}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libFLAC_dynamic", "..\ThirdParty\flac\src\libFLAC\libFLAC_dynamic.vcxproj", "{4CEFBC83-C215-11DB-8314-0800200C9A66}"
 EndProject

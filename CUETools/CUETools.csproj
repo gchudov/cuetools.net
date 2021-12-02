@@ -288,7 +288,7 @@
       <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
       <Name>Freedb</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\taglib-sharp.csproj">
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
       <Project>{1219a514-d3fa-40db-bbb2-92ce05e35839}</Project>
       <Name>taglib-sharp</Name>
     </ProjectReference>

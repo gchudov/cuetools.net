@@ -13,6 +13,7 @@ Prebuilt binaries can be downloaded from [CUETools Download](http://cue.tools/wi
 `git submodule update --init --recursive`
 * Apply patches to submodules:  
 `git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch`  
+`git apply --directory=ThirdParty/taglib-sharp ThirdParty/submodule_taglib-sharp_CUETools.patch`  
 `git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools_VS2017.patch`  
 `git apply --directory=ThirdParty/WindowsMediaLib ThirdParty/submodule_WindowsMediaLib_CUETools.patch --verbose`
 * The solution can be built using Microsoft Visual Studio 2017 or newer (Community Edition will work)
