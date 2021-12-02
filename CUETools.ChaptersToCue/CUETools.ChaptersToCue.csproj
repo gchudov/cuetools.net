@@ -55,9 +55,9 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="taglib-sharp, Version=2.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="taglib-sharp, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\$(Configuration)\net47\taglib-sharp.dll</HintPath>
+      <HintPath>..\bin\$(Configuration)\net47\TagLibSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

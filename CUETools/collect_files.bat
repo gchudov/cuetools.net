@@ -57,7 +57,7 @@ xcopy /Y /D %base_dir%\bin\Release\net47\CUETools.Ripper.Console.exe.config %rel
 xcopy /Y /D %base_dir%\bin\Release\net47\DeviceId.dll %release_dir%
 xcopy /Y /D %base_dir%\bin\Release\net47\Freedb.dll %release_dir%
 xcopy /Y /D %base_dir%\bin\Release\net47\ProgressODoom.dll %release_dir%
-xcopy /Y /D %base_dir%\bin\Release\net47\taglib-sharp.dll %release_dir%
+xcopy /Y /D %base_dir%\bin\Release\net47\TagLibSharp.dll %release_dir%
 
 xcopy /Y /D %base_dir%\CUETools\License.txt %release_dir%
 xcopy /Y /D %base_dir%\CUETools\user_profiles_enabled %release_dir%
