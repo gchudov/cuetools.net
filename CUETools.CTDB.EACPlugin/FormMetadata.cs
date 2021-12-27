@@ -57,6 +57,7 @@ namespace CUETools.CTDB.EACPlugin
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)Enum.ToObject(typeof(SecurityProtocolType), 3072); // Use TLS 1.2
 #if DEBUG
             string server = "db.cuetools.net";
 #else
