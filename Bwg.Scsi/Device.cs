@@ -3703,7 +3703,7 @@ namespace Bwg.Scsi
         /// </summary>
         /// <param name="bDisable">If true, CD eject is disabled. If false, CD eject is enabled</param>
         /// <returns></returns>
-        public bool DisableEjectDrive(bool bDisable)
+        public bool DisableEjectDisc(bool bDisable)
         {
             PREVENT_MEDIA_REMOVAL pmr = new PREVENT_MEDIA_REMOVAL();
             pmr.PreventMediaRemoval = bDisable ? 1u : 0u;

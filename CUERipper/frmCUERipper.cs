@@ -486,13 +486,13 @@ namespace CUERipper
 
 			audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
 			audioSource.DriveOffset = (int)numericWriteOffset.Value;
-			bool bDisableEjectDrive = _config.disableEjectDrive;
+			bool bDisableEjectDisc = _config.disableEjectDisc;
 			try
 			{
-				if (bDisableEjectDrive)
+				if (bDisableEjectDisc)
 				this.Invoke((MethodInvoker)delegate ()
 				{
-					audioSource.DisableEjectDrive(true);
+					audioSource.DisableEjectDisc(true);
 				});
                 if (this.testAndCopy)
                     cueSheet.TestBeforeCopy();
@@ -516,10 +516,10 @@ namespace CUERipper
 				}
 				this.Invoke((MethodInvoker)delegate()
 				{
-					if (bDisableEjectDrive)
+					if (bDisableEjectDisc)
 					{
-						audioSource.DisableEjectDrive(false);
-						bDisableEjectDrive = false;
+						audioSource.DisableEjectDisc(false);
+						bDisableEjectDisc = false;
 					}
 					if (_config.ejectAfterRip)
 						audioSource.EjectDisk();
@@ -546,10 +546,10 @@ namespace CUERipper
 //#endif
 			finally
 			{
-				if (bDisableEjectDrive)
+				if (bDisableEjectDisc)
 					this.Invoke((MethodInvoker)delegate ()
 					{
-					audioSource.DisableEjectDrive(false);
+					audioSource.DisableEjectDisc(false);
 					});
 			}
 
@@ -1784,7 +1784,7 @@ namespace CUERipper
         {
 			if (selectedDriveInfo != null)
 			{
-				selectedDriveInfo.drive.DisableEjectDrive(false);
+				selectedDriveInfo.drive.DisableEjectDisc(false);
 				selectedDriveInfo.drive.EjectDisk();
 			}
 			UpdateDrive();

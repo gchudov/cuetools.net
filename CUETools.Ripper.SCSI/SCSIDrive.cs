@@ -635,10 +635,10 @@ namespace CUETools.Ripper.SCSI
             }
         }
 
-        public void DisableEjectDrive(bool bDisable)
+        public void DisableEjectDisc(bool bDisable)
         {
             if (m_device != null)
-                m_device.DisableEjectDrive(bDisable);
+                m_device.DisableEjectDisc(bDisable);
             else
             {
                 try
@@ -648,7 +648,7 @@ namespace CUETools.Ripper.SCSI
                     {
                         try
                         {
-                            m_device.DisableEjectDrive(bDisable);
+                            m_device.DisableEjectDisc(bDisable);
                         }
                         finally
                         {
@@ -663,7 +663,7 @@ namespace CUETools.Ripper.SCSI
             }
         }
 
-        bool gapsDetected = false;
+		bool gapsDetected = false;
 
 		public unsafe bool DetectGaps()
 		{
