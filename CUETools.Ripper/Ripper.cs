@@ -12,6 +12,7 @@ namespace CUETools.Ripper
 	{
 		bool Open(char Drive);
         void EjectDisk();
+        void DisableEjectDisc(bool bDisable);
 		bool DetectGaps();
 		bool GapsDetected { get; }
 		CDImageLayout TOC { get; }

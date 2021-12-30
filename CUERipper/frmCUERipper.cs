@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 using CUEControls;
 using CUETools.AccurateRip;
 using CUETools.CTDB;
@@ -201,6 +202,80 @@ namespace CUERipper
 		const ushort DBT_DEVNODES_CHANGED = 0x0007;
 		#endregion
 
+
+		[StructLayout(LayoutKind.Sequential)]
+		internal class DEV_BROADCAST_HDR
+		{
+			internal Int32 dbch_size;
+			internal Int32 dbch_devicetype;
+			internal Int32 dbch_reserved;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		private struct DEV_BROADCAST_VOLUME
+		{
+			public DEV_BROADCAST_HDR Header;
+			public int UnitMask;
+			public short Flags;
+		}
+
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+		internal class DEV_BROADCAST_PORT
+		{
+			public int dbcp_size;
+			public int dbcp_devicetype;
+			public int dbcp_reserved; // MSDN say "do not use"
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 255)]
+			public byte[] dbcp_name;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+		internal class DEV_BROADCAST_DEVICEINTERFACE
+		{
+			public Int32 dbcc_size;
+			public Int32 dbcc_devicetype;
+			public Int32 dbcc_reserved;
+			[MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 16)]
+			internal Byte[] dbcc_classguid;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 255)]
+			internal Byte[] dbcc_name;
+		}
+
+		private int firstBitSet(int iIn)
+		{
+			for (int i = 0; i < 32; i++)
+			{
+				if ((iIn & 1) != 0)
+					return i;
+				iIn >>= 1;
+			};
+			return -1;
+		}
+
+#if DEBUG
+		private const int DBT_DEVTYPE_VOLUME = 2;
+		private void logDeviceChangeEvent(ref Message rMessageIn)
+		{
+			int iVal = rMessageIn.WParam.ToInt32();
+			DEV_BROADCAST_HDR hdr = (DEV_BROADCAST_HDR)Marshal.PtrToStructure(rMessageIn.LParam, typeof(DEV_BROADCAST_HDR));
+			if (hdr.dbch_devicetype == DBT_DEVTYPE_VOLUME)
+			{
+				DEV_BROADCAST_VOLUME vol = (DEV_BROADCAST_VOLUME)Marshal.PtrToStructure(rMessageIn.LParam, typeof(DEV_BROADCAST_VOLUME));
+				char cDriveLetter = (char)(firstBitSet(vol.UnitMask) + ((int)'A'));
+				// here we get drive mount point from bitmask
+				string sMessage = cDriveLetter + ":";
+				if (iVal == DBT_DEVICEARRIVAL)
+					sMessage = "DBT_DEVICEARRIVAL " + sMessage;
+				else if (iVal == DBT_DEVICEREMOVECOMPLETE)
+					sMessage = "DBT_DEVICEREMOVECOMPLETE " + sMessage;
+				else if (iVal == DBT_DEVICEREMOVECOMPLETE)
+					sMessage = "DBT_DEVICEREMOVECOMPLETE " + sMessage;
+				System.Diagnostics.Trace.WriteLine(sMessage);
+			}
+		}
+#endif
+
 		/// <summary>
 		/// This method is called when a window message is processed by the dotnet application
 		/// framework.  We override this method and look for the WM_DEVICECHANGE message. All
@@ -211,19 +286,22 @@ namespace CUERipper
 		/// <param name="m">the windows message being processed</param>
 		protected override void WndProc(ref Message m)
 		{
-			if (m.Msg == WM_DEVICECHANGE && _workThread == null)
+			if (m.Msg == WM_DEVICECHANGE)
 			{
-				int val = m.WParam.ToInt32();
-				if (val == DBT_DEVICEARRIVAL || val == DBT_DEVICEREMOVECOMPLETE)
+				if (_workThread == null)
 				{
-					// Save current metadata before clearing
-					if (data.selectedRelease != null)
-						data.selectedRelease.metadata.Save();
-					UpdateDrive();
-				}
-				else if (val == DBT_DEVNODES_CHANGED)
-				{
-					if (_workThread == null)
+					int val = m.WParam.ToInt32();
+					if (val == DBT_DEVICEARRIVAL || val == DBT_DEVICEREMOVECOMPLETE)
+					{
+#if DEBUG
+						logDeviceChangeEvent(ref m);
+#endif
+						// Save current metadata before clearing
+						if (data.selectedRelease != null)
+							data.selectedRelease.metadata.Save();
+						UpdateDrive();
+					}
+					else if (val == DBT_DEVNODES_CHANGED)
 					{
 						// Save current metadata before clearing
 						if (data.selectedRelease != null)
@@ -408,9 +486,14 @@ namespace CUERipper
 
 			audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
 			audioSource.DriveOffset = (int)numericWriteOffset.Value;
-
+			bool bDisableEjectDisc = _config.disableEjectDisc;
 			try
 			{
+				if (bDisableEjectDisc)
+				this.Invoke((MethodInvoker)delegate ()
+				{
+					audioSource.DisableEjectDisc(true);
+				});
                 if (this.testAndCopy)
                     cueSheet.TestBeforeCopy();
                 else
@@ -433,15 +516,23 @@ namespace CUERipper
 				}
 				this.Invoke((MethodInvoker)delegate()
 				{
+					if (bDisableEjectDisc)
+					{
+						audioSource.DisableEjectDisc(false);
+						bDisableEjectDisc = false;
+					}
+					if (_config.ejectAfterRip)
+						audioSource.EjectDisk();
+
                     DialogResult dlgRes = audioSource.FailedSectors.PopulationCount() != 0 ? 
 						MessageBox.Show(this, cueSheet.GenerateVerifyStatus() + (canFix ? "\n" + Properties.Resources.DoneRippingRepair : "") + ".", Properties.Resources.DoneRippingErrors, MessageBoxButtons.OK, MessageBoxIcon.Error) :
 						MessageBox.Show(this, cueSheet.GenerateVerifyStatus() + ".", Properties.Resources.DoneRipping, MessageBoxButtons.OK, MessageBoxIcon.Information);
-				});
+                });
 			}
 			catch (StopException)
 			{
 			}
-#if !DEBUG
+//#if !DEBUG
 			catch (Exception ex)
 			{
 				this.Invoke((MethodInvoker)delegate()
@@ -452,7 +543,15 @@ namespace CUERipper
 					DialogResult dlgRes = MessageBox.Show(this, message, Properties.Resources.ExceptionMessage, MessageBoxButtons.OK, MessageBoxIcon.Error);
 				});
 			}
-#endif
+//#endif
+			finally
+			{
+				if (bDisableEjectDisc)
+					this.Invoke((MethodInvoker)delegate ()
+					{
+					audioSource.DisableEjectDisc(false);
+					});
+			}
 
 			audioSource.ReadProgress -= new EventHandler<ReadProgressArgs>(CDReadProgress);
 			try
@@ -474,7 +573,9 @@ namespace CUERipper
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				SetupControls();
-				UpdateOutputPath();
+//				if (_config.ejectAfterRip)
+					UpdateDrive();
+//				UpdateOutputPath();
 			});
 		}
 
@@ -1681,9 +1782,13 @@ namespace CUERipper
 
         private void buttonEjectDisk_Click(object sender, EventArgs e)
         {
-            if (selectedDriveInfo != null)
-                selectedDriveInfo.drive.EjectDisk();
-        }
+			if (selectedDriveInfo != null)
+			{
+				selectedDriveInfo.drive.DisableEjectDisc(false);
+				selectedDriveInfo.drive.EjectDisk();
+			}
+			UpdateDrive();
+		}
 	}
 
     internal class BackgroundWorkerArtworkArgs
