@@ -1,6 +1,6 @@
 /**
  * CUETools.WMA: WMA audio decoder
- * Copyright (c) 2013-2021 Grigory Chudov
+ * Copyright (c) 2013-2022 Grigory Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -7,7 +7,7 @@
     <RootNamespace>CUEControls</RootNamespace>
     <Product>CUETools</Product>
     <Description>Library containing windows GUI controls for CUETools.</Description>
-    <Copyright>Copyright (c) 2008-2021 Grigory Chudov</Copyright>
+    <Copyright>Copyright (c) 2008-2022 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>

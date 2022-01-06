@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("CUETools.Codecs.FLACCL")]
-[assembly: AssemblyCopyright("Copyright © 2009-2021 Grigory Chudov")]
+[assembly: AssemblyCopyright("Copyright © 2009-2022 Grigory Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
