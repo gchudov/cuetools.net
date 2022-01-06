@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("CUETools")]
 [assembly: AssemblyProduct("CUEPlayer")]
-[assembly: AssemblyCopyright("Copyright © 2010-2021 Grigory Chudov")]
+[assembly: AssemblyCopyright("Copyright © 2010-2022 Grigory Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
