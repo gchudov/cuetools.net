@@ -932,10 +932,9 @@ namespace CUERipper
                 }
             }
 
-            if (data.Releases.Count == 0)
-            {
-                data.Releases.Add(CreateCUESheet(audioSource));
-            }
+            // Add a blank Release to the metadata selection drop-down list in any case. It can be used, if the metadata retrieved is not correct or undesired.
+            data.Releases.Add(CreateCUESheet(audioSource));
+
             _workThread = null;
             if (musicbrainzError != "")
                 musicbrainzError = musicbrainzError + ": ";
