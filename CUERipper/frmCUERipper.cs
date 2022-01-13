@@ -1787,6 +1787,9 @@ namespace CUERipper
 				selectedDriveInfo.drive.DisableEjectDisc(false);
 				selectedDriveInfo.drive.EjectDisk();
 			}
+			// Save current metadata before clearing
+			if (data.selectedRelease != null)
+				data.selectedRelease.metadata.Save();
 			UpdateDrive();
 		}
 	}
