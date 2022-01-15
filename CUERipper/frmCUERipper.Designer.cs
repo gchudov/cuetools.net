@@ -577,6 +577,7 @@ namespace CUERipper
             this.imageListMetadataSource.Images.SetKeyName(7, "freedb");
             this.imageListMetadataSource.Images.SetKeyName(8, "discogs");
             this.imageListMetadataSource.Images.SetKeyName(9, "musicbrainz");
+            this.imageListMetadataSource.Images.SetKeyName(10, "blank");
             // 
             // bnComboBoxDrives
             // 
@@ -658,16 +659,16 @@ namespace CUERipper
             // 
             // buttonReload
             // 
-            this.buttonReload.Image = global::CUERipper.Properties.Resources.arrow_circle_double;
             resources.ApplyResources(this.buttonReload, "buttonReload");
+            this.buttonReload.Image = global::CUERipper.Properties.Resources.arrow_circle_double;
             this.buttonReload.Name = "buttonReload";
             this.buttonReload.UseVisualStyleBackColor = true;
             this.buttonReload.Click += new System.EventHandler(this.buttonReload_Click);
             // 
             // buttonEncoding
             // 
-            this.buttonEncoding.Image = global::CUERipper.Properties.Resources.spellcheck;
             resources.ApplyResources(this.buttonEncoding, "buttonEncoding");
+            this.buttonEncoding.Image = global::CUERipper.Properties.Resources.spellcheck;
             this.buttonEncoding.Name = "buttonEncoding";
             this.buttonEncoding.UseVisualStyleBackColor = true;
             this.buttonEncoding.Click += new System.EventHandler(this.buttonEncoding_Click);

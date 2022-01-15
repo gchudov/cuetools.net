@@ -787,7 +787,7 @@ namespace CUERipper
 
 		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource)
 		{
-			CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, "local");
+			CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, "blank");
 			entry.metadata.Artist = "Unknown Artist";
 			entry.metadata.Title = "Unknown Title";
 			for (int i = 0; i < entry.TOC.AudioTracks; i++)
