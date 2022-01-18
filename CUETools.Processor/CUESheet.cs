@@ -1798,24 +1798,30 @@ namespace CUETools.Processor
                     // TODO: load secondary album art?
                     // TODO: load uri150 version first, load full version in background of choice form?
                     var ms = new MemoryStream();
-                    if (CTDB.FetchFile(imageMeta.uri, ms))
+                    try
                     {
-                        TagLib.Picture pic = new TagLib.Picture(new TagLib.ByteVector(ms.ToArray()));
-                        pic.Description = imageMeta.uri;
-                        using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
-                            try
-                            {
+                        if (CTDB.FetchFile(imageMeta.uri, ms))
+                        {
+                            TagLib.Picture pic = new TagLib.Picture(new TagLib.ByteVector(ms.ToArray()));
+                            pic.Description = imageMeta.uri;
+                            using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
+                                try
+                                {
 #if NET47 || NET20
-                                var image = Image.FromStream(ms);
-                                pic.Description += $" ({image.Width}x{image.Height})";
-                                //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
-                                //    isSquare = true;
-                                // pic.MimeType = f(image.RawFormat);
+                                    var image = Image.FromStream(ms);
+                                    pic.Description += $" ({image.Width}x{image.Height})";
+                                    //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                                    //    isSquare = true;
+                                    // pic.MimeType = f(image.RawFormat);
 #endif
-                            }
-                            catch { }
+                                }
+                                catch { }
 
-                        _albumArt.Add(pic);
+                            _albumArt.Add(pic);
+                        }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
                 CheckStop();
