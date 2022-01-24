@@ -1800,7 +1800,7 @@ namespace CUETools.Processor
                     var ms = new MemoryStream();
                     try
                     {
-                        if (CTDB.FetchFile(imageMeta.uri, ms))
+                        if (_config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.None && CTDB.FetchFile(imageMeta.uri, ms))
                         {
                             TagLib.Picture pic = new TagLib.Picture(new TagLib.ByteVector(ms.ToArray()));
                             pic.Description = imageMeta.uri;
