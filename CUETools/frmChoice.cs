@@ -269,7 +269,7 @@ namespace JDP
                             }
                             catch { }
                     }
-                    else
+                    else if (config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.None)
                     {
                         var image = r.metadata.AlbumArt.Find(x => x.primary) ?? r.metadata.AlbumArt[0];
                         pictureBox1.ImageLocation = image.uri150;
