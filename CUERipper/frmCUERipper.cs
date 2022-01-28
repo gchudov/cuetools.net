@@ -1079,6 +1079,9 @@ namespace CUERipper
             }
 
 			sw.Close();
+			// Save current metadata
+			if (data.selectedRelease != null)
+				data.selectedRelease.metadata.Save();
 		}
 
 		private void listTracks_BeforeLabelEdit(object sender, LabelEditEventArgs e)
