@@ -422,6 +422,44 @@ index ecc4955..1bfb20a 100644
  			BlockType = type;
  			IsLastBlock = false;
  			BlockSize = blockSize;
+diff --git a/src/TaglibSharp/Flac/Picture.cs b/src/TaglibSharp/Flac/Picture.cs
+index 8b6659f..4685ad5 100644
+--- a/src/TaglibSharp/Flac/Picture.cs
++++ b/src/TaglibSharp/Flac/Picture.cs
+@@ -22,6 +22,7 @@
+ //
+ 
+ using System;
++using System.Drawing;
+ 
+ namespace TagLib.Flac
+ {
+@@ -117,8 +118,24 @@ public Picture (IPicture picture)
+ 			Description = picture.Description;
+ 			Data = picture.Data;
+ 
+-			if (!(picture is Picture flac_picture))
++			if (!(picture is Picture flac_picture)) {
++#if NET47 || NET20
++				try
++				{
++					using (System.Drawing.Image ipicture_picture = (Bitmap)((new ImageConverter ()).ConvertFrom (picture.Data.Data)))
++					{
++						Width = ipicture_picture.Width;
++						Height = ipicture_picture.Height;
++						ColorDepth = System.Drawing.Image.GetPixelFormatSize (ipicture_picture.PixelFormat);
++						// IndexedColors are not counted
++					}
++				}
++				catch (Exception)
++				{
++				}
++#endif
+ 				return;
++			}
+ 
+ 			Width = flac_picture.Width;
+ 			Height = flac_picture.Height;
 diff --git a/src/TaglibSharp/Flac/StreamHeader.cs b/src/TaglibSharp/Flac/StreamHeader.cs
 index 5a57bbc..0c4d054 100644
 --- a/src/TaglibSharp/Flac/StreamHeader.cs
