@@ -467,7 +467,7 @@ namespace Freedb
 		{
 			StreamReader reader = null;
 			HttpWebResponse response = null;
-			string url = "http://" + MAIN_FREEDB_ADDRESS + SUBMIT_ADDITIONAL_URL_INFO;
+			string url = "http://" + m_mainSite.SiteAddress + SUBMIT_ADDITIONAL_URL_INFO;
 			string command = "";
 			string result = "";
 

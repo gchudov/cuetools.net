@@ -875,7 +875,17 @@ namespace CUERipper
                 m_freedb.Hostname = _config.advanced.FreedbDomain;
                 m_freedb.ClientName = "CUERipper";
                 m_freedb.Version = CUESheet.CUEToolsVersion;
-                m_freedb.SetDefaultSiteAddress(Properties.Settings.Default.MAIN_FREEDB_SITEADDRESS);
+                try
+                {
+                    m_freedb.SetDefaultSiteAddress(_config.advanced.FreedbSiteAddress);
+                }
+                catch (Exception ex)
+                {
+                    this.Invoke((MethodInvoker)delegate()
+                    {
+                        MessageBox.Show(this, ex.Message, "FreedbHelper.SetDefaultSiteAddress", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    });
+                }
 
                 QueryResult queryResult;
                 QueryResultCollection coll;
@@ -1518,6 +1528,7 @@ namespace CUERipper
 			frm.Data.User = _config.advanced.FreedbUser;
 			frm.Data.Domain = _config.advanced.FreedbDomain;
 			frm.Data.Category = "misc";
+			frm.Data.SiteAddress = _config.advanced.FreedbSiteAddress;
 
 			DialogResult dlgRes = DialogResult.Cancel;
 			this.Invoke((MethodInvoker)delegate() { dlgRes = frm.ShowDialog(); });
@@ -1538,6 +1549,17 @@ namespace CUERipper
 			m_freedb.Hostname = _config.advanced.FreedbDomain;
 			m_freedb.ClientName = "CUERipper";
 			m_freedb.Version = CUESheet.CUEToolsVersion;
+			try
+			{
+				m_freedb.SetDefaultSiteAddress(_config.advanced.FreedbSiteAddress);
+			}
+			catch (Exception ex)
+			{
+				this.Invoke((MethodInvoker)delegate()
+				{
+					MessageBox.Show(this, ex.Message, "FreedbHelper.SetDefaultSiteAddress", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				});
+			}
 			//try
 			//{
 			//    string code = m_freedb.GetCategories(out tmp);

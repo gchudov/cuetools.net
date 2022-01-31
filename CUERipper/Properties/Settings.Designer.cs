@@ -22,17 +22,5 @@ namespace CUERipper.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("gnudb.gnudb.org")]
-        public string MAIN_FREEDB_SITEADDRESS {
-            get {
-                return ((string)(this["MAIN_FREEDB_SITEADDRESS"]));
-            }
-            set {
-                this["MAIN_FREEDB_SITEADDRESS"] = value;
-            }
-        }
     }
 }

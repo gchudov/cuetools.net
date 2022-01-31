@@ -22,6 +22,7 @@ namespace CUERipper
 		private void frmFreedbSubmit_Load(object sender, EventArgs e)
 		{
 			frmFreedbSubmitDataBindingSource.DataSource = Data;
+			Text += " (" + Data.SiteAddress + ")";
 		}
 	}
 
@@ -32,5 +33,6 @@ namespace CUERipper
 		public string Category { get; set; }
 		public string User { get; set; }
 		public string Domain { get; set; }
+		public string SiteAddress { get; set; }
 	}
 }
