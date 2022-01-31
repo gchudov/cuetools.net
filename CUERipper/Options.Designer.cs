@@ -37,7 +37,7 @@ namespace CUERipper
             // buttonCancel
             // 
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(308, 315);
+            this.buttonCancel.Location = new System.Drawing.Point(308, 385);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 25);
             this.buttonCancel.TabIndex = 19;
@@ -51,7 +51,7 @@ namespace CUERipper
             this.propertyGrid1.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid1.Name = "propertyGrid1";
             this.propertyGrid1.PropertySort = System.Windows.Forms.PropertySort.Categorized;
-            this.propertyGrid1.Size = new System.Drawing.Size(395, 309);
+            this.propertyGrid1.Size = new System.Drawing.Size(395, 379);
             this.propertyGrid1.TabIndex = 21;
             this.propertyGrid1.ToolbarVisible = false;
             // 
@@ -60,7 +60,7 @@ namespace CUERipper
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(395, 352);
+            this.ClientSize = new System.Drawing.Size(395, 422);
             this.Controls.Add(this.propertyGrid1);
             this.Controls.Add(this.buttonCancel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;

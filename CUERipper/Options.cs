@@ -90,5 +90,8 @@ namespace CUERipper
 
         [DefaultValue(false), Category("CTDB"), DisplayName("Detailed log")]
         public bool DetailedCTDBLog { get { return config.advanced.DetailedCTDBLog; } set { config.advanced.DetailedCTDBLog = value; } }
+
+        [DefaultValue("gnudb.gnudb.org"), Category("Various"), DisplayName("Freedb site address")]
+        public string FreedbSiteAddress  { get { return config.advanced.FreedbSiteAddress ; } set { config.advanced.FreedbSiteAddress  = value; } }
     }
 }

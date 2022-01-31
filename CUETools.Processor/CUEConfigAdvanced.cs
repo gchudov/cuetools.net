@@ -57,6 +57,9 @@ namespace CUETools.Processor
         [DefaultValue("wont.tell"), Category("Freedb"), DisplayName("Email domain")]
         public string FreedbDomain { get; set; }
 
+        [DefaultValue("gnudb.gnudb.org"), Category("Freedb"), DisplayName("Site address")]
+        public string FreedbSiteAddress { get; set; }
+
         [DefaultValue(ProxyMode.System), Category("Proxy"), DisplayName("Proxy mode")]
         public ProxyMode UseProxyMode { get; set; }
 
