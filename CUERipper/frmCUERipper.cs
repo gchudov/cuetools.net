@@ -1057,7 +1057,7 @@ namespace CUERipper
 		{
 			if (data.selectedRelease == null) return;
 			if (e.Label != null && selectedDriveInfo.drive.TOC[e.Item + 1].IsAudio)
-				data.selectedRelease.metadata.Tracks[e.Item].Title = e.Label;
+				data.selectedRelease.metadata.Tracks[e.Item + 1 - selectedDriveInfo.drive.TOC.FirstAudio].Title = e.Label;
 			else
 				e.CancelEdit = true;
 		}
