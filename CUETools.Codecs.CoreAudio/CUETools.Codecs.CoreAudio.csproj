@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20</TargetFrameworks>
-    <Version>2.2.0.0</Version>
+    <Version>2.2.1.0</Version>
     <AssemblyName>CUETools.Codecs.CoreAudio</AssemblyName>
     <RootNamespace>CUETools.Codecs.CoreAudio</RootNamespace>
     <Product>CUETools</Product>

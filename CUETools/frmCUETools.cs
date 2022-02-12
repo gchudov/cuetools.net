@@ -609,7 +609,7 @@ namespace JDP
         {
             get
             {
-                return "CUETools 2.2.0";
+                return "CUETools 2.2.1";
             }
         }
 

@@ -138,7 +138,7 @@
     <value>imgComboBoxCategory</value>
   </data>
   <data name="&gt;&gt;imgComboBoxCategory.Type" xml:space="preserve">
-    <value>CUEControls.ImgComboBox, CUEControls, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.ImgComboBox, CUEControls, Version=2.2.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;imgComboBoxCategory.Parent" xml:space="preserve">
     <value>groupBox1</value>

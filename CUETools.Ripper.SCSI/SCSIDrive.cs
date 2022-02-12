@@ -1294,7 +1294,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			get
 			{
-				return "CUERipper v2.2.0 Copyright (C) 2008-2022 Grigory Chudov";
+				return "CUERipper v2.2.1 Copyright (C) 2008-2022 Grigory Chudov";
 				// ripper.GetName().Name + " " + ripper.GetName().Version;
 			}
 		}

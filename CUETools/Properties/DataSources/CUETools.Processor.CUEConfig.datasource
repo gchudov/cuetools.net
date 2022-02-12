@@ -6,5 +6,5 @@
     cause the file to be unrecognizable by the program.
 -->
 <GenericObjectDataSource DisplayName="CUEConfig" Version="1.0" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
-   <TypeInfo>CUETools.Processor.CUEConfig, CUETools.Processor, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</TypeInfo>
+   <TypeInfo>CUETools.Processor.CUEConfig, CUETools.Processor, Version=2.2.1.0, Culture=neutral, PublicKeyToken=null</TypeInfo>
 </GenericObjectDataSource>
