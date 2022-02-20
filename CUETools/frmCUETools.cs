@@ -554,7 +554,11 @@ namespace JDP
         private void MakeSelection(object sender, CUEToolsSelectionEventArgs e)
         {
             if (_batchPaths.Count > 1 || _batchProcessed > 0)
+            {
+                // Select the first album art (or log file) in case of batch mode.
+                e.selection = 0;
                 return;
+            }
             this.Invoke((MethodInvoker)delegate()
             {
                 frmChoice dlg = new frmChoice();
