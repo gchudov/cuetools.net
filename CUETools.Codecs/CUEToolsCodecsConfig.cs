@@ -52,6 +52,7 @@ namespace CUETools.Codecs
 
             if (Type.GetType("Mono.Runtime", false) == null)
             {
+                encoders.Add(new CommandLine.EncoderSettings("flac.exe", "flac", true, "0 1 2 3 4 5 6 7 8", "5", "flac.exe", "-%M -P %P - -o %O"));
                 encoders.Add(new CommandLine.EncoderSettings("flake.exe", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));
                 encoders.Add(new CommandLine.EncoderSettings("takc.exe", "tak", true, "0 1 2 2e 2m 3 3e 3m 4 4e 4m", "2", "takc.exe", "-e -p%M -overwrite - %O"));
                 encoders.Add(new CommandLine.EncoderSettings("ffmpeg.exe", "m4a", true, "", "", "ffmpeg.exe", "-i - -f ipod -acodec alac -y %O"));
