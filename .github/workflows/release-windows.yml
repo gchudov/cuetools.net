@@ -16,13 +16,14 @@ jobs:
   build:
     strategy:
       matrix:
-        # https://github.com/actions/virtual-environments/blob/master/images/win/Windows2016-Readme.md
-        os: [windows-2016]
+        # https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
+        os: [windows-2019]
       fail-fast: true
     runs-on: ${{ matrix.os }}
     env:
       # yamllint disable-line rule:line-length
-      DEVENV_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.com
+      DEVENV_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.com
+      MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe
       SLN_PATH: CUETools\CUETools.sln
     steps:
       - uses: actions/checkout@v2
@@ -33,10 +34,14 @@ jobs:
       - name: Apply patches
         # yamllint disable-line rule:line-length
         run: |
-          git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch --verbose
+          git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools_VS2019.patch --verbose
+          git apply --directory=ThirdParty/MAC_SDK ThirdParty/submodule_MAC_SDK_CUETools_VS2019.patch --verbose
           git apply --directory=ThirdParty/taglib-sharp ThirdParty/submodule_taglib-sharp_CUETools.patch --verbose
-          git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools_VS2017.patch --verbose
+          git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools_VS2019.patch --verbose
           git apply --directory=ThirdParty/WindowsMediaLib ThirdParty/submodule_WindowsMediaLib_CUETools.patch --verbose
+      - name: MSBuild NuGet restore
+        run: |
+          "%MSBUILD_PATH%" "%SLN_PATH%" -t:restore -p:Configuration=Release
       - name: Build Release|Any CPU
         run: |
           "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Any CPU"

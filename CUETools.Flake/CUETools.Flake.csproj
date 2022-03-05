@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20;netcoreapp2.0</TargetFrameworks>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <Version>2.2.1.0</Version>
     <AssemblyName>CUETools.Flake</AssemblyName>
     <RootNamespace>CUETools.Flake</RootNamespace>
