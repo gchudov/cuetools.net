@@ -29,7 +29,11 @@ namespace CUETools.TestCodecs
         ///A test for FlacWriter (string, int, int, int, Stream)
         ///</summary>
         [TestMethod()]
+#if DEBUG
+        [DeploymentItem("../ThirdPartyDebug/x64/libFLAC_dynamic.dll", "")]
+#else
         [DeploymentItem("../ThirdParty/x64/libFLAC_dynamic.dll", "")]
+#endif
         public void ConstructorTest()
         {
             AudioBuffer buff = Codecs.WAV.AudioDecoder.ReadAllSamples(new Codecs.WAV.DecoderSettings(), "test.wav");
