@@ -83,18 +83,20 @@ namespace CUETools.TestCodecs
 
             target = new Codecs.ALAC.AudioEncoder(new Codecs.ALAC.EncoderSettings() { PCM = buff.PCM }, "alacwriter1.m4a", null);
 			target.Settings.Padding = 1;
-			target.CreationTime = DateTime.Parse("15 Aug 1976");
+			target.CreationTime = DateTime.Parse("15 Aug 1976 +04:00");
 			target.FinalSampleCount = buff.Length;
 			target.Write(buff);
 			target.Close();
 			CollectionAssert.AreEqual(File.ReadAllBytes("alac.m4a"), File.ReadAllBytes("alacwriter1.m4a"), "alacwriter1.m4a doesn't match.");
 
-            target = new Codecs.ALAC.AudioEncoder(new Codecs.ALAC.EncoderSettings() { PCM = buff.PCM }, "alacwriter0.m4a", null);
-			target.Settings.Padding = 1;
-			target.CreationTime = DateTime.Parse("15 Aug 1976");
-			target.Write(buff);
-			target.Close();
-			CollectionAssert.AreEqual(File.ReadAllBytes("alac.m4a"), File.ReadAllBytes("alacwriter0.m4a"), "alacwriter0.m4a doesn't match.");
+            // This test with unknown FinalSampleCount has been commented out.
+            // See ALACWriter.cs: InvalidOperationException("FinalSampleCount unknown")
+            //target = new Codecs.ALAC.AudioEncoder(new Codecs.ALAC.EncoderSettings() { PCM = buff.PCM }, "alacwriter0.m4a", null);
+			//target.Settings.Padding = 1;
+			//target.CreationTime = DateTime.Parse("15 Aug 1976 +04:00");
+			//target.Write(buff);
+			//target.Close();
+			//CollectionAssert.AreEqual(File.ReadAllBytes("alac.m4a"), File.ReadAllBytes("alacwriter0.m4a"), "alacwriter0.m4a doesn't match.");
 		}
 
         [TestMethod()]
