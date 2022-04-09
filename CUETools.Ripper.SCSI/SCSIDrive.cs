@@ -812,8 +812,10 @@ namespace CUETools.Ripper.SCSI
 
 			ReadCDCommand[] readmode = { ReadCDCommand.ReadCdBEh, ReadCDCommand.ReadCdD8h };
 			Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.Mode294, Device.C2ErrorMode.Mode296, Device.C2ErrorMode.None };
-			// Mode294 does not work for these drives: LG GH24NSD1, ASUS DRW-24D5MT, PIONEER DVR-S21, PIONEER BDR-XD07U, HL-DT-ST BD-RE BU40N, Slimtype - DVD A DU8AESH. Try Mode296 first
-			if (Path.Contains("GH24NSD1") || Path.Contains("DRW-24D5MT") || Path.Contains("DVR-S21") || Path.Contains("BDR-XD07U") || Path.Contains("BU40N") || Path.Contains("DU8AESH"))
+			// Mode294 does not work for these drives: LG GH24NSD1, ASUS DRW-24D5MT, ASUS DRW-24F1ST d, PIONEER DVR-S21, PIONEER BDR-XD05, PIONEER BDR-XD07U, HL-DT-ST BD-RE BU40N, Slimtype - DVD A DU8AESH. Try Mode296 first
+			// Drives can contain one or multiple spaces in the name, e.g. "ASUS DRW-24F1ST   d". Remove any spaces from Path.
+			string pathNoSpace = Path.Replace(" ", String.Empty);
+			if (pathNoSpace.Contains("GH24NSD1") || pathNoSpace.Contains("DRW-24D5MT") || pathNoSpace.Contains("DRW-24F1STd") || pathNoSpace.Contains("DVR-S21") || pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("BU40N") || pathNoSpace.Contains("DU8AESH"))
 			{
 				c2mode.SetValue(Device.C2ErrorMode.Mode296, 0);
 				c2mode.SetValue(Device.C2ErrorMode.Mode294, 1);
