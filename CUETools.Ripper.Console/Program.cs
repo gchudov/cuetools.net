@@ -192,6 +192,17 @@ namespace CUETools.ConsoleRipper
 				//string destFile = (release == null) ? "cdimage.flac" : release.GetArtist() + " - " + release.GetTitle() + ".flac";
 				string destFile = (meta == null) ? "cdimage.wav" : string.Join("_", (meta.artist + " - " + meta.album).Split(Path.GetInvalidFileNameChars())) + ".wav";
 
+				// Do not automatically overwrite an existing file. Use a unique filename, e.g. "cdimage (1).wav"
+				string extension = Path.GetExtension(destFile);
+				int i = 0;
+				while (File.Exists(destFile))
+				{
+					if (i == 0)
+						destFile = destFile.Replace(extension, " (" + ++i + ")" + extension);
+					else
+						destFile = destFile.Replace("(" + i + ")" + extension, "(" + ++i + ")" + extension);
+				}
+
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
 				Console.WriteLine("Read cmd    : {0}", audioSource.CurrentReadCommand);
