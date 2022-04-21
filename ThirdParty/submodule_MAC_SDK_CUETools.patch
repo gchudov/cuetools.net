@@ -1,78 +1,96 @@
 diff --git a/Source/Projects/VS2017/MACLib/MACLib.vcxproj b/Source/Projects/VS2017/MACLib/MACLib.vcxproj
-index a8a2e26..a870ecd 100644
+index a8a2e26..208a7b8 100644
 --- a/Source/Projects/VS2017/MACLib/MACLib.vcxproj
 +++ b/Source/Projects/VS2017/MACLib/MACLib.vcxproj
-@@ -21,29 +21,29 @@
+@@ -1,5 +1,5 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
+@@ -21,29 +21,31 @@
    <PropertyGroup Label="Globals">
      <ProjectGuid>{21BF980F-C022-4DCC-9250-7C73528E422B}</ProjectGuid>
      <RootNamespace>MACLib</RootNamespace>
 -    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
-+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
++    <!-- Latest Target Version property -->
++    <LatestTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</LatestTargetPlatformVersion>
++    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <WholeProgramOptimization>false</WholeProgramOptimization>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <WholeProgramOptimization>false</WholeProgramOptimization>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 diff --git a/Source/Projects/VS2017/MACLibDll/MACLibDll.vcxproj b/Source/Projects/VS2017/MACLibDll/MACLibDll.vcxproj
-index 45e7847..f217947 100644
+index 45e7847..dfce945 100644
 --- a/Source/Projects/VS2017/MACLibDll/MACLibDll.vcxproj
 +++ b/Source/Projects/VS2017/MACLibDll/MACLibDll.vcxproj
-@@ -21,29 +21,29 @@
+@@ -1,5 +1,5 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
+@@ -21,29 +21,31 @@
    <PropertyGroup Label="Globals">
      <ProjectGuid>{CEE4A179-49FC-4D51-B045-F717D3A6C13A}</ProjectGuid>
      <RootNamespace>MACLibDll</RootNamespace>
 -    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
-+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
++    <!-- Latest Target Version property -->
++    <LatestTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</LatestTargetPlatformVersion>
++    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <WholeProgramOptimization>false</WholeProgramOptimization>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <WholeProgramOptimization>false</WholeProgramOptimization>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v141</PlatformToolset>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />

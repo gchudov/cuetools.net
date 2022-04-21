@@ -1,74 +1,75 @@
 diff --git a/audition/audition.vcxproj b/audition/audition.vcxproj
-index fd59f60..a1ff47f 100644
+index fd59f60..dcbf0b5 100644
 --- a/audition/audition.vcxproj
 +++ b/audition/audition.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -26,19 +26,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -57,7 +57,7 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 diff --git a/src/libwavpack.vcxproj b/src/libwavpack.vcxproj
-index 3d586d6..121a4f1 100644
+index 3d586d6..7e4523b 100644
 --- a/src/libwavpack.vcxproj
 +++ b/src/libwavpack.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -26,19 +26,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -58,32 +58,32 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
+@@ -61,29 +61,29 @@
+     <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
 -    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -182,20 +183,6 @@ index 3d586d6..121a4f1 100644
      <ClCompile Include="pack_floats.c" />
      <ClCompile Include="pack_utils.c" />
      <ClCompile Include="read_words.c" />
-diff --git a/wavpack.sln b/wavpack.sln
-index a979740..0b9a66d 100644
---- a/wavpack.sln
-+++ b/wavpack.sln
-@@ -1,7 +1,7 @@
- ﻿
- Microsoft Visual Studio Solution File, Format Version 12.00
--# Visual Studio Version 16
--VisualStudioVersion = 16.0.30804.86
-+# Visual Studio 15
-+VisualStudioVersion = 15.9.28307.1500
- MinimumVisualStudioVersion = 10.0.40219.1
- Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwavpack", "src\libwavpack.vcxproj", "{5CCCB9CF-0384-458F-BA08-72B73866840F}"
- EndProject
 diff --git a/wavpackdll/wavpackdll.rc b/wavpackdll/wavpackdll.rc
 index 782c69f..4ea10a3 100644
 --- a/wavpackdll/wavpackdll.rc
@@ -219,39 +206,42 @@ index 782c69f..4ea10a3 100644
  END
  
 diff --git a/wavpackdll/wavpackdll.vcxproj b/wavpackdll/wavpackdll.vcxproj
-index eabba53..2925c90 100644
+index eabba53..ff50b8c 100644
 --- a/wavpackdll/wavpackdll.vcxproj
 +++ b/wavpackdll/wavpackdll.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -26,19 +26,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -58,25 +58,25 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
+@@ -61,22 +61,22 @@
+     <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
 -    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -444,230 +434,218 @@ index eabba53..2925c90 100644
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
 diff --git a/wavpackexe/wavpack.vcxproj b/wavpackexe/wavpack.vcxproj
-index 89d7b8f..b6939f4 100644
+index 89d7b8f..905b8d0 100644
 --- a/wavpackexe/wavpack.vcxproj
 +++ b/wavpackexe/wavpack.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -25,19 +25,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -56,7 +56,7 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 diff --git a/winamp/winamp.vcxproj b/winamp/winamp.vcxproj
-index 0761d2e..0ecc44a 100644
+index 0761d2e..06e0137 100644
 --- a/winamp/winamp.vcxproj
 +++ b/winamp/winamp.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -26,19 +26,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -57,7 +57,7 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 diff --git a/winamp/winamp_lng/winamp_lng.vcxproj b/winamp/winamp_lng/winamp_lng.vcxproj
-index e7b87ad..aba4c94 100644
+index e7b87ad..516ddee 100644
 --- a/winamp/winamp_lng/winamp_lng.vcxproj
 +++ b/winamp/winamp_lng/winamp_lng.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -26,25 +26,25 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
      <WholeProgramOptimization>false</WholeProgramOptimization>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
      <WholeProgramOptimization>false</WholeProgramOptimization>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
      <WholeProgramOptimization>false</WholeProgramOptimization>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
      <CharacterSet>Unicode</CharacterSet>
      <WholeProgramOptimization>false</WholeProgramOptimization>
    </PropertyGroup>
-@@ -65,7 +65,7 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 diff --git a/wvgainexe/wvgain.vcxproj b/wvgainexe/wvgain.vcxproj
-index b7331b9..a463dad 100644
+index b7331b9..81cf728 100644
 --- a/wvgainexe/wvgain.vcxproj
 +++ b/wvgainexe/wvgain.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -25,19 +25,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -56,7 +56,7 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 diff --git a/wvtagexe/wvtag.vcxproj b/wvtagexe/wvtag.vcxproj
-index b593ab8..20a85aa 100644
+index b593ab8..3e9fc24 100644
 --- a/wvtagexe/wvtag.vcxproj
 +++ b/wvtagexe/wvtag.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -26,19 +26,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -57,7 +57,7 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 diff --git a/wvunpackexe/wvunpack.vcxproj b/wvunpackexe/wvunpack.vcxproj
-index 599b888..794e92a 100644
+index 599b888..eccfb89 100644
 --- a/wvunpackexe/wvunpack.vcxproj
 +++ b/wvunpackexe/wvunpack.vcxproj
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="Debug|Win32">
+       <Configuration>Debug</Configuration>
 @@ -25,19 +25,19 @@
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>Application</ConfigurationType>
 -    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v141</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -56,7 +56,7 @@
-   </ImportGroup>
-   <PropertyGroup Label="UserMacros" />
-   <PropertyGroup>
--    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
-+    <_ProjectFileVersion>15.9.28307.1500</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
