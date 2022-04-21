@@ -1,42 +1,44 @@
 diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj b/src/libFLAC/libFLAC_dynamic.vcxproj
-index 056df9c0..5222f16b 100644
+index 056df9c0..f271bf02 100644
 --- a/src/libFLAC/libFLAC_dynamic.vcxproj
 +++ b/src/libFLAC/libFLAC_dynamic.vcxproj
 @@ -1,5 +1,5 @@
  ﻿<?xml version="1.0" encoding="utf-8"?>
 -<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
    <ItemGroup Label="ProjectConfigurations">
      <ProjectConfiguration Include="Debug|Win32">
        <Configuration>Debug</Configuration>
-@@ -22,21 +22,26 @@
+@@ -22,21 +22,28 @@
      <ProjectGuid>{4cefbc83-c215-11db-8314-0800200c9a66}</ProjectGuid>
      <RootNamespace>libFLAC_dynamic</RootNamespace>
      <Keyword>Win32Proj</Keyword>
-+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
++    <!-- Latest Target Version property -->
++    <LatestTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</LatestTargetPlatformVersion>
++    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
      <WholeProgramOptimization>true</WholeProgramOptimization>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
      <WholeProgramOptimization>true</WholeProgramOptimization>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
      <ConfigurationType>DynamicLibrary</ConfigurationType>
-+    <PlatformToolset>v142</PlatformToolset>
++    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
    </PropertyGroup>
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
-@@ -58,23 +63,23 @@
+@@ -58,23 +65,23 @@
      <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -66,7 +68,7 @@ index 056df9c0..5222f16b 100644
      <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-@@ -82,7 +87,7 @@
+@@ -82,7 +89,7 @@
        <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
        <Optimization>Disabled</Optimization>
        <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -75,7 +77,7 @@ index 056df9c0..5222f16b 100644
        <MinimalRebuild>true</MinimalRebuild>
        <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
        <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-@@ -92,7 +97,6 @@
+@@ -92,7 +99,6 @@
        <DisableSpecificWarnings>4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
      </ClCompile>
      <Link>
@@ -83,7 +85,7 @@ index 056df9c0..5222f16b 100644
        <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
        <GenerateDebugInformation>true</GenerateDebugInformation>
        <SubSystem>Windows</SubSystem>
-@@ -104,7 +108,7 @@
+@@ -104,7 +110,7 @@
        <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
        <Optimization>Disabled</Optimization>
        <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -92,7 +94,7 @@ index 056df9c0..5222f16b 100644
        <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
        <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
        <WarningLevel>Level3</WarningLevel>
-@@ -113,7 +117,6 @@
+@@ -113,7 +119,6 @@
        <DisableSpecificWarnings>4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
      </ClCompile>
      <Link>
@@ -100,7 +102,7 @@ index 056df9c0..5222f16b 100644
        <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
        <GenerateDebugInformation>true</GenerateDebugInformation>
        <SubSystem>Windows</SubSystem>
-@@ -127,8 +130,8 @@
+@@ -127,8 +132,8 @@
        <OmitFramePointers>true</OmitFramePointers>
        <WholeProgramOptimization>true</WholeProgramOptimization>
        <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -111,7 +113,7 @@ index 056df9c0..5222f16b 100644
        <BufferSecurityCheck>false</BufferSecurityCheck>
        <WarningLevel>Level3</WarningLevel>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-@@ -137,7 +140,6 @@
+@@ -137,7 +142,6 @@
        <FloatingPointModel>Fast</FloatingPointModel>
      </ClCompile>
      <Link>
@@ -119,7 +121,7 @@ index 056df9c0..5222f16b 100644
        <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
        <GenerateDebugInformation>true</GenerateDebugInformation>
        <SubSystem>Windows</SubSystem>
-@@ -155,8 +157,8 @@
+@@ -155,8 +159,8 @@
        <OmitFramePointers>true</OmitFramePointers>
        <WholeProgramOptimization>true</WholeProgramOptimization>
        <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -130,7 +132,7 @@ index 056df9c0..5222f16b 100644
        <BufferSecurityCheck>false</BufferSecurityCheck>
        <WarningLevel>Level3</WarningLevel>
        <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-@@ -165,7 +167,6 @@
+@@ -165,7 +169,6 @@
        <FloatingPointModel>Fast</FloatingPointModel>
      </ClCompile>
      <Link>
@@ -138,7 +140,7 @@ index 056df9c0..5222f16b 100644
        <IgnoreSpecificDefaultLibraries>uuid.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
        <GenerateDebugInformation>true</GenerateDebugInformation>
        <SubSystem>Windows</SubSystem>
-@@ -241,10 +242,6 @@
+@@ -241,10 +244,6 @@
      <ClCompile Include="memory.c" />
      <ClCompile Include="metadata_iterators.c" />
      <ClCompile Include="metadata_object.c" />
