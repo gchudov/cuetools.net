@@ -603,6 +603,7 @@ namespace JDP {
             this.toolTip1.SetToolTip(this.comboBoxOutputFormat, resources.GetString("comboBoxOutputFormat.ToolTip"));
             this.comboBoxOutputFormat.SelectedIndexChanged += new System.EventHandler(this.comboBoxOutputFormat_SelectedIndexChanged);
             this.comboBoxOutputFormat.TextUpdate += new System.EventHandler(this.comboBoxOutputFormat_TextUpdate);
+            this.comboBoxOutputFormat.Validating += new System.ComponentModel.CancelEventHandler(this.comboBoxOutputFormat_Validating);
             // 
             // txtInputPath
             // 

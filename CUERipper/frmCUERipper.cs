@@ -179,6 +179,10 @@ namespace CUERipper
 				bnComboBoxOutputFormat.Items.Add(sr.Load(string.Format("OutputPathUseTemplate{0}", iFormat)) ?? "");
 
 			bnComboBoxOutputFormat.Text = sr.Load("PathFormat") ?? "%music%\\%artist%\\[%year% - ]%album%\\%artist% - %album%.cue";
+			if (!bnComboBoxOutputFormat.Text.EndsWith(".cue", StringComparison.InvariantCultureIgnoreCase))
+			{
+				bnComboBoxOutputFormat.Text = bnComboBoxOutputFormat.Text + ".cue";
+			}
 			SelectedOutputAudioType = (AudioEncoderType?)sr.LoadInt32("OutputAudioType", null, null) ?? AudioEncoderType.Lossless;
 			bnComboBoxImage.SelectedIndex = sr.LoadInt32("ComboImage", 0, bnComboBoxImage.Items.Count - 1) ?? 0;
 			trackBarSecureMode.Value = sr.LoadInt32("SecureMode", 0, trackBarSecureMode.Maximum - 1) ?? 1;
@@ -1327,6 +1331,15 @@ namespace CUERipper
 
 		private void bnComboBoxOutputFormat_TextChanged(object sender, EventArgs e)
 		{
+			UpdateOutputPath();
+		}
+
+		private void bnComboBoxOutputFormat_Validating(object sender, CancelEventArgs e)
+		{
+			if (!bnComboBoxOutputFormat.Text.EndsWith(".cue", StringComparison.InvariantCultureIgnoreCase))
+			{
+				bnComboBoxOutputFormat.Text = bnComboBoxOutputFormat.Text + ".cue";
+			}
 			UpdateOutputPath();
 		}
 

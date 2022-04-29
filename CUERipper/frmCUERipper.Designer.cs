@@ -614,6 +614,7 @@ namespace CUERipper
             this.bnComboBoxOutputFormat.TextChanged += new System.EventHandler(this.bnComboBoxOutputFormat_TextChanged);
             this.bnComboBoxOutputFormat.Leave += new System.EventHandler(this.bnComboBoxOutputFormat_Leave);
             this.bnComboBoxOutputFormat.MouseLeave += new System.EventHandler(this.bnComboBoxOutputFormat_MouseLeave);
+            this.bnComboBoxOutputFormat.Validating += new System.ComponentModel.CancelEventHandler(this.bnComboBoxOutputFormat_Validating);
             // 
             // listMetadata
             // 
