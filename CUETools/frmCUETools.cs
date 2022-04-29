@@ -319,6 +319,15 @@ namespace JDP
             UpdateOutputPath();
         }
 
+        private void comboBoxOutputFormat_Validating(object sender, CancelEventArgs e)
+        {
+            if (!comboBoxOutputFormat.Text.EndsWith(".cue", StringComparison.InvariantCultureIgnoreCase))
+            {
+                comboBoxOutputFormat.Text = comboBoxOutputFormat.Text + ".cue";
+            }
+            UpdateOutputPath();
+        }
+
         private void frmCUETools_Load(object sender, EventArgs e)
         {
             _batchPaths = new List<string>();
@@ -1357,6 +1366,10 @@ namespace JDP
             SelectedCUEStyle = _profile._CUEStyle;
             textBoxOffset.Text = _profile._writeOffset.ToString();
             comboBoxOutputFormat.Text = _profile._outputTemplate ?? comboBoxOutputFormat.Items[0].ToString();
+            if (!comboBoxOutputFormat.Text.EndsWith(".cue", StringComparison.InvariantCultureIgnoreCase))
+            {
+                comboBoxOutputFormat.Text = comboBoxOutputFormat.Text + ".cue";
+            }
             toolStripDropDownButtonProfile.Text = _profile._name;
             SelectedScript = _profile._script;
             checkBoxEditTags.Checked = _profile._editTags;
