@@ -10,21 +10,24 @@ namespace ArCueDotNet
         static int Main(string[] args)
         {
             bool ok = true;
+            int offset = 0;
             bool verbose = false;
             string pathIn = null;
             for (int arg = 0; arg < args.Length; arg++)
-			{
-				if (args[arg].Length == 0)
-					ok = false;
-				else if ((args[arg] == "-v" || args[arg] == "--verbose"))
-					verbose = true;
-				else if (args[arg][0] != '-' && pathIn == null)
+            {
+                if (args[arg].Length == 0)
+                    ok = false;
+                else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
+                    ok = int.TryParse(args[arg], out offset);
+                else if ((args[arg] == "-v" || args[arg] == "--verbose"))
+                    verbose = true;
+                else if (args[arg][0] != '-' && pathIn == null)
                     pathIn = args[arg];
-				else
-					ok = false;
-				if (!ok)
-					break;
-			}
+                else
+                    ok = false;
+                if (!ok)
+                    break;
+            }
 
             if (!ok || pathIn == null)
             {
@@ -33,7 +36,8 @@ namespace ArCueDotNet
                 Console.WriteLine();
                 Console.WriteLine("Options:");
                 Console.WriteLine();
-                Console.WriteLine(" -v --verbose         Verbose mode");
+                Console.WriteLine(" -O, --offset <samples>   Use specific offset;");
+                Console.WriteLine(" -v, --verbose            Verbose mode");
                 return 1;
             }
             if (!File.Exists(pathIn))
@@ -57,6 +61,7 @@ namespace ArCueDotNet
                 CUESheet cueSheet = new CUESheet(config);
                 cueSheet.Action = CUEAction.Verify;
                 //cueSheet.OutputStyle = CUEStyle.SingleFile;
+                cueSheet.WriteOffset = offset;
                 cueSheet.Open(pathIn);
                 cueSheet.UseAccurateRip();
                 cueSheet.UseCUEToolsDB("ARCUE " + CUESheet.CUEToolsVersion, null, true, CTDBMetadataSearch.None);
