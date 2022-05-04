@@ -125,7 +125,9 @@ namespace JDP
 				if (_profile._action == CUEAction.CreateDummyCUE)
 					throw new Exception("CreateDummyCUE action not yet supported in commandline mode.");
 
+				bool outputAudio = _profile._action == CUEAction.Encode && _profile._outputAudioType != AudioEncoderType.NoAudio;
 				bool useAR = _profile._action == CUEAction.Verify || _profile._ARVerifyOnEncode;
+				bool useCUEToolsDB = (_profile._action == CUEAction.Verify && _profile._CTDBVerify) || (outputAudio && _profile._CTDBVerifyOnEncode);
 
 				cueSheet.Action = _profile._action;
 				cueSheet.OutputStyle = _profile._CUEStyle;
@@ -133,6 +135,8 @@ namespace JDP
 				cueSheet.Open(pathIn);
 				if (useAR)
 					cueSheet.UseAccurateRip();
+				if (useCUEToolsDB)
+					cueSheet.UseCUEToolsDB("CUETools " + CUESheet.CUEToolsVersion, null, true, CUETools.CTDB.CTDBMetadataSearch.None);
 
 				pathOut = CUESheet.GenerateUniqueOutputPath(_profile._config, 
 					_profile._outputTemplate, 
@@ -163,7 +167,7 @@ namespace JDP
 						textBox1.Text += cueSheet.LOGContents;
 						textBox1.Show();
 					}
-					else if (useAR)
+					else if (useAR || useCUEToolsDB)
 					{
 						textBox1.Text += CUESheetLogWriter.GetAccurateRipLog(cueSheet);
 						textBox1.Show();
