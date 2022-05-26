@@ -22,10 +22,10 @@ index 50613aa..8828d19 100644
  		///    Gets the sample rate of the audio represented by the
  		///    current instance.
 diff --git a/src/TaglibSharp/Aiff/StreamHeader.cs b/src/TaglibSharp/Aiff/StreamHeader.cs
-index 3d8d9ee..f41bbaf 100644
+index 318be17..8ad1ec4 100644
 --- a/src/TaglibSharp/Aiff/StreamHeader.cs
 +++ b/src/TaglibSharp/Aiff/StreamHeader.cs
-@@ -252,6 +252,18 @@ public StreamHeader (ByteVector data, long streamLength)
+@@ -205,6 +205,18 @@ public StreamHeader (ByteVector data, long streamLength)
  			}
  		}
  
@@ -218,7 +218,7 @@ index 84717ba..5251b84 100644
  		///    Gets and sets the ReplayGain track gain in dB.
  		/// </summary>
 diff --git a/src/TaglibSharp/CombinedTag.cs b/src/TaglibSharp/CombinedTag.cs
-index 99706cb..80ec4a9 100644
+index 009eb8f..ee59e6e 100644
 --- a/src/TaglibSharp/CombinedTag.cs
 +++ b/src/TaglibSharp/CombinedTag.cs
 @@ -1637,6 +1637,162 @@ protected void ClearTags ()
@@ -505,10 +505,10 @@ index 1f3d4d2..2019b36 100644
  		///    Gets the sample rate of the audio represented by the
  		///    current instance.
 diff --git a/src/TaglibSharp/Id3v2/FrameTypes.cs b/src/TaglibSharp/Id3v2/FrameTypes.cs
-index 829253a..3228e56 100644
+index 2fda85d..6a088d5 100644
 --- a/src/TaglibSharp/Id3v2/FrameTypes.cs
 +++ b/src/TaglibSharp/Id3v2/FrameTypes.cs
-@@ -58,6 +58,7 @@ static class FrameType
+@@ -60,6 +60,7 @@ static class FrameType
  		public static readonly ReadOnlyByteVector TCMP = "TCMP";
  		public static readonly ReadOnlyByteVector TDRC = "TDRC";
  		public static readonly ReadOnlyByteVector TDAT = "TDAT";
@@ -516,7 +516,7 @@ index 829253a..3228e56 100644
  		public static readonly ReadOnlyByteVector TDTG = "TDTG";
  		public static readonly ReadOnlyByteVector TEXT = "TEXT";
  		public static readonly ReadOnlyByteVector TIT1 = "TIT1";
-@@ -73,7 +74,7 @@ static class FrameType
+@@ -76,7 +77,7 @@ static class FrameType
  		public static readonly ReadOnlyByteVector TPE3 = "TPE3";
  		public static readonly ReadOnlyByteVector TPE4 = "TPE4";
  		public static readonly ReadOnlyByteVector TPOS = "TPOS";
@@ -525,7 +525,7 @@ index 829253a..3228e56 100644
  		public static readonly ReadOnlyByteVector TRCK = "TRCK";
  		public static readonly ReadOnlyByteVector TRDA = "TRDA";
  		public static readonly ReadOnlyByteVector TSIZ = "TSIZ";
-@@ -82,6 +83,7 @@ static class FrameType
+@@ -85,6 +86,7 @@ static class FrameType
  		public static readonly ReadOnlyByteVector TSOC = "TSOC"; // Composer Sort Frame
  		public static readonly ReadOnlyByteVector TSOP = "TSOP"; // Performer Sort Frame
  		public static readonly ReadOnlyByteVector TSOT = "TSOT"; // Track Title Sort Frame
@@ -534,7 +534,7 @@ index 829253a..3228e56 100644
  		public static readonly ReadOnlyByteVector TXXX = "TXXX";
  		public static readonly ReadOnlyByteVector TYER = "TYER";
 diff --git a/src/TaglibSharp/Id3v2/Tag.cs b/src/TaglibSharp/Id3v2/Tag.cs
-index 3e9b866..bd421c8 100644
+index 1c3676f..c780d76 100644
 --- a/src/TaglibSharp/Id3v2/Tag.cs
 +++ b/src/TaglibSharp/Id3v2/Tag.cs
 @@ -2083,6 +2083,77 @@ IEnumerator IEnumerable.GetEnumerator ()
@@ -1309,10 +1309,10 @@ index 360a2b6..03b2873 100644
  		///    Gets the sample rate of the audio represented by the
  		///    current instance.
 diff --git a/src/TaglibSharp/Tag.cs b/src/TaglibSharp/Tag.cs
-index fb7be5c..ed2a3ab 100644
+index 9e5c00b..4ef6fc5 100644
 --- a/src/TaglibSharp/Tag.cs
 +++ b/src/TaglibSharp/Tag.cs
-@@ -1059,6 +1059,66 @@ public abstract class Tag
+@@ -1078,6 +1078,66 @@ public abstract class Tag
  			set { }
  		}
  

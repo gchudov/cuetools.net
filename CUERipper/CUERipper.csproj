@@ -191,7 +191,7 @@
     </ProjectReference>
     <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
       <Project>{1219a514-d3fa-40db-bbb2-92ce05e35839}</Project>
-      <Name>taglib-sharp</Name>
+      <Name>TaglibSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
