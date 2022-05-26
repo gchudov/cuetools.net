@@ -487,7 +487,7 @@
     <value>fileSystemTreeView1</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.2.1.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
     <value>grpInput</value>
@@ -544,7 +544,7 @@
     <value>fileSystemTreeView1</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Type" xml:space="preserve">
-    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.2.1.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>CUEControls.FileSystemTreeView, CUEControls, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;fileSystemTreeView1.Parent" xml:space="preserve">
     <value>grpInput</value>
