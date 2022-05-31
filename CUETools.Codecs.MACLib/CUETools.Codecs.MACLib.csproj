@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
-    <Version>2.2.1.0</Version>
+    <Version>2.2.2.0</Version>
     <AssemblyName>CUETools.Codecs.MACLib</AssemblyName>
     <RootNamespace>CUETools.Codecs.MACLib</RootNamespace>
     <Product>CUETools</Product>

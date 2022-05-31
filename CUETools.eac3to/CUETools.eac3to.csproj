@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net47;netcoreapp2.0</TargetFrameworks>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
-    <Version>2.2.1.0</Version>
+    <Version>2.2.2.0</Version>
     <AssemblyName>CUETools.eac3to</AssemblyName>
     <RootNamespace>CUETools.eac3to</RootNamespace>
     <Product>CUETools</Product>
