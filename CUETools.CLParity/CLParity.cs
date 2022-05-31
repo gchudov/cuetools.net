@@ -383,7 +383,7 @@ namespace CUETools.CLParity
 
         public string Path { get { return null; } }
 
-        public static readonly string vendor_string = "CLParity#2.2.1";
+        public static readonly string vendor_string = "CLParity#2.2.2";
     }
 
 	internal class CLParityTask
