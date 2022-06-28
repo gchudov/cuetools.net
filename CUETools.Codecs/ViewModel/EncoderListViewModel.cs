@@ -14,6 +14,7 @@ namespace CUETools.Codecs
             this.model = model;
             model.ForEach(item => Add(new AudioEncoderSettingsViewModel(item)));
             AddingNew += OnAddingNew;
+            ListChanged += OnListChanged;
         }
 
         private void OnAddingNew(object sender, AddingNewEventArgs e)
@@ -21,6 +22,14 @@ namespace CUETools.Codecs
             var item = new CommandLine.EncoderSettings("new", "wav", true, "", "", "", "");
             model.Add(item);
             e.NewObject = new AudioEncoderSettingsViewModel(item);
+        }
+
+        private void OnListChanged(object sender, ListChangedEventArgs e)
+        {
+            if (e.ListChangedType == ListChangedType.ItemDeleted)
+            {
+                model.RemoveAt(e.NewIndex);
+            }
         }
 
         public bool TryGetValue(string extension, bool lossless, string name, out AudioEncoderSettingsViewModel result)
