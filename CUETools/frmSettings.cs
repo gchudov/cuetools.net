@@ -518,7 +518,7 @@ namespace JDP
             }
         }
 
-        private void listViewDecoders_KeyDown(object sender, KeyEventArgs e)
+        private void listBoxDecoders_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {

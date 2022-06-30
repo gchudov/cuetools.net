@@ -1280,6 +1280,7 @@ namespace JDP
             this.listBoxDecoders.FormattingEnabled = true;
             this.listBoxDecoders.Name = "listBoxDecoders";
             this.tableLayoutPanel5.SetRowSpan(this.listBoxDecoders, 2);
+            this.listBoxDecoders.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBoxDecoders_KeyDown);
             // 
             // tabPage4
             // 
