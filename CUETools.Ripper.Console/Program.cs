@@ -81,6 +81,7 @@ namespace CUETools.ConsoleRipper
 			Console.WriteLine("-P, --paranoid           maximum level of error correction;");
 			Console.WriteLine("-D, --drive <letter>     use a specific CD drive, e.g. {0};", drives);
 			Console.WriteLine("-O, --offset <samples>   use specific drive read offset;");
+			Console.WriteLine("-C, --c2mode <int>       use specific C2ErrorMode, 0 (None), 1 (Mode294), 2 (Mode296), 3 (Auto);");
 			Console.WriteLine("-T, --test               detect read command;");
 			Console.WriteLine("--d8                     force D8h read command;");
 			Console.WriteLine("--be                     force BEh read command;");
@@ -96,6 +97,7 @@ namespace CUETools.ConsoleRipper
 			int correctionQuality = 1;
 			string driveLetter = null;
 			int driveOffset = 0;
+			int driveC2ErrorMode = 3;
 			bool test = false;
 			bool forceD8 = false, forceBE = false, quiet = false;
 			for (int arg = 0; arg < args.Length; arg++)
@@ -119,6 +121,8 @@ namespace CUETools.ConsoleRipper
 					driveLetter = args[arg];
 				else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
 					ok = int.TryParse(args[arg], out driveOffset);
+				else if ((args[arg] == "-C" || args[arg] == "--c2mode") && ++arg < args.Length)
+					ok = int.TryParse(args[arg], out driveC2ErrorMode) && (driveC2ErrorMode >= 0 && driveC2ErrorMode <=3);
 				else
 					ok = false;
 				if (!ok)
@@ -163,6 +167,7 @@ namespace CUETools.ConsoleRipper
 						//throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
 
 				audioSource.DriveOffset = driveOffset;
+				audioSource.DriveC2ErrorMode = driveC2ErrorMode;
 				audioSource.CorrectionQuality = correctionQuality;
 				audioSource.DebugMessages = !quiet;
 				if (forceD8) audioSource.ForceD8 = true;
@@ -205,6 +210,7 @@ namespace CUETools.ConsoleRipper
 
 				Console.WriteLine("Drive       : {0}", audioSource.Path);
 				Console.WriteLine("Read offset : {0}", audioSource.DriveOffset);
+				Console.WriteLine("C2ErrorMode : {0} ({1})", audioSource.DriveC2ErrorMode, (DriveC2ErrorModeSetting)audioSource.DriveC2ErrorMode);
 				Console.WriteLine("Read cmd    : {0}", audioSource.CurrentReadCommand);
 				Console.WriteLine("Secure mode : {0}", audioSource.CorrectionQuality);
 				Console.WriteLine("Filename    : {0}", destFile);
@@ -274,7 +280,8 @@ namespace CUETools.ConsoleRipper
 				logWriter.WriteLine("{0}", audioSource.RipperVersion);
 				logWriter.WriteLine("Extraction logfile from {0}", DateTime.Now);
 				logWriter.WriteLine("Used drive  : {0}", audioSource.Path);
-				logWriter.WriteLine("Read offset correction                      : {0}", audioSource.DriveOffset);
+				logWriter.WriteLine("Read offset correction : {0}", audioSource.DriveOffset);
+				logWriter.WriteLine("C2 error mode          : {0} ({1})", audioSource.DriveC2ErrorMode, (DriveC2ErrorModeSetting)audioSource.DriveC2ErrorMode);
 				bool wereErrors = false;
 				for (int iTrack = 1; iTrack <= audioSource.TOC.AudioTracks; iTrack++)
 					for (uint iSector = audioSource.TOC[iTrack].Start; iSector <= audioSource.TOC[iTrack].End; iSector ++)
