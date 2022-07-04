@@ -19,6 +19,7 @@ namespace CUETools.Ripper
 		string ARName { get; }
 		string EACName { get; }
 		int DriveOffset { get; set; }
+		int DriveC2ErrorMode { get; set; }
 		string RipperVersion { get; }
 		string CurrentReadCommand { get; }
 		int CorrectionQuality { get; set; }

@@ -344,6 +344,21 @@ namespace CUERipper
 						reader.DriveOffset = driveOffset;
 					else
 						reader.DriveOffset = 0;
+
+					if (cueRipperConfig.DriveC2ErrorModes.ContainsKey(reader.ARName))
+					{
+						reader.DriveC2ErrorMode = cueRipperConfig.DriveC2ErrorModes[reader.ARName];
+						if (reader.DriveC2ErrorMode < 0 || reader.DriveC2ErrorMode > 3)
+						{
+							// Invalid setting, use 3 (Auto)
+							reader.DriveC2ErrorMode = 3;
+						}
+					}
+					else
+					{
+						reader.DriveC2ErrorMode = 3; // 0 (None), 1 (Mode294), 2 (Mode296), 3 (Auto)
+					}
+					cueRipperConfig.DriveC2ErrorModes[reader.ARName] = reader.DriveC2ErrorMode; // Remove this line, when setting is available in GUI. See numericWriteOffset_ValueChanged
 				}
 				data.Drives.Add(new DriveInfo(m_icon_mgr, drive + ":\\", reader));
 			}
