@@ -184,7 +184,7 @@ index 3d586d6..7e4523b 100644
      <ClCompile Include="pack_utils.c" />
      <ClCompile Include="read_words.c" />
 diff --git a/wavpackdll/wavpackdll.rc b/wavpackdll/wavpackdll.rc
-index 782c69f..4ea10a3 100644
+index 12f765c..4c625d7 100644
 --- a/wavpackdll/wavpackdll.rc
 +++ b/wavpackdll/wavpackdll.rc
 @@ -7,7 +7,7 @@
@@ -206,7 +206,7 @@ index 782c69f..4ea10a3 100644
  END
  
 diff --git a/wavpackdll/wavpackdll.vcxproj b/wavpackdll/wavpackdll.vcxproj
-index eabba53..ff50b8c 100644
+index 3b86cf2..83b4a35 100644
 --- a/wavpackdll/wavpackdll.vcxproj
 +++ b/wavpackdll/wavpackdll.vcxproj
 @@ -1,5 +1,5 @@
@@ -307,7 +307,7 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
-@@ -150,16 +150,16 @@
+@@ -151,18 +151,18 @@
        <CompileAs>Default</CompileAs>
      </ClCompile>
      <Link>
@@ -316,6 +316,8 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetVersion /export:WavpackGetErrorMessage /export:WavpackUnpackSamples
 -/export:WavpackSeekSample /export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
 +/export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
+ /export:WavpackGetEncodedNoise
+ 
  /export:WavpackGetTagItemIndexed /export:WavpackGetBinaryTagItemIndexed /export:WavpackOpenFileOutput
 -/export:WavpackSetConfiguration /export:WavpackPackInit /export:WavpackPackSamples
 +/export:WavpackPackInit /export:WavpackPackSamples
@@ -329,7 +331,7 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
  /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
  /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
-@@ -171,11 +171,11 @@
+@@ -174,11 +174,11 @@
  /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
  /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
  
@@ -343,7 +345,7 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
-@@ -198,23 +198,23 @@
+@@ -201,25 +201,25 @@
        <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
        <OmitFramePointers>true</OmitFramePointers>
        <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -360,6 +362,8 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetVersion /export:WavpackGetErrorMessage /export:WavpackUnpackSamples
 -/export:WavpackSeekSample /export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
 +/export:WavpackGetNumTagItems /export:WavpackGetNumBinaryTagItems /export:WavpackGetTagItem /export:WavpackGetBinaryTagItem
+ /export:WavpackGetEncodedNoise
+ 
  /export:WavpackGetTagItemIndexed /export:WavpackGetBinaryTagItemIndexed /export:WavpackOpenFileOutput
 -/export:WavpackSetConfiguration /export:WavpackPackInit /export:WavpackPackSamples
 +/export:WavpackPackInit /export:WavpackPackSamples
@@ -373,9 +377,9 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
  /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
  /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
-@@ -227,11 +227,11 @@
+@@ -231,11 +231,11 @@
+ /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
  /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
- /export:WavpackGetEncodedNoise
  
 -/export:WavpackOpenRawDecoder /export:WavpackOpenFileInputEx64
 +/export:WavpackOpenFileInputEx64
@@ -387,7 +391,7 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
-@@ -259,25 +259,25 @@
+@@ -263,25 +263,25 @@
        <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
        <OmitFramePointers>true</OmitFramePointers>
        <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -419,7 +423,7 @@ index eabba53..ff50b8c 100644
  /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
  /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
  /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
-@@ -289,11 +289,11 @@
+@@ -293,11 +293,11 @@
  /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
  /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
  
