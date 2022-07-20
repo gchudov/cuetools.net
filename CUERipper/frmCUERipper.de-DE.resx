@@ -156,9 +156,6 @@
   <data name="buttonPause.Text" xml:space="preserve">
     <value>&amp;Pause</value>
   </data>
-  <data name="lblWriteOffset.Text" xml:space="preserve">
-    <value>Offset lesen</value>
-  </data>
   <data name="checkBoxTestAndCopy.Text" xml:space="preserve">
     <value>Testen &amp;&amp; Kopieren</value>
   </data>
@@ -230,5 +227,13 @@
   </data>
   <data name="buttonEjectDisk.Text" xml:space="preserve">
     <value>Ausw&amp;erfen</value>
+  </data>
+  <data name="bnComboBoxC2ErrorModeSetting.ToolTip" xml:space="preserve">
+    <value>C2-Fehlermodus
+Die Einstellung "Auto" funktioniert mit den meisten Laufwerken.
+Bei Bedarf kann hier der C2-Fehlermodus eingestellt werden.</value>
+  </data>
+  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
+    <value>Lese-Offset</value>
   </data>
 </root>

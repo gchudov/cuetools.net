@@ -169,6 +169,8 @@ namespace CUERipper
             initDone = true;
             bnComboBoxDrives.ImageList = m_icon_mgr.ImageList;
             bnComboBoxFormat.ImageList = m_icon_mgr.ImageList;
+            bnComboBoxC2ErrorModeSetting.DataSource = Enum.GetValues(typeof(CUETools.Ripper.DriveC2ErrorModeSetting));
+            bnComboBoxC2ErrorModeSetting.SelectedIndex = (int)DriveC2ErrorModeSetting.Auto;
 
             SetupControls();
 
@@ -358,7 +360,7 @@ namespace CUERipper
 					{
 						reader.DriveC2ErrorMode = 3; // 0 (None), 1 (Mode294), 2 (Mode296), 3 (Auto)
 					}
-					cueRipperConfig.DriveC2ErrorModes[reader.ARName] = reader.DriveC2ErrorMode; // Remove this line, when setting is available in GUI. See numericWriteOffset_ValueChanged
+					cueRipperConfig.DriveC2ErrorModes[reader.ARName] = reader.DriveC2ErrorMode;
 				}
 				data.Drives.Add(new DriveInfo(m_icon_mgr, drive + ":\\", reader));
 			}
@@ -1030,6 +1032,7 @@ namespace CUERipper
 			}
 
             numericWriteOffset.Value = selectedDriveInfo.drive.DriveOffset;
+            bnComboBoxC2ErrorModeSetting.SelectedItem = (DriveC2ErrorModeSetting)selectedDriveInfo.drive.DriveC2ErrorMode;
 			try
 			{
 				selectedDriveInfo.drive.Open(selectedDriveInfo.drive.Path[0]);
@@ -1844,7 +1847,16 @@ namespace CUERipper
 				data.selectedRelease.metadata.Save();
 			UpdateDrive();
 		}
-	}
+
+        private void bnComboBoxC2ErrorModeSetting_SelectedValueChanged(object sender, EventArgs e)
+        {
+            if (selectedDriveInfo != null && selectedDriveInfo.drive.ARName != null)
+            {
+                cueRipperConfig.DriveC2ErrorModes[selectedDriveInfo.drive.ARName] = (int)bnComboBoxC2ErrorModeSetting.SelectedItem;
+                selectedDriveInfo.drive.DriveC2ErrorMode = (int)bnComboBoxC2ErrorModeSetting.SelectedItem;
+            }
+        }
+    }
 
     internal class BackgroundWorkerArtworkArgs
     {
