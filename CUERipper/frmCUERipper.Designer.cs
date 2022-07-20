@@ -37,6 +37,7 @@ namespace CUERipper
             CUEControls.RectRadius rectRadius5 = new CUEControls.RectRadius();
             CUEControls.RectRadius rectRadius6 = new CUEControls.RectRadius();
             CUEControls.RectRadius rectRadius7 = new CUEControls.RectRadius();
+            CUEControls.RectRadius rectRadius8 = new CUEControls.RectRadius();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabelMusicBrainz = new System.Windows.Forms.ToolStripStatusLabel();
@@ -54,8 +55,8 @@ namespace CUERipper
             this.buttonAbort = new System.Windows.Forms.Button();
             this.buttonPause = new System.Windows.Forms.Button();
             this.numericWriteOffset = new System.Windows.Forms.NumericUpDown();
-            this.lblWriteOffset = new System.Windows.Forms.Label();
             this.groupBoxSettings = new System.Windows.Forms.GroupBox();
+            this.bnComboBoxC2ErrorModeSetting = new CUEControls.ImgComboBox();
             this.buttonEncoderSettings = new System.Windows.Forms.Button();
             this.checkBoxTestAndCopy = new System.Windows.Forms.CheckBox();
             this.bnComboBoxLosslessOrNot = new CUEControls.ImgComboBox();
@@ -276,15 +277,12 @@ namespace CUERipper
             0,
             -2147483648});
             this.numericWriteOffset.Name = "numericWriteOffset";
+            this.toolTip1.SetToolTip(this.numericWriteOffset, resources.GetString("numericWriteOffset.ToolTip"));
             this.numericWriteOffset.ValueChanged += new System.EventHandler(this.numericWriteOffset_ValueChanged);
-            // 
-            // lblWriteOffset
-            // 
-            resources.ApplyResources(this.lblWriteOffset, "lblWriteOffset");
-            this.lblWriteOffset.Name = "lblWriteOffset";
             // 
             // groupBoxSettings
             // 
+            this.groupBoxSettings.Controls.Add(this.bnComboBoxC2ErrorModeSetting);
             this.groupBoxSettings.Controls.Add(this.buttonEncoderSettings);
             this.groupBoxSettings.Controls.Add(this.checkBoxTestAndCopy);
             this.groupBoxSettings.Controls.Add(this.bnComboBoxLosslessOrNot);
@@ -297,11 +295,27 @@ namespace CUERipper
             this.groupBoxSettings.Controls.Add(this.labelEncoderMode);
             this.groupBoxSettings.Controls.Add(this.trackBarEncoderMode);
             this.groupBoxSettings.Controls.Add(this.trackBarSecureMode);
-            this.groupBoxSettings.Controls.Add(this.lblWriteOffset);
             this.groupBoxSettings.Controls.Add(this.numericWriteOffset);
             resources.ApplyResources(this.groupBoxSettings, "groupBoxSettings");
             this.groupBoxSettings.Name = "groupBoxSettings";
             this.groupBoxSettings.TabStop = false;
+            // 
+            // bnComboBoxC2ErrorModeSetting
+            // 
+            this.bnComboBoxC2ErrorModeSetting.BackColor = System.Drawing.Color.Transparent;
+            this.bnComboBoxC2ErrorModeSetting.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.bnComboBoxC2ErrorModeSetting.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.bnComboBoxC2ErrorModeSetting.ImageKeyMember = "ImageKey";
+            this.bnComboBoxC2ErrorModeSetting.ImageList = null;
+            resources.ApplyResources(this.bnComboBoxC2ErrorModeSetting, "bnComboBoxC2ErrorModeSetting");
+            this.bnComboBoxC2ErrorModeSetting.Name = "bnComboBoxC2ErrorModeSetting";
+            rectRadius1.BottomLeft = 2;
+            rectRadius1.BottomRight = 2;
+            rectRadius1.TopLeft = 2;
+            rectRadius1.TopRight = 6;
+            this.bnComboBoxC2ErrorModeSetting.Radius = rectRadius1;
+            this.toolTip1.SetToolTip(this.bnComboBoxC2ErrorModeSetting, resources.GetString("bnComboBoxC2ErrorModeSetting.ToolTip"));
+            this.bnComboBoxC2ErrorModeSetting.SelectedValueChanged += new System.EventHandler(this.bnComboBoxC2ErrorModeSetting_SelectedValueChanged);
             // 
             // buttonEncoderSettings
             // 
@@ -329,11 +343,11 @@ namespace CUERipper
             this.bnComboBoxLosslessOrNot.ImageList = null;
             resources.ApplyResources(this.bnComboBoxLosslessOrNot, "bnComboBoxLosslessOrNot");
             this.bnComboBoxLosslessOrNot.Name = "bnComboBoxLosslessOrNot";
-            rectRadius1.BottomLeft = 2;
-            rectRadius1.BottomRight = 2;
-            rectRadius1.TopLeft = 2;
-            rectRadius1.TopRight = 6;
-            this.bnComboBoxLosslessOrNot.Radius = rectRadius1;
+            rectRadius2.BottomLeft = 2;
+            rectRadius2.BottomRight = 2;
+            rectRadius2.TopLeft = 2;
+            rectRadius2.TopRight = 6;
+            this.bnComboBoxLosslessOrNot.Radius = rectRadius2;
             this.bnComboBoxLosslessOrNot.SelectedValueChanged += new System.EventHandler(this.bnComboBoxLosslessOrNot_SelectedValueChanged);
             // 
             // losslessOrNotBindingSource
@@ -354,11 +368,11 @@ namespace CUERipper
             this.bnComboBoxEncoder.ImageList = null;
             resources.ApplyResources(this.bnComboBoxEncoder, "bnComboBoxEncoder");
             this.bnComboBoxEncoder.Name = "bnComboBoxEncoder";
-            rectRadius2.BottomLeft = 2;
-            rectRadius2.BottomRight = 2;
-            rectRadius2.TopLeft = 2;
-            rectRadius2.TopRight = 6;
-            this.bnComboBoxEncoder.Radius = rectRadius2;
+            rectRadius3.BottomLeft = 2;
+            rectRadius3.BottomRight = 2;
+            rectRadius3.TopLeft = 2;
+            rectRadius3.TopRight = 6;
+            this.bnComboBoxEncoder.Radius = rectRadius3;
             this.bnComboBoxEncoder.SelectedValueChanged += new System.EventHandler(this.bnComboBoxEncoder_SelectedValueChanged);
             // 
             // encodersBindingSource
@@ -381,11 +395,11 @@ namespace CUERipper
             this.bnComboBoxFormat.ImageList = null;
             resources.ApplyResources(this.bnComboBoxFormat, "bnComboBoxFormat");
             this.bnComboBoxFormat.Name = "bnComboBoxFormat";
-            rectRadius3.BottomLeft = 2;
-            rectRadius3.BottomRight = 2;
-            rectRadius3.TopLeft = 2;
-            rectRadius3.TopRight = 6;
-            this.bnComboBoxFormat.Radius = rectRadius3;
+            rectRadius4.BottomLeft = 2;
+            rectRadius4.BottomRight = 2;
+            rectRadius4.TopLeft = 2;
+            rectRadius4.TopRight = 6;
+            this.bnComboBoxFormat.Radius = rectRadius4;
             this.bnComboBoxFormat.SelectedValueChanged += new System.EventHandler(this.bnComboBoxFormat_SelectedValueChanged);
             // 
             // formatsBindingSource
@@ -407,11 +421,11 @@ namespace CUERipper
             this.bnComboBoxImage.ImageList = null;
             resources.ApplyResources(this.bnComboBoxImage, "bnComboBoxImage");
             this.bnComboBoxImage.Name = "bnComboBoxImage";
-            rectRadius4.BottomLeft = 2;
-            rectRadius4.BottomRight = 2;
-            rectRadius4.TopLeft = 2;
-            rectRadius4.TopRight = 6;
-            this.bnComboBoxImage.Radius = rectRadius4;
+            rectRadius5.BottomLeft = 2;
+            rectRadius5.BottomRight = 2;
+            rectRadius5.TopLeft = 2;
+            rectRadius5.TopRight = 6;
+            this.bnComboBoxImage.Radius = rectRadius5;
             this.bnComboBoxImage.SelectedValueChanged += new System.EventHandler(this.bnComboBoxImage_SelectedValueChanged);
             // 
             // cUEStylesBindingSource
@@ -551,11 +565,11 @@ namespace CUERipper
             this.bnComboBoxRelease.ImageKeyMember = "ImageKey";
             this.bnComboBoxRelease.ImageList = this.imageListMetadataSource;
             this.bnComboBoxRelease.Name = "bnComboBoxRelease";
-            rectRadius5.BottomLeft = 2;
-            rectRadius5.BottomRight = 2;
-            rectRadius5.TopLeft = 2;
-            rectRadius5.TopRight = 6;
-            this.bnComboBoxRelease.Radius = rectRadius5;
+            rectRadius6.BottomLeft = 2;
+            rectRadius6.BottomRight = 2;
+            rectRadius6.TopLeft = 2;
+            rectRadius6.TopRight = 6;
+            this.bnComboBoxRelease.Radius = rectRadius6;
             this.bnComboBoxRelease.SelectedValueChanged += new System.EventHandler(this.bnComboBoxRelease_SelectedValueChanged);
             // 
             // releasesBindingSource
@@ -589,11 +603,11 @@ namespace CUERipper
             this.bnComboBoxDrives.ImageKeyMember = "ImageKey";
             this.bnComboBoxDrives.ImageList = this.imageListMetadataSource;
             this.bnComboBoxDrives.Name = "bnComboBoxDrives";
-            rectRadius6.BottomLeft = 2;
-            rectRadius6.BottomRight = 2;
-            rectRadius6.TopLeft = 2;
-            rectRadius6.TopRight = 6;
-            this.bnComboBoxDrives.Radius = rectRadius6;
+            rectRadius7.BottomLeft = 2;
+            rectRadius7.BottomRight = 2;
+            rectRadius7.TopLeft = 2;
+            rectRadius7.TopRight = 6;
+            this.bnComboBoxDrives.Radius = rectRadius7;
             this.bnComboBoxDrives.SelectedIndexChanged += new System.EventHandler(this.bnComboBoxDrives_SelectedIndexChanged);
             // 
             // bnComboBoxOutputFormat
@@ -604,11 +618,11 @@ namespace CUERipper
             resources.ApplyResources(this.bnComboBoxOutputFormat, "bnComboBoxOutputFormat");
             this.bnComboBoxOutputFormat.ImageList = null;
             this.bnComboBoxOutputFormat.Name = "bnComboBoxOutputFormat";
-            rectRadius7.BottomLeft = 2;
-            rectRadius7.BottomRight = 2;
-            rectRadius7.TopLeft = 2;
-            rectRadius7.TopRight = 6;
-            this.bnComboBoxOutputFormat.Radius = rectRadius7;
+            rectRadius8.BottomLeft = 2;
+            rectRadius8.BottomRight = 2;
+            rectRadius8.TopLeft = 2;
+            rectRadius8.TopRight = 6;
+            this.bnComboBoxOutputFormat.Radius = rectRadius8;
             this.bnComboBoxOutputFormat.TabStop = false;
             this.bnComboBoxOutputFormat.DropDown += new System.EventHandler(this.bnComboBoxOutputFormat_DroppedDown);
             this.bnComboBoxOutputFormat.TextChanged += new System.EventHandler(this.bnComboBoxOutputFormat_TextChanged);
@@ -845,7 +859,6 @@ namespace CUERipper
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusAr;
 		private System.Windows.Forms.NumericUpDown numericWriteOffset;
-        private System.Windows.Forms.Label lblWriteOffset;
 		private System.Windows.Forms.GroupBox groupBoxSettings;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusCTDB;
 		private System.Windows.Forms.TrackBar trackBarEncoderMode;
@@ -903,6 +916,7 @@ namespace CUERipper
 		private System.Windows.Forms.Panel panel7;
         private System.Windows.Forms.Button buttonEncoderSettings;
         private System.Windows.Forms.Button buttonEjectDisk;
-	}
+        private CUEControls.ImgComboBox bnComboBoxC2ErrorModeSetting;
+    }
 }
 

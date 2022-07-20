@@ -142,9 +142,6 @@
   <data name="lblWriteOffset.Size" type="System.Drawing.Size, System.Drawing">
     <value>61, 13</value>
   </data>
-  <data name="lblWriteOffset.Text" xml:space="preserve">
-    <value>Смещение</value>
-  </data>
   <data name="checkBoxEACMode.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 17</value>
   </data>
@@ -237,5 +234,13 @@
   </data>
   <data name="buttonReload.Text" xml:space="preserve">
     <value>П&amp;ерезагр.</value>
+  </data>
+  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
+    <value>Смещение</value>
+  </data>
+  <data name="bnComboBoxC2ErrorModeSetting.ToolTip" xml:space="preserve">
+    <value>C2 Режим ошибки
+Параметр «Авто» работает с большинством приводов.
+При необходимости здесь можно установить C2 режим ошибки.</value>
   </data>
 </root>
