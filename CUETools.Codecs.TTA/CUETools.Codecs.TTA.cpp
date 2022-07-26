@@ -56,7 +56,7 @@ namespace TTA {
 		[System::ComponentModel::Browsable(false)]
 		virtual property int Priority
 		{
-			int get() { return 1; }
+			int get() { return 2; }
 		}
 
 		virtual IAudioDecoderSettings^ Clone()
