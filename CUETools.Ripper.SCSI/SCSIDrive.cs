@@ -812,20 +812,45 @@ namespace CUETools.Ripper.SCSI
 				return true;
 
 			ReadCDCommand[] readmode = { ReadCDCommand.ReadCdBEh, ReadCDCommand.ReadCdD8h };
-			// Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.Mode294, Device.C2ErrorMode.Mode296, Device.C2ErrorMode.None };
 			Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.Mode294 };
 			if (_driveC2ErrorMode == DriveC2ErrorModeSetting.Auto)
 			{
-				Array.Resize(ref c2mode, 3);
-				c2mode.SetValue(Device.C2ErrorMode.Mode296, 1);
-				c2mode.SetValue(Device.C2ErrorMode.None, 2);
-				// Mode294 does not work for these drives: LG GH24NSD1, ASUS DRW-24D5MT, ASUS DRW-24F1ST d, PIONEER DVR-S21, PIONEER BDR-XD05, PIONEER BDR-XD07U, HL-DT-ST BD-RE BU40N, Slimtype - DVD A DU8AESH. Try Mode296 first
 				// Drives can contain one or multiple spaces in the name, e.g. "ASUS DRW-24F1ST   d". Remove any spaces from Path.
 				string pathNoSpace = Path.Replace(" ", String.Empty);
-				if (pathNoSpace.Contains("GH24NSD1") || pathNoSpace.Contains("DRW-24D5MT") || pathNoSpace.Contains("DRW-24F1STd") || pathNoSpace.Contains("DVR-S21") || pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("BU40N") || pathNoSpace.Contains("DU8AESH"))
+
+				// Mode294 does not work for these drives. Try Mode296 first, which has been reported to work:
+				// ASUS DRW-24D5MT, ASUS DRW-24F1ST d,
+				// HL-DT-ST BD-RE BU40N,
+				// LG GH24NSD1,
+				// PIONEER BDR-XD05, PIONEER BDR-XD07U, PIONEER DVR-S21,
+				// PLDS DU-8A5LH,
+				// Slimtype - DVD A DU8AESH.
+				if (pathNoSpace.Contains("DRW-24D5MT") || pathNoSpace.Contains("DRW-24F1STd") ||
+					pathNoSpace.Contains("BU40N") ||
+					pathNoSpace.Contains("GH24NSD1") ||
+					pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("DVR-S21") ||
+					pathNoSpace.Contains("DU-8A5LH") ||
+					pathNoSpace.Contains("DU8AESH"))
 				{
+					Array.Resize(ref c2mode, 2);
 					c2mode.SetValue(Device.C2ErrorMode.Mode296, 0);
-					c2mode.SetValue(Device.C2ErrorMode.Mode294, 1);
+					c2mode.SetValue(Device.C2ErrorMode.None, 1);
+				}
+
+				// Mode294 does not work for this drive, C2ErrorMode.None has been reported to work:
+				// iHAS324 F.
+				else if (pathNoSpace.Contains("iHAS324F"))
+				{
+					c2mode.SetValue(Device.C2ErrorMode.None, 0);
+				}
+
+				// Default. Auto detection of C2ErrorMode for most drives.
+				// Device.C2ErrorMode[] c2mode = { Device.C2ErrorMode.Mode294, Device.C2ErrorMode.Mode296, Device.C2ErrorMode.None };
+				else
+				{
+					Array.Resize(ref c2mode, 3);
+					c2mode.SetValue(Device.C2ErrorMode.Mode296, 1);
+					c2mode.SetValue(Device.C2ErrorMode.None, 2);
 				}
 			}
 			else
