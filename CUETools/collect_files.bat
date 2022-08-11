@@ -98,6 +98,8 @@ REM plugins translation files
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\de-DE\* %release_dir%\plugins\de-DE\
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\ru-RU\* %release_dir%\plugins\ru-RU\
 
+REM ThirdParty
+xcopy /Y /D %base_dir%\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\bin\Release\net45\FFmpeg.AutoGen.dll %release_dir%\plugins\
 xcopy /Y /D %base_dir%\ThirdParty\ICSharpCode.SharpZipLib.dll %release_dir%\plugins\
 
 REM ThirdParty\Win32 plugins
