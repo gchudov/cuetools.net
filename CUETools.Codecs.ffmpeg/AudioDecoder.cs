@@ -437,6 +437,9 @@ namespace CUETools.Codecs.ffmpegdll
             }
 
             buff.Length = (int)buffOffset;
+            // EOF
+            if (buff.Length == 0)
+                _sampleCount = _sampleOffset;
             return buff.Length;
         }
 
