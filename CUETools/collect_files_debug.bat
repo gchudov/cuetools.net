@@ -15,8 +15,8 @@ REM /D xcopy copies all Source files that are newer than existing Destination fi
 REM xcopy /Y /D %base_dir%\CUETools\user_profiles_enabled %debug_dir%
 
 REM ThirdParty
-xcopy /Y /D %base_dir%\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\bin\Debug\net45\FFmpeg.AutoGen.dll %debug_dir%\plugins\
-xcopy /Y /D %base_dir%\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\bin\Debug\net45\FFmpeg.AutoGen.pdb %debug_dir%\plugins\
+xcopy /Y /D %base_dir%\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\bin\Debug\net472\FFmpeg.AutoGen.dll %debug_dir%\plugins\
+xcopy /Y /D %base_dir%\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\bin\Debug\net472\FFmpeg.AutoGen.pdb %debug_dir%\plugins\
 xcopy /Y /D %base_dir%\ThirdParty\ICSharpCode.SharpZipLib.dll %debug_dir%\plugins\
 
 REM ThirdParty\Win32 plugins
