@@ -388,8 +388,15 @@ namespace CUETools.FlakeExe
 
                                 if (order_method != null)
                                     flake.OrderMethod = FlakeConstants.LookupOrderMethod(order_method);
-                                if (vbr_mode >= 0)
+                                // if (vbr_mode >= 0)
+                                if (vbr_mode == 0)
                                     flake.VBRMode = vbr_mode;
+                                else if (vbr_mode > 0)
+                                {
+                                    Console.WriteLine("Variable block size modes 1-4 are currently disabled.");
+                                    Console.WriteLine("See: https://github.com/gchudov/cuetools.net/issues/220");
+                                    return 1;
+                                }
                                 if (magic >= 0)
                                     flake.DevelopmentMode = magic;
                                 flake.DoSeekTable = do_seektable;
