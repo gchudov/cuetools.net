@@ -977,6 +977,10 @@ namespace JDP
                                 {
                                     cueSheet.Close();
                                     SetupControls(false);
+                                    if (_batchPaths.Count == 1)
+                                    {
+                                        _batchPaths.Clear();
+                                    }
                                 }
                                 else if (_profile._config.advanced.CacheMetadata && dlg.ChosenRelease != null)
                                 {
