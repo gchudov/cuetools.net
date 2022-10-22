@@ -25,11 +25,9 @@ jobs:
       MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe
       SLN_PATH: CUETools\CUETools.sln
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-      # nasm is required for building Release|Win32
-      - uses: ilammy/setup-nasm@v1
       - name: Apply patches
         # yamllint disable-line rule:line-length
         run: |

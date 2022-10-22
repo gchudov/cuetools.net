@@ -1,9 +1,9 @@
 diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj b/src/libFLAC/libFLAC_dynamic.vcxproj
 new file mode 100644
-index 00000000..2720333d
+index 00000000..bb8d4de9
 --- /dev/null
 +++ b/src/libFLAC/libFLAC_dynamic.vcxproj
-@@ -0,0 +1,331 @@
+@@ -0,0 +1,268 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 +  <ItemGroup Label="ProjectConfigurations">
@@ -95,7 +95,7 @@ index 00000000..2720333d
 +      <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
 +      <Optimization>Disabled</Optimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_NASM;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.1";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <MinimalRebuild>true</MinimalRebuild>
 +      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -116,7 +116,7 @@ index 00000000..2720333d
 +      <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
 +      <Optimization>Disabled</Optimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.1";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
 +      <WarningLevel>Level3</WarningLevel>
@@ -138,7 +138,7 @@ index 00000000..2720333d
 +      <OmitFramePointers>true</OmitFramePointers>
 +      <WholeProgramOptimization>true</WholeProgramOptimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_NASM;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.1";FLaC__INLINE=_inline;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <BufferSecurityCheck>false</BufferSecurityCheck>
 +      <WarningLevel>Level3</WarningLevel>
@@ -165,7 +165,7 @@ index 00000000..2720333d
 +      <OmitFramePointers>true</OmitFramePointers>
 +      <WholeProgramOptimization>true</WholeProgramOptimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.1";FLaC__INLINE=_inline;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <BufferSecurityCheck>false</BufferSecurityCheck>
 +      <WarningLevel>Level3</WarningLevel>
@@ -200,7 +200,6 @@ index 00000000..2720333d
 +    <ClInclude Include="..\..\include\share\private.h" />
 +    <ClInclude Include="..\..\include\share\safe_str.h" />
 +    <ClInclude Include="..\..\include\share\win_utf8_io.h" />
-+    <ClInclude Include="ia32\nasm.h" />
 +    <ClInclude Include="include\private\all.h" />
 +    <ClInclude Include="include\private\bitmath.h" />
 +    <ClInclude Include="include\private\bitreader.h" />
@@ -269,78 +268,16 @@ index 00000000..2720333d
 +    <ClCompile Include="window.c" />
 +    <ClCompile Include="..\share\win_utf8_io\win_utf8_io.c" />
 +  </ItemGroup>
-+  <ItemGroup>
-+    <CustomBuild Include="ia32\cpu_asm.nasm">
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/cpu_asm.nasm -o ia32/cpu_asm.obj
-+</Command>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/cpu_asm.nasm -o ia32/cpu_asm.obj
-+</Command>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ia32/cpu_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ia32/cpu_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ia32/cpu_asm.obj;%(Outputs)</Outputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ia32/cpu_asm.obj;%(Outputs)</Outputs>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/cpu_asm.nasm -o ia32/cpu_asm.obj
-+</Command>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/cpu_asm.nasm -o ia32/cpu_asm.obj
-+</Command>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ia32/cpu_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ia32/cpu_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ia32/cpu_asm.obj;%(Outputs)</Outputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ia32/cpu_asm.obj;%(Outputs)</Outputs>
-+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-+    </CustomBuild>
-+    <CustomBuild Include="ia32\fixed_asm.nasm">
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/fixed_asm.nasm -o ia32/fixed_asm.obj
-+</Command>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/fixed_asm.nasm -o ia32/fixed_asm.obj
-+</Command>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ia32/fixed_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ia32/fixed_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ia32/fixed_asm.obj;%(Outputs)</Outputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ia32/fixed_asm.obj;%(Outputs)</Outputs>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/fixed_asm.nasm -o ia32/fixed_asm.obj
-+</Command>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/fixed_asm.nasm -o ia32/fixed_asm.obj
-+</Command>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ia32/fixed_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ia32/fixed_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ia32/fixed_asm.obj;%(Outputs)</Outputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ia32/fixed_asm.obj;%(Outputs)</Outputs>
-+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-+    </CustomBuild>
-+    <CustomBuild Include="ia32\lpc_asm.nasm">
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/lpc_asm.nasm -o ia32/lpc_asm.obj
-+</Command>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/lpc_asm.nasm -o ia32/lpc_asm.obj
-+</Command>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ia32/lpc_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ia32/lpc_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ia32/lpc_asm.obj;%(Outputs)</Outputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ia32/lpc_asm.obj;%(Outputs)</Outputs>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/lpc_asm.nasm -o ia32/lpc_asm.obj
-+</Command>
-+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">nasm.exe -f win32 -d OBJ_FORMAT_win32 -i ia32/ ia32/lpc_asm.nasm -o ia32/lpc_asm.obj
-+</Command>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ia32/lpc_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ia32/lpc_asm.nasm;ia32/nasm.h;%(AdditionalInputs)</AdditionalInputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ia32/lpc_asm.obj;%(Outputs)</Outputs>
-+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ia32/lpc_asm.obj;%(Outputs)</Outputs>
-+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-+    </CustomBuild>
-+  </ItemGroup>
 +  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 +  <ImportGroup Label="ExtensionTargets">
 +  </ImportGroup>
 +</Project>
 diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj.filters b/src/libFLAC/libFLAC_dynamic.vcxproj.filters
 new file mode 100644
-index 00000000..86cca943
+index 00000000..aaa618b8
 --- /dev/null
 +++ b/src/libFLAC/libFLAC_dynamic.vcxproj.filters
-@@ -0,0 +1,226 @@
+@@ -0,0 +1,218 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 +  <ItemGroup>
@@ -397,9 +334,6 @@ index 00000000..86cca943
 +      <Filter>Header Files</Filter>
 +    </ClInclude>
 +    <ClInclude Include="include\private\metadata.h">
-+      <Filter>Header Files</Filter>
-+    </ClInclude>
-+    <ClInclude Include="ia32\nasm.h">
 +      <Filter>Header Files</Filter>
 +    </ClInclude>
 +    <ClInclude Include="include\private\ogg_decoder_aspect.h">
@@ -560,10 +494,5 @@ index 00000000..86cca943
 +    <ClCompile Include="..\share\win_utf8_io\win_utf8_io.c">
 +      <Filter>Source Files</Filter>
 +    </ClCompile>
-+  </ItemGroup>
-+  <ItemGroup>
-+    <CustomBuild Include="ia32\cpu_asm.nasm" />
-+    <CustomBuild Include="ia32\fixed_asm.nasm" />
-+    <CustomBuild Include="ia32\lpc_asm.nasm" />
 +  </ItemGroup>
 +</Project>
