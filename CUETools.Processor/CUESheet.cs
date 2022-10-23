@@ -1772,14 +1772,14 @@ namespace CUETools.Processor
                     else
                         if (lineStr.StartsWith("Exact Audio Copy")
                             || lineStr.StartsWith("EAC extraction logfile"))
-                        isEACLog = true;
+                            isEACLog = true;
                     else
                         if (lineStr.StartsWith("X Lossless Decoder")
                             || lineStr.StartsWith("XLD extraction logfile"))
-                        isXLDLog = true;
+                            isXLDLog = true;
                     else
                         if (lineStr.StartsWith("Log created by: whipper"))
-                        isWhipperLog = true;
+                            isWhipperLog = true;
                 }
                 if (trNo == 2 && isEACLog)
                 {
