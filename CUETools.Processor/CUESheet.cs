@@ -1733,7 +1733,7 @@ namespace CUETools.Processor
                 {
                     if (isEACLog && trNo <= TrackCount)
                     {
-                        string[] s = { "Copy CRC ", "CRC копии" };
+                        string[] s = { "Copy CRC ", "CRC копии", "复制 CRC ", "コピーCRC " };
                         string[] s1 = { "CRC" };
                         string[] n = lineStr.Split(s, StringSplitOptions.None);
                         uint crc;
