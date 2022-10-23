@@ -1726,6 +1726,7 @@ namespace CUETools.Processor
                 sr = new StringReader(_eacLog);
                 bool isEACLog = false;
                 bool isXLDLog = false;
+                bool isXLDTracks = false;
                 bool isWhipperLog = false;
                 int trNo = 1;
                 while ((lineStr = sr.ReadLine()) != null)
@@ -1749,9 +1750,16 @@ namespace CUETools.Processor
                     {
                         if (lineStr.Contains(" CRC32 hash  "))
                         {
+                            // If a CRC is found before "Track 01" expect a disc CRC.
+                            if (!isXLDTracks)
+                                trNo = 0;
                             string[] parts = lineStr.Split(':');
                             if (parts.Length == 2 && uint.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var crc))
                                 _arVerify.CRCLOG(trNo++, crc);
+                        }
+                        else if (lineStr == "Track 01")
+                        {
+                            isXLDTracks = true;
                         }
                     }
                     else if (isWhipperLog && trNo <= TrackCount)
@@ -1764,14 +1772,14 @@ namespace CUETools.Processor
                     else
                         if (lineStr.StartsWith("Exact Audio Copy")
                             || lineStr.StartsWith("EAC extraction logfile"))
-                            isEACLog = true;
+                        isEACLog = true;
                     else
                         if (lineStr.StartsWith("X Lossless Decoder")
                             || lineStr.StartsWith("XLD extraction logfile"))
-                            isXLDLog = true;
+                        isXLDLog = true;
                     else
                         if (lineStr.StartsWith("Log created by: whipper"))
-                            isWhipperLog = true;
+                        isWhipperLog = true;
                 }
                 if (trNo == 2 && isEACLog)
                 {
