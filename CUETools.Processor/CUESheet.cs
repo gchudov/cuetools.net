@@ -1733,7 +1733,8 @@ namespace CUETools.Processor
                 {
                     if (isEACLog && trNo <= TrackCount)
                     {
-                        string[] s = { "Copy CRC ", "CRC копии", "复制 CRC ", "コピーCRC " };
+                        // English, Bulgarian, Czech, Dutch/German, Italian, Japanese, Korean, Polish, Russian, Serbian, Simplified Chinese, Slovak, Spanish, Swedish
+                        string[] s = { "Copy CRC ", "Копиран CRC ", "CRC kopie ", "Kopie CRC ", "Copia CRC ", "コピーCRC ", "복사 CRC", "CRC kopii ", "CRC копии ", "CRC kopije ", "复制 CRC ", "CRC kópie ", "Copiar CRC ", "Kopiera CRC " };
                         string[] s1 = { "CRC" };
                         string[] n = lineStr.Split(s, StringSplitOptions.None);
                         uint crc;
