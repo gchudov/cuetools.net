@@ -1726,13 +1726,15 @@ namespace CUETools.Processor
                 sr = new StringReader(_eacLog);
                 bool isEACLog = false;
                 bool isXLDLog = false;
+                bool isXLDTracks = false;
                 bool isWhipperLog = false;
                 int trNo = 1;
                 while ((lineStr = sr.ReadLine()) != null)
                 {
                     if (isEACLog && trNo <= TrackCount)
                     {
-                        string[] s = { "Copy CRC ", "CRC копии" };
+                        // English, Bulgarian, Czech, Dutch/German, Italian, Japanese, Korean, Polish, Russian, Serbian, Simplified Chinese, Slovak, Spanish, Swedish
+                        string[] s = { "Copy CRC ", "Копиран CRC ", "CRC kopie ", "Kopie CRC ", "Copia CRC ", "コピーCRC ", "복사 CRC ", "CRC kopii ", "CRC копии ", "CRC kopije ", "复制 CRC ", "CRC kópie ", "Copiar CRC ", "Kopiera CRC " };
                         string[] s1 = { "CRC" };
                         string[] n = lineStr.Split(s, StringSplitOptions.None);
                         uint crc;
@@ -1749,9 +1751,16 @@ namespace CUETools.Processor
                     {
                         if (lineStr.Contains(" CRC32 hash  "))
                         {
+                            // If a CRC is found before "Track 01" expect a disc CRC.
+                            if (!isXLDTracks)
+                                trNo = 0;
                             string[] parts = lineStr.Split(':');
                             if (parts.Length == 2 && uint.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var crc))
                                 _arVerify.CRCLOG(trNo++, crc);
+                        }
+                        else if (lineStr == "Track 01")
+                        {
+                            isXLDTracks = true;
                         }
                     }
                     else if (isWhipperLog && trNo <= TrackCount)
