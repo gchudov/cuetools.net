@@ -150,6 +150,8 @@ namespace CUETools.Processor
                 new CUEAction[] { CUEAction.Verify, CUEAction.Encode }));
             scripts.Add("only if found", new CUEToolsScript("only if found",
                 new CUEAction[] { CUEAction.Verify }));
+            scripts.Add("only if rip log present", new CUEToolsScript("only if rip log present",
+                new CUEAction[] { CUEAction.Verify }));
             scripts.Add("fix offset", new CUEToolsScript("fix offset",
                 new CUEAction[] { CUEAction.Encode }));
             scripts.Add("encode if verified", new CUEToolsScript("encode if verified",
@@ -230,6 +232,8 @@ namespace CUETools.Processor
             scripts.Add("default", new CUEToolsScript("default",
                 new CUEAction[] { CUEAction.Verify, CUEAction.Encode }));
             scripts.Add("only if found", new CUEToolsScript("only if found",
+                new CUEAction[] { CUEAction.Verify }));
+            scripts.Add("only if rip log present", new CUEToolsScript("only if rip log present",
                 new CUEAction[] { CUEAction.Verify }));
             scripts.Add("fix offset", new CUEToolsScript("fix offset",
                 new CUEAction[] { CUEAction.Encode }));
