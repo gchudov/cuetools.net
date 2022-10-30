@@ -4459,6 +4459,8 @@ namespace CUETools.Processor
                     return Go();
                 case "only if found":
                     return ArVerify.ExceptionStatus != WebExceptionStatus.Success ? WriteReport() : Go();
+                case "only if rip log present":
+                    return _eacLog == null ? "Rip log is not present." : Go();
                 case "repair":
                     {
                         UseCUEToolsDB("CUETools " + CUEToolsVersion, null, true, CTDBMetadataSearch.None);
