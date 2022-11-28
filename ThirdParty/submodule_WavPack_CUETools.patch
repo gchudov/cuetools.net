@@ -183,30 +183,8 @@ index 3d586d6..7e4523b 100644
      <ClCompile Include="pack_floats.c" />
      <ClCompile Include="pack_utils.c" />
      <ClCompile Include="read_words.c" />
-diff --git a/wavpackdll/wavpackdll.rc b/wavpackdll/wavpackdll.rc
-index 12f765c..4c625d7 100644
---- a/wavpackdll/wavpackdll.rc
-+++ b/wavpackdll/wavpackdll.rc
-@@ -7,7 +7,7 @@
- //
- // Generated from the TEXTINCLUDE 2 resource.
- //
--#include "afxres.h"
-+#include "winres.h"
- 
- /////////////////////////////////////////////////////////////////////////////
- #undef APSTUDIO_READONLY_SYMBOLS
-@@ -34,7 +34,7 @@ END
- 
- 2 TEXTINCLUDE 
- BEGIN
--    "#include ""afxres.h""\r\n"
-+    "#include ""winres.h""\r\n"
-     "\0"
- END
- 
 diff --git a/wavpackdll/wavpackdll.vcxproj b/wavpackdll/wavpackdll.vcxproj
-index 3b86cf2..83b4a35 100644
+index 2d97667..92e220d 100644
 --- a/wavpackdll/wavpackdll.vcxproj
 +++ b/wavpackdll/wavpackdll.vcxproj
 @@ -1,5 +1,5 @@
@@ -345,7 +323,7 @@ index 3b86cf2..83b4a35 100644
  /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
-@@ -201,25 +201,25 @@
+@@ -202,25 +202,25 @@
        <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
        <OmitFramePointers>true</OmitFramePointers>
        <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -377,7 +355,7 @@ index 3b86cf2..83b4a35 100644
  /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
  /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
  /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
-@@ -231,11 +231,11 @@
+@@ -232,11 +232,11 @@
  /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
  /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
  
@@ -391,7 +369,7 @@ index 3b86cf2..83b4a35 100644
  /export:WavpackGetNativeSampleRate /export:WavpackGetChannelIdentities
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
-@@ -263,25 +263,25 @@
+@@ -265,25 +265,25 @@
        <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
        <OmitFramePointers>true</OmitFramePointers>
        <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -423,7 +401,7 @@ index 3b86cf2..83b4a35 100644
  /export:WavpackGetRatio /export:WavpackGetAverageBitrate /export:WavpackGetInstantBitrate
  /export:WavpackCloseFile /export:WavpackGetSampleRate /export:WavpackGetNumChannels
  /export:WavpackGetChannelMask /export:WavpackGetFloatNormExp
-@@ -293,11 +293,11 @@
+@@ -295,11 +295,11 @@
  /export:WavpackLittleEndianToNative /export:WavpackNativeToLittleEndian
  /export:WavpackGetLibraryVersion /export:WavpackGetLibraryVersionString
  
@@ -438,7 +416,7 @@ index 3b86cf2..83b4a35 100644
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
 diff --git a/wavpackexe/wavpack.vcxproj b/wavpackexe/wavpack.vcxproj
-index 89d7b8f..905b8d0 100644
+index 5d4e2fe..d38b409 100644
 --- a/wavpackexe/wavpack.vcxproj
 +++ b/wavpackexe/wavpack.vcxproj
 @@ -1,5 +1,5 @@
@@ -473,7 +451,7 @@ index 89d7b8f..905b8d0 100644
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
 diff --git a/winamp/winamp.vcxproj b/winamp/winamp.vcxproj
-index 0761d2e..06e0137 100644
+index 2952bf9..247f297 100644
 --- a/winamp/winamp.vcxproj
 +++ b/winamp/winamp.vcxproj
 @@ -1,5 +1,5 @@
@@ -619,7 +597,7 @@ index b593ab8..3e9fc24 100644
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
 diff --git a/wvunpackexe/wvunpack.vcxproj b/wvunpackexe/wvunpack.vcxproj
-index 599b888..eccfb89 100644
+index ef39827..133a4de 100644
 --- a/wvunpackexe/wvunpack.vcxproj
 +++ b/wvunpackexe/wvunpack.vcxproj
 @@ -1,5 +1,5 @@
