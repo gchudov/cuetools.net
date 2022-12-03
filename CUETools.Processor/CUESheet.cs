@@ -2956,6 +2956,10 @@ namespace CUETools.Processor
 
                                 if (_config.copyBasicTags && sourceFileInfo != null)
                                 {
+                                    if (fileInfo.Tag.TrackCount == 0)
+                                        fileInfo.Tag.TrackCount = sourceFileInfo.Tag.TrackCount;
+                                    if (fileInfo.Tag.Track == 0)
+                                        fileInfo.Tag.Track = sourceFileInfo.Tag.Track;
                                     if (fileInfo.Tag.Title == null && _tracks[iTrack]._fileInfo != null)
                                         fileInfo.Tag.Title = _tracks[iTrack]._fileInfo.Tag.Title;
                                     if (fileInfo.Tag.DiscCount == 0)
