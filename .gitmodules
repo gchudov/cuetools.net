@@ -4,9 +4,6 @@
 [submodule "ThirdParty/flac"]
 	path = ThirdParty/flac
 	url = https://github.com/xiph/flac.git
-[submodule "ThirdParty/MAC_SDK"]
-	path = ThirdParty/MAC_SDK
-	url = https://github.com/gchudov/MAC_SDK.git
 [submodule "ThirdParty/openclnet"]
 	path = ThirdParty/openclnet
 	url = https://github.com/gchudov/openclnet.git
