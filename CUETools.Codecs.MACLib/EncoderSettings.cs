@@ -63,6 +63,6 @@ namespace CUETools.Codecs.MACLib
 
         [DisplayName("Version")]
         [Description("Library version")]
-        public string Version => Marshal.PtrToStringAnsi(MACLibDll.GetVersionString());
+        public string Version => Marshal.PtrToStringUni(MACLibDll.GetVersionString());
     };
 }
