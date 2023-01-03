@@ -1847,10 +1847,11 @@ namespace CUETools.Codecs.ALAC
 
 		// stereo decorrelation method
 		// set by user prior to calling encode_init
-		// if set to less than 0, it is chosen based on compression.
-		// valid values are 0 to 2
-		// 0 = independent L+R channels
-		// 1 = mid-side encoding
+		// valid values are 0 to 3
+		// 0 = Independent
+		// 1 = Estimate
+		// 2 = Evaluate
+		// 3 = Search
 		public StereoMethod stereo_method;
 
 		public WindowMethod window_method;

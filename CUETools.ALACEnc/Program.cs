@@ -188,7 +188,13 @@ namespace CUETools.ALACEnc
 			try
 			{
 				if (stereo_method != null)
+				{
 					alac.StereoMethod = Alac.LookupStereoMethod(stereo_method);
+					if (!Enum.IsDefined(typeof(StereoMethod), alac.StereoMethod))
+					{
+						throw new Exception("Invalid stereo method specified.");
+					}
+				}
 				if (order_method != null)
 					alac.OrderMethod = Alac.LookupOrderMethod(order_method);
 				if (window_function != null)
@@ -217,7 +223,7 @@ namespace CUETools.ALACEnc
 			{
 				Usage();
 				Console.WriteLine("");
-				Console.WriteLine("Error: {0}.", ex.Message);
+				Console.WriteLine("Error: {0}", ex.Message);
 				return 3;
 			}
 
