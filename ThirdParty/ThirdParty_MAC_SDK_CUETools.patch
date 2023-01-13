@@ -1,6 +1,6 @@
-diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APECompress.cpp 1_MAC_SDK_433_updated/Source/MACLib/APECompress.cpp
---- 0_MAC_SDK_433_orig/Source/MACLib/APECompress.cpp	2017-10-27 18:10:42.000000000 +0200
-+++ 1_MAC_SDK_433_updated/Source/MACLib/APECompress.cpp	2022-12-28 18:44:14.000000000 +0100
+diff -ur 0_MAC_SDK_444_orig/Source/MACLib/APECompress.cpp 1_MAC_SDK_444_updated/Source/MACLib/APECompress.cpp
+--- 0_MAC_SDK_444_orig/Source/MACLib/APECompress.cpp	2018-12-02 01:38:48.000000000 +0100
++++ 1_MAC_SDK_444_updated/Source/MACLib/APECompress.cpp	2023-01-13 10:46:52.000000000 +0100
 @@ -30,6 +30,7 @@
      }
  }
@@ -17,9 +17,9 @@ diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APECompress.cpp 1_MAC_SDK_433_updated/
  
  int CAPECompress::StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, unsigned int nMaxAudioBytes, intn nCompressionLevel, const void * pHeaderData, intn nHeaderBytes)
  {
-diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APECompress.h 1_MAC_SDK_433_updated/Source/MACLib/APECompress.h
---- 0_MAC_SDK_433_orig/Source/MACLib/APECompress.h	2017-10-27 18:01:52.000000000 +0200
-+++ 1_MAC_SDK_433_updated/Source/MACLib/APECompress.h	2022-12-28 18:44:30.000000000 +0100
+diff -ur 0_MAC_SDK_444_orig/Source/MACLib/APECompress.h 1_MAC_SDK_444_updated/Source/MACLib/APECompress.h
+--- 0_MAC_SDK_444_orig/Source/MACLib/APECompress.h	2018-05-14 18:45:14.000000000 +0200
++++ 1_MAC_SDK_444_updated/Source/MACLib/APECompress.h	2023-01-13 10:46:52.000000000 +0100
 @@ -16,7 +16,9 @@
      ~CAPECompress();
  
@@ -30,9 +30,9 @@ diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APECompress.h 1_MAC_SDK_433_updated/So
      int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, unsigned int nMaxAudioBytes, intn nCompressionLevel = COMPRESSION_LEVEL_NORMAL, const void * pHeaderData = NULL, intn nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION);
      
      // add data / compress data
-diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APEInfo.cpp 1_MAC_SDK_433_updated/Source/MACLib/APEInfo.cpp
---- 0_MAC_SDK_433_orig/Source/MACLib/APEInfo.cpp	2017-11-09 16:20:52.000000000 +0100
-+++ 1_MAC_SDK_433_updated/Source/MACLib/APEInfo.cpp	2022-12-29 17:47:50.000000000 +0100
+diff -ur 0_MAC_SDK_444_orig/Source/MACLib/APEInfo.cpp 1_MAC_SDK_444_updated/Source/MACLib/APEInfo.cpp
+--- 0_MAC_SDK_444_orig/Source/MACLib/APEInfo.cpp	2018-12-07 13:49:55.864627400 +0100
++++ 1_MAC_SDK_444_updated/Source/MACLib/APEInfo.cpp	2023-01-13 10:46:52.000000000 +0100
 @@ -12,6 +12,7 @@
  namespace APE
  {
@@ -49,9 +49,9 @@ diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APEInfo.cpp 1_MAC_SDK_433_updated/Sour
  
  CAPEInfo::CAPEInfo(int * pErrorCode, CIO * pIO, CAPETag * pTag)
  {
-diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APETag.cpp 1_MAC_SDK_433_updated/Source/MACLib/APETag.cpp
---- 0_MAC_SDK_433_orig/Source/MACLib/APETag.cpp	2017-10-28 01:05:46.000000000 +0200
-+++ 1_MAC_SDK_433_updated/Source/MACLib/APETag.cpp	2022-12-28 18:45:18.000000000 +0100
+diff -ur 0_MAC_SDK_444_orig/Source/MACLib/APETag.cpp 1_MAC_SDK_444_updated/Source/MACLib/APETag.cpp
+--- 0_MAC_SDK_444_orig/Source/MACLib/APETag.cpp	2018-12-07 13:49:55.779854000 +0100
++++ 1_MAC_SDK_444_updated/Source/MACLib/APETag.cpp	2023-01-13 10:46:52.000000000 +0100
 @@ -97,6 +97,7 @@
  	L"Crossover", L"Contemporary C", L"Christian Rock", L"Merengue", L"Salsa", L"Thrash Metal", L"Anime", L"JPop", L"SynthPop" 
  };
@@ -68,9 +68,9 @@ diff -ur 0_MAC_SDK_433_orig/Source/MACLib/APETag.cpp 1_MAC_SDK_433_updated/Sourc
  
  CAPETag::CAPETag(CIO * pIO, bool bAnalyze)
  {
-diff -ur 0_MAC_SDK_433_orig/Source/MACLib/MACLib.cpp 1_MAC_SDK_433_updated/Source/MACLib/MACLib.cpp
---- 0_MAC_SDK_433_orig/Source/MACLib/MACLib.cpp	2017-10-26 18:55:30.000000000 +0200
-+++ 1_MAC_SDK_433_updated/Source/MACLib/MACLib.cpp	2022-12-28 18:45:30.000000000 +0100
+diff -ur 0_MAC_SDK_444_orig/Source/MACLib/MACLib.cpp 1_MAC_SDK_444_updated/Source/MACLib/MACLib.cpp
+--- 0_MAC_SDK_444_orig/Source/MACLib/MACLib.cpp	2018-05-14 18:45:14.000000000 +0200
++++ 1_MAC_SDK_444_updated/Source/MACLib/MACLib.cpp	2023-01-13 10:46:52.000000000 +0100
 @@ -58,6 +58,7 @@
      return pAPEDecompress;
  }
@@ -87,10 +87,10 @@ diff -ur 0_MAC_SDK_433_orig/Source/MACLib/MACLib.cpp 1_MAC_SDK_433_updated/Sourc
  
  IAPEDecompress * __stdcall CreateIAPEDecompressEx(CIO * pIO, int * pErrorCode)
  {
-diff -ur 0_MAC_SDK_433_orig/Source/MACLib/MACLib.h 1_MAC_SDK_433_updated/Source/MACLib/MACLib.h
---- 0_MAC_SDK_433_orig/Source/MACLib/MACLib.h	2017-11-18 00:50:42.000000000 +0100
-+++ 1_MAC_SDK_433_updated/Source/MACLib/MACLib.h	2022-12-29 17:51:38.000000000 +0100
-@@ -333,9 +333,11 @@
+diff -ur 0_MAC_SDK_444_orig/Source/MACLib/MACLib.h 1_MAC_SDK_444_updated/Source/MACLib/MACLib.h
+--- 0_MAC_SDK_444_orig/Source/MACLib/MACLib.h	2018-11-12 00:18:48.000000000 +0100
++++ 1_MAC_SDK_444_updated/Source/MACLib/MACLib.h	2023-01-13 10:46:52.000000000 +0100
+@@ -334,9 +334,11 @@
      //        on decompression)
      //////////////////////////////////////////////////////////////////////////////////////////////
  
@@ -102,9 +102,9 @@ diff -ur 0_MAC_SDK_433_orig/Source/MACLib/MACLib.h 1_MAC_SDK_433_updated/Source/
  
      virtual int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, 
          unsigned int nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, intn nCompressionLevel = COMPRESSION_LEVEL_NORMAL,
-diff -ur 0_MAC_SDK_433_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj 1_MAC_SDK_433_updated/Source/Projects/VS2017/MACLib/MACLib.vcxproj
---- 0_MAC_SDK_433_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj	2017-10-28 01:01:26.000000000 +0200
-+++ 1_MAC_SDK_433_updated/Source/Projects/VS2017/MACLib/MACLib.vcxproj	2022-12-28 18:45:58.000000000 +0100
+diff -ur 0_MAC_SDK_444_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj 1_MAC_SDK_444_updated/Source/Projects/VS2017/MACLib/MACLib.vcxproj
+--- 0_MAC_SDK_444_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj	2019-01-14 02:55:50.000000000 +0100
++++ 1_MAC_SDK_444_updated/Source/Projects/VS2017/MACLib/MACLib.vcxproj	2023-01-13 10:46:52.000000000 +0100
 @@ -1,5 +1,5 @@
  ﻿<?xml version="1.0" encoding="utf-8"?>
 -<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -361,7 +361,7 @@ diff -ur 0_MAC_SDK_433_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj 1_MAC_S
      </ClCompile>
      <ClCompile Include="..\..\..\MACLib\..\Shared\CharacterHelper.cpp">
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-@@ -426,6 +404,10 @@
+@@ -436,6 +414,10 @@
        <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Full</Optimization>
        <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BrowseInformation>
@@ -372,7 +372,7 @@ diff -ur 0_MAC_SDK_433_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj 1_MAC_S
      </ClCompile>
      <ClCompile Include="..\..\..\MACLib\MD5.cpp">
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-@@ -456,6 +438,10 @@
+@@ -466,6 +448,10 @@
        <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Full</Optimization>
        <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BrowseInformation>
@@ -383,7 +383,7 @@ diff -ur 0_MAC_SDK_433_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj 1_MAC_S
      </ClCompile>
      <ClCompile Include="..\..\..\MACLib\..\Shared\WinFileIO.cpp">
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-@@ -466,6 +452,10 @@
+@@ -476,6 +462,10 @@
        <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Full</Optimization>
        <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BrowseInformation>
@@ -394,10 +394,10 @@ diff -ur 0_MAC_SDK_433_orig/Source/Projects/VS2017/MACLib/MACLib.vcxproj 1_MAC_S
      </ClCompile>
      <ClCompile Include="..\..\..\MACLib\NewPredictor.cpp">
        <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-diff -ur 0_MAC_SDK_433_orig/Source/Shared/All.h 1_MAC_SDK_433_updated/Source/Shared/All.h
---- 0_MAC_SDK_433_orig/Source/Shared/All.h	2017-12-01 16:15:52.000000000 +0100
-+++ 1_MAC_SDK_433_updated/Source/Shared/All.h	2022-12-30 10:32:48.000000000 +0100
-@@ -24,7 +24,21 @@
+diff -ur 0_MAC_SDK_444_orig/Source/Shared/All.h 1_MAC_SDK_444_updated/Source/Shared/All.h
+--- 0_MAC_SDK_444_orig/Source/Shared/All.h	2019-01-14 02:21:59.292738200 +0100
++++ 1_MAC_SDK_444_updated/Source/Shared/All.h	2023-01-13 10:46:52.000000000 +0100
+@@ -35,7 +35,21 @@
  
  #if defined(PLATFORM_WINDOWS)
      #include "WindowsEnvironment.h"
@@ -419,7 +419,7 @@ diff -ur 0_MAC_SDK_433_orig/Source/Shared/All.h 1_MAC_SDK_433_updated/Source/Sha
      #include <tchar.h>
      #include <assert.h>
  #else
-@@ -131,9 +145,13 @@
+@@ -143,9 +157,13 @@
      #define IO_HEADER_FILE                              "WinFileIO.h"
      #define IO_CLASS_NAME                               CWinFileIO
      #define DLLEXPORT                                   __declspec(dllexport)
@@ -433,9 +433,9 @@ diff -ur 0_MAC_SDK_433_orig/Source/Shared/All.h 1_MAC_SDK_433_updated/Source/Sha
      #define ODS                                         OutputDebugString
      #define TICK_COUNT_TYPE                             unsigned long
      #define TICK_COUNT_READ(VARIABLE)                   VARIABLE = GetTickCount()
-diff -ur 0_MAC_SDK_433_orig/Source/Shared/GlobalFunctions.cpp 1_MAC_SDK_433_updated/Source/Shared/GlobalFunctions.cpp
---- 0_MAC_SDK_433_orig/Source/Shared/GlobalFunctions.cpp	2017-11-18 00:52:56.000000000 +0100
-+++ 1_MAC_SDK_433_updated/Source/Shared/GlobalFunctions.cpp	2022-12-28 18:46:26.000000000 +0100
+diff -ur 0_MAC_SDK_444_orig/Source/Shared/GlobalFunctions.cpp 1_MAC_SDK_444_updated/Source/Shared/GlobalFunctions.cpp
+--- 0_MAC_SDK_444_orig/Source/Shared/GlobalFunctions.cpp	2018-07-27 21:00:18.000000000 +0200
++++ 1_MAC_SDK_444_updated/Source/Shared/GlobalFunctions.cpp	2023-01-13 10:46:52.000000000 +0100
 @@ -35,6 +35,7 @@
      return nResult;
  }

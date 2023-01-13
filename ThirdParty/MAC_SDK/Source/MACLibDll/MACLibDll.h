@@ -31,7 +31,7 @@ typedef void * APE_CIO_HANDLE;
 
 typedef int (__stdcall *proc_APECIO_Read)(void* pUserData, void * pBuffer, unsigned int nBytesToRead, unsigned int * pBytesRead);
 typedef int (__stdcall *proc_APECIO_Write)(void* pUserData, const void * pBuffer, unsigned int nBytesToWrite, unsigned int * pBytesWritten);
-typedef int (__stdcall *proc_APECIO_Seek)(void* pUserData, APE::intn nDistance, unsigned int nMoveMode);
+typedef APE::int64 (__stdcall *proc_APECIO_Seek)(void* pUserData, APE::int64 nDistance, unsigned int nMoveMode);
 typedef int (__stdcall *proc_APECIO_GetPosition)(void* pUserData);
 typedef unsigned int (__stdcall *proc_APECIO_GetSize)(void* pUserData);
 

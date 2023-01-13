@@ -57,7 +57,7 @@ namespace CUETools.Codecs.MACLib
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     internal unsafe delegate uint CIO_GetSizeDelegate(void* pUserData);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate int CIO_SeekDelegate(void* pUserData, IntPtr delta, int mode);
+    internal unsafe delegate long CIO_SeekDelegate(void* pUserData, long delta, int mode);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 2)]
     public unsafe struct WAVEFORMATEX

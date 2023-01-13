@@ -45,9 +45,9 @@ public:
     }
 
     // seek
-    int Seek(intn nDistance, unsigned int nMoveMode)
+    APE::int64 PerformSeek()
     {
-        return m_CIO_Seek(m_pUserData, nDistance, nMoveMode);
+        return m_CIO_Seek(m_pUserData, m_nSeekPosition, m_nSeekMethod);
     }
 
     // other functions
