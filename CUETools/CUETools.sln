@@ -181,7 +181,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaglibSharp", "..\ThirdPart
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libFLAC_dynamic", "..\ThirdParty\flac\src\libFLAC\libFLAC_dynamic.vcxproj", "{4CEFBC83-C215-11DB-8314-0800200C9A66}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MACLib", "..\ThirdParty\MAC_SDK\Source\Projects\VS2017\MACLib\MACLib.vcxproj", "{21BF980F-C022-4DCC-9250-7C73528E422B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MACLib", "..\ThirdParty\MAC_SDK\Source\Projects\VS2022\MACLib\MACLib.vcxproj", "{21BF980F-C022-4DCC-9250-7C73528E422B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenCLNet", "..\ThirdParty\openclnet\source\OpenCLNet.csproj", "{8373E3B2-16F0-4FD3-A13B-0B0248FFC228}"
 EndProject
@@ -191,7 +191,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwavpack", "..\ThirdParty
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wavpackdll", "..\ThirdParty\WavPack\wavpackdll\wavpackdll.vcxproj", "{1A87F412-BA74-4DBB-9F77-FD55C042FB63}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MACLibDll", "..\ThirdParty\MAC_SDK\Source\Projects\VS2017\MACLibDll\MACLibDll.vcxproj", "{CEE4A179-49FC-4D51-B045-F717D3A6C13A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MACLibDll", "..\ThirdParty\MAC_SDK\Source\Projects\VS2022\MACLibDll\MACLibDll.vcxproj", "{CEE4A179-49FC-4D51-B045-F717D3A6C13A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUETools.Codecs.MACLib", "..\CUETools.Codecs.MACLib\CUETools.Codecs.MACLib.csproj", "{8FE405A0-E837-4088-88AD-B63652E34790}"
 EndProject

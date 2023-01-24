@@ -12,7 +12,6 @@ namespace CUETools.Codecs.MACLib
 
             m_path = path;
             m_stream = output;
-            m_settings = settings;
             m_streamGiven = output != null;
             m_initialized = false;
             m_finalSampleCount = 0;
@@ -135,7 +134,7 @@ namespace CUETools.Codecs.MACLib
                 pAPECompress,
                 m_StreamIO.CIO,
                 pWaveFormatEx,
-                (m_finalSampleCount == 0) ? -1 : (int) (m_finalSampleCount * m_settings.PCM.BlockAlign),
+                (m_finalSampleCount == 0) ? -1 : (m_finalSampleCount * m_settings.PCM.BlockAlign),
                 compressionLevel,
                 null,
                 /*CREATE_WAV_HEADER_ON_DECOMPRESSION*/-1);

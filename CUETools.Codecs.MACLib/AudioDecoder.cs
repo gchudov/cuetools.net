@@ -89,7 +89,7 @@ namespace CUETools.Codecs.MACLib
                 _bufferOffset = 0;
                 _bufferLength = 0;
                 _sampleOffset = value;
-                int res = MACLibDll.c_APEDecompress_Seek(pAPEDecompress, (int)value);
+                int res = MACLibDll.c_APEDecompress_Seek(pAPEDecompress, value);
                 if (0 != res)
                     throw new Exception("unable to seek:" + res.ToString());
             }
@@ -117,7 +117,7 @@ namespace CUETools.Codecs.MACLib
                     long nBlocksRetrieved;
                     fixed (byte* pSampleBuffer = &_samplesBuffer[0])
                     {
-                        int res = MACLibDll.c_APEDecompress_GetData(pAPEDecompress, (char*)pSampleBuffer, (IntPtr)16384, out nBlocksRetrieved);
+                        int res = MACLibDll.c_APEDecompress_GetData(pAPEDecompress, (char*)pSampleBuffer, 16384, out nBlocksRetrieved);
                         if (res != 0)
                             throw new Exception("An error occurred while decoding: " + res.ToString());
                     }
