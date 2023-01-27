@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("CUETools")]
-[assembly: AssemblyCopyright("Copyright 2006-2007 Moitah, 2008-2022 Greg Chudov")]
+[assembly: AssemblyCopyright("Copyright 2006-2007 Moitah, 2008-2023 Greg Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

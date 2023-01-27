@@ -7,7 +7,7 @@
     <RootNamespace>CUETools.Codecs.MACLib</RootNamespace>
     <Product>CUETools</Product>
     <Description>A library for encoding APE files using official encoder.</Description>
-    <Copyright>Copyright (c) 2008-2022 Grigory Chudov</Copyright>
+    <Copyright>Copyright (c) 2008-2023 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>

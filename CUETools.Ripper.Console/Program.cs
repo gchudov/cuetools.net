@@ -1,7 +1,7 @@
 // ****************************************************************************
 // 
 // CUERipper
-// Copyright (C) 2008-2022 Grigory Chudov (gchudov@gmail.com)
+// Copyright (C) 2008-2023 Grigory Chudov (gchudov@gmail.com)
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -90,7 +90,7 @@ namespace CUETools.ConsoleRipper
 		static void Main(string[] args)
 		{
 			Console.SetOut(Console.Error);
-			Console.WriteLine("CUERipper v2.2.2 Copyright (C) 2008-2022 Grigory Chudov");
+			Console.WriteLine("CUERipper v2.2.2 Copyright (C) 2008-2023 Grigory Chudov");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 
