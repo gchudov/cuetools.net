@@ -49,7 +49,7 @@ namespace CUETools.ChaptersToCue
         {
             TextWriter stdout = Console.Out;
             Console.SetOut(Console.Error);
-            Console.WriteLine("CUETools.ChaptersToCue v2.2.2 Copyright (C) 2017-2023 Grigory Chudov");
+            Console.WriteLine("CUETools.ChaptersToCue v2.2.3 Copyright (C) 2017-2023 Grigory Chudov");
             Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
             Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 
@@ -166,7 +166,7 @@ namespace CUETools.ChaptersToCue
             if (queryMeta)
             {
                 var ctdb = new CUEToolsDB(toc, null);
-                ctdb.ContactDB(null, "CUETools.ChaptersToCue 2.2.2", "", false, true, CTDBMetadataSearch.Extensive);
+                ctdb.ContactDB(null, "CUETools.ChaptersToCue 2.2.3", "", false, true, CTDBMetadataSearch.Extensive);
                 foreach (var imeta in ctdb.Metadata)
                 {
                     meta = imeta;

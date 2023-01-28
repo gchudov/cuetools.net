@@ -225,7 +225,7 @@ namespace CUETools.eac3to
                     {
                         var ctdb = new CUEToolsDB(toc, null);
                         Console.Error.WriteLine("Contacting CTDB...");
-                        ctdb.ContactDB(null, "CUETools.eac3to 2.2.2", "", false, true, CTDBMetadataSearch.Extensive);
+                        ctdb.ContactDB(null, "CUETools.eac3to 2.2.3", "", false, true, CTDBMetadataSearch.Extensive);
                         foreach (var imeta in ctdb.Metadata)
                         {
                             meta = imeta;

@@ -248,7 +248,7 @@ namespace CUETools.Processor
 
         public void Save(SettingsWriter sw)
         {
-            sw.Save("Version", 222);
+            sw.Save("Version", 223);
             sw.Save("ArFixWhenConfidence", fixOffsetMinimumConfidence);
             sw.Save("ArFixWhenPercent", fixOffsetMinimumTracksPercent);
             sw.Save("ArEncodeWhenConfidence", encodeWhenConfidence);
