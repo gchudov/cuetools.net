@@ -51,7 +51,7 @@ diff -ur 0_MAC_904_SDK_orig/Source/MACLib/APEInfo.cpp 1_MAC_904_SDK_updated/Sour
  {
 diff -ur 0_MAC_904_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_904_SDK_updated/Source/MACLib/APETag.cpp
 --- 0_MAC_904_SDK_orig/Source/MACLib/APETag.cpp	2022-12-09 18:57:02.000000000 +0100
-+++ 1_MAC_904_SDK_updated/Source/MACLib/APETag.cpp	2022-12-28 12:39:50.000000000 +0100
++++ 1_MAC_904_SDK_updated/Source/MACLib/APETag.cpp	2023-02-01 09:01:50.000000000 +0100
 @@ -125,6 +125,7 @@
      L"Crossover", L"Contemporary C", L"Christian Rock", L"Merengue", L"Salsa", L"Thrash Metal", L"Anime", L"JPop", L"SynthPop"
  };
@@ -68,6 +68,15 @@ diff -ur 0_MAC_904_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_904_SDK_updated/Sourc
  
  CAPETag::CAPETag(CIO * pIO, bool bAnalyze, bool bCheckForID3v1)
  {
+@@ -283,7 +285,7 @@
+     m_nAPETagVersion = -1;
+ 
+     // check for an ID3v1 tag
+-    if (m_bCheckForID3v1 && (sizeof(ID3Tag) == ID3_TAG_BYTES))
++    if (m_bCheckForID3v1 && (sizeof(ID3Tag) == ID3_TAG_BYTES) && (m_spIO->GetSize() > ID3_TAG_BYTES))
+     {
+         m_spIO->SetSeekPosition(-ID3_TAG_BYTES);
+         m_spIO->SetSeekMethod(APE_FILE_END);
 diff -ur 0_MAC_904_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_904_SDK_updated/Source/MACLib/MACLib.cpp
 --- 0_MAC_904_SDK_orig/Source/MACLib/MACLib.cpp	2022-12-09 19:11:04.000000000 +0100
 +++ 1_MAC_904_SDK_updated/Source/MACLib/MACLib.cpp	2023-01-03 10:16:08.000000000 +0100
