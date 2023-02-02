@@ -188,7 +188,7 @@ namespace CUETools.Codecs.libFLAC
             m_samplesWritten += sampleBuffer.Length;
         }
 
-        internal FLAC__StreamEncoderWriteStatus StreamEncoderWriteCallback(IntPtr encoder, byte[] buffer, long bytes, int samples, int current_frame, void* client_data)
+        internal FLAC__StreamEncoderWriteStatus StreamEncoderWriteCallback(IntPtr encoder, byte[] buffer, UIntPtr bytes, int samples, int current_frame, void* client_data)
         {
             try
             {
