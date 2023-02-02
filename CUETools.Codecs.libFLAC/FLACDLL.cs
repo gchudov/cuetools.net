@@ -138,7 +138,7 @@ namespace CUETools.Codecs.libFLAC
         internal static extern int FLAC__stream_encoder_set_blocksize(IntPtr encoder, int value);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        internal delegate FLAC__StreamEncoderWriteStatus FLAC__StreamEncoderWriteCallback(IntPtr encoder, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] buffer, long bytes, int samples, int current_frame, void* client_data);
+        internal delegate FLAC__StreamEncoderWriteStatus FLAC__StreamEncoderWriteCallback(IntPtr encoder, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] buffer, UIntPtr bytes, int samples, int current_frame, void* client_data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate FLAC__StreamEncoderSeekStatus FLAC__StreamEncoderSeekCallback(IntPtr encoder, long absolute_byte_offset, void* client_data);
