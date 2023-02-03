@@ -74,23 +74,23 @@ index 3d586d6..7e4523b 100644
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
 -    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 -    <IntDir>$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)\</IntDir>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 -    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
      <IntDir>$(Platform)\$(Configuration)\</IntDir>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
 -    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 -    <IntDir>$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)\</IntDir>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 -    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
      <IntDir>$(Platform)\$(Configuration)\</IntDir>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -224,26 +224,26 @@ index 2d97667..92e220d 100644
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
 -    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 -    <IntDir>$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)\</IntDir>
      <LinkIncremental>true</LinkIncremental>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 -    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
      <IntDir>$(Platform)\$(Configuration)\</IntDir>
      <LinkIncremental>true</LinkIncremental>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
 -    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
 -    <IntDir>$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)\</IntDir>
      <LinkIncremental>false</LinkIncremental>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 -    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
      <IntDir>$(Platform)\$(Configuration)\</IntDir>
      <LinkIncremental>false</LinkIncremental>
    </PropertyGroup>

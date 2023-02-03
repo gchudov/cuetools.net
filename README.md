@@ -7,21 +7,21 @@ CUERipper is a utility for extracting digital audio from CDs, an open-source alt
 # Installing
 Prebuilt binaries can be downloaded from [CUETools Download](http://cue.tools/wiki/CUETools_Download).
 ## Installing from sources
-* Get the CUETools sources from GitHub ([https://github.com/gchudov/cuetools.net](https://github.com/gchudov/cuetools.net)):  
+* Get the CUETools sources from GitHub ([https://github.com/gchudov/cuetools.net](https://github.com/gchudov/cuetools.net)):
 `git clone https://github.com/gchudov/cuetools.net.git`
-* Get the required submodules using:  
+* Get the required submodules using:
 `git submodule update --init --recursive`
-* Apply patches to ThirdParty modules:  
-`git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch --whitespace=nowarn`  
-`powershell -c "Expand-Archive ThirdParty/MAC_SDK/MAC_904_SDK.zip -DestinationPath ThirdParty/MAC_SDK/"`  
-`git apply --directory=ThirdParty/MAC_SDK ThirdParty/ThirdParty_MAC_SDK_CUETools.patch`  
-`git apply --directory=ThirdParty/taglib-sharp ThirdParty/submodule_taglib-sharp_CUETools.patch`  
-`git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools.patch`  
+* Apply patches to ThirdParty modules:
+`git apply --directory=ThirdParty/flac ThirdParty/submodule_flac_CUETools.patch --whitespace=nowarn`
+`powershell -c "Expand-Archive ThirdParty/MAC_SDK/MAC_904_SDK.zip -DestinationPath ThirdParty/MAC_SDK/"`
+`git apply --directory=ThirdParty/MAC_SDK ThirdParty/ThirdParty_MAC_SDK_CUETools.patch`
+`git apply --directory=ThirdParty/taglib-sharp ThirdParty/submodule_taglib-sharp_CUETools.patch`
+`git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools.patch`
 `git apply --directory=ThirdParty/WindowsMediaLib ThirdParty/submodule_WindowsMediaLib_CUETools.patch`
 * The solution can be built using Microsoft Visual Studio 2017 or newer (Community Edition will work)
   * Install the required .NET development tools (currently .NET Framework 4.7 and .NET Core 2.0)
   * Install an appropriate Windows SDK version (e.g. 10.0.16299.0 or newer)
   * Install the Microsoft Visual Studio Installer Projects
-* Open cuetools.net\CUETools\CUETools.sln
+* Open cuetools.net\CUETools.sln
 * Select 'Any CPU' under 'Solution Platforms'
 * Build solution
