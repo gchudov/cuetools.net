@@ -19,7 +19,7 @@ namespace CUETools.Codecs.libFLAC
         public static extern IntPtr GetProcAddress(IntPtr hModule, string procedureName);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        internal delegate FLAC__StreamDecoderReadStatus FLAC__StreamDecoderReadCallback(IntPtr decoder, byte* buffer, ref long bytes, void* client_data);
+        internal delegate FLAC__StreamDecoderReadStatus FLAC__StreamDecoderReadCallback(IntPtr decoder, byte* buffer, ref UIntPtr bytes, void* client_data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate FLAC__StreamDecoderSeekStatus FLAC__StreamDecoderSeekCallback(IntPtr decoder, long absolute_byte_offset, void* client_data);

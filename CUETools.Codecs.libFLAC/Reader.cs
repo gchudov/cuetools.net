@@ -245,19 +245,19 @@ namespace CUETools.Codecs.libFLAC
             }
 		}
 
-        FLAC__StreamDecoderReadStatus ReadCallback(IntPtr decoder, byte* buffer, ref long bytes, void* client_data)
+        FLAC__StreamDecoderReadStatus ReadCallback(IntPtr decoder, byte* buffer, ref UIntPtr bytes, void* client_data)
         {
-            if (bytes <= 0 || bytes > int.MaxValue)
+            if ((long)bytes <= 0 || (long)bytes > int.MaxValue)
                 return FLAC__StreamDecoderReadStatus.FLAC__STREAM_DECODER_READ_STATUS_ABORT; /* abort to avoid a deadlock */
 
-            if (m_readBuffer == null || m_readBuffer.Length < bytes)
-                m_readBuffer = new byte[Math.Max(bytes, 0x4000)];
+            if (m_readBuffer == null || m_readBuffer.Length < (long)bytes)
+                m_readBuffer = new byte[Math.Max((long)bytes, 0x4000)];
 
-            bytes = m_stream.Read(m_readBuffer, 0, (int)bytes);
+            bytes = (UIntPtr)m_stream.Read(m_readBuffer, 0, (int)bytes);
             //if(ferror(decoder->private_->file))
             //return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
             //else 
-            if (bytes == 0)
+            if ((long)bytes == 0)
                 return FLAC__StreamDecoderReadStatus.FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 
             Marshal.Copy(m_readBuffer, 0, (IntPtr)buffer, (int)bytes);
