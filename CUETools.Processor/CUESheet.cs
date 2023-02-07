@@ -2311,7 +2311,7 @@ namespace CUETools.Processor
         public List<string> OutputExists()
         {
             List<string> outputExists = new List<string>();
-            bool outputCUE = Action == CUEAction.Encode && (OutputStyle != CUEStyle.SingleFileWithCUE || _config.createCUEFileWhenEmbedded);
+            bool outputCUE = Action == CUEAction.Encode && _config.createCUEFile && (OutputStyle != CUEStyle.SingleFileWithCUE || _config.createCUEFileWhenEmbedded);
             bool outputAudio = Action == CUEAction.Encode && _audioEncoderType != AudioEncoderType.NoAudio;
             if (outputCUE)
                 outputExists.Add(_outputPath);
@@ -2738,7 +2738,7 @@ namespace CUETools.Processor
                     Directory.CreateDirectory(OutputDir);
             }
 
-            if (_action == CUEAction.Encode)
+            if (_action == CUEAction.Encode && _config.createCUEFile)
             {
                 string cueContents = GetCUESheetContents(OutputStyle);
                 if (_config.createEACLOG && _isCD)
