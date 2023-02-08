@@ -47,6 +47,7 @@ namespace CUETools.Processor
         public bool decodeHDCD;
         public bool wait750FramesForHDCD;
         public bool createM3U;
+        public bool createCUEFileInTracksMode;
         public bool createCUEFileWhenEmbedded;
         public bool truncate4608ExtraSamples;
         public bool decodeHDCDtoLW16;
@@ -114,6 +115,7 @@ namespace CUETools.Processor
             wait750FramesForHDCD = true;
             decodeHDCD = false;
             createM3U = false;
+            createCUEFileInTracksMode = true;
             createCUEFileWhenEmbedded = true;
             truncate4608ExtraSamples = true;
             decodeHDCDtoLW16 = false;
@@ -198,6 +200,7 @@ namespace CUETools.Processor
             wait750FramesForHDCD = src.wait750FramesForHDCD;
             decodeHDCD = src.decodeHDCD;
             createM3U = src.createM3U;
+            createCUEFileInTracksMode = src.createCUEFileInTracksMode;
             createCUEFileWhenEmbedded = src.createCUEFileWhenEmbedded;
             truncate4608ExtraSamples = src.truncate4608ExtraSamples;
             decodeHDCDtoLW16 = src.decodeHDCDtoLW16;
@@ -283,6 +286,7 @@ namespace CUETools.Processor
             sw.Save("Wait750FramesForHDCD", wait750FramesForHDCD);
             sw.Save("DecodeHDCD", decodeHDCD);
             sw.Save("CreateM3U", createM3U);
+            sw.Save("CreateCUEFileInTracksMode", createCUEFileInTracksMode);
             sw.Save("CreateCUEFileWhenEmbedded", createCUEFileWhenEmbedded);
             sw.Save("Truncate4608ExtraSamples", truncate4608ExtraSamples);
             sw.Save("DecodeHDCDToLossyWAV16", decodeHDCDtoLW16);
@@ -386,6 +390,7 @@ namespace CUETools.Processor
             wait750FramesForHDCD = sr.LoadBoolean("Wait750FramesForHDCD") ?? true;
             decodeHDCD = sr.LoadBoolean("DecodeHDCD") ?? false;
             createM3U = sr.LoadBoolean("CreateM3U") ?? false;
+            createCUEFileInTracksMode = sr.LoadBoolean("CreateCUEFileInTracksMode") ?? true;
             createCUEFileWhenEmbedded = sr.LoadBoolean("CreateCUEFileWhenEmbedded") ?? true;
             truncate4608ExtraSamples = sr.LoadBoolean("Truncate4608ExtraSamples") ?? true;
             decodeHDCDtoLW16 = sr.LoadBoolean("DecodeHDCDToLossyWAV16") ?? false;
