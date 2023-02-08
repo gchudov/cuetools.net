@@ -2311,7 +2311,13 @@ namespace CUETools.Processor
         public List<string> OutputExists()
         {
             List<string> outputExists = new List<string>();
-            bool outputCUE = Action == CUEAction.Encode && (OutputStyle != CUEStyle.SingleFileWithCUE || _config.createCUEFileWhenEmbedded);
+            bool outputCUE = Action == CUEAction.Encode &&
+                                       // Embedded, SingleFileWithCUE (0)
+                                       ((OutputStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded) ||
+                                       // Image + CUE, SingleFile (1)
+                                       OutputStyle == CUEStyle.SingleFile ||
+                                       // Track Modes: GapsPrepended (2), GapsAppended (3), GapsLeftOut (4)
+                                       ((int)OutputStyle > 1 && _config.createCUEFileInTracksMode));
             bool outputAudio = Action == CUEAction.Encode && _audioEncoderType != AudioEncoderType.NoAudio;
             if (outputCUE)
                 outputExists.Add(_outputPath);
@@ -2745,7 +2751,7 @@ namespace CUETools.Processor
                     cueContents = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueContents));
                 if (OutputStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded)
                     WriteText(Path.ChangeExtension(_outputPath, ".cue"), cueContents);
-                else
+                else if (OutputStyle == CUEStyle.SingleFile || ((int)OutputStyle > 1 && _config.createCUEFileInTracksMode))
                     WriteText(_outputPath, cueContents);
             }
 
