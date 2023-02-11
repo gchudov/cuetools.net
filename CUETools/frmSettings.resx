@@ -154,13 +154,13 @@
     <value>True</value>
   </data>
   <data name="checkBoxSeparateDecodingThread.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 140</value>
+    <value>12, 157</value>
   </data>
   <data name="checkBoxSeparateDecodingThread.Size" type="System.Drawing.Size, System.Drawing">
     <value>168, 17</value>
   </data>
   <data name="checkBoxSeparateDecodingThread.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="checkBoxSeparateDecodingThread.Text" xml:space="preserve">
     <value>Separate thread for decoding</value>
@@ -315,6 +315,39 @@
   <data name="&gt;&gt;chkTruncateExtra4206Samples.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="chkCreateCUEFileInTracksMode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="chkCreateCUEFileInTracksMode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="chkCreateCUEFileInTracksMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 106</value>
+  </data>
+  <data name="chkCreateCUEFileInTracksMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>174, 17</value>
+  </data>
+  <data name="chkCreateCUEFileInTracksMode.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="chkCreateCUEFileInTracksMode.Text" xml:space="preserve">
+    <value>Create .cue file in Tracks Mode</value>
+  </data>
+  <data name="chkCreateCUEFileInTracksMode.ToolTip" xml:space="preserve">
+    <value>Option to disable writing a CUE sheet for separate tracks</value>
+  </data>
+  <data name="&gt;&gt;chkCreateCUEFileInTracksMode.Name" xml:space="preserve">
+    <value>chkCreateCUEFileInTracksMode</value>
+  </data>
+  <data name="&gt;&gt;chkCreateCUEFileInTracksMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkCreateCUEFileInTracksMode.Parent" xml:space="preserve">
+    <value>grpGeneral</value>
+  </data>
+  <data name="&gt;&gt;chkCreateCUEFileInTracksMode.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
   <data name="chkCreateCUEFileWhenEmbedded.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -322,13 +355,13 @@
     <value>NoControl</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 106</value>
+    <value>12, 123</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Size" type="System.Drawing.Size, System.Drawing">
     <value>189, 17</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="chkCreateCUEFileWhenEmbedded.Text" xml:space="preserve">
     <value>Create .cue file even if embedded</value>
@@ -346,7 +379,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="chkCreateM3U.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -379,7 +412,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkCreateM3U.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="chkAutoCorrectFilenames.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -388,13 +421,13 @@
     <value>NoControl</value>
   </data>
   <data name="chkAutoCorrectFilenames.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 123</value>
+    <value>12, 140</value>
   </data>
   <data name="chkAutoCorrectFilenames.Size" type="System.Drawing.Size, System.Drawing">
     <value>155, 17</value>
   </data>
   <data name="chkAutoCorrectFilenames.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="chkAutoCorrectFilenames.Text" xml:space="preserve">
     <value>Locate audio files if missing</value>
@@ -412,7 +445,7 @@
     <value>grpGeneral</value>
   </data>
   <data name="&gt;&gt;chkAutoCorrectFilenames.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="grpGeneral.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 6</value>

@@ -480,4 +480,10 @@ Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Mu
   <data name="tabPageEncoders.Text" xml:space="preserve">
     <value>Encoder</value>
   </data>
+  <data name="chkCreateCUEFileInTracksMode.Text" xml:space="preserve">
+    <value>Erstelle .cue-Datei im Einzeldatei-Modus</value>
+  </data>
+  <data name="chkCreateCUEFileInTracksMode.ToolTip" xml:space="preserve">
+    <value>Einstellung, mit der das Erstellen einer CUE-Datei im Einzeldatei-Modus deaktiviert werden kann.</value>
+  </data>
 </root>

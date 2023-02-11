@@ -37,6 +37,7 @@ namespace JDP
             this.chkAllowMultipleInstances = new System.Windows.Forms.CheckBox();
             this.chkReducePriority = new System.Windows.Forms.CheckBox();
             this.chkTruncateExtra4206Samples = new System.Windows.Forms.CheckBox();
+            this.chkCreateCUEFileInTracksMode = new System.Windows.Forms.CheckBox();
             this.chkCreateCUEFileWhenEmbedded = new System.Windows.Forms.CheckBox();
             this.chkCreateM3U = new System.Windows.Forms.CheckBox();
             this.chkAutoCorrectFilenames = new System.Windows.Forms.CheckBox();
@@ -226,6 +227,7 @@ namespace JDP
             this.grpGeneral.Controls.Add(this.chkAllowMultipleInstances);
             this.grpGeneral.Controls.Add(this.chkReducePriority);
             this.grpGeneral.Controls.Add(this.chkTruncateExtra4206Samples);
+            this.grpGeneral.Controls.Add(this.chkCreateCUEFileInTracksMode);
             this.grpGeneral.Controls.Add(this.chkCreateCUEFileWhenEmbedded);
             this.grpGeneral.Controls.Add(this.chkCreateM3U);
             this.grpGeneral.Controls.Add(this.chkAutoCorrectFilenames);
@@ -267,6 +269,13 @@ namespace JDP
             this.chkTruncateExtra4206Samples.Name = "chkTruncateExtra4206Samples";
             this.toolTip1.SetToolTip(this.chkTruncateExtra4206Samples, resources.GetString("chkTruncateExtra4206Samples.ToolTip"));
             this.chkTruncateExtra4206Samples.UseVisualStyleBackColor = true;
+            // 
+            // chkCreateCUEFileInTracksMode
+            // 
+            resources.ApplyResources(this.chkCreateCUEFileInTracksMode, "chkCreateCUEFileInTracksMode");
+            this.chkCreateCUEFileInTracksMode.Name = "chkCreateCUEFileInTracksMode";
+            this.toolTip1.SetToolTip(this.chkCreateCUEFileInTracksMode, resources.GetString("chkCreateCUEFileInTracksMode.ToolTip"));
+            this.chkCreateCUEFileInTracksMode.UseVisualStyleBackColor = true;
             // 
             // chkCreateCUEFileWhenEmbedded
             // 
@@ -1292,11 +1301,11 @@ namespace JDP
             // 
             // grpHDCD
             // 
+            resources.ApplyResources(this.grpHDCD, "grpHDCD");
             this.grpHDCD.Controls.Add(this.chkHDCD24bit);
             this.grpHDCD.Controls.Add(this.chkHDCDLW16);
             this.grpHDCD.Controls.Add(this.chkHDCDStopLooking);
             this.grpHDCD.Controls.Add(this.chkHDCDDecode);
-            resources.ApplyResources(this.grpHDCD, "grpHDCD");
             this.grpHDCD.Name = "grpHDCD";
             this.grpHDCD.TabStop = false;
             // 
@@ -1455,6 +1464,7 @@ namespace JDP
         private System.Windows.Forms.GroupBox grpHDCD;
         private System.Windows.Forms.CheckBox chkHDCDStopLooking;
         private System.Windows.Forms.CheckBox chkCreateM3U;
+        private System.Windows.Forms.CheckBox chkCreateCUEFileInTracksMode;
         private System.Windows.Forms.CheckBox chkCreateCUEFileWhenEmbedded;
         private System.Windows.Forms.CheckBox chkTruncateExtra4206Samples;
         private System.Windows.Forms.CheckBox chkReducePriority;

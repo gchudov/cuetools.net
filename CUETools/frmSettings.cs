@@ -71,6 +71,7 @@ namespace JDP
 			chkHDCDDecode.Checked = _config.decodeHDCD;
 			chkHDCDStopLooking.Checked = _config.wait750FramesForHDCD;
 			chkCreateM3U.Checked = _config.createM3U;
+			chkCreateCUEFileInTracksMode.Checked = _config.createCUEFileInTracksMode;
 			chkCreateCUEFileWhenEmbedded.Checked = _config.createCUEFileWhenEmbedded;
 			chkTruncateExtra4206Samples.Checked = _config.truncate4608ExtraSamples;
 			chkHDCDLW16.Checked = _config.decodeHDCDtoLW16;
@@ -216,6 +217,7 @@ namespace JDP
 			_config.wait750FramesForHDCD = chkHDCDStopLooking.Checked;
 			_config.decodeHDCD = chkHDCDDecode.Checked;
 			_config.createM3U = chkCreateM3U.Checked;
+			_config.createCUEFileInTracksMode = chkCreateCUEFileInTracksMode.Checked;
 			_config.createCUEFileWhenEmbedded = chkCreateCUEFileWhenEmbedded.Checked;
 			_config.truncate4608ExtraSamples = chkTruncateExtra4206Samples.Checked;
 			_config.decodeHDCDtoLW16 = chkHDCDLW16.Checked;
