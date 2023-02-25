@@ -181,8 +181,8 @@ diff -ur 0_MAC_904_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_9
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
 -    <OutDir>$(Configuration)\</OutDir>
 -    <IntDir>$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
-+    <IntDir>$(SolutionDir)..\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
      <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-language-extension-token</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -190,8 +190,8 @@ diff -ur 0_MAC_904_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_9
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 -    <OutDir>x64\$(Configuration)\</OutDir>
 -    <IntDir>x64\$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
-+    <IntDir>$(SolutionDir)..\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
      <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-language-extension-token</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -199,8 +199,8 @@ diff -ur 0_MAC_904_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_9
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
 -    <OutDir>$(Configuration)\</OutDir>
 -    <IntDir>$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
-+    <IntDir>$(SolutionDir)..\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
++    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
      <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-language-extension-token</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -208,8 +208,8 @@ diff -ur 0_MAC_904_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_9
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 -    <OutDir>x64\$(Configuration)\</OutDir>
 -    <IntDir>x64\$(Configuration)\</IntDir>
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
-+    <IntDir>$(SolutionDir)..\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
++    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
      <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-language-extension-token</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>

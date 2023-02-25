@@ -5,7 +5,7 @@ REM Wolfgang Stöggl <c72578@yahoo.de>, 2020-2023.
 REM The script is located in the subdirectory CUETools
 echo %~dp0
 pushd %~dp0
-SET base_dir=..
+SET base_dir=.
 
 REM Get version of CUETools
 for /f "tokens=7 delims= " %%a in ('find "CUEToolsVersion =" %base_dir%\CUETools.Processor\CUESheet.cs') do set PRODUCTVER=%%a
@@ -17,7 +17,7 @@ set PRODUCTVER=%PRODUCTVER:"=%
 set PRODUCTVER=%PRODUCTVER:;=%
 echo CUETools version: %PRODUCTVER%
 
-SET release_dir=..\bin\Release\CUETools_%PRODUCTVER%
+SET release_dir=%base_dir%\bin\Release\CUETools_%PRODUCTVER%
 
 mkdir %release_dir%
 

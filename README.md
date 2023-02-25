@@ -22,6 +22,6 @@ Prebuilt binaries can be downloaded from [CUETools Download](http://cue.tools/wi
   * Install the required .NET development tools (currently .NET Framework 4.7 and .NET Core 2.0)
   * Install an appropriate Windows SDK version (e.g. 10.0.16299.0 or newer)
   * Install the Microsoft Visual Studio Installer Projects
-* Open cuetools.net\CUETools\CUETools.sln
+* Open cuetools.net\CUETools.sln
 * Select 'Any CPU' under 'Solution Platforms'
 * Build solution

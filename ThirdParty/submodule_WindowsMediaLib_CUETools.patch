@@ -7,7 +7,7 @@ index 24c8569..62cb8db 100644
      <Authors>snarfle</Authors>
      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 -    <OutputPath>$(SolutionDir)\..\bin\$(Configuration)\plugins</OutputPath>
-+    <OutputPath>$(SolutionDir)\..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
++    <OutputPath>$(SolutionDir)bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
 +    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 +    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
      <RepositoryUrl>https://svn.code.sf.net/p/windowsmedianet/code/</RepositoryUrl>

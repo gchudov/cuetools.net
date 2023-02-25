@@ -71,23 +71,23 @@ index 00000000..bb8d4de9
 +    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
 +    <LinkIncremental>true</LinkIncremental>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 +    <LinkIncremental>true</LinkIncremental>
-+    <OutDir>$(SolutionDir)..\ThirdParty$(Configuration)\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
 +    <LinkIncremental>false</LinkIncremental>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 +    <LinkIncremental>false</LinkIncremental>
-+    <OutDir>$(SolutionDir)..\ThirdParty\$(Platform)\</OutDir>
++    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
 +    <IntDir>$(Platform)\$(Configuration)_dynamic\</IntDir>
 +  </PropertyGroup>
 +  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

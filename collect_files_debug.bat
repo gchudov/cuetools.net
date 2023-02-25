@@ -5,7 +5,7 @@ REM Wolfgang Stöggl <c72578@yahoo.de>, 2020-2023.
 REM The script is located in the subdirectory CUETools
 echo %~dp0
 pushd %~dp0
-SET base_dir=..
+SET base_dir=.
 SET debug_dir=%base_dir%\bin\Debug\net47
 
 REM use xcopy instead of copy. xcopy creates directories if necessary and outputs the copied file
