@@ -59,7 +59,7 @@ xcopy /Y /D %base_dir%\bin\Release\net47\Freedb.dll %release_dir%
 xcopy /Y /D %base_dir%\bin\Release\net47\ProgressODoom.dll %release_dir%
 xcopy /Y /D %base_dir%\bin\Release\net47\TagLibSharp.dll %release_dir%
 
-xcopy /Y /D %base_dir%\CUETools\License.txt %release_dir%
+xcopy /Y /D %base_dir%\License.txt %release_dir%
 xcopy /Y /D %base_dir%\CUETools\user_profiles_enabled %release_dir%
 
 xcopy /Y /D %base_dir%\bin\Release\net47\de-DE\* %release_dir%\de-DE\
