@@ -52,7 +52,7 @@ jobs:
           "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Win32"
       - name: Collect files
         run: |
-          CUETools\collect_files.bat
+          collect_files.bat
       - uses: actions/upload-artifact@v3
         with:
           name: deploy
