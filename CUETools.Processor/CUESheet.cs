@@ -2384,9 +2384,9 @@ namespace CUETools.Processor
             }
         }
 
-        public static void WriteText(string path, string text)
+        public static void WriteText(CUEConfig _config, string path, string text)
         {
-            bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(text)) != text;
+            bool utf8Required = (_config.alwaysWriteUTF8CUEFile && Path.GetExtension(path) == ".cue") || (CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(text)) != text);
             var encoding = utf8Required ? Encoding.UTF8 : CUESheet.Encoding;
             // Preserve original UTF-16LE encoding of EAC log files, which contain a log checksum
             if ((text.StartsWith("Exact Audio Copy") || text.StartsWith("EAC extraction logfile")) && text.Contains("==== Log checksum"))
@@ -2750,9 +2750,9 @@ namespace CUETools.Processor
                 if (_config.createEACLOG && _isCD)
                     cueContents = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueContents));
                 if (OutputStyle == CUEStyle.SingleFileWithCUE && _config.createCUEFileWhenEmbedded)
-                    WriteText(Path.ChangeExtension(_outputPath, ".cue"), cueContents);
+                    WriteText(_config, Path.ChangeExtension(_outputPath, ".cue"), cueContents);
                 else if (OutputStyle == CUEStyle.SingleFile || ((int)OutputStyle > 1 && _config.createCUEFileInTracksMode))
-                    WriteText(_outputPath, cueContents);
+                    WriteText(_config, _outputPath, cueContents);
             }
 
             if (_action == CUEAction.Verify)
@@ -2811,10 +2811,10 @@ namespace CUETools.Processor
                     _ripperLog = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(_ripperLog));
 
                 if (_ripperLog != null)
-                    WriteText(Path.ChangeExtension(_outputPath, ".log"), _ripperLog);
+                    WriteText(_config, Path.ChangeExtension(_outputPath, ".log"), _ripperLog);
                 else
                     if (_eacLog != null && _config.extractLog)
-                        WriteText(Path.ChangeExtension(_outputPath, ".log"), _eacLog);
+                        WriteText(_config, Path.ChangeExtension(_outputPath, ".log"), _eacLog);
 
                 if (_audioEncoderType != AudioEncoderType.NoAudio && _config.extractAlbumArt)
                     ExtractAlbumArt();
@@ -2909,7 +2909,7 @@ namespace CUETools.Processor
                 else
                 {
                     if (_config.createM3U)
-                        WriteText(Path.ChangeExtension(_outputPath, ".m3u"), GetM3UContents(OutputStyle));
+                        WriteText(_config, Path.ChangeExtension(_outputPath, ".m3u"), GetM3UContents(OutputStyle));
                     if (_audioEncoderType != AudioEncoderType.NoAudio)
                         for (int iTrack = 0; iTrack < TrackCount; iTrack++)
                         {
@@ -3276,7 +3276,7 @@ namespace CUETools.Processor
                 {
                     if (!Directory.Exists(OutputDir))
                         Directory.CreateDirectory(OutputDir);
-                    WriteText(Path.ChangeExtension(_outputPath, ".toc"), CUESheetLogWriter.GetTOCContents(this));
+                    WriteText(_config, Path.ChangeExtension(_outputPath, ".toc"), CUESheetLogWriter.GetTOCContents(this));
                 }
             }
             return GenerateVerifyStatus();

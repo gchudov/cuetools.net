@@ -783,7 +783,7 @@ namespace JDP
                         }
                         if (File.Exists(fullCueName))
                             throw new Exception("file already exists");
-                        bool utf8Required = CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheetContents)) != cueSheetContents;
+                        bool utf8Required = _profile._config.alwaysWriteUTF8CUEFile || (CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(cueSheetContents)) != cueSheetContents);
                         StreamWriter sw1 = new StreamWriter(fullCueName, false, utf8Required ? Encoding.UTF8 : CUESheet.Encoding);
                         sw1.Write(cueSheetContents);
                         sw1.Close();
@@ -846,7 +846,7 @@ namespace JDP
                         {
                             if (toolStripButtonCorrectorOverwrite.Checked)
                             {
-                                CUESheet.WriteText(pathIn, fixedCue);
+                                CUESheet.WriteText(_profile._config, pathIn, fixedCue);
                                 BatchLog("corrected ({0}).", pathIn, extension);
                             }
                             else
@@ -856,7 +856,7 @@ namespace JDP
                                     BatchLog("corrected cue already exists.", pathIn);
                                 else
                                 {
-                                    CUESheet.WriteText(fixedPath, fixedCue);
+                                    CUESheet.WriteText(_profile._config, fixedPath, fixedCue);
                                     BatchLog("corrected ({0}).", pathIn, extension);
                                 }
                             }
