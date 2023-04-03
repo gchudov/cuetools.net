@@ -408,6 +408,18 @@ namespace CUETools.Codecs.ffmpegdll
                             }
                         }
                         break;
+                    case AVSampleFormat.AV_SAMPLE_FMT_S16:
+                        {
+                            short* ptr = (short*)(decoded_frame->data[0u]) + c->channels * m_decoded_frame_offset;
+                            fixed (int* dst_start = &buff.Samples[buffOffset, 0])
+                            {
+                                int* dst = dst_start;
+                                int* dst_end = dst_start + copyCount * c->channels;
+                                while (dst < dst_end)
+                                    *(dst++) = *(ptr++);
+                            }
+                        }
+                        break;
                     case AVSampleFormat.AV_SAMPLE_FMT_S16P:
                         for (Int32 iChan = 0; iChan < _channelCount; iChan++)
                         {
