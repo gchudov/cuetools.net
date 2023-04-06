@@ -93,7 +93,7 @@ namespace CUETools.Codecs.ffmpegdll
                 throw new Exception("Could not allocate audio frame");
 
             //ffmpeg.avcodec_register_all();
-            ffmpeg.av_register_all();
+            //ffmpeg.av_register_all();
 
 #if DEBUG
             ffmpeg.av_log_set_level(ffmpeg.AV_LOG_DEBUG);
