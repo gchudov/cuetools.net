@@ -25,8 +25,11 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <PackageReference Include="FFmpeg.AutoGen" Version="4.3.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
-    <ProjectReference Include="..\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj" />
   </ItemGroup>
 
 </Project>
