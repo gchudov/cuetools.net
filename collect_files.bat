@@ -83,6 +83,7 @@ xcopy /Y /D %base_dir%\bin\Release\net47\plugins\CUETools.Codecs.MACLib.dll %rel
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\CUETools.Codecs.WMA.dll %release_dir%\plugins\
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\CUETools.Compression.Zip.dll %release_dir%\plugins\
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\CUETools.Ripper.SCSI.dll %release_dir%\plugins\
+xcopy /Y /D %base_dir%\bin\Release\net47\plugins\FFmpeg.AutoGen.dll %release_dir%\plugins\
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\flac.cl %release_dir%\plugins\
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\OpenCLNet.dll %release_dir%\plugins\
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\WindowsMediaLib.dll %release_dir%\plugins\
@@ -99,7 +100,6 @@ xcopy /Y /D %base_dir%\bin\Release\net47\plugins\de-DE\* %release_dir%\plugins\d
 xcopy /Y /D %base_dir%\bin\Release\net47\plugins\ru-RU\* %release_dir%\plugins\ru-RU\
 
 REM ThirdParty
-xcopy /Y /D %base_dir%\ThirdParty\FFmpeg.AutoGen\FFmpeg.AutoGen\bin\Release\net472\FFmpeg.AutoGen.dll %release_dir%\plugins\
 xcopy /Y /D %base_dir%\ThirdParty\ICSharpCode.SharpZipLib.dll %release_dir%\plugins\
 
 REM ThirdParty\Win32 plugins
