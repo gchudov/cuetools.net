@@ -25,29 +25,6 @@ namespace CUETools.Codecs.ffmpegdll
 
     public unsafe class AudioDecoder : IAudioSource, IDisposable
     {
-        private static void RegisterLibrariesSearchPath(string path)
-        {
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                    SetDllDirectory(path);
-                    break;
-                    //case PlatformID.Unix:
-                    //case PlatformID.MacOSX:
-                    //    string currentValue = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
-                    //    if (string.IsNullOrWhiteSpace(currentValue) == false && currentValue.Contains(path) == false)
-                    //    {
-                    //        string newValue = currentValue + Path.PathSeparator + path;
-                    //        Environment.SetEnvironmentVariable(LD_LIBRARY_PATH, newValue);
-                    //    }
-                    //    break;
-            }
-        }
-
-        [DllImport("kernel32", SetLastError = true)]
-        private static extern bool SetDllDirectory(string lpPathName);
 
         public AudioDecoder(DecoderSettings settings, string path, Stream IO)
         {
@@ -57,31 +34,19 @@ namespace CUETools.Codecs.ffmpegdll
 
             m_stream = (IO != null) ? IO : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            switch (Environment.OSVersion.Platform)
+            var myPath = new Uri(typeof(AudioDecoder).Assembly.CodeBase).LocalPath;
+            var current = System.IO.Path.GetDirectoryName(myPath);
+            var probe = Environment.Is64BitProcess ? "x64" : "win32";
+            while (current != null)
             {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                    var myPath = new Uri(typeof(AudioDecoder).Assembly.CodeBase).LocalPath;
-                    var current = System.IO.Path.GetDirectoryName(myPath);
-                    var probe = Environment.Is64BitProcess ? "x64" : "win32";
-                    while (current != null)
-                    {
-                        var ffmpegDirectory = System.IO.Path.Combine(current, probe);
-                        if (Directory.Exists(ffmpegDirectory))
-                        {
-                            System.Diagnostics.Trace.WriteLine($"FFmpeg binaries found in: {ffmpegDirectory}");
-                            RegisterLibrariesSearchPath(ffmpegDirectory);
-                            break;
-                        }
-                        current = Directory.GetParent(current)?.FullName;
-                    }
+                var ffmpegBinaryPath = System.IO.Path.Combine(current, probe);
+                if (Directory.Exists(ffmpegBinaryPath))
+                {
+                    System.Diagnostics.Trace.WriteLine($"FFmpeg binaries found in: {ffmpegBinaryPath}");
+                    ffmpeg.RootPath = ffmpegBinaryPath;
                     break;
-                    //case PlatformID.Unix:
-                    //case PlatformID.MacOSX:
-                    //    var libraryPath = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
-                    //    RegisterLibrariesSearchPath(libraryPath);
-                    //    break;
+                }
+                current = Directory.GetParent(current)?.FullName;
             }
 
             pkt = ffmpeg.av_packet_alloc();
@@ -91,9 +56,6 @@ namespace CUETools.Codecs.ffmpegdll
             decoded_frame = ffmpeg.av_frame_alloc();
             if (decoded_frame == null)
                 throw new Exception("Could not allocate audio frame");
-
-            //ffmpeg.avcodec_register_all();
-            ffmpeg.av_register_all();
 
 #if DEBUG
             ffmpeg.av_log_set_level(ffmpeg.AV_LOG_DEBUG);
