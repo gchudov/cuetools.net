@@ -16,14 +16,14 @@ jobs:
   build:
     strategy:
       matrix:
-        # https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
-        os: [windows-2019]
+        # https://github.com/actions/virtual-environments/blob/master/images/win/Windows2022-Readme.md
+        os: [windows-2022]
       fail-fast: true
     runs-on: ${{ matrix.os }}
     env:
       # yamllint disable-line rule:line-length
-      DEVENV_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.com
-      MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe
+      DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
+      MSBUILD_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe
       SLN_PATH: CUETools.sln
     steps:
       - uses: actions/checkout@v3
