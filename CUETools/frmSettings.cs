@@ -73,6 +73,7 @@ namespace JDP
 			chkCreateM3U.Checked = _config.createM3U;
 			chkCreateCUEFileInTracksMode.Checked = _config.createCUEFileInTracksMode;
 			chkCreateCUEFileWhenEmbedded.Checked = _config.createCUEFileWhenEmbedded;
+			chkAlwaysWriteUTF8CUEFile.Checked = _config.alwaysWriteUTF8CUEFile;
 			chkTruncateExtra4206Samples.Checked = _config.truncate4608ExtraSamples;
 			chkHDCDLW16.Checked = _config.decodeHDCDtoLW16;
 			chkHDCD24bit.Checked = _config.decodeHDCDto24bit;
@@ -219,6 +220,7 @@ namespace JDP
 			_config.createM3U = chkCreateM3U.Checked;
 			_config.createCUEFileInTracksMode = chkCreateCUEFileInTracksMode.Checked;
 			_config.createCUEFileWhenEmbedded = chkCreateCUEFileWhenEmbedded.Checked;
+			_config.alwaysWriteUTF8CUEFile = chkAlwaysWriteUTF8CUEFile.Checked;
 			_config.truncate4608ExtraSamples = chkTruncateExtra4206Samples.Checked;
 			_config.decodeHDCDtoLW16 = chkHDCDLW16.Checked;
 			_config.decodeHDCDto24bit = chkHDCD24bit.Checked;

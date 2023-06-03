@@ -39,6 +39,7 @@ namespace JDP
             this.chkTruncateExtra4206Samples = new System.Windows.Forms.CheckBox();
             this.chkCreateCUEFileInTracksMode = new System.Windows.Forms.CheckBox();
             this.chkCreateCUEFileWhenEmbedded = new System.Windows.Forms.CheckBox();
+            this.chkAlwaysWriteUTF8CUEFile = new System.Windows.Forms.CheckBox();
             this.chkCreateM3U = new System.Windows.Forms.CheckBox();
             this.chkAutoCorrectFilenames = new System.Windows.Forms.CheckBox();
             this.labelLanguage = new System.Windows.Forms.Label();
@@ -229,6 +230,7 @@ namespace JDP
             this.grpGeneral.Controls.Add(this.chkTruncateExtra4206Samples);
             this.grpGeneral.Controls.Add(this.chkCreateCUEFileInTracksMode);
             this.grpGeneral.Controls.Add(this.chkCreateCUEFileWhenEmbedded);
+            this.grpGeneral.Controls.Add(this.chkAlwaysWriteUTF8CUEFile);
             this.grpGeneral.Controls.Add(this.chkCreateM3U);
             this.grpGeneral.Controls.Add(this.chkAutoCorrectFilenames);
             resources.ApplyResources(this.grpGeneral, "grpGeneral");
@@ -283,6 +285,13 @@ namespace JDP
             this.chkCreateCUEFileWhenEmbedded.Name = "chkCreateCUEFileWhenEmbedded";
             this.toolTip1.SetToolTip(this.chkCreateCUEFileWhenEmbedded, resources.GetString("chkCreateCUEFileWhenEmbedded.ToolTip"));
             this.chkCreateCUEFileWhenEmbedded.UseVisualStyleBackColor = true;
+            // 
+            // chkAlwaysWriteUTF8CUEFile
+            // 
+            resources.ApplyResources(this.chkAlwaysWriteUTF8CUEFile, "chkAlwaysWriteUTF8CUEFile");
+            this.chkAlwaysWriteUTF8CUEFile.Name = "chkAlwaysWriteUTF8CUEFile";
+            this.toolTip1.SetToolTip(this.chkAlwaysWriteUTF8CUEFile, resources.GetString("chkAlwaysWriteUTF8CUEFile.ToolTip"));
+            this.chkAlwaysWriteUTF8CUEFile.UseVisualStyleBackColor = true;
             // 
             // chkCreateM3U
             // 
@@ -1466,6 +1475,7 @@ namespace JDP
         private System.Windows.Forms.CheckBox chkCreateM3U;
         private System.Windows.Forms.CheckBox chkCreateCUEFileInTracksMode;
         private System.Windows.Forms.CheckBox chkCreateCUEFileWhenEmbedded;
+        private System.Windows.Forms.CheckBox chkAlwaysWriteUTF8CUEFile;
         private System.Windows.Forms.CheckBox chkTruncateExtra4206Samples;
         private System.Windows.Forms.CheckBox chkReducePriority;
         private System.Windows.Forms.CheckBox chkHDCDLW16;

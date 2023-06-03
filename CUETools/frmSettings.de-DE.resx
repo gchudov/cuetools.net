@@ -486,4 +486,10 @@ Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Mu
   <data name="chkCreateCUEFileInTracksMode.ToolTip" xml:space="preserve">
     <value>Einstellung, mit der das Erstellen einer CUE-Datei im Einzeldatei-Modus deaktiviert werden kann.</value>
   </data>
+  <data name="chkAlwaysWriteUTF8CUEFile.Text" xml:space="preserve">
+    <value>Immer UTF-8 CUE-Sheet schreiben</value>
+  </data>
+  <data name="chkAlwaysWriteUTF8CUEFile.ToolTip" xml:space="preserve">
+    <value>Standardmäßig UTF-8-Kodierung zum Schreiben von CUE-Sheets verwenden</value>
+  </data>
 </root>
