@@ -647,6 +647,8 @@ namespace CUERipper
             this.listMetadata.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_AfterLabelEdit);
             this.listMetadata.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listMetadata_BeforeLabelEdit);
             this.listMetadata.Click += new System.EventHandler(this.listMetadata_Click);
+            this.listMetadata.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listMetadata_KeyDown);
+            this.listMetadata.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.listMetadata_PreviewKeyDown);
             // 
             // columnHeaderValue
             // 

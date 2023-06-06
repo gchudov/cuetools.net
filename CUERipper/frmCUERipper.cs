@@ -1856,6 +1856,28 @@ namespace CUERipper
                 selectedDriveInfo.drive.DriveC2ErrorMode = (int)bnComboBoxC2ErrorModeSetting.SelectedItem;
             }
         }
+
+        private void listMetadata_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F2)
+            {
+                listMetadata.FocusedItem.BeginEdit();
+            }
+        }
+
+        private void listMetadata_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (listMetadata.FocusedItem != null && listMetadata.FocusedItem.Index + 1 < listMetadata.Items.Count)// && e.Label != null)
+                {
+                    listMetadata.FocusedItem.Selected = false;
+                    listMetadata.FocusedItem = listMetadata.Items[listMetadata.FocusedItem.Index + 1];
+                    listMetadata.FocusedItem.Selected = true;
+                    listMetadata.FocusedItem.BeginEdit();
+                }
+            }
+        }
     }
 
     internal class BackgroundWorkerArtworkArgs
