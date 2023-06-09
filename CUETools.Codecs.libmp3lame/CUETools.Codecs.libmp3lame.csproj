@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
-    <Version>2.2.3.0</Version>
+    <Version>2.2.4.0</Version>
     <AssemblyName>CUETools.Codecs.libmp3lame</AssemblyName>
     <RootNamespace>CUETools.Codecs.libmp3lame</RootNamespace>
     <Product>CUETools</Product>
