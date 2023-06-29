@@ -1,9 +1,28 @@
+diff --git a/src/libFLAC/config.h b/src/libFLAC/config.h
+new file mode 100644
+index 00000000..c4332919
+--- /dev/null
++++ b/src/libFLAC/config.h
+@@ -0,0 +1,13 @@
++/* config.h for version.rc
++
++/* Define to the commit date of the current git HEAD */
++#define GIT_COMMIT_DATE "20230623"
++
++/* Define to the short hash of the current git HEAD */
++#define GIT_COMMIT_HASH "28e4f052"
++
++/* Define to the tag of the current git HEAD */
++#define GIT_COMMIT_TAG "1.4.3"
++
++/* Define to the version of this package. */
++#define PACKAGE_VERSION "1.4.3"
 diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj b/src/libFLAC/libFLAC_dynamic.vcxproj
 new file mode 100644
-index 00000000..bb8d4de9
+index 00000000..0dfcddcc
 --- /dev/null
 +++ b/src/libFLAC/libFLAC_dynamic.vcxproj
-@@ -0,0 +1,268 @@
+@@ -0,0 +1,278 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 +  <ItemGroup Label="ProjectConfigurations">
@@ -95,7 +114,7 @@ index 00000000..bb8d4de9
 +      <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
 +      <Optimization>Disabled</Optimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <MinimalRebuild>true</MinimalRebuild>
 +      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -116,7 +135,7 @@ index 00000000..bb8d4de9
 +      <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
 +      <Optimization>Disabled</Optimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
 +      <WarningLevel>Level3</WarningLevel>
@@ -138,7 +157,7 @@ index 00000000..bb8d4de9
 +      <OmitFramePointers>true</OmitFramePointers>
 +      <WholeProgramOptimization>true</WholeProgramOptimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <BufferSecurityCheck>false</BufferSecurityCheck>
 +      <WarningLevel>Level3</WarningLevel>
@@ -165,7 +184,7 @@ index 00000000..bb8d4de9
 +      <OmitFramePointers>true</OmitFramePointers>
 +      <WholeProgramOptimization>true</WholeProgramOptimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.2";%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <BufferSecurityCheck>false</BufferSecurityCheck>
 +      <WarningLevel>Level3</WarningLevel>
@@ -231,7 +250,14 @@ index 00000000..bb8d4de9
 +    <ClCompile Include="cpu.c" />
 +    <ClCompile Include="crc.c" />
 +    <ClCompile Include="fixed.c" />
++    <ClCompile Include="fixed_intrin_avx2.c">
++      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/arch:AVX2 %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/arch:AVX2 %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/arch:AVX2 %(AdditionalOptions)</AdditionalOptions>
++      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/arch:AVX2 %(AdditionalOptions)</AdditionalOptions>
++    </ClCompile>
 +    <ClCompile Include="fixed_intrin_sse2.c" />
++    <ClCompile Include="fixed_intrin_sse42.c" />
 +    <ClCompile Include="fixed_intrin_ssse3.c" />
 +    <ClCompile Include="float.c" />
 +    <ClCompile Include="format.c" />
@@ -268,16 +294,19 @@ index 00000000..bb8d4de9
 +    <ClCompile Include="window.c" />
 +    <ClCompile Include="..\share\win_utf8_io\win_utf8_io.c" />
 +  </ItemGroup>
++  <ItemGroup>
++    <ResourceCompile Include="version.rc" />
++  </ItemGroup>
 +  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 +  <ImportGroup Label="ExtensionTargets">
 +  </ImportGroup>
 +</Project>
 diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj.filters b/src/libFLAC/libFLAC_dynamic.vcxproj.filters
 new file mode 100644
-index 00000000..aaa618b8
+index 00000000..e6fbc3c2
 --- /dev/null
 +++ b/src/libFLAC/libFLAC_dynamic.vcxproj.filters
-@@ -0,0 +1,218 @@
+@@ -0,0 +1,229 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 +  <ItemGroup>
@@ -431,7 +460,13 @@ index 00000000..aaa618b8
 +    <ClCompile Include="fixed.c">
 +      <Filter>Source Files</Filter>
 +    </ClCompile>
++    <ClCompile Include="fixed_intrin_avx2.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
 +    <ClCompile Include="fixed_intrin_sse2.c">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="fixed_intrin_sse42.c">
 +      <Filter>Source Files</Filter>
 +    </ClCompile>
 +    <ClCompile Include="fixed_intrin_ssse3.c">
@@ -495,4 +530,21 @@ index 00000000..aaa618b8
 +      <Filter>Source Files</Filter>
 +    </ClCompile>
 +  </ItemGroup>
++  <ItemGroup>
++    <ResourceCompile Include="version.rc">
++      <Filter>Source Files</Filter>
++    </ResourceCompile>
++  </ItemGroup>
 +</Project>
+diff --git a/src/libFLAC/version.rc b/src/libFLAC/version.rc
+index 019da1dd..86d9f726 100644
+--- a/src/libFLAC/version.rc
++++ b/src/libFLAC/version.rc
+@@ -1,6 +1,6 @@
+ #include <winver.h>
+ #include "config.h"
+-#include "FLAC/export.h"
++#include "../../include/FLAC/export.h"
+ 
+ #if (defined GIT_COMMIT_HASH && defined GIT_COMMIT_DATE)
+ # ifdef GIT_COMMIT_TAG
