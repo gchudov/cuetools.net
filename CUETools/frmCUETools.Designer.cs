@@ -754,6 +754,7 @@ namespace JDP {
             this.comboBoxScript.FormattingEnabled = true;
             this.comboBoxScript.Name = "comboBoxScript";
             this.toolTip1.SetToolTip(this.comboBoxScript, resources.GetString("comboBoxScript.ToolTip"));
+            this.comboBoxScript.SelectedIndexChanged += new System.EventHandler(this.comboBoxScript_SelectedIndexChanged);
             // 
             // rbActionCorrectFilenames
             // 

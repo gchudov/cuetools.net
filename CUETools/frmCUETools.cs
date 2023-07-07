@@ -1263,7 +1263,7 @@ namespace JDP
             toolStripMenu.Enabled = !running;
             fileSystemTreeView1.Enabled = !running;
             txtInputPath.Enabled = !running;
-            grpExtra.Enabled = !running && (converting || verifying);
+            grpExtra.Enabled = !running && (converting || verifying) && !(SelectedScript == "fix offset" || SelectedScript == "repair");
             //groupBoxCorrector.Enabled = !running && SelectedAction == CUEAction.CorrectFilenames;
             //grpOutputStyle.Enabled = !running && converting;
             groupBoxMode.Enabled = !running;
@@ -1350,7 +1350,7 @@ namespace JDP
 
         private bool CheckWriteOffset()
         {
-            if (!rbActionEncode.Checked || SelectedOutputAudioType == AudioEncoderType.NoAudio || 0 == Int32.Parse(textBoxOffset.Text))
+            if (!rbActionEncode.Checked || SelectedOutputAudioType == AudioEncoderType.NoAudio || 0 == Int32.Parse(textBoxOffset.Text) || SelectedScript == "fix offset" || SelectedScript == "repair")
             {
                 return true;
             }
@@ -2719,6 +2719,17 @@ namespace JDP
         {
             // Trigger textBoxOffset_Validating event, when clicking here
             toolStripOutput.Focus();
+        }
+
+        private void comboBoxScript_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (SelectedScript == "fix offset" || SelectedScript == "repair")
+            {
+                txtPreGapLength.Text = "00:00:00";
+                txtDataTrackLength.Text = "00:00:00";
+                textBoxOffset.Text = "0";
+            }
+            SetupControls(false);
         }
 
         private void backgroundWorkerAddToLocalDB_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

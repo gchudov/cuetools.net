@@ -4483,6 +4483,7 @@ namespace CUETools.Processor
                 case "repair":
                     {
                         UseCUEToolsDB("CUETools " + CUEToolsVersion, null, true, CTDBMetadataSearch.None);
+                        WriteOffset = 0;
                         Action = CUEAction.Verify;
                         if (CTDB.DBStatus != null)
                             return CTDB.DBStatus;
