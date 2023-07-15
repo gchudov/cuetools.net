@@ -3476,7 +3476,7 @@ namespace CUETools.Processor
 
         internal void ApplyWriteOffset()
         {
-            if (_writeOffset == 0)
+            if (_writeOffset == 0 || _appliedWriteOffset)
                 return;
 
             int absOffset = Math.Abs(_writeOffset);
