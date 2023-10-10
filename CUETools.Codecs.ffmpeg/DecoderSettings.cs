@@ -120,4 +120,13 @@ namespace CUETools.Codecs.ffmpegdll
             this.Init();
         }
     }
+    public class AiffDecoderSettings : DecoderSettings, IAudioDecoderSettings
+    {
+        public override string Extension => "aiff";
+        public override string Format => "aiff";
+        public AiffDecoderSettings()
+        {
+            this.Init();
+        }
+    }
 }

@@ -90,6 +90,7 @@ namespace CUETools.Codecs
             formats.Add("opus", new CUEToolsFormat("opus", CUEToolsTagger.TagLibSharp, false, true, false, true, null, encodersViewModel.GetDefault("opus", false), null));
             formats.Add("mlp", new CUEToolsFormat("mlp", CUEToolsTagger.APEv2, true, false, false, false, null, null, decodersViewModel.GetDefault("mlp")));
             formats.Add("aob", new CUEToolsFormat("aob", CUEToolsTagger.APEv2, true, false, false, false, null, null, decodersViewModel.GetDefault("aob")));
+            formats.Add("aiff", new CUEToolsFormat("aiff", CUEToolsTagger.TagLibSharp, true, false, false, true, null, null, decodersViewModel.GetDefault("aiff")));
         }
     }
 }

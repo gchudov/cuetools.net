@@ -2985,7 +2985,7 @@ You can set up foobar2000 to show those values, and see if your music was ripped
     <value>6, 6</value>
   </data>
   <data name="listViewFormats.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 269</value>
+    <value>124, 272</value>
   </data>
   <data name="listViewFormats.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
