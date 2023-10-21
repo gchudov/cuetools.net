@@ -454,9 +454,9 @@ namespace CUETools.Processor
                     advanced.decodersViewModel = new DecoderListViewModel(advanced.decoders);
 
                     // Reset the links in formats
-                    foreach (var extension in formats.Keys)
+                    foreach (var extension in backup.formats.Keys)
                     {
-                        var format = formats[extension];
+                        var format = backup.formats[extension];
                         AudioEncoderSettingsViewModel encoderLossless, encoderLossy;
                         AudioDecoderSettingsViewModel decoder;
                         if (format.encoderLossless == null || !Encoders.TryGetValue(extension, true, format.encoderLossless.Name, out encoderLossless))
@@ -468,6 +468,7 @@ namespace CUETools.Processor
                         format.encoderLossless = encoderLossless;
                         format.encoderLossy = encoderLossy;
                         format.decoder = decoder;
+                        advanced.formats.Add(extension, format);
                     }
                 }
                 catch (Exception ex)
