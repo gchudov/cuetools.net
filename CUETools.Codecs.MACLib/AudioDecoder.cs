@@ -117,7 +117,7 @@ namespace CUETools.Codecs.MACLib
                     long nBlocksRetrieved;
                     fixed (byte* pSampleBuffer = &_samplesBuffer[0])
                     {
-                        int res = MACLibDll.c_APEDecompress_GetData(pAPEDecompress, (char*)pSampleBuffer, 16384, out nBlocksRetrieved);
+                        int res = MACLibDll.c_APEDecompress_GetData(pAPEDecompress, pSampleBuffer, 16384, out nBlocksRetrieved);
                         if (res != 0)
                             throw new Exception("An error occurred while decoding: " + res.ToString());
                     }

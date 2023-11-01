@@ -45,9 +45,9 @@ public:
     }
 
     // seek
-    APE::int64 PerformSeek()
+    int Seek(APE::int64 nDistance, APE::SeekMethod nMoveMode)
     {
-        return m_CIO_Seek(m_pUserData, m_nSeekPosition, m_nSeekMethod);
+        return m_CIO_Seek(m_pUserData, nDistance, nMoveMode);
     }
 
     // other functions
@@ -95,12 +95,12 @@ private:
 
 int __stdcall GetVersionNumber()
 {
-    return MAC_FILE_VERSION_NUMBER;
+    return APE_FILE_VERSION_NUMBER;
 }
 
 const wchar_t *__stdcall GetVersionString()
 {
-    return MAC_VERSION_STRING;
+    return APE_VERSION_STRING;
 }
 
 APE_CIO_HANDLE __stdcall c_APECIO_Create(void* pUserData,
@@ -148,7 +148,7 @@ void __stdcall c_APEDecompress_Destroy(APE_DECOMPRESS_HANDLE hAPEDecompress)
         delete pAPEDecompress;
 }
 
-int __stdcall c_APEDecompress_GetData(APE_DECOMPRESS_HANDLE hAPEDecompress, char * pBuffer, APE::int64 nBlocks, APE::int64 * pBlocksRetrieved)
+int __stdcall c_APEDecompress_GetData(APE_DECOMPRESS_HANDLE hAPEDecompress, unsigned char * pBuffer, APE::int64 nBlocks, APE::int64 * pBlocksRetrieved)
 {
     return (static_cast<IAPEDecompress *>(hAPEDecompress))->GetData(pBuffer, nBlocks, pBlocksRetrieved);
 }
