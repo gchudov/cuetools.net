@@ -76,7 +76,7 @@ namespace CUETools.Codecs.MACLib
             return m_stream.Length;
         }
 
-        long SeekRelativeCallback(void* id, long delta, int mode)
+        int SeekRelativeCallback(void* id, long delta, int mode)
         {
             m_stream.Seek(delta, (SeekOrigin)(mode));
             return 0;

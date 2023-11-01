@@ -61,7 +61,7 @@ namespace CUETools.Codecs.MACLib
         internal static extern int c_APEDecompress_Seek(IntPtr hAPEDecompress, long nBlockOffset);
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
-        internal static extern int c_APEDecompress_GetData(IntPtr hAPEDecompress, char* pBuffer, long nBlocks, out long pBlocksRetrieved);
+        internal static extern int c_APEDecompress_GetData(IntPtr hAPEDecompress, byte* pBuffer, long nBlocks, out long pBlocksRetrieved);
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
         internal static extern void c_APEDecompress_Destroy(IntPtr hAPEDecompress);
