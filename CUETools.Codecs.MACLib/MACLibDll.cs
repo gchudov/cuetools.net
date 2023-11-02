@@ -36,7 +36,7 @@ namespace CUETools.Codecs.MACLib
         internal static extern void c_APECompress_Destroy(IntPtr hAPECompress);
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
-        internal static extern int c_APECompress_Finish(IntPtr hAPECompress, char* pTerminatingData, int nTerminatingBytes, int nWAVTerminatingBytes);
+        internal static extern int c_APECompress_Finish(IntPtr hAPECompress, byte* pTerminatingData, long nTerminatingBytes, long nWAVTerminatingBytes);
 
         [DllImport(DllName, CallingConvention = DllCallingConvention)]
         internal static extern long c_APECompress_AddData(IntPtr hAPECompress, byte* pData, int nBytes);
