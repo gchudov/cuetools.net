@@ -158,10 +158,10 @@ namespace CUETools.Codecs.ffmpegdll
             int bps = stream->codecpar->bits_per_raw_sample != 0 ?
                 stream->codecpar->bits_per_raw_sample :
                 stream->codecpar->bits_per_coded_sample;
-            int channels = stream->codecpar->channels;
+            int channels = stream->codecpar->ch_layout.nb_channels;
             int sample_rate = stream->codecpar->sample_rate;
-            ulong channel_layout = stream->codecpar->channel_layout;
-            pcm = new AudioPCMConfig(bps, channels, sample_rate, (AudioPCMConfig.SpeakerConfig)channel_layout);
+            AVChannelLayout channel_layout = stream->codecpar->ch_layout;
+            pcm = new AudioPCMConfig(bps, channels, sample_rate, (AudioPCMConfig.SpeakerConfig)channel_layout.u.mask);
 
             fmt_ctx = new_fmt_ctx;
 
@@ -358,13 +358,13 @@ namespace CUETools.Codecs.ffmpegdll
                 {
                     case AVSampleFormat.AV_SAMPLE_FMT_S32:
                         {
-                            byte* ptr = decoded_frame->data[0u] + c->channels * 4 * m_decoded_frame_offset;
+                            byte* ptr = decoded_frame->data[0u] + c->ch_layout.nb_channels * 4 * m_decoded_frame_offset;
                             int rshift = 32 - pcm.BitsPerSample;
                             int* smp = (int*)ptr;
                             fixed (int* dst_start = &buff.Samples[buffOffset, 0])
                             {
                                 int* dst = dst_start;
-                                int* dst_end = dst_start + copyCount * c->channels;
+                                int* dst_end = dst_start + copyCount * c->ch_layout.nb_channels;
                                 while (dst < dst_end)
                                     *(dst++) = *(smp++) >> rshift;
                             }
@@ -372,11 +372,11 @@ namespace CUETools.Codecs.ffmpegdll
                         break;
                     case AVSampleFormat.AV_SAMPLE_FMT_S16:
                         {
-                            short* ptr = (short*)(decoded_frame->data[0u]) + c->channels * m_decoded_frame_offset;
+                            short* ptr = (short*)(decoded_frame->data[0u]) + c->ch_layout.nb_channels * m_decoded_frame_offset;
                             fixed (int* dst_start = &buff.Samples[buffOffset, 0])
                             {
                                 int* dst = dst_start;
-                                int* dst_end = dst_start + copyCount * c->channels;
+                                int* dst_end = dst_start + copyCount * c->ch_layout.nb_channels;
                                 while (dst < dst_end)
                                     *(dst++) = *(ptr++);
                             }
