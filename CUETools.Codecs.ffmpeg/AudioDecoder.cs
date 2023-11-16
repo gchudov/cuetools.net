@@ -291,6 +291,7 @@ namespace CUETools.Codecs.ffmpegdll
                 _readBuffer = new byte[Math.Max(@buf_size, 0x4000)];
             int len = m_stream.Read(_readBuffer, 0, @buf_size);
             if (len > 0) Marshal.Copy(_readBuffer, 0, (IntPtr)buf, len);
+            else if (len == 0) return ffmpeg.AVERROR_EOF;
             return len;
         }
 
