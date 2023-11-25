@@ -25,7 +25,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="FFmpeg.AutoGen" Version="6.0.0.2" />
+    <PackageReference Include="FFmpeg.AutoGen" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup>
