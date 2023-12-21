@@ -1,38 +1,38 @@
-diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/APECompress.cpp 1_MAC_1026_SDK_updated/Source/MACLib/APECompress.cpp
---- 0_MAC_1026_SDK_orig/Source/MACLib/APECompress.cpp	2023-05-17 19:49:22.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/MACLib/APECompress.cpp	2023-11-01 09:49:24.000000000 +0100
-@@ -33,6 +33,7 @@
+diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.cpp 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.cpp
+--- 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.cpp	2023-12-15 16:35:58.000000000 +0100
++++ 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.cpp	2023-12-22 04:00:18.000000000 +0100
+@@ -34,6 +34,7 @@
      }
  }
  
 +#ifndef EXCLUDE_CIO
- int CAPECompress::Start(const wchar_t * pOutputFilename, const WAVEFORMATEX * pwfeInput, int64 nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int64 nHeaderBytes, int nFlags)
+ int CAPECompress::Start(const wchar_t * pOutputFilename, const WAVEFORMATEX * pwfeInput, bool bFloat, int64 nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int64 nHeaderBytes, int nFlags)
  {
      if (m_pioOutput)
-@@ -58,6 +59,7 @@
+@@ -67,6 +68,7 @@
  
      return nStartResult;
  }
 +#endif
  
- int CAPECompress::StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, int64 nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int64 nHeaderBytes)
+ int CAPECompress::StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, bool bFloat, int64 nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int64 nHeaderBytes)
  {
-diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/APECompress.h 1_MAC_1026_SDK_updated/Source/MACLib/APECompress.h
---- 0_MAC_1026_SDK_orig/Source/MACLib/APECompress.h	2023-07-11 16:21:04.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/MACLib/APECompress.h	2023-11-01 09:49:24.000000000 +0100
+diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.h 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.h
+--- 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.h	2023-12-15 14:14:54.000000000 +0100
++++ 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.h	2023-12-22 04:02:34.000000000 +0100
 @@ -20,7 +20,9 @@
      ~CAPECompress();
  
      // start encoding
 +#ifndef EXCLUDE_CIO
-     int Start(const wchar_t * pOutputFilename, const WAVEFORMATEX * pwfeInput, int64 nMaxAudioBytes, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL, const void * pHeaderData = APE_NULL, int64 nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION, int nFlags = 0) APE_OVERRIDE;
+     int Start(const wchar_t * pOutputFilename, const WAVEFORMATEX * pwfeInput, bool bFloat, int64 nMaxAudioBytes, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL, const void * pHeaderData = APE_NULL, int64 nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION, int nFlags = 0) APE_OVERRIDE;
 +#endif
-     int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, int64 nMaxAudioBytes, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL, const void * pHeaderData = APE_NULL, int64 nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION) APE_OVERRIDE;
+     int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, bool bFloat, int64 nMaxAudioBytes, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL, const void * pHeaderData = APE_NULL, int64 nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION) APE_OVERRIDE;
  
      // add data / compress data
-diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/APEInfo.cpp 1_MAC_1026_SDK_updated/Source/MACLib/APEInfo.cpp
---- 0_MAC_1026_SDK_orig/Source/MACLib/APEInfo.cpp	2023-10-04 14:56:36.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/MACLib/APEInfo.cpp	2023-11-01 09:49:24.000000000 +0100
+diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APEInfo.cpp 1_MAC_1037_SDK_updated/Source/MACLib/APEInfo.cpp
+--- 0_MAC_1037_SDK_orig/Source/MACLib/APEInfo.cpp	2023-10-04 06:56:38.000000000 +0200
++++ 1_MAC_1037_SDK_updated/Source/MACLib/APEInfo.cpp	2023-12-22 03:51:40.000000000 +0100
 @@ -46,6 +46,7 @@
  {
  }
@@ -49,9 +49,9 @@ diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/APEInfo.cpp 1_MAC_1026_SDK_updated/So
  
  CAPEInfo::CAPEInfo(int * pErrorCode, CIO * pIO, CAPETag * pTag)
  {
-diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_1026_SDK_updated/Source/MACLib/APETag.cpp
---- 0_MAC_1026_SDK_orig/Source/MACLib/APETag.cpp	2023-06-02 02:14:16.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/MACLib/APETag.cpp	2023-11-01 09:49:24.000000000 +0100
+diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_1037_SDK_updated/Source/MACLib/APETag.cpp
+--- 0_MAC_1037_SDK_orig/Source/MACLib/APETag.cpp	2023-11-22 23:14:48.000000000 +0100
++++ 1_MAC_1037_SDK_updated/Source/MACLib/APETag.cpp	2023-12-22 03:51:40.000000000 +0100
 @@ -125,6 +125,7 @@
      L"Crossover", L"Contemporary C", L"Christian Rock", L"Merengue", L"Salsa", L"Thrash Metal", L"Anime", L"JPop", L"SynthPop"
  };
@@ -68,9 +68,9 @@ diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_1026_SDK_updated/Sou
  
  CAPETag::CAPETag(CIO * pIO, bool bAnalyze, bool bCheckForID3v1)
  {
-diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1026_SDK_updated/Source/MACLib/MACLib.cpp
---- 0_MAC_1026_SDK_orig/Source/MACLib/MACLib.cpp	2023-10-25 22:10:50.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/MACLib/MACLib.cpp	2023-11-01 09:49:24.000000000 +0100
+diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.cpp
+--- 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.cpp	2023-12-15 13:08:28.000000000 +0100
++++ 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.cpp	2023-12-22 03:51:40.000000000 +0100
 @@ -77,6 +77,7 @@
      return spAPEDecompress.GetPtr();
  }
@@ -94,30 +94,30 @@ diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1026_SDK_updated/Sou
 +#ifndef EXCLUDE_CIO
  int __stdcall GetAPEFileType(const APE::str_utfn * pInputFilename, APE::str_ansi cFileType[8])
  {
-     memset(&cFileType[0], 0, sizeof(APE::str_ansi) * 8);
-@@ -887,3 +890,4 @@
+     memset(&cFileType[0], 0, sizeof(cFileType[0]) * 8);
+@@ -888,3 +891,4 @@
      // return
      return nFunctionRetVal;
  }
 +#endif
-diff -ur 0_MAC_1026_SDK_orig/Source/MACLib/MACLib.h 1_MAC_1026_SDK_updated/Source/MACLib/MACLib.h
---- 0_MAC_1026_SDK_orig/Source/MACLib/MACLib.h	2023-10-01 14:00:16.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/MACLib/MACLib.h	2023-11-01 09:49:24.000000000 +0100
+diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.h 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.h
+--- 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.h	2023-12-15 13:04:10.000000000 +0100
++++ 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.h	2023-12-22 03:58:14.000000000 +0100
 @@ -382,9 +382,11 @@
      //        on decompression)
      //////////////////////////////////////////////////////////////////////////////////////////////
  
 +#ifndef EXCLUDE_CIO
      virtual int Start(const str_utfn * pOutputFilename, const WAVEFORMATEX * pwfeInput,
-         int64 nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL,
+         bool bFloat, int64 nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL,
          const void * pHeaderData = APE_NULL, int64 nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION, int nFlags = 0) = 0;
 +#endif
  
      virtual int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput,
-         int64 nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL,
-diff -ur 0_MAC_1026_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_1026_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj
---- 0_MAC_1026_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2023-10-01 02:49:14.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2023-11-04 16:02:08.000000000 +0100
+         bool bFloat, int64 nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL,
+diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_1037_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj
+--- 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2023-12-16 15:38:46.000000000 +0100
++++ 1_MAC_1037_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2023-12-22 03:51:40.000000000 +0100
 @@ -1,5 +1,5 @@
  ﻿<?xml version="1.0" encoding="utf-8"?>
 -<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -341,9 +341,9 @@ diff -ur 0_MAC_1026_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_
      <ClCompile Include="..\..\..\MACLib\NewPredictor.cpp" />
      <ClCompile Include="..\..\..\MACLib\NNFilter.cpp" />
      <ClCompile Include="..\..\..\Shared\BufferIO.cpp" />
-diff -ur 0_MAC_1026_SDK_orig/Source/Shared/All.h 1_MAC_1026_SDK_updated/Source/Shared/All.h
---- 0_MAC_1026_SDK_orig/Source/Shared/All.h	2023-09-30 23:19:26.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/Shared/All.h	2023-11-01 09:49:24.000000000 +0100
+diff -ur 0_MAC_1037_SDK_orig/Source/Shared/All.h 1_MAC_1037_SDK_updated/Source/Shared/All.h
+--- 0_MAC_1037_SDK_orig/Source/Shared/All.h	2023-12-15 20:13:16.000000000 +0100
++++ 1_MAC_1037_SDK_updated/Source/Shared/All.h	2023-12-22 03:51:40.000000000 +0100
 @@ -61,7 +61,21 @@
      #ifdef _MSC_VER
          #pragma warning(push) // push and pop warnings because the windows includes suppresses some like 4514
@@ -379,9 +379,9 @@ diff -ur 0_MAC_1026_SDK_orig/Source/Shared/All.h 1_MAC_1026_SDK_updated/Source/S
      #define APE_ODS                                     OutputDebugString
      #define TICK_COUNT_TYPE                             unsigned long long
      #if _WIN32_WINNT >= 0x600
-diff -ur 0_MAC_1026_SDK_orig/Source/Shared/GlobalFunctions.cpp 1_MAC_1026_SDK_updated/Source/Shared/GlobalFunctions.cpp
---- 0_MAC_1026_SDK_orig/Source/Shared/GlobalFunctions.cpp	2023-05-23 14:52:16.000000000 +0200
-+++ 1_MAC_1026_SDK_updated/Source/Shared/GlobalFunctions.cpp	2023-11-01 09:49:24.000000000 +0100
+diff -ur 0_MAC_1037_SDK_orig/Source/Shared/GlobalFunctions.cpp 1_MAC_1037_SDK_updated/Source/Shared/GlobalFunctions.cpp
+--- 0_MAC_1037_SDK_orig/Source/Shared/GlobalFunctions.cpp	2023-05-23 06:52:18.000000000 +0200
++++ 1_MAC_1037_SDK_updated/Source/Shared/GlobalFunctions.cpp	2023-12-22 03:51:40.000000000 +0100
 @@ -44,6 +44,7 @@
      return nResult;
  }
