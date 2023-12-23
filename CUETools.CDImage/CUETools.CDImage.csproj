@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net20;net47;netstandard2.0</TargetFrameworks>
-    <Version>2.2.4.0</Version>
+    <Version>2.2.5.0</Version>
     <AssemblyName>CUETools.CDImage</AssemblyName>
     <RootNamespace>CUETools.CDImage</RootNamespace>
     <Product>CUETools</Product>

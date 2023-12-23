@@ -205,7 +205,7 @@
     <value>&amp;Optionen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.2.4</value>
+    <value>CUERipper 2.2.5</value>
   </data>
   <data name="bnComboBoxDrives.Text" xml:space="preserve">
     <value>Laufwerke</value>

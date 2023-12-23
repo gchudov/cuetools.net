@@ -2173,7 +2173,7 @@ If required, the C2 error mode can be set here.</value>
     <value>CenterScreen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.2.4</value>
+    <value>CUERipper 2.2.5</value>
   </data>
   <data name="&gt;&gt;toolStripStatusLabel1.Name" xml:space="preserve">
     <value>toolStripStatusLabel1</value>
