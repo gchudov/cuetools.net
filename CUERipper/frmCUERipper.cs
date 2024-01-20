@@ -628,7 +628,15 @@ namespace CUERipper
                     try
                     {
                         if (cueSheet.CTDB.FetchFile(albumArt[currentAlbumArt].meta.uri, ms))
-                            albumArt[currentAlbumArt].contents = ms.ToArray();
+                        {
+                            if (ms.Length < 0xffffff || !_config.embedAlbumArt)
+                                albumArt[currentAlbumArt].contents = ms.ToArray();
+                            else
+                                MessageBox.Show(this, String.Format("Selected album art has a size of {0} bytes, " +
+                                "which is too large for embedding (max 16 MB). " +
+                                "Small album art will be used instead.", ms.Length),
+                                "Album art too large", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
                     } catch (Exception)
                     {
                     }
