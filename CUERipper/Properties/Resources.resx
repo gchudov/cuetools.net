@@ -223,4 +223,13 @@
   <data name="opus" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\opus.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DownloadingAlbumArt" xml:space="preserve">
+    <value>Downloading album art...</value>
+  </data>
+  <data name="AlbumArtTooLargeMessage" xml:space="preserve">
+    <value>Selected album art has a size of {0} bytes, which is too large for embedding (max 16 MB). Small album art will be used instead.</value>
+  </data>
+  <data name="AlbumArtTooLargeTitle" xml:space="preserve">
+    <value>Album art too large</value>
+  </data>
 </root>

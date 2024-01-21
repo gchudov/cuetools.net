@@ -147,4 +147,13 @@
   <data name="Retry" xml:space="preserve">
     <value>erneut versuchen</value>
   </data>
+  <data name="DownloadingAlbumArt" xml:space="preserve">
+    <value>Coverbild wird heruntergeladen …</value>
+  </data>
+  <data name="AlbumArtTooLargeMessage" xml:space="preserve">
+    <value>Das gewählte Coverbild hat eine Größe von {0} Bytes und ist somit zu groß (max. 16 MB). Die kleine Coverbildgröße (Small) wird stattdessen verwendet.</value>
+  </data>
+  <data name="AlbumArtTooLargeTitle" xml:space="preserve">
+    <value>Coverbild zu groß</value>
+  </data>
 </root>

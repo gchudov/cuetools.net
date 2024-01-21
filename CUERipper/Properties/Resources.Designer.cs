@@ -71,6 +71,24 @@ namespace CUERipper.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Selected album art has a size of {0} bytes, which is too large for embedding (max 16 MB). Small album art will be used instead..
+        /// </summary>
+        internal static string AlbumArtTooLargeMessage {
+            get {
+                return ResourceManager.GetString("AlbumArtTooLargeMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Album art too large.
+        /// </summary>
+        internal static string AlbumArtTooLargeTitle {
+            get {
+                return ResourceManager.GetString("AlbumArtTooLargeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon ape {
@@ -183,6 +201,15 @@ namespace CUERipper.Properties {
         internal static string DoneRippingRepair {
             get {
                 return ResourceManager.GetString("DoneRippingRepair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading album art....
+        /// </summary>
+        internal static string DownloadingAlbumArt {
+            get {
+                return ResourceManager.GetString("DownloadingAlbumArt", resourceCulture);
             }
         }
         
