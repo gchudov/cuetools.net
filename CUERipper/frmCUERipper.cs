@@ -627,8 +627,15 @@ namespace CUERipper
                     var ms = new MemoryStream();
                     try
                     {
+                        toolStripStatusLabel1.Text = Properties.Resources.DownloadingAlbumArt;
                         if (cueSheet.CTDB.FetchFile(albumArt[currentAlbumArt].meta.uri, ms))
-                            albumArt[currentAlbumArt].contents = ms.ToArray();
+                        {
+                            if (ms.Length < 0xffffff || !_config.embedAlbumArt)
+                                albumArt[currentAlbumArt].contents = ms.ToArray();
+                            else
+                                MessageBox.Show(this, String.Format(Properties.Resources.AlbumArtTooLargeMessage, ms.Length),
+                                Properties.Resources.AlbumArtTooLargeTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
                     } catch (Exception)
                     {
                     }
