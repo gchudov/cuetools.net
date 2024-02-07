@@ -2299,7 +2299,7 @@ namespace CUETools.Processor
             else
             {
                 bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
-                    (_toc.Pregap != 0));
+                    (_toc.Pregap > 75 * (_config.useHTOALengthThreshold ? 5 : 0)));
                 _destPaths = new string[TrackCount + (htoaToFile ? 1 : 0)];
                 if (htoaToFile)
                     _destPaths[0] = Path.Combine(OutputDir, _htoaFilename);
@@ -2455,7 +2455,7 @@ namespace CUETools.Processor
         public string GetM3UContents(CUEStyle style)
         {
             StringWriter sw = new StringWriter();
-            if (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0)
+            if (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap > 75 * (_config.useHTOALengthThreshold ? 5 : 0))
                 WriteLine(sw, 0, _htoaFilename);
             for (int iTrack = 0; iTrack < TrackCount; iTrack++)
                 WriteLine(sw, 0, _trackFilenames[iTrack]);
@@ -2474,7 +2474,7 @@ namespace CUETools.Processor
 
         public string GetCUESheetContents(CUEStyle style)
         {
-            return GetCUESheetContents(style, (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0));
+            return GetCUESheetContents(style, (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap > 75 * (_config.useHTOALengthThreshold ? 5 : 0)));
         }
 
         public string GetCUESheetContents(CUEStyle style, bool htoaToFile)
@@ -2720,7 +2720,7 @@ namespace CUETools.Processor
         {
             int[] destLengths;
             bool htoaToFile = ((OutputStyle == CUEStyle.GapsAppended) && _config.preserveHTOA &&
-                (_toc.Pregap != 0));
+                (_toc.Pregap > 75 * (_config.useHTOALengthThreshold ? 5 : 0)));
 
             if (_isCD)
                 DetectGaps();
@@ -4067,7 +4067,7 @@ namespace CUETools.Processor
         {
             int iTrack, iIndex, iFile;
             int[] fileLengths;
-            bool htoaToFile = (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap != 0);
+            bool htoaToFile = (style == CUEStyle.GapsAppended && _config.preserveHTOA && _toc.Pregap > 75 * (_config.useHTOALengthThreshold ? 5 : 0));
             bool discardOutput;
 
             if (style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE)
