@@ -381,7 +381,7 @@
   <data name="&gt;&gt;chkCreateCUEFileWhenEmbedded.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-<data name="chkAlwaysWriteUTF8CUEFile.AutoSize" type="System.Boolean, mscorlib">
+  <data name="chkAlwaysWriteUTF8CUEFile.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="chkAlwaysWriteUTF8CUEFile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
@@ -413,7 +413,7 @@
   </data>
   <data name="&gt;&gt;chkAlwaysWriteUTF8CUEFile.ZOrder" xml:space="preserve">
     <value>9</value>
-  </data>  
+  </data>
   <data name="chkCreateM3U.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1347,7 +1347,7 @@ You can set up foobar2000 to show those values, and see if your music was ripped
     <value>groupBoxGaps</value>
   </data>
   <data name="&gt;&gt;rbGapsLeftOut.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="rbGapsPrepended.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1413,6 +1413,39 @@ You can set up foobar2000 to show those values, and see if your music was ripped
     <value>groupBoxGaps</value>
   </data>
   <data name="&gt;&gt;rbGapsAppended.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.Location" type="System.Drawing.Point, System.Drawing">
+    <value>165, 20</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.Size" type="System.Drawing.Size, System.Drawing">
+    <value>79, 17</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.Text" xml:space="preserve">
+    <value>HTOA &gt; 5s</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.ToolTip" xml:space="preserve">
+    <value>Save HTOA file only if longer than 5 seconds</value>
+  </data>
+  <data name="&gt;&gt;chkUseHTOALengthThreshold.Name" xml:space="preserve">
+    <value>chkUseHTOALengthThreshold</value>
+  </data>
+  <data name="&gt;&gt;chkUseHTOALengthThreshold.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkUseHTOALengthThreshold.Parent" xml:space="preserve">
+    <value>groupBoxGaps</value>
+  </data>
+  <data name="&gt;&gt;chkUseHTOALengthThreshold.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
   <data name="rbGapsPlusHTOA.AutoSize" type="System.Boolean, mscorlib">

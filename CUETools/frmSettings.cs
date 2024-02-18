@@ -91,6 +91,7 @@ namespace JDP
 			//textBoxARLogExtension.Text = _config.arLogFilenameFormat;
 			numericUpDownMaxResolution.Value = _config.maxAlbumArtSize;
 			checkBoxSeparateDecodingThread.Checked = _config.separateDecodingThread;
+			chkUseHTOALengthThreshold.Checked = _config.useHTOALengthThreshold;
 
 			switch (_config.gapsHandling)
 			{
@@ -191,6 +192,7 @@ namespace JDP
 			_reducePriority = chkReducePriority.Checked;
 			_config.checkForUpdates = checkBoxCheckForUpdates.Checked;
 			_config.preserveHTOA = rbGapsPlusHTOA.Checked;
+			_config.useHTOALengthThreshold = chkUseHTOALengthThreshold.Checked;
 			_config.gapsHandling = rbGapsPrepended.Checked ? CUEStyle.GapsPrepended :
 				rbGapsLeftOut.Checked ? CUEStyle.GapsLeftOut :
 				CUEStyle.GapsAppended;
