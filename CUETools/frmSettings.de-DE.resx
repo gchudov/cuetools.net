@@ -492,4 +492,10 @@ Sie können foobar2000 dazu bringen, die Werte anzuzeigen, und sehen, ob Ihre Mu
   <data name="chkAlwaysWriteUTF8CUEFile.ToolTip" xml:space="preserve">
     <value>Standardmäßig UTF-8-Kodierung zum Schreiben von CUE-Sheets verwenden</value>
   </data>
+  <data name="chkUseHTOALengthThreshold.Text" xml:space="preserve">
+    <value>HTOA &gt; 5s</value>
+  </data>
+  <data name="chkUseHTOALengthThreshold.ToolTip" xml:space="preserve">
+    <value>HTOA-Datei wird nur gespeichert, wenn sie länger als 5 Sekunden ist</value>
+  </data>
 </root>

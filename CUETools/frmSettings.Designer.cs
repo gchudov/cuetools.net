@@ -75,6 +75,7 @@ namespace JDP
             this.rbGapsLeftOut = new System.Windows.Forms.RadioButton();
             this.rbGapsPrepended = new System.Windows.Forms.RadioButton();
             this.rbGapsAppended = new System.Windows.Forms.RadioButton();
+            this.chkUseHTOALengthThreshold = new System.Windows.Forms.CheckBox();
             this.rbGapsPlusHTOA = new System.Windows.Forms.RadioButton();
             this.textBoxEncoderName = new System.Windows.Forms.TextBox();
             this.textBoxDecoderName = new System.Windows.Forms.TextBox();
@@ -589,6 +590,13 @@ namespace JDP
             this.toolTip1.SetToolTip(this.rbGapsAppended, resources.GetString("rbGapsAppended.ToolTip"));
             this.rbGapsAppended.UseVisualStyleBackColor = true;
             // 
+            // chkUseHTOALengthThreshold
+            // 
+            resources.ApplyResources(this.chkUseHTOALengthThreshold, "chkUseHTOALengthThreshold");
+            this.chkUseHTOALengthThreshold.Name = "chkUseHTOALengthThreshold";
+            this.toolTip1.SetToolTip(this.chkUseHTOALengthThreshold, resources.GetString("chkUseHTOALengthThreshold.ToolTip"));
+            this.chkUseHTOALengthThreshold.UseVisualStyleBackColor = true;
+            // 
             // rbGapsPlusHTOA
             // 
             resources.ApplyResources(this.rbGapsPlusHTOA, "rbGapsPlusHTOA");
@@ -697,6 +705,7 @@ namespace JDP
             // groupBoxGaps
             // 
             this.groupBoxGaps.Controls.Add(this.rbGapsPlusHTOA);
+            this.groupBoxGaps.Controls.Add(this.chkUseHTOALengthThreshold);
             this.groupBoxGaps.Controls.Add(this.rbGapsAppended);
             this.groupBoxGaps.Controls.Add(this.rbGapsLeftOut);
             this.groupBoxGaps.Controls.Add(this.rbGapsPrepended);
@@ -1545,6 +1554,7 @@ namespace JDP
         private System.Windows.Forms.TextBox textBoxEncoderModes;
         private System.Windows.Forms.GroupBox groupBoxGaps;
         private System.Windows.Forms.RadioButton rbGapsPlusHTOA;
+        private System.Windows.Forms.CheckBox chkUseHTOALengthThreshold;
         private System.Windows.Forms.RadioButton rbGapsAppended;
         private System.Windows.Forms.RadioButton rbGapsLeftOut;
         private System.Windows.Forms.RadioButton rbGapsPrepended;

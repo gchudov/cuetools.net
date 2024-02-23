@@ -143,7 +143,7 @@ namespace CUETools.Processor
             logWriter.WriteLine();
 
             bool htoaToFile = ((sheet.OutputStyle == CUEStyle.GapsAppended) && sheet.Config.preserveHTOA &&
-                (sheet.TOC.Pregap != 0));
+                (sheet.TOC.Pregap > 75 * (sheet.Config.useHTOALengthThreshold ? 5 : 0)));
             int accurateTracks = 0, knownTracks = 0;
             bool wereErrors = false;
             if (sheet.OutputStyle != CUEStyle.SingleFile && sheet.OutputStyle != CUEStyle.SingleFileWithCUE)

@@ -28,6 +28,7 @@ namespace CUETools.Processor
         public bool autoCorrectFilenames;
         public bool detectGaps;
         public bool preserveHTOA;
+        public bool useHTOALengthThreshold;
         public bool ejectAfterRip;
         public bool disableEjectDisc;
         public bool keepOriginalFilenames;
@@ -96,6 +97,7 @@ namespace CUETools.Processor
 
             autoCorrectFilenames = true;
             preserveHTOA = true;
+            useHTOALengthThreshold = true;
             ejectAfterRip = false;
             disableEjectDisc = false;
             detectGaps = true;
@@ -182,6 +184,7 @@ namespace CUETools.Processor
 
             autoCorrectFilenames = src.autoCorrectFilenames;
             preserveHTOA = src.preserveHTOA;
+            useHTOALengthThreshold = src.useHTOALengthThreshold;
             ejectAfterRip = src.ejectAfterRip;
             disableEjectDisc = src.disableEjectDisc;
             detectGaps = src.detectGaps;
@@ -268,6 +271,7 @@ namespace CUETools.Processor
             sw.Save("ArWriteLogOnVerify", writeArLogOnVerify);
 
             sw.Save("PreserveHTOA", preserveHTOA);
+            sw.Save("UseHTOALengthThreshold", useHTOALengthThreshold);
             sw.Save("EjectAfterRip", ejectAfterRip);
             sw.Save("DisableEjectDisc", disableEjectDisc);
             sw.Save("DetectGaps", detectGaps);            
@@ -373,6 +377,7 @@ namespace CUETools.Processor
             writeArLogOnVerify = sr.LoadBoolean("ArWriteLogOnVerify") ?? false;
 
             preserveHTOA = sr.LoadBoolean("PreserveHTOA") ?? true;
+            useHTOALengthThreshold = sr.LoadBoolean("UseHTOALengthThreshold") ?? true;
             ejectAfterRip = sr.LoadBoolean("EjectAfterRip") ?? false;
             disableEjectDisc = sr.LoadBoolean("DisableEjectDisc") ?? false;
             detectGaps = sr.LoadBoolean("DetectGaps") ?? true;
