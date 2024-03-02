@@ -21,6 +21,9 @@ namespace CUETools.Codecs.libwavpack
         OPEN_ALT_TYPES = 0x400,     // application is aware of alternate file types & qmode
                                     // (just affects retrieving wrappers & MD5 checksums)
         OPEN_NO_CHECKSUM = 0x800,   // don't verify block checksums before decoding
+                                    // new for multithreaded
+        OPEN_THREADS_SHFT = 12,     // specify number of additional worker threads here for
+        OPEN_THREADS_MASK = 0xF000, // decode; 0 to disable, otherwise 1-15 added threads
     };
 
     internal enum ConfigFlags : uint
@@ -43,7 +46,7 @@ namespace CUETools.Codecs.libwavpack
         CONFIG_DYNAMIC_SHAPING = 0x20000,   // dynamic noise shaping
         CONFIG_CREATE_EXE = 0x40000,        // create executable
         CONFIG_CREATE_WVC = 0x80000,        // create correction file
-        CONFIG_OPTIMIZE_WVC = 0x100000,     // maximize bybrid compression
+        CONFIG_OPTIMIZE_WVC = 0x100000,     // maximize hybrid compression
         CONFIG_COMPATIBLE_WRITE = 0x400000, // write files for decoders < 4.3
         CONFIG_CALC_NOISE = 0x800000,       // calc noise in hybrid mode
         CONFIG_LOSSY_MODE = 0x1000000,      // obsolete (for information)
@@ -52,6 +55,7 @@ namespace CUETools.Codecs.libwavpack
         CONFIG_MD5_CHECKSUM = 0x8000000,    // compute & store MD5 signature
         CONFIG_MERGE_BLOCKS = 0x10000000,   // merge blocks of equal redundancy (for lossyWAV)
         CONFIG_PAIR_UNDEF_CHANS = 0x20000000, // encode undefined channels in stereo pairs
+        CONFIG_OPTIMIZE_32BIT = 0x40000000, // new optimizations for 32-bit integer files
         CONFIG_OPTIMIZE_MONO = 0x80000000,  // optimize for mono streams posing as stereo
     };
 
@@ -111,7 +115,7 @@ namespace CUETools.Codecs.libwavpack
         internal int qmode;
         internal ConfigFlags flags;
         internal int xmode, num_channels, float_norm_exp;
-        internal int block_samples, extra_flags, sample_rate, channel_mask;
+        internal int block_samples, worker_threads, sample_rate, channel_mask;
         internal fixed byte md5_checksum[16];
         internal byte md5_read;
         internal int num_tag_strings;

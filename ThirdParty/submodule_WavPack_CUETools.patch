@@ -34,7 +34,7 @@ index fd59f60..dcbf0b5 100644
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
 diff --git a/src/libwavpack.vcxproj b/src/libwavpack.vcxproj
-index 3d586d6..7e4523b 100644
+index c9d3d40..5a01068 100644
 --- a/src/libwavpack.vcxproj
 +++ b/src/libwavpack.vcxproj
 @@ -1,5 +1,5 @@
@@ -97,8 +97,8 @@ index 3d586d6..7e4523b 100644
      <ClCompile>
        <Optimization>Disabled</Optimization>
        <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
--      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;ENABLE_THREADS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_THREADS;NO_TAGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <MinimalRebuild>true</MinimalRebuild>
        <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 -      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -110,8 +110,8 @@ index 3d586d6..7e4523b 100644
      <ClCompile>
        <Optimization>Disabled</Optimization>
        <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
--      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;ENABLE_THREADS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_THREADS;NO_TAGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <MinimalRebuild>true</MinimalRebuild>
        <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 -      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -123,8 +123,8 @@ index 3d586d6..7e4523b 100644
        <IntrinsicFunctions>true</IntrinsicFunctions>
        <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
        <OmitFramePointers>true</OmitFramePointers>
--      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;OPT_ASM_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;OPT_ASM_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;ENABLE_THREADS;OPT_ASM_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_THREADS;NO_TAGS;OPT_ASM_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <StringPooling>true</StringPooling>
        <ExceptionHandling />
 -      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -136,8 +136,8 @@ index 3d586d6..7e4523b 100644
        <IntrinsicFunctions>true</IntrinsicFunctions>
        <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
        <OmitFramePointers>true</OmitFramePointers>
--      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;OPT_ASM_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NO_TAGS;OPT_ASM_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_DSD;ENABLE_THREADS;OPT_ASM_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;ENABLE_THREADS;NO_TAGS;OPT_ASM_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <StringPooling>true</StringPooling>
        <ExceptionHandling />
 -      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -184,7 +184,7 @@ index 3d586d6..7e4523b 100644
      <ClCompile Include="pack_utils.c" />
      <ClCompile Include="read_words.c" />
 diff --git a/wavpackdll/wavpackdll.vcxproj b/wavpackdll/wavpackdll.vcxproj
-index 2d97667..92e220d 100644
+index 2d97667..6143fe1 100644
 --- a/wavpackdll/wavpackdll.vcxproj
 +++ b/wavpackdll/wavpackdll.vcxproj
 @@ -1,5 +1,5 @@
@@ -416,7 +416,7 @@ index 2d97667..92e220d 100644
  /export:WavpackGetChannelLayout /export:WavpackSetFileInformation
  /export:WavpackSetConfiguration64 /export:WavpackSetChannelLayout
 diff --git a/wavpackexe/wavpack.vcxproj b/wavpackexe/wavpack.vcxproj
-index 5d4e2fe..d38b409 100644
+index 9cbf0d8..c6ee402 100644
 --- a/wavpackexe/wavpack.vcxproj
 +++ b/wavpackexe/wavpack.vcxproj
 @@ -1,5 +1,5 @@
@@ -527,7 +527,7 @@ index e7b87ad..516ddee 100644
      <WholeProgramOptimization>false</WholeProgramOptimization>
    </PropertyGroup>
 diff --git a/wvgainexe/wvgain.vcxproj b/wvgainexe/wvgain.vcxproj
-index b7331b9..81cf728 100644
+index 8c1dde4..55fa560 100644
 --- a/wvgainexe/wvgain.vcxproj
 +++ b/wvgainexe/wvgain.vcxproj
 @@ -1,5 +1,5 @@
@@ -597,7 +597,7 @@ index b593ab8..3e9fc24 100644
    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
    <ImportGroup Label="ExtensionSettings">
 diff --git a/wvunpackexe/wvunpack.vcxproj b/wvunpackexe/wvunpack.vcxproj
-index ef39827..133a4de 100644
+index 1888d0d..4aa3fab 100644
 --- a/wvunpackexe/wvunpack.vcxproj
 +++ b/wvunpackexe/wvunpack.vcxproj
 @@ -1,5 +1,5 @@
