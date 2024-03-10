@@ -80,11 +80,27 @@ namespace CUETools.Codecs.libwavpack
         [JsonProperty]
         public bool MD5Sum { get; set; }
 
+        [DefaultValue(0)]
+        [DisplayName("CPUThreads")]
+        [Description("Utilize multiple threads for compression (0..15). 0 means disabled")]
+        [JsonProperty]
+        public int CPUThreads { 
+            get => m_workerThreads; 
+            set {
+                if ((value < 0) || (value > 15))
+                {
+                    throw new Exception("CPUThreads must be between 0..15");
+                }
+                m_workerThreads = value;
+            }
+        }
+
         [DisplayName("Version")]
         [Description("Library version")]
         public string Version => Marshal.PtrToStringAnsi(wavpackdll.WavpackGetLibraryVersionString());
 
         private int m_extraMode;
+        private int m_workerThreads;
     };
 
     public unsafe class AudioEncoder : IAudioDest
@@ -124,14 +140,16 @@ namespace CUETools.Codecs.libwavpack
         {
             if (m_initialized)
             {
-    		    if (m_settings.MD5Sum)
-	    	    {
-        			_md5hasher.TransformFinalBlock (new byte[1], 0, 0);
-        			fixed (byte* md5_digest = &_md5hasher.Hash[0])
-        			    wavpackdll.WavpackStoreMD5Sum (_wpc, md5_digest);
-        		}
                 wavpackdll.WavpackFlushSamples(_wpc);
-    		    _wpc = wavpackdll.WavpackCloseFile(_wpc);
+                if (m_settings.MD5Sum)
+                {
+                    _md5hasher.TransformFinalBlock (new byte[1], 0, 0);
+                    fixed (byte* md5_digest = &_md5hasher.Hash[0])
+                        wavpackdll.WavpackStoreMD5Sum (_wpc, md5_digest);
+                    // Call WavpackFlushSamples() again after writing MD5 sum
+                    wavpackdll.WavpackFlushSamples(_wpc);
+                }
+                _wpc = wavpackdll.WavpackCloseFile(_wpc);
                 m_initialized = false;
             }
             if (m_stream != null)
@@ -236,6 +254,8 @@ namespace CUETools.Codecs.libwavpack
 			config.block_samples = (int)m_settings.BlockSize;
 			if (m_settings.BlockSize > 0 && m_settings.BlockSize < 2048)
 				config.flags |= ConfigFlags.CONFIG_MERGE_BLOCKS;
+            if (m_settings.CPUThreads != 0) 
+                config.worker_threads = m_settings.CPUThreads;
 
             _wpc = wavpackdll.WavpackOpenFileOutput(m_blockOutput, null, null);
             if (_wpc == null)
