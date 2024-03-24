@@ -361,6 +361,26 @@ namespace CUERipper
 						reader.DriveC2ErrorMode = 3; // 0 (None), 1 (Mode294), 2 (Mode296), 3 (Auto)
 					}
 					cueRipperConfig.DriveC2ErrorModes[reader.ARName] = reader.DriveC2ErrorMode;
+
+					int readCDCommand;
+					if (cueRipperConfig.ReadCDCommands.ContainsKey(reader.ARName))
+					{
+						readCDCommand = cueRipperConfig.ReadCDCommands[reader.ARName];
+						if (readCDCommand == 0)
+							reader.ForceBE = true;
+						else if (readCDCommand == 1)
+							reader.ForceD8 = true;
+						else if (readCDCommand < 0 || readCDCommand > 2)
+						{
+							// Invalid setting, use 2 (Unknown)
+							readCDCommand = 2;
+						}
+					}
+					else
+					{
+						readCDCommand = 2; // 0 (ReadCdBEh), 1 (ReadCdD8h), 2 (Unknown/AutoDetect)
+					}
+					cueRipperConfig.ReadCDCommands[reader.ARName] = readCDCommand;
 				}
 				data.Drives.Add(new DriveInfo(m_icon_mgr, drive + ":\\", reader));
 			}
