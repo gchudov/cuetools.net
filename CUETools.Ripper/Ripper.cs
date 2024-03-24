@@ -20,6 +20,8 @@ namespace CUETools.Ripper
 		string EACName { get; }
 		int DriveOffset { get; set; }
 		int DriveC2ErrorMode { get; set; }
+		bool ForceBE { get; set; }
+		bool ForceD8 { get; set; }
 		string RipperVersion { get; }
 		string CurrentReadCommand { get; }
 		int CorrectionQuality { get; set; }
