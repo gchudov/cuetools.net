@@ -74,7 +74,14 @@ namespace Bwg.Scsi
             if (mode)
                 StartMSF = new MinuteSecondFrame(Get8(offset + 5), Get8(offset + 6), Get8(offset + 7));
             else
-                StartSector = Get32(offset + 4) ;
+            {
+                StartSector = Get32(offset + 4);
+                if (StartSector > 16777216 - 150)
+                {
+                    // Fix incorrect TOC, where the first track is reported to start at a frame smaller than 150
+                    StartSector = 0;
+                }
+            }
         }
     }
 }
