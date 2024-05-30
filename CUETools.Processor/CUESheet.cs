@@ -1921,7 +1921,7 @@ namespace CUETools.Processor
             }
         }
 
-        private static StreamReader StreamReader_UTF_ANSI(string path)
+        public static StreamReader StreamReader_UTF_ANSI(string path)
         {
             // StreamReader() detects the encoding of files properly, if a BOM is present.
             // Enable detection of UTF-8 files without BOM. Otherwise fall back to default encoding, which is typically ANSI.
