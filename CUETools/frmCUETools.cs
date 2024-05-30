@@ -814,7 +814,7 @@ namespace JDP
                         if (Path.GetExtension(pathIn).ToLower() != ".cue")
                             throw new Exception("is not a .cue file");
                         string cue = null;
-                        using (StreamReader sr = new StreamReader(pathIn, CUESheet.Encoding))
+                        using (StreamReader sr = CUESheet.StreamReader_UTF_ANSI(pathIn))
                             cue = sr.ReadToEnd();
                         string extension;
                         string fixedCue;
