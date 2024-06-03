@@ -40,6 +40,7 @@ namespace CUETools.Processor
         public bool embedLog;
         public bool extractLog;
         public bool alwaysWriteUTF8CUEFile;
+        public bool writeUTF8BOM;
         public bool fillUpCUE;
         public bool overwriteCUEData;
         public bool filenamesANSISafe;
@@ -110,6 +111,7 @@ namespace CUETools.Processor
             embedLog = true;
             extractLog = true;
             alwaysWriteUTF8CUEFile = false;
+            writeUTF8BOM = true;
             fillUpCUE = true;
             overwriteCUEData = false;
             filenamesANSISafe = true;
@@ -197,6 +199,7 @@ namespace CUETools.Processor
             embedLog = src.embedLog;
             extractLog = src.extractLog;
             alwaysWriteUTF8CUEFile = src.alwaysWriteUTF8CUEFile;
+            writeUTF8BOM = src.writeUTF8BOM;
             fillUpCUE = src.fillUpCUE;
             overwriteCUEData = src.overwriteCUEData;
             filenamesANSISafe = src.filenamesANSISafe;
@@ -285,6 +288,7 @@ namespace CUETools.Processor
             sw.Save("EmbedLog", embedLog);
             sw.Save("ExtractLog", extractLog);
             sw.Save("AlwaysWriteUTF8CUEFile", alwaysWriteUTF8CUEFile);
+            sw.Save("WriteUTF8BOM", writeUTF8BOM);
             sw.Save("FillUpCUE", fillUpCUE);
             sw.Save("OverwriteCUEData", overwriteCUEData);
             sw.Save("FilenamesANSISafe", filenamesANSISafe);
@@ -391,6 +395,7 @@ namespace CUETools.Processor
             embedLog = sr.LoadBoolean("EmbedLog") ?? true;
             extractLog = sr.LoadBoolean("ExtractLog") ?? true;
             alwaysWriteUTF8CUEFile = sr.LoadBoolean("AlwaysWriteUTF8CUEFile") ?? false;
+            writeUTF8BOM = sr.LoadBoolean("WriteUTF8BOM") ?? true;
             fillUpCUE = sr.LoadBoolean("FillUpCUE") ?? true;
             overwriteCUEData = sr.LoadBoolean("OverwriteCUEData") ?? false;
             filenamesANSISafe = sr.LoadBoolean("FilenamesANSISafe") ?? true;

@@ -2387,7 +2387,7 @@ namespace CUETools.Processor
         public static void WriteText(CUEConfig _config, string path, string text)
         {
             bool utf8Required = (_config.alwaysWriteUTF8CUEFile && Path.GetExtension(path) == ".cue") || (CUESheet.Encoding.GetString(CUESheet.Encoding.GetBytes(text)) != text);
-            var encoding = utf8Required ? Encoding.UTF8 : CUESheet.Encoding;
+            var encoding = utf8Required ? new UTF8Encoding(_config.writeUTF8BOM) : CUESheet.Encoding;
             // Preserve original UTF-16LE encoding of EAC log files, which contain a log checksum
             if ((text.StartsWith("Exact Audio Copy") || text.StartsWith("EAC extraction logfile")) && text.Contains("==== Log checksum"))
                 encoding = Encoding.Unicode;
