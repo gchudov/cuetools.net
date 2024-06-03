@@ -834,7 +834,7 @@ namespace CUETools.Ripper.SCSI
 					pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("DVR-S21") ||
 					pathNoSpace.Contains("DU-8A5LH") ||
 					pathNoSpace.Contains("DU8AESH") ||
-					pathNoSpace.Contains("ADH20A4P9P57"))
+					pathNoSpace.Contains("DH20A4P"))
 				{
 					Array.Resize(ref c2mode, 2);
 					c2mode.SetValue(Device.C2ErrorMode.Mode296, 0);
