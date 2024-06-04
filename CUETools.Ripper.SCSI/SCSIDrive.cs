@@ -822,19 +822,19 @@ namespace CUETools.Ripper.SCSI
 				// ASUS DRW-24D5MT, ASUS DRW-24F1ST d,
 				// HL-DT-ST BD-RE BU40N, HL-DT-ST BD-RE WH10LS30, HL-DT-ST DVDRAM GH22LS51,
 				// LG GH24NSD1,
+				// LITEON DH-20A4P,
 				// MATSHITA DVD-R UJ-868,
 				// PIONEER BDR-XD05, PIONEER BDR-XD07U, PIONEER DVR-S21,
 				// PLDS DU-8A5LH,
-				// Slimtype - DVD A DU8AESH,
-				// LITEON ADH20A4P9P57.
+				// Slimtype - DVD A DU8AESH.
 				if (pathNoSpace.Contains("DRW-24D5MT") || pathNoSpace.Contains("DRW-24F1STd") ||
 					pathNoSpace.Contains("BU40N") || pathNoSpace.Contains("WH10LS30") || pathNoSpace.Contains("GH22LS51") ||
 					pathNoSpace.Contains("GH24NSD1") ||
+					pathNoSpace.Contains("DH20A4P") ||
 					pathNoSpace.Contains("UJ-868") ||
 					pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("DVR-S21") ||
 					pathNoSpace.Contains("DU-8A5LH") ||
-					pathNoSpace.Contains("DU8AESH") ||
-					pathNoSpace.Contains("DH20A4P"))
+					pathNoSpace.Contains("DU8AESH"))
 				{
 					Array.Resize(ref c2mode, 2);
 					c2mode.SetValue(Device.C2ErrorMode.Mode296, 0);
