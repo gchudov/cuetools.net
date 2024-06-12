@@ -41,7 +41,7 @@ namespace CUETools.LossyWAVSharp
 		{
 			Console.SetOut(Console.Error);
 			Console.WriteLine("LossyWAV {0}, Copyright (C) 2007,2008 Nick Currie, Copyleft.", LossyWAVWriter.version_string);
-			Console.WriteLine("C# port Copyright (C) 2008-2023 Grigory Chudov.");
+			Console.WriteLine("C# port Copyright (C) 2008-2024 Grigory Chudov.");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
 			Console.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
 			if (args.Length < 1 || (args[0].StartsWith("-") && args[0] != "-"))

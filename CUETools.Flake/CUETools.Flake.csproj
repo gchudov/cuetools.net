@@ -10,7 +10,7 @@
     <Product>CUETools</Product>
     <OutputType>Exe</OutputType>
     <Description>A tool for encoding and decoding FLAC.</Description>
-    <Copyright>Copyright (c) 2008-2023 Grigory Chudov</Copyright>
+    <Copyright>Copyright (c) 2008-2024 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>

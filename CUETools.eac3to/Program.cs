@@ -14,7 +14,7 @@ namespace CUETools.eac3to
     {
         static void Usage()
         {
-            Console.Error.WriteLine("CUETools.eac3to, Copyright (C) 2018-2023 Grigory Chudov.");
+            Console.Error.WriteLine("CUETools.eac3to, Copyright (C) 2018-2024 Grigory Chudov.");
             Console.Error.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
             Console.Error.WriteLine("the extent permitted by law. <http://www.gnu.org/licenses/> for details.");
             Console.Error.WriteLine();

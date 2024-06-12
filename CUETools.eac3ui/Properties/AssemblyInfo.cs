@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("BluTools")]
-[assembly: AssemblyCopyright("Copyright © 2018-2023 Grigory Chudov")]
+[assembly: AssemblyCopyright("Copyright © 2018-2024 Grigory Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

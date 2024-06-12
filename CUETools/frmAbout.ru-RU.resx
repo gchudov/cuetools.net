@@ -155,7 +155,7 @@ hdcd.dll (c) Christopher Key</value>
     <value>309, 17</value>
   </data>
   <data name="linkLabel3.Text" xml:space="preserve">
-    <value>Copyright 2008-2023 Григорий Чудов, gchudov@gmail.com</value>
+    <value>Copyright 2008-2024 Григорий Чудов, gchudov@gmail.com</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>439, 296</value>
