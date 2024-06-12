@@ -1,6 +1,6 @@
 /**
  * CUETools.FLACCL: FLAC audio encoder using CUDA
- * Copyright (c) 2009-2023 Grigory Chudov
+ * Copyright (c) 2009-2024 Grigory Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

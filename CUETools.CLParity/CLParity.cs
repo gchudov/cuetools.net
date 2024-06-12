@@ -1,6 +1,6 @@
 /**
  * CUETools.CLParity: Reed-Solomon (32 bit) using OpenCL
- * Copyright (c) 2009-2023 Gregory S. Chudov
+ * Copyright (c) 2009-2024 Gregory S. Chudov
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

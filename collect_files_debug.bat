@@ -1,6 +1,6 @@
 @ECHO OFF
 REM This script collects built .dll and .pdb files from ThirdParty for debugging CUETools.
-REM Wolfgang Stöggl <c72578@yahoo.de>, 2020-2023.
+REM Wolfgang Stöggl <c72578@yahoo.de>, 2020-2024.
 
 REM The script is located in the subdirectory CUETools
 echo %~dp0
