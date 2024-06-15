@@ -821,7 +821,7 @@ namespace CUETools.Ripper.SCSI
 				// Mode294 does not work for these drives. Try Mode296 first, which has been reported to work:
 				// ASUS DRW-24D5MT, ASUS DRW-24F1ST d,
 				// HL-DT-ST BD-RE BU40N, HL-DT-ST BD-RE WH10LS30, HL-DT-ST DVDRAM GH22LS51,
-				// LG GH24NSD1,
+				// LG GH24NSD1, GH24NSD5,
 				// LITEON DH-20A4P,
 				// MATSHITA DVD-R UJ-868,
 				// PIONEER BDR-XD05, PIONEER BDR-XD07U, PIONEER DVR-S21,
@@ -829,7 +829,7 @@ namespace CUETools.Ripper.SCSI
 				// Slimtype - DVD A DU8AESH.
 				if (pathNoSpace.Contains("DRW-24D5MT") || pathNoSpace.Contains("DRW-24F1STd") ||
 					pathNoSpace.Contains("BU40N") || pathNoSpace.Contains("WH10LS30") || pathNoSpace.Contains("GH22LS51") ||
-					pathNoSpace.Contains("GH24NSD1") ||
+					pathNoSpace.Contains("GH24NSD1") || pathNoSpace.Contains("GH24NSD5") ||
 					pathNoSpace.Contains("DH20A4P") ||
 					pathNoSpace.Contains("UJ-868") ||
 					pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("DVR-S21") ||
