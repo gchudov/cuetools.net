@@ -17,6 +17,7 @@ namespace CUETools.CTDB.EACPlugin
         private CUEToolsDB ctdb;
         private string agent;
         private bool cdinfo, cover;
+        private bool m_coverart_search_stopped = false;
         private ImagePreview m_currently_selected;
 
         public FormMetadata(CUEToolsDB ctdb, string agent, bool cdinfo, bool cover)
@@ -87,6 +88,7 @@ namespace CUETools.CTDB.EACPlugin
                 }
                 foreach (var coverart in metadata.coverart)
                 {
+                    this.button2.Text = "Stop";
                     var uri = Options.CoversSize == CTDBCoversSize.Large ?
                         coverart.uri : coverart.uri150 ?? coverart.uri;
                     if (knownUrls.Contains(uri) || 
@@ -101,6 +103,8 @@ namespace CUETools.CTDB.EACPlugin
                     img.Image = new Bitmap(ms);
                     knownUrls.Add(uri);
                     backgroundWorker1.ReportProgress(0, img);
+                    if (m_coverart_search_stopped)
+                        break;
                 }
             }
         }
@@ -204,7 +208,7 @@ namespace CUETools.CTDB.EACPlugin
         {
             this.progressBar1.Visible = false;
             this.button1.Visible = true;
-            this.button2.Visible = true;
+            this.button2.Text = "OK";
             if (listView1.Items.Count == 0 && flowLayoutPanel1.Controls.Count == 0)
             {
                 this.DialogResult = DialogResult.Cancel;
@@ -322,6 +326,11 @@ namespace CUETools.CTDB.EACPlugin
                 AddMeta(metadata);
                 if (freedbenc != null) AddMeta(freedbenc);
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            m_coverart_search_stopped = true;
         }
 
         private void FormMetadata_FormClosing(object sender, FormClosingEventArgs e)
