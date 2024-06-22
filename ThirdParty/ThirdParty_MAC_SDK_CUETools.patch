@@ -1,15 +1,15 @@
-diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.cpp 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.cpp
---- 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.cpp	2023-12-15 16:35:58.000000000 +0100
-+++ 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.cpp	2023-12-22 04:00:18.000000000 +0100
-@@ -34,6 +34,7 @@
-     }
+diff -ur 0_MAC_1074_SDK_orig/Source/MACLib/APECompress.cpp 1_MAC_1074_SDK_updated/Source/MACLib/APECompress.cpp
+--- 0_MAC_1074_SDK_orig/Source/MACLib/APECompress.cpp	2024-05-13 02:58:42.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/MACLib/APECompress.cpp	2024-06-22 17:27:46.000000000 +0200
+@@ -28,6 +28,7 @@
+     m_spioOutput.Delete();
  }
  
 +#ifndef EXCLUDE_CIO
  int CAPECompress::Start(const wchar_t * pOutputFilename, const WAVEFORMATEX * pwfeInput, bool bFloat, int64 nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int64 nHeaderBytes, int nFlags)
  {
-     if (m_pioOutput)
-@@ -67,6 +68,7 @@
+     m_spioOutput.Delete();
+@@ -57,6 +58,7 @@
  
      return nStartResult;
  }
@@ -17,9 +17,9 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.cpp 1_MAC_1037_SDK_update
  
  int CAPECompress::StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, bool bFloat, int64 nMaxAudioBytes, int nCompressionLevel, const void * pHeaderData, int64 nHeaderBytes)
  {
-diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.h 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.h
---- 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.h	2023-12-15 14:14:54.000000000 +0100
-+++ 1_MAC_1037_SDK_updated/Source/MACLib/APECompress.h	2023-12-22 04:02:34.000000000 +0100
+diff -ur 0_MAC_1074_SDK_orig/Source/MACLib/APECompress.h 1_MAC_1074_SDK_updated/Source/MACLib/APECompress.h
+--- 0_MAC_1074_SDK_orig/Source/MACLib/APECompress.h	2024-05-13 02:58:42.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/MACLib/APECompress.h	2024-06-22 17:18:24.000000000 +0200
 @@ -20,7 +20,9 @@
      ~CAPECompress();
  
@@ -30,9 +30,9 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APECompress.h 1_MAC_1037_SDK_updated/
      int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput, bool bFloat, int64 nMaxAudioBytes, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL, const void * pHeaderData = APE_NULL, int64 nHeaderBytes = CREATE_WAV_HEADER_ON_DECOMPRESSION) APE_OVERRIDE;
  
      // add data / compress data
-diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APEInfo.cpp 1_MAC_1037_SDK_updated/Source/MACLib/APEInfo.cpp
---- 0_MAC_1037_SDK_orig/Source/MACLib/APEInfo.cpp	2023-10-04 06:56:38.000000000 +0200
-+++ 1_MAC_1037_SDK_updated/Source/MACLib/APEInfo.cpp	2023-12-22 03:51:40.000000000 +0100
+diff -ur 0_MAC_1074_SDK_orig/Source/MACLib/APEInfo.cpp 1_MAC_1074_SDK_updated/Source/MACLib/APEInfo.cpp
+--- 0_MAC_1074_SDK_orig/Source/MACLib/APEInfo.cpp	2024-05-13 02:58:42.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/MACLib/APEInfo.cpp	2024-06-22 17:18:24.000000000 +0200
 @@ -46,6 +46,7 @@
  {
  }
@@ -49,9 +49,9 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APEInfo.cpp 1_MAC_1037_SDK_updated/So
  
  CAPEInfo::CAPEInfo(int * pErrorCode, CIO * pIO, CAPETag * pTag)
  {
-diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_1037_SDK_updated/Source/MACLib/APETag.cpp
---- 0_MAC_1037_SDK_orig/Source/MACLib/APETag.cpp	2023-11-22 23:14:48.000000000 +0100
-+++ 1_MAC_1037_SDK_updated/Source/MACLib/APETag.cpp	2023-12-22 03:51:40.000000000 +0100
+diff -ur 0_MAC_1074_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_1074_SDK_updated/Source/MACLib/APETag.cpp
+--- 0_MAC_1074_SDK_orig/Source/MACLib/APETag.cpp	2024-05-13 02:58:42.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/MACLib/APETag.cpp	2024-06-22 17:18:24.000000000 +0200
 @@ -125,6 +125,7 @@
      L"Crossover", L"Contemporary C", L"Christian Rock", L"Merengue", L"Salsa", L"Thrash Metal", L"Anime", L"JPop", L"SynthPop"
  };
@@ -68,10 +68,10 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/APETag.cpp 1_MAC_1037_SDK_updated/Sou
  
  CAPETag::CAPETag(CIO * pIO, bool bAnalyze, bool bCheckForID3v1)
  {
-diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.cpp
---- 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.cpp	2023-12-15 13:08:28.000000000 +0100
-+++ 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.cpp	2023-12-22 03:51:40.000000000 +0100
-@@ -77,6 +77,7 @@
+diff -ur 0_MAC_1074_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1074_SDK_updated/Source/MACLib/MACLib.cpp
+--- 0_MAC_1074_SDK_orig/Source/MACLib/MACLib.cpp	2024-05-13 02:58:42.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/MACLib/MACLib.cpp	2024-06-22 17:18:24.000000000 +0200
+@@ -79,6 +79,7 @@
      return spAPEDecompress.GetPtr();
  }
  
@@ -79,7 +79,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1037_SDK_updated/Sou
  IAPEDecompress * __stdcall CreateIAPEDecompress(const str_utfn * pFilename, int * pErrorCode, bool bReadOnly, bool bAnalyzeTagNow, bool bReadWholeFile)
  {
      // error check the parameters
-@@ -140,6 +141,7 @@
+@@ -142,6 +143,7 @@
      // return
      return pAPEDecompress;
  }
@@ -87,7 +87,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1037_SDK_updated/Sou
  
  IAPEDecompress * __stdcall CreateIAPEDecompressEx(CIO * pIO, int * pErrorCode)
  {
-@@ -257,6 +259,7 @@
+@@ -259,6 +261,7 @@
      catch(...) { return ERROR_UNDEFINED; }
  }
  
@@ -95,14 +95,14 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.cpp 1_MAC_1037_SDK_updated/Sou
  int __stdcall GetAPEFileType(const APE::str_utfn * pInputFilename, APE::str_ansi cFileType[8])
  {
      memset(&cFileType[0], 0, sizeof(cFileType[0]) * 8);
-@@ -888,3 +891,4 @@
+@@ -887,3 +890,4 @@
      // return
      return nFunctionRetVal;
  }
 +#endif
-diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.h 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.h
---- 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.h	2023-12-15 13:04:10.000000000 +0100
-+++ 1_MAC_1037_SDK_updated/Source/MACLib/MACLib.h	2023-12-22 03:58:14.000000000 +0100
+diff -ur 0_MAC_1074_SDK_orig/Source/MACLib/MACLib.h 1_MAC_1074_SDK_updated/Source/MACLib/MACLib.h
+--- 0_MAC_1074_SDK_orig/Source/MACLib/MACLib.h	2024-05-13 02:58:42.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/MACLib/MACLib.h	2024-06-22 17:18:24.000000000 +0200
 @@ -382,9 +382,11 @@
      //        on decompression)
      //////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,9 +115,9 @@ diff -ur 0_MAC_1037_SDK_orig/Source/MACLib/MACLib.h 1_MAC_1037_SDK_updated/Sourc
  
      virtual int StartEx(CIO * pioOutput, const WAVEFORMATEX * pwfeInput,
          bool bFloat, int64 nMaxAudioBytes = MAX_AUDIO_BYTES_UNKNOWN, int nCompressionLevel = APE_COMPRESSION_LEVEL_NORMAL,
-diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_1037_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj
---- 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2023-12-16 15:38:46.000000000 +0100
-+++ 1_MAC_1037_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2023-12-22 03:51:40.000000000 +0100
+diff -ur 0_MAC_1074_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_1074_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj
+--- 0_MAC_1074_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2024-06-11 20:54:54.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/Projects/VS2022/MACLib/MACLib.vcxproj	2024-06-22 17:36:44.000000000 +0200
 @@ -1,5 +1,5 @@
  ﻿<?xml version="1.0" encoding="utf-8"?>
 -<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -129,7 +129,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_
    <PropertyGroup Label="Globals">
      <ProjectGuid>{21BF980F-C022-4DCC-9250-7C73528E422B}</ProjectGuid>
      <RootNamespace>MACLib</RootNamespace>
--    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+-    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
 +    <!-- Latest Target Version property -->
 +    <LatestTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</LatestTargetPlatformVersion>
 +    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
@@ -210,7 +210,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_
 +    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
 +    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
-     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-exit-time-destructors,-clang-diagnostic-global-constructors,-clang-diagnostic-unsafe-buffer-usage</ClangTidyChecks>
+     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-unsafe-buffer-usage,-clang-diagnostic-unused-macros,-clang-diagnostic-pragma-pack</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
 @@ -155,8 +157,8 @@
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -221,7 +221,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_
 +    <OutDir>$(SolutionDir)ThirdParty$(Configuration)\$(Platform)\</OutDir>
 +    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
-     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-exit-time-destructors,-clang-diagnostic-global-constructors,-clang-diagnostic-unsafe-buffer-usage</ClangTidyChecks>
+     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-unsafe-buffer-usage,-clang-diagnostic-unused-macros,-clang-diagnostic-pragma-pack</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
 @@ -176,8 +178,8 @@
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -232,7 +232,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_
 +    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
 +    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
-     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-exit-time-destructors,-clang-diagnostic-global-constructors,-clang-diagnostic-unsafe-buffer-usage</ClangTidyChecks>
+     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-unsafe-buffer-usage,-clang-diagnostic-unused-macros,-clang-diagnostic-pragma-pack</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
 @@ -190,8 +192,8 @@
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -243,7 +243,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_
 +    <OutDir>$(SolutionDir)ThirdParty\$(Platform)\</OutDir>
 +    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
      <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
-     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-exit-time-destructors,-clang-diagnostic-global-constructors,-clang-diagnostic-unsafe-buffer-usage</ClangTidyChecks>
+     <ClangTidyChecks>-clang-diagnostic-c++98-compat,-clang-diagnostic-c++98-compat-pedantic,-clang-diagnostic-language-extension-token,-clang-diagnostic-unsafe-buffer-usage,-clang-diagnostic-unused-macros,-clang-diagnostic-pragma-pack</ClangTidyChecks>
      <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
 @@ -214,9 +216,9 @@
      <ClCompile>
@@ -341,10 +341,10 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Projects/VS2022/MACLib/MACLib.vcxproj 1_MAC_
      <ClCompile Include="..\..\..\MACLib\NewPredictor.cpp" />
      <ClCompile Include="..\..\..\MACLib\NNFilter.cpp" />
      <ClCompile Include="..\..\..\Shared\BufferIO.cpp" />
-diff -ur 0_MAC_1037_SDK_orig/Source/Shared/All.h 1_MAC_1037_SDK_updated/Source/Shared/All.h
---- 0_MAC_1037_SDK_orig/Source/Shared/All.h	2023-12-15 20:13:16.000000000 +0100
-+++ 1_MAC_1037_SDK_updated/Source/Shared/All.h	2023-12-22 03:51:40.000000000 +0100
-@@ -61,7 +61,21 @@
+diff -ur 0_MAC_1074_SDK_orig/Source/Shared/All.h 1_MAC_1074_SDK_updated/Source/Shared/All.h
+--- 0_MAC_1074_SDK_orig/Source/Shared/All.h	2024-05-13 02:58:40.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/Shared/All.h	2024-06-22 17:18:24.000000000 +0200
+@@ -62,7 +62,21 @@
      #ifdef _MSC_VER
          #pragma warning(push) // push and pop warnings because the windows includes suppresses some like 4514
      #endif
@@ -366,7 +366,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Shared/All.h 1_MAC_1037_SDK_updated/Source/S
      #ifdef _MSC_VER
          #pragma warning(pop)
      #endif
-@@ -190,8 +204,12 @@
+@@ -191,8 +205,12 @@
  #if defined(PLATFORM_WINDOWS)
      #define IO_USE_WIN_FILE_IO
      #define DLLEXPORT                                   __declspec(dllexport)
@@ -379,9 +379,9 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Shared/All.h 1_MAC_1037_SDK_updated/Source/S
      #define APE_ODS                                     OutputDebugString
      #define TICK_COUNT_TYPE                             unsigned long long
      #if _WIN32_WINNT >= 0x600
-diff -ur 0_MAC_1037_SDK_orig/Source/Shared/GlobalFunctions.cpp 1_MAC_1037_SDK_updated/Source/Shared/GlobalFunctions.cpp
---- 0_MAC_1037_SDK_orig/Source/Shared/GlobalFunctions.cpp	2023-05-23 06:52:18.000000000 +0200
-+++ 1_MAC_1037_SDK_updated/Source/Shared/GlobalFunctions.cpp	2023-12-22 03:51:40.000000000 +0100
+diff -ur 0_MAC_1074_SDK_orig/Source/Shared/GlobalFunctions.cpp 1_MAC_1074_SDK_updated/Source/Shared/GlobalFunctions.cpp
+--- 0_MAC_1074_SDK_orig/Source/Shared/GlobalFunctions.cpp	2024-05-13 02:58:40.000000000 +0200
++++ 1_MAC_1074_SDK_updated/Source/Shared/GlobalFunctions.cpp	2024-06-22 17:30:30.000000000 +0200
 @@ -44,6 +44,7 @@
      return nResult;
  }
@@ -389,7 +389,7 @@ diff -ur 0_MAC_1037_SDK_orig/Source/Shared/GlobalFunctions.cpp 1_MAC_1037_SDK_up
 +#ifndef EXCLUDE_CIO
  bool FileExists(const wchar_t * pFilename)
  {
-     if (pFilename == NULL)
+     if (pFilename == APE_NULL)
 @@ -85,6 +86,7 @@
  
  #endif
