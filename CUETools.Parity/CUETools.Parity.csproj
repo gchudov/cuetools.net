@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net20;net47;netstandard2.0</TargetFrameworks>
-    <Version>2.2.5.0</Version>
+    <Version>2.2.6.0</Version>
     <AssemblyName>CUETools.Parity</AssemblyName>
     <RootNamespace>CUETools.Parity</RootNamespace>
     <Product>CUETools</Product>

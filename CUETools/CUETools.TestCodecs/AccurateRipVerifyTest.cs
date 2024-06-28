@@ -334,7 +334,7 @@ namespace CUETools.TestCodecs
         public void asdaTest()
         {
             //var tempPath = @"C:\Users\user\Downloads\CUETools_2.1.2a\CUE Tools\LocalDB.xml";
-            var tempPath = @"C:\Users\user\Downloads\CUETools_2.2.5\CUE Tools\LocalDB.xml";
+            var tempPath = @"C:\Users\user\Downloads\CUETools_2.2.6\CUE Tools\LocalDB.xml";
             var path = tempPath + @".z";
             //using (var fileStream = new System.IO.FileStream(tempPath, System.IO.FileMode.CreateNew))
             //using (var deflateStream = new System.IO.Compression.DeflateStream(fileStream, System.IO.Compression.CompressionMode.Compress))

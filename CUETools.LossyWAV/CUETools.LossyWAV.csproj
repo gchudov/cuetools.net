@@ -4,7 +4,7 @@
     <TargetFrameworks>net47;net20;netcoreapp2.0</TargetFrameworks>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)' == 'netcoreapp2.0'">2.0.9</RuntimeFrameworkVersion>
-    <Version>2.2.5.0</Version>
+    <Version>2.2.6.0</Version>
     <AssemblyName>CUETools.LossyWAV</AssemblyName>
     <RootNamespace>CUETools.LossyWAV</RootNamespace>
     <Product>CUETools</Product>

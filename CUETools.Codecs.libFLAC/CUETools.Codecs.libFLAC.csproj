@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
-    <Version>2.2.5.0</Version>
+    <Version>2.2.6.0</Version>
     <AssemblyName>CUETools.Codecs.libFLAC</AssemblyName>
     <RootNamespace>CUETools.Codecs.libFLAC</RootNamespace>
     <Product>CUETools</Product>
