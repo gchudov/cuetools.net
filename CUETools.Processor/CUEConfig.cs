@@ -41,6 +41,7 @@ namespace CUETools.Processor
         public bool extractLog;
         public bool alwaysWriteUTF8CUEFile;
         public bool writeUTF8BOM;
+        public bool writeDummyCUESheetComment;
         public bool fillUpCUE;
         public bool overwriteCUEData;
         public bool filenamesANSISafe;
@@ -112,6 +113,7 @@ namespace CUETools.Processor
             extractLog = true;
             alwaysWriteUTF8CUEFile = false;
             writeUTF8BOM = true;
+            writeDummyCUESheetComment = true;
             fillUpCUE = true;
             overwriteCUEData = false;
             filenamesANSISafe = true;
@@ -200,6 +202,7 @@ namespace CUETools.Processor
             extractLog = src.extractLog;
             alwaysWriteUTF8CUEFile = src.alwaysWriteUTF8CUEFile;
             writeUTF8BOM = src.writeUTF8BOM;
+            writeDummyCUESheetComment = src.writeDummyCUESheetComment;
             fillUpCUE = src.fillUpCUE;
             overwriteCUEData = src.overwriteCUEData;
             filenamesANSISafe = src.filenamesANSISafe;
@@ -289,6 +292,7 @@ namespace CUETools.Processor
             sw.Save("ExtractLog", extractLog);
             sw.Save("AlwaysWriteUTF8CUEFile", alwaysWriteUTF8CUEFile);
             sw.Save("WriteUTF8BOM", writeUTF8BOM);
+            sw.Save("WriteDummyCUESheetComment", writeDummyCUESheetComment);
             sw.Save("FillUpCUE", fillUpCUE);
             sw.Save("OverwriteCUEData", overwriteCUEData);
             sw.Save("FilenamesANSISafe", filenamesANSISafe);
@@ -396,6 +400,7 @@ namespace CUETools.Processor
             extractLog = sr.LoadBoolean("ExtractLog") ?? true;
             alwaysWriteUTF8CUEFile = sr.LoadBoolean("AlwaysWriteUTF8CUEFile") ?? false;
             writeUTF8BOM = sr.LoadBoolean("WriteUTF8BOM") ?? true;
+            writeDummyCUESheetComment = sr.LoadBoolean("WriteDummyCUESheetComment") ?? true;
             fillUpCUE = sr.LoadBoolean("FillUpCUE") ?? true;
             overwriteCUEData = sr.LoadBoolean("OverwriteCUEData") ?? false;
             filenamesANSISafe = sr.LoadBoolean("FilenamesANSISafe") ?? true;

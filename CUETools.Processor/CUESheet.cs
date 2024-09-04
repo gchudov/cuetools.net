@@ -3888,7 +3888,8 @@ namespace CUETools.Processor
             }
 
             StringWriter sw = new StringWriter();
-            sw.WriteLine(String.Format("REM COMMENT \"CUETools generated dummy CUE sheet\""));
+            if (_config.writeDummyCUESheetComment)
+                sw.WriteLine(String.Format("REM COMMENT \"CUETools generated dummy CUE sheet\""));
             int trackNo = 0;
             foreach (FileSystemInfo file in fileGroup.files)
             {
