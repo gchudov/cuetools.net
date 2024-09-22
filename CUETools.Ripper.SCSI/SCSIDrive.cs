@@ -824,7 +824,7 @@ namespace CUETools.Ripper.SCSI
 				// LG GH24NSD1, GH24NSD5,
 				// LITEON DH-20A4P,
 				// MATSHITA DVD-R UJ-868,
-				// PIONEER BDR-XD05, PIONEER BDR-XD07U, PIONEER DVR-S21,
+				// PIONEER BD-RW BDR-UD04, BDR-XD05, BDR-XD07U, DVD-RW DVR-S21,
 				// PLDS DU-8A5LH,
 				// Slimtype - DVD A DU8AESH.
 				if (pathNoSpace.Contains("DRW-24D5MT") || pathNoSpace.Contains("DRW-24F1STd") ||
@@ -832,7 +832,7 @@ namespace CUETools.Ripper.SCSI
 					pathNoSpace.Contains("GH24NSD1") || pathNoSpace.Contains("GH24NSD5") ||
 					pathNoSpace.Contains("DH20A4P") ||
 					pathNoSpace.Contains("UJ-868") ||
-					pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("DVR-S21") ||
+					pathNoSpace.Contains("BDR-UD04") || pathNoSpace.Contains("BDR-XD05") || pathNoSpace.Contains("BDR-XD07U") || pathNoSpace.Contains("DVR-S21") ||
 					pathNoSpace.Contains("DU-8A5LH") ||
 					pathNoSpace.Contains("DU8AESH"))
 				{
