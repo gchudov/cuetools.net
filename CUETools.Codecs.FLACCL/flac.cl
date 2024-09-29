@@ -2220,13 +2220,15 @@ void clRiceEncoding(
         }
 	barrier(CLK_LOCAL_MEM_FENCE);
 	remainder = data[start / 32 - start32];
-	if ((start32 + tid) * 32 <= start)
+	int write = (start32 + tid) * 32;
+	if (write <= start) {
 	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
-	if ((start32 + tid + GROUP_SIZE) * 32 <= start)
-	{
-	    output[start32 + tid + GROUP_SIZE] = as_int(as_char4(data[tid + GROUP_SIZE]).wzyx);
-	    data[tid + GROUP_SIZE] = 0;
-	}
+	    if (write + GROUP_SIZE * 32 <= start)
+	    {
+	        output[start32 + tid + GROUP_SIZE] = as_int(as_char4(data[tid + GROUP_SIZE]).wzyx);
+	        data[tid + GROUP_SIZE] = 0;
+	    }
+    }
     }
     if (pos < bs)
     {
@@ -2286,13 +2288,15 @@ void clRiceEncoding(
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
 	remainder = data[start / 32 - start32];
-	if ((start32 + tid) * 32 <= start)
+	int write = (start32 + tid) * 32;
+	if (write <= start) {
 	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
-	if ((start32 + tid + GROUP_SIZE) * 32 <= start)
-	{
-	    output[start32 + tid + GROUP_SIZE] = as_int(as_char4(data[tid + GROUP_SIZE]).wzyx);
-	    data[tid + GROUP_SIZE] = 0;
-	}
+	    if (write + GROUP_SIZE * 32 <= start)
+	    {
+	        output[start32 + tid + GROUP_SIZE] = as_int(as_char4(data[tid + GROUP_SIZE]).wzyx);
+	        data[tid + GROUP_SIZE] = 0;
+	    }
+    }
     }
     //   if (tid == 0 && start != task.encodingOffset - task.headerLen + task.size)
 	//printf("size mismatch: %d != %d\n", start, task.encodingOffset - task.headerLen + task.size);
