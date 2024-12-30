@@ -17,4 +17,3 @@ EXPORTS
     c_APECompress_LockBuffer
     c_APECompress_UnlockBuffer
     c_APECompress_Finish
-    c_APECompress_Kill

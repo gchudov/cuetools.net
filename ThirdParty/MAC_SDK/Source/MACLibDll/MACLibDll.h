@@ -62,7 +62,6 @@ typedef int (__stdcall * proc_APECompress_GetBufferBytesAvailable)(APE_COMPRESS_
 typedef unsigned char * (__stdcall * proc_APECompress_LockBuffer)(APE_COMPRESS_HANDLE, APE::int64 *);
 typedef int (__stdcall * proc_APECompress_UnlockBuffer)(APE_COMPRESS_HANDLE, int, BOOL);
 typedef int (__stdcall * proc_APECompress_Finish)(APE_COMPRESS_HANDLE, unsigned char *, APE::int64, APE::int64);
-typedef int (__stdcall * proc_APECompress_Kill)(APE_COMPRESS_HANDLE);
 
 extern "C"
 {
@@ -78,7 +77,6 @@ extern "C"
     DLLEXPORT unsigned char * __stdcall c_APECompress_LockBuffer(APE_COMPRESS_HANDLE hAPECompress, APE::int64 * pBytesAvailable);
     DLLEXPORT int __stdcall c_APECompress_UnlockBuffer(APE_COMPRESS_HANDLE hAPECompress, int nBytesAdded, BOOL bProcess = true);
     DLLEXPORT int __stdcall c_APECompress_Finish(APE_COMPRESS_HANDLE hAPECompress, unsigned char * pTerminatingData, APE::int64 nTerminatingBytes, APE::int64 nWAVTerminatingBytes);
-    DLLEXPORT int __stdcall c_APECompress_Kill(APE_COMPRESS_HANDLE hAPECompress);
 }
 
 /**************************************************************************************************

@@ -220,8 +220,3 @@ int __stdcall c_APECompress_Finish(APE_COMPRESS_HANDLE hAPECompress, unsigned ch
 {
     return (static_cast<IAPECompress *>(hAPECompress))->Finish(pTerminatingData, nTerminatingBytes, nWAVTerminatingBytes);
 }
-
-int __stdcall c_APECompress_Kill(APE_COMPRESS_HANDLE hAPECompress)
-{
-    return (static_cast<IAPECompress *>(hAPECompress))->Kill();
-}
