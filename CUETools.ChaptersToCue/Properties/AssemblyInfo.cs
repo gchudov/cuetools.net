@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("CUETools.ChaptersToCue")]
-[assembly: AssemblyCopyright("Copyright © 2017-2024 Grigory Chudov")]
+[assembly: AssemblyCopyright("Copyright © 2017-2025 Grigory Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

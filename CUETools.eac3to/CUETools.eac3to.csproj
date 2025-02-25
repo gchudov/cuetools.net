@@ -10,7 +10,7 @@
     <Product>CUETools</Product>
     <OutputType>Exe</OutputType>
     <Description>A command-line tool for BluRay audio extraction.</Description>
-    <Copyright>Copyright (c) 2018-2024 Grigory Chudov</Copyright>
+    <Copyright>Copyright (c) 2018-2025 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\</OutputPath>

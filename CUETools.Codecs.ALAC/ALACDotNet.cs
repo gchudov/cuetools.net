@@ -7,7 +7,7 @@ using CUETools.Codecs;
 using System.ComponentModel;
 using Newtonsoft.Json;
 
-//Copyright (c) 2008-2024 Grigory Chudov.
+//Copyright (c) 2008-2025 Grigory Chudov.
 //This library is based on ALAC decoder by David Hammerton.
 //See http://crazney.net/programs/itunes/alac.html for details.
 //Copyright (c) 2004 David Hammerton.

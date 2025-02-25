@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("CUETools.CLParity")]
-[assembly: AssemblyCopyright("Copyright © 2011-2024 Gregory S. Chudov")]
+[assembly: AssemblyCopyright("Copyright © 2011-2025 Gregory S. Chudov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
