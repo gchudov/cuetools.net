@@ -7,7 +7,7 @@
     <RootNamespace>CUETools.Compression.Rar</RootNamespace>
     <Product>CUETools</Product>
     <Description>A library for decompressing RAR.</Description>
-    <Copyright>Copyright (c) 2008-2024 Grigory Chudov, Michael A. McCloskey</Copyright>
+    <Copyright>Copyright (c) 2008-2025 Grigory Chudov, Michael A. McCloskey</Copyright>
     <Authors>Grigory Chudov, Michael A. McCloskey</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\win32\</OutputPath>

@@ -1,6 +1,6 @@
 @ECHO OFF
 REM This script collects the built .exe, .dll etc. files required for running CUETools
-REM Wolfgang Stöggl <c72578@yahoo.de>, 2020-2024.
+REM Wolfgang Stöggl <c72578@yahoo.de>, 2020-2025.
 
 REM The script is located in the subdirectory CUETools
 echo %~dp0
