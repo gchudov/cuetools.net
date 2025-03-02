@@ -53,7 +53,27 @@ jobs:
       - name: Collect files
         run: |
           collect_files.bat
-      - uses: actions/upload-artifact@v4
+      - name: Package files
+        run: pwsh -File ./packaging.ps1          
+      - name: Get CUETools Version
+        id: get_version
+        run: |
+          for /f "tokens=7 delims= " %%a in ('find "CUEToolsVersion =" .\CUETools.Processor\CUESheet.cs') do set PRODUCTVER=%%a
+          set PRODUCTVER=%PRODUCTVER:"=%
+          set PRODUCTVER=%PRODUCTVER:;=%
+          echo CUETools version: %PRODUCTVER%
+          echo CUETOOLS_VERSION=%PRODUCTVER%>>%GITHUB_ENV%
+        shell: cmd         
+      - name: Add artifacts to Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: deploy
-          path: bin/Release/CUETools_*/
+          name: CUETools ${{ env.CUETOOLS_VERSION }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          tag_name: ${{ github.ref_name }}
+          files: |
+            CUETools_${{ env.CUETOOLS_VERSION }}.zip
+            CUETools_${{ env.CUETOOLS_VERSION }}.zip.sha256
+            CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip
+            CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip.sha256
