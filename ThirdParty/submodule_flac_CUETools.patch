@@ -1,25 +1,25 @@
 diff --git a/src/libFLAC/config.h b/src/libFLAC/config.h
 new file mode 100644
-index 00000000..c4332919
+index 00000000..fe4555ef
 --- /dev/null
 +++ b/src/libFLAC/config.h
 @@ -0,0 +1,13 @@
 +/* config.h for version.rc
 +
 +/* Define to the commit date of the current git HEAD */
-+#define GIT_COMMIT_DATE "20230623"
++#define GIT_COMMIT_DATE "20250211"
 +
 +/* Define to the short hash of the current git HEAD */
-+#define GIT_COMMIT_HASH "28e4f052"
++#define GIT_COMMIT_HASH "1507800d"
 +
 +/* Define to the tag of the current git HEAD */
-+#define GIT_COMMIT_TAG "1.4.3"
++#define GIT_COMMIT_TAG "1.5.0"
 +
 +/* Define to the version of this package. */
-+#define PACKAGE_VERSION "1.4.3"
++#define PACKAGE_VERSION "1.5.0"
 diff --git a/src/libFLAC/libFLAC_dynamic.vcxproj b/src/libFLAC/libFLAC_dynamic.vcxproj
 new file mode 100644
-index 00000000..0dfcddcc
+index 00000000..c44044dc
 --- /dev/null
 +++ b/src/libFLAC/libFLAC_dynamic.vcxproj
 @@ -0,0 +1,278 @@
@@ -114,7 +114,7 @@ index 00000000..0dfcddcc
 +      <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
 +      <Optimization>Disabled</Optimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.5.0";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <MinimalRebuild>true</MinimalRebuild>
 +      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -135,7 +135,7 @@ index 00000000..0dfcddcc
 +      <AdditionalOptions>/D "_USE_MATH_DEFINES" %(AdditionalOptions)</AdditionalOptions>
 +      <Optimization>Disabled</Optimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.5.0";DEBUG;FLAC__OVERFLOW_DETECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
 +      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
 +      <WarningLevel>Level3</WarningLevel>
@@ -157,7 +157,7 @@ index 00000000..0dfcddcc
 +      <OmitFramePointers>true</OmitFramePointers>
 +      <WholeProgramOptimization>true</WholeProgramOptimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;FLAC__CPU_IA32;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.5.0";%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <BufferSecurityCheck>false</BufferSecurityCheck>
 +      <WarningLevel>Level3</WarningLevel>
@@ -184,7 +184,7 @@ index 00000000..0dfcddcc
 +      <OmitFramePointers>true</OmitFramePointers>
 +      <WholeProgramOptimization>true</WholeProgramOptimization>
 +      <AdditionalIncludeDirectories>.\include;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.4.3";%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FLAC_API_EXPORTS;FLAC__HAS_OGG=0;ENABLE_64_BIT_WORDS;FLAC__CPU_X86_64;FLAC__HAS_X86INTRIN;FLAC__ALIGN_MALLOC_DATA;PACKAGE_VERSION="1.5.0";%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <BufferSecurityCheck>false</BufferSecurityCheck>
 +      <WarningLevel>Level3</WarningLevel>
@@ -537,7 +537,7 @@ index 00000000..e6fbc3c2
 +  </ItemGroup>
 +</Project>
 diff --git a/src/libFLAC/version.rc b/src/libFLAC/version.rc
-index 019da1dd..86d9f726 100644
+index d3d62653..18a68e27 100644
 --- a/src/libFLAC/version.rc
 +++ b/src/libFLAC/version.rc
 @@ -1,6 +1,6 @@
