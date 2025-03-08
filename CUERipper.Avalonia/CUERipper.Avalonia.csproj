@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<Authors>Max Visser</Authors>
+	<Copyright>Copyright (c) 2025 Max Visser</Copyright>
+	<PackageLicenseExpression>GPL-2.0-or-later</PackageLicenseExpression>
+	<Version>2.2.6.0</Version>
+	<OutputType>WinExe</OutputType>
+    <TargetFrameworks>net47;net8.0</TargetFrameworks>
+	<LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>./Assets/cue2.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net47'">
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.1" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.2.1">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+	<PackageReference Include="Avalonia.Controls.DataGrid" Version="11.2.1" />
+	<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.1" />
+	<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+	<PackageReference Include="Serilog" Version="4.2.0" />
+	<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
+	<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+  </ItemGroup>
+	
+  <ItemGroup Condition="'$(TargetFramework)' == 'net47' ">
+	<PackageReference Include="System.Collections.Immutable" Version="9.0.1" />
+  </ItemGroup>	
+
+  <ItemGroup>
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
+    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj" />
+    <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
+  </ItemGroup>	
+
+  <Target Name="CopySharedFiles" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net8.0' ">
+	<ItemGroup>
+	  <SharedFiles Include="..\bin\$(Configuration)\netstandard2.0\**\*.*" />
+	</ItemGroup>
+	<Copy SourceFiles="@(SharedFiles)" DestinationFolder="$(OutputPath)%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

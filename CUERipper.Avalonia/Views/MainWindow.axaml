@@ -1,0 +1,297 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:uc="using:CUERipper.Avalonia.Views.UserControls"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
+        x:Class="CUERipper.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/cue2.ico"
+		Width="1024"
+		Height="685"
+        Title="CUERipper 2.2.6">
+	<SplitView IsPaneOpen="{Binding SplitPaneOpen}"
+			   PanePlacement="Right"
+			   DisplayMode="CompactOverlay"
+			   OpenPaneLength="420"
+			   CompactPaneLength="38"
+			   PaneClosing="OnSplitViewPaneClosing">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="30"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="340"/>
+			</Grid.ColumnDefinitions>
+		
+			<StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+				<Image Name="imageAlbumCover" Source="{Binding AlbumCoverImage}" Width="96" Height="96" Stretch="Uniform" Margin="12"/>
+				<StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20,0,40,0">
+					<TextBlock Name="textAlbumTitle" Text="{Binding AlbumTitle}"/>
+					<TextBlock Name="textAlbumArtist" Text="{Binding AlbumArtist}"/>
+					<TextBlock Name="textAlbumYear" Text="{Binding AlbumYear}"/>
+					<TextBlock Name="textAlbumDisc" Text="{Binding AlbumDisc}"/>
+				</StackPanel>
+			</StackPanel>
+			
+			<StackPanel Grid.Row="0" Grid.Column="1" Margin="0,7,7,0">
+				<ComboBox Name="comboBoxDiscDrives" 
+						ItemsSource="{Binding DiscDrives}"
+						SelectedItem="{Binding SelectedDrive}"
+						HorizontalAlignment="Stretch"
+						Margin="5,5"/>
+				<ComboBox Name="comboBoxAlbumReleases" 
+						ItemsSource="{Binding AlbumReleases}"
+						SelectedItem="{Binding SelectedAlbum}"
+						HorizontalAlignment="Stretch"
+						Margin="5,5">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<Image Source="{Binding Icon}" Width="12" Height="12" Margin="0,0,5,0"/>
+								<TextBlock Text="{Binding Name}"/>
+							</StackPanel>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+					<!-- Prevents resizing of the menu when scrolling through variable length items -->
+					<ComboBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel />
+						</ItemsPanelTemplate>
+					</ComboBox.ItemsPanel>
+				</ComboBox>
+			</StackPanel>
+					
+			<TabControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+				<TabItem Header="{Binding HeaderTracks}" FontSize="20">
+					<DataGrid Name="gridTrackList"
+						AutoGenerateColumns="False"
+						CanUserResizeColumns="True"
+						SelectionMode="Single"
+						HeadersVisibility="Column"
+						CanUserSortColumns="False"
+						ItemsSource="{Binding Tracks}">
+						<DataGrid.Columns>
+							<DataGridTextColumn Header="#" Binding="{Binding TrackNo}" Width="Auto" IsReadOnly="True"/>
+							<DataGridTextColumn Header="{Binding HeaderTitle}" Binding="{Binding Title}" Width="Auto"/>
+							<DataGridTextColumn Header="{Binding HeaderLength}" Binding="{Binding Length}" Width="Auto" IsReadOnly="True"/>
+							<DataGridTemplateColumn Header="{Binding HeaderProgress}">
+								<DataGridTemplateColumn.CellTemplate>
+									<DataTemplate>
+										<ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}" ShowProgressText="True" Height="18" Width ="80"/>
+									</DataTemplate>
+								</DataGridTemplateColumn.CellTemplate>
+							</DataGridTemplateColumn>
+							<DataGridTextColumn Header="{Binding HeaderArtist}" Binding="{Binding Artist}" Width="Auto"/>
+						</DataGrid.Columns>
+					</DataGrid>
+				</TabItem>
+				<TabItem Header="{Binding HeaderMetadata}" FontSize="20">
+					<DataGrid Name="gridMetadata" 
+							AutoGenerateColumns="False" 
+							HeadersVisibility="None"
+							ItemsSource="{Binding Metadata}">
+						<DataGrid.Columns>
+							<DataGridTextColumn Header="Field" Binding="{Binding Field}" IsReadOnly="True" />
+							<DataGridTextColumn Header="Value" Binding="{Binding Value}" />
+						</DataGrid.Columns>
+					</DataGrid>
+				</TabItem>
+				<TabItem Header="Cover Art" FontSize="20">
+					<uc:CoverViewer Name="coverViewer" />
+				</TabItem>
+			</TabControl>
+
+			<Separator Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+					Margin="0" 
+					Opacity="0.2"/>
+
+			<Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
+				<StackPanel Orientation="Horizontal">
+					<Button Name="buttonUpdate" HorizontalContentAlignment="Center" Width="24" Background="Transparent">
+						<ToolTip.Tip>
+							New update available for download!
+						</ToolTip.Tip>
+					</Button>
+					<TextBlock Name="lblStatus" Text="Ready" Margin="5" VerticalAlignment="Center"/>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+					<StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+						<ProgressBar Minimum="0" Maximum="100" Value="{Binding ReadingProgress}" Width="150" HorizontalAlignment="Right" Margin="0,8,3,3">
+							<ToolTip.Tip>
+								Progress of the current section being read from the Audio CD.
+							</ToolTip.Tip>
+						</ProgressBar>
+						<ProgressBar Minimum="0" Maximum="100" Value="{Binding TotalProgress}" Width="150" HorizontalAlignment="Right" Margin="3">
+							<ToolTip.Tip>
+								Total progress of the Audio CD currently being ripped.
+							</ToolTip.Tip>
+						</ProgressBar>					
+					</StackPanel>
+					<Button Name="buttonGo" Content="Start" HorizontalContentAlignment="Center" Width="68" Background="Transparent"/>
+					<Button Name="buttonAbort" Content="Cancel" HorizontalContentAlignment="Center" Width="68" Background="Transparent"/>				
+				</StackPanel>
+			</Grid>
+		</Grid>
+		<SplitView.Pane>
+			<StackPanel>
+				<Button Name="buttonTogglePane" 
+						Content="&lt;" 
+						Margin="5,13,0,5" 
+						Background="Transparent">
+					<ToolTip.Tip>
+						Show/hide an advanced view of the current drive and ripping information.
+					</ToolTip.Tip>
+				</Button>
+				<StackPanel Margin="38,-41,38,0">
+					<Grid ColumnDefinitions="* Auto Auto" RowDefinitions="Auto Auto">
+						<ComboBox Name="comboBoxDiscDrivesSidePane"
+									ItemsSource="{Binding DiscDrives}"
+									SelectedItem="{Binding SelectedDrive}"
+									HorizontalAlignment="Stretch"
+									Margin="5,5"
+									Grid.Row="0"
+									Grid.Column="0"/>
+						<Button Name="buttonRefreshDrives"
+								Grid.Row="0"
+								Grid.Column="1"
+								Background="Transparent">
+							<ToolTip.Tip>
+								Refreshes the list of disc drives and the content of the inserted disc.
+							</ToolTip.Tip>
+						</Button>
+						<Button Name="buttonEject"
+								Grid.Row="0"
+								Grid.Column="2"
+								Background="Transparent">
+							<ToolTip.Tip>
+								Yeets the disc out of the drive.
+							</ToolTip.Tip>
+						</Button>
+						<ComboBox Name="comboBoxAlbumReleasesSidePane"
+								ItemsSource="{Binding AlbumReleases}"
+								SelectedItem="{Binding SelectedAlbum}"
+								HorizontalAlignment="Stretch"
+								Margin="5,5"
+								Grid.Row="1"
+								Grid.Column="0">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<StackPanel Orientation="Horizontal">
+										<Image Source="{Binding Icon}" Width="12" Height="12" Margin="0,0,5,0"/>
+										<TextBlock Text="{Binding Name}"/>
+									</StackPanel>
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+							<!-- Prevents resizing of the menu when scrolling through variable length items -->
+							<ComboBox.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel />
+								</ItemsPanelTemplate>
+							</ComboBox.ItemsPanel>
+						</ComboBox>						
+						<Button Name="buttonAdvancedSearch"
+								Grid.Row="1"
+								Grid.Column="1"
+								Background="Transparent">
+							<ToolTip.Tip>
+								Advanced meta information search, takes longer than the default search.
+							</ToolTip.Tip>
+						</Button>
+						<Button Name="buttonResetSearch"
+								Grid.Row="1"
+								Grid.Column="2"
+								Background="Transparent">
+							<ToolTip.Tip>
+								Resets the release list to the initial search state.
+							</ToolTip.Tip>
+						</Button>
+					</Grid>
+
+					<Separator Margin="0, 25, 0, 10" Opacity="0.1"/>
+
+					<TabControl Name="tabControlEncoding" Padding="0">
+						<TabItem Name="tabItemEncodingAdd" Header="+" FontSize="20" />
+						<TabItem Name="tabItemEncodingRemove" Header="-" FontSize="20" IsEnabled="False"/>
+					</TabControl>
+
+					<Separator Margin="0, 25" Opacity="0.1"/>
+
+					<uc:DriveSettingSection Name="driveSettingSection" />
+
+					<Separator Margin="0, 25" Opacity="0.1"/>
+
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+
+						<Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+							Name="buttonPathFormat"
+							Content="{Binding OutputPath}"
+							Margin="5,0,0,5" 
+							HorizontalAlignment="Stretch" 
+							Background="Transparent"
+							ToolTip.Tip="{Binding OutputPath}"/>
+
+						<ProgressBar Grid.Row="1" Grid.Column="0"
+								MinWidth="0"
+								Minimum="0"
+								Maximum="100"
+								Value="{Binding ReadingProgress}"
+								Margin="5"
+								Height="18">
+							<ToolTip.Tip>
+								Progress of the current section being read from the Audio CD.
+							</ToolTip.Tip>
+						</ProgressBar>
+						
+						<ProgressBar Grid.Row="1" Grid.Column="1"
+								MinWidth="0"
+								Minimum="0"
+								Maximum="100"
+								Value="{Binding ErrorProgress}"
+								Margin="5"
+								Height="18"
+								Foreground="DarkRed">
+							<ToolTip.Tip>
+								Amount of errors encountered while ripping the Audio CD.
+							</ToolTip.Tip>
+						</ProgressBar>
+
+						<ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+								MinWidth="0" 
+								Minimum="0" 
+								Maximum="100" 
+								Value="{Binding TotalProgress}"
+								ShowProgressText="True" 
+								Margin="5"
+								Height="18">
+							<ToolTip.Tip>
+								Total progress of the Audio CD currently being ripped.
+							</ToolTip.Tip>
+						</ProgressBar>
+
+						<StackPanel Grid.Row="1" Grid.Column="2" Grid.RowSpan="2"
+								Orientation="Horizontal">
+							<Button Name="buttonGoSidePane" Content="Start" Width="68" HorizontalContentAlignment="Center"/>
+							<Button Name="buttonAbortSidePane" Content="Cancel" Width="68" HorizontalContentAlignment="Center"/>
+						</StackPanel>
+					</Grid>
+				</StackPanel>
+			</StackPanel>
+		</SplitView.Pane>
+	</SplitView>
+</Window>

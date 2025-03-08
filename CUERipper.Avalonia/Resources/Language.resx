@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Main:Tracks" xml:space="preserve">
+    <value>Tracks</value>
+  </data>
+  <data name="Main:Metadata" xml:space="preserve">
+    <value>Metadata</value>
+  </data>
+  <data name="TrackList:Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="TrackList:Length" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="TrackList:Progress" xml:space="preserve">
+    <value>Progress</value>
+  </data>
+  <data name="TrackList:Artist" xml:space="preserve">
+    <value>Artist</value>
+  </data>
+  <data name="Main:Disc" xml:space="preserve">
+    <value>Disc</value>
+  </data>
+  <data name="Generic:Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Encoding:Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Encoding:Lossless" xml:space="preserve">
+    <value>Lossless</value>
+  </data>
+  <data name="Encoding:Lossy" xml:space="preserve">
+    <value>Lossy</value>
+  </data>
+  <data name="Generic:Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Generic:No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Encoding:Tracks" xml:space="preserve">
+    <value>Tracks</value>
+  </data>
+  <data name="Status:Ready" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="Status:Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Status:Finalizing" xml:space="preserve">
+    <value>Finalizing... please wait.</value>
+  </data>
+  <data name="Status:DiscUnexpectedRemove" xml:space="preserve">
+    <value>Disc has unexpectedly been removed, please wait.</value>
+  </data>
+  <data name="Status:DiscRemoved" xml:space="preserve">
+    <value>Disc has been removed.</value>
+  </data>
+  <data name="Status:RipperStop" xml:space="preserve">
+    <value>Ripping is being stopped, please wait.</value>
+  </data>
+  <data name="Status:RipperStopped" xml:space="preserve">
+    <value>Ripping has been stopped</value>
+  </data>
+  <data name="Main:DiscSeperator" xml:space="preserve">
+    <value>/</value>
+  </data>
+  <data name="Meta:Artist" xml:space="preserve">
+    <value>Artist</value>
+  </data>
+  <data name="Meta:Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Meta:Genre" xml:space="preserve">
+    <value>Genre</value>
+  </data>
+  <data name="Meta:Year" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="Meta:CurrentDisc" xml:space="preserve">
+    <value>Current Disc</value>
+  </data>
+  <data name="Meta:TotalDiscs" xml:space="preserve">
+    <value>Total Discs</value>
+  </data>
+  <data name="Meta:DiscName" xml:space="preserve">
+    <value>Disc Name</value>
+  </data>
+  <data name="Meta:Label" xml:space="preserve">
+    <value>Label</value>
+  </data>
+  <data name="Meta:LabelNo" xml:space="preserve">
+    <value>Label No.</value>
+  </data>
+  <data name="Meta:ReleaseDate" xml:space="preserve">
+    <value>Release Date</value>
+  </data>
+  <data name="Meta:Barcode" xml:space="preserve">
+    <value>Barcode</value>
+  </data>
+  <data name="Meta:Country" xml:space="preserve">
+    <value>Country</value>
+  </data>
+  <data name="Meta:Comment" xml:space="preserve">
+    <value>Comment</value>
+  </data>
+  <data name="Generic:Ok" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+  <data name="Error:RipFailedNoAccessDrive" xml:space="preserve">
+    <value>(RipFailedNoAccessDrive) Couldn't access the disc drive.</value>
+  </data>
+  <data name="Status:RipFail" xml:space="preserve">
+    <value>Ripping has failed!</value>
+  </data>
+  <data name="Error:RipFailedMetadata" xml:space="preserve">
+    <value>(RipFailedMetadata) Couldn't process the album metadata.</value>
+  </data>
+  <data name="Error:RipFailedOutputPath" xml:space="preserve">
+    <value>(RipFailedOutputPath) Invalid output path.</value>
+  </data>
+  <data name="Status:RipFinished" xml:space="preserve">
+    <value>Ripping has finished.</value>
+  </data>
+  <data name="Status:RipFailUser" xml:space="preserve">
+    <value>Ripping has been stopped by user.</value>
+  </data>
+  <data name="Error:Unexpected" xml:space="preserve">
+    <value>(Unexpected) Unexpected error occurred.</value>
+  </data>
+  <data name="Warning:RipTroubledDisc" xml:space="preserve">
+    <value>Disc contains error(s).</value>
+  </data>
+  <data name="Encoding:ToolTipCompression" xml:space="preserve">
+    <value>Lossless will result in accurate but bigger files, while Lossy will result in smaller but less accurate (compressed) files.</value>
+  </data>
+  <data name="Encoding:ToolTipCUEStyle" xml:space="preserve">
+    <value>Image will result in a single audio file. Tracks will result in one file per track.</value>
+  </data>
+  <data name="Status:DownloadingAlbumCover" xml:space="preserve">
+    <value>Downloading album cover... please wait.</value>
+  </data>
+  <data name="Error:NoEncodingFound" xml:space="preserve">
+    <value>(NoEncodingFound) No encoding configuration found.</value>
+  </data>
+  <data name="Error:MultiEncodingNotLossless" xml:space="preserve">
+    <value>(MultiEncodingNotLossless) First encoder must be lossless when using multiple encoders.</value>
+  </data>
+</root>

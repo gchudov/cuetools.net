@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CUERipper.Avalonia.Views.MessageBox"
+        x:DataType="vm:MessageBoxViewModel"		
+        Icon="/Assets/cue2.ico"
+		Title="MessageBox"
+		MaxWidth="500" 
+		MaxHeight="400"
+        WindowStartupLocation="CenterOwner"
+		SizeToContent="WidthAndHeight"
+		CanResize="False">
+	<StackPanel Margin="20">
+		<TextBlock TextWrapping="Wrap"
+                   MaxWidth="500"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Top"
+                   Margin="0,0,0,10"
+				   Text="{Binding Message}"/>
+		<StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="10">
+			<Button Content="{Binding Affirm}"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Width="75"
+                    Margin="5"
+                    Click="OnAffirmClicked"/>
+			<Button Content="{Binding Negate}"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Width="75"
+                    Margin="5"
+                    Click="OnNegateClicked"
+					IsVisible="{Binding ShowNegate}"/>
+		</StackPanel>
+	</StackPanel>
+</Window>

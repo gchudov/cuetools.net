@@ -31,6 +31,7 @@ using CUETools.CDImage;
 using CUETools.Codecs;
 using CUETools.Ripper;
 using System.Threading;
+using CUETools.Ripper.Exceptions;
 
 namespace CUETools.Ripper.SCSI
 {
@@ -216,7 +217,7 @@ namespace CUETools.Ripper.SCSI
 			// Get device info
 			st = m_device.Inquiry(out m_inqury_result);
 			if (st != Device.CommandStatus.Success)
-				throw new SCSIException(Resource1.DeviceInquiryError, m_device, st);
+				throw SCSIExceptionFactory.Create(Resource1.DeviceInquiryError, m_device, st);
 			if (!m_inqury_result.Valid || m_inqury_result.PeripheralQualifier != 0 || m_inqury_result.PeripheralDeviceType != Device.MMCDeviceType)
 				throw new ReadCDException(Resource1.DeviceNotMMC);
 
@@ -262,8 +263,8 @@ namespace CUETools.Ripper.SCSI
 			IList<TocEntry> toc;
 			st = m_device.ReadToc((byte)0, false, out toc);
 			if (st != Device.CommandStatus.Success)
-				throw new SCSIException(Resource1.ReadTOCError, m_device, st);
-				//throw new Exception("ReadTOC: " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
+				throw SCSIExceptionFactory.Create(Resource1.ReadTOCError, m_device, st);
+			//throw new Exception("ReadTOC: " + (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
 
 			//byte[] qdata = null;
 			//st = m_device.ReadPMA(out qdata);
@@ -1032,7 +1033,7 @@ namespace CUETools.Ripper.SCSI
 
 			if (!abort)
 				return st;
-			SCSIException ex = new SCSIException(Resource1.ReadCDError, m_device, st);
+			SCSIException ex = SCSIExceptionFactory.Create(Resource1.ReadCDError, m_device, st);
 			if (sector != 0 && Sectors2Read > 1 && st == Device.CommandStatus.DeviceFailed && m_device.GetSenseAsc() == 0x64 && m_device.GetSenseAscq() == 0x00)
 			{
 				if (_debugMessages)
@@ -1370,19 +1371,18 @@ namespace CUETools.Ripper.SCSI
 		Unknown
 	};
 
-	public sealed class SCSIException : Exception
+	public static class SCSIExceptionFactory
 	{
-		public SCSIException(string args, Device device, Device.CommandStatus st)
-			: base(args + ": " + (st == Device.CommandStatus.DeviceFailed ? device.GetErrorString() : st.ToString()))
+		public static SCSIException Create(string args, Device device, Device.CommandStatus st)
 		{
-		}
-	}
+			if (args == Resource1.ReadTOCError)
+			{
+				return new TOCException(args + ": " +
+					(st == Device.CommandStatus.DeviceFailed ? device.GetErrorString() : st.ToString()));
+			}
 
-	public sealed class ReadCDException : Exception
-	{
-		public ReadCDException(string args, Exception inner)
-			: base(args + ": " + inner.Message, inner) { }
-		public ReadCDException(string args)
-			: base(args) { }
+			return new SCSIException(args + ": " +
+				(st == Device.CommandStatus.DeviceFailed ? device.GetErrorString() : st.ToString()));
+		}
 	}
 }
