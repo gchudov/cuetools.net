@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20</TargetFrameworks>
+    <TargetFrameworks>net47;net20;netstandard2.0</TargetFrameworks>
     <Version>0.0.7.1</Version>
     <AssemblyName>Bwg.Scsi</AssemblyName>
     <RootNamespace>Bwg.Scsi</RootNamespace>
@@ -27,5 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Bwg.Logging\Bwg.Logging.csproj" />
   </ItemGroup>
-
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' ">
+	<ProjectReference Include="..\CUETools.Interop\CUETools.Interop.csproj" />
+  </ItemGroup>
 </Project>

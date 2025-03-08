@@ -78,7 +78,22 @@ namespace Bwg.Scsi
             {
                 m_delete_buffer = true;
                 m_buffer = Marshal.AllocHGlobal(bufsize);
+#if NETSTANDARD2_0
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    RtlZeroMemory(m_buffer, bufsize);
+                }
+                else
+                {
+                    for(int i = 0; i < bufsize; ++i)
+                    {
+                        Marshal.WriteByte(m_buffer, i, 0x00);
+                    }
+                }
+#else
                 RtlZeroMemory(m_buffer, bufsize);
+
+#endif
             }
 
             m_dir = dir;

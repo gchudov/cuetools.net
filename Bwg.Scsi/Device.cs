@@ -43,11 +43,11 @@ namespace Bwg.Scsi
     /// <summary>
     /// 
     /// </summary>
-    public unsafe class Device : WinDev
+    public sealed unsafe class Device : IDisposable
     {
         #region Structures for DeviceIoControl
         [StructLayout(LayoutKind.Explicit)]
-        struct SCSI_PASS_THROUGH_DIRECT32
+        internal struct SCSI_PASS_THROUGH_DIRECT32
         {
             [FieldOffset(0)]public ushort Length;
             [FieldOffset(2)]public byte ScsiStatus;
@@ -66,7 +66,7 @@ namespace Bwg.Scsi
         }  ;
 
         [StructLayout(LayoutKind.Explicit)]
-        struct SCSI_PASS_THROUGH_DIRECT64
+        internal struct SCSI_PASS_THROUGH_DIRECT64
         {
             [FieldOffset(0)]public ushort Length;
             [FieldOffset(2)]public byte ScsiStatus;
@@ -85,7 +85,7 @@ namespace Bwg.Scsi
         }  ;
 
         [StructLayout(LayoutKind.Explicit)]
-        struct IO_SCSI_CAPABILITIES
+        internal struct IO_SCSI_CAPABILITIES
         {
             [FieldOffset(0)]public uint Length;
             [FieldOffset(4)]public uint MaximumTransferLength;
@@ -98,7 +98,7 @@ namespace Bwg.Scsi
         } ;
 
         [StructLayout(LayoutKind.Explicit)]
-        private struct PREVENT_MEDIA_REMOVAL
+        internal struct PREVENT_MEDIA_REMOVAL
         {
             [FieldOffset(0)] public uint PreventMediaRemoval;
         };
@@ -117,9 +117,9 @@ namespace Bwg.Scsi
         private int m_MaximumTransferLength;
         #endregion
 
-        #region private static data structures
-        static ushort m_scsi_request_size_32 = 44;
-        static ushort m_scsi_request_size_64 = 56;
+        #region private constant data structure sizes
+        internal const ushort m_scsi_request_size_32 = 44;
+        internal const ushort m_scsi_request_size_64 = 56;
         #endregion
 
         #region public constants
@@ -131,9 +131,9 @@ namespace Bwg.Scsi
         #endregion
 
         #region Private constants
-        private const uint IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x4d014;
-        private const uint IOCTL_SCSI_GET_CAPABILITIES = 0x41010;
-        private const uint IOCTL_STORAGE_MEDIA_REMOVAL = 0x2D4804;
+        internal const uint IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x4d014;
+        internal const uint IOCTL_SCSI_GET_CAPABILITIES = 0x41010;
+        internal const uint IOCTL_STORAGE_MEDIA_REMOVAL = 0x2D4804;
 
         private const uint ERROR_NOT_SUPPORTED = 50 ;
         #endregion
@@ -816,10 +816,10 @@ namespace Bwg.Scsi
 
             // Send through ioctl field
             IntPtr pt = new IntPtr(&f);
-            if (!Control(IOCTL_SCSI_PASS_THROUGH_DIRECT, pt, total, pt, total, ref ret, IntPtr.Zero))
+            if (!_sysDev.Control(IOCTL_SCSI_PASS_THROUGH_DIRECT, pt, total, pt, total, ref ret, IntPtr.Zero))
             {
                 string str ;
-                str = "IOCTL_SCSI_PASS_THROUGH_DIRECT failed - " + Win32ErrorToString(LastError);
+                str = "IOCTL_SCSI_PASS_THROUGH_DIRECT failed - " + _sysDev.ErrorCodeToString(_sysDev.LastError);
                 m_logger.LogMessage(new UserMessage(UserMessage.Category.Error, 0, str));
                 return CommandStatus.IoctlFailed;
             }
@@ -867,10 +867,10 @@ namespace Bwg.Scsi
 
             // Send through ioctl field
             IntPtr pt = new IntPtr(&f);
-            if (!Control(IOCTL_SCSI_PASS_THROUGH_DIRECT, pt, total, pt, total, ref ret, IntPtr.Zero))
+            if (!_sysDev.Control(IOCTL_SCSI_PASS_THROUGH_DIRECT, pt, total, pt, total, ref ret, IntPtr.Zero))
             {
                 string str ;
-                str = "IOCTL_SCSI_PASS_THROUGH_DIRECT failed - " + Win32ErrorToString(LastError);
+                str = "IOCTL_SCSI_PASS_THROUGH_DIRECT failed - " + _sysDev.ErrorCodeToString(_sysDev.LastError);
                 m_logger.LogMessage(new UserMessage(UserMessage.Category.Error, 0, str));
                 return CommandStatus.IoctlFailed;
             }
@@ -902,7 +902,7 @@ namespace Bwg.Scsi
             uint ret = 0;
             IntPtr pt = new IntPtr(&f);
             uint total = (uint)Marshal.SizeOf(f);
-            if (Control(IOCTL_SCSI_GET_CAPABILITIES, pt, total, pt, total, ref ret, IntPtr.Zero))
+            if (_sysDev.Control(IOCTL_SCSI_GET_CAPABILITIES, pt, total, pt, total, ref ret, IntPtr.Zero))
             {
                 if (f.MaximumTransferLength > Int32.MaxValue)
                     m_MaximumTransferLength = Int32.MaxValue;
@@ -927,6 +927,8 @@ namespace Bwg.Scsi
 
 		static global::System.Resources.ResourceManager messages;
 
+        private readonly ISysDev _sysDev;
+
         #region constructor
         /// <summary>
         /// 
@@ -942,7 +944,21 @@ namespace Bwg.Scsi
             else
                 m_ossize = 64;
 
+
             // m_logger.LogMessage(new UserMessage(UserMessage.Category.Info, 0, "Operating System Size: " + m_ossize.ToString()));
+#if NETSTANDARD2_0
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _sysDev = new WinDev();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                _sysDev = new LinDev();
+            }
+            else throw new NotSupportedException("This OS is currently not supported, feel free to add an implementation!");
+#else
+            _sysDev = new WinDev();
+#endif
         }
 
         static Device()
@@ -950,7 +966,7 @@ namespace Bwg.Scsi
 			messages = new global::System.Resources.ResourceManager("Bwg.Scsi.Messages", typeof(Device).Assembly);
         }
 
-        #endregion
+#endregion
 
         #region Public Functions
 
@@ -971,9 +987,9 @@ namespace Bwg.Scsi
         /// </summary>
         /// <param name="name">name of the SCSI device</param>
         /// <returns>true if the open succeeded</returns>
-        public override bool Open(string name)
+        public bool Open(string name)
         {
-            if (!base.Open(name))
+            if (!_sysDev.Open(name))
                 return false;
 
             QueryBufferSize();
@@ -986,9 +1002,9 @@ namespace Bwg.Scsi
         /// </summary>
         /// <param name="letter"></param>
         /// <returns></returns>
-        public override bool Open(char letter)
+        public bool Open(char letter)
         {
-            if (!base.Open(letter))
+            if (!_sysDev.Open(letter))
                 return false ;
 
             QueryBufferSize();
@@ -3713,15 +3729,16 @@ namespace Bwg.Scsi
             {
                 uint uiReturnedBytes = 0;
                 IntPtr pt = new IntPtr(&pmr);
-                bResult = Control(IOCTL_STORAGE_MEDIA_REMOVAL, pt, uiPmrSize, pt, uiPmrSize, ref uiReturnedBytes, IntPtr.Zero);
+                bResult = _sysDev.Control(IOCTL_STORAGE_MEDIA_REMOVAL, pt, uiPmrSize, pt, uiPmrSize, ref uiReturnedBytes, IntPtr.Zero);
                 if (!bResult)
                 {
-                    string str = "IOCTL_STORAGE_MEDIA_REMOVAL failed - " + Win32ErrorToString(LastError);
+                    string str = "IOCTL_STORAGE_MEDIA_REMOVAL failed - " + _sysDev.ErrorCodeToString(_sysDev.LastError);
                     m_logger.LogMessage(new UserMessage(UserMessage.Category.Error, 0, str));
                 }
             }
             return bResult;
         }
 
+        public void Dispose() => _sysDev.Dispose();
     }
 }

@@ -62,7 +62,7 @@ namespace CUETools.Ripper.SCSI
 		public byte[,] C2Count;
 		public long[] byte2long;
 		BitArray m_failedSectors;
-        byte[] m_retryCount;
+		byte[] m_retryCount;
 		AudioBuffer currentData = new AudioBuffer(AudioPCMConfig.RedBook, MSECTORS * 588);
 		short[] _valueScore = new short[256];
 		bool _debugMessages = false;
@@ -72,15 +72,15 @@ namespace CUETools.Ripper.SCSI
 		Device.C2ErrorMode _c2ErrorMode = Device.C2ErrorMode.Mode296;
 		string _autodetectResult;
 		byte[] _readBuffer = new byte[NSECTORS * CB_AUDIO];
-        byte[] _subchannelBuffer = new byte[NSECTORS * CB_AUDIO];
+		byte[] _subchannelBuffer = new byte[NSECTORS * CB_AUDIO];
 		bool _qChannelInBCD = true;
 
 		private ReadProgressArgs progressArgs = new ReadProgressArgs();
 		public event EventHandler<ReadProgressArgs> ReadProgress;
 
-        public IAudioDecoderSettings Settings => null;
+		public IAudioDecoderSettings Settings => null;
 
-        public CDImageLayout TOC
+		public CDImageLayout TOC
 		{
 			get
 			{
@@ -88,27 +88,27 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
-        public byte[] RetryCount
-        {
-            get
-            {
-                return m_retryCount;
-            }
-        }
+		public byte[] RetryCount
+		{
+			get
+			{
+				return m_retryCount;
+			}
+		}
 
-        public BitArray FailedSectors
-        {
-            get
-            {
-                if (m_failedSectors == null)
-                {
-                    m_failedSectors = new BitArray((int)_toc.AudioLength);
-                    for (int i = 0; i < m_failedSectors.Length; i++)
-                        m_failedSectors[i] = m_retryCount[i] == (16 << _correctionQuality) + 1;
-                }
-                return m_failedSectors;
-            }
-        }
+		public BitArray FailedSectors
+		{
+			get
+			{
+				if (m_failedSectors == null)
+				{
+					m_failedSectors = new BitArray((int)_toc.AudioLength);
+					for (int i = 0; i < m_failedSectors.Length; i++)
+						m_failedSectors[i] = m_retryCount[i] == (16 << _correctionQuality) + 1;
+				}
+				return m_failedSectors;
+			}
+		}
 
 		public int Timeout
 		{
@@ -173,7 +173,7 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				return _readCDCommand == ReadCDCommand.Unknown ? "unknown" :
-					string.Format("{0}, {1:X2}h, {2}{3}, {4} blocks at a time", 
+					string.Format("{0}, {1:X2}h, {2}{3}, {4} blocks at a time",
 					(_readCDCommand == ReadCDCommand.ReadCdBEh ? "BEh" : "D8h"),
 					(_mainChannelMode == Device.MainChannelSelection.UserData ? 0x10 : 0xF8) +
 					(_c2ErrorMode == Device.C2ErrorMode.None ? 0 : _c2ErrorMode == Device.C2ErrorMode.Mode294 ? 2 : 4),
@@ -276,22 +276,23 @@ namespace CUETools.Ripper.SCSI
 			_toc2 = null;
 			_toc = new CDImageLayout();
 			for (int iTrack = 0; iTrack < toc.Count - 1; iTrack++)
-				_toc.AddTrack(new CDTrack((uint)iTrack + 1, 
+				_toc.AddTrack(new CDTrack((uint)iTrack + 1,
 					toc[iTrack].StartSector,
-					toc[iTrack + 1].StartSector - toc[iTrack].StartSector - 
-					    ((toc[iTrack + 1].Control < 4 || iTrack + 1 == toc.Count - 1) ? 0U : 152U * 75U), 
+					toc[iTrack + 1].StartSector - toc[iTrack].StartSector -
+						((toc[iTrack + 1].Control < 4 || iTrack + 1 == toc.Count - 1) ? 0U : 152U * 75U),
 					toc[iTrack].Control < 4,
-					(toc[iTrack].Control & 1) == 1));			
+					(toc[iTrack].Control & 1) == 1));
 			if (_toc.AudioLength > 0)
 			{
 				if (_toc[1].IsAudio)
 					_toc[1][0].Start = 0;
 				Position = 0;
-			} else
+			}
+			else
 				throw new ReadCDException(Resource1.NoAudio);
 
-            UserData = new long[MSECTORS, 2, 4 * 588];
-            C2Count = new byte[MSECTORS, 294];
+			UserData = new long[MSECTORS, 2, 4 * 588];
+			C2Count = new byte[MSECTORS, 294];
 
 			return true;
 		}
@@ -300,8 +301,7 @@ namespace CUETools.Ripper.SCSI
 		{
 			UserData = null;
 			C2Count = null;
-			if (m_device != null)
-				m_device.Close();
+			m_device?.Dispose();
 			m_device = null;
 			_toc = null;
 			_toc2 = null;
@@ -351,7 +351,7 @@ namespace CUETools.Ripper.SCSI
 					lsector = fsector - 1;
 			}
 
-			fixed (byte * data = _subchannelBuffer)
+			fixed (byte* data = _subchannelBuffer)
 				for (int sector = fsector; sector <= lsector; sector++)
 				{
 					Device.CommandStatus st = Device.CommandStatus.Success;
@@ -482,27 +482,27 @@ namespace CUETools.Ripper.SCSI
 
 			if (_readCDCommand == ReadCDCommand.ReadCdBEh)
 			{
-                // PLEXTOR PX-W1210A always returns data, even if asked only for subchannel.
-                // So we fill the buffer with magic data, give extra space for command so it won't hang the drive,
-                // request subchannel data and check if magic data was overwritten.
-                bool overwritten = false;
-                for (int i = 0; i < 16; i++)
-                {
-                    _subchannelBuffer[m_max_sectors * (588 * 4 + 16) - 16 + i] = (byte)(13 + i);
-                }
-                fixed (byte* data = _subchannelBuffer)
-                {
-                    st = m_device.ReadCDAndSubChannel(Device.MainChannelSelection.None, Device.SubChannelMode.QOnly, Device.C2ErrorMode.None, 1, false, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)m_max_sectors, (IntPtr)((void*)data), _timeout);
-                }
-                for (int i = 0; i < 16; i++)
-                {
-                    if (_subchannelBuffer[m_max_sectors * (588 * 4 + 16) - 16 + i] != (byte)(13 + i))
-                        overwritten = true;
-                }
-                if (overwritten)
-                    st = Device.CommandStatus.NotSupported;
-                //else
-                //    st = m_device.ReadSubChannel(2, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)m_max_sectors, ref _subchannelBuffer, _timeout);
+				// PLEXTOR PX-W1210A always returns data, even if asked only for subchannel.
+				// So we fill the buffer with magic data, give extra space for command so it won't hang the drive,
+				// request subchannel data and check if magic data was overwritten.
+				bool overwritten = false;
+				for (int i = 0; i < 16; i++)
+				{
+					_subchannelBuffer[m_max_sectors * (588 * 4 + 16) - 16 + i] = (byte)(13 + i);
+				}
+				fixed (byte* data = _subchannelBuffer)
+				{
+					st = m_device.ReadCDAndSubChannel(Device.MainChannelSelection.None, Device.SubChannelMode.QOnly, Device.C2ErrorMode.None, 1, false, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)m_max_sectors, (IntPtr)((void*)data), _timeout);
+				}
+				for (int i = 0; i < 16; i++)
+				{
+					if (_subchannelBuffer[m_max_sectors * (588 * 4 + 16) - 16 + i] != (byte)(13 + i))
+						overwritten = true;
+				}
+				if (overwritten)
+					st = Device.CommandStatus.NotSupported;
+				//else
+				//    st = m_device.ReadSubChannel(2, (uint)sector + _toc[_toc.FirstAudio][0].Start, (uint)m_max_sectors, ref _subchannelBuffer, _timeout);
 				if (st == Device.CommandStatus.Success)
 				{
 					int[] goodsecs = new int[2];
@@ -592,77 +592,65 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
-        private void DoEjectDisk(Device.StartState action)
-        {
-            EventStatusNotification status;
-            m_device.GetEventStatusNotification(true, Device.NotificationClass.Media, out status);
-            if (status.Valid && status.EventAvailable && status.EventData.Length > 1)
-            {
-                // 0 - tray closed no disc
-                // 1 - tray open
-                // 2 - tray closed, disc
-                action = status.EventData[1] == 1 ? Device.StartState.LoadDisk : Device.StartState.EjectDisk;
-            }
-            m_device.StartStopUnit(true, Device.PowerControl.NoChange, action);
-        }
+		private void DoEjectDisk(Device.StartState action)
+		{
+			EventStatusNotification status;
+			m_device.GetEventStatusNotification(true, Device.NotificationClass.Media, out status);
+			if (status.Valid && status.EventAvailable && status.EventData.Length > 1)
+			{
+				// 0 - tray closed no disc
+				// 1 - tray open
+				// 2 - tray closed, disc
+				action = status.EventData[1] == 1 ? Device.StartState.LoadDisk : Device.StartState.EjectDisk;
+			}
+			m_device.StartStopUnit(true, Device.PowerControl.NoChange, action);
+		}
 
-        public void EjectDisk()
-        {
-            if (m_device != null)
-            {
-                DoEjectDisk(Device.StartState.EjectDisk);
-            }
-            else
-            {
-                try
-                {
-                    m_device = new Device(m_logger);
-                    if (m_device.Open(m_device_letter))
-                    {
-                        try
-                        {
-                            DoEjectDisk(Device.StartState.LoadDisk);
-                        }
-                        finally
-                        {
-                            m_device.Close();
-                        }
-                    }
-                }
-                finally
-                {
-                    m_device = null;
-                }
-            }
-        }
+		public void EjectDisk()
+		{
+			if (m_device != null)
+			{
+				DoEjectDisk(Device.StartState.EjectDisk);
+			}
+			else
+			{
+				try
+				{
+					m_device = new Device(m_logger);
+					if (m_device.Open(m_device_letter))
+					{
+						DoEjectDisk(Device.StartState.LoadDisk);
+					}
+				}
+				finally
+				{
+					m_device.Dispose();
+					m_device = null;
+				}
+			}
+		}
 
-        public void DisableEjectDisc(bool bDisable)
-        {
-            if (m_device != null)
-                m_device.DisableEjectDisc(bDisable);
-            else
-            {
-                try
-                {
-                    m_device = new Device(m_logger);
-                    if (m_device.Open(m_device_letter))
-                    {
-                        try
-                        {
-                            m_device.DisableEjectDisc(bDisable);
-                        }
-                        finally
-                        {
-                            m_device.Close();
-                        }
-                    }
-                }
-                finally
-                {
-                    m_device = null;
-                }
-            }
-        }
+		public void DisableEjectDisc(bool bDisable)
+		{
+			if (m_device != null)
+				m_device.DisableEjectDisc(bDisable);
+			else
+			{
+				try
+				{
+					m_device = new Device(m_logger);
+					if (m_device.Open(m_device_letter))
+					{
+						m_device.DisableEjectDisc(bDisable);
+					}
+				}
+				finally
+				{
+					m_device.Dispose();
+					m_device = null;
+				}
+			}
+		}
 
 		bool gapsDetected = false;
 
@@ -881,7 +869,7 @@ namespace CUETools.Ripper.SCSI
 						_mainChannelMode = mainmode[m];
 						if (_forceReadCommand != ReadCDCommand.Unknown && _readCDCommand != _forceReadCommand)
 							continue;
-                        if (_readCDCommand == ReadCDCommand.ReadCdD8h && (_c2ErrorMode != Device.C2ErrorMode.None || _mainChannelMode != Device.MainChannelSelection.UserData))
+						if (_readCDCommand == ReadCDCommand.ReadCdD8h && (_c2ErrorMode != Device.C2ErrorMode.None || _mainChannelMode != Device.MainChannelSelection.UserData))
 							continue;
 						Array.Clear(_readBuffer, 0, _readBuffer.Length); // fill with something nasty instead?
 						DateTime tm = DateTime.Now;
@@ -901,7 +889,7 @@ namespace CUETools.Ripper.SCSI
 						TimeSpan delay = DateTime.Now - tm;
 						_autodetectResult += string.Format("{0}: {1} ({2}ms)\n", CurrentReadCommand, (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()), delay.TotalMilliseconds);
 						found = st == Device.CommandStatus.Success;
-						
+
 						//sector += m_max_sectors;
 					}
 			//if (found)
@@ -915,16 +903,16 @@ namespace CUETools.Ripper.SCSI
 			//            break;
 			//        }
 			//    }
-            if (found)
-            {
-                TestGaps();
-                _autodetectResult += "Chosen " + CurrentReadCommand + "\n";
-            }
-            else
-            {
-                _gapDetection = GapDetectionMethod.None;
-                _readCDCommand = ReadCDCommand.Unknown;
-            }
+			if (found)
+			{
+				TestGaps();
+				_autodetectResult += "Chosen " + CurrentReadCommand + "\n";
+			}
+			else
+			{
+				_gapDetection = GapDetectionMethod.None;
+				_readCDCommand = ReadCDCommand.Unknown;
+			}
 
 			_currentStart = -1;
 			_currentEnd = -1;
@@ -986,7 +974,7 @@ namespace CUETools.Ripper.SCSI
 						}
 						for (int pos = 0; pos < 294; pos++)
 						{
-							int c2d = sectorPtr[4 * 588 + pos + offs]; 
+							int c2d = sectorPtr[4 * 588 + pos + offs];
 							int c2 = ((-c2d) >> 31) & 1;
 							c2CountPtr[pos] += (byte)c2;
 							int sample = pos << 3;
@@ -1026,7 +1014,7 @@ namespace CUETools.Ripper.SCSI
 			{
 				if (_debugMessages)
 				{
-					int size = (4 * 588 + (_c2ErrorMode == Device.C2ErrorMode.Mode294 ? 294 : _c2ErrorMode == Device.C2ErrorMode.Mode296 ? 296 : 0)) 
+					int size = (4 * 588 + (_c2ErrorMode == Device.C2ErrorMode.Mode294 ? 294 : _c2ErrorMode == Device.C2ErrorMode.Mode296 ? 296 : 0))
 						* (int)Sectors2Read;
 					AudioSamples.MemSet(data, 0xff, size);
 				}
@@ -1054,9 +1042,9 @@ namespace CUETools.Ripper.SCSI
 				{
 					if (FetchSectors(sector + iSector, 1, false) != Device.CommandStatus.Success)
 					{
-						iErrors ++;
+						iErrors++;
 						for (int i = 0; i < 294; i++)
-							C2Count[sector + iSector - _currentStart, i] ++;
+							C2Count[sector + iSector - _currentStart, i]++;
 						if (_debugMessages)
 							System.Console.WriteLine("\nSector lost");
 					}
@@ -1101,14 +1089,14 @@ namespace CUETools.Ripper.SCSI
 					}
 					currentData.Bytes[pos * 4 * 588 + iPar] = (byte)bestValue;
 				}
-                
-                if (pass > _correctionQuality || fError)
-                {
-                    int olderr = pass > _correctionQuality && m_retryCount[sector + iSector] == pass + 1 ? 1 : 0;
-                    int newerr = fError ? 1 : 0;
-                    _currentErrorsCount += newerr - olderr;
-                    if (fError) m_retryCount[sector + iSector] = (byte)(pass + 2);
-                }
+
+				if (pass > _correctionQuality || fError)
+				{
+					int olderr = pass > _correctionQuality && m_retryCount[sector + iSector] == pass + 1 ? 1 : 0;
+					int newerr = fError ? 1 : 0;
+					_currentErrorsCount += newerr - olderr;
+					if (fError) m_retryCount[sector + iSector] = (byte)(pass + 2);
+				}
 			}
 		}
 
@@ -1142,7 +1130,7 @@ namespace CUETools.Ripper.SCSI
 
 			_currentErrorsCount = 0;
 
-            //Device.CommandStatus st = m_device.SetCdSpeed(Device.RotationalControl.CLVandNonPureCav, (ushort)(176 * 4), 65535);
+			//Device.CommandStatus st = m_device.SetCdSpeed(Device.RotationalControl.CLVandNonPureCav, (ushort)(176 * 4), 65535);
 			//if (st != Device.CommandStatus.Success)
 			//    System.Console.WriteLine("SetCdSpeed: {0}", (st == Device.CommandStatus.DeviceFailed ? Device.LookupSenseError(m_device.GetSenseAsc(), m_device.GetSenseAscq()) : st.ToString()));
 
@@ -1151,7 +1139,7 @@ namespace CUETools.Ripper.SCSI
 			int max_scans = 16 << _correctionQuality;
 			for (int pass = 0; pass < max_scans; pass++)
 			{
-//				dbg_pass = pass;
+				//				dbg_pass = pass;
 				DateTime PassTime = DateTime.Now, LastFetch = DateTime.Now;
 
 				for (int sector = _currentStart; sector < _currentEnd; sector += m_max_sectors)
@@ -1163,13 +1151,13 @@ namespace CUETools.Ripper.SCSI
 					//if (msToSleep > 0) Thread.Sleep(msToSleep);
 
 					LastFetch = DateTime.Now;
-					if (pass == 0) 
+					if (pass == 0)
 						ClearSectors(sector, Sectors2Read);
 					FetchSectors(sector, Sectors2Read, true);
 					//TimeSpan delay1 = DateTime.Now - LastFetch;
 					//DateTime LastFetched = DateTime.Now;
 					if (pass >= _correctionQuality)
-                        CorrectSectors(pass, sector, Sectors2Read);
+						CorrectSectors(pass, sector, Sectors2Read);
 					//TimeSpan delay2 = DateTime.Now - LastFetched;
 					//if (sector == _currentStart)
 					//System.Console.WriteLine("\n{0},{1}", delay1.TotalMilliseconds, delay2.TotalMilliseconds);
@@ -1220,7 +1208,7 @@ namespace CUETools.Ripper.SCSI
 				buff.Swap(currentData);
 				_currentStart = -1;
 				_currentEnd = -1;
-			} 
+			}
 			else
 				fixed (byte* dest = buff.Bytes, src = &currentData.Bytes[(_sampleOffset - _currentStart * 588) * 4])
 					AudioSamples.MemCpy(dest, src, buff.ByteLength);
@@ -1228,9 +1216,9 @@ namespace CUETools.Ripper.SCSI
 			return buff.Length;
 		}
 
-        public TimeSpan Duration => TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
+		public TimeSpan Duration => TimeSpan.FromSeconds((double)Length / PCM.SampleRate);
 
-        public long Length
+		public long Length
 		{
 			get
 			{
@@ -1266,7 +1254,7 @@ namespace CUETools.Ripper.SCSI
 			get
 			{
 				return m_inqury_result == null || !m_inqury_result.Valid ? null :
-					m_inqury_result.VendorIdentification.TrimEnd(' ', '\0').PadRight(8, ' ') + " - " + 
+					m_inqury_result.VendorIdentification.TrimEnd(' ', '\0').PadRight(8, ' ') + " - " +
 					m_inqury_result.ProductIdentification.TrimEnd(' ', '\0');
 			}
 		}
@@ -1291,10 +1279,10 @@ namespace CUETools.Ripper.SCSI
 					throw new ReadCDException(Resource1.NoAudio);
 				_currentStart = -1;
 				_currentEnd = -1;
-                m_retryCount = new byte[(int)_toc.AudioLength];
-                for (int i = 0; i < m_retryCount.Length; i++)
-                    m_retryCount[i] = (byte)(_correctionQuality + 1);
-                m_failedSectors = null;
+				m_retryCount = new byte[(int)_toc.AudioLength];
+				for (int i = 0; i < m_retryCount.Length; i++)
+					m_retryCount[i] = (byte)(_correctionQuality + 1);
+				m_failedSectors = null;
 				_sampleOffset = (int)value + _driveOffset;
 			}
 		}
@@ -1343,10 +1331,10 @@ namespace CUETools.Ripper.SCSI
 				if (value < 0 || value > 3)
 					throw new Exception("invalid CorrectionQuality");
 				_correctionQuality = value;
-                for (int i = 0; i < m_retryCount.Length; i++)
-                    m_retryCount[i] = (byte)(_correctionQuality + 1);
-            }
-		}		
+				for (int i = 0; i < m_retryCount.Length; i++)
+					m_retryCount[i] = (byte)(_correctionQuality + 1);
+			}
+		}
 
 		public string RipperVersion
 		{
