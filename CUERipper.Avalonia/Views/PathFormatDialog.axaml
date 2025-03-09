@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:Class="CUERipper.Avalonia.PathFormatDialog"
+		x:DataType="vm:PathFormatDialogViewModel"
+		Title="Add/remove path format"
+        Icon="/Assets/cue2.ico"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="False">
+	<Grid RowDefinitions="*,*,*,Auto"
+			ColumnDefinitions="*,Auto">
+
+		<ListBox Grid.Row="0" Grid.Column="0"
+				 ItemsSource="{Binding Formats}"
+				 SelectedIndex="{Binding FormatIndex}"
+				 FontSize="12"
+                 Margin="5"/>
+
+		<StackPanel Grid.Row="0" Grid.Column="1"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Right"
+                    Margin="5">
+			<Button Name="buttonNew" 
+					Content="+" 
+					IsEnabled="{Binding !MaximumReached}"
+					Margin="2"
+					Background="Transparent"/>
+			<Button Name="buttonCopy"
+					Content="X"
+					IsEnabled="{Binding !MaximumReached}"					
+					Margin="2"
+					Background="Transparent"/>
+			<Button Name="buttonDelete" 
+					Content="-" 
+					IsEnabled="{Binding !ReadOnly}"			
+					Margin="2"
+					Background="Transparent"/>
+		</StackPanel>
+
+		<TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                 Text="{Binding FormatText}"
+				 IsEnabled="{Binding !ReadOnly}"
+                 Margin="5"/>
+
+		<TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                   Text="{Binding OutputPreview}"
+                   Margin="5"
+                   HorizontalAlignment="Left"/>
+
+		<StackPanel Grid.Row="3" Grid.Column="0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="5">
+			<Button Name="buttonOk" Content="Ok" Margin="5"/>
+			<Button Name="buttonCancel" Content="Cancel" Margin="5"/>
+		</StackPanel>
+		
+	</Grid>
+</Window>

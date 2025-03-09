@@ -1,12 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Xml;
-using System.Xml.Serialization;
+using System.Runtime.InteropServices;
 
 namespace CUETools.Codecs
 {
@@ -50,7 +45,12 @@ namespace CUETools.Codecs
             src_encoders.ForEach(item => encoders.Add(item.Clone()));
             src_decoders.ForEach(item => decoders.Add(item.Clone()));
 
-            if (Type.GetType("Mono.Runtime", false) == null)
+            bool isRunningOnWindows = Type.GetType("Mono.Runtime", false) == null;
+#if NETSTANDARD2_0
+            isRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#endif
+
+            if (isRunningOnWindows)
             {
                 encoders.Add(new CommandLine.EncoderSettings("flac.exe", "flac", true, "0 1 2 3 4 5 6 7 8", "5", "flac.exe", "-%M -P %P - -o %O"));
                 encoders.Add(new CommandLine.EncoderSettings("flake.exe", "flac", true, "0 1 2 3 4 5 6 7 8 9 10 11 12", "8", "flake.exe", "-%M - -o %O -p %P"));

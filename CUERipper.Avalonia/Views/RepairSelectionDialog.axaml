@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CUERipper.Avalonia.RepairSelectionDialog"
+        Title="Repair selection"
+        Icon="/Assets/cue2.ico"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="False">
+	<StackPanel Margin="20">
+		<TextBlock Margin="0,5">Select the best match:</TextBlock>
+		<StackPanel Orientation="Horizontal">
+			<StackPanel Orientation="Vertical">
+				<ListBox Name="repairSelection"/>
+				<StackPanel Orientation="Horizontal">
+					<Button Content="Ok"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Width="75"
+						Margin="5"
+						Click="OnOkClicked" />
+					<Button Content="Cancel"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Width="75"
+						Margin="5"
+						Click="OnCancelClicked" />
+				</StackPanel>
+			</StackPanel>
+			<TextBlock Name="description" Margin="10,0"></TextBlock>
+		</StackPanel>
+	</StackPanel>
+</Window>

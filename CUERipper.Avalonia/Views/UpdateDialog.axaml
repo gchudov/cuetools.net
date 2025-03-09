@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CUERipper.Avalonia.UpdateDialog"
+        Title="Update available"
+        Icon="/Assets/cue2.ico"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="False">
+	<StackPanel Margin="20">
+		<StackPanel Orientation="Horizontal">
+			<TextBlock Name="textDescription" Margin="10,0" Width="800" TextWrapping="Wrap">
+				Content
+			</TextBlock>
+			<Border Width="1" Background="Gray" VerticalAlignment="Stretch" Margin="5,0" />
+			<StackPanel Orientation="Vertical" Margin="20,0,40,0">
+				<TextBlock Name="textVersion" Text="Version: X -> Y"/>
+				<TextBlock Name="textSize" Text="Size: # MiB"/>
+				<TextBlock Name="textAuthor" Text="Author: XYX"/>
+				<TextBlock Name="textDate" Text="Date: 00/00/00"/>
+				<ProgressBar Name="progressBarDownload"
+						MinWidth="0"
+						Minimum="0"
+						Maximum="100"
+						ShowProgressText="True" 
+						Margin="5"
+						Height="18"
+						IsVisible="False">
+					<ToolTip.Tip>
+						Total progress of the update being downloaded.
+					</ToolTip.Tip>
+				</ProgressBar>				
+				<StackPanel Orientation="Horizontal">
+					<Button Name="buttonInstall"
+							Content="Install"
+							HorizontalContentAlignment="Center"
+							VerticalContentAlignment="Center"
+							Width="75"
+							Margin="5"/>
+					<Button Name="buttonCancel"
+							Content="Cancel"
+							HorizontalContentAlignment="Center"
+							VerticalContentAlignment="Center"
+							Width="75"
+							Margin="5"/>
+				</StackPanel>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+</Window>

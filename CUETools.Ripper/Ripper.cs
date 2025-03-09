@@ -4,7 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using CUETools.CDImage;
 using CUETools.Codecs;
-using System.Text;
+#if NETSTANDARD2_0
+using System.Runtime.InteropServices;
+using CUETools.Interop;
+#endif
 
 namespace CUETools.Ripper
 {
@@ -33,13 +36,34 @@ namespace CUETools.Ripper
 
 	public class CDDrivesList
 	{
-		public static char[] DrivesAvailable()
+        public static char[] DrivesAvailable()
 		{
-			List<char> result = new List<char>();
-			foreach (DriveInfo info in DriveInfo.GetDrives())
-				if (info.DriveType == DriveType.CDRom)
-					result.Add(info.Name[0]);
-			return result.ToArray();
+#if NETSTANDARD2_0
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+				// DriveInfo doesn't return CD drives on linux...
+				// For now we'll use a quirky workaround!
+				var driveList = new List<char>();
+				for (int i = 0; i < 10; ++i)
+				{
+                    var path = $"{Linux.CDROM_DEVICE_PATH}{i}";
+
+					if (!Linux.PathExists(path)) break;
+					driveList.Add($"{i}"[0]);
+				}
+
+				return driveList.ToArray();
+			}
+#endif
+
+            List<char> result = new List<char>();
+            foreach (DriveInfo info in DriveInfo.GetDrives())
+            {
+                if (info.DriveType == DriveType.CDRom)
+                    result.Add(info.Name[0]);
+            }
+
+            return result.ToArray();
 		}
 	}
 
