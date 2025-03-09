@@ -264,4 +264,16 @@
   <data name="Error:MultiEncodingNotLossless" xml:space="preserve">
     <value>(MultiEncodingNotLossless) Eerste coderingsmethode moet verliesloos zijn bij het gebruik van meerdere coderingen.</value>
   </data>
+  <data name="Warning:RipInProgress" xml:space="preserve">
+    <value>De applicatie is nog bezig met rippen. Wil je het proces stoppen?</value>
+  </data>
+  <data name="Warning:CantClose" xml:space="preserve">
+    <value>Kan de applicatie niet sluiten</value>
+  </data>
+  <data name="Warning:QuestionOverwriteDestination" xml:space="preserve">
+    <value>De gekozen map is niet leeg. Deze applicatie kan de bestaande inhoud wijzigen of verwijderen. Wil je doorgaan?</value>
+  </data>
+  <data name="Warning:DirectoryExists" xml:space="preserve">
+    <value>De map bestaat al</value>
+  </data>
 </root>

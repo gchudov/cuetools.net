@@ -415,13 +415,15 @@ namespace CUERipper.Avalonia.Views
         }
 
         private void DirectoryConflictCallback(object? sender, DirectoryConflictEventArgs e)
-        {
-            var message = "The destination folder is not empty. This program will modify its contents by adding and removing files. Do you want to continue?";
-            
+        {            
             // TODO figure out how to NOT do it like this
             // https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/blob/master/AsyncGuidance.md#avoid-using-taskresult-and-taskwait            
             var result = Task.Run(() => Dispatcher.UIThread.InvokeAsync(
-                () => MessageBox.CreateDialogAsync($"Conflict: {e.Directory}", message, this, _localizer, MessageBox.MessageBoxType.YesNo)
+                () => MessageBox.CreateDialogAsync(title: _localizer["Warning:DirectoryExists"]
+                    , message: _localizer["Warning:QuestionOverwriteDestination"]
+                    , owner: this
+                    , _localizer
+                    , MessageBox.MessageBoxType.YesNo)
             )).GetAwaiter().GetResult();
 
             e.CanModifyContent = result;
@@ -594,8 +596,32 @@ namespace CUERipper.Avalonia.Views
                 .OfType<EncodingConfiguration>()
                 .ToArray();
 
-        private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
-            => _config.EncodingConfiguration = JsonConvert.SerializeObject(GetEncodingConfigurationFromTabControl());
+        private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)
+        {
+            if (_rippingTask != null && !_rippingTask.IsCompleted)
+            {
+                e.Cancel = true;
+
+                var result = await MessageBox.CreateDialogAsync(title: _localizer["Warning:CantClose"]
+                    , message: _localizer["Warning:RipInProgress"]
+                    , owner: this
+                    , _localizer
+                    , MessageBox.MessageBoxType.YesNo);
+
+                if (result)
+                {
+                    _rippingCts.Cancel();
+                    await WaitForTaskToFinishAsync();
+
+                    // Try again
+                    Close();
+                }
+            }
+            else
+            {
+                _config.EncodingConfiguration = JsonConvert.SerializeObject(GetEncodingConfigurationFromTabControl());
+            }
+        }
 
         private void OnCoverViewerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

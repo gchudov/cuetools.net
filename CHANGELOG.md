@@ -7,7 +7,7 @@ Release date: 2025-03-09
 Further information concerning installation:
 http://cue.tools/wiki/CUETools_Download
 
-**CUETools 2.2.* Changelog**
+**CUETools 2.2.- Changelog**
 
 CUERipper UI Reimplemented in Avalonia
 A brand-new application with additional functionalities:

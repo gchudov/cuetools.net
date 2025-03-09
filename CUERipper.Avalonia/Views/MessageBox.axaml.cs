@@ -22,6 +22,9 @@ using CUERipper.Avalonia.Extensions;
 using CUERipper.Avalonia.ViewModels;
 using Microsoft.Extensions.Localization;
 using System.Threading.Tasks;
+#if NET47
+using System.Media;
+#endif
 
 namespace CUERipper.Avalonia.Views;
 
@@ -123,6 +126,17 @@ Vestibulum sed odio nibh."
 
         messageBox.SetMessage(message);
         messageBox.SetType(type, localizer);
+
+#if NET47
+        try
+        {
+            SystemSounds.Exclamation.Play();
+        }
+        catch
+        {
+            // Continue.
+        }
+#endif
 
         await messageBox.ShowDialog(owner, lockParent: true);
 

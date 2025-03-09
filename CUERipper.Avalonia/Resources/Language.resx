@@ -264,4 +264,16 @@
   <data name="Error:MultiEncodingNotLossless" xml:space="preserve">
     <value>(MultiEncodingNotLossless) First encoder must be lossless when using multiple encoders.</value>
   </data>
+  <data name="Warning:RipInProgress" xml:space="preserve">
+    <value>The application is still ripping. Do you want to cancel the process?</value>
+  </data>
+  <data name="Warning:CantClose" xml:space="preserve">
+    <value>Can't close the application</value>
+  </data>
+  <data name="Warning:QuestionOverwriteDestination" xml:space="preserve">
+    <value>The destination folder is not empty. This application will modify its contents by adding and removing files. Do you want to continue?</value>
+  </data>
+  <data name="Warning:DirectoryExists" xml:space="preserve">
+    <value>The directory already exists</value>
+  </data>
 </root>

@@ -40,12 +40,14 @@
 			</StackPanel>
 			
 			<StackPanel Grid.Row="0" Grid.Column="1" Margin="0,7,7,0">
-				<ComboBox Name="comboBoxDiscDrives" 
+				<ComboBox Name="comboBoxDiscDrives"
+						AutomationProperties.Name="Disc drives"
 						ItemsSource="{Binding DiscDrives}"
 						SelectedItem="{Binding SelectedDrive}"
 						HorizontalAlignment="Stretch"
 						Margin="5,5"/>
-				<ComboBox Name="comboBoxAlbumReleases" 
+				<ComboBox Name="comboBoxAlbumReleases"
+						AutomationProperties.Name="Album releases"
 						ItemsSource="{Binding AlbumReleases}"
 						SelectedItem="{Binding SelectedAlbum}"
 						HorizontalAlignment="Stretch"
@@ -133,14 +135,25 @@
 							</ToolTip.Tip>
 						</ProgressBar>					
 					</StackPanel>
-					<Button Name="buttonGo" Content="Start" HorizontalContentAlignment="Center" Width="68" Background="Transparent"/>
-					<Button Name="buttonAbort" Content="Cancel" HorizontalContentAlignment="Center" Width="68" Background="Transparent"/>				
+					<Button Name="buttonGo"
+							AutomationProperties.Name="Start ripping"
+							Content="Start" 
+							HorizontalContentAlignment="Center" 
+							Width="68" 
+							Background="Transparent"/>
+					<Button Name="buttonAbort" 
+							AutomationProperties.Name="Stop ripping"
+							Content="Cancel"
+							HorizontalContentAlignment="Center"
+							Width="68"
+							Background="Transparent"/>				
 				</StackPanel>
 			</Grid>
 		</Grid>
 		<SplitView.Pane>
 			<StackPanel>
 				<Button Name="buttonTogglePane" 
+						AutomationProperties.Name="Toggle advanced view"
 						Content="&lt;" 
 						Margin="5,13,0,5" 
 						Background="Transparent">
@@ -148,24 +161,27 @@
 						Show/hide an advanced view of the current drive and ripping information.
 					</ToolTip.Tip>
 				</Button>
-				<StackPanel Margin="38,-41,38,0">
+				<StackPanel Margin="38,-41,38,0" IsEnabled="{Binding SplitPaneOpen}">
 					<Grid ColumnDefinitions="* Auto Auto" RowDefinitions="Auto Auto">
 						<ComboBox Name="comboBoxDiscDrivesSidePane"
-									ItemsSource="{Binding DiscDrives}"
-									SelectedItem="{Binding SelectedDrive}"
-									HorizontalAlignment="Stretch"
-									Margin="5,5"
-									Grid.Row="0"
-									Grid.Column="0"/>
+							AutomationProperties.Name="Disc drives"
+							ItemsSource="{Binding DiscDrives}"
+							SelectedItem="{Binding SelectedDrive}"
+							HorizontalAlignment="Stretch"
+							Margin="5,5"
+							Grid.Row="0"
+							Grid.Column="0"/>
 						<Button Name="buttonRefreshDrives"
-								Grid.Row="0"
-								Grid.Column="1"
-								Background="Transparent">
+							AutomationProperties.Name="Refresh disc drives"
+							Grid.Row="0"
+							Grid.Column="1"
+							Background="Transparent">
 							<ToolTip.Tip>
 								Refreshes the list of disc drives and the content of the inserted disc.
 							</ToolTip.Tip>
 						</Button>
 						<Button Name="buttonEject"
+								AutomationProperties.Name="Eject disc"
 								Grid.Row="0"
 								Grid.Column="2"
 								Background="Transparent">
@@ -174,6 +190,7 @@
 							</ToolTip.Tip>
 						</Button>
 						<ComboBox Name="comboBoxAlbumReleasesSidePane"
+								AutomationProperties.Name="Album releases"
 								ItemsSource="{Binding AlbumReleases}"
 								SelectedItem="{Binding SelectedAlbum}"
 								HorizontalAlignment="Stretch"
@@ -196,6 +213,7 @@
 							</ComboBox.ItemsPanel>
 						</ComboBox>						
 						<Button Name="buttonAdvancedSearch"
+								AutomationProperties.Name="Advanced album search"
 								Grid.Row="1"
 								Grid.Column="1"
 								Background="Transparent">
@@ -204,6 +222,7 @@
 							</ToolTip.Tip>
 						</Button>
 						<Button Name="buttonResetSearch"
+								AutomationProperties.Name="Reset album search"
 								Grid.Row="1"
 								Grid.Column="2"
 								Background="Transparent">
@@ -216,8 +235,15 @@
 					<Separator Margin="0, 25, 0, 10" Opacity="0.1"/>
 
 					<TabControl Name="tabControlEncoding" Padding="0">
-						<TabItem Name="tabItemEncodingAdd" Header="+" FontSize="20" />
-						<TabItem Name="tabItemEncodingRemove" Header="-" FontSize="20" IsEnabled="False"/>
+						<TabItem Name="tabItemEncodingAdd"
+								 AutomationProperties.Name="Add album encoding"
+								 Header="+" 
+								 FontSize="20" />
+						<TabItem Name="tabItemEncodingRemove" 
+								 AutomationProperties.Name="Remove last album encoding"
+								 Header="-" 
+								 FontSize="20" 
+								 IsEnabled="False"/>
 					</TabControl>
 
 					<Separator Margin="0, 25" Opacity="0.1"/>
@@ -240,6 +266,7 @@
 
 						<Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
 							Name="buttonPathFormat"
+							AutomationProperties.Name="Open path format window"
 							Content="{Binding OutputPath}"
 							Margin="5,0,0,5" 
 							HorizontalAlignment="Stretch" 
@@ -286,8 +313,16 @@
 
 						<StackPanel Grid.Row="1" Grid.Column="2" Grid.RowSpan="2"
 								Orientation="Horizontal">
-							<Button Name="buttonGoSidePane" Content="Start" Width="68" HorizontalContentAlignment="Center"/>
-							<Button Name="buttonAbortSidePane" Content="Cancel" Width="68" HorizontalContentAlignment="Center"/>
+							<Button Name="buttonGoSidePane" 
+									AutomationProperties.Name="Start ripping"
+									Content="Start" 
+									Width="68" 
+									HorizontalContentAlignment="Center"/>
+							<Button Name="buttonAbortSidePane"
+									AutomationProperties.Name="Stop ripping"
+									Content="Cancel" 
+									Width="68" 
+									HorizontalContentAlignment="Center"/>
 						</StackPanel>
 					</Grid>
 				</StackPanel>
