@@ -240,6 +240,14 @@ namespace CUETools.Codecs.libFLAC
                     throw new Exception("encountered a corrupted frame header");
                 case FLAC__StreamDecoderErrorStatus.FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
                     throw new Exception("frame CRC mismatch");
+                case FLAC__StreamDecoderErrorStatus.FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM:
+                    throw new Exception("unparseable stream");
+                case FLAC__StreamDecoderErrorStatus.FLAC__STREAM_DECODER_ERROR_STATUS_BAD_METADATA:
+                    throw new Exception("corrupted metadata block");
+                case FLAC__StreamDecoderErrorStatus.FLAC__STREAM_DECODER_ERROR_STATUS_OUT_OF_BOUNDS:
+                    throw new Exception("out of bounds");
+                case FLAC__StreamDecoderErrorStatus.FLAC__STREAM_DECODER_ERROR_STATUS_MISSING_FRAME:
+                    throw new Exception("missing frame");
                 default:
                     throw new Exception("an unknown error has occurred");
             }
