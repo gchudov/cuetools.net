@@ -1,4 +1,4 @@
-Release date: 2024-06-28
+Release date: 2025-03-09
 
 **Version 2.2.6 Prerequisites**
 - Microsoft .NET Framework 4.7  - preinstalled in Windows 10 (since version 1703)
@@ -7,25 +7,18 @@ Release date: 2024-06-28
 Further information concerning installation:
 http://cue.tools/wiki/CUETools_Download
 
-**CUETools 2.2.6 Changelog**
+**CUETools 2.2.* Changelog**
 
-- Update MAC_SDK from 10.37 to 10.74
-- EACPlugin: Allow coverart search to be stopped
-- Fix C2 mode for further drives:
-  LG GH24NSD5, LITEON DH-20A4P
-- Preserve encoding of localized EAC log files
-- Add setting for UTF-8-BOM
-  settings.txt: WriteUTF8BOM
-  The setting is enabled by default, to preserve previous behavior
-- CUETools, Correct filenames: Support UTF-8
-- CUERipper: Fix incorrect TOC entry of first track
-- CUERipper: Add setting to force ReadCDCommand
-  settings.txt: 0 (ReadCdBEh), 1 (ReadCdD8h), 2 (Unknown/AutoDetect)
-  Default: 2
-- Add WavPack 5.7.0 encoder multithreading support
-- Update WavPack from 5.6.0 to 5.7.0
-- Avoid short HTOA files
-- CUERipper: Detect too large album art earlier
+CUERipper UI Reimplemented in Avalonia
+A brand-new application with additional functionalities:
+- Album cover selector – Choose which album cover to embed.
+- Output path management – Customize where ripped files are saved.
+- Multi-encoding – Encode tracks in multiple formats simultaneously.
+- Automatic ripping – Enables bulk ripping with no user input unless an error is detected.
+- Repair functionality – Same as in CUETools, for fixing errors in a rip.
+- Minimal native Linux support – Early compatibility for Linux users (no automated builds yet).
+- Track progress – Displays per-track ripping progress.
+- In-app updater – Update the application directly via GitHub, without manual downloads.
 
 **Links to ffmpeg dlls (from [v2.2.5](https://github.com/gchudov/cuetools.net/releases/tag/v2.2.5)):**
 - [ffmpeg_6.1_dlls_win32.zip](https://github.com/gchudov/cuetools.net/releases/download/v2.2.5/ffmpeg_6.1_dlls_win32.zip)
