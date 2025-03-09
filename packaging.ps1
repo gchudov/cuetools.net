@@ -15,12 +15,21 @@ Write-Output "Detected CUETools version: $version"
 
 $eacZip = "CUETools.CTDB.EACPlugin.$version.zip"
 $cuetoolsZip = "CUETools_$version.zip"
+$cuetoolsLiteZip = "CUETools.Lite_$version.zip"
 
 Write-Output "Creating EAC Zip"
 Compress-Archive -Path bin/Release/$($cueToolsDir.Name)/interop/ -DestinationPath $eacZip -Force
 
 Write-Output "Creating CUETools Zip"
 Compress-Archive -Path bin/Release/$($cueToolsDir.Name)/ -DestinationPath $cuetoolsZip -Force
+
+$cuetoolsLiteFolder = "bin/Release/CUETools.Lite_$version/"
+if (Test-Path $cuetoolsLiteFolder) {
+    Write-Output "Creating CUETools Lite Zip"
+    Compress-Archive -Path $cuetoolsLiteFolder -DestinationPath $cuetoolsLiteZip -Force
+} else {
+    Write-Output "CUETools.Lite_$version not found, skip packaging."
+}
 
 # Generate a hashfile using the same format as previous releases
 Write-Output "Generating SHA256 hashes..."
@@ -29,5 +38,10 @@ $eacHash = (Get-FileHash $eacZip -Algorithm SHA256).Hash.ToLower()
 
 $cuetoolsHash = (Get-FileHash $cuetoolsZip -Algorithm SHA256).Hash.ToLower()
 "$cuetoolsHash *$cuetoolsZip" | Out-File -Encoding ASCII "$cuetoolsZip.sha256"
+
+if (Test-Path $cuetoolsLiteFolder) {
+    $cuetoolsLiteHash = (Get-FileHash $cuetoolsLiteZip -Algorithm SHA256).Hash.ToLower()
+    "$cuetoolsLiteHash *$cuetoolsLiteZip" | Out-File -Encoding ASCII "$cuetoolsLiteZip.sha256"
+}
 
 Write-Output "Packaging complete."

@@ -17,7 +17,6 @@
 */
 #endregion
 
-#if false
 // The implementation in NullDriveNotificationService doesn't function correctly on .NET 8 under Linux.
 // As a temporary solution, I've implemented a quick workaround to ensure the drive notification works.
 // Further investigation needed...
@@ -154,4 +153,3 @@ namespace CUERipper.Avalonia.Services
         }
     }
 }
-#endif

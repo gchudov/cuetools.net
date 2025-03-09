@@ -97,10 +97,8 @@ namespace CUERipper.Avalonia
 
             if (OS.IsWindows())
                 services.AddSingleton<IDriveNotificationService, WindowsDriveNotificationService>();
-#if false
             else if(OS.IsLinux())
                 services.AddSingleton<IDriveNotificationService, LinuxDriveNotificationService>();
-#endif
             else
                 services.AddSingleton<IDriveNotificationService, NullDriveNotificationService>();
 

@@ -42,7 +42,7 @@ namespace CUERipper.Avalonia
         ];
         public const int MaxPathFormats = 10; // Based on the original CUERipper limit
 
-        public readonly static string ApplicationName = $"CUERipper.Avalonia {CUESheet.CUEToolsVersion}";
+        public const string ApplicationName = $"CUERipper.Avalonia {CUESheet.CUEToolsVersion}";
 
         public const string PathNoto = "avares://CUERipper.Avalonia/Assets/noto-emoji/32/";
         public const string PathImageCache = "./CUERipper/.AlbumCache/";

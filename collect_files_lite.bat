@@ -8,7 +8,7 @@ pushd %~dp0
 SET base_dir=.
 
 REM Get version of CUETools
-for /f "tokens=7 delims= " %%a in ('find "CUEToolsVersion =" %base_dir%\CUETools.Processor\CUESheet.cs') do set PRODUCTVER=%%a
+for /f "tokens=6 delims= " %%a in ('find "CUEToolsVersion =" %base_dir%\CUETools.Processor\CUESheet.cs') do set PRODUCTVER=%%a
 REM echo %PRODUCTVER%
 REM "2.1.7";
 

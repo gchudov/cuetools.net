@@ -53,12 +53,15 @@ jobs:
       - name: Collect files
         run: |
           collect_files.bat
+      - name: Collect files (Lite)
+        run: |
+          collect_files_lite.bat
       - name: Package files
         run: pwsh -File ./packaging.ps1          
       - name: Get CUETools Version
         id: get_version
         run: |
-          for /f "tokens=7 delims= " %%a in ('find "CUEToolsVersion =" .\CUETools.Processor\CUESheet.cs') do set PRODUCTVER=%%a
+          for /f "tokens=6 delims= " %%a in ('find "CUEToolsVersion =" .\CUETools.Processor\CUESheet.cs') do set PRODUCTVER=%%a
           set PRODUCTVER=%PRODUCTVER:"=%
           set PRODUCTVER=%PRODUCTVER:;=%
           echo CUETools version: %PRODUCTVER%
@@ -75,5 +78,7 @@ jobs:
           files: |
             CUETools_${{ env.CUETOOLS_VERSION }}.zip
             CUETools_${{ env.CUETOOLS_VERSION }}.zip.sha256
+            CUETools.Lite_${{ env.CUETOOLS_VERSION }}.zip
+            CUETools.Lite_${{ env.CUETOOLS_VERSION }}.zip.sha256
             CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip
             CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip.sha256

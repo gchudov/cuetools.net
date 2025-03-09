@@ -48,6 +48,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
+    <ProjectReference Include="..\CUETools.Interop\CUETools.Interop.csproj" />
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj" />
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
   </ItemGroup>	
