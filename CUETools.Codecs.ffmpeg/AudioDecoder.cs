@@ -264,13 +264,10 @@ namespace CUETools.Codecs.ffmpegdll
 
             set
             {
-                throw new NotSupportedException();
-                //_bufferOffset = 0;
-                //_bufferLength = 0;
-                //_sampleOffset = value;
-                //int res = MACLibDll.c_APEDecompress_Seek(pAPEDecompress, (int)value);
-                //if (0 != res)
-                //    throw new Exception("unable to seek:" + res.ToString());
+                _sampleOffset = value;
+                int res = ffmpeg.av_seek_frame(fmt_ctx, stream->index, _sampleOffset, ffmpeg.AVSEEK_FLAG_FRAME);
+                if (0 != res)
+                    throw new Exception("unable to seek:" + res.ToString());
             }
         }
 
