@@ -68,6 +68,7 @@ namespace CUERipper.Avalonia.Configuration
         public bool CreateEACLog { get => _cueConfig.createEACLOG; set => _cueConfig.createEACLOG = value; }
         public bool CreateM3U { get => _cueConfig.createM3U; set => _cueConfig.createM3U = value; }
         public bool EmbedAlbumArt { get => _cueConfig.embedAlbumArt; set => _cueConfig.embedAlbumArt = value; }
+        public int MaxAlbumArtSize { get => _cueConfig.maxAlbumArtSize; set => _cueConfig.maxAlbumArtSize = value; }
         public bool EjectAfterRip { get => _cueConfig.ejectAfterRip; set => _cueConfig.ejectAfterRip = value; }
         public bool DisableEjectDisc { get => _cueConfig.disableEjectDisc; set => _cueConfig.disableEjectDisc = value; }
         public string TrackFilenameFormat { get => _cueConfig.trackFilenameFormat; set => _cueConfig.trackFilenameFormat = value; }

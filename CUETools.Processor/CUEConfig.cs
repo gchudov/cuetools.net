@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Xml;
 using CUETools.Codecs;
 using CUETools.Processor.Settings;
 using Newtonsoft.Json;
@@ -14,6 +13,13 @@ namespace CUETools.Processor
 {
     public class CUEConfig
     {
+        public static class Constants
+        {
+            public const int MaxAlbumArtSize = 300;
+            public const int MaxAlbumArtSizeLowerBound = 100;
+            public const int MaxAlbumArtSizeUpperBound = 10000;
+        }
+
         public uint fixOffsetMinimumConfidence;
         public uint fixOffsetMinimumTracksPercent;
         public uint encodeWhenConfidence;
@@ -138,7 +144,7 @@ namespace CUETools.Processor
             CopyAlbumArt = true;
             embedAlbumArt = true;
             extractAlbumArt = true;
-            maxAlbumArtSize = 300;
+            maxAlbumArtSize = Constants.MaxAlbumArtSize;
 
             arLogToSourceFolder = false;
             arLogVerbose = true;
@@ -425,7 +431,8 @@ namespace CUETools.Processor
             CopyAlbumArt = sr.LoadBoolean("CopyAlbumArt") ?? true;
             embedAlbumArt = sr.LoadBoolean("EmbedAlbumArt") ?? true;
             extractAlbumArt = sr.LoadBoolean("ExtractAlbumArt") ?? true;
-            maxAlbumArtSize = sr.LoadInt32("MaxAlbumArtSize", 100, 10000) ?? maxAlbumArtSize;
+            maxAlbumArtSize = sr.LoadInt32("MaxAlbumArtSize", Constants.MaxAlbumArtSizeLowerBound, Constants.MaxAlbumArtSizeUpperBound)
+                ?? maxAlbumArtSize;
 
             arLogToSourceFolder = sr.LoadBoolean("ArLogToSourceFolder") ?? arLogToSourceFolder;
             arLogVerbose = sr.LoadBoolean("ArLogVerbose") ?? arLogVerbose;

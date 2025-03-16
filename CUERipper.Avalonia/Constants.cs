@@ -41,18 +41,19 @@ namespace CUERipper.Avalonia
             $"%music%/%artist%/[%year% - ]%album%[ '('disc %discnumberandname%')'][' ('%releasedateandlabel%')'][' ('%unique%')']/%artist% - %album%{CueExtension}"
         ];
         public const int MaxPathFormats = 10; // Based on the original CUERipper limit
-
+        
         public const string ApplicationName = $"CUERipper.Avalonia {CUESheet.CUEToolsVersion}";
 
         public const string PathNoto = "avares://CUERipper.Avalonia/Assets/noto-emoji/32/";
         public const string PathImageCache = "./CUERipper/.AlbumCache/";
         public const string PathUpdate = "./.cueupdate/";
 
-        public const int EmbeddedImageMaxDimension = 500;
         public const int HiResImageMaxDimension = 2048;
 
         public const string GithubApiUri = "https://api.github.com/repos/gchudov/cuetools.net/releases";
         public const string UserAgent = "Mozilla/5.0";
         public const string UpdaterExecutable = "CUETools.Updater.exe";
+
+        public const int MaxCoverFetchConcurrency = 4;
     }
 }

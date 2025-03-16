@@ -16,6 +16,7 @@
     with this program; if not, see <https://www.gnu.org/licenses/>.
 */
 #endregion
+using CUERipper.Avalonia.Compatibility;
 using CUERipper.Avalonia.Utilities;
 using CUERipper.Avalonia.ViewModels.Bindings.OptionProxies.Abstractions;
 
@@ -23,9 +24,19 @@ namespace CUERipper.Avalonia.ViewModels.Bindings.OptionProxies
 {
     public class IntOptionProxy : OptionProxy<int>
     {
+        private readonly int? _minValue;
+        private readonly int? _maxValue;
+
         public IntOptionProxy(string name, int defaultValue, Accessor<int> accessor)
             : base(name, defaultValue, accessor)
         {
+        }
+
+        public IntOptionProxy(string name, int defaultValue, int minValue, int maxValue, Accessor<int> accessor)
+            : base(name, defaultValue, accessor)
+        {
+            _minValue = minValue;
+            _maxValue = maxValue;
         }
 
         protected override string GetStringFromValue(int val)
@@ -33,5 +44,10 @@ namespace CUERipper.Avalonia.ViewModels.Bindings.OptionProxies
 
         protected override int GetValueFromString(string str)
             => int.TryParse(str, out int result) ? result : Default;
+
+        protected override int ContainWithinRange(int val)
+            => _minValue != null && _maxValue != null
+                ? MathClamp.Clamp(val, _minValue.Value, _maxValue.Value)
+                : val;
     }
 }

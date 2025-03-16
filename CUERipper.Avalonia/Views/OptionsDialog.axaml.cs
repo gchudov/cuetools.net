@@ -69,6 +69,11 @@ public partial class OptionsDialog : Window
                 , new(() => Config.CreateM3U))
             , new BoolOptionProxy("Embed album art", true
                 , new(() => Config.EmbedAlbumArt))
+            , new IntOptionProxy("Max album art size"
+                , defaultValue: CUEConfig.Constants.MaxAlbumArtSize
+                , minValue: CUEConfig.Constants.MaxAlbumArtSizeLowerBound
+                , maxValue: CUEConfig.Constants.MaxAlbumArtSizeUpperBound
+                , new(() => Config.MaxAlbumArtSize))
             , new BoolOptionProxy("Eject after rip", false
                 , new(() => Config.EjectAfterRip))
             , new BoolOptionProxy("Disable eject disc", true
@@ -86,7 +91,10 @@ public partial class OptionsDialog : Window
                 , new(() => Config.UseProxyMode))
             , new StringOptionProxy("Host", "127.0.0.1"
                 , new(() => Config.ProxyServer))
-            , new IntOptionProxy("Port", 8080
+            , new IntOptionProxy("Port"
+                , defaultValue: 8080
+                , minValue: 0
+                , maxValue: 65535
                 , new(() => Config.ProxyPort))
             , new StringOptionProxy("Auth user", string.Empty
                 , new(() => Config.ProxyUser))

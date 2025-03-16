@@ -35,6 +35,7 @@ namespace CUERipper.Avalonia.ViewModels.Bindings.OptionProxies.Abstractions
 
         protected abstract string GetStringFromValue(T val);
         protected abstract T GetValueFromString(string str);
+        protected virtual T ContainWithinRange(T value) => value;
 
         private string _viewValue = string.Empty;
         public string Value
@@ -57,11 +58,13 @@ namespace CUERipper.Avalonia.ViewModels.Bindings.OptionProxies.Abstractions
             set
             {
                 if (value == null || IsReadOnly) return;
-                _viewValue = value;
 
                 try
                 {
-                    T actualValue = GetValueFromString(_viewValue);
+                    T actualValue = GetValueFromString(value);
+                    actualValue = ContainWithinRange(actualValue);
+
+                    _viewValue = GetStringFromValue(actualValue);
                     Accessor.Set(actualValue);
                 }
                 catch (TypeInitializationException ex)

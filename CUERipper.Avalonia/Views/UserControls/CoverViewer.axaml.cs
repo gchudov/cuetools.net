@@ -76,26 +76,35 @@ public sealed partial class CoverViewer : UserControl, IDisposable
 
         _thumbnailJob.Run(async (CancellationToken ct) =>
         {
-            foreach (var cover in albumCovers)
+            using var semaphore = new SemaphoreSlim(Constants.MaxCoverFetchConcurrency);
+            await Task.WhenAll(albumCovers.Select(async cover =>
             {
-                var bitmap = await _metaService.FetchImageAsync(cover.Uri150, ct);
-                if (ct.IsCancellationRequested) break;
-
-                if (bitmap != null)
+                await semaphore.WaitAsync(ct);
+                try
                 {
-                    cover.Bitmap150 = bitmap;
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        if (ViewModel.AlbumCovers.None())
-                        {
-                            cover.IsSelected = true;
-                            ViewModel.CurrentCover = cover.Bitmap150;
-                        }
+                    var bitmap = await _metaService.FetchImageAsync(cover.Uri150, ct);
+                    if (ct.IsCancellationRequested) return;
 
-                        ViewModel.AlbumCovers.Add(cover);
-                    });
+                    if (bitmap != null)
+                    {
+                        cover.Bitmap150 = bitmap;
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (ViewModel.AlbumCovers.None())
+                            {
+                                cover.IsSelected = true;
+                                ViewModel.CurrentCover = cover.Bitmap150;
+                            }
+
+                            ViewModel.AlbumCovers.Add(cover);
+                        });
+                    }
                 }
-            }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }));
         });
     }
 

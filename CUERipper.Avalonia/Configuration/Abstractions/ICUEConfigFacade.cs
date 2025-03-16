@@ -57,6 +57,7 @@ namespace CUERipper.Avalonia.Configuration.Abstractions
         bool CreateEACLog { get; set; }
         bool CreateM3U { get; set; }
         bool EmbedAlbumArt { get; set; }
+        int MaxAlbumArtSize { get; set; }
         bool EjectAfterRip { get; set; }
         bool DisableEjectDisc { get; set; }
         string TrackFilenameFormat { get; set; }

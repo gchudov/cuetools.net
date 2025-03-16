@@ -407,10 +407,10 @@ namespace CUERipper.Avalonia.Services
                 if (albumCover != null)
                 {
                     Bitmap? embeddedArtwork = null; 
-                    if (albumCover.PixelSize.Width > Constants.EmbeddedImageMaxDimension
-                        || albumCover.PixelSize.Height > Constants.EmbeddedImageMaxDimension)
+                    if (albumCover.PixelSize.Width > _config.MaxAlbumArtSize
+                        || albumCover.PixelSize.Height > _config.MaxAlbumArtSize)
                     {
-                        embeddedArtwork = albumCover.ContainedResize(Constants.EmbeddedImageMaxDimension);
+                        embeddedArtwork = albumCover.ContainedResize(_config.MaxAlbumArtSize);
                     }
 
                     byte[] byteArray = [];
