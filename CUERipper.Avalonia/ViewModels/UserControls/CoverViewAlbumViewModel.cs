@@ -26,6 +26,8 @@ namespace CUERipper.Avalonia.ViewModels.UserControls
     {
         public string Uri { get; set; }
         public string Uri150 { get; set; }
+        public bool IsPrimary { get; set; }
+
         public Bitmap? Bitmap150 { get; set; }
 
         private bool _isSelected;
@@ -42,10 +44,11 @@ namespace CUERipper.Avalonia.ViewModels.UserControls
         [ObservableProperty]
         private string borderColor = "Transparent";
 
-        public CoverViewAlbumViewModel(string uri, string uri150)
+        public CoverViewAlbumViewModel(string uri, string uri150, bool isPrimary)
         {
             Uri = uri;
             Uri150 = uri150;
+            IsPrimary = isPrimary;
         }
 
         public bool Equals(CoverViewAlbumViewModel? other)

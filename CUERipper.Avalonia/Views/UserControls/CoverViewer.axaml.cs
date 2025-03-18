@@ -66,45 +66,58 @@ public sealed partial class CoverViewer : UserControl, IDisposable
         
         ClearCovers();
 
-        var albumCovers = _metaService.GetAlbumMetaInformation(false)
+        var unorderedCovers = _metaService.GetAlbumMetaInformation(false)
             .SelectMany(x => x.Data.AlbumArt)
             .Where(x => !string.IsNullOrWhiteSpace(x.uri) || !string.IsNullOrWhiteSpace(x.uri150))
             .Select(x => new CoverViewAlbumViewModel(!string.IsNullOrWhiteSpace(x.uri) ? x.uri : x.uri150
-                , !string.IsNullOrWhiteSpace(x.uri150) ? x.uri150 : x.uri))
+                , !string.IsNullOrWhiteSpace(x.uri150) ? x.uri150 : x.uri
+                , x.primary)
+            )
             .Distinct()
             .ToArray();
+
+        var orderedCovers = new[] 
+        { 
+            // Primary artwork (Front cover)
+            unorderedCovers.Where(x => x.IsPrimary)
+            // Secondary artwork (Photo of CD, back cover, etc.)
+            , unorderedCovers.Where(x => !x.IsPrimary) 
+        };
 
         _thumbnailJob.Run(async (CancellationToken ct) =>
         {
             using var semaphore = new SemaphoreSlim(Constants.MaxCoverFetchConcurrency);
-            await Task.WhenAll(albumCovers.Select(async cover =>
+            foreach (var albumCovers in orderedCovers)
             {
-                await semaphore.WaitAsync(ct);
-                try
+                await Task.WhenAll(albumCovers.Select(async cover =>
                 {
-                    var bitmap = await _metaService.FetchImageAsync(cover.Uri150, ct);
-                    if (ct.IsCancellationRequested) return;
-
-                    if (bitmap != null)
+                    await semaphore.WaitAsync(ct);
+                    try
                     {
-                        cover.Bitmap150 = bitmap;
-                        Dispatcher.UIThread.Post(() =>
-                        {
-                            if (ViewModel.AlbumCovers.None())
-                            {
-                                cover.IsSelected = true;
-                                ViewModel.CurrentCover = cover.Bitmap150;
-                            }
+                        var bitmap = await _metaService.FetchImageAsync(cover.Uri150, ct);
+                        if (ct.IsCancellationRequested) return;
 
-                            ViewModel.AlbumCovers.Add(cover);
-                        });
+                        if (bitmap != null)
+                        {
+                            cover.Bitmap150 = bitmap;
+                            Dispatcher.UIThread.Post(() =>
+                            {
+                                if (ViewModel.AlbumCovers.None())
+                                {
+                                    cover.IsSelected = true;
+                                    ViewModel.CurrentCover = cover.Bitmap150;
+                                }
+
+                                ViewModel.AlbumCovers.Add(cover);
+                            });
+                        }
                     }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }));
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }));
+            }
         });
     }
 
