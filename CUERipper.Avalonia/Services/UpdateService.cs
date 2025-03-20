@@ -1,4 +1,5 @@
-﻿using CUERipper.Avalonia.Events;
+﻿using CUERipper.Avalonia.Configuration.Abstractions;
+using CUERipper.Avalonia.Events;
 using CUERipper.Avalonia.Models;
 using CUERipper.Avalonia.Models.Github;
 using CUERipper.Avalonia.Services.Abstractions;
@@ -22,14 +23,17 @@ namespace CUERipper.Avalonia.Services
         private const string UpdateCheckFilePath = "CT_LAST_UPDATE_CHECK";
 
         private readonly HttpClient _httpClient;
+        private readonly ICUEConfigFacade _config;
         private readonly ILogger _logger;
 
         public UpdateMetadata? UpdateMetadata { get; private set; }
 
         public UpdateService(HttpClient httpClient
+            , ICUEConfigFacade config
             , ILogger<UpdateService> logger)
         {
             _httpClient = httpClient;
+            _config = config;
             _logger = logger;
         }
 
@@ -42,8 +46,13 @@ namespace CUERipper.Avalonia.Services
                 return false;
             }
 #endif
-
             if (UpdateMetadata != null) return true;
+
+            if (!_config.CheckForUpdates)
+            {
+                _logger.LogWarning("Skip checking for updates.");
+                return false;
+            }
 
             var latestRelease = await GetLatestReleaseAsync();
             if (latestRelease.Content == null)

@@ -106,6 +106,8 @@ public partial class OptionsDialog : Window
         new ObservableCollection<IOptionProxy> {
             new StringOptionProxy("Freedb site address", "gnudb.gnudb.org"
                 , new(() => Config.FreedbSiteAddress))
+            , new BoolOptionProxy("Check for updates", true
+                , new(() => Config.CheckForUpdates))
         }.MoveAll(ViewModel.VariousOptions);
     }
 

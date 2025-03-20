@@ -21,7 +21,7 @@ LicenseFile=License.txt
 PrivilegesRequiredOverridesAllowed=dialog
 
 [Files]
-Source: "bin\Release\CUETools_{#CUETOOLS_VERSION}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+Source: "bin\Release\CUETools_{#CUETOOLS_VERSION}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs replacesameversion
 Source: "License.txt"; DestDir: "{app}"; Flags: onlyifdoesntexist
 
 [Icons]

@@ -73,6 +73,7 @@ namespace CUERipper.Avalonia.Configuration.Abstractions
 
         // Various options
         string FreedbSiteAddress { get; set; }
+        bool CheckForUpdates { get; set; }
 
         // UI
         int CUEStyleIndex { get; set; }

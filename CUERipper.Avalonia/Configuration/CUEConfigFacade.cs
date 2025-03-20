@@ -84,6 +84,7 @@ namespace CUERipper.Avalonia.Configuration
 
         // Various options
         public string FreedbSiteAddress { get => _cueConfig.advanced.FreedbSiteAddress; set => _cueConfig.advanced.FreedbSiteAddress = value; }
+        public bool CheckForUpdates { get => _cueConfig.advanced.CheckForUpdates; set => _cueConfig.advanced.CheckForUpdates = value; }
 
         // UI
         public int CUEStyleIndex { get; set; } = 0;
