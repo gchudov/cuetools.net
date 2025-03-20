@@ -52,7 +52,7 @@ namespace CUERipper.Avalonia.Services
                 return false;
             }
 
-            string versionPattern = @"^v\d+\.\d+\.\d+$";
+            string versionPattern = @"^v\d+\.\d+\.\d+[a-zA-Z]?$";
             Regex regex = new(versionPattern);
             if (!regex.IsMatch(latestRelease.Content.TagName))
             {
@@ -189,7 +189,7 @@ namespace CUERipper.Avalonia.Services
 
         private static GithubAsset? GetSetupAsset(GithubRelease latestRelease)
         {
-            const string EXE_PATTERN = @"^CUETools_Setup_\d+\.\d+\.\d+\.exe";
+            const string EXE_PATTERN = @"^CUETools_Setup_\d+\.\d+\.\d+[a-zA-Z]?\.exe";
             Regex regex = new(EXE_PATTERN);
 
             return latestRelease.Assets
@@ -199,7 +199,7 @@ namespace CUERipper.Avalonia.Services
 
         private static GithubAsset? GetHashAsset(GithubRelease latestRelease)
         {
-            const string HASH_PATTERN = @"^CUETools_Setup_\d+\.\d+\.\d+\.exe.sha256$";
+            const string HASH_PATTERN = @"^CUETools_Setup_\d+\.\d+\.\d+[a-zA-Z]?\.exe\.sha256$";
             Regex regex = new(HASH_PATTERN);
 
             return latestRelease.Assets

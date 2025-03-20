@@ -1,8 +1,8 @@
 $ErrorActionPreference = "Stop"
 
 $cueToolsDirectories = Get-ChildItem -Path "bin/Release/CUETools_*" -Directory | 
-    Where-Object { $_.Name -match "CUETools_(\d+\.\d+\.\d+)" } |
-    Sort-Object { [version]($matches[1]) } -Descending
+    Where-Object { $_.Name -match "CUETools_(\d+\.\d+\.\d+[a-zA-Z]?)" } |
+    Sort-Object -Descending	
 
 if (-not $cueToolsDirectories) {
     Write-Error "No CUETools_* directories found!"
