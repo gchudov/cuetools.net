@@ -51,6 +51,7 @@ namespace CUERipper.Avalonia.ViewModels.UserControls
         partial void OnSelectedC2ErrorModeChanged(string? oldValue, string newValue)
         {
             if (string.Compare(oldValue, newValue) == 0) return;
+            if (!_ripperService.IsDriveAccessible()) return; 
 
             int index = C2ErrorMode.IndexOf(newValue);
 
@@ -80,6 +81,7 @@ namespace CUERipper.Avalonia.ViewModels.UserControls
         partial void OnDriveOffsetChanged(int oldValue, int newValue)
         {
             if (oldValue == newValue) return;
+            if (!_ripperService.IsDriveAccessible()) return;
 
             if (_config.DriveOffsets.ContainsKey(_ripperService.GetDriveARName()))
             {
@@ -104,13 +106,21 @@ namespace CUERipper.Avalonia.ViewModels.UserControls
             _localizer = localizer;
 
             _ripperService.OnSelectedDriveChanged += (object? sender, DriveChangedEventArgs e) => {
-                SelectedC2ErrorMode = _config.DriveC2ErrorModes.TryGetValue(_ripperService.GetDriveARName(), out int c2Value)
-                    ? C2ErrorMode[(c2Value >= 0 && c2Value <= 3 ? c2Value : C2ErrorMode.Count - 1)]
-                    : C2ErrorMode[C2ErrorMode.Count - 1];
+                if (_ripperService.IsDriveAccessible())
+                {
+                    SelectedC2ErrorMode = _config.DriveC2ErrorModes.TryGetValue(_ripperService.GetDriveARName(), out int c2Value)
+                        ? C2ErrorMode[(c2Value >= 0 && c2Value <= 3 ? c2Value : C2ErrorMode.Count - 1)]
+                        : C2ErrorMode[C2ErrorMode.Count - 1];
 
-                DriveOffset = _config.DriveOffsets.TryGetValue(_ripperService.GetDriveARName(), out int offsetValue)
-                    ? offsetValue
-                    : _ripperService.GetDriveOffset();
+                    DriveOffset = _config.DriveOffsets.TryGetValue(_ripperService.GetDriveARName(), out int offsetValue)
+                        ? offsetValue
+                        : _ripperService.GetDriveOffset();
+                }
+                else
+                {
+                    SelectedC2ErrorMode = C2ErrorMode[C2ErrorMode.Count - 1];
+                    DriveOffset = 0;
+                }
             };
         }
 

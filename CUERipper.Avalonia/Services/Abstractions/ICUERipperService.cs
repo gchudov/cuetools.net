@@ -22,7 +22,7 @@ using CUETools.CDImage;
 using CUETools.Processor;
 using CUETools.Ripper;
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +30,7 @@ namespace CUERipper.Avalonia.Services.Abstractions
 {
     public interface ICUERipperService
     {
-        char SelectedDrive { get; set; }
+        public char SelectedDrive { get; set; }
         
         /// <summary>
         /// Fired from UI thread
@@ -57,7 +57,8 @@ namespace CUERipper.Avalonia.Services.Abstractions
         /// </summary>
         public event EventHandler<DirectoryConflictEventArgs>? OnDirectoryConflict;
 
-        IDictionary<char, string> QueryDrivesAvailable();
+        IImmutableDictionary<char, DriveInformation> QueryAvailableDriveInformation();
+        bool IsDriveAccessible();
         string GetDriveName();
         string GetDriveARName();
 

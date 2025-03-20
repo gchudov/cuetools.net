@@ -11,5 +11,6 @@ namespace CUERipper.Avalonia.Services.Abstractions
 
         public Task<bool> FetchAsync();
         public Task<bool> DownloadAsync(EventHandler<GenericProgressEventArgs> progressEvent);
+        void Install();
     }
 }

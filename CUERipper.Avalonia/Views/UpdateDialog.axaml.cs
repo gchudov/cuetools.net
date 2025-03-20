@@ -73,42 +73,23 @@ public partial class UpdateDialog : Window
 
         if (success)
         {
-            var result = await MessageBox.CreateDialogAsync(title: "Update downloaded"
-                , message: "CUERipper must close to apply the update."
+            var agreedToUpdate = await MessageBox.CreateDialogAsync(title: "Update downloaded"
+                , message: "CUERipper must be closed before applying the update."
                 , Owner as Window ?? throw new InvalidCastException("Failed to cast property Owner to type Window")
                 , Localizer
                 , MessageBox.MessageBoxType.OkCancel
             );
 
-            if (!result) return;
-
-            if (File.Exists(Constants.UpdaterExecutable))
+            if (agreedToUpdate)
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = Constants.UpdaterExecutable,
-                    Arguments = $"Apply Update-{UpdateService.UpdateMetadata!.Version}",
-                    UseShellExecute = true,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false,
-                    CreateNoWindow = false
-                });
-
+                UpdateService.Install();
                 Environment.Exit(0);
-            }
-            else
-            {
-                await MessageBox.CreateDialogAsync(title: "Update failed"
-                    , message: "Couldn't find the CUETools updater."
-                    , Owner as Window ?? throw new InvalidCastException("Failed to cast property Owner to type Window")
-                    , Localizer
-                );
             }
         }
         else
         {
             await MessageBox.CreateDialogAsync(title: "Update failed"
-                , message: "Failed to download update, check error log."
+                , message: "Failed to download update, check the error log."
                 , Owner as Window ?? throw new InvalidCastException("Failed to cast property Owner to type Window")
                 , Localizer
             );

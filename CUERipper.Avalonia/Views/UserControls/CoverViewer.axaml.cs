@@ -63,9 +63,7 @@ public sealed partial class CoverViewer : UserControl, IDisposable
     public void Feed()
     {
         if (_metaService == null) throw new NotInitializedException(nameof(_metaService));
-        
-        ClearCovers();
-
+ 
         var unorderedCovers = _metaService.GetAlbumMetaInformation(false)
             .SelectMany(x => x.Data.AlbumArt)
             .Where(x => !string.IsNullOrWhiteSpace(x.uri) || !string.IsNullOrWhiteSpace(x.uri150))
@@ -171,8 +169,10 @@ public sealed partial class CoverViewer : UserControl, IDisposable
         }
     }
 
-    private void ClearCovers()
+    public void Clear()
     {
+        _thumbnailJob.Interrupt();
+
         ViewModel.CurrentCover = PlaceholderCover;
 
         foreach(var cover in ViewModel.AlbumCovers)
@@ -205,7 +205,7 @@ public sealed partial class CoverViewer : UserControl, IDisposable
 
         _thumbnailJob.Dispose();
 
-        ClearCovers();
+        Clear();
 
         PlaceholderCover?.Dispose();
     }

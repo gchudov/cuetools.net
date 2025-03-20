@@ -34,13 +34,7 @@ namespace CUERipper.Avalonia.Models
 
     public static class UpdateMetadataExtensions
     {
-#if DEBUG
-        // Allow downloading the same version when debugging
-        public static bool UpdateAvailable(this UpdateMetadata? updateMetadata)
-            => updateMetadata != null;
-#else
         public static bool UpdateAvailable(this UpdateMetadata? updateMetadata)
             => updateMetadata != null && updateMetadata.Version != updateMetadata.CurrentVersion;
-#endif
     }
 }

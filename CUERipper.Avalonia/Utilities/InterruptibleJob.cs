@@ -40,12 +40,13 @@ namespace CUERipper.Avalonia.Utilities
 
         public void Run(Func<CancellationToken, Task> function)
         {
-            TryFinish();
+            Interrupt();
 
             _wrappedTask = Task.Factory.StartNew(async () =>
             {
                 await function(_cts.Token);
             }, _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)
+            .Unwrap()
             .ContinueWith((t) =>
             {
                 if (t.IsFaulted)
@@ -56,7 +57,7 @@ namespace CUERipper.Avalonia.Utilities
             });
         }
 
-        private void TryFinish()
+        public void Interrupt()
         {
             if (_wrappedTask == null || _wrappedTask.IsCompleted) return;
 

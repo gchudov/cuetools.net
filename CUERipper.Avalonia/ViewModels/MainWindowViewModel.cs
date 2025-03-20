@@ -18,7 +18,6 @@
 #endregion
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CUERipper.Avalonia.Compatibility;
 using CUERipper.Avalonia.Configuration.Abstractions;
 using CUERipper.Avalonia.Extensions;
 using CUERipper.Avalonia.Models;
@@ -50,8 +49,6 @@ namespace CUERipper.Avalonia.ViewModels
 
             _ripperService.SelectedDrive = newValue[0];
             _config.DefaultDrive = newValue;
-
-            RefreshAlbums();
         }
 
         public ObservableCollection<AlbumRelease> AlbumReleases { get; set; } = [];
@@ -65,9 +62,10 @@ namespace CUERipper.Avalonia.ViewModels
             if (string.Compare(oldValue?.Name, newValue!.Name) == 0) return;
 
             RefreshTrackList();
+            RefreshMetadata();
 
-            var albumMeta = GetSelectedAlbumMeta();
-            RefreshMetadata(albumMeta);
+            OutputPath = GetSelectedAlbumMeta()?.PathStringFromFormat(_config.PathFormat, _config)
+                ?? "Output Path";
         }
 
         [ObservableProperty]
@@ -198,13 +196,13 @@ namespace CUERipper.Avalonia.ViewModels
                     }
                 });
             }
-
-            OutputPath = meta.PathStringFromFormat(_config.PathFormat, _config);
         }
 
-        public void RefreshMetadata(AlbumMetadata? meta)
+        private void RefreshMetadata()
         {
             Metadata.Clear();
+
+            var meta = GetSelectedAlbumMeta();
             if (meta == null) return;
                 
             new ObservableCollection<EditableFieldProxy> {
@@ -250,16 +248,30 @@ namespace CUERipper.Avalonia.ViewModels
             return index < albumMetaInformation.Count ? albumMetaInformation.ElementAt(index) : null;
         }
 
+        private void Clear()
+        {
+            Tracks.Clear();
+            Metadata.Clear();
+            AlbumReleases.Clear();
+            DiscDrives.Clear();
+
+            AlbumTitle = string.Empty;
+            AlbumArtist = string.Empty;
+            AlbumYear = string.Empty;
+            AlbumDisc = string.Empty;
+
+            ReadingProgress = 0;
+            ErrorProgress = 0;
+            TotalProgress = 0;
+        }
+
         internal bool SetInitState(Bitmap? albumCover)
         {
-            var driveList = _ripperService.QueryDrivesAvailable()
-                .Select(d => d.Value)
-                .ToList();
+            Clear();
 
-            DiscDrives.Clear();
-            foreach (var driveName in driveList)
+            foreach (var driveName in _ripperService.QueryAvailableDriveInformation())
             {
-                DiscDrives.Add(driveName);
+                DiscDrives.Add(driveName.Value.Name);
             }
 
             if (DiscDrives.Count == 0)
@@ -267,14 +279,18 @@ namespace CUERipper.Avalonia.ViewModels
                 DiscDrives.Add(Constants.NoCDDriveFound);
             }
 
+            SplitPaneOpen = _config.DetailPaneOpened;
+            AlbumCoverImage = albumCover;
+
             SelectedDrive = !string.IsNullOrWhiteSpace(_config.DefaultDrive)
                     && DiscDrives.Contains(_config.DefaultDrive)
                 ? _config.DefaultDrive
                 : DiscDrives[0];
 
-            SplitPaneOpen = _config.DetailPaneOpened;
-
-            AlbumCoverImage = albumCover;
+            if (DiscDrives[0] != Constants.NoCDDriveFound)
+            {
+                RefreshAlbums();
+            }
 
             return true;
         }

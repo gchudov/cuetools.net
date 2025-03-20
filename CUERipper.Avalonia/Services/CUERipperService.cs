@@ -17,6 +17,7 @@
 */
 #endregion
 using Avalonia.Media.Imaging;
+using CUERipper.Avalonia.Compatibility;
 using CUERipper.Avalonia.Configuration.Abstractions;
 using CUERipper.Avalonia.Events;
 using CUERipper.Avalonia.Exceptions;
@@ -33,6 +34,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -44,9 +46,9 @@ namespace CUERipper.Avalonia.Services
 {
     public class CUERipperService : ICUERipperService
     {
-        private Dictionary<char, (string Name, string ARName)> _driveList = [];
+        private Dictionary<char, DriveInformation> _driveList = [];
 
-        private char _selectedDrive;
+        private char _selectedDrive = Constants.NullDrive;
         public char SelectedDrive 
         { 
             get => _selectedDrive;
@@ -81,44 +83,58 @@ namespace CUERipper.Avalonia.Services
             => Activator.CreateInstance(CUEProcessorPlugins.ripper) as ICDRipper
                 ?? throw new NullReferenceException("Failed to create instance of CD ripper.");
 
-        private (string, string) QueryDriveName(char drive)
+        private DriveInformation QueryDriveName(char drive)
         {
             using var audioSource = CreateCDRipperInstance();
 
-            var nullResult = (string.Empty, string.Empty);
+            var nullResult = new DriveInformation(drive, $"{drive}:", string.Empty, false);
             try
             {
-                return audioSource.Open(drive) ? (audioSource.Path, audioSource.ARName) : nullResult;
+                return audioSource.Open(drive)
+                    ? new DriveInformation(drive, audioSource.Path, audioSource.ARName, true)
+                    : nullResult;
             }
             catch (TOCException)
             {
                 // Not clean but it's safe at this point
-                return (audioSource.Path, audioSource.ARName);
+                return new DriveInformation(drive, audioSource.Path, audioSource.ARName, true);
+            }
+            catch (ReadCDException ex)
+            {
+                _logger.LogError(ex, "Failed to read disc '{DriveLetter}'.", drive);
+                if (OS.IsWindows() && (uint?)ex.InnerException?.HResult == 0x80070020)
+                {
+                    var drivePath = $"{audioSource.Path}(Warning: drive is in use)";
+                    return new DriveInformation(drive, drivePath, string.Empty, false);
+                }
+
+                return new DriveInformation(drive, $"{audioSource.Path}(Error: {ex.Message})", string.Empty, false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to open drive '{DriveLetter}'.", drive);
+                _logger.LogError(ex, "Failed to access drive '{DriveLetter}'.", drive);
                 return nullResult;
             }
         }
 
-        public IDictionary<char, string> QueryDrivesAvailable()
+        public IImmutableDictionary<char, DriveInformation> QueryAvailableDriveInformation()
         {
-            var result = new Dictionary<char, (string Name, string ARName)>();
+            var result = new Dictionary<char, DriveInformation>();
 
             var drives = CDDrivesList.DrivesAvailable();
             foreach(var drive in drives)
             {
-                (string name, string arName) = QueryDriveName(drive);
-                if(!string.IsNullOrEmpty(name) && !string.IsNullOrWhiteSpace(arName))
-                {
-                    result.Add(drive, (name, arName));
-                }
+                result.Add(drive, QueryDriveName(drive));
             }
 
             _driveList = result;
-            return result.ToDictionary(x => x.Key, x => x.Value.Name);
+            return result.ToImmutableDictionary(x => x.Key, x => x.Value);
         }
+
+        public bool IsDriveAccessible()
+            => _driveList.TryGetValue(SelectedDrive, out var result)
+                ? result.IsAccessible
+                : throw new KeyNotFoundException($"Couldn't find drive key '{SelectedDrive}'.");
 
         public string GetDriveName()
             => _driveList.TryGetValue(SelectedDrive, out var result)
@@ -132,6 +148,8 @@ namespace CUERipper.Avalonia.Services
 
         public CDImageLayout? GetDiscTOC()
         {
+            if (!IsDriveAccessible()) return null;
+
             using var audioSource = CreateCDRipperInstance();
             try
             {
@@ -148,6 +166,8 @@ namespace CUERipper.Avalonia.Services
 
         public void EjectTray()
         {
+            if (!IsDriveAccessible()) return;
+
             using var audioSource = CreateCDRipperInstance();
             try
             {

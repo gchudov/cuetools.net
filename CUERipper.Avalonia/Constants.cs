@@ -50,10 +50,13 @@ namespace CUERipper.Avalonia
 
         public const int HiResImageMaxDimension = 2048;
 
-        public const string GithubApiUri = "https://api.github.com/repos/gchudov/cuetools.net/releases";
         public const string UserAgent = "Mozilla/5.0";
-        public const string UpdaterExecutable = "CUETools.Updater.exe";
+        public const string GithubApiUri = "https://api.github.com/repos/UnknownException/cuetools.net/releases";
+        // "https://api.github.com/repos/gchudov/cuetools.net/releases"
+        public const string GithubBranch = "cueripper-avalonia"; // "master"
 
         public const int MaxCoverFetchConcurrency = 4;
+
+        public const char NullDrive = '\0';
     }
 }

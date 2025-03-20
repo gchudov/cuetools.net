@@ -150,6 +150,13 @@ namespace CUERipper.Avalonia.Views
             _ripperService.OnRippingProgress += RipperStatusCallback;
             _ripperService.OnFinish += RipperFinishedCallback;
             _ripperService.OnDirectoryConflict += DirectoryConflictCallback;
+            _ripperService.OnSelectedDriveChanged += (object? _, DriveChangedEventArgs e)
+                => Dispatcher.UIThread.Post(async () => { 
+                    // Prevent double initializing and only re-initialize when a new drive has been selected
+                    if (e.PreviousDrive != Constants.NullDrive && e.PreviousDrive != e.NextDrive) { 
+                        await InitializeApplicationAsync(); 
+                    }
+                });
 
             SetUI(UIMode.Init);
         }
@@ -157,6 +164,8 @@ namespace CUERipper.Avalonia.Views
         private async Task InitializeApplicationAsync()
         {
             InitializeEncodingTab();
+
+            coverViewer.Clear();
 
             ViewModel.SetInitState(coverViewer.ViewModel.CurrentCover);
 
@@ -435,7 +444,7 @@ namespace CUERipper.Avalonia.Views
             {
                 if (_rippingTask != null && !_rippingTask.IsCompleted)
                 {
-                    var drives = _ripperService.QueryDrivesAvailable().Select(d => d.Key);
+                    var drives = _ripperService.QueryAvailableDriveInformation().Select(d => d.Key);
                     if (drives.Contains(_ripperService.SelectedDrive)) return;
 
                     _rippingCts.Cancel();

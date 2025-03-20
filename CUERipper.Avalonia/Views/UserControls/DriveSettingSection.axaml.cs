@@ -59,9 +59,11 @@ public partial class DriveSettingSection : UserControl
 
     private void OnResetDriveSettingsClicked(object? sender, EventArgs e)
     {
-        ViewModel.DriveOffset = _ripperService?.GetDriveOffset()
-            ?? throw new NotInitializedException(nameof(_ripperService));
+        if (_ripperService == null) throw new NotInitializedException(nameof(_ripperService));
 
+        ViewModel.DriveOffset = _ripperService.IsDriveAccessible()
+            ? _ripperService.GetDriveOffset()
+            : 0;
         ViewModel.SelectedSecureMode = Constants.SecureModeDefault;
         ViewModel.SelectedC2ErrorMode = ViewModel.C2ErrorMode[ViewModel.C2ErrorMode.Count - 1];
         ViewModel.TestAndCopyEnabled = false;

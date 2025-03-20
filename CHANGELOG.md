@@ -12,12 +12,12 @@ http://cue.tools/wiki/CUETools_Download
 CUERipper UI Reimplemented in Avalonia
 A brand-new application with additional functionalities:
 - Album cover selector – Choose which album cover to embed.
-- Output path management – Customize where ripped files are saved.
 - Multi-encoding – Encode tracks in multiple formats simultaneously.
 - Automatic ripping – Enables bulk ripping with no user input unless an error is detected.
 - Repair functionality – Same as in CUETools, for fixing errors in a rip.
 - Minimal native Linux support – Early compatibility for Linux users (no automated builds yet).
 - Track progress – Displays per-track ripping progress.
+- Installer – Install CUETools/CUERipper to Program Files or user-specific directories without manually extracting zip files.
 - In-app updater – Update the application directly via GitHub, without manual downloads.
 
 **Links to ffmpeg dlls (from [v2.2.5](https://github.com/gchudov/cuetools.net/releases/tag/v2.2.5)):**

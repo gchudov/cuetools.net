@@ -6,7 +6,7 @@ using CUETools.Processor;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -45,13 +45,8 @@ namespace CUERipper.Avalonia.Services
 
             if (UpdateMetadata != null) return true;
 
-            var githubReleases = await GetReleaseAsync();
-            var latestRelease = githubReleases
-                    .Where(r => !r.Draft && !r.PreRelease && r.TargetCommitish == "master")
-                    .OrderByDescending(r => r.PublishedAt)
-                    .FirstOrDefault();
-
-            if (latestRelease == null)
+            var latestRelease = await GetLatestReleaseAsync();
+            if (latestRelease.Content == null)
             {
                 _logger.LogWarning("No releases found.");
                 return false;
@@ -59,39 +54,41 @@ namespace CUERipper.Avalonia.Services
 
             string versionPattern = @"^v\d+\.\d+\.\d+$";
             Regex regex = new(versionPattern);
-            if (!regex.IsMatch(latestRelease.TagName))
+            if (!regex.IsMatch(latestRelease.Content.TagName))
             {
-                _logger.LogError("Release tag '{TAG}' doesn't match expected format.", latestRelease.TagName);
+                _logger.LogError("Release tag '{TAG}' doesn't match expected format.", latestRelease.Content.TagName);
                 return false;
             }
 
-            var zipAsset = GetZipAsset(latestRelease);
-            var hashAsset = GetHashAsset(latestRelease);
-            if (zipAsset == null || hashAsset == null)
+            var setupAsset = GetSetupAsset(latestRelease.Content);
+            var hashAsset = GetHashAsset(latestRelease.Content);
+            if (setupAsset == null || hashAsset == null)
             {
                 _logger.LogWarning("Github assets are incomplete.");
                 return false;
             }
 
             UpdateMetadata = new UpdateMetadata(
-                Version: latestRelease.TagName.Substring(1)
+                Version: latestRelease.Content.TagName.Substring(1)
                 , CurrentVersion: CUESheet.CUEToolsVersion
-                , Author: await GetAuthorAsync(latestRelease)
-                , Description: latestRelease.Body
-                , Uri: zipAsset.BrowserDownloadUrl
-                , Size: zipAsset.Size
+                , Author: string.IsNullOrWhiteSpace(latestRelease.Author)
+                            ? Constants.ApplicationName
+                            : latestRelease.Author!
+                , Description: latestRelease.Content.Body
+                , Uri: setupAsset.BrowserDownloadUrl
+                , Size: setupAsset.Size
                 , HashUri: hashAsset.BrowserDownloadUrl
                 , HashSize: hashAsset.Size
-                , Date: latestRelease.PublishedAt
+                , Date: latestRelease.Content.PublishedAt
             );
 
             return true;
         }
 
-        private async Task<IEnumerable<GithubRelease>> GetReleaseAsync()
+        private async Task<GithubReleaseContainer> GetLatestReleaseAsync()
         {
-            IEnumerable<GithubRelease> githubReleases = GetReleasesFromDiskCache();
-            if (githubReleases.Any()) return githubReleases;
+            GithubReleaseContainer latestRelease = GetLatestReleaseFromDiskCache();
+            if (latestRelease.IsFromCache) return latestRelease; 
 
             try
             {
@@ -99,17 +96,29 @@ namespace CUERipper.Avalonia.Services
                 result.EnsureSuccessStatusCode();
 
                 string response = await result.Content.ReadAsStringAsync();
-                WriteReleasesToDiskCache(response);
-
-                githubReleases = JsonConvert.DeserializeObject<GithubRelease[]>(response)
+                var githubReleases = JsonConvert.DeserializeObject<GithubRelease[]>(response)
                     ?? throw new NullReferenceException("Failed to deserialize object...");
+
+                var recentRelease = githubReleases
+                    .Where(r => !r.Draft && !r.PreRelease && r.TargetCommitish == Constants.GithubBranch)
+                    .OrderByDescending(r => r.PublishedAt)
+                    .FirstOrDefault();
+
+                string? author = null;
+                if (recentRelease != null)
+                {
+                    author = await GetAuthorAsync(recentRelease);
+                }
+
+                WriteReleasesToDiskCache(recentRelease, author);
+                return new GithubReleaseContainer(false, recentRelease, author);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to retrieve latest release.");
             }
 
-            return githubReleases;
+            return new GithubReleaseContainer(false, null, null);
         }
 
 
@@ -117,57 +126,58 @@ namespace CUERipper.Avalonia.Services
         /// Mechanism that prevents spamming the GitHub API by limiting automated requests to once every 3 days.
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<GithubRelease> GetReleasesFromDiskCache()
+        private GithubReleaseContainer GetLatestReleaseFromDiskCache()
         {
-            if (!File.Exists(UpdateCheckFilePath)) return [];
+            if (!File.Exists(UpdateCheckFilePath)) return new(false, null, null);
 
             string[] content = File.ReadAllLines(UpdateCheckFilePath);
-            if (content.Length != 2)
+            if (content.Length != 4)
             {
                 _logger.LogError("Content of {File} is incorrect.", UpdateCheckFilePath);
-                return [];
+                return new(false, null, null);
             }
 
             if (!DateTime.TryParseExact(content[0], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None
                 , out DateTime lastUpdateCheck))
             {
                 _logger.LogError("Content of {File} is incorrect, can't parse to datetime.", UpdateCheckFilePath);
-                return [];
+                return new(false, null, null);
             }
 
-            bool shouldUpdate = (DateTime.Now - lastUpdateCheck).Days >= 3;
-            _logger.LogInformation("{State} check for update.", shouldUpdate ? "Should" : "Should not");
-            if (shouldUpdate) return [];
+            bool isCacheValid = (DateTime.Now - lastUpdateCheck).Days < 3;
+            _logger.LogInformation("{State} check GitHub for update.", isCacheValid ? "Should" : "Should not");
+            if (!isCacheValid) return new(false, null, null);
 
             try
             {
                 var jsonBytes = Convert.FromBase64String(content[1]);
-                var json = Encoding.UTF8.GetString(jsonBytes);
-
-                var result = JsonConvert.DeserializeObject<GithubRelease[]>(json)
-                    ?? throw new NullReferenceException("Failed to deserialize object...");
+                var githubRelease = JsonConvert.DeserializeObject<GithubRelease?>(Encoding.UTF8.GetString(jsonBytes));
 
                 _logger.LogInformation("Found valid update information in disk cache.");
-                return result;
+                return new(true, githubRelease, content[2]);
             }
             catch(Exception ex)
             {
                 _logger.LogError(ex, "Failed to parse Github JSON from disk.");
-                return [];
+                return new(true, null, null);
             }
         }
 
-        private void WriteReleasesToDiskCache(string json)
+        private void WriteReleasesToDiskCache(GithubRelease? githubRelease, string? author)
         {
             try
             {
-                var jsonBytes = Encoding.UTF8.GetBytes(json);
+                var jsonBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(githubRelease));
                 var base64String = Convert.ToBase64String(jsonBytes);
 
                 var fileContent = new StringBuilder();
                 fileContent.Append(DateTime.Now.ToString("yyyyMMdd"));
                 fileContent.Append(Environment.NewLine);
                 fileContent.Append(base64String);
+                fileContent.Append(Environment.NewLine);
+                fileContent.Append(author ?? string.Empty);
+                fileContent.Append(Environment.NewLine);
+                fileContent.Append("EOF");
 
                 File.WriteAllText(UpdateCheckFilePath, fileContent.ToString());
             }
@@ -177,10 +187,10 @@ namespace CUERipper.Avalonia.Services
             }
         }
 
-        private static GithubAsset? GetZipAsset(GithubRelease latestRelease)
+        private static GithubAsset? GetSetupAsset(GithubRelease latestRelease)
         {
-            const string ZIP_PATTERN = @"^CUETools_\d+\.\d+\.\d+\.zip$";
-            Regex regex = new(ZIP_PATTERN);
+            const string EXE_PATTERN = @"^CUETools_Setup_\d+\.\d+\.\d+\.exe";
+            Regex regex = new(EXE_PATTERN);
 
             return latestRelease.Assets
                 .Where(a => regex.IsMatch(a.Name))
@@ -189,8 +199,8 @@ namespace CUERipper.Avalonia.Services
 
         private static GithubAsset? GetHashAsset(GithubRelease latestRelease)
         {
-            const string ZIP_PATTERN = @"^CUETools_\d+\.\d+\.\d+\.zip.sha256$";
-            Regex regex = new(ZIP_PATTERN);
+            const string HASH_PATTERN = @"^CUETools_Setup_\d+\.\d+\.\d+\.exe.sha256$";
+            Regex regex = new(HASH_PATTERN);
 
             return latestRelease.Assets
                 .Where(a => regex.IsMatch(a.Name))
@@ -257,12 +267,12 @@ namespace CUERipper.Avalonia.Services
 
             try
             {
-                var zipFile = $"{Constants.PathUpdate}Update-{UpdateMetadata!.Version}.zip";
+                var setupFile = $"{Constants.PathUpdate}Update-{UpdateMetadata!.Version}.exe";
                 var hashFile = $"{Constants.PathUpdate}Update-{UpdateMetadata.Version}.sha256";
 
                 await DownloadFile(UpdateMetadata!.Uri
                     , contentSize: UpdateMetadata.Size
-                    , filePath: zipFile
+                    , filePath: setupFile
                     , progressEvent);
 
                 await DownloadFile(UpdateMetadata.HashUri
@@ -270,7 +280,7 @@ namespace CUERipper.Avalonia.Services
                     , filePath: hashFile
                     , progressEvent: null);
 
-                return VerifyFile(zipFile, hashFile);
+                return VerifyFile(setupFile, hashFile);
             }
             catch(Exception ex)
             {
@@ -303,11 +313,11 @@ namespace CUERipper.Avalonia.Services
             return fileContent[0].Split(' ')[0];
         }
 
-        private bool VerifyFile(string zipFile, string hashFile)
+        private bool VerifyFile(string setupFile, string hashFile)
         {
             try
             {
-                var actualHash = GetSHA256Hash(zipFile);
+                var actualHash = GetSHA256Hash(setupFile);
                 var validationHash = ParseSHA256FromHashFile(hashFile);
 
                 return string.Compare(actualHash, validationHash, true) == 0;
@@ -317,6 +327,19 @@ namespace CUERipper.Avalonia.Services
                 _logger.LogError(ex, "Failed to verify hash.");
                 return false;
             }
+        }
+
+        public void Install()
+        {
+            var setupFile = $"{Constants.PathUpdate}Update-{UpdateMetadata!.Version}.exe";
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.GetFullPath(setupFile),
+                UseShellExecute = true,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+                CreateNoWindow = false
+            });
         }
     }
 }
