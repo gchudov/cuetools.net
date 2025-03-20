@@ -115,13 +115,7 @@ namespace CUERipper.Avalonia.Configuration
 
             if (!Design.IsDesignMode)
             {
-#if NET47
-                var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-#else
-                var appDirectory = Environment.ProcessPath;
-#endif
-
-                var settingsReader = new SettingsReader("CUERipper", "settings.txt", appDirectory);
+                var settingsReader = new SettingsReader(Constants.ApplicationUserContentFolder, "settings.txt", Constants.ApplicationPath);
                 cueConfig.Load(settingsReader);
 
                 try
@@ -163,13 +157,7 @@ namespace CUERipper.Avalonia.Configuration
         private readonly static XmlWriterSettings xmlEmptySettings = new() { Indent = true, OmitXmlDeclaration = true };
         public void Save()
         {
-#if NET47
-            var appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-#else
-            var appDirectory = Environment.ProcessPath;
-#endif
-
-            var sw = new SettingsWriter("CUERipper", "settings.txt", appDirectory);
+            var sw = new SettingsWriter(Constants.ApplicationUserContentFolder, "settings.txt", Constants.ApplicationPath);
             _cueConfig.Save(sw);
 
             sw.Save("OutputAudioType", (int)OutputCompression);

@@ -17,6 +17,9 @@
 */
 #endregion
 using CUETools.Processor;
+using CUETools.Processor.Settings;
+using System;
+using System.IO;
 
 namespace CUERipper.Avalonia
 {
@@ -45,8 +48,6 @@ namespace CUERipper.Avalonia
         public const string ApplicationName = $"CUERipper.Avalonia {CUESheet.CUEToolsVersion}";
 
         public const string PathNoto = "avares://CUERipper.Avalonia/Assets/noto-emoji/32/";
-        public const string PathImageCache = "./CUERipper/.AlbumCache/";
-        public const string PathUpdate = "./.cueupdate/";
 
         public const int HiResImageMaxDimension = 2048;
 
@@ -58,5 +59,18 @@ namespace CUERipper.Avalonia
         public const int MaxCoverFetchConcurrency = 4;
 
         public const char NullDrive = '\0';
+
+
+        public const string ApplicationUserContentFolder = "CUERipper";
+#if NET47
+        public static readonly string ApplicationPath = AppDomain.CurrentDomain.BaseDirectory;
+#else
+        public static readonly string ApplicationPath = Environment.ProcessPath ?? throw new NullReferenceException("Can't determine path.");
+#endif
+        public static readonly string ProfileDir = SettingsShared.GetProfileDir(ApplicationUserContentFolder, ApplicationPath);
+
+        public static readonly string PathImageCache = Path.Combine(ProfileDir, ".AlbumCache/");
+        public static readonly string PathUpdateFolder = Path.Combine(ProfileDir, ".cueupdate/");
+        public static readonly string PathUpdateCacheFile = Path.Combine(ProfileDir, "CT_LAST_UPDATE_CHECK");
     }
 }

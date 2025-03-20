@@ -68,6 +68,8 @@ namespace CUERipper.Avalonia
         {
             var services = new ServiceCollection();
 
+            EnsureUserDirectoryExists();
+
             // Register services and viewmodels
             ConfigureServices(services);
 
@@ -161,7 +163,7 @@ namespace CUERipper.Avalonia
 
             if (!Design.IsDesignMode)
             {
-                var fileInDir = Directory.GetFiles($"{Constants.PathImageCache}", $"*{Constants.JpgExtension}", SearchOption.TopDirectoryOnly);
+                var fileInDir = Directory.GetFiles(Constants.PathImageCache, $"*{Constants.JpgExtension}", SearchOption.TopDirectoryOnly);
                 foreach (var file in fileInDir)
                 {
                     File.Delete(file);
@@ -179,6 +181,14 @@ namespace CUERipper.Avalonia
             foreach (var plugin in dataValidationPluginsToRemove)
             {
                 BindingPlugins.DataValidators.Remove(plugin);
+            }
+        }
+
+        private void EnsureUserDirectoryExists()
+        {
+            if (!Directory.Exists(Constants.ProfileDir))
+            {
+                Directory.CreateDirectory(Constants.ProfileDir);
             }
         }
     }

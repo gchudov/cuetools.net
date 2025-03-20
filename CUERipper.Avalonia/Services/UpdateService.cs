@@ -20,8 +20,6 @@ namespace CUERipper.Avalonia.Services
 {
     public class UpdateService : IUpdateService
     {
-        private const string UpdateCheckFilePath = "CT_LAST_UPDATE_CHECK";
-
         private readonly HttpClient _httpClient;
         private readonly ICUEConfigFacade _config;
         private readonly ILogger _logger;
@@ -137,19 +135,19 @@ namespace CUERipper.Avalonia.Services
         /// <returns></returns>
         private GithubReleaseContainer GetLatestReleaseFromDiskCache()
         {
-            if (!File.Exists(UpdateCheckFilePath)) return new(false, null, null);
+            if (!File.Exists(Constants.PathUpdateCacheFile)) return new(false, null, null);
 
-            string[] content = File.ReadAllLines(UpdateCheckFilePath);
+            string[] content = File.ReadAllLines(Constants.PathUpdateCacheFile);
             if (content.Length != 4)
             {
-                _logger.LogError("Content of {File} is incorrect.", UpdateCheckFilePath);
+                _logger.LogError("Content of {File} is incorrect.", Constants.PathUpdateCacheFile);
                 return new(false, null, null);
             }
 
             if (!DateTime.TryParseExact(content[0], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None
                 , out DateTime lastUpdateCheck))
             {
-                _logger.LogError("Content of {File} is incorrect, can't parse to datetime.", UpdateCheckFilePath);
+                _logger.LogError("Content of {File} is incorrect, can't parse to datetime.", Constants.PathUpdateCacheFile);
                 return new(false, null, null);
             }
 
@@ -188,7 +186,7 @@ namespace CUERipper.Avalonia.Services
                 fileContent.Append(Environment.NewLine);
                 fileContent.Append("EOF");
 
-                File.WriteAllText(UpdateCheckFilePath, fileContent.ToString());
+                File.WriteAllText(Constants.PathUpdateCacheFile, fileContent.ToString());
             }
             catch (Exception ex)
             {
@@ -269,15 +267,15 @@ namespace CUERipper.Avalonia.Services
         {
             if (!UpdateMetadata.UpdateAvailable()) return false;
 
-            if (!Directory.Exists(Constants.PathUpdate))
+            if (!Directory.Exists(Constants.PathUpdateFolder))
             {
-                Directory.CreateDirectory(Constants.PathUpdate);
+                Directory.CreateDirectory(Constants.PathUpdateFolder);
             }
 
             try
             {
-                var setupFile = $"{Constants.PathUpdate}Update-{UpdateMetadata!.Version}.exe";
-                var hashFile = $"{Constants.PathUpdate}Update-{UpdateMetadata.Version}.sha256";
+                var setupFile = $"{Constants.PathUpdateFolder}Update-{UpdateMetadata!.Version}.exe";
+                var hashFile = $"{Constants.PathUpdateFolder}Update-{UpdateMetadata.Version}.sha256";
 
                 await DownloadFile(UpdateMetadata!.Uri
                     , contentSize: UpdateMetadata.Size
@@ -340,7 +338,7 @@ namespace CUERipper.Avalonia.Services
 
         public void Install()
         {
-            var setupFile = $"{Constants.PathUpdate}Update-{UpdateMetadata!.Version}.exe";
+            var setupFile = $"{Constants.PathUpdateFolder}Update-{UpdateMetadata!.Version}.exe";
             Process.Start(new ProcessStartInfo
             {
                 FileName = Path.GetFullPath(setupFile),
