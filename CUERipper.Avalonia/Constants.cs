@@ -44,14 +44,15 @@ namespace CUERipper.Avalonia
             $"%music%/%artist%/[%year% - ]%album%[ '('disc %discnumberandname%')'][' ('%releasedateandlabel%')'][' ('%unique%')']/%artist% - %album%{CueExtension}"
         ];
         public const int MaxPathFormats = 10; // Based on the original CUERipper limit
-        
-        public const string ApplicationName = $"CUERipper.Avalonia {CUESheet.CUEToolsVersion}";
+
+        public const string ApplicationShortName = "CUERipper";
+        public const string ApplicationName = $"{ApplicationShortName}.Avalonia {CUESheet.CUEToolsVersion}";
 
         public const string PathNoto = "avares://CUERipper.Avalonia/Assets/noto-emoji/32/";
 
         public const int HiResImageMaxDimension = 2048;
 
-        public const string UserAgent = "Mozilla/5.0";
+        public const string UserAgent = $"{ApplicationShortName}/{CUESheet.CUEToolsVersion} ( https://github.com/gchudov/cuetools.net )";
         public const string GithubApiUri = "https://api.github.com/repos/UnknownException/cuetools.net/releases";
         // "https://api.github.com/repos/gchudov/cuetools.net/releases"
         public const string GithubBranch = "cueripper-avalonia"; // "master"
@@ -60,14 +61,12 @@ namespace CUERipper.Avalonia
 
         public const char NullDrive = '\0';
 
-
-        public const string ApplicationUserContentFolder = "CUERipper";
 #if NET47
         public static readonly string ApplicationPath = AppDomain.CurrentDomain.BaseDirectory;
 #else
         public static readonly string ApplicationPath = Environment.ProcessPath ?? throw new NullReferenceException("Can't determine path.");
 #endif
-        public static readonly string ProfileDir = SettingsShared.GetProfileDir(ApplicationUserContentFolder, ApplicationPath);
+        public static readonly string ProfileDir = SettingsShared.GetProfileDir(ApplicationShortName, ApplicationPath);
 
         public static readonly string PathImageCache = Path.Combine(ProfileDir, ".AlbumCache/");
         public static readonly string PathUpdateFolder = Path.Combine(ProfileDir, ".cueupdate/");

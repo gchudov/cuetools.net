@@ -132,9 +132,9 @@
 						</DataGridTemplateColumn>
 					</DataGrid.Columns>
 				</DataGrid>
-				<TextBlock Text="Warning: Changes will take effect after restarting&#10;the application."
+				<TextBlock Text="Changes will take effect after restarting the&#10;application."
 							Margin="5"
-							Foreground="Yellow"
+							Foreground="Orange"
 							FontWeight="Bold"/>
 			</StackPanel>
 		</TabItem>

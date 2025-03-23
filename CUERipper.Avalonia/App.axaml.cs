@@ -56,8 +56,8 @@ namespace CUERipper.Avalonia
                     .MinimumLevel.Debug()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
-                    .Enrich.WithProperty("Application", "CUERipper")
-                    .WriteTo.File("logs/log-.txt"
+                    .Enrich.WithProperty("Application", Constants.ApplicationName)
+                    .WriteTo.File(Path.Combine(Constants.ProfileDir, "logs/log-.txt")
                         , rollingInterval: RollingInterval.Day
                         , retainedFileCountLimit: 10
                     ).CreateLogger();
