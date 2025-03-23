@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20</TargetFrameworks>
+    <TargetFrameworks>net47;net8.0</TargetFrameworks>
     <Version>2.2.6.0</Version>
     <AssemblyName>CUETools.Ripper.Console</AssemblyName>
     <RootNamespace>CUETools.Ripper.Console</RootNamespace>
@@ -16,12 +16,6 @@
     <RepositoryType>git</RepositoryType>
     <Company />
   </PropertyGroup>
-
-  <ItemDefinitionGroup>
-    <ProjectReference>
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemDefinitionGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
