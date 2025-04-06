@@ -265,9 +265,15 @@ namespace CUETools.Codecs.ffmpegdll
             set
             {
                 _sampleOffset = value;
-                int res = ffmpeg.av_seek_frame(fmt_ctx, stream->index, _sampleOffset, ffmpeg.AVSEEK_FLAG_FRAME);
-                if (0 != res)
-                    throw new Exception("unable to seek:" + res.ToString());
+                // Seeking is supported in case of AIFF files (PCM_S16BE)
+                if (stream->codecpar->codec_id == AVCodecID.AV_CODEC_ID_PCM_S16BE)
+                {
+                    int res = ffmpeg.av_seek_frame(fmt_ctx, stream->index, _sampleOffset, ffmpeg.AVSEEK_FLAG_FRAME);
+                    if (0 != res)
+                        throw new Exception("Unable to seek: " + res.ToString());
+                }
+                else
+                    throw new Exception("Seeking not supported");
             }
         }
 
