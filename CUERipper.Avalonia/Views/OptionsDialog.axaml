@@ -1,0 +1,182 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CUERipper.Avalonia.OptionsDialog"
+		x:DataType="vm:OptionsDialogViewModel"
+        Title="Options"
+        Icon="/Assets/cue2.ico"
+        WindowStartupLocation="CenterOwner"
+		SizeToContent="WidthAndHeight"
+		CanResize="False">
+	<TabControl>
+		<TabItem Header="CTDB" FontSize="20">
+			<DataGrid AutoGenerateColumns="False"
+					HeadersVisibility="None"
+					ItemsSource="{Binding CTDBOptions}">
+				<DataGrid.Columns>
+					<DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" />
+					<DataGridTemplateColumn Header="Value">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<StackPanel MinWidth="200">
+									<TextBox Text="{Binding Value}"
+										IsVisible="{Binding !IsCombo}"
+										IsReadOnly="{Binding IsReadOnly}"
+										Margin="5" />
+									<ComboBox ItemsSource="{Binding Options}"
+										SelectedItem="{Binding Value}"
+										HorizontalAlignment="Stretch"
+										IsVisible="{Binding IsCombo}"
+										IsEnabled="{Binding !IsReadOnly}"
+										Margin="5" />
+								</StackPanel>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTemplateColumn Header="Value">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Content="❌"
+									Command="{Binding ResetCommand}"
+									Background="Transparent">
+									<ToolTip.Tip>
+										Reset value to default.
+									</ToolTip.Tip>
+								</Button>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+				</DataGrid.Columns>
+			</DataGrid>
+		</TabItem>
+		<TabItem Header="Extraction" FontSize="20">
+			<DataGrid AutoGenerateColumns="False"
+					HeadersVisibility="None"
+					ItemsSource="{Binding ExtractionOptions}">
+				<DataGrid.Columns>
+					<DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" />
+					<DataGridTemplateColumn Header="Value">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<StackPanel MinWidth="200">
+									<TextBox Text="{Binding Value}"
+										IsVisible="{Binding !IsCombo}"
+										IsReadOnly="{Binding IsReadOnly}"
+										Margin="5" />
+									<ComboBox ItemsSource="{Binding Options}"
+										SelectedItem="{Binding Value}"
+										HorizontalAlignment="Stretch"
+										IsVisible="{Binding IsCombo}"
+										IsEnabled="{Binding !IsReadOnly}"
+										Margin="5" />
+								</StackPanel>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTemplateColumn Header="Value">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Content="❌"
+									Command="{Binding ResetCommand}"
+									Background="Transparent">
+									<ToolTip.Tip>
+										Reset value to default.
+									</ToolTip.Tip>
+								</Button>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+				</DataGrid.Columns>
+			</DataGrid>
+		</TabItem>
+		<TabItem Header="Proxy" FontSize="20">
+			<StackPanel>
+				<DataGrid AutoGenerateColumns="False"
+						HeadersVisibility="None"
+						ItemsSource="{Binding ProxyOptions}">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" />
+						<DataGridTemplateColumn Header="Value">
+							<DataGridTemplateColumn.CellTemplate>
+								<DataTemplate>
+									<StackPanel MinWidth="200">
+										<TextBox Text="{Binding Value}"
+											IsVisible="{Binding !IsCombo}"
+											IsReadOnly="{Binding IsReadOnly}"
+											Margin="5" />
+										<ComboBox ItemsSource="{Binding Options}"
+											SelectedItem="{Binding Value}"
+											HorizontalAlignment="Stretch"
+											IsVisible="{Binding IsCombo}"
+											IsEnabled="{Binding !IsReadOnly}"
+											Margin="5" />
+									</StackPanel>
+								</DataTemplate>
+							</DataGridTemplateColumn.CellTemplate>
+						</DataGridTemplateColumn>
+						<DataGridTemplateColumn Header="Value">
+							<DataGridTemplateColumn.CellTemplate>
+								<DataTemplate>
+									<Button Content="❌"
+										Command="{Binding ResetCommand}"
+										Background="Transparent">
+										<ToolTip.Tip>
+											Reset value to default.
+										</ToolTip.Tip>
+									</Button>
+								</DataTemplate>
+							</DataGridTemplateColumn.CellTemplate>
+						</DataGridTemplateColumn>
+					</DataGrid.Columns>
+				</DataGrid>
+				<TextBlock Text="Changes will take effect after restarting the&#10;application."
+							Margin="5"
+							Foreground="Orange"
+							FontWeight="Bold"/>
+			</StackPanel>
+		</TabItem>
+		<TabItem Header="Various" FontSize="20">
+			<DataGrid AutoGenerateColumns="False"
+					HeadersVisibility="None"
+					ItemsSource="{Binding VariousOptions}">
+				<DataGrid.Columns>
+					<DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" />
+					<DataGridTemplateColumn Header="Value">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<StackPanel MinWidth="200">
+									<TextBox Text="{Binding Value}"
+										IsVisible="{Binding !IsCombo}"
+										IsReadOnly="{Binding IsReadOnly}"
+										Margin="5" />
+									<ComboBox ItemsSource="{Binding Options}"
+										SelectedItem="{Binding Value}"
+										HorizontalAlignment="Stretch"
+										IsVisible="{Binding IsCombo}"
+										IsEnabled="{Binding !IsReadOnly}"
+										Margin="5" />
+								</StackPanel>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTemplateColumn Header="Value">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button Content="❌"
+									Command="{Binding ResetCommand}"
+									Background="Transparent">
+									<ToolTip.Tip>
+										Reset value to default.
+									</ToolTip.Tip>
+								</Button>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+				</DataGrid.Columns>
+			</DataGrid>
+		</TabItem>
+	</TabControl>
+</Window>

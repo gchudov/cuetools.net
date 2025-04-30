@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:CUERipper.Avalonia.ViewModels.UserControls"			 
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="CUERipper.Avalonia.Views.UserControls.DriveSettingSection"
+			 x:DataType="vm:DriveSettingSectionViewModel">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="Auto"/>
+		</Grid.ColumnDefinitions>
+
+		<ComboBox Grid.Row="0" Grid.Column="0"
+			ItemsSource="{Binding C2ErrorMode}"
+			SelectedItem="{Binding SelectedC2ErrorMode}"
+			HorizontalAlignment="Stretch"
+			Margin="5"/>
+		<NumericUpDown Grid.Row="0" Grid.Column="1"
+			FormatString="0"
+			Value="{Binding DriveOffset}"
+			Minimum="-99999"
+			Maximum="99999"
+			MinWidth="0"
+			Margin="5"/>
+		<Button Grid.Row="0" Grid.Column="2"
+			Name="buttonResetDriveSettings"
+			Background="Transparent">
+			<ToolTip.Tip>
+				Accidentaly broke something? Don't worry, just reset it!
+			</ToolTip.Tip>
+		</Button>
+		<CheckBox Grid.Row="1" Grid.Column="0"
+			Content="Test and Copy"
+			IsChecked="{Binding TestAndCopyEnabled}"
+			Margin="5,5,5,0"/>
+		<Slider Grid.Row="1" Grid.Column="1"
+				Minimum="0"
+				Maximum="2"
+				Value="{Binding SelectedSecureMode, Mode=TwoWay}"
+				TickFrequency="1"
+				Margin="5,5,5,0"
+				IsSnapToTickEnabled="True">
+			<ToolTip.Tip>
+				Burst is the least secure ripping option, paranoid the most. Only consider using paranoid when a previous ripping attempt was not accurate.
+			</ToolTip.Tip>
+		</Slider>
+		<TextBlock Grid.Row="2" Grid.Column="1"
+			Text="{Binding SelectedSecureModeText}"
+			HorizontalAlignment="Center"/>
+	</Grid>
+</UserControl>

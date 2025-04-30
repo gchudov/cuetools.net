@@ -22,8 +22,6 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 
 namespace Bwg.Scsi
@@ -31,7 +29,7 @@ namespace Bwg.Scsi
     /// <summary>
     /// 
     /// </summary>
-    public unsafe class WinDev : IDisposable
+    public unsafe class WinDev : ISysDev
     {
         //
         // External functions required to interface to th
@@ -63,7 +61,7 @@ namespace Bwg.Scsi
 
         private string m_name;
         private IntPtr m_handle;
-        private uint m_last_error;
+        private int m_last_error;
 
         /// <summary>
         /// 
@@ -75,21 +73,12 @@ namespace Bwg.Scsi
         /// <summary>
         /// 
         /// </summary>
-        public uint LastError 
+        public int LastError 
         { 
             get 
             { 
                 return m_last_error; 
             } 
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Dispose()
-        {
-            if (IsOpen)
-                Close();
         }
 
         /// <summary>
@@ -105,7 +94,7 @@ namespace Bwg.Scsi
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        virtual public bool Open(string name)
+        public bool Open(string name)
         {
             string dname = name;
 
@@ -117,7 +106,7 @@ namespace Bwg.Scsi
             m_handle = CreateFile(dname, acc, 0x01, (IntPtr)0, 3, 0x00000080, (uint)0);
             if (m_handle.ToInt32() == -1)
             {
-                m_last_error = (uint)Marshal.GetLastWin32Error();
+                m_last_error = Marshal.GetLastWin32Error();
                 return false;
             }
 
@@ -130,7 +119,7 @@ namespace Bwg.Scsi
         /// </summary>
         /// <param name="letter"></param>
         /// <returns></returns>
-        virtual public bool Open(char letter)
+        public bool Open(char letter)
         {
             string dname = "\\\\.\\" + letter + ":";
             return Open(dname);
@@ -156,14 +145,14 @@ namespace Bwg.Scsi
         /// <param name="ret"></param>
         /// <param name="overlapped"></param>
         /// <returns></returns>
-        protected bool Control(uint code, IntPtr inbuf, uint insize, IntPtr outbuf, uint outsize, ref uint ret, IntPtr overlapped)
+        public bool Control(uint code, IntPtr inbuf, uint insize, IntPtr outbuf, uint outsize, ref uint ret, IntPtr overlapped)
         {
             bool b;
 
             CheckOpen() ;
             b = DeviceIoControl(m_handle, code, inbuf, insize, outbuf, outsize, ref ret, overlapped);
             if (!b)
-                m_last_error = (uint)Marshal.GetLastWin32Error();
+                m_last_error = Marshal.GetLastWin32Error();
 
             return b;
         }
@@ -173,10 +162,10 @@ namespace Bwg.Scsi
         /// </summary>
         /// <param name="error">the error code to convert</param>
         /// <returns>the string for the error code</returns>
-        static public string Win32ErrorToString(uint error)
+        public string ErrorCodeToString(int error)
         {
             IntPtr buffer = Marshal.AllocHGlobal(1024) ;
-            uint ret = FormatMessage(0x1000, IntPtr.Zero, error, 0, buffer, 1024, IntPtr.Zero);
+            uint ret = FormatMessage(0x1000, IntPtr.Zero, (uint)error, 0, buffer, 1024, IntPtr.Zero);
             if (ret == 0)
                 return "cannot find win32 error string for this code (" + error.ToString() + ")";
 
@@ -185,6 +174,30 @@ namespace Bwg.Scsi
             Marshal.FreeHGlobal(buffer);
 
             return str;
+        }
+
+        private bool _disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                if (IsOpen) Close();
+
+                _disposed = true;
+            }
+        }
+
+        ~WinDev() => Dispose(disposing: false);
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

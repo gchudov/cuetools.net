@@ -3,7 +3,7 @@ using System.IO;
 
 namespace CUETools.Processor.Settings
 {
-    static class SettingsShared
+    public static class SettingsShared
     {
         public static string GetMyAppDataDir(string appName)
         {

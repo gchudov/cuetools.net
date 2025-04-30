@@ -108,6 +108,8 @@ namespace Bwg.Scsi
                 Device dev = new Device(m_logger) ;
                 if (!dev.Open(name))
                 {
+                    dev.Dispose();
+
                     m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, dlev, "  ... device open failed"));
                     continue ;
                 }
@@ -117,6 +119,8 @@ namespace Bwg.Scsi
                 DeviceInfo info = DeviceInfo.CreateDevice(name, letter);
                 if (!info.ExtractInfo(dev))
                 {
+                    dev.Dispose();
+
                     m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, dlev, "  ... cannot extract inquiry information from the drive"));
 
                     string str = "The drive '" + letter + "' (" + name + ") is a CD/DVD driver, but is not a valid MMC device.";
@@ -128,7 +132,7 @@ namespace Bwg.Scsi
 
                 m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, dlev, "  ... device added to device list"));
                 m_devices_found.Add(info) ;
-                dev.Close() ;
+                dev.Dispose();
             }
 
             if (AfterScan != null)

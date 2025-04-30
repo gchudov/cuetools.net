@@ -17,6 +17,10 @@ using CUETools.Codecs;
 using CUETools.Compression;
 using CUETools.Ripper;
 using Freedb;
+#if NETSTANDARD2_0
+using System.Runtime.InteropServices;
+using CUETools.Interop;
+#endif
 
 namespace CUETools.Processor
 {
@@ -24,7 +28,7 @@ namespace CUETools.Processor
     {
         #region Fields
 
-        public readonly static string CUEToolsVersion = "2.2.6";
+        public const string CUEToolsVersion = "2.2.6c";
 
         private bool _stop, _pause;
         private List<CUELine> _attributes;
@@ -2107,6 +2111,13 @@ namespace CUETools.Processor
 
         private static bool IsCDROM(string pathIn)
         {
+#if NETSTANDARD2_0
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return pathIn.StartsWith(Linux.CDROM_DEVICE_PATH);
+            }
+#endif
+
             return pathIn.Length == 3 && pathIn.Substring(1) == ":\\" && new DriveInfo(pathIn).DriveType == DriveType.CDRom;
         }
 
