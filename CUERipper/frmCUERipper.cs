@@ -668,8 +668,10 @@ namespace CUERipper
 			data.selectedRelease.metadata.Save();
 
 			cueSheet.CopyMetadata(data.selectedRelease.metadata);
-			cueSheet.OutputStyle = bnComboBoxImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE :
-				CUEStyle.GapsAppended;
+			if (bnComboBoxImage.SelectedIndex == 0)
+				cueSheet.OutputStyle = selectedFormat.allowEmbed ? CUEStyle.SingleFileWithCUE : CUEStyle.SingleFile;
+			else
+				cueSheet.OutputStyle = CUEStyle.GapsAppended;
 			_pathOut = cueSheet.GenerateUniqueOutputPath(bnComboBoxOutputFormat.Text,
 					cueSheet.OutputStyle == CUEStyle.SingleFileWithCUE ? "." + selectedFormat.ToString() : ".cue",
 					CUEAction.Encode, null);
@@ -1269,7 +1271,11 @@ namespace CUERipper
 				txtOutputPath.Text = "";
 				return;
 			}
-			CUEStyle style = bnComboBoxImage.SelectedIndex == 0 ? CUEStyle.SingleFileWithCUE : CUEStyle.GapsAppended;
+			CUEStyle style;
+			if (bnComboBoxImage.SelectedIndex == 0)
+				style = selectedFormat.allowEmbed ? CUEStyle.SingleFileWithCUE : CUEStyle.SingleFile;
+			else
+				style = CUEStyle.GapsAppended;
 			CUESheet sheet = new CUESheet(_config);
 			sheet.TOC = selectedDriveInfo.drive.TOC;
 			sheet.CopyMetadata(data.selectedRelease.metadata);
