@@ -1,0 +1,68 @@
+---
+name: Build ffmpeg dlls
+# GitHub Action to build ffmpeg dlls on demand using vcpkg
+# Wolfgang Stöggl <c72578@yahoo.de>, 2023-2025.
+
+# yamllint disable rule:line-length
+# yamllint disable-line rule:truthy
+on:
+  # push:
+    # tags:
+      # - 'v*.*.*'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  MSVC:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
+        os: [windows-2022]
+        triplet: [x64-windows, x86-windows]
+        include:
+          - os: windows-2022
+            triplet: x64-windows
+            # https://github.com/microsoft/vcpkg/commit/ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
+            vcpkgCommitId: 'ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0'
+            vcpkgPackages: 'ffmpeg'
+            configuration: 'x64'
+            pluginDir: 'x64'
+          - os: windows-2022
+            triplet: x86-windows
+            vcpkgCommitId: 'ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0'
+            vcpkgPackages: 'ffmpeg'
+            configuration: 'x86'
+            pluginDir: 'win32'
+    env:
+      buildDir: '${{ github.workspace }}/build/'
+      ffmpegVer: '7.1.1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install vcpkg and build packages
+        # Download and build vcpkg.
+        uses: lukka/run-vcpkg@v7
+        with:
+          setupOnly: false
+          doNotCache: true
+          # Location of vcpkg in the Git repository.
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgGitCommitId: '${{ matrix.vcpkgCommitId}}'
+          vcpkgTriplet: ${{ matrix.triplet }}
+          vcpkgArguments: '${{ matrix.vcpkgPackages }}'
+      - name: Collect files
+        run: |
+          # ffmpeg dlls: avcodec, avdevice, avfilter, avformat, avutil
+          xcopy /Y /D vcpkg\installed\${{ matrix.triplet }}\bin\av*.dll deploy\plugins\${{ matrix.pluginDir }}\
+          # ffmpeg dlls: swresample, swscale
+          xcopy /Y /D vcpkg\installed\${{ matrix.triplet }}\bin\sw*.dll deploy\plugins\${{ matrix.pluginDir }}\
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg_${{ env.ffmpegVer }}_dlls_${{ matrix.pluginDir }}
+          path: deploy/
