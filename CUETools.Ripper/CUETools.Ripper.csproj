@@ -27,4 +27,7 @@
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' ">
+    <ProjectReference Include="..\CUETools.Interop\CUETools.Interop.csproj" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:CUERipper.Avalonia.ViewModels.UserControls"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="CUERipper.Avalonia.Views.UserControls.CoverViewer"
+			 x:DataType="vm:CoverViewerViewModel">
+	<ScrollViewer>
+		<ItemsControl ItemsSource="{Binding AlbumCovers}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<WrapPanel />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<Border BorderThickness="2"							
+							Padding="2">
+						<Border.Styles>
+							<Style Selector="Border">
+								<Setter Property="BorderBrush" Value="{Binding BorderColor}"/>
+							</Style>
+						</Border.Styles>
+						<Image Source="{Binding Bitmap150}" 
+								Width="150" 
+								Height="150" 
+								Stretch="UniformToFill"
+								Margin="1"
+								PointerReleased="CoverClicked"/>
+					</Border>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+	</ScrollViewer>
+</UserControl>

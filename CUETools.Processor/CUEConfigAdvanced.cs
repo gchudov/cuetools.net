@@ -122,5 +122,11 @@ namespace CUETools.Processor
 
         [DefaultValue(true), Category("Tagging"), DisplayName("Write CDTOC tag")]
         public bool WriteCDTOCTag { get; set; }
+
+        /// <summary>
+        /// Check GitHub for newer releases. (CUERipper new)
+        /// </summary>
+        [DefaultValue(true), DisplayName("Check for updates")]
+        public bool CheckForUpdates { get; set; }
     }
 }

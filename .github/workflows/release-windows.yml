@@ -29,6 +29,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Install Inno Setup
+        run: pwsh -File ./install_inno.ps1
       - name: Apply patches
         # yamllint disable-line rule:line-length
         run: |
@@ -50,10 +52,53 @@ jobs:
       - name: Build Release|Win32
         run: |
           "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Win32"
+      - name: Publish CUERipper.Avalonia (Linux)
+        shell: bash
+        run: ./publish_linux64.sh
       - name: Collect files
         run: |
           collect_files.bat
-      - uses: actions/upload-artifact@v4
+      - name: Collect files (Lite)
+        run: |
+          collect_files_lite.bat
+      - name: Package files
+        run: pwsh -File ./packaging.ps1
+      - name: Get CUETools Version
+        id: get_version
+        run: |
+          for /f "tokens=6 delims= " %%a in ('find "CUEToolsVersion =" .\CUETools.Processor\CUESheet.cs') do set PRODUCTVER=%%a
+          set PRODUCTVER=%PRODUCTVER:"=%
+          set PRODUCTVER=%PRODUCTVER:;=%
+          echo CUETools version: %PRODUCTVER%
+          echo CUETOOLS_VERSION=%PRODUCTVER%>>%GITHUB_ENV%
+        shell: cmd
+      - name: Build Windows installer
+        run: |
+          "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" "installer.iss"
+        shell: cmd
+      - name: Generate hash for Windows installer
+        run: |
+          $installer = "CUETools_Setup_${{ env.CUETOOLS_VERSION }}.exe"
+          $installerHash = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLower()
+          "$installerHash *$installer" | Out-File -Encoding ASCII "$installer.sha256"
+        shell: pwsh
+      - name: Add artifacts to Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: deploy
-          path: bin/Release/CUETools_*/
+          name: CUETools ${{ env.CUETOOLS_VERSION }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          tag_name: ${{ github.ref_name }}
+          files: |
+            CUETools_Setup_${{ env.CUETOOLS_VERSION }}.exe
+            CUETools_Setup_${{ env.CUETOOLS_VERSION }}.exe.sha256
+            CUETools_${{ env.CUETOOLS_VERSION }}.zip
+            CUETools_${{ env.CUETOOLS_VERSION }}.zip.sha256
+            CUETools.Lite_${{ env.CUETOOLS_VERSION }}.zip
+            CUETools.Lite_${{ env.CUETOOLS_VERSION }}.zip.sha256
+            CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip
+            CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip.sha256
+            CUERipper.Linux64_${{ env.CUETOOLS_VERSION }}.zip
+            CUERipper.Linux64_${{ env.CUETOOLS_VERSION }}.zip.sha256
+

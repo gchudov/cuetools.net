@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CUERipper.Avalonia.ViewModels.UserControls"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="CUERipper.Avalonia.Views.UserControls.EncodingSection"
+			 x:DataType="vm:EncodingSectionViewModel">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="Auto"/>
+		</Grid.ColumnDefinitions>
+		<ComboBox Grid.Row="0" Grid.Column="0"
+					ItemsSource="{Binding Compression}"
+					SelectedItem="{Binding SelectedCompression}"
+					HorizontalAlignment="Stretch"
+					Margin="5,5"
+					ToolTip.Tip="{Binding ToolTipCompression}" />
+		<ComboBox Grid.Row="0" Grid.Column="1"
+					ItemsSource="{Binding CUEStyle}"
+					SelectedItem="{Binding SelectedCUEStyle}"
+					HorizontalAlignment="Stretch"
+					Margin="5,5"
+					ToolTip.Tip="{Binding ToolTipCUEStyle}" />
+		<Button Grid.Row="0" Grid.Column="2"
+				Name="buttonSettings"
+				Background="Transparent">
+			<ToolTip.Tip>
+				CUETools advanced settings.
+			</ToolTip.Tip>
+		</Button>
+		<ComboBox Grid.Row="1" Grid.Column="0"
+					ItemsSource="{Binding Encoding}"
+					SelectedItem="{Binding SelectedEncoding}"
+					HorizontalAlignment="Stretch"
+					Margin="5,5"/>
+		<ComboBox Grid.Row="1" Grid.Column="1"
+					ItemsSource="{Binding Encoder}"
+					SelectedItem="{Binding SelectedEncoder}"
+					HorizontalAlignment="Stretch"
+					Margin="5,5"/>
+		<Button Grid.Row="1" Grid.Column="2"
+				Name="buttonEncoderSettings"
+				Background="Transparent">
+			<ToolTip.Tip>
+				Settings related to the selected encoder.
+			</ToolTip.Tip>
+		</Button>
+		<Slider Grid.Row="2" Grid.ColumnSpan="3"
+				Minimum="0"
+				Maximum="{Binding EncoderModeMaximum}"
+				Value="{Binding SelectedEncoderMode, Mode=TwoWay}"
+				TickFrequency="1"
+				IsSnapToTickEnabled="True"
+				Margin="5,0"
+				IsEnabled="{Binding IsEncoderModeEnabled}"/>
+		<TextBlock Grid.Row="3" Grid.ColumnSpan="3"
+					Text="{Binding SelectedEncoderModeText}"
+					HorizontalAlignment="Center"/>
+	</Grid>
+</UserControl>

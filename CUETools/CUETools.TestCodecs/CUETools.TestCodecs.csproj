@@ -134,9 +134,8 @@
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\Freedb\Freedb.csproj">
-      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
+      <Project>{4d42a992-952b-41f0-a594-c98359865b0a}</Project>
       <Name>Freedb</Name>
-      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
