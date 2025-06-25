@@ -37,13 +37,6 @@ namespace CUERipper.Avalonia.Services
 
         public async Task<bool> FetchAsync()
         {
-#if !NET47
-            if (!OperatingSystem.IsWindows())
-            {
-                _logger.LogWarning("Updater is not implemented for this operating system.");
-                return false;
-            }
-#endif
             if (UpdateMetadata != null) return true;
 
             if (!_config.CheckForUpdates)
@@ -265,6 +258,14 @@ namespace CUERipper.Avalonia.Services
 
         public async Task<bool> DownloadAsync(EventHandler<GenericProgressEventArgs> progressEvent)
         {
+#if !NET47
+            if (!OperatingSystem.IsWindows())
+            {
+                _logger.LogWarning("Updater is not implemented for this operating system.");
+                return false;
+            }
+#endif
+
             if (!UpdateMetadata.UpdateAvailable()) return false;
 
             if (!Directory.Exists(Constants.PathUpdateFolder))
@@ -338,6 +339,14 @@ namespace CUERipper.Avalonia.Services
 
         public void Install()
         {
+#if !NET47
+            if (!OperatingSystem.IsWindows())
+            {
+                _logger.LogWarning("Updater is not implemented for this operating system.");
+                return;
+            }
+#endif
+
             var setupFile = $"{Constants.PathUpdateFolder}Update-{UpdateMetadata!.Version}.exe";
             Process.Start(new ProcessStartInfo
             {

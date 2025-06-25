@@ -51,9 +51,16 @@ public partial class UpdateDialog : Window
         textVersion.Text = $"Version: {data.CurrentVersion} -> {data.Version}";
         textSize.Text = $"Size: {(double)data.Size / (1024 * 1024):F2} MiB";
         textAuthor.Text = $"Author: {data.Author}";
-        textDate.Text = $"Date: {data.Date.ToString("yyyy-MM-dd HH:mm")}";
+        textDate.Text = $"Date: {data.Date:yyyy-MM-dd HH:mm}";
 
         textDescription.Text = data.Description;
+
+#if !NET47
+        if (!OperatingSystem.IsWindows())
+        {
+            buttonInstall.IsEnabled = false;
+        }
+#endif
     }
 
     private async void OnInstallClicked(object? sender, RoutedEventArgs e)
