@@ -381,7 +381,7 @@ namespace CUERipper.Avalonia.Views
             {
                 int passTotalLength = args.PassEnd - args.PassStart;
                 double correctionLength = (double)passTotalLength / (correctionQuality + 1);
-                double correctionProcessed = (double)processed / (correctionQuality + 1) + correctionLength * args.Pass;
+                double correctionProcessed = (double)processed / (correctionQuality + 1) + correctionLength * Math.Min(args.Pass, correctionQuality);
                 double currentProgress = args.PassStart + correctionProcessed;
 
                 lblStatus.Text = currentProgress >= audioLength ? _localizer["Status:Finalizing"] : status;
