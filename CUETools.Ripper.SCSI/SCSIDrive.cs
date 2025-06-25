@@ -361,13 +361,25 @@ namespace CUETools.Ripper.SCSI
 					{
 						case GapDetectionMethod.ReadSubchannel:
 							{
+								var subChannelMode = Device.SubChannelMode.None;
+#if NETSTANDARD2_0
+								// ISSUE: gap detection failed exception
+								// TODO: ReadSubChannel42 sPos seems to drift on Linux (Mint 22.1) during repeated calls, 
+								// if the Read...-commands don't include SubChannelMode.QOnly.
+								// Further research required, root cause is unknown.
+
+								if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+									subChannelMode = Device.SubChannelMode.QOnly;
+#endif
 								// seek to given sector
 								if (_readCDCommand == ReadCDCommand.ReadCdBEh)
-									st = m_device.ReadCDAndSubChannel(_mainChannelMode, Device.SubChannelMode.None, _c2ErrorMode, 1, false, (uint)sector, 1, (IntPtr)((void*)data), _timeout);
+									st = m_device.ReadCDAndSubChannel(_mainChannelMode, subChannelMode, _c2ErrorMode, 1, false, (uint)sector, 1, (IntPtr)((void*)data), _timeout);
 								else
-									st = m_device.ReadCDDA(Device.SubChannelMode.None, (uint)sector, 1, (IntPtr)((void*)data), _timeout);
+									st = m_device.ReadCDDA(subChannelMode, (uint)sector, 1, (IntPtr)((void*)data), _timeout);
+
 								if (st != Device.CommandStatus.Success)
 									continue;
+
 								st = m_device.ReadSubChannel42(1, 0, ref _subchannelBuffer, 0, _timeout);
 								// x x x x 01 adrctl tr ind abs abs abs rel rel rel
 								if (st != Device.CommandStatus.Success)
