@@ -5,7 +5,8 @@
 	<PackageLicenseExpression>GPL-2.0-or-later</PackageLicenseExpression>
 	<Version>2.2.6.0</Version>
 	<OutputType>WinExe</OutputType>
-    <TargetFrameworks>net47;net8.0</TargetFrameworks>
+  <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net47;net8.0</TargetFrameworks>
+  <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Linux'))">net8.0</TargetFrameworks>
 	<LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>

@@ -48,7 +48,7 @@ namespace CUETools.Ripper
 				{
                     var path = $"{Linux.CDROM_DEVICE_PATH}{i}";
 
-					if (!Linux.PathExists(path)) break;
+					if (!Linux.PathExists(path)) continue;
 					driveList.Add($"{i}"[0]);
 				}
 

@@ -52,6 +52,7 @@ namespace CUERipper.Avalonia.Services
             {
                 IsBackground = true
             };
+            _thread.Start();
         }
 
         private void ScanDrives()
