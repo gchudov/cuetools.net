@@ -52,6 +52,9 @@ jobs:
       - name: Build Release|Win32
         run: |
           "%DEVENV_PATH%" "%SLN_PATH%" /Build "Release|Win32"
+      - name: Publish CUERipper.Avalonia (Linux)
+        shell: bash
+        run: ./publish_linux64.sh
       - name: Collect files
         run: |
           collect_files.bat
@@ -96,3 +99,6 @@ jobs:
             CUETools.Lite_${{ env.CUETOOLS_VERSION }}.zip.sha256
             CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip
             CUETools.CTDB.EACPlugin.${{ env.CUETOOLS_VERSION }}.zip.sha256
+            CUERipper.Linux64_${{ env.CUETOOLS_VERSION }}.zip
+            CUERipper.Linux64_${{ env.CUETOOLS_VERSION }}.zip.sha256
+
