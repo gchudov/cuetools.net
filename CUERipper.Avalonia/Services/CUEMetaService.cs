@@ -17,6 +17,7 @@
 */
 #endregion
 using Avalonia.Media.Imaging;
+using CUERipper.Avalonia.Configuration.Abstractions;
 using CUERipper.Avalonia.Events;
 using CUERipper.Avalonia.Extensions;
 using CUERipper.Avalonia.Models;
@@ -40,6 +41,7 @@ namespace CUERipper.Avalonia.Services
 {
     public class CUEMetaService : ICUEMetaService
     {
+        private readonly ICUEConfigFacade _cueConfig;
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
 
@@ -49,9 +51,11 @@ namespace CUERipper.Avalonia.Services
         private string _arName = string.Empty;
 
         public CUEMetaService(ICUERipperService ripperService
+            , ICUEConfigFacade cueConfig
             , HttpClient httpClient
             , ILogger<CUEMetaService> logger)
         {
+            _cueConfig = cueConfig;
             _httpClient = httpClient;
             _logger = logger;
 
@@ -67,13 +71,13 @@ namespace CUERipper.Avalonia.Services
             _arName = ARName;
         }
 
-        private static CTDBResponseMeta CreateDummy(uint audioTracks)
+        private static CUEMetadataEntry CreateDummy(CDImageLayout toc)
         {
             var dummy = new CTDBResponseMeta
             {
                 artist = Constants.UnknownArtist
                 , album = Constants.UnknownTitle
-                , track = new CTDBResponseMetaTrack[audioTracks]
+                , track = new CTDBResponseMetaTrack[toc.AudioTracks]
                 , year = string.Empty
                 , disccount = "1"
                 , discnumber = "1"                
@@ -88,7 +92,10 @@ namespace CUERipper.Avalonia.Services
                 };
             }
 
-            return dummy;
+            var meta = new CUEMetadata(toc.TOCID, (int)toc.AudioTracks);
+            meta.FillFromCtdb(dummy, toc.FirstAudio - 1);
+
+            return new CUEMetadataEntry(meta, toc, string.Empty);
         }
 
         public IImmutableList<AlbumMetadata> GetAlbumMetaInformation(bool advancedSearch)
@@ -113,57 +120,28 @@ namespace CUERipper.Avalonia.Services
                 _logger.LogError(ex, "Non fatal error parsing CUE Metadata cache.");
             }
 
-            var ctdb = new CUEToolsDB(_toc, null);
-            ctdb.ContactDB(null, Constants.ApplicationName, _arName, true, false, advancedSearch ? CTDBMetadataSearch.Extensive : CTDBMetadataSearch.Fast);
+            var remoteResult = CUESheet.LookupRemoteAlbumInfo(Constants.ApplicationShortName
+                , _toc
+                , _cueConfig.ToCUEConfig()
+                , useCTDB: true
+                , advancedSearch ? CTDBMetadataSearch.Extensive : CTDBMetadataSearch.Fast
+                , showProgress: (_, _) => { }
+                , checkStop: () => { }
+            );
 
-            switch (ctdb.QueryResponseStatus)
+            var result = remoteResult.Concat([CreateDummy(_toc)])
+                .Select(entry => new AlbumMetadata(MetaSourceHelper.FromString(entry.ImageKey), entry.metadata))
+                .PrependIf(userCache != null, new AlbumMetadata(MetaSource.Local, userCache!))
+                .ToImmutableList();
+
+            // Only cache if remote call was successful
+            if (remoteResult.Count > 0)
             {
-                case HttpStatusCode.OK:
-                    {
-                        _logger.LogInformation("Retrieved {MetadataCount} releases from the database", ctdb.Metadata.Count());
-
-                        var result = ctdb.Metadata
-                            .Concat([CreateDummy(_toc.AudioTracks)])
-                            .Select(m =>
-                            {
-                                var meta = new CUEMetadata(_toc.TOCID, (int)_toc.AudioTracks);
-                                meta.FillFromCtdb(m, _toc.FirstAudio - 1);
-                                return new AlbumMetadata(MetaSourceHelper.FromString(m.source), meta);
-                            }).PrependIf(userCache != null, new AlbumMetadata(MetaSource.Local, userCache!))
-                            .ToImmutableList();
-
-                        _cache.Remove(_toc.TOCID);
-                        _cache.Add(_toc.TOCID, result);
-
-                        return result;
-                    }
-                case HttpStatusCode.NotFound:
-                    {
-                        _logger.LogWarning("Album not found in the database");
-
-                        IEnumerable<CTDBResponseMeta> result = [CreateDummy(_toc.AudioTracks)];
-                        return result.Select(m =>
-                        {
-                            var meta = new CUEMetadata(_toc.TOCID, (int)_toc.AudioTracks);
-                            meta.FillFromCtdb(m, _toc.FirstAudio - 1);
-                            return new AlbumMetadata(MetaSourceHelper.FromString(m.source), meta);
-                        }).PrependIf(userCache != null, new AlbumMetadata(MetaSource.Local, userCache!))
-                        .ToImmutableList();
-                    }
-                default:
-                    {
-                        _logger.LogError("Unexpected problem contacting the database {StatusCode}", ctdb.QueryResponseStatus);
-
-                        IEnumerable<CTDBResponseMeta> result = [CreateDummy(_toc.AudioTracks)];
-                        return result.Select(m =>
-                        {
-                            var meta = new CUEMetadata(_toc.TOCID, (int)_toc.AudioTracks);
-                            meta.FillFromCtdb(m, _toc.FirstAudio - 1);
-                            return new AlbumMetadata(MetaSourceHelper.FromString(m.source), meta);
-                        }).PrependIf(userCache != null, new AlbumMetadata(MetaSource.Local, userCache!))
-                        .ToImmutableList();
-                    }
+                _cache.Remove(_toc.TOCID);
+                _cache.Add(_toc.TOCID, result);
             }
+
+            return result;
         }
 
         public void ResetAlbumMetaInformation()

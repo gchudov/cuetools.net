@@ -833,9 +833,12 @@ namespace CUETools.Processor
             _localDB.Save();
         }
 
-        public List<object> LookupAlbumInfo(bool useCache, bool useCUE, bool useCTDB, CTDBMetadataSearch metadataSearch)
+        public List<CUEMetadataEntry> LookupAlbumInfo(bool useCache
+            , bool useCUE
+            , bool useCTDB
+            , CTDBMetadataSearch metadataSearch)
         {
-            List<object> Releases = new List<object>();
+            var releases = new List<CUEMetadataEntry>();
 
             CUEMetadata dbmeta = null;
 
@@ -855,33 +858,19 @@ namespace CUETools.Processor
             }
 
             if (dbmeta != null)
-                Releases.Add(new CUEMetadataEntry(dbmeta, TOC, "local") { cover = frontCover });
-
-            //if (useCache)
-            //{
-            //    try
-            //    {
-            //        CUEMetadata cache = CUEMetadata.Load(TOC.TOCID);
-            //        if (cache != null)
-            //            Releases.Add(new CUEMetadataEntry(cache, TOC, "local"));
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        System.Diagnostics.Trace.WriteLine(ex.Message);
-            //    }
-            //}
+                releases.Add(new CUEMetadataEntry(dbmeta, TOC, "local") { cover = frontCover });
 
             if (useCUE)
             {
                 if (dbmeta == null || !dbmeta.Contains(cueMetadata))
                 {
                     if (cueMetadata.Contains(taglibMetadata) || !taglibMetadata.Contains(cueMetadata))
-                        Releases.Add(new CUEMetadataEntry(new CUEMetadata(cueMetadata), TOC, "cue") { cover = frontCover });
+                        releases.Add(new CUEMetadataEntry(new CUEMetadata(cueMetadata), TOC, "cue") { cover = frontCover });
                 }
                 if (dbmeta == null || !dbmeta.Contains(taglibMetadata))
                 {
                     if (!cueMetadata.Contains(taglibMetadata))
-                        Releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags") { cover = frontCover });
+                        releases.Add(new CUEMetadataEntry(new CUEMetadata(taglibMetadata), TOC, "tags") { cover = frontCover });
                 }
             }
 
@@ -889,38 +878,62 @@ namespace CUETools.Processor
             {
                 foreach (var entry in _localDB)
                     if (entry.DiscID == TOC.TOCID && entry.Metadata != null && (dbmeta == null || !dbmeta.Contains(entry.Metadata)))
-                        Releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local") { cover = frontCover });
+                        releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local") { cover = frontCover });
             }
 
+            var remoteReleases = LookupRemoteAlbumInfo("CUETools"
+                , TOC
+                , _config
+                , useCTDB
+                , metadataSearch
+                , (string status, double progress) => ShowProgress(status, progress, null, null)
+                , () => CheckStop()
+            );
+
+            releases.AddRange(remoteReleases);
+            return releases;
+        }
+
+        public static List<CUEMetadataEntry> LookupRemoteAlbumInfo(
+            string applicationName
+            , CDImageLayout toc
+            , CUEConfig config
+            , bool useCTDB
+            , CTDBMetadataSearch metadataSearch
+            , Action<string, double> showProgress
+            , Action checkStop)
+        {
+            var releases = new List<CUEMetadataEntry>();
+        	
             bool ctdbFound = false;
             if (useCTDB)
             {
-                ShowProgress("Looking up album via CTDB...", 0.0, null, null);
-                var ctdb = new CUEToolsDB(TOC, proxy);
-                ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, metadataSearch);
+                showProgress("Looking up album via CTDB...", 0.0);
+                var ctdb = new CUEToolsDB(toc, config.GetProxy());
+                ctdb.ContactDB(config.advanced.CTDBServer, $"{applicationName} {CUEToolsVersion}", null, false, false, metadataSearch);
                 foreach (var meta in ctdb.Metadata)
                 {
-                    CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
-                    metadata.FillFromCtdb(meta, TOC.FirstAudio - 1);
-                    CDImageLayout toc = TOC; //  TocFromCDEntry(meta);
-                    Releases.Add(new CUEMetadataEntry(metadata, toc, meta.source));
+                    CUEMetadata metadata = new CUEMetadata(toc.TOCID, (int)toc.AudioTracks);
+                    metadata.FillFromCtdb(meta, toc.FirstAudio - 1);
+                    releases.Add(new CUEMetadataEntry(metadata, toc, meta.source));
                     ctdbFound = true;
                 }
             }
 
             if (!ctdbFound && metadataSearch == CTDBMetadataSearch.Extensive)
             {
-                ShowProgress("Looking up album via Freedb...", 0.0, null, null);
+                showProgress("Looking up album via Freedb...", 0.0);
 
                 FreedbHelper m_freedb = new FreedbHelper();
-                m_freedb.Proxy = proxy;
-                m_freedb.UserName = _config.advanced.FreedbUser;
-                m_freedb.Hostname = _config.advanced.FreedbDomain;
-                m_freedb.ClientName = "CUETools";
+                m_freedb.Proxy = config.GetProxy();
+                m_freedb.UserName = config.advanced.FreedbUser;
+                m_freedb.Hostname = config.advanced.FreedbDomain;
+                m_freedb.ClientName = applicationName;
                 m_freedb.Version = CUEToolsVersion;
+
                 try
                 {
-                    m_freedb.SetDefaultSiteAddress(_config.advanced.FreedbSiteAddress);
+                    m_freedb.SetDefaultSiteAddress(config.advanced.FreedbSiteAddress);
                 }
                 catch (Exception ex)
                 {
@@ -933,17 +946,16 @@ namespace CUETools.Processor
                 try
                 {
                     CDEntry cdEntry = null;
-                    code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(_toc), out queryResult, out coll);
+                    code = m_freedb.Query(AccurateRipVerify.CalculateCDDBQuery(toc), out queryResult, out coll);
                     if (code == FreedbHelper.ResponseCodes.CODE_200)
                     {
-                        ShowProgress("Looking up album via Freedb... " + queryResult.Discid, 0.5, null, null);
+                        showProgress("Looking up album via Freedb... " + queryResult.Discid, 0.5);
                         code = m_freedb.Read(queryResult, out cdEntry);
                         if (code == FreedbHelper.ResponseCodes.CODE_210)
                         {
-                            CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
-                            metadata.FillFromFreedb(cdEntry, TOC.FirstAudio - 1);
-                            CDImageLayout toc = TocFromCDEntry(cdEntry);
-                            Releases.Add(new CUEMetadataEntry(metadata, toc, "freedb"));
+                            CUEMetadata metadata = new CUEMetadata(toc.TOCID, (int)toc.AudioTracks);
+                            metadata.FillFromFreedb(cdEntry, toc.FirstAudio - 1);
+                            releases.Add(new CUEMetadataEntry(metadata, TocFromCDEntry(toc, cdEntry), "freedb"));
                         }
                     }
                     else
@@ -953,15 +965,14 @@ namespace CUETools.Processor
                             int i = 0;
                             foreach (QueryResult qr in coll)
                             {
-                                ShowProgress("Looking up album via freedb... " + qr.Discid, (++i + 0.0) / coll.Count, null, null);
-                                CheckStop();
+                                showProgress("Looking up album via freedb... " + qr.Discid, (++i + 0.0) / coll.Count);
+                                checkStop();
                                 code = m_freedb.Read(qr, out cdEntry);
                                 if (code == FreedbHelper.ResponseCodes.CODE_210)
                                 {
-                                    CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
-                                    metadata.FillFromFreedb(cdEntry, TOC.FirstAudio - 1);
-                                    CDImageLayout toc = TocFromCDEntry(cdEntry);
-                                    Releases.Add(new CUEMetadataEntry(metadata, toc, "freedb"));
+                                    CUEMetadata metadata = new CUEMetadata(toc.TOCID, (int)toc.AudioTracks);
+                                    metadata.FillFromFreedb(cdEntry, toc.FirstAudio - 1);
+                                    releases.Add(new CUEMetadataEntry(metadata, TocFromCDEntry(toc, cdEntry), "freedb"));
                                 }
                             }
                         }
@@ -973,21 +984,21 @@ namespace CUETools.Processor
                 }
             }
 
-            ShowProgress("", 0, null, null);
-            return Releases;
+            showProgress("", 0);
+            return releases;
         }
 
-        public CDImageLayout TocFromCDEntry(CDEntry cdEntry)
+        public static CDImageLayout TocFromCDEntry(CDImageLayout toc, CDEntry cdEntry)
         {
             CDImageLayout tocFromCDEntry = new CDImageLayout();
             for (int i = 0; i < cdEntry.Tracks.Count; i++)
             {
-                if (i >= _toc.TrackCount)
+                if (i >= toc.TrackCount)
                     break;
                 tocFromCDEntry.AddTrack(new CDTrack((uint)i + 1,
                     (uint)cdEntry.Tracks[i].FrameOffset - 150,
-                    (i + 1 < cdEntry.Tracks.Count) ? (uint)(cdEntry.Tracks[i + 1].FrameOffset - cdEntry.Tracks[i].FrameOffset) : _toc[i + 1].Length,
-                    _toc[i + 1].IsAudio,
+                    (i + 1 < cdEntry.Tracks.Count) ? (uint)(cdEntry.Tracks[i + 1].FrameOffset - cdEntry.Tracks[i].FrameOffset) : toc[i + 1].Length,
+                    toc[i + 1].IsAudio,
                     false/*preEmphasis*/));
             }
             if (tocFromCDEntry.TrackCount > 0 && tocFromCDEntry[1].IsAudio)
