@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <Version>0.0.7.1</Version>
     <AssemblyName>Bwg.Hardware</AssemblyName>
     <RootNamespace>Bwg.Hardware</RootNamespace>
@@ -17,5 +17,9 @@
     <RepositoryType>svn</RepositoryType>
     <Company>BwgSoftware</Company>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
 
 </Project>

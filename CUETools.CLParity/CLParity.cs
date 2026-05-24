@@ -111,7 +111,7 @@ namespace CUETools.CLParity
         bool inited = false;
 
         OpenCLManager OCLMan;
-        Program openCLProgram;
+        CLProgram openCLProgram;
 
         CLParityTask task1;
 		CLParityTask task2;
@@ -123,6 +123,7 @@ namespace CUETools.CLParity
         public CLParityWriter(string path, Stream IO, AudioPCMConfig pcm)
         {
             _pcm = pcm;
+            _encoderSettings = new CUETools.Codecs.WAV.EncoderSettings(pcm);
             if (pcm.BitsPerSample != 16)
                 throw new Exception("Bits per sample must be 16.");
             if (pcm.ChannelCount != 2)
@@ -137,6 +138,7 @@ namespace CUETools.CLParity
         }
 
 		internal CLParitySettings _settings = new CLParitySettings();
+        private readonly IAudioEncoderSettings _encoderSettings;
 
         public object Settings
         {
@@ -151,6 +153,8 @@ namespace CUETools.CLParity
 				_settings = value as CLParitySettings;
             }
         }
+
+        IAudioEncoderSettings IAudioDest.Settings => _encoderSettings;
 
         //[DllImport("kernel32.dll")]
         //static extern bool GetThreadTimes(IntPtr hThread, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
@@ -388,7 +392,7 @@ namespace CUETools.CLParity
 
 	internal class CLParityTask
 	{
-		Program openCLProgram;
+		CLProgram openCLProgram;
 		public CommandQueue openCLCQ;
 		public Kernel reedSolomonInit;
 		public Kernel reedSolomonInitGx;
@@ -432,7 +436,7 @@ namespace CUETools.CLParity
 		public CLParityWriter writer;
 		public bool UseMappedMemory = false;
 
-		unsafe public CLParityTask(Program _openCLProgram, CLParityWriter writer, int groupSize, int npar, int stride, int maxStridesCount)
+		unsafe public CLParityTask(CLProgram _openCLProgram, CLParityWriter writer, int groupSize, int npar, int stride, int maxStridesCount)
 		{
 			this.UseMappedMemory = writer._settings.MappedMemory || writer._settings.DeviceType == OpenCLDeviceType.CPU;
 			this.groupSize = groupSize;
@@ -629,7 +633,6 @@ namespace CUETools.CLParity
 		}
 	}
 
-#if LKJLKJLJK
     public static class OpenCLExtensions
     {
         public static void SetArgs(this Kernel kernel, params object[] args)
@@ -660,5 +663,4 @@ namespace CUETools.CLParity
             queue.EnqueueNDRangeKernel(kernel, 2, null, new long[] { localSizeX * globalSizeX, localSizeY * globalSizeY }, new long[] { localSizeX, localSizeY });
         }
     }
-#endif
 }

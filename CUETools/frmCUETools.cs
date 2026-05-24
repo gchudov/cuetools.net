@@ -1003,7 +1003,7 @@ namespace JDP
                             UpdateOutputPath(pathIn, cueSheet);
                             pathOut = txtOutputPath.Text;
                             if (dlgRes != DialogResult.Cancel && cueSheet.AlbumArt.Count != 0)
-                                pictureBoxMotd.Image = cueSheet.Cover;
+                                pictureBoxMotd.Image = GetCoverImage(cueSheet);
                             else
                                 pictureBoxMotd.Image = motdImage;
                         });
@@ -1049,7 +1049,7 @@ namespace JDP
                         {
                             this.Invoke((MethodInvoker)delegate ()
                             {
-                                pictureBoxMotd.Image = cueSheet.Cover ?? motdImage;
+                                pictureBoxMotd.Image = GetCoverImage(cueSheet) ?? motdImage;
                             });
                             cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
                             if (script == null || script.name == "default")
@@ -2153,6 +2153,20 @@ namespace JDP
                 Activate();
             });
             return true;
+        }
+
+        private static Image GetCoverImage(CUESheet cueSheet)
+        {
+            if (cueSheet == null || cueSheet.AlbumArt == null)
+                return null;
+            var picture = cueSheet.AlbumArt.Find(x => x.Type == TagLib.PictureType.FrontCover) ??
+                cueSheet.AlbumArt.Find(x => x.Type != TagLib.PictureType.NotAPicture);
+            if (picture == null)
+                return null;
+            using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
+                try { return Image.FromStream(imageStream); }
+                catch { }
+            return null;
         }
 
         private void locateInExplorerToolStripMenuItem_Click(object sender, EventArgs e)

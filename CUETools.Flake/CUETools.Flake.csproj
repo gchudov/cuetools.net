@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20;netcoreapp2.0</TargetFrameworks>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
-    <RuntimeFrameworkVersion Condition="'$(TargetFramework)' == 'netcoreapp2.0'">2.0.9</RuntimeFrameworkVersion>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <Version>2.2.6.0</Version>
     <AssemblyName>CUETools.Flake</AssemblyName>
     <RootNamespace>CUETools.Flake</RootNamespace>

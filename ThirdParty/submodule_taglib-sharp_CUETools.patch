@@ -1,8 +1,78 @@
+diff --git a/Directory.Build.props b/Directory.Build.props
+index dec1261..8f041a1 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -6,15 +6,11 @@
+     <RepositoryType>git</RepositoryType>
+ 
+     <!-- Make sure to update Directory.Build.targets too! -->
+-    <ExeTargetFrameworks>net462;netcoreapp3.1</ExeTargetFrameworks>
+-    <LibTargetFrameworks>net462;netstandard2.0</LibTargetFrameworks>
++    <ExeTargetFrameworks>net10.0</ExeTargetFrameworks>
++    <LibTargetFrameworks>netstandard2.1</LibTargetFrameworks>
+     <LangVersion>latest</LangVersion>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
+-    <DebugType>full</DebugType>
+-  </PropertyGroup>
+-
+   <!-- Allow building net framework using mono -->
+   <ItemGroup Condition="$(TargetFramework.StartsWith('net4')) and '$(OS)' == 'Unix'">
+     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
+diff --git a/src/TaglibSharp.Tests/Images/Validators/ImageTest.cs b/src/TaglibSharp.Tests/Images/Validators/ImageTest.cs
+index dfbd151..65f6d9d 100644
+--- a/src/TaglibSharp.Tests/Images/Validators/ImageTest.cs
++++ b/src/TaglibSharp.Tests/Images/Validators/ImageTest.cs
+@@ -5,6 +5,7 @@
+ 
+ using SixLabors.ImageSharp;
+ using SixLabors.ImageSharp.Advanced;
++using SixLabors.ImageSharp.PixelFormats;
+ 
+ using TagLib;
+ 
+@@ -146,9 +147,9 @@ string ReadImageData (TagLib.Image.File file)
+ 				// TODO, ImageSharp doesn't support tiff yet (4/25/2020): https://github.com/SixLabors/ImageSharp/issues/12
+ 				md5Sum = "";// Utils.Md5Encode (v.Data);
+ 			} else {
+-				using var image = Image.Load (v.Data);
+-				image.TryGetSinglePixelSpan (out var span);
+-				byte[] result = MemoryMarshal.AsBytes (span).ToArray ();
++				using var image = Image.Load<Rgba32> (v.Data);
++				image.DangerousTryGetSinglePixelMemory (out var memory);
++				byte[] result = MemoryMarshal.AsBytes (memory.Span).ToArray ();
+ 				md5Sum = Utils.Md5Encode (result);
+ 			}
+ 
+diff --git a/src/TaglibSharp.Tests/TaglibSharp.Tests.csproj b/src/TaglibSharp.Tests/TaglibSharp.Tests.csproj
+index 5e1466b..09061a8 100644
+--- a/src/TaglibSharp.Tests/TaglibSharp.Tests.csproj
++++ b/src/TaglibSharp.Tests/TaglibSharp.Tests.csproj
+@@ -12,13 +12,13 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+-    <PackageReference Include="NUnit" Version="3.13.3" />
+-    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
++    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
++    <PackageReference Include="NUnit" Version="3.14.0" />
++    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+     <!-- This generates a TON of warnings (13k+ warnings) -->
+     <!--<PackageReference Include="NUnit.Analyzers" Version="3.3.0" />-->
+-    <PackageReference Include="coverlet.collector" Version="3.1.2" />
+-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
++    <PackageReference Include="coverlet.collector" Version="10.0.1" />
++    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+   </ItemGroup>
+ 
+ </Project>
 diff --git a/src/TaglibSharp/Aac/AudioHeader.cs b/src/TaglibSharp/Aac/AudioHeader.cs
 index 50613aa..8828d19 100644
 --- a/src/TaglibSharp/Aac/AudioHeader.cs
 +++ b/src/TaglibSharp/Aac/AudioHeader.cs
-@@ -203,6 +203,18 @@ public class AudioHeader : IAudioCodec
+@@ -203,6 +203,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -25,7 +95,7 @@ diff --git a/src/TaglibSharp/Aiff/StreamHeader.cs b/src/TaglibSharp/Aiff/StreamH
 index 318be17..8ad1ec4 100644
 --- a/src/TaglibSharp/Aiff/StreamHeader.cs
 +++ b/src/TaglibSharp/Aiff/StreamHeader.cs
-@@ -205,6 +205,18 @@ public StreamHeader (ByteVector data, long streamLength)
+@@ -205,6 +205,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -48,7 +118,7 @@ diff --git a/src/TaglibSharp/Ape/StreamHeader.cs b/src/TaglibSharp/Ape/StreamHea
 index 75a2675..4bdd5c3 100644
 --- a/src/TaglibSharp/Ape/StreamHeader.cs
 +++ b/src/TaglibSharp/Ape/StreamHeader.cs
-@@ -294,6 +294,18 @@ public StreamHeader (ByteVector data, long streamLength)
+@@ -294,6 +294,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -67,7 +137,7 @@ index 75a2675..4bdd5c3 100644
  		/// <summary>
  		///    Gets the sample rate of the audio represented by the
  		///    current instance.
-@@ -356,4 +368,5 @@ public StreamHeader (ByteVector data, long streamLength)
+@@ -356,4 +368,5 @@ public int BitsPerSample {
          public CompressionLevel Compression { get; private set; }
  
          #endregion
@@ -80,7 +150,7 @@ diff --git a/src/TaglibSharp/Ape/Tag.cs b/src/TaglibSharp/Ape/Tag.cs
 index c3b631b..49a7f37 100644
 --- a/src/TaglibSharp/Ape/Tag.cs
 +++ b/src/TaglibSharp/Ape/Tag.cs
-@@ -1536,6 +1536,74 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -1536,6 +1536,74 @@ public override string MusicBrainzReleaseCountry {
  			set { SetValue ("RELEASECOUNTRY", value); }
  		}
  
@@ -159,7 +229,7 @@ diff --git a/src/TaglibSharp/Asf/FilePropertiesObject.cs b/src/TaglibSharp/Asf/F
 index fc0f513..64111bd 100644
 --- a/src/TaglibSharp/Asf/FilePropertiesObject.cs
 +++ b/src/TaglibSharp/Asf/FilePropertiesObject.cs
-@@ -198,6 +198,12 @@ public FilePropertiesObject (File file, long position)
+@@ -198,6 +198,12 @@ public TimeSpan SendDuration {
  		/// </value>
  		public ulong Preroll { get; private set; }
  
@@ -176,7 +246,7 @@ diff --git a/src/TaglibSharp/Asf/Tag.cs b/src/TaglibSharp/Asf/Tag.cs
 index 84717ba..5251b84 100644
 --- a/src/TaglibSharp/Asf/Tag.cs
 +++ b/src/TaglibSharp/Asf/Tag.cs
-@@ -1298,6 +1298,40 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -1298,6 +1298,40 @@ public override string MusicBrainzReleaseCountry {
  			set { SetDescriptorString (value, "MusicBrainz/Album Release Country"); }
  		}
  
@@ -221,7 +291,7 @@ diff --git a/src/TaglibSharp/CombinedTag.cs b/src/TaglibSharp/CombinedTag.cs
 index 009eb8f..ee59e6e 100644
 --- a/src/TaglibSharp/CombinedTag.cs
 +++ b/src/TaglibSharp/CombinedTag.cs
-@@ -1637,6 +1637,162 @@ protected void ClearTags ()
+@@ -1637,6 +1637,162 @@ public override string MusicBrainzReleaseCountry {
  			}
  		}
  
@@ -388,7 +458,7 @@ diff --git a/src/TaglibSharp/Dsf/StreamHeader.cs b/src/TaglibSharp/Dsf/StreamHea
 index 339d2f3..0651c84 100644
 --- a/src/TaglibSharp/Dsf/StreamHeader.cs
 +++ b/src/TaglibSharp/Dsf/StreamHeader.cs
-@@ -249,6 +249,18 @@ public StreamHeader (ByteVector data, long streamLength)
+@@ -249,6 +249,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -423,7 +493,7 @@ index ecc4955..1bfb20a 100644
  			IsLastBlock = false;
  			BlockSize = blockSize;
 diff --git a/src/TaglibSharp/Flac/Picture.cs b/src/TaglibSharp/Flac/Picture.cs
-index 8b6659f..4685ad5 100644
+index 8b6659f..3a41783 100644
 --- a/src/TaglibSharp/Flac/Picture.cs
 +++ b/src/TaglibSharp/Flac/Picture.cs
 @@ -22,6 +22,7 @@
@@ -440,7 +510,7 @@ index 8b6659f..4685ad5 100644
  
 -			if (!(picture is Picture flac_picture))
 +			if (!(picture is Picture flac_picture)) {
-+#if NET47 || NET20
++#if NET48 || NET20
 +				try
 +				{
 +					using (System.Drawing.Image ipicture_picture = (Bitmap)((new ImageConverter ()).ConvertFrom (picture.Data.Data)))
@@ -464,7 +534,7 @@ diff --git a/src/TaglibSharp/Flac/StreamHeader.cs b/src/TaglibSharp/Flac/StreamH
 index 5a57bbc..0c4d054 100644
 --- a/src/TaglibSharp/Flac/StreamHeader.cs
 +++ b/src/TaglibSharp/Flac/StreamHeader.cs
-@@ -130,6 +130,18 @@ public StreamHeader (ByteVector data, long streamLength)
+@@ -130,6 +130,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -537,7 +607,7 @@ diff --git a/src/TaglibSharp/Id3v2/Tag.cs b/src/TaglibSharp/Id3v2/Tag.cs
 index 1c3676f..c780d76 100644
 --- a/src/TaglibSharp/Id3v2/Tag.cs
 +++ b/src/TaglibSharp/Id3v2/Tag.cs
-@@ -2083,6 +2083,77 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -2083,6 +2083,77 @@ public override string MusicBrainzReleaseCountry {
  			set { SetUserTextAsString ("MusicBrainz Album Release Country", value); }
  		}
  
@@ -619,7 +689,7 @@ diff --git a/src/TaglibSharp/Matroska/AudioTrack.cs b/src/TaglibSharp/Matroska/A
 index e3ee49e..062f5cf 100644
 --- a/src/TaglibSharp/Matroska/AudioTrack.cs
 +++ b/src/TaglibSharp/Matroska/AudioTrack.cs
-@@ -127,6 +127,18 @@ public AudioTrack (File _file, EBMLreader element)
+@@ -127,6 +127,18 @@ public int AudioBitrate {
  			get { return 0; }
  		}
  
@@ -642,7 +712,7 @@ diff --git a/src/TaglibSharp/Matroska/Tag.cs b/src/TaglibSharp/Matroska/Tag.cs
 index 0fc3f7d..bc139ee 100644
 --- a/src/TaglibSharp/Matroska/Tag.cs
 +++ b/src/TaglibSharp/Matroska/Tag.cs
-@@ -1248,6 +1248,34 @@ uint GetUint (string key, string subkey = null, bool recu = false)
+@@ -1248,6 +1248,34 @@ public override string MusicBrainzReleaseCountry {
  			set { }
  		}
  
@@ -681,7 +751,7 @@ diff --git a/src/TaglibSharp/Mpc/StreamHeader.cs b/src/TaglibSharp/Mpc/StreamHea
 index 16bb005..987114c 100644
 --- a/src/TaglibSharp/Mpc/StreamHeader.cs
 +++ b/src/TaglibSharp/Mpc/StreamHeader.cs
-@@ -361,6 +361,18 @@ ulong ReadSize (ByteVector data, ref int pos)
+@@ -361,6 +361,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -704,7 +774,7 @@ diff --git a/src/TaglibSharp/Mpeg/AudioHeader.cs b/src/TaglibSharp/Mpeg/AudioHea
 index d18ea77..06a15e1 100644
 --- a/src/TaglibSharp/Mpeg/AudioHeader.cs
 +++ b/src/TaglibSharp/Mpeg/AudioHeader.cs
-@@ -356,6 +356,18 @@ public struct AudioHeader : IAudioCodec
+@@ -356,6 +356,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -762,7 +832,7 @@ index 020aab1..ac53ef5 100644
  					continue;
  				} else {
  					return (AppleDataBox)box.GetChild (BoxType.Data);
-@@ -1580,6 +1585,77 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -1580,6 +1585,77 @@ public override string MusicBrainzReleaseCountry {
  			set { SetDashBox ("com.apple.iTunes", "MusicBrainz Album Release Country", value); }
  		}
  
@@ -840,7 +910,7 @@ index 020aab1..ac53ef5 100644
  		/// <summary>
  		///    Gets and sets the ReplayGain Track Value of the media represented by
  		///    the current instance.
-@@ -1742,21 +1818,21 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -1742,21 +1818,21 @@ public override string ISRC {
  			set { SetDashBox ("com.apple.iTunes", "ISRC", value); }
  		}
  
@@ -877,24 +947,11 @@ index 020aab1..ac53ef5 100644
  
  		/// <summary>
  		///    Gets and sets the Remixer
-diff --git a/src/TaglibSharp/Mpeg4/BoxFactory.cs b/src/TaglibSharp/Mpeg4/BoxFactory.cs
-index 1c952f6..0fed9f4 100644
---- a/src/TaglibSharp/Mpeg4/BoxFactory.cs
-+++ b/src/TaglibSharp/Mpeg4/BoxFactory.cs
-@@ -112,7 +112,7 @@ public static class BoxFactory
- 				return new AppleElementaryStreamDescriptor (header, file, handler);
- 			else if (type == BoxType.Free || type == BoxType.Skip)
- 				return new IsoFreeSpaceBox (header, file, handler);
--			else if (type == BoxType.Mean || type == BoxType.Name)
-+			else if ((type == BoxType.Mean || type == BoxType.Name) && header.DataSize >= 4)
- 				return new AppleAdditionalInfoBox (header, file, handler);
- 
- 			// If we still don't have a tag, and we're inside an
 diff --git a/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs b/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs
 index d8f71c3..6f59f99 100644
 --- a/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs
 +++ b/src/TaglibSharp/Mpeg4/Boxes/IsoAudioSampleEntry.cs
-@@ -189,6 +189,18 @@ public IsoAudioSampleEntry (BoxHeader header, TagLib.File file, IsoHandlerBox ha
+@@ -189,6 +189,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -917,7 +974,7 @@ diff --git a/src/TaglibSharp/Ogg/Codecs/Opus.cs b/src/TaglibSharp/Ogg/Codecs/Opu
 index a4717cc..68f2219 100644
 --- a/src/TaglibSharp/Ogg/Codecs/Opus.cs
 +++ b/src/TaglibSharp/Ogg/Codecs/Opus.cs
-@@ -209,6 +209,18 @@ public override void SetCommentPacket (ByteVectorCollection packets, XiphComment
+@@ -209,6 +209,18 @@ public int AudioBitrate {
  			get { return 0; }
  		}
  
@@ -952,7 +1009,7 @@ index 917f9cb..c6c8438 100644
  			else
  				packets.Insert (1, data);
  		}
-@@ -203,6 +207,18 @@ public override void SetCommentPacket (ByteVectorCollection packets, XiphComment
+@@ -203,6 +207,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -975,7 +1032,7 @@ diff --git a/src/TaglibSharp/Ogg/GroupedComment.cs b/src/TaglibSharp/Ogg/Grouped
 index 80f2a90..2b30997 100644
 --- a/src/TaglibSharp/Ogg/GroupedComment.cs
 +++ b/src/TaglibSharp/Ogg/GroupedComment.cs
-@@ -1290,6 +1290,138 @@ public void AddComment (uint streamSerialNumber, ByteVector data)
+@@ -1290,6 +1290,138 @@ public override string MusicBrainzReleaseCountry {
  			set { if (tags.Count > 0) tags[0].MusicBrainzReleaseCountry = value; }
  		}
  
@@ -1118,7 +1175,7 @@ diff --git a/src/TaglibSharp/Ogg/XiphComment.cs b/src/TaglibSharp/Ogg/XiphCommen
 index dd1f98e..102c200 100644
 --- a/src/TaglibSharp/Ogg/XiphComment.cs
 +++ b/src/TaglibSharp/Ogg/XiphComment.cs
-@@ -982,6 +982,10 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -982,6 +982,10 @@ public override uint TrackCount {
  					null && uint.TryParse (text, out var value))
  					return value;
  
@@ -1129,7 +1186,7 @@ index dd1f98e..102c200 100644
  				if ((text = GetFirstField ("TRACKNUMBER")) !=
  					null && (values = text.Split ('/'))
  					.Length > 1 && uint.TryParse (
-@@ -1047,6 +1051,10 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -1047,6 +1051,10 @@ public override uint DiscCount {
  					&& uint.TryParse (text, out var value))
  					return value;
  
@@ -1140,7 +1197,7 @@ index dd1f98e..102c200 100644
  				if ((text = GetFirstField ("DISCNUMBER")) !=
  					null && (values = text.Split ('/'))
  					.Length > 1 && uint.TryParse (
-@@ -1400,6 +1408,74 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -1400,6 +1408,74 @@ public override string MusicBrainzReleaseCountry {
  			set { SetField ("RELEASECOUNTRY", value); }
  		}
  
@@ -1215,7 +1272,7 @@ index dd1f98e..102c200 100644
  		/// <summary>
  		///    Gets and sets a collection of pictures associated with
  		///    the media represented by the current instance.
-@@ -1637,19 +1713,19 @@ IEnumerator IEnumerable.GetEnumerator ()
+@@ -1637,19 +1713,19 @@ public override string RemixedBy {
  			set { SetField ("REMIXEDBY", value); }
  		}
  
@@ -1252,7 +1309,7 @@ diff --git a/src/TaglibSharp/Properties.cs b/src/TaglibSharp/Properties.cs
 index befda88..5a6ce9a 100644
 --- a/src/TaglibSharp/Properties.cs
 +++ b/src/TaglibSharp/Properties.cs
-@@ -242,6 +242,32 @@ public Properties (TimeSpan duration, IEnumerable<ICodec> codecs)
+@@ -242,6 +242,32 @@ public int AudioBitrate {
  			}
  		}
  
@@ -1289,7 +1346,7 @@ diff --git a/src/TaglibSharp/Riff/WaveFormatEx.cs b/src/TaglibSharp/Riff/WaveFor
 index 360a2b6..03b2873 100644
 --- a/src/TaglibSharp/Riff/WaveFormatEx.cs
 +++ b/src/TaglibSharp/Riff/WaveFormatEx.cs
-@@ -179,6 +179,18 @@ public WaveFormatEx (ByteVector data, int offset)
+@@ -179,6 +179,18 @@ public int AudioBitrate {
  			}
  		}
  
@@ -1312,7 +1369,7 @@ diff --git a/src/TaglibSharp/Tag.cs b/src/TaglibSharp/Tag.cs
 index 9e5c00b..4ef6fc5 100644
 --- a/src/TaglibSharp/Tag.cs
 +++ b/src/TaglibSharp/Tag.cs
-@@ -1078,6 +1078,66 @@ public abstract class Tag
+@@ -1078,6 +1078,66 @@ public virtual string Length {
  			set { }
  		}
  
@@ -1380,7 +1437,7 @@ index 9e5c00b..4ef6fc5 100644
  		///    Gets and sets a collection of pictures associated with
  		///    the media represented by the current instance.
 diff --git a/src/TaglibSharp/TaglibSharp.csproj b/src/TaglibSharp/TaglibSharp.csproj
-index 88ac00d..aec9676 100644
+index 23bdd8e..cb4bd9c 100644
 --- a/src/TaglibSharp/TaglibSharp.csproj
 +++ b/src/TaglibSharp/TaglibSharp.csproj
 @@ -1,6 +1,8 @@
@@ -1388,7 +1445,7 @@ index 88ac00d..aec9676 100644
  
    <PropertyGroup>
 +    <ReleaseVersion>2.3.0.0</ReleaseVersion> <!-- From Directory.Build.props -->
-+    <LibTargetFrameworks>net47;netstandard2.0</LibTargetFrameworks> <!-- From Directory.Build.props -->
++    <LibTargetFrameworks>netstandard2.1</LibTargetFrameworks> <!-- From Directory.Build.props -->
      <TargetFrameworks>$(LibTargetFrameworks)</TargetFrameworks>
      <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\TaglibSharp.xml</DocumentationFile>
      <AssemblyName>TagLibSharp</AssemblyName>
