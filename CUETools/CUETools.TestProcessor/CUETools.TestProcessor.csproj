@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Compile Include="FileGroupInfoTest.cs" />
+    <Compile Include="CUEConfigSecurityTest.cs" />
     <Compile Include="ProcessorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
