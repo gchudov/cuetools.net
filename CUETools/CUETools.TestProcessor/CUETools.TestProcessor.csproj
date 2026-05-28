@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="AccurateRipMetaTest.cs" />
     <Compile Include="FileGroupInfoTest.cs" />
     <Compile Include="ProcessorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -43,6 +44,10 @@
   <ItemGroup>
     <None Remove="Test Images\**\*.*" />
     <None Include="Test Images\**\*.*" CopyToOutputDirectory="PreserveNewest" TargetPath="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Fixtures\accuraterip-meta-amarok.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
