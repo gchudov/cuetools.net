@@ -298,6 +298,72 @@ namespace CUETools.TestProcessor
             Assert.AreEqual(0, entry.metadata.AlbumArt.Count);
         }
 
+        [TestMethod]
+        public void LookupPostsSerializedAccurateRipIdAndUsesProxy()
+        {
+            var toc = CreateTwoTrackToc();
+            var proxy = new WebProxy("127.0.0.1", 8888);
+            var transport = new FakeTransport { Response = SampleJson(trackCount: 2) };
+            var provider = new AccurateRipMetaProvider(transport);
+
+            CUEMetadataEntry entry = provider.Lookup(toc, proxy);
+
+            Assert.IsNotNull(entry);
+            Assert.AreEqual(1, transport.PostCount);
+            Assert.AreEqual(AccurateRipMeta.Endpoint, transport.Url);
+            Assert.AreSame(proxy, transport.Proxy);
+            var body = JsonConvert.DeserializeObject<Dictionary<string, string>>(transport.Body);
+            Assert.AreEqual(string.Format("{0:000}-{1}", toc.AudioTracks, AccurateRipVerify.CalculateAccurateRipId(toc)), body["accurateripdiscid"]);
+        }
+
+        [TestMethod]
+        public void LookupReturnsNullWhenTransportThrows()
+        {
+            var transport = new FakeTransport { Exception = new WebException("network unavailable") };
+            var provider = new AccurateRipMetaProvider(transport);
+
+            CUEMetadataEntry entry = provider.Lookup(CreateTwoTrackToc(), null);
+
+            Assert.IsNull(entry);
+            Assert.AreEqual(1, transport.PostCount);
+        }
+
+        [TestMethod]
+        public void LookupReturnsNullForInvalidJson()
+        {
+            var transport = new FakeTransport { Response = "{not-json" };
+            var provider = new AccurateRipMetaProvider(transport);
+
+            CUEMetadataEntry entry = provider.Lookup(CreateTwoTrackToc(), null);
+
+            Assert.IsNull(entry);
+            Assert.AreEqual(1, transport.PostCount);
+        }
+
+        [TestMethod]
+        public void LookupReturnsNullForNullTocWithoutCallingTransport()
+        {
+            var transport = new FakeTransport { Response = SampleJson(trackCount: 2) };
+            var provider = new AccurateRipMetaProvider(transport);
+
+            CUEMetadataEntry entry = provider.Lookup(null, new WebProxy("127.0.0.1", 8888));
+
+            Assert.IsNull(entry);
+            Assert.AreEqual(0, transport.PostCount);
+        }
+
+        [TestMethod]
+        public void LookupReturnsNullForInvalidMappedJson()
+        {
+            var transport = new FakeTransport { Response = SampleJson(trackCount: 1) };
+            var provider = new AccurateRipMetaProvider(transport);
+
+            CUEMetadataEntry entry = provider.Lookup(CreateTwoTrackToc(), null);
+
+            Assert.IsNull(entry);
+            Assert.AreEqual(1, transport.PostCount);
+        }
+
         private static CDImageLayout CreateAmarokToc()
         {
             var sheet = new CUESheet(new CUEConfig());
@@ -389,6 +455,29 @@ namespace CUETools.TestProcessor
                 _arturl = "http://covers.example/front.jpg",
                 tracks = tracks
             });
+        }
+
+        private sealed class FakeTransport : IAccurateRipMetaTransport
+        {
+            public string Url { get; private set; }
+            public string Body { get; private set; }
+            public IWebProxy Proxy { get; private set; }
+            public int PostCount { get; private set; }
+            public string Response { get; set; }
+            public Exception Exception { get; set; }
+
+            public string Post(string url, string body, IWebProxy proxy)
+            {
+                PostCount++;
+                Url = url;
+                Body = body;
+                Proxy = proxy;
+
+                if (Exception != null)
+                    throw Exception;
+
+                return Response;
+            }
         }
     }
 }
