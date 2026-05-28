@@ -16,7 +16,9 @@ using CUETools.CTDB;
 using CUETools.Codecs;
 using CUETools.Compression;
 using CUETools.Ripper;
+#if DORMANT_FREEDB
 using Freedb;
+#endif
 
 namespace CUETools.Processor
 {
@@ -126,6 +128,8 @@ namespace CUETools.Processor
         {
             get { return _albumArt; }
         }
+
+        public AccurateRipMetaProvider AccurateRipMetaProvider { get; set; }
 
 #if NET48 || NET20
         public Image Cover
@@ -537,6 +541,7 @@ namespace CUETools.Processor
         public CUESheet(CUEConfig config)
         {
             _config = config;
+            AccurateRipMetaProvider = new AccurateRipMetaProvider();
             _progress = new CUEToolsProgressEventArgs();
             _progress.cueSheet = this;
             _attributes = new List<CUELine>();
@@ -829,6 +834,13 @@ namespace CUETools.Processor
             _localDB.Save();
         }
 
+        protected virtual IEnumerable<CTDBResponseMeta> LookupCtdbMetadata(CTDBMetadataSearch metadataSearch)
+        {
+            var ctdb = new CUEToolsDB(TOC, proxy);
+            ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, metadataSearch);
+            return ctdb.Metadata;
+        }
+
         public List<object> LookupAlbumInfo(bool useCache, bool useCUE, bool useCTDB, CTDBMetadataSearch metadataSearch)
         {
             List<object> Releases = new List<object>();
@@ -888,22 +900,37 @@ namespace CUETools.Processor
                         Releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local") { cover = frontCover });
             }
 
+#if DORMANT_FREEDB
             bool ctdbFound = false;
+#endif
             if (useCTDB)
             {
                 ShowProgress("Looking up album via CTDB...", 0.0, null, null);
-                var ctdb = new CUEToolsDB(TOC, proxy);
-                ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, metadataSearch);
-                foreach (var meta in ctdb.Metadata)
+                foreach (var meta in LookupCtdbMetadata(metadataSearch))
                 {
                     CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
                     metadata.FillFromCtdb(meta, TOC.FirstAudio - 1);
                     CDImageLayout toc = TOC; //  TocFromCDEntry(meta);
                     Releases.Add(new CUEMetadataEntry(metadata, toc, meta.source));
+#if DORMANT_FREEDB
                     ctdbFound = true;
+#endif
                 }
             }
 
+            if (metadataSearch == CTDBMetadataSearch.Extensive)
+            {
+                ShowProgress("Looking up album via AccurateRip Meta...", 0.0, null, null);
+                CheckStop();
+
+                AccurateRipMetaProvider provider = AccurateRipMetaProvider ?? new AccurateRipMetaProvider();
+                CUEMetadataEntry accurateRipMetaEntry = provider.Lookup(TOC, proxy);
+                if (accurateRipMetaEntry != null)
+                    Releases.Add(accurateRipMetaEntry);
+            }
+
+#if DORMANT_FREEDB
+            // FreeDB lookup is dormant. AccurateRip Meta is the active replacement provider.
             if (!ctdbFound && metadataSearch == CTDBMetadataSearch.Extensive)
             {
                 ShowProgress("Looking up album via Freedb...", 0.0, null, null);
@@ -968,11 +995,14 @@ namespace CUETools.Processor
                         throw ex;
                 }
             }
+#endif
 
             ShowProgress("", 0, null, null);
             return Releases;
         }
 
+#if DORMANT_FREEDB
+        // FreeDB TOC reconstruction is dormant with the FreeDB provider.
         public CDImageLayout TocFromCDEntry(CDEntry cdEntry)
         {
             CDImageLayout tocFromCDEntry = new CDImageLayout();
@@ -990,6 +1020,7 @@ namespace CUETools.Processor
                 tocFromCDEntry[1][0].Start = 0;
             return tocFromCDEntry;
         }
+#endif
 
         public void Open(string pathIn)
         {

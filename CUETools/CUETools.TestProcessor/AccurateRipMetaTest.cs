@@ -582,6 +582,97 @@ namespace CUETools.TestProcessor
             return -1;
         }
 
+        [TestMethod]
+        public void LookupAlbumInfoExtensiveAddsAccurateRipMeta()
+        {
+            var transport = new FakeTransport { Response = SampleJson(trackCount: 1) };
+            var sheet = new CUESheet(new CUEConfig())
+            {
+                AccurateRipMetaProvider = new AccurateRipMetaProvider(transport)
+            };
+            sheet.Open("Amarok\\Amarok.cue");
+
+            var releases = sheet.LookupAlbumInfo(false, false, false, CUETools.CTDB.CTDBMetadataSearch.Extensive)
+                .OfType<CUEMetadataEntry>()
+                .ToList();
+
+            Assert.AreEqual(1, releases.Count(entry => entry.ImageKey == AccurateRipMeta.SourceKey));
+        }
+
+        [TestMethod]
+        public void LookupAlbumInfoExtensiveAddsAccurateRipMetaWhenCtdbReturnedMetadata()
+        {
+            var transport = new FakeTransport { Response = SampleJson(trackCount: 1) };
+            var sheet = new CtdbStubCUESheet(new CUEConfig(), CreateCtdbMetadata())
+            {
+                AccurateRipMetaProvider = new AccurateRipMetaProvider(transport)
+            };
+            sheet.Open("Amarok\\Amarok.cue");
+
+            var releases = sheet.LookupAlbumInfo(false, false, true, CTDBMetadataSearch.Extensive)
+                .OfType<CUEMetadataEntry>()
+                .ToList();
+
+            Assert.AreEqual(1, releases.Count(entry => entry.ImageKey == "ctdb"));
+            Assert.AreEqual(1, releases.Count(entry => entry.ImageKey == AccurateRipMeta.SourceKey));
+            Assert.AreEqual(1, transport.PostCount);
+        }
+
+        [TestMethod]
+        public void LookupAlbumInfoDefaultDoesNotQueryAccurateRipMeta()
+        {
+            var transport = new FakeTransport { Response = SampleJson(trackCount: 1) };
+            var sheet = new CUESheet(new CUEConfig())
+            {
+                AccurateRipMetaProvider = new AccurateRipMetaProvider(transport)
+            };
+            sheet.Open("Amarok\\Amarok.cue");
+
+            var releases = sheet.LookupAlbumInfo(false, false, false, CUETools.CTDB.CTDBMetadataSearch.Default)
+                .OfType<CUEMetadataEntry>()
+                .ToList();
+
+            Assert.AreEqual(0, releases.Count(entry => entry.ImageKey == AccurateRipMeta.SourceKey));
+            Assert.IsNull(transport.Url);
+        }
+
+        private sealed class CtdbStubCUESheet : CUESheet
+        {
+            private readonly IEnumerable<CTDBResponseMeta> ctdbMetadata;
+
+            public CtdbStubCUESheet(CUEConfig config, IEnumerable<CTDBResponseMeta> ctdbMetadata)
+                : base(config)
+            {
+                this.ctdbMetadata = ctdbMetadata;
+            }
+
+            protected override IEnumerable<CTDBResponseMeta> LookupCtdbMetadata(CTDBMetadataSearch metadataSearch)
+            {
+                return ctdbMetadata;
+            }
+        }
+
+        private static IEnumerable<CTDBResponseMeta> CreateCtdbMetadata()
+        {
+            return new[]
+            {
+                new CTDBResponseMeta
+                {
+                    source = "ctdb",
+                    artist = "CTDB Artist",
+                    album = "CTDB Album",
+                    track = new[]
+                    {
+                        new CTDBResponseMetaTrack
+                        {
+                            name = "CTDB Track",
+                            artist = "CTDB Artist"
+                        }
+                    }
+                }
+            };
+        }
+
         private sealed class CapturedHttpRequest
         {
             public string Method { get; set; }
