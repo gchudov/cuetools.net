@@ -33,7 +33,6 @@
     <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj" />
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
-    <ProjectReference Include="..\Freedb\Freedb.csproj" />
     <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
       <Private>true</Private>
     </ProjectReference>

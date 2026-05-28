@@ -38,7 +38,6 @@
     <ProjectReference Include="..\..\CUETools.CTDB\CUETools.CTDB.csproj" />
     <ProjectReference Include="..\..\CUETools.Processor\CUETools.Processor.csproj" />
     <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj" />
-    <ProjectReference Include="..\..\Freedb\Freedb.csproj" />
   </ItemGroup>
 
   <ItemGroup>

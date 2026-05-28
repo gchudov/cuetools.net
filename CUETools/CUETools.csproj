@@ -48,7 +48,6 @@
     <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj" />
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
     <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj" />
-    <ProjectReference Include="..\Freedb\Freedb.csproj" />
     <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj" />
   </ItemGroup>
 

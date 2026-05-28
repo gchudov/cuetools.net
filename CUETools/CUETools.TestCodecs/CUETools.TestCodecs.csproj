@@ -46,7 +46,6 @@
     <ProjectReference Include="..\..\CUETools.DSP.Resampler\CUETools.DSP.Resampler.csproj" />
     <ProjectReference Include="..\..\CUETools.Ripper\CUETools.Ripper.csproj" />
     <ProjectReference Include="..\..\CUETools.TestHelpers\CUETools.TestHelpers.csproj" />
-    <ProjectReference Include="..\..\Freedb\Freedb.csproj" />
   </ItemGroup>
 
   <ItemGroup>
