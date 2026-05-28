@@ -4,6 +4,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
 using CUETools.CTDB;
@@ -314,6 +317,31 @@ namespace CUETools.TestProcessor
             Assert.AreSame(proxy, transport.Proxy);
             var body = JsonConvert.DeserializeObject<Dictionary<string, string>>(transport.Body);
             Assert.AreEqual(string.Format("{0:000}-{1}", toc.AudioTracks, AccurateRipVerify.CalculateAccurateRipId(toc)), body["accurateripdiscid"]);
+            Assert.AreEqual(AccurateRipMeta.SourceKey, entry.ImageKey);
+            Assert.AreEqual("The Album", entry.metadata.Title);
+        }
+
+        [TestMethod]
+        public async Task HttpTransportPostsLiveRequestShapeToLoopbackServer()
+        {
+            const string requestBody = "{\"accurateripdiscid\":\"001-test\"}";
+            const string responseBody = "{}";
+
+            using (var listener = new TcpListener(IPAddress.Loopback, 0))
+            {
+                listener.Start();
+                int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+                Task<CapturedHttpRequest> serverTask = ReadSingleRequestAsync(listener, responseBody);
+
+                string response = new AccurateRipMetaHttpTransport().Post("http://127.0.0.1:" + port + "/", requestBody, null);
+                CapturedHttpRequest request = await serverTask;
+
+                Assert.AreEqual(responseBody, response);
+                Assert.AreEqual("POST", request.Method);
+                Assert.AreEqual("Mozilla/5.0", request.UserAgent);
+                StringAssert.StartsWith(request.ContentType, "application/x-www-form-urlencoded");
+                Assert.AreEqual(requestBody, request.Body);
+            }
         }
 
         [TestMethod]
@@ -455,6 +483,111 @@ namespace CUETools.TestProcessor
                 _arturl = "http://covers.example/front.jpg",
                 tracks = tracks
             });
+        }
+
+        private static async Task<CapturedHttpRequest> ReadSingleRequestAsync(TcpListener listener, string responseBody)
+        {
+            using (TcpClient client = await listener.AcceptTcpClientAsync())
+            using (NetworkStream stream = client.GetStream())
+            {
+                byte[] rawRequest = await ReadRequestBytesThroughHeadersAsync(stream);
+                int headerEnd = FindHeaderEnd(rawRequest, rawRequest.Length);
+                string headerText = Encoding.ASCII.GetString(rawRequest, 0, headerEnd);
+                string[] headerLines = headerText.Split(new[] { "\r\n" }, StringSplitOptions.None);
+
+                var captured = new CapturedHttpRequest();
+                captured.Method = headerLines[0].Split(' ')[0];
+
+                int contentLength = 0;
+                bool expectsContinue = false;
+                for (int i = 1; i < headerLines.Length; i++)
+                {
+                    int separator = headerLines[i].IndexOf(':');
+                    if (separator < 0)
+                        continue;
+
+                    string name = headerLines[i].Substring(0, separator);
+                    string value = headerLines[i].Substring(separator + 1).Trim();
+                    if (string.Equals(name, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                        captured.UserAgent = value;
+                    else if (string.Equals(name, "Content-Type", StringComparison.OrdinalIgnoreCase))
+                        captured.ContentType = value;
+                    else if (string.Equals(name, "Content-Length", StringComparison.OrdinalIgnoreCase))
+                        int.TryParse(value, out contentLength);
+                    else if (string.Equals(name, "Expect", StringComparison.OrdinalIgnoreCase) && value.IndexOf("100-continue", StringComparison.OrdinalIgnoreCase) >= 0)
+                        expectsContinue = true;
+                }
+
+                if (expectsContinue)
+                {
+                    byte[] continueBytes = Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
+                    await stream.WriteAsync(continueBytes, 0, continueBytes.Length);
+                }
+
+                int bodyStart = headerEnd + 4;
+                byte[] bodyBytes = new byte[contentLength];
+                int bufferedBodyBytes = Math.Min(contentLength, rawRequest.Length - bodyStart);
+                if (bufferedBodyBytes > 0)
+                    Buffer.BlockCopy(rawRequest, bodyStart, bodyBytes, 0, bufferedBodyBytes);
+
+                int offset = bufferedBodyBytes;
+                while (offset < contentLength)
+                {
+                    int read = await stream.ReadAsync(bodyBytes, offset, contentLength - offset);
+                    if (read == 0)
+                        break;
+
+                    offset += read;
+                }
+
+                captured.Body = Encoding.UTF8.GetString(bodyBytes, 0, offset);
+
+                byte[] responseBodyBytes = Encoding.UTF8.GetBytes(responseBody);
+                string responseHeaders = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: " + responseBodyBytes.Length + "\r\nConnection: close\r\n\r\n";
+                byte[] responseHeaderBytes = Encoding.ASCII.GetBytes(responseHeaders);
+                await stream.WriteAsync(responseHeaderBytes, 0, responseHeaderBytes.Length);
+                await stream.WriteAsync(responseBodyBytes, 0, responseBodyBytes.Length);
+
+                return captured;
+            }
+        }
+
+        private static async Task<byte[]> ReadRequestBytesThroughHeadersAsync(NetworkStream stream)
+        {
+            var request = new MemoryStream();
+            byte[] buffer = new byte[1024];
+            while (true)
+            {
+                int read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                if (read == 0)
+                    break;
+
+                request.Write(buffer, 0, read);
+                byte[] bytes = request.ToArray();
+                if (FindHeaderEnd(bytes, bytes.Length) >= 0)
+                    return bytes;
+            }
+
+            return request.ToArray();
+        }
+
+        private static int FindHeaderEnd(byte[] bytes, int length)
+        {
+            for (int i = 0; i <= length - 4; i++)
+            {
+                if (bytes[i] == '\r' && bytes[i + 1] == '\n' && bytes[i + 2] == '\r' && bytes[i + 3] == '\n')
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private sealed class CapturedHttpRequest
+        {
+            public string Method { get; set; }
+            public string UserAgent { get; set; }
+            public string ContentType { get; set; }
+            public string Body { get; set; }
         }
 
         private sealed class FakeTransport : IAccurateRipMetaTransport
