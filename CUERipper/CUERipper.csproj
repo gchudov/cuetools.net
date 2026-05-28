@@ -17,6 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Freedb\Freedb.csproj" Condition="'$(EnableDormantFreedb)' == 'true'" />
     <ProjectReference Include="..\CUEControls\CUEControls.csproj" />
     <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />

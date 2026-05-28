@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
 using CUETools.CTDB;
@@ -17,6 +18,7 @@ namespace CUETools.Processor
     {
         public const string SourceKey = "accurateripmeta";
         public const string DisplayName = "AccurateRip Meta";
+        // The deployed endpoint was validated over HTTP during contract review.
         public const string Endpoint = "http://meta.accuraterip.com/discmatch";
 
         public static bool TryParseMetadata(string json, CDImageLayout toc, out CUEMetadataEntry entry)
@@ -54,10 +56,11 @@ namespace CUETools.Processor
                 Artist = NormalizeProviderList(response["Artist"]),
                 Title = Clean(response["Album"]),
                 Year = Clean(response["Year"]),
+                // AccurateRip Meta may return a CR/LF-delimited genre list; CUEMetadata has a single Genre slot.
                 Genre = FirstNonEmptyLine(response["Genre"]),
-                Barcode = Clean(response["UPC"]),
+                Barcode = CleanIdentifier(response["UPC"], "UPC"),
                 Label = Clean(response["Label"]),
-                LabelNo = Clean(response["CatalogNum"])
+                LabelNo = CleanIdentifier(response["CatalogNum"], "CatalogNum")
             };
 
             // AccurateRip Meta also exposes Styles, Composers, and Conductors. Keep them unused until CUETools has explicit fields for them; do not overwrite Genre with Styles.
@@ -67,7 +70,7 @@ namespace CUETools.Processor
 
                 metadata.Tracks[i].Title = Clean(track["Title"]);
                 metadata.Tracks[i].Artist = NormalizeProviderList(track["Artist"]);
-                metadata.Tracks[i].ISRC = Clean(track["ISRC"]);
+                metadata.Tracks[i].ISRC = CleanIdentifier(track["ISRC"], "ISRC");
             }
 
             string coverUrl = NormalizeCoverUrl(response["_arturl"]);
@@ -106,6 +109,21 @@ namespace CUETools.Processor
             JValue scalar = value as JValue;
             // The live contract uses strings for identifiers such as UPC. Numeric coercion is fail-soft only and cannot preserve leading zeroes.
             return scalar == null || scalar.Value == null ? "" : Convert.ToString(scalar.Value, CultureInfo.InvariantCulture).Trim();
+        }
+
+        private static string CleanIdentifier(JToken value, string fieldName)
+        {
+            if (value == null || value.Type == JTokenType.Null)
+                return "";
+
+            if (value.Type != JTokenType.String)
+            {
+                if (value.Type != JTokenType.Array && value.Type != JTokenType.Object)
+                    System.Diagnostics.Trace.WriteLine("AccurateRip Meta ignored non-string " + fieldName + " value.");
+                return "";
+            }
+
+            return Clean(value);
         }
 
         private static List<JObject> OrderTracksByTrackNumber(JArray tracks, int audioTracks)
@@ -208,11 +226,20 @@ namespace CUETools.Processor
 
                 return AccurateRipMeta.TryParseMetadata(json, toc, out CUEMetadataEntry entry) ? entry : null;
             }
+            catch (Exception ex) when (IsCancellation(ex))
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine("AccurateRip Meta lookup failed: " + ex.Message);
                 return null;
             }
+        }
+
+        private static bool IsCancellation(Exception ex)
+        {
+            return ex is StopException || ex is OperationCanceledException || ex is ThreadAbortException;
         }
     }
 
@@ -228,6 +255,7 @@ namespace CUETools.Processor
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
             request.UserAgent = "Mozilla/5.0";
+            // The server expects the EasyEACGUI-compatible JSON body with this form content type.
             request.ContentType = "application/x-www-form-urlencoded";
             request.AllowAutoRedirect = false;
             request.Timeout = 15000;
@@ -240,10 +268,22 @@ namespace CUETools.Processor
             using (Stream requestStream = request.GetRequestStream())
                 requestStream.Write(bytes, 0, bytes.Length);
 
-            using (var response = (HttpWebResponse)request.GetResponse())
-            using (Stream responseStream = response.GetResponseStream())
-            using (var reader = new StreamReader(responseStream, Encoding.UTF8))
-                return reader.ReadToEnd();
+            try
+            {
+                using (var response = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = response.GetResponseStream())
+                using (var reader = new StreamReader(responseStream, Encoding.UTF8))
+                    return reader.ReadToEnd();
+            }
+            catch (WebException ex)
+            {
+                var response = ex.Response as HttpWebResponse;
+                if (response != null && (int)response.StatusCode >= 300 && (int)response.StatusCode < 400)
+                    System.Diagnostics.Trace.WriteLine("AccurateRip Meta redirect not followed: " + response.StatusCode + " " + response.Headers["Location"]);
+                if (response != null)
+                    response.Dispose();
+                throw;
+            }
         }
     }
 

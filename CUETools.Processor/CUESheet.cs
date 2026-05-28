@@ -541,7 +541,6 @@ namespace CUETools.Processor
         public CUESheet(CUEConfig config)
         {
             _config = config;
-            AccurateRipMetaProvider = new AccurateRipMetaProvider();
             _progress = new CUEToolsProgressEventArgs();
             _progress.cueSheet = this;
             _attributes = new List<CUELine>();
@@ -920,13 +919,23 @@ namespace CUETools.Processor
 
             if (metadataSearch == CTDBMetadataSearch.Extensive)
             {
-                ShowProgress("Looking up album via AccurateRip Meta...", 0.0, null, null);
-                CheckStop();
+                try
+                {
+                    // Extensive deliberately adds AccurateRip Meta even when CTDB already returned metadata.
+                    ShowProgress("Looking up album via AccurateRip Meta...", 0.0, null, null);
+                    CheckStop();
 
-                AccurateRipMetaProvider provider = AccurateRipMetaProvider ?? new AccurateRipMetaProvider();
-                CUEMetadataEntry accurateRipMetaEntry = provider.Lookup(TOC, proxy);
-                if (accurateRipMetaEntry != null)
-                    Releases.Add(accurateRipMetaEntry);
+                    AccurateRipMetaProvider provider = AccurateRipMetaProvider ?? new AccurateRipMetaProvider();
+                    CUEMetadataEntry accurateRipMetaEntry = provider.Lookup(TOC, proxy);
+                    if (accurateRipMetaEntry != null)
+                        Releases.Add(accurateRipMetaEntry);
+                }
+                catch (Exception ex)
+                {
+                    if (ex is StopException || ex is OperationCanceledException || ex is ThreadAbortException)
+                        throw;
+                    System.Diagnostics.Trace.WriteLine("AccurateRip Meta lookup failed: " + ex.Message);
+                }
             }
 
 #if DORMANT_FREEDB

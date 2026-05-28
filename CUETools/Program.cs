@@ -121,7 +121,11 @@ namespace JDP
 			}
 
 			if (!createdNew)
+			{
+				m_Mutex.Dispose();
+				m_Mutex = null;
 				return false;
+			}
 
 			m_PipeName = "CUETools-" + id;
 			m_Cancellation = new CancellationTokenSource();
@@ -134,12 +138,16 @@ namespace JDP
 
         public static void Cleanup()
         {
-			if (m_Cancellation != null)
+			CancellationTokenSource cancellation = m_Cancellation;
+			string pipeName = m_PipeName;
+			Thread listenerThread = m_ListenerThread;
+
+			if (cancellation != null)
 			{
-				m_Cancellation.Cancel();
+				cancellation.Cancel();
 				try
 				{
-					using (NamedPipeClientStream client = new NamedPipeClientStream(".", m_PipeName, PipeDirection.Out))
+					using (NamedPipeClientStream client = new NamedPipeClientStream(".", pipeName, PipeDirection.Out))
 						client.Connect(50);
 				}
 				catch
@@ -147,8 +155,8 @@ namespace JDP
 				}
 			}
 
-			if (m_ListenerThread != null)
-				m_ListenerThread.Join(1000);
+			if (listenerThread != null)
+				listenerThread.Join(1000);
 			m_ListenerThread = null;
 			m_Cancellation = null;
 			m_PipeName = null;
@@ -195,14 +203,19 @@ namespace JDP
 
 		private static void Listen()
 		{
-			while (m_Cancellation != null && !m_Cancellation.IsCancellationRequested)
+			while (true)
 			{
+				CancellationTokenSource cancellation = m_Cancellation;
+				string pipeName = m_PipeName;
+				if (cancellation == null || cancellation.IsCancellationRequested || string.IsNullOrEmpty(pipeName))
+					return;
+
 				try
 				{
-					using (NamedPipeServerStream server = new NamedPipeServerStream(m_PipeName, PipeDirection.InOut, 1))
+					using (NamedPipeServerStream server = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1))
 					{
 						server.WaitForConnection();
-						if (m_Cancellation.IsCancellationRequested)
+						if (cancellation.IsCancellationRequested)
 							continue;
 
 						BinaryReader reader = new BinaryReader(server, Encoding.UTF8, true);

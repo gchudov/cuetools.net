@@ -45,8 +45,7 @@ namespace CUERipper
 		{
 			InitializeComponent();
             if (!imageListMetadataSource.Images.ContainsKey(AccurateRipMeta.SourceKey))
-                using (Image accurateRipIcon = Properties.Resources.accuraterip16)
-                    imageListMetadataSource.Images.Add(AccurateRipMeta.SourceKey, accurateRipIcon);
+                imageListMetadataSource.Images.Add(AccurateRipMeta.SourceKey, Properties.Resources.accuraterip16);
 			_config = new CUEConfig();
 			_startStop = new StartStop();
             cueRipperConfig = new CUERipperConfig();
@@ -955,6 +954,8 @@ namespace CUERipper
                 }
                 catch (Exception ex)
                 {
+                    if (ex is StopException || ex is OperationCanceledException || ex is ThreadAbortException)
+                        throw;
                     System.Diagnostics.Trace.WriteLine(ex.Message);
                 }
 
@@ -1785,6 +1786,7 @@ namespace CUERipper
                         continue;
 
                     releaseCovers.Add(releaseCover);
+                    // args.meta is the same CUEMetadataEntry instance captured from data.Releases for selected-release priority.
                     if (object.ReferenceEquals(release, args.meta) && !string.IsNullOrEmpty(releaseCover.uri))
                         firstUrls.Add(releaseCover.uri);
                 }

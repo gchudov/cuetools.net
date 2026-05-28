@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -276,17 +277,21 @@ namespace CUETools.TestProcessor
         }
 
         [TestMethod]
-        public void TryParseMetadataAllowsOddScalarShapesWithoutDroppingMetadata()
+        public void TryParseMetadataAllowsOddScalarYearButDropsNumericIdentifiers()
         {
-            string json = SampleJson(trackCount: 2)
-                .Replace("\"Year\":\"1999\"", "\"Year\":1999")
-                .Replace("\"UPC\":\"0123456789012\"", "\"UPC\":123456789012");
+            JObject json = JObject.Parse(SampleJson(trackCount: 2));
+            json["Year"] = 1999;
+            json["CatalogNum"] = 12345;
+            json["UPC"] = 123456789012;
+            ((JArray)json["tracks"])[0]["ISRC"] = 123456789012;
 
-            bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
+            bool parsed = AccurateRipMeta.TryParseMetadata(json.ToString(), CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
             Assert.IsTrue(parsed);
             Assert.AreEqual("1999", entry.metadata.Year);
-            Assert.AreEqual("123456789012", entry.metadata.Barcode);
+            Assert.AreEqual("", entry.metadata.LabelNo);
+            Assert.AreEqual("", entry.metadata.Barcode);
+            Assert.AreEqual("", entry.metadata.Tracks[0].ISRC);
         }
 
         [TestMethod]
@@ -316,7 +321,7 @@ namespace CUETools.TestProcessor
             Assert.AreEqual(AccurateRipMeta.Endpoint, transport.Url);
             Assert.AreSame(proxy, transport.Proxy);
             var body = JsonConvert.DeserializeObject<Dictionary<string, string>>(transport.Body);
-            Assert.AreEqual(string.Format("{0:000}-{1}", toc.AudioTracks, AccurateRipVerify.CalculateAccurateRipId(toc)), body["accurateripdiscid"]);
+            Assert.AreEqual(string.Format(CultureInfo.InvariantCulture, "{0:000}-{1}", toc.AudioTracks, AccurateRipVerify.CalculateAccurateRipId(toc)), body["accurateripdiscid"]);
             Assert.AreEqual(AccurateRipMeta.SourceKey, entry.ImageKey);
             Assert.AreEqual("The Album", entry.metadata.Title);
         }
@@ -395,8 +400,13 @@ namespace CUETools.TestProcessor
         private static CDImageLayout CreateAmarokToc()
         {
             var sheet = new CUESheet(new CUEConfig());
-            sheet.Open("Amarok\\Amarok.cue");
+            sheet.Open(AmarokCuePath());
             return sheet.TOC;
+        }
+
+        private static string AmarokCuePath()
+        {
+            return Path.Combine(AppContext.BaseDirectory, "Amarok", "Amarok.cue");
         }
 
         private static CDImageLayout CreateTwoTrackToc()
@@ -590,7 +600,7 @@ namespace CUETools.TestProcessor
             {
                 AccurateRipMetaProvider = new AccurateRipMetaProvider(transport)
             };
-            sheet.Open("Amarok\\Amarok.cue");
+            sheet.Open(AmarokCuePath());
 
             var releases = sheet.LookupAlbumInfo(false, false, false, CUETools.CTDB.CTDBMetadataSearch.Extensive)
                 .OfType<CUEMetadataEntry>()
@@ -607,7 +617,7 @@ namespace CUETools.TestProcessor
             {
                 AccurateRipMetaProvider = new AccurateRipMetaProvider(transport)
             };
-            sheet.Open("Amarok\\Amarok.cue");
+            sheet.Open(AmarokCuePath());
 
             var releases = sheet.LookupAlbumInfo(false, false, true, CTDBMetadataSearch.Extensive)
                 .OfType<CUEMetadataEntry>()
@@ -626,7 +636,7 @@ namespace CUETools.TestProcessor
             {
                 AccurateRipMetaProvider = new AccurateRipMetaProvider(transport)
             };
-            sheet.Open("Amarok\\Amarok.cue");
+            sheet.Open(AmarokCuePath());
 
             var releases = sheet.LookupAlbumInfo(false, false, false, CUETools.CTDB.CTDBMetadataSearch.Default)
                 .OfType<CUEMetadataEntry>()

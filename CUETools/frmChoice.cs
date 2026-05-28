@@ -18,8 +18,7 @@ namespace JDP
         {
             InitializeComponent();
             if (!imageList1.Images.ContainsKey(AccurateRipMeta.SourceKey))
-                using (Image accurateRipIcon = Properties.Resources.accuraterip16)
-                    imageList1.Images.Add(AccurateRipMeta.SourceKey, accurateRipIcon);
+                imageList1.Images.Add(AccurateRipMeta.SourceKey, Properties.Resources.accuraterip16);
         }
 
         public CUESheet CUE;

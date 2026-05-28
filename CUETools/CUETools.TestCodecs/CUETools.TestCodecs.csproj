@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Freedb\Freedb.csproj" Condition="'$(EnableDormantFreedb)' == 'true'" />
     <ProjectReference Include="..\..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
     <ProjectReference Include="..\..\CUETools.CDImage\CUETools.CDImage.csproj" />
     <ProjectReference Include="..\..\CUETools.Codecs.ALAC\CUETools.Codecs.ALAC.csproj" />

@@ -1003,9 +1003,9 @@ namespace JDP
                             UpdateOutputPath(pathIn, cueSheet);
                             pathOut = txtOutputPath.Text;
                             if (dlgRes != DialogResult.Cancel && cueSheet.AlbumArt.Count != 0)
-                                pictureBoxMotd.Image = GetCoverImage(cueSheet);
+                                SetMotdImage(GetCoverImage(cueSheet));
                             else
-                                pictureBoxMotd.Image = motdImage;
+                                SetMotdImage(motdImage);
                         });
 
                         if (dlgRes == DialogResult.Cancel)
@@ -1049,7 +1049,7 @@ namespace JDP
                         {
                             this.Invoke((MethodInvoker)delegate ()
                             {
-                                pictureBoxMotd.Image = GetCoverImage(cueSheet) ?? motdImage;
+                                SetMotdImage(GetCoverImage(cueSheet) ?? motdImage);
                             });
                             cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
                             if (script == null || script.name == "default")
@@ -1300,7 +1300,7 @@ namespace JDP
             if (!running)
             {
                 UpdateActions();
-                pictureBoxMotd.Image = motdImage;
+                SetMotdImage(motdImage);
                 toolStripStatusLabelProcessed.Text = "";
             }
 
@@ -2155,6 +2155,14 @@ namespace JDP
             return true;
         }
 
+        private void SetMotdImage(Image image)
+        {
+            Image previous = pictureBoxMotd.Image;
+            pictureBoxMotd.Image = image;
+            if (previous != null && !object.ReferenceEquals(previous, motdImage) && !object.ReferenceEquals(previous, image))
+                previous.Dispose();
+        }
+
         private static Image GetCoverImage(CUESheet cueSheet)
         {
             if (cueSheet == null || cueSheet.AlbumArt == null)
@@ -2163,9 +2171,13 @@ namespace JDP
                 cueSheet.AlbumArt.Find(x => x.Type != TagLib.PictureType.NotAPicture);
             if (picture == null)
                 return null;
-            using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
-                try { return Image.FromStream(imageStream); }
-                catch { }
+            try
+            {
+                using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
+                using (Image source = Image.FromStream(imageStream))
+                    return new Bitmap(source);
+            }
+            catch { }
             return null;
         }
 
