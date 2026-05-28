@@ -681,6 +681,18 @@ namespace CUETools.TestProcessor
             public string Body { get; set; }
         }
 
+        [TestMethod]
+        public void CUEConfigAdvancedDoesNotExposeFreedbSettings()
+        {
+            var freedbProperties = TypeDescriptor.GetProperties(new CUEConfigAdvanced())
+                .Cast<PropertyDescriptor>()
+                .Where(property => property.Category == "Freedb")
+                .Select(property => property.Name)
+                .ToList();
+
+            CollectionAssert.AreEqual(new string[0], freedbProperties);
+        }
+
         private sealed class FakeTransport : IAccurateRipMetaTransport
         {
             public string Url { get; private set; }
