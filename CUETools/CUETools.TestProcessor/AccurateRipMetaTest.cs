@@ -105,9 +105,11 @@ namespace CUETools.TestProcessor
         [TestMethod]
         public void TryParseMetadataRejectsMissingTrackNumber()
         {
-            string json = SampleJson(trackCount: 2).Replace("\"TrackNumber\":\"2\",", "");
+            JObject json = JObject.Parse(SampleJson(trackCount: 2));
+            JArray tracks = (JArray)json["tracks"];
+            tracks[1]["TrackNumber"].Parent.Remove();
 
-            bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
+            bool parsed = AccurateRipMeta.TryParseMetadata(json.ToString(), CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
             Assert.IsFalse(parsed);
             Assert.IsNull(entry);
@@ -197,12 +199,14 @@ namespace CUETools.TestProcessor
         }
 
         [TestMethod]
-        public void TryParseMetadataRejectsExtraProviderTracks()
+        public void TryParseMetadataAllowsExtraProviderTracks()
         {
             bool parsed = AccurateRipMeta.TryParseMetadata(SampleJson(trackCount: 3), CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
-            Assert.IsFalse(parsed);
-            Assert.IsNull(entry);
+            Assert.IsTrue(parsed);
+            Assert.AreEqual(2, entry.metadata.Tracks.Count);
+            Assert.AreEqual("Track One", entry.metadata.Tracks[0].Title);
+            Assert.AreEqual("Track Two", entry.metadata.Tracks[1].Title);
         }
 
         [TestMethod]
