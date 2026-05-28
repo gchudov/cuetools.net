@@ -115,11 +115,11 @@ namespace CUETools.Processor
             {
                 JObject track = item as JObject;
                 if (track == null)
-                    return null;
+                    continue;
 
                 int trackNumber;
                 if (!int.TryParse(Clean(track["TrackNumber"]), NumberStyles.Integer, CultureInfo.InvariantCulture, out trackNumber))
-                    return null;
+                    continue;
 
                 if (trackNumber < 1 || trackNumber > audioTracks)
                     continue;

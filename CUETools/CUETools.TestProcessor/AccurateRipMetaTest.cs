@@ -239,6 +239,40 @@ namespace CUETools.TestProcessor
         }
 
         [TestMethod]
+        public void TryParseMetadataAllowsSurplusTrackWithoutTrackNumber()
+        {
+            JObject json = JObject.Parse(SampleJson(trackCount: 2));
+            JArray tracks = (JArray)json["tracks"];
+            tracks.Add(new JObject
+            {
+                ["Title"] = "Malformed Provider Extra Track",
+                ["Artist"] = "Ignored Extra Artist"
+            });
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json.ToString(), CreateTwoTrackToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual(2, entry.metadata.Tracks.Count);
+            Assert.AreEqual("Track One", entry.metadata.Tracks[0].Title);
+            Assert.AreEqual("Track Two", entry.metadata.Tracks[1].Title);
+        }
+
+        [TestMethod]
+        public void TryParseMetadataAllowsSurplusNonObjectTrack()
+        {
+            JObject json = JObject.Parse(SampleJson(trackCount: 2));
+            JArray tracks = (JArray)json["tracks"];
+            tracks.Add("not a track object");
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json.ToString(), CreateTwoTrackToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual(2, entry.metadata.Tracks.Count);
+            Assert.AreEqual("Track One", entry.metadata.Tracks[0].Title);
+            Assert.AreEqual("Track Two", entry.metadata.Tracks[1].Title);
+        }
+
+        [TestMethod]
         public void TryParseMetadataAllowsOddScalarShapesWithoutDroppingMetadata()
         {
             string json = SampleJson(trackCount: 2)
