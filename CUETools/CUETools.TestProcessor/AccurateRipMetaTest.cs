@@ -145,15 +145,35 @@ namespace CUETools.TestProcessor
             Assert.AreEqual(0, entry.metadata.AlbumArt.Count);
         }
 
-        [TestMethod]
-        public void TryParseMetadataRejectsInvalidCoverArtUrl()
+        [DataTestMethod]
+        [DataRow("not a url")]
+        [DataRow("file:///C:/covers/front.jpg")]
+        [DataRow("ftp://covers.example/front.jpg")]
+        [DataRow("//covers.example/front.jpg")]
+        [DataRow("/covers/front.jpg")]
+        public void TryParseMetadataRejectsInvalidCoverArtUrl(string coverArtUrl)
         {
-            string json = SampleJson(trackCount: 2).Replace("http://covers.example/front.jpg", "not a url");
+            string json = SampleJsonWithCoverArtUrl(coverArtUrl);
 
             bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
             Assert.IsTrue(parsed);
             Assert.AreEqual(0, entry.metadata.AlbumArt.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("2", "2")]
+        [DataRow("abc", "2")]
+        [DataRow("0", "2")]
+        [DataRow("1", "3")]
+        public void TryParseMetadataRejectsInvalidTrackNumberSet(string firstTrackNumber, string secondTrackNumber)
+        {
+            string json = SampleJsonWithTrackNumbers(firstTrackNumber, secondTrackNumber);
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
+
+            Assert.IsFalse(parsed);
+            Assert.IsNull(entry);
         }
 
         [TestMethod]
@@ -177,14 +197,12 @@ namespace CUETools.TestProcessor
         }
 
         [TestMethod]
-        public void TryParseMetadataAllowsExtraProviderTracks()
+        public void TryParseMetadataRejectsExtraProviderTracks()
         {
             bool parsed = AccurateRipMeta.TryParseMetadata(SampleJson(trackCount: 3), CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
-            Assert.IsTrue(parsed);
-            Assert.AreEqual(2, entry.metadata.Tracks.Count);
-            Assert.AreEqual("Track One", entry.metadata.Tracks[0].Title);
-            Assert.AreEqual("Track Two", entry.metadata.Tracks[1].Title);
+            Assert.IsFalse(parsed);
+            Assert.IsNull(entry);
         }
 
         [TestMethod]
@@ -226,6 +244,26 @@ namespace CUETools.TestProcessor
             toc.AddTrack(new CDTrack(1, 0, 15000, true, false));
             toc.AddTrack(new CDTrack(2, 15000, 18000, true, false));
             return toc;
+        }
+
+        private static string SampleJsonWithCoverArtUrl(string coverArtUrl)
+        {
+            JObject json = JObject.Parse(SampleJson(trackCount: 2));
+            json["_arturl"] = coverArtUrl;
+            return json.ToString();
+        }
+
+        private static string SampleJsonWithTrackNumbers(params string[] trackNumbers)
+        {
+            JObject json = JObject.Parse(SampleJson(trackNumbers.Length));
+            JArray tracks = (JArray)json["tracks"];
+
+            for (int i = 0; i < trackNumbers.Length; i++)
+            {
+                tracks[i]["TrackNumber"] = trackNumbers[i];
+            }
+
+            return json.ToString();
         }
 
         private static string SampleJson(int trackCount)
