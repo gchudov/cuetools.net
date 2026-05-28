@@ -147,6 +147,20 @@ namespace CUETools.TestProcessor
             Assert.AreEqual(0, entry.metadata.AlbumArt.Count);
         }
 
+        [TestMethod]
+        public void TryParseMetadataAllowsHttpsCoverArtUrl()
+        {
+            string coverArtUrl = "https://covers.example/front.jpg";
+            string json = SampleJsonWithCoverArtUrl(coverArtUrl);
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual(1, entry.metadata.AlbumArt.Count);
+            Assert.AreEqual(coverArtUrl, entry.metadata.AlbumArt[0].uri);
+            Assert.AreEqual(coverArtUrl, entry.metadata.AlbumArt[0].uri150);
+        }
+
         [DataTestMethod]
         [DataRow("not a url")]
         [DataRow("file:///C:/covers/front.jpg")]
@@ -202,6 +216,21 @@ namespace CUETools.TestProcessor
         public void TryParseMetadataAllowsExtraProviderTracks()
         {
             bool parsed = AccurateRipMeta.TryParseMetadata(SampleJson(trackCount: 3), CreateTwoTrackToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual(2, entry.metadata.Tracks.Count);
+            Assert.AreEqual("Track One", entry.metadata.Tracks[0].Title);
+            Assert.AreEqual("Track Two", entry.metadata.Tracks[1].Title);
+        }
+
+        [TestMethod]
+        public void TryParseMetadataAllowsUnorderedExtraProviderTracks()
+        {
+            JObject json = JObject.Parse(SampleJson(trackCount: 3));
+            JArray tracks = (JArray)json["tracks"];
+            json["tracks"] = new JArray(tracks[2], tracks[0], tracks[1]);
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json.ToString(), CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
             Assert.IsTrue(parsed);
             Assert.AreEqual(2, entry.metadata.Tracks.Count);
