@@ -490,6 +490,19 @@ namespace CUERipper
             }
         }
 
+		private void CheckStopRequested()
+		{
+			lock (_startStop)
+			{
+				if (_startStop._stop)
+				{
+					_startStop._stop = false;
+					_startStop._pause = false;
+					throw new StopException();
+				}
+			}
+		}
+
 		private void UploadProgress(object sender, Krystalware.UploadHelper.UploadProgressEventArgs e)
 		{
 			CheckStop();
@@ -944,13 +957,9 @@ namespace CUERipper
                 try
                 {
                     var provider = new AccurateRipMetaProvider();
-                    CUEMetadataEntry accurateRipMeta = provider.Lookup(audioSource.TOC, _config.GetProxy());
-                    if (accurateRipMeta != null && !data.Releases.Any(r =>
-                        r.ImageKey == AccurateRipMeta.SourceKey &&
-                        r.metadata.Contains(accurateRipMeta.metadata)))
-                    {
+                    CUEMetadataEntry accurateRipMeta = provider.Lookup(audioSource.TOC, _config.GetProxy(), CheckStopRequested);
+                    if (accurateRipMeta != null)
                         data.Releases.Add(accurateRipMeta);
-                    }
                 }
                 catch (Exception ex)
                 {

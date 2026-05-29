@@ -57,7 +57,7 @@ namespace CUETools.TestProcessor
             Assert.AreEqual("The Artist & Guest", entry.metadata.Artist);
             Assert.AreEqual("The Album", entry.metadata.Title);
             Assert.AreEqual("1999", entry.metadata.Year);
-            Assert.AreEqual("Rock", entry.metadata.Genre);
+            Assert.AreEqual("Rock; Alternative", entry.metadata.Genre);
             Assert.AreEqual("0123456789012", entry.metadata.Barcode);
             Assert.AreEqual("The Label", entry.metadata.Label);
             Assert.AreEqual("CAT-123", entry.metadata.LabelNo);
@@ -71,8 +71,8 @@ namespace CUETools.TestProcessor
             Assert.AreEqual("Track Artist 2", entry.metadata.Tracks[1].Artist);
             Assert.AreEqual("USAAA0100002", entry.metadata.Tracks[1].ISRC);
             Assert.AreEqual(1, entry.metadata.AlbumArt.Count);
-            Assert.AreEqual("http://covers.example/front.jpg", entry.metadata.AlbumArt[0].uri);
-            Assert.AreEqual("http://covers.example/front.jpg", entry.metadata.AlbumArt[0].uri150);
+            Assert.AreEqual("http://meta.accuraterip.com/albumart/front.jpg", entry.metadata.AlbumArt[0].uri);
+            Assert.AreEqual("http://meta.accuraterip.com/albumart/front.jpg", entry.metadata.AlbumArt[0].uri150);
             Assert.IsTrue(entry.metadata.AlbumArt[0].primary);
         }
 
@@ -82,12 +82,24 @@ namespace CUETools.TestProcessor
             bool parsed = AccurateRipMeta.TryParseMetadata(SampleJson(trackCount: 2), CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
             Assert.IsTrue(parsed);
-            Assert.AreEqual("Rock", entry.metadata.Genre);
+            Assert.AreEqual("Rock; Alternative", entry.metadata.Genre);
             Assert.IsFalse(entry.metadata.Genre.Contains("Fusion"));
             Assert.AreEqual("", entry.metadata.Comment);
             Assert.IsFalse(entry.metadata.Comment.Contains("Fusion"));
             Assert.IsFalse(entry.metadata.Tracks.Any(track => track.Comment.Contains("Composer")));
             Assert.IsFalse(entry.metadata.Tracks.Any(track => track.Comment.Contains("Conductor")));
+        }
+
+        [TestMethod]
+        public void TryParseMetadataFormatsMultipleProviderNames()
+        {
+            JObject json = JObject.Parse(SampleJson(trackCount: 2));
+            json["Artist"] = "Artist One\rArtist Two\rArtist Three";
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json.ToString(), CreateTwoTrackToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual("Artist One, Artist Two & Artist Three", entry.metadata.Artist);
         }
 
         [TestMethod]
@@ -143,7 +155,7 @@ namespace CUETools.TestProcessor
         [TestMethod]
         public void TryParseMetadataAllowsMissingCoverArt()
         {
-            string json = SampleJson(trackCount: 2).Replace("\"_arturl\":\"http://covers.example/front.jpg\",", "");
+            string json = SampleJson(trackCount: 2).Replace("\"_arturl\":\"http://meta.accuraterip.com/albumart/front.jpg\",", "");
 
             bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
@@ -154,7 +166,7 @@ namespace CUETools.TestProcessor
         [TestMethod]
         public void TryParseMetadataAllowsHttpsCoverArtUrl()
         {
-            string coverArtUrl = "https://covers.example/front.jpg";
+            string coverArtUrl = "https://meta.accuraterip.com/albumart/front.jpg";
             string json = SampleJsonWithCoverArtUrl(coverArtUrl);
 
             bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
@@ -169,6 +181,8 @@ namespace CUETools.TestProcessor
         [DataRow("not a url")]
         [DataRow("file:///C:/covers/front.jpg")]
         [DataRow("ftp://covers.example/front.jpg")]
+        [DataRow("http://covers.example/front.jpg")]
+        [DataRow("https://covers.example/front.jpg")]
         [DataRow("//covers.example/front.jpg")]
         [DataRow("/covers/front.jpg")]
         public void TryParseMetadataRejectsInvalidCoverArtUrl(string coverArtUrl)
@@ -297,7 +311,7 @@ namespace CUETools.TestProcessor
         [TestMethod]
         public void TryParseMetadataIgnoresOddCoverArtShapeWithoutDroppingMetadata()
         {
-            string json = SampleJson(trackCount: 2).Replace("\"_arturl\":\"http://covers.example/front.jpg\"", "\"_arturl\":[\"http://covers.example/front.jpg\"]");
+            string json = SampleJson(trackCount: 2).Replace("\"_arturl\":\"http://meta.accuraterip.com/albumart/front.jpg\"", "\"_arturl\":[\"http://meta.accuraterip.com/albumart/front.jpg\"]");
 
             bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateTwoTrackToc(), out CUEMetadataEntry entry);
 
@@ -337,8 +351,12 @@ namespace CUETools.TestProcessor
                 listener.Start();
                 int port = ((IPEndPoint)listener.LocalEndpoint).Port;
                 Task<CapturedHttpRequest> serverTask = ReadSingleRequestAsync(listener, responseBody);
+                Task<string> clientTask = Task.Run(() => new AccurateRipMetaHttpTransport().Post("http://127.0.0.1:" + port + "/", requestBody, null, null));
+                Task work = Task.WhenAll(serverTask, clientTask);
+                Task completed = await Task.WhenAny(work, Task.Delay(TimeSpan.FromSeconds(15)));
 
-                string response = new AccurateRipMetaHttpTransport().Post("http://127.0.0.1:" + port + "/", requestBody, null);
+                Assert.AreSame(work, completed, "HTTP transport loopback test timed out.");
+                string response = await clientTask;
                 CapturedHttpRequest request = await serverTask;
 
                 Assert.AreEqual(responseBody, response);
@@ -358,6 +376,23 @@ namespace CUETools.TestProcessor
             CUEMetadataEntry entry = provider.Lookup(CreateTwoTrackToc(), null);
 
             Assert.IsNull(entry);
+            Assert.AreEqual(1, transport.PostCount);
+        }
+
+        [TestMethod]
+        public void LookupRethrowsStopExceptionFromTransport()
+        {
+            var transport = new FakeTransport { Exception = new StopException() };
+            var provider = new AccurateRipMetaProvider(transport);
+
+            try
+            {
+                provider.Lookup(CreateTwoTrackToc(), null);
+                Assert.Fail("Expected StopException.");
+            }
+            catch (StopException)
+            {
+            }
             Assert.AreEqual(1, transport.PostCount);
         }
 
@@ -490,7 +525,7 @@ namespace CUETools.TestProcessor
                 CatalogNum = "CAT-123",
                 UPC = "0123456789012",
                 _albumid = "album-id",
-                _arturl = "http://covers.example/front.jpg",
+                _arturl = "http://meta.accuraterip.com/albumart/front.jpg",
                 tracks = tracks
             });
         }
@@ -607,6 +642,8 @@ namespace CUETools.TestProcessor
                 .ToList();
 
             Assert.AreEqual(1, releases.Count(entry => entry.ImageKey == AccurateRipMeta.SourceKey));
+            var body = JsonConvert.DeserializeObject<Dictionary<string, string>>(transport.Body);
+            Assert.AreEqual(AccurateRipMeta.CreateRequestDiscId(sheet.TOC), body["accurateripdiscid"]);
         }
 
         [TestMethod]
@@ -712,7 +749,7 @@ namespace CUETools.TestProcessor
             public string Response { get; set; }
             public Exception Exception { get; set; }
 
-            public string Post(string url, string body, IWebProxy proxy)
+            public string Post(string url, string body, IWebProxy proxy, Action checkStop)
             {
                 PostCount++;
                 Url = url;

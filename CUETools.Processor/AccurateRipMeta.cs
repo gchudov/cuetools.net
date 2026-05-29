@@ -18,8 +18,10 @@ namespace CUETools.Processor
     {
         public const string SourceKey = "accurateripmeta";
         public const string DisplayName = "AccurateRip Meta";
-        // The deployed endpoint was validated over HTTP during contract review.
-        public const string Endpoint = "http://meta.accuraterip.com/discmatch";
+        internal const string ContentType = "application/x-www-form-urlencoded";
+        internal const string CoverArtHost = "meta.accuraterip.com";
+        // HTTPS on meta.accuraterip.com:443 was refused during contract review, so the live endpoint remains HTTP-only.
+        public static readonly string Endpoint = "http://meta.accuraterip.com/discmatch";
 
         public static bool TryParseMetadata(string json, CDImageLayout toc, out CUEMetadataEntry entry)
         {
@@ -56,14 +58,13 @@ namespace CUETools.Processor
                 Artist = NormalizeProviderList(response["Artist"]),
                 Title = Clean(response["Album"]),
                 Year = Clean(response["Year"]),
-                // AccurateRip Meta may return a CR/LF-delimited genre list; CUEMetadata has a single Genre slot.
-                Genre = FirstNonEmptyLine(response["Genre"]),
+                Genre = NormalizeGenreList(response["Genre"]),
                 Barcode = CleanIdentifier(response["UPC"], "UPC"),
                 Label = Clean(response["Label"]),
                 LabelNo = CleanIdentifier(response["CatalogNum"], "CatalogNum")
             };
 
-            // AccurateRip Meta also exposes Styles, Composers, and Conductors. Keep them unused until CUETools has explicit fields for them; do not overwrite Genre with Styles.
+            // AccurateRip Meta also exposes Styles, Composers, Conductors, _albumid, and _tocid. Keep them unused until CUETools has explicit fields for them; do not overwrite Genre with Styles.
             for (int i = 0; i < audioTracks; i++)
             {
                 JObject track = orderedTracks[i];
@@ -97,7 +98,7 @@ namespace CUETools.Processor
         {
             return JsonConvert.SerializeObject(new AccurateRipMetaRequest
             {
-                accurateripdiscid = accurateRipDiscId
+                AccurateRipDiscId = accurateRipDiscId
             });
         }
 
@@ -169,19 +170,27 @@ namespace CUETools.Processor
             if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
                 return "";
 
+            if (!string.Equals(uri.Host, CoverArtHost, StringComparison.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Trace.WriteLine("AccurateRip Meta ignored cover art URL from unexpected host: " + uri.Host);
+                return "";
+            }
+
             return uri.AbsoluteUri;
         }
 
-        private static string FirstNonEmptyLine(JToken value)
+        private static string NormalizeGenreList(JToken value)
         {
             string text = Clean(value);
             if (string.IsNullOrWhiteSpace(text))
                 return "";
 
-            return text
+            return string.Join("; ", text
                 .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(line => line.Trim())
-                .FirstOrDefault(line => line.Length > 0) ?? "";
+                .Where(line => line.Length > 0)
+                .Distinct()
+                .ToArray());
         }
 
         private static string NormalizeProviderList(JToken value)
@@ -190,12 +199,21 @@ namespace CUETools.Processor
             if (string.IsNullOrWhiteSpace(text))
                 return "";
 
-            return string.Join(" & ", text
+            string[] names = text
                 .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(line => line.Trim())
                 .Where(line => line.Length > 0)
                 .Distinct()
-                .ToArray());
+                .ToArray();
+
+            if (names.Length == 0)
+                return "";
+            if (names.Length == 1)
+                return names[0];
+            if (names.Length == 2)
+                return names[0] + " & " + names[1];
+
+            return string.Join(", ", names.Take(names.Length - 1).ToArray()) + " & " + names[names.Length - 1];
         }
     }
 
@@ -215,6 +233,11 @@ namespace CUETools.Processor
 
         public CUEMetadataEntry Lookup(CDImageLayout toc, IWebProxy proxy)
         {
+            return Lookup(toc, proxy, null);
+        }
+
+        public CUEMetadataEntry Lookup(CDImageLayout toc, IWebProxy proxy, Action checkStop)
+        {
             if (toc == null)
                 return null;
 
@@ -222,7 +245,7 @@ namespace CUETools.Processor
             {
                 string accurateRipDiscId = AccurateRipMeta.CreateRequestDiscId(toc);
                 string body = AccurateRipMeta.CreateRequestBody(accurateRipDiscId);
-                string json = transport.Post(AccurateRipMeta.Endpoint, body, proxy);
+                string json = transport.Post(AccurateRipMeta.Endpoint, body, proxy, checkStop);
 
                 return AccurateRipMeta.TryParseMetadata(json, toc, out CUEMetadataEntry entry) ? entry : null;
             }
@@ -245,31 +268,35 @@ namespace CUETools.Processor
 
     public interface IAccurateRipMetaTransport
     {
-        string Post(string url, string body, IWebProxy proxy);
+        string Post(string url, string body, IWebProxy proxy, Action checkStop);
     }
 
     public sealed class AccurateRipMetaHttpTransport : IAccurateRipMetaTransport
     {
-        public string Post(string url, string body, IWebProxy proxy)
+        public string Post(string url, string body, IWebProxy proxy, Action checkStop)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "POST";
-            request.UserAgent = "Mozilla/5.0";
-            // The server expects the EasyEACGUI-compatible JSON body with this form content type.
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.AllowAutoRedirect = false;
-            request.Timeout = 15000;
-            request.ReadWriteTimeout = 30000;
-            if (proxy != null)
-                request.Proxy = proxy;
-
-            byte[] bytes = Encoding.UTF8.GetBytes(body);
-            request.ContentLength = bytes.Length;
-            using (Stream requestStream = request.GetRequestStream())
-                requestStream.Write(bytes, 0, bytes.Length);
-
+            int[] stopped = new[] { 0 };
+            Thread stopWatcher = null;
+            ManualResetEvent stopWatcherFinished = null;
             try
             {
+                stopWatcherFinished = StartStopWatcher(request, checkStop, stopped, out stopWatcher);
+                request.Method = "POST";
+                request.UserAgent = "Mozilla/5.0";
+                // The server expects the EasyEACGUI-compatible JSON body with this form content type.
+                request.ContentType = AccurateRipMeta.ContentType;
+                request.AllowAutoRedirect = false;
+                request.Timeout = 15000;
+                request.ReadWriteTimeout = 30000;
+                if (proxy != null)
+                    request.Proxy = proxy;
+
+                byte[] bytes = Encoding.UTF8.GetBytes(body);
+                request.ContentLength = bytes.Length;
+                using (Stream requestStream = request.GetRequestStream())
+                    requestStream.Write(bytes, 0, bytes.Length);
+
                 using (var response = (HttpWebResponse)request.GetResponse())
                 using (Stream responseStream = response.GetResponseStream())
                 using (var reader = new StreamReader(responseStream, Encoding.UTF8))
@@ -277,18 +304,73 @@ namespace CUETools.Processor
             }
             catch (WebException ex)
             {
+                request.Abort();
                 var response = ex.Response as HttpWebResponse;
                 if (response != null && (int)response.StatusCode >= 300 && (int)response.StatusCode < 400)
-                    System.Diagnostics.Trace.WriteLine("AccurateRip Meta redirect not followed: " + response.StatusCode + " " + response.Headers["Location"]);
+                    System.Diagnostics.Trace.WriteLine("AccurateRip Meta moved; update CUETools (got " + response.StatusCode + " -> " + response.Headers["Location"] + ")");
                 if (response != null)
                     response.Dispose();
+                if (Volatile.Read(ref stopped[0]) != 0)
+                    throw new StopException();
                 throw;
             }
+            catch
+            {
+                request.Abort();
+                if (Volatile.Read(ref stopped[0]) != 0)
+                    throw new StopException();
+                throw;
+            }
+            finally
+            {
+                if (stopWatcherFinished != null)
+                {
+                    stopWatcherFinished.Set();
+                    if (stopWatcher != null)
+                        stopWatcher.Join(500);
+                    stopWatcherFinished.Dispose();
+                }
+            }
+        }
+
+        private static ManualResetEvent StartStopWatcher(HttpWebRequest request, Action checkStop, int[] stopped, out Thread stopWatcher)
+        {
+            stopWatcher = null;
+            if (checkStop == null)
+                return null;
+
+            var finished = new ManualResetEvent(false);
+            stopWatcher = new Thread(() =>
+            {
+                while (!finished.WaitOne(100))
+                {
+                    try
+                    {
+                        checkStop();
+                    }
+                    catch (Exception ex) when (IsCancellation(ex))
+                    {
+                        Interlocked.Exchange(ref stopped[0], 1);
+                        request.Abort();
+                        return;
+                    }
+                }
+            });
+            stopWatcher.IsBackground = true;
+            stopWatcher.Name = "AccurateRip Meta stop watcher";
+            stopWatcher.Start();
+            return finished;
+        }
+
+        private static bool IsCancellation(Exception ex)
+        {
+            return ex is StopException || ex is OperationCanceledException || ex is ThreadAbortException;
         }
     }
 
     internal sealed class AccurateRipMetaRequest
     {
-        public string accurateripdiscid { get; set; }
+        [JsonProperty("accurateripdiscid")]
+        public string AccurateRipDiscId { get; set; }
     }
 }

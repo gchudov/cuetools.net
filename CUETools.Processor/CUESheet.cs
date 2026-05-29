@@ -129,7 +129,10 @@ namespace CUETools.Processor
             get { return _albumArt; }
         }
 
-        public AccurateRipMetaProvider AccurateRipMetaProvider { get; set; }
+        /// <summary>
+        /// Test seam for overriding the AccurateRip Meta lookup provider.
+        /// </summary>
+        public AccurateRipMetaProvider AccurateRipMetaProvider { get; internal set; }
 
 #if NET48 || NET20
         public Image Cover
@@ -833,6 +836,9 @@ namespace CUETools.Processor
             _localDB.Save();
         }
 
+        /// <summary>
+        /// Test seam for overriding CTDB metadata lookup without network access.
+        /// </summary>
         protected virtual IEnumerable<CTDBResponseMeta> LookupCtdbMetadata(CTDBMetadataSearch metadataSearch)
         {
             var ctdb = new CUEToolsDB(TOC, proxy);
@@ -926,7 +932,7 @@ namespace CUETools.Processor
                     CheckStop();
 
                     AccurateRipMetaProvider provider = AccurateRipMetaProvider ?? new AccurateRipMetaProvider();
-                    CUEMetadataEntry accurateRipMetaEntry = provider.Lookup(TOC, proxy);
+                    CUEMetadataEntry accurateRipMetaEntry = provider.Lookup(TOC, proxy, CheckStopRequested);
                     if (accurateRipMetaEntry != null)
                         Releases.Add(accurateRipMetaEntry);
                 }
@@ -4161,6 +4167,15 @@ namespace CUETools.Processor
                     ShowProgress("Paused...", 0, null, null);
                     Monitor.Wait(this);
                 }
+            }
+        }
+
+        private void CheckStopRequested()
+        {
+            lock (this)
+            {
+                if (_stop)
+                    throw new StopException();
             }
         }
 
