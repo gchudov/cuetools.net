@@ -191,7 +191,7 @@ namespace CUETools.TestProcessor
             Assert.AreEqual(coverArtUrl, entry.metadata.AlbumArt[0].uri150);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("not a url")]
         [DataRow("file:///C:/covers/front.jpg")]
         [DataRow("ftp://covers.example/front.jpg")]
@@ -209,7 +209,7 @@ namespace CUETools.TestProcessor
             Assert.AreEqual(0, entry.metadata.AlbumArt.Count);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("2", "2")]
         [DataRow("abc", "2")]
         [DataRow("0", "2")]
@@ -222,6 +222,30 @@ namespace CUETools.TestProcessor
 
             Assert.IsFalse(parsed);
             Assert.IsNull(entry);
+        }
+
+        [TestMethod]
+        public void TryParseMetadataUsesDiscTrackNumbersForDataTrackFirstDiscs()
+        {
+            string json = SampleJsonWithTrackNumbers("2", "3");
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateDataTrackFirstToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual("Track One", entry.metadata.Tracks[0].Title);
+            Assert.AreEqual("Track Two", entry.metadata.Tracks[1].Title);
+        }
+
+        [TestMethod]
+        public void TryParseMetadataAllowsAudioRelativeTrackNumbersForDataTrackFirstDiscs()
+        {
+            string json = SampleJsonWithTrackNumbers("1", "2");
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json, CreateDataTrackFirstToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual("Track One", entry.metadata.Tracks[0].Title);
+            Assert.AreEqual("Track Two", entry.metadata.Tracks[1].Title);
         }
 
         [TestMethod]
@@ -463,6 +487,15 @@ namespace CUETools.TestProcessor
             var toc = new CDImageLayout();
             toc.AddTrack(new CDTrack(1, 0, 15000, true, false));
             toc.AddTrack(new CDTrack(2, 15000, 18000, true, false));
+            return toc;
+        }
+
+        private static CDImageLayout CreateDataTrackFirstToc()
+        {
+            var toc = new CDImageLayout();
+            toc.AddTrack(new CDTrack(1, 0, 15000, false, false));
+            toc.AddTrack(new CDTrack(2, 15000, 15000, true, false));
+            toc.AddTrack(new CDTrack(3, 30000, 18000, true, false));
             return toc;
         }
 

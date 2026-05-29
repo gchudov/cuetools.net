@@ -22,6 +22,8 @@ namespace CUETools.Processor
         internal const string CoverArtHost = "meta.accuraterip.com";
         // HTTPS on meta.accuraterip.com:443 was refused during contract review, so the live endpoint remains HTTP-only.
         public static readonly string Endpoint = "http://meta.accuraterip.com/discmatch";
+        internal const int LookupTimeoutMilliseconds = 5000;
+        internal const int ReadWriteTimeoutMilliseconds = 15000;
 
         public static bool TryParseMetadata(string json, CDImageLayout toc, out CUEMetadataEntry entry)
         {
@@ -46,7 +48,7 @@ namespace CUETools.Processor
             if (tracks == null || tracks.Count < audioTracks)
                 return false;
 
-            List<JObject> orderedTracks = OrderTracksByTrackNumber(tracks, audioTracks);
+            List<JObject> orderedTracks = OrderTracksByTrackNumber(tracks, toc.FirstAudio, audioTracks);
             if (orderedTracks == null)
                 return false;
 
@@ -128,7 +130,17 @@ namespace CUETools.Processor
             return Clean(value);
         }
 
-        private static List<JObject> OrderTracksByTrackNumber(JArray tracks, int audioTracks)
+        private static List<JObject> OrderTracksByTrackNumber(JArray tracks, int firstAudioTrackNumber, int audioTracks)
+        {
+            List<JObject> orderedTracks = OrderTracksByNumberRange(tracks, firstAudioTrackNumber, audioTracks);
+            if (orderedTracks != null || firstAudioTrackNumber == 1)
+                return orderedTracks;
+
+            // Some providers normalize mixed-mode discs to audio-relative track numbers.
+            return OrderTracksByNumberRange(tracks, 1, audioTracks);
+        }
+
+        private static List<JObject> OrderTracksByNumberRange(JArray tracks, int firstTrackNumber, int audioTracks)
         {
             var byNumber = new Dictionary<int, JObject>();
             foreach (JToken item in tracks)
@@ -141,20 +153,21 @@ namespace CUETools.Processor
                 if (!int.TryParse(Clean(track["TrackNumber"]), NumberStyles.Integer, CultureInfo.InvariantCulture, out trackNumber))
                     continue;
 
-                if (trackNumber < 1 || trackNumber > audioTracks)
+                if (trackNumber < firstTrackNumber || trackNumber >= firstTrackNumber + audioTracks)
                     continue;
 
-                if (byNumber.ContainsKey(trackNumber))
+                int audioIndex = trackNumber - firstTrackNumber;
+                if (byNumber.ContainsKey(audioIndex))
                     return null;
 
-                byNumber.Add(trackNumber, track);
+                byNumber.Add(audioIndex, track);
             }
 
             if (byNumber.Count != audioTracks)
                 return null;
 
-            return Enumerable.Range(1, audioTracks)
-                .Select(trackNumber => byNumber[trackNumber])
+            return Enumerable.Range(0, audioTracks)
+                .Select(audioIndex => byNumber[audioIndex])
                 .ToList();
         }
 
@@ -284,12 +297,14 @@ namespace CUETools.Processor
             {
                 stopWatcher = StartStopWatcher(request, checkStop, stopped, stopWatcherFinished);
                 request.Method = "POST";
+                // The undocumented endpoint matched the EasyEACGUI client only with this browser-style UA during contract review.
                 request.UserAgent = "Mozilla/5.0";
                 // The server expects the EasyEACGUI-compatible JSON body with this form content type.
                 request.ContentType = AccurateRipMeta.ContentType;
                 request.AllowAutoRedirect = false;
-                request.Timeout = 15000;
-                request.ReadWriteTimeout = 30000;
+                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                request.Timeout = AccurateRipMeta.LookupTimeoutMilliseconds;
+                request.ReadWriteTimeout = AccurateRipMeta.ReadWriteTimeoutMilliseconds;
                 if (proxy != null)
                     request.Proxy = proxy;
 
@@ -346,6 +361,11 @@ namespace CUETools.Processor
                     {
                         Interlocked.Exchange(ref stopped[0], 1);
                         request.Abort();
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Trace.WriteLine("AccurateRip Meta stop watcher failed: " + ex.Message);
                         return;
                     }
 

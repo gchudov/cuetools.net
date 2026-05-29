@@ -1609,25 +1609,6 @@ namespace CUERipper
 		}
 
 #if DORMANT_FREEDB
-        private void DormantFreedbVariousArtistRepair()
-        {
-			if (data.selectedRelease == null) return;
-			data.selectedRelease.metadata.FreedbToVarious();
-			UpdateRelease();
-			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			SetupControls();
-        }
-
-        private void DormantFreedbEncodingRepair()
-        {
-			if (data.selectedRelease == null) return;
-			data.selectedRelease.metadata.FreedbToEncoding();
-			UpdateRelease();
-			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			UpdateOutputPath();
-			SetupControls();
-        }
-
 		private void FreedbSubmit(object o)
 		{
 			StringCollection tmp = new StringCollection();

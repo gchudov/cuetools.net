@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
-#if NET48 || NET20
+#if NETSTANDARD2_1 || NET48 || NET20
 using System.Drawing.Drawing2D;
 #endif
 using System.Globalization;
@@ -134,7 +134,7 @@ namespace CUETools.Processor
         /// </summary>
         public AccurateRipMetaProvider AccurateRipMetaProvider { get; internal set; }
 
-#if NET48 || NET20
+#if NETSTANDARD2_1 || NET48 || NET20
         public Image Cover
         {
             get
@@ -146,7 +146,11 @@ namespace CUETools.Processor
                 if (picture == null)
                     return null;
                 using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
-                    try { return Image.FromStream(imageStream); }
+                    try
+                    {
+                        using (Image source = Image.FromStream(imageStream))
+                            return new Bitmap(source);
+                    }
                     catch { }
                 return null;
             }
@@ -1874,12 +1878,14 @@ namespace CUETools.Processor
                             using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                                 try
                                 {
-#if NET48 || NET20
-                                    var image = Image.FromStream(ms);
-                                    pic.Description += $" ({image.Width}x{image.Height})";
-                                    //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
-                                    //    isSquare = true;
-                                    // pic.MimeType = f(image.RawFormat);
+#if NETSTANDARD2_1 || NET48 || NET20
+                                    using (var image = Image.FromStream(imageStream))
+                                    {
+                                        pic.Description += $" ({image.Width}x{image.Height})";
+                                        //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                                        //    isSquare = true;
+                                        // pic.MimeType = f(image.RawFormat);
+                                    }
 #endif
                                 }
                                 catch { }
@@ -1909,7 +1915,7 @@ namespace CUETools.Processor
                     }
                 }
             }
-#if NET48 || NET20
+#if NETSTANDARD2_1 || NET48 || NET20
             ResizeAlbumArt();
 #endif
         }
@@ -3076,7 +3082,7 @@ namespace CUETools.Processor
             return entry;
         }
 
-#if NET48 || NET20
+#if NETSTANDARD2_1 || NET48 || NET20
         private static Bitmap resizeImage(Image imgToResize, Size size)
         {
             int sourceWidth = imgToResize.Width;
@@ -3098,11 +3104,11 @@ namespace CUETools.Processor
             int destHeight = (int)(sourceHeight * nPercent);
 
             Bitmap b = new Bitmap(destWidth, destHeight);
-            Graphics g = Graphics.FromImage((Image)b);
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
-            g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
-            g.Dispose();
+            using (Graphics g = Graphics.FromImage((Image)b))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
+            }
 
             return b;
         }
@@ -3198,15 +3204,17 @@ namespace CUETools.Processor
                     using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                         try
                         {
-#if NET48 || NET20
-                            var image = Image.FromStream(imageStream);
-                            pic.Description += $" ({image.Width}x{image.Height})";
-                            if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+#if NETSTANDARD2_1 || NET48 || NET20
+                            using (var image = Image.FromStream(imageStream))
                             {
-                                if (isValidName)
-                                    pic.Type = TagLib.PictureType.FrontCover;
+                                pic.Description += $" ({image.Width}x{image.Height})";
+                                if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                                {
+                                    if (isValidName)
+                                        pic.Type = TagLib.PictureType.FrontCover;
+                                }
+                                // pic.MimeType = f(image.RawFormat);
                             }
-                            // pic.MimeType = f(image.RawFormat);
 #endif
                         }
                         catch { }
@@ -3216,7 +3224,7 @@ namespace CUETools.Processor
             }
         }
 
-#if NET48 || NET20
+#if NETSTANDARD2_1 || NET48 || NET20
         public void ResizeAlbumArt()
         {
             if (_albumArt == null)
