@@ -1776,7 +1776,8 @@ namespace CUERipper
             currentAlbumArt = 0;
             var knownUrls = new List<string>();
             var firstUrls = new List<string>();
-            var releaseCovers = new List<CTDBResponseMetaImage>();
+            var selectedReleaseCovers = new List<CTDBResponseMetaImage>();
+            var otherReleaseCovers = new List<CTDBResponseMetaImage>();
 
             var releases = args.releases ?? new List<CUEMetadataEntry>();
             if (releases.Count == 0 && args.meta != null)
@@ -1794,13 +1795,21 @@ namespace CUERipper
                     if (_config.advanced.coversSearch == CUEConfigAdvanced.CTDBCoversSearch.Primary && !releaseCover.primary)
                         continue;
 
-                    releaseCovers.Add(releaseCover);
                     // args.meta is the same CUEMetadataEntry instance captured from data.Releases for selected-release priority.
-                    if (object.ReferenceEquals(release, args.meta) && !string.IsNullOrEmpty(releaseCover.uri))
-                        firstUrls.Add(releaseCover.uri);
+                    if (object.ReferenceEquals(release, args.meta))
+                    {
+                        if (!string.IsNullOrEmpty(releaseCover.uri))
+                            firstUrls.Add(releaseCover.uri);
+                        selectedReleaseCovers.Add(releaseCover);
+                    }
+                    else
+                    {
+                        otherReleaseCovers.Add(releaseCover);
+                    }
                 }
             }
 
+            var releaseCovers = selectedReleaseCovers.Concat(otherReleaseCovers);
             foreach (var releaseCover in releaseCovers)
             {
                 string fetchUrl = !string.IsNullOrEmpty(releaseCover.uri150) ? releaseCover.uri150 : releaseCover.uri;

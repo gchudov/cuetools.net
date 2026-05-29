@@ -232,6 +232,10 @@ namespace JDP
 				}
 				catch
 				{
+					cancellation = m_Cancellation;
+					if (cancellation == null || cancellation.IsCancellationRequested)
+						return;
+					Thread.Sleep(250);
 				}
 			}
 		}

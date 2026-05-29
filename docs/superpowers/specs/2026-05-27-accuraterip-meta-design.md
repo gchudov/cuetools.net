@@ -39,7 +39,7 @@ Map AccurateRip Meta fields into the existing CUETools metadata model:
 - `Artist` -> `CUEMetadata.Artist`
 - `Album` -> `CUEMetadata.Title`
 - `Year` -> `CUEMetadata.Year`
-- first non-empty line of `Genre` -> `CUEMetadata.Genre`
+- distinct non-empty `Genre` lines joined with `; ` -> `CUEMetadata.Genre`
 - `UPC` -> `CUEMetadata.Barcode`
 - `Label` -> `CUEMetadata.Label`
 - `CatalogNum` -> `CUEMetadata.LabelNo`
@@ -50,7 +50,7 @@ Map AccurateRip Meta fields into the existing CUETools metadata model:
 
 `CatalogNum` maps to `LabelNo` because CUETools already uses `LabelNo` as the catalog number slot: it is displayed as `Label#`, read from cue `REM CATALOGNUMBER`, and written to TagLib `CatalogNo`.
 
-Cover art will be represented as a `CTDBResponseMetaImage` with `uri` and `uri150` set to `_arturl`, `primary = true`, and dimensions left at `0` when the provider does not supply dimensions. This lets the existing CUETools and CUERipper cover preview/download paths continue to work.
+Cover art will be represented as a `CTDBResponseMetaImage` with `uri` and `uri150` set to `_arturl`, `primary = true`, and dimensions left at `0` when the provider does not supply dimensions. `_arturl` is accepted only from `meta.accuraterip.com`; URLs from other hosts are dropped to avoid making CUETools fetch provider-supplied third-party URLs. This lets the existing CUETools and CUERipper cover preview/download paths continue to work for the observed live provider responses.
 
 The AccurateRip Meta response also exposes `Styles`, `tracks[].Composers`, and `tracks[].Conductors`. These fields are available from the provider but intentionally unused until CUETools has explicit fields for them. Add a short code comment near the mapping to document that decision.
 

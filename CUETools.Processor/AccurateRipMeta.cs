@@ -70,7 +70,8 @@ namespace CUETools.Processor
                 JObject track = orderedTracks[i];
 
                 metadata.Tracks[i].Title = Clean(track["Title"]);
-                metadata.Tracks[i].Artist = NormalizeProviderList(track["Artist"]);
+                string trackArtist = NormalizeProviderList(track["Artist"]);
+                metadata.Tracks[i].Artist = trackArtist != "" ? trackArtist : metadata.Artist;
                 metadata.Tracks[i].ISRC = CleanIdentifier(track["ISRC"], "ISRC");
             }
 
@@ -277,11 +278,11 @@ namespace CUETools.Processor
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
             int[] stopped = new[] { 0 };
+            int[] stopWatcherFinished = new[] { 0 };
             Thread stopWatcher = null;
-            ManualResetEvent stopWatcherFinished = null;
             try
             {
-                stopWatcherFinished = StartStopWatcher(request, checkStop, stopped, out stopWatcher);
+                stopWatcher = StartStopWatcher(request, checkStop, stopped, stopWatcherFinished);
                 request.Method = "POST";
                 request.UserAgent = "Mozilla/5.0";
                 // The server expects the EasyEACGUI-compatible JSON body with this form content type.
@@ -299,17 +300,16 @@ namespace CUETools.Processor
 
                 using (var response = (HttpWebResponse)request.GetResponse())
                 using (Stream responseStream = response.GetResponseStream())
-                using (var reader = new StreamReader(responseStream, Encoding.UTF8))
-                    return reader.ReadToEnd();
+                    return ReadResponseBody(responseStream);
             }
             catch (WebException ex)
             {
-                request.Abort();
                 var response = ex.Response as HttpWebResponse;
                 if (response != null && (int)response.StatusCode >= 300 && (int)response.StatusCode < 400)
                     System.Diagnostics.Trace.WriteLine("AccurateRip Meta moved; update CUETools (got " + response.StatusCode + " -> " + response.Headers["Location"] + ")");
                 if (response != null)
                     response.Dispose();
+                request.Abort();
                 if (Volatile.Read(ref stopped[0]) != 0)
                     throw new StopException();
                 throw;
@@ -323,26 +323,20 @@ namespace CUETools.Processor
             }
             finally
             {
-                if (stopWatcherFinished != null)
-                {
-                    stopWatcherFinished.Set();
-                    if (stopWatcher != null)
-                        stopWatcher.Join(500);
-                    stopWatcherFinished.Dispose();
-                }
+                Volatile.Write(ref stopWatcherFinished[0], 1);
+                if (stopWatcher != null)
+                    stopWatcher.Join(500);
             }
         }
 
-        private static ManualResetEvent StartStopWatcher(HttpWebRequest request, Action checkStop, int[] stopped, out Thread stopWatcher)
+        private static Thread StartStopWatcher(HttpWebRequest request, Action checkStop, int[] stopped, int[] finished)
         {
-            stopWatcher = null;
             if (checkStop == null)
                 return null;
 
-            var finished = new ManualResetEvent(false);
-            stopWatcher = new Thread(() =>
+            var stopWatcher = new Thread(() =>
             {
-                while (!finished.WaitOne(100))
+                while (Volatile.Read(ref finished[0]) == 0)
                 {
                     try
                     {
@@ -354,12 +348,36 @@ namespace CUETools.Processor
                         request.Abort();
                         return;
                     }
+
+                    for (int i = 0; i < 10 && Volatile.Read(ref finished[0]) == 0; i++)
+                        Thread.Sleep(10);
                 }
             });
             stopWatcher.IsBackground = true;
             stopWatcher.Name = "AccurateRip Meta stop watcher";
             stopWatcher.Start();
-            return finished;
+            return stopWatcher;
+        }
+
+        private static string ReadResponseBody(Stream responseStream)
+        {
+            if (responseStream == null)
+                return "";
+
+            const int maxResponseBytes = 1024 * 1024;
+            byte[] buffer = new byte[8192];
+            using (var memory = new MemoryStream())
+            {
+                int read;
+                while ((read = responseStream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    if (memory.Length + read > maxResponseBytes)
+                        throw new InvalidDataException("AccurateRip Meta response exceeded the maximum supported size.");
+                    memory.Write(buffer, 0, read);
+                }
+
+                return Encoding.UTF8.GetString(memory.ToArray());
+            }
         }
 
         private static bool IsCancellation(Exception ex)

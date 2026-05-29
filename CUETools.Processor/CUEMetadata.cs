@@ -176,7 +176,7 @@ namespace CUETools.Processor
 			{
 				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
 				if ((overwrite || Tracks[i].Artist == "") && metadata.Tracks[i].Artist != "") Tracks[i].Artist = metadata.Tracks[i].Artist;
-				if ((overwrite || Tracks[i].Comment == "") && metadata.Tracks[i].Artist != "") Tracks[i].Comment = metadata.Tracks[i].Comment;
+				if ((overwrite || Tracks[i].Comment == "") && metadata.Tracks[i].Comment != "") Tracks[i].Comment = metadata.Tracks[i].Comment;
 				if ((overwrite || Tracks[i].ISRC == "") && metadata.Tracks[i].ISRC != "") Tracks[i].ISRC = metadata.Tracks[i].ISRC;
 			}
 		}

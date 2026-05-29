@@ -103,6 +103,20 @@ namespace CUETools.TestProcessor
         }
 
         [TestMethod]
+        public void TryParseMetadataUsesAlbumArtistWhenTrackArtistMissing()
+        {
+            JObject json = JObject.Parse(SampleJson(trackCount: 2));
+            JArray tracks = (JArray)json["tracks"];
+            tracks[0]["Artist"].Parent.Remove();
+
+            bool parsed = AccurateRipMeta.TryParseMetadata(json.ToString(), CreateTwoTrackToc(), out CUEMetadataEntry entry);
+
+            Assert.IsTrue(parsed);
+            Assert.AreEqual("The Artist & Guest", entry.metadata.Tracks[0].Artist);
+            Assert.AreEqual("Track Artist 2", entry.metadata.Tracks[1].Artist);
+        }
+
+        [TestMethod]
         public void TryParseMetadataOrdersTracksByTrackNumber()
         {
             JObject json = JObject.Parse(SampleJson(trackCount: 2));
