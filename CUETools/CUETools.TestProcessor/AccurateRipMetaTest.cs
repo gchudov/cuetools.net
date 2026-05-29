@@ -401,6 +401,7 @@ namespace CUETools.TestProcessor
                 Assert.AreEqual("POST", request.Method);
                 Assert.AreEqual("Mozilla/5.0", request.UserAgent);
                 StringAssert.StartsWith(request.ContentType, "application/x-www-form-urlencoded");
+                Assert.IsFalse(request.ExpectContinue);
                 Assert.AreEqual(requestBody, request.Body);
             }
         }
@@ -607,7 +608,10 @@ namespace CUETools.TestProcessor
                     else if (string.Equals(name, "Content-Length", StringComparison.OrdinalIgnoreCase))
                         int.TryParse(value, out contentLength);
                     else if (string.Equals(name, "Expect", StringComparison.OrdinalIgnoreCase) && value.IndexOf("100-continue", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
                         expectsContinue = true;
+                        captured.ExpectContinue = true;
+                    }
                 }
 
                 if (expectsContinue)
@@ -772,6 +776,7 @@ namespace CUETools.TestProcessor
             public string Method { get; set; }
             public string UserAgent { get; set; }
             public string ContentType { get; set; }
+            public bool ExpectContinue { get; set; }
             public string Body { get; set; }
         }
 

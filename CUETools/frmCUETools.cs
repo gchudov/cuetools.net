@@ -2165,20 +2165,7 @@ namespace JDP
 
         private static Image GetCoverImage(CUESheet cueSheet)
         {
-            if (cueSheet == null || cueSheet.AlbumArt == null)
-                return null;
-            var picture = cueSheet.AlbumArt.Find(x => x.Type == TagLib.PictureType.FrontCover) ??
-                cueSheet.AlbumArt.Find(x => x.Type != TagLib.PictureType.NotAPicture);
-            if (picture == null)
-                return null;
-            try
-            {
-                using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
-                using (Image source = Image.FromStream(imageStream))
-                    return new Bitmap(source);
-            }
-            catch { }
-            return null;
+            return cueSheet?.Cover;
         }
 
         private void locateInExplorerToolStripMenuItem_Click(object sender, EventArgs e)

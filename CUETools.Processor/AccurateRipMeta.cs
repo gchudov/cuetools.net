@@ -276,7 +276,7 @@ namespace CUETools.Processor
 
         private static bool IsCancellation(Exception ex)
         {
-            return ex is StopException || ex is OperationCanceledException || ex is ThreadAbortException;
+            return ex is StopException || ex is OperationCanceledException;
         }
     }
 
@@ -302,11 +302,11 @@ namespace CUETools.Processor
                 // The server expects the EasyEACGUI-compatible JSON body with this form content type.
                 request.ContentType = AccurateRipMeta.ContentType;
                 request.AllowAutoRedirect = false;
+                request.ServicePoint.Expect100Continue = false;
                 request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
                 request.Timeout = AccurateRipMeta.LookupTimeoutMilliseconds;
                 request.ReadWriteTimeout = AccurateRipMeta.ReadWriteTimeoutMilliseconds;
-                if (proxy != null)
-                    request.Proxy = proxy;
+                request.Proxy = proxy;
 
                 byte[] bytes = Encoding.UTF8.GetBytes(body);
                 request.ContentLength = bytes.Length;
@@ -402,7 +402,7 @@ namespace CUETools.Processor
 
         private static bool IsCancellation(Exception ex)
         {
-            return ex is StopException || ex is OperationCanceledException || ex is ThreadAbortException;
+            return ex is StopException || ex is OperationCanceledException;
         }
     }
 

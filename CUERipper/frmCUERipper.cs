@@ -898,8 +898,12 @@ namespace CUERipper
             cueSheet.OpenCD(audioSource);
             cueSheet.Action = CUEAction.Encode;
 
+            CTDBMetadataSearch metadataSearch = loadAllMetadata ? CTDBMetadataSearch.Extensive : _config.advanced.metadataSearch;
+            bool loadAllMetadataRequested = loadAllMetadata;
+            loadAllMetadata = false;
+
             this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-            cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, false, loadAllMetadata ? CTDBMetadataSearch.Extensive : _config.advanced.metadataSearch);
+            cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, false, metadataSearch);
             cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
             this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
             cueSheet.UseAccurateRip();
@@ -922,10 +926,9 @@ namespace CUERipper
                 data.Releases.Add(CreateCUESheet(audioSource, ctdbMeta));
             }
 
-            if (data.Releases.Count == 0 || loadAllMetadata)
+            bool noMetadataReleases = data.Releases.Count == 0;
+            if (noMetadataReleases || loadAllMetadataRequested)
             {
-                loadAllMetadata = false;
-
                 //this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " MusicBrainz..."; });
 
                 //ReleaseQueryParameters p = new ReleaseQueryParameters();
@@ -952,21 +955,6 @@ namespace CUERipper
                 //}
                 //MusicBrainzService.Proxy = null;
                 //MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
-
-                AccurateRipMetaLookupProgress(null);
-                try
-                {
-                    var provider = new AccurateRipMetaProvider();
-                    CUEMetadataEntry accurateRipMeta = provider.Lookup(audioSource.TOC, _config.GetProxy(), CheckStopRequested);
-                    if (accurateRipMeta != null)
-                        data.Releases.Add(accurateRipMeta);
-                }
-                catch (Exception ex)
-                {
-                    if (ex is StopException || ex is OperationCanceledException || ex is ThreadAbortException)
-                        throw;
-                    System.Diagnostics.Trace.WriteLine(ex.Message);
-                }
 
 #if DORMANT_FREEDB
                 // FreeDB lookup is dormant. AccurateRip Meta is the active replacement provider.
@@ -1044,6 +1032,15 @@ namespace CUERipper
                     System.Diagnostics.Trace.WriteLine(ex.Message);
                 }
 #endif
+            }
+
+            if (noMetadataReleases || metadataSearch == CTDBMetadataSearch.Extensive)
+            {
+                AccurateRipMetaLookupProgress(null);
+                var provider = new AccurateRipMetaProvider();
+                CUEMetadataEntry accurateRipMeta = provider.Lookup(audioSource.TOC, _config.GetProxy(), CheckStopRequested);
+                if (accurateRipMeta != null)
+                    data.Releases.Add(accurateRipMeta);
             }
 
             // Add a blank Release to the metadata selection drop-down list in any case. It can be used, if the metadata retrieved is not correct or undesired.
