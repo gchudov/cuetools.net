@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
-#if NETSTANDARD2_1 || NET48 || NET20
 using System.Drawing.Drawing2D;
-#endif
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -134,7 +132,6 @@ namespace CUETools.Processor
         /// </summary>
         public AccurateRipMetaProvider AccurateRipMetaProvider { get; internal set; }
 
-#if NETSTANDARD2_1 || NET48 || NET20
         public Image Cover
         {
             get
@@ -155,7 +152,6 @@ namespace CUETools.Processor
                 return null;
             }
         }
-#endif
 
         public List<string> SourcePaths
         {
@@ -1878,7 +1874,6 @@ namespace CUETools.Processor
                             using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                                 try
                                 {
-#if NETSTANDARD2_1 || NET48 || NET20
                                     using (var image = Image.FromStream(imageStream))
                                     {
                                         pic.Description += $" ({image.Width}x{image.Height})";
@@ -1886,7 +1881,6 @@ namespace CUETools.Processor
                                         //    isSquare = true;
                                         // pic.MimeType = f(image.RawFormat);
                                     }
-#endif
                                 }
                                 catch { }
 
@@ -1915,9 +1909,7 @@ namespace CUETools.Processor
                     }
                 }
             }
-#if NETSTANDARD2_1 || NET48 || NET20
             ResizeAlbumArt();
-#endif
         }
 
         public void UseCUEToolsDB(string userAgent, string driveName, bool fuzzy, CTDBMetadataSearch metadataSearch)
@@ -3082,7 +3074,6 @@ namespace CUETools.Processor
             return entry;
         }
 
-#if NETSTANDARD2_1 || NET48 || NET20
         private static Bitmap resizeImage(Image imgToResize, Size size)
         {
             int sourceWidth = imgToResize.Width;
@@ -3112,7 +3103,6 @@ namespace CUETools.Processor
 
             return b;
         }
-#endif
 
         public void ExtractAlbumArt()
         {
@@ -3204,7 +3194,6 @@ namespace CUETools.Processor
                     using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                         try
                         {
-#if NETSTANDARD2_1 || NET48 || NET20
                             using (var image = Image.FromStream(imageStream))
                             {
                                 pic.Description += $" ({image.Width}x{image.Height})";
@@ -3215,7 +3204,6 @@ namespace CUETools.Processor
                                 }
                                 // pic.MimeType = f(image.RawFormat);
                             }
-#endif
                         }
                         catch { }
                     _albumArt.Add(pic);
@@ -3224,7 +3212,6 @@ namespace CUETools.Processor
             }
         }
 
-#if NETSTANDARD2_1 || NET48 || NET20
         public void ResizeAlbumArt()
         {
             if (_albumArt == null)
@@ -3254,7 +3241,6 @@ namespace CUETools.Processor
                     {
                     }
         }
-#endif
 
         public string WriteReport()
         {

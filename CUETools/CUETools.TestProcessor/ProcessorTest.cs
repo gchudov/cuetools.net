@@ -130,6 +130,16 @@ namespace CUETools.TestProcessor
 		}
 
 		[TestMethod()]
+		public void CTDBUserIdIsStable()
+		{
+			string first = CUEToolsDB.GetUUID();
+			string second = CUEToolsDB.GetUUID();
+
+			Assert.IsFalse(string.IsNullOrEmpty(first));
+			Assert.AreEqual(first, second);
+		}
+
+		[TestMethod()]
 		[Ignore]
 		public void CTDBResponseTest()
 		{

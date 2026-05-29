@@ -4,15 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-#if NET20
-    namespace System.Runtime.CompilerServices
-    {
-        [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class
-             | AttributeTargets.Method)]
-        public sealed class ExtensionAttribute : Attribute { }
-    }
-#endif
-
 namespace CUETools.Codecs
 {
     public interface IAudioEncoderSettings
