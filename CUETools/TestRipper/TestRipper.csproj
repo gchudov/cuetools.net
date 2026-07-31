@@ -8,9 +8,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <IsTestProject>true</IsTestProject>
-    <OutputPath>..\..\bin\$(Configuration)\$(TargetFramework)\tests\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)tests\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,7 +7,9 @@
     <AssemblyName>CUETools.TestHelpers</AssemblyName>
     <RootNamespace>CUETools.TestHelpers</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)tests\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemDefinitionGroup>

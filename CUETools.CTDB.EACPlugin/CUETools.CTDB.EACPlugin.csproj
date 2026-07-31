@@ -8,10 +8,14 @@
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
-    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\interop\EAC\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)interop\EAC\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ctdb64.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Interop.HelperFunctionsLib">

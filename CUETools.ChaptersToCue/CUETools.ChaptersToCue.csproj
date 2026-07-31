@@ -6,7 +6,9 @@
     <AssemblyName>CUETools.ChaptersToCue</AssemblyName>
     <RootNamespace>CUETools.ChaptersToCue</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

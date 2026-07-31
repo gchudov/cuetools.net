@@ -13,7 +13,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
     <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Company />

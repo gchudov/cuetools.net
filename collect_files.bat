@@ -18,9 +18,9 @@ set PRODUCTVER=%PRODUCTVER:;=%
 echo CUETools version: %PRODUCTVER%
 
 SET release_dir=%base_dir%\bin\Release\CUETools_%PRODUCTVER%
-SET win_dir=%base_dir%\bin\Release\net10.0-windows
-SET cli_dir=%base_dir%\bin\Release\net10.0
-SET lib_dir=%base_dir%\bin\Release\netstandard2.1
+REM Applications, libraries and plugins all build into one deployment root
+REM (see CueToolsBinRoot in Directory.Build.props), so there is a single source directory.
+SET build_dir=%base_dir%\bin\Release
 
 if not exist "%release_dir%" mkdir "%release_dir%"
 
@@ -29,31 +29,22 @@ REM /Y Suppresses prompting to confirm that you want to overwrite an existing de
 REM /D xcopy copies all Source files that are newer than existing Destination files.
 REM /I treats the destination as a directory and avoids interactive prompts in batch mode.
 
-REM Windows applications and their runtime metadata.
-xcopy /Y /D /I "%win_dir%\*.exe" "%release_dir%\"
-xcopy /Y /D /I "%win_dir%\*.dll" "%release_dir%\"
-xcopy /Y /D /I "%win_dir%\*.deps.json" "%release_dir%\"
-xcopy /Y /D /I "%win_dir%\*.runtimeconfig.json" "%release_dir%\"
-xcopy /Y /D /I "%win_dir%\*.config" "%release_dir%\"
-xcopy /Y /D /I "%win_dir%\de-DE\*" "%release_dir%\de-DE\"
-xcopy /Y /D /I "%win_dir%\ru-RU\*" "%release_dir%\ru-RU\"
-
-REM Console tools and their runtime metadata.
-xcopy /Y /D /I "%cli_dir%\*.exe" "%release_dir%\"
-xcopy /Y /D /I "%cli_dir%\*.dll" "%release_dir%\"
-xcopy /Y /D /I "%cli_dir%\*.deps.json" "%release_dir%\"
-xcopy /Y /D /I "%cli_dir%\*.runtimeconfig.json" "%release_dir%\"
-xcopy /Y /D /I "%cli_dir%\*.config" "%release_dir%\"
+REM Windows applications, console tools, shared libraries and their runtime metadata.
+xcopy /Y /D /I "%build_dir%\*.exe" "%release_dir%\"
+xcopy /Y /D /I "%build_dir%\*.dll" "%release_dir%\"
+xcopy /Y /D /I "%build_dir%\*.deps.json" "%release_dir%\"
+xcopy /Y /D /I "%build_dir%\*.runtimeconfig.json" "%release_dir%\"
+xcopy /Y /D /I "%build_dir%\*.config" "%release_dir%\"
+xcopy /Y /D /I "%build_dir%\de-DE\*" "%release_dir%\de-DE\"
+xcopy /Y /D /I "%build_dir%\ru-RU\*" "%release_dir%\ru-RU\"
 
 xcopy /Y /D /I "%base_dir%\License.txt" "%release_dir%\"
 xcopy /Y /D /I "%base_dir%\CUETools\user_profiles_enabled" "%release_dir%\"
 
-REM Managed plugins. Most plugins are libraries under netstandard2.1; FLACCL remains Windows-only.
-xcopy /Y /D /I /S "%lib_dir%\plugins\*.dll" "%release_dir%\plugins\"
-xcopy /Y /D /I /S "%lib_dir%\plugins\*.deps.json" "%release_dir%\plugins\"
-xcopy /Y /D /I /S "%win_dir%\plugins\*.dll" "%release_dir%\plugins\"
-xcopy /Y /D /I /S "%win_dir%\plugins\*.deps.json" "%release_dir%\plugins\"
-xcopy /Y /D /I /S "%win_dir%\plugins\*.cl" "%release_dir%\plugins\"
+REM Managed plugins. /S also picks up the native win32\ and x64\ subdirectories.
+xcopy /Y /D /I /S "%build_dir%\plugins\*.dll" "%release_dir%\plugins\"
+xcopy /Y /D /I /S "%build_dir%\plugins\*.deps.json" "%release_dir%\plugins\"
+xcopy /Y /D /I /S "%build_dir%\plugins\*.cl" "%release_dir%\plugins\"
 
 REM ThirdParty
 IF EXIST "%base_dir%\ThirdParty\ICSharpCode.SharpZipLib.dll" (
@@ -101,9 +92,9 @@ IF EXIST "%base_dir%\ThirdParty\x64\wavpackdll.dll" (
 ) ELSE echo WARNING: Missing %base_dir%\ThirdParty\x64\wavpackdll.dll
 
 REM EAC Plugin
-xcopy /Y /D /I "%win_dir%\interop\EAC\*.dll" "%release_dir%\interop\EAC\"
-xcopy /Y /D /I "%win_dir%\interop\EAC\*.deps.json" "%release_dir%\interop\EAC\"
-xcopy /Y /D /I "%win_dir%\interop\EAC\*.config" "%release_dir%\interop\EAC\"
-xcopy /Y /D /I "%win_dir%\Newtonsoft.Json.dll" "%release_dir%\interop\EAC\"
+xcopy /Y /D /I "%build_dir%\interop\EAC\*.dll" "%release_dir%\interop\EAC\"
+xcopy /Y /D /I "%build_dir%\interop\EAC\*.deps.json" "%release_dir%\interop\EAC\"
+xcopy /Y /D /I "%build_dir%\interop\EAC\*.config" "%release_dir%\interop\EAC\"
+xcopy /Y /D /I "%build_dir%\Newtonsoft.Json.dll" "%release_dir%\interop\EAC\"
 
 popd

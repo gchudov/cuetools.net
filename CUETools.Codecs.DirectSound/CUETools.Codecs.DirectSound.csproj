@@ -10,9 +10,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
-    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)plugins\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemDefinitionGroup>

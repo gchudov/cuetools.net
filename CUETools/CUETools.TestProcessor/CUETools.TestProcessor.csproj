@@ -10,9 +10,9 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <IsTestProject>true</IsTestProject>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
-    <OutputPath>..\..\bin\$(Configuration)\$(TargetFramework)\tests\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)tests\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

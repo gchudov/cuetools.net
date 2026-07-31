@@ -1,5 +1,5 @@
 diff --git a/wmlib/src/WindowsMediaLib.csproj b/wmlib/src/WindowsMediaLib.csproj
-index 24c8569..d908906 100644
+index 24c8569..4aaf700 100644
 --- a/wmlib/src/WindowsMediaLib.csproj
 +++ b/wmlib/src/WindowsMediaLib.csproj
 @@ -1,7 +1,7 @@
@@ -16,9 +16,9 @@ index 24c8569..d908906 100644
      <Authors>snarfle</Authors>
      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 -    <OutputPath>$(SolutionDir)\..\bin\$(Configuration)\plugins</OutputPath>
-+    <OutputPath>$(SolutionDir)bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
++    <OutputPath>$(CueToolsBinRoot)plugins\</OutputPath>
 +    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
++    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
      <RepositoryUrl>https://svn.code.sf.net/p/windowsmedianet/code/</RepositoryUrl>
      <RepositoryType>svn</RepositoryType>
      <Company />

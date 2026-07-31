@@ -8,16 +8,10 @@
     <RootNamespace>CUETools.FLACCL.cmd</RootNamespace>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
-
-  <ItemDefinitionGroup>
-    <ProjectReference>
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemDefinitionGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CUETools.Codecs.Flake\CUETools.Codecs.Flake.csproj" />

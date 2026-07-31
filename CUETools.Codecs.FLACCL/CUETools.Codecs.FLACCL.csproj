@@ -11,24 +11,25 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
-    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)plugins\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
-
-  <ItemDefinitionGroup>
-    <ProjectReference>
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemDefinitionGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.Codecs.Flake\CUETools.Codecs.Flake.csproj" />
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
+    <!-- Private is set per reference rather than through an ItemDefinitionGroup, because the two
+    settings are not interchangeable here. The CUETools assemblies must NOT be copied: they live in
+    the deployment root and are already loaded by the host, and a second copy inside plugins\ would
+    be picked up by the plugins\CUETools.*.dll scan in CUEProcessorPlugins and register the built-in
+    codecs twice. OpenCLNet on the other hand builds inside its own submodule and has to be copied
+    next to this plugin, because Assembly.LoadFrom() resolves a plugin's dependencies from the
+    plugin's own directory. -->
+    <ProjectReference Include="..\CUETools.Codecs.Flake\CUETools.Codecs.Flake.csproj" Private="False" />
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" Private="False" />
     <ProjectReference Include="..\ThirdParty\openclnet\source\OpenCLNet.csproj" />
   </ItemGroup>
 

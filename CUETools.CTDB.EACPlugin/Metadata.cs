@@ -11,7 +11,6 @@ using CUETools.AccurateRip;
 using CUETools.Codecs;
 using CUETools.CTDB;
 using CUETools.CTDB.EACPlugin.Properties;
-using System.Drawing.Imaging;
 using AudioDataPlugIn;
 
 namespace MetadataPlugIn
@@ -179,9 +178,17 @@ namespace MetadataPlugIn
 
         public Array GetPluginLogo()
         {
-            MemoryStream ms = new MemoryStream();
-            Resources.ctdb64.Save(ms, ImageFormat.Png);
-            return ms.ToArray();
+            // Read the PNG straight out of the assembly. Going through Properties.Resources
+            // deserializes a Bitmap, which BinaryFormatter no longer supports on .NET 9+.
+            using (Stream src = typeof(MetadataRetriever).Assembly.GetManifestResourceStream(
+                "CUETools.CTDB.EACPlugin.Resources.ctdb64.png"))
+            {
+                if (src == null)
+                    return new byte[0];
+                MemoryStream ms = new MemoryStream();
+                src.CopyTo(ms);
+                return ms.ToArray();
+            }
         }
 
         public string GetPluginName()

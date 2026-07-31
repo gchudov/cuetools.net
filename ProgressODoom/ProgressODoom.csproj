@@ -10,7 +10,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,9 +10,9 @@
     <Copyright>Copyright (c) 2018-2025 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)plugins\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
     <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Company />

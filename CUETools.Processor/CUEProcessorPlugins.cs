@@ -60,8 +60,15 @@ namespace CUETools.Processor
   
         private static void AddPlugin(string plugin_path)
         {
-            AssemblyName name = AssemblyName.GetAssemblyName(plugin_path);
-            Assembly assembly = Assembly.Load(name);
+            // On .NET Framework AssemblyName.GetAssemblyName() filled in AssemblyName.CodeBase and
+            // Assembly.Load() used it as a load hint, so naming an assembly outside the probing
+            // path was enough to load it. On .NET (Core) CodeBase is no longer consulted and
+            // Assembly.Load() resolves by name against the application base only, which fails for
+            // every plugin the host does not already reference itself.
+            // LoadFrom() loads the file directly and additionally probes its directory for the
+            // plugin's own dependencies (Bwg.*, WindowsMediaLib, ICSharpCode.SharpZipLib), which
+            // live next to the plugin rather than in the application base.
+            Assembly assembly = Assembly.LoadFrom(plugin_path);
             System.Diagnostics.Trace.WriteLine("Loaded " + assembly.FullName);
             foreach (Type type in assembly.GetExportedTypes())
             {

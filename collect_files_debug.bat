@@ -6,15 +6,15 @@ REM The script is located in the CUETools repository root.
 echo %~dp0
 pushd %~dp0
 SET base_dir=.
-SET debug_win_dir=%base_dir%\bin\Debug\net10.0-windows
-SET debug_lib_dir=%base_dir%\bin\Debug\netstandard2.1
+REM All projects build into one deployment root (see CueToolsBinRoot in Directory.Build.props),
+REM so the native files only need to be staged once.
+SET debug_dir=%base_dir%\bin\Debug
 
 REM use xcopy instead of copy. xcopy creates directories if necessary and outputs the copied file.
 REM /Y Suppresses prompting to confirm that you want to overwrite an existing destination file.
 REM /D xcopy copies all Source files that are newer than existing Destination files.
 
-call :copy_native "%debug_win_dir%"
-call :copy_native "%debug_lib_dir%"
+call :copy_native "%debug_dir%"
 
 popd
 goto :eof
