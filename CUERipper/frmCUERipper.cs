@@ -1034,7 +1034,10 @@ namespace CUERipper
 #endif
             }
 
-            if (noMetadataReleases || metadataSearch == CTDBMetadataSearch.Extensive)
+            // AccurateRip Meta is a peer of the CTDB metadata sources rather than a fallback for
+            // them: whenever CTDB is asked for metadata, this provider is asked too, so its release
+            // and its cover art appear on the first lookup instead of only after Reload.
+            if (metadataSearch != CTDBMetadataSearch.None)
             {
                 AccurateRipMetaLookupProgress(null);
                 var provider = new AccurateRipMetaProvider();
