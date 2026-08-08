@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -73,7 +74,7 @@ namespace CUEPlayer
 				textBoxAlbum.Text = playingRow < 0 ? "" : dataSet.Playlist[playingRow].album;
 				textBoxTitle.Text = playingRow < 0 ? "" : dataSet.Playlist[playingRow].title;
 				textBoxDuration.Text = "";
-				pictureBox.Image = playingCue != null && playingCue.Cover != null ? playingCue.Cover : pictureBox.InitialImage;
+				pictureBox.Image = GetCoverImage(playingCue) ?? pictureBox.InitialImage;
 
 				if (nextDeck != null && nextDeck.playingSource == null && playingRow >= 0 && playingRow < dataSet.Playlist.Rows.Count - 1)
 				{
@@ -98,6 +99,20 @@ namespace CUEPlayer
 			lenStr1 = "0:00".Substring(0, Math.Max(0, 4 - lenStr1.Length)) + lenStr1;
 			lenStr2 = "0:00".Substring(0, Math.Max(0, 4 - lenStr2.Length)) + lenStr2;
 			textBoxDuration.Text = lenStr2 + " / " + lenStr1;
+		}
+
+		private static Image GetCoverImage(CUESheet cueSheet)
+		{
+			if (cueSheet == null || cueSheet.AlbumArt == null)
+				return null;
+			var picture = cueSheet.AlbumArt.Find(x => x.Type == TagLib.PictureType.FrontCover) ??
+				cueSheet.AlbumArt.Find(x => x.Type != TagLib.PictureType.NotAPicture);
+			if (picture == null)
+				return null;
+			using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
+				try { return Image.FromStream(imageStream); }
+				catch { }
+			return null;
 		}
 
 		private int seekTo = -1;

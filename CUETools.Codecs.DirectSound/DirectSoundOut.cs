@@ -1,297 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Threading;
+using System;
 using System.Windows.Forms;
-using Microsoft.DirectX;
-using Microsoft.DirectX.DirectSound;
+using CUETools.Codecs.CoreAudio;
+using NAudio.CoreAudioApi;
 
 namespace CUETools.Codecs.DirectSound
 {
-	public class DirectSoundOut : IWavePlayer
-	{
-		private Device dSound;
-		private WaveFormat format;// = new WaveFormat();
-		private BufferDescription description = new BufferDescription();
-		private SecondaryBuffer secondaryBuffer;
-		private Notify notify;
-		private MemoryStream pcmStream;
-		private int SecBufByteSize;
-        private AudioEncoderSettings m_settings;
-		PlaybackState playbackState = PlaybackState.Stopped;
-		
-		/// <summary>
-		/// Playback Stopped
-		/// </summary>
-		public event EventHandler PlaybackStopped;
+    public class DirectSoundOut : CUETools.Codecs.IWavePlayer
+    {
+        private readonly WasapiOut player;
 
-		AutoResetEvent
-			SecBufNotifyAtBegin = new AutoResetEvent(false),
-			SecBufNotifyAtOneThird = new AutoResetEvent(false),
-			SecBufNotifyAtTwoThirds = new AutoResetEvent(false);
-		WaitHandle[] SecBufWaitHandles;
+        public DirectSoundOut(Control owner, AudioPCMConfig pcm, int delay)
+        {
+            player = new WasapiOut(WasapiOut.GetDefaultAudioEndpoint(), AudioClientShareMode.Shared, true, delay, pcm);
+        }
 
-		public DirectSoundOut(Control owner, AudioPCMConfig pcm, int delay)
-		{
-            this.m_settings = new AudioEncoderSettings(pcm);
+        public event EventHandler PlaybackStopped
+        {
+            add { player.PlaybackStopped += value; }
+            remove { player.PlaybackStopped -= value; }
+        }
 
-			//buffer = new CyclicBuffer(44100*4/10);
-			//output = new CycilcBufferOutputStream(buffer);
-			//input = new CycilcBufferInputStream(buffer);
+        public float Volume
+        {
+            get { return player.Volume; }
+            set { player.Volume = value; }
+        }
 
-			dSound = new Device();
-			dSound.SetCooperativeLevel(owner, CooperativeLevel.Priority);
-			format.AverageBytesPerSecond = pcm.SampleRate * pcm.BlockAlign;
-			format.BitsPerSample = (short)pcm.BitsPerSample;
-			format.BlockAlign = (short)pcm.BlockAlign;
-			format.Channels = (short)pcm.ChannelCount;
-			format.SamplesPerSecond = pcm.SampleRate;
-			format.FormatTag = WaveFormatTag.Pcm;
-			SecBufByteSize = delay * pcm.SampleRate * pcm.BlockAlign / 1000;
-			description.Format = format;
-			description.BufferBytes = SecBufByteSize;
-			description.CanGetCurrentPosition = true;
-			description.ControlPositionNotify = true;
-			//description.ControlVolume = true;
-			description.GlobalFocus = true;
-			secondaryBuffer = new SecondaryBuffer(description, dSound);
-			//secondaryBuffer.Volume = 100;
+        public CUETools.Codecs.PlaybackState PlaybackState => (CUETools.Codecs.PlaybackState)player.PlaybackState;
 
-			notify = new Notify(secondaryBuffer);
-			BufferPositionNotify[] bufferPositions = new BufferPositionNotify[3];
-			bufferPositions[0].Offset = 0;
-			bufferPositions[0].EventNotifyHandle = SecBufNotifyAtBegin.Handle;
-			bufferPositions[1].Offset = SecBufByteSize / 3;
-			bufferPositions[1].EventNotifyHandle = SecBufNotifyAtOneThird.Handle;
-			bufferPositions[2].Offset = 2 * SecBufByteSize / 3;
-			bufferPositions[2].EventNotifyHandle = SecBufNotifyAtTwoThirds.Handle;
-			notify.SetNotificationPositions(bufferPositions);
-			pcmStream = new MemoryStream(SecBufByteSize);
+        public long Position => player.Position;
 
-			SecBufWaitHandles = new WaitHandle[] { SecBufNotifyAtBegin, SecBufNotifyAtOneThird, SecBufNotifyAtTwoThirds };
+        public long FinalSampleCount
+        {
+            set { player.FinalSampleCount = value; }
+        }
 
-			//wavoutput = new WAVWriter("", output, pcm);
-		}
+        public IAudioEncoderSettings Settings => player.Settings;
 
-		/// <summary>
-		/// Volume
-		/// </summary>
-		public float Volume
-		{
-			get
-			{
-				return 1.0f;
-			}
-			set
-			{
-				if (value != 1.0f)
-				{
-					throw new NotImplementedException();
-				}
-			}
-		}
+        public string Path => player.Path;
 
-		//int SecBufNextWritePosition = 0;
-		//bool SecBufInitialLoad = false;
+        public void Write(AudioBuffer src)
+        {
+            player.Write(src);
+        }
 
-		bool playing = false;
-		public void Write(AudioBuffer src)
-		{
-			//wavoutput.Write(src);
+        public void Play()
+        {
+            player.Play();
+        }
 
-			pcmStream.SetLength(0);
-			pcmStream.Write(src.Bytes, 0, src.ByteLength);
-			pcmStream.Position = 0;
-			//pcmStream.Position = 0;
+        public void Stop()
+        {
+            player.Stop();
+        }
 
-			//while (true)
-			//{
-			//    if (SecBufInitialLoad)
-			//    {
-			//        int count = Math.Min(src.ByteLength, SecBufByteSize - SecBufNextWritePosition);
-			//        if (count > 0)
-			//        {
-			//            secondaryBuffer.Write(SecBufNextWritePosition, pcmStream, count, LockFlag.None);
-			//            SecBufNextWritePosition += count;
-			//            pcmStream.Position += count;
-			//        }
+        public void Pause()
+        {
+            player.Pause();
+        }
 
-			//        if (SecBufByteSize == SecBufNextWritePosition)
-			//        {
-			//            // Finished filling the buffer
-			//            SecBufInitialLoad = false;
-			//            SecBufNextWritePosition = 0;
+        public void Close()
+        {
+            player.Close();
+        }
 
-			//            // So start the playback in its own thread
-			//            secondaryBuffer.Play(0, BufferPlayFlags.Looping);						
+        public void Delete()
+        {
+            player.Delete();
+        }
 
-			//            // Yield rest of timeslice so playback can  
-			//            // start right away.
-			//            Thread.Sleep(0);
-			//        }
-			//        else
-			//        {
-			//            continue;  // Get more PCM data
-			//        }
-			//    }
-
-			// Exhaust the current PCM data by writing the data into secondaryBuffer
-			while (pcmStream.Position < pcmStream.Length)
-			{
-				int PlayPosition, WritePosition;
-
-				secondaryBuffer.GetCurrentPosition(out PlayPosition, out WritePosition);
-
-				int WriteCount = (int)Math.Min(
-					(SecBufByteSize + PlayPosition - WritePosition) % SecBufByteSize,
-					pcmStream.Length - pcmStream.Position);
-
-				if (WriteCount > 0)
-				{
-					secondaryBuffer.Write(
-						WritePosition,
-						pcmStream,
-						WriteCount,
-						LockFlag.None);
-					pcmStream.Position += WriteCount;
-					if (!playing)
-					{
-						secondaryBuffer.Play(0, 0);
-						playing = true;
-					}
-				}
-				else
-				{
-					WaitHandle.WaitAny(SecBufWaitHandles, new TimeSpan(0, 0, 5), true);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Begin Playback
-		/// </summary>
-		public void Play()
-		{
-			switch (playbackState)
-			{
-				case PlaybackState.Playing:
-					return;
-				case PlaybackState.Paused:
-					playbackState = PlaybackState.Playing;
-					return;
-				case PlaybackState.Stopped:
-					playbackState = PlaybackState.Playing;
-					//playThread = new Thread(new ThreadStart(PlayThread));
-					//playThread.Priority = ThreadPriority.Highest;
-					//playThread.IsBackground = true;
-					//playThread.Name = "Pro Audio";
-					//playThread.Start();
-					return;
-			}
-		}
-
-		/// <summary>
-		/// Stop playback and flush buffers
-		/// </summary>
-		public void Stop()
-		{
-			if (playbackState != PlaybackState.Stopped)
-			{
-				playbackState = PlaybackState.Stopped;
-				//if (frameEventWaitHandle != null)
-				//    frameEventWaitHandle.Set();
-				//playThread.Join();
-				//playThread = null;
-				//ReleaseBuffer(readBuffers[0], false, 0);
-				//ReleaseBuffer(readBuffers[1], false, 0);
-				//active = null;
-				//active_offset = 0;
-			}
-		}
-
-		/// <summary>
-		/// Stop playback without flushing buffers
-		/// </summary>
-		public void Pause()
-		{
-			if (playbackState == PlaybackState.Playing)
-			{
-				playbackState = PlaybackState.Paused;
-			}
-			//if (frameEventWaitHandle != null)
-			//    frameEventWaitHandle.Set();
-		}
-
-		/// <summary>
-		/// Playback State
-		/// </summary>
-		public PlaybackState PlaybackState
-		{
-			get { return playbackState; }
-		}
-
-		public void Close()
-		{
-			if (secondaryBuffer != null)
-			{
-				secondaryBuffer.Dispose();
-				secondaryBuffer = null;
-			}
-			if (dSound != null)
-			{
-				dSound.Dispose();
-				dSound = null;
-			}
-			//wavoutput.Close();
-		}
-
-		public void Delete()
-		{
-			Close();
-		}
-
-		#region IAudioDest Members
-
-		public long Position
-		{
-			get
-			{
-				return 0;
-			}
-		}
-
-		public long FinalSampleCount
-		{
-			set { ; }
-		}
-
-		public object Settings
-		{
-			get
-			{
-				return m_settings;
-			}
-		}
-
-		public string Path { get { return null; } }
-
-		#endregion
-
-		#region IDisposable Members
-
-		/// <summary>
-		/// Dispose
-		/// </summary>
-		public void Dispose()
-		{
-			//if (audioClient != null)
-			{
-				Stop();
-			}
-
-		}
-
-		#endregion
-	}
+        public void Dispose()
+        {
+            player.Dispose();
+        }
+    }
 }
