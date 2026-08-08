@@ -8,7 +8,9 @@ using System.Xml;
 using CUETools.Codecs;
 using CUETools.Processor.Settings;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System.Linq;
+using System.Reflection;
 
 namespace CUETools.Processor
 {
@@ -81,6 +83,7 @@ namespace CUETools.Processor
         public EncoderListViewModel Encoders => advanced.encodersViewModel;
         public DecoderListViewModel Decoders => advanced.decodersViewModel;
         public Dictionary<string, CUEToolsFormat> formats => advanced.formats;
+        private static readonly ISerializationBinder AdvancedConfigSerializationBinder = new AudioSettingsSerializationBinder();
 
         public CUEConfig()
             : base()
@@ -334,6 +337,7 @@ namespace CUETools.Processor
                 {
                     DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
                     TypeNameHandling = TypeNameHandling.Auto,
+                    SerializationBinder = AdvancedConfigSerializationBinder,
                 }));
 
             int nFormats = 0;
@@ -447,6 +451,7 @@ namespace CUETools.Processor
                         {
                             DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
                             TypeNameHandling = TypeNameHandling.Auto,
+                            SerializationBinder = AdvancedConfigSerializationBinder,
                             Error = (sender, ev) => {
                                 System.Diagnostics.Trace.WriteLine(ev.ErrorContext.Error.ToString());
                                 ev.ErrorContext.Handled = true;
@@ -586,6 +591,71 @@ namespace CUETools.Processor
             }
 
             return sb.ToString();
+        }
+
+        private sealed class AudioSettingsSerializationBinder : ISerializationBinder
+        {
+            private static readonly Lazy<HashSet<Type>> AllowedTypes = new Lazy<HashSet<Type>>(CreateAllowedTypes);
+
+            public Type BindToType(string assemblyName, string typeName)
+            {
+                Type resolvedType = ResolveLoadedType(assemblyName, typeName);
+                if (resolvedType == null || !AllowedTypes.Value.Contains(resolvedType))
+                    throw new JsonSerializationException($"Type '{typeName}' is not allowed in CUETools advanced settings.");
+
+                return resolvedType;
+            }
+
+            public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                if (!AllowedTypes.Value.Contains(serializedType))
+                    throw new JsonSerializationException($"Type '{serializedType.FullName}' is not allowed in CUETools advanced settings.");
+
+                assemblyName = serializedType.Assembly.GetName().Name;
+                typeName = serializedType.FullName;
+            }
+
+            private static HashSet<Type> CreateAllowedTypes()
+            {
+                var config = new CUEConfigAdvanced();
+                config.Init();
+
+                return new HashSet<Type>(
+                    config.encoders.Select(settings => settings.GetType())
+                        .Concat(config.decoders.Select(settings => settings.GetType())));
+            }
+
+            private static Type ResolveLoadedType(string assemblyName, string typeName)
+            {
+                foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (!AssemblyNameMatches(assembly, assemblyName))
+                        continue;
+
+                    Type type = assembly.GetType(typeName, false);
+                    if (type != null)
+                        return type;
+                }
+
+                return null;
+            }
+
+            private static bool AssemblyNameMatches(Assembly assembly, string assemblyName)
+            {
+                if (string.IsNullOrEmpty(assemblyName))
+                    return true;
+
+                try
+                {
+                    var requestedName = new AssemblyName(assemblyName);
+                    return string.Equals(assembly.GetName().Name, requestedName.Name, StringComparison.OrdinalIgnoreCase);
+                }
+                catch
+                {
+                    return string.Equals(assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(assembly.FullName, assemblyName, StringComparison.OrdinalIgnoreCase);
+                }
+            }
         }
     }
 }

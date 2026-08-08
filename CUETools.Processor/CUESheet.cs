@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
-#if NET47 || NET20
+#if NET48 || NET20
 using System.Drawing.Drawing2D;
 #endif
 using System.Globalization;
@@ -127,7 +127,7 @@ namespace CUETools.Processor
             get { return _albumArt; }
         }
 
-#if NET47 || NET20
+#if NET48 || NET20
         public Image Cover
         {
             get
@@ -1828,7 +1828,7 @@ namespace CUETools.Processor
                             using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                                 try
                                 {
-#if NET47 || NET20
+#if NET48 || NET20
                                     var image = Image.FromStream(ms);
                                     pic.Description += $" ({image.Width}x{image.Height})";
                                     //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
@@ -1863,7 +1863,7 @@ namespace CUETools.Processor
                     }
                 }
             }
-#if NET47 || NET20
+#if NET48 || NET20
             ResizeAlbumArt();
 #endif
         }
@@ -3030,7 +3030,7 @@ namespace CUETools.Processor
             return entry;
         }
 
-#if NET47 || NET20
+#if NET48 || NET20
         private static Bitmap resizeImage(Image imgToResize, Size size)
         {
             int sourceWidth = imgToResize.Width;
@@ -3152,7 +3152,7 @@ namespace CUETools.Processor
                     using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                         try
                         {
-#if NET47 || NET20
+#if NET48 || NET20
                             var image = Image.FromStream(imageStream);
                             pic.Description += $" ({image.Width}x{image.Height})";
                             if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
@@ -3170,7 +3170,7 @@ namespace CUETools.Processor
             }
         }
 
-#if NET47 || NET20
+#if NET48 || NET20
         public void ResizeAlbumArt()
         {
             if (_albumArt == null)
