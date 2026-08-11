@@ -1,23 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
     <Version>2.2.6.0</Version>
     <AssemblyName>CUEControls</AssemblyName>
     <RootNamespace>CUEControls</RootNamespace>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <Product>CUETools</Product>
     <Description>Library containing windows GUI controls for CUETools.</Description>
     <Copyright>Copyright (c) 2008-2025 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <UseWindowsForms>true</UseWindowsForms>
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
+    <OutputPath>$(CueToolsBinRoot)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
     <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Company />
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
 
 </Project>

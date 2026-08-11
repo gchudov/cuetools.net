@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <Version>2.2.6.0</Version>
     <AssemblyName>CUETools.Processor</AssemblyName>
     <RootNamespace>CUETools.Processor</RootNamespace>
@@ -10,7 +10,9 @@
     <Copyright>Copyright (c) 2008-2025 Grigory Chudov</Copyright>
     <Authors>Grigory Chudov</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
     <RepositoryUrl>https://github.com/gchudov/cuetools.net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Company />
@@ -23,17 +25,18 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Freedb\Freedb.csproj" Condition="'$(EnableDormantFreedb)' == 'true'" />
     <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
     <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
     <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
     <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj" />
     <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
     <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
-    <ProjectReference Include="..\Freedb\Freedb.csproj" />
     <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
       <Private>true</Private>
     </ProjectReference>

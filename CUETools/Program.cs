@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Channels.Ipc;
+using System.IO.Pipes;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -74,10 +73,12 @@ namespace JDP
 		}
 	}
 
-	[Serializable]
-    class SingletonController : MarshalByRefObject
+    class SingletonController
     {
-		private static IpcChannel m_IPCChannel = null;
+		private static Mutex m_Mutex = null;
+		private static string m_PipeName = null;
+		private static Thread m_ListenerThread = null;
+		private static CancellationTokenSource m_Cancellation = null;
 
 		public delegate bool ReceiveDelegate(string[] args);
 
@@ -109,39 +110,88 @@ namespace JDP
 
         public static bool IamFirst(string id)
         {
+			bool createdNew;
 			try
 			{
-				m_IPCChannel = new IpcChannel(id);
+				m_Mutex = new Mutex(true, "CUETools-" + id, out createdNew);
 			}
 			catch
 			{
 				return false;
 			}
-			System.Runtime.Remoting.Channels.ChannelServices.RegisterChannel(m_IPCChannel, false);
-			RemotingConfiguration.RegisterWellKnownServiceType(
-				typeof(SingletonController),
-				"SingletonController",
-				WellKnownObjectMode.SingleCall);
+
+			if (!createdNew)
+			{
+				m_Mutex.Dispose();
+				m_Mutex = null;
+				return false;
+			}
+
+			m_PipeName = "CUETools-" + id;
+			m_Cancellation = new CancellationTokenSource();
+			m_ListenerThread = new Thread(Listen);
+			m_ListenerThread.IsBackground = true;
+			m_ListenerThread.Name = "CUETools single-instance listener";
+			m_ListenerThread.Start();
 			return true;
 		}
 
         public static void Cleanup()
         {
-            if (m_IPCChannel != null)
-                m_IPCChannel.StopListening(null);
-            m_IPCChannel = null;
+			CancellationTokenSource cancellation = m_Cancellation;
+			string pipeName = m_PipeName;
+			Thread listenerThread = m_ListenerThread;
+
+			if (cancellation != null)
+			{
+				cancellation.Cancel();
+				try
+				{
+					using (NamedPipeClientStream client = new NamedPipeClientStream(".", pipeName, PipeDirection.Out))
+						client.Connect(50);
+				}
+				catch
+				{
+				}
+			}
+
+			if (listenerThread != null)
+				listenerThread.Join(1000);
+			m_ListenerThread = null;
+			m_Cancellation = null;
+			m_PipeName = null;
+
+			if (m_Mutex != null)
+			{
+				try
+				{
+					m_Mutex.ReleaseMutex();
+				}
+				catch
+				{
+				}
+				m_Mutex.Dispose();
+			}
+			m_Mutex = null;
         }
 
         public static void Send(string id, string[] s)
         {
-            SingletonController ctrl;
-            IpcChannel channel = new IpcChannel();
-			System.Runtime.Remoting.Channels.ChannelServices.RegisterChannel(channel, false);
 			bool result = false;
             try
             {
-				ctrl = (SingletonController)Activator.GetObject(typeof(SingletonController), "ipc://" + id + "/SingletonController");
-				result = ctrl.Receive(s);
+				using (NamedPipeClientStream client = new NamedPipeClientStream(".", "CUETools-" + id, PipeDirection.InOut))
+				{
+					client.Connect(1000);
+					BinaryWriter writer = new BinaryWriter(client, Encoding.UTF8, true);
+					writer.Write(s.Length);
+					foreach (string arg in s)
+						writer.Write(arg ?? "");
+					writer.Flush();
+
+					BinaryReader reader = new BinaryReader(client, Encoding.UTF8, true);
+					result = reader.ReadBoolean();
+				}
 			}
             catch
             {
@@ -151,7 +201,46 @@ namespace JDP
 					"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
 
-        public bool Receive(string[] s)
+		private static void Listen()
+		{
+			while (true)
+			{
+				CancellationTokenSource cancellation = m_Cancellation;
+				string pipeName = m_PipeName;
+				if (cancellation == null || cancellation.IsCancellationRequested || string.IsNullOrEmpty(pipeName))
+					return;
+
+				try
+				{
+					using (NamedPipeServerStream server = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1))
+					{
+						server.WaitForConnection();
+						if (cancellation.IsCancellationRequested)
+							continue;
+
+						BinaryReader reader = new BinaryReader(server, Encoding.UTF8, true);
+						int count = reader.ReadInt32();
+						string[] args = new string[count];
+						for (int i = 0; i < count; i++)
+							args[i] = reader.ReadString();
+
+						bool result = Receive(args);
+						BinaryWriter writer = new BinaryWriter(server, Encoding.UTF8, true);
+						writer.Write(result);
+						writer.Flush();
+					}
+				}
+				catch
+				{
+					cancellation = m_Cancellation;
+					if (cancellation == null || cancellation.IsCancellationRequested)
+						return;
+					Thread.Sleep(250);
+				}
+			}
+		}
+
+        private static bool Receive(string[] s)
         {
 			if (m_Receive == null)
 				return false;

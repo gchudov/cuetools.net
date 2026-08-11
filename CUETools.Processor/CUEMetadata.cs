@@ -176,7 +176,7 @@ namespace CUETools.Processor
 			{
 				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
 				if ((overwrite || Tracks[i].Artist == "") && metadata.Tracks[i].Artist != "") Tracks[i].Artist = metadata.Tracks[i].Artist;
-				if ((overwrite || Tracks[i].Comment == "") && metadata.Tracks[i].Artist != "") Tracks[i].Comment = metadata.Tracks[i].Comment;
+				if ((overwrite || Tracks[i].Comment == "") && metadata.Tracks[i].Comment != "") Tracks[i].Comment = metadata.Tracks[i].Comment;
 				if ((overwrite || Tracks[i].ISRC == "") && metadata.Tracks[i].ISRC != "") Tracks[i].ISRC = metadata.Tracks[i].ISRC;
 			}
 		}
@@ -250,6 +250,8 @@ namespace CUETools.Processor
 			}
 		}
 
+#if DORMANT_FREEDB
+        // FreeDB metadata import and repair helpers are dormant. AccurateRip Meta is the active replacement provider.
 		public void FillFromFreedb(Freedb.CDEntry cdEntry, int firstAudio)
 		{
 			Year = cdEntry.Year;
@@ -264,6 +266,7 @@ namespace CUETools.Processor
 				Tracks[i].Comment = cdEntry.ExtendedData;
 			}
 		}
+#endif
 
 		public void FillFromCtdb(CUETools.CTDB.CTDBResponseMeta cdEntry, int firstAudio)
 		{
@@ -316,6 +319,8 @@ namespace CUETools.Processor
 			}
         }
 
+#if DORMANT_FREEDB
+        // FreeDB metadata import and repair helpers are dormant. AccurateRip Meta is the active replacement provider.
 		private static string FreedbToEncoding(Encoding iso, Encoding def, ref bool changed, ref bool error, string s)
 		{
 			try
@@ -370,6 +375,7 @@ namespace CUETools.Processor
 			}
 			return found;
 		}
+#endif
 
 		public void UpdateArtist(string artist)
 		{

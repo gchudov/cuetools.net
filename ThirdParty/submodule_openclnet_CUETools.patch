@@ -1,0 +1,21 @@
+diff --git a/source/OpenCLNet.csproj b/source/OpenCLNet.csproj
+index f2ec492..d8a2bce 100644
+--- a/source/OpenCLNet.csproj
++++ b/source/OpenCLNet.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net47</TargetFrameworks>
++    <TargetFrameworks>net10.0-windows</TargetFrameworks>
+     <Version>0.5.1.0</Version>
+     <PackageId>OpenCL.Net</PackageId>
+     <Product>OpenCL.Net</Product>
+@@ -11,6 +11,7 @@
+     <Authors>Olav Kalgraf</Authors>
+     <AssemblyName>OpenCLNet</AssemblyName>
+     <RootNamespace>OpenCLNet</RootNamespace>
++    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+   </PropertyGroup>
+ 
+   <PropertyGroup>

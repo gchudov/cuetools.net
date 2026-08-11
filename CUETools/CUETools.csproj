@@ -1,430 +1,68 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EF351583-A9CD-4530-92C3-20AC02136BC2}</ProjectGuid>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
+    <Version>2.2.6.0</Version>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JDP</RootNamespace>
     <AssemblyName>CUETools</AssemblyName>
+    <RootNamespace>JDP</RootNamespace>
     <ApplicationIcon>cue2.ico</ApplicationIcon>
-    <ManifestCertificateThumbprint>611F49E043614FEDCFF1B128868CC8DC0B6656C5</ManifestCertificateThumbprint>
-    <ManifestKeyFile>CUETools_TemporaryKey.pfx</ManifestKeyFile>
-    <GenerateManifests>false</GenerateManifests>
-    <SignManifests>false</SignManifests>
-    <IsWebBootstrapper>true</IsWebBootstrapper>
-    <TargetZone>LocalIntranet</TargetZone>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
-    <PublishUrl>ftp://cuetools.net/cuetools.net/install/cuetools/</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Web</InstallFrom>
-    <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Background</UpdateMode>
-    <UpdateInterval>1</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>true</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://cuetools.net/install/cuetools/</InstallUrl>
-    <SupportUrl>http://cuetools.net/</SupportUrl>
-    <ProductName>CUETools</ProductName>
-    <PublisherName>CUETools</PublisherName>
-    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
-    <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\net47\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
+    <OutputPath>$(CueToolsBinRoot)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <PlatformTarget>x86</PlatformTarget>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\net47\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <UseVSHostingProcess>true</UseVSHostingProcess>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
+    <Compile Remove="CUETools.TestCodecs\**" />
+    <Compile Remove="CUETools.TestParity\**" />
+    <Compile Remove="CUETools.TestProcessor\**" />
+    <Compile Remove="TestRipper\**" />
+    <EmbeddedResource Remove="CUETools.TestCodecs\**" />
+    <EmbeddedResource Remove="CUETools.TestParity\**" />
+    <EmbeddedResource Remove="CUETools.TestProcessor\**" />
+    <EmbeddedResource Remove="TestRipper\**" />
+    <None Remove="CUETools.TestCodecs\**" />
+    <None Remove="CUETools.TestParity\**" />
+    <None Remove="CUETools.TestProcessor\**" />
+    <None Remove="TestRipper\**" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBCollision.cs" />
-    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDB.cs" />
-    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBCategory.cs" />
-    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBEntry.cs" />
-    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBFolder.cs" />
-    <Compile Include="TreeNodes\FileSystemTreeNodeLocalDBGroup.cs" />
-    <Compile Include="frmSubmit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmSubmit.Designer.cs">
-      <DependentUpon>frmSubmit.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmAbout.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmAbout.Designer.cs">
-      <DependentUpon>frmAbout.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmBatch.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmBatch.Designer.cs">
-      <DependentUpon>frmBatch.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmChoice.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmChoice.Designer.cs">
-      <DependentUpon>frmChoice.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmOverwrite.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmOverwrite.Designer.cs">
-      <DependentUpon>frmOverwrite.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmPassword.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmPassword.Designer.cs">
-      <DependentUpon>frmPassword.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmReport.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmReport.Designer.cs">
-      <DependentUpon>frmReport.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmSettings.Designer.cs">
-      <DependentUpon>frmSettings.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmCUETools.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmCUETools.Designer.cs">
-      <DependentUpon>frmCUETools.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="frmAbout.de-DE.resx">
-      <DependentUpon>frmAbout.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmAbout.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmAbout.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmAbout.ru-RU.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmAbout.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmBatch.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmBatch.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmChoice.de-DE.resx">
-      <DependentUpon>frmChoice.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmChoice.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmChoice.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmChoice.ru-RU.resx">
-      <DependentUpon>frmChoice.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmCUETools.de-DE.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmCUETools.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmCUETools.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmCUETools.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmCUETools.ru-RU.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmCUETools.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmOverwrite.resx">
-      <DependentUpon>frmOverwrite.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmPassword.de-DE.resx">
-      <DependentUpon>frmPassword.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmPassword.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmPassword.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmPassword.ru-RU.resx">
-      <DependentUpon>frmPassword.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmReport.de-DE.resx">
-      <DependentUpon>frmReport.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmReport.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmReport.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmReport.ru-RU.resx">
-      <DependentUpon>frmReport.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmSettings.de-DE.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmSettings.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmSettings.ru-RU.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmSubmit.de-DE.resx">
-      <DependentUpon>frmSubmit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmSubmit.resx">
-      <DependentUpon>frmSubmit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmSubmit.ru-RU.resx">
-      <DependentUpon>frmSubmit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.de-DE.resx" />
-    <EmbeddedResource Include="Properties\Resources.resx">
+    <ProjectReference Include="..\Freedb\Freedb.csproj" Condition="'$(EnableDormantFreedb)' == 'true'" />
+    <ProjectReference Include="..\CUEControls\CUEControls.csproj" />
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
+    <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
+    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj" />
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.ru-RU.resx" />
-    <None Include="app.config" />
-    <None Include="Properties\Settings.settings">
+    <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Compile Include="Settings.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CUEControls\CUEControls.csproj">
-      <Project>{CA4D64E6-6544-4A29-8BA5-7DB08D50D072}</Project>
-      <Name>CUEControls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
-      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
-      <Name>CUETools.AccurateRip</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
-      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
-      <Name>CUETools.CDImage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
-      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>CUETools.Codecs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Compression\CUETools.Compression.csproj">
-      <Project>{14EE067E-C218-4625-9540-2361AB27C4A6}</Project>
-      <Name>CUETools.Compression</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj">
-      <Project>{c36efaa5-4f81-4a29-800d-ba866ff13bc8}</Project>
-      <Name>CUETools.CTDB.Types</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
-      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
-      <Name>CUETools.CTDB</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
-      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
-      <Name>CUETools.Processor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Freedb\Freedb.csproj">
-      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
-      <Name>Freedb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
-      <Project>{1219a514-d3fa-40db-bbb2-92ce05e35839}</Project>
-      <Name>TaglibSharp</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\freedb.gif" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\musicbrainz.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CUETools_TemporaryKey.pfx" />
-    <BaseApplicationManifest Include="Properties\app.manifest" />
-    <None Include="Properties\DataSources\CUETools.Processor.CUEConfig.datasource" />
-    <None Include="Resources\accuraterip.jpg" />
-    <Content Include="cue2.ico" />
-    <None Include="Resources\freedb16.png" />
-    <None Include="Resources\more\icons\report.png" />
-    <None Include="Resources\report.png" />
-    <None Include="Resources\more\icons\world_go.png" />
-    <None Include="Resources\world_go.png" />
-    <None Include="Resources\disk.png" />
-    <None Include="Resources\find.png" />
-    <None Include="Resources\link_go.png" />
-    <None Include="Resources\basket.png" />
-    <None Include="Resources\delete.png" />
-    <None Include="Resources\cdrepair.ico" />
-    <None Include="Resources\cdrepair.png" />
-    <None Include="Resources\puzzle--arrow.png" />
-    <None Include="Resources\alarm-clock--minus.png" />
-    <None Include="Resources\puzzle.ico" />
-    <None Include="Resources\alarm-clock.ico" />
-    <None Include="Resources\users.ico" />
-    <None Include="Resources\calendar.ico" />
-    <None Include="Resources\images.ico" />
-    <None Include="Resources\pictures.ico" />
-    <None Include="Resources\images-question.ico" />
-    <None Include="Resources\picture.ico" />
-    <None Include="Resources\wma.ico" />
-    <None Include="Resources\more\card--pencil.png" />
-    <Content Include="Resources\opus.ico" />
-    <Content Include="Resources\accuraterip_16.bmp" />
-    <None Include="Resources\ape.ico" />
-    <Content Include="Resources\AR.ico" />
-    <Content Include="Resources\cd2.png" />
-    <None Include="Resources\cog.ico" />
-    <Content Include="Resources\cue.ico" />
-    <None Include="Resources\cue2.ico" />
-    <None Include="Resources\cue3.ico" />
-    <Content Include="Resources\cue_32.ico" />
-    <Content Include="Resources\eac.ico" />
-    <Content Include="Resources\flac.ico" />
-    <None Include="Resources\freedb.ico" />
-    <Content Include="Resources\icon-wv.png" />
-    <None Include="Resources\cuetools.icl" />
-    <None Include="Resources\settings.ico" />
-    <None Include="Resources\information.ico" />
-    <None Include="Resources\info2.bmp" />
-    <None Include="Resources\information.png" />
-    <None Include="Resources\ipod_sound.ico" />
-    <None Include="Resources\ogg.ico" />
-    <None Include="Resources\mp3.ico" />
-    <None Include="Resources\more\icons\folder.png" />
-    <None Include="Resources\more\icons\folder_add.png" />
-    <None Include="Resources\more\icons\folder_delete.png" />
-    <None Include="Resources\more\icons\folder_feed.png" />
-    <None Include="Resources\more\icons\folder_page.png" />
-    <Content Include="Resources\wav.bmp" />
-    <None Include="Resources\wv.ico" />
-    <None Include="Resources\wave.ico" />
-    <None Include="Resources\tta.ico" />
-    <Content Include="user_profiles_enabled" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Visual.C++.8.0.x86">
-      <Visible>False</Visible>
-      <ProductName>Visual C++ Runtime Libraries %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <PublishFile Include="de-DE\CUETools.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-    <PublishFile Include="ru-RU\CUETools.resources">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Satellite</FileType>
-    </PublishFile>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="InstallFiles\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

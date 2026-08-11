@@ -1,180 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{816D964C-9772-46C5-AF1D-49E8C78A1E7C}</ProjectGuid>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUETools.CTDB.EACPlugin</RootNamespace>
     <AssemblyName>CUETools.CTDB.EACPlugin</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <RootNamespace>CUETools.CTDB.EACPlugin</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
+    <OutputPath>$(CueToolsBinRoot)interop\EAC\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\interop\EAC\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\interop\EAC\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="FormSubmitParity.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormSubmitParity.Designer.cs">
-      <DependentUpon>FormSubmitParity.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormMetadata.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormMetadata.Designer.cs">
-      <DependentUpon>FormMetadata.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ImagePreview.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ImagePreview.Designer.cs">
-      <DependentUpon>ImagePreview.cs</DependentUpon>
-    </Compile>
-    <Compile Include="InternetImage.cs" />
-    <Compile Include="Metadata.cs" />
-    <Compile Include="Plugin.cs" />
-    <Compile Include="Options.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Options.Designer.cs">
-      <DependentUpon>Options.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    <EmbeddedResource Include="Resources\ctdb64.png" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="FormSubmitParity.resx">
-      <DependentUpon>FormSubmitParity.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormMetadata.resx">
-      <DependentUpon>FormMetadata.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ImagePreview.resx">
-      <DependentUpon>ImagePreview.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Options.resx">
-      <DependentUpon>Options.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\favicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ctdb64.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\document-save_12.png" />
-  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Interop.HelperFunctionsLib">
       <HintPath>.\Interop.HelperFunctionsLib.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
-      <Project>{5802c7e9-157e-4124-946d-70b5ae48a5a1}</Project>
-      <Name>CUETools.AccurateRip</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
-      <Project>{1dd41038-d885-46c5-8dde-e0b82f066584}</Project>
-      <Name>CUETools.CDImage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
-      <Project>{6458a13a-30ef-45a9-9d58-e5031b17bee2}</Project>
-      <Name>CUETools.Codecs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj">
-      <Project>{c36efaa5-4f81-4a29-800d-ba866ff13bc8}</Project>
-      <Name>CUETools.CTDB.Types</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
-      <Project>{aa2a9a7e-45fb-4632-ad85-85b0e556f818}</Project>
-      <Name>CUETools.CTDB</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Parity\CUETools.Parity.csproj">
-      <Project>{eceb839c-171b-4535-958f-9899310a0342}</Project>
-      <Name>CUETools.Parity</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
+    <ProjectReference Include="..\CUETools.Parity\CUETools.Parity.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

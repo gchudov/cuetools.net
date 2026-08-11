@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;net20</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <Version>0.0.7.1</Version>
     <AssemblyName>Bwg.Hardware</AssemblyName>
     <RootNamespace>Bwg.Hardware</RootNamespace>
@@ -10,12 +10,16 @@
     <Copyright>Copyright © 2006 by Jack W. Griffin, Jr.</Copyright>
     <Authors>Jack W. Griffin, Jr</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>..\bin\$(Configuration)\$(TargetFramework)\plugins\</OutputPath>
+    <OutputPath>$(CueToolsBinRoot)plugins\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
     <RepositoryUrl>https://svn.code.sf.net/p/bwgburn/code/</RepositoryUrl>
     <RepositoryType>svn</RepositoryType>
     <Company>BwgSoftware</Company>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
 
 </Project>

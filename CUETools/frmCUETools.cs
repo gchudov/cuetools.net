@@ -1003,9 +1003,9 @@ namespace JDP
                             UpdateOutputPath(pathIn, cueSheet);
                             pathOut = txtOutputPath.Text;
                             if (dlgRes != DialogResult.Cancel && cueSheet.AlbumArt.Count != 0)
-                                pictureBoxMotd.Image = cueSheet.Cover;
+                                SetMotdImage(GetCoverImage(cueSheet));
                             else
-                                pictureBoxMotd.Image = motdImage;
+                                SetMotdImage(motdImage);
                         });
 
                         if (dlgRes == DialogResult.Cancel)
@@ -1049,7 +1049,7 @@ namespace JDP
                         {
                             this.Invoke((MethodInvoker)delegate ()
                             {
-                                pictureBoxMotd.Image = cueSheet.Cover ?? motdImage;
+                                SetMotdImage(GetCoverImage(cueSheet) ?? motdImage);
                             });
                             cueSheet.UsePregapForFirstTrackInSingleFile = _usePregapForFirstTrackInSingleFile && !outputAudio;
                             if (script == null || script.name == "default")
@@ -1300,7 +1300,7 @@ namespace JDP
             if (!running)
             {
                 UpdateActions();
-                pictureBoxMotd.Image = motdImage;
+                SetMotdImage(motdImage);
                 toolStripStatusLabelProcessed.Text = "";
             }
 
@@ -2153,6 +2153,19 @@ namespace JDP
                 Activate();
             });
             return true;
+        }
+
+        private void SetMotdImage(Image image)
+        {
+            Image previous = pictureBoxMotd.Image;
+            pictureBoxMotd.Image = image;
+            if (previous != null && !object.ReferenceEquals(previous, motdImage) && !object.ReferenceEquals(previous, image))
+                previous.Dispose();
+        }
+
+        private static Image GetCoverImage(CUESheet cueSheet)
+        {
+            return cueSheet?.Cover;
         }
 
         private void locateInExplorerToolStripMenuItem_Click(object sender, EventArgs e)

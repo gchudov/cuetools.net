@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup Condition="'$(EnableDormantFreedb)' == 'true'">
+    <!-- Normal builds retire FreeDB. Run `dotnet build CUETools.sln -p:EnableDormantFreedb=true` to compile preserved dormant code. -->
+    <DefineConstants>$(DefineConstants);DORMANT_FREEDB</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- The single deployment root shared by every CUETools project.
+
+         This must NOT contain $(TargetFramework). The app, its managed plugins and its
+         native helpers have to land in one tree, because the plugin loader probes for a
+         "plugins" folder next to the running assembly (CUETools.Processor\CUEProcessorPlugins.cs)
+         and CUERipper probes "plugins\<arch>" (CUERipper\Program.cs).
+
+         Before the .NET 10 migration this invariant held by accident: every runnable
+         project produced a net47 output, so bin\<cfg>\net47\ was the one real root and the
+         other target-framework trees were unused build byproducts. With executables on
+         net10.0-windows and libraries on netstandard2.1 that no longer works, so the
+         deployment root is now pinned explicitly instead of derived from the framework.
+
+         Projects opt into a subfolder of this root and must also set
+         AppendTargetFrameworkToOutputPath=false, otherwise the SDK re-appends the target
+         framework to whatever OutputPath they declare. -->
+    <CueToolsBinRoot>$(MSBuildThisFileDirectory)bin\$(Configuration)\</CueToolsBinRoot>
+  </PropertyGroup>
+</Project>

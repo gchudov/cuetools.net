@@ -243,6 +243,7 @@ namespace AudioDataPlugIn
             StringWriter sw = new StringWriter();
             if (this.sequence_ok)
             {
+                // Test extraction without a real extraction shall run on an error
                 if (TOC.AudioLength * 588 != ar.Position)
                 {
 #if DEBUG
