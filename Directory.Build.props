@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup Condition="'$(EnableDormantFreedb)' == 'true'">
+    <!-- Normal builds retire FreeDB. Run `dotnet build CUETools.sln -p:EnableDormantFreedb=true` to compile preserved dormant code. -->
+    <DefineConstants>$(DefineConstants);DORMANT_FREEDB</DefineConstants>
+  </PropertyGroup>
+</Project>

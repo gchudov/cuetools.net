@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
@@ -14,7 +15,9 @@ using CUETools.CTDB;
 using CUETools.Processor;
 using CUETools.Processor.Settings;
 using CUETools.Ripper;
+#if DORMANT_FREEDB
 using Freedb;
+#endif
 using CUETools.Codecs;
 using System.Xml;
 using System.Xml.Serialization;
@@ -41,6 +44,8 @@ namespace CUERipper
 		public frmCUERipper()
 		{
 			InitializeComponent();
+            if (!imageListMetadataSource.Images.ContainsKey(AccurateRipMeta.SourceKey))
+                imageListMetadataSource.Images.Add(AccurateRipMeta.SourceKey, Properties.Resources.accuraterip16);
 			_config = new CUEConfig();
 			_startStop = new StartStop();
             cueRipperConfig = new CUERipperConfig();
@@ -452,11 +457,12 @@ namespace CUERipper
 
 			buttonTracks.Enabled = data.selectedRelease != null && !running;
 			buttonMetadata.Enabled = data.selectedRelease != null && !running;
-			buttonFreedbSubmit.Enabled = data.selectedRelease != null && !running;
-			buttonVA.Enabled = data.selectedRelease != null && !running &&
-				data.selectedRelease.ImageKey == "freedb" && !data.selectedRelease.metadata.IsVarious() && (new CUEMetadata(data.selectedRelease.metadata)).FreedbToVarious();
-			buttonEncoding.Enabled = data.selectedRelease != null && !running &&
-				data.selectedRelease.ImageKey == "freedb" && (new CUEMetadata(data.selectedRelease.metadata)).FreedbToEncoding();
+			buttonFreedbSubmit.Visible = false;
+			buttonFreedbSubmit.Enabled = false;
+			buttonVA.Visible = false;
+			buttonVA.Enabled = false;
+			buttonEncoding.Visible = false;
+			buttonEncoding.Enabled = false;
 			buttonReload.Enabled = data.selectedRelease != null && !running;
             buttonEjectDisk.Enabled = selectedDriveInfo !=null && !running;
             buttonSettings.Enabled = !running;
@@ -483,6 +489,19 @@ namespace CUERipper
                 throw new StopException();
             }
         }
+
+		private void CheckStopRequested()
+		{
+			lock (_startStop)
+			{
+				if (_startStop._stop)
+				{
+					_startStop._stop = false;
+					_startStop._pause = false;
+					throw new StopException();
+				}
+			}
+		}
 
 		private void UploadProgress(object sender, Krystalware.UploadHelper.UploadProgressEventArgs e)
 		{
@@ -801,6 +820,19 @@ namespace CUERipper
 		//    });
 		//}
 
+        private void AccurateRipMetaLookupProgress(string detail)
+        {
+            CheckStop();
+            string text = Properties.Resources.LookingUpVia + " " + AccurateRipMeta.DisplayName + "..." + (string.IsNullOrEmpty(detail) ? "" : " " + detail);
+            this.BeginInvoke((MethodInvoker)delegate()
+            {
+                toolStripStatusLabel1.Text = text;
+                toolStripProgressBar1.Value = (100 + 2 * toolStripProgressBar1.Value) / 3;
+            });
+        }
+
+#if DORMANT_FREEDB
+        // FreeDB progress UI is dormant with the FreeDB provider.
 		private void FreeDB_LookupProgress(object sender)
 		{
 			CheckStop();
@@ -813,6 +845,7 @@ namespace CUERipper
 				toolStripProgressBar1.Value = (100 + 2 * toolStripProgressBar1.Value) / 3;
 			});
 		}
+#endif
 
 		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, CTDBResponseMeta release)
 		{
@@ -828,12 +861,15 @@ namespace CUERipper
 		//    return entry;
 		//}
 
+#if DORMANT_FREEDB
+        // FreeDB CDEntry conversion is dormant with the FreeDB provider.
 		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource, CDEntry cdEntry)
 		{
 			CUEMetadataEntry entry = new CUEMetadataEntry(audioSource.TOC, "freedb");
 			entry.metadata.FillFromFreedb(cdEntry, entry.TOC.FirstAudio - 1);
 			return entry;
 		}
+#endif
 
 		private CUEMetadataEntry CreateCUESheet(ICDRipper audioSource)
 		{
@@ -862,8 +898,12 @@ namespace CUERipper
             cueSheet.OpenCD(audioSource);
             cueSheet.Action = CUEAction.Encode;
 
+            CTDBMetadataSearch metadataSearch = loadAllMetadata ? CTDBMetadataSearch.Extensive : _config.advanced.metadataSearch;
+            bool loadAllMetadataRequested = loadAllMetadata;
+            loadAllMetadata = false;
+
             this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " CTDB..."; });
-            cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, false, loadAllMetadata ? CTDBMetadataSearch.Extensive : _config.advanced.metadataSearch);
+            cueSheet.UseCUEToolsDB("CUERipper " + CUESheet.CUEToolsVersion, selectedDriveInfo.drive.ARName, false, metadataSearch);
             cueSheet.CTDB.UploadHelper.onProgress += new EventHandler<Krystalware.UploadHelper.UploadProgressEventArgs>(UploadProgress);
             this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " AccurateRip..."; });
             cueSheet.UseAccurateRip();
@@ -886,10 +926,9 @@ namespace CUERipper
                 data.Releases.Add(CreateCUESheet(audioSource, ctdbMeta));
             }
 
-            if (data.Releases.Count == 0 || loadAllMetadata)
+            bool noMetadataReleases = data.Releases.Count == 0;
+            if (noMetadataReleases || loadAllMetadataRequested)
             {
-                loadAllMetadata = false;
-
                 //this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " MusicBrainz..."; });
 
                 //ReleaseQueryParameters p = new ReleaseQueryParameters();
@@ -917,6 +956,8 @@ namespace CUERipper
                 //MusicBrainzService.Proxy = null;
                 //MusicBrainzService.XmlRequest -= new EventHandler<XmlRequestEventArgs>(MusicBrainz_LookupProgress);
 
+#if DORMANT_FREEDB
+                // FreeDB lookup is dormant. AccurateRip Meta is the active replacement provider.
                 this.BeginInvoke((MethodInvoker)delegate() { toolStripStatusLabel1.Text = Properties.Resources.LookingUpVia + " Freedb..."; });
 
                 FreedbHelper m_freedb = new FreedbHelper();
@@ -990,6 +1031,19 @@ namespace CUERipper
                 {
                     System.Diagnostics.Trace.WriteLine(ex.Message);
                 }
+#endif
+            }
+
+            // AccurateRip Meta is a peer of the CTDB metadata sources rather than a fallback for
+            // them: whenever CTDB is asked for metadata, this provider is asked too, so its release
+            // and its cover art appear on the first lookup instead of only after Reload.
+            if (metadataSearch != CTDBMetadataSearch.None)
+            {
+                AccurateRipMetaLookupProgress(null);
+                var provider = new AccurateRipMetaProvider();
+                CUEMetadataEntry accurateRipMeta = provider.Lookup(audioSource.TOC, _config.GetProxy(), CheckStopRequested);
+                if (accurateRipMeta != null)
+                    data.Releases.Add(accurateRipMeta);
             }
 
             // Add a blank Release to the metadata selection drop-down list in any case. It can be used, if the metadata retrieved is not correct or undesired.
@@ -1019,7 +1073,12 @@ namespace CUERipper
                 toolStripStatusLabelMusicBrainz.Text = mbresults_count > 0 ? mbresults_count.ToString() : "";
                 toolStripStatusLabelMusicBrainz.ToolTipText = "Musicbrainz: " + (mbresults_count > 0 ? mbresults_count.ToString() + " entries found." : (musicbrainzError + "click to submit."));
                 if (_config.advanced.coversSearch != CUEConfigAdvanced.CTDBCoversSearch.None)
-                    backgroundWorkerArtwork.RunWorkerAsync(new BackgroundWorkerArtworkArgs() { cueSheet = cueSheet, meta = data.selectedRelease });
+                    backgroundWorkerArtwork.RunWorkerAsync(new BackgroundWorkerArtworkArgs()
+                    {
+                        cueSheet = cueSheet,
+                        meta = data.selectedRelease,
+                        releases = data.Releases.ToList()
+                    });
             });
         }
 
@@ -1516,21 +1575,12 @@ namespace CUERipper
 
 		private void buttonVA_Click(object sender, EventArgs e)
 		{
-			if (data.selectedRelease == null) return;
-			data.selectedRelease.metadata.FreedbToVarious();
-			UpdateRelease();
-			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			SetupControls();
+            // FreeDB various-artist repair is dormant. AccurateRip Meta does not need this action.
 		}
 
 		private void buttonEncoding_Click(object sender, EventArgs e)
 		{
-			if (data.selectedRelease == null) return;
-			data.selectedRelease.metadata.FreedbToEncoding();
-			UpdateRelease();
-			data.Releases.ResetItem(bnComboBoxRelease.SelectedIndex);
-			UpdateOutputPath();
-			SetupControls();
+            // FreeDB encoding repair is dormant. AccurateRip Meta responses are Unicode JSON.
 		}
 
 		private void listTracks_Click(object sender, EventArgs e)
@@ -1558,6 +1608,7 @@ namespace CUERipper
 			}
 		}
 
+#if DORMANT_FREEDB
 		private void FreedbSubmit(object o)
 		{
 			StringCollection tmp = new StringCollection();
@@ -1652,14 +1703,11 @@ namespace CUERipper
 			_workThread = null;
 			this.BeginInvoke((MethodInvoker)delegate() { SetupControls(); });
 		}
+#endif
 
 		private void buttonFreedbSubmit_Click(object sender, EventArgs e)
 		{
-			_workThread = new Thread(FreedbSubmit);
-			_workThread.Priority = ThreadPriority.BelowNormal;
-			_workThread.IsBackground = true;
-			SetupControls();
-			_workThread.Start();
+            // FreeDB submission is dormant. AccurateRip Meta currently has no submission API.
 		}
 
         List<AlbumArt> albumArt = new List<AlbumArt>();
@@ -1707,13 +1755,64 @@ namespace CUERipper
             var cueSheet = args.cueSheet;
             albumArt.Clear();
             currentAlbumArt = 0;
-            //frontAlbumArt = -1;
             var knownUrls = new List<string>();
             var firstUrls = new List<string>();
+            var selectedReleaseCovers = new List<CTDBResponseMetaImage>();
+            var otherReleaseCovers = new List<CTDBResponseMetaImage>();
 
-            if (args.meta != null && args.meta.metadata.AlbumArt.Count > 0)
-                foreach (var aa in args.meta.metadata.AlbumArt)
-                    firstUrls.Add(aa.uri);
+            var releases = args.releases ?? new List<CUEMetadataEntry>();
+            if (releases.Count == 0 && args.meta != null)
+                releases.Add(args.meta);
+
+            foreach (var release in releases)
+            {
+                if (release == null || release.metadata == null || release.metadata.AlbumArt == null)
+                    continue;
+
+                foreach (var releaseCover in release.metadata.AlbumArt)
+                {
+                    if (releaseCover == null)
+                        continue;
+                    if (_config.advanced.coversSearch == CUEConfigAdvanced.CTDBCoversSearch.Primary && !releaseCover.primary)
+                        continue;
+
+                    // args.meta is the same CUEMetadataEntry instance captured from data.Releases for selected-release priority.
+                    if (object.ReferenceEquals(release, args.meta))
+                    {
+                        if (!string.IsNullOrEmpty(releaseCover.uri))
+                            firstUrls.Add(releaseCover.uri);
+                        selectedReleaseCovers.Add(releaseCover);
+                    }
+                    else
+                    {
+                        otherReleaseCovers.Add(releaseCover);
+                    }
+                }
+            }
+
+            var releaseCovers = selectedReleaseCovers.Concat(otherReleaseCovers);
+            foreach (var releaseCover in releaseCovers)
+            {
+                string fetchUrl = !string.IsNullOrEmpty(releaseCover.uri150) ? releaseCover.uri150 : releaseCover.uri;
+                if (string.IsNullOrEmpty(fetchUrl) || knownUrls.Contains(fetchUrl))
+                    continue;
+
+                var ms = new MemoryStream();
+                if (!cueSheet.CTDB.FetchFile(fetchUrl, ms))
+                    continue;
+
+                lock (this.albumArt)
+                {
+                    if (backgroundWorkerArtwork.CancellationPending)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                    this.albumArt.Add(new AlbumArt(releaseCover, ms.ToArray()));
+                }
+                knownUrls.Add(fetchUrl);
+                backgroundWorkerArtwork.ReportProgress(0);
+            }
 
             for (int i = 0; i < 2; i++)
             {
@@ -1917,6 +2016,7 @@ namespace CUERipper
     {
         public CUESheet cueSheet;
         public CUEMetadataEntry meta;
+        public List<CUEMetadataEntry> releases;
     }
 
     internal class AlbumArt

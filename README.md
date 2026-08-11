@@ -17,9 +17,10 @@ Prebuilt binaries can be downloaded from [CUETools Download](http://cue.tools/wi
 `git apply --directory=ThirdParty/MAC_SDK ThirdParty/ThirdParty_MAC_SDK_CUETools.patch`  
 `git apply --directory=ThirdParty/taglib-sharp ThirdParty/submodule_taglib-sharp_CUETools.patch`  
 `git apply --directory=ThirdParty/WavPack ThirdParty/submodule_WavPack_CUETools.patch`  
+`git apply --directory=ThirdParty/openclnet ThirdParty/submodule_openclnet_CUETools.patch`  
 `git apply --directory=ThirdParty/WindowsMediaLib ThirdParty/submodule_WindowsMediaLib_CUETools.patch`
 * The solution can be built using Microsoft Visual Studio 2017 or newer (Community Edition will work)
-  * Install the required .NET development tools (currently .NET Framework 4.7 and .NET Core 2.0)
+  * Install the required .NET development tools (currently .NET 10 SDK)
   * Install an appropriate Windows SDK version (e.g. 10.0.16299.0 or newer)
   * Install the Microsoft Visual Studio Installer Projects
 * Open cuetools.net\CUETools.sln

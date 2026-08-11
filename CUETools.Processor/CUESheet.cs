@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
-#if NET47 || NET20
 using System.Drawing.Drawing2D;
-#endif
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -16,7 +14,9 @@ using CUETools.CTDB;
 using CUETools.Codecs;
 using CUETools.Compression;
 using CUETools.Ripper;
+#if DORMANT_FREEDB
 using Freedb;
+#endif
 
 namespace CUETools.Processor
 {
@@ -127,7 +127,11 @@ namespace CUETools.Processor
             get { return _albumArt; }
         }
 
-#if NET47 || NET20
+        /// <summary>
+        /// Test seam for overriding the AccurateRip Meta lookup provider.
+        /// </summary>
+        public AccurateRipMetaProvider AccurateRipMetaProvider { get; internal set; }
+
         public Image Cover
         {
             get
@@ -139,12 +143,15 @@ namespace CUETools.Processor
                 if (picture == null)
                     return null;
                 using (MemoryStream imageStream = new MemoryStream(picture.Data.Data, 0, picture.Data.Count))
-                    try { return Image.FromStream(imageStream); }
+                    try
+                    {
+                        using (Image source = Image.FromStream(imageStream))
+                            return new Bitmap(source);
+                    }
                     catch { }
                 return null;
             }
         }
-#endif
 
         public List<string> SourcePaths
         {
@@ -829,6 +836,16 @@ namespace CUETools.Processor
             _localDB.Save();
         }
 
+        /// <summary>
+        /// Test seam for overriding CTDB metadata lookup without network access.
+        /// </summary>
+        protected virtual IEnumerable<CTDBResponseMeta> LookupCtdbMetadata(CTDBMetadataSearch metadataSearch)
+        {
+            var ctdb = new CUEToolsDB(TOC, proxy);
+            ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, metadataSearch);
+            return ctdb.Metadata;
+        }
+
         public List<object> LookupAlbumInfo(bool useCache, bool useCUE, bool useCTDB, CTDBMetadataSearch metadataSearch)
         {
             List<object> Releases = new List<object>();
@@ -888,22 +905,38 @@ namespace CUETools.Processor
                         Releases.Add(new CUEMetadataEntry(entry.Metadata, TOC, "local") { cover = frontCover });
             }
 
+#if DORMANT_FREEDB
             bool ctdbFound = false;
+#endif
             if (useCTDB)
             {
                 ShowProgress("Looking up album via CTDB...", 0.0, null, null);
-                var ctdb = new CUEToolsDB(TOC, proxy);
-                ctdb.ContactDB(_config.advanced.CTDBServer, "CUETools " + CUEToolsVersion, null, false, false, metadataSearch);
-                foreach (var meta in ctdb.Metadata)
+                foreach (var meta in LookupCtdbMetadata(metadataSearch))
                 {
                     CUEMetadata metadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
                     metadata.FillFromCtdb(meta, TOC.FirstAudio - 1);
                     CDImageLayout toc = TOC; //  TocFromCDEntry(meta);
                     Releases.Add(new CUEMetadataEntry(metadata, toc, meta.source));
+#if DORMANT_FREEDB
                     ctdbFound = true;
+#endif
                 }
             }
 
+            if (metadataSearch == CTDBMetadataSearch.Extensive)
+            {
+                // Extensive deliberately adds AccurateRip Meta even when CTDB already returned metadata.
+                ShowProgress("Looking up album via AccurateRip Meta...", 0.0, null, null);
+                CheckStop();
+
+                AccurateRipMetaProvider provider = AccurateRipMetaProvider ?? new AccurateRipMetaProvider();
+                CUEMetadataEntry accurateRipMetaEntry = provider.Lookup(TOC, proxy, CheckStopRequested);
+                if (accurateRipMetaEntry != null)
+                    Releases.Add(accurateRipMetaEntry);
+            }
+
+#if DORMANT_FREEDB
+            // FreeDB lookup is dormant. AccurateRip Meta is the active replacement provider.
             if (!ctdbFound && metadataSearch == CTDBMetadataSearch.Extensive)
             {
                 ShowProgress("Looking up album via Freedb...", 0.0, null, null);
@@ -968,11 +1001,14 @@ namespace CUETools.Processor
                         throw ex;
                 }
             }
+#endif
 
             ShowProgress("", 0, null, null);
             return Releases;
         }
 
+#if DORMANT_FREEDB
+        // FreeDB TOC reconstruction is dormant with the FreeDB provider.
         public CDImageLayout TocFromCDEntry(CDEntry cdEntry)
         {
             CDImageLayout tocFromCDEntry = new CDImageLayout();
@@ -990,6 +1026,7 @@ namespace CUETools.Processor
                 tocFromCDEntry[1][0].Start = 0;
             return tocFromCDEntry;
         }
+#endif
 
         public void Open(string pathIn)
         {
@@ -1828,13 +1865,13 @@ namespace CUETools.Processor
                             using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                                 try
                                 {
-#if NET47 || NET20
-                                    var image = Image.FromStream(ms);
-                                    pic.Description += $" ({image.Width}x{image.Height})";
-                                    //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
-                                    //    isSquare = true;
-                                    // pic.MimeType = f(image.RawFormat);
-#endif
+                                    using (var image = Image.FromStream(imageStream))
+                                    {
+                                        pic.Description += $" ({image.Width}x{image.Height})";
+                                        //if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                                        //    isSquare = true;
+                                        // pic.MimeType = f(image.RawFormat);
+                                    }
                                 }
                                 catch { }
 
@@ -1863,9 +1900,7 @@ namespace CUETools.Processor
                     }
                 }
             }
-#if NET47 || NET20
             ResizeAlbumArt();
-#endif
         }
 
         public void UseCUEToolsDB(string userAgent, string driveName, bool fuzzy, CTDBMetadataSearch metadataSearch)
@@ -3030,7 +3065,6 @@ namespace CUETools.Processor
             return entry;
         }
 
-#if NET47 || NET20
         private static Bitmap resizeImage(Image imgToResize, Size size)
         {
             int sourceWidth = imgToResize.Width;
@@ -3052,15 +3086,14 @@ namespace CUETools.Processor
             int destHeight = (int)(sourceHeight * nPercent);
 
             Bitmap b = new Bitmap(destWidth, destHeight);
-            Graphics g = Graphics.FromImage((Image)b);
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
-            g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
-            g.Dispose();
+            using (Graphics g = Graphics.FromImage((Image)b))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
+            }
 
             return b;
         }
-#endif
 
         public void ExtractAlbumArt()
         {
@@ -3152,16 +3185,16 @@ namespace CUETools.Processor
                     using (MemoryStream imageStream = new MemoryStream(pic.Data.Data, 0, pic.Data.Count))
                         try
                         {
-#if NET47 || NET20
-                            var image = Image.FromStream(imageStream);
-                            pic.Description += $" ({image.Width}x{image.Height})";
-                            if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                            using (var image = Image.FromStream(imageStream))
                             {
-                                if (isValidName)
-                                    pic.Type = TagLib.PictureType.FrontCover;
+                                pic.Description += $" ({image.Width}x{image.Height})";
+                                if (image.Height > 0 && image.Width > 0 && (image.Height * 1.0 / image.Width) > 0.9 && (image.Width * 1.0 / image.Height) > 0.9)
+                                {
+                                    if (isValidName)
+                                        pic.Type = TagLib.PictureType.FrontCover;
+                                }
+                                // pic.MimeType = f(image.RawFormat);
                             }
-                            // pic.MimeType = f(image.RawFormat);
-#endif
                         }
                         catch { }
                     _albumArt.Add(pic);
@@ -3170,7 +3203,6 @@ namespace CUETools.Processor
             }
         }
 
-#if NET47 || NET20
         public void ResizeAlbumArt()
         {
             if (_albumArt == null)
@@ -3200,7 +3232,6 @@ namespace CUETools.Processor
                     {
                     }
         }
-#endif
 
         public string WriteReport()
         {
@@ -4121,6 +4152,15 @@ namespace CUETools.Processor
                     ShowProgress("Paused...", 0, null, null);
                     Monitor.Wait(this);
                 }
+            }
+        }
+
+        private void CheckStopRequested()
+        {
+            lock (this)
+            {
+                if (_stop)
+                    throw new StopException();
             }
         }
 

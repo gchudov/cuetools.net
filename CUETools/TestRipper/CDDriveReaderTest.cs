@@ -39,6 +39,7 @@ namespace TestRipper
 
 		const int max_pass = 64;
 		const int Sectors2Read = 2400;
+		const string FixtureDirectory = @"Y:\Temp\dbg\960";
 
 		bool markErrors = true;
 		int _currentStart = 0, _realErrors = 0;
@@ -57,6 +58,8 @@ namespace TestRipper
 		[ClassInitialize()]
 		public static void MyClassInitialize(TestContext testContext)
 		{
+			EnsureExternalFixtureAvailable();
+
 			for (ulong i = 0; i < 256; i++)
 			{
 				ulong bl = 0;
@@ -72,8 +75,8 @@ namespace TestRipper
 			for (int p = 0; p < max_pass; p++)
 			{
 				//    string nm_d = string.Format("Y:\\Temp\\dbg\\{0:x}-{1:00}.bin", _currentStart, dbg_pass);
-				using (FileStream fs = new FileStream(string.Format("Y:\\Temp\\dbg\\960\\960-{0:00}.bin", p), FileMode.Open))
-				using (FileStream fs2 = new FileStream(string.Format("Y:\\Temp\\dbg\\960\\960-{0:00}.c2", p), FileMode.Open))
+				using (FileStream fs = new FileStream(Path.Combine(FixtureDirectory, string.Format("960-{0:00}.bin", p)), FileMode.Open))
+				using (FileStream fs2 = new FileStream(Path.Combine(FixtureDirectory, string.Format("960-{0:00}.c2", p)), FileMode.Open))
 				{
 					fs.Read(_realData, 0, Sectors2Read * 4 * 588);
 					fs2.Read(c2data, 0, Sectors2Read * 296);
@@ -107,8 +110,25 @@ namespace TestRipper
 				//        }
 				//    }
 			}
-			using (FileStream fs = new FileStream(string.Format("Y:\\Temp\\dbg\\960\\960.bin", 0), FileMode.Open))
+			using (FileStream fs = new FileStream(Path.Combine(FixtureDirectory, "960.bin"), FileMode.Open))
 				fs.Read(_realData, 0, Sectors2Read * 4 * 588);
+		}
+
+		static void EnsureExternalFixtureAvailable()
+		{
+			if (!Directory.Exists(FixtureDirectory))
+				Assert.Inconclusive("External TestRipper fixture directory is missing: " + FixtureDirectory);
+
+			for (int p = 0; p < max_pass; p++)
+			{
+				string binPath = Path.Combine(FixtureDirectory, string.Format("960-{0:00}.bin", p));
+				string c2Path = Path.Combine(FixtureDirectory, string.Format("960-{0:00}.c2", p));
+				if (!File.Exists(binPath) || !File.Exists(c2Path))
+					Assert.Inconclusive("External TestRipper fixture files are missing under: " + FixtureDirectory);
+			}
+
+			if (!File.Exists(Path.Combine(FixtureDirectory, "960.bin")))
+				Assert.Inconclusive("External TestRipper reference file is missing: " + Path.Combine(FixtureDirectory, "960.bin"));
 		}
 		//
 		//Use ClassCleanup to run code after all tests in a class have run

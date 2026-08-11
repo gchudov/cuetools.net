@@ -10,13 +10,9 @@ using System.Xml.Serialization;
 using CUETools.AccurateRip;
 using CUETools.CDImage;
 using CUETools.Parity;
-#if NET20
-using System.Management;
-#else
 using DeviceId;
 using DeviceId.Encoders;
 using DeviceId.Formatters;
-#endif
 using Krystalware.UploadHelper;
 
 namespace CUETools.CTDB
@@ -283,26 +279,11 @@ namespace CUETools.CTDB
 		{
 			if (uuidInfo == null)
 			{
-#if NET20
-				string id = "CTDB userid";
-				using (ManagementClass mc = new ManagementClass("Win32_ComputerSystemProduct"))
-					foreach (ManagementObject mo in mc.GetInstances())
-					{
-					id = id + mo.Properties["UUID"].Value.ToString();
-					break;
-				}
-    			byte[] hashBytes = (new SHA1CryptoServiceProvider()).ComputeHash(Encoding.ASCII.GetBytes(id));
-			    uuidInfo = Convert.ToBase64String(hashBytes).Replace('+', '.').Replace('/', '_').Replace('=', '-');
-#else
                 uuidInfo = new DeviceIdBuilder()
                     .AddMachineName()
-#if NET47
-                    .AddProcessorId()
-                    .AddMotherboardSerialNumber()
-#endif
+                    .AddMacAddress(excludeWireless: true, excludeDockerBridge: true)
                     .UseFormatter(new HashDeviceIdFormatter(() => SHA256.Create(), new Base64UrlByteArrayEncoder()))
                     .ToString();
-#endif
             }
 			return uuidInfo;
 		}

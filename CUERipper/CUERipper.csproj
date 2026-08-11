@@ -1,278 +1,44 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{39B43BBB-BAFC-4D85-9BEA-3BCB7EFED89C}</ProjectGuid>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
+    <Version>2.2.6.0</Version>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUERipper</RootNamespace>
     <AssemblyName>CUERipper</AssemblyName>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
+    <RootNamespace>CUERipper</RootNamespace>
     <ApplicationIcon>cue2.ico</ApplicationIcon>
-    <ManifestCertificateThumbprint>F89503BB83CA42A647C506D67956D6F32C1C6E7E</ManifestCertificateThumbprint>
-    <ManifestKeyFile>CUERipper_TemporaryKey.pfx</ManifestKeyFile>
-    <GenerateManifests>false</GenerateManifests>
-    <SignManifests>false</SignManifests>
-    <IsWebBootstrapper>true</IsWebBootstrapper>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-    <TargetZone>LocalIntranet</TargetZone>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Web</InstallFrom>
-    <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Background</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://www.cuetools.net/install/cueripper/</InstallUrl>
-    <SupportUrl>http://www.cuetools.net/</SupportUrl>
-    <ProductName>CUERipper</ProductName>
-    <PublisherName>Gregory S. Chudov</PublisherName>
-    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
-    <WebPage>index.html</WebPage>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\net47\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\net47\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\Freedb\Freedb.csproj" Condition="'$(EnableDormantFreedb)' == 'true'" />
+    <ProjectReference Include="..\CUEControls\CUEControls.csproj" />
+    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj" />
+    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj" />
+    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj" />
+    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj" />
+    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj" />
+    <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj" />
+    <ProjectReference Include="..\ProgressODoom\ProgressODoom.csproj" />
+    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="CUERipperConfig.cs" />
-    <Compile Include="frmCUERipper.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmCUERipper.Designer.cs">
-      <DependentUpon>frmCUERipper.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmFreedbSubmit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmFreedbSubmit.Designer.cs">
-      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Options.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Options.Designer.cs">
-      <DependentUpon>Options.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="frmCUERipper.de-DE.resx">
-      <DependentUpon>frmCUERipper.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmCUERipper.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmCUERipper.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmCUERipper.ru-RU.resx">
-      <DependentUpon>frmCUERipper.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmFreedbSubmit.de-DE.resx">
-      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmFreedbSubmit.resx">
-      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmFreedbSubmit.ru-RU.resx">
-      <DependentUpon>frmFreedbSubmit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Options.resx">
-      <DependentUpon>Options.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.de-DE.resx" />
-    <EmbeddedResource Include="Properties\Resources.resx">
+    <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.ru-RU.resx" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="app.config" />
-    <None Include="Properties\DataSources\MusicBrainz.Release.datasource" />
-    <None Include="Properties\Settings.settings">
+    <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CUEControls\CUEControls.csproj">
-      <Project>{CA4D64E6-6544-4A29-8BA5-7DB08D50D072}</Project>
-      <Name>CUEControls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.AccurateRip\CUETools.AccurateRip.csproj">
-      <Project>{5802C7E9-157E-4124-946D-70B5AE48A5A1}</Project>
-      <Name>CUETools.AccurateRip</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CDImage\CUETools.CDImage.csproj">
-      <Project>{1DD41038-D885-46C5-8DDE-E0B82F066584}</Project>
-      <Name>CUETools.CDImage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Codecs\CUETools.Codecs.csproj">
-      <Project>{6458A13A-30EF-45A9-9D58-E5031B17BEE2}</Project>
-      <Name>CUETools.Codecs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB.Types\CUETools.CTDB.Types.csproj">
-      <Project>{c36efaa5-4f81-4a29-800d-ba866ff13bc8}</Project>
-      <Name>CUETools.CTDB.Types</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.CTDB\CUETools.CTDB.csproj">
-      <Project>{AA2A9A7E-45FB-4632-AD85-85B0E556F818}</Project>
-      <Name>CUETools.CTDB</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Processor\CUETools.Processor.csproj">
-      <Project>{4911BD82-49EF-4858-8B51-5394F86739A4}</Project>
-      <Name>CUETools.Processor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUETools.Ripper\CUETools.Ripper.csproj">
-      <Project>{D2700165-3E77-4B28-928D-551F5FC11954}</Project>
-      <Name>CUETools.Ripper</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Freedb\Freedb.csproj">
-      <Project>{5ADCFD6D-BFEA-4B10-BB45-9083BBB56AF4}</Project>
-      <Name>Freedb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ProgressODoom\ProgressODoom.csproj">
-      <Project>{8DD1E84B-0B03-4C0B-9B42-1E49F75E7CB1}</Project>
-      <Name>ProgressODoom</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\taglib-sharp\src\TaglibSharp\TaglibSharp.csproj">
-      <Project>{1219a514-d3fa-40db-bbb2-92ce05e35839}</Project>
-      <Name>TaglibSharp</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\musicbrainz.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\DataSources\frmCUERipper.datasource" />
-    <None Include="Resources\cdrepair.png" />
-    <None Include="Resources\accuraterip_16.bmp" />
-    <None Include="Resources\accuraterip.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Visual.C++.9.0.x64">
-      <Visible>False</Visible>
-      <ProductName>Visual C++ Runtime Libraries %28x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Visual.C++.9.0.x86">
-      <Visible>False</Visible>
-      <ProductName>Visual C++ Runtime Libraries %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="cue2.ico" />
-    <None Include="Resources\opus.ico" />
-    <None Include="Resources\cd_eject.png" />
-    <None Include="Resources\wma.ico" />
-    <None Include="Resources\cog.ico" />
-    <None Include="Properties\app.manifest" />
-    <None Include="Properties\DataSources\frmFreedbSubmitData.datasource" />
-    <None Include="Resources\freedb16.png" />
-    <None Include="Resources\edit-list-order.png" />
-    <None Include="Resources\spellcheck.png" />
-    <None Include="Resources\users--arrow.png" />
-    <None Include="Resources\arrow-circle-double.png" />
-    <None Include="Resources\tag-label.png" />
-    <None Include="Resources\ape.ico" />
-    <None Include="Resources\ipod_sound.ico" />
-    <None Include="Resources\mp3.ico" />
-    <None Include="Resources\ogg.ico" />
-    <None Include="Resources\tta.ico" />
-    <None Include="Resources\wave.ico" />
-    <None Include="Resources\wv.ico" />
-    <None Include="Resources\flac.ico" />
-  </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

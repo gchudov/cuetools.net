@@ -1,5 +1,4 @@
 using System;
-using System.Deployment.Application;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -33,24 +32,8 @@ namespace CUERipper
 
 		static void GetSatelliteAssemblies(string groupName)
 		{
-			if (ApplicationDeployment.IsNetworkDeployed)
-			{
-				ApplicationDeployment deploy = ApplicationDeployment.CurrentDeployment;
-
-				if (deploy.IsFirstRun)
-				{
-					try
-					{
-						deploy.DownloadFileGroup(groupName);
-					}
-					catch (DeploymentException)
-					{
-						// Log error. Do not report this error to the user, because a satellite
-						// assembly may not exist if the user's culture and the application's
-						// default culture match.
-					}
-				}
-			}
+			// System.Deployment.Application is not available on .NET 10.
+			// Optional plugin file groups must be included by the publish/package step.
 		}
 	}
 }

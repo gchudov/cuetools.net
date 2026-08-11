@@ -17,6 +17,8 @@ namespace JDP
         public frmChoice()
         {
             InitializeComponent();
+            if (!imageList1.Images.ContainsKey(AccurateRipMeta.SourceKey))
+                imageList1.Images.Add(AccurateRipMeta.SourceKey, Properties.Resources.accuraterip16);
         }
 
         public CUESheet CUE;
@@ -70,6 +72,8 @@ namespace JDP
                 item.Tag = entry;
                 listChoices.Items.Add(item);
 
+#if DORMANT_FREEDB
+                // FreeDB encoding repair is dormant. AccurateRip Meta entries are already Unicode JSON.
                 if (entry.ImageKey == "freedb")
                 {
                     // check if the entry contains non-iso characters,
@@ -83,6 +87,7 @@ namespace JDP
                         listChoices.Items.Add(item);
                     }
                 }
+#endif
             }
             else
             {

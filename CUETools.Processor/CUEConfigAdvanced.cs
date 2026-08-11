@@ -51,6 +51,7 @@ namespace CUETools.Processor
             Init(CUEProcessorPlugins.encs, CUEProcessorPlugins.decs);
         }
 
+#if DORMANT_FREEDB
         [DefaultValue("i"), Category("Freedb"), DisplayName("Email user")]
         public string FreedbUser { get; set; }
 
@@ -59,6 +60,7 @@ namespace CUETools.Processor
 
         [DefaultValue("gnudb.gnudb.org"), Category("Freedb"), DisplayName("Site address")]
         public string FreedbSiteAddress { get; set; }
+#endif
 
         [DefaultValue(ProxyMode.System), Category("Proxy"), DisplayName("Proxy mode")]
         public ProxyMode UseProxyMode { get; set; }

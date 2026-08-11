@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <Version>2.2.6.0</Version>
     <AssemblyName>CUETools.Codecs.ffmpegdll</AssemblyName>
     <RootNamespace>CUETools.Codecs.ffmpegdll</RootNamespace>
@@ -25,7 +25,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="FFmpeg.AutoGen" Version="7.1.1" />
+    <PackageReference Include="FFmpeg.AutoGen" Version="8.1.0" />
   </ItemGroup>
 
   <ItemGroup>
