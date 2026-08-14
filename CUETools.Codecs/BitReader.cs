@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace CUETools.Codecs
 {
@@ -63,8 +64,12 @@ namespace CUETools.Codecs
 
         private byte* buffer_m;
         private byte* bptr_m;
+        private byte* end_m;
         private int buffer_len_m;
         private int have_bits_m;
+        // -1 while every cached bit came from the declared input. Once fill()
+        // adds zero lookahead, this tracks only the real bits left in the cache.
+        private int remaining_bits_m;
         private ulong cache_m;
         private ushort crc16_m;
 
@@ -85,8 +90,10 @@ namespace CUETools.Codecs
 		{
 			buffer_m = null;
             bptr_m = null;
+			end_m = null;
 			buffer_len_m = 0;
 			have_bits_m = 0;
+			remaining_bits_m = -1;
 			cache_m = 0;
             crc16_m = 0;
 		}
@@ -100,8 +107,10 @@ namespace CUETools.Codecs
 		{
 			buffer_m = _buffer;
             bptr_m = _buffer + _pos;
+			end_m = _buffer + _pos + _len;
 			buffer_len_m = _len;
 			have_bits_m = 0;
+			remaining_bits_m = -1;
             cache_m = 0;
             crc16_m = 0;
 			fill();
@@ -111,8 +120,17 @@ namespace CUETools.Codecs
 		{
             while (have_bits_m < 56)
             {
+                byte b;
+                if (bptr_m < end_m)
+                    b = *bptr_m;
+                else
+                {
+                    if (remaining_bits_m < 0)
+                        remaining_bits_m = have_bits_m;
+                    b = 0;
+                }
                 have_bits_m += 8;
-                byte b = *(bptr_m++);
+                bptr_m++;
                 cache_m |= (ulong)b << (64 - have_bits_m);
                 crc16_m = (ushort)((crc16_m << 8) ^ Crc16.table[(crc16_m >> 8) ^ b]);
             }
@@ -121,13 +139,19 @@ namespace CUETools.Codecs
 		/* skip any number of bits */
 		public void skipbits(int bits)
 		{
+            if (bits < 0 || ((long)(end_m - bptr_m) << 3) + have_bits_m < bits)
+                throw new InvalidDataException("BitReader: read past end of buffer (corrupt or truncated stream)");
             while (bits > have_bits_m)
             {
+                if (remaining_bits_m >= 0)
+                    remaining_bits_m -= have_bits_m;
                 bits -= have_bits_m;
                 cache_m = 0;
                 have_bits_m = 0;
                 fill();
             }
+            if (remaining_bits_m >= 0)
+                remaining_bits_m -= bits;
             cache_m <<= bits;
             have_bits_m -= bits;
 		}
@@ -166,8 +190,13 @@ namespace CUETools.Codecs
         public uint readbits(int bits)
         {
             fill();
+            if (bits < 0 || (remaining_bits_m >= 0 && remaining_bits_m < bits))
+                throw new InvalidDataException("BitReader: read past end of buffer (corrupt or truncated stream)");
+            if (remaining_bits_m >= 0)
+                remaining_bits_m -= bits;
             uint result = (uint)(cache_m >> 64 - bits);
-            skipbits(bits);
+            cache_m <<= bits;
+            have_bits_m -= bits;
             return result;
         }
 
@@ -192,9 +221,18 @@ namespace CUETools.Codecs
 			ulong result = cache_m >> 56;
 			while (result == 0)
 			{
+				if (remaining_bits_m < 0 && bptr_m >= end_m)
+					remaining_bits_m = have_bits_m;
+				if (remaining_bits_m >= 0)
+				{
+					if (remaining_bits_m <= 8)
+						throw new InvalidDataException("BitReader: unary code exceeds the input buffer");
+					remaining_bits_m -= 8;
+				}
 				val += 8;
                 cache_m <<= 8;
-                byte b = *(bptr_m++);
+                byte b = bptr_m < end_m ? *bptr_m : (byte)0;
+                bptr_m++;
                 cache_m |= (ulong)b << (64 - have_bits_m);
                 crc16_m = (ushort)((crc16_m << 8) ^ Crc16.table[(crc16_m >> 8) ^ b]);
                 result = cache_m >> 56;
@@ -206,10 +244,15 @@ namespace CUETools.Codecs
 
 		public void flush()
 		{
-            if ((have_bits_m & 7) > 0)
+            int discarded = have_bits_m & 7;
+            if (discarded > 0)
             {
-                cache_m <<= have_bits_m & 7;
-                have_bits_m -= have_bits_m & 7;
+                if (remaining_bits_m >= 0 && remaining_bits_m < discarded)
+                    throw new InvalidDataException("BitReader: alignment exceeds the input buffer");
+                if (remaining_bits_m >= 0)
+                    remaining_bits_m -= discarded;
+                cache_m <<= discarded;
+                have_bits_m -= discarded;
             }
         }
 
@@ -290,6 +333,13 @@ namespace CUETools.Codecs
 		public void read_rice_block(int n, int k, int* r)
 		{
             fill();
+            int remaining = remaining_bits_m < 0 ? read_rice_block_fast(n, k, r) : n;
+            if (remaining > 0)
+                read_rice_block_tail(remaining, k, r + (n - remaining));
+		}
+
+        private int read_rice_block_fast(int n, int k, int* r)
+        {
             fixed (byte* unary_table = byte_to_unary_table)
             fixed (ushort* t = Crc16.table)
             {
@@ -298,18 +348,22 @@ namespace CUETools.Codecs
                 int have_bits = have_bits_m;
                 ulong cache = cache_m;
                 ushort crc = crc16_m;
+                // With k <= 41 and no whole zero unary byte, one value can require
+                // at most seven refill bytes. Any longer unary value transfers to
+                // the checked tail before consuming another byte.
+                if (end_m - bptr < (long)n * 7)
+                    return n;
                 for (int i = n; i > 0; i--)
                 {
-                    uint bits;
-                    byte* orig_bptr = bptr;
-                    while ((bits = unary_table[cache >> 56]) == 8)
+                    uint bits = unary_table[cache >> 56];
+                    if (bits == 8)
                     {
-                        cache <<= 8;
-                        byte b = *(bptr++);
-                        cache |= (ulong)b << (64 - have_bits);
-                        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
+                        have_bits_m = have_bits;
+                        cache_m = cache;
+                        bptr_m = bptr;
+                        crc16_m = crc;
+                        return i;
                     }
-                    uint msbs = bits + ((uint)(bptr - orig_bptr) << 3);
                     // assumes k <= 41 (have_bits < 41 + 7 + 1 + 8 == 57, so we don't loose bits here)
                     while (have_bits < 56)
                     {
@@ -320,7 +374,7 @@ namespace CUETools.Codecs
                     }
 
                     int btsk = k + (int)bits + 1;
-                    uint uval = (msbs << k) | (uint)((cache >> (64 - btsk)) & mask);
+                    uint uval = (bits << k) | (uint)((cache >> (64 - btsk)) & mask);
                     cache <<= btsk;
                     have_bits -= btsk;
                     *(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
@@ -329,7 +383,90 @@ namespace CUETools.Codecs
                 cache_m = cache;
                 bptr_m = bptr;
                 crc16_m = crc;
+                return 0;
             }
 		}
+
+        private void read_rice_block_tail(int n, int k, int* r)
+        {
+            fixed (byte* unary_table = byte_to_unary_table)
+            fixed (ushort* t = Crc16.table)
+            {
+                uint mask = (1U << k) - 1;
+                byte* bptr = bptr_m;
+                int have_bits = have_bits_m;
+                int remaining_bits = remaining_bits_m;
+                ulong cache = cache_m;
+                ushort crc = crc16_m;
+                for (int i = n; i > 0; i--)
+                {
+                    uint bits;
+                    byte* orig_bptr = bptr;
+                    while ((bits = unary_table[cache >> 56]) == 8)
+                    {
+                        if (remaining_bits < 0 && bptr >= end_m)
+                            remaining_bits = have_bits;
+                        if (remaining_bits >= 0)
+                        {
+                            if (remaining_bits <= 8)
+                            {
+                                bptr_m = bptr;
+                                have_bits_m = have_bits;
+                                remaining_bits_m = remaining_bits;
+                                cache_m = cache;
+                                crc16_m = crc;
+                                throw new InvalidDataException("BitReader: Rice code exceeds the input buffer");
+                            }
+                            remaining_bits -= 8;
+                        }
+                        cache <<= 8;
+                        byte b = bptr < end_m ? *bptr : (byte)0;
+                        bptr++;
+                        cache |= (ulong)b << (64 - have_bits);
+                        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
+                    }
+                    uint msbs = bits + ((uint)(bptr - orig_bptr) << 3);
+                    // assumes k <= 41 (have_bits < 41 + 7 + 1 + 8 == 57, so we don't loose bits here)
+                    while (have_bits < 56)
+                    {
+                        byte b;
+                        if (bptr < end_m)
+                            b = *bptr;
+                        else
+                        {
+                            if (remaining_bits < 0)
+                                remaining_bits = have_bits;
+                            b = 0;
+                        }
+                        have_bits += 8;
+                        bptr++;
+                        cache |= (ulong)b << (64 - have_bits);
+                        crc = (ushort)((crc << 8) ^ t[(crc >> 8) ^ b]);
+                    }
+
+                    int btsk = k + (int)bits + 1;
+                    if (remaining_bits >= 0 && remaining_bits < btsk)
+                    {
+                        bptr_m = bptr;
+                        have_bits_m = have_bits;
+                        remaining_bits_m = remaining_bits;
+                        cache_m = cache;
+                        crc16_m = crc;
+                        throw new InvalidDataException("BitReader: Rice code exceeds the input buffer");
+                    }
+                    uint uval = (msbs << k) | (uint)((cache >> (64 - btsk)) & mask);
+                    cache <<= btsk;
+                    have_bits -= btsk;
+                    if (remaining_bits >= 0)
+                        remaining_bits -= btsk;
+                    *(r++) = (int)(uval >> 1 ^ -(int)(uval & 1));
+                }
+                have_bits_m = have_bits;
+                remaining_bits_m = remaining_bits;
+                cache_m = cache;
+                bptr_m = bptr;
+                crc16_m = crc;
+            }
+        }
 	}
 }

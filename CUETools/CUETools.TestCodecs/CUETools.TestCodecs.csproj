@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="AccurateRipVerifyTest.cs" />
     <Compile Include="ALACWriterTest.cs" />
+    <Compile Include="BitReaderBoundsTest.cs" />
     <Compile Include="BitWriterTest.cs" />
     <Compile Include="CodecsTest.cs" />
     <Compile Include="Crc32Test.cs" />
