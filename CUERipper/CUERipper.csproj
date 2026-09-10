@@ -105,12 +105,17 @@
     <EmbeddedResource Include="frmCUERipper.de-DE.resx">
       <DependentUpon>frmCUERipper.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmCUERipper.nl.resx">
+      <DependentUpon>frmCUERipper.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmCUERipper.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmCUERipper.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmCUERipper.ru-RU.resx">
       <DependentUpon>frmCUERipper.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmFreedbSubmit.de-DE.resx">
       <DependentUpon>frmFreedbSubmit.cs</DependentUpon>

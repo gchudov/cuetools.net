@@ -176,8 +176,10 @@ namespace CUETools.Processor
 			{
 				if ((overwrite || Tracks[i].Title == "") && metadata.Tracks[i].Title != "") Tracks[i].Title = metadata.Tracks[i].Title;
 				if ((overwrite || Tracks[i].Artist == "") && metadata.Tracks[i].Artist != "") Tracks[i].Artist = metadata.Tracks[i].Artist;
-				if ((overwrite || Tracks[i].Comment == "") && metadata.Tracks[i].Artist != "") Tracks[i].Comment = metadata.Tracks[i].Comment;
-				if ((overwrite || Tracks[i].ISRC == "") && metadata.Tracks[i].ISRC != "") Tracks[i].ISRC = metadata.Tracks[i].ISRC;
+				if ((overwrite || Tracks[i].Comment == "") && metadata.Tracks[i].Comment != "") Tracks[i].Comment = metadata.Tracks[i].Comment;
+                if ((overwrite || Tracks[i].Composer == "") && metadata.Tracks[i].Composer != "") Tracks[i].Composer = metadata.Tracks[i].Composer;
+                if ((overwrite || Tracks[i].Lyricist == "") && metadata.Tracks[i].Lyricist != "") Tracks[i].Lyricist = metadata.Tracks[i].Lyricist;
+                if ((overwrite || Tracks[i].ISRC == "") && metadata.Tracks[i].ISRC != "") Tracks[i].ISRC = metadata.Tracks[i].ISRC;
 			}
 		}
 
@@ -210,8 +212,10 @@ namespace CUETools.Processor
 			for (int i = 0; i < Tracks.Count; i++)
 				if (Tracks[i].Title != metadata.Tracks[i].Title ||
 					Tracks[i].Artist != metadata.Tracks[i].Artist ||
-					Tracks[i].Comment != metadata.Tracks[i].Comment ||
-					Tracks[i].ISRC != metadata.Tracks[i].ISRC)
+                    Tracks[i].Comment != metadata.Tracks[i].Comment ||
+                    Tracks[i].Composer != metadata.Tracks[i].Composer ||
+                    Tracks[i].Lyricist != metadata.Tracks[i].Lyricist ||
+                    Tracks[i].ISRC != metadata.Tracks[i].ISRC)
 					return false;
 			return true;
 		}
@@ -246,6 +250,8 @@ namespace CUETools.Processor
 				Tracks[i].Title = metadata.Tracks[i].Title;
 				Tracks[i].Artist = metadata.Tracks[i].Artist;
 				Tracks[i].Comment = metadata.Tracks[i].Comment;
+				Tracks[i].Composer = metadata.Tracks[i].Composer;
+				Tracks[i].Lyricist = metadata.Tracks[i].Lyricist;
 				Tracks[i].ISRC = metadata.Tracks[i].ISRC;
 			}
 		}
@@ -344,7 +350,9 @@ namespace CUETools.Processor
 			{
 				Tracks[i].Artist = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Artist);
 				Tracks[i].Title = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Title);
-				Tracks[i].Comment = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Comment);
+                Tracks[i].Composer = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Composer);
+                Tracks[i].Lyricist = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Lyricist);
+                Tracks[i].Comment = FreedbToEncoding(iso, def, ref different, ref error, Tracks[i].Comment);
 			}
 			return different && !error;
 		}

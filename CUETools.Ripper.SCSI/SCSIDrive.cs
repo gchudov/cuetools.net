@@ -664,7 +664,7 @@ namespace CUETools.Ripper.SCSI
             }
         }
 
-		bool gapsDetected = false;
+        bool gapsDetected = false;
 
 		public unsafe bool DetectGaps()
 		{
@@ -839,9 +839,9 @@ namespace CUETools.Ripper.SCSI
 					pathNoSpace.Contains("DU8AESH"))
 				{
 					Array.Resize(ref c2mode, 2);
-					c2mode.SetValue(Device.C2ErrorMode.Mode296, 0);
+				c2mode.SetValue(Device.C2ErrorMode.Mode296, 0);
 					c2mode.SetValue(Device.C2ErrorMode.None, 1);
-				}
+			}
 
 				// Mode294 does not work for this drive, C2ErrorMode.None has been reported to work:
 				// iHAS324 F.

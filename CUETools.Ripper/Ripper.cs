@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using CUETools.CDImage;
 using CUETools.Codecs;
 using System.Text;
+using System.CodeDom;
 
 namespace CUETools.Ripper
 {
@@ -13,7 +14,7 @@ namespace CUETools.Ripper
 		bool Open(char Drive);
         void EjectDisk();
         void DisableEjectDisc(bool bDisable);
-		bool DetectGaps();
+        bool DetectGaps();
 		bool GapsDetected { get; }
 		CDImageLayout TOC { get; }
 		string ARName { get; }
@@ -65,7 +66,17 @@ namespace CUETools.Ripper
 			ErrorsCount = errorsCount;
 			PassTime = passTime;
 		}
-	}
+
+		public void assign(ReadProgressArgs readProgressArgsIn)
+		{
+            Position = readProgressArgsIn.Position;
+            Pass = readProgressArgsIn.Pass;
+            PassStart = readProgressArgsIn.PassStart;
+            PassEnd = readProgressArgsIn.PassEnd;
+            ErrorsCount = readProgressArgsIn.ErrorsCount;
+            PassTime = readProgressArgsIn.PassTime;
+        }
+    }
 
     public static class BitArrayUtils
     {

@@ -17,6 +17,8 @@ using CUETools.Codecs;
 using CUETools.Compression;
 using CUETools.Ripper;
 using Freedb;
+using System.Collections;
+using TagLib.Id3v2;
 
 namespace CUETools.Processor
 {
@@ -24,7 +26,7 @@ namespace CUETools.Processor
     {
         #region Fields
 
-        public readonly static string CUEToolsVersion = "2.2.6";
+        public readonly static string CUEToolsVersion = "2.2.6.4";
 
         private bool _stop, _pause;
         private List<CUELine> _attributes;
@@ -1500,6 +1502,12 @@ namespace CUETools.Processor
                 taglibMetadata.Tracks[i].Comment = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Comment :
                     _hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_COMMENT", i + 1))) :
                     null) ?? "";
+                taglibMetadata.Tracks[i].Composer = (_hasTrackFilenames && track._fileInfo != null ? string.Join(";", track._fileInfo.Tag.Composers) :
+                    _hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_COMPOSER", i + 1))) :
+                    null) ?? "";
+                  taglibMetadata.Tracks[i].Lyricist = (_hasTrackFilenames && track._fileInfo != null ? track._fileInfo.Tag.Lyrics :
+                    _hasEmbeddedCUESheet && _fileInfo != null ? Tagging.TagListToSingleValue(Tagging.GetMiscTag(_fileInfo, String.Format("cue_track{0:00}_LYRICIST", i + 1))) :
+                    null) ?? "";
             }
 
             cueMetadata = new CUEMetadata(TOC.TOCID, (int)TOC.AudioTracks);
@@ -2502,6 +2510,8 @@ namespace CUETools.Processor
                 General.SetCUELine(Tracks[i].Attributes, "PERFORMER", Metadata.Tracks[i].Artist, true);
                 General.SetCUELine(Tracks[i].Attributes, "TITLE", Metadata.Tracks[i].Title, true);
                 General.SetCUELine(Tracks[i].Attributes, "ISRC", Metadata.Tracks[i].ISRC, false);
+                //General.SetCUELine(Tracks[i].Attributes, "COMPOSER", Metadata.Tracks[i].Composer, true);
+                //General.SetCUELine(Tracks[i].Attributes, "LYRICYST", Metadata.Tracks[i].Lyricist, true);
             }
 
             using (sw)
@@ -2519,11 +2529,54 @@ namespace CUETools.Processor
                     WriteLine(sw, 0, String.Format("FILE \"{0}\" WAVE", _htoaFilename));
 
                 for (iTrack = 0; iTrack < TrackCount; iTrack++)
+                /*{
+                    WriteLine(sw, 0, String.Format("FILE \"{0}\" WAVE", _trackFilenames[iTrack]));
+                    WriteLine(sw, 1, String.Format("TRACK {0:00} AUDIO", iTrack + 1));
+                    //
+                    for (i = 0; i < _tracks[iTrack].Attributes.Count; i++)
+                        WriteLine(sw, 2, _tracks[iTrack].Attributes[i]);
+                    //
+                    if (style == CUEStyle.GapsAppended)
+                    {
+                        if  ((iTrack == 0) && (!htoaToFile))
+                            timeRelativeToFileStart = _toc[_toc.FirstAudio + iTrack].Pregap;
+                        else
+                            timeRelativeToFileStart = 0;
+                    }
+                    else
+                        timeRelativeToFileStart = _toc[_toc.FirstAudio + iTrack].Pregap;
+                    //
+                    if (timeRelativeToFileStart != 0)
+                    {
+                        if ((style == CUEStyle.GapsLeftOut) ||
+                            (style == CUEStyle.GapsAppended) ||
+                            ((style == CUEStyle.SingleFile || style == CUEStyle.SingleFileWithCUE) && (iTrack == 0) && _usePregapForFirstTrackInSingleFile))
+                            WriteLine(sw, 2, "PREGAP " + CDImageLayout.TimeToString(timeRelativeToFileStart));
+                        else
+                        {
+                            WriteLine(sw, 2, String.Format("INDEX 00 {0}", CDImageLayout.TimeToString(timeRelativeToFileStart)));
+                        }
+                    }
+                    //
+                    for (iIndex = 1; iIndex <= _toc[_toc.FirstAudio + iTrack].LastIndex; iIndex++)
+                    {
+                        WriteLine(sw, 2, String.Format("INDEX {0:00} {1}", iIndex, CDImageLayout.TimeToString(timeRelativeToFileStart)));
+                        timeRelativeToFileStart += _toc.IndexLength(_toc.FirstAudio + iTrack, iIndex);
+                    }
+                    //
+                    if ((style == CUEStyle.GapsAppended) && (iTrack+1 < (TrackCount-1)))
+                    {
+                        uint iNextGap = _toc[_toc.FirstAudio + iTrack + 1].Pregap;
+                        if (iNextGap > 0)
+                            WriteLine(sw, 2, String.Format("INDEX {0:00} {1}", iIndex, CDImageLayout.TimeToString(timeRelativeToFileStart)));
+                    }
+
+                }*/
                 {
                     if ((style == CUEStyle.GapsPrepended) ||
                         (style == CUEStyle.GapsLeftOut) ||
                         ((style == CUEStyle.GapsAppended) &&
-                        ((_toc[_toc.FirstAudio + iTrack].Pregap == 0) || ((iTrack == 0) && !htoaToFile))))
+                            ((_toc[_toc.FirstAudio + iTrack].Pregap == 0) || ((iTrack == 0) && !htoaToFile))))
                     {
                         WriteLine(sw, 0, String.Format("FILE \"{0}\" WAVE", _trackFilenames[iTrack]));
                         timeRelativeToFileStart = 0;
@@ -2721,6 +2774,13 @@ namespace CUETools.Processor
             _ripper.Position = 0;
         }
 
+        private Action _onTracksDataChanged;
+        public string Go(Action method)
+        {
+            _onTracksDataChanged = method;
+            return Go();
+        }
+
         public string Go()
         {
             int[] destLengths;
@@ -2728,7 +2788,10 @@ namespace CUETools.Processor
                 (_toc.Pregap > 75 * (_config.useHTOALengthThreshold ? 5 : 0)));
 
             if (_isCD)
+            {
                 DetectGaps();
+                _onTracksDataChanged?.Invoke();
+            }
 
             if (_usePregapForFirstTrackInSingleFile)
                 throw new Exception("UsePregapForFirstTrackInSingleFile is not supported for writing audio files.");
@@ -2936,9 +2999,9 @@ namespace CUETools.Processor
                                     if (fileInfo.Tag.Album == null && Metadata.Title != "")
                                         fileInfo.Tag.Album = Metadata.Title;
                                     if (fileInfo.Tag.Performers.Length == 0 && Metadata.Tracks[iTrack].Artist != "")
-                                        fileInfo.Tag.Performers = new string[] { Metadata.Tracks[iTrack].Artist };
+                                        fileInfo.Tag.Performers = Metadata.Tracks[iTrack].Artist.Split(';');
                                     if (fileInfo.Tag.Performers.Length == 0 && Metadata.Artist != "")
-                                        fileInfo.Tag.Performers = new string[] { Metadata.Artist };
+                                        fileInfo.Tag.Performers = Metadata.Artist.Split(';');
                                     if (fNeedAlbumArtist && fileInfo.Tag.AlbumArtists.Length == 0 && Metadata.Artist != "")
                                         fileInfo.Tag.AlbumArtists = new string[] { Metadata.Artist };
                                     if (fileInfo.Tag.Genres.Length == 0 && Metadata.Genre != "")
@@ -2953,6 +3016,36 @@ namespace CUETools.Processor
                                         fileInfo.Tag.Comment = Metadata.Tracks[iTrack].Comment;
                                     if (fileInfo.Tag.Comment == null && Metadata.Comment != "")
                                         fileInfo.Tag.Comment = Metadata.Comment;
+                                    if (fileInfo.Tag.Composers.Length==0 && Metadata.Tracks[iTrack].Composer != "")
+                                        fileInfo.Tag.Composers = Metadata.Tracks[iTrack].Composer.Split(';');
+                                    //if (fileInfo.Tag.Lyrics == null && Metadata.Tracks[iTrack].Lyricist != "")
+                                    //    fileInfo.Tag.Lyrics = Metadata.Tracks[iTrack].Lyricist;
+                                    var lyricist = Metadata.Tracks[iTrack].Lyricist;
+                                    if (lyricist != null && lyricist != "")
+                                    {
+                                        var lyricists = lyricist.Split(';');
+                                        if (fileInfo.TagTypes.HasFlag(TagLib.TagTypes.Id3v2))
+                                        {
+                                            var id3v2 = (TagLib.Id3v2.Tag)fileInfo.GetTag(TagLib.TagTypes.Id3v2, true);
+                                            // Remove old TEXT frames
+                                            try { id3v2.RemoveFrames("TEXT"); } catch { }
+                                            // New TEXT frame
+                                            var frameLyricist = new TagLib.Id3v2.TextInformationFrame("TEXT");
+                                            frameLyricist.Text = lyricists;
+                                            id3v2.AddFrame(frameLyricist);
+                                        }
+                                        else if (fileInfo.TagTypes.HasFlag(TagLib.TagTypes.Xiph))
+                                        {
+                                            TagLib.Ogg.XiphComment xiphComment = (TagLib.Ogg.XiphComment)fileInfo.GetTag(TagLib.TagTypes.Xiph, true);
+                                            xiphComment.SetField("LYRICIST", lyricists);
+                                        }
+                                        /*
+                                        else if (fileInfo.TagTypes.HasFlag(TagLib.TagTypes.FlacMetadata))
+                                        {
+                                            var flacTag = (TagLib.Flac.Metadata)fileInfo.GetTag(TagLib.TagTypes.FlacMetadata, true);
+                                            flacTag.Lyrics = lyricist;
+                                        }*/
+                                    }
                                     if (fileInfo.Tag.ReleaseDate == null && Metadata.ReleaseDate != "")
                                         fileInfo.Tag.ReleaseDate = Metadata.ReleaseDate;
                                     if (fileInfo.Tag.MusicBrainzReleaseCountry == null && Metadata.Country != "")
@@ -2963,6 +3056,8 @@ namespace CUETools.Processor
                                         fileInfo.Tag.CatalogNo = Metadata.LabelNo;
                                     if (fileInfo.Tag.DiscSubtitle == null && Metadata.DiscName != "")
                                         fileInfo.Tag.DiscSubtitle = Metadata.DiscName;
+                                    if (fileInfo.Tag.ISRC == null && Metadata.Tracks[iTrack].ISRC != "")
+                                        fileInfo.Tag.ISRC = Metadata.Tracks[iTrack].ISRC;
                                 }
 
                                 if (_config.copyBasicTags && sourceFileInfo != null)
@@ -2999,6 +3094,8 @@ namespace CUETools.Processor
                                         fileInfo.Tag.CatalogNo = sourceFileInfo.Tag.CatalogNo;
                                     if (fileInfo.Tag.DiscSubtitle == null)
                                         fileInfo.Tag.DiscSubtitle = sourceFileInfo.Tag.DiscSubtitle;
+                                    if (fileInfo.Tag.ISRC == null)
+                                        fileInfo.Tag.ISRC = sourceFileInfo.Tag.ISRC;
                                 }
 
                                 if ((_config.embedAlbumArt || _config.CopyAlbumArt) && _albumArt.Count > 0)
@@ -3437,6 +3534,16 @@ namespace CUETools.Processor
                     _config.copyBasicTags && _tracks[iTrack]._fileInfo != null && _tracks[iTrack]._fileInfo.Tag.Comment != null ?_tracks[iTrack]._fileInfo.Tag.Comment : null;
                 if (comment != null)
                     destTags.Add(String.Format("cue_track{0:00}_COMMENT", iTrack + 1), comment);
+                //
+                var composer = _config.writeBasicTagsFromCUEData && Metadata.Tracks[iTrack].Composer != "" ? Metadata.Tracks[iTrack].Composer :
+                    _config.copyBasicTags && _tracks[iTrack]._fileInfo != null && _tracks[iTrack]._fileInfo.Tag.Composers.Length != 0 ? string.Join(";", _tracks[iTrack]._fileInfo.Tag.Composers) : null;
+                if (composer != null)
+                    destTags.Add(String.Format("cue_track{0:00}_COMPOSER", iTrack + 1), composer);
+                //
+                var lyricist = _config.writeBasicTagsFromCUEData && Metadata.Tracks[iTrack].Lyricist != "" ? Metadata.Tracks[iTrack].Lyricist :
+                    _config.copyBasicTags && _tracks[iTrack]._fileInfo != null && _tracks[iTrack]._fileInfo.Tag.Lyrics != null ? _tracks[iTrack]._fileInfo.Tag.Lyrics : null;
+                if (lyricist != null)
+                    destTags.Add(String.Format("cue_track{0:00}_LYRICYST", iTrack + 1), lyricist);
             }
 
             if (fWithCUE)

@@ -9,6 +9,10 @@ namespace CUETools.Processor
         [DefaultValue("")]
         public string Title { get; set; }
 		[DefaultValue("")]
+		public string Composer { get; set; }
+		[DefaultValue("")]
+		public string Lyricist { get; set; }
+		[DefaultValue("")]
 		public string Comment { get; set; }
 		[DefaultValue("")]
         public string ISRC { get; set; }
@@ -17,8 +21,11 @@ namespace CUETools.Processor
         {
             Artist = "";
             Title = "";
+			Composer = "";
+			Lyricist = "";
 			Comment = "";
-            ISRC = "";
-        }
+			ISRC = "";
+
+		}
     }
 }

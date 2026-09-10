@@ -134,6 +134,7 @@ namespace Bwg.Scsi
         private const uint IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x4d014;
         private const uint IOCTL_SCSI_GET_CAPABILITIES = 0x41010;
         private const uint IOCTL_STORAGE_MEDIA_REMOVAL = 0x2D4804;
+        private const uint IOCTL_CDROM_SET_SPEED = 0x24060;
 
         private const uint ERROR_NOT_SUPPORTED = 50 ;
         #endregion

@@ -112,10 +112,10 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="toolStripStatusAr.ToolTipText" xml:space="preserve">
     <value>AccurateRip-Status</value>
@@ -129,23 +129,27 @@
   <data name="statusStrip1.Text" xml:space="preserve">
     <value>statusStrip1</value>
   </data>
-  <data name="Title.Text" xml:space="preserve">
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="dataGridVwColTrackNo.HeaderText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="dataGridVwColTitle.HeaderText" xml:space="preserve">
     <value>Titel</value>
   </data>
-  <data name="TrackNo.Text" xml:space="preserve">
-    <value>#</value>
-  </data>
-  <data name="columnHeaderArtist.Text" xml:space="preserve">
-    <value>Interpret</value>
-  </data>
-  <data name="Start.Text" xml:space="preserve">
+  <data name="dataGridVwColStart.HeaderText" xml:space="preserve">
     <value>Start</value>
   </data>
-  <data name="Length.Text" xml:space="preserve">
+  <data name="dataGridVwColLength.HeaderText" xml:space="preserve">
     <value>Länge</value>
   </data>
-  <data name="listTracks.ToolTip" xml:space="preserve">
-    <value>Doppelklick zum Ändern von Titeln</value>
+  <data name="dataGridVwColEnd.HeaderText" xml:space="preserve">
+    <value>Ende</value>
+  </data>
+  <data name="dataGridVwColLyricist.HeaderText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="dataGridVwColISRC.HeaderText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
   </data>
   <data name="buttonGo.Text" xml:space="preserve">
     <value>&amp;Los</value>
@@ -156,11 +160,31 @@
   <data name="buttonPause.Text" xml:space="preserve">
     <value>&amp;Pause</value>
   </data>
+  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
+    <value>Lese-Offset</value>
+  </data>
+  <data name="bnComboBoxC2ErrorModeSetting.ToolTip" xml:space="preserve">
+    <value>C2-Fehlermodus
+Die Einstellung "Auto" funktioniert mit den meisten Laufwerken.
+Bei Bedarf kann hier der C2-Fehlermodus eingestellt werden.</value>
+  </data>
   <data name="checkBoxTestAndCopy.Text" xml:space="preserve">
     <value>Testen &amp;&amp; Kopieren</value>
   </data>
+  <data name="bnComboBoxLosslessOrNot.Text" xml:space="preserve">
+    <value>verlustfrei</value>
+  </data>
+  <data name="bnComboBoxEncoder.Text" xml:space="preserve">
+    <value>libFlac</value>
+  </data>
+  <data name="bnComboBoxFormat.Text" xml:space="preserve">
+    <value>flac</value>
+  </data>
   <data name="labelEncoderMinMode.Text" xml:space="preserve">
     <value>128</value>
+  </data>
+  <data name="bnComboBoxImage.Text" xml:space="preserve">
+    <value>Image</value>
   </data>
   <data name="labelEncoderMaxMode.Text" xml:space="preserve">
     <value>320</value>
@@ -176,6 +200,12 @@
   </data>
   <data name="txtOutputPath.ToolTip" xml:space="preserve">
     <value>Klicken, um die Vorlage zu ändern</value>
+  </data>
+  <data name="bnComboBoxRelease.Text" xml:space="preserve">
+    <value>Veröffentlichungen</value>
+  </data>
+  <data name="bnComboBoxDrives.Text" xml:space="preserve">
+    <value>Laufwerke</value>
   </data>
   <data name="columnHeaderValue.Text" xml:space="preserve">
     <value>Wert</value>
@@ -204,36 +234,19 @@
   <data name="buttonSettings.Text" xml:space="preserve">
     <value>&amp;Optionen</value>
   </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>CUERipper 2.2.6</value>
-  </data>
-  <data name="bnComboBoxDrives.Text" xml:space="preserve">
-    <value>Laufwerke</value>
-  </data>
-  <data name="bnComboBoxEncoder.Text" xml:space="preserve">
-    <value>libFlac</value>
-  </data>
-  <data name="bnComboBoxFormat.Text" xml:space="preserve">
-    <value>flac</value>
-  </data>
-  <data name="bnComboBoxImage.Text" xml:space="preserve">
-    <value>Image</value>
-  </data>
-  <data name="bnComboBoxLosslessOrNot.Text" xml:space="preserve">
-    <value>verlustfrei</value>
-  </data>
-  <data name="bnComboBoxRelease.Text" xml:space="preserve">
-    <value>Veröffentlichungen</value>
-  </data>
   <data name="buttonEjectDisk.Text" xml:space="preserve">
     <value>Ausw&amp;erfen</value>
   </data>
-  <data name="bnComboBoxC2ErrorModeSetting.ToolTip" xml:space="preserve">
-    <value>C2-Fehlermodus
-Die Einstellung "Auto" funktioniert mit den meisten Laufwerken.
-Bei Bedarf kann hier der C2-Fehlermodus eingestellt werden.</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>CUERipper 2.2.6</value>
   </data>
-  <data name="numericWriteOffset.ToolTip" xml:space="preserve">
-    <value>Lese-Offset</value>
+  <data name="TrackNo.Text" xml:space="preserve">
+    <value>#</value>
+  </data>
+  <data name="columnHeaderArtist.Text" xml:space="preserve">
+    <value>Interpret</value>
+  </data>
+  <data name="listTracks.ToolTip" xml:space="preserve">
+    <value>Doppelklick zum Ändern von Titeln</value>
   </data>
 </root>

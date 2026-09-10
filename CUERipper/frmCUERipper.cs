@@ -18,6 +18,8 @@ using Freedb;
 using CUETools.Codecs;
 using System.Xml;
 using System.Xml.Serialization;
+using CUETools.CDImage;
+using System.Reflection;
 
 namespace CUERipper
 {
@@ -37,10 +39,35 @@ namespace CUERipper
         private bool freezeReleasesUpdates_m = false;
         public readonly static XmlSerializerNamespaces xmlEmptyNamespaces = new XmlSerializerNamespaces(new XmlQualifiedName[] { XmlQualifiedName.Empty });
         public readonly static XmlWriterSettings xmlEmptySettings = new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true };
+		//        static FileSystemWatcher _fileSystemWatcher = new FileSystemWatcher();
+		private System.Windows.Forms.Timer _timerDriveReady = new System.Windows.Forms.Timer();
+        private System.Timers.Timer _timerProgress = new System.Timers.Timer();
+        private bool _bDriveReady = false;
+
+		private void EnableDoubleBuffering(DataGridView dgv)
+		{
+			PropertyInfo pi = typeof(DataGridView).GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+			pi.SetValue(dgv, true, null);
+		}
+
+        private void datagridviewTracks_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
+        {
+            // Controleer of de rij een datarij is (geen header of footer)
+            if (!datagridviewTracks.Rows[e.RowIndex].IsNewRow)
+            {
+                // Wissel achtergrondkleur om de twee rijen
+                if (e.RowIndex % 3 == 0)
+                    datagridviewTracks.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(0xF4, 0xF4, 0xF4); // Donkerdere kleur
+                else
+                    datagridviewTracks.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White; // Standaardkleur
+            }
+        }
 
 		public frmCUERipper()
 		{
 			InitializeComponent();
+			EnableDoubleBuffering(datagridviewTracks);
+            datagridviewTracks.RowPrePaint += datagridviewTracks_RowPrePaint;
 			_config = new CUEConfig();
 			_startStop = new StartStop();
             cueRipperConfig = new CUERipperConfig();
@@ -55,7 +82,11 @@ namespace CUERipper
 			m_icon_mgr.SetExtensionIcon(".ogg", Properties.Resources.ogg);
 			m_icon_mgr.SetExtensionIcon(".opus", Properties.Resources.opus);
             m_icon_mgr.SetExtensionIcon(".wma", Properties.Resources.wma);
+			_timerDriveReady.Interval = 1000; // 1 seconde
+            _timerDriveReady.Tick += onTimerDriveStatus;
+            _timerDriveReady.Start();
 		}
+
 
 		string[] OutputPathUseTemplates = {
 			"%music%\\%artist%\\[%year% - ]%album%\\%artist% - %album%[ '('disc %discnumberandname%')'].cue",
@@ -164,7 +195,7 @@ namespace CUERipper
             {
                 System.Diagnostics.Trace.WriteLine(ex.Message);
             }
-
+            cueRipperConfig.TrackGridSettings.ApplyTo(datagridviewTracks);
             bindingSourceCR.DataSource = data;
             initDone = true;
             bnComboBoxDrives.ImageList = m_icon_mgr.ImageList;
@@ -290,7 +321,7 @@ namespace CUERipper
 		/// have changed.
 		/// </summary>
 		/// <param name="m">the windows message being processed</param>
-		protected override void WndProc(ref Message m)
+        /*protected override void WndProc(ref Message m)
 		{
 			if (m.Msg == WM_DEVICECHANGE)
 			{
@@ -317,7 +348,44 @@ namespace CUERipper
 				}
 			}
 			base.WndProc(ref m);
+		}*/
+
+
+        private void onTimerDriveStatus(object sender, EventArgs e)
+        {
+			if (selectedDriveInfo != null)
+			{
+				if (_workThread == null)
+				{
+					System.IO.DriveInfo driveInfo = new System.IO.DriveInfo(selectedDriveInfo.Path);
+					if (driveInfo.IsReady)
+					{
+						if (!_bDriveReady)
+						{
+                            _bDriveReady = true;
+                            UpdateDrive();
+						}
+					}
+					else if (!driveInfo.IsReady)
+					{
+						if (_bDriveReady)
+						{
+							if (data.selectedRelease != null)
+								data.selectedRelease.metadata.Save();
+                            _bDriveReady = false;
+							datagridviewTracksClear();
+                            UpdateDrive();
+						}
+					}
 		}
+            }
+			else
+				_bDriveReady = false;
+        }
+
+
+
+
 
 		private void DrivesLookup(object o)
 		{
@@ -354,7 +422,7 @@ namespace CUERipper
 						{
 							// Invalid setting, use 3 (Auto)
 							reader.DriveC2ErrorMode = 3;
-						}
+				}
 					}
 					else
 					{
@@ -407,7 +475,6 @@ namespace CUERipper
 				if (driveInfo.drive != null)
 					driveInfo.drive.Close();
 			data.Drives.Clear();
-			listTracks.Items.Clear();
 			data.Releases.Clear();
 			data.selectedRelease = null;
             ResetAlbumArt();
@@ -431,7 +498,7 @@ namespace CUERipper
 
 		private void SetupControls()
 		{
-			bool running = _workThread != null;
+			bool running = (_workThread != null) && (_workThread.Name == "Ripping Thread");
 
 			bnComboBoxOutputFormat.Visible = outputFormatVisible;
 			txtOutputPath.Visible = !outputFormatVisible;
@@ -439,7 +506,7 @@ namespace CUERipper
 			bnComboBoxRelease.Enabled = !running && data.Releases.Count > 0;
 			bnComboBoxDrives.Enabled = !running && data.Drives.Count > 0;
 			bnComboBoxOutputFormat.Enabled =			
-			listTracks.Enabled =
+			datagridviewTracks.Enabled =
 			listMetadata.Enabled =
 			groupBoxSettings.Enabled = !running;
 			buttonGo.Enabled = !running && data.selectedRelease != null;
@@ -494,31 +561,59 @@ namespace CUERipper
 			});
 		}
 
+        private ReadProgressArgs _readProgressArgs = new ReadProgressArgs();
+		private int _iCorrectionQualityProgress;
+		private int _iAudioLengthProgress;
+
+
 		private void CDReadProgress(object sender, ReadProgressArgs e)
-		{		
+		{
 			CheckStop();
-
-			ICDRipper audioSource = sender as ICDRipper;
-			int processed = e.Position - e.PassStart;
-			TimeSpan elapsed = DateTime.Now - e.PassTime;
-			double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
-
-			double percentTrck = (double)(e.Position - e.PassStart) / (e.PassEnd - e.PassStart);
-			string retry = e.Pass > 0 ? " (" + Properties.Resources.Retry + " " + e.Pass.ToString() + ")" : "";
-			string status = (elapsed.TotalSeconds > 0 && e.Pass >= 0) ?
-				string.Format("{0} @{1:00.00}x{2}...", e.Action, speed, retry) :
-				string.Format("{0}{1}...", e.Action, retry);
-			this.BeginInvoke((MethodInvoker)delegate()
+			lock (this)
 			{
-				toolStripStatusLabel1.Text = status;
-				toolStripProgressBar1.Value = Math.Max(0, Math.Min(100, (int)(percentTrck * 100)));
+				_readProgressArgs.assign(e);
+				ICDRipper audioSource = sender as ICDRipper;
+				_iCorrectionQualityProgress = audioSource.CorrectionQuality;
+				_iAudioLengthProgress = (int)audioSource.TOC.AudioLength;
+                _timerProgress.Start();
 
-                progressBarErrors.Value = Math.Max(0,Math.Min(progressBarErrors.Maximum, (int)(100 * Math.Log(e.ErrorsCount / 10.0 + 1) / Math.Log((e.PassEnd - e.PassStart) / 10.0 + 1))));
-				progressBarErrors.Enabled = e.Pass >= audioSource.CorrectionQuality;
+			}
+		}
 
-				progressBarCD.Maximum = (int) audioSource.TOC.AudioLength;
-				progressBarCD.Value = Math.Max(0, Math.Min(progressBarCD.Maximum, (int)e.PassStart + (e.PassEnd - e.PassStart) * (Math.Min(e.Pass, audioSource.CorrectionQuality) + 1) / (audioSource.CorrectionQuality + 1)));
-			});
+
+        private void onTimerReadProgress(object sender, EventArgs e)
+		{
+			lock (this)
+			{
+                int iErrorsCount = _readProgressArgs.ErrorsCount;
+                int iPassEnd = _readProgressArgs.PassEnd;
+                int iPassStart = _readProgressArgs.PassStart;
+                int iPass = _readProgressArgs.Pass;
+                int processed = _readProgressArgs.Position - iPassStart;
+				TimeSpan elapsed = DateTime.Now - _readProgressArgs.PassTime;
+				double speed = elapsed.TotalSeconds > 0 ? processed / elapsed.TotalSeconds / 75 : 1.0;
+
+				double percentTrck = (double)(_readProgressArgs.Position - iPassStart) / (iPassEnd - iPassStart);
+				string retry = iPass > 0 ? " (" + Properties.Resources.Retry + " " + iPass.ToString() + ")" : "";
+				string status = (elapsed.TotalSeconds > 0 && iPass >= 0) ?
+				string.Format("{0} @{1:00.00}x{2}...", _readProgressArgs.Action, speed, retry) :
+				string.Format("{0}{1}...", _readProgressArgs.Action, retry);
+                int iCorrectionQualityProgress = _iCorrectionQualityProgress;
+                int iAudioLengthProgress = _iAudioLengthProgress;
+                //
+                this.BeginInvoke((MethodInvoker)delegate ()
+				{
+
+					toolStripStatusLabel1.Text = status;
+					toolStripProgressBar1.Value = Math.Max(0, Math.Min(100, (int)(percentTrck * 100)));
+
+					progressBarErrors.Value = Math.Max(0, Math.Min(progressBarErrors.Maximum, (int)(100 * Math.Log(iErrorsCount / 10.0 + 1) / Math.Log((iPassEnd - iPassStart) / 10.0 + 1))));
+					progressBarErrors.Enabled = iPass >= iCorrectionQualityProgress;
+
+					progressBarCD.Maximum = iAudioLengthProgress;
+					progressBarCD.Value = Math.Max(0, Math.Min(progressBarCD.Maximum, (int)iPassStart + (iPassEnd - iPassStart) * (Math.Min(iPass, iCorrectionQualityProgress) + 1) / (iCorrectionQualityProgress + 1)));
+				});
+			}
 		}
 
 		private void Rip(object o)
@@ -528,8 +623,11 @@ namespace CUERipper
 			audioSource.ReadProgress += new EventHandler<ReadProgressArgs>(CDReadProgress);
 			audioSource.DriveOffset = (int)numericWriteOffset.Value;
 			bool bDisableEjectDisc = _config.disableEjectDisc;
-			try
-			{
+            _timerProgress.Interval = 100; // 100 ms
+			_timerProgress.AutoReset = false;
+            _timerProgress.Elapsed += onTimerReadProgress;
+            try
+            {
 				if (bDisableEjectDisc)
 				this.Invoke((MethodInvoker)delegate ()
 				{
@@ -540,7 +638,20 @@ namespace CUERipper
                 else
                     cueSheet.ArTestVerify = null;
 
-                cueSheet.Go();
+                cueSheet.Go(() =>
+				{
+					this.Invoke((MethodInvoker)delegate ()
+					{
+						UpdateRelease();
+					});
+				});
+                //
+                if (_timerProgress.Enabled)
+                {
+                    _timerProgress.Stop();
+                    onTimerReadProgress(null, null);
+                }
+                //
                 cueSheet.CTDB.Submit(
 					(int)cueSheet.ArVerify.WorstConfidence() + 1,
 					audioSource.CorrectionQuality == 0 ? 0 :
@@ -587,7 +698,8 @@ namespace CUERipper
 //#endif
 			finally
 			{
-				if (bDisableEjectDisc)
+                _timerProgress.Elapsed -= onTimerReadProgress;
+                if (bDisableEjectDisc)
 					this.Invoke((MethodInvoker)delegate ()
 					{
 					audioSource.DisableEjectDisc(false);
@@ -614,9 +726,6 @@ namespace CUERipper
 			this.BeginInvoke((MethodInvoker)delegate()
 			{
 				SetupControls();
-//				if (_config.ejectAfterRip)
-					UpdateDrive();
-//				UpdateOutputPath();
 			});
 		}
 
@@ -651,7 +760,7 @@ namespace CUERipper
                         if (cueSheet.CTDB.FetchFile(albumArt[currentAlbumArt].meta.uri, ms))
                         {
                             if (ms.Length < 0xffffff || !_config.embedAlbumArt)
-                                albumArt[currentAlbumArt].contents = ms.ToArray();
+                            albumArt[currentAlbumArt].contents = ms.ToArray();
                             else
                                 MessageBox.Show(this, String.Format(Properties.Resources.AlbumArtTooLargeMessage, ms.Length),
                                 Properties.Resources.AlbumArtTooLargeTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -686,7 +795,8 @@ namespace CUERipper
 			selectedDriveInfo.drive.CorrectionQuality = trackBarSecureMode.Value;
 
 			_workThread = new Thread(Rip);
-			_workThread.Priority = ThreadPriority.BelowNormal;
+            _workThread.Name = "Ripping Thread";
+            _workThread.Priority = ThreadPriority.BelowNormal;
 			_workThread.IsBackground = true;
 			SetupControls();
 			_workThread.Start(selectedDriveInfo.drive);
@@ -717,38 +827,48 @@ namespace CUERipper
 		{
 			data.selectedRelease = bnComboBoxRelease.SelectedItem as CUEMetadataEntry;
 			UpdateOutputPath();
-			listTracks.BeginUpdate();
+			if (cueRipperConfig != null)
+				cueRipperConfig.TrackGridSettings.ReadFrom(datagridviewTracks);
+			datagridviewTracks.SuspendLayout();
 			listMetadata.BeginUpdate();
-			listTracks.Items.Clear();
 			listMetadata.Items.Clear();
 			if (!data.metadataMode)
 			{
-				listTracks.Visible = true;
+				datagridviewTracks.Visible = true;
 				listMetadata.Visible = false;
+				List<CueTrackMetaTOCWrapper> listTracksGrid = new List<CueTrackMetaTOCWrapper>();
 				if (data.selectedRelease != null)
 				{
-					columnHeaderArtist.Width = data.selectedRelease.metadata.IsVarious() ? 120 : 0;
-					for (int i = 1; i <= selectedDriveInfo.drive.TOC.TrackCount; i++)
+                    dataGridVwColArtist.Width = data.selectedRelease.metadata.IsVarious() ? 120 : 0;
+					CDImageLayout cdImageLayoutTOC = cueSheet.TOC;
+					for (int i = 1; i <= cdImageLayoutTOC.TrackCount; i++)
 					{
-						string title = "Data track";
-						string artist = "";
-						if (selectedDriveInfo.drive.TOC[i].IsAudio)
+						//						string title = "Data track";
+						//						string artist = "";
+						CDTrack cdtrack = cdImageLayoutTOC[i];
+						CUETrackMetadata trackMetaData;
+						if (cdImageLayoutTOC[i].IsAudio)
 						{
-							title = data.selectedRelease.metadata.Tracks[i - selectedDriveInfo.drive.TOC.FirstAudio].Title;
-							artist = data.selectedRelease.metadata.Tracks[i - selectedDriveInfo.drive.TOC.FirstAudio].Artist;
+							//							title = data.selectedRelease.metadata.Tracks[i - cdImageLayoutTOC.FirstAudio].Title;
+							//							artist = data.selectedRelease.metadata.Tracks[i - cdImageLayoutTOC.FirstAudio].Artist;
+							trackMetaData = data.selectedRelease.metadata.Tracks[i - cdImageLayoutTOC.FirstAudio];
 						}
-						listTracks.Items.Add(new ListViewItem(new string[] { 
-							title,
-							selectedDriveInfo.drive.TOC[i].Number.ToString(), 
-							artist,
-							selectedDriveInfo.drive.TOC[i].StartMSF, 
-							selectedDriveInfo.drive.TOC[i].LengthMSF }));
+						else
+						{
+							trackMetaData = new CUETrackMetadata();
+							trackMetaData.Title = "Data track";
+						}
+
+						//
+						listTracksGrid.Add(new CueTrackMetaTOCWrapper(trackMetaData, cdtrack));
 					}
+					datagridviewTracks.DataSource = listTracksGrid;
 				}
+				datagridviewTracks.Focus();
 			}
 			else if (data.metadataTrack < 0)
 			{
-				listTracks.Visible = false;
+				datagridviewTracks.Visible = false;
 				listMetadata.Visible = true;
 				if (data.selectedRelease != null)
 				{
@@ -757,32 +877,50 @@ namespace CUERipper
 					foreach (PropertyDescriptor p in sortedprops)
 						if (p.Name != "Tracks" && p.Name != "AlbumArt" && p.Name != "Id" && !p.Attributes.Contains(new System.Xml.Serialization.XmlIgnoreAttribute()))
 							listMetadata.Items.Add(new ListViewItem(new string[] { p.GetValue(data.selectedRelease.metadata).ToString(), p.Name }));
+				listMetadata.Items[0].Focused = true;
+				listMetadata.Items[0].Selected = true;
 				}
+				listMetadata.Focus();
 			}
 			else
 			{
-				listTracks.Visible = false;
+				datagridviewTracks.Visible = false;
 				listMetadata.Visible = true;
 				if (data.selectedRelease != null)
 				{
 					CUETrackMetadata track = data.selectedRelease.metadata.Tracks[data.metadataTrack];
 					PropertyDescriptorCollection props = TypeDescriptor.GetProperties(track);
-					props = props.Sort(new string[] { "ISRC", "Title", "Artist" });
+					props = props.Sort(new string[] { "ISRC", "Title", "Artist", "Composer", "Lyricist" });
 					ListViewItem lvItem = new ListViewItem(new string[] { (data.metadataTrack + 1).ToString(), "Number" });
 					lvItem.ForeColor = SystemColors.GrayText;
 					listMetadata.Items.Add(lvItem);
 					foreach (PropertyDescriptor p in props)
 					{
-						lvItem = new ListViewItem(new string[] { p.GetValue(track).ToString(), p.Name });
+						Object valueHelp = p.GetValue(track);
+						String sHelp;
+						if (valueHelp == null)
+							sHelp = "";
+						else
+							sHelp = valueHelp.ToString();
+						//
+                        lvItem = new ListViewItem(new string[] { sHelp, p.Name });
 						if (p.Name == "ISRC")
 							lvItem.ForeColor = SystemColors.GrayText;
 						listMetadata.Items.Add(lvItem);
+						if (p.Name == "Title")
+						{
+							lvItem.Focused = true;
+							lvItem.Selected = true;
+						}
 					}
 				}
+				listMetadata.Focus();
 			}
-			ResizeList(listTracks, Title);
+//			ResizeList(datagridviewTracks, Title);
 			ResizeList(listMetadata, columnHeaderValue);
-			listTracks.EndUpdate();
+			datagridviewTracks.ResumeLayout();
+            if (cueRipperConfig != null)
+                cueRipperConfig.TrackGridSettings.ApplyTo(datagridviewTracks);
 			listMetadata.EndUpdate();
 
             SelectAlbumArt();
@@ -993,7 +1131,7 @@ namespace CUERipper
             }
 
             // Add a blank Release to the metadata selection drop-down list in any case. It can be used, if the metadata retrieved is not correct or undesired.
-            data.Releases.Add(CreateCUESheet(audioSource));
+                data.Releases.Add(CreateCUESheet(audioSource));
 
             _workThread = null;
             if (musicbrainzError != "")
@@ -1023,6 +1161,18 @@ namespace CUERipper
             });
         }
 
+		private void datagridviewTracksClear()
+		{
+            if (cueRipperConfig != null)
+                cueRipperConfig.TrackGridSettings.ReadFrom(datagridviewTracks);
+            datagridviewTracks.SuspendLayout();
+			datagridviewTracks.DataSource = new List<CueTrackMetaTOCWrapper>();
+			datagridviewTracks.ResumeLayout();
+            if (cueRipperConfig != null)
+                cueRipperConfig.TrackGridSettings.ApplyTo(datagridviewTracks);
+        }
+
+
 		private void UpdateDrive()
 		{
 			if (bnComboBoxDrives.SelectedItem as DriveInfo == null)
@@ -1043,7 +1193,6 @@ namespace CUERipper
 			toolStripStatusLabelMusicBrainz.Enabled = false;
 			toolStripStatusLabelMusicBrainz.Text = "";
 			toolStripStatusLabelMusicBrainz.ToolTipText = "";
-			listTracks.Items.Clear();
 			data.Releases.Clear();
 			data.selectedRelease = null;
             ResetAlbumArt();
@@ -1082,24 +1231,29 @@ namespace CUERipper
 			_workThread.Start(selectedDriveInfo.drive);
 		}
 
-		private void listTracks_KeyDown(object sender, KeyEventArgs e)
+		private void datagridviewTracks_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.KeyCode == Keys.F2)
+			if ((e.KeyCode == Keys.V) && (e.Control))
+				pasteClipboardInGrid(datagridviewTracks);
+			else if ((e.KeyCode == Keys.X) && (e.Control))
 			{
-				listTracks.FocusedItem.BeginEdit();
+				copySelectionToClipboard(datagridviewTracks);
+				deleteSelectionInGrid(datagridviewTracks);
 			}
+			else if ((e.KeyCode == Keys.Delete) && (e.Control))
+				deleteSelectionInGrid(datagridviewTracks);
 		}
 
 		private void listTracks_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
 		{
 			if (e.KeyCode == Keys.Enter)
 			{
-                if (listTracks.FocusedItem != null && listTracks.FocusedItem.Index + 1 < listTracks.Items.Count)// && e.Label != null)
+                if (datagridviewTracks.CurrentCell != null && datagridviewTracks.CurrentCell.RowIndex + 1 < selectedDriveInfo.drive.TOC.TrackCount)// && e.Label != null)
 				{
-					listTracks.FocusedItem.Selected = false;
-					listTracks.FocusedItem = listTracks.Items[listTracks.FocusedItem.Index + 1];
-					listTracks.FocusedItem.Selected = true;
-					listTracks.FocusedItem.BeginEdit();
+/*					datagridviewTracks.FocusedItem.Selected = false;
+					datagridviewTracks.FocusedItem = datagridviewTracks.Items[datagridviewTracks.FocusedItem.Index + 1];
+					datagridviewTracks.FocusedItem.Selected = true;
+					datagridviewTracks.FocusedItem.BeginEdit();*/
 				}
 			}
 		}
@@ -1112,6 +1266,131 @@ namespace CUERipper
 			else
 				e.CancelEdit = true;
 		}
+
+		public int NextColumnOnDisplayIndex(DataGridViewColumnCollection dgvcol, int iColumnIndex)
+		{
+			int iDisplayIndexNew = dgvcol[iColumnIndex].DisplayIndex + 1;
+			//
+			foreach (DataGridViewColumn datagridviewColumn in dgvcol)
+			{
+				if (datagridviewColumn.DisplayIndex == iDisplayIndexNew)
+					return datagridviewColumn.Index;
+            }
+			return -1;
+        }
+
+
+
+		protected void pasteClipboardInGrid(DataGridView dataGridViewIn)
+		{
+			// bepalen selectie
+			// indien 0/1 cel focus of geselecteerd => startcel + plakken meerdere cellen vanaf dit beginpunt
+			// indien meerdere cellen geselecteerd => Eerste waarde clipboard tot TAB of CR/LF plakken in alle geselecteerde cellen
+			if (Clipboard.ContainsText())
+			{
+				String sClipboard = Clipboard.GetText(TextDataFormat.Text);
+				if (dataGridViewIn.SelectedCells.Count <= 1)
+				{
+					DataGridViewCell datagridviewcell = null;
+					if (dataGridViewIn.SelectedCells.Count == 1)
+						datagridviewcell = dataGridViewIn.SelectedCells[0];
+					else
+						datagridviewcell = dataGridViewIn.CurrentCell;
+					if (datagridviewcell != null)
+					{
+						int iColStart = datagridviewcell.ColumnIndex;
+						string[] asRows = sClipboard.Split(new string[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+						for (int iRow = datagridviewcell.RowIndex, iT1 = 0; (iRow < dataGridViewIn.RowCount) && (iT1 < asRows.Length); iRow++, iT1++)
+						{
+							string[] asCols = asRows[iT1].Split(new string[] { "\t" }, StringSplitOptions.None);
+                            int iColHelp = 0;
+                            for (int iT2 = 0; (iT2 < asCols.Length); iT2++)
+                            {
+                                if (iT2 == 0)
+									iColHelp = iColStart;
+								else
+									iColHelp = NextColumnOnDisplayIndex(dataGridViewIn.Columns, iColHelp);
+								//
+								if (iColHelp >= 0)
+							{
+                                    DataGridViewCell dgvcell = dataGridViewIn.Rows[iRow].Cells[iColHelp];
+                                    if (dgvcell.ValueType.Name.Equals("String"))
+                                        dgvcell.Value = asCols[iT2];
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					string sHelp = sClipboard.Split(new string[] { "\r\n", "\r", "\n", "\t" }, StringSplitOptions.None)[0];
+					for (int iT1 = 0; iT1 < dataGridViewIn.SelectedCells.Count; iT1++)
+					{
+						DataGridViewCell dgvcell = dataGridViewIn.SelectedCells[iT1];
+						if (dgvcell.ValueType.Name.Equals("String"))
+                            dgvcell.Value = sHelp;
+					}
+				}
+			}
+		}
+
+
+		protected void copySelectionToClipboard(DataGridView dataGridViewIn)
+		{
+			if (dataGridViewIn.SelectedCells.Count > 0)
+			{
+				int iColumnMin = dataGridViewIn.ColumnCount;
+				int iColumnMax = 0;
+				int iRowMin = dataGridViewIn.RowCount;
+				int iRowMax = 0;
+				for (int iT1 = 0; iT1 < dataGridViewIn.SelectedCells.Count; iT1++)
+				{
+					DataGridViewCell dataGridViewCell = dataGridViewIn.SelectedCells[iT1];
+					if (iColumnMin > dataGridViewCell.ColumnIndex)
+						iColumnMin = dataGridViewCell.ColumnIndex;
+					if (iColumnMax < dataGridViewCell.ColumnIndex)
+						iColumnMax = dataGridViewCell.ColumnIndex;
+					if (iRowMin > dataGridViewCell.RowIndex)
+						iRowMin = dataGridViewCell.RowIndex;
+					if (iRowMax < dataGridViewCell.RowIndex)
+						iRowMax = dataGridViewCell.RowIndex;
+				}
+
+
+				string sUit = "";
+				for (int iT1 = iRowMin; iT1 <= iRowMax; iT1++)
+				{
+					for (int iT2 = iColumnMin; iT2 <= iColumnMax; iT2++)
+					{
+						DataGridViewCell dataGridViewCell = dataGridViewIn.Rows[iT1].Cells[iT2];
+						String sWaarde;
+						if (dataGridViewCell.Selected)
+							sWaarde = dataGridViewCell.Value.ToString();
+						else
+							sWaarde = "";
+						if (iT2 > iColumnMin)
+							sWaarde = "\t" + sWaarde;
+						sUit = sUit + sWaarde;
+					}
+					if (iT1 != iRowMax)
+						sUit = sUit + Environment.NewLine;
+				}
+				Clipboard.SetText(sUit);
+			}
+		}
+
+
+		protected void deleteSelectionInGrid(DataGridView dataGridViewIn)
+		{
+			if (dataGridViewIn.SelectedCells.Count > 0)
+			{
+				for (int iT1 = 0; iT1 < dataGridViewIn.SelectedCells.Count; iT1++)
+				{
+					dataGridViewIn.SelectedCells[iT1].Value = null;
+				}
+			}
+		}
+
 
 		private void frmCUERipper_FormClosed(object sender, FormClosedEventArgs e)
 		{
@@ -1135,6 +1414,7 @@ namespace CUERipper
             using (TextWriter tw = new StringWriter())
             using (XmlWriter xw = XmlTextWriter.Create(tw, xmlEmptySettings))
             {
+                cueRipperConfig.TrackGridSettings.ReadFrom(datagridviewTracks);
                 CUERipperConfig.serializer.Serialize(xw, cueRipperConfig, xmlEmptyNamespaces);
                 sw.SaveText("CUERipper", tw.ToString());
             }
@@ -1145,10 +1425,10 @@ namespace CUERipper
 				data.selectedRelease.metadata.Save();
 		}
 
-		private void listTracks_BeforeLabelEdit(object sender, LabelEditEventArgs e)
+		private void datagridviewTracks_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
 		{
-			if (!selectedDriveInfo.drive.TOC[e.Item + 1].IsAudio)
-				e.CancelEdit = true;
+			if (!selectedDriveInfo.drive.TOC[e.RowIndex + 1].IsAudio)
+				e.Cancel = true;
 		}
 
 		private string SelectedOutputAudioFormat
@@ -1533,27 +1813,20 @@ namespace CUERipper
 			SetupControls();
 		}
 
-		private void listTracks_Click(object sender, EventArgs e)
+		private void gridTracks_DoubleClick(object sender, EventArgs e)
 		{
-			Point p = listTracks.PointToClient(MousePosition);
-			ListViewItem lvItem = listTracks.GetItemAt(p.X, p.Y);
-			if (lvItem != null)
-			{
-				ListViewItem.ListViewSubItem a = lvItem.GetSubItemAt(p.X, p.Y);
-				if (a != null)
+			DataGridViewCell datagridviewcell = datagridviewTracks.CurrentCell;
+			if (datagridviewcell != null)
+			{ 
+				int track = datagridviewcell.RowIndex + 1 - selectedDriveInfo.drive.TOC.FirstAudio;
+				if (track >= 0 && track < selectedDriveInfo.drive.TOC.AudioTracks)
 				{
-					int track = lvItem.Index + 1 - selectedDriveInfo.drive.TOC.FirstAudio;
-					if (a == lvItem.SubItems[0])
-						lvItem.BeginEdit();
-					else if (/*a == lvItem.SubItems[2] &&*/ track >= 0 && track < selectedDriveInfo.drive.TOC.AudioTracks)
-					{
-						buttonTracks.Visible = true;
-						buttonTracks.Focus();
-						buttonMetadata.Visible = false;
-						data.metadataTrack = track;
-						data.metadataMode = true;
-						UpdateRelease();
-					}
+					buttonTracks.Visible = true;
+					buttonTracks.Focus();
+					buttonMetadata.Visible = false;
+					data.metadataTrack = track;
+					data.metadataMode = true;
+					UpdateRelease();
 				}
 			}
 		}
@@ -1667,7 +1940,7 @@ namespace CUERipper
 
         private void ResetAlbumArt()
         {
-            if (this.cueSheet != null)
+            if ((this.cueSheet != null) && (this.cueSheet.CTDB != null))
             {
                 this.cueSheet.CTDB.CancelRequest();
             }
@@ -1772,7 +2045,7 @@ namespace CUERipper
 
 		private void frmCUERipper_ClientSizeChanged(object sender, EventArgs e)
 		{
-			ResizeList(listTracks, Title);
+/*			ResizeList(datagridviewTracks, Title);*/
 			ResizeList(listMetadata, columnHeaderValue);
 		}
 
@@ -1898,22 +2171,22 @@ namespace CUERipper
             }
         }
 
-        private void listMetadata_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
+		private void listMetadata_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+		{
+			if (e.KeyCode == Keys.Enter)
+			{
                 if (listMetadata.FocusedItem != null && listMetadata.FocusedItem.Index + 1 < listMetadata.Items.Count)// && e.Label != null)
-                {
+				{
                     listMetadata.FocusedItem.Selected = false;
                     listMetadata.FocusedItem = listMetadata.Items[listMetadata.FocusedItem.Index + 1];
                     listMetadata.FocusedItem.Selected = true;
                     listMetadata.FocusedItem.BeginEdit();
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+	}
 
-    internal class BackgroundWorkerArtworkArgs
+	internal class BackgroundWorkerArtworkArgs
     {
         public CUESheet cueSheet;
         public CUEMetadataEntry meta;
