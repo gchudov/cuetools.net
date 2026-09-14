@@ -432,6 +432,12 @@ namespace CUERipper.Avalonia.ViewModels
             CoverViewer.IsReadOnly = RipSession.IsRipping;
             EncodingTabs.IsReadOnly = RipSession.IsRipping;
 
+            if (RipSession.IsRipping)
+            {
+                TrackGrid.ResetProgress();
+                RipSession.ResetProgress();
+            }
+
             // Init, Ripping and Done keep whatever the ripper last reported
             if (RipSession.Mode == SessionState.Ready) RipSession.Status = _localizer["Status:Ready"];
         }

@@ -54,6 +54,14 @@ namespace CUERipper.Avalonia.ViewModels.UserControls
             Tracks.Clear();
         }
 
+        public void ResetProgress()
+        {
+            foreach (var track in Tracks)
+            {
+                track.Progress = 0;
+            }
+        }
+
         public void OnSelectedMetadataChanged(object? sender, SelectedMetadataChangedEventArgs e)
         {
             Clear();
