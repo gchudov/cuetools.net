@@ -2125,7 +2125,7 @@ void clRiceEncoding(
 	flush(&bw);
     }
 #else
-    __local uint data[GROUP_SIZE];
+    __local uint data[GROUP_SIZE*2];
     __local volatile int mypos[GROUP_SIZE+1];
 #if 0
     __local int brp[256];
@@ -2148,6 +2148,7 @@ void clRiceEncoding(
 	brp[offs] = best_rice_parameters[(get_group_id(0) << max_porder) + offs];
 #endif
     data[tid] = 0;
+    data[tid + GROUP_SIZE] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
     const int bs = task.blocksize;
     int start = task.encodingOffset;
@@ -2218,9 +2219,16 @@ void clRiceEncoding(
 	    if (qpos1 && qval1) atomic_or(&data[qpos0 + 1], qval1);
         }
 	barrier(CLK_LOCAL_MEM_FENCE);
-	if ((start32 + tid) * 32 <= start)
-	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
 	remainder = data[start / 32 - start32];
+	int write = (start32 + tid) * 32;
+	if (write <= start) {
+	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
+	    if (write + GROUP_SIZE * 32 <= start)
+	    {
+	        output[start32 + tid + GROUP_SIZE] = as_int(as_char4(data[tid + GROUP_SIZE]).wzyx);
+	        data[tid + GROUP_SIZE] = 0;
+	    }
+    }
     }
     if (pos < bs)
     {
@@ -2279,9 +2287,16 @@ void clRiceEncoding(
 	    if (qpos1 && qval1) atomic_or(&data[qpos0 + 1], qval1);
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
-	if ((start32 + tid) * 32 <= start)
-	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
 	remainder = data[start / 32 - start32];
+	int write = (start32 + tid) * 32;
+	if (write <= start) {
+	    output[start32 + tid] = as_int(as_char4(data[tid]).wzyx);
+	    if (write + GROUP_SIZE * 32 <= start)
+	    {
+	        output[start32 + tid + GROUP_SIZE] = as_int(as_char4(data[tid + GROUP_SIZE]).wzyx);
+	        data[tid + GROUP_SIZE] = 0;
+	    }
+    }
     }
     //   if (tid == 0 && start != task.encodingOffset - task.headerLen + task.size)
 	//printf("size mismatch: %d != %d\n", start, task.encodingOffset - task.headerLen + task.size);
