@@ -1,0 +1,49 @@
+---
+name: release-linux
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake libtool-bin
+      - name: Apply Patches
+        run: ./git_init.sh
+      - name: Publish CUERipper.Avalonia
+        run: ./publish_linux64.sh
+      - name: Get CUETools Version
+        id: get_version
+        run: |
+          PRODUCTVER=$(grep 'CUEToolsVersion =' CUETools.Processor/CUESheet.cs | awk '{print $6}' | tr -d '";\r')
+          echo "CUETools version: $PRODUCTVER"
+          echo "CUETOOLS_VERSION=$PRODUCTVER" >> $GITHUB_ENV
+      - name: Package CUERipper.Avalonia
+        run: ./package_linux64.sh
+      - name: Add artifacts to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CUETools ${{ env.CUETOOLS_VERSION }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          tag_name: ${{ github.ref_name }}
+          files: |
+            CUERipper.Linux64_${{ env.CUETOOLS_VERSION }}.tar.gz
+            CUERipper.Linux64_${{ env.CUETOOLS_VERSION }}.tar.gz.sha256
+

@@ -1,0 +1,338 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:uc="using:CUERipper.Avalonia.Views.UserControls"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
+        x:Class="CUERipper.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/cue2.ico"
+		Width="1024"
+		Height="685"
+        Classes.busy="{Binding RipSession.IsStopping}"
+        Title="CUERipper 2.2.6">
+	<Window.Styles>
+		<Style Selector="Window.busy">
+			<Setter Property="Cursor" Value="Wait"/>
+		</Style>
+	</Window.Styles>
+	<SplitView IsPaneOpen="{Binding SplitPaneOpen}"
+			   PanePlacement="Right"
+			   DisplayMode="CompactOverlay"
+			   OpenPaneLength="420"
+			   CompactPaneLength="38"
+			   PaneClosing="OnSplitViewPaneClosing">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="30"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="340"/>
+			</Grid.ColumnDefinitions>
+		
+			<StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+				<Image Name="imageAlbumCover" Source="{Binding CoverViewer.CurrentCover, Converter={StaticResource AvaloniaBitmap}}" Width="96" Height="96" Stretch="Uniform" Margin="12"/>
+				<StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20,0,40,0">
+					<TextBlock Name="textAlbumTitle" Text="{Binding MetaGrid.AlbumTitle}"/>
+					<TextBlock Name="textAlbumArtist" Text="{Binding MetaGrid.AlbumArtist}"/>
+					<TextBlock Name="textAlbumYear" Text="{Binding MetaGrid.AlbumYear}"/>
+					<TextBlock Name="textAlbumDisc" Text="{Binding MetaGrid.AlbumDisc}"/>
+				</StackPanel>
+			</StackPanel>
+			
+			<StackPanel Grid.Row="0" Grid.Column="1" Margin="0,7,7,0">
+				<ComboBox Name="comboBoxDiscDrives"
+						AutomationProperties.Name="Disc drives"
+						IsEnabled="{Binding !RipSession.IsRipping}"
+						ItemsSource="{Binding DiscDrives}"
+						SelectedItem="{Binding SelectedDrive}"
+						HorizontalAlignment="Stretch"
+						Margin="5,5"/>
+				<ComboBox Name="comboBoxAlbumReleases"
+						AutomationProperties.Name="Album releases"
+						IsEnabled="{Binding RipSession.IsDiscIdle}"
+						ItemsSource="{Binding AlbumReleases}"
+						SelectedItem="{Binding SelectedAlbum}"
+						HorizontalAlignment="Stretch"
+						Margin="5,5">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<Image Source="{Binding Icon, Converter={StaticResource AvaloniaBitmap}}" Width="12" Height="12" Margin="0,0,5,0"/>
+								<TextBlock Text="{Binding Name}"/>
+							</StackPanel>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+					<!-- Prevents resizing of the menu when scrolling through variable length items -->
+					<ComboBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel />
+						</ItemsPanelTemplate>
+					</ComboBox.ItemsPanel>
+				</ComboBox>
+			</StackPanel>
+					
+			<TabControl Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+				<TabItem Header="{Binding HeaderTracks}" FontSize="20">
+					<uc:TrackGrid DataContext="{Binding TrackGrid}" />
+				</TabItem>
+				<TabItem Header="{Binding HeaderMetadata}" FontSize="20">
+					<uc:MetaGrid DataContext="{Binding MetaGrid}" />
+				</TabItem>
+				<TabItem Header="Cover Art" FontSize="20">
+					<uc:CoverViewer DataContext="{Binding CoverViewer}" />
+				</TabItem>
+			</TabControl>
+
+			<Separator Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+					Margin="0" 
+					Opacity="0.2"/>
+
+			<Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
+				<StackPanel Orientation="Horizontal">
+					<Button Name="buttonUpdate"
+							Command="{Binding ShowUpdateCommand}"
+							IsVisible="{Binding UpdateAvailable}"
+							IsEnabled="{Binding !RipSession.IsRipping}"
+							HorizontalContentAlignment="Center"
+							Width="24"
+							Background="Transparent">
+						<ToolTip.Tip>
+							New update available for download!
+						</ToolTip.Tip>
+						<Image Source="{Binding IconUpdate, Converter={StaticResource AvaloniaBitmap}}" Width="18" Height="18"/>
+					</Button>
+					<TextBlock Name="lblStatus" Text="{Binding RipSession.Status}" Margin="5" VerticalAlignment="Center"/>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+					<StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+						<ProgressBar Minimum="0" Maximum="100" Value="{Binding RipSession.ReadingProgress}" Width="150" HorizontalAlignment="Right" Margin="0,8,3,3">
+							<ToolTip.Tip>
+								Progress of the current section being read from the Audio CD.
+							</ToolTip.Tip>
+						</ProgressBar>
+						<ProgressBar Minimum="0" Maximum="100" Value="{Binding RipSession.TotalProgress}" Width="150" HorizontalAlignment="Right" Margin="3">
+							<ToolTip.Tip>
+								Total progress of the Audio CD currently being ripped.
+							</ToolTip.Tip>
+						</ProgressBar>					
+					</StackPanel>
+					<Button Name="buttonGo"
+							AutomationProperties.Name="Start ripping"
+							Command="{Binding RipSession.StartCommand}"
+							Content="Start"
+							IsVisible="{Binding !RipSession.IsRipping}"
+							IsEnabled="{Binding RipSession.IsDiscIdle}"
+							HorizontalContentAlignment="Center"
+							Width="68"
+							Background="Transparent"/>
+					<Button Name="buttonAbort"
+							AutomationProperties.Name="Stop ripping"
+							Command="{Binding RipSession.AbortCommand}"
+							Content="Cancel"
+							IsVisible="{Binding RipSession.IsRipping}"
+							HorizontalContentAlignment="Center"
+							Width="68"
+							Background="Transparent"/>
+				</StackPanel>
+			</Grid>
+		</Grid>
+		<SplitView.Pane>
+			<StackPanel>
+				<Button Name="buttonTogglePane"
+						AutomationProperties.Name="Toggle advanced view"
+						Command="{Binding TogglePaneCommand}"
+						Content="{Binding TogglePaneGlyph}"
+						Margin="5,13,0,5"
+						Background="Transparent">
+					<ToolTip.Tip>
+						Show/hide an advanced view of the current drive and ripping information.
+					</ToolTip.Tip>
+				</Button>
+				<StackPanel Margin="38,-41,38,0" IsEnabled="{Binding SplitPaneOpen}">
+					<Grid ColumnDefinitions="* Auto Auto" RowDefinitions="Auto Auto">
+						<ComboBox Name="comboBoxDiscDrivesSidePane"
+							AutomationProperties.Name="Disc drives"
+							IsEnabled="{Binding !RipSession.IsRipping}"
+							ItemsSource="{Binding DiscDrives}"
+							SelectedItem="{Binding SelectedDrive}"
+							HorizontalAlignment="Stretch"
+							Margin="5,5"
+							Grid.Row="0"
+							Grid.Column="0"/>
+						<Button Name="buttonRefreshDrives"
+							AutomationProperties.Name="Refresh disc drives"
+							Command="{Binding RefreshSessionCommand}"
+							IsEnabled="{Binding !RipSession.IsRipping}"
+							Grid.Row="0"
+							Grid.Column="1"
+							Background="Transparent">
+							<ToolTip.Tip>
+								Refreshes the list of disc drives and the content of the inserted disc.
+							</ToolTip.Tip>
+							<Image Source="{Binding IconRefreshDrives, Converter={StaticResource AvaloniaBitmap}}" Width="18" Height="18"/>
+						</Button>
+						<Button Name="buttonEject"
+								AutomationProperties.Name="Eject disc"
+								Command="{Binding EjectTrayCommand}"
+								IsEnabled="{Binding !RipSession.IsRipping}"
+								Grid.Row="0"
+								Grid.Column="2"
+								Background="Transparent">
+							<ToolTip.Tip>
+								Yeets the disc out of the drive.
+							</ToolTip.Tip>
+							<Image Source="{Binding IconEject, Converter={StaticResource AvaloniaBitmap}}" Width="18" Height="18"/>
+						</Button>
+						<ComboBox Name="comboBoxAlbumReleasesSidePane"
+								AutomationProperties.Name="Album releases"
+								IsEnabled="{Binding RipSession.IsDiscIdle}"
+								ItemsSource="{Binding AlbumReleases}"
+								SelectedItem="{Binding SelectedAlbum}"
+								HorizontalAlignment="Stretch"
+								Margin="5,5"
+								Grid.Row="1"
+								Grid.Column="0">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<StackPanel Orientation="Horizontal">
+										<Image Source="{Binding Icon, Converter={StaticResource AvaloniaBitmap}}" Width="12" Height="12" Margin="0,0,5,0"/>
+										<TextBlock Text="{Binding Name}"/>
+									</StackPanel>
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+							<!-- Prevents resizing of the menu when scrolling through variable length items -->
+							<ComboBox.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel />
+								</ItemsPanelTemplate>
+							</ComboBox.ItemsPanel>
+						</ComboBox>						
+						<Button Name="buttonAdvancedSearch"
+								AutomationProperties.Name="Advanced album search"
+								Command="{Binding AdvancedSearchCommand}"
+								IsEnabled="{Binding RipSession.IsDiscIdle}"
+								Grid.Row="1"
+								Grid.Column="1"
+								Background="Transparent">
+							<ToolTip.Tip>
+								Advanced meta information search, takes longer than the default search.
+							</ToolTip.Tip>
+							<Image Source="{Binding IconAdvancedSearch, Converter={StaticResource AvaloniaBitmap}}" Width="18" Height="18"/>
+						</Button>
+						<Button Name="buttonResetSearch"
+								AutomationProperties.Name="Reset album search"
+								Command="{Binding ResetSearchCommand}"
+								IsEnabled="{Binding RipSession.IsDiscIdle}"
+								Grid.Row="1"
+								Grid.Column="2"
+								Background="Transparent">
+							<ToolTip.Tip>
+								Resets the release list to the initial search state.
+							</ToolTip.Tip>
+							<Image Source="{Binding IconResetSearch, Converter={StaticResource AvaloniaBitmap}}" Width="18" Height="18"/>
+						</Button>
+					</Grid>
+
+					<Separator Margin="0, 25, 0, 10" Opacity="0.1"/>
+
+					<uc:EncodingTabContainer Name="encodingTabContainer"
+											 DataContext="{Binding EncodingTabs}" />
+
+					<Separator Margin="0, 25" Opacity="0.1"/>
+
+					<uc:DriveSettingSection Name="driveSettingSection"
+										   DataContext="{Binding DriveSettings}" />
+
+					<Separator Margin="0, 25" Opacity="0.1"/>
+
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+
+						<Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+							Name="buttonPathFormat"
+							AutomationProperties.Name="Open path format window"
+							Command="{Binding ShowPathFormatCommand}"
+							Content="{Binding OutputPath}"
+							IsEnabled="{Binding !RipSession.IsRipping}"
+							Margin="5,0,0,5" 
+							HorizontalAlignment="Stretch" 
+							Background="Transparent"
+							ToolTip.Tip="{Binding OutputPath}"/>
+
+						<ProgressBar Grid.Row="1" Grid.Column="0"
+								MinWidth="0"
+								Minimum="0"
+								Maximum="100"
+								Value="{Binding RipSession.ReadingProgress}"
+								Margin="5"
+								Height="18">
+							<ToolTip.Tip>
+								Progress of the current section being read from the Audio CD.
+							</ToolTip.Tip>
+						</ProgressBar>
+						
+						<ProgressBar Grid.Row="1" Grid.Column="1"
+								MinWidth="0"
+								Minimum="0"
+								Maximum="100"
+								Value="{Binding RipSession.ErrorProgress}"
+								Margin="5"
+								Height="18"
+								Foreground="DarkRed">
+							<ToolTip.Tip>
+								Amount of errors encountered while ripping the Audio CD.
+							</ToolTip.Tip>
+						</ProgressBar>
+
+						<ProgressBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+								MinWidth="0" 
+								Minimum="0" 
+								Maximum="100" 
+								Value="{Binding RipSession.TotalProgress}"
+								ShowProgressText="True" 
+								Margin="5"
+								Height="18">
+							<ToolTip.Tip>
+								Total progress of the Audio CD currently being ripped.
+							</ToolTip.Tip>
+						</ProgressBar>
+
+						<StackPanel Grid.Row="1" Grid.Column="2" Grid.RowSpan="2"
+								Orientation="Horizontal">
+							<Button Name="buttonGoSidePane"
+									AutomationProperties.Name="Start ripping"
+									Command="{Binding RipSession.StartCommand}"
+									Content="Start"
+									IsVisible="{Binding !RipSession.IsRipping}"
+									IsEnabled="{Binding RipSession.IsDiscIdle}"
+									Width="68"
+									HorizontalContentAlignment="Center"/>
+							<Button Name="buttonAbortSidePane"
+									AutomationProperties.Name="Stop ripping"
+									Command="{Binding RipSession.AbortCommand}"
+									Content="Cancel"
+									IsVisible="{Binding RipSession.IsRipping}"
+									Width="68"
+									HorizontalContentAlignment="Center"/>
+						</StackPanel>
+					</Grid>
+				</StackPanel>
+			</StackPanel>
+		</SplitView.Pane>
+	</SplitView>
+</Window>

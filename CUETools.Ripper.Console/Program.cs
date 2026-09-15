@@ -70,16 +70,19 @@ namespace CUETools.ConsoleRipper
 	{
 		static void Usage()
 		{
-			string drives = "";
 			char[] drivesAvailable = CDDrivesList.DrivesAvailable();
-			for (int i = 0; i < drivesAvailable.Length; i++)
-				drives += string.Format("{0}: ", drivesAvailable[i]);
+			if (drivesAvailable.Length == 0)
+			{
+				Console.WriteLine("Warning: No CD drive detected.");
+				Console.WriteLine();
+			}
+
 			Console.WriteLine("Usage    : CUERipper.exe <options>");
 			Console.WriteLine();
 			Console.WriteLine("-S, --secure             secure mode, read each block twice (default);");
 			Console.WriteLine("-B, --burst              burst (1 pass) mode;");
 			Console.WriteLine("-P, --paranoid           maximum level of error correction;");
-			Console.WriteLine("-D, --drive <letter>     use a specific CD drive, e.g. {0};", drives);
+			Console.WriteLine("-D, --drive <letter>     use a specific CD drive, e.g. {0};", string.Join(", ", drivesAvailable));
 			Console.WriteLine("-O, --offset <samples>   use specific drive read offset;");
 			Console.WriteLine("-C, --c2mode <int>       use specific C2ErrorMode, 0 (None), 1 (Mode294), 2 (Mode296), 3 (Auto);");
 			Console.WriteLine("-T, --test               detect read command;");

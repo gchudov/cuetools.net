@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
+#if NETSTANDARD2_0
+using CUETools.Interop;
+#endif
 
 namespace CUETools.Codecs.libmp3lame
 {
@@ -52,15 +53,44 @@ namespace CUETools.Codecs.libmp3lame
             var myFolder = System.IO.Path.GetDirectoryName(myPath);
             var is64 = IntPtr.Size == 8;
             var subfolder = is64 ? "x64" : "win32";
-#if NET47
-            IntPtr Dll = LoadLibrary(System.IO.Path.Combine(myFolder, subfolder, DllName + ".dll"));
+
+#if NET47 || NETSTANDARD2_0
+            var dllPath = System.IO.Path.Combine(myFolder, subfolder, DllName);
 #else
-            IntPtr Dll = LoadLibrary(System.IO.Path.Combine(System.IO.Path.Combine(myFolder, subfolder), DllName + ".dll"));
+            var dllPath = System.IO.Path.Combine(System.IO.Path.Combine(myFolder, subfolder), DllName);
 #endif
-            if (Dll == IntPtr.Zero)
-                Dll = LoadLibrary(DllName + ".dll");
-            if (Dll == IntPtr.Zero)
-                throw new DllNotFoundException();
+
+#if NETSTANDARD2_0
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                WinDllCheck(dllPath);
+            }
+            else
+            {
+                LinDllCheck(dllPath);
+            }
+#else
+            WinDllCheck(dllPath);
+#endif
         }
+
+        static void WinDllCheck(string dllPath)
+        {
+            IntPtr lib = LoadLibrary(dllPath + ".dll");
+
+            if (lib == IntPtr.Zero) lib = LoadLibrary(DllName + ".dll");
+            if (lib == IntPtr.Zero) throw new DllNotFoundException(DllName);
+        }
+
+#if NETSTANDARD2_0
+        static void LinDllCheck(string dllPath)
+        {
+            IntPtr lib = Linux.dlopen(dllPath + ".so", Linux.RTLD_LOCAL | Linux.RTLD_LAZY);
+
+            if (lib == IntPtr.Zero) throw new DllNotFoundException(DllName);
+
+            Linux.dlclose(lib);
+        }
+#endif
     }
 }

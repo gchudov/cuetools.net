@@ -1,5 +1,9 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
+#if NETSTANDARD2_0
+using CUETools.Interop;
+#endif
 
 namespace CUETools.Codecs.libFLAC
 {
@@ -53,7 +57,7 @@ namespace CUETools.Codecs.libFLAC
         internal static extern int FLAC__stream_decoder_process_until_end_of_metadata(IntPtr decoder);
 
         [DllImport(DllName, CallingConvention = libFLACCallingConvention)]
-        internal static extern  FLAC__StreamDecoderInitStatus FLAC__stream_decoder_init_stream(
+        internal static extern FLAC__StreamDecoderInitStatus FLAC__stream_decoder_init_stream(
             IntPtr decoder,
             FLAC__StreamDecoderReadCallback read_callback,
             FLAC__StreamDecoderSeekCallback seek_callback,
@@ -163,18 +167,52 @@ namespace CUETools.Codecs.libFLAC
             var myFolder = System.IO.Path.GetDirectoryName(myPath);
             var is64 = IntPtr.Size == 8;
             var subfolder = is64 ? "x64" : "win32";
-#if NET47
-            IntPtr Dll = LoadLibrary(System.IO.Path.Combine(myFolder, subfolder, DllName + ".dll"));
+
+#if NET47 || NETSTANDARD2_0
+            var dllPath = System.IO.Path.Combine(myFolder, subfolder, DllName);
 #else
-            IntPtr Dll = LoadLibrary(System.IO.Path.Combine(System.IO.Path.Combine(myFolder, subfolder), DllName + ".dll"));
+            var dllPath = System.IO.Path.Combine(System.IO.Path.Combine(myFolder, subfolder), DllName);
 #endif
-            if (Dll == IntPtr.Zero)
-                Dll = LoadLibrary(DllName + ".dll");
-            if (Dll == IntPtr.Zero)
-                throw new DllNotFoundException();
-            IntPtr addr = GetProcAddress(Dll, "FLAC__VERSION_STRING");
+
+#if NETSTANDARD2_0
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                WinDllCheck(dllPath);
+            }
+            else
+            {
+                LinDllCheck(dllPath);
+            }
+#else
+            WinDllCheck(dllPath);
+#endif
+        }
+
+        static void WinDllCheck(string dllPath)
+        {
+            IntPtr lib = LoadLibrary(dllPath + ".dll");
+
+            if (lib == IntPtr.Zero) lib = LoadLibrary(DllName + ".dll");
+            if (lib == IntPtr.Zero) throw new DllNotFoundException(DllName);
+
+            IntPtr addr = GetProcAddress(lib, "FLAC__VERSION_STRING");
             IntPtr ptr = Marshal.ReadIntPtr(addr);
             version = Marshal.PtrToStringAnsi(ptr);
         }
-    };
+
+#if NETSTANDARD2_0
+        static void LinDllCheck(string dllPath)
+        {
+            IntPtr lib = Linux.dlopen(dllPath + ".so", Linux.RTLD_LOCAL | Linux.RTLD_LAZY);
+
+            if (lib == IntPtr.Zero) throw new DllNotFoundException(DllName);
+
+            IntPtr addr = Linux.dlsym(lib, "FLAC__VERSION_STRING");
+            IntPtr ptr = Marshal.ReadIntPtr(addr);
+            version = Marshal.PtrToStringAnsi(ptr);
+
+            Linux.dlclose(lib);
+        }
+#endif
+    }
 }

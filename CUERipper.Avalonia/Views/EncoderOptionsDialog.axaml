@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CUERipper.Avalonia.EncoderOptionsDialog"
+		x:DataType="vm:EncoderOptionsDialogViewModel"
+		Title="Encoder options"
+		Icon="/Assets/cue2.ico"
+        WindowStartupLocation="CenterOwner"
+		SizeToContent="WidthAndHeight"
+		CanResize="False">
+	<DataGrid AutoGenerateColumns="False"
+			HeadersVisibility="None"
+			ItemsSource="{Binding Options}">
+		<DataGrid.Columns>
+			<DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" />
+			<DataGridTemplateColumn Header="Value">
+				<DataGridTemplateColumn.CellTemplate>
+					<DataTemplate>
+						<StackPanel MinWidth="200">
+							<TextBox Text="{Binding Value}"
+								IsVisible="{Binding !IsCombo}"
+								IsReadOnly="{Binding IsReadOnly}"
+								Margin="5" />
+							<ComboBox ItemsSource="{Binding Options}"
+								SelectedItem="{Binding Value}"
+								HorizontalAlignment="Stretch"
+								IsVisible="{Binding IsCombo}"
+								IsEnabled="{Binding !IsReadOnly}"
+								Margin="5" />
+						</StackPanel>
+					</DataTemplate>
+				</DataGridTemplateColumn.CellTemplate>
+			</DataGridTemplateColumn>
+			<DataGridTemplateColumn Header="Value">
+				<DataGridTemplateColumn.CellTemplate>
+					<DataTemplate>
+						<Button Content="❌"
+							Command="{Binding ResetCommand}"
+							Background="Transparent">
+							<ToolTip.Tip>
+								Reset value to default.
+							</ToolTip.Tip>
+						</Button>
+					</DataTemplate>
+				</DataGridTemplateColumn.CellTemplate>
+			</DataGridTemplateColumn>
+		</DataGrid.Columns>
+	</DataGrid>
+</Window>

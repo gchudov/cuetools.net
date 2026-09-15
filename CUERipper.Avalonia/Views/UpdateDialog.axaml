@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CUERipper.Avalonia.UpdateDialog"
+		x:DataType="vm:UpdateDialogViewModel"
+        Title="Update available"
+        Icon="/Assets/cue2.ico"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="False">
+	<StackPanel Margin="20">
+		<StackPanel Orientation="Horizontal">
+			<TextBlock Text="{Binding Description}"
+					Margin="10,0"
+					Width="800"
+					TextWrapping="Wrap"/>
+			<Border Width="1" Background="Gray" VerticalAlignment="Stretch" Margin="5,0" />
+			<StackPanel Orientation="Vertical" Margin="20,0,40,0">
+				<TextBlock Text="{Binding Version}"/>
+				<TextBlock Text="{Binding Filesize}"/>
+				<TextBlock Text="{Binding Author}"/>
+				<TextBlock Text="{Binding Date}"/>
+				<ProgressBar Value="{Binding DownloadProgress}"
+						IsVisible="{Binding IsDownloading}"
+						ToolTip.Tip="{Binding ToolTipDownloadProgress}"
+						MinWidth="0"
+						Minimum="0"
+						Maximum="100"
+						ShowProgressText="True"
+						Margin="5"
+						Height="18"/>
+				<StackPanel Orientation="Horizontal">
+					<Button Content="{Binding TextInstall}"
+							Command="{Binding InstallCommand}"
+							HorizontalContentAlignment="Center"
+							VerticalContentAlignment="Center"
+							Width="75"
+							Margin="5"/>
+					<Button Content="{Binding TextCancel}"
+							Command="{Binding CancelCommand}"
+							HorizontalContentAlignment="Center"
+							VerticalContentAlignment="Center"
+							Width="75"
+							Margin="5"/>
+				</StackPanel>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+</Window>

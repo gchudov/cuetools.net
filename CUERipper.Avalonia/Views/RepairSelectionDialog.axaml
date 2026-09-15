@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CUERipper.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CUERipper.Avalonia.RepairSelectionDialog"
+        x:DataType="vm:RepairSelectionDialogViewModel"
+        Title="Repair selection"
+        Icon="/Assets/cue2.ico"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="False">
+	<StackPanel Margin="20">
+		<TextBlock Margin="0,5">Select the best match:</TextBlock>
+		<StackPanel Orientation="Horizontal">
+			<StackPanel Orientation="Vertical">
+				<ListBox ItemsSource="{Binding Paths}"
+						 SelectedIndex="{Binding Index}"/>
+				<StackPanel Orientation="Horizontal">
+					<Button Content="Ok"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Width="75"
+						Margin="5"
+						Command="{Binding ConfirmCommand}" />
+					<Button Content="Cancel"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Width="75"
+						Margin="5"
+						Command="{Binding CancelCommand}" />
+				</StackPanel>
+			</StackPanel>
+			<TextBlock Text="{Binding Description}" Margin="10,0"/>
+		</StackPanel>
+	</StackPanel>
+</Window>

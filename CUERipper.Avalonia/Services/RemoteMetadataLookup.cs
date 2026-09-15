@@ -1,0 +1,43 @@
+#region Copyright (C) 2026 Max Visser
+/*
+    Copyright (C) 2026 Max Visser
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, see <https://www.gnu.org/licenses/>.
+*/
+#endregion
+using CUERipper.Avalonia.Services.Abstractions;
+using CUETools.CDImage;
+using CUETools.CTDB;
+using CUETools.Processor;
+using System.Collections.Generic;
+
+namespace CUERipper.Avalonia.Services
+{
+
+    public sealed class RemoteMetadataLookup : IRemoteMetadataLookup
+    {
+        public List<CUEMetadataEntry> Lookup(string applicationName
+            , CDImageLayout toc
+            , CUEConfig config
+            , CTDBMetadataSearch metadataSearch
+            ) => CUESheet.LookupRemoteAlbumInfo(applicationName
+                , toc
+                , config
+                , useCTDB: true
+                , metadataSearch
+                , showProgress: (_, _) => { }
+                , checkStop: () => { }
+        );
+    }
+}

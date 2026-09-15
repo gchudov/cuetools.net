@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:CUERipper.Avalonia.ViewModels.UserControls"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="CUERipper.Avalonia.Views.UserControls.MetaGrid"
+			 x:DataType="vm:MetaGridViewModel">
+	<DataGrid Name="metaGrid"
+		AutoGenerateColumns="False"
+		CanUserResizeColumns="True"
+		SelectionMode="Extended"
+		HeadersVisibility="None"
+		CanUserSortColumns="False"
+		IsReadOnly="{Binding IsReadOnly}"
+		ItemsSource="{Binding Metadata}">
+	</DataGrid>
+</UserControl>

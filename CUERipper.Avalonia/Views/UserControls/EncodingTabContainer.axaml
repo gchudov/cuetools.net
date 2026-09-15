@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CUERipper.Avalonia.ViewModels.UserControls"
+             xmlns:uc="using:CUERipper.Avalonia.Views.UserControls"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="CUERipper.Avalonia.Views.UserControls.EncodingTabContainer"
+			 x:DataType="vm:EncodingTabContainerViewModel">
+	<Panel IsEnabled="{Binding !IsReadOnly}">
+		<TabControl Padding="0"
+					ItemsSource="{Binding Tabs}"
+					SelectedItem="{Binding SelectedTab}">
+			<TabControl.Styles>
+				<Style Selector="TabItem">
+					<Setter Property="MinHeight" Value="0"/>
+					<Setter Property="Padding" Value="10,4"/>
+					<Setter Property="VerticalContentAlignment" Value="Center"/>
+				</Style>
+			</TabControl.Styles>
+			<TabControl.ItemTemplate>
+				<DataTemplate x:DataType="vm:EncodingSectionViewModel">
+					<TextBlock Text="{Binding SectionHeader}" FontSize="20"/>
+				</DataTemplate>
+			</TabControl.ItemTemplate>
+			<TabControl.ContentTemplate>
+				<DataTemplate x:DataType="vm:EncodingSectionViewModel">
+					<uc:EncodingSection/>
+				</DataTemplate>
+			</TabControl.ContentTemplate>
+		</TabControl>
+		<StackPanel Orientation="Horizontal"
+					HorizontalAlignment="Right"
+					VerticalAlignment="Top">
+			<Button AutomationProperties.Name="Add album encoding"
+					Command="{Binding AddTabCommand}"
+					Content="+"
+					FontSize="20"
+					MinHeight="0"
+					Padding="10,4"
+					VerticalContentAlignment="Center"
+					Background="Transparent"/>
+			<Button AutomationProperties.Name="Remove selected album encoding"
+					Command="{Binding RemoveTabCommand}"
+					Content="-"
+					FontSize="20"
+					MinHeight="0"
+					Padding="10,4"
+					VerticalContentAlignment="Center"
+					Background="Transparent"/>
+		</StackPanel>
+	</Panel>
+</UserControl>
