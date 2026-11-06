@@ -14,16 +14,17 @@ namespace CUETools.CTDB.EACPlugin
 	{
 		private CUEToolsDB ctdb;
 		private int confidence, quality;
-		private string artist, title, agent, drivename;
+		private string artist, title, barcode, agent, drivename;
         private CTDBResponse resp;
 
-		public FormSubmitParity(CUEToolsDB ctdb, string agent, string drivename, int confidence, int quality, string artist, string title)
+		public FormSubmitParity(CUEToolsDB ctdb, string agent, string drivename, int confidence, int quality, string artist, string title, string barcode)
 		{
 			this.ctdb = ctdb;
 			this.confidence = confidence;
 			this.quality = quality;
 			this.artist = artist;
 			this.title = title;
+			this.barcode = barcode;
             this.agent = agent;
             this.drivename = drivename;
             this.InitializeComponent();
@@ -52,7 +53,7 @@ namespace CUETools.CTDB.EACPlugin
 #endif
                 this.ctdb.ContactDB(server, this.agent, this.drivename, true, true, CTDBMetadataSearch.None);
                 this.ctdb.DoVerify();
-                resp = this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title, null);
+                resp = this.ctdb.Submit(this.confidence, this.quality, this.artist, this.title, this.barcode);
             } else
             {
                 var url = resp.updateurl;

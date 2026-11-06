@@ -71,6 +71,8 @@
       <DependentUpon>ImagePreview.cs</DependentUpon>
     </Compile>
     <Compile Include="InternetImage.cs" />
+    <Compile Include="BarcodePrompt.cs" />
+    <Compile Include="BarcodeMetadataFilter.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Options.cs">

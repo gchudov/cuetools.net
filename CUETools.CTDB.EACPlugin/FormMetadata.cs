@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using CUETools.CTDB.EACPlugin.Properties;
 using System.Net;
 using System.IO;
+using System.Threading;
 using AudioDataPlugIn;
 
 namespace CUETools.CTDB.EACPlugin
@@ -19,15 +20,40 @@ namespace CUETools.CTDB.EACPlugin
         private bool cdinfo, cover;
         private bool m_coverart_search_stopped = false;
         private ImagePreview m_currently_selected;
+        private string barcode;
+        private CTDBResponseMeta autoSelectedMeta;
+        private readonly ManualResetEvent barcodeReady;
+        private bool lookupStarted;
 
         public FormMetadata(CUEToolsDB ctdb, string agent, bool cdinfo, bool cover)
+            : this(ctdb, agent, cdinfo, cover, null, false)
+        {
+        }
+
+        internal FormMetadata(CUEToolsDB ctdb, string agent, bool cdinfo, bool cover, string barcode, bool waitForBarcode)
         {
             this.ctdb = ctdb;
             this.agent = agent;
             this.cdinfo = cdinfo;
             this.cover = cover;
+            this.barcode = barcode;
+            this.barcodeReady = waitForBarcode ? new ManualResetEvent(false) : null;
             this.InitializeComponent();
+            this.Opacity = barcode == null ? 1 : 0;
             this.Size = Options.MetadataWindowSize;
+        }
+
+        internal void StartLookup()
+        {
+            if (lookupStarted) return;
+            lookupStarted = true;
+            backgroundWorker1.RunWorkerAsync();
+        }
+
+        internal void SetBarcode(string value)
+        {
+            barcode = value;
+            if (barcodeReady != null) barcodeReady.Set();
         }
 
         public CTDBResponseMeta Meta
@@ -35,8 +61,8 @@ namespace CUETools.CTDB.EACPlugin
             get
             {
                 return this.DialogResult != DialogResult.Cancel &&
-                    listView1.SelectedItems.Count > 0 ?
-                    listView1.SelectedItems[0].Tag as CTDBResponseMeta : null;
+                    (autoSelectedMeta != null || listView1.SelectedItems.Count > 0) ?
+                    autoSelectedMeta ?? listView1.SelectedItems[0].Tag as CTDBResponseMeta : null;
             }
         }
 
@@ -53,7 +79,7 @@ namespace CUETools.CTDB.EACPlugin
         private void FormMetadata_Load(object sender, EventArgs e)
         {
             this.Icon = Resources.ctdb;
-            this.backgroundWorker1.RunWorkerAsync();
+            this.StartLookup();
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
@@ -66,15 +92,20 @@ namespace CUETools.CTDB.EACPlugin
 #endif
             this.ctdb.ContactDB(server, this.agent, null, false, false,
                 AudioDataPlugIn.Options.MetadataSearch);
+            if (barcodeReady != null) barcodeReady.WaitOne();
+            var allMetadata = new List<CTDBResponseMeta>(ctdb.Metadata);
+            var displayMetadata = string.IsNullOrEmpty(barcode) ? allMetadata : BarcodeMetadataFilter.FilterOrOriginal(allMetadata, barcode);
+            if (BarcodeMetadataFilter.HasSingleMatch(displayMetadata, barcode))
+                autoSelectedMeta = displayMetadata[0];
             if (this.cdinfo)
             {
-                foreach (var metadata in ctdb.Metadata)
+                foreach (var metadata in displayMetadata)
                 {
                     backgroundWorker1.ReportProgress(0, metadata);
                 }
             }
             var knownUrls = new List<string>();
-            foreach (var metadata in ctdb.Metadata)
+            foreach (var metadata in displayMetadata)
             {
                 if (metadata.coverart == null || !this.cover)
                     continue;
@@ -206,6 +237,12 @@ namespace CUETools.CTDB.EACPlugin
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (autoSelectedMeta != null)
+            {
+                this.DialogResult = DialogResult.OK;
+                return;
+            }
+            this.Opacity = 1;
             this.progressBar1.Visible = false;
             this.button1.Visible = true;
             this.button2.Text = "OK";
@@ -343,6 +380,8 @@ namespace CUETools.CTDB.EACPlugin
             }
 
             Options.MetadataWindowSize = this.Size;
+            if (barcodeReady != null)
+                barcodeReady.Close();
         }
     }
 }

@@ -46,7 +46,23 @@ namespace MetadataPlugIn
             TOC[1][0].Start = 0U;
 
             var ctdb = new CUEToolsDB(TOC, null);
-            var form = new CUETools.CTDB.EACPlugin.FormMetadata(ctdb, "EAC" + data.HostVersion + " CTDB 2.2.6", cdinfo, cover);
+            var promptForBarcode = Options.PromptForBarcode;
+            var form = new CUETools.CTDB.EACPlugin.FormMetadata(ctdb, "EAC" + data.HostVersion + " CTDB 2.2.7", cdinfo, cover, null, promptForBarcode);
+            string enteredBarcode = null;
+            if (promptForBarcode)
+            {
+                form.StartLookup();
+                try
+                {
+                    using (var prompt = new CUETools.CTDB.EACPlugin.BarcodePrompt())
+                        if (prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            enteredBarcode = prompt.Barcode;
+                }
+                finally
+                {
+                    form.SetBarcode(string.IsNullOrEmpty(enteredBarcode) ? null : enteredBarcode);
+                }
+            }
             form.ShowDialog();
             var meta = form.Meta;
             if (meta == null)
@@ -186,7 +202,7 @@ namespace MetadataPlugIn
 
         public string GetPluginName()
         {
-            return "CUETools DB Metadata Plugin V2.2.6";
+            return "CUETools DB Metadata Plugin V2.2.7";
         }
 
         public void ShowOptions()
