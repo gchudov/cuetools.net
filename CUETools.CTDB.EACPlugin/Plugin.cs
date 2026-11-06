@@ -286,7 +286,8 @@ namespace AudioDataPlugIn
                     (int)(100 * (1.0 - Math.Log(m_suspicious + 1) / Math.Log(TOC.AudioLength + 1))) :
                     (int)( 49 * (1.0 - Math.Log(m_suspicious + 1) / Math.Log(TOC.AudioLength + 1))),
                     m_data.AlbumArtist,
-                    m_data.AlbumTitle);
+                    m_data.AlbumTitle,
+                    GetBarcode(m_data.ExtendedDiscInformation));
                 form.ShowDialog();
                 sw.WriteLine("[CTDB TOCID: {0}] {1}",
                     TOC.TOCID,
@@ -318,6 +319,24 @@ namespace AudioDataPlugIn
             else
                 sw.WriteLine("Some tracks have been skipped");
             return sw.ToString();
+        }
+
+        internal static string GetBarcode(string extendedDiscInformation)
+        {
+            if (string.IsNullOrEmpty(extendedDiscInformation))
+                return null;
+
+            using (var reader = new StringReader(extendedDiscInformation))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                    if (line.StartsWith("Barcode:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string barcode = line.Substring("Barcode:".Length).Trim();
+                        return barcode.Length == 0 ? null : barcode;
+                    }
+            }
+            return null;
         }
     }
 

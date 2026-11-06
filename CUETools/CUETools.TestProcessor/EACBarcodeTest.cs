@@ -82,5 +82,15 @@ namespace CUETools.TestProcessor
                 AudioDataPlugIn.Options.PromptForBarcode = original;
             }
         }
+
+        [TestMethod]
+        public void SubmissionBarcodeIsReadFromExtendedDiscInformation()
+        {
+            Assert.AreEqual("0012345", AudioDataPlugIn.AudioDataTransfer.GetBarcode("Comment: rip\r\nBarcode: 0012345\r\n"));
+            Assert.IsNull(AudioDataPlugIn.AudioDataTransfer.GetBarcode("Barcode: \r\n"));
+            Assert.IsNull(AudioDataPlugIn.AudioDataTransfer.GetBarcode("Comment: no barcode"));
+        }
+
+        [TestMethod]
     }
 }

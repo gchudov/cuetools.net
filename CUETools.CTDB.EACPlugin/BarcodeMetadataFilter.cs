@@ -21,5 +21,6 @@ namespace CUETools.CTDB.EACPlugin
             return !string.IsNullOrEmpty(barcode) && filtered.Count == 1 &&
                 string.Equals(filtered[0].barcode, barcode, StringComparison.Ordinal);
         }
+
     }
 }
