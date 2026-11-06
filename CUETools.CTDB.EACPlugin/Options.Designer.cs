@@ -46,6 +46,7 @@ namespace AudioDataPlugIn
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.radioButtonCoversSmall = new System.Windows.Forms.RadioButton();
             this.radioButtonCoversLarge = new System.Windows.Forms.RadioButton();
+            this.checkBoxPromptForBarcode = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -60,7 +61,7 @@ namespace AudioDataPlugIn
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(205, 20);
             this.label1.TabIndex = 0;
-            this.label1.Text = "CUETools DB Plugin V2.2.6";
+            this.label1.Text = "CUETools DB Plugin V2.2.7";
             // 
             // label2
             // 
@@ -252,6 +253,13 @@ namespace AudioDataPlugIn
             this.radioButtonCoversLarge.TabStop = true;
             this.radioButtonCoversLarge.Text = "Large";
             this.radioButtonCoversLarge.UseVisualStyleBackColor = true;
+            this.checkBoxPromptForBarcode.AutoSize = true;
+            this.checkBoxPromptForBarcode.Location = new System.Drawing.Point(18, 338);
+            this.checkBoxPromptForBarcode.Name = "checkBoxPromptForBarcode";
+            this.checkBoxPromptForBarcode.Size = new System.Drawing.Size(150, 24);
+            this.checkBoxPromptForBarcode.TabIndex = 20;
+            this.checkBoxPromptForBarcode.Text = "Prompt for barcode";
+            this.checkBoxPromptForBarcode.UseVisualStyleBackColor = true;
             // 
             // Options
             // 
@@ -259,8 +267,9 @@ namespace AudioDataPlugIn
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(773, 354);
+            this.ClientSize = new System.Drawing.Size(773, 380);
             this.Controls.Add(this.groupBox3);
+            this.Controls.Add(this.checkBoxPromptForBarcode);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
@@ -308,5 +317,6 @@ namespace AudioDataPlugIn
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.RadioButton radioButtonCoversSmall;
         private System.Windows.Forms.RadioButton radioButtonCoversLarge;
+        private System.Windows.Forms.CheckBox checkBoxPromptForBarcode;
     }
 }

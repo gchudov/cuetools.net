@@ -30,6 +30,7 @@ namespace AudioDataPlugIn
 		private static CTDBMetadataSearch? metadataSearch = null;
         private static CTDBCoversSearch? coversSearch = null;
         private static CTDBCoversSize? coversSize = null;
+        private static bool? promptForBarcode = null;
         private static string optionsKey = @"SOFTWARE\CUETools\EACPugin";
 		public static CTDBMetadataSearch MetadataSearch
 		{
@@ -130,6 +131,29 @@ namespace AudioDataPlugIn
             }
         }
 
+        public static bool PromptForBarcode
+        {
+            get
+            {
+                if (!promptForBarcode.HasValue)
+                {
+                    try
+                    {
+                        using (var key = Registry.CurrentUser.OpenSubKey(optionsKey, false))
+                            promptForBarcode = key.GetValue("PromptForBarcode") as string == "True";
+                    }
+                    catch (Exception) { }
+                }
+                return promptForBarcode ?? false;
+            }
+            set
+            {
+                using (var key = Registry.CurrentUser.CreateSubKey(optionsKey))
+                    key.SetValue("PromptForBarcode", value.ToString());
+                promptForBarcode = value;
+            }
+        }
+
         public static Size MetadataWindowSize
         {
             get
@@ -180,6 +204,7 @@ namespace AudioDataPlugIn
             this.radioButtonCoversNone.Checked = CoversSearch == CTDBCoversSearch.None;
             this.radioButtonCoversLarge.Checked = CoversSize == CTDBCoversSize.Large;
             this.radioButtonCoversSmall.Checked = CoversSize == CTDBCoversSize.Small;
+            this.checkBoxPromptForBarcode.Checked = PromptForBarcode;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -193,6 +218,7 @@ namespace AudioDataPlugIn
             Options.CoversSearch = this.radioButtonCoversExtensive.Checked ? CTDBCoversSearch.Extensive
                 : this.radioButtonCoversPrimary.Checked ? CTDBCoversSearch.Primary
                 : CTDBCoversSearch.None;
+            Options.PromptForBarcode = this.checkBoxPromptForBarcode.Checked;
         }
     }
 }
