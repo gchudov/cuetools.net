@@ -43,7 +43,7 @@ namespace Bwg.Scsi
     /// <summary>
     /// 
     /// </summary>
-    public unsafe class Device : WinDev
+    public unsafe partial class Device : WinDev
     {
         #region Structures for DeviceIoControl
         [StructLayout(LayoutKind.Explicit)]
@@ -782,7 +782,11 @@ namespace Bwg.Scsi
 
         private CommandStatus SendCommand(Command cmd)
         {
+#if LINUX
+            return SendCommandLinux(cmd);
+#else
             return (m_ossize == 32) ? SendCommand32(cmd) : SendCommand64(cmd);
+#endif
         }
 
         private CommandStatus SendCommand64(Command cmd)
@@ -889,6 +893,11 @@ namespace Bwg.Scsi
 
         void QueryBufferSize()
         {
+#if LINUX
+            // Below Linux's normal optical transfer limit; enough for the reader's
+            // 16-sector audio+C2+subchannel blocks without large USB transfers.
+            m_MaximumTransferLength = 26 * 2048;
+#else
             IO_SCSI_CAPABILITIES f = new IO_SCSI_CAPABILITIES();
             f.Length = 23;
 
@@ -914,6 +923,7 @@ namespace Bwg.Scsi
                 //
                 m_MaximumTransferLength = 26 * 2048;
             }
+#endif
         }
 
         #endregion

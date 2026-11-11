@@ -75,15 +75,24 @@ namespace CUETools.ConsoleRipper
 		static void Usage()
 		{
 			string drives = "";
+#if LINUX
+			drives = string.Join(" ", OpticalDrives.Available());
+#else
 			char[] drivesAvailable = CDDrivesList.DrivesAvailable();
 			for (int i = 0; i < drivesAvailable.Length; i++)
 				drives += string.Format("{0}: ", drivesAvailable[i]);
+#endif
 			Console.WriteLine("Usage    : CUERipper.exe <options>");
 			Console.WriteLine();
 			Console.WriteLine("-S, --secure             secure mode, read each block twice (default);");
 			Console.WriteLine("-B, --burst              burst (1 pass) mode;");
 			Console.WriteLine("-P, --paranoid           maximum level of error correction;");
+#if LINUX
+			Console.WriteLine("-D, --drive <device>     use a CD drive, e.g. /dev/sr0; available: {0}", drives);
+			Console.WriteLine("--list-drives            list optical device paths without reading a disc");
+#else
 			Console.WriteLine("-D, --drive <letter>     use a specific CD drive, e.g. {0};", drives);
+#endif
 			Console.WriteLine("-O, --offset <samples>   use specific drive read offset;");
 			Console.WriteLine("-T, --test               detect read command;");
 			Console.WriteLine("--d8                     force D8h read command;");
@@ -102,6 +111,18 @@ namespace CUETools.ConsoleRipper
 
 		static void Main(string[] args)
 		{
+#if LINUX
+			if (args.Length == 1 && args[0] == "--list-drives")
+			{
+				foreach (string drive in OpticalDrives.Available()) Console.WriteLine(drive);
+				return;
+			}
+			if (args.Length == 1 && (args[0] == "--help" || args[0] == "-h"))
+			{
+				Usage();
+				return;
+			}
+#endif
 			Console.SetOut(Console.Error);
 			Console.WriteLine("CUERipper v2.1.8 Copyright (C) 2008-2021 Grigory Chudov");
 			Console.WriteLine("This is free software under the GNU GPLv3+ license; There is NO WARRANTY, to");
@@ -164,36 +185,61 @@ namespace CUETools.ConsoleRipper
 				if (!ok)
 				{
 					Usage();
+#if LINUX
+					Environment.ExitCode = 2;
+#endif
 					return;
 				}
 			}
 			
+#if LINUX
+			string[] drives;
+#else
 			char[] drives;
+#endif
 			if (driveLetter == null || driveLetter.Length < 1)
 			{
+#if LINUX
+				drives = OpticalDrives.Available();
+#else
 				drives = CDDrivesList.DrivesAvailable();
+#endif
 				if (drives.Length < 1)
 				{
 					Console.WriteLine("No CD drives found.");
+#if LINUX
+					Environment.ExitCode = 3;
+#endif
 					return;
 				}
 			}
 			else
 			{
+#if LINUX
+				drives = new[] { driveLetter };
+#else
 				drives = new char[1];
 				drives[0] = driveLetter[0];
+#endif
 			}
 
 #if !DEBUG
 			try
 #endif
 			{
+#if LINUX
+				using var audioSource = new CDDriveReader();
+#else
 				CDDriveReader audioSource = new CDDriveReader();
+#endif
 				audioSource.Open(drives[0]);
 				
 				if (audioSource.TOC.AudioTracks < 1)
 				{
 					Console.WriteLine("{0}: CD does not contain any audio tracks.", audioSource.Path);
+#if LINUX
+					Environment.ExitCode = 4;
+#endif
 					audioSource.Close();
 					return;
 				}
@@ -443,7 +489,11 @@ namespace CUETools.ConsoleRipper
 
 			    if (flac)
 			    {
+#if LINUX
+			        using var fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+#else
 			        var fileInfo = TagLib.File.Create(new TagLib.File.LocalFileAbstraction(destFile));
+#endif
 
 			        var xiph = (XiphComment)fileInfo.GetTag(TagTypes.Xiph);
 			        xiph.SetField("CUESHEET", cueWriter.ToString());
@@ -498,6 +548,9 @@ namespace CUETools.ConsoleRipper
 #if !DEBUG
 			catch (Exception ex)
 			{
+#if LINUX
+				Environment.ExitCode = 1;
+#endif
 				Console.WriteLine();
 				Console.WriteLine("Error: {0}", ex.Message);
 				Console.WriteLine("{0}", ex.StackTrace);

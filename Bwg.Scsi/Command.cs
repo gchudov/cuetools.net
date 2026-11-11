@@ -31,8 +31,15 @@ namespace Bwg.Scsi
 {
 	class Command : IDisposable
     {
+#if LINUX
+        internal static unsafe void RtlZeroMemory(IntPtr dest, int size)
+        {
+            new Span<byte>((void*)dest, size).Clear();
+        }
+#else
         [DllImport("ntdll.dll")]
         internal static extern void RtlZeroMemory(IntPtr dest, int size);
+#endif
 
         public enum CmdDirection
         {

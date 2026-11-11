@@ -52,7 +52,11 @@ namespace CUETools.Ripper.SCSI
 		Logger m_logger;
 		CDImageLayout _toc;
 		CDImageLayout _toc2;
+#if LINUX
+		string m_device_letter;
+#else
 		char m_device_letter;
+#endif
 		InquiryResult m_inqury_result;
 		int m_max_sectors;
 		int _timeout = 10;
@@ -196,7 +200,16 @@ namespace CUETools.Ripper.SCSI
 			}
 		}
 
+#if LINUX
 		public bool Open(char Drive)
+		{
+			throw new PlatformNotSupportedException("Use an optical device path, such as /dev/sr0.");
+		}
+
+		public bool Open(string Drive)
+#else
+		public bool Open(char Drive)
+#endif
 		{
 			Device.CommandStatus st;
 
@@ -209,7 +222,11 @@ namespace CUETools.Ripper.SCSI
 
 			m_device = new Device(m_logger);
 			if (!m_device.Open(m_device_letter))
+#if LINUX
+				throw new ReadCDException(Resource1.DeviceOpenError + ": " + WinDev.Win32ErrorToString(m_device.LastError));
+#else
 				throw new ReadCDException(Resource1.DeviceOpenError, Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()));
+#endif
 			//throw new ReadCDException(Resource1.DeviceOpenError + ": " + WinDev.Win32ErrorToString(m_device.LastError));
 
 			// Get device info

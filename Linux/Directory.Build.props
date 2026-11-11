@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <CueRipperBuildRoot Condition="'$(CueRipperBuildRoot)' == ''">$(MSBuildThisFileDirectory)build</CueRipperBuildRoot>
+    <BaseIntermediateOutputPath>$(CueRipperBuildRoot)/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(CueRipperBuildRoot)/bin/$(MSBuildProjectName)/</BaseOutputPath>
+  </PropertyGroup>
+</Project>
