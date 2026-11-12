@@ -351,6 +351,14 @@ namespace CUETools.Ripper.SCSI
 
 		private unsafe void LocateLastSector(int sec0, int sec1, int iTrack, int iIndex, ref int maxIndex, out int pos)
 		{
+#if LINUX
+			LocateLastSector(sec0, sec1, iTrack, iIndex, ref maxIndex, out pos, 0);
+		}
+
+		private unsafe void LocateLastSector(int sec0, int sec1, int iTrack, int iIndex, ref int maxIndex, out int pos, int readAttempt)
+		{
+			bool nearbyPosition = false;
+#endif
 			if (sec1 <= sec0)
 			{
 				pos = Math.Min(sec0, sec1);
@@ -443,6 +451,11 @@ namespace CUETools.Ripper.SCSI
 							continue;
 					}
 
+#if LINUX
+					// A valid checksum does not guarantee a fresh position: some USB
+					// drives repeat an earlier Q packet for every requested sector.
+					nearbyPosition |= sPos >= fsector - 8 && sPos <= lsector + 8;
+#endif
 					bool preemph = (ctl & 1) == 1;
 					bool dcp = (ctl & 2) == 2;
 					if (preemph)
@@ -465,7 +478,24 @@ namespace CUETools.Ripper.SCSI
 						return;
 					}
 				}
+#if LINUX
+			// Retry only this search point, not the whole recursive search. Keep
+			// the same CRC/track/position validation and reread fresh data each
+			// time; a persistently unusable response must still fail the rip.
+			if (readAttempt < 2 && (!nearbyPosition || sec1 > sec0 + 16))
+			{
+				if (_debugMessages)
+					Console.WriteLine("\nGap retry   : track {0}, sectors {1}-{2}, attempt {3}/3", iTrack, sec0, sec1, readAttempt + 2);
+				Thread.Sleep(25 * (readAttempt + 1));
+				LocateLastSector(sec0, sec1, iTrack, iIndex, ref maxIndex, out pos, readAttempt + 1);
+				return;
+			}
+			// Preserve the existing small position tolerance only when valid Q
+			// data was returned nearby, never for failed reads or bad checksums.
+			if (nearbyPosition && sec1 <= sec0 + 16)
+#else
 			if (sec1 <= sec0 + 16)
+#endif
 			{
 				pos = Math.Min(sec0, sec1);
 				return;

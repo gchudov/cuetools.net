@@ -35,7 +35,12 @@ entry is not itself a ripping failure. Results must still be reviewed in the log
 
 Software checks cover the native SCSI ABI, command layouts, sense errors, short
 audio transfers, non-optical device rejection, and sample-exact FLAC output after
-Unicode metadata/CUE/log tagging. They do not replace physical drive testing.
+Unicode metadata/CUE/log tagging. Gap checks replay stale Q packets captured from
+a Pioneer BDR-XS06 and inject invalid checksums/transport failures. Linux retries
+an unusable gap-search response at that same position up to twice, retaining
+CRC/track/position validation. Persistent invalid data still fails, including in
+small search ranges; it is not replaced with guessed gap boundaries. Normal reads
+and the Windows reader are unchanged. These checks do not replace physical testing.
 Before release, test real discs in secure/burst/paranoid modes, cancel/eject,
 disc replacement, mixed-mode discs, drive offsets and AccurateRip results.
 

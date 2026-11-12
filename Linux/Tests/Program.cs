@@ -85,6 +85,7 @@ internal static unsafe class Program
             bool rejected = false;
             try { CUETools.Ripper.OpticalDrives.Resolve("/dev/null"); } catch (IOException) { rejected = true; }
             Check(rejected, "Reject non-optical devices");
+            GapTests.Run(Check);
             RoundTrip();
             Console.WriteLine("Passed " + count + " Linux CUE Ripper checks.");
             return 0;
