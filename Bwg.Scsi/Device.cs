@@ -2056,7 +2056,14 @@ namespace Bwg.Scsi
 				m_logger.LogMessage(new UserMessage(UserMessage.Category.Debug, 8, "Bwg.Scsi.Device.ReadCD(" + args + ")"));
 			}
 
-			int size = (4 * 588 +
+			int size = (
+#if LINUX
+                // SG_IO reports the difference between the requested and returned
+                // transfer sizes. A subchannel-only read contains no audio bytes.
+                (mainmode == MainChannelSelection.None ? 0 : 4 * 588) +
+#else
+                4 * 588 +
+#endif
 				(submode == SubChannelMode.QOnly ? 16 : submode == SubChannelMode.RWMode ? 96 : 0) +
 				(c2mode == C2ErrorMode.Mode294 ? 294 : c2mode == C2ErrorMode.Mode296 ? 296 : 0)) * (int) length;
 

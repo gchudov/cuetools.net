@@ -61,6 +61,15 @@ internal static unsafe class Program
                     request->Residual = 4;
                 };
                 Check(drive.ReadCD(1, false, 42, 1, (IntPtr)audio, 2352) == Device.CommandStatus.IoctlFailed, "Reject incomplete audio transfers");
+                drive.Reply = pointer =>
+                {
+                    var request = (Device.SgIoHeader*)pointer;
+                    Check(request->TransferLength == 16 * 16, "Subchannel-only transfer excludes audio bytes");
+                    Check(Marshal.ReadByte(request->Command, 9) == 0 && Marshal.ReadByte(request->Command, 10) == 2, "Q-only READ CD command");
+                };
+                Check(drive.ReadCDAndSubChannel(Device.MainChannelSelection.None, Device.SubChannelMode.QOnly,
+                    Device.C2ErrorMode.None, 1, false, 3, 16, (IntPtr)audio, 10) == Device.CommandStatus.Success,
+                    "Subchannel-only reads do not trigger incomplete-audio rejection");
                 drive.Reply = pointer => { ((Device.SgIoHeader*)pointer)->HostStatus = 3; };
                 Check(drive.Inquiry(out _) == Device.CommandStatus.IoctlFailed, "Transport failure is not audio");
                 drive.Reply = pointer =>
