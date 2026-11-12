@@ -5,4 +5,5 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../CUERipper.csproj" /></ItemGroup>
+  <ItemGroup><Compile Include="../../Tests/OffsetCalibration/OffsetCalibrationTests.cs" Link="OffsetCalibrationTests.cs" /></ItemGroup>
 </Project>

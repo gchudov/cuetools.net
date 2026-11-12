@@ -131,6 +131,7 @@ namespace CUETools.ConsoleRipper
 			int correctionQuality = 1;
 			string driveLetter = null;
 			int driveOffset = 0;
+			bool explicitOffset = false;
 			bool test = false;
 			bool forceD8 = false, forceBE = false, quiet = false;
             bool flac = false;
@@ -159,7 +160,10 @@ namespace CUETools.ConsoleRipper
                 else if ((args[arg] == "-D" || args[arg] == "--drive") && ++arg < args.Length)
                     driveLetter = args[arg];
                 else if ((args[arg] == "-O" || args[arg] == "--offset") && ++arg < args.Length)
+                {
                     ok = int.TryParse(args[arg], out driveOffset);
+                    explicitOffset = ok;
+                }
                 else if (args[arg] == "--flac" || args[arg] == "-F")
                     flac = true;
                 else if (args[arg] == "-I" || args[arg] == "--info")
@@ -243,10 +247,8 @@ namespace CUETools.ConsoleRipper
 					audioSource.Close();
 					return;
 				}
-				if (driveOffset == 0)
-					if (!AccurateRipVerify.FindDriveReadOffset(audioSource.ARName, out driveOffset))
-						Console.WriteLine("Unknown read offset for drive {0}!!!", audioSource.Path);
-						//throw new Exception("Failed to find drive read offset for drive" + audioSource.ARName);
+				bool knownOffset = explicitOffset ||
+					AccurateRipVerify.FindDriveReadOffset(audioSource.ARName, out driveOffset);
 
 				audioSource.DriveOffset = driveOffset;
 				audioSource.CorrectionQuality = correctionQuality;
@@ -268,6 +270,32 @@ namespace CUETools.ConsoleRipper
 				ctdb.Init(arVerify);
 				ctdb.ContactDB(null, "CUETools.ConsoleRipper 2.1.8", audioSource.ARName, true, false, CTDBMetadataSearch.Fast);
 				arVerify.ContactAccurateRip(ArId);
+				if (!knownOffset && !infoOnly)
+				{
+					var calibrationTime = System.Diagnostics.Stopwatch.StartNew();
+					try
+					{
+						int tracks;
+						knownOffset = arVerify.ARStatus == null && OffsetCalibration.TryCalibrate(
+							audioSource.TOC, arVerify.AccDisks, audioSource.ReadOffsetCalibrationSample,
+							TimeSpan.FromSeconds(5), out driveOffset, out tracks);
+						if (knownOffset)
+						{
+							audioSource.DriveOffset = driveOffset;
+							Console.WriteLine("Offset calibration: {0:+0;-0;0} samples for this disc ({1:F2}s).", driveOffset, calibrationTime.Elapsed.TotalSeconds);
+						}
+					}
+					catch (ReadCDException error)
+					{
+						Console.WriteLine("Offset calibration: {0}", error.Message);
+					}
+					catch (SCSIException error)
+					{
+						Console.WriteLine("Offset calibration: {0}", error.Message);
+					}
+					if (!knownOffset)
+						Console.WriteLine("Offset calibration: inconclusive; using 0 samples. AccurateRip will verify the completed rip.");
+				}
 				CTDBResponseMeta meta = null;
 				foreach (var imeta in ctdb.Metadata)
 				{

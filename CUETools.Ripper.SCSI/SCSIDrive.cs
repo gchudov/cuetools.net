@@ -1087,6 +1087,41 @@ namespace CUETools.Ripper.SCSI
 
 		public unsafe void PrefetchSector(int iSector)
 		{
+			PrefetchSector(iSector, MSECTORS, 16 << _correctionQuality);
+		}
+
+		// Calibration reads only a few sectors, with two secure passes instead of
+		// filling the normal 2400-sector streaming buffer or retrying a bad disc.
+		public byte[] ReadOffsetCalibrationSample(int firstSector, int sectorCount)
+		{
+			if (firstSector < 0 || sectorCount < 1 || sectorCount > 32 ||
+				(long)firstSector + sectorCount > _toc.AudioLength)
+				throw new ArgumentOutOfRangeException("firstSector");
+			long position = Position;
+			int quality = CorrectionQuality;
+			int timeout = _timeout;
+			try
+			{
+				_timeout = Math.Min(_timeout, 2);
+				CorrectionQuality = 1;
+				Position = position; // Discard cached audio; calibration must read the disc.
+				PrefetchSector(firstSector, sectorCount, 2);
+				if (_currentErrorsCount != 0)
+					throw new ReadCDException("Offset calibration sample could not be read securely.");
+				byte[] result = new byte[sectorCount * 2352];
+				Buffer.BlockCopy(currentData.Bytes, 0, result, 0, result.Length);
+				return result;
+			}
+			finally
+			{
+				_timeout = timeout;
+				CorrectionQuality = quality;
+				Position = position; // Reset retries/errors before the actual rip.
+			}
+		}
+
+		private unsafe void PrefetchSector(int iSector, int sectorCount, int max_scans)
+		{
 			if (iSector >= _currentStart && iSector < _currentEnd)
 				return;
 
@@ -1094,11 +1129,11 @@ namespace CUETools.Ripper.SCSI
 				throw new ReadCDException(Resource1.AutodetectReadCommandFailed + "\n" + _autodetectResult);
 
 			_currentStart = iSector;
-			_currentEnd = _currentStart + MSECTORS;
+			_currentEnd = _currentStart + sectorCount;
 			if (_currentEnd > (int)_toc.AudioLength)
 			{
 				_currentEnd = (int)_toc.AudioLength;
-				_currentStart = Math.Max(0, _currentEnd - MSECTORS);
+				_currentStart = Math.Max(0, _currentEnd - sectorCount);
 			}
 
 			int neededSize = (_currentEnd - _currentStart) * 588;
@@ -1121,7 +1156,6 @@ namespace CUETools.Ripper.SCSI
 
 			// TODO:
 			//int max_scans = 1 << _correctionQuality;
-			int max_scans = 16 << _correctionQuality;
 			for (int pass = 0; pass < max_scans; pass++)
 			{
 //				dbg_pass = pass;

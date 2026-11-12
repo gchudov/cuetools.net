@@ -5,6 +5,28 @@ CD reader, correction modes, drive offsets, AccurateRip checks, CTDB metadata,
 managed Flake encoder, and embedded CUE/log output as the Windows console ripper.
 Windows projects and their SCSI transport remain separate.
 
+Unknown drive offsets are calibrated automatically at the start of a rip using
+AccurateRip's frame-450 checksums. Three tracks must agree on one correction;
+multiple possible pressings, silence and missing database data are inconclusive.
+The helper reads eleven sectors per sample with two secure passes, tries at most
+six samples, stops starting samples after five seconds, and limits each command
+to two seconds. Normal metadata queries do not perform calibration. A failed
+calibration retains the previous zero-offset fallback and reports that explicitly.
+Known drive offsets and explicit `--offset` values (including zero) take priority.
+
+The correction applies to this disc only, not a permanently guessed offset for a
+generic model name. The normal full-track AccurateRip verification still runs.
+This shared calibration also builds for Windows with the existing .NET Framework
+4.7 projects and native SCSI transport:
+
+```powershell
+./Windows/build.ps1 -DestinationDirectory C:/temp/cueripper-update
+```
+
+That command tests and builds the two changed Windows components for overlay onto
+the existing CUETools distribution. Shared regressions compare the new checksum
+scanner against the original full-disc AccurateRip verifier on both platforms.
+
 Build requirements: .NET 10 SDK, a C compiler and Linux development headers for
 the ABI check. Initialize the pinned metadata library first:
 

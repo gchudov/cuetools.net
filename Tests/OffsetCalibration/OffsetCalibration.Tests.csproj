@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../CUETools.Ripper.Console/OffsetCalibration.cs" Link="OffsetCalibration.cs" />
+    <ProjectReference Include="../../CUETools.AccurateRip/CUETools.AccurateRip.csproj" />
+    <ProjectReference Include="../../CUETools.CDImage/CUETools.CDImage.csproj" />
+    <ProjectReference Include="../../CUETools.Codecs/CUETools.Codecs.csproj" />
+  </ItemGroup>
+</Project>
