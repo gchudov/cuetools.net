@@ -472,7 +472,12 @@ namespace CUETools.Ripper.SCSI
 			}
 
 			// TODO: catch?
+#if LINUX
+			throw new Exception(string.Format("gap detection failed (track {0}, index {1}, sectors {2}-{3}, method {4}, BCD {5}, data {6})",
+				iTrack, iIndex, sec0, sec1, _gapDetection, _qChannelInBCD, BitConverter.ToString(_subchannelBuffer, 0, Math.Min(80, _subchannelBuffer.Length))));
+#else
 			throw new Exception("gap detection failed");
+#endif
 		}
 
 		private unsafe void TestGaps()
